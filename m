@@ -1,955 +1,402 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Sun, 24 Jun 2018 11:45:25 +0300
-Subject: [Intel-wired-lan] [PATCH v3 10/11] igc: Add setup link functionality
-Message-ID: <20180624084525.10374-1-sasha.neftin@intel.com>
+Date: Sun, 24 Jun 2018 11:45:28 +0300
+Subject: [Intel-wired-lan] [PATCH v3 11/11] igc: Add watchdog
+Message-ID: <20180624084528.10419-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add link establishment methods
-Add auto negotiation methods
-Add read MAC address method
+Code completion, remove obsolete code
+Add watchdog methods
 
 Sasha Neftin (v2):
 minor cosmetic changes
 
 Sasha Neftin (v3):
-removed not addressed methods
+resolve conflict and code optimization
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/e1000_base.c    |  41 +++
- drivers/net/ethernet/intel/igc/e1000_defines.h |  45 ++++
- drivers/net/ethernet/intel/igc/e1000_mac.c     | 272 +++++++++++++++++++-
- drivers/net/ethernet/intel/igc/e1000_mac.h     |   2 +
- drivers/net/ethernet/intel/igc/e1000_phy.c     | 332 ++++++++++++++++++++++++-
- drivers/net/ethernet/intel/igc/e1000_phy.h     |   1 +
- drivers/net/ethernet/intel/igc/igc.h           |   1 +
- drivers/net/ethernet/intel/igc/igc_main.c      |  35 ++-
- 8 files changed, 725 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/igc/e1000_defines.h |  12 ++
+ drivers/net/ethernet/intel/igc/e1000_hw.h      |   2 +
+ drivers/net/ethernet/intel/igc/igc.h           |  12 ++
+ drivers/net/ethernet/intel/igc/igc_main.c      | 235 +++++++++++++++++++++++++
+ 4 files changed, 261 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igc/e1000_base.c b/drivers/net/ethernet/intel/igc/e1000_base.c
-index 8b35e1d6c32e..6405506ff7b8 100644
---- a/drivers/net/ethernet/intel/igc/e1000_base.c
-+++ b/drivers/net/ethernet/intel/igc/e1000_base.c
-@@ -17,6 +17,7 @@ static void igc_release_phy_base(struct e1000_hw *);
- static s32 igc_get_phy_id_base(struct e1000_hw *);
- static s32 igc_init_hw_base(struct e1000_hw *);
- static s32 igc_reset_hw_base(struct e1000_hw *);
-+static s32 igc_setup_copper_link_base(struct e1000_hw *);
- static s32 igc_set_pcie_completion_timeout(struct e1000_hw *hw);
- static s32 igc_read_mac_addr_base(struct e1000_hw *hw);
- 
-@@ -97,6 +98,9 @@ static s32 igc_init_mac_params_base(struct e1000_hw *hw)
- 	if (mac->type == e1000_i225)
- 		dev_spec->clear_semaphore_once = true;
- 
-+	/* physical interface link setup */
-+	mac->ops.setup_physical_interface = igc_setup_copper_link_base;
-+
- 	return 0;
- }
- 
-@@ -139,6 +143,8 @@ static s32 igc_init_phy_params_base(struct e1000_hw *hw)
- 	if (ret_val)
- 		return ret_val;
- 
-+	igc_check_for_link_base(hw);
-+
- 	/* Verify phy id and set remaining function pointers */
- 	switch (phy->id) {
- 	case I225_I_PHY_ID:
-@@ -155,10 +161,22 @@ static s32 igc_init_phy_params_base(struct e1000_hw *hw)
- 
- static s32 igc_get_invariants_base(struct e1000_hw *hw)
- {
-+	struct e1000_mac_info *mac = &hw->mac;
- 	s32 ret_val = 0;
- 	u32 ctrl_ext = 0;
- 	u32 link_mode = 0;
- 
-+	switch (hw->device_id) {
-+	case E1000_DEV_ID_I225_LM:
-+	case E1000_DEV_ID_I225_V:
-+		mac->type = e1000_i225;
-+		break;
-+	default:
-+		return -E1000_ERR_MAC_INIT;
-+	}
-+
-+	hw->phy.media_type = e1000_media_type_copper;
-+
- 	ctrl_ext = rd32(E1000_CTRL_EXT);
- 	link_mode = ctrl_ext & E1000_CTRL_EXT_LINK_MODE_MASK;
- 
-@@ -289,6 +307,29 @@ static s32 igc_init_hw_base(struct e1000_hw *hw)
- }
- 
- /**
-+ *  igc_setup_copper_link_base - Configure copper link settings
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Configures the link for auto-neg or forced speed and duplex.  Then we check
-+ *  for link, once link is established calls to configure collision distance
-+ *  and flow control are called.
-+ **/
-+static s32 igc_setup_copper_link_base(struct e1000_hw *hw)
-+{
-+	s32  ret_val = 0;
-+	u32 ctrl;
-+
-+	ctrl = rd32(E1000_CTRL);
-+	ctrl |= E1000_CTRL_SLU;
-+	ctrl &= ~(E1000_CTRL_FRCSPD | E1000_CTRL_FRCDPX);
-+	wr32(E1000_CTRL, ctrl);
-+
-+	ret_val = igc_setup_copper_link(hw);
-+
-+	return ret_val;
-+}
-+
-+/**
-  *  igc_read_mac_addr_base - Read device MAC address
-  *  @hw: pointer to the HW structure
-  **/
 diff --git a/drivers/net/ethernet/intel/igc/e1000_defines.h b/drivers/net/ethernet/intel/igc/e1000_defines.h
-index 40276ae76c9f..24c24c197d6b 100644
+index 24c24c197d6b..5e13a606712b 100644
 --- a/drivers/net/ethernet/intel/igc/e1000_defines.h
 +++ b/drivers/net/ethernet/intel/igc/e1000_defines.h
-@@ -33,6 +33,11 @@
- /* Physical Func Reset Done Indication */
- #define E1000_CTRL_EXT_LINK_MODE_MASK	0x00C00000
+@@ -86,6 +86,9 @@
+ #define E1000_CTRL_RFCE		0x08000000  /* Receive Flow Control enable */
+ #define E1000_CTRL_TFCE		0x10000000  /* Transmit flow control enable */
  
-+/* Loop limit on how long we wait for auto-negotiation to complete */
-+#define COPPER_LINK_UP_LIMIT		10
-+#define PHY_AUTO_NEG_LIMIT		45
-+#define PHY_FORCE_LIMIT			20
++#define E1000_CONNSW_AUTOSENSE_CONF	0x2
++#define E1000_CONNSW_AUTOSENSE_EN	0x1
 +
- /* Number of 100 microseconds we wait for PCI Express master disable */
- #define MASTER_DISABLE_TIMEOUT		800
- /*Blocks new Master requests */
-@@ -74,6 +79,12 @@
- #define E1000_CTRL_RST		0x04000000  /* Global reset */
- 
- #define E1000_CTRL_PHY_RST	0x80000000  /* PHY Reset */
-+#define E1000_CTRL_SLU		0x00000040  /* Set link up (Force Link) */
-+#define E1000_CTRL_FRCSPD	0x00000800  /* Force Speed */
-+#define E1000_CTRL_FRCDPX	0x00001000  /* Force Duplex */
-+
-+#define E1000_CTRL_RFCE		0x08000000  /* Receive Flow Control enable */
-+#define E1000_CTRL_TFCE		0x10000000  /* Transmit flow control enable */
- 
  /* PBA constants */
  #define E1000_PBA_34K			0x0022
-@@ -89,6 +100,40 @@
- #define E1000_SWFW_PHY2_SM	0x20
- #define E1000_SWFW_PHY3_SM	0x40
  
-+/* PHY 1000 MII Register/Bit Definitions */
-+/* PHY Registers defined by IEEE */
-+#define PHY_CONTROL		0x00 /* Control Register */
-+#define PHY_STATUS		0x01 /* Status Register */
-+#define PHY_ID1			0x02 /* Phy Id Reg (word 1) */
-+#define PHY_ID2			0x03 /* Phy Id Reg (word 2) */
-+#define PHY_AUTONEG_ADV		0x04 /* Autoneg Advertisement */
-+#define PHY_LP_ABILITY		0x05 /* Link Partner Ability (Base Page) */
-+#define PHY_1000T_CTRL		0x09 /* 1000Base-T Control Reg */
-+#define PHY_1000T_STATUS	0x0A /* 1000Base-T Status Reg */
-+
-+/* Autoneg Advertisement Register */
-+#define NWAY_AR_10T_HD_CAPS	0x0020   /* 10T   Half Duplex Capable */
-+#define NWAY_AR_10T_FD_CAPS	0x0040   /* 10T   Full Duplex Capable */
-+#define NWAY_AR_100TX_HD_CAPS	0x0080   /* 100TX Half Duplex Capable */
-+#define NWAY_AR_100TX_FD_CAPS	0x0100   /* 100TX Full Duplex Capable */
-+#define NWAY_AR_PAUSE		0x0400   /* Pause operation desired */
-+#define NWAY_AR_ASM_DIR		0x0800   /* Asymmetric Pause Direction bit */
-+
-+/* Link Partner Ability Register (Base Page) */
-+#define NWAY_LPAR_PAUSE		0x0400 /* LP Pause operation desired */
-+#define NWAY_LPAR_ASM_DIR	0x0800 /* LP Asymmetric Pause Direction bit */
-+
-+/* 1000BASE-T Control Register */
-+#define CR_1000T_ASYM_PAUSE	0x0080 /* Advertise asymmetric pause bit */
-+#define CR_1000T_HD_CAPS	0x0100 /* Advertise 1000T HD capability */
-+#define CR_1000T_FD_CAPS	0x0200 /* Advertise 1000T FD capability  */
-+
-+/* PHY GPY 211 registers */
-+#define STANDARD_AN_REG_MASK	0x0007 /* MMD */
-+#define ANEG_MULTIGBT_AN_CTRL	0x0020 /* MULTI GBT AN Control Register */
-+#define MMD_DEVADDR_SHIFT	16     /* Shift MMD to higher bits */
-+#define CR_2500T_FD_CAPS	0x0080 /* Advertise 2500T FD capability */
-+
- /* NVM Control */
- #define E1000_EECD_SK		0x00000001 /* NVM Clock */
- #define E1000_EECD_CS		0x00000002 /* NVM Chip Select */
-diff --git a/drivers/net/ethernet/intel/igc/e1000_mac.c b/drivers/net/ethernet/intel/igc/e1000_mac.c
-index fe483211f66f..3f60810adc19 100644
---- a/drivers/net/ethernet/intel/igc/e1000_mac.c
-+++ b/drivers/net/ethernet/intel/igc/e1000_mac.c
-@@ -141,6 +141,8 @@ s32 igc_setup_link(struct e1000_hw *hw)
- 	/* In the case of the phy reset being blocked, we already have a link.
- 	 * We do not need to set it up again.
- 	 */
-+	if (igc_check_reset_block(hw))
-+		goto out;
+@@ -128,6 +131,10 @@
+ #define CR_1000T_HD_CAPS	0x0100 /* Advertise 1000T HD capability */
+ #define CR_1000T_FD_CAPS	0x0200 /* Advertise 1000T FD capability  */
  
- 	/* If requested flow control is set to default, set flow control
- 	 * based on the EEPROM flow control settings.
-@@ -192,10 +194,74 @@ s32 igc_setup_link(struct e1000_hw *hw)
-  **/
- static s32 igc_set_default_fc(struct e1000_hw *hw)
- {
-+	hw->fc.requested_mode = e1000_fc_full;
++/* 1000BASE-T Status Register */
++#define SR_1000T_REMOTE_RX_STATUS	0x1000 /* Remote receiver OK */
++#define SR_1000T_LOCAL_RX_STATUS	0x2000 /* Local receiver OK */
++
+ /* PHY GPY 211 registers */
+ #define STANDARD_AN_REG_MASK	0x0007 /* MMD */
+ #define ANEG_MULTIGBT_AN_CTRL	0x0020 /* MULTI GBT AN Control Register */
+@@ -270,6 +277,11 @@
+ #define E1000_IMS_RXT0		E1000_ICR_RXT0    /* Rx timer intr */
+ #define E1000_IMS_RXDMT0	E1000_ICR_RXDMT0  /* Rx desc min. threshold */
+ 
++/* Interrupt Cause Set */
++#define E1000_ICS_LSC		E1000_ICR_LSC       /* Link Status Change */
++#define E1000_ICS_RXDMT0	E1000_ICR_RXDMT0    /* rx desc min. threshold */
++#define E1000_ICS_DRSTA		E1000_ICR_DRSTA     /* Device Reset Aserted */
++
+ #define E1000_ICR_DOUTSYNC	0x10000000 /* NIC DMA out of sync */
+ #define E1000_EITR_CNT_IGNR	0x80000000 /* Don't reset counters on write */
+ #define E1000_IVAR_VALID	0x80
+diff --git a/drivers/net/ethernet/intel/igc/e1000_hw.h b/drivers/net/ethernet/intel/igc/e1000_hw.h
+index d8fc6fa9eda2..df948840df3b 100644
+--- a/drivers/net/ethernet/intel/igc/e1000_hw.h
++++ b/drivers/net/ethernet/intel/igc/e1000_hw.h
+@@ -229,6 +229,8 @@ struct e1000_dev_spec_base {
+ 	bool clear_semaphore_once;
+ 	bool module_plugged;
+ 	u8 media_port;
++	bool media_changed;
++	bool mas_capable;
+ };
+ 
+ struct e1000_hw {
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 99bc2344b7ff..36685d07c765 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -33,6 +33,8 @@ extern char igc_driver_version[];
+ #define IGC_FLAG_HAS_MSI		BIT(0)
+ #define IGC_FLAG_QUEUE_PAIRS		BIT(4)
+ #define IGC_FLAG_NEED_LINK_UPDATE	BIT(9)
++#define IGC_FLAG_MEDIA_RESET		BIT(10)
++#define IGC_FLAG_MAS_ENABLE		BIT(12)
+ #define IGC_FLAG_HAS_MSIX		BIT(13)
+ #define IGC_FLAG_VLAN_PROMISC		BIT(15)
+ 
+@@ -296,6 +298,7 @@ struct igc_adapter {
+ 
+ 	/* TX */
+ 	u16 tx_work_limit;
++	u32 tx_timeout_count;
+ 	int num_tx_queues;
+ 	struct igc_ring *tx_ring[IGC_MAX_TX_QUEUES];
+ 
+@@ -354,6 +357,7 @@ struct igc_adapter {
+ 
+ 	struct igc_mac_addr *mac_table;
+ 
++	unsigned long link_check_timeout;
+ 	struct e1000_info ei;
+ };
+ 
+@@ -423,6 +427,14 @@ static inline unsigned int igc_rx_pg_order(struct igc_ring *ring)
  	return 0;
  }
  
- /**
-+ *  igc_force_mac_fc - Force the MAC's flow control settings
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Force the MAC's flow control settings.  Sets the TFCE and RFCE bits in the
-+ *  device control register to reflect the adapter settings.  TFCE and RFCE
-+ *  need to be explicitly set by software when a copper PHY is used because
-+ *  autonegotiation is managed by the PHY rather than the MAC.  Software must
-+ *  also configure these bits when link is forced on a fiber connection.
-+ **/
-+s32 igc_force_mac_fc(struct e1000_hw *hw)
++static inline s32 igc_read_phy_reg(struct e1000_hw *hw, u32 offset, u16 *data)
 +{
-+	u32 ctrl;
-+	s32 ret_val = 0;
++	if (hw->phy.ops.read_reg)
++		return hw->phy.ops.read_reg(hw, offset, data);
 +
-+	ctrl = rd32(E1000_CTRL);
-+
-+	/* Because we didn't get link via the internal auto-negotiation
-+	 * mechanism (we either forced link or we got link via PHY
-+	 * auto-neg), we have to manually enable/disable transmit an
-+	 * receive flow control.
-+	 *
-+	 * The "Case" statement below enables/disable flow control
-+	 * according to the "hw->fc.current_mode" parameter.
-+	 *
-+	 * The possible values of the "fc" parameter are:
-+	 *      0:  Flow control is completely disabled
-+	 *      1:  Rx flow control is enabled (we can receive pause
-+	 *          frames but not send pause frames).
-+	 *      2:  Tx flow control is enabled (we can send pause frames
-+	 *          frames but we do not receive pause frames).
-+	 *      3:  Both Rx and TX flow control (symmetric) is enabled.
-+	 *  other:  No other values should be possible at this point.
-+	 */
-+	hw_dbg("hw->fc.current_mode = %u\n", hw->fc.current_mode);
-+
-+	switch (hw->fc.current_mode) {
-+	case e1000_fc_none:
-+		ctrl &= (~(E1000_CTRL_TFCE | E1000_CTRL_RFCE));
-+		break;
-+	case e1000_fc_rx_pause:
-+		ctrl &= (~E1000_CTRL_TFCE);
-+		ctrl |= E1000_CTRL_RFCE;
-+		break;
-+	case e1000_fc_tx_pause:
-+		ctrl &= (~E1000_CTRL_RFCE);
-+		ctrl |= E1000_CTRL_TFCE;
-+		break;
-+	case e1000_fc_full:
-+		ctrl |= (E1000_CTRL_TFCE | E1000_CTRL_RFCE);
-+		break;
-+	default:
-+		hw_dbg("Flow control param set incorrectly\n");
-+		ret_val = -E1000_ERR_CONFIG;
-+		goto out;
-+	}
-+
-+	wr32(E1000_CTRL, ctrl);
-+
-+out:
-+	return ret_val;
-+}
-+
-+/**
-  *  igc_set_fc_watermarks - Set flow control high/low watermarks
-  *  @hw: pointer to the HW structure
-  *
-@@ -423,7 +489,7 @@ s32 igc_check_for_copper_link(struct e1000_hw *hw)
- 	 * settings because we may have had to re-autoneg with a
- 	 * different link partner.
- 	 */
--	/* TODO ret_val = igc_config_fc_after_link_up(hw); */
-+	ret_val = igc_config_fc_after_link_up(hw);
- 	if (ret_val)
- 		hw_dbg("Error configuring flow control\n");
- 
-@@ -453,6 +519,210 @@ void igc_config_collision_dist(struct e1000_hw *hw)
- }
- 
- /**
-+ *  igc_config_fc_after_link_up - Configures flow control after link
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Checks the status of auto-negotiation after link up to ensure that the
-+ *  speed and duplex were not forced.  If the link needed to be forced, then
-+ *  flow control needs to be forced also.  If auto-negotiation is enabled
-+ *  and did not fail, then we configure flow control based on our link
-+ *  partner.
-+ **/
-+s32 igc_config_fc_after_link_up(struct e1000_hw *hw)
-+{
-+	struct e1000_mac_info *mac = &hw->mac;
-+	s32 ret_val = 0;
-+	u16 mii_status_reg, mii_nway_adv_reg, mii_nway_lp_ability_reg;
-+	u16 speed, duplex;
-+
-+	/* Check for the case where we have fiber media and auto-neg failed
-+	 * so we had to force link.  In this case, we need to force the
-+	 * configuration of the MAC to match the "fc" parameter.
-+	 */
-+	if (mac->autoneg_failed) {
-+		if (hw->phy.media_type == e1000_media_type_copper)
-+			ret_val = igc_force_mac_fc(hw);
-+	}
-+
-+	if (ret_val) {
-+		hw_dbg("Error forcing flow control settings\n");
-+		goto out;
-+	}
-+
-+	/* Check for the case where we have copper media and auto-neg is
-+	 * enabled.  In this case, we need to check and see if Auto-Neg
-+	 * has completed, and if so, how the PHY and link partner has
-+	 * flow control configured.
-+	 */
-+	if (hw->phy.media_type == e1000_media_type_copper && mac->autoneg) {
-+		/* Read the MII Status Register and check to see if AutoNeg
-+		 * has completed.  We read this twice because this reg has
-+		 * some "sticky" (latched) bits.
-+		 */
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS,
-+					       &mii_status_reg);
-+		if (ret_val)
-+			goto out;
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS,
-+					       &mii_status_reg);
-+		if (ret_val)
-+			goto out;
-+
-+		if (!(mii_status_reg & MII_SR_AUTONEG_COMPLETE)) {
-+			hw_dbg("Copper PHY and Auto Neg has not completed.\n");
-+			goto out;
-+		}
-+
-+		/* The AutoNeg process has completed, so we now need to
-+		 * read both the Auto Negotiation Advertisement
-+		 * Register (Address 4) and the Auto_Negotiation Base
-+		 * Page Ability Register (Address 5) to determine how
-+		 * flow control was negotiated.
-+		 */
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_AUTONEG_ADV,
-+					       &mii_nway_adv_reg);
-+		if (ret_val)
-+			goto out;
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_LP_ABILITY,
-+					       &mii_nway_lp_ability_reg);
-+		if (ret_val)
-+			goto out;
-+		/* Two bits in the Auto Negotiation Advertisement Register
-+		 * (Address 4) and two bits in the Auto Negotiation Base
-+		 * Page Ability Register (Address 5) determine flow control
-+		 * for both the PHY and the link partner.  The following
-+		 * table, taken out of the IEEE 802.3ab/D6.0 dated March 25,
-+		 * 1999, describes these PAUSE resolution bits and how flow
-+		 * control is determined based upon these settings.
-+		 * NOTE:  DC = Don't Care
-+		 *
-+		 *   LOCAL DEVICE  |   LINK PARTNER
-+		 * PAUSE | ASM_DIR | PAUSE | ASM_DIR | NIC Resolution
-+		 *-------|---------|-------|---------|--------------------
-+		 *   0   |    0    |  DC   |   DC    | e1000_fc_none
-+		 *   0   |    1    |   0   |   DC    | e1000_fc_none
-+		 *   0   |    1    |   1   |    0    | e1000_fc_none
-+		 *   0   |    1    |   1   |    1    | e1000_fc_tx_pause
-+		 *   1   |    0    |   0   |   DC    | e1000_fc_none
-+		 *   1   |   DC    |   1   |   DC    | e1000_fc_full
-+		 *   1   |    1    |   0   |    0    | e1000_fc_none
-+		 *   1   |    1    |   0   |    1    | e1000_fc_rx_pause
-+		 *
-+		 * Are both PAUSE bits set to 1?  If so, this implies
-+		 * Symmetric Flow Control is enabled at both ends.  The
-+		 * ASM_DIR bits are irrelevant per the spec.
-+		 *
-+		 * For Symmetric Flow Control:
-+		 *
-+		 *   LOCAL DEVICE  |   LINK PARTNER
-+		 * PAUSE | ASM_DIR | PAUSE | ASM_DIR | Result
-+		 *-------|---------|-------|---------|--------------------
-+		 *   1   |   DC    |   1   |   DC    | E1000_fc_full
-+		 *
-+		 */
-+		if ((mii_nway_adv_reg & NWAY_AR_PAUSE) &&
-+		    (mii_nway_lp_ability_reg & NWAY_LPAR_PAUSE)) {
-+			/* Now we need to check if the user selected RX ONLY
-+			 * of pause frames.  In this case, we had to advertise
-+			 * FULL flow control because we could not advertise RX
-+			 * ONLY. Hence, we must now check to see if we need to
-+			 * turn OFF  the TRANSMISSION of PAUSE frames.
-+			 */
-+			if (hw->fc.requested_mode == e1000_fc_full) {
-+				hw->fc.current_mode = e1000_fc_full;
-+				hw_dbg("Flow Control = FULL.\n");
-+			} else {
-+				hw->fc.current_mode = e1000_fc_rx_pause;
-+				hw_dbg("Flow Control = RX PAUSE frames only.\n");
-+			}
-+		}
-+
-+		/* For receiving PAUSE frames ONLY.
-+		 *
-+		 *   LOCAL DEVICE  |   LINK PARTNER
-+		 * PAUSE | ASM_DIR | PAUSE | ASM_DIR | Result
-+		 *-------|---------|-------|---------|--------------------
-+		 *   0   |    1    |   1   |    1    | e1000_fc_tx_pause
-+		 */
-+		else if (!(mii_nway_adv_reg & NWAY_AR_PAUSE) &&
-+			 (mii_nway_adv_reg & NWAY_AR_ASM_DIR) &&
-+			 (mii_nway_lp_ability_reg & NWAY_LPAR_PAUSE) &&
-+			 (mii_nway_lp_ability_reg & NWAY_LPAR_ASM_DIR)) {
-+			hw->fc.current_mode = e1000_fc_tx_pause;
-+			hw_dbg("Flow Control = TX PAUSE frames only.\n");
-+		}
-+		/* For transmitting PAUSE frames ONLY.
-+		 *
-+		 *   LOCAL DEVICE  |   LINK PARTNER
-+		 * PAUSE | ASM_DIR | PAUSE | ASM_DIR | Result
-+		 *-------|---------|-------|---------|--------------------
-+		 *   1   |    1    |   0   |    1    | e1000_fc_rx_pause
-+		 */
-+		else if ((mii_nway_adv_reg & NWAY_AR_PAUSE) &&
-+			 (mii_nway_adv_reg & NWAY_AR_ASM_DIR) &&
-+			 !(mii_nway_lp_ability_reg & NWAY_LPAR_PAUSE) &&
-+			 (mii_nway_lp_ability_reg & NWAY_LPAR_ASM_DIR)) {
-+			hw->fc.current_mode = e1000_fc_rx_pause;
-+			hw_dbg("Flow Control = RX PAUSE frames only.\n");
-+		}
-+		/* Per the IEEE spec, at this point flow control should be
-+		 * disabled.  However, we want to consider that we could
-+		 * be connected to a legacy switch that doesn't advertise
-+		 * desired flow control, but can be forced on the link
-+		 * partner.  So if we advertised no flow control, that is
-+		 * what we will resolve to.  If we advertised some kind of
-+		 * receive capability (Rx Pause Only or Full Flow Control)
-+		 * and the link partner advertised none, we will configure
-+		 * ourselves to enable Rx Flow Control only.  We can do
-+		 * this safely for two reasons:  If the link partner really
-+		 * didn't want flow control enabled, and we enable Rx, no
-+		 * harm done since we won't be receiving any PAUSE frames
-+		 * anyway.  If the intent on the link partner was to have
-+		 * flow control enabled, then by us enabling RX only, we
-+		 * can at least receive pause frames and process them.
-+		 * This is a good idea because in most cases, since we are
-+		 * predominantly a server NIC, more times than not we will
-+		 * be asked to delay transmission of packets than asking
-+		 * our link partner to pause transmission of frames.
-+		 */
-+		else if ((hw->fc.requested_mode == e1000_fc_none) ||
-+			 (hw->fc.requested_mode == e1000_fc_tx_pause) ||
-+			 (hw->fc.strict_ieee)) {
-+			hw->fc.current_mode = e1000_fc_none;
-+			hw_dbg("Flow Control = NONE.\n");
-+		} else {
-+			hw->fc.current_mode = e1000_fc_rx_pause;
-+			hw_dbg("Flow Control = RX PAUSE frames only.\n");
-+		}
-+
-+		/* Now we need to do one last check...  If we auto-
-+		 * negotiated to HALF DUPLEX, flow control should not be
-+		 * enabled per IEEE 802.3 spec.
-+		 */
-+		ret_val = hw->mac.ops.get_speed_and_duplex(hw, &speed, &duplex);
-+		if (ret_val) {
-+			hw_dbg("Error getting link speed and duplex\n");
-+			goto out;
-+		}
-+
-+		if (duplex == HALF_DUPLEX)
-+			hw->fc.current_mode = e1000_fc_none;
-+
-+		/* Now we call a subroutine to actually force the MAC
-+		 * controller to use the correct flow control settings.
-+		 */
-+		ret_val = igc_force_mac_fc(hw);
-+		if (ret_val) {
-+			hw_dbg("Error forcing flow control settings\n");
-+			goto out;
-+		}
-+	}
-+
-+out:
 +	return 0;
 +}
 +
-+/**
-  *  igc_get_auto_rd_done - Check for auto read completion
-  *  @hw: pointer to the HW structure
-  *
-diff --git a/drivers/net/ethernet/intel/igc/e1000_mac.h b/drivers/net/ethernet/intel/igc/e1000_mac.h
-index 0f17a8443125..0b32f21ce168 100644
---- a/drivers/net/ethernet/intel/igc/e1000_mac.h
-+++ b/drivers/net/ethernet/intel/igc/e1000_mac.h
-@@ -14,6 +14,8 @@
+ #define igc_rx_pg_size(_ring) (PAGE_SIZE << igc_rx_pg_order(_ring))
  
- /* forward declaration */
- s32 igc_check_for_copper_link(struct e1000_hw *hw);
-+s32 igc_config_fc_after_link_up(struct e1000_hw *hw);
-+s32 igc_force_mac_fc(struct e1000_hw *hw);
- 
- s32 igc_disable_pcie_master(struct e1000_hw *hw);
- void igc_init_rx_addrs(struct e1000_hw *hw, u16 rar_count);
-diff --git a/drivers/net/ethernet/intel/igc/e1000_phy.c b/drivers/net/ethernet/intel/igc/e1000_phy.c
-index c95efc4145e8..4f130402225f 100644
---- a/drivers/net/ethernet/intel/igc/e1000_phy.c
-+++ b/drivers/net/ethernet/intel/igc/e1000_phy.c
-@@ -3,6 +3,10 @@
- 
- #include "e1000_phy.h"
- 
-+/* forward declaration */
-+static s32  igc_phy_setup_autoneg(struct e1000_hw *hw);
-+static s32  igc_wait_autoneg(struct e1000_hw *hw);
-+
- /**
-  *  igc_check_reset_block - Check if PHY reset is blocked
-  *  @hw: pointer to the HW structure
-@@ -206,7 +210,333 @@ s32 igc_phy_hw_reset(struct e1000_hw *hw)
- 
- 	phy->ops.release(hw);
- 
--	ret_val = phy->ops.get_cfg_done(hw);
-+out:
-+	return ret_val;
-+}
-+
-+/**
-+ *  igc_copper_link_autoneg - Setup/Enable autoneg for copper link
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Performs initial bounds checking on autoneg advertisement parameter, then
-+ *  configure to advertise the full capability.  Setup the PHY to autoneg
-+ *  and restart the negotiation process between the link partner.  If
-+ *  autoneg_wait_to_complete, then wait for autoneg to complete before exiting.
-+ **/
-+static s32 igc_copper_link_autoneg(struct e1000_hw *hw)
-+{
-+	struct e1000_phy_info *phy = &hw->phy;
-+	s32 ret_val;
-+	u16 phy_ctrl;
-+
-+	/* Perform some bounds checking on the autoneg advertisement
-+	 * parameter.
-+	 */
-+	phy->autoneg_advertised &= phy->autoneg_mask;
-+
-+	/* If autoneg_advertised is zero, we assume it was not defaulted
-+	 * by the calling code so we set to advertise full capability.
-+	 */
-+	if (phy->autoneg_advertised == 0)
-+		phy->autoneg_advertised = phy->autoneg_mask;
-+
-+	hw_dbg("Reconfiguring auto-neg advertisement params\n");
-+	ret_val = igc_phy_setup_autoneg(hw);
-+	if (ret_val) {
-+		hw_dbg("Error Setting up Auto-Negotiation\n");
-+		goto out;
-+	}
-+	hw_dbg("Restarting Auto-Neg\n");
-+
-+	/* Restart auto-negotiation by setting the Auto Neg Enable bit and
-+	 * the Auto Neg Restart bit in the PHY control register.
-+	 */
-+	ret_val = phy->ops.read_reg(hw, PHY_CONTROL, &phy_ctrl);
-+	if (ret_val)
-+		goto out;
-+
-+	phy_ctrl |= (MII_CR_AUTO_NEG_EN | MII_CR_RESTART_AUTO_NEG);
-+	ret_val = phy->ops.write_reg(hw, PHY_CONTROL, phy_ctrl);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Does the user want to wait for Auto-Neg to complete here, or
-+	 * check at a later time (for example, callback routine).
-+	 */
-+	if (phy->autoneg_wait_to_complete) {
-+		ret_val = igc_wait_autoneg(hw);
-+		if (ret_val) {
-+			hw_dbg("Error while waiting for autoneg to complete\n");
-+			goto out;
-+		}
-+	}
-+
-+	hw->mac.get_link_status = true;
-+
-+out:
-+	return ret_val;
-+}
-+
-+/**
-+ *  igc_wait_autoneg - Wait for auto-neg completion
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Waits for auto-negotiation to complete or for the auto-negotiation time
-+ *  limit to expire, which ever happens first.
-+ **/
-+static s32 igc_wait_autoneg(struct e1000_hw *hw)
-+{
-+	s32 ret_val = 0;
-+	u16 i, phy_status;
-+
-+	/* Break after autoneg completes or PHY_AUTO_NEG_LIMIT expires. */
-+	for (i = PHY_AUTO_NEG_LIMIT; i > 0; i--) {
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS, &phy_status);
-+		if (ret_val)
-+			break;
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS, &phy_status);
-+		if (ret_val)
-+			break;
-+		if (phy_status & MII_SR_AUTONEG_COMPLETE)
-+			break;
-+		msleep(100);
-+	}
-+
-+	/* PHY_AUTO_NEG_TIME expiration doesn't guarantee auto-negotiation
-+	 * has completed.
-+	 */
-+	return ret_val;
-+}
-+
-+/**
-+ *  igc_phy_setup_autoneg - Configure PHY for auto-negotiation
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Reads the MII auto-neg advertisement register and/or the 1000T control
-+ *  register and if the PHY is already setup for auto-negotiation, then
-+ *  return successful.  Otherwise, setup advertisement and flow control to
-+ *  the appropriate values for the wanted auto-negotiation.
-+ **/
-+static s32 igc_phy_setup_autoneg(struct e1000_hw *hw)
-+{
-+	struct e1000_phy_info *phy = &hw->phy;
-+	s32 ret_val;
-+	u16 mii_autoneg_adv_reg;
-+	u16 mii_1000t_ctrl_reg = 0;
-+	u16 aneg_multigbt_an_ctrl = 0;
-+
-+	phy->autoneg_advertised &= phy->autoneg_mask;
-+
-+	/* Read the MII Auto-Neg Advertisement Register (Address 4). */
-+	ret_val = phy->ops.read_reg(hw, PHY_AUTONEG_ADV, &mii_autoneg_adv_reg);
-+	if (ret_val)
-+		return ret_val;
-+
-+	if (phy->autoneg_mask & ADVERTISE_1000_FULL) {
-+		/* Read the MII 1000Base-T Control Register (Address 9). */
-+		ret_val = phy->ops.read_reg(hw, PHY_1000T_CTRL,
-+					    &mii_1000t_ctrl_reg);
-+		if (ret_val)
-+			return ret_val;
-+	}
-+
-+	if ((phy->autoneg_mask & ADVERTISE_2500_FULL) &&
-+	    hw->phy.id == I225_I_PHY_ID) {
-+		/* Read the MULTI GBT AN Control Register - reg 7.32 */
-+		ret_val = phy->ops.read_reg(hw, (STANDARD_AN_REG_MASK <<
-+					    MMD_DEVADDR_SHIFT) |
-+					    ANEG_MULTIGBT_AN_CTRL,
-+					    &aneg_multigbt_an_ctrl);
-+
-+		if (ret_val)
-+			return ret_val;
-+	}
-+
-+	/* Need to parse both autoneg_advertised and fc and set up
-+	 * the appropriate PHY registers.  First we will parse for
-+	 * autoneg_advertised software override.  Since we can advertise
-+	 * a plethora of combinations, we need to check each bit
-+	 * individually.
-+	 */
-+
-+	/* First we clear all the 10/100 mb speed bits in the Auto-Neg
-+	 * Advertisement Register (Address 4) and the 1000 mb speed bits in
-+	 * the  1000Base-T Control Register (Address 9).
-+	 */
-+	mii_autoneg_adv_reg &= ~(NWAY_AR_100TX_FD_CAPS |
-+				 NWAY_AR_100TX_HD_CAPS |
-+				 NWAY_AR_10T_FD_CAPS   |
-+				 NWAY_AR_10T_HD_CAPS);
-+	mii_1000t_ctrl_reg &= ~(CR_1000T_HD_CAPS | CR_1000T_FD_CAPS);
-+
-+	hw_dbg("autoneg_advertised %x\n", phy->autoneg_advertised);
-+
-+	/* Do we want to advertise 10 Mb Half Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_10_HALF) {
-+		hw_dbg("Advertise 10mb Half duplex\n");
-+		mii_autoneg_adv_reg |= NWAY_AR_10T_HD_CAPS;
-+	}
-+
-+	/* Do we want to advertise 10 Mb Full Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_10_FULL) {
-+		hw_dbg("Advertise 10mb Full duplex\n");
-+		mii_autoneg_adv_reg |= NWAY_AR_10T_FD_CAPS;
-+	}
-+
-+	/* Do we want to advertise 100 Mb Half Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_100_HALF) {
-+		hw_dbg("Advertise 100mb Half duplex\n");
-+		mii_autoneg_adv_reg |= NWAY_AR_100TX_HD_CAPS;
-+	}
-+
-+	/* Do we want to advertise 100 Mb Full Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_100_FULL) {
-+		hw_dbg("Advertise 100mb Full duplex\n");
-+		mii_autoneg_adv_reg |= NWAY_AR_100TX_FD_CAPS;
-+	}
-+
-+	/* We do not allow the Phy to advertise 1000 Mb Half Duplex */
-+	if (phy->autoneg_advertised & ADVERTISE_1000_HALF)
-+		hw_dbg("Advertise 1000mb Half duplex request denied!\n");
-+
-+	/* Do we want to advertise 1000 Mb Full Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_1000_FULL) {
-+		hw_dbg("Advertise 1000mb Full duplex\n");
-+		mii_1000t_ctrl_reg |= CR_1000T_FD_CAPS;
-+	}
-+
-+	/* We do not allow the Phy to advertise 2500 Mb Half Duplex */
-+	if (phy->autoneg_advertised & ADVERTISE_2500_HALF)
-+		hw_dbg("Advertise 2500mb Half duplex request denied!\n");
-+
-+	/* Do we want to advertise 2500 Mb Full Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_2500_FULL) {
-+		hw_dbg("Advertise 2500mb Full duplex\n");
-+		aneg_multigbt_an_ctrl |= CR_2500T_FD_CAPS;
-+	}
-+
-+	/* Check for a software override of the flow control settings, and
-+	 * setup the PHY advertisement registers accordingly.  If
-+	 * auto-negotiation is enabled, then software will have to set the
-+	 * "PAUSE" bits to the correct value in the Auto-Negotiation
-+	 * Advertisement Register (PHY_AUTONEG_ADV) and re-start auto-
-+	 * negotiation.
-+	 *
-+	 * The possible values of the "fc" parameter are:
-+	 *      0:  Flow control is completely disabled
-+	 *      1:  Rx flow control is enabled (we can receive pause frames
-+	 *          but not send pause frames).
-+	 *      2:  Tx flow control is enabled (we can send pause frames
-+	 *          but we do not support receiving pause frames).
-+	 *      3:  Both Rx and Tx flow control (symmetric) are enabled.
-+	 *  other:  No software override.  The flow control configuration
-+	 *          in the EEPROM is used.
-+	 */
-+	switch (hw->fc.current_mode) {
-+	case e1000_fc_none:
-+		/* Flow control (Rx & Tx) is completely disabled by a
-+		 * software over-ride.
-+		 */
-+		mii_autoneg_adv_reg &= ~(NWAY_AR_ASM_DIR | NWAY_AR_PAUSE);
-+		break;
-+	case e1000_fc_rx_pause:
-+		/* Rx Flow control is enabled, and Tx Flow control is
-+		 * disabled, by a software over-ride.
-+		 *
-+		 * Since there really isn't a way to advertise that we are
-+		 * capable of Rx Pause ONLY, we will advertise that we
-+		 * support both symmetric and asymmetric Rx PAUSE.  Later
-+		 * (in e1000_config_fc_after_link_up) we will disable the
-+		 * hw's ability to send PAUSE frames.
-+		 */
-+		mii_autoneg_adv_reg |= (NWAY_AR_ASM_DIR | NWAY_AR_PAUSE);
-+		break;
-+	case e1000_fc_tx_pause:
-+		/* Tx Flow control is enabled, and Rx Flow control is
-+		 * disabled, by a software over-ride.
-+		 */
-+		mii_autoneg_adv_reg |= NWAY_AR_ASM_DIR;
-+		mii_autoneg_adv_reg &= ~NWAY_AR_PAUSE;
-+		break;
-+	case e1000_fc_full:
-+		/* Flow control (both Rx and Tx) is enabled by a software
-+		 * over-ride.
-+		 */
-+		mii_autoneg_adv_reg |= (NWAY_AR_ASM_DIR | NWAY_AR_PAUSE);
-+		break;
-+	default:
-+		hw_dbg("Flow control param set incorrectly\n");
-+		return -E1000_ERR_CONFIG;
-+	}
-+
-+	ret_val = phy->ops.write_reg(hw, PHY_AUTONEG_ADV, mii_autoneg_adv_reg);
-+	if (ret_val)
-+		return ret_val;
-+
-+	hw_dbg("Auto-Neg Advertising %x\n", mii_autoneg_adv_reg);
-+
-+	if (phy->autoneg_mask & ADVERTISE_1000_FULL)
-+		ret_val = phy->ops.write_reg(hw, PHY_1000T_CTRL,
-+					     mii_1000t_ctrl_reg);
-+
-+	if ((phy->autoneg_mask & ADVERTISE_2500_FULL) &&
-+	    hw->phy.id == I225_I_PHY_ID)
-+		ret_val = phy->ops.write_reg(hw,
-+					     (STANDARD_AN_REG_MASK <<
-+					     MMD_DEVADDR_SHIFT) |
-+					     ANEG_MULTIGBT_AN_CTRL,
-+					     aneg_multigbt_an_ctrl);
-+
-+	return ret_val;
-+}
-+
-+/**
-+ *  igc_setup_copper_link - Configure copper link settings
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Calls the appropriate function to configure the link for auto-neg or forced
-+ *  speed and duplex.  Then we check for link, once link is established calls
-+ *  to configure collision distance and flow control are called.  If link is
-+ *  not established, we return -E1000_ERR_PHY (-2).
-+ **/
-+s32 igc_setup_copper_link(struct e1000_hw *hw)
-+{
-+	s32 ret_val = 0;
-+	bool link;
-+
-+	if (hw->mac.autoneg) {
-+		/* Setup autoneg and flow control advertisement and perform
-+		 * autonegotiation.
-+		 */
-+		ret_val = igc_copper_link_autoneg(hw);
-+		if (ret_val)
-+			goto out;
-+	} else {
-+		/* PHY will be set to 10H, 10F, 100H or 100F
-+		 * depending on user settings.
-+		 */
-+		hw_dbg("Forcing Speed and Duplex\n");
-+		ret_val = hw->phy.ops.force_speed_duplex(hw);
-+		if (ret_val) {
-+			hw_dbg("Error Forcing Speed and Duplex\n");
-+			goto out;
-+		}
-+	}
-+
-+	/* Check link status. Wait up to 100 microseconds for link to become
-+	 * valid.
-+	 */
-+	ret_val = igc_phy_has_link(hw, COPPER_LINK_UP_LIMIT, 10, &link);
-+	if (ret_val)
-+		goto out;
-+
-+	if (link) {
-+		hw_dbg("Valid link established!!!\n");
-+		igc_config_collision_dist(hw);
-+		ret_val = igc_config_fc_after_link_up(hw);
-+	} else {
-+		hw_dbg("Unable to establish link!!!\n");
-+	}
- 
- out:
- 	return ret_val;
-diff --git a/drivers/net/ethernet/intel/igc/e1000_phy.h b/drivers/net/ethernet/intel/igc/e1000_phy.h
-index d04dfd0be7fd..3fddb1269ea2 100644
---- a/drivers/net/ethernet/intel/igc/e1000_phy.h
-+++ b/drivers/net/ethernet/intel/igc/e1000_phy.h
-@@ -12,6 +12,7 @@ s32  igc_get_phy_id(struct e1000_hw *hw);
- s32  igc_phy_has_link(struct e1000_hw *hw, u32 iterations,
- 		      u32 usec_interval, bool *success);
- s32 igc_check_downshift(struct e1000_hw *hw);
-+s32 igc_setup_copper_link(struct e1000_hw *hw);
- void igc_power_up_phy_copper(struct e1000_hw *hw);
- void igc_power_down_phy_copper(struct e1000_hw *hw);
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 91df0a14c3a5..99bc2344b7ff 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -320,6 +320,7 @@ struct igc_adapter {
- 	struct work_struct reset_task;
- 	struct work_struct watchdog_task;
- 	struct work_struct dma_err_task;
-+	bool fc_autoneg;
- 
- 	u8  tx_timeout_factor;
- 
+ #define IGC_TXD_DCMD	(E1000_ADVTXD_DCMD_EOP | E1000_ADVTXD_DCMD_RS)
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 21aed91454d4..563612910b3f 100644
+index 563612910b3f..7fb21af955ec 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3194,7 +3194,6 @@ static int __igc_open(struct net_device *netdev, bool resuming)
+@@ -129,6 +129,14 @@ static void igc_power_down_link(struct igc_adapter *adapter)
+ }
  
+ /**
++ *  Detect and switch function for Media Auto Sense
++ *  @adapter: address of the board private structure
++ **/
++static void igc_check_swap_media(struct igc_adapter *adapter)
++{
++}
++
++/**
+  *  igc_release_hw_control - release control of the h/w to f/w
+  *  @adapter: address of board private structure
+  *
+@@ -2323,6 +2331,45 @@ static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx)
+ }
+ 
+ /**
++ *  igc_has_link - check shared code for link and determine up/down
++ *  @adapter: pointer to driver private info
++ **/
++bool igc_has_link(struct igc_adapter *adapter)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	bool link_active = false;
++
++	/* get_link_status is set on LSC (link status) interrupt or
++	 * rx sequence error interrupt.  get_link_status will stay
++	 * false until the e1000_check_for_link establishes link
++	 * for copper adapters ONLY
++	 */
++	switch (hw->phy.media_type) {
++	case e1000_media_type_copper:
++		if (!hw->mac.get_link_status)
++			return true;
++		hw->mac.ops.check_for_link(hw);
++		link_active = !hw->mac.get_link_status;
++		break;
++	default:
++	case e1000_media_type_unknown:
++		break;
++	}
++
++	if (hw->mac.type == e1000_i225 &&
++	    hw->phy.id == I225_I_PHY_ID) {
++		if (!netif_carrier_ok(adapter->netdev)) {
++			adapter->flags &= ~IGC_FLAG_NEED_LINK_UPDATE;
++		} else if (!(adapter->flags & IGC_FLAG_NEED_LINK_UPDATE)) {
++			adapter->flags |= IGC_FLAG_NEED_LINK_UPDATE;
++			adapter->link_check_timeout = jiffies;
++		}
++	}
++
++	return link_active;
++}
++
++/**
+  *  igc_watchdog - Timer Call-back
+  *  @data: pointer to adapter cast into an unsigned long
+  **/
+@@ -2333,6 +2380,190 @@ static void igc_watchdog(struct timer_list *t)
+ 	schedule_work(&adapter->watchdog_task);
+ }
+ 
++static void igc_watchdog_task(struct work_struct *work)
++{
++	struct igc_adapter *adapter = container_of(work,
++						   struct igc_adapter,
++						   watchdog_task);
++	struct e1000_hw *hw = &adapter->hw;
++	struct e1000_phy_info *phy = &hw->phy;
++	struct net_device *netdev = adapter->netdev;
++	u32 link;
++	int i;
++	u32 connsw;
++	u16 phy_data, retry_count = 20;
++
++	link = igc_has_link(adapter);
++
++	if (adapter->flags & IGC_FLAG_NEED_LINK_UPDATE) {
++		if (time_after(jiffies, (adapter->link_check_timeout + HZ)))
++			adapter->flags &= ~IGC_FLAG_NEED_LINK_UPDATE;
++		else
++			link = false;
++	}
++
++	/* Force link down if we have fiber to swap to */
++	if (adapter->flags & IGC_FLAG_MAS_ENABLE) {
++		if (hw->phy.media_type == e1000_media_type_copper) {
++			connsw = rd32(E1000_CONNSW);
++			if (!(connsw & E1000_CONNSW_AUTOSENSE_EN))
++				link = 0;
++		}
++	}
++	if (link) {
++		/* Perform a reset if the media type changed. */
++		if (hw->dev_spec._base.media_changed) {
++			hw->dev_spec._base.media_changed = false;
++			adapter->flags |= IGC_FLAG_MEDIA_RESET;
++			igc_reset(adapter);
++		}
++
++		if (!netif_carrier_ok(netdev)) {
++			u32 ctrl;
++
++			hw->mac.ops.get_speed_and_duplex(hw,
++							 &adapter->link_speed,
++							 &adapter->link_duplex);
++
++			ctrl = rd32(E1000_CTRL);
++			/* Links status message must follow this format */
++			netdev_info(netdev,
++				    "igc: %s NIC Link is Up %d Mbps %s Duplex, Flow Control: %s\n",
++				    netdev->name,
++				    adapter->link_speed,
++				    adapter->link_duplex == FULL_DUPLEX ?
++				    "Full" : "Half",
++				    (ctrl & E1000_CTRL_TFCE) &&
++				    (ctrl & E1000_CTRL_RFCE) ? "RX/TX" :
++				    (ctrl & E1000_CTRL_RFCE) ?  "RX" :
++				    (ctrl & E1000_CTRL_TFCE) ?  "TX" : "None");
++
++			/* check if SmartSpeed worked */
++			igc_check_downshift(hw);
++			if (phy->speed_downgraded)
++				netdev_warn(netdev, "Link Speed was downgraded by SmartSpeed\n");
++
++			/* adjust timeout factor according to speed/duplex */
++			adapter->tx_timeout_factor = 1;
++			switch (adapter->link_speed) {
++			case SPEED_10:
++				adapter->tx_timeout_factor = 14;
++				break;
++			case SPEED_100:
++				/* maybe add some timeout factor ? */
++				break;
++			}
++
++			if (adapter->link_speed != SPEED_1000)
++				goto no_wait;
++
++			/* wait for Remote receiver status OK */
++retry_read_status:
++			if (!igc_read_phy_reg(hw, PHY_1000T_STATUS,
++					      &phy_data)) {
++				if (!(phy_data & SR_1000T_REMOTE_RX_STATUS) &&
++				    retry_count) {
++					msleep(100);
++					retry_count--;
++					goto retry_read_status;
++				} else if (!retry_count) {
++					dev_err(&adapter->pdev->dev, "exceed max 2 second\n");
++				}
++			} else {
++				dev_err(&adapter->pdev->dev, "read 1000Base-T Status Reg\n");
++			}
++no_wait:
++			netif_carrier_on(netdev);
++
++			/* link state has changed, schedule phy info update */
++			if (!test_bit(__IGC_DOWN, &adapter->state))
++				mod_timer(&adapter->phy_info_timer,
++					  round_jiffies(jiffies + 2 * HZ));
++		}
++	} else {
++		if (netif_carrier_ok(netdev)) {
++			adapter->link_speed = 0;
++			adapter->link_duplex = 0;
++
++			/* Links status message must follow this format */
++			netdev_info(netdev, "igc: %s NIC Link is Down\n",
++				    netdev->name);
++			netif_carrier_off(netdev);
++
++			/* link state has changed, schedule phy info update */
++			if (!test_bit(__IGC_DOWN, &adapter->state))
++				mod_timer(&adapter->phy_info_timer,
++					  round_jiffies(jiffies + 2 * HZ));
++
++			/* link is down, time to check for alternate media */
++			if (adapter->flags & IGC_FLAG_MAS_ENABLE) {
++				igc_check_swap_media(adapter);
++				if (adapter->flags & IGC_FLAG_MEDIA_RESET) {
++					schedule_work(&adapter->reset_task);
++					/* return immediately */
++					return;
++				}
++			}
++
++		/* also check for alternate media here */
++		} else if (!netif_carrier_ok(netdev) &&
++			   (adapter->flags & IGC_FLAG_MAS_ENABLE)) {
++			igc_check_swap_media(adapter);
++			if (adapter->flags & IGC_FLAG_MEDIA_RESET) {
++				schedule_work(&adapter->reset_task);
++				/* return immediately */
++				return;
++			}
++		}
++	}
++
++	spin_lock(&adapter->stats64_lock);
++	igc_update_stats(adapter);
++	spin_unlock(&adapter->stats64_lock);
++
++	for (i = 0; i < adapter->num_tx_queues; i++) {
++		struct igc_ring *tx_ring = adapter->tx_ring[i];
++
++		if (!netif_carrier_ok(netdev)) {
++			/* We've lost link, so the controller stops DMA,
++			 * but we've got queued Tx work that's never going
++			 * to get done, so reset controller to flush Tx.
++			 * (Do the reset outside of interrupt context).
++			 */
++			if (igc_desc_unused(tx_ring) + 1 < tx_ring->count) {
++				adapter->tx_timeout_count++;
++				schedule_work(&adapter->reset_task);
++				/* return immediately since reset is imminent */
++				return;
++			}
++		}
++
++		/* Force detection of hung controller every watchdog period */
++		set_bit(IGC_RING_FLAG_TX_DETECT_HANG, &tx_ring->flags);
++	}
++
++	/* Cause software interrupt to ensure Rx ring is cleaned */
++	if (adapter->flags & IGC_FLAG_HAS_MSIX) {
++		u32 eics = 0;
++
++		for (i = 0; i < adapter->num_q_vectors; i++)
++			eics |= adapter->q_vector[i]->eims_value;
++		wr32(E1000_EICS, eics);
++	} else {
++		wr32(E1000_ICS, E1000_ICS_RXDMT0);
++	}
++
++	/* Reset the timer */
++	if (!test_bit(__IGC_DOWN, &adapter->state)) {
++		if (adapter->flags & IGC_FLAG_NEED_LINK_UPDATE)
++			mod_timer(&adapter->watchdog_timer,
++				  round_jiffies(jiffies +  HZ));
++		else
++			mod_timer(&adapter->watchdog_timer,
++				  round_jiffies(jiffies + 2 * HZ));
++	}
++}
++
+ /**
+  *  igc_update_ring_itr - update the dynamic ITR value based on packet size
+  *  @q_vector: pointer to q_vector
+@@ -3195,6 +3426,8 @@ static int __igc_open(struct net_device *netdev, bool resuming)
  	/* start the watchdog. */
  	hw->mac.get_link_status = 1;
--	schedule_work(&adapter->watchdog_task);
  
++	schedule_work(&adapter->watchdog_task);
++
  	return E1000_SUCCESS;
  
-@@ -3452,6 +3451,25 @@ static int igc_probe(struct pci_dev *pdev,
- 	netdev->min_mtu = ETH_MIN_MTU;
- 	netdev->max_mtu = MAX_STD_JUMBO_FRAME_SIZE;
- 
-+	/* before reading the NVM, reset the controller to put the device in a
-+	 * known good starting state
-+	 */
-+	hw->mac.ops.reset_hw(hw);
-+
-+	if (eth_platform_get_mac_address(&pdev->dev, hw->mac.addr)) {
-+		/* copy the MAC address out of the NVM */
-+		if (hw->mac.ops.read_mac_addr(hw))
-+			dev_err(&pdev->dev, "NVM Read Error\n");
-+	}
-+
-+	memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);
-+
-+	if (!is_valid_ether_addr(netdev->dev_addr)) {
-+		dev_err(&pdev->dev, "Invalid MAC Address\n");
-+		err = -EIO;
-+		goto err_eeprom;
-+	}
-+
- 	/* configure RXPBSIZE and TXPBSIZE */
- 	wr32(E1000_RXPBS, I225_RXPBSIZE_DEFAULT);
- 	wr32(E1000_TXPBS, I225_TXPBSIZE_DEFAULT);
-@@ -3460,6 +3478,14 @@ static int igc_probe(struct pci_dev *pdev,
+ err_set_queues:
+@@ -3477,6 +3710,7 @@ static int igc_probe(struct pci_dev *pdev,
+ 	timer_setup(&adapter->watchdog_timer, igc_watchdog, 0);
  
  	INIT_WORK(&adapter->reset_task, igc_reset_task);
++	INIT_WORK(&adapter->watchdog_task, igc_watchdog_task);
  
-+	/* Initialize link properties that are user-changeable */
-+	adapter->fc_autoneg = true;
-+	hw->mac.autoneg = true;
-+	hw->phy.autoneg_advertised = 0x2f;
-+
-+	hw->fc.requested_mode = e1000_fc_default;
-+	hw->fc.current_mode = e1000_fc_default;
-+
- 	/* reset the hardware with the new settings */
- 	igc_reset(adapter);
- 
-@@ -3496,6 +3522,12 @@ static int igc_probe(struct pci_dev *pdev,
- 
- err_register:
- 	igc_release_hw_control(adapter);
-+err_eeprom:
-+	if (!igc_check_reset_block(hw))
-+		igc_reset_phy(hw);
-+
-+	if (hw->flash_address)
-+		iounmap(hw->flash_address);
- err_sw_init:
- 	igc_clear_interrupt_scheme(adapter);
- 	iounmap(adapter->io_addr);
-@@ -3530,7 +3562,6 @@ static void igc_remove(struct pci_dev *pdev)
+ 	/* Initialize link properties that are user-changeable */
+ 	adapter->fc_autoneg = true;
+@@ -3562,6 +3796,7 @@ static void igc_remove(struct pci_dev *pdev)
  	del_timer_sync(&adapter->watchdog_timer);
  
  	cancel_work_sync(&adapter->reset_task);
--	cancel_work_sync(&adapter->watchdog_task);
++	cancel_work_sync(&adapter->watchdog_task);
  
  	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
  	 * would have already happened in close and is redundant.
