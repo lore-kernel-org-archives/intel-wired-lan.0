@@ -1,9 +1,9 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sun, 24 Jun 2018 19:42:35 +0800
-Subject: [Intel-wired-lan] [PATCH v3 02/11] igc: Add support for PF
-In-Reply-To: <20180624084500.10021-1-sasha.neftin@intel.com>
-References: <20180624084500.10021-1-sasha.neftin@intel.com>
-Message-ID: <201806241858.TXFRw68O%fengguang.wu@intel.com>
+Date: Sun, 24 Jun 2018 20:33:59 +0800
+Subject: [Intel-wired-lan] [PATCH v3 03/11] igc: Add netdev
+In-Reply-To: <20180624084503.10065-1-sasha.neftin@intel.com>
+References: <20180624084503.10065-1-sasha.neftin@intel.com>
+Message-ID: <201806242041.Vf0MGPVy%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,40 +28,33 @@ reproduce:
 
 sparse warnings: (new ones prefixed by >>)
 
->> drivers/net/ethernet/intel/igc/igc_main.c:76:31: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_main.c:76:31:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_main.c:76:31:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/igc_main.c: In function 'igc_probe':
-   drivers/net/ethernet/intel/igc/igc_main.c:193:18: warning: 'adapter' may be used uninitialized in this function [-Wmaybe-uninitialized]
-     struct pci_dev *pdev = adapter->pdev;
-                     ^~~~
-   drivers/net/ethernet/intel/igc/igc_main.c:105:22: note: 'adapter' was declared here
-     struct igc_adapter *adapter;
-                         ^~~~~~~
-   drivers/net/ethernet/intel/igc/igc_main.c:147:2: warning: 'hw' may be used uninitialized in this function [-Wmaybe-uninitialized]
-     igc_get_bus_info_pcie(hw);
-     ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> drivers/net/ethernet/intel/igc/igc_main.c:37:6: sparse: symbol 'igc_reset' was not declared. Should it be static?
+>> drivers/net/ethernet/intel/igc/igc_main.c:47:6: sparse: symbol 'igc_power_up_link' was not declared. Should it be static?
+   drivers/net/ethernet/intel/igc/igc_main.c:74:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_main.c:74:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_main.c:74:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_main.c:93:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_main.c:93:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_main.c:93:9:    got unsigned char [usertype] *__val
+>> drivers/net/ethernet/intel/igc/igc_main.c:147:5: sparse: symbol 'igc_up' was not declared. Should it be static?
+>> drivers/net/ethernet/intel/igc/igc_main.c:166:6: sparse: symbol 'igc_down' was not declared. Should it be static?
+>> drivers/net/ethernet/intel/igc/igc_main.c:230:6: sparse: symbol 'igc_update_stats' was not declared. Should it be static?
+   drivers/net/ethernet/intel/igc/igc_main.c:289:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_main.c:289:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_main.c:289:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_main.c:291:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_main.c:291:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_main.c:291:9:    got unsigned char [usertype] *__val
+>> drivers/net/ethernet/intel/igc/igc_main.c:350:5: sparse: symbol 'igc_open' was not declared. Should it be static?
+>> drivers/net/ethernet/intel/igc/igc_main.c:379:5: sparse: symbol 'igc_close' was not declared. Should it be static?
+   drivers/net/ethernet/intel/igc/igc_main.c:443:31: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_main.c:443:31:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_main.c:443:31:    got unsigned char [usertype] *__val
+>> drivers/net/ethernet/intel/igc/igc_main.c:545:21: sparse: incorrect type in assignment (different address spaces) @@    expected unsigned char [usertype] *hw_addr @@    got unsigned char [nounsigned char [usertype] *hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_main.c:545:21:    expected unsigned char [usertype] *hw_addr
+   drivers/net/ethernet/intel/igc/igc_main.c:545:21:    got unsigned char [noderef] [usertype] <asn:2>*io_addr
 
-vim +76 drivers/net/ethernet/intel/igc/igc_main.c
-
-    73	
-    74	u32 igc_rd32(struct e1000_hw *hw, u32 reg)
-    75	{
-  > 76		u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
-    77		u32 value = 0;
-    78	
-    79		if (E1000_REMOVED(hw_addr))
-    80			return ~value;
-    81	
-    82		value = readl(&hw_addr[reg]);
-    83	
-    84		/* reads should not return all F's */
-    85		if (!(~value) && (!reg || !(~readl(hw_addr))))
-    86			hw->hw_addr = NULL;
-    87	
-    88		return value;
-    89	}
-    90	
+Please review and possibly fold the followup patch.
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
