@@ -1,9 +1,9 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Mon, 25 Jun 2018 00:39:27 +0800
-Subject: [Intel-wired-lan] [PATCH v3 08/11] igc: Add NVM support
-In-Reply-To: <20180624084518.10286-1-sasha.neftin@intel.com>
-References: <20180624084518.10286-1-sasha.neftin@intel.com>
-Message-ID: <201806250008.RNycmphF%fengguang.wu@intel.com>
+Date: Mon, 25 Jun 2018 01:23:51 +0800
+Subject: [Intel-wired-lan] [PATCH v3 09/11] igc: Add code for PHY support
+In-Reply-To: <20180624084521.10330-1-sasha.neftin@intel.com>
+References: <20180624084521.10330-1-sasha.neftin@intel.com>
+Message-ID: <201806250159.5JPYRzj9%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,57 +28,66 @@ reproduce:
 
 sparse warnings: (new ones prefixed by >>)
 
->> drivers/net/ethernet/intel/igc/e1000_nvm.c:52:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:52:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:52:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:65:17: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:65:17:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:65:17:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:85:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:85:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:85:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:117:17: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:117:17:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_nvm.c:117:17:    got unsigned char [usertype] *__val
+>> drivers/net/ethernet/intel/igc/e1000_phy.c:197:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/e1000_phy.c:197:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/e1000_phy.c:197:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/e1000_phy.c:202:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/e1000_phy.c:202:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/e1000_phy.c:202:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/e1000_phy.c:244:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/e1000_phy.c:244:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/e1000_phy.c:244:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/e1000_phy.c:301:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/e1000_phy.c:301:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/e1000_phy.c:301:9:    got unsigned char [usertype] *__val
 
-vim +52 drivers/net/ethernet/intel/igc/e1000_nvm.c
+vim +197 drivers/net/ethernet/intel/igc/e1000_phy.c
 
-    37	
-    38	/**
-    39	 *  igc_acquire_nvm - Generic request for access to EEPROM
-    40	 *  @hw: pointer to the HW structure
-    41	 *
-    42	 *  Set the EEPROM access request bit and wait for EEPROM access grant bit.
-    43	 *  Return successful if access grant bit set, else clear the request for
-    44	 *  EEPROM access and return -E1000_ERR_NVM (-1).
-    45	 **/
-    46	s32 igc_acquire_nvm(struct e1000_hw *hw)
-    47	{
-    48		u32 eecd = rd32(E1000_EECD);
-    49		s32 timeout = E1000_NVM_GRANT_ATTEMPTS;
-    50		s32 ret_val = 0;
-    51	
-  > 52		wr32(E1000_EECD, eecd | E1000_EECD_REQ);
-    53		eecd = rd32(E1000_EECD);
-    54	
-    55		while (timeout) {
-    56			if (eecd & E1000_EECD_GNT)
-    57				break;
-    58			udelay(5);
-    59			eecd = rd32(E1000_EECD);
-    60			timeout--;
-    61		}
-    62	
-    63		if (!timeout) {
-    64			eecd &= ~E1000_EECD_REQ;
-    65			wr32(E1000_EECD, eecd);
-    66			hw_dbg("Could not acquire NVM grant\n");
-    67			ret_val = -E1000_ERR_NVM;
-    68		}
-    69	
-    70		return ret_val;
-    71	}
-    72	
+   170	
+   171	/**
+   172	 *  igc_phy_hw_reset - PHY hardware reset
+   173	 *  @hw: pointer to the HW structure
+   174	 *
+   175	 *  Verify the reset block is not blocking us from resetting.  Acquire
+   176	 *  semaphore (if necessary) and read/set/write the device control reset
+   177	 *  bit in the PHY.  Wait the appropriate delay time for the device to
+   178	 *  reset and release the semaphore (if necessary).
+   179	 **/
+   180	s32 igc_phy_hw_reset(struct e1000_hw *hw)
+   181	{
+   182		struct e1000_phy_info *phy = &hw->phy;
+   183		s32  ret_val;
+   184		u32 ctrl;
+   185	
+   186		ret_val = igc_check_reset_block(hw);
+   187		if (ret_val) {
+   188			ret_val = 0;
+   189			goto out;
+   190		}
+   191	
+   192		ret_val = phy->ops.acquire(hw);
+   193		if (ret_val)
+   194			goto out;
+   195	
+   196		ctrl = rd32(E1000_CTRL);
+ > 197		wr32(E1000_CTRL, ctrl | E1000_CTRL_PHY_RST);
+   198		wrfl();
+   199	
+   200		udelay(phy->reset_delay_us);
+   201	
+   202		wr32(E1000_CTRL, ctrl);
+   203		wrfl();
+   204	
+   205		usleep_range(1500, 2000);
+   206	
+   207		phy->ops.release(hw);
+   208	
+   209		ret_val = phy->ops.get_cfg_done(hw);
+   210	
+   211	out:
+   212		return ret_val;
+   213	}
+   214	
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
