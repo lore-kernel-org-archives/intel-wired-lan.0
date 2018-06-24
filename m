@@ -1,1445 +1,1093 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Sun, 24 Jun 2018 11:45:08 +0300
-Subject: [Intel-wired-lan] [PATCH v3 05/11] igc: Add support for Tx/Rx rings
-Message-ID: <20180624084508.10153-1-sasha.neftin@intel.com>
+Date: Sun, 24 Jun 2018 11:45:15 +0300
+Subject: [Intel-wired-lan] [PATCH v3 07/11] igc: Add HW initialization code
+Message-ID: <20180624084515.10242-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change adds the defines and structures necessary to support both Tx
-and Rx descriptor rings.
+Add code for hw initialization and reset.
+Add code for semaphore handling.
 
 Sasha Neftin (v2):
 fixed code indentation
+refactor of igc_desc_unused method
 
-Sasha Nedftin (v3):
-minor code fixes
+Sasha Neftin (v3):
+clean code and remove unused methods
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
  drivers/net/ethernet/intel/igc/Makefile        |   3 +-
- drivers/net/ethernet/intel/igc/e1000_base.c    |  83 +++
- drivers/net/ethernet/intel/igc/e1000_base.h    |  89 +++
- drivers/net/ethernet/intel/igc/e1000_defines.h |  53 ++
- drivers/net/ethernet/intel/igc/e1000_hw.h      |   1 +
- drivers/net/ethernet/intel/igc/e1000_regs.h    |   3 +
- drivers/net/ethernet/intel/igc/igc.h           | 127 ++++
- drivers/net/ethernet/intel/igc/igc_main.c      | 839 ++++++++++++++++++++++++-
- 8 files changed, 1193 insertions(+), 5 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/igc/e1000_base.c
- create mode 100644 drivers/net/ethernet/intel/igc/e1000_base.h
+ drivers/net/ethernet/intel/igc/e1000_base.c    | 198 +++++++++++++++
+ drivers/net/ethernet/intel/igc/e1000_base.h    |   2 +
+ drivers/net/ethernet/intel/igc/e1000_defines.h |  39 +++
+ drivers/net/ethernet/intel/igc/e1000_hw.h      |  85 +++++++
+ drivers/net/ethernet/intel/igc/e1000_i225.c    | 141 +++++++++++
+ drivers/net/ethernet/intel/igc/e1000_mac.c     | 320 +++++++++++++++++++++++++
+ drivers/net/ethernet/intel/igc/e1000_mac.h     |  13 +-
+ drivers/net/ethernet/intel/igc/e1000_regs.h    |  27 +++
+ drivers/net/ethernet/intel/igc/igc_main.c      |  21 ++
+ 10 files changed, 846 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/igc/e1000_i225.c
 
 diff --git a/drivers/net/ethernet/intel/igc/Makefile b/drivers/net/ethernet/intel/igc/Makefile
-index 4563b83cd4e0..6a757ac8492d 100644
+index 6a757ac8492d..cb260bedfa37 100644
 --- a/drivers/net/ethernet/intel/igc/Makefile
 +++ b/drivers/net/ethernet/intel/igc/Makefile
-@@ -7,4 +7,5 @@
+@@ -7,5 +7,4 @@
  
  obj-$(CONFIG_IGC) += igc.o
  
--igc-objs := igc_main.o e1000_mac.o
-+igc-objs := igc_main.o e1000_mac.o \
-+e1000_base.o
+-igc-objs := igc_main.o e1000_mac.o \
+-e1000_base.o
++igc-objs := igc_main.o e1000_mac.o e1000_i225.o e1000_base.o
 diff --git a/drivers/net/ethernet/intel/igc/e1000_base.c b/drivers/net/ethernet/intel/igc/e1000_base.c
-new file mode 100644
-index 000000000000..265ec98000e7
---- /dev/null
+index 265ec98000e7..395d7ce70bb4 100644
+--- a/drivers/net/ethernet/intel/igc/e1000_base.c
 +++ b/drivers/net/ethernet/intel/igc/e1000_base.c
-@@ -0,0 +1,83 @@
+@@ -5,6 +5,92 @@
+ 
+ #include "e1000_hw.h"
+ #include "e1000_i225.h"
++#include "e1000_mac.h"
++#include "e1000_base.h"
++#include "igc.h"
++
++/* forward declaration */
++static s32 igc_get_invariants_base(struct e1000_hw *);
++static s32 igc_init_hw_base(struct e1000_hw *);
++static s32 igc_reset_hw_base(struct e1000_hw *);
++static s32 igc_set_pcie_completion_timeout(struct e1000_hw *hw);
++
++/**
++ *  igc_init_mac_params_base - Init MAC func ptrs.
++ *  @hw: pointer to the HW structure
++ **/
++static s32 igc_init_mac_params_base(struct e1000_hw *hw)
++{
++	struct e1000_mac_info *mac = &hw->mac;
++
++	/* Set mta register count */
++	mac->mta_reg_count = 128;
++	mac->rar_entry_count = E1000_RAR_ENTRIES;
++
++	/* reset */
++	mac->ops.reset_hw = igc_reset_hw_base;
++
++	mac->ops.acquire_swfw_sync = igc_acquire_swfw_sync_i225;
++	mac->ops.release_swfw_sync = igc_release_swfw_sync_i225;
++
++	return 0;
++}
++
++static s32 igc_get_invariants_base(struct e1000_hw *hw)
++{
++	s32 ret_val = 0;
++	u32 ctrl_ext = 0;
++	u32 link_mode = 0;
++
++	ctrl_ext = rd32(E1000_CTRL_EXT);
++	link_mode = ctrl_ext & E1000_CTRL_EXT_LINK_MODE_MASK;
++
++	/* mac initialization and operations */
++	ret_val = igc_init_mac_params_base(hw);
++	if (ret_val)
++		goto out;
++
++out:
++	return ret_val;
++}
++
++/**
++ *  igc_init_hw_base - Initialize hardware
++ *  @hw: pointer to the HW structure
++ *
++ *  This inits the hardware readying it for operation.
++ **/
++static s32 igc_init_hw_base(struct e1000_hw *hw)
++{
++	struct e1000_mac_info *mac = &hw->mac;
++	s32 ret_val = 0;
++	u16 i, rar_count = mac->rar_entry_count;
++
++	/* Setup the receive address */
++	igc_init_rx_addrs(hw, rar_count);
++
++	/* Zero out the Multicast HASH table */
++	hw_dbg("Zeroing the MTA\n");
++	for (i = 0; i < mac->mta_reg_count; i++)
++		array_wr32(E1000_MTA, i, 0);
++
++	/* Zero out the Unicast HASH table */
++	hw_dbg("Zeroing the UTA\n");
++	for (i = 0; i < mac->uta_reg_count; i++)
++		array_wr32(E1000_UTA, i, 0);
++
++	/* Setup link and flow control */
++	ret_val = igc_setup_link(hw);
++
++	/* Clear all of the statistics registers (clear on read).  It is
++	 * important that we do this after we have tried to establish link
++	 * because the symbol error count will increment wildly if there
++	 * is no link.
++	 */
++	igc_clear_hw_cntrs_base(hw);
++
++	return ret_val;
++}
+ 
+ /**
+  *  igc_rx_fifo_flush_base - Clean rx fifo after Rx enable
+@@ -81,3 +167,115 @@ void igc_rx_fifo_flush_base(struct e1000_hw *hw)
+ 	rd32(E1000_RNBC);
+ 	rd32(E1000_MPC);
+ }
++
++static struct e1000_mac_operations e1000_mac_ops_base = {
++	.init_hw	= igc_init_hw_base,
++};
++
++const struct e1000_info e1000_base_info = {
++	.get_invariants = igc_get_invariants_base,
++	.mac_ops = &e1000_mac_ops_base,
++};
++
++/**
++ *  igc_reset_hw_base - Reset hardware
++ *  @hw: pointer to the HW structure
++ *
++ *  This resets the hardware into a known state.  This is a
++ *  function pointer entry point called by the api module.
++ **/
++static s32 igc_reset_hw_base(struct e1000_hw *hw)
++{
++	u32 ctrl;
++	s32 ret_val;
++
++	/* Prevent the PCI-E bus from sticking if there is no TLP connection
++	 * on the last TLP read/write transaction when MAC is reset.
++	 */
++	ret_val = igc_disable_pcie_master(hw);
++	if (ret_val)
++		hw_dbg("PCI-E Master disable polling has failed.\n");
++
++	/* set the completion timeout for interface */
++	ret_val = igc_set_pcie_completion_timeout(hw);
++	if (ret_val)
++		hw_dbg("PCI-E Set completion timeout has failed.\n");
++
++	hw_dbg("Masking off all interrupts\n");
++	wr32(E1000_IMC, 0xffffffff);
++
++	wr32(E1000_RCTL, 0);
++	wr32(E1000_TCTL, E1000_TCTL_PSP);
++	wrfl();
++
++	usleep_range(10000, 20000);
++
++	ctrl = rd32(E1000_CTRL);
++
++	hw_dbg("Issuing a global reset to MAC\n");
++	wr32(E1000_CTRL, ctrl | E1000_CTRL_RST);
++
++	ret_val = igc_get_auto_rd_done(hw);
++	if (ret_val) {
++		/* When auto config read does not complete, do not
++		 * return with an error. This can happen in situations
++		 * where there is no eeprom and prevents getting link.
++		 */
++		hw_dbg("Auto Read Done did not complete\n");
++	}
++
++	/* Clear any pending interrupt events. */
++	wr32(E1000_IMC, 0xffffffff);
++	rd32(E1000_ICR);
++
++	return ret_val;
++}
++
++/**
++ *  igc_set_pcie_completion_timeout - set pci-e completion timeout
++ *  @hw: pointer to the HW structure
++ *
++ *  The defaults for 82575 and 82576 should be in the range of 50us to 50ms,
++ *  however the hardware default for these parts is 500us to 1ms which is less
++ *  than the 10ms recommended by the pci-e spec.  To address this we need to
++ *  increase the value to either 10ms to 200ms for capability version 1 config,
++ *  or 16ms to 55ms for version 2.
++ **/
++static s32 igc_set_pcie_completion_timeout(struct e1000_hw *hw)
++{
++	u32 gcr = rd32(E1000_GCR);
++	s32 ret_val = 0;
++	u16 pcie_devctl2;
++
++	/* only take action if timeout value is defaulted to 0 */
++	if (gcr & E1000_GCR_CMPL_TMOUT_MASK)
++		goto out;
++
++	/* if capabilities version is type 1 we can write the
++	 * timeout of 10ms to 200ms through the GCR register
++	 */
++	if (!(gcr & E1000_GCR_CAP_VER2)) {
++		gcr |= E1000_GCR_CMPL_TMOUT_10ms;
++		goto out;
++	}
++
++	/* for version 2 capabilities we need to write the config space
++	 * directly in order to set the completion timeout value for
++	 * 16ms to 55ms
++	 */
++	ret_val = igc_read_pcie_cap_reg(hw, PCIE_DEVICE_CONTROL2,
++					&pcie_devctl2);
++	if (ret_val)
++		goto out;
++
++	pcie_devctl2 |= PCIE_DEVICE_CONTROL2_16ms;
++
++	ret_val = igc_write_pcie_cap_reg(hw, PCIE_DEVICE_CONTROL2,
++					 &pcie_devctl2);
++out:
++	/* disable completion timeout resend */
++	gcr &= ~E1000_GCR_CMPL_TMOUT_RESEND;
++
++	wr32(E1000_GCR, gcr);
++	return ret_val;
++}
+diff --git a/drivers/net/ethernet/intel/igc/e1000_base.h b/drivers/net/ethernet/intel/igc/e1000_base.h
+index 5c766fb7514b..210f1b5f6012 100644
+--- a/drivers/net/ethernet/intel/igc/e1000_base.h
++++ b/drivers/net/ethernet/intel/igc/e1000_base.h
+@@ -33,6 +33,8 @@ union e1000_adv_tx_desc {
+ #define E1000_ADVTXD_DCMD_TSE	0x80000000 /* TCP Seg enable */
+ #define E1000_ADVTXD_PAYLEN_SHIFT	14 /* Adv desc PAYLEN shift */
+ 
++#define E1000_RAR_ENTRIES		16
++
+ struct e1000_adv_data_desc {
+ 	__le64 buffer_addr;    /* Address of the descriptor's data buffer */
+ 	union {
+diff --git a/drivers/net/ethernet/intel/igc/e1000_defines.h b/drivers/net/ethernet/intel/igc/e1000_defines.h
+index f39d93d17ba6..5613806742b1 100644
+--- a/drivers/net/ethernet/intel/igc/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igc/e1000_defines.h
+@@ -30,6 +30,22 @@
+ #define E1000_PCI_PMCSR			0x44
+ #define E1000_PCI_PMCSR_D3		0x03
+ 
++/* Physical Func Reset Done Indication */
++#define E1000_CTRL_EXT_LINK_MODE_MASK	0x00C00000
++
++/* Number of 100 microseconds we wait for PCI Express master disable */
++#define MASTER_DISABLE_TIMEOUT		800
++/*Blocks new Master requests */
++#define E1000_CTRL_GIO_MASTER_DISABLE	0x00000004
++/* Status of Master requests. */
++#define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000
++
++/* PCI Express Control */
++#define E1000_GCR_CMPL_TMOUT_MASK	0x0000F000
++#define E1000_GCR_CMPL_TMOUT_10ms	0x00001000
++#define E1000_GCR_CMPL_TMOUT_RESEND	0x00010000
++#define E1000_GCR_CAP_VER2		0x00040000
++
+ /* Receive Address
+  * Number of high/low register pairs in the RAR. The RAR (Receive Address
+  * Registers) holds the directed and multicast addresses that we monitor.
+@@ -48,10 +64,26 @@
+ #define E1000_ERR_PARAM				4
+ #define E1000_ERR_MAC_INIT			5
+ #define E1000_ERR_RESET				9
++#define E1000_ERR_MASTER_REQUESTS_PENDING	10
++#define E1000_ERR_SWFW_SYNC			13
++
++/* Device Control */
++#define E1000_CTRL_RST		0x04000000  /* Global reset */
+ 
+ /* PBA constants */
+ #define E1000_PBA_34K			0x0022
+ 
++/* SW Semaphore Register */
++#define E1000_SWSM_SMBI		0x00000001 /* Driver Semaphore bit */
++#define E1000_SWSM_SWESMBI	0x00000002 /* FW Semaphore bit */
++
++/* NVM Control */
++#define E1000_EECD_PRES		0x00000100 /* NVM Present */
++
++/* Number of milliseconds for NVM auto read done after MAC reset. */
++#define AUTO_READ_DONE_TIMEOUT		10
++#define E1000_EECD_AUTO_RD	0x00000200  /* NVM Auto Read done */
++
+ /* Device Status */
+ #define E1000_STATUS_FD		0x00000001      /* Full duplex.0=half,1=full */
+ #define E1000_STATUS_LU		0x00000002      /* Link up.0=no,1=link */
+@@ -135,6 +167,13 @@
+ #define E1000_CT_SHIFT			4
+ #define E1000_COLLISION_THRESHOLD	15
+ 
++/* Flow Control Constants */
++#define FLOW_CONTROL_ADDRESS_LOW	0x00C28001
++#define FLOW_CONTROL_ADDRESS_HIGH	0x00000100
++#define FLOW_CONTROL_TYPE		0x8808
++/* Enable XON frame transmission */
++#define E1000_FCRTL_XONE		0x80000000
++
+ /* Management Control */
+ #define E1000_MANC_RCV_TCO_EN	0x00020000 /* Receive TCO Packets Enabled */
+ 
+diff --git a/drivers/net/ethernet/intel/igc/e1000_hw.h b/drivers/net/ethernet/intel/igc/e1000_hw.h
+index 67fa4f696b98..debeadd61b45 100644
+--- a/drivers/net/ethernet/intel/igc/e1000_hw.h
++++ b/drivers/net/ethernet/intel/igc/e1000_hw.h
+@@ -6,6 +6,8 @@
+ 
+ #include <linux/types.h>
+ #include <linux/if_ether.h>
++#include <linux/netdevice.h>
++
+ #include "e1000_regs.h"
+ #include "e1000_defines.h"
+ #include "e1000_mac.h"
+@@ -20,6 +22,16 @@ struct e1000_hw;
+ 
+ /* Function pointers for the MAC. */
+ struct e1000_mac_operations {
++	s32 (*check_for_link)(struct e1000_hw *hw);
++	s32 (*reset_hw)(struct e1000_hw *hw);
++	s32 (*init_hw)(struct e1000_hw *hw);
++	s32 (*setup_physical_interface)(struct e1000_hw *hw);
++	void (*rar_set)(struct e1000_hw *hw, u8 *address, u32 index);
++	s32 (*read_mac_addr)(struct e1000_hw *hw);
++	s32 (*get_speed_and_duplex)(struct e1000_hw *hw, u16 *speed,
++				    u16 *duplex);
++	s32 (*acquire_swfw_sync)(struct e1000_hw *hw, u16 mask);
++	void (*release_swfw_sync)(struct e1000_hw *hw, u16 mask);
+ };
+ 
+ enum e1000_mac_type {
+@@ -34,6 +46,12 @@ enum e1000_phy_type {
+ 	e1000_phy_i225,
+ };
+ 
++enum e1000_nvm_type {
++	e1000_nvm_unknown = 0,
++	e1000_nvm_flash_hw,
++	e1000_nvm_invm,
++};
++
+ enum e1000_bus_type {
+ 	e1000_bus_type_unknown = 0,
+ 	e1000_bus_type_pci_express,
+@@ -56,6 +74,13 @@ enum e1000_bus_width {
+ 	e1000_bus_width_reserved
+ };
+ 
++struct e1000_info {
++	s32 (*get_invariants)(struct e1000_hw *hw);
++	struct e1000_mac_operations *mac_ops;
++	const struct e1000_phy_operations *phy_ops;
++	struct e1000_nvm_operations *nvm_ops;
++};
++
+ struct e1000_mac_info {
+ 	struct e1000_mac_operations ops;
+ 
+@@ -91,6 +116,30 @@ struct e1000_mac_info {
+ 	bool get_link_status;
+ };
+ 
++struct e1000_nvm_operations {
++	s32 (*acquire)(struct e1000_hw *hw);
++	s32 (*read)(struct e1000_hw *hw, u16 offset, u16 i, u16 *data);
++	void (*release)(struct e1000_hw *hw);
++	s32 (*write)(struct e1000_hw *hw, u16 offset, u16 i, u16 *data);
++	s32 (*update)(struct e1000_hw *hw);
++	s32 (*validate)(struct e1000_hw *hw);
++	s32 (*valid_led_default)(struct e1000_hw *hw, u16 *data);
++};
++
++struct e1000_nvm_info {
++	struct e1000_nvm_operations ops;
++	enum e1000_nvm_type type;
++
++	u32 flash_bank_size;
++	u32 flash_base_addr;
++
++	u16 word_size;
++	u16 delay_usec;
++	u16 address_bits;
++	u16 opcode_bits;
++	u16 page_size;
++};
++
+ struct e1000_bus_info {
+ 	enum e1000_bus_type type;
+ 	enum e1000_bus_speed speed;
+@@ -100,6 +149,32 @@ struct e1000_bus_info {
+ 	u16 pci_cmd_word;
+ };
+ 
++enum e1000_fc_mode {
++	e1000_fc_none = 0,
++	e1000_fc_rx_pause,
++	e1000_fc_tx_pause,
++	e1000_fc_full,
++	e1000_fc_default = 0xFF
++};
++
++struct e1000_fc_info {
++	u32 high_water;     /* Flow control high-water mark */
++	u32 low_water;      /* Flow control low-water mark */
++	u16 pause_time;     /* Flow control pause timer */
++	bool send_xon;      /* Flow control send XON */
++	bool strict_ieee;   /* Strict IEEE mode */
++	enum e1000_fc_mode current_mode; /* Type of flow control */
++	enum e1000_fc_mode requested_mode;
++};
++
++struct e1000_dev_spec_base {
++	bool global_device_reset;
++	bool eee_disable;
++	bool clear_semaphore_once;
++	bool module_plugged;
++	u8 media_port;
++};
++
+ struct e1000_hw {
+ 	void *back;
+ 
+@@ -108,9 +183,15 @@ struct e1000_hw {
+ 	unsigned long io_base;
+ 
+ 	struct e1000_mac_info  mac;
++	struct e1000_fc_info   fc;
++	struct e1000_nvm_info  nvm;
+ 
+ 	struct e1000_bus_info bus;
+ 
++	union {
++		struct e1000_dev_spec_base	_base;
++	} dev_spec;
++
+ 	u16 device_id;
+ 	u16 subsystem_vendor_id;
+ 	u16 subsystem_device_id;
+@@ -203,6 +284,10 @@ struct e1000_hw_stats {
+ 	u64 b2ogprc;
+ };
+ 
++struct net_device *igc_get_hw_dev(struct e1000_hw *hw);
++#define hw_dbg(format, arg...) \
++	netdev_dbg(igc_get_hw_dev(hw), format, ##arg)
++
+ /* These functions must be implemented by drivers */
+ s32  igc_read_pcie_cap_reg(struct e1000_hw *hw, u32 reg, u16 *value);
+ s32  igc_write_pcie_cap_reg(struct e1000_hw *hw, u32 reg, u16 *value);
+diff --git a/drivers/net/ethernet/intel/igc/e1000_i225.c b/drivers/net/ethernet/intel/igc/e1000_i225.c
+new file mode 100644
+index 000000000000..11d797c77619
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igc/e1000_i225.c
+@@ -0,0 +1,141 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (c)  2018 Intel Corporation */
 +
 +#include <linux/delay.h>
 +
 +#include "e1000_hw.h"
-+#include "e1000_i225.h"
 +
 +/**
-+ *  igc_rx_fifo_flush_base - Clean rx fifo after Rx enable
++ *  igc_get_hw_semaphore_i225 - Acquire hardware semaphore
 + *  @hw: pointer to the HW structure
 + *
-+ *  After Rx enable, if manageability is enabled then there is likely some
-+ *  bad data at the start of the fifo and possibly in the DMA fifo.  This
-+ *  function clears the fifos and flushes any packets that came in as rx was
-+ *  being enabled.
-+ **/
-+void igc_rx_fifo_flush_base(struct e1000_hw *hw)
++ *  Acquire the HW semaphore to access the PHY or NVM
++ */
++static s32 igc_get_hw_semaphore_i225(struct e1000_hw *hw)
 +{
-+	u32 rctl, rlpml, rxdctl[4], rfctl, temp_rctl, rx_enabled;
-+	int i, ms_wait;
++	u32 swsm;
++	s32 timeout = hw->nvm.word_size + 1;
++	s32 i = 0;
 +
-+	/* disable IPv6 options as per hardware errata */
-+	rfctl = rd32(E1000_RFCTL);
-+	rfctl |= E1000_RFCTL_IPV6_EX_DIS;
-+	wr32(E1000_RFCTL, rfctl);
-+
-+	if (!(rd32(E1000_MANC) & E1000_MANC_RCV_TCO_EN))
-+		return;
-+
-+	/* Disable all Rx queues */
-+	for (i = 0; i < 4; i++) {
-+		rxdctl[i] = rd32(E1000_RXDCTL(i));
-+		wr32(E1000_RXDCTL(i),
-+		     rxdctl[i] & ~E1000_RXDCTL_QUEUE_ENABLE);
-+	}
-+	/* Poll all queues to verify they have shut down */
-+	for (ms_wait = 0; ms_wait < 10; ms_wait++) {
-+		usleep_range(1000, 2000);
-+		rx_enabled = 0;
-+		for (i = 0; i < 4; i++)
-+			rx_enabled |= rd32(E1000_RXDCTL(i));
-+		if (!(rx_enabled & E1000_RXDCTL_QUEUE_ENABLE))
++	/* Get the SW semaphore */
++	while (i < timeout) {
++		swsm = rd32(E1000_SWSM);
++		if (!(swsm & E1000_SWSM_SMBI))
 +			break;
++
++		usleep_range(500, 600);
++		i++;
 +	}
 +
-+	if (ms_wait == 10)
-+		pr_debug("Queue disable timed out after 10ms\n");
++	if (i == timeout) {
++		/* In rare circumstances, the SW semaphore may already be held
++		 * unintentionally. Clear the semaphore once before giving up.
++		 */
++		if (hw->dev_spec._base.clear_semaphore_once) {
++			hw->dev_spec._base.clear_semaphore_once = false;
++			igc_put_hw_semaphore(hw);
++			for (i = 0; i < timeout; i++) {
++				swsm = rd32(E1000_SWSM);
++				if (!(swsm & E1000_SWSM_SMBI))
++					break;
 +
-+	/* Clear RLPML, RCTL.SBP, RFCTL.LEF, and set RCTL.LPE so that all
-+	 * incoming packets are rejected.  Set enable and wait 2ms so that
-+	 * any packet that was coming in as RCTL.EN was set is flushed
-+	 */
-+	wr32(E1000_RFCTL, rfctl & ~E1000_RFCTL_LEF);
++				usleep_range(500, 600);
++			}
++		}
 +
-+	rlpml = rd32(E1000_RLPML);
-+	wr32(E1000_RLPML, 0);
++		/* If we do not have the semaphore here, we have to give up. */
++		if (i == timeout) {
++			hw_dbg("Driver can't access device - SMBI bit is set.\n");
++			return -E1000_ERR_NVM;
++		}
++	}
 +
-+	rctl = rd32(E1000_RCTL);
-+	temp_rctl = rctl & ~(E1000_RCTL_EN | E1000_RCTL_SBP);
-+	temp_rctl |= E1000_RCTL_LPE;
++	/* Get the FW semaphore. */
++	for (i = 0; i < timeout; i++) {
++		swsm = rd32(E1000_SWSM);
++		wr32(E1000_SWSM, swsm | E1000_SWSM_SWESMBI);
 +
-+	wr32(E1000_RCTL, temp_rctl);
-+	wr32(E1000_RCTL, temp_rctl | E1000_RCTL_EN);
-+	wrfl();
-+	usleep_range(2000, 3000);
++		/* Semaphore acquired if bit latched */
++		if (rd32(E1000_SWSM) & E1000_SWSM_SWESMBI)
++			break;
 +
-+	/* Enable Rx queues that were previously enabled and restore our
-+	 * previous state
-+	 */
-+	for (i = 0; i < 4; i++)
-+		wr32(E1000_RXDCTL(i), rxdctl[i]);
-+	wr32(E1000_RCTL, rctl);
-+	wrfl();
++		usleep_range(500, 600);
++	}
 +
-+	wr32(E1000_RLPML, rlpml);
-+	wr32(E1000_RFCTL, rfctl);
++	if (i == timeout) {
++		/* Release semaphores */
++		igc_put_hw_semaphore(hw);
++		hw_dbg("Driver can't access the NVM\n");
++		return -E1000_ERR_NVM;
++	}
 +
-+	/* Flush receive errors generated by workaround */
-+	rd32(E1000_ROC);
-+	rd32(E1000_RNBC);
-+	rd32(E1000_MPC);
++	return 0;
 +}
-diff --git a/drivers/net/ethernet/intel/igc/e1000_base.h b/drivers/net/ethernet/intel/igc/e1000_base.h
-new file mode 100644
-index 000000000000..9acc41d73f4f
---- /dev/null
-+++ b/drivers/net/ethernet/intel/igc/e1000_base.h
-@@ -0,0 +1,89 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c)  2018 Intel Corporation */
 +
-+#ifndef _E1000_BASE_H
-+#define _E1000_BASE_H
++/**
++ *  igc_acquire_swfw_sync_i225 - Acquire SW/FW semaphore
++ *  @hw: pointer to the HW structure
++ *  @mask: specifies which semaphore to acquire
++ *
++ *  Acquire the SW/FW semaphore to access the PHY or NVM.  The mask
++ *  will also specify which port we're acquiring the lock for.
++ **/
++s32 igc_acquire_swfw_sync_i225(struct e1000_hw *hw, u16 mask)
++{
++	u32 swfw_sync;
++	u32 swmask = mask;
++	u32 fwmask = mask << 16;
++	s32 ret_val = 0;
++	s32 i = 0, timeout = 200; /* FIXME: find real value to use here */
 +
++	while (i < timeout) {
++		if (igc_get_hw_semaphore_i225(hw)) {
++			ret_val = -E1000_ERR_SWFW_SYNC;
++			goto out;
++		}
++
++		swfw_sync = rd32(E1000_SW_FW_SYNC);
++		if (!(swfw_sync & (fwmask | swmask)))
++			break;
++
++		/* Firmware currently using resource (fwmask) */
++		igc_put_hw_semaphore(hw);
++		mdelay(5);
++		i++;
++	}
++
++	if (i == timeout) {
++		hw_dbg("Driver can't access resource, SW_FW_SYNC timeout.\n");
++		ret_val = -E1000_ERR_SWFW_SYNC;
++		goto out;
++	}
++
++	swfw_sync |= swmask;
++	wr32(E1000_SW_FW_SYNC, swfw_sync);
++
++	igc_put_hw_semaphore(hw);
++out:
++	return ret_val;
++}
++
++/**
++ *  igc_release_swfw_sync_i225 - Release SW/FW semaphore
++ *  @hw: pointer to the HW structure
++ *  @mask: specifies which semaphore to acquire
++ *
++ *  Release the SW/FW semaphore used to access the PHY or NVM.  The mask
++ *  will also specify which port we're releasing the lock for.
++ **/
++void igc_release_swfw_sync_i225(struct e1000_hw *hw, u16 mask)
++{
++	u32 swfw_sync;
++
++	while (igc_get_hw_semaphore_i225(hw))
++		; /* Empty */
++
++	swfw_sync = rd32(E1000_SW_FW_SYNC);
++	swfw_sync &= ~mask;
++	wr32(E1000_SW_FW_SYNC, swfw_sync);
++
++	igc_put_hw_semaphore(hw);
++}
+diff --git a/drivers/net/ethernet/intel/igc/e1000_mac.c b/drivers/net/ethernet/intel/igc/e1000_mac.c
+index c38435bb8a8c..27e478a9854c 100644
+--- a/drivers/net/ethernet/intel/igc/e1000_mac.c
++++ b/drivers/net/ethernet/intel/igc/e1000_mac.c
+@@ -2,8 +2,15 @@
+ /* Copyright (c)  2018 Intel Corporation */
+ 
+ #include <linux/pci.h>
++#include <linux/delay.h>
++
++#include "e1000_mac.h"
+ #include "e1000_hw.h"
+ 
 +/* forward declaration */
-+void igc_rx_fifo_flush_base(struct e1000_hw *hw);
++static s32 igc_set_default_fc(struct e1000_hw *hw);
++static s32 igc_set_fc_watermarks(struct e1000_hw *hw);
 +
-+/* Transmit Descriptor - Advanced */
-+union e1000_adv_tx_desc {
-+	struct {
-+		__le64 buffer_addr;    /* Address of descriptor's data buf */
-+		__le32 cmd_type_len;
-+	__le32 olinfo_status;
-+	} read;
-+	struct {
-+		__le64 rsvd;       /* Reserved */
-+		__le32 nxtseq_seed;
-+		__le32 status;
-+	} wb;
-+};
-+
-+struct e1000_adv_data_desc {
-+	__le64 buffer_addr;    /* Address of the descriptor's data buffer */
-+	union {
-+		u32 data;
-+		struct {
-+			u32 datalen:16; /* Data buffer length */
-+			u32 rsvd:4;
-+			u32 dtyp:4;  /* Descriptor type */
-+			u32 dcmd:8;  /* Descriptor command */
-+		} config;
-+	} lower;
-+	union {
-+		u32 data;
-+		struct {
-+			u32 status:4;  /* Descriptor status */
-+			u32 idx:4;
-+			u32 popts:6;  /* Packet Options */
-+			u32 paylen:18; /* Payload length */
-+		} options;
-+	} upper;
-+};
-+
-+/* Receive Descriptor - Advanced */
-+union e1000_adv_rx_desc {
-+	struct {
-+		__le64 pkt_addr; /* Packet buffer address */
-+		__le64 hdr_addr; /* Header buffer address */
-+	} read;
-+	struct {
-+		struct {
-+			union {
-+				__le32 data;
-+				struct {
-+					__le16 pkt_info; /*RSS type, Pkt type*/
-+					/* Split Header, header buffer len */
-+					__le16 hdr_info;
-+				} hs_rss;
-+			} lo_dword;
-+			union {
-+				__le32 rss; /* RSS Hash */
-+				struct {
-+					__le16 ip_id; /* IP id */
-+					__le16 csum; /* Packet Checksum */
-+				} csum_ip;
-+			} hi_dword;
-+		} lower;
-+		struct {
-+			__le32 status_error; /* ext status/error */
-+			__le16 length; /* Packet length */
-+			__le16 vlan; /* VLAN tag */
-+		} upper;
-+	} wb;  /* writeback */
-+};
-+
-+/* Additional Transmit Descriptor Control definitions */
-+#define E1000_TXDCTL_QUEUE_ENABLE	0x02000000 /* Ena specific Tx Queue */
-+
-+/* Additional Receive Descriptor Control definitions */
-+#define E1000_RXDCTL_QUEUE_ENABLE	0x02000000 /* Ena specific Rx Queue */
-+
-+/* SRRCTL bit definitions */
-+#define E1000_SRRCTL_BSIZEPKT_SHIFT		10 /* Shift _right_ */
-+#define E1000_SRRCTL_BSIZEHDRSIZE_SHIFT		2  /* Shift _left_ */
-+#define E1000_SRRCTL_DESCTYPE_ADV_ONEBUF	0x02000000
-+
-+#endif /* _E1000_BASE_H */
-diff --git a/drivers/net/ethernet/intel/igc/e1000_defines.h b/drivers/net/ethernet/intel/igc/e1000_defines.h
-index 1f8bc16c7029..66f8fc96dfb8 100644
---- a/drivers/net/ethernet/intel/igc/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igc/e1000_defines.h
-@@ -71,6 +71,10 @@
- #define E1000_ICR_RXO		0x00000040 /* Rx overrun */
- #define E1000_ICR_RXT0		0x00000080 /* Rx timer intr (ring 0) */
- #define E1000_ICR_DRSTA		0x40000000 /* Device Reset Asserted */
-+
-+/* If this bit asserted, the driver should claim the interrupt */
-+#define E1000_ICR_INT_ASSERTED	0x80000000
-+
- #define E1000_ICS_RXT0		E1000_ICR_RXT0      /* Rx timer intr */
+ /**
+  *  igc_get_bus_info_pcie - Get PCIe bus information
+  *  @hw: pointer to the HW structure
+@@ -49,3 +56,316 @@ s32 igc_get_bus_info_pcie(struct e1000_hw *hw)
  
- #define IMS_ENABLE_MASK ( \
-@@ -97,4 +101,53 @@
- #define E1000_GPIE_EIAME	0x40000000
- #define E1000_GPIE_PBA		0x80000000
+ 	return 0;
+ }
++
++/**
++ *  igc_disable_pcie_master - Disables PCI-express master access
++ *  @hw: pointer to the HW structure
++ *
++ *  Returns 0 (0) if successful, else returns -10
++ *  (-E1000_ERR_MASTER_REQUESTS_PENDING) if master disable bit has not caused
++ *  the master requests to be disabled.
++ *
++ *  Disables PCI-Express master access and verifies there are no pending
++ *  requests.
++ **/
++s32 igc_disable_pcie_master(struct e1000_hw *hw)
++{
++	u32 ctrl;
++	s32 timeout = MASTER_DISABLE_TIMEOUT;
++	s32 ret_val = 0;
++
++	if (hw->bus.type != e1000_bus_type_pci_express)
++		goto out;
++
++	ctrl = rd32(E1000_CTRL);
++	ctrl |= E1000_CTRL_GIO_MASTER_DISABLE;
++	wr32(E1000_CTRL, ctrl);
++
++	while (timeout) {
++		if (!(rd32(E1000_STATUS) &
++		    E1000_STATUS_GIO_MASTER_ENABLE))
++			break;
++		usleep_range(2000, 3000);
++		timeout--;
++	}
++
++	if (!timeout) {
++		hw_dbg("Master requests are pending.\n");
++		ret_val = -E1000_ERR_MASTER_REQUESTS_PENDING;
++		goto out;
++	}
++
++out:
++	return ret_val;
++}
++
++/**
++ *  igc_init_rx_addrs - Initialize receive address's
++ *  @hw: pointer to the HW structure
++ *  @rar_count: receive address registers
++ *
++ *  Setups the receive address registers by setting the base receive address
++ *  register to the devices MAC address and clearing all the other receive
++ *  address registers to 0.
++ **/
++void igc_init_rx_addrs(struct e1000_hw *hw, u16 rar_count)
++{
++	u32 i;
++	u8 mac_addr[ETH_ALEN] = {0};
++
++	/* Setup the receive address */
++	hw_dbg("Programming MAC Address into RAR[0]\n");
++
++	hw->mac.ops.rar_set(hw, hw->mac.addr, 0);
++
++	/* Zero out the other (rar_entry_count - 1) receive addresses */
++	hw_dbg("Clearing RAR[1-%u]\n", rar_count - 1);
++	for (i = 1; i < rar_count; i++)
++		hw->mac.ops.rar_set(hw, mac_addr, i);
++}
++
++/**
++ *  igc_setup_link - Setup flow control and link settings
++ *  @hw: pointer to the HW structure
++ *
++ *  Determines which flow control settings to use, then configures flow
++ *  control.  Calls the appropriate media-specific link configuration
++ *  function.  Assuming the adapter has a valid link partner, a valid link
++ *  should be established.  Assumes the hardware has previously been reset
++ *  and the transmitter and receiver are not enabled.
++ **/
++s32 igc_setup_link(struct e1000_hw *hw)
++{
++	s32 ret_val = 0;
++
++	/* In the case of the phy reset being blocked, we already have a link.
++	 * We do not need to set it up again.
++	 */
++
++	/* If requested flow control is set to default, set flow control
++	 * based on the EEPROM flow control settings.
++	 */
++	if (hw->fc.requested_mode == e1000_fc_default) {
++		ret_val = igc_set_default_fc(hw);
++		if (ret_val)
++			goto out;
++	}
++
++	/* We want to save off the original Flow Control configuration just
++	 * in case we get disconnected and then reconnected into a different
++	 * hub or switch with different Flow Control capabilities.
++	 */
++	hw->fc.current_mode = hw->fc.requested_mode;
++
++	hw_dbg("After fix-ups FlowControl is now = %x\n", hw->fc.current_mode);
++
++	/* Call the necessary media_type subroutine to configure the link. */
++	ret_val = hw->mac.ops.setup_physical_interface(hw);
++	if (ret_val)
++		goto out;
++
++	/* Initialize the flow control address, type, and PAUSE timer
++	 * registers to their default values.  This is done even if flow
++	 * control is disabled, because it does not hurt anything to
++	 * initialize these registers.
++	 */
++	hw_dbg("Initializing the Flow Control address, type and timer regs\n");
++	wr32(E1000_FCT, FLOW_CONTROL_TYPE);
++	wr32(E1000_FCAH, FLOW_CONTROL_ADDRESS_HIGH);
++	wr32(E1000_FCAL, FLOW_CONTROL_ADDRESS_LOW);
++
++	wr32(E1000_FCTTV, hw->fc.pause_time);
++
++	ret_val = igc_set_fc_watermarks(hw);
++
++out:
++
++	return ret_val;
++}
++
++/**
++ *  igc_set_default_fc - Set flow control default values
++ *  @hw: pointer to the HW structure
++ *
++ *  Read the EEPROM for the default values for flow control and store the
++ *  values.
++ **/
++static s32 igc_set_default_fc(struct e1000_hw *hw)
++{
++	return 0;
++}
++
++/**
++ *  igc_set_fc_watermarks - Set flow control high/low watermarks
++ *  @hw: pointer to the HW structure
++ *
++ *  Sets the flow control high/low threshold (watermark) registers.  If
++ *  flow control XON frame transmission is enabled, then set XON frame
++ *  tansmission as well.
++ **/
++static s32 igc_set_fc_watermarks(struct e1000_hw *hw)
++{
++	s32 ret_val = 0;
++	u32 fcrtl = 0, fcrth = 0;
++
++	/* Set the flow control receive threshold registers.  Normally,
++	 * these registers will be set to a default threshold that may be
++	 * adjusted later by the driver's runtime code.  However, if the
++	 * ability to transmit pause frames is not enabled, then these
++	 * registers will be set to 0.
++	 */
++	if (hw->fc.current_mode & e1000_fc_tx_pause) {
++		/* We need to set up the Receive Threshold high and low water
++		 * marks as well as (optionally) enabling the transmission of
++		 * XON frames.
++		 */
++		fcrtl = hw->fc.low_water;
++		if (hw->fc.send_xon)
++			fcrtl |= E1000_FCRTL_XONE;
++
++		fcrth = hw->fc.high_water;
++	}
++	wr32(E1000_FCRTL, fcrtl);
++	wr32(E1000_FCRTH, fcrth);
++
++	return ret_val;
++}
++
++/**
++ *  igc_clear_hw_cntrs_base - Clear base hardware counters
++ *  @hw: pointer to the HW structure
++ *
++ *  Clears the base hardware counters by reading the counter registers.
++ **/
++void igc_clear_hw_cntrs_base(struct e1000_hw *hw)
++{
++	rd32(E1000_CRCERRS);
++	rd32(E1000_SYMERRS);
++	rd32(E1000_MPC);
++	rd32(E1000_SCC);
++	rd32(E1000_ECOL);
++	rd32(E1000_MCC);
++	rd32(E1000_LATECOL);
++	rd32(E1000_COLC);
++	rd32(E1000_DC);
++	rd32(E1000_SEC);
++	rd32(E1000_RLEC);
++	rd32(E1000_XONRXC);
++	rd32(E1000_XONTXC);
++	rd32(E1000_XOFFRXC);
++	rd32(E1000_XOFFTXC);
++	rd32(E1000_FCRUC);
++	rd32(E1000_GPRC);
++	rd32(E1000_BPRC);
++	rd32(E1000_MPRC);
++	rd32(E1000_GPTC);
++	rd32(E1000_GORCL);
++	rd32(E1000_GORCH);
++	rd32(E1000_GOTCL);
++	rd32(E1000_GOTCH);
++	rd32(E1000_RNBC);
++	rd32(E1000_RUC);
++	rd32(E1000_RFC);
++	rd32(E1000_ROC);
++	rd32(E1000_RJC);
++	rd32(E1000_TORL);
++	rd32(E1000_TORH);
++	rd32(E1000_TOTL);
++	rd32(E1000_TOTH);
++	rd32(E1000_TPR);
++	rd32(E1000_TPT);
++	rd32(E1000_MPTC);
++	rd32(E1000_BPTC);
++
++	rd32(E1000_PRC64);
++	rd32(E1000_PRC127);
++	rd32(E1000_PRC255);
++	rd32(E1000_PRC511);
++	rd32(E1000_PRC1023);
++	rd32(E1000_PRC1522);
++	rd32(E1000_PTC64);
++	rd32(E1000_PTC127);
++	rd32(E1000_PTC255);
++	rd32(E1000_PTC511);
++	rd32(E1000_PTC1023);
++	rd32(E1000_PTC1522);
++
++	rd32(E1000_ALGNERRC);
++	rd32(E1000_RXERRC);
++	rd32(E1000_TNCRS);
++	rd32(E1000_CEXTERR);
++	rd32(E1000_TSCTC);
++	rd32(E1000_TSCTFC);
++
++	rd32(E1000_MGTPRC);
++	rd32(E1000_MGTPDC);
++	rd32(E1000_MGTPTC);
++
++	rd32(E1000_IAC);
++	rd32(E1000_ICRXOC);
++
++	rd32(E1000_ICRXPTC);
++	rd32(E1000_ICRXATC);
++	rd32(E1000_ICTXPTC);
++	rd32(E1000_ICTXATC);
++	rd32(E1000_ICTXQEC);
++	rd32(E1000_ICTXQMTC);
++	rd32(E1000_ICRXDMTC);
++
++	rd32(E1000_CBTMPC);
++	rd32(E1000_HTDPMC);
++	rd32(E1000_CBRMPC);
++	rd32(E1000_RPTHC);
++	rd32(E1000_HGPTC);
++	rd32(E1000_HTCBDPC);
++	rd32(E1000_HGORCL);
++	rd32(E1000_HGORCH);
++	rd32(E1000_HGOTCL);
++	rd32(E1000_HGOTCH);
++	rd32(E1000_LENERRS);
++}
++
++/**
++ *  igc_get_auto_rd_done - Check for auto read completion
++ *  @hw: pointer to the HW structure
++ *
++ *  Check EEPROM for Auto Read done bit.
++ **/
++s32 igc_get_auto_rd_done(struct e1000_hw *hw)
++{
++	s32 i = 0;
++	s32 ret_val = 0;
++
++	while (i < AUTO_READ_DONE_TIMEOUT) {
++		if (rd32(E1000_EECD) & E1000_EECD_AUTO_RD)
++			break;
++		usleep_range(1000, 2000);
++		i++;
++	}
++
++	if (i == AUTO_READ_DONE_TIMEOUT) {
++		hw_dbg("Auto read by HW from NVM has not completed.\n");
++		ret_val = -E1000_ERR_RESET;
++		goto out;
++	}
++
++out:
++	return ret_val;
++}
++
++/**
++ *  igc_put_hw_semaphore - Release hardware semaphore
++ *  @hw: pointer to the HW structure
++ *
++ *  Release hardware semaphore used to access the PHY or NVM
++ **/
++void igc_put_hw_semaphore(struct e1000_hw *hw)
++{
++	u32 swsm;
++
++	swsm = rd32(E1000_SWSM);
++
++	swsm &= ~(E1000_SWSM_SMBI | E1000_SWSM_SWESMBI);
++
++	wr32(E1000_SWSM, swsm);
++}
+diff --git a/drivers/net/ethernet/intel/igc/e1000_mac.h b/drivers/net/ethernet/intel/igc/e1000_mac.h
+index afb0f7b28222..2f8dbf17800a 100644
+--- a/drivers/net/ethernet/intel/igc/e1000_mac.h
++++ b/drivers/net/ethernet/intel/igc/e1000_mac.h
+@@ -4,10 +4,21 @@
+ #ifndef _E1000_MAC_H_
+ #define _E1000_MAC_H_
  
-+/* Transmit Control */
-+#define E1000_TCTL_EN		0x00000002 /* enable Tx */
-+#define E1000_TCTL_PSP		0x00000008 /* pad short packets */
-+#define E1000_TCTL_CT		0x00000ff0 /* collision threshold */
-+#define E1000_TCTL_COLD		0x003ff000 /* collision distance */
-+#define E1000_TCTL_RTLC		0x01000000 /* Re-transmit on late collision */
-+#define E1000_TCTL_MULR		0x10000000 /* Multiple request support */
++#include "e1000_hw.h"
++#include "e1000_defines.h"
 +
-+#define E1000_CT_SHIFT			4
-+#define E1000_COLLISION_THRESHOLD	15
-+
-+/* Management Control */
-+#define E1000_MANC_RCV_TCO_EN	0x00020000 /* Receive TCO Packets Enabled */
-+
-+/* Receive Control */
-+#define E1000_RCTL_RST		0x00000001 /* Software reset */
-+#define E1000_RCTL_EN		0x00000002 /* enable */
-+#define E1000_RCTL_SBP		0x00000004 /* store bad packet */
-+#define E1000_RCTL_UPE		0x00000008 /* unicast promisc enable */
-+#define E1000_RCTL_MPE		0x00000010 /* multicast promisc enable */
-+#define E1000_RCTL_LPE		0x00000020 /* long packet enable */
-+#define E1000_RCTL_LBM_NO	0x00000000 /* no loopback mode */
-+#define E1000_RCTL_LBM_MAC	0x00000040 /* MAC loopback mode */
-+#define E1000_RCTL_LBM_TCVR	0x000000C0 /* tcvr loopback mode */
-+#define E1000_RCTL_DTYP_PS	0x00000400 /* Packet Split descriptor */
-+
-+#define E1000_RCTL_RDMTS_HALF	0x00000000 /* Rx desc min thresh size */
-+#define E1000_RCTL_BAM		0x00008000 /* broadcast enable */
-+
-+/* Header split receive */
-+#define E1000_RFCTL_IPV6_EX_DIS	0x00010000
-+#define E1000_RFCTL_LEF		0x00040000
-+
-+/* these buffer sizes are valid if E1000_RCTL_BSEX is 0 */
-+#define E1000_RCTL_SZ_2048	0x00000000 /* Rx buffer size 2048 */
-+#define E1000_RCTL_SZ_1024	0x00010000 /* Rx buffer size 1024 */
-+#define E1000_RCTL_SZ_512	0x00020000 /* Rx buffer size 512 */
-+#define E1000_RCTL_SZ_256	0x00030000 /* Rx buffer size 256 */
-+/* these buffer sizes are valid if E1000_RCTL_BSEX is 1 */
-+#define E1000_RCTL_SZ_16384	0x00010000 /* Rx buffer size 16384 */
-+#define E1000_RCTL_SZ_8192	0x00020000 /* Rx buffer size 8192 */
-+#define E1000_RCTL_SZ_4096	0x00030000 /* Rx buffer size 4096 */
-+
-+#define E1000_RCTL_MO_SHIFT	12 /* multicast offset shift */
-+#define E1000_RCTL_CFIEN	0x00080000 /* canonical form enable */
-+#define E1000_RCTL_DPF		0x00400000 /* discard pause frames */
-+#define E1000_RCTL_PMCF		0x00800000 /* pass MAC control frames */
-+#define E1000_RCTL_SECRC	0x04000000 /* Strip Ethernet CRC */
-+
- #endif /* _E1000_DEFINES_H_ */
-diff --git a/drivers/net/ethernet/intel/igc/e1000_hw.h b/drivers/net/ethernet/intel/igc/e1000_hw.h
-index 650c4ac981d9..67fa4f696b98 100644
---- a/drivers/net/ethernet/intel/igc/e1000_hw.h
-+++ b/drivers/net/ethernet/intel/igc/e1000_hw.h
-@@ -10,6 +10,7 @@
- #include "e1000_defines.h"
- #include "e1000_mac.h"
- #include "e1000_i225.h"
-+#include "e1000_base.h"
+ #ifndef E1000_REMOVED
+ #define E1000_REMOVED@ (0)
+ #endif /* E1000_REMOVED */
  
- #define E1000_DEV_ID_I225_LM			0x15F2
- #define E1000_DEV_ID_I225_V			0x15F3
+-s32 igc_get_bus_info_pcie(struct e1000_hw *hw);
++/* forward declaration */
++s32  igc_disable_pcie_master(struct e1000_hw *hw);
++void igc_init_rx_addrs(struct e1000_hw *hw, u16 rar_count);
++s32  igc_setup_link(struct e1000_hw *hw);
++void igc_clear_hw_cntrs_base(struct e1000_hw *hw);
++s32 igc_get_auto_rd_done(struct e1000_hw *hw);
++void igc_put_hw_semaphore(struct e1000_hw *hw);
++
++s32  igc_get_bus_info_pcie(struct e1000_hw *hw);
+ 
+ #endif
 diff --git a/drivers/net/ethernet/intel/igc/e1000_regs.h b/drivers/net/ethernet/intel/igc/e1000_regs.h
-index 5634a01afff3..dcc4d89c9933 100644
+index dcc4d89c9933..66d5c757dae8 100644
 --- a/drivers/net/ethernet/intel/igc/e1000_regs.h
 +++ b/drivers/net/ethernet/intel/igc/e1000_regs.h
-@@ -229,6 +229,9 @@
- #define E1000_TLPIC	0x4148 /* EEE Tx LPI Count - TLPIC */
- #define E1000_RLPIC	0x414C /* EEE Rx LPI Count - RLPIC */
+@@ -7,6 +7,7 @@
+ /* General Register Descriptions */
+ #define E1000_CTRL		0x00000  /* Device Control - RW */
+ #define E1000_STATUS		0x00008  /* Device Status - RO */
++#define E1000_EECD		0x00010  /* EEPROM/Flash Control - RW */
+ #define E1000_CTRL_EXT		0x00018  /* Extended Device Control - RW */
+ #define E1000_MDIC		0x00020  /* MDI Control - RW */
+ #define E1000_MDICNFG		0x00E04  /* MDC/MDIO Configuration - RW */
+@@ -75,6 +76,30 @@
+ #define E1000_IVAR_MISC		0x01740   /* IVAR for "other" causes - RW */
+ #define E1000_GPIE		0x01514  /* General Purpose Intr Enable - RW */
  
-+/* Management registers */
-+#define E1000_MANC	0x05820  /* Management Control - RW */
++/* Interrupt Cause Rx Packet Timer Expire Count */
++#define E1000_ICRXPTC		0x04104
++/* Interrupt Cause Rx Absolute Timer Expire Count */
++#define E1000_ICRXATC		0x04108
++/* Interrupt Cause Tx Packet Timer Expire Count */
++#define E1000_ICTXPTC		0x0410C
++/* Interrupt Cause Tx Absolute Timer Expire Count */
++#define E1000_ICTXATC		0x04110
++/* Interrupt Cause Tx Queue Empty Count */
++#define E1000_ICTXQEC		0x04118
++/* Interrupt Cause Tx Queue Minimum Threshold Count */
++#define E1000_ICTXQMTC		0x0411C
++/* Interrupt Cause Rx Descriptor Minimum Threshold Count */
++#define E1000_ICRXDMTC		0x04120
++/* Interrupt Cause Receiver Overrun Count */
++#define E1000_ICRXOC		0x04124
 +
- /* forward declaration */
- struct e1000_hw;
- u32 igc_rd32(struct e1000_hw *hw, u32 reg);
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 7cab3e9c8e91..abf2e302c417 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -46,6 +46,47 @@ extern char igc_driver_version[];
- #define MAX_Q_VECTORS                     10
- #define MAX_STD_JUMBO_FRAME_SIZE        9216
++#define E1000_CBTMPC		0x0402C  /* Circuit Breaker TX Packet Count */
++#define E1000_HTDPMC		0x0403C  /* Host Transmit Discarded Packets */
++#define E1000_CBRMPC		0x040FC  /* Circuit Breaker RX Packet Count */
++#define E1000_RPTHC		0x04104  /* Rx Packets To Host */
++#define E1000_HGPTC		0x04118  /* Host Good Packets TX Count */
++#define E1000_HTCBDPC		0x04124  /* Host TX Circ.Breaker Drop Count */
++
+ /* MSI-X Table Register Descriptions */
+ #define E1000_PBACL		0x05B68  /* MSIx PBA Clear - R/W 1 to clear */
  
-+#define IGC_TX_PTHRESH			8
-+#define IGC_TX_HTHRESH			1
-+
-+/* Supported Rx Buffer Sizes */
-+#define IGC_RXBUFFER_256		256
-+#define IGC_RXBUFFER_2048		2048
-+#define IGC_RXBUFFER_3072		3072
-+
-+#define IGC_RX_HDR_LEN			IGC_RXBUFFER_256
-+
-+/* RX and TX descriptor control thresholds.
-+ * PTHRESH - MAC will consider prefetch if it has fewer than this number of
-+ *           descriptors available in its onboard memory.
-+ *           Setting this to 0 disables RX descriptor prefetch.
-+ * HTHRESH - MAC will only prefetch if there are@least this many descriptors
-+ *           available in host memory.
-+ *           If PTHRESH is 0, this should also be 0.
-+ * WTHRESH - RX descriptor writeback threshold - MAC will delay writing back
-+ *           descriptors until either it has this many to write back, or the
-+ *           ITR timer expires.
-+ */
-+#define IGC_RX_PTHRESH			8
-+#define IGC_RX_HTHRESH			8
-+#define IGC_TX_PTHRESH			8
-+#define IGC_TX_HTHRESH			1
-+#define IGC_RX_WTHRESH			4
-+
-+#define IGC_RX_DMA_ATTR \
-+	(DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_WEAK_ORDERING)
-+
-+#define IGC_TS_HDR_LEN			16
-+
-+#define IGC_SKB_PAD			(NET_SKB_PAD + NET_IP_ALIGN)
-+
-+#if (PAGE_SIZE < 8192)
-+#define IGC_MAX_FRAME_BUILD_SKB \
-+	(SKB_WITH_OVERHEAD(IGC_RXBUFFER_2048) - IGC_SKB_PAD - IGC_TS_HDR_LEN)
-+#else
-+#define IGC_MAX_FRAME_BUILD_SKB (IGC_RXBUFFER_2048 - IGC_TS_HDR_LEN)
-+#endif
-+
- enum e1000_state_t {
- 	 __IGC_TESTING,
- 	__IGC_RESETTING,
-@@ -53,6 +94,33 @@ enum e1000_state_t {
- 	 __IGC_PTP_TX_IN_PROGRESS,
- };
- 
-+/** wrapper around a pointer to a socket buffer,
-+ *  so a DMA handle can be stored along with the buffer
-+ **/
-+struct igc_tx_buffer {
-+	union e1000_adv_tx_desc *next_to_watch;
-+	unsigned long time_stamp;
-+	struct sk_buff *skb;
-+	unsigned int bytecount;
-+	u16 gso_segs;
-+	__be16 protocol;
-+
-+	DEFINE_DMA_UNMAP_ADDR(dma);
-+	DEFINE_DMA_UNMAP_LEN(len);
-+	u32 tx_flags;
-+};
-+
-+struct igc_rx_buffer {
-+	dma_addr_t dma;
-+	struct page *page;
-+#if (BITS_PER_LONG > 32) || (PAGE_SIZE >= 65536)
-+	__u32 page_offset;
-+#else
-+	__u16 page_offset;
-+#endif
-+	__u16 pagecnt_bias;
-+};
-+
- struct igc_tx_queue_stats {
- 	u64 packets;
- 	u64 bytes;
-@@ -218,4 +286,63 @@ struct igc_adapter {
- 	struct igc_mac_addr *mac_table;
- };
- 
-+/* igc_desc_unused - calculate if we have unused descriptors */
-+static inline u16 igc_desc_unused(const struct igc_ring *ring)
-+{
-+	u16 ntc = ring->next_to_clean;
-+	u16 ntu = ring->next_to_use;
-+
-+	return ((ntc > ntu) ? 0 : ring->count) + ntc - ntu - 1;
-+}
-+
-+static inline struct netdev_queue *txring_txq(const struct igc_ring *tx_ring)
-+{
-+	return netdev_get_tx_queue(tx_ring->netdev, tx_ring->queue_index);
-+}
-+
-+enum e1000_ring_flags_t {
-+	IGC_RING_FLAG_RX_3K_BUFFER,
-+	IGC_RING_FLAG_RX_BUILD_SKB_ENABLED,
-+	IGC_RING_FLAG_RX_SCTP_CSUM,
-+	IGC_RING_FLAG_RX_LB_VLAN_BSWAP,
-+	IGC_RING_FLAG_TX_CTX_IDX,
-+	IGC_RING_FLAG_TX_DETECT_HANG
-+};
-+
-+#define ring_uses_large_buffer(ring) \
-+	test_bit(IGC_RING_FLAG_RX_3K_BUFFER, &(ring)->flags)
-+
-+#define ring_uses_build_skb(ring) \
-+	test_bit(IGC_RING_FLAG_RX_BUILD_SKB_ENABLED, &(ring)->flags)
-+
-+static inline unsigned int igc_rx_bufsz(struct igc_ring *ring)
-+{
-+#if (PAGE_SIZE < 8192)
-+	if (ring_uses_large_buffer(ring))
-+		return IGC_RXBUFFER_3072;
-+
-+	if (ring_uses_build_skb(ring))
-+		return IGC_MAX_FRAME_BUILD_SKB + IGC_TS_HDR_LEN;
-+#endif
-+	return IGC_RXBUFFER_2048;
-+}
-+
-+static inline unsigned int igc_rx_pg_order(struct igc_ring *ring)
-+{
-+#if (PAGE_SIZE < 8192)
-+	if (ring_uses_large_buffer(ring))
-+		return 1;
-+#endif
-+	return 0;
-+}
-+
-+#define igc_rx_pg_size(_ring) (PAGE_SIZE << igc_rx_pg_order(_ring))
-+
-+#define IGC_RX_DESC(R, i)       \
-+	(&(((union e1000_adv_rx_desc *)((R)->desc))[i]))
-+#define IGC_TX_DESC(R, i)       \
-+	(&(((union e1000_adv_tx_desc *)((R)->desc))[i]))
-+#define IGC_TX_CTXTDESC(R, i)   \
-+	(&(((struct e1000_adv_tx_context_desc *)((R)->desc))[i]))
-+
- #endif /* _IGC_H_ */
+@@ -92,6 +117,8 @@
+ #define E1000_RXCSUM		0x05000  /* Rx Checksum Control - RW */
+ #define E1000_RLPML		0x05004  /* Rx Long Packet Max Length */
+ #define E1000_RFCTL		0x05008  /* Receive Filter Control*/
++#define E1000_MTA		0x05200  /* Multicast Table Array - RW Array */
++#define E1000_UTA		0x0A000 /* Unicast Table Array - RW */
+ #define E1000_RAL(_n)		(0x05400 + ((_n) * 0x08))
+ #define E1000_RAH(_n)		(0x05404 + ((_n) * 0x08))
+ #define E1000_VLAPQF		0x055B0  /* VLAN Priority Queuue - RW */
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 30b778c9b94b..a147a1b7585e 100644
+index 67826041eb3c..9a99c7d68796 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -29,11 +29,21 @@ static const struct pci_device_id igc_pci_tbl[] = {
- MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+@@ -86,6 +86,14 @@ enum latency_range {
  
- /* forward declaration */
-+static int igc_setup_all_tx_resources(struct igc_adapter *adapter);
-+static void igc_clean_tx_ring(struct igc_ring *tx_ring);
-+static void igc_free_all_tx_resources(struct igc_adapter *adapter);
-+static int igc_setup_all_rx_resources(struct igc_adapter *adapter);
- static int igc_sw_init(struct igc_adapter *);
- static void igc_configure(struct igc_adapter *adapter);
-+static void igc_configure_tx(struct igc_adapter *);
-+static void igc_configure_rx(struct igc_adapter *adapter);
- static void igc_power_down_link(struct igc_adapter *adapter);
- static void igc_set_default_mac_filter(struct igc_adapter *adapter);
-+static void igc_set_rx_mode(struct net_device *netdev);
-+static void igc_setup_mrqc(struct igc_adapter *adapter);
- static irqreturn_t igc_msix_ring(int irq, void *data);
-+static irqreturn_t igc_intr_msi(int irq, void *data);
-+static irqreturn_t igc_intr(int irq, void *data);
- static void igc_write_itr(struct igc_q_vector *q_vector);
- static int igc_request_msix(struct igc_adapter *adapter);
- static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector);
-@@ -125,6 +135,526 @@ static void igc_get_hw_control(struct igc_adapter *adapter)
- }
- 
- /**
-+ *  igc_free_tx_resources - Free Tx Resources per Queue
-+ *  @tx_ring: Tx descriptor ring for a specific queue
-+ *
-+ *  Free all transmit software resources
-+ **/
-+void igc_free_tx_resources(struct igc_ring *tx_ring)
-+{
-+	igc_clean_tx_ring(tx_ring);
-+
-+	vfree(tx_ring->tx_buffer_info);
-+	tx_ring->tx_buffer_info = NULL;
-+
-+	/* if not set, then don't free */
-+	if (!tx_ring->desc)
-+		return;
-+
-+	dma_free_coherent(tx_ring->dev, tx_ring->size,
-+			  tx_ring->desc, tx_ring->dma);
-+
-+	tx_ring->desc = NULL;
-+}
-+
-+/**
-+ *  igc_free_all_tx_resources - Free Tx Resources for All Queues
-+ *  @adapter: board private structure
-+ *
-+ *  Free all transmit software resources
-+ **/
-+static void igc_free_all_tx_resources(struct igc_adapter *adapter)
-+{
-+	int i;
-+
-+	for (i = 0; i < adapter->num_tx_queues; i++)
-+		igc_free_tx_resources(adapter->tx_ring[i]);
-+}
-+
-+void igc_unmap_and_free_tx_resource(struct igc_ring *ring,
-+				    struct igc_tx_buffer *tx_buffer)
-+{
-+	if (tx_buffer->skb) {
-+		dev_kfree_skb_any(tx_buffer->skb);
-+		if (dma_unmap_len(tx_buffer, len))
-+			dma_unmap_single(ring->dev,
-+					 dma_unmap_addr(tx_buffer, dma),
-+					 dma_unmap_len(tx_buffer, len),
-+					 DMA_TO_DEVICE);
-+	} else if (dma_unmap_len(tx_buffer, len)) {
-+		dma_unmap_page(ring->dev,
-+			       dma_unmap_addr(tx_buffer, dma),
-+			       dma_unmap_len(tx_buffer, len),
-+			       DMA_TO_DEVICE);
-+	}
-+	tx_buffer->next_to_watch = NULL;
-+	tx_buffer->skb = NULL;
-+	dma_unmap_len_set(tx_buffer, len, 0);
-+	/* buffer_info must be completely set up in the transmit path */
-+}
-+
-+/**
-+ *  igc_clean_tx_ring - Free Tx Buffers
-+ *  @tx_ring: ring to be cleaned
-+ **/
-+static void igc_clean_tx_ring(struct igc_ring *tx_ring)
-+{
-+	struct igc_tx_buffer *buffer_info;
-+	unsigned long size;
-+	u16 i;
-+
-+	if (!tx_ring->tx_buffer_info)
-+		return;
-+
-+	/* Free all the Tx ring sk_buffs */
-+	for (i = 0; i < tx_ring->count; i++) {
-+		buffer_info = &tx_ring->tx_buffer_info[i];
-+		igc_unmap_and_free_tx_resource(tx_ring, buffer_info);
-+	}
-+
-+	netdev_tx_reset_queue(txring_txq(tx_ring));
-+
-+	size = sizeof(struct igc_tx_buffer) * tx_ring->count;
-+	memset(tx_ring->tx_buffer_info, 0, size);
-+
-+	/* Zero out the descriptor ring */
-+	memset(tx_ring->desc, 0, tx_ring->size);
-+
-+	tx_ring->next_to_use = 0;
-+	tx_ring->next_to_clean = 0;
-+}
-+
-+/**
-+ *  igc_setup_tx_resources - allocate Tx resources (Descriptors)
-+ *  @tx_ring: tx descriptor ring (for a specific queue) to setup
-+ *
-+ *  Return 0 on success, negative on failure
-+ **/
-+int igc_setup_tx_resources(struct igc_ring *tx_ring)
-+{
-+	struct device *dev = tx_ring->dev;
-+	int size = 0;
-+
-+	size = sizeof(struct igc_tx_buffer) * tx_ring->count;
-+	tx_ring->tx_buffer_info = vzalloc(size);
-+	if (!tx_ring->tx_buffer_info)
-+		goto err;
-+
-+	/* round up to nearest 4K */
-+	tx_ring->size = tx_ring->count * sizeof(union e1000_adv_tx_desc);
-+	tx_ring->size = ALIGN(tx_ring->size, 4096);
-+
-+	tx_ring->desc = dma_alloc_coherent(dev, tx_ring->size,
-+					   &tx_ring->dma, GFP_KERNEL);
-+
-+	if (!tx_ring->desc)
-+		goto err;
-+
-+	tx_ring->next_to_use = 0;
-+	tx_ring->next_to_clean = 0;
-+
-+	return 0;
-+
-+err:
-+	vfree(tx_ring->tx_buffer_info);
-+	dev_err(dev,
-+		"Unable to allocate memory for the transmit descriptor ring\n");
-+	return -ENOMEM;
-+}
-+
-+/**
-+ *  igc_setup_all_tx_resources - wrapper to allocate Tx resources
-+ *                                (Descriptors) for all queues
-+ *  @adapter: board private structure
-+ *
-+ *  Return 0 on success, negative on failure
-+ **/
-+static int igc_setup_all_tx_resources(struct igc_adapter *adapter)
-+{
+ void igc_reset(struct igc_adapter *adapter)
+ {
 +	struct pci_dev *pdev = adapter->pdev;
-+	int i, err = 0;
-+
-+	for (i = 0; i < adapter->num_tx_queues; i++) {
-+		err = igc_setup_tx_resources(adapter->tx_ring[i]);
-+		if (err) {
-+			dev_err(&pdev->dev,
-+				"Allocation for Tx Queue %u failed\n", i);
-+			for (i--; i >= 0; i--)
-+				igc_free_tx_resources(adapter->tx_ring[i]);
-+			break;
-+		}
-+	}
-+
-+	return err;
-+}
-+
-+/**
-+ *  igc_clean_rx_ring - Free Rx Buffers per Queue
-+ *  @rx_ring: ring to free buffers from
-+ **/
-+void igc_clean_rx_ring(struct igc_ring *rx_ring)
-+{
-+	u16 i = rx_ring->next_to_clean;
-+
-+	if (rx_ring->skb)
-+		dev_kfree_skb(rx_ring->skb);
-+	rx_ring->skb = NULL;
-+
-+	/* Free all the Rx ring sk_buffs */
-+	while (i != rx_ring->next_to_alloc) {
-+		struct igc_rx_buffer *buffer_info = &rx_ring->rx_buffer_info[i];
-+
-+		/* Invalidate cache lines that may have been written to by
-+		 * device so that we avoid corrupting memory.
-+		 */
-+		dma_sync_single_range_for_cpu(rx_ring->dev,
-+					      buffer_info->dma,
-+					      buffer_info->page_offset,
-+					      igc_rx_bufsz(rx_ring),
-+					      DMA_FROM_DEVICE);
-+
-+		/* free resources associated with mapping */
-+		dma_unmap_page_attrs(rx_ring->dev,
-+				     buffer_info->dma,
-+				     igc_rx_pg_size(rx_ring),
-+				     DMA_FROM_DEVICE,
-+				     IGC_RX_DMA_ATTR);
-+		__page_frag_cache_drain(buffer_info->page,
-+					buffer_info->pagecnt_bias);
-+
-+		i++;
-+		if (i == rx_ring->count)
-+			i = 0;
-+	}
-+
-+	rx_ring->next_to_alloc = 0;
-+	rx_ring->next_to_clean = 0;
-+	rx_ring->next_to_use = 0;
-+}
-+
-+/**
-+ *  igc_free_rx_resources - Free Rx Resources
-+ *  @rx_ring: ring to clean the resources from
-+ *
-+ *  Free all receive software resources
-+ **/
-+void igc_free_rx_resources(struct igc_ring *rx_ring)
-+{
-+	igc_clean_rx_ring(rx_ring);
-+
-+	vfree(rx_ring->rx_buffer_info);
-+	rx_ring->rx_buffer_info = NULL;
-+
-+	/* if not set, then don't free */
-+	if (!rx_ring->desc)
-+		return;
-+
-+	dma_free_coherent(rx_ring->dev, rx_ring->size,
-+			  rx_ring->desc, rx_ring->dma);
-+
-+	rx_ring->desc = NULL;
-+}
-+
-+/**
-+ *  igc_free_all_rx_resources - Free Rx Resources for All Queues
-+ *  @adapter: board private structure
-+ *
-+ *  Free all receive software resources
-+ **/
-+static void igc_free_all_rx_resources(struct igc_adapter *adapter)
-+{
-+	int i;
-+
-+	for (i = 0; i < adapter->num_rx_queues; i++)
-+		igc_free_rx_resources(adapter->rx_ring[i]);
-+}
-+
-+/**
-+ *  igc_setup_rx_resources - allocate Rx resources (Descriptors)
-+ *  @rx_ring:    rx descriptor ring (for a specific queue) to setup
-+ *
-+ *  Returns 0 on success, negative on failure
-+ **/
-+int igc_setup_rx_resources(struct igc_ring *rx_ring)
-+{
-+	struct device *dev = rx_ring->dev;
-+	int size, desc_len;
-+
-+	size = sizeof(struct igc_rx_buffer) * rx_ring->count;
-+	rx_ring->rx_buffer_info = vzalloc(size);
-+	if (!rx_ring->rx_buffer_info)
-+		goto err;
-+
-+	desc_len = sizeof(union e1000_adv_rx_desc);
-+
-+	/* Round up to nearest 4K */
-+	rx_ring->size = rx_ring->count * desc_len;
-+	rx_ring->size = ALIGN(rx_ring->size, 4096);
-+
-+	rx_ring->desc = dma_alloc_coherent(dev, rx_ring->size,
-+					   &rx_ring->dma, GFP_KERNEL);
-+
-+	if (!rx_ring->desc)
-+		goto err;
-+
-+	rx_ring->next_to_alloc = 0;
-+	rx_ring->next_to_clean = 0;
-+	rx_ring->next_to_use = 0;
-+
-+	return 0;
-+
-+err:
-+	vfree(rx_ring->rx_buffer_info);
-+	rx_ring->rx_buffer_info = NULL;
-+	dev_err(dev,
-+		"Unable to allocate memory for the receive descriptor ring\n");
-+	return -ENOMEM;
-+}
-+
-+/**
-+ *  igc_setup_all_rx_resources - wrapper to allocate Rx resources
-+ *                                (Descriptors) for all queues
-+ *  @adapter: board private structure
-+ *
-+ *  Return 0 on success, negative on failure
-+ **/
-+static int igc_setup_all_rx_resources(struct igc_adapter *adapter)
-+{
-+	struct pci_dev *pdev = adapter->pdev;
-+	int i, err = 0;
-+
-+	for (i = 0; i < adapter->num_rx_queues; i++) {
-+		err = igc_setup_rx_resources(adapter->rx_ring[i]);
-+		if (err) {
-+			dev_err(&pdev->dev,
-+				"Allocation for Rx Queue %u failed\n", i);
-+			for (i--; i >= 0; i--)
-+				igc_free_rx_resources(adapter->rx_ring[i]);
-+			break;
-+		}
-+	}
-+
-+	return err;
-+}
-+
-+static u32 igc_tx_wthresh(struct igc_adapter *adapter)
-+{
-+	return 16;
-+}
-+
-+/**
-+ *  igc_configure_rx_ring - Configure a receive ring after Reset
-+ *  @adapter: board private structure
-+ *  @ring: receive ring to be configured
-+ *
-+ *  Configure the Rx unit of the MAC after a reset.
-+ **/
-+void igc_configure_rx_ring(struct igc_adapter *adapter,
-+			   struct igc_ring *ring)
-+{
 +	struct e1000_hw *hw = &adapter->hw;
-+	union e1000_adv_rx_desc *rx_desc;
-+	u64 rdba = ring->dma;
-+	int reg_idx = ring->reg_idx;
-+	u32 srrctl = 0, rxdctl = 0;
 +
-+	/* disable the queue */
-+	wr32(E1000_RXDCTL(reg_idx), 0);
++	hw->mac.ops.reset_hw(hw);
 +
-+	/* Set DMA base address registers */
-+	wr32(E1000_RDBAL(reg_idx),
-+	     rdba & 0x00000000ffffffffULL);
-+	wr32(E1000_RDBAH(reg_idx), rdba >> 32);
-+	wr32(E1000_RDLEN(reg_idx),
-+	     ring->count * sizeof(union e1000_adv_rx_desc));
++	if (hw->mac.ops.init_hw(hw))
++		dev_err(&pdev->dev, "Hardware Error\n");
 +
-+	/* initialize head and tail */
-+	ring->tail = adapter->io_addr + E1000_RDT(reg_idx);
-+	wr32(E1000_RDH(reg_idx), 0);
-+	writel(0, ring->tail);
-+
-+	/* reset next-to- use/clean to place SW in sync with hardwdare */
-+	ring->next_to_clean = 0;
-+	ring->next_to_use = 0;
-+
-+	/* set descriptor configuration */
-+	srrctl = IGC_RX_HDR_LEN << E1000_SRRCTL_BSIZEHDRSIZE_SHIFT;
-+	if (ring_uses_large_buffer(ring))
-+		srrctl |= IGC_RXBUFFER_3072 >> E1000_SRRCTL_BSIZEPKT_SHIFT;
-+	else
-+		srrctl |= IGC_RXBUFFER_2048 >> E1000_SRRCTL_BSIZEPKT_SHIFT;
-+	srrctl |= E1000_SRRCTL_DESCTYPE_ADV_ONEBUF;
-+
-+	wr32(E1000_SRRCTL(reg_idx), srrctl);
-+
-+	rxdctl |= IGC_RX_PTHRESH;
-+	rxdctl |= IGC_RX_HTHRESH << 8;
-+	rxdctl |= IGC_RX_WTHRESH << 16;
-+
-+	/* initialize rx_buffer_info */
-+	memset(ring->rx_buffer_info, 0,
-+	       sizeof(struct igc_rx_buffer) * ring->count);
-+
-+	/* initialize Rx descriptor 0 */
-+	rx_desc = IGC_RX_DESC(ring, 0);
-+	rx_desc->wb.upper.length = 0;
-+
-+	/* enable receive descriptor fetching */
-+	rxdctl |= E1000_RXDCTL_QUEUE_ENABLE;
-+
-+	wr32(E1000_RXDCTL(reg_idx), rxdctl);
-+}
-+
-+/**
-+ *  igc_configure_rx - Configure receive Unit after Reset
-+ *  @adapter: board private structure
-+ *
-+ *  Configure the Rx unit of the MAC after a reset.
-+ **/
-+static void igc_configure_rx(struct igc_adapter *adapter)
-+{
-+	int i;
-+
-+	/* Setup the HW Rx Head and Tail Descriptor Pointers and
-+	 * the Base and Length of the Rx Descriptor Ring
-+	 */
-+	for (i = 0; i < adapter->num_rx_queues; i++)
-+		igc_configure_rx_ring(adapter, adapter->rx_ring[i]);
-+}
-+
-+/**
-+ *  igc_configure_tx_ring - Configure transmit ring after Reset
-+ *  @adapter: board private structure
-+ *  @ring: tx ring to configure
-+ *
-+ *  Configure a transmit ring after a reset.
-+ **/
-+void igc_configure_tx_ring(struct igc_adapter *adapter,
-+			   struct igc_ring *ring)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 txdctl = 0;
-+	u64 tdba = ring->dma;
-+	int reg_idx = ring->reg_idx;
-+
-+	/* disable the queue */
-+	wr32(E1000_TXDCTL(reg_idx), 0);
-+	wrfl();
-+	mdelay(10);
-+
-+	wr32(E1000_TDLEN(reg_idx),
-+	     ring->count * sizeof(union e1000_adv_tx_desc));
-+	wr32(E1000_TDBAL(reg_idx),
-+	     tdba & 0x00000000ffffffffULL);
-+	wr32(E1000_TDBAH(reg_idx), tdba >> 32);
-+
-+	ring->tail = adapter->io_addr + E1000_TDT(reg_idx);
-+	wr32(E1000_TDH(reg_idx), 0);
-+	writel(0, ring->tail);
-+
-+	txdctl |= IGC_TX_PTHRESH;
-+	txdctl |= IGC_TX_HTHRESH << 8;
-+	txdctl |= igc_tx_wthresh(adapter) << 16;
-+
-+	txdctl |= E1000_TXDCTL_QUEUE_ENABLE;
-+	wr32(E1000_TXDCTL(reg_idx), txdctl);
-+}
-+
-+/**
-+ *  igc_configure_tx - Configure transmit Unit after Reset
-+ *  @adapter: board private structure
-+ *
-+ *  Configure the Tx unit of the MAC after a reset.
-+ **/
-+static void igc_configure_tx(struct igc_adapter *adapter)
-+{
-+	int i;
-+
-+	for (i = 0; i < adapter->num_tx_queues; i++)
-+		igc_configure_tx_ring(adapter, adapter->tx_ring[i]);
-+}
-+
-+/**
-+ *  igc_setup_mrqc - configure the multiple receive queue control registers
-+ *  @adapter: Board private structure
-+ **/
-+static void igc_setup_mrqc(struct igc_adapter *adapter)
-+{
-+}
-+
-+/**
-+ *  igc_setup_rctl - configure the receive control registers
-+ *  @adapter: Board private structure
-+ **/
-+void igc_setup_rctl(struct igc_adapter *adapter)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 rctl;
-+
-+	rctl = rd32(E1000_RCTL);
-+
-+	rctl &= ~(3 << E1000_RCTL_MO_SHIFT);
-+	rctl &= ~(E1000_RCTL_LBM_TCVR | E1000_RCTL_LBM_MAC);
-+
-+	rctl |= E1000_RCTL_EN | E1000_RCTL_BAM | E1000_RCTL_RDMTS_HALF |
-+		(hw->mac.mc_filter_type << E1000_RCTL_MO_SHIFT);
-+
-+	/* enable stripping of CRC. It's unlikely this will break BMC
-+	 * redirection as it did with e1000. Newer features require
-+	 * that the HW strips the CRC.
-+	 */
-+	rctl |= E1000_RCTL_SECRC;
-+
-+	/* disable store bad packets and clear size bits. */
-+	rctl &= ~(E1000_RCTL_SBP | E1000_RCTL_SZ_256);
-+
-+	/* enable LPE to allow for reception of jumbo frames */
-+	rctl |= E1000_RCTL_LPE;
-+
-+	/* disable queue 0 to prevent tail write w/o re-config */
-+	wr32(E1000_RXDCTL(0), 0);
-+
-+	/* This is useful for sniffing bad packets. */
-+	if (adapter->netdev->features & NETIF_F_RXALL) {
-+		/* UPE and MPE will be handled by normal PROMISC logic
-+		 * in e1000e_set_rx_mode
-+		 */
-+		rctl |= (E1000_RCTL_SBP | /* Receive bad packets */
-+			 E1000_RCTL_BAM | /* RX All Bcast Pkts */
-+			 E1000_RCTL_PMCF); /* RX All MAC Ctrl Pkts */
-+
-+		rctl &= ~(E1000_RCTL_DPF | /* Allow filtered pause */
-+			  E1000_RCTL_CFIEN); /* Disable VLAN CFIEN Filter */
-+	}
-+
-+	wr32(E1000_RCTL, rctl);
-+}
-+
-+/**
-+ *  igc_setup_tctl - configure the transmit control registers
-+ *  @adapter: Board private structure
-+ **/
-+void igc_setup_tctl(struct igc_adapter *adapter)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 tctl;
-+
-+	/* disable queue 0 which icould be enabled by default */
-+	wr32(E1000_TXDCTL(0), 0);
-+
-+	/* Program the Transmit Control Register */
-+	tctl = rd32(E1000_TCTL);
-+	tctl &= ~E1000_TCTL_CT;
-+	tctl |= E1000_TCTL_PSP | E1000_TCTL_RTLC |
-+		(E1000_COLLISION_THRESHOLD << E1000_CT_SHIFT);
-+
-+	/* Enable transmits */
-+	tctl |= E1000_TCTL_EN;
-+
-+	wr32(E1000_TCTL, tctl);
-+}
-+
-+/**
-  *  igc_set_mac - Change the Ethernet Address of the NIC
-  *  @netdev: network interface device structure
-  *  @p: pointer to an address structure
-@@ -156,6 +686,121 @@ static netdev_tx_t igc_xmit_frame(struct sk_buff *skb,
- 	return NETDEV_TX_OK;
+ 	if (!netif_running(adapter->netdev))
+ 		igc_power_down_link(adapter);
  }
- 
-+static inline unsigned int igc_rx_offset(struct igc_ring *rx_ring)
-+{
-+	return ring_uses_build_skb(rx_ring) ? IGC_SKB_PAD : 0;
-+}
-+
-+static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
-+				  struct igc_rx_buffer *bi)
-+{
-+	struct page *page = bi->page;
-+	dma_addr_t dma;
-+
-+	/* since we are recycling buffers we should seldom need to alloc */
-+	if (likely(page))
-+		return true;
-+
-+	/* alloc new page for storage */
-+	page = dev_alloc_pages(igc_rx_pg_order(rx_ring));
-+	if (unlikely(!page)) {
-+		rx_ring->rx_stats.alloc_failed++;
-+		return false;
-+	}
-+
-+	/* map page for use */
-+	dma = dma_map_page_attrs(rx_ring->dev, page, 0,
-+				 igc_rx_pg_size(rx_ring),
-+				 DMA_FROM_DEVICE,
-+				 IGC_RX_DMA_ATTR);
-+
-+	/* if mapping failed free memory back to system since
-+	 * there isn't much point in holding memory we can't use
-+	 */
-+	if (dma_mapping_error(rx_ring->dev, dma)) {
-+		__free_page(page);
-+
-+		rx_ring->rx_stats.alloc_failed++;
-+		return false;
-+	}
-+
-+	bi->dma = dma;
-+	bi->page = page;
-+	bi->page_offset = igc_rx_offset(rx_ring);
-+	bi->pagecnt_bias = 1;
-+
-+	return true;
-+}
-+
-+/**
-+ *  igc_alloc_rx_buffers - Replace used receive buffers; packet split
-+ *  @adapter: address of board private structure
-+ **/
-+void igc_alloc_rx_buffers(struct igc_ring *rx_ring, u16 cleaned_count)
-+{
-+	union e1000_adv_rx_desc *rx_desc;
-+	struct igc_rx_buffer *bi;
-+	u16 i = rx_ring->next_to_use;
-+	u16 bufsz;
-+
-+	/* nothing to do */
-+	if (!cleaned_count)
-+		return;
-+
-+	rx_desc = IGC_RX_DESC(rx_ring, i);
-+	bi = &rx_ring->rx_buffer_info[i];
-+	i -= rx_ring->count;
-+
-+	bufsz = igc_rx_bufsz(rx_ring);
-+
-+	do {
-+		if (!igc_alloc_mapped_page(rx_ring, bi))
-+			break;
-+
-+		/* sync the buffer for use by the device */
-+		dma_sync_single_range_for_device(rx_ring->dev, bi->dma,
-+						 bi->page_offset, bufsz,
-+						 DMA_FROM_DEVICE);
-+
-+		/* Refresh the desc even if buffer_addrs didn't change
-+		 * because each write-back erases this info.
-+		 */
-+		rx_desc->read.pkt_addr = cpu_to_le64(bi->dma + bi->page_offset);
-+
-+		rx_desc++;
-+		bi++;
-+		i++;
-+		if (unlikely(!i)) {
-+			rx_desc = IGC_RX_DESC(rx_ring, 0);
-+			bi = rx_ring->rx_buffer_info;
-+			i -= rx_ring->count;
-+		}
-+
-+		/* clear the length for the next_to_use descriptor */
-+		rx_desc->wb.upper.length = 0;
-+
-+		cleaned_count--;
-+	} while (cleaned_count);
-+
-+	i += rx_ring->count;
-+
-+	if (rx_ring->next_to_use != i) {
-+		/* record the next descriptor to use */
-+		rx_ring->next_to_use = i;
-+
-+		/* update next to alloc since we have filled the ring */
-+		rx_ring->next_to_alloc = i;
-+
-+		/* Force memory writes to complete before letting h/w
-+		 * know there are new descriptors to fetch.  (Only
-+		 * applicable for weak-ordered memory model archs,
-+		 * such as IA-64).
-+		 */
-+		wmb();
-+		writel(i, rx_ring->tail);
-+	}
-+}
-+
- /**
-  *  igc_ioctl - I/O control method
-  *  @netdev: network interface device structure
-@@ -196,6 +841,12 @@ int igc_up(struct igc_adapter *adapter)
- 	rd32(E1000_ICR);
- 	igc_irq_enable(adapter);
- 
-+	netif_tx_start_all_queues(adapter->netdev);
-+
-+	/* start the watchdog. */
-+	hw->mac.get_link_status = 1;
-+	schedule_work(&adapter->watchdog_task);
-+
- 	return 0;
- }
- 
-@@ -295,7 +946,30 @@ static struct net_device_stats *igc_get_stats(struct net_device *netdev)
-  **/
- static void igc_configure(struct igc_adapter *adapter)
- {
-+	struct net_device *netdev = adapter->netdev;
-+	int i = 0;
-+
- 	igc_get_hw_control(adapter);
-+	igc_set_rx_mode(netdev);
-+
-+	igc_setup_tctl(adapter);
-+	igc_setup_mrqc(adapter);
-+	igc_setup_rctl(adapter);
-+
-+	igc_configure_tx(adapter);
-+	igc_configure_rx(adapter);
-+
-+	igc_rx_fifo_flush_base(&adapter->hw);
-+
-+	/* call igc_desc_unused which always leaves
-+	 * at least 1 descriptor unused to make sure
-+	 * next_to_use != next_to_clean
-+	 */
-+	for (i = 0; i < adapter->num_rx_queues; i++) {
-+		struct igc_ring *ring = adapter->rx_ring[i];
-+
-+		igc_alloc_rx_buffers(ring, igc_desc_unused(ring));
-+	}
+@@ -3621,6 +3629,19 @@ static void igc_nfc_filter_exit(struct igc_adapter *adapter)
  }
  
  /**
-@@ -343,6 +1017,19 @@ static void igc_set_default_mac_filter(struct igc_adapter *adapter)
- 	igc_rar_set_index(adapter, 0);
- }
- 
-+/**
-+ *  igc_set_rx_mode - Secondary Unicast, Multicast and Promiscuous mode set
-+ *  @netdev: network interface device structure
++ *  igc_get_hw_dev - return device
++ *  @hw: pointer to hardware structure
 + *
-+ *  The set_rx_mode entry point is called whenever the unicast or multicast
-+ *  address lists or the network interface flags are updated.  This routine is
-+ *  responsible for configuring the hardware for proper unicast, multicast,
-+ *  promiscuous mode, and all-multi behavior.
++ *  used by hardware layer to print debugging information
 + **/
-+static void igc_set_rx_mode(struct net_device *netdev)
++struct net_device *igc_get_hw_dev(struct e1000_hw *hw)
 +{
-+}
++	struct igc_adapter *adapter = hw->back;
 +
- static irqreturn_t igc_msix_other(int irq, void *data)
- {
- 	struct igc_adapter *adapter = data;
-@@ -781,6 +1468,83 @@ static void igc_update_itr(struct igc_q_vector *q_vector,
- 	ring_container->itr = itrval;
- }
- 
-+/**
-+ *  igc_intr_msi - Interrupt Handler
-+ *  @irq: interrupt number
-+ *  @data: pointer to a network interface device structure
-+ **/
-+static irqreturn_t igc_intr_msi(int irq, void *data)
-+{
-+	struct igc_adapter *adapter = data;
-+	struct igc_q_vector *q_vector = adapter->q_vector[0];
-+	struct e1000_hw *hw = &adapter->hw;
-+	/* read ICR disables interrupts using IAM */
-+	u32 icr = rd32(E1000_ICR);
-+
-+	igc_write_itr(q_vector);
-+
-+	if (icr & E1000_ICR_DRSTA)
-+		schedule_work(&adapter->reset_task);
-+
-+	if (icr & E1000_ICR_DOUTSYNC) {
-+		/* HW is reporting DMA is out of sync */
-+		adapter->stats.doosync++;
-+	}
-+
-+	if (icr & (E1000_ICR_RXSEQ | E1000_ICR_LSC)) {
-+		hw->mac.get_link_status = 1;
-+		if (!test_bit(__IGC_DOWN, &adapter->state))
-+			mod_timer(&adapter->watchdog_timer, jiffies + 1);
-+	}
-+
-+	 napi_schedule(&q_vector->napi);
-+
-+	return IRQ_HANDLED;
++	return adapter->netdev;
 +}
 +
 +/**
-+ *  igc_intr - Legacy Interrupt Handler
-+ *  @irq: interrupt number
-+ *  @data: pointer to a network interface device structure
-+ **/
-+static irqreturn_t igc_intr(int irq, void *data)
-+{
-+	struct igc_adapter *adapter = data;
-+	struct igc_q_vector *q_vector = adapter->q_vector[0];
-+	struct e1000_hw *hw = &adapter->hw;
-+	/* Interrupt Auto-Mask...upon reading ICR, interrupts are masked.  No
-+	 * need for the IMC write
-+	 */
-+	u32 icr = rd32(E1000_ICR);
-+
-+	/* IMS will not auto-mask if INT_ASSERTED is not set, and if it is
-+	 * not set, then the adapter didn't send an interrupt
-+	 */
-+	if (!(icr & E1000_ICR_INT_ASSERTED))
-+		return IRQ_NONE;
-+
-+	igc_write_itr(q_vector);
-+
-+	if (icr & E1000_ICR_DRSTA)
-+		schedule_work(&adapter->reset_task);
-+
-+	if (icr & E1000_ICR_DOUTSYNC) {
-+		/* HW is reporting DMA is out of sync */
-+		adapter->stats.doosync++;
-+	}
-+
-+	if (icr & (E1000_ICR_RXSEQ | E1000_ICR_LSC)) {
-+		hw->mac.get_link_status = 1;
-+		/* guard against interrupt when we're going down */
-+		if (!test_bit(__IGC_DOWN, &adapter->state))
-+			mod_timer(&adapter->watchdog_timer, jiffies + 1);
-+	}
-+
-+	napi_schedule(&q_vector->napi);
-+
-+	return IRQ_HANDLED;
-+}
-+
- static void igc_ring_irq_enable(struct igc_q_vector *q_vector)
- {
- 	struct igc_adapter *adapter = q_vector->adapter;
-@@ -1148,6 +1912,29 @@ static int igc_alloc_q_vectors(struct igc_adapter *adapter)
- }
- 
- /**
-+ *  igc_cache_ring_register - Descriptor ring to register mapping
-+ *  @adapter: board private structure to initialize
-+ *
-+ *  Once we know the feature-set enabled for the device, we'll cache
-+ *  the register offset the descriptor ring is assigned to.
-+ **/
-+static void igc_cache_ring_register(struct igc_adapter *adapter)
-+{
-+	int i = 0, j = 0;
-+
-+	switch (adapter->hw.mac.type) {
-+	case e1000_i225:
-+	/* Fall through */
-+	default:
-+		for (; i < adapter->num_rx_queues; i++)
-+			adapter->rx_ring[i]->reg_idx = i;
-+		for (; j < adapter->num_tx_queues; j++)
-+			adapter->tx_ring[j]->reg_idx = j;
-+		break;
-+	}
-+}
-+
-+/**
-  *  igc_init_interrupt_scheme - initialize interrupts, allocate queues/vectors
-  *  @adapter: Pointer to adapter structure
+  *  igc_init_module - Driver Registration Routine
   *
-@@ -1166,7 +1953,7 @@ static int igc_init_interrupt_scheme(struct igc_adapter *adapter, bool msix)
- 		goto err_alloc_q_vectors;
- 	}
- 
--	/* TODO complete igc_cache_ring_register */
-+	igc_cache_ring_register(adapter);
- 
- 	return 0;
- 
-@@ -1255,6 +2042,8 @@ static void igc_irq_enable(struct igc_adapter *adapter)
-  **/
- static int igc_request_irq(struct igc_adapter *adapter)
- {
-+	struct net_device *netdev = adapter->netdev;
-+	struct pci_dev *pdev = adapter->pdev;
- 	int err = 0;
- 
- 	if (adapter->flags & IGC_FLAG_HAS_MSIX) {
-@@ -1262,16 +2051,38 @@ static int igc_request_irq(struct igc_adapter *adapter)
- 		if (!err)
- 			goto request_done;
- 		/* fall back to MSI */
--		/* TODO complete free tx/rx resources */
-+		igc_free_all_tx_resources(adapter);
-+		igc_free_all_rx_resources(adapter);
- 
- 		igc_clear_interrupt_scheme(adapter);
- 		err = igc_init_interrupt_scheme(adapter, false);
- 		if (err)
- 			goto request_done;
--		/* TODO complete setup tx/rx resources */
-+		igc_setup_all_tx_resources(adapter);
-+		igc_setup_all_rx_resources(adapter);
- 		igc_configure(adapter);
- 	}
- 
-+	igc_assign_vector(adapter->q_vector[0], 0);
-+
-+	if (adapter->flags & IGC_FLAG_HAS_MSI) {
-+		err = request_irq(pdev->irq, &igc_intr_msi, 0,
-+				  netdev->name, adapter);
-+		if (!err)
-+			goto request_done;
-+
-+		/* fall back to legacy interrupts */
-+		igc_reset_interrupt_capability(adapter);
-+		adapter->flags &= ~IGC_FLAG_HAS_MSI;
-+	}
-+
-+	err = request_irq(pdev->irq, &igc_intr, IRQF_SHARED,
-+			  netdev->name, adapter);
-+
-+	if (err)
-+		dev_err(&pdev->dev, "Error %d getting interrupt\n",
-+			err);
-+
- request_done:
- 	return err;
- }
-@@ -1332,6 +2143,16 @@ static int __igc_open(struct net_device *netdev, bool resuming)
- 
- 	netif_carrier_off(netdev);
- 
-+	/* allocate transmit descriptors */
-+	err = igc_setup_all_tx_resources(adapter);
-+	if (err)
-+		goto err_setup_tx;
-+
-+	/* allocate receive descriptors */
-+	err = igc_setup_all_rx_resources(adapter);
-+	if (err)
-+		goto err_setup_rx;
-+
- 	igc_power_up_link(adapter);
- 
- 	igc_configure(adapter);
-@@ -1357,6 +2178,8 @@ static int __igc_open(struct net_device *netdev, bool resuming)
- 	rd32(E1000_ICR);
- 	igc_irq_enable(adapter);
- 
-+	netif_tx_start_all_queues(netdev);
-+
- 	/* start the watchdog. */
- 	hw->mac.get_link_status = 1;
- 	schedule_work(&adapter->watchdog_task);
-@@ -1368,7 +2191,11 @@ static int __igc_open(struct net_device *netdev, bool resuming)
- err_req_irq:
- 	igc_release_hw_control(adapter);
- 	igc_power_down_link(adapter);
--	/* TODO complete free_all_rx_resources */
-+	igc_free_all_rx_resources(adapter);
-+err_setup_rx:
-+	igc_free_all_tx_resources(adapter);
-+err_setup_tx:
-+	igc_reset(adapter);
- 
- 	return err;
- }
-@@ -1401,6 +2228,9 @@ static int __igc_close(struct net_device *netdev, bool suspending)
- 
- 	igc_free_irq(adapter);
- 
-+	igc_free_all_tx_resources(adapter);
-+	igc_free_all_rx_resources(adapter);
-+
- 	return 0;
- }
- 
-@@ -1415,6 +2245,7 @@ static const struct net_device_ops igc_netdev_ops = {
- 	.ndo_open               = igc_open,
- 	.ndo_stop               = igc_close,
- 	.ndo_start_xmit         = igc_xmit_frame,
-+	.ndo_set_rx_mode        = igc_set_rx_mode,
- 	.ndo_set_mac_address    = igc_set_mac,
- 	.ndo_change_mtu         = igc_change_mtu,
- 	.ndo_get_stats          = igc_get_stats,
+  *  igc_init_module is the first routine called when the driver is
 -- 
 2.11.0
 
