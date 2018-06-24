@@ -1,10 +1,9 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sun, 24 Jun 2018 23:52:36 +0800
-Subject: [Intel-wired-lan] [PATCH v3 07/11] igc: Add HW initialization
- code
-In-Reply-To: <20180624084515.10242-1-sasha.neftin@intel.com>
-References: <20180624084515.10242-1-sasha.neftin@intel.com>
-Message-ID: <201806242321.uvbD17t1%fengguang.wu@intel.com>
+Date: Mon, 25 Jun 2018 00:39:27 +0800
+Subject: [Intel-wired-lan] [PATCH v3 08/11] igc: Add NVM support
+In-Reply-To: <20180624084518.10286-1-sasha.neftin@intel.com>
+References: <20180624084518.10286-1-sasha.neftin@intel.com>
+Message-ID: <201806250008.RNycmphF%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -29,80 +28,57 @@ reproduce:
 
 sparse warnings: (new ones prefixed by >>)
 
->> drivers/net/ethernet/intel/igc/e1000_mac.c:228:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_mac.c:228:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_mac.c:228:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_mac.c:229:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_mac.c:229:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_mac.c:229:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_mac.c:82:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_mac.c:82:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_mac.c:82:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_mac.c:173:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_mac.c:173:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_mac.c:173:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_mac.c:174:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_mac.c:174:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_mac.c:174:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_mac.c:175:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_mac.c:175:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_mac.c:175:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_mac.c:177:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_mac.c:177:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_mac.c:177:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_mac.c:370:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_mac.c:370:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_mac.c:370:9:    got unsigned char [usertype] *__val
---
->> drivers/net/ethernet/intel/igc/e1000_i225.c:56:17: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_i225.c:56:17:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_i225.c:56:17:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_i225.c:114:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_i225.c:114:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_i225.c:114:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/e1000_i225.c:138:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/e1000_i225.c:138:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/e1000_i225.c:138:9:    got unsigned char [usertype] *__val
+>> drivers/net/ethernet/intel/igc/e1000_nvm.c:52:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:52:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:52:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:65:17: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:65:17:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:65:17:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:85:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:85:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:85:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:117:17: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:117:17:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/e1000_nvm.c:117:17:    got unsigned char [usertype] *__val
 
-vim +228 drivers/net/ethernet/intel/igc/e1000_mac.c
+vim +52 drivers/net/ethernet/intel/igc/e1000_nvm.c
 
-   197	
-   198	/**
-   199	 *  igc_set_fc_watermarks - Set flow control high/low watermarks
-   200	 *  @hw: pointer to the HW structure
-   201	 *
-   202	 *  Sets the flow control high/low threshold (watermark) registers.  If
-   203	 *  flow control XON frame transmission is enabled, then set XON frame
-   204	 *  tansmission as well.
-   205	 **/
-   206	static s32 igc_set_fc_watermarks(struct e1000_hw *hw)
-   207	{
-   208		s32 ret_val = 0;
-   209		u32 fcrtl = 0, fcrth = 0;
-   210	
-   211		/* Set the flow control receive threshold registers.  Normally,
-   212		 * these registers will be set to a default threshold that may be
-   213		 * adjusted later by the driver's runtime code.  However, if the
-   214		 * ability to transmit pause frames is not enabled, then these
-   215		 * registers will be set to 0.
-   216		 */
-   217		if (hw->fc.current_mode & e1000_fc_tx_pause) {
-   218			/* We need to set up the Receive Threshold high and low water
-   219			 * marks as well as (optionally) enabling the transmission of
-   220			 * XON frames.
-   221			 */
-   222			fcrtl = hw->fc.low_water;
-   223			if (hw->fc.send_xon)
-   224				fcrtl |= E1000_FCRTL_XONE;
-   225	
-   226			fcrth = hw->fc.high_water;
-   227		}
- > 228		wr32(E1000_FCRTL, fcrtl);
-   229		wr32(E1000_FCRTH, fcrth);
-   230	
-   231		return ret_val;
-   232	}
-   233	
+    37	
+    38	/**
+    39	 *  igc_acquire_nvm - Generic request for access to EEPROM
+    40	 *  @hw: pointer to the HW structure
+    41	 *
+    42	 *  Set the EEPROM access request bit and wait for EEPROM access grant bit.
+    43	 *  Return successful if access grant bit set, else clear the request for
+    44	 *  EEPROM access and return -E1000_ERR_NVM (-1).
+    45	 **/
+    46	s32 igc_acquire_nvm(struct e1000_hw *hw)
+    47	{
+    48		u32 eecd = rd32(E1000_EECD);
+    49		s32 timeout = E1000_NVM_GRANT_ATTEMPTS;
+    50		s32 ret_val = 0;
+    51	
+  > 52		wr32(E1000_EECD, eecd | E1000_EECD_REQ);
+    53		eecd = rd32(E1000_EECD);
+    54	
+    55		while (timeout) {
+    56			if (eecd & E1000_EECD_GNT)
+    57				break;
+    58			udelay(5);
+    59			eecd = rd32(E1000_EECD);
+    60			timeout--;
+    61		}
+    62	
+    63		if (!timeout) {
+    64			eecd &= ~E1000_EECD_REQ;
+    65			wr32(E1000_EECD, eecd);
+    66			hw_dbg("Could not acquire NVM grant\n");
+    67			ret_val = -E1000_ERR_NVM;
+    68		}
+    69	
+    70		return ret_val;
+    71	}
+    72	
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
