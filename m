@@ -1,100 +1,91 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue, 26 Jun 2018 18:37:18 +0200
-Subject: [Intel-wired-lan] [PATCH 2/3] i40e: split XDP_TX tail and
- XDP_REDIRECT map flushing
-In-Reply-To: <153002759360.15389.18278323388927454181.stgit@firesoul>
-References: <153002741940.15389.10466368482771753300.stgit@firesoul>
- <153002759360.15389.18278323388927454181.stgit@firesoul>
-Message-ID: <CAJ+HfNjtWpXY=DeQdmgB8UMKvz1iwHB_s__a6fnz1LZsPCiTcA@mail.gmail.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 26 Jun 2018 13:14:54 -0700
+Subject: [Intel-wired-lan] [PATCH] igb: Remove superfluous reset to PHY
+ and page 0 selection
+In-Reply-To: <7d2fa77261c64a218250d6c0f6dad6aa@infodas.de>
+References: <7d2fa77261c64a218250d6c0f6dad6aa@infodas.de>
+Message-ID: <CAKgT0UduLXDjpUEbnbb=EREavU1ct-7dckT4Fc22MJPsQbM_wQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Den tis 26 juni 2018 kl 18:08 skrev Jesper Dangaard Brouer <brouer@redhat.com>:
+On Tue, Jun 26, 2018 at 3:12 AM, Gr?nke, Christian <C.Groenke@infodas.de> wrote:
+> This patch reverts two previous applied patches to fix an issue
+> that appeared when using SGMII based SFP modules. In the current
+> state the driver will try to reset the PHY before obtaining the
+> phy_addr of the SGMII attached PHY. That leads to an error in
+> e1000_write_phy_reg_sgmii_82575. Causing the initialization to
+> fail:
 >
-> The driver was combining the XDP_TX tail flush and XDP_REDIRECT
-> map flushing (xdp_do_flush_map).  This is suboptimal, these two
-> flush operations should be kept separate.
+>     igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
+>     igb: Copyright (c) 2007-2014 Intel Corporation.
+>     igb: probe of ????:??:??.? failed with error -3
 >
-> It looks like the mistake was copy-pasted from ixgbe.
+> The patches being reverted are:
 >
-> Fixes: d9314c474d4f ("i40e: add support for XDP_REDIRECT")
-> Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
+>     commit 182785335447957409282ca745aa5bc3968facee
+>     Author: Aaron Sierra <asierra@xes-inc.com>
+>     Date:   Tue Nov 29 10:03:56 2016 -0600
+>
+>         igb: reset the PHY before reading the PHY ID
+>
+>     commit 440aeca4b9858248d8f16d724d9fa87a4f65fa33
+>     Author: Matwey V Kornilov <matwey@sai.msu.ru>
+>     Date:   Thu Nov 24 13:32:48 2016 +0300
+>
+>          igb: Explicitly select page 0 at initialization
+>
+> The first reverted patch directly causes the problem mentioned above.
+> In case of SGMII the phy_addr is not known at this point and will
+> only be obtained by 'igb_get_phy_id_82575' further down in the code.
+> The second removed patch selects forces selection of page 0 in the
+> PHY. Something that the reset tries to address as well.
+>
+> As pointed out by Alexander Duzck, the patch below fixes the same
+> issue but in the proper location:
+>
+>     commit 4e684f59d760a2c7c716bb60190783546e2d08a1
+>     Author: Chris J Arges <christopherarges@gmail.com>
+>     Date:   Wed Nov 2 09:13:42 2016 -0500
+>
+>         igb: Workaround for igb i210 firmware issue
+>
+> Reverts: 440aeca4b9858248d8f16d724d9fa87a4f65fa33.
+> Reverts: 182785335447957409282ca745aa5bc3968facee.
+>
+> Signed-off-by: Christian Gr?nke <c.groenke@infodas.de>
+
+Looks good to me.
+
+Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
+
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c |   24 +++++++++++++++---------
->  1 file changed, 15 insertions(+), 9 deletions(-)
+>  e1000_82575.c |   12 ------------
+>  1 file changed, 12 deletions(-)
 >
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> index 8ffb7454e67c..c1c027743159 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> @@ -2200,9 +2200,10 @@ static bool i40e_is_non_eop(struct i40e_ring *rx_ring,
->         return true;
->  }
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+> index b13b42e..a795c07 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
+> +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+> @@ -225,19 +225,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+>         hw->bus.func = (rd32(E1000_STATUS) & E1000_STATUS_FUNC_MASK) >>
+>                         E1000_STATUS_FUNC_SHIFT;
 >
-> -#define I40E_XDP_PASS 0
-> -#define I40E_XDP_CONSUMED 1
-> -#define I40E_XDP_TX 2
-> +#define I40E_XDP_PASS          0
-> +#define I40E_XDP_CONSUMED      BIT(0)
-> +#define I40E_XDP_TX            BIT(1)
-> +#define I40E_XDP_REDIR         BIT(2)
->
->  static int i40e_xmit_xdp_ring(struct xdp_frame *xdpf,
->                               struct i40e_ring *xdp_ring);
-> @@ -2249,7 +2250,7 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
->                 break;
->         case XDP_REDIRECT:
->                 err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
-> -               result = !err ? I40E_XDP_TX : I40E_XDP_CONSUMED;
-> +               result = !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
->                 break;
->         default:
->                 bpf_warn_invalid_xdp_action(act);
-> @@ -2312,7 +2313,8 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
->         unsigned int total_rx_bytes = 0, total_rx_packets = 0;
->         struct sk_buff *skb = rx_ring->skb;
->         u16 cleaned_count = I40E_DESC_UNUSED(rx_ring);
-> -       bool failure = false, xdp_xmit = false;
-> +       unsigned int xdp_xmit = 0;
-> +       bool failure = false;
->         struct xdp_buff xdp;
->
->         xdp.rxq = &rx_ring->xdp_rxq;
-> @@ -2373,8 +2375,10 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
->                 }
->
->                 if (IS_ERR(skb)) {
-> -                       if (PTR_ERR(skb) == -I40E_XDP_TX) {
-> -                               xdp_xmit = true;
-> +                       unsigned int xdp_res = -PTR_ERR(skb);
-> +
-> +                       if (xdp_res & (I40E_XDP_TX | I40E_XDP_REDIR)) {
-> +                               xdp_xmit |= xdp_res;
->                                 i40e_rx_buffer_flip(rx_ring, rx_buffer, size);
->                         } else {
->                                 rx_buffer->pagecnt_bias++;
-> @@ -2428,12 +2432,14 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
->                 total_rx_packets++;
->         }
->
-> -       if (xdp_xmit) {
-> +       if (xdp_xmit & I40E_XDP_REDIR)
-> +               xdp_do_flush_map();
-> +
-> +       if (xdp_xmit & I40E_XDP_TX) {
->                 struct i40e_ring *xdp_ring =
->                         rx_ring->vsi->xdp_rings[rx_ring->queue_index];
->
->                 i40e_xdp_ring_update_tail(xdp_ring);
-> -               xdp_do_flush_map();
->         }
->
->         rx_ring->skb = skb;
->
-
-Nice! Added intel-wired-lan to Cc.
-
-Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
+> -       /* Make sure the PHY is in a good state. Several people have reported
+> -        * firmware leaving the PHY's page select register set to something
+> -        * other than the default of zero, which causes the PHY ID read to
+> -        * access something other than the intended register.
+> -        */
+> -       ret_val = hw->phy.ops.reset(hw);
+> -       if (ret_val) {
+> -               hw_dbg("Error resetting the PHY.\n");
+> -               goto out;
+> -       }
+> -
+>         /* Set phy->phy_addr and phy->id. */
+> -       igb_write_phy_reg_82580(hw, I347AT4_PAGE_SELECT, 0);
+>         ret_val = igb_get_phy_id_82575(hw);
+>         if (ret_val)
+>                 return ret_val;
