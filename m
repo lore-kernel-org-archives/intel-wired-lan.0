@@ -1,97 +1,175 @@
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Date: Tue, 26 Jun 2018 06:49:02 -0300
-Subject: [Intel-wired-lan] [PATCH 0/9] Fix references for some missing
- documentation files
-Message-ID: <cover.1530005114.git.mchehab+samsung@kernel.org>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 27 Jun 2018 23:05:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ b2a82de4712c7cb9d32f782b78c5dd336693a5d2
+Message-ID: <5b33a7d0.n4POFW8RBQclICNI%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Having nothing to do while waiting for my plane to arrive while
-returning back from Japan, I ended by writing a small series of 
-patches meant to reduce the number of bad Documentation/* 
-links that are detected by:
-	./scripts/documentation-file-ref-check
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: b2a82de4712c7cb9d32f782b78c5dd336693a5d2  ixgbe: Be more careful when modifying MAC filters
 
-I ended by rebasing this patch series against linux-next, because
-of those two patches:
-	3b0c3ebe2a42 Documentation: e100: Fix docs build error
-	805f16a5f12f Documentation: e1000: Fix docs build error
+elapsed time: 64m
 
-They basically fix documentation builds with upstream Kernel. Both
-got merged on -rc2.
+configs tested: 150
 
-The first two patches in this series makes the script to ignore some
-false positives.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Patches 3 to 6 corrects the location of some documentation files.
+x86_64                 randconfig-a0-06271658
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                     davinci_all_defconfig
+sh                          rsk7201_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201825
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201825
+i386                     randconfig-i1-201825
+arm                      pxa255-idp_defconfig
+sh                          lboxre2_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x015-201825
+x86_64                 randconfig-x011-201825
+x86_64                 randconfig-x018-201825
+x86_64                 randconfig-x010-201825
+x86_64                 randconfig-x019-201825
+x86_64                 randconfig-x014-201825
+x86_64                 randconfig-x016-201825
+x86_64                 randconfig-x017-201825
+x86_64                 randconfig-x013-201825
+x86_64                 randconfig-x012-201825
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201825
+i386                     randconfig-a1-201825
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                        clps711x_defconfig
+m68k                        m5307c3_defconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                     tqm8548_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201825
+i386                     randconfig-s1-201825
+x86_64                 randconfig-s3-06272037
+x86_64                 randconfig-s4-06272037
+x86_64                 randconfig-s5-06272037
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201825
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-u0-06272125
+i386                               tinyconfig
+arm                        spear6xx_defconfig
+sh                         ap325rxa_defconfig
+i386                   randconfig-x017-201825
+i386                   randconfig-x014-201825
+i386                   randconfig-x016-201825
+i386                   randconfig-x012-201825
+i386                   randconfig-x018-201825
+i386                   randconfig-x011-201825
+i386                   randconfig-x013-201825
+i386                   randconfig-x019-201825
+i386                   randconfig-x015-201825
+i386                   randconfig-x010-201825
+sh                           se7780_defconfig
+sh                   sh7770_generic_defconfig
+x86_64                randconfig-ne0-06271705
+x86_64                              fedora-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-x000-201825
+i386                   randconfig-x001-201825
+i386                   randconfig-x002-201825
+i386                   randconfig-x003-201825
+i386                   randconfig-x004-201825
+i386                   randconfig-x005-201825
+i386                   randconfig-x006-201825
+i386                   randconfig-x007-201825
+i386                   randconfig-x008-201825
+i386                   randconfig-x009-201825
+x86_64                           allmodconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x078-201825
+i386                   randconfig-x079-201825
+i386                   randconfig-x075-201825
+i386                   randconfig-x076-201825
+i386                   randconfig-x074-201825
+i386                   randconfig-x070-201825
+i386                   randconfig-x073-201825
+i386                   randconfig-x071-201825
+i386                   randconfig-x077-201825
+i386                   randconfig-x072-201825
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x003-201825
+x86_64                 randconfig-x007-201825
+x86_64                 randconfig-x005-201825
+x86_64                 randconfig-x004-201825
+x86_64                 randconfig-x000-201825
+x86_64                 randconfig-x001-201825
+x86_64                 randconfig-x008-201825
+x86_64                 randconfig-x006-201825
+x86_64                 randconfig-x002-201825
+x86_64                 randconfig-x009-201825
 
-Patches 7 and 8 were actually two patches meant to fix the build
-error. I ended by rebasing them over linux-next, as they fix some
-troubles with the ReST syntax with causes warnings.
-
-Patch 9 converts Documentation/trace/histogram.txt to ReST
-syntax. It also had to be rebased against linux-next, due to some minor
-conflicts with:
-    064f35a95224 ("tracing: Fix some errors in histogram documentation")
-
-After this series, the script still produces 16 warnings:
-
-Documentation/devicetree/bindings/input/mtk-pmic-keys.txt: Documentation/devicetree/bindings/input/keys.txt
-Documentation/devicetree/bindings/input/mtk-pmic-keys.txt: Documentation/devicetree/bindings/input/keys.txt
-Documentation/devicetree/bindings/regulator/rohm,bd71837-regulator.txt: Documentation/devicetree/bindings/mfd/rohm,bd71837-pmic.txt
-Documentation/devicetree/dynamic-resolution-notes.txt: Documentation/devicetree/dt-object-internal.txt
-Documentation/scsi/scsi_mid_low_api.txt: Documentation/Configure.help
-Documentation/translations/zh_CN/HOWTO: Documentation/DocBook/
-Documentation/translations/zh_CN/basic_profiling.txt: Documentation/basic_profiling
-Documentation/translations/zh_CN/basic_profiling.txt: Documentation/basic_profiling
-MAINTAINERS: Documentation/fpga/
-MAINTAINERS: Documentation/devicetree/bindings/rng/samsung,exynos5250-trng.txt
-arch/powerpc/Kconfig: Documentation/vm/protection-keys.rst
-drivers/isdn/mISDN/dsp_core.c: Documentation/isdn/mISDN.cert
-drivers/scsi/Kconfig: file:Documentation/scsi/tmscsim.txt
-drivers/vhost/vhost.c: Documentation/virtual/lguest/lguest.c
-include/linux/fs_context.h: Documentation/filesystems/mounting.txt
-include/linux/lsm_hooks.h: Documentation/filesystems/mounting.txt
-
-IMHO, the above should be fixed by the corresponding maintainers.
-
-The ones that scarry me most are the DT binding documentation, as
-the binding documentation for some stuff are likely broken.
-
-Btw, two of the above are new on linux-next (include/linux/fs_context.h
-and include/linux/lsm_hooks.h) . That makes me wander that we should
-likely add some logic (or run the detect script) at checkpatch.pl or make
-it to call ./scripts/documentation-file-ref-check.
-
-Mauro Carvalho Chehab (9):
-  scripts/documentation-file-ref-check: remove some false positives
-  scripts/documentation-file-ref-check: ignore sched-pelt false positive
-  docs: zh_CN: fix location of oops-tracing.txt
-  devicectree: bindings: fix location of leds common file
-  MAINTAINERS: fix location of ina2xx.txt device tree file
-  gpio.h: fix location of gpio legacy documentation
-  networking: e100.rst: Get rid of Sphinx warnings
-  networking: e1000.rst: Get rid of Sphinx warnings
-  docs: histogram.txt: convert it to ReST file format
-
- .../devicetree/bindings/leds/common.txt       |    2 +-
- Documentation/networking/e100.rst             |   27 +-
- Documentation/networking/e1000.rst            |  187 ++-
- Documentation/trace/events.rst                |    2 +-
- .../trace/{histogram.txt => histogram.rst}    | 1242 +++++++++--------
- Documentation/trace/index.rst                 |    1 +
- .../translations/zh_CN/oops-tracing.txt       |    4 +-
- MAINTAINERS                                   |    2 +-
- include/linux/gpio.h                          |    2 +-
- kernel/trace/Kconfig                          |    2 +-
- scripts/documentation-file-ref-check          |    6 +
- 11 files changed, 767 insertions(+), 710 deletions(-)
- rename Documentation/trace/{histogram.txt => histogram.rst} (73%)
-
--- 
-2.17.1
-
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
