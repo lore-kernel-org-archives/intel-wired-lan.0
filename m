@@ -1,10 +1,9 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Thu, 28 Jun 2018 15:25:47 -0700
-Subject: [Intel-wired-lan] [PATCH v3 07/11] igc: Add HW initialization
- code
-In-Reply-To: <20180624084515.10242-1-sasha.neftin@intel.com>
-References: <20180624084515.10242-1-sasha.neftin@intel.com>
-Message-ID: <cf82084e-aa48-8d00-5ae7-ae53b95f6bb2@oracle.com>
+Date: Thu, 28 Jun 2018 16:35:35 -0700
+Subject: [Intel-wired-lan] [PATCH v3 08/11] igc: Add NVM support
+In-Reply-To: <20180624084518.10286-1-sasha.neftin@intel.com>
+References: <20180624084518.10286-1-sasha.neftin@intel.com>
+Message-ID: <f20934e8-d2e6-e0c1-c89a-9c2e621d5761@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,965 +11,1213 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 6/24/2018 1:45 AM, Sasha Neftin wrote:
-> Add code for hw initialization and reset.
-> Add code for semaphore handling.
+> Add code for NVM support and get MAC address, complete probe
+> method.
 > 
 > Sasha Neftin (v2):
-> fixed code indentation
-> refactor of igc_desc_unused method
+> minor cosmetic changes
 > 
-> Sasha Neftin (v3):
-> clean code and remove unused methods
+> Alexander Duyck (v3):
+> NVM access code optimization
 > 
 > Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/Makefile        |   3 +-
->   drivers/net/ethernet/intel/igc/e1000_base.c    | 198 +++++++++++++++
->   drivers/net/ethernet/intel/igc/e1000_base.h    |   2 +
->   drivers/net/ethernet/intel/igc/e1000_defines.h |  39 +++
->   drivers/net/ethernet/intel/igc/e1000_hw.h      |  85 +++++++
->   drivers/net/ethernet/intel/igc/e1000_i225.c    | 141 +++++++++++
->   drivers/net/ethernet/intel/igc/e1000_mac.c     | 320 +++++++++++++++++++++++++
+>   drivers/net/ethernet/intel/igc/Makefile        |   2 +-
+>   drivers/net/ethernet/intel/igc/e1000_base.c    | 118 ++++++++-
+>   drivers/net/ethernet/intel/igc/e1000_defines.h |  81 ++++++
+>   drivers/net/ethernet/intel/igc/e1000_hw.h      |   5 +-
+>   drivers/net/ethernet/intel/igc/e1000_i225.c    | 351 +++++++++++++++++++++++++
+>   drivers/net/ethernet/intel/igc/e1000_i225.h    |   3 +
+>   drivers/net/ethernet/intel/igc/e1000_mac.c     | 173 ++++++++++++
 >   drivers/net/ethernet/intel/igc/e1000_mac.h     |  13 +-
->   drivers/net/ethernet/intel/igc/e1000_regs.h    |  27 +++
->   drivers/net/ethernet/intel/igc/igc_main.c      |  21 ++
->   10 files changed, 846 insertions(+), 3 deletions(-)
->   create mode 100644 drivers/net/ethernet/intel/igc/e1000_i225.c
+>   drivers/net/ethernet/intel/igc/e1000_nvm.c     | 219 +++++++++++++++
+>   drivers/net/ethernet/intel/igc/e1000_nvm.h     |  16 ++
+>   drivers/net/ethernet/intel/igc/e1000_regs.h    |   3 +
+>   drivers/net/ethernet/intel/igc/igc.h           |   6 +
+>   drivers/net/ethernet/intel/igc/igc_main.c      |  20 +-
+>   13 files changed, 1000 insertions(+), 10 deletions(-)
+>   create mode 100644 drivers/net/ethernet/intel/igc/e1000_nvm.c
+>   create mode 100644 drivers/net/ethernet/intel/igc/e1000_nvm.h
 > 
 > diff --git a/drivers/net/ethernet/intel/igc/Makefile b/drivers/net/ethernet/intel/igc/Makefile
-> index 6a757ac8492d..cb260bedfa37 100644
+> index cb260bedfa37..5147bca1a900 100644
 > --- a/drivers/net/ethernet/intel/igc/Makefile
 > +++ b/drivers/net/ethernet/intel/igc/Makefile
-> @@ -7,5 +7,4 @@
+> @@ -7,4 +7,4 @@
 >   
 >   obj-$(CONFIG_IGC) += igc.o
 >   
-> -igc-objs := igc_main.o e1000_mac.o \
-> -e1000_base.o
-> +igc-objs := igc_main.o e1000_mac.o e1000_i225.o e1000_base.o
+> -igc-objs := igc_main.o e1000_mac.o e1000_i225.o e1000_base.o
+> +igc-objs := igc_main.o e1000_mac.o e1000_i225.o e1000_base.o e1000_nvm.o
 > diff --git a/drivers/net/ethernet/intel/igc/e1000_base.c b/drivers/net/ethernet/intel/igc/e1000_base.c
-> index 265ec98000e7..395d7ce70bb4 100644
+> index 395d7ce70bb4..6db31349daa4 100644
 > --- a/drivers/net/ethernet/intel/igc/e1000_base.c
 > +++ b/drivers/net/ethernet/intel/igc/e1000_base.c
-> @@ -5,6 +5,92 @@
+> @@ -11,9 +11,49 @@
 >   
->   #include "e1000_hw.h"
->   #include "e1000_i225.h"
-> +#include "e1000_mac.h"
-> +#include "e1000_base.h"
-> +#include "igc.h"
-> +
-> +/* forward declaration */
-> +static s32 igc_get_invariants_base(struct e1000_hw *);
-> +static s32 igc_init_hw_base(struct e1000_hw *);
-> +static s32 igc_reset_hw_base(struct e1000_hw *);
-> +static s32 igc_set_pcie_completion_timeout(struct e1000_hw *hw);
+>   /* forward declaration */
+>   static s32 igc_get_invariants_base(struct e1000_hw *);
+> +static s32 igc_check_for_link_base(struct e1000_hw *);
+>   static s32 igc_init_hw_base(struct e1000_hw *);
+>   static s32 igc_reset_hw_base(struct e1000_hw *);
+>   static s32 igc_set_pcie_completion_timeout(struct e1000_hw *hw);
+> +static s32 igc_read_mac_addr_base(struct e1000_hw *hw);
 > +
 > +/**
-> + *  igc_init_mac_params_base - Init MAC func ptrs.
+> + *  igc_init_nvm_params_base - Init NVM func ptrs.
 > + *  @hw: pointer to the HW structure
 > + **/
-> +static s32 igc_init_mac_params_base(struct e1000_hw *hw)
+> +static s32 igc_init_nvm_params_base(struct e1000_hw *hw)
 > +{
-> +	struct e1000_mac_info *mac = &hw->mac;
+> +	struct e1000_nvm_info *nvm = &hw->nvm;
+> +	u32 eecd = rd32(E1000_EECD);
+> +	u16 size;
 > +
-> +	/* Set mta register count */
-> +	mac->mta_reg_count = 128;
-> +	mac->rar_entry_count = E1000_RAR_ENTRIES;
+> +	size = (u16)((eecd & E1000_EECD_SIZE_EX_MASK) >>
+> +		     E1000_EECD_SIZE_EX_SHIFT);
 > +
-> +	/* reset */
-> +	mac->ops.reset_hw = igc_reset_hw_base;
+> +	/* Added to a constant, "size" becomes the left-shift value
+> +	 * for setting word_size.
+> +	 */
+> +	size += NVM_WORD_SIZE_BASE_SHIFT;
 > +
-> +	mac->ops.acquire_swfw_sync = igc_acquire_swfw_sync_i225;
-> +	mac->ops.release_swfw_sync = igc_release_swfw_sync_i225;
+> +	/* Just in case size is out of range, cap it to the largest
+> +	 * EEPROM size supported
+> +	 */
+> +	if (size > 15)
+> +		size = 15;
+> +
+> +	nvm->word_size = BIT(size);
+> +	nvm->opcode_bits = 8;
+> +	nvm->delay_usec = 1;
+> +
+> +	nvm->page_size = eecd & E1000_EECD_ADDR_BITS ? 32 : 8;
+> +	nvm->address_bits = eecd & E1000_EECD_ADDR_BITS ?
+> +			    16 : 8;
+> +
+> +	if (nvm->word_size == BIT(15))
+> +		nvm->page_size = 128;
 > +
 > +	return 0;
 > +}
-> +
-> +static s32 igc_get_invariants_base(struct e1000_hw *hw)
-> +{
-> +	s32 ret_val = 0;
-> +	u32 ctrl_ext = 0;
-> +	u32 link_mode = 0;
-> +
-> +	ctrl_ext = rd32(E1000_CTRL_EXT);
-> +	link_mode = ctrl_ext & E1000_CTRL_EXT_LINK_MODE_MASK;
-> +
-> +	/* mac initialization and operations */
-> +	ret_val = igc_init_mac_params_base(hw);
-> +	if (ret_val)
-> +		goto out;
-> +
-> +out:
-> +	return ret_val;
-> +}
-> +
-> +/**
-> + *  igc_init_hw_base - Initialize hardware
-> + *  @hw: pointer to the HW structure
-> + *
-> + *  This inits the hardware readying it for operation.
-> + **/
-> +static s32 igc_init_hw_base(struct e1000_hw *hw)
-> +{
-> +	struct e1000_mac_info *mac = &hw->mac;
-> +	s32 ret_val = 0;
-> +	u16 i, rar_count = mac->rar_entry_count;
-> +
-> +	/* Setup the receive address */
-> +	igc_init_rx_addrs(hw, rar_count);
-> +
-> +	/* Zero out the Multicast HASH table */
-> +	hw_dbg("Zeroing the MTA\n");
-> +	for (i = 0; i < mac->mta_reg_count; i++)
-> +		array_wr32(E1000_MTA, i, 0);
-> +
-> +	/* Zero out the Unicast HASH table */
-> +	hw_dbg("Zeroing the UTA\n");
-> +	for (i = 0; i < mac->uta_reg_count; i++)
-> +		array_wr32(E1000_UTA, i, 0);
-> +
-> +	/* Setup link and flow control */
-> +	ret_val = igc_setup_link(hw);
-> +
-> +	/* Clear all of the statistics registers (clear on read).  It is
-> +	 * important that we do this after we have tried to establish link
-> +	 * because the symbol error count will increment wildly if there
-> +	 * is no link.
-> +	 */
-> +	igc_clear_hw_cntrs_base(hw);
-> +
-> +	return ret_val;
-> +}
 >   
 >   /**
->    *  igc_rx_fifo_flush_base - Clean rx fifo after Rx enable
-> @@ -81,3 +167,115 @@ void igc_rx_fifo_flush_base(struct e1000_hw *hw)
->   	rd32(E1000_RNBC);
->   	rd32(E1000_MPC);
+>    *  igc_init_mac_params_base - Init MAC func ptrs.
+> @@ -22,6 +62,7 @@ static s32 igc_set_pcie_completion_timeout(struct e1000_hw *hw);
+>   static s32 igc_init_mac_params_base(struct e1000_hw *hw)
+>   {
+>   	struct e1000_mac_info *mac = &hw->mac;
+> +	struct e1000_dev_spec_base *dev_spec = &hw->dev_spec._base;
+
+reverse xmas tree
+
+>   
+>   	/* Set mta register count */
+>   	mac->mta_reg_count = 128;
+> @@ -33,6 +74,10 @@ static s32 igc_init_mac_params_base(struct e1000_hw *hw)
+>   	mac->ops.acquire_swfw_sync = igc_acquire_swfw_sync_i225;
+>   	mac->ops.release_swfw_sync = igc_release_swfw_sync_i225;
+>   
+> +	/* Allow a single clear of the SW semaphore on I225 */
+> +	if (mac->type == e1000_i225)
+> +		dev_spec->clear_semaphore_once = true;
+> +
+>   	return 0;
 >   }
+>   
+> @@ -50,11 +95,60 @@ static s32 igc_get_invariants_base(struct e1000_hw *hw)
+>   	if (ret_val)
+>   		goto out;
+>   
+> +	/* NVM initialization */
+> +	ret_val = igc_init_nvm_params_base(hw);
+> +	switch (hw->mac.type) {
+> +	case e1000_i225:
+> +		ret_val = igc_init_nvm_params_i225(hw);
+> +		break;
+> +	default:
+> +		break;
+> +	}
 > +
-> +static struct e1000_mac_operations e1000_mac_ops_base = {
-> +	.init_hw	= igc_init_hw_base,
-> +};
+> +	if (ret_val)
+> +		goto out;
 > +
-> +const struct e1000_info e1000_base_info = {
-> +	.get_invariants = igc_get_invariants_base,
-> +	.mac_ops = &e1000_mac_ops_base,
-> +};
-> +
-> +/**
-> + *  igc_reset_hw_base - Reset hardware
+>   out:
+>   	return ret_val;
+>   }
+>   
+>   /**
+> + *  igc_get_link_up_info_base - Get link speed/duplex info
 > + *  @hw: pointer to the HW structure
+> + *  @speed: stores the current speed
+> + *  @duplex: stores the current duplex
 > + *
-> + *  This resets the hardware into a known state.  This is a
-> + *  function pointer entry point called by the api module.
+> + *  This is a wrapper function, if using the serial gigabit media independent
+> + *  interface, use PCS to retrieve the link speed and duplex information.
+> + *  Otherwise, use the generic function to get the link speed and duplex info.
 > + **/
-> +static s32 igc_reset_hw_base(struct e1000_hw *hw)
+> +static s32 igc_get_link_up_info_base(struct e1000_hw *hw, u16 *speed,
+> +				     u16 *duplex)
 > +{
-> +	u32 ctrl;
 > +	s32 ret_val;
 > +
-> +	/* Prevent the PCI-E bus from sticking if there is no TLP connection
-> +	 * on the last TLP read/write transaction when MAC is reset.
-> +	 */
-> +	ret_val = igc_disable_pcie_master(hw);
-> +	if (ret_val)
-> +		hw_dbg("PCI-E Master disable polling has failed.\n");
-> +
-> +	/* set the completion timeout for interface */
-> +	ret_val = igc_set_pcie_completion_timeout(hw);
-> +	if (ret_val)
-> +		hw_dbg("PCI-E Set completion timeout has failed.\n");
-> +
-> +	hw_dbg("Masking off all interrupts\n");
-> +	wr32(E1000_IMC, 0xffffffff);
-> +
-> +	wr32(E1000_RCTL, 0);
-> +	wr32(E1000_TCTL, E1000_TCTL_PSP);
-> +	wrfl();
-> +
-> +	usleep_range(10000, 20000);
-> +
-> +	ctrl = rd32(E1000_CTRL);
-> +
-> +	hw_dbg("Issuing a global reset to MAC\n");
-> +	wr32(E1000_CTRL, ctrl | E1000_CTRL_RST);
-> +
-> +	ret_val = igc_get_auto_rd_done(hw);
-> +	if (ret_val) {
-> +		/* When auto config read does not complete, do not
-> +		 * return with an error. This can happen in situations
-> +		 * where there is no eeprom and prevents getting link.
-> +		 */
-> +		hw_dbg("Auto Read Done did not complete\n");
-> +	}
-> +
-> +	/* Clear any pending interrupt events. */
-> +	wr32(E1000_IMC, 0xffffffff);
-> +	rd32(E1000_ICR);
+> +	ret_val = igc_get_speed_and_duplex_copper(hw, speed, duplex);
 > +
 > +	return ret_val;
 > +}
 > +
 > +/**
-> + *  igc_set_pcie_completion_timeout - set pci-e completion timeout
+> + *  igc_check_for_link_base - Check for link
 > + *  @hw: pointer to the HW structure
 > + *
-> + *  The defaults for 82575 and 82576 should be in the range of 50us to 50ms,
-
-Wrong devices
-
-Since this is copy-n-paste from the previous driver, is this even correct?
-
-> + *  however the hardware default for these parts is 500us to 1ms which is less
-> + *  than the 10ms recommended by the pci-e spec.  To address this we need to
-> + *  increase the value to either 10ms to 200ms for capability version 1 config,
-> + *  or 16ms to 55ms for version 2.
+> + *  If sgmii is enabled, then use the pcs register to determine link, otherwise
+> + *  use the generic interface for determining link.
 > + **/
-> +static s32 igc_set_pcie_completion_timeout(struct e1000_hw *hw)
+> +static s32 igc_check_for_link_base(struct e1000_hw *hw)
 > +{
-> +	u32 gcr = rd32(E1000_GCR);
 > +	s32 ret_val = 0;
-> +	u16 pcie_devctl2;
 > +
-> +	/* only take action if timeout value is defaulted to 0 */
-> +	if (gcr & E1000_GCR_CMPL_TMOUT_MASK)
-> +		goto out;
+> +	ret_val = igc_check_for_copper_link(hw);
 > +
-> +	/* if capabilities version is type 1 we can write the
-> +	 * timeout of 10ms to 200ms through the GCR register
-> +	 */
-> +	if (!(gcr & E1000_GCR_CAP_VER2)) {
-> +		gcr |= E1000_GCR_CMPL_TMOUT_10ms;
-> +		goto out;
-> +	}
-> +
-> +	/* for version 2 capabilities we need to write the config space
-> +	 * directly in order to set the completion timeout value for
-> +	 * 16ms to 55ms
-> +	 */
-> +	ret_val = igc_read_pcie_cap_reg(hw, PCIE_DEVICE_CONTROL2,
-> +					&pcie_devctl2);
-> +	if (ret_val)
-> +		goto out;
-> +
-> +	pcie_devctl2 |= PCIE_DEVICE_CONTROL2_16ms;
-> +
-> +	ret_val = igc_write_pcie_cap_reg(hw, PCIE_DEVICE_CONTROL2,
-> +					 &pcie_devctl2);
-> +out:
-> +	/* disable completion timeout resend */
-> +	gcr &= ~E1000_GCR_CMPL_TMOUT_RESEND;
-> +
-> +	wr32(E1000_GCR, gcr);
 > +	return ret_val;
 > +}
-> diff --git a/drivers/net/ethernet/intel/igc/e1000_base.h b/drivers/net/ethernet/intel/igc/e1000_base.h
-> index 5c766fb7514b..210f1b5f6012 100644
-> --- a/drivers/net/ethernet/intel/igc/e1000_base.h
-> +++ b/drivers/net/ethernet/intel/igc/e1000_base.h
-> @@ -33,6 +33,8 @@ union e1000_adv_tx_desc {
->   #define E1000_ADVTXD_DCMD_TSE	0x80000000 /* TCP Seg enable */
->   #define E1000_ADVTXD_PAYLEN_SHIFT	14 /* Adv desc PAYLEN shift */
->   
-> +#define E1000_RAR_ENTRIES		16
 > +
->   struct e1000_adv_data_desc {
->   	__le64 buffer_addr;    /* Address of the descriptor's data buffer */
->   	union {
+> +/**
+>    *  igc_init_hw_base - Initialize hardware
+>    *  @hw: pointer to the HW structure
+>    *
+> @@ -93,6 +187,19 @@ static s32 igc_init_hw_base(struct e1000_hw *hw)
+>   }
+>   
+>   /**
+> + *  igc_read_mac_addr_base - Read device MAC address
+> + *  @hw: pointer to the HW structure
+> + **/
+> +static s32 igc_read_mac_addr_base(struct e1000_hw *hw)
+> +{
+> +	s32 ret_val = 0;
+> +
+> +	ret_val = igc_read_mac_addr(hw);
+> +
+> +	return ret_val;
+> +}
+> +
+> +/**
+>    *  igc_rx_fifo_flush_base - Clean rx fifo after Rx enable
+>    *  @hw: pointer to the HW structure
+>    *
+> @@ -169,12 +276,17 @@ void igc_rx_fifo_flush_base(struct e1000_hw *hw)
+>   }
+>   
+>   static struct e1000_mac_operations e1000_mac_ops_base = {
+> -	.init_hw	= igc_init_hw_base,
+> +	.init_hw		= igc_init_hw_base,
+> +	.check_for_link		= igc_check_for_link_base,
+> +	.rar_set		= igc_rar_set,
+> +	.read_mac_addr		=  igc_read_mac_addr_base,
+
+Extra space after the '='
+
+> +	.get_speed_and_duplex	= igc_get_link_up_info_base,
+>   };
+>   
+>   const struct e1000_info e1000_base_info = {
+> -	.get_invariants = igc_get_invariants_base,
+> -	.mac_ops = &e1000_mac_ops_base,
+> +	.get_invariants	= igc_get_invariants_base,
+> +	.mac_ops	= &e1000_mac_ops_base,
+> +	/* TODO phy_ops */
+>   };
+>   
+>   /**
 > diff --git a/drivers/net/ethernet/intel/igc/e1000_defines.h b/drivers/net/ethernet/intel/igc/e1000_defines.h
-> index f39d93d17ba6..5613806742b1 100644
+> index 5613806742b1..31bc85cfa149 100644
 > --- a/drivers/net/ethernet/intel/igc/e1000_defines.h
 > +++ b/drivers/net/ethernet/intel/igc/e1000_defines.h
-> @@ -30,6 +30,22 @@
->   #define E1000_PCI_PMCSR			0x44
->   #define E1000_PCI_PMCSR_D3		0x03
+> @@ -55,6 +55,8 @@
+>    */
+>   #define E1000_RAH_AV		0x80000000 /* Receive descriptor valid */
+>   #define E1000_RAH_POOL_1	0x00040000
+> +#define E1000_RAL_MAC_ADDR_LEN	4
+> +#define E1000_RAH_MAC_ADDR_LEN	2
 >   
-> +/* Physical Func Reset Done Indication */
-> +#define E1000_CTRL_EXT_LINK_MODE_MASK	0x00C00000
-> +
-> +/* Number of 100 microseconds we wait for PCI Express master disable */
-> +#define MASTER_DISABLE_TIMEOUT		800
-> +/*Blocks new Master requests */
-> +#define E1000_CTRL_GIO_MASTER_DISABLE	0x00000004
-> +/* Status of Master requests. */
-> +#define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000
-> +
-> +/* PCI Express Control */
-> +#define E1000_GCR_CMPL_TMOUT_MASK	0x0000F000
-> +#define E1000_GCR_CMPL_TMOUT_10ms	0x00001000
-> +#define E1000_GCR_CMPL_TMOUT_RESEND	0x00010000
-> +#define E1000_GCR_CAP_VER2		0x00040000
-> +
->   /* Receive Address
->    * Number of high/low register pairs in the RAR. The RAR (Receive Address
->    * Registers) holds the directed and multicast addresses that we monitor.
-> @@ -48,10 +64,26 @@
->   #define E1000_ERR_PARAM				4
->   #define E1000_ERR_MAC_INIT			5
->   #define E1000_ERR_RESET				9
-> +#define E1000_ERR_MASTER_REQUESTS_PENDING	10
-> +#define E1000_ERR_SWFW_SYNC			13
-> +
-> +/* Device Control */
-> +#define E1000_CTRL_RST		0x04000000  /* Global reset */
+>   /* Error Codes */
+>   #define E1000_SUCCESS				0
+> @@ -77,13 +79,84 @@
+>   #define E1000_SWSM_SMBI		0x00000001 /* Driver Semaphore bit */
+>   #define E1000_SWSM_SWESMBI	0x00000002 /* FW Semaphore bit */
 >   
->   /* PBA constants */
->   #define E1000_PBA_34K			0x0022
+> +/* SWFW_SYNC Definitions */
+> +#define E1000_SWFW_EEP_SM	0x1
+> +#define E1000_SWFW_PHY0_SM	0x2
+> +#define E1000_SWFW_PHY1_SM	0x4
+> +#define E1000_SWFW_PHY2_SM	0x20
+> +#define E1000_SWFW_PHY3_SM	0x40
+> +
+>   /* NVM Control */
+> +#define E1000_EECD_SK		0x00000001 /* NVM Clock */
+> +#define E1000_EECD_CS		0x00000002 /* NVM Chip Select */
+> +#define E1000_EECD_DI		0x00000004 /* NVM Data In */
+> +#define E1000_EECD_DO		0x00000008 /* NVM Data Out */
+> +#define E1000_EECD_REQ		0x00000040 /* NVM Access Request */
+> +#define E1000_EECD_GNT		0x00000080 /* NVM Access Grant */
+>   #define E1000_EECD_PRES		0x00000100 /* NVM Present */
+> +/* NVM Addressing bits based on type 0=small, 1=large */
+> +#define E1000_EECD_ADDR_BITS		0x00000400
+> +#define E1000_NVM_GRANT_ATTEMPTS	1000 /* NVM # attempts to gain grant */
+> +#define E1000_EECD_AUTO_RD		0x00000200  /* NVM Auto Read done */
+> +#define E1000_EECD_SIZE_EX_MASK		0x00007800  /* NVM Size */
+> +#define E1000_EECD_SIZE_EX_SHIFT	11
+> +#define E1000_EECD_FLUPD_I225		0x00800000 /* Update FLASH */
+> +#define E1000_EECD_FLUDONE_I225		0x04000000 /* Update FLASH done*/
+> +#define E1000_EECD_FLASH_DETECTED_I225	0x00080000 /* FLASH detected */
+> +#define E1000_FLUDONE_ATTEMPTS		20000
+> +#define E1000_EERD_EEWR_MAX_COUNT	512 /* buffered EEPROM words rw */
 >   
-> +/* SW Semaphore Register */
-> +#define E1000_SWSM_SMBI		0x00000001 /* Driver Semaphore bit */
-> +#define E1000_SWSM_SWESMBI	0x00000002 /* FW Semaphore bit */
+>   /* Number of milliseconds for NVM auto read done after MAC reset. */
+>   #define AUTO_READ_DONE_TIMEOUT		10
+>   #define E1000_EECD_AUTO_RD	0x00000200  /* NVM Auto Read done */
+>   
+> +/* Offset to data in NVM read/write registers */
+> +#define E1000_NVM_RW_REG_DATA	16
+> +#define E1000_NVM_RW_REG_DONE	2    /* Offset to READ/WRITE done bit */
+> +#define E1000_NVM_RW_REG_START	1    /* Start operation */
+> +#define E1000_NVM_RW_ADDR_SHIFT	2    /* Shift to the address bits */
+> +#define E1000_NVM_POLL_READ	0    /* Flag for polling for read complete */
 > +
-> +/* NVM Control */
-> +#define E1000_EECD_PRES		0x00000100 /* NVM Present */
+> +/* NVM Word Offsets */
+> +#define NVM_COMPAT			0x0003
+> +#define NVM_ID_LED_SETTINGS		0x0004 /* SERDES output amplitude */
+> +#define NVM_VERSION			0x0005
+> +#define NVM_INIT_CONTROL2_REG		0x000F
+> +#define NVM_INIT_CONTROL3_PORT_B	0x0014
+> +#define NVM_INIT_CONTROL3_PORT_A	0x0024
+> +#define NVM_ALT_MAC_ADDR_PTR		0x0037
+> +#define NVM_CHECKSUM_REG		0x003F
+> +#define NVM_COMPATIBILITY_REG_3		0x0003
+> +#define NVM_COMPATIBILITY_BIT_MASK	0x8000
+> +#define NVM_MAC_ADDR			0x0000
+> +#define NVM_SUB_DEV_ID			0x000B
+> +#define NVM_SUB_VEN_ID			0x000C
+> +#define NVM_DEV_ID			0x000D
+> +#define NVM_VEN_ID			0x000E
+> +#define NVM_INIT_CTRL_2			0x000F
+> +#define NVM_INIT_CTRL_4			0x0013
+> +#define NVM_LED_1_CFG			0x001C
+> +#define NVM_LED_0_2_CFG			0x001F
+> +#define NVM_ETRACK_WORD			0x0042
+> +#define NVM_ETRACK_HIWORD		0x0043
+> +#define NVM_COMB_VER_OFF		0x0083
+> +#define NVM_COMB_VER_PTR		0x003d
 > +
-> +/* Number of milliseconds for NVM auto read done after MAC reset. */
-> +#define AUTO_READ_DONE_TIMEOUT		10
-> +#define E1000_EECD_AUTO_RD	0x00000200  /* NVM Auto Read done */
+> +/* For checksumming, the sum of all words in the NVM should equal 0xBABA. */
+> +#define NVM_SUM				0xBABA
+> +
+> +#define NVM_PBA_OFFSET_0		8
+> +#define NVM_PBA_OFFSET_1		9
+> +#define NVM_RESERVED_WORD		0xFFFF
+> +#define NVM_PBA_PTR_GUARD		0xFAFA
+> +#define NVM_WORD_SIZE_BASE_SHIFT	6
+> +
+> +/* Collision related configuration parameters */
+> +#define E1000_COLLISION_THRESHOLD	15
+> +#define E1000_CT_SHIFT			4
+> +#define E1000_COLLISION_DISTANCE	63
+> +#define E1000_COLD_SHIFT		12
 > +
 >   /* Device Status */
 >   #define E1000_STATUS_FD		0x00000001      /* Full duplex.0=half,1=full */
 >   #define E1000_STATUS_LU		0x00000002      /* Link up.0=no,1=link */
-> @@ -135,6 +167,13 @@
->   #define E1000_CT_SHIFT			4
->   #define E1000_COLLISION_THRESHOLD	15
->   
-> +/* Flow Control Constants */
-> +#define FLOW_CONTROL_ADDRESS_LOW	0x00C28001
-> +#define FLOW_CONTROL_ADDRESS_HIGH	0x00000100
-> +#define FLOW_CONTROL_TYPE		0x8808
-> +/* Enable XON frame transmission */
-> +#define E1000_FCRTL_XONE		0x80000000
+> @@ -93,6 +166,14 @@
+>   #define E1000_STATUS_TXOFF	0x00000010      /* transmission paused */
+>   #define E1000_STATUS_SPEED_100	0x00000040      /* Speed 100Mb/s */
+>   #define E1000_STATUS_SPEED_1000	0x00000080      /* Speed 1000Mb/s */
+> +#define E1000_STATUS_SPEED_2500	0x00400000	/* Speed 2.5Gb/s */
 > +
->   /* Management Control */
->   #define E1000_MANC_RCV_TCO_EN	0x00020000 /* Receive TCO Packets Enabled */
+> +#define SPEED_10		10
+> +#define SPEED_100		100
+> +#define SPEED_1000		1000
+> +#define SPEED_2500		2500
+> +#define HALF_DUPLEX		1
+> +#define FULL_DUPLEX		2
 >   
+>   /* Interrupt Cause Read */
+>   #define E1000_ICR_TXDW		0x00000001 /* Transmit desc written back */
 > diff --git a/drivers/net/ethernet/intel/igc/e1000_hw.h b/drivers/net/ethernet/intel/igc/e1000_hw.h
-> index 67fa4f696b98..debeadd61b45 100644
+> index debeadd61b45..ab630e5b3d97 100644
 > --- a/drivers/net/ethernet/intel/igc/e1000_hw.h
 > +++ b/drivers/net/ethernet/intel/igc/e1000_hw.h
-> @@ -6,6 +6,8 @@
->   
->   #include <linux/types.h>
->   #include <linux/if_ether.h>
-> +#include <linux/netdevice.h>
-> +
+> @@ -11,6 +11,7 @@
 >   #include "e1000_regs.h"
 >   #include "e1000_defines.h"
 >   #include "e1000_mac.h"
-> @@ -20,6 +22,16 @@ struct e1000_hw;
+> +#include "e1000_nvm.h"
+>   #include "e1000_i225.h"
+>   #include "e1000_base.h"
 >   
->   /* Function pointers for the MAC. */
->   struct e1000_mac_operations {
-> +	s32 (*check_for_link)(struct e1000_hw *hw);
-> +	s32 (*reset_hw)(struct e1000_hw *hw);
-> +	s32 (*init_hw)(struct e1000_hw *hw);
-> +	s32 (*setup_physical_interface)(struct e1000_hw *hw);
-> +	void (*rar_set)(struct e1000_hw *hw, u8 *address, u32 index);
-> +	s32 (*read_mac_addr)(struct e1000_hw *hw);
-> +	s32 (*get_speed_and_duplex)(struct e1000_hw *hw, u16 *speed,
-> +				    u16 *duplex);
-> +	s32 (*acquire_swfw_sync)(struct e1000_hw *hw, u16 mask);
-> +	void (*release_swfw_sync)(struct e1000_hw *hw, u16 mask);
+> @@ -81,6 +82,8 @@ struct e1000_info {
+>   	struct e1000_nvm_operations *nvm_ops;
 >   };
 >   
->   enum e1000_mac_type {
-> @@ -34,6 +46,12 @@ enum e1000_phy_type {
->   	e1000_phy_i225,
->   };
->   
-> +enum e1000_nvm_type {
-> +	e1000_nvm_unknown = 0,
-> +	e1000_nvm_flash_hw,
-> +	e1000_nvm_invm,
-> +};
-> +
->   enum e1000_bus_type {
->   	e1000_bus_type_unknown = 0,
->   	e1000_bus_type_pci_express,
-> @@ -56,6 +74,13 @@ enum e1000_bus_width {
->   	e1000_bus_width_reserved
->   };
->   
-> +struct e1000_info {
-> +	s32 (*get_invariants)(struct e1000_hw *hw);
-> +	struct e1000_mac_operations *mac_ops;
-> +	const struct e1000_phy_operations *phy_ops;
-> +	struct e1000_nvm_operations *nvm_ops;
-> +};
+> +extern const struct e1000_info e1000_base_info;
 > +
 >   struct e1000_mac_info {
 >   	struct e1000_mac_operations ops;
 >   
-> @@ -91,6 +116,30 @@ struct e1000_mac_info {
->   	bool get_link_status;
->   };
+> @@ -118,7 +121,7 @@ struct e1000_mac_info {
 >   
-> +struct e1000_nvm_operations {
-> +	s32 (*acquire)(struct e1000_hw *hw);
-> +	s32 (*read)(struct e1000_hw *hw, u16 offset, u16 i, u16 *data);
-> +	void (*release)(struct e1000_hw *hw);
-> +	s32 (*write)(struct e1000_hw *hw, u16 offset, u16 i, u16 *data);
-> +	s32 (*update)(struct e1000_hw *hw);
-> +	s32 (*validate)(struct e1000_hw *hw);
-> +	s32 (*valid_led_default)(struct e1000_hw *hw, u16 *data);
-> +};
-> +
-> +struct e1000_nvm_info {
-> +	struct e1000_nvm_operations ops;
-> +	enum e1000_nvm_type type;
-> +
-> +	u32 flash_bank_size;
-> +	u32 flash_base_addr;
-> +
-> +	u16 word_size;
-> +	u16 delay_usec;
-> +	u16 address_bits;
-> +	u16 opcode_bits;
-> +	u16 page_size;
-> +};
-> +
->   struct e1000_bus_info {
->   	enum e1000_bus_type type;
->   	enum e1000_bus_speed speed;
-> @@ -100,6 +149,32 @@ struct e1000_bus_info {
->   	u16 pci_cmd_word;
->   };
->   
-> +enum e1000_fc_mode {
-> +	e1000_fc_none = 0,
-> +	e1000_fc_rx_pause,
-> +	e1000_fc_tx_pause,
-> +	e1000_fc_full,
-> +	e1000_fc_default = 0xFF
-> +};
-> +
-> +struct e1000_fc_info {
-> +	u32 high_water;     /* Flow control high-water mark */
-> +	u32 low_water;      /* Flow control low-water mark */
-> +	u16 pause_time;     /* Flow control pause timer */
-> +	bool send_xon;      /* Flow control send XON */
-> +	bool strict_ieee;   /* Strict IEEE mode */
-> +	enum e1000_fc_mode current_mode; /* Type of flow control */
-> +	enum e1000_fc_mode requested_mode;
-> +};
-> +
-> +struct e1000_dev_spec_base {
-> +	bool global_device_reset;
-> +	bool eee_disable;
-> +	bool clear_semaphore_once;
-> +	bool module_plugged;
-> +	u8 media_port;
-> +};
-> +
->   struct e1000_hw {
->   	void *back;
->   
-> @@ -108,9 +183,15 @@ struct e1000_hw {
->   	unsigned long io_base;
->   
->   	struct e1000_mac_info  mac;
-> +	struct e1000_fc_info   fc;
-> +	struct e1000_nvm_info  nvm;
->   
->   	struct e1000_bus_info bus;
->   
-> +	union {
-> +		struct e1000_dev_spec_base	_base;
-> +	} dev_spec;
-> +
->   	u16 device_id;
->   	u16 subsystem_vendor_id;
->   	u16 subsystem_device_id;
-> @@ -203,6 +284,10 @@ struct e1000_hw_stats {
->   	u64 b2ogprc;
->   };
->   
-> +struct net_device *igc_get_hw_dev(struct e1000_hw *hw);
-> +#define hw_dbg(format, arg...) \
-> +	netdev_dbg(igc_get_hw_dev(hw), format, ##arg)
-> +
->   /* These functions must be implemented by drivers */
->   s32  igc_read_pcie_cap_reg(struct e1000_hw *hw, u32 reg, u16 *value);
->   s32  igc_write_pcie_cap_reg(struct e1000_hw *hw, u32 reg, u16 *value);
+>   struct e1000_nvm_operations {
+>   	s32 (*acquire)(struct e1000_hw *hw);
+> -	s32 (*read)(struct e1000_hw *hw, u16 offset, u16 i, u16 *data);
+> +	s32 (*read)(struct e1000_hw *hw, u16 offset, u16 words, u16 *data);
+>   	void (*release)(struct e1000_hw *hw);
+>   	s32 (*write)(struct e1000_hw *hw, u16 offset, u16 i, u16 *data);
+>   	s32 (*update)(struct e1000_hw *hw);
 > diff --git a/drivers/net/ethernet/intel/igc/e1000_i225.c b/drivers/net/ethernet/intel/igc/e1000_i225.c
-> new file mode 100644
-> index 000000000000..11d797c77619
-> --- /dev/null
+> index 11d797c77619..d1fa45f600dc 100644
+> --- a/drivers/net/ethernet/intel/igc/e1000_i225.c
 > +++ b/drivers/net/ethernet/intel/igc/e1000_i225.c
-> @@ -0,0 +1,141 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/* Copyright (c)  2018 Intel Corporation */
-> +
-> +#include <linux/delay.h>
-> +
-> +#include "e1000_hw.h"
-> +
-> +/**
-> + *  igc_get_hw_semaphore_i225 - Acquire hardware semaphore
+> @@ -6,6 +6,32 @@
+>   #include "e1000_hw.h"
+>   
+>   /**
+> + *  igc_acquire_nvm_i225 - Request for access to EEPROM
 > + *  @hw: pointer to the HW structure
 > + *
-> + *  Acquire the HW semaphore to access the PHY or NVM
-> + */
-> +static s32 igc_get_hw_semaphore_i225(struct e1000_hw *hw)
+> + *  Acquire the necessary semaphores for exclusive access to the EEPROM.
+> + *  Set the EEPROM access request bit and wait for EEPROM access grant bit.
+> + *  Return successful if access grant bit set, else clear the request for
+> + *  EEPROM access and return -E1000_ERR_NVM (-1).
+> + **/
+> +static s32 igc_acquire_nvm_i225(struct e1000_hw *hw)
 > +{
-> +	u32 swsm;
-> +	s32 timeout = hw->nvm.word_size + 1;
-> +	s32 i = 0;
-
-reverse xmas tree
-
+> +	return igc_acquire_swfw_sync_i225(hw, E1000_SWFW_EEP_SM);
+> +}
 > +
-> +	/* Get the SW semaphore */
-> +	while (i < timeout) {
-> +		swsm = rd32(E1000_SWSM);
-> +		if (!(swsm & E1000_SWSM_SMBI))
+> +/**
+> + *  igc_release_nvm_i225 - Release exclusive access to EEPROM
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Stop any current commands to the EEPROM and clear the EEPROM request bit,
+> + *  then release the semaphores acquired.
+> + **/
+> +static void igc_release_nvm_i225(struct e1000_hw *hw)
+> +{
+> +	igc_release_swfw_sync_i225(hw, E1000_SWFW_EEP_SM);
+> +}
+> +
+> +/**
+>    *  igc_get_hw_semaphore_i225 - Acquire hardware semaphore
+>    *  @hw: pointer to the HW structure
+>    *
+> @@ -139,3 +165,328 @@ void igc_release_swfw_sync_i225(struct e1000_hw *hw, u16 mask)
+>   
+>   	igc_put_hw_semaphore(hw);
+>   }
+> +
+> +/**
+> + *  igc_read_nvm_srrd_i225 - Reads Shadow Ram using EERD register
+> + *  @hw: pointer to the HW structure
+> + *  @offset: offset of word in the Shadow Ram to read
+> + *  @words: number of words to read
+> + *  @data: word read from the Shadow Ram
+> + *
+> + *  Reads a 16 bit word from the Shadow Ram using the EERD register.
+> + *  Uses necessary synchronization semaphores.
+> + **/
+> +static s32 igc_read_nvm_srrd_i225(struct e1000_hw *hw, u16 offset, u16 words,
+> +				  u16 *data)
+> +{
+> +	s32 status = 0;
+> +	u16 i, count;
+> +
+> +	/* We cannot hold synchronization semaphores for too long,
+> +	 * because of forceful takeover procedure. However it is more efficient
+> +	 * to read in bursts than synchronizing access for each word.
+> +	 */
+> +	for (i = 0; i < words; i += E1000_EERD_EEWR_MAX_COUNT) {
+> +		count = (words - i) / E1000_EERD_EEWR_MAX_COUNT > 0 ?
+> +			E1000_EERD_EEWR_MAX_COUNT : (words - i);
+> +		if (!(hw->nvm.ops.acquire(hw))) {
+> +			status = igc_read_nvm_eerd(hw, offset, count,
+> +						   data + i);
+> +			hw->nvm.ops.release(hw);
+> +		} else {
+> +			status = E1000_ERR_SWFW_SYNC;
+
+Is this missing the '-' on purpose?
+
+> +		}
+> +
+> +		if (status)
 > +			break;
-> +
-> +		usleep_range(500, 600);
-> +		i++;
+
+This code seem rather awkward and harder to read than necessary ... 
+maybe something more like this?
+
+		status = hw->nvm.ops.acquire(hw);
+		if (status)
+			break;
+
+		status = igc_read_nvm_eerd(hw, offset, count, data + i);
+		hw->nvm.ops.release(hw);
+
+		if (status)
+			break;
+
 > +	}
 > +
-> +	if (i == timeout) {
-> +		/* In rare circumstances, the SW semaphore may already be held
-> +		 * unintentionally. Clear the semaphore once before giving up.
-> +		 */
-> +		if (hw->dev_spec._base.clear_semaphore_once) {
-> +			hw->dev_spec._base.clear_semaphore_once = false;
-> +			igc_put_hw_semaphore(hw);
-> +			for (i = 0; i < timeout; i++) {
-> +				swsm = rd32(E1000_SWSM);
-> +				if (!(swsm & E1000_SWSM_SMBI))
-> +					break;
+> +	return status;
+> +}
 > +
-> +				usleep_range(500, 600);
+> +/**
+> + *  igc_write_nvm_srwr - Write to Shadow Ram using EEWR
+> + *  @hw: pointer to the HW structure
+> + *  @offset: offset within the Shadow Ram to be written to
+> + *  @words: number of words to write
+> + *  @data: 16 bit word(s) to be written to the Shadow Ram
+> + *
+> + *  Writes data to Shadow Ram at offset using EEWR register.
+> + *
+> + *  If igc_update_nvm_checksum is not called after this function , the
+> + *  Shadow Ram will most likely contain an invalid checksum.
+> + **/
+> +static s32 igc_write_nvm_srwr(struct e1000_hw *hw, u16 offset, u16 words,
+> +			      u16 *data)
+> +{
+> +	struct e1000_nvm_info *nvm = &hw->nvm;
+> +	u32 i, k, eewr = 0;
+> +	u32 attempts = 100000;
+> +	s32 ret_val = 0;
+> +
+> +	/* A check for invalid values:  offset too large, too many words,
+> +	 * too many words for the offset, and not enough words.
+> +	 */
+> +	if (offset >= nvm->word_size || (words > (nvm->word_size - offset)) ||
+> +	    words == 0) {
+> +		hw_dbg("nvm parameter(s) out of bounds\n");
+> +		ret_val = -E1000_ERR_NVM;
+> +		goto out;
+> +	}
+> +
+> +	for (i = 0; i < words; i++) {
+> +		eewr = ((offset + i) << E1000_NVM_RW_ADDR_SHIFT) |
+> +			(data[i] << E1000_NVM_RW_REG_DATA) |
+> +			E1000_NVM_RW_REG_START;
+> +
+> +		wr32(E1000_SRWR, eewr);
+> +
+> +		for (k = 0; k < attempts; k++) {
+> +			if (E1000_NVM_RW_REG_DONE &
+> +			    rd32(E1000_SRWR)) {
+> +				ret_val = 0;
+> +				break;
 > +			}
+> +			udelay(5);
 > +		}
 > +
-> +		/* If we do not have the semaphore here, we have to give up. */
-> +		if (i == timeout) {
-> +			hw_dbg("Driver can't access device - SMBI bit is set.\n");
-> +			return -E1000_ERR_NVM;
-> +		}
-> +	}
-> +
-> +	/* Get the FW semaphore. */
-> +	for (i = 0; i < timeout; i++) {
-> +		swsm = rd32(E1000_SWSM);
-> +		wr32(E1000_SWSM, swsm | E1000_SWSM_SWESMBI);
-> +
-> +		/* Semaphore acquired if bit latched */
-> +		if (rd32(E1000_SWSM) & E1000_SWSM_SWESMBI)
+> +		if (ret_val) {
+> +			hw_dbg("Shadow RAM write EEWR timed out\n");
 > +			break;
-> +
-> +		usleep_range(500, 600);
+> +		}
 > +	}
 > +
-> +	if (i == timeout) {
-> +		/* Release semaphores */
-> +		igc_put_hw_semaphore(hw);
-> +		hw_dbg("Driver can't access the NVM\n");
-> +		return -E1000_ERR_NVM;
+> +out:
+> +	return ret_val;
+> +}
+> +
+> +/**
+> + *  igc_write_nvm_srwr_i225 - Write to Shadow RAM using EEWR
+> + *  @hw: pointer to the HW structure
+> + *  @offset: offset within the Shadow RAM to be written to
+> + *  @words: number of words to write
+> + *  @data: 16 bit word(s) to be written to the Shadow RAM
+> + *
+> + *  Writes data to Shadow RAM at offset using EEWR register.
+> + *
+> + *  If e1000_update_nvm_checksum is not called after this function , the
+> + *  data will not be committed to FLASH and also Shadow RAM will most likely
+> + *  contain an invalid checksum.
+> + *
+> + *  If error code is returned, data and Shadow RAM may be inconsistent - buffer
+> + *  partially written.
+> + **/
+> +static s32 igc_write_nvm_srwr_i225(struct e1000_hw *hw, u16 offset, u16 words,
+> +				   u16 *data)
+> +{
+> +	s32 status = 0;
+> +	u16 i, count;
+> +
+> +	/* We cannot hold synchronization semaphores for too long,
+> +	 * because of forceful takeover procedure. However it is more efficient
+> +	 * to write in bursts than synchronizing access for each word.
+> +	 */
+> +	for (i = 0; i < words; i += E1000_EERD_EEWR_MAX_COUNT) {
+> +		count = (words - i) / E1000_EERD_EEWR_MAX_COUNT > 0 ?
+> +			E1000_EERD_EEWR_MAX_COUNT : (words - i);
+> +		if (!(hw->nvm.ops.acquire(hw))) {
+> +			status = igc_write_nvm_srwr(hw, offset, count,
+> +						    data + i);
+> +			hw->nvm.ops.release(hw);
+> +		} else {
+> +			status = E1000_ERR_SWFW_SYNC;
+
+Is this missing the '-' on purpose?
+
+> +		}
+> +
+> +		if (status)
+> +			break;
+
+Same as earlier comment - this code can be made clearer
+
+> +	}
+> +
+> +	return status;
+> +}
+> +
+> +/**
+> + *  igc_validate_nvm_checksum_i225 - Validate EEPROM checksum
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Calculates the EEPROM checksum by reading/adding each word of the EEPROM
+> + *  and then verifies that the sum of the EEPROM is equal to 0xBABA.
+> + **/
+> +static s32 igc_validate_nvm_checksum_i225(struct e1000_hw *hw)
+> +{
+> +	s32 status = 0;
+> +	s32 (*read_op_ptr)(struct e1000_hw *hw, u16 offset, u16 count,
+> +			   u16 *data);
+> +
+> +	if (!(hw->nvm.ops.acquire(hw))) {
+
+Again, this can be simpler
+
+	status = hw->nvm.ops.acquire(hw);
+	if (status)
+		return status;
+
+and now the next chunk doesn't need to be indented
+
+> +		/* Replace the read function with semaphore grabbing with
+> +		 * the one that skips this for a while.
+> +		 * We have semaphore taken already here.
+> +		 */
+> +		read_op_ptr = hw->nvm.ops.read;
+> +		hw->nvm.ops.read = igc_read_nvm_eerd;
+> +
+> +		status = igc_validate_nvm_checksum(hw);
+> +
+> +		/* Revert original read operation. */
+> +		hw->nvm.ops.read = read_op_ptr;
+> +
+> +		hw->nvm.ops.release(hw);
+> +	} else {
+> +		status = E1000_ERR_SWFW_SYNC;
+
+Should this have a minus sign?  Or, this line is not needed if the code 
+is simplified as suggested above.
+
+> +	}
+> +
+> +	return status;
+> +}
+> +
+> +/**
+> + *  igc_pool_flash_update_done_i225 - Pool FLUDONE status
+> + *  @hw: pointer to the HW structure
+> + **/
+> +static s32 igc_pool_flash_update_done_i225(struct e1000_hw *hw)
+> +{
+> +	s32 ret_val = -E1000_ERR_NVM;
+> +	u32 i, reg;
+> +
+> +	for (i = 0; i < E1000_FLUDONE_ATTEMPTS; i++) {
+> +		reg = rd32(E1000_EECD);
+> +		if (reg & E1000_EECD_FLUDONE_I225) {
+> +			ret_val = 0;
+> +			break;
+> +		}
+> +		udelay(5);
+> +	}
+> +
+> +	return ret_val;
+> +}
+> +
+> +/**
+> + *  igc_update_flash_i225 - Commit EEPROM to the flash
+> + *  @hw: pointer to the HW structure
+> + **/
+> +static s32 igc_update_flash_i225(struct e1000_hw *hw)
+> +{
+> +	s32 ret_val = 0;
+> +	u32 flup;
+> +
+> +	ret_val = igc_pool_flash_update_done_i225(hw);
+> +	if (ret_val == -E1000_ERR_NVM) {
+> +		hw_dbg("Flash update time out\n");
+> +		goto out;
+> +	}
+> +
+> +	flup = rd32(E1000_EECD) | E1000_EECD_FLUPD_I225;
+> +	wr32(E1000_EECD, flup);
+> +
+> +	ret_val = igc_pool_flash_update_done_i225(hw);
+> +	if (ret_val)
+> +		hw_dbg("Flash update time out\n");
+> +	else
+> +		hw_dbg("Flash update complete\n");
+> +
+> +out:
+> +	return ret_val;
+> +}
+> +
+> +/**
+> + *  igc_update_nvm_checksum_i225 - Update EEPROM checksum
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Updates the EEPROM checksum by reading/adding each word of the EEPROM
+> + *  up to the checksum.  Then calculates the EEPROM checksum and writes the
+> + *  value to the EEPROM. Next commit EEPROM data onto the Flash.
+> + **/
+> +static s32 igc_update_nvm_checksum_i225(struct e1000_hw *hw)
+> +{
+> +	s32 ret_val = 0;
+> +	u16 checksum = 0;
+> +	u16 i, nvm_data;
+> +
+> +	/* Read the first word from the EEPROM. If this times out or fails, do
+> +	 * not continue or we could be in for a very long wait while every
+> +	 * EEPROM read fails
+> +	 */
+> +	ret_val = igc_read_nvm_eerd(hw, 0, 1, &nvm_data);
+> +	if (ret_val) {
+> +		hw_dbg("EEPROM read failed\n");
+> +		goto out;
+
+May as well do a return here rather than goto a return
+
+> +	}
+> +
+> +	if (!(hw->nvm.ops.acquire(hw))) {
+
+See earlier comments
+
+> +		/* Do not use hw->nvm.ops.write, hw->nvm.ops.read
+> +		 * because we do not want to take the synchronization
+> +		 * semaphores twice here.
+> +		 */
+> +
+> +		for (i = 0; i < NVM_CHECKSUM_REG; i++) {
+> +			ret_val = igc_read_nvm_eerd(hw, i, 1, &nvm_data);
+> +			if (ret_val) {
+> +				hw->nvm.ops.release(hw);
+> +				hw_dbg("NVM Read Error while updating checksum.\n");
+> +				goto out;
+> +			}
+> +			checksum += nvm_data;
+> +		}
+> +		checksum = (u16)NVM_SUM - checksum;
+> +		ret_val = igc_write_nvm_srwr(hw, NVM_CHECKSUM_REG, 1,
+> +					     &checksum);
+> +		if (ret_val) {
+> +			hw->nvm.ops.release(hw);
+> +			hw_dbg("NVM Write Error while updating checksum.\n");
+> +			goto out;
+> +		}
+> +
+> +		hw->nvm.ops.release(hw);
+> +
+> +		ret_val = igc_update_flash_i225(hw);
+> +	} else {
+> +		ret_val = -E1000_ERR_SWFW_SYNC;
+> +	}
+> +
+> +out:
+> +	return ret_val;
+> +}
+> +
+> +/**
+> + *  igc_get_flash_presence_i225 - Check if flash device is detected
+> + *  @hw: pointer to the HW structure
+> + **/
+> +bool igc_get_flash_presence_i225(struct e1000_hw *hw)
+> +{
+> +	u32 eec = 0;
+> +	bool ret_val = false;
+> +
+> +	eec = rd32(E1000_EECD);
+> +	if (eec & E1000_EECD_FLASH_DETECTED_I225)
+> +		ret_val = true;
+> +
+> +	return ret_val;
+> +}
+> +
+> +/**
+> + *  igc_init_nvm_params_i225 - Init NVM func ptrs.
+> + *  @hw: pointer to the HW structure
+> + **/
+> +s32 igc_init_nvm_params_i225(struct e1000_hw *hw)
+> +{
+> +	s32 ret_val = 0;
+> +	struct e1000_nvm_info *nvm = &hw->nvm;
+> +
+> +	nvm->ops.acquire = igc_acquire_nvm_i225;
+> +	nvm->ops.release = igc_release_nvm_i225;
+> +
+> +	/* NVM Function Pointers */
+> +	if (igc_get_flash_presence_i225(hw)) {
+> +		hw->nvm.type = e1000_nvm_flash_hw;
+> +		nvm->ops.read = igc_read_nvm_srrd_i225;
+> +		nvm->ops.write = igc_write_nvm_srwr_i225;
+> +		nvm->ops.validate = igc_validate_nvm_checksum_i225;
+> +		nvm->ops.update = igc_update_nvm_checksum_i225;
+> +	} else {
+> +		hw->nvm.type = e1000_nvm_invm;
+> +		nvm->ops.read = igc_read_nvm_eerd;
+> +		nvm->ops.write = NULL;
+> +		nvm->ops.validate = NULL;
+> +		nvm->ops.update = NULL;
+> +	}
+> +	return ret_val;
+> +}
+> diff --git a/drivers/net/ethernet/intel/igc/e1000_i225.h b/drivers/net/ethernet/intel/igc/e1000_i225.h
+> index 749a50c34534..c8c0398d9ff0 100644
+> --- a/drivers/net/ethernet/intel/igc/e1000_i225.h
+> +++ b/drivers/net/ethernet/intel/igc/e1000_i225.h
+> @@ -7,4 +7,7 @@
+>   s32 igc_acquire_swfw_sync_i225(struct e1000_hw *hw, u16 mask);
+>   void igc_release_swfw_sync_i225(struct e1000_hw *hw, u16 mask);
+>   
+> +s32 igc_init_nvm_params_i225(struct e1000_hw *hw);
+> +bool igc_get_flash_presence_i225(struct e1000_hw *hw);
+> +
+>   #endif
+> diff --git a/drivers/net/ethernet/intel/igc/e1000_mac.c b/drivers/net/ethernet/intel/igc/e1000_mac.c
+> index 27e478a9854c..5681c0e3f0c8 100644
+> --- a/drivers/net/ethernet/intel/igc/e1000_mac.c
+> +++ b/drivers/net/ethernet/intel/igc/e1000_mac.c
+> @@ -326,6 +326,132 @@ void igc_clear_hw_cntrs_base(struct e1000_hw *hw)
+>   }
+>   
+>   /**
+> + *  igc_rar_set - Set receive address register
+> + *  @hw: pointer to the HW structure
+> + *  @addr: pointer to the receive address
+> + *  @index: receive address array register
+> + *
+> + *  Sets the receive address array register at index to the address passed
+> + *  in by addr.
+> + **/
+> +void igc_rar_set(struct e1000_hw *hw, u8 *addr, u32 index)
+> +{
+> +	u32 rar_low, rar_high;
+> +
+> +	/* HW expects these in little endian so we reverse the byte order
+> +	 * from network order (big endian) to little endian
+> +	 */
+> +	rar_low = ((u32)addr[0] |
+> +		   ((u32)addr[1] << 8) |
+> +		   ((u32)addr[2] << 16) | ((u32)addr[3] << 24));
+> +
+> +	rar_high = ((u32)addr[4] | ((u32)addr[5] << 8));
+> +
+> +	/* If MAC address zero, no need to set the AV bit */
+> +	if (rar_low || rar_high)
+> +		rar_high |= E1000_RAH_AV;
+
+if the mac address is zero, there's no need to do the swap
+
+> +
+> +	/* Some bridges will combine consecutive 32-bit writes into
+> +	 * a single burst write, which will malfunction on some parts.
+
+Is this malfunction in the new devices?  Is this comment still needed?
+
+> +	 * The flushes avoid this.
+> +	 */
+> +	wr32(E1000_RAL(index), rar_low);
+> +	wrfl();
+> +	wr32(E1000_RAH(index), rar_high);
+> +	wrfl();
+> +}
+> +
+> +/**
+> + *  igc_check_for_copper_link - Check for link (Copper)
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Checks to see of the link status of the hardware has changed.  If a
+> + *  change in link status has been detected, then we read the PHY registers
+> + *  to get the current speed/duplex if link exists.
+> + **/
+> +s32 igc_check_for_copper_link(struct e1000_hw *hw)
+> +{
+> +	struct e1000_mac_info *mac = &hw->mac;
+> +	s32 ret_val;
+> +	bool link;
+> +
+> +	/* We only want to go out to the PHY registers to see if Auto-Neg
+> +	 * has completed and/or if our link status has changed.  The
+> +	 * get_link_status flag is set upon receiving a Link Status
+> +	 * Change or Rx Sequence Error interrupt.
+> +	 */
+> +	if (!mac->get_link_status) {
+> +		ret_val = 0;
+> +		goto out;
+> +	}
+> +
+> +	/* First we want to see if the MII Status Register reports
+> +	 * link.  If so, then we want to get the current speed/duplex
+> +	 * of the PHY.
+> +	 */
+> +	/* TODO ret_val = igc_phy_has_link(hw, 1, 0, &link); */
+> +	if (ret_val)
+> +		goto out;
+> +
+> +	if (!link)
+> +		goto out; /* No link detected */
+> +
+> +	mac->get_link_status = false;
+> +
+> +	/* Check if there was DownShift, must be checked
+> +	 * immediately after link-up
+> +	 */
+> +	/* TODO igc_check_downshift(hw); */
+> +
+> +	/* If we are forcing speed/duplex, then we simply return since
+> +	 * we have already determined whether we have link or not.
+> +	 */
+> +	if (!mac->autoneg) {
+> +		ret_val = -E1000_ERR_CONFIG;
+> +		goto out;
+> +	}
+> +
+> +	/* Auto-Neg is enabled.  Auto Speed Detection takes care
+> +	 * of MAC speed/duplex configuration.  So we only need to
+> +	 * configure Collision Distance in the MAC.
+> +	 */
+> +	igc_config_collision_dist(hw);
+> +
+> +	/* Configure Flow Control now that Auto-Neg has completed.
+> +	 * First, we need to restore the desired flow control
+> +	 * settings because we may have had to re-autoneg with a
+> +	 * different link partner.
+> +	 */
+> +	/* TODO ret_val = igc_config_fc_after_link_up(hw); */
+> +	if (ret_val)
+> +		hw_dbg("Error configuring flow control\n");
+> +
+> +out:
+> +	return ret_val;
+> +}
+> +
+> +/**
+> + *  igc_config_collision_dist - Configure collision distance
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Configures the collision distance to the default value and is used
+> + *  during link setup. Currently no func pointer exists and all
+> + *  implementations are handled in the generic version of this function.
+> + **/
+> +void igc_config_collision_dist(struct e1000_hw *hw)
+> +{
+> +	u32 tctl;
+> +
+> +	tctl = rd32(E1000_TCTL);
+> +
+> +	tctl &= ~E1000_TCTL_COLD;
+> +	tctl |= E1000_COLLISION_DISTANCE << E1000_COLD_SHIFT;
+> +
+> +	wr32(E1000_TCTL, tctl);
+> +	wrfl();
+> +}
+> +
+> +/**
+>    *  igc_get_auto_rd_done - Check for auto read completion
+>    *  @hw: pointer to the HW structure
+>    *
+> @@ -354,6 +480,53 @@ s32 igc_get_auto_rd_done(struct e1000_hw *hw)
+>   }
+>   
+>   /**
+> + *  igc_get_speed_and_duplex_copper - Retrieve current speed/duplex
+> + *  @hw: pointer to the HW structure
+> + *  @speed: stores the current speed
+> + *  @duplex: stores the current duplex
+> + *
+> + *  Read the status register for the current speed/duplex and store the current
+> + *  speed and duplex for copper connections.
+> + **/
+> +s32 igc_get_speed_and_duplex_copper(struct e1000_hw *hw, u16 *speed,
+> +				    u16 *duplex)
+> +{
+> +	u32 status;
+> +
+> +	status = rd32(E1000_STATUS);
+> +	if (status & E1000_STATUS_SPEED_1000) {
+> +		/* For I225, STATUS will indicate 1G speed in both 1 Gbps
+> +		 * and 2.5 Gbps link modes. An additional bit is used
+> +		 * to differentiate between 1 Gbps and 2.5 Gbps.
+> +		 */
+> +		if (hw->mac.type == e1000_i225 &&
+> +		    (status & E1000_STATUS_SPEED_2500)) {
+> +			*speed = SPEED_2500;
+> +			hw_dbg("2500 Mbs, ");
+> +		} else {
+> +			*speed = SPEED_1000;
+> +			hw_dbg("1000 Mbs, ");
+> +		}
+> +	} else if (status & E1000_STATUS_SPEED_100) {
+> +		*speed = SPEED_100;
+> +		hw_dbg("100 Mbs, ");
+> +	} else {
+> +		*speed = SPEED_10;
+> +		hw_dbg("10 Mbs, ");
+> +	}
+> +
+> +	if (status & E1000_STATUS_FD) {
+> +		*duplex = FULL_DUPLEX;
+> +		hw_dbg("Full Duplex\n");
+> +	} else {
+> +		*duplex = HALF_DUPLEX;
+> +		hw_dbg("Half Duplex\n");
 > +	}
 > +
 > +	return 0;
 > +}
 > +
 > +/**
-> + *  igc_acquire_swfw_sync_i225 - Acquire SW/FW semaphore
-> + *  @hw: pointer to the HW structure
-> + *  @mask: specifies which semaphore to acquire
-> + *
-> + *  Acquire the SW/FW semaphore to access the PHY or NVM.  The mask
-> + *  will also specify which port we're acquiring the lock for.
-> + **/
-> +s32 igc_acquire_swfw_sync_i225(struct e1000_hw *hw, u16 mask)
-> +{
-> +	u32 swfw_sync;
-> +	u32 swmask = mask;
-> +	u32 fwmask = mask << 16;
-> +	s32 ret_val = 0;
-> +	s32 i = 0, timeout = 200; /* FIXME: find real value to use here */
+>    *  igc_put_hw_semaphore - Release hardware semaphore
+>    *  @hw: pointer to the HW structure
+>    *
+> diff --git a/drivers/net/ethernet/intel/igc/e1000_mac.h b/drivers/net/ethernet/intel/igc/e1000_mac.h
+> index 2f8dbf17800a..f18f5221199f 100644
+> --- a/drivers/net/ethernet/intel/igc/e1000_mac.h
+> +++ b/drivers/net/ethernet/intel/igc/e1000_mac.h
+> @@ -12,13 +12,20 @@
+>   #endif /* E1000_REMOVED */
+>   
+>   /* forward declaration */
+> -s32  igc_disable_pcie_master(struct e1000_hw *hw);
+> +s32 igc_check_for_copper_link(struct e1000_hw *hw);
 > +
-> +	while (i < timeout) {
-> +		if (igc_get_hw_semaphore_i225(hw)) {
-> +			ret_val = -E1000_ERR_SWFW_SYNC;
-> +			goto out;
+> +s32 igc_disable_pcie_master(struct e1000_hw *hw);
+>   void igc_init_rx_addrs(struct e1000_hw *hw, u16 rar_count);
+> -s32  igc_setup_link(struct e1000_hw *hw);
+> +s32 igc_setup_link(struct e1000_hw *hw);
+>   void igc_clear_hw_cntrs_base(struct e1000_hw *hw);
+>   s32 igc_get_auto_rd_done(struct e1000_hw *hw);
+>   void igc_put_hw_semaphore(struct e1000_hw *hw);
+> +void igc_rar_set(struct e1000_hw *hw, u8 *addr, u32 index);
+> +
+> +void igc_config_collision_dist(struct e1000_hw *hw);
+>   
+> -s32  igc_get_bus_info_pcie(struct e1000_hw *hw);
+> +s32 igc_get_bus_info_pcie(struct e1000_hw *hw);
+> +s32 igc_get_speed_and_duplex_copper(struct e1000_hw *hw, u16 *speed,
+> +				    u16 *duplex);
+>   
+>   #endif
+> diff --git a/drivers/net/ethernet/intel/igc/e1000_nvm.c b/drivers/net/ethernet/intel/igc/e1000_nvm.c
+> new file mode 100644
+> index 000000000000..62a4ae7f224b
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/igc/e1000_nvm.c
+> @@ -0,0 +1,219 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/* Copyright (c)  2018 Intel Corporation */
+> +
+> +#include "e1000_mac.h"
+> +#include "e1000_nvm.h"
+> +
+> +/**
+> + *  igc_poll_eerd_eewr_done - Poll for EEPROM read/write completion
+> + *  @hw: pointer to the HW structure
+> + *  @ee_reg: EEPROM flag for polling
+> + *
+> + *  Polls the EEPROM status bit for either read or write completion based
+> + *  upon the value of 'ee_reg'.
+> + **/
+> +static s32 igc_poll_eerd_eewr_done(struct e1000_hw *hw, int ee_reg)
+> +{
+> +	u32 attempts = 100000;
+> +	u32 i, reg = 0;
+> +	s32 ret_val = -E1000_ERR_NVM;
+> +
+> +	for (i = 0; i < attempts; i++) {
+> +		if (ee_reg == E1000_NVM_POLL_READ)
+> +			reg = rd32(E1000_EERD);
+> +		else
+> +			reg = rd32(E1000_EEWR);
+> +
+> +		if (reg & E1000_NVM_RW_REG_DONE) {
+> +			ret_val = 0;
+> +			break;
 > +		}
 > +
-> +		swfw_sync = rd32(E1000_SW_FW_SYNC);
-> +		if (!(swfw_sync & (fwmask | swmask)))
-> +			break;
-> +
-> +		/* Firmware currently using resource (fwmask) */
-> +		igc_put_hw_semaphore(hw);
-> +		mdelay(5);
-> +		i++;
+> +		udelay(5);
 > +	}
 > +
-> +	if (i == timeout) {
-> +		hw_dbg("Driver can't access resource, SW_FW_SYNC timeout.\n");
-> +		ret_val = -E1000_ERR_SWFW_SYNC;
-> +		goto out;
-> +	}
-> +
-> +	swfw_sync |= swmask;
-> +	wr32(E1000_SW_FW_SYNC, swfw_sync);
-> +
-> +	igc_put_hw_semaphore(hw);
-> +out:
 > +	return ret_val;
 > +}
 > +
 > +/**
-> + *  igc_release_swfw_sync_i225 - Release SW/FW semaphore
-> + *  @hw: pointer to the HW structure
-> + *  @mask: specifies which semaphore to acquire
-> + *
-> + *  Release the SW/FW semaphore used to access the PHY or NVM.  The mask
-> + *  will also specify which port we're releasing the lock for.
-> + **/
-> +void igc_release_swfw_sync_i225(struct e1000_hw *hw, u16 mask)
-> +{
-> +	u32 swfw_sync;
-> +
-> +	while (igc_get_hw_semaphore_i225(hw))
-> +		; /* Empty */
-
-This loop needs a bounding condition
-
-> +
-> +	swfw_sync = rd32(E1000_SW_FW_SYNC);
-> +	swfw_sync &= ~mask;
-> +	wr32(E1000_SW_FW_SYNC, swfw_sync);
-> +
-> +	igc_put_hw_semaphore(hw);
-> +}
-> diff --git a/drivers/net/ethernet/intel/igc/e1000_mac.c b/drivers/net/ethernet/intel/igc/e1000_mac.c
-> index c38435bb8a8c..27e478a9854c 100644
-> --- a/drivers/net/ethernet/intel/igc/e1000_mac.c
-> +++ b/drivers/net/ethernet/intel/igc/e1000_mac.c
-> @@ -2,8 +2,15 @@
->   /* Copyright (c)  2018 Intel Corporation */
->   
->   #include <linux/pci.h>
-> +#include <linux/delay.h>
-> +
-> +#include "e1000_mac.h"
->   #include "e1000_hw.h"
->   
-> +/* forward declaration */
-> +static s32 igc_set_default_fc(struct e1000_hw *hw);
-> +static s32 igc_set_fc_watermarks(struct e1000_hw *hw);
-> +
->   /**
->    *  igc_get_bus_info_pcie - Get PCIe bus information
->    *  @hw: pointer to the HW structure
-> @@ -49,3 +56,316 @@ s32 igc_get_bus_info_pcie(struct e1000_hw *hw)
->   
->   	return 0;
->   }
-> +
-> +/**
-> + *  igc_disable_pcie_master - Disables PCI-express master access
+> + *  igc_acquire_nvm - Generic request for access to EEPROM
 > + *  @hw: pointer to the HW structure
 > + *
-> + *  Returns 0 (0) if successful, else returns -10
-> + *  (-E1000_ERR_MASTER_REQUESTS_PENDING) if master disable bit has not caused
-> + *  the master requests to be disabled.
-> + *
-> + *  Disables PCI-Express master access and verifies there are no pending
-> + *  requests.
+> + *  Set the EEPROM access request bit and wait for EEPROM access grant bit.
+> + *  Return successful if access grant bit set, else clear the request for
+> + *  EEPROM access and return -E1000_ERR_NVM (-1).
 > + **/
-> +s32 igc_disable_pcie_master(struct e1000_hw *hw)
+> +s32 igc_acquire_nvm(struct e1000_hw *hw)
 > +{
-> +	u32 ctrl;
-> +	s32 timeout = MASTER_DISABLE_TIMEOUT;
+> +	u32 eecd = rd32(E1000_EECD);
+> +	s32 timeout = E1000_NVM_GRANT_ATTEMPTS;
 > +	s32 ret_val = 0;
 > +
-> +	if (hw->bus.type != e1000_bus_type_pci_express)
-> +		goto out;
-> +
-> +	ctrl = rd32(E1000_CTRL);
-> +	ctrl |= E1000_CTRL_GIO_MASTER_DISABLE;
-> +	wr32(E1000_CTRL, ctrl);
+> +	wr32(E1000_EECD, eecd | E1000_EECD_REQ);
+> +	eecd = rd32(E1000_EECD);
 > +
 > +	while (timeout) {
-> +		if (!(rd32(E1000_STATUS) &
-> +		    E1000_STATUS_GIO_MASTER_ENABLE))
+> +		if (eecd & E1000_EECD_GNT)
 > +			break;
-> +		usleep_range(2000, 3000);
+> +		udelay(5);
+> +		eecd = rd32(E1000_EECD);
 > +		timeout--;
 > +	}
 > +
 > +	if (!timeout) {
-> +		hw_dbg("Master requests are pending.\n");
-> +		ret_val = -E1000_ERR_MASTER_REQUESTS_PENDING;
-> +		goto out;
+> +		eecd &= ~E1000_EECD_REQ;
+> +		wr32(E1000_EECD, eecd);
+> +		hw_dbg("Could not acquire NVM grant\n");
+> +		ret_val = -E1000_ERR_NVM;
 > +	}
 > +
-> +out:
 > +	return ret_val;
 > +}
 > +
 > +/**
-> + *  igc_init_rx_addrs - Initialize receive address's
-
-s/address's/addresses/
-
+> + *  igc_release_nvm - Release exclusive access to EEPROM
 > + *  @hw: pointer to the HW structure
-> + *  @rar_count: receive address registers
 > + *
-> + *  Setups the receive address registers by setting the base receive address
-
-s/Setups/Setup/
-
-> + *  register to the devices MAC address and clearing all the other receive
-> + *  address registers to 0.
+> + *  Stop any current commands to the EEPROM and clear the EEPROM request bit.
 > + **/
-> +void igc_init_rx_addrs(struct e1000_hw *hw, u16 rar_count)
+> +void igc_release_nvm(struct e1000_hw *hw)
 > +{
-> +	u32 i;
-> +	u8 mac_addr[ETH_ALEN] = {0};
+> +	u32 eecd;
 > +
-> +	/* Setup the receive address */
-> +	hw_dbg("Programming MAC Address into RAR[0]\n");
-> +
-> +	hw->mac.ops.rar_set(hw, hw->mac.addr, 0);
-> +
-> +	/* Zero out the other (rar_entry_count - 1) receive addresses */
-> +	hw_dbg("Clearing RAR[1-%u]\n", rar_count - 1);
-> +	for (i = 1; i < rar_count; i++)
-> +		hw->mac.ops.rar_set(hw, mac_addr, i);
+> +	eecd = rd32(E1000_EECD);
+> +	eecd &= ~E1000_EECD_REQ;
+> +	wr32(E1000_EECD, eecd);
 > +}
 > +
 > +/**
-> + *  igc_setup_link - Setup flow control and link settings
+> + *  igc_read_nvm_eerd - Reads EEPROM using EERD register
 > + *  @hw: pointer to the HW structure
+> + *  @offset: offset of word in the EEPROM to read
+> + *  @words: number of words to read
+> + *  @data: word read from the EEPROM
 > + *
-> + *  Determines which flow control settings to use, then configures flow
-> + *  control.  Calls the appropriate media-specific link configuration
-> + *  function.  Assuming the adapter has a valid link partner, a valid link
-> + *  should be established.  Assumes the hardware has previously been reset
-> + *  and the transmitter and receiver are not enabled.
+> + *  Reads a 16 bit word from the EEPROM using the EERD register.
 > + **/
-> +s32 igc_setup_link(struct e1000_hw *hw)
+> +s32 igc_read_nvm_eerd(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
 > +{
+> +	struct e1000_nvm_info *nvm = &hw->nvm;
+> +	u32 i, eerd = 0;
 > +	s32 ret_val = 0;
 > +
-> +	/* In the case of the phy reset being blocked, we already have a link.
-> +	 * We do not need to set it up again.
+> +	/* A check for invalid values:  offset too large, too many words,
+> +	 * and not enough words.
 > +	 */
+> +	if (offset >= nvm->word_size || (words > (nvm->word_size - offset)) ||
+> +	    words == 0) {
+> +		hw_dbg("nvm parameter(s) out of bounds\n");
+> +		ret_val = -E1000_ERR_NVM;
+> +		goto out;
+> +	}
 > +
-> +	/* If requested flow control is set to default, set flow control
-> +	 * based on the EEPROM flow control settings.
-> +	 */
-> +	if (hw->fc.requested_mode == e1000_fc_default) {
-> +		ret_val = igc_set_default_fc(hw);
+> +	for (i = 0; i < words; i++) {
+> +		eerd = ((offset + i) << E1000_NVM_RW_ADDR_SHIFT) +
+> +			E1000_NVM_RW_REG_START;
+> +
+> +		wr32(E1000_EERD, eerd);
+> +		ret_val = igc_poll_eerd_eewr_done(hw, E1000_NVM_POLL_READ);
 > +		if (ret_val)
-> +			goto out;
-> +	}
-> +
-> +	/* We want to save off the original Flow Control configuration just
-> +	 * in case we get disconnected and then reconnected into a different
-> +	 * hub or switch with different Flow Control capabilities.
-> +	 */
-> +	hw->fc.current_mode = hw->fc.requested_mode;
-> +
-> +	hw_dbg("After fix-ups FlowControl is now = %x\n", hw->fc.current_mode);
-> +
-> +	/* Call the necessary media_type subroutine to configure the link. */
-> +	ret_val = hw->mac.ops.setup_physical_interface(hw);
-> +	if (ret_val)
-> +		goto out;
-> +
-> +	/* Initialize the flow control address, type, and PAUSE timer
-> +	 * registers to their default values.  This is done even if flow
-> +	 * control is disabled, because it does not hurt anything to
-> +	 * initialize these registers.
-> +	 */
-> +	hw_dbg("Initializing the Flow Control address, type and timer regs\n");
-> +	wr32(E1000_FCT, FLOW_CONTROL_TYPE);
-> +	wr32(E1000_FCAH, FLOW_CONTROL_ADDRESS_HIGH);
-> +	wr32(E1000_FCAL, FLOW_CONTROL_ADDRESS_LOW);
-> +
-> +	wr32(E1000_FCTTV, hw->fc.pause_time);
-> +
-> +	ret_val = igc_set_fc_watermarks(hw);
-> +
-> +out:
-> +
-> +	return ret_val;
-> +}
-> +
-> +/**
-> + *  igc_set_default_fc - Set flow control default values
-> + *  @hw: pointer to the HW structure
-> + *
-> + *  Read the EEPROM for the default values for flow control and store the
-> + *  values.
-> + **/
-> +static s32 igc_set_default_fc(struct e1000_hw *hw)
-> +{
-> +	return 0;
-> +}
-> +
-> +/**
-> + *  igc_set_fc_watermarks - Set flow control high/low watermarks
-> + *  @hw: pointer to the HW structure
-> + *
-> + *  Sets the flow control high/low threshold (watermark) registers.  If
-> + *  flow control XON frame transmission is enabled, then set XON frame
-> + *  tansmission as well.
-
-s/tansmission/transmission/
-
-> + **/
-> +static s32 igc_set_fc_watermarks(struct e1000_hw *hw)
-> +{
-> +	s32 ret_val = 0;
-> +	u32 fcrtl = 0, fcrth = 0;
-> +
-> +	/* Set the flow control receive threshold registers.  Normally,
-> +	 * these registers will be set to a default threshold that may be
-> +	 * adjusted later by the driver's runtime code.  However, if the
-> +	 * ability to transmit pause frames is not enabled, then these
-> +	 * registers will be set to 0.
-> +	 */
-> +	if (hw->fc.current_mode & e1000_fc_tx_pause) {
-> +		/* We need to set up the Receive Threshold high and low water
-> +		 * marks as well as (optionally) enabling the transmission of
-> +		 * XON frames.
-> +		 */
-> +		fcrtl = hw->fc.low_water;
-> +		if (hw->fc.send_xon)
-> +			fcrtl |= E1000_FCRTL_XONE;
-> +
-> +		fcrth = hw->fc.high_water;
-> +	}
-> +	wr32(E1000_FCRTL, fcrtl);
-> +	wr32(E1000_FCRTH, fcrth);
-> +
-> +	return ret_val;
-> +}
-> +
-> +/**
-> + *  igc_clear_hw_cntrs_base - Clear base hardware counters
-> + *  @hw: pointer to the HW structure
-> + *
-> + *  Clears the base hardware counters by reading the counter registers.
-> + **/
-> +void igc_clear_hw_cntrs_base(struct e1000_hw *hw)
-> +{
-> +	rd32(E1000_CRCERRS);
-> +	rd32(E1000_SYMERRS);
-> +	rd32(E1000_MPC);
-> +	rd32(E1000_SCC);
-> +	rd32(E1000_ECOL);
-> +	rd32(E1000_MCC);
-> +	rd32(E1000_LATECOL);
-> +	rd32(E1000_COLC);
-> +	rd32(E1000_DC);
-> +	rd32(E1000_SEC);
-> +	rd32(E1000_RLEC);
-> +	rd32(E1000_XONRXC);
-> +	rd32(E1000_XONTXC);
-> +	rd32(E1000_XOFFRXC);
-> +	rd32(E1000_XOFFTXC);
-> +	rd32(E1000_FCRUC);
-> +	rd32(E1000_GPRC);
-> +	rd32(E1000_BPRC);
-> +	rd32(E1000_MPRC);
-> +	rd32(E1000_GPTC);
-> +	rd32(E1000_GORCL);
-> +	rd32(E1000_GORCH);
-> +	rd32(E1000_GOTCL);
-> +	rd32(E1000_GOTCH);
-> +	rd32(E1000_RNBC);
-> +	rd32(E1000_RUC);
-> +	rd32(E1000_RFC);
-> +	rd32(E1000_ROC);
-> +	rd32(E1000_RJC);
-> +	rd32(E1000_TORL);
-> +	rd32(E1000_TORH);
-> +	rd32(E1000_TOTL);
-> +	rd32(E1000_TOTH);
-> +	rd32(E1000_TPR);
-> +	rd32(E1000_TPT);
-> +	rd32(E1000_MPTC);
-> +	rd32(E1000_BPTC);
-> +
-> +	rd32(E1000_PRC64);
-> +	rd32(E1000_PRC127);
-> +	rd32(E1000_PRC255);
-> +	rd32(E1000_PRC511);
-> +	rd32(E1000_PRC1023);
-> +	rd32(E1000_PRC1522);
-> +	rd32(E1000_PTC64);
-> +	rd32(E1000_PTC127);
-> +	rd32(E1000_PTC255);
-> +	rd32(E1000_PTC511);
-> +	rd32(E1000_PTC1023);
-> +	rd32(E1000_PTC1522);
-> +
-> +	rd32(E1000_ALGNERRC);
-> +	rd32(E1000_RXERRC);
-> +	rd32(E1000_TNCRS);
-> +	rd32(E1000_CEXTERR);
-> +	rd32(E1000_TSCTC);
-> +	rd32(E1000_TSCTFC);
-> +
-> +	rd32(E1000_MGTPRC);
-> +	rd32(E1000_MGTPDC);
-> +	rd32(E1000_MGTPTC);
-> +
-> +	rd32(E1000_IAC);
-> +	rd32(E1000_ICRXOC);
-> +
-> +	rd32(E1000_ICRXPTC);
-> +	rd32(E1000_ICRXATC);
-> +	rd32(E1000_ICTXPTC);
-> +	rd32(E1000_ICTXATC);
-> +	rd32(E1000_ICTXQEC);
-> +	rd32(E1000_ICTXQMTC);
-> +	rd32(E1000_ICRXDMTC);
-> +
-> +	rd32(E1000_CBTMPC);
-> +	rd32(E1000_HTDPMC);
-> +	rd32(E1000_CBRMPC);
-> +	rd32(E1000_RPTHC);
-> +	rd32(E1000_HGPTC);
-> +	rd32(E1000_HTCBDPC);
-> +	rd32(E1000_HGORCL);
-> +	rd32(E1000_HGORCH);
-> +	rd32(E1000_HGOTCL);
-> +	rd32(E1000_HGOTCH);
-> +	rd32(E1000_LENERRS);
-> +}
-> +
-> +/**
-> + *  igc_get_auto_rd_done - Check for auto read completion
-> + *  @hw: pointer to the HW structure
-> + *
-> + *  Check EEPROM for Auto Read done bit.
-> + **/
-> +s32 igc_get_auto_rd_done(struct e1000_hw *hw)
-> +{
-> +	s32 i = 0;
-> +	s32 ret_val = 0;
-> +
-> +	while (i < AUTO_READ_DONE_TIMEOUT) {
-> +		if (rd32(E1000_EECD) & E1000_EECD_AUTO_RD)
 > +			break;
-> +		usleep_range(1000, 2000);
-> +		i++;
+> +
+> +		data[i] = (rd32(E1000_EERD) >> E1000_NVM_RW_REG_DATA);
 > +	}
 > +
-> +	if (i == AUTO_READ_DONE_TIMEOUT) {
-> +		hw_dbg("Auto read by HW from NVM has not completed.\n");
-> +		ret_val = -E1000_ERR_RESET;
+> +out:
+> +	return ret_val;
+> +}
+> +
+> +/**
+> + *  igc_read_mac_addr - Read device MAC address
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Reads the device MAC address from the EEPROM and stores the value.
+> + *  Since devices with two ports use the same EEPROM, we increment the
+> + *  last bit in the MAC address for the second port.
+> + **/
+> +s32 igc_read_mac_addr(struct e1000_hw *hw)
+> +{
+> +	u32 rar_high;
+> +	u32 rar_low;
+> +	u16 i;
+> +
+> +	rar_high = rd32(E1000_RAH(0));
+> +	rar_low = rd32(E1000_RAL(0));
+> +
+> +	for (i = 0; i < E1000_RAL_MAC_ADDR_LEN; i++)
+> +		hw->mac.perm_addr[i] = (u8)(rar_low >> (i * 8));
+> +
+> +	for (i = 0; i < E1000_RAH_MAC_ADDR_LEN; i++)
+> +		hw->mac.perm_addr[i + 4] = (u8)(rar_high >> (i * 8));
+> +
+> +	for (i = 0; i < ETH_ALEN; i++)
+> +		hw->mac.addr[i] = hw->mac.perm_addr[i];
+
+Is there supposed to be an increment here for the second port as 
+mentioned in the function comments?
+
+> +
+> +	return 0;
+
+Can this be a void function?
+
+> +}
+> +
+> +/**
+> + *  igc_validate_nvm_checksum - Validate EEPROM checksum
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Calculates the EEPROM checksum by reading/adding each word of the EEPROM
+> + *  and then verifies that the sum of the EEPROM is equal to 0xBABA.
+> + **/
+> +s32 igc_validate_nvm_checksum(struct e1000_hw *hw)
+> +{
+> +	s32 ret_val = 0;
+> +	u16 checksum = 0;
+> +	u16 i, nvm_data;
+> +
+> +	for (i = 0; i < (NVM_CHECKSUM_REG + 1); i++) {
+> +		ret_val = hw->nvm.ops.read(hw, i, 1, &nvm_data);
+> +		if (ret_val) {
+> +			hw_dbg("NVM Read Error\n");
+> +			goto out;
+> +		}
+> +		checksum += nvm_data;
+> +	}
+
+This looks slow, reading one word at a time.  Can you read a buffer at a 
+time to speed things up a bit?
+
+> +
+> +	if (checksum != (u16)NVM_SUM) {
+> +		hw_dbg("NVM Checksum Invalid\n");
+> +		ret_val = -E1000_ERR_NVM;
 > +		goto out;
 > +	}
 > +
@@ -979,148 +1226,149 @@ s/tansmission/transmission/
 > +}
 > +
 > +/**
-> + *  igc_put_hw_semaphore - Release hardware semaphore
+> + *  igc_update_nvm_checksum - Update EEPROM checksum
 > + *  @hw: pointer to the HW structure
 > + *
-> + *  Release hardware semaphore used to access the PHY or NVM
+> + *  Updates the EEPROM checksum by reading/adding each word of the EEPROM
+> + *  up to the checksum.  Then calculates the EEPROM checksum and writes the
+> + *  value to the EEPROM.
 > + **/
-> +void igc_put_hw_semaphore(struct e1000_hw *hw)
+> +s32 igc_update_nvm_checksum(struct e1000_hw *hw)
 > +{
-> +	u32 swsm;
+> +	s32  ret_val;
+> +	u16 checksum = 0;
+> +	u16 i, nvm_data;
 > +
-> +	swsm = rd32(E1000_SWSM);
+> +	for (i = 0; i < NVM_CHECKSUM_REG; i++) {
+> +		ret_val = hw->nvm.ops.read(hw, i, 1, &nvm_data);
+> +		if (ret_val) {
+> +			hw_dbg("NVM Read Error while updating checksum.\n");
+> +			goto out;
+> +		}
+> +		checksum += nvm_data;
+
+Again, maybe do buffer reads rather than one word at a time?
+
+> +	}
+> +	checksum = (u16)NVM_SUM - checksum;
+> +	ret_val = hw->nvm.ops.write(hw, NVM_CHECKSUM_REG, 1, &checksum);
+> +	if (ret_val)
+> +		hw_dbg("NVM Write Error while updating checksum.\n");
 > +
-> +	swsm &= ~(E1000_SWSM_SMBI | E1000_SWSM_SWESMBI);
-> +
-> +	wr32(E1000_SWSM, swsm);
+> +out:
+> +	return ret_val;
 > +}
-> diff --git a/drivers/net/ethernet/intel/igc/e1000_mac.h b/drivers/net/ethernet/intel/igc/e1000_mac.h
-> index afb0f7b28222..2f8dbf17800a 100644
-> --- a/drivers/net/ethernet/intel/igc/e1000_mac.h
-> +++ b/drivers/net/ethernet/intel/igc/e1000_mac.h
-> @@ -4,10 +4,21 @@
->   #ifndef _E1000_MAC_H_
->   #define _E1000_MAC_H_
->   
-> +#include "e1000_hw.h"
-> +#include "e1000_defines.h"
+> diff --git a/drivers/net/ethernet/intel/igc/e1000_nvm.h b/drivers/net/ethernet/intel/igc/e1000_nvm.h
+> new file mode 100644
+> index 000000000000..b6237bd515e9
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/igc/e1000_nvm.h
+> @@ -0,0 +1,16 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/* Copyright (c)  2018 Intel Corporation */
 > +
->   #ifndef E1000_REMOVED
->   #define E1000_REMOVED(a) (0)
->   #endif /* E1000_REMOVED */
->   
-> -s32 igc_get_bus_info_pcie(struct e1000_hw *hw);
-> +/* forward declaration */
-> +s32  igc_disable_pcie_master(struct e1000_hw *hw);
-> +void igc_init_rx_addrs(struct e1000_hw *hw, u16 rar_count);
-> +s32  igc_setup_link(struct e1000_hw *hw);
-> +void igc_clear_hw_cntrs_base(struct e1000_hw *hw);
-> +s32 igc_get_auto_rd_done(struct e1000_hw *hw);
-> +void igc_put_hw_semaphore(struct e1000_hw *hw);
+> +#ifndef _E1000_NVM_H_
+> +#define _E1000_NVM_H_
 > +
-> +s32  igc_get_bus_info_pcie(struct e1000_hw *hw);
->   
->   #endif
+> +s32 igc_acquire_nvm(struct e1000_hw *hw);
+> +void igc_release_nvm(struct e1000_hw *hw);
+> +s32 igc_read_mac_addr(struct e1000_hw *hw);
+> +
+> +s32 igc_read_nvm_eerd(struct e1000_hw *hw, u16 offset, u16 words, u16 *data);
+> +
+> +s32  igc_validate_nvm_checksum(struct e1000_hw *hw);
+> +s32  igc_update_nvm_checksum(struct e1000_hw *hw);
+> +
+> +#endif
 > diff --git a/drivers/net/ethernet/intel/igc/e1000_regs.h b/drivers/net/ethernet/intel/igc/e1000_regs.h
-> index dcc4d89c9933..66d5c757dae8 100644
+> index 66d5c757dae8..698ce0cac757 100644
 > --- a/drivers/net/ethernet/intel/igc/e1000_regs.h
 > +++ b/drivers/net/ethernet/intel/igc/e1000_regs.h
-> @@ -7,6 +7,7 @@
->   /* General Register Descriptions */
->   #define E1000_CTRL		0x00000  /* Device Control - RW */
->   #define E1000_STATUS		0x00008  /* Device Status - RO */
-> +#define E1000_EECD		0x00010  /* EEPROM/Flash Control - RW */
->   #define E1000_CTRL_EXT		0x00018  /* Extended Device Control - RW */
->   #define E1000_MDIC		0x00020  /* MDI Control - RW */
->   #define E1000_MDICNFG		0x00E04  /* MDC/MDIO Configuration - RW */
-> @@ -75,6 +76,30 @@
->   #define E1000_IVAR_MISC		0x01740   /* IVAR for "other" causes - RW */
->   #define E1000_GPIE		0x01514  /* General Purpose Intr Enable - RW */
+> @@ -259,6 +259,9 @@
+>   /* Management registers */
+>   #define E1000_MANC	0x05820  /* Management Control - RW */
 >   
-> +/* Interrupt Cause Rx Packet Timer Expire Count */
-> +#define E1000_ICRXPTC		0x04104
-> +/* Interrupt Cause Rx Absolute Timer Expire Count */
-> +#define E1000_ICRXATC		0x04108
-> +/* Interrupt Cause Tx Packet Timer Expire Count */
-> +#define E1000_ICTXPTC		0x0410C
-> +/* Interrupt Cause Tx Absolute Timer Expire Count */
-> +#define E1000_ICTXATC		0x04110
-> +/* Interrupt Cause Tx Queue Empty Count */
-> +#define E1000_ICTXQEC		0x04118
-> +/* Interrupt Cause Tx Queue Minimum Threshold Count */
-> +#define E1000_ICTXQMTC		0x0411C
-> +/* Interrupt Cause Rx Descriptor Minimum Threshold Count */
-> +#define E1000_ICRXDMTC		0x04120
-> +/* Interrupt Cause Receiver Overrun Count */
-> +#define E1000_ICRXOC		0x04124
-
-These comments intersperced make the #defines hard to read - putting 
-them off to the side would help a lot.
-
+> +/* Shadow Ram Write Register - RW */
+> +#define E1000_SRWR	0x12018
 > +
-> +#define E1000_CBTMPC		0x0402C  /* Circuit Breaker TX Packet Count */
-> +#define E1000_HTDPMC		0x0403C  /* Host Transmit Discarded Packets */
-> +#define E1000_CBRMPC		0x040FC  /* Circuit Breaker RX Packet Count */
-> +#define E1000_RPTHC		0x04104  /* Rx Packets To Host */
-> +#define E1000_HGPTC		0x04118  /* Host Good Packets TX Count */
-> +#define E1000_HTCBDPC		0x04124  /* Host TX Circ.Breaker Drop Count */
-> +
->   /* MSI-X Table Register Descriptions */
->   #define E1000_PBACL		0x05B68  /* MSIx PBA Clear - R/W 1 to clear */
+>   /* forward declaration */
+>   struct e1000_hw;
+>   u32 igc_rd32(struct e1000_hw *hw, u32 reg);
+> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+> index c61212ccb60e..735a5e3d0717 100644
+> --- a/drivers/net/ethernet/intel/igc/igc.h
+> +++ b/drivers/net/ethernet/intel/igc/igc.h
+> @@ -133,6 +133,10 @@ enum igc_tx_flags {
+>   	IGC_TX_FLAGS_CSUM       = 0x20,
+>   };
 >   
-> @@ -92,6 +117,8 @@
->   #define E1000_RXCSUM		0x05000  /* Rx Checksum Control - RW */
->   #define E1000_RLPML		0x05004  /* Rx Long Packet Max Length */
->   #define E1000_RFCTL		0x05008  /* Receive Filter Control*/
-> +#define E1000_MTA		0x05200  /* Multicast Table Array - RW Array */
-> +#define E1000_UTA		0x0A000 /* Unicast Table Array - RW */
->   #define E1000_RAL(_n)		(0x05400 + ((_n) * 0x08))
->   #define E1000_RAH(_n)		(0x05404 + ((_n) * 0x08))
->   #define E1000_VLAPQF		0x055B0  /* VLAN Priority Queuue - RW */
+> +enum igc_boards {
+> +	board_base,
+> +};
+> +
+>   /** The largest size we can write to the descriptor is 65535.  In order to
+>    * maintain a power of two alignment we have to limit ourselves to 32K.
+>    **/
+> @@ -348,6 +352,8 @@ struct igc_adapter {
+>   	spinlock_t nfc_lock;
+>   
+>   	struct igc_mac_addr *mac_table;
+> +
+> +	struct e1000_info ei;
+>   };
+>   
+>   /* igc_desc_unused - calculate if we have unused descriptors */
 > diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 67826041eb3c..9a99c7d68796 100644
+> index 9a99c7d68796..dcc7e700074f 100644
 > --- a/drivers/net/ethernet/intel/igc/igc_main.c
 > +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -86,6 +86,14 @@ enum latency_range {
+> @@ -19,9 +19,13 @@ static const char igc_driver_string[] = DRV_SUMMARY;
+>   static const char igc_copyright[] =
+>   	"Copyright(c) 2018 Intel Corporation.";
 >   
->   void igc_reset(struct igc_adapter *adapter)
->   {
-> +	struct pci_dev *pdev = adapter->pdev;
-> +	struct e1000_hw *hw = &adapter->hw;
+> +static const struct e1000_info *igc_info_tbl[] = {
+> +	[board_base] = &e1000_base_info,
+> +};
 > +
-> +	hw->mac.ops.reset_hw(hw);
-> +
-> +	if (hw->mac.ops.init_hw(hw))
-> +		dev_err(&pdev->dev, "Hardware Error\n");
-
-Is there something more specific that can be said here, including 
-something about it being the init that failed?
-
-> +
->   	if (!netif_running(adapter->netdev))
->   		igc_power_down_link(adapter);
->   }
-> @@ -3621,6 +3629,19 @@ static void igc_nfc_filter_exit(struct igc_adapter *adapter)
->   }
+>   static const struct pci_device_id igc_pci_tbl[] = {
+> -	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I225_LM) },
+> -	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I225_V) },
+> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I225_LM), board_base },
+> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I225_V), board_base },
+>   	/* required last entry */
+>   	{0, }
+>   };
+> @@ -3334,6 +3338,7 @@ static int igc_probe(struct pci_dev *pdev,
+>   	struct net_device *netdev;
+>   	struct igc_adapter *adapter;
+>   	struct e1000_hw *hw;
+> +	const struct e1000_info *ei = igc_info_tbl[ent->driver_data];
+>   	int err, pci_using_dac;
 >   
->   /**
-> + *  igc_get_hw_dev - return device
-> + *  @hw: pointer to hardware structure
-> + *
-> + *  used by hardware layer to print debugging information
-> + **/
-> +struct net_device *igc_get_hw_dev(struct e1000_hw *hw)
-> +{
-> +	struct igc_adapter *adapter = hw->back;
+>   	err = pci_enable_device_mem(pdev);
+> @@ -3417,6 +3422,14 @@ static int igc_probe(struct pci_dev *pdev,
+>   	hw->subsystem_vendor_id = pdev->subsystem_vendor;
+>   	hw->subsystem_device_id = pdev->subsystem_device;
+>   
+> +	/* Copy the default MAC and PHY function pointers */
+> +	memcpy(&hw->mac.ops, ei->mac_ops, sizeof(hw->mac.ops));
 > +
-> +	return adapter->netdev;
-
-I think this can either become a #define or an inline in a .h file
-
-> +}
+> +	/* Initialize skew-specific constants */
+> +	err = ei->get_invariants(hw);
+> +	if (err)
+> +		goto err_sw_init;
 > +
-> +/**
->    *  igc_init_module - Driver Registration Routine
->    *
->    *  igc_init_module is the first routine called when the driver is
+>   	/* setup the private structure */
+>   	err = igc_sw_init(adapter);
+>   	if (err)
+> @@ -3452,6 +3465,9 @@ static int igc_probe(struct pci_dev *pdev,
+>   	 /* carrier off reporting is important to ethtool even BEFORE open */
+>   	netif_carrier_off(netdev);
+>   
+> +	/* Check if Media Autosense is enabled */
+> +	adapter->ei = *ei;
+> +
+>   	dev_info(&pdev->dev, "@SUMMARY@");
+>   	/* print bus type/speed/width info */
+>   	dev_info(&pdev->dev, "%s: (PCIe:%s:%s) ",
 > 
