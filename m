@@ -1,144 +1,223 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Mon, 02 Jul 2018 22:58:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- a033baf24be32dbc9f75d84b5dd90600ab65f2c4
-Message-ID: <5b3a3daf.N+A2wnihT195xNfQ%lkp@intel.com>
+Date: Mon, 2 Jul 2018 23:14:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 9/15]
+ net/core/dev.c:3595:35: error: 'struct net_device' has no member named
+ 'xps_maps'
+Message-ID: <201807022316.jJ8PUnyV%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: a033baf24be32dbc9f75d84b5dd90600ab65f2c4  Documentation: ixgb: Convert to RST format
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   a033baf24be32dbc9f75d84b5dd90600ab65f2c4
+commit: fba8131dba987290a4f14a04ad74870654f81a6b [9/15] net: Add support for subordinate traffic classes to netdev_pick_tx
+config: x86_64-randconfig-s5-07022124 (attached as .config)
+compiler: gcc-7 (Debian 7.3.0-16) 7.3.0
+reproduce:
+        git checkout fba8131dba987290a4f14a04ad74870654f81a6b
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
-elapsed time: 57m
+All error/warnings (new ones prefixed by >>):
 
-configs tested: 119
+   In file included from include/linux/rculist.h:11:0,
+                    from include/linux/pid.h:5,
+                    from include/linux/sched.h:14,
+                    from include/linux/uaccess.h:5,
+                    from net/core/dev.c:75:
+   net/core/dev.c: In function 'get_xps_queue':
+>> net/core/dev.c:3595:35: error: 'struct net_device' has no member named 'xps_maps'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                                      ^
+   include/linux/rcupdate.h:350:10: note: in definition of macro '__rcu_dereference_check'
+     typeof(*p) *________p1 = (typeof(*p) *__force)READ_ONCE(p); \
+             ^
+   include/linux/rcupdate.h:545:28: note: in expansion of macro 'rcu_dereference_check'
+    #define rcu_dereference(p) rcu_dereference_check(p, 0)
+                               ^~~~~~~~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:13: note: in expansion of macro 'rcu_dereference'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                ^~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:35: error: 'struct net_device' has no member named 'xps_maps'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                                      ^
+   include/linux/rcupdate.h:350:36: note: in definition of macro '__rcu_dereference_check'
+     typeof(*p) *________p1 = (typeof(*p) *__force)READ_ONCE(p); \
+                                       ^
+   include/linux/rcupdate.h:545:28: note: in expansion of macro 'rcu_dereference_check'
+    #define rcu_dereference(p) rcu_dereference_check(p, 0)
+                               ^~~~~~~~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:13: note: in expansion of macro 'rcu_dereference'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                ^~~~~~~~~~~~~~~
+   In file included from arch/x86/include/asm/current.h:5:0,
+                    from include/linux/sched.h:12,
+                    from include/linux/uaccess.h:5,
+                    from net/core/dev.c:75:
+>> net/core/dev.c:3595:35: error: 'struct net_device' has no member named 'xps_maps'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                                      ^
+   include/linux/compiler.h:250:17: note: in definition of macro '__READ_ONCE'
+     union { typeof(x) __val; char __c[1]; } __u;   \
+                    ^
+   include/linux/rcupdate.h:350:48: note: in expansion of macro 'READ_ONCE'
+     typeof(*p) *________p1 = (typeof(*p) *__force)READ_ONCE(p); \
+                                                   ^~~~~~~~~
+   include/linux/rcupdate.h:487:2: note: in expansion of macro '__rcu_dereference_check'
+     __rcu_dereference_check((p), (c) || rcu_read_lock_held(), __rcu)
+     ^~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/rcupdate.h:545:28: note: in expansion of macro 'rcu_dereference_check'
+    #define rcu_dereference(p) rcu_dereference_check(p, 0)
+                               ^~~~~~~~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:13: note: in expansion of macro 'rcu_dereference'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                ^~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:35: error: 'struct net_device' has no member named 'xps_maps'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                                      ^
+   include/linux/compiler.h:252:22: note: in definition of macro '__READ_ONCE'
+      __read_once_size(&(x), __u.__c, sizeof(x));  \
+                         ^
+   include/linux/rcupdate.h:350:48: note: in expansion of macro 'READ_ONCE'
+     typeof(*p) *________p1 = (typeof(*p) *__force)READ_ONCE(p); \
+                                                   ^~~~~~~~~
+   include/linux/rcupdate.h:487:2: note: in expansion of macro '__rcu_dereference_check'
+     __rcu_dereference_check((p), (c) || rcu_read_lock_held(), __rcu)
+     ^~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/rcupdate.h:545:28: note: in expansion of macro 'rcu_dereference_check'
+    #define rcu_dereference(p) rcu_dereference_check(p, 0)
+                               ^~~~~~~~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:13: note: in expansion of macro 'rcu_dereference'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                ^~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:35: error: 'struct net_device' has no member named 'xps_maps'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                                      ^
+   include/linux/compiler.h:252:42: note: in definition of macro '__READ_ONCE'
+      __read_once_size(&(x), __u.__c, sizeof(x));  \
+                                             ^
+   include/linux/rcupdate.h:350:48: note: in expansion of macro 'READ_ONCE'
+     typeof(*p) *________p1 = (typeof(*p) *__force)READ_ONCE(p); \
+                                                   ^~~~~~~~~
+   include/linux/rcupdate.h:487:2: note: in expansion of macro '__rcu_dereference_check'
+     __rcu_dereference_check((p), (c) || rcu_read_lock_held(), __rcu)
+     ^~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/rcupdate.h:545:28: note: in expansion of macro 'rcu_dereference_check'
+    #define rcu_dereference(p) rcu_dereference_check(p, 0)
+                               ^~~~~~~~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:13: note: in expansion of macro 'rcu_dereference'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                ^~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:35: error: 'struct net_device' has no member named 'xps_maps'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                                      ^
+   include/linux/compiler.h:254:30: note: in definition of macro '__READ_ONCE'
+      __read_once_size_nocheck(&(x), __u.__c, sizeof(x)); \
+                                 ^
+   include/linux/rcupdate.h:350:48: note: in expansion of macro 'READ_ONCE'
+     typeof(*p) *________p1 = (typeof(*p) *__force)READ_ONCE(p); \
+                                                   ^~~~~~~~~
+   include/linux/rcupdate.h:487:2: note: in expansion of macro '__rcu_dereference_check'
+     __rcu_dereference_check((p), (c) || rcu_read_lock_held(), __rcu)
+     ^~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/rcupdate.h:545:28: note: in expansion of macro 'rcu_dereference_check'
+    #define rcu_dereference(p) rcu_dereference_check(p, 0)
+                               ^~~~~~~~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:13: note: in expansion of macro 'rcu_dereference'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                ^~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:35: error: 'struct net_device' has no member named 'xps_maps'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                                      ^
+   include/linux/compiler.h:254:50: note: in definition of macro '__READ_ONCE'
+      __read_once_size_nocheck(&(x), __u.__c, sizeof(x)); \
+                                                     ^
+   include/linux/rcupdate.h:350:48: note: in expansion of macro 'READ_ONCE'
+     typeof(*p) *________p1 = (typeof(*p) *__force)READ_ONCE(p); \
+                                                   ^~~~~~~~~
+   include/linux/rcupdate.h:487:2: note: in expansion of macro '__rcu_dereference_check'
+     __rcu_dereference_check((p), (c) || rcu_read_lock_held(), __rcu)
+     ^~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/rcupdate.h:545:28: note: in expansion of macro 'rcu_dereference_check'
+    #define rcu_dereference(p) rcu_dereference_check(p, 0)
+                               ^~~~~~~~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:13: note: in expansion of macro 'rcu_dereference'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                ^~~~~~~~~~~~~~~
+   In file included from include/linux/rculist.h:11:0,
+                    from include/linux/pid.h:5,
+                    from include/linux/sched.h:14,
+                    from include/linux/uaccess.h:5,
+                    from net/core/dev.c:75:
+>> net/core/dev.c:3595:35: error: 'struct net_device' has no member named 'xps_maps'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                                      ^
+   include/linux/rcupdate.h:353:12: note: in definition of macro '__rcu_dereference_check'
+     ((typeof(*p) __force __kernel *)(________p1)); \
+               ^
+   include/linux/rcupdate.h:545:28: note: in expansion of macro 'rcu_dereference_check'
+    #define rcu_dereference(p) rcu_dereference_check(p, 0)
+                               ^~~~~~~~~~~~~~~~~~~~~
+>> net/core/dev.c:3595:13: note: in expansion of macro 'rcu_dereference'
+     dev_maps = rcu_dereference(sb_dev->xps_maps);
+                ^~~~~~~~~~~~~~~
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+vim +3595 net/core/dev.c
 
-i386                               tinyconfig
-mips                         rt305x_defconfig
-powerpc                          alldefconfig
-i386                   randconfig-x016-201826
-i386                   randconfig-x014-201826
-i386                   randconfig-x017-201826
-i386                   randconfig-x012-201826
-i386                   randconfig-x018-201826
-i386                   randconfig-x011-201826
-i386                   randconfig-x013-201826
-i386                   randconfig-x019-201826
-i386                   randconfig-x015-201826
-i386                   randconfig-x010-201826
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-n0-201826
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201826
-i386                     randconfig-i1-201826
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201826
-i386                     randconfig-a1-201826
-x86_64                 randconfig-s0-07021744
-x86_64                 randconfig-s1-07021744
-x86_64                 randconfig-s2-07021744
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                     asp8347_defconfig
-powerpc                 mpc837x_rdb_defconfig
-sh                         microdev_defconfig
-x86_64                 randconfig-x015-201826
-x86_64                 randconfig-x011-201826
-x86_64                 randconfig-x018-201826
-x86_64                 randconfig-x010-201826
-x86_64                 randconfig-x014-201826
-x86_64                 randconfig-x019-201826
-x86_64                 randconfig-x017-201826
-x86_64                 randconfig-x016-201826
-x86_64                 randconfig-x013-201826
-x86_64                 randconfig-x012-201826
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201826
-i386                     randconfig-s1-201826
-x86_64                 randconfig-s3-07022124
-x86_64                 randconfig-s4-07022124
-x86_64                 randconfig-s5-07022124
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-microblaze                       allmodconfig
-i386                   randconfig-x009-201826
-i386                   randconfig-x008-201826
-i386                   randconfig-x001-201826
-i386                   randconfig-x003-201826
-i386                   randconfig-x000-201826
-i386                   randconfig-x005-201826
-i386                   randconfig-x006-201826
-i386                   randconfig-x004-201826
-i386                   randconfig-x002-201826
-i386                   randconfig-x007-201826
-i386                 randconfig-x072-07021704
-i386                 randconfig-x073-07021704
-i386                 randconfig-x076-07021704
-i386                 randconfig-x079-07021704
-i386                 randconfig-x074-07021704
-i386                 randconfig-x075-07021704
-i386                 randconfig-x070-07021704
-i386                 randconfig-x071-07021704
-i386                 randconfig-x077-07021704
-i386                 randconfig-x078-07021704
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-x003-201826
-x86_64                 randconfig-x007-201826
-x86_64                 randconfig-x004-201826
-x86_64                 randconfig-x005-201826
-x86_64                 randconfig-x000-201826
-x86_64                 randconfig-x001-201826
-x86_64                 randconfig-x008-201826
-x86_64                 randconfig-x006-201826
-x86_64                 randconfig-x002-201826
-x86_64                 randconfig-x009-201826
+  3578	
+  3579	static inline int get_xps_queue(struct net_device *dev,
+  3580					struct net_device *sb_dev,
+  3581					struct sk_buff *skb)
+  3582	{
+  3583	#ifdef CONFIG_XPS
+  3584		struct xps_dev_maps *dev_maps;
+  3585		struct sock *sk = skb->sk;
+  3586		int queue_index = -1;
+  3587	
+  3588		if (!static_key_false(&xps_needed))
+  3589			return -1;
+  3590	
+  3591		rcu_read_lock();
+  3592		if (!static_key_false(&xps_rxqs_needed))
+  3593			goto get_cpus_map;
+  3594	
+> 3595		dev_maps = rcu_dereference(sb_dev->xps_maps);
+  3596		if (dev_maps) {
+  3597			int tci = sk_rx_queue_get(sk);
+  3598	
+  3599			if (tci >= 0 && tci < dev->num_rx_queues)
+  3600				queue_index = __get_xps_queue_idx(dev, skb, dev_maps,
+  3601								  tci);
+  3602		}
+  3603	
+  3604	get_cpus_map:
+  3605		if (queue_index < 0) {
+  3606			dev_maps = rcu_dereference(dev->xps_cpus_map);
+  3607			if (dev_maps) {
+  3608				unsigned int tci = skb->sender_cpu - 1;
+  3609	
+  3610				queue_index = __get_xps_queue_idx(dev, skb, dev_maps,
+  3611								  tci);
+  3612			}
+  3613		}
+  3614		rcu_read_unlock();
+  3615	
+  3616		return queue_index;
+  3617	#else
+  3618		return -1;
+  3619	#endif
+  3620	}
+  3621	
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 30206 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180702/bda07c1a/attachment-0001.bin>
