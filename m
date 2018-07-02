@@ -1,60 +1,98 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon, 2 Jul 2018 09:18:13 -0700
-Subject: [Intel-wired-lan] [PATCH v3 02/11] igc: Add support for PF
-In-Reply-To: <70f27bbc-676f-1583-c0e5-e6d9ebc72592@intel.com>
-References: <20180624084500.10021-1-sasha.neftin@intel.com>
- <63d4f9f3-d9c7-64f2-9256-fca93e8383e7@oracle.com>
- <70f27bbc-676f-1583-c0e5-e6d9ebc72592@intel.com>
-Message-ID: <d1a8c9c0-c558-8f15-ca03-83b089a99785@oracle.com>
+Date: Mon, 2 Jul 2018 09:40:40 -0700
+Subject: [Intel-wired-lan] [PATCH v3 03/11] igc: Add netdev
+In-Reply-To: <2d11eab6-8bd4-e444-435e-95980be23a4a@intel.com>
+References: <20180624084503.10065-1-sasha.neftin@intel.com>
+ <800bbf05-477f-870c-730a-bf129e1eea9a@oracle.com>
+ <2d11eab6-8bd4-e444-435e-95980be23a4a@intel.com>
+Message-ID: <f64eca67-9ff5-8fd7-532c-d6f8e3dae100@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/2/2018 1:57 AM, Neftin, Sasha wrote:
+
+
+On 7/2/2018 6:05 AM, Neftin, Sasha wrote:
 > On 6/27/2018 03:32, Shannon Nelson wrote:
 >> On 6/24/2018 1:45 AM, Sasha Neftin wrote:
->>> This patch adds the basic defines and structures needed by the PF for
->>> operation.
+>>> Now that we have the ability to configure the basic settings on the 
+>>> device
+
+[...]
+
+>>> ? /* Board specific private data structure */
+>>> ? struct igc_adapter {
+>>> +??? struct net_device *netdev;
+>>> +
+>>> +??? unsigned long state;
+>>> +??? unsigned int flags;
 >>
+>> These state and flags fields should probably be specifically defined 
+>> as u32 or u64.
+>>
+> Let me do not agree with you here. I've a two arguments:
+> 1. general set_bit/clear_bit methods is used this type and do not allow 
+> pass another type. Actually we use set_bit/clear_bit a lot of.
+> 2. i prefer stay consistently with another driver where is used same value.
+>> Is there a reason that state is a long and flags an int?? Is there an 
+>> expectation of different sizes?
+
+The 'state' to be used in set/clear_bit makes sense, but it might be 
+better to use DECLARE_BITMAP().
+
+The 'flags' still might be specifically set to u32 as done in ixgbe and 
+i40e.
 
 [...]
 
 >>> +
->>> +/* forward declaration */
->>> +struct e1000_hw;
->>> +u32 igc_rd32(struct e1000_hw *hw, u32 reg);
->>
->> Can we do this without the forward decls?
->>
-> Can you advice another place?
-
-Yeah, this one is my mistake, putting the declarations of functions used 
-in other files into the headerfile is fine.
+>>> +??? strncpy(netdev->name, pci_name(pdev), sizeof(netdev->name) - 1);
+>>> +
 
 [...]
 
->>> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c 
->>> b/drivers/net/ethernet/intel/igc/igc_main.c
->>> index 3e10d27752d5..ec3451dad91e 100644
->>> --- a/drivers/net/ethernet/intel/igc/igc_main.c
->>> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
->>> @@ -25,6 +25,69 @@ static const struct pci_device_id igc_pci_tbl[] = {
->>> ? MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
->>> +/* Forward declaration */
->>> +static int igc_sw_init(struct igc_adapter *);
+>>> +
+>>> +??? strncpy(netdev->name, "eth%d", IFNAMSIZ);
 >>
->> Can we do this without the forward decls?
+>> You're stomping on what you just set a few lines earlier.? Of course, 
+>> some might argue that you shouldn't put anything here at all and let 
+>> the system name the device.
 >>
-> Can you advice another place?
+> my apologies I do not understand you.
 
-It's these in the .c file that bother me.  For the most part, you should 
-be able to order the functions in the file such that anything used by 
-one functions has already be defined above it, and then these are not 
-needed.  This way, the starting or "main" functions e.g. probe and 
-release, are at the bottom of the file, and simple little utility 
-functions are near the top.  This is not an absolute standard, but a 
-general custom.
+You've already set the netdev->name once, here you're setting it again 
+to something else.  In either case, the userland daemons will likely 
+change whatever you put here.
+
+
+>>> +??? err = register_netdev(netdev);
+>>> +??? if (err)
+>>> +??????? goto err_register;
+>>> +
+>>> +???? /* carrier off reporting is important to ethtool even BEFORE 
+>>> open */
+>>> +??? netif_carrier_off(netdev);
+>>> +
+>>> +??? dev_info(&pdev->dev, "@SUMMARY@");
+>>> +??? /* print bus type/speed/width info */
+>>> +??? dev_info(&pdev->dev, "%s: (PCIe:%s:%s) ",
+>>> +???????? netdev->name,
+>>> +???????? ((hw->bus.speed == e1000_bus_speed_2500) ? "2.5GT/s" :
+>>> +???????? (hw->bus.speed == e1000_bus_speed_5000) ? "5.0GT/s" :
+>>> +???????? "unknown"),
+>>> +???????? ((hw->bus.width == e1000_bus_width_pcie_x4) ? "Width x4" :
+>>> +???????? (hw->bus.width == e1000_bus_width_pcie_x2) ? "Width x2" :
+>>> +???????? (hw->bus.width == e1000_bus_width_pcie_x1) ? "Width x1" :
+>>> +???????? "unknown"));
+>>
+>> How about using the new pcie_print_link_status()?
+>>
+> Good idea. I will keep it in mind and replace in future. Currenly in my 
+> working kernel this method not exist yet.
+
+Then you're using an out-of-date kernel and you should update to what is 
+currently upstream.
 
 sln
