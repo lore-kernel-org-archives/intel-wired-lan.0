@@ -1,57 +1,257 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 3 Jul 2018 11:42:50 -0700
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 0/7] Add
- support for L2 Fwd Offload w/o ndo_select_queue
-In-Reply-To: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
-References: <20180612151322.86792.97587.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <CAL3LdT6s2fe5Reby5-d1PHSCjfDEgGu_v9Eu-BS-sN9YjOHiaA@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 03 Jul 2018 22:04:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 248c690a2dc8725b5a5e06a1e0cdd65c7da06801
+Message-ID: <5b3b8267.45VHtY3c1pporxAO%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jun 12, 2018 at 8:18 AM, Alexander Duyck
-<alexander.h.duyck@intel.com> wrote:
-> This patch series is meant to allow support for the L2 forward offload, aka
-> MACVLAN offload without the need for using ndo_select_queue.
->
-> The existing solution currently requires that we use ndo_select_queue in
-> the transmit path if we want to associate specific Tx queues with a given
-> MACVLAN interface. In order to get away from this we need to repurpose the
-> tc_to_txq array and XPS pointer for the MACVLAN interface and use those as
-> a means of accessing the queues on the lower device. As a result we cannot
-> offload a device that is configured as multiqueue, however it doesn't
-> really make sense to configure a macvlan interfaced as being multiqueue
-> anyway since it doesn't really have a qdisc of its own in the first place.
->
-> I am submitting this as an RFC for the netdev mailing list, and officially
-> submitting it for testing to Jeff Kirsher's next-queue in order to validate
-> the ixgbe specific bits.
->
-> The big changes in this set are:
->   Allow lower device to update tc_to_txq and XPS map of offloaded MACVLAN
->   Disable XPS for single queue devices
->   Replace accel_priv with sb_dev in ndo_select_queue
->   Add sb_dev parameter to fallback function for ndo_select_queue
->   Consolidated ndo_select_queue functions that appeared to be duplicates
->
-> v2: Implement generic "select_queue" functions instead of "fallback" functions.
->     Tweak last two patches to account for changes in dev_pick_tx_xxx functions.
->
-> ---
->
-> Alexander Duyck (7):
->       net-sysfs: Drop support for XPS and traffic_class on single queue device
->       net: Add support for subordinate device traffic classes
->       ixgbe: Add code to populate and use macvlan tc to Tx queue map
->       net: Add support for subordinate traffic classes to netdev_pick_tx
->       net: Add generic ndo_select_queue functions
->       net: allow ndo_select_queue to pass netdev
->       net: allow fallback function to pass netdev
->
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: 248c690a2dc8725b5a5e06a1e0cdd65c7da06801  Merge tag 'wireless-drivers-for-davem-2018-07-03' of git://git.kernel.org/pub/scm/linux/kernel/git/kvalo/wireless-drivers
 
-Alex, there were recent changes to Dave's net-next which caused a
-conflict with one or more of your patches.  So I have removed this
-series from my tree for now, and will work with you on updating the
-series to work with the latest net-next tree.
+elapsed time: -61m
+
+configs tested: 233
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                 randconfig-x010-07031211
+i386                 randconfig-x011-07031211
+i386                 randconfig-x012-07031211
+i386                 randconfig-x013-07031211
+i386                 randconfig-x014-07031211
+i386                 randconfig-x015-07031211
+i386                 randconfig-x016-07031211
+i386                 randconfig-x017-07031211
+i386                 randconfig-x018-07031211
+i386                 randconfig-x019-07031211
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-07031211
+i386                     randconfig-n0-201826
+i386         randconfig-n0-201826-CONFIG_DEBUG_INFO_REDUCED
+x86_64                 randconfig-x000-201826
+x86_64                 randconfig-x001-201826
+x86_64                 randconfig-x002-201826
+x86_64                 randconfig-x003-201826
+x86_64                 randconfig-x004-201826
+x86_64                 randconfig-x005-201826
+x86_64                 randconfig-x006-201826
+x86_64                 randconfig-x007-201826
+x86_64                 randconfig-x008-201826
+x86_64                 randconfig-x009-201826
+i386                     randconfig-i0-201826
+i386                     randconfig-i1-201826
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64               randconfig-x010-07031120
+x86_64               randconfig-x011-07031120
+x86_64               randconfig-x012-07031120
+x86_64               randconfig-x013-07031120
+x86_64               randconfig-x014-07031120
+x86_64               randconfig-x015-07031120
+x86_64               randconfig-x016-07031120
+x86_64               randconfig-x017-07031120
+x86_64               randconfig-x018-07031120
+x86_64               randconfig-x019-07031120
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                   randconfig-a0-07031120
+i386                   randconfig-a1-07031120
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                          tango4_defconfig
+powerpc                     kmeter1_defconfig
+sh                           cayman_defconfig
+xtensa                              defconfig
+arm                         lpc32xx_defconfig
+arm                            mps2_defconfig
+arm64                            allyesconfig
+powerpc                     mpc5200_defconfig
+arm                                 defconfig
+arm                    vt8500_v6_v7_defconfig
+nds32                               defconfig
+powerpc                      tqm8xx_defconfig
+arm                         ebsa110_defconfig
+mips                       lemote2f_defconfig
+powerpc                 mpc8560_ads_defconfig
+powerpc                 mpc832x_mds_defconfig
+sh                 kfr2r09-romimage_defconfig
+sh                           se7712_defconfig
+um                               alldefconfig
+x86_64                            allnoconfig
+arm                      footbridge_defconfig
+openrisc                          allnoconfig
+powerpc                     kilauea_defconfig
+x86_64                           alldefconfig
+mips                           ip27_defconfig
+mips                         rt305x_defconfig
+powerpc                      ppc64e_defconfig
+sh                         microdev_defconfig
+sh                          sdk7780_defconfig
+arm64                               defconfig
+m68k                       bvme6000_defconfig
+powerpc                     mpc83xx_defconfig
+x86_64                 randconfig-x015-201826
+x86_64                 randconfig-x011-201826
+x86_64                 randconfig-x018-201826
+x86_64                 randconfig-x010-201826
+x86_64                 randconfig-x014-201826
+x86_64                 randconfig-x019-201826
+x86_64                 randconfig-x017-201826
+x86_64                 randconfig-x016-201826
+x86_64                 randconfig-x013-201826
+x86_64                 randconfig-x012-201826
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201826
+i386                     randconfig-s1-201826
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-07040123
+x86_64                 randconfig-s4-07040123
+x86_64                 randconfig-s5-07040123
+x86_64                 randconfig-s3-07040200
+x86_64                 randconfig-s4-07040200
+x86_64                 randconfig-s5-07040200
+x86_64                 randconfig-s3-07040259
+x86_64                 randconfig-s4-07040259
+x86_64                 randconfig-s5-07040259
+x86_64                 randconfig-s3-07040353
+x86_64                 randconfig-s4-07040353
+x86_64                 randconfig-s5-07040353
+x86_64                 randconfig-s3-07040425
+x86_64                 randconfig-s4-07040425
+x86_64                 randconfig-s5-07040425
+x86_64                 randconfig-s3-07040506
+x86_64                 randconfig-s5-07040506
+x86_64                 randconfig-s3-07040531
+x86_64                 randconfig-s4-07040531
+x86_64                 randconfig-s5-07040531
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+i386                   randconfig-b0-07040203
+i386                   randconfig-b0-07040301
+i386                   randconfig-b0-07040303
+i386                   randconfig-b0-07040400
+i386                   randconfig-b0-07040407
+sh                           se7722_defconfig
+m68k                        stmark2_defconfig
+mips                        omega2p_defconfig
+mips                      maltaaprp_defconfig
+powerpc                   lite5200b_defconfig
+sh                            shmin_defconfig
+x86_64                randconfig-ne0-07040207
+x86_64                randconfig-ne0-07040413
+i386                 randconfig-x000-07030947
+i386                 randconfig-x001-07030947
+i386                 randconfig-x002-07030947
+i386                 randconfig-x003-07030947
+i386                 randconfig-x004-07030947
+i386                 randconfig-x005-07030947
+i386                 randconfig-x006-07030947
+i386                 randconfig-x007-07030947
+i386                 randconfig-x008-07030947
+i386                 randconfig-x009-07030947
+i386                 randconfig-x010-07030947
+i386                 randconfig-x011-07030947
+i386                 randconfig-x012-07030947
+i386                 randconfig-x013-07030947
+i386                 randconfig-x014-07030947
+i386                 randconfig-x015-07030947
+i386                 randconfig-x016-07030947
+i386                 randconfig-x017-07030947
+i386                 randconfig-x018-07030947
+i386                 randconfig-x019-07030947
+i386                 randconfig-x070-07030947
+i386                 randconfig-x071-07030947
+i386                 randconfig-x072-07030947
+i386                 randconfig-x073-07030947
+i386                 randconfig-x074-07030947
+i386                 randconfig-x075-07030947
+i386                 randconfig-x076-07030947
+i386                 randconfig-x077-07030947
+i386                 randconfig-x078-07030947
+i386                 randconfig-x079-07030947
+i386                             allyesconfig
+i386                   randconfig-x009-201826
+i386                   randconfig-x008-201826
+i386                   randconfig-x001-201826
+i386                   randconfig-x003-201826
+i386                   randconfig-x000-201826
+i386                   randconfig-x005-201826
+i386                   randconfig-x006-201826
+i386                   randconfig-x004-201826
+i386                   randconfig-x002-201826
+i386                   randconfig-x007-201826
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+arm                           corgi_defconfig
+powerpc                 mpc836x_rdk_defconfig
+i386                   randconfig-x078-201826
+i386                   randconfig-x079-201826
+i386                   randconfig-x074-201826
+i386                   randconfig-x076-201826
+i386                   randconfig-x075-201826
+i386                   randconfig-x070-201826
+i386                   randconfig-x073-201826
+i386                   randconfig-x071-201826
+i386                   randconfig-x077-201826
+i386                   randconfig-x072-201826
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                              fedora-25
+arm                         assabet_defconfig
+mips                            ar7_defconfig
+powerpc                   bluestone_defconfig
+microblaze                       allmodconfig
+sh                             shx3_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-r0-07040130
+x86_64                 randconfig-r0-07040204
+x86_64                 randconfig-r0-07040309
+x86_64                 randconfig-r0-07040350
+i386                   randconfig-x0-07040359
+i386                   randconfig-x0-07040403
+i386                   randconfig-x0-07040500
+i386                   randconfig-x0-07040502
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
