@@ -1,164 +1,156 @@
-From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Mon, 09 Jul 2018 12:19:54 -0400
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 5/7] net: Add
- generic ndo_select_queue functions
-In-Reply-To: <20180709161743.8383.97754.stgit@ahduyck-green-test.jf.intel.com>
-References: <20180709161743.8383.97754.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <20180709161954.8383.69951.stgit@ahduyck-green-test.jf.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 10 Jul 2018 01:16:34 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 538561eca1a00307a5dd16bac54587be1642375a
+Message-ID: <5b439872.+JY3bYM52os/xRF2%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds a generic version of the ndo_select_queue functions for
-either returning 0 or selecting a queue based on the processor ID. This is
-generally meant to just reduce the number of functions we have to change
-in the future when we have to deal with ndo_select_queue changes.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 538561eca1a00307a5dd16bac54587be1642375a  net-sysfs: Drop support for XPS and traffic_class on single queue device
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+elapsed time: 35m
+
+configs tested: 131
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-a0-07100008
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386         randconfig-i0-201827+bisect_validate
+i386                     randconfig-i0-201827
+i386                     randconfig-i1-201827
+x86_64                 randconfig-v0-07090937
+arm                          iop32x_defconfig
+sh                           sh2007_defconfig
+x86_64                 randconfig-g0-07092351
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                   randconfig-a0-07092045
+i386                   randconfig-a1-07092045
+x86_64                 randconfig-s0-07092347
+x86_64                 randconfig-s1-07092347
+x86_64                 randconfig-s2-07092347
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x015-201827
+x86_64                 randconfig-x011-201827
+x86_64                 randconfig-x018-201827
+x86_64                 randconfig-x010-201827
+x86_64                 randconfig-x014-201827
+x86_64                 randconfig-x019-201827
+x86_64                 randconfig-x017-201827
+x86_64                 randconfig-x016-201827
+x86_64                 randconfig-x013-201827
+x86_64                 randconfig-x012-201827
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                     randconfig-s0-201827
+i386                     randconfig-s1-201827
+i386                               tinyconfig
+i386                             allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                       multi_v4t_defconfig
+sh                     sh7710voipgw_defconfig
+x86_64                 randconfig-u0-07100048
+i386                   randconfig-x016-201827
+i386                   randconfig-x017-201827
+i386                   randconfig-x014-201827
+i386                   randconfig-x012-201827
+i386                   randconfig-x018-201827
+i386                   randconfig-x011-201827
+i386                   randconfig-x013-201827
+i386                   randconfig-x019-201827
+i386                   randconfig-x015-201827
+i386                   randconfig-x010-201827
+x86_64                              fedora-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-h0-07100002
+i386                   randconfig-x009-201827
+i386                   randconfig-x008-201827
+i386                   randconfig-x001-201827
+i386                   randconfig-x000-201827
+i386                   randconfig-x003-201827
+i386                   randconfig-x005-201827
+i386                   randconfig-x006-201827
+i386                   randconfig-x004-201827
+i386                   randconfig-x002-201827
+i386                   randconfig-x007-201827
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-x003-201827
+x86_64                 randconfig-x007-201827
+x86_64                 randconfig-x004-201827
+x86_64                 randconfig-x005-201827
+x86_64                 randconfig-x000-201827
+x86_64                 randconfig-x001-201827
+x86_64                 randconfig-x008-201827
+x86_64                 randconfig-x006-201827
+x86_64                 randconfig-x002-201827
+x86_64                 randconfig-x009-201827
+i386                   randconfig-x078-201827
+i386                   randconfig-x079-201827
+i386                   randconfig-x074-201827
+i386                   randconfig-x075-201827
+i386                   randconfig-x076-201827
+i386                   randconfig-x070-201827
+i386                   randconfig-x073-201827
+i386                   randconfig-x071-201827
+i386                   randconfig-x077-201827
+i386                   randconfig-x072-201827
+x86_64                 randconfig-r0-07100023
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-07100019
+
 ---
- drivers/net/ethernet/lantiq_etop.c   |   10 +---------
- drivers/net/ethernet/ti/netcp_core.c |    9 +--------
- drivers/staging/netlogic/xlr_net.c   |    9 +--------
- include/linux/netdevice.h            |    4 ++++
- net/core/dev.c                       |   14 ++++++++++++++
- net/packet/af_packet.c               |    2 +-
- 6 files changed, 22 insertions(+), 26 deletions(-)
-
-diff --git a/drivers/net/ethernet/lantiq_etop.c b/drivers/net/ethernet/lantiq_etop.c
-index afc8100..7a637b5 100644
---- a/drivers/net/ethernet/lantiq_etop.c
-+++ b/drivers/net/ethernet/lantiq_etop.c
-@@ -563,14 +563,6 @@ struct ltq_etop_priv {
- 	spin_unlock_irqrestore(&priv->lock, flags);
- }
- 
--static u16
--ltq_etop_select_queue(struct net_device *dev, struct sk_buff *skb,
--		      void *accel_priv, select_queue_fallback_t fallback)
--{
--	/* we are currently only using the first queue */
--	return 0;
--}
--
- static int
- ltq_etop_init(struct net_device *dev)
- {
-@@ -641,7 +633,7 @@ struct ltq_etop_priv {
- 	.ndo_set_mac_address = ltq_etop_set_mac_address,
- 	.ndo_validate_addr = eth_validate_addr,
- 	.ndo_set_rx_mode = ltq_etop_set_multicast_list,
--	.ndo_select_queue = ltq_etop_select_queue,
-+	.ndo_select_queue = dev_pick_tx_zero,
- 	.ndo_init = ltq_etop_init,
- 	.ndo_tx_timeout = ltq_etop_tx_timeout,
- };
-diff --git a/drivers/net/ethernet/ti/netcp_core.c b/drivers/net/ethernet/ti/netcp_core.c
-index 6ebf110..a1d335a 100644
---- a/drivers/net/ethernet/ti/netcp_core.c
-+++ b/drivers/net/ethernet/ti/netcp_core.c
-@@ -1889,13 +1889,6 @@ static int netcp_rx_kill_vid(struct net_device *ndev, __be16 proto, u16 vid)
- 	return err;
- }
- 
--static u16 netcp_select_queue(struct net_device *dev, struct sk_buff *skb,
--			      void *accel_priv,
--			      select_queue_fallback_t fallback)
--{
--	return 0;
--}
--
- static int netcp_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 			  void *type_data)
- {
-@@ -1972,7 +1965,7 @@ static int netcp_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 	.ndo_vlan_rx_add_vid	= netcp_rx_add_vid,
- 	.ndo_vlan_rx_kill_vid	= netcp_rx_kill_vid,
- 	.ndo_tx_timeout		= netcp_ndo_tx_timeout,
--	.ndo_select_queue	= netcp_select_queue,
-+	.ndo_select_queue	= dev_pick_tx_zero,
- 	.ndo_setup_tc		= netcp_setup_tc,
- };
- 
-diff --git a/drivers/staging/netlogic/xlr_net.c b/drivers/staging/netlogic/xlr_net.c
-index e461168..4e6611e 100644
---- a/drivers/staging/netlogic/xlr_net.c
-+++ b/drivers/staging/netlogic/xlr_net.c
-@@ -290,13 +290,6 @@ static netdev_tx_t xlr_net_start_xmit(struct sk_buff *skb,
- 	return NETDEV_TX_OK;
- }
- 
--static u16 xlr_net_select_queue(struct net_device *ndev, struct sk_buff *skb,
--				void *accel_priv,
--				select_queue_fallback_t fallback)
--{
--	return (u16)smp_processor_id();
--}
--
- static void xlr_hw_set_mac_addr(struct net_device *ndev)
- {
- 	struct xlr_net_priv *priv = netdev_priv(ndev);
-@@ -403,7 +396,7 @@ static void xlr_stats(struct net_device *ndev, struct rtnl_link_stats64 *stats)
- 	.ndo_open = xlr_net_open,
- 	.ndo_stop = xlr_net_stop,
- 	.ndo_start_xmit = xlr_net_start_xmit,
--	.ndo_select_queue = xlr_net_select_queue,
-+	.ndo_select_queue = dev_pick_tx_cpu_id,
- 	.ndo_set_mac_address = xlr_net_set_mac_addr,
- 	.ndo_set_rx_mode = xlr_set_rx_mode,
- 	.ndo_get_stats64 = xlr_stats,
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 5729bc80..2e056bc 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -2567,6 +2567,10 @@ struct net_device *__dev_get_by_flags(struct net *net, unsigned short flags,
- void dev_close_many(struct list_head *head, bool unlink);
- void dev_disable_lro(struct net_device *dev);
- int dev_loopback_xmit(struct net *net, struct sock *sk, struct sk_buff *newskb);
-+u16 dev_pick_tx_zero(struct net_device *dev, struct sk_buff *skb,
-+		     void *accel_priv, select_queue_fallback_t fallback);
-+u16 dev_pick_tx_cpu_id(struct net_device *dev, struct sk_buff *skb,
-+		       void *accel_priv, select_queue_fallback_t fallback);
- int dev_queue_xmit(struct sk_buff *skb);
- int dev_queue_xmit_accel(struct sk_buff *skb, struct net_device *sb_dev);
- int dev_direct_xmit(struct sk_buff *skb, u16 queue_id);
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 09a7cc2..b5e5380 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -3617,6 +3617,20 @@ static int get_xps_queue(struct net_device *dev, struct net_device *sb_dev,
- #endif
- }
- 
-+u16 dev_pick_tx_zero(struct net_device *dev, struct sk_buff *skb,
-+		     void *accel_priv, select_queue_fallback_t fallback)
-+{
-+	return 0;
-+}
-+EXPORT_SYMBOL(dev_pick_tx_zero);
-+
-+u16 dev_pick_tx_cpu_id(struct net_device *dev, struct sk_buff *skb,
-+		       void *accel_priv, select_queue_fallback_t fallback)
-+{
-+	return (u16)raw_smp_processor_id() % dev->real_num_tx_queues;
-+}
-+EXPORT_SYMBOL(dev_pick_tx_cpu_id);
-+
- static u16 ___netdev_pick_tx(struct net_device *dev, struct sk_buff *skb,
- 			     struct net_device *sb_dev)
- {
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index 47931eb..f37d087 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -277,7 +277,7 @@ static bool packet_use_direct_xmit(const struct packet_sock *po)
- 
- static u16 __packet_pick_tx_queue(struct net_device *dev, struct sk_buff *skb)
- {
--	return (u16) raw_smp_processor_id() % dev->real_num_tx_queues;
-+	return dev_pick_tx_cpu_id(dev, skb, NULL, NULL);
- }
- 
- static u16 packet_pick_tx_queue(struct sk_buff *skb)
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
