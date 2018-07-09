@@ -1,60 +1,66 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon, 9 Jul 2018 09:13:05 -0700
-Subject: [Intel-wired-lan] [PATCH v3 10/11] igc: Add setup link
- functionality
-In-Reply-To: <0aa506cb-f7e3-0b44-1f77-c56b41cbe961@intel.com>
-References: <20180624084525.10374-1-sasha.neftin@intel.com>
- <5cbe68b0-9409-adca-c040-cfc5953c884c@oracle.com>
- <0aa506cb-f7e3-0b44-1f77-c56b41cbe961@intel.com>
-Message-ID: <8747a5ef-22fb-5bde-d788-756fac6a93ef@oracle.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
+Date: Mon, 09 Jul 2018 12:19:32 -0400
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 1/7] net-sysfs:
+ Drop support for XPS and traffic_class on single queue device
+In-Reply-To: <20180709161743.8383.97754.stgit@ahduyck-green-test.jf.intel.com>
+References: <20180709161743.8383.97754.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <20180709161932.8383.5753.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/4/2018 8:19 AM, Neftin, Sasha wrote:
-> On 6/29/2018 18:03, Shannon Nelson wrote:
->> On 6/24/2018 1:45 AM, Sasha Neftin wrote:
+This patch makes it so that we do not report the traffic class or allow XPS
+configuration on single queue devices. This is mostly to avoid unnecessary
+complexity with changes I have planned that will allow us to reuse
+the unused tc_to_txq and XPS configuration on a single queue device to
+allow it to make use of a subset of queues on an underlying device.
 
-[...]
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+---
+ net/core/net-sysfs.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
->>> +/**
->>> + *? igc_wait_autoneg - Wait for auto-neg completion
->>> + *? @hw: pointer to the HW structure
->>> + *
->>> + *? Waits for auto-negotiation to complete or for the 
->>> auto-negotiation time
->>> + *? limit to expire, which ever happens first.
->>> + **/
->>> +static s32 igc_wait_autoneg(struct e1000_hw *hw)
->>> +{
->>> +??? s32 ret_val = 0;
->>> +??? u16 i, phy_status;
->>> +
->>> +??? /* Break after autoneg completes or PHY_AUTO_NEG_LIMIT expires. */
->>> +??? for (i = PHY_AUTO_NEG_LIMIT; i > 0; i--) {
->>> +??????? ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS, &phy_status);
->>> +??????? if (ret_val)
->>> +??????????? break;
->>> +??????? ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS, &phy_status);
->>> +??????? if (ret_val)
->>> +??????????? break;
->>> +??????? if (phy_status & MII_SR_AUTONEG_COMPLETE)
->>> +??????????? break;
->>> +??????? msleep(100);
->>> +??? }
->>> +
->>> +??? /* PHY_AUTO_NEG_TIME expiration doesn't guarantee auto-negotiation
->>> +???? * has completed.
->>> +???? */
->>
->> Should you return an error value if the wait time expired?
->>
-> ret_val is returned. do you mean something else?
-
-Should some non-zero value be returned if the for-loop ran out and 
-MII_SR_AUTONEG_COMPLETE was never set?
-
-sln
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index f25ac5f..dce3ae0 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -1047,9 +1047,14 @@ static ssize_t traffic_class_show(struct netdev_queue *queue,
+ 				  char *buf)
+ {
+ 	struct net_device *dev = queue->dev;
+-	int index = get_netdev_queue_index(queue);
+-	int tc = netdev_txq_to_tc(dev, index);
++	int index;
++	int tc;
+ 
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
++
++	index = get_netdev_queue_index(queue);
++	tc = netdev_txq_to_tc(dev, index);
+ 	if (tc < 0)
+ 		return -EINVAL;
+ 
+@@ -1214,6 +1219,9 @@ static ssize_t xps_cpus_show(struct netdev_queue *queue,
+ 	cpumask_var_t mask;
+ 	unsigned long index;
+ 
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
++
+ 	index = get_netdev_queue_index(queue);
+ 
+ 	if (dev->num_tc) {
+@@ -1260,6 +1268,9 @@ static ssize_t xps_cpus_store(struct netdev_queue *queue,
+ 	cpumask_var_t mask;
+ 	int err;
+ 
++	if (!netif_is_multiqueue(dev))
++		return -ENOENT;
++
+ 	if (!capable(CAP_NET_ADMIN))
+ 		return -EPERM;
+ 
 
