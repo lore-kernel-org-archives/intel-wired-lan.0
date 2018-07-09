@@ -1,142 +1,135 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 31 Jul 2018 21:04:33 -0700
-Subject: [Intel-wired-lan] [PATCH v2 13/13] ice: Introduce SERVICE_DIS flag
- and service routine functions
-In-Reply-To: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
-References: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180801040433.5865-14-anirudh.venkataramanan@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Mon, 09 Jul 2018 23:13:14 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 9149df94a9988dace53455cd7dff4da3ed88255c
+Message-ID: <5b437b8a.Q38G7bHaOe7aXqgi%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 9149df94a9988dace53455cd7dff4da3ed88255c  ixgbe: add ipsec security registers into ethtool register dump
 
-This patch introduces SERVICE_DIS flag to use for stopping service task.
-This flag will be checked before scheduling new tasks. Also add new
-functions ice_service_task_stop to stop service task.
+elapsed time: 61m
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+configs tested: 110
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                               tinyconfig
+i386                     randconfig-i0-201827
+i386                     randconfig-i1-201827
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-a0-07092045
+i386                   randconfig-a1-07092045
+x86_64                 randconfig-x015-201827
+x86_64                 randconfig-x011-201827
+x86_64                 randconfig-x018-201827
+x86_64                 randconfig-x010-201827
+x86_64                 randconfig-x014-201827
+x86_64                 randconfig-x019-201827
+x86_64                 randconfig-x017-201827
+x86_64                 randconfig-x016-201827
+x86_64                 randconfig-x013-201827
+x86_64                 randconfig-x012-201827
+i386                     randconfig-s0-201827
+i386                     randconfig-s1-201827
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                          pcm027_defconfig
+parisc                           alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+i386                   randconfig-x000-201827
+i386                   randconfig-x001-201827
+i386                   randconfig-x002-201827
+i386                   randconfig-x003-201827
+i386                   randconfig-x004-201827
+i386                   randconfig-x005-201827
+i386                   randconfig-x006-201827
+i386                   randconfig-x007-201827
+i386                   randconfig-x008-201827
+i386                   randconfig-x009-201827
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x003-201827
+x86_64                 randconfig-x007-201827
+x86_64                 randconfig-x004-201827
+x86_64                 randconfig-x005-201827
+x86_64                 randconfig-x000-201827
+x86_64                 randconfig-x001-201827
+x86_64                 randconfig-x008-201827
+x86_64                 randconfig-x006-201827
+x86_64                 randconfig-x002-201827
+x86_64                 randconfig-x009-201827
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x078-201827
+i386                   randconfig-x079-201827
+i386                   randconfig-x074-201827
+i386                   randconfig-x075-201827
+i386                   randconfig-x076-201827
+i386                   randconfig-x070-201827
+i386                   randconfig-x073-201827
+i386                   randconfig-x071-201827
+i386                   randconfig-x077-201827
+i386                   randconfig-x072-201827
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
 ---
- drivers/net/ethernet/intel/ice/ice.h      |  1 +
- drivers/net/ethernet/intel/ice/ice_main.c | 34 ++++++++++++++++++-----
- 2 files changed, 28 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 6f44a850c4b2..9cf233d085d8 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -138,6 +138,7 @@ enum ice_state {
- 	__ICE_FLTR_OVERFLOW_PROMISC,
- 	__ICE_CFG_BUSY,
- 	__ICE_SERVICE_SCHED,
-+	__ICE_SERVICE_DIS,
- 	__ICE_STATE_NBITS		/* must be last */
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index bcc163bf3137..2276b4c49aad 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1107,7 +1107,7 @@ static void ice_clean_adminq_subtask(struct ice_pf *pf)
-  */
- static void ice_service_task_schedule(struct ice_pf *pf)
- {
--	if (!test_bit(__ICE_DOWN, pf->state) &&
-+	if (!test_bit(__ICE_SERVICE_DIS, pf->state) &&
- 	    !test_and_set_bit(__ICE_SERVICE_SCHED, pf->state) &&
- 	    !test_bit(__ICE_NEEDS_RESTART, pf->state))
- 		queue_work(ice_wq, &pf->serv_task);
-@@ -1126,6 +1126,22 @@ static void ice_service_task_complete(struct ice_pf *pf)
- 	clear_bit(__ICE_SERVICE_SCHED, pf->state);
- }
- 
-+/**
-+ * ice_service_task_stop - stop service task and cancel works
-+ * @pf: board private structure
-+ */
-+static void ice_service_task_stop(struct ice_pf *pf)
-+{
-+	set_bit(__ICE_SERVICE_DIS, pf->state);
-+
-+	if (pf->serv_tmr.function)
-+		del_timer_sync(&pf->serv_tmr);
-+	if (pf->serv_task.func)
-+		cancel_work_sync(&pf->serv_task);
-+
-+	clear_bit(__ICE_SERVICE_SCHED, pf->state);
-+}
-+
- /**
-  * ice_service_timer - timer callback to schedule service task
-  * @t: pointer to timer_list
-@@ -3387,10 +3403,7 @@ static void ice_determine_q_usage(struct ice_pf *pf)
-  */
- static void ice_deinit_pf(struct ice_pf *pf)
- {
--	if (pf->serv_tmr.function)
--		del_timer_sync(&pf->serv_tmr);
--	if (pf->serv_task.func)
--		cancel_work_sync(&pf->serv_task);
-+	ice_service_task_stop(pf);
- 	mutex_destroy(&pf->sw_mutex);
- 	mutex_destroy(&pf->avail_q_mutex);
- }
-@@ -3597,6 +3610,8 @@ static int ice_probe(struct pci_dev *pdev,
- 	pf->pdev = pdev;
- 	pci_set_drvdata(pdev, pf);
- 	set_bit(__ICE_DOWN, pf->state);
-+	/* Disable service task until DOWN bit is cleared */
-+	set_bit(__ICE_SERVICE_DIS, pf->state);
- 
- 	hw = &pf->hw;
- 	hw->hw_addr = pcim_iomap_table(pdev)[ICE_BAR0];
-@@ -3654,6 +3669,9 @@ static int ice_probe(struct pci_dev *pdev,
- 		goto err_init_interrupt_unroll;
- 	}
- 
-+	/* Driver is mostly up */
-+	clear_bit(__ICE_DOWN, pf->state);
-+
- 	/* In case of MSIX we are going to setup the misc vector right here
- 	 * to handle admin queue events etc. In case of legacy and MSI
- 	 * the misc functionality and queue processing is combined in
-@@ -3693,8 +3711,7 @@ static int ice_probe(struct pci_dev *pdev,
- 		goto err_alloc_sw_unroll;
- 	}
- 
--	/* Driver is mostly up */
--	clear_bit(__ICE_DOWN, pf->state);
-+	clear_bit(__ICE_SERVICE_DIS, pf->state);
- 
- 	/* since everything is good, start the service timer */
- 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
-@@ -3708,6 +3725,7 @@ static int ice_probe(struct pci_dev *pdev,
- 	return 0;
- 
- err_alloc_sw_unroll:
-+	set_bit(__ICE_SERVICE_DIS, pf->state);
- 	set_bit(__ICE_DOWN, pf->state);
- 	devm_kfree(&pf->pdev->dev, pf->first_sw);
- err_msix_misc_unroll:
-@@ -3735,6 +3753,7 @@ static void ice_remove(struct pci_dev *pdev)
- 		return;
- 
- 	set_bit(__ICE_DOWN, pf->state);
-+	ice_service_task_stop(pf);
- 
- 	ice_vsi_release_all(pf);
- 	ice_free_irq_msix_misc(pf);
-@@ -5999,6 +6018,7 @@ static void ice_tx_timeout(struct net_device *netdev)
- 		netdev_err(netdev, "tx_timeout recovery unsuccessful, device is in unrecoverable state.\n");
- 		set_bit(__ICE_DOWN, pf->state);
- 		set_bit(__ICE_NEEDS_RESTART, vsi->state);
-+		set_bit(__ICE_SERVICE_DIS, pf->state);
- 		break;
- 	}
- 
--- 
-2.17.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
