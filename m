@@ -1,88 +1,314 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Mon, 09 Jul 2018 12:19:27 -0400
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 0/7] Add support
- for L2 Fwd Offload w/o ndo_select_queue
-Message-ID: <20180709161743.8383.97754.stgit@ahduyck-green-test.jf.intel.com>
+Date: Mon, 09 Jul 2018 12:19:48 -0400
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 4/7] net: Add
+ support for subordinate traffic classes to netdev_pick_tx
+In-Reply-To: <20180709161743.8383.97754.stgit@ahduyck-green-test.jf.intel.com>
+References: <20180709161743.8383.97754.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <20180709161948.8383.76209.stgit@ahduyck-green-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch series is meant to allow support for the L2 forward offload, aka
-MACVLAN offload without the need for using ndo_select_queue.
+This change makes it so that we can support the concept of subordinate
+device traffic classes to the core networking code. In doing this we can
+start pulling out the driver specific bits needed to support selecting a
+queue based on an upper device.
 
-The existing solution currently requires that we use ndo_select_queue in
-the transmit path if we want to associate specific Tx queues with a given
-MACVLAN interface. In order to get away from this we need to repurpose the
-tc_to_txq array and XPS pointer for the MACVLAN interface and use those as
-a means of accessing the queues on the lower device. As a result we cannot
-offload a device that is configured as multiqueue, however it doesn't
-really make sense to configure a macvlan interfaced as being multiqueue
-anyway since it doesn't really have a qdisc of its own in the first place.
+The solution at is currently stands is only partially implemented. I have
+the start of some XPS bits in here, but I would still need to allow for
+configuration of the XPS maps on the queues reserved for the subordinate
+devices. For now I am using the reference to the sb_dev XPS map as just a
+way to skip the lookup of the lower device XPS map for now as that would
+result in the wrong queue being picked.
 
-I am submitting this as an RFC for the netdev mailing list, and officially
-submitting it for testing to Jeff Kirsher's next-queue in order to validate
-the ixgbe specific bits.
-
-The big changes in this set are:
-  Allow lower device to update tc_to_txq and XPS map of offloaded MACVLAN
-  Disable XPS for single queue devices
-  Replace accel_priv with sb_dev in ndo_select_queue
-  Add sb_dev parameter to fallback function for ndo_select_queue
-  Consolidated ndo_select_queue functions that appeared to be duplicates
-
-v2:
-Updated patch set to rebase the netdev_pick_tx logic off of recent Rx
-symmetric queue changes.
-
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   19 +++-----
+ drivers/net/macvlan.c                         |   10 +---
+ include/linux/netdevice.h                     |    4 +-
+ net/core/dev.c                                |   58 +++++++++++++++----------
+ 4 files changed, 45 insertions(+), 46 deletions(-)
 
-Alexander Duyck (7):
-      net-sysfs: Drop support for XPS and traffic_class on single queue device
-      net: Add support for subordinate device traffic classes
-      ixgbe: Add code to populate and use macvlan tc to Tx queue map
-      net: Add support for subordinate traffic classes to netdev_pick_tx
-      net: Add generic ndo_select_queue functions
-      net: allow ndo_select_queue to pass netdev
-      net: allow fallback function to pass netdev
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 3ff34ca..41ef58f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8213,20 +8213,17 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
+ 					      input, common, ring->queue_index);
+ }
+ 
++#ifdef IXGBE_FCOE
+ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
+ 			      void *accel_priv, select_queue_fallback_t fallback)
+ {
+-	struct ixgbe_fwd_adapter *fwd_adapter = accel_priv;
+-#ifdef IXGBE_FCOE
+ 	struct ixgbe_adapter *adapter;
+ 	struct ixgbe_ring_feature *f;
+-#endif
+ 	int txq;
+ 
+-	if (fwd_adapter) {
+-		u8 tc = netdev_get_num_tc(dev) ?
+-			netdev_get_prio_tc_map(dev, skb->priority) : 0;
+-		struct net_device *vdev = fwd_adapter->netdev;
++	if (accel_priv) {
++		u8 tc = netdev_get_prio_tc_map(dev, skb->priority);
++		struct net_device *vdev = accel_priv;
+ 
+ 		txq = vdev->tc_to_txq[tc].offset;
+ 		txq += reciprocal_scale(skb_get_hash(skb),
+@@ -8235,8 +8232,6 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
+ 		return txq;
+ 	}
+ 
+-#ifdef IXGBE_FCOE
+-
+ 	/*
+ 	 * only execute the code below if protocol is FCoE
+ 	 * or FIP and we have FCoE enabled on the adapter
+@@ -8262,11 +8257,9 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
+ 		txq -= f->indices;
+ 
+ 	return txq + f->offset;
+-#else
+-	return fallback(dev, skb);
+-#endif
+ }
+ 
++#endif
+ static int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+ 			       struct xdp_frame *xdpf)
+ {
+@@ -10068,7 +10061,6 @@ static int ixgbe_xdp_xmit(struct net_device *dev, int n,
+ 	.ndo_open		= ixgbe_open,
+ 	.ndo_stop		= ixgbe_close,
+ 	.ndo_start_xmit		= ixgbe_xmit_frame,
+-	.ndo_select_queue	= ixgbe_select_queue,
+ 	.ndo_set_rx_mode	= ixgbe_set_rx_mode,
+ 	.ndo_validate_addr	= eth_validate_addr,
+ 	.ndo_set_mac_address	= ixgbe_set_mac,
+@@ -10091,6 +10083,7 @@ static int ixgbe_xdp_xmit(struct net_device *dev, int n,
+ 	.ndo_poll_controller	= ixgbe_netpoll,
+ #endif
+ #ifdef IXGBE_FCOE
++	.ndo_select_queue	= ixgbe_select_queue,
+ 	.ndo_fcoe_ddp_setup = ixgbe_fcoe_ddp_get,
+ 	.ndo_fcoe_ddp_target = ixgbe_fcoe_ddp_target,
+ 	.ndo_fcoe_ddp_done = ixgbe_fcoe_ddp_put,
+diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
+index adde8fc..401e1d1 100644
+--- a/drivers/net/macvlan.c
++++ b/drivers/net/macvlan.c
+@@ -514,7 +514,6 @@ static int macvlan_queue_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	const struct macvlan_dev *vlan = netdev_priv(dev);
+ 	const struct macvlan_port *port = vlan->port;
+ 	const struct macvlan_dev *dest;
+-	void *accel_priv = NULL;
+ 
+ 	if (vlan->mode == MACVLAN_MODE_BRIDGE) {
+ 		const struct ethhdr *eth = (void *)skb->data;
+@@ -533,15 +532,10 @@ static int macvlan_queue_xmit(struct sk_buff *skb, struct net_device *dev)
+ 			return NET_XMIT_SUCCESS;
+ 		}
+ 	}
+-
+-	/* For packets that are non-multicast and not bridged we will pass
+-	 * the necessary information so that the lowerdev can distinguish
+-	 * the source of the packets via the accel_priv value.
+-	 */
+-	accel_priv = vlan->accel_priv;
+ xmit_world:
+ 	skb->dev = vlan->lowerdev;
+-	return dev_queue_xmit_accel(skb, accel_priv);
++	return dev_queue_xmit_accel(skb,
++				    netdev_get_sb_channel(dev) ? dev : NULL);
+ }
+ 
+ static inline netdev_tx_t macvlan_netpoll_send_skb(struct macvlan_dev *vlan, struct sk_buff *skb)
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 4648a9a..5729bc80 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -2103,7 +2103,7 @@ static inline void netdev_for_each_tx_queue(struct net_device *dev,
+ 
+ struct netdev_queue *netdev_pick_tx(struct net_device *dev,
+ 				    struct sk_buff *skb,
+-				    void *accel_priv);
++				    struct net_device *sb_dev);
+ 
+ /* returns the headroom that the master device needs to take in account
+  * when forwarding to this dev
+@@ -2568,7 +2568,7 @@ struct net_device *__dev_get_by_flags(struct net *net, unsigned short flags,
+ void dev_disable_lro(struct net_device *dev);
+ int dev_loopback_xmit(struct net *net, struct sock *sk, struct sk_buff *newskb);
+ int dev_queue_xmit(struct sk_buff *skb);
+-int dev_queue_xmit_accel(struct sk_buff *skb, void *accel_priv);
++int dev_queue_xmit_accel(struct sk_buff *skb, struct net_device *sb_dev);
+ int dev_direct_xmit(struct sk_buff *skb, u16 queue_id);
+ int register_netdevice(struct net_device *dev);
+ void unregister_netdevice_queue(struct net_device *dev, struct list_head *head);
+diff --git a/net/core/dev.c b/net/core/dev.c
+index cc1d6bb..09a7cc2 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2786,24 +2786,26 @@ void netif_device_attach(struct net_device *dev)
+  * Returns a Tx hash based on the given packet descriptor a Tx queues' number
+  * to be used as a distribution range.
+  */
+-static u16 skb_tx_hash(const struct net_device *dev, struct sk_buff *skb)
++static u16 skb_tx_hash(const struct net_device *dev,
++		       const struct net_device *sb_dev,
++		       struct sk_buff *skb)
+ {
+ 	u32 hash;
+ 	u16 qoffset = 0;
+ 	u16 qcount = dev->real_num_tx_queues;
+ 
++	if (dev->num_tc) {
++		u8 tc = netdev_get_prio_tc_map(dev, skb->priority);
++
++		qoffset = sb_dev->tc_to_txq[tc].offset;
++		qcount = sb_dev->tc_to_txq[tc].count;
++	}
++
+ 	if (skb_rx_queue_recorded(skb)) {
+ 		hash = skb_get_rx_queue(skb);
+ 		while (unlikely(hash >= qcount))
+ 			hash -= qcount;
+-		return hash;
+-	}
+-
+-	if (dev->num_tc) {
+-		u8 tc = netdev_get_prio_tc_map(dev, skb->priority);
+-
+-		qoffset = dev->tc_to_txq[tc].offset;
+-		qcount = dev->tc_to_txq[tc].count;
++		return hash + qoffset;
+ 	}
+ 
+ 	return (u16) reciprocal_scale(skb_get_hash(skb), qcount) + qoffset;
+@@ -3573,7 +3575,8 @@ static int __get_xps_queue_idx(struct net_device *dev, struct sk_buff *skb,
+ }
+ #endif
+ 
+-static int get_xps_queue(struct net_device *dev, struct sk_buff *skb)
++static int get_xps_queue(struct net_device *dev, struct net_device *sb_dev,
++			 struct sk_buff *skb)
+ {
+ #ifdef CONFIG_XPS
+ 	struct xps_dev_maps *dev_maps;
+@@ -3587,7 +3590,7 @@ static int get_xps_queue(struct net_device *dev, struct sk_buff *skb)
+ 	if (!static_key_false(&xps_rxqs_needed))
+ 		goto get_cpus_map;
+ 
+-	dev_maps = rcu_dereference(dev->xps_rxqs_map);
++	dev_maps = rcu_dereference(sb_dev->xps_rxqs_map);
+ 	if (dev_maps) {
+ 		int tci = sk_rx_queue_get(sk);
+ 
+@@ -3598,7 +3601,7 @@ static int get_xps_queue(struct net_device *dev, struct sk_buff *skb)
+ 
+ get_cpus_map:
+ 	if (queue_index < 0) {
+-		dev_maps = rcu_dereference(dev->xps_cpus_map);
++		dev_maps = rcu_dereference(sb_dev->xps_cpus_map);
+ 		if (dev_maps) {
+ 			unsigned int tci = skb->sender_cpu - 1;
+ 
+@@ -3614,17 +3617,20 @@ static int get_xps_queue(struct net_device *dev, struct sk_buff *skb)
+ #endif
+ }
+ 
+-static u16 __netdev_pick_tx(struct net_device *dev, struct sk_buff *skb)
++static u16 ___netdev_pick_tx(struct net_device *dev, struct sk_buff *skb,
++			     struct net_device *sb_dev)
+ {
+ 	struct sock *sk = skb->sk;
+ 	int queue_index = sk_tx_queue_get(sk);
+ 
++	sb_dev = sb_dev ? : dev;
++
+ 	if (queue_index < 0 || skb->ooo_okay ||
+ 	    queue_index >= dev->real_num_tx_queues) {
+-		int new_index = get_xps_queue(dev, skb);
++		int new_index = get_xps_queue(dev, sb_dev, skb);
+ 
+ 		if (new_index < 0)
+-			new_index = skb_tx_hash(dev, skb);
++			new_index = skb_tx_hash(dev, sb_dev, skb);
+ 
+ 		if (queue_index != new_index && sk &&
+ 		    sk_fullsock(sk) &&
+@@ -3637,9 +3643,15 @@ static u16 __netdev_pick_tx(struct net_device *dev, struct sk_buff *skb)
+ 	return queue_index;
+ }
+ 
++static u16 __netdev_pick_tx(struct net_device *dev,
++			    struct sk_buff *skb)
++{
++	return ___netdev_pick_tx(dev, skb, NULL);
++}
++
+ struct netdev_queue *netdev_pick_tx(struct net_device *dev,
+ 				    struct sk_buff *skb,
+-				    void *accel_priv)
++				    struct net_device *sb_dev)
+ {
+ 	int queue_index = 0;
+ 
+@@ -3654,10 +3666,10 @@ struct netdev_queue *netdev_pick_tx(struct net_device *dev,
+ 		const struct net_device_ops *ops = dev->netdev_ops;
+ 
+ 		if (ops->ndo_select_queue)
+-			queue_index = ops->ndo_select_queue(dev, skb, accel_priv,
++			queue_index = ops->ndo_select_queue(dev, skb, sb_dev,
+ 							    __netdev_pick_tx);
+ 		else
+-			queue_index = __netdev_pick_tx(dev, skb);
++			queue_index = ___netdev_pick_tx(dev, skb, sb_dev);
+ 
+ 		queue_index = netdev_cap_txqueue(dev, queue_index);
+ 	}
+@@ -3669,7 +3681,7 @@ struct netdev_queue *netdev_pick_tx(struct net_device *dev,
+ /**
+  *	__dev_queue_xmit - transmit a buffer
+  *	@skb: buffer to transmit
+- *	@accel_priv: private data used for L2 forwarding offload
++ *	@sb_dev: suboordinate device used for L2 forwarding offload
+  *
+  *	Queue a buffer for transmission to a network device. The caller must
+  *	have set the device and priority and built the buffer before calling
+@@ -3692,7 +3704,7 @@ struct netdev_queue *netdev_pick_tx(struct net_device *dev,
+  *      the BH enable code must have IRQs enabled so that it will not deadlock.
+  *          --BLG
+  */
+-static int __dev_queue_xmit(struct sk_buff *skb, void *accel_priv)
++static int __dev_queue_xmit(struct sk_buff *skb, struct net_device *sb_dev)
+ {
+ 	struct net_device *dev = skb->dev;
+ 	struct netdev_queue *txq;
+@@ -3731,7 +3743,7 @@ static int __dev_queue_xmit(struct sk_buff *skb, void *accel_priv)
+ 	else
+ 		skb_dst_force(skb);
+ 
+-	txq = netdev_pick_tx(dev, skb, accel_priv);
++	txq = netdev_pick_tx(dev, skb, sb_dev);
+ 	q = rcu_dereference_bh(txq->qdisc);
+ 
+ 	trace_net_dev_queue(skb);
+@@ -3805,9 +3817,9 @@ int dev_queue_xmit(struct sk_buff *skb)
+ }
+ EXPORT_SYMBOL(dev_queue_xmit);
+ 
+-int dev_queue_xmit_accel(struct sk_buff *skb, void *accel_priv)
++int dev_queue_xmit_accel(struct sk_buff *skb, struct net_device *sb_dev)
+ {
+-	return __dev_queue_xmit(skb, accel_priv);
++	return __dev_queue_xmit(skb, sb_dev);
+ }
+ EXPORT_SYMBOL(dev_queue_xmit_accel);
+ 
 
-
- drivers/infiniband/hw/hfi1/vnic_main.c            |    2 
- drivers/infiniband/ulp/opa_vnic/opa_vnic_netdev.c |    4 -
- drivers/net/bonding/bond_main.c                   |    3 
- drivers/net/ethernet/amazon/ena/ena_netdev.c      |    5 -
- drivers/net/ethernet/broadcom/bcmsysport.c        |    6 -
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c   |    6 +
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h   |    3 
- drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c   |    5 -
- drivers/net/ethernet/hisilicon/hns/hns_enet.c     |    5 -
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |   62 ++++++--
- drivers/net/ethernet/lantiq_etop.c                |   10 -
- drivers/net/ethernet/mellanox/mlx4/en_tx.c        |    7 +
- drivers/net/ethernet/mellanox/mlx4/mlx4_en.h      |    3 
- drivers/net/ethernet/mellanox/mlx5/core/en.h      |    3 
- drivers/net/ethernet/mellanox/mlx5/core/en_tx.c   |    5 -
- drivers/net/ethernet/renesas/ravb_main.c          |    3 
- drivers/net/ethernet/sun/ldmvsw.c                 |    3 
- drivers/net/ethernet/sun/sunvnet.c                |    3 
- drivers/net/ethernet/ti/netcp_core.c              |    9 -
- drivers/net/hyperv/netvsc_drv.c                   |    6 -
- drivers/net/macvlan.c                             |   10 -
- drivers/net/net_failover.c                        |    7 +
- drivers/net/team/team.c                           |    3 
- drivers/net/tun.c                                 |    3 
- drivers/net/wireless/marvell/mwifiex/main.c       |    3 
- drivers/net/xen-netback/interface.c               |    4 -
- drivers/net/xen-netfront.c                        |    3 
- drivers/staging/netlogic/xlr_net.c                |    9 -
- drivers/staging/rtl8188eu/os_dep/os_intfs.c       |    3 
- drivers/staging/rtl8723bs/os_dep/os_intfs.c       |    7 -
- include/linux/netdevice.h                         |   34 ++++-
- net/core/dev.c                                    |  157 ++++++++++++++++++---
- net/core/net-sysfs.c                              |   36 ++++-
- net/mac80211/iface.c                              |    4 -
- net/packet/af_packet.c                            |    7 +
- 35 files changed, 312 insertions(+), 131 deletions(-)
-
---
