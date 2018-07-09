@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 9 Jul 2018 21:18:05 +0000
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 6/7] net: allow
- ndo_select_queue to pass netdev
-In-Reply-To: <20180709161959.8383.30395.stgit@ahduyck-green-test.jf.intel.com>
+Date: Mon, 9 Jul 2018 21:18:23 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 7/7] net: allow
+ fallback function to pass netdev
+In-Reply-To: <20180709162004.8383.91041.stgit@ahduyck-green-test.jf.intel.com>
 References: <20180709161743.8383.97754.stgit@ahduyck-green-test.jf.intel.com>
- <20180709161959.8383.30395.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2D46DC@ORSMSX104.amr.corp.intel.com>
+ <20180709162004.8383.91041.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2D46EB@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,47 +18,36 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, July 9, 2018 9:20 AM
 > To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher,
 > Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 6/7] net: allow
-> ndo_select_queue to pass netdev
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 7/7] net: allow
+> fallback function to pass netdev
 > 
-> This patch makes it so that instead of passing a void pointer as the accel_priv
-> we instead pass a net_device pointer as sb_dev. Making this change allows
-> us to pass the subordinate device through to the fallback function eventually
-> so that we can keep the actual code in the ndo_select_queue call as focused
-> on possible on the exception cases.
+> For most of these calls we can just pass NULL through to the fallback function
+> as the sb_dev. The only cases where we cannot are the cases where we
+> might be dealing with either an upper device or a driver that would have
+> configured things to support an sb_dev itself.
+> 
+> The only driver that has any signficant change in this patchset should be ixgbe
+> as we can drop the redundant functionality that existed in both the
+> ndo_select_queue function and the fallback function that was passed
+> through to us.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/infiniband/hw/hfi1/vnic_main.c            |    2 +-
->  drivers/infiniband/ulp/opa_vnic/opa_vnic_netdev.c |    4 ++--
->  drivers/net/bonding/bond_main.c                   |    3 ++-
->  drivers/net/ethernet/amazon/ena/ena_netdev.c      |    3 ++-
->  drivers/net/ethernet/broadcom/bcmsysport.c        |    2 +-
->  drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c   |    3 ++-
->  drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h   |    3 ++-
->  drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c   |    3 ++-
->  drivers/net/ethernet/hisilicon/hns/hns_enet.c     |    3 ++-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |    7 ++++---
->  drivers/net/ethernet/mellanox/mlx4/en_tx.c        |    3 ++-
->  drivers/net/ethernet/mellanox/mlx4/mlx4_en.h      |    3 ++-
->  drivers/net/ethernet/mellanox/mlx5/core/en.h      |    3 ++-
->  drivers/net/ethernet/mellanox/mlx5/core/en_tx.c   |    3 ++-
->  drivers/net/ethernet/renesas/ravb_main.c          |    3 ++-
->  drivers/net/ethernet/sun/ldmvsw.c                 |    3 ++-
->  drivers/net/ethernet/sun/sunvnet.c                |    3 ++-
->  drivers/net/hyperv/netvsc_drv.c                   |    4 ++--
->  drivers/net/net_failover.c                        |    5 +++--
->  drivers/net/team/team.c                           |    3 ++-
->  drivers/net/tun.c                                 |    3 ++-
->  drivers/net/wireless/marvell/mwifiex/main.c       |    3 ++-
->  drivers/net/xen-netback/interface.c               |    2 +-
->  drivers/net/xen-netfront.c                        |    3 ++-
->  drivers/staging/rtl8188eu/os_dep/os_intfs.c       |    3 ++-
->  drivers/staging/rtl8723bs/os_dep/os_intfs.c       |    7 +++----
->  include/linux/netdevice.h                         |   11 +++++++----
->  net/core/dev.c                                    |    6 ++++--
->  net/mac80211/iface.c                              |    4 ++--
->  29 files changed, 66 insertions(+), 42 deletions(-)
+>  drivers/net/ethernet/amazon/ena/ena_netdev.c    |    2 +-
+>  drivers/net/ethernet/broadcom/bcmsysport.c      |    4 ++--
+>  drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c |    3 ++-
+>  drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c |    2 +-
+>  drivers/net/ethernet/hisilicon/hns/hns_enet.c   |    2 +-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    4 ++--
+>  drivers/net/ethernet/mellanox/mlx4/en_tx.c      |    4 ++--
+>  drivers/net/ethernet/mellanox/mlx5/core/en_tx.c |    2 +-
+>  drivers/net/hyperv/netvsc_drv.c                 |    2 +-
+>  drivers/net/net_failover.c                      |    2 +-
+>  drivers/net/xen-netback/interface.c             |    2 +-
+>  include/linux/netdevice.h                       |    3 ++-
+>  net/core/dev.c                                  |   12 +++---------
+>  net/packet/af_packet.c                          |    7 ++++---
+>  14 files changed, 24 insertions(+), 27 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
