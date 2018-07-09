@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 9 Jul 2018 21:26:48 +0000
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: Off by one in
- ixgbe_ipsec_tx()
-In-Reply-To: <20180704095337.nqiczkkd5r6k755v@kili.mountain>
-References: <20180704095337.nqiczkkd5r6k755v@kili.mountain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2D4700@ORSMSX104.amr.corp.intel.com>
+Date: Mon, 9 Jul 2018 22:00:27 +0000
+Subject: [Intel-wired-lan] [PATCH next-queue] ixgbe: add ipsec security
+ registers into ethtool register dump
+In-Reply-To: <1530576570-17065-1-git-send-email-shannon.nelson@oracle.com>
+References: <1530576570-17065-1-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2D474E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,21 +13,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Dan Carpenter
-> Sent: Wednesday, July 4, 2018 2:54 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Shannon Nelson
-> <shannon.nelson@oracle.com>
-> Cc: netdev at vger.kernel.org; kernel-janitors at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org; David S. Miller <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH net] ixgbe: Off by one in ixgbe_ipsec_tx()
+> Behalf Of Shannon Nelson
+> Sent: Monday, July 2, 2018 5:10 PM
+> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH next-queue] ixgbe: add ipsec security
+> registers into ethtool register dump
 > 
-> The ipsec->tx_tbl[] has IXGBE_IPSEC_MAX_SA_COUNT elements so the >
-> needs to be changed to >= so we don't read one element beyond the end of
-> the array.
+> Add the ixgbe's security configuration registers into the register dump.
 > 
-> Fixes: 592594704761 ("ixgbe: process the Tx ipsec offload")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-
+> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
