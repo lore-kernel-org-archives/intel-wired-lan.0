@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 9 Jul 2018 21:17:43 +0000
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 5/7] net: Add
- generic ndo_select_queue functions
-In-Reply-To: <20180709161954.8383.69951.stgit@ahduyck-green-test.jf.intel.com>
+Date: Mon, 9 Jul 2018 21:18:05 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 6/7] net: allow
+ ndo_select_queue to pass netdev
+In-Reply-To: <20180709161959.8383.30395.stgit@ahduyck-green-test.jf.intel.com>
 References: <20180709161743.8383.97754.stgit@ahduyck-green-test.jf.intel.com>
- <20180709161954.8383.69951.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2D46CC@ORSMSX104.amr.corp.intel.com>
+ <20180709161959.8383.30395.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2D46DC@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,23 +18,47 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, July 9, 2018 9:20 AM
 > To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher,
 > Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 5/7] net: Add
-> generic ndo_select_queue functions
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 6/7] net: allow
+> ndo_select_queue to pass netdev
 > 
-> This patch adds a generic version of the ndo_select_queue functions for
-> either returning 0 or selecting a queue based on the processor ID. This is
-> generally meant to just reduce the number of functions we have to change
-> in the future when we have to deal with ndo_select_queue changes.
+> This patch makes it so that instead of passing a void pointer as the accel_priv
+> we instead pass a net_device pointer as sb_dev. Making this change allows
+> us to pass the subordinate device through to the fallback function eventually
+> so that we can keep the actual code in the ndo_select_queue call as focused
+> on possible on the exception cases.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/lantiq_etop.c   |   10 +---------
->  drivers/net/ethernet/ti/netcp_core.c |    9 +--------
->  drivers/staging/netlogic/xlr_net.c   |    9 +--------
->  include/linux/netdevice.h            |    4 ++++
->  net/core/dev.c                       |   14 ++++++++++++++
->  net/packet/af_packet.c               |    2 +-
->  6 files changed, 22 insertions(+), 26 deletions(-)
+>  drivers/infiniband/hw/hfi1/vnic_main.c            |    2 +-
+>  drivers/infiniband/ulp/opa_vnic/opa_vnic_netdev.c |    4 ++--
+>  drivers/net/bonding/bond_main.c                   |    3 ++-
+>  drivers/net/ethernet/amazon/ena/ena_netdev.c      |    3 ++-
+>  drivers/net/ethernet/broadcom/bcmsysport.c        |    2 +-
+>  drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c   |    3 ++-
+>  drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h   |    3 ++-
+>  drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c   |    3 ++-
+>  drivers/net/ethernet/hisilicon/hns/hns_enet.c     |    3 ++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |    7 ++++---
+>  drivers/net/ethernet/mellanox/mlx4/en_tx.c        |    3 ++-
+>  drivers/net/ethernet/mellanox/mlx4/mlx4_en.h      |    3 ++-
+>  drivers/net/ethernet/mellanox/mlx5/core/en.h      |    3 ++-
+>  drivers/net/ethernet/mellanox/mlx5/core/en_tx.c   |    3 ++-
+>  drivers/net/ethernet/renesas/ravb_main.c          |    3 ++-
+>  drivers/net/ethernet/sun/ldmvsw.c                 |    3 ++-
+>  drivers/net/ethernet/sun/sunvnet.c                |    3 ++-
+>  drivers/net/hyperv/netvsc_drv.c                   |    4 ++--
+>  drivers/net/net_failover.c                        |    5 +++--
+>  drivers/net/team/team.c                           |    3 ++-
+>  drivers/net/tun.c                                 |    3 ++-
+>  drivers/net/wireless/marvell/mwifiex/main.c       |    3 ++-
+>  drivers/net/xen-netback/interface.c               |    2 +-
+>  drivers/net/xen-netfront.c                        |    3 ++-
+>  drivers/staging/rtl8188eu/os_dep/os_intfs.c       |    3 ++-
+>  drivers/staging/rtl8723bs/os_dep/os_intfs.c       |    7 +++----
+>  include/linux/netdevice.h                         |   11 +++++++----
+>  net/core/dev.c                                    |    6 ++++--
+>  net/mac80211/iface.c                              |    4 ++--
+>  29 files changed, 66 insertions(+), 42 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
