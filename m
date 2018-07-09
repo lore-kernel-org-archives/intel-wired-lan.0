@@ -1,166 +1,37 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 10 Jul 2018 04:00:28 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 900d6be5276eaa4a63dd72c6532dcadbb247f0ac
-Message-ID: <5b43bedc.LG9K+1J8aUNUcBl0%lkp@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 9 Jul 2018 21:15:45 +0000
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 1/7] net-sysfs:
+ Drop support for XPS and traffic_class on single queue device
+In-Reply-To: <20180709161932.8383.5753.stgit@ahduyck-green-test.jf.intel.com>
+References: <20180709161743.8383.97754.stgit@ahduyck-green-test.jf.intel.com>
+ <20180709161932.8383.5753.stgit@ahduyck-green-test.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2D368F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 900d6be5276eaa4a63dd72c6532dcadbb247f0ac  net: allow fallback function to pass netdev
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Monday, July 9, 2018 9:20 AM
+> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher,
+> Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH v2 1/7] net-sysfs:
+> Drop support for XPS and traffic_class on single queue device
+> 
+> This patch makes it so that we do not report the traffic class or allow XPS
+> configuration on single queue devices. This is mostly to avoid unnecessary
+> complexity with changes I have planned that will allow us to reuse the
+> unused tc_to_txq and XPS configuration on a single queue device to allow it
+> to make use of a subset of queues on an underlying device.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> ---
+>  net/core/net-sysfs.c |   15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
 
-elapsed time: 106m
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-configs tested: 141
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                 randconfig-a0-07100128
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-07100132
-x86_64                randconfig-it0-07092352
-x86_64                 randconfig-x003-201827
-x86_64                 randconfig-x007-201827
-x86_64                 randconfig-x004-201827
-x86_64                 randconfig-x005-201827
-x86_64                 randconfig-x000-201827
-x86_64                 randconfig-x001-201827
-x86_64                 randconfig-x008-201827
-x86_64                 randconfig-x006-201827
-x86_64                 randconfig-x002-201827
-x86_64                 randconfig-x009-201827
-i386                     randconfig-i0-201827
-i386                     randconfig-i1-201827
-x86_64                 randconfig-v0-07100103
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                   randconfig-a0-07092045
-i386                   randconfig-a1-07092045
-x86_64                 randconfig-s0-07100057
-x86_64                 randconfig-s1-07100057
-x86_64                 randconfig-s2-07100057
-x86_64                 randconfig-s0-07100300
-x86_64                 randconfig-s1-07100300
-x86_64                 randconfig-s2-07100300
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-x015-201827
-x86_64                 randconfig-x011-201827
-x86_64                 randconfig-x018-201827
-x86_64                 randconfig-x010-201827
-x86_64                 randconfig-x014-201827
-x86_64                 randconfig-x019-201827
-x86_64                 randconfig-x017-201827
-x86_64                 randconfig-x016-201827
-x86_64                 randconfig-x013-201827
-x86_64                 randconfig-x012-201827
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                              fedora-25
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201827
-i386                     randconfig-s1-201827
-i386                               tinyconfig
-arm                          simpad_defconfig
-mips                     loongson1b_defconfig
-parisc                        c8000_defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201827
-i386                   randconfig-b0-07091836
-i386                   randconfig-b0-07100317
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-ia64                             allmodconfig
-m68k                            mac_defconfig
-arm                             ezx_defconfig
-mips                          rb532_defconfig
-x86_64                 randconfig-u0-07100146
-x86_64                 randconfig-u0-07100317
-i386                   randconfig-x016-201827
-i386                   randconfig-x017-201827
-i386                   randconfig-x014-201827
-i386                   randconfig-x012-201827
-i386                   randconfig-x018-201827
-i386                   randconfig-x011-201827
-i386                   randconfig-x013-201827
-i386                   randconfig-x019-201827
-i386                   randconfig-x015-201827
-i386                   randconfig-x010-201827
-i386                   randconfig-x009-201827
-i386                   randconfig-x008-201827
-i386                   randconfig-x001-201827
-i386                   randconfig-x000-201827
-i386                   randconfig-x003-201827
-i386                   randconfig-x005-201827
-i386                   randconfig-x006-201827
-i386                   randconfig-x004-201827
-i386                   randconfig-x002-201827
-i386                   randconfig-x007-201827
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x078-201827
-i386                   randconfig-x079-201827
-i386                   randconfig-x074-201827
-i386                   randconfig-x075-201827
-i386                   randconfig-x076-201827
-i386                   randconfig-x070-201827
-i386                   randconfig-x073-201827
-i386                   randconfig-x071-201827
-i386                   randconfig-x077-201827
-i386                   randconfig-x072-201827
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-r0-07100023
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-x0-07100224
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
