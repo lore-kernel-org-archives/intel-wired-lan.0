@@ -1,317 +1,83 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 10 Jul 2018 14:15:32 +0300
-Subject: [Intel-wired-lan] [PATCH v3 01/11] igc: Add skeletal frame for
- Intel(R) 2.5G Ethernet Controller support.
-In-Reply-To: <f7916ab2-37bc-010c-a88e-f8372bfecd5d@oracle.com>
-References: <20180624084458.9977-1-sasha.neftin@intel.com>
- <f7916ab2-37bc-010c-a88e-f8372bfecd5d@oracle.com>
-Message-ID: <a34a1fea-f0e3-d2a2-1500-9c658f9ac790@intel.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Tue, 10 Jul 2018 13:17:21 +0200
+Subject: [Intel-wired-lan] Issue with driver i40e stat strings count mismatch
+Message-ID: <20180710131721.657e55a5@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 6/27/2018 03:30, Shannon Nelson wrote:
-> On 6/24/2018 1:44 AM, Sasha Neftin wrote:
->> This patch adds the beginning framework onto which I am going to add
->> the igc driver which supports the Intel(R) I225-LM/I225-V 2.5G
->> Ethernet Controller.
->>
->> Sasha Neftin (v2):
->> update module author, copyright and licence header
->> cosmetic changes
->>
->> Sasha Neftin (v3):
->> Removed unused header files
->>
->> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
->> ---
->> ? drivers/net/ethernet/intel/Kconfig??????? |? 15 +++
->> ? drivers/net/ethernet/intel/Makefile?????? |?? 1 +
->> ? drivers/net/ethernet/intel/igc/Makefile?? |? 10 ++
->> ? drivers/net/ethernet/intel/igc/e1000_hw.h |? 10 ++
->> ? drivers/net/ethernet/intel/igc/igc.h????? |? 29 ++++++
->> ? drivers/net/ethernet/intel/igc/igc_main.c | 146 
->> ++++++++++++++++++++++++++++++
->> ? 6 files changed, 211 insertions(+)
->> ? create mode 100644 drivers/net/ethernet/intel/igc/Makefile
->> ? create mode 100644 drivers/net/ethernet/intel/igc/e1000_hw.h
-> 
-> Can we please get rid of the e1000 stuff this time?? Why isn't this 
-> called igc_hw.h?
-> 
-yes. I've been looking in our other drivers and agree. I will rework all 
-code and file names. igc_ prefix will be applied in v4.
->> ? create mode 100644 drivers/net/ethernet/intel/igc/igc.h
->> ? create mode 100644 drivers/net/ethernet/intel/igc/igc_main.c
->>
->> diff --git a/drivers/net/ethernet/intel/Kconfig 
->> b/drivers/net/ethernet/intel/Kconfig
->> index 14d287bed33c..0e425b5bc733 100644
->> --- a/drivers/net/ethernet/intel/Kconfig
->> +++ b/drivers/net/ethernet/intel/Kconfig
->> @@ -280,4 +280,19 @@ config FM10K
->> ??????? To compile this driver as a module, choose M here. The module
->> ??????? will be called fm10k.? MSI-X interrupt support is required
->> +config IGC
->> +??? tristate "Intel(R) I225-LM/I225-V 2.5G Ethernet Controller support"
->> +??? default n
->> +??? depends on PCI
->> +??? ---help---
->> +????? This driver supports Intel(R) I225-LM/I225-V 2.5G Ethernet
->> +????? Controller family of adapters.
->> +????? For more information on how to identify your adapter, go
->> +????? to the Adapter & Driver ID Guide that can be located at:
->> +
->> +????? <http://support.intel.com>
->> +
->> +????? To compile this driver as a module, choose M here. The module
->> +????? will be called igc.
->> +
->> ? endif # NET_VENDOR_INTEL
->> diff --git a/drivers/net/ethernet/intel/Makefile 
->> b/drivers/net/ethernet/intel/Makefile
->> index 807a4f8c7e4e..18f4aac68bc0 100644
->> --- a/drivers/net/ethernet/intel/Makefile
->> +++ b/drivers/net/ethernet/intel/Makefile
->> @@ -7,6 +7,7 @@ obj-$(CONFIG_E100) += e100.o
->> ? obj-$(CONFIG_E1000) += e1000/
->> ? obj-$(CONFIG_E1000E) += e1000e/
->> ? obj-$(CONFIG_IGB) += igb/
->> +obj-$(CONFIG_IGC) += igc/
->> ? obj-$(CONFIG_IGBVF) += igbvf/
->> ? obj-$(CONFIG_IXGBE) += ixgbe/
->> ? obj-$(CONFIG_IXGBEVF) += ixgbevf/
->> diff --git a/drivers/net/ethernet/intel/igc/Makefile 
->> b/drivers/net/ethernet/intel/igc/Makefile
->> new file mode 100644
->> index 000000000000..3d13b015d401
->> --- /dev/null
->> +++ b/drivers/net/ethernet/intel/igc/Makefile
->> @@ -0,0 +1,10 @@
->> +# SPDX-License-Identifier: GPL-2.0
->> +# Copyright (c)? 2018 Intel Corporation
->> +
->> +#
->> +# Intel(R) I225-LM/I225-V 2.5G Ethernet Controller
->> +#
->> +
->> +obj-$(CONFIG_IGC) += igc.o
->> +
->> +igc-objs := igc_main.o
->> diff --git a/drivers/net/ethernet/intel/igc/e1000_hw.h 
->> b/drivers/net/ethernet/intel/igc/e1000_hw.h
->> new file mode 100644
->> index 000000000000..677f40c2c0a4
->> --- /dev/null
->> +++ b/drivers/net/ethernet/intel/igc/e1000_hw.h
->> @@ -0,0 +1,10 @@
->> +/* SPDX-License-Identifier: GPL-2.0 */
->> +/* Copyright (c)? 2018 Intel Corporation */
->> +
->> +#ifndef _E1000_HW_H_
->> +#define _E1000_HW_H_
->> +
->> +#define E1000_DEV_ID_I225_LM??????????? 0x15F2
->> +#define E1000_DEV_ID_I225_V??????????? 0x15F3
-> 
-> Please, please, please don't continue the e1000 stuff.? It is already 
-> confusing enough with three other drivers using E1000 as a filename and 
-> macro prefix.? Use IGC_ here.
-> 
-> 
-igc_ prefix will be applied in v4.
->> +
->> +#endif /* _E1000_HW_H_ */
->> diff --git a/drivers/net/ethernet/intel/igc/igc.h 
->> b/drivers/net/ethernet/intel/igc/igc.h
->> new file mode 100644
->> index 000000000000..afe595cfcf63
->> --- /dev/null
->> +++ b/drivers/net/ethernet/intel/igc/igc.h
->> @@ -0,0 +1,29 @@
->> +/* SPDX-License-Identifier: GPL-2.0 */
->> +/* Copyright (c)? 2018 Intel Corporation */
->> +
->> +#ifndef _IGC_H_
->> +#define _IGC_H_
->> +
->> +#include <linux/kobject.h>
->> +
->> +#include <linux/pci.h>
->> +#include <linux/netdevice.h>
->> +#include <linux/vmalloc.h>
->> +
->> +#include <linux/ethtool.h>
->> +
->> +#include <linux/sctp.h>
->> +
->> +#define IGC_ERR(args...) pr_err("igc: " args)
->> +
->> +#define PFX "igc: "
->> +
->> +#include <linux/timecounter.h>
->> +#include <linux/net_tstamp.h>
->> +#include <linux/ptp_clock_kernel.h>
->> +
->> +/* main */
->> +extern char igc_driver_name[];
->> +extern char igc_driver_version[];
->> +
->> +#endif /* _IGC_H_ */
->> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c 
->> b/drivers/net/ethernet/intel/igc/igc_main.c
->> new file mode 100644
->> index 000000000000..3e10d27752d5
->> --- /dev/null
->> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
->> @@ -0,0 +1,146 @@
->> +// SPDX-License-Identifier: GPL-2.0
->> +/* Copyright (c)? 2018 Intel Corporation */
->> +
->> +#include <linux/module.h>
->> +#include <linux/types.h>
->> +
->> +#include "igc.h"
->> +#include "e1000_hw.h"
->> +
->> +#define DRV_VERSION??? "0.0.1-k"
->> +#define DRV_SUMMARY??? "Intel(R) 2.5G Ethernet Linux Driver"
->> +
->> +char igc_driver_name[] = "igc";
->> +char igc_driver_version[] = DRV_VERSION;
->> +static const char igc_driver_string[] = DRV_SUMMARY;
->> +static const char igc_copyright[] =
->> +??? "Copyright(c) 2018 Intel Corporation.";
->> +
->> +static const struct pci_device_id igc_pci_tbl[] = {
->> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_I225_LM) },
->> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_I225_V) },
->> +??? /* required last entry */
->> +??? {0, }
->> +};
->> +
->> +MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
->> +
->> +/**
->> + *? igc_probe - Device Initialization Routine
->> + *? @pdev: PCI device information struct
->> + *? @ent: entry in igc_pci_tbl
->> + *
->> + *? Returns 0 on success, negative on failure
->> + *
->> + *? igc_probe initializes an adapter identified by a pci_dev structure.
->> + *? The OS initialization, configuring of the adapter private structure,
->> + *? and a hardware reset occur.
->> + **/
->> +static int igc_probe(struct pci_dev *pdev,
->> +???????????? const struct pci_device_id *ent)
->> +{
->> +??? int err, pci_using_dac;
->> +
->> +??? err = pci_enable_device_mem(pdev);
->> +??? if (err)
->> +??????? return err;
->> +
->> +??? pci_using_dac = 0;
->> +??? err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
->> +??? if (!err) {
->> +??????? err = dma_set_coherent_mask(&pdev->dev,
->> +??????????????????????? DMA_BIT_MASK(64));
->> +??????? if (!err)
->> +??????????? pci_using_dac = 1;
->> +??? } else {
->> +??????? err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
->> +??????? if (err) {
->> +??????????? err = dma_set_coherent_mask(&pdev->dev,
->> +??????????????????????????? DMA_BIT_MASK(32));
->> +??????????? if (err) {
->> +??????????????? IGC_ERR("Wrong DMA configuration, aborting\n");
->> +??????????????? goto err_dma;
->> +??????????? }
->> +??????? }
->> +??? }
->> +
->> +??? err = pci_request_selected_regions(pdev,
->> +?????????????????????? pci_select_bars(pdev,
->> +?????????????????????????????? IORESOURCE_MEM),
->> +?????????????????????? igc_driver_name);
->> +??? if (err)
->> +??????? goto err_pci_reg;
->> +
->> +??? pci_set_master(pdev);
->> +??? pci_save_state(pdev);
->> +??? return 0;
->> +
->> +err_pci_reg:
->> +err_dma:
->> +??? pci_disable_device(pdev);
->> +??? return err;
->> +}
->> +
->> +/**
->> + *? igc_remove - Device Removal Routine
->> + *? @pdev: PCI device information struct
->> + *
->> + *? igc_remove is called by the PCI subsystem to alert the driver
->> + *? that it should release a PCI device.? The could be caused by a
->> + *? Hot-Plug event, or because the driver is going to be removed from
->> + *? memory.
->> + **/
->> +static void igc_remove(struct pci_dev *pdev)
->> +{
->> +??? pci_release_selected_regions(pdev,
->> +???????????????????? pci_select_bars(pdev, IORESOURCE_MEM));
->> +
->> +??? pci_disable_device(pdev);
->> +}
->> +
->> +static struct pci_driver igc_driver = {
->> +??? .name???? = igc_driver_name,
->> +??? .id_table = igc_pci_tbl,
->> +??? .probe??? = igc_probe,
->> +??? .remove?? = igc_remove,
->> +};
->> +
->> +/**
->> + *? igc_init_module - Driver Registration Routine
->> + *
->> + *? igc_init_module is the first routine called when the driver is
->> + *? loaded. All it does is register with the PCI subsystem.
->> + **/
->> +static int __init igc_init_module(void)
->> +{
->> +??? int ret;
->> +
->> +??? pr_info("%s - version %s\n",
->> +??????? igc_driver_string, igc_driver_version);
->> +
->> +??? pr_info("%s\n", igc_copyright);
->> +
->> +??? ret = pci_register_driver(&igc_driver);
->> +??? return ret;
->> +}
->> +
->> +module_init(igc_init_module);
->> +
->> +/**
->> + *? igc_exit_module - Driver Exit Cleanup Routine
->> + *
->> + *? igc_exit_module is called just before the driver is removed
->> + *? from memory.
->> + **/
->> +static void __exit igc_exit_module(void)
->> +{
->> +??? pci_unregister_driver(&igc_driver);
->> +}
->> +
->> +module_exit(igc_exit_module);
->> +
->> +MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
->> +MODULE_DESCRIPTION(DRV_SUMMARY);
->> +MODULE_LICENSE("GPL");
->> +MODULE_VERSION(DRV_VERSION);
->> +/* igc_main.c */
->>
-Thank you very much for your comments. igc_ prefix will be applied in v4.
+Hi Intel-fokes,
+
+Your i40e driver have issues with it's ethtool stats.  A warning
+triggers at drivers/net/ethernet/intel/i40e/i40e_ethtool.c line 1907
+(see splash below) in func i40e_get_stat_strings().
+
+
+[ 5077.779518] ------------[ cut here ]------------
+[ 5077.784493] stat strings count mismatch!
+[ 5077.784529] WARNING: CPU: 0 PID: 2293 at drivers/net/ethernet/intel/i40e/i40e_ethtool.c:1907 i40e_get_strings+0x477/0x4b0 [i40e]
+[ 5077.800941] Modules linked in: act_gact cls_u32 sch_ingress xt_tcpudp iptable_raw ip_tables x_tables tun nfnetlink bridge stp llc bpfilter sunrpc coretemp kvm_intel kvm irqbypass intel_cstate intel_uncore intel_rapl_perf pcspkr i2c_i801 wmi ipmi_si ipmi_devintf ipmi_msghandler acpi_pad sch_fq_codel ixgbe mlx5_core mlxfw i40e devlink hid_generic igb mdio i2c_algo_bit ptp sd_mod i2c_core pps_core [last unloaded: x_tables]
+[ 5077.839833] CPU: 0 PID: 2293 Comm: ethtool Not tainted 4.18.0-rc3-net-next-EdwardCree01+ #484
+[ 5077.848962] Hardware name: Supermicro Super Server/X10SRi-F, BIOS 2.0a 08/01/2016
+[ 5077.857049] RIP: 0010:i40e_get_strings+0x477/0x4b0 [i40e]
+[ 5077.862776] Code: 98 49 39 c4 0f 84 2e fc ff ff 80 3d b3 da 03 00 00 0f 85 21 fc ff ff 48 c7 c7 24 42 19 a0 c6 05 9f da 03 00 01 e8 e9 9c ee e0 <0f> 0b e9 07 fc ff ff 48 83 c4 10 48 c7 c1 80 01 19 a0 be 20 00 00 
+[ 5077.882506] RSP: 0018:ffffc90003af3c18 EFLAGS: 00010296
+[ 5077.888063] RAX: 000000000000001c RBX: ffffc90003ce1440 RCX: 0000000000000006
+[ 5077.895528] RDX: 0000000000000007 RSI: 0000000000000096 RDI: ffff88087ca15530
+[ 5077.902991] RBP: ffffc90003ce1440 R08: 000000000000001c R09: 0000000000000411
+[ 5077.910453] R10: 000fffffffe00000 R11: ffffffff82a4e66d R12: ffffffffffffcbc0
+[ 5077.917913] R13: ffff88087c50f000 R14: 0000000000000008 R15: ffffffffa0199620
+[ 5077.925376] FS:  00007f7a84bcb740(0000) GS:ffff88087ca00000(0000) knlGS:0000000000000000
+[ 5077.934061] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[ 5077.940133] CR2: 000055c7d709b000 CR3: 000000081acd0004 CR4: 00000000003606f0
+[ 5077.947609] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 5077.955070] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[ 5077.962531] Call Trace:
+[ 5077.965309]  dev_ethtool+0xf4e/0x2430
+[ 5077.969305]  ? get_page_from_freelist+0x2bb/0x1240
+[ 5077.974428]  ? dev_ioctl+0x1e9/0x3c0
+[ 5077.978332]  dev_ioctl+0x1e9/0x3c0
+[ 5077.982062]  sock_do_ioctl+0xa8/0x140
+[ 5077.986057]  ? sock_ioctl+0x1c0/0x300
+[ 5077.990051]  sock_ioctl+0x1c0/0x300
+[ 5077.993864]  ? __handle_mm_fault+0xa82/0xfd0
+[ 5077.998462]  ? do_vfs_ioctl+0x8d/0x5e0
+[ 5078.002550]  do_vfs_ioctl+0x8d/0x5e0
+[ 5078.006456]  ? handle_mm_fault+0xd0/0x210
+[ 5078.010790]  ksys_ioctl+0x70/0x80
+[ 5078.014429]  __x64_sys_ioctl+0x16/0x20
+[ 5078.018505]  do_syscall_64+0x42/0xf0
+[ 5078.022411]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+[ 5078.027789] RIP: 0033:0x7f7a84394dc7
+[ 5078.031703] Code: b3 66 90 48 8b 05 d9 00 2d 00 64 c7 00 26 00 00 00 48 c7 c0 ff ff ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 b8 10 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d a9 00 2d 00 f7 d8 64 89 01 48 
+[ 5078.051437] RSP: 002b:00007ffd64d68338 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+[ 5078.059596] RAX: ffffffffffffffda RBX: 000055c7d7099260 RCX: 00007f7a84394dc7
+[ 5078.067062] RDX: 00007ffd64d684e0 RSI: 0000000000008946 RDI: 0000000000000003
+[ 5078.074524] RBP: 00007ffd64d684d0 R08: ffffffffffffffb0 R09: 000055c7d7099260
+[ 5078.081986] R10: 0000000000000000 R11: 0000000000000246 R12: 00000000000001a2
+[ 5078.089447] R13: 0000000000000001 R14: 0000000000000000 R15: 00007ffd64d684e0
+[ 5078.096911] ---[ end trace faf82a00c0d8b6b1 ]---
+
+$ gdb ./drivers/net/ethernet/intel/i40e/i40e.ko
+[...]
+Reading symbols from ./drivers/net/ethernet/intel/i40e/i40e.ko...done.
+(gdb) list *(i40e_get_strings)+0x477
+0x17787 is in i40e_get_strings (drivers/net/ethernet/intel/i40e/i40e_ethtool.c:1906).
+1901			snprintf(data, ETH_GSTRING_LEN,
+1902				 "port.rx_priority_%u_xon_2_xoff", i);
+1903			data += ETH_GSTRING_LEN;
+1904		}
+1905	
+1906		WARN_ONCE(p - data != i40e_get_stats_count(netdev) * ETH_GSTRING_LEN,
+1907			  "stat strings count mismatch!");
+1908	}
+1909	
+1910	static void i40e_get_priv_flag_strings(struct net_device *netdev, u8 *data)
+
+-- 
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
