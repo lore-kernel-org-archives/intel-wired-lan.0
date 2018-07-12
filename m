@@ -1,97 +1,73 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 13 Jul 2018 01:41:25 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
- 672f5ccece3ba3fc851d9c73924ae16f39e4c176
-Message-ID: <5b4792c5.CWGFXLXL0VhD750f%lkp@intel.com>
+From: Duyck, Alexander H <alexander.h.duyck@intel.com>
+Date: Thu, 12 Jul 2018 17:56:33 +0000
+Subject: [Intel-wired-lan] [PATCH v3 04/11] igc: Add interrupt support
+In-Reply-To: <7e31b5f3-2319-29fa-85ae-32e674fa7510@oracle.com>
+References: <20180624084505.10109-1-sasha.neftin@intel.com>
+ <bb91c36c-0a1e-5b13-1233-152918c1908f@oracle.com>
+ <918e2d98-4cf1-6f85-b24f-d455c7280be4@intel.com>
+ <aaa06623-035b-a4ff-14c9-d6d32b8f1f53@intel.com>
+ <7e31b5f3-2319-29fa-85ae-32e674fa7510@oracle.com>
+Message-ID: <B1C1DF2ACD01FD4881736AA51731BAB22DFF7C93@ORSMSX114.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: 672f5ccece3ba3fc851d9c73924ae16f39e4c176  Merge branch 'ieee802154-for-davem-2018-07-11' of git://git.kernel.org/pub/scm/linux/kernel/git/sschmidt/wpan
 
-elapsed time: 13m
 
-configs tested: 72
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
+> Shannon Nelson
+> Sent: Thursday, July 12, 2018 9:46 AM
+> To: Neftin, Sasha <sasha.neftin@intel.com>; intel-wired-lan at osuosl.org
+> Subject: Re: [Intel-wired-lan] [PATCH v3 04/11] igc: Add interrupt support
+> 
+> On 7/12/2018 1:57 AM, Neftin, Sasha wrote:
+> > On 7/3/2018 11:25, Neftin, Sasha wrote:
+> >> On 6/28/2018 02:42, Shannon Nelson wrote:
+> >>> On 6/24/2018 1:45 AM, Sasha Neftin wrote:
+> >>>> This patch set adds interrupt support for the igc interfaces.
+> 
+> [...]
+> 
+> >>>
+> > I need check it. currently it is consistent with our previously driver.
+> 
+> I understand the desire to keep with what is working in other drivers, but in
+> some cases they are showing signs of age and might lead you astray.
+> 
+> [...]
+> 
+> >>>> +
+> >>>> +??????? if (q_vector->rx.ring && q_vector->tx.ring)
+> >>>> +??????????? sprintf(q_vector->name, "%s-TxRx-%u", netdev->name,
+> >>>> +??????????????? q_vector->rx.ring->queue_index);
+> >>>> +??????? else if (q_vector->tx.ring)
+> >>>> +??????????? sprintf(q_vector->name, "%s-tx-%u", netdev->name,
+> >>>> +??????????????? q_vector->tx.ring->queue_index);
+> >>>> +??????? else if (q_vector->rx.ring)
+> >>>> +??????????? sprintf(q_vector->name, "%s-rx-%u", netdev->name,
+> >>>> +??????????????? q_vector->rx.ring->queue_index);
+> >>>
+> >>> Is there any reason to support the tx and rx queues split on
+> >>> different interrupts?
+> >>>
+> > i stayed align with previos driver style. any benefit from change it?
+> 
+> With RSS putting certain incoming traffic on one particular Rx/interrupt/CPU, it's
+> good to keep the outgoing response traffic on the same Tx/interrupt/CPU so
+> that you don't have to move data to a different CPU and cache.  This is a general
+> case thing, of course, and I'm sure there are examples of where Tx and Rx on
+> separate interrupts is a useful thing.  However, are the target platforms for this
+> device going to want to spread the Tx and Rx queues across different interrupts?
+> 
+> If you can assume that queues are always in pairs on the interrupts you can
+> simplify a bunch of code, which is always a good thing.  You'll want to balance
+> the simplified code against user and design requirements.
+> 
+> sln
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Let's avoid requiring a 1:1 mapping between Rx and Tx queues. We have scenerios where more Tx than Rx is useful, and there are scenarios where more Rx than Tx queues are useful. As such I would say we should leave that logic.
 
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x016-201827
-i386                   randconfig-x017-201827
-i386                   randconfig-x014-201827
-i386                   randconfig-x012-201827
-i386                   randconfig-x018-201827
-i386                   randconfig-x011-201827
-i386                   randconfig-x013-201827
-i386                   randconfig-x019-201827
-i386                   randconfig-x015-201827
-i386                   randconfig-x010-201827
-i386                     randconfig-n0-201827
-x86_64                 randconfig-x003-201827
-x86_64                 randconfig-x007-201827
-x86_64                 randconfig-x004-201827
-x86_64                 randconfig-x005-201827
-x86_64                 randconfig-x000-201827
-x86_64                 randconfig-x001-201827
-x86_64                 randconfig-x008-201827
-x86_64                 randconfig-x006-201827
-x86_64                 randconfig-x002-201827
-x86_64                 randconfig-x009-201827
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x015-201827
-x86_64                 randconfig-x011-201827
-x86_64                 randconfig-x018-201827
-x86_64                 randconfig-x010-201827
-x86_64                 randconfig-x014-201827
-x86_64                 randconfig-x019-201827
-x86_64                 randconfig-x017-201827
-x86_64                 randconfig-x016-201827
-x86_64                 randconfig-x013-201827
-x86_64                 randconfig-x012-201827
-i386                     randconfig-s0-201827
-i386                     randconfig-s1-201827
-i386                   randconfig-x009-201827
-i386                   randconfig-x008-201827
-i386                   randconfig-x001-201827
-i386                   randconfig-x000-201827
-i386                   randconfig-x003-201827
-i386                   randconfig-x005-201827
-i386                   randconfig-x006-201827
-i386                   randconfig-x004-201827
-i386                   randconfig-x002-201827
-i386                   randconfig-x007-201827
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+- Alex
