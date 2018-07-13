@@ -1,20 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Fri, 13 Jul 2018 19:11:06 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
- 672f5ccece3ba3fc851d9c73924ae16f39e4c176
-Message-ID: <5b4888ca.62aHtyKvr5ziXPv5%lkp@intel.com>
+Date: Fri, 13 Jul 2018 19:54:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:10GbE] BUILD SUCCESS
+ 8dc4b1a799fbf4e21ea014076284ee73bb4f9443
+Message-ID: <5b4892f8.aSWhbW6E8W2fxixj%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: 672f5ccece3ba3fc851d9c73924ae16f39e4c176  Merge branch 'ieee802154-for-davem-2018-07-11' of git://git.kernel.org/pub/scm/linux/kernel/git/sschmidt/wpan
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  10GbE
+branch HEAD: 8dc4b1a799fbf4e21ea014076284ee73bb4f9443  networking: e1000.rst: Get rid of Sphinx warnings
 
-elapsed time: 164m
+elapsed time: 207m
 
-configs tested: 157
+configs tested: 203
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -39,9 +39,12 @@ arm                            dove_defconfig
 um                                allnoconfig
 ia64                              allnoconfig
 microblaze                       allyesconfig
+arm                        mini2440_defconfig
+m68k                       bvme6000_defconfig
 x86_64                 randconfig-a0-07131650
 x86_64                 randconfig-a0-07131809
 x86_64                 randconfig-a0-07131838
+x86_64                 randconfig-a0-07131905
 arm                        clps711x_defconfig
 arm64                             allnoconfig
 alpha                            allyesconfig
@@ -56,9 +59,15 @@ arm64                               defconfig
 m68k                         amcore_defconfig
 sh                           se7722_defconfig
 sh                            titan_defconfig
+s390                       zfcpdump_defconfig
+sh                          polaris_defconfig
+powerpc                     mpc83xx_defconfig
+powerpc                     virtex5_defconfig
 x86_64                randconfig-it0-07131631
 x86_64                randconfig-it0-07131806
 i386                     randconfig-n0-201827
+i386                     randconfig-i0-201827
+i386                     randconfig-i1-201827
 m68k                       m5275evb_defconfig
 powerpc                     stx_gp3_defconfig
 sh                     magicpanelr2_defconfig
@@ -73,17 +82,37 @@ mips                malta_qemu_32r6_defconfig
 powerpc                      acadia_defconfig
 powerpc                 mpc834x_itx_defconfig
 xtensa                            allnoconfig
+mips                     loongson1b_defconfig
+powerpc                     tqm8541_defconfig
+arm                              alldefconfig
+powerpc                      ep88xc_defconfig
 x86_64                 randconfig-v0-07131757
 x86_64                 randconfig-v0-07131823
 x86_64                 randconfig-v0-07131854
+x86_64                 randconfig-v0-07131917
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
 ia64                      gensparse_defconfig
 alpha                             allnoconfig
-powerpc                      ep88xc_defconfig
 powerpc                    klondike_defconfig
 x86_64                           alldefconfig
 x86_64                 randconfig-g0-07131630
 x86_64                 randconfig-g0-07131742
 x86_64                 randconfig-g0-07131839
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                                defconfig
+i386                     randconfig-a0-201827
+i386                     randconfig-a1-201827
 x86_64                 randconfig-s0-07130958
 x86_64                 randconfig-s1-07130958
 x86_64                 randconfig-s2-07130958
@@ -93,21 +122,30 @@ x86_64                 randconfig-s2-07131735
 x86_64                 randconfig-s0-07131841
 x86_64                 randconfig-s1-07131841
 x86_64                 randconfig-s2-07131841
-alpha                               defconfig
-ia64                                defconfig
 mips                                defconfig
 sh                                  defconfig
+arm                      integrator_defconfig
+microblaze                       allmodconfig
+parisc                          712_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                              fedora-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
+i386                   randconfig-s0-07131603
+i386                   randconfig-s1-07131603
+x86_64                 randconfig-s3-07131905
+x86_64                 randconfig-s4-07131905
+x86_64                 randconfig-s5-07131905
 arm                      tct_hammer_defconfig
 powerpc                      makalu_defconfig
 sh                             sh03_defconfig
 arm                  colibri_pxa270_defconfig
 powerpc                          allmodconfig
-powerpc                     virtex5_defconfig
+x86_64                   randconfig-i0-201827
 i386                   randconfig-b0-07131627
 i386                   randconfig-b0-07131729
 arm                            hisi_defconfig
@@ -120,6 +158,7 @@ h8300                    h8300h-sim_defconfig
 powerpc                     kilauea_defconfig
 x86_64                 randconfig-b0-07131622
 x86_64                 randconfig-b0-07131708
+x86_64                 randconfig-b0-07131842
 arm                         mv78xx0_defconfig
 sparc                       sparc32_defconfig
 arm                          gemini_defconfig
@@ -128,19 +167,25 @@ sparc64                          allmodconfig
 m68k                          hp300_defconfig
 powerpc                   lite5200b_defconfig
 arm                          imote2_defconfig
+arm                        vexpress_defconfig
+mips                             alldefconfig
+arm                              allmodconfig
+arm                         lpc18xx_defconfig
 x86_64                 randconfig-u0-07131638
 x86_64                 randconfig-u0-07131739
 x86_64                 randconfig-u0-07131833
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 powerpc                 mpc8272_ads_defconfig
-i386                             allmodconfig
 x86_64                randconfig-ne0-07131648
 x86_64                randconfig-ne0-07131748
 parisc                      default_defconfig
 arm                           corgi_defconfig
 sh                     sh7710voipgw_defconfig
+mips                  cavium_octeon_defconfig
+xtensa                           alldefconfig
 x86_64                 randconfig-h0-07131710
+x86_64                 randconfig-h0-07131900
 arm                            u300_defconfig
 parisc                           alldefconfig
 powerpc               mpc86xx_basic_defconfig
@@ -172,6 +217,7 @@ arm                          pxa910_defconfig
 s390                    performance_defconfig
 x86_64                randconfig-ws0-07131650
 sh                               allyesconfig
+powerpc                      pasemi_defconfig
 x86_64                 randconfig-r0-07131740
 x86_64                 randconfig-r0-07131839
 i386                   randconfig-x0-07131715
