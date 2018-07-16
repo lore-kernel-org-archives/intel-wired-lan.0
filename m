@@ -1,144 +1,70 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 28 Jul 2018 16:38:01 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 951574b3cdf72d71bd61ed3f480d206e55ddd34e
-Message-ID: <5b5c2b69.vzkJ9G7WEjEmLLmc%lkp@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Mon, 16 Jul 2018 22:46:47 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: Remove superfluous reset to PHY
+ and page 0 selection
+In-Reply-To: <7d2fa77261c64a218250d6c0f6dad6aa@infodas.de>
+References: <7d2fa77261c64a218250d6c0f6dad6aa@infodas.de>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96526059@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 951574b3cdf72d71bd61ed3f480d206e55ddd34e  i40e/i40evf: remove redundant functions i40evf_aq_{set/get}_phy_register
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
+> Of Gr?nke, Christian
+> Sent: Tuesday, June 26, 2018 3:12 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Chris J Arges <christopherarges@gmail.com>
+> Subject: [Intel-wired-lan] [PATCH] igb: Remove superfluous reset to PHY and
+> page 0 selection
+> 
+> This patch reverts two previous applied patches to fix an issue
+> that appeared when using SGMII based SFP modules. In the current
+> state the driver will try to reset the PHY before obtaining the
+> phy_addr of the SGMII attached PHY. That leads to an error in
+> e1000_write_phy_reg_sgmii_82575. Causing the initialization to
+> fail:
+> 
+>     igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
+>     igb: Copyright (c) 2007-2014 Intel Corporation.
+>     igb: probe of ????:??:??.? failed with error -3
+> 
+> The patches being reverted are:
+> 
+>     commit 182785335447957409282ca745aa5bc3968facee
+>     Author: Aaron Sierra <asierra@xes-inc.com>
+>     Date:   Tue Nov 29 10:03:56 2016 -0600
+> 
+>         igb: reset the PHY before reading the PHY ID
+> 
+>     commit 440aeca4b9858248d8f16d724d9fa87a4f65fa33
+>     Author: Matwey V Kornilov <matwey@sai.msu.ru>
+>     Date:   Thu Nov 24 13:32:48 2016 +0300
+> 
+>          igb: Explicitly select page 0 at initialization
+> 
+> The first reverted patch directly causes the problem mentioned above.
+> In case of SGMII the phy_addr is not known at this point and will
+> only be obtained by 'igb_get_phy_id_82575' further down in the code.
+> The second removed patch selects forces selection of page 0 in the
+> PHY. Something that the reset tries to address as well.
+> 
+> As pointed out by Alexander Duzck, the patch below fixes the same
+> issue but in the proper location:
+> 
+>     commit 4e684f59d760a2c7c716bb60190783546e2d08a1
+>     Author: Chris J Arges <christopherarges@gmail.com>
+>     Date:   Wed Nov 2 09:13:42 2016 -0500
+> 
+>         igb: Workaround for igb i210 firmware issue
+> 
+> Reverts: 440aeca4b9858248d8f16d724d9fa87a4f65fa33.
+> Reverts: 182785335447957409282ca745aa5bc3968facee.
+> 
+> Signed-off-by: Christian Gr?nke <c.groenke@infodas.de>
+> ---
+>  e1000_82575.c |   12 ------------
+>  1 file changed, 12 deletions(-)
 
-elapsed time: 89m
-
-configs tested: 119
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                     randconfig-n0-201829
-x86_64                 randconfig-x007-201829
-x86_64                 randconfig-x003-201829
-x86_64                 randconfig-x000-201829
-x86_64                 randconfig-x005-201829
-x86_64                 randconfig-x004-201829
-x86_64                 randconfig-x008-201829
-x86_64                 randconfig-x001-201829
-x86_64                 randconfig-x009-201829
-x86_64                 randconfig-x002-201829
-x86_64                 randconfig-x006-201829
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201829
-i386                     randconfig-i1-201829
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-a0-201829
-i386                     randconfig-a1-201829
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              fedora-25
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-s1-201829
-i386                     randconfig-s0-201829
-i386                               tinyconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201829
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-x008-201829
-i386                   randconfig-x009-201829
-i386                   randconfig-x005-201829
-i386                   randconfig-x000-201829
-i386                   randconfig-x003-201829
-i386                   randconfig-x001-201829
-i386                   randconfig-x004-201829
-i386                   randconfig-x006-201829
-i386                   randconfig-x007-201829
-i386                   randconfig-x002-201829
-x86_64                 randconfig-x018-201829
-x86_64                 randconfig-x011-201829
-x86_64                 randconfig-x015-201829
-x86_64                 randconfig-x019-201829
-x86_64                 randconfig-x014-201829
-x86_64                 randconfig-x010-201829
-x86_64                 randconfig-x013-201829
-x86_64                 randconfig-x016-201829
-x86_64                 randconfig-x017-201829
-x86_64                 randconfig-x012-201829
-i386                   randconfig-x012-201829
-i386                   randconfig-x017-201829
-i386                   randconfig-x014-201829
-i386                   randconfig-x016-201829
-i386                   randconfig-x013-201829
-i386                   randconfig-x011-201829
-i386                   randconfig-x018-201829
-i386                   randconfig-x010-201829
-i386                   randconfig-x015-201829
-i386                   randconfig-x019-201829
-i386                   randconfig-x078-201829
-i386                   randconfig-x070-201829
-i386                   randconfig-x075-201829
-i386                   randconfig-x076-201829
-i386                   randconfig-x074-201829
-i386                   randconfig-x079-201829
-i386                   randconfig-x071-201829
-i386                   randconfig-x073-201829
-i386                   randconfig-x072-201829
-i386                   randconfig-x077-201829
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
