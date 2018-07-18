@@ -1,412 +1,52 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed, 18 Jul 2018 11:18:15 +0300
-Subject: [Intel-wired-lan] [PATCH v4 11/11] igc: Add watchdog
-Message-ID: <20180718081815.15957-1-sasha.neftin@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 18 Jul 2018 13:49:40 -0700
+Subject: [Intel-wired-lan] [PATCH] e1000: ethtool: check on
+ netif_running() before calling e1000_up()
+In-Reply-To: <20180718191851.31984-1-chenbo@pdx.edu>
+References: <20180718191851.31984-1-chenbo@pdx.edu>
+Message-ID: <CAKgT0UceBCgtae2NMpu236fYvJOU+0uzQDk5c6rgRXqB+7CcMQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Code completion, remove obsolete code
-Add watchdog methods
+On Wed, Jul 18, 2018 at 12:18 PM, Bo Chen <chenbo@pdx.edu> wrote:
+> When the device is not up, the call to 'e1000_up()' from the error handling path
+> of 'e1000_set_ringparam()' causes a kernel oops with a null-pointer
+> dereference. The null-pointer dereference is triggered in function
+> 'e1000_alloc_rx_buffers()' at line 'buffer_info = &rx_ring->buffer_info[i]'.
+>
+> This bug was reported by COD, a tool for testing kernel module binaries I am
+> building. This bug was also detected by KFI from Dr. Kai Cong.
+>
+> This patch fixes the bug by checking on 'netif_running()' before calling
+> 'e1000_up()' in 'e1000_set_ringparam()'.
+>
+> Signed-off-by: Bo Chen <chenbo@pdx.edu>
 
-Sasha Neftin (v2):
-minor cosmetic changes
+The change below looks good to me.
 
-Sasha Neftin (v3):
-resolve conflict and code optimization
+Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Sasha Neftin (v4):
-fix update phy info for a watchdog task
-remove no need media_change type and media_swap method
-code optimization
-address comments
-replace e1000_ prefix with igc_ prefix
-
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc.h         |  12 ++
- drivers/net/ethernet/intel/igc/igc_defines.h |  12 ++
- drivers/net/ethernet/intel/igc/igc_hw.h      |   1 +
- drivers/net/ethernet/intel/igc/igc_main.c    | 232 +++++++++++++++++++++++++++
- 4 files changed, 257 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index c9e83da145df..99f768aac493 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -33,6 +33,8 @@ extern char igc_driver_version[];
- #define IGC_FLAG_HAS_MSI		BIT(0)
- #define IGC_FLAG_QUEUE_PAIRS		BIT(4)
- #define IGC_FLAG_NEED_LINK_UPDATE	BIT(9)
-+#define IGC_FLAG_MEDIA_RESET		BIT(10)
-+#define IGC_FLAG_MAS_ENABLE		BIT(12)
- #define IGC_FLAG_HAS_MSIX		BIT(13)
- #define IGC_FLAG_VLAN_PROMISC		BIT(15)
- 
-@@ -296,6 +298,7 @@ struct igc_adapter {
- 
- 	/* TX */
- 	u16 tx_work_limit;
-+	u32 tx_timeout_count;
- 	int num_tx_queues;
- 	struct igc_ring *tx_ring[IGC_MAX_TX_QUEUES];
- 
-@@ -354,6 +357,7 @@ struct igc_adapter {
- 
- 	struct igc_mac_addr *mac_table;
- 
-+	unsigned long link_check_timeout;
- 	struct igc_info ei;
- };
- 
-@@ -423,6 +427,14 @@ static inline unsigned int igc_rx_pg_order(struct igc_ring *ring)
- 	return 0;
- }
- 
-+static inline s32 igc_read_phy_reg(struct igc_hw *hw, u32 offset, u16 *data)
-+{
-+	if (hw->phy.ops.read_reg)
-+		return hw->phy.ops.read_reg(hw, offset, data);
-+
-+	return 0;
-+}
-+
- #define igc_rx_pg_size(_ring) (PAGE_SIZE << igc_rx_pg_order(_ring))
- 
- #define IGC_TXD_DCMD	(IGC_ADVTXD_DCMD_EOP | IGC_ADVTXD_DCMD_RS)
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index f05b9e244df1..a0f08b151437 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -73,6 +73,9 @@
- #define IGC_CTRL_RFCE		0x08000000  /* Receive Flow Control enable */
- #define IGC_CTRL_TFCE		0x10000000  /* Transmit flow control enable */
- 
-+#define IGC_CONNSW_AUTOSENSE_CONF	0x2
-+#define IGC_CONNSW_AUTOSENSE_EN	0x1
-+
- /* PBA constants */
- #define IGC_PBA_34K		0x0022
- 
-@@ -101,6 +104,10 @@
- #define CR_1000T_HD_CAPS	0x0100 /* Advertise 1000T HD capability */
- #define CR_1000T_FD_CAPS	0x0200 /* Advertise 1000T FD capability  */
- 
-+/* 1000BASE-T Status Register */
-+#define SR_1000T_REMOTE_RX_STATUS	0x1000 /* Remote receiver OK */
-+#define SR_1000T_LOCAL_RX_STATUS	0x2000 /* Local receiver OK */
-+
- /* PHY GPY 211 registers */
- #define STANDARD_AN_REG_MASK	0x0007 /* MMD */
- #define ANEG_MULTIGBT_AN_CTRL	0x0020 /* MULTI GBT AN Control Register */
-@@ -218,6 +225,11 @@
- #define IGC_QVECTOR_MASK	0x7FFC		/* Q-vector mask */
- #define IGC_ITR_VAL_MASK	0x04		/* ITR value mask */
- 
-+/* Interrupt Cause Set */
-+#define IGC_ICS_LSC		IGC_ICR_LSC       /* Link Status Change */
-+#define IGC_ICS_RXDMT0		IGC_ICR_RXDMT0    /* rx desc min. threshold */
-+#define IGC_ICS_DRSTA		IGC_ICR_DRSTA     /* Device Reset Aserted */
-+
- #define IGC_ICR_DOUTSYNC	0x10000000 /* NIC DMA out of sync */
- #define IGC_EITR_CNT_IGNR	0x80000000 /* Don't reset counters on write */
- #define IGC_IVAR_VALID		0x80
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index a84cf0ba78d4..3ba14c8cf4c3 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -226,6 +226,7 @@ struct igc_dev_spec_base {
- 	bool clear_semaphore_once;
- 	bool module_plugged;
- 	u8 media_port;
-+	bool mas_capable;
- };
- 
- struct igc_hw {
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index e5bd2c5cf02a..6417f8ab8ba1 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -1765,6 +1765,7 @@ static int igc_up(struct igc_adapter *adapter)
- 
- 	/* start the watchdog. */
- 	hw->mac.get_link_status = 1;
-+	schedule_work(&adapter->watchdog_task);
- 
- 	return 0;
- }
-@@ -2305,6 +2306,55 @@ static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx)
- 		kfree_rcu(q_vector, rcu);
- }
- 
-+/* Need to wait a few seconds after link up to get diagnostic information from
-+ * the phy
-+ */
-+static void igc_update_phy_info(struct timer_list *t)
-+{
-+	struct igc_adapter *adapter = from_timer(adapter, t, phy_info_timer);
-+
-+	igc_get_phy_info(&adapter->hw);
-+}
-+
-+/**
-+ *  igc_has_link - check shared code for link and determine up/down
-+ *  @adapter: pointer to driver private info
-+ **/
-+static bool igc_has_link(struct igc_adapter *adapter)
-+{
-+	struct igc_hw *hw = &adapter->hw;
-+	bool link_active = false;
-+
-+	/* get_link_status is set on LSC (link status) interrupt or
-+	 * rx sequence error interrupt.  get_link_status will stay
-+	 * false until the igc_check_for_link establishes link
-+	 * for copper adapters ONLY
-+	 */
-+	switch (hw->phy.media_type) {
-+	case igc_media_type_copper:
-+		if (!hw->mac.get_link_status)
-+			return true;
-+		hw->mac.ops.check_for_link(hw);
-+		link_active = !hw->mac.get_link_status;
-+		break;
-+	default:
-+	case igc_media_type_unknown:
-+		break;
-+	}
-+
-+	if (hw->mac.type == igc_i225 &&
-+	    hw->phy.id == I225_I_PHY_ID) {
-+		if (!netif_carrier_ok(adapter->netdev)) {
-+			adapter->flags &= ~IGC_FLAG_NEED_LINK_UPDATE;
-+		} else if (!(adapter->flags & IGC_FLAG_NEED_LINK_UPDATE)) {
-+			adapter->flags |= IGC_FLAG_NEED_LINK_UPDATE;
-+			adapter->link_check_timeout = jiffies;
-+		}
-+	}
-+
-+	return link_active;
-+}
-+
- /**
-  *  igc_watchdog - Timer Call-back
-  *  @data: pointer to adapter cast into an unsigned long
-@@ -2312,6 +2362,183 @@ static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx)
- static void igc_watchdog(struct timer_list *t)
- {
- 	struct igc_adapter *adapter = from_timer(adapter, t, watchdog_timer);
-+	/* Do the rest outside of interrupt context */
-+	schedule_work(&adapter->watchdog_task);
-+}
-+
-+static void igc_watchdog_task(struct work_struct *work)
-+{
-+	struct igc_adapter *adapter = container_of(work,
-+						   struct igc_adapter,
-+						   watchdog_task);
-+	struct net_device *netdev = adapter->netdev;
-+	struct igc_hw *hw = &adapter->hw;
-+	struct igc_phy_info *phy = &hw->phy;
-+	u16 phy_data, retry_count = 20;
-+	u32 connsw;
-+	u32 link;
-+	int i;
-+
-+	link = igc_has_link(adapter);
-+
-+	if (adapter->flags & IGC_FLAG_NEED_LINK_UPDATE) {
-+		if (time_after(jiffies, (adapter->link_check_timeout + HZ)))
-+			adapter->flags &= ~IGC_FLAG_NEED_LINK_UPDATE;
-+		else
-+			link = false;
-+	}
-+
-+	/* Force link down if we have fiber to swap to */
-+	if (adapter->flags & IGC_FLAG_MAS_ENABLE) {
-+		if (hw->phy.media_type == igc_media_type_copper) {
-+			connsw = rd32(IGC_CONNSW);
-+			if (!(connsw & IGC_CONNSW_AUTOSENSE_EN))
-+				link = 0;
-+		}
-+	}
-+	if (link) {
-+		if (!netif_carrier_ok(netdev)) {
-+			u32 ctrl;
-+
-+			hw->mac.ops.get_speed_and_duplex(hw,
-+							 &adapter->link_speed,
-+							 &adapter->link_duplex);
-+
-+			ctrl = rd32(IGC_CTRL);
-+			/* Link status message must follow this format */
-+			netdev_info(netdev,
-+				    "igc: %s NIC Link is Up %d Mbps %s Duplex, Flow Control: %s\n",
-+				    netdev->name,
-+				    adapter->link_speed,
-+				    adapter->link_duplex == FULL_DUPLEX ?
-+				    "Full" : "Half",
-+				    (ctrl & IGC_CTRL_TFCE) &&
-+				    (ctrl & IGC_CTRL_RFCE) ? "RX/TX" :
-+				    (ctrl & IGC_CTRL_RFCE) ?  "RX" :
-+				    (ctrl & IGC_CTRL_TFCE) ?  "TX" : "None");
-+
-+			/* check if SmartSpeed worked */
-+			igc_check_downshift(hw);
-+			if (phy->speed_downgraded)
-+				netdev_warn(netdev, "Link Speed was downgraded by SmartSpeed\n");
-+
-+			/* adjust timeout factor according to speed/duplex */
-+			adapter->tx_timeout_factor = 1;
-+			switch (adapter->link_speed) {
-+			case SPEED_10:
-+				adapter->tx_timeout_factor = 14;
-+				break;
-+			case SPEED_100:
-+				/* maybe add some timeout factor ? */
-+				break;
-+			}
-+
-+			if (adapter->link_speed != SPEED_1000)
-+				goto no_wait;
-+
-+			/* wait for Remote receiver status OK */
-+retry_read_status:
-+			if (!igc_read_phy_reg(hw, PHY_1000T_STATUS,
-+					      &phy_data)) {
-+				if (!(phy_data & SR_1000T_REMOTE_RX_STATUS) &&
-+				    retry_count) {
-+					msleep(100);
-+					retry_count--;
-+					goto retry_read_status;
-+				} else if (!retry_count) {
-+					dev_err(&adapter->pdev->dev, "exceed max 2 second\n");
-+				}
-+			} else {
-+				dev_err(&adapter->pdev->dev, "read 1000Base-T Status Reg\n");
-+			}
-+no_wait:
-+			netif_carrier_on(netdev);
-+
-+			/* link state has changed, schedule phy info update */
-+			if (!test_bit(__IGC_DOWN, &adapter->state))
-+				mod_timer(&adapter->phy_info_timer,
-+					  round_jiffies(jiffies + 2 * HZ));
-+		}
-+	} else {
-+		if (netif_carrier_ok(netdev)) {
-+			adapter->link_speed = 0;
-+			adapter->link_duplex = 0;
-+
-+			/* Links status message must follow this format */
-+			netdev_info(netdev, "igc: %s NIC Link is Down\n",
-+				    netdev->name);
-+			netif_carrier_off(netdev);
-+
-+			/* link state has changed, schedule phy info update */
-+			if (!test_bit(__IGC_DOWN, &adapter->state))
-+				mod_timer(&adapter->phy_info_timer,
-+					  round_jiffies(jiffies + 2 * HZ));
-+
-+			/* link is down, time to check for alternate media */
-+			if (adapter->flags & IGC_FLAG_MAS_ENABLE) {
-+				if (adapter->flags & IGC_FLAG_MEDIA_RESET) {
-+					schedule_work(&adapter->reset_task);
-+					/* return immediately */
-+					return;
-+				}
-+			}
-+
-+		/* also check for alternate media here */
-+		} else if (!netif_carrier_ok(netdev) &&
-+			   (adapter->flags & IGC_FLAG_MAS_ENABLE)) {
-+			if (adapter->flags & IGC_FLAG_MEDIA_RESET) {
-+				schedule_work(&adapter->reset_task);
-+				/* return immediately */
-+				return;
-+			}
-+		}
-+	}
-+
-+	spin_lock(&adapter->stats64_lock);
-+	igc_update_stats(adapter);
-+	spin_unlock(&adapter->stats64_lock);
-+
-+	for (i = 0; i < adapter->num_tx_queues; i++) {
-+		struct igc_ring *tx_ring = adapter->tx_ring[i];
-+
-+		if (!netif_carrier_ok(netdev)) {
-+			/* We've lost link, so the controller stops DMA,
-+			 * but we've got queued Tx work that's never going
-+			 * to get done, so reset controller to flush Tx.
-+			 * (Do the reset outside of interrupt context).
-+			 */
-+			if (igc_desc_unused(tx_ring) + 1 < tx_ring->count) {
-+				adapter->tx_timeout_count++;
-+				schedule_work(&adapter->reset_task);
-+				/* return immediately since reset is imminent */
-+				return;
-+			}
-+		}
-+
-+		/* Force detection of hung controller every watchdog period */
-+		set_bit(IGC_RING_FLAG_TX_DETECT_HANG, &tx_ring->flags);
-+	}
-+
-+	/* Cause software interrupt to ensure Rx ring is cleaned */
-+	if (adapter->flags & IGC_FLAG_HAS_MSIX) {
-+		u32 eics = 0;
-+
-+		for (i = 0; i < adapter->num_q_vectors; i++)
-+			eics |= adapter->q_vector[i]->eims_value;
-+		wr32(IGC_EICS, eics);
-+	} else {
-+		wr32(IGC_ICS, IGC_ICS_RXDMT0);
-+	}
-+
-+	/* Reset the timer */
-+	if (!test_bit(__IGC_DOWN, &adapter->state)) {
-+		if (adapter->flags & IGC_FLAG_NEED_LINK_UPDATE)
-+			mod_timer(&adapter->watchdog_timer,
-+				  round_jiffies(jiffies +  HZ));
-+		else
-+			mod_timer(&adapter->watchdog_timer,
-+				  round_jiffies(jiffies + 2 * HZ));
-+	}
- }
- 
- /**
-@@ -3172,6 +3399,7 @@ static int __igc_open(struct net_device *netdev, bool resuming)
- 
- 	/* start the watchdog. */
- 	hw->mac.get_link_status = 1;
-+	schedule_work(&adapter->watchdog_task);
- 
- 	return IGC_SUCCESS;
- 
-@@ -3453,8 +3681,10 @@ static int igc_probe(struct pci_dev *pdev,
- 	wr32(IGC_TXPBS, I225_TXPBSIZE_DEFAULT);
- 
- 	timer_setup(&adapter->watchdog_timer, igc_watchdog, 0);
-+	timer_setup(&adapter->phy_info_timer, igc_update_phy_info, 0);
- 
- 	INIT_WORK(&adapter->reset_task, igc_reset_task);
-+	INIT_WORK(&adapter->watchdog_task, igc_watchdog_task);
- 
- 	/* Initialize link properties that are user-changeable */
- 	adapter->fc_autoneg = true;
-@@ -3529,8 +3759,10 @@ static void igc_remove(struct pci_dev *pdev)
- 	set_bit(__IGC_DOWN, &adapter->state);
- 
- 	del_timer_sync(&adapter->watchdog_timer);
-+	del_timer_sync(&adapter->phy_info_timer);
- 
- 	cancel_work_sync(&adapter->reset_task);
-+	cancel_work_sync(&adapter->watchdog_task);
- 
- 	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
- 	 * would have already happened in close and is redundant.
--- 
-2.11.0
-
+> ---
+>  drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+> index bdb3f8e65ed4..c1e4e94f100f 100644
+> --- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+> +++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+> @@ -644,7 +644,8 @@ static int e1000_set_ringparam(struct net_device *netdev,
+>  err_alloc_rx:
+>         kfree(txdr);
+>  err_alloc_tx:
+> -       e1000_up(adapter);
+> +       if (netif_running(adapter->netdev))
+> +               e1000_up(adapter);
+>  err_setup:
+>         clear_bit(__E1000_RESETTING, &adapter->flags);
+>         return err;
+> --
+> 2.17.0
+>
