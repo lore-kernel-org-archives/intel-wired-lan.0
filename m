@@ -1,300 +1,689 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed, 18 Jul 2018 11:17:45 +0300
-Subject: [Intel-wired-lan] [PATCH v4 01/11] igc: Add skeletal frame for
- Intel(R) 2.5G Ethernet Controller support.
-Message-ID: <20180718081745.15440-1-sasha.neftin@intel.com>
+Date: Wed, 18 Jul 2018 11:17:48 +0300
+Subject: [Intel-wired-lan] [PATCH v4 02/11] igc: Add support for PF
+Message-ID: <20180718081748.15489-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds the beginning framework onto which I am going to add
-the igc driver which supports the Intel(R) I225-LM/I225-V 2.5G
-Ethernet Controller.
+This patch adds the basic defines and structures needed by the PF for
+operation. With this it is possible to bring up the interface,
+but without being able to configure any of the filters on
+the interface itself.
+Add skeleton for a function pointers.
 
 Sasha Neftin (v2):
-update module author, copyright and licence header
-cosmetic changes
+add description
+fix code indentation
 
 Sasha Neftin (v3):
-remove unused header files
+squash patches, clean code and remove unused values
+remove duplication
 
 Sasha Neftin (v4):
-update brand name
-fix syntax by input from community
+address comments
+remove unused PCIE definition
+remove unused MAX_MTA_REG definition
+remove unused NVM registers
+remove unused PCIE registers
+remove unused DMA registers
+remove unused Receive registers
+remove unused Transmit registers
+fix typos
 replace e1000_ prefix with igc_ prefix
+remove unused PCIE defines
+remove unused EEE register, will be add per needs
+remove unused SERDES definitions
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/Kconfig        |  16 ++++
- drivers/net/ethernet/intel/Makefile       |   1 +
- drivers/net/ethernet/intel/igc/Makefile   |  10 ++
- drivers/net/ethernet/intel/igc/igc.h      |  29 ++++++
- drivers/net/ethernet/intel/igc/igc_hw.h   |  10 ++
- drivers/net/ethernet/intel/igc/igc_main.c | 146 ++++++++++++++++++++++++++++++
- 6 files changed, 212 insertions(+)
- create mode 100644 drivers/net/ethernet/intel/igc/Makefile
- create mode 100644 drivers/net/ethernet/intel/igc/igc.h
- create mode 100644 drivers/net/ethernet/intel/igc/igc_hw.h
- create mode 100644 drivers/net/ethernet/intel/igc/igc_main.c
+ drivers/net/ethernet/intel/igc/Makefile      |   2 +-
+ drivers/net/ethernet/intel/igc/igc.h         |  13 ++
+ drivers/net/ethernet/intel/igc/igc_defines.h |  37 ++++++
+ drivers/net/ethernet/intel/igc/igc_hw.h      | 113 ++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_i225.h    |  10 ++
+ drivers/net/ethernet/intel/igc/igc_mac.c     |  51 +++++++
+ drivers/net/ethernet/intel/igc/igc_mac.h     |  13 ++
+ drivers/net/ethernet/intel/igc/igc_main.c    | 101 ++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_regs.h    | 192 +++++++++++++++++++++++++++
+ 9 files changed, 531 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_defines.h
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_i225.h
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_mac.c
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_mac.h
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_regs.h
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 1ab613eb5796..fcb676398022 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -280,4 +280,20 @@ config FM10K
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called fm10k.  MSI-X interrupt support is required
- 
-+config IGC
-+	tristate "Intel(R) Ethernet Controller I225-LM/I225-V support"
-+	default n
-+	depends on PCI
-+	---help---
-+	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
-+	  family of adapters.
-+
-+	  For more information on how to identify your adapter, go
-+	  to the Adapter & Driver ID Guide that can be located at:
-+
-+	  <http://support.intel.com>
-+
-+	  To compile this driver as a module, choose M here. The module
-+	  will be called igc.
-+
- endif # NET_VENDOR_INTEL
-diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
-index 807a4f8c7e4e..18f4aac68bc0 100644
---- a/drivers/net/ethernet/intel/Makefile
-+++ b/drivers/net/ethernet/intel/Makefile
-@@ -7,6 +7,7 @@ obj-$(CONFIG_E100) += e100.o
- obj-$(CONFIG_E1000) += e1000/
- obj-$(CONFIG_E1000E) += e1000e/
- obj-$(CONFIG_IGB) += igb/
-+obj-$(CONFIG_IGC) += igc/
- obj-$(CONFIG_IGBVF) += igbvf/
- obj-$(CONFIG_IXGBE) += ixgbe/
- obj-$(CONFIG_IXGBEVF) += ixgbevf/
 diff --git a/drivers/net/ethernet/intel/igc/Makefile b/drivers/net/ethernet/intel/igc/Makefile
-new file mode 100644
-index 000000000000..3d13b015d401
---- /dev/null
+index 3d13b015d401..06e0b9e23a8c 100644
+--- a/drivers/net/ethernet/intel/igc/Makefile
 +++ b/drivers/net/ethernet/intel/igc/Makefile
-@@ -0,0 +1,10 @@
-+# SPDX-License-Identifier: GPL-2.0
-+# Copyright (c)  2018 Intel Corporation
-+
-+#
-+# Intel(R) I225-LM/I225-V 2.5G Ethernet Controller
-+#
-+
-+obj-$(CONFIG_IGC) += igc.o
-+
-+igc-objs := igc_main.o
+@@ -7,4 +7,4 @@
+ 
+ obj-$(CONFIG_IGC) += igc.o
+ 
+-igc-objs := igc_main.o
++igc-objs := igc_main.o igc_mac.o
 diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-new file mode 100644
-index 000000000000..afe595cfcf63
---- /dev/null
+index afe595cfcf63..481b2ee694fa 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
 +++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -0,0 +1,29 @@
+@@ -22,8 +22,21 @@
+ #include <linux/net_tstamp.h>
+ #include <linux/ptp_clock_kernel.h>
+ 
++#include "igc_hw.h"
++
+ /* main */
+ extern char igc_driver_name[];
+ extern char igc_driver_version[];
+ 
++/* Board specific private data structure */
++struct igc_adapter {
++	u8 __iomem *io_addr;
++
++	/* OS defined structs */
++	struct pci_dev *pdev;
++
++	/* structs defined in igc_hw.h */
++	struct igc_hw hw;
++};
++
+ #endif /* _IGC_H_ */
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+new file mode 100644
+index 000000000000..d6facad2b0e2
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -0,0 +1,37 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/* Copyright (c)  2018 Intel Corporation */
 +
-+#ifndef _IGC_H_
-+#define _IGC_H_
++#ifndef _IGC_DEFINES_H_
++#define _IGC_DEFINES_H_
 +
-+#include <linux/kobject.h>
++/* Priority on PCI. 0=rx,1=fair */
++#define IGC_CTRL_PRIOR			0x00000004
++/* PCI Function Mask */
++#define IGC_STATUS_FUNC_MASK			0x0000000C
++#define IGC_EXTCNF_SIZE_EXT_PCIE_LENGTH_MASK	0x00FF0000
++#define IGC_EXTCNF_SIZE_EXT_PCIE_LENGTH_SHIFT	16
 +
-+#include <linux/pci.h>
-+#include <linux/netdevice.h>
-+#include <linux/vmalloc.h>
++/* PCI Bus Info */
++#define PCIE_DEVICE_CONTROL2		0x28
++#define PCIE_DEVICE_CONTROL2_16ms	0x0005
 +
-+#include <linux/ethtool.h>
++/* Error Codes */
++#define IGC_SUCCESS				0
++#define IGC_ERR_NVM				1
++#define IGC_ERR_PHY				2
++#define IGC_ERR_CONFIG				3
++#define IGC_ERR_PARAM				4
++#define IGC_ERR_MAC_INIT			5
++#define IGC_ERR_RESET				9
 +
-+#include <linux/sctp.h>
++/* Device Status */
++#define IGC_STATUS_FD		0x00000001      /* Full duplex.0=half,1=full */
++#define IGC_STATUS_LU		0x00000002      /* Link up.0=no,1=link */
++#define IGC_STATUS_FUNC_MASK	0x0000000C      /* PCI Function Mask */
++#define IGC_STATUS_FUNC_SHIFT	2
++#define IGC_STATUS_FUNC_1	0x00000004      /* Function 1 */
++#define IGC_STATUS_TXOFF	0x00000010      /* transmission paused */
++#define IGC_STATUS_SPEED_100	0x00000040      /* Speed 100Mb/s */
++#define IGC_STATUS_SPEED_1000	0x00000080      /* Speed 1000Mb/s */
 +
-+#define IGC_ERR(args...) pr_err("igc: " args)
-+
-+#define PFX "igc: "
-+
-+#include <linux/timecounter.h>
-+#include <linux/net_tstamp.h>
-+#include <linux/ptp_clock_kernel.h>
-+
-+/* main */
-+extern char igc_driver_name[];
-+extern char igc_driver_version[];
-+
-+#endif /* _IGC_H_ */
++#endif /* _IGC_DEFINES_H_ */
 diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-new file mode 100644
-index 000000000000..aa68b4516700
---- /dev/null
+index aa68b4516700..cf995c078996 100644
+--- a/drivers/net/ethernet/intel/igc/igc_hw.h
 +++ b/drivers/net/ethernet/intel/igc/igc_hw.h
+@@ -4,7 +4,120 @@
+ #ifndef _IGC_HW_H_
+ #define _IGC_HW_H_
+ 
++#include <linux/types.h>
++#include <linux/if_ether.h>
++#include "igc_regs.h"
++#include "igc_defines.h"
++#include "igc_mac.h"
++#include "igc_i225.h"
++
+ #define IGC_DEV_ID_I225_LM			0x15F2
+ #define IGC_DEV_ID_I225_V			0x15F3
+ 
++/* Forward declaration */
++struct igc_hw;
++
++/* Function pointers for the MAC. */
++struct igc_mac_operations {
++};
++
++enum igc_mac_type {
++	igc_undefined = 0,
++	igc_i225,
++	igc_num_macs  /* List is 1-based, so subtract 1 for true count. */
++};
++
++enum igc_phy_type {
++	igc_phy_unknown = 0,
++	igc_phy_none,
++	igc_phy_i225,
++};
++
++enum igc_bus_type {
++	igc_bus_type_unknown = 0,
++	igc_bus_type_pci_express,
++	igc_bus_type_reserved
++};
++
++enum igc_bus_speed {
++	igc_bus_speed_unknown = 0,
++	igc_bus_speed_2500,
++	igc_bus_speed_5000,
++	igc_bus_speed_reserved
++};
++
++enum igc_bus_width {
++	igc_bus_width_unknown = 0,
++	igc_bus_width_pcie_x1 = 1,
++	igc_bus_width_pcie_x2 = 2,
++	igc_bus_width_pcie_x4 = 4,
++	igc_bus_width_pcie_x8 = 8,
++	igc_bus_width_reserved
++};
++
++struct igc_mac_info {
++	struct igc_mac_operations ops;
++
++	u8 addr[ETH_ALEN];
++	u8 perm_addr[ETH_ALEN];
++
++	enum igc_mac_type type;
++
++	u32 collision_delta;
++	u32 ledctl_default;
++	u32 ledctl_mode1;
++	u32 ledctl_mode2;
++	u32 mc_filter_type;
++	u32 tx_packet_delta;
++	u32 txcw;
++
++	u16 mta_reg_count;
++	u16 uta_reg_count;
++
++	u16 rar_entry_count;
++
++	u8  forced_speed_duplex;
++
++	bool adaptive_ifs;
++	bool has_fwsm;
++	bool arc_subsystem_valid;
++
++	bool autoneg;
++	bool autoneg_failed;
++};
++
++struct igc_bus_info {
++	enum igc_bus_type type;
++	enum igc_bus_speed speed;
++	enum igc_bus_width width;
++
++	u16 func;
++	u16 pci_cmd_word;
++};
++
++struct igc_hw {
++	void *back;
++
++	u8 *hw_addr;
++	u8 *flash_address;
++	unsigned long io_base;
++
++	struct igc_mac_info  mac;
++
++	struct igc_bus_info bus;
++
++	u16 device_id;
++	u16 subsystem_vendor_id;
++	u16 subsystem_device_id;
++	u16 vendor_id;
++
++	u8  revision_id;
++};
++
++/* These functions must be implemented by drivers */
++s32  igc_read_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value);
++s32  igc_write_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value);
++void igc_read_pci_cfg(struct igc_hw *hw, u32 reg, u16 *value);
++void igc_write_pci_cfg(struct igc_hw *hw, u32 reg, u16 *value);
++
+ #endif /* _IGC_HW_H_ */
+diff --git a/drivers/net/ethernet/intel/igc/igc_i225.h b/drivers/net/ethernet/intel/igc/igc_i225.h
+new file mode 100644
+index 000000000000..461cd8c7e352
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igc/igc_i225.h
 @@ -0,0 +1,10 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/* Copyright (c)  2018 Intel Corporation */
 +
-+#ifndef _IGC_HW_H_
-+#define _IGC_HW_H_
++#ifndef _IGC_I225_H_
++#define _IGC_I225_H_
 +
-+#define IGC_DEV_ID_I225_LM			0x15F2
-+#define IGC_DEV_ID_I225_V			0x15F3
++s32 igc_acquire_swfw_sync_i225(struct igc_hw *hw, u16 mask);
++void igc_release_swfw_sync_i225(struct igc_hw *hw, u16 mask);
 +
-+#endif /* _IGC_HW_H_ */
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
++#endif
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
 new file mode 100644
-index 000000000000..c926dab0057d
+index 000000000000..0c81ea3bc706
 --- /dev/null
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -0,0 +1,146 @@
++++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+@@ -0,0 +1,51 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/* Copyright (c)  2018 Intel Corporation */
 +
-+#include <linux/module.h>
-+#include <linux/types.h>
-+
-+#include "igc.h"
++#include <linux/pci.h>
 +#include "igc_hw.h"
 +
-+#define DRV_VERSION	"0.0.1-k"
-+#define DRV_SUMMARY	"Intel(R) 2.5G Ethernet Linux Driver"
-+
-+char igc_driver_name[] = "igc";
-+char igc_driver_version[] = DRV_VERSION;
-+static const char igc_driver_string[] = DRV_SUMMARY;
-+static const char igc_copyright[] =
-+	"Copyright(c) 2018 Intel Corporation.";
-+
-+static const struct pci_device_id igc_pci_tbl[] = {
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LM) },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_V) },
-+	/* required last entry */
-+	{0, }
-+};
-+
-+MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
-+
 +/**
-+ *  igc_probe - Device Initialization Routine
-+ *  @pdev: PCI device information struct
-+ *  @ent: entry in igc_pci_tbl
++ *  igc_get_bus_info_pcie - Get PCIe bus information
++ *  @hw: pointer to the HW structure
 + *
-+ *  Returns 0 on success, negative on failure
-+ *
-+ *  igc_probe initializes an adapter identified by a pci_dev structure.
-+ *  The OS initialization, configuring the adapter private structure,
-+ *  and a hardware reset occur.
++ *  Determines and stores the system bus information for a particular
++ *  network interface.  The following bus information is determined and stored:
++ *  bus speed, bus width, type (PCIe), and PCIe function.
 + **/
-+static int igc_probe(struct pci_dev *pdev,
-+		     const struct pci_device_id *ent)
++s32 igc_get_bus_info_pcie(struct igc_hw *hw)
 +{
-+	int err, pci_using_dac;
++	struct igc_bus_info *bus = &hw->bus;
++	u16 pcie_link_status;
++	s32 ret_val;
++	u32 reg = 0;
 +
-+	err = pci_enable_device_mem(pdev);
-+	if (err)
-+		return err;
++	bus->type = igc_bus_type_pci_express;
 +
-+	pci_using_dac = 0;
-+	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
-+	if (!err) {
-+		err = dma_set_coherent_mask(&pdev->dev,
-+					    DMA_BIT_MASK(64));
-+		if (!err)
-+			pci_using_dac = 1;
++	ret_val = igc_read_pcie_cap_reg(hw, PCI_EXP_LNKSTA,
++					&pcie_link_status);
++	if (ret_val) {
++		bus->width = igc_bus_width_unknown;
++		bus->speed = igc_bus_speed_unknown;
 +	} else {
-+		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
-+		if (err) {
-+			err = dma_set_coherent_mask(&pdev->dev,
-+						    DMA_BIT_MASK(32));
-+			if (err) {
-+				IGC_ERR("Wrong DMA configuration, aborting\n");
-+				goto err_dma;
-+			}
++		switch (pcie_link_status & PCI_EXP_LNKSTA_CLS) {
++		case PCI_EXP_LNKSTA_CLS_2_5GB:
++			bus->speed = igc_bus_speed_2500;
++			break;
++		case PCI_EXP_LNKSTA_CLS_5_0GB:
++			bus->speed = igc_bus_speed_5000;
++			break;
++		default:
++			bus->speed = igc_bus_speed_unknown;
++			break;
 +		}
++
++		bus->width = (enum igc_bus_width)((pcie_link_status &
++						     PCI_EXP_LNKSTA_NLW) >>
++						     PCI_EXP_LNKSTA_NLW_SHIFT);
 +	}
 +
-+	err = pci_request_selected_regions(pdev,
-+					   pci_select_bars(pdev,
-+							   IORESOURCE_MEM),
-+					   igc_driver_name);
-+	if (err)
-+		goto err_pci_reg;
++	reg = rd32(IGC_STATUS);
++	bus->func = (reg & IGC_STATUS_FUNC_MASK) >> IGC_STATUS_FUNC_SHIFT;
 +
-+	pci_set_master(pdev);
-+	pci_save_state(pdev);
 +	return 0;
++}
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.h b/drivers/net/ethernet/intel/igc/igc_mac.h
+new file mode 100644
+index 000000000000..f5de0213c2a5
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igc/igc_mac.h
+@@ -0,0 +1,13 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c)  2018 Intel Corporation */
 +
-+err_pci_reg:
-+err_dma:
-+	pci_disable_device(pdev);
-+	return err;
++#ifndef _IGC_MAC_H_
++#define _IGC_MAC_H_
++
++#ifndef IGC_REMOVED
++#define IGC_REMOVED(a) (0)
++#endif /* IGC_REMOVED */
++
++s32 igc_get_bus_info_pcie(struct igc_hw *hw);
++
++#endif
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index c926dab0057d..92d9cfe72834 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -25,6 +25,69 @@ static const struct pci_device_id igc_pci_tbl[] = {
+ 
+ MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+ 
++/* Forward declaration */
++static int igc_sw_init(struct igc_adapter *);
++
++/* PCIe configuration access */
++void igc_read_pci_cfg(struct igc_hw *hw, u32 reg, u16 *value)
++{
++	struct igc_adapter *adapter = hw->back;
++
++	pci_read_config_word(adapter->pdev, reg, value);
++}
++
++void igc_write_pci_cfg(struct igc_hw *hw, u32 reg, u16 *value)
++{
++	struct igc_adapter *adapter = hw->back;
++
++	pci_write_config_word(adapter->pdev, reg, *value);
++}
++
++s32 igc_read_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value)
++{
++	struct igc_adapter *adapter = hw->back;
++	u16 cap_offset;
++
++	cap_offset = pci_find_capability(adapter->pdev, PCI_CAP_ID_EXP);
++	if (!cap_offset)
++		return -IGC_ERR_CONFIG;
++
++	pci_read_config_word(adapter->pdev, cap_offset + reg, value);
++
++	return IGC_SUCCESS;
++}
++
++s32 igc_write_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value)
++{
++	struct igc_adapter *adapter = hw->back;
++	u16 cap_offset;
++
++	cap_offset = pci_find_capability(adapter->pdev, PCI_CAP_ID_EXP);
++	if (!cap_offset)
++		return -IGC_ERR_CONFIG;
++
++	pci_write_config_word(adapter->pdev, cap_offset + reg, *value);
++
++	return IGC_SUCCESS;
++}
++
++u32 igc_rd32(struct igc_hw *hw, u32 reg)
++{
++	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
++	u32 value = 0;
++
++	if (IGC_REMOVED(hw_addr))
++		return ~value;
++
++	value = readl(&hw_addr[reg]);
++
++	/* reads should not return all F's */
++	if (!(~value) && (!reg || !(~readl(hw_addr))))
++		hw->hw_addr = NULL;
++
++	return value;
++}
++
+ /**
+  *  igc_probe - Device Initialization Routine
+  *  @pdev: PCI device information struct
+@@ -39,6 +102,8 @@ MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+ static int igc_probe(struct pci_dev *pdev,
+ 		     const struct pci_device_id *ent)
+ {
++	struct igc_adapter *adapter;
++	struct igc_hw *hw;
+ 	int err, pci_using_dac;
+ 
+ 	err = pci_enable_device_mem(pdev);
+@@ -73,8 +138,17 @@ static int igc_probe(struct pci_dev *pdev,
+ 
+ 	pci_set_master(pdev);
+ 	pci_save_state(pdev);
++
++	/* setup the private structure */
++	err = igc_sw_init(adapter);
++	if (err)
++		goto err_sw_init;
++
++	igc_get_bus_info_pcie(hw);
++
+ 	return 0;
+ 
++err_sw_init:
+ err_pci_reg:
+ err_dma:
+ 	pci_disable_device(pdev);
+@@ -106,6 +180,33 @@ static struct pci_driver igc_driver = {
+ };
+ 
+ /**
++ *  igc_sw_init - Initialize general software structures (struct igc_adapter)
++ *  @adapter: board private structure to initialize
++ *
++ *  igc_sw_init initializes the Adapter private data structure.
++ *  Fields are initialized based on PCI device information and
++ *  OS network device settings (MTU size).
++ **/
++static int igc_sw_init(struct igc_adapter *adapter)
++{
++	struct pci_dev *pdev = adapter->pdev;
++	struct igc_hw *hw = &adapter->hw;
++
++	/* PCI config space info */
++
++	hw->vendor_id = pdev->vendor;
++	hw->device_id = pdev->device;
++	hw->subsystem_vendor_id = pdev->subsystem_vendor;
++	hw->subsystem_device_id = pdev->subsystem_device;
++
++	pci_read_config_byte(pdev, PCI_REVISION_ID, &hw->revision_id);
++
++	pci_read_config_word(pdev, PCI_COMMAND, &hw->bus.pci_cmd_word);
++
++	return 0;
 +}
 +
 +/**
-+ *  igc_remove - Device Removal Routine
-+ *  @pdev: PCI device information struct
-+ *
-+ *  igc_remove is called by the PCI subsystem to alert the driver
-+ *  that it should release a PCI device.  This could be caused by a
-+ *  Hot-Plug event, or because the driver is going to be removed from
-+ *  memory.
-+ **/
-+static void igc_remove(struct pci_dev *pdev)
-+{
-+	pci_release_selected_regions(pdev,
-+				     pci_select_bars(pdev, IORESOURCE_MEM));
+  *  igc_init_module - Driver Registration Routine
+  *
+  *  igc_init_module is the first routine called when the driver is
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+new file mode 100644
+index 000000000000..d390b5336cc7
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -0,0 +1,192 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c)  2018 Intel Corporation */
 +
-+	pci_disable_device(pdev);
-+}
++#ifndef _IGC_REGS_H_
++#define _IGC_REGS_H_
 +
-+static struct pci_driver igc_driver = {
-+	.name     = igc_driver_name,
-+	.id_table = igc_pci_tbl,
-+	.probe    = igc_probe,
-+	.remove   = igc_remove,
-+};
++/* General Register Descriptions */
++#define IGC_CTRL		0x00000  /* Device Control - RW */
++#define IGC_STATUS		0x00008  /* Device Status - RO */
++#define IGC_CTRL_EXT		0x00018  /* Extended Device Control - RW */
++#define IGC_MDIC		0x00020  /* MDI Control - RW */
++#define IGC_MDICNFG		0x00E04  /* MDC/MDIO Configuration - RW */
++#define IGC_CONNSW		0x00034  /* Copper/Fiber switch control - RW */
 +
-+/**
-+ *  igc_init_module - Driver Registration Routine
-+ *
-+ *  igc_init_module is the first routine called when the driver is
-+ *  loaded. All it does is register with the PCI subsystem.
-+ **/
-+static int __init igc_init_module(void)
-+{
-+	int ret;
++/* Internal Packet Buffer Size Registers */
++#define IGC_RXPBS		0x02404  /* Rx Packet Buffer Size - RW */
++#define IGC_TXPBS		0x03404  /* Tx Packet Buffer Size - RW */
 +
-+	pr_info("%s - version %s\n",
-+		igc_driver_string, igc_driver_version);
++/* NVM  Register Descriptions */
++#define IGC_EERD		0x12014  /* EEprom mode read - RW */
++#define IGC_EEWR		0x12018  /* EEprom mode write - RW */
 +
-+	pr_info("%s\n", igc_copyright);
++/* Flow Control Register Descriptions */
++#define IGC_FCAL		0x00028  /* FC Address Low - RW */
++#define IGC_FCAH		0x0002C  /* FC Address High - RW */
++#define IGC_FCT			0x00030  /* FC Type - RW */
++#define IGC_FCTTV		0x00170  /* FC Transmit Timer - RW */
++#define IGC_FCRTL		0x02160  /* FC Receive Threshold Low - RW */
++#define IGC_FCRTH		0x02168  /* FC Receive Threshold High - RW */
++#define IGC_FCRTV		0x02460  /* FC Refresh Timer Value - RW */
++#define IGC_FCSTS		0x02464  /* FC Status - RO */
 +
-+	ret = pci_register_driver(&igc_driver);
-+	return ret;
-+}
++/* PCIe Register Description */
++#define IGC_GCR			0x05B00  /* PCIe control- RW */
 +
-+module_init(igc_init_module);
++/* Semaphore registers */
++#define IGC_SW_FW_SYNC		0x05B5C  /* SW-FW Synchronization - RW */
++#define IGC_SWSM		0x05B50  /* SW Semaphore */
++#define IGC_FWSM		0x05B54  /* FW Semaphore */
 +
-+/**
-+ *  igc_exit_module - Driver Exit Cleanup Routine
-+ *
-+ *  igc_exit_module is called just before the driver is removed
-+ *  from memory.
-+ **/
-+static void __exit igc_exit_module(void)
-+{
-+	pci_unregister_driver(&igc_driver);
-+}
++/* Interrupt Register Description */
++#define IGC_EICS		0x01520  /* Ext. Interrupt Cause Set - W0 */
++#define IGC_EIMS		0x01524  /* Ext. Interrupt Mask Set/Read - RW */
++#define IGC_EIMC		0x01528  /* Ext. Interrupt Mask Clear - WO */
++#define IGC_EIAC		0x0152C  /* Ext. Interrupt Auto Clear - RW */
++#define IGC_EIAM		0x01530  /* Ext. Interrupt Auto Mask - RW */
++#define IGC_ICR			0x01500  /* Intr Cause Read - RC/W1C */
++#define IGC_ICS			0x01504  /* Intr Cause Set - WO */
++#define IGC_IMS			0x01508  /* Intr Mask Set/Read - RW */
++#define IGC_IMC			0x0150C  /* Intr Mask Clear - WO */
++#define IGC_IAM			0x01510  /* Intr Ack Auto Mask- RW */
++/* Intr Throttle - RW */
++#define IGC_EITR(_n)		(0x01680 + (0x4 * (_n)))
++/* Interrupt Vector Allocation - RW */
++#define IGC_IVAR0		0x01700
++#define IGC_IVAR_MISC		0x01740   /* IVAR for "other" causes - RW */
++#define IGC_GPIE		0x01514  /* General Purpose Intr Enable - RW */
 +
-+module_exit(igc_exit_module);
++/* MSI-X Table Register Descriptions */
++#define IGC_PBACL		0x05B68  /* MSIx PBA Clear - R/W 1 to clear */
 +
-+MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
-+MODULE_DESCRIPTION(DRV_SUMMARY);
-+MODULE_LICENSE("GPL");
-+MODULE_VERSION(DRV_VERSION);
-+/* igc_main.c */
++/* Receive Register Descriptions */
++#define IGC_RCTL		0x00100  /* Rx Control - RW */
++#define IGC_SRRCTL(_n)		(0x0C00C + ((_n) * 0x40))
++#define IGC_PSRTYPE(_i)		(0x05480 + ((_i) * 4))
++#define IGC_RDBAL(_n)		(0x0C000 + ((_n) * 0x40))
++#define IGC_RDBAH(_n)		(0x0C004 + ((_n) * 0x40))
++#define IGC_RDLEN(_n)		(0x0C008 + ((_n) * 0x40))
++#define IGC_RDH(_n)		(0x0C010 + ((_n) * 0x40))
++#define IGC_RDT(_n)		(0x0C018 + ((_n) * 0x40))
++#define IGC_RXDCTL(_n)		(0x0C028 + ((_n) * 0x40))
++#define IGC_RQDPC(_n)		(0x0C030 + ((_n) * 0x40))
++#define IGC_RXCSUM		0x05000  /* Rx Checksum Control - RW */
++#define IGC_RLPML		0x05004  /* Rx Long Packet Max Length */
++#define IGC_RFCTL		0x05008  /* Receive Filter Control*/
++#define IGC_RAL(_n)		(0x05400 + ((_n) * 0x08))
++#define IGC_RAH(_n)		(0x05404 + ((_n) * 0x08))
++
++/* Transmit Register Descriptions */
++#define IGC_TCTL		0x00400  /* Tx Control - RW */
++#define IGC_TIPG		0x00410  /* Tx Inter-packet gap - RW */
++#define IGC_TDBAL(_n)		(0x0E000 + ((_n) * 0x40))
++#define IGC_TDBAH(_n)		(0x0E004 + ((_n) * 0x40))
++#define IGC_TDLEN(_n)		(0x0E008 + ((_n) * 0x40))
++#define IGC_TDH(_n)		(0x0E010 + ((_n) * 0x40))
++#define IGC_TDT(_n)		(0x0E018 + ((_n) * 0x40))
++#define IGC_TXDCTL(_n)		(0x0E028 + ((_n) * 0x40))
++
++/* MMD Register Descriptions */
++#define IGC_MMDAC		13 /* MMD Access Control */
++#define IGC_MMDAAD		14 /* MMD Access Address/Data */
++
++/* Good transmitted packets counter registers */
++#define IGC_PQGPTC(_n)		(0x010014 + (0x100 * (_n)))
++
++/* Statistics Register Descriptions */
++#define IGC_CRCERRS	0x04000  /* CRC Error Count - R/clr */
++#define IGC_ALGNERRC	0x04004  /* Alignment Error Count - R/clr */
++#define IGC_SYMERRS	0x04008  /* Symbol Error Count - R/clr */
++#define IGC_RXERRC	0x0400C  /* Receive Error Count - R/clr */
++#define IGC_MPC		0x04010  /* Missed Packet Count - R/clr */
++#define IGC_SCC		0x04014  /* Single Collision Count - R/clr */
++#define IGC_ECOL	0x04018  /* Excessive Collision Count - R/clr */
++#define IGC_MCC		0x0401C  /* Multiple Collision Count - R/clr */
++#define IGC_LATECOL	0x04020  /* Late Collision Count - R/clr */
++#define IGC_COLC	0x04028  /* Collision Count - R/clr */
++#define IGC_DC		0x04030  /* Defer Count - R/clr */
++#define IGC_TNCRS	0x04034  /* Tx-No CRS - R/clr */
++#define IGC_SEC		0x04038  /* Sequence Error Count - R/clr */
++#define IGC_CEXTERR	0x0403C  /* Carrier Extension Error Count - R/clr */
++#define IGC_RLEC	0x04040  /* Receive Length Error Count - R/clr */
++#define IGC_XONRXC	0x04048  /* XON Rx Count - R/clr */
++#define IGC_XONTXC	0x0404C  /* XON Tx Count - R/clr */
++#define IGC_XOFFRXC	0x04050  /* XOFF Rx Count - R/clr */
++#define IGC_XOFFTXC	0x04054  /* XOFF Tx Count - R/clr */
++#define IGC_FCRUC	0x04058  /* Flow Control Rx Unsupported Count- R/clr */
++#define IGC_PRC64	0x0405C  /* Packets Rx (64 bytes) - R/clr */
++#define IGC_PRC127	0x04060  /* Packets Rx (65-127 bytes) - R/clr */
++#define IGC_PRC255	0x04064  /* Packets Rx (128-255 bytes) - R/clr */
++#define IGC_PRC511	0x04068  /* Packets Rx (255-511 bytes) - R/clr */
++#define IGC_PRC1023	0x0406C  /* Packets Rx (512-1023 bytes) - R/clr */
++#define IGC_PRC1522	0x04070  /* Packets Rx (1024-1522 bytes) - R/clr */
++#define IGC_GPRC	0x04074  /* Good Packets Rx Count - R/clr */
++#define IGC_BPRC	0x04078  /* Broadcast Packets Rx Count - R/clr */
++#define IGC_MPRC	0x0407C  /* Multicast Packets Rx Count - R/clr */
++#define IGC_GPTC	0x04080  /* Good Packets Tx Count - R/clr */
++#define IGC_GORCL	0x04088  /* Good Octets Rx Count Low - R/clr */
++#define IGC_GORCH	0x0408C  /* Good Octets Rx Count High - R/clr */
++#define IGC_GOTCL	0x04090  /* Good Octets Tx Count Low - R/clr */
++#define IGC_GOTCH	0x04094  /* Good Octets Tx Count High - R/clr */
++#define IGC_RNBC	0x040A0  /* Rx No Buffers Count - R/clr */
++#define IGC_RUC		0x040A4  /* Rx Undersize Count - R/clr */
++#define IGC_RFC		0x040A8  /* Rx Fragment Count - R/clr */
++#define IGC_ROC		0x040AC  /* Rx Oversize Count - R/clr */
++#define IGC_RJC		0x040B0  /* Rx Jabber Count - R/clr */
++#define IGC_MGTPRC	0x040B4  /* Management Packets Rx Count - R/clr */
++#define IGC_MGTPDC	0x040B8  /* Management Packets Dropped Count - R/clr */
++#define IGC_MGTPTC	0x040BC  /* Management Packets Tx Count - R/clr */
++#define IGC_TORL	0x040C0  /* Total Octets Rx Low - R/clr */
++#define IGC_TORH	0x040C4  /* Total Octets Rx High - R/clr */
++#define IGC_TOTL	0x040C8  /* Total Octets Tx Low - R/clr */
++#define IGC_TOTH	0x040CC  /* Total Octets Tx High - R/clr */
++#define IGC_TPR		0x040D0  /* Total Packets Rx - R/clr */
++#define IGC_TPT		0x040D4  /* Total Packets Tx - R/clr */
++#define IGC_PTC64	0x040D8  /* Packets Tx (64 bytes) - R/clr */
++#define IGC_PTC127	0x040DC  /* Packets Tx (65-127 bytes) - R/clr */
++#define IGC_PTC255	0x040E0  /* Packets Tx (128-255 bytes) - R/clr */
++#define IGC_PTC511	0x040E4  /* Packets Tx (256-511 bytes) - R/clr */
++#define IGC_PTC1023	0x040E8  /* Packets Tx (512-1023 bytes) - R/clr */
++#define IGC_PTC1522	0x040EC  /* Packets Tx (1024-1522 Bytes) - R/clr */
++#define IGC_MPTC	0x040F0  /* Multicast Packets Tx Count - R/clr */
++#define IGC_BPTC	0x040F4  /* Broadcast Packets Tx Count - R/clr */
++#define IGC_TSCTC	0x040F8  /* TCP Segmentation Context Tx - R/clr */
++#define IGC_TSCTFC	0x040FC  /* TCP Segmentation Context Tx Fail - R/clr */
++#define IGC_IAC		0x04100  /* Interrupt Assertion Count */
++#define IGC_ICTXPTC	0x0410C  /* Interrupt Cause Tx Pkt Timer Expire Count */
++#define IGC_ICTXATC	0x04110  /* Interrupt Cause Tx Abs Timer Expire Count */
++#define IGC_ICTXQEC	0x04118  /* Interrupt Cause Tx Queue Empty Count */
++#define IGC_ICTXQMTC	0x0411C  /* Interrupt Cause Tx Queue Min Thresh Count */
++#define IGC_RPTHC	0x04104  /* Rx Packets To Host */
++#define IGC_HGPTC	0x04118  /* Host Good Packets Tx Count */
++#define IGC_RXDMTC	0x04120  /* Rx Descriptor Minimum Threshold Count */
++#define IGC_HGORCL	0x04128  /* Host Good Octets Received Count Low */
++#define IGC_HGORCH	0x0412C  /* Host Good Octets Received Count High */
++#define IGC_HGOTCL	0x04130  /* Host Good Octets Transmit Count Low */
++#define IGC_HGOTCH	0x04134  /* Host Good Octets Transmit Count High */
++#define IGC_LENERRS	0x04138  /* Length Errors Count */
++#define IGC_SCVPC	0x04228  /* SerDes/SGMII Code Violation Pkt Count */
++#define IGC_HRMPC	0x0A018  /* Header Redirection Missed Packet Count */
++
++/* forward declaration */
++struct igc_hw;
++u32 igc_rd32(struct igc_hw *hw, u32 reg);
++
++/* write operations, indexed using DWORDS */
++#define wr32(reg, val) \
++do { \
++	u8 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
++	if (!IGC_REMOVED(hw_addr)) \
++		writel((val), &hw_addr[(reg)]); \
++} while (0)
++
++#define rd32(reg) (igc_rd32(hw, reg))
++
++#define wrfl() ((void)rd32(IGC_STATUS))
++
++#define array_wr32(reg, offset, value) \
++	wr32((reg) + ((offset) << 2), (value))
++
++#define array_rd32(reg, offset) (igc_rd32(hw, (reg) + ((offset) << 2)))
++
++#endif
 -- 
 2.11.0
 
