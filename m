@@ -1,1178 +1,1654 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed, 18 Jul 2018 11:18:09 +0300
-Subject: [Intel-wired-lan] [PATCH v4 09/11] igc: Add code for PHY support
-Message-ID: <20180718081809.15868-1-sasha.neftin@intel.com>
+Date: Wed, 18 Jul 2018 11:17:59 +0300
+Subject: [Intel-wired-lan] [PATCH v4 06/11] igc: Add transmit and receive
+ fastpath and interrupt handlers
+Message-ID: <20180718081759.15666-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Sasha Neftin (v2):
-minor cosmetic changes
+This patch adds support for allocating, configuring, and freeing Tx/Rx ring
+resources.  With these changes in place the descriptor queues are in a
+state where they are ready to transmit or receive if provided buffers.
 
-Alexander Duyck (v3.5):
-Made non-gpy versions of phy functions static
-Move xmdio functions to avoid need for prototype function
-Move reset, read_reg, and write_reg ops into e1000_phy_ops_base
-Drop code implying more than one function
-Fix merge conflict with v3.5 of NVM code.
+This also adds the transmit and receive fastpath and interrupt handlers.
+With this code in place the network device is now able to send and receive
+frames over the network interface using a single queue.
+
+Sasha Neftin (v2):
+removed obsolete code
 
 Sasha Neftin (v3):
-Introduce temporary workaround for PHY power down.
+removed unused mac type
+code optimization, remome switch statement where it is not necessary
+resolve conflicts
 
 Sasha Neftin (v4):
 address comments
-remove space
-fix minor grammar typo
+fix comments
+remove obsolete Helbert's patch
+fix xmas tree layout
+remove obsolete IGC_SET_FLAG definition
+re-work PAGE_SIZE definition
+fix indent
+re-work igc_tx_olinfo_status method
 replace e1000_ prefix with igc_ prefix
+remove unused descriptors definition
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/igc/Makefile      |   2 +-
- drivers/net/ethernet/intel/igc/igc.h         |  16 +
- drivers/net/ethernet/intel/igc/igc_base.c    | 126 +++++++-
- drivers/net/ethernet/intel/igc/igc_base.h    |   1 +
- drivers/net/ethernet/intel/igc/igc_defines.h |  95 ++++++
- drivers/net/ethernet/intel/igc/igc_hw.h      |  62 +++-
- drivers/net/ethernet/intel/igc/igc_mac.c     |  47 ++-
- drivers/net/ethernet/intel/igc/igc_mac.h     |  11 +
- drivers/net/ethernet/intel/igc/igc_main.c    |  11 +
- drivers/net/ethernet/intel/igc/igc_phy.c     | 458 +++++++++++++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_phy.h     |  20 ++
- drivers/net/ethernet/intel/igc/igc_regs.h    |   3 +
- 12 files changed, 844 insertions(+), 8 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/igc/igc_phy.c
- create mode 100644 drivers/net/ethernet/intel/igc/igc_phy.h
+ drivers/net/ethernet/intel/igc/igc.h         |   69 +-
+ drivers/net/ethernet/intel/igc/igc_base.h    |   15 +
+ drivers/net/ethernet/intel/igc/igc_defines.h |   53 +-
+ drivers/net/ethernet/intel/igc/igc_main.c    | 1149 ++++++++++++++++++++++++--
+ 4 files changed, 1230 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/Makefile b/drivers/net/ethernet/intel/igc/Makefile
-index 2b5378d96c7b..4387f6ba8e67 100644
---- a/drivers/net/ethernet/intel/igc/Makefile
-+++ b/drivers/net/ethernet/intel/igc/Makefile
-@@ -7,4 +7,4 @@
- 
- obj-$(CONFIG_IGC) += igc.o
- 
--igc-objs := igc_main.o igc_mac.o igc_i225.o igc_base.o igc_nvm.o
-+igc-objs := igc_main.o igc_mac.o igc_i225.o igc_base.o igc_nvm.o igc_phy.o
 diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 9ef6f290209c..901048fdf478 100644
+index 2fb2492e5aca..f7ad668bc80b 100644
 --- a/drivers/net/ethernet/intel/igc/igc.h
 +++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -365,6 +365,22 @@ static inline u16 igc_desc_unused(const struct igc_ring *ring)
- 	return ((ntc > ntu) ? 0 : ring->count) + ntc - ntu - 1;
- }
+@@ -32,18 +32,36 @@ extern char igc_driver_version[];
+ #define IGC_START_ITR			648 /* ~6000 ints/sec */
+ #define IGC_FLAG_HAS_MSI		BIT(0)
+ #define IGC_FLAG_QUEUE_PAIRS		BIT(4)
++#define IGC_FLAG_NEED_LINK_UPDATE	BIT(9)
+ #define IGC_FLAG_HAS_MSIX		BIT(13)
++#define IGC_FLAG_VLAN_PROMISC		BIT(15)
  
-+static inline s32 igc_get_phy_info(struct igc_hw *hw)
-+{
-+	if (hw->phy.ops.get_phy_info)
-+		return hw->phy.ops.get_phy_info(hw);
+ #define IGC_START_ITR			648 /* ~6000 ints/sec */
+ #define IGC_4K_ITR			980
+ #define IGC_20K_ITR			196
+ #define IGC_70K_ITR			56
+ 
++#define IGC_DEFAULT_ITR		3 /* dynamic */
++#define IGC_MAX_ITR_USECS	10000
++#define IGC_MIN_ITR_USECS	10
++#define NON_Q_VECTORS		1
++#define MAX_Q_VECTORS		8
++#define MAX_MSIX_ENTRIES	10
 +
-+	return 0;
++/* TX/RX descriptor defines */
++#define IGC_DEFAULT_TXD		256
++#define IGC_DEFAULT_TX_WORK	128
++#define IGC_MIN_TXD		80
++#define IGC_MAX_TXD		4096
++
++#define IGC_DEFAULT_RXD		256
++#define IGC_MIN_RXD		80
++#define IGC_MAX_RXD		4096
++
+ /* Transmit and receive queues */
+ #define IGC_MAX_RX_QUEUES                 4
+ #define IGC_MAX_TX_QUEUES                 4
+ 
+-#define MAX_Q_VECTORS                     10
+ #define MAX_STD_JUMBO_FRAME_SIZE        9216
+ 
+ /* Supported Rx Buffer Sizes */
+@@ -85,6 +103,16 @@ extern char igc_driver_version[];
+ #define IGC_MAX_FRAME_BUILD_SKB (IGC_RXBUFFER_2048 - IGC_TS_HDR_LEN)
+ #endif
+ 
++/* How many Rx Buffers do we bundle into one write to the hardware ? */
++#define IGC_RX_BUFFER_WRITE	16 /* Must be power of 2 */
++
++/* igc_test_staterr - tests bits within Rx descriptor status and error fields */
++static inline __le32 igc_test_staterr(union igc_adv_rx_desc *rx_desc,
++				      const u32 stat_err_bits)
++{
++	return rx_desc->wb.upper.status_error & cpu_to_le32(stat_err_bits);
 +}
 +
-+static inline s32 igc_reset_phy(struct igc_hw *hw)
-+{
-+	if (hw->phy.ops.reset)
-+		return hw->phy.ops.reset(hw);
-+
-+	return 0;
-+}
-+
- static inline struct netdev_queue *txring_txq(const struct igc_ring *tx_ring)
- {
- 	return netdev_get_tx_queue(tx_ring->netdev, tx_ring->queue_index);
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-index 0c7cacb75643..7215f303278e 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.c
-+++ b/drivers/net/ethernet/intel/igc/igc_base.c
-@@ -12,12 +12,31 @@
- /* forward declaration */
- static s32 igc_get_invariants_base(struct igc_hw *);
- static s32 igc_check_for_link_base(struct igc_hw *);
-+static s32 igc_acquire_phy_base(struct igc_hw *);
-+static void igc_release_phy_base(struct igc_hw *);
-+static s32 igc_get_phy_id_base(struct igc_hw *);
- static s32 igc_init_hw_base(struct igc_hw *);
- static s32 igc_reset_hw_base(struct igc_hw *);
- static s32 igc_set_pcie_completion_timeout(struct igc_hw *hw);
- static s32 igc_read_mac_addr_base(struct igc_hw *hw);
- 
- /**
-+ *  igc_get_phy_id_base - Retrieve PHY addr and id
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Retrieves the PHY address and ID for both PHY's which do and do not use
-+ *  sgmi interface.
-+ **/
-+static s32 igc_get_phy_id_base(struct igc_hw *hw)
-+{
-+	s32  ret_val = 0;
-+
-+	ret_val = igc_get_phy_id(hw);
-+
-+	return ret_val;
-+}
-+
-+/**
-  *  igc_init_nvm_params_base - Init NVM func ptrs.
-  *  @hw: pointer to the HW structure
-  **/
-@@ -81,6 +100,59 @@ static s32 igc_init_mac_params_base(struct igc_hw *hw)
- 	return 0;
- }
- 
-+/**
-+ *  igc_init_phy_params_base - Init PHY func ptrs.
-+ *  @hw: pointer to the HW structure
-+ **/
-+static s32 igc_init_phy_params_base(struct igc_hw *hw)
-+{
-+	struct igc_phy_info *phy = &hw->phy;
-+	s32 ret_val = 0;
-+	u32 ctrl_ext;
-+
-+	if (hw->phy.media_type != igc_media_type_copper) {
-+		phy->type = igc_phy_none;
-+		goto out;
-+	}
-+
-+	phy->autoneg_mask       = AUTONEG_ADVERTISE_SPEED_DEFAULT_2500;
-+	phy->reset_delay_us     = 100;
-+
-+	ctrl_ext = rd32(IGC_CTRL_EXT);
-+
-+	/* set lan id */
-+	hw->bus.func = (rd32(IGC_STATUS) & IGC_STATUS_FUNC_MASK) >>
-+			IGC_STATUS_FUNC_SHIFT;
-+
-+	/* Make sure the PHY is in a good state. Several people have reported
-+	 * firmware leaving the PHY's page select register set to something
-+	 * other than the default of zero, which causes the PHY ID read to
-+	 * access something other than the intended register.
-+	 */
-+	ret_val = hw->phy.ops.reset(hw);
-+	if (ret_val) {
-+		hw_dbg("Error resetting the PHY.\n");
-+		goto out;
-+	}
-+
-+	ret_val = igc_get_phy_id_base(hw);
-+	if (ret_val)
-+		return ret_val;
-+
-+	/* Verify phy id and set remaining function pointers */
-+	switch (phy->id) {
-+	case I225_I_PHY_ID:
-+		phy->type	= igc_phy_i225;
-+		break;
-+	default:
-+		ret_val = -IGC_ERR_PHY;
-+		goto out;
-+	}
-+
-+out:
-+	return ret_val;
-+}
-+
- static s32 igc_get_invariants_base(struct igc_hw *hw)
- {
- 	u32 link_mode = 0;
-@@ -105,6 +177,8 @@ static s32 igc_get_invariants_base(struct igc_hw *hw)
- 		break;
- 	}
- 
-+	/* setup PHY parameters */
-+	ret_val = igc_init_phy_params_base(hw);
- 	if (ret_val)
- 		goto out;
- 
-@@ -113,6 +187,34 @@ static s32 igc_get_invariants_base(struct igc_hw *hw)
- }
- 
- /**
-+ *  igc_acquire_phy_base - Acquire rights to access PHY
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Acquire access rights to the correct PHY.  This is a
-+ *  function pointer entry point called by the api module.
-+ **/
-+static s32 igc_acquire_phy_base(struct igc_hw *hw)
-+{
-+	u16 mask = IGC_SWFW_PHY0_SM;
-+
-+	return hw->mac.ops.acquire_swfw_sync(hw, mask);
-+}
-+
-+/**
-+ *  igc_release_phy_base - Release rights to access PHY
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  A wrapper to release access rights to the correct PHY.  This is a
-+ *  function pointer entry point called by the api module.
-+ **/
-+static void igc_release_phy_base(struct igc_hw *hw)
-+{
-+	u16 mask = IGC_SWFW_PHY0_SM;
-+
-+	hw->mac.ops.release_swfw_sync(hw, mask);
-+}
-+
-+/**
-  *  igc_get_link_up_info_base - Get link speed/duplex info
-  *  @hw: pointer to the HW structure
-  *  @speed: stores the current speed
-@@ -200,6 +302,20 @@ static s32 igc_read_mac_addr_base(struct igc_hw *hw)
- }
- 
- /**
-+ *  igc_power_down_phy_copper_base - Remove link during PHY power down
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  In the case of a PHY power down to save power, or to turn off link during a
-+ *  driver unload, or wake on lan is not enabled, remove the link.
-+ **/
-+void igc_power_down_phy_copper_base(struct igc_hw *hw)
-+{
-+	/* If the management interface is not enabled, then power down */
-+	if (!(igc_enable_mng_pass_thru(hw) || igc_check_reset_block(hw)))
-+		igc_power_down_phy_copper(hw);
-+}
-+
-+/**
-  *  igc_rx_fifo_flush_base - Clean rx fifo after Rx enable
-  *  @hw: pointer to the HW structure
-  *
-@@ -283,10 +399,18 @@ static struct igc_mac_operations igc_mac_ops_base = {
- 	.get_speed_and_duplex	= igc_get_link_up_info_base,
+ enum igc_state_t {
+ 	__IGC_TESTING,
+ 	__IGC_RESETTING,
+@@ -92,6 +120,28 @@ enum igc_state_t {
+ 	__IGC_PTP_TX_IN_PROGRESS,
  };
  
-+static const struct igc_phy_operations igc_phy_ops_base = {
-+	.acquire		= igc_acquire_phy_base,
-+	.release		= igc_release_phy_base,
-+	.reset			= igc_phy_hw_reset,
-+	.read_reg		= igc_read_phy_reg_gpy,
-+	.write_reg		= igc_write_phy_reg_gpy,
++enum igc_tx_flags {
++	/* cmd_type flags */
++	IGC_TX_FLAGS_VLAN       = 0x01,
++	IGC_TX_FLAGS_TSO        = 0x02,
++	IGC_TX_FLAGS_TSTAMP     = 0x04,
++
++	/* olinfo flags */
++	IGC_TX_FLAGS_IPV4       = 0x10,
++	IGC_TX_FLAGS_CSUM       = 0x20,
 +};
 +
- const struct igc_info igc_base_info = {
- 	.get_invariants		= igc_get_invariants_base,
- 	.mac_ops		= &igc_mac_ops_base,
--	/* TODO phy_ops */
-+	.phy_ops		= &igc_phy_ops_base,
++/**
++ *  The largest size we can write to the descriptor is 65535.  In order to
++ *  maintain a power of two alignment we have to limit ourselves to 32K.
++ **/
++#define IGC_MAX_TXD_PWR		15
++#define IGC_MAX_DATA_PER_TXD	BIT(IGC_MAX_TXD_PWR)
++
++/* Tx Descriptors needed, worst case */
++#define TXD_USE_COUNT(S)	DIV_ROUND_UP((S), IGC_MAX_DATA_PER_TXD)
++#define DESC_NEEDED	(MAX_SKB_FRAGS + 4)
++
+ /**
+  *   wrapper around a pointer to a socket buffer,
+  *   so a DMA handle can be stored along with the buffer
+@@ -124,6 +174,7 @@ struct igc_tx_queue_stats {
+ 	u64 packets;
+ 	u64 bytes;
+ 	u64 restart_queue;
++	u64 restart_queue2;
  };
  
- /**
+ struct igc_rx_queue_stats {
+@@ -182,11 +233,14 @@ struct igc_ring {
+ 		/* TX */
+ 		struct {
+ 			struct igc_tx_queue_stats tx_stats;
++			struct u64_stats_sync tx_syncp;
++			struct u64_stats_sync tx_syncp2;
+ 		};
+ 		/* RX */
+ 		struct {
+ 			struct igc_rx_queue_stats rx_stats;
+ 			struct igc_rx_packet_stats pkt_stats;
++			struct u64_stats_sync rx_syncp;
+ #ifdef CONFIG_IGC_DISABLE_PACKET_SPLIT
+ 			u16 rx_buffer_len;
+ #else
+@@ -263,11 +317,17 @@ struct igc_adapter {
+ 	struct work_struct watchdog_task;
+ 	struct work_struct dma_err_task;
+ 
++	u8  tx_timeout_factor;
++
+ 	int msg_enable;
+ 	u32 max_frame_size;
++	u32 min_frame_size;
+ 
+ 	/* OS defined structs */
+ 	struct pci_dev *pdev;
++	/* lock for statistics */
++	spinlock_t stats64_lock;
++	struct rtnl_link_stats64 stats64;
+ 
+ 	/* structs defined in igc_hw.h */
+ 	struct igc_hw hw;
+@@ -280,8 +340,13 @@ struct igc_adapter {
+ 	u16 tx_ring_count;
+ 	u16 rx_ring_count;
+ 
++	u32 *shadow_vfta;
++
+ 	u32 rss_queues;
+ 
++	/* lock for RX network flow classification filter */
++	spinlock_t nfc_lock;
++
+ 	struct igc_mac_addr *mac_table;
+ };
+ 
+@@ -337,6 +402,8 @@ static inline unsigned int igc_rx_pg_order(struct igc_ring *ring)
+ 
+ #define igc_rx_pg_size(_ring) (PAGE_SIZE << igc_rx_pg_order(_ring))
+ 
++#define IGC_TXD_DCMD	(IGC_ADVTXD_DCMD_EOP | IGC_ADVTXD_DCMD_RS)
++
+ #define IGC_RX_DESC(R, i)       \
+ 	(&(((union igc_adv_rx_desc *)((R)->desc))[i]))
+ #define IGC_TX_DESC(R, i)       \
 diff --git a/drivers/net/ethernet/intel/igc/igc_base.h b/drivers/net/ethernet/intel/igc/igc_base.h
-index 802a0cbd3123..35588fa7b8c5 100644
+index 4bdb4ecf3bc8..3078a18f70a9 100644
 --- a/drivers/net/ethernet/intel/igc/igc_base.h
 +++ b/drivers/net/ethernet/intel/igc/igc_base.h
-@@ -6,6 +6,7 @@
+@@ -21,6 +21,18 @@ union igc_adv_tx_desc {
+ 	} wb;
+ };
  
- /* forward declaration */
- void igc_rx_fifo_flush_base(struct igc_hw *hw);
-+void igc_power_down_phy_copper_base(struct igc_hw *hw);
++/* Adv Transmit Descriptor Config Masks */
++#define IGC_ADVTXD_MAC_TSTAMP	0x00080000 /* IEEE1588 Timestamp packet */
++#define IGC_ADVTXD_DTYP_CTXT	0x00200000 /* Advanced Context Descriptor */
++#define IGC_ADVTXD_DTYP_DATA	0x00300000 /* Advanced Data Descriptor */
++#define IGC_ADVTXD_DCMD_EOP	0x01000000 /* End of Packet */
++#define IGC_ADVTXD_DCMD_IFCS	0x02000000 /* Insert FCS (Ethernet CRC) */
++#define IGC_ADVTXD_DCMD_RS	0x08000000 /* Report Status */
++#define IGC_ADVTXD_DCMD_DEXT	0x20000000 /* Descriptor extension (1=Adv) */
++#define IGC_ADVTXD_DCMD_VLE	0x40000000 /* VLAN pkt enable */
++#define IGC_ADVTXD_DCMD_TSE	0x80000000 /* TCP Seg enable */
++#define IGC_ADVTXD_PAYLEN_SHIFT	14 /* Adv desc PAYLEN shift */
++
+ struct igc_adv_data_desc {
+ 	__le64 buffer_addr;    /* Address of the descriptor's data buffer */
+ 	union {
+@@ -75,6 +87,9 @@ union igc_adv_rx_desc {
+ 	} wb;  /* writeback */
+ };
  
- /* Transmit Descriptor - Advanced */
- union igc_adv_tx_desc {
++/* Adv Transmit Descriptor Config Masks */
++#define IGC_ADVTXD_PAYLEN_SHIFT	14 /* Adv desc PAYLEN shift */
++
+ /* Additional Transmit Descriptor Control definitions */
+ #define IGC_TXDCTL_QUEUE_ENABLE	0x02000000 /* Ena specific Tx Queue */
+ 
 diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index a94970289a74..6b0c5058d897 100644
+index 5775ce68c227..66fd6c03a44d 100644
 --- a/drivers/net/ethernet/intel/igc/igc_defines.h
 +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -54,11 +54,14 @@
- #define IGC_ERR_MAC_INIT		5
- #define IGC_ERR_RESET			9
- #define IGC_ERR_MASTER_REQUESTS_PENDING	10
-+#define IGC_ERR_BLK_PHY_RESET			12
- #define IGC_ERR_SWFW_SYNC			13
+@@ -78,7 +78,7 @@
+ #define IGC_IMS_DOUTSYNC	IGC_ICR_DOUTSYNC /* NIC DMA out of sync */
+ #define IGC_IMS_DRSTA		IGC_ICR_DRSTA   /* Device Reset Asserted */
+ #define IGC_IMS_RXT0		IGC_ICR_RXT0    /* Rx timer intr */
+-#define IGC_IMS_RXDMT0	IGC_ICR_RXDMT0		/* Rx desc min. threshold */
++#define IGC_IMS_RXDMT0		IGC_ICR_RXDMT0  /* Rx desc min. threshold */
  
- /* Device Control */
- #define IGC_CTRL_RST		0x04000000  /* Global reset */
+ #define IGC_QVECTOR_MASK	0x7FFC		/* Q-vector mask */
+ #define IGC_ITR_VAL_MASK	0x04		/* ITR value mask */
+@@ -91,6 +91,29 @@
+ #define IGC_GPIE_EIAME		0x40000000
+ #define IGC_GPIE_PBA		0x80000000
  
-+#define IGC_CTRL_PHY_RST	0x80000000  /* PHY Reset */
++/* Transmit Descriptor bit definitions */
++#define IGC_TXD_DTYP_D		0x00100000 /* Data Descriptor */
++#define IGC_TXD_DTYP_C		0x00000000 /* Context Descriptor */
++#define IGC_TXD_POPTS_IXSM	0x01       /* Insert IP checksum */
++#define IGC_TXD_POPTS_TXSM	0x02       /* Insert TCP/UDP checksum */
++#define IGC_TXD_CMD_EOP		0x01000000 /* End of Packet */
++#define IGC_TXD_CMD_IFCS	0x02000000 /* Insert FCS (Ethernet CRC) */
++#define IGC_TXD_CMD_IC		0x04000000 /* Insert Checksum */
++#define IGC_TXD_CMD_RS		0x08000000 /* Report Status */
++#define IGC_TXD_CMD_RPS		0x10000000 /* Report Packet Sent */
++#define IGC_TXD_CMD_DEXT	0x20000000 /* Desc extension (0 = legacy) */
++#define IGC_TXD_CMD_VLE		0x40000000 /* Add VLAN tag */
++#define IGC_TXD_CMD_IDE		0x80000000 /* Enable Tidv register */
++#define IGC_TXD_STAT_DD		0x00000001 /* Descriptor Done */
++#define IGC_TXD_STAT_EC		0x00000002 /* Excess Collisions */
++#define IGC_TXD_STAT_LC		0x00000004 /* Late Collisions */
++#define IGC_TXD_STAT_TU		0x00000008 /* Transmit underrun */
++#define IGC_TXD_CMD_TCP		0x01000000 /* TCP packet */
++#define IGC_TXD_CMD_IP		0x02000000 /* IP packet */
++#define IGC_TXD_CMD_TSE		0x04000000 /* TCP Seg enable */
++#define IGC_TXD_STAT_TC		0x00000004 /* Tx Underrun */
++#define IGC_TXD_EXTCMD_TSTAMP	0x00000010 /* IEEE1588 Timestamp packet */
 +
- /* PBA constants */
- #define IGC_PBA_34K		0x0022
+ /* Transmit Control */
+ #define IGC_TCTL_EN		0x00000002 /* enable Tx */
+ #define IGC_TCTL_PSP		0x00000008 /* pad short packets */
+@@ -120,6 +143,31 @@
+ #define IGC_RCTL_RDMTS_HALF	0x00000000 /* Rx desc min thresh size */
+ #define IGC_RCTL_BAM		0x00008000 /* broadcast enable */
  
-@@ -131,6 +134,22 @@
- #define HALF_DUPLEX		1
- #define FULL_DUPLEX		2
++/* Receive Descriptor bit definitions */
++#define IGC_RXD_STAT_DD		0x01    /* Descriptor Done */
++#define IGC_RXD_STAT_EOP	0x02    /* End of Packet */
++#define IGC_RXD_STAT_IXSM	0x04    /* Ignore checksum */
++#define IGC_RXD_STAT_VP		0x08    /* IEEE VLAN Packet */
++#define IGC_RXD_STAT_UDPCS	0x10    /* UDP xsum calculated */
++#define IGC_RXD_STAT_TCPCS	0x20    /* TCP xsum calculated */
++#define IGC_RXD_STAT_TS		0x10000 /* Pkt was time stamped */
++
++#define IGC_RXDEXT_STATERR_CE		0x01000000
++#define IGC_RXDEXT_STATERR_SE		0x02000000
++#define IGC_RXDEXT_STATERR_SEQ		0x04000000
++#define IGC_RXDEXT_STATERR_CXE		0x10000000
++#define IGC_RXDEXT_STATERR_TCPE		0x20000000
++#define IGC_RXDEXT_STATERR_IPE		0x40000000
++#define IGC_RXDEXT_STATERR_RXE		0x80000000
++
++/* Same mask, but for extended and packet split descriptors */
++#define IGC_RXDEXT_ERR_FRAME_ERR_MASK ( \
++	IGC_RXDEXT_STATERR_CE  |            \
++	IGC_RXDEXT_STATERR_SE  |            \
++	IGC_RXDEXT_STATERR_SEQ |            \
++	IGC_RXDEXT_STATERR_CXE |            \
++	IGC_RXDEXT_STATERR_RXE)
++
+ /* Header split receive */
+ #define IGC_RFCTL_IPV6_EX_DIS	0x00010000
+ #define IGC_RFCTL_LEF		0x00040000
+@@ -140,6 +188,9 @@
+ #define IGC_RCTL_PMCF		0x00800000 /* pass MAC control frames */
+ #define IGC_RCTL_SECRC		0x04000000 /* Strip Ethernet CRC */
  
-+/* 1Gbps and 2.5Gbps half duplex is not supported, nor spec-compliant. */
-+#define ADVERTISE_10_HALF		0x0001
-+#define ADVERTISE_10_FULL		0x0002
-+#define ADVERTISE_100_HALF		0x0004
-+#define ADVERTISE_100_FULL		0x0008
-+#define ADVERTISE_1000_HALF		0x0010 /* Not used, just FYI */
-+#define ADVERTISE_1000_FULL		0x0020
-+#define ADVERTISE_2500_HALF		0x0040 /* NOT used, just FYI */
-+#define ADVERTISE_2500_FULL		0x0080
-+
-+#define IGC_ALL_SPEED_DUPLEX_2500 ( \
-+	ADVERTISE_10_HALF | ADVERTISE_10_FULL | ADVERTISE_100_HALF | \
-+	ADVERTISE_100_FULL | ADVERTISE_1000_FULL | ADVERTISE_2500_FULL)
-+
-+#define AUTONEG_ADVERTISE_SPEED_DEFAULT_2500	IGC_ALL_SPEED_DUPLEX_2500
-+
- /* Interrupt Cause Read */
- #define IGC_ICR_TXDW		BIT(0)	/* Transmit desc written back */
- #define IGC_ICR_TXQE		BIT(1)	/* Transmit Queue empty */
-@@ -216,6 +235,7 @@
- 
- /* Management Control */
- #define IGC_MANC_RCV_TCO_EN	0x00020000 /* Receive TCO Packets Enabled */
-+#define IGC_MANC_BLK_PHY_RST_ON_IDE	0x00040000 /* Block phy resets */
- 
- /* Receive Control */
- #define IGC_RCTL_RST		0x00000001 /* Software reset */
-@@ -280,6 +300,81 @@
- #define I225_RXPBSIZE_DEFAULT	0x000000A2 /* RXPBSIZE default */
- #define I225_TXPBSIZE_DEFAULT	0x04000014 /* TXPBSIZE default */
- 
-+/* these buffer sizes are valid if IGC_RCTL_BSEX is 0 */
-+#define IGC_RCTL_SZ_2048	0x00000000 /* Rx buffer size 2048 */
-+#define IGC_RCTL_SZ_1024	0x00010000 /* Rx buffer size 1024 */
-+#define IGC_RCTL_SZ_512		0x00020000 /* Rx buffer size 512 */
-+#define IGC_RCTL_SZ_256		0x00030000 /* Rx buffer size 256 */
-+/* these buffer sizes are valid if IGC_RCTL_BSEX is 1 */
-+#define IGC_RCTL_SZ_16384	0x00010000 /* Rx buffer size 16384 */
-+#define IGC_RCTL_SZ_8192	0x00020000 /* Rx buffer size 8192 */
-+#define IGC_RCTL_SZ_4096	0x00030000 /* Rx buffer size 4096 */
-+
-+#define IGC_RCTL_MO_SHIFT	12 /* multicast offset shift */
-+#define IGC_RCTL_CFIEN		0x00080000 /* canonical form enable */
-+#define IGC_RCTL_DPF		0x00400000 /* discard pause frames */
-+#define IGC_RCTL_PMCF		0x00800000 /* pass MAC control frames */
-+#define IGC_RCTL_SECRC		0x04000000 /* Strip Ethernet CRC */
-+
-+/* GPY211 - I225 defines */
-+#define GPY_MMD_MASK		0xFFFF0000
-+#define GPY_MMD_SHIFT		16
-+#define GPY_REG_MASK		0x0000FFFF
-+
-+#define IGC_MMDAC_FUNC_DATA	0x4000 /* Data, no post increment */
-+
-+/* MAC definitions */
-+#define IGC_FACTPS_MNGCG	0x20000000
-+#define IGC_FWSM_MODE_MASK	0xE
-+#define IGC_FWSM_MODE_SHIFT	1
-+
-+/* Management Control */
-+#define IGC_MANC_SMBUS_EN	0x00000001 /* SMBus Enabled - RO */
-+#define IGC_MANC_ASF_EN		0x00000002 /* ASF Enabled - RO */
-+
-+/* PHY */
-+#define PHY_REVISION_MASK	0xFFFFFFF0
-+#define MAX_PHY_REG_ADDRESS	0x1F  /* 5 bit address bus (0-0x1F) */
-+#define IGC_GEN_POLL_TIMEOUT	640
-+
-+/* PHY Control Register */
-+#define MII_CR_FULL_DUPLEX	0x0100  /* FDX =1, half duplex =0 */
-+#define MII_CR_RESTART_AUTO_NEG	0x0200  /* Restart auto negotiation */
-+#define MII_CR_POWER_DOWN	0x0800  /* Power down */
-+#define MII_CR_AUTO_NEG_EN	0x1000  /* Auto Neg Enable */
-+#define MII_CR_LOOPBACK		0x4000  /* 0 = normal, 1 = loopback */
-+#define MII_CR_RESET		0x8000  /* 0 = normal, 1 = PHY reset */
-+#define MII_CR_SPEED_1000	0x0040
-+#define MII_CR_SPEED_100	0x2000
-+#define MII_CR_SPEED_10		0x0000
-+
-+/* PHY Status Register */
-+#define MII_SR_LINK_STATUS	0x0004 /* Link Status 1 = link */
-+#define MII_SR_AUTONEG_COMPLETE	0x0020 /* Auto Neg Complete */
-+
-+/* PHY 1000 MII Register/Bit Definitions */
-+/* PHY Registers defined by IEEE */
-+#define PHY_CONTROL		0x00 /* Control Register */
-+#define PHY_STATUS		0x01 /* Status Register */
-+#define PHY_ID1			0x02 /* Phy Id Reg (word 1) */
-+#define PHY_ID2			0x03 /* Phy Id Reg (word 2) */
-+
-+/* Bit definitions for valid PHY IDs. I = Integrated E = External */
-+#define I225_I_PHY_ID		0x67C9DC00
-+
-+/* MDI Control */
-+#define IGC_MDIC_DATA_MASK	0x0000FFFF
-+#define IGC_MDIC_REG_MASK	0x001F0000
-+#define IGC_MDIC_REG_SHIFT	16
-+#define IGC_MDIC_PHY_MASK	0x03E00000
-+#define IGC_MDIC_PHY_SHIFT	21
-+#define IGC_MDIC_OP_WRITE	0x04000000
-+#define IGC_MDIC_OP_READ	0x08000000
-+#define IGC_MDIC_READY		0x10000000
-+#define IGC_MDIC_INT_EN		0x20000000
-+#define IGC_MDIC_ERROR		0x40000000
-+#define IGC_MDIC_DEST		0x80000000
++#define I225_RXPBSIZE_DEFAULT	0x000000A2 /* RXPBSIZE default */
++#define I225_TXPBSIZE_DEFAULT	0x04000014 /* TXPBSIZE default */
 +
  #define IGC_N0_QUEUE -1
  
  #endif /* _IGC_DEFINES_H_ */
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index bf4fcbe396e6..a84cf0ba78d4 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -11,6 +11,7 @@
- #include "igc_regs.h"
- #include "igc_defines.h"
- #include "igc_mac.h"
-+#include "igc_phy.h"
- #include "igc_nvm.h"
- #include "igc_i225.h"
- #include "igc_base.h"
-@@ -18,6 +19,8 @@
- #define IGC_DEV_ID_I225_LM			0x15F2
- #define IGC_DEV_ID_I225_V			0x15F3
- 
-+#define IGC_FUNC_0				0
-+
- /* Forward declaration */
- struct igc_hw;
- 
-@@ -47,10 +50,10 @@ enum igc_phy_type {
- 	igc_phy_i225,
- };
- 
--enum igc_bus_type {
--	igc_bus_type_unknown = 0,
--	igc_bus_type_pci_express,
--	igc_bus_type_reserved
-+enum igc_media_type {
-+	igc_media_type_unknown = 0,
-+	igc_media_type_copper = 1,
-+	igc_num_media_types
- };
- 
- enum igc_nvm_type {
-@@ -59,6 +62,12 @@ enum igc_nvm_type {
- 	igc_nvm_invm,
- };
- 
-+enum igc_bus_type {
-+	igc_bus_type_unknown = 0,
-+	igc_bus_type_pci_express,
-+	igc_bus_type_reserved
-+};
-+
- enum igc_bus_speed {
- 	igc_bus_speed_unknown = 0,
- 	igc_bus_speed_2500,
-@@ -109,6 +118,7 @@ struct igc_mac_info {
- 
- 	bool adaptive_ifs;
- 	bool has_fwsm;
-+	bool asf_firmware_present;
- 	bool arc_subsystem_valid;
- 
- 	bool autoneg;
-@@ -126,6 +136,20 @@ struct igc_nvm_operations {
- 	s32 (*valid_led_default)(struct igc_hw *hw, u16 *data);
- };
- 
-+struct igc_phy_operations {
-+	s32 (*acquire)(struct igc_hw *hw);
-+	s32 (*check_polarity)(struct igc_hw *hw);
-+	s32 (*check_reset_block)(struct igc_hw *hw);
-+	s32 (*force_speed_duplex)(struct igc_hw *hw);
-+	s32 (*get_cfg_done)(struct igc_hw *hw);
-+	s32 (*get_cable_length)(struct igc_hw *hw);
-+	s32 (*get_phy_info)(struct igc_hw *hw);
-+	s32 (*read_reg)(struct igc_hw *hw, u32 address, u16 *data);
-+	void (*release)(struct igc_hw *hw);
-+	s32 (*reset)(struct igc_hw *hw);
-+	s32 (*write_reg)(struct igc_hw *hw, u32 address, u16 data);
-+};
-+
- struct igc_nvm_info {
- 	struct igc_nvm_operations ops;
- 	enum igc_nvm_type type;
-@@ -140,6 +164,35 @@ struct igc_nvm_info {
- 	u16 page_size;
- };
- 
-+struct igc_phy_info {
-+	struct igc_phy_operations ops;
-+
-+	enum igc_phy_type type;
-+
-+	u32 addr;
-+	u32 id;
-+	u32 reset_delay_us; /* in usec */
-+	u32 revision;
-+
-+	enum igc_media_type media_type;
-+
-+	u16 autoneg_advertised;
-+	u16 autoneg_mask;
-+	u16 cable_length;
-+	u16 max_cable_length;
-+	u16 min_cable_length;
-+	u16 pair_length[4];
-+
-+	u8 mdix;
-+
-+	bool disable_polarity_correction;
-+	bool is_mdix;
-+	bool polarity_correction;
-+	bool reset_disable;
-+	bool speed_downgraded;
-+	bool autoneg_wait_to_complete;
-+};
-+
- struct igc_bus_info {
- 	enum igc_bus_type type;
- 	enum igc_bus_speed speed;
-@@ -185,6 +238,7 @@ struct igc_hw {
- 	struct igc_mac_info  mac;
- 	struct igc_fc_info   fc;
- 	struct igc_nvm_info  nvm;
-+	struct igc_phy_info  phy;
- 
- 	struct igc_bus_info bus;
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-index d08d2c6a6647..78941e2a26f0 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.c
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-@@ -389,7 +389,7 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
- 	 * link.  If so, then we want to get the current speed/duplex
- 	 * of the PHY.
- 	 */
--	/* TODO ret_val = igc_phy_has_link(hw, 1, 0, &link); */
-+	ret_val = igc_phy_has_link(hw, 1, 0, &link);
- 	if (ret_val)
- 		goto out;
- 
-@@ -401,7 +401,7 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
- 	/* Check if there was DownShift, must be checked
- 	 * immediately after link-up
- 	 */
--	/* TODO igc_check_downshift(hw); */
-+	igc_check_downshift(hw);
- 
- 	/* If we are forcing speed/duplex, then we simply return since
- 	 * we have already determined whether we have link or not.
-@@ -542,3 +542,46 @@ void igc_put_hw_semaphore(struct igc_hw *hw)
- 
- 	wr32(IGC_SWSM, swsm);
- }
-+
-+/**
-+ *  igc_enable_mng_pass_thru - Enable processing of ARP's
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Verifies the hardware needs to leave interface enabled so that frames can
-+ *  be directed to and from the management interface.
-+ **/
-+bool igc_enable_mng_pass_thru(struct igc_hw *hw)
-+{
-+	bool ret_val = false;
-+	u32 fwsm, factps;
-+	u32 manc;
-+
-+	if (!hw->mac.asf_firmware_present)
-+		goto out;
-+
-+	manc = rd32(IGC_MANC);
-+
-+	if (!(manc & IGC_MANC_RCV_TCO_EN))
-+		goto out;
-+
-+	if (hw->mac.arc_subsystem_valid) {
-+		fwsm = rd32(IGC_FWSM);
-+		factps = rd32(IGC_FACTPS);
-+
-+		if (!(factps & IGC_FACTPS_MNGCG) &&
-+		    ((fwsm & IGC_FWSM_MODE_MASK) ==
-+		    (igc_mng_mode_pt << IGC_FWSM_MODE_SHIFT))) {
-+			ret_val = true;
-+			goto out;
-+		}
-+	} else {
-+		if ((manc & IGC_MANC_SMBUS_EN) &&
-+		    !(manc & IGC_MANC_ASF_EN)) {
-+			ret_val = true;
-+			goto out;
-+		}
-+	}
-+
-+out:
-+	return ret_val;
-+}
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.h b/drivers/net/ethernet/intel/igc/igc_mac.h
-index 7d935d581fc7..e61b9c5faa32 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.h
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.h
-@@ -5,6 +5,7 @@
- #define _IGC_MAC_H_
- 
- #include "igc_hw.h"
-+#include "igc_phy.h"
- #include "igc_defines.h"
- 
- #ifndef IGC_REMOVED
-@@ -26,4 +27,14 @@ s32 igc_get_bus_info_pcie(struct igc_hw *hw);
- s32 igc_get_speed_and_duplex_copper(struct igc_hw *hw, u16 *speed,
- 				    u16 *duplex);
- 
-+bool igc_enable_mng_pass_thru(struct igc_hw *hw);
-+
-+enum igc_mng_mode {
-+	igc_mng_mode_none = 0,
-+	igc_mng_mode_asf,
-+	igc_mng_mode_pt,
-+	igc_mng_mode_ipmi,
-+	igc_mng_mode_host_if_only
-+};
-+
- #endif
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 2514bb5e5651..24689854a0a2 100644
+index 6bd4fb469020..5ef3d558a300 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -100,6 +100,8 @@ static void igc_reset(struct igc_adapter *adapter)
+@@ -37,9 +37,13 @@ static int igc_sw_init(struct igc_adapter *);
+ static void igc_configure(struct igc_adapter *adapter);
+ static void igc_configure_tx(struct igc_adapter *);
+ static void igc_configure_rx(struct igc_adapter *adapter);
++static void igc_clean_all_tx_rings(struct igc_adapter *);
++static void igc_clean_all_rx_rings(struct igc_adapter *);
+ static void igc_power_down_link(struct igc_adapter *adapter);
+ static void igc_set_default_mac_filter(struct igc_adapter *adapter);
+ static void igc_set_rx_mode(struct net_device *netdev);
++static netdev_tx_t igc_xmit_frame(struct sk_buff *skb,
++				  struct net_device *netdev);
+ static void igc_setup_mrqc(struct igc_adapter *adapter);
+ static irqreturn_t igc_msix_ring(int irq, void *data);
+ static irqreturn_t igc_intr_msi(int irq, void *data);
+@@ -51,8 +55,11 @@ static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx);
+ static int igc_init_interrupt_scheme(struct igc_adapter *adapter, bool msix);
+ static int igc_alloc_q_vectors(struct igc_adapter *adapter);
+ static int igc_poll(struct napi_struct *napi, int budget);
++static bool igc_clean_tx_irq(struct igc_q_vector *, int);
++static int igc_clean_rx_irq(struct igc_q_vector *, int);
+ static void igc_set_interrupt_capability(struct igc_adapter *adapter,
+ 					 bool msix);
++static void igc_reset_task(struct work_struct *);
+ static void igc_reset_interrupt_capability(struct igc_adapter *adapter);
+ static void igc_reset_q_vector(struct igc_adapter *adapter, int v_idx);
+ static void igc_clear_interrupt_scheme(struct igc_adapter *adapter);
+@@ -66,6 +73,9 @@ static void igc_set_itr(struct igc_q_vector *q_vector);
+ static void igc_update_ring_itr(struct igc_q_vector *q_vector);
+ static void igc_update_itr(struct igc_q_vector *q_vector,
+ 			   struct igc_ring_container *ring_container);
++static void igc_nfc_filter_exit(struct igc_adapter *adapter);
++static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
++				  struct igc_rx_buffer *bi);
  
- 	if (!netif_running(adapter->netdev))
- 		igc_power_down_link(adapter);
-+
-+	igc_get_phy_info(hw);
+ enum latency_range {
+ 	lowest_latency = 0,
+@@ -233,6 +243,19 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
  }
  
  /**
-@@ -108,6 +110,12 @@ static void igc_reset(struct igc_adapter *adapter)
-  **/
- static void igc_power_up_link(struct igc_adapter *adapter)
- {
-+	igc_reset_phy(&adapter->hw);
-+
-+	if (adapter->hw.phy.media_type == igc_media_type_copper)
-+		igc_power_up_phy_copper(&adapter->hw);
-+
-+	igc_setup_link(&adapter->hw);
- }
- 
- /**
-@@ -116,6 +124,8 @@ static void igc_power_up_link(struct igc_adapter *adapter)
-  **/
- static void igc_power_down_link(struct igc_adapter *adapter)
- {
-+	if (adapter->hw.phy.media_type == igc_media_type_copper)
-+		igc_power_down_phy_copper_base(&adapter->hw);
- }
- 
- /**
-@@ -3401,6 +3411,7 @@ static int igc_probe(struct pci_dev *pdev,
- 
- 	/* Copy the default MAC and PHY function pointers */
- 	memcpy(&hw->mac.ops, ei->mac_ops, sizeof(hw->mac.ops));
-+	memcpy(&hw->phy.ops, ei->phy_ops, sizeof(hw->phy.ops));
- 
- 	/* Initialize skew-specific constants */
- 	err = ei->get_invariants(hw);
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
-new file mode 100644
-index 000000000000..95c9a30b96a2
---- /dev/null
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.c
-@@ -0,0 +1,458 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c)  2018 Intel Corporation */
-+
-+#include "igc_phy.h"
-+
-+/**
-+ *  igc_check_reset_block - Check if PHY reset is blocked
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Read the PHY management control register and check whether a PHY reset
-+ *  is blocked.  If a reset is not blocked return 0, otherwise
-+ *  return IGC_ERR_BLK_PHY_RESET (12).
++ *  igc_clean_all_tx_rings - Free Tx Buffers for all queues
++ *  @adapter: board private structure
 + **/
-+s32 igc_check_reset_block(struct igc_hw *hw)
++static void igc_clean_all_tx_rings(struct igc_adapter *adapter)
 +{
-+	u32 manc;
++	int i;
 +
-+	manc = rd32(IGC_MANC);
-+
-+	return (manc & IGC_MANC_BLK_PHY_RST_ON_IDE) ?
-+		IGC_ERR_BLK_PHY_RESET : 0;
++	for (i = 0; i < adapter->num_tx_queues; i++)
++		if (adapter->tx_ring[i])
++			igc_clean_tx_ring(adapter->tx_ring[i]);
 +}
 +
 +/**
-+ *  igc_get_phy_id - Retrieve the PHY ID and revision
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Reads the PHY registers and stores the PHY ID and possibly the PHY
-+ *  revision in the hardware structure.
+  *  igc_setup_tx_resources - allocate Tx resources (Descriptors)
+  *  @tx_ring: tx descriptor ring (for a specific queue) to setup
+  *
+@@ -340,6 +363,19 @@ static void igc_clean_rx_ring(struct igc_ring *rx_ring)
+ }
+ 
+ /**
++ *  igc_clean_all_rx_rings - Free Rx Buffers for all queues
++ *  @adapter: board private structure
 + **/
-+s32 igc_get_phy_id(struct igc_hw *hw)
++static void igc_clean_all_rx_rings(struct igc_adapter *adapter)
 +{
-+	struct igc_phy_info *phy = &hw->phy;
-+	s32 ret_val = 0;
-+	u16 phy_id;
++	int i;
 +
-+	ret_val = phy->ops.read_reg(hw, PHY_ID1, &phy_id);
-+	if (ret_val)
-+		goto out;
-+
-+	phy->id = (u32)(phy_id << 16);
-+	usleep_range(200, 500);
-+	ret_val = phy->ops.read_reg(hw, PHY_ID2, &phy_id);
-+	if (ret_val)
-+		goto out;
-+
-+	phy->id |= (u32)(phy_id & PHY_REVISION_MASK);
-+	phy->revision = (u32)(phy_id & ~PHY_REVISION_MASK);
-+
-+out:
-+	return ret_val;
++	for (i = 0; i < adapter->num_rx_queues; i++)
++		if (adapter->rx_ring[i])
++			igc_clean_rx_ring(adapter->rx_ring[i]);
 +}
 +
 +/**
-+ *  igc_phy_has_link - Polls PHY for link
-+ *  @hw: pointer to the HW structure
-+ *  @iterations: number of times to poll for link
-+ *  @usec_interval: delay between polling attempts
-+ *  @success: pointer to whether polling was successful or not
-+ *
-+ *  Polls the PHY status register for link, 'iterations' number of times.
-+ **/
-+s32 igc_phy_has_link(struct igc_hw *hw, u32 iterations,
-+		     u32 usec_interval, bool *success)
+  *  igc_free_rx_resources - Free Rx Resources
+  *  @rx_ring: ring to clean the resources from
+  *
+@@ -680,60 +716,613 @@ static int igc_set_mac(struct net_device *netdev, void *p)
+ 	return 0;
+ }
+ 
++static void igc_tx_csum(struct igc_ring *tx_ring, struct igc_tx_buffer *first)
 +{
-+	u16 i, phy_status;
-+	s32 ret_val = 0;
++}
 +
-+	for (i = 0; i < iterations; i++) {
-+		/* Some PHYs require the PHY_STATUS register to be read
-+		 * twice due to the link bit being sticky.  No harm doing
-+		 * it across the board.
-+		 */
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS, &phy_status);
-+		if (ret_val && usec_interval > 0) {
-+			/* If the first read fails, another entity may have
-+			 * ownership of the resources, wait and try again to
-+			 * see if they have relinquished the resources yet.
-+			 */
-+			if (usec_interval >= 1000)
-+				mdelay(usec_interval / 1000);
-+			else
-+				udelay(usec_interval);
++static int __igc_maybe_stop_tx(struct igc_ring *tx_ring, const u16 size)
++{
++	struct net_device *netdev = tx_ring->netdev;
++
++	netif_stop_subqueue(netdev, tx_ring->queue_index);
++
++	/* memory barriier comment */
++	smp_mb();
++
++	/* We need to check again in a case another CPU has just
++	 * made room available.
++	 */
++	if (igc_desc_unused(tx_ring) < size)
++		return -EBUSY;
++
++	/* A reprieve! */
++	netif_wake_subqueue(netdev, tx_ring->queue_index);
++
++	u64_stats_update_begin(&tx_ring->tx_syncp2);
++	tx_ring->tx_stats.restart_queue2++;
++	u64_stats_update_end(&tx_ring->tx_syncp2);
++
++	return 0;
++}
++
++static inline int igc_maybe_stop_tx(struct igc_ring *tx_ring, const u16 size)
++{
++	if (igc_desc_unused(tx_ring) >= size)
++		return 0;
++	return __igc_maybe_stop_tx(tx_ring, size);
++}
++
++static u32 igc_tx_cmd_type(struct sk_buff *skb, u32 tx_flags)
++{
++	/* set type for advanced descriptor with frame checksum insertion */
++	u32 cmd_type = IGC_ADVTXD_DTYP_DATA |
++		       IGC_ADVTXD_DCMD_DEXT |
++		       IGC_ADVTXD_DCMD_IFCS;
++
++	return cmd_type;
++}
++
++static void igc_tx_olinfo_status(struct igc_ring *tx_ring,
++				 union igc_adv_tx_desc *tx_desc,
++				 u32 tx_flags, unsigned int paylen)
++{
++	u32 olinfo_status = paylen << IGC_ADVTXD_PAYLEN_SHIFT;
++
++	/* insert L4 checksum */
++	olinfo_status |= (tx_flags & IGC_TX_FLAGS_CSUM) *
++			  ((IGC_TXD_POPTS_TXSM << 8) /
++			  IGC_TX_FLAGS_CSUM);
++
++	/* insert IPv4 checksum */
++	olinfo_status |= (tx_flags & IGC_TX_FLAGS_IPV4) *
++			  (((IGC_TXD_POPTS_IXSM << 8)) /
++			  IGC_TX_FLAGS_IPV4);
++
++	tx_desc->read.olinfo_status = cpu_to_le32(olinfo_status);
++}
++
++static int igc_tx_map(struct igc_ring *tx_ring,
++		      struct igc_tx_buffer *first,
++		      const u8 hdr_len)
++{
++	struct sk_buff *skb = first->skb;
++	struct igc_tx_buffer *tx_buffer;
++	union igc_adv_tx_desc *tx_desc;
++	u32 tx_flags = first->tx_flags;
++	struct skb_frag_struct *frag;
++	u16 i = tx_ring->next_to_use;
++	unsigned int data_len, size;
++	dma_addr_t dma;
++	u32 cmd_type = igc_tx_cmd_type(skb, tx_flags);
++
++	tx_desc = IGC_TX_DESC(tx_ring, i);
++
++	igc_tx_olinfo_status(tx_ring, tx_desc, tx_flags, skb->len - hdr_len);
++
++	size = skb_headlen(skb);
++	data_len = skb->data_len;
++
++	dma = dma_map_single(tx_ring->dev, skb->data, size, DMA_TO_DEVICE);
++
++	tx_buffer = first;
++
++	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
++		if (dma_mapping_error(tx_ring->dev, dma))
++			goto dma_error;
++
++		/* record length, and DMA address */
++		dma_unmap_len_set(tx_buffer, len, size);
++		dma_unmap_addr_set(tx_buffer, dma, dma);
++
++		tx_desc->read.buffer_addr = cpu_to_le64(dma);
++
++		while (unlikely(size > IGC_MAX_DATA_PER_TXD)) {
++			tx_desc->read.cmd_type_len =
++				cpu_to_le32(cmd_type ^ IGC_MAX_DATA_PER_TXD);
++
++			i++;
++			tx_desc++;
++			if (i == tx_ring->count) {
++				tx_desc = IGC_TX_DESC(tx_ring, 0);
++				i = 0;
++			}
++			tx_desc->read.olinfo_status = 0;
++
++			dma += IGC_MAX_DATA_PER_TXD;
++			size -= IGC_MAX_DATA_PER_TXD;
++
++			tx_desc->read.buffer_addr = cpu_to_le64(dma);
 +		}
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS, &phy_status);
-+		if (ret_val)
++
++		if (likely(!data_len))
 +			break;
-+		if (phy_status & MII_SR_LINK_STATUS)
-+			break;
-+		if (usec_interval >= 1000)
-+			mdelay(usec_interval / 1000);
-+		else
-+			udelay(usec_interval);
++
++		tx_desc->read.cmd_type_len = cpu_to_le32(cmd_type ^ size);
++
++		i++;
++		tx_desc++;
++		if (i == tx_ring->count) {
++			tx_desc = IGC_TX_DESC(tx_ring, 0);
++			i = 0;
++		}
++		tx_desc->read.olinfo_status = 0;
++
++		size = skb_frag_size(frag);
++		data_len -= size;
++
++		dma = skb_frag_dma_map(tx_ring->dev, frag, 0,
++				       size, DMA_TO_DEVICE);
++
++		tx_buffer = &tx_ring->tx_buffer_info[i];
 +	}
 +
-+	*success = (i < iterations) ? true : false;
++	/* write last descriptor with RS and EOP bits */
++	cmd_type |= size | IGC_TXD_DCMD;
++	tx_desc->read.cmd_type_len = cpu_to_le32(cmd_type);
 +
-+	return ret_val;
-+}
++	netdev_tx_sent_queue(txring_txq(tx_ring), first->bytecount);
 +
-+/**
-+ *  igc_power_up_phy_copper - Restore copper link in case of PHY power down
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  In the case of a PHY power down to save power, or to turn off link during a
-+ *  driver unload, restore the link to previous settings.
-+ **/
-+void igc_power_up_phy_copper(struct igc_hw *hw)
-+{
-+	u16 mii_reg = 0;
++	/* set the timestamp */
++	first->time_stamp = jiffies;
 +
-+	/* The PHY will retain its settings across a power down/up cycle */
-+	hw->phy.ops.read_reg(hw, PHY_CONTROL, &mii_reg);
-+	mii_reg &= ~MII_CR_POWER_DOWN;
-+	hw->phy.ops.write_reg(hw, PHY_CONTROL, mii_reg);
-+}
-+
-+/**
-+ *  igc_power_down_phy_copper - Power down copper PHY
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Power down PHY to save power when interface is down and wake on lan
-+ *  is not enabled.
-+ **/
-+void igc_power_down_phy_copper(struct igc_hw *hw)
-+{
-+	u16 mii_reg = 0;
-+
-+	/* The PHY will retain its settings across a power down/up cycle */
-+	hw->phy.ops.read_reg(hw, PHY_CONTROL, &mii_reg);
-+	mii_reg |= MII_CR_POWER_DOWN;
-+
-+	/* Temporary workaround - should be removed when PHY will implement
-+	 * IEEE registers as properly
++	/* Force memory writes to complete before letting h/w know there
++	 * are new descriptors to fetch.  (Only applicable for weak-ordered
++	 * memory model archs, such as IA-64).
++	 *
++	 * We also need this memory barrier to make certain all of the
++	 * status bits have been updated before next_to_watch is written.
 +	 */
-+	/* hw->phy.ops.write_reg(hw, PHY_CONTROL, mii_reg);*/
-+	usleep_range(1000, 2000);
-+}
++	wmb();
 +
-+/**
-+ *  igc_check_downshift - Checks whether a downshift in speed occurred
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Success returns 0, Failure returns 1
-+ *
-+ *  A downshift is detected by querying the PHY link health.
-+ **/
-+s32 igc_check_downshift(struct igc_hw *hw)
-+{
-+	struct igc_phy_info *phy = &hw->phy;
-+	u16 phy_data, offset, mask;
-+	s32 ret_val;
++	/* set next_to_watch value indicating a packet is present */
++	first->next_to_watch = tx_desc;
 +
-+	switch (phy->type) {
-+	case igc_phy_i225:
-+	default:
-+		/* speed downshift not supported */
-+		phy->speed_downgraded = false;
-+		ret_val = 0;
-+		goto out;
++	i++;
++	if (i == tx_ring->count)
++		i = 0;
++
++	tx_ring->next_to_use = i;
++
++	/* Make sure there is space in the ring for the next send. */
++	igc_maybe_stop_tx(tx_ring, DESC_NEEDED);
++
++	if (netif_xmit_stopped(txring_txq(tx_ring)) || !skb->xmit_more) {
++		writel(i, tx_ring->tail);
++
++		/* we need this if more than one processor can write to our tail
++		 * at a time, it synchronizes IO on IA64/Altix systems
++		 */
++		mmiowb();
 +	}
 +
-+	ret_val = phy->ops.read_reg(hw, offset, &phy_data);
++	return 0;
++dma_error:
++	dev_err(tx_ring->dev, "TX DMA map failed\n");
++	tx_buffer = &tx_ring->tx_buffer_info[i];
 +
-+	if (!ret_val)
-+		phy->speed_downgraded = (phy_data & mask) ? true : false;
++	/* clear dma mappings for failed tx_buffer_info map */
++	while (tx_buffer != first) {
++		if (dma_unmap_len(tx_buffer, len))
++			dma_unmap_page(tx_ring->dev,
++				       dma_unmap_addr(tx_buffer, dma),
++				       dma_unmap_len(tx_buffer, len),
++				       DMA_TO_DEVICE);
++		dma_unmap_len_set(tx_buffer, len, 0);
 +
-+out:
-+	return ret_val;
-+}
-+
-+/**
-+ *  igc_phy_hw_reset - PHY hardware reset
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Verify the reset block is not blocking us from resetting.  Acquire
-+ *  semaphore (if necessary) and read/set/write the device control reset
-+ *  bit in the PHY.  Wait the appropriate delay time for the device to
-+ *  reset and release the semaphore (if necessary).
-+ **/
-+s32 igc_phy_hw_reset(struct igc_hw *hw)
-+{
-+	struct igc_phy_info *phy = &hw->phy;
-+	s32  ret_val;
-+	u32 ctrl;
-+
-+	ret_val = igc_check_reset_block(hw);
-+	if (ret_val) {
-+		ret_val = 0;
-+		goto out;
++		if (i-- == 0)
++			i += tx_ring->count;
++		tx_buffer = &tx_ring->tx_buffer_info[i];
 +	}
 +
-+	ret_val = phy->ops.acquire(hw);
-+	if (ret_val)
-+		goto out;
++	if (dma_unmap_len(tx_buffer, len))
++		dma_unmap_single(tx_ring->dev,
++				 dma_unmap_addr(tx_buffer, dma),
++				 dma_unmap_len(tx_buffer, len),
++				 DMA_TO_DEVICE);
++	dma_unmap_len_set(tx_buffer, len, 0);
 +
-+	ctrl = rd32(IGC_CTRL);
-+	wr32(IGC_CTRL, ctrl | IGC_CTRL_PHY_RST);
-+	wrfl();
++	dev_kfree_skb_any(tx_buffer->skb);
++	tx_buffer->skb = NULL;
 +
-+	udelay(phy->reset_delay_us);
++	tx_ring->next_to_use = i;
 +
-+	wr32(IGC_CTRL, ctrl);
-+	wrfl();
-+
-+	usleep_range(1500, 2000);
-+
-+	phy->ops.release(hw);
-+
-+	ret_val = phy->ops.get_cfg_done(hw);
-+
-+out:
-+	return ret_val;
++	return -1;
 +}
 +
-+/**
-+ *  igc_read_phy_reg_mdic - Read MDI control register
-+ *  @hw: pointer to the HW structure
-+ *  @offset: register offset to be read
-+ *  @data: pointer to the read data
-+ *
-+ *  Reads the MDI control register in the PHY at offset and stores the
-+ *  information read to data.
-+ **/
-+static s32 igc_read_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 *data)
++static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
++				       struct igc_ring *tx_ring)
 +{
-+	struct igc_phy_info *phy = &hw->phy;
-+	u32 i, mdic = 0;
-+	s32 ret_val = 0;
++	u16 count = TXD_USE_COUNT(skb_headlen(skb));
++	__be16 protocol = vlan_get_protocol(skb);
++	struct igc_tx_buffer *first;
++	u32 tx_flags = 0;
++	unsigned short f;
++	u8 hdr_len = 0;
 +
-+	if (offset > MAX_PHY_REG_ADDRESS) {
-+		hw_dbg("PHY Address %d is out of range\n", offset);
-+		ret_val = -IGC_ERR_PARAM;
-+		goto out;
-+	}
-+
-+	/* Set up Op-code, Phy Address, and register offset in the MDI
-+	 * Control register.  The MAC will take care of interfacing with the
-+	 * PHY to retrieve the desired data.
++	/* need: 1 descriptor per page * PAGE_SIZE/IGC_MAX_DATA_PER_TXD,
++	 *       + 1 desc for skb_headlen/IGC_MAX_DATA_PER_TXD,
++	 *      + 2 desc gap to keep tail from touching head,
++	 *       + 1 desc for context descriptor,
++	 * otherwise try next time
 +	 */
-+	mdic = ((offset << IGC_MDIC_REG_SHIFT) |
-+		(phy->addr << IGC_MDIC_PHY_SHIFT) |
-+		(IGC_MDIC_OP_READ));
++	for (f = 0; f < skb_shinfo(skb)->nr_frags; f++)
++		count += TXD_USE_COUNT(skb_shinfo(skb)->frags[f].size);
 +
-+	wr32(IGC_MDIC, mdic);
++	if (igc_maybe_stop_tx(tx_ring, count + 3)) {
++		/* this is a hard error */
++		return NETDEV_TX_BUSY;
++	}
 +
-+	/* Poll the ready bit to see if the MDI read completed
-+	 * Increasing the time out as testing showed failures with
-+	 * the lower time out
++	/* record the location of the first descriptor for this packet */
++	first = &tx_ring->tx_buffer_info[tx_ring->next_to_use];
++	first->skb = skb;
++	first->bytecount = skb->len;
++	first->gso_segs = 1;
++
++	skb_tx_timestamp(skb);
++
++	/* record initial flags and protocol */
++	first->tx_flags = tx_flags;
++	first->protocol = protocol;
++
++	igc_tx_csum(tx_ring, first);
++
++	igc_tx_map(tx_ring, first, hdr_len);
++
++	return NETDEV_TX_OK;
++}
++
++static inline struct igc_ring *igc_tx_queue_mapping(struct igc_adapter *adapter,
++						    struct sk_buff *skb)
++{
++	unsigned int r_idx = skb->queue_mapping;
++
++	if (r_idx >= adapter->num_tx_queues)
++		r_idx = r_idx % adapter->num_tx_queues;
++
++	return adapter->tx_ring[r_idx];
++}
++
+ static netdev_tx_t igc_xmit_frame(struct sk_buff *skb,
+ 				  struct net_device *netdev)
+ {
+-	dev_kfree_skb_any(skb);
+-	return NETDEV_TX_OK;
++	struct igc_adapter *adapter = netdev_priv(netdev);
++
++	/* The minimum packet size with TCTL.PSP set is 17 so pad the skb
++	 * in order to meet this minimum size requirement.
 +	 */
-+	for (i = 0; i < (IGC_GEN_POLL_TIMEOUT * 3); i++) {
-+		usleep_range(500, 1000);
-+		mdic = rd32(IGC_MDIC);
-+		if (mdic & IGC_MDIC_READY)
-+			break;
-+	}
-+	if (!(mdic & IGC_MDIC_READY)) {
-+		hw_dbg("MDI Read did not complete\n");
-+		ret_val = -IGC_ERR_PHY;
-+		goto out;
-+	}
-+	if (mdic & IGC_MDIC_ERROR) {
-+		hw_dbg("MDI Error\n");
-+		ret_val = -IGC_ERR_PHY;
-+		goto out;
-+	}
-+	*data = (u16)mdic;
-+
-+out:
-+	return ret_val;
-+}
-+
-+/**
-+ *  igc_write_phy_reg_mdic - Write MDI control register
-+ *  @hw: pointer to the HW structure
-+ *  @offset: register offset to write to
-+ *  @data: data to write to register at offset
-+ *
-+ *  Writes data to MDI control register in the PHY@offset.
-+ **/
-+static s32 igc_write_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 data)
-+{
-+	struct igc_phy_info *phy = &hw->phy;
-+	u32 i, mdic = 0;
-+	s32 ret_val = 0;
-+
-+	if (offset > MAX_PHY_REG_ADDRESS) {
-+		hw_dbg("PHY Address %d is out of range\n", offset);
-+		ret_val = -IGC_ERR_PARAM;
-+		goto out;
++	if (skb->len < 17) {
++		if (skb_padto(skb, 17))
++			return NETDEV_TX_OK;
++		skb->len = 17;
 +	}
 +
-+	/* Set up Op-code, Phy Address, and register offset in the MDI
-+	 * Control register.  The MAC will take care of interfacing with the
-+	 * PHY to write the desired data.
-+	 */
-+	mdic = (((u32)data) |
-+		(offset << IGC_MDIC_REG_SHIFT) |
-+		(phy->addr << IGC_MDIC_PHY_SHIFT) |
-+		(IGC_MDIC_OP_WRITE));
-+
-+	wr32(IGC_MDIC, mdic);
-+
-+	/* Poll the ready bit to see if the MDI read completed
-+	 * Increasing the time out as testing showed failures with
-+	 * the lower time out
-+	 */
-+	for (i = 0; i < (IGC_GEN_POLL_TIMEOUT * 3); i++) {
-+		usleep_range(500, 1000);
-+		mdic = rd32(IGC_MDIC);
-+		if (mdic & IGC_MDIC_READY)
-+			break;
-+	}
-+	if (!(mdic & IGC_MDIC_READY)) {
-+		hw_dbg("MDI Write did not complete\n");
-+		ret_val = -IGC_ERR_PHY;
-+		goto out;
-+	}
-+	if (mdic & IGC_MDIC_ERROR) {
-+		hw_dbg("MDI Error\n");
-+		ret_val = -IGC_ERR_PHY;
-+		goto out;
-+	}
-+
-+out:
-+	return ret_val;
-+}
-+
-+/**
-+ *  __igc_access_xmdio_reg - Read/write XMDIO register
-+ *  @hw: pointer to the HW structure
-+ *  @address: XMDIO address to program
-+ *  @dev_addr: device address to program
-+ *  @data: pointer to value to read/write from/to the XMDIO address
-+ *  @read: boolean flag to indicate read or write
-+ **/
-+static s32 __igc_access_xmdio_reg(struct igc_hw *hw, u16 address,
-+				  u8 dev_addr, u16 *data, bool read)
-+{
-+	s32 ret_val;
-+
-+	ret_val = hw->phy.ops.write_reg(hw, IGC_MMDAC, dev_addr);
-+	if (ret_val)
-+		return ret_val;
-+
-+	ret_val = hw->phy.ops.write_reg(hw, IGC_MMDAAD, address);
-+	if (ret_val)
-+		return ret_val;
-+
-+	ret_val = hw->phy.ops.write_reg(hw, IGC_MMDAC, IGC_MMDAC_FUNC_DATA |
-+					dev_addr);
-+	if (ret_val)
-+		return ret_val;
-+
-+	if (read)
-+		ret_val = hw->phy.ops.read_reg(hw, IGC_MMDAAD, data);
-+	else
-+		ret_val = hw->phy.ops.write_reg(hw, IGC_MMDAAD, *data);
-+	if (ret_val)
-+		return ret_val;
-+
-+	/* Recalibrate the device back to 0 */
-+	ret_val = hw->phy.ops.write_reg(hw, IGC_MMDAC, 0);
-+	if (ret_val)
-+		return ret_val;
-+
-+	return ret_val;
-+}
-+
-+/**
-+ *  igc_read_xmdio_reg - Read XMDIO register
-+ *  @hw: pointer to the HW structure
-+ *  @addr: XMDIO address to program
-+ *  @dev_addr: device address to program
-+ *  @data: value to be read from the EMI address
-+ **/
-+static s32 igc_read_xmdio_reg(struct igc_hw *hw, u16 addr,
-+			      u8 dev_addr, u16 *data)
-+{
-+	return __igc_access_xmdio_reg(hw, addr, dev_addr, data, true);
-+}
-+
-+/**
-+ *  igc_write_xmdio_reg - Write XMDIO register
-+ *  @hw: pointer to the HW structure
-+ *  @addr: XMDIO address to program
-+ *  @dev_addr: device address to program
-+ *  @data: value to be written to the XMDIO address
-+ **/
-+static s32 igc_write_xmdio_reg(struct igc_hw *hw, u16 addr,
-+			       u8 dev_addr, u16 data)
-+{
-+	return __igc_access_xmdio_reg(hw, addr, dev_addr, &data, false);
-+}
-+
-+/**
-+ *  igc_write_phy_reg_gpy - Write GPY PHY register
-+ *  @hw: pointer to the HW structure
-+ *  @offset: register offset to write to
-+ *  @data: data to write at register offset
-+ *
-+ *  Acquires semaphore, if necessary, then writes the data to PHY register
-+ *  at the offset.  Release any acquired semaphores before exiting.
-+ **/
-+s32 igc_write_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 data)
-+{
-+	u8 dev_addr = (offset & GPY_MMD_MASK) >> GPY_MMD_SHIFT;
-+	s32 ret_val;
-+
-+	offset = offset & GPY_REG_MASK;
-+
-+	if (!dev_addr) {
-+		ret_val = hw->phy.ops.acquire(hw);
-+		if (ret_val)
-+			return ret_val;
-+		ret_val = igc_write_phy_reg_mdic(hw, offset, data);
-+		if (ret_val)
-+			return ret_val;
-+		hw->phy.ops.release(hw);
-+	} else {
-+		ret_val = igc_write_xmdio_reg(hw, (u16)offset, dev_addr,
-+					      data);
-+	}
-+	return ret_val;
-+}
-+
-+/**
-+ *  igc_read_phy_reg_gpy - Read GPY PHY register
-+ *  @hw: pointer to the HW structure
-+ *  @offset: lower half is register offset to read to
-+ *  upper half is MMD to use.
-+ *  @data: data to read at register offset
-+ *
-+ *  Acquires semaphore, if necessary, then reads the data in the PHY register
-+ *  at the offset.  Release any acquired semaphores before exiting.
-+ **/
-+s32 igc_read_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 *data)
-+{
-+	u8 dev_addr = (offset & GPY_MMD_MASK) >> GPY_MMD_SHIFT;
-+	s32 ret_val;
-+
-+	offset = offset & GPY_REG_MASK;
-+
-+	if (!dev_addr) {
-+		ret_val = hw->phy.ops.acquire(hw);
-+		if (ret_val)
-+			return ret_val;
-+		ret_val = igc_read_phy_reg_mdic(hw, offset, data);
-+		if (ret_val)
-+			return ret_val;
-+		hw->phy.ops.release(hw);
-+	} else {
-+		ret_val = igc_read_xmdio_reg(hw, (u16)offset, dev_addr,
-+					     data);
-+	}
-+	return ret_val;
-+}
-+
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.h b/drivers/net/ethernet/intel/igc/igc_phy.h
-new file mode 100644
-index 000000000000..deac52297052
---- /dev/null
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.h
-@@ -0,0 +1,20 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c)  2018 Intel Corporation */
-+
-+#ifndef _IGC_PHY_H_
-+#define _IGC_PHY_H_
-+
-+#include "igc_mac.h"
-+
-+s32  igc_check_reset_block(struct igc_hw *hw);
-+s32  igc_phy_hw_reset(struct igc_hw *hw);
-+s32  igc_get_phy_id(struct igc_hw *hw);
-+s32  igc_phy_has_link(struct igc_hw *hw, u32 iterations,
-+		      u32 usec_interval, bool *success);
-+s32 igc_check_downshift(struct igc_hw *hw);
-+void igc_power_up_phy_copper(struct igc_hw *hw);
-+void igc_power_down_phy_copper(struct igc_hw *hw);
-+s32  igc_write_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 data);
-+s32  igc_read_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 *data);
-+
-+#endif
-diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-index aaeaf61b730a..68a1aa17b329 100644
---- a/drivers/net/ethernet/intel/igc/igc_regs.h
-+++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-@@ -39,6 +39,9 @@
- #define IGC_SWSM		0x05B50  /* SW Semaphore */
- #define IGC_FWSM		0x05B54  /* FW Semaphore */
++	return igc_xmit_frame_ring(skb, igc_tx_queue_mapping(adapter, skb));
+ }
  
-+/* Function Active and Power State to MNG */
-+#define IGC_FACTPS		0x05B30
+-static inline unsigned int igc_rx_offset(struct igc_ring *rx_ring)
++static inline void igc_rx_hash(struct igc_ring *ring,
++			       union igc_adv_rx_desc *rx_desc,
++			       struct sk_buff *skb)
+ {
+-	return ring_uses_build_skb(rx_ring) ? IGC_SKB_PAD : 0;
++	if (ring->netdev->features & NETIF_F_RXHASH)
++		skb_set_hash(skb,
++			     le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
++			     PKT_HASH_TYPE_L3);
+ }
+ 
+-static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
+-				  struct igc_rx_buffer *bi)
++/**
++ *  igc_process_skb_fields - Populate skb header fields from Rx descriptor
++ *  @rx_ring: rx descriptor ring packet is being transacted on
++ *  @rx_desc: pointer to the EOP Rx descriptor
++ *  @skb: pointer to current skb being populated
++ *
++ *  This function checks the ring, descriptor, and packet information in
++ *  order to populate the hash, checksum, VLAN, timestamp, protocol, and
++ *  other fields within the skb.
++ **/
++static void igc_process_skb_fields(struct igc_ring *rx_ring,
++				   union igc_adv_rx_desc *rx_desc,
++				   struct sk_buff *skb)
+ {
+-	struct page *page = bi->page;
+-	dma_addr_t dma;
++	igc_rx_hash(rx_ring, rx_desc, skb);
+ 
+-	/* since we are recycling buffers we should seldom need to alloc */
+-	if (likely(page))
+-		return true;
++	skb_record_rx_queue(skb, rx_ring->queue_index);
+ 
+-	/* alloc new page for storage */
+-	page = dev_alloc_pages(igc_rx_pg_order(rx_ring));
+-	if (unlikely(!page)) {
+-		rx_ring->rx_stats.alloc_failed++;
+-		return false;
++	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
++}
 +
- /* Interrupt Register Description */
- #define IGC_EICS		0x01520  /* Ext. Interrupt Cause Set - W0 */
- #define IGC_EIMS		0x01524  /* Ext. Interrupt Mask Set/Read - RW */
++static struct igc_rx_buffer *igc_get_rx_buffer(struct igc_ring *rx_ring,
++					       const unsigned int size)
++{
++	struct igc_rx_buffer *rx_buffer;
++
++	rx_buffer = &rx_ring->rx_buffer_info[rx_ring->next_to_clean];
++	prefetchw(rx_buffer->page);
++
++	/* we are reusing so sync this buffer for CPU use */
++	dma_sync_single_range_for_cpu(rx_ring->dev,
++				      rx_buffer->dma,
++				      rx_buffer->page_offset,
++				      size,
++				      DMA_FROM_DEVICE);
++
++	rx_buffer->pagecnt_bias--;
++
++	return rx_buffer;
++}
++
++/**
++ *  igc_add_rx_frag - Add contents of Rx buffer to sk_buff
++ *  @rx_ring: rx descriptor ring to transact packets on
++ *  @rx_buffer: buffer containing page to add
++ *  @skb: sk_buff to place the data into
++ *  @size: size of buffer to be added
++ *
++ *  This function will add the data contained in rx_buffer->page to the skb.
++ **/
++static void igc_add_rx_frag(struct igc_ring *rx_ring,
++			    struct igc_rx_buffer *rx_buffer,
++			    struct sk_buff *skb,
++			    unsigned int size)
++{
++#if (PAGE_SIZE < 8192)
++	unsigned int truesize = igc_rx_pg_size(rx_ring) / 2;
++
++	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
++			rx_buffer->page_offset, size, truesize);
++	rx_buffer->page_offset ^= truesize;
++#else
++	unsigned int truesize = ring_uses_build_skb(rx_ring) ?
++				SKB_DATA_ALIGN(IGC_SKB_PAD + size) :
++				SKB_DATA_ALIGN(size);
++	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
++			rx_buffer->page_offset, size, truesize);
++	rx_buffer->page_offset += truesize;
++#endif
++}
++
++static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
++				     struct igc_rx_buffer *rx_buffer,
++				     union igc_adv_rx_desc *rx_desc,
++				     unsigned int size)
++{
++	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
++#if (PAGE_SIZE < 8192)
++	unsigned int truesize = igc_rx_pg_size(rx_ring) / 2;
++#else
++	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
++				SKB_DATA_ALIGN(IGC_SKB_PAD + size);
++#endif
++	struct sk_buff *skb;
++
++	/* prefetch first cache line of first page */
++	prefetch(va);
++#if L1_CACHE_BYTES < 128
++	prefetch(va + L1_CACHE_BYTES);
++#endif
++
++	/* build an skb around the page buffer */
++	skb = build_skb(va - IGC_SKB_PAD, truesize);
++	if (unlikely(!skb))
++		return NULL;
++
++	/* update pointers within the skb to store the data */
++	skb_reserve(skb, IGC_SKB_PAD);
++	 __skb_put(skb, size);
++
++	/* update buffer offset */
++#if (PAGE_SIZE < 8192)
++	rx_buffer->page_offset ^= truesize;
++#else
++	rx_buffer->page_offset += truesize;
++#endif
++
++	return skb;
++}
++
++static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
++					 struct igc_rx_buffer *rx_buffer,
++					 union igc_adv_rx_desc *rx_desc,
++					 unsigned int size)
++{
++	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
++#if (PAGE_SIZE < 8192)
++	unsigned int truesize = igc_rx_pg_size(rx_ring) / 2;
++#else
++	unsigned int truesize = SKB_DATA_ALIGN(size);
++#endif
++	unsigned int headlen;
++	struct sk_buff *skb;
++
++	/* prefetch first cache line of first page */
++	prefetch(va);
++#if L1_CACHE_BYTES < 128
++	prefetch(va + L1_CACHE_BYTES);
++#endif
++
++	/* allocate a skb to store the frags */
++	skb = napi_alloc_skb(&rx_ring->q_vector->napi, IGC_RX_HDR_LEN);
++	if (unlikely(!skb))
++		return NULL;
++
++	/* Determine available headroom for copy */
++	headlen = size;
++	if (headlen > IGC_RX_HDR_LEN)
++		headlen = eth_get_headlen(va, IGC_RX_HDR_LEN);
++
++	/* align pull length to size of long to optimize memcpy performance */
++	memcpy(__skb_put(skb, headlen), va, ALIGN(headlen, sizeof(long)));
++
++	/* update all of the pointers */
++	size -= headlen;
++	if (size) {
++		skb_add_rx_frag(skb, 0, rx_buffer->page,
++				(va + headlen) - page_address(rx_buffer->page),
++				size, truesize);
++#if (PAGE_SIZE < 8192)
++	rx_buffer->page_offset ^= truesize;
++#else
++	rx_buffer->page_offset += truesize;
++#endif
++	} else {
++		rx_buffer->pagecnt_bias++;
+ 	}
+ 
+-	/* map page for use */
+-	dma = dma_map_page_attrs(rx_ring->dev, page, 0,
+-				 igc_rx_pg_size(rx_ring),
+-				 DMA_FROM_DEVICE,
+-				 IGC_RX_DMA_ATTR);
++	return skb;
++}
+ 
+-	/* if mapping failed free memory back to system since
+-	 * there isn't much point in holding memory we can't use
++/**
++ *  igc_reuse_rx_page - page flip buffer and store it back on the ring
++ *  @rx_ring: rx descriptor ring to store buffers on
++ *  @old_buff: donor buffer to have page reused
++ *
++ *  Synchronizes page for reuse by the adapter
++ **/
++static void igc_reuse_rx_page(struct igc_ring *rx_ring,
++			      struct igc_rx_buffer *old_buff)
++{
++	u16 nta = rx_ring->next_to_alloc;
++	struct igc_rx_buffer *new_buff;
++
++	new_buff = &rx_ring->rx_buffer_info[nta];
++
++	/* update, and store next to alloc */
++	nta++;
++	rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
++
++	/* Transfer page from old buffer to new buffer.
++	 * Move each member individually to avoid possible store
++	 * forwarding stalls.
+ 	 */
+-	if (dma_mapping_error(rx_ring->dev, dma)) {
+-		__free_page(page);
++	new_buff->dma           = old_buff->dma;
++	new_buff->page          = old_buff->page;
++	new_buff->page_offset   = old_buff->page_offset;
++	new_buff->pagecnt_bias  = old_buff->pagecnt_bias;
++}
+ 
+-		rx_ring->rx_stats.alloc_failed++;
++static inline bool igc_page_is_reserved(struct page *page)
++{
++	return (page_to_nid(page) != numa_mem_id()) || page_is_pfmemalloc(page);
++}
++
++static bool igc_can_reuse_rx_page(struct igc_rx_buffer *rx_buffer)
++{
++	unsigned int pagecnt_bias = rx_buffer->pagecnt_bias;
++	struct page *page = rx_buffer->page;
++
++	/* avoid re-using remote pages */
++	if (unlikely(igc_page_is_reserved(page)))
++		return false;
++
++#if (PAGE_SIZE < 8192)
++	/* if we are only owner of page we can reuse it */
++	if (unlikely((page_ref_count(page) - pagecnt_bias) > 1))
+ 		return false;
++#else
++#define IGC_LAST_OFFSET \
++	(SKB_WITH_OVERHEAD(PAGE_SIZE) - IGC_RXBUFFER_2048)
++
++	if (rx_buffer->page_offset > IGC_LAST_OFFSET)
++		return false;
++#endif
++
++	/* If we have drained the page fragment pool we need to update
++	 * the pagecnt_bias and page count so that we fully restock the
++	 * number of references the driver holds.
++	 */
++	if (unlikely(!pagecnt_bias)) {
++		page_ref_add(page, USHRT_MAX);
++		rx_buffer->pagecnt_bias = USHRT_MAX;
+ 	}
+ 
+-	bi->dma = dma;
+-	bi->page = page;
+-	bi->page_offset = igc_rx_offset(rx_ring);
+-	bi->pagecnt_bias = 1;
++	return true;
++}
++
++/**
++ *  igc_is_non_eop - process handling of non-EOP buffers
++ *  @rx_ring: Rx ring being processed
++ *  @rx_desc: Rx descriptor for current buffer
++ *  @skb: current socket buffer containing buffer in progress
++ *
++ *  This function updates next to clean.  If the buffer is an EOP buffer
++ *  this function exits returning false, otherwise it will place the
++ *  sk_buff in the next buffer to be chained and return true indicating
++ *  that this is in fact a non-EOP buffer.
++ **/
++static bool igc_is_non_eop(struct igc_ring *rx_ring,
++			   union igc_adv_rx_desc *rx_desc)
++{
++	u32 ntc = rx_ring->next_to_clean + 1;
++
++	/* fetch, update, and store next to clean */
++	ntc = (ntc < rx_ring->count) ? ntc : 0;
++	rx_ring->next_to_clean = ntc;
++
++	prefetch(IGC_RX_DESC(rx_ring, ntc));
++
++	if (likely(igc_test_staterr(rx_desc, IGC_RXD_STAT_EOP)))
++		return false;
+ 
+ 	return true;
+ }
+ 
+ /**
++ *  igc_cleanup_headers - Correct corrupted or empty headers
++ *  @rx_ring: rx descriptor ring packet is being transacted on
++ *  @rx_desc: pointer to the EOP Rx descriptor
++ *  @skb: pointer to current skb being fixed
++ *
++ *  Address the case where we are pulling data in on pages only
++ *  and as such no data is present in the skb header.
++ *
++ *  In addition if skb is not at least 60 bytes we need to pad it so that
++ *  it is large enough to qualify as a valid Ethernet frame.
++ *
++ *  Returns true if an error was encountered and skb was freed.
++ **/
++static bool igc_cleanup_headers(struct igc_ring *rx_ring,
++				union igc_adv_rx_desc *rx_desc,
++				struct sk_buff *skb)
++{
++	if (unlikely((igc_test_staterr(rx_desc,
++				       IGC_RXDEXT_ERR_FRAME_ERR_MASK)))) {
++		struct net_device *netdev = rx_ring->netdev;
++
++		if (!(netdev->features & NETIF_F_RXALL)) {
++			dev_kfree_skb_any(skb);
++			return true;
++		}
++	}
++
++	/* if eth_skb_pad returns an error the skb was freed */
++	if (eth_skb_pad(skb))
++		return true;
++
++	return false;
++}
++
++static void igc_put_rx_buffer(struct igc_ring *rx_ring,
++			      struct igc_rx_buffer *rx_buffer)
++{
++	if (igc_can_reuse_rx_page(rx_buffer)) {
++		/* hand second half of page back to the ring */
++		igc_reuse_rx_page(rx_ring, rx_buffer);
++	} else {
++		/* We are not reusing the buffer so unmap it and free
++		 * any references we are holding to it
++		 */
++		dma_unmap_page_attrs(rx_ring->dev, rx_buffer->dma,
++				     igc_rx_pg_size(rx_ring), DMA_FROM_DEVICE,
++				     IGC_RX_DMA_ATTR);
++		__page_frag_cache_drain(rx_buffer->page,
++					rx_buffer->pagecnt_bias);
++	}
++
++	/* clear contents of rx_buffer */
++	rx_buffer->page = NULL;
++}
++
++/**
+  *  igc_alloc_rx_buffers - Replace used receive buffers; packet split
+  *  @adapter: address of board private structure
+  **/
+@@ -802,6 +1391,314 @@ static void igc_alloc_rx_buffers(struct igc_ring *rx_ring, u16 cleaned_count)
+ 	}
+ }
+ 
++static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
++{
++	unsigned int total_bytes = 0, total_packets = 0;
++	struct igc_ring *rx_ring = q_vector->rx.ring;
++	struct sk_buff *skb = rx_ring->skb;
++	u16 cleaned_count = igc_desc_unused(rx_ring);
++
++	while (likely(total_packets < budget)) {
++		union igc_adv_rx_desc *rx_desc;
++		struct igc_rx_buffer *rx_buffer;
++		unsigned int size;
++
++		/* return some buffers to hardware, one@a time is too slow */
++		if (cleaned_count >= IGC_RX_BUFFER_WRITE) {
++			igc_alloc_rx_buffers(rx_ring, cleaned_count);
++			cleaned_count = 0;
++		}
++
++		rx_desc = IGC_RX_DESC(rx_ring, rx_ring->next_to_clean);
++		size = le16_to_cpu(rx_desc->wb.upper.length);
++		if (!size)
++			break;
++
++		/* This memory barrier is needed to keep us from reading
++		 * any other fields out of the rx_desc until we know the
++		 * descriptor has been written back
++		 */
++		dma_rmb();
++
++		rx_buffer = igc_get_rx_buffer(rx_ring, size);
++
++		/* retrieve a buffer from the ring */
++		if (skb)
++			igc_add_rx_frag(rx_ring, rx_buffer, skb, size);
++		else if (ring_uses_build_skb(rx_ring))
++			skb = igc_build_skb(rx_ring, rx_buffer, rx_desc, size);
++		else
++			skb = igc_construct_skb(rx_ring, rx_buffer,
++						rx_desc, size);
++
++		/* exit if we failed to retrieve a buffer */
++		if (!skb) {
++			rx_ring->rx_stats.alloc_failed++;
++			rx_buffer->pagecnt_bias++;
++			break;
++		}
++
++		igc_put_rx_buffer(rx_ring, rx_buffer);
++		cleaned_count++;
++
++		/* fetch next buffer in frame if non-eop */
++		if (igc_is_non_eop(rx_ring, rx_desc))
++			continue;
++
++		/* verify the packet layout is correct */
++		if (igc_cleanup_headers(rx_ring, rx_desc, skb)) {
++			skb = NULL;
++			continue;
++		}
++
++		/* probably a little skewed due to removing CRC */
++		total_bytes += skb->len;
++
++		/* populate checksum, timestamp, VLAN, and protocol */
++		igc_process_skb_fields(rx_ring, rx_desc, skb);
++
++		napi_gro_receive(&q_vector->napi, skb);
++
++		/* reset skb pointer */
++		skb = NULL;
++
++		/* update budget accounting */
++		total_packets++;
++	}
++
++	/* place incomplete frames back on ring for completion */
++	rx_ring->skb = skb;
++
++	u64_stats_update_begin(&rx_ring->rx_syncp);
++	rx_ring->rx_stats.packets += total_packets;
++	rx_ring->rx_stats.bytes += total_bytes;
++	u64_stats_update_end(&rx_ring->rx_syncp);
++	q_vector->rx.total_packets += total_packets;
++	q_vector->rx.total_bytes += total_bytes;
++
++	if (cleaned_count)
++		igc_alloc_rx_buffers(rx_ring, cleaned_count);
++
++	return total_packets;
++}
++
++static inline unsigned int igc_rx_offset(struct igc_ring *rx_ring)
++{
++	return ring_uses_build_skb(rx_ring) ? IGC_SKB_PAD : 0;
++}
++
++static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
++				  struct igc_rx_buffer *bi)
++{
++	struct page *page = bi->page;
++	dma_addr_t dma;
++
++	/* since we are recycling buffers we should seldom need to alloc */
++	if (likely(page))
++		return true;
++
++	/* alloc new page for storage */
++	page = dev_alloc_pages(igc_rx_pg_order(rx_ring));
++	if (unlikely(!page)) {
++		rx_ring->rx_stats.alloc_failed++;
++		return false;
++	}
++
++	/* map page for use */
++	dma = dma_map_page_attrs(rx_ring->dev, page, 0,
++				 igc_rx_pg_size(rx_ring),
++				 DMA_FROM_DEVICE,
++				 IGC_RX_DMA_ATTR);
++
++	/* if mapping failed free memory back to system since
++	 * there isn't much point in holding memory we can't use
++	 */
++	if (dma_mapping_error(rx_ring->dev, dma)) {
++		__free_page(page);
++
++		rx_ring->rx_stats.alloc_failed++;
++		return false;
++	}
++
++	bi->dma = dma;
++	bi->page = page;
++	bi->page_offset = igc_rx_offset(rx_ring);
++	bi->pagecnt_bias = 1;
++
++	return true;
++}
++
++/**
++ *  igc_clean_tx_irq - Reclaim resources after transmit completes
++ *  @q_vector: pointer to q_vector containing needed info
++ *  @napi_budget: Used to determine if we are in netpoll
++ *
++ *  returns true if ring is completely cleaned
++ **/
++static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
++{
++	struct igc_adapter *adapter = q_vector->adapter;
++	unsigned int total_bytes = 0, total_packets = 0;
++	unsigned int budget = q_vector->tx.work_limit;
++	struct igc_ring *tx_ring = q_vector->tx.ring;
++	unsigned int i = tx_ring->next_to_clean;
++	struct igc_tx_buffer *tx_buffer;
++	union igc_adv_tx_desc *tx_desc;
++
++	if (test_bit(__IGC_DOWN, &adapter->state))
++		return true;
++
++	tx_buffer = &tx_ring->tx_buffer_info[i];
++	tx_desc = IGC_TX_DESC(tx_ring, i);
++	i -= tx_ring->count;
++
++	do {
++		union igc_adv_tx_desc *eop_desc = tx_buffer->next_to_watch;
++
++		/* if next_to_watch is not set then there is no work pending */
++		if (!eop_desc)
++			break;
++
++		/* prevent any other reads prior to eop_desc */
++		smp_rmb();
++
++		/* if DD is not set pending work has not been completed */
++		if (!(eop_desc->wb.status & cpu_to_le32(IGC_TXD_STAT_DD)))
++			break;
++
++		/* clear next_to_watch to prevent false hangs */
++		tx_buffer->next_to_watch = NULL;
++
++		/* update the statistics for this packet */
++		total_bytes += tx_buffer->bytecount;
++		total_packets += tx_buffer->gso_segs;
++
++		/* free the skb */
++		napi_consume_skb(tx_buffer->skb, napi_budget);
++
++		/* unmap skb header data */
++		dma_unmap_single(tx_ring->dev,
++				 dma_unmap_addr(tx_buffer, dma),
++				 dma_unmap_len(tx_buffer, len),
++				 DMA_TO_DEVICE);
++
++		/* clear tx_buffer data */
++		dma_unmap_len_set(tx_buffer, len, 0);
++
++		/* clear last DMA location and unmap remaining buffers */
++		while (tx_desc != eop_desc) {
++			tx_buffer++;
++			tx_desc++;
++			i++;
++			if (unlikely(!i)) {
++				i -= tx_ring->count;
++				tx_buffer = tx_ring->tx_buffer_info;
++				tx_desc = IGC_TX_DESC(tx_ring, 0);
++			}
++
++			/* unmap any remaining paged data */
++			if (dma_unmap_len(tx_buffer, len)) {
++				dma_unmap_page(tx_ring->dev,
++					       dma_unmap_addr(tx_buffer, dma),
++					       dma_unmap_len(tx_buffer, len),
++					       DMA_TO_DEVICE);
++				dma_unmap_len_set(tx_buffer, len, 0);
++			}
++		}
++
++		/* move us one more past the eop_desc for start of next pkt */
++		tx_buffer++;
++		tx_desc++;
++		i++;
++		if (unlikely(!i)) {
++			i -= tx_ring->count;
++			tx_buffer = tx_ring->tx_buffer_info;
++			tx_desc = IGC_TX_DESC(tx_ring, 0);
++		}
++
++		/* issue prefetch for next Tx descriptor */
++		prefetch(tx_desc);
++
++		/* update budget accounting */
++		budget--;
++	} while (likely(budget));
++
++	netdev_tx_completed_queue(txring_txq(tx_ring),
++				  total_packets, total_bytes);
++
++	i += tx_ring->count;
++	tx_ring->next_to_clean = i;
++	u64_stats_update_begin(&tx_ring->tx_syncp);
++	tx_ring->tx_stats.bytes += total_bytes;
++	tx_ring->tx_stats.packets += total_packets;
++	u64_stats_update_end(&tx_ring->tx_syncp);
++	q_vector->tx.total_bytes += total_bytes;
++	q_vector->tx.total_packets += total_packets;
++
++	if (test_bit(IGC_RING_FLAG_TX_DETECT_HANG, &tx_ring->flags)) {
++		struct igc_hw *hw = &adapter->hw;
++
++		/* Detect a transmit hang in hardware, this serializes the
++		 * check with the clearing of time_stamp and movement of i
++		 */
++		clear_bit(IGC_RING_FLAG_TX_DETECT_HANG, &tx_ring->flags);
++		if (tx_buffer->next_to_watch &&
++		    time_after(jiffies, tx_buffer->time_stamp +
++		    (adapter->tx_timeout_factor * HZ)) &&
++		    !(rd32(IGC_STATUS) & IGC_STATUS_TXOFF)) {
++			/* detected Tx unit hang */
++			dev_err(tx_ring->dev,
++				"Detected Tx Unit Hang\n"
++				"  Tx Queue             <%d>\n"
++				"  TDH                  <%x>\n"
++				"  TDT                  <%x>\n"
++				"  next_to_use          <%x>\n"
++				"  next_to_clean        <%x>\n"
++				"buffer_info[next_to_clean]\n"
++				"  time_stamp           <%lx>\n"
++				"  next_to_watch        <%p>\n"
++				"  jiffies              <%lx>\n"
++				"  desc.status          <%x>\n",
++				tx_ring->queue_index,
++				rd32(IGC_TDH(tx_ring->reg_idx)),
++				readl(tx_ring->tail),
++				tx_ring->next_to_use,
++				tx_ring->next_to_clean,
++				tx_buffer->time_stamp,
++				tx_buffer->next_to_watch,
++				jiffies,
++				tx_buffer->next_to_watch->wb.status);
++				netif_stop_subqueue(tx_ring->netdev,
++						    tx_ring->queue_index);
++
++			/* we are about to reset, no point in enabling stuff */
++			return true;
++		}
++	}
++
++#define TX_WAKE_THRESHOLD (DESC_NEEDED * 2)
++	if (unlikely(total_packets &&
++		     netif_carrier_ok(tx_ring->netdev) &&
++		     igc_desc_unused(tx_ring) >= TX_WAKE_THRESHOLD)) {
++		/* Make sure that anybody stopping the queue after this
++		 * sees the new next_to_clean.
++		 */
++		smp_mb();
++		if (__netif_subqueue_stopped(tx_ring->netdev,
++					     tx_ring->queue_index) &&
++		    !(test_bit(__IGC_DOWN, &adapter->state))) {
++			netif_wake_subqueue(tx_ring->netdev,
++					    tx_ring->queue_index);
++
++			u64_stats_update_begin(&tx_ring->tx_syncp);
++			tx_ring->tx_stats.restart_queue++;
++			u64_stats_update_end(&tx_ring->tx_syncp);
++		}
++	}
++
++	return !!budget;
++}
++
+ /**
+  *  igc_ioctl - I/O control method
+  *  @netdev: network interface device structure
+@@ -851,27 +1748,97 @@ static int igc_up(struct igc_adapter *adapter)
+ }
+ 
+ /**
++ *  igc_update_stats - Update the board statistics counters
++ *  @adapter: board private structure
++ **/
++static void igc_update_stats(struct igc_adapter *adapter)
++{
++}
++
++/**
+  *  igc_down - Close the interface
+  *  @adapter: board private structure
+  **/
+ static void igc_down(struct igc_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
++	struct igc_hw *hw = &adapter->hw;
++	u32 tctl, rctl;
+ 	int i = 0;
+ 
+ 	set_bit(__IGC_DOWN, &adapter->state);
+ 
++	/* disable receives in the hardware */
++	rctl = rd32(IGC_RCTL);
++	wr32(IGC_RCTL, rctl & ~IGC_RCTL_EN);
++	/* flush and sleep below */
++
++	igc_nfc_filter_exit(adapter);
++
+ 	/* set trans_start so we don't get spurious watchdogs during reset */
+ 	netif_trans_update(netdev);
+ 
+ 	netif_carrier_off(netdev);
+ 	netif_tx_stop_all_queues(netdev);
+ 
+-	for (i = 0; i < adapter->num_q_vectors; i++)
+-		napi_disable(&adapter->q_vector[i]->napi);
++	/* disable transmits in the hardware */
++	tctl = rd32(IGC_TCTL);
++	tctl &= ~IGC_TCTL_EN;
++	wr32(IGC_TCTL, tctl);
++	/* flush both disables and wait for them to finish */
++	wrfl();
++	usleep_range(10000, 20000);
++
++	igc_irq_disable(adapter);
++
++	adapter->flags &= ~IGC_FLAG_NEED_LINK_UPDATE;
++
++	for (i = 0; i < adapter->num_q_vectors; i++) {
++		if (adapter->q_vector[i]) {
++			napi_synchronize(&adapter->q_vector[i]->napi);
++			napi_disable(&adapter->q_vector[i]->napi);
++		}
++	}
++
++	del_timer_sync(&adapter->watchdog_timer);
++	del_timer_sync(&adapter->phy_info_timer);
++
++	/* record the stats before reset*/
++	spin_lock(&adapter->stats64_lock);
++	igc_update_stats(adapter);
++	spin_unlock(&adapter->stats64_lock);
+ 
+ 	adapter->link_speed = 0;
+ 	adapter->link_duplex = 0;
++
++	if (!pci_channel_offline(adapter->pdev))
++		igc_reset(adapter);
++
++	/* clear VLAN promisc flag so VFTA will be updated if necessary */
++	adapter->flags &= ~IGC_FLAG_VLAN_PROMISC;
++
++	igc_clean_all_tx_rings(adapter);
++	igc_clean_all_rx_rings(adapter);
++}
++
++static void igc_reinit_locked(struct igc_adapter *adapter)
++{
++	WARN_ON(in_interrupt());
++	while (test_and_set_bit(__IGC_RESETTING, &adapter->state))
++		usleep_range(1000, 2000);
++	igc_down(adapter);
++	igc_up(adapter);
++	clear_bit(__IGC_RESETTING, &adapter->state);
++}
++
++static void igc_reset_task(struct work_struct *work)
++{
++	struct igc_adapter *adapter;
++
++	adapter = container_of(work, struct igc_adapter, reset_task);
++
++	netdev_err(adapter->netdev, "Reset adapter\n");
++	igc_reinit_locked(adapter);
+ }
+ 
+ /**
+@@ -915,14 +1882,6 @@ static int igc_change_mtu(struct net_device *netdev, int new_mtu)
+ }
+ 
+ /**
+- *  igc_update_stats - Update the board statistics counters
+- *  @adapter: board private structure
+- **/
+-static void igc_update_stats(struct igc_adapter *adapter)
+-{
+-}
+-
+-/**
+  *  igc_get_stats - Get System Network Statistics
+  *  @netdev: network interface device structure
+  *
+@@ -1325,6 +2284,15 @@ static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx)
+ }
+ 
+ /**
++ *  igc_watchdog - Timer Call-back
++ *  @data: pointer to adapter cast into an unsigned long
++ **/
++static void igc_watchdog(struct timer_list *t)
++{
++	struct igc_adapter *adapter = from_timer(adapter, t, watchdog_timer);
++}
++
++/**
+  *  igc_update_ring_itr - update the dynamic ITR value based on packet size
+  *  @q_vector: pointer to q_vector
+  *
+@@ -1641,12 +2609,12 @@ static int igc_poll(struct napi_struct *napi, int budget)
+ 						     napi);
+ 	bool clean_complete = true;
+ 	int work_done = 0;
+-	int cleaned = 0;
+ 
+-	/* TODO q->vector->tx_ring: igc_clean_tx_irq */
++	if (q_vector->tx.ring)
++		clean_complete = igc_clean_tx_irq(q_vector, budget);
+ 
+ 	if (q_vector->rx.ring) {
+-		/* TODO igc_clean_rx_irq */
++		int cleaned = igc_clean_rx_irq(q_vector, budget);
+ 
+ 		work_done += cleaned;
+ 		if (cleaned >= budget)
+@@ -2429,6 +3397,14 @@ static int igc_probe(struct pci_dev *pdev,
+ 	netdev->min_mtu = ETH_MIN_MTU;
+ 	netdev->max_mtu = MAX_STD_JUMBO_FRAME_SIZE;
+ 
++	/* configure RXPBSIZE and TXPBSIZE */
++	wr32(IGC_RXPBS, I225_RXPBSIZE_DEFAULT);
++	wr32(IGC_TXPBS, I225_TXPBSIZE_DEFAULT);
++
++	timer_setup(&adapter->watchdog_timer, igc_watchdog, 0);
++
++	INIT_WORK(&adapter->reset_task, igc_reset_task);
++
+ 	/* reset the hardware with the new settings */
+ 	igc_reset(adapter);
+ 
+@@ -2480,9 +3456,13 @@ static void igc_remove(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct igc_adapter *adapter = netdev_priv(netdev);
++	struct igc_hw *hw = &adapter->hw;
+ 
+ 	set_bit(__IGC_DOWN, &adapter->state);
+-	flush_scheduled_work();
++
++	del_timer_sync(&adapter->watchdog_timer);
++
++	cancel_work_sync(&adapter->reset_task);
+ 
+ 	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
+ 	 * would have already happened in close and is redundant.
+@@ -2490,10 +3470,18 @@ static void igc_remove(struct pci_dev *pdev)
+ 	igc_release_hw_control(adapter);
+ 	unregister_netdev(netdev);
+ 
+-	pci_release_selected_regions(pdev,
+-				     pci_select_bars(pdev, IORESOURCE_MEM));
++	igc_clear_interrupt_scheme(adapter);
++	pci_iounmap(pdev, adapter->io_addr);
++	if (hw->flash_address)
++		iounmap(hw->flash_address);
++	pci_release_mem_regions(pdev);
+ 
++	kfree(adapter->mac_table);
++	kfree(adapter->shadow_vfta);
+ 	free_netdev(netdev);
++
++	pci_disable_pcie_error_reporting(pdev);
++
+ 	pci_disable_device(pdev);
+ }
+ 
+@@ -2504,6 +3492,39 @@ static struct pci_driver igc_driver = {
+ 	.remove   = igc_remove,
+ };
+ 
++static void igc_set_flag_queue_pairs(struct igc_adapter *adapter,
++				     const u32 max_rss_queues)
++{
++	/* Determine if we need to pair queues. */
++	/* If rss_queues > half of max_rss_queues, pair the queues in
++	 * order to conserve interrupts due to limited supply.
++	 */
++	if (adapter->rss_queues > (max_rss_queues / 2))
++		adapter->flags |= IGC_FLAG_QUEUE_PAIRS;
++	else
++		adapter->flags &= ~IGC_FLAG_QUEUE_PAIRS;
++}
++
++static unsigned int igc_get_max_rss_queues(struct igc_adapter *adapter)
++{
++	unsigned int max_rss_queues;
++
++	/* Determine the maximum number of RSS queues supported. */
++	max_rss_queues = IGC_MAX_RX_QUEUES;
++
++	return max_rss_queues;
++}
++
++static void igc_init_queue_configuration(struct igc_adapter *adapter)
++{
++	u32 max_rss_queues;
++
++	max_rss_queues = igc_get_max_rss_queues(adapter);
++	adapter->rss_queues = min_t(u32, max_rss_queues, num_online_cpus());
++
++	igc_set_flag_queue_pairs(adapter, max_rss_queues);
++}
++
+ /**
+  *  igc_sw_init - Initialize general software structures (struct igc_adapter)
+  *  @adapter: board private structure to initialize
+@@ -2518,21 +3539,37 @@ static int igc_sw_init(struct igc_adapter *adapter)
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	struct igc_hw *hw = &adapter->hw;
+ 
+-	/* PCI config space info */
++	int size = sizeof(struct igc_mac_addr) * hw->mac.rar_entry_count;
+ 
+-	hw->vendor_id = pdev->vendor;
+-	hw->device_id = pdev->device;
+-	hw->subsystem_vendor_id = pdev->subsystem_vendor;
+-	hw->subsystem_device_id = pdev->subsystem_device;
++	pci_read_config_word(pdev, PCI_COMMAND, &hw->bus.pci_cmd_word);
+ 
+-	pci_read_config_byte(pdev, PCI_REVISION_ID, &hw->revision_id);
++	/* set default ring sizes */
++	adapter->tx_ring_count = IGC_DEFAULT_TXD;
++	adapter->rx_ring_count = IGC_DEFAULT_RXD;
+ 
+-	pci_read_config_word(pdev, PCI_COMMAND, &hw->bus.pci_cmd_word);
++	/* set default ITR values */
++	adapter->rx_itr_setting = IGC_DEFAULT_ITR;
++	adapter->tx_itr_setting = IGC_DEFAULT_ITR;
+ 
+ 	/* set default work limits */
++	adapter->tx_work_limit = IGC_DEFAULT_TX_WORK;
++
+ 	adapter->max_frame_size = netdev->mtu + ETH_HLEN + ETH_FCS_LEN +
+-					VLAN_HLEN;
++				VLAN_HLEN;
++	adapter->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
++
++	spin_lock_init(&adapter->nfc_lock);
++	spin_lock_init(&adapter->stats64_lock);
++	/* Assume MSI-X interrupts, will be checked during IRQ allocation */
++	adapter->flags |= IGC_FLAG_HAS_MSIX;
++
++	adapter->mac_table = kzalloc(size, GFP_ATOMIC);
++	if (!adapter->mac_table)
++		return -ENOMEM;
++
++	igc_init_queue_configuration(adapter);
+ 
++	/* This call may decrease the number of queues */
+ 	if (igc_init_interrupt_scheme(adapter, true)) {
+ 		dev_err(&pdev->dev, "Unable to allocate memory for queues\n");
+ 		return -ENOMEM;
+@@ -2546,6 +3583,10 @@ static int igc_sw_init(struct igc_adapter *adapter)
+ 	return 0;
+ }
+ 
++static void igc_nfc_filter_exit(struct igc_adapter *adapter)
++{
++}
++
+ /**
+  *  igc_init_module - Driver Registration Routine
+  *
 -- 
 2.11.0
 
