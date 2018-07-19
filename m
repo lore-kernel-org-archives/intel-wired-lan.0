@@ -1,10 +1,10 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Thu, 19 Jul 2018 09:23:17 +0800
-Subject: [Intel-wired-lan] [PATCH v4 05/11] igc: Add support for Tx/Rx
- rings
-In-Reply-To: <20180718081756.15622-1-sasha.neftin@intel.com>
-References: <20180718081756.15622-1-sasha.neftin@intel.com>
-Message-ID: <201807190921.H1cBoyX1%fengguang.wu@intel.com>
+Date: Thu, 19 Jul 2018 11:45:14 +0800
+Subject: [Intel-wired-lan] [PATCH v4 07/11] igc: Add HW initialization
+ code
+In-Reply-To: <20180718081803.15752-1-sasha.neftin@intel.com>
+References: <20180718081803.15752-1-sasha.neftin@intel.com>
+Message-ID: <201807191136.Z0vjGQyx%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -29,58 +29,80 @@ reproduce:
 
 sparse warnings: (new ones prefixed by >>)
 
->> drivers/net/ethernet/intel/igc/igc_base.c:26:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_base.c:26:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_base.c:26:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/igc_base.c:34:17: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_base.c:34:17:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_base.c:34:17:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/igc_base.c:54:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_base.c:54:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_base.c:54:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/igc_base.c:57:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_base.c:57:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_base.c:57:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/igc_base.c:63:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_base.c:63:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_base.c:63:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/igc_base.c:64:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_base.c:64:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_base.c:64:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/igc_base.c:72:17: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_base.c:72:17:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_base.c:72:17:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/igc_base.c:73:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_base.c:73:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_base.c:73:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/igc_base.c:76:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_base.c:76:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_base.c:76:9:    got unsigned char [usertype] *__val
-   drivers/net/ethernet/intel/igc/igc_base.c:77:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
-   drivers/net/ethernet/intel/igc/igc_base.c:77:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
-   drivers/net/ethernet/intel/igc/igc_base.c:77:9:    got unsigned char [usertype] *__val
+>> drivers/net/ethernet/intel/igc/igc_mac.c:228:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_mac.c:228:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_mac.c:228:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_mac.c:229:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_mac.c:229:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_mac.c:229:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_mac.c:82:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_mac.c:82:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_mac.c:82:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_mac.c:173:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_mac.c:173:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_mac.c:173:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_mac.c:174:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_mac.c:174:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_mac.c:174:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_mac.c:175:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_mac.c:175:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_mac.c:175:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_mac.c:177:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_mac.c:177:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_mac.c:177:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_mac.c:370:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_mac.c:370:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_mac.c:370:9:    got unsigned char [usertype] *__val
+--
+>> drivers/net/ethernet/intel/igc/igc_i225.c:56:17: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_i225.c:56:17:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_i225.c:56:17:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_i225.c:114:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_i225.c:114:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_i225.c:114:9:    got unsigned char [usertype] *__val
+   drivers/net/ethernet/intel/igc/igc_i225.c:138:9: sparse: incorrect type in initializer (different address spaces) @@    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr @@    got deref] [usertype] <asn:2>*hw_addr @@
+   drivers/net/ethernet/intel/igc/igc_i225.c:138:9:    expected unsigned char [noderef] [usertype] <asn:2>*hw_addr
+   drivers/net/ethernet/intel/igc/igc_i225.c:138:9:    got unsigned char [usertype] *__val
 
-vim +26 drivers/net/ethernet/intel/igc/igc_base.c
+vim +228 drivers/net/ethernet/intel/igc/igc_mac.c
 
-     8	
-     9	/**
-    10	 *  igc_rx_fifo_flush_base - Clean rx fifo after Rx enable
-    11	 *  @hw: pointer to the HW structure
-    12	 *
-    13	 *  After Rx enable, if manageability is enabled then there is likely some
-    14	 *  bad data at the start of the fifo and possibly in the DMA fifo.  This
-    15	 *  function clears the fifos and flushes any packets that came in as rx was
-    16	 *  being enabled.
-    17	 **/
-    18	void igc_rx_fifo_flush_base(struct igc_hw *hw)
-    19	{
-    20		u32 rctl, rlpml, rxdctl[4], rfctl, temp_rctl, rx_enabled;
-    21		int i, ms_wait;
-    22	
-    23		/* disable IPv6 options as per hardware errata */
-    24		rfctl = rd32(IGC_RFCTL);
-    25		rfctl |= IGC_RFCTL_IPV6_EX_DIS;
-  > 26		wr32(IGC_RFCTL, rfctl);
+   197	
+   198	/**
+   199	 *  igc_set_fc_watermarks - Set flow control high/low watermarks
+   200	 *  @hw: pointer to the HW structure
+   201	 *
+   202	 *  Sets the flow control high/low threshold (watermark) registers.  If
+   203	 *  flow control XON frame transmission is enabled, then set XON frame
+   204	 *  transmission as well.
+   205	 **/
+   206	static s32 igc_set_fc_watermarks(struct igc_hw *hw)
+   207	{
+   208		u32 fcrtl = 0, fcrth = 0;
+   209		s32 ret_val = 0;
+   210	
+   211		/* Set the flow control receive threshold registers.  Normally,
+   212		 * these registers will be set to a default threshold that may be
+   213		 * adjusted later by the driver's runtime code.  However, if the
+   214		 * ability to transmit pause frames is not enabled, then these
+   215		 * registers will be set to 0.
+   216		 */
+   217		if (hw->fc.current_mode & igc_fc_tx_pause) {
+   218			/* We need to set up the Receive Threshold high and low water
+   219			 * marks as well as (optionally) enabling the transmission of
+   220			 * XON frames.
+   221			 */
+   222			fcrtl = hw->fc.low_water;
+   223			if (hw->fc.send_xon)
+   224				fcrtl |= IGC_FCRTL_XONE;
+   225	
+   226			fcrth = hw->fc.high_water;
+   227		}
+ > 228		wr32(IGC_FCRTL, fcrtl);
+   229		wr32(IGC_FCRTH, fcrth);
+   230	
+   231		return ret_val;
+   232	}
+   233	
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
