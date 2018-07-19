@@ -1,84 +1,44 @@
-From: Sergey Nemov <sergey.nemov@intel.com>
-Date: Thu, 19 Jul 2018 13:25:22 +0200
-Subject: [Intel-wired-lan] [PATCH] i40e: Remove duplicated prepare call in
- i40e_shutdown
-Message-ID: <20180719112522.GA16521@gklab-81-211.igk.intel.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Thu, 19 Jul 2018 22:04:07 +0800
+Subject: [Intel-wired-lan] [PATCH net-next] ixgb: use dma_zalloc_coherent
+ instead of allocator/memset
+Message-ID: <20180719140407.15388-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Function call to i40e_prep_for_reset() is duplicated in
-i40e_shutdown routine and gets called before
-i40e_enable_mc_magic_wake() which blocks it from being executed
-correctly on system reboot or shutdown because adminq is already
-disabled by first i40e_prep_for_reset() call.
+Use dma_zalloc_coherent instead of dma_alloc_coherent
+followed by memset 0.
 
-Two register write calls are also duplicated.
-
-Signed-off-by: Sergey Nemov <sergey.nemov@intel.com>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ------
- 1 file changed, 6 deletions(-)
+ drivers/net/ethernet/intel/ixgb/ixgb_main.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index b5daa5c..71c69df 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -14355,12 +14355,6 @@ static void i40e_shutdown(struct pci_dev *pdev)
+diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+index 43664ad..d3e72d0 100644
+--- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
++++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+@@ -771,14 +771,13 @@ ixgb_setup_rx_resources(struct ixgb_adapter *adapter)
+ 	rxdr->size = rxdr->count * sizeof(struct ixgb_rx_desc);
+ 	rxdr->size = ALIGN(rxdr->size, 4096);
  
- 	set_bit(__I40E_SUSPENDED, pf->state);
- 	set_bit(__I40E_DOWN, pf->state);
--	rtnl_lock();
--	i40e_prep_for_reset(pf, true);
--	rtnl_unlock();
--
--	wr32(hw, I40E_PFPM_APM, (pf->wol_en ? I40E_PFPM_APM_APME_MASK : 0));
--	wr32(hw, I40E_PFPM_WUFC, (pf->wol_en ? I40E_PFPM_WUFC_MAG_MASK : 0));
+-	rxdr->desc = dma_alloc_coherent(&pdev->dev, rxdr->size, &rxdr->dma,
+-					GFP_KERNEL);
++	rxdr->desc = dma_zalloc_coherent(&pdev->dev, rxdr->size, &rxdr->dma,
++					 GFP_KERNEL);
  
- 	del_timer_sync(&pf->service_timer);
- 	cancel_work_sync(&pf->service_task);
+ 	if (!rxdr->desc) {
+ 		vfree(rxdr->buffer_info);
+ 		return -ENOMEM;
+ 	}
+-	memset(rxdr->desc, 0, rxdr->size);
+ 
+ 	rxdr->next_to_clean = 0;
+ 	rxdr->next_to_use = 0;
 -- 
-1.8.3.1
+2.7.0
 
--------------- next part --------------
-From d986263b858e0e0349fb56fe7ea78cf4b3044769 Mon Sep 17 00:00:00 2001
-From: Sergey Nemov <sergey.nemov@intel.com>
-Date: Tue, 10 Jul 2018 16:05:58 +0200
-Subject: [PATCH] i40e: Remove duplicated prepare call in i40e_shutdown
-To: intel-wired-lan@lists.osuosl.org
-
-Function call to i40e_prep_for_reset() is duplicated in
-i40e_shutdown routine and gets called before
-i40e_enable_mc_magic_wake() which blocks it from being executed
-correctly on system reboot or shutdown because adminq is already
-disabled by first i40e_prep_for_reset() call.
-
-Two register write calls are also duplicated.
-
-Signed-off-by: Sergey Nemov <sergey.nemov@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ------
- 1 file changed, 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index b5daa5c..71c69df 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -14355,12 +14355,6 @@ static void i40e_shutdown(struct pci_dev *pdev)
- 
- 	set_bit(__I40E_SUSPENDED, pf->state);
- 	set_bit(__I40E_DOWN, pf->state);
--	rtnl_lock();
--	i40e_prep_for_reset(pf, true);
--	rtnl_unlock();
--
--	wr32(hw, I40E_PFPM_APM, (pf->wol_en ? I40E_PFPM_APM_APME_MASK : 0));
--	wr32(hw, I40E_PFPM_WUFC, (pf->wol_en ? I40E_PFPM_WUFC_MAG_MASK : 0));
- 
- 	del_timer_sync(&pf->service_timer);
- 	cancel_work_sync(&pf->service_task);
--- 
-1.8.3.1
 
