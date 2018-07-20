@@ -1,409 +1,142 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 20 Jul 2018 13:53:51 -0700
-Subject: [Intel-wired-lan] [RFC 11/13] ice: Enable firmware logging during
- device initialization.
+Date: Fri, 20 Jul 2018 13:53:53 -0700
+Subject: [Intel-wired-lan] [RFC 13/13] ice: Introduce SERVICE_DIS flag and
+ service routine functions
 In-Reply-To: <20180720205353.13296-1-anirudh.venkataramanan@intel.com>
 References: <20180720205353.13296-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180720205353.13296-12-anirudh.venkataramanan@intel.com>
+Message-ID: <20180720205353.13296-14-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Hieu Tran <hieu.t.tran@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-To enable FW logging, the "cq_en" and "uart_en" enable bits of the
-"fw_log" element in struct ice_hw need to set accordingly based on
-some user-provided parameters during driver loading. To select which
-FW log events to be emitted, the "cfg" elements of corresponding FW
-modules in the "evnts" array member of "fw_log" need to be configured.
+This patch introduces SERVICE_DIS flag to use for stopping service task.
+This flag will be checked before scheduling new tasks. Also add new
+functions ice_service_task_stop to stop service task.
 
-Signed-off-by: Hieu Tran <hieu.t.tran@intel.com>
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  83 +++++++++++
- drivers/net/ethernet/intel/ice/ice_common.c     | 180 ++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h     |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c       |   3 +
- drivers/net/ethernet/intel/ice/ice_type.h       |  19 +++
- 5 files changed, 286 insertions(+)
+ drivers/net/ethernet/intel/ice/ice.h      |  1 +
+ drivers/net/ethernet/intel/ice/ice_main.c | 34 ++++++++++++++++++++++++-------
+ 2 files changed, 28 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index ce3405f870d8..8fb54c3e7bf2 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1207,6 +1207,84 @@ struct ice_aqc_dis_txq {
- 	struct ice_aqc_dis_txq_item qgrps[1];
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 6f44a850c4b2..9cf233d085d8 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -138,6 +138,7 @@ enum ice_state {
+ 	__ICE_FLTR_OVERFLOW_PROMISC,
+ 	__ICE_CFG_BUSY,
+ 	__ICE_SERVICE_SCHED,
++	__ICE_SERVICE_DIS,
+ 	__ICE_STATE_NBITS		/* must be last */
  };
  
-+/* Configure Firmware Logging Command (indirect 0xFF09)
-+ * Logging Information Read Response (indirect 0xFF10)
-+ * Note: The 0xFF10 command has no input parameters.
-+ */
-+struct ice_aqc_fw_logging {
-+	u8 log_ctrl;
-+#define ICE_AQC_FW_LOG_AQ_EN		BIT(0)
-+#define ICE_AQC_FW_LOG_UART_EN		BIT(1)
-+	u8 rsvd0;
-+	u8 log_ctrl_valid; /* Not used by 0xFF10 Response */
-+#define ICE_AQC_FW_LOG_AQ_VALID		BIT(0)
-+#define ICE_AQC_FW_LOG_UART_VALID	BIT(1)
-+	u8 rsvd1[5];
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+enum ice_aqc_fw_logging_mod {
-+	ICE_AQC_FW_LOG_ID_GENERAL = 0,
-+	ICE_AQC_FW_LOG_ID_CTRL,
-+	ICE_AQC_FW_LOG_ID_LINK,
-+	ICE_AQC_FW_LOG_ID_LINK_TOPO,
-+	ICE_AQC_FW_LOG_ID_DNL,
-+	ICE_AQC_FW_LOG_ID_I2C,
-+	ICE_AQC_FW_LOG_ID_SDP,
-+	ICE_AQC_FW_LOG_ID_MDIO,
-+	ICE_AQC_FW_LOG_ID_ADMINQ,
-+	ICE_AQC_FW_LOG_ID_HDMA,
-+	ICE_AQC_FW_LOG_ID_LLDP,
-+	ICE_AQC_FW_LOG_ID_DCBX,
-+	ICE_AQC_FW_LOG_ID_DCB,
-+	ICE_AQC_FW_LOG_ID_NETPROXY,
-+	ICE_AQC_FW_LOG_ID_NVM,
-+	ICE_AQC_FW_LOG_ID_AUTH,
-+	ICE_AQC_FW_LOG_ID_VPD,
-+	ICE_AQC_FW_LOG_ID_IOSF,
-+	ICE_AQC_FW_LOG_ID_PARSER,
-+	ICE_AQC_FW_LOG_ID_SW,
-+	ICE_AQC_FW_LOG_ID_SCHEDULER,
-+	ICE_AQC_FW_LOG_ID_TXQ,
-+	ICE_AQC_FW_LOG_ID_RSVD,
-+	ICE_AQC_FW_LOG_ID_POST,
-+	ICE_AQC_FW_LOG_ID_WATCHDOG,
-+	ICE_AQC_FW_LOG_ID_TASK_DISPATCH,
-+	ICE_AQC_FW_LOG_ID_MNG,
-+	ICE_AQC_FW_LOG_ID_MAX,
-+};
-+
-+/* This is the buffer for both of the logging commands.
-+ * The entry array size depends on the datalen parameter in the descriptor.
-+ * There will be a total of datalen / 2 entries.
-+ */
-+struct ice_aqc_fw_logging_data {
-+	__le16 entry[1];
-+#define ICE_AQC_FW_LOG_ID_S		0
-+#define ICE_AQC_FW_LOG_ID_M		(0xFFF << ICE_AQC_FW_LOG_ID_S)
-+
-+#define ICE_AQC_FW_LOG_CONF_SUCCESS	0	/* Used by response */
-+#define ICE_AQC_FW_LOG_CONF_BAD_INDX	BIT(12)	/* Used by response */
-+
-+#define ICE_AQC_FW_LOG_EN_S		12
-+#define ICE_AQC_FW_LOG_EN_M		(0xF << ICE_AQC_FW_LOG_EN_S)
-+#define ICE_AQC_FW_LOG_INFO_EN		BIT(12)	/* Used by command */
-+#define ICE_AQC_FW_LOG_INIT_EN		BIT(13)	/* Used by command */
-+#define ICE_AQC_FW_LOG_FLOW_EN		BIT(14)	/* Used by command */
-+#define ICE_AQC_FW_LOG_ERR_EN		BIT(15)	/* Used by command */
-+};
-+
-+/* Get/Clear FW Log (indirect 0xFF11) */
-+struct ice_aqc_get_clear_fw_log {
-+	u8 flags;
-+#define ICE_AQC_FW_LOG_CLEAR		BIT(0)
-+#define ICE_AQC_FW_LOG_MORE_DATA_AVAIL	BIT(1)
-+	u8 rsvd1[7];
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
- /**
-  * struct ice_aq_desc - Admin Queue (AQ) descriptor
-  * @flags: ICE_AQ_FLAG_* flags
-@@ -1257,6 +1335,8 @@ struct ice_aq_desc {
- 		struct ice_aqc_dis_txqs dis_txqs;
- 		struct ice_aqc_add_get_update_free_vsi vsi_cmd;
- 		struct ice_aqc_add_update_free_vsi_resp add_update_free_vsi_res;
-+		struct ice_aqc_fw_logging fw_logging;
-+		struct ice_aqc_get_clear_fw_log get_clear_fw_log;
- 		struct ice_aqc_alloc_free_res_cmd sw_res_ctrl;
- 		struct ice_aqc_set_event_mask set_event_mask;
- 		struct ice_aqc_get_link_status get_link_status;
-@@ -1354,6 +1434,9 @@ enum ice_adminq_opc {
- 	/* TX queue handling commands/events */
- 	ice_aqc_opc_add_txqs				= 0x0C30,
- 	ice_aqc_opc_dis_txqs				= 0x0C31,
-+
-+	/* debug commands */
-+	ice_aqc_opc_fw_logging				= 0xFF09,
- };
- 
- #endif /* _ICE_ADMINQ_CMD_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 67c95fed320a..d6bfa90d9e19 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -369,6 +369,177 @@ static void ice_cleanup_fltr_mgmt_struct(struct ice_hw *hw)
- 	devm_kfree(ice_hw_to_dev(hw), sw);
- }
- 
-+#define ICE_FW_LOG_DESC_SIZE(n)	(sizeof(struct ice_aqc_fw_logging_data) + \
-+	(((n) - 1) * sizeof(((struct ice_aqc_fw_logging_data *)0)->entry)))
-+#define ICE_FW_LOG_DESC_SIZE_MAX	\
-+	ICE_FW_LOG_DESC_SIZE(ICE_AQC_FW_LOG_ID_MAX)
-+
-+/**
-+ * ice_cfg_fw_log - configure FW logging
-+ * @hw: pointer to the hw struct
-+ * @enable: enable certain FW logging events if true, disable all if false
-+ *
-+ * This function enables/disables the FW logging via Rx CQ events and a UART
-+ * port based on predetermined configurations. FW logging via the Rx CQ can be
-+ * enabled/disabled for individual PF's. However, FW logging via the UART can
-+ * only be enabled/disabled for all PFs on the same device.
-+ *
-+ * To enable overall FW logging, the "cq_en" and "uart_en" enable bits in
-+ * hw->fw_log need to be set accordingly, e.g. based on user-provided input,
-+ * before initializing the device.
-+ *
-+ * When re/configuring FW logging, callers need to update the "cfg" elements of
-+ * the hw->fw_log.evnts array with the desired logging event configurations for
-+ * modules of interest. When disabling FW logging completely, the callers can
-+ * just pass false in the "enable" parameter. On completion, the function will
-+ * update the "cur" element of the the hw->fw_log.evnts array with the resulting
-+ * logging event configurations of the modules that are being re/configured. FW
-+ * logging modules that are not part of a reconfiguration operation retain their
-+ * previous states.
-+ *
-+ * Before resetting the device, it is recommended that the driver disables FW
-+ * logging before shutting down the control queue. When disabling FW logging
-+ * ("enable" = false), the latest configurations of FW logging events stored in
-+ * hw->fw_log.evnts[] are not overridden to allow them to be reconfigured after
-+ * a device reset.
-+ *
-+ * When enabling FW logging to emit log messages via the Rx CQ during the
-+ * device's initialization phase, a mechanism alternative to interrupt handlers
-+ * needs to be used to extract FW log messages from the Rx CQ periodically and
-+ * to prevent the Rx CQ from being full and stalling other types of control
-+ * messages from FW to SW. Interrupts are typically disabled during the device's
-+ * initialization phase.
-+ */
-+
-+static enum ice_status ice_cfg_fw_log(struct ice_hw *hw, bool enable)
-+{
-+	struct ice_aqc_fw_logging_data *data = NULL;
-+	struct ice_aqc_fw_logging *cmd;
-+	enum ice_status status = 0;
-+	u16 i, chgs = 0, len = 0;
-+	struct ice_aq_desc desc;
-+	u8 actv_evnts = 0;
-+	void *buf = NULL;
-+
-+	if (!hw->fw_log.cq_en && !hw->fw_log.uart_en)
-+		return 0;
-+
-+	/* Disable FW logging only when the control queue is still responsive */
-+	if (!enable &&
-+	    (!hw->fw_log.actv_evnts || !ice_check_sq_alive(hw, &hw->adminq)))
-+		return 0;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logging);
-+	cmd = &desc.params.fw_logging;
-+
-+	/* Indicate which controls are valid */
-+	if (hw->fw_log.cq_en)
-+		cmd->log_ctrl_valid |= ICE_AQC_FW_LOG_AQ_VALID;
-+
-+	if (hw->fw_log.uart_en)
-+		cmd->log_ctrl_valid |= ICE_AQC_FW_LOG_UART_VALID;
-+
-+	if (enable) {
-+		/* Fill in an array of entries with FW logging modules and
-+		 * logging events being reconfigured.
-+		 */
-+		for (i = 0; i < ICE_AQC_FW_LOG_ID_MAX; i++) {
-+			u16 val;
-+
-+			/* Keep track of enabled event types */
-+			actv_evnts |= hw->fw_log.evnts[i].cfg;
-+
-+			if (hw->fw_log.evnts[i].cfg == hw->fw_log.evnts[i].cur)
-+				continue;
-+
-+			if (!data) {
-+				data = devm_kzalloc(ice_hw_to_dev(hw),
-+						    ICE_FW_LOG_DESC_SIZE_MAX,
-+						    GFP_KERNEL);
-+				if (!data)
-+					return ICE_ERR_NO_MEMORY;
-+			}
-+
-+			val = i << ICE_AQC_FW_LOG_ID_S;
-+			val |= hw->fw_log.evnts[i].cfg << ICE_AQC_FW_LOG_EN_S;
-+			data->entry[chgs++] = cpu_to_le16(val);
-+		}
-+
-+		/* Only enable FW logging if at least one module is specified.
-+		 * If FW logging is currently enabled but all modules are not
-+		 * enabled to emit log messages, disable FW logging altogether.
-+		 */
-+		if (actv_evnts) {
-+			/* Leave if there is effectively no change */
-+			if (!chgs)
-+				goto out;
-+
-+			if (hw->fw_log.cq_en)
-+				cmd->log_ctrl |= ICE_AQC_FW_LOG_AQ_EN;
-+
-+			if (hw->fw_log.uart_en)
-+				cmd->log_ctrl |= ICE_AQC_FW_LOG_UART_EN;
-+
-+			buf = data;
-+			len = ICE_FW_LOG_DESC_SIZE(chgs);
-+			desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+		}
-+	}
-+
-+	status = ice_aq_send_cmd(hw, &desc, buf, len, NULL);
-+	if (!status) {
-+		/* Update the current configuration to reflect events enabled.
-+		 * hw->fw_log.cq_en and hw->fw_log.uart_en indicate if the FW
-+		 * logging mode is enabled for the device. They do not reflect
-+		 * actual modules being enabled to emit log messages. So, their
-+		 * values remain unchanged even when all modules are disabled.
-+		 */
-+		u16 cnt = enable ? chgs : (u16)ICE_AQC_FW_LOG_ID_MAX;
-+
-+		hw->fw_log.actv_evnts = actv_evnts;
-+		for (i = 0; i < cnt; i++) {
-+			u16 v, m;
-+
-+			if (!enable) {
-+				/* When disabling all FW logging events as part
-+				 * of device's de-initialization, the original
-+				 * configurations are retained, and can be used
-+				 * to reconfigure FW logging later if the device
-+				 * is re-initialized.
-+				 */
-+				hw->fw_log.evnts[i].cur = 0;
-+				continue;
-+			}
-+
-+			v = le16_to_cpu(data->entry[i]);
-+			m = (v & ICE_AQC_FW_LOG_ID_M) >> ICE_AQC_FW_LOG_ID_S;
-+			hw->fw_log.evnts[m].cur = hw->fw_log.evnts[m].cfg;
-+		}
-+	}
-+
-+out:
-+	if (data)
-+		devm_kfree(ice_hw_to_dev(hw), data);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_output_fw_log
-+ * @hw: pointer to the hw struct
-+ * @desc: pointer to the AQ message descriptor
-+ * @buf: pointer to the buffer accompanying the AQ message
-+ *
-+ * Formats a FW Log message and outputs it via the standard driver logs.
-+ */
-+void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf)
-+{
-+	ice_debug(hw, ICE_DBG_AQ_MSG, "[ FW Log Msg Start ]\n");
-+	ice_debug_array(hw, ICE_DBG_AQ_MSG, 16, 1, (u8 *)buf,
-+			le16_to_cpu(desc->datalen));
-+	ice_debug(hw, ICE_DBG_AQ_MSG, "[ FW Log Msg End ]\n");
-+}
-+
- /**
-  * ice_init_hw - main hardware initialization routine
-  * @hw: pointer to the hardware structure
-@@ -403,6 +574,11 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
- 	if (status)
- 		goto err_unroll_cqinit;
- 
-+	/* Enable FW logging. Not fatal if this fails. */
-+	status = ice_cfg_fw_log(hw, true);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to enable FW logging.\n");
-+
- 	status = ice_clear_pf_cfg(hw);
- 	if (status)
- 		goto err_unroll_cqinit;
-@@ -509,6 +685,10 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
- void ice_deinit_hw(struct ice_hw *hw)
- {
- 	ice_sched_cleanup_all(hw);
-+
-+	/* Attempt to disable FW logging before shutting down control queues */
-+	ice_cfg_fw_log(hw, false);
-+
- 	ice_shutdown_all_ctrlq(hw);
- 
- 	if (hw->port_info) {
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 34c468138a8a..8e56bbbeda56 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -95,4 +95,5 @@ enum ice_status
- ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_id, u8 tc, u8 num_qgrps,
- 		struct ice_aqc_add_tx_qgrp *buf, u16 buf_size,
- 		struct ice_sq_cd *cd);
-+void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf);
- #endif /* _ICE_COMMON_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 19dfb2525a33..2b8a71d49ef7 100644
+index 27b9718b226c..28a9c54365b3 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -984,6 +984,9 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- 				dev_err(&pf->pdev->dev,
- 					"Could not handle link event");
- 			break;
-+		case ice_aqc_opc_fw_logging:
-+			ice_output_fw_log(hw, &event.desc, event.msg_buf);
-+			break;
- 		default:
- 			dev_dbg(&pf->pdev->dev,
- 				"%s Receive Queue unknown event 0x%04x ignored\n",
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 75457afc912c..9f57306daf85 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -253,6 +253,24 @@ struct ice_switch_info {
- 	struct ice_sw_recipe *recp_list;
- };
+@@ -1107,7 +1107,7 @@ static void ice_clean_adminq_subtask(struct ice_pf *pf)
+  */
+ static void ice_service_task_schedule(struct ice_pf *pf)
+ {
+-	if (!test_bit(__ICE_DOWN, pf->state) &&
++	if (!test_bit(__ICE_SERVICE_DIS, pf->state) &&
+ 	    !test_and_set_bit(__ICE_SERVICE_SCHED, pf->state) &&
+ 	    !test_bit(__ICE_NEEDS_RESTART, pf->state))
+ 		queue_work(ice_wq, &pf->serv_task);
+@@ -1126,6 +1126,22 @@ static void ice_service_task_complete(struct ice_pf *pf)
+ 	clear_bit(__ICE_SERVICE_SCHED, pf->state);
+ }
  
-+/* FW logging configuration */
-+struct ice_fw_log_evnt {
-+	u8 cfg : 4;	/* New event enables to configure */
-+	u8 cur : 4;	/* Current/active event enables */
-+};
++/**
++ * ice_service_task_stop - stop service task and cancel works
++ * @pf: board private structure
++ */
++static void ice_service_task_stop(struct ice_pf *pf)
++{
++	set_bit(__ICE_SERVICE_DIS, pf->state);
 +
-+struct ice_fw_log_cfg {
-+	u8 cq_en : 1;    /* FW logging is enabled via the control queue */
-+	u8 uart_en : 1;  /* FW logging is enabled via UART for all PFs */
-+	u8 actv_evnts;   /* Cumulation of currently enabled log events */
++	if (pf->serv_tmr.function)
++		del_timer_sync(&pf->serv_tmr);
++	if (pf->serv_task.func)
++		cancel_work_sync(&pf->serv_task);
 +
-+#define ICE_FW_LOG_EVNT_INFO	(ICE_AQC_FW_LOG_INFO_EN >> ICE_AQC_FW_LOG_EN_S)
-+#define ICE_FW_LOG_EVNT_INIT	(ICE_AQC_FW_LOG_INIT_EN >> ICE_AQC_FW_LOG_EN_S)
-+#define ICE_FW_LOG_EVNT_FLOW	(ICE_AQC_FW_LOG_FLOW_EN >> ICE_AQC_FW_LOG_EN_S)
-+#define ICE_FW_LOG_EVNT_ERR	(ICE_AQC_FW_LOG_ERR_EN >> ICE_AQC_FW_LOG_EN_S)
-+	struct ice_fw_log_evnt evnts[ICE_AQC_FW_LOG_ID_MAX];
-+};
++	clear_bit(__ICE_SERVICE_SCHED, pf->state);
++}
 +
- /* Port hardware description */
- struct ice_hw {
- 	u8 __iomem *hw_addr;
-@@ -301,6 +319,7 @@ struct ice_hw {
- 	u8 fw_patch;		/* firmware patch version */
- 	u32 fw_build;		/* firmware build number */
+ /**
+  * ice_service_timer - timer callback to schedule service task
+  * @t: pointer to timer_list
+@@ -3391,10 +3407,7 @@ static void ice_determine_q_usage(struct ice_pf *pf)
+  */
+ static void ice_deinit_pf(struct ice_pf *pf)
+ {
+-	if (pf->serv_tmr.function)
+-		del_timer_sync(&pf->serv_tmr);
+-	if (pf->serv_task.func)
+-		cancel_work_sync(&pf->serv_task);
++	ice_service_task_stop(pf);
+ 	mutex_destroy(&pf->sw_mutex);
+ 	mutex_destroy(&pf->avail_q_mutex);
+ }
+@@ -3601,6 +3614,8 @@ static int ice_probe(struct pci_dev *pdev,
+ 	pf->pdev = pdev;
+ 	pci_set_drvdata(pdev, pf);
+ 	set_bit(__ICE_DOWN, pf->state);
++	/* Disable service task until DOWN bit is cleared */
++	set_bit(__ICE_SERVICE_DIS, pf->state);
  
-+	struct ice_fw_log_cfg fw_log;
- 	/* minimum allowed value for different speeds */
- #define ICE_ITR_GRAN_MIN_200	1
- #define ICE_ITR_GRAN_MIN_100	1
+ 	hw = &pf->hw;
+ 	hw->hw_addr = pcim_iomap_table(pdev)[ICE_BAR0];
+@@ -3658,6 +3673,9 @@ static int ice_probe(struct pci_dev *pdev,
+ 		goto err_init_interrupt_unroll;
+ 	}
+ 
++	/* Driver is mostly up */
++	clear_bit(__ICE_DOWN, pf->state);
++
+ 	/* In case of MSIX we are going to setup the misc vector right here
+ 	 * to handle admin queue events etc. In case of legacy and MSI
+ 	 * the misc functionality and queue processing is combined in
+@@ -3697,8 +3715,7 @@ static int ice_probe(struct pci_dev *pdev,
+ 		goto err_alloc_sw_unroll;
+ 	}
+ 
+-	/* Driver is mostly up */
+-	clear_bit(__ICE_DOWN, pf->state);
++	clear_bit(__ICE_SERVICE_DIS, pf->state);
+ 
+ 	/* since everything is good, start the service timer */
+ 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
+@@ -3712,6 +3729,7 @@ static int ice_probe(struct pci_dev *pdev,
+ 	return 0;
+ 
+ err_alloc_sw_unroll:
++	set_bit(__ICE_SERVICE_DIS, pf->state);
+ 	set_bit(__ICE_DOWN, pf->state);
+ 	devm_kfree(&pf->pdev->dev, pf->first_sw);
+ err_msix_misc_unroll:
+@@ -3739,6 +3757,7 @@ static void ice_remove(struct pci_dev *pdev)
+ 		return;
+ 
+ 	set_bit(__ICE_DOWN, pf->state);
++	ice_service_task_stop(pf);
+ 
+ 	ice_vsi_release_all(pf);
+ 	ice_free_irq_msix_misc(pf);
+@@ -6003,6 +6022,7 @@ static void ice_tx_timeout(struct net_device *netdev)
+ 		netdev_err(netdev, "tx_timeout recovery unsuccessful, device is in unrecoverable state.\n");
+ 		set_bit(__ICE_DOWN, pf->state);
+ 		set_bit(__ICE_NEEDS_RESTART, vsi->state);
++		set_bit(__ICE_SERVICE_DIS, pf->state);
+ 		break;
+ 	}
+ 
 -- 
 2.14.3
 
