@@ -1,66 +1,65 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 20 Jul 2018 12:54:40 -0700
-Subject: [Intel-wired-lan] [RFC 07/13] ice: Use order_base_2 to calculate
- higher power of 2
-In-Reply-To: <20180720195446.4346-1-anirudh.venkataramanan@intel.com>
-References: <20180720195446.4346-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180720195446.4346-8-anirudh.venkataramanan@intel.com>
+Date: Fri, 20 Jul 2018 13:53:40 -0700
+Subject: [Intel-wired-lan] [RFC 00/13] Feature updates for ice
+Message-ID: <20180720205353.13296-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+This patch series includes new features and implementation updates
+for the ice driver.
 
-Currently, we use a combination of ilog2 and is_power_of_2() to
-calculate the next power of 2 for the qcount. This appears to be causing
-a warning on some combinations of GCC and the Linux kernel:
+Akeem G Abodunrin (1):
+  ice: Introduce SERVICE_DIS flag and service routine functions
 
-MODPOST 1 modules
-WARNING: "____ilog2_NaN" [ice.ko] undefined!
+Anirudh Venkataramanan (5):
+  ice: Minor updates to Tx scheduler code
+  ice: Prevent control queue operations during reset
+  ice: Refactor switch rule management structures and functions
+  ice: Refactor VSI allocation, deletion and rebuild flow
+  ice: Clean up register file
 
-This appears to because because GCC realizes that qcount could be zero
-in some circumstances and thus attempts to link against the
-intentionally undefined ___ilog2_NaN function.
+Brett Creeley (1):
+  ice: Make ice_vsi_kill_vlan return an error code
 
-The order_base_2 function is intentionally defined to return 0 when
-passed 0 as an argument, and thus will be safe to use here.
+Chinh Cao (1):
+  ice: Implement handlers for ethtool PHY/link operations
 
-This not only fixes the warning but makes the resulting code slightly
-cleaner, and is really what we should have used originally.
+Hieu Tran (1):
+  ice: Enable firmware logging during device initialization.
 
-Also update the comment to make it more clear that we are rounding up,
-not just incrementing the ilog2 of qcount unconditionally.
+Md Fahad Iqbal Polash (1):
+  ice: Implement ice_bridge_getlink and ice_bridge_setlink
 
-Without this patch, we get warnings when building against the upstream
-kernel.
+Phani R Burra (1):
+  ice: Get both device and function capabilities
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> minor cleanup for upstream submission]
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+Sudheer Mogilappagari (1):
+  ice: Add support for Tx hang, Tx timeout and malicious driver
+    detection
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 81b04e1d7ea2..feeca75912ec 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1313,11 +1313,8 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- 		qcount = numq_tc;
- 	}
- 
--	/* find higher power-of-2 of qcount */
--	pow = ilog2(qcount);
--
--	if (!is_power_of_2(qcount))
--		pow++;
-+	/* find the (rounded up) power-of-2 of qcount */
-+	pow = order_base_2(qcount);
- 
- 	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
- 		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
+Zhenning Xiao (1):
+  ice: Code optimization for ice_fill_sw_rule()
+
+ drivers/net/ethernet/intel/ice/ice.h            |    7 +
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |   94 +-
+ drivers/net/ethernet/intel/ice/ice_common.c     |  361 +++++-
+ drivers/net/ethernet/intel/ice/ice_common.h     |   15 +-
+ drivers/net/ethernet/intel/ice/ice_controlq.c   |    3 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c    |  805 +++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  456 ++++----
+ drivers/net/ethernet/intel/ice/ice_main.c       |  967 +++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_sched.c      |  117 +-
+ drivers/net/ethernet/intel/ice/ice_status.h     |    1 +
+ drivers/net/ethernet/intel/ice/ice_switch.c     | 1356 ++++++++++++++---------
+ drivers/net/ethernet/intel/ice/ice_switch.h     |   50 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c       |    1 +
+ drivers/net/ethernet/intel/ice/ice_txrx.h       |    1 +
+ drivers/net/ethernet/intel/ice/ice_type.h       |   42 +-
+ 15 files changed, 3157 insertions(+), 1119 deletions(-)
+
 -- 
 2.14.3
 
