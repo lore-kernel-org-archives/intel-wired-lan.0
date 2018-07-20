@@ -1,105 +1,171 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 20 Jul 2018 12:54:39 -0700
-Subject: [Intel-wired-lan] [RFC 06/13] ice: Fix bugs in control queue
- processing
+Date: Fri, 20 Jul 2018 12:54:46 -0700
+Subject: [Intel-wired-lan] [RFC 13/13] ice: Change struct members from bool
+ to u8
 In-Reply-To: <20180720195446.4346-1-anirudh.venkataramanan@intel.com>
 References: <20180720195446.4346-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180720195446.4346-7-anirudh.venkataramanan@intel.com>
+Message-ID: <20180720195446.4346-14-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is a consolidation of multiple bug fixes for control queue
-processing.
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-1)  In ice_clean_adminq_subtask() remove unnecessary reads/writes to
-    registers. The bits PFINT_FW_CTL, PFINT_MBX_CTL and PFINT_SB_CTL
-    are not set when an interrupt arrives, which means that clearing them
-    again can be omitted.
+Recent versions of checkpatch have a new warning based on a documented
+preference of Linus to not use bool in structures due to wasted space and
+the size of bool is implementation dependent.  For more information, see
+the email thread at https://lkml.org/lkml/2017/11/21/384.
 
-2)  Get an accurate value in "pending" by re-reading the control queue
-    head register from the hardware.
-
-3)  Fix a corner case involving lost control queue messages by checking
-    for new control messages (using ice_ctrlq_pending) before exiting the
-    cleanup routine.
-
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_controlq.c |  5 ++++-
- drivers/net/ethernet/intel/ice/ice_main.c     | 26 ++++++++++++++++++++++----
- 2 files changed, 26 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h        |  8 ++++----
+ drivers/net/ethernet/intel/ice/ice_switch.h |  6 +++---
+ drivers/net/ethernet/intel/ice/ice_txrx.h   |  2 +-
+ drivers/net/ethernet/intel/ice/ice_type.h   | 16 ++++++++--------
+ 4 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index c064416080e7..62be72fdc8f3 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -1065,8 +1065,11 @@ ice_clean_rq_elem(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index ed071ea75f20..868f4a1d0f72 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -196,9 +196,9 @@ struct ice_vsi {
+ 	struct list_head tmp_sync_list;		/* MAC filters to be synced */
+ 	struct list_head tmp_unsync_list;	/* MAC filters to be unsynced */
  
- clean_rq_elem_out:
- 	/* Set pending if needed, unlock and return */
--	if (pending)
-+	if (pending) {
-+		/* re-read HW head to calculate actual pending messages */
-+		ntu = (u16)(rd32(hw, cq->rq.head) & cq->rq.head_mask);
- 		*pending = (u16)((ntc > ntu ? cq->rq.count : 0) + (ntu - ntc));
-+	}
- clean_rq_elem_err:
- 	mutex_unlock(&cq->rq_lock);
+-	bool irqs_ready;
+-	bool current_isup;		 /* Sync 'link up' logging */
+-	bool stat_offsets_loaded;
++	u8 irqs_ready;
++	u8 current_isup;		 /* Sync 'link up' logging */
++	u8 stat_offsets_loaded;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 450911345144..81b04e1d7ea2 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -916,6 +916,21 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- 	return pending && (i == ICE_DFLT_IRQ_WORK);
- }
+ 	/* queue information */
+ 	u8 tx_mapping_mode;		 /* ICE_MAP_MODE_[CONTIG|SCATTER] */
+@@ -269,7 +269,7 @@ struct ice_pf {
+ 	struct ice_hw_port_stats stats;
+ 	struct ice_hw_port_stats stats_prev;
+ 	struct ice_hw hw;
+-	bool stat_prev_loaded;	/* has previous stats been loaded */
++	u8 stat_prev_loaded;	/* has previous stats been loaded */
+ 	char int_name[ICE_INT_NAME_STR_LEN];
+ };
  
-+/**
-+ * ice_ctrlq_pending - check if there is a difference between ntc and ntu
-+ * @hw: pointer to hardware info
-+ * @cq: control queue information
-+ *
-+ * returns true if there are pending messages in a queue, false if there aren't
-+ */
-+static bool ice_ctrlq_pending(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	u16 ntu;
-+
-+	ntu = (u16)(rd32(hw, cq->rq.head) & cq->rq.head_mask);
-+	return cq->rq.next_to_clean != ntu;
-+}
-+
- /**
-  * ice_clean_adminq_subtask - clean the AdminQ rings
-  * @pf: board private structure
-@@ -923,7 +938,6 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- static void ice_clean_adminq_subtask(struct ice_pf *pf)
- {
- 	struct ice_hw *hw = &pf->hw;
--	u32 val;
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 6f4a0d159dbf..9b8ec128ee31 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -17,7 +17,7 @@ struct ice_vsi_ctx {
+ 	u16 vsis_unallocated;
+ 	u16 flags;
+ 	struct ice_aqc_vsi_props info;
+-	bool alloc_from_pool;
++	u8 alloc_from_pool;
+ };
  
- 	if (!test_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state))
- 		return;
-@@ -933,9 +947,13 @@ static void ice_clean_adminq_subtask(struct ice_pf *pf)
+ enum ice_sw_fwd_act_type {
+@@ -94,8 +94,8 @@ struct ice_fltr_info {
+ 	u8 qgrp_size;
  
- 	clear_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state);
+ 	/* Rule creations populate these indicators basing on the switch type */
+-	bool lb_en;	/* Indicate if packet can be looped back */
+-	bool lan_en;	/* Indicate if packet can be forwarded to the uplink */
++	u8 lb_en;	/* Indicate if packet can be looped back */
++	u8 lan_en;	/* Indicate if packet can be forwarded to the uplink */
+ };
  
--	/* re-enable Admin queue interrupt causes */
--	val = rd32(hw, PFINT_FW_CTL);
--	wr32(hw, PFINT_FW_CTL, (val | PFINT_FW_CTL_CAUSE_ENA_M));
-+	/* There might be a situation where new messages arrive to a control
-+	 * queue between processing the last message and clearing the
-+	 * EVENT_PENDING bit. So before exiting, check queue head again (using
-+	 * ice_ctrlq_pending) and process new messages if any.
-+	 */
-+	if (ice_ctrlq_pending(hw, &hw->adminq))
-+		__ice_clean_ctrlq(pf, ICE_CTL_Q_ADMIN);
+ /* Bookkeeping structure to hold bitmap of VSIs corresponding to VSI list id */
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 567067b650c4..31bc998fe200 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -143,7 +143,7 @@ struct ice_ring {
+ 	u16 next_to_use;
+ 	u16 next_to_clean;
  
- 	ice_flush(hw);
- }
+-	bool ring_active;		/* is ring online or not */
++	u8 ring_active;			/* is ring online or not */
+ 
+ 	/* stats structs */
+ 	struct ice_q_stats	stats;
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 99c8a9a71b5e..97c366e0ca59 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -83,7 +83,7 @@ struct ice_link_status {
+ 	u64 phy_type_low;
+ 	u16 max_frame_size;
+ 	u16 link_speed;
+-	bool lse_ena;	/* Link Status Event notification */
++	u8 lse_ena;	/* Link Status Event notification */
+ 	u8 link_info;
+ 	u8 an_info;
+ 	u8 ext_info;
+@@ -101,7 +101,7 @@ struct ice_phy_info {
+ 	struct ice_link_status link_info_old;
+ 	u64 phy_type_low;
+ 	enum ice_media_type media_type;
+-	bool get_link_info;
++	u8 get_link_info;
+ };
+ 
+ /* Common HW capabilities for SW use */
+@@ -167,7 +167,7 @@ struct ice_nvm_info {
+ 	u32 oem_ver;              /* OEM version info */
+ 	u16 sr_words;             /* Shadow RAM size in words */
+ 	u16 ver;                  /* NVM package version */
+-	bool blank_nvm_mode;      /* is NVM empty (no FW present) */
++	u8 blank_nvm_mode;        /* is NVM empty (no FW present) */
+ };
+ 
+ /* Max number of port to queue branches w.r.t topology */
+@@ -181,7 +181,7 @@ struct ice_sched_node {
+ 	struct ice_aqc_txsched_elem_data info;
+ 	u32 agg_id;			/* aggregator group id */
+ 	u16 vsi_id;
+-	bool in_use;			/* suspended or in use */
++	u8 in_use;			/* suspended or in use */
+ 	u8 tx_sched_layer;		/* Logical Layer (1-9) */
+ 	u8 num_children;
+ 	u8 tc_num;
+@@ -218,7 +218,7 @@ struct ice_sched_vsi_info {
+ struct ice_sched_tx_policy {
+ 	u16 max_num_vsis;
+ 	u8 max_num_lan_qs_per_tc[ICE_MAX_TRAFFIC_CLASS];
+-	bool rdma_ena;
++	u8 rdma_ena;
+ };
+ 
+ struct ice_port_info {
+@@ -243,7 +243,7 @@ struct ice_port_info {
+ 	struct list_head agg_list;	/* lists all aggregator */
+ 	u8 lport;
+ #define ICE_LPORT_MASK		0xff
+-	bool is_vf;
++	u8 is_vf;
+ };
+ 
+ struct ice_switch_info {
+@@ -287,7 +287,7 @@ struct ice_hw {
+ 	u8 max_cgds;
+ 	u8 sw_entry_point_layer;
+ 
+-	bool evb_veb;		/* true for VEB, false for VEPA */
++	u8 evb_veb;		/* true for VEB, false for VEPA */
+ 	struct ice_bus_info bus;
+ 	struct ice_nvm_info nvm;
+ 	struct ice_hw_dev_caps dev_caps;	/* device capabilities */
+@@ -318,7 +318,7 @@ struct ice_hw {
+ 	u8 itr_gran_100;
+ 	u8 itr_gran_50;
+ 	u8 itr_gran_25;
+-	bool ucast_shared;	/* true if VSIs can share unicast addr */
++	u8 ucast_shared;	/* true if VSIs can share unicast addr */
+ 
+ };
+ 
 -- 
 2.14.3
 
