@@ -1,142 +1,190 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 20 Jul 2018 13:53:53 -0700
-Subject: [Intel-wired-lan] [RFC 13/13] ice: Introduce SERVICE_DIS flag and
- service routine functions
+Date: Fri, 20 Jul 2018 13:53:52 -0700
+Subject: [Intel-wired-lan] [RFC 12/13] ice: Make ice_vsi_kill_vlan return an
+ error code
 In-Reply-To: <20180720205353.13296-1-anirudh.venkataramanan@intel.com>
 References: <20180720205353.13296-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180720205353.13296-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20180720205353.13296-13-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-This patch introduces SERVICE_DIS flag to use for stopping service task.
-This flag will be checked before scheduling new tasks. Also add new
-functions ice_service_task_stop to stop service task.
+Prior to this patch ice_vsi_kill_vlan has a void return value and we
+were ignoring if it fails. Make ice_vsi_kill_vlan return an integer
+value so its return value can be checked and used to determine whether
+or not to update VLAN counts, structures, pruning bits.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h      |  1 +
- drivers/net/ethernet/intel/ice/ice_main.c | 34 ++++++++++++++++++++++++-------
- 2 files changed, 28 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 94 ++++++++++++++++++++++++++++---
+ 1 file changed, 85 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 6f44a850c4b2..9cf233d085d8 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -138,6 +138,7 @@ enum ice_state {
- 	__ICE_FLTR_OVERFLOW_PROMISC,
- 	__ICE_CFG_BUSY,
- 	__ICE_SERVICE_SCHED,
-+	__ICE_SERVICE_DIS,
- 	__ICE_STATE_NBITS		/* must be last */
- };
- 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 27b9718b226c..28a9c54365b3 100644
+index 2b8a71d49ef7..27b9718b226c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1107,7 +1107,7 @@ static void ice_clean_adminq_subtask(struct ice_pf *pf)
-  */
- static void ice_service_task_schedule(struct ice_pf *pf)
- {
--	if (!test_bit(__ICE_DOWN, pf->state) &&
-+	if (!test_bit(__ICE_SERVICE_DIS, pf->state) &&
- 	    !test_and_set_bit(__ICE_SERVICE_SCHED, pf->state) &&
- 	    !test_bit(__ICE_NEEDS_RESTART, pf->state))
- 		queue_work(ice_wq, &pf->serv_task);
-@@ -1126,6 +1126,22 @@ static void ice_service_task_complete(struct ice_pf *pf)
- 	clear_bit(__ICE_SERVICE_SCHED, pf->state);
+@@ -349,6 +349,63 @@ static bool ice_vsi_fltr_changed(struct ice_vsi *vsi)
+ 	       test_bit(ICE_VSI_FLAG_VLAN_FLTR_CHANGED, vsi->flags);
  }
  
 +/**
-+ * ice_service_task_stop - stop service task and cancel works
-+ * @pf: board private structure
++ * ice_cfg_vlan_pruning - enable or disable VLAN pruning on the VSI
++ * @vsi: VSI to enable or disable VLAN pruning on
++ * @ena: set to true to enable VLAN pruning and false to disable it
++ *
++ * returns 0 if VSI is updated, negative otherwise
 + */
-+static void ice_service_task_stop(struct ice_pf *pf)
++static int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena)
 +{
-+	set_bit(__ICE_SERVICE_DIS, pf->state);
++	struct ice_vsi_ctx *ctxt;
++	struct device *dev;
++	int status;
 +
-+	if (pf->serv_tmr.function)
-+		del_timer_sync(&pf->serv_tmr);
-+	if (pf->serv_task.func)
-+		cancel_work_sync(&pf->serv_task);
++	if (!vsi)
++		return -EINVAL;
 +
-+	clear_bit(__ICE_SERVICE_SCHED, pf->state);
++	dev = &vsi->back->pdev->dev;
++	ctxt = devm_kzalloc(dev, sizeof(*ctxt), GFP_KERNEL);
++	if (!ctxt)
++		return -ENOMEM;
++
++	ctxt->info = vsi->info;
++
++	if (ena) {
++		ctxt->info.sec_flags |=
++			ICE_AQ_VSI_SEC_TX_VLAN_PRUNE_ENA <<
++			ICE_AQ_VSI_SEC_TX_PRUNE_ENA_S;
++		ctxt->info.sw_flags2 |= ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA;
++	} else {
++		ctxt->info.sec_flags &=
++			~(ICE_AQ_VSI_SEC_TX_VLAN_PRUNE_ENA <<
++			  ICE_AQ_VSI_SEC_TX_PRUNE_ENA_S);
++		ctxt->info.sw_flags2 &= ~ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA;
++	}
++
++	ctxt->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SECURITY_VALID |
++						ICE_AQ_VSI_PROP_SW_VALID);
++	ctxt->vsi_num = vsi->vsi_num;
++	status = ice_aq_update_vsi(&vsi->back->hw, ctxt, NULL);
++	if (status) {
++		netdev_err(vsi->netdev, "%sabling VLAN pruning on VSI %d failed, err = %d, aq_err = %d\n",
++			   ena ? "Ena" : "Dis", vsi->vsi_num, status,
++			   vsi->back->hw.adminq.sq_last_status);
++		goto err_out;
++	}
++
++	vsi->info.sec_flags = ctxt->info.sec_flags;
++	vsi->info.sw_flags2 = ctxt->info.sw_flags2;
++
++	devm_kfree(dev, ctxt);
++	return 0;
++
++err_out:
++	devm_kfree(dev, ctxt);
++	return -EIO;
 +}
 +
  /**
-  * ice_service_timer - timer callback to schedule service task
-  * @t: pointer to timer_list
-@@ -3391,10 +3407,7 @@ static void ice_determine_q_usage(struct ice_pf *pf)
-  */
- static void ice_deinit_pf(struct ice_pf *pf)
+  * ice_vsi_sync_fltr - Update the VSI filter list to the HW
+  * @vsi: ptr to the VSI
+@@ -3128,7 +3185,7 @@ static int ice_vlan_rx_add_vid(struct net_device *netdev,
  {
--	if (pf->serv_tmr.function)
--		del_timer_sync(&pf->serv_tmr);
--	if (pf->serv_task.func)
--		cancel_work_sync(&pf->serv_task);
-+	ice_service_task_stop(pf);
- 	mutex_destroy(&pf->sw_mutex);
- 	mutex_destroy(&pf->avail_q_mutex);
- }
-@@ -3601,6 +3614,8 @@ static int ice_probe(struct pci_dev *pdev,
- 	pf->pdev = pdev;
- 	pci_set_drvdata(pdev, pf);
- 	set_bit(__ICE_DOWN, pf->state);
-+	/* Disable service task until DOWN bit is cleared */
-+	set_bit(__ICE_SERVICE_DIS, pf->state);
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 	struct ice_vsi *vsi = np->vsi;
+-	int ret = 0;
++	int ret;
  
- 	hw = &pf->hw;
- 	hw->hw_addr = pcim_iomap_table(pdev)[ICE_BAR0];
-@@ -3658,6 +3673,9 @@ static int ice_probe(struct pci_dev *pdev,
- 		goto err_init_interrupt_unroll;
- 	}
+ 	if (vid >= VLAN_N_VID) {
+ 		netdev_err(netdev, "VLAN id requested %d is out of range %d\n",
+@@ -3139,6 +3196,13 @@ static int ice_vlan_rx_add_vid(struct net_device *netdev,
+ 	if (vsi->info.pvid)
+ 		return -EINVAL;
  
-+	/* Driver is mostly up */
-+	clear_bit(__ICE_DOWN, pf->state);
++	/* Enable VLAN pruning when VLAN 0 is added */
++	if (unlikely(!vid)) {
++		ret = ice_cfg_vlan_pruning(vsi, true);
++		if (ret)
++			return ret;
++	}
 +
- 	/* In case of MSIX we are going to setup the misc vector right here
- 	 * to handle admin queue events etc. In case of legacy and MSI
- 	 * the misc functionality and queue processing is combined in
-@@ -3697,8 +3715,7 @@ static int ice_probe(struct pci_dev *pdev,
- 		goto err_alloc_sw_unroll;
- 	}
+ 	/* Add all VLAN ids including 0 to the switch filter. VLAN id 0 is
+ 	 * needed to continue allowing all untagged packets since VLAN prune
+ 	 * list is applied to all packets by the switch
+@@ -3155,16 +3219,19 @@ static int ice_vlan_rx_add_vid(struct net_device *netdev,
+  * ice_vsi_kill_vlan - Remove VSI membership for a given VLAN
+  * @vsi: the VSI being configured
+  * @vid: VLAN id to be removed
++ *
++ * Returns 0 on success and negative on failure
+  */
+-static void ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
++static int ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
+ {
+ 	struct ice_fltr_list_entry *list;
+ 	struct ice_pf *pf = vsi->back;
+ 	LIST_HEAD(tmp_add_list);
++	int status = 0;
  
--	/* Driver is mostly up */
--	clear_bit(__ICE_DOWN, pf->state);
-+	clear_bit(__ICE_SERVICE_DIS, pf->state);
+ 	list = devm_kzalloc(&pf->pdev->dev, sizeof(*list), GFP_KERNEL);
+ 	if (!list)
+-		return;
++		return -ENOMEM;
  
- 	/* since everything is good, start the service timer */
- 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
-@@ -3712,6 +3729,7 @@ static int ice_probe(struct pci_dev *pdev,
- 	return 0;
+ 	list->fltr_info.lkup_type = ICE_SW_LKUP_VLAN;
+ 	list->fltr_info.fwd_id.vsi_id = vsi->vsi_num;
+@@ -3176,11 +3243,14 @@ static void ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
+ 	INIT_LIST_HEAD(&list->list_entry);
+ 	list_add(&list->list_entry, &tmp_add_list);
  
- err_alloc_sw_unroll:
-+	set_bit(__ICE_SERVICE_DIS, pf->state);
- 	set_bit(__ICE_DOWN, pf->state);
- 	devm_kfree(&pf->pdev->dev, pf->first_sw);
- err_msix_misc_unroll:
-@@ -3739,6 +3757,7 @@ static void ice_remove(struct pci_dev *pdev)
- 		return;
+-	if (ice_remove_vlan(&pf->hw, &tmp_add_list))
++	if (ice_remove_vlan(&pf->hw, &tmp_add_list)) {
+ 		dev_err(&pf->pdev->dev, "Error removing VLAN %d on vsi %i\n",
+ 			vid, vsi->vsi_num);
++		status = -EIO;
++	}
  
- 	set_bit(__ICE_DOWN, pf->state);
-+	ice_service_task_stop(pf);
+ 	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
++	return status;
+ }
  
- 	ice_vsi_release_all(pf);
- 	ice_free_irq_msix_misc(pf);
-@@ -6003,6 +6022,7 @@ static void ice_tx_timeout(struct net_device *netdev)
- 		netdev_err(netdev, "tx_timeout recovery unsuccessful, device is in unrecoverable state.\n");
- 		set_bit(__ICE_DOWN, pf->state);
- 		set_bit(__ICE_NEEDS_RESTART, vsi->state);
-+		set_bit(__ICE_SERVICE_DIS, pf->state);
- 		break;
- 	}
+ /**
+@@ -3196,19 +3266,25 @@ static int ice_vlan_rx_kill_vid(struct net_device *netdev,
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 	struct ice_vsi *vsi = np->vsi;
++	int status;
  
+ 	if (vsi->info.pvid)
+ 		return -EINVAL;
+ 
+-	/* return code is ignored as there is nothing a user
+-	 * can do about failure to remove and a log message was
+-	 * already printed from the other function
++	/* Make sure ice_vsi_kill_vlan is successful before updating VLAN
++	 * information
+ 	 */
+-	ice_vsi_kill_vlan(vsi, vid);
++	status = ice_vsi_kill_vlan(vsi, vid);
++	if (status)
++		return status;
+ 
+ 	clear_bit(vid, vsi->active_vlans);
+ 
+-	return 0;
++	/* Disable VLAN pruning when VLAN 0 is removed */
++	if (unlikely(!vid))
++		status = ice_cfg_vlan_pruning(vsi, false);
++
++	return status;
+ }
+ 
+ /**
 -- 
 2.14.3
 
