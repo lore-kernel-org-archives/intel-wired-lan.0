@@ -1,59 +1,202 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 20 Jul 2018 12:54:36 -0700
-Subject: [Intel-wired-lan] [RFC 03/13] ice: Fix missing shift
+Date: Fri, 20 Jul 2018 12:54:37 -0700
+Subject: [Intel-wired-lan] [RFC 04/13] ice: Report stats for allocated
+ queues via ethtool stats
 In-Reply-To: <20180720195446.4346-1-anirudh.venkataramanan@intel.com>
 References: <20180720195446.4346-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180720195446.4346-4-anirudh.venkataramanan@intel.com>
+Message-ID: <20180720195446.4346-5-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-The ITR index of the interrupt cause for OICR and FW interrupts is not
-being shifted correctly so when masked with PFINT_*_CTL_ITR_INDX_M it
-will always be zero.  Luckily, ICE_RX_ITR is zero anyway so the end result
-is the same, but the shift should be fixed in case the value of ICE_RX_ITR
-ever changes or it is substituted with another value that needs to be
-shifted properly.
+It is not safe to have the string table for statistics change order or
+size over the lifetime of a given netdevice. This is because of the
+nature of the 3-step process for obtaining stats. First, userspace
+performs a request for the size of the strings table. Second it performs
+a separate request for the strings themselves, after allocating space
+for the table. Third, it requests the stats themselves, also allocating
+space for the table.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+If the size decreased, there is potential to see garbage data or stats
+values. In the worst case, we could potentially see stats values become
+mis-aligned with their strings, so that it looks like a statistic is
+being reported differently than it actually is.
+
+Even worse, if the size increased, there is potential that the strings
+table or stats table was not allocated large enough and the stats code
+could access and write to memory it should not, potentially resulting in
+undefined behavior and system crashes.
+
+It isn't even safe if the size always changes under the RTNL lock. This
+is because the calls take place over multiple userspace commands, so it
+is not possible to hold the RTNL lock for the entire duration of
+obtaining strings and stats. Further, not all consumers of the ethtool
+API are the userspace ethtool program, and it is possible that one
+assumes the strings will not change (valid under the current contract),
+and thus only requests the stats values when requesting stats in a loop.
+
+Finally, it's not possible in the general case to detect when the size
+changes, because it is quite possible that one value which could impact
+the stat size increased, while another decreased. This would result in
+the same total number of stats, but reordering them so that stats no
+longer line up with the strings they belong to. Since only size changes
+aren't enough, we would need some sort of hash or token to determine
+when the strings no longer match. This would require extending the
+ethtool stats commands, but there is no more space in the relevant
+structures.
+
+The real solution to resolve this would be to add a completely new API
+for stats, probably over netlink.
+
+In the ice driver, the only thing impacting the stats that is not
+constant is the number of queues. Instead of reporting stats for each
+used queue, report stats for each allocated queue. We do not change the
+number of queues allocated for a given netdevice, as we pass this into
+the alloc_etherdev_mq() function to set the num_tx_queues and
+num_rx_queues.
+
+This resolves the potential bugs at the slight cost of displaying many
+queue statistics which will not be activated.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h         |  7 ++++
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 52 +++++++++++++++++++++-------
+ 2 files changed, 46 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 78756853ade1..450911345144 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2058,15 +2058,17 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
- skip_req_irq:
- 	ice_ena_misc_vector(pf);
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index d8b5fff581e7..ed071ea75f20 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -89,6 +89,13 @@ extern const char ice_drv_ver[];
+ #define ice_for_each_rxq(vsi, i) \
+ 	for ((i) = 0; (i) < (vsi)->num_rxq; (i)++)
  
--	val = (pf->oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
--	      (ICE_RX_ITR & PFINT_OICR_CTL_ITR_INDX_M) |
--	      PFINT_OICR_CTL_CAUSE_ENA_M;
-+	val = ((pf->oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
-+	       ((ICE_RX_ITR << PFINT_OICR_CTL_ITR_INDX_S) &
-+		PFINT_OICR_CTL_ITR_INDX_M) |
-+	       PFINT_OICR_CTL_CAUSE_ENA_M);
- 	wr32(hw, PFINT_OICR_CTL, val);
++/* Macros for each allocated tx/rx ring whether used or not in a VSI */
++#define ice_for_each_alloc_txq(vsi, i) \
++	for ((i) = 0; (i) < (vsi)->alloc_txq; (i)++)
++
++#define ice_for_each_alloc_rxq(vsi, i) \
++	for ((i) = 0; (i) < (vsi)->alloc_rxq; (i)++)
++
+ struct ice_tc_info {
+ 	u16 qoffset;
+ 	u16 qcount;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 1db304c01d10..807b683a5707 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -26,7 +26,7 @@ static int ice_q_stats_len(struct net_device *netdev)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
  
- 	/* This enables Admin queue Interrupt causes */
--	val = (pf->oicr_idx & PFINT_FW_CTL_MSIX_INDX_M) |
--	      (ICE_RX_ITR & PFINT_FW_CTL_ITR_INDX_M) |
--	      PFINT_FW_CTL_CAUSE_ENA_M;
-+	val = ((pf->oicr_idx & PFINT_FW_CTL_MSIX_INDX_M) |
-+	       ((ICE_RX_ITR << PFINT_FW_CTL_ITR_INDX_S) &
-+		PFINT_FW_CTL_ITR_INDX_M) |
-+	       PFINT_FW_CTL_CAUSE_ENA_M);
- 	wr32(hw, PFINT_FW_CTL, val);
+-	return ((np->vsi->num_txq + np->vsi->num_rxq) *
++	return ((np->vsi->alloc_txq + np->vsi->alloc_rxq) *
+ 		(sizeof(struct ice_q_stats) / sizeof(u64)));
+ }
  
- 	itr_gran = hw->itr_gran_200;
+@@ -218,7 +218,7 @@ static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+ 			p += ETH_GSTRING_LEN;
+ 		}
+ 
+-		ice_for_each_txq(vsi, i) {
++		ice_for_each_alloc_txq(vsi, i) {
+ 			snprintf(p, ETH_GSTRING_LEN,
+ 				 "tx-queue-%u.tx_packets", i);
+ 			p += ETH_GSTRING_LEN;
+@@ -226,7 +226,7 @@ static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+ 			p += ETH_GSTRING_LEN;
+ 		}
+ 
+-		ice_for_each_rxq(vsi, i) {
++		ice_for_each_alloc_rxq(vsi, i) {
+ 			snprintf(p, ETH_GSTRING_LEN,
+ 				 "rx-queue-%u.rx_packets", i);
+ 			p += ETH_GSTRING_LEN;
+@@ -253,6 +253,24 @@ static int ice_get_sset_count(struct net_device *netdev, int sset)
+ {
+ 	switch (sset) {
+ 	case ETH_SS_STATS:
++		/* The number (and order) of strings reported *must* remain
++		 * constant for a given netdevice. This function must not
++		 * report a different number based on run time parameters
++		 * (such as the number of queues in use, or the setting of
++		 * a private ethtool flag). This is due to the nature of the
++		 * ethtool stats API.
++		 *
++		 * Userspace programs such as ethtool must make 3 separate
++		 * ioctl requests, one for size, one for the strings, and
++		 * finally one for the stats. Since these cross into
++		 * userspace, changes to the number or size could result in
++		 * undefined memory access or incorrect string<->value
++		 * correlations for statistics.
++		 *
++		 * Even if it appears to be safe, changes to the size or
++		 * order of strings will suffer from race conditions and are
++		 * not safe.
++		 */
+ 		return ICE_ALL_STATS_LEN(netdev);
+ 	default:
+ 		return -EOPNOTSUPP;
+@@ -280,18 +298,26 @@ ice_get_ethtool_stats(struct net_device *netdev,
+ 	/* populate per queue stats */
+ 	rcu_read_lock();
+ 
+-	ice_for_each_txq(vsi, j) {
++	ice_for_each_alloc_txq(vsi, j) {
+ 		ring = READ_ONCE(vsi->tx_rings[j]);
+-		if (!ring)
+-			continue;
+-		data[i++] = ring->stats.pkts;
+-		data[i++] = ring->stats.bytes;
++		if (ring) {
++			data[i++] = ring->stats.pkts;
++			data[i++] = ring->stats.bytes;
++		} else {
++			data[i++] = 0;
++			data[i++] = 0;
++		}
+ 	}
+ 
+-	ice_for_each_rxq(vsi, j) {
++	ice_for_each_alloc_rxq(vsi, j) {
+ 		ring = READ_ONCE(vsi->rx_rings[j]);
+-		data[i++] = ring->stats.pkts;
+-		data[i++] = ring->stats.bytes;
++		if (ring) {
++			data[i++] = ring->stats.pkts;
++			data[i++] = ring->stats.bytes;
++		} else {
++			data[i++] = 0;
++			data[i++] = 0;
++		}
+ 	}
+ 
+ 	rcu_read_unlock();
+@@ -519,7 +545,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
+ 		goto done;
+ 	}
+ 
+-	for (i = 0; i < vsi->num_txq; i++) {
++	for (i = 0; i < vsi->alloc_txq; i++) {
+ 		/* clone ring and setup updated count */
+ 		tx_rings[i] = *vsi->tx_rings[i];
+ 		tx_rings[i].count = new_tx_cnt;
+@@ -551,7 +577,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
+ 		goto done;
+ 	}
+ 
+-	for (i = 0; i < vsi->num_rxq; i++) {
++	for (i = 0; i < vsi->alloc_rxq; i++) {
+ 		/* clone ring and setup updated count */
+ 		rx_rings[i] = *vsi->rx_rings[i];
+ 		rx_rings[i].count = new_rx_cnt;
 -- 
 2.14.3
 
