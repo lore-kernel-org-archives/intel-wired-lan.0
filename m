@@ -1,164 +1,135 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon, 23 Jul 2018 09:34:29 -0700
-Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 2/2] ixgbe:
- Refactor queue disable logic to take completion time into account
-In-Reply-To: <20180720222934.3568.15842.stgit@ahduyck-green-test.jf.intel.com>
-References: <20180720222647.3568.34992.stgit@ahduyck-green-test.jf.intel.com>
- <20180720222934.3568.15842.stgit@ahduyck-green-test.jf.intel.com>
-Message-ID: <ab26e694-6c7c-7e70-42f3-646939708ee2@oracle.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 24 Jul 2018 00:35:11 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 17927989beff0dca67895983ed9110707a387a07
+Message-ID: <5b5603bf.eEVboxGMTU7dKI2Q%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/20/2018 3:29 PM, Alexander Duyck wrote:
-> This change is meant to allow us to take completion time into account when
-> disabling queues. Previously we were just working with hard coded values
-> for how long we should wait. This worked fine for the standard case where
-> completion timeout was operating in the 50us to 50ms range, however on
-> platforms that have higher completion timeout times this was resulting in
-> Rx queues disable messages being displayed as we weren't waiting long
-> enough for outstanding Rx DMA completions.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> ---
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 17927989beff0dca67895983ed9110707a387a07  e1000: ensure to free old tx/rx rings in set_ringparam()
 
-[...]
+elapsed time: 29m
 
-> +
-> +void ixgbe_disable_tx(struct ixgbe_adapter *adapter)
-> +{
-> +	unsigned long wait_delay, delay_interval;
-> +	struct ixgbe_hw *hw = &adapter->hw;
-> +	int i, wait_loop;
-> +	u32 txdctl;
-> +
-> +	if (ixgbe_removed(hw->hw_addr))
-> +		return;
-> +
-> +	/* disable all enabled Tx queues */
-> +	for (i = 0; i < adapter->num_tx_queues; i++) {
-> +		struct ixgbe_ring *ring = adapter->tx_ring[i];
-> +		u8 reg_idx = ring->reg_idx;
-> +
-> +		IXGBE_WRITE_REG(hw, IXGBE_TXDCTL(reg_idx), IXGBE_TXDCTL_SWFLSH);
-> +	}
-> +
-> +	/* disable all enabled XDP Tx queues */
-> +	for (i = 0; i < adapter->num_xdp_queues; i++) {
-> +		struct ixgbe_ring *ring = adapter->xdp_ring[i];
-> +		u8 reg_idx = ring->reg_idx;
-> +
-> +		IXGBE_WRITE_REG(hw, IXGBE_TXDCTL(reg_idx), IXGBE_TXDCTL_SWFLSH);
-> +	}
-> +
-> +	/* If the link is now up there shouldn't be much in the way of
+configs tested: 110
 
-I think you mean "not" up rather than "now" up, which has the opposite 
-meaning and could be a bit confusing.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> +	 * pending transactions. Those that are left will be flushed out
-> +	 * when the reset logic goes through the flush sequence to clean out
-> +	 * the pending Tx transactions.
-> +	 */
-> +	if (!(IXGBE_READ_REG(hw, IXGBE_LINKS) & IXGBE_LINKS_UP))
-> +		goto dma_engine_disable;
-> +
-> +	/* Determine our minimum delay interval. We will increase this value
-> +	 * with each subsequent test. This way if the device returns quickly
-> +	 * we should spend as little time as possible waiting, however as
-> +	 * the time increases we will wait for larger periods of time.
-> +	 *
-> +	 * The trick here is that we increase the interval using the
-> +	 * following pattern: 1x 3x 5x 7x 9x 11x 13x 15x 17x 19x. The result
-> +	 * of that wait is that it totals up to 100x whatever interval we
-> +	 * choose. Since our minimum wait is 100us we can just divide the
-> +	 * total timeout by 100 to get our minimum delay interval.
-> +	 */
-> +	delay_interval = ixgbe_get_completion_timeout(adapter) / 100;
-> +
-> +	wait_loop = IXGBE_MAX_RX_DESC_POLL;
-> +	wait_delay = delay_interval;
-> +
-> +	while (wait_loop--) {
-> +		usleep_range(wait_delay, wait_delay + 10);
-> +		wait_delay += delay_interval * 2;
-> +		txdctl = 0;
-> +
-> +		/* OR together the reading of all the active TXDCTL registers,
-> +		 * and then test the result. We need the disable to complete
-> +		 * before we start freeing the memory and invalidating the
-> +		 * DMA mappings.
-> +		 */
-> +		for (i = 0; i < adapter->num_tx_queues; i++) {
-> +			struct ixgbe_ring *ring = adapter->tx_ring[i];
-> +			u8 reg_idx = ring->reg_idx;
-> +
-> +			txdctl |= IXGBE_READ_REG(hw, IXGBE_TXDCTL(reg_idx));
-> +		}
-> +		for (i = 0; i < adapter->num_xdp_queues; i++) {
-> +			struct ixgbe_ring *ring = adapter->xdp_ring[i];
-> +			u8 reg_idx = ring->reg_idx;
-> +
-> +			txdctl |= IXGBE_READ_REG(hw, IXGBE_TXDCTL(reg_idx));
-> +		}
-> +
-> +		if (!(txdctl & IXGBE_TXDCTL_ENABLE))
-> +			goto dma_engine_disable;
-> +	}
-> +
-> +	e_err(drv,
-> +	      "TXDCTL.ENABLE for one or more queues not cleared within the polling period\n");
-> +
-> +dma_engine_disable:
-> +	/* Disable the Tx DMA engine on 82599 and later MAC */
-> +	switch (hw->mac.type) {
-> +	case ixgbe_mac_82599EB:
-> +	case ixgbe_mac_X540:
-> +	case ixgbe_mac_X550:
-> +	case ixgbe_mac_X550EM_x:
-> +	case ixgbe_mac_x550em_a:
-> +		IXGBE_WRITE_REG(hw, IXGBE_DMATXCTL,
-> +				(IXGBE_READ_REG(hw, IXGBE_DMATXCTL) &
-> +				 ~IXGBE_DMATXCTL_TE));
-> +		/* fall through */
-> +	default:
-> +		break;
-> +	}
+x86_64                randconfig-it0-07231322
+i386                               tinyconfig
+i386                     randconfig-n0-201829
+x86_64                 randconfig-x007-201829
+x86_64                 randconfig-x003-201829
+x86_64                 randconfig-x000-201829
+x86_64                 randconfig-x005-201829
+x86_64                 randconfig-x004-201829
+x86_64                 randconfig-x008-201829
+x86_64                 randconfig-x001-201829
+x86_64                 randconfig-x009-201829
+x86_64                 randconfig-x002-201829
+x86_64                 randconfig-x006-201829
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201829
+i386                     randconfig-i1-201829
+alpha                            alldefconfig
+arm                          iop32x_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201829
+x86_64                 randconfig-x011-201829
+x86_64                 randconfig-x012-201829
+x86_64                 randconfig-x013-201829
+x86_64                 randconfig-x014-201829
+x86_64                 randconfig-x015-201829
+x86_64                 randconfig-x016-201829
+x86_64                 randconfig-x017-201829
+x86_64                 randconfig-x018-201829
+x86_64                 randconfig-x019-201829
+i386                     randconfig-a0-201829
+i386                     randconfig-a1-201829
+arm                          lpd270_defconfig
+arm                        vexpress_defconfig
+arm                            zeus_defconfig
+mips                      fuloong2e_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201829
+i386                     randconfig-s1-201829
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                   randconfig-x012-201829
+i386                   randconfig-x017-201829
+i386                   randconfig-x014-201829
+i386                   randconfig-x016-201829
+i386                   randconfig-x013-201829
+i386                   randconfig-x011-201829
+i386                   randconfig-x018-201829
+i386                   randconfig-x010-201829
+i386                   randconfig-x015-201829
+i386                   randconfig-x019-201829
+i386                   randconfig-x078-201829
+i386                   randconfig-x070-201829
+i386                   randconfig-x075-201829
+i386                   randconfig-x076-201829
+i386                   randconfig-x074-201829
+i386                   randconfig-x079-201829
+i386                   randconfig-x071-201829
+i386                   randconfig-x073-201829
+i386                   randconfig-x072-201829
+i386                   randconfig-x077-201829
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x008-201829
+i386                   randconfig-x009-201829
+i386                   randconfig-x005-201829
+i386                   randconfig-x000-201829
+i386                   randconfig-x003-201829
+i386                   randconfig-x001-201829
+i386                   randconfig-x004-201829
+i386                   randconfig-x006-201829
+i386                   randconfig-x007-201829
+i386                   randconfig-x002-201829
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+powerpc                 mpc836x_mds_defconfig
 
-Picky bike-shed thoughts: I realize you're just moving the previously 
-existing code, but with the comment "... and later MAC" I would think 
-the translation to code puts all the later MACs into the default and 
-have the WRITE_REG() as the default action.  This would make it default 
-to the correct action for any new MACs if someone forgot to fix up this 
-part of the code.
-
-	switch (hw->mac.type) {
-	case ixgbe_mac_82598EB:
-		break;
-
-	case ixgbe_mac_82599EB:
-	case ixgbe_mac_X540:
-	case ixgbe_mac_X550:
-	case ixgbe_mac_X550EM_x:
-	case ixgbe_mac_x550em_a:
-	default:
-		IXGBE_WRITE_REG(hw, IXGBE_DMATXCTL,
-				(IXGBE_READ_REG(hw, IXGBE_DMATXCTL) &
-				 ~IXGBE_DMATXCTL_TE));
-		break;
-	}
-
-Or even simpler,
-
-	if (hw->mac.type != ixgbe_mac_82598EB)
-		IXGBE_WRITE_REG(hw, IXGBE_DMATXCTL,
-				(IXGBE_READ_REG(hw, IXGBE_DMATXCTL) &
-				 ~IXGBE_DMATXCTL_TE));
-
-Okay, I'll stop now.
-
-Cheers,
-sln
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
