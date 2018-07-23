@@ -1,69 +1,69 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon, 23 Jul 2018 09:57:30 -0700
-Subject: [Intel-wired-lan] [RFC 08/13] ice: Don't explicitly set
- port_vlan_bits to 0
-In-Reply-To: <20180720195446.4346-9-anirudh.venkataramanan@intel.com>
-References: <20180720195446.4346-1-anirudh.venkataramanan@intel.com>
- <20180720195446.4346-9-anirudh.venkataramanan@intel.com>
-Message-ID: <3f1e33ad-161f-5bfa-f669-153186b32ef8@oracle.com>
+Date: Mon, 23 Jul 2018 09:59:37 -0700
+Subject: [Intel-wired-lan] [RFC 00/13] Feature updates for ice
+In-Reply-To: <20180720205353.13296-1-anirudh.venkataramanan@intel.com>
+References: <20180720205353.13296-1-anirudh.venkataramanan@intel.com>
+Message-ID: <13b67f57-845e-a80a-2405-fb3f11aca86f@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/20/2018 12:54 PM, Anirudh Venkataramanan wrote:
-> From: Brett Creeley <brett.creeley@intel.com>
-> 
-> This patch fixes the following smatch warning originally reported by
-> Dan Carpenter:
-> ice_set_dflt_vsi_ctx() warn: odd binop '0x0 & 0x18'
-> 
-> In ice_set_dflt_vsi_ctx() we are currently doing logic that is intended
-> to explicitly clear bits 3 and 4 for port_vlan_flags. Clearing these
-> bits results in legacy behavior (showing VLAN, DEI, and UP) in the
-> descriptors. The issue was this was reporting the Smatch error shown
-> below.  To fix this remove this logic because the port_vlan_flags field
+On 7/20/2018 1:53 PM, Anirudh Venkataramanan wrote:
+> This patch series includes new features and implementation updates
+> for the ice driver.
 
-There is no "smatch warning shown below"
+Same comment - roll these into the initial patchset.
+sln
 
-> is set to 0 initially by memset so by default we have the correct legacy
-> behavior for bits 3 and 4.  A comment was added above where we set
-> port_vlan_flags in ice_set_dflt_vsi_ctx() to note that this is the
-> desired behavior.
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
-
-This would be a better comment after the "---".  Check you other patches 
-as well for this.
-
-> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-> ---
->   drivers/net/ethernet/intel/ice/ice_main.c | 9 ++++-----
->   1 file changed, 4 insertions(+), 5 deletions(-)
+> Akeem G Abodunrin (1):
+>    ice: Introduce SERVICE_DIS flag and service routine functions
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-> index feeca75912ec..586c6e615a98 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -1367,14 +1367,13 @@ static void ice_set_dflt_vsi_ctx(struct ice_vsi_ctx *ctxt)
->   	ctxt->info.sw_flags = ICE_AQ_VSI_SW_FLAG_SRC_PRUNE;
->   	/* Traffic from VSI can be sent to LAN */
->   	ctxt->info.sw_flags2 = ICE_AQ_VSI_SW_FLAG_LAN_ENA;
-> -	/* Allow all packets untagged/tagged */
-> +	/* By default bits 3 and 4 in port_vlan_flags are 0's which results in
-> +	 * legacy behavior (show VLAN, DEI, and UP) in descriptor. Also, allow
-> +	 * all packets untagged/tagged.
-> +	 */
->   	ctxt->info.port_vlan_flags = ((ICE_AQ_VSI_PVLAN_MODE_ALL &
->   				       ICE_AQ_VSI_PVLAN_MODE_M) >>
->   				      ICE_AQ_VSI_PVLAN_MODE_S);
-> -	/* Show VLAN/UP from packets in Rx descriptors */
-> -	ctxt->info.port_vlan_flags |= ((ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH &
-> -					ICE_AQ_VSI_PVLAN_EMOD_M) >>
-> -				       ICE_AQ_VSI_PVLAN_EMOD_S);
->   	/* Have 1:1 UP mapping for both ingress/egress tables */
->   	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
->   	table |= ICE_UP_TABLE_TRANSLATE(1, 1);
+> Anirudh Venkataramanan (5):
+>    ice: Minor updates to Tx scheduler code
+>    ice: Prevent control queue operations during reset
+>    ice: Refactor switch rule management structures and functions
+>    ice: Refactor VSI allocation, deletion and rebuild flow
+>    ice: Clean up register file
+> 
+> Brett Creeley (1):
+>    ice: Make ice_vsi_kill_vlan return an error code
+> 
+> Chinh Cao (1):
+>    ice: Implement handlers for ethtool PHY/link operations
+> 
+> Hieu Tran (1):
+>    ice: Enable firmware logging during device initialization.
+> 
+> Md Fahad Iqbal Polash (1):
+>    ice: Implement ice_bridge_getlink and ice_bridge_setlink
+> 
+> Phani R Burra (1):
+>    ice: Get both device and function capabilities
+> 
+> Sudheer Mogilappagari (1):
+>    ice: Add support for Tx hang, Tx timeout and malicious driver
+>      detection
+> 
+> Zhenning Xiao (1):
+>    ice: Code optimization for ice_fill_sw_rule()
+> 
+>   drivers/net/ethernet/intel/ice/ice.h            |    7 +
+>   drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |   94 +-
+>   drivers/net/ethernet/intel/ice/ice_common.c     |  361 +++++-
+>   drivers/net/ethernet/intel/ice/ice_common.h     |   15 +-
+>   drivers/net/ethernet/intel/ice/ice_controlq.c   |    3 +
+>   drivers/net/ethernet/intel/ice/ice_ethtool.c    |  805 +++++++++++++-
+>   drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  456 ++++----
+>   drivers/net/ethernet/intel/ice/ice_main.c       |  967 +++++++++++++---
+>   drivers/net/ethernet/intel/ice/ice_sched.c      |  117 +-
+>   drivers/net/ethernet/intel/ice/ice_status.h     |    1 +
+>   drivers/net/ethernet/intel/ice/ice_switch.c     | 1356 ++++++++++++++---------
+>   drivers/net/ethernet/intel/ice/ice_switch.h     |   50 +-
+>   drivers/net/ethernet/intel/ice/ice_txrx.c       |    1 +
+>   drivers/net/ethernet/intel/ice/ice_txrx.h       |    1 +
+>   drivers/net/ethernet/intel/ice/ice_type.h       |   42 +-
+>   15 files changed, 3157 insertions(+), 1119 deletions(-)
 > 
