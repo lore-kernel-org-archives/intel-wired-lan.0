@@ -1,65 +1,54 @@
-From: Nemov, Sergey <sergey.nemov@intel.com>
-Date: Mon, 23 Jul 2018 20:40:33 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Remove duplicated prepare call
- in i40e_shutdown
-In-Reply-To: <CAKgT0Ucq17ze_qVmKESMC-x-v687FJnWh-NqOZKbmdn8RuUKeg@mail.gmail.com>
-References: <20180719112522.GA16521@gklab-81-211.igk.intel.com>
- <CAKgT0Ucq17ze_qVmKESMC-x-v687FJnWh-NqOZKbmdn8RuUKeg@mail.gmail.com>
-Message-ID: <0913DEDD48273D4B8649A517874AC4B09F5740E9@irsmsx111.ger.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 24 Jul 2018 04:54:04 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:XDP-hints-EXPERIMENTAL 1/1]
+ drivers/net//ethernet/intel/i40e/i40e_txrx.c:8:10: fatal error: asm/msr.h:
+ No such file or directory
+Message-ID: <201807240456.eoQnKjga%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I decided to remove the first invocation because this is how out-of-tree driver does it.
-Moreover, is you leave the first invocation and remove the second one then  i40e_enable_mc_magic_wake() will fail with "Failed to update MAC address registers" error because the adminq will be disabled at this point.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git XDP-hints-EXPERIMENTAL
+head:   58e0270bb7ac94a31ff0fe372385cfce4198b56c
+commit: 58e0270bb7ac94a31ff0fe372385cfce4198b56c [1/1] i40e: Initial support to add hw hints for xdp
+config: powerpc-defconfig (attached as .config)
+compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 58e0270bb7ac94a31ff0fe372385cfce4198b56c
+        # save the attached .config to linux build tree
+        GCC_VERSION=7.2.0 make.cross ARCH=powerpc 
 
-So, i40e_enable_mc_magic_wake() has to be run before i40e_prep_for_reset()
+All errors (new ones prefixed by >>):
 
------Original Message-----
-From: Alexander Duyck [mailto:alexander.duyck at gmail.com] 
-Sent: Monday, July 23, 2018 16:53
-To: Nemov, Sergey <sergey.nemov@intel.com>
-Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-Subject: Re: [Intel-wired-lan] [PATCH] i40e: Remove duplicated prepare call in i40e_shutdown
+>> drivers/net//ethernet/intel/i40e/i40e_txrx.c:8:10: fatal error: asm/msr.h: No such file or directory
+    #include <asm/msr.h>
+             ^~~~~~~~~~~
+   compilation terminated.
 
-On Thu, Jul 19, 2018 at 4:25 AM, Sergey Nemov <sergey.nemov@intel.com> wrote:
-> Function call to i40e_prep_for_reset() is duplicated in i40e_shutdown 
-> routine and gets called before
-> i40e_enable_mc_magic_wake() which blocks it from being executed 
-> correctly on system reboot or shutdown because adminq is already 
-> disabled by first i40e_prep_for_reset() call.
->
-> Two register write calls are also duplicated.
->
-> Signed-off-by: Sergey Nemov <sergey.nemov@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ------
->  1 file changed, 6 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c 
-> b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index b5daa5c..71c69df 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -14355,12 +14355,6 @@ static void i40e_shutdown(struct pci_dev 
-> *pdev)
->
->         set_bit(__I40E_SUSPENDED, pf->state);
->         set_bit(__I40E_DOWN, pf->state);
-> -       rtnl_lock();
-> -       i40e_prep_for_reset(pf, true);
-> -       rtnl_unlock();
-> -
-> -       wr32(hw, I40E_PFPM_APM, (pf->wol_en ? I40E_PFPM_APM_APME_MASK : 0));
-> -       wr32(hw, I40E_PFPM_WUFC, (pf->wol_en ? I40E_PFPM_WUFC_MAG_MASK : 0));
->
->         del_timer_sync(&pf->service_timer);
->         cancel_work_sync(&pf->service_task);
-> --
-> 1.8.3.1
+vim +8 drivers/net//ethernet/intel/i40e/i40e_txrx.c
 
-Is there a reason for selecting to remove the first invocation of this instead of the second? It seems to me like the service timer and filter rules are being torn down in the lines following this. It might make more sense to maybe split the difference and keep this call to prep_for_reset and instead get rid of the second call, and in the case of the wakeup registers remove the first set and wait on enabling it until the second set.
+     3	
+     4	#include <linux/prefetch.h>
+     5	#include <net/busy_poll.h>
+     6	#include <linux/bpf_trace.h>
+     7	#include <net/xdp.h>
+   > 8	#include <asm/msr.h>
+     9	#include "i40e.h"
+    10	#include "i40e_trace.h"
+    11	#include "i40e_prototype.h"
+    12	
 
-- Alex
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 23435 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180724/80727c70/attachment-0001.bin>
