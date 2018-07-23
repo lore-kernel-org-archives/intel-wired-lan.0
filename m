@@ -1,53 +1,86 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 15:05:07 -0700
-Subject: [Intel-wired-lan] [PATCH v2 00/13] Bug fixes for ice
-Message-ID: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
+Date: Mon, 23 Jul 2018 15:05:17 -0700
+Subject: [Intel-wired-lan] [PATCH v2 10/13] ice: Update to interrupts
+ enabled in OICR
+In-Reply-To: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
+References: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723220520.16678-11-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch set fixes multiple bugs for the ice driver.
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Anirudh Venkataramanan (4):
-  ice: Fix static analyser warning
-  ice: Cleanup magic number
-  ice: Fix bugs in control queue processing
-  ice: Fix couple of null pointer dereference issues
+Remove the following interrupt causes that are not applicable or not
+handled:
+- PFINT_OICR_HLP_RDY_M
+- PFINT_OICR_CPM_RDY_M
+- PFINT_OICR_GPIO_M
+- PFINT_OICR_STORM_DETECT_M
 
-Brett Creeley (2):
-  ice: Don't explicitly set port_vlan_bits to 0
-  ice: Set VLAN flags correctly
+Add the following interrupt cause that's actually handled in ice_misc_intr:
+- PFINT_OICR_PE_CRITERR_M
 
-Bruce Allan (3):
-  ice: Fix missing shift
-  ice: Update to interrupts enabled in OICR
-  ice: Change struct members from bool to u8
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> Removed defines from ice_hw_autogen.h]
+---
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 8 --------
+ drivers/net/ethernet/intel/ice/ice_main.c       | 9 +++------
+ 2 files changed, 3 insertions(+), 14 deletions(-)
 
-Jacob Keller (2):
-  ice: Report stats for allocated queues via ethtool stats
-  ice: Use order_base_2 to calculate higher power of 2
-
-Jesse Brandeburg (1):
-  ice: Fix potential return of uninitialized value
-
-Preethi Banala (1):
-  ice: Clean control queues only when they are initialized
-
- drivers/net/ethernet/intel/ice/ice.h            | 15 ++--
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  1 +
- drivers/net/ethernet/intel/ice/ice_controlq.c   | 29 +++++---
- drivers/net/ethernet/intel/ice/ice_ethtool.c    | 52 ++++++++++----
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  8 ---
- drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h  |  1 +
- drivers/net/ethernet/intel/ice/ice_main.c       | 91 +++++++++++++++----------
- drivers/net/ethernet/intel/ice/ice_switch.c     |  3 +-
- drivers/net/ethernet/intel/ice/ice_switch.h     |  6 +-
- drivers/net/ethernet/intel/ice/ice_txrx.h       |  2 +-
- drivers/net/ethernet/intel/ice/ice_type.h       | 16 ++---
- 11 files changed, 141 insertions(+), 83 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 499904874b3f..6076fc87df9d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -121,10 +121,6 @@
+ #define PFINT_FW_CTL_CAUSE_ENA_S	30
+ #define PFINT_FW_CTL_CAUSE_ENA_M	BIT(PFINT_FW_CTL_CAUSE_ENA_S)
+ #define PFINT_OICR			0x0016CA00
+-#define PFINT_OICR_HLP_RDY_S		14
+-#define PFINT_OICR_HLP_RDY_M		BIT(PFINT_OICR_HLP_RDY_S)
+-#define PFINT_OICR_CPM_RDY_S		15
+-#define PFINT_OICR_CPM_RDY_M		BIT(PFINT_OICR_CPM_RDY_S)
+ #define PFINT_OICR_ECC_ERR_S		16
+ #define PFINT_OICR_ECC_ERR_M		BIT(PFINT_OICR_ECC_ERR_S)
+ #define PFINT_OICR_MAL_DETECT_S		19
+@@ -133,10 +129,6 @@
+ #define PFINT_OICR_GRST_M		BIT(PFINT_OICR_GRST_S)
+ #define PFINT_OICR_PCI_EXCEPTION_S	21
+ #define PFINT_OICR_PCI_EXCEPTION_M	BIT(PFINT_OICR_PCI_EXCEPTION_S)
+-#define PFINT_OICR_GPIO_S		22
+-#define PFINT_OICR_GPIO_M		BIT(PFINT_OICR_GPIO_S)
+-#define PFINT_OICR_STORM_DETECT_S	24
+-#define PFINT_OICR_STORM_DETECT_M	BIT(PFINT_OICR_STORM_DETECT_S)
+ #define PFINT_OICR_HMC_ERR_S		26
+ #define PFINT_OICR_HMC_ERR_M		BIT(PFINT_OICR_HMC_ERR_S)
+ #define PFINT_OICR_PE_CRITERR_S		28
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 71cc5b6e6237..bcd39654ab4b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1702,15 +1702,12 @@ static void ice_ena_misc_vector(struct ice_pf *pf)
+ 	wr32(hw, PFINT_OICR_ENA, 0);	/* disable all */
+ 	rd32(hw, PFINT_OICR);		/* read to clear */
+ 
+-	val = (PFINT_OICR_HLP_RDY_M |
+-	       PFINT_OICR_CPM_RDY_M |
+-	       PFINT_OICR_ECC_ERR_M |
++	val = (PFINT_OICR_ECC_ERR_M |
+ 	       PFINT_OICR_MAL_DETECT_M |
+ 	       PFINT_OICR_GRST_M |
+ 	       PFINT_OICR_PCI_EXCEPTION_M |
+-	       PFINT_OICR_GPIO_M |
+-	       PFINT_OICR_STORM_DETECT_M |
+-	       PFINT_OICR_HMC_ERR_M);
++	       PFINT_OICR_HMC_ERR_M |
++	       PFINT_OICR_PE_CRITERR_M);
+ 
+ 	wr32(hw, PFINT_OICR_ENA, val);
+ 
 -- 
 2.14.3
 
