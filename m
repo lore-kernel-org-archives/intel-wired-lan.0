@@ -1,151 +1,191 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Mon, 23 Jul 2018 10:03:25 -0700
-Subject: [Intel-wired-lan] [RFC 03/13] ice: Prevent control queue
- operations during reset
-In-Reply-To: <20180720205353.13296-4-anirudh.venkataramanan@intel.com>
-References: <20180720205353.13296-1-anirudh.venkataramanan@intel.com>
- <20180720205353.13296-4-anirudh.venkataramanan@intel.com>
-Message-ID: <bbb72a81-a76f-ef58-5c19-7c19d858f64e@oracle.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 23 Jul 2018 10:10:57 -0700
+Subject: [Intel-wired-lan] [jkirsher/next-queue PATCH 2/2] ixgbe:
+ Refactor queue disable logic to take completion time into account
+In-Reply-To: <ab26e694-6c7c-7e70-42f3-646939708ee2@oracle.com>
+References: <20180720222647.3568.34992.stgit@ahduyck-green-test.jf.intel.com>
+ <20180720222934.3568.15842.stgit@ahduyck-green-test.jf.intel.com>
+ <ab26e694-6c7c-7e70-42f3-646939708ee2@oracle.com>
+Message-ID: <CAKgT0UcKaSKKQgULsCVa+iUh1bFUg=ZZaNJ6fp=HiECQfPor7g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/20/2018 1:53 PM, Anirudh Venkataramanan wrote:
-> Once reset is issued, the driver loses all control queue interfaces.
-> Exercising control queue operations during reset is incorrect and
-> may result in long timeouts.
-> 
-> This patch introduces a new field 'reset_ongoing' in the hw structure.
-> This is set to 1 by the core driver when it receives a reset interrupt.
-> ice_sq_send_cmd checks reset_ongoing before actually issuing the control
-> queue operation. If a reset is in progress, it returns a soft error code
-> (ICE_ERR_RESET_PENDING) to the caller. The caller may or may not have to
-> take any action based on this return. Once the driver knows that the
-> reset is done, it has to set reset_ongoing back to 0. This will allow
-> control queue operations to be posted to the hardware again.
-> 
-> This "bail out" logic was specifically added to ice_sq_send_cmd (which
-> is pretty low level function) so that we have one solution in one place
-> that applies to all types of control queues.
-> 
-> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-> ---
->   drivers/net/ethernet/intel/ice/ice_controlq.c |  3 +++
->   drivers/net/ethernet/intel/ice/ice_main.c     | 34 +++++++++++++++++++++++----
->   drivers/net/ethernet/intel/ice/ice_status.h   |  1 +
->   drivers/net/ethernet/intel/ice/ice_type.h     |  1 +
->   4 files changed, 34 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-> index 62be72fdc8f3..1fe026a65d75 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-> @@ -806,6 +806,9 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
->   	u16 retval = 0;
->   	u32 val = 0;
->   
-> +	/* if reset is in progress return a soft error */
-> +	if (hw->reset_ongoing)
-> +		return ICE_ERR_RESET_ONGOING;
->   	mutex_lock(&cq->sq_lock);
->   
->   	cq->sq_last_status = ICE_AQ_RC_OK;
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-> index 3782569b450a..23bffa3cbf7f 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -535,10 +535,13 @@ static void ice_reset_subtask(struct ice_pf *pf)
->   		ice_prepare_for_reset(pf);
->   
->   		/* make sure we are ready to rebuild */
-> -		if (ice_check_reset(&pf->hw))
-> +		if (ice_check_reset(&pf->hw)) {
->   			set_bit(__ICE_RESET_FAILED, pf->state);
-> -		else
-> +		} else {
-> +			/* done with reset. start rebuild */
-> +			pf->hw.reset_ongoing = false;
->   			ice_rebuild(pf);
-> +		}
->   		clear_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
->   		goto unlock;
->   	}
-> @@ -1752,7 +1755,8 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
->   		 * We also make note of which reset happened so that peer
->   		 * devices/drivers can be informed.
->   		 */
-> -		if (!test_bit(__ICE_RESET_RECOVERY_PENDING, pf->state)) {
-> +		if (!test_and_set_bit(__ICE_RESET_RECOVERY_PENDING,
-> +				      pf->state)) {
->   			if (reset == ICE_RESET_CORER)
->   				set_bit(__ICE_CORER_RECV, pf->state);
->   			else if (reset == ICE_RESET_GLOBR)
-> @@ -1760,7 +1764,20 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
->   			else
->   				set_bit(__ICE_EMPR_RECV, pf->state);
->   
-> -			set_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
-> +			/* There are couple of different bits at play here.
-> +			 * hw->reset_ongoing indicates whether the hardware is
-> +			 * in reset. This is set to true when a reset interrupt
-> +			 * is received and set back to false after the driver
-> +			 * has determined that the hardware is out of reset.
-> +			 *
-> +			 * __ICE_RESET_RECOVERY_PENDING in pf->state indicates
-> +			 * that a post reset rebuild is required before the
-> +			 * driver is operational again. This is set above.
-> +			 *
-> +			 * As this is the start of the reset/rebuild cycle, set
-> +			 * both to indicate that.
-> +			 */
-> +			hw->reset_ongoing = true;
->   		}
->   	}
->   
-> @@ -4187,7 +4204,14 @@ static int ice_vsi_stop_tx_rings(struct ice_vsi *vsi)
->   	}
->   	status = ice_dis_vsi_txq(vsi->port_info, vsi->num_txq, q_ids, q_teids,
->   				 NULL);
-> -	if (status) {
-> +	/* if the disable queue command was exercised during an active reset
-> +	 * flow, ICE_ERR_RESET_ONGOING is returned. This is not an error as
-> +	 * the reset operation disables queues at the hardware level anyway.
-> +	 */
-> +	if (status == ICE_ERR_RESET_ONGOING) {
-> +		dev_info(&pf->pdev->dev,
-> +			 "Reset in progress. LAN Tx queues already disabled\n");
+On Mon, Jul 23, 2018 at 9:34 AM, Shannon Nelson
+<shannon.nelson@oracle.com> wrote:
+> On 7/20/2018 3:29 PM, Alexander Duyck wrote:
+>>
+>> This change is meant to allow us to take completion time into account when
+>> disabling queues. Previously we were just working with hard coded values
+>> for how long we should wait. This worked fine for the standard case where
+>> completion timeout was operating in the 50us to 50ms range, however on
+>> platforms that have higher completion timeout times this was resulting in
+>> Rx queues disable messages being displayed as we weren't waiting long
+>> enough for outstanding Rx DMA completions.
+>>
+>> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+>> ---
+>
+>
+> [...]
+>
+>
+>> +
+>> +void ixgbe_disable_tx(struct ixgbe_adapter *adapter)
+>> +{
+>> +       unsigned long wait_delay, delay_interval;
+>> +       struct ixgbe_hw *hw = &adapter->hw;
+>> +       int i, wait_loop;
+>> +       u32 txdctl;
+>> +
+>> +       if (ixgbe_removed(hw->hw_addr))
+>> +               return;
+>> +
+>> +       /* disable all enabled Tx queues */
+>> +       for (i = 0; i < adapter->num_tx_queues; i++) {
+>> +               struct ixgbe_ring *ring = adapter->tx_ring[i];
+>> +               u8 reg_idx = ring->reg_idx;
+>> +
+>> +               IXGBE_WRITE_REG(hw, IXGBE_TXDCTL(reg_idx),
+>> IXGBE_TXDCTL_SWFLSH);
+>> +       }
+>> +
+>> +       /* disable all enabled XDP Tx queues */
+>> +       for (i = 0; i < adapter->num_xdp_queues; i++) {
+>> +               struct ixgbe_ring *ring = adapter->xdp_ring[i];
+>> +               u8 reg_idx = ring->reg_idx;
+>> +
+>> +               IXGBE_WRITE_REG(hw, IXGBE_TXDCTL(reg_idx),
+>> IXGBE_TXDCTL_SWFLSH);
+>> +       }
+>> +
+>> +       /* If the link is now up there shouldn't be much in the way of
+>
+>
+> I think you mean "not" up rather than "now" up, which has the opposite
+> meaning and could be a bit confusing.
 
-Unnecessary log message - make this a debug message if you really want 
-to keep it around.
+Yeah, that is a typo.
 
-> +	} else if (status) {
->   		dev_err(&pf->pdev->dev,
->   			"Failed to disable LAN Tx queues, error: %d\n",
->   			status);
-> diff --git a/drivers/net/ethernet/intel/ice/ice_status.h b/drivers/net/ethernet/intel/ice/ice_status.h
-> index 9a95c4ffd7d7..d2dae913d81e 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_status.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_status.h
-> @@ -20,6 +20,7 @@ enum ice_status {
->   	ICE_ERR_ALREADY_EXISTS			= -14,
->   	ICE_ERR_DOES_NOT_EXIST			= -15,
->   	ICE_ERR_MAX_LIMIT			= -17,
-> +	ICE_ERR_RESET_ONGOING			= -18,
->   	ICE_ERR_BUF_TOO_SHORT			= -52,
->   	ICE_ERR_NVM_BLANK_MODE			= -53,
->   	ICE_ERR_AQ_ERROR			= -100,
-> diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-> index f5aff99bbb61..bc31d1069cab 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_type.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-> @@ -289,6 +289,7 @@ struct ice_hw {
->   	u8 sw_entry_point_layer;
->   
->   	u8 evb_veb;		/* true for VEB, false for VEPA */
-> +	u8 reset_ongoing;	/* true if hw is in reset, false otherwise */
->   	struct ice_bus_info bus;
->   	struct ice_nvm_info nvm;
->   	struct ice_hw_dev_caps dev_caps;	/* device capabilities */
-> 
+>
+>> +        * pending transactions. Those that are left will be flushed out
+>> +        * when the reset logic goes through the flush sequence to clean
+>> out
+>> +        * the pending Tx transactions.
+>> +        */
+>> +       if (!(IXGBE_READ_REG(hw, IXGBE_LINKS) & IXGBE_LINKS_UP))
+>> +               goto dma_engine_disable;
+>> +
+>> +       /* Determine our minimum delay interval. We will increase this
+>> value
+>> +        * with each subsequent test. This way if the device returns
+>> quickly
+>> +        * we should spend as little time as possible waiting, however as
+>> +        * the time increases we will wait for larger periods of time.
+>> +        *
+>> +        * The trick here is that we increase the interval using the
+>> +        * following pattern: 1x 3x 5x 7x 9x 11x 13x 15x 17x 19x. The
+>> result
+>> +        * of that wait is that it totals up to 100x whatever interval we
+>> +        * choose. Since our minimum wait is 100us we can just divide the
+>> +        * total timeout by 100 to get our minimum delay interval.
+>> +        */
+>> +       delay_interval = ixgbe_get_completion_timeout(adapter) / 100;
+>> +
+>> +       wait_loop = IXGBE_MAX_RX_DESC_POLL;
+>> +       wait_delay = delay_interval;
+>> +
+>> +       while (wait_loop--) {
+>> +               usleep_range(wait_delay, wait_delay + 10);
+>> +               wait_delay += delay_interval * 2;
+>> +               txdctl = 0;
+>> +
+>> +               /* OR together the reading of all the active TXDCTL
+>> registers,
+>> +                * and then test the result. We need the disable to
+>> complete
+>> +                * before we start freeing the memory and invalidating the
+>> +                * DMA mappings.
+>> +                */
+>> +               for (i = 0; i < adapter->num_tx_queues; i++) {
+>> +                       struct ixgbe_ring *ring = adapter->tx_ring[i];
+>> +                       u8 reg_idx = ring->reg_idx;
+>> +
+>> +                       txdctl |= IXGBE_READ_REG(hw,
+>> IXGBE_TXDCTL(reg_idx));
+>> +               }
+>> +               for (i = 0; i < adapter->num_xdp_queues; i++) {
+>> +                       struct ixgbe_ring *ring = adapter->xdp_ring[i];
+>> +                       u8 reg_idx = ring->reg_idx;
+>> +
+>> +                       txdctl |= IXGBE_READ_REG(hw,
+>> IXGBE_TXDCTL(reg_idx));
+>> +               }
+>> +
+>> +               if (!(txdctl & IXGBE_TXDCTL_ENABLE))
+>> +                       goto dma_engine_disable;
+>> +       }
+>> +
+>> +       e_err(drv,
+>> +             "TXDCTL.ENABLE for one or more queues not cleared within the
+>> polling period\n");
+>> +
+>> +dma_engine_disable:
+>> +       /* Disable the Tx DMA engine on 82599 and later MAC */
+>> +       switch (hw->mac.type) {
+>> +       case ixgbe_mac_82599EB:
+>> +       case ixgbe_mac_X540:
+>> +       case ixgbe_mac_X550:
+>> +       case ixgbe_mac_X550EM_x:
+>> +       case ixgbe_mac_x550em_a:
+>> +               IXGBE_WRITE_REG(hw, IXGBE_DMATXCTL,
+>> +                               (IXGBE_READ_REG(hw, IXGBE_DMATXCTL) &
+>> +                                ~IXGBE_DMATXCTL_TE));
+>> +               /* fall through */
+>> +       default:
+>> +               break;
+>> +       }
+>
+>
+> Picky bike-shed thoughts: I realize you're just moving the previously
+> existing code, but with the comment "... and later MAC" I would think the
+> translation to code puts all the later MACs into the default and have the
+> WRITE_REG() as the default action.  This would make it default to the
+> correct action for any new MACs if someone forgot to fix up this part of the
+> code.
+>
+>         switch (hw->mac.type) {
+>         case ixgbe_mac_82598EB:
+>                 break;
+>
+>         case ixgbe_mac_82599EB:
+>         case ixgbe_mac_X540:
+>         case ixgbe_mac_X550:
+>         case ixgbe_mac_X550EM_x:
+>         case ixgbe_mac_x550em_a:
+>         default:
+>                 IXGBE_WRITE_REG(hw, IXGBE_DMATXCTL,
+>                                 (IXGBE_READ_REG(hw, IXGBE_DMATXCTL) &
+>                                  ~IXGBE_DMATXCTL_TE));
+>                 break;
+>         }
+>
+> Or even simpler,
+>
+>         if (hw->mac.type != ixgbe_mac_82598EB)
+>                 IXGBE_WRITE_REG(hw, IXGBE_DMATXCTL,
+>                                 (IXGBE_READ_REG(hw, IXGBE_DMATXCTL) &
+>                                  ~IXGBE_DMATXCTL_TE));
+>
+> Okay, I'll stop now.
+>
+> Cheers,
+> sln
+
+Yeah, for now I will probably leave the code as is, but this is
+something that could be updated int he future. Either that or you are
+always free to submit a patch.. :-)
+
+- Alex
