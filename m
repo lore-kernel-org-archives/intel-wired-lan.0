@@ -1,105 +1,62 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 15:05:13 -0700
-Subject: [Intel-wired-lan] [PATCH v2 06/13] ice: Fix bugs in control queue
- processing
+Date: Mon, 23 Jul 2018 15:05:18 -0700
+Subject: [Intel-wired-lan] [PATCH v2 11/13] ice: Fix couple of null pointer
+ dereference issues
 In-Reply-To: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
 References: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723220520.16678-7-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723220520.16678-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is a consolidation of multiple bug fixes for control queue
-processing.
+When ice_ena_msix_range() fails to reserve vectors, a devm_kfree() warning
+was seen in the error flow path. So check pf->irq_tracker before use in
+ice_clear_interrupt_scheme().
 
-1)  In ice_clean_adminq_subtask() remove unnecessary reads/writes to
-    registers. The bits PFINT_FW_CTL, PFINT_MBX_CTL and PFINT_SB_CTL
-    are not set when an interrupt arrives, which means that clearing them
-    again can be omitted.
-
-2)  Get an accurate value in "pending" by re-reading the control queue
-    head register from the hardware.
-
-3)  Fix a corner case involving lost control queue messages by checking
-    for new control messages (using ice_ctrlq_pending) before exiting the
-    cleanup routine.
+In ice_vsi_cfg(), check vsi->netdev before use.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_controlq.c |  5 ++++-
- drivers/net/ethernet/intel/ice/ice_main.c     | 26 ++++++++++++++++++++++----
- 2 files changed, 26 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index c064416080e7..62be72fdc8f3 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -1065,8 +1065,11 @@ ice_clean_rq_elem(struct ice_hw *hw, struct ice_ctl_q_info *cq,
- 
- clean_rq_elem_out:
- 	/* Set pending if needed, unlock and return */
--	if (pending)
-+	if (pending) {
-+		/* re-read HW head to calculate actual pending messages */
-+		ntu = (u16)(rd32(hw, cq->rq.head) & cq->rq.head_mask);
- 		*pending = (u16)((ntc > ntu ? cq->rq.count : 0) + (ntu - ntc));
-+	}
- clean_rq_elem_err:
- 	mutex_unlock(&cq->rq_lock);
- 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 450911345144..81b04e1d7ea2 100644
+index bcd39654ab4b..e5b8eb0c4581 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -916,6 +916,21 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- 	return pending && (i == ICE_DFLT_IRQ_WORK);
+@@ -3259,8 +3259,10 @@ static void ice_clear_interrupt_scheme(struct ice_pf *pf)
+ 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
+ 		ice_dis_msix(pf);
+ 
+-	devm_kfree(&pf->pdev->dev, pf->irq_tracker);
+-	pf->irq_tracker = NULL;
++	if (pf->irq_tracker) {
++		devm_kfree(&pf->pdev->dev, pf->irq_tracker);
++		pf->irq_tracker = NULL;
++	}
  }
  
-+/**
-+ * ice_ctrlq_pending - check if there is a difference between ntc and ntu
-+ * @hw: pointer to hardware info
-+ * @cq: control queue information
-+ *
-+ * returns true if there are pending messages in a queue, false if there aren't
-+ */
-+static bool ice_ctrlq_pending(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	u16 ntu;
-+
-+	ntu = (u16)(rd32(hw, cq->rq.head) & cq->rq.head_mask);
-+	return cq->rq.next_to_clean != ntu;
-+}
-+
  /**
-  * ice_clean_adminq_subtask - clean the AdminQ rings
-  * @pf: board private structure
-@@ -923,7 +938,6 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- static void ice_clean_adminq_subtask(struct ice_pf *pf)
+@@ -4114,11 +4116,12 @@ static int ice_vsi_cfg(struct ice_vsi *vsi)
  {
- 	struct ice_hw *hw = &pf->hw;
--	u32 val;
+ 	int err;
  
- 	if (!test_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state))
- 		return;
-@@ -933,9 +947,13 @@ static void ice_clean_adminq_subtask(struct ice_pf *pf)
+-	ice_set_rx_mode(vsi->netdev);
+-
+-	err = ice_restore_vlan(vsi);
+-	if (err)
+-		return err;
++	if (vsi->netdev) {
++		ice_set_rx_mode(vsi->netdev);
++		err = ice_restore_vlan(vsi);
++		if (err)
++			return err;
++	}
  
- 	clear_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state);
- 
--	/* re-enable Admin queue interrupt causes */
--	val = rd32(hw, PFINT_FW_CTL);
--	wr32(hw, PFINT_FW_CTL, (val | PFINT_FW_CTL_CAUSE_ENA_M));
-+	/* There might be a situation where new messages arrive to a control
-+	 * queue between processing the last message and clearing the
-+	 * EVENT_PENDING bit. So before exiting, check queue head again (using
-+	 * ice_ctrlq_pending) and process new messages if any.
-+	 */
-+	if (ice_ctrlq_pending(hw, &hw->adminq))
-+		__ice_clean_ctrlq(pf, ICE_CTL_Q_ADMIN);
- 
- 	ice_flush(hw);
- }
+ 	err = ice_vsi_cfg_txqs(vsi);
+ 	if (!err)
 -- 
 2.14.3
 
