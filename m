@@ -1,171 +1,62 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 15:05:20 -0700
-Subject: [Intel-wired-lan] [PATCH v2 13/13] ice: Change struct members from
- bool to u8
+Date: Mon, 23 Jul 2018 15:05:15 -0700
+Subject: [Intel-wired-lan] [PATCH v2 08/13] ice: Don't explicitly set
+ port_vlan_bits to 0
 In-Reply-To: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
 References: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723220520.16678-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723220520.16678-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Recent versions of checkpatch have a new warning based on a documented
-preference of Linus to not use bool in structures due to wasted space and
-the size of bool is implementation dependent.  For more information, see
-the email thread at https://lkml.org/lkml/2017/11/21/384.
+This patch fixes the following smatch warning originally reported by
+Dan Carpenter:
+ice_set_dflt_vsi_ctx() warn: odd binop '0x0 & 0x18'
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+In ice_set_dflt_vsi_ctx() we clear bits 3 and 4 for legacy behavior
+(i.e. show VLAN, DEI and UP in the receive descriptors). However
+the logic to do this generated the above mentioned smatch warning.
+
+Bits 3 and 4 in port_vlan_flags are anyway set to zero by the memset on
+ctxt->info field, so remove the logic to set these explicitly to 0. This
+fixes the smatch warning as well.
+
+CC: Shannon Nelson <shannon.nelson@oracle.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h        |  8 ++++----
- drivers/net/ethernet/intel/ice/ice_switch.h |  6 +++---
- drivers/net/ethernet/intel/ice/ice_txrx.h   |  2 +-
- drivers/net/ethernet/intel/ice/ice_type.h   | 16 ++++++++--------
- 4 files changed, 16 insertions(+), 16 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index ed071ea75f20..868f4a1d0f72 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -196,9 +196,9 @@ struct ice_vsi {
- 	struct list_head tmp_sync_list;		/* MAC filters to be synced */
- 	struct list_head tmp_unsync_list;	/* MAC filters to be unsynced */
- 
--	bool irqs_ready;
--	bool current_isup;		 /* Sync 'link up' logging */
--	bool stat_offsets_loaded;
-+	u8 irqs_ready;
-+	u8 current_isup;		 /* Sync 'link up' logging */
-+	u8 stat_offsets_loaded;
- 
- 	/* queue information */
- 	u8 tx_mapping_mode;		 /* ICE_MAP_MODE_[CONTIG|SCATTER] */
-@@ -269,7 +269,7 @@ struct ice_pf {
- 	struct ice_hw_port_stats stats;
- 	struct ice_hw_port_stats stats_prev;
- 	struct ice_hw hw;
--	bool stat_prev_loaded;	/* has previous stats been loaded */
-+	u8 stat_prev_loaded;	/* has previous stats been loaded */
- 	char int_name[ICE_INT_NAME_STR_LEN];
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 6f4a0d159dbf..9b8ec128ee31 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -17,7 +17,7 @@ struct ice_vsi_ctx {
- 	u16 vsis_unallocated;
- 	u16 flags;
- 	struct ice_aqc_vsi_props info;
--	bool alloc_from_pool;
-+	u8 alloc_from_pool;
- };
- 
- enum ice_sw_fwd_act_type {
-@@ -94,8 +94,8 @@ struct ice_fltr_info {
- 	u8 qgrp_size;
- 
- 	/* Rule creations populate these indicators basing on the switch type */
--	bool lb_en;	/* Indicate if packet can be looped back */
--	bool lan_en;	/* Indicate if packet can be forwarded to the uplink */
-+	u8 lb_en;	/* Indicate if packet can be looped back */
-+	u8 lan_en;	/* Indicate if packet can be forwarded to the uplink */
- };
- 
- /* Bookkeeping structure to hold bitmap of VSIs corresponding to VSI list id */
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 567067b650c4..31bc998fe200 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -143,7 +143,7 @@ struct ice_ring {
- 	u16 next_to_use;
- 	u16 next_to_clean;
- 
--	bool ring_active;		/* is ring online or not */
-+	u8 ring_active;			/* is ring online or not */
- 
- 	/* stats structs */
- 	struct ice_q_stats	stats;
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 99c8a9a71b5e..97c366e0ca59 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -83,7 +83,7 @@ struct ice_link_status {
- 	u64 phy_type_low;
- 	u16 max_frame_size;
- 	u16 link_speed;
--	bool lse_ena;	/* Link Status Event notification */
-+	u8 lse_ena;	/* Link Status Event notification */
- 	u8 link_info;
- 	u8 an_info;
- 	u8 ext_info;
-@@ -101,7 +101,7 @@ struct ice_phy_info {
- 	struct ice_link_status link_info_old;
- 	u64 phy_type_low;
- 	enum ice_media_type media_type;
--	bool get_link_info;
-+	u8 get_link_info;
- };
- 
- /* Common HW capabilities for SW use */
-@@ -167,7 +167,7 @@ struct ice_nvm_info {
- 	u32 oem_ver;              /* OEM version info */
- 	u16 sr_words;             /* Shadow RAM size in words */
- 	u16 ver;                  /* NVM package version */
--	bool blank_nvm_mode;      /* is NVM empty (no FW present) */
-+	u8 blank_nvm_mode;        /* is NVM empty (no FW present) */
- };
- 
- /* Max number of port to queue branches w.r.t topology */
-@@ -181,7 +181,7 @@ struct ice_sched_node {
- 	struct ice_aqc_txsched_elem_data info;
- 	u32 agg_id;			/* aggregator group id */
- 	u16 vsi_id;
--	bool in_use;			/* suspended or in use */
-+	u8 in_use;			/* suspended or in use */
- 	u8 tx_sched_layer;		/* Logical Layer (1-9) */
- 	u8 num_children;
- 	u8 tc_num;
-@@ -218,7 +218,7 @@ struct ice_sched_vsi_info {
- struct ice_sched_tx_policy {
- 	u16 max_num_vsis;
- 	u8 max_num_lan_qs_per_tc[ICE_MAX_TRAFFIC_CLASS];
--	bool rdma_ena;
-+	u8 rdma_ena;
- };
- 
- struct ice_port_info {
-@@ -243,7 +243,7 @@ struct ice_port_info {
- 	struct list_head agg_list;	/* lists all aggregator */
- 	u8 lport;
- #define ICE_LPORT_MASK		0xff
--	bool is_vf;
-+	u8 is_vf;
- };
- 
- struct ice_switch_info {
-@@ -287,7 +287,7 @@ struct ice_hw {
- 	u8 max_cgds;
- 	u8 sw_entry_point_layer;
- 
--	bool evb_veb;		/* true for VEB, false for VEPA */
-+	u8 evb_veb;		/* true for VEB, false for VEPA */
- 	struct ice_bus_info bus;
- 	struct ice_nvm_info nvm;
- 	struct ice_hw_dev_caps dev_caps;	/* device capabilities */
-@@ -318,7 +318,7 @@ struct ice_hw {
- 	u8 itr_gran_100;
- 	u8 itr_gran_50;
- 	u8 itr_gran_25;
--	bool ucast_shared;	/* true if VSIs can share unicast addr */
-+	u8 ucast_shared;	/* true if VSIs can share unicast addr */
- 
- };
- 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index feeca75912ec..586c6e615a98 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1367,14 +1367,13 @@ static void ice_set_dflt_vsi_ctx(struct ice_vsi_ctx *ctxt)
+ 	ctxt->info.sw_flags = ICE_AQ_VSI_SW_FLAG_SRC_PRUNE;
+ 	/* Traffic from VSI can be sent to LAN */
+ 	ctxt->info.sw_flags2 = ICE_AQ_VSI_SW_FLAG_LAN_ENA;
+-	/* Allow all packets untagged/tagged */
++	/* By default bits 3 and 4 in port_vlan_flags are 0's which results in
++	 * legacy behavior (show VLAN, DEI, and UP) in descriptor. Also, allow
++	 * all packets untagged/tagged.
++	 */
+ 	ctxt->info.port_vlan_flags = ((ICE_AQ_VSI_PVLAN_MODE_ALL &
+ 				       ICE_AQ_VSI_PVLAN_MODE_M) >>
+ 				      ICE_AQ_VSI_PVLAN_MODE_S);
+-	/* Show VLAN/UP from packets in Rx descriptors */
+-	ctxt->info.port_vlan_flags |= ((ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH &
+-					ICE_AQ_VSI_PVLAN_EMOD_M) >>
+-				       ICE_AQ_VSI_PVLAN_EMOD_S);
+ 	/* Have 1:1 UP mapping for both ingress/egress tables */
+ 	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
+ 	table |= ICE_UP_TABLE_TRANSLATE(1, 1);
 -- 
 2.14.3
 
