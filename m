@@ -1,53 +1,57 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 10:37:39 -0700
-Subject: [Intel-wired-lan] [PATCH 00/13] Bug fixes for ice
-Message-ID: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
+Date: Mon, 23 Jul 2018 10:37:40 -0700
+Subject: [Intel-wired-lan] [PATCH 01/13] ice: Fix static analyser warning
+In-Reply-To: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
+References: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723173752.19676-2-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch set fixes multiple bugs for the ice driver.
+This patch fixes one of the smatch (a static analysis tool) warnings
+reported by Dan Carpenter. ICE_LG_ACT_GENERIC_OFFSET_M is the right mask
+to use but it appears that ICE_LG_ACT_GENERIC_VALUE_M was used instead,
+which resulted in the following smatch warning:
 
-Anirudh Venkataramanan (4):
-  ice: Fix static analyser warning
-  ice: Cleanup magic number
-  ice: Fix bugs in control queue processing
-  ice: Fix couple of null pointer dereference issues
+ice_add_marker_act() warn: odd binop '0x380000 & 0x7fff8'
 
-Brett Creeley (2):
-  ice: Don't explicitly set port_vlan_bits to 0
-  ice: Set VLAN flags correctly
+Additionally, use a new define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX
+instead of magic number '7'.
 
-Bruce Allan (3):
-  ice: Fix missing shift
-  ice: Update to interrupts enabled in OICR
-  ice: Change struct members from bool to u8
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 1 +
+ drivers/net/ethernet/intel/ice/ice_switch.c     | 3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-Jacob Keller (2):
-  ice: Report stats for allocated queues via ethtool stats
-  ice: Use order_base_2 to calculate higher power of 2
-
-Jesse Brandeburg (1):
-  ice: Fix potential return of uninitialized value
-
-Preethi Banala (1):
-  ice: Clean control queues only when they are initialized
-
- drivers/net/ethernet/intel/ice/ice.h            | 15 ++--
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  1 +
- drivers/net/ethernet/intel/ice/ice_controlq.c   | 29 +++++---
- drivers/net/ethernet/intel/ice/ice_ethtool.c    | 52 ++++++++++----
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  8 ---
- drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h  |  1 +
- drivers/net/ethernet/intel/ice/ice_main.c       | 91 +++++++++++++++----------
- drivers/net/ethernet/intel/ice/ice_switch.c     |  3 +-
- drivers/net/ethernet/intel/ice/ice_switch.h     |  6 +-
- drivers/net/ethernet/intel/ice/ice_txrx.h       |  2 +-
- drivers/net/ethernet/intel/ice/ice_type.h       | 16 ++---
- 11 files changed, 141 insertions(+), 83 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 7541ec2270b3..6d3e11659ba5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -594,6 +594,7 @@ struct ice_sw_rule_lg_act {
+ #define ICE_LG_ACT_GENERIC_OFFSET_M	(0x7 << ICE_LG_ACT_GENERIC_OFFSET_S)
+ #define ICE_LG_ACT_GENERIC_PRIORITY_S	22
+ #define ICE_LG_ACT_GENERIC_PRIORITY_M	(0x7 << ICE_LG_ACT_GENERIC_PRIORITY_S)
++#define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX	7
+ 
+ 	/* Action = 7 - Set Stat count */
+ #define ICE_LG_ACT_STAT_COUNT		0x7
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 723d15f1e90b..750d2051a976 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -645,7 +645,8 @@ ice_add_marker_act(struct ice_hw *hw, struct ice_fltr_mgmt_list_entry *m_ent,
+ 	act |= (1 << ICE_LG_ACT_GENERIC_VALUE_S) & ICE_LG_ACT_GENERIC_VALUE_M;
+ 	lg_act->pdata.lg_act.act[1] = cpu_to_le32(act);
+ 
+-	act = (7 << ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_VALUE_M;
++	act = (ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX <<
++	       ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_OFFSET_M;
+ 
+ 	/* Third action Marker value */
+ 	act |= ICE_LG_ACT_GENERIC;
 -- 
 2.14.3
 
