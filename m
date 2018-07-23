@@ -1,110 +1,25 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 24 Jul 2018 00:00:30 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 9fc8e9984f18d769abd6673df16c6647f4de390e
-Message-ID: <5b55fb9e.jx/iYB2eZQqk//fy%lkp@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 23 Jul 2018 09:24:06 -0700
+Subject: [Intel-wired-lan] [RFC PATCH] ixgbe:
+ ixgbe_get_completion_timeout() can be static
+In-Reply-To: <20180721055327.GA30259@lkp-wsm-ep1>
+References: <20180720222934.3568.15842.stgit@ahduyck-green-test.jf.intel.com>
+ <20180721055327.GA30259@lkp-wsm-ep1>
+Message-ID: <CAKgT0UdHYJdWeh5_bhYViOqVYX7-N9MVHrEj=e1MK7RO7TxjJA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 9fc8e9984f18d769abd6673df16c6647f4de390e  ixgbe: Refactor queue disable logic to take completion time into account
+On Fri, Jul 20, 2018 at 10:53 PM, kbuild test robot
+<fengguang.wu@intel.com> wrote:
+>
+> Fixes: 23f3effc3f69 ("ixgbe: Refactor queue disable logic to take completion time into account")
+> Signed-off-by: kbuild test robot <fengguang.wu@intel.com>
 
-elapsed time: 29m
+Jeff do you think you could fold this into the current completion timeout patch?
 
-configs tested: 85
+Thanks.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201829
-x86_64                 randconfig-x007-201829
-x86_64                 randconfig-x003-201829
-x86_64                 randconfig-x000-201829
-x86_64                 randconfig-x005-201829
-x86_64                 randconfig-x004-201829
-x86_64                 randconfig-x008-201829
-x86_64                 randconfig-x001-201829
-x86_64                 randconfig-x009-201829
-x86_64                 randconfig-x002-201829
-x86_64                 randconfig-x006-201829
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i0-201829
-i386                     randconfig-i1-201829
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201829
-i386                     randconfig-a1-201829
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-x018-201829
-x86_64                 randconfig-x011-201829
-x86_64                 randconfig-x015-201829
-x86_64                 randconfig-x019-201829
-x86_64                 randconfig-x014-201829
-x86_64                 randconfig-x010-201829
-x86_64                 randconfig-x013-201829
-x86_64                 randconfig-x016-201829
-x86_64                 randconfig-x017-201829
-x86_64                 randconfig-x012-201829
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201829
-i386                     randconfig-s1-201829
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x012-201829
-i386                   randconfig-x017-201829
-i386                   randconfig-x014-201829
-i386                   randconfig-x016-201829
-i386                   randconfig-x013-201829
-i386                   randconfig-x011-201829
-i386                   randconfig-x018-201829
-i386                   randconfig-x010-201829
-i386                   randconfig-x015-201829
-i386                   randconfig-x019-201829
-i386                   randconfig-x078-201829
-i386                   randconfig-x070-201829
-i386                   randconfig-x075-201829
-i386                   randconfig-x076-201829
-i386                   randconfig-x074-201829
-i386                   randconfig-x079-201829
-i386                   randconfig-x071-201829
-i386                   randconfig-x073-201829
-i386                   randconfig-x072-201829
-i386                   randconfig-x077-201829
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x008-201829
-i386                   randconfig-x009-201829
-i386                   randconfig-x005-201829
-i386                   randconfig-x000-201829
-i386                   randconfig-x003-201829
-i386                   randconfig-x001-201829
-i386                   randconfig-x004-201829
-i386                   randconfig-x006-201829
-i386                   randconfig-x007-201829
-i386                   randconfig-x002-201829
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+- Alex
