@@ -1,57 +1,49 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 15:05:08 -0700
-Subject: [Intel-wired-lan] [PATCH v2 01/13] ice: Fix static analyser warning
+Date: Mon, 23 Jul 2018 15:05:09 -0700
+Subject: [Intel-wired-lan] [PATCH v2 02/13] ice: Cleanup magic number
 In-Reply-To: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
 References: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723220520.16678-2-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723220520.16678-3-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes one of the smatch (a static analysis tool) warnings
-reported by Dan Carpenter. ICE_LG_ACT_GENERIC_OFFSET_M is the right mask
-to use but it appears that ICE_LG_ACT_GENERIC_VALUE_M was used instead,
-which resulted in the following smatch warning:
-
-ice_add_marker_act() warn: odd binop '0x380000 & 0x7fff8'
-
-Additionally, use a new define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX
-instead of magic number '7'.
+Use define for the unit size shift of the Rx LAN context descriptor base
+address instead of the magic number 7.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 1 +
- drivers/net/ethernet/intel/ice/ice_switch.c     | 3 ++-
- 2 files changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 1 +
+ drivers/net/ethernet/intel/ice/ice_main.c      | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 7541ec2270b3..6d3e11659ba5 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -594,6 +594,7 @@ struct ice_sw_rule_lg_act {
- #define ICE_LG_ACT_GENERIC_OFFSET_M	(0x7 << ICE_LG_ACT_GENERIC_OFFSET_S)
- #define ICE_LG_ACT_GENERIC_PRIORITY_S	22
- #define ICE_LG_ACT_GENERIC_PRIORITY_M	(0x7 << ICE_LG_ACT_GENERIC_PRIORITY_S)
-+#define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX	7
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index d23a91665b46..068dbc740b76 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -265,6 +265,7 @@ enum ice_rx_flex_desc_status_error_0_bits {
+ struct ice_rlan_ctx {
+ 	u16 head;
+ 	u16 cpuid; /* bigger than needed, see above for reason */
++#define ICE_RLAN_BASE_S 7
+ 	u64 base;
+ 	u16 qlen;
+ #define ICE_RLAN_CTX_DBUF_S 7
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 5299caf55a7f..78756853ade1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3986,7 +3986,7 @@ static int ice_setup_rx_ctx(struct ice_ring *ring)
+ 	/* clear the context structure first */
+ 	memset(&rlan_ctx, 0, sizeof(rlan_ctx));
  
- 	/* Action = 7 - Set Stat count */
- #define ICE_LG_ACT_STAT_COUNT		0x7
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 723d15f1e90b..750d2051a976 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -645,7 +645,8 @@ ice_add_marker_act(struct ice_hw *hw, struct ice_fltr_mgmt_list_entry *m_ent,
- 	act |= (1 << ICE_LG_ACT_GENERIC_VALUE_S) & ICE_LG_ACT_GENERIC_VALUE_M;
- 	lg_act->pdata.lg_act.act[1] = cpu_to_le32(act);
+-	rlan_ctx.base = ring->dma >> 7;
++	rlan_ctx.base = ring->dma >> ICE_RLAN_BASE_S;
  
--	act = (7 << ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_VALUE_M;
-+	act = (ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX <<
-+	       ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_OFFSET_M;
+ 	rlan_ctx.qlen = ring->count;
  
- 	/* Third action Marker value */
- 	act |= ICE_LG_ACT_GENERIC;
 -- 
 2.14.3
 
