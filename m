@@ -1,171 +1,202 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 10:37:52 -0700
-Subject: [Intel-wired-lan] [PATCH 13/13] ice: Change struct members from
- bool to u8
+Date: Mon, 23 Jul 2018 10:37:43 -0700
+Subject: [Intel-wired-lan] [PATCH 04/13] ice: Report stats for allocated
+ queues via ethtool stats
 In-Reply-To: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
 References: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723173752.19676-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723173752.19676-5-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Recent versions of checkpatch have a new warning based on a documented
-preference of Linus to not use bool in structures due to wasted space and
-the size of bool is implementation dependent.  For more information, see
-the email thread at https://lkml.org/lkml/2017/11/21/384.
+It is not safe to have the string table for statistics change order or
+size over the lifetime of a given netdevice. This is because of the
+nature of the 3-step process for obtaining stats. First, userspace
+performs a request for the size of the strings table. Second it performs
+a separate request for the strings themselves, after allocating space
+for the table. Third, it requests the stats themselves, also allocating
+space for the table.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+If the size decreased, there is potential to see garbage data or stats
+values. In the worst case, we could potentially see stats values become
+mis-aligned with their strings, so that it looks like a statistic is
+being reported differently than it actually is.
+
+Even worse, if the size increased, there is potential that the strings
+table or stats table was not allocated large enough and the stats code
+could access and write to memory it should not, potentially resulting in
+undefined behavior and system crashes.
+
+It isn't even safe if the size always changes under the RTNL lock. This
+is because the calls take place over multiple userspace commands, so it
+is not possible to hold the RTNL lock for the entire duration of
+obtaining strings and stats. Further, not all consumers of the ethtool
+API are the userspace ethtool program, and it is possible that one
+assumes the strings will not change (valid under the current contract),
+and thus only requests the stats values when requesting stats in a loop.
+
+Finally, it's not possible in the general case to detect when the size
+changes, because it is quite possible that one value which could impact
+the stat size increased, while another decreased. This would result in
+the same total number of stats, but reordering them so that stats no
+longer line up with the strings they belong to. Since only size changes
+aren't enough, we would need some sort of hash or token to determine
+when the strings no longer match. This would require extending the
+ethtool stats commands, but there is no more space in the relevant
+structures.
+
+The real solution to resolve this would be to add a completely new API
+for stats, probably over netlink.
+
+In the ice driver, the only thing impacting the stats that is not
+constant is the number of queues. Instead of reporting stats for each
+used queue, report stats for each allocated queue. We do not change the
+number of queues allocated for a given netdevice, as we pass this into
+the alloc_etherdev_mq() function to set the num_tx_queues and
+num_rx_queues.
+
+This resolves the potential bugs at the slight cost of displaying many
+queue statistics which will not be activated.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h        |  8 ++++----
- drivers/net/ethernet/intel/ice/ice_switch.h |  6 +++---
- drivers/net/ethernet/intel/ice/ice_txrx.h   |  2 +-
- drivers/net/ethernet/intel/ice/ice_type.h   | 16 ++++++++--------
- 4 files changed, 16 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h         |  7 ++++
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 52 +++++++++++++++++++++-------
+ 2 files changed, 46 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index ed071ea75f20..868f4a1d0f72 100644
+index d8b5fff581e7..ed071ea75f20 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -196,9 +196,9 @@ struct ice_vsi {
- 	struct list_head tmp_sync_list;		/* MAC filters to be synced */
- 	struct list_head tmp_unsync_list;	/* MAC filters to be unsynced */
+@@ -89,6 +89,13 @@ extern const char ice_drv_ver[];
+ #define ice_for_each_rxq(vsi, i) \
+ 	for ((i) = 0; (i) < (vsi)->num_rxq; (i)++)
  
--	bool irqs_ready;
--	bool current_isup;		 /* Sync 'link up' logging */
--	bool stat_offsets_loaded;
-+	u8 irqs_ready;
-+	u8 current_isup;		 /* Sync 'link up' logging */
-+	u8 stat_offsets_loaded;
++/* Macros for each allocated tx/rx ring whether used or not in a VSI */
++#define ice_for_each_alloc_txq(vsi, i) \
++	for ((i) = 0; (i) < (vsi)->alloc_txq; (i)++)
++
++#define ice_for_each_alloc_rxq(vsi, i) \
++	for ((i) = 0; (i) < (vsi)->alloc_rxq; (i)++)
++
+ struct ice_tc_info {
+ 	u16 qoffset;
+ 	u16 qcount;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 1db304c01d10..807b683a5707 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -26,7 +26,7 @@ static int ice_q_stats_len(struct net_device *netdev)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
  
- 	/* queue information */
- 	u8 tx_mapping_mode;		 /* ICE_MAP_MODE_[CONTIG|SCATTER] */
-@@ -269,7 +269,7 @@ struct ice_pf {
- 	struct ice_hw_port_stats stats;
- 	struct ice_hw_port_stats stats_prev;
- 	struct ice_hw hw;
--	bool stat_prev_loaded;	/* has previous stats been loaded */
-+	u8 stat_prev_loaded;	/* has previous stats been loaded */
- 	char int_name[ICE_INT_NAME_STR_LEN];
- };
+-	return ((np->vsi->num_txq + np->vsi->num_rxq) *
++	return ((np->vsi->alloc_txq + np->vsi->alloc_rxq) *
+ 		(sizeof(struct ice_q_stats) / sizeof(u64)));
+ }
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 6f4a0d159dbf..9b8ec128ee31 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -17,7 +17,7 @@ struct ice_vsi_ctx {
- 	u16 vsis_unallocated;
- 	u16 flags;
- 	struct ice_aqc_vsi_props info;
--	bool alloc_from_pool;
-+	u8 alloc_from_pool;
- };
+@@ -218,7 +218,7 @@ static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+ 			p += ETH_GSTRING_LEN;
+ 		}
  
- enum ice_sw_fwd_act_type {
-@@ -94,8 +94,8 @@ struct ice_fltr_info {
- 	u8 qgrp_size;
+-		ice_for_each_txq(vsi, i) {
++		ice_for_each_alloc_txq(vsi, i) {
+ 			snprintf(p, ETH_GSTRING_LEN,
+ 				 "tx-queue-%u.tx_packets", i);
+ 			p += ETH_GSTRING_LEN;
+@@ -226,7 +226,7 @@ static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+ 			p += ETH_GSTRING_LEN;
+ 		}
  
- 	/* Rule creations populate these indicators basing on the switch type */
--	bool lb_en;	/* Indicate if packet can be looped back */
--	bool lan_en;	/* Indicate if packet can be forwarded to the uplink */
-+	u8 lb_en;	/* Indicate if packet can be looped back */
-+	u8 lan_en;	/* Indicate if packet can be forwarded to the uplink */
- };
+-		ice_for_each_rxq(vsi, i) {
++		ice_for_each_alloc_rxq(vsi, i) {
+ 			snprintf(p, ETH_GSTRING_LEN,
+ 				 "rx-queue-%u.rx_packets", i);
+ 			p += ETH_GSTRING_LEN;
+@@ -253,6 +253,24 @@ static int ice_get_sset_count(struct net_device *netdev, int sset)
+ {
+ 	switch (sset) {
+ 	case ETH_SS_STATS:
++		/* The number (and order) of strings reported *must* remain
++		 * constant for a given netdevice. This function must not
++		 * report a different number based on run time parameters
++		 * (such as the number of queues in use, or the setting of
++		 * a private ethtool flag). This is due to the nature of the
++		 * ethtool stats API.
++		 *
++		 * Userspace programs such as ethtool must make 3 separate
++		 * ioctl requests, one for size, one for the strings, and
++		 * finally one for the stats. Since these cross into
++		 * userspace, changes to the number or size could result in
++		 * undefined memory access or incorrect string<->value
++		 * correlations for statistics.
++		 *
++		 * Even if it appears to be safe, changes to the size or
++		 * order of strings will suffer from race conditions and are
++		 * not safe.
++		 */
+ 		return ICE_ALL_STATS_LEN(netdev);
+ 	default:
+ 		return -EOPNOTSUPP;
+@@ -280,18 +298,26 @@ ice_get_ethtool_stats(struct net_device *netdev,
+ 	/* populate per queue stats */
+ 	rcu_read_lock();
  
- /* Bookkeeping structure to hold bitmap of VSIs corresponding to VSI list id */
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 567067b650c4..31bc998fe200 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -143,7 +143,7 @@ struct ice_ring {
- 	u16 next_to_use;
- 	u16 next_to_clean;
+-	ice_for_each_txq(vsi, j) {
++	ice_for_each_alloc_txq(vsi, j) {
+ 		ring = READ_ONCE(vsi->tx_rings[j]);
+-		if (!ring)
+-			continue;
+-		data[i++] = ring->stats.pkts;
+-		data[i++] = ring->stats.bytes;
++		if (ring) {
++			data[i++] = ring->stats.pkts;
++			data[i++] = ring->stats.bytes;
++		} else {
++			data[i++] = 0;
++			data[i++] = 0;
++		}
+ 	}
  
--	bool ring_active;		/* is ring online or not */
-+	u8 ring_active;			/* is ring online or not */
+-	ice_for_each_rxq(vsi, j) {
++	ice_for_each_alloc_rxq(vsi, j) {
+ 		ring = READ_ONCE(vsi->rx_rings[j]);
+-		data[i++] = ring->stats.pkts;
+-		data[i++] = ring->stats.bytes;
++		if (ring) {
++			data[i++] = ring->stats.pkts;
++			data[i++] = ring->stats.bytes;
++		} else {
++			data[i++] = 0;
++			data[i++] = 0;
++		}
+ 	}
  
- 	/* stats structs */
- 	struct ice_q_stats	stats;
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 99c8a9a71b5e..97c366e0ca59 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -83,7 +83,7 @@ struct ice_link_status {
- 	u64 phy_type_low;
- 	u16 max_frame_size;
- 	u16 link_speed;
--	bool lse_ena;	/* Link Status Event notification */
-+	u8 lse_ena;	/* Link Status Event notification */
- 	u8 link_info;
- 	u8 an_info;
- 	u8 ext_info;
-@@ -101,7 +101,7 @@ struct ice_phy_info {
- 	struct ice_link_status link_info_old;
- 	u64 phy_type_low;
- 	enum ice_media_type media_type;
--	bool get_link_info;
-+	u8 get_link_info;
- };
+ 	rcu_read_unlock();
+@@ -519,7 +545,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
+ 		goto done;
+ 	}
  
- /* Common HW capabilities for SW use */
-@@ -167,7 +167,7 @@ struct ice_nvm_info {
- 	u32 oem_ver;              /* OEM version info */
- 	u16 sr_words;             /* Shadow RAM size in words */
- 	u16 ver;                  /* NVM package version */
--	bool blank_nvm_mode;      /* is NVM empty (no FW present) */
-+	u8 blank_nvm_mode;        /* is NVM empty (no FW present) */
- };
+-	for (i = 0; i < vsi->num_txq; i++) {
++	for (i = 0; i < vsi->alloc_txq; i++) {
+ 		/* clone ring and setup updated count */
+ 		tx_rings[i] = *vsi->tx_rings[i];
+ 		tx_rings[i].count = new_tx_cnt;
+@@ -551,7 +577,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
+ 		goto done;
+ 	}
  
- /* Max number of port to queue branches w.r.t topology */
-@@ -181,7 +181,7 @@ struct ice_sched_node {
- 	struct ice_aqc_txsched_elem_data info;
- 	u32 agg_id;			/* aggregator group id */
- 	u16 vsi_id;
--	bool in_use;			/* suspended or in use */
-+	u8 in_use;			/* suspended or in use */
- 	u8 tx_sched_layer;		/* Logical Layer (1-9) */
- 	u8 num_children;
- 	u8 tc_num;
-@@ -218,7 +218,7 @@ struct ice_sched_vsi_info {
- struct ice_sched_tx_policy {
- 	u16 max_num_vsis;
- 	u8 max_num_lan_qs_per_tc[ICE_MAX_TRAFFIC_CLASS];
--	bool rdma_ena;
-+	u8 rdma_ena;
- };
- 
- struct ice_port_info {
-@@ -243,7 +243,7 @@ struct ice_port_info {
- 	struct list_head agg_list;	/* lists all aggregator */
- 	u8 lport;
- #define ICE_LPORT_MASK		0xff
--	bool is_vf;
-+	u8 is_vf;
- };
- 
- struct ice_switch_info {
-@@ -287,7 +287,7 @@ struct ice_hw {
- 	u8 max_cgds;
- 	u8 sw_entry_point_layer;
- 
--	bool evb_veb;		/* true for VEB, false for VEPA */
-+	u8 evb_veb;		/* true for VEB, false for VEPA */
- 	struct ice_bus_info bus;
- 	struct ice_nvm_info nvm;
- 	struct ice_hw_dev_caps dev_caps;	/* device capabilities */
-@@ -318,7 +318,7 @@ struct ice_hw {
- 	u8 itr_gran_100;
- 	u8 itr_gran_50;
- 	u8 itr_gran_25;
--	bool ucast_shared;	/* true if VSIs can share unicast addr */
-+	u8 ucast_shared;	/* true if VSIs can share unicast addr */
- 
- };
- 
+-	for (i = 0; i < vsi->num_rxq; i++) {
++	for (i = 0; i < vsi->alloc_rxq; i++) {
+ 		/* clone ring and setup updated count */
+ 		rx_rings[i] = *vsi->rx_rings[i];
+ 		rx_rings[i].count = new_rx_cnt;
 -- 
 2.14.3
 
