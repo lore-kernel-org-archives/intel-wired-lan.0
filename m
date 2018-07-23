@@ -1,191 +1,473 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 16:13:47 -0700
-Subject: [Intel-wired-lan] [PATCH 12/13] ice: Make ice_vsi_kill_vlan return
- an error code
+Date: Mon, 23 Jul 2018 16:13:43 -0700
+Subject: [Intel-wired-lan] [PATCH 08/13] ice: Clean up register file
 In-Reply-To: <20180723231348.14838-1-anirudh.venkataramanan@intel.com>
 References: <20180723231348.14838-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723231348.14838-13-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723231348.14838-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+This patch cleans up the existing register definitions.
 
-Prior to this patch ice_vsi_kill_vlan has a void return value and we
-were ignoring if it fails. Make ice_vsi_kill_vlan return an integer
-value so its return value can be checked and used to determine whether
-or not to update VLAN counts, structures, pruning bits.
+1) Several instances of long defines names used in the BIT() macro
+   were replaced to use the actual values they represent. As a
+   result some defines for shifts (ending with _S) that were used
+   only to create bitmasks were removed completely.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+2) Apply more consistent tab spacing.
+
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_main.c | 94 ++++++++++++++++++++++++++++---
- 1 file changed, 85 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 417 +++++++++++-------------
+ 1 file changed, 188 insertions(+), 229 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index e1ec525138ac..cb1145515f98 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -349,6 +349,63 @@ static bool ice_vsi_fltr_changed(struct ice_vsi *vsi)
- 	       test_bit(ICE_VSI_FLAG_VLAN_FLTR_CHANGED, vsi->flags);
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 6076fc87df9d..067ca26a1d94 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -6,251 +6,210 @@
+ #ifndef _ICE_HW_AUTOGEN_H_
+ #define _ICE_HW_AUTOGEN_H_
  
-+/**
-+ * ice_cfg_vlan_pruning - enable or disable VLAN pruning on the VSI
-+ * @vsi: VSI to enable or disable VLAN pruning on
-+ * @ena: set to true to enable VLAN pruning and false to disable it
-+ *
-+ * returns 0 if VSI is updated, negative otherwise
-+ */
-+static int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena)
-+{
-+	struct ice_vsi_ctx *ctxt;
-+	struct device *dev;
-+	int status;
-+
-+	if (!vsi)
-+		return -EINVAL;
-+
-+	dev = &vsi->back->pdev->dev;
-+	ctxt = devm_kzalloc(dev, sizeof(*ctxt), GFP_KERNEL);
-+	if (!ctxt)
-+		return -ENOMEM;
-+
-+	ctxt->info = vsi->info;
-+
-+	if (ena) {
-+		ctxt->info.sec_flags |=
-+			ICE_AQ_VSI_SEC_TX_VLAN_PRUNE_ENA <<
-+			ICE_AQ_VSI_SEC_TX_PRUNE_ENA_S;
-+		ctxt->info.sw_flags2 |= ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA;
-+	} else {
-+		ctxt->info.sec_flags &=
-+			~(ICE_AQ_VSI_SEC_TX_VLAN_PRUNE_ENA <<
-+			  ICE_AQ_VSI_SEC_TX_PRUNE_ENA_S);
-+		ctxt->info.sw_flags2 &= ~ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA;
-+	}
-+
-+	ctxt->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SECURITY_VALID |
-+						ICE_AQ_VSI_PROP_SW_VALID);
-+	ctxt->vsi_num = vsi->vsi_num;
-+	status = ice_aq_update_vsi(&vsi->back->hw, ctxt, NULL);
-+	if (status) {
-+		netdev_err(vsi->netdev, "%sabling VLAN pruning on VSI %d failed, err = %d, aq_err = %d\n",
-+			   ena ? "Ena" : "Dis", vsi->vsi_num, status,
-+			   vsi->back->hw.adminq.sq_last_status);
-+		goto err_out;
-+	}
-+
-+	vsi->info.sec_flags = ctxt->info.sec_flags;
-+	vsi->info.sw_flags2 = ctxt->info.sw_flags2;
-+
-+	devm_kfree(dev, ctxt);
-+	return 0;
-+
-+err_out:
-+	devm_kfree(dev, ctxt);
-+	return -EIO;
-+}
-+
- /**
-  * ice_vsi_sync_fltr - Update the VSI filter list to the HW
-  * @vsi: ptr to the VSI
-@@ -3128,7 +3185,7 @@ static int ice_vlan_rx_add_vid(struct net_device *netdev,
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
--	int ret = 0;
-+	int ret;
+-#define QTX_COMM_DBELL(_DBQM)		(0x002C0000 + ((_DBQM) * 4))
+-#define PF_FW_ARQBAH			0x00080180
+-#define PF_FW_ARQBAL			0x00080080
+-#define PF_FW_ARQH			0x00080380
+-#define PF_FW_ARQH_ARQH_S		0
+-#define PF_FW_ARQH_ARQH_M		ICE_M(0x3FF, PF_FW_ARQH_ARQH_S)
+-#define PF_FW_ARQLEN			0x00080280
+-#define PF_FW_ARQLEN_ARQLEN_S		0
+-#define PF_FW_ARQLEN_ARQLEN_M		ICE_M(0x3FF, PF_FW_ARQLEN_ARQLEN_S)
+-#define PF_FW_ARQLEN_ARQVFE_S		28
+-#define PF_FW_ARQLEN_ARQVFE_M		BIT(PF_FW_ARQLEN_ARQVFE_S)
+-#define PF_FW_ARQLEN_ARQOVFL_S		29
+-#define PF_FW_ARQLEN_ARQOVFL_M		BIT(PF_FW_ARQLEN_ARQOVFL_S)
+-#define PF_FW_ARQLEN_ARQCRIT_S		30
+-#define PF_FW_ARQLEN_ARQCRIT_M		BIT(PF_FW_ARQLEN_ARQCRIT_S)
+-#define PF_FW_ARQLEN_ARQENABLE_S	31
+-#define PF_FW_ARQLEN_ARQENABLE_M	BIT(PF_FW_ARQLEN_ARQENABLE_S)
+-#define PF_FW_ARQT			0x00080480
+-#define PF_FW_ATQBAH			0x00080100
+-#define PF_FW_ATQBAL			0x00080000
+-#define PF_FW_ATQH			0x00080300
+-#define PF_FW_ATQH_ATQH_S		0
+-#define PF_FW_ATQH_ATQH_M		ICE_M(0x3FF, PF_FW_ATQH_ATQH_S)
+-#define PF_FW_ATQLEN			0x00080200
+-#define PF_FW_ATQLEN_ATQLEN_S		0
+-#define PF_FW_ATQLEN_ATQLEN_M		ICE_M(0x3FF, PF_FW_ATQLEN_ATQLEN_S)
+-#define PF_FW_ATQLEN_ATQVFE_S		28
+-#define PF_FW_ATQLEN_ATQVFE_M		BIT(PF_FW_ATQLEN_ATQVFE_S)
+-#define PF_FW_ATQLEN_ATQOVFL_S		29
+-#define PF_FW_ATQLEN_ATQOVFL_M		BIT(PF_FW_ATQLEN_ATQOVFL_S)
+-#define PF_FW_ATQLEN_ATQCRIT_S		30
+-#define PF_FW_ATQLEN_ATQCRIT_M		BIT(PF_FW_ATQLEN_ATQCRIT_S)
+-#define PF_FW_ATQLEN_ATQENABLE_S	31
+-#define PF_FW_ATQLEN_ATQENABLE_M	BIT(PF_FW_ATQLEN_ATQENABLE_S)
+-#define PF_FW_ATQT			0x00080400
+-
++#define QTX_COMM_DBELL(_DBQM)			(0x002C0000 + ((_DBQM) * 4))
++#define PF_FW_ARQBAH				0x00080180
++#define PF_FW_ARQBAL				0x00080080
++#define PF_FW_ARQH				0x00080380
++#define PF_FW_ARQH_ARQH_M			ICE_M(0x3FF, 0)
++#define PF_FW_ARQLEN				0x00080280
++#define PF_FW_ARQLEN_ARQLEN_M			ICE_M(0x3FF, 0)
++#define PF_FW_ARQLEN_ARQVFE_M			BIT(28)
++#define PF_FW_ARQLEN_ARQOVFL_M			BIT(29)
++#define PF_FW_ARQLEN_ARQCRIT_M			BIT(30)
++#define PF_FW_ARQLEN_ARQENABLE_M		BIT(31)
++#define PF_FW_ARQT				0x00080480
++#define PF_FW_ATQBAH				0x00080100
++#define PF_FW_ATQBAL				0x00080000
++#define PF_FW_ATQH				0x00080300
++#define PF_FW_ATQH_ATQH_M			ICE_M(0x3FF, 0)
++#define PF_FW_ATQLEN				0x00080200
++#define PF_FW_ATQLEN_ATQLEN_M			ICE_M(0x3FF, 0)
++#define PF_FW_ATQLEN_ATQVFE_M			BIT(28)
++#define PF_FW_ATQLEN_ATQOVFL_M			BIT(29)
++#define PF_FW_ATQLEN_ATQCRIT_M			BIT(30)
++#define PF_FW_ATQLEN_ATQENABLE_M		BIT(31)
++#define PF_FW_ATQT				0x00080400
+ #define GLFLXP_RXDID_FLAGS(_i, _j)		(0x0045D000 + ((_i) * 4 + (_j) * 256))
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S	0
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, 0)
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S	8
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_M	ICE_M(0x3F, 8)
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_S	16
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_M	ICE_M(0x3F, 16)
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_S	24
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_M	ICE_M(0x3F, 24)
+ #define GLFLXP_RXDID_FLX_WRD_0(_i)		(0x0045c800 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_S)
++#define GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_M	ICE_M(0x3, 30)
+ #define GLFLXP_RXDID_FLX_WRD_1(_i)		(0x0045c900 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_S)
++#define GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_M	ICE_M(0x3, 30)
+ #define GLFLXP_RXDID_FLX_WRD_2(_i)		(0x0045ca00 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_S)
++#define GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_M	ICE_M(0x3, 30)
+ #define GLFLXP_RXDID_FLX_WRD_3(_i)		(0x0045cb00 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_S)
+-
+-#define QRXFLXP_CNTXT(_QRX)		(0x00480000 + ((_QRX) * 4))
+-#define QRXFLXP_CNTXT_RXDID_IDX_S	0
+-#define QRXFLXP_CNTXT_RXDID_IDX_M	ICE_M(0x3F, QRXFLXP_CNTXT_RXDID_IDX_S)
+-#define QRXFLXP_CNTXT_RXDID_PRIO_S	8
+-#define QRXFLXP_CNTXT_RXDID_PRIO_M	ICE_M(0x7, QRXFLXP_CNTXT_RXDID_PRIO_S)
+-#define QRXFLXP_CNTXT_TS_S		11
+-#define QRXFLXP_CNTXT_TS_M		BIT(QRXFLXP_CNTXT_TS_S)
+-#define GLGEN_RSTAT			0x000B8188
+-#define GLGEN_RSTAT_DEVSTATE_S		0
+-#define GLGEN_RSTAT_DEVSTATE_M		ICE_M(0x3, GLGEN_RSTAT_DEVSTATE_S)
+-#define GLGEN_RSTCTL			0x000B8180
+-#define GLGEN_RSTCTL_GRSTDEL_S		0
+-#define GLGEN_RSTCTL_GRSTDEL_M		ICE_M(0x3F, GLGEN_RSTCTL_GRSTDEL_S)
+-#define GLGEN_RSTAT_RESET_TYPE_S	2
+-#define GLGEN_RSTAT_RESET_TYPE_M	ICE_M(0x3, GLGEN_RSTAT_RESET_TYPE_S)
+-#define GLGEN_RTRIG			0x000B8190
+-#define GLGEN_RTRIG_CORER_S		0
+-#define GLGEN_RTRIG_CORER_M		BIT(GLGEN_RTRIG_CORER_S)
+-#define GLGEN_RTRIG_GLOBR_S		1
+-#define GLGEN_RTRIG_GLOBR_M		BIT(GLGEN_RTRIG_GLOBR_S)
+-#define GLGEN_STAT			0x000B612C
+-#define PFGEN_CTRL			0x00091000
+-#define PFGEN_CTRL_PFSWR_S		0
+-#define PFGEN_CTRL_PFSWR_M		BIT(PFGEN_CTRL_PFSWR_S)
+-#define PFGEN_STATE			0x00088000
+-#define PRTGEN_STATUS			0x000B8100
+-#define PFHMC_ERRORDATA			0x00520500
+-#define PFHMC_ERRORINFO			0x00520400
+-#define GLINT_DYN_CTL(_INT)		(0x00160000 + ((_INT) * 4))
+-#define GLINT_DYN_CTL_INTENA_S		0
+-#define GLINT_DYN_CTL_INTENA_M		BIT(GLINT_DYN_CTL_INTENA_S)
+-#define GLINT_DYN_CTL_CLEARPBA_S	1
+-#define GLINT_DYN_CTL_CLEARPBA_M	BIT(GLINT_DYN_CTL_CLEARPBA_S)
+-#define GLINT_DYN_CTL_SWINT_TRIG_S	2
+-#define GLINT_DYN_CTL_SWINT_TRIG_M	BIT(GLINT_DYN_CTL_SWINT_TRIG_S)
+-#define GLINT_DYN_CTL_ITR_INDX_S	3
+-#define GLINT_DYN_CTL_SW_ITR_INDX_S	25
+-#define GLINT_DYN_CTL_SW_ITR_INDX_M	ICE_M(0x3, GLINT_DYN_CTL_SW_ITR_INDX_S)
+-#define GLINT_DYN_CTL_INTENA_MSK_S	31
+-#define GLINT_DYN_CTL_INTENA_MSK_M	BIT(GLINT_DYN_CTL_INTENA_MSK_S)
+-#define GLINT_ITR(_i, _INT)		(0x00154000 + ((_i) * 8192 + (_INT) * 4))
+-#define PFINT_FW_CTL			0x0016C800
+-#define PFINT_FW_CTL_MSIX_INDX_S	0
+-#define PFINT_FW_CTL_MSIX_INDX_M	ICE_M(0x7FF, PFINT_FW_CTL_MSIX_INDX_S)
+-#define PFINT_FW_CTL_ITR_INDX_S		11
+-#define PFINT_FW_CTL_ITR_INDX_M		ICE_M(0x3, PFINT_FW_CTL_ITR_INDX_S)
+-#define PFINT_FW_CTL_CAUSE_ENA_S	30
+-#define PFINT_FW_CTL_CAUSE_ENA_M	BIT(PFINT_FW_CTL_CAUSE_ENA_S)
+-#define PFINT_OICR			0x0016CA00
+-#define PFINT_OICR_ECC_ERR_S		16
+-#define PFINT_OICR_ECC_ERR_M		BIT(PFINT_OICR_ECC_ERR_S)
+-#define PFINT_OICR_MAL_DETECT_S		19
+-#define PFINT_OICR_MAL_DETECT_M		BIT(PFINT_OICR_MAL_DETECT_S)
+-#define PFINT_OICR_GRST_S		20
+-#define PFINT_OICR_GRST_M		BIT(PFINT_OICR_GRST_S)
+-#define PFINT_OICR_PCI_EXCEPTION_S	21
+-#define PFINT_OICR_PCI_EXCEPTION_M	BIT(PFINT_OICR_PCI_EXCEPTION_S)
+-#define PFINT_OICR_HMC_ERR_S		26
+-#define PFINT_OICR_HMC_ERR_M		BIT(PFINT_OICR_HMC_ERR_S)
+-#define PFINT_OICR_PE_CRITERR_S		28
+-#define PFINT_OICR_PE_CRITERR_M		BIT(PFINT_OICR_PE_CRITERR_S)
+-#define PFINT_OICR_CTL			0x0016CA80
+-#define PFINT_OICR_CTL_MSIX_INDX_S	0
+-#define PFINT_OICR_CTL_MSIX_INDX_M	ICE_M(0x7FF, PFINT_OICR_CTL_MSIX_INDX_S)
+-#define PFINT_OICR_CTL_ITR_INDX_S	11
+-#define PFINT_OICR_CTL_ITR_INDX_M	ICE_M(0x3, PFINT_OICR_CTL_ITR_INDX_S)
+-#define PFINT_OICR_CTL_CAUSE_ENA_S	30
+-#define PFINT_OICR_CTL_CAUSE_ENA_M	BIT(PFINT_OICR_CTL_CAUSE_ENA_S)
+-#define PFINT_OICR_ENA			0x0016C900
+-#define QINT_RQCTL(_QRX)		(0x00150000 + ((_QRX) * 4))
+-#define QINT_RQCTL_MSIX_INDX_S		0
+-#define QINT_RQCTL_ITR_INDX_S		11
+-#define QINT_RQCTL_CAUSE_ENA_S		30
+-#define QINT_RQCTL_CAUSE_ENA_M		BIT(QINT_RQCTL_CAUSE_ENA_S)
+-#define QINT_TQCTL(_DBQM)		(0x00140000 + ((_DBQM) * 4))
+-#define QINT_TQCTL_MSIX_INDX_S		0
+-#define QINT_TQCTL_ITR_INDX_S		11
+-#define QINT_TQCTL_CAUSE_ENA_S		30
+-#define QINT_TQCTL_CAUSE_ENA_M		BIT(QINT_TQCTL_CAUSE_ENA_S)
+-#define GLLAN_RCTL_0			0x002941F8
+-#define QRX_CONTEXT(_i, _QRX)		(0x00280000 + ((_i) * 8192 + (_QRX) * 4))
+-#define QRX_CTRL(_QRX)			(0x00120000 + ((_QRX) * 4))
+-#define QRX_CTRL_MAX_INDEX		2047
+-#define QRX_CTRL_QENA_REQ_S		0
+-#define QRX_CTRL_QENA_REQ_M		BIT(QRX_CTRL_QENA_REQ_S)
+-#define QRX_CTRL_QENA_STAT_S		2
+-#define QRX_CTRL_QENA_STAT_M		BIT(QRX_CTRL_QENA_STAT_S)
+-#define QRX_ITR(_QRX)			(0x00292000 + ((_QRX) * 4))
+-#define QRX_TAIL(_QRX)			(0x00290000 + ((_QRX) * 4))
+-#define GLNVM_FLA			0x000B6108
+-#define GLNVM_FLA_LOCKED_S		6
+-#define GLNVM_FLA_LOCKED_M		BIT(GLNVM_FLA_LOCKED_S)
+-#define GLNVM_GENS			0x000B6100
+-#define GLNVM_GENS_SR_SIZE_S		5
+-#define GLNVM_GENS_SR_SIZE_M		ICE_M(0x7, GLNVM_GENS_SR_SIZE_S)
+-#define GLNVM_ULD			0x000B6008
+-#define GLNVM_ULD_CORER_DONE_S		3
+-#define GLNVM_ULD_CORER_DONE_M		BIT(GLNVM_ULD_CORER_DONE_S)
+-#define GLNVM_ULD_GLOBR_DONE_S		4
+-#define GLNVM_ULD_GLOBR_DONE_M		BIT(GLNVM_ULD_GLOBR_DONE_S)
+-#define PF_FUNC_RID			0x0009E880
+-#define PF_FUNC_RID_FUNC_NUM_S		0
+-#define PF_FUNC_RID_FUNC_NUM_M		ICE_M(0x7, PF_FUNC_RID_FUNC_NUM_S)
+-#define GLPRT_BPRCH(_i)			(0x00381384 + ((_i) * 8))
+-#define GLPRT_BPRCL(_i)			(0x00381380 + ((_i) * 8))
+-#define GLPRT_BPTCH(_i)			(0x00381244 + ((_i) * 8))
+-#define GLPRT_BPTCL(_i)			(0x00381240 + ((_i) * 8))
+-#define GLPRT_CRCERRS(_i)		(0x00380100 + ((_i) * 8))
+-#define GLPRT_GORCH(_i)			(0x00380004 + ((_i) * 8))
+-#define GLPRT_GORCL(_i)			(0x00380000 + ((_i) * 8))
+-#define GLPRT_GOTCH(_i)			(0x00380B44 + ((_i) * 8))
+-#define GLPRT_GOTCL(_i)			(0x00380B40 + ((_i) * 8))
+-#define GLPRT_ILLERRC(_i)		(0x003801C0 + ((_i) * 8))
+-#define GLPRT_LXOFFRXC(_i)		(0x003802C0 + ((_i) * 8))
+-#define GLPRT_LXOFFTXC(_i)		(0x00381180 + ((_i) * 8))
+-#define GLPRT_LXONRXC(_i)		(0x00380280 + ((_i) * 8))
+-#define GLPRT_LXONTXC(_i)		(0x00381140 + ((_i) * 8))
+-#define GLPRT_MLFC(_i)			(0x00380040 + ((_i) * 8))
+-#define GLPRT_MPRCH(_i)			(0x00381344 + ((_i) * 8))
+-#define GLPRT_MPRCL(_i)			(0x00381340 + ((_i) * 8))
+-#define GLPRT_MPTCH(_i)			(0x00381204 + ((_i) * 8))
+-#define GLPRT_MPTCL(_i)			(0x00381200 + ((_i) * 8))
+-#define GLPRT_MRFC(_i)			(0x00380080 + ((_i) * 8))
+-#define GLPRT_PRC1023H(_i)		(0x00380A04 + ((_i) * 8))
+-#define GLPRT_PRC1023L(_i)		(0x00380A00 + ((_i) * 8))
+-#define GLPRT_PRC127H(_i)		(0x00380944 + ((_i) * 8))
+-#define GLPRT_PRC127L(_i)		(0x00380940 + ((_i) * 8))
+-#define GLPRT_PRC1522H(_i)		(0x00380A44 + ((_i) * 8))
+-#define GLPRT_PRC1522L(_i)		(0x00380A40 + ((_i) * 8))
+-#define GLPRT_PRC255H(_i)		(0x00380984 + ((_i) * 8))
+-#define GLPRT_PRC255L(_i)		(0x00380980 + ((_i) * 8))
+-#define GLPRT_PRC511H(_i)		(0x003809C4 + ((_i) * 8))
+-#define GLPRT_PRC511L(_i)		(0x003809C0 + ((_i) * 8))
+-#define GLPRT_PRC64H(_i)		(0x00380904 + ((_i) * 8))
+-#define GLPRT_PRC64L(_i)		(0x00380900 + ((_i) * 8))
+-#define GLPRT_PRC9522H(_i)		(0x00380A84 + ((_i) * 8))
+-#define GLPRT_PRC9522L(_i)		(0x00380A80 + ((_i) * 8))
+-#define GLPRT_PTC1023H(_i)		(0x00380C84 + ((_i) * 8))
+-#define GLPRT_PTC1023L(_i)		(0x00380C80 + ((_i) * 8))
+-#define GLPRT_PTC127H(_i)		(0x00380BC4 + ((_i) * 8))
+-#define GLPRT_PTC127L(_i)		(0x00380BC0 + ((_i) * 8))
+-#define GLPRT_PTC1522H(_i)		(0x00380CC4 + ((_i) * 8))
+-#define GLPRT_PTC1522L(_i)		(0x00380CC0 + ((_i) * 8))
+-#define GLPRT_PTC255H(_i)		(0x00380C04 + ((_i) * 8))
+-#define GLPRT_PTC255L(_i)		(0x00380C00 + ((_i) * 8))
+-#define GLPRT_PTC511H(_i)		(0x00380C44 + ((_i) * 8))
+-#define GLPRT_PTC511L(_i)		(0x00380C40 + ((_i) * 8))
+-#define GLPRT_PTC64H(_i)		(0x00380B84 + ((_i) * 8))
+-#define GLPRT_PTC64L(_i)		(0x00380B80 + ((_i) * 8))
+-#define GLPRT_PTC9522H(_i)		(0x00380D04 + ((_i) * 8))
+-#define GLPRT_PTC9522L(_i)		(0x00380D00 + ((_i) * 8))
+-#define GLPRT_RFC(_i)			(0x00380AC0 + ((_i) * 8))
+-#define GLPRT_RJC(_i)			(0x00380B00 + ((_i) * 8))
+-#define GLPRT_RLEC(_i)			(0x00380140 + ((_i) * 8))
+-#define GLPRT_ROC(_i)			(0x00380240 + ((_i) * 8))
+-#define GLPRT_RUC(_i)			(0x00380200 + ((_i) * 8))
+-#define GLPRT_TDOLD(_i)			(0x00381280 + ((_i) * 8))
+-#define GLPRT_UPRCH(_i)			(0x00381304 + ((_i) * 8))
+-#define GLPRT_UPRCL(_i)			(0x00381300 + ((_i) * 8))
+-#define GLPRT_UPTCH(_i)			(0x003811C4 + ((_i) * 8))
+-#define GLPRT_UPTCL(_i)			(0x003811C0 + ((_i) * 8))
+-#define GLV_BPRCH(_i)			(0x003B6004 + ((_i) * 8))
+-#define GLV_BPRCL(_i)			(0x003B6000 + ((_i) * 8))
+-#define GLV_BPTCH(_i)			(0x0030E004 + ((_i) * 8))
+-#define GLV_BPTCL(_i)			(0x0030E000 + ((_i) * 8))
+-#define GLV_GORCH(_i)			(0x003B0004 + ((_i) * 8))
+-#define GLV_GORCL(_i)			(0x003B0000 + ((_i) * 8))
+-#define GLV_GOTCH(_i)			(0x00300004 + ((_i) * 8))
+-#define GLV_GOTCL(_i)			(0x00300000 + ((_i) * 8))
+-#define GLV_MPRCH(_i)			(0x003B4004 + ((_i) * 8))
+-#define GLV_MPRCL(_i)			(0x003B4000 + ((_i) * 8))
+-#define GLV_MPTCH(_i)			(0x0030C004 + ((_i) * 8))
+-#define GLV_MPTCL(_i)			(0x0030C000 + ((_i) * 8))
+-#define GLV_RDPC(_i)			(0x00294C04 + ((_i) * 4))
+-#define GLV_TEPC(_VSI)			(0x00312000 + ((_VSI) * 4))
+-#define GLV_UPRCH(_i)			(0x003B2004 + ((_i) * 8))
+-#define GLV_UPRCL(_i)			(0x003B2000 + ((_i) * 8))
+-#define GLV_UPTCH(_i)			(0x0030A004 + ((_i) * 8))
+-#define GLV_UPTCL(_i)			(0x0030A000 + ((_i) * 8))
+-#define VSIQF_HKEY_MAX_INDEX		12
++#define GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_M	ICE_M(0x3, 30)
++#define QRXFLXP_CNTXT(_QRX)			(0x00480000 + ((_QRX) * 4))
++#define QRXFLXP_CNTXT_RXDID_IDX_S		0
++#define QRXFLXP_CNTXT_RXDID_IDX_M		ICE_M(0x3F, 0)
++#define QRXFLXP_CNTXT_RXDID_PRIO_S		8
++#define QRXFLXP_CNTXT_RXDID_PRIO_M		ICE_M(0x7, 8)
++#define GLGEN_RSTAT				0x000B8188
++#define GLGEN_RSTAT_DEVSTATE_M			ICE_M(0x3, 0)
++#define GLGEN_RSTCTL				0x000B8180
++#define GLGEN_RSTCTL_GRSTDEL_S			0
++#define GLGEN_RSTCTL_GRSTDEL_M			ICE_M(0x3F, GLGEN_RSTCTL_GRSTDEL_S)
++#define GLGEN_RSTAT_RESET_TYPE_S		2
++#define GLGEN_RSTAT_RESET_TYPE_M		ICE_M(0x3, 2)
++#define GLGEN_RTRIG				0x000B8190
++#define GLGEN_RTRIG_CORER_M			BIT(0)
++#define GLGEN_RTRIG_GLOBR_M			BIT(1)
++#define GLGEN_STAT				0x000B612C
++#define PFGEN_CTRL				0x00091000
++#define PFGEN_CTRL_PFSWR_M			BIT(0)
++#define PFGEN_STATE				0x00088000
++#define PRTGEN_STATUS				0x000B8100
++#define PFHMC_ERRORDATA				0x00520500
++#define PFHMC_ERRORINFO				0x00520400
++#define GLINT_DYN_CTL(_INT)			(0x00160000 + ((_INT) * 4))
++#define GLINT_DYN_CTL_INTENA_M			BIT(0)
++#define GLINT_DYN_CTL_CLEARPBA_M		BIT(1)
++#define GLINT_DYN_CTL_SWINT_TRIG_M		BIT(2)
++#define GLINT_DYN_CTL_ITR_INDX_S		3
++#define GLINT_DYN_CTL_SW_ITR_INDX_M		ICE_M(0x3, 25)
++#define GLINT_DYN_CTL_INTENA_MSK_M		BIT(31)
++#define GLINT_ITR(_i, _INT)			(0x00154000 + ((_i) * 8192 + (_INT) * 4))
++#define PFINT_FW_CTL				0x0016C800
++#define PFINT_FW_CTL_MSIX_INDX_M		ICE_M(0x7FF, 0)
++#define PFINT_FW_CTL_ITR_INDX_S			11
++#define PFINT_FW_CTL_ITR_INDX_M			ICE_M(0x3, 11)
++#define PFINT_FW_CTL_CAUSE_ENA_M		BIT(30)
++#define PFINT_OICR				0x0016CA00
++#define PFINT_OICR_ECC_ERR_M			BIT(16)
++#define PFINT_OICR_MAL_DETECT_M			BIT(19)
++#define PFINT_OICR_GRST_M			BIT(20)
++#define PFINT_OICR_PCI_EXCEPTION_M		BIT(21)
++#define PFINT_OICR_HMC_ERR_M			BIT(26)
++#define PFINT_OICR_PE_CRITERR_M			BIT(28)
++#define PFINT_OICR_CTL				0x0016CA80
++#define PFINT_OICR_CTL_MSIX_INDX_M		ICE_M(0x7FF, 0)
++#define PFINT_OICR_CTL_ITR_INDX_S		11
++#define PFINT_OICR_CTL_ITR_INDX_M		ICE_M(0x3, 11)
++#define PFINT_OICR_CTL_CAUSE_ENA_M		BIT(30)
++#define PFINT_OICR_ENA				0x0016C900
++#define QINT_RQCTL(_QRX)			(0x00150000 + ((_QRX) * 4))
++#define QINT_RQCTL_MSIX_INDX_S			0
++#define QINT_RQCTL_ITR_INDX_S			11
++#define QINT_RQCTL_CAUSE_ENA_M			BIT(30)
++#define QINT_TQCTL(_DBQM)			(0x00140000 + ((_DBQM) * 4))
++#define QINT_TQCTL_MSIX_INDX_S			0
++#define QINT_TQCTL_ITR_INDX_S			11
++#define QINT_TQCTL_CAUSE_ENA_M			BIT(30)
++#define QRX_CONTEXT(_i, _QRX)			(0x00280000 + ((_i) * 8192 + (_QRX) * 4))
++#define QRX_CTRL(_QRX)				(0x00120000 + ((_QRX) * 4))
++#define QRX_CTRL_MAX_INDEX			2047
++#define QRX_CTRL_QENA_REQ_S			0
++#define QRX_CTRL_QENA_REQ_M			BIT(0)
++#define QRX_CTRL_QENA_STAT_S			2
++#define QRX_CTRL_QENA_STAT_M			BIT(2)
++#define QRX_ITR(_QRX)				(0x00292000 + ((_QRX) * 4))
++#define QRX_TAIL(_QRX)				(0x00290000 + ((_QRX) * 4))
++#define GLNVM_FLA				0x000B6108
++#define GLNVM_FLA_LOCKED_M			BIT(6)
++#define GLNVM_GENS				0x000B6100
++#define GLNVM_GENS_SR_SIZE_S			5
++#define GLNVM_GENS_SR_SIZE_M			ICE_M(0x7, 5)
++#define GLNVM_ULD				0x000B6008
++#define GLNVM_ULD_CORER_DONE_M			BIT(3)
++#define GLNVM_ULD_GLOBR_DONE_M			BIT(4)
++#define PF_FUNC_RID				0x0009E880
++#define PF_FUNC_RID_FUNC_NUM_S			0
++#define PF_FUNC_RID_FUNC_NUM_M			ICE_M(0x7, 0)
++#define GLPRT_BPRCH(_i)				(0x00381384 + ((_i) * 8))
++#define GLPRT_BPRCL(_i)				(0x00381380 + ((_i) * 8))
++#define GLPRT_BPTCH(_i)				(0x00381244 + ((_i) * 8))
++#define GLPRT_BPTCL(_i)				(0x00381240 + ((_i) * 8))
++#define GLPRT_CRCERRS(_i)			(0x00380100 + ((_i) * 8))
++#define GLPRT_GORCH(_i)				(0x00380004 + ((_i) * 8))
++#define GLPRT_GORCL(_i)				(0x00380000 + ((_i) * 8))
++#define GLPRT_GOTCH(_i)				(0x00380B44 + ((_i) * 8))
++#define GLPRT_GOTCL(_i)				(0x00380B40 + ((_i) * 8))
++#define GLPRT_ILLERRC(_i)			(0x003801C0 + ((_i) * 8))
++#define GLPRT_LXOFFRXC(_i)			(0x003802C0 + ((_i) * 8))
++#define GLPRT_LXOFFTXC(_i)			(0x00381180 + ((_i) * 8))
++#define GLPRT_LXONRXC(_i)			(0x00380280 + ((_i) * 8))
++#define GLPRT_LXONTXC(_i)			(0x00381140 + ((_i) * 8))
++#define GLPRT_MLFC(_i)				(0x00380040 + ((_i) * 8))
++#define GLPRT_MPRCH(_i)				(0x00381344 + ((_i) * 8))
++#define GLPRT_MPRCL(_i)				(0x00381340 + ((_i) * 8))
++#define GLPRT_MPTCH(_i)				(0x00381204 + ((_i) * 8))
++#define GLPRT_MPTCL(_i)				(0x00381200 + ((_i) * 8))
++#define GLPRT_MRFC(_i)				(0x00380080 + ((_i) * 8))
++#define GLPRT_PRC1023H(_i)			(0x00380A04 + ((_i) * 8))
++#define GLPRT_PRC1023L(_i)			(0x00380A00 + ((_i) * 8))
++#define GLPRT_PRC127H(_i)			(0x00380944 + ((_i) * 8))
++#define GLPRT_PRC127L(_i)			(0x00380940 + ((_i) * 8))
++#define GLPRT_PRC1522H(_i)			(0x00380A44 + ((_i) * 8))
++#define GLPRT_PRC1522L(_i)			(0x00380A40 + ((_i) * 8))
++#define GLPRT_PRC255H(_i)			(0x00380984 + ((_i) * 8))
++#define GLPRT_PRC255L(_i)			(0x00380980 + ((_i) * 8))
++#define GLPRT_PRC511H(_i)			(0x003809C4 + ((_i) * 8))
++#define GLPRT_PRC511L(_i)			(0x003809C0 + ((_i) * 8))
++#define GLPRT_PRC64H(_i)			(0x00380904 + ((_i) * 8))
++#define GLPRT_PRC64L(_i)			(0x00380900 + ((_i) * 8))
++#define GLPRT_PRC9522H(_i)			(0x00380A84 + ((_i) * 8))
++#define GLPRT_PRC9522L(_i)			(0x00380A80 + ((_i) * 8))
++#define GLPRT_PTC1023H(_i)			(0x00380C84 + ((_i) * 8))
++#define GLPRT_PTC1023L(_i)			(0x00380C80 + ((_i) * 8))
++#define GLPRT_PTC127H(_i)			(0x00380BC4 + ((_i) * 8))
++#define GLPRT_PTC127L(_i)			(0x00380BC0 + ((_i) * 8))
++#define GLPRT_PTC1522H(_i)			(0x00380CC4 + ((_i) * 8))
++#define GLPRT_PTC1522L(_i)			(0x00380CC0 + ((_i) * 8))
++#define GLPRT_PTC255H(_i)			(0x00380C04 + ((_i) * 8))
++#define GLPRT_PTC255L(_i)			(0x00380C00 + ((_i) * 8))
++#define GLPRT_PTC511H(_i)			(0x00380C44 + ((_i) * 8))
++#define GLPRT_PTC511L(_i)			(0x00380C40 + ((_i) * 8))
++#define GLPRT_PTC64H(_i)			(0x00380B84 + ((_i) * 8))
++#define GLPRT_PTC64L(_i)			(0x00380B80 + ((_i) * 8))
++#define GLPRT_PTC9522H(_i)			(0x00380D04 + ((_i) * 8))
++#define GLPRT_PTC9522L(_i)			(0x00380D00 + ((_i) * 8))
++#define GLPRT_RFC(_i)				(0x00380AC0 + ((_i) * 8))
++#define GLPRT_RJC(_i)				(0x00380B00 + ((_i) * 8))
++#define GLPRT_RLEC(_i)				(0x00380140 + ((_i) * 8))
++#define GLPRT_ROC(_i)				(0x00380240 + ((_i) * 8))
++#define GLPRT_RUC(_i)				(0x00380200 + ((_i) * 8))
++#define GLPRT_TDOLD(_i)				(0x00381280 + ((_i) * 8))
++#define GLPRT_UPRCH(_i)				(0x00381304 + ((_i) * 8))
++#define GLPRT_UPRCL(_i)				(0x00381300 + ((_i) * 8))
++#define GLPRT_UPTCH(_i)				(0x003811C4 + ((_i) * 8))
++#define GLPRT_UPTCL(_i)				(0x003811C0 + ((_i) * 8))
++#define GLV_BPRCH(_i)				(0x003B6004 + ((_i) * 8))
++#define GLV_BPRCL(_i)				(0x003B6000 + ((_i) * 8))
++#define GLV_BPTCH(_i)				(0x0030E004 + ((_i) * 8))
++#define GLV_BPTCL(_i)				(0x0030E000 + ((_i) * 8))
++#define GLV_GORCH(_i)				(0x003B0004 + ((_i) * 8))
++#define GLV_GORCL(_i)				(0x003B0000 + ((_i) * 8))
++#define GLV_GOTCH(_i)				(0x00300004 + ((_i) * 8))
++#define GLV_GOTCL(_i)				(0x00300000 + ((_i) * 8))
++#define GLV_MPRCH(_i)				(0x003B4004 + ((_i) * 8))
++#define GLV_MPRCL(_i)				(0x003B4000 + ((_i) * 8))
++#define GLV_MPTCH(_i)				(0x0030C004 + ((_i) * 8))
++#define GLV_MPTCL(_i)				(0x0030C000 + ((_i) * 8))
++#define GLV_RDPC(_i)				(0x00294C04 + ((_i) * 4))
++#define GLV_TEPC(_VSI)				(0x00312000 + ((_VSI) * 4))
++#define GLV_UPRCH(_i)				(0x003B2004 + ((_i) * 8))
++#define GLV_UPRCL(_i)				(0x003B2000 + ((_i) * 8))
++#define GLV_UPTCH(_i)				(0x0030A004 + ((_i) * 8))
++#define GLV_UPTCL(_i)				(0x0030A000 + ((_i) * 8))
++#define VSIQF_HKEY_MAX_INDEX			12
  
- 	if (vid >= VLAN_N_VID) {
- 		netdev_err(netdev, "VLAN id requested %d is out of range %d\n",
-@@ -3139,6 +3196,13 @@ static int ice_vlan_rx_add_vid(struct net_device *netdev,
- 	if (vsi->info.pvid)
- 		return -EINVAL;
- 
-+	/* Enable VLAN pruning when VLAN 0 is added */
-+	if (unlikely(!vid)) {
-+		ret = ice_cfg_vlan_pruning(vsi, true);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	/* Add all VLAN ids including 0 to the switch filter. VLAN id 0 is
- 	 * needed to continue allowing all untagged packets since VLAN prune
- 	 * list is applied to all packets by the switch
-@@ -3155,16 +3219,19 @@ static int ice_vlan_rx_add_vid(struct net_device *netdev,
-  * ice_vsi_kill_vlan - Remove VSI membership for a given VLAN
-  * @vsi: the VSI being configured
-  * @vid: VLAN id to be removed
-+ *
-+ * Returns 0 on success and negative on failure
-  */
--static void ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
-+static int ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
- {
- 	struct ice_fltr_list_entry *list;
- 	struct ice_pf *pf = vsi->back;
- 	LIST_HEAD(tmp_add_list);
-+	int status = 0;
- 
- 	list = devm_kzalloc(&pf->pdev->dev, sizeof(*list), GFP_KERNEL);
- 	if (!list)
--		return;
-+		return -ENOMEM;
- 
- 	list->fltr_info.lkup_type = ICE_SW_LKUP_VLAN;
- 	list->fltr_info.fwd_id.vsi_id = vsi->vsi_num;
-@@ -3176,11 +3243,14 @@ static void ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
- 	INIT_LIST_HEAD(&list->list_entry);
- 	list_add(&list->list_entry, &tmp_add_list);
- 
--	if (ice_remove_vlan(&pf->hw, &tmp_add_list))
-+	if (ice_remove_vlan(&pf->hw, &tmp_add_list)) {
- 		dev_err(&pf->pdev->dev, "Error removing VLAN %d on vsi %i\n",
- 			vid, vsi->vsi_num);
-+		status = -EIO;
-+	}
- 
- 	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
-+	return status;
- }
- 
- /**
-@@ -3196,19 +3266,25 @@ static int ice_vlan_rx_kill_vid(struct net_device *netdev,
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
-+	int status;
- 
- 	if (vsi->info.pvid)
- 		return -EINVAL;
- 
--	/* return code is ignored as there is nothing a user
--	 * can do about failure to remove and a log message was
--	 * already printed from the other function
-+	/* Make sure ice_vsi_kill_vlan is successful before updating VLAN
-+	 * information
- 	 */
--	ice_vsi_kill_vlan(vsi, vid);
-+	status = ice_vsi_kill_vlan(vsi, vid);
-+	if (status)
-+		return status;
- 
- 	clear_bit(vid, vsi->active_vlans);
- 
--	return 0;
-+	/* Disable VLAN pruning when VLAN 0 is removed */
-+	if (unlikely(!vid))
-+		status = ice_cfg_vlan_pruning(vsi, false);
-+
-+	return status;
- }
- 
- /**
+ #endif /* _ICE_HW_AUTOGEN_H_ */
 -- 
 2.14.3
 
