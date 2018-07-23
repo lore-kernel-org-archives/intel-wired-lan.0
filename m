@@ -1,72 +1,51 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 15:05:12 -0700
-Subject: [Intel-wired-lan] [PATCH v2 05/13] ice: Clean control queues only
- when they are initialized
+Date: Mon, 23 Jul 2018 15:05:19 -0700
+Subject: [Intel-wired-lan] [PATCH v2 12/13] ice: Fix potential return of
+ uninitialized value
 In-Reply-To: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
 References: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723220520.16678-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723220520.16678-13-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Preethi Banala <preethi.banala@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Clean control queues only when they are initialized. One of the ways to
-validate if the basic initialization is done is by checking value of
-cq->sq.head and cq->rq.head variables that specify the register address.
-This patch adds a check to avoid NULL pointer dereference crash when tried
-to shutdown uninitialized control queue.
+In ice_vsi_setup_[tx|rx]_rings, err is uninitialized which can result in
+a garbage value return to the caller. Fix that.
 
-Signed-off-by: Preethi Banala <preethi.banala@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_controlq.c | 24 ++++++++++++++++--------
- 1 file changed, 16 insertions(+), 8 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index 7c511f144ed6..c064416080e7 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -597,10 +597,14 @@ static enum ice_status ice_init_check_adminq(struct ice_hw *hw)
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index e5b8eb0c4581..3782569b450a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4887,7 +4887,7 @@ int ice_down(struct ice_vsi *vsi)
+  */
+ static int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
+ {
+-	int i, err;
++	int i, err = 0;
  
- init_ctrlq_free_rq:
--	ice_shutdown_rq(hw, cq);
--	ice_shutdown_sq(hw, cq);
--	mutex_destroy(&cq->sq_lock);
--	mutex_destroy(&cq->rq_lock);
-+	if (cq->rq.head) {
-+		ice_shutdown_rq(hw, cq);
-+		mutex_destroy(&cq->rq_lock);
-+	}
-+	if (cq->sq.head) {
-+		ice_shutdown_sq(hw, cq);
-+		mutex_destroy(&cq->sq_lock);
-+	}
- 	return status;
- }
+ 	if (!vsi->num_txq) {
+ 		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Tx queues\n",
+@@ -4912,7 +4912,7 @@ static int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
+  */
+ static int ice_vsi_setup_rx_rings(struct ice_vsi *vsi)
+ {
+-	int i, err;
++	int i, err = 0;
  
-@@ -706,10 +710,14 @@ static void ice_shutdown_ctrlq(struct ice_hw *hw, enum ice_ctl_q q_type)
- 		return;
- 	}
- 
--	ice_shutdown_sq(hw, cq);
--	ice_shutdown_rq(hw, cq);
--	mutex_destroy(&cq->sq_lock);
--	mutex_destroy(&cq->rq_lock);
-+	if (cq->sq.head) {
-+		ice_shutdown_sq(hw, cq);
-+		mutex_destroy(&cq->sq_lock);
-+	}
-+	if (cq->rq.head) {
-+		ice_shutdown_rq(hw, cq);
-+		mutex_destroy(&cq->rq_lock);
-+	}
- }
- 
- /**
+ 	if (!vsi->num_rxq) {
+ 		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Rx queues\n",
 -- 
 2.14.3
 
