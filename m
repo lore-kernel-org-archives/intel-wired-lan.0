@@ -1,42 +1,67 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 15:05:16 -0700
-Subject: [Intel-wired-lan] [PATCH v2 09/13] ice: Set VLAN flags correctly
+Date: Mon, 23 Jul 2018 15:05:14 -0700
+Subject: [Intel-wired-lan] [PATCH v2 07/13] ice: Use order_base_2 to
+ calculate higher power of 2
 In-Reply-To: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
 References: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723220520.16678-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723220520.16678-8-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Set the ICE_AQ_VSI_PVLAN_MODE_ALL bit to allow the driver to add a VLAN
-tag to all packets it sends.
+Currently, we use a combination of ilog2 and is_power_of_2() to
+calculate the next power of 2 for the qcount. This appears to be causing
+a warning on some combinations of GCC and the Linux kernel:
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+MODPOST 1 modules
+WARNING: "____ilog2_NaN" [ice.ko] undefined!
+
+This appears to because because GCC realizes that qcount could be zero
+in some circumstances and thus attempts to link against the
+intentionally undefined ___ilog2_NaN function.
+
+The order_base_2 function is intentionally defined to return 0 when
+passed 0 as an argument, and thus will be safe to use here.
+
+This not only fixes the warning but makes the resulting code slightly
+cleaner, and is really what we should have used originally.
+
+Also update the comment to make it more clear that we are rounding up,
+not just incrementing the ilog2 of qcount unconditionally.
+
+Without this patch, we get warnings when building against the upstream
+kernel.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> minor cleanup for upstream submission]
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_main.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 586c6e615a98..71cc5b6e6237 100644
+index 81b04e1d7ea2..feeca75912ec 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3779,6 +3779,9 @@ static int ice_vsi_manage_vlan_stripping(struct ice_vsi *vsi, bool ena)
- 		ctxt.info.port_vlan_flags = ICE_AQ_VSI_PVLAN_EMOD_NOTHING;
+@@ -1313,11 +1313,8 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ 		qcount = numq_tc;
  	}
  
-+	/* Allow all packets untagged/tagged */
-+	ctxt.info.port_vlan_flags |= ICE_AQ_VSI_PVLAN_MODE_ALL;
-+
- 	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
- 	ctxt.vsi_num = vsi->vsi_num;
+-	/* find higher power-of-2 of qcount */
+-	pow = ilog2(qcount);
+-
+-	if (!is_power_of_2(qcount))
+-		pow++;
++	/* find the (rounded up) power-of-2 of qcount */
++	pow = order_base_2(qcount);
  
+ 	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
+ 		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
 -- 
 2.14.3
 
