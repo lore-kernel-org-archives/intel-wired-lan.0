@@ -1,66 +1,85 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 10:37:46 -0700
-Subject: [Intel-wired-lan] [PATCH 07/13] ice: Use order_base_2 to calculate
- higher power of 2
+Date: Mon, 23 Jul 2018 10:37:49 -0700
+Subject: [Intel-wired-lan] [PATCH 10/13] ice: Update to interrupts enabled
+ in OICR
 In-Reply-To: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
 References: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723173752.19676-8-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723173752.19676-11-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Currently, we use a combination of ilog2 and is_power_of_2() to
-calculate the next power of 2 for the qcount. This appears to be causing
-a warning on some combinations of GCC and the Linux kernel:
+Remove the following interrupt causes that are not applicable or not
+handled:
+- PFINT_OICR_HLP_RDY_M
+- PFINT_OICR_CPM_RDY_M
+- PFINT_OICR_GPIO_M
+- PFINT_OICR_STORM_DETECT_M
 
-MODPOST 1 modules
-WARNING: "____ilog2_NaN" [ice.ko] undefined!
+Add the following interrupt cause that's actually handled in ice_misc_intr:
+- PFINT_OICR_PE_CRITERR_M
 
-This appears to because because GCC realizes that qcount could be zero
-in some circumstances and thus attempts to link against the
-intentionally undefined ___ilog2_NaN function.
-
-The order_base_2 function is intentionally defined to return 0 when
-passed 0 as an argument, and thus will be safe to use here.
-
-This not only fixes the warning but makes the resulting code slightly
-cleaner, and is really what we should have used originally.
-
-Also update the comment to make it more clear that we are rounding up,
-not just incrementing the ilog2 of qcount unconditionally.
-
-Without this patch, we get warnings when building against the upstream
-kernel.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> minor cleanup for upstream submission]
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> Removed defines from ice_hw_autogen.h]
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 8 --------
+ drivers/net/ethernet/intel/ice/ice_main.c       | 9 +++------
+ 2 files changed, 3 insertions(+), 14 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 499904874b3f..6076fc87df9d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -121,10 +121,6 @@
+ #define PFINT_FW_CTL_CAUSE_ENA_S	30
+ #define PFINT_FW_CTL_CAUSE_ENA_M	BIT(PFINT_FW_CTL_CAUSE_ENA_S)
+ #define PFINT_OICR			0x0016CA00
+-#define PFINT_OICR_HLP_RDY_S		14
+-#define PFINT_OICR_HLP_RDY_M		BIT(PFINT_OICR_HLP_RDY_S)
+-#define PFINT_OICR_CPM_RDY_S		15
+-#define PFINT_OICR_CPM_RDY_M		BIT(PFINT_OICR_CPM_RDY_S)
+ #define PFINT_OICR_ECC_ERR_S		16
+ #define PFINT_OICR_ECC_ERR_M		BIT(PFINT_OICR_ECC_ERR_S)
+ #define PFINT_OICR_MAL_DETECT_S		19
+@@ -133,10 +129,6 @@
+ #define PFINT_OICR_GRST_M		BIT(PFINT_OICR_GRST_S)
+ #define PFINT_OICR_PCI_EXCEPTION_S	21
+ #define PFINT_OICR_PCI_EXCEPTION_M	BIT(PFINT_OICR_PCI_EXCEPTION_S)
+-#define PFINT_OICR_GPIO_S		22
+-#define PFINT_OICR_GPIO_M		BIT(PFINT_OICR_GPIO_S)
+-#define PFINT_OICR_STORM_DETECT_S	24
+-#define PFINT_OICR_STORM_DETECT_M	BIT(PFINT_OICR_STORM_DETECT_S)
+ #define PFINT_OICR_HMC_ERR_S		26
+ #define PFINT_OICR_HMC_ERR_M		BIT(PFINT_OICR_HMC_ERR_S)
+ #define PFINT_OICR_PE_CRITERR_S		28
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 81b04e1d7ea2..feeca75912ec 100644
+index 71cc5b6e6237..bcd39654ab4b 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1313,11 +1313,8 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- 		qcount = numq_tc;
- 	}
+@@ -1702,15 +1702,12 @@ static void ice_ena_misc_vector(struct ice_pf *pf)
+ 	wr32(hw, PFINT_OICR_ENA, 0);	/* disable all */
+ 	rd32(hw, PFINT_OICR);		/* read to clear */
  
--	/* find higher power-of-2 of qcount */
--	pow = ilog2(qcount);
--
--	if (!is_power_of_2(qcount))
--		pow++;
-+	/* find the (rounded up) power-of-2 of qcount */
-+	pow = order_base_2(qcount);
+-	val = (PFINT_OICR_HLP_RDY_M |
+-	       PFINT_OICR_CPM_RDY_M |
+-	       PFINT_OICR_ECC_ERR_M |
++	val = (PFINT_OICR_ECC_ERR_M |
+ 	       PFINT_OICR_MAL_DETECT_M |
+ 	       PFINT_OICR_GRST_M |
+ 	       PFINT_OICR_PCI_EXCEPTION_M |
+-	       PFINT_OICR_GPIO_M |
+-	       PFINT_OICR_STORM_DETECT_M |
+-	       PFINT_OICR_HMC_ERR_M);
++	       PFINT_OICR_HMC_ERR_M |
++	       PFINT_OICR_PE_CRITERR_M);
  
- 	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
- 		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
+ 	wr32(hw, PFINT_OICR_ENA, val);
+ 
 -- 
 2.14.3
 
