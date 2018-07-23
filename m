@@ -1,57 +1,66 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 10:37:40 -0700
-Subject: [Intel-wired-lan] [PATCH 01/13] ice: Fix static analyser warning
+Date: Mon, 23 Jul 2018 10:37:46 -0700
+Subject: [Intel-wired-lan] [PATCH 07/13] ice: Use order_base_2 to calculate
+ higher power of 2
 In-Reply-To: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
 References: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723173752.19676-2-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723173752.19676-8-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes one of the smatch (a static analysis tool) warnings
-reported by Dan Carpenter. ICE_LG_ACT_GENERIC_OFFSET_M is the right mask
-to use but it appears that ICE_LG_ACT_GENERIC_VALUE_M was used instead,
-which resulted in the following smatch warning:
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-ice_add_marker_act() warn: odd binop '0x380000 & 0x7fff8'
+Currently, we use a combination of ilog2 and is_power_of_2() to
+calculate the next power of 2 for the qcount. This appears to be causing
+a warning on some combinations of GCC and the Linux kernel:
 
-Additionally, use a new define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX
-instead of magic number '7'.
+MODPOST 1 modules
+WARNING: "____ilog2_NaN" [ice.ko] undefined!
 
+This appears to because because GCC realizes that qcount could be zero
+in some circumstances and thus attempts to link against the
+intentionally undefined ___ilog2_NaN function.
+
+The order_base_2 function is intentionally defined to return 0 when
+passed 0 as an argument, and thus will be safe to use here.
+
+This not only fixes the warning but makes the resulting code slightly
+cleaner, and is really what we should have used originally.
+
+Also update the comment to make it more clear that we are rounding up,
+not just incrementing the ilog2 of qcount unconditionally.
+
+Without this patch, we get warnings when building against the upstream
+kernel.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> minor cleanup for upstream submission]
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 1 +
- drivers/net/ethernet/intel/ice/ice_switch.c     | 3 ++-
- 2 files changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 7541ec2270b3..6d3e11659ba5 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -594,6 +594,7 @@ struct ice_sw_rule_lg_act {
- #define ICE_LG_ACT_GENERIC_OFFSET_M	(0x7 << ICE_LG_ACT_GENERIC_OFFSET_S)
- #define ICE_LG_ACT_GENERIC_PRIORITY_S	22
- #define ICE_LG_ACT_GENERIC_PRIORITY_M	(0x7 << ICE_LG_ACT_GENERIC_PRIORITY_S)
-+#define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX	7
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 81b04e1d7ea2..feeca75912ec 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1313,11 +1313,8 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ 		qcount = numq_tc;
+ 	}
  
- 	/* Action = 7 - Set Stat count */
- #define ICE_LG_ACT_STAT_COUNT		0x7
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 723d15f1e90b..750d2051a976 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -645,7 +645,8 @@ ice_add_marker_act(struct ice_hw *hw, struct ice_fltr_mgmt_list_entry *m_ent,
- 	act |= (1 << ICE_LG_ACT_GENERIC_VALUE_S) & ICE_LG_ACT_GENERIC_VALUE_M;
- 	lg_act->pdata.lg_act.act[1] = cpu_to_le32(act);
+-	/* find higher power-of-2 of qcount */
+-	pow = ilog2(qcount);
+-
+-	if (!is_power_of_2(qcount))
+-		pow++;
++	/* find the (rounded up) power-of-2 of qcount */
++	pow = order_base_2(qcount);
  
--	act = (7 << ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_VALUE_M;
-+	act = (ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX <<
-+	       ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_OFFSET_M;
- 
- 	/* Third action Marker value */
- 	act |= ICE_LG_ACT_GENERIC;
+ 	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
+ 		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
 -- 
 2.14.3
 
