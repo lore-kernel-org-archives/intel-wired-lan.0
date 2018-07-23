@@ -1,59 +1,50 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 10:37:42 -0700
-Subject: [Intel-wired-lan] [PATCH 03/13] ice: Fix missing shift
+Date: Mon, 23 Jul 2018 10:37:51 -0700
+Subject: [Intel-wired-lan] [PATCH 12/13] ice: Fix potential return of
+ uninitialized value
 In-Reply-To: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
 References: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723173752.19676-4-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723173752.19676-13-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-The ITR index of the interrupt cause for OICR and FW interrupts is not
-being shifted correctly so when masked with PFINT_*_CTL_ITR_INDX_M it
-will always be zero.  Luckily, ICE_RX_ITR is zero anyway so the end result
-is the same, but the shift should be fixed in case the value of ICE_RX_ITR
-ever changes or it is substituted with another value that needs to be
-shifted properly.
+In ice_vsi_setup_[tx|rx]_rings, err is uninitialized which can result in
+a garbage value return to the caller. Fix that.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 78756853ade1..450911345144 100644
+index e5b8eb0c4581..3782569b450a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2058,15 +2058,17 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
- skip_req_irq:
- 	ice_ena_misc_vector(pf);
+@@ -4887,7 +4887,7 @@ int ice_down(struct ice_vsi *vsi)
+  */
+ static int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
+ {
+-	int i, err;
++	int i, err = 0;
  
--	val = (pf->oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
--	      (ICE_RX_ITR & PFINT_OICR_CTL_ITR_INDX_M) |
--	      PFINT_OICR_CTL_CAUSE_ENA_M;
-+	val = ((pf->oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
-+	       ((ICE_RX_ITR << PFINT_OICR_CTL_ITR_INDX_S) &
-+		PFINT_OICR_CTL_ITR_INDX_M) |
-+	       PFINT_OICR_CTL_CAUSE_ENA_M);
- 	wr32(hw, PFINT_OICR_CTL, val);
+ 	if (!vsi->num_txq) {
+ 		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Tx queues\n",
+@@ -4912,7 +4912,7 @@ static int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
+  */
+ static int ice_vsi_setup_rx_rings(struct ice_vsi *vsi)
+ {
+-	int i, err;
++	int i, err = 0;
  
- 	/* This enables Admin queue Interrupt causes */
--	val = (pf->oicr_idx & PFINT_FW_CTL_MSIX_INDX_M) |
--	      (ICE_RX_ITR & PFINT_FW_CTL_ITR_INDX_M) |
--	      PFINT_FW_CTL_CAUSE_ENA_M;
-+	val = ((pf->oicr_idx & PFINT_FW_CTL_MSIX_INDX_M) |
-+	       ((ICE_RX_ITR << PFINT_FW_CTL_ITR_INDX_S) &
-+		PFINT_FW_CTL_ITR_INDX_M) |
-+	       PFINT_FW_CTL_CAUSE_ENA_M);
- 	wr32(hw, PFINT_FW_CTL, val);
- 
- 	itr_gran = hw->itr_gran_200;
+ 	if (!vsi->num_rxq) {
+ 		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Rx queues\n",
 -- 
 2.14.3
 
