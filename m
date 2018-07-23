@@ -1,146 +1,65 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 24 Jul 2018 04:31:17 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:XDP-hints-EXPERIMENTAL]
- BUILD SUCCESS 58e0270bb7ac94a31ff0fe372385cfce4198b56c
-Message-ID: <5b563b15.GcVqxt9IbdfwNGBq%lkp@intel.com>
+From: Nemov, Sergey <sergey.nemov@intel.com>
+Date: Mon, 23 Jul 2018 20:40:33 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Remove duplicated prepare call
+ in i40e_shutdown
+In-Reply-To: <CAKgT0Ucq17ze_qVmKESMC-x-v687FJnWh-NqOZKbmdn8RuUKeg@mail.gmail.com>
+References: <20180719112522.GA16521@gklab-81-211.igk.intel.com>
+ <CAKgT0Ucq17ze_qVmKESMC-x-v687FJnWh-NqOZKbmdn8RuUKeg@mail.gmail.com>
+Message-ID: <0913DEDD48273D4B8649A517874AC4B09F5740E9@irsmsx111.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  XDP-hints-EXPERIMENTAL
-branch HEAD: 58e0270bb7ac94a31ff0fe372385cfce4198b56c  i40e: Initial support to add hw hints for xdp
+I decided to remove the first invocation because this is how out-of-tree driver does it.
+Moreover, is you leave the first invocation and remove the second one then  i40e_enable_mc_magic_wake() will fail with "Failed to update MAC address registers" error because the adminq will be disabled at this point.
 
-elapsed time: 90m
+So, i40e_enable_mc_magic_wake() has to be run before i40e_prep_for_reset()
 
-configs tested: 121
+-----Original Message-----
+From: Alexander Duyck [mailto:alexander.duyck at gmail.com] 
+Sent: Monday, July 23, 2018 16:53
+To: Nemov, Sergey <sergey.nemov@intel.com>
+Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+Subject: Re: [Intel-wired-lan] [PATCH] i40e: Remove duplicated prepare call in i40e_shutdown
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+On Thu, Jul 19, 2018 at 4:25 AM, Sergey Nemov <sergey.nemov@intel.com> wrote:
+> Function call to i40e_prep_for_reset() is duplicated in i40e_shutdown 
+> routine and gets called before
+> i40e_enable_mc_magic_wake() which blocks it from being executed 
+> correctly on system reboot or shutdown because adminq is already 
+> disabled by first i40e_prep_for_reset() call.
+>
+> Two register write calls are also duplicated.
+>
+> Signed-off-by: Sergey Nemov <sergey.nemov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ------
+>  1 file changed, 6 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c 
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index b5daa5c..71c69df 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -14355,12 +14355,6 @@ static void i40e_shutdown(struct pci_dev 
+> *pdev)
+>
+>         set_bit(__I40E_SUSPENDED, pf->state);
+>         set_bit(__I40E_DOWN, pf->state);
+> -       rtnl_lock();
+> -       i40e_prep_for_reset(pf, true);
+> -       rtnl_unlock();
+> -
+> -       wr32(hw, I40E_PFPM_APM, (pf->wol_en ? I40E_PFPM_APM_APME_MASK : 0));
+> -       wr32(hw, I40E_PFPM_WUFC, (pf->wol_en ? I40E_PFPM_WUFC_MAG_MASK : 0));
+>
+>         del_timer_sync(&pf->service_timer);
+>         cancel_work_sync(&pf->service_task);
+> --
+> 1.8.3.1
 
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                     randconfig-n0-201829
-i386                     randconfig-i0-201829
-i386                     randconfig-i1-201829
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x018-201829
-x86_64                 randconfig-x011-201829
-x86_64                 randconfig-x015-201829
-x86_64                 randconfig-x019-201829
-x86_64                 randconfig-x014-201829
-x86_64                 randconfig-x010-201829
-x86_64                 randconfig-x013-201829
-x86_64                 randconfig-x016-201829
-x86_64                 randconfig-x017-201829
-x86_64                 randconfig-x012-201829
-i386                     randconfig-a0-201829
-i386                     randconfig-a1-201829
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201829
-i386                     randconfig-s1-201829
-x86_64                           allmodconfig
-i386                             allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201829
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
-i386                   randconfig-x012-201829
-i386                   randconfig-x017-201829
-i386                   randconfig-x014-201829
-i386                   randconfig-x016-201829
-i386                   randconfig-x013-201829
-i386                   randconfig-x011-201829
-i386                   randconfig-x018-201829
-i386                   randconfig-x010-201829
-i386                   randconfig-x015-201829
-i386                   randconfig-x019-201829
-i386                   randconfig-x078-201829
-i386                   randconfig-x070-201829
-i386                   randconfig-x075-201829
-i386                   randconfig-x076-201829
-i386                   randconfig-x074-201829
-i386                   randconfig-x079-201829
-i386                   randconfig-x071-201829
-i386                   randconfig-x073-201829
-i386                   randconfig-x072-201829
-i386                   randconfig-x077-201829
-x86_64                 randconfig-x007-201829
-x86_64                 randconfig-x003-201829
-x86_64                 randconfig-x000-201829
-x86_64                 randconfig-x005-201829
-x86_64                 randconfig-x004-201829
-x86_64                 randconfig-x008-201829
-x86_64                 randconfig-x001-201829
-x86_64                 randconfig-x009-201829
-x86_64                 randconfig-x002-201829
-x86_64                 randconfig-x006-201829
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64        kexec-CONFIG_DEBUG_INFO_REDUCED
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                              fedora-25
-i386                   randconfig-x008-201829
-i386                   randconfig-x009-201829
-i386                   randconfig-x005-201829
-i386                   randconfig-x000-201829
-i386                   randconfig-x003-201829
-i386                   randconfig-x001-201829
-i386                   randconfig-x004-201829
-i386                   randconfig-x006-201829
-i386                   randconfig-x007-201829
-i386                   randconfig-x002-201829
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
+Is there a reason for selecting to remove the first invocation of this instead of the second? It seems to me like the service timer and filter rules are being torn down in the lines following this. It might make more sense to maybe split the difference and keep this call to prep_for_reset and instead get rid of the second call, and in the case of the wakeup registers remove the first set and wait on enabling it until the second set.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+- Alex
