@@ -1,62 +1,53 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 10:37:50 -0700
-Subject: [Intel-wired-lan] [PATCH 11/13] ice: Fix couple of null pointer
- dereference issues
-In-Reply-To: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
-References: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723173752.19676-12-anirudh.venkataramanan@intel.com>
+Date: Mon, 23 Jul 2018 10:37:39 -0700
+Subject: [Intel-wired-lan] [PATCH 00/13] Bug fixes for ice
+Message-ID: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When ice_ena_msix_range() fails to reserve vectors, a devm_kfree() warning
-was seen in the error flow path. So check pf->irq_tracker before use in
-ice_clear_interrupt_scheme().
+This patch set fixes multiple bugs for the ice driver.
 
-In ice_vsi_cfg(), check vsi->netdev before use.
+Anirudh Venkataramanan (4):
+  ice: Fix static analyser warning
+  ice: Cleanup magic number
+  ice: Fix bugs in control queue processing
+  ice: Fix couple of null pointer dereference issues
 
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+Brett Creeley (2):
+  ice: Don't explicitly set port_vlan_bits to 0
+  ice: Set VLAN flags correctly
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index bcd39654ab4b..e5b8eb0c4581 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3259,8 +3259,10 @@ static void ice_clear_interrupt_scheme(struct ice_pf *pf)
- 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
- 		ice_dis_msix(pf);
- 
--	devm_kfree(&pf->pdev->dev, pf->irq_tracker);
--	pf->irq_tracker = NULL;
-+	if (pf->irq_tracker) {
-+		devm_kfree(&pf->pdev->dev, pf->irq_tracker);
-+		pf->irq_tracker = NULL;
-+	}
- }
- 
- /**
-@@ -4114,11 +4116,12 @@ static int ice_vsi_cfg(struct ice_vsi *vsi)
- {
- 	int err;
- 
--	ice_set_rx_mode(vsi->netdev);
--
--	err = ice_restore_vlan(vsi);
--	if (err)
--		return err;
-+	if (vsi->netdev) {
-+		ice_set_rx_mode(vsi->netdev);
-+		err = ice_restore_vlan(vsi);
-+		if (err)
-+			return err;
-+	}
- 
- 	err = ice_vsi_cfg_txqs(vsi);
- 	if (!err)
+Bruce Allan (3):
+  ice: Fix missing shift
+  ice: Update to interrupts enabled in OICR
+  ice: Change struct members from bool to u8
+
+Jacob Keller (2):
+  ice: Report stats for allocated queues via ethtool stats
+  ice: Use order_base_2 to calculate higher power of 2
+
+Jesse Brandeburg (1):
+  ice: Fix potential return of uninitialized value
+
+Preethi Banala (1):
+  ice: Clean control queues only when they are initialized
+
+ drivers/net/ethernet/intel/ice/ice.h            | 15 ++--
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  1 +
+ drivers/net/ethernet/intel/ice/ice_controlq.c   | 29 +++++---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c    | 52 ++++++++++----
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  8 ---
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h  |  1 +
+ drivers/net/ethernet/intel/ice/ice_main.c       | 91 +++++++++++++++----------
+ drivers/net/ethernet/intel/ice/ice_switch.c     |  3 +-
+ drivers/net/ethernet/intel/ice/ice_switch.h     |  6 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.h       |  2 +-
+ drivers/net/ethernet/intel/ice/ice_type.h       | 16 ++---
+ 11 files changed, 141 insertions(+), 83 deletions(-)
+
 -- 
 2.14.3
 
