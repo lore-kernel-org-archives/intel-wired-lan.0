@@ -1,51 +1,42 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 15:05:19 -0700
-Subject: [Intel-wired-lan] [PATCH v2 12/13] ice: Fix potential return of
- uninitialized value
+Date: Mon, 23 Jul 2018 15:05:16 -0700
+Subject: [Intel-wired-lan] [PATCH v2 09/13] ice: Set VLAN flags correctly
 In-Reply-To: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
 References: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723220520.16678-13-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723220520.16678-10-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-In ice_vsi_setup_[tx|rx]_rings, err is uninitialized which can result in
-a garbage value return to the caller. Fix that.
+Set the ICE_AQ_VSI_PVLAN_MODE_ALL bit to allow the driver to add a VLAN
+tag to all packets it sends.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
 [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index e5b8eb0c4581..3782569b450a 100644
+index 586c6e615a98..71cc5b6e6237 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4887,7 +4887,7 @@ int ice_down(struct ice_vsi *vsi)
-  */
- static int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
- {
--	int i, err;
-+	int i, err = 0;
+@@ -3779,6 +3779,9 @@ static int ice_vsi_manage_vlan_stripping(struct ice_vsi *vsi, bool ena)
+ 		ctxt.info.port_vlan_flags = ICE_AQ_VSI_PVLAN_EMOD_NOTHING;
+ 	}
  
- 	if (!vsi->num_txq) {
- 		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Tx queues\n",
-@@ -4912,7 +4912,7 @@ static int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
-  */
- static int ice_vsi_setup_rx_rings(struct ice_vsi *vsi)
- {
--	int i, err;
-+	int i, err = 0;
++	/* Allow all packets untagged/tagged */
++	ctxt.info.port_vlan_flags |= ICE_AQ_VSI_PVLAN_MODE_ALL;
++
+ 	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
+ 	ctxt.vsi_num = vsi->vsi_num;
  
- 	if (!vsi->num_rxq) {
- 		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Rx queues\n",
 -- 
 2.14.3
 
