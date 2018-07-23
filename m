@@ -1,62 +1,72 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 10:37:47 -0700
-Subject: [Intel-wired-lan] [PATCH 08/13] ice: Don't explicitly set
- port_vlan_bits to 0
+Date: Mon, 23 Jul 2018 10:37:44 -0700
+Subject: [Intel-wired-lan] [PATCH 05/13] ice: Clean control queues only when
+ they are initialized
 In-Reply-To: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
 References: <20180723173752.19676-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723173752.19676-9-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723173752.19676-6-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Preethi Banala <preethi.banala@intel.com>
 
-This patch fixes the following smatch warning originally reported by
-Dan Carpenter:
-ice_set_dflt_vsi_ctx() warn: odd binop '0x0 & 0x18'
+Clean control queues only when they are initialized. One of the ways to
+validate if the basic initialization is done is by checking value of
+cq->sq.head and cq->rq.head variables that specify the register address.
+This patch adds a check to avoid NULL pointer dereference crash when tried
+to shutdown uninitialized control queue.
 
-In ice_set_dflt_vsi_ctx() we are currently doing logic that is intended
-to explicitly clear bits 3 and 4 for port_vlan_flags. Clearing these
-bits results in legacy behavior (showing VLAN, DEI, and UP) in the
-descriptors. The issue was this was reporting the Smatch error shown
-below.  To fix this remove this logic because the port_vlan_flags field
-is set to 0 initially by memset so by default we have the correct legacy
-behavior for bits 3 and 4.  A comment was added above where we set
-port_vlan_flags in ice_set_dflt_vsi_ctx() to note that this is the
-desired behavior.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_controlq.c | 24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index feeca75912ec..586c6e615a98 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1367,14 +1367,13 @@ static void ice_set_dflt_vsi_ctx(struct ice_vsi_ctx *ctxt)
- 	ctxt->info.sw_flags = ICE_AQ_VSI_SW_FLAG_SRC_PRUNE;
- 	/* Traffic from VSI can be sent to LAN */
- 	ctxt->info.sw_flags2 = ICE_AQ_VSI_SW_FLAG_LAN_ENA;
--	/* Allow all packets untagged/tagged */
-+	/* By default bits 3 and 4 in port_vlan_flags are 0's which results in
-+	 * legacy behavior (show VLAN, DEI, and UP) in descriptor. Also, allow
-+	 * all packets untagged/tagged.
-+	 */
- 	ctxt->info.port_vlan_flags = ((ICE_AQ_VSI_PVLAN_MODE_ALL &
- 				       ICE_AQ_VSI_PVLAN_MODE_M) >>
- 				      ICE_AQ_VSI_PVLAN_MODE_S);
--	/* Show VLAN/UP from packets in Rx descriptors */
--	ctxt->info.port_vlan_flags |= ((ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH &
--					ICE_AQ_VSI_PVLAN_EMOD_M) >>
--				       ICE_AQ_VSI_PVLAN_EMOD_S);
- 	/* Have 1:1 UP mapping for both ingress/egress tables */
- 	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
- 	table |= ICE_UP_TABLE_TRANSLATE(1, 1);
+diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
+index 7c511f144ed6..c064416080e7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_controlq.c
++++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
+@@ -597,10 +597,14 @@ static enum ice_status ice_init_check_adminq(struct ice_hw *hw)
+ 	return 0;
+ 
+ init_ctrlq_free_rq:
+-	ice_shutdown_rq(hw, cq);
+-	ice_shutdown_sq(hw, cq);
+-	mutex_destroy(&cq->sq_lock);
+-	mutex_destroy(&cq->rq_lock);
++	if (cq->rq.head) {
++		ice_shutdown_rq(hw, cq);
++		mutex_destroy(&cq->rq_lock);
++	}
++	if (cq->sq.head) {
++		ice_shutdown_sq(hw, cq);
++		mutex_destroy(&cq->sq_lock);
++	}
+ 	return status;
+ }
+ 
+@@ -706,10 +710,14 @@ static void ice_shutdown_ctrlq(struct ice_hw *hw, enum ice_ctl_q q_type)
+ 		return;
+ 	}
+ 
+-	ice_shutdown_sq(hw, cq);
+-	ice_shutdown_rq(hw, cq);
+-	mutex_destroy(&cq->sq_lock);
+-	mutex_destroy(&cq->rq_lock);
++	if (cq->sq.head) {
++		ice_shutdown_sq(hw, cq);
++		mutex_destroy(&cq->sq_lock);
++	}
++	if (cq->rq.head) {
++		ice_shutdown_rq(hw, cq);
++		mutex_destroy(&cq->rq_lock);
++	}
+ }
+ 
+ /**
 -- 
 2.14.3
 
