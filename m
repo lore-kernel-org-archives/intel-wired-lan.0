@@ -1,34 +1,34 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 23 Jul 2018 10:35:36 -0700
-Subject: [Intel-wired-lan] [RFC PATCH] ixgbe:
- ixgbe_get_completion_timeout() can be static
-In-Reply-To: <CAKgT0UdHYJdWeh5_bhYViOqVYX7-N9MVHrEj=e1MK7RO7TxjJA@mail.gmail.com>
-References: <20180720222934.3568.15842.stgit@ahduyck-green-test.jf.intel.com>
- <20180721055327.GA30259@lkp-wsm-ep1>
- <CAKgT0UdHYJdWeh5_bhYViOqVYX7-N9MVHrEj=e1MK7RO7TxjJA@mail.gmail.com>
-Message-ID: <0670ba769f4eeebf8069dd5ea13477aa7e1f39d5.camel@intel.com>
+Date: Mon, 23 Jul 2018 10:39:10 -0700
+Subject: [Intel-wired-lan] [RFC 00/13] Bug fixes for ice
+In-Reply-To: <b28588b5-6024-8e90-18b7-bade5264f885@oracle.com>
+References: <20180720195446.4346-1-anirudh.venkataramanan@intel.com>
+ <b28588b5-6024-8e90-18b7-bade5264f885@oracle.com>
+Message-ID: <e2f9442bda931f8e813c9b4f9841ff0c404eafbe.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2018-07-23 at 09:24 -0700, Alexander Duyck wrote:
-> On Fri, Jul 20, 2018 at 10:53 PM, kbuild test robot
-> <fengguang.wu@intel.com> wrote:
-> > 
-> > Fixes: 23f3effc3f69 ("ixgbe: Refactor queue disable logic to take
-> > completion time into account")
-> > Signed-off-by: kbuild test robot <fengguang.wu@intel.com>
+On Mon, 2018-07-23 at 09:57 -0700, Shannon Nelson wrote:
+> On 7/20/2018 12:54 PM, Anirudh Venkataramanan wrote:
+> > This patch set fixes multiple bugs for the ice driver.
 > 
-> Jeff do you think you could fold this into the current completion
-> timeout patch?
+> Since the ice driver original patches are still under review and not
+> yet 
+> upstream, why are these bug fixes not rolled into the original patch 
+> set?  Put these into the initial patch set and have a clearer
+> upstream 
+> submission.
 
-Yes, I can do that.
+Ah, the ice driver was submitted (and accepted) into 4.17 kernel.  Not
+sure why you think the initial driver submission is still under review
+and not upstream. :-)
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180723/b1d30cb7/attachment-0001.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180723/7dc02b1d/attachment.asc>
