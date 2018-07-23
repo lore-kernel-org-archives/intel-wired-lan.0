@@ -1,10 +1,10 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon, 23 Jul 2018 15:05:17 -0700
-Subject: [Intel-wired-lan] [PATCH v2 10/13] ice: Update to interrupts
- enabled in OICR
+Date: Mon, 23 Jul 2018 15:05:20 -0700
+Subject: [Intel-wired-lan] [PATCH v2 13/13] ice: Change struct members from
+ bool to u8
 In-Reply-To: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
 References: <20180723220520.16678-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180723220520.16678-11-anirudh.venkataramanan@intel.com>
+Message-ID: <20180723220520.16678-14-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,73 +13,158 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bruce Allan <bruce.w.allan@intel.com>
 
-Remove the following interrupt causes that are not applicable or not
-handled:
-- PFINT_OICR_HLP_RDY_M
-- PFINT_OICR_CPM_RDY_M
-- PFINT_OICR_GPIO_M
-- PFINT_OICR_STORM_DETECT_M
-
-Add the following interrupt cause that's actually handled in ice_misc_intr:
-- PFINT_OICR_PE_CRITERR_M
+Recent versions of checkpatch have a new warning based on a documented
+preference of Linus to not use bool in structures due to wasted space and
+the size of bool is implementation dependent.  For more information, see
+the email thread at https://lkml.org/lkml/2017/11/21/384.
 
 Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> Removed defines from ice_hw_autogen.h]
----
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 8 --------
- drivers/net/ethernet/intel/ice/ice_main.c       | 9 +++------
- 2 files changed, 3 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h        |  8 ++++----
+ drivers/net/ethernet/intel/ice/ice_switch.h |  6 +++---
+ drivers/net/ethernet/intel/ice/ice_txrx.h   |  2 +-
+ drivers/net/ethernet/intel/ice/ice_type.h   | 16 ++++++++--------
+ 4 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 499904874b3f..6076fc87df9d 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -121,10 +121,6 @@
- #define PFINT_FW_CTL_CAUSE_ENA_S	30
- #define PFINT_FW_CTL_CAUSE_ENA_M	BIT(PFINT_FW_CTL_CAUSE_ENA_S)
- #define PFINT_OICR			0x0016CA00
--#define PFINT_OICR_HLP_RDY_S		14
--#define PFINT_OICR_HLP_RDY_M		BIT(PFINT_OICR_HLP_RDY_S)
--#define PFINT_OICR_CPM_RDY_S		15
--#define PFINT_OICR_CPM_RDY_M		BIT(PFINT_OICR_CPM_RDY_S)
- #define PFINT_OICR_ECC_ERR_S		16
- #define PFINT_OICR_ECC_ERR_M		BIT(PFINT_OICR_ECC_ERR_S)
- #define PFINT_OICR_MAL_DETECT_S		19
-@@ -133,10 +129,6 @@
- #define PFINT_OICR_GRST_M		BIT(PFINT_OICR_GRST_S)
- #define PFINT_OICR_PCI_EXCEPTION_S	21
- #define PFINT_OICR_PCI_EXCEPTION_M	BIT(PFINT_OICR_PCI_EXCEPTION_S)
--#define PFINT_OICR_GPIO_S		22
--#define PFINT_OICR_GPIO_M		BIT(PFINT_OICR_GPIO_S)
--#define PFINT_OICR_STORM_DETECT_S	24
--#define PFINT_OICR_STORM_DETECT_M	BIT(PFINT_OICR_STORM_DETECT_S)
- #define PFINT_OICR_HMC_ERR_S		26
- #define PFINT_OICR_HMC_ERR_M		BIT(PFINT_OICR_HMC_ERR_S)
- #define PFINT_OICR_PE_CRITERR_S		28
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 71cc5b6e6237..bcd39654ab4b 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1702,15 +1702,12 @@ static void ice_ena_misc_vector(struct ice_pf *pf)
- 	wr32(hw, PFINT_OICR_ENA, 0);	/* disable all */
- 	rd32(hw, PFINT_OICR);		/* read to clear */
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index ed071ea75f20..868f4a1d0f72 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -196,9 +196,9 @@ struct ice_vsi {
+ 	struct list_head tmp_sync_list;		/* MAC filters to be synced */
+ 	struct list_head tmp_unsync_list;	/* MAC filters to be unsynced */
  
--	val = (PFINT_OICR_HLP_RDY_M |
--	       PFINT_OICR_CPM_RDY_M |
--	       PFINT_OICR_ECC_ERR_M |
-+	val = (PFINT_OICR_ECC_ERR_M |
- 	       PFINT_OICR_MAL_DETECT_M |
- 	       PFINT_OICR_GRST_M |
- 	       PFINT_OICR_PCI_EXCEPTION_M |
--	       PFINT_OICR_GPIO_M |
--	       PFINT_OICR_STORM_DETECT_M |
--	       PFINT_OICR_HMC_ERR_M);
-+	       PFINT_OICR_HMC_ERR_M |
-+	       PFINT_OICR_PE_CRITERR_M);
+-	bool irqs_ready;
+-	bool current_isup;		 /* Sync 'link up' logging */
+-	bool stat_offsets_loaded;
++	u8 irqs_ready;
++	u8 current_isup;		 /* Sync 'link up' logging */
++	u8 stat_offsets_loaded;
  
- 	wr32(hw, PFINT_OICR_ENA, val);
+ 	/* queue information */
+ 	u8 tx_mapping_mode;		 /* ICE_MAP_MODE_[CONTIG|SCATTER] */
+@@ -269,7 +269,7 @@ struct ice_pf {
+ 	struct ice_hw_port_stats stats;
+ 	struct ice_hw_port_stats stats_prev;
+ 	struct ice_hw hw;
+-	bool stat_prev_loaded;	/* has previous stats been loaded */
++	u8 stat_prev_loaded;	/* has previous stats been loaded */
+ 	char int_name[ICE_INT_NAME_STR_LEN];
+ };
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 6f4a0d159dbf..9b8ec128ee31 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -17,7 +17,7 @@ struct ice_vsi_ctx {
+ 	u16 vsis_unallocated;
+ 	u16 flags;
+ 	struct ice_aqc_vsi_props info;
+-	bool alloc_from_pool;
++	u8 alloc_from_pool;
+ };
+ 
+ enum ice_sw_fwd_act_type {
+@@ -94,8 +94,8 @@ struct ice_fltr_info {
+ 	u8 qgrp_size;
+ 
+ 	/* Rule creations populate these indicators basing on the switch type */
+-	bool lb_en;	/* Indicate if packet can be looped back */
+-	bool lan_en;	/* Indicate if packet can be forwarded to the uplink */
++	u8 lb_en;	/* Indicate if packet can be looped back */
++	u8 lan_en;	/* Indicate if packet can be forwarded to the uplink */
+ };
+ 
+ /* Bookkeeping structure to hold bitmap of VSIs corresponding to VSI list id */
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 567067b650c4..31bc998fe200 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -143,7 +143,7 @@ struct ice_ring {
+ 	u16 next_to_use;
+ 	u16 next_to_clean;
+ 
+-	bool ring_active;		/* is ring online or not */
++	u8 ring_active;			/* is ring online or not */
+ 
+ 	/* stats structs */
+ 	struct ice_q_stats	stats;
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 99c8a9a71b5e..97c366e0ca59 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -83,7 +83,7 @@ struct ice_link_status {
+ 	u64 phy_type_low;
+ 	u16 max_frame_size;
+ 	u16 link_speed;
+-	bool lse_ena;	/* Link Status Event notification */
++	u8 lse_ena;	/* Link Status Event notification */
+ 	u8 link_info;
+ 	u8 an_info;
+ 	u8 ext_info;
+@@ -101,7 +101,7 @@ struct ice_phy_info {
+ 	struct ice_link_status link_info_old;
+ 	u64 phy_type_low;
+ 	enum ice_media_type media_type;
+-	bool get_link_info;
++	u8 get_link_info;
+ };
+ 
+ /* Common HW capabilities for SW use */
+@@ -167,7 +167,7 @@ struct ice_nvm_info {
+ 	u32 oem_ver;              /* OEM version info */
+ 	u16 sr_words;             /* Shadow RAM size in words */
+ 	u16 ver;                  /* NVM package version */
+-	bool blank_nvm_mode;      /* is NVM empty (no FW present) */
++	u8 blank_nvm_mode;        /* is NVM empty (no FW present) */
+ };
+ 
+ /* Max number of port to queue branches w.r.t topology */
+@@ -181,7 +181,7 @@ struct ice_sched_node {
+ 	struct ice_aqc_txsched_elem_data info;
+ 	u32 agg_id;			/* aggregator group id */
+ 	u16 vsi_id;
+-	bool in_use;			/* suspended or in use */
++	u8 in_use;			/* suspended or in use */
+ 	u8 tx_sched_layer;		/* Logical Layer (1-9) */
+ 	u8 num_children;
+ 	u8 tc_num;
+@@ -218,7 +218,7 @@ struct ice_sched_vsi_info {
+ struct ice_sched_tx_policy {
+ 	u16 max_num_vsis;
+ 	u8 max_num_lan_qs_per_tc[ICE_MAX_TRAFFIC_CLASS];
+-	bool rdma_ena;
++	u8 rdma_ena;
+ };
+ 
+ struct ice_port_info {
+@@ -243,7 +243,7 @@ struct ice_port_info {
+ 	struct list_head agg_list;	/* lists all aggregator */
+ 	u8 lport;
+ #define ICE_LPORT_MASK		0xff
+-	bool is_vf;
++	u8 is_vf;
+ };
+ 
+ struct ice_switch_info {
+@@ -287,7 +287,7 @@ struct ice_hw {
+ 	u8 max_cgds;
+ 	u8 sw_entry_point_layer;
+ 
+-	bool evb_veb;		/* true for VEB, false for VEPA */
++	u8 evb_veb;		/* true for VEB, false for VEPA */
+ 	struct ice_bus_info bus;
+ 	struct ice_nvm_info nvm;
+ 	struct ice_hw_dev_caps dev_caps;	/* device capabilities */
+@@ -318,7 +318,7 @@ struct ice_hw {
+ 	u8 itr_gran_100;
+ 	u8 itr_gran_50;
+ 	u8 itr_gran_25;
+-	bool ucast_shared;	/* true if VSIs can share unicast addr */
++	u8 ucast_shared;	/* true if VSIs can share unicast addr */
+ 
+ };
  
 -- 
 2.14.3
