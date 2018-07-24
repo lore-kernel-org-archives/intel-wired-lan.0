@@ -1,154 +1,136 @@
-From: Abodunrin, Akeem G <akeem.g.abodunrin@intel.com>
-Date: Mon, 23 Jul 2018 23:51:12 +0000
-Subject: [Intel-wired-lan] [PATCH 13/13] ice: Introduce SERVICE_DIS flag
- and service routine functions
-In-Reply-To: <20180723231348.14838-14-anirudh.venkataramanan@intel.com>
-References: <20180723231348.14838-1-anirudh.venkataramanan@intel.com>
- <20180723231348.14838-14-anirudh.venkataramanan@intel.com>
-Message-ID: <CFEEE81102D91947B9CC368106979EBAAA5FE7BE@ORSMSX105.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 24 Jul 2018 22:44:57 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 971d63128718dda2cec086f55bf13b1270513dbd
+Message-ID: <5b573b69.1GjjuOix3kVYQPKA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 971d63128718dda2cec086f55bf13b1270513dbd  ice: Change struct members from bool to u8
 
-> -----Original Message-----
-> From: Venkataramanan, Anirudh
-> Sent: Monday, July 23, 2018 4:14 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Abodunrin, Akeem G <akeem.g.abodunrin@intel.com>
-> Subject: [PATCH 13/13] ice: Introduce SERVICE_DIS flag and service routine
-> functions
-> 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> 
-> This patch introduces SERVICE_DIS flag to use for stopping service task.
-> This flag will be checked before scheduling new tasks. Also add new functions
-> ice_service_task_stop to stop service task.
-> 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice.h      |  1 +
->  drivers/net/ethernet/intel/ice/ice_main.c | 34 ++++++++++++++++++++++++----
-> ---
->  2 files changed, 28 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice.h
-> b/drivers/net/ethernet/intel/ice/ice.h
-> index 6f44a850c4b2..9cf233d085d8 100644
-> --- a/drivers/net/ethernet/intel/ice/ice.h
-> +++ b/drivers/net/ethernet/intel/ice/ice.h
-> @@ -138,6 +138,7 @@ enum ice_state {
->  	__ICE_FLTR_OVERFLOW_PROMISC,
->  	__ICE_CFG_BUSY,
->  	__ICE_SERVICE_SCHED,
-> +	__ICE_SERVICE_DIS,
->  	__ICE_STATE_NBITS		/* must be last */
->  };
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
-> b/drivers/net/ethernet/intel/ice/ice_main.c
-> index cb1145515f98..3a77812e4be7 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -1107,7 +1107,7 @@ static void ice_clean_adminq_subtask(struct ice_pf
-> *pf)
->   */
->  static void ice_service_task_schedule(struct ice_pf *pf)  {
-> -	if (!test_bit(__ICE_DOWN, pf->state) &&
-> +	if (!test_bit(__ICE_SERVICE_DIS, pf->state) &&
->  	    !test_and_set_bit(__ICE_SERVICE_SCHED, pf->state) &&
->  	    !test_bit(__ICE_NEEDS_RESTART, pf->state))
->  		queue_work(ice_wq, &pf->serv_task);
-> @@ -1126,6 +1126,22 @@ static void ice_service_task_complete(struct ice_pf
-> *pf)
->  	clear_bit(__ICE_SERVICE_SCHED, pf->state);  }
-> 
-> +/**
-> + * ice_service_task_stop - stop service task and cancel works
-> + * @pf: board private structure
-> + */
-> +static void ice_service_task_stop(struct ice_pf *pf) {
-> +	set_bit(__ICE_SERVICE_DIS, pf->state);
-> +
-> +	if (pf->serv_tmr.function)
-> +		del_timer_sync(&pf->serv_tmr);
-> +	if (pf->serv_task.func)
-> +		cancel_work_sync(&pf->serv_task);
-> +
-> +	clear_bit(__ICE_SERVICE_SCHED, pf->state); }
-> +
->  /**
->   * ice_service_timer - timer callback to schedule service task
->   * @t: pointer to timer_list
-> @@ -3391,10 +3407,7 @@ static void ice_determine_q_usage(struct ice_pf *pf)
->   */
->  static void ice_deinit_pf(struct ice_pf *pf)  {
-> -	if (pf->serv_tmr.function)
-> -		del_timer_sync(&pf->serv_tmr);
-> -	if (pf->serv_task.func)
-> -		cancel_work_sync(&pf->serv_task);
-> +	ice_service_task_stop(pf);
->  	mutex_destroy(&pf->sw_mutex);
->  	mutex_destroy(&pf->avail_q_mutex);
->  }
-> @@ -3601,6 +3614,8 @@ static int ice_probe(struct pci_dev *pdev,
->  	pf->pdev = pdev;
->  	pci_set_drvdata(pdev, pf);
->  	set_bit(__ICE_DOWN, pf->state);
-> +	/* Disable service task until DOWN bit is cleared */
-> +	set_bit(__ICE_SERVICE_DIS, pf->state);
-> 
->  	hw = &pf->hw;
->  	hw->hw_addr = pcim_iomap_table(pdev)[ICE_BAR0]; @@ -3658,6
-> +3673,9 @@ static int ice_probe(struct pci_dev *pdev,
->  		goto err_init_interrupt_unroll;
->  	}
-> 
-> +	/* Driver is mostly up */
-> +	clear_bit(__ICE_DOWN, pf->state);
-> +
->  	/* In case of MSIX we are going to setup the misc vector right here
->  	 * to handle admin queue events etc. In case of legacy and MSI
->  	 * the misc functionality and queue processing is combined in @@ -
-> 3697,8 +3715,7 @@ static int ice_probe(struct pci_dev *pdev,
->  		goto err_alloc_sw_unroll;
->  	}
-> 
-> -	/* Driver is mostly up */
-> -	clear_bit(__ICE_DOWN, pf->state);
-> +	clear_bit(__ICE_SERVICE_DIS, pf->state);
-> 
->  	/* since everything is good, start the service timer */
->  	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
-> @@ -3712,6 +3729,7 @@ static int ice_probe(struct pci_dev *pdev,
->  	return 0;
-> 
->  err_alloc_sw_unroll:
-> +	set_bit(__ICE_SERVICE_DIS, pf->state);
->  	set_bit(__ICE_DOWN, pf->state);
->  	devm_kfree(&pf->pdev->dev, pf->first_sw);
->  err_msix_misc_unroll:
-> @@ -3739,6 +3757,7 @@ static void ice_remove(struct pci_dev *pdev)
->  		return;
-> 
->  	set_bit(__ICE_DOWN, pf->state);
-> +	ice_service_task_stop(pf);
-> 
->  	ice_vsi_release_all(pf);
->  	ice_free_irq_msix_misc(pf);
-> @@ -6003,6 +6022,7 @@ static void ice_tx_timeout(struct net_device *netdev)
->  		netdev_err(netdev, "tx_timeout recovery unsuccessful, device is
-> in unrecoverable state.\n");
->  		set_bit(__ICE_DOWN, pf->state);
->  		set_bit(__ICE_NEEDS_RESTART, vsi->state);
-> +		set_bit(__ICE_SERVICE_DIS, pf->state);
->  		break;
->  	}
-> 
-> --
-> 2.14.3
+elapsed time: 21m
 
+configs tested: 111
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                 randconfig-a0-07242139
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                     randconfig-n0-201829
+i386                     randconfig-i0-201829
+i386                     randconfig-i1-201829
+i386         randconfig-i1-201829-CONFIG_DEBUG_INFO_REDUCED
+arm                          collie_defconfig
+microblaze                       allyesconfig
+x86_64                 randconfig-g0-07241806
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201829
+i386                     randconfig-a1-201829
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201829
+i386                     randconfig-s1-201829
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+mips                          ath79_defconfig
+i386                   randconfig-x008-201829
+i386                   randconfig-x009-201829
+i386                   randconfig-x005-201829
+i386                   randconfig-x000-201829
+i386                   randconfig-x003-201829
+i386                   randconfig-x001-201829
+i386                   randconfig-x004-201829
+i386                   randconfig-x006-201829
+i386                   randconfig-x007-201829
+i386                   randconfig-x002-201829
+x86_64                 randconfig-x018-201829
+x86_64                 randconfig-x011-201829
+x86_64                 randconfig-x015-201829
+x86_64                 randconfig-x019-201829
+x86_64                 randconfig-x014-201829
+x86_64                 randconfig-x010-201829
+x86_64                 randconfig-x013-201829
+x86_64                 randconfig-x016-201829
+x86_64                 randconfig-x017-201829
+x86_64                 randconfig-x012-201829
+i386                   randconfig-x012-201829
+i386                   randconfig-x017-201829
+i386                   randconfig-x014-201829
+i386                   randconfig-x016-201829
+i386                   randconfig-x013-201829
+i386                   randconfig-x011-201829
+i386                   randconfig-x018-201829
+i386                   randconfig-x010-201829
+i386                   randconfig-x015-201829
+i386                   randconfig-x019-201829
+i386                   randconfig-x078-201829
+i386                   randconfig-x070-201829
+i386                   randconfig-x075-201829
+i386                   randconfig-x076-201829
+i386                   randconfig-x074-201829
+i386                   randconfig-x079-201829
+i386                   randconfig-x071-201829
+i386                   randconfig-x073-201829
+i386                   randconfig-x072-201829
+i386                   randconfig-x077-201829
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sh                        dreamcast_defconfig
+x86_64                 randconfig-x007-201829
+x86_64                 randconfig-x003-201829
+x86_64                 randconfig-x000-201829
+x86_64                 randconfig-x005-201829
+x86_64                 randconfig-x004-201829
+x86_64                 randconfig-x008-201829
+x86_64                 randconfig-x001-201829
+x86_64                 randconfig-x009-201829
+x86_64                 randconfig-x002-201829
+x86_64                 randconfig-x006-201829
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
