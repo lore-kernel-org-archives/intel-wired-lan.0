@@ -1,38 +1,135 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 25 Jul 2018 14:52:42 -0700
-Subject: [Intel-wired-lan] [PATCH v1 1/4] igb: Remove unnecessary
- include of <linux/pci-aspm.h>
-In-Reply-To: <153254834342.92573.16877025672192312745.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <153254813164.92573.10755585465477668768.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <153254834342.92573.16877025672192312745.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <c3c236249fc8fc270e7100ed30c15a4269ab3eae.camel@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 26 Jul 2018 07:21:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE] BUILD SUCCESS
+ ca686104896618593834c69eb3270590387efa95
+Message-ID: <5b5905e4.8idiSRBgHN9xPj03%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2018-07-25 at 14:52 -0500, Bjorn Helgaas wrote:
-> From: Bjorn Helgaas <bhelgaas@google.com>
-> 
-> The igb driver doesn't need anything provided by pci-aspm.h, so
-> remove
-> the unnecessary include of it.
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
+branch HEAD: ca686104896618593834c69eb3270590387efa95  ixgbe: Refactor queue disable logic to take completion time into account
 
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+elapsed time: 36m
 
-I am fine with you picking up this change.
+configs tested: 110
 
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c |    1 -
->  1 file changed, 1 deletion(-)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180725/7cc6d884/attachment.asc>
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x012-201829
+i386                   randconfig-x017-201829
+i386                   randconfig-x014-201829
+i386                   randconfig-x016-201829
+i386                   randconfig-x013-201829
+i386                   randconfig-x011-201829
+i386                   randconfig-x018-201829
+i386                   randconfig-x010-201829
+i386                   randconfig-x015-201829
+i386                   randconfig-x019-201829
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-07251925
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x018-201829
+x86_64                 randconfig-x011-201829
+x86_64                 randconfig-x015-201829
+x86_64                 randconfig-x019-201829
+x86_64                 randconfig-x014-201829
+x86_64                 randconfig-x010-201829
+x86_64                 randconfig-x013-201829
+x86_64                 randconfig-x016-201829
+x86_64                 randconfig-x017-201829
+x86_64                 randconfig-x012-201829
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-a0-07251933
+i386                   randconfig-a1-07251933
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-07251932
+i386                   randconfig-s1-07251932
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-x007-201829
+x86_64                 randconfig-x003-201829
+x86_64                 randconfig-x000-201829
+x86_64                 randconfig-x005-201829
+x86_64                 randconfig-x004-201829
+x86_64                 randconfig-x008-201829
+x86_64                 randconfig-x001-201829
+x86_64                 randconfig-x009-201829
+x86_64                 randconfig-x002-201829
+x86_64                 randconfig-x006-201829
+i386                   randconfig-x078-201829
+i386                   randconfig-x070-201829
+i386                   randconfig-x075-201829
+i386                   randconfig-x076-201829
+i386                   randconfig-x074-201829
+i386                   randconfig-x079-201829
+i386                   randconfig-x071-201829
+i386                   randconfig-x073-201829
+i386                   randconfig-x072-201829
+i386                   randconfig-x077-201829
+i386                   randconfig-x008-201829
+i386                   randconfig-x009-201829
+i386                   randconfig-x005-201829
+i386                   randconfig-x000-201829
+i386                   randconfig-x003-201829
+i386                   randconfig-x001-201829
+i386                   randconfig-x004-201829
+i386                   randconfig-x006-201829
+i386                   randconfig-x007-201829
+i386                   randconfig-x002-201829
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
