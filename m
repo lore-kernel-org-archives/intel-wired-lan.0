@@ -1,37 +1,163 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 24 Jul 2018 17:26:11 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Remove duplicated prepare call
- in i40e_shutdown
-In-Reply-To: <20180719112522.GA16521@gklab-81-211.igk.intel.com>
-References: <20180719112522.GA16521@gklab-81-211.igk.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2DA5CB@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 25 Jul 2018 09:43:27 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 6dfebcdce07c5e39f0e264748f53fa1c5e8c2947
+Message-ID: <5b57d5bf.eJF39mImKKX6G5xB%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Sergey Nemov
-> Sent: Thursday, July 19, 2018 4:25 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: Remove duplicated prepare call in
-> i40e_shutdown
-> 
-> Function call to i40e_prep_for_reset() is duplicated in i40e_shutdown
-> routine and gets called before
-> i40e_enable_mc_magic_wake() which blocks it from being executed
-> correctly on system reboot or shutdown because adminq is already disabled
-> by first i40e_prep_for_reset() call.
-> 
-> Two register write calls are also duplicated.
-> 
-> Signed-off-by: Sergey Nemov <sergey.nemov@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ------
->  1 file changed, 6 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 6dfebcdce07c5e39f0e264748f53fa1c5e8c2947  ice: Introduce SERVICE_DIS flag and service routine functions
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 532m
 
+configs tested: 138
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                 randconfig-a0-07250842
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+i386                   randconfig-x012-201829
+i386                   randconfig-x017-201829
+i386                   randconfig-x014-201829
+i386                   randconfig-x016-201829
+i386                   randconfig-x013-201829
+i386                   randconfig-x011-201829
+i386                   randconfig-x018-201829
+i386                   randconfig-x010-201829
+i386                   randconfig-x015-201829
+i386                   randconfig-x019-201829
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201829
+x86_64                 randconfig-x000-201829
+x86_64                 randconfig-x001-201829
+x86_64                 randconfig-x002-201829
+x86_64                 randconfig-x003-201829
+x86_64                 randconfig-x004-201829
+x86_64                 randconfig-x005-201829
+x86_64                 randconfig-x006-201829
+x86_64                 randconfig-x007-201829
+x86_64                 randconfig-x008-201829
+x86_64                 randconfig-x009-201829
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-i0-201829
+i386                     randconfig-i1-201829
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201829
+x86_64                 randconfig-x011-201829
+x86_64                 randconfig-x012-201829
+x86_64                 randconfig-x013-201829
+x86_64                 randconfig-x014-201829
+x86_64                 randconfig-x015-201829
+x86_64                 randconfig-x016-201829
+x86_64                 randconfig-x017-201829
+x86_64                 randconfig-x018-201829
+x86_64                 randconfig-x019-201829
+i386                     randconfig-a0-201829
+i386                     randconfig-a1-201829
+x86_64                 randconfig-s0-07250848
+x86_64                 randconfig-s1-07250848
+x86_64                 randconfig-s2-07250848
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                            mmp2_defconfig
+mips                malta_qemu_32r6_defconfig
+powerpc                 mpc836x_rdk_defconfig
+powerpc                    sam440ep_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201829
+i386                     randconfig-s1-201829
+x86_64                 randconfig-s3-07250849
+x86_64                 randconfig-s4-07250849
+x86_64                 randconfig-s5-07250849
+m68k                        m5407c3_defconfig
+powerpc                 canyonlands_defconfig
+powerpc                     tqm8555_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-i0-07241207
+i386                   randconfig-b0-07250826
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-u0-07250900
+arm                       omap2plus_defconfig
+sh                           se7343_defconfig
+x86_64                randconfig-ne0-07250826
+i386                   randconfig-x008-201829
+i386                   randconfig-x009-201829
+i386                   randconfig-x005-201829
+i386                   randconfig-x000-201829
+i386                   randconfig-x003-201829
+i386                   randconfig-x001-201829
+i386                   randconfig-x004-201829
+i386                   randconfig-x006-201829
+i386                   randconfig-x007-201829
+i386                   randconfig-x002-201829
+i386                   randconfig-x078-201829
+i386                   randconfig-x070-201829
+i386                   randconfig-x075-201829
+i386                   randconfig-x076-201829
+i386                   randconfig-x074-201829
+i386                   randconfig-x079-201829
+i386                   randconfig-x071-201829
+i386                   randconfig-x073-201829
+i386                   randconfig-x072-201829
+i386                   randconfig-x077-201829
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                              fedora-25
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
