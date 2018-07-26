@@ -1,150 +1,225 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 26 Jul 2018 07:32:18 -0700
+From: Marco Berizzi <pupilla@libero.it>
+Date: Thu, 26 Jul 2018 17:03:35 +0200 (CEST)
 Subject: [Intel-wired-lan] igb Detected Tx Unit Hang after upgrade to
  4.18-rc6 [was Re: igb Detected Tx Unit Hang after upgrade to 4.17]
-In-Reply-To: <931347915.758706.1532606173777@mail.libero.it>
+In-Reply-To: <CAKgT0UdmzKG6usaHqFt2N4q1FVX-8r58hbhWb9dc8ygS2UmKWQ@mail.gmail.com>
 References: <528200032.321946.1528186357567@mail.libero.it>
  <963322856.1365958.1530796944033@mail.libero.it>
  <931347915.758706.1532606173777@mail.libero.it>
-Message-ID: <CAKgT0UdmzKG6usaHqFt2N4q1FVX-8r58hbhWb9dc8ygS2UmKWQ@mail.gmail.com>
+ <CAKgT0UdmzKG6usaHqFt2N4q1FVX-8r58hbhWb9dc8ygS2UmKWQ@mail.gmail.com>
+Message-ID: <1265852288.743881.1532617415845@mail.libero.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Jul 26, 2018 at 4:56 AM, Marco Berizzi <pupilla@libero.it> wrote:
->> Il 5 luglio 2018 alle 15.22 Marco Berizzi <pupilla@libero.it> ha scritto:
->>
->> > Il 5 giugno 2018 alle 10.12 Marco Berizzi <pupilla@libero.it> ha scritto:
->> >
->> > Hi Folks,
->> >
->> > after upgrading from 4.16.13 to 4.17 I got this error message.
->> >
->> > Any feedback are welcome.
->> >
->> > Marco Berizzi
->> >
->> > PS: this system is running oracle virtualbox 5.2.12
->>
->> Hi Folks,
->>
->> I'm getting the same error also with 4.17.3:
->
-> Hi Folks,
->
-> I'm getting the same error also with 4.18-r6 (this system is
-> running oracle virtualbox 5.2.16):
+> Il 26 luglio 2018 alle 16.32 Alexander Duyck <alexander.duyck@gmail.com> ha scritto:
+> Could you include an lspci -vvv for the igb functions.
 
-Could you include an lspci -vvv for the igb functions. Also I assume
-this is a direct assigned port?
+Hi Alexander.
+Thanks for the reply.
+Here is the output from lspci -vvv
 
-From what I can get based on the log below somehow the driver and the
-device are falling out of sync. It looks like either we missed a tail
-update at some point after we stopped the queue.
+08:00.0 Ethernet controller: Intel Corporation 82575EB Gigabit Network Connection (rev 02)
+        Subsystem: Fujitsu Technology Solutions 82575EB Gigabit Network Connection
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx+
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 64 bytes
+        Interrupt: pin A routed to IRQ 16
+        Region 0: Memory at ce260000 (32-bit, non-prefetchable) [size=128K]
+        Region 1: Memory at ce240000 (32-bit, non-prefetchable) [size=128K]
+        Region 2: I/O ports at 3000 [size=32]
+        Region 3: Memory at ce200000 (32-bit, non-prefetchable) [size=16K]
+        [virtual] Expansion ROM@ce220000 [disabled] [size=128K]
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [50] MSI: Enable- Count=1/1 Maskable- 64bit+
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [60] MSI-X: Enable+ Count=10 Masked-
+                Vector table: BAR=3 offset=00000000
+                PBA: BAR=3 offset=00002000
+        Capabilities: [a0] Express (v2) Endpoint, MSI 00
+                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
+                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset- SlotPowerLimit 0.000W
+                DevCtl: Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+                        MaxPayload 128 bytes, MaxReadReq 512 bytes
+                DevSta: CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+                LnkCap: Port #0, Speed 2.5GT/s, Width x4, ASPM L0s L1, Exit Latency L0s <4us, L1 <64us
+                        ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp-
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- CommClk+
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+                DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR-, OBFF Not Supported
+                DevCtl2: Completion Timeout: 16ms to 55ms, TimeoutDis-, LTR-, OBFF Disabled
+                LnkCtl2: Target Link Speed: 2.5GT/s, EnterCompliance- SpeedDis-
+                         Transmit Margin: Normal Operating Range, EnterModifiedCompliance- ComplianceSOS-
+                         Compliance De-emphasis: -6dB
+                LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete-, EqualizationPhase1-
+                         EqualizationPhase2-, EqualizationPhase3-, LinkEqualizationRequest-
+        Capabilities: [100 v1] Advanced Error Reporting
+                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq+ ACSViol-
+                UESvrt: DLP+ SDES- TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
+                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
+                CEMsk:  RxErr- BadTLP+ BadDLLP- Rollover- Timeout- NonFatalErr+
+                AERCap: First Error Pointer: 00, GenCap- CGenEn- ChkCap- ChkEn-
+        Capabilities: [140 v1] Device Serial Number 00-19-99-ff-ff-ab-0b-38
+        Kernel driver in use: igb
+        Kernel modules: igb
 
-It looks like the error took 2 to 3 days to show up. Do you know if
-there are any reproduction steps that might let us start bisecting
-this, or that would at least allow us to reproduce the issue more
-quickly? Also, what sort of traffic are you sending over the port?
+08:00.1 Ethernet controller: Intel Corporation 82575EB Gigabit Network Connection (rev 02)
+        Subsystem: Fujitsu Technology Solutions 82575EB Gigabit Network Connection
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx+
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 64 bytes
+        Interrupt: pin B routed to IRQ 17
+        Region 0: Memory at ce2c0000 (32-bit, non-prefetchable) [size=128K]
+        Region 1: Memory at ce2a0000 (32-bit, non-prefetchable) [size=128K]
+        Region 2: I/O ports at 3020 [size=32]
+        Region 3: Memory at ce204000 (32-bit, non-prefetchable) [size=16K]
+        [virtual] Expansion ROM@ce280000 [disabled] [size=128K]
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [50] MSI: Enable- Count=1/1 Maskable- 64bit+
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [60] MSI-X: Enable+ Count=10 Masked-
+                Vector table: BAR=3 offset=00000000
+                PBA: BAR=3 offset=00002000
+        Capabilities: [a0] Express (v2) Endpoint, MSI 00
+                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
+                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset- SlotPowerLimit 0.000W
+                DevCtl: Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+                        MaxPayload 128 bytes, MaxReadReq 512 bytes
+                DevSta: CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+                LnkCap: Port #0, Speed 2.5GT/s, Width x4, ASPM L0s L1, Exit Latency L0s <4us, L1 <64us
+                        ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp-
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- CommClk+
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+                DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR-, OBFF Not Supported
+                DevCtl2: Completion Timeout: 16ms to 55ms, TimeoutDis-, LTR-, OBFF Disabled
+                LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete-, EqualizationPhase1-
+                         EqualizationPhase2-, EqualizationPhase3-, LinkEqualizationRequest-
+        Capabilities: [100 v1] Advanced Error Reporting
+                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq+ ACSViol-
+                UESvrt: DLP+ SDES- TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
+                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
+                CEMsk:  RxErr- BadTLP+ BadDLLP- Rollover- Timeout- NonFatalErr+
+                AERCap: First Error Pointer: 00, GenCap- CGenEn- ChkCap- ChkEn-
+        Capabilities: [140 v1] Device Serial Number 00-19-99-ff-ff-ab-0b-38
+        Kernel driver in use: igb
+        Kernel modules: igb
 
-> [226277.797573] igb 0000:08:00.0: Detected Tx Unit Hang
->                   Tx Queue             <2>
->                   TDH                  <de>
->                   TDT                  <de>
->                   next_to_use          <e0>
->                   next_to_clean        <de>
->                 buffer_info[next_to_clean]
->                   time_stamp           <10d782971>
->                   next_to_watch        <0000000095a05ad2>
->                   jiffies              <10d783141>
->                   desc.status          <238220>
-> [226279.780541] igb 0000:08:00.0: Detected Tx Unit Hang
->                   Tx Queue             <2>
->                   TDH                  <de>
->                   TDT                  <de>
->                   next_to_use          <e0>
->                   next_to_clean        <de>
->                 buffer_info[next_to_clean]
->                   time_stamp           <10d782971>
->                   next_to_watch        <0000000095a05ad2>
->                   jiffies              <10d783900>
->                   desc.status          <238220>
-> [226281.764513] igb 0000:08:00.0: Detected Tx Unit Hang
->                   Tx Queue             <2>
->                   TDH                  <de>
->                   TDT                  <de>
->                   next_to_use          <e0>
->                   next_to_clean        <de>
->                 buffer_info[next_to_clean]
->                   time_stamp           <10d782971>
->                   next_to_watch        <0000000095a05ad2>
->                   jiffies              <10d7840c0>
->                   desc.status          <238220>
-> [226283.749485] igb 0000:08:00.0: Detected Tx Unit Hang
->                   Tx Queue             <2>
->                   TDH                  <de>
->                   TDT                  <de>
->                   next_to_use          <e0>
->                   next_to_clean        <de>
->                 buffer_info[next_to_clean]
->                   time_stamp           <10d782971>
->                   next_to_watch        <0000000095a05ad2>
->                   jiffies              <10d784881>
->                   desc.status          <238220>
-> [226285.156354] ------------[ cut here ]------------
-> [226285.156359] NETDEV WATCHDOG: eth0 (igb): transmit queue 2 timed out
-> [226285.156381] WARNING: CPU: 10 PID: 0 at net/sched/sch_generic.c:461 dev_watchdog+0x1d9/0x1e0
-> [226285.156382] Modules linked in: vboxpci(O) vboxnetflt(O) vboxnetadp(O) vboxdrv(O) uhci_hcd igb ehci_pci ptp ehci_hcd 8250 evdev pps_core button 8250_base usbcore i2c_i801 i2c_algo_bit serial_core usb_common i2c_core loop
-> [226285.156399] CPU: 10 PID: 0 Comm: swapper/10 Tainted: G          IO      4.18.0-rc6 #1
-> [226285.156400] Hardware name: FUJITSU                          PRIMERGY RX300 S6             /D2619, BIOS 6.00 Rev. 1.13.2619.N1           01/19/2012
-> [226285.156403] RIP: 0010:dev_watchdog+0x1d9/0x1e0
-> [226285.156404] Code: 00 48 63 4d f0 eb 97 4c 89 e7 c6 05 ca e3 83 00 01 e8 ab eb fd ff 89 d9 4c 89 e6 48 c7 c7 c0 48 b3 81 48 89 c2 e8 97 22 c3 ff <0f> 0b eb c0 0f 1f 00 48 c7 47 08 00 00 00 00 48 c7 07 00 00 00 00
-> [226285.156437] RSP: 0018:ffff880fff283ec8 EFLAGS: 00010286
-> [226285.156439] RAX: 0000000000000000 RBX: 0000000000000002 RCX: 0000000000000006
-> [226285.156440] RDX: 0000000000000007 RSI: 0000000000000096 RDI: ffff880fff294ff0
-> [226285.156441] RBP: ffff880ff11903b0 R08: 0000000000000001 R09: 000000000000036c
-> [226285.156443] R10: ffffffff81c05100 R11: 000000000000036c R12: ffff880ff1190000
-> [226285.156444] R13: 000000000000000a R14: 0000000000000202 R15: ffffffff81c05108
-> [226285.156446] FS:  0000000000000000(0000) GS:ffff880fff280000(0000) knlGS:0000000000000000
-> [226285.156447] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [226285.156448] CR2: 0000000000310c00 CR3: 0000000001c0a003 CR4: 00000000000226a0
-> [226285.156449] Call Trace:
-> [226285.156452]  <IRQ>
-> [226285.156456]  ? qdisc_reset+0xe0/0xe0
-> [226285.156460]  call_timer_fn+0x13/0x80
-> [226285.156462]  expire_timers+0x70/0x80
-> [226285.156464]  run_timer_softirq+0x7e/0x150
-> [226285.156467]  ? __hrtimer_run_queues+0x130/0x190
-> [226285.156471]  ? recalibrate_cpu_khz+0x10/0x10
-> [226285.156474]  ? ktime_get+0x33/0x90
-> [226285.156477]  ? default_inquire_remote_apic+0x10/0x10
-> [226285.156481]  ? lapic_next_event+0x17/0x20
-> [226285.156485]  __do_softirq+0xd4/0x1c9
-> [226285.156488]  irq_exit+0xa7/0xb0
-> [226285.156490]  smp_apic_timer_interrupt+0x59/0x90
-> [226285.156492]  apic_timer_interrupt+0xf/0x20
-> [226285.156493]  </IRQ>
-> [226285.156496] RIP: 0010:acpi_idle_do_entry+0x2b/0x40
-> [226285.156496] Code: b6 47 08 3c 01 74 25 3c 02 74 0d 8b 57 04 ec 48 8b 15 fd 8f ac 00 ed c3 65 48 8b 04 25 40 4c 01 00 48 8b 00 a8 08 75 ef fb f4 <fa> c3 e9 ae fe ff ff 90 90 90 90 90 90 90 90 90 90 90 90 90 90 41
-> [226285.156522] RSP: 0018:ffffc900000cbe48 EFLAGS: 00000246 ORIG_RAX: ffffffffffffff13
-> [226285.156524] RAX: 0000000080000000 RBX: ffff880ff83bf400 RCX: 0000000000000034
-> [226285.156525] RDX: 4ec4ec4ec4ec4ec5 RSI: ffffffff81c386e0 RDI: ffff880ff83bf464
-> [226285.156526] RBP: ffff880ff83bf464 R08: ffff880fff29e1c8 R09: 0000000000000008
-> [226285.156527] R10: 0000000000000003 R11: 0000000000000009 R12: 0000000000000001
-> [226285.156528] R13: 0000000000000001 R14: 0000000000000001 R15: ffff880ff8c9de80
-> [226285.156532]  acpi_idle_enter+0x8d/0x250
-> [226285.156536]  ? menu_select+0x399/0x550
-> [226285.156537]  cpuidle_enter_state+0xff/0x200
-> [226285.156541]  do_idle+0x113/0x200
-> [226285.156543]  cpu_startup_entry+0x6a/0x70
-> [226285.156545]  start_secondary+0x183/0x1b0
-> [226285.156547]  secondary_startup_64+0xa5/0xb0
-> [226285.156549] ---[ end trace 66fae9a7fe07d63b ]---
-> [226285.156564] igb 0000:08:00.0 eth0: Reset adapter
-> [226288.173886] igb 0000:08:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+> Also I assume
+> this is a direct assigned port?
+
+Apologies, but I did not understand this question.
+
+> From what I can get based on the log below somehow the driver and the
+> device are falling out of sync. It looks like either we missed a tail
+> update at some point after we stopped the queue.
+> 
+> It looks like the error took 2 to 3 days to show up.
+
+yes, indeed.
+
+> Do you know if
+> there are any reproduction steps that might let us start bisecting
+> this, or that would at least allow us to reproduce the issue more
+> quickly?
+
+Impossibile for me to reproduce. I'm not able to understand
+why/when it is happening.
+
+> Also, what sort of traffic are you sending over the port?
+
+this host is running slackware linux 14.2 64bit with oracle
+virtualbox 5.2.16
+The traffic to this hosts is small: after 3 dayes uptime
+it is less than 10GBytes:
+
+root at Kaa:~# last | head | grep reboot
+reboot   system boot  4.18.0-rc6       Mon Jul 23 13:18 - 16:52 (3+03:33)   
+root at Kaa:~# ifconfig  eth0
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 9000
+        inet 10.81.110.15  netmask 255.255.255.0  broadcast 10.81.110.255
+        ether 00:19:99:ab:0b:38  txqueuelen 1000  (Ethernet)
+        RX packets 10813141  bytes 2139165411 (1.9 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 10860078  bytes 4702798829 (4.3 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device memory 0xce260000-ce27ffff  
+
+there are around 12 virtual machine hosted running (mainly windows7).
+
+bind/dhcp/proftpd/openssh/ntp and the above mentioned oracle virtualbox
+are the only running applications on this host.
+
+Problem popped up from linux 4.17.0
+
+root at Kaa:~# ethtool -k eth0
+Features for eth0:
+Cannot get device udp-fragmentation-offload settings: Operation not supported
+rx-checksumming: on
+tx-checksumming: on
+        tx-checksum-ipv4: off [fixed]
+        tx-checksum-ip-generic: on
+        tx-checksum-ipv6: off [fixed]
+        tx-checksum-fcoe-crc: off [fixed]
+        tx-checksum-sctp: off [fixed]
+scatter-gather: on
+        tx-scatter-gather: on
+        tx-scatter-gather-fraglist: off [fixed]
+tcp-segmentation-offload: on
+        tx-tcp-segmentation: on
+        tx-tcp-ecn-segmentation: off [fixed]
+        tx-tcp-mangleid-segmentation: off
+        tx-tcp6-segmentation: on
+udp-fragmentation-offload: off
+generic-segmentation-offload: on
+generic-receive-offload: on
+large-receive-offload: off [fixed]
+rx-vlan-offload: on
+tx-vlan-offload: on
+ntuple-filters: off [fixed]
+receive-hashing: on
+highdma: on [fixed]
+rx-vlan-filter: on [fixed]
+vlan-challenged: off [fixed]
+tx-lockless: off [fixed]
+netns-local: off [fixed]
+tx-gso-robust: off [fixed]
+tx-fcoe-segmentation: off [fixed]
+tx-gre-segmentation: on
+tx-gre-csum-segmentation: on
+tx-ipxip4-segmentation: on
+tx-ipxip6-segmentation: on
+tx-udp_tnl-segmentation: on
+tx-udp_tnl-csum-segmentation: on
+tx-gso-partial: on
+tx-sctp-segmentation: off [fixed]
+tx-esp-segmentation: off [fixed]
+tx-udp-segmentation: off [fixed]
+fcoe-mtu: off [fixed]
+tx-nocache-copy: off
+loopback: off [fixed]
+rx-fcs: off [fixed]
+rx-all: off
+tx-vlan-stag-hw-insert: off [fixed]
+rx-vlan-stag-hw-parse: off [fixed]
+rx-vlan-stag-filter: off [fixed]
+l2-fwd-offload: off [fixed]
+hw-tc-offload: off [fixed]
+esp-hw-offload: off [fixed]
+esp-tx-csum-hw-offload: off [fixed]
+rx-udp_tunnel-port-offload: off [fixed]
+tls-hw-tx-offload: off [fixed]
+rx-gro-hw: off [fixed]
+tls-hw-record: off [fixed]
