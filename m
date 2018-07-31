@@ -1,118 +1,181 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 31 Jul 2018 03:41:47 -0700
-Subject: [Intel-wired-lan] [next PATCH S93 10/11] i40e: Add AQ command for
- rearrange NVM structure
+Date: Tue, 31 Jul 2018 03:41:42 -0700
+Subject: [Intel-wired-lan] [next PATCH S93 05/11] i40e: convert priority
+ flow control stats to use helpers
 In-Reply-To: <20180731104148.11896-1-alice.michael@intel.com>
 References: <20180731104148.11896-1-alice.michael@intel.com>
-Message-ID: <20180731104148.11896-10-alice.michael@intel.com>
+Message-ID: <20180731104148.11896-5-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Piotr Azarewicz <piotr.azarewicz@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-During switching between old NVM structure approach (called structured
-NVM) to new one (called flat NVM) or backward flash needs to be
-rearranged to required NVM structure. This is a part of transition from
-one NVM structure to another. The function is introduced to command
-firmware to start rearrangement process.
+The priority flow control statistics are laid out in the stats structure
+using arrays. This made it unwieldy to use as part of an i40e_stats
+array.
 
-Signed-off-by: Piotr Azarewicz <piotr.azarewicz@intel.com>
+Add a new structure type, i40e_pfc_stats, and a helper function
+i40e_get_pfc_stats which can return the stats for a given priority
+value as an i40e_pfc_stats structure.
+
+Use this to create an i40e_stats array, which we'll use to format and
+copy the strings and stats into the supplied buffers.
+
+This reduces even more boiler plate code in i40e_get_ethtool_stats and
+i40e_get_stat_strings.
+
+An alternative would be to modify the structure definition for the pfc
+stats, but this is more invasive to the rest of the code base.
+
+Note that a macro was used to setup the copy of stats from the
+pf->stats, as this reduces the chance of typos in the code names. It
+will produce a checkpatch.pl warning due to re-use of a macro argument.
+In this case, it should be safe, as the macro will fail to compile in
+cases where the argument is not a simple structure member name, and thus
+arguments with side effects should not be an issue.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_common.c      | 35 ++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  3 ++
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  2 ++
- 4 files changed, 42 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 87 +++++++++++++++-----------
+ 1 file changed, 51 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 7d888e0..80e3eec 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -2247,6 +2247,8 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_phy_register_access);
- struct i40e_aqc_nvm_update {
- 	u8	command_flags;
- #define I40E_AQ_NVM_LAST_CMD			0x01
-+#define I40E_AQ_NVM_REARRANGE_TO_FLAT		0x20
-+#define I40E_AQ_NVM_REARRANGE_TO_STRUCT		0x40
- #define I40E_AQ_NVM_FLASH_ONLY			0x80
- #define I40E_AQ_NVM_PRESERVATION_FLAGS_SHIFT	1
- #define I40E_AQ_NVM_PRESERVATION_FLAGS_MASK	0x03
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index ad710b2..cc196de 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -3545,6 +3545,41 @@ i40e_status i40e_aq_update_nvm(struct i40e_hw *hw, u8 module_pointer,
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 52ccafe..9c380c0 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -31,6 +31,8 @@ struct i40e_stats {
+ 	I40E_STAT(struct i40e_vsi, _name, _stat)
+ #define I40E_VEB_STAT(_name, _stat) \
+ 	I40E_STAT(struct i40e_veb, _name, _stat)
++#define I40E_PFC_STAT(_name, _stat) \
++	I40E_STAT(struct i40e_pfc_stats, _name, _stat)
+ 
+ static const struct i40e_stats i40e_gstrings_net_stats[] = {
+ 	I40E_NETDEV_STAT(rx_packets),
+@@ -153,6 +155,22 @@ static const struct i40e_stats i40e_gstrings_stats[] = {
+ 	I40E_PF_STAT("port.rx_lpi_count", stats.rx_lpi_count),
+ };
+ 
++struct i40e_pfc_stats {
++	u64 priority_xon_rx;
++	u64 priority_xoff_rx;
++	u64 priority_xon_tx;
++	u64 priority_xoff_tx;
++	u64 priority_xon_2_xoff;
++};
++
++static const struct i40e_stats i40e_gstrings_pfc_stats[] = {
++	I40E_PFC_STAT("port.tx_priority_%u_xon_tx", priority_xon_tx),
++	I40E_PFC_STAT("port.tx_priority_%u_xoff_tx", priority_xoff_tx),
++	I40E_PFC_STAT("port.rx_priority_%u_xon_rx", priority_xon_rx),
++	I40E_PFC_STAT("port.rx_priority_%u_xoff_rx", priority_xoff_rx),
++	I40E_PFC_STAT("port.rx_priority_%u_xon_2_xoff", priority_xon_2_xoff),
++};
++
+ /* We use num_tx_queues here as a proxy for the maximum number of queues
+  * available because we always allocate queues symmetrically.
+  */
+@@ -167,13 +185,9 @@ static const struct i40e_stats i40e_gstrings_stats[] = {
+ #define I40E_VSI_STATS_LEN(n)	(I40E_NETDEV_STATS_LEN + \
+ 				 I40E_MISC_STATS_LEN + \
+ 				 I40E_QUEUE_STATS_LEN((n)))
+-#define I40E_PFC_STATS_LEN ( \
+-		(FIELD_SIZEOF(struct i40e_pf, stats.priority_xoff_rx) + \
+-		 FIELD_SIZEOF(struct i40e_pf, stats.priority_xon_rx) + \
+-		 FIELD_SIZEOF(struct i40e_pf, stats.priority_xoff_tx) + \
+-		 FIELD_SIZEOF(struct i40e_pf, stats.priority_xon_tx) + \
+-		 FIELD_SIZEOF(struct i40e_pf, stats.priority_xon_2_xoff)) \
+-		 / sizeof(u64))
++
++#define I40E_PFC_STATS_LEN	(ARRAY_SIZE(i40e_gstrings_pfc_stats) * \
++				 I40E_MAX_USER_PRIORITY)
+ 
+ #define I40E_VEB_STATS_LEN	(ARRAY_SIZE(i40e_gstrings_veb_stats) + \
+ 				 (ARRAY_SIZE(i40e_gstrings_veb_tc_stats) * \
+@@ -1799,6 +1813,31 @@ __i40e_add_ethtool_stats(u64 **data, void *pointer,
+ 	__i40e_add_ethtool_stats(data, pointer, stats, ARRAY_SIZE(stats))
  
  /**
-+ * i40e_aq_rearrange_nvm
-+ * @hw: pointer to the hw struct
-+ * @rearrange_nvm: defines direction of rearrangement
-+ * @cmd_details: pointer to command details structure or NULL
++ * i40e_get_pfc_stats - copy HW PFC statistics to formatted structure
++ * @pf: the PF device structure
++ * @i: the priority value to copy
 + *
-+ * Rearrange NVM structure, available only for transition FW
++ * The PFC stats are found as arrays in pf->stats, which is not easy to pass
++ * into i40e_add_ethtool_stats. Produce a formatted i40e_pfc_stats structure
++ * of the PFC stats for the given priority.
 + **/
-+i40e_status i40e_aq_rearrange_nvm(struct i40e_hw *hw,
-+				  u8 rearrange_nvm,
-+				  struct i40e_asq_cmd_details *cmd_details)
++static inline struct i40e_pfc_stats
++i40e_get_pfc_stats(struct i40e_pf *pf, unsigned int i)
 +{
-+	struct i40e_aqc_nvm_update *cmd;
-+	i40e_status status;
-+	struct i40e_aq_desc desc;
++#define I40E_GET_PFC_STAT(stat, priority) \
++	.stat = pf->stats.stat[priority]
 +
-+	cmd = (struct i40e_aqc_nvm_update *)&desc.params.raw;
-+
-+	i40e_fill_default_direct_cmd_desc(&desc, i40e_aqc_opc_nvm_update);
-+
-+	rearrange_nvm &= (I40E_AQ_NVM_REARRANGE_TO_FLAT |
-+			 I40E_AQ_NVM_REARRANGE_TO_STRUCT);
-+
-+	if (!rearrange_nvm) {
-+		status = I40E_ERR_PARAM;
-+		goto i40e_aq_rearrange_nvm_exit;
-+	}
-+
-+	cmd->command_flags |= rearrange_nvm;
-+	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
-+
-+i40e_aq_rearrange_nvm_exit:
-+	return status;
++	struct i40e_pfc_stats pfc = {
++		I40E_GET_PFC_STAT(priority_xon_rx, i),
++		I40E_GET_PFC_STAT(priority_xoff_rx, i),
++		I40E_GET_PFC_STAT(priority_xon_tx, i),
++		I40E_GET_PFC_STAT(priority_xoff_tx, i),
++		I40E_GET_PFC_STAT(priority_xon_2_xoff, i),
++	};
++	return pfc;
 +}
 +
 +/**
-  * i40e_aq_get_lldp_mib
-  * @hw: pointer to the hw struct
-  * @bridge_type: type of bridge requested
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index 3170655..e08d754 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -193,6 +193,9 @@ i40e_status i40e_aq_update_nvm(struct i40e_hw *hw, u8 module_pointer,
- 				u32 offset, u16 length, void *data,
- 				bool last_command, u8 preservation_flags,
- 				struct i40e_asq_cmd_details *cmd_details);
-+i40e_status i40e_aq_rearrange_nvm(struct i40e_hw *hw,
-+				  u8 rearrange_nvm,
-+				  struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_get_lldp_mib(struct i40e_hw *hw, u8 bridge_type,
- 				u8 mib_type, void *buff, u16 buff_size,
- 				u16 *local_len, u16 *remote_len,
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index aa81e87..5fd8529 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -2175,6 +2175,8 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_phy_register_access);
- struct i40e_aqc_nvm_update {
- 	u8	command_flags;
- #define I40E_AQ_NVM_LAST_CMD			0x01
-+#define I40E_AQ_NVM_REARRANGE_TO_FLAT		0x20
-+#define I40E_AQ_NVM_REARRANGE_TO_STRUCT		0x40
- #define I40E_AQ_NVM_FLASH_ONLY			0x80
- #define I40E_AQ_NVM_PRESERVATION_FLAGS_SHIFT	1
- #define I40E_AQ_NVM_PRESERVATION_FLAGS_MASK	0x03
+  * i40e_get_ethtool_stats - copy stat values into supplied buffer
+  * @netdev: the netdev to collect stats for
+  * @stats: ethtool stats command structure
+@@ -1884,15 +1923,10 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
+ 	i40e_add_ethtool_stats(&data, pf, i40e_gstrings_stats);
+ 
+ 	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
+-		*(data++) = pf->stats.priority_xon_tx[i];
+-		*(data++) = pf->stats.priority_xoff_tx[i];
+-	}
+-	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
+-		*(data++) = pf->stats.priority_xon_rx[i];
+-		*(data++) = pf->stats.priority_xoff_rx[i];
++		struct i40e_pfc_stats pfc = i40e_get_pfc_stats(pf, i);
++
++		i40e_add_ethtool_stats(&data, &pfc, i40e_gstrings_pfc_stats);
+ 	}
+-	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++)
+-		*(data++) = pf->stats.priority_xon_2_xoff[i];
+ }
+ 
+ /**
+@@ -1973,27 +2007,8 @@ static void i40e_get_stat_strings(struct net_device *netdev, u8 *data)
+ 
+ 	i40e_add_stat_strings(&data, i40e_gstrings_stats);
+ 
+-	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
+-		snprintf(data, ETH_GSTRING_LEN,
+-			 "port.tx_priority_%u_xon", i);
+-		data += ETH_GSTRING_LEN;
+-		snprintf(data, ETH_GSTRING_LEN,
+-			 "port.tx_priority_%u_xoff", i);
+-		data += ETH_GSTRING_LEN;
+-	}
+-	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
+-		snprintf(data, ETH_GSTRING_LEN,
+-			 "port.rx_priority_%u_xon", i);
+-		data += ETH_GSTRING_LEN;
+-		snprintf(data, ETH_GSTRING_LEN,
+-			 "port.rx_priority_%u_xoff", i);
+-		data += ETH_GSTRING_LEN;
+-	}
+-	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
+-		snprintf(data, ETH_GSTRING_LEN,
+-			 "port.rx_priority_%u_xon_2_xoff", i);
+-		data += ETH_GSTRING_LEN;
+-	}
++	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++)
++		i40e_add_stat_strings(&data, i40e_gstrings_pfc_stats, i);
+ 
+ 	WARN_ONCE(p - data != i40e_get_stats_count(netdev) * ETH_GSTRING_LEN,
+ 		  "stat strings count mismatch!");
 -- 
 2.9.5
 
