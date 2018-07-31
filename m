@@ -1,53 +1,68 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 31 Jul 2018 03:41:46 -0700
-Subject: [Intel-wired-lan] [next PATCH S93 09/11] i40e: Add additional
- return code to i40e_asq_send_command
+Date: Tue, 31 Jul 2018 03:41:48 -0700
+Subject: [Intel-wired-lan] [next PATCH S93 11/11] i40e: fix
+ i40e_add_queue_stats data pointer update
 In-Reply-To: <20180731104148.11896-1-alice.michael@intel.com>
 References: <20180731104148.11896-1-alice.michael@intel.com>
-Message-ID: <20180731104148.11896-9-alice.michael@intel.com>
+Message-ID: <20180731104148.11896-11-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Piotr Azarewicz <piotr.azarewicz@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Firmware can return a busy state, so the function return
-I40E_ERR_NOT_READY.
+This function accidentally failed to update the data pointer, which
+caused the reported stats to be incorrect. Additionally, statistics
+which follow queue stats in the output would potentially read non-zeroed
+garbage data from the ethtool buffer.
 
-Signed-off-by: Piotr Azarewicz <piotr.azarewicz@intel.com>
+This occurred because the data double pointer was not dereferenced
+before incrementing the size.
+
+Additionally, make sure this issue is more visible by adding a WARN_ONCE
+to the i40e_get_ethtool_stats function. This warning will trigger
+whenever the data pointer is not at the expected address, similar to the
+check that we make in the i40e_get_stat_strings() function.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c   | 2 ++
- drivers/net/ethernet/intel/i40evf/i40e_adminq.c | 2 ++
- 2 files changed, 4 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index ddbea79..501ee71 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -868,6 +868,8 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
- 		cmd_completed = true;
- 		if ((enum i40e_admin_queue_err)retval == I40E_AQ_RC_OK)
- 			status = 0;
-+		else if ((enum i40e_admin_queue_err)retval == I40E_AQ_RC_EBUSY)
-+			status = I40E_ERR_NOT_READY;
- 		else
- 			status = I40E_ERR_ADMIN_QUEUE_ERROR;
- 		hw->aq.asq_last_status = (enum i40e_admin_queue_err)retval;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-index c355120..21a0dbf 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-@@ -797,6 +797,8 @@ i40e_status i40evf_asq_send_command(struct i40e_hw *hw,
- 		cmd_completed = true;
- 		if ((enum i40e_admin_queue_err)retval == I40E_AQ_RC_OK)
- 			status = 0;
-+		else if ((enum i40e_admin_queue_err)retval == I40E_AQ_RC_EBUSY)
-+			status = I40E_ERR_NOT_READY;
- 		else
- 			status = I40E_ERR_ADMIN_QUEUE_ERROR;
- 		hw->aq.asq_last_status = (enum i40e_admin_queue_err)retval;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index cd23d1e..abcd096 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1860,6 +1860,7 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
+ 	unsigned int i;
+ 	unsigned int start;
+ 	bool veb_stats;
++	u64 *p = data;
+ 
+ 	i40e_update_stats(vsi);
+ 
+@@ -1902,7 +1903,7 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
+ 	}
+ 	rcu_read_unlock();
+ 	if (vsi != pf->vsi[pf->lan_vsi] || pf->hw.partition_id != 1)
+-		return;
++		goto check_data_pointer;
+ 
+ 	veb_stats = ((pf->lan_veb != I40E_NO_VEB) &&
+ 		     (pf->flags & I40E_FLAG_VEB_STATS_ENABLED));
+@@ -1925,6 +1926,10 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
+ 
+ 		i40e_add_ethtool_stats(&data, &pfc, i40e_gstrings_pfc_stats);
+ 	}
++
++check_data_pointer:
++	WARN_ONCE(data - p != i40e_get_stats_count(netdev),
++		  "ethtool stats count mismatch!");
+ }
+ 
+ /**
 -- 
 2.9.5
 
