@@ -1,123 +1,90 @@
-From: Basierski, SebastianX <sebastianx.basierski@intel.com>
-Date: Tue, 31 Jul 2018 18:11:35 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix driver behaviour after
- issuing VFLR
-In-Reply-To: <d68af3a2-00b5-56dc-40cf-b66158de5175@oracle.com>
-References: <20180731161600.75051-1-sebastianx.basierski@intel.com>
- <d68af3a2-00b5-56dc-40cf-b66158de5175@oracle.com>
-Message-ID: <3A7E81AC661B4646A4CE6F2E09B7B74E05C64477@HASMSX106.ger.corp.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 31 Jul 2018 18:29:32 +0000
+Subject: [Intel-wired-lan] Issue with driver i40e stat strings count
+ mismatch
+In-Reply-To: <9BBC4E0CF881AA4299206E2E1412B6267C5C1128@ORSMSX102.amr.corp.intel.com>
+References: <20180710131721.657e55a5@redhat.com>
+ <64be8e6a-c285-2864-fd91-356eba645acd@kpanic.de>
+ <20180731162835.628ebb62@redhat.com>
+ <9BBC4E0CF881AA4299206E2E1412B6267C5C1128@ORSMSX102.amr.corp.intel.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5884C2A217@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Shannon Nelson [mailto:shannon.nelson at oracle.com]
-> Sent: Tuesday, July 31, 2018 6:18 PM
-> To: Basierski, SebastianX <sebastianx.basierski@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: fix driver behaviour after issuing
-> VFLR
+
+
+> -----Original Message-----
+> From: Wyborny, Carolyn
+> Sent: Tuesday, July 31, 2018 8:53 AM
+> To: Jesper Dangaard Brouer <brouer@redhat.com>; Stefan Assmann
+> <sassmann@kpanic.de>; Keller, Jacob E <jacob.e.keller@intel.com>
+> Cc: netdev at vger.kernel.org; intel-wired-lan <intel-wired-lan@lists.osuosl.org>;
+> Topel, Bjorn <bjorn.topel@intel.com>; Keller, Jacob E
+> <jacob.e.keller@intel.com>
+> Subject: RE: [Intel-wired-lan] Issue with driver i40e stat strings count mismatch
 > 
-> On 7/31/2018 9:16 AM, Sebastian Basierski wrote:
-> > Since VFLR doesn't clear VFMBMEM (VF Mailbox Memory) and is not
-> > re-enabling queues correctly we should fix this behavior.
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> > Behalf Of Jesper Dangaard Brouer
+> > Sent: Tuesday, July 31, 2018 7:29 AM
+> > To: Stefan Assmann <sassmann@kpanic.de>; Keller, Jacob E
+> > <jacob.e.keller@intel.com>
+> > Cc: netdev at vger.kernel.org; intel-wired-lan <intel-wired-
+> > lan at lists.osuosl.org>; brouer at redhat.com; Topel, Bjorn
+> > <bjorn.topel@intel.com>
+> > Subject: Re: [Intel-wired-lan] Issue with driver i40e stat strings count
+> > mismatch
 > >
-> > Signed-off-by: Sebastian Basierski <sebastianx.basierski@intel.com>
-> > ---
-> >   .../net/ethernet/intel/ixgbe/ixgbe_sriov.c    | 26 +++++++++++++++++++
-> >   drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  1 +
-> >   2 files changed, 27 insertions(+)
 > >
-> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-> > b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-> > index 6f59933cdff7..2bc4fe475f28 100644
-> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-> > @@ -688,8 +688,13 @@ static int ixgbe_set_vf_macvlan(struct
-> ixgbe_adapter *adapter,
-> >   static inline void ixgbe_vf_reset_event(struct ixgbe_adapter *adapter,
-> u32 vf)
-> >   {
-> >   	struct ixgbe_hw *hw = &adapter->hw;
-> > +	struct ixgbe_ring_feature *vmdq =
-> > +&adapter->ring_feature[RING_F_VMDQ];
-> >   	struct vf_data_storage *vfinfo = &adapter->vfinfo[vf];
-> > +	u32 q_per_pool = __ALIGN_MASK(1, ~vmdq->mask);
-> >   	u8 num_tcs = adapter->hw_tcs;
-> > +	u32 reg_val;
-> > +	u32 queue;
-> > +	u32 word;
+> > On Tue, 31 Jul 2018 09:05:40 +0200 Stefan Assmann
+> > <sassmann@kpanic.de> wrote:
 > >
-> >   	/* remove VLAN filters beloning to this VF */
-> >   	ixgbe_clear_vf_vlans(adapter, vf);
-> > @@ -726,6 +731,27 @@ static inline void ixgbe_vf_reset_event(struct
-> > ixgbe_adapter *adapter, u32 vf)
+> > > From: Stefan Assmann <sassmann@kpanic.de>
+> > > To: Jesper Dangaard Brouer <brouer@redhat.com>,  Jeff Kirsher
+> > <jeffrey.t.kirsher@intel.com>
+> > > Cc: Bj?rn T?pel <bjorn.topel@intel.com>,
+> > "alexander.h.duyck at intel.com" <alexander.h.duyck@intel.com>,  intel-
+> > wired-lan <intel-wired-lan@lists.osuosl.org>,  "netdev at vger.kernel.org"
+> > <netdev@vger.kernel.org>
+> > > Subject: Re: Issue with driver i40e stat strings count mismatch
+> > > Date: Tue, 31 Jul 2018 09:05:40 +0200
+> > > User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+> > >  Thunderbird/52.9.1
+> > > Message-ID: <64be8e6a-c285-2864-fd91-356eba645acd@kpanic.de>
+> > >
+> > > On 10.07.2018 13:17, Jesper Dangaard Brouer wrote:
+> > > > Hi Intel-fokes,
+> > > >
+> > > > Your i40e driver have issues with it's ethtool stats.  A warning
+> > > > triggers at drivers/net/ethernet/intel/i40e/i40e_ethtool.c line 1907
+> > > > (see splash below) in func i40e_get_stat_strings().
+> > >
+> > > Hi Jesper,
+> > >
+> > > I ran into the same issue. Here's my proposed fix.
 > >
-> >   	/* reset VF api back to unknown */
-> >   	adapter->vfinfo[vf].vf_api = ixgbe_mbox_api_10;
-> > +
-> > +	/* Restart each queue for given VF */
-> > +	for (queue = 0; queue < q_per_pool; queue++) {
-> > +		unsigned int reg_idx = (vf * q_per_pool) + queue;
-> > +
-> > +		reg_val = IXGBE_READ_REG(hw,
-> IXGBE_PVFTXDCTL(reg_idx));
-> > +
-> > +		/* Re-enabling only configured queues */
-> > +		if (reg_val) {
-> > +			reg_val |= IXGBE_TXDCTL_ENABLE;
-> > +			IXGBE_WRITE_REG(hw, IXGBE_PVFTXDCTL(reg_idx),
-> reg_val);
-> > +			reg_val &= ~IXGBE_TXDCTL_ENABLE;
-> > +			IXGBE_WRITE_REG(hw, IXGBE_PVFTXDCTL(reg_idx),
-> reg_val);
+> > Thanks for following up Stefan :-)
+> >
+> > I'm hoping some Intel people will look at evaluating this fix? ...
+> >
+> Thanks, we have a patch in process for this fix and other related ones from Jake
+> Keller.  We'll expedite it.
 > 
-> Why bother creating a new name for an existing register?  Why not use the
-> existing define for IXGBE_TXDCTL?
+> Carolyn
+> 
+> Carolyn Wyborny
+> Linux Development
+> Networking Division
+> Intel Corporation
+> 
 > 
 
-I think PVF prefix used for making a point we are now in VF domain.
+Yea I found tihs issue a while ago and we had a patch internally. I suspect it just got lost in a shuffle earlier
 
- > > +		}
-> > +	}
-> > +
-> > +	/* Clear VF's mailbox memory */
-> > +	for (word = 0; word < IXGBE_VFMAILBOX_SIZE; word++)
-> > +		IXGBE_WRITE_REG_ARRAY(hw, IXGBE_PFMBMEM(vf), word,
-> 0);
-> > +
-> > +	IXGBE_WRITE_FLUSH(hw);
-> >   }
-> >
-> >   static int ixgbe_set_vf_mac(struct ixgbe_adapter *adapter, diff
-> > --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-> > b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-> > index 44cfb2021145..41bcbb337e83 100644
-> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-> > @@ -2518,6 +2518,7 @@ enum {
-> >   /* Translated register #defines */
-> >   #define IXGBE_PVFTDH(P)		(0x06010 + (0x40 * (P)))
-> >   #define IXGBE_PVFTDT(P)		(0x06018 + (0x40 * (P)))
-> > +#define IXGBE_PVFTXDCTL(P)	(0x06028 + (0x40 * (P)))
-> >   #define IXGBE_PVFTDWBAL(P)	(0x06038 + (0x40 * (P)))
-> >   #define IXGBE_PVFTDWBAH(P)	(0x0603C + (0x40 * (P)))
-> 
-> For that matter, why do any of these "translated" defines exist when they
-> are the same as the un-translated defines?
+I think we have an equivalent patch, but I don't care which gets applied.
 
-Same as above.
-
-> 
-> sln
-> 
-> 
-> >
-> >
-
-Thanks
-Sebastian Basierski
-SII Engineer
-Delivering outsourced services to Intel
-e-mail: sebastianx.basierski at intel.com
+Thanks,
+Jake
