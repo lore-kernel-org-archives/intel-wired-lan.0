@@ -1,185 +1,40 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 31 Jul 2018 03:41:39 -0700
-Subject: [Intel-wired-lan] [next PATCH S93 02/11] i40e: add helper to copy
- statistic values into ethtool buffer
+Date: Tue, 31 Jul 2018 03:41:40 -0700
+Subject: [Intel-wired-lan] [next PATCH S93 03/11] i40e: Set fec_config when
+ forcing link state
 In-Reply-To: <20180731104148.11896-1-alice.michael@intel.com>
 References: <20180731104148.11896-1-alice.michael@intel.com>
-Message-ID: <20180731104148.11896-2-alice.michael@intel.com>
+Message-ID: <20180731104148.11896-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Mariusz Stachura <mariusz.stachura@intel.com>
 
-Similar to the helper function to copy the ethtool stats strings, add
-and use a helper function for copying the ethtool stats into the
-supplied buffer.
+This patch configures FEC setting in i40e_force_link_state().
+For some reason setting this field was overlooked thus causing
+25G link to be configured incorrectly.
 
-Just like before, we use a macro to avoid having to pass ARRAY_SIZE
-manually, so as to reduce chance of bugs.
-
-Some of the stats, especially queue stats, are a bit trickier, and will
-be handled in future patches.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 116 ++++++++++++++++++++-----
- 1 file changed, 93 insertions(+), 23 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 20e8630..c051afe 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -1706,6 +1706,89 @@ static int i40e_get_sset_count(struct net_device *netdev, int sset)
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 13940e0..a730f48 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6597,6 +6597,8 @@ static i40e_status i40e_force_link_state(struct i40e_pf *pf, bool is_up)
+ 	config.eee_capability = abilities.eee_capability;
+ 	config.eeer = abilities.eeer_val;
+ 	config.low_power_ctrl = abilities.d3_lpan;
++	config.fec_config = abilities.fec_cfg_curr_mod_ext_info &
++			    I40E_AQ_PHY_FEC_CONFIG_MASK;
+ 	err = i40e_aq_set_phy_config(hw, &config, NULL);
  
- /**
-+ * i40e_add_one_ethtool_stat - copy the stat into the supplied buffer
-+ * @data: location to store the stat value
-+ * @pointer: basis for where to copy from
-+ * @stat: the stat definition
-+ *
-+ * Copies the stat data defined by the pointer and stat structure pair into
-+ * the memory supplied as data. Used to implement i40e_add_ethtool_stats.
-+ * If the pointer is null, data will be zero'd.
-+ */
-+static inline void
-+i40e_add_one_ethtool_stat(u64 *data, void *pointer,
-+			  const struct i40e_stats *stat)
-+{
-+	char *p;
-+
-+	if (!pointer) {
-+		/* ensure that the ethtool data buffer is zero'd for any stats
-+		 * which don't have a valid pointer.
-+		 */
-+		*data = 0;
-+		return;
-+	}
-+
-+	p = (char *)pointer + stat->stat_offset;
-+	switch (stat->sizeof_stat) {
-+	case sizeof(u64):
-+		*data = *((u64 *)p);
-+		break;
-+	case sizeof(u32):
-+		*data = *((u32 *)p);
-+		break;
-+	case sizeof(u16):
-+		*data = *((u16 *)p);
-+		break;
-+	case sizeof(u8):
-+		*data = *((u8 *)p);
-+		break;
-+	default:
-+		WARN_ONCE(1, "unexpected stat size for %s",
-+			  stat->stat_string);
-+		*data = 0;
-+	}
-+}
-+
-+/**
-+ * __i40e_add_ethtool_stats - copy stats into the ethtool supplied buffer
-+ * @data: ethtool stats buffer
-+ * @pointer: location to copy stats from
-+ * @stats: array of stats to copy
-+ * @size: the size of the stats definition
-+ *
-+ * Copy the stats defined by the stats array using the pointer as a base into
-+ * the data buffer supplied by ethtool. Updates the data pointer to point to
-+ * the next empty location for successive calls to __i40e_add_ethtool_stats.
-+ * If pointer is null, set the data values to zero and update the pointer to
-+ * skip these stats.
-+ **/
-+static inline void
-+__i40e_add_ethtool_stats(u64 **data, void *pointer,
-+			 const struct i40e_stats stats[],
-+			 const unsigned int size)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < size; i++)
-+		i40e_add_one_ethtool_stat((*data)++, pointer, &stats[i]);
-+}
-+
-+/**
-+ * i40e_add_ethtool_stats - copy stats into ethtool supplied buffer
-+ * @data: ethtool stats buffer
-+ * @pointer: location where stats are stored
-+ * @stats: static const array of stat definitions
-+ *
-+ * Macro to ease the use of __i40e_add_ethtool_stats by taking a static
-+ * constant stats array and passing the ARRAY_SIZE(). This avoids typos by
-+ * ensuring that we pass the size associated with the given stats array.
-+ * Assumes that stats is an array.
-+ **/
-+#define i40e_add_ethtool_stats(data, pointer, stats) \
-+	__i40e_add_ethtool_stats(data, pointer, stats, ARRAY_SIZE(stats))
-+
-+/**
-  * i40e_get_ethtool_stats - copy stat values into supplied buffer
-  * @netdev: the netdev to collect stats for
-  * @stats: ethtool stats command structure
-@@ -1727,22 +1810,15 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
- 	unsigned int i;
--	char *p;
--	struct rtnl_link_stats64 *net_stats = i40e_get_vsi_stats_struct(vsi);
- 	unsigned int start;
- 
- 	i40e_update_stats(vsi);
- 
--	for (i = 0; i < I40E_NETDEV_STATS_LEN; i++) {
--		p = (char *)net_stats + i40e_gstrings_net_stats[i].stat_offset;
--		*(data++) = (i40e_gstrings_net_stats[i].sizeof_stat ==
--			sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
--	}
--	for (i = 0; i < I40E_MISC_STATS_LEN; i++) {
--		p = (char *)vsi + i40e_gstrings_misc_stats[i].stat_offset;
--		*(data++) = (i40e_gstrings_misc_stats[i].sizeof_stat ==
--			    sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
--	}
-+	i40e_add_ethtool_stats(&data, i40e_get_vsi_stats_struct(vsi),
-+			       i40e_gstrings_net_stats);
-+
-+	i40e_add_ethtool_stats(&data, vsi, i40e_gstrings_misc_stats);
-+
- 	rcu_read_lock();
- 	for (i = 0; i < I40E_MAX_NUM_QUEUES(netdev) ; i++) {
- 		tx_ring = READ_ONCE(vsi->tx_rings[i]);
-@@ -1783,12 +1859,8 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
- 	    (pf->flags & I40E_FLAG_VEB_STATS_ENABLED)) {
- 		struct i40e_veb *veb = pf->veb[pf->lan_veb];
- 
--		for (i = 0; i < I40E_VEB_STATS_LEN; i++) {
--			p = (char *)veb;
--			p += i40e_gstrings_veb_stats[i].stat_offset;
--			*(data++) = (i40e_gstrings_veb_stats[i].sizeof_stat ==
--				     sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
--		}
-+		i40e_add_ethtool_stats(&data, veb, i40e_gstrings_veb_stats);
-+
- 		for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
- 			*(data++) = veb->tc_stats.tc_tx_packets[i];
- 			*(data++) = veb->tc_stats.tc_tx_bytes[i];
-@@ -1798,11 +1870,9 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
- 	} else {
- 		data += I40E_VEB_STATS_TOTAL;
- 	}
--	for (i = 0; i < I40E_GLOBAL_STATS_LEN; i++) {
--		p = (char *)pf + i40e_gstrings_stats[i].stat_offset;
--		*(data++) = (i40e_gstrings_stats[i].sizeof_stat ==
--			     sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
--	}
-+
-+	i40e_add_ethtool_stats(&data, pf, i40e_gstrings_stats);
-+
- 	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
- 		*(data++) = pf->stats.priority_xon_tx[i];
- 		*(data++) = pf->stats.priority_xoff_tx[i];
+ 	if (err) {
 -- 
 2.9.5
 
