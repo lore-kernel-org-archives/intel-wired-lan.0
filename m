@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 31 Jul 2018 03:41:42 -0700
-Subject: [Intel-wired-lan] [next PATCH S93 05/11] i40e: convert priority
- flow control stats to use helpers
+Date: Tue, 31 Jul 2018 03:41:44 -0700
+Subject: [Intel-wired-lan] [next PATCH S93 07/11] i40e: remove unnecessary i
+ variable causing -Wshadow warning
 In-Reply-To: <20180731104148.11896-1-alice.michael@intel.com>
 References: <20180731104148.11896-1-alice.michael@intel.com>
-Message-ID: <20180731104148.11896-5-alice.michael@intel.com>
+Message-ID: <20180731104148.11896-7-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,169 +13,36 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-The priority flow control statistics are laid out in the stats structure
-using arrays. This made it unwieldy to use as part of an i40e_stats
-array.
+Commit c61c8fe1d592 ("i40e: Implement an ethtool private flag to stop
+LLDP in FW") added an extra for-loop which added a shadowing 'i'
+variable as the index.
 
-Add a new structure type, i40e_pfc_stats, and a helper function
-i40e_get_pfc_stats which can return the stats for a given priority
-value as an i40e_pfc_stats structure.
+However, the local variable i already exists, and we already use it as
+a loop index. Additionally, at this point, there is no further use of
+the variable, so it's safe to simply overwrite the variable contents.
 
-Use this to create an i40e_stats array, which we'll use to format and
-copy the strings and stats into the supplied buffers.
-
-This reduces even more boiler plate code in i40e_get_ethtool_stats and
-i40e_get_stat_strings.
-
-An alternative would be to modify the structure definition for the pfc
-stats, but this is more invasive to the rest of the code base.
-
-Note that a macro was used to setup the copy of stats from the
-pf->stats, as this reduces the chance of typos in the code names. It
-will produce a checkpatch.pl warning due to re-use of a macro argument.
-In this case, it should be safe, as the macro will fail to compile in
-cases where the argument is not a simple structure member name, and thus
-arguments with side effects should not be an issue.
+This fixes a -Wshadow warning which has started being enabled on some
+distributions
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Malek, Patryk <patryk.malek@intel.com>
+Change-ID: I1d2259d27ccab6927efd40fb1853af74678680b8
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 87 +++++++++++++++-----------
- 1 file changed, 51 insertions(+), 36 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 52ccafe..9c380c0 100644
+index 9c380c0..12d279a 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -31,6 +31,8 @@ struct i40e_stats {
- 	I40E_STAT(struct i40e_vsi, _name, _stat)
- #define I40E_VEB_STAT(_name, _stat) \
- 	I40E_STAT(struct i40e_veb, _name, _stat)
-+#define I40E_PFC_STAT(_name, _stat) \
-+	I40E_STAT(struct i40e_pfc_stats, _name, _stat)
+@@ -4642,7 +4642,6 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	if (changed_flags & I40E_FLAG_DISABLE_FW_LLDP) {
+ 		if (pf->flags & I40E_FLAG_DISABLE_FW_LLDP) {
+ 			struct i40e_dcbx_config *dcbcfg;
+-			int i;
  
- static const struct i40e_stats i40e_gstrings_net_stats[] = {
- 	I40E_NETDEV_STAT(rx_packets),
-@@ -153,6 +155,22 @@ static const struct i40e_stats i40e_gstrings_stats[] = {
- 	I40E_PF_STAT("port.rx_lpi_count", stats.rx_lpi_count),
- };
- 
-+struct i40e_pfc_stats {
-+	u64 priority_xon_rx;
-+	u64 priority_xoff_rx;
-+	u64 priority_xon_tx;
-+	u64 priority_xoff_tx;
-+	u64 priority_xon_2_xoff;
-+};
-+
-+static const struct i40e_stats i40e_gstrings_pfc_stats[] = {
-+	I40E_PFC_STAT("port.tx_priority_%u_xon_tx", priority_xon_tx),
-+	I40E_PFC_STAT("port.tx_priority_%u_xoff_tx", priority_xoff_tx),
-+	I40E_PFC_STAT("port.rx_priority_%u_xon_rx", priority_xon_rx),
-+	I40E_PFC_STAT("port.rx_priority_%u_xoff_rx", priority_xoff_rx),
-+	I40E_PFC_STAT("port.rx_priority_%u_xon_2_xoff", priority_xon_2_xoff),
-+};
-+
- /* We use num_tx_queues here as a proxy for the maximum number of queues
-  * available because we always allocate queues symmetrically.
-  */
-@@ -167,13 +185,9 @@ static const struct i40e_stats i40e_gstrings_stats[] = {
- #define I40E_VSI_STATS_LEN(n)	(I40E_NETDEV_STATS_LEN + \
- 				 I40E_MISC_STATS_LEN + \
- 				 I40E_QUEUE_STATS_LEN((n)))
--#define I40E_PFC_STATS_LEN ( \
--		(FIELD_SIZEOF(struct i40e_pf, stats.priority_xoff_rx) + \
--		 FIELD_SIZEOF(struct i40e_pf, stats.priority_xon_rx) + \
--		 FIELD_SIZEOF(struct i40e_pf, stats.priority_xoff_tx) + \
--		 FIELD_SIZEOF(struct i40e_pf, stats.priority_xon_tx) + \
--		 FIELD_SIZEOF(struct i40e_pf, stats.priority_xon_2_xoff)) \
--		 / sizeof(u64))
-+
-+#define I40E_PFC_STATS_LEN	(ARRAY_SIZE(i40e_gstrings_pfc_stats) * \
-+				 I40E_MAX_USER_PRIORITY)
- 
- #define I40E_VEB_STATS_LEN	(ARRAY_SIZE(i40e_gstrings_veb_stats) + \
- 				 (ARRAY_SIZE(i40e_gstrings_veb_tc_stats) * \
-@@ -1799,6 +1813,31 @@ __i40e_add_ethtool_stats(u64 **data, void *pointer,
- 	__i40e_add_ethtool_stats(data, pointer, stats, ARRAY_SIZE(stats))
- 
- /**
-+ * i40e_get_pfc_stats - copy HW PFC statistics to formatted structure
-+ * @pf: the PF device structure
-+ * @i: the priority value to copy
-+ *
-+ * The PFC stats are found as arrays in pf->stats, which is not easy to pass
-+ * into i40e_add_ethtool_stats. Produce a formatted i40e_pfc_stats structure
-+ * of the PFC stats for the given priority.
-+ **/
-+static inline struct i40e_pfc_stats
-+i40e_get_pfc_stats(struct i40e_pf *pf, unsigned int i)
-+{
-+#define I40E_GET_PFC_STAT(stat, priority) \
-+	.stat = pf->stats.stat[priority]
-+
-+	struct i40e_pfc_stats pfc = {
-+		I40E_GET_PFC_STAT(priority_xon_rx, i),
-+		I40E_GET_PFC_STAT(priority_xoff_rx, i),
-+		I40E_GET_PFC_STAT(priority_xon_tx, i),
-+		I40E_GET_PFC_STAT(priority_xoff_tx, i),
-+		I40E_GET_PFC_STAT(priority_xon_2_xoff, i),
-+	};
-+	return pfc;
-+}
-+
-+/**
-  * i40e_get_ethtool_stats - copy stat values into supplied buffer
-  * @netdev: the netdev to collect stats for
-  * @stats: ethtool stats command structure
-@@ -1884,15 +1923,10 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
- 	i40e_add_ethtool_stats(&data, pf, i40e_gstrings_stats);
- 
- 	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
--		*(data++) = pf->stats.priority_xon_tx[i];
--		*(data++) = pf->stats.priority_xoff_tx[i];
--	}
--	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
--		*(data++) = pf->stats.priority_xon_rx[i];
--		*(data++) = pf->stats.priority_xoff_rx[i];
-+		struct i40e_pfc_stats pfc = i40e_get_pfc_stats(pf, i);
-+
-+		i40e_add_ethtool_stats(&data, &pfc, i40e_gstrings_pfc_stats);
- 	}
--	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++)
--		*(data++) = pf->stats.priority_xon_2_xoff[i];
- }
- 
- /**
-@@ -1973,27 +2007,8 @@ static void i40e_get_stat_strings(struct net_device *netdev, u8 *data)
- 
- 	i40e_add_stat_strings(&data, i40e_gstrings_stats);
- 
--	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
--		snprintf(data, ETH_GSTRING_LEN,
--			 "port.tx_priority_%u_xon", i);
--		data += ETH_GSTRING_LEN;
--		snprintf(data, ETH_GSTRING_LEN,
--			 "port.tx_priority_%u_xoff", i);
--		data += ETH_GSTRING_LEN;
--	}
--	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
--		snprintf(data, ETH_GSTRING_LEN,
--			 "port.rx_priority_%u_xon", i);
--		data += ETH_GSTRING_LEN;
--		snprintf(data, ETH_GSTRING_LEN,
--			 "port.rx_priority_%u_xoff", i);
--		data += ETH_GSTRING_LEN;
--	}
--	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
--		snprintf(data, ETH_GSTRING_LEN,
--			 "port.rx_priority_%u_xon_2_xoff", i);
--		data += ETH_GSTRING_LEN;
--	}
-+	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++)
-+		i40e_add_stat_strings(&data, i40e_gstrings_pfc_stats, i);
- 
- 	WARN_ONCE(p - data != i40e_get_stats_count(netdev) * ETH_GSTRING_LEN,
- 		  "stat strings count mismatch!");
+ 			i40e_aq_stop_lldp(&pf->hw, true, NULL);
+ 			i40e_aq_set_dcb_parameters(&pf->hw, true, NULL);
 -- 
 2.9.5
 
