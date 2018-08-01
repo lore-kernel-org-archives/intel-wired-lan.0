@@ -1,51 +1,171 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 31 Jul 2018 20:47:28 -0700
-Subject: [Intel-wired-lan] [PATCH v3 12/13] ice: Fix potential return of
- uninitialized value
+Date: Tue, 31 Jul 2018 20:47:29 -0700
+Subject: [Intel-wired-lan] [PATCH v3 13/13] ice: Change struct members from
+ bool to u8
 In-Reply-To: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
 References: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180801034729.3864-13-anirudh.venkataramanan@intel.com>
+Message-ID: <20180801034729.3864-14-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-In ice_vsi_setup_[tx|rx]_rings, err is uninitialized which can result in
-a garbage value return to the caller. Fix that.
+Recent versions of checkpatch have a new warning based on a documented
+preference of Linus to not use bool in structures due to wasted space and
+the size of bool is implementation dependent.  For more information, see
+the email thread at https://lkml.org/lkml/2017/11/21/384.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h        |  8 ++++----
+ drivers/net/ethernet/intel/ice/ice_switch.h |  6 +++---
+ drivers/net/ethernet/intel/ice/ice_txrx.h   |  2 +-
+ drivers/net/ethernet/intel/ice/ice_type.h   | 16 ++++++++--------
+ 4 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 6ac74511c4ea..7a45ee74531a 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4883,7 +4883,7 @@ int ice_down(struct ice_vsi *vsi)
-  */
- static int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
- {
--	int i, err;
-+	int i, err = 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index ed071ea75f20..868f4a1d0f72 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -196,9 +196,9 @@ struct ice_vsi {
+ 	struct list_head tmp_sync_list;		/* MAC filters to be synced */
+ 	struct list_head tmp_unsync_list;	/* MAC filters to be unsynced */
  
- 	if (!vsi->num_txq) {
- 		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Tx queues\n",
-@@ -4908,7 +4908,7 @@ static int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
-  */
- static int ice_vsi_setup_rx_rings(struct ice_vsi *vsi)
- {
--	int i, err;
-+	int i, err = 0;
+-	bool irqs_ready;
+-	bool current_isup;		 /* Sync 'link up' logging */
+-	bool stat_offsets_loaded;
++	u8 irqs_ready;
++	u8 current_isup;		 /* Sync 'link up' logging */
++	u8 stat_offsets_loaded;
  
- 	if (!vsi->num_rxq) {
- 		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Rx queues\n",
+ 	/* queue information */
+ 	u8 tx_mapping_mode;		 /* ICE_MAP_MODE_[CONTIG|SCATTER] */
+@@ -269,7 +269,7 @@ struct ice_pf {
+ 	struct ice_hw_port_stats stats;
+ 	struct ice_hw_port_stats stats_prev;
+ 	struct ice_hw hw;
+-	bool stat_prev_loaded;	/* has previous stats been loaded */
++	u8 stat_prev_loaded;	/* has previous stats been loaded */
+ 	char int_name[ICE_INT_NAME_STR_LEN];
+ };
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 6f4a0d159dbf..9b8ec128ee31 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -17,7 +17,7 @@ struct ice_vsi_ctx {
+ 	u16 vsis_unallocated;
+ 	u16 flags;
+ 	struct ice_aqc_vsi_props info;
+-	bool alloc_from_pool;
++	u8 alloc_from_pool;
+ };
+ 
+ enum ice_sw_fwd_act_type {
+@@ -94,8 +94,8 @@ struct ice_fltr_info {
+ 	u8 qgrp_size;
+ 
+ 	/* Rule creations populate these indicators basing on the switch type */
+-	bool lb_en;	/* Indicate if packet can be looped back */
+-	bool lan_en;	/* Indicate if packet can be forwarded to the uplink */
++	u8 lb_en;	/* Indicate if packet can be looped back */
++	u8 lan_en;	/* Indicate if packet can be forwarded to the uplink */
+ };
+ 
+ /* Bookkeeping structure to hold bitmap of VSIs corresponding to VSI list id */
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 567067b650c4..31bc998fe200 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -143,7 +143,7 @@ struct ice_ring {
+ 	u16 next_to_use;
+ 	u16 next_to_clean;
+ 
+-	bool ring_active;		/* is ring online or not */
++	u8 ring_active;			/* is ring online or not */
+ 
+ 	/* stats structs */
+ 	struct ice_q_stats	stats;
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 99c8a9a71b5e..97c366e0ca59 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -83,7 +83,7 @@ struct ice_link_status {
+ 	u64 phy_type_low;
+ 	u16 max_frame_size;
+ 	u16 link_speed;
+-	bool lse_ena;	/* Link Status Event notification */
++	u8 lse_ena;	/* Link Status Event notification */
+ 	u8 link_info;
+ 	u8 an_info;
+ 	u8 ext_info;
+@@ -101,7 +101,7 @@ struct ice_phy_info {
+ 	struct ice_link_status link_info_old;
+ 	u64 phy_type_low;
+ 	enum ice_media_type media_type;
+-	bool get_link_info;
++	u8 get_link_info;
+ };
+ 
+ /* Common HW capabilities for SW use */
+@@ -167,7 +167,7 @@ struct ice_nvm_info {
+ 	u32 oem_ver;              /* OEM version info */
+ 	u16 sr_words;             /* Shadow RAM size in words */
+ 	u16 ver;                  /* NVM package version */
+-	bool blank_nvm_mode;      /* is NVM empty (no FW present) */
++	u8 blank_nvm_mode;        /* is NVM empty (no FW present) */
+ };
+ 
+ /* Max number of port to queue branches w.r.t topology */
+@@ -181,7 +181,7 @@ struct ice_sched_node {
+ 	struct ice_aqc_txsched_elem_data info;
+ 	u32 agg_id;			/* aggregator group id */
+ 	u16 vsi_id;
+-	bool in_use;			/* suspended or in use */
++	u8 in_use;			/* suspended or in use */
+ 	u8 tx_sched_layer;		/* Logical Layer (1-9) */
+ 	u8 num_children;
+ 	u8 tc_num;
+@@ -218,7 +218,7 @@ struct ice_sched_vsi_info {
+ struct ice_sched_tx_policy {
+ 	u16 max_num_vsis;
+ 	u8 max_num_lan_qs_per_tc[ICE_MAX_TRAFFIC_CLASS];
+-	bool rdma_ena;
++	u8 rdma_ena;
+ };
+ 
+ struct ice_port_info {
+@@ -243,7 +243,7 @@ struct ice_port_info {
+ 	struct list_head agg_list;	/* lists all aggregator */
+ 	u8 lport;
+ #define ICE_LPORT_MASK		0xff
+-	bool is_vf;
++	u8 is_vf;
+ };
+ 
+ struct ice_switch_info {
+@@ -287,7 +287,7 @@ struct ice_hw {
+ 	u8 max_cgds;
+ 	u8 sw_entry_point_layer;
+ 
+-	bool evb_veb;		/* true for VEB, false for VEPA */
++	u8 evb_veb;		/* true for VEB, false for VEPA */
+ 	struct ice_bus_info bus;
+ 	struct ice_nvm_info nvm;
+ 	struct ice_hw_dev_caps dev_caps;	/* device capabilities */
+@@ -318,7 +318,7 @@ struct ice_hw {
+ 	u8 itr_gran_100;
+ 	u8 itr_gran_50;
+ 	u8 itr_gran_25;
+-	bool ucast_shared;	/* true if VSIs can share unicast addr */
++	u8 ucast_shared;	/* true if VSIs can share unicast addr */
+ 
+ };
+ 
 -- 
 2.17.1
 
