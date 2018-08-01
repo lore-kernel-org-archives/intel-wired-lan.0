@@ -1,105 +1,67 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 31 Jul 2018 20:47:22 -0700
-Subject: [Intel-wired-lan] [PATCH v3 06/13] ice: Fix bugs in control queue
- processing
+Date: Tue, 31 Jul 2018 20:47:23 -0700
+Subject: [Intel-wired-lan] [PATCH v3 07/13] ice: Use order_base_2 to
+ calculate higher power of 2
 In-Reply-To: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
 References: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180801034729.3864-7-anirudh.venkataramanan@intel.com>
+Message-ID: <20180801034729.3864-8-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is a consolidation of multiple bug fixes for control queue
-processing.
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-1)  In ice_clean_adminq_subtask() remove unnecessary reads/writes to
-    registers. The bits PFINT_FW_CTL, PFINT_MBX_CTL and PFINT_SB_CTL
-    are not set when an interrupt arrives, which means that clearing them
-    again can be omitted.
+Currently, we use a combination of ilog2 and is_power_of_2() to
+calculate the next power of 2 for the qcount. This appears to be causing
+a warning on some combinations of GCC and the Linux kernel:
 
-2)  Get an accurate value in "pending" by re-reading the control queue
-    head register from the hardware.
+MODPOST 1 modules
+WARNING: "____ilog2_NaN" [ice.ko] undefined!
 
-3)  Fix a corner case involving lost control queue messages by checking
-    for new control messages (using ice_ctrlq_pending) before exiting the
-    cleanup routine.
+This appears to because because GCC realizes that qcount could be zero
+in some circumstances and thus attempts to link against the
+intentionally undefined ___ilog2_NaN function.
 
+The order_base_2 function is intentionally defined to return 0 when
+passed 0 as an argument, and thus will be safe to use here.
+
+This not only fixes the warning but makes the resulting code slightly
+cleaner, and is really what we should have used originally.
+
+Also update the comment to make it more clear that we are rounding up,
+not just incrementing the ilog2 of qcount unconditionally.
+
+Without this patch, we get warnings when building against the upstream
+kernel.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_controlq.c |  5 +++-
- drivers/net/ethernet/intel/ice/ice_main.c     | 26 ++++++++++++++++---
- 2 files changed, 26 insertions(+), 5 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> minor cleanup for upstream submission]
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index c064416080e7..62be72fdc8f3 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -1065,8 +1065,11 @@ ice_clean_rq_elem(struct ice_hw *hw, struct ice_ctl_q_info *cq,
- 
- clean_rq_elem_out:
- 	/* Set pending if needed, unlock and return */
--	if (pending)
-+	if (pending) {
-+		/* re-read HW head to calculate actual pending messages */
-+		ntu = (u16)(rd32(hw, cq->rq.head) & cq->rq.head_mask);
- 		*pending = (u16)((ntc > ntu ? cq->rq.count : 0) + (ntu - ntc));
-+	}
- clean_rq_elem_err:
- 	mutex_unlock(&cq->rq_lock);
- 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 7bb83deee165..a1524cbb15b1 100644
+index a1524cbb15b1..d4f1f92faf65 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -916,6 +916,21 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- 	return pending && (i == ICE_DFLT_IRQ_WORK);
- }
+@@ -1313,11 +1313,8 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ 		qcount = numq_tc;
+ 	}
  
-+/**
-+ * ice_ctrlq_pending - check if there is a difference between ntc and ntu
-+ * @hw: pointer to hardware info
-+ * @cq: control queue information
-+ *
-+ * returns true if there are pending messages in a queue, false if there aren't
-+ */
-+static bool ice_ctrlq_pending(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	u16 ntu;
-+
-+	ntu = (u16)(rd32(hw, cq->rq.head) & cq->rq.head_mask);
-+	return cq->rq.next_to_clean != ntu;
-+}
-+
- /**
-  * ice_clean_adminq_subtask - clean the AdminQ rings
-  * @pf: board private structure
-@@ -923,7 +938,6 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- static void ice_clean_adminq_subtask(struct ice_pf *pf)
- {
- 	struct ice_hw *hw = &pf->hw;
--	u32 val;
+-	/* find higher power-of-2 of qcount */
+-	pow = ilog2(qcount);
+-
+-	if (!is_power_of_2(qcount))
+-		pow++;
++	/* find the (rounded up) power-of-2 of qcount */
++	pow = order_base_2(qcount);
  
- 	if (!test_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state))
- 		return;
-@@ -933,9 +947,13 @@ static void ice_clean_adminq_subtask(struct ice_pf *pf)
- 
- 	clear_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state);
- 
--	/* re-enable Admin queue interrupt causes */
--	val = rd32(hw, PFINT_FW_CTL);
--	wr32(hw, PFINT_FW_CTL, (val | PFINT_FW_CTL_CAUSE_ENA_M));
-+	/* There might be a situation where new messages arrive to a control
-+	 * queue between processing the last message and clearing the
-+	 * EVENT_PENDING bit. So before exiting, check queue head again (using
-+	 * ice_ctrlq_pending) and process new messages if any.
-+	 */
-+	if (ice_ctrlq_pending(hw, &hw->adminq))
-+		__ice_clean_ctrlq(pf, ICE_CTL_Q_ADMIN);
- 
- 	ice_flush(hw);
- }
+ 	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
+ 		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
 -- 
 2.17.1
 
