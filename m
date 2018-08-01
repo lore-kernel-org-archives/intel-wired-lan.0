@@ -1,1096 +1,473 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 31 Jul 2018 21:04:27 -0700
-Subject: [Intel-wired-lan] [PATCH v2 07/13] ice: Implement handlers for
- ethtool PHY/link operations
+Date: Tue, 31 Jul 2018 21:04:28 -0700
+Subject: [Intel-wired-lan] [PATCH v2 08/13] ice: Clean up register file
 In-Reply-To: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
 References: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180801040433.5865-8-anirudh.venkataramanan@intel.com>
+Message-ID: <20180801040433.5865-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Chinh Cao <chinh.t.cao@intel.com>
+This patch cleans up the existing register definitions.
 
-This patch implements handlers for ethtool get_link_ksettings and
-set_link_ksettings. Helper functions use by these handlers are also
-introduced in this patch.
+1) Several instances of long defines names used in the BIT() macro
+   were replaced to use the actual values they represent. As a
+   result some defines for shifts (ending with _S) that were used
+   only to create bitmasks were removed completely.
 
-Signed-off-by: Chinh Cao <chinh.t.cao@intel.com>
+2) Apply more consistent tab spacing.
+
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   8 +-
- drivers/net/ethernet/intel/ice/ice_common.c   | 120 ++-
- drivers/net/ethernet/intel/ice/ice_common.h   |  14 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 805 +++++++++++++++++-
- 4 files changed, 894 insertions(+), 53 deletions(-)
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   | 417 ++++++++----------
+ 1 file changed, 188 insertions(+), 229 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index a49b890941ec..ce3405f870d8 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -921,9 +921,11 @@ struct ice_aqc_set_phy_cfg_data {
- 	u8 caps;
- #define ICE_AQ_PHY_ENA_TX_PAUSE_ABILITY		BIT(0)
- #define ICE_AQ_PHY_ENA_RX_PAUSE_ABILITY		BIT(1)
--#define ICE_AQ_PHY_ENA_LOW_POWER		BIT(2)
--#define ICE_AQ_PHY_ENA_LINK			BIT(3)
--#define ICE_AQ_PHY_ENA_ATOMIC_LINK		BIT(5)
-+#define ICE_AQ_PHY_ENA_LOW_POWER	BIT(2)
-+#define ICE_AQ_PHY_ENA_LINK		BIT(3)
-+#define ICE_AQ_PHY_ENA_AUTO_LINK_UPDT	BIT(5)
-+#define ICE_AQ_PHY_ENA_LESM		BIT(6)
-+#define ICE_AQ_PHY_ENA_AUTO_FEC		BIT(7)
- 	u8 low_power_ctrl;
- 	__le16 eee_cap; /* Value from ice_aqc_get_phy_caps */
- 	__le16 eeer_value;
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 303403f4ffc6..ad7f450ddf85 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -122,7 +122,7 @@ ice_aq_manage_mac_read(struct ice_hw *hw, void *buf, u16 buf_size,
-  *
-  * Returns the various PHY capabilities supported on the Port (0x0600)
-  */
--static enum ice_status
-+enum ice_status
- ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8 report_mode,
- 		    struct ice_aqc_get_phy_caps_data *pcaps,
- 		    struct ice_sq_cd *cd)
-@@ -1318,6 +1318,109 @@ void ice_clear_pxe_mode(struct ice_hw *hw)
- 		ice_aq_clear_pxe_mode(hw);
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 6076fc87df9d..067ca26a1d94 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -6,251 +6,210 @@
+ #ifndef _ICE_HW_AUTOGEN_H_
+ #define _ICE_HW_AUTOGEN_H_
  
-+/**
-+ * ice_get_link_speed_based_on_phy_type - returns link speed
-+ * @phy_type_low : lower part of phy_type
-+ * This helper function will convert a phy_type_low to its corresponding link
-+ * speed.
-+ * Note : In the structure of phy_type_low, there should be one bit set, as
-+ * this function will convert one phy type to its speed.
-+ * If no bit gets set, ICE_LINK_SPEED_UNKNOWN will be returned
-+ * If more than one bit gets set, ICE_LINK_SPEED_UNKNOWN will be returned
-+ */
-+static u16
-+ice_get_link_speed_based_on_phy_type(u64 phy_type_low)
-+{
-+	u16 speed_phy_type_low = ICE_AQ_LINK_SPEED_UNKNOWN;
-+
-+	switch (phy_type_low) {
-+	case ICE_PHY_TYPE_LOW_100BASE_TX:
-+	case ICE_PHY_TYPE_LOW_100M_SGMII:
-+		speed_phy_type_low = ICE_AQ_LINK_SPEED_100MB;
-+		break;
-+	case ICE_PHY_TYPE_LOW_1000BASE_T:
-+	case ICE_PHY_TYPE_LOW_1000BASE_SX:
-+	case ICE_PHY_TYPE_LOW_1000BASE_LX:
-+	case ICE_PHY_TYPE_LOW_1000BASE_KX:
-+	case ICE_PHY_TYPE_LOW_1G_SGMII:
-+		speed_phy_type_low = ICE_AQ_LINK_SPEED_1000MB;
-+		break;
-+	case ICE_PHY_TYPE_LOW_2500BASE_T:
-+	case ICE_PHY_TYPE_LOW_2500BASE_X:
-+	case ICE_PHY_TYPE_LOW_2500BASE_KX:
-+		speed_phy_type_low = ICE_AQ_LINK_SPEED_2500MB;
-+		break;
-+	case ICE_PHY_TYPE_LOW_5GBASE_T:
-+	case ICE_PHY_TYPE_LOW_5GBASE_KR:
-+		speed_phy_type_low = ICE_AQ_LINK_SPEED_5GB;
-+		break;
-+	case ICE_PHY_TYPE_LOW_10GBASE_T:
-+	case ICE_PHY_TYPE_LOW_10G_SFI_DA:
-+	case ICE_PHY_TYPE_LOW_10GBASE_SR:
-+	case ICE_PHY_TYPE_LOW_10GBASE_LR:
-+	case ICE_PHY_TYPE_LOW_10GBASE_KR_CR1:
-+	case ICE_PHY_TYPE_LOW_10G_SFI_AOC_ACC:
-+	case ICE_PHY_TYPE_LOW_10G_SFI_C2C:
-+		speed_phy_type_low = ICE_AQ_LINK_SPEED_10GB;
-+		break;
-+	case ICE_PHY_TYPE_LOW_25GBASE_T:
-+	case ICE_PHY_TYPE_LOW_25GBASE_CR:
-+	case ICE_PHY_TYPE_LOW_25GBASE_CR_S:
-+	case ICE_PHY_TYPE_LOW_25GBASE_CR1:
-+	case ICE_PHY_TYPE_LOW_25GBASE_SR:
-+	case ICE_PHY_TYPE_LOW_25GBASE_LR:
-+	case ICE_PHY_TYPE_LOW_25GBASE_KR:
-+	case ICE_PHY_TYPE_LOW_25GBASE_KR_S:
-+	case ICE_PHY_TYPE_LOW_25GBASE_KR1:
-+	case ICE_PHY_TYPE_LOW_25G_AUI_AOC_ACC:
-+	case ICE_PHY_TYPE_LOW_25G_AUI_C2C:
-+		speed_phy_type_low = ICE_AQ_LINK_SPEED_25GB;
-+		break;
-+	case ICE_PHY_TYPE_LOW_40GBASE_CR4:
-+	case ICE_PHY_TYPE_LOW_40GBASE_SR4:
-+	case ICE_PHY_TYPE_LOW_40GBASE_LR4:
-+	case ICE_PHY_TYPE_LOW_40GBASE_KR4:
-+	case ICE_PHY_TYPE_LOW_40G_XLAUI_AOC_ACC:
-+	case ICE_PHY_TYPE_LOW_40G_XLAUI:
-+		speed_phy_type_low = ICE_AQ_LINK_SPEED_40GB;
-+		break;
-+	default:
-+		speed_phy_type_low = ICE_AQ_LINK_SPEED_UNKNOWN;
-+		break;
-+	}
-+
-+	return speed_phy_type_low;
-+}
-+
-+/**
-+ * ice_update_phy_type
-+ * @phy_type_low : pointer to the lower part of phy_type
-+ * @link_speeds_bitmap : targeted link speeds bitmap
-+ *
-+ * Note : For the link_speeds_bitmap structure, you can check it at
-+ * [ice_aqc_get_link_status->link_speed]. Caller can pass in
-+ * link_speeds_bitmap include multiple speeds.
-+ *
-+ * The value of phy_type_low will present a certain link speed. This helper
-+ * function will turn on bits in the phy_type_low based on the value of
-+ * link_speeds_bitmap input parameter.
-+ */
-+void ice_update_phy_type(u64 *phy_type_low, u16 link_speeds_bitmap)
-+{
-+	u16 speed = ICE_AQ_LINK_SPEED_UNKNOWN;
-+	u64 pt_low;
-+	int index;
-+
-+	/* We first check with low part of phy_type */
-+	for (index = 0; index <= ICE_PHY_TYPE_LOW_MAX_INDEX; index++) {
-+		pt_low = BIT_ULL(index);
-+		speed = ice_get_link_speed_based_on_phy_type(pt_low);
-+
-+		if (link_speeds_bitmap & speed)
-+			*phy_type_low |= BIT_ULL(index);
-+	}
-+}
-+
- /**
-  * ice_aq_set_phy_cfg
-  * @hw: pointer to the hw struct
-@@ -1330,19 +1433,18 @@ void ice_clear_pxe_mode(struct ice_hw *hw)
-  * mode as the PF may not have the privilege to set some of the PHY Config
-  * parameters. This status will be indicated by the command response (0x0601).
-  */
--static enum ice_status
-+enum ice_status
- ice_aq_set_phy_cfg(struct ice_hw *hw, u8 lport,
- 		   struct ice_aqc_set_phy_cfg_data *cfg, struct ice_sq_cd *cd)
- {
--	struct ice_aqc_set_phy_cfg *cmd;
- 	struct ice_aq_desc desc;
+-#define QTX_COMM_DBELL(_DBQM)		(0x002C0000 + ((_DBQM) * 4))
+-#define PF_FW_ARQBAH			0x00080180
+-#define PF_FW_ARQBAL			0x00080080
+-#define PF_FW_ARQH			0x00080380
+-#define PF_FW_ARQH_ARQH_S		0
+-#define PF_FW_ARQH_ARQH_M		ICE_M(0x3FF, PF_FW_ARQH_ARQH_S)
+-#define PF_FW_ARQLEN			0x00080280
+-#define PF_FW_ARQLEN_ARQLEN_S		0
+-#define PF_FW_ARQLEN_ARQLEN_M		ICE_M(0x3FF, PF_FW_ARQLEN_ARQLEN_S)
+-#define PF_FW_ARQLEN_ARQVFE_S		28
+-#define PF_FW_ARQLEN_ARQVFE_M		BIT(PF_FW_ARQLEN_ARQVFE_S)
+-#define PF_FW_ARQLEN_ARQOVFL_S		29
+-#define PF_FW_ARQLEN_ARQOVFL_M		BIT(PF_FW_ARQLEN_ARQOVFL_S)
+-#define PF_FW_ARQLEN_ARQCRIT_S		30
+-#define PF_FW_ARQLEN_ARQCRIT_M		BIT(PF_FW_ARQLEN_ARQCRIT_S)
+-#define PF_FW_ARQLEN_ARQENABLE_S	31
+-#define PF_FW_ARQLEN_ARQENABLE_M	BIT(PF_FW_ARQLEN_ARQENABLE_S)
+-#define PF_FW_ARQT			0x00080480
+-#define PF_FW_ATQBAH			0x00080100
+-#define PF_FW_ATQBAL			0x00080000
+-#define PF_FW_ATQH			0x00080300
+-#define PF_FW_ATQH_ATQH_S		0
+-#define PF_FW_ATQH_ATQH_M		ICE_M(0x3FF, PF_FW_ATQH_ATQH_S)
+-#define PF_FW_ATQLEN			0x00080200
+-#define PF_FW_ATQLEN_ATQLEN_S		0
+-#define PF_FW_ATQLEN_ATQLEN_M		ICE_M(0x3FF, PF_FW_ATQLEN_ATQLEN_S)
+-#define PF_FW_ATQLEN_ATQVFE_S		28
+-#define PF_FW_ATQLEN_ATQVFE_M		BIT(PF_FW_ATQLEN_ATQVFE_S)
+-#define PF_FW_ATQLEN_ATQOVFL_S		29
+-#define PF_FW_ATQLEN_ATQOVFL_M		BIT(PF_FW_ATQLEN_ATQOVFL_S)
+-#define PF_FW_ATQLEN_ATQCRIT_S		30
+-#define PF_FW_ATQLEN_ATQCRIT_M		BIT(PF_FW_ATQLEN_ATQCRIT_S)
+-#define PF_FW_ATQLEN_ATQENABLE_S	31
+-#define PF_FW_ATQLEN_ATQENABLE_M	BIT(PF_FW_ATQLEN_ATQENABLE_S)
+-#define PF_FW_ATQT			0x00080400
+-
++#define QTX_COMM_DBELL(_DBQM)			(0x002C0000 + ((_DBQM) * 4))
++#define PF_FW_ARQBAH				0x00080180
++#define PF_FW_ARQBAL				0x00080080
++#define PF_FW_ARQH				0x00080380
++#define PF_FW_ARQH_ARQH_M			ICE_M(0x3FF, 0)
++#define PF_FW_ARQLEN				0x00080280
++#define PF_FW_ARQLEN_ARQLEN_M			ICE_M(0x3FF, 0)
++#define PF_FW_ARQLEN_ARQVFE_M			BIT(28)
++#define PF_FW_ARQLEN_ARQOVFL_M			BIT(29)
++#define PF_FW_ARQLEN_ARQCRIT_M			BIT(30)
++#define PF_FW_ARQLEN_ARQENABLE_M		BIT(31)
++#define PF_FW_ARQT				0x00080480
++#define PF_FW_ATQBAH				0x00080100
++#define PF_FW_ATQBAL				0x00080000
++#define PF_FW_ATQH				0x00080300
++#define PF_FW_ATQH_ATQH_M			ICE_M(0x3FF, 0)
++#define PF_FW_ATQLEN				0x00080200
++#define PF_FW_ATQLEN_ATQLEN_M			ICE_M(0x3FF, 0)
++#define PF_FW_ATQLEN_ATQVFE_M			BIT(28)
++#define PF_FW_ATQLEN_ATQOVFL_M			BIT(29)
++#define PF_FW_ATQLEN_ATQCRIT_M			BIT(30)
++#define PF_FW_ATQLEN_ATQENABLE_M		BIT(31)
++#define PF_FW_ATQT				0x00080400
+ #define GLFLXP_RXDID_FLAGS(_i, _j)		(0x0045D000 + ((_i) * 4 + (_j) * 256))
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S	0
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, 0)
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S	8
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_M	ICE_M(0x3F, 8)
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_S	16
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_M	ICE_M(0x3F, 16)
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_S	24
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_M	ICE_M(0x3F, 24)
+ #define GLFLXP_RXDID_FLX_WRD_0(_i)		(0x0045c800 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_S)
++#define GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_M	ICE_M(0x3, 30)
+ #define GLFLXP_RXDID_FLX_WRD_1(_i)		(0x0045c900 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_S)
++#define GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_M	ICE_M(0x3, 30)
+ #define GLFLXP_RXDID_FLX_WRD_2(_i)		(0x0045ca00 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_S)
++#define GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_M	ICE_M(0x3, 30)
+ #define GLFLXP_RXDID_FLX_WRD_3(_i)		(0x0045cb00 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_S)
+-
+-#define QRXFLXP_CNTXT(_QRX)		(0x00480000 + ((_QRX) * 4))
+-#define QRXFLXP_CNTXT_RXDID_IDX_S	0
+-#define QRXFLXP_CNTXT_RXDID_IDX_M	ICE_M(0x3F, QRXFLXP_CNTXT_RXDID_IDX_S)
+-#define QRXFLXP_CNTXT_RXDID_PRIO_S	8
+-#define QRXFLXP_CNTXT_RXDID_PRIO_M	ICE_M(0x7, QRXFLXP_CNTXT_RXDID_PRIO_S)
+-#define QRXFLXP_CNTXT_TS_S		11
+-#define QRXFLXP_CNTXT_TS_M		BIT(QRXFLXP_CNTXT_TS_S)
+-#define GLGEN_RSTAT			0x000B8188
+-#define GLGEN_RSTAT_DEVSTATE_S		0
+-#define GLGEN_RSTAT_DEVSTATE_M		ICE_M(0x3, GLGEN_RSTAT_DEVSTATE_S)
+-#define GLGEN_RSTCTL			0x000B8180
+-#define GLGEN_RSTCTL_GRSTDEL_S		0
+-#define GLGEN_RSTCTL_GRSTDEL_M		ICE_M(0x3F, GLGEN_RSTCTL_GRSTDEL_S)
+-#define GLGEN_RSTAT_RESET_TYPE_S	2
+-#define GLGEN_RSTAT_RESET_TYPE_M	ICE_M(0x3, GLGEN_RSTAT_RESET_TYPE_S)
+-#define GLGEN_RTRIG			0x000B8190
+-#define GLGEN_RTRIG_CORER_S		0
+-#define GLGEN_RTRIG_CORER_M		BIT(GLGEN_RTRIG_CORER_S)
+-#define GLGEN_RTRIG_GLOBR_S		1
+-#define GLGEN_RTRIG_GLOBR_M		BIT(GLGEN_RTRIG_GLOBR_S)
+-#define GLGEN_STAT			0x000B612C
+-#define PFGEN_CTRL			0x00091000
+-#define PFGEN_CTRL_PFSWR_S		0
+-#define PFGEN_CTRL_PFSWR_M		BIT(PFGEN_CTRL_PFSWR_S)
+-#define PFGEN_STATE			0x00088000
+-#define PRTGEN_STATUS			0x000B8100
+-#define PFHMC_ERRORDATA			0x00520500
+-#define PFHMC_ERRORINFO			0x00520400
+-#define GLINT_DYN_CTL(_INT)		(0x00160000 + ((_INT) * 4))
+-#define GLINT_DYN_CTL_INTENA_S		0
+-#define GLINT_DYN_CTL_INTENA_M		BIT(GLINT_DYN_CTL_INTENA_S)
+-#define GLINT_DYN_CTL_CLEARPBA_S	1
+-#define GLINT_DYN_CTL_CLEARPBA_M	BIT(GLINT_DYN_CTL_CLEARPBA_S)
+-#define GLINT_DYN_CTL_SWINT_TRIG_S	2
+-#define GLINT_DYN_CTL_SWINT_TRIG_M	BIT(GLINT_DYN_CTL_SWINT_TRIG_S)
+-#define GLINT_DYN_CTL_ITR_INDX_S	3
+-#define GLINT_DYN_CTL_SW_ITR_INDX_S	25
+-#define GLINT_DYN_CTL_SW_ITR_INDX_M	ICE_M(0x3, GLINT_DYN_CTL_SW_ITR_INDX_S)
+-#define GLINT_DYN_CTL_INTENA_MSK_S	31
+-#define GLINT_DYN_CTL_INTENA_MSK_M	BIT(GLINT_DYN_CTL_INTENA_MSK_S)
+-#define GLINT_ITR(_i, _INT)		(0x00154000 + ((_i) * 8192 + (_INT) * 4))
+-#define PFINT_FW_CTL			0x0016C800
+-#define PFINT_FW_CTL_MSIX_INDX_S	0
+-#define PFINT_FW_CTL_MSIX_INDX_M	ICE_M(0x7FF, PFINT_FW_CTL_MSIX_INDX_S)
+-#define PFINT_FW_CTL_ITR_INDX_S		11
+-#define PFINT_FW_CTL_ITR_INDX_M		ICE_M(0x3, PFINT_FW_CTL_ITR_INDX_S)
+-#define PFINT_FW_CTL_CAUSE_ENA_S	30
+-#define PFINT_FW_CTL_CAUSE_ENA_M	BIT(PFINT_FW_CTL_CAUSE_ENA_S)
+-#define PFINT_OICR			0x0016CA00
+-#define PFINT_OICR_ECC_ERR_S		16
+-#define PFINT_OICR_ECC_ERR_M		BIT(PFINT_OICR_ECC_ERR_S)
+-#define PFINT_OICR_MAL_DETECT_S		19
+-#define PFINT_OICR_MAL_DETECT_M		BIT(PFINT_OICR_MAL_DETECT_S)
+-#define PFINT_OICR_GRST_S		20
+-#define PFINT_OICR_GRST_M		BIT(PFINT_OICR_GRST_S)
+-#define PFINT_OICR_PCI_EXCEPTION_S	21
+-#define PFINT_OICR_PCI_EXCEPTION_M	BIT(PFINT_OICR_PCI_EXCEPTION_S)
+-#define PFINT_OICR_HMC_ERR_S		26
+-#define PFINT_OICR_HMC_ERR_M		BIT(PFINT_OICR_HMC_ERR_S)
+-#define PFINT_OICR_PE_CRITERR_S		28
+-#define PFINT_OICR_PE_CRITERR_M		BIT(PFINT_OICR_PE_CRITERR_S)
+-#define PFINT_OICR_CTL			0x0016CA80
+-#define PFINT_OICR_CTL_MSIX_INDX_S	0
+-#define PFINT_OICR_CTL_MSIX_INDX_M	ICE_M(0x7FF, PFINT_OICR_CTL_MSIX_INDX_S)
+-#define PFINT_OICR_CTL_ITR_INDX_S	11
+-#define PFINT_OICR_CTL_ITR_INDX_M	ICE_M(0x3, PFINT_OICR_CTL_ITR_INDX_S)
+-#define PFINT_OICR_CTL_CAUSE_ENA_S	30
+-#define PFINT_OICR_CTL_CAUSE_ENA_M	BIT(PFINT_OICR_CTL_CAUSE_ENA_S)
+-#define PFINT_OICR_ENA			0x0016C900
+-#define QINT_RQCTL(_QRX)		(0x00150000 + ((_QRX) * 4))
+-#define QINT_RQCTL_MSIX_INDX_S		0
+-#define QINT_RQCTL_ITR_INDX_S		11
+-#define QINT_RQCTL_CAUSE_ENA_S		30
+-#define QINT_RQCTL_CAUSE_ENA_M		BIT(QINT_RQCTL_CAUSE_ENA_S)
+-#define QINT_TQCTL(_DBQM)		(0x00140000 + ((_DBQM) * 4))
+-#define QINT_TQCTL_MSIX_INDX_S		0
+-#define QINT_TQCTL_ITR_INDX_S		11
+-#define QINT_TQCTL_CAUSE_ENA_S		30
+-#define QINT_TQCTL_CAUSE_ENA_M		BIT(QINT_TQCTL_CAUSE_ENA_S)
+-#define GLLAN_RCTL_0			0x002941F8
+-#define QRX_CONTEXT(_i, _QRX)		(0x00280000 + ((_i) * 8192 + (_QRX) * 4))
+-#define QRX_CTRL(_QRX)			(0x00120000 + ((_QRX) * 4))
+-#define QRX_CTRL_MAX_INDEX		2047
+-#define QRX_CTRL_QENA_REQ_S		0
+-#define QRX_CTRL_QENA_REQ_M		BIT(QRX_CTRL_QENA_REQ_S)
+-#define QRX_CTRL_QENA_STAT_S		2
+-#define QRX_CTRL_QENA_STAT_M		BIT(QRX_CTRL_QENA_STAT_S)
+-#define QRX_ITR(_QRX)			(0x00292000 + ((_QRX) * 4))
+-#define QRX_TAIL(_QRX)			(0x00290000 + ((_QRX) * 4))
+-#define GLNVM_FLA			0x000B6108
+-#define GLNVM_FLA_LOCKED_S		6
+-#define GLNVM_FLA_LOCKED_M		BIT(GLNVM_FLA_LOCKED_S)
+-#define GLNVM_GENS			0x000B6100
+-#define GLNVM_GENS_SR_SIZE_S		5
+-#define GLNVM_GENS_SR_SIZE_M		ICE_M(0x7, GLNVM_GENS_SR_SIZE_S)
+-#define GLNVM_ULD			0x000B6008
+-#define GLNVM_ULD_CORER_DONE_S		3
+-#define GLNVM_ULD_CORER_DONE_M		BIT(GLNVM_ULD_CORER_DONE_S)
+-#define GLNVM_ULD_GLOBR_DONE_S		4
+-#define GLNVM_ULD_GLOBR_DONE_M		BIT(GLNVM_ULD_GLOBR_DONE_S)
+-#define PF_FUNC_RID			0x0009E880
+-#define PF_FUNC_RID_FUNC_NUM_S		0
+-#define PF_FUNC_RID_FUNC_NUM_M		ICE_M(0x7, PF_FUNC_RID_FUNC_NUM_S)
+-#define GLPRT_BPRCH(_i)			(0x00381384 + ((_i) * 8))
+-#define GLPRT_BPRCL(_i)			(0x00381380 + ((_i) * 8))
+-#define GLPRT_BPTCH(_i)			(0x00381244 + ((_i) * 8))
+-#define GLPRT_BPTCL(_i)			(0x00381240 + ((_i) * 8))
+-#define GLPRT_CRCERRS(_i)		(0x00380100 + ((_i) * 8))
+-#define GLPRT_GORCH(_i)			(0x00380004 + ((_i) * 8))
+-#define GLPRT_GORCL(_i)			(0x00380000 + ((_i) * 8))
+-#define GLPRT_GOTCH(_i)			(0x00380B44 + ((_i) * 8))
+-#define GLPRT_GOTCL(_i)			(0x00380B40 + ((_i) * 8))
+-#define GLPRT_ILLERRC(_i)		(0x003801C0 + ((_i) * 8))
+-#define GLPRT_LXOFFRXC(_i)		(0x003802C0 + ((_i) * 8))
+-#define GLPRT_LXOFFTXC(_i)		(0x00381180 + ((_i) * 8))
+-#define GLPRT_LXONRXC(_i)		(0x00380280 + ((_i) * 8))
+-#define GLPRT_LXONTXC(_i)		(0x00381140 + ((_i) * 8))
+-#define GLPRT_MLFC(_i)			(0x00380040 + ((_i) * 8))
+-#define GLPRT_MPRCH(_i)			(0x00381344 + ((_i) * 8))
+-#define GLPRT_MPRCL(_i)			(0x00381340 + ((_i) * 8))
+-#define GLPRT_MPTCH(_i)			(0x00381204 + ((_i) * 8))
+-#define GLPRT_MPTCL(_i)			(0x00381200 + ((_i) * 8))
+-#define GLPRT_MRFC(_i)			(0x00380080 + ((_i) * 8))
+-#define GLPRT_PRC1023H(_i)		(0x00380A04 + ((_i) * 8))
+-#define GLPRT_PRC1023L(_i)		(0x00380A00 + ((_i) * 8))
+-#define GLPRT_PRC127H(_i)		(0x00380944 + ((_i) * 8))
+-#define GLPRT_PRC127L(_i)		(0x00380940 + ((_i) * 8))
+-#define GLPRT_PRC1522H(_i)		(0x00380A44 + ((_i) * 8))
+-#define GLPRT_PRC1522L(_i)		(0x00380A40 + ((_i) * 8))
+-#define GLPRT_PRC255H(_i)		(0x00380984 + ((_i) * 8))
+-#define GLPRT_PRC255L(_i)		(0x00380980 + ((_i) * 8))
+-#define GLPRT_PRC511H(_i)		(0x003809C4 + ((_i) * 8))
+-#define GLPRT_PRC511L(_i)		(0x003809C0 + ((_i) * 8))
+-#define GLPRT_PRC64H(_i)		(0x00380904 + ((_i) * 8))
+-#define GLPRT_PRC64L(_i)		(0x00380900 + ((_i) * 8))
+-#define GLPRT_PRC9522H(_i)		(0x00380A84 + ((_i) * 8))
+-#define GLPRT_PRC9522L(_i)		(0x00380A80 + ((_i) * 8))
+-#define GLPRT_PTC1023H(_i)		(0x00380C84 + ((_i) * 8))
+-#define GLPRT_PTC1023L(_i)		(0x00380C80 + ((_i) * 8))
+-#define GLPRT_PTC127H(_i)		(0x00380BC4 + ((_i) * 8))
+-#define GLPRT_PTC127L(_i)		(0x00380BC0 + ((_i) * 8))
+-#define GLPRT_PTC1522H(_i)		(0x00380CC4 + ((_i) * 8))
+-#define GLPRT_PTC1522L(_i)		(0x00380CC0 + ((_i) * 8))
+-#define GLPRT_PTC255H(_i)		(0x00380C04 + ((_i) * 8))
+-#define GLPRT_PTC255L(_i)		(0x00380C00 + ((_i) * 8))
+-#define GLPRT_PTC511H(_i)		(0x00380C44 + ((_i) * 8))
+-#define GLPRT_PTC511L(_i)		(0x00380C40 + ((_i) * 8))
+-#define GLPRT_PTC64H(_i)		(0x00380B84 + ((_i) * 8))
+-#define GLPRT_PTC64L(_i)		(0x00380B80 + ((_i) * 8))
+-#define GLPRT_PTC9522H(_i)		(0x00380D04 + ((_i) * 8))
+-#define GLPRT_PTC9522L(_i)		(0x00380D00 + ((_i) * 8))
+-#define GLPRT_RFC(_i)			(0x00380AC0 + ((_i) * 8))
+-#define GLPRT_RJC(_i)			(0x00380B00 + ((_i) * 8))
+-#define GLPRT_RLEC(_i)			(0x00380140 + ((_i) * 8))
+-#define GLPRT_ROC(_i)			(0x00380240 + ((_i) * 8))
+-#define GLPRT_RUC(_i)			(0x00380200 + ((_i) * 8))
+-#define GLPRT_TDOLD(_i)			(0x00381280 + ((_i) * 8))
+-#define GLPRT_UPRCH(_i)			(0x00381304 + ((_i) * 8))
+-#define GLPRT_UPRCL(_i)			(0x00381300 + ((_i) * 8))
+-#define GLPRT_UPTCH(_i)			(0x003811C4 + ((_i) * 8))
+-#define GLPRT_UPTCL(_i)			(0x003811C0 + ((_i) * 8))
+-#define GLV_BPRCH(_i)			(0x003B6004 + ((_i) * 8))
+-#define GLV_BPRCL(_i)			(0x003B6000 + ((_i) * 8))
+-#define GLV_BPTCH(_i)			(0x0030E004 + ((_i) * 8))
+-#define GLV_BPTCL(_i)			(0x0030E000 + ((_i) * 8))
+-#define GLV_GORCH(_i)			(0x003B0004 + ((_i) * 8))
+-#define GLV_GORCL(_i)			(0x003B0000 + ((_i) * 8))
+-#define GLV_GOTCH(_i)			(0x00300004 + ((_i) * 8))
+-#define GLV_GOTCL(_i)			(0x00300000 + ((_i) * 8))
+-#define GLV_MPRCH(_i)			(0x003B4004 + ((_i) * 8))
+-#define GLV_MPRCL(_i)			(0x003B4000 + ((_i) * 8))
+-#define GLV_MPTCH(_i)			(0x0030C004 + ((_i) * 8))
+-#define GLV_MPTCL(_i)			(0x0030C000 + ((_i) * 8))
+-#define GLV_RDPC(_i)			(0x00294C04 + ((_i) * 4))
+-#define GLV_TEPC(_VSI)			(0x00312000 + ((_VSI) * 4))
+-#define GLV_UPRCH(_i)			(0x003B2004 + ((_i) * 8))
+-#define GLV_UPRCL(_i)			(0x003B2000 + ((_i) * 8))
+-#define GLV_UPTCH(_i)			(0x0030A004 + ((_i) * 8))
+-#define GLV_UPTCL(_i)			(0x0030A000 + ((_i) * 8))
+-#define VSIQF_HKEY_MAX_INDEX		12
++#define GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_M	ICE_M(0x3, 30)
++#define QRXFLXP_CNTXT(_QRX)			(0x00480000 + ((_QRX) * 4))
++#define QRXFLXP_CNTXT_RXDID_IDX_S		0
++#define QRXFLXP_CNTXT_RXDID_IDX_M		ICE_M(0x3F, 0)
++#define QRXFLXP_CNTXT_RXDID_PRIO_S		8
++#define QRXFLXP_CNTXT_RXDID_PRIO_M		ICE_M(0x7, 8)
++#define GLGEN_RSTAT				0x000B8188
++#define GLGEN_RSTAT_DEVSTATE_M			ICE_M(0x3, 0)
++#define GLGEN_RSTCTL				0x000B8180
++#define GLGEN_RSTCTL_GRSTDEL_S			0
++#define GLGEN_RSTCTL_GRSTDEL_M			ICE_M(0x3F, GLGEN_RSTCTL_GRSTDEL_S)
++#define GLGEN_RSTAT_RESET_TYPE_S		2
++#define GLGEN_RSTAT_RESET_TYPE_M		ICE_M(0x3, 2)
++#define GLGEN_RTRIG				0x000B8190
++#define GLGEN_RTRIG_CORER_M			BIT(0)
++#define GLGEN_RTRIG_GLOBR_M			BIT(1)
++#define GLGEN_STAT				0x000B612C
++#define PFGEN_CTRL				0x00091000
++#define PFGEN_CTRL_PFSWR_M			BIT(0)
++#define PFGEN_STATE				0x00088000
++#define PRTGEN_STATUS				0x000B8100
++#define PFHMC_ERRORDATA				0x00520500
++#define PFHMC_ERRORINFO				0x00520400
++#define GLINT_DYN_CTL(_INT)			(0x00160000 + ((_INT) * 4))
++#define GLINT_DYN_CTL_INTENA_M			BIT(0)
++#define GLINT_DYN_CTL_CLEARPBA_M		BIT(1)
++#define GLINT_DYN_CTL_SWINT_TRIG_M		BIT(2)
++#define GLINT_DYN_CTL_ITR_INDX_S		3
++#define GLINT_DYN_CTL_SW_ITR_INDX_M		ICE_M(0x3, 25)
++#define GLINT_DYN_CTL_INTENA_MSK_M		BIT(31)
++#define GLINT_ITR(_i, _INT)			(0x00154000 + ((_i) * 8192 + (_INT) * 4))
++#define PFINT_FW_CTL				0x0016C800
++#define PFINT_FW_CTL_MSIX_INDX_M		ICE_M(0x7FF, 0)
++#define PFINT_FW_CTL_ITR_INDX_S			11
++#define PFINT_FW_CTL_ITR_INDX_M			ICE_M(0x3, 11)
++#define PFINT_FW_CTL_CAUSE_ENA_M		BIT(30)
++#define PFINT_OICR				0x0016CA00
++#define PFINT_OICR_ECC_ERR_M			BIT(16)
++#define PFINT_OICR_MAL_DETECT_M			BIT(19)
++#define PFINT_OICR_GRST_M			BIT(20)
++#define PFINT_OICR_PCI_EXCEPTION_M		BIT(21)
++#define PFINT_OICR_HMC_ERR_M			BIT(26)
++#define PFINT_OICR_PE_CRITERR_M			BIT(28)
++#define PFINT_OICR_CTL				0x0016CA80
++#define PFINT_OICR_CTL_MSIX_INDX_M		ICE_M(0x7FF, 0)
++#define PFINT_OICR_CTL_ITR_INDX_S		11
++#define PFINT_OICR_CTL_ITR_INDX_M		ICE_M(0x3, 11)
++#define PFINT_OICR_CTL_CAUSE_ENA_M		BIT(30)
++#define PFINT_OICR_ENA				0x0016C900
++#define QINT_RQCTL(_QRX)			(0x00150000 + ((_QRX) * 4))
++#define QINT_RQCTL_MSIX_INDX_S			0
++#define QINT_RQCTL_ITR_INDX_S			11
++#define QINT_RQCTL_CAUSE_ENA_M			BIT(30)
++#define QINT_TQCTL(_DBQM)			(0x00140000 + ((_DBQM) * 4))
++#define QINT_TQCTL_MSIX_INDX_S			0
++#define QINT_TQCTL_ITR_INDX_S			11
++#define QINT_TQCTL_CAUSE_ENA_M			BIT(30)
++#define QRX_CONTEXT(_i, _QRX)			(0x00280000 + ((_i) * 8192 + (_QRX) * 4))
++#define QRX_CTRL(_QRX)				(0x00120000 + ((_QRX) * 4))
++#define QRX_CTRL_MAX_INDEX			2047
++#define QRX_CTRL_QENA_REQ_S			0
++#define QRX_CTRL_QENA_REQ_M			BIT(0)
++#define QRX_CTRL_QENA_STAT_S			2
++#define QRX_CTRL_QENA_STAT_M			BIT(2)
++#define QRX_ITR(_QRX)				(0x00292000 + ((_QRX) * 4))
++#define QRX_TAIL(_QRX)				(0x00290000 + ((_QRX) * 4))
++#define GLNVM_FLA				0x000B6108
++#define GLNVM_FLA_LOCKED_M			BIT(6)
++#define GLNVM_GENS				0x000B6100
++#define GLNVM_GENS_SR_SIZE_S			5
++#define GLNVM_GENS_SR_SIZE_M			ICE_M(0x7, 5)
++#define GLNVM_ULD				0x000B6008
++#define GLNVM_ULD_CORER_DONE_M			BIT(3)
++#define GLNVM_ULD_GLOBR_DONE_M			BIT(4)
++#define PF_FUNC_RID				0x0009E880
++#define PF_FUNC_RID_FUNC_NUM_S			0
++#define PF_FUNC_RID_FUNC_NUM_M			ICE_M(0x7, 0)
++#define GLPRT_BPRCH(_i)				(0x00381384 + ((_i) * 8))
++#define GLPRT_BPRCL(_i)				(0x00381380 + ((_i) * 8))
++#define GLPRT_BPTCH(_i)				(0x00381244 + ((_i) * 8))
++#define GLPRT_BPTCL(_i)				(0x00381240 + ((_i) * 8))
++#define GLPRT_CRCERRS(_i)			(0x00380100 + ((_i) * 8))
++#define GLPRT_GORCH(_i)				(0x00380004 + ((_i) * 8))
++#define GLPRT_GORCL(_i)				(0x00380000 + ((_i) * 8))
++#define GLPRT_GOTCH(_i)				(0x00380B44 + ((_i) * 8))
++#define GLPRT_GOTCL(_i)				(0x00380B40 + ((_i) * 8))
++#define GLPRT_ILLERRC(_i)			(0x003801C0 + ((_i) * 8))
++#define GLPRT_LXOFFRXC(_i)			(0x003802C0 + ((_i) * 8))
++#define GLPRT_LXOFFTXC(_i)			(0x00381180 + ((_i) * 8))
++#define GLPRT_LXONRXC(_i)			(0x00380280 + ((_i) * 8))
++#define GLPRT_LXONTXC(_i)			(0x00381140 + ((_i) * 8))
++#define GLPRT_MLFC(_i)				(0x00380040 + ((_i) * 8))
++#define GLPRT_MPRCH(_i)				(0x00381344 + ((_i) * 8))
++#define GLPRT_MPRCL(_i)				(0x00381340 + ((_i) * 8))
++#define GLPRT_MPTCH(_i)				(0x00381204 + ((_i) * 8))
++#define GLPRT_MPTCL(_i)				(0x00381200 + ((_i) * 8))
++#define GLPRT_MRFC(_i)				(0x00380080 + ((_i) * 8))
++#define GLPRT_PRC1023H(_i)			(0x00380A04 + ((_i) * 8))
++#define GLPRT_PRC1023L(_i)			(0x00380A00 + ((_i) * 8))
++#define GLPRT_PRC127H(_i)			(0x00380944 + ((_i) * 8))
++#define GLPRT_PRC127L(_i)			(0x00380940 + ((_i) * 8))
++#define GLPRT_PRC1522H(_i)			(0x00380A44 + ((_i) * 8))
++#define GLPRT_PRC1522L(_i)			(0x00380A40 + ((_i) * 8))
++#define GLPRT_PRC255H(_i)			(0x00380984 + ((_i) * 8))
++#define GLPRT_PRC255L(_i)			(0x00380980 + ((_i) * 8))
++#define GLPRT_PRC511H(_i)			(0x003809C4 + ((_i) * 8))
++#define GLPRT_PRC511L(_i)			(0x003809C0 + ((_i) * 8))
++#define GLPRT_PRC64H(_i)			(0x00380904 + ((_i) * 8))
++#define GLPRT_PRC64L(_i)			(0x00380900 + ((_i) * 8))
++#define GLPRT_PRC9522H(_i)			(0x00380A84 + ((_i) * 8))
++#define GLPRT_PRC9522L(_i)			(0x00380A80 + ((_i) * 8))
++#define GLPRT_PTC1023H(_i)			(0x00380C84 + ((_i) * 8))
++#define GLPRT_PTC1023L(_i)			(0x00380C80 + ((_i) * 8))
++#define GLPRT_PTC127H(_i)			(0x00380BC4 + ((_i) * 8))
++#define GLPRT_PTC127L(_i)			(0x00380BC0 + ((_i) * 8))
++#define GLPRT_PTC1522H(_i)			(0x00380CC4 + ((_i) * 8))
++#define GLPRT_PTC1522L(_i)			(0x00380CC0 + ((_i) * 8))
++#define GLPRT_PTC255H(_i)			(0x00380C04 + ((_i) * 8))
++#define GLPRT_PTC255L(_i)			(0x00380C00 + ((_i) * 8))
++#define GLPRT_PTC511H(_i)			(0x00380C44 + ((_i) * 8))
++#define GLPRT_PTC511L(_i)			(0x00380C40 + ((_i) * 8))
++#define GLPRT_PTC64H(_i)			(0x00380B84 + ((_i) * 8))
++#define GLPRT_PTC64L(_i)			(0x00380B80 + ((_i) * 8))
++#define GLPRT_PTC9522H(_i)			(0x00380D04 + ((_i) * 8))
++#define GLPRT_PTC9522L(_i)			(0x00380D00 + ((_i) * 8))
++#define GLPRT_RFC(_i)				(0x00380AC0 + ((_i) * 8))
++#define GLPRT_RJC(_i)				(0x00380B00 + ((_i) * 8))
++#define GLPRT_RLEC(_i)				(0x00380140 + ((_i) * 8))
++#define GLPRT_ROC(_i)				(0x00380240 + ((_i) * 8))
++#define GLPRT_RUC(_i)				(0x00380200 + ((_i) * 8))
++#define GLPRT_TDOLD(_i)				(0x00381280 + ((_i) * 8))
++#define GLPRT_UPRCH(_i)				(0x00381304 + ((_i) * 8))
++#define GLPRT_UPRCL(_i)				(0x00381300 + ((_i) * 8))
++#define GLPRT_UPTCH(_i)				(0x003811C4 + ((_i) * 8))
++#define GLPRT_UPTCL(_i)				(0x003811C0 + ((_i) * 8))
++#define GLV_BPRCH(_i)				(0x003B6004 + ((_i) * 8))
++#define GLV_BPRCL(_i)				(0x003B6000 + ((_i) * 8))
++#define GLV_BPTCH(_i)				(0x0030E004 + ((_i) * 8))
++#define GLV_BPTCL(_i)				(0x0030E000 + ((_i) * 8))
++#define GLV_GORCH(_i)				(0x003B0004 + ((_i) * 8))
++#define GLV_GORCL(_i)				(0x003B0000 + ((_i) * 8))
++#define GLV_GOTCH(_i)				(0x00300004 + ((_i) * 8))
++#define GLV_GOTCL(_i)				(0x00300000 + ((_i) * 8))
++#define GLV_MPRCH(_i)				(0x003B4004 + ((_i) * 8))
++#define GLV_MPRCL(_i)				(0x003B4000 + ((_i) * 8))
++#define GLV_MPTCH(_i)				(0x0030C004 + ((_i) * 8))
++#define GLV_MPTCL(_i)				(0x0030C000 + ((_i) * 8))
++#define GLV_RDPC(_i)				(0x00294C04 + ((_i) * 4))
++#define GLV_TEPC(_VSI)				(0x00312000 + ((_VSI) * 4))
++#define GLV_UPRCH(_i)				(0x003B2004 + ((_i) * 8))
++#define GLV_UPRCL(_i)				(0x003B2000 + ((_i) * 8))
++#define GLV_UPTCH(_i)				(0x0030A004 + ((_i) * 8))
++#define GLV_UPTCL(_i)				(0x0030A000 + ((_i) * 8))
++#define VSIQF_HKEY_MAX_INDEX			12
  
- 	if (!cfg)
- 		return ICE_ERR_PARAM;
- 
--	cmd = &desc.params.set_phy;
- 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_phy_cfg);
--	cmd->lport_num = lport;
-+	desc.params.set_phy.lport_num = lport;
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
- 
- 	return ice_aq_send_cmd(hw, &desc, cfg, sizeof(*cfg), cd);
- }
-@@ -1391,12 +1493,12 @@ ice_update_link_info(struct ice_port_info *pi)
-  * ice_set_fc
-  * @pi: port information structure
-  * @aq_failures: pointer to status code, specific to ice_set_fc routine
-- * @atomic_restart: enable automatic link update
-+ * @ena_auto_link_update: enable automatic link update
-  *
-  * Set the requested flow control mode.
-  */
- enum ice_status
--ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool atomic_restart)
-+ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool ena_auto_link_update)
- {
- 	struct ice_aqc_set_phy_cfg_data cfg = { 0 };
- 	struct ice_aqc_get_phy_caps_data *pcaps;
-@@ -1446,8 +1548,8 @@ ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool atomic_restart)
- 		int retry_count, retry_max = 10;
- 
- 		/* Auto restart link so settings take effect */
--		if (atomic_restart)
--			cfg.caps |= ICE_AQ_PHY_ENA_ATOMIC_LINK;
-+		if (ena_auto_link_update)
-+			cfg.caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
- 		/* Copy over all the old settings */
- 		cfg.phy_type_low = pcaps->phy_type_low;
- 		cfg.low_power_ctrl = pcaps->low_power_ctrl;
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 9a5519130af1..34c468138a8a 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -58,12 +58,24 @@ enum ice_status
- ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc,
- 		void *buf, u16 buf_size, struct ice_sq_cd *cd);
- enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd);
-+
-+enum ice_status
-+ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8 report_mode,
-+		    struct ice_aqc_get_phy_caps_data *caps,
-+		    struct ice_sq_cd *cd);
-+void
-+ice_update_phy_type(u64 *phy_type_low, u16 link_speeds_bitmap);
- enum ice_status
- ice_aq_manage_mac_write(struct ice_hw *hw, u8 *mac_addr, u8 flags,
- 			struct ice_sq_cd *cd);
- enum ice_status ice_clear_pf_cfg(struct ice_hw *hw);
- enum ice_status
--ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool atomic_restart);
-+ice_aq_set_phy_cfg(struct ice_hw *hw, u8 lport,
-+		   struct ice_aqc_set_phy_cfg_data *cfg, struct ice_sq_cd *cd);
-+enum ice_status
-+ice_set_fc(struct ice_port_info *pi, u8 *aq_failures,
-+	   bool ena_auto_link_update);
-+
- enum ice_status
- ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
- 			   struct ice_sq_cd *cd);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 807b683a5707..21c3be1ed72c 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -332,58 +332,477 @@ ice_get_ethtool_stats(struct net_device *netdev,
- 	}
- }
- 
--static int
--ice_get_link_ksettings(struct net_device *netdev,
--		       struct ethtool_link_ksettings *ks)
-+/**
-+ * ice_phy_type_to_ethtool - convert the phy_types to ethtool link modes
-+ * @netdev: network interface device structure
-+ * @ks: ethtool link ksettings struct to fill out
-+ *
-+ */
-+static void ice_phy_type_to_ethtool(struct net_device *netdev,
-+				    struct ethtool_link_ksettings *ks)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_link_status *hw_link_info;
- 	struct ice_vsi *vsi = np->vsi;
--	bool link_up;
-+	u64 phy_types_low;
- 
- 	hw_link_info = &vsi->port_info->phy.link_info;
--	link_up = hw_link_info->link_info & ICE_AQ_LINK_UP;
-+	phy_types_low = vsi->port_info->phy.phy_type_low;
-+
-+	ethtool_link_ksettings_zero_link_mode(ks, supported);
-+	ethtool_link_ksettings_zero_link_mode(ks, advertising);
-+
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_100BASE_TX ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_100M_SGMII) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     100baseT_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100MB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     100baseT_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_1000BASE_T ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_1G_SGMII) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     1000baseT_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     1000baseT_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_1000BASE_KX) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     1000baseKX_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     1000baseKX_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_1000BASE_SX ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_1000BASE_LX) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     1000baseX_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     1000baseX_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_2500BASE_T) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     2500baseT_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_2500MB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     2500baseT_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_2500BASE_X ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_2500BASE_KX) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     2500baseX_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_2500MB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     2500baseX_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_5GBASE_T ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_5GBASE_KR) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     5000baseT_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_5GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     5000baseT_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_T ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_10G_SFI_DA ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_10G_SFI_AOC_ACC ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_10G_SFI_C2C) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     10000baseT_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     10000baseT_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_KR_CR1) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     10000baseKR_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     10000baseKR_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_SR) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     10000baseSR_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     10000baseSR_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_LR) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     10000baseLR_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     10000baseLR_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_T ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_CR ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_CR_S ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_CR1 ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25G_AUI_AOC_ACC ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25G_AUI_C2C) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     25000baseCR_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     25000baseCR_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_SR ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_LR) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     25000baseSR_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     25000baseSR_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_KR ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_KR_S ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_KR1) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     25000baseKR_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     25000baseKR_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_KR4) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     40000baseKR4_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     40000baseKR4_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_CR4 ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_40G_XLAUI_AOC_ACC ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_40G_XLAUI) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     40000baseCR4_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     40000baseCR4_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_SR4) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     40000baseSR4_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     40000baseSR4_Full);
-+	}
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_LR4) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     40000baseLR4_Full);
-+		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     40000baseLR4_Full);
-+	}
- 
--	ethtool_link_ksettings_add_link_mode(ks, supported,
--					     10000baseT_Full);
--	ethtool_link_ksettings_add_link_mode(ks, advertising,
--					     10000baseT_Full);
-+	/* Autoneg PHY types */
-+	if (phy_types_low & ICE_PHY_TYPE_LOW_100BASE_TX ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_1000BASE_T ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_1000BASE_KX ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_2500BASE_T ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_2500BASE_KX ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_5GBASE_T ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_5GBASE_KR ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_T ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_KR_CR1 ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_T ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_CR ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_CR_S ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_CR1 ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_KR ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_KR_S ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_KR1 ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_CR4 ||
-+	    phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_KR4) {
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     Autoneg);
-+	}
-+}
- 
--	/* set speed and duplex */
--	if (link_up) {
--		switch (hw_link_info->link_speed) {
--		case ICE_AQ_LINK_SPEED_100MB:
--			ks->base.speed = SPEED_100;
--			break;
--		case ICE_AQ_LINK_SPEED_2500MB:
--			ks->base.speed = SPEED_2500;
--			break;
--		case ICE_AQ_LINK_SPEED_5GB:
--			ks->base.speed = SPEED_5000;
--			break;
--		case ICE_AQ_LINK_SPEED_10GB:
--			ks->base.speed = SPEED_10000;
--			break;
--		case ICE_AQ_LINK_SPEED_25GB:
--			ks->base.speed = SPEED_25000;
--			break;
--		case ICE_AQ_LINK_SPEED_40GB:
--			ks->base.speed = SPEED_40000;
--			break;
--		default:
--			ks->base.speed = SPEED_UNKNOWN;
--			break;
--		}
-+#define TEST_SET_BITS_TIMEOUT	50
-+#define TEST_SET_BITS_SLEEP_MAX	2000
-+#define TEST_SET_BITS_SLEEP_MIN	1000
- 
--		ks->base.duplex = DUPLEX_FULL;
--	} else {
--		ks->base.speed = SPEED_UNKNOWN;
--		ks->base.duplex = DUPLEX_UNKNOWN;
-+/**
-+ * ice_get_settings_link_up - Get Link settings for when link is up
-+ * @ks: ethtool ksettings to fill in
-+ * @netdev: network interface device structure
-+ */
-+static void ice_get_settings_link_up(struct ethtool_link_ksettings *ks,
-+				     struct net_device *netdev)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ethtool_link_ksettings cap_ksettings;
-+	struct ice_link_status *hw_link_info;
-+	struct ice_vsi *vsi = np->vsi;
-+	bool unrecog_phy = false;
-+
-+	hw_link_info = &vsi->port_info->phy.link_info;
-+
-+	/* Initialize supported and advertised settings based on phy settings */
-+	switch (hw_link_info->phy_type_low) {
-+	case ICE_PHY_TYPE_LOW_100BASE_TX:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     100baseT_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     100baseT_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_100M_SGMII:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     100baseT_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_1000BASE_T:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     1000baseT_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     1000baseT_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_1G_SGMII:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     1000baseT_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_1000BASE_SX:
-+	case ICE_PHY_TYPE_LOW_1000BASE_LX:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     1000baseX_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_1000BASE_KX:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     1000baseKX_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     1000baseKX_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_2500BASE_T:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     2500baseT_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     2500baseT_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_2500BASE_X:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     2500baseX_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_2500BASE_KX:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     2500baseX_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     2500baseX_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_5GBASE_T:
-+	case ICE_PHY_TYPE_LOW_5GBASE_KR:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     5000baseT_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     5000baseT_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_10GBASE_T:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     10000baseT_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     10000baseT_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_10G_SFI_DA:
-+	case ICE_PHY_TYPE_LOW_10G_SFI_AOC_ACC:
-+	case ICE_PHY_TYPE_LOW_10G_SFI_C2C:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     10000baseT_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_10GBASE_SR:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     10000baseSR_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_10GBASE_LR:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     10000baseLR_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_10GBASE_KR_CR1:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     10000baseKR_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     10000baseKR_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_25GBASE_T:
-+	case ICE_PHY_TYPE_LOW_25GBASE_CR:
-+	case ICE_PHY_TYPE_LOW_25GBASE_CR_S:
-+	case ICE_PHY_TYPE_LOW_25GBASE_CR1:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     25000baseCR_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     25000baseCR_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_25G_AUI_AOC_ACC:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     25000baseCR_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_25GBASE_SR:
-+	case ICE_PHY_TYPE_LOW_25GBASE_LR:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     25000baseSR_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_25GBASE_KR:
-+	case ICE_PHY_TYPE_LOW_25GBASE_KR1:
-+	case ICE_PHY_TYPE_LOW_25GBASE_KR_S:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     25000baseKR_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     25000baseKR_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_40GBASE_CR4:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     40000baseCR4_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     40000baseCR4_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_40G_XLAUI_AOC_ACC:
-+	case ICE_PHY_TYPE_LOW_40G_XLAUI:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     40000baseCR4_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_40GBASE_SR4:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     40000baseSR4_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_40GBASE_LR4:
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     40000baseLR4_Full);
-+		break;
-+	case ICE_PHY_TYPE_LOW_40GBASE_KR4:
-+		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, supported,
-+						     40000baseKR4_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     40000baseKR4_Full);
-+		break;
-+	default:
-+		unrecog_phy = true;
-+	}
-+
-+	if (unrecog_phy) {
-+		/* if we got here and link is up something bad is afoot */
-+		netdev_info(netdev,
-+			    "WARNING: Link up but PhyType isn't recognized.\n");
-+		netdev_info(netdev,
-+			    "WARNING: Unrecognized PHY_Low (0x%llx).\n",
-+			    (unsigned long long)hw_link_info->phy_type_low);
- 	}
- 
-+	/* Now that we've worked out everything that could be supported by the
-+	 * current PHY type, get what is supported by the NVM and intersect
-+	 * them to get what is truly supported
-+	 */
-+	memset(&cap_ksettings, 0, sizeof(struct ethtool_link_ksettings));
-+	ice_phy_type_to_ethtool(netdev, &cap_ksettings);
-+	ethtool_intersect_link_masks(ks, &cap_ksettings);
-+
-+	switch (hw_link_info->link_speed) {
-+	case ICE_AQ_LINK_SPEED_40GB:
-+		ks->base.speed = SPEED_40000;
-+		break;
-+	case ICE_AQ_LINK_SPEED_25GB:
-+		ks->base.speed = SPEED_25000;
-+		break;
-+	case ICE_AQ_LINK_SPEED_20GB:
-+		ks->base.speed = SPEED_20000;
-+		break;
-+	case ICE_AQ_LINK_SPEED_10GB:
-+		ks->base.speed = SPEED_10000;
-+		break;
-+	case ICE_AQ_LINK_SPEED_5GB:
-+		ks->base.speed = SPEED_5000;
-+		break;
-+	case ICE_AQ_LINK_SPEED_2500MB:
-+		ks->base.speed = SPEED_2500;
-+		break;
-+	case ICE_AQ_LINK_SPEED_1000MB:
-+		ks->base.speed = SPEED_1000;
-+		break;
-+	case ICE_AQ_LINK_SPEED_100MB:
-+		ks->base.speed = SPEED_100;
-+		break;
-+	default:
-+		netdev_info(netdev,
-+			    "WARNING: Unrecognized link_speed (0x%x).\n",
-+			    hw_link_info->link_speed);
-+		break;
-+	}
-+	ks->base.duplex = DUPLEX_FULL;
-+}
-+
-+/**
-+ * ice_get_settings_link_down - Get the Link settings when link is down
-+ * @ks: ethtool ksettings to fill in
-+ * @netdev: network interface device structure
-+ *
-+ * Reports link settings that can be determined when link is down
-+ */
-+static void
-+ice_get_settings_link_down(struct ethtool_link_ksettings *ks,
-+			   struct net_device __always_unused *netdev)
-+{
-+	/* link is down and the driver needs to fall back on
-+	 * supported phy types to figure out what info to display
-+	 */
-+	ice_phy_type_to_ethtool(netdev, ks);
-+
-+	/* With no link, speed and duplex are unknown */
-+	ks->base.speed = SPEED_UNKNOWN;
-+	ks->base.duplex = DUPLEX_UNKNOWN;
-+}
-+
-+/**
-+ * ice_get_link_ksettings - Get Link Speed and Duplex settings
-+ * @netdev: network interface device structure
-+ * @ks: ethtool ksettings
-+ *
-+ * Reports speed/duplex settings based on media_type
-+ */
-+static int ice_get_link_ksettings(struct net_device *netdev,
-+				  struct ethtool_link_ksettings *ks)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_link_status *hw_link_info;
-+	struct ice_vsi *vsi = np->vsi;
-+
-+	ethtool_link_ksettings_zero_link_mode(ks, supported);
-+	ethtool_link_ksettings_zero_link_mode(ks, advertising);
-+	hw_link_info = &vsi->port_info->phy.link_info;
-+
-+	/* set speed and duplex */
-+	if (hw_link_info->link_info & ICE_AQ_LINK_UP)
-+		ice_get_settings_link_up(ks, netdev);
-+	else
-+		ice_get_settings_link_down(ks, netdev);
-+
- 	/* set autoneg settings */
--	ks->base.autoneg = ((hw_link_info->an_info & ICE_AQ_AN_COMPLETED) ?
--			    AUTONEG_ENABLE : AUTONEG_DISABLE);
-+	ks->base.autoneg = (hw_link_info->an_info & ICE_AQ_AN_COMPLETED) ?
-+		AUTONEG_ENABLE : AUTONEG_DISABLE;
- 
- 	/* set media type settings */
- 	switch (vsi->port_info->phy.media_type) {
-@@ -441,6 +860,311 @@ ice_get_link_ksettings(struct net_device *netdev,
- 	return 0;
- }
- 
-+/**
-+ * ice_ksettings_find_adv_link_speed - Find advertising link speed
-+ * @ks: ethtool ksettings
-+ */
-+static u16
-+ice_ksettings_find_adv_link_speed(const struct ethtool_link_ksettings *ks)
-+{
-+	u16 adv_link_speed = 0;
-+
-+	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  100baseT_Full))
-+		adv_link_speed |= ICE_AQ_LINK_SPEED_100MB;
-+	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  1000baseX_Full))
-+		adv_link_speed |= ICE_AQ_LINK_SPEED_1000MB;
-+	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  1000baseT_Full) ||
-+	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  1000baseKX_Full))
-+		adv_link_speed |= ICE_AQ_LINK_SPEED_1000MB;
-+	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  2500baseT_Full))
-+		adv_link_speed |= ICE_AQ_LINK_SPEED_2500MB;
-+	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  2500baseX_Full))
-+		adv_link_speed |= ICE_AQ_LINK_SPEED_2500MB;
-+	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  5000baseT_Full))
-+		adv_link_speed |= ICE_AQ_LINK_SPEED_5GB;
-+	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  10000baseT_Full) ||
-+	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  10000baseKR_Full))
-+		adv_link_speed |= ICE_AQ_LINK_SPEED_10GB;
-+	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  10000baseSR_Full) ||
-+	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  10000baseLR_Full))
-+		adv_link_speed |= ICE_AQ_LINK_SPEED_10GB;
-+	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  25000baseCR_Full) ||
-+	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  25000baseSR_Full) ||
-+	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  25000baseKR_Full))
-+		adv_link_speed |= ICE_AQ_LINK_SPEED_25GB;
-+	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  40000baseCR4_Full) ||
-+	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  40000baseSR4_Full) ||
-+	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  40000baseLR4_Full) ||
-+	    ethtool_link_ksettings_test_link_mode(ks, advertising,
-+						  40000baseKR4_Full))
-+		adv_link_speed |= ICE_AQ_LINK_SPEED_40GB;
-+
-+	return adv_link_speed;
-+}
-+
-+/**
-+ * ice_setup_autoneg
-+ * @p: port info
-+ * @ks: ethtool_link_ksettings
-+ * @config: configuration that will be sent down to FW
-+ * @autoneg_enabled: autonegotiation is enabled or not
-+ * @autoneg_changed: will there a change in autonegotiation
-+ * @netdev: network interface device structure
-+ *
-+ * Setup PHY autonegotiation feature
-+ */
-+static int
-+ice_setup_autoneg(struct ice_port_info *p, struct ethtool_link_ksettings *ks,
-+		  struct ice_aqc_set_phy_cfg_data *config,
-+		  u8 autoneg_enabled, u8 *autoneg_changed,
-+		  struct net_device *netdev)
-+{
-+	int err = 0;
-+
-+	*autoneg_changed = 0;
-+
-+	/* Check autoneg */
-+	if (autoneg_enabled == AUTONEG_ENABLE) {
-+		/* If autoneg was not already enabled */
-+		if (!(p->phy.link_info.an_info & ICE_AQ_AN_COMPLETED)) {
-+			/* If autoneg is not supported, return error */
-+			if (!ethtool_link_ksettings_test_link_mode(ks,
-+								   supported,
-+								   Autoneg)) {
-+				netdev_info(netdev, "Autoneg not supported on this phy.\n");
-+				err = -EINVAL;
-+			} else {
-+				/* Autoneg is allowed to change */
-+				config->caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
-+				*autoneg_changed = 1;
-+			}
-+		}
-+	} else {
-+		/* If autoneg is currently enabled */
-+		if (p->phy.link_info.an_info & ICE_AQ_AN_COMPLETED) {
-+			/* If autoneg is supported 10GBASE_T is the only phy
-+			 * that can disable it, so otherwise return error
-+			 */
-+			if (ethtool_link_ksettings_test_link_mode(ks,
-+								  supported,
-+								  Autoneg)) {
-+				netdev_info(netdev, "Autoneg cannot be disabled on this phy\n");
-+				err = -EINVAL;
-+			} else {
-+				/* Autoneg is allowed to change */
-+				config->caps &= ~ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
-+				*autoneg_changed = 1;
-+			}
-+		}
-+	}
-+
-+	return err;
-+}
-+
-+/**
-+ * ice_set_link_ksettings - Set Speed and Duplex
-+ * @netdev: network interface device structure
-+ * @ks: ethtool ksettings
-+ *
-+ * Set speed/duplex per media_types advertised/forced
-+ */
-+static int ice_set_link_ksettings(struct net_device *netdev,
-+				  const struct ethtool_link_ksettings *ks)
-+{
-+	u8 autoneg, timeout = TEST_SET_BITS_TIMEOUT, lport = 0;
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ethtool_link_ksettings safe_ks, copy_ks;
-+	struct ice_aqc_get_phy_caps_data *abilities;
-+	u16 adv_link_speed, curr_link_speed, idx;
-+	struct ice_aqc_set_phy_cfg_data config;
-+	struct ice_pf *pf = np->vsi->back;
-+	struct ice_port_info *p;
-+	u8 autoneg_changed = 0;
-+	enum ice_status status;
-+	u64 phy_type_low;
-+	int err = 0;
-+	bool linkup;
-+
-+	p = np->vsi->port_info;
-+
-+	if (!p)
-+		return -EOPNOTSUPP;
-+
-+	/* Check if this is lan vsi */
-+	for (idx = 0 ; idx <  pf->num_alloc_vsi ; idx++) {
-+		if (pf->vsi[idx]->type == ICE_VSI_PF) {
-+			if (np->vsi != pf->vsi[idx])
-+				return -EOPNOTSUPP;
-+			break;
-+		}
-+	}
-+
-+	if (p->phy.media_type != ICE_MEDIA_BASET &&
-+	    p->phy.media_type != ICE_MEDIA_FIBER &&
-+	    p->phy.media_type != ICE_MEDIA_BACKPLANE &&
-+	    p->phy.media_type != ICE_MEDIA_DA &&
-+	    p->phy.link_info.link_info & ICE_AQ_LINK_UP)
-+		return -EOPNOTSUPP;
-+
-+	/* copy the ksettings to copy_ks to avoid modifying the original */
-+	memcpy(&copy_ks, ks, sizeof(struct ethtool_link_ksettings));
-+
-+	/* save autoneg out of ksettings */
-+	autoneg = copy_ks.base.autoneg;
-+
-+	memset(&safe_ks, 0, sizeof(safe_ks));
-+
-+	/* Get link modes supported by hardware.*/
-+	ice_phy_type_to_ethtool(netdev, &safe_ks);
-+
-+	/* and check against modes requested by user.
-+	 * Return an error if unsupported mode was set.
-+	 */
-+	if (!bitmap_subset(copy_ks.link_modes.advertising,
-+			   safe_ks.link_modes.supported,
-+			   __ETHTOOL_LINK_MODE_MASK_NBITS))
-+		return -EINVAL;
-+
-+	/* get our own copy of the bits to check against */
-+	memset(&safe_ks, 0, sizeof(struct ethtool_link_ksettings));
-+	safe_ks.base.cmd = copy_ks.base.cmd;
-+	safe_ks.base.link_mode_masks_nwords =
-+		copy_ks.base.link_mode_masks_nwords;
-+	ice_get_link_ksettings(netdev, &safe_ks);
-+
-+	/* set autoneg back to what it currently is */
-+	copy_ks.base.autoneg = safe_ks.base.autoneg;
-+	/* we don't compare the speed */
-+	copy_ks.base.speed = safe_ks.base.speed;
-+
-+	/* If copy_ks.base and safe_ks.base are not the same now, then they are
-+	 * trying to set something that we do not support.
-+	 */
-+	if (memcmp(&copy_ks.base, &safe_ks.base,
-+		   sizeof(struct ethtool_link_settings)))
-+		return -EOPNOTSUPP;
-+
-+	while (test_and_set_bit(__ICE_CFG_BUSY, pf->state)) {
-+		timeout--;
-+		if (!timeout)
-+			return -EBUSY;
-+		usleep_range(TEST_SET_BITS_SLEEP_MIN, TEST_SET_BITS_SLEEP_MAX);
-+	}
-+
-+	abilities = devm_kzalloc(&pf->pdev->dev, sizeof(*abilities),
-+				 GFP_KERNEL);
-+	if (!abilities)
-+		return -ENOMEM;
-+
-+	/* Get the current phy config */
-+	status = ice_aq_get_phy_caps(p, false, ICE_AQC_REPORT_SW_CFG, abilities,
-+				     NULL);
-+	if (status) {
-+		err = -EAGAIN;
-+		goto done;
-+	}
-+
-+	/* Copy abilities to config in case autoneg is not set below */
-+	memset(&config, 0, sizeof(struct ice_aqc_set_phy_cfg_data));
-+	config.caps = abilities->caps & ~ICE_AQC_PHY_AN_MODE;
-+	if (abilities->caps & ICE_AQC_PHY_AN_MODE)
-+		config.caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
-+
-+	/* Check autoneg */
-+	err = ice_setup_autoneg(p, &safe_ks, &config, autoneg, &autoneg_changed,
-+				netdev);
-+
-+	if (err)
-+		goto done;
-+
-+	/* Call to get the current link speed */
-+	p->phy.get_link_info = true;
-+	status = ice_get_link_status(p, &linkup);
-+	if (status) {
-+		err = -EAGAIN;
-+		goto done;
-+	}
-+
-+	curr_link_speed = p->phy.link_info.link_speed;
-+	adv_link_speed = ice_ksettings_find_adv_link_speed(ks);
-+
-+	/* If speed didn't get set, set it to what it currently is.
-+	 * This is needed because if advertise is 0 (as it is when autoneg
-+	 * is disabled) then speed won't get set.
-+	 */
-+	if (!adv_link_speed)
-+		adv_link_speed = curr_link_speed;
-+
-+	/* Convert the advertise link speeds to their corresponded PHY_TYPE */
-+	ice_update_phy_type(&phy_type_low, adv_link_speed);
-+
-+	if (!autoneg_changed && adv_link_speed == curr_link_speed) {
-+		netdev_info(netdev, "Nothing changed, exiting without setting anything.\n");
-+		goto done;
-+	}
-+
-+	/* copy over the rest of the abilities */
-+	config.low_power_ctrl = abilities->low_power_ctrl;
-+	config.eee_cap = abilities->eee_cap;
-+	config.eeer_value = abilities->eeer_value;
-+	config.link_fec_opt = abilities->link_fec_options;
-+
-+	/* save the requested speeds */
-+	p->phy.link_info.req_speeds = adv_link_speed;
-+
-+	/* set link and auto negotiation so changes take effect */
-+	config.caps |= ICE_AQ_PHY_ENA_LINK;
-+
-+	if (phy_type_low) {
-+		config.phy_type_low = cpu_to_le64(phy_type_low) &
-+			abilities->phy_type_low;
-+	} else {
-+		err = -EAGAIN;
-+		netdev_info(netdev, "Nothing changed. No PHY_TYPE is corresponded to advertised link speed.\n");
-+		goto done;
-+	}
-+
-+	/* If link is up put link down */
-+	if (p->phy.link_info.link_info & ICE_AQ_LINK_UP) {
-+		/* Tell the OS link is going down, the link will go
-+		 * back up when fw says it is ready asynchronously
-+		 */
-+		ice_print_link_msg(np->vsi, false);
-+		netif_carrier_off(netdev);
-+		netif_tx_stop_all_queues(netdev);
-+	}
-+
-+	/* make the aq call */
-+	status = ice_aq_set_phy_cfg(&pf->hw, lport, &config, NULL);
-+	if (status) {
-+		netdev_info(netdev, "Set phy config failed,\n");
-+		err = -EAGAIN;
-+	}
-+
-+done:
-+	devm_kfree(&pf->pdev->dev, abilities);
-+	clear_bit(__ICE_CFG_BUSY, pf->state);
-+
-+	return err;
-+}
-+
- /**
-  * ice_get_rxnfc - command to get RX flow classification rules
-  * @netdev: network interface device structure
-@@ -933,6 +1657,7 @@ static int ice_set_rxfh(struct net_device *netdev, const u32 *indir,
- 
- static const struct ethtool_ops ice_ethtool_ops = {
- 	.get_link_ksettings	= ice_get_link_ksettings,
-+	.set_link_ksettings	= ice_set_link_ksettings,
- 	.get_drvinfo            = ice_get_drvinfo,
- 	.get_regs_len           = ice_get_regs_len,
- 	.get_regs               = ice_get_regs,
+ #endif /* _ICE_HW_AUTOGEN_H_ */
 -- 
 2.17.1
 
