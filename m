@@ -1,271 +1,410 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 31 Jul 2018 21:04:30 -0700
-Subject: [Intel-wired-lan] [PATCH v2 10/13] ice: Implement
- ice_bridge_getlink and ice_bridge_setlink
+Date: Tue, 31 Jul 2018 21:04:31 -0700
+Subject: [Intel-wired-lan] [PATCH v2 11/13] ice: Enable firmware logging
+ during device initialization.
 In-Reply-To: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
 References: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180801040433.5865-11-anirudh.venkataramanan@intel.com>
+Message-ID: <20180801040433.5865-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+From: Hieu Tran <hieu.t.tran@intel.com>
 
-ice_bridge_getlink returns the current bridge mode using
-ndo_dflt_bridge_getlink and the mode parameter available in
-first_switch->bridge_mode.
+To enable FW logging, the "cq_en" and "uart_en" enable bits of the
+"fw_log" element in struct ice_hw need to set accordingly based on
+some user-provided parameters during driver loading. To select which
+FW log events to be emitted, the "cfg" elements of corresponding FW
+modules in the "evnts" array member of "fw_log" need to be configured.
 
-ice_bridge_setlink is invoked when the bridge mode needs to
-changed. The value to be changed to is available as a netlink
-message which is parsed in this function. If the mode has to
-be changed, switch_flags is set appropriately (set ALLOW_LB
-for VEB mode and clear it for VEPA mode) and ice_aq_update_vsi
-is called. Also change the unicast switch filter rules.
-
-Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+Signed-off-by: Hieu Tran <hieu.t.tran@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c   | 145 +++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_switch.c |  41 ++++++
- drivers/net/ethernet/intel/ice/ice_switch.h |   1 +
- 3 files changed, 186 insertions(+), 1 deletion(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  83 ++++++++
+ drivers/net/ethernet/intel/ice/ice_common.c   | 180 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h   |   1 +
+ drivers/net/ethernet/intel/ice/ice_main.c     |   3 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |  19 ++
+ 5 files changed, 286 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 1e42833d8337..6b2bcd3c1d6e 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3597,7 +3597,11 @@ static int ice_probe(struct pci_dev *pdev,
- 		goto err_msix_misc_unroll;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index ce3405f870d8..8fb54c3e7bf2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1207,6 +1207,84 @@ struct ice_aqc_dis_txq {
+ 	struct ice_aqc_dis_txq_item qgrps[1];
+ };
  
--	pf->first_sw->bridge_mode = BRIDGE_MODE_VEB;
-+	if (hw->evb_veb)
-+		pf->first_sw->bridge_mode = BRIDGE_MODE_VEB;
-+	else
-+		pf->first_sw->bridge_mode = BRIDGE_MODE_VEPA;
-+
- 	pf->first_sw->pf = pf;
- 
- 	/* record the sw_id available for later use */
-@@ -5693,6 +5697,143 @@ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
- 	return 0;
- }
- 
-+/**
-+ * ice_bridge_getlink - Get the hardware bridge mode
-+ * @skb: skb buff
-+ * @pid: process id
-+ * @seq: RTNL message seq
-+ * @dev: the netdev being configured
-+ * @filter_mask: filter mask passed in
-+ * @nlflags: netlink flags passed in
-+ *
-+ * Return the bridge mode (VEB/VEPA)
++/* Configure Firmware Logging Command (indirect 0xFF09)
++ * Logging Information Read Response (indirect 0xFF10)
++ * Note: The 0xFF10 command has no input parameters.
 + */
-+static int
-+ice_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
-+		   struct net_device *dev, u32 filter_mask, int nlflags)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(dev);
-+	struct ice_vsi *vsi = np->vsi;
-+	struct ice_pf *pf = vsi->back;
-+	u16 bmode;
++struct ice_aqc_fw_logging {
++	u8 log_ctrl;
++#define ICE_AQC_FW_LOG_AQ_EN		BIT(0)
++#define ICE_AQC_FW_LOG_UART_EN		BIT(1)
++	u8 rsvd0;
++	u8 log_ctrl_valid; /* Not used by 0xFF10 Response */
++#define ICE_AQC_FW_LOG_AQ_VALID		BIT(0)
++#define ICE_AQC_FW_LOG_UART_VALID	BIT(1)
++	u8 rsvd1[5];
++	__le32 addr_high;
++	__le32 addr_low;
++};
 +
-+	bmode = pf->first_sw->bridge_mode;
++enum ice_aqc_fw_logging_mod {
++	ICE_AQC_FW_LOG_ID_GENERAL = 0,
++	ICE_AQC_FW_LOG_ID_CTRL,
++	ICE_AQC_FW_LOG_ID_LINK,
++	ICE_AQC_FW_LOG_ID_LINK_TOPO,
++	ICE_AQC_FW_LOG_ID_DNL,
++	ICE_AQC_FW_LOG_ID_I2C,
++	ICE_AQC_FW_LOG_ID_SDP,
++	ICE_AQC_FW_LOG_ID_MDIO,
++	ICE_AQC_FW_LOG_ID_ADMINQ,
++	ICE_AQC_FW_LOG_ID_HDMA,
++	ICE_AQC_FW_LOG_ID_LLDP,
++	ICE_AQC_FW_LOG_ID_DCBX,
++	ICE_AQC_FW_LOG_ID_DCB,
++	ICE_AQC_FW_LOG_ID_NETPROXY,
++	ICE_AQC_FW_LOG_ID_NVM,
++	ICE_AQC_FW_LOG_ID_AUTH,
++	ICE_AQC_FW_LOG_ID_VPD,
++	ICE_AQC_FW_LOG_ID_IOSF,
++	ICE_AQC_FW_LOG_ID_PARSER,
++	ICE_AQC_FW_LOG_ID_SW,
++	ICE_AQC_FW_LOG_ID_SCHEDULER,
++	ICE_AQC_FW_LOG_ID_TXQ,
++	ICE_AQC_FW_LOG_ID_RSVD,
++	ICE_AQC_FW_LOG_ID_POST,
++	ICE_AQC_FW_LOG_ID_WATCHDOG,
++	ICE_AQC_FW_LOG_ID_TASK_DISPATCH,
++	ICE_AQC_FW_LOG_ID_MNG,
++	ICE_AQC_FW_LOG_ID_MAX,
++};
 +
-+	return ndo_dflt_bridge_getlink(skb, pid, seq, dev, bmode, 0, 0, nlflags,
-+				       filter_mask, NULL);
-+}
-+
-+/**
-+ * ice_vsi_update_bridge_mode - Update VSI for switching bridge mode (VEB/VEPA)
-+ * @vsi: Pointer to VSI structure
-+ * @bmode: Hardware bridge mode (VEB/VEPA)
-+ *
-+ * Returns 0 on success, negative on failure
++/* This is the buffer for both of the logging commands.
++ * The entry array size depends on the datalen parameter in the descriptor.
++ * There will be a total of datalen / 2 entries.
 + */
-+static int ice_vsi_update_bridge_mode(struct ice_vsi *vsi, u16 bmode)
-+{
-+	struct device *dev = &vsi->back->pdev->dev;
-+	struct ice_aqc_vsi_props *vsi_props;
-+	struct ice_hw *hw = &vsi->back->hw;
-+	struct ice_vsi_ctx ctxt = { 0 };
-+	enum ice_status status;
++struct ice_aqc_fw_logging_data {
++	__le16 entry[1];
++#define ICE_AQC_FW_LOG_ID_S		0
++#define ICE_AQC_FW_LOG_ID_M		(0xFFF << ICE_AQC_FW_LOG_ID_S)
 +
-+	vsi_props = &vsi->info;
-+	ctxt.info = vsi->info;
++#define ICE_AQC_FW_LOG_CONF_SUCCESS	0	/* Used by response */
++#define ICE_AQC_FW_LOG_CONF_BAD_INDX	BIT(12)	/* Used by response */
 +
-+	if (bmode == BRIDGE_MODE_VEB)
-+		/* change from VEPA to VEB mode */
-+		ctxt.info.sw_flags |= ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
-+	else
-+		/* change from VEB to VEPA mode */
-+		ctxt.info.sw_flags &= ~ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
-+	ctxt.vsi_num = vsi->vsi_num;
-+	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SW_VALID);
-+	status = ice_aq_update_vsi(hw, &ctxt, NULL);
-+	if (status) {
-+		dev_err(dev, "update VSI for bridge mode failed, bmode = %d err %d aq_err %d\n",
-+			bmode, status, hw->adminq.sq_last_status);
-+		return -EIO;
-+	}
-+	/* Update sw flags for book keeping */
-+	if (bmode == BRIDGE_MODE_VEB)
-+		/* change from VEPA to VEB mode */
-+		vsi_props->sw_flags |= ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
-+	else
-+		/* change from VEB to VEPA mode */
-+		vsi_props->sw_flags &= ~ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
++#define ICE_AQC_FW_LOG_EN_S		12
++#define ICE_AQC_FW_LOG_EN_M		(0xF << ICE_AQC_FW_LOG_EN_S)
++#define ICE_AQC_FW_LOG_INFO_EN		BIT(12)	/* Used by command */
++#define ICE_AQC_FW_LOG_INIT_EN		BIT(13)	/* Used by command */
++#define ICE_AQC_FW_LOG_FLOW_EN		BIT(14)	/* Used by command */
++#define ICE_AQC_FW_LOG_ERR_EN		BIT(15)	/* Used by command */
++};
 +
-+	return 0;
-+}
-+
-+/**
-+ * ice_bridge_setlink - Set the hardware bridge mode
-+ * @dev: the netdev being configured
-+ * @nlh: RTNL message
-+ * @flags: bridge setlink flags
-+ *
-+ * Sets the bridge mode (VEB/VEPA) of the switch to which the netdev (VSI) is
-+ * hooked up to. Iterates through the PF VSI list and sets the loopback mode (if
-+ * not already set for all VSIs connected to this switch. And also update the
-+ * unicast switch filter rules for the corresponding switch of the netdev.
-+ */
-+static int
-+ice_bridge_setlink(struct net_device *dev, struct nlmsghdr *nlh,
-+		   u16 __always_unused flags)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(dev);
-+	struct ice_pf *pf = np->vsi->back;
-+	struct nlattr *attr, *br_spec;
-+	struct ice_hw *hw = &pf->hw;
-+	enum ice_status status;
-+	struct ice_sw *pf_sw;
-+	int rem, v, err = 0;
-+
-+	pf_sw = pf->first_sw;
-+	/* find the attribute in the netlink message */
-+	br_spec = nlmsg_find_attr(nlh, sizeof(struct ifinfomsg), IFLA_AF_SPEC);
-+
-+	nla_for_each_nested(attr, br_spec, rem) {
-+		__u16 mode;
-+
-+		if (nla_type(attr) != IFLA_BRIDGE_MODE)
-+			continue;
-+		mode = nla_get_u16(attr);
-+		if (mode != BRIDGE_MODE_VEPA && mode != BRIDGE_MODE_VEB)
-+			return -EINVAL;
-+		/* Continue  if bridge mode is not being flipped */
-+		if (mode == pf_sw->bridge_mode)
-+			continue;
-+		/* Iterates through the PF VSI list and update the loopback
-+		 * mode of the VSI
-+		 */
-+		ice_for_each_vsi(pf, v) {
-+			if (!pf->vsi[v])
-+				continue;
-+			err = ice_vsi_update_bridge_mode(pf->vsi[v], mode);
-+			if (err)
-+				return err;
-+		}
-+
-+		hw->evb_veb = (mode == BRIDGE_MODE_VEB);
-+		/* Update the unicast switch filter rules for the corresponding
-+		 * switch of the netdev
-+		 */
-+		status = ice_update_sw_rule_bridge_mode(hw);
-+		if (status) {
-+			netdev_err(dev, "update SW_RULE for bridge mode failed,  = %d err %d aq_err %d\n",
-+				   mode, status, hw->adminq.sq_last_status);
-+			/* revert hw->evb_veb */
-+			hw->evb_veb = (pf_sw->bridge_mode == BRIDGE_MODE_VEB);
-+			return -EIO;
-+		}
-+
-+		pf_sw->bridge_mode = mode;
-+	}
-+
-+	return 0;
-+}
++/* Get/Clear FW Log (indirect 0xFF11) */
++struct ice_aqc_get_clear_fw_log {
++	u8 flags;
++#define ICE_AQC_FW_LOG_CLEAR		BIT(0)
++#define ICE_AQC_FW_LOG_MORE_DATA_AVAIL	BIT(1)
++	u8 rsvd1[7];
++	__le32 addr_high;
++	__le32 addr_low;
++};
 +
  /**
-  * ice_tx_timeout - Respond to a Tx Hang
-  * @netdev: network interface device structure
-@@ -5905,6 +6046,8 @@ static const struct net_device_ops ice_netdev_ops = {
- 	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
- 	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
- 	.ndo_set_features = ice_set_features,
-+	.ndo_bridge_getlink = ice_bridge_getlink,
-+	.ndo_bridge_setlink = ice_bridge_setlink,
- 	.ndo_fdb_add = ice_fdb_add,
- 	.ndo_fdb_del = ice_fdb_del,
- 	.ndo_tx_timeout = ice_tx_timeout,
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 2240485010c5..02455ce9eb91 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -1128,6 +1128,47 @@ ice_update_pkt_fwd_rule(struct ice_hw *hw, struct ice_fltr_info *f_info)
- 	return status;
+  * struct ice_aq_desc - Admin Queue (AQ) descriptor
+  * @flags: ICE_AQ_FLAG_* flags
+@@ -1257,6 +1335,8 @@ struct ice_aq_desc {
+ 		struct ice_aqc_dis_txqs dis_txqs;
+ 		struct ice_aqc_add_get_update_free_vsi vsi_cmd;
+ 		struct ice_aqc_add_update_free_vsi_resp add_update_free_vsi_res;
++		struct ice_aqc_fw_logging fw_logging;
++		struct ice_aqc_get_clear_fw_log get_clear_fw_log;
+ 		struct ice_aqc_alloc_free_res_cmd sw_res_ctrl;
+ 		struct ice_aqc_set_event_mask set_event_mask;
+ 		struct ice_aqc_get_link_status get_link_status;
+@@ -1354,6 +1434,9 @@ enum ice_adminq_opc {
+ 	/* TX queue handling commands/events */
+ 	ice_aqc_opc_add_txqs				= 0x0C30,
+ 	ice_aqc_opc_dis_txqs				= 0x0C31,
++
++	/* debug commands */
++	ice_aqc_opc_fw_logging				= 0xFF09,
+ };
+ 
+ #endif /* _ICE_ADMINQ_CMD_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index ad7f450ddf85..9aa394681f93 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -369,6 +369,177 @@ static void ice_cleanup_fltr_mgmt_struct(struct ice_hw *hw)
+ 	devm_kfree(ice_hw_to_dev(hw), sw);
  }
  
++#define ICE_FW_LOG_DESC_SIZE(n)	(sizeof(struct ice_aqc_fw_logging_data) + \
++	(((n) - 1) * sizeof(((struct ice_aqc_fw_logging_data *)0)->entry)))
++#define ICE_FW_LOG_DESC_SIZE_MAX	\
++	ICE_FW_LOG_DESC_SIZE(ICE_AQC_FW_LOG_ID_MAX)
++
 +/**
-+ * ice_update_sw_rule_bridge_mode
++ * ice_cfg_fw_log - configure FW logging
 + * @hw: pointer to the hw struct
++ * @enable: enable certain FW logging events if true, disable all if false
 + *
-+ * Updates unicast switch filter rules based on VEB/VEPA mode
++ * This function enables/disables the FW logging via Rx CQ events and a UART
++ * port based on predetermined configurations. FW logging via the Rx CQ can be
++ * enabled/disabled for individual PF's. However, FW logging via the UART can
++ * only be enabled/disabled for all PFs on the same device.
++ *
++ * To enable overall FW logging, the "cq_en" and "uart_en" enable bits in
++ * hw->fw_log need to be set accordingly, e.g. based on user-provided input,
++ * before initializing the device.
++ *
++ * When re/configuring FW logging, callers need to update the "cfg" elements of
++ * the hw->fw_log.evnts array with the desired logging event configurations for
++ * modules of interest. When disabling FW logging completely, the callers can
++ * just pass false in the "enable" parameter. On completion, the function will
++ * update the "cur" element of the the hw->fw_log.evnts array with the resulting
++ * logging event configurations of the modules that are being re/configured. FW
++ * logging modules that are not part of a reconfiguration operation retain their
++ * previous states.
++ *
++ * Before resetting the device, it is recommended that the driver disables FW
++ * logging before shutting down the control queue. When disabling FW logging
++ * ("enable" = false), the latest configurations of FW logging events stored in
++ * hw->fw_log.evnts[] are not overridden to allow them to be reconfigured after
++ * a device reset.
++ *
++ * When enabling FW logging to emit log messages via the Rx CQ during the
++ * device's initialization phase, a mechanism alternative to interrupt handlers
++ * needs to be used to extract FW log messages from the Rx CQ periodically and
++ * to prevent the Rx CQ from being full and stalling other types of control
++ * messages from FW to SW. Interrupts are typically disabled during the device's
++ * initialization phase.
 + */
-+enum ice_status ice_update_sw_rule_bridge_mode(struct ice_hw *hw)
++
++static enum ice_status ice_cfg_fw_log(struct ice_hw *hw, bool enable)
 +{
-+	struct ice_switch_info *sw = hw->switch_info;
-+	struct ice_fltr_mgmt_list_entry *fm_entry;
++	struct ice_aqc_fw_logging_data *data = NULL;
++	struct ice_aqc_fw_logging *cmd;
 +	enum ice_status status = 0;
-+	struct list_head *rule_head;
-+	struct mutex *rule_lock; /* Lock to protect filter rule list */
++	u16 i, chgs = 0, len = 0;
++	struct ice_aq_desc desc;
++	u8 actv_evnts = 0;
++	void *buf = NULL;
 +
-+	rule_lock = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rule_lock;
-+	rule_head = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rules;
++	if (!hw->fw_log.cq_en && !hw->fw_log.uart_en)
++		return 0;
 +
-+	mutex_lock(rule_lock);
-+	list_for_each_entry(fm_entry, rule_head, list_entry) {
-+		struct ice_fltr_info *fi = &fm_entry->fltr_info;
-+		u8 *addr = fi->l_data.mac.mac_addr;
++	/* Disable FW logging only when the control queue is still responsive */
++	if (!enable &&
++	    (!hw->fw_log.actv_evnts || !ice_check_sq_alive(hw, &hw->adminq)))
++		return 0;
 +
-+		/* Update unicast Tx rules to reflect the selected
-+		 * VEB/VEPA mode
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logging);
++	cmd = &desc.params.fw_logging;
++
++	/* Indicate which controls are valid */
++	if (hw->fw_log.cq_en)
++		cmd->log_ctrl_valid |= ICE_AQC_FW_LOG_AQ_VALID;
++
++	if (hw->fw_log.uart_en)
++		cmd->log_ctrl_valid |= ICE_AQC_FW_LOG_UART_VALID;
++
++	if (enable) {
++		/* Fill in an array of entries with FW logging modules and
++		 * logging events being reconfigured.
 +		 */
-+		if ((fi->flag & ICE_FLTR_TX) && is_unicast_ether_addr(addr) &&
-+		    (fi->fltr_act == ICE_FWD_TO_VSI ||
-+		     fi->fltr_act == ICE_FWD_TO_VSI_LIST ||
-+		     fi->fltr_act == ICE_FWD_TO_Q ||
-+		     fi->fltr_act == ICE_FWD_TO_QGRP)) {
-+			status = ice_update_pkt_fwd_rule(hw, fi);
-+			if (status)
-+				break;
++		for (i = 0; i < ICE_AQC_FW_LOG_ID_MAX; i++) {
++			u16 val;
++
++			/* Keep track of enabled event types */
++			actv_evnts |= hw->fw_log.evnts[i].cfg;
++
++			if (hw->fw_log.evnts[i].cfg == hw->fw_log.evnts[i].cur)
++				continue;
++
++			if (!data) {
++				data = devm_kzalloc(ice_hw_to_dev(hw),
++						    ICE_FW_LOG_DESC_SIZE_MAX,
++						    GFP_KERNEL);
++				if (!data)
++					return ICE_ERR_NO_MEMORY;
++			}
++
++			val = i << ICE_AQC_FW_LOG_ID_S;
++			val |= hw->fw_log.evnts[i].cfg << ICE_AQC_FW_LOG_EN_S;
++			data->entry[chgs++] = cpu_to_le16(val);
++		}
++
++		/* Only enable FW logging if at least one module is specified.
++		 * If FW logging is currently enabled but all modules are not
++		 * enabled to emit log messages, disable FW logging altogether.
++		 */
++		if (actv_evnts) {
++			/* Leave if there is effectively no change */
++			if (!chgs)
++				goto out;
++
++			if (hw->fw_log.cq_en)
++				cmd->log_ctrl |= ICE_AQC_FW_LOG_AQ_EN;
++
++			if (hw->fw_log.uart_en)
++				cmd->log_ctrl |= ICE_AQC_FW_LOG_UART_EN;
++
++			buf = data;
++			len = ICE_FW_LOG_DESC_SIZE(chgs);
++			desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
 +		}
 +	}
 +
-+	mutex_unlock(rule_lock);
++	status = ice_aq_send_cmd(hw, &desc, buf, len, NULL);
++	if (!status) {
++		/* Update the current configuration to reflect events enabled.
++		 * hw->fw_log.cq_en and hw->fw_log.uart_en indicate if the FW
++		 * logging mode is enabled for the device. They do not reflect
++		 * actual modules being enabled to emit log messages. So, their
++		 * values remain unchanged even when all modules are disabled.
++		 */
++		u16 cnt = enable ? chgs : (u16)ICE_AQC_FW_LOG_ID_MAX;
++
++		hw->fw_log.actv_evnts = actv_evnts;
++		for (i = 0; i < cnt; i++) {
++			u16 v, m;
++
++			if (!enable) {
++				/* When disabling all FW logging events as part
++				 * of device's de-initialization, the original
++				 * configurations are retained, and can be used
++				 * to reconfigure FW logging later if the device
++				 * is re-initialized.
++				 */
++				hw->fw_log.evnts[i].cur = 0;
++				continue;
++			}
++
++			v = le16_to_cpu(data->entry[i]);
++			m = (v & ICE_AQC_FW_LOG_ID_M) >> ICE_AQC_FW_LOG_ID_S;
++			hw->fw_log.evnts[m].cur = hw->fw_log.evnts[m].cfg;
++		}
++	}
++
++out:
++	if (data)
++		devm_kfree(ice_hw_to_dev(hw), data);
 +
 +	return status;
 +}
 +
++/**
++ * ice_output_fw_log
++ * @hw: pointer to the hw struct
++ * @desc: pointer to the AQ message descriptor
++ * @buf: pointer to the buffer accompanying the AQ message
++ *
++ * Formats a FW Log message and outputs it via the standard driver logs.
++ */
++void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf)
++{
++	ice_debug(hw, ICE_DBG_AQ_MSG, "[ FW Log Msg Start ]\n");
++	ice_debug_array(hw, ICE_DBG_AQ_MSG, 16, 1, (u8 *)buf,
++			le16_to_cpu(desc->datalen));
++	ice_debug(hw, ICE_DBG_AQ_MSG, "[ FW Log Msg End ]\n");
++}
++
  /**
-  * ice_add_update_vsi_list
+  * ice_init_hw - main hardware initialization routine
   * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 11a481644dac..646389ca1238 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -169,6 +169,7 @@ ice_free_vsi(struct ice_hw *hw, u16 vsi_handle, struct ice_vsi_ctx *vsi_ctx,
- enum ice_status ice_get_initial_sw_cfg(struct ice_hw *hw);
+@@ -403,6 +574,11 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
+ 	if (status)
+ 		goto err_unroll_cqinit;
  
- /* Switch/bridge related commands */
-+enum ice_status ice_update_sw_rule_bridge_mode(struct ice_hw *hw);
- enum ice_status ice_add_mac(struct ice_hw *hw, struct list_head *m_lst);
- enum ice_status ice_remove_mac(struct ice_hw *hw, struct list_head *m_lst);
- void ice_remove_vsi_fltr(struct ice_hw *hw, u16 vsi_id);
++	/* Enable FW logging. Not fatal if this fails. */
++	status = ice_cfg_fw_log(hw, true);
++	if (status)
++		ice_debug(hw, ICE_DBG_INIT, "Failed to enable FW logging.\n");
++
+ 	status = ice_clear_pf_cfg(hw);
+ 	if (status)
+ 		goto err_unroll_cqinit;
+@@ -509,6 +685,10 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
+ void ice_deinit_hw(struct ice_hw *hw)
+ {
+ 	ice_sched_cleanup_all(hw);
++
++	/* Attempt to disable FW logging before shutting down control queues */
++	ice_cfg_fw_log(hw, false);
++
+ 	ice_shutdown_all_ctrlq(hw);
+ 
+ 	if (hw->port_info) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 34c468138a8a..8e56bbbeda56 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -95,4 +95,5 @@ enum ice_status
+ ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_id, u8 tc, u8 num_qgrps,
+ 		struct ice_aqc_add_tx_qgrp *buf, u16 buf_size,
+ 		struct ice_sq_cd *cd);
++void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf);
+ #endif /* _ICE_COMMON_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 6b2bcd3c1d6e..292d9ca20898 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -984,6 +984,9 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
+ 				dev_err(&pf->pdev->dev,
+ 					"Could not handle link event");
+ 			break;
++		case ice_aqc_opc_fw_logging:
++			ice_output_fw_log(hw, &event.desc, event.msg_buf);
++			break;
+ 		default:
+ 			dev_dbg(&pf->pdev->dev,
+ 				"%s Receive Queue unknown event 0x%04x ignored\n",
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 75457afc912c..9f57306daf85 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -253,6 +253,24 @@ struct ice_switch_info {
+ 	struct ice_sw_recipe *recp_list;
+ };
+ 
++/* FW logging configuration */
++struct ice_fw_log_evnt {
++	u8 cfg : 4;	/* New event enables to configure */
++	u8 cur : 4;	/* Current/active event enables */
++};
++
++struct ice_fw_log_cfg {
++	u8 cq_en : 1;    /* FW logging is enabled via the control queue */
++	u8 uart_en : 1;  /* FW logging is enabled via UART for all PFs */
++	u8 actv_evnts;   /* Cumulation of currently enabled log events */
++
++#define ICE_FW_LOG_EVNT_INFO	(ICE_AQC_FW_LOG_INFO_EN >> ICE_AQC_FW_LOG_EN_S)
++#define ICE_FW_LOG_EVNT_INIT	(ICE_AQC_FW_LOG_INIT_EN >> ICE_AQC_FW_LOG_EN_S)
++#define ICE_FW_LOG_EVNT_FLOW	(ICE_AQC_FW_LOG_FLOW_EN >> ICE_AQC_FW_LOG_EN_S)
++#define ICE_FW_LOG_EVNT_ERR	(ICE_AQC_FW_LOG_ERR_EN >> ICE_AQC_FW_LOG_EN_S)
++	struct ice_fw_log_evnt evnts[ICE_AQC_FW_LOG_ID_MAX];
++};
++
+ /* Port hardware description */
+ struct ice_hw {
+ 	u8 __iomem *hw_addr;
+@@ -301,6 +319,7 @@ struct ice_hw {
+ 	u8 fw_patch;		/* firmware patch version */
+ 	u32 fw_build;		/* firmware build number */
+ 
++	struct ice_fw_log_cfg fw_log;
+ 	/* minimum allowed value for different speeds */
+ #define ICE_ITR_GRAN_MIN_200	1
+ #define ICE_ITR_GRAN_MIN_100	1
 -- 
 2.17.1
 
