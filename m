@@ -1,475 +1,271 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 31 Jul 2018 21:04:29 -0700
-Subject: [Intel-wired-lan] [PATCH v2 09/13] ice: Add support for Tx hang,
- Tx timeout and malicious driver detection
+Date: Tue, 31 Jul 2018 21:04:30 -0700
+Subject: [Intel-wired-lan] [PATCH v2 10/13] ice: Implement
+ ice_bridge_getlink and ice_bridge_setlink
 In-Reply-To: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
 References: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180801040433.5865-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20180801040433.5865-11-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
 
-When a malicious operation is detected, the firmware triggers an
-interrupt, which is then picked up by the service task (specifically by
-ice_handle_mdd_event). A reset is scheduled if required.
+ice_bridge_getlink returns the current bridge mode using
+ndo_dflt_bridge_getlink and the mode parameter available in
+first_switch->bridge_mode.
 
-Tx hang detection works in a similar way, except the logic here monitors
-the VSI's Tx queues and tries to revive them if stalled. If the hang is
-not resolved, the kernel eventually calls ndo_tx_timeout, which is
-handled by ice_tx_timeout.
+ice_bridge_setlink is invoked when the bridge mode needs to
+changed. The value to be changed to is available as a netlink
+message which is parsed in this function. If the mode has to
+be changed, switch_flags is set appropriately (set ALLOW_LB
+for VEB mode and clear it for VEPA mode) and ice_aq_update_vsi
+is called. Also change the unicast switch filter rules.
 
-Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice.h          |   4 +
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |  39 +++
- drivers/net/ethernet/intel/ice/ice_main.c     | 286 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_txrx.c     |   1 +
- drivers/net/ethernet/intel/ice/ice_txrx.h     |   1 +
- 5 files changed, 331 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_main.c   | 145 +++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_switch.c |  41 ++++++
+ drivers/net/ethernet/intel/ice/ice_switch.h |   1 +
+ 3 files changed, 186 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index e17030db0bee..6f44a850c4b2 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -134,6 +134,7 @@ enum ice_state {
- 	__ICE_SUSPENDED,		/* set on module remove path */
- 	__ICE_RESET_FAILED,		/* set by reset/rebuild */
- 	__ICE_ADMINQ_EVENT_PENDING,
-+	__ICE_MDD_EVENT_PENDING,
- 	__ICE_FLTR_OVERFLOW_PROMISC,
- 	__ICE_CFG_BUSY,
- 	__ICE_SERVICE_SCHED,
-@@ -272,6 +273,9 @@ struct ice_pf {
- 	struct ice_hw_port_stats stats_prev;
- 	struct ice_hw hw;
- 	u8 stat_prev_loaded;	/* has previous stats been loaded */
-+	u32 tx_timeout_count;
-+	unsigned long tx_timeout_last_recovery;
-+	u32 tx_timeout_recovery_level;
- 	char int_name[ICE_INT_NAME_STR_LEN];
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 067ca26a1d94..88f11498804b 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -123,6 +123,45 @@
- #define QRX_CTRL_QENA_STAT_M			BIT(2)
- #define QRX_ITR(_QRX)				(0x00292000 + ((_QRX) * 4))
- #define QRX_TAIL(_QRX)				(0x00290000 + ((_QRX) * 4))
-+#define QRX_TAIL_MAX_INDEX			2047
-+#define QRX_TAIL_TAIL_S				0
-+#define QRX_TAIL_TAIL_M				ICE_M(0x1FFF, 0)
-+#define GL_MDET_RX				0x00294C00
-+#define GL_MDET_RX_QNUM_S			0
-+#define GL_MDET_RX_QNUM_M			ICE_M(0x7FFF, 0)
-+#define GL_MDET_RX_VF_NUM_S			15
-+#define GL_MDET_RX_VF_NUM_M			ICE_M(0xFF, 15)
-+#define GL_MDET_RX_PF_NUM_S			23
-+#define GL_MDET_RX_PF_NUM_M			ICE_M(0x7, 23)
-+#define GL_MDET_RX_MAL_TYPE_S			26
-+#define GL_MDET_RX_MAL_TYPE_M			ICE_M(0x1F, 26)
-+#define GL_MDET_RX_VALID_M			BIT(31)
-+#define GL_MDET_TX_PQM				0x002D2E00
-+#define GL_MDET_TX_PQM_PF_NUM_S			0
-+#define GL_MDET_TX_PQM_PF_NUM_M			ICE_M(0x7, 0)
-+#define GL_MDET_TX_PQM_VF_NUM_S			4
-+#define GL_MDET_TX_PQM_VF_NUM_M			ICE_M(0xFF, 4)
-+#define GL_MDET_TX_PQM_QNUM_S			12
-+#define GL_MDET_TX_PQM_QNUM_M			ICE_M(0x3FFF, 12)
-+#define GL_MDET_TX_PQM_MAL_TYPE_S		26
-+#define GL_MDET_TX_PQM_MAL_TYPE_M		ICE_M(0x1F, 26)
-+#define GL_MDET_TX_PQM_VALID_M			BIT(31)
-+#define GL_MDET_TX_TCLAN			0x000FC068
-+#define GL_MDET_TX_TCLAN_QNUM_S			0
-+#define GL_MDET_TX_TCLAN_QNUM_M			ICE_M(0x7FFF, 0)
-+#define GL_MDET_TX_TCLAN_VF_NUM_S		15
-+#define GL_MDET_TX_TCLAN_VF_NUM_M		ICE_M(0xFF, 15)
-+#define GL_MDET_TX_TCLAN_PF_NUM_S		23
-+#define GL_MDET_TX_TCLAN_PF_NUM_M		ICE_M(0x7, 23)
-+#define GL_MDET_TX_TCLAN_MAL_TYPE_S		26
-+#define GL_MDET_TX_TCLAN_MAL_TYPE_M		ICE_M(0x1F, 26)
-+#define GL_MDET_TX_TCLAN_VALID_M		BIT(31)
-+#define PF_MDET_RX				0x00294280
-+#define PF_MDET_RX_VALID_M			BIT(0)
-+#define PF_MDET_TX_PQM				0x002D2C80
-+#define PF_MDET_TX_PQM_VALID_M			BIT(0)
-+#define PF_MDET_TX_TCLAN			0x000FC000
-+#define PF_MDET_TX_TCLAN_VALID_M		BIT(0)
- #define GLNVM_FLA				0x000B6108
- #define GLNVM_FLA_LOCKED_M			BIT(6)
- #define GLNVM_GENS				0x000B6100
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 60f988bfcc95..1e42833d8337 100644
+index 1e42833d8337..6b2bcd3c1d6e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -36,6 +36,81 @@ static void ice_vsi_release_all(struct ice_pf *pf);
- static void ice_update_vsi_stats(struct ice_vsi *vsi);
- static void ice_update_pf_stats(struct ice_pf *pf);
+@@ -3597,7 +3597,11 @@ static int ice_probe(struct pci_dev *pdev,
+ 		goto err_msix_misc_unroll;
+ 	}
+ 
+-	pf->first_sw->bridge_mode = BRIDGE_MODE_VEB;
++	if (hw->evb_veb)
++		pf->first_sw->bridge_mode = BRIDGE_MODE_VEB;
++	else
++		pf->first_sw->bridge_mode = BRIDGE_MODE_VEPA;
++
+ 	pf->first_sw->pf = pf;
+ 
+ 	/* record the sw_id available for later use */
+@@ -5693,6 +5697,143 @@ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
+ 	return 0;
+ }
  
 +/**
-+ * ice_get_tx_pending - returns number of Tx descriptors not processed
-+ * @ring: the ring of descriptors
++ * ice_bridge_getlink - Get the hardware bridge mode
++ * @skb: skb buff
++ * @pid: process id
++ * @seq: RTNL message seq
++ * @dev: the netdev being configured
++ * @filter_mask: filter mask passed in
++ * @nlflags: netlink flags passed in
++ *
++ * Return the bridge mode (VEB/VEPA)
 + */
-+static u32 ice_get_tx_pending(struct ice_ring *ring)
++static int
++ice_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
++		   struct net_device *dev, u32 filter_mask, int nlflags)
 +{
-+	u32 head, tail;
++	struct ice_netdev_priv *np = netdev_priv(dev);
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	u16 bmode;
 +
-+	head = ring->next_to_clean;
-+	tail = readl(ring->tail);
++	bmode = pf->first_sw->bridge_mode;
 +
-+	if (head != tail)
-+		return (head < tail) ?
-+			tail - head : (tail + ring->count - head);
++	return ndo_dflt_bridge_getlink(skb, pid, seq, dev, bmode, 0, 0, nlflags,
++				       filter_mask, NULL);
++}
++
++/**
++ * ice_vsi_update_bridge_mode - Update VSI for switching bridge mode (VEB/VEPA)
++ * @vsi: Pointer to VSI structure
++ * @bmode: Hardware bridge mode (VEB/VEPA)
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int ice_vsi_update_bridge_mode(struct ice_vsi *vsi, u16 bmode)
++{
++	struct device *dev = &vsi->back->pdev->dev;
++	struct ice_aqc_vsi_props *vsi_props;
++	struct ice_hw *hw = &vsi->back->hw;
++	struct ice_vsi_ctx ctxt = { 0 };
++	enum ice_status status;
++
++	vsi_props = &vsi->info;
++	ctxt.info = vsi->info;
++
++	if (bmode == BRIDGE_MODE_VEB)
++		/* change from VEPA to VEB mode */
++		ctxt.info.sw_flags |= ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
++	else
++		/* change from VEB to VEPA mode */
++		ctxt.info.sw_flags &= ~ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
++	ctxt.vsi_num = vsi->vsi_num;
++	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SW_VALID);
++	status = ice_aq_update_vsi(hw, &ctxt, NULL);
++	if (status) {
++		dev_err(dev, "update VSI for bridge mode failed, bmode = %d err %d aq_err %d\n",
++			bmode, status, hw->adminq.sq_last_status);
++		return -EIO;
++	}
++	/* Update sw flags for book keeping */
++	if (bmode == BRIDGE_MODE_VEB)
++		/* change from VEPA to VEB mode */
++		vsi_props->sw_flags |= ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
++	else
++		/* change from VEB to VEPA mode */
++		vsi_props->sw_flags &= ~ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
++
 +	return 0;
 +}
 +
 +/**
-+ * ice_check_for_hang_subtask - check for and recover hung queues
-+ * @pf: pointer to PF struct
-+ */
-+static void ice_check_for_hang_subtask(struct ice_pf *pf)
-+{
-+	struct ice_vsi *vsi = NULL;
-+	unsigned int i;
-+	u32 v, v_idx;
-+	int packets;
-+
-+	ice_for_each_vsi(pf, v)
-+		if (pf->vsi[v] && pf->vsi[v]->type == ICE_VSI_PF) {
-+			vsi = pf->vsi[v];
-+			break;
-+		}
-+
-+	if (!vsi || test_bit(__ICE_DOWN, vsi->state))
-+		return;
-+
-+	if (!(vsi->netdev && netif_carrier_ok(vsi->netdev)))
-+		return;
-+
-+	for (i = 0; i < vsi->num_txq; i++) {
-+		struct ice_ring *tx_ring = vsi->tx_rings[i];
-+
-+		if (tx_ring && tx_ring->desc) {
-+			int itr = ICE_ITR_NONE;
-+
-+			/* If packet counter has not changed the queue is
-+			 * likely stalled, so force an interrupt for this
-+			 * queue.
-+			 *
-+			 * prev_pkt would be negative if there was no
-+			 * pending work.
-+			 */
-+			packets = tx_ring->stats.pkts & INT_MAX;
-+			if (tx_ring->tx_stats.prev_pkt == packets) {
-+				/* Trigger sw interrupt to revive the queue */
-+				v_idx = tx_ring->q_vector->v_idx;
-+				wr32(&vsi->back->hw,
-+				     GLINT_DYN_CTL(vsi->base_vector + v_idx),
-+				     (itr << GLINT_DYN_CTL_ITR_INDX_S) |
-+				     GLINT_DYN_CTL_SWINT_TRIG_M |
-+				     GLINT_DYN_CTL_INTENA_MSK_M);
-+				continue;
-+			}
-+
-+			/* Memory barrier between read of packet count and call
-+			 * to ice_get_tx_pending()
-+			 */
-+			smp_rmb();
-+			tx_ring->tx_stats.prev_pkt =
-+			    ice_get_tx_pending(tx_ring) ? packets : -1;
-+		}
-+	}
-+}
-+
- /**
-  * ice_get_free_slot - get the next non-NULL location index in array
-  * @array: array to search
-@@ -1003,6 +1078,114 @@ static void ice_service_timer(struct timer_list *t)
- 	ice_service_task_schedule(pf);
- }
- 
-+/**
-+ * ice_handle_mdd_event - handle malicious driver detect event
-+ * @pf: pointer to the PF structure
++ * ice_bridge_setlink - Set the hardware bridge mode
++ * @dev: the netdev being configured
++ * @nlh: RTNL message
++ * @flags: bridge setlink flags
 + *
-+ * Called from service task. OICR interrupt handler indicates MDD event
++ * Sets the bridge mode (VEB/VEPA) of the switch to which the netdev (VSI) is
++ * hooked up to. Iterates through the PF VSI list and sets the loopback mode (if
++ * not already set for all VSIs connected to this switch. And also update the
++ * unicast switch filter rules for the corresponding switch of the netdev.
 + */
-+static void ice_handle_mdd_event(struct ice_pf *pf)
++static int
++ice_bridge_setlink(struct net_device *dev, struct nlmsghdr *nlh,
++		   u16 __always_unused flags)
 +{
++	struct ice_netdev_priv *np = netdev_priv(dev);
++	struct ice_pf *pf = np->vsi->back;
++	struct nlattr *attr, *br_spec;
 +	struct ice_hw *hw = &pf->hw;
-+	bool mdd_detected = false;
-+	u32 reg;
++	enum ice_status status;
++	struct ice_sw *pf_sw;
++	int rem, v, err = 0;
 +
-+	if (!test_bit(__ICE_MDD_EVENT_PENDING, pf->state))
-+		return;
++	pf_sw = pf->first_sw;
++	/* find the attribute in the netlink message */
++	br_spec = nlmsg_find_attr(nlh, sizeof(struct ifinfomsg), IFLA_AF_SPEC);
 +
-+	/* find what triggered the MDD event */
-+	reg = rd32(hw, GL_MDET_TX_PQM);
-+	if (reg & GL_MDET_TX_PQM_VALID_M) {
-+		u8 pf_num = (reg & GL_MDET_TX_PQM_PF_NUM_M) >>
-+				GL_MDET_TX_PQM_PF_NUM_S;
-+		u16 vf_num = (reg & GL_MDET_TX_PQM_VF_NUM_M) >>
-+				GL_MDET_TX_PQM_VF_NUM_S;
-+		u8 event = (reg & GL_MDET_TX_PQM_MAL_TYPE_M) >>
-+				GL_MDET_TX_PQM_MAL_TYPE_S;
-+		u16 queue = ((reg & GL_MDET_TX_PQM_QNUM_M) >>
-+				GL_MDET_TX_PQM_QNUM_S);
++	nla_for_each_nested(attr, br_spec, rem) {
++		__u16 mode;
 +
-+		if (netif_msg_tx_err(pf))
-+			dev_info(&pf->pdev->dev, "Malicious Driver Detection event %d on TX queue %d PF# %d VF# %d\n",
-+				 event, queue, pf_num, vf_num);
-+		wr32(hw, GL_MDET_TX_PQM, 0xffffffff);
-+		mdd_detected = true;
-+	}
-+
-+	reg = rd32(hw, GL_MDET_TX_TCLAN);
-+	if (reg & GL_MDET_TX_TCLAN_VALID_M) {
-+		u8 pf_num = (reg & GL_MDET_TX_TCLAN_PF_NUM_M) >>
-+				GL_MDET_TX_TCLAN_PF_NUM_S;
-+		u16 vf_num = (reg & GL_MDET_TX_TCLAN_VF_NUM_M) >>
-+				GL_MDET_TX_TCLAN_VF_NUM_S;
-+		u8 event = (reg & GL_MDET_TX_TCLAN_MAL_TYPE_M) >>
-+				GL_MDET_TX_TCLAN_MAL_TYPE_S;
-+		u16 queue = ((reg & GL_MDET_TX_TCLAN_QNUM_M) >>
-+				GL_MDET_TX_TCLAN_QNUM_S);
-+
-+		if (netif_msg_rx_err(pf))
-+			dev_info(&pf->pdev->dev, "Malicious Driver Detection event %d on TX queue %d PF# %d VF# %d\n",
-+				 event, queue, pf_num, vf_num);
-+		wr32(hw, GL_MDET_TX_TCLAN, 0xffffffff);
-+		mdd_detected = true;
-+	}
-+
-+	reg = rd32(hw, GL_MDET_RX);
-+	if (reg & GL_MDET_RX_VALID_M) {
-+		u8 pf_num = (reg & GL_MDET_RX_PF_NUM_M) >>
-+				GL_MDET_RX_PF_NUM_S;
-+		u16 vf_num = (reg & GL_MDET_RX_VF_NUM_M) >>
-+				GL_MDET_RX_VF_NUM_S;
-+		u8 event = (reg & GL_MDET_RX_MAL_TYPE_M) >>
-+				GL_MDET_RX_MAL_TYPE_S;
-+		u16 queue = ((reg & GL_MDET_RX_QNUM_M) >>
-+				GL_MDET_RX_QNUM_S);
-+
-+		if (netif_msg_rx_err(pf))
-+			dev_info(&pf->pdev->dev, "Malicious Driver Detection event %d on RX queue %d PF# %d VF# %d\n",
-+				 event, queue, pf_num, vf_num);
-+		wr32(hw, GL_MDET_RX, 0xffffffff);
-+		mdd_detected = true;
-+	}
-+
-+	if (mdd_detected) {
-+		bool pf_mdd_detected = false;
-+
-+		reg = rd32(hw, PF_MDET_TX_PQM);
-+		if (reg & PF_MDET_TX_PQM_VALID_M) {
-+			wr32(hw, PF_MDET_TX_PQM, 0xFFFF);
-+			dev_info(&pf->pdev->dev, "TX driver issue detected, PF reset issued\n");
-+			pf_mdd_detected = true;
++		if (nla_type(attr) != IFLA_BRIDGE_MODE)
++			continue;
++		mode = nla_get_u16(attr);
++		if (mode != BRIDGE_MODE_VEPA && mode != BRIDGE_MODE_VEB)
++			return -EINVAL;
++		/* Continue  if bridge mode is not being flipped */
++		if (mode == pf_sw->bridge_mode)
++			continue;
++		/* Iterates through the PF VSI list and update the loopback
++		 * mode of the VSI
++		 */
++		ice_for_each_vsi(pf, v) {
++			if (!pf->vsi[v])
++				continue;
++			err = ice_vsi_update_bridge_mode(pf->vsi[v], mode);
++			if (err)
++				return err;
 +		}
 +
-+		reg = rd32(hw, PF_MDET_TX_TCLAN);
-+		if (reg & PF_MDET_TX_TCLAN_VALID_M) {
-+			wr32(hw, PF_MDET_TX_TCLAN, 0xFFFF);
-+			dev_info(&pf->pdev->dev, "TX driver issue detected, PF reset issued\n");
-+			pf_mdd_detected = true;
++		hw->evb_veb = (mode == BRIDGE_MODE_VEB);
++		/* Update the unicast switch filter rules for the corresponding
++		 * switch of the netdev
++		 */
++		status = ice_update_sw_rule_bridge_mode(hw);
++		if (status) {
++			netdev_err(dev, "update SW_RULE for bridge mode failed,  = %d err %d aq_err %d\n",
++				   mode, status, hw->adminq.sq_last_status);
++			/* revert hw->evb_veb */
++			hw->evb_veb = (pf_sw->bridge_mode == BRIDGE_MODE_VEB);
++			return -EIO;
 +		}
 +
-+		reg = rd32(hw, PF_MDET_RX);
-+		if (reg & PF_MDET_RX_VALID_M) {
-+			wr32(hw, PF_MDET_RX, 0xFFFF);
-+			dev_info(&pf->pdev->dev, "RX driver issue detected, PF reset issued\n");
-+			pf_mdd_detected = true;
-+		}
-+		/* Queue belongs to the PF initiate a reset */
-+		if (pf_mdd_detected) {
-+			set_bit(__ICE_NEEDS_RESTART, pf->state);
-+			ice_service_task_schedule(pf);
-+		}
++		pf_sw->bridge_mode = mode;
 +	}
 +
-+	/* re-enable MDD interrupt cause */
-+	clear_bit(__ICE_MDD_EVENT_PENDING, pf->state);
-+	reg = rd32(hw, PFINT_OICR_ENA);
-+	reg |= PFINT_OICR_MAL_DETECT_M;
-+	wr32(hw, PFINT_OICR_ENA, reg);
-+	ice_flush(hw);
++	return 0;
 +}
 +
  /**
-  * ice_service_task - manage and run subtasks
-  * @work: pointer to work_struct contained by the PF struct
-@@ -1025,7 +1208,9 @@ static void ice_service_task(struct work_struct *work)
- 		return;
- 	}
- 
-+	ice_check_for_hang_subtask(pf);
- 	ice_sync_fltr_subtask(pf);
-+	ice_handle_mdd_event(pf);
- 	ice_watchdog_subtask(pf);
- 	ice_clean_adminq_subtask(pf);
- 
-@@ -1037,6 +1222,7 @@ static void ice_service_task(struct work_struct *work)
- 	 * schedule the service task now.
- 	 */
- 	if (time_after(jiffies, (start_time + pf->serv_tmr_period)) ||
-+	    test_bit(__ICE_MDD_EVENT_PENDING, pf->state) ||
- 	    test_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state))
- 		mod_timer(&pf->serv_tmr, jiffies);
- }
-@@ -1745,8 +1931,14 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 	oicr = rd32(hw, PFINT_OICR);
- 	ena_mask = rd32(hw, PFINT_OICR_ENA);
- 
-+	if (oicr & PFINT_OICR_MAL_DETECT_M) {
-+		ena_mask &= ~PFINT_OICR_MAL_DETECT_M;
-+		set_bit(__ICE_MDD_EVENT_PENDING, pf->state);
-+	}
-+
- 	if (oicr & PFINT_OICR_GRST_M) {
- 		u32 reset;
-+
- 		/* we have a reset warning */
- 		ena_mask &= ~PFINT_OICR_GRST_M;
- 		reset = (rd32(hw, GLGEN_RSTAT) & GLGEN_RSTAT_RESET_TYPE_M) >>
-@@ -5501,6 +5693,99 @@ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
- 	return 0;
- }
- 
-+/**
-+ * ice_tx_timeout - Respond to a Tx Hang
-+ * @netdev: network interface device structure
-+ */
-+static void ice_tx_timeout(struct net_device *netdev)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_ring *tx_ring = NULL;
-+	struct ice_vsi *vsi = np->vsi;
-+	struct ice_pf *pf = vsi->back;
-+	u32 head, val = 0, i;
-+	int hung_queue = -1;
-+
-+	pf->tx_timeout_count++;
-+
-+	/* find the stopped queue the same way the stack does */
-+	for (i = 0; i < netdev->num_tx_queues; i++) {
-+		struct netdev_queue *q;
-+		unsigned long trans_start;
-+
-+		q = netdev_get_tx_queue(netdev, i);
-+		trans_start = q->trans_start;
-+		if (netif_xmit_stopped(q) &&
-+		    time_after(jiffies,
-+			       (trans_start + netdev->watchdog_timeo))) {
-+			hung_queue = i;
-+			break;
-+		}
-+	}
-+
-+	if (i == netdev->num_tx_queues) {
-+		netdev_info(netdev, "tx_timeout: no netdev hung queue found\n");
-+	} else {
-+		/* now that we have an index, find the tx_ring struct */
-+		for (i = 0; i < vsi->num_txq; i++) {
-+			if (vsi->tx_rings[i] && vsi->tx_rings[i]->desc) {
-+				if (hung_queue ==
-+				    vsi->tx_rings[i]->q_index) {
-+					tx_ring = vsi->tx_rings[i];
-+					break;
-+				}
-+			}
-+		}
-+	}
-+
-+	/* Reset recovery level if enough time has elapsed after last timeout.
-+	 * Also ensure no new reset action happens before next timeout period.
-+	 */
-+	if (time_after(jiffies, (pf->tx_timeout_last_recovery + HZ * 20)))
-+		pf->tx_timeout_recovery_level = 1;
-+	else if (time_before(jiffies, (pf->tx_timeout_last_recovery +
-+				       netdev->watchdog_timeo)))
-+		return;
-+
-+	if (tx_ring) {
-+		head = tx_ring->next_to_clean;
-+		/* Read interrupt register */
-+		if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
-+			val = rd32(&pf->hw,
-+				   GLINT_DYN_CTL(tx_ring->q_vector->v_idx +
-+						tx_ring->vsi->base_vector - 1));
-+
-+		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %d, NTC: 0x%x, HWB: 0x%x, NTU: 0x%x, TAIL: 0x%x, INT: 0x%x\n",
-+			    vsi->vsi_num, hung_queue, tx_ring->next_to_clean,
-+			    head, tx_ring->next_to_use,
-+			    readl(tx_ring->tail), val);
-+	}
-+
-+	pf->tx_timeout_last_recovery = jiffies;
-+	netdev_info(netdev, "tx_timeout recovery level %d, hung_queue %d\n",
-+		    pf->tx_timeout_recovery_level, hung_queue);
-+
-+	switch (pf->tx_timeout_recovery_level) {
-+	case 1:
-+		set_bit(__ICE_PFR_REQ, pf->state);
-+		break;
-+	case 2:
-+		set_bit(__ICE_CORER_REQ, pf->state);
-+		break;
-+	case 3:
-+		set_bit(__ICE_GLOBR_REQ, pf->state);
-+		break;
-+	default:
-+		netdev_err(netdev, "tx_timeout recovery unsuccessful, device is in unrecoverable state.\n");
-+		set_bit(__ICE_DOWN, pf->state);
-+		set_bit(__ICE_NEEDS_RESTART, vsi->state);
-+		break;
-+	}
-+
-+	ice_service_task_schedule(pf);
-+	pf->tx_timeout_recovery_level++;
-+}
-+
- /**
-  * ice_open - Called when a network interface becomes active
+  * ice_tx_timeout - Respond to a Tx Hang
   * @netdev: network interface device structure
-@@ -5622,4 +5907,5 @@ static const struct net_device_ops ice_netdev_ops = {
+@@ -5905,6 +6046,8 @@ static const struct net_device_ops ice_netdev_ops = {
+ 	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
+ 	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
  	.ndo_set_features = ice_set_features,
++	.ndo_bridge_getlink = ice_bridge_getlink,
++	.ndo_bridge_setlink = ice_bridge_setlink,
  	.ndo_fdb_add = ice_fdb_add,
  	.ndo_fdb_del = ice_fdb_del,
-+	.ndo_tx_timeout = ice_tx_timeout,
- };
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 6481e3d86374..5dae968d853e 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -251,6 +251,7 @@ int ice_setup_tx_ring(struct ice_ring *tx_ring)
+ 	.ndo_tx_timeout = ice_tx_timeout,
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 2240485010c5..02455ce9eb91 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -1128,6 +1128,47 @@ ice_update_pkt_fwd_rule(struct ice_hw *hw, struct ice_fltr_info *f_info)
+ 	return status;
+ }
  
- 	tx_ring->next_to_use = 0;
- 	tx_ring->next_to_clean = 0;
-+	tx_ring->tx_stats.prev_pkt = -1;
- 	return 0;
++/**
++ * ice_update_sw_rule_bridge_mode
++ * @hw: pointer to the hw struct
++ *
++ * Updates unicast switch filter rules based on VEB/VEPA mode
++ */
++enum ice_status ice_update_sw_rule_bridge_mode(struct ice_hw *hw)
++{
++	struct ice_switch_info *sw = hw->switch_info;
++	struct ice_fltr_mgmt_list_entry *fm_entry;
++	enum ice_status status = 0;
++	struct list_head *rule_head;
++	struct mutex *rule_lock; /* Lock to protect filter rule list */
++
++	rule_lock = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rule_lock;
++	rule_head = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rules;
++
++	mutex_lock(rule_lock);
++	list_for_each_entry(fm_entry, rule_head, list_entry) {
++		struct ice_fltr_info *fi = &fm_entry->fltr_info;
++		u8 *addr = fi->l_data.mac.mac_addr;
++
++		/* Update unicast Tx rules to reflect the selected
++		 * VEB/VEPA mode
++		 */
++		if ((fi->flag & ICE_FLTR_TX) && is_unicast_ether_addr(addr) &&
++		    (fi->fltr_act == ICE_FWD_TO_VSI ||
++		     fi->fltr_act == ICE_FWD_TO_VSI_LIST ||
++		     fi->fltr_act == ICE_FWD_TO_Q ||
++		     fi->fltr_act == ICE_FWD_TO_QGRP)) {
++			status = ice_update_pkt_fwd_rule(hw, fi);
++			if (status)
++				break;
++		}
++	}
++
++	mutex_unlock(rule_lock);
++
++	return status;
++}
++
+ /**
+  * ice_add_update_vsi_list
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 11a481644dac..646389ca1238 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -169,6 +169,7 @@ ice_free_vsi(struct ice_hw *hw, u16 vsi_handle, struct ice_vsi_ctx *vsi_ctx,
+ enum ice_status ice_get_initial_sw_cfg(struct ice_hw *hw);
  
- err:
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 31bc998fe200..839fd9ff6043 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -71,6 +71,7 @@ struct ice_txq_stats {
- 	u64 restart_q;
- 	u64 tx_busy;
- 	u64 tx_linearize;
-+	int prev_pkt; /* negative if no pending Tx descriptors */
- };
- 
- struct ice_rxq_stats {
+ /* Switch/bridge related commands */
++enum ice_status ice_update_sw_rule_bridge_mode(struct ice_hw *hw);
+ enum ice_status ice_add_mac(struct ice_hw *hw, struct list_head *m_lst);
+ enum ice_status ice_remove_mac(struct ice_hw *hw, struct list_head *m_lst);
+ void ice_remove_vsi_fltr(struct ice_hw *hw, u16 vsi_id);
 -- 
 2.17.1
 
