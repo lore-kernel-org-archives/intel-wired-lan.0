@@ -1,45 +1,49 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 31 Jul 2018 20:47:18 -0700
-Subject: [Intel-wired-lan] [PATCH v3 02/13] ice: Remove unncessary node
- owner check
+Date: Tue, 31 Jul 2018 20:47:19 -0700
+Subject: [Intel-wired-lan] [PATCH v3 03/13] ice: Cleanup magic number
 In-Reply-To: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
 References: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180801034729.3864-3-anirudh.venkataramanan@intel.com>
+Message-ID: <20180801034729.3864-4-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+Use define for the unit size shift of the Rx LAN context descriptor base
+address instead of the magic number 7.
 
-There is already a check for owner == ICE_SCHED_NODE_OWNER_LAN at the
-beginning of ice_sched_update_vsi_child_nodes. Remove the additional
-check to address the static anlaysis tool smatch issue "warn: we tested
-'owner' before and it was 'false'".
-
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
 ---
- drivers/net/ethernet/intel/ice/ice_sched.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 1 +
+ drivers/net/ethernet/intel/ice/ice_main.c      | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 2e6c1d92cc88..eeae199469b6 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -1576,8 +1576,7 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id, u8 tc,
- 			return status;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index d23a91665b46..068dbc740b76 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -265,6 +265,7 @@ enum ice_rx_flex_desc_status_error_0_bits {
+ struct ice_rlan_ctx {
+ 	u16 head;
+ 	u16 cpuid; /* bigger than needed, see above for reason */
++#define ICE_RLAN_BASE_S 7
+ 	u64 base;
+ 	u16 qlen;
+ #define ICE_RLAN_CTX_DBUF_S 7
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index e5deb4e38366..7bb83deee165 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3984,7 +3984,7 @@ static int ice_setup_rx_ctx(struct ice_ring *ring)
+ 	/* clear the context structure first */
+ 	memset(&rlan_ctx, 0, sizeof(rlan_ctx));
  
--	if (owner == ICE_SCHED_NODE_OWNER_LAN)
--		vsi->max_lanq[tc] = new_numqs;
-+	vsi->max_lanq[tc] = new_numqs;
+-	rlan_ctx.base = ring->dma >> 7;
++	rlan_ctx.base = ring->dma >> ICE_RLAN_BASE_S;
  
- 	return status;
- }
+ 	rlan_ctx.qlen = ring->count;
+ 
 -- 
 2.17.1
 
