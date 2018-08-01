@@ -1,55 +1,134 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 31 Jul 2018 20:47:16 -0700
-Subject: [Intel-wired-lan] [PATCH v3 00/13] Bug fixes for ice
-Message-ID: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
+Date: Tue, 31 Jul 2018 20:47:17 -0700
+Subject: [Intel-wired-lan] [PATCH v3 01/13] ice: Fix multiple static
+ analyser warnings
+In-Reply-To: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
+References: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20180801034729.3864-2-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch set fixes multiple bugs for the ice driver.
+This patch fixes the following smatch errors:
 
-Anirudh Venkataramanan (4):
-  ice: Fix multiple static analyser warnings
-  ice: Cleanup magic number
-  ice: Fix bugs in control queue processing
-  ice: Fix couple of null pointer dereference issues
+1) Fix "odd binop '0x0 & 0xc'" when performing the bitwise-and with a
+   constant value of zero (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_128_FLAG).
+   Remove a similar bitwise-and with 0 in ice_add_marker_act() and use the
+   right mask ICE_LG_ACT_GENERIC_OFFSET_M in the expression.
 
-Brett Creeley (2):
-  ice: Don't explicitly set port_vlan_bits to 0
-  ice: Set VLAN flags correctly
+2) Fix a similar issue "odd binop '0x0 & 0x1800' in ice_req_irq_msix_misc.
 
-Bruce Allan (3):
-  ice: Remove unncessary node owner check
-  ice: Update to interrupts enabled in OICR
-  ice: Change struct members from bool to u8
+3) Fix "odd binop '0x380000 & 0x7fff8'" in ice_add_marker_act(). Also, use
+   a new define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX instead of magic
+   number '7'. Also remove the following statement that has
 
-Jacob Keller (2):
-  ice: Report stats for allocated queues via ethtool stats
-  ice: Use order_base_2 to calculate higher power of 2
-
-Jesse Brandeburg (1):
-  ice: Fix potential return of uninitialized value
-
-Preethi Banala (1):
-  ice: Clean control queues only when they are initialized
-
- drivers/net/ethernet/intel/ice/ice.h          | 15 +++-
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_common.c   | 25 +++---
- drivers/net/ethernet/intel/ice/ice_controlq.c | 29 +++++--
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 52 ++++++++---
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |  8 --
- .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  1 +
- drivers/net/ethernet/intel/ice/ice_main.c     | 87 +++++++++++--------
- drivers/net/ethernet/intel/ice/ice_sched.c    |  3 +-
- drivers/net/ethernet/intel/ice/ice_switch.c   |  4 +-
- drivers/net/ethernet/intel/ice/ice_switch.h   |  6 +-
- drivers/net/ethernet/intel/ice/ice_txrx.h     |  2 +-
- drivers/net/ethernet/intel/ice/ice_type.h     | 16 ++--
- 13 files changed, 152 insertions(+), 97 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c   | 25 +++++++++++--------
+ drivers/net/ethernet/intel/ice/ice_main.c     | 10 +++-----
+ drivers/net/ethernet/intel/ice/ice_switch.c   |  4 +--
+ 4 files changed, 21 insertions(+), 19 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 7541ec2270b3..6d3e11659ba5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -594,6 +594,7 @@ struct ice_sw_rule_lg_act {
+ #define ICE_LG_ACT_GENERIC_OFFSET_M	(0x7 << ICE_LG_ACT_GENERIC_OFFSET_S)
+ #define ICE_LG_ACT_GENERIC_PRIORITY_S	22
+ #define ICE_LG_ACT_GENERIC_PRIORITY_M	(0x7 << ICE_LG_ACT_GENERIC_PRIORITY_S)
++#define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX	7
+ 
+ 	/* Action = 7 - Set Stat count */
+ #define ICE_LG_ACT_STAT_COUNT		0x7
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 71d032cc5fa7..d5300b606d5a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1619,20 +1619,23 @@ __ice_aq_get_set_rss_lut(struct ice_hw *hw, u16 vsi_id, u8 lut_type, u8 *lut,
+ 	}
+ 
+ 	/* LUT size is only valid for Global and PF table types */
+-	if (lut_size == ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_128) {
+-		flags |= (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_128_FLAG <<
+-			  ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_S) &
+-			 ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_M;
+-	} else if (lut_size == ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_512) {
++	switch (lut_size) {
++	case ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_128:
++		break;
++	case ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_512:
+ 		flags |= (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_512_FLAG <<
+ 			  ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_S) &
+ 			 ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_M;
+-	} else if ((lut_size == ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_2K) &&
+-		   (lut_type == ICE_AQC_GSET_RSS_LUT_TABLE_TYPE_PF)) {
+-		flags |= (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_2K_FLAG <<
+-			  ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_S) &
+-			 ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_M;
+-	} else {
++		break;
++	case ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_2K:
++		if (lut_type == ICE_AQC_GSET_RSS_LUT_TABLE_TYPE_PF) {
++			flags |= (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_2K_FLAG <<
++				  ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_S) &
++				 ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_M;
++			break;
++		}
++		/* fall-through */
++	default:
+ 		status = ICE_ERR_PARAM;
+ 		goto ice_aq_get_set_rss_lut_exit;
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 5299caf55a7f..e5deb4e38366 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2058,15 +2058,13 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+ skip_req_irq:
+ 	ice_ena_misc_vector(pf);
+ 
+-	val = (pf->oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
+-	      (ICE_RX_ITR & PFINT_OICR_CTL_ITR_INDX_M) |
+-	      PFINT_OICR_CTL_CAUSE_ENA_M;
++	val = ((pf->oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
++	       PFINT_OICR_CTL_CAUSE_ENA_M);
+ 	wr32(hw, PFINT_OICR_CTL, val);
+ 
+ 	/* This enables Admin queue Interrupt causes */
+-	val = (pf->oicr_idx & PFINT_FW_CTL_MSIX_INDX_M) |
+-	      (ICE_RX_ITR & PFINT_FW_CTL_ITR_INDX_M) |
+-	      PFINT_FW_CTL_CAUSE_ENA_M;
++	val = ((pf->oicr_idx & PFINT_FW_CTL_MSIX_INDX_M) |
++	       PFINT_FW_CTL_CAUSE_ENA_M);
+ 	wr32(hw, PFINT_FW_CTL, val);
+ 
+ 	itr_gran = hw->itr_gran_200;
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 723d15f1e90b..6b7ec2ae5ad6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -645,14 +645,14 @@ ice_add_marker_act(struct ice_hw *hw, struct ice_fltr_mgmt_list_entry *m_ent,
+ 	act |= (1 << ICE_LG_ACT_GENERIC_VALUE_S) & ICE_LG_ACT_GENERIC_VALUE_M;
+ 	lg_act->pdata.lg_act.act[1] = cpu_to_le32(act);
+ 
+-	act = (7 << ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_VALUE_M;
++	act = (ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX <<
++	       ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_OFFSET_M;
+ 
+ 	/* Third action Marker value */
+ 	act |= ICE_LG_ACT_GENERIC;
+ 	act |= (sw_marker << ICE_LG_ACT_GENERIC_VALUE_S) &
+ 		ICE_LG_ACT_GENERIC_VALUE_M;
+ 
+-	act |= (0 << ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_VALUE_M;
+ 	lg_act->pdata.lg_act.act[2] = cpu_to_le32(act);
+ 
+ 	/* call the fill switch rule to fill the lookup tx rx structure */
 -- 
 2.17.1
 
