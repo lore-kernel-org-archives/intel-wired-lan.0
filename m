@@ -1,62 +1,51 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 31 Jul 2018 20:47:27 -0700
-Subject: [Intel-wired-lan] [PATCH v3 11/13] ice: Fix couple of null pointer
- dereference issues
+Date: Tue, 31 Jul 2018 20:47:28 -0700
+Subject: [Intel-wired-lan] [PATCH v3 12/13] ice: Fix potential return of
+ uninitialized value
 In-Reply-To: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
 References: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180801034729.3864-12-anirudh.venkataramanan@intel.com>
+Message-ID: <20180801034729.3864-13-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When ice_ena_msix_range() fails to reserve vectors, a devm_kfree() warning
-was seen in the error flow path. So check pf->irq_tracker before use in
-ice_clear_interrupt_scheme().
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-In ice_vsi_cfg(), check vsi->netdev before use.
+In ice_vsi_setup_[tx|rx]_rings, err is uninitialized which can result in
+a garbage value return to the caller. Fix that.
 
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 1487aac09e99..6ac74511c4ea 100644
+index 6ac74511c4ea..7a45ee74531a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3255,8 +3255,10 @@ static void ice_clear_interrupt_scheme(struct ice_pf *pf)
- 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
- 		ice_dis_msix(pf);
- 
--	devm_kfree(&pf->pdev->dev, pf->irq_tracker);
--	pf->irq_tracker = NULL;
-+	if (pf->irq_tracker) {
-+		devm_kfree(&pf->pdev->dev, pf->irq_tracker);
-+		pf->irq_tracker = NULL;
-+	}
- }
- 
- /**
-@@ -4110,11 +4112,12 @@ static int ice_vsi_cfg(struct ice_vsi *vsi)
+@@ -4883,7 +4883,7 @@ int ice_down(struct ice_vsi *vsi)
+  */
+ static int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
  {
- 	int err;
+-	int i, err;
++	int i, err = 0;
  
--	ice_set_rx_mode(vsi->netdev);
--
--	err = ice_restore_vlan(vsi);
--	if (err)
--		return err;
-+	if (vsi->netdev) {
-+		ice_set_rx_mode(vsi->netdev);
-+		err = ice_restore_vlan(vsi);
-+		if (err)
-+			return err;
-+	}
+ 	if (!vsi->num_txq) {
+ 		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Tx queues\n",
+@@ -4908,7 +4908,7 @@ static int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
+  */
+ static int ice_vsi_setup_rx_rings(struct ice_vsi *vsi)
+ {
+-	int i, err;
++	int i, err = 0;
  
- 	err = ice_vsi_cfg_txqs(vsi);
- 	if (!err)
+ 	if (!vsi->num_rxq) {
+ 		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Rx queues\n",
 -- 
 2.17.1
 
