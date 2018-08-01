@@ -1,11 +1,11 @@
 From: Allan, Bruce W <bruce.w.allan@intel.com>
-Date: Wed, 1 Aug 2018 23:02:10 +0000
-Subject: [Intel-wired-lan] [PATCH v3 07/13] ice: Use order_base_2 to
- calculate higher power of 2
-In-Reply-To: <20180801034729.3864-8-anirudh.venkataramanan@intel.com>
+Date: Wed, 1 Aug 2018 23:03:17 +0000
+Subject: [Intel-wired-lan] [PATCH v3 08/13] ice: Don't explicitly set
+ port_vlan_bits to 0
+In-Reply-To: <20180801034729.3864-9-anirudh.venkataramanan@intel.com>
 References: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
- <20180801034729.3864-8-anirudh.venkataramanan@intel.com>
-Message-ID: <804857E1F29AAC47BF68C404FC60A184F23DD78F@ORSMSX105.amr.corp.intel.com>
+ <20180801034729.3864-9-anirudh.venkataramanan@intel.com>
+Message-ID: <804857E1F29AAC47BF68C404FC60A184F23DD7B4@ORSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,67 +17,63 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Of Anirudh Venkataramanan
 > Sent: Tuesday, July 31, 2018 8:47 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 07/13] ice: Use order_base_2 to calculate
-> higher power of 2
+> Subject: [Intel-wired-lan] [PATCH v3 08/13] ice: Don't explicitly set
+> port_vlan_bits to 0
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Currently, we use a combination of ilog2 and is_power_of_2() to
-> calculate the next power of 2 for the qcount. This appears to be causing
-> a warning on some combinations of GCC and the Linux kernel:
+> This patch fixes the following smatch warning originally reported by
+> Dan Carpenter:
+> ice_set_dflt_vsi_ctx() warn: odd binop '0x0 & 0x18'
 > 
-> MODPOST 1 modules
-> WARNING: "____ilog2_NaN" [ice.ko] undefined!
+> In ice_set_dflt_vsi_ctx() we clear bits 3 and 4 for legacy behavior
+> (i.e. show VLAN, DEI and UP in the receive descriptors). However
+> the logic to do this generated the above mentioned smatch warning.
 > 
-> This appears to because because GCC realizes that qcount could be zero
-> in some circumstances and thus attempts to link against the
-> intentionally undefined ___ilog2_NaN function.
+> Bits 3 and 4 in port_vlan_flags are anyway set to zero by the memset on
+> ctxt->info field, so remove the logic to set these explicitly to 0. This
+> fixes the smatch warning as well.
 > 
-> The order_base_2 function is intentionally defined to return 0 when
-> passed 0 as an argument, and thus will be safe to use here.
-> 
-> This not only fixes the warning but makes the resulting code slightly
-> cleaner, and is really what we should have used originally.
-> 
-> Also update the comment to make it more clear that we are rounding up,
-> not just incrementing the ilog2 of qcount unconditionally.
-> 
-> Without this patch, we get warnings when building against the upstream
-> kernel.
+> CC: Shannon Nelson <shannon.nelson@oracle.com>
 
-This last sentence is unnecessary for this upstream kernel patch.
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> minor
-> cleanup for upstream submission]
+> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote
+> commit message]
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
 > 
 > diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
 > b/drivers/net/ethernet/intel/ice/ice_main.c
-> index a1524cbb15b1..d4f1f92faf65 100644
+> index d4f1f92faf65..3eff1d2d1543 100644
 > --- a/drivers/net/ethernet/intel/ice/ice_main.c
 > +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -1313,11 +1313,8 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi,
-> struct ice_vsi_ctx *ctxt)
->  		qcount = numq_tc;
->  	}
-> 
-> -	/* find higher power-of-2 of qcount */
-> -	pow = ilog2(qcount);
-> -
-> -	if (!is_power_of_2(qcount))
-> -		pow++;
-> +	/* find the (rounded up) power-of-2 of qcount */
-> +	pow = order_base_2(qcount);
-> 
->  	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
->  		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
+> @@ -1367,14 +1367,13 @@ static void ice_set_dflt_vsi_ctx(struct ice_vsi_ctx
+> *ctxt)
+>  	ctxt->info.sw_flags = ICE_AQ_VSI_SW_FLAG_SRC_PRUNE;
+>  	/* Traffic from VSI can be sent to LAN */
+>  	ctxt->info.sw_flags2 = ICE_AQ_VSI_SW_FLAG_LAN_ENA;
+> -	/* Allow all packets untagged/tagged */
+> +	/* By default bits 3 and 4 in port_vlan_flags are 0's which results in
+> +	 * legacy behavior (show VLAN, DEI, and UP) in descriptor. Also, allow
+> +	 * all packets untagged/tagged.
+> +	 */
+>  	ctxt->info.port_vlan_flags = ((ICE_AQ_VSI_PVLAN_MODE_ALL &
+>  				       ICE_AQ_VSI_PVLAN_MODE_M) >>
+>  				      ICE_AQ_VSI_PVLAN_MODE_S);
+> -	/* Show VLAN/UP from packets in Rx descriptors */
+> -	ctxt->info.port_vlan_flags |= ((ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH
+> &
+> -					ICE_AQ_VSI_PVLAN_EMOD_M) >>
+> -				       ICE_AQ_VSI_PVLAN_EMOD_S);
+>  	/* Have 1:1 UP mapping for both ingress/egress tables */
+>  	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
+>  	table |= ICE_UP_TABLE_TRANSLATE(1, 1);
 > --
 > 2.17.1
 > 
