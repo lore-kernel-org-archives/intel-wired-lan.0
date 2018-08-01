@@ -1,65 +1,79 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 31 Jul 2018 21:04:20 -0700
-Subject: [Intel-wired-lan] [PATCH v2 00/13] Feature updates for ice
-Message-ID: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
+Date: Tue, 31 Jul 2018 21:04:22 -0700
+Subject: [Intel-wired-lan] [PATCH v2 02/13] ice: Get both device and
+ function capabilities
+In-Reply-To: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
+References: <20180801040433.5865-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20180801040433.5865-3-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch series includes new features and implementation updates
-for the ice driver.
+From: Phani R Burra <phani.r.burra@intel.com>
 
-Akeem G Abodunrin (1):
-  ice: Introduce SERVICE_DIS flag and service routine functions
+Expand ice_get_caps to also get device capabilities along with function
+capabilities.
 
-Anirudh Venkataramanan (5):
-  ice: Minor updates to Tx scheduler code
-  ice: Prevent control queue operations during reset
-  ice: Refactor switch rule management structures and functions
-  ice: Refactor VSI allocation, deletion and rebuild flow
-  ice: Clean up register file
+Signed-off-by: Phani R Burra <phani.r.burra@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_common.c | 23 ++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-Brett Creeley (1):
-  ice: Make ice_vsi_kill_vlan return an error code
-
-Chinh Cao (1):
-  ice: Implement handlers for ethtool PHY/link operations
-
-Hieu Tran (1):
-  ice: Enable firmware logging during device initialization.
-
-Md Fahad Iqbal Polash (1):
-  ice: Implement ice_bridge_getlink and ice_bridge_setlink
-
-Phani R Burra (1):
-  ice: Get both device and function capabilities
-
-Sudheer Mogilappagari (1):
-  ice: Add support for Tx hang, Tx timeout and malicious driver
-    detection
-
-Zhenning Xiao (1):
-  ice: Code optimization for ice_fill_sw_rule()
-
- drivers/net/ethernet/intel/ice/ice.h          |    7 +
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   94 +-
- drivers/net/ethernet/intel/ice/ice_common.c   |  361 ++++-
- drivers/net/ethernet/intel/ice/ice_common.h   |   15 +-
- drivers/net/ethernet/intel/ice/ice_controlq.c |    3 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |  805 +++++++++-
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |  456 +++---
- drivers/net/ethernet/intel/ice/ice_main.c     |  967 ++++++++++--
- drivers/net/ethernet/intel/ice/ice_sched.c    |  117 +-
- drivers/net/ethernet/intel/ice/ice_status.h   |    1 +
- drivers/net/ethernet/intel/ice/ice_switch.c   | 1360 ++++++++++-------
- drivers/net/ethernet/intel/ice/ice_switch.h   |   50 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c     |    1 +
- drivers/net/ethernet/intel/ice/ice_txrx.h     |    1 +
- drivers/net/ethernet/intel/ice/ice_type.h     |   42 +-
- 15 files changed, 3157 insertions(+), 1123 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index d5300b606d5a..8f5c9fea7a36 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1200,10 +1200,12 @@ ice_aq_discover_caps(struct ice_hw *hw, void *buf, u16 buf_size, u16 *data_size,
+ }
+ 
+ /**
+- * ice_get_caps - get info about the HW
++ * ice_discover_caps - get info about the HW
+  * @hw: pointer to the hardware structure
++ * @opc: capabilities type to discover - pass in the command opcode
+  */
+-enum ice_status ice_get_caps(struct ice_hw *hw)
++static enum ice_status ice_discover_caps(struct ice_hw *hw,
++					 enum ice_adminq_opc opc)
+ {
+ 	enum ice_status status;
+ 	u16 data_size = 0;
+@@ -1233,7 +1235,7 @@ enum ice_status ice_get_caps(struct ice_hw *hw)
+ 			return ICE_ERR_NO_MEMORY;
+ 
+ 		status = ice_aq_discover_caps(hw, cbuf, cbuf_len, &data_size,
+-					      ice_aqc_opc_list_func_caps, NULL);
++					      opc, NULL);
+ 		devm_kfree(ice_hw_to_dev(hw), cbuf);
+ 
+ 		if (!status || hw->adminq.sq_last_status != ICE_AQ_RC_ENOMEM)
+@@ -1246,6 +1248,21 @@ enum ice_status ice_get_caps(struct ice_hw *hw)
+ 	return status;
+ }
+ 
++/**
++ * ice_get_caps - get info about the HW
++ * @hw: pointer to the hardware structure
++ */
++enum ice_status ice_get_caps(struct ice_hw *hw)
++{
++	enum ice_status status;
++
++	status = ice_discover_caps(hw, ice_aqc_opc_list_dev_caps);
++	if (!status)
++		status = ice_discover_caps(hw, ice_aqc_opc_list_func_caps);
++
++	return status;
++}
++
+ /**
+  * ice_aq_manage_mac_write - manage MAC address write command
+  * @hw: pointer to the hw struct
 -- 
 2.17.1
 
