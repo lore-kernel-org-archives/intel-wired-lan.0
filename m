@@ -1,87 +1,145 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 02 Aug 2018 09:58:31 -0700
-Subject: [Intel-wired-lan] [E1000-devel] [PATCH] igb: CPU0 latency and
- updating statistics
-In-Reply-To: <1533108587.16601.56.camel@atviedlbe741.rss.d3s.at.thales>
-References: <1533108587.16601.56.camel@atviedlbe741.rss.d3s.at.thales>
-Message-ID: <6a0523e73e5a9a2fe23caeb9a65e505e788d6012.camel@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 03 Aug 2018 01:01:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 6ada1fed55f6fa342c76a188679778fe11395f25
+Message-ID: <5b633900.MCYJTPS+Lcak3J2s%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2018-08-01 at 07:29 +0000, JABLONSKY Jan wrote:
-> The Watchdog workqueue in igb driver is scheduled every 2s for each 
-> network interface. That includes updating a statistics protected by 
-> spinlock. Function igb_update_stats in this case will be protected 
-> against preemption. According to number of a statistics registers 
-> (cca 60), processing this function might cause additional cpu load
->  on CPU0.
-> 
-> In case of statistics spinlock may be replaced with mutex, which 
-> reduce latency on CPU0.
-> 
-> 
-> # Measurements
-> Measurements were performed on Intel Atom E3950 (Quad-Core), 
-> E3930 (Dual-Core)
-> 
-> # Cyclictest
-> High latency is always on CPU0 which might be in range 
-> from 70us to 140us (sometimes higher)
-> 
-> 
-> # cyclictest -l1000000 -Smp90 -i200 -q
-> 
-> # E3930
-> # default
-> T: 0 ( 1745) P:90 I:200 C:1000000 Min: 2 Act: 3 Avg: 3 Max: 72
-> T: 1 ( 1746) P:90 I:700 C: 285737 Min: 3 Act: 4 Avg: 3 Max: 13
-> 
-> # with patch
-> T: 0 (  932) P:90 I:200 C:1000000 Min: 2 Act: 3 Avg: 3 Max: 22
-> T: 1 (  933) P:90 I:700 C: 285736 Min: 2 Act: 3 Avg: 3 Max: 12
-> 
-> 
-> # E3950
-> # default
-> T: 0 ( 1103) P:90 I:200 C:1000000 Min: 2 Act: 2 Avg: 2 Max: 89
-> T: 1 ( 1104) P:90 I:700 C: 285738 Min: 2 Act: 4 Avg: 2 Max: 9
-> T: 2 ( 1105) P:90 I:1200 C: 166678 Min: 2 Act: 5 Avg: 3 Max: 22
-> T: 3 ( 1106) P:90 I:1700 C: 117653 Min: 2 Act: 6 Avg: 2 Max: 13
-> 
-> # with patch
-> T: 0 (  879) P:90 I:200 C:1000000 Min: 2 Act: 3 Avg: 3 Max: 26
-> T: 1 (  880) P:90 I:700 C: 285729 Min: 3 Act: 4 Avg: 3 Max: 22
-> T: 2 (  881) P:90 I:1200 C: 166672 Min: 3 Act: 7 Avg: 3 Max: 24
-> T: 3 (  882) P:90 I:1700 C: 117649 Min: 3 Act: 7 Avg: 3 Max: 8
-> 
-> 
-> Additionally I think updating statistics and watchdog task should 
-> be implemented in 2 separated ways
-> 
-> Patch is created against a linux-4.4
-> 
-> Reviewed also by: Bernhard Kaindl  <bernhard.kaindl@thalesgroup.com>
-> 
-> Signed-off-by: Jan Jablonsky <jan.jablonsky@thalesgroup.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb.h         |  2 +-
->  drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ++--
->  drivers/net/ethernet/intel/igb/igb_main.c    | 14 +++++++-------
->  3 files changed, 10 insertions(+), 10 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 6ada1fed55f6fa342c76a188679778fe11395f25  i40e: Introduce recovery mode support
 
-NACK, as is.  This patch is malformed, as well as does not apply to the
-current net-next tree.
+elapsed time: 90m
 
-Since the jist of this change is to wrap statistical updates with mutex
-lock versus spin locks, I will put together a patch agains the latest
-net-next tree for your review Jan.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180802/57c7fdca/attachment.asc>
+configs tested: 120
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x018-201830
+i386                   randconfig-x017-201830
+i386                   randconfig-x010-201830
+i386                   randconfig-x016-201830
+i386                   randconfig-x013-201830
+i386                   randconfig-x011-201830
+i386                   randconfig-x015-201830
+i386                   randconfig-x019-201830
+i386                   randconfig-x012-201830
+i386                   randconfig-x014-201830
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201830
+i386                     randconfig-i0-201830
+i386                     randconfig-i1-201830
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x019-201830
+x86_64                 randconfig-x013-201830
+x86_64                 randconfig-x017-201830
+x86_64                 randconfig-x018-201830
+x86_64                 randconfig-x012-201830
+x86_64                 randconfig-x010-201830
+x86_64                 randconfig-x014-201830
+x86_64                 randconfig-x016-201830
+x86_64                 randconfig-x011-201830
+x86_64                 randconfig-x015-201830
+i386                     randconfig-a0-201830
+i386                     randconfig-a1-201830
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201830
+i386                     randconfig-s1-201830
+i386                               tinyconfig
+x86_64                   randconfig-i0-201830
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-x002-201830
+i386                   randconfig-x005-201830
+i386                   randconfig-x003-201830
+i386                   randconfig-x008-201830
+i386                   randconfig-x000-201830
+i386                   randconfig-x007-201830
+i386                   randconfig-x001-201830
+i386                   randconfig-x004-201830
+i386                   randconfig-x009-201830
+i386                   randconfig-x006-201830
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+i386                   randconfig-x077-201830
+i386                   randconfig-x070-201830
+i386                   randconfig-x076-201830
+i386                   randconfig-x075-201830
+i386                   randconfig-x072-201830
+i386                   randconfig-x074-201830
+i386                   randconfig-x078-201830
+i386                   randconfig-x071-201830
+i386                   randconfig-x073-201830
+i386                   randconfig-x079-201830
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-x000-201830
+x86_64                 randconfig-x009-201830
+x86_64                 randconfig-x004-201830
+x86_64                 randconfig-x001-201830
+x86_64                 randconfig-x003-201830
+x86_64                 randconfig-x007-201830
+x86_64                 randconfig-x008-201830
+x86_64                 randconfig-x005-201830
+x86_64                 randconfig-x002-201830
+x86_64                 randconfig-x006-201830
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
