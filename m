@@ -1,46 +1,52 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 2 Aug 2018 18:34:51 +0000
-Subject: [Intel-wired-lan] [next PATCH S93 11/11] i40e: fix
- i40e_add_queue_stats data pointer update
-In-Reply-To: <20180731104148.11896-11-alice.michael@intel.com>
-References: <20180731104148.11896-1-alice.michael@intel.com>
- <20180731104148.11896-11-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2DB3B3@ORSMSX104.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 02 Aug 2018 12:55:33 -0700
+Subject: [Intel-wired-lan] IXGBE driver questions
+In-Reply-To: <CA+WKCcmYi+BeodZy_xdtWrjN05emwJ2Xhm5Lp0Y1tMS1E5kQow@mail.gmail.com>
+References: <CA+WKCcmYi+BeodZy_xdtWrjN05emwJ2Xhm5Lp0Y1tMS1E5kQow@mail.gmail.com>
+Message-ID: <da133a858c09b8c4192ae04149836f9a326552eb.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Tuesday, July 31, 2018 3:42 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S93 11/11] i40e: fix
-> i40e_add_queue_stats data pointer update
+On Tue, 2018-07-31 at 20:19 +0300, Valery Kobyzev wrote:
+> Hello,
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> I found your email as commiters to ixgbe drivers.
 > 
-> This function accidentally failed to update the data pointer, which caused the
-> reported stats to be incorrect. Additionally, statistics which follow queue
-> stats in the output would potentially read non-zeroed garbage data from the
-> ethtool buffer.
+> I start work very closely with 82599 equipment and nice things like
+> as
+> Flow Director and SR-IOV.
 > 
-> This occurred because the data double pointer was not dereferenced before
-> incrementing the size.
+> And I have several questions without answer.
 > 
-> Additionally, make sure this issue is more visible by adding a WARN_ONCE to
-> the i40e_get_ethtool_stats function. This warning will trigger whenever the
-> data pointer is not at the expected address, similar to the check that we
-> make in the i40e_get_stat_strings() function.
+> 1) flow-director have 8k perfect filters. If I will be have 2k
+> filters
+> and speed 10 mpps are possible? Any drawbacks?
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+> 2) I found user-def instruction. But don't see how it work.
+> 
+> 3) Is it possible to filter ipv4/ether frames with fixed offset in
+> frame? Any examples?
+> 
+> 4) How I can patched (provide additional functions by ethtool) to
+> make
+> 82599 card as white list? Is it possible to drop all packets that not
+> present in flow director filters?
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Looks like you have been shopping around to the various contributors to
+ixgbe for an answer in private emails.  It appears several others have
+provided answers to your questions, but not on a public mailing list.
 
-
+I have added the intel-wired-lan mailing list, as well as a number of
+the other developers you have emailed privately, so that this
+discussion can be made public and if others choose to chime in, they
+can.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180802/cd77dece/attachment.asc>
