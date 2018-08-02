@@ -1,121 +1,135 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu,  2 Aug 2018 10:13:10 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: reduce CPU0 latency when updating
- statistics
-Message-ID: <20180802171310.9295-1-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 03 Aug 2018 01:52:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 26f6b0a1c22f866ba2a5ef591b587e9cb007fbe6
+Message-ID: <5b6344e5.YnEutMSje8nFSiUn%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change is based off of the work and suggestion of Jan Jablonsky
-<jan.jablonsky@thalesgroup.com>.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 26f6b0a1c22f866ba2a5ef591b587e9cb007fbe6  i40e: set vsi->netdev to NULL after free_netdev()
 
-The Watchdog workqueue in igb driver is scheduled every 2s for each
-network interface. That includes updating a statistics protected by
-spinlock. Function igb_update_stats in this case will be protected
-against preemption. According to number of a statistics registers
-(cca 60), processing this function might cause additional cpu load
- on CPU0.
+elapsed time: 84m
 
-In case of statistics spinlock may be replaced with mutex, which
-reduce latency on CPU0.
+configs tested: 110
 
-CC: Bernhard Kaindl  <bernhard.kaindl@thalesgroup.com>
-CC: Jan Jablonsky <jan.jablonsky@thalesgroup.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x018-201830
+i386                   randconfig-x017-201830
+i386                   randconfig-x010-201830
+i386                   randconfig-x016-201830
+i386                   randconfig-x013-201830
+i386                   randconfig-x011-201830
+i386                   randconfig-x015-201830
+i386                   randconfig-x019-201830
+i386                   randconfig-x012-201830
+i386                   randconfig-x014-201830
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201830
+x86_64                 randconfig-x000-201830
+x86_64                 randconfig-x009-201830
+x86_64                 randconfig-x004-201830
+x86_64                 randconfig-x001-201830
+x86_64                 randconfig-x003-201830
+x86_64                 randconfig-x007-201830
+x86_64                 randconfig-x008-201830
+x86_64                 randconfig-x005-201830
+x86_64                 randconfig-x002-201830
+x86_64                 randconfig-x006-201830
+i386                     randconfig-i1-201830
+i386                     randconfig-i0-201830
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                              fedora-25
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201830
+i386                     randconfig-a1-201830
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201830
+i386                     randconfig-s1-201830
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201830
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+i386                   randconfig-x002-201830
+i386                   randconfig-x005-201830
+i386                   randconfig-x003-201830
+i386                   randconfig-x008-201830
+i386                   randconfig-x000-201830
+i386                   randconfig-x007-201830
+i386                   randconfig-x001-201830
+i386                   randconfig-x004-201830
+i386                   randconfig-x009-201830
+i386                   randconfig-x006-201830
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x077-201830
+i386                   randconfig-x070-201830
+i386                   randconfig-x076-201830
+i386                   randconfig-x075-201830
+i386                   randconfig-x072-201830
+i386                   randconfig-x074-201830
+i386                   randconfig-x078-201830
+i386                   randconfig-x071-201830
+i386                   randconfig-x073-201830
+i386                   randconfig-x079-201830
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+
 ---
- drivers/net/ethernet/intel/igb/igb.h         |  2 +-
- drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ++--
- drivers/net/ethernet/intel/igb/igb_main.c    | 14 +++++++-------
- 3 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index ca54e268d157..fe1592ae8769 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -515,7 +515,7 @@ struct igb_adapter {
- 	/* OS defined structs */
- 	struct pci_dev *pdev;
- 
--	spinlock_t stats64_lock;
-+	struct mutex stats64_lock;
- 	struct rtnl_link_stats64 stats64;
- 
- 	/* structs defined in e1000_hw.h */
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 5acf3b743876..e0a0e62b142a 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2295,7 +2295,7 @@ static void igb_get_ethtool_stats(struct net_device *netdev,
- 	int i, j;
- 	char *p;
- 
--	spin_lock(&adapter->stats64_lock);
-+	mutex_lock(&adapter->stats64_lock);
- 	igb_update_stats(adapter);
- 
- 	for (i = 0; i < IGB_GLOBAL_STATS_LEN; i++) {
-@@ -2338,7 +2338,7 @@ static void igb_get_ethtool_stats(struct net_device *netdev,
- 		} while (u64_stats_fetch_retry_irq(&ring->rx_syncp, start));
- 		i += IGB_RX_QUEUE_STATS_LEN;
- 	}
--	spin_unlock(&adapter->stats64_lock);
-+	mutex_unlock(&adapter->stats64_lock);
- }
- 
- static void igb_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 1ed4f073e7e0..3cca19dade84 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2209,9 +2209,9 @@ void igb_down(struct igb_adapter *adapter)
- 	del_timer_sync(&adapter->phy_info_timer);
- 
- 	/* record the stats before reset*/
--	spin_lock(&adapter->stats64_lock);
-+	mutex_lock(&adapter->stats64_lock);
- 	igb_update_stats(adapter);
--	spin_unlock(&adapter->stats64_lock);
-+	mutex_unlock(&adapter->stats64_lock);
- 
- 	adapter->link_speed = 0;
- 	adapter->link_duplex = 0;
-@@ -3849,7 +3849,7 @@ static int igb_sw_init(struct igb_adapter *adapter)
- 	adapter->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
- 
- 	spin_lock_init(&adapter->nfc_lock);
--	spin_lock_init(&adapter->stats64_lock);
-+	mutex_init(&adapter->stats64_lock);
- #ifdef CONFIG_PCI_IOV
- 	switch (hw->mac.type) {
- 	case e1000_82576:
-@@ -5414,9 +5414,9 @@ static void igb_watchdog_task(struct work_struct *work)
- 		}
- 	}
- 
--	spin_lock(&adapter->stats64_lock);
-+	mutex_lock(&adapter->stats64_lock);
- 	igb_update_stats(adapter);
--	spin_unlock(&adapter->stats64_lock);
-+	mutex_unlock(&adapter->stats64_lock);
- 
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
- 		struct igb_ring *tx_ring = adapter->tx_ring[i];
-@@ -6242,10 +6242,10 @@ static void igb_get_stats64(struct net_device *netdev,
- {
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 
--	spin_lock(&adapter->stats64_lock);
-+	mutex_lock(&adapter->stats64_lock);
- 	igb_update_stats(adapter);
- 	memcpy(stats, &adapter->stats64, sizeof(*stats));
--	spin_unlock(&adapter->stats64_lock);
-+	mutex_unlock(&adapter->stats64_lock);
- }
- 
- /**
--- 
-2.17.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
