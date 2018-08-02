@@ -1,10 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  1 Aug 2018 17:40:32 -0700
-Subject: [Intel-wired-lan] [next PATCH S94 09/13] i40e: Set
- netdev_registered when registering netdev in recovery mode
+Date: Wed,  1 Aug 2018 17:40:31 -0700
+Subject: [Intel-wired-lan] [next PATCH S94 08/13] i40e: Reorder irq and
+ adminq deinitialization in i40e_remove
 In-Reply-To: <20180802004036.89363-1-alice.michael@intel.com>
 References: <20180802004036.89363-1-alice.michael@intel.com>
-Message-ID: <20180802004036.89363-9-alice.michael@intel.com>
+Message-ID: <20180802004036.89363-8-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,28 +13,46 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Patryk Ma?ek <patryk.malek@intel.com>
 
-When initializing adapter in recovery mode we've forgotten to set
-netdev_registered to true causing kernel BUGs when we unload the module
-after successful recovery. This patch sets this flag correctly as it was
-supposed to be set.
+This is needed to allow changing of deinitialization flow in
+order to skip freeing uninitialized irq when in recovery mode.
 
 Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 725b2de..ca701e0 100644
+index 5720d40..725b2de 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -13694,6 +13694,7 @@ static int i40e_init_recovery_mode(struct i40e_pf *pf, struct i40e_hw *hw)
- 	err = register_netdev(vsi->netdev);
- 	if (err)
- 		goto err_switch_setup;
-+	vsi->netdev_registered = true;
- 	i40e_dbg_pf_init(pf);
+@@ -14370,13 +14370,6 @@ static void i40e_remove(struct pci_dev *pdev)
+ 	}
  
- 	err = i40e_setup_misc_vector_for_recovery_mode(pf);
+ unmap:
+-	/* shutdown the adminq */
+-	i40e_shutdown_adminq(hw);
+-
+-	/* destroy the locks only once, here */
+-	mutex_destroy(&hw->aq.arq_mutex);
+-	mutex_destroy(&hw->aq.asq_mutex);
+-
+ 	/* Free MSI/legacy interrupt 0 when in recovery mode.
+ 	 * This is normally done in i40e_vsi_free_irq on
+ 	 * VSI close but since recovery mode doesn't allow to up
+@@ -14398,6 +14391,13 @@ static void i40e_remove(struct pci_dev *pdev)
+ 		}
+ 	}
+ 
++	/* shutdown the adminq */
++	i40e_shutdown_adminq(hw);
++
++	/* destroy the locks only once, here */
++	mutex_destroy(&hw->aq.arq_mutex);
++	mutex_destroy(&hw->aq.asq_mutex);
++
+ 	for (i = 0; i < I40E_MAX_VEB; i++) {
+ 		kfree(pf->veb[i]);
+ 		pf->veb[i] = NULL;
 -- 
 2.9.5
 
