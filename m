@@ -1,103 +1,140 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 6 Aug 2018 15:45:29 -0700
-Subject: [Intel-wired-lan] e1000e driver stuck at 10Mbps after
- reconnection
-In-Reply-To: <20180806115913.GA21556@super_plancton>
-References: <20180806115913.GA21556@super_plancton>
-Message-ID: <CAKgT0UcUV8bQRAhyevfnvwE+yWnWjwAkH0WumUoUK4Fa9SCzhg@mail.gmail.com>
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Mon,  6 Aug 2018 18:25:35 -0500
+Subject: [Intel-wired-lan] [PATCH v6 1/9] PCI: Check for PCIe downtraining
+ conditions
+In-Reply-To: <CAErSpo4PK+SQLNfdkLNt9eLc7bpbxbkZCsa8T-tQpid601n0SQ@mail.gmail.com>
+References: <CAErSpo4PK+SQLNfdkLNt9eLc7bpbxbkZCsa8T-tQpid601n0SQ@mail.gmail.com>
+Message-ID: <20180806232600.25694-1-mr.nuke.me@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Aug 6, 2018 at 4:59 AM, Camille Bordignon
-<camille.bordignon@easymile.com> wrote:
-> Hello,
->
-> Recently we experienced some issues with intel NIC (I219-LM and I219-V).
-> It seems that after a wire reconnection, auto-negotation "fails" and
-> link speed drips to 10 Mbps.
->
-> From kernel logs:
-> [17616.346150] e1000e: enp0s31f6 NIC Link is Down
-> [17627.003322] e1000e: enp0s31f6 NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
-> [17627.003325] e1000e 0000:00:1f.6 enp0s31f6: 10/100 speed: disabling TSO
->
->
-> $ethtool enp0s31f6
-> Settings for enp0s31f6:
->         Supported ports: [ TP ]
->         Supported link modes:   10baseT/Half 10baseT/Full
->                                 100baseT/Half 100baseT/Full
->                                 1000baseT/Full
->         Supported pause frame use: No
->         Supports auto-negotiation: Yes
->         Supported FEC modes: Not reported
->         Advertised link modes:  10baseT/Half 10baseT/Full
->                                 100baseT/Half 100baseT/Full
->                                 1000baseT/Full
->         Advertised pause frame use: No
->         Advertised auto-negotiation: Yes
->         Advertised FEC modes: Not reported
->         Speed: 10Mb/s
->         Duplex: Full
->         Port: Twisted Pair
->         PHYAD: 1
->         Transceiver: internal
->         Auto-negotiation: on
->         MDI-X: on (auto)
->         Supports Wake-on: pumbg
->         Wake-on: g
->         Current message level: 0x00000007 (7)
->                                drv probe link
->         Link detected: yes
->
->
-> Notice that if disconnection last less than about 5 seconds,
-> nothing wrong happens.
-> And if after last failure, disconnection / connection occurs again and
-> last less than 5 seconds, link speed is back to 1000 Mbps.
->
-> [18075.350678] e1000e: enp0s31f6 NIC Link is Down
-> [18078.716245] e1000e: enp0s31f6 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
->
-> The following patch seems to fix this issue.
-> However I don't clearly understand why.
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 3ba0c90e7055..763c013960f1 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -5069,7 +5069,7 @@ static bool e1000e_has_link(struct e1000_adapter *adapter)
->         case e1000_media_type_copper:
->                 if (hw->mac.get_link_status) {
->                         ret_val = hw->mac.ops.check_for_link(hw);
-> -                       link_active = !hw->mac.get_link_status;
-> +                       link_active = false;
->                 } else {
->                         link_active = true;
->                 }
->
-> Maybe this is related to watchdog task.
->
-> I've found out this fix by comparing with last commit that works fine :
-> commit 0b76aae741abb9d16d2c0e67f8b1e766576f897d.
-> However I don't know if this information is relevant.
->
-> Thank you.
-> Camille Bordignon
+PCIe downtraining happens when both the device and PCIe port are
+capable of a larger bus width or higher speed than negotiated.
+Downtraining might be indicative of other problems in the system, and
+identifying this from userspace is neither intuitive, nor
+straightforward.
 
-What kernel were you testing this on? I know there have been a number
-of changes over the past few months in this area and it would be
-useful to know exactly what code base you started out with and what
-the latest version of the kernel is you have tested.
+The easiest way to detect this is with pcie_print_link_status(),
+since the bottleneck is usually the link that is downtrained. It's not
+a perfect solution, but it works extremely well in most cases.
 
-Looking over the code change the net effect of it should be to add a 2
-second delay from the time the link has changed until you actually
-check the speed/duplex configuration. It is possible we could be
-seeing some sort of timing issue and adding the 2 second delay after
-the link event is enough time for things to stabilize and detect the
-link at 1000 instead of 10/100.
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ drivers/pci/pci.c   | 22 ++++++++++++++++++----
+ drivers/pci/probe.c | 21 +++++++++++++++++++++
+ include/linux/pci.h |  1 +
+ 3 files changed, 40 insertions(+), 4 deletions(-)
 
-- Alex
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 316496e99da9..414ad7b3abdb 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -5302,14 +5302,15 @@ u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed *speed,
+ }
+ 
+ /**
+- * pcie_print_link_status - Report the PCI device's link speed and width
++ * __pcie_print_link_status - Report the PCI device's link speed and width
+  * @dev: PCI device to query
++ * @verbose: Be verbose -- print info even when enough bandwidth is available.
+  *
+  * Report the available bandwidth at the device.  If this is less than the
+  * device is capable of, report the device's maximum possible bandwidth and
+  * the upstream link that limits its performance to less than that.
+  */
+-void pcie_print_link_status(struct pci_dev *dev)
++void __pcie_print_link_status(struct pci_dev *dev, bool verbose)
+ {
+ 	enum pcie_link_width width, width_cap;
+ 	enum pci_bus_speed speed, speed_cap;
+@@ -5319,11 +5320,11 @@ void pcie_print_link_status(struct pci_dev *dev)
+ 	bw_cap = pcie_bandwidth_capable(dev, &speed_cap, &width_cap);
+ 	bw_avail = pcie_bandwidth_available(dev, &limiting_dev, &speed, &width);
+ 
+-	if (bw_avail >= bw_cap)
++	if (bw_avail >= bw_cap && verbose)
+ 		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth (%s x%d link)\n",
+ 			 bw_cap / 1000, bw_cap % 1000,
+ 			 PCIE_SPEED2STR(speed_cap), width_cap);
+-	else
++	else if (bw_avail < bw_cap)
+ 		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)\n",
+ 			 bw_avail / 1000, bw_avail % 1000,
+ 			 PCIE_SPEED2STR(speed), width,
+@@ -5331,6 +5332,19 @@ void pcie_print_link_status(struct pci_dev *dev)
+ 			 bw_cap / 1000, bw_cap % 1000,
+ 			 PCIE_SPEED2STR(speed_cap), width_cap);
+ }
++
++/**
++ * pcie_print_link_status - Report the PCI device's link speed and width
++ * @dev: PCI device to query
++ *
++ * Report the available bandwidth@the device.  If this is less than the
++ * device is capable of, report the device's maximum possible bandwidth and
++ * the upstream link that limits its performance to less than that.
++ */
++void pcie_print_link_status(struct pci_dev *dev)
++{
++	__pcie_print_link_status(dev, true);
++}
+ EXPORT_SYMBOL(pcie_print_link_status);
+ 
+ /**
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 611adcd9c169..1c8c26dd2cb2 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -2205,6 +2205,24 @@ static struct pci_dev *pci_scan_device(struct pci_bus *bus, int devfn)
+ 	return dev;
+ }
+ 
++static void pcie_check_upstream_link(struct pci_dev *dev)
++{
++	if (!pci_is_pcie(dev))
++		return;
++
++	/* Look from the device up to avoid downstream ports with no devices. */
++	if ((pci_pcie_type(dev) != PCI_EXP_TYPE_ENDPOINT) &&
++	    (pci_pcie_type(dev) != PCI_EXP_TYPE_LEG_END) &&
++	    (pci_pcie_type(dev) != PCI_EXP_TYPE_UPSTREAM))
++		return;
++
++	/* Multi-function PCIe share the same link/status. */
++	if (PCI_FUNC(dev->devfn) != 0 || dev->is_virtfn)
++		return;
++
++	__pcie_print_link_status(dev, false);
++}
++
+ static void pci_init_capabilities(struct pci_dev *dev)
+ {
+ 	/* Enhanced Allocation */
+@@ -2240,6 +2258,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
+ 	/* Advanced Error Reporting */
+ 	pci_aer_init(dev);
+ 
++	/* Check link and detect downtrain errors */
++	pcie_check_upstream_link(dev);
++
+ 	if (pci_probe_reset_function(dev) == 0)
+ 		dev->reset_fn = 1;
+ }
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index c133ccfa002e..d212de231259 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1087,6 +1087,7 @@ int pcie_set_mps(struct pci_dev *dev, int mps);
+ u32 pcie_bandwidth_available(struct pci_dev *dev, struct pci_dev **limiting_dev,
+ 			     enum pci_bus_speed *speed,
+ 			     enum pcie_link_width *width);
++void __pcie_print_link_status(struct pci_dev *dev, bool verbose);
+ void pcie_print_link_status(struct pci_dev *dev);
+ int pcie_flr(struct pci_dev *dev);
+ int __pci_reset_function_locked(struct pci_dev *dev);
+-- 
+2.17.1
+
