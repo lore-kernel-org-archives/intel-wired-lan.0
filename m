@@ -1,10 +1,10 @@
 From: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Date: Tue, 7 Aug 2018 18:19:42 -0500
-Subject: [Intel-wired-lan] [PATCH 15/33] i40e_main: mark expected switch
+Date: Tue, 7 Aug 2018 18:20:27 -0500
+Subject: [Intel-wired-lan] [PATCH 16/33] i40e_txrx: mark expected switch
  fall-through
 In-Reply-To: <cover.1533675546.git.gustavo@embeddedor.com>
 References: <cover.1533675546.git.gustavo@embeddedor.com>
-Message-ID: <26fb4ceb500109db986fbc938845997cf83e17b4.1533675546.git.gustavo@embeddedor.com>
+Message-ID: <7997bf34df88375f097d0a7d60608620718e81db.1533675546.git.gustavo@embeddedor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,24 +14,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 In preparation to enabling -Wimplicit-fallthrough, mark switch cases
 where we are expecting to fall through.
 
-Addresses-Coverity-ID: 114790 ("Missing break in switch")
+Addresses-Coverity-ID: 114791 ("Missing break in switch")
 Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5176242..a1a274d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1800,6 +1800,7 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
- 						       num_tc_qps);
- 					break;
- 				}
-+				/* fall through */
- 			case I40E_VSI_FDIR:
- 			case I40E_VSI_SRIOV:
- 			case I40E_VSI_VMDQ2:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index b151ae3..b5042d1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2253,9 +2253,10 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
+ 		break;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
++		/* fall through */
+ 	case XDP_ABORTED:
+ 		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
+-		/* fallthrough -- handle aborts by dropping packet */
++		/* fall through -- handle aborts by dropping packet */
+ 	case XDP_DROP:
+ 		result = I40E_XDP_CONSUMED;
+ 		break;
 -- 
 2.7.4
 
