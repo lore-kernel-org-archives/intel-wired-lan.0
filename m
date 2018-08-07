@@ -1,104 +1,181 @@
-From: Venkataramanan, Anirudh <anirudh.venkataramanan@intel.com>
-Date: Tue, 7 Aug 2018 16:49:31 +0000
-Subject: [Intel-wired-lan] [PATCH v3 08/13] ice: Don't explicitly set
- port_vlan_bits to 0
-In-Reply-To: <804857E1F29AAC47BF68C404FC60A184F23DD7B4@ORSMSX105.amr.corp.intel.com>
-References: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
- <20180801034729.3864-9-anirudh.venkataramanan@intel.com>
- <804857E1F29AAC47BF68C404FC60A184F23DD7B4@ORSMSX105.amr.corp.intel.com>
-Message-ID: <d166c6edff404bec8932ca33dd14484d65f77a65.camel@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 08 Aug 2018 00:48:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 0de4ba4472bf3e0206b3927c1012712780b87bd3
+Message-ID: <5b69cd5f.j+m1RdTm1TtFjff3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2018-08-01 at 16:03 -0700, Allan, Bruce W wrote:
-> > -----Original Message-----
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org]
-> > On Behalf
-> > Of Anirudh Venkataramanan
-> > Sent: Tuesday, July 31, 2018 8:47 PM
-> > To: intel-wired-lan at lists.osuosl.org
-> > Subject: [Intel-wired-lan] [PATCH v3 08/13] ice: Don't explicitly
-> > set
-> > port_vlan_bits to 0
-> > 
-> > From: Brett Creeley <brett.creeley@intel.com>
-> > 
-> > This patch fixes the following smatch warning originally reported
-> > by
-> > Dan Carpenter:
-> > ice_set_dflt_vsi_ctx() warn: odd binop '0x0 & 0x18'
-> > 
-> > In ice_set_dflt_vsi_ctx() we clear bits 3 and 4 for legacy behavior
-> > (i.e. show VLAN, DEI and UP in the receive descriptors). However
-> > the logic to do this generated the above mentioned smatch warning.
-> > 
-> > Bits 3 and 4 in port_vlan_flags are anyway set to zero by the
-> > memset on
-> > ctxt->info field, so remove the logic to set these explicitly to 0.
-> > This
-> > fixes the smatch warning as well.
-> > 
-> > CC: Shannon Nelson <shannon.nelson@oracle.com>
-> 
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 0de4ba4472bf3e0206b3927c1012712780b87bd3  igb: reduce CPU0 latency when updating statistics
 
-I will squash this with "[PATCH v3 01/13] ice: Fix multiple static
-analyser warnings" in this series which already has this attribution.
+elapsed time: 88m
 
-> 
-> > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> > Signed-off-by: Anirudh Venkataramanan
-> > <anirudh.venkataramanan@intel.com>
-> > ---
-> > [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote
-> > commit message]
-> > ---
-> >  drivers/net/ethernet/intel/ice/ice_main.c | 9 ++++-----
-> >  1 file changed, 4 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
-> > b/drivers/net/ethernet/intel/ice/ice_main.c
-> > index d4f1f92faf65..3eff1d2d1543 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> > @@ -1367,14 +1367,13 @@ static void ice_set_dflt_vsi_ctx(struct
-> > ice_vsi_ctx
-> > *ctxt)
-> >  	ctxt->info.sw_flags = ICE_AQ_VSI_SW_FLAG_SRC_PRUNE;
-> >  	/* Traffic from VSI can be sent to LAN */
-> >  	ctxt->info.sw_flags2 = ICE_AQ_VSI_SW_FLAG_LAN_ENA;
-> > -	/* Allow all packets untagged/tagged */
-> > +	/* By default bits 3 and 4 in port_vlan_flags are 0's which
-> > results in
-> > +	 * legacy behavior (show VLAN, DEI, and UP) in descriptor.
-> > Also, allow
-> > +	 * all packets untagged/tagged.
-> > +	 */
-> >  	ctxt->info.port_vlan_flags = ((ICE_AQ_VSI_PVLAN_MODE_ALL &
-> >  				       ICE_AQ_VSI_PVLAN_MODE_M) >>
-> >  				      ICE_AQ_VSI_PVLAN_MODE_S);
-> > -	/* Show VLAN/UP from packets in Rx descriptors */
-> > -	ctxt->info.port_vlan_flags |= ((ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH
-> > &
-> > -					ICE_AQ_VSI_PVLAN_EMOD_M) >>
-> > -				       ICE_AQ_VSI_PVLAN_EMOD_S);
-> >  	/* Have 1:1 UP mapping for both ingress/egress tables */
-> >  	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
-> >  	table |= ICE_UP_TABLE_TRANSLATE(1, 1);
-> > --
-> > 2.17.1
-> > 
-> > _______________________________________________
-> > Intel-wired-lan mailing list
-> > Intel-wired-lan at osuosl.org
-> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/x-pkcs7-signature
-Size: 3302 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180807/46c7e49a/attachment.bin>
+configs tested: 156
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-a0-08072100
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-08071819
+i386                               tinyconfig
+i386                   randconfig-x010-201831
+i386                   randconfig-x011-201831
+i386                   randconfig-x012-201831
+i386                   randconfig-x013-201831
+i386                   randconfig-x014-201831
+i386                   randconfig-x015-201831
+i386                   randconfig-x016-201831
+i386                   randconfig-x017-201831
+i386                   randconfig-x018-201831
+i386                   randconfig-x019-201831
+i386                     randconfig-n0-201831
+x86_64                 randconfig-x000-201831
+x86_64                 randconfig-x009-201831
+x86_64                 randconfig-x004-201831
+x86_64                 randconfig-x001-201831
+x86_64                 randconfig-x003-201831
+x86_64                 randconfig-x007-201831
+x86_64                 randconfig-x008-201831
+x86_64                 randconfig-x002-201831
+x86_64                 randconfig-x005-201831
+x86_64                 randconfig-x006-201831
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201831
+i386                     randconfig-i1-201831
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x019-201831
+x86_64                 randconfig-x013-201831
+x86_64                 randconfig-x017-201831
+x86_64                 randconfig-x018-201831
+x86_64                 randconfig-x012-201831
+x86_64                 randconfig-x010-201831
+x86_64                 randconfig-x014-201831
+x86_64                 randconfig-x011-201831
+x86_64                 randconfig-x016-201831
+x86_64                 randconfig-x015-201831
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201831
+i386                     randconfig-a1-201831
+x86_64                 randconfig-s0-08072157
+x86_64                 randconfig-s1-08072157
+x86_64                 randconfig-s2-08072157
+x86_64                 randconfig-s0-08080019
+x86_64                 randconfig-s1-08080019
+x86_64                 randconfig-s2-08080019
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                       versatile_defconfig
+c6x                        evmc6457_defconfig
+xtensa                  cadence_csp_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201831
+i386                     randconfig-s1-201831
+x86_64                 randconfig-s3-08072153
+x86_64                 randconfig-s4-08072153
+x86_64                 randconfig-s5-08072153
+x86_64                 randconfig-s3-08080005
+x86_64                 randconfig-s4-08080005
+x86_64                 randconfig-s5-08080005
+i386                             allmodconfig
+x86_64                   randconfig-i0-201831
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                randconfig-ne0-08072144
+c6x                         dsk6455_defconfig
+x86_64                 randconfig-h0-08071848
+i386                   randconfig-x002-201831
+i386                   randconfig-x005-201831
+i386                   randconfig-x003-201831
+i386                   randconfig-x008-201831
+i386                   randconfig-x007-201831
+i386                   randconfig-x000-201831
+i386                   randconfig-x001-201831
+i386                   randconfig-x004-201831
+i386                   randconfig-x009-201831
+i386                   randconfig-x006-201831
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                           allmodconfig
+i386                   randconfig-x077-201831
+i386                   randconfig-x070-201831
+i386                   randconfig-x076-201831
+i386                   randconfig-x072-201831
+i386                   randconfig-x075-201831
+i386                   randconfig-x074-201831
+i386                   randconfig-x078-201831
+i386                   randconfig-x071-201831
+i386                   randconfig-x073-201831
+i386                   randconfig-x079-201831
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+arm                        oxnas_v6_defconfig
+powerpc                     sbc8548_defconfig
+i386                   randconfig-x0-08072128
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
