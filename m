@@ -1,10 +1,10 @@
 From: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Date: Tue, 7 Aug 2018 18:20:27 -0500
-Subject: [Intel-wired-lan] [PATCH 16/33] i40e_txrx: mark expected switch
- fall-through
+Date: Tue, 7 Aug 2018 18:22:22 -0500
+Subject: [Intel-wired-lan] [PATCH 19/33] igb_main: Mark expected switch
+ fall-throughs
 In-Reply-To: <cover.1533675546.git.gustavo@embeddedor.com>
 References: <cover.1533675546.git.gustavo@embeddedor.com>
-Message-ID: <7997bf34df88375f097d0a7d60608620718e81db.1533675546.git.gustavo@embeddedor.com>
+Message-ID: <1f23933f64740396a518c7bf86a085c295d19759.1533675546.git.gustavo@embeddedor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,28 +14,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 In preparation to enabling -Wimplicit-fallthrough, mark switch cases
 where we are expecting to fall through.
 
-Addresses-Coverity-ID: 114791 ("Missing break in switch")
+Addresses-Coverity-ID: 200521 ("Missing break in switch")
+Addresses-Coverity-ID: 114797 ("Missing break in switch")
 Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index b151ae3..b5042d1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2253,9 +2253,10 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
- 		break;
- 	default:
- 		bpf_warn_invalid_xdp_action(act);
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 636d805..d03c2f0 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -5175,6 +5175,7 @@ bool igb_has_link(struct igb_adapter *adapter)
+ 	case e1000_media_type_copper:
+ 		if (!hw->mac.get_link_status)
+ 			return true;
 +		/* fall through */
- 	case XDP_ABORTED:
- 		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
--		/* fallthrough -- handle aborts by dropping packet */
-+		/* fall through -- handle aborts by dropping packet */
- 	case XDP_DROP:
- 		result = I40E_XDP_CONSUMED;
- 		break;
+ 	case e1000_media_type_internal_serdes:
+ 		hw->mac.ops.check_for_link(hw);
+ 		link_active = !hw->mac.get_link_status;
+@@ -5835,6 +5836,7 @@ static void igb_tx_csum(struct igb_ring *tx_ring, struct igb_tx_buffer *first)
+ 			type_tucmd = E1000_ADVTXD_TUCMD_L4T_SCTP;
+ 			break;
+ 		}
++		/* fall through */
+ 	default:
+ 		skb_checksum_help(skb);
+ 		goto csum_failed;
 -- 
 2.7.4
 
