@@ -1,195 +1,158 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 08 Aug 2018 05:56:01 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 333e2f2cea6cbffd75aa4969afad7409d7fad74c
-Message-ID: <5b6a1571.8CR+/S3bBBSQwcpl%lkp@intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Tue, 7 Aug 2018 16:41:41 -0500
+Subject: [Intel-wired-lan] [PATCH v6 1/9] PCI: Check for PCIe
+ downtraining conditions
+In-Reply-To: <20180806232600.25694-1-mr.nuke.me@gmail.com>
+References: <CAErSpo4PK+SQLNfdkLNt9eLc7bpbxbkZCsa8T-tQpid601n0SQ@mail.gmail.com>
+ <20180806232600.25694-1-mr.nuke.me@gmail.com>
+Message-ID: <20180807214141.GA49411@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 333e2f2cea6cbffd75aa4969afad7409d7fad74c  i40e: fix i40e_add_queue_stats data pointer update
+On Mon, Aug 06, 2018 at 06:25:35PM -0500, Alexandru Gagniuc wrote:
+> PCIe downtraining happens when both the device and PCIe port are
+> capable of a larger bus width or higher speed than negotiated.
+> Downtraining might be indicative of other problems in the system, and
+> identifying this from userspace is neither intuitive, nor
+> straightforward.
+> 
+> The easiest way to detect this is with pcie_print_link_status(),
+> since the bottleneck is usually the link that is downtrained. It's not
+> a perfect solution, but it works extremely well in most cases.
 
-elapsed time: 152m
+After this series, there are no callers of pcie_print_link_status(),
+which means we *only* print something if a device is capable of more
+bandwidth than the fabric can deliver.
 
-configs tested: 170
+ISTR some desire to have this information for NICs even if the device
+isn't limited, so I'm just double-checking to make sure the driver
+guys are OK with this change.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+There are no callers of __pcie_print_link_status() outside the PCI
+core, so I would move the declaration from include/linux/pci.h to
+drivers/pci/pci.h.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                     kilauea_defconfig
-xtensa                  nommu_kc705_defconfig
-arm                            lart_defconfig
-mips                           ip27_defconfig
-x86_64                 randconfig-a0-08080251
-x86_64                 randconfig-a0-08080435
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-08071819
-i386                     randconfig-n0-201831
-x86_64                 randconfig-x000-201831
-x86_64                 randconfig-x009-201831
-x86_64                 randconfig-x004-201831
-x86_64                 randconfig-x001-201831
-x86_64                 randconfig-x003-201831
-x86_64                 randconfig-x007-201831
-x86_64                 randconfig-x008-201831
-x86_64                 randconfig-x002-201831
-x86_64                 randconfig-x005-201831
-x86_64                 randconfig-x006-201831
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i1-201831
-i386                     randconfig-i0-201831
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-g0-08080314
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a1-201831
-i386                     randconfig-a0-201831
-x86_64                 randconfig-s0-08080325
-x86_64                 randconfig-s1-08080325
-x86_64                 randconfig-s2-08080325
-arm                       cns3420vb_defconfig
-arm                         hackkit_defconfig
-powerpc64                        allyesconfig
-sparc                             allnoconfig
-i386                             allyesconfig
-arm                  colibri_pxa270_defconfig
-openrisc                          allnoconfig
-parisc                         a500_defconfig
-x86_64                 randconfig-x019-201831
-x86_64                 randconfig-x013-201831
-x86_64                 randconfig-x017-201831
-x86_64                 randconfig-x018-201831
-x86_64                 randconfig-x012-201831
-x86_64                 randconfig-x010-201831
-x86_64                 randconfig-x014-201831
-x86_64                 randconfig-x011-201831
-x86_64                 randconfig-x016-201831
-x86_64                 randconfig-x015-201831
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201831
-i386                     randconfig-s1-201831
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-08080238
-x86_64                 randconfig-s4-08080238
-x86_64                 randconfig-s5-08080238
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201831
-i386                   randconfig-b0-08071345
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allyesconfig
-sh                           se7750_defconfig
-x86_64                 randconfig-u0-08061820
-arm                        keystone_defconfig
-powerpc               corenet_basic_defconfig
-powerpc                      walnut_defconfig
-i386                   randconfig-x018-201831
-i386                   randconfig-x010-201831
-i386                   randconfig-x017-201831
-i386                   randconfig-x016-201831
-i386                   randconfig-x013-201831
-i386                   randconfig-x011-201831
-i386                   randconfig-x015-201831
-i386                   randconfig-x019-201831
-i386                   randconfig-x012-201831
-i386                   randconfig-x014-201831
-powerpc                     stx_gp3_defconfig
-s390                             allyesconfig
-x86_64                randconfig-ne0-08080251
-mips                           ip32_defconfig
-i386                   randconfig-x077-201831
-i386                   randconfig-x070-201831
-i386                   randconfig-x076-201831
-i386                   randconfig-x072-201831
-i386                   randconfig-x075-201831
-i386                   randconfig-x074-201831
-i386                   randconfig-x078-201831
-i386                   randconfig-x071-201831
-i386                   randconfig-x073-201831
-i386                   randconfig-x079-201831
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                          atari_defconfig
-sh                           se7705_defconfig
-um                               allyesconfig
-i386                   randconfig-x002-201831
-i386                   randconfig-x005-201831
-i386                   randconfig-x003-201831
-i386                   randconfig-x008-201831
-i386                   randconfig-x007-201831
-i386                   randconfig-x000-201831
-i386                   randconfig-x001-201831
-i386                   randconfig-x004-201831
-i386                   randconfig-x009-201831
-i386                   randconfig-x006-201831
-i386                   randconfig-x0-08080321
+If we agree that we *never* need to print anything unless a device is
+constrained by the fabric, I would get rid of the "verbose" flag and
+keep everything in pcie_print_link_status().
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+> ---
+>  drivers/pci/pci.c   | 22 ++++++++++++++++++----
+>  drivers/pci/probe.c | 21 +++++++++++++++++++++
+>  include/linux/pci.h |  1 +
+>  3 files changed, 40 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 316496e99da9..414ad7b3abdb 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -5302,14 +5302,15 @@ u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed *speed,
+>  }
+>  
+>  /**
+> - * pcie_print_link_status - Report the PCI device's link speed and width
+> + * __pcie_print_link_status - Report the PCI device's link speed and width
+>   * @dev: PCI device to query
+> + * @verbose: Be verbose -- print info even when enough bandwidth is available.
+>   *
+>   * Report the available bandwidth at the device.  If this is less than the
+>   * device is capable of, report the device's maximum possible bandwidth and
+>   * the upstream link that limits its performance to less than that.
+>   */
+> -void pcie_print_link_status(struct pci_dev *dev)
+> +void __pcie_print_link_status(struct pci_dev *dev, bool verbose)
+>  {
+>  	enum pcie_link_width width, width_cap;
+>  	enum pci_bus_speed speed, speed_cap;
+> @@ -5319,11 +5320,11 @@ void pcie_print_link_status(struct pci_dev *dev)
+>  	bw_cap = pcie_bandwidth_capable(dev, &speed_cap, &width_cap);
+>  	bw_avail = pcie_bandwidth_available(dev, &limiting_dev, &speed, &width);
+>  
+> -	if (bw_avail >= bw_cap)
+> +	if (bw_avail >= bw_cap && verbose)
+>  		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth (%s x%d link)\n",
+>  			 bw_cap / 1000, bw_cap % 1000,
+>  			 PCIE_SPEED2STR(speed_cap), width_cap);
+> -	else
+> +	else if (bw_avail < bw_cap)
+>  		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)\n",
+>  			 bw_avail / 1000, bw_avail % 1000,
+>  			 PCIE_SPEED2STR(speed), width,
+> @@ -5331,6 +5332,19 @@ void pcie_print_link_status(struct pci_dev *dev)
+>  			 bw_cap / 1000, bw_cap % 1000,
+>  			 PCIE_SPEED2STR(speed_cap), width_cap);
+>  }
+> +
+> +/**
+> + * pcie_print_link_status - Report the PCI device's link speed and width
+> + * @dev: PCI device to query
+> + *
+> + * Report the available bandwidth at the device.  If this is less than the
+> + * device is capable of, report the device's maximum possible bandwidth and
+> + * the upstream link that limits its performance to less than that.
+> + */
+> +void pcie_print_link_status(struct pci_dev *dev)
+> +{
+> +	__pcie_print_link_status(dev, true);
+> +}
+>  EXPORT_SYMBOL(pcie_print_link_status);
+>  
+>  /**
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 611adcd9c169..1c8c26dd2cb2 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -2205,6 +2205,24 @@ static struct pci_dev *pci_scan_device(struct pci_bus *bus, int devfn)
+>  	return dev;
+>  }
+>  
+> +static void pcie_check_upstream_link(struct pci_dev *dev)
+> +{
+> +	if (!pci_is_pcie(dev))
+> +		return;
+> +
+> +	/* Look from the device up to avoid downstream ports with no devices. */
+> +	if ((pci_pcie_type(dev) != PCI_EXP_TYPE_ENDPOINT) &&
+> +	    (pci_pcie_type(dev) != PCI_EXP_TYPE_LEG_END) &&
+> +	    (pci_pcie_type(dev) != PCI_EXP_TYPE_UPSTREAM))
+> +		return;
+> +
+> +	/* Multi-function PCIe share the same link/status. */
+> +	if (PCI_FUNC(dev->devfn) != 0 || dev->is_virtfn)
+> +		return;
+> +
+> +	__pcie_print_link_status(dev, false);
+> +}
+> +
+>  static void pci_init_capabilities(struct pci_dev *dev)
+>  {
+>  	/* Enhanced Allocation */
+> @@ -2240,6 +2258,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
+>  	/* Advanced Error Reporting */
+>  	pci_aer_init(dev);
+>  
+> +	/* Check link and detect downtrain errors */
+> +	pcie_check_upstream_link(dev);
+> +
+>  	if (pci_probe_reset_function(dev) == 0)
+>  		dev->reset_fn = 1;
+>  }
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index c133ccfa002e..d212de231259 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1087,6 +1087,7 @@ int pcie_set_mps(struct pci_dev *dev, int mps);
+>  u32 pcie_bandwidth_available(struct pci_dev *dev, struct pci_dev **limiting_dev,
+>  			     enum pci_bus_speed *speed,
+>  			     enum pcie_link_width *width);
+> +void __pcie_print_link_status(struct pci_dev *dev, bool verbose);
+>  void pcie_print_link_status(struct pci_dev *dev);
+>  int pcie_flr(struct pci_dev *dev);
+>  int __pci_reset_function_locked(struct pci_dev *dev);
+> -- 
+> 2.17.1
+> 
