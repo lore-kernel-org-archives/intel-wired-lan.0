@@ -1,64 +1,104 @@
 From: Venkataramanan, Anirudh <anirudh.venkataramanan@intel.com>
-Date: Tue, 7 Aug 2018 16:41:45 +0000
-Subject: [Intel-wired-lan] [PATCH v3 01/13] ice: Fix multiple static
- analyser warnings
-In-Reply-To: <9dc76e7840f2057306cf3d9ced9fbab394addbf3.camel@intel.com>
+Date: Tue, 7 Aug 2018 16:49:31 +0000
+Subject: [Intel-wired-lan] [PATCH v3 08/13] ice: Don't explicitly set
+ port_vlan_bits to 0
+In-Reply-To: <804857E1F29AAC47BF68C404FC60A184F23DD7B4@ORSMSX105.amr.corp.intel.com>
 References: <20180801034729.3864-1-anirudh.venkataramanan@intel.com>
- <20180801034729.3864-2-anirudh.venkataramanan@intel.com>
- <a4d02981-d08b-3748-cce8-b1025f491222@oracle.com>
- <9dc76e7840f2057306cf3d9ced9fbab394addbf3.camel@intel.com>
-Message-ID: <cea8b59467fc1e0abb034eb4349486aad5fcc677.camel@intel.com>
+ <20180801034729.3864-9-anirudh.venkataramanan@intel.com>
+ <804857E1F29AAC47BF68C404FC60A184F23DD7B4@ORSMSX105.amr.corp.intel.com>
+Message-ID: <d166c6edff404bec8932ca33dd14484d65f77a65.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2018-08-01 at 13:53 -0700, Jeff Kirsher wrote:
-> On Wed, 2018-08-01 at 11:16 -0700, Shannon Nelson wrote:
-> > On 7/31/2018 8:47 PM, Anirudh Venkataramanan wrote:
-> > > This patch fixes the following smatch errors:
-> > > 
-> > > 1) Fix "odd binop '0x0 & 0xc'" when performing the bitwise-and
-> > > with
-> > > a
-> > >      constant value of zero
-> > > (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_128_FLAG).
-> > >      Remove a similar bitwise-and with 0 in ice_add_marker_act()
-> > > and use the
-> > >      right mask ICE_LG_ACT_GENERIC_OFFSET_M in the expression.
-> > > 
-> > > 2) Fix a similar issue "odd binop '0x0 & 0x1800' in
-> > > ice_req_irq_msix_misc.
-> > > 
-> > > 3) Fix "odd binop '0x380000 & 0x7fff8'" in ice_add_marker_act().
-> > > Also, use
-> > >      a new define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX instead
-> > > of magic
-> > >      number '7'. Also remove the following statement that has
+On Wed, 2018-08-01 at 16:03 -0700, Allan, Bruce W wrote:
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org]
+> > On Behalf
+> > Of Anirudh Venkataramanan
+> > Sent: Tuesday, July 31, 2018 8:47 PM
+> > To: intel-wired-lan at lists.osuosl.org
+> > Subject: [Intel-wired-lan] [PATCH v3 08/13] ice: Don't explicitly
+> > set
+> > port_vlan_bits to 0
 > > 
-> > Message truncated - the "... statement that has ..." what?  Maybe
-> > Jeff 
-> > can address this before pushing upstream rather than bothering with
-> > yet 
-> > another patchset version.
+> > From: Brett Creeley <brett.creeley@intel.com>
+> > 
+> > This patch fixes the following smatch warning originally reported
+> > by
+> > Dan Carpenter:
+> > ice_set_dflt_vsi_ctx() warn: odd binop '0x0 & 0x18'
+> > 
+> > In ice_set_dflt_vsi_ctx() we clear bits 3 and 4 for legacy behavior
+> > (i.e. show VLAN, DEI and UP in the receive descriptors). However
+> > the logic to do this generated the above mentioned smatch warning.
+> > 
+> > Bits 3 and 4 in port_vlan_flags are anyway set to zero by the
+> > memset on
+> > ctxt->info field, so remove the logic to set these explicitly to 0.
+> > This
+> > fixes the smatch warning as well.
+> > 
+> > CC: Shannon Nelson <shannon.nelson@oracle.com>
 > 
-> LOL, I thought for a minute that the patch description got truncated
-> somehow when I applied the patch, but it appears to be sent out
-> truncated. :-)
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+I will squash this with "[PATCH v3 01/13] ice: Fix multiple static
+analyser warnings" in this series which already has this attribution.
+
 > 
-> Anirudh, just send out a v4 of just patch 1 of the series, with the
-> patch description fixed and I will update patch in my tree that is
-> being tested.
-
-Ugh. Sorry about that. Will send a revised version.
-
-- Ani
-
+> > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> > Signed-off-by: Anirudh Venkataramanan
+> > <anirudh.venkataramanan@intel.com>
+> > ---
+> > [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote
+> > commit message]
+> > ---
+> >  drivers/net/ethernet/intel/ice/ice_main.c | 9 ++++-----
+> >  1 file changed, 4 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
+> > b/drivers/net/ethernet/intel/ice/ice_main.c
+> > index d4f1f92faf65..3eff1d2d1543 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> > @@ -1367,14 +1367,13 @@ static void ice_set_dflt_vsi_ctx(struct
+> > ice_vsi_ctx
+> > *ctxt)
+> >  	ctxt->info.sw_flags = ICE_AQ_VSI_SW_FLAG_SRC_PRUNE;
+> >  	/* Traffic from VSI can be sent to LAN */
+> >  	ctxt->info.sw_flags2 = ICE_AQ_VSI_SW_FLAG_LAN_ENA;
+> > -	/* Allow all packets untagged/tagged */
+> > +	/* By default bits 3 and 4 in port_vlan_flags are 0's which
+> > results in
+> > +	 * legacy behavior (show VLAN, DEI, and UP) in descriptor.
+> > Also, allow
+> > +	 * all packets untagged/tagged.
+> > +	 */
+> >  	ctxt->info.port_vlan_flags = ((ICE_AQ_VSI_PVLAN_MODE_ALL &
+> >  				       ICE_AQ_VSI_PVLAN_MODE_M) >>
+> >  				      ICE_AQ_VSI_PVLAN_MODE_S);
+> > -	/* Show VLAN/UP from packets in Rx descriptors */
+> > -	ctxt->info.port_vlan_flags |= ((ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH
+> > &
+> > -					ICE_AQ_VSI_PVLAN_EMOD_M) >>
+> > -				       ICE_AQ_VSI_PVLAN_EMOD_S);
+> >  	/* Have 1:1 UP mapping for both ingress/egress tables */
+> >  	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
+> >  	table |= ICE_UP_TABLE_TRANSLATE(1, 1);
+> > --
+> > 2.17.1
+> > 
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at osuosl.org
+> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: smime.p7s
 Type: application/x-pkcs7-signature
 Size: 3302 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180807/042e50c6/attachment.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180807/46c7e49a/attachment.bin>
