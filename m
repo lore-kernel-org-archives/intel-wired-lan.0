@@ -1,103 +1,184 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Wed, 8 Aug 2018 20:27:36 +0300
-Subject: [Intel-wired-lan] [PATCH v6 8/9] net/mlx5: Do not call
- pcie_print_link_status()
-In-Reply-To: <79264a38-e3e4-d270-95df-a09047f7a15e@gmail.com>
-References: <CAErSpo4PK+SQLNfdkLNt9eLc7bpbxbkZCsa8T-tQpid601n0SQ@mail.gmail.com>
- <20180806232600.25694-1-mr.nuke.me@gmail.com>
- <20180806232600.25694-8-mr.nuke.me@gmail.com>
- <20180808060848.GQ13378@mtr-leonro.mtl.com>
- <05056a70-ee78-ea3c-0b9b-6d64a8663b11@mellanox.com>
- <20180808154142.GZ13378@mtr-leonro.mtl.com>
- <5578cd9a-e4f0-85ab-4a86-bfa23eec136c@mellanox.com>
- <79264a38-e3e4-d270-95df-a09047f7a15e@gmail.com>
-Message-ID: <20180808172736.GB13378@mtr-leonro.mtl.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 09 Aug 2018 03:52:29 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 2df1944298d9ee88db98535434a22226844b49c3
+Message-ID: <5b6b49fd.093CzzKqxzOD9xDM%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Aug 08, 2018 at 11:33:51AM -0500, Alex G. wrote:
->
->
-> On 08/08/2018 10:56 AM, Tal Gilboa wrote:
-> > On 8/8/2018 6:41 PM, Leon Romanovsky wrote:
-> > > On Wed, Aug 08, 2018 at 05:23:12PM +0300, Tal Gilboa wrote:
-> > > > On 8/8/2018 9:08 AM, Leon Romanovsky wrote:
-> > > > > On Mon, Aug 06, 2018 at 06:25:42PM -0500, Alexandru Gagniuc wrote:
-> > > > > > This is now done by the PCI core to warn of sub-optimal bandwidth.
-> > > > > >
-> > > > > > Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
-> > > > > > ---
-> > > > > > ?? drivers/net/ethernet/mellanox/mlx5/core/main.c | 4 ----
-> > > > > > ?? 1 file changed, 4 deletions(-)
-> > > > > >
-> > > > >
-> > > > > Thanks,
-> > > > > Reviewed-by: Leon Romanovsky <leonro@mellanox.com>
-> > > > >
-> > > >
-> > > > Alex,
-> > > > I loaded mlx5 driver with and without these series. The report
-> > > > in dmesg is
-> > > > now missing. From what I understood, the status should be
-> > > > reported at least
-> > > > once, even if everything is in order.
-> > >
-> > > It is not what this series is doing and it removes prints completely if
-> > > fabric can deliver more than card is capable.
-> > >
-> > > > We need this functionality to stay.
-> > >
-> > > I'm not sure that you need this information in driver's dmesg output,
-> > > but most probably something globally visible and accessible per-pci
-> > > device.
-> >
-> > Currently we have users that look for it. If we remove the dmesg print
-> > we need this to be reported elsewhere. Adding it to sysfs for example
-> > should be a valid solution for our case.
->
-> I think a stop-gap measure is to leave the pcie_print_link_status() call in
-> drivers that really need it for whatever reason. Implementing a reliable
-> reporting through sysfs might take some tinkering, and I don't think it's a
-> sufficient reason to block the heart of this series -- being able to detect
-> bottlenecks and link downtraining.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 2df1944298d9ee88db98535434a22226844b49c3  i40e: Fix for tx timeouts when interface is brought up if DCB is enabled
 
-IMHO, you did right change and it is better to replace this print to some
-more generic solution now while you are doing it and don't leave leftovers.
+elapsed time: 95m
 
-Thanks
+configs tested: 159
 
->
-> Alex
->
-> > >
-> > > >
-> > > > net-next (dmesg output for 07:00.0):
-> > > > [270498.625351] mlx5_core 0000:07:00.0: firmware version: 14.22.4020
-> > > > [270498.632130] mlx5_core 0000:07:00.0: 63.008 Gb/s available
-> > > > PCIe bandwidth
-> > > > (8 GT/s x8 link)
-> > > > [270499.169533] (0000:07:00.0): E-Switch: Total vports 9, per vport: max
-> > > > uc(1024) max mc(16384)
-> > > > [270499.182358] mlx5_core 0000:07:00.0: Port module event:
-> > > > module 0, Cable
-> > > > plugged
-> > > >
-> > > > net-next + patches (dmesg output for 07:00.0):
-> > > > [? 331.608472] mlx5_core 0000:07:00.0: firmware version: 14.22.4020
-> > > > [? 332.564938] (0000:07:00.0): E-Switch: Total vports 9, per vport: max
-> > > > uc(1024) max mc(16384)
-> > > > [? 332.616271] mlx5_core 0000:07:00.0: Port module event: module
-> > > > 0, Cable
-> > > > plugged
-> > > >
-> > > >
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 801 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180808/436c707b/attachment.asc>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+ia64                             allmodconfig
+powerpc                  iss476-smp_defconfig
+x86_64                 randconfig-a0-08090238
+powerpc                      pasemi_defconfig
+s390                             allyesconfig
+i386                   randconfig-c0-08090243
+i386                               tinyconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201831
+x86_64                 randconfig-x000-201831
+x86_64                 randconfig-x009-201831
+x86_64                 randconfig-x004-201831
+x86_64                 randconfig-x001-201831
+x86_64                 randconfig-x003-201831
+x86_64                 randconfig-x007-201831
+x86_64                 randconfig-x008-201831
+x86_64                 randconfig-x002-201831
+x86_64                 randconfig-x005-201831
+x86_64                 randconfig-x006-201831
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i1-201831
+i386                     randconfig-i0-201831
+c6x                        evmc6474_defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                              fedora-25
+x86_64                 randconfig-g0-08082351
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a1-201831
+i386                     randconfig-a0-201831
+x86_64                 randconfig-s0-08090253
+x86_64                 randconfig-s1-08090253
+x86_64                 randconfig-s2-08090253
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                     randconfig-s0-201831
+i386                     randconfig-s1-201831
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-08090255
+x86_64                 randconfig-s4-08090255
+x86_64                 randconfig-s5-08090255
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201831
+i386                   randconfig-b0-08090222
+x86_64                 randconfig-b0-08081716
+arm                           sunxi_defconfig
+mips                      bmips_stb_defconfig
+x86_64                 randconfig-u0-08090236
+i386                   randconfig-x018-201831
+i386                   randconfig-x010-201831
+i386                   randconfig-x017-201831
+i386                   randconfig-x016-201831
+i386                   randconfig-x013-201831
+i386                   randconfig-x011-201831
+i386                   randconfig-x015-201831
+i386                   randconfig-x019-201831
+i386                   randconfig-x012-201831
+i386                   randconfig-x014-201831
+x86_64                randconfig-ne0-08090237
+x86_64                 randconfig-h0-08090247
+i386                   randconfig-x002-201831
+i386                   randconfig-x005-201831
+i386                   randconfig-x003-201831
+i386                   randconfig-x008-201831
+i386                   randconfig-x007-201831
+i386                   randconfig-x000-201831
+i386                   randconfig-x001-201831
+i386                   randconfig-x004-201831
+i386                   randconfig-x009-201831
+i386                   randconfig-x006-201831
+x86_64                 randconfig-x019-201831
+x86_64                 randconfig-x013-201831
+x86_64                 randconfig-x017-201831
+x86_64                 randconfig-x018-201831
+x86_64                 randconfig-x012-201831
+x86_64                 randconfig-x010-201831
+x86_64                 randconfig-x014-201831
+x86_64                 randconfig-x011-201831
+x86_64                 randconfig-x016-201831
+x86_64                 randconfig-x015-201831
+i386                   randconfig-x077-201831
+i386                   randconfig-x070-201831
+i386                   randconfig-x076-201831
+i386                   randconfig-x072-201831
+i386                   randconfig-x075-201831
+i386                   randconfig-x074-201831
+i386                   randconfig-x078-201831
+i386                   randconfig-x071-201831
+i386                   randconfig-x073-201831
+i386                   randconfig-x079-201831
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                     stx_gp3_defconfig
+x86_64                randconfig-ws0-08082102
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+mips                         tb0219_defconfig
+s390                    performance_defconfig
+x86_64                 randconfig-r0-08090236
+i386                   randconfig-x0-08090252
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
