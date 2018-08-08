@@ -1,37 +1,103 @@
-From: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Date: Wed, 8 Aug 2018 11:26:05 -0500
-Subject: [Intel-wired-lan] [PATCH 00/33] net: ethernet: Mark expected
- switch fall-throughs
-In-Reply-To: <20180807.175931.200772329178253653.davem@davemloft.net>
-References: <cover.1533675546.git.gustavo@embeddedor.com>
- <20180807.175931.200772329178253653.davem@davemloft.net>
-Message-ID: <620f18c0-7329-f808-43bc-0f51def3b92a@embeddedor.com>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Wed, 8 Aug 2018 20:27:36 +0300
+Subject: [Intel-wired-lan] [PATCH v6 8/9] net/mlx5: Do not call
+ pcie_print_link_status()
+In-Reply-To: <79264a38-e3e4-d270-95df-a09047f7a15e@gmail.com>
+References: <CAErSpo4PK+SQLNfdkLNt9eLc7bpbxbkZCsa8T-tQpid601n0SQ@mail.gmail.com>
+ <20180806232600.25694-1-mr.nuke.me@gmail.com>
+ <20180806232600.25694-8-mr.nuke.me@gmail.com>
+ <20180808060848.GQ13378@mtr-leonro.mtl.com>
+ <05056a70-ee78-ea3c-0b9b-6d64a8663b11@mellanox.com>
+ <20180808154142.GZ13378@mtr-leonro.mtl.com>
+ <5578cd9a-e4f0-85ab-4a86-bfa23eec136c@mellanox.com>
+ <79264a38-e3e4-d270-95df-a09047f7a15e@gmail.com>
+Message-ID: <20180808172736.GB13378@mtr-leonro.mtl.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Wed, Aug 08, 2018 at 11:33:51AM -0500, Alex G. wrote:
+>
+>
+> On 08/08/2018 10:56 AM, Tal Gilboa wrote:
+> > On 8/8/2018 6:41 PM, Leon Romanovsky wrote:
+> > > On Wed, Aug 08, 2018 at 05:23:12PM +0300, Tal Gilboa wrote:
+> > > > On 8/8/2018 9:08 AM, Leon Romanovsky wrote:
+> > > > > On Mon, Aug 06, 2018 at 06:25:42PM -0500, Alexandru Gagniuc wrote:
+> > > > > > This is now done by the PCI core to warn of sub-optimal bandwidth.
+> > > > > >
+> > > > > > Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+> > > > > > ---
+> > > > > > ?? drivers/net/ethernet/mellanox/mlx5/core/main.c | 4 ----
+> > > > > > ?? 1 file changed, 4 deletions(-)
+> > > > > >
+> > > > >
+> > > > > Thanks,
+> > > > > Reviewed-by: Leon Romanovsky <leonro@mellanox.com>
+> > > > >
+> > > >
+> > > > Alex,
+> > > > I loaded mlx5 driver with and without these series. The report
+> > > > in dmesg is
+> > > > now missing. From what I understood, the status should be
+> > > > reported at least
+> > > > once, even if everything is in order.
+> > >
+> > > It is not what this series is doing and it removes prints completely if
+> > > fabric can deliver more than card is capable.
+> > >
+> > > > We need this functionality to stay.
+> > >
+> > > I'm not sure that you need this information in driver's dmesg output,
+> > > but most probably something globally visible and accessible per-pci
+> > > device.
+> >
+> > Currently we have users that look for it. If we remove the dmesg print
+> > we need this to be reported elsewhere. Adding it to sysfs for example
+> > should be a valid solution for our case.
+>
+> I think a stop-gap measure is to leave the pcie_print_link_status() call in
+> drivers that really need it for whatever reason. Implementing a reliable
+> reporting through sysfs might take some tinkering, and I don't think it's a
+> sufficient reason to block the heart of this series -- being able to detect
+> bottlenecks and link downtraining.
 
-
-On 8/7/18 7:59 PM, David Miller wrote:
-> From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-> Date: Tue, 7 Aug 2018 18:09:00 -0500
-> 
->> In preparation to enabling -Wimplicit-fallthrough, this patchset aims
->> to add some annotations in order to mark switch cases where we are
->> expecting to fall through.
-> 
-> Ok, I went through all of these and they look good.
-> 
-> If any are not correct we can revert/fix.
-> 
-
-Yep. If anything is reported, I'll take a look right away.
-
-> Series applied, thanks.
-> 
+IMHO, you did right change and it is better to replace this print to some
+more generic solution now while you are doing it and don't leave leftovers.
 
 Thanks
---
-Gustavo
+
+>
+> Alex
+>
+> > >
+> > > >
+> > > > net-next (dmesg output for 07:00.0):
+> > > > [270498.625351] mlx5_core 0000:07:00.0: firmware version: 14.22.4020
+> > > > [270498.632130] mlx5_core 0000:07:00.0: 63.008 Gb/s available
+> > > > PCIe bandwidth
+> > > > (8 GT/s x8 link)
+> > > > [270499.169533] (0000:07:00.0): E-Switch: Total vports 9, per vport: max
+> > > > uc(1024) max mc(16384)
+> > > > [270499.182358] mlx5_core 0000:07:00.0: Port module event:
+> > > > module 0, Cable
+> > > > plugged
+> > > >
+> > > > net-next + patches (dmesg output for 07:00.0):
+> > > > [? 331.608472] mlx5_core 0000:07:00.0: firmware version: 14.22.4020
+> > > > [? 332.564938] (0000:07:00.0): E-Switch: Total vports 9, per vport: max
+> > > > uc(1024) max mc(16384)
+> > > > [? 332.616271] mlx5_core 0000:07:00.0: Port module event: module
+> > > > 0, Cable
+> > > > plugged
+> > > >
+> > > >
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 801 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180808/436c707b/attachment.asc>
