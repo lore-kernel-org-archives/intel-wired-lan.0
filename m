@@ -1,42 +1,53 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 8 Aug 2018 16:46:07 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix for tx timeouts when
- interface is brought up if DCB is enabled
-In-Reply-To: <20180808001123.55890-1-alice.michael@intel.com>
-References: <20180808001123.55890-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2E884E@ORSMSX104.amr.corp.intel.com>
+From: Tal Gilboa <talgi@mellanox.com>
+Date: Wed, 8 Aug 2018 17:23:12 +0300
+Subject: [Intel-wired-lan] [PATCH v6 8/9] net/mlx5: Do not call
+ pcie_print_link_status()
+In-Reply-To: <20180808060848.GQ13378@mtr-leonro.mtl.com>
+References: <CAErSpo4PK+SQLNfdkLNt9eLc7bpbxbkZCsa8T-tQpid601n0SQ@mail.gmail.com>
+ <20180806232600.25694-1-mr.nuke.me@gmail.com>
+ <20180806232600.25694-8-mr.nuke.me@gmail.com>
+ <20180808060848.GQ13378@mtr-leonro.mtl.com>
+Message-ID: <05056a70-ee78-ea3c-0b9b-6d64a8663b11@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Tuesday, August 7, 2018 5:11 PM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Cc: Szapar, Martyna <martyna.szapar@intel.com>
-> Subject: [Intel-wired-lan] [PATCH] i40e: Fix for tx timeouts when interface is
-> brought up if DCB is enabled
+On 8/8/2018 9:08 AM, Leon Romanovsky wrote:
+> On Mon, Aug 06, 2018 at 06:25:42PM -0500, Alexandru Gagniuc wrote:
+>> This is now done by the PCI core to warn of sub-optimal bandwidth.
+>>
+>> Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+>> ---
+>>   drivers/net/ethernet/mellanox/mlx5/core/main.c | 4 ----
+>>   1 file changed, 4 deletions(-)
+>>
 > 
-> From: "Szapar, Martyna" <martyna.szapar@intel.com>
+> Thanks,
+> Reviewed-by: Leon Romanovsky <leonro@mellanox.com>
 > 
-> If interface is connected to switch port configured for DCB there are TX
-> timeouts when bringing up interface. Problem started appearing after adding
-> in i40e driver code mqprio hardware offload mode. In function
-> i40e_vsi_configure_bw_alloc was added resetting BW rate which should be
-> executing when mqprio qdisc is removed but was also when there was no
-> mqprio qdisc added and DCB was enabled. In this patch was added additional
-> check for DCB flag so now when DCB is enabled the correct DCB configs from
-> before mqprio patch are restored.
-> 
-> Signed-off-by: Martyna Szapar <martyna.szapar@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 15 ++++++++-------
->  1 file changed, 8 insertions(+), 7 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Alex,
+I loaded mlx5 driver with and without these series. The report in dmesg 
+is now missing. From what I understood, the status should be reported at 
+least once, even if everything is in order. We need this functionality 
+to stay.
+
+net-next (dmesg output for 07:00.0):
+[270498.625351] mlx5_core 0000:07:00.0: firmware version: 14.22.4020
+[270498.632130] mlx5_core 0000:07:00.0: 63.008 Gb/s available PCIe 
+bandwidth (8 GT/s x8 link)
+[270499.169533] (0000:07:00.0): E-Switch: Total vports 9, per vport: max 
+uc(1024) max mc(16384)
+[270499.182358] mlx5_core 0000:07:00.0: Port module event: module 0, 
+Cable plugged
+
+net-next + patches (dmesg output for 07:00.0):
+[  331.608472] mlx5_core 0000:07:00.0: firmware version: 14.22.4020
+[  332.564938] (0000:07:00.0): E-Switch: Total vports 9, per vport: max 
+uc(1024) max mc(16384)
+[  332.616271] mlx5_core 0000:07:00.0: Port module event: module 0, 
+Cable plugged
 
 
