@@ -1,64 +1,147 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu,  9 Aug 2018 06:28:57 -0700
-Subject: [Intel-wired-lan] [PATCH v4 07/13] ice: Use order_base_2 to
- calculate higher power of 2
+Date: Thu,  9 Aug 2018 06:28:58 -0700
+Subject: [Intel-wired-lan] [PATCH v4 08/13] ice: Set VLAN flags correctly
 In-Reply-To: <20180809132903.22819-1-anirudh.venkataramanan@intel.com>
 References: <20180809132903.22819-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180809132903.22819-8-anirudh.venkataramanan@intel.com>
+Message-ID: <20180809132903.22819-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Currently, we use a combination of ilog2 and is_power_of_2() to
-calculate the next power of 2 for the qcount. This appears to be causing
-a warning on some combinations of GCC and the Linux kernel:
+In the struct ice_aqc_vsi_props the field port_vlan_flags is an
+overloaded term because it is used for both port VLANs (PVLANs) and
+regular VLANs. This is an issue and is very confusing especially when
+dealing with VFs because normal VLANs and port VLANs are not the same.
+To fix this the field was renamed to vlan_flags and all of the #define's
+labeled *_PVLAN_* were renamed to *_VLAN_* if they are not specific to
+port VLANs.
 
-MODPOST 1 modules
-WARNING: "____ilog2_NaN" [ice.ko] undefined!
+Also in ice_vsi_manage_vlan_stripping, set the ICE_AQ_VSI_VLAN_MODE_ALL
+bit to allow the driver to add a VLAN tag to all packets it sends.
 
-This appears to because because GCC realizes that qcount could be zero
-in some circumstances and thus attempts to link against the
-intentionally undefined ___ilog2_NaN function.
-
-The order_base_2 function is intentionally defined to return 0 when
-passed 0 as an argument, and thus will be safe to use here.
-
-This not only fixes the warning but makes the resulting code slightly
-cleaner, and is really what we should have used originally.
-
-Also update the comment to make it more clear that we are rounding up,
-not just incrementing the ilog2 of qcount unconditionally.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> minor cleanup for upstream submission]
----
- drivers/net/ethernet/intel/ice/ice_main.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 24 +++++++-------
+ drivers/net/ethernet/intel/ice/ice_main.c     | 31 +++++++++++--------
+ 2 files changed, 30 insertions(+), 25 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 6d3e11659ba5..a0614f472658 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -329,19 +329,19 @@ struct ice_aqc_vsi_props {
+ 	/* VLAN section */
+ 	__le16 pvid; /* VLANS include priority bits */
+ 	u8 pvlan_reserved[2];
+-	u8 port_vlan_flags;
+-#define ICE_AQ_VSI_PVLAN_MODE_S	0
+-#define ICE_AQ_VSI_PVLAN_MODE_M	(0x3 << ICE_AQ_VSI_PVLAN_MODE_S)
+-#define ICE_AQ_VSI_PVLAN_MODE_UNTAGGED	0x1
+-#define ICE_AQ_VSI_PVLAN_MODE_TAGGED	0x2
+-#define ICE_AQ_VSI_PVLAN_MODE_ALL	0x3
++	u8 vlan_flags;
++#define ICE_AQ_VSI_VLAN_MODE_S	0
++#define ICE_AQ_VSI_VLAN_MODE_M	(0x3 << ICE_AQ_VSI_VLAN_MODE_S)
++#define ICE_AQ_VSI_VLAN_MODE_UNTAGGED	0x1
++#define ICE_AQ_VSI_VLAN_MODE_TAGGED	0x2
++#define ICE_AQ_VSI_VLAN_MODE_ALL	0x3
+ #define ICE_AQ_VSI_PVLAN_INSERT_PVID	BIT(2)
+-#define ICE_AQ_VSI_PVLAN_EMOD_S	3
+-#define ICE_AQ_VSI_PVLAN_EMOD_M	(0x3 << ICE_AQ_VSI_PVLAN_EMOD_S)
+-#define ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH	(0x0 << ICE_AQ_VSI_PVLAN_EMOD_S)
+-#define ICE_AQ_VSI_PVLAN_EMOD_STR_UP	(0x1 << ICE_AQ_VSI_PVLAN_EMOD_S)
+-#define ICE_AQ_VSI_PVLAN_EMOD_STR	(0x2 << ICE_AQ_VSI_PVLAN_EMOD_S)
+-#define ICE_AQ_VSI_PVLAN_EMOD_NOTHING	(0x3 << ICE_AQ_VSI_PVLAN_EMOD_S)
++#define ICE_AQ_VSI_VLAN_EMOD_S		3
++#define ICE_AQ_VSI_VLAN_EMOD_M		(0x3 << ICE_AQ_VSI_VLAN_EMOD_S)
++#define ICE_AQ_VSI_VLAN_EMOD_STR_BOTH	(0x0 << ICE_AQ_VSI_VLAN_EMOD_S)
++#define ICE_AQ_VSI_VLAN_EMOD_STR_UP	(0x1 << ICE_AQ_VSI_VLAN_EMOD_S)
++#define ICE_AQ_VSI_VLAN_EMOD_STR	(0x2 << ICE_AQ_VSI_VLAN_EMOD_S)
++#define ICE_AQ_VSI_VLAN_EMOD_NOTHING	(0x3 << ICE_AQ_VSI_VLAN_EMOD_S)
+ 	u8 pvlan_reserved2[3];
+ 	/* ingress egress up sections */
+ 	__le32 ingress_table; /* bitmap, 3 bits per up */
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index f3ba4f76b6cb..3eff1d2d1543 100644
+index 3eff1d2d1543..68003fad33d1 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1313,11 +1313,8 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- 		qcount = numq_tc;
+@@ -1367,13 +1367,15 @@ static void ice_set_dflt_vsi_ctx(struct ice_vsi_ctx *ctxt)
+ 	ctxt->info.sw_flags = ICE_AQ_VSI_SW_FLAG_SRC_PRUNE;
+ 	/* Traffic from VSI can be sent to LAN */
+ 	ctxt->info.sw_flags2 = ICE_AQ_VSI_SW_FLAG_LAN_ENA;
+-	/* By default bits 3 and 4 in port_vlan_flags are 0's which results in
+-	 * legacy behavior (show VLAN, DEI, and UP) in descriptor. Also, allow
+-	 * all packets untagged/tagged.
++
++	/* By default bits 3 and 4 in vlan_flags are 0's which results in legacy
++	 * behavior (show VLAN, DEI, and UP) in descriptor. Also, allow all
++	 * packets untagged/tagged.
+ 	 */
+-	ctxt->info.port_vlan_flags = ((ICE_AQ_VSI_PVLAN_MODE_ALL &
+-				       ICE_AQ_VSI_PVLAN_MODE_M) >>
+-				      ICE_AQ_VSI_PVLAN_MODE_S);
++	ctxt->info.vlan_flags = ((ICE_AQ_VSI_VLAN_MODE_ALL &
++				  ICE_AQ_VSI_VLAN_MODE_M) >>
++				 ICE_AQ_VSI_VLAN_MODE_S);
++
+ 	/* Have 1:1 UP mapping for both ingress/egress tables */
+ 	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
+ 	table |= ICE_UP_TABLE_TRANSLATE(1, 1);
+@@ -3732,10 +3734,10 @@ static int ice_vsi_manage_vlan_insertion(struct ice_vsi *vsi)
+ 	enum ice_status status;
+ 
+ 	/* Here we are configuring the VSI to let the driver add VLAN tags by
+-	 * setting port_vlan_flags to ICE_AQ_VSI_PVLAN_MODE_ALL. The actual VLAN
+-	 * tag insertion happens in the Tx hot path, in ice_tx_map.
++	 * setting vlan_flags to ICE_AQ_VSI_VLAN_MODE_ALL. The actual VLAN tag
++	 * insertion happens in the Tx hot path, in ice_tx_map.
+ 	 */
+-	ctxt.info.port_vlan_flags = ICE_AQ_VSI_PVLAN_MODE_ALL;
++	ctxt.info.vlan_flags = ICE_AQ_VSI_VLAN_MODE_ALL;
+ 
+ 	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
+ 	ctxt.vsi_num = vsi->vsi_num;
+@@ -3747,7 +3749,7 @@ static int ice_vsi_manage_vlan_insertion(struct ice_vsi *vsi)
+ 		return -EIO;
  	}
  
--	/* find higher power-of-2 of qcount */
--	pow = ilog2(qcount);
--
--	if (!is_power_of_2(qcount))
--		pow++;
-+	/* find the (rounded up) power-of-2 of qcount */
-+	pow = order_base_2(qcount);
+-	vsi->info.port_vlan_flags = ctxt.info.port_vlan_flags;
++	vsi->info.vlan_flags = ctxt.info.vlan_flags;
+ 	return 0;
+ }
  
- 	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
- 		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
+@@ -3769,12 +3771,15 @@ static int ice_vsi_manage_vlan_stripping(struct ice_vsi *vsi, bool ena)
+ 	 */
+ 	if (ena) {
+ 		/* Strip VLAN tag from Rx packet and put it in the desc */
+-		ctxt.info.port_vlan_flags = ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH;
++		ctxt.info.vlan_flags = ICE_AQ_VSI_VLAN_EMOD_STR_BOTH;
+ 	} else {
+ 		/* Disable stripping. Leave tag in packet */
+-		ctxt.info.port_vlan_flags = ICE_AQ_VSI_PVLAN_EMOD_NOTHING;
++		ctxt.info.vlan_flags = ICE_AQ_VSI_VLAN_EMOD_NOTHING;
+ 	}
+ 
++	/* Allow all packets untagged/tagged */
++	ctxt.info.vlan_flags |= ICE_AQ_VSI_VLAN_MODE_ALL;
++
+ 	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
+ 	ctxt.vsi_num = vsi->vsi_num;
+ 
+@@ -3785,7 +3790,7 @@ static int ice_vsi_manage_vlan_stripping(struct ice_vsi *vsi, bool ena)
+ 		return -EIO;
+ 	}
+ 
+-	vsi->info.port_vlan_flags = ctxt.info.port_vlan_flags;
++	vsi->info.vlan_flags = ctxt.info.vlan_flags;
+ 	return 0;
+ }
+ 
 -- 
 2.17.1
 
