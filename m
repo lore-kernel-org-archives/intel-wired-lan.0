@@ -1,157 +1,45 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu,  9 Aug 2018 06:28:51 -0700
-Subject: [Intel-wired-lan] [PATCH v4 01/13] ice: Fix multiple static
- analyser warnings
+Date: Thu,  9 Aug 2018 06:28:52 -0700
+Subject: [Intel-wired-lan] [PATCH v4 02/13] ice: Remove unncessary node
+ owner check
 In-Reply-To: <20180809132903.22819-1-anirudh.venkataramanan@intel.com>
 References: <20180809132903.22819-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180809132903.22819-2-anirudh.venkataramanan@intel.com>
+Message-ID: <20180809132903.22819-3-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes the following smatch errors:
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-1) Fix "odd binop '0x0 & 0xc'" when performing the bitwise-and with a
-   constant value of zero (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_128_FLAG).
-   Remove a similar bitwise-and with 0 in ice_add_marker_act() and use the
-   right mask ICE_LG_ACT_GENERIC_OFFSET_M in the expression.
+There is already a check for owner == ICE_SCHED_NODE_OWNER_LAN at the
+beginning of ice_sched_update_vsi_child_nodes. Remove the additional
+check to address the static anlaysis tool smatch issue "warn: we tested
+'owner' before and it was 'false'".
 
-2) Fix a similar issue "odd binop '0x0 & 0x1800' in ice_req_irq_msix_misc.
-
-3) Fix "odd binop '0x380000 & 0x7fff8'" in ice_add_marker_act(). Also, use
-   a new define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX instead of magic
-   number '7'.
-
-4) Fix warn: odd binop '0x0 & 0x18' in ice_set_dflt_vsi_ctx() by removing
-   unnecessary logic to explicitly unset bits 3 and 4 in port_vlan_bits.
-   These bits are unset already by the memset on ctxt->info.
-
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+--
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_common.c   | 25 +++++++++++--------
- drivers/net/ethernet/intel/ice/ice_main.c     | 19 ++++++--------
- drivers/net/ethernet/intel/ice/ice_switch.c   |  4 +--
- 4 files changed, 25 insertions(+), 24 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sched.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 7541ec2270b3..6d3e11659ba5 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -594,6 +594,7 @@ struct ice_sw_rule_lg_act {
- #define ICE_LG_ACT_GENERIC_OFFSET_M	(0x7 << ICE_LG_ACT_GENERIC_OFFSET_S)
- #define ICE_LG_ACT_GENERIC_PRIORITY_S	22
- #define ICE_LG_ACT_GENERIC_PRIORITY_M	(0x7 << ICE_LG_ACT_GENERIC_PRIORITY_S)
-+#define ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX	7
- 
- 	/* Action = 7 - Set Stat count */
- #define ICE_LG_ACT_STAT_COUNT		0x7
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 71d032cc5fa7..d5300b606d5a 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1619,20 +1619,23 @@ __ice_aq_get_set_rss_lut(struct ice_hw *hw, u16 vsi_id, u8 lut_type, u8 *lut,
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index 2e6c1d92cc88..eeae199469b6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1576,8 +1576,7 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id, u8 tc,
+ 			return status;
  	}
  
- 	/* LUT size is only valid for Global and PF table types */
--	if (lut_size == ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_128) {
--		flags |= (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_128_FLAG <<
--			  ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_S) &
--			 ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_M;
--	} else if (lut_size == ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_512) {
-+	switch (lut_size) {
-+	case ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_128:
-+		break;
-+	case ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_512:
- 		flags |= (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_512_FLAG <<
- 			  ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_S) &
- 			 ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_M;
--	} else if ((lut_size == ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_2K) &&
--		   (lut_type == ICE_AQC_GSET_RSS_LUT_TABLE_TYPE_PF)) {
--		flags |= (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_2K_FLAG <<
--			  ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_S) &
--			 ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_M;
--	} else {
-+		break;
-+	case ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_2K:
-+		if (lut_type == ICE_AQC_GSET_RSS_LUT_TABLE_TYPE_PF) {
-+			flags |= (ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_2K_FLAG <<
-+				  ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_S) &
-+				 ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_M;
-+			break;
-+		}
-+		/* fall-through */
-+	default:
- 		status = ICE_ERR_PARAM;
- 		goto ice_aq_get_set_rss_lut_exit;
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 5299caf55a7f..186e764a469a 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1352,14 +1352,13 @@ static void ice_set_dflt_vsi_ctx(struct ice_vsi_ctx *ctxt)
- 	ctxt->info.sw_flags = ICE_AQ_VSI_SW_FLAG_SRC_PRUNE;
- 	/* Traffic from VSI can be sent to LAN */
- 	ctxt->info.sw_flags2 = ICE_AQ_VSI_SW_FLAG_LAN_ENA;
--	/* Allow all packets untagged/tagged */
-+	/* By default bits 3 and 4 in port_vlan_flags are 0's which results in
-+	 * legacy behavior (show VLAN, DEI, and UP) in descriptor. Also, allow
-+	 * all packets untagged/tagged.
-+	 */
- 	ctxt->info.port_vlan_flags = ((ICE_AQ_VSI_PVLAN_MODE_ALL &
- 				       ICE_AQ_VSI_PVLAN_MODE_M) >>
- 				      ICE_AQ_VSI_PVLAN_MODE_S);
--	/* Show VLAN/UP from packets in Rx descriptors */
--	ctxt->info.port_vlan_flags |= ((ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH &
--					ICE_AQ_VSI_PVLAN_EMOD_M) >>
--				       ICE_AQ_VSI_PVLAN_EMOD_S);
- 	/* Have 1:1 UP mapping for both ingress/egress tables */
- 	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
- 	table |= ICE_UP_TABLE_TRANSLATE(1, 1);
-@@ -2058,15 +2057,13 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
- skip_req_irq:
- 	ice_ena_misc_vector(pf);
+-	if (owner == ICE_SCHED_NODE_OWNER_LAN)
+-		vsi->max_lanq[tc] = new_numqs;
++	vsi->max_lanq[tc] = new_numqs;
  
--	val = (pf->oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
--	      (ICE_RX_ITR & PFINT_OICR_CTL_ITR_INDX_M) |
--	      PFINT_OICR_CTL_CAUSE_ENA_M;
-+	val = ((pf->oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
-+	       PFINT_OICR_CTL_CAUSE_ENA_M);
- 	wr32(hw, PFINT_OICR_CTL, val);
- 
- 	/* This enables Admin queue Interrupt causes */
--	val = (pf->oicr_idx & PFINT_FW_CTL_MSIX_INDX_M) |
--	      (ICE_RX_ITR & PFINT_FW_CTL_ITR_INDX_M) |
--	      PFINT_FW_CTL_CAUSE_ENA_M;
-+	val = ((pf->oicr_idx & PFINT_FW_CTL_MSIX_INDX_M) |
-+	       PFINT_FW_CTL_CAUSE_ENA_M);
- 	wr32(hw, PFINT_FW_CTL, val);
- 
- 	itr_gran = hw->itr_gran_200;
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 723d15f1e90b..6b7ec2ae5ad6 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -645,14 +645,14 @@ ice_add_marker_act(struct ice_hw *hw, struct ice_fltr_mgmt_list_entry *m_ent,
- 	act |= (1 << ICE_LG_ACT_GENERIC_VALUE_S) & ICE_LG_ACT_GENERIC_VALUE_M;
- 	lg_act->pdata.lg_act.act[1] = cpu_to_le32(act);
- 
--	act = (7 << ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_VALUE_M;
-+	act = (ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX <<
-+	       ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_OFFSET_M;
- 
- 	/* Third action Marker value */
- 	act |= ICE_LG_ACT_GENERIC;
- 	act |= (sw_marker << ICE_LG_ACT_GENERIC_VALUE_S) &
- 		ICE_LG_ACT_GENERIC_VALUE_M;
- 
--	act |= (0 << ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_VALUE_M;
- 	lg_act->pdata.lg_act.act[2] = cpu_to_le32(act);
- 
- 	/* call the fill switch rule to fill the lookup tx rx structure */
+ 	return status;
+ }
 -- 
 2.17.1
 
