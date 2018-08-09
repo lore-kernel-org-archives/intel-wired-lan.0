@@ -1,222 +1,183 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Thu, 9 Aug 2018 09:02:55 -0500
-Subject: [Intel-wired-lan] [PATCH v6 8/9] net/mlx5: Do not call
- pcie_print_link_status()
-In-Reply-To: <20180808172736.GB13378@mtr-leonro.mtl.com>
-References: <CAErSpo4PK+SQLNfdkLNt9eLc7bpbxbkZCsa8T-tQpid601n0SQ@mail.gmail.com>
- <20180806232600.25694-1-mr.nuke.me@gmail.com>
- <20180806232600.25694-8-mr.nuke.me@gmail.com>
- <20180808060848.GQ13378@mtr-leonro.mtl.com>
- <05056a70-ee78-ea3c-0b9b-6d64a8663b11@mellanox.com>
- <20180808154142.GZ13378@mtr-leonro.mtl.com>
- <5578cd9a-e4f0-85ab-4a86-bfa23eec136c@mellanox.com>
- <79264a38-e3e4-d270-95df-a09047f7a15e@gmail.com>
- <20180808172736.GB13378@mtr-leonro.mtl.com>
-Message-ID: <20180809140255.GG49411@bhelgaas-glaptop.roam.corp.google.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 09 Aug 2018 23:34:21 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 1b93b3f2b0e397b27651d8de9467d908560e985d
+Message-ID: <5b6c5efd.KO7kcjSzOAn7cJTb%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Aug 08, 2018 at 08:27:36PM +0300, Leon Romanovsky wrote:
-> On Wed, Aug 08, 2018 at 11:33:51AM -0500, Alex G. wrote:
-> >
-> >
-> > On 08/08/2018 10:56 AM, Tal Gilboa wrote:
-> > > On 8/8/2018 6:41 PM, Leon Romanovsky wrote:
-> > > > On Wed, Aug 08, 2018 at 05:23:12PM +0300, Tal Gilboa wrote:
-> > > > > On 8/8/2018 9:08 AM, Leon Romanovsky wrote:
-> > > > > > On Mon, Aug 06, 2018 at 06:25:42PM -0500, Alexandru Gagniuc wrote:
-> > > > > > > This is now done by the PCI core to warn of sub-optimal bandwidth.
-> > > > > > >
-> > > > > > > Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
-> > > > > > > ---
-> > > > > > > ?? drivers/net/ethernet/mellanox/mlx5/core/main.c | 4 ----
-> > > > > > > ?? 1 file changed, 4 deletions(-)
-> > > > > > >
-> > > > > >
-> > > > > > Thanks,
-> > > > > > Reviewed-by: Leon Romanovsky <leonro@mellanox.com>
-> > > > > >
-> > > > >
-> > > > > Alex,
-> > > > > I loaded mlx5 driver with and without these series. The report
-> > > > > in dmesg is
-> > > > > now missing. From what I understood, the status should be
-> > > > > reported at least
-> > > > > once, even if everything is in order.
-> > > >
-> > > > It is not what this series is doing and it removes prints completely if
-> > > > fabric can deliver more than card is capable.
-> > > >
-> > > > > We need this functionality to stay.
-> > > >
-> > > > I'm not sure that you need this information in driver's dmesg output,
-> > > > but most probably something globally visible and accessible per-pci
-> > > > device.
-> > >
-> > > Currently we have users that look for it. If we remove the dmesg print
-> > > we need this to be reported elsewhere. Adding it to sysfs for example
-> > > should be a valid solution for our case.
-> >
-> > I think a stop-gap measure is to leave the pcie_print_link_status() call in
-> > drivers that really need it for whatever reason. Implementing a reliable
-> > reporting through sysfs might take some tinkering, and I don't think it's a
-> > sufficient reason to block the heart of this series -- being able to detect
-> > bottlenecks and link downtraining.
-> 
-> IMHO, you did right change and it is better to replace this print to some
-> more generic solution now while you are doing it and don't leave leftovers.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 1b93b3f2b0e397b27651d8de9467d908560e985d  i40e: Fix for tx timeouts when interface is brought up if DCB is enabled
 
-I'd like to make forward progress on this, so I propose we merge only
-the PCI core change (patch 1/9) and drop the individual driver
-changes.  That would mean:
+elapsed time: 92m
 
-  - We'll get a message from every NIC driver that calls
-    pcie_print_link_status() as before.
+configs tested: 158
 
-  - We'll get a new message from the core for every downtrained link.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-  - If a link leading to the NIC is downtrained, there will be
-    duplicate messages.  Maybe that's overkill but it's not terrible.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-a0-08092204
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-08092105
+x86_64                           allmodconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201831
+x86_64                 randconfig-x000-201831
+x86_64                 randconfig-x009-201831
+x86_64                 randconfig-x004-201831
+x86_64                 randconfig-x001-201831
+x86_64                 randconfig-x003-201831
+x86_64                 randconfig-x007-201831
+x86_64                 randconfig-x008-201831
+x86_64                 randconfig-x002-201831
+x86_64                 randconfig-x005-201831
+x86_64                 randconfig-x006-201831
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201831
+i386                     randconfig-i1-201831
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+m68k                             allyesconfig
+mips                      malta_kvm_defconfig
+x86_64                 randconfig-g0-08092018
+i386                             allmodconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a0-201831
+i386                     randconfig-a1-201831
+x86_64                 randconfig-s0-08092201
+x86_64                 randconfig-s1-08092201
+x86_64                 randconfig-s2-08092201
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                         dsk6455_defconfig
+powerpc                    mvme5100_defconfig
+sh                            shmin_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201831
+i386                     randconfig-s1-201831
+x86_64                 randconfig-s3-08092143
+x86_64                 randconfig-s4-08092143
+x86_64                 randconfig-s5-08092143
+x86_64                 randconfig-s3-08092212
+x86_64                 randconfig-s4-08092212
+x86_64                 randconfig-s5-08092212
+arm                          iop32x_defconfig
+mips                              allnoconfig
+x86_64                   randconfig-i0-201831
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m68k                         apollo_defconfig
+sh                           se7751_defconfig
+powerpc                      pcm030_defconfig
+x86_64                 randconfig-u0-08092109
+x86_64                randconfig-ne0-08091902
+i386                   randconfig-x002-201831
+i386                   randconfig-x005-201831
+i386                   randconfig-x003-201831
+i386                   randconfig-x008-201831
+i386                   randconfig-x007-201831
+i386                   randconfig-x000-201831
+i386                   randconfig-x001-201831
+i386                   randconfig-x004-201831
+i386                   randconfig-x009-201831
+i386                   randconfig-x006-201831
+x86_64                 randconfig-x019-201831
+x86_64                 randconfig-x013-201831
+x86_64                 randconfig-x017-201831
+x86_64                 randconfig-x018-201831
+x86_64                 randconfig-x012-201831
+x86_64                 randconfig-x010-201831
+x86_64                 randconfig-x014-201831
+x86_64                 randconfig-x011-201831
+x86_64                 randconfig-x016-201831
+x86_64                 randconfig-x015-201831
+i386                   randconfig-x018-201831
+i386                   randconfig-x010-201831
+i386                   randconfig-x017-201831
+i386                   randconfig-x016-201831
+i386                   randconfig-x013-201831
+i386                   randconfig-x011-201831
+i386                   randconfig-x015-201831
+i386                   randconfig-x019-201831
+i386                   randconfig-x012-201831
+i386                   randconfig-x014-201831
+i386                   randconfig-x077-201831
+i386                   randconfig-x070-201831
+i386                   randconfig-x076-201831
+i386                   randconfig-x072-201831
+i386                   randconfig-x075-201831
+i386                   randconfig-x074-201831
+i386                   randconfig-x078-201831
+i386                   randconfig-x071-201831
+i386                   randconfig-x073-201831
+i386                   randconfig-x079-201831
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+mips                       capcella_defconfig
+mips                           xway_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-x0-08092206
 
-I provisionally put the patch below on my pci/enumeration branch.
-Objections?
-
-
-commit c870cc8cbc4d79014f3daa74d1e412f32e42bf1b
-Author: Alexandru Gagniuc <mr.nuke.me@gmail.com>
-Date:   Mon Aug 6 18:25:35 2018 -0500
-
-    PCI: Check for PCIe Link downtraining
-    
-    When both ends of a PCIe Link are capable of a higher bandwidth than is
-    currently in use, the Link is said to be "downtrained".  A downtrained Link
-    may indicate hardware or configuration problems in the system, but it's
-    hard to identify such Links from userspace.
-    
-    Refactor pcie_print_link_status() so it continues to always print PCIe
-    bandwidth information, as several NIC drivers desire.
-    
-    Add a new internal __pcie_print_link_status() to emit a message only when a
-    device's bandwidth is constrained by the fabric and call it from the PCI
-    core for all devices, which identifies all downtrained Links.  It also
-    emits messages for a few cases that are technically not downtrained, such
-    as a x4 device in an open-ended x1 slot.
-    
-    Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
-    [bhelgaas: changelog, move __pcie_print_link_status() declaration to
-    drivers/pci/, rename pcie_check_upstream_link() to
-    pcie_report_downtraining()]
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 97acba712e4e..a84d341504a5 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -5264,14 +5264,16 @@ u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed *speed,
- }
- 
- /**
-- * pcie_print_link_status - Report the PCI device's link speed and width
-+ * __pcie_print_link_status - Report the PCI device's link speed and width
-  * @dev: PCI device to query
-+ * @verbose: Print info even when enough bandwidth is available
-  *
-- * Report the available bandwidth at the device.  If this is less than the
-- * device is capable of, report the device's maximum possible bandwidth and
-- * the upstream link that limits its performance to less than that.
-+ * If the available bandwidth at the device is less than the device is
-+ * capable of, report the device's maximum possible bandwidth and the
-+ * upstream link that limits its performance.  If @verbose, always print
-+ * the available bandwidth, even if the device isn't constrained.
-  */
--void pcie_print_link_status(struct pci_dev *dev)
-+void __pcie_print_link_status(struct pci_dev *dev, bool verbose)
- {
- 	enum pcie_link_width width, width_cap;
- 	enum pci_bus_speed speed, speed_cap;
-@@ -5281,11 +5283,11 @@ void pcie_print_link_status(struct pci_dev *dev)
- 	bw_cap = pcie_bandwidth_capable(dev, &speed_cap, &width_cap);
- 	bw_avail = pcie_bandwidth_available(dev, &limiting_dev, &speed, &width);
- 
--	if (bw_avail >= bw_cap)
-+	if (bw_avail >= bw_cap && verbose)
- 		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth (%s x%d link)\n",
- 			 bw_cap / 1000, bw_cap % 1000,
- 			 PCIE_SPEED2STR(speed_cap), width_cap);
--	else
-+	else if (bw_avail < bw_cap)
- 		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)\n",
- 			 bw_avail / 1000, bw_avail % 1000,
- 			 PCIE_SPEED2STR(speed), width,
-@@ -5293,6 +5295,17 @@ void pcie_print_link_status(struct pci_dev *dev)
- 			 bw_cap / 1000, bw_cap % 1000,
- 			 PCIE_SPEED2STR(speed_cap), width_cap);
- }
-+
-+/**
-+ * pcie_print_link_status - Report the PCI device's link speed and width
-+ * @dev: PCI device to query
-+ *
-+ * Report the available bandwidth@the device.
-+ */
-+void pcie_print_link_status(struct pci_dev *dev)
-+{
-+	__pcie_print_link_status(dev, true);
-+}
- EXPORT_SYMBOL(pcie_print_link_status);
- 
- /**
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 70808c168fb9..ce880dab5bc8 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -263,6 +263,7 @@ enum pci_bus_speed pcie_get_speed_cap(struct pci_dev *dev);
- enum pcie_link_width pcie_get_width_cap(struct pci_dev *dev);
- u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed *speed,
- 			   enum pcie_link_width *width);
-+void __pcie_print_link_status(struct pci_dev *dev, bool verbose);
- 
- /* Single Root I/O Virtualization */
- struct pci_sriov {
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index bc147c586643..387fc8ac54ec 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -2231,6 +2231,25 @@ static struct pci_dev *pci_scan_device(struct pci_bus *bus, int devfn)
- 	return dev;
- }
- 
-+static void pcie_report_downtraining(struct pci_dev *dev)
-+{
-+	if (!pci_is_pcie(dev))
-+		return;
-+
-+	/* Look from the device up to avoid downstream ports with no devices */
-+	if ((pci_pcie_type(dev) != PCI_EXP_TYPE_ENDPOINT) &&
-+	    (pci_pcie_type(dev) != PCI_EXP_TYPE_LEG_END) &&
-+	    (pci_pcie_type(dev) != PCI_EXP_TYPE_UPSTREAM))
-+		return;
-+
-+	/* Multi-function PCIe devices share the same link/status */
-+	if (PCI_FUNC(dev->devfn) != 0 || dev->is_virtfn)
-+		return;
-+
-+	/* Print link status only if the device is constrained by the fabric */
-+	__pcie_print_link_status(dev, false);
-+}
-+
- static void pci_init_capabilities(struct pci_dev *dev)
- {
- 	/* Enhanced Allocation */
-@@ -2266,6 +2285,8 @@ static void pci_init_capabilities(struct pci_dev *dev)
- 	/* Advanced Error Reporting */
- 	pci_aer_init(dev);
- 
-+	pcie_report_downtraining(dev);
-+
- 	if (pci_probe_reset_function(dev) == 0)
- 		dev->reset_fn = 1;
- }
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
