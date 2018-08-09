@@ -1,442 +1,211 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu,  9 Aug 2018 06:29:45 -0700
-Subject: [Intel-wired-lan] [PATCH v3 02/15] ice: Updates to Tx scheduler code
+Date: Thu,  9 Aug 2018 06:29:46 -0700
+Subject: [Intel-wired-lan] [PATCH v3 03/15] ice: Update request resource
+ command to latest specification
 In-Reply-To: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
 References: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180809132958.23036-3-anirudh.venkataramanan@intel.com>
+Message-ID: <20180809132958.23036-4-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-1) The maximum device nodes is a global value and shared by the whole
-   device. Add element AQ command would fail if there is no space to
-   add new nodes so the check for max nodes isn't required. So remove
-   ice_sched_get_num_nodes_per_layer and ice_sched_val_max_nodes.
+From: Dan Nowlin <dan.nowlin@intel.com>
 
-2) In ice_sched_add_elems, set default node's CIR/EIR bandwidth weight.
+Align Request Resource Ownership AQ command (0x0008) to the latest
+specification. This includes:
 
-3) Fix default scheduler topology buffer size as the firmware expects
-   a 4KB buffer at all times, and will error out if one of any other
-   size is provided.
+- Correcting the resource IDs for the Global Cfg and Change locks.
+- new enum ICE_CHANGE_LOCK_RES_ID
+- new enum ICE_GLOBAL_CFG_LOCK_RES_ID
+- Altering the flow for Global Config Lock to allow only the first PF to
+  download the package.
 
-4) In the latest spec, max children per node per layer is replaced by
-   max sibling group size. Now it provides the max children of the below
-   layer node, not the current layer node.
-
-5) Fix some newline/whitespace issues for consistency.
-
+Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   5 +-
- drivers/net/ethernet/intel/ice/ice_common.c   |   7 +
- drivers/net/ethernet/intel/ice/ice_sched.c    | 161 ++++++------------
- drivers/net/ethernet/intel/ice/ice_type.h     |   2 +
- 4 files changed, 61 insertions(+), 114 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 75 ++++++++++++++++-----
+ drivers/net/ethernet/intel/ice/ice_common.h |  2 +-
+ drivers/net/ethernet/intel/ice/ice_nvm.c    |  2 +-
+ drivers/net/ethernet/intel/ice/ice_type.h   |  9 ++-
+ 4 files changed, 67 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index a0614f472658..9a33fb95c0ea 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -771,9 +771,8 @@ struct ice_aqc_layer_props {
- 	u8 chunk_size;
- 	__le16 max_device_nodes;
- 	__le16 max_pf_nodes;
--	u8 rsvd0[2];
--	__le16 max_shared_rate_lmtr;
--	__le16 max_children;
-+	u8 rsvd0[4];
-+	__le16 max_sibl_grp_sz;
- 	__le16 max_cir_rl_profiles;
- 	__le16 max_eir_rl_profiles;
- 	__le16 max_srl_profiles;
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 53cbfd942d03..182f96108f22 100644
+index 182f96108f22..caf2620b7852 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.c
 +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -527,6 +527,13 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
- 	if (status)
- 		goto err_unroll_sched;
- 
-+	/* need a valid SW entry point to build a tx tree */
-+	if (!hw->sw_entry_point_layer) {
-+		ice_debug(hw, ICE_DBG_SCHED, "invalid sw entry point\n");
-+		status = ICE_ERR_CFG;
-+		goto err_unroll_sched;
-+	}
-+
- 	status = ice_init_fltr_mgmt_struct(hw);
- 	if (status)
- 		goto err_unroll_sched;
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index eeae199469b6..9b7b50554952 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -17,7 +17,6 @@ ice_sched_add_root_node(struct ice_port_info *pi,
- {
- 	struct ice_sched_node *root;
- 	struct ice_hw *hw;
--	u16 max_children;
- 
- 	if (!pi)
- 		return ICE_ERR_PARAM;
-@@ -28,8 +27,8 @@ ice_sched_add_root_node(struct ice_port_info *pi,
- 	if (!root)
- 		return ICE_ERR_NO_MEMORY;
- 
--	max_children = le16_to_cpu(hw->layer_info[0].max_children);
--	root->children = devm_kcalloc(ice_hw_to_dev(hw), max_children,
-+	/* coverity[suspicious_sizeof] */
-+	root->children = devm_kcalloc(ice_hw_to_dev(hw), hw->max_children[0],
- 				      sizeof(*root), GFP_KERNEL);
- 	if (!root->children) {
- 		devm_kfree(ice_hw_to_dev(hw), root);
-@@ -100,7 +99,6 @@ ice_sched_add_node(struct ice_port_info *pi, u8 layer,
- 	struct ice_sched_node *parent;
- 	struct ice_sched_node *node;
- 	struct ice_hw *hw;
--	u16 max_children;
- 
- 	if (!pi)
- 		return ICE_ERR_PARAM;
-@@ -120,9 +118,10 @@ ice_sched_add_node(struct ice_port_info *pi, u8 layer,
- 	node = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*node), GFP_KERNEL);
- 	if (!node)
- 		return ICE_ERR_NO_MEMORY;
--	max_children = le16_to_cpu(hw->layer_info[layer].max_children);
--	if (max_children) {
--		node->children = devm_kcalloc(ice_hw_to_dev(hw), max_children,
-+	if (hw->max_children[layer]) {
-+		/* coverity[suspicious_sizeof] */
-+		node->children = devm_kcalloc(ice_hw_to_dev(hw),
-+					      hw->max_children[layer],
- 					      sizeof(*node), GFP_KERNEL);
- 		if (!node->children) {
- 			devm_kfree(ice_hw_to_dev(hw), node);
-@@ -192,14 +191,17 @@ ice_sched_remove_elems(struct ice_hw *hw, struct ice_sched_node *parent,
- 	buf = devm_kzalloc(ice_hw_to_dev(hw), buf_size, GFP_KERNEL);
- 	if (!buf)
- 		return ICE_ERR_NO_MEMORY;
-+
- 	buf->hdr.parent_teid = parent->info.node_teid;
- 	buf->hdr.num_elems = cpu_to_le16(num_nodes);
- 	for (i = 0; i < num_nodes; i++)
- 		buf->teid[i] = cpu_to_le32(node_teids[i]);
-+
- 	status = ice_aq_delete_sched_elems(hw, 1, buf, buf_size,
- 					   &num_groups_removed, NULL);
- 	if (status || num_groups_removed != 1)
- 		ice_debug(hw, ICE_DBG_SCHED, "remove elements failed\n");
-+
- 	devm_kfree(ice_hw_to_dev(hw), buf);
- 	return status;
- }
-@@ -592,13 +594,16 @@ static void ice_sched_clear_port(struct ice_port_info *pi)
+@@ -967,7 +967,22 @@ enum ice_status ice_aq_q_shutdown(struct ice_hw *hw, bool unloading)
+  * @timeout: the maximum time in ms that the driver may hold the resource
+  * @cd: pointer to command details structure or NULL
+  *
+- * requests common resource using the admin queue commands (0x0008)
++ * Requests common resource using the admin queue commands (0x0008).
++ * When attempting to acquire the Global Config Lock, the driver can
++ * learn of three states:
++ *  1) ICE_SUCCESS -        acquired lock, and can perform download package
++ *  2) ICE_ERR_AQ_ERROR -   did not get lock, driver should fail to load
++ *  3) ICE_ERR_AQ_NO_WORK - did not get lock, but another driver has
++ *                          successfully downloaded the package; the driver does
++ *                          not have to download the package and can continue
++ *                          loading
++ *
++ * Note that if the caller is in an acquire lock, perform action, release lock
++ * phase of operation, it is possible that the FW may detect a timeout and issue
++ * a CORER. In this case, the driver will receive a CORER interrupt and will
++ * have to determine its cause. The calling thread that is handling this flow
++ * will likely get an error propagated back to it indicating the Download
++ * Package, Update Package or the Release Resource AQ commands timed out.
   */
- void ice_sched_cleanup_all(struct ice_hw *hw)
- {
--	if (!hw || !hw->port_info)
-+	if (!hw)
- 		return;
+ static enum ice_status
+ ice_aq_req_res(struct ice_hw *hw, enum ice_aq_res_ids res,
+@@ -985,13 +1000,43 @@ ice_aq_req_res(struct ice_hw *hw, enum ice_aq_res_ids res,
+ 	cmd_resp->res_id = cpu_to_le16(res);
+ 	cmd_resp->access_type = cpu_to_le16(access);
+ 	cmd_resp->res_number = cpu_to_le32(sdp_number);
++	cmd_resp->timeout = cpu_to_le32(*timeout);
++	*timeout = 0;
  
--	if (hw->layer_info)
-+	if (hw->layer_info) {
- 		devm_kfree(ice_hw_to_dev(hw), hw->layer_info);
-+		hw->layer_info = NULL;
-+	}
- 
--	ice_sched_clear_port(hw->port_info);
-+	if (hw->port_info)
-+		ice_sched_clear_port(hw->port_info);
- 
- 	hw->num_tx_sched_layers = 0;
- 	hw->num_tx_sched_phys_layers = 0;
-@@ -671,9 +676,13 @@ ice_sched_add_elems(struct ice_port_info *pi, struct ice_sched_node *tc_node,
- 			ICE_AQC_ELEM_VALID_EIR;
- 		buf->generic[i].data.generic = 0;
- 		buf->generic[i].data.cir_bw.bw_profile_idx =
--			ICE_SCHED_DFLT_RL_PROF_ID;
-+			cpu_to_le16(ICE_SCHED_DFLT_RL_PROF_ID);
-+		buf->generic[i].data.cir_bw.bw_alloc =
-+			cpu_to_le16(ICE_SCHED_DFLT_BW_WT);
- 		buf->generic[i].data.eir_bw.bw_profile_idx =
--			ICE_SCHED_DFLT_RL_PROF_ID;
-+			cpu_to_le16(ICE_SCHED_DFLT_RL_PROF_ID);
-+		buf->generic[i].data.eir_bw.bw_alloc =
-+			cpu_to_le16(ICE_SCHED_DFLT_BW_WT);
- 	}
- 
- 	status = ice_aq_add_sched_elems(hw, 1, buf, buf_size,
-@@ -697,7 +706,6 @@ ice_sched_add_elems(struct ice_port_info *pi, struct ice_sched_node *tc_node,
- 
- 		teid = le32_to_cpu(buf->generic[i].node_teid);
- 		new_node = ice_sched_find_node_by_teid(parent, teid);
--
- 		if (!new_node) {
- 			ice_debug(hw, ICE_DBG_SCHED,
- 				  "Node is missing for teid =%d\n", teid);
-@@ -710,7 +718,6 @@ ice_sched_add_elems(struct ice_port_info *pi, struct ice_sched_node *tc_node,
- 		/* add it to previous node sibling pointer */
- 		/* Note: siblings are not linked across branches */
- 		prev = ice_sched_get_first_node(hw, tc_node, layer);
--
- 		if (prev && prev != new_node) {
- 			while (prev->sibling)
- 				prev = prev->sibling;
-@@ -760,8 +767,7 @@ ice_sched_add_nodes_to_layer(struct ice_port_info *pi,
- 		return ICE_ERR_PARAM;
- 
- 	/* max children per node per layer */
--	max_child_nodes =
--	    le16_to_cpu(hw->layer_info[parent->tx_sched_layer].max_children);
-+	max_child_nodes = hw->max_children[parent->tx_sched_layer];
- 
- 	/* current number of children + required nodes exceed max children ? */
- 	if ((parent->num_children + num_nodes) > max_child_nodes) {
-@@ -850,78 +856,6 @@ static u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
- 	return hw->sw_entry_point_layer;
- }
- 
--/**
-- * ice_sched_get_num_nodes_per_layer - Get the total number of nodes per layer
-- * @pi: pointer to the port info struct
-- * @layer: layer number
-- *
-- * This function calculates the number of nodes present in the scheduler tree
-- * including all the branches for a given layer
-- */
--static u16
--ice_sched_get_num_nodes_per_layer(struct ice_port_info *pi, u8 layer)
--{
--	struct ice_hw *hw;
--	u16 num_nodes = 0;
--	u8 i;
--
--	if (!pi)
--		return num_nodes;
--
--	hw = pi->hw;
--
--	/* Calculate the number of nodes for all TCs */
--	for (i = 0; i < pi->root->num_children; i++) {
--		struct ice_sched_node *tc_node, *node;
--
--		tc_node = pi->root->children[i];
--
--		/* Get the first node */
--		node = ice_sched_get_first_node(hw, tc_node, layer);
--		if (!node)
--			continue;
--
--		/* count the siblings */
--		while (node) {
--			num_nodes++;
--			node = node->sibling;
--		}
--	}
--
--	return num_nodes;
--}
--
--/**
-- * ice_sched_val_max_nodes - check max number of nodes reached or not
-- * @pi: port information structure
-- * @new_num_nodes_per_layer: pointer to the new number of nodes array
-- *
-- * This function checks whether the scheduler tree layers have enough space to
-- * add new nodes
-- */
--static enum ice_status
--ice_sched_validate_for_max_nodes(struct ice_port_info *pi,
--				 u16 *new_num_nodes_per_layer)
--{
--	struct ice_hw *hw = pi->hw;
--	u8 i, qg_layer;
--	u16 num_nodes;
--
--	qg_layer = ice_sched_get_qgrp_layer(hw);
--
--	/* walk through all the layers from SW entry point to qgroup layer */
--	for (i = hw->sw_entry_point_layer; i <= qg_layer; i++) {
--		num_nodes = ice_sched_get_num_nodes_per_layer(pi, i);
--		if (num_nodes + new_num_nodes_per_layer[i] >
--		    le16_to_cpu(hw->layer_info[i].max_pf_nodes)) {
--			ice_debug(hw, ICE_DBG_SCHED,
--				  "max nodes reached for layer = %d\n", i);
--			return ICE_ERR_CFG;
--		}
--	}
--	return 0;
--}
--
- /**
-  * ice_rm_dflt_leaf_node - remove the default leaf node in the tree
-  * @pi: port information structure
-@@ -1003,14 +937,12 @@ enum ice_status ice_sched_init_port(struct ice_port_info *pi)
- 	hw = pi->hw;
- 
- 	/* Query the Default Topology from FW */
--	buf = devm_kcalloc(ice_hw_to_dev(hw), ICE_TXSCHED_MAX_BRANCHES,
--			   sizeof(*buf), GFP_KERNEL);
-+	buf = devm_kzalloc(ice_hw_to_dev(hw), ICE_AQ_MAX_BUF_LEN, GFP_KERNEL);
- 	if (!buf)
- 		return ICE_ERR_NO_MEMORY;
- 
- 	/* Query default scheduling tree topology */
--	status = ice_aq_get_dflt_topo(hw, pi->lport, buf,
--				      sizeof(*buf) * ICE_TXSCHED_MAX_BRANCHES,
-+	status = ice_aq_get_dflt_topo(hw, pi->lport, buf, ICE_AQ_MAX_BUF_LEN,
- 				      &num_branches, NULL);
- 	if (status)
- 		goto err_init_port;
-@@ -1097,6 +1029,8 @@ enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw)
- {
- 	struct ice_aqc_query_txsched_res_resp *buf;
- 	enum ice_status status = 0;
-+	__le16 max_sibl;
-+	u8 i;
- 
- 	if (hw->layer_info)
- 		return status;
-@@ -1115,7 +1049,20 @@ enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw)
- 	hw->flattened_layers = buf->sched_props.flattening_bitmap;
- 	hw->max_cgds = buf->sched_props.max_pf_cgds;
- 
--	 hw->layer_info = devm_kmemdup(ice_hw_to_dev(hw), buf->layer_props,
-+	/* max sibling group size of current layer refers to the max children
-+	 * of the below layer node.
-+	 * layer 1 node max children will be layer 2 max sibling group size
-+	 * layer 2 node max children will be layer 3 max sibling group size
-+	 * and so on. This array will be populated from root (index 0) to
-+	 * qgroup layer 7. Leaf node has no children.
+ 	status = ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
++
+ 	/* The completion specifies the maximum time in ms that the driver
+ 	 * may hold the resource in the Timeout field.
+-	 * If the resource is held by someone else, the command completes with
+-	 * busy return value and the timeout field indicates the maximum time
+-	 * the current owner of the resource has to free it.
 +	 */
-+	for (i = 0; i < hw->num_tx_sched_layers; i++) {
-+		max_sibl = buf->layer_props[i].max_sibl_grp_sz;
-+		hw->max_children[i] = le16_to_cpu(max_sibl);
++
++	/* Global config lock response utilizes an additional status field.
++	 *
++	 * If the Global config lock resource is held by some other driver, the
++	 * command completes with ICE_AQ_RES_GLBL_IN_PROG in the status field
++	 * and the timeout field indicates the maximum time the current owner
++	 * of the resource has to free it.
++	 */
++	if (res == ICE_GLOBAL_CFG_LOCK_RES_ID) {
++		if (le16_to_cpu(cmd_resp->status) == ICE_AQ_RES_GLBL_SUCCESS) {
++			*timeout = le32_to_cpu(cmd_resp->timeout);
++			return 0;
++		} else if (le16_to_cpu(cmd_resp->status) ==
++			   ICE_AQ_RES_GLBL_IN_PROG) {
++			*timeout = le32_to_cpu(cmd_resp->timeout);
++			return ICE_ERR_AQ_ERROR;
++		} else if (le16_to_cpu(cmd_resp->status) ==
++			   ICE_AQ_RES_GLBL_DONE) {
++			return ICE_ERR_AQ_NO_WORK;
++		}
++
++		/* invalid FW response, force a timeout immediately */
++		*timeout = 0;
++		return ICE_ERR_AQ_ERROR;
 +	}
 +
-+	hw->layer_info = (struct ice_aqc_layer_props *)
-+			  devm_kmemdup(ice_hw_to_dev(hw), buf->layer_props,
- 				       (hw->num_tx_sched_layers *
- 					sizeof(*hw->layer_info)),
- 				       GFP_KERNEL);
-@@ -1202,7 +1149,7 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_id, u8 tc,
- 	u8 qgrp_layer;
- 
- 	qgrp_layer = ice_sched_get_qgrp_layer(pi->hw);
--	max_children = le16_to_cpu(pi->hw->layer_info[qgrp_layer].max_children);
-+	max_children = pi->hw->max_children[qgrp_layer];
- 
- 	list_elem = ice_sched_get_vsi_info_entry(pi, vsi_id);
- 	if (!list_elem)
-@@ -1278,10 +1225,8 @@ ice_sched_calc_vsi_child_nodes(struct ice_hw *hw, u16 num_qs, u16 *num_nodes)
- 
- 	/* calculate num nodes from q group to VSI layer */
- 	for (i = qgl; i > vsil; i--) {
--		u16 max_children = le16_to_cpu(hw->layer_info[i].max_children);
--
- 		/* round to the next integer if there is a remainder */
--		num = DIV_ROUND_UP(num, max_children);
-+		num = DIV_ROUND_UP(num, hw->max_children[i]);
- 
- 		/* need at least one node */
- 		num_nodes[i] = num ? num : 1;
-@@ -1311,16 +1256,13 @@ ice_sched_add_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id,
- 	u16 num_added = 0;
- 	u8 i, qgl, vsil;
- 
--	status = ice_sched_validate_for_max_nodes(pi, num_nodes);
--	if (status)
--		return status;
--
- 	qgl = ice_sched_get_qgrp_layer(hw);
- 	vsil = ice_sched_get_vsi_layer(hw);
- 	parent = ice_sched_get_vsi_node(hw, tc_node, vsi_id);
- 	for (i = vsil + 1; i <= qgl; i++) {
- 		if (!parent)
- 			return ICE_ERR_CFG;
-+
- 		status = ice_sched_add_nodes_to_layer(pi, tc_node, parent, i,
- 						      num_nodes[i],
- 						      &first_node_teid,
-@@ -1398,8 +1340,8 @@ ice_sched_calc_vsi_support_nodes(struct ice_hw *hw,
- 				 struct ice_sched_node *tc_node, u16 *num_nodes)
++	/* If the resource is held by some other driver, the command completes
++	 * with a busy return value and the timeout field indicates the maximum
++	 * time the current owner of the resource has to free it.
+ 	 */
+ 	if (!status || hw->adminq.sq_last_status == ICE_AQ_RC_EBUSY)
+ 		*timeout = le32_to_cpu(cmd_resp->timeout);
+@@ -1030,30 +1075,28 @@ ice_aq_release_res(struct ice_hw *hw, enum ice_aq_res_ids res, u8 sdp_number,
+  * @hw: pointer to the HW structure
+  * @res: resource id
+  * @access: access type (read or write)
++ * @timeout: timeout in milliseconds
+  *
+  * This function will attempt to acquire the ownership of a resource.
+  */
+ enum ice_status
+ ice_acquire_res(struct ice_hw *hw, enum ice_aq_res_ids res,
+-		enum ice_aq_res_access_type access)
++		enum ice_aq_res_access_type access, u32 timeout)
  {
- 	struct ice_sched_node *node;
--	u16 max_child;
--	u8 i, vsil;
-+	u8 vsil;
-+	int i;
+ #define ICE_RES_POLLING_DELAY_MS	10
+ 	u32 delay = ICE_RES_POLLING_DELAY_MS;
++	u32 time_left = timeout;
+ 	enum ice_status status;
+-	u32 time_left = 0;
+-	u32 timeout;
  
- 	vsil = ice_sched_get_vsi_layer(hw);
- 	for (i = vsil; i >= hw->sw_entry_point_layer; i--)
-@@ -1412,12 +1354,10 @@ ice_sched_calc_vsi_support_nodes(struct ice_hw *hw,
- 			/* If intermediate nodes are reached max children
- 			 * then add a new one.
- 			 */
--			node = ice_sched_get_first_node(hw, tc_node, i);
--			max_child = le16_to_cpu(hw->layer_info[i].max_children);
--
-+			node = ice_sched_get_first_node(hw, tc_node, (u8)i);
- 			/* scan all the siblings */
- 			while (node) {
--				if (node->num_children < max_child)
-+				if (node->num_children < hw->max_children[i])
- 					break;
- 				node = node->sibling;
- 			}
-@@ -1451,10 +1391,6 @@ ice_sched_add_vsi_support_nodes(struct ice_port_info *pi, u16 vsi_id,
- 	if (!pi)
- 		return ICE_ERR_PARAM;
+ 	status = ice_aq_req_res(hw, res, access, 0, &time_left, NULL);
  
--	status = ice_sched_validate_for_max_nodes(pi, num_nodes);
--	if (status)
--		return status;
--
- 	vsil = ice_sched_get_vsi_layer(pi->hw);
- 	for (i = pi->hw->sw_entry_point_layer; i <= vsil; i++) {
- 		status = ice_sched_add_nodes_to_layer(pi, tc_node, parent,
-@@ -1479,6 +1415,7 @@ ice_sched_add_vsi_support_nodes(struct ice_port_info *pi, u16 vsi_id,
- 		if (i == vsil)
- 			parent->vsi_id = vsi_id;
- 	}
-+
- 	return 0;
+-	/* An admin queue return code of ICE_AQ_RC_EEXIST means that another
+-	 * driver has previously acquired the resource and performed any
+-	 * necessary updates; in this case the caller does not obtain the
+-	 * resource and has no further work to do.
++	/* A return code of ICE_ERR_AQ_NO_WORK means that another driver has
++	 * previously acquired the resource and performed any necessary updates;
++	 * in this case the caller does not obtain the resource and has no
++	 * further work to do.
+ 	 */
+-	if (hw->adminq.sq_last_status == ICE_AQ_RC_EEXIST) {
+-		status = ICE_ERR_AQ_NO_WORK;
++	if (status == ICE_ERR_AQ_NO_WORK)
+ 		goto ice_acquire_res_exit;
+-	}
+ 
+ 	if (status)
+ 		ice_debug(hw, ICE_DBG_RES,
+@@ -1066,11 +1109,9 @@ ice_acquire_res(struct ice_hw *hw, enum ice_aq_res_ids res,
+ 		timeout = (timeout > delay) ? timeout - delay : 0;
+ 		status = ice_aq_req_res(hw, res, access, 0, &time_left, NULL);
+ 
+-		if (hw->adminq.sq_last_status == ICE_AQ_RC_EEXIST) {
++		if (status == ICE_ERR_AQ_NO_WORK)
+ 			/* lock free, but no work to do */
+-			status = ICE_ERR_AQ_NO_WORK;
+ 			break;
+-		}
+ 
+ 		if (!status)
+ 			/* lock acquired */
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 9a5519130af1..6455b6952ec8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -23,7 +23,7 @@ enum ice_status
+ ice_get_link_status(struct ice_port_info *pi, bool *link_up);
+ enum ice_status
+ ice_acquire_res(struct ice_hw *hw, enum ice_aq_res_ids res,
+-		enum ice_aq_res_access_type access);
++		enum ice_aq_res_access_type access, u32 timeout);
+ void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res);
+ enum ice_status ice_init_nvm(struct ice_hw *hw);
+ enum ice_status
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index 295a8cd87fc1..3274c543283c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -137,7 +137,7 @@ ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access)
+ 	if (hw->nvm.blank_nvm_mode)
+ 		return 0;
+ 
+-	return ice_acquire_res(hw, ICE_NVM_RES_ID, access);
++	return ice_acquire_res(hw, ICE_NVM_RES_ID, access, ICE_NVM_TIMEOUT);
  }
  
-@@ -1633,9 +1570,11 @@ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_id, u8 tc, u16 maxqs,
- 		status = ice_sched_add_vsi_to_topo(pi, vsi_id, tc);
- 		if (status)
- 			return status;
-+
- 		vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_id);
- 		if (!vsi_node)
- 			return ICE_ERR_CFG;
-+
- 		vsi->vsi_node[tc] = vsi_node;
- 		vsi_node->in_use = true;
- 	}
+ /**
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 97c366e0ca59..df953f5f219b 100644
+index df953f5f219b..e1a0d0e5d074 100644
 --- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -204,6 +204,7 @@ enum ice_agg_type {
+@@ -34,10 +34,15 @@ static inline bool ice_is_tc_ena(u8 bitmap, u8 tc)
+ enum ice_aq_res_ids {
+ 	ICE_NVM_RES_ID = 1,
+ 	ICE_SPD_RES_ID,
+-	ICE_GLOBAL_CFG_LOCK_RES_ID,
+-	ICE_CHANGE_LOCK_RES_ID
++	ICE_CHANGE_LOCK_RES_ID,
++	ICE_GLOBAL_CFG_LOCK_RES_ID
  };
  
- #define ICE_SCHED_DFLT_RL_PROF_ID	0
-+#define ICE_SCHED_DFLT_BW_WT		1
- 
- /* vsi type list entry to locate corresponding vsi/ag nodes */
- struct ice_sched_vsi_info {
-@@ -286,6 +287,7 @@ struct ice_hw {
- 	u8 flattened_layers;
- 	u8 max_cgds;
- 	u8 sw_entry_point_layer;
-+	u16 max_children[ICE_AQC_TOPO_MAX_LEVEL_NUM];
- 
- 	u8 evb_veb;		/* true for VEB, false for VEPA */
- 	struct ice_bus_info bus;
++/* FW update timeout definitions are in milliseconds */
++#define ICE_NVM_TIMEOUT			180000
++#define ICE_CHANGE_LOCK_TIMEOUT		1000
++#define ICE_GLOBAL_CFG_LOCK_TIMEOUT	3000
++
+ enum ice_aq_res_access_type {
+ 	ICE_RES_READ = 1,
+ 	ICE_RES_WRITE
 -- 
 2.17.1
 
