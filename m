@@ -1,105 +1,72 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu,  9 Aug 2018 06:28:56 -0700
-Subject: [Intel-wired-lan] [PATCH v4 06/13] ice: Fix bugs in control queue
- processing
+Date: Thu,  9 Aug 2018 06:28:55 -0700
+Subject: [Intel-wired-lan] [PATCH v4 05/13] ice: Clean control queues only
+ when they are initialized
 In-Reply-To: <20180809132903.22819-1-anirudh.venkataramanan@intel.com>
 References: <20180809132903.22819-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180809132903.22819-7-anirudh.venkataramanan@intel.com>
+Message-ID: <20180809132903.22819-6-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is a consolidation of multiple bug fixes for control queue
-processing.
+From: Preethi Banala <preethi.banala@intel.com>
 
-1)  In ice_clean_adminq_subtask() remove unnecessary reads/writes to
-    registers. The bits PFINT_FW_CTL, PFINT_MBX_CTL and PFINT_SB_CTL
-    are not set when an interrupt arrives, which means that clearing them
-    again can be omitted.
+Clean control queues only when they are initialized. One of the ways to
+validate if the basic initialization is done is by checking value of
+cq->sq.head and cq->rq.head variables that specify the register address.
+This patch adds a check to avoid NULL pointer dereference crash when tried
+to shutdown uninitialized control queue.
 
-2)  Get an accurate value in "pending" by re-reading the control queue
-    head register from the hardware.
-
-3)  Fix a corner case involving lost control queue messages by checking
-    for new control messages (using ice_ctrlq_pending) before exiting the
-    cleanup routine.
-
+Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_controlq.c |  5 +++-
- drivers/net/ethernet/intel/ice/ice_main.c     | 26 ++++++++++++++++---
- 2 files changed, 26 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_controlq.c | 24 ++++++++++++-------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index c064416080e7..62be72fdc8f3 100644
+index 7c511f144ed6..c064416080e7 100644
 --- a/drivers/net/ethernet/intel/ice/ice_controlq.c
 +++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -1065,8 +1065,11 @@ ice_clean_rq_elem(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+@@ -597,10 +597,14 @@ static enum ice_status ice_init_check_adminq(struct ice_hw *hw)
+ 	return 0;
  
- clean_rq_elem_out:
- 	/* Set pending if needed, unlock and return */
--	if (pending)
-+	if (pending) {
-+		/* re-read HW head to calculate actual pending messages */
-+		ntu = (u16)(rd32(hw, cq->rq.head) & cq->rq.head_mask);
- 		*pending = (u16)((ntc > ntu ? cq->rq.count : 0) + (ntu - ntc));
+ init_ctrlq_free_rq:
+-	ice_shutdown_rq(hw, cq);
+-	ice_shutdown_sq(hw, cq);
+-	mutex_destroy(&cq->sq_lock);
+-	mutex_destroy(&cq->rq_lock);
++	if (cq->rq.head) {
++		ice_shutdown_rq(hw, cq);
++		mutex_destroy(&cq->rq_lock);
 +	}
- clean_rq_elem_err:
- 	mutex_unlock(&cq->rq_lock);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 7d65e0ed3588..f3ba4f76b6cb 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -916,6 +916,21 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- 	return pending && (i == ICE_DFLT_IRQ_WORK);
++	if (cq->sq.head) {
++		ice_shutdown_sq(hw, cq);
++		mutex_destroy(&cq->sq_lock);
++	}
+ 	return status;
  }
  
-+/**
-+ * ice_ctrlq_pending - check if there is a difference between ntc and ntu
-+ * @hw: pointer to hardware info
-+ * @cq: control queue information
-+ *
-+ * returns true if there are pending messages in a queue, false if there aren't
-+ */
-+static bool ice_ctrlq_pending(struct ice_hw *hw, struct ice_ctl_q_info *cq)
-+{
-+	u16 ntu;
-+
-+	ntu = (u16)(rd32(hw, cq->rq.head) & cq->rq.head_mask);
-+	return cq->rq.next_to_clean != ntu;
-+}
-+
- /**
-  * ice_clean_adminq_subtask - clean the AdminQ rings
-  * @pf: board private structure
-@@ -923,7 +938,6 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- static void ice_clean_adminq_subtask(struct ice_pf *pf)
- {
- 	struct ice_hw *hw = &pf->hw;
--	u32 val;
- 
- 	if (!test_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state))
+@@ -706,10 +710,14 @@ static void ice_shutdown_ctrlq(struct ice_hw *hw, enum ice_ctl_q q_type)
  		return;
-@@ -933,9 +947,13 @@ static void ice_clean_adminq_subtask(struct ice_pf *pf)
+ 	}
  
- 	clear_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state);
- 
--	/* re-enable Admin queue interrupt causes */
--	val = rd32(hw, PFINT_FW_CTL);
--	wr32(hw, PFINT_FW_CTL, (val | PFINT_FW_CTL_CAUSE_ENA_M));
-+	/* There might be a situation where new messages arrive to a control
-+	 * queue between processing the last message and clearing the
-+	 * EVENT_PENDING bit. So before exiting, check queue head again (using
-+	 * ice_ctrlq_pending) and process new messages if any.
-+	 */
-+	if (ice_ctrlq_pending(hw, &hw->adminq))
-+		__ice_clean_ctrlq(pf, ICE_CTL_Q_ADMIN);
- 
- 	ice_flush(hw);
+-	ice_shutdown_sq(hw, cq);
+-	ice_shutdown_rq(hw, cq);
+-	mutex_destroy(&cq->sq_lock);
+-	mutex_destroy(&cq->rq_lock);
++	if (cq->sq.head) {
++		ice_shutdown_sq(hw, cq);
++		mutex_destroy(&cq->sq_lock);
++	}
++	if (cq->rq.head) {
++		ice_shutdown_rq(hw, cq);
++		mutex_destroy(&cq->rq_lock);
++	}
  }
+ 
+ /**
 -- 
 2.17.1
 
