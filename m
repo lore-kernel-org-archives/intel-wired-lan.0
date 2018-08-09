@@ -1,38 +1,56 @@
-From: Sebastian Basierski <sebastianx.basierski@intel.com>
-Date: Thu,  9 Aug 2018 11:45:40 +0200
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: VF2VF TCP RSS
-Message-ID: <20180809094540.29745-1-sebastianx.basierski@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Date: Thu,  9 Aug 2018 06:28:50 -0700
+Subject: [Intel-wired-lan] [PATCH v4 00/13] Bug fixes for ice
+Message-ID: <20180809132903.22819-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-While VF2VF with RSS communication, RSS Type were wrongly recognized
-and RSS hash was not calculated as it should be. Packets was
-distributed on various queues by accident.
-This commit fixes that behaviour and causes proper RSS Type recognition.
+This patch set fixes multiple bugs for the ice driver.
 
-Signed-off-by: Sebastian Basierski <sebastianx.basierski@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Anirudh Venkataramanan (5):
+  ice: Fix multiple static analyser warnings
+  ice: Cleanup magic number
+  ice: Fix bugs in control queue processing
+  ice: Fix a few null pointer dereference issues
+  ice: Trivial formatting fixes
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index d86446d202d5..15deac07fd92 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3849,6 +3849,10 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
- 		skb_checksum_help(skb);
- 		goto no_csum;
- 	}
-+
-+	if (first->protocol == htons(ETH_P_IP))
-+		type_tucmd |= IXGBE_ADVTXD_TUCMD_IPV4;
-+
- 	/* update TX checksum flag */
- 	first->tx_flags |= IXGBE_TX_FLAGS_CSUM;
- 	vlan_macip_lens = skb_checksum_start_offset(skb) -
+Brett Creeley (1):
+  ice: Set VLAN flags correctly
+
+Bruce Allan (3):
+  ice: Remove unncessary node owner check
+  ice: Update to interrupts enabled in OICR
+  ice: Change struct members from bool to u8
+
+Jacob Keller (2):
+  ice: Report stats for allocated queues via ethtool stats
+  ice: Use order_base_2 to calculate higher power of 2
+
+Jesse Brandeburg (1):
+  ice: Fix potential return of uninitialized value
+
+Preethi Banala (1):
+  ice: Clean control queues only when they are initialized
+
+ drivers/net/ethernet/intel/ice/ice.h          |  15 ++-
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  25 ++--
+ drivers/net/ethernet/intel/ice/ice_common.c   |  30 +++--
+ drivers/net/ethernet/intel/ice/ice_controlq.c |  29 +++--
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  52 ++++++--
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |   8 --
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |   1 +
+ drivers/net/ethernet/intel/ice/ice_main.c     | 115 ++++++++++--------
+ drivers/net/ethernet/intel/ice/ice_nvm.c      |   5 +-
+ drivers/net/ethernet/intel/ice/ice_sched.c    |   3 +-
+ drivers/net/ethernet/intel/ice/ice_switch.c   |   4 +-
+ drivers/net/ethernet/intel/ice/ice_switch.h   |   6 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |   2 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |  16 +--
+ 14 files changed, 185 insertions(+), 126 deletions(-)
+
 -- 
 2.17.1
 
