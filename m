@@ -1,419 +1,222 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu,  9 Aug 2018 06:29:55 -0700
-Subject: [Intel-wired-lan] [PATCH v3 12/15] ice: Enable firmware logging
- during device initialization.
-In-Reply-To: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
-References: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180809132958.23036-13-anirudh.venkataramanan@intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Thu, 9 Aug 2018 09:02:55 -0500
+Subject: [Intel-wired-lan] [PATCH v6 8/9] net/mlx5: Do not call
+ pcie_print_link_status()
+In-Reply-To: <20180808172736.GB13378@mtr-leonro.mtl.com>
+References: <CAErSpo4PK+SQLNfdkLNt9eLc7bpbxbkZCsa8T-tQpid601n0SQ@mail.gmail.com>
+ <20180806232600.25694-1-mr.nuke.me@gmail.com>
+ <20180806232600.25694-8-mr.nuke.me@gmail.com>
+ <20180808060848.GQ13378@mtr-leonro.mtl.com>
+ <05056a70-ee78-ea3c-0b9b-6d64a8663b11@mellanox.com>
+ <20180808154142.GZ13378@mtr-leonro.mtl.com>
+ <5578cd9a-e4f0-85ab-4a86-bfa23eec136c@mellanox.com>
+ <79264a38-e3e4-d270-95df-a09047f7a15e@gmail.com>
+ <20180808172736.GB13378@mtr-leonro.mtl.com>
+Message-ID: <20180809140255.GG49411@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Hieu Tran <hieu.t.tran@intel.com>
+On Wed, Aug 08, 2018 at 08:27:36PM +0300, Leon Romanovsky wrote:
+> On Wed, Aug 08, 2018 at 11:33:51AM -0500, Alex G. wrote:
+> >
+> >
+> > On 08/08/2018 10:56 AM, Tal Gilboa wrote:
+> > > On 8/8/2018 6:41 PM, Leon Romanovsky wrote:
+> > > > On Wed, Aug 08, 2018 at 05:23:12PM +0300, Tal Gilboa wrote:
+> > > > > On 8/8/2018 9:08 AM, Leon Romanovsky wrote:
+> > > > > > On Mon, Aug 06, 2018 at 06:25:42PM -0500, Alexandru Gagniuc wrote:
+> > > > > > > This is now done by the PCI core to warn of sub-optimal bandwidth.
+> > > > > > >
+> > > > > > > Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+> > > > > > > ---
+> > > > > > > ?? drivers/net/ethernet/mellanox/mlx5/core/main.c | 4 ----
+> > > > > > > ?? 1 file changed, 4 deletions(-)
+> > > > > > >
+> > > > > >
+> > > > > > Thanks,
+> > > > > > Reviewed-by: Leon Romanovsky <leonro@mellanox.com>
+> > > > > >
+> > > > >
+> > > > > Alex,
+> > > > > I loaded mlx5 driver with and without these series. The report
+> > > > > in dmesg is
+> > > > > now missing. From what I understood, the status should be
+> > > > > reported at least
+> > > > > once, even if everything is in order.
+> > > >
+> > > > It is not what this series is doing and it removes prints completely if
+> > > > fabric can deliver more than card is capable.
+> > > >
+> > > > > We need this functionality to stay.
+> > > >
+> > > > I'm not sure that you need this information in driver's dmesg output,
+> > > > but most probably something globally visible and accessible per-pci
+> > > > device.
+> > >
+> > > Currently we have users that look for it. If we remove the dmesg print
+> > > we need this to be reported elsewhere. Adding it to sysfs for example
+> > > should be a valid solution for our case.
+> >
+> > I think a stop-gap measure is to leave the pcie_print_link_status() call in
+> > drivers that really need it for whatever reason. Implementing a reliable
+> > reporting through sysfs might take some tinkering, and I don't think it's a
+> > sufficient reason to block the heart of this series -- being able to detect
+> > bottlenecks and link downtraining.
+> 
+> IMHO, you did right change and it is better to replace this print to some
+> more generic solution now while you are doing it and don't leave leftovers.
 
-To enable FW logging, the "cq_en" and "uart_en" enable bits of the
-"fw_log" element in struct ice_hw need to set accordingly based on
-some user-provided parameters during driver loading. To select which
-FW log events to be emitted, the "cfg" elements of corresponding FW
-modules in the "evnts" array member of "fw_log" need to be configured.
+I'd like to make forward progress on this, so I propose we merge only
+the PCI core change (patch 1/9) and drop the individual driver
+changes.  That would mean:
 
-Signed-off-by: Hieu Tran <hieu.t.tran@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
----
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  83 ++++++++
- drivers/net/ethernet/intel/ice/ice_common.c   | 182 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_common.h   |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c     |   3 +
- drivers/net/ethernet/intel/ice/ice_type.h     |  19 ++
- 5 files changed, 286 insertions(+), 2 deletions(-)
+  - We'll get a message from every NIC driver that calls
+    pcie_print_link_status() as before.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 3dadb2b01b5c..f8dfd675486c 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1206,6 +1206,84 @@ struct ice_aqc_dis_txq {
- 	struct ice_aqc_dis_txq_item qgrps[1];
- };
- 
-+/* Configure Firmware Logging Command (indirect 0xFF09)
-+ * Logging Information Read Response (indirect 0xFF10)
-+ * Note: The 0xFF10 command has no input parameters.
-+ */
-+struct ice_aqc_fw_logging {
-+	u8 log_ctrl;
-+#define ICE_AQC_FW_LOG_AQ_EN		BIT(0)
-+#define ICE_AQC_FW_LOG_UART_EN		BIT(1)
-+	u8 rsvd0;
-+	u8 log_ctrl_valid; /* Not used by 0xFF10 Response */
-+#define ICE_AQC_FW_LOG_AQ_VALID		BIT(0)
-+#define ICE_AQC_FW_LOG_UART_VALID	BIT(1)
-+	u8 rsvd1[5];
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+enum ice_aqc_fw_logging_mod {
-+	ICE_AQC_FW_LOG_ID_GENERAL = 0,
-+	ICE_AQC_FW_LOG_ID_CTRL,
-+	ICE_AQC_FW_LOG_ID_LINK,
-+	ICE_AQC_FW_LOG_ID_LINK_TOPO,
-+	ICE_AQC_FW_LOG_ID_DNL,
-+	ICE_AQC_FW_LOG_ID_I2C,
-+	ICE_AQC_FW_LOG_ID_SDP,
-+	ICE_AQC_FW_LOG_ID_MDIO,
-+	ICE_AQC_FW_LOG_ID_ADMINQ,
-+	ICE_AQC_FW_LOG_ID_HDMA,
-+	ICE_AQC_FW_LOG_ID_LLDP,
-+	ICE_AQC_FW_LOG_ID_DCBX,
-+	ICE_AQC_FW_LOG_ID_DCB,
-+	ICE_AQC_FW_LOG_ID_NETPROXY,
-+	ICE_AQC_FW_LOG_ID_NVM,
-+	ICE_AQC_FW_LOG_ID_AUTH,
-+	ICE_AQC_FW_LOG_ID_VPD,
-+	ICE_AQC_FW_LOG_ID_IOSF,
-+	ICE_AQC_FW_LOG_ID_PARSER,
-+	ICE_AQC_FW_LOG_ID_SW,
-+	ICE_AQC_FW_LOG_ID_SCHEDULER,
-+	ICE_AQC_FW_LOG_ID_TXQ,
-+	ICE_AQC_FW_LOG_ID_RSVD,
-+	ICE_AQC_FW_LOG_ID_POST,
-+	ICE_AQC_FW_LOG_ID_WATCHDOG,
-+	ICE_AQC_FW_LOG_ID_TASK_DISPATCH,
-+	ICE_AQC_FW_LOG_ID_MNG,
-+	ICE_AQC_FW_LOG_ID_MAX,
-+};
-+
-+/* This is the buffer for both of the logging commands.
-+ * The entry array size depends on the datalen parameter in the descriptor.
-+ * There will be a total of datalen / 2 entries.
-+ */
-+struct ice_aqc_fw_logging_data {
-+	__le16 entry[1];
-+#define ICE_AQC_FW_LOG_ID_S		0
-+#define ICE_AQC_FW_LOG_ID_M		(0xFFF << ICE_AQC_FW_LOG_ID_S)
-+
-+#define ICE_AQC_FW_LOG_CONF_SUCCESS	0	/* Used by response */
-+#define ICE_AQC_FW_LOG_CONF_BAD_INDX	BIT(12)	/* Used by response */
-+
-+#define ICE_AQC_FW_LOG_EN_S		12
-+#define ICE_AQC_FW_LOG_EN_M		(0xF << ICE_AQC_FW_LOG_EN_S)
-+#define ICE_AQC_FW_LOG_INFO_EN		BIT(12)	/* Used by command */
-+#define ICE_AQC_FW_LOG_INIT_EN		BIT(13)	/* Used by command */
-+#define ICE_AQC_FW_LOG_FLOW_EN		BIT(14)	/* Used by command */
-+#define ICE_AQC_FW_LOG_ERR_EN		BIT(15)	/* Used by command */
-+};
-+
-+/* Get/Clear FW Log (indirect 0xFF11) */
-+struct ice_aqc_get_clear_fw_log {
-+	u8 flags;
-+#define ICE_AQC_FW_LOG_CLEAR		BIT(0)
-+#define ICE_AQC_FW_LOG_MORE_DATA_AVAIL	BIT(1)
-+	u8 rsvd1[7];
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
- /**
-  * struct ice_aq_desc - Admin Queue (AQ) descriptor
-  * @flags: ICE_AQ_FLAG_* flags
-@@ -1256,6 +1334,8 @@ struct ice_aq_desc {
- 		struct ice_aqc_dis_txqs dis_txqs;
- 		struct ice_aqc_add_get_update_free_vsi vsi_cmd;
- 		struct ice_aqc_add_update_free_vsi_resp add_update_free_vsi_res;
-+		struct ice_aqc_fw_logging fw_logging;
-+		struct ice_aqc_get_clear_fw_log get_clear_fw_log;
- 		struct ice_aqc_alloc_free_res_cmd sw_res_ctrl;
- 		struct ice_aqc_set_event_mask set_event_mask;
- 		struct ice_aqc_get_link_status get_link_status;
-@@ -1353,6 +1433,9 @@ enum ice_adminq_opc {
- 	/* TX queue handling commands/events */
- 	ice_aqc_opc_add_txqs				= 0x0C30,
- 	ice_aqc_opc_dis_txqs				= 0x0C31,
-+
-+	/* debug commands */
-+	ice_aqc_opc_fw_logging				= 0xFF09,
- };
- 
- #endif /* _ICE_ADMINQ_CMD_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 92845efce37a..32f8a071ac45 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -427,6 +427,176 @@ static void ice_cleanup_fltr_mgmt_struct(struct ice_hw *hw)
- 	devm_kfree(ice_hw_to_dev(hw), sw);
+  - We'll get a new message from the core for every downtrained link.
+
+  - If a link leading to the NIC is downtrained, there will be
+    duplicate messages.  Maybe that's overkill but it's not terrible.
+
+I provisionally put the patch below on my pci/enumeration branch.
+Objections?
+
+
+commit c870cc8cbc4d79014f3daa74d1e412f32e42bf1b
+Author: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date:   Mon Aug 6 18:25:35 2018 -0500
+
+    PCI: Check for PCIe Link downtraining
+    
+    When both ends of a PCIe Link are capable of a higher bandwidth than is
+    currently in use, the Link is said to be "downtrained".  A downtrained Link
+    may indicate hardware or configuration problems in the system, but it's
+    hard to identify such Links from userspace.
+    
+    Refactor pcie_print_link_status() so it continues to always print PCIe
+    bandwidth information, as several NIC drivers desire.
+    
+    Add a new internal __pcie_print_link_status() to emit a message only when a
+    device's bandwidth is constrained by the fabric and call it from the PCI
+    core for all devices, which identifies all downtrained Links.  It also
+    emits messages for a few cases that are technically not downtrained, such
+    as a x4 device in an open-ended x1 slot.
+    
+    Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+    [bhelgaas: changelog, move __pcie_print_link_status() declaration to
+    drivers/pci/, rename pcie_check_upstream_link() to
+    pcie_report_downtraining()]
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 97acba712e4e..a84d341504a5 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -5264,14 +5264,16 @@ u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed *speed,
  }
  
-+#define ICE_FW_LOG_DESC_SIZE(n)	(sizeof(struct ice_aqc_fw_logging_data) + \
-+	(((n) - 1) * sizeof(((struct ice_aqc_fw_logging_data *)0)->entry)))
-+#define ICE_FW_LOG_DESC_SIZE_MAX	\
-+	ICE_FW_LOG_DESC_SIZE(ICE_AQC_FW_LOG_ID_MAX)
-+
-+/**
-+ * ice_cfg_fw_log - configure FW logging
-+ * @hw: pointer to the hw struct
-+ * @enable: enable certain FW logging events if true, disable all if false
-+ *
-+ * This function enables/disables the FW logging via Rx CQ events and a UART
-+ * port based on predetermined configurations. FW logging via the Rx CQ can be
-+ * enabled/disabled for individual PF's. However, FW logging via the UART can
-+ * only be enabled/disabled for all PFs on the same device.
-+ *
-+ * To enable overall FW logging, the "cq_en" and "uart_en" enable bits in
-+ * hw->fw_log need to be set accordingly, e.g. based on user-provided input,
-+ * before initializing the device.
-+ *
-+ * When re/configuring FW logging, callers need to update the "cfg" elements of
-+ * the hw->fw_log.evnts array with the desired logging event configurations for
-+ * modules of interest. When disabling FW logging completely, the callers can
-+ * just pass false in the "enable" parameter. On completion, the function will
-+ * update the "cur" element of the hw->fw_log.evnts array with the resulting
-+ * logging event configurations of the modules that are being re/configured. FW
-+ * logging modules that are not part of a reconfiguration operation retain their
-+ * previous states.
-+ *
-+ * Before resetting the device, it is recommended that the driver disables FW
-+ * logging before shutting down the control queue. When disabling FW logging
-+ * ("enable" = false), the latest configurations of FW logging events stored in
-+ * hw->fw_log.evnts[] are not overridden to allow them to be reconfigured after
-+ * a device reset.
-+ *
-+ * When enabling FW logging to emit log messages via the Rx CQ during the
-+ * device's initialization phase, a mechanism alternative to interrupt handlers
-+ * needs to be used to extract FW log messages from the Rx CQ periodically and
-+ * to prevent the Rx CQ from being full and stalling other types of control
-+ * messages from FW to SW. Interrupts are typically disabled during the device's
-+ * initialization phase.
-+ */
-+static enum ice_status ice_cfg_fw_log(struct ice_hw *hw, bool enable)
-+{
-+	struct ice_aqc_fw_logging_data *data = NULL;
-+	struct ice_aqc_fw_logging *cmd;
-+	enum ice_status status = 0;
-+	u16 i, chgs = 0, len = 0;
-+	struct ice_aq_desc desc;
-+	u8 actv_evnts = 0;
-+	void *buf = NULL;
-+
-+	if (!hw->fw_log.cq_en && !hw->fw_log.uart_en)
-+		return 0;
-+
-+	/* Disable FW logging only when the control queue is still responsive */
-+	if (!enable &&
-+	    (!hw->fw_log.actv_evnts || !ice_check_sq_alive(hw, &hw->adminq)))
-+		return 0;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logging);
-+	cmd = &desc.params.fw_logging;
-+
-+	/* Indicate which controls are valid */
-+	if (hw->fw_log.cq_en)
-+		cmd->log_ctrl_valid |= ICE_AQC_FW_LOG_AQ_VALID;
-+
-+	if (hw->fw_log.uart_en)
-+		cmd->log_ctrl_valid |= ICE_AQC_FW_LOG_UART_VALID;
-+
-+	if (enable) {
-+		/* Fill in an array of entries with FW logging modules and
-+		 * logging events being reconfigured.
-+		 */
-+		for (i = 0; i < ICE_AQC_FW_LOG_ID_MAX; i++) {
-+			u16 val;
-+
-+			/* Keep track of enabled event types */
-+			actv_evnts |= hw->fw_log.evnts[i].cfg;
-+
-+			if (hw->fw_log.evnts[i].cfg == hw->fw_log.evnts[i].cur)
-+				continue;
-+
-+			if (!data) {
-+				data = devm_kzalloc(ice_hw_to_dev(hw),
-+						    ICE_FW_LOG_DESC_SIZE_MAX,
-+						    GFP_KERNEL);
-+				if (!data)
-+					return ICE_ERR_NO_MEMORY;
-+			}
-+
-+			val = i << ICE_AQC_FW_LOG_ID_S;
-+			val |= hw->fw_log.evnts[i].cfg << ICE_AQC_FW_LOG_EN_S;
-+			data->entry[chgs++] = cpu_to_le16(val);
-+		}
-+
-+		/* Only enable FW logging if at least one module is specified.
-+		 * If FW logging is currently enabled but all modules are not
-+		 * enabled to emit log messages, disable FW logging altogether.
-+		 */
-+		if (actv_evnts) {
-+			/* Leave if there is effectively no change */
-+			if (!chgs)
-+				goto out;
-+
-+			if (hw->fw_log.cq_en)
-+				cmd->log_ctrl |= ICE_AQC_FW_LOG_AQ_EN;
-+
-+			if (hw->fw_log.uart_en)
-+				cmd->log_ctrl |= ICE_AQC_FW_LOG_UART_EN;
-+
-+			buf = data;
-+			len = ICE_FW_LOG_DESC_SIZE(chgs);
-+			desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+		}
-+	}
-+
-+	status = ice_aq_send_cmd(hw, &desc, buf, len, NULL);
-+	if (!status) {
-+		/* Update the current configuration to reflect events enabled.
-+		 * hw->fw_log.cq_en and hw->fw_log.uart_en indicate if the FW
-+		 * logging mode is enabled for the device. They do not reflect
-+		 * actual modules being enabled to emit log messages. So, their
-+		 * values remain unchanged even when all modules are disabled.
-+		 */
-+		u16 cnt = enable ? chgs : (u16)ICE_AQC_FW_LOG_ID_MAX;
-+
-+		hw->fw_log.actv_evnts = actv_evnts;
-+		for (i = 0; i < cnt; i++) {
-+			u16 v, m;
-+
-+			if (!enable) {
-+				/* When disabling all FW logging events as part
-+				 * of device's de-initialization, the original
-+				 * configurations are retained, and can be used
-+				 * to reconfigure FW logging later if the device
-+				 * is re-initialized.
-+				 */
-+				hw->fw_log.evnts[i].cur = 0;
-+				continue;
-+			}
-+
-+			v = le16_to_cpu(data->entry[i]);
-+			m = (v & ICE_AQC_FW_LOG_ID_M) >> ICE_AQC_FW_LOG_ID_S;
-+			hw->fw_log.evnts[m].cur = hw->fw_log.evnts[m].cfg;
-+		}
-+	}
-+
-+out:
-+	if (data)
-+		devm_kfree(ice_hw_to_dev(hw), data);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_output_fw_log
-+ * @hw: pointer to the hw struct
-+ * @desc: pointer to the AQ message descriptor
-+ * @buf: pointer to the buffer accompanying the AQ message
-+ *
-+ * Formats a FW Log message and outputs it via the standard driver logs.
-+ */
-+void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf)
-+{
-+	ice_debug(hw, ICE_DBG_AQ_MSG, "[ FW Log Msg Start ]\n");
-+	ice_debug_array(hw, ICE_DBG_AQ_MSG, 16, 1, (u8 *)buf,
-+			le16_to_cpu(desc->datalen));
-+	ice_debug(hw, ICE_DBG_AQ_MSG, "[ FW Log Msg End ]\n");
-+}
-+
  /**
-  * ice_init_hw - main hardware initialization routine
-  * @hw: pointer to the hardware structure
-@@ -461,6 +631,11 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
- 	if (status)
- 		goto err_unroll_cqinit;
- 
-+	/* Enable FW logging. Not fatal if this fails. */
-+	status = ice_cfg_fw_log(hw, true);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to enable FW logging.\n");
-+
- 	status = ice_clear_pf_cfg(hw);
- 	if (status)
- 		goto err_unroll_cqinit;
-@@ -574,15 +749,18 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
+- * pcie_print_link_status - Report the PCI device's link speed and width
++ * __pcie_print_link_status - Report the PCI device's link speed and width
+  * @dev: PCI device to query
++ * @verbose: Print info even when enough bandwidth is available
+  *
+- * Report the available bandwidth at the device.  If this is less than the
+- * device is capable of, report the device's maximum possible bandwidth and
+- * the upstream link that limits its performance to less than that.
++ * If the available bandwidth at the device is less than the device is
++ * capable of, report the device's maximum possible bandwidth and the
++ * upstream link that limits its performance.  If @verbose, always print
++ * the available bandwidth, even if the device isn't constrained.
   */
- void ice_deinit_hw(struct ice_hw *hw)
+-void pcie_print_link_status(struct pci_dev *dev)
++void __pcie_print_link_status(struct pci_dev *dev, bool verbose)
  {
-+	ice_cleanup_fltr_mgmt_struct(hw);
-+
- 	ice_sched_cleanup_all(hw);
--	ice_shutdown_all_ctrlq(hw);
+ 	enum pcie_link_width width, width_cap;
+ 	enum pci_bus_speed speed, speed_cap;
+@@ -5281,11 +5283,11 @@ void pcie_print_link_status(struct pci_dev *dev)
+ 	bw_cap = pcie_bandwidth_capable(dev, &speed_cap, &width_cap);
+ 	bw_avail = pcie_bandwidth_available(dev, &limiting_dev, &speed, &width);
  
- 	if (hw->port_info) {
- 		devm_kfree(ice_hw_to_dev(hw), hw->port_info);
- 		hw->port_info = NULL;
- 	}
- 
--	ice_cleanup_fltr_mgmt_struct(hw);
-+	/* Attempt to disable FW logging before shutting down control queues */
-+	ice_cfg_fw_log(hw, false);
-+	ice_shutdown_all_ctrlq(hw);
+-	if (bw_avail >= bw_cap)
++	if (bw_avail >= bw_cap && verbose)
+ 		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth (%s x%d link)\n",
+ 			 bw_cap / 1000, bw_cap % 1000,
+ 			 PCIE_SPEED2STR(speed_cap), width_cap);
+-	else
++	else if (bw_avail < bw_cap)
+ 		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)\n",
+ 			 bw_avail / 1000, bw_avail % 1000,
+ 			 PCIE_SPEED2STR(speed), width,
+@@ -5293,6 +5295,17 @@ void pcie_print_link_status(struct pci_dev *dev)
+ 			 bw_cap / 1000, bw_cap % 1000,
+ 			 PCIE_SPEED2STR(speed_cap), width_cap);
  }
++
++/**
++ * pcie_print_link_status - Report the PCI device's link speed and width
++ * @dev: PCI device to query
++ *
++ * Report the available bandwidth@the device.
++ */
++void pcie_print_link_status(struct pci_dev *dev)
++{
++	__pcie_print_link_status(dev, true);
++}
+ EXPORT_SYMBOL(pcie_print_link_status);
  
  /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 409b9957f407..aac2d6cadaaf 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -95,4 +95,5 @@ enum ice_status
- ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_id, u8 tc, u8 num_qgrps,
- 		struct ice_aqc_add_tx_qgrp *buf, u16 buf_size,
- 		struct ice_sq_cd *cd);
-+void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf);
- #endif /* _ICE_COMMON_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index cbeae1355593..f04e124bca8c 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -984,6 +984,9 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- 				dev_err(&pf->pdev->dev,
- 					"Could not handle link event\n");
- 			break;
-+		case ice_aqc_opc_fw_logging:
-+			ice_output_fw_log(hw, &event.desc, event.msg_buf);
-+			break;
- 		default:
- 			dev_dbg(&pf->pdev->dev,
- 				"%s Receive Queue unknown event 0x%04x ignored\n",
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 3a1308fe65e7..8f78267f40b9 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -258,6 +258,24 @@ struct ice_switch_info {
- 	struct ice_sw_recipe *recp_list;
- };
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 70808c168fb9..ce880dab5bc8 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -263,6 +263,7 @@ enum pci_bus_speed pcie_get_speed_cap(struct pci_dev *dev);
+ enum pcie_link_width pcie_get_width_cap(struct pci_dev *dev);
+ u32 pcie_bandwidth_capable(struct pci_dev *dev, enum pci_bus_speed *speed,
+ 			   enum pcie_link_width *width);
++void __pcie_print_link_status(struct pci_dev *dev, bool verbose);
  
-+/* FW logging configuration */
-+struct ice_fw_log_evnt {
-+	u8 cfg : 4;	/* New event enables to configure */
-+	u8 cur : 4;	/* Current/active event enables */
-+};
-+
-+struct ice_fw_log_cfg {
-+	u8 cq_en : 1;    /* FW logging is enabled via the control queue */
-+	u8 uart_en : 1;  /* FW logging is enabled via UART for all PFs */
-+	u8 actv_evnts;   /* Cumulation of currently enabled log events */
-+
-+#define ICE_FW_LOG_EVNT_INFO	(ICE_AQC_FW_LOG_INFO_EN >> ICE_AQC_FW_LOG_EN_S)
-+#define ICE_FW_LOG_EVNT_INIT	(ICE_AQC_FW_LOG_INIT_EN >> ICE_AQC_FW_LOG_EN_S)
-+#define ICE_FW_LOG_EVNT_FLOW	(ICE_AQC_FW_LOG_FLOW_EN >> ICE_AQC_FW_LOG_EN_S)
-+#define ICE_FW_LOG_EVNT_ERR	(ICE_AQC_FW_LOG_ERR_EN >> ICE_AQC_FW_LOG_EN_S)
-+	struct ice_fw_log_evnt evnts[ICE_AQC_FW_LOG_ID_MAX];
-+};
-+
- /* Port hardware description */
- struct ice_hw {
- 	u8 __iomem *hw_addr;
-@@ -307,6 +325,7 @@ struct ice_hw {
- 	u8 fw_patch;		/* firmware patch version */
- 	u32 fw_build;		/* firmware build number */
+ /* Single Root I/O Virtualization */
+ struct pci_sriov {
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index bc147c586643..387fc8ac54ec 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -2231,6 +2231,25 @@ static struct pci_dev *pci_scan_device(struct pci_bus *bus, int devfn)
+ 	return dev;
+ }
  
-+	struct ice_fw_log_cfg fw_log;
- 	/* minimum allowed value for different speeds */
- #define ICE_ITR_GRAN_MIN_200	1
- #define ICE_ITR_GRAN_MIN_100	1
--- 
-2.17.1
-
++static void pcie_report_downtraining(struct pci_dev *dev)
++{
++	if (!pci_is_pcie(dev))
++		return;
++
++	/* Look from the device up to avoid downstream ports with no devices */
++	if ((pci_pcie_type(dev) != PCI_EXP_TYPE_ENDPOINT) &&
++	    (pci_pcie_type(dev) != PCI_EXP_TYPE_LEG_END) &&
++	    (pci_pcie_type(dev) != PCI_EXP_TYPE_UPSTREAM))
++		return;
++
++	/* Multi-function PCIe devices share the same link/status */
++	if (PCI_FUNC(dev->devfn) != 0 || dev->is_virtfn)
++		return;
++
++	/* Print link status only if the device is constrained by the fabric */
++	__pcie_print_link_status(dev, false);
++}
++
+ static void pci_init_capabilities(struct pci_dev *dev)
+ {
+ 	/* Enhanced Allocation */
+@@ -2266,6 +2285,8 @@ static void pci_init_capabilities(struct pci_dev *dev)
+ 	/* Advanced Error Reporting */
+ 	pci_aer_init(dev);
+ 
++	pcie_report_downtraining(dev);
++
+ 	if (pci_probe_reset_function(dev) == 0)
+ 		dev->reset_fn = 1;
+ }
