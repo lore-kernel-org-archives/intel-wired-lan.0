@@ -1,266 +1,473 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu,  9 Aug 2018 06:29:54 -0700
-Subject: [Intel-wired-lan] [PATCH v3 11/15] ice: Implement
- ice_bridge_getlink and ice_bridge_setlink
+Date: Thu,  9 Aug 2018 06:29:52 -0700
+Subject: [Intel-wired-lan] [PATCH v3 09/15] ice: Clean up register file
 In-Reply-To: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
 References: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180809132958.23036-12-anirudh.venkataramanan@intel.com>
+Message-ID: <20180809132958.23036-10-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+This patch cleans up the existing register definitions.
 
-ice_bridge_getlink returns the current bridge mode using
-ndo_dflt_bridge_getlink and the mode parameter available in
-first_switch->bridge_mode.
+1) Several instances of long defines names used in the BIT() macro
+   were replaced to use the actual values they represent. As a
+   result some defines for shifts (ending with _S) that were used
+   only to create bitmasks were removed completely.
 
-ice_bridge_setlink is invoked when the bridge mode needs to
-changed. The value to be changed to is available as a netlink
-message which is parsed in this function. If the mode has to
-be changed, switch_flags is set appropriately (set ALLOW_LB
-for VEB mode and clear it for VEPA mode) and ice_aq_update_vsi
-is called. Also change the unicast switch filter rules.
+2) Apply more consistent tab spacing.
 
-Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c   | 140 +++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_switch.c |  41 ++++++
- drivers/net/ethernet/intel/ice/ice_switch.h |   1 +
- 3 files changed, 181 insertions(+), 1 deletion(-)
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   | 417 ++++++++----------
+ 1 file changed, 188 insertions(+), 229 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index fccecb6fa618..cbeae1355593 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3599,7 +3599,11 @@ static int ice_probe(struct pci_dev *pdev,
- 		goto err_msix_misc_unroll;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 6076fc87df9d..067ca26a1d94 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -6,251 +6,210 @@
+ #ifndef _ICE_HW_AUTOGEN_H_
+ #define _ICE_HW_AUTOGEN_H_
  
--	pf->first_sw->bridge_mode = BRIDGE_MODE_VEB;
-+	if (hw->evb_veb)
-+		pf->first_sw->bridge_mode = BRIDGE_MODE_VEB;
-+	else
-+		pf->first_sw->bridge_mode = BRIDGE_MODE_VEPA;
-+
- 	pf->first_sw->pf = pf;
+-#define QTX_COMM_DBELL(_DBQM)		(0x002C0000 + ((_DBQM) * 4))
+-#define PF_FW_ARQBAH			0x00080180
+-#define PF_FW_ARQBAL			0x00080080
+-#define PF_FW_ARQH			0x00080380
+-#define PF_FW_ARQH_ARQH_S		0
+-#define PF_FW_ARQH_ARQH_M		ICE_M(0x3FF, PF_FW_ARQH_ARQH_S)
+-#define PF_FW_ARQLEN			0x00080280
+-#define PF_FW_ARQLEN_ARQLEN_S		0
+-#define PF_FW_ARQLEN_ARQLEN_M		ICE_M(0x3FF, PF_FW_ARQLEN_ARQLEN_S)
+-#define PF_FW_ARQLEN_ARQVFE_S		28
+-#define PF_FW_ARQLEN_ARQVFE_M		BIT(PF_FW_ARQLEN_ARQVFE_S)
+-#define PF_FW_ARQLEN_ARQOVFL_S		29
+-#define PF_FW_ARQLEN_ARQOVFL_M		BIT(PF_FW_ARQLEN_ARQOVFL_S)
+-#define PF_FW_ARQLEN_ARQCRIT_S		30
+-#define PF_FW_ARQLEN_ARQCRIT_M		BIT(PF_FW_ARQLEN_ARQCRIT_S)
+-#define PF_FW_ARQLEN_ARQENABLE_S	31
+-#define PF_FW_ARQLEN_ARQENABLE_M	BIT(PF_FW_ARQLEN_ARQENABLE_S)
+-#define PF_FW_ARQT			0x00080480
+-#define PF_FW_ATQBAH			0x00080100
+-#define PF_FW_ATQBAL			0x00080000
+-#define PF_FW_ATQH			0x00080300
+-#define PF_FW_ATQH_ATQH_S		0
+-#define PF_FW_ATQH_ATQH_M		ICE_M(0x3FF, PF_FW_ATQH_ATQH_S)
+-#define PF_FW_ATQLEN			0x00080200
+-#define PF_FW_ATQLEN_ATQLEN_S		0
+-#define PF_FW_ATQLEN_ATQLEN_M		ICE_M(0x3FF, PF_FW_ATQLEN_ATQLEN_S)
+-#define PF_FW_ATQLEN_ATQVFE_S		28
+-#define PF_FW_ATQLEN_ATQVFE_M		BIT(PF_FW_ATQLEN_ATQVFE_S)
+-#define PF_FW_ATQLEN_ATQOVFL_S		29
+-#define PF_FW_ATQLEN_ATQOVFL_M		BIT(PF_FW_ATQLEN_ATQOVFL_S)
+-#define PF_FW_ATQLEN_ATQCRIT_S		30
+-#define PF_FW_ATQLEN_ATQCRIT_M		BIT(PF_FW_ATQLEN_ATQCRIT_S)
+-#define PF_FW_ATQLEN_ATQENABLE_S	31
+-#define PF_FW_ATQLEN_ATQENABLE_M	BIT(PF_FW_ATQLEN_ATQENABLE_S)
+-#define PF_FW_ATQT			0x00080400
+-
++#define QTX_COMM_DBELL(_DBQM)			(0x002C0000 + ((_DBQM) * 4))
++#define PF_FW_ARQBAH				0x00080180
++#define PF_FW_ARQBAL				0x00080080
++#define PF_FW_ARQH				0x00080380
++#define PF_FW_ARQH_ARQH_M			ICE_M(0x3FF, 0)
++#define PF_FW_ARQLEN				0x00080280
++#define PF_FW_ARQLEN_ARQLEN_M			ICE_M(0x3FF, 0)
++#define PF_FW_ARQLEN_ARQVFE_M			BIT(28)
++#define PF_FW_ARQLEN_ARQOVFL_M			BIT(29)
++#define PF_FW_ARQLEN_ARQCRIT_M			BIT(30)
++#define PF_FW_ARQLEN_ARQENABLE_M		BIT(31)
++#define PF_FW_ARQT				0x00080480
++#define PF_FW_ATQBAH				0x00080100
++#define PF_FW_ATQBAL				0x00080000
++#define PF_FW_ATQH				0x00080300
++#define PF_FW_ATQH_ATQH_M			ICE_M(0x3FF, 0)
++#define PF_FW_ATQLEN				0x00080200
++#define PF_FW_ATQLEN_ATQLEN_M			ICE_M(0x3FF, 0)
++#define PF_FW_ATQLEN_ATQVFE_M			BIT(28)
++#define PF_FW_ATQLEN_ATQOVFL_M			BIT(29)
++#define PF_FW_ATQLEN_ATQCRIT_M			BIT(30)
++#define PF_FW_ATQLEN_ATQENABLE_M		BIT(31)
++#define PF_FW_ATQT				0x00080400
+ #define GLFLXP_RXDID_FLAGS(_i, _j)		(0x0045D000 + ((_i) * 4 + (_j) * 256))
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S	0
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, 0)
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S	8
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_M	ICE_M(0x3F, 8)
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_S	16
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_M	ICE_M(0x3F, 16)
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_S	24
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_M	ICE_M(0x3F, GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_S)
++#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_M	ICE_M(0x3F, 24)
+ #define GLFLXP_RXDID_FLX_WRD_0(_i)		(0x0045c800 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_S)
++#define GLFLXP_RXDID_FLX_WRD_0_RXDID_OPCODE_M	ICE_M(0x3, 30)
+ #define GLFLXP_RXDID_FLX_WRD_1(_i)		(0x0045c900 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_1_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_S)
++#define GLFLXP_RXDID_FLX_WRD_1_RXDID_OPCODE_M	ICE_M(0x3, 30)
+ #define GLFLXP_RXDID_FLX_WRD_2(_i)		(0x0045ca00 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_2_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_S)
++#define GLFLXP_RXDID_FLX_WRD_2_RXDID_OPCODE_M	ICE_M(0x3, 30)
+ #define GLFLXP_RXDID_FLX_WRD_3(_i)		(0x0045cb00 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_S	0
+-#define GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_M	ICE_M(0xFF, GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_S)
++#define GLFLXP_RXDID_FLX_WRD_3_PROT_MDID_M	ICE_M(0xFF, 0)
+ #define GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_S	30
+-#define GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_M	ICE_M(0x3, GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_S)
+-
+-#define QRXFLXP_CNTXT(_QRX)		(0x00480000 + ((_QRX) * 4))
+-#define QRXFLXP_CNTXT_RXDID_IDX_S	0
+-#define QRXFLXP_CNTXT_RXDID_IDX_M	ICE_M(0x3F, QRXFLXP_CNTXT_RXDID_IDX_S)
+-#define QRXFLXP_CNTXT_RXDID_PRIO_S	8
+-#define QRXFLXP_CNTXT_RXDID_PRIO_M	ICE_M(0x7, QRXFLXP_CNTXT_RXDID_PRIO_S)
+-#define QRXFLXP_CNTXT_TS_S		11
+-#define QRXFLXP_CNTXT_TS_M		BIT(QRXFLXP_CNTXT_TS_S)
+-#define GLGEN_RSTAT			0x000B8188
+-#define GLGEN_RSTAT_DEVSTATE_S		0
+-#define GLGEN_RSTAT_DEVSTATE_M		ICE_M(0x3, GLGEN_RSTAT_DEVSTATE_S)
+-#define GLGEN_RSTCTL			0x000B8180
+-#define GLGEN_RSTCTL_GRSTDEL_S		0
+-#define GLGEN_RSTCTL_GRSTDEL_M		ICE_M(0x3F, GLGEN_RSTCTL_GRSTDEL_S)
+-#define GLGEN_RSTAT_RESET_TYPE_S	2
+-#define GLGEN_RSTAT_RESET_TYPE_M	ICE_M(0x3, GLGEN_RSTAT_RESET_TYPE_S)
+-#define GLGEN_RTRIG			0x000B8190
+-#define GLGEN_RTRIG_CORER_S		0
+-#define GLGEN_RTRIG_CORER_M		BIT(GLGEN_RTRIG_CORER_S)
+-#define GLGEN_RTRIG_GLOBR_S		1
+-#define GLGEN_RTRIG_GLOBR_M		BIT(GLGEN_RTRIG_GLOBR_S)
+-#define GLGEN_STAT			0x000B612C
+-#define PFGEN_CTRL			0x00091000
+-#define PFGEN_CTRL_PFSWR_S		0
+-#define PFGEN_CTRL_PFSWR_M		BIT(PFGEN_CTRL_PFSWR_S)
+-#define PFGEN_STATE			0x00088000
+-#define PRTGEN_STATUS			0x000B8100
+-#define PFHMC_ERRORDATA			0x00520500
+-#define PFHMC_ERRORINFO			0x00520400
+-#define GLINT_DYN_CTL(_INT)		(0x00160000 + ((_INT) * 4))
+-#define GLINT_DYN_CTL_INTENA_S		0
+-#define GLINT_DYN_CTL_INTENA_M		BIT(GLINT_DYN_CTL_INTENA_S)
+-#define GLINT_DYN_CTL_CLEARPBA_S	1
+-#define GLINT_DYN_CTL_CLEARPBA_M	BIT(GLINT_DYN_CTL_CLEARPBA_S)
+-#define GLINT_DYN_CTL_SWINT_TRIG_S	2
+-#define GLINT_DYN_CTL_SWINT_TRIG_M	BIT(GLINT_DYN_CTL_SWINT_TRIG_S)
+-#define GLINT_DYN_CTL_ITR_INDX_S	3
+-#define GLINT_DYN_CTL_SW_ITR_INDX_S	25
+-#define GLINT_DYN_CTL_SW_ITR_INDX_M	ICE_M(0x3, GLINT_DYN_CTL_SW_ITR_INDX_S)
+-#define GLINT_DYN_CTL_INTENA_MSK_S	31
+-#define GLINT_DYN_CTL_INTENA_MSK_M	BIT(GLINT_DYN_CTL_INTENA_MSK_S)
+-#define GLINT_ITR(_i, _INT)		(0x00154000 + ((_i) * 8192 + (_INT) * 4))
+-#define PFINT_FW_CTL			0x0016C800
+-#define PFINT_FW_CTL_MSIX_INDX_S	0
+-#define PFINT_FW_CTL_MSIX_INDX_M	ICE_M(0x7FF, PFINT_FW_CTL_MSIX_INDX_S)
+-#define PFINT_FW_CTL_ITR_INDX_S		11
+-#define PFINT_FW_CTL_ITR_INDX_M		ICE_M(0x3, PFINT_FW_CTL_ITR_INDX_S)
+-#define PFINT_FW_CTL_CAUSE_ENA_S	30
+-#define PFINT_FW_CTL_CAUSE_ENA_M	BIT(PFINT_FW_CTL_CAUSE_ENA_S)
+-#define PFINT_OICR			0x0016CA00
+-#define PFINT_OICR_ECC_ERR_S		16
+-#define PFINT_OICR_ECC_ERR_M		BIT(PFINT_OICR_ECC_ERR_S)
+-#define PFINT_OICR_MAL_DETECT_S		19
+-#define PFINT_OICR_MAL_DETECT_M		BIT(PFINT_OICR_MAL_DETECT_S)
+-#define PFINT_OICR_GRST_S		20
+-#define PFINT_OICR_GRST_M		BIT(PFINT_OICR_GRST_S)
+-#define PFINT_OICR_PCI_EXCEPTION_S	21
+-#define PFINT_OICR_PCI_EXCEPTION_M	BIT(PFINT_OICR_PCI_EXCEPTION_S)
+-#define PFINT_OICR_HMC_ERR_S		26
+-#define PFINT_OICR_HMC_ERR_M		BIT(PFINT_OICR_HMC_ERR_S)
+-#define PFINT_OICR_PE_CRITERR_S		28
+-#define PFINT_OICR_PE_CRITERR_M		BIT(PFINT_OICR_PE_CRITERR_S)
+-#define PFINT_OICR_CTL			0x0016CA80
+-#define PFINT_OICR_CTL_MSIX_INDX_S	0
+-#define PFINT_OICR_CTL_MSIX_INDX_M	ICE_M(0x7FF, PFINT_OICR_CTL_MSIX_INDX_S)
+-#define PFINT_OICR_CTL_ITR_INDX_S	11
+-#define PFINT_OICR_CTL_ITR_INDX_M	ICE_M(0x3, PFINT_OICR_CTL_ITR_INDX_S)
+-#define PFINT_OICR_CTL_CAUSE_ENA_S	30
+-#define PFINT_OICR_CTL_CAUSE_ENA_M	BIT(PFINT_OICR_CTL_CAUSE_ENA_S)
+-#define PFINT_OICR_ENA			0x0016C900
+-#define QINT_RQCTL(_QRX)		(0x00150000 + ((_QRX) * 4))
+-#define QINT_RQCTL_MSIX_INDX_S		0
+-#define QINT_RQCTL_ITR_INDX_S		11
+-#define QINT_RQCTL_CAUSE_ENA_S		30
+-#define QINT_RQCTL_CAUSE_ENA_M		BIT(QINT_RQCTL_CAUSE_ENA_S)
+-#define QINT_TQCTL(_DBQM)		(0x00140000 + ((_DBQM) * 4))
+-#define QINT_TQCTL_MSIX_INDX_S		0
+-#define QINT_TQCTL_ITR_INDX_S		11
+-#define QINT_TQCTL_CAUSE_ENA_S		30
+-#define QINT_TQCTL_CAUSE_ENA_M		BIT(QINT_TQCTL_CAUSE_ENA_S)
+-#define GLLAN_RCTL_0			0x002941F8
+-#define QRX_CONTEXT(_i, _QRX)		(0x00280000 + ((_i) * 8192 + (_QRX) * 4))
+-#define QRX_CTRL(_QRX)			(0x00120000 + ((_QRX) * 4))
+-#define QRX_CTRL_MAX_INDEX		2047
+-#define QRX_CTRL_QENA_REQ_S		0
+-#define QRX_CTRL_QENA_REQ_M		BIT(QRX_CTRL_QENA_REQ_S)
+-#define QRX_CTRL_QENA_STAT_S		2
+-#define QRX_CTRL_QENA_STAT_M		BIT(QRX_CTRL_QENA_STAT_S)
+-#define QRX_ITR(_QRX)			(0x00292000 + ((_QRX) * 4))
+-#define QRX_TAIL(_QRX)			(0x00290000 + ((_QRX) * 4))
+-#define GLNVM_FLA			0x000B6108
+-#define GLNVM_FLA_LOCKED_S		6
+-#define GLNVM_FLA_LOCKED_M		BIT(GLNVM_FLA_LOCKED_S)
+-#define GLNVM_GENS			0x000B6100
+-#define GLNVM_GENS_SR_SIZE_S		5
+-#define GLNVM_GENS_SR_SIZE_M		ICE_M(0x7, GLNVM_GENS_SR_SIZE_S)
+-#define GLNVM_ULD			0x000B6008
+-#define GLNVM_ULD_CORER_DONE_S		3
+-#define GLNVM_ULD_CORER_DONE_M		BIT(GLNVM_ULD_CORER_DONE_S)
+-#define GLNVM_ULD_GLOBR_DONE_S		4
+-#define GLNVM_ULD_GLOBR_DONE_M		BIT(GLNVM_ULD_GLOBR_DONE_S)
+-#define PF_FUNC_RID			0x0009E880
+-#define PF_FUNC_RID_FUNC_NUM_S		0
+-#define PF_FUNC_RID_FUNC_NUM_M		ICE_M(0x7, PF_FUNC_RID_FUNC_NUM_S)
+-#define GLPRT_BPRCH(_i)			(0x00381384 + ((_i) * 8))
+-#define GLPRT_BPRCL(_i)			(0x00381380 + ((_i) * 8))
+-#define GLPRT_BPTCH(_i)			(0x00381244 + ((_i) * 8))
+-#define GLPRT_BPTCL(_i)			(0x00381240 + ((_i) * 8))
+-#define GLPRT_CRCERRS(_i)		(0x00380100 + ((_i) * 8))
+-#define GLPRT_GORCH(_i)			(0x00380004 + ((_i) * 8))
+-#define GLPRT_GORCL(_i)			(0x00380000 + ((_i) * 8))
+-#define GLPRT_GOTCH(_i)			(0x00380B44 + ((_i) * 8))
+-#define GLPRT_GOTCL(_i)			(0x00380B40 + ((_i) * 8))
+-#define GLPRT_ILLERRC(_i)		(0x003801C0 + ((_i) * 8))
+-#define GLPRT_LXOFFRXC(_i)		(0x003802C0 + ((_i) * 8))
+-#define GLPRT_LXOFFTXC(_i)		(0x00381180 + ((_i) * 8))
+-#define GLPRT_LXONRXC(_i)		(0x00380280 + ((_i) * 8))
+-#define GLPRT_LXONTXC(_i)		(0x00381140 + ((_i) * 8))
+-#define GLPRT_MLFC(_i)			(0x00380040 + ((_i) * 8))
+-#define GLPRT_MPRCH(_i)			(0x00381344 + ((_i) * 8))
+-#define GLPRT_MPRCL(_i)			(0x00381340 + ((_i) * 8))
+-#define GLPRT_MPTCH(_i)			(0x00381204 + ((_i) * 8))
+-#define GLPRT_MPTCL(_i)			(0x00381200 + ((_i) * 8))
+-#define GLPRT_MRFC(_i)			(0x00380080 + ((_i) * 8))
+-#define GLPRT_PRC1023H(_i)		(0x00380A04 + ((_i) * 8))
+-#define GLPRT_PRC1023L(_i)		(0x00380A00 + ((_i) * 8))
+-#define GLPRT_PRC127H(_i)		(0x00380944 + ((_i) * 8))
+-#define GLPRT_PRC127L(_i)		(0x00380940 + ((_i) * 8))
+-#define GLPRT_PRC1522H(_i)		(0x00380A44 + ((_i) * 8))
+-#define GLPRT_PRC1522L(_i)		(0x00380A40 + ((_i) * 8))
+-#define GLPRT_PRC255H(_i)		(0x00380984 + ((_i) * 8))
+-#define GLPRT_PRC255L(_i)		(0x00380980 + ((_i) * 8))
+-#define GLPRT_PRC511H(_i)		(0x003809C4 + ((_i) * 8))
+-#define GLPRT_PRC511L(_i)		(0x003809C0 + ((_i) * 8))
+-#define GLPRT_PRC64H(_i)		(0x00380904 + ((_i) * 8))
+-#define GLPRT_PRC64L(_i)		(0x00380900 + ((_i) * 8))
+-#define GLPRT_PRC9522H(_i)		(0x00380A84 + ((_i) * 8))
+-#define GLPRT_PRC9522L(_i)		(0x00380A80 + ((_i) * 8))
+-#define GLPRT_PTC1023H(_i)		(0x00380C84 + ((_i) * 8))
+-#define GLPRT_PTC1023L(_i)		(0x00380C80 + ((_i) * 8))
+-#define GLPRT_PTC127H(_i)		(0x00380BC4 + ((_i) * 8))
+-#define GLPRT_PTC127L(_i)		(0x00380BC0 + ((_i) * 8))
+-#define GLPRT_PTC1522H(_i)		(0x00380CC4 + ((_i) * 8))
+-#define GLPRT_PTC1522L(_i)		(0x00380CC0 + ((_i) * 8))
+-#define GLPRT_PTC255H(_i)		(0x00380C04 + ((_i) * 8))
+-#define GLPRT_PTC255L(_i)		(0x00380C00 + ((_i) * 8))
+-#define GLPRT_PTC511H(_i)		(0x00380C44 + ((_i) * 8))
+-#define GLPRT_PTC511L(_i)		(0x00380C40 + ((_i) * 8))
+-#define GLPRT_PTC64H(_i)		(0x00380B84 + ((_i) * 8))
+-#define GLPRT_PTC64L(_i)		(0x00380B80 + ((_i) * 8))
+-#define GLPRT_PTC9522H(_i)		(0x00380D04 + ((_i) * 8))
+-#define GLPRT_PTC9522L(_i)		(0x00380D00 + ((_i) * 8))
+-#define GLPRT_RFC(_i)			(0x00380AC0 + ((_i) * 8))
+-#define GLPRT_RJC(_i)			(0x00380B00 + ((_i) * 8))
+-#define GLPRT_RLEC(_i)			(0x00380140 + ((_i) * 8))
+-#define GLPRT_ROC(_i)			(0x00380240 + ((_i) * 8))
+-#define GLPRT_RUC(_i)			(0x00380200 + ((_i) * 8))
+-#define GLPRT_TDOLD(_i)			(0x00381280 + ((_i) * 8))
+-#define GLPRT_UPRCH(_i)			(0x00381304 + ((_i) * 8))
+-#define GLPRT_UPRCL(_i)			(0x00381300 + ((_i) * 8))
+-#define GLPRT_UPTCH(_i)			(0x003811C4 + ((_i) * 8))
+-#define GLPRT_UPTCL(_i)			(0x003811C0 + ((_i) * 8))
+-#define GLV_BPRCH(_i)			(0x003B6004 + ((_i) * 8))
+-#define GLV_BPRCL(_i)			(0x003B6000 + ((_i) * 8))
+-#define GLV_BPTCH(_i)			(0x0030E004 + ((_i) * 8))
+-#define GLV_BPTCL(_i)			(0x0030E000 + ((_i) * 8))
+-#define GLV_GORCH(_i)			(0x003B0004 + ((_i) * 8))
+-#define GLV_GORCL(_i)			(0x003B0000 + ((_i) * 8))
+-#define GLV_GOTCH(_i)			(0x00300004 + ((_i) * 8))
+-#define GLV_GOTCL(_i)			(0x00300000 + ((_i) * 8))
+-#define GLV_MPRCH(_i)			(0x003B4004 + ((_i) * 8))
+-#define GLV_MPRCL(_i)			(0x003B4000 + ((_i) * 8))
+-#define GLV_MPTCH(_i)			(0x0030C004 + ((_i) * 8))
+-#define GLV_MPTCL(_i)			(0x0030C000 + ((_i) * 8))
+-#define GLV_RDPC(_i)			(0x00294C04 + ((_i) * 4))
+-#define GLV_TEPC(_VSI)			(0x00312000 + ((_VSI) * 4))
+-#define GLV_UPRCH(_i)			(0x003B2004 + ((_i) * 8))
+-#define GLV_UPRCL(_i)			(0x003B2000 + ((_i) * 8))
+-#define GLV_UPTCH(_i)			(0x0030A004 + ((_i) * 8))
+-#define GLV_UPTCL(_i)			(0x0030A000 + ((_i) * 8))
+-#define VSIQF_HKEY_MAX_INDEX		12
++#define GLFLXP_RXDID_FLX_WRD_3_RXDID_OPCODE_M	ICE_M(0x3, 30)
++#define QRXFLXP_CNTXT(_QRX)			(0x00480000 + ((_QRX) * 4))
++#define QRXFLXP_CNTXT_RXDID_IDX_S		0
++#define QRXFLXP_CNTXT_RXDID_IDX_M		ICE_M(0x3F, 0)
++#define QRXFLXP_CNTXT_RXDID_PRIO_S		8
++#define QRXFLXP_CNTXT_RXDID_PRIO_M		ICE_M(0x7, 8)
++#define GLGEN_RSTAT				0x000B8188
++#define GLGEN_RSTAT_DEVSTATE_M			ICE_M(0x3, 0)
++#define GLGEN_RSTCTL				0x000B8180
++#define GLGEN_RSTCTL_GRSTDEL_S			0
++#define GLGEN_RSTCTL_GRSTDEL_M			ICE_M(0x3F, GLGEN_RSTCTL_GRSTDEL_S)
++#define GLGEN_RSTAT_RESET_TYPE_S		2
++#define GLGEN_RSTAT_RESET_TYPE_M		ICE_M(0x3, 2)
++#define GLGEN_RTRIG				0x000B8190
++#define GLGEN_RTRIG_CORER_M			BIT(0)
++#define GLGEN_RTRIG_GLOBR_M			BIT(1)
++#define GLGEN_STAT				0x000B612C
++#define PFGEN_CTRL				0x00091000
++#define PFGEN_CTRL_PFSWR_M			BIT(0)
++#define PFGEN_STATE				0x00088000
++#define PRTGEN_STATUS				0x000B8100
++#define PFHMC_ERRORDATA				0x00520500
++#define PFHMC_ERRORINFO				0x00520400
++#define GLINT_DYN_CTL(_INT)			(0x00160000 + ((_INT) * 4))
++#define GLINT_DYN_CTL_INTENA_M			BIT(0)
++#define GLINT_DYN_CTL_CLEARPBA_M		BIT(1)
++#define GLINT_DYN_CTL_SWINT_TRIG_M		BIT(2)
++#define GLINT_DYN_CTL_ITR_INDX_S		3
++#define GLINT_DYN_CTL_SW_ITR_INDX_M		ICE_M(0x3, 25)
++#define GLINT_DYN_CTL_INTENA_MSK_M		BIT(31)
++#define GLINT_ITR(_i, _INT)			(0x00154000 + ((_i) * 8192 + (_INT) * 4))
++#define PFINT_FW_CTL				0x0016C800
++#define PFINT_FW_CTL_MSIX_INDX_M		ICE_M(0x7FF, 0)
++#define PFINT_FW_CTL_ITR_INDX_S			11
++#define PFINT_FW_CTL_ITR_INDX_M			ICE_M(0x3, 11)
++#define PFINT_FW_CTL_CAUSE_ENA_M		BIT(30)
++#define PFINT_OICR				0x0016CA00
++#define PFINT_OICR_ECC_ERR_M			BIT(16)
++#define PFINT_OICR_MAL_DETECT_M			BIT(19)
++#define PFINT_OICR_GRST_M			BIT(20)
++#define PFINT_OICR_PCI_EXCEPTION_M		BIT(21)
++#define PFINT_OICR_HMC_ERR_M			BIT(26)
++#define PFINT_OICR_PE_CRITERR_M			BIT(28)
++#define PFINT_OICR_CTL				0x0016CA80
++#define PFINT_OICR_CTL_MSIX_INDX_M		ICE_M(0x7FF, 0)
++#define PFINT_OICR_CTL_ITR_INDX_S		11
++#define PFINT_OICR_CTL_ITR_INDX_M		ICE_M(0x3, 11)
++#define PFINT_OICR_CTL_CAUSE_ENA_M		BIT(30)
++#define PFINT_OICR_ENA				0x0016C900
++#define QINT_RQCTL(_QRX)			(0x00150000 + ((_QRX) * 4))
++#define QINT_RQCTL_MSIX_INDX_S			0
++#define QINT_RQCTL_ITR_INDX_S			11
++#define QINT_RQCTL_CAUSE_ENA_M			BIT(30)
++#define QINT_TQCTL(_DBQM)			(0x00140000 + ((_DBQM) * 4))
++#define QINT_TQCTL_MSIX_INDX_S			0
++#define QINT_TQCTL_ITR_INDX_S			11
++#define QINT_TQCTL_CAUSE_ENA_M			BIT(30)
++#define QRX_CONTEXT(_i, _QRX)			(0x00280000 + ((_i) * 8192 + (_QRX) * 4))
++#define QRX_CTRL(_QRX)				(0x00120000 + ((_QRX) * 4))
++#define QRX_CTRL_MAX_INDEX			2047
++#define QRX_CTRL_QENA_REQ_S			0
++#define QRX_CTRL_QENA_REQ_M			BIT(0)
++#define QRX_CTRL_QENA_STAT_S			2
++#define QRX_CTRL_QENA_STAT_M			BIT(2)
++#define QRX_ITR(_QRX)				(0x00292000 + ((_QRX) * 4))
++#define QRX_TAIL(_QRX)				(0x00290000 + ((_QRX) * 4))
++#define GLNVM_FLA				0x000B6108
++#define GLNVM_FLA_LOCKED_M			BIT(6)
++#define GLNVM_GENS				0x000B6100
++#define GLNVM_GENS_SR_SIZE_S			5
++#define GLNVM_GENS_SR_SIZE_M			ICE_M(0x7, 5)
++#define GLNVM_ULD				0x000B6008
++#define GLNVM_ULD_CORER_DONE_M			BIT(3)
++#define GLNVM_ULD_GLOBR_DONE_M			BIT(4)
++#define PF_FUNC_RID				0x0009E880
++#define PF_FUNC_RID_FUNC_NUM_S			0
++#define PF_FUNC_RID_FUNC_NUM_M			ICE_M(0x7, 0)
++#define GLPRT_BPRCH(_i)				(0x00381384 + ((_i) * 8))
++#define GLPRT_BPRCL(_i)				(0x00381380 + ((_i) * 8))
++#define GLPRT_BPTCH(_i)				(0x00381244 + ((_i) * 8))
++#define GLPRT_BPTCL(_i)				(0x00381240 + ((_i) * 8))
++#define GLPRT_CRCERRS(_i)			(0x00380100 + ((_i) * 8))
++#define GLPRT_GORCH(_i)				(0x00380004 + ((_i) * 8))
++#define GLPRT_GORCL(_i)				(0x00380000 + ((_i) * 8))
++#define GLPRT_GOTCH(_i)				(0x00380B44 + ((_i) * 8))
++#define GLPRT_GOTCL(_i)				(0x00380B40 + ((_i) * 8))
++#define GLPRT_ILLERRC(_i)			(0x003801C0 + ((_i) * 8))
++#define GLPRT_LXOFFRXC(_i)			(0x003802C0 + ((_i) * 8))
++#define GLPRT_LXOFFTXC(_i)			(0x00381180 + ((_i) * 8))
++#define GLPRT_LXONRXC(_i)			(0x00380280 + ((_i) * 8))
++#define GLPRT_LXONTXC(_i)			(0x00381140 + ((_i) * 8))
++#define GLPRT_MLFC(_i)				(0x00380040 + ((_i) * 8))
++#define GLPRT_MPRCH(_i)				(0x00381344 + ((_i) * 8))
++#define GLPRT_MPRCL(_i)				(0x00381340 + ((_i) * 8))
++#define GLPRT_MPTCH(_i)				(0x00381204 + ((_i) * 8))
++#define GLPRT_MPTCL(_i)				(0x00381200 + ((_i) * 8))
++#define GLPRT_MRFC(_i)				(0x00380080 + ((_i) * 8))
++#define GLPRT_PRC1023H(_i)			(0x00380A04 + ((_i) * 8))
++#define GLPRT_PRC1023L(_i)			(0x00380A00 + ((_i) * 8))
++#define GLPRT_PRC127H(_i)			(0x00380944 + ((_i) * 8))
++#define GLPRT_PRC127L(_i)			(0x00380940 + ((_i) * 8))
++#define GLPRT_PRC1522H(_i)			(0x00380A44 + ((_i) * 8))
++#define GLPRT_PRC1522L(_i)			(0x00380A40 + ((_i) * 8))
++#define GLPRT_PRC255H(_i)			(0x00380984 + ((_i) * 8))
++#define GLPRT_PRC255L(_i)			(0x00380980 + ((_i) * 8))
++#define GLPRT_PRC511H(_i)			(0x003809C4 + ((_i) * 8))
++#define GLPRT_PRC511L(_i)			(0x003809C0 + ((_i) * 8))
++#define GLPRT_PRC64H(_i)			(0x00380904 + ((_i) * 8))
++#define GLPRT_PRC64L(_i)			(0x00380900 + ((_i) * 8))
++#define GLPRT_PRC9522H(_i)			(0x00380A84 + ((_i) * 8))
++#define GLPRT_PRC9522L(_i)			(0x00380A80 + ((_i) * 8))
++#define GLPRT_PTC1023H(_i)			(0x00380C84 + ((_i) * 8))
++#define GLPRT_PTC1023L(_i)			(0x00380C80 + ((_i) * 8))
++#define GLPRT_PTC127H(_i)			(0x00380BC4 + ((_i) * 8))
++#define GLPRT_PTC127L(_i)			(0x00380BC0 + ((_i) * 8))
++#define GLPRT_PTC1522H(_i)			(0x00380CC4 + ((_i) * 8))
++#define GLPRT_PTC1522L(_i)			(0x00380CC0 + ((_i) * 8))
++#define GLPRT_PTC255H(_i)			(0x00380C04 + ((_i) * 8))
++#define GLPRT_PTC255L(_i)			(0x00380C00 + ((_i) * 8))
++#define GLPRT_PTC511H(_i)			(0x00380C44 + ((_i) * 8))
++#define GLPRT_PTC511L(_i)			(0x00380C40 + ((_i) * 8))
++#define GLPRT_PTC64H(_i)			(0x00380B84 + ((_i) * 8))
++#define GLPRT_PTC64L(_i)			(0x00380B80 + ((_i) * 8))
++#define GLPRT_PTC9522H(_i)			(0x00380D04 + ((_i) * 8))
++#define GLPRT_PTC9522L(_i)			(0x00380D00 + ((_i) * 8))
++#define GLPRT_RFC(_i)				(0x00380AC0 + ((_i) * 8))
++#define GLPRT_RJC(_i)				(0x00380B00 + ((_i) * 8))
++#define GLPRT_RLEC(_i)				(0x00380140 + ((_i) * 8))
++#define GLPRT_ROC(_i)				(0x00380240 + ((_i) * 8))
++#define GLPRT_RUC(_i)				(0x00380200 + ((_i) * 8))
++#define GLPRT_TDOLD(_i)				(0x00381280 + ((_i) * 8))
++#define GLPRT_UPRCH(_i)				(0x00381304 + ((_i) * 8))
++#define GLPRT_UPRCL(_i)				(0x00381300 + ((_i) * 8))
++#define GLPRT_UPTCH(_i)				(0x003811C4 + ((_i) * 8))
++#define GLPRT_UPTCL(_i)				(0x003811C0 + ((_i) * 8))
++#define GLV_BPRCH(_i)				(0x003B6004 + ((_i) * 8))
++#define GLV_BPRCL(_i)				(0x003B6000 + ((_i) * 8))
++#define GLV_BPTCH(_i)				(0x0030E004 + ((_i) * 8))
++#define GLV_BPTCL(_i)				(0x0030E000 + ((_i) * 8))
++#define GLV_GORCH(_i)				(0x003B0004 + ((_i) * 8))
++#define GLV_GORCL(_i)				(0x003B0000 + ((_i) * 8))
++#define GLV_GOTCH(_i)				(0x00300004 + ((_i) * 8))
++#define GLV_GOTCL(_i)				(0x00300000 + ((_i) * 8))
++#define GLV_MPRCH(_i)				(0x003B4004 + ((_i) * 8))
++#define GLV_MPRCL(_i)				(0x003B4000 + ((_i) * 8))
++#define GLV_MPTCH(_i)				(0x0030C004 + ((_i) * 8))
++#define GLV_MPTCL(_i)				(0x0030C000 + ((_i) * 8))
++#define GLV_RDPC(_i)				(0x00294C04 + ((_i) * 4))
++#define GLV_TEPC(_VSI)				(0x00312000 + ((_VSI) * 4))
++#define GLV_UPRCH(_i)				(0x003B2004 + ((_i) * 8))
++#define GLV_UPRCL(_i)				(0x003B2000 + ((_i) * 8))
++#define GLV_UPTCH(_i)				(0x0030A004 + ((_i) * 8))
++#define GLV_UPTCL(_i)				(0x0030A000 + ((_i) * 8))
++#define VSIQF_HKEY_MAX_INDEX			12
  
- 	/* record the sw_id available for later use */
-@@ -5695,6 +5699,138 @@ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
- 	return 0;
- }
- 
-+/**
-+ * ice_bridge_getlink - Get the hardware bridge mode
-+ * @skb: skb buff
-+ * @pid: process id
-+ * @seq: RTNL message seq
-+ * @dev: the netdev being configured
-+ * @filter_mask: filter mask passed in
-+ * @nlflags: netlink flags passed in
-+ *
-+ * Return the bridge mode (VEB/VEPA)
-+ */
-+static int
-+ice_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
-+		   struct net_device *dev, u32 filter_mask, int nlflags)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(dev);
-+	struct ice_vsi *vsi = np->vsi;
-+	struct ice_pf *pf = vsi->back;
-+	u16 bmode;
-+
-+	bmode = pf->first_sw->bridge_mode;
-+
-+	return ndo_dflt_bridge_getlink(skb, pid, seq, dev, bmode, 0, 0, nlflags,
-+				       filter_mask, NULL);
-+}
-+
-+/**
-+ * ice_vsi_update_bridge_mode - Update VSI for switching bridge mode (VEB/VEPA)
-+ * @vsi: Pointer to VSI structure
-+ * @bmode: Hardware bridge mode (VEB/VEPA)
-+ *
-+ * Returns 0 on success, negative on failure
-+ */
-+static int ice_vsi_update_bridge_mode(struct ice_vsi *vsi, u16 bmode)
-+{
-+	struct device *dev = &vsi->back->pdev->dev;
-+	struct ice_aqc_vsi_props *vsi_props;
-+	struct ice_hw *hw = &vsi->back->hw;
-+	struct ice_vsi_ctx ctxt = { 0 };
-+	enum ice_status status;
-+
-+	vsi_props = &vsi->info;
-+	ctxt.info = vsi->info;
-+
-+	if (bmode == BRIDGE_MODE_VEB)
-+		/* change from VEPA to VEB mode */
-+		ctxt.info.sw_flags |= ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
-+	else
-+		/* change from VEB to VEPA mode */
-+		ctxt.info.sw_flags &= ~ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
-+	ctxt.vsi_num = vsi->vsi_num;
-+	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SW_VALID);
-+	status = ice_aq_update_vsi(hw, &ctxt, NULL);
-+	if (status) {
-+		dev_err(dev, "update VSI for bridge mode failed, bmode = %d err %d aq_err %d\n",
-+			bmode, status, hw->adminq.sq_last_status);
-+		return -EIO;
-+	}
-+	/* Update sw flags for book keeping */
-+	vsi_props->sw_flags = ctxt.info.sw_flags;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_bridge_setlink - Set the hardware bridge mode
-+ * @dev: the netdev being configured
-+ * @nlh: RTNL message
-+ * @flags: bridge setlink flags
-+ *
-+ * Sets the bridge mode (VEB/VEPA) of the switch to which the netdev (VSI) is
-+ * hooked up to. Iterates through the PF VSI list and sets the loopback mode (if
-+ * not already set for all VSIs connected to this switch. And also update the
-+ * unicast switch filter rules for the corresponding switch of the netdev.
-+ */
-+static int
-+ice_bridge_setlink(struct net_device *dev, struct nlmsghdr *nlh,
-+		   u16 __always_unused flags)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(dev);
-+	struct ice_pf *pf = np->vsi->back;
-+	struct nlattr *attr, *br_spec;
-+	struct ice_hw *hw = &pf->hw;
-+	enum ice_status status;
-+	struct ice_sw *pf_sw;
-+	int rem, v, err = 0;
-+
-+	pf_sw = pf->first_sw;
-+	/* find the attribute in the netlink message */
-+	br_spec = nlmsg_find_attr(nlh, sizeof(struct ifinfomsg), IFLA_AF_SPEC);
-+
-+	nla_for_each_nested(attr, br_spec, rem) {
-+		__u16 mode;
-+
-+		if (nla_type(attr) != IFLA_BRIDGE_MODE)
-+			continue;
-+		mode = nla_get_u16(attr);
-+		if (mode != BRIDGE_MODE_VEPA && mode != BRIDGE_MODE_VEB)
-+			return -EINVAL;
-+		/* Continue  if bridge mode is not being flipped */
-+		if (mode == pf_sw->bridge_mode)
-+			continue;
-+		/* Iterates through the PF VSI list and update the loopback
-+		 * mode of the VSI
-+		 */
-+		ice_for_each_vsi(pf, v) {
-+			if (!pf->vsi[v])
-+				continue;
-+			err = ice_vsi_update_bridge_mode(pf->vsi[v], mode);
-+			if (err)
-+				return err;
-+		}
-+
-+		hw->evb_veb = (mode == BRIDGE_MODE_VEB);
-+		/* Update the unicast switch filter rules for the corresponding
-+		 * switch of the netdev
-+		 */
-+		status = ice_update_sw_rule_bridge_mode(hw);
-+		if (status) {
-+			netdev_err(dev, "update SW_RULE for bridge mode failed,  = %d err %d aq_err %d\n",
-+				   mode, status, hw->adminq.sq_last_status);
-+			/* revert hw->evb_veb */
-+			hw->evb_veb = (pf_sw->bridge_mode == BRIDGE_MODE_VEB);
-+			return -EIO;
-+		}
-+
-+		pf_sw->bridge_mode = mode;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * ice_tx_timeout - Respond to a Tx Hang
-  * @netdev: network interface device structure
-@@ -5907,6 +6043,8 @@ static const struct net_device_ops ice_netdev_ops = {
- 	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
- 	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
- 	.ndo_set_features = ice_set_features,
-+	.ndo_bridge_getlink = ice_bridge_getlink,
-+	.ndo_bridge_setlink = ice_bridge_setlink,
- 	.ndo_fdb_add = ice_fdb_add,
- 	.ndo_fdb_del = ice_fdb_del,
- 	.ndo_tx_timeout = ice_tx_timeout,
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 17dfb8895692..412826165b06 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -1130,6 +1130,47 @@ ice_update_pkt_fwd_rule(struct ice_hw *hw, struct ice_fltr_info *f_info)
- 	return status;
- }
- 
-+/**
-+ * ice_update_sw_rule_bridge_mode
-+ * @hw: pointer to the hw struct
-+ *
-+ * Updates unicast switch filter rules based on VEB/VEPA mode
-+ */
-+enum ice_status ice_update_sw_rule_bridge_mode(struct ice_hw *hw)
-+{
-+	struct ice_switch_info *sw = hw->switch_info;
-+	struct ice_fltr_mgmt_list_entry *fm_entry;
-+	enum ice_status status = 0;
-+	struct list_head *rule_head;
-+	struct mutex *rule_lock; /* Lock to protect filter rule list */
-+
-+	rule_lock = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rule_lock;
-+	rule_head = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rules;
-+
-+	mutex_lock(rule_lock);
-+	list_for_each_entry(fm_entry, rule_head, list_entry) {
-+		struct ice_fltr_info *fi = &fm_entry->fltr_info;
-+		u8 *addr = fi->l_data.mac.mac_addr;
-+
-+		/* Update unicast Tx rules to reflect the selected
-+		 * VEB/VEPA mode
-+		 */
-+		if ((fi->flag & ICE_FLTR_TX) && is_unicast_ether_addr(addr) &&
-+		    (fi->fltr_act == ICE_FWD_TO_VSI ||
-+		     fi->fltr_act == ICE_FWD_TO_VSI_LIST ||
-+		     fi->fltr_act == ICE_FWD_TO_Q ||
-+		     fi->fltr_act == ICE_FWD_TO_QGRP)) {
-+			status = ice_update_pkt_fwd_rule(hw, fi);
-+			if (status)
-+				break;
-+		}
-+	}
-+
-+	mutex_unlock(rule_lock);
-+
-+	return status;
-+}
-+
- /**
-  * ice_add_update_vsi_list
-  * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 11a481644dac..646389ca1238 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -169,6 +169,7 @@ ice_free_vsi(struct ice_hw *hw, u16 vsi_handle, struct ice_vsi_ctx *vsi_ctx,
- enum ice_status ice_get_initial_sw_cfg(struct ice_hw *hw);
- 
- /* Switch/bridge related commands */
-+enum ice_status ice_update_sw_rule_bridge_mode(struct ice_hw *hw);
- enum ice_status ice_add_mac(struct ice_hw *hw, struct list_head *m_lst);
- enum ice_status ice_remove_mac(struct ice_hw *hw, struct list_head *m_lst);
- void ice_remove_vsi_fltr(struct ice_hw *hw, u16 vsi_id);
+ #endif /* _ICE_HW_AUTOGEN_H_ */
 -- 
 2.17.1
 
