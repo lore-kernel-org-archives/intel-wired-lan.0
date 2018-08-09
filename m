@@ -1,206 +1,37 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu,  9 Aug 2018 06:29:56 -0700
-Subject: [Intel-wired-lan] [PATCH v3 13/15] ice: Enable VSI Rx/Tx pruning
- only when VLAN 0 is active
+Date: Thu,  9 Aug 2018 06:29:58 -0700
+Subject: [Intel-wired-lan] [PATCH v3 15/15] ice: Fix and update driver
+ version string
 In-Reply-To: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
 References: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180809132958.23036-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20180809132958.23036-16-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+Remove the "ice" prefix for the driver version string and bump version
+to 0.7.1-k.
 
-VLAN pruning is not valid when VLAN 0 is not active. If VLAN
-pruning is enabled and VLAN 0 is not active (8021q driver not loaded)
-then normal, non-VLAN, traffic will not pass.
-
-TX/RX VLAN pruning is enabled when the VLAN 0 is added to the
-active_vlan bitmap and it is disabled when VLAN 0 is removed from the
-active_vlan bitmap.
-
-So, only enable VLAN pruning when VLAN 0 is active. Setting RX VLAN
-pruning causes the switch to drop received VLAN packets when there
-are no matching VLAN ids in the associated VSI's switch filters. Setting
-TX pruning makes it so the switch will not send out any packets with
-VLAN tags that don't match the associated VSI's switch filters.
-
-With this patch, if the VF or PF tries to send a VLAN tagged packet with
-a VLAN tag that it does not have a pruning rule for it will trigger an
-MDD event. For example, if PF0 has VLAN10 and VLAN11 interfaces and
-scapy is used to send a packet with VLAN8 then the MDD is triggered.
-
-Also make ice_vsi_kill_vlan return a value which the caller can check
-before updating VLAN related data structures (counts, pruning bits, etc.).
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 94 ++++++++++++++++++++---
- 1 file changed, 85 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index f04e124bca8c..46d8e2275647 100644
+index b1c4dfbdeeb3..1b49a605d094 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -349,6 +349,63 @@ static bool ice_vsi_fltr_changed(struct ice_vsi *vsi)
- 	       test_bit(ICE_VSI_FLAG_VLAN_FLTR_CHANGED, vsi->flags);
- }
+@@ -7,7 +7,7 @@
  
-+/**
-+ * ice_cfg_vlan_pruning - enable or disable VLAN pruning on the VSI
-+ * @vsi: VSI to enable or disable VLAN pruning on
-+ * @ena: set to true to enable VLAN pruning and false to disable it
-+ *
-+ * returns 0 if VSI is updated, negative otherwise
-+ */
-+static int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena)
-+{
-+	struct ice_vsi_ctx *ctxt;
-+	struct device *dev;
-+	int status;
-+
-+	if (!vsi)
-+		return -EINVAL;
-+
-+	dev = &vsi->back->pdev->dev;
-+	ctxt = devm_kzalloc(dev, sizeof(*ctxt), GFP_KERNEL);
-+	if (!ctxt)
-+		return -ENOMEM;
-+
-+	ctxt->info = vsi->info;
-+
-+	if (ena) {
-+		ctxt->info.sec_flags |=
-+			ICE_AQ_VSI_SEC_TX_VLAN_PRUNE_ENA <<
-+			ICE_AQ_VSI_SEC_TX_PRUNE_ENA_S;
-+		ctxt->info.sw_flags2 |= ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA;
-+	} else {
-+		ctxt->info.sec_flags &=
-+			~(ICE_AQ_VSI_SEC_TX_VLAN_PRUNE_ENA <<
-+			  ICE_AQ_VSI_SEC_TX_PRUNE_ENA_S);
-+		ctxt->info.sw_flags2 &= ~ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA;
-+	}
-+
-+	ctxt->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SECURITY_VALID |
-+						ICE_AQ_VSI_PROP_SW_VALID);
-+	ctxt->vsi_num = vsi->vsi_num;
-+	status = ice_aq_update_vsi(&vsi->back->hw, ctxt, NULL);
-+	if (status) {
-+		netdev_err(vsi->netdev, "%sabling VLAN pruning on VSI %d failed, err = %d, aq_err = %d\n",
-+			   ena ? "Ena" : "Dis", vsi->vsi_num, status,
-+			   vsi->back->hw.adminq.sq_last_status);
-+		goto err_out;
-+	}
-+
-+	vsi->info.sec_flags = ctxt->info.sec_flags;
-+	vsi->info.sw_flags2 = ctxt->info.sw_flags2;
-+
-+	devm_kfree(dev, ctxt);
-+	return 0;
-+
-+err_out:
-+	devm_kfree(dev, ctxt);
-+	return -EIO;
-+}
-+
- /**
-  * ice_vsi_sync_fltr - Update the VSI filter list to the HW
-  * @vsi: ptr to the VSI
-@@ -3126,7 +3183,7 @@ static int ice_vlan_rx_add_vid(struct net_device *netdev,
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
--	int ret = 0;
-+	int ret;
+ #include "ice.h"
  
- 	if (vid >= VLAN_N_VID) {
- 		netdev_err(netdev, "VLAN id requested %d is out of range %d\n",
-@@ -3137,6 +3194,13 @@ static int ice_vlan_rx_add_vid(struct net_device *netdev,
- 	if (vsi->info.pvid)
- 		return -EINVAL;
- 
-+	/* Enable VLAN pruning when VLAN 0 is added */
-+	if (unlikely(!vid)) {
-+		ret = ice_cfg_vlan_pruning(vsi, true);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	/* Add all VLAN ids including 0 to the switch filter. VLAN id 0 is
- 	 * needed to continue allowing all untagged packets since VLAN prune
- 	 * list is applied to all packets by the switch
-@@ -3153,16 +3217,19 @@ static int ice_vlan_rx_add_vid(struct net_device *netdev,
-  * ice_vsi_kill_vlan - Remove VSI membership for a given VLAN
-  * @vsi: the VSI being configured
-  * @vid: VLAN id to be removed
-+ *
-+ * Returns 0 on success and negative on failure
-  */
--static void ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
-+static int ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
- {
- 	struct ice_fltr_list_entry *list;
- 	struct ice_pf *pf = vsi->back;
- 	LIST_HEAD(tmp_add_list);
-+	int status = 0;
- 
- 	list = devm_kzalloc(&pf->pdev->dev, sizeof(*list), GFP_KERNEL);
- 	if (!list)
--		return;
-+		return -ENOMEM;
- 
- 	list->fltr_info.lkup_type = ICE_SW_LKUP_VLAN;
- 	list->fltr_info.fwd_id.vsi_id = vsi->vsi_num;
-@@ -3174,11 +3241,14 @@ static void ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
- 	INIT_LIST_HEAD(&list->list_entry);
- 	list_add(&list->list_entry, &tmp_add_list);
- 
--	if (ice_remove_vlan(&pf->hw, &tmp_add_list))
-+	if (ice_remove_vlan(&pf->hw, &tmp_add_list)) {
- 		dev_err(&pf->pdev->dev, "Error removing VLAN %d on vsi %i\n",
- 			vid, vsi->vsi_num);
-+		status = -EIO;
-+	}
- 
- 	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
-+	return status;
- }
- 
- /**
-@@ -3194,19 +3264,25 @@ static int ice_vlan_rx_kill_vid(struct net_device *netdev,
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
-+	int status;
- 
- 	if (vsi->info.pvid)
- 		return -EINVAL;
- 
--	/* return code is ignored as there is nothing a user
--	 * can do about failure to remove and a log message was
--	 * already printed from the other function
-+	/* Make sure ice_vsi_kill_vlan is successful before updating VLAN
-+	 * information
- 	 */
--	ice_vsi_kill_vlan(vsi, vid);
-+	status = ice_vsi_kill_vlan(vsi, vid);
-+	if (status)
-+		return status;
- 
- 	clear_bit(vid, vsi->active_vlans);
- 
--	return 0;
-+	/* Disable VLAN pruning when VLAN 0 is removed */
-+	if (unlikely(!vid))
-+		status = ice_cfg_vlan_pruning(vsi, false);
-+
-+	return status;
- }
- 
- /**
+-#define DRV_VERSION	"ice-0.7.0-k"
++#define DRV_VERSION	"0.7.1-k"
+ #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
+ const char ice_drv_ver[] = DRV_VERSION;
+ static const char ice_driver_string[] = DRV_SUMMARY;
 -- 
 2.17.1
 
