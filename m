@@ -1,88 +1,206 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu,  9 Aug 2018 06:29:48 -0700
-Subject: [Intel-wired-lan] [PATCH v3 05/15] ice: Code optimization for
- ice_fill_sw_rule()
+Date: Thu,  9 Aug 2018 06:29:44 -0700
+Subject: [Intel-wired-lan] [PATCH v3 01/15] ice: Rework flex descriptor
+ programming
 In-Reply-To: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
 References: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180809132958.23036-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20180809132958.23036-2-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Zhenning Xiao <zhenning.xiao@intel.com>
+The driver can support two flex descriptor profiles, ICE_RXDID_FLEX_NIC
+and ICE_RXDID_FLEX_NIC_2. This patch reworks the current flex programming
+logic to add support for the latter profile.
 
-Use the buffer in the s_rule structure directly instead of using
-a local array eth_hdr[DUMMY_ETH_HDR_LEN]
-
-Signed-off-by: Zhenning Xiao <zhenning.xiao@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_switch.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c   | 102 ++++++++++++++----
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  24 +++--
+ 2 files changed, 92 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 6b7ec2ae5ad6..d8b18cabc3a8 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -464,8 +464,9 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
- 		 struct ice_aqc_sw_rules_elem *s_rule, enum ice_adminq_opc opc)
- {
- 	u16 vlan_id = ICE_MAX_VLAN_ID + 1;
--	u8 eth_hdr[DUMMY_ETH_HDR_LEN];
- 	void *daddr = NULL;
-+	u16 eth_hdr_sz;
-+	u8 *eth_hdr;
- 	u32 act = 0;
- 	__be16 *off;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 661beea6af79..53cbfd942d03 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -7,16 +7,16 @@
  
-@@ -477,8 +478,11 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
- 		return;
- 	}
+ #define ICE_PF_RESET_WAIT_COUNT	200
  
-+	eth_hdr_sz = sizeof(dummy_eth_header);
-+	eth_hdr = s_rule->pdata.lkup_tx_rx.hdr;
-+
- 	/* initialize the ether header with a dummy header */
--	memcpy(eth_hdr, dummy_eth_header, sizeof(dummy_eth_header));
-+	memcpy(eth_hdr, dummy_eth_header, eth_hdr_sz);
- 	ice_fill_sw_info(hw, f_info);
+-#define ICE_NIC_FLX_ENTRY(hw, mdid, idx) \
+-	wr32((hw), GLFLXP_RXDID_FLX_WRD_##idx(ICE_RXDID_FLEX_NIC), \
++#define ICE_PROG_FLEX_ENTRY(hw, rxdid, mdid, idx) \
++	wr32((hw), GLFLXP_RXDID_FLX_WRD_##idx(rxdid), \
+ 	     ((ICE_RX_OPC_MDID << \
+ 	       GLFLXP_RXDID_FLX_WRD_##idx##_RXDID_OPCODE_S) & \
+ 	      GLFLXP_RXDID_FLX_WRD_##idx##_RXDID_OPCODE_M) | \
+ 	     (((mdid) << GLFLXP_RXDID_FLX_WRD_##idx##_PROT_MDID_S) & \
+ 	      GLFLXP_RXDID_FLX_WRD_##idx##_PROT_MDID_M))
  
- 	switch (f_info->fltr_act) {
-@@ -536,7 +540,7 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
- 		daddr = f_info->l_data.ethertype_mac.mac_addr;
- 		/* fall-through */
- 	case ICE_SW_LKUP_ETHERTYPE:
--		off = (__be16 *)&eth_hdr[ICE_ETH_ETHTYPE_OFFSET];
-+		off = (__be16 *)(eth_hdr + ICE_ETH_ETHTYPE_OFFSET);
- 		*off = cpu_to_be16(f_info->l_data.ethertype_mac.ethertype);
- 		break;
- 	case ICE_SW_LKUP_MAC_VLAN:
-@@ -563,18 +567,16 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
- 	s_rule->pdata.lkup_tx_rx.act = cpu_to_le32(act);
- 
- 	if (daddr)
--		ether_addr_copy(&eth_hdr[ICE_ETH_DA_OFFSET], daddr);
-+		ether_addr_copy(eth_hdr + ICE_ETH_DA_OFFSET, daddr);
- 
- 	if (!(vlan_id > ICE_MAX_VLAN_ID)) {
--		off = (__be16 *)&eth_hdr[ICE_ETH_VLAN_TCI_OFFSET];
-+		off = (__be16 *)(eth_hdr + ICE_ETH_VLAN_TCI_OFFSET);
- 		*off = cpu_to_be16(vlan_id);
- 	}
- 
- 	/* Create the switch rule with the final dummy Ethernet header */
- 	if (opc != ice_aqc_opc_update_sw_rules)
--		s_rule->pdata.lkup_tx_rx.hdr_len = cpu_to_le16(sizeof(eth_hdr));
--
--	memcpy(s_rule->pdata.lkup_tx_rx.hdr, eth_hdr, sizeof(eth_hdr));
-+		s_rule->pdata.lkup_tx_rx.hdr_len = cpu_to_le16(eth_hdr_sz);
+-#define ICE_NIC_FLX_FLG_ENTRY(hw, flg_0, flg_1, flg_2, flg_3, idx) \
+-	wr32((hw), GLFLXP_RXDID_FLAGS(ICE_RXDID_FLEX_NIC, idx), \
++#define ICE_PROG_FLG_ENTRY(hw, rxdid, flg_0, flg_1, flg_2, flg_3, idx) \
++	wr32((hw), GLFLXP_RXDID_FLAGS(rxdid, idx), \
+ 	     (((flg_0) << GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S) & \
+ 	      GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M) | \
+ 	     (((flg_1) << GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S) & \
+@@ -290,30 +290,85 @@ ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
  }
  
  /**
+- * ice_init_flex_parser - initialize rx flex parser
++ * ice_init_flex_flags
+  * @hw: pointer to the hardware structure
++ * @prof_id: Rx Descriptor Builder profile ID
+  *
+- * Function to initialize flex descriptors
++ * Function to initialize Rx flex flags
+  */
+-static void ice_init_flex_parser(struct ice_hw *hw)
++static void ice_init_flex_flags(struct ice_hw *hw, enum ice_rxdid prof_id)
+ {
+ 	u8 idx = 0;
+ 
+-	ICE_NIC_FLX_ENTRY(hw, ICE_RX_MDID_HASH_LOW, 0);
+-	ICE_NIC_FLX_ENTRY(hw, ICE_RX_MDID_HASH_HIGH, 1);
+-	ICE_NIC_FLX_ENTRY(hw, ICE_RX_MDID_FLOW_ID_LOWER, 2);
+-	ICE_NIC_FLX_ENTRY(hw, ICE_RX_MDID_FLOW_ID_HIGH, 3);
+-	ICE_NIC_FLX_FLG_ENTRY(hw, ICE_RXFLG_PKT_FRG, ICE_RXFLG_UDP_GRE,
+-			      ICE_RXFLG_PKT_DSI, ICE_RXFLG_FIN, idx++);
+-	ICE_NIC_FLX_FLG_ENTRY(hw, ICE_RXFLG_SYN, ICE_RXFLG_RST,
+-			      ICE_RXFLG_PKT_DSI, ICE_RXFLG_PKT_DSI, idx++);
+-	ICE_NIC_FLX_FLG_ENTRY(hw, ICE_RXFLG_PKT_DSI, ICE_RXFLG_PKT_DSI,
+-			      ICE_RXFLG_EVLAN_x8100, ICE_RXFLG_EVLAN_x9100,
+-			      idx++);
+-	ICE_NIC_FLX_FLG_ENTRY(hw, ICE_RXFLG_VLAN_x8100, ICE_RXFLG_TNL_VLAN,
+-			      ICE_RXFLG_TNL_MAC, ICE_RXFLG_TNL0, idx++);
+-	ICE_NIC_FLX_FLG_ENTRY(hw, ICE_RXFLG_TNL1, ICE_RXFLG_TNL2,
+-			      ICE_RXFLG_PKT_DSI, ICE_RXFLG_PKT_DSI, idx);
++	/* Flex-flag fields (0-2) are programmed with FLG64 bits with layout:
++	 * flexiflags0[5:0] - TCP flags, is_packet_fragmented, is_packet_UDP_GRE
++	 * flexiflags1[3:0] - Not used for flag programming
++	 * flexiflags2[7:0] - Tunnel and VLAN types
++	 * 2 invalid fields in last index
++	 */
++	switch (prof_id) {
++	/* Rx flex flags are currently programmed for the NIC profiles only.
++	 * Different flag bit programming configurations can be added per
++	 * profile as needed.
++	 */
++	case ICE_RXDID_FLEX_NIC:
++	case ICE_RXDID_FLEX_NIC_2:
++		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_RXFLG_PKT_FRG,
++				   ICE_RXFLG_UDP_GRE, ICE_RXFLG_PKT_DSI,
++				   ICE_RXFLG_FIN, idx++);
++		/* flex flag 1 is not used for flexi-flag programming, skipping
++		 * these four FLG64 bits.
++		 */
++		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_RXFLG_SYN, ICE_RXFLG_RST,
++				   ICE_RXFLG_PKT_DSI, ICE_RXFLG_PKT_DSI, idx++);
++		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_RXFLG_PKT_DSI,
++				   ICE_RXFLG_PKT_DSI, ICE_RXFLG_EVLAN_x8100,
++				   ICE_RXFLG_EVLAN_x9100, idx++);
++		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_RXFLG_VLAN_x8100,
++				   ICE_RXFLG_TNL_VLAN, ICE_RXFLG_TNL_MAC,
++				   ICE_RXFLG_TNL0, idx++);
++		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_RXFLG_TNL1, ICE_RXFLG_TNL2,
++				   ICE_RXFLG_PKT_DSI, ICE_RXFLG_PKT_DSI, idx);
++		break;
++
++	default:
++		ice_debug(hw, ICE_DBG_INIT,
++			  "Flag programming for profile ID %d not supported\n",
++			  prof_id);
++	}
++}
++
++/**
++ * ice_init_flex_flds
++ * @hw: pointer to the hardware structure
++ * @prof_id: Rx Descriptor Builder profile ID
++ *
++ * Function to initialize flex descriptors
++ */
++static void ice_init_flex_flds(struct ice_hw *hw, enum ice_rxdid prof_id)
++{
++	enum ice_flex_rx_mdid mdid;
++
++	switch (prof_id) {
++	case ICE_RXDID_FLEX_NIC:
++	case ICE_RXDID_FLEX_NIC_2:
++		ICE_PROG_FLEX_ENTRY(hw, prof_id, ICE_RX_MDID_HASH_LOW, 0);
++		ICE_PROG_FLEX_ENTRY(hw, prof_id, ICE_RX_MDID_HASH_HIGH, 1);
++		ICE_PROG_FLEX_ENTRY(hw, prof_id, ICE_RX_MDID_FLOW_ID_LOWER, 2);
++
++		mdid = (prof_id == ICE_RXDID_FLEX_NIC_2) ?
++			ICE_RX_MDID_SRC_VSI : ICE_RX_MDID_FLOW_ID_HIGH;
++
++		ICE_PROG_FLEX_ENTRY(hw, prof_id, mdid, 3);
++
++		ice_init_flex_flags(hw, prof_id);
++		break;
++
++	default:
++		ice_debug(hw, ICE_DBG_INIT,
++			  "Field init for profile ID %d not supported\n",
++			  prof_id);
++	}
+ }
+ 
+ /**
+@@ -494,7 +549,8 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
+ 	if (status)
+ 		goto err_unroll_fltr_mgmt_struct;
+ 
+-	ice_init_flex_parser(hw);
++	ice_init_flex_flds(hw, ICE_RXDID_FLEX_NIC);
++	ice_init_flex_flds(hw, ICE_RXDID_FLEX_NIC_2);
+ 
+ 	return 0;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index 068dbc740b76..94504023d86e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -188,23 +188,25 @@ struct ice_32b_rx_flex_desc_nic {
+  * with a specific metadata (profile 7 reserved for HW)
+  */
+ enum ice_rxdid {
+-	ICE_RXDID_START			= 0,
+-	ICE_RXDID_LEGACY_0		= ICE_RXDID_START,
+-	ICE_RXDID_LEGACY_1,
+-	ICE_RXDID_FLX_START,
+-	ICE_RXDID_FLEX_NIC		= ICE_RXDID_FLX_START,
+-	ICE_RXDID_FLX_LAST		= 63,
+-	ICE_RXDID_LAST			= ICE_RXDID_FLX_LAST
++	ICE_RXDID_LEGACY_0		= 0,
++	ICE_RXDID_LEGACY_1		= 1,
++	ICE_RXDID_FLEX_NIC		= 2,
++	ICE_RXDID_FLEX_NIC_2		= 6,
++	ICE_RXDID_HW			= 7,
++	ICE_RXDID_LAST			= 63,
+ };
+ 
+ /* Receive Flex Descriptor Rx opcode values */
+ #define ICE_RX_OPC_MDID		0x01
+ 
+ /* Receive Descriptor MDID values */
+-#define ICE_RX_MDID_FLOW_ID_LOWER	5
+-#define ICE_RX_MDID_FLOW_ID_HIGH	6
+-#define ICE_RX_MDID_HASH_LOW		56
+-#define ICE_RX_MDID_HASH_HIGH		57
++enum ice_flex_rx_mdid {
++	ICE_RX_MDID_FLOW_ID_LOWER	= 5,
++	ICE_RX_MDID_FLOW_ID_HIGH,
++	ICE_RX_MDID_SRC_VSI		= 19,
++	ICE_RX_MDID_HASH_LOW		= 56,
++	ICE_RX_MDID_HASH_HIGH,
++};
+ 
+ /* Rx Flag64 packet flag bits */
+ enum ice_rx_flg64_bits {
 -- 
 2.17.1
 
