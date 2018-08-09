@@ -1,146 +1,85 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu,  9 Aug 2018 06:28:58 -0700
-Subject: [Intel-wired-lan] [PATCH v4 08/13] ice: Set VLAN flags correctly
+Date: Thu,  9 Aug 2018 06:28:59 -0700
+Subject: [Intel-wired-lan] [PATCH v4 09/13] ice: Update to interrupts
+ enabled in OICR
 In-Reply-To: <20180809132903.22819-1-anirudh.venkataramanan@intel.com>
 References: <20180809132903.22819-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180809132903.22819-9-anirudh.venkataramanan@intel.com>
+Message-ID: <20180809132903.22819-10-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-In the struct ice_aqc_vsi_props the field port_vlan_flags is an
-overloaded term because it is used for both port VLANs (PVLANs) and
-regular VLANs. This is an issue and is very confusing especially when
-dealing with VFs because normal VLANs and port VLANs are not the same.
-To fix this the field was renamed to vlan_flags and all of the #define's
-labeled *_PVLAN_* were renamed to *_VLAN_* if they are not specific to
-port VLANs.
+Remove the following interrupt causes that are not applicable or not
+handled:
+- PFINT_OICR_HLP_RDY_M
+- PFINT_OICR_CPM_RDY_M
+- PFINT_OICR_GPIO_M
+- PFINT_OICR_STORM_DETECT_M
 
-Also in ice_vsi_manage_vlan_stripping, set the ICE_AQ_VSI_VLAN_MODE_ALL
-bit to allow the driver to add a VLAN tag to all packets it sends.
+Add the following interrupt cause that's actually handled in ice_misc_intr:
+- PFINT_OICR_PE_CRITERR_M
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 24 +++++++-------
- drivers/net/ethernet/intel/ice/ice_main.c     | 31 +++++++++++--------
- 2 files changed, 30 insertions(+), 25 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> Removed defines from ice_hw_autogen.h]
+---
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 8 --------
+ drivers/net/ethernet/intel/ice/ice_main.c       | 9 +++------
+ 2 files changed, 3 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 6d3e11659ba5..a0614f472658 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -329,19 +329,19 @@ struct ice_aqc_vsi_props {
- 	/* VLAN section */
- 	__le16 pvid; /* VLANS include priority bits */
- 	u8 pvlan_reserved[2];
--	u8 port_vlan_flags;
--#define ICE_AQ_VSI_PVLAN_MODE_S	0
--#define ICE_AQ_VSI_PVLAN_MODE_M	(0x3 << ICE_AQ_VSI_PVLAN_MODE_S)
--#define ICE_AQ_VSI_PVLAN_MODE_UNTAGGED	0x1
--#define ICE_AQ_VSI_PVLAN_MODE_TAGGED	0x2
--#define ICE_AQ_VSI_PVLAN_MODE_ALL	0x3
-+	u8 vlan_flags;
-+#define ICE_AQ_VSI_VLAN_MODE_S	0
-+#define ICE_AQ_VSI_VLAN_MODE_M	(0x3 << ICE_AQ_VSI_VLAN_MODE_S)
-+#define ICE_AQ_VSI_VLAN_MODE_UNTAGGED	0x1
-+#define ICE_AQ_VSI_VLAN_MODE_TAGGED	0x2
-+#define ICE_AQ_VSI_VLAN_MODE_ALL	0x3
- #define ICE_AQ_VSI_PVLAN_INSERT_PVID	BIT(2)
--#define ICE_AQ_VSI_PVLAN_EMOD_S	3
--#define ICE_AQ_VSI_PVLAN_EMOD_M	(0x3 << ICE_AQ_VSI_PVLAN_EMOD_S)
--#define ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH	(0x0 << ICE_AQ_VSI_PVLAN_EMOD_S)
--#define ICE_AQ_VSI_PVLAN_EMOD_STR_UP	(0x1 << ICE_AQ_VSI_PVLAN_EMOD_S)
--#define ICE_AQ_VSI_PVLAN_EMOD_STR	(0x2 << ICE_AQ_VSI_PVLAN_EMOD_S)
--#define ICE_AQ_VSI_PVLAN_EMOD_NOTHING	(0x3 << ICE_AQ_VSI_PVLAN_EMOD_S)
-+#define ICE_AQ_VSI_VLAN_EMOD_S		3
-+#define ICE_AQ_VSI_VLAN_EMOD_M		(0x3 << ICE_AQ_VSI_VLAN_EMOD_S)
-+#define ICE_AQ_VSI_VLAN_EMOD_STR_BOTH	(0x0 << ICE_AQ_VSI_VLAN_EMOD_S)
-+#define ICE_AQ_VSI_VLAN_EMOD_STR_UP	(0x1 << ICE_AQ_VSI_VLAN_EMOD_S)
-+#define ICE_AQ_VSI_VLAN_EMOD_STR	(0x2 << ICE_AQ_VSI_VLAN_EMOD_S)
-+#define ICE_AQ_VSI_VLAN_EMOD_NOTHING	(0x3 << ICE_AQ_VSI_VLAN_EMOD_S)
- 	u8 pvlan_reserved2[3];
- 	/* ingress egress up sections */
- 	__le32 ingress_table; /* bitmap, 3 bits per up */
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 499904874b3f..6076fc87df9d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -121,10 +121,6 @@
+ #define PFINT_FW_CTL_CAUSE_ENA_S	30
+ #define PFINT_FW_CTL_CAUSE_ENA_M	BIT(PFINT_FW_CTL_CAUSE_ENA_S)
+ #define PFINT_OICR			0x0016CA00
+-#define PFINT_OICR_HLP_RDY_S		14
+-#define PFINT_OICR_HLP_RDY_M		BIT(PFINT_OICR_HLP_RDY_S)
+-#define PFINT_OICR_CPM_RDY_S		15
+-#define PFINT_OICR_CPM_RDY_M		BIT(PFINT_OICR_CPM_RDY_S)
+ #define PFINT_OICR_ECC_ERR_S		16
+ #define PFINT_OICR_ECC_ERR_M		BIT(PFINT_OICR_ECC_ERR_S)
+ #define PFINT_OICR_MAL_DETECT_S		19
+@@ -133,10 +129,6 @@
+ #define PFINT_OICR_GRST_M		BIT(PFINT_OICR_GRST_S)
+ #define PFINT_OICR_PCI_EXCEPTION_S	21
+ #define PFINT_OICR_PCI_EXCEPTION_M	BIT(PFINT_OICR_PCI_EXCEPTION_S)
+-#define PFINT_OICR_GPIO_S		22
+-#define PFINT_OICR_GPIO_M		BIT(PFINT_OICR_GPIO_S)
+-#define PFINT_OICR_STORM_DETECT_S	24
+-#define PFINT_OICR_STORM_DETECT_M	BIT(PFINT_OICR_STORM_DETECT_S)
+ #define PFINT_OICR_HMC_ERR_S		26
+ #define PFINT_OICR_HMC_ERR_M		BIT(PFINT_OICR_HMC_ERR_S)
+ #define PFINT_OICR_PE_CRITERR_S		28
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 3eff1d2d1543..68003fad33d1 100644
+index 68003fad33d1..34be94a30a60 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1367,13 +1367,15 @@ static void ice_set_dflt_vsi_ctx(struct ice_vsi_ctx *ctxt)
- 	ctxt->info.sw_flags = ICE_AQ_VSI_SW_FLAG_SRC_PRUNE;
- 	/* Traffic from VSI can be sent to LAN */
- 	ctxt->info.sw_flags2 = ICE_AQ_VSI_SW_FLAG_LAN_ENA;
--	/* By default bits 3 and 4 in port_vlan_flags are 0's which results in
--	 * legacy behavior (show VLAN, DEI, and UP) in descriptor. Also, allow
--	 * all packets untagged/tagged.
-+
-+	/* By default bits 3 and 4 in vlan_flags are 0's which results in legacy
-+	 * behavior (show VLAN, DEI, and UP) in descriptor. Also, allow all
-+	 * packets untagged/tagged.
- 	 */
--	ctxt->info.port_vlan_flags = ((ICE_AQ_VSI_PVLAN_MODE_ALL &
--				       ICE_AQ_VSI_PVLAN_MODE_M) >>
--				      ICE_AQ_VSI_PVLAN_MODE_S);
-+	ctxt->info.vlan_flags = ((ICE_AQ_VSI_VLAN_MODE_ALL &
-+				  ICE_AQ_VSI_VLAN_MODE_M) >>
-+				 ICE_AQ_VSI_VLAN_MODE_S);
-+
- 	/* Have 1:1 UP mapping for both ingress/egress tables */
- 	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
- 	table |= ICE_UP_TABLE_TRANSLATE(1, 1);
-@@ -3732,10 +3734,10 @@ static int ice_vsi_manage_vlan_insertion(struct ice_vsi *vsi)
- 	enum ice_status status;
+@@ -1704,15 +1704,12 @@ static void ice_ena_misc_vector(struct ice_pf *pf)
+ 	wr32(hw, PFINT_OICR_ENA, 0);	/* disable all */
+ 	rd32(hw, PFINT_OICR);		/* read to clear */
  
- 	/* Here we are configuring the VSI to let the driver add VLAN tags by
--	 * setting port_vlan_flags to ICE_AQ_VSI_PVLAN_MODE_ALL. The actual VLAN
--	 * tag insertion happens in the Tx hot path, in ice_tx_map.
-+	 * setting vlan_flags to ICE_AQ_VSI_VLAN_MODE_ALL. The actual VLAN tag
-+	 * insertion happens in the Tx hot path, in ice_tx_map.
- 	 */
--	ctxt.info.port_vlan_flags = ICE_AQ_VSI_PVLAN_MODE_ALL;
-+	ctxt.info.vlan_flags = ICE_AQ_VSI_VLAN_MODE_ALL;
+-	val = (PFINT_OICR_HLP_RDY_M |
+-	       PFINT_OICR_CPM_RDY_M |
+-	       PFINT_OICR_ECC_ERR_M |
++	val = (PFINT_OICR_ECC_ERR_M |
+ 	       PFINT_OICR_MAL_DETECT_M |
+ 	       PFINT_OICR_GRST_M |
+ 	       PFINT_OICR_PCI_EXCEPTION_M |
+-	       PFINT_OICR_GPIO_M |
+-	       PFINT_OICR_STORM_DETECT_M |
+-	       PFINT_OICR_HMC_ERR_M);
++	       PFINT_OICR_HMC_ERR_M |
++	       PFINT_OICR_PE_CRITERR_M);
  
- 	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
- 	ctxt.vsi_num = vsi->vsi_num;
-@@ -3747,7 +3749,7 @@ static int ice_vsi_manage_vlan_insertion(struct ice_vsi *vsi)
- 		return -EIO;
- 	}
- 
--	vsi->info.port_vlan_flags = ctxt.info.port_vlan_flags;
-+	vsi->info.vlan_flags = ctxt.info.vlan_flags;
- 	return 0;
- }
- 
-@@ -3769,12 +3771,15 @@ static int ice_vsi_manage_vlan_stripping(struct ice_vsi *vsi, bool ena)
- 	 */
- 	if (ena) {
- 		/* Strip VLAN tag from Rx packet and put it in the desc */
--		ctxt.info.port_vlan_flags = ICE_AQ_VSI_PVLAN_EMOD_STR_BOTH;
-+		ctxt.info.vlan_flags = ICE_AQ_VSI_VLAN_EMOD_STR_BOTH;
- 	} else {
- 		/* Disable stripping. Leave tag in packet */
--		ctxt.info.port_vlan_flags = ICE_AQ_VSI_PVLAN_EMOD_NOTHING;
-+		ctxt.info.vlan_flags = ICE_AQ_VSI_VLAN_EMOD_NOTHING;
- 	}
- 
-+	/* Allow all packets untagged/tagged */
-+	ctxt.info.vlan_flags |= ICE_AQ_VSI_VLAN_MODE_ALL;
-+
- 	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
- 	ctxt.vsi_num = vsi->vsi_num;
- 
-@@ -3785,7 +3790,7 @@ static int ice_vsi_manage_vlan_stripping(struct ice_vsi *vsi, bool ena)
- 		return -EIO;
- 	}
- 
--	vsi->info.port_vlan_flags = ctxt.info.port_vlan_flags;
-+	vsi->info.vlan_flags = ctxt.info.vlan_flags;
- 	return 0;
- }
+ 	wr32(hw, PFINT_OICR_ENA, val);
  
 -- 
 2.17.1
