@@ -1,135 +1,59 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 25 Aug 2018 11:04:36 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:1GbE] BUILD SUCCESS
- 07f3701387dcab3a4fb0166098fb2754a1b927e1
-Message-ID: <5b80c744.3C3Aa6RswZFTpTlk%lkp@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Mon, 13 Aug 2018 11:43:38 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue 1/8] ixgbe: reload ipsec ip
+ table after sa tables
+In-Reply-To: <1534185825-12451-1-git-send-email-shannon.nelson@oracle.com>
+References: <1534185825-12451-1-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <1534185825-12451-2-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  1GbE
-branch HEAD: 07f3701387dcab3a4fb0166098fb2754a1b927e1  i40e: fix condition of WARN_ONCE for stat strings
+Restore the ipsec hardware IP table after reloading the SA tables.
+This doesn't make much difference now, but will matter when we add
+support for VF ipsec offloads.
 
-elapsed time: 42m
-
-configs tested: 110
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-mips                        workpad_defconfig
-x86_64                 randconfig-a0-08251015
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                       aspeed_g4_defconfig
-nios2                         3c120_defconfig
-i386                   randconfig-c0-08251017
-i386                   randconfig-x018-201833
-i386                   randconfig-x010-201833
-i386                   randconfig-x017-201833
-i386                   randconfig-x016-201833
-i386                   randconfig-x013-201833
-i386                   randconfig-x011-201833
-i386                   randconfig-x015-201833
-i386                   randconfig-x019-201833
-i386                   randconfig-x014-201833
-i386                   randconfig-x012-201833
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201833
-i386                     randconfig-i1-201833
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-a0-201833
-i386                     randconfig-a1-201833
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x010-201833
-x86_64                 randconfig-x011-201833
-x86_64                 randconfig-x012-201833
-x86_64                 randconfig-x013-201833
-x86_64                 randconfig-x014-201833
-x86_64                 randconfig-x015-201833
-x86_64                 randconfig-x016-201833
-x86_64                 randconfig-x017-201833
-x86_64                 randconfig-x018-201833
-x86_64                 randconfig-x019-201833
-x86_64                 randconfig-s3-08251025
-x86_64                 randconfig-s4-08251025
-x86_64                 randconfig-s5-08251025
-x86_64                   randconfig-i0-201833
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-u0-08251018
-alpha                             allnoconfig
-arm64                               defconfig
-x86_64                randconfig-ne0-08242149
-i386                   randconfig-x077-201833
-i386                   randconfig-x076-201833
-i386                   randconfig-x070-201833
-i386                   randconfig-x072-201833
-i386                   randconfig-x075-201833
-i386                   randconfig-x074-201833
-i386                   randconfig-x071-201833
-i386                   randconfig-x078-201833
-i386                   randconfig-x079-201833
-i386                   randconfig-x073-201833
-arm                          pcm027_defconfig
-mips                          rb532_defconfig
-i386                   randconfig-x002-201833
-i386                   randconfig-x003-201833
-i386                   randconfig-x005-201833
-i386                   randconfig-x008-201833
-i386                   randconfig-x007-201833
-i386                   randconfig-x000-201833
-i386                   randconfig-x001-201833
-i386                   randconfig-x004-201833
-i386                   randconfig-x009-201833
-i386                   randconfig-x006-201833
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-x009-201833
-x86_64                 randconfig-x000-201833
-x86_64                 randconfig-x004-201833
-x86_64                 randconfig-x001-201833
-x86_64                 randconfig-x003-201833
-x86_64                 randconfig-x007-201833
-x86_64                 randconfig-x008-201833
-x86_64                 randconfig-x002-201833
-x86_64                 randconfig-x005-201833
-x86_64                 randconfig-x006-201833
-powerpc                      makalu_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-
+Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index e515246..4340651 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -301,14 +301,6 @@ void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter)
+ 	ixgbe_ipsec_clear_hw_tables(adapter);
+ 	ixgbe_ipsec_start_engine(adapter);
+ 
+-	/* reload the IP addrs */
+-	for (i = 0; i < IXGBE_IPSEC_MAX_RX_IP_COUNT; i++) {
+-		struct rx_ip_sa *ipsa = &ipsec->ip_tbl[i];
+-
+-		if (ipsa->used)
+-			ixgbe_ipsec_set_rx_ip(hw, i, ipsa->ipaddr);
+-	}
+-
+ 	/* reload the Rx and Tx keys */
+ 	for (i = 0; i < IXGBE_IPSEC_MAX_SA_COUNT; i++) {
+ 		struct rx_sa *rsa = &ipsec->rx_tbl[i];
+@@ -322,6 +314,14 @@ void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter)
+ 		if (tsa->used)
+ 			ixgbe_ipsec_set_tx_sa(hw, i, tsa->key, tsa->salt);
+ 	}
++
++	/* reload the IP addrs */
++	for (i = 0; i < IXGBE_IPSEC_MAX_RX_IP_COUNT; i++) {
++		struct rx_ip_sa *ipsa = &ipsec->ip_tbl[i];
++
++		if (ipsa->used)
++			ixgbe_ipsec_set_rx_ip(hw, i, ipsa->ipaddr);
++	}
+ }
+ 
+ /**
+-- 
+2.7.4
+
