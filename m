@@ -1,116 +1,90 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 14 Aug 2018 22:44:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 26df9564006eadbaa3dd25bea46015f3e08e2fde
-Message-ID: <5b72ead9.DQRqZ68dexBvp0q3%lkp@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 14 Aug 2018 08:30:19 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue 0/8] ixgbe/ixgbevf: IPsec
+ offload support for VFs
+In-Reply-To: <1534185825-12451-1-git-send-email-shannon.nelson@oracle.com>
+References: <1534185825-12451-1-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <CAKgT0UdcijJ4f4gKeHj6t_EGuKjE7P5oZ0UH0_jfuHQ05RJALA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 26df9564006eadbaa3dd25bea46015f3e08e2fde  virtchnl: Added support to exchange additional speed values
+On Mon, Aug 13, 2018 at 11:43 AM Shannon Nelson
+<shannon.nelson@oracle.com> wrote:
+>
+> This set of patches implements IPsec hardware offload for VF devices in
+> Intel's 10Gbe x540 family of Ethernet devices.
+>
+> The IPsec HW offload feature has been in the x540/Niantic family of
+> network devices since their release in 2009, but there was no Linux
+> kernel support for the offload until 2017.  After the XFRM code added
+> support for the offload last year, the hw offload was added to the ixgbe
+> PF driver.
+>
+> Since the related x540 VF device uses same setup as the PF for implementing
+> the offload, adding the feature to the ixgbevf seemed like a good idea.
+> In this case, the PF owns the device registers, so the VF simply packages
+> up the request information into a VF<->PF message and the PF does the
+> device configuration.  The resulting IPsec throughput is roughly equivalent
+> to what we see in the PF - nearly line-rate, with the expected drop in CPU
+> cycles burned.  (I'm not great at performance statistics, I'll let better
+> folks do the actual measurements as they pertain to their own usage)
+>
+> To make use of the capability, first two things are needed: the PF must
+> be told to enable the offload for VFs (it is off by default) and the VF
+> must be trusted.  A new ethtool priv-flag for ixgbe is added to control
+> VF offload support.  For example:
+>
+>         ethtool --set-priv-flags eth0 vf-ipsec on
+>         ip link set eth0 vf 1 trust on
+>
+> Once those are set up and the VF device is UP, the user can add SAs the
+> same as for PFs, whether the VF is in the host or has been assigned to
+> a VM.
+>
+> Note that the x540 chip supports a total of 1024 Rx plus 1024 Tx Security
+> Associations (SAs), shared among the PF and VFs that might request them.
+> It is entirely possible for a single VF to soak up all the offload
+> capability, which would likely annoy some people.  It seems rather
+> arbitrary to try to set a limit for how many a VF could be allowed,
+> but this is mitigated somewhat by the need for "trust" and "vf-ipsec"
+> to be enabled.  I suppose we could come up with a way to make a limit
+> configurable, but there is no existing method for adding that kind
+> configuration so I'll leave that to a future discussion.
+>
+> Currently this doesn't support Tx offload as the hardware encryption
+> engine doesn't seem to engage on the Tx packets.  This may be a lingering
+> driver bug, more investigation is needed.  Until then, requests for a Tx
+> offload are failed and the userland requester will need to add Tx SAs
+> without the offload attribute.
+>
+> Given that we don't have Tx offload support, the benefit here is less
+> than it could be, but is definitely still noticeable.  For example, with
+> informal iperf testing over a 10Gbps link, with full offload in a PF on
+> one side and a VF in a VM on the other side on a CPU with AES instructions:
+>
+>     Reference:
+>         No IPsec:                         9.4 Gbps
+>         IPsec offload btwn two PFs:       9.2 Gbps
+>     VF as the iperf receiver:
+>         IPsec offload on PF, none on VF:  6.8 Gbps
+>         IPsec offload on PF and VF:       9.2 Gbps   << biggest benefit
+>     VF as the iperf sender:
+>         IPsec offload on PF, none on VF:  4.8 Gbps
+>         IPsec offload on PF and VF:       4.8 Gbps
+>
+> The iperf traffic is primarily uni-directional, and we can see the most
+> benefit when VF is the iperf server and is receiving the test traffic.
+> Watching output from sar also shows a nice decrease in CPU utilization.
+>
 
-elapsed time: 22m
+So the one question I would have about this patch set is what happens
+if you are setting up a ipsec connection between the PF and one of the
+VFs on the same port/function? Do the ipsec offloads get translated
+across the Tx loopback or do they end up causing issues? Specifically
+I would be interested in seeing the results of a test either between
+two VFs, or the PF and one of the VFs on the same port.
 
-configs tested: 91
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                   randconfig-n0-08141352
-i386                   randconfig-i0-08141352
-i386                   randconfig-i1-08141352
-x86_64                 randconfig-x019-201832
-x86_64                 randconfig-x013-201832
-x86_64                 randconfig-x017-201832
-x86_64                 randconfig-x012-201832
-x86_64                 randconfig-x018-201832
-x86_64                 randconfig-x010-201832
-x86_64                 randconfig-x014-201832
-x86_64                 randconfig-x016-201832
-x86_64                 randconfig-x011-201832
-x86_64                 randconfig-x015-201832
-i386                   randconfig-a0-08141359
-i386                   randconfig-a1-08141359
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-s0-08141407
-i386                   randconfig-s1-08141407
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-x018-201832
-i386                   randconfig-x017-201832
-i386                   randconfig-x010-201832
-i386                   randconfig-x016-201832
-i386                   randconfig-x013-201832
-i386                   randconfig-x011-201832
-i386                   randconfig-x015-201832
-i386                   randconfig-x019-201832
-i386                   randconfig-x014-201832
-i386                   randconfig-x012-201832
-i386                   randconfig-x077-201832
-i386                   randconfig-x076-201832
-i386                   randconfig-x070-201832
-i386                   randconfig-x075-201832
-i386                   randconfig-x072-201832
-i386                   randconfig-x074-201832
-i386                   randconfig-x071-201832
-i386                   randconfig-x078-201832
-i386                   randconfig-x079-201832
-i386                   randconfig-x073-201832
-i386                   randconfig-x002-201832
-i386                   randconfig-x003-201832
-i386                   randconfig-x005-201832
-i386                   randconfig-x008-201832
-i386                   randconfig-x000-201832
-i386                   randconfig-x007-201832
-i386                   randconfig-x001-201832
-i386                   randconfig-x004-201832
-i386                   randconfig-x009-201832
-i386                   randconfig-x006-201832
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-x009-201832
-x86_64                 randconfig-x000-201832
-x86_64                 randconfig-x004-201832
-x86_64                 randconfig-x001-201832
-x86_64                 randconfig-x003-201832
-x86_64                 randconfig-x007-201832
-x86_64                 randconfig-x008-201832
-x86_64                 randconfig-x005-201832
-x86_64                 randconfig-x002-201832
-x86_64                 randconfig-x006-201832
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+- Alex
