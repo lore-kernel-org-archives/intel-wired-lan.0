@@ -1,10 +1,10 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 15 Aug 2018 09:20:46 -0700
-Subject: [Intel-wired-lan] [PATCH v5 05/11] igc: Add support for Tx/Rx
- rings
-In-Reply-To: <1534345347-5578-1-git-send-email-sasha.neftin@intel.com>
-References: <1534345347-5578-1-git-send-email-sasha.neftin@intel.com>
-Message-ID: <e34da823689c32156285b98375445b45d353f068.camel@intel.com>
+Date: Wed, 15 Aug 2018 09:25:09 -0700
+Subject: [Intel-wired-lan] [PATCH v5 06/11] igc: Add transmit and
+ receive fastpath and interrupt handlers
+In-Reply-To: <1534345350-5628-1-git-send-email-sasha.neftin@intel.com>
+References: <1534345350-5628-1-git-send-email-sasha.neftin@intel.com>
+Message-ID: <ae8e4483436d33a01794d1520bab56b952088ee9.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,34 +14,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 On Wed, 2018-08-15 at 18:02 +0300, Sasha Neftin wrote:
 > diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h
 > b/drivers/net/ethernet/intel/igc/igc_defines.h
-> index 1ce997a..f9d1842 100644
+> index f9d1842..8f0ce02 100644
 > --- a/drivers/net/ethernet/intel/igc/igc_defines.h
 > +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-> @@ -28,13 +28,13 @@
->  #define IGC_RAH_POOL_1         0x00040000
->  
->  /* Error Codes */
-> -#define IGC_SUCCESS                            0
-> -#define IGC_ERR_NVM                            1
-> -#define IGC_ERR_PHY                            2
-> -#define IGC_ERR_CONFIG                         3
-> -#define IGC_ERR_PARAM                          4
-> -#define IGC_ERR_MAC_INIT                       5
-> -#define IGC_ERR_RESET                          9
-> +#define IGC_SUCCESS                    0
-> +#define IGC_ERR_NVM                    1
-> +#define IGC_ERR_PHY                    2
-> +#define IGC_ERR_CONFIG                 3
-> +#define IGC_ERR_PARAM                  4
-> +#define IGC_ERR_MAC_INIT               5
-> +#define IGC_ERR_RESET                  9
+> @@ -78,7 +78,7 @@
+>  #define IGC_IMS_DOUTSYNC       IGC_ICR_DOUTSYNC /* NIC DMA out of
+> sync */
+>  #define IGC_IMS_DRSTA          IGC_ICR_DRSTA   /* Device Reset
+> Asserted */
+>  #define IGC_IMS_RXT0           IGC_ICR_RXT0    /* Rx timer intr */
+> -#define IGC_IMS_RXDMT0         IGC_ICR_RXDMT0  /* Rx desc min.
+> threshold */
+> +#define IGC_IMS_RXDMT0         IGC_ICR_RXDMT0  /* Rx desc min.
+> threshold */
 
-This change in indentation should be in patch 2, when the code was
-first introduced.
+This fix to replace a tab with spaces should be in patch 4, where this
+code was introduced.
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180815/3b99de62/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180815/2f88fc2e/attachment.asc>
