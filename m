@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 16 Aug 2018 21:06:29 +0000
-Subject: [Intel-wired-lan] [PATCH next-queue 2/8] ixgbe: prep ipsec
- constants for later use
-In-Reply-To: <1534185825-12451-3-git-send-email-shannon.nelson@oracle.com>
+Date: Thu, 16 Aug 2018 21:07:16 +0000
+Subject: [Intel-wired-lan] [PATCH next-queue 3/8] ixgbe: add VF ipsec
+ management
+In-Reply-To: <1534185825-12451-4-git-send-email-shannon.nelson@oracle.com>
 References: <1534185825-12451-1-git-send-email-shannon.nelson@oracle.com>
- <1534185825-12451-3-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2E9160@ORSMSX104.amr.corp.intel.com>
+ <1534185825-12451-4-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2E9170@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,16 +19,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
 > <jeffrey.t.kirsher@intel.com>
 > Cc: steffen.klassert at secunet.com; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH next-queue 2/8] ixgbe: prep ipsec
-> constants for later use
+> Subject: [Intel-wired-lan] [PATCH next-queue 3/8] ixgbe: add VF ipsec
+> management
 > 
-> Pull out a couple of values from a function so they can be used later
-> elsewhere.
+> Add functions to translate VF IPsec offload add and delete requests into
+> something the existing code can work with.
 > 
 > Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 256
+> ++++++++++++++++++++++++-
+> drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h |  13 ++
+>  2 files changed, 260 insertions(+), 9 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
