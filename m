@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 16 Aug 2018 21:05:47 +0000
-Subject: [Intel-wired-lan] [PATCH next-queue 1/8] ixgbe: reload ipsec ip
- table after sa tables
-In-Reply-To: <1534185825-12451-2-git-send-email-shannon.nelson@oracle.com>
+Date: Thu, 16 Aug 2018 21:06:29 +0000
+Subject: [Intel-wired-lan] [PATCH next-queue 2/8] ixgbe: prep ipsec
+ constants for later use
+In-Reply-To: <1534185825-12451-3-git-send-email-shannon.nelson@oracle.com>
 References: <1534185825-12451-1-git-send-email-shannon.nelson@oracle.com>
- <1534185825-12451-2-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2E9154@ORSMSX104.amr.corp.intel.com>
+ <1534185825-12451-3-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2E9160@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,17 +19,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
 > <jeffrey.t.kirsher@intel.com>
 > Cc: steffen.klassert at secunet.com; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH next-queue 1/8] ixgbe: reload ipsec ip
-> table after sa tables
+> Subject: [Intel-wired-lan] [PATCH next-queue 2/8] ixgbe: prep ipsec
+> constants for later use
 > 
-> Restore the ipsec hardware IP table after reloading the SA tables.
-> This doesn't make much difference now, but will matter when we add
-> support for VF ipsec offloads.
+> Pull out a couple of values from a function so they can be used later
+> elsewhere.
 > 
 > Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
