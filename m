@@ -1,165 +1,84 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 17 Aug 2018 07:27:57 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 52a006a11d4a3096e8c01743cf43610033889154
-Message-ID: <5b76087d.iE5QiTZ5vc97nMMG%lkp@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Fri, 17 Aug 2018 16:19:50 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue 0/8] ixgbe/ixgbevf: IPsec
+ offload support for VFs
+In-Reply-To: <7796a29d-625a-4728-defd-cda73afc83ba@oracle.com>
+References: <1534185825-12451-1-git-send-email-shannon.nelson@oracle.com>
+ <CAKgT0UdcijJ4f4gKeHj6t_EGuKjE7P5oZ0UH0_jfuHQ05RJALA@mail.gmail.com>
+ <5ff4527d-7557-10f4-f41e-3e618f0e5863@oracle.com>
+ <CAKgT0UfjB35yWMALtLUh-dU78VUW95=8MMn8rLcnKiTQxOB-Eg@mail.gmail.com>
+ <7796a29d-625a-4728-defd-cda73afc83ba@oracle.com>
+Message-ID: <84477537-900a-fb3b-50fa-8142bba76869@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 52a006a11d4a3096e8c01743cf43610033889154  igc: Add watchdog
 
-elapsed time: 100m
+On 8/16/2018 2:36 PM, Shannon Nelson wrote:
+> On 8/16/2018 2:15 PM, Alexander Duyck wrote:
+>> On Tue, Aug 14, 2018 at 10:10 AM Shannon Nelson
+>> <shannon.nelson@oracle.com> wrote:
+>>>
+>>> On 8/14/2018 8:30 AM, Alexander Duyck wrote:
+>>>> On Mon, Aug 13, 2018 at 11:43 AM Shannon Nelson
+>>>> <shannon.nelson@oracle.com> wrote:
+>>>>>
+>>>>> This set of patches implements IPsec hardware offload for VF 
+>>>>> devices in
+>>>>> Intel's 10Gbe x540 family of Ethernet devices.
+>>>
+>>> [...]
+>>>
+>>>>
+>>>> So the one question I would have about this patch set is what happens
+>>>> if you are setting up a ipsec connection between the PF and one of the
+>>>> VFs on the same port/function? Do the ipsec offloads get translated
+>>>> across the Tx loopback or do they end up causing issues? Specifically
+>>>> I would be interested in seeing the results of a test either between
+>>>> two VFs, or the PF and one of the VFs on the same port.
+>>>>
+>>>> - Alex
+>>>>
+>>>
+>>> There is definitely something funky in the internal switch connection,
+>>> as messages going from PF to VF with an offloaded encryption don't seem
+>>> to get received by the VF, at least when in a VEB setup.? If I only set
+>>> up offloads on the Rx on both PF and VF, and don't offload the Tx, then
+>>> things work.
+>>>
+>>> I don't have a setup to test this, but I suspect that in a VEPA
+>>> configuration, with packets going out to the switch and turned around
+>>> back in, the Tx encryption offload would happen as expected.
+>>>
+>>> sln
+>>
+>> We should probably look at adding at least one patch to the set then
+>> that disables IPsec Tx offload if SR-IOV is enabled with VEB so that
+>> we don't end up breaking connections should a VF be migrated from a
+>> remote system to a local one that it is connected to.
+>>
+>> - Alex
+>>
+> 
+> The problem with this is that someone could set up an IPsec connection 
+> on the PF for Tx and Rx use, then set num_vfs, start some VFs, and we 
+> still can end up in the same place.? I don't think we want to disallow 
+> all Tx IPsec offload.
+> 
+> Maybe we can catch it in ixgbe_ipsec_offload_ok()?? If it can find that 
+> the dest mac is on the internal switch, perhaps it can NAK the Tx 
+> offload?? That would force the XFRM xmit code to do a regular SW encrypt 
+> before sending the packet.? I'll look into this.
+> 
+> sln
 
-configs tested: 140
+This would be a great idea, but the xdo_state_offload_ok() callback 
+happens in the network stack before routing has happened, so there is no 
+mac address yet in the skb.  We may be stuck with NAKing *all* Tx 
+offloads when num_vfs != 0.  It works, and it is better than no offload 
+at all, but it sure harshes the vibe.  Blech.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+sln
 
-x86_64                 randconfig-a0-08170639
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201832
-x86_64                 randconfig-x009-201832
-x86_64                 randconfig-x000-201832
-x86_64                 randconfig-x004-201832
-x86_64                 randconfig-x001-201832
-x86_64                 randconfig-x003-201832
-x86_64                 randconfig-x007-201832
-x86_64                 randconfig-x008-201832
-x86_64                 randconfig-x005-201832
-x86_64                 randconfig-x002-201832
-x86_64                 randconfig-x006-201832
-i386                     randconfig-i0-201832
-i386                     randconfig-i1-201832
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                          lpd270_defconfig
-sh                   sh7724_generic_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-a0-201832
-i386                     randconfig-a1-201832
-x86_64                 randconfig-s0-08170638
-x86_64                 randconfig-s1-08170638
-x86_64                 randconfig-s2-08170638
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                      integrator_defconfig
-powerpc                 mpc8540_ads_defconfig
-sh                           se7343_defconfig
-xtensa                generic_kc705_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201832
-i386                     randconfig-s1-201832
-x86_64                 randconfig-s3-08170646
-x86_64                 randconfig-s4-08170646
-x86_64                 randconfig-s5-08170646
-i386                               tinyconfig
-i386                             allmodconfig
-x86_64                   randconfig-i0-201832
-arm                       cns3420vb_defconfig
-parisc                      default_defconfig
-sh                            shmin_defconfig
-i386                   randconfig-x002-201832
-i386                   randconfig-x003-201832
-i386                   randconfig-x005-201832
-i386                   randconfig-x008-201832
-i386                   randconfig-x000-201832
-i386                   randconfig-x007-201832
-i386                   randconfig-x001-201832
-i386                   randconfig-x004-201832
-i386                   randconfig-x009-201832
-i386                   randconfig-x006-201832
-x86_64                 randconfig-x019-201832
-x86_64                 randconfig-x013-201832
-x86_64                 randconfig-x017-201832
-x86_64                 randconfig-x012-201832
-x86_64                 randconfig-x018-201832
-x86_64                 randconfig-x010-201832
-x86_64                 randconfig-x014-201832
-x86_64                 randconfig-x016-201832
-x86_64                 randconfig-x011-201832
-x86_64                 randconfig-x015-201832
-i386                   randconfig-x018-201832
-i386                   randconfig-x017-201832
-i386                   randconfig-x010-201832
-i386                   randconfig-x016-201832
-i386                   randconfig-x013-201832
-i386                   randconfig-x011-201832
-i386                   randconfig-x015-201832
-i386                   randconfig-x019-201832
-i386                   randconfig-x014-201832
-i386                   randconfig-x012-201832
-i386                   randconfig-x077-201832
-i386                   randconfig-x076-201832
-i386                   randconfig-x070-201832
-i386                   randconfig-x075-201832
-i386                   randconfig-x072-201832
-i386                   randconfig-x074-201832
-i386                   randconfig-x071-201832
-i386                   randconfig-x078-201832
-i386                   randconfig-x079-201832
-i386                   randconfig-x073-201832
-i386                             allyesconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m68k                       bvme6000_defconfig
-mips                      fuloong2e_defconfig
-x86_64                randconfig-ws0-08170625
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-08170638
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
