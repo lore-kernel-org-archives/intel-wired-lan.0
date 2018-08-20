@@ -1,335 +1,471 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon, 20 Aug 2018 08:12:28 -0700
-Subject: [Intel-wired-lan] [next PATCH S95 07/12] i40e: Unset promiscuous
- settings on VF reset
+Date: Mon, 20 Aug 2018 08:12:24 -0700
+Subject: [Intel-wired-lan] [next PATCH S95 03/12] i40e: move ethtool stats
+ boiler plate code to i40e_ethtool_stats.h
 In-Reply-To: <20180820151233.14629-1-alice.michael@intel.com>
 References: <20180820151233.14629-1-alice.michael@intel.com>
-Message-ID: <20180820151233.14629-7-alice.michael@intel.com>
+Message-ID: <20180820151233.14629-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mariusz Stachura <mariusz.stachura@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-This patch cleans up promiscuous configuration when a VF reset occurs.
-Previously the promiscuous mode settings were still there after the VF
-driver removal.
+Move the boiler plate structures and helper functions we recently
+added into their own header file, so that the complete collection is
+located together.
 
-Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 267 ++++++++++++---------
- 1 file changed, 157 insertions(+), 110 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 182 +----------------
+ .../net/ethernet/intel/i40e/i40e_ethtool_stats.h   | 221 +++++++++++++++++++++
+ 2 files changed, 222 insertions(+), 181 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index f56c645..ca423be 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1084,6 +1084,136 @@ static int i40e_quiesce_vf_pci(struct i40e_vf *vf)
- 	return -EIO;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 9ac41c8..ecc30524 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -6,25 +6,8 @@
+ #include "i40e.h"
+ #include "i40e_diag.h"
+ 
+-struct i40e_stats {
+-	/* The stat_string is expected to be a format string formatted using
+-	 * vsnprintf by i40e_add_stat_strings. Every member of a stats array
+-	 * should use the same format specifiers as they will be formatted
+-	 * using the same variadic arguments.
+-	 */
+-	char stat_string[ETH_GSTRING_LEN];
+-	int sizeof_stat;
+-	int stat_offset;
+-};
+-
+-#define I40E_STAT(_type, _name, _stat) { \
+-	.stat_string = _name, \
+-	.sizeof_stat = FIELD_SIZEOF(_type, _stat), \
+-	.stat_offset = offsetof(_type, _stat) \
+-}
++#include "i40e_ethtool_stats.h"
+ 
+-#define I40E_NETDEV_STAT(_net_stat) \
+-	I40E_STAT(struct rtnl_link_stats64, #_net_stat, _net_stat)
+ #define I40E_PF_STAT(_name, _stat) \
+ 	I40E_STAT(struct i40e_pf, _name, _stat)
+ #define I40E_VSI_STAT(_name, _stat) \
+@@ -173,11 +156,6 @@ static const struct i40e_stats i40e_gstrings_pfc_stats[] = {
+ 	I40E_PFC_STAT("port.rx_priority_%u_xon_2_xoff", priority_xon_2_xoff),
+ };
+ 
+-static const struct i40e_stats i40e_gstrings_queue_stats[] = {
+-	I40E_QUEUE_STAT("%s-%u.packets", stats.packets),
+-	I40E_QUEUE_STAT("%s-%u.bytes", stats.bytes),
+-};
+-
+ #define I40E_NETDEV_STATS_LEN	ARRAY_SIZE(i40e_gstrings_net_stats)
+ 
+ #define I40E_MISC_STATS_LEN	ARRAY_SIZE(i40e_gstrings_misc_stats)
+@@ -1750,128 +1728,6 @@ static int i40e_get_sset_count(struct net_device *netdev, int sset)
  }
  
-+static inline int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi);
+ /**
+- * i40e_add_one_ethtool_stat - copy the stat into the supplied buffer
+- * @data: location to store the stat value
+- * @pointer: basis for where to copy from
+- * @stat: the stat definition
+- *
+- * Copies the stat data defined by the pointer and stat structure pair into
+- * the memory supplied as data. Used to implement i40e_add_ethtool_stats and
+- * i40e_add_queue_stats. If the pointer is null, data will be zero'd.
+- */
+-static inline void
+-i40e_add_one_ethtool_stat(u64 *data, void *pointer,
+-			  const struct i40e_stats *stat)
+-{
+-	char *p;
+-
+-	if (!pointer) {
+-		/* ensure that the ethtool data buffer is zero'd for any stats
+-		 * which don't have a valid pointer.
+-		 */
+-		*data = 0;
+-		return;
+-	}
+-
+-	p = (char *)pointer + stat->stat_offset;
+-	switch (stat->sizeof_stat) {
+-	case sizeof(u64):
+-		*data = *((u64 *)p);
+-		break;
+-	case sizeof(u32):
+-		*data = *((u32 *)p);
+-		break;
+-	case sizeof(u16):
+-		*data = *((u16 *)p);
+-		break;
+-	case sizeof(u8):
+-		*data = *((u8 *)p);
+-		break;
+-	default:
+-		WARN_ONCE(1, "unexpected stat size for %s",
+-			  stat->stat_string);
+-		*data = 0;
+-	}
+-}
+-
+-/**
+- * __i40e_add_ethtool_stats - copy stats into the ethtool supplied buffer
+- * @data: ethtool stats buffer
+- * @pointer: location to copy stats from
+- * @stats: array of stats to copy
+- * @size: the size of the stats definition
+- *
+- * Copy the stats defined by the stats array using the pointer as a base into
+- * the data buffer supplied by ethtool. Updates the data pointer to point to
+- * the next empty location for successive calls to __i40e_add_ethtool_stats.
+- * If pointer is null, set the data values to zero and update the pointer to
+- * skip these stats.
+- **/
+-static inline void
+-__i40e_add_ethtool_stats(u64 **data, void *pointer,
+-			 const struct i40e_stats stats[],
+-			 const unsigned int size)
+-{
+-	unsigned int i;
+-
+-	for (i = 0; i < size; i++)
+-		i40e_add_one_ethtool_stat((*data)++, pointer, &stats[i]);
+-}
+-
+-/**
+- * i40e_add_ethtool_stats - copy stats into ethtool supplied buffer
+- * @data: ethtool stats buffer
+- * @pointer: location where stats are stored
+- * @stats: static const array of stat definitions
+- *
+- * Macro to ease the use of __i40e_add_ethtool_stats by taking a static
+- * constant stats array and passing the ARRAY_SIZE(). This avoids typos by
+- * ensuring that we pass the size associated with the given stats array.
+- * Assumes that stats is an array.
+- **/
+-#define i40e_add_ethtool_stats(data, pointer, stats) \
+-	__i40e_add_ethtool_stats(data, pointer, stats, ARRAY_SIZE(stats))
+-
+-/**
+- * i40e_add_queue_stats - copy queue statistics into supplied buffer
+- * @data: ethtool stats buffer
+- * @ring: the ring to copy
+- *
+- * Queue statistics must be copied while protected by
+- * u64_stats_fetch_begin_irq, so we can't directly use i40e_add_ethtool_stats.
+- * Assumes that queue stats are defined in i40e_gstrings_queue_stats. If the
+- * ring pointer is null, zero out the queue stat values and update the data
+- * pointer. Otherwise safely copy the stats from the ring into the supplied
+- * buffer and update the data pointer when finished.
+- *
+- * This function expects to be called while under rcu_read_lock().
+- **/
+-static inline void
+-i40e_add_queue_stats(u64 **data, struct i40e_ring *ring)
+-{
+-	const unsigned int size = ARRAY_SIZE(i40e_gstrings_queue_stats);
+-	const struct i40e_stats *stats = i40e_gstrings_queue_stats;
+-	unsigned int start;
+-	unsigned int i;
+-
+-	/* To avoid invalid statistics values, ensure that we keep retrying
+-	 * the copy until we get a consistent value according to
+-	 * u64_stats_fetch_retry_irq. But first, make sure our ring is
+-	 * non-null before attempting to access its syncp.
+-	 */
+-	do {
+-		start = !ring ? 0 : u64_stats_fetch_begin_irq(&ring->syncp);
+-		for (i = 0; i < size; i++) {
+-			i40e_add_one_ethtool_stat(&(*data)[i], ring,
+-						  &stats[i]);
+-		}
+-	} while (ring && u64_stats_fetch_retry_irq(&ring->syncp, start));
+-
+-	/* Once we successfully copy the stats in, update the data pointer */
+-	data += size;
+-}
+-
+-/**
+  * i40e_get_pfc_stats - copy HW PFC statistics to formatted structure
+  * @pf: the PF device structure
+  * @i: the priority value to copy
+@@ -1966,42 +1822,6 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
+ }
+ 
+ /**
+- * __i40e_add_stat_strings - copy stat strings into ethtool buffer
+- * @p: ethtool supplied buffer
+- * @stats: stat definitions array
+- * @size: size of the stats array
+- *
+- * Format and copy the strings described by stats into the buffer pointed at
+- * by p.
+- **/
+-static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
+-				    const unsigned int size, ...)
+-{
+-	unsigned int i;
+-
+-	for (i = 0; i < size; i++) {
+-		va_list args;
+-
+-		va_start(args, size);
+-		vsnprintf(*p, ETH_GSTRING_LEN, stats[i].stat_string, args);
+-		*p += ETH_GSTRING_LEN;
+-		va_end(args);
+-	}
+-}
+-
+-/**
+- * 40e_add_stat_strings - copy stat strings into ethtool buffer
+- * @p: ethtool supplied buffer
+- * @stats: stat definitions array
+- *
+- * Format and copy the strings described by the const static stats value into
+- * the buffer pointed@by p. Assumes that stats can have ARRAY_SIZE called
+- * for it.
+- **/
+-#define i40e_add_stat_strings(p, stats, ...) \
+-	__i40e_add_stat_strings(p, stats, ARRAY_SIZE(stats), ## __VA_ARGS__)
+-
+-/**
+  * i40e_get_stat_strings - copy stat strings into supplied buffer
+  * @netdev: the netdev to collect strings for
+  * @data: supplied buffer to copy strings into
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
+new file mode 100644
+index 0000000..0290ade
+--- /dev/null
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
+@@ -0,0 +1,221 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright(c) 2013 - 2018 Intel Corporation. */
++
++/* ethtool statistics helpers */
 +
 +/**
-+ * i40e_config_vf_promiscuous_mode
-+ * @vf: pointer to the VF info
-+ * @vsi_id: VSI id
-+ * @allmulti: set MAC L2 layer multicast promiscuous enable/disable
-+ * @alluni: set MAC L2 layer unicast promiscuous enable/disable
++ * struct i40e_stats - definition for an ethtool statistic
++ * @stat_string: statistic name to display in ethtool -S output
++ * @sizeof_stat: the sizeof() the stat, must be no greater than sizeof(u64)
++ * @stat_offset: offsetof() the stat from a base pointer
 + *
-+ * Called from the VF to configure the promiscuous mode of
-+ * VF vsis and from the VF reset path to reset promiscuous mode.
++ * This structure defines a statistic to be added to the ethtool stats buffer.
++ * It defines a statistic as offset from a common base pointer. Stats should
++ * be defined in constant arrays using the I40E_STAT macro, with every element
++ * of the array using the same _type for calculating the sizeof_stat and
++ * stat_offset.
++ *
++ * The @sizeof_stat is expected to be sizeof(u8), sizeof(u16), sizeof(u32) or
++ * sizeof(u64). Other sizes are not expected and will produce a WARN_ONCE from
++ * the i40e_add_ethtool_stat() helper function.
++ *
++ * The @stat_string is interpreted as a format string, allowing formatted
++ * values to be inserted while looping over multiple structures for a given
++ * statistics array. Thus, every statistic string in an array should have the
++ * same type and number of format specifiers, to be formatted by variadic
++ * arguments to the i40e_add_stat_string() helper function.
 + **/
-+static i40e_status i40e_config_vf_promiscuous_mode(struct i40e_vf *vf,
-+						   u16 vsi_id,
-+						   bool allmulti,
-+						   bool alluni)
-+{
-+	i40e_status aq_ret = 0;
-+	struct i40e_pf *pf = vf->pf;
-+	struct i40e_hw *hw = &pf->hw;
-+	struct i40e_mac_filter *f;
-+	struct i40e_vsi *vsi;
-+	int bkt;
++struct i40e_stats {
++	char stat_string[ETH_GSTRING_LEN];
++	int sizeof_stat;
++	int stat_offset;
++};
 +
-+	vsi = i40e_find_vsi_from_id(pf, vsi_id);
-+	if (!i40e_vc_isvalid_vsi_id(vf, vsi_id) || !vsi)
-+		return I40E_ERR_PARAM;
-+
-+	if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
-+		dev_err(&pf->pdev->dev,
-+			"Unprivileged VF %d is attempting to configure promiscuous mode\n",
-+			vf->vf_id);
-+		/* Lie to the VF on purpose. */
-+		return 0;
-+	}
-+
-+	if (vf->port_vlan_id) {
-+		aq_ret = i40e_aq_set_vsi_mc_promisc_on_vlan(hw, vsi->seid,
-+							    allmulti,
-+							    vf->port_vlan_id,
-+							    NULL);
-+		if (aq_ret) {
-+			int aq_err = pf->hw.aq.asq_last_status;
-+
-+			dev_err(&pf->pdev->dev,
-+				"VF %d failed to set multicast promiscuous mode err %s aq_err %s\n",
-+				vf->vf_id,
-+				i40e_stat_str(&pf->hw, aq_ret),
-+				i40e_aq_str(&pf->hw, aq_err));
-+			return aq_ret;
-+		}
-+
-+		aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw, vsi->seid,
-+							    alluni,
-+							    vf->port_vlan_id,
-+							    NULL);
-+		if (aq_ret) {
-+			int aq_err = pf->hw.aq.asq_last_status;
-+
-+			dev_err(&pf->pdev->dev,
-+				"VF %d failed to set unicast promiscuous mode err %s aq_err %s\n",
-+				vf->vf_id,
-+				i40e_stat_str(&pf->hw, aq_ret),
-+				i40e_aq_str(&pf->hw, aq_err));
-+		}
-+		return aq_ret;
-+	} else if (i40e_getnum_vf_vsi_vlan_filters(vsi)) {
-+		hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
-+			if (f->vlan < 0 || f->vlan > I40E_MAX_VLANID)
-+				continue;
-+			aq_ret = i40e_aq_set_vsi_mc_promisc_on_vlan(hw,
-+								    vsi->seid,
-+								    allmulti,
-+								    f->vlan,
-+								    NULL);
-+			if (aq_ret) {
-+				int aq_err = pf->hw.aq.asq_last_status;
-+
-+				dev_err(&pf->pdev->dev,
-+					"Could not add VLAN %d to multicast promiscuous domain err %s aq_err %s\n",
-+					f->vlan,
-+					i40e_stat_str(&pf->hw, aq_ret),
-+					i40e_aq_str(&pf->hw, aq_err));
-+			}
-+
-+			aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw,
-+								    vsi->seid,
-+								    alluni,
-+								    f->vlan,
-+								    NULL);
-+			if (aq_ret) {
-+				int aq_err = pf->hw.aq.asq_last_status;
-+
-+				dev_err(&pf->pdev->dev,
-+					"Could not add VLAN %d to Unicast promiscuous domain err %s aq_err %s\n",
-+					f->vlan,
-+					i40e_stat_str(&pf->hw, aq_ret),
-+					i40e_aq_str(&pf->hw, aq_err));
-+			}
-+		}
-+		return aq_ret;
-+	}
-+	aq_ret = i40e_aq_set_vsi_multicast_promiscuous(hw, vsi->seid, allmulti,
-+						       NULL);
-+	if (aq_ret) {
-+		int aq_err = pf->hw.aq.asq_last_status;
-+
-+		dev_err(&pf->pdev->dev,
-+			"VF %d failed to set multicast promiscuous mode err %s aq_err %s\n",
-+			vf->vf_id,
-+			i40e_stat_str(&pf->hw, aq_ret),
-+			i40e_aq_str(&pf->hw, aq_err));
-+		return aq_ret;
-+	}
-+
-+	aq_ret = i40e_aq_set_vsi_unicast_promiscuous(hw, vsi->seid, alluni,
-+						     NULL, true);
-+	if (aq_ret) {
-+		int aq_err = pf->hw.aq.asq_last_status;
-+
-+		dev_err(&pf->pdev->dev,
-+			"VF %d failed to set unicast promiscuous mode err %s aq_err %s\n",
-+			vf->vf_id,
-+			i40e_stat_str(&pf->hw, aq_ret),
-+			i40e_aq_str(&pf->hw, aq_err));
-+	}
-+
-+	return aq_ret;
++/* Helper macro to define an i40e_stat structure with proper size and type.
++ * Use this when defining constant statistics arrays. Note that @_type expects
++ * only a type name and is used multiple times.
++ */
++#define I40E_STAT(_type, _name, _stat) { \
++	.stat_string = _name, \
++	.sizeof_stat = FIELD_SIZEOF(_type, _stat), \
++	.stat_offset = offsetof(_type, _stat) \
 +}
 +
- /**
-  * i40e_trigger_vf_reset
-  * @vf: pointer to the VF structure
-@@ -1145,6 +1275,9 @@ static void i40e_cleanup_reset_vf(struct i40e_vf *vf)
- 	struct i40e_hw *hw = &pf->hw;
- 	u32 reg;
- 
-+	/* disable promisc modes in case they were enabled */
-+	i40e_config_vf_promiscuous_mode(vf, vf->lan_vsi_id, false, false);
++/* Helper macro for defining some statistics directly copied from the netdev
++ * stats structure.
++ */
++#define I40E_NETDEV_STAT(_net_stat) \
++	I40E_STAT(struct rtnl_link_stats64, #_net_stat, _net_stat)
 +
- 	/* free VF resources to begin resetting the VSI state */
- 	i40e_free_vf_res(vf);
- 
-@@ -1851,132 +1984,46 @@ static int i40e_vc_config_promiscuous_mode_msg(struct i40e_vf *vf,
- 	struct virtchnl_promisc_info *info =
- 	    (struct virtchnl_promisc_info *)msg;
- 	struct i40e_pf *pf = vf->pf;
--	struct i40e_hw *hw = &pf->hw;
--	struct i40e_mac_filter *f;
- 	i40e_status aq_ret = 0;
- 	bool allmulti = false;
--	struct i40e_vsi *vsi;
- 	bool alluni = false;
--	int aq_err = 0;
--	int bkt;
- 
--	vsi = i40e_find_vsi_from_id(pf, info->vsi_id);
--	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states) ||
--	    !i40e_vc_isvalid_vsi_id(vf, info->vsi_id) ||
--	    !vsi) {
--		aq_ret = I40E_ERR_PARAM;
--		goto error_param;
--	}
--	if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
--		dev_err(&pf->pdev->dev,
--			"Unprivileged VF %d is attempting to configure promiscuous mode\n",
--			vf->vf_id);
--		/* Lie to the VF on purpose. */
--		aq_ret = 0;
--		goto error_param;
--	}
-+	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states))
-+		return I40E_ERR_PARAM;
++/* Helper macro for defining some statistics related to queues */
++#define I40E_QUEUE_STAT(_name, _stat) \
++	I40E_STAT(struct i40e_ring, _name, _stat)
 +
- 	/* Multicast promiscuous handling*/
- 	if (info->flags & FLAG_VF_MULTICAST_PROMISC)
- 		allmulti = true;
- 
--	if (vf->port_vlan_id) {
--		aq_ret = i40e_aq_set_vsi_mc_promisc_on_vlan(hw, vsi->seid,
--							    allmulti,
--							    vf->port_vlan_id,
--							    NULL);
--	} else if (i40e_getnum_vf_vsi_vlan_filters(vsi)) {
--		hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
--			if (f->vlan < 0 || f->vlan > I40E_MAX_VLANID)
--				continue;
--			aq_ret = i40e_aq_set_vsi_mc_promisc_on_vlan(hw,
--								    vsi->seid,
--								    allmulti,
--								    f->vlan,
--								    NULL);
--			aq_err = pf->hw.aq.asq_last_status;
--			if (aq_ret) {
--				dev_err(&pf->pdev->dev,
--					"Could not add VLAN %d to multicast promiscuous domain err %s aq_err %s\n",
--					f->vlan,
--					i40e_stat_str(&pf->hw, aq_ret),
--					i40e_aq_str(&pf->hw, aq_err));
--				break;
--			}
--		}
--	} else {
--		aq_ret = i40e_aq_set_vsi_multicast_promiscuous(hw, vsi->seid,
--							       allmulti, NULL);
--		aq_err = pf->hw.aq.asq_last_status;
--		if (aq_ret) {
--			dev_err(&pf->pdev->dev,
--				"VF %d failed to set multicast promiscuous mode err %s aq_err %s\n",
--				vf->vf_id,
--				i40e_stat_str(&pf->hw, aq_ret),
--				i40e_aq_str(&pf->hw, aq_err));
--			goto error_param;
--		}
--	}
--
-+	if (info->flags & FLAG_VF_UNICAST_PROMISC)
-+		alluni = true;
-+	aq_ret = i40e_config_vf_promiscuous_mode(vf, info->vsi_id, allmulti,
-+						 alluni);
- 	if (!aq_ret) {
--		dev_info(&pf->pdev->dev,
--			 "VF %d successfully set multicast promiscuous mode\n",
--			 vf->vf_id);
--		if (allmulti)
-+		if (allmulti) {
-+			dev_info(&pf->pdev->dev,
-+				 "VF %d successfully set multicast promiscuous mode\n",
-+				 vf->vf_id);
- 			set_bit(I40E_VF_STATE_MC_PROMISC, &vf->vf_states);
--		else
-+		} else {
-+			dev_info(&pf->pdev->dev,
-+				 "VF %d successfully unset multicast promiscuous mode\n",
-+				 vf->vf_id);
- 			clear_bit(I40E_VF_STATE_MC_PROMISC, &vf->vf_states);
--	}
--
--	if (info->flags & FLAG_VF_UNICAST_PROMISC)
--		alluni = true;
--	if (vf->port_vlan_id) {
--		aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw, vsi->seid,
--							    alluni,
--							    vf->port_vlan_id,
--							    NULL);
--	} else if (i40e_getnum_vf_vsi_vlan_filters(vsi)) {
--		hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
--			if (f->vlan < 0 || f->vlan > I40E_MAX_VLANID)
--				continue;
--			aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw,
--								    vsi->seid,
--								    alluni,
--								    f->vlan,
--								    NULL);
--			aq_err = pf->hw.aq.asq_last_status;
--			if (aq_ret)
--				dev_err(&pf->pdev->dev,
--					"Could not add VLAN %d to Unicast promiscuous domain err %s aq_err %s\n",
--					f->vlan,
--					i40e_stat_str(&pf->hw, aq_ret),
--					i40e_aq_str(&pf->hw, aq_err));
- 		}
--	} else {
--		aq_ret = i40e_aq_set_vsi_unicast_promiscuous(hw, vsi->seid,
--							     alluni, NULL,
--							     true);
--		aq_err = pf->hw.aq.asq_last_status;
--		if (aq_ret) {
--			dev_err(&pf->pdev->dev,
--				"VF %d failed to set unicast promiscuous mode %8.8x err %s aq_err %s\n",
--				vf->vf_id, info->flags,
--				i40e_stat_str(&pf->hw, aq_ret),
--				i40e_aq_str(&pf->hw, aq_err));
--			goto error_param;
--		}
--	}
--
--	if (!aq_ret) {
--		dev_info(&pf->pdev->dev,
--			 "VF %d successfully set unicast promiscuous mode\n",
--			 vf->vf_id);
--		if (alluni)
-+		if (alluni) {
-+			dev_info(&pf->pdev->dev,
-+				 "VF %d successfully set unicast promiscuous mode\n",
-+				 vf->vf_id);
- 			set_bit(I40E_VF_STATE_UC_PROMISC, &vf->vf_states);
--		else
-+		} else {
-+			dev_info(&pf->pdev->dev,
-+				 "VF %d successfully unset unicast promiscuous mode\n",
-+				 vf->vf_id);
- 			clear_bit(I40E_VF_STATE_UC_PROMISC, &vf->vf_states);
++/* Stats associated with a Tx or Rx ring */
++static const struct i40e_stats i40e_gstrings_queue_stats[] = {
++	I40E_QUEUE_STAT("%s-%u.packets", stats.packets),
++	I40E_QUEUE_STAT("%s-%u.bytes", stats.bytes),
++};
++
++/**
++ * i40e_add_one_ethtool_stat - copy the stat into the supplied buffer
++ * @data: location to store the stat value
++ * @pointer: basis for where to copy from
++ * @stat: the stat definition
++ *
++ * Copies the stat data defined by the pointer and stat structure pair into
++ * the memory supplied as data. Used to implement i40e_add_ethtool_stats and
++ * i40e_add_queue_stats. If the pointer is null, data will be zero'd.
++ */
++static inline void
++i40e_add_one_ethtool_stat(u64 *data, void *pointer,
++			  const struct i40e_stats *stat)
++{
++	char *p;
++
++	if (!pointer) {
++		/* ensure that the ethtool data buffer is zero'd for any stats
++		 * which don't have a valid pointer.
++		 */
++		*data = 0;
++		return;
++	}
++
++	p = (char *)pointer + stat->stat_offset;
++	switch (stat->sizeof_stat) {
++	case sizeof(u64):
++		*data = *((u64 *)p);
++		break;
++	case sizeof(u32):
++		*data = *((u32 *)p);
++		break;
++	case sizeof(u16):
++		*data = *((u16 *)p);
++		break;
++	case sizeof(u8):
++		*data = *((u8 *)p);
++		break;
++	default:
++		WARN_ONCE(1, "unexpected stat size for %s",
++			  stat->stat_string);
++		*data = 0;
++	}
++}
++
++/**
++ * __i40e_add_ethtool_stats - copy stats into the ethtool supplied buffer
++ * @data: ethtool stats buffer
++ * @pointer: location to copy stats from
++ * @stats: array of stats to copy
++ * @size: the size of the stats definition
++ *
++ * Copy the stats defined by the stats array using the pointer as a base into
++ * the data buffer supplied by ethtool. Updates the data pointer to point to
++ * the next empty location for successive calls to __i40e_add_ethtool_stats.
++ * If pointer is null, set the data values to zero and update the pointer to
++ * skip these stats.
++ **/
++static inline void
++__i40e_add_ethtool_stats(u64 **data, void *pointer,
++			 const struct i40e_stats stats[],
++			 const unsigned int size)
++{
++	unsigned int i;
++
++	for (i = 0; i < size; i++)
++		i40e_add_one_ethtool_stat((*data)++, pointer, &stats[i]);
++}
++
++/**
++ * i40e_add_ethtool_stats - copy stats into ethtool supplied buffer
++ * @data: ethtool stats buffer
++ * @pointer: location where stats are stored
++ * @stats: static const array of stat definitions
++ *
++ * Macro to ease the use of __i40e_add_ethtool_stats by taking a static
++ * constant stats array and passing the ARRAY_SIZE(). This avoids typos by
++ * ensuring that we pass the size associated with the given stats array.
++ *
++ * The parameter @stats is evaluated twice, so parameters with side effects
++ * should be avoided.
++ **/
++#define i40e_add_ethtool_stats(data, pointer, stats) \
++	__i40e_add_ethtool_stats(data, pointer, stats, ARRAY_SIZE(stats))
++
++/**
++ * i40e_add_queue_stats - copy queue statistics into supplied buffer
++ * @data: ethtool stats buffer
++ * @ring: the ring to copy
++ *
++ * Queue statistics must be copied while protected by
++ * u64_stats_fetch_begin_irq, so we can't directly use i40e_add_ethtool_stats.
++ * Assumes that queue stats are defined in i40e_gstrings_queue_stats. If the
++ * ring pointer is null, zero out the queue stat values and update the data
++ * pointer. Otherwise safely copy the stats from the ring into the supplied
++ * buffer and update the data pointer when finished.
++ *
++ * This function expects to be called while under rcu_read_lock().
++ **/
++static inline void
++i40e_add_queue_stats(u64 **data, struct i40e_ring *ring)
++{
++	const unsigned int size = ARRAY_SIZE(i40e_gstrings_queue_stats);
++	const struct i40e_stats *stats = i40e_gstrings_queue_stats;
++	unsigned int start;
++	unsigned int i;
++
++	/* To avoid invalid statistics values, ensure that we keep retrying
++	 * the copy until we get a consistent value according to
++	 * u64_stats_fetch_retry_irq. But first, make sure our ring is
++	 * non-null before attempting to access its syncp.
++	 */
++	do {
++		start = !ring ? 0 : u64_stats_fetch_begin_irq(&ring->syncp);
++		for (i = 0; i < size; i++) {
++			i40e_add_one_ethtool_stat(&(*data)[i], ring,
++						  &stats[i]);
 +		}
- 	}
- 
--error_param:
- 	/* send the response to the VF */
- 	return i40e_vc_send_resp_to_vf(vf,
- 				       VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE,
++	} while (ring && u64_stats_fetch_retry_irq(&ring->syncp, start));
++
++	/* Once we successfully copy the stats in, update the data pointer */
++	*data += size;
++}
++
++/**
++ * __i40e_add_stat_strings - copy stat strings into ethtool buffer
++ * @p: ethtool supplied buffer
++ * @stats: stat definitions array
++ * @size: size of the stats array
++ *
++ * Format and copy the strings described by stats into the buffer pointed at
++ * by p.
++ **/
++static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
++				    const unsigned int size, ...)
++{
++	unsigned int i;
++
++	for (i = 0; i < size; i++) {
++		va_list args;
++
++		va_start(args, size);
++		vsnprintf(*p, ETH_GSTRING_LEN, stats[i].stat_string, args);
++		*p += ETH_GSTRING_LEN;
++		va_end(args);
++	}
++}
++
++/**
++ * 40e_add_stat_strings - copy stat strings into ethtool buffer
++ * @p: ethtool supplied buffer
++ * @stats: stat definitions array
++ *
++ * Format and copy the strings described by the const static stats value into
++ * the buffer pointed@by p.
++ *
++ * The parameter @stats is evaluated twice, so parameters with side effects
++ * should be avoided. Additionally, stats must be an array such that
++ * ARRAY_SIZE can be called on it.
++ **/
++#define i40e_add_stat_strings(p, stats, ...) \
++	__i40e_add_stat_strings(p, stats, ARRAY_SIZE(stats), ## __VA_ARGS__)
 -- 
 2.9.5
 
