@@ -1,60 +1,163 @@
-From: zhong jiang <zhongjiang@huawei.com>
-Date: Mon, 20 Aug 2018 09:35:03 +0800
-Subject: [Intel-wired-lan] [PATCH] ethernet: Use dma_zalloc_coherent to
- replace dma_alloc_coherent + memset
-In-Reply-To: <8E050A97-6745-4CC9-A3CD-B30DC7A34DEF@intel.com>
-References: <1534603699-10120-1-git-send-email-zhongjiang@huawei.com>
- <8E050A97-6745-4CC9-A3CD-B30DC7A34DEF@intel.com>
-Message-ID: <5B7A1AC7.10301@huawei.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Mon, 20 Aug 2018 23:59:03 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 3933b2d228dd7732f28bb57f05ee30c0c685239b
+Message-ID: <5b7ae547.Z6xWZEtIxYSslKCz%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2018/8/19 8:22, Kirsher, Jeffrey T wrote:
-> Please send ALL patches against drivers I maintain to the Intel-wired-lan at lists.osuosl.org.  Your repeated refusal to do so, makes me think you are trying to circumvent the maintainer (me) and the correct kernel patch process.
-I am sorry to that. :-[     It is my fault that I never want to circumvent the maintainer.  I will notice that for next time.  Thank you for your understanding.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 3933b2d228dd7732f28bb57f05ee30c0c685239b  fq_codel: fix NULL pointer deref in fq_codel_reset
 
-Best wishes,
-zhong jiang 
-> Sent from my iPhone
->
->> On Aug 18, 2018, at 08:00, zhong jiang <zhongjiang@huawei.com> wrote:
->>
->> dma_zalloc_coherent has implemented the dma_alloc_coherent() + memset (),
->> We prefer to dma_zalloc_coherent instead of open-codeing.
->>
->> Signed-off-by: zhong jiang <zhongjiang@huawei.com>
->> ---
->> drivers/net/ethernet/intel/ixgb/ixgb_main.c | 5 ++---
->> 1 file changed, 2 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
->> index 43664ad..d3e72d0 100644
->> --- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
->> +++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
->> @@ -771,14 +771,13 @@ static pci_ers_result_t ixgb_io_error_detected (struct pci_dev *pdev,
->>    rxdr->size = rxdr->count * sizeof(struct ixgb_rx_desc);
->>    rxdr->size = ALIGN(rxdr->size, 4096);
->>
->> -    rxdr->desc = dma_alloc_coherent(&pdev->dev, rxdr->size, &rxdr->dma,
->> -                    GFP_KERNEL);
->> +    rxdr->desc = dma_zalloc_coherent(&pdev->dev, rxdr->size, &rxdr->dma,
->> +                     GFP_KERNEL);
->>
->>    if (!rxdr->desc) {
->>        vfree(rxdr->buffer_info);
->>        return -ENOMEM;
->>    }
->> -    memset(rxdr->desc, 0, rxdr->size);
->>
->>    rxdr->next_to_clean = 0;
->>    rxdr->next_to_use = 0;
->> -- 
->> 1.7.12.4
->>
-> .
->
+elapsed time: 61m
 
+configs tested: 138
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                 randconfig-a0-08202220
+i386                               tinyconfig
+arm                     am200epdkit_defconfig
+powerpc                    socrates_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-08201652
+i386                     randconfig-n0-201833
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201833
+i386                     randconfig-i1-201833
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x019-201833
+x86_64                 randconfig-x013-201833
+x86_64                 randconfig-x017-201833
+x86_64                 randconfig-x012-201833
+x86_64                 randconfig-x018-201833
+x86_64                 randconfig-x010-201833
+x86_64                 randconfig-x014-201833
+x86_64                 randconfig-x011-201833
+x86_64                 randconfig-x016-201833
+x86_64                 randconfig-x015-201833
+i386                     randconfig-a0-201833
+i386                     randconfig-a1-201833
+x86_64                 randconfig-s0-08202215
+x86_64                 randconfig-s1-08202215
+x86_64                 randconfig-s2-08202215
+openrisc                            defconfig
+powerpc                      ppc64e_defconfig
+sh                           sh2007_defconfig
+sh                          urquell_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201833
+i386                     randconfig-s1-201833
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-08201837
+x86_64                 randconfig-s4-08201837
+x86_64                 randconfig-s5-08201837
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201833
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x018-201833
+i386                   randconfig-x010-201833
+i386                   randconfig-x017-201833
+i386                   randconfig-x016-201833
+i386                   randconfig-x013-201833
+i386                   randconfig-x011-201833
+i386                   randconfig-x015-201833
+i386                   randconfig-x019-201833
+i386                   randconfig-x014-201833
+i386                   randconfig-x012-201833
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                randconfig-ne0-08201620
+ia64                                defconfig
+mips                                defconfig
+i386                   randconfig-x002-201833
+i386                   randconfig-x003-201833
+i386                   randconfig-x005-201833
+i386                   randconfig-x008-201833
+i386                   randconfig-x007-201833
+i386                   randconfig-x000-201833
+i386                   randconfig-x001-201833
+i386                   randconfig-x004-201833
+i386                   randconfig-x009-201833
+i386                   randconfig-x006-201833
+ia64                             alldefconfig
+ia64                              allnoconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                   randconfig-x077-201833
+i386                   randconfig-x076-201833
+i386                   randconfig-x070-201833
+i386                   randconfig-x072-201833
+i386                   randconfig-x075-201833
+i386                   randconfig-x074-201833
+i386                   randconfig-x071-201833
+i386                   randconfig-x078-201833
+i386                   randconfig-x079-201833
+i386                   randconfig-x073-201833
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                         cm_x2xx_defconfig
+nios2                         3c120_defconfig
+x86_64                 randconfig-x009-201833
+x86_64                 randconfig-x000-201833
+x86_64                 randconfig-x004-201833
+x86_64                 randconfig-x001-201833
+x86_64                 randconfig-x003-201833
+x86_64                 randconfig-x007-201833
+x86_64                 randconfig-x008-201833
+x86_64                 randconfig-x002-201833
+x86_64                 randconfig-x005-201833
+x86_64                 randconfig-x006-201833
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
