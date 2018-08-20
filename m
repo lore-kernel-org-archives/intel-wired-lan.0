@@ -1,181 +1,57 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 21 Aug 2018 05:29:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 192dd4698dc7aa57c2887fba36ac9b7176b1b9e8
-Message-ID: <5b7b329c.nPGtvMjq8SP65UrR%lkp@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 20 Aug 2018 14:48:01 -0700
+Subject: [Intel-wired-lan] [PATCH] Documentation: e100, e1000,
+ ixgb: Add missing SPDX header
+Message-ID: <20180820214801.12975-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 192dd4698dc7aa57c2887fba36ac9b7176b1b9e8  Documentation: fm10k: Add kernel documentation
+Add the SPDX-Lincense-Identifier to the Intel wired Ethernet *.rst
+kernel documentation.
 
-elapsed time: 81m
-
-configs tested: 156
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                 randconfig-a0-08210329
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-08210334
-x86_64                           allmodconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201833
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201833
-i386                     randconfig-i1-201833
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x019-201833
-x86_64                 randconfig-x013-201833
-x86_64                 randconfig-x017-201833
-x86_64                 randconfig-x012-201833
-x86_64                 randconfig-x018-201833
-x86_64                 randconfig-x010-201833
-x86_64                 randconfig-x014-201833
-x86_64                 randconfig-x011-201833
-x86_64                 randconfig-x016-201833
-x86_64                 randconfig-x015-201833
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201833
-i386                     randconfig-a1-201833
-x86_64                 randconfig-s0-08210413
-x86_64                 randconfig-s1-08210413
-x86_64                 randconfig-s2-08210413
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                            allyesconfig
-arm64                               defconfig
-mips                 pnx8335_stb225_defconfig
-arm                          exynos_defconfig
-arm                       versatile_defconfig
-sparc                            allmodconfig
-xtensa                    smp_lx200_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201833
-i386                     randconfig-s1-201833
-x86_64                 randconfig-s3-08210402
-x86_64                 randconfig-s4-08210402
-x86_64                 randconfig-s5-08210402
-i386                               tinyconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201833
-i386                   randconfig-b0-08201510
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                           viper_defconfig
-powerpc                       maple_defconfig
-powerpc                      mgcoge_defconfig
-x86_64                randconfig-ne0-08210343
-x86_64                 randconfig-h0-08201426
-i386                   randconfig-x018-201833
-i386                   randconfig-x010-201833
-i386                   randconfig-x017-201833
-i386                   randconfig-x016-201833
-i386                   randconfig-x013-201833
-i386                   randconfig-x011-201833
-i386                   randconfig-x015-201833
-i386                   randconfig-x019-201833
-i386                   randconfig-x014-201833
-i386                   randconfig-x012-201833
-i386                   randconfig-x077-201833
-i386                   randconfig-x076-201833
-i386                   randconfig-x070-201833
-i386                   randconfig-x072-201833
-i386                   randconfig-x075-201833
-i386                   randconfig-x074-201833
-i386                   randconfig-x071-201833
-i386                   randconfig-x078-201833
-i386                   randconfig-x079-201833
-i386                   randconfig-x073-201833
-i386                   randconfig-x002-201833
-i386                   randconfig-x003-201833
-i386                   randconfig-x005-201833
-i386                   randconfig-x008-201833
-i386                   randconfig-x007-201833
-i386                   randconfig-x000-201833
-i386                   randconfig-x001-201833
-i386                   randconfig-x004-201833
-i386                   randconfig-x009-201833
-i386                   randconfig-x006-201833
-x86_64                randconfig-ws0-08201448
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-powerpc                      pcm030_defconfig
-sh                        apsh4ad0a_defconfig
-x86_64                 randconfig-x009-201833
-x86_64                 randconfig-x000-201833
-x86_64                 randconfig-x004-201833
-x86_64                 randconfig-x001-201833
-x86_64                 randconfig-x003-201833
-x86_64                 randconfig-x007-201833
-x86_64                 randconfig-x008-201833
-x86_64                 randconfig-x002-201833
-x86_64                 randconfig-x005-201833
-x86_64                 randconfig-x006-201833
-i386                   randconfig-x0-08202038
-
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ Documentation/networking/e100.rst  | 3 ++-
+ Documentation/networking/e1000.rst | 3 ++-
+ Documentation/networking/ixgb.rst  | 3 ++-
+ 3 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/networking/e100.rst b/Documentation/networking/e100.rst
+index f81111eba9c5..5e2839b4ec92 100644
+--- a/Documentation/networking/e100.rst
++++ b/Documentation/networking/e100.rst
+@@ -1,4 +1,5 @@
+-==============================================================
++.. SPDX-License-Identifier: GPL-2.0+
++
+ Linux* Base Driver for the Intel(R) PRO/100 Family of Adapters
+ ==============================================================
+ 
+diff --git a/Documentation/networking/e1000.rst b/Documentation/networking/e1000.rst
+index f10dd4086921..6379d4d20771 100644
+--- a/Documentation/networking/e1000.rst
++++ b/Documentation/networking/e1000.rst
+@@ -1,4 +1,5 @@
+-===========================================================
++.. SPDX-License-Identifier: GPL-2.0+
++
+ Linux* Base Driver for Intel(R) Ethernet Network Connection
+ ===========================================================
+ 
+diff --git a/Documentation/networking/ixgb.rst b/Documentation/networking/ixgb.rst
+index 86b18330666c..b85d48a75194 100644
+--- a/Documentation/networking/ixgb.rst
++++ b/Documentation/networking/ixgb.rst
+@@ -1,4 +1,5 @@
+-=====================================================================
++.. SPDX-License-Identifier: GPL-2.0+
++
+ Linux Base Driver for 10 Gigabit Intel(R) Ethernet Network Connection
+ =====================================================================
+ 
+-- 
+2.17.1
+
