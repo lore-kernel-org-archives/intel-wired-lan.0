@@ -1,8 +1,8 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 20 Aug 2018 12:04:46 -0700
-Subject: [Intel-wired-lan] [PATCH v3] Documentation: fm10k: Add kernel
+Date: Mon, 20 Aug 2018 13:05:55 -0700
+Subject: [Intel-wired-lan] [PATCH v4] Documentation: fm10k: Add kernel
  documentation
-Message-ID: <20180820190446.11713-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180820200555.13072-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,24 +13,31 @@ Added the fm10k kernel documentation, which apparently was missing.
 
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- Documentation/networking/fm10k.rst | 183 +++++++++++++++++++++++++++++
+v1/v2: Initial attempt to produce fm10k documentation
+
+v3: converted to RST format and addressed Shannon Nelson's feedback
+
+V4: Fixed documentation title, no reason for it to say "README ..." and
+    addressed more of Shannon's feedback
+
+ Documentation/networking/fm10k.rst | 139 +++++++++++++++++++++++++++++
  Documentation/networking/index.rst |   1 +
  MAINTAINERS                        |   1 +
  drivers/net/ethernet/intel/Kconfig |   3 +
- 4 files changed, 188 insertions(+)
+ 4 files changed, 144 insertions(+)
  create mode 100644 Documentation/networking/fm10k.rst
 
 diff --git a/Documentation/networking/fm10k.rst b/Documentation/networking/fm10k.rst
 new file mode 100644
-index 000000000000..8ac4125f7c0b
+index 000000000000..a061da652986
 --- /dev/null
 +++ b/Documentation/networking/fm10k.rst
-@@ -0,0 +1,183 @@
-+README for Intel(R) Ethernet Multi-host Controller Driver
-+=========================================================
+@@ -0,0 +1,139 @@
++Linux* Base Driver for Intel(R) Ethernet Multi-host Controller
++==============================================================
 +
-+February 23, 2017
-+Copyright(c) 2015-2017 Intel Corporation.
++August 20, 2018
++Copyright(c) 2015-2018 Intel Corporation.
 +
 +Contents
 +========
@@ -54,35 +61,6 @@ index 000000000000..8ac4125f7c0b
 +------------
 +The Intel(R) Ethernet Switch Host Interface Driver does not support Flow
 +Control. It will not send pause frames. This may result in dropped frames.
-+
-+
-+Intel(R) Ethernet Flow Director
-+-------------------------------
-+The Intel Ethernet Flow Director performs the following tasks:
-+
-+- Directs receive packets according to their flows to different queues.
-+- Enables tight control on routing a flow in the platform.
-+- Matches flows and CPU cores for flow affinity.
-+- Supports multiple parameters for flexible flow classification and load
-+  balancing (in SFP mode only).
-+
-+
-+To enable or disable the Intel Ethernet Flow Director::
-+
-+    ethtool -K ethX ntuple <on|off>
-+
-+When disabling ntuple filters, all the user programmed filters are flushed from
-+the driver cache and hardware. All needed filters must be re-added when ntuple
-+is re-enabled.
-+
-+To add a filter that directs packet to queue 2, use -U or -N switch::
-+
-+    ethtool -N ethX flow-type tcp4 src-ip 192.168.10.1 dst-ip \
-+    192.168.10.2 src-port 2000 dst-port 2001 action 2 [loc 1]
-+
-+To see the list of filters currently present::
-+
-+    ethtool <-u|-n> ethX
 +
 +
 +Virtual Functions (VFs)
@@ -150,12 +128,6 @@ index 000000000000..8ac4125f7c0b
 +are problematic for LRO, namely bridging and iSCSI.
 +
 +
-+ethtool
-+-------
-+The driver utilizes the ethtool interface for driver configuration and
-+diagnostics, as well as displaying statistical information. The latest ethtool
-+version is required for this functionality. Download it at:
-+https://www.kernel.org/pub/software/network/ethtool/
 +
 +Supported ethtool Commands and Options for Filtering
 +----------------------------------------------------
@@ -175,15 +147,6 @@ index 000000000000..8ac4125f7c0b
 +- udp6: UDP over IPv6
 +- f Hash on bytes 0 and 1 of the Layer 4 header of the rx packet.
 +- n Hash on bytes 2 and 3 of the Layer 4 header of the rx packet.
-+
-+
-+FCoE
-+----
-+The fm10k driver supports Fiber Channel over Ethernet (FCoE) and Data Center
-+Bridging (DCB). This code has no default effect on the regular driver
-+operation. Configuring DCB and FCoE is outside the scope of this README. Refer
-+to http://www.open-fcoe.org/ for FCoE project information and contact
-+fm10k-eedc at lists.sourceforge.net for DCB information.
 +
 +
 +Known Issues/Troubleshooting
@@ -209,7 +172,6 @@ index 000000000000..8ac4125f7c0b
 +If an issue is identified with the released source code on a supported kernel
 +with a supported adapter, email the specific information related to the issue
 +to e1000-devel at lists.sf.net.
-\ No newline at end of file
 diff --git a/Documentation/networking/index.rst b/Documentation/networking/index.rst
 index a9346dc77a74..779c1f141d94 100644
 --- a/Documentation/networking/index.rst
