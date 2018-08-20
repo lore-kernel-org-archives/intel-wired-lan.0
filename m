@@ -1,57 +1,34 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 20 Aug 2018 14:48:01 -0700
-Subject: [Intel-wired-lan] [PATCH] Documentation: e100, e1000,
- ixgb: Add missing SPDX header
-Message-ID: <20180820214801.12975-1-jeffrey.t.kirsher@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Mon, 20 Aug 2018 15:35:18 -0700
+Subject: [Intel-wired-lan] [PATCH v5] Documentation: fm10k: Add kernel
+ documentation
+In-Reply-To: <20180820203745.13448-1-jeffrey.t.kirsher@intel.com>
+References: <20180820203745.13448-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <399630d8-2bc4-fc62-96de-f322cbf88493@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add the SPDX-Lincense-Identifier to the Intel wired Ethernet *.rst
-kernel documentation.
+On 8/20/2018 1:37 PM, Jeff Kirsher wrote:
+> Added the fm10k kernel documentation, which apparently was missing.
+> 
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> ---
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
- Documentation/networking/e100.rst  | 3 ++-
- Documentation/networking/e1000.rst | 3 ++-
- Documentation/networking/ixgb.rst  | 3 ++-
- 3 files changed, 6 insertions(+), 3 deletions(-)
+[...]
 
-diff --git a/Documentation/networking/e100.rst b/Documentation/networking/e100.rst
-index f81111eba9c5..5e2839b4ec92 100644
---- a/Documentation/networking/e100.rst
-+++ b/Documentation/networking/e100.rst
-@@ -1,4 +1,5 @@
--==============================================================
-+.. SPDX-License-Identifier: GPL-2.0+
-+
- Linux* Base Driver for the Intel(R) PRO/100 Family of Adapters
- ==============================================================
- 
-diff --git a/Documentation/networking/e1000.rst b/Documentation/networking/e1000.rst
-index f10dd4086921..6379d4d20771 100644
---- a/Documentation/networking/e1000.rst
-+++ b/Documentation/networking/e1000.rst
-@@ -1,4 +1,5 @@
--===========================================================
-+.. SPDX-License-Identifier: GPL-2.0+
-+
- Linux* Base Driver for Intel(R) Ethernet Network Connection
- ===========================================================
- 
-diff --git a/Documentation/networking/ixgb.rst b/Documentation/networking/ixgb.rst
-index 86b18330666c..b85d48a75194 100644
---- a/Documentation/networking/ixgb.rst
-+++ b/Documentation/networking/ixgb.rst
-@@ -1,4 +1,5 @@
--=====================================================================
-+.. SPDX-License-Identifier: GPL-2.0+
-+
- Linux Base Driver for 10 Gigabit Intel(R) Ethernet Network Connection
- =====================================================================
- 
--- 
-2.17.1
+> +Virtual Functions (VFs)
+> +-----------------------
+> +Use sysfs to enable VFs.
+> +Valid Range: 0-64
+> +
+> +For example::
+> +
+> +    echo $num_vf_enabled > /sys/class/net/$dev/device/sriov_numvfsr //enable VFs
 
+s/sriov_numvfsr/sriov_numvfs/
+
+Cheers,
+sln
