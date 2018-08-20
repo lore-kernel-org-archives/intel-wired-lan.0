@@ -1,8 +1,8 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 20 Aug 2018 13:05:55 -0700
-Subject: [Intel-wired-lan] [PATCH v4] Documentation: fm10k: Add kernel
+Date: Mon, 20 Aug 2018 13:37:45 -0700
+Subject: [Intel-wired-lan] [PATCH v5] Documentation: fm10k: Add kernel
  documentation
-Message-ID: <20180820200555.13072-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20180820203745.13448-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,19 +20,23 @@ v3: converted to RST format and addressed Shannon Nelson's feedback
 V4: Fixed documentation title, no reason for it to say "README ..." and
     addressed more of Shannon's feedback
 
- Documentation/networking/fm10k.rst | 139 +++++++++++++++++++++++++++++
+v5: added SPDX-License-Identifier
+
+ Documentation/networking/fm10k.rst | 141 +++++++++++++++++++++++++++++
  Documentation/networking/index.rst |   1 +
  MAINTAINERS                        |   1 +
  drivers/net/ethernet/intel/Kconfig |   3 +
- 4 files changed, 144 insertions(+)
+ 4 files changed, 146 insertions(+)
  create mode 100644 Documentation/networking/fm10k.rst
 
 diff --git a/Documentation/networking/fm10k.rst b/Documentation/networking/fm10k.rst
 new file mode 100644
-index 000000000000..a061da652986
+index 000000000000..aeec9dd7b8f3
 --- /dev/null
 +++ b/Documentation/networking/fm10k.rst
-@@ -0,0 +1,139 @@
+@@ -0,0 +1,141 @@
++.. SPDX-License-Identifier: GPL-2.0+
++
 +Linux* Base Driver for Intel(R) Ethernet Multi-host Controller
 +==============================================================
 +
