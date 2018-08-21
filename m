@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Tue, 21 Aug 2018 21:41:04 +0000
-Subject: [Intel-wired-lan] [PATCH v3 11/15] ice: Implement
- ice_bridge_getlink and ice_bridge_setlink
-In-Reply-To: <20180809132958.23036-12-anirudh.venkataramanan@intel.com>
+Date: Tue, 21 Aug 2018 21:40:46 +0000
+Subject: [Intel-wired-lan] [PATCH v3 10/15] ice: Add support for Tx hang,
+ Tx timeout and malicious driver detection
+In-Reply-To: <20180809132958.23036-11-anirudh.venkataramanan@intel.com>
 References: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
- <20180809132958.23036-12-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD2619545AFF@ORSMSX109.amr.corp.intel.com>
+ <20180809132958.23036-11-anirudh.venkataramanan@intel.com>
+Message-ID: <C25D919FD1849B409D8D987DDC7FCD2619545AF1@ORSMSX109.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,29 +17,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Thursday, August 9, 2018 6:30 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 11/15] ice: Implement
-> ice_bridge_getlink and ice_bridge_setlink
+> Subject: [Intel-wired-lan] [PATCH v3 10/15] ice: Add support for Tx hang, Tx
+> timeout and malicious driver detection
 > 
-> From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+> From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 > 
-> ice_bridge_getlink returns the current bridge mode using
-> ndo_dflt_bridge_getlink and the mode parameter available in first_switch-
-> >bridge_mode.
+> When a malicious operation is detected, the firmware triggers an interrupt,
+> which is then picked up by the service task (specifically by
+> ice_handle_mdd_event). A reset is scheduled if required.
 > 
-> ice_bridge_setlink is invoked when the bridge mode needs to changed. The
-> value to be changed to is available as a netlink message which is parsed in this
-> function. If the mode has to be changed, switch_flags is set appropriately
-> (set ALLOW_LB for VEB mode and clear it for VEPA mode) and
-> ice_aq_update_vsi is called. Also change the unicast switch filter rules.
+> Tx hang detection works in a similar way, except the logic here monitors the
+> VSI's Tx queues and tries to revive them if stalled. If the hang is not resolved,
+> the kernel eventually calls ndo_tx_timeout, which is handled by
+> ice_tx_timeout.
 > 
-> Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+> Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c   | 140 +++++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_switch.c |  41 ++++++
->  drivers/net/ethernet/intel/ice/ice_switch.h |   1 +
->  3 files changed, 181 insertions(+), 1 deletion(-)
+> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
+> up commit message]
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h          |   4 +
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   |  39 +++
+>  drivers/net/ethernet/intel/ice/ice_main.c     | 286 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_txrx.c     |   1 +
+>  drivers/net/ethernet/intel/ice/ice_txrx.h     |   1 +
+>  5 files changed, 331 insertions(+)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
 
