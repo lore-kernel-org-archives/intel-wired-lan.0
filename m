@@ -1,11 +1,11 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 21 Aug 2018 09:28:04 -0700
-Subject: [Intel-wired-lan] [next PATCH S95 07/12] i40e: Unset
- promiscuous settings on VF reset
-In-Reply-To: <20180820151233.14629-7-alice.michael@intel.com>
+Date: Tue, 21 Aug 2018 09:28:00 -0700
+Subject: [Intel-wired-lan] [next PATCH S95 09/12] i40e: use correct
+ length for strncpy
+In-Reply-To: <20180820151233.14629-9-alice.michael@intel.com>
 References: <20180820151233.14629-1-alice.michael@intel.com>
- <20180820151233.14629-7-alice.michael@intel.com>
-Message-ID: <731b5135-2bda-0eee-b668-ccfb540cfe67@oracle.com>
+ <20180820151233.14629-9-alice.michael@intel.com>
+Message-ID: <a7c5ac53-3cb6-4fe5-d281-a46e1ead12a1@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,346 +13,35 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 8/20/2018 8:12 AM, Alice Michael wrote:
-> From: Mariusz Stachura <mariusz.stachura@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> This patch cleans up promiscuous configuration when a VF reset occurs.
-> Previously the promiscuous mode settings were still there after the VF
-> driver removal.
+> Caught by gcc 8. When we provide a length for strncpy, we should not
+> include the terminating null. So we must tell it one less than the size
+> of the destination buffer.
 > 
-> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > ---
->   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 267 ++++++++++++---------
->   1 file changed, 157 insertions(+), 110 deletions(-)
+>   drivers/net/ethernet/intel/i40e/i40e_ptp.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> index f56c645..ca423be 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> @@ -1084,6 +1084,136 @@ static int i40e_quiesce_vf_pci(struct i40e_vf *vf)
->   	return -EIO;
->   }
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> index 35f2866..1199f05 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> @@ -694,7 +694,8 @@ static long i40e_ptp_create_clock(struct i40e_pf *pf)
+>   	if (!IS_ERR_OR_NULL(pf->ptp_clock))
+>   		return 0;
 >   
-> +static inline int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi);
-> +
-> +/**
-> + * i40e_config_vf_promiscuous_mode
-> + * @vf: pointer to the VF info
-> + * @vsi_id: VSI id
-> + * @allmulti: set MAC L2 layer multicast promiscuous enable/disable
-> + * @alluni: set MAC L2 layer unicast promiscuous enable/disable
-> + *
-> + * Called from the VF to configure the promiscuous mode of
-> + * VF vsis and from the VF reset path to reset promiscuous mode.
-> + **/
-> +static i40e_status i40e_config_vf_promiscuous_mode(struct i40e_vf *vf,
-> +						   u16 vsi_id,
-> +						   bool allmulti,
-> +						   bool alluni)
-> +{
-> +	i40e_status aq_ret = 0;
-> +	struct i40e_pf *pf = vf->pf;
-> +	struct i40e_hw *hw = &pf->hw;
-> +	struct i40e_mac_filter *f;
-> +	struct i40e_vsi *vsi;
-> +	int bkt;
-> +
-> +	vsi = i40e_find_vsi_from_id(pf, vsi_id);
-> +	if (!i40e_vc_isvalid_vsi_id(vf, vsi_id) || !vsi)
-> +		return I40E_ERR_PARAM;
-> +
-> +	if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
-> +		dev_err(&pf->pdev->dev,
-> +			"Unprivileged VF %d is attempting to configure promiscuous mode\n",
-> +			vf->vf_id);
-> +		/* Lie to the VF on purpose. */
+> -	strncpy(pf->ptp_caps.name, i40e_driver_name, sizeof(pf->ptp_caps.name));
+> +	strncpy(pf->ptp_caps.name, i40e_driver_name,
+> +		sizeof(pf->ptp_caps.name) - 1);
 
-Can you explain why in the comment?
-
-> +		return 0;
-> +	}
-> +
-> +	if (vf->port_vlan_id) {
-> +		aq_ret = i40e_aq_set_vsi_mc_promisc_on_vlan(hw, vsi->seid,
-> +							    allmulti,
-> +							    vf->port_vlan_id,
-> +							    NULL);
-> +		if (aq_ret) {
-> +			int aq_err = pf->hw.aq.asq_last_status;
-> +
-> +			dev_err(&pf->pdev->dev,
-> +				"VF %d failed to set multicast promiscuous mode err %s aq_err %s\n",
-> +				vf->vf_id,
-> +				i40e_stat_str(&pf->hw, aq_ret),
-> +				i40e_aq_str(&pf->hw, aq_err));
-> +			return aq_ret;
-> +		}
-> +
-> +		aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw, vsi->seid,
-> +							    alluni,
-> +							    vf->port_vlan_id,
-> +							    NULL);
-> +		if (aq_ret) {
-> +			int aq_err = pf->hw.aq.asq_last_status;
-> +
-> +			dev_err(&pf->pdev->dev,
-> +				"VF %d failed to set unicast promiscuous mode err %s aq_err %s\n",
-> +				vf->vf_id,
-> +				i40e_stat_str(&pf->hw, aq_ret),
-> +				i40e_aq_str(&pf->hw, aq_err));
-
-If uc_promisc fails, perhaps you should undo the mc_promisc change?  Of 
-course, you might need to find out what it was before you set it to see 
-if there was a change requested.
-
-> +		}
-> +		return aq_ret;
-> +	} else if (i40e_getnum_vf_vsi_vlan_filters(vsi)) {
-> +		hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
-> +			if (f->vlan < 0 || f->vlan > I40E_MAX_VLANID)
-> +				continue;
-> +			aq_ret = i40e_aq_set_vsi_mc_promisc_on_vlan(hw,
-> +								    vsi->seid,
-> +								    allmulti,
-> +								    f->vlan,
-> +								    NULL);
-> +			if (aq_ret) {
-> +				int aq_err = pf->hw.aq.asq_last_status;
-> +
-> +				dev_err(&pf->pdev->dev,
-> +					"Could not add VLAN %d to multicast promiscuous domain err %s aq_err %s\n",
-> +					f->vlan,
-> +					i40e_stat_str(&pf->hw, aq_ret),
-> +					i40e_aq_str(&pf->hw, aq_err));
-> +			}
-> +
-> +			aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw,
-> +								    vsi->seid,
-> +								    alluni,
-> +								    f->vlan,
-> +								    NULL);
-> +			if (aq_ret) {
-> +				int aq_err = pf->hw.aq.asq_last_status;
-> +
-> +				dev_err(&pf->pdev->dev,
-> +					"Could not add VLAN %d to Unicast promiscuous domain err %s aq_err %s\n",
-> +					f->vlan,
-> +					i40e_stat_str(&pf->hw, aq_ret),
-> +					i40e_aq_str(&pf->hw, aq_err));
-
-Undo the mc_promisc change?
-
-> +			}
-> +		}
-> +		return aq_ret;
-> +	}
-> +	aq_ret = i40e_aq_set_vsi_multicast_promiscuous(hw, vsi->seid, allmulti,
-> +						       NULL);
-> +	if (aq_ret) {
-> +		int aq_err = pf->hw.aq.asq_last_status;
-> +
-> +		dev_err(&pf->pdev->dev,
-> +			"VF %d failed to set multicast promiscuous mode err %s aq_err %s\n",
-> +			vf->vf_id,
-> +			i40e_stat_str(&pf->hw, aq_ret),
-> +			i40e_aq_str(&pf->hw, aq_err));
-> +		return aq_ret;
-> +	}
-> +
-> +	aq_ret = i40e_aq_set_vsi_unicast_promiscuous(hw, vsi->seid, alluni,
-> +						     NULL, true);
-> +	if (aq_ret) {
-> +		int aq_err = pf->hw.aq.asq_last_status;
-> +
-> +		dev_err(&pf->pdev->dev,
-> +			"VF %d failed to set unicast promiscuous mode err %s aq_err %s\n",
-> +			vf->vf_id,
-> +			i40e_stat_str(&pf->hw, aq_ret),
-> +			i40e_aq_str(&pf->hw, aq_err));
-
-Undo the mc_promisc change?
-
-> +	}
-> +
-> +	return aq_ret;
-> +}
-> +
->   /**
->    * i40e_trigger_vf_reset
->    * @vf: pointer to the VF structure
-> @@ -1145,6 +1275,9 @@ static void i40e_cleanup_reset_vf(struct i40e_vf *vf)
->   	struct i40e_hw *hw = &pf->hw;
->   	u32 reg;
->   
-> +	/* disable promisc modes in case they were enabled */
-> +	i40e_config_vf_promiscuous_mode(vf, vf->lan_vsi_id, false, false);
-> +
->   	/* free VF resources to begin resetting the VSI state */
->   	i40e_free_vf_res(vf);
->   
-> @@ -1851,132 +1984,46 @@ static int i40e_vc_config_promiscuous_mode_msg(struct i40e_vf *vf,
->   	struct virtchnl_promisc_info *info =
->   	    (struct virtchnl_promisc_info *)msg;
->   	struct i40e_pf *pf = vf->pf;
-> -	struct i40e_hw *hw = &pf->hw;
-> -	struct i40e_mac_filter *f;
->   	i40e_status aq_ret = 0;
->   	bool allmulti = false;
-> -	struct i40e_vsi *vsi;
->   	bool alluni = false;
-> -	int aq_err = 0;
-> -	int bkt;
->   
-> -	vsi = i40e_find_vsi_from_id(pf, info->vsi_id);
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states) ||
-> -	    !i40e_vc_isvalid_vsi_id(vf, info->vsi_id) ||
-> -	    !vsi) {
-> -		aq_ret = I40E_ERR_PARAM;
-> -		goto error_param;
-> -	}
-> -	if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
-> -		dev_err(&pf->pdev->dev,
-> -			"Unprivileged VF %d is attempting to configure promiscuous mode\n",
-> -			vf->vf_id);
-> -		/* Lie to the VF on purpose. */
-> -		aq_ret = 0;
-> -		goto error_param;
-> -	}
-> +	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states))
-> +		return I40E_ERR_PARAM;
-> +
->   	/* Multicast promiscuous handling*/
->   	if (info->flags & FLAG_VF_MULTICAST_PROMISC)
->   		allmulti = true;
->   
-> -	if (vf->port_vlan_id) {
-> -		aq_ret = i40e_aq_set_vsi_mc_promisc_on_vlan(hw, vsi->seid,
-> -							    allmulti,
-> -							    vf->port_vlan_id,
-> -							    NULL);
-> -	} else if (i40e_getnum_vf_vsi_vlan_filters(vsi)) {
-> -		hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
-> -			if (f->vlan < 0 || f->vlan > I40E_MAX_VLANID)
-> -				continue;
-> -			aq_ret = i40e_aq_set_vsi_mc_promisc_on_vlan(hw,
-> -								    vsi->seid,
-> -								    allmulti,
-> -								    f->vlan,
-> -								    NULL);
-> -			aq_err = pf->hw.aq.asq_last_status;
-> -			if (aq_ret) {
-> -				dev_err(&pf->pdev->dev,
-> -					"Could not add VLAN %d to multicast promiscuous domain err %s aq_err %s\n",
-> -					f->vlan,
-> -					i40e_stat_str(&pf->hw, aq_ret),
-> -					i40e_aq_str(&pf->hw, aq_err));
-> -				break;
-> -			}
-> -		}
-> -	} else {
-> -		aq_ret = i40e_aq_set_vsi_multicast_promiscuous(hw, vsi->seid,
-> -							       allmulti, NULL);
-> -		aq_err = pf->hw.aq.asq_last_status;
-> -		if (aq_ret) {
-> -			dev_err(&pf->pdev->dev,
-> -				"VF %d failed to set multicast promiscuous mode err %s aq_err %s\n",
-> -				vf->vf_id,
-> -				i40e_stat_str(&pf->hw, aq_ret),
-> -				i40e_aq_str(&pf->hw, aq_err));
-> -			goto error_param;
-> -		}
-> -	}
-> -
-> +	if (info->flags & FLAG_VF_UNICAST_PROMISC)
-> +		alluni = true;
-> +	aq_ret = i40e_config_vf_promiscuous_mode(vf, info->vsi_id, allmulti,
-> +						 alluni);
->   	if (!aq_ret) {
-> -		dev_info(&pf->pdev->dev,
-> -			 "VF %d successfully set multicast promiscuous mode\n",
-> -			 vf->vf_id);
-> -		if (allmulti)
-> +		if (allmulti) {
-> +			dev_info(&pf->pdev->dev,
-> +				 "VF %d successfully set multicast promiscuous mode\n",
-> +				 vf->vf_id);
->   			set_bit(I40E_VF_STATE_MC_PROMISC, &vf->vf_states);
-> -		else
-> +		} else {
-> +			dev_info(&pf->pdev->dev,
-> +				 "VF %d successfully unset multicast promiscuous mode\n",
-> +				 vf->vf_id);
->   			clear_bit(I40E_VF_STATE_MC_PROMISC, &vf->vf_states);
-> -	}
-> -
-> -	if (info->flags & FLAG_VF_UNICAST_PROMISC)
-> -		alluni = true;
-> -	if (vf->port_vlan_id) {
-> -		aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw, vsi->seid,
-> -							    alluni,
-> -							    vf->port_vlan_id,
-> -							    NULL);
-> -	} else if (i40e_getnum_vf_vsi_vlan_filters(vsi)) {
-> -		hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
-> -			if (f->vlan < 0 || f->vlan > I40E_MAX_VLANID)
-> -				continue;
-> -			aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw,
-> -								    vsi->seid,
-> -								    alluni,
-> -								    f->vlan,
-> -								    NULL);
-> -			aq_err = pf->hw.aq.asq_last_status;
-> -			if (aq_ret)
-> -				dev_err(&pf->pdev->dev,
-> -					"Could not add VLAN %d to Unicast promiscuous domain err %s aq_err %s\n",
-> -					f->vlan,
-> -					i40e_stat_str(&pf->hw, aq_ret),
-> -					i40e_aq_str(&pf->hw, aq_err));
->   		}
-> -	} else {
-> -		aq_ret = i40e_aq_set_vsi_unicast_promiscuous(hw, vsi->seid,
-> -							     alluni, NULL,
-> -							     true);
-> -		aq_err = pf->hw.aq.asq_last_status;
-> -		if (aq_ret) {
-> -			dev_err(&pf->pdev->dev,
-> -				"VF %d failed to set unicast promiscuous mode %8.8x err %s aq_err %s\n",
-> -				vf->vf_id, info->flags,
-> -				i40e_stat_str(&pf->hw, aq_ret),
-> -				i40e_aq_str(&pf->hw, aq_err));
-> -			goto error_param;
-> -		}
-> -	}
-> -
-> -	if (!aq_ret) {
-> -		dev_info(&pf->pdev->dev,
-> -			 "VF %d successfully set unicast promiscuous mode\n",
-> -			 vf->vf_id);
-> -		if (alluni)
-> +		if (alluni) {
-> +			dev_info(&pf->pdev->dev,
-> +				 "VF %d successfully set unicast promiscuous mode\n",
-> +				 vf->vf_id);
->   			set_bit(I40E_VF_STATE_UC_PROMISC, &vf->vf_states);
-> -		else
-> +		} else {
-> +			dev_info(&pf->pdev->dev,
-> +				 "VF %d successfully unset unicast promiscuous mode\n",
-> +				 vf->vf_id);
-
-It looks to me that all these status messages are getting printed 
-whether there actually was a change or not.  In other words, if the 
-unicast promisc was already on, and the VF again calls for it to be set, 
-this will be printed again, even though there was no change in state. 
-Is this what you intended?
+Is there any need to be sure the rest of the name field is zero'd out? 
+It looks like maybe not, not sure.
 
 sln
 
->   			clear_bit(I40E_VF_STATE_UC_PROMISC, &vf->vf_states);
-> +		}
->   	}
->   
-> -error_param:
->   	/* send the response to the VF */
->   	return i40e_vc_send_resp_to_vf(vf,
->   				       VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE,
+>   	pf->ptp_caps.owner = THIS_MODULE;
+>   	pf->ptp_caps.max_adj = 999999999;
+>   	pf->ptp_caps.n_ext_ts = 0;
 > 
