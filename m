@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 21 Aug 2018 19:41:47 +0000
-Subject: [Intel-wired-lan] [next PATCH S95 11/12] virtchnl: use u8 type
- for a field in the virtchnl_filter struct
-In-Reply-To: <20180820151233.14629-11-alice.michael@intel.com>
+Date: Tue, 21 Aug 2018 19:42:15 +0000
+Subject: [Intel-wired-lan] [next PATCH S95 12/12] i40e: static analysis
+ report from community
+In-Reply-To: <20180820151233.14629-12-alice.michael@intel.com>
 References: <20180820151233.14629-1-alice.michael@intel.com>
- <20180820151233.14629-11-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2E96C9@ORSMSX104.amr.corp.intel.com>
+ <20180820151233.14629-12-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2E96D9@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,18 +18,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, August 20, 2018 8:13 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S95 11/12] virtchnl: use u8 type for a
-> field in the virtchnl_filter struct
+> Cc: Szapar, Martyna <martyna.szapar@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S95 12/12] i40e: static analysis report
+> from community
 > 
-> From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> From: Martyna Szapar <martyna.szapar@intel.com>
 > 
-> The virtchnl_filter struct has a field called field_flags. A previous commit
-> mistakenly had the type to be a __u8. What we want is for the field to be an
-> unsigned 8 bit value, so let's just use the existing kernel type u8 for that.
+> Static analysis tools report a problem from original driver submission.
+> Removing unnecessary check in condition.
 > 
-> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> Signed-off-by: Martyna Szapar <martyna.szapar@intel.com>
 > ---
->  include/linux/avf/virtchnl.h | 2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
