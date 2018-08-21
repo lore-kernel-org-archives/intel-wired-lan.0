@@ -1,11 +1,10 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Tue, 21 Aug 2018 21:30:24 +0000
-Subject: [Intel-wired-lan] [PATCH v4 09/13] ice: Update to interrupts
- enabled in OICR
-In-Reply-To: <20180809132903.22819-10-anirudh.venkataramanan@intel.com>
+Date: Tue, 21 Aug 2018 21:30:45 +0000
+Subject: [Intel-wired-lan] [PATCH v4 08/13] ice: Set VLAN flags correctly
+In-Reply-To: <20180809132903.22819-9-anirudh.venkataramanan@intel.com>
 References: <20180809132903.22819-1-anirudh.venkataramanan@intel.com>
- <20180809132903.22819-10-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD2619545A4C@ORSMSX109.amr.corp.intel.com>
+ <20180809132903.22819-9-anirudh.venkataramanan@intel.com>
+Message-ID: <C25D919FD1849B409D8D987DDC7FCD2619545A5B@ORSMSX109.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,31 +16,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Thursday, August 9, 2018 6:29 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v4 09/13] ice: Update to interrupts enabled
-> in OICR
+> Subject: [Intel-wired-lan] [PATCH v4 08/13] ice: Set VLAN flags correctly
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Remove the following interrupt causes that are not applicable or not
-> handled:
-> - PFINT_OICR_HLP_RDY_M
-> - PFINT_OICR_CPM_RDY_M
-> - PFINT_OICR_GPIO_M
-> - PFINT_OICR_STORM_DETECT_M
+> In the struct ice_aqc_vsi_props the field port_vlan_flags is an overloaded
+> term because it is used for both port VLANs (PVLANs) and regular VLANs.
+> This is an issue and is very confusing especially when dealing with VFs
+> because normal VLANs and port VLANs are not the same.
+> To fix this the field was renamed to vlan_flags and all of the #define's labeled
+> *_PVLAN_* were renamed to *_VLAN_* if they are not specific to port
+> VLANs.
 > 
-> Add the following interrupt cause that's actually handled in ice_misc_intr:
-> - PFINT_OICR_PE_CRITERR_M
+> Also in ice_vsi_manage_vlan_stripping, set the
+> ICE_AQ_VSI_VLAN_MODE_ALL bit to allow the driver to add a VLAN tag to all
+> packets it sends.
 > 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> Removed
-> defines from ice_hw_autogen.h]
-> ---
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 8 --------
->  drivers/net/ethernet/intel/ice/ice_main.c       | 9 +++------
->  2 files changed, 3 insertions(+), 14 deletions(-)
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 24 +++++++-------
+>  drivers/net/ethernet/intel/ice/ice_main.c     | 31 +++++++++++--------
+>  2 files changed, 30 insertions(+), 25 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
 
