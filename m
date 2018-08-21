@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Tue, 21 Aug 2018 21:11:15 +0000
-Subject: [Intel-wired-lan] [PATCH v3 12/15] ice: Enable firmware logging
- during device initialization.
-In-Reply-To: <20180809132958.23036-13-anirudh.venkataramanan@intel.com>
+Date: Tue, 21 Aug 2018 21:12:19 +0000
+Subject: [Intel-wired-lan] [PATCH v3 06/15] ice: Refactor switch rule
+ management structures and functions
+In-Reply-To: <20180809132958.23036-7-anirudh.venkataramanan@intel.com>
 References: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
- <20180809132958.23036-13-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD2619545913@ORSMSX109.amr.corp.intel.com>
+ <20180809132958.23036-7-anirudh.venkataramanan@intel.com>
+Message-ID: <C25D919FD1849B409D8D987DDC7FCD2619545927@ORSMSX109.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,30 +17,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Thursday, August 9, 2018 6:30 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 12/15] ice: Enable firmware logging
-> during device initialization.
+> Subject: [Intel-wired-lan] [PATCH v3 06/15] ice: Refactor switch rule
+> management structures and functions
 > 
-> From: Hieu Tran <hieu.t.tran@intel.com>
+> This patch is an adaptation of the work originally done by Grishma Kotecha
+> <grishma.kotecha@intel.com> that in summary refactors the switch filtering
+> logic in the driver. More specifically,
+>  - Update the recipe structure to also store list of rules
+>  - Update the existing code for recipes like mac, vlan, ethtype etc to
+>    use list head that is attached to switch recipe structure
+>  - Add a common function to search for a rule entry and add a new rule
+>    entry. Update the code to use this new function.
+>  - Refactor the rem_handle_vsi_list function to simplify the logic
 > 
-> To enable FW logging, the "cq_en" and "uart_en" enable bits of the "fw_log"
-> element in struct ice_hw need to set accordingly based on some user-
-> provided parameters during driver loading. To select which FW log events to
-> be emitted, the "cfg" elements of corresponding FW modules in the "evnts"
-> array member of "fw_log" need to be configured.
-> 
-> Signed-off-by: Hieu Tran <hieu.t.tran@intel.com>
+> CC: Shannon Nelson <shannon.nelson@oracle.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
-> up commit message]
-> ---
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  83 ++++++++
->  drivers/net/ethernet/intel/ice/ice_common.c   | 182 +++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_common.h   |   1 +
->  drivers/net/ethernet/intel/ice/ice_main.c     |   3 +
->  drivers/net/ethernet/intel/ice/ice_type.h     |  19 ++
->  5 files changed, 286 insertions(+), 2 deletions(-)
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   2 +
+>  drivers/net/ethernet/intel/ice/ice_common.c   |  36 +-
+>  drivers/net/ethernet/intel/ice/ice_switch.c   | 968 ++++++++----------
+>  drivers/net/ethernet/intel/ice/ice_switch.h   |  35 +-
+>  drivers/net/ethernet/intel/ice/ice_type.h     |  13 +-
+>  5 files changed, 501 insertions(+), 553 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
 
