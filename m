@@ -1,192 +1,60 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 21 Aug 2018 23:40:28 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- c749d5b4f1fe6e607707ebe9f5b8681f228e86d6
-Message-ID: <5b7c326c.LmeoAhOPuN5i3WNY%lkp@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Tue, 21 Aug 2018 09:27:52 -0700
+Subject: [Intel-wired-lan] [next PATCH S95 01/12] i40e: Fix VF's link
+ state notification
+In-Reply-To: <20180820151233.14629-1-alice.michael@intel.com>
+References: <20180820151233.14629-1-alice.michael@intel.com>
+Message-ID: <c74c8ae1-bdef-c5d1-ce66-715919409ba2@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: c749d5b4f1fe6e607707ebe9f5b8681f228e86d6  fq_codel: fix NULL pointer deref in fq_codel_reset
+On 8/20/2018 8:12 AM, Alice Michael wrote:
+> From: Mariusz Stachura <mariusz.stachura@intel.com>
+> 
+> This patch moves saving old link status information after the call to
+> i40e_get_link_status(). Mentioned function updates both old and the new
+> link info, so reading it before results in not notifying VF about the
+> PF link state change.
 
-elapsed time: 94m
+I see that this is removing one instance of saving the current status, 
+not moving it to somewhere else.  I see that i40e_aq_get_link_info() is 
+also doing the save, not i40e_get_link_status().  I don't see how this 
+affects VF notification.  Can you clean up this description and 
+elaborate on how the VF notification is involved?
 
-configs tested: 167
+> 
+> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+> ---
+>   drivers/net/ethernet/intel/i40e/i40e_main.c | 5 -----
+>   1 file changed, 5 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 456c917..969fb93 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -8446,14 +8446,9 @@ static void i40e_link_event(struct i40e_pf *pf)
+>   	i40e_status status;
+>   	bool new_link, old_link;
+>   
+> -	/* save off old link status information */
+> -	pf->hw.phy.link_info_old = pf->hw.phy.link_info;
+> -
+>   	/* set this to force the get_link_status call to refresh state */
+>   	pf->hw.phy.get_link_info = true;
+> -
+>   	old_link = (pf->hw.phy.link_info_old.link_info & I40E_AQ_LINK_UP);
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Since link_info_old has not been refreshed yet by 
+i40e_aq_get_link_info(), are you sure you are getting the old_link 
+status that you want?
 
-arm                          badge4_defconfig
-arm                      footbridge_defconfig
-mips                malta_qemu_32r6_defconfig
-sh                           se7750_defconfig
-x86_64                 randconfig-a0-08212136
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-arm                          gemini_defconfig
-mips                          rm200_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-08211852
-x86_64                           allmodconfig
-i386                     randconfig-n0-201833
-x86_64                 randconfig-x009-201833
-x86_64                 randconfig-x000-201833
-x86_64                 randconfig-x004-201833
-x86_64                 randconfig-x001-201833
-x86_64                 randconfig-x003-201833
-x86_64                 randconfig-x007-201833
-x86_64                 randconfig-x008-201833
-x86_64                 randconfig-x002-201833
-x86_64                 randconfig-x005-201833
-x86_64                 randconfig-x006-201833
-i386                     randconfig-i0-201833
-i386                     randconfig-i1-201833
-ia64                            zx1_defconfig
-parisc                      default_defconfig
-x86_64                 randconfig-g0-08211849
-x86_64                 randconfig-x019-201833
-x86_64                 randconfig-x013-201833
-x86_64                 randconfig-x017-201833
-x86_64                 randconfig-x012-201833
-x86_64                 randconfig-x018-201833
-x86_64                 randconfig-x010-201833
-x86_64                 randconfig-x014-201833
-x86_64                 randconfig-x011-201833
-x86_64                 randconfig-x016-201833
-x86_64                 randconfig-x015-201833
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201833
-i386                     randconfig-a1-201833
-x86_64                 randconfig-s0-08212201
-x86_64                 randconfig-s1-08212201
-x86_64                 randconfig-s2-08212201
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                        raumfeld_defconfig
-microblaze                       allmodconfig
-powerpc                     mpc83xx_defconfig
-sh                          rsk7201_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s0-201833
-i386                     randconfig-s1-201833
-x86_64                 randconfig-s3-08212157
-x86_64                 randconfig-s4-08212157
-x86_64                 randconfig-s5-08212157
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201833
-i386                   randconfig-b0-08211905
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                        oxnas_v6_defconfig
-powerpc                       eiger_defconfig
-powerpc                     ppa8548_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-b0-08211420
-mips                       markeins_defconfig
-parisc                          712_defconfig
-x86_64                 randconfig-u0-08211907
-x86_64                randconfig-ne0-08211909
-i386                             allmodconfig
-arm                      integrator_defconfig
-um                               allmodconfig
-x86_64                 randconfig-h0-08211737
-i386                   randconfig-x002-201833
-i386                   randconfig-x003-201833
-i386                   randconfig-x005-201833
-i386                   randconfig-x008-201833
-i386                   randconfig-x007-201833
-i386                   randconfig-x000-201833
-i386                   randconfig-x001-201833
-i386                   randconfig-x004-201833
-i386                   randconfig-x009-201833
-i386                   randconfig-x006-201833
-i386                   randconfig-x018-201833
-i386                   randconfig-x010-201833
-i386                   randconfig-x017-201833
-i386                   randconfig-x016-201833
-i386                   randconfig-x013-201833
-i386                   randconfig-x011-201833
-i386                   randconfig-x015-201833
-i386                   randconfig-x019-201833
-i386                   randconfig-x014-201833
-i386                   randconfig-x012-201833
-i386                   randconfig-x077-201833
-i386                   randconfig-x076-201833
-i386                   randconfig-x070-201833
-i386                   randconfig-x072-201833
-i386                   randconfig-x075-201833
-i386                   randconfig-x074-201833
-i386                   randconfig-x071-201833
-i386                   randconfig-x078-201833
-i386                   randconfig-x079-201833
-i386                   randconfig-x073-201833
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-x0-08211907
+sln
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> -
+>   	status = i40e_get_link_status(&pf->hw, &new_link);
+>   
+>   	/* On success, disable temp link polling */
+> 
