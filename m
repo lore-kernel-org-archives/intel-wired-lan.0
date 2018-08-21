@@ -1,47 +1,54 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 21 Aug 2018 09:28:00 -0700
-Subject: [Intel-wired-lan] [next PATCH S95 09/12] i40e: use correct
- length for strncpy
-In-Reply-To: <20180820151233.14629-9-alice.michael@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 21 Aug 2018 19:16:26 +0000
+Subject: [Intel-wired-lan] [next PATCH S95 02/12] i40e: convert queue
+ stats to i40e_stats array
+In-Reply-To: <20180820151233.14629-2-alice.michael@intel.com>
 References: <20180820151233.14629-1-alice.michael@intel.com>
- <20180820151233.14629-9-alice.michael@intel.com>
-Message-ID: <a7c5ac53-3cb6-4fe5-d281-a46e1ead12a1@oracle.com>
+ <20180820151233.14629-2-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2E965D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/20/2018 8:12 AM, Alice Michael wrote:
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Monday, August 20, 2018 8:12 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S95 02/12] i40e: convert queue stats
+> to i40e_stats array
 > 
-> Caught by gcc 8. When we provide a length for strncpy, we should not
-> include the terminating null. So we must tell it one less than the size
-> of the destination buffer.
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Use an i40e_stats array to handle the queue stats, instead of coding similar
+> functionality separately. Because of how the queue stats are accessed on
+> some kernels, we can't easily use i40e_add_ethtool_stats.
+> 
+> Instead, implement a separate helper, i40e_add_queue_stats, which we'll
+> use instead. This helper will correctly implement the
+> u64_stats_fetch_begin_irq logic and allow retries until successful. We share
+> the most complex code by re-using i40e_add_one_ethtool_stat.
+> 
+> This logic additionally easily supports skipping disabled rings by using a
+> ternary operator before calling the u64_stats_fetch_begin_irq() function, so
+> that we correctly zero-out the stats values without having to perform two
+> separate sections of code.
+> 
+> This significantly reduces the boiler plate code in i40e_get_ethtool_stats, and
+> helps keep the complex logic contained to as few functions as possible.
+> 
+> With this patch, we've finally converted all the statistics to use the helpers
+> and the i40e_stats function.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->   drivers/net/ethernet/intel/i40e/i40e_ptp.c | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> index 35f2866..1199f05 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> @@ -694,7 +694,8 @@ static long i40e_ptp_create_clock(struct i40e_pf *pf)
->   	if (!IS_ERR_OR_NULL(pf->ptp_clock))
->   		return 0;
->   
-> -	strncpy(pf->ptp_caps.name, i40e_driver_name, sizeof(pf->ptp_caps.name));
-> +	strncpy(pf->ptp_caps.name, i40e_driver_name,
-> +		sizeof(pf->ptp_caps.name) - 1);
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 148 +++++++++++++++----
+> ------
+>  1 file changed, 89 insertions(+), 59 deletions(-)
 
-Is there any need to be sure the rest of the name field is zero'd out? 
-It looks like maybe not, not sure.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-sln
 
->   	pf->ptp_caps.owner = THIS_MODULE;
->   	pf->ptp_caps.max_adj = 999999999;
->   	pf->ptp_caps.n_ext_ts = 0;
-> 
