@@ -1,10 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Tue, 21 Aug 2018 21:07:47 +0000
-Subject: [Intel-wired-lan] [PATCH v3 09/15] ice: Clean up register file
-In-Reply-To: <20180809132958.23036-10-anirudh.venkataramanan@intel.com>
+Date: Tue, 21 Aug 2018 21:09:14 +0000
+Subject: [Intel-wired-lan] [PATCH v3 14/15] ice: Introduce SERVICE_DIS
+ flag and service routine functions
+In-Reply-To: <20180809132958.23036-15-anirudh.venkataramanan@intel.com>
 References: <20180809132958.23036-1-anirudh.venkataramanan@intel.com>
- <20180809132958.23036-10-anirudh.venkataramanan@intel.com>
-Message-ID: <C25D919FD1849B409D8D987DDC7FCD26195458C0@ORSMSX109.amr.corp.intel.com>
+ <20180809132958.23036-15-anirudh.venkataramanan@intel.com>
+Message-ID: <C25D919FD1849B409D8D987DDC7FCD26195458DA@ORSMSX109.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,22 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Thursday, August 9, 2018 6:30 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 09/15] ice: Clean up register file
+> Subject: [Intel-wired-lan] [PATCH v3 14/15] ice: Introduce SERVICE_DIS flag
+> and service routine functions
 > 
-> This patch cleans up the existing register definitions.
+> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > 
-> 1) Several instances of long defines names used in the BIT() macro
->    were replaced to use the actual values they represent. As a
->    result some defines for shifts (ending with _S) that were used
->    only to create bitmasks were removed completely.
+> This patch introduces SERVICE_DIS flag to use for stopping service task.
+> This flag will be checked before scheduling new tasks. Also add new
+> functions ice_service_task_stop to stop service task.
 > 
-> 2) Apply more consistent tab spacing.
-> 
+> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_hw_autogen.h   | 417 ++++++++----------
->  1 file changed, 188 insertions(+), 229 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h      |  1 +
+>  drivers/net/ethernet/intel/ice/ice_main.c | 34 ++++++++++++++++++-----
+>  2 files changed, 28 insertions(+), 7 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
 
