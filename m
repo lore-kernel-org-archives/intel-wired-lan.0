@@ -1,94 +1,65 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Thu, 23 Aug 2018 18:21:04 +0200
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 23 Aug 2018 09:37:36 -0700
 Subject: [Intel-wired-lan] [PATCH v6 01/11] igc: Add skeletal frame for
  Intel(R) 2.5G Ethernet Controller support.
-In-Reply-To: <0d296c72b24c76f0e93ca5c72da83e1813b80e1f.camel@intel.com>
+In-Reply-To: <20180823070552.12190-1-sasha.neftin@intel.com>
 References: <20180823070552.12190-1-sasha.neftin@intel.com>
- <20180823140338.GR3348@calimero.vinschen.de>
- <017dfb5dc28cc4227a4dd655008a308f919023dc.camel@intel.com>
- <20180823152136.GS3348@calimero.vinschen.de>
- <0d296c72b24c76f0e93ca5c72da83e1813b80e1f.camel@intel.com>
-Message-ID: <20180823162104.GU3348@calimero.vinschen.de>
+Message-ID: <77e2a16b-b6e8-0a31-7c85-78186166bd45@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Aug 23 08:57, Jeff Kirsher wrote:
-> On Thu, 2018-08-23 at 17:21 +0200, Corinna Vinschen wrote:
-> > On Aug 23 08:12, Jeff Kirsher wrote:
-> > > On Thu, 2018-08-23 at 16:03 +0200, Corinna Vinschen wrote:
-> > > > On Aug 23 10:05, Sasha Neftin wrote:
-> > > > > This patch adds the beginning framework onto which I am going
-> > to
-> > > > add
-> > > > > the igc driver which supports the Intel(R) I225-LM/I225-V 2.5G
-> > > > > Ethernet Controller.
-> > > > 
-> > > > I'm curious.  The code looks very much like the igb code. 
-> > Wouldn't
-> > > > it
-> > > > be simpler and less error prone to add these new NICs to igb,
-> > rather
-> > > > than creating a new driver by (mostly) copying the code from igb?
-> > > > 
-> > > > What's the idea behind this?
-> > > 
-> > > This new driver is for a new upcoming client part, not server
-> > (which is
-> > > the igb driver).  Yes, the way that this new client part does
-> > resemble
-> > > how the igb driver operates, but this new client part will not have
-> > > many of the advance features (like SRIOV) that igb uses.  We also
-> > want
-> > > to keep the igb driver strictly for the 1GbE server devices.
-> > 
-> > Ok, thanks, but I'm still a bit puzzled.
-> > 
-> > What about E1000_DEV_ID_I354_BACKPLANE_2_5GBPS?  The later supposedly
-> > already provides 2.5G within igb.  Is that the server part compared
-> > to igc?  Otherwise, what's the equivalent server part providing 2.5G?
+On 8/23/2018 12:05 AM, Sasha Neftin wrote:
+> This patch adds the beginning framework onto which I am going to add
+> the igc driver which supports the Intel(R) I225-LM/I225-V 2.5G
+> Ethernet Controller.
 > 
-> Yes, one of the last server devices we developed back in 2013 was I354
-> and that device did support 2.5 GbE.  Again, this is a server part,
-> which supports more advanced features that client parts do not.
+> Sasha Neftin (v2):
+> update module author, copyright and licence header
+> cosmetic changes
 > 
-> There is not a 1:1 on server parts and client parts, sometimes there
-> can be a server part that is similar to a client part or vice versa.
+> Sasha Neftin (v3):
+> remove unused header files
 > 
-> In this case, this new client part will be the next generation of
-> client parts.  So these will be essentially the new "e1000e" (our other
-> client driver), but since this next generation of client parts will
-> have MAC/PHY communications that are more similar to how some of our
-> server parts did, that is why portions of the driver will resemble igb.
-> But feature wise the igc driver will be more like e1000e than igb.
+> Sasha Neftin (v4):
+> update brand name
+> fix syntax by input from community
+> replace e1000_ prefix with igc_ prefix
 > 
-> Hope that helps.
+> Sasha Neftin (v5):
+> no changes
+> 
+> Sasha Neftin (v6):
+> no changes
 
-Yes, Jeff, this really helps.
+In all these patches, this version stuff will be removed from the commit 
+message before pushing upstream, right?
 
-But this just reinforces my doubts that changing the E1000 prefix
-to IGC is a good thing.  The comparison of binary values only gets
-more complicated.  In the end we have, for instance, this:
+Normally they appear after the "---" so as to not be a part of the 
+formal commit message saved in git.
 
-  e1000:  #define E1000_ERR_NVM        1
-  e1000e: #define E1000_ERR_NVM        1
-  igb:    #define E1000_ERR_NVM        1
+[...]
 
-but
+> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+> new file mode 100644
+> index 000000000000..afe595cfcf63
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/igc/igc.h
+> @@ -0,0 +1,29 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
 
-  igc:    #define IGC_ERR_NVM          1
+[...]
 
-This doesn't make sense.
+> +MODULE_LICENSE("GPL");
+
+Since you're using the SPDX "GPL-2.0", you might want to use the 
+MODULE_LICENSE string "GPL v2" to match. since "GPL" means v2 or later. 
+See include/linux/module.h for details.
+
+By the way, this all looks much nicer with the "igc_" prefix - thanks.
+
+sln
 
 
-Thanks,
-Corinna
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180823/f2087ca4/attachment.asc>
