@@ -1,81 +1,117 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Thu, 23 Aug 2018 17:21:36 +0200
-Subject: [Intel-wired-lan] [PATCH v6 01/11] igc: Add skeletal frame for
- Intel(R) 2.5G Ethernet Controller support.
-In-Reply-To: <017dfb5dc28cc4227a4dd655008a308f919023dc.camel@intel.com>
-References: <20180823070552.12190-1-sasha.neftin@intel.com>
- <20180823140338.GR3348@calimero.vinschen.de>
- <017dfb5dc28cc4227a4dd655008a308f919023dc.camel@intel.com>
-Message-ID: <20180823152136.GS3348@calimero.vinschen.de>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 23 Aug 2018 23:25:48 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 79f2a4fe137fc77412490d4cebaade274818488b
+Message-ID: <5b7ed1fc.TASCmP/XPJrXfXO6%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Aug 23 08:12, Jeff Kirsher wrote:
-> On Thu, 2018-08-23 at 16:03 +0200, Corinna Vinschen wrote:
-> > On Aug 23 10:05, Sasha Neftin wrote:
-> > > This patch adds the beginning framework onto which I am going to
-> > add
-> > > the igc driver which supports the Intel(R) I225-LM/I225-V 2.5G
-> > > Ethernet Controller.
-> > 
-> > I'm curious.  The code looks very much like the igb code.  Wouldn't
-> > it
-> > be simpler and less error prone to add these new NICs to igb, rather
-> > than creating a new driver by (mostly) copying the code from igb?
-> > 
-> > What's the idea behind this?
-> 
-> This new driver is for a new upcoming client part, not server (which is
-> the igb driver).  Yes, the way that this new client part does resemble
-> how the igb driver operates, but this new client part will not have
-> many of the advance features (like SRIOV) that igb uses.  We also want
-> to keep the igb driver strictly for the 1GbE server devices.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 79f2a4fe137fc77412490d4cebaade274818488b  fq_codel: fix NULL pointer deref in fq_codel_reset
 
-Ok, thanks, but I'm still a bit puzzled.
+elapsed time: 57m
 
-What about E1000_DEV_ID_I354_BACKPLANE_2_5GBPS?  The later supposedly
-already provides 2.5G within igb.  Is that the server part compared
-to igc?  Otherwise, what's the equivalent server part providing 2.5G?
+configs tested: 92
 
-> > > Sasha Neftin (v2):
-> > > update module author, copyright and licence header
-> > > cosmetic changes
-> > > 
-> > > Sasha Neftin (v3):
-> > > remove unused header files
-> > > 
-> > > Sasha Neftin (v4):
-> > > update brand name
-> > > fix syntax by input from community
-> > > replace e1000_ prefix with igc_ prefix
-> > 
-> > In theory this is neither necessary, nor does it actually help.
-> > By keeping the e1000 prefixes it's much easier to compare to the
-> > other, already existing drivers.
-> > 
-> > > Sasha Neftin (v5):
-> > > no changes
-> > > 
-> > > Sasha Neftin (v6):
-> > > no changes
-> > 
-> > Is that an oversight?  If there are no changes in v5 and v6, why
-> > do we have them?!?
-> 
-> Sasha is just noting that this particular patch did not change in v6,
-> but other patches did have changes in this new version of the series.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Oh, right, thanks for the clarification.
+x86_64                 randconfig-a0-08232228
+arm                            qcom_defconfig
+sh                     sh7710voipgw_defconfig
+i386                   randconfig-c0-08232113
+x86_64                                    lkp
+i386                     randconfig-n0-201833
+i386                     randconfig-i1-201833
+i386                     randconfig-i0-201833
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201833
+x86_64                 randconfig-x019-201833
+x86_64                 randconfig-x013-201833
+x86_64                 randconfig-x017-201833
+x86_64                 randconfig-x012-201833
+x86_64                 randconfig-x018-201833
+x86_64                 randconfig-x010-201833
+x86_64                 randconfig-x014-201833
+x86_64                 randconfig-x011-201833
+x86_64                 randconfig-x016-201833
+x86_64                 randconfig-x015-201833
+i386                   randconfig-x018-201833
+i386                   randconfig-x010-201833
+i386                   randconfig-x017-201833
+i386                   randconfig-x016-201833
+i386                   randconfig-x013-201833
+i386                   randconfig-x011-201833
+i386                   randconfig-x015-201833
+i386                   randconfig-x019-201833
+i386                   randconfig-x014-201833
+i386                   randconfig-x012-201833
+i386                   randconfig-x077-201833
+i386                   randconfig-x076-201833
+i386                   randconfig-x070-201833
+i386                   randconfig-x072-201833
+i386                   randconfig-x075-201833
+i386                   randconfig-x074-201833
+i386                   randconfig-x071-201833
+i386                   randconfig-x078-201833
+i386                   randconfig-x079-201833
+i386                   randconfig-x073-201833
+i386                  randconfig-sb0-08232223
+x86_64                randconfig-ws0-08232228
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x009-201833
+x86_64                 randconfig-x000-201833
+x86_64                 randconfig-x004-201833
+x86_64                 randconfig-x001-201833
+x86_64                 randconfig-x003-201833
+x86_64                 randconfig-x007-201833
+x86_64                 randconfig-x008-201833
+x86_64                 randconfig-x002-201833
+x86_64                 randconfig-x005-201833
+x86_64                 randconfig-x006-201833
+i386                   randconfig-x002-201833
+i386                   randconfig-x003-201833
+i386                   randconfig-x005-201833
+i386                   randconfig-x008-201833
+i386                   randconfig-x007-201833
+i386                   randconfig-x000-201833
+i386                   randconfig-x001-201833
+i386                   randconfig-x004-201833
+i386                   randconfig-x009-201833
+i386                   randconfig-x006-201833
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x0-08232122
 
-
-Corinna
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180823/8490f85d/attachment.asc>
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
