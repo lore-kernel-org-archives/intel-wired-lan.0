@@ -1,29 +1,90 @@
 From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Thu, 23 Aug 2018 09:37:43 -0700
-Subject: [Intel-wired-lan] [PATCH v6 02/11] igc: Add support for PF
-In-Reply-To: <20180823070554.12243-1-sasha.neftin@intel.com>
-References: <20180823070554.12243-1-sasha.neftin@intel.com>
-Message-ID: <f39c245f-ba0b-5f88-4faa-09d04961458b@oracle.com>
+Date: Thu, 23 Aug 2018 09:37:58 -0700
+Subject: [Intel-wired-lan] [PATCH v6 04/11] igc: Add interrupt support
+In-Reply-To: <20180823070600.12369-1-sasha.neftin@intel.com>
+References: <20180823070600.12369-1-sasha.neftin@intel.com>
+Message-ID: <fc18c378-98f1-a311-a5ac-270a754b82f7@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/23/2018 12:05 AM, Sasha Neftin wrote:
+On 8/23/2018 12:06 AM, Sasha Neftin wrote:
 
 [...]
 
-> +#define array_wr32(reg, offset, value) \
-> +	wr32((reg) + ((offset) << 2), (value))
 > +
-> +#define array_rd32(reg, offset) (igc_rd32(hw, (reg) + ((offset) << 2)))
+> +/**
+> + *  igc_request_msix - Initialize MSI-X interrupts
+> + *  @adapter: Pointer to adapter structure
+> + *
+> + *  igc_request_msix allocates MSI-X vectors and requests interrupts from the
+> + *  kernel.
+> + **/
+> +static int igc_request_msix(struct igc_adapter *adapter)
+> +{
+> +	int i = 0, err = 0, vector = 0, free_vector = 0;
+> +	struct net_device *netdev = adapter->netdev;
+> +
+> +	err = request_irq(adapter->msix_entries[vector].vector,
+> +			  &igc_msix_other, 0, netdev->name, adapter);
+> +	if (err)
+> +		goto err_out;
+> +
+> +	for (i = 0; i < adapter->num_q_vectors; i++) {
+> +		struct igc_q_vector *q_vector = adapter->q_vector[i];
+> +
+> +		vector++;
+> +
+> +		q_vector->itr_register = adapter->io_addr + IGC_EITR(vector);
+> +
+> +		if (q_vector->rx.ring && q_vector->tx.ring)
+> +			sprintf(q_vector->name, "%s-TxRx-%u", netdev->name,
+> +				q_vector->rx.ring->queue_index);
+> +		else if (q_vector->tx.ring)
+> +			sprintf(q_vector->name, "%s-tx-%u", netdev->name,
+> +				q_vector->tx.ring->queue_index);
+> +		else if (q_vector->rx.ring)
+> +			sprintf(q_vector->name, "%s-rx-%u", netdev->name,
+> +				q_vector->rx.ring->queue_index);
+> +		else
+> +			sprintf(q_vector->name, "%s-unused", netdev->name);
+> +
+> +		err = request_irq(adapter->msix_entries[vector].vector,
+> +				  igc_msix_ring, 0, q_vector->name,
+> +				  q_vector);
+> +		if (err)
+> +			goto err_free;
+> +	}
+> +
+> +	igc_configure_msix(adapter);
+> +	return 0;
+> +
+> +err_free:
+> +	/* free already assigned IRQs */
+> +	free_irq(adapter->msix_entries[free_vector++].vector, adapter);
+> +
+> +	vector--;
+
+You might set free_vector to 0 here rather than in the definition above, 
+just in case someone in the future decides to use it elsewhere in the 
+function and leave junk in it.
+
+> +	for (i = 0; i < vector; i++) {
+> +		free_irq(adapter->msix_entries[free_vector++].vector,
+> +			 adapter->q_vector[i]);
+> +	}
+> +err_out:
+> +	return err;
+> +}
 > +
 
-Hmm... you may want to be careful with these array defines.  I don't 
-know what the register set looks like, but on some devices I've seen 
-array element offset is in things like 128 byte chunks rather than 
-4-byte words.
+[...]
+
+> +
+> +	/*populate entry values*/
+
+Fix comment spacing
 
 sln
-
