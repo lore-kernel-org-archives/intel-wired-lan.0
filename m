@@ -1,10 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 23 Aug 2018 21:02:36 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: reduce CPU0 latency when
- updating statistics
-In-Reply-To: <20180802171310.9295-1-jeffrey.t.kirsher@intel.com>
-References: <20180802171310.9295-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9655020A@ORSMSX101.amr.corp.intel.com>
+Date: Thu, 23 Aug 2018 21:04:08 +0000
+Subject: [Intel-wired-lan] [PATCH 1/2] net: intel: igb: Replace
+ GFP_ATOMIC with GFP_KERNEL in igb_sw_init()
+In-Reply-To: <20180727080453.3198-1-baijiaju1990@gmail.com>
+References: <20180727080453.3198-1-baijiaju1990@gmail.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9655021D@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,34 +12,24 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Thursday, August 2, 2018 10:13 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Jan Jablonsky <jan.jablonsky@thalesgroup.com>; Bernhard Kaindl
-> <bernhard.kaindl@thalesgroup.com>
-> Subject: [Intel-wired-lan] [PATCH] igb: reduce CPU0 latency when updating
-> statistics
+> Behalf Of Jia-Ju Bai
+> Sent: Friday, July 27, 2018 1:05 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; Jia-Ju Bai <baijiaju1990@gmail.com>; intel-
+> wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH 1/2] net: intel: igb: Replace GFP_ATOMIC
+> with GFP_KERNEL in igb_sw_init()
 > 
-> This change is based off of the work and suggestion of Jan Jablonsky
-> <jan.jablonsky@thalesgroup.com>.
+> igb_sw_init() is never called in atomic context.
+> It calls kzalloc() and kcalloc() with GFP_ATOMIC, which is not necessary.
+> GFP_ATOMIC can be replaced with GFP_KERNEL.
 > 
-> The Watchdog workqueue in igb driver is scheduled every 2s for each
-> network interface. That includes updating a statistics protected by
-> spinlock. Function igb_update_stats in this case will be protected
-> against preemption. According to number of a statistics registers
-> (cca 60), processing this function might cause additional cpu load
->  on CPU0.
+> This is found by a static analysis tool named DCNS written by myself.
 > 
-> In case of statistics spinlock may be replaced with mutex, which
-> reduce latency on CPU0.
-> 
-> CC: Bernhard Kaindl  <bernhard.kaindl@thalesgroup.com>
-> CC: Jan Jablonsky <jan.jablonsky@thalesgroup.com>
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb.h         |  2 +-
->  drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ++--
->  drivers/net/ethernet/intel/igb/igb_main.c    | 14 +++++++-------
->  3 files changed, 10 insertions(+), 10 deletions(-)
+>  drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
