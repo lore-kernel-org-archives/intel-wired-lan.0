@@ -1,22 +1,44 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Fri, 24 Aug 2018 09:21:34 -0700
-Subject: [Intel-wired-lan] ixgbe and packet steering
-Message-ID: <c956c4e6-86bc-bda6-43a7-5cddac043f3c@oracle.com>
+From: Colin King <colin.king@canonical.com>
+Date: Fri, 24 Aug 2018 17:52:32 +0100
+Subject: [Intel-wired-lan] [PATCH] ixgb: replace dma_alloc_coherent + memset
+ with dma_zalloc_coherent
+Message-ID: <20180824165232.21585-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi folks,
+From: Colin Ian King <colin.king@canonical.com>
 
-Is there any particular reason that ixgbe doesn't call 
-skb_record_rx_queue()?  It looks like i40e, igb, and fm10k all call it, 
-but I don't see it in ixgbe's flow.
+Use dma_zalloc_coherent rather than dam_alloc_coherent and memset.
 
-sln
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/intel/ixgb/ixgb_main.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+index 43664adf7a3c..c71bc0237108 100644
+--- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
++++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+@@ -771,14 +771,12 @@ ixgb_setup_rx_resources(struct ixgb_adapter *adapter)
+ 	rxdr->size = rxdr->count * sizeof(struct ixgb_rx_desc);
+ 	rxdr->size = ALIGN(rxdr->size, 4096);
+ 
+-	rxdr->desc = dma_alloc_coherent(&pdev->dev, rxdr->size, &rxdr->dma,
+-					GFP_KERNEL);
+-
++	rxdr->desc = dma_zalloc_coherent(&pdev->dev, rxdr->size, &rxdr->dma,
++					 GFP_KERNEL);
+ 	if (!rxdr->desc) {
+ 		vfree(rxdr->buffer_info);
+ 		return -ENOMEM;
+ 	}
+-	memset(rxdr->desc, 0, rxdr->size);
+ 
+ 	rxdr->next_to_clean = 0;
+ 	rxdr->next_to_use = 0;
 -- 
-==================================================
-Shannon Nelson           shannon.nelson at oracle.com
-Parents can't afford to be squeamish
+2.17.1
+
