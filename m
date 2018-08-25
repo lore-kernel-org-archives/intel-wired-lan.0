@@ -1,27 +1,49 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 25 Aug 2018 11:00:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- bc5418581efef672736be21cd64e0b2b87b8cacc
-Message-ID: <5b80c65c.OsPUg/TvBKzQ0Q2c%lkp@intel.com>
+Date: Sat, 25 Aug 2018 11:04:36 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:1GbE] BUILD SUCCESS
+ 07f3701387dcab3a4fb0166098fb2754a1b927e1
+Message-ID: <5b80c744.3C3Aa6RswZFTpTlk%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: bc5418581efef672736be21cd64e0b2b87b8cacc  fq_codel: fix NULL pointer deref in fq_codel_reset
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  1GbE
+branch HEAD: 07f3701387dcab3a4fb0166098fb2754a1b927e1  i40e: fix condition of WARN_ONCE for stat strings
 
-elapsed time: 38m
+elapsed time: 42m
 
-configs tested: 79
+configs tested: 110
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
+arm                                 defconfig
+mips                        workpad_defconfig
+x86_64                 randconfig-a0-08251015
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
+arm                       aspeed_g4_defconfig
+nios2                         3c120_defconfig
+i386                   randconfig-c0-08251017
+i386                   randconfig-x018-201833
+i386                   randconfig-x010-201833
+i386                   randconfig-x017-201833
+i386                   randconfig-x016-201833
+i386                   randconfig-x013-201833
+i386                   randconfig-x011-201833
+i386                   randconfig-x015-201833
+i386                   randconfig-x019-201833
+i386                   randconfig-x014-201833
+i386                   randconfig-x012-201833
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201833
+i386                     randconfig-i1-201833
 i386                             allmodconfig
 ia64                             alldefconfig
 ia64                              allnoconfig
@@ -46,9 +68,15 @@ x86_64                 randconfig-x016-201833
 x86_64                 randconfig-x017-201833
 x86_64                 randconfig-x018-201833
 x86_64                 randconfig-x019-201833
+x86_64                 randconfig-s3-08251025
+x86_64                 randconfig-s4-08251025
+x86_64                 randconfig-s5-08251025
 x86_64                   randconfig-i0-201833
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
 x86_64                 randconfig-u0-08251018
 alpha                             allnoconfig
 arm64                               defconfig
@@ -75,6 +103,9 @@ i386                   randconfig-x001-201833
 i386                   randconfig-x004-201833
 i386                   randconfig-x009-201833
 i386                   randconfig-x006-201833
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                              allnoconfig
