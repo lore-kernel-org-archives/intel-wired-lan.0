@@ -1,60 +1,201 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 28 Aug 2018 09:08:16 +0300
-Subject: [Intel-wired-lan] [PATCH v6 03/11] igc: Add netdev
-In-Reply-To: <1090b26f-cd49-72c3-efed-c977a9b2fab6@intel.com>
-References: <20180823070557.12312-1-sasha.neftin@intel.com>
- <54a5282f-df2e-378c-fdb6-124ef2bcd3b6@oracle.com>
- <1090b26f-cd49-72c3-efed-c977a9b2fab6@intel.com>
-Message-ID: <5e69fa57-55f6-f0d9-20af-d95c70e28eb5@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 28 Aug 2018 16:26:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ 2e2b5d94cbb1a83c807debcc582c1c0d064b8068
+Message-ID: <5b85074c.Fl10eEXNsogMvuaU%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/27/2018 10:42, Neftin, Sasha wrote:
-> On 8/23/2018 19:37, Shannon Nelson wrote:
->> On 8/23/2018 12:05 AM, Sasha Neftin wrote:
->>
->> [...]
->>
->>> +??? strncpy(netdev->name, pci_name(pdev), sizeof(netdev->name) - 1);
->>
->> [...]
->>
->>> +??? strncpy(netdev->name, "eth%d", IFNAMSIZ);
->>
->> I've mentioned this to you before: why are you setting the 
->> netdev->name twice, and to different values?? Besides, the OS's udev 
->> rules will likely change the name to something else.
->>
-> I believe I already answered in previous review (v3 or v4). Since I 
-> remove second settings of netdev->name: "strncpy(netdev->name, "eth%d", 
-> IFNAMSIZ)" I got error in probe: "probe of 0000:05:00.0 failed with 
-> error -22". I agree with you that we can do some optimization here - I 
-> will look later again in this code.
->>
-Thanks that you point me on this. I figure out that 
-'strncpy(netdev->name, pci_name(pdev)...' line have no point and should 
-be removed. Since v6 should be final I will consult with Jeff how to 
-submit change, probably in different patch. Also, we need run validation 
-cycle.
->>> +
->>> +module_param(debug, int, 0);
->>> +MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
->>> ? /* igc_main.c */
->>
->> It would be nice to have this up above, next to the definition of int 
->> debug.
->>
-> so, may be all code start from MODULE_AUTHOR... move to begin of the 
-> file. it is not urgent. I will look at other examples. what is benefit 
-> from this?
->> sln
->>
-> Sasha
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 2e2b5d94cbb1a83c807debcc582c1c0d064b8068  Documentation: igbvf: Update kernel documentation
 
+Regressions in current branch:
+
+drivers/net/ethernet/intel/i40e/i40e_main.c:13946:2-8: ERROR: missing iounmap; ioremap on line 13817 and execution via conditional on line 13945
+drivers/net/ethernet/intel/igc/igc_i225.c:471:5-12: Unneeded variable: "ret_val". Return "0" on line 490
+drivers/net/ethernet/intel/igc/igc_mac.c:275:5-12: Unneeded variable: "ret_val". Return "0" on line 297
+
+Error ids grouped by kconfigs:
+
+recent_errors
+`-- i386-allmodconfig
+    |-- drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
+    |-- drivers-net-ethernet-intel-igc-igc_i225.c:Unneeded-variable:ret_val-Return-on-line
+    `-- drivers-net-ethernet-intel-igc-igc_mac.c:Unneeded-variable:ret_val-Return-on-line
+
+TIMEOUT after 607m
+
+
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 45
+
+alpha                            allmodconfig
+alpha                            allyesconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                          randconfig-x070
+i386                          randconfig-x071
+i386                          randconfig-x072
+i386                          randconfig-x073
+i386                          randconfig-x074
+i386                          randconfig-x075
+i386                          randconfig-x076
+i386                          randconfig-x077
+i386                          randconfig-x078
+i386                          randconfig-x079
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+mips                             allmodconfig
+mips                             allyesconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+s390                             allmodconfig
+s390                             allyesconfig
+sh                               allmodconfig
+sh                               allyesconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+sparc64                          allmodconfig
+sparc64                          allyesconfig
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+x86_64                                    lkp
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+
+configs tested: 109
+
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                   randconfig-x018-201834
+i386                   randconfig-x017-201834
+i386                   randconfig-x010-201834
+i386                   randconfig-x013-201834
+i386                   randconfig-x016-201834
+i386                   randconfig-x011-201834
+i386                   randconfig-x019-201834
+i386                   randconfig-x015-201834
+i386                   randconfig-x012-201834
+i386                   randconfig-x014-201834
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201834
+x86_64                 randconfig-x000-201834
+x86_64                 randconfig-x009-201834
+x86_64                 randconfig-x001-201834
+x86_64                 randconfig-x004-201834
+x86_64                 randconfig-x003-201834
+x86_64                 randconfig-x008-201834
+x86_64                 randconfig-x007-201834
+x86_64                 randconfig-x006-201834
+x86_64                 randconfig-x005-201834
+x86_64                 randconfig-x002-201834
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201834
+i386                     randconfig-i1-201834
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-08280857
+i386                   randconfig-a1-08280857
+x86_64               randconfig-x014-08280925
+x86_64               randconfig-x016-08280925
+x86_64               randconfig-x010-08280925
+x86_64               randconfig-x013-08280925
+x86_64               randconfig-x011-08280925
+x86_64               randconfig-x018-08280925
+x86_64               randconfig-x017-08280925
+x86_64               randconfig-x012-08280925
+x86_64               randconfig-x019-08280925
+x86_64               randconfig-x015-08280925
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                   randconfig-s0-08280925
+i386                   randconfig-s1-08280925
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-i0-08280848
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                 randconfig-x002-08271637
+i386                 randconfig-x009-08271637
+i386                 randconfig-x004-08271637
+i386                 randconfig-x005-08271637
+i386                 randconfig-x003-08271637
+i386                 randconfig-x007-08271637
+i386                 randconfig-x006-08271637
+i386                 randconfig-x000-08271637
+i386                 randconfig-x008-08271637
+i386                 randconfig-x001-08271637
+i386                 randconfig-x000-08280950
+i386                 randconfig-x001-08280950
+i386                 randconfig-x002-08280950
+i386                 randconfig-x003-08280950
+i386                 randconfig-x004-08280950
+i386                 randconfig-x005-08280950
+i386                 randconfig-x006-08280950
+i386                 randconfig-x007-08280950
+i386                 randconfig-x008-08280950
+i386                 randconfig-x009-08280950
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
