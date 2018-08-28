@@ -1,230 +1,250 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 27 Aug 2018 15:15:22 -0700
-Subject: [Intel-wired-lan] [PATCH v3] Documentation: igbvf: Update kernel
- documentation
-Message-ID: <20180827221522.16362-1-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 28 Aug 2018 14:03:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 5ab8c2eca23b458c37639ce60e4162c5fc23d161
+Message-ID: <5b84e5a7.QDyfk5605HiyeLVA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Updated the igbvf kernel documentation with the latest information.
-Cleaned up references to older kernel versions and converted the
-documentation to the RST format
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 5ab8c2eca23b458c37639ce60e4162c5fc23d161  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+elapsed time: 502m
+
+configs tested: 225
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                        oxnas_v6_defconfig
+powerpc                       ep405_defconfig
+arm                       imx_v6_v7_defconfig
+mips                         rt305x_defconfig
+arm                             mxs_defconfig
+powerpc                      pasemi_defconfig
+arm                         vf610m4_defconfig
+powerpc                 xes_mpc85xx_defconfig
+powerpc                     pseries_defconfig
+sh                         ap325rxa_defconfig
+arm                             ezx_defconfig
+powerpc                     mpc512x_defconfig
+x86_64                 randconfig-a0-08281211
+x86_64                 randconfig-a0-08281249
+x86_64                 randconfig-a0-08281331
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-c0-08281250
+i386                   randconfig-c0-08281304
+i386                   randconfig-x018-201834
+i386                   randconfig-x017-201834
+i386                   randconfig-x010-201834
+i386                   randconfig-x013-201834
+i386                   randconfig-x016-201834
+i386                   randconfig-x011-201834
+i386                   randconfig-x019-201834
+i386                   randconfig-x015-201834
+i386                   randconfig-x012-201834
+i386                   randconfig-x014-201834
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201834
+x86_64                 randconfig-x000-201834
+x86_64                 randconfig-x009-201834
+x86_64                 randconfig-x001-201834
+x86_64                 randconfig-x004-201834
+x86_64                 randconfig-x003-201834
+x86_64                 randconfig-x008-201834
+x86_64                 randconfig-x007-201834
+x86_64                 randconfig-x006-201834
+x86_64                 randconfig-x005-201834
+x86_64                 randconfig-x002-201834
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201834
+i386                     randconfig-i1-201834
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                            hisi_defconfig
+powerpc                          allyesconfig
+i386                             allmodconfig
+x86_64               randconfig-x010-08280857
+x86_64               randconfig-x011-08280857
+x86_64               randconfig-x012-08280857
+x86_64               randconfig-x013-08280857
+x86_64               randconfig-x014-08280857
+x86_64               randconfig-x015-08280857
+x86_64               randconfig-x016-08280857
+x86_64               randconfig-x017-08280857
+x86_64               randconfig-x018-08280857
+x86_64               randconfig-x019-08280857
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                   randconfig-a0-08280857
+i386                   randconfig-a1-08280857
+x86_64                 randconfig-s0-08281120
+x86_64                 randconfig-s1-08281120
+x86_64                 randconfig-s2-08281120
+x86_64                 randconfig-s0-08281159
+x86_64                 randconfig-s1-08281159
+x86_64                 randconfig-s2-08281159
+x86_64                 randconfig-s0-08281234
+x86_64                 randconfig-s1-08281234
+x86_64                 randconfig-s2-08281234
+x86_64                 randconfig-s0-08281302
+x86_64                 randconfig-s1-08281302
+x86_64                 randconfig-s2-08281302
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+m68k                       bvme6000_defconfig
+arm                      tct_hammer_defconfig
+m68k                           sun3_defconfig
+mips                       lemote2f_defconfig
+powerpc                 mpc836x_mds_defconfig
+nios2                         3c120_defconfig
+powerpc                       holly_defconfig
+sparc                               defconfig
+arm                      acs5k_tiny_defconfig
+mips                             alldefconfig
+powerpc                 linkstation_defconfig
+m68k                        stmark2_defconfig
+powerpc                 mpc832x_mds_defconfig
+powerpc               mpc834x_itxgp_defconfig
+sh                 kfr2r09-romimage_defconfig
+openrisc                          allnoconfig
+powerpc                     kmeter1_defconfig
+powerpc                      pmac32_defconfig
+sparc                            alldefconfig
+arm                           h5000_defconfig
+mips                        qi_lb60_defconfig
+mips                          rm200_defconfig
+sh                   sh7724_generic_defconfig
+x86_64               randconfig-x010-08280925
+x86_64               randconfig-x011-08280925
+x86_64               randconfig-x012-08280925
+x86_64               randconfig-x013-08280925
+x86_64               randconfig-x014-08280925
+x86_64               randconfig-x015-08280925
+x86_64               randconfig-x016-08280925
+x86_64               randconfig-x017-08280925
+x86_64               randconfig-x018-08280925
+x86_64               randconfig-x019-08280925
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                              fedora-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+i386                   randconfig-s0-08280925
+i386                   randconfig-s1-08280925
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-08281123
+x86_64                 randconfig-s4-08281123
+x86_64                 randconfig-s5-08281123
+x86_64                 randconfig-s3-08281225
+x86_64                 randconfig-s4-08281225
+x86_64                 randconfig-s5-08281225
+x86_64                 randconfig-s3-08281252
+x86_64                 randconfig-s4-08281252
+x86_64                 randconfig-s5-08281252
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+arm                            mps2_defconfig
+powerpc                    adder875_defconfig
+xtensa                generic_kc705_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-i0-08280848
+i386                   randconfig-b0-08281152
+sparc64                           allnoconfig
+sparc64                             defconfig
+parisc                          712_defconfig
+sh                          kfr2r09_defconfig
+arm                          iop32x_defconfig
+s390                       zfcpdump_defconfig
+openrisc                            defconfig
+sparc                       sparc64_defconfig
+powerpc                    amigaone_defconfig
+xtensa                    smp_lx200_defconfig
+x86_64                 randconfig-u0-08281251
+x86_64                 randconfig-u0-08281340
+powerpc                   bluestone_defconfig
+powerpc64                        allmodconfig
+x86_64                randconfig-ne0-08281251
+x86_64                                  kexec
+mips                 pnx8335_stb225_defconfig
+powerpc               corenet_basic_defconfig
+arm                        vexpress_defconfig
+parisc                           alldefconfig
+x86_64                 randconfig-r0-08281332
+i386                 randconfig-x002-08271637
+i386                 randconfig-x009-08271637
+i386                 randconfig-x004-08271637
+i386                 randconfig-x005-08271637
+i386                 randconfig-x003-08271637
+i386                 randconfig-x007-08271637
+i386                 randconfig-x006-08271637
+i386                 randconfig-x000-08271637
+i386                 randconfig-x008-08271637
+i386                 randconfig-x001-08271637
+i386                 randconfig-x000-08280950
+i386                 randconfig-x001-08280950
+i386                 randconfig-x002-08280950
+i386                 randconfig-x003-08280950
+i386                 randconfig-x004-08280950
+i386                 randconfig-x005-08280950
+i386                 randconfig-x006-08280950
+i386                 randconfig-x007-08280950
+i386                 randconfig-x008-08280950
+i386                 randconfig-x009-08280950
+
 ---
-v1: Initial submission
-
-v2: fixed up documentation based on community feedback and internal
-    review
-
-v3: cleaned up old kernel version references, converted to RST format
-
- Documentation/networking/igbvf.rst | 64 ++++++++++++++++++++++++
- Documentation/networking/igbvf.txt | 80 ------------------------------
- Documentation/networking/index.rst |  1 +
- MAINTAINERS                        |  2 +-
- drivers/net/ethernet/intel/Kconfig |  2 +-
- 5 files changed, 67 insertions(+), 82 deletions(-)
- create mode 100644 Documentation/networking/igbvf.rst
- delete mode 100644 Documentation/networking/igbvf.txt
-
-diff --git a/Documentation/networking/igbvf.rst b/Documentation/networking/igbvf.rst
-new file mode 100644
-index 000000000000..74d8729ace67
---- /dev/null
-+++ b/Documentation/networking/igbvf.rst
-@@ -0,0 +1,64 @@
-+.. SPDX-License-Identifier: GPL-2.0+
-+
-+Linux* Base Driver for Intel(R) Ethernet Network Connection
-+===========================================================
-+
-+Intel Gigabit Virtual Function Linux driver.
-+Copyright(c) 1999-2018 Intel Corporation.
-+
-+Contents
-+========
-+- Identifying Your Adapter
-+- Additional Configurations
-+- Support
-+
-+This driver supports Intel 82576-based virtual function devices-based virtual
-+function devices that can only be activated on kernels that support SR-IOV.
-+
-+SR-IOV requires the correct platform and OS support.
-+
-+The guest OS loading this driver must support MSI-X interrupts.
-+
-+For questions related to hardware requirements, refer to the documentation
-+supplied with your Intel adapter. All hardware requirements listed apply to use
-+with Linux.
-+
-+Driver information can be obtained using ethtool, lspci, and ifconfig.
-+Instructions on updating ethtool can be found in the section Additional
-+Configurations later in this document.
-+
-+NOTE: There is a limit of a total of 32 shared VLANs to 1 or more VFs.
-+
-+
-+Identifying Your Adapter
-+========================
-+For information on how to identify your adapter, and for the latest Intel
-+network drivers, refer to the Intel Support website:
-+http://www.intel.com/support
-+
-+
-+Additional Features and Configurations
-+======================================
-+
-+ethtool
-+-------
-+The driver utilizes the ethtool interface for driver configuration and
-+diagnostics, as well as displaying statistical information. The latest ethtool
-+version is required for this functionality. Download it at:
-+
-+https://www.kernel.org/pub/software/network/ethtool/
-+
-+
-+Support
-+=======
-+For general information, go to the Intel support website at:
-+
-+https://www.intel.com/support/
-+
-+or the Intel Wired Networking project hosted by Sourceforge at:
-+
-+https://sourceforge.net/projects/e1000
-+
-+If an issue is identified with the released source code on a supported kernel
-+with a supported adapter, email the specific information related to the issue
-+to e1000-devel at lists.sf.net.
-diff --git a/Documentation/networking/igbvf.txt b/Documentation/networking/igbvf.txt
-deleted file mode 100644
-index bd404735fb46..000000000000
---- a/Documentation/networking/igbvf.txt
-+++ /dev/null
-@@ -1,80 +0,0 @@
--Linux* Base Driver for Intel(R) Ethernet Network Connection
--===========================================================
--
--Intel Gigabit Linux driver.
--Copyright(c) 1999 - 2013 Intel Corporation.
--
--Contents
--========
--
--- Identifying Your Adapter
--- Additional Configurations
--- Support
--
--This file describes the igbvf Linux* Base Driver for Intel Network Connection.
--
--The igbvf driver supports 82576-based virtual function devices that can only
--be activated on kernels that support SR-IOV. SR-IOV requires the correct
--platform and OS support.
--
--The igbvf driver requires the igb driver, version 2.0 or later. The igbvf
--driver supports virtual functions generated by the igb driver with a max_vfs
--value of 1 or greater. For more information on the max_vfs parameter refer
--to the README included with the igb driver.
--
--The guest OS loading the igbvf driver must support MSI-X interrupts.
--
--This driver is only supported as a loadable module at this time.  Intel is
--not supplying patches against the kernel source to allow for static linking
--of the driver.  For questions related to hardware requirements, refer to the
--documentation supplied with your Intel Gigabit adapter.  All hardware
--requirements listed apply to use with Linux.
--
--Instructions on updating ethtool can be found in the section "Additional
--Configurations" later in this document.
--
--VLANs: There is a limit of a total of 32 shared VLANs to 1 or more VFs.
--
--Identifying Your Adapter
--========================
--
--The igbvf driver supports 82576-based virtual function devices that can only
--be activated on kernels that support SR-IOV.
--
--For more information on how to identify your adapter, go to the Adapter &
--Driver ID Guide at:
--
--    http://support.intel.com/support/go/network/adapter/idguide.htm
--
--For the latest Intel network drivers for Linux, refer to the following
--website.  In the search field, enter your adapter name or type, or use the
--networking link on the left to search for your adapter:
--
--    http://downloadcenter.intel.com/scripts-df-external/Support_Intel.aspx
--
--Additional Configurations
--=========================
--
--  ethtool
--  -------
--  The driver utilizes the ethtool interface for driver configuration and
--  diagnostics, as well as displaying statistical information.  The ethtool
--  version 3.0 or later is required for this functionality, although we
--  strongly recommend downloading the latest version at:
--
--  https://www.kernel.org/pub/software/network/ethtool/
--
--Support
--=======
--
--For general information, go to the Intel support website at:
--
--    http://support.intel.com
--
--or the Intel Wired Networking project hosted by Sourceforge at:
--
--    http://sourceforge.net/projects/e1000
--
--If an issue is identified with the released source code on the supported
--kernel with a supported adapter, email the specific information related
--to the issue to e1000-devel at lists.sf.net
-diff --git a/Documentation/networking/index.rst b/Documentation/networking/index.rst
-index 35c92be2b22c..f9d27e03f756 100644
---- a/Documentation/networking/index.rst
-+++ b/Documentation/networking/index.rst
-@@ -17,6 +17,7 @@ Contents:
-    e1000e
-    fm10k
-    igb
-+   igbvf
-    ixgb
-    kapi
-    z8530book
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 08db46efc7aa..b12602b0acfe 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7327,7 +7327,7 @@ F:	Documentation/networking/e1000.rst
- F:	Documentation/networking/e1000e.rst
- F:	Documentation/networking/fm10k.rst
- F:	Documentation/networking/igb.rst
--F:	Documentation/networking/igbvf.txt
-+F:	Documentation/networking/igbvf.rst
- F:	Documentation/networking/ixgb.rst
- F:	Documentation/networking/ixgbe.txt
- F:	Documentation/networking/ixgbevf.txt
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index d95997237f9d..228db47b7818 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -133,7 +133,7 @@ config IGBVF
- 	  <http://support.intel.com>
- 
- 	  More specific information on configuring the driver is in
--	  <file:Documentation/networking/e1000.rst>.
-+	  <file:Documentation/networking/igbvf.rst>.
- 
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called igbvf.
--- 
-2.17.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
