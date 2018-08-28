@@ -1,41 +1,79 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 28 Aug 2018 10:16:08 -0700
-Subject: [Intel-wired-lan] [next PATCH S96 8/9] i40evf: cancel workqueue
- sync for adminq when a VF is removed
-In-Reply-To: <20180828171609.78242-1-alice.michael@intel.com>
-References: <20180828171609.78242-1-alice.michael@intel.com>
-Message-ID: <20180828171609.78242-8-alice.michael@intel.com>
+Date: Tue, 28 Aug 2018 10:16:01 -0700
+Subject: [Intel-wired-lan] [next PATCH S96 1/9] i40e: Check and correct
+ speed values for link on open
+Message-ID: <20180828171609.78242-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Lihong Yang <lihong.yang@intel.com>
+From: Jan Sokolowski <jan.sokolowski@intel.com>
 
-If a VF is being removed, there is no need to continue with the
-workqueue sync for the adminq task, thus cancel it. Without this call,
-when VFs are created and removed right away, there might be a chance for
-the driver to crash with events stuck in the adminq.
+If our card has been put in an unstable state due to
+other drivers interacting with it, speed settings
+might be incorrect. If incorrect, forcefully reset them
+on open to known default values.
 
-Signed-off-by: Lihong Yang <lihong.yang@intel.com>
+Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 27 ++++++++++++++++++++++++---
+ 1 file changed, 24 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index c7048cf..174d1da 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -3910,6 +3910,8 @@ static void i40evf_remove(struct pci_dev *pdev)
- 	if (adapter->watchdog_timer.function)
- 		del_timer_sync(&adapter->watchdog_timer);
- 
-+	cancel_work_sync(&adapter->adminq_task);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 1718f2f..fd0c6c5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6622,6 +6622,24 @@ static i40e_status i40e_force_link_state(struct i40e_pf *pf, bool is_up)
+ 	struct i40e_hw *hw = &pf->hw;
+ 	i40e_status err;
+ 	u64 mask;
++	u8 speed;
 +
- 	i40evf_free_rss(adapter);
++	/* Card might've been put in an unstable state by other drivers
++	 * and applications, which causes incorrect speed values being
++	 * set on startup. In order to clear speed registers, we call
++	 * get_phy_capabilities twice, once to get initial state of
++	 * available speeds, and once to get current phy config.
++	 */
++	err = i40e_aq_get_phy_capabilities(hw, false, true, &abilities,
++					   NULL);
++	if (err) {
++		dev_err(&pf->pdev->dev,
++			"failed to get phy cap., ret =  %s last_status =  %s\n",
++			i40e_stat_str(hw, err),
++			i40e_aq_str(hw, hw->aq.asq_last_status));
++		return err;
++	}
++	speed = abilities.link_speed;
  
- 	if (hw->aq.asq.count)
+ 	/* Get the current phy config */
+ 	err = i40e_aq_get_phy_capabilities(hw, false, false, &abilities,
+@@ -6635,9 +6653,9 @@ static i40e_status i40e_force_link_state(struct i40e_pf *pf, bool is_up)
+ 	}
+ 
+ 	/* If link needs to go up, but was not forced to go down,
+-	 * no need for a flap
++	 * and its speed values are OK, no need for a flap
+ 	 */
+-	if (is_up && abilities.phy_type != 0)
++	if (is_up && abilities.phy_type != 0 && abilities.link_speed != 0)
+ 		return I40E_SUCCESS;
+ 
+ 	/* To force link we need to set bits for all supported PHY types,
+@@ -6649,7 +6667,10 @@ static i40e_status i40e_force_link_state(struct i40e_pf *pf, bool is_up)
+ 	config.phy_type_ext = is_up ? (u8)((mask >> 32) & 0xff) : 0;
+ 	/* Copy the old settings, except of phy_type */
+ 	config.abilities = abilities.abilities;
+-	config.link_speed = abilities.link_speed;
++	if (abilities.link_speed != 0)
++		config.link_speed = abilities.link_speed;
++	else
++		config.link_speed = speed;
+ 	config.eee_capability = abilities.eee_capability;
+ 	config.eeer = abilities.eeer_val;
+ 	config.low_power_ctrl = abilities.d3_lpan;
 -- 
 2.9.5
 
