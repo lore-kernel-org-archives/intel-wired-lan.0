@@ -1,59 +1,63 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 28 Aug 2018 10:16:02 -0700
-Subject: [Intel-wired-lan] [next PATCH S96 2/9] i40evf: Don't enable vlan
- stripping when rx offload is turned on
-In-Reply-To: <20180828171609.78242-1-alice.michael@intel.com>
-References: <20180828171609.78242-1-alice.michael@intel.com>
-Message-ID: <20180828171609.78242-2-alice.michael@intel.com>
+From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+Date: Tue, 28 Aug 2018 18:07:13 +0000
+Subject: [Intel-wired-lan] igb Detected Tx Unit Hang after upgrade to
+ 4.18-rc6 [was Re: igb Detected Tx Unit Hang after upgrade to 4.17]
+In-Reply-To: <978998680.826474.1535469615050@mail.libero.it>
+References: <528200032.321946.1528186357567@mail.libero.it>
+ <963322856.1365958.1530796944033@mail.libero.it>
+ <931347915.758706.1532606173777@mail.libero.it>
+ <CAKgT0UdmzKG6usaHqFt2N4q1FVX-8r58hbhWb9dc8ygS2UmKWQ@mail.gmail.com>
+ <1265852288.743881.1532617415845@mail.libero.it>
+ <CAKgT0Ud3CMQBKabty07ordkeDPoaaWK3_q3rMoAh7XMSJMSE9g@mail.gmail.com>
+ <1312873949.790150.1532681266921@mail.libero.it>
+ <117857591.886490.1532956286262@mail.libero.it>
+ <403709248.209641.1533555587417@mail.libero.it>
+ <978998680.826474.1535469615050@mail.libero.it>
+Message-ID: <9BBC4E0CF881AA4299206E2E1412B6267C5F6B47@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Patryk Ma?ek <patryk.malek@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Marco Berizzi
+> Sent: Tuesday, August 28, 2018 8:20 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] igb Detected Tx Unit Hang after upgrade to
+> 4.18-rc6 [was Re: igb Detected Tx Unit Hang after upgrade to 4.17]
+> 
+> > Il 6 agosto 2018 alle 13.39 Marco Berizzi <pupilla@libero.it> ha scritto:
+> >
+> > > Il 30 luglio 2018 alle 15.11 Marco Berizzi <pupilla@libero.it> ha scritto:
+> > >
+> > > > Il 27 luglio 2018 alle 10.47 Marco Berizzi <pupilla@libero.it> ha scritto:
+> > > >
+> > > > Should I disable the TSO? Or should I set all my linux boxes MTU to
+> 1500?
+> > >
+> > > Hello everyone,
+> > >
+> > > One hour ago I upgraded to linux 4.18-rc7 and I set the MTU=1500
+> > >
+> > > I will keep you updated.
+> >
+> > After 6 days uptime I got the same error message with MTU=1500.
+> > Now I will upgrade to 4.18-rc8 with MTU=1500 and I will disable
+> > the tso with the following command: ethtool -K eth0 tso off
+> 
+> Hello everyone,
+> same error also with tso disabled:
+> 
 
-With current implementation of i40evf_set_features when user sets
-any offload via ethtool we set I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING
-as a required aq which triggers driver to call
-i40evf_enable_vlan_stripping. This shouldn't take place.
-This patches fixes it by setting the flag only when vlan offload
-is turned on.
+Thanks for the update.  We'll take a look into it.  
 
-Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
----
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+Carolyn
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 07f187b..c7048cf 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -3120,18 +3120,19 @@ static int i40evf_set_features(struct net_device *netdev,
- {
- 	struct i40evf_adapter *adapter = netdev_priv(netdev);
- 
--	/* Don't allow changing VLAN_RX flag when VLAN is set for VF
--	 * and return an error in this case
-+	/* Don't allow changing VLAN_RX flag when adapter is not capable
-+	 * of VLAN offload
- 	 */
--	if (VLAN_ALLOWED(adapter)) {
-+	if (!VLAN_ALLOWED(adapter)) {
-+		if ((netdev->features ^ features) & NETIF_F_HW_VLAN_CTAG_RX)
-+			return -EINVAL;
-+	} else if ((netdev->features ^ features) & NETIF_F_HW_VLAN_CTAG_RX) {
- 		if (features & NETIF_F_HW_VLAN_CTAG_RX)
- 			adapter->aq_required |=
- 				I40EVF_FLAG_AQ_ENABLE_VLAN_STRIPPING;
- 		else
- 			adapter->aq_required |=
- 				I40EVF_FLAG_AQ_DISABLE_VLAN_STRIPPING;
--	} else if ((netdev->features ^ features) & NETIF_F_HW_VLAN_CTAG_RX) {
--		return -EINVAL;
- 	}
- 
- 	return 0;
--- 
-2.9.5
+Carolyn Wyborny 
+Linux Development 
+Networking Division 
+Intel Corporation 
+
 
