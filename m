@@ -1,155 +1,60 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 28 Aug 2018 10:16:05 -0700
-Subject: [Intel-wired-lan] [next PATCH S96 5/9] i40e: add a helper function
- to validate a vf based on the vf id
+Date: Tue, 28 Aug 2018 10:16:04 -0700
+Subject: [Intel-wired-lan] [next PATCH S96 4/9] i40e: use declared variables
+ for pf and hw
 In-Reply-To: <20180828171609.78242-1-alice.michael@intel.com>
 References: <20180828171609.78242-1-alice.michael@intel.com>
-Message-ID: <20180828171609.78242-5-alice.michael@intel.com>
+Message-ID: <20180828171609.78242-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+From: Patryk Ma?ek <patryk.malek@intel.com>
 
-When we are trying to change VF settings, it is possible for 2 race
-conditions to happen. One, when the VF is created but not yet enabled.
-Second, the VF is enabled but the vsi is still not created or not yet
-re-created in the VF reset flow.
+In order to slightly simplify the code use the variables for pf and hw
+that are declared in i40e_set_mac function.
 
-This patch introduces a helper function to validate that the vf is
-enabled and that the vsi is set up. This patch also calls this
-function from other functions which could get into these race conditions.
-While we are poking around here, remove unnecessary parenthesis that
-checkpatch was complaining about.
-
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 62 ++++++++++++++--------
- 1 file changed, 41 insertions(+), 21 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index ca423be..b299003 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -3833,6 +3833,35 @@ int i40e_vc_process_vflr_event(struct i40e_pf *pf)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 79bffaf..6ce695f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1537,8 +1537,8 @@ static int i40e_set_mac(struct net_device *netdev, void *p)
+ 		return 0;
+ 	}
+ 
+-	if (test_bit(__I40E_VSI_DOWN, vsi->back->state) ||
+-	    test_bit(__I40E_RESET_RECOVERY_PENDING, vsi->back->state))
++	if (test_bit(__I40E_DOWN, pf->state) ||
++	    test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state))
+ 		return -EADDRNOTAVAIL;
+ 
+ 	if (ether_addr_equal(hw->mac.addr, addr->sa_data))
+@@ -1562,8 +1562,7 @@ static int i40e_set_mac(struct net_device *netdev, void *p)
+ 	if (vsi->type == I40E_VSI_MAIN) {
+ 		i40e_status ret;
+ 
+-		ret = i40e_aq_mac_address_write(&vsi->back->hw,
+-						I40E_AQC_WRITE_TYPE_LAA_WOL,
++		ret = i40e_aq_mac_address_write(hw, I40E_AQC_WRITE_TYPE_LAA_WOL,
+ 						addr->sa_data, NULL);
+ 		if (ret)
+ 			netdev_info(netdev, "Ignoring error from firmware on LAA update, status %s, AQ ret %s\n",
+@@ -1574,7 +1573,7 @@ static int i40e_set_mac(struct net_device *netdev, void *p)
+ 	/* schedule our worker thread which will take care of
+ 	 * applying the new filter changes
+ 	 */
+-	i40e_service_event_schedule(vsi->back);
++	i40e_service_event_schedule(pf);
+ 	return 0;
  }
  
- /**
-+ * i40e_validate_vf
-+ * @pf: the physical function
-+ * @vf_id: VF identifier
-+ *
-+ * Check that the VF is enabled and the vsi exists.
-+ *
-+ * Returns 0 on success, negative on failure
-+ **/
-+static int i40e_validate_vf(struct i40e_pf *pf, int vf_id)
-+{
-+	struct i40e_vsi *vsi;
-+	struct i40e_vf *vf;
-+	int ret = 0;
-+
-+	if (vf_id >= pf->num_alloc_vfs) {
-+		dev_err(&pf->pdev->dev,
-+			"Invalid VF Identifier %d\n", vf_id);
-+		ret = -EINVAL;
-+		goto err_out;
-+	}
-+	vf = &pf->vf[vf_id];
-+	vsi = i40e_find_vsi_from_id(pf, vf->lan_vsi_id);
-+	if (!vsi)
-+		ret = -EINVAL;
-+err_out:
-+	return ret;
-+}
-+
-+/**
-  * i40e_ndo_set_vf_mac
-  * @netdev: network interface device structure
-  * @vf_id: VF identifier
-@@ -3853,14 +3882,11 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 	u8 i;
- 
- 	/* validate the request */
--	if (vf_id >= pf->num_alloc_vfs) {
--		dev_err(&pf->pdev->dev,
--			"Invalid VF Identifier %d\n", vf_id);
--		ret = -EINVAL;
-+	ret = i40e_validate_vf(pf, vf_id);
-+	if (ret)
- 		goto error_param;
--	}
- 
--	vf = &(pf->vf[vf_id]);
-+	vf = &pf->vf[vf_id];
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 
- 	/* When the VF is resetting wait until it is done.
-@@ -3979,11 +4005,9 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 	int ret = 0;
- 
- 	/* validate the request */
--	if (vf_id >= pf->num_alloc_vfs) {
--		dev_err(&pf->pdev->dev, "Invalid VF Identifier %d\n", vf_id);
--		ret = -EINVAL;
-+	ret = i40e_validate_vf(pf, vf_id);
-+	if (ret)
- 		goto error_pvid;
--	}
- 
- 	if ((vlan_id > I40E_MAX_VLANID) || (qos > 7)) {
- 		dev_err(&pf->pdev->dev, "Invalid VF Parameters\n");
-@@ -3997,7 +4021,7 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 		goto error_pvid;
- 	}
- 
--	vf = &(pf->vf[vf_id]);
-+	vf = &pf->vf[vf_id];
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
- 		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
-@@ -4117,11 +4141,9 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 	int ret = 0;
- 
- 	/* validate the request */
--	if (vf_id >= pf->num_alloc_vfs) {
--		dev_err(&pf->pdev->dev, "Invalid VF Identifier %d.\n", vf_id);
--		ret = -EINVAL;
-+	ret = i40e_validate_vf(pf, vf_id);
-+	if (ret)
- 		goto error;
--	}
- 
- 	if (min_tx_rate) {
- 		dev_err(&pf->pdev->dev, "Invalid min tx rate (%d) (greater than 0) specified for VF %d.\n",
-@@ -4129,7 +4151,7 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 		return -EINVAL;
- 	}
- 
--	vf = &(pf->vf[vf_id]);
-+	vf = &pf->vf[vf_id];
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
- 		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
-@@ -4165,13 +4187,11 @@ int i40e_ndo_get_vf_config(struct net_device *netdev,
- 	int ret = 0;
- 
- 	/* validate the request */
--	if (vf_id >= pf->num_alloc_vfs) {
--		dev_err(&pf->pdev->dev, "Invalid VF Identifier %d\n", vf_id);
--		ret = -EINVAL;
-+	ret = i40e_validate_vf(pf, vf_id);
-+	if (ret)
- 		goto error_param;
--	}
- 
--	vf = &(pf->vf[vf_id]);
-+	vf = &pf->vf[vf_id];
- 	/* first vsi is always the LAN vsi */
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
 -- 
 2.9.5
 
