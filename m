@@ -1,63 +1,98 @@
-From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
-Date: Tue, 28 Aug 2018 18:07:13 +0000
-Subject: [Intel-wired-lan] igb Detected Tx Unit Hang after upgrade to
- 4.18-rc6 [was Re: igb Detected Tx Unit Hang after upgrade to 4.17]
-In-Reply-To: <978998680.826474.1535469615050@mail.libero.it>
-References: <528200032.321946.1528186357567@mail.libero.it>
- <963322856.1365958.1530796944033@mail.libero.it>
- <931347915.758706.1532606173777@mail.libero.it>
- <CAKgT0UdmzKG6usaHqFt2N4q1FVX-8r58hbhWb9dc8ygS2UmKWQ@mail.gmail.com>
- <1265852288.743881.1532617415845@mail.libero.it>
- <CAKgT0Ud3CMQBKabty07ordkeDPoaaWK3_q3rMoAh7XMSJMSE9g@mail.gmail.com>
- <1312873949.790150.1532681266921@mail.libero.it>
- <117857591.886490.1532956286262@mail.libero.it>
- <403709248.209641.1533555587417@mail.libero.it>
- <978998680.826474.1535469615050@mail.libero.it>
-Message-ID: <9BBC4E0CF881AA4299206E2E1412B6267C5F6B47@ORSMSX102.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 29 Aug 2018 02:54:41 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ 9ea47d81a7f17c6b77211ab75fbca2127719ad39
+Message-ID: <5b859a71.wWN96bH+Fo5ni/L1%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Marco Berizzi
-> Sent: Tuesday, August 28, 2018 8:20 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] igb Detected Tx Unit Hang after upgrade to
-> 4.18-rc6 [was Re: igb Detected Tx Unit Hang after upgrade to 4.17]
-> 
-> > Il 6 agosto 2018 alle 13.39 Marco Berizzi <pupilla@libero.it> ha scritto:
-> >
-> > > Il 30 luglio 2018 alle 15.11 Marco Berizzi <pupilla@libero.it> ha scritto:
-> > >
-> > > > Il 27 luglio 2018 alle 10.47 Marco Berizzi <pupilla@libero.it> ha scritto:
-> > > >
-> > > > Should I disable the TSO? Or should I set all my linux boxes MTU to
-> 1500?
-> > >
-> > > Hello everyone,
-> > >
-> > > One hour ago I upgraded to linux 4.18-rc7 and I set the MTU=1500
-> > >
-> > > I will keep you updated.
-> >
-> > After 6 days uptime I got the same error message with MTU=1500.
-> > Now I will upgrade to 4.18-rc8 with MTU=1500 and I will disable
-> > the tso with the following command: ethtool -K eth0 tso off
-> 
-> Hello everyone,
-> same error also with tso disabled:
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: 9ea47d81a7f17c6b77211ab75fbca2127719ad39  ice: Fix and update driver version string
 
-Thanks for the update.  We'll take a look into it.  
+elapsed time: 34m
 
-Carolyn
+configs tested: 73
 
-Carolyn Wyborny 
-Linux Development 
-Networking Division 
-Intel Corporation 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+i386                   randconfig-x018-201834
+i386                   randconfig-x017-201834
+i386                   randconfig-x010-201834
+i386                   randconfig-x013-201834
+i386                   randconfig-x016-201834
+i386                   randconfig-x011-201834
+i386                   randconfig-x019-201834
+i386                   randconfig-x015-201834
+i386                   randconfig-x012-201834
+i386                   randconfig-x014-201834
+i386                     randconfig-i0-201834
+i386                     randconfig-i1-201834
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+powerpc                 mpc836x_mds_defconfig
+powerpc                     tqm8540_defconfig
+i386                               tinyconfig
+i386                   randconfig-x002-201834
+i386                   randconfig-x005-201834
+i386                   randconfig-x003-201834
+i386                   randconfig-x008-201834
+i386                   randconfig-x000-201834
+i386                   randconfig-x007-201834
+i386                   randconfig-x004-201834
+i386                   randconfig-x001-201834
+i386                   randconfig-x006-201834
+i386                   randconfig-x009-201834
+x86_64                 randconfig-x019-201834
+x86_64                 randconfig-x013-201834
+x86_64                 randconfig-x018-201834
+x86_64                 randconfig-x012-201834
+x86_64                 randconfig-x017-201834
+x86_64                 randconfig-x010-201834
+x86_64                 randconfig-x014-201834
+x86_64                 randconfig-x015-201834
+x86_64                 randconfig-x016-201834
+x86_64                 randconfig-x011-201834
+x86_64                 randconfig-x000-201834
+x86_64                 randconfig-x009-201834
+x86_64                 randconfig-x001-201834
+x86_64                 randconfig-x004-201834
+x86_64                 randconfig-x003-201834
+x86_64                 randconfig-x008-201834
+x86_64                 randconfig-x007-201834
+x86_64                 randconfig-x006-201834
+x86_64                 randconfig-x005-201834
+x86_64                 randconfig-x002-201834
 
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
