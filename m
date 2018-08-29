@@ -1,11 +1,11 @@
-From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Date: Wed, 29 Aug 2018 18:27:41 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] Documentation: ixgb: Prep
- documentation for RST conversion
-In-Reply-To: <6444f87a-3e50-54fe-89e8-aa57ed5d451c@oracle.com>
-References: <20180829153939.26656-1-jeffrey.t.kirsher@intel.com>
- <6444f87a-3e50-54fe-89e8-aa57ed5d451c@oracle.com>
-Message-ID: <61CC2BC414934749BD9F5BF3D5D9404494FD37C4@ORSMSX112.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 29 Aug 2018 18:39:32 +0000
+Subject: [Intel-wired-lan] [next PATCH S96 9/9] i40e: Prevent deleting
+ MAC address from VF when set by PF
+In-Reply-To: <20180828171609.78242-9-alice.michael@intel.com>
+References: <20180828171609.78242-1-alice.michael@intel.com>
+ <20180828171609.78242-9-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2EB2A0@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,33 +13,23 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Shannon Nelson [mailto:shannon.nelson at oracle.com]
-> Sent: Wednesday, August 29, 2018 09:45
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Tuesday, August 28, 2018 10:16 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH 1/2] Documentation: ixgb: Prep
-> documentation for RST conversion
+> Subject: [Intel-wired-lan] [next PATCH S96 9/9] i40e: Prevent deleting MAC
+> address from VF when set by PF
 > 
-> On 8/29/2018 8:39 AM, Jeff Kirsher wrote:
-> > Before making the conversion to the rst (reStructured Text) format,
-> > there are changes needed to the documentation so that there are no build
-> errors.
-> >
-> > Also fixed old/broken URLs to the correct or updated URL.
-> >
-> > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> > ---
-> >   Documentation/networking/ixgb.txt | 484 +++++++++++++-----------------
-> >   1 file changed, 214 insertions(+), 270 deletions(-)
-> >
-> > diff --git a/Documentation/networking/ixgb.txt
-> > b/Documentation/networking/ixgb.txt
-> > index eccdc4c26af3..86b18330666c 100644
-> > --- a/Documentation/networking/ixgb.txt
-> > +++ b/Documentation/networking/ixgb.txt
-> > @@ -1,7 +1,8 @@
+> From: Patryk Ma?ek <patryk.malek@intel.com>
 > 
-> Add SPDX-License-Identifier?
+> To prevent VF from deleting MAC address that was assigned by the PF we
+> need to check for that scenario when we try to delete a MAC address from a
+> VF.
+> 
+> Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
 
-Yeah, it got added in a later patch.  These 2 ixgb patches had been on my tree for several weeks, I had just forgotten to send them out for review. 
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
