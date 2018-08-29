@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 29 Aug 2018 20:53:46 +0000
-Subject: [Intel-wired-lan] [next PATCH S95 07/12] i40e: Unset
- promiscuous settings on VF reset
-In-Reply-To: <20180820151233.14629-7-alice.michael@intel.com>
+Date: Wed, 29 Aug 2018 20:54:16 +0000
+Subject: [Intel-wired-lan] [next PATCH S95 08/12] i40evf: Validate the
+ number of queues a PF sends
+In-Reply-To: <20180820151233.14629-8-alice.michael@intel.com>
 References: <20180820151233.14629-1-alice.michael@intel.com>
- <20180820151233.14629-7-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2EB306@ORSMSX104.amr.corp.intel.com>
+ <20180820151233.14629-8-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2EB318@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,21 +18,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, August 20, 2018 8:12 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S95 07/12] i40e: Unset promiscuous
-> settings on VF reset
+> Cc: Stillwell Jr, Paul M <paul.m.stillwell.jr@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S95 08/12] i40evf: Validate the
+> number of queues a PF sends
 > 
-> From: Mariusz Stachura <mariusz.stachura@intel.com>
+> From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 > 
-> This patch cleans up promiscuous configuration when a VF reset occurs.
-> Previously the promiscuous mode settings were still there after the VF driver
-> removal.
+> A PF can send any number of queues to the VF and the VF may not be able
+> to support that many. Check to see that the number of queues is less than or
+> equal to the max number of queues the VF can have.
 > 
-> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
+> Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 267 ++++++++++++-----
-> ----
->  1 file changed, 157 insertions(+), 110 deletions(-)> 
+>  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 32
+> ++++++++++++++++++++++
+>  1 file changed, 32 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
