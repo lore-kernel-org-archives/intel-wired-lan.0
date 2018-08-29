@@ -1,188 +1,110 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Wed, 29 Aug 2018 12:38:30 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- aa3a63d22e2ca9e1e926001f85565e50ff82706c
-Message-ID: <5b862346.siDiIwQBQR+rLKNK%lkp@intel.com>
+Date: Wed, 29 Aug 2018 12:55:36 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 46/47]
+ drivers/net//ethernet/intel/i40e/i40e_xsk.c:709:32: warning: 'tx_desc' may
+ be used uninitialized in this function
+Message-ID: <201808291234.d7fWsl5p%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: aa3a63d22e2ca9e1e926001f85565e50ff82706c  i40e: Check and correct speed values for link on open
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   f0fd160d93655114cc9999fd689e546acb7fb82b
+commit: 3605612ea81dbc67e419f0d78a918df397e9bc61 [46/47] i40e: add AF_XDP zero-copy Tx support
+config: mips-allyesconfig (attached as .config)
+compiler: mips-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 3605612ea81dbc67e419f0d78a918df397e9bc61
+        # save the attached .config to linux build tree
+        GCC_VERSION=7.2.0 make.cross ARCH=mips 
 
-elapsed time: 77m
+Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
+http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
 
-configs tested: 163
+All warnings (new ones prefixed by >>):
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+   drivers/net//ethernet/intel/i40e/i40e_xsk.c: In function 'i40e_clean_xdp_tx_irq':
+>> drivers/net//ethernet/intel/i40e/i40e_xsk.c:709:32: warning: 'tx_desc' may be used uninitialized in this function [-Wmaybe-uninitialized]
+      tx_desc->cmd_type_offset_bsz |= (I40E_TX_DESC_CMD_RS <<
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+           I40E_TXD_QW1_CMD_SHIFT);
+           ~~~~~~~~~~~~~~~~~~~~~~~  
+   drivers/net//ethernet/intel/i40e/i40e_xsk.c:673:23: note: 'tx_desc' was declared here
+     struct i40e_tx_desc *tx_desc;
+                          ^~~~~~~
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                              allyesconfig
-arm                        spear3xx_defconfig
-x86_64                 randconfig-a0-08291008
-x86_64                 randconfig-a0-08291140
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-ia64                             allmodconfig
-ia64                                defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-08290127
-i386                   randconfig-x018-201834
-i386                   randconfig-x017-201834
-i386                   randconfig-x010-201834
-i386                   randconfig-x013-201834
-i386                   randconfig-x016-201834
-i386                   randconfig-x011-201834
-i386                   randconfig-x019-201834
-i386                   randconfig-x015-201834
-i386                   randconfig-x012-201834
-i386                   randconfig-x014-201834
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201834
-x86_64                 randconfig-x000-201834
-x86_64                 randconfig-x009-201834
-x86_64                 randconfig-x001-201834
-x86_64                 randconfig-x004-201834
-x86_64                 randconfig-x003-201834
-x86_64                 randconfig-x008-201834
-x86_64                 randconfig-x007-201834
-x86_64                 randconfig-x006-201834
-x86_64                 randconfig-x005-201834
-x86_64                 randconfig-x002-201834
-i386                     randconfig-i0-201834
-i386                     randconfig-i1-201834
-arm                          pxa168_defconfig
-mips                      bmips_stb_defconfig
-x86_64                 randconfig-g0-08291030
-i386                             allmodconfig
-x86_64                 randconfig-x019-201834
-x86_64                 randconfig-x013-201834
-x86_64                 randconfig-x018-201834
-x86_64                 randconfig-x012-201834
-x86_64                 randconfig-x017-201834
-x86_64                 randconfig-x010-201834
-x86_64                 randconfig-x014-201834
-x86_64                 randconfig-x015-201834
-x86_64                 randconfig-x016-201834
-x86_64                 randconfig-x011-201834
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                 randconfig-s0-08291102
-x86_64                 randconfig-s1-08291102
-x86_64                 randconfig-s2-08291102
-x86_64                 randconfig-s0-08291137
-x86_64                 randconfig-s1-08291137
-x86_64                 randconfig-s2-08291137
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                         lpc32xx_defconfig
-m68k                       m5249evb_defconfig
-mips                             allyesconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                              fedora-25
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-s3-08291052
-x86_64                 randconfig-s4-08291052
-x86_64                 randconfig-s5-08291052
-x86_64                 randconfig-s3-08291135
-x86_64                 randconfig-s4-08291135
-x86_64                 randconfig-s5-08291135
-m68k                          hp300_defconfig
-sh                        dreamcast_defconfig
-sh                           se7750_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                         s3c6400_defconfig
-mips                           ip22_defconfig
-mips                        omega2p_defconfig
-microblaze                       allyesconfig
-x86_64                 randconfig-u0-08291033
-x86_64                randconfig-ne0-08290240
-i386                   randconfig-x002-201834
-i386                   randconfig-x005-201834
-i386                   randconfig-x003-201834
-i386                   randconfig-x008-201834
-i386                   randconfig-x000-201834
-i386                   randconfig-x007-201834
-i386                   randconfig-x004-201834
-i386                   randconfig-x001-201834
-i386                   randconfig-x006-201834
-i386                   randconfig-x009-201834
-ia64                             alldefconfig
-ia64                              allnoconfig
-x86_64                randconfig-ws0-08282138
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                   randconfig-x077-201834
-i386                   randconfig-x070-201834
-i386                   randconfig-x076-201834
-i386                   randconfig-x075-201834
-i386                   randconfig-x072-201834
-i386                   randconfig-x078-201834
-i386                   randconfig-x071-201834
-i386                   randconfig-x074-201834
-i386                   randconfig-x073-201834
-i386                   randconfig-x079-201834
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                        magician_defconfig
-powerpc                     pseries_defconfig
-i386                   randconfig-x0-08290944
+vim +/tx_desc +709 drivers/net//ethernet/intel/i40e/i40e_xsk.c
+
+   661	
+   662	/**
+   663	 * i40e_xmit_zc - Performs zero-copy Tx AF_XDP
+   664	 * @xdp_ring: XDP Tx ring
+   665	 * @budget: NAPI budget
+   666	 *
+   667	 * Returns true if the work is finished.
+   668	 **/
+   669	static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
+   670	{
+   671		unsigned int total_packets = 0;
+   672		struct i40e_tx_buffer *tx_bi;
+   673		struct i40e_tx_desc *tx_desc;
+   674		bool work_done = true;
+   675		dma_addr_t dma;
+   676		u32 len;
+   677	
+   678		while (budget-- > 0) {
+   679			if (!unlikely(I40E_DESC_UNUSED(xdp_ring))) {
+   680				xdp_ring->tx_stats.tx_busy++;
+   681				work_done = false;
+   682				break;
+   683			}
+   684	
+   685			if (!xsk_umem_consume_tx(xdp_ring->xsk_umem, &dma, &len))
+   686				break;
+   687	
+   688			dma_sync_single_for_device(xdp_ring->dev, dma, len,
+   689						   DMA_BIDIRECTIONAL);
+   690	
+   691			tx_bi = &xdp_ring->tx_bi[xdp_ring->next_to_use];
+   692			tx_bi->bytecount = len;
+   693	
+   694			tx_desc = I40E_TX_DESC(xdp_ring, xdp_ring->next_to_use);
+   695			tx_desc->buffer_addr = cpu_to_le64(dma);
+   696			tx_desc->cmd_type_offset_bsz =
+   697				build_ctob(I40E_TX_DESC_CMD_ICRC
+   698					   | I40E_TX_DESC_CMD_EOP,
+   699					   0, len, 0);
+   700			total_packets++;
+   701	
+   702			xdp_ring->next_to_use++;
+   703			if (xdp_ring->next_to_use == xdp_ring->count)
+   704				xdp_ring->next_to_use = 0;
+   705		}
+   706	
+   707		if (total_packets > 0) {
+   708			/* Request an interrupt for the last frame and bump tail ptr. */
+ > 709			tx_desc->cmd_type_offset_bsz |= (I40E_TX_DESC_CMD_RS <<
+   710							 I40E_TXD_QW1_CMD_SHIFT);
+   711			i40e_xdp_ring_update_tail(xdp_ring);
+   712	
+   713			xsk_umem_consume_tx_done(xdp_ring->xsk_umem);
+   714		}
+   715	
+   716		return !!budget && work_done;
+   717	}
+   718	
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 57507 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180829/5cda2d94/attachment-0001.bin>
