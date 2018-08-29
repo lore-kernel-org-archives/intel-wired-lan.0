@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 29 Aug 2018 18:39:32 +0000
-Subject: [Intel-wired-lan] [next PATCH S96 9/9] i40e: Prevent deleting
- MAC address from VF when set by PF
-In-Reply-To: <20180828171609.78242-9-alice.michael@intel.com>
+Date: Wed, 29 Aug 2018 18:39:02 +0000
+Subject: [Intel-wired-lan] [next PATCH S96 8/9] i40evf: cancel workqueue
+ sync for adminq when a VF is removed
+In-Reply-To: <20180828171609.78242-8-alice.michael@intel.com>
 References: <20180828171609.78242-1-alice.michael@intel.com>
- <20180828171609.78242-9-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2EB2A0@ORSMSX104.amr.corp.intel.com>
+ <20180828171609.78242-8-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2EB294@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,18 +18,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, August 28, 2018 10:16 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S96 9/9] i40e: Prevent deleting MAC
-> address from VF when set by PF
+> Subject: [Intel-wired-lan] [next PATCH S96 8/9] i40evf: cancel workqueue
+> sync for adminq when a VF is removed
 > 
-> From: Patryk Ma?ek <patryk.malek@intel.com>
+> From: Lihong Yang <lihong.yang@intel.com>
 > 
-> To prevent VF from deleting MAC address that was assigned by the PF we
-> need to check for that scenario when we try to delete a MAC address from a
-> VF.
+> If a VF is being removed, there is no need to continue with the workqueue
+> sync for the adminq task, thus cancel it. Without this call, when VFs are
+> created and removed right away, there might be a chance for the driver to
+> crash with events stuck in the adminq.
 > 
-> Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
+> Signed-off-by: Lihong Yang <lihong.yang@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 ++
+>  1 file changed, 2 insertions(+)
+
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
