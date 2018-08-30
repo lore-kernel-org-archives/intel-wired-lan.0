@@ -1,183 +1,183 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Fri, 31 Aug 2018 07:23:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 68f43765e68bec41982a5232e7bfbe2ff8ee0fea
-Message-ID: <5b887c7d.Ihx68Oe+jTMphccR%lkp@intel.com>
+Date: Fri, 31 Aug 2018 07:40:51 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE 2/15]
+ drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h:193:20: error:
+ function '__i40e_add_stat_strings' can never be inlined because it uses
+ variable argument lists
+Message-ID: <201808310748.IfcJF3Zx%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 68f43765e68bec41982a5232e7bfbe2ff8ee0fea  Subject: [v2] Documentation: ixgbe: Update kernel documentation X-Patchwork-Submitter: Jeff Kirsher <jeffrey.t.kirsher@intel.com> List-Id: Intel Wired Ethernet Linux Kernel Driver Development  <intel-wired-lan.osuosl.org>
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git 40GbE
+head:   5907cf6c5bbe78be2ed18b875b316c6028b20634
+commit: 8fd75c58a09a571543b5b61e49171bb3a1d88c19 [2/15] i40e: move ethtool stats boiler plate code to i40e_ethtool_stats.h
+config: xtensa-allmodconfig (attached as .config)
+compiler: xtensa-linux-gcc (GCC) 8.1.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 8fd75c58a09a571543b5b61e49171bb3a1d88c19
+        # save the attached .config to linux build tree
+        GCC_VERSION=8.1.0 make.cross ARCH=xtensa 
 
-elapsed time: 149m
+All errors (new ones prefixed by >>):
 
-configs tested: 158
+   drivers/net/usb/rtl8150.c:30: warning: "RSR" redefined
+    #define RSR   0x0133
+    
+   In file included from arch/xtensa/include/asm/bitops.h:22,
+                    from include/linux/bitops.h:19,
+                    from include/linux/kernel.h:11,
+                    from include/asm-generic/bug.h:18,
+                    from ./arch/xtensa/include/generated/asm/bug.h:1,
+                    from include/linux/bug.h:5,
+                    from include/linux/signal.h:5,
+                    from drivers/net/usb/rtl8150.c:9:
+   arch/xtensa/include/asm/processor.h:220: note: this is the location of the previous definition
+    #define RSR(v,sr) __asm__ __volatile__ ("rsr %0,"__stringify(sr) : "=a"(v));
+    
+   In file included from drivers/net/ethernet/intel/i40e/i40e_ethtool.c:9:
+   drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function '__i40e_add_stat_strings':
+>> drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h:193:20: error: function '__i40e_add_stat_strings' can never be inlined because it uses variable argument lists
+    static inline void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
+                       ^~~~~~~~~~~~~~~~~~~~~~~
+   make[6]: *** [drivers/net/ethernet/intel/i40e/i40e_ethtool.o] Error 1
+   In file included from arch/xtensa/include/asm/atomic.h:21,
+                    from include/linux/atomic.h:7,
+                    from include/asm-generic/bitops/atomic.h:5,
+                    from arch/xtensa/include/asm/bitops.h:222,
+                    from include/linux/bitops.h:19,
+                    from drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:11:
+   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c: In function 'ixgbevf_xdp_setup':
+   arch/xtensa/include/asm/cmpxchg.h:139:3: warning: value computed is not used [-Wunused-value]
+     ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
+     ~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:4483:4: note: in expansion of macro 'xchg'
+       xchg(&adapter->rx_ring[i]->xdp_prog, adapter->xdp_prog);
+       ^~~~
+   drivers/net/ethernet/microchip/lan743x_main.c:2987:12: warning: 'lan743x_pm_resume' defined but not used [-Wunused-function]
+    static int lan743x_pm_resume(struct device *dev)
+               ^~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/microchip/lan743x_main.c:2964:12: warning: 'lan743x_pm_suspend' defined but not used [-Wunused-function]
+    static int lan743x_pm_suspend(struct device *dev)
+               ^~~~~~~~~~~~~~~~~~
+   make[6]: Target '__build' not remade because of errors.
+   make[5]: *** [drivers/net/ethernet/intel/i40e] Error 2
+   make[5]: Target '__build' not remade because of errors.
+   make[4]: *** [drivers/net/ethernet/intel] Error 2
+   In file included from drivers/scsi/sym53c8xx_2/sym_glue.h:64,
+                    from drivers/scsi/sym53c8xx_2/sym_fw.c:40:
+   drivers/scsi/sym53c8xx_2/sym_defs.h:109: warning: "WSR" redefined
+     #define   WSR     0x01  /* sta: wide scsi received       [W]*/
+    
+   In file included from arch/xtensa/include/asm/bitops.h:22,
+                    from include/linux/bitops.h:19,
+                    from include/linux/kernel.h:11,
+                    from include/linux/list.h:9,
+                    from include/linux/wait.h:7,
+                    from include/linux/completion.h:12,
+                    from drivers/scsi/sym53c8xx_2/sym_glue.h:43,
+                    from drivers/scsi/sym53c8xx_2/sym_fw.c:40:
+   arch/xtensa/include/asm/processor.h:219: note: this is the location of the previous definition
+    #define WSR(v,sr) __asm__ __volatile__ ("wsr %0,"__stringify(sr) :: "a"(v));
+    
+   In file included from drivers/scsi/sym53c8xx_2/sym_glue.h:64,
+                    from drivers/scsi/sym53c8xx_2/sym_glue.c:50:
+   drivers/scsi/sym53c8xx_2/sym_defs.h:109: warning: "WSR" redefined
+     #define   WSR     0x01  /* sta: wide scsi received       [W]*/
+    
+   In file included from arch/xtensa/include/asm/bitops.h:22,
+                    from include/linux/bitops.h:19,
+                    from include/linux/kernel.h:11,
+                    from include/linux/list.h:9,
+                    from include/linux/module.h:9,
+                    from drivers/scsi/sym53c8xx_2/sym_glue.c:42:
+   arch/xtensa/include/asm/processor.h:219: note: this is the location of the previous definition
+    #define WSR(v,sr) __asm__ __volatile__ ("wsr %0,"__stringify(sr) :: "a"(v));
+    
+   In file included from drivers/scsi/sym53c8xx_2/sym_glue.h:64,
+                    from drivers/scsi/sym53c8xx_2/sym_hipd.c:44:
+   drivers/scsi/sym53c8xx_2/sym_defs.h:109: warning: "WSR" redefined
+     #define   WSR     0x01  /* sta: wide scsi received       [W]*/
+    
+   In file included from arch/xtensa/include/asm/bitops.h:22,
+                    from include/linux/bitops.h:19,
+                    from include/linux/kernel.h:11,
+                    from include/asm-generic/bug.h:18,
+                    from ./arch/xtensa/include/generated/asm/bug.h:1,
+                    from include/linux/bug.h:5,
+                    from include/linux/mmdebug.h:5,
+                    from include/linux/gfp.h:5,
+                    from include/linux/slab.h:15,
+                    from drivers/scsi/sym53c8xx_2/sym_hipd.c:41:
+   arch/xtensa/include/asm/processor.h:219: note: this is the location of the previous definition
+    #define WSR(v,sr) __asm__ __volatile__ ("wsr %0,"__stringify(sr) :: "a"(v));
+    
+   In file included from drivers/scsi/sym53c8xx_2/sym_glue.h:64,
+                    from drivers/scsi/sym53c8xx_2/sym_malloc.c:40:
+   drivers/scsi/sym53c8xx_2/sym_defs.h:109: warning: "WSR" redefined
+     #define   WSR     0x01  /* sta: wide scsi received       [W]*/
+    
+   In file included from arch/xtensa/include/asm/bitops.h:22,
+                    from include/linux/bitops.h:19,
+                    from include/linux/kernel.h:11,
+                    from include/linux/list.h:9,
+                    from include/linux/wait.h:7,
+                    from include/linux/completion.h:12,
+                    from drivers/scsi/sym53c8xx_2/sym_glue.h:43,
+                    from drivers/scsi/sym53c8xx_2/sym_malloc.c:40:
+   arch/xtensa/include/asm/processor.h:219: note: this is the location of the previous definition
+    #define WSR(v,sr) __asm__ __volatile__ ("wsr %0,"__stringify(sr) :: "a"(v));
+    
+   In file included from drivers/scsi/sym53c8xx_2/sym_glue.h:64,
+                    from drivers/scsi/sym53c8xx_2/sym_nvram.c:40:
+   drivers/scsi/sym53c8xx_2/sym_defs.h:109: warning: "WSR" redefined
+     #define   WSR     0x01  /* sta: wide scsi received       [W]*/
+    
+   In file included from arch/xtensa/include/asm/bitops.h:22,
+                    from include/linux/bitops.h:19,
+                    from include/linux/kernel.h:11,
+                    from include/linux/list.h:9,
+                    from include/linux/wait.h:7,
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+vim +/__i40e_add_stat_strings +193 drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
 
-x86_64                           allmodconfig
-arm                        cerfcube_defconfig
-x86_64                 randconfig-a0-08310313
-ia64                             allmodconfig
-ia64                                defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-08310152
-i386                               tinyconfig
-i386                     randconfig-n0-201834
-x86_64                 randconfig-x000-201834
-x86_64                 randconfig-x001-201834
-x86_64                 randconfig-x002-201834
-x86_64                 randconfig-x003-201834
-x86_64                 randconfig-x004-201834
-x86_64                 randconfig-x005-201834
-x86_64                 randconfig-x006-201834
-x86_64                 randconfig-x007-201834
-x86_64                 randconfig-x008-201834
-x86_64                 randconfig-x009-201834
-i386                     randconfig-i0-201834
-i386                     randconfig-i1-201834
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-08310210
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201834
-i386                     randconfig-a1-201834
-x86_64                 randconfig-s0-08310447
-x86_64                 randconfig-s1-08310447
-x86_64                 randconfig-s2-08310447
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                         orion5x_defconfig
-m68k                             allmodconfig
-mips                      malta_kvm_defconfig
-xtensa                              defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-s0-08280925
-i386                   randconfig-s1-08280925
-x86_64                 randconfig-s3-08310431
-x86_64                 randconfig-s4-08310431
-x86_64                 randconfig-s5-08310431
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-i0-08280848
-i386                   randconfig-b0-08302035
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-powerpc                 canyonlands_defconfig
-powerpc               corenet_basic_defconfig
-x86_64                 randconfig-u0-08310054
-x86_64                randconfig-ne0-08310110
-i386                             allmodconfig
-mips                malta_qemu_32r6_defconfig
-powerpc                        icon_defconfig
-x86_64                 randconfig-h0-08291526
-x86_64                 randconfig-x019-201834
-x86_64                 randconfig-x013-201834
-x86_64                 randconfig-x018-201834
-x86_64                 randconfig-x012-201834
-x86_64                 randconfig-x017-201834
-x86_64                 randconfig-x010-201834
-x86_64                 randconfig-x014-201834
-x86_64                 randconfig-x015-201834
-x86_64                 randconfig-x016-201834
-x86_64                 randconfig-x011-201834
-i386                   randconfig-x018-201834
-i386                   randconfig-x017-201834
-i386                   randconfig-x010-201834
-i386                   randconfig-x013-201834
-i386                   randconfig-x016-201834
-i386                   randconfig-x011-201834
-i386                   randconfig-x019-201834
-i386                   randconfig-x015-201834
-i386                   randconfig-x012-201834
-i386                   randconfig-x014-201834
-i386                   randconfig-x077-201834
-i386                   randconfig-x070-201834
-i386                   randconfig-x076-201834
-i386                   randconfig-x075-201834
-i386                   randconfig-x072-201834
-i386                   randconfig-x078-201834
-i386                   randconfig-x071-201834
-i386                   randconfig-x074-201834
-i386                   randconfig-x073-201834
-i386                   randconfig-x079-201834
-i386                   randconfig-x002-201834
-i386                   randconfig-x005-201834
-i386                   randconfig-x003-201834
-i386                   randconfig-x008-201834
-i386                   randconfig-x000-201834
-i386                   randconfig-x007-201834
-i386                   randconfig-x004-201834
-i386                   randconfig-x001-201834
-i386                   randconfig-x006-201834
-i386                   randconfig-x009-201834
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                     stx_gp3_defconfig
-sh                          rsk7264_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-r0-08302237
+   183	
+   184	/**
+   185	 * __i40e_add_stat_strings - copy stat strings into ethtool buffer
+   186	 * @p: ethtool supplied buffer
+   187	 * @stats: stat definitions array
+   188	 * @size: size of the stats array
+   189	 *
+   190	 * Format and copy the strings described by stats into the buffer pointed at
+   191	 * by p.
+   192	 **/
+ > 193	static inline void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
+   194					    const unsigned int size, ...)
+   195	{
+   196		unsigned int i;
+   197	
+   198		for (i = 0; i < size; i++) {
+   199			va_list args;
+   200	
+   201			va_start(args, size);
+   202			vsnprintf(*p, ETH_GSTRING_LEN, stats[i].stat_string, args);
+   203			*p += ETH_GSTRING_LEN;
+   204			va_end(args);
+   205		}
+   206	}
+   207	
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 54962 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180831/9c5e6aa3/attachment-0001.bin>
