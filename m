@@ -1,38 +1,42 @@
-From: YueHaibing <yuehaibing@huawei.com>
-Date: Mon, 3 Sep 2018 20:36:21 +0800
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Date: Mon, 3 Sep 2018 19:05:05 +0300
 Subject: [Intel-wired-lan] [PATCH net-next] i40e: remove inline directive
-Message-ID: <20180903123621.8696-1-yuehaibing@huawei.com>
+In-Reply-To: <20180903123621.8696-1-yuehaibing@huawei.com>
+References: <20180903123621.8696-1-yuehaibing@huawei.com>
+Message-ID: <b7bfa13d-d33d-87f1-6f0a-95d040610847@cogentembedded.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fixes follow gcc warning:
+On 09/03/2018 03:36 PM, YueHaibing wrote:
 
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function '__i40e_add_stat_strings':
-drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h:193:20: error: function '__i40e_add_stat_strings' can never be inlined because it uses variable argument lists
+> Fixes follow gcc warning:
+> 
+> drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function '__i40e_add_stat_strings':
+> drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h:193:20: error: function '__i40e_add_stat_strings' can never be inlined because it uses variable argument lists
+> 
+> Fixes: 8fd75c58a09a ("i40e: move ethtool stats boiler plate code to i40e_ethtool_stats.h")
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
+> index bba1cb0..0290ade 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
+> @@ -190,7 +190,7 @@ i40e_add_queue_stats(u64 **data, struct i40e_ring *ring)
+>   * Format and copy the strings described by stats into the buffer pointed at
+>   * by p.
+>   **/
+> -static inline void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
+> +static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
+>  				    const unsigned int size, ...)
+>  {
+>  	unsigned int i;
 
-Fixes: 8fd75c58a09a ("i40e: move ethtool stats boiler plate code to i40e_ethtool_stats.h")
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+   You now need to move this function to a .c file and leave here only its prototype.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-index bba1cb0..0290ade 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-@@ -190,7 +190,7 @@ i40e_add_queue_stats(u64 **data, struct i40e_ring *ring)
-  * Format and copy the strings described by stats into the buffer pointed at
-  * by p.
-  **/
--static inline void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
-+static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
- 				    const unsigned int size, ...)
- {
- 	unsigned int i;
--- 
-2.7.0
-
-
+MBR, Sergei
