@@ -1,46 +1,57 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Fri, 10 Aug 2018 12:24:10 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue] ixgbe: don't clear ipsec sa
- counters on hw clearing
-Message-ID: <1533929050-15326-1-git-send-email-shannon.nelson@oracle.com>
+From: Marco Berizzi <pupilla@libero.it>
+Date: Mon, 3 Sep 2018 12:09:50 +0200 (CEST)
+Subject: [Intel-wired-lan] igb Detected Tx Unit Hang after upgrade to
+ 4.18-rc6 [was Re: igb Detected Tx Unit Hang after upgrade to 4.17]
+In-Reply-To: <CAKgT0UcKxnUK-5E-hr+DHLMAXQtzad21XNuoskh5k8O0Nia7PA@mail.gmail.com>
+References: <528200032.321946.1528186357567@mail.libero.it>
+ <963322856.1365958.1530796944033@mail.libero.it>
+ <931347915.758706.1532606173777@mail.libero.it>
+ <CAKgT0UdmzKG6usaHqFt2N4q1FVX-8r58hbhWb9dc8ygS2UmKWQ@mail.gmail.com>
+ <1265852288.743881.1532617415845@mail.libero.it>
+ <CAKgT0Ud3CMQBKabty07ordkeDPoaaWK3_q3rMoAh7XMSJMSE9g@mail.gmail.com>
+ <1312873949.790150.1532681266921@mail.libero.it>
+ <117857591.886490.1532956286262@mail.libero.it>
+ <403709248.209641.1533555587417@mail.libero.it>
+ <978998680.826474.1535469615050@mail.libero.it>
+ <CAKgT0Ueo7by0AuVocZiieZuv=ZhL9_FSP8R8yXndZwU1+eV-Mg@mail.gmail.com>
+ <231579625.943257.1535706026202@mail.libero.it>
+ <CAKgT0UcKxnUK-5E-hr+DHLMAXQtzad21XNuoskh5k8O0Nia7PA@mail.gmail.com>
+Message-ID: <1538491676.1055857.1535969390637@mail.libero.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The software SA record counters should not be cleared when clearing
-the hardware tables.  This causes the counters to be out of sync
-after a driver reset.
+> Il 1 settembre 2018 alle 4.01 Alexander Duyck <alexander.duyck@gmail.com> ha scritto:
 
-Fixes: 63a67fe229ea ("ixgbe: add ipsec offload add and remove SA")
-Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 4 ----
- 1 file changed, 4 deletions(-)
+> However with that being said it does occur to me that you mentioned
+> using VirtualBox. I dug back through the dmesg output and found the
+> line:
+> [   20.944982] VBoxNetFlt: attached to 'eth0' / 00:19:99:ab:0b:38
+> 
+> I think there may be an issue with the filter stripping out packets at
+> the end of a queue and as a result we are receiving packets with
+> xmit_more set and not updating tail. At least that is my understanding
+> of things for now as I am not that familiar with the VBoxNetFlt
+> driver.
+> 
+> There are two ways to verify if this is the case. The first and more
+> correct solution might be to look at updating
+> vboxNetFltLinuxStartXmitFilter so that it will clear the xmit_more bit
+> before handing it off to the lower device. If you don't have access to
+> that an alternative would be to just modify the igb driver you have so
+> that you replace "skb->xmit_more" with "true" and just force the tail
+> to always be written out. It will cause a small performance hit but it
+> will work around the issue in the driver that overwrote our network
+> device ops.
+> 
+> Hope that helps.
+> 
+> - Alex
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index c116f45..df2f997 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -113,7 +113,6 @@ static void ixgbe_ipsec_set_rx_ip(struct ixgbe_hw *hw, u16 idx, __be32 addr[])
-  **/
- static void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
- {
--	struct ixgbe_ipsec *ipsec = adapter->ipsec;
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	u32 buf[4] = {0, 0, 0, 0};
- 	u16 idx;
-@@ -132,9 +131,6 @@ static void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
- 		ixgbe_ipsec_set_tx_sa(hw, idx, buf, 0);
- 		ixgbe_ipsec_set_rx_sa(hw, idx, 0, buf, 0, 0, 0);
- 	}
--
--	ipsec->num_rx_sa = 0;
--	ipsec->num_tx_sa = 0;
- }
- 
- /**
--- 
-2.7.4
+Thanks a lot Alexander for debugging this problem.
+I'm confident the virtualbox people will take care
+of this problem.
 
+Thanks again for your prompt response.
