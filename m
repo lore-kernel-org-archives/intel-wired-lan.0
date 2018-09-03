@@ -1,57 +1,38 @@
-From: Marco Berizzi <pupilla@libero.it>
-Date: Mon, 3 Sep 2018 12:09:50 +0200 (CEST)
-Subject: [Intel-wired-lan] igb Detected Tx Unit Hang after upgrade to
- 4.18-rc6 [was Re: igb Detected Tx Unit Hang after upgrade to 4.17]
-In-Reply-To: <CAKgT0UcKxnUK-5E-hr+DHLMAXQtzad21XNuoskh5k8O0Nia7PA@mail.gmail.com>
-References: <528200032.321946.1528186357567@mail.libero.it>
- <963322856.1365958.1530796944033@mail.libero.it>
- <931347915.758706.1532606173777@mail.libero.it>
- <CAKgT0UdmzKG6usaHqFt2N4q1FVX-8r58hbhWb9dc8ygS2UmKWQ@mail.gmail.com>
- <1265852288.743881.1532617415845@mail.libero.it>
- <CAKgT0Ud3CMQBKabty07ordkeDPoaaWK3_q3rMoAh7XMSJMSE9g@mail.gmail.com>
- <1312873949.790150.1532681266921@mail.libero.it>
- <117857591.886490.1532956286262@mail.libero.it>
- <403709248.209641.1533555587417@mail.libero.it>
- <978998680.826474.1535469615050@mail.libero.it>
- <CAKgT0Ueo7by0AuVocZiieZuv=ZhL9_FSP8R8yXndZwU1+eV-Mg@mail.gmail.com>
- <231579625.943257.1535706026202@mail.libero.it>
- <CAKgT0UcKxnUK-5E-hr+DHLMAXQtzad21XNuoskh5k8O0Nia7PA@mail.gmail.com>
-Message-ID: <1538491676.1055857.1535969390637@mail.libero.it>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Mon, 3 Sep 2018 20:36:21 +0800
+Subject: [Intel-wired-lan] [PATCH net-next] i40e: remove inline directive
+Message-ID: <20180903123621.8696-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> Il 1 settembre 2018 alle 4.01 Alexander Duyck <alexander.duyck@gmail.com> ha scritto:
+Fixes follow gcc warning:
 
-> However with that being said it does occur to me that you mentioned
-> using VirtualBox. I dug back through the dmesg output and found the
-> line:
-> [   20.944982] VBoxNetFlt: attached to 'eth0' / 00:19:99:ab:0b:38
-> 
-> I think there may be an issue with the filter stripping out packets at
-> the end of a queue and as a result we are receiving packets with
-> xmit_more set and not updating tail. At least that is my understanding
-> of things for now as I am not that familiar with the VBoxNetFlt
-> driver.
-> 
-> There are two ways to verify if this is the case. The first and more
-> correct solution might be to look at updating
-> vboxNetFltLinuxStartXmitFilter so that it will clear the xmit_more bit
-> before handing it off to the lower device. If you don't have access to
-> that an alternative would be to just modify the igb driver you have so
-> that you replace "skb->xmit_more" with "true" and just force the tail
-> to always be written out. It will cause a small performance hit but it
-> will work around the issue in the driver that overwrote our network
-> device ops.
-> 
-> Hope that helps.
-> 
-> - Alex
+drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function '__i40e_add_stat_strings':
+drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h:193:20: error: function '__i40e_add_stat_strings' can never be inlined because it uses variable argument lists
 
-Thanks a lot Alexander for debugging this problem.
-I'm confident the virtualbox people will take care
-of this problem.
+Fixes: 8fd75c58a09a ("i40e: move ethtool stats boiler plate code to i40e_ethtool_stats.h")
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks again for your prompt response.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
+index bba1cb0..0290ade 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
+@@ -190,7 +190,7 @@ i40e_add_queue_stats(u64 **data, struct i40e_ring *ring)
+  * Format and copy the strings described by stats into the buffer pointed at
+  * by p.
+  **/
+-static inline void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
++static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
+ 				    const unsigned int size, ...)
+ {
+ 	unsigned int i;
+-- 
+2.7.0
+
+
