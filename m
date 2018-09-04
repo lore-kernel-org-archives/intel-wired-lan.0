@@ -1,99 +1,69 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue,  4 Sep 2018 20:11:05 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 4/4] i40e: disallow changing the
- number of descriptors when AF_XDP is on
-In-Reply-To: <20180904181105.10983-1-bjorn.topel@gmail.com>
-References: <20180904181105.10983-1-bjorn.topel@gmail.com>
-Message-ID: <20180904181105.10983-5-bjorn.topel@gmail.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Tue,  4 Sep 2018 12:33:29 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue] ixgbevf: fix msglen for ipsec
+ mbx messages
+Message-ID: <1536089609-32716-1-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
+Don't be fancy with message lengths, just set lengths to
+number of dwords, not bytes.
 
-When an AF_XDP UMEM is attached to any of the Rx rings, we disallow a
-user to change the number of descriptors via e.g. "ethtool -G IFNAME".
-
-Otherwise, the size of the stash/reuse queue can grow unbounded, which
-would result in OOM or leaking userspace buffers.
-
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+Fixes: 0062e7cc955e ("ixgbevf: add VF IPsec offload code")
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- .../net/ethernet/intel/i40e/i40e_ethtool.c    |  9 +++++++-
- .../ethernet/intel/i40e/i40e_txrx_common.h    |  1 +
- drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 22 +++++++++++++++++++
- 3 files changed, 31 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbevf/ipsec.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index d7d3974beca2..3cd2c88c72f8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -5,7 +5,7 @@
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ipsec.c b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
+index fac91c0..a68586c 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
+@@ -21,7 +21,6 @@ static int ixgbevf_ipsec_set_pf_sa(struct ixgbevf_adapter *adapter,
+ 	u32 msgbuf[IXGBE_VFMAILBOX_SIZE] = { 0 };
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	struct sa_mbx_msg *sam;
+-	u16 msglen;
+ 	int ret;
  
- #include "i40e.h"
- #include "i40e_diag.h"
--
-+#include "i40e_txrx_common.h"
- #include "i40e_ethtool_stats.h"
+ 	/* send the important bits to the PF */
+@@ -38,16 +37,14 @@ static int ixgbevf_ipsec_set_pf_sa(struct ixgbevf_adapter *adapter,
+ 	memcpy(sam->key, xs->aead->alg_key, sizeof(sam->key));
  
- #define I40E_PF_STAT(_name, _stat) \
-@@ -1493,6 +1493,13 @@ static int i40e_set_ringparam(struct net_device *netdev,
- 	    (new_rx_count == vsi->rx_rings[0]->count))
- 		return 0;
+ 	msgbuf[0] = IXGBE_VF_IPSEC_ADD;
+-	msglen = sizeof(*sam) + sizeof(msgbuf[0]);
  
-+	/* If there is a AF_XDP UMEM attached to any of Rx rings,
-+	 * disallow changing the number of descriptors -- regardless
-+	 * if the netdev is running or not.
-+	 */
-+	if (i40e_xsk_any_rx_ring_enabled(vsi))
-+		return -EBUSY;
-+
- 	while (test_and_set_bit(__I40E_CONFIG_BUSY, pf->state)) {
- 		timeout--;
- 		if (!timeout)
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-index 8d46acff6f2e..09809dffe399 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-@@ -89,5 +89,6 @@ static inline void i40e_arm_wb(struct i40e_ring *tx_ring,
+ 	spin_lock_bh(&adapter->mbx_lock);
  
- void i40e_xsk_clean_rx_ring(struct i40e_ring *rx_ring);
- void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring);
-+bool i40e_xsk_any_rx_ring_enabled(struct i40e_vsi *vsi);
+-	ret = hw->mbx.ops.write_posted(hw, msgbuf, msglen);
++	ret = hw->mbx.ops.write_posted(hw, msgbuf, IXGBE_VFMAILBOX_SIZE);
+ 	if (ret)
+ 		goto out;
  
- #endif /* I40E_TXRX_COMMON_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index e4b62e871afc..119f59ec7cc0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -944,3 +944,25 @@ void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring)
- 	if (xsk_frames)
- 		xsk_umem_complete_tx(umem, xsk_frames);
- }
-+
-+/**
-+ * i40e_xsk_any_rx_ring_enabled - Checks whether any of the Rx rings
-+ * has AF_XDP UMEM attached
-+ * @vsi: vsi
-+ *
-+ * Returns true if any of the Rx rings has an AF_XDP UMEM attached
-+ **/
-+bool i40e_xsk_any_rx_ring_enabled(struct i40e_vsi *vsi)
-+{
-+	int i;
-+
-+	if (!vsi->xsk_umems)
-+		return false;
-+
-+	for (i = 0; i < vsi->num_queue_pairs; i++) {
-+		if (vsi->xsk_umems[i])
-+			return true;
-+	}
-+
-+	return false;
-+}
+-	msglen = sizeof(msgbuf[0]) * 2;
+-	ret = hw->mbx.ops.read_posted(hw, msgbuf, msglen);
++	ret = hw->mbx.ops.read_posted(hw, msgbuf, 2);
+ 	if (ret)
+ 		goto out;
+ 
+@@ -80,11 +77,11 @@ static int ixgbevf_ipsec_del_pf_sa(struct ixgbevf_adapter *adapter, int pfsa)
+ 
+ 	spin_lock_bh(&adapter->mbx_lock);
+ 
+-	err = hw->mbx.ops.write_posted(hw, msgbuf, sizeof(msgbuf));
++	err = hw->mbx.ops.write_posted(hw, msgbuf, 2);
+ 	if (err)
+ 		goto out;
+ 
+-	err = hw->mbx.ops.read_posted(hw, msgbuf, sizeof(msgbuf));
++	err = hw->mbx.ops.read_posted(hw, msgbuf, 2);
+ 	if (err)
+ 		goto out;
+ 
 -- 
-2.17.1
+2.7.4
 
