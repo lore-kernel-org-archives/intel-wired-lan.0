@@ -1,69 +1,43 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue,  4 Sep 2018 12:33:29 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue] ixgbevf: fix msglen for ipsec
- mbx messages
-Message-ID: <1536089609-32716-1-git-send-email-shannon.nelson@oracle.com>
+From: Wang Dongsheng <dongsheng.wang@hxt-semitech.com>
+Date: Tue, 4 Sep 2018 17:48:47 +0800
+Subject: [Intel-wired-lan] [PATCH] net: ethernet: i40e: fix build error
+Message-ID: <1536054527-34184-1-git-send-email-dongsheng.wang@hxt-semitech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Don't be fancy with message lengths, just set lengths to
-number of dwords, not bytes.
+Remove "inline" from __i40e_add_stat_strings.
 
-Fixes: 0062e7cc955e ("ixgbevf: add VF IPsec offload code")
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
+In file included from
+drivers/net/ethernet/intel/i40e/i40e_ethtool.c:9:0:
+drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function
+?__i40e_add_stat_strings?:
+drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h:193:20: error:
+function ?__i40e_add_stat_strings? can never be inlined because it uses
+variable argument lists
+ static inline void __i40e_add_stat_strings(u8 **p, const struct
+					    i40e_stats stats[],
+
+Signed-off-by: Wang Dongsheng <dongsheng.wang@hxt-semitech.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ipsec.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ipsec.c b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
-index fac91c0..a68586c 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
-@@ -21,7 +21,6 @@ static int ixgbevf_ipsec_set_pf_sa(struct ixgbevf_adapter *adapter,
- 	u32 msgbuf[IXGBE_VFMAILBOX_SIZE] = { 0 };
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	struct sa_mbx_msg *sam;
--	u16 msglen;
- 	int ret;
- 
- 	/* send the important bits to the PF */
-@@ -38,16 +37,14 @@ static int ixgbevf_ipsec_set_pf_sa(struct ixgbevf_adapter *adapter,
- 	memcpy(sam->key, xs->aead->alg_key, sizeof(sam->key));
- 
- 	msgbuf[0] = IXGBE_VF_IPSEC_ADD;
--	msglen = sizeof(*sam) + sizeof(msgbuf[0]);
- 
- 	spin_lock_bh(&adapter->mbx_lock);
- 
--	ret = hw->mbx.ops.write_posted(hw, msgbuf, msglen);
-+	ret = hw->mbx.ops.write_posted(hw, msgbuf, IXGBE_VFMAILBOX_SIZE);
- 	if (ret)
- 		goto out;
- 
--	msglen = sizeof(msgbuf[0]) * 2;
--	ret = hw->mbx.ops.read_posted(hw, msgbuf, msglen);
-+	ret = hw->mbx.ops.read_posted(hw, msgbuf, 2);
- 	if (ret)
- 		goto out;
- 
-@@ -80,11 +77,11 @@ static int ixgbevf_ipsec_del_pf_sa(struct ixgbevf_adapter *adapter, int pfsa)
- 
- 	spin_lock_bh(&adapter->mbx_lock);
- 
--	err = hw->mbx.ops.write_posted(hw, msgbuf, sizeof(msgbuf));
-+	err = hw->mbx.ops.write_posted(hw, msgbuf, 2);
- 	if (err)
- 		goto out;
- 
--	err = hw->mbx.ops.read_posted(hw, msgbuf, sizeof(msgbuf));
-+	err = hw->mbx.ops.read_posted(hw, msgbuf, 2);
- 	if (err)
- 		goto out;
- 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
+index bba1cb0..0290ade 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
+@@ -190,7 +190,7 @@ struct i40e_stats {
+  * Format and copy the strings described by stats into the buffer pointed at
+  * by p.
+  **/
+-static inline void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
++static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
+ 				    const unsigned int size, ...)
+ {
+ 	unsigned int i;
 -- 
-2.7.4
+1.8.3.1
 
