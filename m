@@ -1,50 +1,124 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Date: Tue, 4 Sep 2018 13:54:28 +0300
-Subject: [Intel-wired-lan] [PATCH] net: ethernet: i40e: fix build error
-In-Reply-To: <1536054527-34184-1-git-send-email-dongsheng.wang@hxt-semitech.com>
-References: <1536054527-34184-1-git-send-email-dongsheng.wang@hxt-semitech.com>
-Message-ID: <84982f95-940e-d278-f6a2-13a9f76823c9@cogentembedded.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Tue, 4 Sep 2018 08:32:39 -0700
+Subject: [Intel-wired-lan] [bug report] ixgbevf: add VF IPsec offload
+ code
+In-Reply-To: <20180831172952.ndpg56fhftpnxzsk@kili.mountain>
+References: <20180831172952.ndpg56fhftpnxzsk@kili.mountain>
+Message-ID: <a5b2e5fa-2285-6b9f-c529-672311e6fe70@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/4/2018 12:48 PM, Wang Dongsheng wrote:
-
-> Remove "inline" from __i40e_add_stat_strings.
+On 8/31/2018 10:29 AM, Dan Carpenter wrote:
+> Hello Shannon Nelson,
 > 
-> In file included from
-> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:9:0:
-> drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function
-> ?__i40e_add_stat_strings?:
-> drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h:193:20: error:
-> function ?__i40e_add_stat_strings? can never be inlined because it uses
-> variable argument lists
->   static inline void __i40e_add_stat_strings(u8 **p, const struct
-> 					    i40e_stats stats[],
+> The patch 0062e7cc955e: "ixgbevf: add VF IPsec offload code" from Aug
+> 13, 2018, leads to the following static checker warning:
 > 
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@hxt-semitech.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> 	drivers/net/ethernet/intel/ixgbevf/mbx.c:244 ixgbevf_write_mbx_vf()
+> 	warn: potential pointer math issue ('msg' is a 32 bit pointer)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-> index bba1cb0..0290ade 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-> @@ -190,7 +190,7 @@ struct i40e_stats {
->    * Format and copy the strings described by stats into the buffer pointed at
->    * by p.
->    **/
-> -static inline void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
-> +static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
+> [ This is an unpublished smatch check.  The warning message isn't very
+>    good.  What it's trying to warn about here is the difference between
+>    ARRAY_SIZE() and sizeof().  - dan ]
 
-    You can't have non-inline function in a header file. Please move it, 
-leaving only prototype here.
+Thanks for finding this, Dan.  I'll send up a fix.
+sln
 
->   				    const unsigned int size, ...)
->   {
->   	unsigned int i;
-
-MBR, Sergei
+> 
+> drivers/net/ethernet/intel/ixgbevf/ipsec.c
+>      18  static int ixgbevf_ipsec_set_pf_sa(struct ixgbevf_adapter *adapter,
+>      19                                     struct xfrm_state *xs)
+>      20  {
+>      21          u32 msgbuf[IXGBE_VFMAILBOX_SIZE] = { 0 };
+>      22          struct ixgbe_hw *hw = &adapter->hw;
+>      23          struct sa_mbx_msg *sam;
+>      24          u16 msglen;
+>      25          int ret;
+>      26
+>      27          /* send the important bits to the PF */
+>      28          sam = (struct sa_mbx_msg *)(&msgbuf[1]);
+>      29          sam->flags = xs->xso.flags;
+>      30          sam->spi = xs->id.spi;
+>      31          sam->proto = xs->id.proto;
+>      32          sam->family = xs->props.family;
+>      33
+>      34          if (xs->props.family == AF_INET6)
+>      35                  memcpy(sam->addr, &xs->id.daddr.a6, sizeof(xs->id.daddr.a6));
+>      36          else
+>      37                  memcpy(sam->addr, &xs->id.daddr.a4, sizeof(xs->id.daddr.a4));
+>      38          memcpy(sam->key, xs->aead->alg_key, sizeof(sam->key));
+>      39
+>      40          msgbuf[0] = IXGBE_VF_IPSEC_ADD;
+>      41          msglen = sizeof(*sam) + sizeof(msgbuf[0]);
+>                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>      42
+>      43          spin_lock_bh(&adapter->mbx_lock);
+>      44
+>      45          ret = hw->mbx.ops.write_posted(hw, msgbuf, msglen);
+>                                                             ^^^^^^
+> This is in byte terms but it should be in terms of sizeof(u32).
+> 
+>      46          if (ret)
+>      47                  goto out;
+>      48
+>      49          msglen = sizeof(msgbuf[0]) * 2;
+>      50          ret = hw->mbx.ops.read_posted(hw, msgbuf, msglen);
+>                                                            ^^^^^^
+>      51          if (ret)
+>      52                  goto out;
+>      53
+>      54          ret = (int)msgbuf[1];
+>      55          if (msgbuf[0] & IXGBE_VT_MSGTYPE_NACK && ret >= 0)
+>      56                  ret = -1;
+>      57
+>      58  out:
+>      59          spin_unlock_bh(&adapter->mbx_lock);
+>      60
+>      61          return ret;
+>      62  }
+>      63
+>      64  /**
+>      65   * ixgbevf_ipsec_del_pf_sa - ask the PF to delete an SA
+>      66   * @adapter: board private structure
+>      67   * @pfsa: sa index returned from PF when created, -1 for all
+>      68   *
+>      69   * Returns: 0 on success, or negative error code
+>      70   **/
+>      71  static int ixgbevf_ipsec_del_pf_sa(struct ixgbevf_adapter *adapter, int pfsa)
+>      72  {
+>      73          struct ixgbe_hw *hw = &adapter->hw;
+>      74          u32 msgbuf[2];
+>      75          int err;
+>      76
+>      77          memset(msgbuf, 0, sizeof(msgbuf));
+>      78          msgbuf[0] = IXGBE_VF_IPSEC_DEL;
+>      79          msgbuf[1] = (u32)pfsa;
+>      80
+>      81          spin_lock_bh(&adapter->mbx_lock);
+>      82
+>      83          err = hw->mbx.ops.write_posted(hw, msgbuf, sizeof(msgbuf));
+>                                                             ^^^^^^^^^^^^^^
+> This should be 2
+> 
+>      84          if (err)
+>      85                  goto out;
+>      86
+>      87          err = hw->mbx.ops.read_posted(hw, msgbuf, sizeof(msgbuf));
+>                                                            ^^^^^^^^^^^^^
+> 2 elements here also.  (This static checker warning is not published
+> because it's low quality, so take it all with a grain of salt etc).
+> 
+>      88          if (err)
+>      89                  goto out;
+>      90
+>      91  out:
+>      92          spin_unlock_bh(&adapter->mbx_lock);
+>      93          return err;
+>      94  }
+> 
+> regards,
+> dan carpenter
+> 
