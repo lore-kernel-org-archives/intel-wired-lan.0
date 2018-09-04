@@ -1,43 +1,32 @@
-From: Wang Dongsheng <dongsheng.wang@hxt-semitech.com>
-Date: Tue, 4 Sep 2018 17:48:47 +0800
-Subject: [Intel-wired-lan] [PATCH] net: ethernet: i40e: fix build error
-Message-ID: <1536054527-34184-1-git-send-email-dongsheng.wang@hxt-semitech.com>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Tue, 4 Sep 2018 15:51:08 +0300
+Subject: [Intel-wired-lan] [PATCH 7/9] net/mlx4: Do not call
+ pcie_print_link_status()
+In-Reply-To: <20180903180242.14504-8-mr.nuke.me@gmail.com>
+References: <20180903180242.14504-1-mr.nuke.me@gmail.com>
+ <20180903180242.14504-8-mr.nuke.me@gmail.com>
+Message-ID: <20180904125108.GE2796@mtr-leonro.mtl.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove "inline" from __i40e_add_stat_strings.
+On Mon, Sep 03, 2018 at 01:02:34PM -0500, Alexandru Gagniuc wrote:
+> This is now done by the PCI core to warn of sub-optimal bandwidth.
+>
+> Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+> ---
+>  drivers/net/ethernet/mellanox/mlx4/main.c | 7 -------
+>  1 file changed, 7 deletions(-)
+>
 
-In file included from
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c:9:0:
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function
-?__i40e_add_stat_strings?:
-drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h:193:20: error:
-function ?__i40e_add_stat_strings? can never be inlined because it uses
-variable argument lists
- static inline void __i40e_add_stat_strings(u8 **p, const struct
-					    i40e_stats stats[],
-
-Signed-off-by: Wang Dongsheng <dongsheng.wang@hxt-semitech.com>
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-index bba1cb0..0290ade 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-@@ -190,7 +190,7 @@ struct i40e_stats {
-  * Format and copy the strings described by stats into the buffer pointed at
-  * by p.
-  **/
--static inline void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
-+static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
- 				    const unsigned int size, ...)
- {
- 	unsigned int i;
--- 
-1.8.3.1
-
+Thanks,
+Acked-by: Leon Romanovsky <leonro@mellanox.com>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 801 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180904/ac23a18e/attachment-0001.asc>
