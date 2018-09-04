@@ -1,124 +1,222 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 4 Sep 2018 08:32:39 -0700
-Subject: [Intel-wired-lan] [bug report] ixgbevf: add VF IPsec offload
- code
-In-Reply-To: <20180831172952.ndpg56fhftpnxzsk@kili.mountain>
-References: <20180831172952.ndpg56fhftpnxzsk@kili.mountain>
-Message-ID: <a5b2e5fa-2285-6b9f-c529-672311e6fe70@oracle.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Tue,  4 Sep 2018 20:11:04 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 3/4] i40e: clean zero-copy XDP Rx
+ ring on shutdown/reset
+In-Reply-To: <20180904181105.10983-1-bjorn.topel@gmail.com>
+References: <20180904181105.10983-1-bjorn.topel@gmail.com>
+Message-ID: <20180904181105.10983-4-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/31/2018 10:29 AM, Dan Carpenter wrote:
-> Hello Shannon Nelson,
-> 
-> The patch 0062e7cc955e: "ixgbevf: add VF IPsec offload code" from Aug
-> 13, 2018, leads to the following static checker warning:
-> 
-> 	drivers/net/ethernet/intel/ixgbevf/mbx.c:244 ixgbevf_write_mbx_vf()
-> 	warn: potential pointer math issue ('msg' is a 32 bit pointer)
-> 
-> [ This is an unpublished smatch check.  The warning message isn't very
->    good.  What it's trying to warn about here is the difference between
->    ARRAY_SIZE() and sizeof().  - dan ]
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Thanks for finding this, Dan.  I'll send up a fix.
-sln
+Outstanding Rx descriptors are temporarily stored on a stash/reuse
+queue. When/if the HW rings comes up again, entries from the stash are
+used to re-populate the ring.
 
-> 
-> drivers/net/ethernet/intel/ixgbevf/ipsec.c
->      18  static int ixgbevf_ipsec_set_pf_sa(struct ixgbevf_adapter *adapter,
->      19                                     struct xfrm_state *xs)
->      20  {
->      21          u32 msgbuf[IXGBE_VFMAILBOX_SIZE] = { 0 };
->      22          struct ixgbe_hw *hw = &adapter->hw;
->      23          struct sa_mbx_msg *sam;
->      24          u16 msglen;
->      25          int ret;
->      26
->      27          /* send the important bits to the PF */
->      28          sam = (struct sa_mbx_msg *)(&msgbuf[1]);
->      29          sam->flags = xs->xso.flags;
->      30          sam->spi = xs->id.spi;
->      31          sam->proto = xs->id.proto;
->      32          sam->family = xs->props.family;
->      33
->      34          if (xs->props.family == AF_INET6)
->      35                  memcpy(sam->addr, &xs->id.daddr.a6, sizeof(xs->id.daddr.a6));
->      36          else
->      37                  memcpy(sam->addr, &xs->id.daddr.a4, sizeof(xs->id.daddr.a4));
->      38          memcpy(sam->key, xs->aead->alg_key, sizeof(sam->key));
->      39
->      40          msgbuf[0] = IXGBE_VF_IPSEC_ADD;
->      41          msglen = sizeof(*sam) + sizeof(msgbuf[0]);
->                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->      42
->      43          spin_lock_bh(&adapter->mbx_lock);
->      44
->      45          ret = hw->mbx.ops.write_posted(hw, msgbuf, msglen);
->                                                             ^^^^^^
-> This is in byte terms but it should be in terms of sizeof(u32).
-> 
->      46          if (ret)
->      47                  goto out;
->      48
->      49          msglen = sizeof(msgbuf[0]) * 2;
->      50          ret = hw->mbx.ops.read_posted(hw, msgbuf, msglen);
->                                                            ^^^^^^
->      51          if (ret)
->      52                  goto out;
->      53
->      54          ret = (int)msgbuf[1];
->      55          if (msgbuf[0] & IXGBE_VT_MSGTYPE_NACK && ret >= 0)
->      56                  ret = -1;
->      57
->      58  out:
->      59          spin_unlock_bh(&adapter->mbx_lock);
->      60
->      61          return ret;
->      62  }
->      63
->      64  /**
->      65   * ixgbevf_ipsec_del_pf_sa - ask the PF to delete an SA
->      66   * @adapter: board private structure
->      67   * @pfsa: sa index returned from PF when created, -1 for all
->      68   *
->      69   * Returns: 0 on success, or negative error code
->      70   **/
->      71  static int ixgbevf_ipsec_del_pf_sa(struct ixgbevf_adapter *adapter, int pfsa)
->      72  {
->      73          struct ixgbe_hw *hw = &adapter->hw;
->      74          u32 msgbuf[2];
->      75          int err;
->      76
->      77          memset(msgbuf, 0, sizeof(msgbuf));
->      78          msgbuf[0] = IXGBE_VF_IPSEC_DEL;
->      79          msgbuf[1] = (u32)pfsa;
->      80
->      81          spin_lock_bh(&adapter->mbx_lock);
->      82
->      83          err = hw->mbx.ops.write_posted(hw, msgbuf, sizeof(msgbuf));
->                                                             ^^^^^^^^^^^^^^
-> This should be 2
-> 
->      84          if (err)
->      85                  goto out;
->      86
->      87          err = hw->mbx.ops.read_posted(hw, msgbuf, sizeof(msgbuf));
->                                                            ^^^^^^^^^^^^^
-> 2 elements here also.  (This static checker warning is not published
-> because it's low quality, so take it all with a grain of salt etc).
-> 
->      88          if (err)
->      89                  goto out;
->      90
->      91  out:
->      92          spin_unlock_bh(&adapter->mbx_lock);
->      93          return err;
->      94  }
-> 
-> regards,
-> dan carpenter
-> 
+The latter required some restructuring of the allocation scheme for
+the AF_XDP zero-copy implementation. There is now a fast, and a slow
+allocation. The "fast allocation" is used from the fast-path and
+obtains free buffers from the fill ring and the internal recycle
+mechanism. The "slow allocation" is only used in ring setup, and
+obtains buffers from the fill ring and the stash (if any).
+
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   4 +-
+ .../ethernet/intel/i40e/i40e_txrx_common.h    |   1 +
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 100 ++++++++++++++++--
+ 3 files changed, 96 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 7f85d4ba8b54..740ea58ba938 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1355,8 +1355,10 @@ void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
+ 		rx_ring->skb = NULL;
+ 	}
+ 
+-	if (rx_ring->xsk_umem)
++	if (rx_ring->xsk_umem) {
++		i40e_xsk_clean_rx_ring(rx_ring);
+ 		goto skip_free;
++	}
+ 
+ 	/* Free all the Rx ring sk_buffs */
+ 	for (i = 0; i < rx_ring->count; i++) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
+index 29c68b29d36f..8d46acff6f2e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
+@@ -87,6 +87,7 @@ static inline void i40e_arm_wb(struct i40e_ring *tx_ring,
+ 	}
+ }
+ 
++void i40e_xsk_clean_rx_ring(struct i40e_ring *rx_ring);
+ void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring);
+ 
+ #endif /* I40E_TXRX_COMMON_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index 99116277c4d2..e4b62e871afc 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -140,6 +140,7 @@ static void i40e_xsk_umem_dma_unmap(struct i40e_vsi *vsi, struct xdp_umem *umem)
+ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
+ 				u16 qid)
+ {
++	struct xdp_umem_fq_reuse *reuseq;
+ 	bool if_running;
+ 	int err;
+ 
+@@ -156,6 +157,12 @@ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
+ 			return -EBUSY;
+ 	}
+ 
++	reuseq = xsk_reuseq_prepare(vsi->rx_rings[0]->count);
++	if (!reuseq)
++		return -ENOMEM;
++
++	xsk_reuseq_free(xsk_reuseq_swap(umem, reuseq));
++
+ 	err = i40e_xsk_umem_dma_map(vsi, umem);
+ 	if (err)
+ 		return err;
+@@ -353,16 +360,46 @@ static bool i40e_alloc_buffer_zc(struct i40e_ring *rx_ring,
+ }
+ 
+ /**
+- * i40e_alloc_rx_buffers_zc - Allocates a number of Rx buffers
++ * i40e_alloc_buffer_slow_zc - Allocates an i40e_rx_buffer
+  * @rx_ring: Rx ring
+- * @count: The number of buffers to allocate
++ * @bi: Rx buffer to populate
+  *
+- * This function allocates a number of Rx buffers and places them on
+- * the Rx ring.
++ * This function allocates an Rx buffer. The buffer can come from fill
++ * queue, or via the reuse queue.
+  *
+  * Returns true for a successful allocation, false otherwise
+  **/
+-bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
++static bool i40e_alloc_buffer_slow_zc(struct i40e_ring *rx_ring,
++				      struct i40e_rx_buffer *bi)
++{
++	struct xdp_umem *umem = rx_ring->xsk_umem;
++	u64 handle, hr;
++
++	if (!xsk_umem_peek_addr_rq(umem, &handle)) {
++		rx_ring->rx_stats.alloc_page_failed++;
++		return false;
++	}
++
++	handle &= rx_ring->xsk_umem->chunk_mask;
++
++	hr = umem->headroom + XDP_PACKET_HEADROOM;
++
++	bi->dma = xdp_umem_get_dma(umem, handle);
++	bi->dma += hr;
++
++	bi->addr = xdp_umem_get_data(umem, handle);
++	bi->addr += hr;
++
++	bi->handle = handle + umem->headroom;
++
++	xsk_umem_discard_addr_rq(umem);
++	return true;
++}
++
++static __always_inline bool __i40e_alloc_rx_buffers_zc(
++	struct i40e_ring *rx_ring, u16 count,
++	bool alloc(struct i40e_ring *rx_ring,
++		   struct i40e_rx_buffer *bi))
+ {
+ 	u16 ntu = rx_ring->next_to_use;
+ 	union i40e_rx_desc *rx_desc;
+@@ -372,7 +409,7 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
+ 	rx_desc = I40E_RX_DESC(rx_ring, ntu);
+ 	bi = &rx_ring->rx_bi[ntu];
+ 	do {
+-		if (!i40e_alloc_buffer_zc(rx_ring, bi)) {
++		if (!alloc(rx_ring, bi)) {
+ 			ok = false;
+ 			goto no_buffers;
+ 		}
+@@ -404,6 +441,38 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
+ 	return ok;
+ }
+ 
++/**
++ * i40e_alloc_rx_buffers_zc - Allocates a number of Rx buffers
++ * @rx_ring: Rx ring
++ * @count: The number of buffers to allocate
++ *
++ * This function allocates a number of Rx buffers from the reuse queue
++ * or fill ring and places them on the Rx ring.
++ *
++ * Returns true for a successful allocation, false otherwise
++ **/
++bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
++{
++	return __i40e_alloc_rx_buffers_zc(rx_ring, count,
++					  i40e_alloc_buffer_slow_zc);
++}
++
++/**
++ * i40e_alloc_rx_buffers_fast_zc - Allocates a number of Rx buffers
++ * @rx_ring: Rx ring
++ * @count: The number of buffers to allocate
++ *
++ * This function allocates a number of Rx buffers from the fill ring
++ * or the internal recycle mechanism and places them on the Rx ring.
++ *
++ * Returns true for a successful allocation, false otherwise
++ **/
++static bool i40e_alloc_rx_buffers_fast_zc(struct i40e_ring *rx_ring, u16 count)
++{
++	return __i40e_alloc_rx_buffers_zc(rx_ring, count,
++					  i40e_alloc_buffer_zc);
++}
++
+ /**
+  * i40e_get_rx_buffer_zc - Return the current Rx buffer
+  * @rx_ring: Rx ring
+@@ -571,8 +640,8 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
+ 
+ 		if (cleaned_count >= I40E_RX_BUFFER_WRITE) {
+ 			failure = failure ||
+-				  !i40e_alloc_rx_buffers_zc(rx_ring,
+-							    cleaned_count);
++				  !i40e_alloc_rx_buffers_fast_zc(rx_ring,
++								 cleaned_count);
+ 			cleaned_count = 0;
+ 		}
+ 
+@@ -831,6 +900,21 @@ int i40e_xsk_async_xmit(struct net_device *dev, u32 queue_id)
+ 	return 0;
+ }
+ 
++void i40e_xsk_clean_rx_ring(struct i40e_ring *rx_ring)
++{
++	u16 i;
++
++	for (i = 0; i < rx_ring->count; i++) {
++		struct i40e_rx_buffer *rx_bi = &rx_ring->rx_bi[i];
++
++		if (!rx_bi->addr)
++			continue;
++
++		xsk_umem_fq_reuse(rx_ring->xsk_umem, rx_bi->handle);
++		rx_bi->addr = NULL;
++	}
++}
++
+ /**
+  * i40e_xsk_clean_xdp_ring - Clean the XDP Tx ring on shutdown
+  * @xdp_ring: XDP Tx ring
+-- 
+2.17.1
+
