@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue,  4 Sep 2018 20:11:04 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 3/4] i40e: clean zero-copy XDP Rx
+Date: Tue,  4 Sep 2018 20:11:02 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 1/4] i40e: clean zero-copy XDP Tx
  ring on shutdown/reset
 In-Reply-To: <20180904181105.10983-1-bjorn.topel@gmail.com>
 References: <20180904181105.10983-1-bjorn.topel@gmail.com>
-Message-ID: <20180904181105.10983-4-bjorn.topel@gmail.com>
+Message-ID: <20180904181105.10983-2-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,210 +13,98 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Outstanding Rx descriptors are temporarily stored on a stash/reuse
-queue. When/if the HW rings comes up again, entries from the stash are
-used to re-populate the ring.
+When the zero-copy enabled XDP Tx ring is torn down, due to
+configuration changes, outstandning frames on the hardware descriptor
+ring are queued on the completion ring.
 
-The latter required some restructuring of the allocation scheme for
-the AF_XDP zero-copy implementation. There is now a fast, and a slow
-allocation. The "fast allocation" is used from the fast-path and
-obtains free buffers from the fill ring and the internal recycle
-mechanism. The "slow allocation" is only used in ring setup, and
-obtains buffers from the fill ring and the stash (if any).
+The completion ring has a back-pressure mechanism that will guarantee
+that there is sufficient space on the ring.
 
 Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   4 +-
- .../ethernet/intel/i40e/i40e_txrx_common.h    |   1 +
- drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 100 ++++++++++++++++--
- 3 files changed, 96 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 17 +++++++----
+ .../ethernet/intel/i40e/i40e_txrx_common.h    |  2 ++
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 30 +++++++++++++++++++
+ 3 files changed, 43 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 7f85d4ba8b54..740ea58ba938 100644
+index 37bd4e50ccde..7f85d4ba8b54 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1355,8 +1355,10 @@ void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
- 		rx_ring->skb = NULL;
- 	}
+@@ -636,13 +636,18 @@ void i40e_clean_tx_ring(struct i40e_ring *tx_ring)
+ 	unsigned long bi_size;
+ 	u16 i;
  
--	if (rx_ring->xsk_umem)
-+	if (rx_ring->xsk_umem) {
-+		i40e_xsk_clean_rx_ring(rx_ring);
- 		goto skip_free;
+-	/* ring already cleared, nothing to do */
+-	if (!tx_ring->tx_bi)
+-		return;
++	if (ring_is_xdp(tx_ring) && tx_ring->xsk_umem) {
++		i40e_xsk_clean_tx_ring(tx_ring);
++	} else {
++		/* ring already cleared, nothing to do */
++		if (!tx_ring->tx_bi)
++			return;
+ 
+-	/* Free all the Tx ring sk_buffs */
+-	for (i = 0; i < tx_ring->count; i++)
+-		i40e_unmap_and_free_tx_resource(tx_ring, &tx_ring->tx_bi[i]);
++		/* Free all the Tx ring sk_buffs */
++		for (i = 0; i < tx_ring->count; i++)
++			i40e_unmap_and_free_tx_resource(tx_ring,
++							&tx_ring->tx_bi[i]);
 +	}
  
- 	/* Free all the Rx ring sk_buffs */
- 	for (i = 0; i < rx_ring->count; i++) {
+ 	bi_size = sizeof(struct i40e_tx_buffer) * tx_ring->count;
+ 	memset(tx_ring->tx_bi, 0, bi_size);
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-index 29c68b29d36f..8d46acff6f2e 100644
+index b5afd479a9c5..29c68b29d36f 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-@@ -87,6 +87,7 @@ static inline void i40e_arm_wb(struct i40e_ring *tx_ring,
+@@ -87,4 +87,6 @@ static inline void i40e_arm_wb(struct i40e_ring *tx_ring,
  	}
  }
  
-+void i40e_xsk_clean_rx_ring(struct i40e_ring *rx_ring);
- void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring);
- 
++void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring);
++
  #endif /* I40E_TXRX_COMMON_ */
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 99116277c4d2..e4b62e871afc 100644
+index 2ebfc78bbd09..99116277c4d2 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -140,6 +140,7 @@ static void i40e_xsk_umem_dma_unmap(struct i40e_vsi *vsi, struct xdp_umem *umem)
- static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
- 				u16 qid)
- {
-+	struct xdp_umem_fq_reuse *reuseq;
- 	bool if_running;
- 	int err;
+@@ -830,3 +830,33 @@ int i40e_xsk_async_xmit(struct net_device *dev, u32 queue_id)
  
-@@ -156,6 +157,12 @@ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
- 			return -EBUSY;
- 	}
- 
-+	reuseq = xsk_reuseq_prepare(vsi->rx_rings[0]->count);
-+	if (!reuseq)
-+		return -ENOMEM;
-+
-+	xsk_reuseq_free(xsk_reuseq_swap(umem, reuseq));
-+
- 	err = i40e_xsk_umem_dma_map(vsi, umem);
- 	if (err)
- 		return err;
-@@ -353,16 +360,46 @@ static bool i40e_alloc_buffer_zc(struct i40e_ring *rx_ring,
- }
- 
- /**
-- * i40e_alloc_rx_buffers_zc - Allocates a number of Rx buffers
-+ * i40e_alloc_buffer_slow_zc - Allocates an i40e_rx_buffer
-  * @rx_ring: Rx ring
-- * @count: The number of buffers to allocate
-+ * @bi: Rx buffer to populate
-  *
-- * This function allocates a number of Rx buffers and places them on
-- * the Rx ring.
-+ * This function allocates an Rx buffer. The buffer can come from fill
-+ * queue, or via the reuse queue.
-  *
-  * Returns true for a successful allocation, false otherwise
-  **/
--bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
-+static bool i40e_alloc_buffer_slow_zc(struct i40e_ring *rx_ring,
-+				      struct i40e_rx_buffer *bi)
-+{
-+	struct xdp_umem *umem = rx_ring->xsk_umem;
-+	u64 handle, hr;
-+
-+	if (!xsk_umem_peek_addr_rq(umem, &handle)) {
-+		rx_ring->rx_stats.alloc_page_failed++;
-+		return false;
-+	}
-+
-+	handle &= rx_ring->xsk_umem->chunk_mask;
-+
-+	hr = umem->headroom + XDP_PACKET_HEADROOM;
-+
-+	bi->dma = xdp_umem_get_dma(umem, handle);
-+	bi->dma += hr;
-+
-+	bi->addr = xdp_umem_get_data(umem, handle);
-+	bi->addr += hr;
-+
-+	bi->handle = handle + umem->headroom;
-+
-+	xsk_umem_discard_addr_rq(umem);
-+	return true;
-+}
-+
-+static __always_inline bool __i40e_alloc_rx_buffers_zc(
-+	struct i40e_ring *rx_ring, u16 count,
-+	bool alloc(struct i40e_ring *rx_ring,
-+		   struct i40e_rx_buffer *bi))
- {
- 	u16 ntu = rx_ring->next_to_use;
- 	union i40e_rx_desc *rx_desc;
-@@ -372,7 +409,7 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
- 	rx_desc = I40E_RX_DESC(rx_ring, ntu);
- 	bi = &rx_ring->rx_bi[ntu];
- 	do {
--		if (!i40e_alloc_buffer_zc(rx_ring, bi)) {
-+		if (!alloc(rx_ring, bi)) {
- 			ok = false;
- 			goto no_buffers;
- 		}
-@@ -404,6 +441,38 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
- 	return ok;
- }
- 
-+/**
-+ * i40e_alloc_rx_buffers_zc - Allocates a number of Rx buffers
-+ * @rx_ring: Rx ring
-+ * @count: The number of buffers to allocate
-+ *
-+ * This function allocates a number of Rx buffers from the reuse queue
-+ * or fill ring and places them on the Rx ring.
-+ *
-+ * Returns true for a successful allocation, false otherwise
-+ **/
-+bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
-+{
-+	return __i40e_alloc_rx_buffers_zc(rx_ring, count,
-+					  i40e_alloc_buffer_slow_zc);
-+}
-+
-+/**
-+ * i40e_alloc_rx_buffers_fast_zc - Allocates a number of Rx buffers
-+ * @rx_ring: Rx ring
-+ * @count: The number of buffers to allocate
-+ *
-+ * This function allocates a number of Rx buffers from the fill ring
-+ * or the internal recycle mechanism and places them on the Rx ring.
-+ *
-+ * Returns true for a successful allocation, false otherwise
-+ **/
-+static bool i40e_alloc_rx_buffers_fast_zc(struct i40e_ring *rx_ring, u16 count)
-+{
-+	return __i40e_alloc_rx_buffers_zc(rx_ring, count,
-+					  i40e_alloc_buffer_zc);
-+}
-+
- /**
-  * i40e_get_rx_buffer_zc - Return the current Rx buffer
-  * @rx_ring: Rx ring
-@@ -571,8 +640,8 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
- 
- 		if (cleaned_count >= I40E_RX_BUFFER_WRITE) {
- 			failure = failure ||
--				  !i40e_alloc_rx_buffers_zc(rx_ring,
--							    cleaned_count);
-+				  !i40e_alloc_rx_buffers_fast_zc(rx_ring,
-+								 cleaned_count);
- 			cleaned_count = 0;
- 		}
- 
-@@ -831,6 +900,21 @@ int i40e_xsk_async_xmit(struct net_device *dev, u32 queue_id)
  	return 0;
  }
- 
-+void i40e_xsk_clean_rx_ring(struct i40e_ring *rx_ring)
++
++/**
++ * i40e_xsk_clean_xdp_ring - Clean the XDP Tx ring on shutdown
++ * @xdp_ring: XDP Tx ring
++ **/
++void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring)
 +{
-+	u16 i;
++	u16 ntc = tx_ring->next_to_clean, ntu = tx_ring->next_to_use;
++	struct xdp_umem *umem = tx_ring->xsk_umem;
++	struct i40e_tx_buffer *tx_bi;
++	u32 xsk_frames = 0;
 +
-+	for (i = 0; i < rx_ring->count; i++) {
-+		struct i40e_rx_buffer *rx_bi = &rx_ring->rx_bi[i];
++	while (ntc != ntu) {
++		tx_bi = &tx_ring->tx_bi[ntc];
 +
-+		if (!rx_bi->addr)
-+			continue;
++		if (tx_bi->xdpf)
++			i40e_clean_xdp_tx_buffer(tx_ring, tx_bi);
++		else
++			xsk_frames++;
 +
-+		xsk_umem_fq_reuse(rx_ring->xsk_umem, rx_bi->handle);
-+		rx_bi->addr = NULL;
++		tx_bi->xdpf = NULL;
++
++		ntc++;
++		if (ntc > tx_ring->count)
++			ntc = 0;
 +	}
-+}
 +
- /**
-  * i40e_xsk_clean_xdp_ring - Clean the XDP Tx ring on shutdown
-  * @xdp_ring: XDP Tx ring
++	if (xsk_frames)
++		xsk_umem_complete_tx(umem, xsk_frames);
++}
 -- 
 2.17.1
 
