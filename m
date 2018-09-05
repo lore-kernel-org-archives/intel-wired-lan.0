@@ -1,117 +1,66 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 5 Sep 2018 16:52:58 +0000
-Subject: [Intel-wired-lan] [PATCH v2 2/2] net: ethernet: i40evf: fix
- potential build error
-In-Reply-To: <1536114430-21356-2-git-send-email-dongsheng.wang@hxt-semitech.com>
-References: <1536114430-21356-1-git-send-email-dongsheng.wang@hxt-semitech.com>
- <1536114430-21356-2-git-send-email-dongsheng.wang@hxt-semitech.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5884C78D96@ORSMSX115.amr.corp.intel.com>
+From: Jakub Kicinski <jakub.kicinski@netronome.com>
+Date: Wed, 5 Sep 2018 19:14:37 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/4] i40e AF_XDP zero-copy
+ buffer leak fixes
+In-Reply-To: <20180904181105.10983-1-bjorn.topel@gmail.com>
+References: <20180904181105.10983-1-bjorn.topel@gmail.com>
+Message-ID: <20180905191437.35f7d049@cakuba>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Tue,  4 Sep 2018 20:11:01 +0200, Bj?rn T?pel wrote:
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
+> 
+> This series addresses an AF_XDP zero-copy issue that buffers passed
+> from userspace to the kernel was leaked when the hardware descriptor
+> ring was torn down.
+> 
+> The patches fixes the i40e AF_XDP zero-copy implementation.
+> 
+> Thanks to Jakub Kicinski for pointing this out!
+> 
+> Some background for folks that don't know the details: A zero-copy
+> capable driver picks buffers off the fill ring and places them on the
+> hardware Rx ring to be completed at a later point when DMA is
+> complete. Similar on the Tx side; The driver picks buffers off the Tx
+> ring and places them on the Tx hardware ring.
+> 
+> In the typical flow, the Rx buffer will be placed onto an Rx ring
+> (completed to the user), and the Tx buffer will be placed on the
+> completion ring to notify the user that the transfer is done.
+> 
+> However, if the driver needs to tear down the hardware rings for some
+> reason (interface goes down, reconfiguration and such), the userspace
+> buffers cannot be leaked. They have to be reused or completed back to
+> userspace.
+> 
+> The implementation does the following:
+> 
+> * Outstanding Tx descriptors will be passed to the completion
+>   ring. The Tx code has back-pressure mechanism in place, so that
+>   enough empty space in the completion ring is guaranteed.
+> 
+> * Outstanding Rx descriptors are temporarily stored on a stash/reuse
+>   queue. The reuse queue is based on Jakub's RFC. When/if the HW rings
+>   comes up again, entries from the stash are used to re-populate the
+>   ring.
+> 
+> * When AF_XDP ZC is enabled, disallow changing the number of hardware
+>   descriptors via ethtool. Otherwise, the size of the stash/reuse
+>   queue can grow unbounded.
+> 
+> Going forward, introducing a "zero-copy allocator" analogous to Jesper
+> Brouer's page pool would be a more robust and reuseable solution.
+> 
+> Jakub: I've made a minor checkpatch-fix to your RFC, prior adding it
+> into this series.
 
+Thanks for the fix! :)
 
-> -----Original Message-----
-> From: Wang Dongsheng [mailto:dongsheng.wang at hxt-semitech.com]
-> Sent: Tuesday, September 04, 2018 7:27 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
-> sergei.shtylyov at cogentembedded.com
-> Cc: Keller, Jacob E <jacob.e.keller@intel.com>; davem at davemloft.net; intel-
-> wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org; Wang Dongsheng <dongsheng.wang@hxt-
-> semitech.com>
-> Subject: [PATCH v2 2/2] net: ethernet: i40evf: fix potential build error
-> 
-> Can't have non-inline function in a header file.
-> There is a risk of "Multiple definition" from cross-including.
-> 
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@hxt-semitech.com>
-
-Acked-by: Jacob Keller <jacob.e.keller@intel.com>
-
-> ---
->  .../intel/i40evf/i40e_ethtool_stats.h         | 25 ++-----------------
->  .../ethernet/intel/i40evf/i40evf_ethtool.c    | 24 ++++++++++++++++++
->  2 files changed, 26 insertions(+), 23 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_ethtool_stats.h
-> b/drivers/net/ethernet/intel/i40evf/i40e_ethtool_stats.h
-> index 60b595dd8c39..d70a071f065f 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40e_ethtool_stats.h
-> +++ b/drivers/net/ethernet/intel/i40evf/i40e_ethtool_stats.h
-> @@ -181,29 +181,8 @@ i40evf_add_queue_stats(u64 **data, struct i40e_ring
-> *ring)
->  	*data += size;
->  }
-> 
-> -/**
-> - * __i40e_add_stat_strings - copy stat strings into ethtool buffer
-> - * @p: ethtool supplied buffer
-> - * @stats: stat definitions array
-> - * @size: size of the stats array
-> - *
-> - * Format and copy the strings described by stats into the buffer pointed at
-> - * by p.
-> - **/
-> -static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
-> -				    const unsigned int size, ...)
-> -{
-> -	unsigned int i;
-> -
-> -	for (i = 0; i < size; i++) {
-> -		va_list args;
-> -
-> -		va_start(args, size);
-> -		vsnprintf(*p, ETH_GSTRING_LEN, stats[i].stat_string, args);
-> -		*p += ETH_GSTRING_LEN;
-> -		va_end(args);
-> -	}
-> -}
-> +void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
-> +			     const unsigned int size, ...);
-> 
->  /**
->   * 40e_add_stat_strings - copy stat strings into ethtool buffer
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-> b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-> index 9319971c5c92..c9a54f6de61e 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-> @@ -171,6 +171,30 @@ static void i40evf_get_priv_flag_strings(struct
-> net_device *netdev, u8 *data)
->  	}
->  }
-> 
-> +/**
-> + * __i40e_add_stat_strings - copy stat strings into ethtool buffer
-> + * @p: ethtool supplied buffer
-> + * @stats: stat definitions array
-> + * @size: size of the stats array
-> + *
-> + * Format and copy the strings described by stats into the buffer pointed at
-> + * by p.
-> + **/
-> +void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
-> +			     const unsigned int size, ...)
-> +{
-> +	unsigned int i;
-> +
-> +	for (i = 0; i < size; i++) {
-> +		va_list args;
-> +
-> +		va_start(args, size);
-> +		vsnprintf(*p, ETH_GSTRING_LEN, stats[i].stat_string, args);
-> +		*p += ETH_GSTRING_LEN;
-> +		va_end(args);
-> +	}
-> +}
-> +
->  /**
->   * i40evf_get_stat_strings - Get stat strings
->   * @netdev: network interface device structure
-> --
-> 2.18.0
-
+Out of curiosity, did checking the reuse queue have a noticeable impact
+in your test (i.e. always using the _rq() helpers)?  You seem to be
+adding an indirect call, would that not be way worse on a retpoline
+kernel?
