@@ -1,31 +1,80 @@
-From: Stephen Hemminger <stephen@networkplumber.org>
-Date: Wed, 5 Sep 2018 08:26:05 +0100
-Subject: [Intel-wired-lan] [PATCH 1/9] PCI: sysfs: Export available PCIe
- bandwidth
-In-Reply-To: <20180903180242.14504-2-mr.nuke.me@gmail.com>
-References: <20180903180242.14504-1-mr.nuke.me@gmail.com>
- <20180903180242.14504-2-mr.nuke.me@gmail.com>
-Message-ID: <20180905082605.69d9e5a0@shemminger-XPS-13-9360>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Wed, 5 Sep 2018 21:15:14 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/4] i40e AF_XDP zero-copy
+ buffer leak fixes
+In-Reply-To: <20180905191437.35f7d049@cakuba>
+References: <20180904181105.10983-1-bjorn.topel@gmail.com>
+ <20180905191437.35f7d049@cakuba>
+Message-ID: <CAJ+HfNjQCP7c7gCVJi=LRxK2LvQrNvn6cPfRACW6TPzM8339SA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon,  3 Sep 2018 13:02:28 -0500
-Alexandru Gagniuc <mr.nuke.me@gmail.com> wrote:
+Den ons 5 sep. 2018 kl 19:14 skrev Jakub Kicinski
+<jakub.kicinski@netronome.com>:
+>
+> On Tue,  4 Sep 2018 20:11:01 +0200, Bj?rn T?pel wrote:
+> > From: Bj?rn T?pel <bjorn.topel@intel.com>
+> >
+> > This series addresses an AF_XDP zero-copy issue that buffers passed
+> > from userspace to the kernel was leaked when the hardware descriptor
+> > ring was torn down.
+> >
+> > The patches fixes the i40e AF_XDP zero-copy implementation.
+> >
+> > Thanks to Jakub Kicinski for pointing this out!
+> >
+> > Some background for folks that don't know the details: A zero-copy
+> > capable driver picks buffers off the fill ring and places them on the
+> > hardware Rx ring to be completed at a later point when DMA is
+> > complete. Similar on the Tx side; The driver picks buffers off the Tx
+> > ring and places them on the Tx hardware ring.
+> >
+> > In the typical flow, the Rx buffer will be placed onto an Rx ring
+> > (completed to the user), and the Tx buffer will be placed on the
+> > completion ring to notify the user that the transfer is done.
+> >
+> > However, if the driver needs to tear down the hardware rings for some
+> > reason (interface goes down, reconfiguration and such), the userspace
+> > buffers cannot be leaked. They have to be reused or completed back to
+> > userspace.
+> >
+> > The implementation does the following:
+> >
+> > * Outstanding Tx descriptors will be passed to the completion
+> >   ring. The Tx code has back-pressure mechanism in place, so that
+> >   enough empty space in the completion ring is guaranteed.
+> >
+> > * Outstanding Rx descriptors are temporarily stored on a stash/reuse
+> >   queue. The reuse queue is based on Jakub's RFC. When/if the HW rings
+> >   comes up again, entries from the stash are used to re-populate the
+> >   ring.
+> >
+> > * When AF_XDP ZC is enabled, disallow changing the number of hardware
+> >   descriptors via ethtool. Otherwise, the size of the stash/reuse
+> >   queue can grow unbounded.
+> >
+> > Going forward, introducing a "zero-copy allocator" analogous to Jesper
+> > Brouer's page pool would be a more robust and reuseable solution.
+> >
+> > Jakub: I've made a minor checkpatch-fix to your RFC, prior adding it
+> > into this series.
+>
+> Thanks for the fix! :)
+>
+> Out of curiosity, did checking the reuse queue have a noticeable impact
+> in your test (i.e. always using the _rq() helpers)?  You seem to be
+> adding an indirect call, would that not be way worse on a retpoline
+> kernel?
 
-> For certain bandwidth-critical devices (e.g. multi-port network cards)
-> it is useful to know the available bandwidth to the root complex. This
-> information is only available via the system log, which doesn't
-> account for link degradation after probing.
-> 
-> With a sysfs attribute, we can computes the bandwidth on-demand, and
-> will detect degraded links.
-> 
-> Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Do you mean the indirection in __i40e_alloc_rx_buffers_zc (patch #3)?
+The indirect call is elided by the __always_inline -- without that
+retpoline took 2.5Mpps worth of Rx. :-(
 
-In other places (like /sys/class/net/eth0/speed) only the raw value is printed
-without suffix.  The general convention in sysfs is that it should be one value
-per file and in more raw format.  So why not just print it in bits/sec without
-suffix?
+I'm only using the _rq helpers in the configuration/slow path, so the
+fast-path is unchanged.
+
+
+Bj?rn
