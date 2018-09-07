@@ -1,245 +1,99 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri,  7 Sep 2018 10:18:46 +0200
-Subject: [Intel-wired-lan] [PATCH v2 2/4] net: xsk: add a simple buffer
- reuse queue
+Date: Fri,  7 Sep 2018 10:18:48 +0200
+Subject: [Intel-wired-lan] [PATCH v2 4/4] i40e: disallow changing the number
+ of descriptors when AF_XDP is on
 In-Reply-To: <20180907081848.5438-1-bjorn.topel@gmail.com>
 References: <20180907081848.5438-1-bjorn.topel@gmail.com>
-Message-ID: <20180907081848.5438-3-bjorn.topel@gmail.com>
+Message-ID: <20180907081848.5438-5-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jakub Kicinski <jakub.kicinski@netronome.com>
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-XSK UMEM is strongly single producer single consumer so reuse of
-frames is challenging.  Add a simple "stash" of FILL packets to
-reuse for drivers to optionally make use of.  This is useful
-when driver has to free (ndo_stop) or resize a ring with an active
-AF_XDP ZC socket.
+When an AF_XDP UMEM is attached to any of the Rx rings, we disallow a
+user to change the number of descriptors via e.g. "ethtool -G IFNAME".
 
-v2: Fixed build issues for !CONFIG_XDP_SOCKETS.
+Otherwise, the size of the stash/reuse queue can grow unbounded, which
+would result in OOM or leaking userspace buffers.
 
-Signed-off-by: Jakub Kicinski <jakub.kicinski@netronome.com>
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- include/net/xdp_sock.h | 69 ++++++++++++++++++++++++++++++++++++++++++
- net/xdp/xdp_umem.c     |  2 ++
- net/xdp/xsk_queue.c    | 55 +++++++++++++++++++++++++++++++++
- net/xdp/xsk_queue.h    |  3 ++
- 4 files changed, 129 insertions(+)
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |  9 +++++++-
+ .../ethernet/intel/i40e/i40e_txrx_common.h    |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 22 +++++++++++++++++++
+ 3 files changed, 31 insertions(+), 1 deletion(-)
 
-diff --git a/include/net/xdp_sock.h b/include/net/xdp_sock.h
-index 932ca0dad6f3..70a115bea4f4 100644
---- a/include/net/xdp_sock.h
-+++ b/include/net/xdp_sock.h
-@@ -21,6 +21,12 @@ struct xdp_umem_page {
- 	dma_addr_t dma;
- };
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index d7d3974beca2..3cd2c88c72f8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -5,7 +5,7 @@
  
-+struct xdp_umem_fq_reuse {
-+	u32 nentries;
-+	u32 length;
-+	u64 handles[];
-+};
+ #include "i40e.h"
+ #include "i40e_diag.h"
+-
++#include "i40e_txrx_common.h"
+ #include "i40e_ethtool_stats.h"
+ 
+ #define I40E_PF_STAT(_name, _stat) \
+@@ -1493,6 +1493,13 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 	    (new_rx_count == vsi->rx_rings[0]->count))
+ 		return 0;
+ 
++	/* If there is a AF_XDP UMEM attached to any of Rx rings,
++	 * disallow changing the number of descriptors -- regardless
++	 * if the netdev is running or not.
++	 */
++	if (i40e_xsk_any_rx_ring_enabled(vsi))
++		return -EBUSY;
 +
- struct xdp_umem {
- 	struct xsk_queue *fq;
- 	struct xsk_queue *cq;
-@@ -37,6 +43,7 @@ struct xdp_umem {
- 	struct page **pgs;
- 	u32 npgs;
- 	struct net_device *dev;
-+	struct xdp_umem_fq_reuse *fq_reuse;
- 	u16 queue_id;
- 	bool zc;
- 	spinlock_t xsk_list_lock;
-@@ -75,6 +82,10 @@ void xsk_umem_discard_addr(struct xdp_umem *umem);
- void xsk_umem_complete_tx(struct xdp_umem *umem, u32 nb_entries);
- bool xsk_umem_consume_tx(struct xdp_umem *umem, dma_addr_t *dma, u32 *len);
- void xsk_umem_consume_tx_done(struct xdp_umem *umem);
-+struct xdp_umem_fq_reuse *xsk_reuseq_prepare(u32 nentries);
-+struct xdp_umem_fq_reuse *xsk_reuseq_swap(struct xdp_umem *umem,
-+					  struct xdp_umem_fq_reuse *newq);
-+void xsk_reuseq_free(struct xdp_umem_fq_reuse *rq);
+ 	while (test_and_set_bit(__I40E_CONFIG_BUSY, pf->state)) {
+ 		timeout--;
+ 		if (!timeout)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
+index 8d46acff6f2e..09809dffe399 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
+@@ -89,5 +89,6 @@ static inline void i40e_arm_wb(struct i40e_ring *tx_ring,
  
- static inline char *xdp_umem_get_data(struct xdp_umem *umem, u64 addr)
- {
-@@ -85,6 +96,35 @@ static inline dma_addr_t xdp_umem_get_dma(struct xdp_umem *umem, u64 addr)
- {
- 	return umem->pages[addr >> PAGE_SHIFT].dma + (addr & (PAGE_SIZE - 1));
+ void i40e_xsk_clean_rx_ring(struct i40e_ring *rx_ring);
+ void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring);
++bool i40e_xsk_any_rx_ring_enabled(struct i40e_vsi *vsi);
+ 
+ #endif /* I40E_TXRX_COMMON_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index e4b62e871afc..119f59ec7cc0 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -944,3 +944,25 @@ void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring)
+ 	if (xsk_frames)
+ 		xsk_umem_complete_tx(umem, xsk_frames);
  }
 +
-+/* Reuse-queue aware version of FILL queue helpers */
-+static inline u64 *xsk_umem_peek_addr_rq(struct xdp_umem *umem, u64 *addr)
++/**
++ * i40e_xsk_any_rx_ring_enabled - Checks whether any of the Rx rings
++ * has AF_XDP UMEM attached
++ * @vsi: vsi
++ *
++ * Returns true if any of the Rx rings has an AF_XDP UMEM attached
++ **/
++bool i40e_xsk_any_rx_ring_enabled(struct i40e_vsi *vsi)
 +{
-+	struct xdp_umem_fq_reuse *rq = umem->fq_reuse;
++	int i;
 +
-+	if (!rq->length)
-+		return xsk_umem_peek_addr(umem, addr);
++	if (!vsi->xsk_umems)
++		return false;
 +
-+	*addr = rq->handles[rq->length - 1];
-+	return addr;
-+}
-+
-+static inline void xsk_umem_discard_addr_rq(struct xdp_umem *umem)
-+{
-+	struct xdp_umem_fq_reuse *rq = umem->fq_reuse;
-+
-+	if (!rq->length)
-+		xsk_umem_discard_addr(umem);
-+	else
-+		rq->length--;
-+}
-+
-+static inline void xsk_umem_fq_reuse(struct xdp_umem *umem, u64 addr)
-+{
-+	struct xdp_umem_fq_reuse *rq = umem->fq_reuse;
-+
-+	rq->handles[rq->length++] = addr;
-+}
- #else
- static inline int xsk_generic_rcv(struct xdp_sock *xs, struct xdp_buff *xdp)
- {
-@@ -128,6 +168,21 @@ static inline void xsk_umem_consume_tx_done(struct xdp_umem *umem)
- {
- }
- 
-+static inline struct xdp_umem_fq_reuse *xsk_reuseq_prepare(u32 nentries)
-+{
-+	return NULL;
-+}
-+
-+static inline struct xdp_umem_fq_reuse *xsk_reuseq_swap(
-+	struct xdp_umem *umem,
-+	struct xdp_umem_fq_reuse *newq)
-+{
-+	return NULL;
-+}
-+static inline void xsk_reuseq_free(struct xdp_umem_fq_reuse *rq)
-+{
-+}
-+
- static inline char *xdp_umem_get_data(struct xdp_umem *umem, u64 addr)
- {
- 	return NULL;
-@@ -137,6 +192,20 @@ static inline dma_addr_t xdp_umem_get_dma(struct xdp_umem *umem, u64 addr)
- {
- 	return 0;
- }
-+
-+static inline u64 *xsk_umem_peek_addr_rq(struct xdp_umem *umem, u64 *addr)
-+{
-+	return NULL;
-+}
-+
-+static inline void xsk_umem_discard_addr_rq(struct xdp_umem *umem)
-+{
-+}
-+
-+static inline void xsk_umem_fq_reuse(struct xdp_umem *umem, u64 addr)
-+{
-+}
-+
- #endif /* CONFIG_XDP_SOCKETS */
- 
- #endif /* _LINUX_XDP_SOCK_H */
-diff --git a/net/xdp/xdp_umem.c b/net/xdp/xdp_umem.c
-index b3b632c5aeae..555427b3e0fe 100644
---- a/net/xdp/xdp_umem.c
-+++ b/net/xdp/xdp_umem.c
-@@ -165,6 +165,8 @@ static void xdp_umem_release(struct xdp_umem *umem)
- 		umem->cq = NULL;
- 	}
- 
-+	xsk_reuseq_destroy(umem);
-+
- 	xdp_umem_unpin_pages(umem);
- 
- 	task = get_pid_task(umem->pid, PIDTYPE_PID);
-diff --git a/net/xdp/xsk_queue.c b/net/xdp/xsk_queue.c
-index 2dc1384d9f27..b66504592d9b 100644
---- a/net/xdp/xsk_queue.c
-+++ b/net/xdp/xsk_queue.c
-@@ -3,7 +3,9 @@
-  * Copyright(c) 2018 Intel Corporation.
-  */
- 
-+#include <linux/log2.h>
- #include <linux/slab.h>
-+#include <linux/overflow.h>
- 
- #include "xsk_queue.h"
- 
-@@ -62,3 +64,56 @@ void xskq_destroy(struct xsk_queue *q)
- 	page_frag_free(q->ring);
- 	kfree(q);
- }
-+
-+struct xdp_umem_fq_reuse *xsk_reuseq_prepare(u32 nentries)
-+{
-+	struct xdp_umem_fq_reuse *newq;
-+
-+	/* Check for overflow */
-+	if (nentries > (u32)roundup_pow_of_two(nentries))
-+		return NULL;
-+	nentries = roundup_pow_of_two(nentries);
-+
-+	newq = kvmalloc(struct_size(newq, handles, nentries), GFP_KERNEL);
-+	if (!newq)
-+		return NULL;
-+	memset(newq, 0, offsetof(typeof(*newq), handles));
-+
-+	newq->nentries = nentries;
-+	return newq;
-+}
-+EXPORT_SYMBOL_GPL(xsk_reuseq_prepare);
-+
-+struct xdp_umem_fq_reuse *xsk_reuseq_swap(struct xdp_umem *umem,
-+					  struct xdp_umem_fq_reuse *newq)
-+{
-+	struct xdp_umem_fq_reuse *oldq = umem->fq_reuse;
-+
-+	if (!oldq) {
-+		umem->fq_reuse = newq;
-+		return NULL;
++	for (i = 0; i < vsi->num_queue_pairs; i++) {
++		if (vsi->xsk_umems[i])
++			return true;
 +	}
 +
-+	if (newq->nentries < oldq->length)
-+		return newq;
-+
-+	memcpy(newq->handles, oldq->handles,
-+	       array_size(oldq->length, sizeof(u64)));
-+	newq->length = oldq->length;
-+
-+	umem->fq_reuse = newq;
-+	return oldq;
++	return false;
 +}
-+EXPORT_SYMBOL_GPL(xsk_reuseq_swap);
-+
-+void xsk_reuseq_free(struct xdp_umem_fq_reuse *rq)
-+{
-+	kvfree(rq);
-+}
-+EXPORT_SYMBOL_GPL(xsk_reuseq_free);
-+
-+void xsk_reuseq_destroy(struct xdp_umem *umem)
-+{
-+	xsk_reuseq_free(umem->fq_reuse);
-+	umem->fq_reuse = NULL;
-+}
-diff --git a/net/xdp/xsk_queue.h b/net/xdp/xsk_queue.h
-index 82252cccb4e0..bcb5cbb40419 100644
---- a/net/xdp/xsk_queue.h
-+++ b/net/xdp/xsk_queue.h
-@@ -258,4 +258,7 @@ void xskq_set_umem(struct xsk_queue *q, u64 size, u64 chunk_mask);
- struct xsk_queue *xskq_create(u32 nentries, bool umem_queue);
- void xskq_destroy(struct xsk_queue *q_ops);
- 
-+/* Executed by the core when the entire UMEM gets freed */
-+void xsk_reuseq_destroy(struct xdp_umem *umem);
-+
- #endif /* _LINUX_XSK_QUEUE_H */
 -- 
 2.17.1
 
