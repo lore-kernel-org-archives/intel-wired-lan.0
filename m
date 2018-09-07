@@ -1,41 +1,21 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 7 Sep 2018 15:27:21 +0000
-Subject: [Intel-wired-lan] [PATCH v3 1/2] net: ethernet: i40e: fix build
- error
-In-Reply-To: <1536319175-3660-2-git-send-email-dongsheng.wang@hxt-semitech.com>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Date: Fri, 7 Sep 2018 18:33:08 +0300
+Subject: [Intel-wired-lan] [PATCH v3 2/2] net: ethernet: i40evf: fix
+ underlying build error
+In-Reply-To: <1536319175-3660-3-git-send-email-dongsheng.wang@hxt-semitech.com>
 References: <1536319175-3660-1-git-send-email-dongsheng.wang@hxt-semitech.com>
- <1536319175-3660-2-git-send-email-dongsheng.wang@hxt-semitech.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5884C7B63C@ORSMSX115.amr.corp.intel.com>
+ <1536319175-3660-3-git-send-email-dongsheng.wang@hxt-semitech.com>
+Message-ID: <59fd149c-bacc-c39c-b0d8-a4fb9366f26a@cogentembedded.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On 09/07/2018 02:19 PM, Wang Dongsheng wrote:
 
-
-> -----Original Message-----
-> From: Wang Dongsheng [mailto:dongsheng.wang at hxt-semitech.com]
-> Sent: Friday, September 07, 2018 4:20 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
-> sergei.shtylyov at cogentembedded.com
-> Cc: Keller, Jacob E <jacob.e.keller@intel.com>; davem at davemloft.net; intel-
-> wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org; Wang Dongsheng <dongsheng.wang@hxt-
-> semitech.com>
-> Subject: [PATCH v3 1/2] net: ethernet: i40e: fix build error
-> 
-> Remove "inline" from __i40e_add_stat_strings and move the function.
-> 
-> In file included from
-> drivers/net/ethernet/intel/i40e/i40e_ethtool.c:9:0:
-> drivers/net/ethernet/intel/i40e/i40e_ethtool.c: In function
-> __i40e_add_stat_string:
-> drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h:193:20: error:
-> function __i40e_add_stat_strings can never be inlined because it uses
-> variable argument lists
->  static inline void __i40e_add_stat_strings(u8 **p, const struct
-> 					    i40e_stats stats[],
+> Can't have non-inline function in a header file.
+> There is a risk of "Multiple definition" from cross-including.
 > 
 > Tested on: x86_64, make ARCH=i386
 > 
@@ -49,70 +29,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > 
 > Signed-off-by: Wang Dongsheng <dongsheng.wang@hxt-semitech.com>
 > ---
-> V3: add static
-> V2: Move function
-
-
-Acked-by: Jacob Keller <jacob.e.keller@intel.com>
-
-
-This patch fixes the build issue, and is fine with me.
-
-Thanks,
-Jake
-
+> V3: add static 
 > ---
->  .../net/ethernet/intel/i40e/i40e_ethtool.c    | 24 ++++++++++++++++++
->  .../ethernet/intel/i40e/i40e_ethtool_stats.h  | 25 ++-----------------
->  2 files changed, 26 insertions(+), 23 deletions(-)
+>  .../intel/i40evf/i40e_ethtool_stats.h         | 23 +-----------------
+>  .../ethernet/intel/i40evf/i40evf_ethtool.c    | 24 +++++++++++++++++++
+>  2 files changed, 25 insertions(+), 22 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> index d7d3974beca2..34121a72f2e7 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> @@ -1821,6 +1821,30 @@ static void i40e_get_ethtool_stats(struct net_device
-> *netdev,
->  		  "ethtool stats count mismatch!");
->  }
-> 
-> +/**
-> + * __i40e_add_stat_strings - copy stat strings into ethtool buffer
-> + * @p: ethtool supplied buffer
-> + * @stats: stat definitions array
-> + * @size: size of the stats array
-> + *
-> + * Format and copy the strings described by stats into the buffer pointed at
-> + * by p.
-> + **/
-> +static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
-> +				    const unsigned int size, ...)
-> +{
-> +	unsigned int i;
-> +
-> +	for (i = 0; i < size; i++) {
-> +		va_list args;
-> +
-> +		va_start(args, size);
-> +		vsnprintf(*p, ETH_GSTRING_LEN, stats[i].stat_string, args);
-> +		*p += ETH_GSTRING_LEN;
-> +		va_end(args);
-> +	}
-> +}
-> +
->  /**
->   * i40e_get_stat_strings - copy stat strings into supplied buffer
->   * @netdev: the netdev to collect strings for
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-> b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-> index bba1cb0b658f..553b0d720839 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool_stats.h
-> @@ -181,29 +181,8 @@ i40e_add_queue_stats(u64 **data, struct i40e_ring
-> *ring)
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_ethtool_stats.h b/drivers/net/ethernet/intel/i40evf/i40e_ethtool_stats.h
+> index 60b595dd8c39..62ab67a77753 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40e_ethtool_stats.h
+> +++ b/drivers/net/ethernet/intel/i40evf/i40e_ethtool_stats.h
+> @@ -181,29 +181,8 @@ i40evf_add_queue_stats(u64 **data, struct i40e_ring *ring)
 >  	*data += size;
 >  }
-> 
+>  
 > -/**
 > - * __i40e_add_stat_strings - copy stat strings into ethtool buffer
 > - * @p: ethtool supplied buffer
@@ -122,7 +52,11 @@ Jake
 > - * Format and copy the strings described by stats into the buffer pointed at
 > - * by p.
 > - **/
-> -static inline void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
+>  static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
+
+   There's no point to keeping *static* function in the header file (unless it's
+also *inline*).
+
 > -				    const unsigned int size, ...)
 > -{
 > -	unsigned int i;
@@ -136,11 +70,10 @@ Jake
 > -		va_end(args);
 > -	}
 > -}
-> +static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
 > +				    const unsigned int size, ...);
-> 
+>  
 >  /**
 >   * 40e_add_stat_strings - copy stat strings into ethtool buffer
-> --
-> 2.18.0
+[...]
 
+MBR, Sergei
