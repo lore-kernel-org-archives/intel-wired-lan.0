@@ -1,45 +1,110 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 7 Sep 2018 15:25:03 +0800
-Subject: [Intel-wired-lan] [PATCH v2 2/2] net: ethernet: i40evf: fix
- potential build error
-In-Reply-To: <1536114430-21356-2-git-send-email-dongsheng.wang@hxt-semitech.com>
-References: <1536114430-21356-2-git-send-email-dongsheng.wang@hxt-semitech.com>
-Message-ID: <201809071557.VVFCvL4J%fengguang.wu@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Fri,  7 Sep 2018 10:18:45 +0200
+Subject: [Intel-wired-lan] [PATCH v2 1/4] i40e: clean zero-copy XDP Tx ring
+ on shutdown/reset
+In-Reply-To: <20180907081848.5438-1-bjorn.topel@gmail.com>
+References: <20180907081848.5438-1-bjorn.topel@gmail.com>
+Message-ID: <20180907081848.5438-2-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Wang,
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Thank you for the patch! Yet something to improve:
+When the zero-copy enabled XDP Tx ring is torn down, due to
+configuration changes, outstandning frames on the hardware descriptor
+ring are queued on the completion ring.
 
-[auto build test ERROR on jkirsher-next-queue/dev-queue]
-[cannot apply to v4.19-rc2 next-20180906]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+The completion ring has a back-pressure mechanism that will guarantee
+that there is sufficient space on the ring.
 
-url:    https://github.com/0day-ci/linux/commits/Wang-Dongsheng/net-ethernet-i40e-fix-build-error/20180907-063122
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-config: i386-allyesconfig (attached as .config)
-compiler: gcc-7 (Debian 7.3.0-1) 7.3.0
-reproduce:
-        # save the attached .config to linux build tree
-        make ARCH=i386 
-
-All errors (new ones prefixed by >>):
-
-   drivers/net/ethernet/intel/i40evf/i40evf_ethtool.o: In function `__i40e_add_stat_strings':
->> i40evf_ethtool.c:(.text+0xeb0): multiple definition of `__i40e_add_stat_strings'
-   drivers/net/ethernet/intel/i40e/i40e_ethtool.o:i40e_ethtool.c:(.text+0x5e20): first defined here
-
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 64499 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180907/43644654/attachment-0001.bin>
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 17 +++++++----
+ .../ethernet/intel/i40e/i40e_txrx_common.h    |  2 ++
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 30 +++++++++++++++++++
+ 3 files changed, 43 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 37bd4e50ccde..7f85d4ba8b54 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -636,13 +636,18 @@ void i40e_clean_tx_ring(struct i40e_ring *tx_ring)
+ 	unsigned long bi_size;
+ 	u16 i;
+ 
+-	/* ring already cleared, nothing to do */
+-	if (!tx_ring->tx_bi)
+-		return;
++	if (ring_is_xdp(tx_ring) && tx_ring->xsk_umem) {
++		i40e_xsk_clean_tx_ring(tx_ring);
++	} else {
++		/* ring already cleared, nothing to do */
++		if (!tx_ring->tx_bi)
++			return;
+ 
+-	/* Free all the Tx ring sk_buffs */
+-	for (i = 0; i < tx_ring->count; i++)
+-		i40e_unmap_and_free_tx_resource(tx_ring, &tx_ring->tx_bi[i]);
++		/* Free all the Tx ring sk_buffs */
++		for (i = 0; i < tx_ring->count; i++)
++			i40e_unmap_and_free_tx_resource(tx_ring,
++							&tx_ring->tx_bi[i]);
++	}
+ 
+ 	bi_size = sizeof(struct i40e_tx_buffer) * tx_ring->count;
+ 	memset(tx_ring->tx_bi, 0, bi_size);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
+index b5afd479a9c5..29c68b29d36f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
+@@ -87,4 +87,6 @@ static inline void i40e_arm_wb(struct i40e_ring *tx_ring,
+ 	}
+ }
+ 
++void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring);
++
+ #endif /* I40E_TXRX_COMMON_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index 2ebfc78bbd09..99116277c4d2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -830,3 +830,33 @@ int i40e_xsk_async_xmit(struct net_device *dev, u32 queue_id)
+ 
+ 	return 0;
+ }
++
++/**
++ * i40e_xsk_clean_xdp_ring - Clean the XDP Tx ring on shutdown
++ * @xdp_ring: XDP Tx ring
++ **/
++void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring)
++{
++	u16 ntc = tx_ring->next_to_clean, ntu = tx_ring->next_to_use;
++	struct xdp_umem *umem = tx_ring->xsk_umem;
++	struct i40e_tx_buffer *tx_bi;
++	u32 xsk_frames = 0;
++
++	while (ntc != ntu) {
++		tx_bi = &tx_ring->tx_bi[ntc];
++
++		if (tx_bi->xdpf)
++			i40e_clean_xdp_tx_buffer(tx_ring, tx_bi);
++		else
++			xsk_frames++;
++
++		tx_bi->xdpf = NULL;
++
++		ntc++;
++		if (ntc > tx_ring->count)
++			ntc = 0;
++	}
++
++	if (xsk_frames)
++		xsk_umem_complete_tx(umem, xsk_frames);
++}
+-- 
+2.17.1
+
