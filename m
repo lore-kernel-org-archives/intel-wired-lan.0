@@ -1,45 +1,120 @@
-From: David Miller <davem@davemloft.net>
-Date: Fri, 07 Sep 2018 15:02:02 -0700 (PDT)
-Subject: [Intel-wired-lan] [net-next] i40e(vf): remove
- i40e_ethtool_stats.h header file
-In-Reply-To: <20180907215544.5957-1-jacob.e.keller@intel.com>
-References: <20180907215544.5957-1-jacob.e.keller@intel.com>
-Message-ID: <20180907.150202.635126554624052715.davem@davemloft.net>
+From: kbuild test robot <lkp@intel.com>
+Date: Mon, 10 Sep 2018 23:31:15 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ d18f008e716f11798ad049a628228af7544abbf9
+Message-ID: <5b968e43.D+F73euwPsfJTX9I%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  7 Sep 2018 14:55:44 -0700
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: d18f008e716f11798ad049a628228af7544abbf9  ixgbevf: fix msglen for ipsec mbx messages
 
-> Essentially reverts commit 8fd75c58a09a ("i40e: move ethtool
-> stats boiler plate code to i40e_ethtool_stats.h", 2018-08-30), and
-> additionally moves the similar code in i40evf into i40evf_ethtool.c.
-> 
-> The code was intially moved from i40e_ethtool.c into i40e_ethtool_stats.h
-> as a way of better logically organizing the code. This has two problems.
-> First, we can't have an inline function with variadic arguments on all
-> platforms. Second, it gave the appearance that we had plans to share
-> code between the i40e and i40evf drivers, due to having a near copy of
-> the contents in the i40evf/i40e_ethtool_stats.h file.
-> 
-> Patches which actually attempt to combine or share code between the i40e
-> and i40evf drivers have not materialized, and are likely a ways off.
-> 
-> Rather than fixing the one function which causes build issues, just move
-> this code back into the i40e_ethtool.c and i40evf_ethtool.c files. Note
-> that we also change these functions back from static inlines to just
-> statics, since they're no longer in a header file.
-> 
-> We can revisit this if/when work is done to actually attempt to share
-> code between drivers. Alternatively, this stats code could be made more
-> generic so that it can be shared across drivers as part of ethtool
-> kernel work.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+elapsed time: 30m
 
-Applied and after the build checks out will be pushed to net-next.
+configs tested: 95
 
-Thanks.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x009-201836
+x86_64                 randconfig-x000-201836
+x86_64                 randconfig-x001-201836
+x86_64                 randconfig-x004-201836
+x86_64                 randconfig-x003-201836
+x86_64                 randconfig-x008-201836
+x86_64                 randconfig-x007-201836
+x86_64                 randconfig-x006-201836
+x86_64                 randconfig-x005-201836
+x86_64                 randconfig-x002-201836
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-x002-201836
+i386                   randconfig-x003-201836
+i386                   randconfig-x005-201836
+i386                   randconfig-x008-201836
+i386                   randconfig-x000-201836
+i386                   randconfig-x007-201836
+i386                   randconfig-x004-201836
+i386                   randconfig-x001-201836
+i386                   randconfig-x006-201836
+i386                   randconfig-x009-201836
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+openrisc                 simple_smp_defconfig
+powerpc                      ep88xc_defconfig
+powerpc                        fsp2_defconfig
+riscv                               defconfig
+x86_64                 randconfig-x019-201836
+x86_64                 randconfig-x013-201836
+x86_64                 randconfig-x012-201836
+x86_64                 randconfig-x018-201836
+x86_64                 randconfig-x017-201836
+x86_64                 randconfig-x010-201836
+x86_64                 randconfig-x014-201836
+x86_64                 randconfig-x015-201836
+x86_64                 randconfig-x016-201836
+x86_64                 randconfig-x011-201836
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-09101230
+i386                   randconfig-s1-09101230
+i386                   randconfig-s2-09101230
+i386                   randconfig-s3-09101230
+x86_64                 randconfig-s3-09102233
+x86_64                 randconfig-s4-09102233
+x86_64                 randconfig-s5-09102233
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x018-201836
+i386                   randconfig-x017-201836
+i386                   randconfig-x010-201836
+i386                   randconfig-x013-201836
+i386                   randconfig-x016-201836
+i386                   randconfig-x011-201836
+i386                   randconfig-x019-201836
+i386                   randconfig-x015-201836
+i386                   randconfig-x014-201836
+i386                   randconfig-x012-201836
+x86_64                randconfig-ne0-09102126
+i386                   randconfig-x070-201836
+i386                   randconfig-x071-201836
+i386                   randconfig-x072-201836
+i386                   randconfig-x073-201836
+i386                   randconfig-x074-201836
+i386                   randconfig-x075-201836
+i386                   randconfig-x076-201836
+i386                   randconfig-x077-201836
+i386                   randconfig-x078-201836
+i386                   randconfig-x079-201836
+arm                           corgi_defconfig
+powerpc                     tqm8540_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
