@@ -1,287 +1,53 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 11 Sep 2018 08:29:51 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
- 3403d4717ff553dcf187ef39fa3acd3df882d038
-Message-ID: <5b970c7f.SvES29ZS/4N9dgUY%lkp@intel.com>
+From: Benjamin Poirier <benjamin.poirier@gmail.com>
+Date: Tue, 11 Sep 2018 17:31:47 +0900
+Subject: [Intel-wired-lan] e1000e driver stuck at 10Mbps after
+ reconnection
+In-Reply-To: <20180907062851.GA7336@super_plancton>
+References: <20180806115913.GA21556@super_plancton>
+ <CAKgT0UcUV8bQRAhyevfnvwE+yWnWjwAkH0WumUoUK4Fa9SCzhg@mail.gmail.com>
+ <20180807064222.GA30741@super_plancton>
+ <001556a4-c49c-b96b-0be8-b3c4be7bb09c@intel.com>
+ <c1e2cf13-6bcc-498d-03ea-7c3792d675cb@intel.com>
+ <20180907062851.GA7336@super_plancton>
+Message-ID: <20180911083147.GA31642@f2>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 3403d4717ff553dcf187ef39fa3acd3df882d038  checkpatch.pl: seed camelcase from the provided kernel tree root
+On 2018/09/07 08:28, Camille Bordignon wrote:
+> Le mercredi 08 ao?t 2018 ? 18:00:28 (+0300), Neftin, Sasha a ?crit :
+> > On 8/8/2018 17:24, Neftin, Sasha wrote:
+> > > On 8/7/2018 09:42, Camille Bordignon wrote:
+> > > > Le lundi 06 ao?t 2018 ? 15:45:29 (-0700), Alexander Duyck a ?crit :
+> > > > > On Mon, Aug 6, 2018 at 4:59 AM, Camille Bordignon
+> > > > > <camille.bordignon@easymile.com> wrote:
+> > > > > > Hello,
+> > > > > > 
+> > > > > > Recently we experienced some issues with intel NIC (I219-LM
+> > > > > > and I219-V).
+> > > > > > It seems that after a wire reconnection, auto-negotation "fails" and
+> > > > > > link speed drips to 10 Mbps.
+> > > > > > 
+[...]
+> 
+> I recently figured out that neither the previous patch nor commit
+> 0b76aae741abb9d16d2c0e67f8b1e766576f897d fix this issue.
+> 
+> In these cases, after reproducing the issue, when ethernet wire is connected
+> kernel logs mention full speed (1000 Mbps) but actually it seems it is not.
+> The problem persists.
+> 
 
-TIMEOUT after 607m
+Hmm, so the newer (post 4110e02eb45e) kernels are actually "better", in
+that they accurately report that link speed is 10Mb/s.
 
+In the end, do you know of a kernel version that doesn't exhibit the
+problem of slower actual link speed?
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+I had a look at the code and I tried to reproduce the problem on the
+hardware that I have (I217) but could not.
 
-configs tested: 258
-
-arm                       imx_v6_v7_defconfig
-ia64                      gensparse_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m68k                             alldefconfig
-sh                          r7785rp_defconfig
-i386                   randconfig-c0-09102023
-x86_64                           allmodconfig
-i386                   randconfig-x010-201836
-i386                   randconfig-x011-201836
-i386                   randconfig-x012-201836
-i386                   randconfig-x013-201836
-i386                   randconfig-x014-201836
-i386                   randconfig-x015-201836
-i386                   randconfig-x016-201836
-i386                   randconfig-x017-201836
-i386                   randconfig-x018-201836
-i386                   randconfig-x019-201836
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                   randconfig-n0-09101236
-i386                   randconfig-n1-09101236
-i386                   randconfig-n2-09101236
-i386                   randconfig-n3-09101236
-x86_64                 randconfig-x009-201836
-x86_64                 randconfig-x000-201836
-x86_64                 randconfig-x001-201836
-x86_64                 randconfig-x004-201836
-x86_64                 randconfig-x003-201836
-x86_64                 randconfig-x008-201836
-x86_64                 randconfig-x007-201836
-x86_64                 randconfig-x006-201836
-x86_64                 randconfig-x005-201836
-x86_64                 randconfig-x002-201836
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                   randconfig-i1-09101237
-i386                   randconfig-i2-09101237
-i386                   randconfig-i0-09101237
-i386                   randconfig-i3-09101237
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-x86_64                                  kexec
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x002-201836
-i386                   randconfig-x003-201836
-i386                   randconfig-x005-201836
-i386                   randconfig-x008-201836
-i386                   randconfig-x000-201836
-i386                   randconfig-x007-201836
-i386                   randconfig-x004-201836
-i386                   randconfig-x001-201836
-i386                   randconfig-x006-201836
-i386                   randconfig-x009-201836
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                   randconfig-a0-09101308
-i386                   randconfig-a1-09101308
-i386                   randconfig-a2-09101308
-i386                   randconfig-a3-09101308
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-s0-09102118
-x86_64                 randconfig-s1-09102118
-x86_64                 randconfig-s2-09102118
-x86_64                 randconfig-s0-09110801
-x86_64                 randconfig-s1-09110801
-x86_64                 randconfig-s2-09110801
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-openrisc                 simple_smp_defconfig
-powerpc                      ep88xc_defconfig
-powerpc                        fsp2_defconfig
-riscv                               defconfig
-arm                           h5000_defconfig
-m68k                        mvme147_defconfig
-mips                        nlm_xlp_defconfig
-mips                        nlm_xlr_defconfig
-mips                        generic_defconfig
-powerpc                          allmodconfig
-powerpc                        cell_defconfig
-arm                       imx_v4_v5_defconfig
-arm                             pxa_defconfig
-mips                        bcm47xx_defconfig
-sh                          rsk7203_defconfig
-i386                              allnoconfig
-arm                              zx_defconfig
-powerpc                     stx_gp3_defconfig
-sh                          rsk7264_defconfig
-arm                     eseries_pxa_defconfig
-arm                          ks8695_defconfig
-powerpc                       eiger_defconfig
-powerpc                 mpc837x_mds_defconfig
-arm                         lpc32xx_defconfig
-powerpc                    gamecube_defconfig
-sh                             espt_defconfig
-x86_64                 randconfig-x019-201836
-x86_64                 randconfig-x013-201836
-x86_64                 randconfig-x012-201836
-x86_64                 randconfig-x018-201836
-x86_64                 randconfig-x017-201836
-x86_64                 randconfig-x010-201836
-x86_64                 randconfig-x014-201836
-x86_64                 randconfig-x015-201836
-x86_64                 randconfig-x016-201836
-x86_64                 randconfig-x011-201836
-i386                             alldefconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-09101230
-i386                   randconfig-s1-09101230
-i386                   randconfig-s2-09101230
-i386                   randconfig-s3-09101230
-x86_64                 randconfig-s3-09102233
-x86_64                 randconfig-s4-09102233
-x86_64                 randconfig-s5-09102233
-x86_64                 randconfig-s3-09110322
-x86_64                 randconfig-s4-09110322
-x86_64                 randconfig-s5-09110322
-x86_64                 randconfig-s3-09110742
-x86_64                 randconfig-s4-09110742
-x86_64                 randconfig-s5-09110742
-arm                         lubbock_defconfig
-powerpc                   motionpro_defconfig
-sh                          sdk7780_defconfig
-x86_64                 randconfig-i0-09101240
-x86_64                 randconfig-i1-09101240
-x86_64                 randconfig-i2-09101240
-x86_64                 randconfig-i3-09101240
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                         lpc18xx_defconfig
-mips                      fuloong2e_defconfig
-sparc                             allnoconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-b0-09102104
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m68k                              allnoconfig
-mips                malta_qemu_32r6_defconfig
-mips                           xway_defconfig
-mips                          ath25_defconfig
-xtensa                  nommu_kc705_defconfig
-mips                          ath79_defconfig
-sh                           se7780_defconfig
-xtensa                           alldefconfig
-alpha                            allmodconfig
-powerpc                         wii_defconfig
-arm                    vt8500_v6_v7_defconfig
-ia64                         bigsur_defconfig
-arm                            netx_defconfig
-x86_64                 randconfig-u0-09102216
-x86_64                 randconfig-u0-09110150
-x86_64                 randconfig-u0-09110214
-x86_64                 randconfig-u0-09110301
-x86_64                 randconfig-u0-09110335
-x86_64                 randconfig-u0-09110357
-sh                           se7722_defconfig
-powerpc                      cm5200_defconfig
-x86_64                randconfig-ne0-09102126
-x86_64                randconfig-ne0-09110326
-x86_64                randconfig-ne0-09110746
-powerpc                       ep405_defconfig
-arm                          imote2_defconfig
-mips                   sb1250_swarm_defconfig
-x86_64                 randconfig-h0-09101301
-x86_64                 randconfig-h1-09101301
-x86_64                 randconfig-h2-09101301
-x86_64                 randconfig-h3-09101301
-x86_64                 randconfig-h0-09102244
-x86_64                 randconfig-h0-09110229
-i386                   randconfig-x077-201836
-i386                   randconfig-x076-201836
-i386                   randconfig-x070-201836
-i386                   randconfig-x075-201836
-i386                   randconfig-x072-201836
-i386                   randconfig-x071-201836
-i386                   randconfig-x078-201836
-i386                   randconfig-x074-201836
-i386                   randconfig-x079-201836
-i386                   randconfig-x073-201836
-arm                           corgi_defconfig
-powerpc                     tqm8540_defconfig
-x86_64                 randconfig-g0-09101252
-x86_64                 randconfig-g3-09101252
-x86_64                 randconfig-g2-09101252
-x86_64                 randconfig-g1-09101252
-i386                  randconfig-sb0-09102113
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-e1-09101220
-x86_64                 randconfig-e2-09101220
-x86_64                 randconfig-e3-09101220
-x86_64                 randconfig-e0-09101220
-powerpc                  mpc885_ads_defconfig
-x86_64                randconfig-ws0-09102135
-arm                          gemini_defconfig
-powerpc                    amigaone_defconfig
-x86_64                randconfig-ws0-09102235
-mips                          malta_defconfig
-mips                        workpad_defconfig
-x86_64                 randconfig-j0-09101243
-x86_64                 randconfig-j1-09101243
-x86_64                 randconfig-j2-09101243
-x86_64                 randconfig-j3-09101243
-i386                   randconfig-j0-09101243
-i386                   randconfig-j1-09101243
-i386                   randconfig-j2-09101243
-i386                   randconfig-j3-09101243
-x86_64                 randconfig-r0-09101539
-i386                             allmodconfig
-i386                   randconfig-x0-09102240
-i386                   randconfig-x0-09110249
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Also, out of curiosity, have you tried playing with the speed, autoneg
+and advertise settings via ethtool -s to force the link to 1000Mb/s?
