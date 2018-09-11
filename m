@@ -1,54 +1,33 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 11 Sep 2018 21:54:02 +0000
-Subject: [Intel-wired-lan] [PATCH v7 11/11] igc: Add watchdog
-In-Reply-To: <20180828160016.26807-1-sasha.neftin@intel.com>
-References: <20180828160016.26807-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96558810@ORSMSX101.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 11 Sep 2018 21:56:36 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: remove redundant
+ function ixgbe_fw_recovery_mode()
+In-Reply-To: <20180907033844.4876-1-yuehaibing@huawei.com>
+References: <20180907033844.4876-1-yuehaibing@huawei.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2ECE3E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Sasha Neftin
-> Sent: Tuesday, August 28, 2018 9:00 AM
-> To: Neftin, Sasha <sasha.neftin@intel.com>; intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v7 11/11] igc: Add watchdog
+> Behalf Of YueHaibing
+> Sent: Thursday, September 6, 2018 8:39 PM
+> To: davem at davemloft.net; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; YueHaibing <yuehaibing@huawei.com>; intel-
+> wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: remove redundant
+> function ixgbe_fw_recovery_mode()
 > 
-> Code completion, remove obsolete code
-> Add watchdog methods
+> There are no in-tree callers.
 > 
-> Sasha Neftin (v2):
-> minor cosmetic changes
-> 
-> Sasha Neftin (v3):
-> resolve conflict and code optimization
-> 
-> Sasha Neftin (v4):
-> fix update phy info for a watchdog task
-> remove no need media_change type and media_swap method
-> code optimization
-> address comments
-> replace e1000_ prefix with igc_ prefix
-> 
-> Sasha Neftin (v5):
-> remove unused defines
-> 
-> Sasha Neftin (v6):
-> no changes
-> 
-> Sasha Neftin (v7):
-> no changes
-> 
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc.h         |  12 ++
->  drivers/net/ethernet/intel/igc/igc_defines.h |  11 ++
->  drivers/net/ethernet/intel/igc/igc_hw.h      |   1 +
->  drivers/net/ethernet/intel/igc/igc_main.c    | 232
-> +++++++++++++++++++++++++++
->  4 files changed, 256 insertions(+)
-> 
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 11 -----------
+>  1 file changed, 11 deletions(-)
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
