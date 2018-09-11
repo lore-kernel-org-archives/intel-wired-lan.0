@@ -1,10 +1,9 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 11 Sep 2018 21:46:59 +0000
-Subject: [Intel-wired-lan] [PATCH v7 01/11] igc: Add skeletal frame for
- Intel(R) 2.5G Ethernet Controller support.
-In-Reply-To: <20180828155946.26270-1-sasha.neftin@intel.com>
-References: <20180828155946.26270-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96558766@ORSMSX101.amr.corp.intel.com>
+Date: Tue, 11 Sep 2018 21:49:12 +0000
+Subject: [Intel-wired-lan] [PATCH v7 04/11] igc: Add interrupt support
+In-Reply-To: <20180828155954.26416-1-sasha.neftin@intel.com>
+References: <20180828155954.26416-1-sasha.neftin@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96558794@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,48 +14,44 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Sasha Neftin
 > Sent: Tuesday, August 28, 2018 9:00 AM
 > To: Neftin, Sasha <sasha.neftin@intel.com>; intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v7 01/11] igc: Add skeletal frame for
-> Intel(R) 2.5G Ethernet Controller support.
+> Subject: [Intel-wired-lan] [PATCH v7 04/11] igc: Add interrupt support
 > 
-> This patch adds the beginning framework onto which I am going to add
-> the igc driver which supports the Intel(R) I225-LM/I225-V 2.5G
-> Ethernet Controller.
+> This patch set adds interrupt support for the igc interfaces.
 > 
 > Sasha Neftin (v2):
-> update module author, copyright and licence header
-> cosmetic changes
+> fixed comments
 > 
 > Sasha Neftin (v3):
-> remove unused header files
+> minor cosmetic changes
 > 
 > Sasha Neftin (v4):
-> update brand name
-> fix syntax by input from community
+> address comments
+> move IGC_NO_QUEUE to .h file
+> add header to irqreturn_t igc_msix_other method
+> fix comment in igc_write_ivar method
+> fix xmas tree layout
+> fix code indentation
 > replace e1000_ prefix with igc_ prefix
+> introduce BIT() macro
 > 
 > Sasha Neftin (v5):
-> no changes
+> fix xmas tree tree layout
+> fix code indentation
 > 
 > Sasha Neftin (v6):
-> no changes
+> minor cosmetic changes
 > 
 > Sasha Neftin (v7):
-> no changes
+> fix comments spacing
 > 
 > Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
->  drivers/net/ethernet/intel/Kconfig        |  16 ++++
->  drivers/net/ethernet/intel/Makefile       |   1 +
->  drivers/net/ethernet/intel/igc/Makefile   |  10 ++
->  drivers/net/ethernet/intel/igc/igc.h      |  29 ++++++
->  drivers/net/ethernet/intel/igc/igc_hw.h   |  10 ++
->  drivers/net/ethernet/intel/igc/igc_main.c | 146
-> ++++++++++++++++++++++++++++++
->  6 files changed, 212 insertions(+)
->  create mode 100644 drivers/net/ethernet/intel/igc/Makefile
->  create mode 100644 drivers/net/ethernet/intel/igc/igc.h
->  create mode 100644 drivers/net/ethernet/intel/igc/igc_hw.h
->  create mode 100644 drivers/net/ethernet/intel/igc/igc_main.c
+>  drivers/net/ethernet/intel/igc/igc.h         |  131 ++++
+>  drivers/net/ethernet/intel/igc/igc_defines.h |   40 +
+>  drivers/net/ethernet/intel/igc/igc_hw.h      |   84 +++
+>  drivers/net/ethernet/intel/igc/igc_main.c    | 1030
+> ++++++++++++++++++++++++++
+>  4 files changed, 1285 insertions(+)
 > 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
