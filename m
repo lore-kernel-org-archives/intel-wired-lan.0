@@ -1,10 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 11 Sep 2018 21:51:29 +0000
-Subject: [Intel-wired-lan] [PATCH v7 07/11] igc: Add HW initialization
- code
-In-Reply-To: <20180828160004.26596-1-sasha.neftin@intel.com>
-References: <20180828160004.26596-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B965587BE@ORSMSX101.amr.corp.intel.com>
+Date: Tue, 11 Sep 2018 21:53:33 +0000
+Subject: [Intel-wired-lan] [PATCH v7 10/11] igc: Add setup link
+ functionality
+In-Reply-To: <20180828160013.26757-1-sasha.neftin@intel.com>
+References: <20180828160013.26757-1-sasha.neftin@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B965587FB@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,52 +15,49 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Sasha Neftin
 > Sent: Tuesday, August 28, 2018 9:00 AM
 > To: Neftin, Sasha <sasha.neftin@intel.com>; intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v7 07/11] igc: Add HW initialization code
+> Subject: [Intel-wired-lan] [PATCH v7 10/11] igc: Add setup link functionality
 > 
-> Add code for hw initialization and reset.
-> Add code for semaphore handling.
+> Add link establishment methods
+> Add auto negotiation methods
+> Add read MAC address method
 > 
 > Sasha Neftin (v2):
-> fix code indentation
-> refactor of igc_desc_unused method
+> minor cosmetic changes
 > 
 > Sasha Neftin (v3):
-> clean code and remove unused methods
+> remove not addressed methods
 > 
 > Sasha Neftin (v4):
 > address comments
-> fix comments in e1000_i225.c and e1000_regs.h files
-> fix xmas tree layout
-> fix typos in e1000_mac.c file
+> remove improperly insertion of method from a patch
 > replace e1000_ prefix with igc_ prefix
+> remove duplicate PHY MII defines
 > 
 > Sasha Neftin (v5):
-> fix code indentation
+> code clean
+> remove obsolete flash_address reference
+> fix initial autoneg advertisement and add 2.5G option
+> add option to clear the 2.5 Gbps advertising bit and disable 2.5 Gbps speed
 > 
 > Sasha Neftin (v6):
-> fix code indentation
-> remove unused defines
 > minor cosmetic changes
 > 
 > Sasha Neftin (v7):
-> fix kbuild test robot warning
-> remove unneeded ret_val from igc_set_fc_watermarks method
+> no changes
 > 
 > Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/Makefile      |   2 +-
->  drivers/net/ethernet/intel/igc/igc_base.c    | 192 ++++++++++++++++
->  drivers/net/ethernet/intel/igc/igc_base.h    |   2 +
->  drivers/net/ethernet/intel/igc/igc_defines.h |  36 +++
->  drivers/net/ethernet/intel/igc/igc_hw.h      |  85 +++++++
->  drivers/net/ethernet/intel/igc/igc_i225.c    | 141 ++++++++++++
->  drivers/net/ethernet/intel/igc/igc_mac.c     | 319
+>  drivers/net/ethernet/intel/igc/igc.h         |   1 +
+>  drivers/net/ethernet/intel/igc/igc_base.c    |  41 ++++
+>  drivers/net/ethernet/intel/igc/igc_defines.h |  38 +++
+>  drivers/net/ethernet/intel/igc/igc_mac.c     | 271
+> ++++++++++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_mac.h     |   2 +
+>  drivers/net/ethernet/intel/igc/igc_main.c    |  30 +++
+>  drivers/net/ethernet/intel/igc/igc_phy.c     | 334
 > +++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/igc/igc_mac.h     |  11 +
->  drivers/net/ethernet/intel/igc/igc_main.c    |  21 ++
->  drivers/net/ethernet/intel/igc/igc_regs.h    |  20 ++
->  10 files changed, 828 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/net/ethernet/intel/igc/igc_i225.c
+>  drivers/net/ethernet/intel/igc/igc_phy.h     |   2 +
+>  8 files changed, 719 insertions(+)
 > 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
