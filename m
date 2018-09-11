@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 11 Sep 2018 21:59:00 +0000
-Subject: [Intel-wired-lan] [PATCH v2 4/4] i40e: disallow changing the
- number of descriptors when AF_XDP is on
-In-Reply-To: <20180907081848.5438-5-bjorn.topel@gmail.com>
+Date: Tue, 11 Sep 2018 22:00:03 +0000
+Subject: [Intel-wired-lan] [PATCH v2 2/4] net: xsk: add a simple buffer
+ reuse queue
+In-Reply-To: <20180907081848.5438-3-bjorn.topel@gmail.com>
 References: <20180907081848.5438-1-bjorn.topel@gmail.com>
- <20180907081848.5438-5-bjorn.topel@gmail.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2ECE6E@ORSMSX104.amr.corp.intel.com>
+ <20180907081848.5438-3-bjorn.topel@gmail.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2ECE81@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,26 +19,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: ast at kernel.org; daniel at iogearbox.net; Kirsher, Jeffrey T
 > <jeffrey.t.kirsher@intel.com>; intel-wired-lan at lists.osuosl.org;
 > jakub.kicinski at netronome.com
-> Cc: netdev at vger.kernel.org; Topel, Bjorn <bjorn.topel@intel.com>;
-> magnus.karlsson at gmail.com; Karlsson, Magnus
+> Cc: netdev at vger.kernel.org; magnus.karlsson at gmail.com; Karlsson, Magnus
 > <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v2 4/4] i40e: disallow changing the number
-> of descriptors when AF_XDP is on
+> Subject: [Intel-wired-lan] [PATCH v2 2/4] net: xsk: add a simple buffer reuse
+> queue
 > 
-> From: Bj?rn T?pel <bjorn.topel@intel.com>
+> From: Jakub Kicinski <jakub.kicinski@netronome.com>
 > 
-> When an AF_XDP UMEM is attached to any of the Rx rings, we disallow a
-> user to change the number of descriptors via e.g. "ethtool -G IFNAME".
+> XSK UMEM is strongly single producer single consumer so reuse of frames is
+> challenging.  Add a simple "stash" of FILL packets to reuse for drivers to
+> optionally make use of.  This is useful when driver has to free (ndo_stop) or
+> resize a ring with an active AF_XDP ZC socket.
 > 
-> Otherwise, the size of the stash/reuse queue can grow unbounded, which
-> would result in OOM or leaking userspace buffers.
+> v2: Fixed build issues for !CONFIG_XDP_SOCKETS.
 > 
-> Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+> Signed-off-by: Jakub Kicinski <jakub.kicinski@netronome.com>
 > ---
->  .../net/ethernet/intel/i40e/i40e_ethtool.c    |  9 +++++++-
->  .../ethernet/intel/i40e/i40e_txrx_common.h    |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 22 +++++++++++++++++++
->  3 files changed, 31 insertions(+), 1 deletion(-)
+>  include/net/xdp_sock.h | 69
+> ++++++++++++++++++++++++++++++++++++++++++
+>  net/xdp/xdp_umem.c     |  2 ++
+>  net/xdp/xsk_queue.c    | 55 +++++++++++++++++++++++++++++++++
+>  net/xdp/xsk_queue.h    |  3 ++
+>  4 files changed, 129 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
