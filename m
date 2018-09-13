@@ -1,123 +1,187 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 13 Sep 2018 15:31:38 -0700
-Subject: [Intel-wired-lan] [RFC PATCH net-next v1 08/14] iavf: rename
- I40E_ADMINQ_DESC
+Date: Thu, 13 Sep 2018 15:31:37 -0700
+Subject: [Intel-wired-lan] [RFC PATCH net-next v1 07/14] iavf: rename device
+ ID defines
 In-Reply-To: <20180913223144.75823-1-jesse.brandeburg@intel.com>
 References: <20180913223144.75823-1-jesse.brandeburg@intel.com>
-Message-ID: <20180913223144.75823-9-jesse.brandeburg@intel.com>
+Message-ID: <20180913223144.75823-8-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Take care of some renames containing I40E_ADMINQ_DESC.
+Rename the device ID defines to have IAVF in them
+and remove all the unused defines.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/i40e_adminq.c | 18 +++++++++---------
- drivers/net/ethernet/intel/iavf/i40e_adminq.h |  4 ++--
- 2 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/iavf/i40e_adminq.c | 22 +++++++--------
+ drivers/net/ethernet/intel/iavf/i40e_common.c | 29 +++----------------
+ drivers/net/ethernet/intel/iavf/i40e_devids.h | 40 ++++++---------------------
+ drivers/net/ethernet/intel/iavf/i40e_type.h   |  6 ----
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |  8 +++---
+ 5 files changed, 27 insertions(+), 78 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.c b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-index 8110b92fa2b0..69dfdfd69796 100644
+index 50e0f1225298..8110b92fa2b0 100644
 --- a/drivers/net/ethernet/intel/iavf/i40e_adminq.c
 +++ b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-@@ -40,7 +40,7 @@ static iavf_status i40e_alloc_adminq_asq_ring(struct i40e_hw *hw)
- 					 i40e_mem_atq_ring,
- 					 (hw->aq.num_asq_entries *
- 					 sizeof(struct i40e_aq_desc)),
--					 I40E_ADMINQ_DESC_ALIGNMENT);
-+					 IAVF_ADMINQ_DESC_ALIGNMENT);
- 	if (ret_code)
- 		return ret_code;
- 
-@@ -67,7 +67,7 @@ static iavf_status i40e_alloc_adminq_arq_ring(struct i40e_hw *hw)
- 					 i40e_mem_arq_ring,
- 					 (hw->aq.num_arq_entries *
- 					 sizeof(struct i40e_aq_desc)),
--					 I40E_ADMINQ_DESC_ALIGNMENT);
-+					 IAVF_ADMINQ_DESC_ALIGNMENT);
- 
- 	return ret_code;
+@@ -16,18 +16,16 @@
+ static void i40e_adminq_init_regs(struct i40e_hw *hw)
+ {
+ 	/* set head and tail registers in our local struct */
+-	if (i40e_is_vf(hw)) {
+-		hw->aq.asq.tail = IAVF_VF_ATQT1;
+-		hw->aq.asq.head = IAVF_VF_ATQH1;
+-		hw->aq.asq.len  = IAVF_VF_ATQLEN1;
+-		hw->aq.asq.bal  = IAVF_VF_ATQBAL1;
+-		hw->aq.asq.bah  = IAVF_VF_ATQBAH1;
+-		hw->aq.arq.tail = IAVF_VF_ARQT1;
+-		hw->aq.arq.head = IAVF_VF_ARQH1;
+-		hw->aq.arq.len  = IAVF_VF_ARQLEN1;
+-		hw->aq.arq.bal  = IAVF_VF_ARQBAL1;
+-		hw->aq.arq.bah  = IAVF_VF_ARQBAH1;
+-	}
++	hw->aq.asq.tail = IAVF_VF_ATQT1;
++	hw->aq.asq.head = IAVF_VF_ATQH1;
++	hw->aq.asq.len  = IAVF_VF_ATQLEN1;
++	hw->aq.asq.bal  = IAVF_VF_ATQBAL1;
++	hw->aq.asq.bah  = IAVF_VF_ATQBAH1;
++	hw->aq.arq.tail = IAVF_VF_ARQT1;
++	hw->aq.arq.head = IAVF_VF_ARQH1;
++	hw->aq.arq.len  = IAVF_VF_ARQLEN1;
++	hw->aq.arq.bal  = IAVF_VF_ARQBAL1;
++	hw->aq.arq.bah  = IAVF_VF_ARQBAH1;
  }
-@@ -124,12 +124,12 @@ static iavf_status i40e_alloc_arq_bufs(struct i40e_hw *hw)
- 		ret_code = i40e_allocate_dma_mem(hw, bi,
- 						 i40e_mem_arq_buf,
- 						 hw->aq.arq_buf_size,
--						 I40E_ADMINQ_DESC_ALIGNMENT);
-+						 IAVF_ADMINQ_DESC_ALIGNMENT);
- 		if (ret_code)
- 			goto unwind_alloc_arq_bufs;
  
- 		/* now configure the descriptors for use */
--		desc = I40E_ADMINQ_DESC(hw->aq.arq, i);
-+		desc = IAVF_ADMINQ_DESC(hw->aq.arq, i);
+ /**
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_common.c b/drivers/net/ethernet/intel/iavf/i40e_common.c
+index 733e5cfeaf71..b97e8925d20e 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_common.c
++++ b/drivers/net/ethernet/intel/iavf/i40e_common.c
+@@ -19,33 +19,12 @@ iavf_status i40e_set_mac_type(struct i40e_hw *hw)
  
- 		desc->flags = cpu_to_le16(I40E_AQ_FLAG_BUF);
- 		if (hw->aq.arq_buf_size > I40E_AQ_LARGE_BUF)
-@@ -186,7 +186,7 @@ static iavf_status i40e_alloc_asq_bufs(struct i40e_hw *hw)
- 		ret_code = i40e_allocate_dma_mem(hw, bi,
- 						 i40e_mem_asq_buf,
- 						 hw->aq.asq_buf_size,
--						 I40E_ADMINQ_DESC_ALIGNMENT);
-+						 IAVF_ADMINQ_DESC_ALIGNMENT);
- 		if (ret_code)
- 			goto unwind_alloc_asq_bufs;
- 	}
-@@ -574,7 +574,7 @@ static u16 i40e_clean_asq(struct i40e_hw *hw)
- 	struct i40e_aq_desc desc_cb;
- 	struct i40e_aq_desc *desc;
+ 	if (hw->vendor_id == PCI_VENDOR_ID_INTEL) {
+ 		switch (hw->device_id) {
+-		case I40E_DEV_ID_SFP_XL710:
+-		case I40E_DEV_ID_QEMU:
+-		case I40E_DEV_ID_KX_B:
+-		case I40E_DEV_ID_KX_C:
+-		case I40E_DEV_ID_QSFP_A:
+-		case I40E_DEV_ID_QSFP_B:
+-		case I40E_DEV_ID_QSFP_C:
+-		case I40E_DEV_ID_10G_BASE_T:
+-		case I40E_DEV_ID_10G_BASE_T4:
+-		case I40E_DEV_ID_20G_KR2:
+-		case I40E_DEV_ID_20G_KR2_A:
+-		case I40E_DEV_ID_25G_B:
+-		case I40E_DEV_ID_25G_SFP28:
+-			hw->mac.type = I40E_MAC_XL710;
+-			break;
+-		case I40E_DEV_ID_SFP_X722:
+-		case I40E_DEV_ID_1G_BASE_T_X722:
+-		case I40E_DEV_ID_10G_BASE_T_X722:
+-		case I40E_DEV_ID_SFP_I_X722:
+-			hw->mac.type = I40E_MAC_X722;
+-			break;
+-		case I40E_DEV_ID_X722_VF:
++		case IAVF_DEV_ID_X722_VF:
+ 			hw->mac.type = I40E_MAC_X722_VF;
+ 			break;
+-		case I40E_DEV_ID_VF:
+-		case I40E_DEV_ID_VF_HV:
+-		case I40E_DEV_ID_ADAPTIVE_VF:
++		case IAVF_DEV_ID_VF:
++		case IAVF_DEV_ID_VF_HV:
++		case IAVF_DEV_ID_ADAPTIVE_VF:
+ 			hw->mac.type = I40E_MAC_VF;
+ 			break;
+ 		default:
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_devids.h b/drivers/net/ethernet/intel/iavf/i40e_devids.h
+index f300bf271824..8eb7b697e96c 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_devids.h
++++ b/drivers/net/ethernet/intel/iavf/i40e_devids.h
+@@ -1,34 +1,12 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright(c) 2013 - 2018 Intel Corporation. */
  
--	desc = I40E_ADMINQ_DESC(*asq, ntc);
-+	desc = IAVF_ADMINQ_DESC(*asq, ntc);
- 	details = I40E_ADMINQ_DETAILS(*asq, ntc);
- 	while (rd32(hw, hw->aq.asq.head) != ntc) {
- 		i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
-@@ -592,7 +592,7 @@ static u16 i40e_clean_asq(struct i40e_hw *hw)
- 		ntc++;
- 		if (ntc == asq->count)
- 			ntc = 0;
--		desc = I40E_ADMINQ_DESC(*asq, ntc);
-+		desc = IAVF_ADMINQ_DESC(*asq, ntc);
- 		details = I40E_ADMINQ_DETAILS(*asq, ntc);
- 	}
+-#ifndef _I40E_DEVIDS_H_
+-#define _I40E_DEVIDS_H_
+-
+-/* Device IDs */
+-#define I40E_DEV_ID_SFP_XL710		0x1572
+-#define I40E_DEV_ID_QEMU		0x1574
+-#define I40E_DEV_ID_KX_B		0x1580
+-#define I40E_DEV_ID_KX_C		0x1581
+-#define I40E_DEV_ID_QSFP_A		0x1583
+-#define I40E_DEV_ID_QSFP_B		0x1584
+-#define I40E_DEV_ID_QSFP_C		0x1585
+-#define I40E_DEV_ID_10G_BASE_T		0x1586
+-#define I40E_DEV_ID_20G_KR2		0x1587
+-#define I40E_DEV_ID_20G_KR2_A		0x1588
+-#define I40E_DEV_ID_10G_BASE_T4		0x1589
+-#define I40E_DEV_ID_25G_B		0x158A
+-#define I40E_DEV_ID_25G_SFP28		0x158B
+-#define I40E_DEV_ID_VF			0x154C
+-#define I40E_DEV_ID_VF_HV		0x1571
+-#define I40E_DEV_ID_ADAPTIVE_VF		0x1889
+-#define I40E_DEV_ID_SFP_X722		0x37D0
+-#define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
+-#define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
+-#define I40E_DEV_ID_SFP_I_X722		0x37D3
+-#define I40E_DEV_ID_X722_VF		0x37CD
+-
+-#define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
+-					 (d) == I40E_DEV_ID_QSFP_B  || \
+-					 (d) == I40E_DEV_ID_QSFP_C)
+-
+-#endif /* _I40E_DEVIDS_H_ */
++#ifndef _IAVF_DEVIDS_H_
++#define _IAVF_DEVIDS_H_
++
++/* Device IDs for the VF driver */
++#define IAVF_DEV_ID_VF			0x154C
++#define IAVF_DEV_ID_VF_HV		0x1571
++#define IAVF_DEV_ID_ADAPTIVE_VF		0x1889
++#define IAVF_DEV_ID_X722_VF		0x37CD
++#endif /* _IAVF_DEVIDS_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_type.h b/drivers/net/ethernet/intel/iavf/i40e_type.h
+index eea5b86a37b4..bcb1805a2f3a 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_type.h
++++ b/drivers/net/ethernet/intel/iavf/i40e_type.h
+@@ -193,12 +193,6 @@ struct i40e_hw {
+ 	char err_str[16];
+ };
  
-@@ -714,7 +714,7 @@ iavf_status iavf_asq_send_command(struct i40e_hw *hw, struct i40e_aq_desc *desc,
- 	}
- 
- 	/* initialize the temp desc pointer with the right desc */
--	desc_on_ring = I40E_ADMINQ_DESC(hw->aq.asq, hw->aq.asq.next_to_use);
-+	desc_on_ring = IAVF_ADMINQ_DESC(hw->aq.asq, hw->aq.asq.next_to_use);
- 
- 	/* if the desc is available copy the temp desc to the right place */
- 	*desc_on_ring = *desc;
-@@ -874,7 +874,7 @@ iavf_status iavf_clean_arq_element(struct i40e_hw *hw,
- 	}
- 
- 	/* now clean the next descriptor */
--	desc = I40E_ADMINQ_DESC(hw->aq.arq, ntc);
-+	desc = IAVF_ADMINQ_DESC(hw->aq.arq, ntc);
- 	desc_idx = ntc;
- 
- 	hw->aq.arq_last_status =
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.h b/drivers/net/ethernet/intel/iavf/i40e_adminq.h
-index 80b70a65028f..fd162a293c38 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_adminq.h
-+++ b/drivers/net/ethernet/intel/iavf/i40e_adminq.h
-@@ -8,10 +8,10 @@
- #include "i40e_status.h"
- #include "i40e_adminq_cmd.h"
- 
--#define I40E_ADMINQ_DESC(R, i)   \
-+#define IAVF_ADMINQ_DESC(R, i)   \
- 	(&(((struct i40e_aq_desc *)((R).desc_buf.va))[i]))
- 
--#define I40E_ADMINQ_DESC_ALIGNMENT 4096
-+#define IAVF_ADMINQ_DESC_ALIGNMENT 4096
- 
- struct i40e_adminq_ring {
- 	struct i40e_virt_mem dma_head;	/* space for dma structures */
+-static inline bool i40e_is_vf(struct i40e_hw *hw)
+-{
+-	return (hw->mac.type == I40E_MAC_VF ||
+-		hw->mac.type == I40E_MAC_X722_VF);
+-}
+-
+ struct i40e_driver_version {
+ 	u8 major_version;
+ 	u8 minor_version;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 01fd440b4bbe..5a3884b65ca8 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -41,10 +41,10 @@ static const char iavf_copyright[] =
+  *   Class, Class Mask, private data (not used) }
+  */
+ static const struct pci_device_id iavf_pci_tbl[] = {
+-	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF), 0},
+-	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF_HV), 0},
+-	{PCI_VDEVICE(INTEL, I40E_DEV_ID_X722_VF), 0},
+-	{PCI_VDEVICE(INTEL, I40E_DEV_ID_ADAPTIVE_VF), 0},
++	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_VF), 0},
++	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_VF_HV), 0},
++	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_X722_VF), 0},
++	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_ADAPTIVE_VF), 0},
+ 	/* required last entry */
+ 	{0, }
+ };
 -- 
 2.14.4
 
