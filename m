@@ -1,187 +1,185 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 13 Sep 2018 15:31:37 -0700
-Subject: [Intel-wired-lan] [RFC PATCH net-next v1 07/14] iavf: rename device
- ID defines
+Date: Thu, 13 Sep 2018 15:31:41 -0700
+Subject: [Intel-wired-lan] [RFC PATCH net-next v1 11/14] iavf: tracing
+ infrastructure rename
 In-Reply-To: <20180913223144.75823-1-jesse.brandeburg@intel.com>
 References: <20180913223144.75823-1-jesse.brandeburg@intel.com>
-Message-ID: <20180913223144.75823-8-jesse.brandeburg@intel.com>
+Message-ID: <20180913223144.75823-12-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Rename the device ID defines to have IAVF in them
-and remove all the unused defines.
+Rename the i40e_trace file and fix up all the callers
+to the new names inside the iavf_trace.h file.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/i40e_adminq.c | 22 +++++++--------
- drivers/net/ethernet/intel/iavf/i40e_common.c | 29 +++----------------
- drivers/net/ethernet/intel/iavf/i40e_devids.h | 40 ++++++---------------------
- drivers/net/ethernet/intel/iavf/i40e_type.h   |  6 ----
- drivers/net/ethernet/intel/iavf/iavf_main.c   |  8 +++---
- 5 files changed, 27 insertions(+), 78 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c        |  2 +-
+ .../intel/iavf/{i40e_trace.h => iavf_trace.h}      | 28 +++++++++++-----------
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c        | 14 +++++------
+ 3 files changed, 22 insertions(+), 22 deletions(-)
+ rename drivers/net/ethernet/intel/iavf/{i40e_trace.h => iavf_trace.h} (85%)
 
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.c b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-index 50e0f1225298..8110b92fa2b0 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-@@ -16,18 +16,16 @@
- static void i40e_adminq_init_regs(struct i40e_hw *hw)
- {
- 	/* set head and tail registers in our local struct */
--	if (i40e_is_vf(hw)) {
--		hw->aq.asq.tail = IAVF_VF_ATQT1;
--		hw->aq.asq.head = IAVF_VF_ATQH1;
--		hw->aq.asq.len  = IAVF_VF_ATQLEN1;
--		hw->aq.asq.bal  = IAVF_VF_ATQBAL1;
--		hw->aq.asq.bah  = IAVF_VF_ATQBAH1;
--		hw->aq.arq.tail = IAVF_VF_ARQT1;
--		hw->aq.arq.head = IAVF_VF_ARQH1;
--		hw->aq.arq.len  = IAVF_VF_ARQLEN1;
--		hw->aq.arq.bal  = IAVF_VF_ARQBAL1;
--		hw->aq.arq.bah  = IAVF_VF_ARQBAH1;
--	}
-+	hw->aq.asq.tail = IAVF_VF_ATQT1;
-+	hw->aq.asq.head = IAVF_VF_ATQH1;
-+	hw->aq.asq.len  = IAVF_VF_ATQLEN1;
-+	hw->aq.asq.bal  = IAVF_VF_ATQBAL1;
-+	hw->aq.asq.bah  = IAVF_VF_ATQBAH1;
-+	hw->aq.arq.tail = IAVF_VF_ARQT1;
-+	hw->aq.arq.head = IAVF_VF_ARQH1;
-+	hw->aq.arq.len  = IAVF_VF_ARQLEN1;
-+	hw->aq.arq.bal  = IAVF_VF_ARQBAL1;
-+	hw->aq.arq.bah  = IAVF_VF_ARQBAH1;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_common.c b/drivers/net/ethernet/intel/iavf/i40e_common.c
-index 733e5cfeaf71..b97e8925d20e 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_common.c
-+++ b/drivers/net/ethernet/intel/iavf/i40e_common.c
-@@ -19,33 +19,12 @@ iavf_status i40e_set_mac_type(struct i40e_hw *hw)
- 
- 	if (hw->vendor_id == PCI_VENDOR_ID_INTEL) {
- 		switch (hw->device_id) {
--		case I40E_DEV_ID_SFP_XL710:
--		case I40E_DEV_ID_QEMU:
--		case I40E_DEV_ID_KX_B:
--		case I40E_DEV_ID_KX_C:
--		case I40E_DEV_ID_QSFP_A:
--		case I40E_DEV_ID_QSFP_B:
--		case I40E_DEV_ID_QSFP_C:
--		case I40E_DEV_ID_10G_BASE_T:
--		case I40E_DEV_ID_10G_BASE_T4:
--		case I40E_DEV_ID_20G_KR2:
--		case I40E_DEV_ID_20G_KR2_A:
--		case I40E_DEV_ID_25G_B:
--		case I40E_DEV_ID_25G_SFP28:
--			hw->mac.type = I40E_MAC_XL710;
--			break;
--		case I40E_DEV_ID_SFP_X722:
--		case I40E_DEV_ID_1G_BASE_T_X722:
--		case I40E_DEV_ID_10G_BASE_T_X722:
--		case I40E_DEV_ID_SFP_I_X722:
--			hw->mac.type = I40E_MAC_X722;
--			break;
--		case I40E_DEV_ID_X722_VF:
-+		case IAVF_DEV_ID_X722_VF:
- 			hw->mac.type = I40E_MAC_X722_VF;
- 			break;
--		case I40E_DEV_ID_VF:
--		case I40E_DEV_ID_VF_HV:
--		case I40E_DEV_ID_ADAPTIVE_VF:
-+		case IAVF_DEV_ID_VF:
-+		case IAVF_DEV_ID_VF_HV:
-+		case IAVF_DEV_ID_ADAPTIVE_VF:
- 			hw->mac.type = I40E_MAC_VF;
- 			break;
- 		default:
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_devids.h b/drivers/net/ethernet/intel/iavf/i40e_devids.h
-index f300bf271824..8eb7b697e96c 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_devids.h
-+++ b/drivers/net/ethernet/intel/iavf/i40e_devids.h
-@@ -1,34 +1,12 @@
- /* SPDX-License-Identifier: GPL-2.0 */
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
- 
--#ifndef _I40E_DEVIDS_H_
--#define _I40E_DEVIDS_H_
--
--/* Device IDs */
--#define I40E_DEV_ID_SFP_XL710		0x1572
--#define I40E_DEV_ID_QEMU		0x1574
--#define I40E_DEV_ID_KX_B		0x1580
--#define I40E_DEV_ID_KX_C		0x1581
--#define I40E_DEV_ID_QSFP_A		0x1583
--#define I40E_DEV_ID_QSFP_B		0x1584
--#define I40E_DEV_ID_QSFP_C		0x1585
--#define I40E_DEV_ID_10G_BASE_T		0x1586
--#define I40E_DEV_ID_20G_KR2		0x1587
--#define I40E_DEV_ID_20G_KR2_A		0x1588
--#define I40E_DEV_ID_10G_BASE_T4		0x1589
--#define I40E_DEV_ID_25G_B		0x158A
--#define I40E_DEV_ID_25G_SFP28		0x158B
--#define I40E_DEV_ID_VF			0x154C
--#define I40E_DEV_ID_VF_HV		0x1571
--#define I40E_DEV_ID_ADAPTIVE_VF		0x1889
--#define I40E_DEV_ID_SFP_X722		0x37D0
--#define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
--#define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
--#define I40E_DEV_ID_SFP_I_X722		0x37D3
--#define I40E_DEV_ID_X722_VF		0x37CD
--
--#define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
--					 (d) == I40E_DEV_ID_QSFP_B  || \
--					 (d) == I40E_DEV_ID_QSFP_C)
--
--#endif /* _I40E_DEVIDS_H_ */
-+#ifndef _IAVF_DEVIDS_H_
-+#define _IAVF_DEVIDS_H_
-+
-+/* Device IDs for the VF driver */
-+#define IAVF_DEV_ID_VF			0x154C
-+#define IAVF_DEV_ID_VF_HV		0x1571
-+#define IAVF_DEV_ID_ADAPTIVE_VF		0x1889
-+#define IAVF_DEV_ID_X722_VF		0x37CD
-+#endif /* _IAVF_DEVIDS_H_ */
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_type.h b/drivers/net/ethernet/intel/iavf/i40e_type.h
-index eea5b86a37b4..bcb1805a2f3a 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/iavf/i40e_type.h
-@@ -193,12 +193,6 @@ struct i40e_hw {
- 	char err_str[16];
- };
- 
--static inline bool i40e_is_vf(struct i40e_hw *hw)
--{
--	return (hw->mac.type == I40E_MAC_VF ||
--		hw->mac.type == I40E_MAC_X722_VF);
--}
--
- struct i40e_driver_version {
- 	u8 major_version;
- 	u8 minor_version;
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 01fd440b4bbe..5a3884b65ca8 100644
+index 63c5d97b1658..b8edf43e36f1 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -41,10 +41,10 @@ static const char iavf_copyright[] =
-  *   Class, Class Mask, private data (not used) }
+@@ -9,7 +9,7 @@
+  * CREATE_TRACE_POINTS defined
   */
- static const struct pci_device_id iavf_pci_tbl[] = {
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF_HV), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_X722_VF), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_ADAPTIVE_VF), 0},
-+	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_VF), 0},
-+	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_VF_HV), 0},
-+	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_X722_VF), 0},
-+	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_ADAPTIVE_VF), 0},
- 	/* required last entry */
- 	{0, }
- };
+ #define CREATE_TRACE_POINTS
+-#include "i40e_trace.h"
++#include "iavf_trace.h"
+ 
+ static int iavf_setup_all_tx_resources(struct iavf_adapter *adapter);
+ static int iavf_setup_all_rx_resources(struct iavf_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_trace.h b/drivers/net/ethernet/intel/iavf/iavf_trace.h
+similarity index 85%
+rename from drivers/net/ethernet/intel/iavf/i40e_trace.h
+rename to drivers/net/ethernet/intel/iavf/iavf_trace.h
+index 552cfbfcce71..24f34d79f20a 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_trace.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_trace.h
+@@ -5,7 +5,7 @@
+ 
+ /* The trace subsystem name for iavf will be "iavf".
+  *
+- * This file is named i40e_trace.h.
++ * This file is named iavf_trace.h.
+  *
+  * Since this include file's name is different from the trace
+  * subsystem name, we'll have to define TRACE_INCLUDE_FILE at the end
+@@ -23,14 +23,14 @@
+ #include <linux/tracepoint.h>
+ 
+ /**
+- * i40e_trace() macro enables shared code to refer to trace points
++ * iavf_trace() macro enables shared code to refer to trace points
+  * like:
+  *
+- * trace_i40e{,vf}_example(args...)
++ * trace_iavf{,vf}_example(args...)
+  *
+  * ... as:
+  *
+- * i40e_trace(example, args...)
++ * iavf_trace(example, args...)
+  *
+  * ... to resolve to the PF or VF version of the tracepoint without
+  * ifdefs, and to allow tracepoints to be disabled entirely at build
+@@ -39,18 +39,18 @@
+  * Trace point should always be referred to in the driver via this
+  * macro.
+  *
+- * Similarly, i40e_trace_enabled(trace_name) wraps references to
+- * trace_i40e{,vf}_<trace_name>_enabled() functions.
++ * Similarly, iavf_trace_enabled(trace_name) wraps references to
++ * trace_iavf{,vf}_<trace_name>_enabled() functions.
+  */
+-#define _I40E_TRACE_NAME(trace_name) (trace_ ## iavf ## _ ## trace_name)
+-#define I40E_TRACE_NAME(trace_name) _I40E_TRACE_NAME(trace_name)
++#define _IAVF_TRACE_NAME(trace_name) (trace_ ## iavf ## _ ## trace_name)
++#define IAVF_TRACE_NAME(trace_name) _IAVF_TRACE_NAME(trace_name)
+ 
+-#define i40e_trace(trace_name, args...) I40E_TRACE_NAME(trace_name)(args)
++#define iavf_trace(trace_name, args...) IAVF_TRACE_NAME(trace_name)(args)
+ 
+-#define i40e_trace_enabled(trace_name) I40E_TRACE_NAME(trace_name##_enabled)()
++#define iavf_trace_enabled(trace_name) IAVF_TRACE_NAME(trace_name##_enabled)()
+ 
+ /* Events common to PF and VF. Corresponding versions will be defined
+- * for both, named trace_i40e_* and trace_iavf_*. The i40e_trace()
++ * for both, named trace_iavf_* and trace_iavf_*. The iavf_trace()
+  * macro above will select the right trace point name for the driver
+  * being built from shared code.
+  */
+@@ -195,8 +195,8 @@ DEFINE_EVENT(
+ 
+ /* Events unique to the VF. */
+ 
+-#endif /* _I40E_TRACE_H_ */
+-/* This must be outside ifdef _I40E_TRACE_H */
++#endif /* _IAVF_TRACE_H_ */
++/* This must be outside ifdef _IAVF_TRACE_H */
+ 
+ /* This trace include file is not located in the .../include/trace
+  * with the kernel tracepoint definitions, because we're a loadable
+@@ -205,5 +205,5 @@ DEFINE_EVENT(
+ #undef TRACE_INCLUDE_PATH
+ #define TRACE_INCLUDE_PATH .
+ #undef TRACE_INCLUDE_FILE
+-#define TRACE_INCLUDE_FILE i40e_trace
++#define TRACE_INCLUDE_FILE iavf_trace
+ #include <trace/define_trace.h>
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index 66d9f1bf9467..5164e812f009 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -5,7 +5,7 @@
+ #include <net/busy_poll.h>
+ 
+ #include "iavf.h"
+-#include "i40e_trace.h"
++#include "iavf_trace.h"
+ #include "i40e_prototype.h"
+ 
+ static inline __le64 build_ctob(u32 td_cmd, u32 td_offset, unsigned int size,
+@@ -211,7 +211,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 		/* prevent any other reads prior to eop_desc */
+ 		smp_rmb();
+ 
+-		i40e_trace(clean_tx_irq, tx_ring, tx_desc, tx_buf);
++		iavf_trace(clean_tx_irq, tx_ring, tx_desc, tx_buf);
+ 		/* if the descriptor isn't done, no work yet to do */
+ 		if (!(eop_desc->cmd_type_offset_bsz &
+ 		      cpu_to_le64(IAVF_TX_DESC_DTYPE_DESC_DONE)))
+@@ -239,7 +239,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 
+ 		/* unmap remaining buffers */
+ 		while (tx_desc != eop_desc) {
+-			i40e_trace(clean_tx_irq_unmap,
++			iavf_trace(clean_tx_irq_unmap,
+ 				   tx_ring, tx_desc, tx_buf);
+ 
+ 			tx_buf++;
+@@ -1503,7 +1503,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		if (!size)
+ 			break;
+ 
+-		i40e_trace(clean_rx_irq, rx_ring, rx_desc, skb);
++		iavf_trace(clean_rx_irq, rx_ring, rx_desc, skb);
+ 		rx_buffer = i40e_get_rx_buffer(rx_ring, size);
+ 
+ 		/* retrieve a buffer from the ring */
+@@ -1557,7 +1557,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 		vlan_tag = (qword & BIT(IAVF_RX_DESC_STATUS_L2TAG1P_SHIFT)) ?
+ 			   le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1) : 0;
+ 
+-		i40e_trace(clean_rx_irq_rx, rx_ring, rx_desc, skb);
++		iavf_trace(clean_rx_irq_rx, rx_ring, rx_desc, skb);
+ 		i40e_receive_skb(rx_ring, skb, vlan_tag);
+ 		skb = NULL;
+ 
+@@ -2407,7 +2407,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	/* prefetch the data, we'll need it later */
+ 	prefetch(skb->data);
+ 
+-	i40e_trace(xmit_frame_ring, skb, tx_ring);
++	iavf_trace(xmit_frame_ring, skb, tx_ring);
+ 
+ 	count = i40e_xmit_descriptor_count(skb);
+ 	if (i40e_chk_linearize(skb, count)) {
+@@ -2476,7 +2476,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	return NETDEV_TX_OK;
+ 
+ out_drop:
+-	i40e_trace(xmit_frame_ring_drop, first->skb, tx_ring);
++	iavf_trace(xmit_frame_ring_drop, first->skb, tx_ring);
+ 	dev_kfree_skb_any(first->skb);
+ 	first->skb = NULL;
+ 	return NETDEV_TX_OK;
 -- 
 2.14.4
 
