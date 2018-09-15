@@ -1,248 +1,237 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 14 Sep 2018 17:37:56 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 13/14] iavf: finish renaming
- files to iavf
+Date: Fri, 14 Sep 2018 17:37:53 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 10/14] iavf: replace
+ i40e_debug with iavf version
 In-Reply-To: <20180915003757.169108-1-jesse.brandeburg@intel.com>
 References: <20180915003757.169108-1-jesse.brandeburg@intel.com>
-Message-ID: <20180915003757.169108-14-jesse.brandeburg@intel.com>
+Message-ID: <20180915003757.169108-11-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This finishes the process of renaming the files that
-make sense to rename (skipping adminq related files that
-talk to i40e), and fixes up the build and the #includes
-so that everything builds nicely.
+Change another string (i40e_debug)
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/Makefile                          | 2 +-
- drivers/net/ethernet/intel/iavf/i40e_adminq.c                     | 8 ++++----
- drivers/net/ethernet/intel/iavf/i40e_adminq.h                     | 4 ++--
- drivers/net/ethernet/intel/iavf/iavf.h                            | 4 ++--
- drivers/net/ethernet/intel/iavf/{i40e_alloc.h => iavf_alloc.h}    | 0
- drivers/net/ethernet/intel/iavf/iavf_client.c                     | 2 +-
- drivers/net/ethernet/intel/iavf/{i40e_common.c => iavf_common.c}  | 4 ++--
- drivers/net/ethernet/intel/iavf/{i40e_devids.h => iavf_devids.h}  | 0
- drivers/net/ethernet/intel/iavf/iavf_main.c                       | 2 +-
- drivers/net/ethernet/intel/iavf/{i40e_osdep.h => iavf_osdep.h}    | 0
- .../ethernet/intel/iavf/{i40e_prototype.h => iavf_prototype.h}    | 4 ++--
- .../net/ethernet/intel/iavf/{i40e_register.h => iavf_register.h}  | 0
- drivers/net/ethernet/intel/iavf/{i40e_status.h => iavf_status.h}  | 0
- drivers/net/ethernet/intel/iavf/iavf_txrx.c                       | 2 +-
- drivers/net/ethernet/intel/iavf/{i40e_type.h => iavf_type.h}      | 8 ++++----
- drivers/net/ethernet/intel/iavf/iavf_virtchnl.c                   | 2 +-
- 16 files changed, 21 insertions(+), 21 deletions(-)
- rename drivers/net/ethernet/intel/iavf/{i40e_alloc.h => iavf_alloc.h} (100%)
- rename drivers/net/ethernet/intel/iavf/{i40e_common.c => iavf_common.c} (99%)
- rename drivers/net/ethernet/intel/iavf/{i40e_devids.h => iavf_devids.h} (100%)
- rename drivers/net/ethernet/intel/iavf/{i40e_osdep.h => iavf_osdep.h} (100%)
- rename drivers/net/ethernet/intel/iavf/{i40e_prototype.h => iavf_prototype.h} (98%)
- rename drivers/net/ethernet/intel/iavf/{i40e_register.h => iavf_register.h} (100%)
- rename drivers/net/ethernet/intel/iavf/{i40e_status.h => iavf_status.h} (100%)
- rename drivers/net/ethernet/intel/iavf/{i40e_type.h => iavf_type.h} (99%)
+ drivers/net/ethernet/intel/iavf/i40e_adminq.c    | 28 ++++++++++++------------
+ drivers/net/ethernet/intel/iavf/i40e_common.c    | 12 +++++-----
+ drivers/net/ethernet/intel/iavf/i40e_osdep.h     |  2 +-
+ drivers/net/ethernet/intel/iavf/i40e_prototype.h |  2 +-
+ drivers/net/ethernet/intel/iavf/i40e_type.h      |  2 +-
+ 5 files changed, 23 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/Makefile b/drivers/net/ethernet/intel/iavf/Makefile
-index fa4c43be2266..87ddfbac2f17 100644
---- a/drivers/net/ethernet/intel/iavf/Makefile
-+++ b/drivers/net/ethernet/intel/iavf/Makefile
-@@ -12,4 +12,4 @@ subdir-ccflags-y += -I$(src)
- obj-$(CONFIG_IAVF) += iavf.o
- 
- iavf-objs := iavf_main.o iavf_ethtool.o iavf_virtchnl.o \
--		 iavf_txrx.o i40e_common.o i40e_adminq.o iavf_client.o
-+		 iavf_txrx.o iavf_common.o i40e_adminq.o iavf_client.o
 diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.c b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-index 8aa817808cd5..d2b165b610fa 100644
+index 480c3e8c38c8..d614722fbb3d 100644
 --- a/drivers/net/ethernet/intel/iavf/i40e_adminq.c
 +++ b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-@@ -1,11 +1,11 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
+@@ -577,7 +577,7 @@ static u16 i40e_clean_asq(struct iavf_hw *hw)
+ 	desc = IAVF_ADMINQ_DESC(*asq, ntc);
+ 	details = I40E_ADMINQ_DETAILS(*asq, ntc);
+ 	while (rd32(hw, hw->aq.asq.head) != ntc) {
+-		i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
++		iavf_debug(hw, I40E_DEBUG_AQ_MESSAGE,
+ 			   "ntc %d head %d.\n", ntc, rd32(hw, hw->aq.asq.head));
  
--#include "i40e_status.h"
--#include "i40e_type.h"
--#include "i40e_register.h"
-+#include "iavf_status.h"
-+#include "iavf_type.h"
-+#include "iavf_register.h"
- #include "i40e_adminq.h"
--#include "i40e_prototype.h"
-+#include "iavf_prototype.h"
+ 		if (details->callback) {
+@@ -643,7 +643,7 @@ iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+ 	mutex_lock(&hw->aq.asq_mutex);
  
- /**
-  *  i40e_adminq_init_regs - Initialize AdminQ registers
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.h b/drivers/net/ethernet/intel/iavf/i40e_adminq.h
-index e34625e25589..ee983889eab0 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_adminq.h
-+++ b/drivers/net/ethernet/intel/iavf/i40e_adminq.h
-@@ -4,8 +4,8 @@
- #ifndef _IAVF_ADMINQ_H_
- #define _IAVF_ADMINQ_H_
+ 	if (hw->aq.asq.count == 0) {
+-		i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
++		iavf_debug(hw, I40E_DEBUG_AQ_MESSAGE,
+ 			   "AQTX: Admin queue not initialized.\n");
+ 		status = I40E_ERR_QUEUE_EMPTY;
+ 		goto asq_send_command_error;
+@@ -653,7 +653,7 @@ iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
  
--#include "i40e_osdep.h"
--#include "i40e_status.h"
-+#include "iavf_osdep.h"
-+#include "iavf_status.h"
- #include "i40e_adminq_cmd.h"
+ 	val = rd32(hw, hw->aq.asq.head);
+ 	if (val >= hw->aq.num_asq_entries) {
+-		i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
++		iavf_debug(hw, I40E_DEBUG_AQ_MESSAGE,
+ 			   "AQTX: head overrun at %d\n", val);
+ 		status = I40E_ERR_QUEUE_EMPTY;
+ 		goto asq_send_command_error;
+@@ -682,7 +682,7 @@ iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+ 	desc->flags |= cpu_to_le16(details->flags_ena);
  
- #define IAVF_ADMINQ_DESC(R, i)   \
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 1d973b4cd973..961c1a71b671 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -34,7 +34,7 @@
- #include <net/tc_act/tc_gact.h>
- #include <net/tc_act/tc_mirred.h>
+ 	if (buff_size > hw->aq.asq_buf_size) {
+-		i40e_debug(hw,
++		iavf_debug(hw,
+ 			   I40E_DEBUG_AQ_MESSAGE,
+ 			   "AQTX: Invalid buffer size: %d.\n",
+ 			   buff_size);
+@@ -691,7 +691,7 @@ iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+ 	}
  
--#include "i40e_type.h"
-+#include "iavf_type.h"
- #include <linux/avf/virtchnl.h>
- #include "iavf_txrx.h"
+ 	if (details->postpone && !details->async) {
+-		i40e_debug(hw,
++		iavf_debug(hw,
+ 			   I40E_DEBUG_AQ_MESSAGE,
+ 			   "AQTX: Async flag not set along with postpone flag");
+ 		status = I40E_ERR_PARAM;
+@@ -706,7 +706,7 @@ iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+ 	 * in case of asynchronous completions
+ 	 */
+ 	if (i40e_clean_asq(hw) == 0) {
+-		i40e_debug(hw,
++		iavf_debug(hw,
+ 			   I40E_DEBUG_AQ_MESSAGE,
+ 			   "AQTX: Error queue is full.\n");
+ 		status = I40E_ERR_ADMIN_QUEUE_FULL;
+@@ -736,7 +736,7 @@ iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+ 	}
  
-@@ -298,7 +298,7 @@ struct iavf_adapter {
- 	struct net_device *netdev;
- 	struct pci_dev *pdev;
+ 	/* bump the tail */
+-	i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE, "AQTX: desc and buffer:\n");
++	iavf_debug(hw, I40E_DEBUG_AQ_MESSAGE, "AQTX: desc and buffer:\n");
+ 	iavf_debug_aq(hw, I40E_DEBUG_AQ_COMMAND, (void *)desc_on_ring,
+ 		      buff, buff_size);
+ 	(hw->aq.asq.next_to_use)++;
+@@ -769,7 +769,7 @@ iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+ 			memcpy(buff, dma_buff->va, buff_size);
+ 		retval = le16_to_cpu(desc->retval);
+ 		if (retval != 0) {
+-			i40e_debug(hw,
++			iavf_debug(hw,
+ 				   I40E_DEBUG_AQ_MESSAGE,
+ 				   "AQTX: Command completed with error 0x%X.\n",
+ 				   retval);
+@@ -787,7 +787,7 @@ iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+ 		hw->aq.asq_last_status = (enum i40e_admin_queue_err)retval;
+ 	}
  
--	struct iavf_hw hw; /* defined in i40e_type.h */
-+	struct iavf_hw hw; /* defined in iavf_type.h */
+-	i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
++	iavf_debug(hw, I40E_DEBUG_AQ_MESSAGE,
+ 		   "AQTX: desc and buffer writeback:\n");
+ 	iavf_debug_aq(hw, I40E_DEBUG_AQ_COMMAND, (void *)desc, buff, buff_size);
  
- 	enum iavf_state_t state;
- 	unsigned long crit_section;
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_alloc.h b/drivers/net/ethernet/intel/iavf/iavf_alloc.h
-similarity index 100%
-rename from drivers/net/ethernet/intel/iavf/i40e_alloc.h
-rename to drivers/net/ethernet/intel/iavf/iavf_alloc.h
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_client.c b/drivers/net/ethernet/intel/iavf/iavf_client.c
-index f4c195a4167a..a0bfa6b9555e 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_client.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_client.c
-@@ -5,7 +5,7 @@
- #include <linux/errno.h>
+@@ -799,11 +799,11 @@ iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+ 	if ((!cmd_completed) &&
+ 	    (!details->async && !details->postpone)) {
+ 		if (rd32(hw, hw->aq.asq.len) & IAVF_VF_ATQLEN1_ATQCRIT_MASK) {
+-			i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
++			iavf_debug(hw, I40E_DEBUG_AQ_MESSAGE,
+ 				   "AQTX: AQ Critical error.\n");
+ 			status = I40E_ERR_ADMIN_QUEUE_CRITICAL_ERROR;
+ 		} else {
+-			i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
++			iavf_debug(hw, I40E_DEBUG_AQ_MESSAGE,
+ 				   "AQTX: Writeback timeout.\n");
+ 			status = I40E_ERR_ADMIN_QUEUE_TIMEOUT;
+ 		}
+@@ -859,7 +859,7 @@ iavf_status iavf_clean_arq_element(struct iavf_hw *hw,
+ 	mutex_lock(&hw->aq.arq_mutex);
  
- #include "iavf.h"
--#include "i40e_prototype.h"
-+#include "iavf_prototype.h"
- #include "iavf_client.h"
+ 	if (hw->aq.arq.count == 0) {
+-		i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
++		iavf_debug(hw, I40E_DEBUG_AQ_MESSAGE,
+ 			   "AQRX: Admin queue not initialized.\n");
+ 		ret_code = I40E_ERR_QUEUE_EMPTY;
+ 		goto clean_arq_element_err;
+@@ -882,7 +882,7 @@ iavf_status iavf_clean_arq_element(struct iavf_hw *hw,
+ 	flags = le16_to_cpu(desc->flags);
+ 	if (flags & I40E_AQ_FLAG_ERR) {
+ 		ret_code = I40E_ERR_ADMIN_QUEUE_ERROR;
+-		i40e_debug(hw,
++		iavf_debug(hw,
+ 			   I40E_DEBUG_AQ_MESSAGE,
+ 			   "AQRX: Event received with error 0x%X.\n",
+ 			   hw->aq.arq_last_status);
+@@ -895,7 +895,7 @@ iavf_status iavf_clean_arq_element(struct iavf_hw *hw,
+ 		memcpy(e->msg_buf, hw->aq.arq.r.arq_bi[desc_idx].va,
+ 		       e->msg_len);
  
- static
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_common.c b/drivers/net/ethernet/intel/iavf/iavf_common.c
-similarity index 99%
-rename from drivers/net/ethernet/intel/iavf/i40e_common.c
-rename to drivers/net/ethernet/intel/iavf/iavf_common.c
-index d9fd2f24b3e7..768369c89e77 100644
+-	i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE, "AQRX: desc and buffer:\n");
++	iavf_debug(hw, I40E_DEBUG_AQ_MESSAGE, "AQRX: desc and buffer:\n");
+ 	iavf_debug_aq(hw, I40E_DEBUG_AQ_COMMAND, (void *)desc, e->msg_buf,
+ 		      hw->aq.arq_buf_size);
+ 
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_common.c b/drivers/net/ethernet/intel/iavf/i40e_common.c
+index 97eb06616cc0..c830bb6f5943 100644
 --- a/drivers/net/ethernet/intel/iavf/i40e_common.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_common.c
-@@ -1,9 +1,9 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
++++ b/drivers/net/ethernet/intel/iavf/i40e_common.c
+@@ -257,7 +257,7 @@ const char *iavf_stat_str(struct iavf_hw *hw, iavf_status stat_err)
+  *
+  * Dumps debug log about adminq command with descriptor contents.
+  **/
+-void iavf_debug_aq(struct iavf_hw *hw, enum i40e_debug_mask mask, void *desc,
++void iavf_debug_aq(struct iavf_hw *hw, enum iavf_debug_mask mask, void *desc,
+ 		   void *buffer, u16 buf_len)
+ {
+ 	struct i40e_aq_desc *aq_desc = (struct i40e_aq_desc *)desc;
+@@ -266,26 +266,26 @@ void iavf_debug_aq(struct iavf_hw *hw, enum i40e_debug_mask mask, void *desc,
+ 	if ((!(mask & hw->debug_mask)) || !desc)
+ 		return;
  
--#include "i40e_type.h"
-+#include "iavf_type.h"
- #include "i40e_adminq.h"
--#include "i40e_prototype.h"
-+#include "iavf_prototype.h"
- #include <linux/avf/virtchnl.h>
+-	i40e_debug(hw, mask,
++	iavf_debug(hw, mask,
+ 		   "AQ CMD: opcode 0x%04X, flags 0x%04X, datalen 0x%04X, retval 0x%04X\n",
+ 		   le16_to_cpu(aq_desc->opcode),
+ 		   le16_to_cpu(aq_desc->flags),
+ 		   le16_to_cpu(aq_desc->datalen),
+ 		   le16_to_cpu(aq_desc->retval));
+-	i40e_debug(hw, mask, "\tcookie (h,l) 0x%08X 0x%08X\n",
++	iavf_debug(hw, mask, "\tcookie (h,l) 0x%08X 0x%08X\n",
+ 		   le32_to_cpu(aq_desc->cookie_high),
+ 		   le32_to_cpu(aq_desc->cookie_low));
+-	i40e_debug(hw, mask, "\tparam (0,1)  0x%08X 0x%08X\n",
++	iavf_debug(hw, mask, "\tparam (0,1)  0x%08X 0x%08X\n",
+ 		   le32_to_cpu(aq_desc->params.internal.param0),
+ 		   le32_to_cpu(aq_desc->params.internal.param1));
+-	i40e_debug(hw, mask, "\taddr (h,l)   0x%08X 0x%08X\n",
++	iavf_debug(hw, mask, "\taddr (h,l)   0x%08X 0x%08X\n",
+ 		   le32_to_cpu(aq_desc->params.external.addr_high),
+ 		   le32_to_cpu(aq_desc->params.external.addr_low));
  
- /**
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_devids.h b/drivers/net/ethernet/intel/iavf/iavf_devids.h
-similarity index 100%
-rename from drivers/net/ethernet/intel/iavf/i40e_devids.h
-rename to drivers/net/ethernet/intel/iavf/iavf_devids.h
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 74b547634f48..54d8a1ed05ac 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2,7 +2,7 @@
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
+ 	if (buffer && aq_desc->datalen) {
+ 		u16 len = le16_to_cpu(aq_desc->datalen);
  
- #include "iavf.h"
--#include "i40e_prototype.h"
-+#include "iavf_prototype.h"
- #include "iavf_client.h"
- /* All iavf tracepoints are defined by the include below, which must
-  * be included exactly once across the whole kernel with
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_osdep.h b/drivers/net/ethernet/intel/iavf/iavf_osdep.h
-similarity index 100%
-rename from drivers/net/ethernet/intel/iavf/i40e_osdep.h
-rename to drivers/net/ethernet/intel/iavf/iavf_osdep.h
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_prototype.h b/drivers/net/ethernet/intel/iavf/iavf_prototype.h
-similarity index 98%
-rename from drivers/net/ethernet/intel/iavf/i40e_prototype.h
-rename to drivers/net/ethernet/intel/iavf/iavf_prototype.h
-index dca62e3b951f..a0cd43b7a368 100644
+-		i40e_debug(hw, mask, "AQ CMD Buffer:\n");
++		iavf_debug(hw, mask, "AQ CMD Buffer:\n");
+ 		if (buf_len < len)
+ 			len = buf_len;
+ 		/* write the full 16-byte chunks */
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_osdep.h b/drivers/net/ethernet/intel/iavf/i40e_osdep.h
+index 0fceb284e54a..412d534a4bbe 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_osdep.h
++++ b/drivers/net/ethernet/intel/iavf/i40e_osdep.h
+@@ -44,7 +44,7 @@ struct i40e_virt_mem {
+ #define i40e_allocate_virt_mem(h, m, s) iavf_allocate_virt_mem_d(h, m, s)
+ #define i40e_free_virt_mem(h, m) iavf_free_virt_mem_d(h, m)
+ 
+-#define i40e_debug(h, m, s, ...)  iavf_debug_d(h, m, s, ##__VA_ARGS__)
++#define iavf_debug(h, m, s, ...)  iavf_debug_d(h, m, s, ##__VA_ARGS__)
+ extern void iavf_debug_d(void *hw, u32 mask, char *fmt_str, ...)
+ 	__attribute__ ((format(gnu_printf, 3, 4)));
+ 
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_prototype.h b/drivers/net/ethernet/intel/iavf/i40e_prototype.h
+index 0497832bc53e..5d59104b97b9 100644
 --- a/drivers/net/ethernet/intel/iavf/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_prototype.h
-@@ -4,8 +4,8 @@
- #ifndef _IAVF_PROTOTYPE_H_
- #define _IAVF_PROTOTYPE_H_
++++ b/drivers/net/ethernet/intel/iavf/i40e_prototype.h
+@@ -29,7 +29,7 @@ iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+ bool iavf_asq_done(struct iavf_hw *hw);
  
--#include "i40e_type.h"
--#include "i40e_alloc.h"
-+#include "iavf_type.h"
-+#include "iavf_alloc.h"
- #include <linux/avf/virtchnl.h>
+ /* debug function for adminq */
+-void iavf_debug_aq(struct iavf_hw *hw, enum i40e_debug_mask mask, void *desc,
++void iavf_debug_aq(struct iavf_hw *hw, enum iavf_debug_mask mask, void *desc,
+ 		   void *buffer, u16 buf_len);
  
- /* Prototypes for shared code functions that are not in
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_register.h b/drivers/net/ethernet/intel/iavf/iavf_register.h
-similarity index 100%
-rename from drivers/net/ethernet/intel/iavf/i40e_register.h
-rename to drivers/net/ethernet/intel/iavf/iavf_register.h
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_status.h b/drivers/net/ethernet/intel/iavf/iavf_status.h
-similarity index 100%
-rename from drivers/net/ethernet/intel/iavf/i40e_status.h
-rename to drivers/net/ethernet/intel/iavf/iavf_status.h
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 517c37a44026..add3188ccedf 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -6,7 +6,7 @@
- 
- #include "iavf.h"
- #include "iavf_trace.h"
--#include "i40e_prototype.h"
-+#include "iavf_prototype.h"
- 
- static inline __le64 build_ctob(u32 td_cmd, u32 td_offset, unsigned int size,
- 				u32 td_tag)
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_type.h b/drivers/net/ethernet/intel/iavf/iavf_type.h
-similarity index 99%
-rename from drivers/net/ethernet/intel/iavf/i40e_type.h
-rename to drivers/net/ethernet/intel/iavf/iavf_type.h
-index 6a917dbfb981..f0c8cf981b92 100644
+ void i40e_idle_aq(struct iavf_hw *hw);
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_type.h b/drivers/net/ethernet/intel/iavf/i40e_type.h
+index 2ce4203cd0b6..773df7afb9ac 100644
 --- a/drivers/net/ethernet/intel/iavf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_type.h
-@@ -4,11 +4,11 @@
- #ifndef _IAVF_TYPE_H_
- #define _IAVF_TYPE_H_
++++ b/drivers/net/ethernet/intel/iavf/i40e_type.h
+@@ -35,7 +35,7 @@ typedef void (*I40E_ADMINQ_CALLBACK)(struct iavf_hw *, struct i40e_aq_desc *);
+ #define I40E_QTX_CTL_PF_QUEUE	0x2
  
--#include "i40e_status.h"
--#include "i40e_osdep.h"
--#include "i40e_register.h"
-+#include "iavf_status.h"
-+#include "iavf_osdep.h"
-+#include "iavf_register.h"
- #include "i40e_adminq.h"
--#include "i40e_devids.h"
-+#include "iavf_devids.h"
+ /* debug masks - set these bits in hw->debug_mask to control output */
+-enum i40e_debug_mask {
++enum iavf_debug_mask {
+ 	I40E_DEBUG_INIT			= 0x00000001,
+ 	I40E_DEBUG_RELEASE		= 0x00000002,
  
- #define IAVF_RXQ_CTX_DBUFF_SHIFT 7
- 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 8622d7781fd7..fa5be220a7ec 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -2,7 +2,7 @@
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
- 
- #include "iavf.h"
--#include "i40e_prototype.h"
-+#include "iavf_prototype.h"
- #include "iavf_client.h"
- 
- /* busy wait delay in msec */
 -- 
 2.14.4
 
