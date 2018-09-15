@@ -1,185 +1,197 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 14 Sep 2018 17:37:54 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 11/14] iavf: tracing
- infrastructure rename
+Date: Fri, 14 Sep 2018 17:37:57 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 14/14] intel-ethernet: use
+ correct module license
 In-Reply-To: <20180915003757.169108-1-jesse.brandeburg@intel.com>
 References: <20180915003757.169108-1-jesse.brandeburg@intel.com>
-Message-ID: <20180915003757.169108-12-jesse.brandeburg@intel.com>
+Message-ID: <20180915003757.169108-15-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Rename the i40e_trace file and fix up all the callers
-to the new names inside the iavf_trace.h file.
+We recently updated all our SPDX identifiers to correctly
+indicate our net/ethernet/intel/* drivers were always released
+and intended to be released under GPL v2, but the MODULE_LICENSE
+declaration was never updated.
+
+Fix the MODULE_LICENSE to be GPL v2, for all our drivers.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c        |  2 +-
- .../intel/iavf/{i40e_trace.h => iavf_trace.h}      | 28 +++++++++++-----------
- drivers/net/ethernet/intel/iavf/iavf_txrx.c        | 14 +++++------
- 3 files changed, 22 insertions(+), 22 deletions(-)
- rename drivers/net/ethernet/intel/iavf/{i40e_trace.h => iavf_trace.h} (85%)
+ drivers/net/ethernet/intel/e100.c                 | 2 +-
+ drivers/net/ethernet/intel/e1000/e1000_main.c     | 2 +-
+ drivers/net/ethernet/intel/e1000e/netdev.c        | 2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c       | 2 +-
+ drivers/net/ethernet/intel/iavf/iavf_main.c       | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_main.c         | 2 +-
+ drivers/net/ethernet/intel/igb/igb_main.c         | 2 +-
+ drivers/net/ethernet/intel/igbvf/netdev.c         | 2 +-
+ drivers/net/ethernet/intel/ixgb/ixgb_main.c       | 2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 2 +-
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
+ 12 files changed, 13 insertions(+), 13 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index 27d5f27163d2..7c4b55482f72 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -164,7 +164,7 @@
+ 
+ MODULE_DESCRIPTION(DRV_DESCRIPTION);
+ MODULE_AUTHOR(DRV_COPYRIGHT);
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
+ MODULE_FIRMWARE(FIRMWARE_D101M);
+ MODULE_FIRMWARE(FIRMWARE_D101S);
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 2110d5f2da19..7e0f1f96a8a1 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -195,7 +195,7 @@ static struct pci_driver e1000_driver = {
+ 
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION("Intel(R) PRO/1000 Network Driver");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
+ 
+ #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 3ba0c90e7055..c0f9faca70c4 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -7592,7 +7592,7 @@ module_exit(e1000_exit_module);
+ 
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION("Intel(R) PRO/1000 Network Driver");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
+ 
+ /* netdev.c */
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 3f536541f45f..503bbc017792 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -21,7 +21,7 @@ static const char fm10k_copyright[] =
+ 
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION(DRV_SUMMARY);
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
+ 
+ /* single workqueue for entire fm10k driver */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 5d209d8fe9b8..c7d2c9010fdf 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -91,7 +91,7 @@ MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX
+ 
+ MODULE_AUTHOR("Intel Corporation, <e1000-devel@lists.sourceforge.net>");
+ MODULE_DESCRIPTION("Intel(R) Ethernet Connection XL710 Network Driver");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
+ 
+ static struct workqueue_struct *i40e_wq;
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 63c5d97b1658..b8edf43e36f1 100644
+index 54d8a1ed05ac..0e2f78175f0e 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -9,7 +9,7 @@
-  * CREATE_TRACE_POINTS defined
-  */
- #define CREATE_TRACE_POINTS
--#include "i40e_trace.h"
-+#include "iavf_trace.h"
+@@ -53,8 +53,8 @@ MODULE_DEVICE_TABLE(pci, iavf_pci_tbl);
  
- static int iavf_setup_all_tx_resources(struct iavf_adapter *adapter);
- static int iavf_setup_all_rx_resources(struct iavf_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_trace.h b/drivers/net/ethernet/intel/iavf/iavf_trace.h
-similarity index 85%
-rename from drivers/net/ethernet/intel/iavf/i40e_trace.h
-rename to drivers/net/ethernet/intel/iavf/iavf_trace.h
-index 552cfbfcce71..24f34d79f20a 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_trace.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_trace.h
-@@ -5,7 +5,7 @@
+ MODULE_ALIAS("i40evf");
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+-MODULE_DESCRIPTION("Intel(R) XL710 X710 Virtual Function Network Driver");
+-MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Intel(R) Ethernet Adaptive Virtual Function Network Driver");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
  
- /* The trace subsystem name for iavf will be "iavf".
-  *
-- * This file is named i40e_trace.h.
-+ * This file is named iavf_trace.h.
-  *
-  * Since this include file's name is different from the trace
-  * subsystem name, we'll have to define TRACE_INCLUDE_FILE at the end
-@@ -23,14 +23,14 @@
- #include <linux/tracepoint.h>
+ static struct workqueue_struct *iavf_wq;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 1b49a605d094..d54e63785ff0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -15,7 +15,7 @@ static const char ice_copyright[] = "Copyright (c) 2018, Intel Corporation.";
  
- /**
-- * i40e_trace() macro enables shared code to refer to trace points
-+ * iavf_trace() macro enables shared code to refer to trace points
-  * like:
-  *
-- * trace_i40e{,vf}_example(args...)
-+ * trace_iavf{,vf}_example(args...)
-  *
-  * ... as:
-  *
-- * i40e_trace(example, args...)
-+ * iavf_trace(example, args...)
-  *
-  * ... to resolve to the PF or VF version of the tracepoint without
-  * ifdefs, and to allow tracepoints to be disabled entirely at build
-@@ -39,18 +39,18 @@
-  * Trace point should always be referred to in the driver via this
-  * macro.
-  *
-- * Similarly, i40e_trace_enabled(trace_name) wraps references to
-- * trace_i40e{,vf}_<trace_name>_enabled() functions.
-+ * Similarly, iavf_trace_enabled(trace_name) wraps references to
-+ * trace_iavf{,vf}_<trace_name>_enabled() functions.
-  */
--#define _I40E_TRACE_NAME(trace_name) (trace_ ## iavf ## _ ## trace_name)
--#define I40E_TRACE_NAME(trace_name) _I40E_TRACE_NAME(trace_name)
-+#define _IAVF_TRACE_NAME(trace_name) (trace_ ## iavf ## _ ## trace_name)
-+#define IAVF_TRACE_NAME(trace_name) _IAVF_TRACE_NAME(trace_name)
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION(DRV_SUMMARY);
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
  
--#define i40e_trace(trace_name, args...) I40E_TRACE_NAME(trace_name)(args)
-+#define iavf_trace(trace_name, args...) IAVF_TRACE_NAME(trace_name)(args)
+ static int debug = -1;
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index a32c576c1e65..c18e79112cad 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -243,7 +243,7 @@ static struct pci_driver igb_driver = {
  
--#define i40e_trace_enabled(trace_name) I40E_TRACE_NAME(trace_name##_enabled)()
-+#define iavf_trace_enabled(trace_name) IAVF_TRACE_NAME(trace_name##_enabled)()
+ MODULE_AUTHOR("Intel Corporation, <e1000-devel@lists.sourceforge.net>");
+ MODULE_DESCRIPTION("Intel(R) Gigabit Ethernet Network Driver");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
  
- /* Events common to PF and VF. Corresponding versions will be defined
-- * for both, named trace_i40e_* and trace_iavf_*. The i40e_trace()
-+ * for both, named trace_iavf_* and trace_iavf_*. The iavf_trace()
-  * macro above will select the right trace point name for the driver
-  * being built from shared code.
-  */
-@@ -195,8 +195,8 @@ DEFINE_EVENT(
+ #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
+diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
+index e0c989ffb2b3..820d49eb41ab 100644
+--- a/drivers/net/ethernet/intel/igbvf/netdev.c
++++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+@@ -3011,7 +3011,7 @@ module_exit(igbvf_exit_module);
  
- /* Events unique to the VF. */
+ MODULE_AUTHOR("Intel Corporation, <e1000-devel@lists.sourceforge.net>");
+ MODULE_DESCRIPTION("Intel(R) Gigabit Virtual Function Network Driver");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
  
--#endif /* _I40E_TRACE_H_ */
--/* This must be outside ifdef _I40E_TRACE_H */
-+#endif /* _IAVF_TRACE_H_ */
-+/* This must be outside ifdef _IAVF_TRACE_H */
+ /* netdev.c */
+diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+index d3e72d0f66ef..4bb89587cd6a 100644
+--- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
++++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+@@ -107,7 +107,7 @@ static struct pci_driver ixgb_driver = {
  
- /* This trace include file is not located in the .../include/trace
-  * with the kernel tracepoint definitions, because we're a loadable
-@@ -205,5 +205,5 @@ DEFINE_EVENT(
- #undef TRACE_INCLUDE_PATH
- #define TRACE_INCLUDE_PATH .
- #undef TRACE_INCLUDE_FILE
--#define TRACE_INCLUDE_FILE i40e_trace
-+#define TRACE_INCLUDE_FILE iavf_trace
- #include <trace/define_trace.h>
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 66d9f1bf9467..5164e812f009 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -5,7 +5,7 @@
- #include <net/busy_poll.h>
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION("Intel(R) PRO/10GbE Network Driver");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
  
- #include "iavf.h"
--#include "i40e_trace.h"
-+#include "iavf_trace.h"
- #include "i40e_prototype.h"
+ #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 604282f03d23..27a8546c88b2 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -159,7 +159,7 @@ MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
  
- static inline __le64 build_ctob(u32 td_cmd, u32 td_offset, unsigned int size,
-@@ -211,7 +211,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
- 		/* prevent any other reads prior to eop_desc */
- 		smp_rmb();
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION("Intel(R) 10 Gigabit PCI Express Network Driver");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
  
--		i40e_trace(clean_tx_irq, tx_ring, tx_desc, tx_buf);
-+		iavf_trace(clean_tx_irq, tx_ring, tx_desc, tx_buf);
- 		/* if the descriptor isn't done, no work yet to do */
- 		if (!(eop_desc->cmd_type_offset_bsz &
- 		      cpu_to_le64(IAVF_TX_DESC_DTYPE_DESC_DONE)))
-@@ -239,7 +239,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ static struct workqueue_struct *ixgbe_wq;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 17e23f609d74..ba6562e8cd73 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -79,7 +79,7 @@ MODULE_DEVICE_TABLE(pci, ixgbevf_pci_tbl);
  
- 		/* unmap remaining buffers */
- 		while (tx_desc != eop_desc) {
--			i40e_trace(clean_tx_irq_unmap,
-+			iavf_trace(clean_tx_irq_unmap,
- 				   tx_ring, tx_desc, tx_buf);
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION("Intel(R) 10 Gigabit Virtual Function Network Driver");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
  
- 			tx_buf++;
-@@ -1503,7 +1503,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		if (!size)
- 			break;
- 
--		i40e_trace(clean_rx_irq, rx_ring, rx_desc, skb);
-+		iavf_trace(clean_rx_irq, rx_ring, rx_desc, skb);
- 		rx_buffer = i40e_get_rx_buffer(rx_ring, size);
- 
- 		/* retrieve a buffer from the ring */
-@@ -1557,7 +1557,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		vlan_tag = (qword & BIT(IAVF_RX_DESC_STATUS_L2TAG1P_SHIFT)) ?
- 			   le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1) : 0;
- 
--		i40e_trace(clean_rx_irq_rx, rx_ring, rx_desc, skb);
-+		iavf_trace(clean_rx_irq_rx, rx_ring, rx_desc, skb);
- 		i40e_receive_skb(rx_ring, skb, vlan_tag);
- 		skb = NULL;
- 
-@@ -2407,7 +2407,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	/* prefetch the data, we'll need it later */
- 	prefetch(skb->data);
- 
--	i40e_trace(xmit_frame_ring, skb, tx_ring);
-+	iavf_trace(xmit_frame_ring, skb, tx_ring);
- 
- 	count = i40e_xmit_descriptor_count(skb);
- 	if (i40e_chk_linearize(skb, count)) {
-@@ -2476,7 +2476,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	return NETDEV_TX_OK;
- 
- out_drop:
--	i40e_trace(xmit_frame_ring_drop, first->skb, tx_ring);
-+	iavf_trace(xmit_frame_ring_drop, first->skb, tx_ring);
- 	dev_kfree_skb_any(first->skb);
- 	first->skb = NULL;
- 	return NETDEV_TX_OK;
+ #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
 -- 
 2.14.4
 
