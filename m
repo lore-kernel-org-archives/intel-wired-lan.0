@@ -1,1141 +1,1307 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 14 Sep 2018 17:37:49 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 06/14] iavf: remove references
- to old names
+Date: Fri, 14 Sep 2018 17:37:47 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 04/14] iavf: rename
+ i40e_status to iavf_status
 In-Reply-To: <20180915003757.169108-1-jesse.brandeburg@intel.com>
 References: <20180915003757.169108-1-jesse.brandeburg@intel.com>
-Message-ID: <20180915003757.169108-7-jesse.brandeburg@intel.com>
+Message-ID: <20180915003757.169108-5-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove the register name references to I40E_VF* and change to
-IAVF_VF. Update the descriptor names and defines to the IAVF
-name.
+This is just a rename of an internal variable i40e_status, but
+it was a pretty big change and so deserved it's own patch.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/i40e_adminq.c   |  28 ++--
- drivers/net/ethernet/intel/iavf/i40e_common.c   |   2 +-
- drivers/net/ethernet/intel/iavf/i40e_osdep.h    |   2 +-
- drivers/net/ethernet/intel/iavf/i40e_register.h | 128 +++++++++---------
- drivers/net/ethernet/intel/iavf/i40e_type.h     | 170 ++++++++++++------------
- drivers/net/ethernet/intel/iavf/iavf.h          |  10 +-
- drivers/net/ethernet/intel/iavf/iavf_main.c     |  92 ++++++-------
- drivers/net/ethernet/intel/iavf/iavf_txrx.c     | 104 +++++++--------
- drivers/net/ethernet/intel/iavf/iavf_txrx.h     |   2 +-
- 9 files changed, 267 insertions(+), 271 deletions(-)
+ drivers/net/ethernet/intel/iavf/i40e_adminq.c     |  94 +++++++++---------
+ drivers/net/ethernet/intel/iavf/i40e_alloc.h      |   8 +-
+ drivers/net/ethernet/intel/iavf/i40e_common.c     |  72 +++++++-------
+ drivers/net/ethernet/intel/iavf/i40e_osdep.h      |   2 +-
+ drivers/net/ethernet/intel/iavf/i40e_prototype.h  |  28 +++---
+ drivers/net/ethernet/intel/iavf/i40evf.h          |   2 +-
+ drivers/net/ethernet/intel/iavf/i40evf_client.c   |   6 +-
+ drivers/net/ethernet/intel/iavf/i40evf_ethtool.c  |  52 ++++------
+ drivers/net/ethernet/intel/iavf/i40evf_main.c     |  14 +--
+ drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c | 115 +++++++++-------------
+ 10 files changed, 179 insertions(+), 214 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.c b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-index f0e6f9bbb819..50e0f1225298 100644
+index 3d1c874f5f85..f0e6f9bbb819 100644
 --- a/drivers/net/ethernet/intel/iavf/i40e_adminq.c
 +++ b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-@@ -17,16 +17,16 @@ static void i40e_adminq_init_regs(struct i40e_hw *hw)
+@@ -34,9 +34,9 @@ static void i40e_adminq_init_regs(struct i40e_hw *hw)
+  *  i40e_alloc_adminq_asq_ring - Allocate Admin Queue send rings
+  *  @hw: pointer to the hardware structure
+  **/
+-static i40e_status i40e_alloc_adminq_asq_ring(struct i40e_hw *hw)
++static iavf_status i40e_alloc_adminq_asq_ring(struct i40e_hw *hw)
  {
- 	/* set head and tail registers in our local struct */
- 	if (i40e_is_vf(hw)) {
--		hw->aq.asq.tail = I40E_VF_ATQT1;
--		hw->aq.asq.head = I40E_VF_ATQH1;
--		hw->aq.asq.len  = I40E_VF_ATQLEN1;
--		hw->aq.asq.bal  = I40E_VF_ATQBAL1;
--		hw->aq.asq.bah  = I40E_VF_ATQBAH1;
--		hw->aq.arq.tail = I40E_VF_ARQT1;
--		hw->aq.arq.head = I40E_VF_ARQH1;
--		hw->aq.arq.len  = I40E_VF_ARQLEN1;
--		hw->aq.arq.bal  = I40E_VF_ARQBAL1;
--		hw->aq.arq.bah  = I40E_VF_ARQBAH1;
-+		hw->aq.asq.tail = IAVF_VF_ATQT1;
-+		hw->aq.asq.head = IAVF_VF_ATQH1;
-+		hw->aq.asq.len  = IAVF_VF_ATQLEN1;
-+		hw->aq.asq.bal  = IAVF_VF_ATQBAL1;
-+		hw->aq.asq.bah  = IAVF_VF_ATQBAH1;
-+		hw->aq.arq.tail = IAVF_VF_ARQT1;
-+		hw->aq.arq.head = IAVF_VF_ARQH1;
-+		hw->aq.arq.len  = IAVF_VF_ARQLEN1;
-+		hw->aq.arq.bal  = IAVF_VF_ARQBAL1;
-+		hw->aq.arq.bah  = IAVF_VF_ARQBAH1;
- 	}
+-	i40e_status ret_code;
++	iavf_status ret_code;
+ 
+ 	ret_code = i40e_allocate_dma_mem(hw, &hw->aq.asq.desc_buf,
+ 					 i40e_mem_atq_ring,
+@@ -61,9 +61,9 @@ static i40e_status i40e_alloc_adminq_asq_ring(struct i40e_hw *hw)
+  *  i40e_alloc_adminq_arq_ring - Allocate Admin Queue receive rings
+  *  @hw: pointer to the hardware structure
+  **/
+-static i40e_status i40e_alloc_adminq_arq_ring(struct i40e_hw *hw)
++static iavf_status i40e_alloc_adminq_arq_ring(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code;
++	iavf_status ret_code;
+ 
+ 	ret_code = i40e_allocate_dma_mem(hw, &hw->aq.arq.desc_buf,
+ 					 i40e_mem_arq_ring,
+@@ -102,9 +102,9 @@ static void i40e_free_adminq_arq(struct i40e_hw *hw)
+  *  i40e_alloc_arq_bufs - Allocate pre-posted buffers for the receive queue
+  *  @hw: pointer to the hardware structure
+  **/
+-static i40e_status i40e_alloc_arq_bufs(struct i40e_hw *hw)
++static iavf_status i40e_alloc_arq_bufs(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code;
++	iavf_status ret_code;
+ 	struct i40e_aq_desc *desc;
+ 	struct i40e_dma_mem *bi;
+ 	int i;
+@@ -115,7 +115,7 @@ static i40e_status i40e_alloc_arq_bufs(struct i40e_hw *hw)
+ 
+ 	/* buffer_info structures do not need alignment */
+ 	ret_code = i40e_allocate_virt_mem(hw, &hw->aq.arq.dma_head,
+-		(hw->aq.num_arq_entries * sizeof(struct i40e_dma_mem)));
++					  (hw->aq.num_arq_entries * sizeof(struct i40e_dma_mem)));
+ 	if (ret_code)
+ 		goto alloc_arq_bufs;
+ 	hw->aq.arq.r.arq_bi = (struct i40e_dma_mem *)hw->aq.arq.dma_head.va;
+@@ -169,15 +169,15 @@ static i40e_status i40e_alloc_arq_bufs(struct i40e_hw *hw)
+  *  i40e_alloc_asq_bufs - Allocate empty buffer structs for the send queue
+  *  @hw: pointer to the hardware structure
+  **/
+-static i40e_status i40e_alloc_asq_bufs(struct i40e_hw *hw)
++static iavf_status i40e_alloc_asq_bufs(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code;
++	iavf_status ret_code;
+ 	struct i40e_dma_mem *bi;
+ 	int i;
+ 
+ 	/* No mapped memory needed yet, just the buffer info structures */
+ 	ret_code = i40e_allocate_virt_mem(hw, &hw->aq.asq.dma_head,
+-		(hw->aq.num_asq_entries * sizeof(struct i40e_dma_mem)));
++					  (hw->aq.num_asq_entries * sizeof(struct i40e_dma_mem)));
+ 	if (ret_code)
+ 		goto alloc_asq_bufs;
+ 	hw->aq.asq.r.asq_bi = (struct i40e_dma_mem *)hw->aq.asq.dma_head.va;
+@@ -253,9 +253,9 @@ static void i40e_free_asq_bufs(struct i40e_hw *hw)
+  *
+  *  Configure base address and length registers for the transmit queue
+  **/
+-static i40e_status i40e_config_asq_regs(struct i40e_hw *hw)
++static iavf_status i40e_config_asq_regs(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code = 0;
++	iavf_status ret_code = 0;
+ 	u32 reg = 0;
+ 
+ 	/* Clear Head and Tail */
+@@ -282,9 +282,9 @@ static i40e_status i40e_config_asq_regs(struct i40e_hw *hw)
+  *
+  * Configure base address and length registers for the receive (event queue)
+  **/
+-static i40e_status i40e_config_arq_regs(struct i40e_hw *hw)
++static iavf_status i40e_config_arq_regs(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code = 0;
++	iavf_status ret_code = 0;
+ 	u32 reg = 0;
+ 
+ 	/* Clear Head and Tail */
+@@ -321,9 +321,9 @@ static i40e_status i40e_config_arq_regs(struct i40e_hw *hw)
+  *  Do *NOT* hold the lock when calling this as the memory allocation routines
+  *  called are not going to be atomic context safe
+  **/
+-static i40e_status i40e_init_asq(struct i40e_hw *hw)
++static iavf_status i40e_init_asq(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code = 0;
++	iavf_status ret_code = 0;
+ 
+ 	if (hw->aq.asq.count > 0) {
+ 		/* queue already initialized */
+@@ -380,9 +380,9 @@ static i40e_status i40e_init_asq(struct i40e_hw *hw)
+  *  Do *NOT* hold the lock when calling this as the memory allocation routines
+  *  called are not going to be atomic context safe
+  **/
+-static i40e_status i40e_init_arq(struct i40e_hw *hw)
++static iavf_status i40e_init_arq(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code = 0;
++	iavf_status ret_code = 0;
+ 
+ 	if (hw->aq.arq.count > 0) {
+ 		/* queue already initialized */
+@@ -432,9 +432,9 @@ static i40e_status i40e_init_arq(struct i40e_hw *hw)
+  *
+  *  The main shutdown routine for the Admin Send Queue
+  **/
+-static i40e_status i40e_shutdown_asq(struct i40e_hw *hw)
++static iavf_status i40e_shutdown_asq(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code = 0;
++	iavf_status ret_code = 0;
+ 
+ 	mutex_lock(&hw->aq.asq_mutex);
+ 
+@@ -466,9 +466,9 @@ static i40e_status i40e_shutdown_asq(struct i40e_hw *hw)
+  *
+  *  The main shutdown routine for the Admin Receive Queue
+  **/
+-static i40e_status i40e_shutdown_arq(struct i40e_hw *hw)
++static iavf_status i40e_shutdown_arq(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code = 0;
++	iavf_status ret_code = 0;
+ 
+ 	mutex_lock(&hw->aq.arq_mutex);
+ 
+@@ -505,9 +505,9 @@ static i40e_status i40e_shutdown_arq(struct i40e_hw *hw)
+  *     - hw->aq.arq_buf_size
+  *     - hw->aq.asq_buf_size
+  **/
+-i40e_status iavf_init_adminq(struct i40e_hw *hw)
++iavf_status iavf_init_adminq(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code;
++	iavf_status ret_code;
+ 
+ 	/* verify input for valid configuration */
+ 	if ((hw->aq.num_arq_entries == 0) ||
+@@ -549,9 +549,9 @@ i40e_status iavf_init_adminq(struct i40e_hw *hw)
+  *  iavf_shutdown_adminq - shutdown routine for the Admin Queue
+  *  @hw: pointer to the hardware structure
+  **/
+-i40e_status iavf_shutdown_adminq(struct i40e_hw *hw)
++iavf_status iavf_shutdown_adminq(struct i40e_hw *hw)
+ {
+-	i40e_status ret_code = 0;
++	iavf_status ret_code = 0;
+ 
+ 	if (iavf_check_asq_alive(hw))
+ 		iavf_aq_queue_shutdown(hw, true);
+@@ -570,7 +570,7 @@ i40e_status iavf_shutdown_adminq(struct i40e_hw *hw)
+  **/
+ static u16 i40e_clean_asq(struct i40e_hw *hw)
+ {
+-	struct i40e_adminq_ring *asq = &(hw->aq.asq);
++	struct i40e_adminq_ring *asq = &hw->aq.asq;
+ 	struct i40e_asq_cmd_details *details;
+ 	u16 ntc = asq->next_to_clean;
+ 	struct i40e_aq_desc desc_cb;
+@@ -616,7 +616,6 @@ bool iavf_asq_done(struct i40e_hw *hw)
+ 	 * timing reliability than DD bit
+ 	 */
+ 	return rd32(hw, hw->aq.asq.head) == hw->aq.asq.next_to_use;
+-
  }
  
-@@ -264,7 +264,7 @@ static iavf_status i40e_config_asq_regs(struct i40e_hw *hw)
+ /**
+@@ -630,17 +629,16 @@ bool iavf_asq_done(struct i40e_hw *hw)
+  *  This is the main send command driver routine for the Admin Queue send
+  *  queue.  It runs the queue, cleans the queue, etc
+  **/
+-i40e_status iavf_asq_send_command(struct i40e_hw *hw,
+-				struct i40e_aq_desc *desc,
+-				void *buff, /* can be NULL */
+-				u16  buff_size,
+-				struct i40e_asq_cmd_details *cmd_details)
++iavf_status iavf_asq_send_command(struct i40e_hw *hw, struct i40e_aq_desc *desc,
++				  void *buff, /* can be NULL */
++				  u16  buff_size,
++				  struct i40e_asq_cmd_details *cmd_details)
+ {
+-	i40e_status status = 0;
+ 	struct i40e_dma_mem *dma_buff = NULL;
+ 	struct i40e_asq_cmd_details *details;
+ 	struct i40e_aq_desc *desc_on_ring;
+ 	bool cmd_completed = false;
++	iavf_status status = 0;
+ 	u16  retval = 0;
+ 	u32  val = 0;
  
- 	/* set starting point */
- 	wr32(hw, hw->aq.asq.len, (hw->aq.num_asq_entries |
--				  I40E_VF_ATQLEN1_ATQENABLE_MASK));
-+				  IAVF_VF_ATQLEN1_ATQENABLE_MASK));
- 	wr32(hw, hw->aq.asq.bal, lower_32_bits(hw->aq.asq.desc_buf.pa));
- 	wr32(hw, hw->aq.asq.bah, upper_32_bits(hw->aq.asq.desc_buf.pa));
+@@ -724,8 +722,8 @@ i40e_status iavf_asq_send_command(struct i40e_hw *hw,
+ 	*desc_on_ring = *desc;
  
-@@ -293,7 +293,7 @@ static iavf_status i40e_config_arq_regs(struct i40e_hw *hw)
+ 	/* if buff is not NULL assume indirect command */
+-	if (buff != NULL) {
+-		dma_buff = &(hw->aq.asq.r.asq_bi[hw->aq.asq.next_to_use]);
++	if (buff) {
++		dma_buff = &hw->aq.asq.r.asq_bi[hw->aq.asq.next_to_use];
+ 		/* copy the user buff into the respective DMA buff */
+ 		memcpy(dma_buff->va, buff, buff_size);
+ 		desc_on_ring->datalen = cpu_to_le16(buff_size);
+@@ -742,7 +740,7 @@ i40e_status iavf_asq_send_command(struct i40e_hw *hw,
+ 	/* bump the tail */
+ 	i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE, "AQTX: desc and buffer:\n");
+ 	iavf_debug_aq(hw, I40E_DEBUG_AQ_COMMAND, (void *)desc_on_ring,
+-			buff, buff_size);
++		      buff, buff_size);
+ 	(hw->aq.asq.next_to_use)++;
+ 	if (hw->aq.asq.next_to_use == hw->aq.asq.count)
+ 		hw->aq.asq.next_to_use = 0;
+@@ -769,7 +767,7 @@ i40e_status iavf_asq_send_command(struct i40e_hw *hw,
+ 	/* if ready, copy the desc back to temp */
+ 	if (iavf_asq_done(hw)) {
+ 		*desc = *desc_on_ring;
+-		if (buff != NULL)
++		if (buff)
+ 			memcpy(buff, dma_buff->va, buff_size);
+ 		retval = le16_to_cpu(desc->retval);
+ 		if (retval != 0) {
+@@ -793,8 +791,7 @@ i40e_status iavf_asq_send_command(struct i40e_hw *hw,
  
- 	/* set starting point */
- 	wr32(hw, hw->aq.arq.len, (hw->aq.num_arq_entries |
--				  I40E_VF_ARQLEN1_ARQENABLE_MASK));
-+				  IAVF_VF_ARQLEN1_ARQENABLE_MASK));
- 	wr32(hw, hw->aq.arq.bal, lower_32_bits(hw->aq.arq.desc_buf.pa));
- 	wr32(hw, hw->aq.arq.bah, upper_32_bits(hw->aq.arq.desc_buf.pa));
+ 	i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
+ 		   "AQTX: desc and buffer writeback:\n");
+-	iavf_debug_aq(hw, I40E_DEBUG_AQ_COMMAND, (void *)desc, buff,
+-			buff_size);
++	iavf_debug_aq(hw, I40E_DEBUG_AQ_COMMAND, (void *)desc, buff, buff_size);
  
-@@ -800,7 +800,7 @@ iavf_status iavf_asq_send_command(struct i40e_hw *hw, struct i40e_aq_desc *desc,
- 	/* update the error if time out occurred */
- 	if ((!cmd_completed) &&
- 	    (!details->async && !details->postpone)) {
--		if (rd32(hw, hw->aq.asq.len) & I40E_VF_ATQLEN1_ATQCRIT_MASK) {
-+		if (rd32(hw, hw->aq.asq.len) & IAVF_VF_ATQLEN1_ATQCRIT_MASK) {
- 			i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
- 				   "AQTX: AQ Critical error.\n");
- 			status = I40E_ERR_ADMIN_QUEUE_CRITICAL_ERROR;
-@@ -868,7 +868,7 @@ iavf_status iavf_clean_arq_element(struct i40e_hw *hw,
- 	}
+ 	/* save writeback aq if requested */
+ 	if (details->wb_desc)
+@@ -826,8 +823,7 @@ i40e_status iavf_asq_send_command(struct i40e_hw *hw,
+  *
+  *  Fill the desc with default values
+  **/
+-void iavf_fill_default_direct_cmd_desc(struct i40e_aq_desc *desc,
+-				       u16 opcode)
++void iavf_fill_default_direct_cmd_desc(struct i40e_aq_desc *desc, u16 opcode)
+ {
+ 	/* zero out the desc */
+ 	memset((void *)desc, 0, sizeof(struct i40e_aq_desc));
+@@ -845,13 +841,13 @@ void iavf_fill_default_direct_cmd_desc(struct i40e_aq_desc *desc,
+  *  the contents through e.  It can also return how many events are
+  *  left to process through 'pending'
+  **/
+-i40e_status iavf_clean_arq_element(struct i40e_hw *hw,
+-					     struct i40e_arq_event_info *e,
+-					     u16 *pending)
++iavf_status iavf_clean_arq_element(struct i40e_hw *hw,
++				   struct i40e_arq_event_info *e,
++				   u16 *pending)
+ {
+-	i40e_status ret_code = 0;
+ 	u16 ntc = hw->aq.arq.next_to_clean;
+ 	struct i40e_aq_desc *desc;
++	iavf_status ret_code = 0;
+ 	struct i40e_dma_mem *bi;
+ 	u16 desc_idx;
+ 	u16 datalen;
+@@ -897,13 +893,13 @@ i40e_status iavf_clean_arq_element(struct i40e_hw *hw,
+ 	e->desc = *desc;
+ 	datalen = le16_to_cpu(desc->datalen);
+ 	e->msg_len = min(datalen, e->buf_len);
+-	if (e->msg_buf != NULL && (e->msg_len != 0))
++	if (e->msg_buf && (e->msg_len != 0))
+ 		memcpy(e->msg_buf, hw->aq.arq.r.arq_bi[desc_idx].va,
+ 		       e->msg_len);
  
- 	/* set next_to_use to head */
--	ntu = rd32(hw, hw->aq.arq.head) & I40E_VF_ARQH1_ARQH_MASK;
-+	ntu = rd32(hw, hw->aq.arq.head) & IAVF_VF_ARQH1_ARQH_MASK;
- 	if (ntu == ntc) {
- 		/* nothing to do - shouldn't need to update ring's values */
- 		ret_code = I40E_ERR_ADMIN_QUEUE_NO_WORK;
+ 	i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE, "AQRX: desc and buffer:\n");
+ 	iavf_debug_aq(hw, I40E_DEBUG_AQ_COMMAND, (void *)desc, e->msg_buf,
+-			hw->aq.arq_buf_size);
++		      hw->aq.arq_buf_size);
+ 
+ 	/* Restore the original datalen and buffer address in the desc,
+ 	 * FW updates datalen to indicate the event message
+@@ -930,7 +926,7 @@ i40e_status iavf_clean_arq_element(struct i40e_hw *hw,
+ 
+ clean_arq_element_out:
+ 	/* Set pending if needed, unlock and return */
+-	if (pending != NULL)
++	if (pending)
+ 		*pending = (ntc > ntu ? hw->aq.arq.count : 0) + (ntu - ntc);
+ 
+ clean_arq_element_err:
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_alloc.h b/drivers/net/ethernet/intel/iavf/i40e_alloc.h
+index cb8689222c8b..de3edf3bc8a4 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_alloc.h
++++ b/drivers/net/ethernet/intel/iavf/i40e_alloc.h
+@@ -20,16 +20,16 @@ enum i40e_memory_type {
+ };
+ 
+ /* prototype for functions used for dynamic memory allocation */
+-i40e_status i40e_allocate_dma_mem(struct i40e_hw *hw,
++iavf_status i40e_allocate_dma_mem(struct i40e_hw *hw,
+ 					    struct i40e_dma_mem *mem,
+ 					    enum i40e_memory_type type,
+ 					    u64 size, u32 alignment);
+-i40e_status i40e_free_dma_mem(struct i40e_hw *hw,
++iavf_status i40e_free_dma_mem(struct i40e_hw *hw,
+ 					struct i40e_dma_mem *mem);
+-i40e_status i40e_allocate_virt_mem(struct i40e_hw *hw,
++iavf_status i40e_allocate_virt_mem(struct i40e_hw *hw,
+ 					     struct i40e_virt_mem *mem,
+ 					     u32 size);
+-i40e_status i40e_free_virt_mem(struct i40e_hw *hw,
++iavf_status i40e_free_virt_mem(struct i40e_hw *hw,
+ 					 struct i40e_virt_mem *mem);
+ 
+ #endif /* _I40E_ALLOC_H_ */
 diff --git a/drivers/net/ethernet/intel/iavf/i40e_common.c b/drivers/net/ethernet/intel/iavf/i40e_common.c
-index 96133efddf72..733e5cfeaf71 100644
+index cc2e229ea976..96133efddf72 100644
 --- a/drivers/net/ethernet/intel/iavf/i40e_common.c
 +++ b/drivers/net/ethernet/intel/iavf/i40e_common.c
-@@ -335,7 +335,7 @@ bool iavf_check_asq_alive(struct i40e_hw *hw)
+@@ -13,9 +13,9 @@
+  * This function sets the mac type of the adapter based on the
+  * vendor ID and device ID stored in the hw structure.
+  **/
+-i40e_status i40e_set_mac_type(struct i40e_hw *hw)
++iavf_status i40e_set_mac_type(struct i40e_hw *hw)
  {
- 	if (hw->aq.asq.len)
- 		return !!(rd32(hw, hw->aq.asq.len) &
--			  I40E_VF_ATQLEN1_ATQENABLE_MASK);
-+			  IAVF_VF_ATQLEN1_ATQENABLE_MASK);
- 	else
- 		return false;
+-	i40e_status status = 0;
++	iavf_status status = 0;
+ 
+ 	if (hw->vendor_id == PCI_VENDOR_ID_INTEL) {
+ 		switch (hw->device_id) {
+@@ -56,8 +56,7 @@ i40e_status i40e_set_mac_type(struct i40e_hw *hw)
+ 		status = I40E_ERR_DEVICE_NOT_SUPPORTED;
+ 	}
+ 
+-	hw_dbg(hw, "i40e_set_mac_type found mac: %d, returns: %d\n",
+-		  hw->mac.type, status);
++	hw_dbg(hw, "found mac: %d, returns: %d\n", hw->mac.type, status);
+ 	return status;
  }
+ 
+@@ -126,7 +125,7 @@ const char *iavf_aq_str(struct i40e_hw *hw, enum i40e_admin_queue_err aq_err)
+  * @hw: pointer to the HW structure
+  * @stat_err: the status error code to convert
+  **/
+-const char *iavf_stat_str(struct i40e_hw *hw, i40e_status stat_err)
++const char *iavf_stat_str(struct i40e_hw *hw, iavf_status stat_err)
+ {
+ 	switch (stat_err) {
+ 	case 0:
+@@ -285,7 +284,7 @@ void iavf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
+ 	struct i40e_aq_desc *aq_desc = (struct i40e_aq_desc *)desc;
+ 	u8 *buf = (u8 *)buffer;
+ 
+-	if ((!(mask & hw->debug_mask)) || (desc == NULL))
++	if ((!(mask & hw->debug_mask)) || !desc)
+ 		return;
+ 
+ 	i40e_debug(hw, mask,
+@@ -304,7 +303,7 @@ void iavf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
+ 		   le32_to_cpu(aq_desc->params.external.addr_high),
+ 		   le32_to_cpu(aq_desc->params.external.addr_low));
+ 
+-	if ((buffer != NULL) && (aq_desc->datalen != 0)) {
++	if (buffer && aq_desc->datalen) {
+ 		u16 len = le16_to_cpu(aq_desc->datalen);
+ 
+ 		i40e_debug(hw, mask, "AQ CMD Buffer:\n");
+@@ -349,16 +348,14 @@ bool iavf_check_asq_alive(struct i40e_hw *hw)
+  * Tell the Firmware that we're shutting down the AdminQ and whether
+  * or not the driver is unloading as well.
+  **/
+-i40e_status iavf_aq_queue_shutdown(struct i40e_hw *hw,
+-					     bool unloading)
++iavf_status iavf_aq_queue_shutdown(struct i40e_hw *hw, bool unloading)
+ {
+ 	struct i40e_aq_desc desc;
+ 	struct i40e_aqc_queue_shutdown *cmd =
+ 		(struct i40e_aqc_queue_shutdown *)&desc.params.raw;
+-	i40e_status status;
++	iavf_status status;
+ 
+-	iavf_fill_default_direct_cmd_desc(&desc,
+-					  i40e_aqc_opc_queue_shutdown);
++	iavf_fill_default_direct_cmd_desc(&desc, i40e_aqc_opc_queue_shutdown);
+ 
+ 	if (unloading)
+ 		cmd->driver_unloading = cpu_to_le32(I40E_AQ_DRIVER_UNLOADING);
+@@ -378,22 +375,22 @@ i40e_status iavf_aq_queue_shutdown(struct i40e_hw *hw,
+  *
+  * Internal function to get or set RSS look up table
+  **/
+-static i40e_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
++static iavf_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
+ 					   u16 vsi_id, bool pf_lut,
+ 					   u8 *lut, u16 lut_size,
+ 					   bool set)
+ {
+-	i40e_status status;
++	iavf_status status;
+ 	struct i40e_aq_desc desc;
+ 	struct i40e_aqc_get_set_rss_lut *cmd_resp =
+ 		   (struct i40e_aqc_get_set_rss_lut *)&desc.params.raw;
+ 
+ 	if (set)
+ 		iavf_fill_default_direct_cmd_desc(&desc,
+-						    i40e_aqc_opc_set_rss_lut);
++						  i40e_aqc_opc_set_rss_lut);
+ 	else
+ 		iavf_fill_default_direct_cmd_desc(&desc,
+-						    i40e_aqc_opc_get_rss_lut);
++						  i40e_aqc_opc_get_rss_lut);
+ 
+ 	/* Indirect command */
+ 	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_BUF);
+@@ -431,8 +428,8 @@ static i40e_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
+  *
+  * get the RSS lookup table, PF or VSI type
+  **/
+-i40e_status iavf_aq_get_rss_lut(struct i40e_hw *hw, u16 vsi_id,
+-				  bool pf_lut, u8 *lut, u16 lut_size)
++iavf_status iavf_aq_get_rss_lut(struct i40e_hw *hw, u16 vsi_id,
++				bool pf_lut, u8 *lut, u16 lut_size)
+ {
+ 	return i40e_aq_get_set_rss_lut(hw, vsi_id, pf_lut, lut, lut_size,
+ 				       false);
+@@ -448,8 +445,8 @@ i40e_status iavf_aq_get_rss_lut(struct i40e_hw *hw, u16 vsi_id,
+  *
+  * set the RSS lookup table, PF or VSI type
+  **/
+-i40e_status iavf_aq_set_rss_lut(struct i40e_hw *hw, u16 vsi_id,
+-				  bool pf_lut, u8 *lut, u16 lut_size)
++iavf_status iavf_aq_set_rss_lut(struct i40e_hw *hw, u16 vsi_id,
++				bool pf_lut, u8 *lut, u16 lut_size)
+ {
+ 	return i40e_aq_get_set_rss_lut(hw, vsi_id, pf_lut, lut, lut_size, true);
+ }
+@@ -463,12 +460,12 @@ i40e_status iavf_aq_set_rss_lut(struct i40e_hw *hw, u16 vsi_id,
+  *
+  * get the RSS key per VSI
+  **/
+-static i40e_status i40e_aq_get_set_rss_key(struct i40e_hw *hw,
+-				      u16 vsi_id,
+-				      struct i40e_aqc_get_set_rss_key_data *key,
+-				      bool set)
++static
++iavf_status i40e_aq_get_set_rss_key(struct i40e_hw *hw, u16 vsi_id,
++				    struct i40e_aqc_get_set_rss_key_data *key,
++				    bool set)
+ {
+-	i40e_status status;
++	iavf_status status;
+ 	struct i40e_aq_desc desc;
+ 	struct i40e_aqc_get_set_rss_key *cmd_resp =
+ 			(struct i40e_aqc_get_set_rss_key *)&desc.params.raw;
+@@ -476,10 +473,10 @@ static i40e_status i40e_aq_get_set_rss_key(struct i40e_hw *hw,
+ 
+ 	if (set)
+ 		iavf_fill_default_direct_cmd_desc(&desc,
+-						    i40e_aqc_opc_set_rss_key);
++						  i40e_aqc_opc_set_rss_key);
+ 	else
+ 		iavf_fill_default_direct_cmd_desc(&desc,
+-						    i40e_aqc_opc_get_rss_key);
++						  i40e_aqc_opc_get_rss_key);
+ 
+ 	/* Indirect command */
+ 	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_BUF);
+@@ -503,9 +500,8 @@ static i40e_status i40e_aq_get_set_rss_key(struct i40e_hw *hw,
+  * @key: pointer to key info struct
+  *
+  **/
+-i40e_status iavf_aq_get_rss_key(struct i40e_hw *hw,
+-				  u16 vsi_id,
+-				  struct i40e_aqc_get_set_rss_key_data *key)
++iavf_status iavf_aq_get_rss_key(struct i40e_hw *hw, u16 vsi_id,
++				struct i40e_aqc_get_set_rss_key_data *key)
+ {
+ 	return i40e_aq_get_set_rss_key(hw, vsi_id, key, false);
+ }
+@@ -518,14 +514,12 @@ i40e_status iavf_aq_get_rss_key(struct i40e_hw *hw,
+  *
+  * set the RSS key per VSI
+  **/
+-i40e_status iavf_aq_set_rss_key(struct i40e_hw *hw,
+-				  u16 vsi_id,
+-				  struct i40e_aqc_get_set_rss_key_data *key)
++iavf_status iavf_aq_set_rss_key(struct i40e_hw *hw, u16 vsi_id,
++				struct i40e_aqc_get_set_rss_key_data *key)
+ {
+ 	return i40e_aq_get_set_rss_key(hw, vsi_id, key, true);
+ }
+ 
+-
+ /* The iavf_ptype_lookup table is used to convert from the 8-bit ptype in the
+  * hardware to a bit-field that can be used by SW to more easily determine the
+  * packet type.
+@@ -904,14 +898,14 @@ struct i40e_rx_ptype_decoded iavf_ptype_lookup[] = {
+  * is sent asynchronously, i.e. iavf_asq_send_command() does not wait for
+  * completion before returning.
+  **/
+-i40e_status iavf_aq_send_msg_to_pf(struct i40e_hw *hw,
++iavf_status iavf_aq_send_msg_to_pf(struct i40e_hw *hw,
+ 				   enum virtchnl_ops v_opcode,
+-				   i40e_status v_retval, u8 *msg, u16 msglen,
++				   iavf_status v_retval, u8 *msg, u16 msglen,
+ 				   struct i40e_asq_cmd_details *cmd_details)
+ {
+-	struct i40e_aq_desc desc;
+ 	struct i40e_asq_cmd_details details;
+-	i40e_status status;
++	struct i40e_aq_desc desc;
++	iavf_status status;
+ 
+ 	iavf_fill_default_direct_cmd_desc(&desc, i40e_aqc_opc_send_msg_to_pf);
+ 	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_SI);
+@@ -975,7 +969,7 @@ void iavf_vf_parse_hw_config(struct i40e_hw *hw,
+  * as none will be forthcoming. Immediately after calling this function,
+  * the admin queue should be shut down and (optionally) reinitialized.
+  **/
+-i40e_status iavf_vf_reset(struct i40e_hw *hw)
++iavf_status iavf_vf_reset(struct i40e_hw *hw)
+ {
+ 	return iavf_aq_send_msg_to_pf(hw, VIRTCHNL_OP_RESET_VF,
+ 				      0, NULL, 0, NULL);
 diff --git a/drivers/net/ethernet/intel/iavf/i40e_osdep.h b/drivers/net/ethernet/intel/iavf/i40e_osdep.h
-index 788a599dc26b..0fceb284e54a 100644
+index 01e6babbdcd3..788a599dc26b 100644
 --- a/drivers/net/ethernet/intel/iavf/i40e_osdep.h
 +++ b/drivers/net/ethernet/intel/iavf/i40e_osdep.h
-@@ -24,7 +24,7 @@
+@@ -48,5 +48,5 @@ struct i40e_virt_mem {
+ extern void iavf_debug_d(void *hw, u32 mask, char *fmt_str, ...)
+ 	__attribute__ ((format(gnu_printf, 3, 4)));
  
- #define wr64(a, reg, value)	writeq((value), ((a)->hw_addr + (reg)))
- #define rd64(a, reg)		readq((a)->hw_addr + (reg))
--#define i40e_flush(a)		readl((a)->hw_addr + I40E_VFGEN_RSTAT)
-+#define iavf_flush(a)		readl((a)->hw_addr + IAVF_VFGEN_RSTAT)
+-typedef enum i40e_status_code i40e_status;
++typedef enum i40e_status_code iavf_status;
+ #endif /* _I40E_OSDEP_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_prototype.h b/drivers/net/ethernet/intel/iavf/i40e_prototype.h
+index ea38aaf4a511..f2d52ec2ece0 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/iavf/i40e_prototype.h
+@@ -16,13 +16,13 @@
+  */
  
- /* memory allocation tracking */
- struct i40e_dma_mem {
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_register.h b/drivers/net/ethernet/intel/iavf/i40e_register.h
-index 20b464ac1542..bf793332fc9d 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_register.h
-+++ b/drivers/net/ethernet/intel/iavf/i40e_register.h
-@@ -1,68 +1,68 @@
- /* SPDX-License-Identifier: GPL-2.0 */
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
+ /* adminq functions */
+-i40e_status iavf_init_adminq(struct i40e_hw *hw);
+-i40e_status iavf_shutdown_adminq(struct i40e_hw *hw);
++iavf_status iavf_init_adminq(struct i40e_hw *hw);
++iavf_status iavf_shutdown_adminq(struct i40e_hw *hw);
+ void i40e_adminq_init_ring_data(struct i40e_hw *hw);
+-i40e_status iavf_clean_arq_element(struct i40e_hw *hw,
++iavf_status iavf_clean_arq_element(struct i40e_hw *hw,
+ 					     struct i40e_arq_event_info *e,
+ 					     u16 *events_pending);
+-i40e_status iavf_asq_send_command(struct i40e_hw *hw,
++iavf_status iavf_asq_send_command(struct i40e_hw *hw,
+ 				struct i40e_aq_desc *desc,
+ 				void *buff, /* can be NULL */
+ 				u16  buff_size,
+@@ -36,22 +36,22 @@ void iavf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask,
+ void i40e_idle_aq(struct i40e_hw *hw);
+ void iavf_resume_aq(struct i40e_hw *hw);
+ bool iavf_check_asq_alive(struct i40e_hw *hw);
+-i40e_status iavf_aq_queue_shutdown(struct i40e_hw *hw, bool unloading);
++iavf_status iavf_aq_queue_shutdown(struct i40e_hw *hw, bool unloading);
+ const char *iavf_aq_str(struct i40e_hw *hw, enum i40e_admin_queue_err aq_err);
+-const char *iavf_stat_str(struct i40e_hw *hw, i40e_status stat_err);
++const char *iavf_stat_str(struct i40e_hw *hw, iavf_status stat_err);
  
--#ifndef _I40E_REGISTER_H_
--#define _I40E_REGISTER_H_
-+#ifndef _IAVF_REGISTER_H_
-+#define _IAVF_REGISTER_H_
+-i40e_status iavf_aq_get_rss_lut(struct i40e_hw *hw, u16 seid,
++iavf_status iavf_aq_get_rss_lut(struct i40e_hw *hw, u16 seid,
+ 				  bool pf_lut, u8 *lut, u16 lut_size);
+-i40e_status iavf_aq_set_rss_lut(struct i40e_hw *hw, u16 seid,
++iavf_status iavf_aq_set_rss_lut(struct i40e_hw *hw, u16 seid,
+ 				  bool pf_lut, u8 *lut, u16 lut_size);
+-i40e_status iavf_aq_get_rss_key(struct i40e_hw *hw,
++iavf_status iavf_aq_get_rss_key(struct i40e_hw *hw,
+ 				  u16 seid,
+ 				  struct i40e_aqc_get_set_rss_key_data *key);
+-i40e_status iavf_aq_set_rss_key(struct i40e_hw *hw,
++iavf_status iavf_aq_set_rss_key(struct i40e_hw *hw,
+ 				  u16 seid,
+ 				  struct i40e_aqc_get_set_rss_key_data *key);
  
--#define I40E_VF_ARQBAH1 0x00006000 /* Reset: EMPR */
--#define I40E_VF_ARQBAL1 0x00006C00 /* Reset: EMPR */
--#define I40E_VF_ARQH1 0x00007400 /* Reset: EMPR */
--#define I40E_VF_ARQH1_ARQH_SHIFT 0
--#define I40E_VF_ARQH1_ARQH_MASK I40E_MASK(0x3FF, I40E_VF_ARQH1_ARQH_SHIFT)
--#define I40E_VF_ARQLEN1 0x00008000 /* Reset: EMPR */
--#define I40E_VF_ARQLEN1_ARQVFE_SHIFT 28
--#define I40E_VF_ARQLEN1_ARQVFE_MASK I40E_MASK(0x1, I40E_VF_ARQLEN1_ARQVFE_SHIFT)
--#define I40E_VF_ARQLEN1_ARQOVFL_SHIFT 29
--#define I40E_VF_ARQLEN1_ARQOVFL_MASK I40E_MASK(0x1, I40E_VF_ARQLEN1_ARQOVFL_SHIFT)
--#define I40E_VF_ARQLEN1_ARQCRIT_SHIFT 30
--#define I40E_VF_ARQLEN1_ARQCRIT_MASK I40E_MASK(0x1, I40E_VF_ARQLEN1_ARQCRIT_SHIFT)
--#define I40E_VF_ARQLEN1_ARQENABLE_SHIFT 31
--#define I40E_VF_ARQLEN1_ARQENABLE_MASK I40E_MASK(0x1, I40E_VF_ARQLEN1_ARQENABLE_SHIFT)
--#define I40E_VF_ARQT1 0x00007000 /* Reset: EMPR */
--#define I40E_VF_ATQBAH1 0x00007800 /* Reset: EMPR */
--#define I40E_VF_ATQBAL1 0x00007C00 /* Reset: EMPR */
--#define I40E_VF_ATQH1 0x00006400 /* Reset: EMPR */
--#define I40E_VF_ATQLEN1 0x00006800 /* Reset: EMPR */
--#define I40E_VF_ATQLEN1_ATQVFE_SHIFT 28
--#define I40E_VF_ATQLEN1_ATQVFE_MASK I40E_MASK(0x1, I40E_VF_ATQLEN1_ATQVFE_SHIFT)
--#define I40E_VF_ATQLEN1_ATQOVFL_SHIFT 29
--#define I40E_VF_ATQLEN1_ATQOVFL_MASK I40E_MASK(0x1, I40E_VF_ATQLEN1_ATQOVFL_SHIFT)
--#define I40E_VF_ATQLEN1_ATQCRIT_SHIFT 30
--#define I40E_VF_ATQLEN1_ATQCRIT_MASK I40E_MASK(0x1, I40E_VF_ATQLEN1_ATQCRIT_SHIFT)
--#define I40E_VF_ATQLEN1_ATQENABLE_SHIFT 31
--#define I40E_VF_ATQLEN1_ATQENABLE_MASK I40E_MASK(0x1, I40E_VF_ATQLEN1_ATQENABLE_SHIFT)
--#define I40E_VF_ATQT1 0x00008400 /* Reset: EMPR */
--#define I40E_VFGEN_RSTAT 0x00008800 /* Reset: VFR */
--#define I40E_VFGEN_RSTAT_VFR_STATE_SHIFT 0
--#define I40E_VFGEN_RSTAT_VFR_STATE_MASK I40E_MASK(0x3, I40E_VFGEN_RSTAT_VFR_STATE_SHIFT)
--#define I40E_VFINT_DYN_CTL01 0x00005C00 /* Reset: VFR */
--#define I40E_VFINT_DYN_CTL01_INTENA_SHIFT 0
--#define I40E_VFINT_DYN_CTL01_INTENA_MASK I40E_MASK(0x1, I40E_VFINT_DYN_CTL01_INTENA_SHIFT)
--#define I40E_VFINT_DYN_CTL01_ITR_INDX_SHIFT 3
--#define I40E_VFINT_DYN_CTL01_ITR_INDX_MASK I40E_MASK(0x3, I40E_VFINT_DYN_CTL01_ITR_INDX_SHIFT)
--#define I40E_VFINT_DYN_CTLN1(_INTVF) (0x00003800 + ((_INTVF) * 4)) /* _i=0...15 */ /* Reset: VFR */
--#define I40E_VFINT_DYN_CTLN1_INTENA_SHIFT 0
--#define I40E_VFINT_DYN_CTLN1_INTENA_MASK I40E_MASK(0x1, I40E_VFINT_DYN_CTLN1_INTENA_SHIFT)
--#define I40E_VFINT_DYN_CTLN1_SWINT_TRIG_SHIFT 2
--#define I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK I40E_MASK(0x1, I40E_VFINT_DYN_CTLN1_SWINT_TRIG_SHIFT)
--#define I40E_VFINT_DYN_CTLN1_ITR_INDX_SHIFT 3
--#define I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK I40E_MASK(0x3, I40E_VFINT_DYN_CTLN1_ITR_INDX_SHIFT)
--#define I40E_VFINT_DYN_CTLN1_INTERVAL_SHIFT 5
--#define I40E_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_SHIFT 24
--#define I40E_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_MASK I40E_MASK(0x1, I40E_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_SHIFT)
--#define I40E_VFINT_ICR0_ENA1 0x00005000 /* Reset: CORER */
--#define I40E_VFINT_ICR0_ENA1_ADMINQ_SHIFT 30
--#define I40E_VFINT_ICR0_ENA1_ADMINQ_MASK I40E_MASK(0x1, I40E_VFINT_ICR0_ENA1_ADMINQ_SHIFT)
--#define I40E_VFINT_ICR0_ENA1_RSVD_SHIFT 31
--#define I40E_VFINT_ICR01 0x00004800 /* Reset: CORER */
--#define I40E_VFINT_ITRN1(_i, _INTVF) (0x00002800 + ((_i) * 64 + (_INTVF) * 4)) /* _i=0...2, _INTVF=0...15 */ /* Reset: VFR */
--#define I40E_QRX_TAIL1(_Q) (0x00002000 + ((_Q) * 4)) /* _i=0...15 */ /* Reset: CORER */
--#define I40E_QTX_TAIL1(_Q) (0x00000000 + ((_Q) * 4)) /* _i=0...15 */ /* Reset: PFR */
--#define I40E_VFQF_HENA(_i) (0x0000C400 + ((_i) * 4)) /* _i=0...1 */ /* Reset: CORER */
--#define I40E_VFQF_HKEY(_i) (0x0000CC00 + ((_i) * 4)) /* _i=0...12 */ /* Reset: CORER */
--#define I40E_VFQF_HKEY_MAX_INDEX 12
--#define I40E_VFQF_HLUT(_i) (0x0000D000 + ((_i) * 4)) /* _i=0...15 */ /* Reset: CORER */
--#define I40E_VFQF_HLUT_MAX_INDEX 15
--#define I40E_VFINT_DYN_CTLN1_WB_ON_ITR_SHIFT 30
--#define I40E_VFINT_DYN_CTLN1_WB_ON_ITR_MASK I40E_MASK(0x1, I40E_VFINT_DYN_CTLN1_WB_ON_ITR_SHIFT)
--#endif /* _I40E_REGISTER_H_ */
-+#define IAVF_VF_ARQBAH1 0x00006000 /* Reset: EMPR */
-+#define IAVF_VF_ARQBAL1 0x00006C00 /* Reset: EMPR */
-+#define IAVF_VF_ARQH1 0x00007400 /* Reset: EMPR */
-+#define IAVF_VF_ARQH1_ARQH_SHIFT 0
-+#define IAVF_VF_ARQH1_ARQH_MASK IAVF_MASK(0x3FF, IAVF_VF_ARQH1_ARQH_SHIFT)
-+#define IAVF_VF_ARQLEN1 0x00008000 /* Reset: EMPR */
-+#define IAVF_VF_ARQLEN1_ARQVFE_SHIFT 28
-+#define IAVF_VF_ARQLEN1_ARQVFE_MASK IAVF_MASK(0x1, IAVF_VF_ARQLEN1_ARQVFE_SHIFT)
-+#define IAVF_VF_ARQLEN1_ARQOVFL_SHIFT 29
-+#define IAVF_VF_ARQLEN1_ARQOVFL_MASK IAVF_MASK(0x1, IAVF_VF_ARQLEN1_ARQOVFL_SHIFT)
-+#define IAVF_VF_ARQLEN1_ARQCRIT_SHIFT 30
-+#define IAVF_VF_ARQLEN1_ARQCRIT_MASK IAVF_MASK(0x1, IAVF_VF_ARQLEN1_ARQCRIT_SHIFT)
-+#define IAVF_VF_ARQLEN1_ARQENABLE_SHIFT 31
-+#define IAVF_VF_ARQLEN1_ARQENABLE_MASK IAVF_MASK(0x1, IAVF_VF_ARQLEN1_ARQENABLE_SHIFT)
-+#define IAVF_VF_ARQT1 0x00007000 /* Reset: EMPR */
-+#define IAVF_VF_ATQBAH1 0x00007800 /* Reset: EMPR */
-+#define IAVF_VF_ATQBAL1 0x00007C00 /* Reset: EMPR */
-+#define IAVF_VF_ATQH1 0x00006400 /* Reset: EMPR */
-+#define IAVF_VF_ATQLEN1 0x00006800 /* Reset: EMPR */
-+#define IAVF_VF_ATQLEN1_ATQVFE_SHIFT 28
-+#define IAVF_VF_ATQLEN1_ATQVFE_MASK IAVF_MASK(0x1, IAVF_VF_ATQLEN1_ATQVFE_SHIFT)
-+#define IAVF_VF_ATQLEN1_ATQOVFL_SHIFT 29
-+#define IAVF_VF_ATQLEN1_ATQOVFL_MASK IAVF_MASK(0x1, IAVF_VF_ATQLEN1_ATQOVFL_SHIFT)
-+#define IAVF_VF_ATQLEN1_ATQCRIT_SHIFT 30
-+#define IAVF_VF_ATQLEN1_ATQCRIT_MASK IAVF_MASK(0x1, IAVF_VF_ATQLEN1_ATQCRIT_SHIFT)
-+#define IAVF_VF_ATQLEN1_ATQENABLE_SHIFT 31
-+#define IAVF_VF_ATQLEN1_ATQENABLE_MASK IAVF_MASK(0x1, IAVF_VF_ATQLEN1_ATQENABLE_SHIFT)
-+#define IAVF_VF_ATQT1 0x00008400 /* Reset: EMPR */
-+#define IAVF_VFGEN_RSTAT 0x00008800 /* Reset: VFR */
-+#define IAVF_VFGEN_RSTAT_VFR_STATE_SHIFT 0
-+#define IAVF_VFGEN_RSTAT_VFR_STATE_MASK IAVF_MASK(0x3, IAVF_VFGEN_RSTAT_VFR_STATE_SHIFT)
-+#define IAVF_VFINT_DYN_CTL01 0x00005C00 /* Reset: VFR */
-+#define IAVF_VFINT_DYN_CTL01_INTENA_SHIFT 0
-+#define IAVF_VFINT_DYN_CTL01_INTENA_MASK IAVF_MASK(0x1, IAVF_VFINT_DYN_CTL01_INTENA_SHIFT)
-+#define IAVF_VFINT_DYN_CTL01_ITR_INDX_SHIFT 3
-+#define IAVF_VFINT_DYN_CTL01_ITR_INDX_MASK IAVF_MASK(0x3, IAVF_VFINT_DYN_CTL01_ITR_INDX_SHIFT)
-+#define IAVF_VFINT_DYN_CTLN1(_INTVF) (0x00003800 + ((_INTVF) * 4)) /* _i=0...15 */ /* Reset: VFR */
-+#define IAVF_VFINT_DYN_CTLN1_INTENA_SHIFT 0
-+#define IAVF_VFINT_DYN_CTLN1_INTENA_MASK IAVF_MASK(0x1, IAVF_VFINT_DYN_CTLN1_INTENA_SHIFT)
-+#define IAVF_VFINT_DYN_CTLN1_SWINT_TRIG_SHIFT 2
-+#define IAVF_VFINT_DYN_CTLN1_SWINT_TRIG_MASK IAVF_MASK(0x1, IAVF_VFINT_DYN_CTLN1_SWINT_TRIG_SHIFT)
-+#define IAVF_VFINT_DYN_CTLN1_ITR_INDX_SHIFT 3
-+#define IAVF_VFINT_DYN_CTLN1_ITR_INDX_MASK IAVF_MASK(0x3, IAVF_VFINT_DYN_CTLN1_ITR_INDX_SHIFT)
-+#define IAVF_VFINT_DYN_CTLN1_INTERVAL_SHIFT 5
-+#define IAVF_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_SHIFT 24
-+#define IAVF_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_MASK IAVF_MASK(0x1, IAVF_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_SHIFT)
-+#define IAVF_VFINT_ICR0_ENA1 0x00005000 /* Reset: CORER */
-+#define IAVF_VFINT_ICR0_ENA1_ADMINQ_SHIFT 30
-+#define IAVF_VFINT_ICR0_ENA1_ADMINQ_MASK IAVF_MASK(0x1, IAVF_VFINT_ICR0_ENA1_ADMINQ_SHIFT)
-+#define IAVF_VFINT_ICR0_ENA1_RSVD_SHIFT 31
-+#define IAVF_VFINT_ICR01 0x00004800 /* Reset: CORER */
-+#define IAVF_VFINT_ITRN1(_i, _INTVF) (0x00002800 + ((_i) * 64 + (_INTVF) * 4)) /* _i=0...2, _INTVF=0...15 */ /* Reset: VFR */
-+#define IAVF_QRX_TAIL1(_Q) (0x00002000 + ((_Q) * 4)) /* _i=0...15 */ /* Reset: CORER */
-+#define IAVF_QTX_TAIL1(_Q) (0x00000000 + ((_Q) * 4)) /* _i=0...15 */ /* Reset: PFR */
-+#define IAVF_VFQF_HENA(_i) (0x0000C400 + ((_i) * 4)) /* _i=0...1 */ /* Reset: CORER */
-+#define IAVF_VFQF_HKEY(_i) (0x0000CC00 + ((_i) * 4)) /* _i=0...12 */ /* Reset: CORER */
-+#define IAVF_VFQF_HKEY_MAX_INDEX 12
-+#define IAVF_VFQF_HLUT(_i) (0x0000D000 + ((_i) * 4)) /* _i=0...15 */ /* Reset: CORER */
-+#define IAVF_VFQF_HLUT_MAX_INDEX 15
-+#define IAVF_VFINT_DYN_CTLN1_WB_ON_ITR_SHIFT 30
-+#define IAVF_VFINT_DYN_CTLN1_WB_ON_ITR_MASK IAVF_MASK(0x1, IAVF_VFINT_DYN_CTLN1_WB_ON_ITR_SHIFT)
-+#endif /* _IAVF_REGISTER_H_ */
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_type.h b/drivers/net/ethernet/intel/iavf/i40e_type.h
-index 8f1344094bc9..eea5b86a37b4 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/iavf/i40e_type.h
-@@ -13,7 +13,7 @@
- #define I40E_RXQ_CTX_DBUFF_SHIFT 7
+-i40e_status i40e_set_mac_type(struct i40e_hw *hw);
++iavf_status i40e_set_mac_type(struct i40e_hw *hw);
  
- /* I40E_MASK is a macro used on 32 bit registers */
--#define I40E_MASK(mask, shift) ((u32)(mask) << (shift))
-+#define IAVF_MASK(mask, shift) ((u32)(mask) << (shift))
+ extern struct i40e_rx_ptype_decoded iavf_ptype_lookup[];
  
- #define I40E_MAX_VSI_QP			16
- #define I40E_MAX_VF_VSI			3
-@@ -286,45 +286,45 @@ union i40e_32byte_rx_desc {
- 
- enum i40e_rx_desc_status_bits {
- 	/* Note: These are predefined bit offsets */
--	I40E_RX_DESC_STATUS_DD_SHIFT		= 0,
--	I40E_RX_DESC_STATUS_EOF_SHIFT		= 1,
--	I40E_RX_DESC_STATUS_L2TAG1P_SHIFT	= 2,
--	I40E_RX_DESC_STATUS_L3L4P_SHIFT		= 3,
--	I40E_RX_DESC_STATUS_CRCP_SHIFT		= 4,
--	I40E_RX_DESC_STATUS_TSYNINDX_SHIFT	= 5, /* 2 BITS */
--	I40E_RX_DESC_STATUS_TSYNVALID_SHIFT	= 7,
-+	IAVF_RX_DESC_STATUS_DD_SHIFT		= 0,
-+	IAVF_RX_DESC_STATUS_EOF_SHIFT		= 1,
-+	IAVF_RX_DESC_STATUS_L2TAG1P_SHIFT	= 2,
-+	IAVF_RX_DESC_STATUS_L3L4P_SHIFT		= 3,
-+	IAVF_RX_DESC_STATUS_CRCP_SHIFT		= 4,
-+	IAVF_RX_DESC_STATUS_TSYNINDX_SHIFT	= 5, /* 2 BITS */
-+	IAVF_RX_DESC_STATUS_TSYNVALID_SHIFT	= 7,
- 	/* Note: Bit 8 is reserved in X710 and XL710 */
--	I40E_RX_DESC_STATUS_EXT_UDP_0_SHIFT	= 8,
--	I40E_RX_DESC_STATUS_UMBCAST_SHIFT	= 9, /* 2 BITS */
--	I40E_RX_DESC_STATUS_FLM_SHIFT		= 11,
--	I40E_RX_DESC_STATUS_FLTSTAT_SHIFT	= 12, /* 2 BITS */
--	I40E_RX_DESC_STATUS_LPBK_SHIFT		= 14,
--	I40E_RX_DESC_STATUS_IPV6EXADD_SHIFT	= 15,
--	I40E_RX_DESC_STATUS_RESERVED_SHIFT	= 16, /* 2 BITS */
-+	IAVF_RX_DESC_STATUS_EXT_UDP_0_SHIFT	= 8,
-+	IAVF_RX_DESC_STATUS_UMBCAST_SHIFT	= 9, /* 2 BITS */
-+	IAVF_RX_DESC_STATUS_FLM_SHIFT		= 11,
-+	IAVF_RX_DESC_STATUS_FLTSTAT_SHIFT	= 12, /* 2 BITS */
-+	IAVF_RX_DESC_STATUS_LPBK_SHIFT		= 14,
-+	IAVF_RX_DESC_STATUS_IPV6EXADD_SHIFT	= 15,
-+	IAVF_RX_DESC_STATUS_RESERVED_SHIFT	= 16, /* 2 BITS */
- 	/* Note: For non-tunnel packets INT_UDP_0 is the right status for
- 	 * UDP header
- 	 */
--	I40E_RX_DESC_STATUS_INT_UDP_0_SHIFT	= 18,
--	I40E_RX_DESC_STATUS_LAST /* this entry must be last!!! */
-+	IAVF_RX_DESC_STATUS_INT_UDP_0_SHIFT	= 18,
-+	IAVF_RX_DESC_STATUS_LAST /* this entry must be last!!! */
- };
- 
- #define I40E_RXD_QW1_STATUS_SHIFT	0
--#define I40E_RXD_QW1_STATUS_MASK	((BIT(I40E_RX_DESC_STATUS_LAST) - 1) \
-+#define I40E_RXD_QW1_STATUS_MASK	((BIT(IAVF_RX_DESC_STATUS_LAST) - 1) \
- 					 << I40E_RXD_QW1_STATUS_SHIFT)
- 
--#define I40E_RXD_QW1_STATUS_TSYNINDX_SHIFT   I40E_RX_DESC_STATUS_TSYNINDX_SHIFT
-+#define I40E_RXD_QW1_STATUS_TSYNINDX_SHIFT   IAVF_RX_DESC_STATUS_TSYNINDX_SHIFT
- #define I40E_RXD_QW1_STATUS_TSYNINDX_MASK	(0x3UL << \
- 					     I40E_RXD_QW1_STATUS_TSYNINDX_SHIFT)
- 
--#define I40E_RXD_QW1_STATUS_TSYNVALID_SHIFT  I40E_RX_DESC_STATUS_TSYNVALID_SHIFT
-+#define I40E_RXD_QW1_STATUS_TSYNVALID_SHIFT  IAVF_RX_DESC_STATUS_TSYNVALID_SHIFT
- #define I40E_RXD_QW1_STATUS_TSYNVALID_MASK \
- 				    BIT_ULL(I40E_RXD_QW1_STATUS_TSYNVALID_SHIFT)
- 
- enum i40e_rx_desc_fltstat_values {
--	I40E_RX_DESC_FLTSTAT_NO_DATA	= 0,
--	I40E_RX_DESC_FLTSTAT_RSV_FD_ID	= 1, /* 16byte desc? FD_ID : RSV */
--	I40E_RX_DESC_FLTSTAT_RSV	= 2,
--	I40E_RX_DESC_FLTSTAT_RSS_HASH	= 3,
-+	IAVF_RX_DESC_FLTSTAT_NO_DATA	= 0,
-+	IAVF_RX_DESC_FLTSTAT_RSV_FD_ID	= 1, /* 16byte desc? FD_ID : RSV */
-+	IAVF_RX_DESC_FLTSTAT_RSV	= 2,
-+	IAVF_RX_DESC_FLTSTAT_RSS_HASH	= 3,
- };
- 
- #define I40E_RXD_QW1_ERROR_SHIFT	19
-@@ -332,23 +332,23 @@ enum i40e_rx_desc_fltstat_values {
- 
- enum i40e_rx_desc_error_bits {
- 	/* Note: These are predefined bit offsets */
--	I40E_RX_DESC_ERROR_RXE_SHIFT		= 0,
--	I40E_RX_DESC_ERROR_RECIPE_SHIFT		= 1,
--	I40E_RX_DESC_ERROR_HBO_SHIFT		= 2,
--	I40E_RX_DESC_ERROR_L3L4E_SHIFT		= 3, /* 3 BITS */
--	I40E_RX_DESC_ERROR_IPE_SHIFT		= 3,
--	I40E_RX_DESC_ERROR_L4E_SHIFT		= 4,
--	I40E_RX_DESC_ERROR_EIPE_SHIFT		= 5,
--	I40E_RX_DESC_ERROR_OVERSIZE_SHIFT	= 6,
--	I40E_RX_DESC_ERROR_PPRS_SHIFT		= 7
-+	IAVF_RX_DESC_ERROR_RXE_SHIFT		= 0,
-+	IAVF_RX_DESC_ERROR_RECIPE_SHIFT		= 1,
-+	IAVF_RX_DESC_ERROR_HBO_SHIFT		= 2,
-+	IAVF_RX_DESC_ERROR_L3L4E_SHIFT		= 3, /* 3 BITS */
-+	IAVF_RX_DESC_ERROR_IPE_SHIFT		= 3,
-+	IAVF_RX_DESC_ERROR_L4E_SHIFT		= 4,
-+	IAVF_RX_DESC_ERROR_EIPE_SHIFT		= 5,
-+	IAVF_RX_DESC_ERROR_OVERSIZE_SHIFT	= 6,
-+	IAVF_RX_DESC_ERROR_PPRS_SHIFT		= 7
- };
- 
- enum i40e_rx_desc_error_l3l4e_fcoe_masks {
--	I40E_RX_DESC_ERROR_L3L4E_NONE		= 0,
--	I40E_RX_DESC_ERROR_L3L4E_PROT		= 1,
--	I40E_RX_DESC_ERROR_L3L4E_FC		= 2,
--	I40E_RX_DESC_ERROR_L3L4E_DMAC_ERR	= 3,
--	I40E_RX_DESC_ERROR_L3L4E_DMAC_WARN	= 4
-+	IAVF_RX_DESC_ERROR_L3L4E_NONE		= 0,
-+	IAVF_RX_DESC_ERROR_L3L4E_PROT		= 1,
-+	IAVF_RX_DESC_ERROR_L3L4E_FC		= 2,
-+	IAVF_RX_DESC_ERROR_L3L4E_DMAC_ERR	= 3,
-+	IAVF_RX_DESC_ERROR_L3L4E_DMAC_WARN	= 4
- };
- 
- #define I40E_RXD_QW1_PTYPE_SHIFT	30
-@@ -456,26 +456,26 @@ enum i40e_rx_ptype_payload_layer {
- 
- enum i40e_rx_desc_ext_status_bits {
- 	/* Note: These are predefined bit offsets */
--	I40E_RX_DESC_EXT_STATUS_L2TAG2P_SHIFT	= 0,
--	I40E_RX_DESC_EXT_STATUS_L2TAG3P_SHIFT	= 1,
--	I40E_RX_DESC_EXT_STATUS_FLEXBL_SHIFT	= 2, /* 2 BITS */
--	I40E_RX_DESC_EXT_STATUS_FLEXBH_SHIFT	= 4, /* 2 BITS */
--	I40E_RX_DESC_EXT_STATUS_FDLONGB_SHIFT	= 9,
--	I40E_RX_DESC_EXT_STATUS_FCOELONGB_SHIFT	= 10,
--	I40E_RX_DESC_EXT_STATUS_PELONGB_SHIFT	= 11,
-+	IAVF_RX_DESC_EXT_STATUS_L2TAG2P_SHIFT	= 0,
-+	IAVF_RX_DESC_EXT_STATUS_L2TAG3P_SHIFT	= 1,
-+	IAVF_RX_DESC_EXT_STATUS_FLEXBL_SHIFT	= 2, /* 2 BITS */
-+	IAVF_RX_DESC_EXT_STATUS_FLEXBH_SHIFT	= 4, /* 2 BITS */
-+	IAVF_RX_DESC_EXT_STATUS_FDLONGB_SHIFT	= 9,
-+	IAVF_RX_DESC_EXT_STATUS_FCOELONGB_SHIFT	= 10,
-+	IAVF_RX_DESC_EXT_STATUS_PELONGB_SHIFT	= 11,
- };
- 
- enum i40e_rx_desc_pe_status_bits {
- 	/* Note: These are predefined bit offsets */
--	I40E_RX_DESC_PE_STATUS_QPID_SHIFT	= 0, /* 18 BITS */
--	I40E_RX_DESC_PE_STATUS_L4PORT_SHIFT	= 0, /* 16 BITS */
--	I40E_RX_DESC_PE_STATUS_IPINDEX_SHIFT	= 16, /* 8 BITS */
--	I40E_RX_DESC_PE_STATUS_QPIDHIT_SHIFT	= 24,
--	I40E_RX_DESC_PE_STATUS_APBVTHIT_SHIFT	= 25,
--	I40E_RX_DESC_PE_STATUS_PORTV_SHIFT	= 26,
--	I40E_RX_DESC_PE_STATUS_URG_SHIFT	= 27,
--	I40E_RX_DESC_PE_STATUS_IPFRAG_SHIFT	= 28,
--	I40E_RX_DESC_PE_STATUS_IPOPT_SHIFT	= 29
-+	IAVF_RX_DESC_PE_STATUS_QPID_SHIFT	= 0, /* 18 BITS */
-+	IAVF_RX_DESC_PE_STATUS_L4PORT_SHIFT	= 0, /* 16 BITS */
-+	IAVF_RX_DESC_PE_STATUS_IPINDEX_SHIFT	= 16, /* 8 BITS */
-+	IAVF_RX_DESC_PE_STATUS_QPIDHIT_SHIFT	= 24,
-+	IAVF_RX_DESC_PE_STATUS_APBVTHIT_SHIFT	= 25,
-+	IAVF_RX_DESC_PE_STATUS_PORTV_SHIFT	= 26,
-+	IAVF_RX_DESC_PE_STATUS_URG_SHIFT	= 27,
-+	IAVF_RX_DESC_PE_STATUS_IPFRAG_SHIFT	= 28,
-+	IAVF_RX_DESC_PE_STATUS_IPOPT_SHIFT	= 29
- };
- 
- #define I40E_RX_PROG_STATUS_DESC_LENGTH_SHIFT		38
-@@ -519,40 +519,40 @@ struct i40e_tx_desc {
- #define I40E_TXD_QW1_DTYPE_MASK		(0xFUL << I40E_TXD_QW1_DTYPE_SHIFT)
- 
- enum i40e_tx_desc_dtype_value {
--	I40E_TX_DESC_DTYPE_DATA		= 0x0,
--	I40E_TX_DESC_DTYPE_NOP		= 0x1, /* same as Context desc */
--	I40E_TX_DESC_DTYPE_CONTEXT	= 0x1,
--	I40E_TX_DESC_DTYPE_FCOE_CTX	= 0x2,
--	I40E_TX_DESC_DTYPE_FILTER_PROG	= 0x8,
--	I40E_TX_DESC_DTYPE_DDP_CTX	= 0x9,
--	I40E_TX_DESC_DTYPE_FLEX_DATA	= 0xB,
--	I40E_TX_DESC_DTYPE_FLEX_CTX_1	= 0xC,
--	I40E_TX_DESC_DTYPE_FLEX_CTX_2	= 0xD,
--	I40E_TX_DESC_DTYPE_DESC_DONE	= 0xF
-+	IAVF_TX_DESC_DTYPE_DATA		= 0x0,
-+	IAVF_TX_DESC_DTYPE_NOP		= 0x1, /* same as Context desc */
-+	IAVF_TX_DESC_DTYPE_CONTEXT	= 0x1,
-+	IAVF_TX_DESC_DTYPE_FCOE_CTX	= 0x2,
-+	IAVF_TX_DESC_DTYPE_FILTER_PROG	= 0x8,
-+	IAVF_TX_DESC_DTYPE_DDP_CTX	= 0x9,
-+	IAVF_TX_DESC_DTYPE_FLEX_DATA	= 0xB,
-+	IAVF_TX_DESC_DTYPE_FLEX_CTX_1	= 0xC,
-+	IAVF_TX_DESC_DTYPE_FLEX_CTX_2	= 0xD,
-+	IAVF_TX_DESC_DTYPE_DESC_DONE	= 0xF
- };
- 
- #define I40E_TXD_QW1_CMD_SHIFT	4
- #define I40E_TXD_QW1_CMD_MASK	(0x3FFUL << I40E_TXD_QW1_CMD_SHIFT)
- 
- enum i40e_tx_desc_cmd_bits {
--	I40E_TX_DESC_CMD_EOP			= 0x0001,
--	I40E_TX_DESC_CMD_RS			= 0x0002,
--	I40E_TX_DESC_CMD_ICRC			= 0x0004,
--	I40E_TX_DESC_CMD_IL2TAG1		= 0x0008,
--	I40E_TX_DESC_CMD_DUMMY			= 0x0010,
--	I40E_TX_DESC_CMD_IIPT_NONIP		= 0x0000, /* 2 BITS */
--	I40E_TX_DESC_CMD_IIPT_IPV6		= 0x0020, /* 2 BITS */
--	I40E_TX_DESC_CMD_IIPT_IPV4		= 0x0040, /* 2 BITS */
--	I40E_TX_DESC_CMD_IIPT_IPV4_CSUM		= 0x0060, /* 2 BITS */
--	I40E_TX_DESC_CMD_FCOET			= 0x0080,
--	I40E_TX_DESC_CMD_L4T_EOFT_UNK		= 0x0000, /* 2 BITS */
--	I40E_TX_DESC_CMD_L4T_EOFT_TCP		= 0x0100, /* 2 BITS */
--	I40E_TX_DESC_CMD_L4T_EOFT_SCTP		= 0x0200, /* 2 BITS */
--	I40E_TX_DESC_CMD_L4T_EOFT_UDP		= 0x0300, /* 2 BITS */
--	I40E_TX_DESC_CMD_L4T_EOFT_EOF_N		= 0x0000, /* 2 BITS */
--	I40E_TX_DESC_CMD_L4T_EOFT_EOF_T		= 0x0100, /* 2 BITS */
--	I40E_TX_DESC_CMD_L4T_EOFT_EOF_NI	= 0x0200, /* 2 BITS */
--	I40E_TX_DESC_CMD_L4T_EOFT_EOF_A		= 0x0300, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_EOP			= 0x0001,
-+	IAVF_TX_DESC_CMD_RS			= 0x0002,
-+	IAVF_TX_DESC_CMD_ICRC			= 0x0004,
-+	IAVF_TX_DESC_CMD_IL2TAG1		= 0x0008,
-+	IAVF_TX_DESC_CMD_DUMMY			= 0x0010,
-+	IAVF_TX_DESC_CMD_IIPT_NONIP		= 0x0000, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_IIPT_IPV6		= 0x0020, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_IIPT_IPV4		= 0x0040, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_IIPT_IPV4_CSUM		= 0x0060, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_FCOET			= 0x0080,
-+	IAVF_TX_DESC_CMD_L4T_EOFT_UNK		= 0x0000, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_L4T_EOFT_TCP		= 0x0100, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_L4T_EOFT_SCTP		= 0x0200, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_L4T_EOFT_UDP		= 0x0300, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_L4T_EOFT_EOF_N		= 0x0000, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_L4T_EOFT_EOF_T		= 0x0100, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_L4T_EOFT_EOF_NI	= 0x0200, /* 2 BITS */
-+	IAVF_TX_DESC_CMD_L4T_EOFT_EOF_A		= 0x0300, /* 2 BITS */
- };
- 
- #define I40E_TXD_QW1_OFFSET_SHIFT	16
-@@ -561,9 +561,9 @@ enum i40e_tx_desc_cmd_bits {
- 
- enum i40e_tx_desc_length_fields {
- 	/* Note: These are predefined bit offsets */
--	I40E_TX_DESC_LENGTH_MACLEN_SHIFT	= 0, /* 7 BITS */
--	I40E_TX_DESC_LENGTH_IPLEN_SHIFT		= 7, /* 7 BITS */
--	I40E_TX_DESC_LENGTH_L4_FC_LEN_SHIFT	= 14 /* 4 BITS */
-+	IAVF_TX_DESC_LENGTH_MACLEN_SHIFT	= 0, /* 7 BITS */
-+	IAVF_TX_DESC_LENGTH_IPLEN_SHIFT		= 7, /* 7 BITS */
-+	IAVF_TX_DESC_LENGTH_L4_FC_LEN_SHIFT	= 14 /* 4 BITS */
- };
- 
- #define I40E_TXD_QW1_TX_BUF_SZ_SHIFT	34
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index c7ce2db958b0..48ff5e924cfe 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -77,14 +77,14 @@ struct i40e_vsi {
- 
- #define MAXIMUM_ETHERNET_VLAN_SIZE (VLAN_ETH_FRAME_LEN + ETH_FCS_LEN)
- 
--#define I40E_RX_DESC(R, i) (&(((union i40e_32byte_rx_desc *)((R)->desc))[i]))
--#define I40E_TX_DESC(R, i) (&(((struct i40e_tx_desc *)((R)->desc))[i]))
--#define I40E_TX_CTXTDESC(R, i) \
-+#define IAVF_RX_DESC(R, i) (&(((union i40e_32byte_rx_desc *)((R)->desc))[i]))
-+#define IAVF_TX_DESC(R, i) (&(((struct i40e_tx_desc *)((R)->desc))[i]))
-+#define IAVF_TX_CTXTDESC(R, i) \
- 	(&(((struct i40e_tx_context_desc *)((R)->desc))[i]))
- #define IAVF_MAX_REQ_QUEUES 4
- 
--#define IAVF_HKEY_ARRAY_SIZE ((I40E_VFQF_HKEY_MAX_INDEX + 1) * 4)
--#define IAVF_HLUT_ARRAY_SIZE ((I40E_VFQF_HLUT_MAX_INDEX + 1) * 4)
-+#define IAVF_HKEY_ARRAY_SIZE ((IAVF_VFQF_HKEY_MAX_INDEX + 1) * 4)
-+#define IAVF_HLUT_ARRAY_SIZE ((IAVF_VFQF_HLUT_MAX_INDEX + 1) * 4)
- #define IAVF_MBPS_DIVISOR	125000 /* divisor to convert to Mbps */
- 
- /* MAX_MSIX_Q_VECTORS of these are allocated,
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 7d815ace2d98..01fd440b4bbe 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -196,10 +196,9 @@ static void iavf_misc_irq_disable(struct iavf_adapter *adapter)
- 	if (!adapter->msix_entries)
- 		return;
- 
--	wr32(hw, I40E_VFINT_DYN_CTL01, 0);
-+	wr32(hw, IAVF_VFINT_DYN_CTL01, 0);
- 
--	/* read flush */
--	rd32(hw, I40E_VFGEN_RSTAT);
-+	iavf_flush(hw);
- 
- 	synchronize_irq(adapter->msix_entries[0].vector);
- }
-@@ -212,12 +211,11 @@ static void iavf_misc_irq_enable(struct iavf_adapter *adapter)
+@@ -63,9 +63,9 @@ static inline struct i40e_rx_ptype_decoded decode_rx_desc_ptype(u8 ptype)
+ /* i40e_common for VF drivers*/
+ void iavf_vf_parse_hw_config(struct i40e_hw *hw,
+ 			     struct virtchnl_vf_resource *msg);
+-i40e_status iavf_vf_reset(struct i40e_hw *hw);
+-i40e_status iavf_aq_send_msg_to_pf(struct i40e_hw *hw,
++iavf_status iavf_vf_reset(struct i40e_hw *hw);
++iavf_status iavf_aq_send_msg_to_pf(struct i40e_hw *hw,
+ 				   enum virtchnl_ops v_opcode,
+-				   i40e_status v_retval, u8 *msg, u16 msglen,
++				   iavf_status v_retval, u8 *msg, u16 msglen,
+ 				   struct i40e_asq_cmd_details *cmd_details);
+ #endif /* _I40E_PROTOTYPE_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf.h b/drivers/net/ethernet/intel/iavf/i40evf.h
+index 15a0910a7a79..19a93bfdb65c 100644
+--- a/drivers/net/ethernet/intel/iavf/i40evf.h
++++ b/drivers/net/ethernet/intel/iavf/i40evf.h
+@@ -411,7 +411,7 @@ void iavf_enable_vlan_stripping(struct iavf_adapter *adapter);
+ void iavf_disable_vlan_stripping(struct iavf_adapter *adapter);
+ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 				enum virtchnl_ops v_opcode,
+-				i40e_status v_retval, u8 *msg, u16 msglen);
++				iavf_status v_retval, u8 *msg, u16 msglen);
+ int iavf_config_rss(struct iavf_adapter *adapter);
+ int iavf_lan_add_device(struct iavf_adapter *adapter);
+ int iavf_lan_del_device(struct iavf_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf_client.c b/drivers/net/ethernet/intel/iavf/i40evf_client.c
+index 71d94cb24602..d2660659174d 100644
+--- a/drivers/net/ethernet/intel/iavf/i40evf_client.c
++++ b/drivers/net/ethernet/intel/iavf/i40evf_client.c
+@@ -135,7 +135,7 @@ void iavf_notify_client_open(struct i40e_vsi *vsi)
+ static int iavf_client_release_qvlist(struct i40e_info *ldev)
  {
- 	struct i40e_hw *hw = &adapter->hw;
+ 	struct iavf_adapter *adapter = ldev->vf;
+-	i40e_status err;
++	iavf_status err;
  
--	wr32(hw, I40E_VFINT_DYN_CTL01, I40E_VFINT_DYN_CTL01_INTENA_MASK |
--				       I40E_VFINT_DYN_CTL01_ITR_INDX_MASK);
--	wr32(hw, I40E_VFINT_ICR0_ENA1, I40E_VFINT_ICR0_ENA1_ADMINQ_MASK);
-+	wr32(hw, IAVF_VFINT_DYN_CTL01, IAVF_VFINT_DYN_CTL01_INTENA_MASK |
-+				       IAVF_VFINT_DYN_CTL01_ITR_INDX_MASK);
-+	wr32(hw, IAVF_VFINT_ICR0_ENA1, IAVF_VFINT_ICR0_ENA1_ADMINQ_MASK);
- 
--	/* read flush */
--	rd32(hw, I40E_VFGEN_RSTAT);
-+	iavf_flush(hw);
- }
- 
- /**
-@@ -233,11 +231,10 @@ static void iavf_irq_disable(struct iavf_adapter *adapter)
- 		return;
- 
- 	for (i = 1; i < adapter->num_msix_vectors; i++) {
--		wr32(hw, I40E_VFINT_DYN_CTLN1(i - 1), 0);
-+		wr32(hw, IAVF_VFINT_DYN_CTLN1(i - 1), 0);
- 		synchronize_irq(adapter->msix_entries[i].vector);
- 	}
--	/* read flush */
--	rd32(hw, I40E_VFGEN_RSTAT);
-+	iavf_flush(hw);
- }
- 
- /**
-@@ -252,9 +249,9 @@ void iavf_irq_enable_queues(struct iavf_adapter *adapter, u32 mask)
- 
- 	for (i = 1; i < adapter->num_msix_vectors; i++) {
- 		if (mask & BIT(i - 1)) {
--			wr32(hw, I40E_VFINT_DYN_CTLN1(i - 1),
--			     I40E_VFINT_DYN_CTLN1_INTENA_MASK |
--			     I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK);
-+			wr32(hw, IAVF_VFINT_DYN_CTLN1(i - 1),
-+			     IAVF_VFINT_DYN_CTLN1_INTENA_MASK |
-+			     IAVF_VFINT_DYN_CTLN1_ITR_INDX_MASK);
- 		}
- 	}
- }
-@@ -272,7 +269,7 @@ void iavf_irq_enable(struct iavf_adapter *adapter, bool flush)
- 	iavf_irq_enable_queues(adapter, ~0);
- 
- 	if (flush)
--		rd32(hw, I40E_VFGEN_RSTAT);
-+		iavf_flush(hw);
- }
- 
- /**
-@@ -287,8 +284,8 @@ static irqreturn_t iavf_msix_aq(int irq, void *data)
- 	struct i40e_hw *hw = &adapter->hw;
- 
- 	/* handle non-queue interrupts, these reads clear the registers */
--	rd32(hw, I40E_VFINT_ICR01);
--	rd32(hw, I40E_VFINT_ICR0_ENA1);
-+	rd32(hw, IAVF_VFINT_ICR01);
-+	rd32(hw, IAVF_VFINT_ICR0_ENA1);
- 
- 	/* schedule work on the private workqueue */
- 	schedule_work(&adapter->adminq_task);
-@@ -334,7 +331,7 @@ iavf_map_vector_to_rxq(struct iavf_adapter *adapter, int v_idx, int r_idx)
- 	q_vector->rx.next_update = jiffies + 1;
- 	q_vector->rx.target_itr = ITR_TO_REG(rx_ring->itr_setting);
- 	q_vector->ring_mask |= BIT(r_idx);
--	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, q_vector->reg_idx),
-+	wr32(hw, IAVF_VFINT_ITRN1(I40E_RX_ITR, q_vector->reg_idx),
- 	     q_vector->rx.current_itr);
- 	q_vector->rx.current_itr = q_vector->rx.target_itr;
- }
-@@ -360,7 +357,7 @@ iavf_map_vector_to_txq(struct iavf_adapter *adapter, int v_idx, int t_idx)
- 	q_vector->tx.next_update = jiffies + 1;
- 	q_vector->tx.target_itr = ITR_TO_REG(tx_ring->itr_setting);
- 	q_vector->num_ringpairs++;
--	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, q_vector->reg_idx),
-+	wr32(hw, IAVF_VFINT_ITRN1(I40E_TX_ITR, q_vector->reg_idx),
- 	     q_vector->tx.target_itr);
- 	q_vector->tx.current_itr = q_vector->tx.target_itr;
- }
-@@ -601,7 +598,7 @@ static void iavf_configure_tx(struct iavf_adapter *adapter)
- 	int i;
- 
- 	for (i = 0; i < adapter->num_active_queues; i++)
--		adapter->tx_rings[i].tail = hw->hw_addr + I40E_QTX_TAIL1(i);
-+		adapter->tx_rings[i].tail = hw->hw_addr + IAVF_QTX_TAIL1(i);
- }
- 
- /**
-@@ -638,7 +635,7 @@ static void iavf_configure_rx(struct iavf_adapter *adapter)
- #endif
- 
- 	for (i = 0; i < adapter->num_active_queues; i++) {
--		adapter->rx_rings[i].tail = hw->hw_addr + I40E_QRX_TAIL1(i);
-+		adapter->rx_rings[i].tail = hw->hw_addr + IAVF_QRX_TAIL1(i);
- 		adapter->rx_rings[i].rx_buf_len = rx_buf_len;
- 
- 		if (adapter->flags & IAVF_FLAG_LEGACY_RX)
-@@ -1301,13 +1298,13 @@ static int iavf_config_rss_reg(struct iavf_adapter *adapter)
- 
- 	dw = (u32 *)adapter->rss_key;
- 	for (i = 0; i <= adapter->rss_key_size / 4; i++)
--		wr32(hw, I40E_VFQF_HKEY(i), dw[i]);
-+		wr32(hw, IAVF_VFQF_HKEY(i), dw[i]);
- 
- 	dw = (u32 *)adapter->rss_lut;
- 	for (i = 0; i <= adapter->rss_lut_size / 4; i++)
--		wr32(hw, I40E_VFQF_HLUT(i), dw[i]);
-+		wr32(hw, IAVF_VFQF_HLUT(i), dw[i]);
- 
--	i40e_flush(hw);
-+	iavf_flush(hw);
- 
- 	return 0;
- }
-@@ -1363,12 +1360,11 @@ static int iavf_init_rss(struct iavf_adapter *adapter)
- 		else
- 			adapter->hena = I40E_DEFAULT_RSS_HENA;
- 
--		wr32(hw, I40E_VFQF_HENA(0), (u32)adapter->hena);
--		wr32(hw, I40E_VFQF_HENA(1), (u32)(adapter->hena >> 32));
-+		wr32(hw, IAVF_VFQF_HENA(0), (u32)adapter->hena);
-+		wr32(hw, IAVF_VFQF_HENA(1), (u32)(adapter->hena >> 32));
- 	}
- 
- 	iavf_fill_rss_lut(adapter);
--
- 	netdev_rss_key_fill((void *)adapter->rss_key, adapter->rss_key_size);
- 	ret = iavf_config_rss(adapter);
- 
-@@ -1588,8 +1584,8 @@ static void iavf_watchdog_task(struct work_struct *work)
- 		goto restart_watchdog;
- 
- 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED) {
--		reg_val = rd32(hw, I40E_VFGEN_RSTAT) &
--			  I40E_VFGEN_RSTAT_VFR_STATE_MASK;
-+		reg_val = rd32(hw, IAVF_VFGEN_RSTAT) &
-+			  IAVF_VFGEN_RSTAT_VFR_STATE_MASK;
- 		if ((reg_val == VIRTCHNL_VFR_VFACTIVE) ||
- 		    (reg_val == VIRTCHNL_VFR_COMPLETED)) {
- 			/* A chance for redemption! */
-@@ -1616,7 +1612,7 @@ static void iavf_watchdog_task(struct work_struct *work)
- 		goto watchdog_done;
- 
- 	/* check for reset */
--	reg_val = rd32(hw, I40E_VF_ARQLEN1) & I40E_VF_ARQLEN1_ARQENABLE_MASK;
-+	reg_val = rd32(hw, IAVF_VF_ARQLEN1) & IAVF_VF_ARQLEN1_ARQENABLE_MASK;
- 	if (!(adapter->flags & IAVF_FLAG_RESET_PENDING) && !reg_val) {
- 		adapter->state = __IAVF_RESETTING;
- 		adapter->flags |= IAVF_FLAG_RESET_PENDING;
-@@ -1891,8 +1887,8 @@ static void iavf_reset_task(struct work_struct *work)
- 
- 	/* poll until we see the reset actually happen */
- 	for (i = 0; i < IAVF_RESET_WAIT_COUNT; i++) {
--		reg_val = rd32(hw, I40E_VF_ARQLEN1) &
--			  I40E_VF_ARQLEN1_ARQENABLE_MASK;
-+		reg_val = rd32(hw, IAVF_VF_ARQLEN1) &
-+			  IAVF_VF_ARQLEN1_ARQENABLE_MASK;
- 		if (!reg_val)
- 			break;
- 		usleep_range(5000, 10000);
-@@ -1907,8 +1903,8 @@ static void iavf_reset_task(struct work_struct *work)
- 		/* sleep first to make sure a minimum wait time is met */
- 		msleep(IAVF_RESET_WAIT_MS);
- 
--		reg_val = rd32(hw, I40E_VFGEN_RSTAT) &
--			  I40E_VFGEN_RSTAT_VFR_STATE_MASK;
-+		reg_val = rd32(hw, IAVF_VFGEN_RSTAT) &
-+			  IAVF_VFGEN_RSTAT_VFR_STATE_MASK;
- 		if (reg_val == VIRTCHNL_VFR_VFACTIVE)
- 			break;
- 	}
-@@ -2087,34 +2083,34 @@ static void iavf_adminq_task(struct work_struct *work)
- 	if (val == 0xdeadbeef) /* indicates device in reset */
- 		goto freedom;
- 	oldval = val;
--	if (val & I40E_VF_ARQLEN1_ARQVFE_MASK) {
-+	if (val & IAVF_VF_ARQLEN1_ARQVFE_MASK) {
- 		dev_info(&adapter->pdev->dev, "ARQ VF Error detected\n");
--		val &= ~I40E_VF_ARQLEN1_ARQVFE_MASK;
-+		val &= ~IAVF_VF_ARQLEN1_ARQVFE_MASK;
- 	}
--	if (val & I40E_VF_ARQLEN1_ARQOVFL_MASK) {
-+	if (val & IAVF_VF_ARQLEN1_ARQOVFL_MASK) {
- 		dev_info(&adapter->pdev->dev, "ARQ Overflow Error detected\n");
--		val &= ~I40E_VF_ARQLEN1_ARQOVFL_MASK;
-+		val &= ~IAVF_VF_ARQLEN1_ARQOVFL_MASK;
- 	}
--	if (val & I40E_VF_ARQLEN1_ARQCRIT_MASK) {
-+	if (val & IAVF_VF_ARQLEN1_ARQCRIT_MASK) {
- 		dev_info(&adapter->pdev->dev, "ARQ Critical Error detected\n");
--		val &= ~I40E_VF_ARQLEN1_ARQCRIT_MASK;
-+		val &= ~IAVF_VF_ARQLEN1_ARQCRIT_MASK;
- 	}
- 	if (oldval != val)
- 		wr32(hw, hw->aq.arq.len, val);
- 
- 	val = rd32(hw, hw->aq.asq.len);
- 	oldval = val;
--	if (val & I40E_VF_ATQLEN1_ATQVFE_MASK) {
-+	if (val & IAVF_VF_ATQLEN1_ATQVFE_MASK) {
- 		dev_info(&adapter->pdev->dev, "ASQ VF Error detected\n");
--		val &= ~I40E_VF_ATQLEN1_ATQVFE_MASK;
-+		val &= ~IAVF_VF_ATQLEN1_ATQVFE_MASK;
- 	}
--	if (val & I40E_VF_ATQLEN1_ATQOVFL_MASK) {
-+	if (val & IAVF_VF_ATQLEN1_ATQOVFL_MASK) {
- 		dev_info(&adapter->pdev->dev, "ASQ Overflow Error detected\n");
--		val &= ~I40E_VF_ATQLEN1_ATQOVFL_MASK;
-+		val &= ~IAVF_VF_ATQLEN1_ATQOVFL_MASK;
- 	}
--	if (val & I40E_VF_ATQLEN1_ATQCRIT_MASK) {
-+	if (val & IAVF_VF_ATQLEN1_ATQCRIT_MASK) {
- 		dev_info(&adapter->pdev->dev, "ASQ Critical Error detected\n");
--		val &= ~I40E_VF_ATQLEN1_ATQCRIT_MASK;
-+		val &= ~IAVF_VF_ATQLEN1_ATQCRIT_MASK;
- 	}
- 	if (oldval != val)
- 		wr32(hw, hw->aq.asq.len, val);
-@@ -3251,8 +3247,8 @@ static int iavf_check_reset_complete(struct i40e_hw *hw)
- 	int i;
- 
- 	for (i = 0; i < 100; i++) {
--		rstat = rd32(hw, I40E_VFGEN_RSTAT) &
--			    I40E_VFGEN_RSTAT_VFR_STATE_MASK;
-+		rstat = rd32(hw, IAVF_VFGEN_RSTAT) &
-+			     IAVF_VFGEN_RSTAT_VFR_STATE_MASK;
- 		if ((rstat == VIRTCHNL_VFR_VFACTIVE) ||
- 		    (rstat == VIRTCHNL_VFR_COMPLETED))
- 			return 0;
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index d288694a6c83..01ec3944c3c9 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -11,14 +11,14 @@
- static inline __le64 build_ctob(u32 td_cmd, u32 td_offset, unsigned int size,
- 				u32 td_tag)
+ 	if (adapter->aq_required)
+ 		return -EAGAIN;
+@@ -420,7 +420,7 @@ static u32 iavf_client_virtchnl_send(struct i40e_info *ldev,
+ 				       u8 *msg, u16 len)
  {
--	return cpu_to_le64(I40E_TX_DESC_DTYPE_DATA |
-+	return cpu_to_le64(IAVF_TX_DESC_DTYPE_DATA |
- 			   ((u64)td_cmd  << I40E_TXD_QW1_CMD_SHIFT) |
- 			   ((u64)td_offset << I40E_TXD_QW1_OFFSET_SHIFT) |
- 			   ((u64)size  << I40E_TXD_QW1_TX_BUF_SZ_SHIFT) |
- 			   ((u64)td_tag  << I40E_TXD_QW1_L2TAG1_SHIFT));
- }
+ 	struct iavf_adapter *adapter = ldev->vf;
+-	i40e_status err;
++	iavf_status err;
  
--#define I40E_TXD_CMD (I40E_TX_DESC_CMD_EOP | I40E_TX_DESC_CMD_RS)
-+#define I40E_TXD_CMD (IAVF_TX_DESC_CMD_EOP | IAVF_TX_DESC_CMD_RS)
+ 	if (adapter->aq_required)
+ 		return -EAGAIN;
+@@ -449,7 +449,7 @@ static int iavf_client_setup_qvlist(struct i40e_info *ldev,
+ 	struct virtchnl_iwarp_qvlist_info *v_qvlist_info;
+ 	struct iavf_adapter *adapter = ldev->vf;
+ 	struct i40e_qv_info *qv_info;
+-	i40e_status err;
++	iavf_status err;
+ 	u32 v_idx, i;
+ 	u32 msg_size;
  
- /**
-  * i40e_unmap_and_free_tx_resource - Release a Tx buffer
-@@ -198,7 +198,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
- 	unsigned int budget = vsi->work_limit;
- 
- 	tx_buf = &tx_ring->tx_bi[i];
--	tx_desc = I40E_TX_DESC(tx_ring, i);
-+	tx_desc = IAVF_TX_DESC(tx_ring, i);
- 	i -= tx_ring->count;
- 
- 	do {
-@@ -214,7 +214,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
- 		i40e_trace(clean_tx_irq, tx_ring, tx_desc, tx_buf);
- 		/* if the descriptor isn't done, no work yet to do */
- 		if (!(eop_desc->cmd_type_offset_bsz &
--		      cpu_to_le64(I40E_TX_DESC_DTYPE_DESC_DONE)))
-+		      cpu_to_le64(IAVF_TX_DESC_DTYPE_DESC_DONE)))
- 			break;
- 
- 		/* clear next_to_watch to prevent false hangs */
-@@ -248,7 +248,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
- 			if (unlikely(!i)) {
- 				i -= tx_ring->count;
- 				tx_buf = tx_ring->tx_bi;
--				tx_desc = I40E_TX_DESC(tx_ring, 0);
-+				tx_desc = IAVF_TX_DESC(tx_ring, 0);
- 			}
- 
- 			/* unmap any remaining paged data */
-@@ -268,7 +268,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
- 		if (unlikely(!i)) {
- 			i -= tx_ring->count;
- 			tx_buf = tx_ring->tx_bi;
--			tx_desc = I40E_TX_DESC(tx_ring, 0);
-+			tx_desc = IAVF_TX_DESC(tx_ring, 0);
- 		}
- 
- 		prefetch(tx_desc);
-@@ -342,11 +342,11 @@ static void i40e_enable_wb_on_itr(struct i40e_vsi *vsi,
- 	if (q_vector->arm_wb_state)
- 		return;
- 
--	val = I40E_VFINT_DYN_CTLN1_WB_ON_ITR_MASK |
--	      I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK; /* set noitr */
-+	val = IAVF_VFINT_DYN_CTLN1_WB_ON_ITR_MASK |
-+	      IAVF_VFINT_DYN_CTLN1_ITR_INDX_MASK; /* set noitr */
- 
- 	wr32(&vsi->back->hw,
--	     I40E_VFINT_DYN_CTLN1(q_vector->reg_idx), val);
-+	     IAVF_VFINT_DYN_CTLN1(q_vector->reg_idx), val);
- 	q_vector->arm_wb_state = true;
- }
- 
-@@ -358,14 +358,14 @@ static void i40e_enable_wb_on_itr(struct i40e_vsi *vsi,
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf_ethtool.c b/drivers/net/ethernet/intel/iavf/i40evf_ethtool.c
+index 8eb6686eebd0..0277df40e53f 100644
+--- a/drivers/net/ethernet/intel/iavf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/i40evf_ethtool.c
+@@ -277,7 +277,7 @@ static const struct iavf_priv_flags iavf_gstrings_priv_flags[] = {
+  * kind of link we really have, so we fake it.
   **/
- void iavf_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector)
+ static int iavf_get_link_ksettings(struct net_device *netdev,
+-				     struct ethtool_link_ksettings *cmd)
++				   struct ethtool_link_ksettings *cmd)
  {
--	u32 val = I40E_VFINT_DYN_CTLN1_INTENA_MASK |
--		  I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK | /* set noitr */
--		  I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
--		  I40E_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_MASK
-+	u32 val = IAVF_VFINT_DYN_CTLN1_INTENA_MASK |
-+		  IAVF_VFINT_DYN_CTLN1_ITR_INDX_MASK | /* set noitr */
-+		  IAVF_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
-+		  IAVF_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_MASK
- 		  /* allow 00 to be written to the index */;
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
  
- 	wr32(&vsi->back->hw,
--	     I40E_VFINT_DYN_CTLN1(q_vector->reg_idx),
-+	     IAVF_VFINT_DYN_CTLN1(q_vector->reg_idx),
- 	     val);
+@@ -344,7 +344,7 @@ static int iavf_get_sset_count(struct net_device *netdev, int sset)
+  * All statistics are added to the data buffer as an array of u64.
+  **/
+ static void iavf_get_ethtool_stats(struct net_device *netdev,
+-				     struct ethtool_stats *stats, u64 *data)
++				   struct ethtool_stats *stats, u64 *data)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	unsigned int i;
+@@ -561,7 +561,7 @@ static void iavf_set_msglevel(struct net_device *netdev, u32 data)
+  * Returns information about the driver and device for display to the user.
+  **/
+ static void iavf_get_drvinfo(struct net_device *netdev,
+-			       struct ethtool_drvinfo *drvinfo)
++			     struct ethtool_drvinfo *drvinfo)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 
+@@ -581,7 +581,7 @@ static void iavf_get_drvinfo(struct net_device *netdev,
+  * but the number of rings is not reported.
+  **/
+ static void iavf_get_ringparam(struct net_device *netdev,
+-				 struct ethtool_ringparam *ring)
++			       struct ethtool_ringparam *ring)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 
+@@ -600,7 +600,7 @@ static void iavf_get_ringparam(struct net_device *netdev,
+  * number of rings is not specified, so all rings get the same settings.
+  **/
+ static int iavf_set_ringparam(struct net_device *netdev,
+-				struct ethtool_ringparam *ring)
++			      struct ethtool_ringparam *ring)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	u32 new_rx_count, new_tx_count;
+@@ -645,8 +645,7 @@ static int iavf_set_ringparam(struct net_device *netdev,
+  * representative value.
+  **/
+ static int __iavf_get_coalesce(struct net_device *netdev,
+-				 struct ethtool_coalesce *ec,
+-				 int queue)
++			       struct ethtool_coalesce *ec, int queue)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = &adapter->vsi;
+@@ -689,7 +688,7 @@ static int __iavf_get_coalesce(struct net_device *netdev,
+  * only represents the settings of queue 0.
+  **/
+ static int iavf_get_coalesce(struct net_device *netdev,
+-			       struct ethtool_coalesce *ec)
++			     struct ethtool_coalesce *ec)
+ {
+ 	return __iavf_get_coalesce(netdev, ec, -1);
  }
+@@ -702,9 +701,8 @@ static int iavf_get_coalesce(struct net_device *netdev,
+  *
+  * Read specific queue's coalesce settings.
+  **/
+-static int iavf_get_per_queue_coalesce(struct net_device *netdev,
+-					 u32 queue,
+-					 struct ethtool_coalesce *ec)
++static int iavf_get_per_queue_coalesce(struct net_device *netdev, u32 queue,
++				       struct ethtool_coalesce *ec)
+ {
+ 	return __iavf_get_coalesce(netdev, ec, queue);
+ }
+@@ -718,8 +716,7 @@ static int iavf_get_per_queue_coalesce(struct net_device *netdev,
+  * Change the ITR settings for a specific queue.
+  **/
+ static void iavf_set_itr_per_queue(struct iavf_adapter *adapter,
+-				     struct ethtool_coalesce *ec,
+-				     int queue)
++				   struct ethtool_coalesce *ec, int queue)
+ {
+ 	struct i40e_ring *rx_ring = &adapter->rx_rings[queue];
+ 	struct i40e_ring *tx_ring = &adapter->tx_rings[queue];
+@@ -757,8 +754,7 @@ static void iavf_set_itr_per_queue(struct iavf_adapter *adapter,
+  * Sets the coalesce settings for a particular queue.
+  **/
+ static int __iavf_set_coalesce(struct net_device *netdev,
+-				 struct ethtool_coalesce *ec,
+-				 int queue)
++			       struct ethtool_coalesce *ec, int queue)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = &adapter->vsi;
+@@ -774,10 +770,7 @@ static int __iavf_set_coalesce(struct net_device *netdev,
+ 		   (ec->rx_coalesce_usecs > I40E_MAX_ITR)) {
+ 		netif_info(adapter, drv, netdev, "Invalid value, rx-usecs range is 0-8160\n");
+ 		return -EINVAL;
+-	}
+-
+-	else
+-	if (ec->tx_coalesce_usecs == 0) {
++	} else if (ec->tx_coalesce_usecs == 0) {
+ 		if (ec->use_adaptive_tx_coalesce)
+ 			netif_info(adapter, drv, netdev, "tx-usecs=0, need to disable adaptive-tx for a complete disable\n");
+ 	} else if ((ec->tx_coalesce_usecs < I40E_MIN_ITR) ||
+@@ -811,7 +804,7 @@ static int __iavf_set_coalesce(struct net_device *netdev,
+  * Change current coalescing settings for every queue.
+  **/
+ static int iavf_set_coalesce(struct net_device *netdev,
+-			       struct ethtool_coalesce *ec)
++			     struct ethtool_coalesce *ec)
+ {
+ 	return __iavf_set_coalesce(netdev, ec, -1);
+ }
+@@ -824,9 +817,8 @@ static int iavf_set_coalesce(struct net_device *netdev,
+  *
+  * Modifies a specific queue's coalesce settings.
+  */
+-static int iavf_set_per_queue_coalesce(struct net_device *netdev,
+-					 u32 queue,
+-					 struct ethtool_coalesce *ec)
++static int iavf_set_per_queue_coalesce(struct net_device *netdev, u32 queue,
++				       struct ethtool_coalesce *ec)
+ {
+ 	return __iavf_set_coalesce(netdev, ec, queue);
+ }
+@@ -840,8 +832,7 @@ static int iavf_set_per_queue_coalesce(struct net_device *netdev,
+  * Returns Success if the command is supported.
+  **/
+ static int iavf_get_rxnfc(struct net_device *netdev,
+-			    struct ethtool_rxnfc *cmd,
+-			    u32 *rule_locs)
++			  struct ethtool_rxnfc *cmd, u32 *rule_locs)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	int ret = -EOPNOTSUPP;
+@@ -870,7 +861,7 @@ static int iavf_get_rxnfc(struct net_device *netdev,
+  * queue pair. Report one extra channel to match our "other" MSI-X vector.
+  **/
+ static void iavf_get_channels(struct net_device *netdev,
+-				struct ethtool_channels *ch)
++			      struct ethtool_channels *ch)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
  
-@@ -887,7 +887,7 @@ bool iavf_alloc_rx_buffers(struct i40e_ring *rx_ring, u16 cleaned_count)
- 	if (!rx_ring->netdev || !cleaned_count)
- 		return false;
+@@ -893,7 +884,7 @@ static void iavf_get_channels(struct net_device *netdev,
+  * negative on failure.
+  **/
+ static int iavf_set_channels(struct net_device *netdev,
+-			       struct ethtool_channels *ch)
++			     struct ethtool_channels *ch)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	int num_req = ch->combined_count;
+@@ -960,7 +951,7 @@ static u32 iavf_get_rxfh_indir_size(struct net_device *netdev)
+  * Reads the indirection table directly from the hardware. Always returns 0.
+  **/
+ static int iavf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+-			   u8 *hfunc)
++			 u8 *hfunc)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	u16 i;
+@@ -990,7 +981,7 @@ static int iavf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+  * returns 0 after programming the table.
+  **/
+ static int iavf_set_rxfh(struct net_device *netdev, const u32 *indir,
+-			   const u8 *key, const u8 hfunc)
++			 const u8 *key, const u8 hfunc)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	u16 i;
+@@ -1002,9 +993,8 @@ static int iavf_set_rxfh(struct net_device *netdev, const u32 *indir,
+ 	if (!indir)
+ 		return 0;
  
--	rx_desc = I40E_RX_DESC(rx_ring, ntu);
-+	rx_desc = IAVF_RX_DESC(rx_ring, ntu);
- 	bi = &rx_ring->rx_bi[ntu];
+-	if (key) {
++	if (key)
+ 		memcpy(adapter->rss_key, key, adapter->rss_key_size);
+-	}
  
+ 	/* Each 32 bits pointed by 'indir' is stored with a lut entry */
+ 	for (i = 0; i < adapter->rss_lut_size; i++)
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf_main.c b/drivers/net/ethernet/intel/iavf/i40evf_main.c
+index f7b4d5aacee3..600ea4040af2 100644
+--- a/drivers/net/ethernet/intel/iavf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/iavf/i40evf_main.c
+@@ -66,7 +66,7 @@ static struct workqueue_struct *iavf_wq;
+  * @size: size of memory requested
+  * @alignment: what to align the allocation to
+  **/
+-i40e_status iavf_allocate_dma_mem_d(struct i40e_hw *hw,
++iavf_status iavf_allocate_dma_mem_d(struct i40e_hw *hw,
+ 				      struct i40e_dma_mem *mem,
+ 				      u64 size, u32 alignment)
+ {
+@@ -89,7 +89,7 @@ i40e_status iavf_allocate_dma_mem_d(struct i40e_hw *hw,
+  * @hw:   pointer to the HW structure
+  * @mem:  ptr to mem struct to free
+  **/
+-i40e_status iavf_free_dma_mem_d(struct i40e_hw *hw, struct i40e_dma_mem *mem)
++iavf_status iavf_free_dma_mem_d(struct i40e_hw *hw, struct i40e_dma_mem *mem)
+ {
+ 	struct iavf_adapter *adapter = (struct iavf_adapter *)hw->back;
+ 
+@@ -106,7 +106,7 @@ i40e_status iavf_free_dma_mem_d(struct i40e_hw *hw, struct i40e_dma_mem *mem)
+  * @mem:  ptr to mem struct to fill out
+  * @size: size of memory requested
+  **/
+-i40e_status iavf_allocate_virt_mem_d(struct i40e_hw *hw,
++iavf_status iavf_allocate_virt_mem_d(struct i40e_hw *hw,
+ 				       struct i40e_virt_mem *mem, u32 size)
+ {
+ 	if (!mem)
+@@ -126,7 +126,7 @@ i40e_status iavf_allocate_virt_mem_d(struct i40e_hw *hw,
+  * @hw:   pointer to the HW structure
+  * @mem:  ptr to mem struct to free
+  **/
+-i40e_status iavf_free_virt_mem_d(struct i40e_hw *hw,
++iavf_status iavf_free_virt_mem_d(struct i40e_hw *hw,
+ 				   struct i40e_virt_mem *mem)
+ {
+ 	if (!mem)
+@@ -469,6 +469,7 @@ iavf_request_traffic_irqs(struct iavf_adapter *adapter, char *basename)
+ 
+ 	for (vector = 0; vector < q_vectors; vector++) {
+ 		struct i40e_q_vector *q_vector = &adapter->q_vectors[vector];
++
+ 		irq_num = adapter->msix_entries[vector + NONQ_VECS].vector;
+ 
+ 		if (q_vector->tx.ring && q_vector->rx.ring) {
+@@ -1427,6 +1428,7 @@ static void iavf_free_q_vectors(struct iavf_adapter *adapter)
+ 
+ 	for (q_idx = 0; q_idx < num_q_vectors; q_idx++) {
+ 		struct i40e_q_vector *q_vector = &adapter->q_vectors[q_idx];
++
+ 		if (q_idx < napi_vectors)
+ 			netif_napi_del(&q_vector->napi);
+ 	}
+@@ -2049,7 +2051,7 @@ static void iavf_adminq_task(struct work_struct *work)
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	struct i40e_arq_event_info event;
+ 	enum virtchnl_ops v_op;
+-	i40e_status ret, v_ret;
++	iavf_status ret, v_ret;
+ 	u32 val, oldval;
+ 	u16 pending;
+ 
+@@ -2064,7 +2066,7 @@ static void iavf_adminq_task(struct work_struct *work)
  	do {
-@@ -909,7 +909,7 @@ bool iavf_alloc_rx_buffers(struct i40e_ring *rx_ring, u16 cleaned_count)
- 		bi++;
- 		ntu++;
- 		if (unlikely(ntu == rx_ring->count)) {
--			rx_desc = I40E_RX_DESC(rx_ring, 0);
-+			rx_desc = IAVF_RX_DESC(rx_ring, 0);
- 			bi = rx_ring->rx_bi;
- 			ntu = 0;
- 		}
-@@ -968,7 +968,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 		return;
+ 		ret = iavf_clean_arq_element(hw, &event, &pending);
+ 		v_op = (enum virtchnl_ops)le32_to_cpu(event.desc.cookie_high);
+-		v_ret = (i40e_status)le32_to_cpu(event.desc.cookie_low);
++		v_ret = (iavf_status)le32_to_cpu(event.desc.cookie_low);
  
- 	/* did the hardware decode the packet and checksum? */
--	if (!(rx_status & BIT(I40E_RX_DESC_STATUS_L3L4P_SHIFT)))
-+	if (!(rx_status & BIT(IAVF_RX_DESC_STATUS_L3L4P_SHIFT)))
- 		return;
- 
- 	/* both known and outer_ip must be set for the below code to work */
-@@ -981,25 +981,25 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	       (decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV6);
- 
- 	if (ipv4 &&
--	    (rx_error & (BIT(I40E_RX_DESC_ERROR_IPE_SHIFT) |
--			 BIT(I40E_RX_DESC_ERROR_EIPE_SHIFT))))
-+	    (rx_error & (BIT(IAVF_RX_DESC_ERROR_IPE_SHIFT) |
-+			 BIT(IAVF_RX_DESC_ERROR_EIPE_SHIFT))))
- 		goto checksum_fail;
- 
- 	/* likely incorrect csum if alternate IP extension headers found */
- 	if (ipv6 &&
--	    rx_status & BIT(I40E_RX_DESC_STATUS_IPV6EXADD_SHIFT))
-+	    rx_status & BIT(IAVF_RX_DESC_STATUS_IPV6EXADD_SHIFT))
- 		/* don't increment checksum err here, non-fatal err */
- 		return;
- 
- 	/* there was some L4 error, count error and punt packet to the stack */
--	if (rx_error & BIT(I40E_RX_DESC_ERROR_L4E_SHIFT))
-+	if (rx_error & BIT(IAVF_RX_DESC_ERROR_L4E_SHIFT))
- 		goto checksum_fail;
- 
- 	/* handle packets that were not able to be checksummed due
- 	 * to arrival speed, in this case the stack can compute
- 	 * the csum.
- 	 */
--	if (rx_error & BIT(I40E_RX_DESC_ERROR_PPRS_SHIFT))
-+	if (rx_error & BIT(IAVF_RX_DESC_ERROR_PPRS_SHIFT))
- 		return;
- 
- 	/* Only report checksum unnecessary for TCP, UDP, or SCTP */
-@@ -1056,8 +1056,8 @@ static inline void i40e_rx_hash(struct i40e_ring *ring,
+ 		if (ret || !v_op)
+ 			break; /* No event to process or error cleaning ARQ */
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c
+index 4dbba07fd383..6a2bc501658c 100644
+--- a/drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c
+@@ -18,11 +18,11 @@
+  *
+  * Send message to PF and print status if failure.
+  **/
+-static int iavf_send_pf_msg(struct iavf_adapter *adapter,
+-			      enum virtchnl_ops op, u8 *msg, u16 len)
++static int iavf_send_pf_msg(struct iavf_adapter *adapter, enum virtchnl_ops op,
++			    u8 *msg, u16 len)
  {
- 	u32 hash;
- 	const __le64 rss_mask =
--		cpu_to_le64((u64)I40E_RX_DESC_FLTSTAT_RSS_HASH <<
--			    I40E_RX_DESC_STATUS_FLTSTAT_SHIFT);
-+		cpu_to_le64((u64)IAVF_RX_DESC_FLTSTAT_RSS_HASH <<
-+			    IAVF_RX_DESC_STATUS_FLTSTAT_SHIFT);
+ 	struct i40e_hw *hw = &adapter->hw;
+-	i40e_status err;
++	iavf_status err;
  
- 	if (ring->netdev->features & NETIF_F_RXHASH)
- 		return;
-@@ -1437,10 +1437,10 @@ static bool i40e_is_non_eop(struct i40e_ring *rx_ring,
- 	ntc = (ntc < rx_ring->count) ? ntc : 0;
- 	rx_ring->next_to_clean = ntc;
+ 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
+ 		return 0; /* nothing to see here, move along */
+@@ -51,7 +51,7 @@ int iavf_send_api_ver(struct iavf_adapter *adapter)
+ 	vvi.minor = VIRTCHNL_VERSION_MINOR;
  
--	prefetch(I40E_RX_DESC(rx_ring, ntc));
-+	prefetch(IAVF_RX_DESC(rx_ring, ntc));
- 
- 	/* if we are the last buffer then there is nothing else to do */
--#define I40E_RXD_EOF BIT(I40E_RX_DESC_STATUS_EOF_SHIFT)
-+#define I40E_RXD_EOF BIT(IAVF_RX_DESC_STATUS_EOF_SHIFT)
- 	if (likely(i40e_test_staterr(rx_desc, I40E_RXD_EOF)))
- 		return false;
- 
-@@ -1483,7 +1483,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 			cleaned_count = 0;
- 		}
- 
--		rx_desc = I40E_RX_DESC(rx_ring, rx_ring->next_to_clean);
-+		rx_desc = IAVF_RX_DESC(rx_ring, rx_ring->next_to_clean);
- 
- 		/* status_error_len will always be zero for unused descriptors
- 		 * because it's cleared in cleanup, and overlaps with hdr_addr
-@@ -1529,7 +1529,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 
- 		/* ERR_MASK will only have valid bits if EOP set, and
- 		 * what we are doing here is actually checking
--		 * I40E_RX_DESC_ERROR_RXE_SHIFT, since it is the zeroth bit in
-+		 * IAVF_RX_DESC_ERROR_RXE_SHIFT, since it is the zeroth bit in
- 		 * the error field
- 		 */
- 		if (unlikely(i40e_test_staterr(rx_desc, BIT(I40E_RXD_QW1_ERROR_SHIFT)))) {
-@@ -1554,7 +1554,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		iavf_process_skb_fields(rx_ring, rx_desc, skb, rx_ptype);
- 
- 
--		vlan_tag = (qword & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)) ?
-+		vlan_tag = (qword & BIT(IAVF_RX_DESC_STATUS_L2TAG1P_SHIFT)) ?
- 			   le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1) : 0;
- 
- 		i40e_trace(clean_rx_irq_rx, rx_ring, rx_desc, skb);
-@@ -1599,15 +1599,15 @@ static inline u32 i40e_buildreg_itr(const int type, u16 itr)
- 	 */
- 	itr &= I40E_ITR_MASK;
- 
--	val = I40E_VFINT_DYN_CTLN1_INTENA_MASK |
--	      (type << I40E_VFINT_DYN_CTLN1_ITR_INDX_SHIFT) |
--	      (itr << (I40E_VFINT_DYN_CTLN1_INTERVAL_SHIFT - 1));
-+	val = IAVF_VFINT_DYN_CTLN1_INTENA_MASK |
-+	      (type << IAVF_VFINT_DYN_CTLN1_ITR_INDX_SHIFT) |
-+	      (itr << (IAVF_VFINT_DYN_CTLN1_INTERVAL_SHIFT - 1));
- 
- 	return val;
+ 	return iavf_send_pf_msg(adapter, VIRTCHNL_OP_VERSION, (u8 *)&vvi,
+-				  sizeof(vvi));
++				sizeof(vvi));
  }
  
- /* a small macro to shorten up some long lines */
--#define INTREG I40E_VFINT_DYN_CTLN1
-+#define INTREG IAVF_VFINT_DYN_CTLN1
+ /**
+@@ -69,7 +69,7 @@ int iavf_verify_api_ver(struct iavf_adapter *adapter)
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	struct i40e_arq_event_info event;
+ 	enum virtchnl_ops op;
+-	i40e_status err;
++	iavf_status err;
  
- /* The act of updating the ITR will cause it to immediately trigger. In order
-  * to prevent this from throwing off adaptive update statistics we defer the
-@@ -1968,7 +1968,7 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 	l4.hdr = skb_transport_header(skb);
- 
- 	/* compute outer L2 header size */
--	offset = ((ip.hdr - skb->data) / 2) << I40E_TX_DESC_LENGTH_MACLEN_SHIFT;
-+	offset = ((ip.hdr - skb->data) / 2) << IAVF_TX_DESC_LENGTH_MACLEN_SHIFT;
- 
- 	if (skb->encapsulation) {
- 		u32 tunnel = 0;
-@@ -2051,10 +2051,10 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 		 * need the hardware to recompute it is in the case of TSO.
- 		 */
- 		cmd |= (*tx_flags & I40E_TX_FLAGS_TSO) ?
--		       I40E_TX_DESC_CMD_IIPT_IPV4_CSUM :
--		       I40E_TX_DESC_CMD_IIPT_IPV4;
-+		       IAVF_TX_DESC_CMD_IIPT_IPV4_CSUM :
-+		       IAVF_TX_DESC_CMD_IIPT_IPV4;
- 	} else if (*tx_flags & I40E_TX_FLAGS_IPV6) {
--		cmd |= I40E_TX_DESC_CMD_IIPT_IPV6;
-+		cmd |= IAVF_TX_DESC_CMD_IIPT_IPV6;
- 
- 		exthdr = ip.hdr + sizeof(*ip.v6);
- 		l4_proto = ip.v6->nexthdr;
-@@ -2064,26 +2064,26 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 	event.buf_len = IAVF_MAX_AQ_BUF_SIZE;
+ 	event.msg_buf = kzalloc(event.buf_len, GFP_KERNEL);
+@@ -92,7 +92,7 @@ int iavf_verify_api_ver(struct iavf_adapter *adapter)
  	}
  
- 	/* compute inner L3 header size */
--	offset |= ((l4.hdr - ip.hdr) / 4) << I40E_TX_DESC_LENGTH_IPLEN_SHIFT;
-+	offset |= ((l4.hdr - ip.hdr) / 4) << IAVF_TX_DESC_LENGTH_IPLEN_SHIFT;
  
- 	/* Enable L4 checksum offloads */
- 	switch (l4_proto) {
- 	case IPPROTO_TCP:
- 		/* enable checksum offloads */
--		cmd |= I40E_TX_DESC_CMD_L4T_EOFT_TCP;
--		offset |= l4.tcp->doff << I40E_TX_DESC_LENGTH_L4_FC_LEN_SHIFT;
-+		cmd |= IAVF_TX_DESC_CMD_L4T_EOFT_TCP;
-+		offset |= l4.tcp->doff << IAVF_TX_DESC_LENGTH_L4_FC_LEN_SHIFT;
- 		break;
- 	case IPPROTO_SCTP:
- 		/* enable SCTP checksum offload */
--		cmd |= I40E_TX_DESC_CMD_L4T_EOFT_SCTP;
-+		cmd |= IAVF_TX_DESC_CMD_L4T_EOFT_SCTP;
- 		offset |= (sizeof(struct sctphdr) >> 2) <<
--			  I40E_TX_DESC_LENGTH_L4_FC_LEN_SHIFT;
-+			  IAVF_TX_DESC_LENGTH_L4_FC_LEN_SHIFT;
- 		break;
- 	case IPPROTO_UDP:
- 		/* enable UDP checksum offload */
--		cmd |= I40E_TX_DESC_CMD_L4T_EOFT_UDP;
-+		cmd |= IAVF_TX_DESC_CMD_L4T_EOFT_UDP;
- 		offset |= (sizeof(struct udphdr) >> 2) <<
--			  I40E_TX_DESC_LENGTH_L4_FC_LEN_SHIFT;
-+			  IAVF_TX_DESC_LENGTH_L4_FC_LEN_SHIFT;
- 		break;
- 	default:
- 		if (*tx_flags & I40E_TX_FLAGS_TSO)
-@@ -2112,12 +2112,12 @@ static void i40e_create_tx_ctx(struct i40e_ring *tx_ring,
- 	struct i40e_tx_context_desc *context_desc;
- 	int i = tx_ring->next_to_use;
+-	err = (i40e_status)le32_to_cpu(event.desc.cookie_low);
++	err = (iavf_status)le32_to_cpu(event.desc.cookie_low);
+ 	if (err)
+ 		goto out_alloc;
  
--	if ((cd_type_cmd_tso_mss == I40E_TX_DESC_DTYPE_CONTEXT) &&
-+	if ((cd_type_cmd_tso_mss == IAVF_TX_DESC_DTYPE_CONTEXT) &&
- 	    !cd_tunneling && !cd_l2tag2)
- 		return;
+@@ -144,13 +144,11 @@ int iavf_send_vf_config_msg(struct iavf_adapter *adapter)
+ 	adapter->current_op = VIRTCHNL_OP_GET_VF_RESOURCES;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_GET_CONFIG;
+ 	if (PF_IS_V11(adapter))
+-		return iavf_send_pf_msg(adapter,
+-					  VIRTCHNL_OP_GET_VF_RESOURCES,
+-					  (u8 *)&caps, sizeof(caps));
++		return iavf_send_pf_msg(adapter, VIRTCHNL_OP_GET_VF_RESOURCES,
++					(u8 *)&caps, sizeof(caps));
+ 	else
+-		return iavf_send_pf_msg(adapter,
+-					  VIRTCHNL_OP_GET_VF_RESOURCES,
+-					  NULL, 0);
++		return iavf_send_pf_msg(adapter, VIRTCHNL_OP_GET_VF_RESOURCES,
++					NULL, 0);
+ }
  
- 	/* grab the next descriptor */
--	context_desc = I40E_TX_CTXTDESC(tx_ring, i);
-+	context_desc = IAVF_TX_CTXTDESC(tx_ring, i);
+ /**
+@@ -193,7 +191,7 @@ int iavf_get_vf_config(struct iavf_adapter *adapter)
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	struct i40e_arq_event_info event;
+ 	enum virtchnl_ops op;
+-	i40e_status err;
++	iavf_status err;
+ 	u16 len;
  
- 	i++;
- 	tx_ring->next_to_use = (i < tx_ring->count) ? i : 0;
-@@ -2260,7 +2260,7 @@ static inline void iavf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	dma_addr_t dma;
- 
- 	if (tx_flags & I40E_TX_FLAGS_HW_VLAN) {
--		td_cmd |= I40E_TX_DESC_CMD_IL2TAG1;
-+		td_cmd |= IAVF_TX_DESC_CMD_IL2TAG1;
- 		td_tag = (tx_flags & I40E_TX_FLAGS_VLAN_MASK) >>
- 			 I40E_TX_FLAGS_VLAN_SHIFT;
+ 	len =  sizeof(struct virtchnl_vf_resource) +
+@@ -218,7 +216,7 @@ int iavf_get_vf_config(struct iavf_adapter *adapter)
+ 			break;
  	}
-@@ -2269,7 +2269,7 @@ static inline void iavf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
  
- 	dma = dma_map_single(tx_ring->dev, skb->data, size, DMA_TO_DEVICE);
+-	err = (i40e_status)le32_to_cpu(event.desc.cookie_low);
++	err = (iavf_status)le32_to_cpu(event.desc.cookie_low);
+ 	memcpy(adapter->vf_res, event.msg_buf, min(event.msg_len, len));
  
--	tx_desc = I40E_TX_DESC(tx_ring, i);
-+	tx_desc = IAVF_TX_DESC(tx_ring, i);
- 	tx_bi = first;
+ 	/* some PFs send more queues than we should have so validate that
+@@ -287,8 +285,8 @@ void iavf_configure_queues(struct iavf_adapter *adapter)
+ 	}
  
- 	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
-@@ -2295,7 +2295,7 @@ static inline void iavf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 			i++;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_CONFIGURE_QUEUES;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_VSI_QUEUES,
+-			   (u8 *)vqci, len);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_VSI_QUEUES, (u8 *)vqci,
++			 len);
+ 	kfree(vqci);
+ }
  
- 			if (i == tx_ring->count) {
--				tx_desc = I40E_TX_DESC(tx_ring, 0);
-+				tx_desc = IAVF_TX_DESC(tx_ring, 0);
- 				i = 0;
- 			}
+@@ -313,8 +311,8 @@ void iavf_enable_queues(struct iavf_adapter *adapter)
+ 	vqs.tx_queues = BIT(adapter->num_active_queues) - 1;
+ 	vqs.rx_queues = vqs.tx_queues;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_ENABLE_QUEUES;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_ENABLE_QUEUES,
+-			   (u8 *)&vqs, sizeof(vqs));
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_ENABLE_QUEUES, (u8 *)&vqs,
++			 sizeof(vqs));
+ }
  
-@@ -2316,7 +2316,7 @@ static inline void iavf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		i++;
+ /**
+@@ -338,8 +336,8 @@ void iavf_disable_queues(struct iavf_adapter *adapter)
+ 	vqs.tx_queues = BIT(adapter->num_active_queues) - 1;
+ 	vqs.rx_queues = vqs.tx_queues;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_DISABLE_QUEUES;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_QUEUES,
+-			   (u8 *)&vqs, sizeof(vqs));
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_QUEUES, (u8 *)&vqs,
++			 sizeof(vqs));
+ }
  
- 		if (i == tx_ring->count) {
--			tx_desc = I40E_TX_DESC(tx_ring, 0);
-+			tx_desc = IAVF_TX_DESC(tx_ring, 0);
- 			i = 0;
- 		}
+ /**
+@@ -394,8 +392,7 @@ void iavf_map_queues(struct iavf_adapter *adapter)
+ 	vecmap->rxq_map = 0;
  
-@@ -2394,7 +2394,7 @@ static inline void iavf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 					struct i40e_ring *tx_ring)
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_MAP_VECTORS;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_IRQ_MAP,
+-			   (u8 *)vimi, len);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_IRQ_MAP, (u8 *)vimi, len);
+ 	kfree(vimi);
+ }
+ 
+@@ -423,7 +420,7 @@ int iavf_request_queues(struct iavf_adapter *adapter, int num)
+ 	adapter->current_op = VIRTCHNL_OP_REQUEST_QUEUES;
+ 	adapter->flags |= IAVF_FLAG_REINIT_ITR_NEEDED;
+ 	return iavf_send_pf_msg(adapter, VIRTCHNL_OP_REQUEST_QUEUES,
+-				  (u8 *)&vfres, sizeof(vfres));
++				(u8 *)&vfres, sizeof(vfres));
+ }
+ 
+ /**
+@@ -493,8 +490,7 @@ void iavf_add_ether_addrs(struct iavf_adapter *adapter)
+ 
+ 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
+ 
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_ADD_ETH_ADDR,
+-			   (u8 *)veal, len);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_ADD_ETH_ADDR, (u8 *)veal, len);
+ 	kfree(veal);
+ }
+ 
+@@ -565,8 +561,7 @@ void iavf_del_ether_addrs(struct iavf_adapter *adapter)
+ 
+ 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
+ 
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DEL_ETH_ADDR,
+-			   (u8 *)veal, len);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DEL_ETH_ADDR, (u8 *)veal, len);
+ 	kfree(veal);
+ }
+ 
+@@ -756,7 +751,7 @@ void iavf_set_promiscuous(struct iavf_adapter *adapter, int flags)
+ 	vpi.vsi_id = adapter->vsi_res->vsi_id;
+ 	vpi.flags = flags;
+ 	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE,
+-			   (u8 *)&vpi, sizeof(vpi));
++			 (u8 *)&vpi, sizeof(vpi));
+ }
+ 
+ /**
+@@ -776,8 +771,8 @@ void iavf_request_stats(struct iavf_adapter *adapter)
+ 	adapter->current_op = VIRTCHNL_OP_GET_STATS;
+ 	vqs.vsi_id = adapter->vsi_res->vsi_id;
+ 	/* queue maps are ignored for this message - only the vsi is used */
+-	if (iavf_send_pf_msg(adapter, VIRTCHNL_OP_GET_STATS,
+-			       (u8 *)&vqs, sizeof(vqs)))
++	if (iavf_send_pf_msg(adapter, VIRTCHNL_OP_GET_STATS, (u8 *)&vqs,
++			     sizeof(vqs)))
+ 		/* if the request failed, don't lock out others */
+ 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
+ }
+@@ -798,8 +793,7 @@ void iavf_get_hena(struct iavf_adapter *adapter)
+ 	}
+ 	adapter->current_op = VIRTCHNL_OP_GET_RSS_HENA_CAPS;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_GET_HENA;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_GET_RSS_HENA_CAPS,
+-			   NULL, 0);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_GET_RSS_HENA_CAPS, NULL, 0);
+ }
+ 
+ /**
+@@ -821,8 +815,8 @@ void iavf_set_hena(struct iavf_adapter *adapter)
+ 	vrh.hena = adapter->hena;
+ 	adapter->current_op = VIRTCHNL_OP_SET_RSS_HENA;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_SET_HENA;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_SET_RSS_HENA,
+-			   (u8 *)&vrh, sizeof(vrh));
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_SET_RSS_HENA, (u8 *)&vrh,
++			 sizeof(vrh));
+ }
+ 
+ /**
+@@ -853,8 +847,7 @@ void iavf_set_rss_key(struct iavf_adapter *adapter)
+ 
+ 	adapter->current_op = VIRTCHNL_OP_CONFIG_RSS_KEY;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_SET_RSS_KEY;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_RSS_KEY,
+-			   (u8 *)vrk, len);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_RSS_KEY, (u8 *)vrk, len);
+ 	kfree(vrk);
+ }
+ 
+@@ -885,8 +878,7 @@ void iavf_set_rss_lut(struct iavf_adapter *adapter)
+ 	memcpy(vrl->lut, adapter->rss_lut, adapter->rss_lut_size);
+ 	adapter->current_op = VIRTCHNL_OP_CONFIG_RSS_LUT;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_SET_RSS_LUT;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_RSS_LUT,
+-			   (u8 *)vrl, len);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_RSS_LUT, (u8 *)vrl, len);
+ 	kfree(vrl);
+ }
+ 
+@@ -906,8 +898,7 @@ void iavf_enable_vlan_stripping(struct iavf_adapter *adapter)
+ 	}
+ 	adapter->current_op = VIRTCHNL_OP_ENABLE_VLAN_STRIPPING;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_ENABLE_VLAN_STRIPPING;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_ENABLE_VLAN_STRIPPING,
+-			   NULL, 0);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_ENABLE_VLAN_STRIPPING, NULL, 0);
+ }
+ 
+ /**
+@@ -926,8 +917,7 @@ void iavf_disable_vlan_stripping(struct iavf_adapter *adapter)
+ 	}
+ 	adapter->current_op = VIRTCHNL_OP_DISABLE_VLAN_STRIPPING;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_DISABLE_VLAN_STRIPPING;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_VLAN_STRIPPING,
+-			   NULL, 0);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_VLAN_STRIPPING, NULL, 0);
+ }
+ 
+ /**
+@@ -1011,8 +1001,7 @@ void iavf_enable_channels(struct iavf_adapter *adapter)
+ 	adapter->flags |= IAVF_FLAG_REINIT_ITR_NEEDED;
+ 	adapter->current_op = VIRTCHNL_OP_ENABLE_CHANNELS;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_ENABLE_CHANNELS;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_ENABLE_CHANNELS,
+-			   (u8 *)vti, len);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_ENABLE_CHANNELS, (u8 *)vti, len);
+ 	kfree(vti);
+ }
+ 
+@@ -1035,8 +1024,7 @@ void iavf_disable_channels(struct iavf_adapter *adapter)
+ 	adapter->flags |= IAVF_FLAG_REINIT_ITR_NEEDED;
+ 	adapter->current_op = VIRTCHNL_OP_DISABLE_CHANNELS;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_DISABLE_CHANNELS;
+-	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_CHANNELS,
+-			   NULL, 0);
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_CHANNELS, NULL, 0);
+ }
+ 
+ /**
+@@ -1047,7 +1035,7 @@ void iavf_disable_channels(struct iavf_adapter *adapter)
+  * Print the cloud filter
+  **/
+ static void iavf_print_cloud_filter(struct iavf_adapter *adapter,
+-				      struct virtchnl_filter *f)
++				    struct virtchnl_filter *f)
  {
--	u64 cd_type_cmd_tso_mss = I40E_TX_DESC_DTYPE_CONTEXT;
-+	u64 cd_type_cmd_tso_mss = IAVF_TX_DESC_DTYPE_CONTEXT;
- 	u32 cd_tunneling = 0, cd_l2tag2 = 0;
- 	struct i40e_tx_buffer *first;
- 	u32 td_offset = 0;
-@@ -2465,7 +2465,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	skb_tx_timestamp(skb);
+ 	switch (f->flow_type) {
+ 	case VIRTCHNL_TCP_V4_FLOW:
+@@ -1114,9 +1102,8 @@ void iavf_add_cloud_filter(struct iavf_adapter *adapter)
+ 			memcpy(f, &cf->f, sizeof(struct virtchnl_filter));
+ 			cf->add = false;
+ 			cf->state = __IAVF_CF_ADD_PENDING;
+-			iavf_send_pf_msg(adapter,
+-					   VIRTCHNL_OP_ADD_CLOUD_FILTER,
+-					   (u8 *)f, len);
++			iavf_send_pf_msg(adapter, VIRTCHNL_OP_ADD_CLOUD_FILTER,
++					 (u8 *)f, len);
+ 		}
+ 	}
+ 	kfree(f);
+@@ -1163,9 +1150,8 @@ void iavf_del_cloud_filter(struct iavf_adapter *adapter)
+ 			memcpy(f, &cf->f, sizeof(struct virtchnl_filter));
+ 			cf->del = false;
+ 			cf->state = __IAVF_CF_DEL_PENDING;
+-			iavf_send_pf_msg(adapter,
+-					   VIRTCHNL_OP_DEL_CLOUD_FILTER,
+-					   (u8 *)f, len);
++			iavf_send_pf_msg(adapter, VIRTCHNL_OP_DEL_CLOUD_FILTER,
++					 (u8 *)f, len);
+ 		}
+ 	}
+ 	kfree(f);
+@@ -1197,9 +1183,8 @@ void iavf_request_reset(struct iavf_adapter *adapter)
+  * This function handles the reply messages.
+  **/
+ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+-				enum virtchnl_ops v_opcode,
+-				i40e_status v_retval,
+-				u8 *msg, u16 msglen)
++			      enum virtchnl_ops v_opcode, iavf_status v_retval,
++			      u8 *msg, u16 msglen)
+ {
+ 	struct net_device *netdev = adapter->netdev;
  
- 	/* always enable CRC insertion offload */
--	td_cmd |= I40E_TX_DESC_CMD_ICRC;
-+	td_cmd |= IAVF_TX_DESC_CMD_ICRC;
+@@ -1207,6 +1192,7 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		struct virtchnl_pf_event *vpe =
+ 			(struct virtchnl_pf_event *)msg;
+ 		bool link_up = vpe->event_data.link_event.link_status;
++
+ 		switch (vpe->event) {
+ 		case VIRTCHNL_EVENT_LINK_CHANGE:
+ 			adapter->link_speed =
+@@ -1304,9 +1290,8 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 					cf->state = __IAVF_CF_INVALID;
+ 					dev_info(&adapter->pdev->dev, "Failed to add cloud filter, error %s\n",
+ 						 iavf_stat_str(&adapter->hw,
+-								 v_retval));
+-					iavf_print_cloud_filter(adapter,
+-								  &cf->f);
++							       v_retval));
++					iavf_print_cloud_filter(adapter, &cf->f);
+ 					list_del(&cf->list);
+ 					kfree(cf);
+ 					adapter->num_cloud_filters--;
+@@ -1323,17 +1308,15 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 					cf->state = __IAVF_CF_ACTIVE;
+ 					dev_info(&adapter->pdev->dev, "Failed to del cloud filter, error %s\n",
+ 						 iavf_stat_str(&adapter->hw,
+-								 v_retval));
+-					iavf_print_cloud_filter(adapter,
+-								  &cf->f);
++							       v_retval));
++					iavf_print_cloud_filter(adapter, &cf->f);
+ 				}
+ 			}
+ 			}
+ 			break;
+ 		default:
+ 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
+-				v_retval,
+-				iavf_stat_str(&adapter->hw, v_retval),
++				v_retval, iavf_stat_str(&adapter->hw, v_retval),
+ 				v_opcode);
+ 		}
+ 	}
+@@ -1402,8 +1385,7 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		 * care about that.
+ 		 */
+ 		if (msglen && CLIENT_ENABLED(adapter))
+-			iavf_notify_client_message(&adapter->vsi,
+-						     msg, msglen);
++			iavf_notify_client_message(&adapter->vsi, msg, msglen);
+ 		break;
  
- 	i40e_create_tx_ctx(tx_ring, cd_type_cmd_tso_mss,
- 			   cd_tunneling, cd_l2tag2);
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.h b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-index 5dbb1cd52feb..db2ec715f3b5 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-@@ -186,7 +186,7 @@ static inline bool i40e_test_staterr(union i40e_rx_desc *rx_desc,
- 		(i)++;				\
- 		if ((i) == (r)->count)		\
- 			i = 0;			\
--		(n) = I40E_RX_DESC((r), (i));	\
-+		(n) = IAVF_RX_DESC((r), (i));	\
- 	} while (0)
- 
- #define I40E_RX_NEXT_DESC_PREFETCH(r, i, n)		\
+ 	case VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP:
+@@ -1412,6 +1394,7 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		break;
+ 	case VIRTCHNL_OP_GET_RSS_HENA_CAPS: {
+ 		struct virtchnl_rss_hena *vrh = (struct virtchnl_rss_hena *)msg;
++
+ 		if (msglen == sizeof(*vrh))
+ 			adapter->hena = vrh->hena;
+ 		else
 -- 
 2.14.4
 
