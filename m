@@ -1,187 +1,168 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 14 Sep 2018 17:37:50 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 07/14] iavf: rename device ID
- defines
+Date: Fri, 14 Sep 2018 17:37:48 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 05/14] iavf: move i40evf files
+ to new name
 In-Reply-To: <20180915003757.169108-1-jesse.brandeburg@intel.com>
 References: <20180915003757.169108-1-jesse.brandeburg@intel.com>
-Message-ID: <20180915003757.169108-8-jesse.brandeburg@intel.com>
+Message-ID: <20180915003757.169108-6-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Rename the device ID defines to have IAVF in them
-and remove all the unused defines.
+Simply move the i40evf files to the new name, updating the #includes
+to track the new names, and updating the Makefile as well.
+
+A future patch will remove the i40e references (after the code
+removal patches later in this series).
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/i40e_adminq.c | 22 +++++++--------
- drivers/net/ethernet/intel/iavf/i40e_common.c | 29 +++----------------
- drivers/net/ethernet/intel/iavf/i40e_devids.h | 40 ++++++---------------------
- drivers/net/ethernet/intel/iavf/i40e_type.h   |  6 ----
- drivers/net/ethernet/intel/iavf/iavf_main.c   |  8 +++---
- 5 files changed, 27 insertions(+), 78 deletions(-)
+ drivers/net/ethernet/intel/iavf/Makefile                              | 4 ++--
+ drivers/net/ethernet/intel/iavf/{i40evf.h => iavf.h}                  | 2 +-
+ drivers/net/ethernet/intel/iavf/{i40evf_client.c => iavf_client.c}    | 4 ++--
+ drivers/net/ethernet/intel/iavf/{i40evf_client.h => iavf_client.h}    | 0
+ drivers/net/ethernet/intel/iavf/{i40evf_ethtool.c => iavf_ethtool.c}  | 2 +-
+ drivers/net/ethernet/intel/iavf/{i40evf_main.c => iavf_main.c}        | 4 ++--
+ drivers/net/ethernet/intel/iavf/{i40e_txrx.c => iavf_txrx.c}          | 2 +-
+ drivers/net/ethernet/intel/iavf/{i40e_txrx.h => iavf_txrx.h}          | 0
+ .../net/ethernet/intel/iavf/{i40evf_virtchnl.c => iavf_virtchnl.c}    | 4 ++--
+ 9 files changed, 11 insertions(+), 11 deletions(-)
+ rename drivers/net/ethernet/intel/iavf/{i40evf.h => iavf.h} (99%)
+ rename drivers/net/ethernet/intel/iavf/{i40evf_client.c => iavf_client.c} (99%)
+ rename drivers/net/ethernet/intel/iavf/{i40evf_client.h => iavf_client.h} (100%)
+ rename drivers/net/ethernet/intel/iavf/{i40evf_ethtool.c => iavf_ethtool.c} (99%)
+ rename drivers/net/ethernet/intel/iavf/{i40evf_main.c => iavf_main.c} (99%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_txrx.c => iavf_txrx.c} (99%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_txrx.h => iavf_txrx.h} (100%)
+ rename drivers/net/ethernet/intel/iavf/{i40evf_virtchnl.c => iavf_virtchnl.c} (99%)
 
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.c b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-index 50e0f1225298..8110b92fa2b0 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
-@@ -16,18 +16,16 @@
- static void i40e_adminq_init_regs(struct i40e_hw *hw)
- {
- 	/* set head and tail registers in our local struct */
--	if (i40e_is_vf(hw)) {
--		hw->aq.asq.tail = IAVF_VF_ATQT1;
--		hw->aq.asq.head = IAVF_VF_ATQH1;
--		hw->aq.asq.len  = IAVF_VF_ATQLEN1;
--		hw->aq.asq.bal  = IAVF_VF_ATQBAL1;
--		hw->aq.asq.bah  = IAVF_VF_ATQBAH1;
--		hw->aq.arq.tail = IAVF_VF_ARQT1;
--		hw->aq.arq.head = IAVF_VF_ARQH1;
--		hw->aq.arq.len  = IAVF_VF_ARQLEN1;
--		hw->aq.arq.bal  = IAVF_VF_ARQBAL1;
--		hw->aq.arq.bah  = IAVF_VF_ARQBAH1;
--	}
-+	hw->aq.asq.tail = IAVF_VF_ATQT1;
-+	hw->aq.asq.head = IAVF_VF_ATQH1;
-+	hw->aq.asq.len  = IAVF_VF_ATQLEN1;
-+	hw->aq.asq.bal  = IAVF_VF_ATQBAL1;
-+	hw->aq.asq.bah  = IAVF_VF_ATQBAH1;
-+	hw->aq.arq.tail = IAVF_VF_ARQT1;
-+	hw->aq.arq.head = IAVF_VF_ARQH1;
-+	hw->aq.arq.len  = IAVF_VF_ARQLEN1;
-+	hw->aq.arq.bal  = IAVF_VF_ARQBAL1;
-+	hw->aq.arq.bah  = IAVF_VF_ARQBAH1;
- }
+diff --git a/drivers/net/ethernet/intel/iavf/Makefile b/drivers/net/ethernet/intel/iavf/Makefile
+index ce2dce1e1ebf..fa4c43be2266 100644
+--- a/drivers/net/ethernet/intel/iavf/Makefile
++++ b/drivers/net/ethernet/intel/iavf/Makefile
+@@ -11,5 +11,5 @@ subdir-ccflags-y += -I$(src)
  
- /**
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_common.c b/drivers/net/ethernet/intel/iavf/i40e_common.c
-index 733e5cfeaf71..b97e8925d20e 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_common.c
-+++ b/drivers/net/ethernet/intel/iavf/i40e_common.c
-@@ -19,33 +19,12 @@ iavf_status i40e_set_mac_type(struct i40e_hw *hw)
+ obj-$(CONFIG_IAVF) += iavf.o
  
- 	if (hw->vendor_id == PCI_VENDOR_ID_INTEL) {
- 		switch (hw->device_id) {
--		case I40E_DEV_ID_SFP_XL710:
--		case I40E_DEV_ID_QEMU:
--		case I40E_DEV_ID_KX_B:
--		case I40E_DEV_ID_KX_C:
--		case I40E_DEV_ID_QSFP_A:
--		case I40E_DEV_ID_QSFP_B:
--		case I40E_DEV_ID_QSFP_C:
--		case I40E_DEV_ID_10G_BASE_T:
--		case I40E_DEV_ID_10G_BASE_T4:
--		case I40E_DEV_ID_20G_KR2:
--		case I40E_DEV_ID_20G_KR2_A:
--		case I40E_DEV_ID_25G_B:
--		case I40E_DEV_ID_25G_SFP28:
--			hw->mac.type = I40E_MAC_XL710;
--			break;
--		case I40E_DEV_ID_SFP_X722:
--		case I40E_DEV_ID_1G_BASE_T_X722:
--		case I40E_DEV_ID_10G_BASE_T_X722:
--		case I40E_DEV_ID_SFP_I_X722:
--			hw->mac.type = I40E_MAC_X722;
--			break;
--		case I40E_DEV_ID_X722_VF:
-+		case IAVF_DEV_ID_X722_VF:
- 			hw->mac.type = I40E_MAC_X722_VF;
- 			break;
--		case I40E_DEV_ID_VF:
--		case I40E_DEV_ID_VF_HV:
--		case I40E_DEV_ID_ADAPTIVE_VF:
-+		case IAVF_DEV_ID_VF:
-+		case IAVF_DEV_ID_VF_HV:
-+		case IAVF_DEV_ID_ADAPTIVE_VF:
- 			hw->mac.type = I40E_MAC_VF;
- 			break;
- 		default:
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_devids.h b/drivers/net/ethernet/intel/iavf/i40e_devids.h
-index f300bf271824..8eb7b697e96c 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_devids.h
-+++ b/drivers/net/ethernet/intel/iavf/i40e_devids.h
-@@ -1,34 +1,12 @@
- /* SPDX-License-Identifier: GPL-2.0 */
+-iavf-objs := i40evf_main.o i40evf_ethtool.o i40evf_virtchnl.o \
+-		 i40e_txrx.o i40e_common.o i40e_adminq.o i40evf_client.o
++iavf-objs := iavf_main.o iavf_ethtool.o iavf_virtchnl.o \
++		 iavf_txrx.o i40e_common.o i40e_adminq.o iavf_client.o
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+similarity index 99%
+rename from drivers/net/ethernet/intel/iavf/i40evf.h
+rename to drivers/net/ethernet/intel/iavf/iavf.h
+index 19a93bfdb65c..c7ce2db958b0 100644
+--- a/drivers/net/ethernet/intel/iavf/i40evf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -36,7 +36,7 @@
+ 
+ #include "i40e_type.h"
+ #include <linux/avf/virtchnl.h>
+-#include "i40e_txrx.h"
++#include "iavf_txrx.h"
+ 
+ #define DEFAULT_DEBUG_LEVEL_SHIFT 3
+ #define PFX "iavf: "
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf_client.c b/drivers/net/ethernet/intel/iavf/iavf_client.c
+similarity index 99%
+rename from drivers/net/ethernet/intel/iavf/i40evf_client.c
+rename to drivers/net/ethernet/intel/iavf/iavf_client.c
+index d2660659174d..16971bfc5e43 100644
+--- a/drivers/net/ethernet/intel/iavf/i40evf_client.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_client.c
+@@ -4,9 +4,9 @@
+ #include <linux/list.h>
+ #include <linux/errno.h>
+ 
+-#include "i40evf.h"
++#include "iavf.h"
+ #include "i40e_prototype.h"
+-#include "i40evf_client.h"
++#include "iavf_client.h"
+ 
+ static
+ const char iavf_client_interface_version_str[] = IAVF_CLIENT_VERSION_STR;
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf_client.h b/drivers/net/ethernet/intel/iavf/iavf_client.h
+similarity index 100%
+rename from drivers/net/ethernet/intel/iavf/i40evf_client.h
+rename to drivers/net/ethernet/intel/iavf/iavf_client.h
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+similarity index 99%
+rename from drivers/net/ethernet/intel/iavf/i40evf_ethtool.c
+rename to drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 0277df40e53f..74a142802074 100644
+--- a/drivers/net/ethernet/intel/iavf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -2,7 +2,7 @@
  /* Copyright(c) 2013 - 2018 Intel Corporation. */
  
--#ifndef _I40E_DEVIDS_H_
--#define _I40E_DEVIDS_H_
--
--/* Device IDs */
--#define I40E_DEV_ID_SFP_XL710		0x1572
--#define I40E_DEV_ID_QEMU		0x1574
--#define I40E_DEV_ID_KX_B		0x1580
--#define I40E_DEV_ID_KX_C		0x1581
--#define I40E_DEV_ID_QSFP_A		0x1583
--#define I40E_DEV_ID_QSFP_B		0x1584
--#define I40E_DEV_ID_QSFP_C		0x1585
--#define I40E_DEV_ID_10G_BASE_T		0x1586
--#define I40E_DEV_ID_20G_KR2		0x1587
--#define I40E_DEV_ID_20G_KR2_A		0x1588
--#define I40E_DEV_ID_10G_BASE_T4		0x1589
--#define I40E_DEV_ID_25G_B		0x158A
--#define I40E_DEV_ID_25G_SFP28		0x158B
--#define I40E_DEV_ID_VF			0x154C
--#define I40E_DEV_ID_VF_HV		0x1571
--#define I40E_DEV_ID_ADAPTIVE_VF		0x1889
--#define I40E_DEV_ID_SFP_X722		0x37D0
--#define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
--#define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
--#define I40E_DEV_ID_SFP_I_X722		0x37D3
--#define I40E_DEV_ID_X722_VF		0x37CD
--
--#define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
--					 (d) == I40E_DEV_ID_QSFP_B  || \
--					 (d) == I40E_DEV_ID_QSFP_C)
--
--#endif /* _I40E_DEVIDS_H_ */
-+#ifndef _IAVF_DEVIDS_H_
-+#define _IAVF_DEVIDS_H_
-+
-+/* Device IDs for the VF driver */
-+#define IAVF_DEV_ID_VF			0x154C
-+#define IAVF_DEV_ID_VF_HV		0x1571
-+#define IAVF_DEV_ID_ADAPTIVE_VF		0x1889
-+#define IAVF_DEV_ID_X722_VF		0x37CD
-+#endif /* _IAVF_DEVIDS_H_ */
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_type.h b/drivers/net/ethernet/intel/iavf/i40e_type.h
-index eea5b86a37b4..bcb1805a2f3a 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/iavf/i40e_type.h
-@@ -193,12 +193,6 @@ struct i40e_hw {
- 	char err_str[16];
- };
+ /* ethtool support for iavf */
+-#include "i40evf.h"
++#include "iavf.h"
  
--static inline bool i40e_is_vf(struct i40e_hw *hw)
--{
--	return (hw->mac.type == I40E_MAC_VF ||
--		hw->mac.type == I40E_MAC_X722_VF);
--}
--
- struct i40e_driver_version {
- 	u8 major_version;
- 	u8 minor_version;
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 01fd440b4bbe..5a3884b65ca8 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+ #include <linux/uaccess.h>
+ 
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+similarity index 99%
+rename from drivers/net/ethernet/intel/iavf/i40evf_main.c
+rename to drivers/net/ethernet/intel/iavf/iavf_main.c
+index 600ea4040af2..7d815ace2d98 100644
+--- a/drivers/net/ethernet/intel/iavf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -41,10 +41,10 @@ static const char iavf_copyright[] =
-  *   Class, Class Mask, private data (not used) }
-  */
- static const struct pci_device_id iavf_pci_tbl[] = {
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_VF_HV), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_X722_VF), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_ADAPTIVE_VF), 0},
-+	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_VF), 0},
-+	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_VF_HV), 0},
-+	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_X722_VF), 0},
-+	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_ADAPTIVE_VF), 0},
- 	/* required last entry */
- 	{0, }
- };
+@@ -1,9 +1,9 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright(c) 2013 - 2018 Intel Corporation. */
+ 
+-#include "i40evf.h"
++#include "iavf.h"
+ #include "i40e_prototype.h"
+-#include "i40evf_client.h"
++#include "iavf_client.h"
+ /* All iavf tracepoints are defined by the include below, which must
+  * be included exactly once across the whole kernel with
+  * CREATE_TRACE_POINTS defined
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+similarity index 99%
+rename from drivers/net/ethernet/intel/iavf/i40e_txrx.c
+rename to drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index 28892a6e730c..d288694a6c83 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -4,7 +4,7 @@
+ #include <linux/prefetch.h>
+ #include <net/busy_poll.h>
+ 
+-#include "i40evf.h"
++#include "iavf.h"
+ #include "i40e_trace.h"
+ #include "i40e_prototype.h"
+ 
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_txrx.h b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
+similarity index 100%
+rename from drivers/net/ethernet/intel/iavf/i40e_txrx.h
+rename to drivers/net/ethernet/intel/iavf/iavf_txrx.h
+diff --git a/drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+similarity index 99%
+rename from drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c
+rename to drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 6a2bc501658c..720fe010dbbd 100644
+--- a/drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1,9 +1,9 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright(c) 2013 - 2018 Intel Corporation. */
+ 
+-#include "i40evf.h"
++#include "iavf.h"
+ #include "i40e_prototype.h"
+-#include "i40evf_client.h"
++#include "iavf_client.h"
+ 
+ /* busy wait delay in msec */
+ #define IAVF_BUSY_WAIT_DELAY 10
 -- 
 2.14.4
 
