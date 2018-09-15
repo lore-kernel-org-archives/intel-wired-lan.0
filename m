@@ -1,168 +1,827 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 14 Sep 2018 17:37:48 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 05/14] iavf: move i40evf files
- to new name
+Date: Fri, 14 Sep 2018 17:37:52 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 09/14] iavf: rename i40e_hw to
+ iavf_hw
 In-Reply-To: <20180915003757.169108-1-jesse.brandeburg@intel.com>
 References: <20180915003757.169108-1-jesse.brandeburg@intel.com>
-Message-ID: <20180915003757.169108-6-jesse.brandeburg@intel.com>
+Message-ID: <20180915003757.169108-10-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Simply move the i40evf files to the new name, updating the #includes
-to track the new names, and updating the Makefile as well.
-
-A future patch will remove the i40e references (after the code
-removal patches later in this series).
+Fix up the i40e_hw names to new name, including versions
+inside other strings.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/Makefile                              | 4 ++--
- drivers/net/ethernet/intel/iavf/{i40evf.h => iavf.h}                  | 2 +-
- drivers/net/ethernet/intel/iavf/{i40evf_client.c => iavf_client.c}    | 4 ++--
- drivers/net/ethernet/intel/iavf/{i40evf_client.h => iavf_client.h}    | 0
- drivers/net/ethernet/intel/iavf/{i40evf_ethtool.c => iavf_ethtool.c}  | 2 +-
- drivers/net/ethernet/intel/iavf/{i40evf_main.c => iavf_main.c}        | 4 ++--
- drivers/net/ethernet/intel/iavf/{i40e_txrx.c => iavf_txrx.c}          | 2 +-
- drivers/net/ethernet/intel/iavf/{i40e_txrx.h => iavf_txrx.h}          | 0
- .../net/ethernet/intel/iavf/{i40evf_virtchnl.c => iavf_virtchnl.c}    | 4 ++--
- 9 files changed, 11 insertions(+), 11 deletions(-)
- rename drivers/net/ethernet/intel/iavf/{i40evf.h => iavf.h} (99%)
- rename drivers/net/ethernet/intel/iavf/{i40evf_client.c => iavf_client.c} (99%)
- rename drivers/net/ethernet/intel/iavf/{i40evf_client.h => iavf_client.h} (100%)
- rename drivers/net/ethernet/intel/iavf/{i40evf_ethtool.c => iavf_ethtool.c} (99%)
- rename drivers/net/ethernet/intel/iavf/{i40evf_main.c => iavf_main.c} (99%)
- rename drivers/net/ethernet/intel/iavf/{i40e_txrx.c => iavf_txrx.c} (99%)
- rename drivers/net/ethernet/intel/iavf/{i40e_txrx.h => iavf_txrx.h} (100%)
- rename drivers/net/ethernet/intel/iavf/{i40evf_virtchnl.c => iavf_virtchnl.c} (99%)
+ drivers/net/ethernet/intel/iavf/i40e_adminq.c    | 42 +++++++--------
+ drivers/net/ethernet/intel/iavf/i40e_alloc.h     | 21 +++-----
+ drivers/net/ethernet/intel/iavf/i40e_common.c    | 30 +++++------
+ drivers/net/ethernet/intel/iavf/i40e_prototype.h | 65 +++++++++++-------------
+ drivers/net/ethernet/intel/iavf/i40e_type.h      | 10 ++--
+ drivers/net/ethernet/intel/iavf/iavf.h           |  2 +-
+ drivers/net/ethernet/intel/iavf/iavf_main.c      | 52 +++++++++----------
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c      |  2 +-
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c  |  6 +--
+ 9 files changed, 111 insertions(+), 119 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/Makefile b/drivers/net/ethernet/intel/iavf/Makefile
-index ce2dce1e1ebf..fa4c43be2266 100644
---- a/drivers/net/ethernet/intel/iavf/Makefile
-+++ b/drivers/net/ethernet/intel/iavf/Makefile
-@@ -11,5 +11,5 @@ subdir-ccflags-y += -I$(src)
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.c b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
+index 69dfdfd69796..480c3e8c38c8 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
+@@ -13,7 +13,7 @@
+  *
+  *  This assumes the alloc_asq and alloc_arq functions have already been called
+  **/
+-static void i40e_adminq_init_regs(struct i40e_hw *hw)
++static void i40e_adminq_init_regs(struct iavf_hw *hw)
+ {
+ 	/* set head and tail registers in our local struct */
+ 	hw->aq.asq.tail = IAVF_VF_ATQT1;
+@@ -32,7 +32,7 @@ static void i40e_adminq_init_regs(struct i40e_hw *hw)
+  *  i40e_alloc_adminq_asq_ring - Allocate Admin Queue send rings
+  *  @hw: pointer to the hardware structure
+  **/
+-static iavf_status i40e_alloc_adminq_asq_ring(struct i40e_hw *hw)
++static iavf_status i40e_alloc_adminq_asq_ring(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code;
  
- obj-$(CONFIG_IAVF) += iavf.o
+@@ -59,7 +59,7 @@ static iavf_status i40e_alloc_adminq_asq_ring(struct i40e_hw *hw)
+  *  i40e_alloc_adminq_arq_ring - Allocate Admin Queue receive rings
+  *  @hw: pointer to the hardware structure
+  **/
+-static iavf_status i40e_alloc_adminq_arq_ring(struct i40e_hw *hw)
++static iavf_status i40e_alloc_adminq_arq_ring(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code;
  
--iavf-objs := i40evf_main.o i40evf_ethtool.o i40evf_virtchnl.o \
--		 i40e_txrx.o i40e_common.o i40e_adminq.o i40evf_client.o
-+iavf-objs := iavf_main.o iavf_ethtool.o iavf_virtchnl.o \
-+		 iavf_txrx.o i40e_common.o i40e_adminq.o iavf_client.o
-diff --git a/drivers/net/ethernet/intel/iavf/i40evf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-similarity index 99%
-rename from drivers/net/ethernet/intel/iavf/i40evf.h
-rename to drivers/net/ethernet/intel/iavf/iavf.h
-index 19a93bfdb65c..c7ce2db958b0 100644
---- a/drivers/net/ethernet/intel/iavf/i40evf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -36,7 +36,7 @@
+@@ -79,7 +79,7 @@ static iavf_status i40e_alloc_adminq_arq_ring(struct i40e_hw *hw)
+  *  This assumes the posted send buffers have already been cleaned
+  *  and de-allocated
+  **/
+-static void i40e_free_adminq_asq(struct i40e_hw *hw)
++static void i40e_free_adminq_asq(struct iavf_hw *hw)
+ {
+ 	i40e_free_dma_mem(hw, &hw->aq.asq.desc_buf);
+ }
+@@ -91,7 +91,7 @@ static void i40e_free_adminq_asq(struct i40e_hw *hw)
+  *  This assumes the posted receive buffers have already been cleaned
+  *  and de-allocated
+  **/
+-static void i40e_free_adminq_arq(struct i40e_hw *hw)
++static void i40e_free_adminq_arq(struct iavf_hw *hw)
+ {
+ 	i40e_free_dma_mem(hw, &hw->aq.arq.desc_buf);
+ }
+@@ -100,7 +100,7 @@ static void i40e_free_adminq_arq(struct i40e_hw *hw)
+  *  i40e_alloc_arq_bufs - Allocate pre-posted buffers for the receive queue
+  *  @hw: pointer to the hardware structure
+  **/
+-static iavf_status i40e_alloc_arq_bufs(struct i40e_hw *hw)
++static iavf_status i40e_alloc_arq_bufs(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code;
+ 	struct i40e_aq_desc *desc;
+@@ -167,7 +167,7 @@ static iavf_status i40e_alloc_arq_bufs(struct i40e_hw *hw)
+  *  i40e_alloc_asq_bufs - Allocate empty buffer structs for the send queue
+  *  @hw: pointer to the hardware structure
+  **/
+-static iavf_status i40e_alloc_asq_bufs(struct i40e_hw *hw)
++static iavf_status i40e_alloc_asq_bufs(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code;
+ 	struct i40e_dma_mem *bi;
+@@ -207,7 +207,7 @@ static iavf_status i40e_alloc_asq_bufs(struct i40e_hw *hw)
+  *  i40e_free_arq_bufs - Free receive queue buffer info elements
+  *  @hw: pointer to the hardware structure
+  **/
+-static void i40e_free_arq_bufs(struct i40e_hw *hw)
++static void i40e_free_arq_bufs(struct iavf_hw *hw)
+ {
+ 	int i;
  
- #include "i40e_type.h"
- #include <linux/avf/virtchnl.h>
--#include "i40e_txrx.h"
-+#include "iavf_txrx.h"
+@@ -226,7 +226,7 @@ static void i40e_free_arq_bufs(struct i40e_hw *hw)
+  *  i40e_free_asq_bufs - Free send queue buffer info elements
+  *  @hw: pointer to the hardware structure
+  **/
+-static void i40e_free_asq_bufs(struct i40e_hw *hw)
++static void i40e_free_asq_bufs(struct iavf_hw *hw)
+ {
+ 	int i;
  
- #define DEFAULT_DEBUG_LEVEL_SHIFT 3
- #define PFX "iavf: "
-diff --git a/drivers/net/ethernet/intel/iavf/i40evf_client.c b/drivers/net/ethernet/intel/iavf/iavf_client.c
-similarity index 99%
-rename from drivers/net/ethernet/intel/iavf/i40evf_client.c
-rename to drivers/net/ethernet/intel/iavf/iavf_client.c
-index d2660659174d..16971bfc5e43 100644
---- a/drivers/net/ethernet/intel/iavf/i40evf_client.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_client.c
-@@ -4,9 +4,9 @@
- #include <linux/list.h>
- #include <linux/errno.h>
+@@ -251,7 +251,7 @@ static void i40e_free_asq_bufs(struct i40e_hw *hw)
+  *
+  *  Configure base address and length registers for the transmit queue
+  **/
+-static iavf_status i40e_config_asq_regs(struct i40e_hw *hw)
++static iavf_status i40e_config_asq_regs(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code = 0;
+ 	u32 reg = 0;
+@@ -280,7 +280,7 @@ static iavf_status i40e_config_asq_regs(struct i40e_hw *hw)
+  *
+  * Configure base address and length registers for the receive (event queue)
+  **/
+-static iavf_status i40e_config_arq_regs(struct i40e_hw *hw)
++static iavf_status i40e_config_arq_regs(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code = 0;
+ 	u32 reg = 0;
+@@ -319,7 +319,7 @@ static iavf_status i40e_config_arq_regs(struct i40e_hw *hw)
+  *  Do *NOT* hold the lock when calling this as the memory allocation routines
+  *  called are not going to be atomic context safe
+  **/
+-static iavf_status i40e_init_asq(struct i40e_hw *hw)
++static iavf_status i40e_init_asq(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code = 0;
  
--#include "i40evf.h"
-+#include "iavf.h"
- #include "i40e_prototype.h"
--#include "i40evf_client.h"
-+#include "iavf_client.h"
+@@ -378,7 +378,7 @@ static iavf_status i40e_init_asq(struct i40e_hw *hw)
+  *  Do *NOT* hold the lock when calling this as the memory allocation routines
+  *  called are not going to be atomic context safe
+  **/
+-static iavf_status i40e_init_arq(struct i40e_hw *hw)
++static iavf_status i40e_init_arq(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code = 0;
  
- static
- const char iavf_client_interface_version_str[] = IAVF_CLIENT_VERSION_STR;
-diff --git a/drivers/net/ethernet/intel/iavf/i40evf_client.h b/drivers/net/ethernet/intel/iavf/iavf_client.h
-similarity index 100%
-rename from drivers/net/ethernet/intel/iavf/i40evf_client.h
-rename to drivers/net/ethernet/intel/iavf/iavf_client.h
-diff --git a/drivers/net/ethernet/intel/iavf/i40evf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-similarity index 99%
-rename from drivers/net/ethernet/intel/iavf/i40evf_ethtool.c
-rename to drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 0277df40e53f..74a142802074 100644
---- a/drivers/net/ethernet/intel/iavf/i40evf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -2,7 +2,7 @@
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
+@@ -430,7 +430,7 @@ static iavf_status i40e_init_arq(struct i40e_hw *hw)
+  *
+  *  The main shutdown routine for the Admin Send Queue
+  **/
+-static iavf_status i40e_shutdown_asq(struct i40e_hw *hw)
++static iavf_status i40e_shutdown_asq(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code = 0;
  
- /* ethtool support for iavf */
--#include "i40evf.h"
-+#include "iavf.h"
+@@ -464,7 +464,7 @@ static iavf_status i40e_shutdown_asq(struct i40e_hw *hw)
+  *
+  *  The main shutdown routine for the Admin Receive Queue
+  **/
+-static iavf_status i40e_shutdown_arq(struct i40e_hw *hw)
++static iavf_status i40e_shutdown_arq(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code = 0;
  
- #include <linux/uaccess.h>
+@@ -503,7 +503,7 @@ static iavf_status i40e_shutdown_arq(struct i40e_hw *hw)
+  *     - hw->aq.arq_buf_size
+  *     - hw->aq.asq_buf_size
+  **/
+-iavf_status iavf_init_adminq(struct i40e_hw *hw)
++iavf_status iavf_init_adminq(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code;
  
-diff --git a/drivers/net/ethernet/intel/iavf/i40evf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-similarity index 99%
-rename from drivers/net/ethernet/intel/iavf/i40evf_main.c
-rename to drivers/net/ethernet/intel/iavf/iavf_main.c
-index 600ea4040af2..7d815ace2d98 100644
---- a/drivers/net/ethernet/intel/iavf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1,9 +1,9 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
+@@ -547,7 +547,7 @@ iavf_status iavf_init_adminq(struct i40e_hw *hw)
+  *  iavf_shutdown_adminq - shutdown routine for the Admin Queue
+  *  @hw: pointer to the hardware structure
+  **/
+-iavf_status iavf_shutdown_adminq(struct i40e_hw *hw)
++iavf_status iavf_shutdown_adminq(struct iavf_hw *hw)
+ {
+ 	iavf_status ret_code = 0;
  
--#include "i40evf.h"
-+#include "iavf.h"
- #include "i40e_prototype.h"
--#include "i40evf_client.h"
-+#include "iavf_client.h"
- /* All iavf tracepoints are defined by the include below, which must
-  * be included exactly once across the whole kernel with
-  * CREATE_TRACE_POINTS defined
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-similarity index 99%
-rename from drivers/net/ethernet/intel/iavf/i40e_txrx.c
-rename to drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 28892a6e730c..d288694a6c83 100644
---- a/drivers/net/ethernet/intel/iavf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -566,7 +566,7 @@ iavf_status iavf_shutdown_adminq(struct i40e_hw *hw)
+  *
+  *  returns the number of free desc
+  **/
+-static u16 i40e_clean_asq(struct i40e_hw *hw)
++static u16 i40e_clean_asq(struct iavf_hw *hw)
+ {
+ 	struct i40e_adminq_ring *asq = &hw->aq.asq;
+ 	struct i40e_asq_cmd_details *details;
+@@ -608,7 +608,7 @@ static u16 i40e_clean_asq(struct i40e_hw *hw)
+  *  Returns true if the firmware has processed all descriptors on the
+  *  admin send queue. Returns false if there are still requests pending.
+  **/
+-bool iavf_asq_done(struct i40e_hw *hw)
++bool iavf_asq_done(struct iavf_hw *hw)
+ {
+ 	/* AQ designers suggest use of head for better
+ 	 * timing reliability than DD bit
+@@ -627,7 +627,7 @@ bool iavf_asq_done(struct i40e_hw *hw)
+  *  This is the main send command driver routine for the Admin Queue send
+  *  queue.  It runs the queue, cleans the queue, etc
+  **/
+-iavf_status iavf_asq_send_command(struct i40e_hw *hw, struct i40e_aq_desc *desc,
++iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+ 				  void *buff, /* can be NULL */
+ 				  u16  buff_size,
+ 				  struct i40e_asq_cmd_details *cmd_details)
+@@ -839,7 +839,7 @@ void iavf_fill_default_direct_cmd_desc(struct i40e_aq_desc *desc, u16 opcode)
+  *  the contents through e.  It can also return how many events are
+  *  left to process through 'pending'
+  **/
+-iavf_status iavf_clean_arq_element(struct i40e_hw *hw,
++iavf_status iavf_clean_arq_element(struct iavf_hw *hw,
+ 				   struct i40e_arq_event_info *e,
+ 				   u16 *pending)
+ {
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_alloc.h b/drivers/net/ethernet/intel/iavf/i40e_alloc.h
+index de3edf3bc8a4..e70d805dde42 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_alloc.h
++++ b/drivers/net/ethernet/intel/iavf/i40e_alloc.h
 @@ -4,7 +4,7 @@
- #include <linux/prefetch.h>
- #include <net/busy_poll.h>
+ #ifndef _I40E_ALLOC_H_
+ #define _I40E_ALLOC_H_
  
--#include "i40evf.h"
-+#include "iavf.h"
- #include "i40e_trace.h"
- #include "i40e_prototype.h"
+-struct i40e_hw;
++struct iavf_hw;
  
-diff --git a/drivers/net/ethernet/intel/iavf/i40e_txrx.h b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-similarity index 100%
-rename from drivers/net/ethernet/intel/iavf/i40e_txrx.h
-rename to drivers/net/ethernet/intel/iavf/iavf_txrx.h
-diff --git a/drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-similarity index 99%
-rename from drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c
-rename to drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 6a2bc501658c..720fe010dbbd 100644
---- a/drivers/net/ethernet/intel/iavf/i40evf_virtchnl.c
+ /* Memory allocation types */
+ enum i40e_memory_type {
+@@ -20,16 +20,11 @@ enum i40e_memory_type {
+ };
+ 
+ /* prototype for functions used for dynamic memory allocation */
+-iavf_status i40e_allocate_dma_mem(struct i40e_hw *hw,
+-					    struct i40e_dma_mem *mem,
+-					    enum i40e_memory_type type,
+-					    u64 size, u32 alignment);
+-iavf_status i40e_free_dma_mem(struct i40e_hw *hw,
+-					struct i40e_dma_mem *mem);
+-iavf_status i40e_allocate_virt_mem(struct i40e_hw *hw,
+-					     struct i40e_virt_mem *mem,
+-					     u32 size);
+-iavf_status i40e_free_virt_mem(struct i40e_hw *hw,
+-					 struct i40e_virt_mem *mem);
+-
++iavf_status i40e_allocate_dma_mem(struct iavf_hw *hw, struct i40e_dma_mem *mem,
++				  enum i40e_memory_type type, u64 size,
++				  u32 alignment);
++iavf_status i40e_free_dma_mem(struct iavf_hw *hw, struct i40e_dma_mem *mem);
++iavf_status i40e_allocate_virt_mem(struct iavf_hw *hw,
++				   struct i40e_virt_mem *mem, u32 size);
++iavf_status i40e_free_virt_mem(struct iavf_hw *hw, struct i40e_virt_mem *mem);
+ #endif /* _I40E_ALLOC_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_common.c b/drivers/net/ethernet/intel/iavf/i40e_common.c
+index b97e8925d20e..97eb06616cc0 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_common.c
++++ b/drivers/net/ethernet/intel/iavf/i40e_common.c
+@@ -13,7 +13,7 @@
+  * This function sets the mac type of the adapter based on the
+  * vendor ID and device ID stored in the hw structure.
+  **/
+-iavf_status i40e_set_mac_type(struct i40e_hw *hw)
++iavf_status i40e_set_mac_type(struct iavf_hw *hw)
+ {
+ 	iavf_status status = 0;
+ 
+@@ -44,7 +44,7 @@ iavf_status i40e_set_mac_type(struct i40e_hw *hw)
+  * @hw: pointer to the HW structure
+  * @aq_err: the AQ error code to convert
+  **/
+-const char *iavf_aq_str(struct i40e_hw *hw, enum i40e_admin_queue_err aq_err)
++const char *iavf_aq_str(struct iavf_hw *hw, enum i40e_admin_queue_err aq_err)
+ {
+ 	switch (aq_err) {
+ 	case I40E_AQ_RC_OK:
+@@ -104,7 +104,7 @@ const char *iavf_aq_str(struct i40e_hw *hw, enum i40e_admin_queue_err aq_err)
+  * @hw: pointer to the HW structure
+  * @stat_err: the status error code to convert
+  **/
+-const char *iavf_stat_str(struct i40e_hw *hw, iavf_status stat_err)
++const char *iavf_stat_str(struct iavf_hw *hw, iavf_status stat_err)
+ {
+ 	switch (stat_err) {
+ 	case 0:
+@@ -257,7 +257,7 @@ const char *iavf_stat_str(struct i40e_hw *hw, iavf_status stat_err)
+  *
+  * Dumps debug log about adminq command with descriptor contents.
+  **/
+-void iavf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
++void iavf_debug_aq(struct iavf_hw *hw, enum i40e_debug_mask mask, void *desc,
+ 		   void *buffer, u16 buf_len)
+ {
+ 	struct i40e_aq_desc *aq_desc = (struct i40e_aq_desc *)desc;
+@@ -310,7 +310,7 @@ void iavf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
+  *
+  * Returns true if Queue is enabled else false.
+  **/
+-bool iavf_check_asq_alive(struct i40e_hw *hw)
++bool iavf_check_asq_alive(struct iavf_hw *hw)
+ {
+ 	if (hw->aq.asq.len)
+ 		return !!(rd32(hw, hw->aq.asq.len) &
+@@ -327,7 +327,7 @@ bool iavf_check_asq_alive(struct i40e_hw *hw)
+  * Tell the Firmware that we're shutting down the AdminQ and whether
+  * or not the driver is unloading as well.
+  **/
+-iavf_status iavf_aq_queue_shutdown(struct i40e_hw *hw, bool unloading)
++iavf_status iavf_aq_queue_shutdown(struct iavf_hw *hw, bool unloading)
+ {
+ 	struct i40e_aq_desc desc;
+ 	struct i40e_aqc_queue_shutdown *cmd =
+@@ -354,7 +354,7 @@ iavf_status iavf_aq_queue_shutdown(struct i40e_hw *hw, bool unloading)
+  *
+  * Internal function to get or set RSS look up table
+  **/
+-static iavf_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
++static iavf_status i40e_aq_get_set_rss_lut(struct iavf_hw *hw,
+ 					   u16 vsi_id, bool pf_lut,
+ 					   u8 *lut, u16 lut_size,
+ 					   bool set)
+@@ -407,7 +407,7 @@ static iavf_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
+  *
+  * get the RSS lookup table, PF or VSI type
+  **/
+-iavf_status iavf_aq_get_rss_lut(struct i40e_hw *hw, u16 vsi_id,
++iavf_status iavf_aq_get_rss_lut(struct iavf_hw *hw, u16 vsi_id,
+ 				bool pf_lut, u8 *lut, u16 lut_size)
+ {
+ 	return i40e_aq_get_set_rss_lut(hw, vsi_id, pf_lut, lut, lut_size,
+@@ -424,7 +424,7 @@ iavf_status iavf_aq_get_rss_lut(struct i40e_hw *hw, u16 vsi_id,
+  *
+  * set the RSS lookup table, PF or VSI type
+  **/
+-iavf_status iavf_aq_set_rss_lut(struct i40e_hw *hw, u16 vsi_id,
++iavf_status iavf_aq_set_rss_lut(struct iavf_hw *hw, u16 vsi_id,
+ 				bool pf_lut, u8 *lut, u16 lut_size)
+ {
+ 	return i40e_aq_get_set_rss_lut(hw, vsi_id, pf_lut, lut, lut_size, true);
+@@ -440,7 +440,7 @@ iavf_status iavf_aq_set_rss_lut(struct i40e_hw *hw, u16 vsi_id,
+  * get the RSS key per VSI
+  **/
+ static
+-iavf_status i40e_aq_get_set_rss_key(struct i40e_hw *hw, u16 vsi_id,
++iavf_status i40e_aq_get_set_rss_key(struct iavf_hw *hw, u16 vsi_id,
+ 				    struct i40e_aqc_get_set_rss_key_data *key,
+ 				    bool set)
+ {
+@@ -479,7 +479,7 @@ iavf_status i40e_aq_get_set_rss_key(struct i40e_hw *hw, u16 vsi_id,
+  * @key: pointer to key info struct
+  *
+  **/
+-iavf_status iavf_aq_get_rss_key(struct i40e_hw *hw, u16 vsi_id,
++iavf_status iavf_aq_get_rss_key(struct iavf_hw *hw, u16 vsi_id,
+ 				struct i40e_aqc_get_set_rss_key_data *key)
+ {
+ 	return i40e_aq_get_set_rss_key(hw, vsi_id, key, false);
+@@ -493,7 +493,7 @@ iavf_status iavf_aq_get_rss_key(struct i40e_hw *hw, u16 vsi_id,
+  *
+  * set the RSS key per VSI
+  **/
+-iavf_status iavf_aq_set_rss_key(struct i40e_hw *hw, u16 vsi_id,
++iavf_status iavf_aq_set_rss_key(struct iavf_hw *hw, u16 vsi_id,
+ 				struct i40e_aqc_get_set_rss_key_data *key)
+ {
+ 	return i40e_aq_get_set_rss_key(hw, vsi_id, key, true);
+@@ -877,7 +877,7 @@ struct i40e_rx_ptype_decoded iavf_ptype_lookup[] = {
+  * is sent asynchronously, i.e. iavf_asq_send_command() does not wait for
+  * completion before returning.
+  **/
+-iavf_status iavf_aq_send_msg_to_pf(struct i40e_hw *hw,
++iavf_status iavf_aq_send_msg_to_pf(struct iavf_hw *hw,
+ 				   enum virtchnl_ops v_opcode,
+ 				   iavf_status v_retval, u8 *msg, u16 msglen,
+ 				   struct i40e_asq_cmd_details *cmd_details)
+@@ -914,7 +914,7 @@ iavf_status iavf_aq_send_msg_to_pf(struct i40e_hw *hw,
+  * Given a VF resource message from the PF, populate the hw struct
+  * with appropriate information.
+  **/
+-void iavf_vf_parse_hw_config(struct i40e_hw *hw,
++void iavf_vf_parse_hw_config(struct iavf_hw *hw,
+ 			     struct virtchnl_vf_resource *msg)
+ {
+ 	struct virtchnl_vsi_resource *vsi_res;
+@@ -948,7 +948,7 @@ void iavf_vf_parse_hw_config(struct i40e_hw *hw,
+  * as none will be forthcoming. Immediately after calling this function,
+  * the admin queue should be shut down and (optionally) reinitialized.
+  **/
+-iavf_status iavf_vf_reset(struct i40e_hw *hw)
++iavf_status iavf_vf_reset(struct iavf_hw *hw)
+ {
+ 	return iavf_aq_send_msg_to_pf(hw, VIRTCHNL_OP_RESET_VF,
+ 				      0, NULL, 0, NULL);
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_prototype.h b/drivers/net/ethernet/intel/iavf/i40e_prototype.h
+index f2d52ec2ece0..0497832bc53e 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/iavf/i40e_prototype.h
+@@ -16,42 +16,39 @@
+  */
+ 
+ /* adminq functions */
+-iavf_status iavf_init_adminq(struct i40e_hw *hw);
+-iavf_status iavf_shutdown_adminq(struct i40e_hw *hw);
+-void i40e_adminq_init_ring_data(struct i40e_hw *hw);
+-iavf_status iavf_clean_arq_element(struct i40e_hw *hw,
+-					     struct i40e_arq_event_info *e,
+-					     u16 *events_pending);
+-iavf_status iavf_asq_send_command(struct i40e_hw *hw,
+-				struct i40e_aq_desc *desc,
+-				void *buff, /* can be NULL */
+-				u16  buff_size,
+-				struct i40e_asq_cmd_details *cmd_details);
+-bool iavf_asq_done(struct i40e_hw *hw);
++iavf_status iavf_init_adminq(struct iavf_hw *hw);
++iavf_status iavf_shutdown_adminq(struct iavf_hw *hw);
++void i40e_adminq_init_ring_data(struct iavf_hw *hw);
++iavf_status iavf_clean_arq_element(struct iavf_hw *hw,
++				   struct i40e_arq_event_info *e,
++				   u16 *events_pending);
++iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
++				  void *buff, /* can be NULL */
++				  u16 buff_size,
++				  struct i40e_asq_cmd_details *cmd_details);
++bool iavf_asq_done(struct iavf_hw *hw);
+ 
+ /* debug function for adminq */
+-void iavf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask,
+-		     void *desc, void *buffer, u16 buf_len);
++void iavf_debug_aq(struct iavf_hw *hw, enum i40e_debug_mask mask, void *desc,
++		   void *buffer, u16 buf_len);
+ 
+-void i40e_idle_aq(struct i40e_hw *hw);
+-void iavf_resume_aq(struct i40e_hw *hw);
+-bool iavf_check_asq_alive(struct i40e_hw *hw);
+-iavf_status iavf_aq_queue_shutdown(struct i40e_hw *hw, bool unloading);
+-const char *iavf_aq_str(struct i40e_hw *hw, enum i40e_admin_queue_err aq_err);
+-const char *iavf_stat_str(struct i40e_hw *hw, iavf_status stat_err);
++void i40e_idle_aq(struct iavf_hw *hw);
++void iavf_resume_aq(struct iavf_hw *hw);
++bool iavf_check_asq_alive(struct iavf_hw *hw);
++iavf_status iavf_aq_queue_shutdown(struct iavf_hw *hw, bool unloading);
++const char *iavf_aq_str(struct iavf_hw *hw, enum i40e_admin_queue_err aq_err);
++const char *iavf_stat_str(struct iavf_hw *hw, iavf_status stat_err);
+ 
+-iavf_status iavf_aq_get_rss_lut(struct i40e_hw *hw, u16 seid,
+-				  bool pf_lut, u8 *lut, u16 lut_size);
+-iavf_status iavf_aq_set_rss_lut(struct i40e_hw *hw, u16 seid,
+-				  bool pf_lut, u8 *lut, u16 lut_size);
+-iavf_status iavf_aq_get_rss_key(struct i40e_hw *hw,
+-				  u16 seid,
+-				  struct i40e_aqc_get_set_rss_key_data *key);
+-iavf_status iavf_aq_set_rss_key(struct i40e_hw *hw,
+-				  u16 seid,
+-				  struct i40e_aqc_get_set_rss_key_data *key);
++iavf_status iavf_aq_get_rss_lut(struct iavf_hw *hw, u16 seid, bool pf_lut,
++				u8 *lut, u16 lut_size);
++iavf_status iavf_aq_set_rss_lut(struct iavf_hw *hw, u16 seid,
++				bool pf_lut, u8 *lut, u16 lut_size);
++iavf_status iavf_aq_get_rss_key(struct iavf_hw *hw, u16 seid,
++				struct i40e_aqc_get_set_rss_key_data *key);
++iavf_status iavf_aq_set_rss_key(struct iavf_hw *hw, u16 seid,
++				struct i40e_aqc_get_set_rss_key_data *key);
+ 
+-iavf_status i40e_set_mac_type(struct i40e_hw *hw);
++iavf_status i40e_set_mac_type(struct iavf_hw *hw);
+ 
+ extern struct i40e_rx_ptype_decoded iavf_ptype_lookup[];
+ 
+@@ -61,10 +58,10 @@ static inline struct i40e_rx_ptype_decoded decode_rx_desc_ptype(u8 ptype)
+ }
+ 
+ /* i40e_common for VF drivers*/
+-void iavf_vf_parse_hw_config(struct i40e_hw *hw,
++void iavf_vf_parse_hw_config(struct iavf_hw *hw,
+ 			     struct virtchnl_vf_resource *msg);
+-iavf_status iavf_vf_reset(struct i40e_hw *hw);
+-iavf_status iavf_aq_send_msg_to_pf(struct i40e_hw *hw,
++iavf_status iavf_vf_reset(struct iavf_hw *hw);
++iavf_status iavf_aq_send_msg_to_pf(struct iavf_hw *hw,
+ 				   enum virtchnl_ops v_opcode,
+ 				   iavf_status v_retval, u8 *msg, u16 msglen,
+ 				   struct i40e_asq_cmd_details *cmd_details);
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_type.h b/drivers/net/ethernet/intel/iavf/i40e_type.h
+index bcb1805a2f3a..2ce4203cd0b6 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_type.h
++++ b/drivers/net/ethernet/intel/iavf/i40e_type.h
+@@ -20,8 +20,8 @@
+ #define I40E_MAX_CHAINED_RX_BUFFERS	5
+ 
+ /* forward declaration */
+-struct i40e_hw;
+-typedef void (*I40E_ADMINQ_CALLBACK)(struct i40e_hw *, struct i40e_aq_desc *);
++struct iavf_hw;
++typedef void (*I40E_ADMINQ_CALLBACK)(struct iavf_hw *, struct i40e_aq_desc *);
+ 
+ /* Data type manipulation macros. */
+ 
+@@ -99,7 +99,7 @@ enum i40e_queue_type {
+ 
+ #define I40E_HW_CAP_MAX_GPIO		30
+ /* Capabilities of a PF or a VF or the whole device */
+-struct i40e_hw_capabilities {
++struct iavf_hw_capabilities {
+ 	bool dcb;
+ 	bool fcoe;
+ 	u32 num_vsis;
+@@ -167,7 +167,7 @@ struct i40e_bus_info {
+ #define I40E_MAX_TRAFFIC_CLASS		8
+ #define I40E_MAX_USER_PRIORITY		8
+ /* Port hardware description */
+-struct i40e_hw {
++struct iavf_hw {
+ 	u8 __iomem *hw_addr;
+ 	void *back;
+ 
+@@ -183,7 +183,7 @@ struct i40e_hw {
+ 	u8 revision_id;
+ 
+ 	/* capabilities for entire device and PCI func */
+-	struct i40e_hw_capabilities dev_caps;
++	struct iavf_hw_capabilities dev_caps;
+ 
+ 	/* Admin Queue info */
+ 	struct i40e_adminq_info aq;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index 48ff5e924cfe..8e1a9f0348fe 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -307,7 +307,7 @@ struct iavf_adapter {
+ 	struct net_device *netdev;
+ 	struct pci_dev *pdev;
+ 
+-	struct i40e_hw hw; /* defined in i40e_type.h */
++	struct iavf_hw hw; /* defined in i40e_type.h */
+ 
+ 	enum iavf_state_t state;
+ 	unsigned long crit_section;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 5a3884b65ca8..63c5d97b1658 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -66,7 +66,7 @@ static struct workqueue_struct *iavf_wq;
+  * @size: size of memory requested
+  * @alignment: what to align the allocation to
+  **/
+-iavf_status iavf_allocate_dma_mem_d(struct i40e_hw *hw,
++iavf_status iavf_allocate_dma_mem_d(struct iavf_hw *hw,
+ 				      struct i40e_dma_mem *mem,
+ 				      u64 size, u32 alignment)
+ {
+@@ -89,7 +89,7 @@ iavf_status iavf_allocate_dma_mem_d(struct i40e_hw *hw,
+  * @hw:   pointer to the HW structure
+  * @mem:  ptr to mem struct to free
+  **/
+-iavf_status iavf_free_dma_mem_d(struct i40e_hw *hw, struct i40e_dma_mem *mem)
++iavf_status iavf_free_dma_mem_d(struct iavf_hw *hw, struct i40e_dma_mem *mem)
+ {
+ 	struct iavf_adapter *adapter = (struct iavf_adapter *)hw->back;
+ 
+@@ -106,7 +106,7 @@ iavf_status iavf_free_dma_mem_d(struct i40e_hw *hw, struct i40e_dma_mem *mem)
+  * @mem:  ptr to mem struct to fill out
+  * @size: size of memory requested
+  **/
+-iavf_status iavf_allocate_virt_mem_d(struct i40e_hw *hw,
++iavf_status iavf_allocate_virt_mem_d(struct iavf_hw *hw,
+ 				       struct i40e_virt_mem *mem, u32 size)
+ {
+ 	if (!mem)
+@@ -126,7 +126,7 @@ iavf_status iavf_allocate_virt_mem_d(struct i40e_hw *hw,
+  * @hw:   pointer to the HW structure
+  * @mem:  ptr to mem struct to free
+  **/
+-iavf_status iavf_free_virt_mem_d(struct i40e_hw *hw,
++iavf_status iavf_free_virt_mem_d(struct iavf_hw *hw,
+ 				   struct i40e_virt_mem *mem)
+ {
+ 	if (!mem)
+@@ -149,7 +149,7 @@ void iavf_debug_d(void *hw, u32 mask, char *fmt_str, ...)
+ 	char buf[512];
+ 	va_list argptr;
+ 
+-	if (!(mask & ((struct i40e_hw *)hw)->debug_mask))
++	if (!(mask & ((struct iavf_hw *)hw)->debug_mask))
+ 		return;
+ 
+ 	va_start(argptr, fmt_str);
+@@ -191,7 +191,7 @@ static void iavf_tx_timeout(struct net_device *netdev)
+  **/
+ static void iavf_misc_irq_disable(struct iavf_adapter *adapter)
+ {
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 
+ 	if (!adapter->msix_entries)
+ 		return;
+@@ -209,7 +209,7 @@ static void iavf_misc_irq_disable(struct iavf_adapter *adapter)
+  **/
+ static void iavf_misc_irq_enable(struct iavf_adapter *adapter)
+ {
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 
+ 	wr32(hw, IAVF_VFINT_DYN_CTL01, IAVF_VFINT_DYN_CTL01_INTENA_MASK |
+ 				       IAVF_VFINT_DYN_CTL01_ITR_INDX_MASK);
+@@ -225,7 +225,7 @@ static void iavf_misc_irq_enable(struct iavf_adapter *adapter)
+ static void iavf_irq_disable(struct iavf_adapter *adapter)
+ {
+ 	int i;
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 
+ 	if (!adapter->msix_entries)
+ 		return;
+@@ -244,7 +244,7 @@ static void iavf_irq_disable(struct iavf_adapter *adapter)
+  **/
+ void iavf_irq_enable_queues(struct iavf_adapter *adapter, u32 mask)
+ {
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	int i;
+ 
+ 	for (i = 1; i < adapter->num_msix_vectors; i++) {
+@@ -263,7 +263,7 @@ void iavf_irq_enable_queues(struct iavf_adapter *adapter, u32 mask)
+  **/
+ void iavf_irq_enable(struct iavf_adapter *adapter, bool flush)
+ {
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 
+ 	iavf_misc_irq_enable(adapter);
+ 	iavf_irq_enable_queues(adapter, ~0);
+@@ -281,7 +281,7 @@ static irqreturn_t iavf_msix_aq(int irq, void *data)
+ {
+ 	struct net_device *netdev = data;
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 
+ 	/* handle non-queue interrupts, these reads clear the registers */
+ 	rd32(hw, IAVF_VFINT_ICR01);
+@@ -321,7 +321,7 @@ iavf_map_vector_to_rxq(struct iavf_adapter *adapter, int v_idx, int r_idx)
+ {
+ 	struct i40e_q_vector *q_vector = &adapter->q_vectors[v_idx];
+ 	struct i40e_ring *rx_ring = &adapter->rx_rings[r_idx];
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 
+ 	rx_ring->q_vector = q_vector;
+ 	rx_ring->next = q_vector->rx.ring;
+@@ -347,7 +347,7 @@ iavf_map_vector_to_txq(struct iavf_adapter *adapter, int v_idx, int t_idx)
+ {
+ 	struct i40e_q_vector *q_vector = &adapter->q_vectors[v_idx];
+ 	struct i40e_ring *tx_ring = &adapter->tx_rings[t_idx];
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 
+ 	tx_ring->q_vector = q_vector;
+ 	tx_ring->next = q_vector->tx.ring;
+@@ -594,7 +594,7 @@ static void iavf_free_misc_irq(struct iavf_adapter *adapter)
+  **/
+ static void iavf_configure_tx(struct iavf_adapter *adapter)
+ {
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	int i;
+ 
+ 	for (i = 0; i < adapter->num_active_queues; i++)
+@@ -610,7 +610,7 @@ static void iavf_configure_tx(struct iavf_adapter *adapter)
+ static void iavf_configure_rx(struct iavf_adapter *adapter)
+ {
+ 	unsigned int rx_buf_len = I40E_RXBUFFER_2048;
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	int i;
+ 
+ 	/* Legacy Rx will always default to a 2048 buffer size. */
+@@ -822,7 +822,7 @@ iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
+ static int iavf_set_mac(struct net_device *netdev, void *p)
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	struct iavf_mac_filter *f;
+ 	struct sockaddr *addr = p;
+ 
+@@ -1253,7 +1253,7 @@ static int iavf_config_rss_aq(struct iavf_adapter *adapter)
+ {
+ 	struct i40e_aqc_get_set_rss_key_data *rss_key =
+ 		(struct i40e_aqc_get_set_rss_key_data *)adapter->rss_key;
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	int ret = 0;
+ 
+ 	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
+@@ -1292,7 +1292,7 @@ static int iavf_config_rss_aq(struct iavf_adapter *adapter)
+  **/
+ static int iavf_config_rss_reg(struct iavf_adapter *adapter)
+ {
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	u32 *dw;
+ 	u16 i;
+ 
+@@ -1349,7 +1349,7 @@ static void iavf_fill_rss_lut(struct iavf_adapter *adapter)
+  **/
+ static int iavf_init_rss(struct iavf_adapter *adapter)
+ {
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	int ret;
+ 
+ 	if (!RSS_PF(adapter)) {
+@@ -1577,7 +1577,7 @@ static void iavf_watchdog_task(struct work_struct *work)
+ 	struct iavf_adapter *adapter = container_of(work,
+ 						      struct iavf_adapter,
+ 						      watchdog_task);
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	u32 reg_val;
+ 
+ 	if (test_and_set_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section))
+@@ -1848,7 +1848,7 @@ static void iavf_reset_task(struct work_struct *work)
+ 						      reset_task);
+ 	struct virtchnl_vf_resource *vfres = adapter->vf_res;
+ 	struct net_device *netdev = adapter->netdev;
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	struct iavf_vlan_filter *vlf;
+ 	struct iavf_cloud_filter *cf;
+ 	struct iavf_mac_filter *f;
+@@ -2044,7 +2044,7 @@ static void iavf_adminq_task(struct work_struct *work)
+ {
+ 	struct iavf_adapter *adapter =
+ 		container_of(work, struct iavf_adapter, adminq_task);
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	struct i40e_arq_event_info event;
+ 	enum virtchnl_ops v_op;
+ 	iavf_status ret, v_ret;
+@@ -3241,7 +3241,7 @@ static const struct net_device_ops iavf_netdev_ops = {
+  *
+  * Returns 0 if device is ready to use, or -EBUSY if it's in reset.
+  **/
+-static int iavf_check_reset_complete(struct i40e_hw *hw)
++static int iavf_check_reset_complete(struct iavf_hw *hw)
+ {
+ 	u32 rstat;
+ 	int i;
+@@ -3414,7 +3414,7 @@ static void iavf_init_task(struct work_struct *work)
+ 						      struct iavf_adapter,
+ 						      init_task.work);
+ 	struct net_device *netdev = adapter->netdev;
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	int err, bufsz;
+ 
+@@ -3664,7 +3664,7 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ {
+ 	struct net_device *netdev;
+ 	struct iavf_adapter *adapter = NULL;
+-	struct i40e_hw *hw = NULL;
++	struct iavf_hw *hw = NULL;
+ 	int err;
+ 
+ 	err = pci_enable_device(pdev);
+@@ -3870,7 +3870,7 @@ static void iavf_remove(struct pci_dev *pdev)
+ 	struct iavf_vlan_filter *vlf, *vlftmp;
+ 	struct iavf_mac_filter *f, *ftmp;
+ 	struct iavf_cloud_filter *cf, *cftmp;
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	int err;
+ 	/* Indicate we are in remove and not to run reset_task */
+ 	set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index 01ec3944c3c9..66d9f1bf9467 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -1627,7 +1627,7 @@ static inline u32 i40e_buildreg_itr(const int type, u16 itr)
+ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+ 					  struct i40e_q_vector *q_vector)
+ {
+-	struct i40e_hw *hw = &vsi->back->hw;
++	struct iavf_hw *hw = &vsi->back->hw;
+ 	u32 intval;
+ 
+ 	/* These will do nothing if dynamic updates are not enabled */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 720fe010dbbd..fdf4c5ffbe6f 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -1,9 +1,9 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
+@@ -21,7 +21,7 @@
+ static int iavf_send_pf_msg(struct iavf_adapter *adapter, enum virtchnl_ops op,
+ 			    u8 *msg, u16 len)
+ {
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	iavf_status err;
  
--#include "i40evf.h"
-+#include "iavf.h"
- #include "i40e_prototype.h"
--#include "i40evf_client.h"
-+#include "iavf_client.h"
- 
- /* busy wait delay in msec */
- #define IAVF_BUSY_WAIT_DELAY 10
+ 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
+@@ -66,7 +66,7 @@ int iavf_send_api_ver(struct iavf_adapter *adapter)
+ int iavf_verify_api_ver(struct iavf_adapter *adapter)
+ {
+ 	struct virtchnl_version_info *pf_vvi;
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	struct i40e_arq_event_info event;
+ 	enum virtchnl_ops op;
+ 	iavf_status err;
+@@ -188,7 +188,7 @@ static void iavf_validate_num_queues(struct iavf_adapter *adapter)
+  **/
+ int iavf_get_vf_config(struct iavf_adapter *adapter)
+ {
+-	struct i40e_hw *hw = &adapter->hw;
++	struct iavf_hw *hw = &adapter->hw;
+ 	struct i40e_arq_event_info event;
+ 	enum virtchnl_ops op;
+ 	iavf_status err;
 -- 
 2.14.4
 
