@@ -1,197 +1,248 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 14 Sep 2018 17:37:57 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 14/14] intel-ethernet: use
- correct module license
+Date: Fri, 14 Sep 2018 17:37:56 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 13/14] iavf: finish renaming
+ files to iavf
 In-Reply-To: <20180915003757.169108-1-jesse.brandeburg@intel.com>
 References: <20180915003757.169108-1-jesse.brandeburg@intel.com>
-Message-ID: <20180915003757.169108-15-jesse.brandeburg@intel.com>
+Message-ID: <20180915003757.169108-14-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We recently updated all our SPDX identifiers to correctly
-indicate our net/ethernet/intel/* drivers were always released
-and intended to be released under GPL v2, but the MODULE_LICENSE
-declaration was never updated.
-
-Fix the MODULE_LICENSE to be GPL v2, for all our drivers.
+This finishes the process of renaming the files that
+make sense to rename (skipping adminq related files that
+talk to i40e), and fixes up the build and the #includes
+so that everything builds nicely.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/e100.c                 | 2 +-
- drivers/net/ethernet/intel/e1000/e1000_main.c     | 2 +-
- drivers/net/ethernet/intel/e1000e/netdev.c        | 2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_main.c     | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c       | 2 +-
- drivers/net/ethernet/intel/iavf/iavf_main.c       | 4 ++--
- drivers/net/ethernet/intel/ice/ice_main.c         | 2 +-
- drivers/net/ethernet/intel/igb/igb_main.c         | 2 +-
- drivers/net/ethernet/intel/igbvf/netdev.c         | 2 +-
- drivers/net/ethernet/intel/ixgb/ixgb_main.c       | 2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 2 +-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
- 12 files changed, 13 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/iavf/Makefile                          | 2 +-
+ drivers/net/ethernet/intel/iavf/i40e_adminq.c                     | 8 ++++----
+ drivers/net/ethernet/intel/iavf/i40e_adminq.h                     | 4 ++--
+ drivers/net/ethernet/intel/iavf/iavf.h                            | 4 ++--
+ drivers/net/ethernet/intel/iavf/{i40e_alloc.h => iavf_alloc.h}    | 0
+ drivers/net/ethernet/intel/iavf/iavf_client.c                     | 2 +-
+ drivers/net/ethernet/intel/iavf/{i40e_common.c => iavf_common.c}  | 4 ++--
+ drivers/net/ethernet/intel/iavf/{i40e_devids.h => iavf_devids.h}  | 0
+ drivers/net/ethernet/intel/iavf/iavf_main.c                       | 2 +-
+ drivers/net/ethernet/intel/iavf/{i40e_osdep.h => iavf_osdep.h}    | 0
+ .../ethernet/intel/iavf/{i40e_prototype.h => iavf_prototype.h}    | 4 ++--
+ .../net/ethernet/intel/iavf/{i40e_register.h => iavf_register.h}  | 0
+ drivers/net/ethernet/intel/iavf/{i40e_status.h => iavf_status.h}  | 0
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c                       | 2 +-
+ drivers/net/ethernet/intel/iavf/{i40e_type.h => iavf_type.h}      | 8 ++++----
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c                   | 2 +-
+ 16 files changed, 21 insertions(+), 21 deletions(-)
+ rename drivers/net/ethernet/intel/iavf/{i40e_alloc.h => iavf_alloc.h} (100%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_common.c => iavf_common.c} (99%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_devids.h => iavf_devids.h} (100%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_osdep.h => iavf_osdep.h} (100%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_prototype.h => iavf_prototype.h} (98%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_register.h => iavf_register.h} (100%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_status.h => iavf_status.h} (100%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_type.h => iavf_type.h} (99%)
 
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 27d5f27163d2..7c4b55482f72 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -164,7 +164,7 @@
+diff --git a/drivers/net/ethernet/intel/iavf/Makefile b/drivers/net/ethernet/intel/iavf/Makefile
+index fa4c43be2266..87ddfbac2f17 100644
+--- a/drivers/net/ethernet/intel/iavf/Makefile
++++ b/drivers/net/ethernet/intel/iavf/Makefile
+@@ -12,4 +12,4 @@ subdir-ccflags-y += -I$(src)
+ obj-$(CONFIG_IAVF) += iavf.o
  
- MODULE_DESCRIPTION(DRV_DESCRIPTION);
- MODULE_AUTHOR(DRV_COPYRIGHT);
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
- MODULE_FIRMWARE(FIRMWARE_D101M);
- MODULE_FIRMWARE(FIRMWARE_D101S);
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 2110d5f2da19..7e0f1f96a8a1 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -195,7 +195,7 @@ static struct pci_driver e1000_driver = {
+ iavf-objs := iavf_main.o iavf_ethtool.o iavf_virtchnl.o \
+-		 iavf_txrx.o i40e_common.o i40e_adminq.o iavf_client.o
++		 iavf_txrx.o iavf_common.o i40e_adminq.o iavf_client.o
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.c b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
+index 8aa817808cd5..d2b165b610fa 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/iavf/i40e_adminq.c
+@@ -1,11 +1,11 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright(c) 2013 - 2018 Intel Corporation. */
  
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
- MODULE_DESCRIPTION("Intel(R) PRO/1000 Network Driver");
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
+-#include "i40e_status.h"
+-#include "i40e_type.h"
+-#include "i40e_register.h"
++#include "iavf_status.h"
++#include "iavf_type.h"
++#include "iavf_register.h"
+ #include "i40e_adminq.h"
+-#include "i40e_prototype.h"
++#include "iavf_prototype.h"
  
- #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 3ba0c90e7055..c0f9faca70c4 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7592,7 +7592,7 @@ module_exit(e1000_exit_module);
+ /**
+  *  i40e_adminq_init_regs - Initialize AdminQ registers
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.h b/drivers/net/ethernet/intel/iavf/i40e_adminq.h
+index e34625e25589..ee983889eab0 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/iavf/i40e_adminq.h
+@@ -4,8 +4,8 @@
+ #ifndef _IAVF_ADMINQ_H_
+ #define _IAVF_ADMINQ_H_
  
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
- MODULE_DESCRIPTION("Intel(R) PRO/1000 Network Driver");
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
+-#include "i40e_osdep.h"
+-#include "i40e_status.h"
++#include "iavf_osdep.h"
++#include "iavf_status.h"
+ #include "i40e_adminq_cmd.h"
  
- /* netdev.c */
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 3f536541f45f..503bbc017792 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -21,7 +21,7 @@ static const char fm10k_copyright[] =
+ #define IAVF_ADMINQ_DESC(R, i)   \
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index 1d973b4cd973..961c1a71b671 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -34,7 +34,7 @@
+ #include <net/tc_act/tc_gact.h>
+ #include <net/tc_act/tc_mirred.h>
  
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
- MODULE_DESCRIPTION(DRV_SUMMARY);
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
+-#include "i40e_type.h"
++#include "iavf_type.h"
+ #include <linux/avf/virtchnl.h>
+ #include "iavf_txrx.h"
  
- /* single workqueue for entire fm10k driver */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5d209d8fe9b8..c7d2c9010fdf 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -91,7 +91,7 @@ MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX
+@@ -298,7 +298,7 @@ struct iavf_adapter {
+ 	struct net_device *netdev;
+ 	struct pci_dev *pdev;
  
- MODULE_AUTHOR("Intel Corporation, <e1000-devel@lists.sourceforge.net>");
- MODULE_DESCRIPTION("Intel(R) Ethernet Connection XL710 Network Driver");
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
+-	struct iavf_hw hw; /* defined in i40e_type.h */
++	struct iavf_hw hw; /* defined in iavf_type.h */
  
- static struct workqueue_struct *i40e_wq;
+ 	enum iavf_state_t state;
+ 	unsigned long crit_section;
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_alloc.h b/drivers/net/ethernet/intel/iavf/iavf_alloc.h
+similarity index 100%
+rename from drivers/net/ethernet/intel/iavf/i40e_alloc.h
+rename to drivers/net/ethernet/intel/iavf/iavf_alloc.h
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_client.c b/drivers/net/ethernet/intel/iavf/iavf_client.c
+index f4c195a4167a..a0bfa6b9555e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_client.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_client.c
+@@ -5,7 +5,7 @@
+ #include <linux/errno.h>
+ 
+ #include "iavf.h"
+-#include "i40e_prototype.h"
++#include "iavf_prototype.h"
+ #include "iavf_client.h"
+ 
+ static
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_common.c b/drivers/net/ethernet/intel/iavf/iavf_common.c
+similarity index 99%
+rename from drivers/net/ethernet/intel/iavf/i40e_common.c
+rename to drivers/net/ethernet/intel/iavf/iavf_common.c
+index d9fd2f24b3e7..768369c89e77 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_common.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_common.c
+@@ -1,9 +1,9 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright(c) 2013 - 2018 Intel Corporation. */
+ 
+-#include "i40e_type.h"
++#include "iavf_type.h"
+ #include "i40e_adminq.h"
+-#include "i40e_prototype.h"
++#include "iavf_prototype.h"
+ #include <linux/avf/virtchnl.h>
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_devids.h b/drivers/net/ethernet/intel/iavf/iavf_devids.h
+similarity index 100%
+rename from drivers/net/ethernet/intel/iavf/i40e_devids.h
+rename to drivers/net/ethernet/intel/iavf/iavf_devids.h
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 54d8a1ed05ac..0e2f78175f0e 100644
+index 74b547634f48..54d8a1ed05ac 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -53,8 +53,8 @@ MODULE_DEVICE_TABLE(pci, iavf_pci_tbl);
+@@ -2,7 +2,7 @@
+ /* Copyright(c) 2013 - 2018 Intel Corporation. */
  
- MODULE_ALIAS("i40evf");
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
--MODULE_DESCRIPTION("Intel(R) XL710 X710 Virtual Function Network Driver");
--MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("Intel(R) Ethernet Adaptive Virtual Function Network Driver");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
+ #include "iavf.h"
+-#include "i40e_prototype.h"
++#include "iavf_prototype.h"
+ #include "iavf_client.h"
+ /* All iavf tracepoints are defined by the include below, which must
+  * be included exactly once across the whole kernel with
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_osdep.h b/drivers/net/ethernet/intel/iavf/iavf_osdep.h
+similarity index 100%
+rename from drivers/net/ethernet/intel/iavf/i40e_osdep.h
+rename to drivers/net/ethernet/intel/iavf/iavf_osdep.h
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_prototype.h b/drivers/net/ethernet/intel/iavf/iavf_prototype.h
+similarity index 98%
+rename from drivers/net/ethernet/intel/iavf/i40e_prototype.h
+rename to drivers/net/ethernet/intel/iavf/iavf_prototype.h
+index dca62e3b951f..a0cd43b7a368 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_prototype.h
+@@ -4,8 +4,8 @@
+ #ifndef _IAVF_PROTOTYPE_H_
+ #define _IAVF_PROTOTYPE_H_
  
- static struct workqueue_struct *iavf_wq;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 1b49a605d094..d54e63785ff0 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -15,7 +15,7 @@ static const char ice_copyright[] = "Copyright (c) 2018, Intel Corporation.";
+-#include "i40e_type.h"
+-#include "i40e_alloc.h"
++#include "iavf_type.h"
++#include "iavf_alloc.h"
+ #include <linux/avf/virtchnl.h>
  
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
- MODULE_DESCRIPTION(DRV_SUMMARY);
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
+ /* Prototypes for shared code functions that are not in
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_register.h b/drivers/net/ethernet/intel/iavf/iavf_register.h
+similarity index 100%
+rename from drivers/net/ethernet/intel/iavf/i40e_register.h
+rename to drivers/net/ethernet/intel/iavf/iavf_register.h
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_status.h b/drivers/net/ethernet/intel/iavf/iavf_status.h
+similarity index 100%
+rename from drivers/net/ethernet/intel/iavf/i40e_status.h
+rename to drivers/net/ethernet/intel/iavf/iavf_status.h
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index 517c37a44026..add3188ccedf 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -6,7 +6,7 @@
  
- static int debug = -1;
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index a32c576c1e65..c18e79112cad 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -243,7 +243,7 @@ static struct pci_driver igb_driver = {
+ #include "iavf.h"
+ #include "iavf_trace.h"
+-#include "i40e_prototype.h"
++#include "iavf_prototype.h"
  
- MODULE_AUTHOR("Intel Corporation, <e1000-devel@lists.sourceforge.net>");
- MODULE_DESCRIPTION("Intel(R) Gigabit Ethernet Network Driver");
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
+ static inline __le64 build_ctob(u32 td_cmd, u32 td_offset, unsigned int size,
+ 				u32 td_tag)
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_type.h b/drivers/net/ethernet/intel/iavf/iavf_type.h
+similarity index 99%
+rename from drivers/net/ethernet/intel/iavf/i40e_type.h
+rename to drivers/net/ethernet/intel/iavf/iavf_type.h
+index 6a917dbfb981..f0c8cf981b92 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_type.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_type.h
+@@ -4,11 +4,11 @@
+ #ifndef _IAVF_TYPE_H_
+ #define _IAVF_TYPE_H_
  
- #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index e0c989ffb2b3..820d49eb41ab 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -3011,7 +3011,7 @@ module_exit(igbvf_exit_module);
+-#include "i40e_status.h"
+-#include "i40e_osdep.h"
+-#include "i40e_register.h"
++#include "iavf_status.h"
++#include "iavf_osdep.h"
++#include "iavf_register.h"
+ #include "i40e_adminq.h"
+-#include "i40e_devids.h"
++#include "iavf_devids.h"
  
- MODULE_AUTHOR("Intel Corporation, <e1000-devel@lists.sourceforge.net>");
- MODULE_DESCRIPTION("Intel(R) Gigabit Virtual Function Network Driver");
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
+ #define IAVF_RXQ_CTX_DBUFF_SHIFT 7
  
- /* netdev.c */
-diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-index d3e72d0f66ef..4bb89587cd6a 100644
---- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-+++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-@@ -107,7 +107,7 @@ static struct pci_driver ixgb_driver = {
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 8622d7781fd7..fa5be220a7ec 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -2,7 +2,7 @@
+ /* Copyright(c) 2013 - 2018 Intel Corporation. */
  
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
- MODULE_DESCRIPTION("Intel(R) PRO/10GbE Network Driver");
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
+ #include "iavf.h"
+-#include "i40e_prototype.h"
++#include "iavf_prototype.h"
+ #include "iavf_client.h"
  
- #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 604282f03d23..27a8546c88b2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -159,7 +159,7 @@ MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
- 
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
- MODULE_DESCRIPTION("Intel(R) 10 Gigabit PCI Express Network Driver");
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
- 
- static struct workqueue_struct *ixgbe_wq;
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 17e23f609d74..ba6562e8cd73 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -79,7 +79,7 @@ MODULE_DEVICE_TABLE(pci, ixgbevf_pci_tbl);
- 
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
- MODULE_DESCRIPTION("Intel(R) 10 Gigabit Virtual Function Network Driver");
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
- 
- #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
+ /* busy wait delay in msec */
 -- 
 2.14.4
 
