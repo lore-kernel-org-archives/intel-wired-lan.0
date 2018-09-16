@@ -1,96 +1,43 @@
-From: Henning Svane <hsv@energy.dk>
-Date: Sat, 15 Sep 2018 22:53:45 +0000
-Subject: [Intel-wired-lan] X550 VF do not support PTP
-Message-ID: <5ABC601D16A6044981773D154D5C9F7101CC6B0C99@XMail-DAG1.energy.local>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Sun, 16 Sep 2018 13:04:07 -0700
+Subject: [Intel-wired-lan] using XPS on Intel i40e
+In-Reply-To: <CAGv3bDeHUA6vWen50QheqTygyDpLgTzYKLtd82amPZzK-anh_Q@mail.gmail.com>
+References: <CAGv3bDeHUA6vWen50QheqTygyDpLgTzYKLtd82amPZzK-anh_Q@mail.gmail.com>
+Message-ID: <CAKgT0Ufnpxp0MDXkiZ9T1jafYj_ebiTY49JOGhFwC4D+uy3YOw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi
+On Sun, Sep 16, 2018 at 12:55 AM Kushal Gautam <kushal.gautam@gmail.com> wrote:
+>
+> Hi:
+>
+> I am using the Intel i40e driver from kernel source tree of Kernel 4.15.12
+> My NIC is Intel X710.
+>
+> I am composing and sending a packet from my custom kernel module as:
+>
+> ...
+> skb->dev->netdev_ops->ndo_start_xmit(skb, skb->dev);
+> ...
+>
+> Just like FDIR on the receiving side, is it possible to have a similar configuration on the sending side?
+>
+> For instance, I want my packets sent via kernel module to pass through TX-Queue 5. Right now all my packets are being sent through just Tx-Queue 0. And maybe after that, it would make sense to use XPS(https://github.com/torvalds/linux/blob/v3.13/Documentation/networking/scaling.txt#L364)
+>
+> Regards,
+> Kushal.
 
-I cannot get PTP hardware to work on a Virtual Function Ethernet Controller.
-Here below you can see what I have tried with no luck.
+Right now you are bypassing XPS entirely if you are using
+ndo_start_xmit to send you frames.
 
-How can I enable PTP hardware on Virtual function NIC, as from what I can read in the documentation this should work, but how?
+You might take a look at the pktgen code in the kernel as I believe
+that has examples where they use specific queues to send packets. All
+that is really involved is updating a field in the sk_buff data
+structure before you call ndo_start_xmit.
 
-As hypervisor I use VMware ESXi 6.7 (9484548)
+Hope that helps.
 
-Regards
-Henning
-
-On Ubuntu 18.04.1 (4.15.0-34-generic)
-I am trying to get PTP to work on a X550 dual port, which has been setup so one port is SR-IOV (24 VF) and the other as Passthrough.
-
-04:00.0 Ethernet controller: Intel Corporation Ethernet Controller 10G X550T (rev 01)
-0b:00.0 Ethernet controller: Intel Corporation X550 Virtual Function
-13:00.0 Ethernet controller: Intel Corporation X550 Virtual Function
-
-To be sure that the drive support PTP I downloaded the newest driver
-ixgbevf-4.3.5.tar.gz
-sudo make CFLAGS_EXTRA="-DIXGBE_PTP" install (The documentation says this options has to be set)
-https://downloadmirror.intel.com/26950/eng/readme.txt
-
-:~/ixgbevf-4.3.5/src$ modinfo ixgbevf
-filename:       /lib/modules/4.15.0-34-generic/updates/drivers/net/ethernet/intel/ixgbevf/ixgbevf.ko
-version:        4.3.5
-license:        GPL
-description:    Intel(R) 10 Gigabit Virtual Function Network Driver
-author:         Intel Corporation, <linux.nics@intel.com>
-srcversion:     DE0A8FE27F168DAF11C29F6
-alias:          pci:v00008086d000015B4sv*sd*bc*sc*i*
-alias:          pci:v00008086d000015C5sv*sd*bc*sc*i*
-alias:          pci:v00008086d000015A9sv*sd*bc*sc*i*
-alias:          pci:v00008086d000015A8sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001564sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001565sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001530sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001515sv*sd*bc*sc*i*
-alias:          pci:v00008086d0000152Esv*sd*bc*sc*i*
-alias:          pci:v00008086d000010EDsv*sd*bc*sc*i*
-depends:
-retpoline:      Y
-name:           ixgbevf
-vermagic:       4.15.0-34-generic SMP mod_unload
-
-:~/ixgbevf-4.3.5/src$ ethtool -T ens224
-Time stamping parameters for ens224:
-Capabilities:
-        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
-        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
-PTP Hardware Clock: none
-Hardware Transmit Timestamp Modes: none
-Hardware Receive Filter Modes: none
-hsv at ptpc2ntps01:~/ixgbevf-4.3.5/src$ ethtool -T ens256
-Time stamping parameters for ens256:
-Capabilities:
-        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
-        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
-PTP Hardware Clock: none
-Hardware Transmit Timestamp Modes: none
-Hardware Receive Filter Modes: none
-
-Ens161 is the Passthrough NIC and here PTP works.
-:~/ixgbevf-4.3.5/src$ ethtool -T ens161
-Time stamping parameters for ens161:
-Capabilities:
-        hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE)
-        software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
-        hardware-receive      (SOF_TIMESTAMPING_RX_HARDWARE)
-        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
-        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
-        hardware-raw-clock    (SOF_TIMESTAMPING_RAW_HARDWARE)
-PTP Hardware Clock: none
-Hardware Transmit Timestamp Modes:
-        off                   (HWTSTAMP_TX_OFF)
-        on                    (HWTSTAMP_TX_ON)
-Hardware Receive Filter Modes:
-        none                  (HWTSTAMP_FILTER_NONE)
-        all                   (HWTSTAMP_FILTER_ALL)
-        ptpv1-l4-sync         (HWTSTAMP_FILTER_PTP_V1_L4_SYNC)
-        ptpv1-l4-delay-req    (HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ)
-        ptpv2-event           (HWTSTAMP_FILTER_PTP_V2_EVENT)
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180915/3b57e7ee/attachment-0001.html>
+- Alex
