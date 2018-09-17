@@ -1,180 +1,122 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 29 Sep 2018 09:23:27 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 5d258d3070c678cc1ad4ea1d3bc47f241fbf7dfd
-Message-ID: <5baed40f.X+++juVGDWJMOmrK%lkp@intel.com>
+From: Basierski, SebastianX <sebastianx.basierski@intel.com>
+Date: Mon, 17 Sep 2018 08:27:55 +0000
+Subject: [Intel-wired-lan] X550 VF do not support PTP
+In-Reply-To: <5ABC601D16A6044981773D154D5C9F7101CC6B0C99@XMail-DAG1.energy.local>
+References: <5ABC601D16A6044981773D154D5C9F7101CC6B0C99@XMail-DAG1.energy.local>
+Message-ID: <3A7E81AC661B4646A4CE6F2E09B7B74E05C8F738@HASMSX106.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 5d258d3070c678cc1ad4ea1d3bc47f241fbf7dfd  iavf: fix a typo
+Hello,
 
-elapsed time: 116m
+As far as I know, PTP is not (and probably will not be) supported by VF driver.
 
-configs tested: 155
+Thanks
+Sebastian Basierski
+SII Engineer
+Delivering outsourced services to Intel
+e-mail: sebastianx.basierski at intel.com<mailto:sebastianx.basierski@intel.com>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+[sii-logo]
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                       spear13xx_defconfig
-mips                        maltaup_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-x004-201838
-x86_64                 randconfig-x001-201838
-x86_64                 randconfig-x000-201838
-x86_64                 randconfig-x009-201838
-x86_64                 randconfig-x007-201838
-x86_64                 randconfig-x008-201838
-x86_64                 randconfig-x003-201838
-x86_64                 randconfig-x005-201838
-x86_64                 randconfig-x002-201838
-x86_64                 randconfig-x006-201838
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x019-201838
-x86_64                 randconfig-x017-201838
-x86_64                 randconfig-x018-201838
-x86_64                 randconfig-x012-201838
-x86_64                 randconfig-x013-201838
-x86_64                 randconfig-x014-201838
-x86_64                 randconfig-x010-201838
-x86_64                 randconfig-x016-201838
-x86_64                 randconfig-x011-201838
-x86_64                 randconfig-x015-201838
-x86_64                 randconfig-s0-09290735
-x86_64                 randconfig-s1-09290735
-x86_64                 randconfig-s2-09290735
-x86_64                 randconfig-s0-09290821
-x86_64                 randconfig-s1-09290821
-x86_64                 randconfig-s2-09290821
-arm                       multi_v4t_defconfig
-c6x                         dsk6455_defconfig
-m68k                        mvme16x_defconfig
-powerpc                     tqm8540_defconfig
-arm                              allyesconfig
-arm                             ezx_defconfig
-powerpc                 mpc85xx_cds_defconfig
-powerpc                    sam440ep_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201838
-i386                     randconfig-s3-201838
-i386                     randconfig-s1-201838
-i386                     randconfig-s2-201838
-x86_64                 randconfig-s3-09290728
-x86_64                 randconfig-s4-09290728
-x86_64                 randconfig-s5-09290728
-x86_64                 randconfig-s3-09290818
-x86_64                 randconfig-s4-09290818
-x86_64                 randconfig-s5-09290818
-x86_64                 randconfig-s3-09290857
-x86_64                 randconfig-s4-09290857
-x86_64                 randconfig-s5-09290857
-arm                          simpad_defconfig
-mips                            ar7_defconfig
-mips                     decstation_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-b0-09290521
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-b0-09290408
-x86_64                 randconfig-b0-09290808
-sh                           cayman_defconfig
-sh                           se7724_defconfig
-x86_64                           alldefconfig
-powerpc                     powernv_defconfig
-x86_64                 randconfig-u0-09290753
-x86_64                 randconfig-u0-09290808
-i386                   randconfig-x018-201838
-i386                   randconfig-x017-201838
-i386                   randconfig-x010-201838
-i386                   randconfig-x011-201838
-i386                   randconfig-x016-201838
-i386                   randconfig-x013-201838
-i386                   randconfig-x012-201838
-i386                   randconfig-x014-201838
-i386                   randconfig-x015-201838
-i386                   randconfig-x019-201838
-arm                          pxa3xx_defconfig
-arm                           tegra_defconfig
-m68k                              allnoconfig
-mips                           ip28_defconfig
-m68k                            mac_defconfig
-sh                           se7722_defconfig
-x86_64                randconfig-ne0-09290558
-x86_64                randconfig-ne0-09290811
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                   randconfig-x070-201838
-i386                   randconfig-x076-201838
-i386                   randconfig-x077-201838
-i386                   randconfig-x075-201838
-i386                   randconfig-x072-201838
-i386                   randconfig-x073-201838
-i386                   randconfig-x079-201838
-i386                   randconfig-x074-201838
-i386                   randconfig-x078-201838
-i386                   randconfig-x071-201838
-mips                            e55_defconfig
-powerpc                     asp8347_defconfig
-x86_64                   randconfig-g0-201838
-x86_64                   randconfig-g1-201838
-x86_64                   randconfig-g2-201838
-x86_64                   randconfig-g3-201838
-i386                  randconfig-sb0-09290412
-i386                   randconfig-x005-201838
-i386                   randconfig-x003-201838
-i386                   randconfig-x002-201838
-i386                   randconfig-x008-201838
-i386                   randconfig-x000-201838
-i386                   randconfig-x007-201838
-i386                   randconfig-x009-201838
-i386                   randconfig-x006-201838
-i386                   randconfig-x001-201838
-i386                   randconfig-x004-201838
-ia64                        generic_defconfig
-parisc                        c8000_defconfig
-x86_64                randconfig-ws0-09290528
-s390                          debug_defconfig
-xtensa                           allyesconfig
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Henning Svane
+Sent: Sunday, September 16, 2018 12:54 AM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] X550 VF do not support PTP
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Hi
+
+I cannot get PTP hardware to work on a Virtual Function Ethernet Controller.
+Here below you can see what I have tried with no luck.
+
+How can I enable PTP hardware on Virtual function NIC, as from what I can read in the documentation this should work, but how?
+
+As hypervisor I use VMware ESXi 6.7 (9484548)
+
+Regards
+Henning
+
+On Ubuntu 18.04.1 (4.15.0-34-generic)
+I am trying to get PTP to work on a X550 dual port, which has been setup so one port is SR-IOV (24 VF) and the other as Passthrough.
+
+04:00.0 Ethernet controller: Intel Corporation Ethernet Controller 10G X550T (rev 01)
+0b:00.0 Ethernet controller: Intel Corporation X550 Virtual Function
+13:00.0 Ethernet controller: Intel Corporation X550 Virtual Function
+
+To be sure that the drive support PTP I downloaded the newest driver
+ixgbevf-4.3.5.tar.gz
+sudo make CFLAGS_EXTRA="-DIXGBE_PTP" install (The documentation says this options has to be set)
+https://downloadmirror.intel.com/26950/eng/readme.txt
+
+:~/ixgbevf-4.3.5/src$ modinfo ixgbevf
+filename:       /lib/modules/4.15.0-34-generic/updates/drivers/net/ethernet/intel/ixgbevf/ixgbevf.ko
+version:        4.3.5
+license:        GPL
+description:    Intel(R) 10 Gigabit Virtual Function Network Driver
+author:         Intel Corporation, <linux.nics at intel.com<mailto:linux.nics@intel.com>>
+srcversion:     DE0A8FE27F168DAF11C29F6
+alias:          pci:v00008086d000015B4sv*sd*bc*sc*i*
+alias:          pci:v00008086d000015C5sv*sd*bc*sc*i*
+alias:          pci:v00008086d000015A9sv*sd*bc*sc*i*
+alias:          pci:v00008086d000015A8sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001564sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001565sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001530sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001515sv*sd*bc*sc*i*
+alias:          pci:v00008086d0000152Esv*sd*bc*sc*i*
+alias:          pci:v00008086d000010EDsv*sd*bc*sc*i*
+depends:
+retpoline:      Y
+name:           ixgbevf
+vermagic:       4.15.0-34-generic SMP mod_unload
+
+:~/ixgbevf-4.3.5/src$ ethtool -T ens224
+Time stamping parameters for ens224:
+Capabilities:
+        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+PTP Hardware Clock: none
+Hardware Transmit Timestamp Modes: none
+Hardware Receive Filter Modes: none
+hsv at ptpc2ntps01:~/ixgbevf-4.3.5/src$<mailto:hsv@ptpc2ntps01:~/ixgbevf-4.3.5/src$> ethtool -T ens256
+Time stamping parameters for ens256:
+Capabilities:
+        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+PTP Hardware Clock: none
+Hardware Transmit Timestamp Modes: none
+Hardware Receive Filter Modes: none
+
+Ens161 is the Passthrough NIC and here PTP works.
+:~/ixgbevf-4.3.5/src$ ethtool -T ens161
+Time stamping parameters for ens161:
+Capabilities:
+        hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE)
+        software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
+        hardware-receive      (SOF_TIMESTAMPING_RX_HARDWARE)
+        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+        hardware-raw-clock    (SOF_TIMESTAMPING_RAW_HARDWARE)
+PTP Hardware Clock: none
+Hardware Transmit Timestamp Modes:
+        off                   (HWTSTAMP_TX_OFF)
+        on                    (HWTSTAMP_TX_ON)
+Hardware Receive Filter Modes:
+        none                  (HWTSTAMP_FILTER_NONE)
+        all                   (HWTSTAMP_FILTER_ALL)
+        ptpv1-l4-sync         (HWTSTAMP_FILTER_PTP_V1_L4_SYNC)
+        ptpv1-l4-delay-req    (HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ)
+        ptpv2-event           (HWTSTAMP_FILTER_PTP_V2_EVENT)
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180917/9c3129e0/attachment-0001.html>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: image001.png
+Type: image/png
+Size: 5461 bytes
+Desc: image001.png
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180917/9c3129e0/attachment-0001.png>
