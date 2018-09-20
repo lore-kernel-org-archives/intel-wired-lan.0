@@ -1,483 +1,285 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:42:57 -0700
-Subject: [Intel-wired-lan] [PATCH v2 05/16] ice: Add support for VF reset
- events
+Date: Wed, 19 Sep 2018 17:43:05 -0700
+Subject: [Intel-wired-lan] [PATCH v2 13/16] ice: Add more flexibility on how
+ we assign an ITR index
 In-Reply-To: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
 References: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920004308.13772-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920004308.13772-14-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Post VF initialization, there are a couple of different ways in which a
-VF reset can be triggered. One is when the underlying PF itself goes
-through a reset and other is via a VFLR interrupt. ice_reset_vf introduced
-in this patch handles both these cases.
+From: Brett Creeley <brett.creeley@intel.com>
 
-Also introduced in this patch is a helper function ice_aq_send_msg_to_vf
-to send messages to VF over the mailbox queue. The PF uses this to send
-reset notifications to VFs.
+This issue came about when looking at the VF function
+ice_vc_cfg_irq_map_msg. Currently we are assigning the itr_setting value
+to the itr_idx received from the AVF driver, which is not correct and is
+not used for the VF flow anyway. Currently the only way we set the ITR
+index for both the PF and VF driver is by hardcoding ICE_TX_ITR or
+ICE_RX_ITR for the ITR index on each q_vector.
 
+To fix this, add the member itr_idx in struct ice_ring_container. Thisi
+can then be used to dynamically program the correct ITR index. This change
+also affected the PF driver so make the necessary changes there as well.
+
+Also, removed the itr_setting member in struct ice_ring because it is not
+being used meaningfully and is going to be removed in a future patch that
+includes dynamic itr.
+
+On another note, this will be useful moving forward if we decide to split
+rx/tx rings on different q_vectors instead of sharing them as queue pairs.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile          |   2 +-
- drivers/net/ethernet/intel/ice/ice.h             |   2 +
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |  17 +++
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c        |  15 +++
- drivers/net/ethernet/intel/ice/ice_sriov.c       |  41 ++++++
- drivers/net/ethernet/intel/ice/ice_sriov.h       |  25 ++++
- drivers/net/ethernet/intel/ice/ice_status.h      |   3 +
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 163 +++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |   4 +
- 10 files changed, 272 insertions(+), 1 deletion(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_sriov.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_sriov.h
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c         | 73 ++++++++++++++----------
+ drivers/net/ethernet/intel/ice/ice_txrx.h        | 13 ++---
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 20 ++++---
+ 3 files changed, 59 insertions(+), 47 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 1999cd09239e..e5d6f684437e 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -16,4 +16,4 @@ ice-y := ice_main.o	\
- 	 ice_lib.o	\
- 	 ice_txrx.o	\
- 	 ice_ethtool.o
--ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o
-+ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index f97a23930cab..30eeb0d2d582 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -37,6 +37,7 @@
- #include "ice_common.h"
- #include "ice_sched.h"
- #include "ice_virtchnl_pf.h"
-+#include "ice_sriov.h"
- 
- extern const char ice_drv_ver[];
- #define ICE_BAR0		0
-@@ -155,6 +156,7 @@ enum ice_state {
- 	__ICE_ADMINQ_EVENT_PENDING,
- 	__ICE_MAILBOXQ_EVENT_PENDING,
- 	__ICE_MDD_EVENT_PENDING,
-+	__ICE_VFLR_EVENT_PENDING,
- 	__ICE_FLTR_OVERFLOW_PROMISC,
- 	__ICE_VF_DIS,
- 	__ICE_CFG_BUSY,
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 7d793cc96a18..2c8f590316e9 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1077,6 +1077,19 @@ struct ice_aqc_nvm {
- 	__le32 addr_low;
- };
- 
-+/**
-+ * Send to PF command (indirect 0x0801) id is only used by PF
-+ *
-+ * Send to VF command (indirect 0x0802) id is only used by PF
-+ *
-+ */
-+struct ice_aqc_pf_vf_msg {
-+	__le32 id;
-+	u32 reserved;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
- /* Get/Set RSS key (indirect 0x0B04/0x0B02) */
- struct ice_aqc_get_set_rss_key {
- #define ICE_AQC_GSET_RSS_KEY_VSI_VALID	BIT(15)
-@@ -1334,6 +1347,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_query_txsched_res query_sched_res;
- 		struct ice_aqc_add_move_delete_elem add_move_delete_elem;
- 		struct ice_aqc_nvm nvm;
-+		struct ice_aqc_pf_vf_msg virt;
- 		struct ice_aqc_get_set_rss_lut get_set_rss_lut;
- 		struct ice_aqc_get_set_rss_key get_set_rss_key;
- 		struct ice_aqc_add_txqs add_txqs;
-@@ -1431,6 +1445,9 @@ enum ice_adminq_opc {
- 	/* NVM commands */
- 	ice_aqc_opc_nvm_read				= 0x0701,
- 
-+	/* PF/VF mailbox commands */
-+	ice_mbx_opc_send_msg_to_vf			= 0x0802,
-+
- 	/* RSS commands */
- 	ice_aqc_opc_set_rss_key				= 0x0B02,
- 	ice_aqc_opc_set_rss_lut				= 0x0B03,
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 12d4c862bf05..5a4fa22d0a83 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -136,6 +136,7 @@
- #define PFINT_OICR_PCI_EXCEPTION_M		BIT(21)
- #define PFINT_OICR_HMC_ERR_M			BIT(26)
- #define PFINT_OICR_PE_CRITERR_M			BIT(28)
-+#define PFINT_OICR_VFLR_M			BIT(29)
- #define PFINT_OICR_CTL				0x0016CA80
- #define PFINT_OICR_CTL_MSIX_INDX_M		ICE_M(0x7FF, 0)
- #define PFINT_OICR_CTL_ITR_INDX_S		11
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 7e15f9e7ba95..9dd12f6cab98 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -342,6 +342,10 @@ ice_prepare_for_reset(struct ice_pf *pf)
- {
- 	struct ice_hw *hw = &pf->hw;
- 
-+	/* Notify VFs of impending reset */
-+	if (ice_check_sq_alive(hw, &hw->mailboxq))
-+		ice_vc_notify_reset(pf);
-+
- 	/* disable the VSIs and their queues that are not already DOWN */
- 	ice_pf_dis_all_vsi(pf);
- 
-@@ -1064,6 +1068,7 @@ static void ice_service_task(struct work_struct *work)
- 	ice_check_for_hang_subtask(pf);
- 	ice_sync_fltr_subtask(pf);
- 	ice_handle_mdd_event(pf);
-+	ice_process_vflr_event(pf);
- 	ice_watchdog_subtask(pf);
- 	ice_clean_adminq_subtask(pf);
- 	ice_clean_mailboxq_subtask(pf);
-@@ -1077,6 +1082,7 @@ static void ice_service_task(struct work_struct *work)
- 	 */
- 	if (time_after(jiffies, (start_time + pf->serv_tmr_period)) ||
- 	    test_bit(__ICE_MDD_EVENT_PENDING, pf->state) ||
-+	    test_bit(__ICE_VFLR_EVENT_PENDING, pf->state) ||
- 	    test_bit(__ICE_MAILBOXQ_EVENT_PENDING, pf->state) ||
- 	    test_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state))
- 		mod_timer(&pf->serv_tmr, jiffies);
-@@ -1229,6 +1235,7 @@ static void ice_ena_misc_vector(struct ice_pf *pf)
- 	       PFINT_OICR_MAL_DETECT_M |
- 	       PFINT_OICR_GRST_M |
- 	       PFINT_OICR_PCI_EXCEPTION_M |
-+	       PFINT_OICR_VFLR_M |
- 	       PFINT_OICR_HMC_ERR_M |
- 	       PFINT_OICR_PE_CRITERR_M);
- 
-@@ -1261,6 +1268,10 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 		ena_mask &= ~PFINT_OICR_MAL_DETECT_M;
- 		set_bit(__ICE_MDD_EVENT_PENDING, pf->state);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 0dbf3245a9d9..5315a10c6849 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1203,7 +1203,6 @@ static int ice_vsi_alloc_rings(struct ice_vsi *vsi)
+ 		ring->vsi = vsi;
+ 		ring->dev = &pf->pdev->dev;
+ 		ring->count = vsi->num_desc;
+-		ring->itr_setting = ICE_DFLT_TX_ITR;
+ 		vsi->tx_rings[i] = ring;
  	}
-+	if (oicr & PFINT_OICR_VFLR_M) {
-+		ena_mask &= ~PFINT_OICR_VFLR_M;
-+		set_bit(__ICE_VFLR_EVENT_PENDING, pf->state);
-+	}
  
- 	if (oicr & PFINT_OICR_GRST_M) {
- 		u32 reset;
-@@ -3242,6 +3253,10 @@ static int ice_vsi_rebuild_all(struct ice_pf *pf)
- 		if (!pf->vsi[i])
- 			continue;
+@@ -1223,7 +1222,6 @@ static int ice_vsi_alloc_rings(struct ice_vsi *vsi)
+ 		ring->netdev = vsi->netdev;
+ 		ring->dev = &pf->pdev->dev;
+ 		ring->count = vsi->num_desc;
+-		ring->itr_setting = ICE_DFLT_RX_ITR;
+ 		vsi->rx_rings[i] = ring;
+ 	}
  
-+		/* VF VSI rebuild isn't supported yet */
-+		if (pf->vsi[i]->type == ICE_VSI_VF)
-+			continue;
-+
- 		err = ice_vsi_rebuild(pf->vsi[i]);
- 		if (err) {
- 			dev_err(&pf->pdev->dev,
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-new file mode 100644
-index 000000000000..191e832134b6
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -0,0 +1,41 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2018, Intel Corporation. */
-+
-+#include "ice_common.h"
-+#include "ice_adminq_cmd.h"
-+#include "ice_sriov.h"
-+
-+/**
-+ * ice_aq_send_msg_to_vf
-+ * @hw: pointer to the hardware structure
-+ * @vfid: VF ID to send msg
-+ * @v_opcode: opcodes for VF-PF communication
-+ * @v_retval: return error code
-+ * @msg: pointer to the msg buffer
-+ * @msglen: msg length
-+ * @cd: pointer to command details
-+ *
-+ * Send message to VF driver (0x0802) using mailbox
-+ * queue and asynchronously sending message via
-+ * ice_sq_send_cmd() function
-+ */
-+enum ice_status
-+ice_aq_send_msg_to_vf(struct ice_hw *hw, u16 vfid, u32 v_opcode, u32 v_retval,
-+		      u8 *msg, u16 msglen, struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_pf_vf_msg *cmd;
-+	struct ice_aq_desc desc;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_mbx_opc_send_msg_to_vf);
-+
-+	cmd = &desc.params.virt;
-+	cmd->id = cpu_to_le32(vfid);
-+
-+	desc.cookie_high = cpu_to_le32(v_opcode);
-+	desc.cookie_low = cpu_to_le32(v_retval);
-+
-+	if (msglen)
-+		desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+
-+	return ice_sq_send_cmd(hw, &hw->mailboxq, &desc, msg, msglen, cd);
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.h b/drivers/net/ethernet/intel/ice/ice_sriov.h
-new file mode 100644
-index 000000000000..f9b86fd05c8b
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.h
-@@ -0,0 +1,25 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2018, Intel Corporation. */
-+
-+#ifndef _ICE_SRIOV_H_
-+#define _ICE_SRIOV_H_
-+
-+#include "ice_common.h"
-+
-+#ifdef CONFIG_PCI_IOV
-+enum ice_status
-+ice_aq_send_msg_to_vf(struct ice_hw *hw, u16 vfid, u32 v_opcode, u32 v_retval,
-+		      u8 *msg, u16 msglen, struct ice_sq_cd *cd);
-+
-+#else /* CONFIG_PCI_IOV */
-+static inline enum ice_status
-+ice_aq_send_msg_to_vf(struct ice_hw __always_unused *hw,
-+		      u16 __always_unused vfid, u32 __always_unused v_opcode,
-+		      u32 __always_unused v_retval, u8 __always_unused *msg,
-+		      u16 __always_unused msglen,
-+		      struct ice_sq_cd __always_unused *cd)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_PCI_IOV */
-+#endif /* _ICE_SRIOV_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_status.h b/drivers/net/ethernet/intel/ice/ice_status.h
-index d2dae913d81e..f49f299ddf2c 100644
---- a/drivers/net/ethernet/intel/ice/ice_status.h
-+++ b/drivers/net/ethernet/intel/ice/ice_status.h
-@@ -6,6 +6,9 @@
+@@ -1260,6 +1258,7 @@ static void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
+ 		tx_rings_per_v = DIV_ROUND_UP(tx_rings_rem, q_vectors - v_id);
+ 		q_vector->num_ring_tx = tx_rings_per_v;
+ 		q_vector->tx.ring = NULL;
++		q_vector->tx.itr_idx = ICE_TX_ITR;
+ 		q_base = vsi->num_txq - tx_rings_rem;
  
- /* Error Codes */
- enum ice_status {
-+	ICE_SUCCESS				= 0,
-+
-+	/* Generic codes : Range -1..-49 */
- 	ICE_ERR_PARAM				= -1,
- 	ICE_ERR_NOT_IMPL			= -2,
- 	ICE_ERR_NOT_READY			= -3,
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 1b7017c1f190..f8f5cccb0b5c 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -4,6 +4,36 @@
- #include "ice.h"
- #include "ice_lib.h"
+ 		for (q_id = q_base; q_id < (q_base + tx_rings_per_v); q_id++) {
+@@ -1275,6 +1274,7 @@ static void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
+ 		rx_rings_per_v = DIV_ROUND_UP(rx_rings_rem, q_vectors - v_id);
+ 		q_vector->num_ring_rx = rx_rings_per_v;
+ 		q_vector->rx.ring = NULL;
++		q_vector->rx.itr_idx = ICE_RX_ITR;
+ 		q_base = vsi->num_rxq - rx_rings_rem;
  
-+/**
-+ * ice_vc_vf_broadcast - Broadcast a message to all VFs on PF
-+ * @pf: pointer to the PF structure
-+ * @v_opcode: operation code
-+ * @v_retval: return value
-+ * @msg: pointer to the msg buffer
-+ * @msglen: msg length
-+ */
-+static void
-+ice_vc_vf_broadcast(struct ice_pf *pf, enum virtchnl_ops v_opcode,
-+		    enum ice_status v_retval, u8 *msg, u16 msglen)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+	struct ice_vf *vf = pf->vf;
-+	int i;
-+
-+	for (i = 0; i < pf->num_alloc_vfs; i++, vf++) {
-+		/* Not all vfs are enabled so skip the ones that are not */
-+		if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states) &&
-+		    !test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
-+			continue;
-+
-+		/* Ignore return value on purpose - a given VF may fail, but
-+		 * we need to keep going and send to all of them
-+		 */
-+		ice_aq_send_msg_to_vf(hw, vf->vf_id, v_opcode, v_retval, msg,
-+				      msglen, NULL);
-+	}
-+}
-+
- /**
-  * ice_get_vf_vector - get VF interrupt vector register offset
-  * @vf_msix: number of msix vector per VF on a PF
-@@ -693,6 +723,97 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	return true;
- }
- 
-+/**
-+ * ice_reset_vf - Reset a particular VF
-+ * @vf: pointer to the VF structure
-+ * @is_vflr: true if VFLR was issued, false if not
-+ *
-+ * Returns true if the VF is reset, false otherwise.
-+ */
-+static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
-+{
-+	struct ice_pf *pf = vf->pf;
-+	struct ice_hw *hw = &pf->hw;
-+	bool rsd = false;
-+	u32 reg;
-+	int i;
-+
-+	/* If the VFs have been disabled, this means something else is
-+	 * resetting the VF, so we shouldn't continue.
-+	 */
-+	if (test_and_set_bit(__ICE_VF_DIS, pf->state))
-+		return false;
-+
-+	ice_trigger_vf_reset(vf, is_vflr);
-+
-+	if (test_bit(ICE_VF_STATE_ENA, vf->vf_states)) {
-+		ice_vsi_stop_tx_rings(pf->vsi[vf->lan_vsi_idx], ICE_VF_RESET,
-+				      vf->vf_id);
-+		ice_vsi_stop_rx_rings(pf->vsi[vf->lan_vsi_idx]);
-+		clear_bit(ICE_VF_STATE_ENA, vf->vf_states);
-+	} else {
-+		/* Call Disable LAN Tx queue AQ call even when queues are not
-+		 * enabled. This is needed for successful completiom of VFR
-+		 */
-+		ice_dis_vsi_txq(pf->vsi[vf->lan_vsi_idx]->port_info, 0,
-+				NULL, NULL, ICE_VF_RESET, vf->vf_id, NULL);
-+	}
-+
-+	/* poll VPGEN_VFRSTAT reg to make sure
-+	 * that reset is complete
-+	 */
-+	for (i = 0; i < 10; i++) {
-+		/* VF reset requires driver to first reset the VF and then
-+		 * poll the status register to make sure that the reset
-+		 * completed successfully.
-+		 */
-+		usleep_range(10000, 20000);
-+		reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
-+		if (reg & VPGEN_VFRSTAT_VFRD_M) {
-+			rsd = true;
-+			break;
-+		}
-+	}
-+
-+	/* Display a warning if VF didn't manage to reset in time, but need to
-+	 * continue on with the operation.
-+	 */
-+	if (!rsd)
-+		dev_warn(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
-+			 vf->vf_id);
-+
-+	usleep_range(10000, 20000);
-+
-+	/* free VF resources to begin resetting the VSI state */
-+	ice_free_vf_res(vf);
-+
-+	ice_cleanup_and_realloc_vf(vf);
-+
-+	ice_flush(hw);
-+	clear_bit(__ICE_VF_DIS, pf->state);
-+
-+	return true;
-+}
-+
-+/**
-+ * ice_vc_notify_reset - Send pending reset message to all VFs
-+ * @pf: pointer to the PF structure
-+ *
-+ * indicate a pending reset to all VFs on a given PF
-+ */
-+void ice_vc_notify_reset(struct ice_pf *pf)
-+{
-+	struct virtchnl_pf_event pfe;
-+
-+	if (!pf->num_alloc_vfs)
-+		return;
-+
-+	pfe.event = VIRTCHNL_EVENT_RESET_IMPENDING;
-+	pfe.severity = PF_EVENT_SEVERITY_CERTAIN_DOOM;
-+	ice_vc_vf_broadcast(pf, VIRTCHNL_OP_EVENT, ICE_SUCCESS,
-+			    (u8 *)&pfe, sizeof(struct virtchnl_pf_event));
-+}
-+
- /**
-  * ice_alloc_vfs - Allocate and set up VFs resources
-  * @pf: pointer to the PF structure
-@@ -845,3 +966,45 @@ int ice_sriov_configure(struct pci_dev *pdev, int num_vfs)
- 
+ 		for (q_id = q_base; q_id < (q_base + rx_rings_per_v); q_id++) {
+@@ -1682,6 +1682,37 @@ static u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran)
  	return 0;
  }
-+
+ 
 +/**
-+ * ice_process_vflr_event - Free VF resources via irq calls
-+ * @pf: pointer to the PF structure
++ * ice_cfg_itr - configure the initial interrupt throttle values
++ * @hw: pointer to the hw structure
++ * @q_vector: interrupt vector that's being configured
++ * @vector: hw vector index to apply the interrupt throttling to
 + *
-+ * called from the vlfr irq handler to
-+ * free up VF resources and state variables
++ * Configure interrupt throttling values for the ring containers that are
++ * associated with the interrupt vector passed in.
 + */
-+void ice_process_vflr_event(struct ice_pf *pf)
++static void
++ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector, u16 vector)
 +{
-+	struct ice_hw *hw = &pf->hw;
-+	int vf_id;
-+	u32 reg;
++	u8 itr_gran = hw->itr_gran;
 +
-+	if (!test_bit(__ICE_VFLR_EVENT_PENDING, pf->state) ||
-+	    !pf->num_alloc_vfs)
-+		return;
++	if (q_vector->num_ring_rx) {
++		struct ice_ring_container *rc = &q_vector->rx;
 +
-+	/* Re-enable the VFLR interrupt cause here, before looking for which
-+	 * VF got reset. Otherwise, if another VF gets a reset while the
-+	 * first one is being processed, that interrupt will be lost, and
-+	 * that VF will be stuck in reset forever.
-+	 */
-+	reg = rd32(hw, PFINT_OICR_ENA);
-+	reg |= PFINT_OICR_VFLR_M;
-+	wr32(hw, PFINT_OICR_ENA, reg);
-+	ice_flush(hw);
++		rc->itr = ITR_TO_REG(ICE_DFLT_RX_ITR, itr_gran);
++		rc->latency_range = ICE_LOW_LATENCY;
++		wr32(hw, GLINT_ITR(rc->itr_idx, vector), rc->itr);
++	}
 +
-+	clear_bit(__ICE_VFLR_EVENT_PENDING, pf->state);
-+	for (vf_id = 0; vf_id < pf->num_alloc_vfs; vf_id++) {
-+		struct ice_vf *vf = &pf->vf[vf_id];
-+		u32 reg_idx, bit_idx;
++	if (q_vector->num_ring_tx) {
++		struct ice_ring_container *rc = &q_vector->tx;
 +
-+		reg_idx = (hw->func_caps.vf_base_id + vf_id) / 32;
-+		bit_idx = (hw->func_caps.vf_base_id + vf_id) % 32;
-+		/* read GLGEN_VFLRSTAT register to find out the flr VFs */
-+		reg = rd32(hw, GLGEN_VFLRSTAT(reg_idx));
-+		if (reg & BIT(bit_idx))
-+			/* GLGEN_VFLRSTAT bit will be cleared in ice_reset_vf */
-+			ice_reset_vf(vf, true);
++		rc->itr = ITR_TO_REG(ICE_DFLT_TX_ITR, itr_gran);
++		rc->latency_range = ICE_LOW_LATENCY;
++		wr32(hw, GLINT_ITR(rc->itr_idx, vector), rc->itr);
 +	}
 +}
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 3d5344d12efb..c6932559244f 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -51,11 +51,15 @@ struct ice_vf {
++
+ /**
+  * ice_vsi_cfg_msix - MSIX mode Interrupt Config in the HW
+  * @vsi: the VSI being configured
+@@ -1692,31 +1723,13 @@ void ice_vsi_cfg_msix(struct ice_vsi *vsi)
+ 	u16 vector = vsi->hw_base_vector;
+ 	struct ice_hw *hw = &pf->hw;
+ 	u32 txq = 0, rxq = 0;
+-	int i, q, itr;
+-	u8 itr_gran;
++	int i, q;
+ 
+ 	for (i = 0; i < vsi->num_q_vectors; i++, vector++) {
+ 		struct ice_q_vector *q_vector = vsi->q_vectors[i];
+ 
+-		itr_gran = hw->itr_gran;
++		ice_cfg_itr(hw, q_vector, vector);
+ 
+-		q_vector->intrl = ICE_DFLT_INTRL;
+-
+-		if (q_vector->num_ring_rx) {
+-			q_vector->rx.itr =
+-				ITR_TO_REG(vsi->rx_rings[rxq]->itr_setting,
+-					   itr_gran);
+-			q_vector->rx.latency_range = ICE_LOW_LATENCY;
+-		}
+-
+-		if (q_vector->num_ring_tx) {
+-			q_vector->tx.itr =
+-				ITR_TO_REG(vsi->tx_rings[txq]->itr_setting,
+-					   itr_gran);
+-			q_vector->tx.latency_range = ICE_LOW_LATENCY;
+-		}
+-		wr32(hw, GLINT_ITR(ICE_RX_ITR, vector), q_vector->rx.itr);
+-		wr32(hw, GLINT_ITR(ICE_TX_ITR, vector), q_vector->tx.itr);
+ 		wr32(hw, GLINT_RATE(vector),
+ 		     ice_intrl_usec_to_reg(q_vector->intrl, hw->intrl_gran));
+ 
+@@ -1732,32 +1745,32 @@ void ice_vsi_cfg_msix(struct ice_vsi *vsi)
+ 		 * tracked for this PF.
+ 		 */
+ 		for (q = 0; q < q_vector->num_ring_tx; q++) {
++			int itr_idx = q_vector->tx.itr_idx;
+ 			u32 val;
+ 
+-			itr = ICE_ITR_NONE;
+ 			if (vsi->type == ICE_VSI_VF)
+ 				val = QINT_TQCTL_CAUSE_ENA_M |
+-				      (itr << QINT_TQCTL_ITR_INDX_S)  |
++				      (itr_idx << QINT_TQCTL_ITR_INDX_S)  |
+ 				      ((i + 1) << QINT_TQCTL_MSIX_INDX_S);
+ 			else
+ 				val = QINT_TQCTL_CAUSE_ENA_M |
+-				      (itr << QINT_TQCTL_ITR_INDX_S)  |
++				      (itr_idx << QINT_TQCTL_ITR_INDX_S)  |
+ 				      (vector << QINT_TQCTL_MSIX_INDX_S);
+ 			wr32(hw, QINT_TQCTL(vsi->txq_map[txq]), val);
+ 			txq++;
+ 		}
+ 
+ 		for (q = 0; q < q_vector->num_ring_rx; q++) {
++			int itr_idx = q_vector->rx.itr_idx;
+ 			u32 val;
+ 
+-			itr = ICE_ITR_NONE;
+ 			if (vsi->type == ICE_VSI_VF)
+ 				val = QINT_RQCTL_CAUSE_ENA_M |
+-				      (itr << QINT_RQCTL_ITR_INDX_S)  |
++				      (itr_idx << QINT_RQCTL_ITR_INDX_S)  |
+ 				      ((i + 1) << QINT_RQCTL_MSIX_INDX_S);
+ 			else
+ 				val = QINT_RQCTL_CAUSE_ENA_M |
+-				      (itr << QINT_RQCTL_ITR_INDX_S)  |
++				      (itr_idx << QINT_RQCTL_ITR_INDX_S)  |
+ 				      (vector << QINT_RQCTL_MSIX_INDX_S);
+ 			wr32(hw, QINT_RQCTL(vsi->rxq_map[rxq]), val);
+ 			rxq++;
+@@ -2156,8 +2169,8 @@ static void ice_vsi_release_msix(struct ice_vsi *vsi)
+ 	for (i = 0; i < vsi->num_q_vectors; i++, vector++) {
+ 		struct ice_q_vector *q_vector = vsi->q_vectors[i];
+ 
+-		wr32(hw, GLINT_ITR(ICE_RX_ITR, vector), 0);
+-		wr32(hw, GLINT_ITR(ICE_TX_ITR, vector), 0);
++		wr32(hw, GLINT_ITR(ICE_IDX_ITR0, vector), 0);
++		wr32(hw, GLINT_ITR(ICE_IDX_ITR1, vector), 0);
+ 		for (q = 0; q < q_vector->num_ring_tx; q++) {
+ 			wr32(hw, QINT_TQCTL(vsi->txq_map[txq]), 0);
+ 			txq++;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index a9b92974e041..1d0f58bd389b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -105,8 +105,9 @@ enum ice_rx_dtype {
+ #define ICE_TX_ITR	ICE_IDX_ITR1
+ #define ICE_ITR_DYNAMIC	0x8000  /* use top bit as a flag */
+ #define ICE_ITR_8K	125
+-#define ICE_DFLT_TX_ITR	ICE_ITR_8K
+-#define ICE_DFLT_RX_ITR	ICE_ITR_8K
++#define ICE_ITR_20K	50
++#define ICE_DFLT_TX_ITR	ICE_ITR_20K
++#define ICE_DFLT_RX_ITR	ICE_ITR_20K
+ /* apply ITR granularity translation to program the register. itr_gran is either
+  * 2 or 4 usecs so we need to divide by 2 first then shift by that value
+  */
+@@ -135,13 +136,6 @@ struct ice_ring {
+ 	u16 q_index;			/* Queue number of ring */
+ 	u32 txq_teid;			/* Added Tx queue TEID */
+ 
+-	/* high bit set means dynamic, use accessor routines to read/write.
+-	 * hardware supports 4us/2us resolution for the ITR registers.
+-	 * these values always store the USER setting, and must be converted
+-	 * before programming to a register.
+-	 */
+-	u16 itr_setting;
+-
+ 	u16 count;			/* Number of descriptors */
+ 	u16 reg_idx;			/* HW register index of the ring */
+ 
+@@ -178,6 +172,7 @@ struct ice_ring_container {
+ 	unsigned int total_bytes;	/* total bytes processed this int */
+ 	unsigned int total_pkts;	/* total packets processed this int */
+ 	enum ice_latency_range latency_range;
++	int itr_idx;	/* index in the interrupt vector */
+ 	u16 itr;
  };
  
- #ifdef CONFIG_PCI_IOV
-+void ice_process_vflr_event(struct ice_pf *pf);
- int ice_sriov_configure(struct pci_dev *pdev, int num_vfs);
- void ice_free_vfs(struct ice_pf *pf);
-+void ice_vc_notify_reset(struct ice_pf *pf);
- bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr);
- #else /* CONFIG_PCI_IOV */
-+#define ice_process_vflr_event(pf) do {} while (0)
- #define ice_free_vfs(pf) do {} while (0)
-+#define ice_vc_notify_reset(pf) do {} while (0)
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 5d14b9f2682a..cd72a6482f53 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1678,26 +1678,30 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf *vf, u8 *msg)
+ 		/* lookout for the invalid queue index */
+ 		qmap = map->rxq_map;
+ 		for_each_set_bit(vsi_q_id, &qmap, ICE_MAX_BASE_QS_PER_VF) {
++			struct ice_q_vector *q_vector;
++
+ 			if (!ice_vc_isvalid_q_id(vf, vsi_id, vsi_q_id)) {
+ 				aq_ret = ICE_ERR_PARAM;
+ 				goto error_param;
+ 			}
+-			vsi->q_vectors[i]->num_ring_rx++;
+-			vsi->rx_rings[vsi_q_id]->itr_setting =
+-				map->rxitr_idx;
+-			vsi->rx_rings[vsi_q_id]->q_vector = vsi->q_vectors[i];
++			q_vector = vsi->q_vectors[i];
++			q_vector->num_ring_rx++;
++			q_vector->rx.itr_idx = map->rxitr_idx;
++			vsi->rx_rings[vsi_q_id]->q_vector = q_vector;
+ 		}
  
- static inline bool
- ice_reset_all_vfs(struct ice_pf __always_unused *pf,
+ 		qmap = map->txq_map;
+ 		for_each_set_bit(vsi_q_id, &qmap, ICE_MAX_BASE_QS_PER_VF) {
++			struct ice_q_vector *q_vector;
++
+ 			if (!ice_vc_isvalid_q_id(vf, vsi_id, vsi_q_id)) {
+ 				aq_ret = ICE_ERR_PARAM;
+ 				goto error_param;
+ 			}
+-			vsi->q_vectors[i]->num_ring_tx++;
+-			vsi->tx_rings[vsi_q_id]->itr_setting =
+-				map->txitr_idx;
+-			vsi->tx_rings[vsi_q_id]->q_vector = vsi->q_vectors[i];
++			q_vector = vsi->q_vectors[i];
++			q_vector->num_ring_tx++;
++			q_vector->tx.itr_idx = map->txitr_idx;
++			vsi->tx_rings[vsi_q_id]->q_vector = q_vector;
+ 		}
+ 	}
+ 
 -- 
 2.14.3
 
