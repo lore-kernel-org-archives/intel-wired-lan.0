@@ -1,148 +1,136 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 20 Sep 2018 22:46:27 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: reset next_to_clean and
- next_to_use when we reset the head and tail
-In-Reply-To: <20180920104247.69280-1-sebastianx.basierski@intel.com>
-References: <20180920104247.69280-1-sebastianx.basierski@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2EDA5B@ORSMSX104.amr.corp.intel.com>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Thu, 20 Sep 2018 16:22:16 -0700
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: check return value of
+ napi_complete_done()
+In-Reply-To: <0DAF1AF9-E98D-4D0F-BD68-F5936A0312C6@fb.com>
+References: <20180920190113.490005-1-songliubraving@fb.com>
+ <c1251d5d-4b18-a1de-acd2-6de829b7c7ac@gmail.com>
+ <2ca0e823642d232092017f66e8151652e22e74a1.camel@intel.com>
+ <0DAF1AF9-E98D-4D0F-BD68-F5936A0312C6@fb.com>
+Message-ID: <ee9b9a55-c967-cec3-7df1-79f84b06154c@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is causing a stack trace on shutdown. Reverting the patch fixes it.
 
 
+On 09/20/2018 03:42 PM, Song Liu wrote:
+> 
+> 
+>> On Sep 20, 2018, at 2:01 PM, Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
+>>
+>> On Thu, 2018-09-20 at 13:35 -0700, Eric Dumazet wrote:
+>>> On 09/20/2018 12:01 PM, Song Liu wrote:
+>>>> The NIC driver should only enable interrupts when napi_complete_done()
+>>>> returns true. This patch adds the check for ixgbe.
+>>>>
+>>>> Cc: stable at vger.kernel.org # 4.10+
+>>>> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+>>>> Suggested-by: Eric Dumazet <edumazet@google.com>
+>>>> Signed-off-by: Song Liu <songliubraving@fb.com>
+>>>> ---
+>>>
+>>>
+>>> Well, unfortunately we do not know why this is needed,
+>>> this is why I have not yet sent this patch formally.
+>>>
+>>> netpoll has correct synchronization :
+>>>
+>>> poll_napi() places into napi->poll_owner current cpu number before
+>>> calling poll_one_napi()
+>>>
+>>> netpoll_poll_lock() does also use napi->poll_owner
+>>>
+>>> When netpoll calls ixgbe poll() method, it passed a budget of 0,
+>>> meaning napi_complete_done() is not called.
+>>>
+>>> As long as we can not explain the problem properly in the changelog,
+>>> we should investigate, otherwise we will probably see coming dozens of
+>>> patches
+>>> trying to fix a 'potential hazard'.
+>>
+>> Agreed, which is why I have our validation and developers looking into it,
+>> while we test the current patch from Song.
+> 
+> I figured out what is the issue here. And I have a proposal to fix it. I 
+> have verified that this fixes the issue in our tests. But Alexei suggests
+> that it may not be the right way to fix. 
+> 
+> Here is what happened:
+> 
+> netpoll tries to send skb with netpoll_start_xmit(). If that fails, it 
+> calls netpoll_poll_dev(), which calls ndo_poll_controller(). Then, in 
+> the driver, ndo_poll_controller() calls napi_schedule() for ALL NAPIs 
+> within the same NIC. 
+> 
+> This is problematic, because at the end napi_schedule() calls:
+> 
+>     ____napi_schedule(this_cpu_ptr(&softnet_data), n);
+> 
+> which attached these NAPIs to softnet_data on THIS CPU. This is done
+> via napi->poll_list. 
+> 
+> Then suddenly ksoftirqd on this CPU owns multiple NAPIs. And it will
+> not give up the ownership until it calls napi_complete_done(). However, 
+> for a very busy server, we usually use 16 CPUs to poll NAPI, so this
+> CPU can easily be overloaded. And as a result, each call of napi->poll() 
+> will hit budget (of 64), and it will not call napi_complete_done(), 
+> and the NAPI stays in the poll_list of this CPU. 
+> 
+> When this happens, the host usually cannot get out of this state until
+> we throttle/stop client traffic. 
+> 
+> 
+> I am pretty confident this is what happened. Please let me know if 
+> anything above doesn't make sense. 
+> 
+> 
+> Here is my proposal to fix it: Instead of polling all NAPIs within one
+> NIC, I would have netpoll to only poll the NAPI that will free space
+> for netpoll_start_xmit(). I attached my two RFC patches to the end of 
+> this email. 
+> 
+> I chatted with Alexei about this. He think polling only one NAPI may 
+> not guarantee netpoll make progress with the TX queue we are aiming 
+> for. Also, the bigger problem may be the fact that NAPIs could get 
+> pinned to one CPU and cannot get released. 
+> 
+> At this point, I really don't know what is the best way to fix this. 
+> 
+> I will also work on a repro with netperf. 
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Sebastian Basierski
-> Sent: Thursday, September 20, 2018 3:43 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: reset next_to_clean and
-> next_to_use when we reset the head and tail
+Thanks !
+
 > 
-> Only reset the next_to_clean and next_to_use values when we are resetting
-> the head and tail hardware registers.  This way we can avoid having multiple
-> functions doing the reset work and can more easily track the correlation
-> between the registers and these values.
+> Please let me know your suggestions. 
 > 
-> Signed-off-by: Sebastian Basierski <sebastianx.basierski@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 25 +++++++++----------
->  1 file changed, 12 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 27a8546c88b2..0e83f5e8973d 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -3482,10 +3482,16 @@ void ixgbe_configure_tx_ring(struct
-> ixgbe_adapter *adapter,
->  	IXGBE_WRITE_REG(hw, IXGBE_TDBAH(reg_idx), (tdba >> 32));
->  	IXGBE_WRITE_REG(hw, IXGBE_TDLEN(reg_idx),
->  			ring->count * sizeof(union ixgbe_adv_tx_desc));
-> +
-> +	/* reset head and tail pointers */
->  	IXGBE_WRITE_REG(hw, IXGBE_TDH(reg_idx), 0);
->  	IXGBE_WRITE_REG(hw, IXGBE_TDT(reg_idx), 0);
->  	ring->tail = adapter->io_addr + IXGBE_TDT(reg_idx);
-> 
-> +	/* reset ntu and ntc to place SW in sync with hardwdare */
-> +	ring->next_to_clean = 0;
-> +	ring->next_to_use = 0;
-> +
->  	/*
->  	 * set WTHRESH to encourage burst writeback, it should not be set
->  	 * higher than 1 when:
-> @@ -4046,10 +4052,16 @@ void ixgbe_configure_rx_ring(struct
-> ixgbe_adapter *adapter,
->  	/* Force flushing of IXGBE_RDLEN to prevent MDD */
->  	IXGBE_WRITE_FLUSH(hw);
-> 
-> +	/* reset head and tail pointers */
->  	IXGBE_WRITE_REG(hw, IXGBE_RDH(reg_idx), 0);
->  	IXGBE_WRITE_REG(hw, IXGBE_RDT(reg_idx), 0);
->  	ring->tail = adapter->io_addr + IXGBE_RDT(reg_idx);
-> 
-> +	/* reset ntu and ntc to place SW in sync with hardwdare */
-> +	ring->next_to_clean = 0;
-> +	ring->next_to_use = 0;
-> +	ring->next_to_alloc = 0;
-> +
->  	ixgbe_configure_srrctl(adapter, ring);
->  	ixgbe_configure_rscctl(adapter, ring);
-> 
-> @@ -5238,10 +5250,6 @@ static void ixgbe_clean_rx_ring(struct ixgbe_ring
-> *rx_ring)
->  			rx_buffer = rx_ring->rx_buffer_info;
->  		}
->  	}
-> -
-> -	rx_ring->next_to_alloc = 0;
-> -	rx_ring->next_to_clean = 0;
-> -	rx_ring->next_to_use = 0;
->  }
-> 
->  static int ixgbe_fwd_ring_up(struct ixgbe_adapter *adapter, @@ -5933,10
-> +5941,6 @@ static void ixgbe_clean_tx_ring(struct ixgbe_ring *tx_ring)
->  	/* reset BQL for queue */
->  	if (!ring_is_xdp(tx_ring))
->  		netdev_tx_reset_queue(txring_txq(tx_ring));
-> -
-> -	/* reset next_to_use and next_to_clean */
-> -	tx_ring->next_to_use = 0;
-> -	tx_ring->next_to_clean = 0;
->  }
-> 
->  /**
-> @@ -6369,8 +6373,6 @@ int ixgbe_setup_tx_resources(struct ixgbe_ring
-> *tx_ring)
->  	if (!tx_ring->desc)
->  		goto err;
-> 
-> -	tx_ring->next_to_use = 0;
-> -	tx_ring->next_to_clean = 0;
->  	return 0;
-> 
->  err:
-> @@ -6463,9 +6465,6 @@ int ixgbe_setup_rx_resources(struct ixgbe_adapter
-> *adapter,
->  	if (!rx_ring->desc)
->  		goto err;
-> 
-> -	rx_ring->next_to_clean = 0;
-> -	rx_ring->next_to_use = 0;
-> -
->  	/* XDP RX-queue info */
->  	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
->  			     rx_ring->queue_index) < 0)
-> --
-> 2.17.1
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: ixgbe crash c.jpg
-Type: image/jpeg
-Size: 179286 bytes
-Desc: ixgbe crash c.jpg
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180920/22212a52/attachment-0003.jpg>
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: ixgbe crash a.jpg
-Type: image/jpeg
-Size: 171082 bytes
-Desc: ixgbe crash a.jpg
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180920/22212a52/attachment-0004.jpg>
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: ixgbe crash b.jpg
-Type: image/jpeg
-Size: 195790 bytes
-Desc: ixgbe crash b.jpg
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180920/22212a52/attachment-0005.jpg>
+
+Yeah, maybe that NICs using NAPI could not provide an ndo_poll_controller() method at all,
+since it is very risky (potentially grab many NAPI, and end up in this locked situation)
+
+poll_napi() could attempt to free skbs one napi at a time,
+without the current cpu stealing all NAPI.
+
+
+diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+index 57557a6a950cc9cdff959391576a03381d328c1a..a992971d366090ba69d5c1af32eadd554d6880cf 100644
+--- a/net/core/netpoll.c
++++ b/net/core/netpoll.c
+@@ -205,13 +205,8 @@ static void netpoll_poll_dev(struct net_device *dev)
+        }
+ 
+        ops = dev->netdev_ops;
+-       if (!ops->ndo_poll_controller) {
+-               up(&ni->dev_lock);
+-               return;
+-       }
+-
+-       /* Process pending work on NIC */
+-       ops->ndo_poll_controller(dev);
++       if (ops->ndo_poll_controller)
++               ops->ndo_poll_controller(dev);
+ 
+        poll_napi(dev);
+
