@@ -1,82 +1,137 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:23:35 -0700
-Subject: [Intel-wired-lan] [PATCH 12/16] ice: Fix potential null pointer
- issues
+Date: Wed, 19 Sep 2018 17:23:32 -0700
+Subject: [Intel-wired-lan] [PATCH 09/16] ice: Extend malicious operations
+ detection logic
 In-Reply-To: <20180920002339.11107-1-anirudh.venkataramanan@intel.com>
 References: <20180920002339.11107-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920002339.11107-13-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920002339.11107-10-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+This patch extends the existing malicious driver operation detection
+logic to cover malicious operations by the VF driver as well.
 
-Add checks in the filter handling flow to avoid dereferencing
-NULL pointers.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> minor cleanup for upstream submission]
----
- drivers/net/ethernet/intel/ice/ice_switch.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |  8 +++++
+ drivers/net/ethernet/intel/ice/ice_main.c        | 46 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  8 +++--
+ 3 files changed, 60 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index c6d673bd5eaa..2a3d4a72ab3c 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -2010,12 +2010,12 @@ ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_handle, bool set, u8 direction)
- enum ice_status
- ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
- {
--	struct ice_fltr_list_entry *list_itr;
-+	struct ice_fltr_list_entry *list_itr, *tmp;
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 5a4fa22d0a83..a6679a9bfd3a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -219,6 +219,14 @@
+ #define PF_MDET_TX_PQM_VALID_M			BIT(0)
+ #define PF_MDET_TX_TCLAN			0x000FC000
+ #define PF_MDET_TX_TCLAN_VALID_M		BIT(0)
++#define VP_MDET_RX(_VF)				(0x00294400 + ((_VF) * 4))
++#define VP_MDET_RX_VALID_M			BIT(0)
++#define VP_MDET_TX_PQM(_VF)			(0x002D2000 + ((_VF) * 4))
++#define VP_MDET_TX_PQM_VALID_M			BIT(0)
++#define VP_MDET_TX_TCLAN(_VF)			(0x000FB800 + ((_VF) * 4))
++#define VP_MDET_TX_TCLAN_VALID_M		BIT(0)
++#define VP_MDET_TX_TDPU(_VF)			(0x00040000 + ((_VF) * 4))
++#define VP_MDET_TX_TDPU_VALID_M			BIT(0)
+ #define GLNVM_FLA				0x000B6108
+ #define GLNVM_FLA_LOCKED_M			BIT(6)
+ #define GLNVM_GENS				0x000B6100
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 28f6d9f63a18..3e254281da63 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -951,6 +951,7 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 	struct ice_hw *hw = &pf->hw;
+ 	bool mdd_detected = false;
+ 	u32 reg;
++	int i;
  
- 	if (!m_list)
- 		return ICE_ERR_PARAM;
- 
--	list_for_each_entry(list_itr, m_list, list_entry) {
-+	list_for_each_entry_safe(list_itr, tmp, m_list, list_entry) {
- 		enum ice_sw_lkup_type l_type = list_itr->fltr_info.lkup_type;
- 
- 		if (l_type != ICE_SW_LKUP_MAC)
-@@ -2037,12 +2037,12 @@ ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
- enum ice_status
- ice_remove_vlan(struct ice_hw *hw, struct list_head *v_list)
- {
--	struct ice_fltr_list_entry *v_list_itr;
-+	struct ice_fltr_list_entry *v_list_itr, *tmp;
- 
- 	if (!v_list || !hw)
- 		return ICE_ERR_PARAM;
- 
--	list_for_each_entry(v_list_itr, v_list, list_entry) {
-+	list_for_each_entry_safe(v_list_itr, tmp, v_list, list_entry) {
- 		enum ice_sw_lkup_type l_type = v_list_itr->fltr_info.lkup_type;
- 
- 		if (l_type != ICE_SW_LKUP_VLAN)
-@@ -2142,7 +2142,7 @@ ice_add_to_vsi_fltr_list(struct ice_hw *hw, u16 vsi_handle,
- 		struct ice_fltr_info *fi;
- 
- 		fi = &fm_entry->fltr_info;
--		if (!ice_vsi_uses_fltr(fm_entry, vsi_handle))
-+		if (!fi || !ice_vsi_uses_fltr(fm_entry, vsi_handle))
- 			continue;
- 
- 		status = ice_add_entry_to_vsi_fltr_list(hw, vsi_handle,
-@@ -2259,7 +2259,8 @@ ice_replay_vsi_fltr(struct ice_hw *hw, u16 vsi_handle, u8 recp_id,
- 				goto end;
- 			continue;
+ 	if (!test_bit(__ICE_MDD_EVENT_PENDING, pf->state))
+ 		return;
+@@ -1040,6 +1041,51 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
  		}
--		if (!test_bit(vsi_handle, itr->vsi_list_info->vsi_map))
-+		if (!itr->vsi_list_info ||
-+		    !test_bit(vsi_handle, itr->vsi_list_info->vsi_map))
- 			continue;
- 		/* Clearing it so that the logic can add it back */
- 		clear_bit(vsi_handle, itr->vsi_list_info->vsi_map);
+ 	}
+ 
++	/* see if one of the VFs needs to be reset */
++	for (i = 0; i < pf->num_alloc_vfs && mdd_detected; i++) {
++		struct ice_vf *vf = &pf->vf[i];
++
++		reg = rd32(hw, VP_MDET_TX_PQM(i));
++		if (reg & VP_MDET_TX_PQM_VALID_M) {
++			wr32(hw, VP_MDET_TX_PQM(i), 0xFFFF);
++			vf->num_mdd_events++;
++			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
++				 i);
++		}
++
++		reg = rd32(hw, VP_MDET_TX_TCLAN(i));
++		if (reg & VP_MDET_TX_TCLAN_VALID_M) {
++			wr32(hw, VP_MDET_TX_TCLAN(i), 0xFFFF);
++			vf->num_mdd_events++;
++			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
++				 i);
++		}
++
++		reg = rd32(hw, VP_MDET_TX_TDPU(i));
++		if (reg & VP_MDET_TX_TDPU_VALID_M) {
++			wr32(hw, VP_MDET_TX_TDPU(i), 0xFFFF);
++			vf->num_mdd_events++;
++			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
++				 i);
++		}
++
++		reg = rd32(hw, VP_MDET_RX(i));
++		if (reg & VP_MDET_RX_VALID_M) {
++			wr32(hw, VP_MDET_RX(i), 0xFFFF);
++			vf->num_mdd_events++;
++			dev_info(&pf->pdev->dev, "RX driver issue detected on VF %d\n",
++				 i);
++		}
++
++		if (vf->num_mdd_events > ICE_DFLT_NUM_MDD_EVENTS_ALLOWED) {
++			dev_info(&pf->pdev->dev,
++				 "Too many MDD events on VF %d, disabled\n", i);
++			dev_info(&pf->pdev->dev,
++				 "Use PF Control I/F to re-enable the VF\n");
++			set_bit(ICE_VF_STATE_DIS, vf->vf_states);
++		}
++	}
++
+ 	/* re-enable MDD interrupt cause */
+ 	clear_bit(__ICE_MDD_EVENT_PENDING, pf->state);
+ 	reg = rd32(hw, PFINT_OICR_ENA);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 94295fb779df..11a35cb990e2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -9,10 +9,13 @@
+ #define ICE_VLAN_PRIORITY_S		12
+ #define ICE_VLAN_M			0xFFF
+ #define ICE_PRIORITY_M			0x7000
+-#define ICE_MAX_VLAN_PER_VF		8 /* restriction for non-trusted VF */
+ 
+-/* Restrict number of MACs a non-trusted VF can program */
++/* Restrict number of MAC Addr and VLAN that non-trusted VF can programmed */
++#define ICE_MAX_VLAN_PER_VF		8
+ #define ICE_MAX_MACADDR_PER_VF		12
++
++/* Malicious Driver Detection */
++#define ICE_DFLT_NUM_MDD_EVENTS_ALLOWED		3
+ #define ICE_DFLT_NUM_INVAL_MSGS_ALLOWED		10
+ 
+ /* Static VF transaction/status register def */
+@@ -56,6 +59,7 @@ struct ice_vf {
+ 	u8 trusted;
+ 	u16 lan_vsi_idx;		/* index into PF struct */
+ 	u16 lan_vsi_num;		/* ID as used by firmware */
++	u64 num_mdd_events;		/* number of mdd events detected */
+ 	u64 num_inval_msgs;		/* number of continuous invalid msgs */
+ 	u64 num_valid_msgs;		/* number of valid msgs detected */
+ 	unsigned long vf_caps;		/* vf's adv. capabilities */
 -- 
 2.14.3
 
