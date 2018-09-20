@@ -1,43 +1,95 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:23:08 -0700
-Subject: [Intel-wired-lan] [PATCH 5/8] ice: Update comment for
- ice_fltr_mgmt_list_entry
+Date: Wed, 19 Sep 2018 17:23:11 -0700
+Subject: [Intel-wired-lan] [PATCH 8/8] ice: fix changing of ring descriptor
+ size (ethtool -G)
 In-Reply-To: <20180920002311.10891-1-anirudh.venkataramanan@intel.com>
 References: <20180920002311.10891-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920002311.10891-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920002311.10891-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Previously the comment stated that VSI lists should be used when a
-second VSI becomes a subscriber to the "VLAN address". VSI lists
-are always used for VLAN membership, so replace "VLAN address" with
-"MAC address". Also note that VLAN(s) always use VSI list rules.
+rx_mini_pending was set to an incorrect value. This was causing EINVAL to
+always be returned to 'ethtool -G'. The driver does not support mini or
+jumbo rings so the respective settings should be zero.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Also, change the valid range of the number of descriptors in the rings to
+make the code simpler and easier for users to understand (this removes the
+valid settings of 8 and 16). Add a system log message indicating when the
+number is rounded-up from what the user specifies with the 'ethtool -G'
+command (i.e. when it is not a multiple of 32), and update the log message
+when a user-provided value is out of range to also indicate the stride.
+
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_switch.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice.h         |  4 ++--
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 17 ++++++++++++++---
+ 2 files changed, 16 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 646389ca1238..e12940e70000 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -140,7 +140,8 @@ struct ice_fltr_list_entry {
- /* This defines an entry in the list that maintains MAC or VLAN membership
-  * to HW list mapping, since multiple VSIs can subscribe to the same MAC or
-  * VLAN. As an optimization the VSI list should be created only when a
-- * second VSI becomes a subscriber to the VLAN address.
-+ * second VSI becomes a subscriber to the same MAC address. VSI lists are always
-+ * used for VLAN membership.
-  */
- struct ice_fltr_mgmt_list_entry {
- 	/* back pointer to VSI list id to VSI list mapping */
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 9cf233d085d8..e84a612ffa71 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -39,9 +39,9 @@
+ extern const char ice_drv_ver[];
+ #define ICE_BAR0		0
+ #define ICE_DFLT_NUM_DESC	128
+-#define ICE_MIN_NUM_DESC	8
+-#define ICE_MAX_NUM_DESC	8160
+ #define ICE_REQ_DESC_MULTIPLE	32
++#define ICE_MIN_NUM_DESC	ICE_REQ_DESC_MULTIPLE
++#define ICE_MAX_NUM_DESC	8160
+ #define ICE_DFLT_TRAFFIC_CLASS	BIT(0)
+ #define ICE_INT_NAME_STR_LEN	(IFNAMSIZ + 16)
+ #define ICE_ETHTOOL_FWVER_LEN	32
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index db2c502ae932..96923580f2a6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -1198,9 +1198,11 @@ ice_get_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
+ 	ring->tx_max_pending = ICE_MAX_NUM_DESC;
+ 	ring->rx_pending = vsi->rx_rings[0]->count;
+ 	ring->tx_pending = vsi->tx_rings[0]->count;
+-	ring->rx_mini_pending = ICE_MIN_NUM_DESC;
++
++	/* Rx mini and jumbo rings are not supported */
+ 	ring->rx_mini_max_pending = 0;
+ 	ring->rx_jumbo_max_pending = 0;
++	ring->rx_mini_pending = 0;
+ 	ring->rx_jumbo_pending = 0;
+ }
+ 
+@@ -1218,14 +1220,23 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
+ 	    ring->tx_pending < ICE_MIN_NUM_DESC ||
+ 	    ring->rx_pending > ICE_MAX_NUM_DESC ||
+ 	    ring->rx_pending < ICE_MIN_NUM_DESC) {
+-		netdev_err(netdev, "Descriptors requested (Tx: %d / Rx: %d) out of range [%d-%d]\n",
++		netdev_err(netdev, "Descriptors requested (Tx: %d / Rx: %d) out of range [%d-%d] (increment %d)\n",
+ 			   ring->tx_pending, ring->rx_pending,
+-			   ICE_MIN_NUM_DESC, ICE_MAX_NUM_DESC);
++			   ICE_MIN_NUM_DESC, ICE_MAX_NUM_DESC,
++			   ICE_REQ_DESC_MULTIPLE);
+ 		return -EINVAL;
+ 	}
+ 
+ 	new_tx_cnt = ALIGN(ring->tx_pending, ICE_REQ_DESC_MULTIPLE);
++	if (new_tx_cnt != ring->tx_pending)
++		netdev_info(netdev,
++			    "Requested Tx descriptor count rounded up to %d\n",
++			    new_tx_cnt);
+ 	new_rx_cnt = ALIGN(ring->rx_pending, ICE_REQ_DESC_MULTIPLE);
++	if (new_rx_cnt != ring->rx_pending)
++		netdev_info(netdev,
++			    "Requested Rx descriptor count rounded up to %d\n",
++			    new_rx_cnt);
+ 
+ 	/* if nothing to do return success */
+ 	if (new_tx_cnt == vsi->tx_rings[0]->count &&
 -- 
 2.14.3
 
