@@ -1,102 +1,266 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:23:17 -0700
-Subject: [Intel-wired-lan] [PATCH 14/16] ice: Implement ethtool hook for RSS
- switch
+Date: Wed, 19 Sep 2018 17:23:11 -0700
+Subject: [Intel-wired-lan] [PATCH 08/16] ice: Change pf state behavior to
+ protect reset path
 In-Reply-To: <20180920002319.10971-1-anirudh.venkataramanan@intel.com>
 References: <20180920002319.10971-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920002319.10971-15-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920002319.10971-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+From: Dave Ertman <david.m.ertman@intel.com>
 
-This patch implements ethtool hook for enabling/disabling
-RSS. While disabling RSS, the LUT should be cleared. And
-the LUT should be reconfigured while enabling RSS.
+Currently, there is no bit, or set of bits, that protect the entirety
+of the reset path.
 
-Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+If the reset is originated by the driver, then the relevant
+one of the following bits will be set when the reset is scheduled:
+__ICE_PFR_REQ
+__ICE_CORER_REQ
+__ICE_GLOBR_REQ
+This bit will not be cleared until after the rebuild has completed.
+
+If the reset is originated by the FW, then the first the driver knows of
+it will be the reception of the OICR interrupt.  The __ICE_RESET_OICR_RECV
+bit will be set in the interrupt handler.  This will also be the indicator
+in a SW originated reset that we have completed the pre-OICR tasks and
+have informed the FW that a reset was requested.
+
+To utilize these bits, change the function:
+ice_is_reset_recovery_pending()
+	to be:
+ice_is_reset_in_progress()
+
+The new function will check all of the above bits in the pf->state and
+will return a true if one or more of these bits are set.
+
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c  | 32 +++++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_lib.h  |  2 ++
- drivers/net/ethernet/intel/ice/ice_main.c |  6 ++++++
- 3 files changed, 40 insertions(+)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice.h      |  2 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c  | 13 +++++----
+ drivers/net/ethernet/intel/ice/ice_lib.h  |  2 +-
+ drivers/net/ethernet/intel/ice/ice_main.c | 44 +++++++++++++++----------------
+ 4 files changed, 31 insertions(+), 30 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index e84a612ffa71..9cce4cb91401 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -124,7 +124,7 @@ enum ice_state {
+ 	__ICE_DOWN,
+ 	__ICE_NEEDS_RESTART,
+ 	__ICE_PREPARED_FOR_RESET,	/* set by driver when prepared */
+-	__ICE_RESET_RECOVERY_PENDING,	/* set by driver when reset starts */
++	__ICE_RESET_OICR_RECV,		/* set by driver after rcv reset OICR */
+ 	__ICE_PFR_REQ,			/* set by driver and peers */
+ 	__ICE_CORER_REQ,		/* set by driver and peers */
+ 	__ICE_GLOBR_REQ,		/* set by driver and peers */
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 92bbbe99120c..0d341652fb92 100644
+index 3d6d8a33b7bc..da9199d220a0 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1222,6 +1222,38 @@ static void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
+@@ -2250,7 +2250,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 	 * currently. This is done to avoid check_flush_dependency() warning
+ 	 * on this wq
+ 	 */
+-	if (vsi->netdev && !ice_is_reset_recovery_pending(pf->state)) {
++	if (vsi->netdev && !ice_is_reset_in_progress(pf->state)) {
+ 		unregister_netdev(vsi->netdev);
+ 		free_netdev(vsi->netdev);
+ 		vsi->netdev = NULL;
+@@ -2280,7 +2280,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 	 * free VSI netdev when PF is not in reset recovery pending state,\
+ 	 * for ex: during rmmod.
+ 	 */
+-	if (!ice_is_reset_recovery_pending(pf->state))
++	if (!ice_is_reset_in_progress(pf->state))
+ 		ice_vsi_clear(vsi);
+ 
+ 	return 0;
+@@ -2367,10 +2367,13 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
+ }
+ 
+ /**
+- * ice_is_reset_recovery_pending - schedule a reset
++ * ice_is_reset_in_progress - check for a reset in progress
+  * @state: pf state field
+  */
+-bool ice_is_reset_recovery_pending(unsigned long *state)
++bool ice_is_reset_in_progress(unsigned long *state)
+ {
+-	return test_bit(__ICE_RESET_RECOVERY_PENDING, state);
++	return test_bit(__ICE_RESET_OICR_RECV, state) ||
++	       test_bit(__ICE_PFR_REQ, state) ||
++	       test_bit(__ICE_CORER_REQ, state) ||
++	       test_bit(__ICE_GLOBR_REQ, state);
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index a76cde895bf3..4265464ee3d3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -54,7 +54,7 @@ ice_get_res(struct ice_pf *pf, struct ice_res_tracker *res, u16 needed, u16 id);
+ 
+ int ice_vsi_rebuild(struct ice_vsi *vsi);
+ 
+-bool ice_is_reset_recovery_pending(unsigned long *state);
++bool ice_is_reset_in_progress(unsigned long *state);
+ 
+ void ice_vsi_free_q_vectors(struct ice_vsi *vsi);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 0abf0aef366d..65e882b8277e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -364,21 +364,17 @@ static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	dev_dbg(dev, "reset_type 0x%x requested\n", reset_type);
+ 	WARN_ON(in_interrupt());
+ 
+-	/* PFR is a bit of a special case because it doesn't result in an OICR
+-	 * interrupt. Set pending bit here which otherwise gets set in the
+-	 * OICR handler.
+-	 */
+-	if (reset_type == ICE_RESET_PFR)
+-		set_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
+-
+ 	ice_prepare_for_reset(pf);
+ 
+ 	/* trigger the reset */
+ 	if (ice_reset(hw, reset_type)) {
+ 		dev_err(dev, "reset %d failed\n", reset_type);
+ 		set_bit(__ICE_RESET_FAILED, pf->state);
+-		clear_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
++		clear_bit(__ICE_RESET_OICR_RECV, pf->state);
+ 		clear_bit(__ICE_PREPARED_FOR_RESET, pf->state);
++		clear_bit(__ICE_PFR_REQ, pf->state);
++		clear_bit(__ICE_CORER_REQ, pf->state);
++		clear_bit(__ICE_GLOBR_REQ, pf->state);
+ 		return;
+ 	}
+ 
+@@ -389,8 +385,8 @@ static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	if (reset_type == ICE_RESET_PFR) {
+ 		pf->pfr_count++;
+ 		ice_rebuild(pf);
+-		clear_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
+ 		clear_bit(__ICE_PREPARED_FOR_RESET, pf->state);
++		clear_bit(__ICE_PFR_REQ, pf->state);
  	}
  }
  
-+/**
-+ * ice_vsi_manage_rss_lut - disable/enable RSS
-+ * @vsi: the VSI being changed
-+ * @ena: boolean value indicating if this is an enable or disable request
-+ *
-+ * In the event of disable request for RSS, this function will zero out RSS
-+ * LUT, while in the event of enable request for RSS, it will reconfigure RSS
-+ * LUT.
-+ */
-+int ice_vsi_manage_rss_lut(struct ice_vsi *vsi, bool ena)
-+{
-+	int err = 0;
-+	u8 *lut;
-+
-+	lut = devm_kzalloc(&vsi->back->pdev->dev, vsi->rss_table_size,
-+			   GFP_KERNEL);
-+	if (!lut)
-+		return -ENOMEM;
-+
-+	if (ena) {
-+		if (vsi->rss_lut_user)
-+			memcpy(lut, vsi->rss_lut_user, vsi->rss_table_size);
-+		else
-+			ice_fill_rss_lut(lut, vsi->rss_table_size,
-+					 vsi->rss_size);
-+	}
-+
-+	err = ice_set_rss(vsi, NULL, lut, vsi->rss_table_size);
-+	devm_kfree(&vsi->back->pdev->dev, lut);
-+	return err;
-+}
-+
- /**
-  * ice_vsi_cfg_rss_lut_key - Configure RSS params for a VSI
-  * @vsi: VSI to be configured
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index 4265464ee3d3..2617afe01c82 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -70,5 +70,7 @@ void ice_vsi_free_tx_rings(struct ice_vsi *vsi);
+@@ -405,14 +401,14 @@ static void ice_reset_subtask(struct ice_pf *pf)
+ 	/* When a CORER/GLOBR/EMPR is about to happen, the hardware triggers an
+ 	 * OICR interrupt. The OICR handler (ice_misc_intr) determines what type
+ 	 * of reset is pending and sets bits in pf->state indicating the reset
+-	 * type and __ICE_RESET_RECOVERY_PENDING.  So, if the latter bit is set
++	 * type and __ICE_RESET_OICR_RECV.  So, if the latter bit is set
+ 	 * prepare for pending reset if not already (for PF software-initiated
+ 	 * global resets the software should already be prepared for it as
+ 	 * indicated by __ICE_PREPARED_FOR_RESET; for global resets initiated
+ 	 * by firmware or software on other PFs, that bit is not set so prepare
+ 	 * for the reset now), poll for reset done, rebuild and return.
+ 	 */
+-	if (ice_is_reset_recovery_pending(pf->state)) {
++	if (test_bit(__ICE_RESET_OICR_RECV, pf->state)) {
+ 		clear_bit(__ICE_GLOBR_RECV, pf->state);
+ 		clear_bit(__ICE_CORER_RECV, pf->state);
+ 		if (!test_bit(__ICE_PREPARED_FOR_RESET, pf->state))
+@@ -428,19 +424,22 @@ static void ice_reset_subtask(struct ice_pf *pf)
+ 			/* clear bit to resume normal operations, but
+ 			 * ICE_NEEDS_RESTART bit is set incase rebuild failed
+ 			 */
+-			clear_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
++			clear_bit(__ICE_RESET_OICR_RECV, pf->state);
+ 			clear_bit(__ICE_PREPARED_FOR_RESET, pf->state);
++			clear_bit(__ICE_PFR_REQ, pf->state);
++			clear_bit(__ICE_CORER_REQ, pf->state);
++			clear_bit(__ICE_GLOBR_REQ, pf->state);
+ 		}
  
- int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc);
+ 		return;
+ 	}
  
-+int ice_vsi_manage_rss_lut(struct ice_vsi *vsi, bool ena);
-+
- irqreturn_t ice_msix_clean_rings(int __always_unused irq, void *data);
- #endif /* !_ICE_LIB_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 9d9c963982ca..b8d274f92e42 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2412,6 +2412,12 @@ static int ice_set_features(struct net_device *netdev,
- 	struct ice_vsi *vsi = np->vsi;
- 	int ret = 0;
+ 	/* No pending resets to finish processing. Check for new resets */
+-	if (test_and_clear_bit(__ICE_PFR_REQ, pf->state))
++	if (test_bit(__ICE_PFR_REQ, pf->state))
+ 		reset_type = ICE_RESET_PFR;
+-	if (test_and_clear_bit(__ICE_CORER_REQ, pf->state))
++	if (test_bit(__ICE_CORER_REQ, pf->state))
+ 		reset_type = ICE_RESET_CORER;
+-	if (test_and_clear_bit(__ICE_GLOBR_REQ, pf->state))
++	if (test_bit(__ICE_GLOBR_REQ, pf->state))
+ 		reset_type = ICE_RESET_GLOBR;
+ 	/* If no valid reset type requested just return */
+ 	if (reset_type == ICE_RESET_INVAL)
+@@ -1029,7 +1028,7 @@ static void ice_service_task(struct work_struct *work)
+ 	ice_reset_subtask(pf);
  
-+	if (features & NETIF_F_RXHASH && !(netdev->features & NETIF_F_RXHASH))
-+		ret = ice_vsi_manage_rss_lut(vsi, true);
-+	else if (!(features & NETIF_F_RXHASH) &&
-+		 netdev->features & NETIF_F_RXHASH)
-+		ret = ice_vsi_manage_rss_lut(vsi, false);
-+
- 	if ((features & NETIF_F_HW_VLAN_CTAG_RX) &&
- 	    !(netdev->features & NETIF_F_HW_VLAN_CTAG_RX))
- 		ret = ice_vsi_manage_vlan_stripping(vsi, true);
+ 	/* bail if a reset/recovery cycle is pending or rebuild failed */
+-	if (ice_is_reset_recovery_pending(pf->state) ||
++	if (ice_is_reset_in_progress(pf->state) ||
+ 	    test_bit(__ICE_SUSPENDED, pf->state) ||
+ 	    test_bit(__ICE_NEEDS_RESTART, pf->state)) {
+ 		ice_service_task_complete(pf);
+@@ -1250,8 +1249,7 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+ 		 * We also make note of which reset happened so that peer
+ 		 * devices/drivers can be informed.
+ 		 */
+-		if (!test_and_set_bit(__ICE_RESET_RECOVERY_PENDING,
+-				      pf->state)) {
++		if (!test_and_set_bit(__ICE_RESET_OICR_RECV, pf->state)) {
+ 			if (reset == ICE_RESET_CORER)
+ 				set_bit(__ICE_CORER_RECV, pf->state);
+ 			else if (reset == ICE_RESET_GLOBR)
+@@ -1265,7 +1263,7 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+ 			 * is received and set back to false after the driver
+ 			 * has determined that the hardware is out of reset.
+ 			 *
+-			 * __ICE_RESET_RECOVERY_PENDING in pf->state indicates
++			 * __ICE_RESET_OICR_RECV in pf->state indicates
+ 			 * that a post reset rebuild is required before the
+ 			 * driver is operational again. This is set above.
+ 			 *
+@@ -1355,7 +1353,7 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+ 	 * lost during reset. Note that this function is called only during
+ 	 * rebuild path and not while reset is in progress.
+ 	 */
+-	if (ice_is_reset_recovery_pending(pf->state))
++	if (ice_is_reset_in_progress(pf->state))
+ 		goto skip_req_irq;
+ 
+ 	/* reserve one vector in irq_tracker for misc interrupts */
+@@ -1637,7 +1635,7 @@ static int ice_setup_pf_sw(struct ice_pf *pf)
+ 	struct ice_vsi *vsi;
+ 	int status = 0;
+ 
+-	if (ice_is_reset_recovery_pending(pf->state))
++	if (ice_is_reset_in_progress(pf->state))
+ 		return -EBUSY;
+ 
+ 	vsi = ice_pf_vsi_setup(pf, pf->hw.port_info);
+@@ -2203,7 +2201,7 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
+ 	}
+ 
+ 	if (test_bit(__ICE_DOWN, pf->state) ||
+-	    ice_is_reset_recovery_pending(pf->state)) {
++	    ice_is_reset_in_progress(pf->state)) {
+ 		netdev_err(netdev, "can't set mac %pM. device not ready\n",
+ 			   mac);
+ 		return -EBUSY;
+@@ -3280,7 +3278,7 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
+ 	}
+ 	/* if a reset is in progress, wait for some time for it to complete */
+ 	do {
+-		if (ice_is_reset_recovery_pending(pf->state)) {
++		if (ice_is_reset_in_progress(pf->state)) {
+ 			count++;
+ 			usleep_range(1000, 2000);
+ 		} else {
 -- 
 2.14.3
 
