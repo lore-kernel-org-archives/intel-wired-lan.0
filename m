@@ -1,10 +1,10 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:23:11 -0700
-Subject: [Intel-wired-lan] [PATCH 8/8] ice: fix changing of ring descriptor
- size (ethtool -G)
+Date: Wed, 19 Sep 2018 17:23:05 -0700
+Subject: [Intel-wired-lan] [PATCH 2/8] ice: replace unnecessary memcpy with
+ direct assignment
 In-Reply-To: <20180920002311.10891-1-anirudh.venkataramanan@intel.com>
 References: <20180920002311.10891-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920002311.10891-9-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920002311.10891-3-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,83 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bruce Allan <bruce.w.allan@intel.com>
 
-rx_mini_pending was set to an incorrect value. This was causing EINVAL to
-always be returned to 'ethtool -G'. The driver does not support mini or
-jumbo rings so the respective settings should be zero.
-
-Also, change the valid range of the number of descriptors in the rings to
-make the code simpler and easier for users to understand (this removes the
-valid settings of 8 and 16). Add a system log message indicating when the
-number is rounded-up from what the user specifies with the 'ethtool -G'
-command (i.e. when it is not a multiple of 32), and update the log message
-when a user-provided value is out of range to also indicate the stride.
+Direct assignment is preferred over a memcpy()
 
 Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         |  4 ++--
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 17 ++++++++++++++---
- 2 files changed, 16 insertions(+), 5 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_controlq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 9cf233d085d8..e84a612ffa71 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -39,9 +39,9 @@
- extern const char ice_drv_ver[];
- #define ICE_BAR0		0
- #define ICE_DFLT_NUM_DESC	128
--#define ICE_MIN_NUM_DESC	8
--#define ICE_MAX_NUM_DESC	8160
- #define ICE_REQ_DESC_MULTIPLE	32
-+#define ICE_MIN_NUM_DESC	ICE_REQ_DESC_MULTIPLE
-+#define ICE_MAX_NUM_DESC	8160
- #define ICE_DFLT_TRAFFIC_CLASS	BIT(0)
- #define ICE_INT_NAME_STR_LEN	(IFNAMSIZ + 16)
- #define ICE_ETHTOOL_FWVER_LEN	32
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index db2c502ae932..96923580f2a6 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1198,9 +1198,11 @@ ice_get_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 	ring->tx_max_pending = ICE_MAX_NUM_DESC;
- 	ring->rx_pending = vsi->rx_rings[0]->count;
- 	ring->tx_pending = vsi->tx_rings[0]->count;
--	ring->rx_mini_pending = ICE_MIN_NUM_DESC;
-+
-+	/* Rx mini and jumbo rings are not supported */
- 	ring->rx_mini_max_pending = 0;
- 	ring->rx_jumbo_max_pending = 0;
-+	ring->rx_mini_pending = 0;
- 	ring->rx_jumbo_pending = 0;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
+index 3c736b90a6bf..6cd86cff6a23 100644
+--- a/drivers/net/ethernet/intel/ice/ice_controlq.c
++++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
+@@ -850,7 +850,7 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
  
-@@ -1218,14 +1220,23 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 	    ring->tx_pending < ICE_MIN_NUM_DESC ||
- 	    ring->rx_pending > ICE_MAX_NUM_DESC ||
- 	    ring->rx_pending < ICE_MIN_NUM_DESC) {
--		netdev_err(netdev, "Descriptors requested (Tx: %d / Rx: %d) out of range [%d-%d]\n",
-+		netdev_err(netdev, "Descriptors requested (Tx: %d / Rx: %d) out of range [%d-%d] (increment %d)\n",
- 			   ring->tx_pending, ring->rx_pending,
--			   ICE_MIN_NUM_DESC, ICE_MAX_NUM_DESC);
-+			   ICE_MIN_NUM_DESC, ICE_MAX_NUM_DESC,
-+			   ICE_REQ_DESC_MULTIPLE);
- 		return -EINVAL;
- 	}
+ 	details = ICE_CTL_Q_DETAILS(cq->sq, cq->sq.next_to_use);
+ 	if (cd)
+-		memcpy(details, cd, sizeof(*details));
++		*details = *cd;
+ 	else
+ 		memset(details, 0, sizeof(*details));
  
- 	new_tx_cnt = ALIGN(ring->tx_pending, ICE_REQ_DESC_MULTIPLE);
-+	if (new_tx_cnt != ring->tx_pending)
-+		netdev_info(netdev,
-+			    "Requested Tx descriptor count rounded up to %d\n",
-+			    new_tx_cnt);
- 	new_rx_cnt = ALIGN(ring->rx_pending, ICE_REQ_DESC_MULTIPLE);
-+	if (new_rx_cnt != ring->rx_pending)
-+		netdev_info(netdev,
-+			    "Requested Rx descriptor count rounded up to %d\n",
-+			    new_rx_cnt);
- 
- 	/* if nothing to do return success */
- 	if (new_tx_cnt == vsi->tx_rings[0]->count &&
 -- 
 2.14.3
 
