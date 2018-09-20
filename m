@@ -1,60 +1,137 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:43:02 -0700
-Subject: [Intel-wired-lan] [PATCH v2 10/16] ice: Fix forward to queue group
- logic
+Date: Wed, 19 Sep 2018 17:43:01 -0700
+Subject: [Intel-wired-lan] [PATCH v2 09/16] ice: Extend malicious operations
+ detection logic
 In-Reply-To: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
 References: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920004308.13772-11-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920004308.13772-10-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When adding a rule, queue region size needs to be provided as log base 2
-of the number of queues in region. Fix that.
+This patch extends the existing malicious driver operation detection
+logic to cover malicious operations by the VF driver as well.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |  8 +++++
+ drivers/net/ethernet/intel/ice/ice_main.c        | 46 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  8 +++--
+ 3 files changed, 60 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 47815359e2ec..822442fee327 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -656,6 +656,7 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
- 	u8 *eth_hdr;
- 	u32 act = 0;
- 	__be16 *off;
-+	u8 q_rgn;
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 5a4fa22d0a83..a6679a9bfd3a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -219,6 +219,14 @@
+ #define PF_MDET_TX_PQM_VALID_M			BIT(0)
+ #define PF_MDET_TX_TCLAN			0x000FC000
+ #define PF_MDET_TX_TCLAN_VALID_M		BIT(0)
++#define VP_MDET_RX(_VF)				(0x00294400 + ((_VF) * 4))
++#define VP_MDET_RX_VALID_M			BIT(0)
++#define VP_MDET_TX_PQM(_VF)			(0x002D2000 + ((_VF) * 4))
++#define VP_MDET_TX_PQM_VALID_M			BIT(0)
++#define VP_MDET_TX_TCLAN(_VF)			(0x000FB800 + ((_VF) * 4))
++#define VP_MDET_TX_TCLAN_VALID_M		BIT(0)
++#define VP_MDET_TX_TDPU(_VF)			(0x00040000 + ((_VF) * 4))
++#define VP_MDET_TX_TDPU_VALID_M			BIT(0)
+ #define GLNVM_FLA				0x000B6108
+ #define GLNVM_FLA_LOCKED_M			BIT(6)
+ #define GLNVM_GENS				0x000B6100
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 28f6d9f63a18..3e254281da63 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -951,6 +951,7 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 	struct ice_hw *hw = &pf->hw;
+ 	bool mdd_detected = false;
+ 	u32 reg;
++	int i;
  
- 	if (opc == ice_aqc_opc_remove_sw_rules) {
- 		s_rule->pdata.lkup_tx_rx.act = 0;
-@@ -694,14 +695,19 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
- 		act |= (f_info->fwd_id.q_id << ICE_SINGLE_ACT_Q_INDEX_S) &
- 			ICE_SINGLE_ACT_Q_INDEX_M;
- 		break;
-+	case ICE_DROP_PACKET:
-+		act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_DROP |
-+			ICE_SINGLE_ACT_VALID_BIT;
-+		break;
- 	case ICE_FWD_TO_QGRP:
-+		q_rgn = f_info->qgrp_size > 0 ?
-+			(u8)ilog2(f_info->qgrp_size) : 0;
- 		act |= ICE_SINGLE_ACT_TO_Q;
--		act |= (f_info->qgrp_size << ICE_SINGLE_ACT_Q_REGION_S) &
-+		act |= (f_info->fwd_id.q_id << ICE_SINGLE_ACT_Q_INDEX_S) &
-+			ICE_SINGLE_ACT_Q_INDEX_M;
-+		act |= (q_rgn << ICE_SINGLE_ACT_Q_REGION_S) &
- 			ICE_SINGLE_ACT_Q_REGION_M;
- 		break;
--	case ICE_DROP_PACKET:
--		act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_DROP;
--		break;
- 	default:
+ 	if (!test_bit(__ICE_MDD_EVENT_PENDING, pf->state))
  		return;
+@@ -1040,6 +1041,51 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		}
  	}
+ 
++	/* see if one of the VFs needs to be reset */
++	for (i = 0; i < pf->num_alloc_vfs && mdd_detected; i++) {
++		struct ice_vf *vf = &pf->vf[i];
++
++		reg = rd32(hw, VP_MDET_TX_PQM(i));
++		if (reg & VP_MDET_TX_PQM_VALID_M) {
++			wr32(hw, VP_MDET_TX_PQM(i), 0xFFFF);
++			vf->num_mdd_events++;
++			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
++				 i);
++		}
++
++		reg = rd32(hw, VP_MDET_TX_TCLAN(i));
++		if (reg & VP_MDET_TX_TCLAN_VALID_M) {
++			wr32(hw, VP_MDET_TX_TCLAN(i), 0xFFFF);
++			vf->num_mdd_events++;
++			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
++				 i);
++		}
++
++		reg = rd32(hw, VP_MDET_TX_TDPU(i));
++		if (reg & VP_MDET_TX_TDPU_VALID_M) {
++			wr32(hw, VP_MDET_TX_TDPU(i), 0xFFFF);
++			vf->num_mdd_events++;
++			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
++				 i);
++		}
++
++		reg = rd32(hw, VP_MDET_RX(i));
++		if (reg & VP_MDET_RX_VALID_M) {
++			wr32(hw, VP_MDET_RX(i), 0xFFFF);
++			vf->num_mdd_events++;
++			dev_info(&pf->pdev->dev, "RX driver issue detected on VF %d\n",
++				 i);
++		}
++
++		if (vf->num_mdd_events > ICE_DFLT_NUM_MDD_EVENTS_ALLOWED) {
++			dev_info(&pf->pdev->dev,
++				 "Too many MDD events on VF %d, disabled\n", i);
++			dev_info(&pf->pdev->dev,
++				 "Use PF Control I/F to re-enable the VF\n");
++			set_bit(ICE_VF_STATE_DIS, vf->vf_states);
++		}
++	}
++
+ 	/* re-enable MDD interrupt cause */
+ 	clear_bit(__ICE_MDD_EVENT_PENDING, pf->state);
+ 	reg = rd32(hw, PFINT_OICR_ENA);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 94295fb779df..11a35cb990e2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -9,10 +9,13 @@
+ #define ICE_VLAN_PRIORITY_S		12
+ #define ICE_VLAN_M			0xFFF
+ #define ICE_PRIORITY_M			0x7000
+-#define ICE_MAX_VLAN_PER_VF		8 /* restriction for non-trusted VF */
+ 
+-/* Restrict number of MACs a non-trusted VF can program */
++/* Restrict number of MAC Addr and VLAN that non-trusted VF can programmed */
++#define ICE_MAX_VLAN_PER_VF		8
+ #define ICE_MAX_MACADDR_PER_VF		12
++
++/* Malicious Driver Detection */
++#define ICE_DFLT_NUM_MDD_EVENTS_ALLOWED		3
+ #define ICE_DFLT_NUM_INVAL_MSGS_ALLOWED		10
+ 
+ /* Static VF transaction/status register def */
+@@ -56,6 +59,7 @@ struct ice_vf {
+ 	u8 trusted;
+ 	u16 lan_vsi_idx;		/* index into PF struct */
+ 	u16 lan_vsi_num;		/* ID as used by firmware */
++	u64 num_mdd_events;		/* number of mdd events detected */
+ 	u64 num_inval_msgs;		/* number of continuous invalid msgs */
+ 	u64 num_valid_msgs;		/* number of valid msgs detected */
+ 	unsigned long vf_caps;		/* vf's adv. capabilities */
 -- 
 2.14.3
 
