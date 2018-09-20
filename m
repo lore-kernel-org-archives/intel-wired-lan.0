@@ -1,901 +1,380 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:23:13 -0700
-Subject: [Intel-wired-lan] [PATCH 10/16] ice: Expand use of VSI handles part
- 2/2
+Date: Wed, 19 Sep 2018 17:23:08 -0700
+Subject: [Intel-wired-lan] [PATCH 05/16] ice: Move common functions out of
+ ice_main.c part 5/7
 In-Reply-To: <20180920002319.10971-1-anirudh.venkataramanan@intel.com>
 References: <20180920002319.10971-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920002319.10971-11-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920002319.10971-6-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is a continuation of the previous patch where VSI
-handles are used instead of VSI numbers.
+This patch continues the code move out of ice_main.c
+
+The following top level functions (and related dependency functions) were
+moved to ice_lib.c:
+ice_vsi_clear
+ice_vsi_close
+ice_vsi_free_arrays
+ice_vsi_map_rings_to_vectors
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c |  71 ++++++++-----
- drivers/net/ethernet/intel/ice/ice_common.h |  13 +--
- drivers/net/ethernet/intel/ice/ice_lib.c    |  18 ++--
- drivers/net/ethernet/intel/ice/ice_main.c   |  22 ++--
- drivers/net/ethernet/intel/ice/ice_sched.c  | 151 +++++++++-------------------
- drivers/net/ethernet/intel/ice/ice_sched.h  |   5 +-
- drivers/net/ethernet/intel/ice/ice_switch.c |   6 +-
- drivers/net/ethernet/intel/ice/ice_switch.h |   5 +
- drivers/net/ethernet/intel/ice/ice_type.h   |   4 +-
- 9 files changed, 132 insertions(+), 163 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c  | 133 ++++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_lib.h  |   8 ++
+ drivers/net/ethernet/intel/ice/ice_main.c | 132 -----------------------------
+ 3 files changed, 141 insertions(+), 132 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index ef9229fa5510..62bc717e4a90 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -2055,7 +2055,7 @@ __ice_aq_get_set_rss_lut(struct ice_hw *hw, u16 vsi_id, u8 lut_type, u8 *lut,
- /**
-  * ice_aq_get_rss_lut
-  * @hw: pointer to the hardware structure
-- * @vsi_id: VSI FW index
-+ * @vsi_handle: software VSI handle
-  * @lut_type: LUT table type
-  * @lut: pointer to the LUT buffer provided by the caller
-  * @lut_size: size of the LUT buffer
-@@ -2063,17 +2063,20 @@ __ice_aq_get_set_rss_lut(struct ice_hw *hw, u16 vsi_id, u8 lut_type, u8 *lut,
-  * get the RSS lookup table, PF or VSI type
-  */
- enum ice_status
--ice_aq_get_rss_lut(struct ice_hw *hw, u16 vsi_id, u8 lut_type, u8 *lut,
--		   u16 lut_size)
-+ice_aq_get_rss_lut(struct ice_hw *hw, u16 vsi_handle, u8 lut_type,
-+		   u8 *lut, u16 lut_size)
- {
--	return __ice_aq_get_set_rss_lut(hw, vsi_id, lut_type, lut, lut_size, 0,
--					false);
-+	if (!ice_is_vsi_valid(hw, vsi_handle) || !lut)
-+		return ICE_ERR_PARAM;
-+
-+	return __ice_aq_get_set_rss_lut(hw, ice_get_hw_vsi_num(hw, vsi_handle),
-+					lut_type, lut, lut_size, 0, false);
- }
- 
- /**
-  * ice_aq_set_rss_lut
-  * @hw: pointer to the hardware structure
-- * @vsi_id: VSI FW index
-+ * @vsi_handle: software VSI handle
-  * @lut_type: LUT table type
-  * @lut: pointer to the LUT buffer provided by the caller
-  * @lut_size: size of the LUT buffer
-@@ -2081,11 +2084,14 @@ ice_aq_get_rss_lut(struct ice_hw *hw, u16 vsi_id, u8 lut_type, u8 *lut,
-  * set the RSS lookup table, PF or VSI type
-  */
- enum ice_status
--ice_aq_set_rss_lut(struct ice_hw *hw, u16 vsi_id, u8 lut_type, u8 *lut,
--		   u16 lut_size)
-+ice_aq_set_rss_lut(struct ice_hw *hw, u16 vsi_handle, u8 lut_type,
-+		   u8 *lut, u16 lut_size)
- {
--	return __ice_aq_get_set_rss_lut(hw, vsi_id, lut_type, lut, lut_size, 0,
--					true);
-+	if (!ice_is_vsi_valid(hw, vsi_handle) || !lut)
-+		return ICE_ERR_PARAM;
-+
-+	return __ice_aq_get_set_rss_lut(hw, ice_get_hw_vsi_num(hw, vsi_handle),
-+					lut_type, lut, lut_size, 0, true);
- }
- 
- /**
-@@ -2126,31 +2132,39 @@ ice_status __ice_aq_get_set_rss_key(struct ice_hw *hw, u16 vsi_id,
- /**
-  * ice_aq_get_rss_key
-  * @hw: pointer to the hw struct
-- * @vsi_id: VSI FW index
-+ * @vsi_handle: software VSI handle
-  * @key: pointer to key info struct
-  *
-  * get the RSS key per VSI
-  */
- enum ice_status
--ice_aq_get_rss_key(struct ice_hw *hw, u16 vsi_id,
-+ice_aq_get_rss_key(struct ice_hw *hw, u16 vsi_handle,
- 		   struct ice_aqc_get_set_rss_keys *key)
- {
--	return __ice_aq_get_set_rss_key(hw, vsi_id, key, false);
-+	if (!ice_is_vsi_valid(hw, vsi_handle) || !key)
-+		return ICE_ERR_PARAM;
-+
-+	return __ice_aq_get_set_rss_key(hw, ice_get_hw_vsi_num(hw, vsi_handle),
-+					key, false);
- }
- 
- /**
-  * ice_aq_set_rss_key
-  * @hw: pointer to the hw struct
-- * @vsi_id: VSI FW index
-+ * @vsi_handle: software VSI handle
-  * @keys: pointer to key info struct
-  *
-  * set the RSS key per VSI
-  */
- enum ice_status
--ice_aq_set_rss_key(struct ice_hw *hw, u16 vsi_id,
-+ice_aq_set_rss_key(struct ice_hw *hw, u16 vsi_handle,
- 		   struct ice_aqc_get_set_rss_keys *keys)
- {
--	return __ice_aq_get_set_rss_key(hw, vsi_id, keys, true);
-+	if (!ice_is_vsi_valid(hw, vsi_handle) || !keys)
-+		return ICE_ERR_PARAM;
-+
-+	return __ice_aq_get_set_rss_key(hw, ice_get_hw_vsi_num(hw, vsi_handle),
-+					keys, true);
- }
- 
- /**
-@@ -2489,7 +2503,7 @@ ice_set_ctx(u8 *src_ctx, u8 *dest_ctx, const struct ice_ctx_ele *ce_info)
- /**
-  * ice_ena_vsi_txq
-  * @pi: port information structure
-- * @vsi_id: VSI id
-+ * @vsi_handle: software VSI handle
-  * @tc: tc number
-  * @num_qgrps: Number of added queue groups
-  * @buf: list of queue groups to be added
-@@ -2499,7 +2513,7 @@ ice_set_ctx(u8 *src_ctx, u8 *dest_ctx, const struct ice_ctx_ele *ce_info)
-  * This function adds one lan q
-  */
- enum ice_status
--ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_id, u8 tc, u8 num_qgrps,
-+ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u8 num_qgrps,
- 		struct ice_aqc_add_tx_qgrp *buf, u16 buf_size,
- 		struct ice_sq_cd *cd)
- {
-@@ -2516,15 +2530,19 @@ ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_id, u8 tc, u8 num_qgrps,
- 
- 	hw = pi->hw;
- 
-+	if (!ice_is_vsi_valid(hw, vsi_handle))
-+		return ICE_ERR_PARAM;
-+
- 	mutex_lock(&pi->sched_lock);
- 
- 	/* find a parent node */
--	parent = ice_sched_get_free_qparent(pi, vsi_id, tc,
-+	parent = ice_sched_get_free_qparent(pi, vsi_handle, tc,
- 					    ICE_SCHED_NODE_OWNER_LAN);
- 	if (!parent) {
- 		status = ICE_ERR_PARAM;
- 		goto ena_txq_exit;
- 	}
-+
- 	buf->parent_teid = parent->info.node_teid;
- 	node.parent_teid = parent->info.node_teid;
- 	/* Mark that the values in the "generic" section as valid. The default
-@@ -2602,7 +2620,7 @@ ice_dis_vsi_txq(struct ice_port_info *pi, u8 num_queues, u16 *q_ids,
- /**
-  * ice_cfg_vsi_qs - configure the new/exisiting VSI queues
-  * @pi: port information structure
-- * @vsi_id: VSI Id
-+ * @vsi_handle: software VSI handle
-  * @tc_bitmap: TC bitmap
-  * @maxqs: max queues array per TC
-  * @owner: lan or rdma
-@@ -2610,7 +2628,7 @@ ice_dis_vsi_txq(struct ice_port_info *pi, u8 num_queues, u16 *q_ids,
-  * This function adds/updates the VSI queues per TC.
-  */
- static enum ice_status
--ice_cfg_vsi_qs(struct ice_port_info *pi, u16 vsi_id, u8 tc_bitmap,
-+ice_cfg_vsi_qs(struct ice_port_info *pi, u16 vsi_handle, u8 tc_bitmap,
- 	       u16 *maxqs, u8 owner)
- {
- 	enum ice_status status = 0;
-@@ -2619,6 +2637,9 @@ ice_cfg_vsi_qs(struct ice_port_info *pi, u16 vsi_id, u8 tc_bitmap,
- 	if (!pi || pi->port_state != ICE_SCHED_PORT_STATE_READY)
- 		return ICE_ERR_CFG;
- 
-+	if (!ice_is_vsi_valid(pi->hw, vsi_handle))
-+		return ICE_ERR_PARAM;
-+
- 	mutex_lock(&pi->sched_lock);
- 
- 	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
-@@ -2626,7 +2647,7 @@ ice_cfg_vsi_qs(struct ice_port_info *pi, u16 vsi_id, u8 tc_bitmap,
- 		if (!ice_sched_get_tc_node(pi, i))
- 			continue;
- 
--		status = ice_sched_cfg_vsi(pi, vsi_id, i, maxqs[i], owner,
-+		status = ice_sched_cfg_vsi(pi, vsi_handle, i, maxqs[i], owner,
- 					   ice_is_tc_ena(tc_bitmap, i));
- 		if (status)
- 			break;
-@@ -2639,17 +2660,17 @@ ice_cfg_vsi_qs(struct ice_port_info *pi, u16 vsi_id, u8 tc_bitmap,
- /**
-  * ice_cfg_vsi_lan - configure VSI lan queues
-  * @pi: port information structure
-- * @vsi_id: VSI Id
-+ * @vsi_handle: software VSI handle
-  * @tc_bitmap: TC bitmap
-  * @max_lanqs: max lan queues array per TC
-  *
-  * This function adds/updates the VSI lan queues per TC.
-  */
- enum ice_status
--ice_cfg_vsi_lan(struct ice_port_info *pi, u16 vsi_id, u8 tc_bitmap,
-+ice_cfg_vsi_lan(struct ice_port_info *pi, u16 vsi_handle, u8 tc_bitmap,
- 		u16 *max_lanqs)
- {
--	return ice_cfg_vsi_qs(pi, vsi_id, tc_bitmap, max_lanqs,
-+	return ice_cfg_vsi_qs(pi, vsi_handle, tc_bitmap, max_lanqs,
- 			      ICE_SCHED_NODE_OWNER_LAN);
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 80d288a07731..01384fb919df 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -37,17 +37,18 @@ ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
- 		  u32 rxq_index);
- 
- enum ice_status
--ice_aq_get_rss_lut(struct ice_hw *hw, u16 vsi_id, u8 lut_type, u8 *lut,
-+ice_aq_get_rss_lut(struct ice_hw *hw, u16 vsi_handle, u8 lut_type, u8 *lut,
- 		   u16 lut_size);
- enum ice_status
--ice_aq_set_rss_lut(struct ice_hw *hw, u16 vsi_id, u8 lut_type, u8 *lut,
-+ice_aq_set_rss_lut(struct ice_hw *hw, u16 vsi_handle, u8 lut_type, u8 *lut,
- 		   u16 lut_size);
- enum ice_status
--ice_aq_get_rss_key(struct ice_hw *hw, u16 vsi_id,
-+ice_aq_get_rss_key(struct ice_hw *hw, u16 vsi_handle,
- 		   struct ice_aqc_get_set_rss_keys *keys);
- enum ice_status
--ice_aq_set_rss_key(struct ice_hw *hw, u16 vsi_id,
-+ice_aq_set_rss_key(struct ice_hw *hw, u16 vsi_handle,
- 		   struct ice_aqc_get_set_rss_keys *keys);
-+
- bool ice_check_sq_alive(struct ice_hw *hw, struct ice_ctl_q_info *cq);
- enum ice_status ice_aq_q_shutdown(struct ice_hw *hw, bool unloading);
- void ice_fill_dflt_direct_cmd_desc(struct ice_aq_desc *desc, u16 opcode);
-@@ -89,10 +90,10 @@ enum ice_status
- ice_dis_vsi_txq(struct ice_port_info *pi, u8 num_queues, u16 *q_ids,
- 		u32 *q_teids, struct ice_sq_cd *cmd_details);
- enum ice_status
--ice_cfg_vsi_lan(struct ice_port_info *pi, u16 vsi_id, u8 tc_bitmap,
-+ice_cfg_vsi_lan(struct ice_port_info *pi, u16 vsi_handle, u8 tc_bitmap,
- 		u16 *max_lanqs);
- enum ice_status
--ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_id, u8 tc, u8 num_qgrps,
-+ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u8 num_qgrps,
- 		struct ice_aqc_add_tx_qgrp *buf, u16 buf_size,
- 		struct ice_sq_cd *cd);
- void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf);
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 2b8dd9272ede..673123823d54 100644
+index fa96279139d0..c9f82e351802 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -137,7 +137,7 @@ ice_setup_tx_ctx(struct ice_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf_q)
- 	}
+@@ -341,6 +341,71 @@ void ice_vsi_delete(struct ice_vsi *vsi)
+ 			vsi->vsi_num);
+ }
  
- 	/* make sure the context is associated with the right VSI */
--	tlan_ctx->src_vsi = vsi->vsi_num;
-+	tlan_ctx->src_vsi = ice_get_hw_vsi_num(hw, vsi->idx);
++/**
++ * ice_vsi_free_arrays - clean up vsi resources
++ * @vsi: pointer to VSI being cleared
++ * @free_qvectors: bool to specify if q_vectors should be deallocated
++ */
++void ice_vsi_free_arrays(struct ice_vsi *vsi, bool free_qvectors)
++{
++	struct ice_pf *pf = vsi->back;
++
++	/* free the ring and vector containers */
++	if (free_qvectors && vsi->q_vectors) {
++		devm_kfree(&pf->pdev->dev, vsi->q_vectors);
++		vsi->q_vectors = NULL;
++	}
++	if (vsi->tx_rings) {
++		devm_kfree(&pf->pdev->dev, vsi->tx_rings);
++		vsi->tx_rings = NULL;
++	}
++	if (vsi->rx_rings) {
++		devm_kfree(&pf->pdev->dev, vsi->rx_rings);
++		vsi->rx_rings = NULL;
++	}
++}
++
++/**
++ * ice_vsi_clear - clean up and deallocate the provided vsi
++ * @vsi: pointer to VSI being cleared
++ *
++ * This deallocates the vsi's queue resources, removes it from the PF's
++ * VSI array if necessary, and deallocates the VSI
++ *
++ * Returns 0 on success, negative on failure
++ */
++int ice_vsi_clear(struct ice_vsi *vsi)
++{
++	struct ice_pf *pf = NULL;
++
++	if (!vsi)
++		return 0;
++
++	if (!vsi->back)
++		return -EINVAL;
++
++	pf = vsi->back;
++
++	if (!pf->vsi[vsi->idx] || pf->vsi[vsi->idx] != vsi) {
++		dev_dbg(&pf->pdev->dev, "vsi does not exist at pf->vsi[%d]\n",
++			vsi->idx);
++		return -EINVAL;
++	}
++
++	mutex_lock(&pf->sw_mutex);
++	/* updates the PF for this cleared vsi */
++
++	pf->vsi[vsi->idx] = NULL;
++	if (vsi->idx < pf->next_vsi)
++		pf->next_vsi = vsi->idx;
++
++	ice_vsi_free_arrays(vsi, true);
++	mutex_unlock(&pf->sw_mutex);
++	devm_kfree(&pf->pdev->dev, vsi);
++
++	return 0;
++}
++
+ /**
+  * ice_msix_clean_rings - MSIX mode Interrupt Handler
+  * @irq: interrupt number
+@@ -700,6 +765,60 @@ int ice_vsi_alloc_rings(struct ice_vsi *vsi)
+ 	return -ENOMEM;
+ }
  
- 	tlan_ctx->tso_ena = ICE_TX_LEGACY;
- 	tlan_ctx->tso_qnum = pf_q;
-@@ -1230,8 +1230,8 @@ static int ice_vsi_cfg_rss_lut_key(struct ice_vsi *vsi)
- 	else
- 		ice_fill_rss_lut(lut, vsi->rss_table_size, vsi->rss_size);
++/**
++ * ice_vsi_map_rings_to_vectors - Map VSI rings to interrupt vectors
++ * @vsi: the VSI being configured
++ *
++ * This function maps descriptor rings to the queue-specific vectors allotted
++ * through the MSI-X enabling code. On a constrained vector budget, we map Tx
++ * and Rx rings to the vector as "efficiently" as possible.
++ */
++void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
++{
++	int q_vectors = vsi->num_q_vectors;
++	int tx_rings_rem, rx_rings_rem;
++	int v_id;
++
++	/* initially assigning remaining rings count to VSIs num queue value */
++	tx_rings_rem = vsi->num_txq;
++	rx_rings_rem = vsi->num_rxq;
++
++	for (v_id = 0; v_id < q_vectors; v_id++) {
++		struct ice_q_vector *q_vector = vsi->q_vectors[v_id];
++		int tx_rings_per_v, rx_rings_per_v, q_id, q_base;
++
++		/* Tx rings mapping to vector */
++		tx_rings_per_v = DIV_ROUND_UP(tx_rings_rem, q_vectors - v_id);
++		q_vector->num_ring_tx = tx_rings_per_v;
++		q_vector->tx.ring = NULL;
++		q_base = vsi->num_txq - tx_rings_rem;
++
++		for (q_id = q_base; q_id < (q_base + tx_rings_per_v); q_id++) {
++			struct ice_ring *tx_ring = vsi->tx_rings[q_id];
++
++			tx_ring->q_vector = q_vector;
++			tx_ring->next = q_vector->tx.ring;
++			q_vector->tx.ring = tx_ring;
++		}
++		tx_rings_rem -= tx_rings_per_v;
++
++		/* Rx rings mapping to vector */
++		rx_rings_per_v = DIV_ROUND_UP(rx_rings_rem, q_vectors - v_id);
++		q_vector->num_ring_rx = rx_rings_per_v;
++		q_vector->rx.ring = NULL;
++		q_base = vsi->num_rxq - rx_rings_rem;
++
++		for (q_id = q_base; q_id < (q_base + rx_rings_per_v); q_id++) {
++			struct ice_ring *rx_ring = vsi->rx_rings[q_id];
++
++			rx_ring->q_vector = q_vector;
++			rx_ring->next = q_vector->rx.ring;
++			q_vector->rx.ring = rx_ring;
++		}
++		rx_rings_rem -= rx_rings_per_v;
++	}
++}
++
+ /**
+  * ice_add_mac_to_list - Add a mac address filter entry to the list
+  * @vsi: the VSI to be forwarded to
+@@ -1385,6 +1504,20 @@ void ice_vsi_free_rx_rings(struct ice_vsi *vsi)
+ 			ice_free_rx_ring(vsi->rx_rings[i]);
+ }
  
--	status = ice_aq_set_rss_lut(&pf->hw, vsi->vsi_num, vsi->rss_lut_type,
--				    lut, vsi->rss_table_size);
-+	status = ice_aq_set_rss_lut(&pf->hw, vsi->idx, vsi->rss_lut_type, lut,
-+				    vsi->rss_table_size);
++/**
++ * ice_vsi_close - Shut down a VSI
++ * @vsi: the VSI being shut down
++ */
++void ice_vsi_close(struct ice_vsi *vsi)
++{
++	if (!test_and_set_bit(__ICE_DOWN, vsi->state))
++		ice_down(vsi);
++
++	ice_vsi_free_irq(vsi);
++	ice_vsi_free_tx_rings(vsi);
++	ice_vsi_free_rx_rings(vsi);
++}
++
+ /**
+  * ice_free_res - free a block of resources
+  * @res: pointer to the resource
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index ab5a4e1edcf8..002bbca8e7ea 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -6,6 +6,8 @@
  
- 	if (status) {
- 		dev_err(&vsi->back->pdev->dev,
-@@ -1255,7 +1255,7 @@ static int ice_vsi_cfg_rss_lut_key(struct ice_vsi *vsi)
- 	memcpy(&key->standard_rss_key, seed,
- 	       ICE_AQC_GET_SET_RSS_KEY_DATA_RSS_KEY_SIZE);
+ #include "ice.h"
  
--	status = ice_aq_set_rss_key(&pf->hw, vsi->vsi_num, key);
-+	status = ice_aq_set_rss_key(&pf->hw, vsi->idx, key);
++void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi);
++
+ int ice_vsi_alloc_rings(struct ice_vsi *vsi);
  
- 	if (status) {
- 		dev_err(&vsi->back->pdev->dev, "set_rss_key failed, error %d\n",
-@@ -1524,7 +1524,7 @@ int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
- 		 * comm scheduler queue doorbell.
- 		 */
- 		vsi->tx_rings[i]->tail = pf->hw.hw_addr + QTX_COMM_DBELL(pf_q);
--		status = ice_ena_vsi_txq(vsi->port_info, vsi->vsi_num, tc,
-+		status = ice_ena_vsi_txq(vsi->port_info, vsi->idx, tc,
- 					 num_q_grps, qg_buf, buf_len, NULL);
- 		if (status) {
- 			dev_err(&vsi->back->pdev->dev,
-@@ -1929,8 +1929,8 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	for (i = 0; i < vsi->tc_cfg.numtc; i++)
- 		max_txqs[i] = vsi->num_txq;
+ void ice_vsi_set_rss_params(struct ice_vsi *vsi);
+@@ -16,6 +18,8 @@ int ice_get_free_slot(void *array, int size, int curr);
  
--	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->vsi_num,
--			      vsi->tc_cfg.ena_tc, max_txqs);
-+	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
-+			      max_txqs);
- 	if (ret) {
- 		dev_info(&pf->pdev->dev, "Failed VSI lan queue config\n");
- 		goto unroll_vector_base;
-@@ -2340,8 +2340,8 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
- 	for (i = 0; i < vsi->tc_cfg.numtc; i++)
- 		max_txqs[i] = vsi->num_txq;
+ int ice_vsi_init(struct ice_vsi *vsi);
  
--	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->vsi_num,
--			      vsi->tc_cfg.ena_tc, max_txqs);
-+	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
-+			      max_txqs);
- 	if (ret) {
- 		dev_info(&vsi->back->pdev->dev,
- 			 "Failed VSI lan queue config\n");
++void ice_vsi_free_arrays(struct ice_vsi *vsi, bool free_qvectors);
++
+ void ice_vsi_clear_rings(struct ice_vsi *vsi);
+ 
+ int ice_vsi_alloc_arrays(struct ice_vsi *vsi, bool alloc_qvectors);
+@@ -51,6 +55,10 @@ int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena);
+ 
+ void ice_vsi_delete(struct ice_vsi *vsi);
+ 
++int ice_vsi_clear(struct ice_vsi *vsi);
++
++void ice_vsi_close(struct ice_vsi *vsi);
++
+ int ice_free_res(struct ice_res_tracker *res, u16 index, u16 id);
+ 
+ int
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index b502d0522d21..cb12cb5b62a1 100644
+index 9ef8611d13b0..40f4e0c9b722 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -253,7 +253,7 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
- 		clear_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags);
- 		if (vsi->current_netdev_flags & IFF_PROMISC) {
- 			/* Apply TX filter rule to get traffic from VMs */
--			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, true,
-+			status = ice_cfg_dflt_vsi(hw, vsi->idx, true,
- 						  ICE_FLTR_TX);
- 			if (status) {
- 				netdev_err(netdev, "Error setting default VSI %i tx rule\n",
-@@ -263,7 +263,7 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
- 				goto out_promisc;
- 			}
- 			/* Apply RX filter rule to get traffic from wire */
--			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, true,
-+			status = ice_cfg_dflt_vsi(hw, vsi->idx, true,
- 						  ICE_FLTR_RX);
- 			if (status) {
- 				netdev_err(netdev, "Error setting default VSI %i rx rule\n",
-@@ -274,7 +274,7 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
- 			}
- 		} else {
- 			/* Clear TX filter rule to stop traffic from VMs */
--			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, false,
-+			status = ice_cfg_dflt_vsi(hw, vsi->idx, false,
- 						  ICE_FLTR_TX);
- 			if (status) {
- 				netdev_err(netdev, "Error clearing default VSI %i tx rule\n",
-@@ -283,8 +283,8 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
- 				err = -EIO;
- 				goto out_promisc;
- 			}
--			/* Clear filter RX to remove traffic from wire */
--			status = ice_cfg_dflt_vsi(hw, vsi->vsi_num, false,
-+			/* Clear RX filter to remove traffic from wire */
-+			status = ice_cfg_dflt_vsi(hw, vsi->idx, false,
- 						  ICE_FLTR_RX);
- 			if (status) {
- 				netdev_err(netdev, "Error clearing default VSI %i rx rule\n",
-@@ -3334,7 +3334,7 @@ int ice_set_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
- 		struct ice_aqc_get_set_rss_keys *buf =
- 				  (struct ice_aqc_get_set_rss_keys *)seed;
+@@ -1313,60 +1313,6 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+ 	return ret;
+ }
  
--		status = ice_aq_set_rss_key(hw, vsi->vsi_num, buf);
-+		status = ice_aq_set_rss_key(hw, vsi->idx, buf);
+-/**
+- * ice_vsi_map_rings_to_vectors - Map VSI rings to interrupt vectors
+- * @vsi: the VSI being configured
+- *
+- * This function maps descriptor rings to the queue-specific vectors allotted
+- * through the MSI-X enabling code. On a constrained vector budget, we map Tx
+- * and Rx rings to the vector as "efficiently" as possible.
+- */
+-static void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
+-{
+-	int q_vectors = vsi->num_q_vectors;
+-	int tx_rings_rem, rx_rings_rem;
+-	int v_id;
+-
+-	/* initially assigning remaining rings count to VSIs num queue value */
+-	tx_rings_rem = vsi->num_txq;
+-	rx_rings_rem = vsi->num_rxq;
+-
+-	for (v_id = 0; v_id < q_vectors; v_id++) {
+-		struct ice_q_vector *q_vector = vsi->q_vectors[v_id];
+-		int tx_rings_per_v, rx_rings_per_v, q_id, q_base;
+-
+-		/* Tx rings mapping to vector */
+-		tx_rings_per_v = DIV_ROUND_UP(tx_rings_rem, q_vectors - v_id);
+-		q_vector->num_ring_tx = tx_rings_per_v;
+-		q_vector->tx.ring = NULL;
+-		q_base = vsi->num_txq - tx_rings_rem;
+-
+-		for (q_id = q_base; q_id < (q_base + tx_rings_per_v); q_id++) {
+-			struct ice_ring *tx_ring = vsi->tx_rings[q_id];
+-
+-			tx_ring->q_vector = q_vector;
+-			tx_ring->next = q_vector->tx.ring;
+-			q_vector->tx.ring = tx_ring;
+-		}
+-		tx_rings_rem -= tx_rings_per_v;
+-
+-		/* Rx rings mapping to vector */
+-		rx_rings_per_v = DIV_ROUND_UP(rx_rings_rem, q_vectors - v_id);
+-		q_vector->num_ring_rx = rx_rings_per_v;
+-		q_vector->rx.ring = NULL;
+-		q_base = vsi->num_rxq - rx_rings_rem;
+-
+-		for (q_id = q_base; q_id < (q_base + rx_rings_per_v); q_id++) {
+-			struct ice_ring *rx_ring = vsi->rx_rings[q_id];
+-
+-			rx_ring->q_vector = q_vector;
+-			rx_ring->next = q_vector->rx.ring;
+-			q_vector->rx.ring = rx_ring;
+-		}
+-		rx_rings_rem -= rx_rings_per_v;
+-	}
+-}
+-
+ /**
+  * ice_vsi_alloc - Allocates the next available struct vsi in the PF
+  * @pf: board private structure
+@@ -1770,71 +1716,6 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
+ 	return 0;
+ }
  
- 		if (status) {
- 			dev_err(&pf->pdev->dev,
-@@ -3345,8 +3345,8 @@ int ice_set_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
- 	}
- 
- 	if (lut) {
--		status = ice_aq_set_rss_lut(hw, vsi->vsi_num,
--					    vsi->rss_lut_type, lut, lut_size);
-+		status = ice_aq_set_rss_lut(hw, vsi->idx, vsi->rss_lut_type,
-+					    lut, lut_size);
- 		if (status) {
- 			dev_err(&pf->pdev->dev,
- 				"Cannot set RSS lut, err %d aq_err %d\n",
-@@ -3377,7 +3377,7 @@ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
- 		struct ice_aqc_get_set_rss_keys *buf =
- 				  (struct ice_aqc_get_set_rss_keys *)seed;
- 
--		status = ice_aq_get_rss_key(hw, vsi->vsi_num, buf);
-+		status = ice_aq_get_rss_key(hw, vsi->idx, buf);
- 		if (status) {
- 			dev_err(&pf->pdev->dev,
- 				"Cannot get RSS key, err %d aq_err %d\n",
-@@ -3387,8 +3387,8 @@ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
- 	}
- 
- 	if (lut) {
--		status = ice_aq_get_rss_lut(hw, vsi->vsi_num,
--					    vsi->rss_lut_type, lut, lut_size);
-+		status = ice_aq_get_rss_lut(hw, vsi->idx, vsi->rss_lut_type,
-+					    lut, lut_size);
- 		if (status) {
- 			dev_err(&pf->pdev->dev,
- 				"Cannot get RSS lut, err %d aq_err %d\n",
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 9c4f408f222d..7cc8aa18a22b 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -599,9 +599,7 @@ ice_sched_suspend_resume_elems(struct ice_hw *hw, u8 num_nodes, u32 *node_teids,
- static void ice_sched_clear_tx_topo(struct ice_port_info *pi)
- {
- 	struct ice_sched_agg_info *agg_info;
--	struct ice_sched_vsi_info *vsi_elem;
- 	struct ice_sched_agg_info *atmp;
--	struct ice_sched_vsi_info *tmp;
- 	struct ice_hw *hw;
- 
- 	if (!pi)
-@@ -620,13 +618,6 @@ static void ice_sched_clear_tx_topo(struct ice_port_info *pi)
- 		}
- 	}
- 
--	/* remove the vsi list */
--	list_for_each_entry_safe(vsi_elem, tmp, &pi->vsi_info_list,
--				 list_entry) {
--		list_del(&vsi_elem->list_entry);
--		devm_kfree(ice_hw_to_dev(hw), vsi_elem);
+-/**
+- * ice_vsi_free_arrays - clean up vsi resources
+- * @vsi: pointer to VSI being cleared
+- * @free_qvectors: bool to specify if q_vectors should be deallocated
+- */
+-static void ice_vsi_free_arrays(struct ice_vsi *vsi, bool free_qvectors)
+-{
+-	struct ice_pf *pf = vsi->back;
+-
+-	/* free the ring and vector containers */
+-	if (free_qvectors && vsi->q_vectors) {
+-		devm_kfree(&pf->pdev->dev, vsi->q_vectors);
+-		vsi->q_vectors = NULL;
+-	}
+-	if (vsi->tx_rings) {
+-		devm_kfree(&pf->pdev->dev, vsi->tx_rings);
+-		vsi->tx_rings = NULL;
+-	}
+-	if (vsi->rx_rings) {
+-		devm_kfree(&pf->pdev->dev, vsi->rx_rings);
+-		vsi->rx_rings = NULL;
+-	}
+-}
+-
+-/**
+- * ice_vsi_clear - clean up and deallocate the provided vsi
+- * @vsi: pointer to VSI being cleared
+- *
+- * This deallocates the vsi's queue resources, removes it from the PF's
+- * VSI array if necessary, and deallocates the VSI
+- *
+- * Returns 0 on success, negative on failure
+- */
+-static int ice_vsi_clear(struct ice_vsi *vsi)
+-{
+-	struct ice_pf *pf = NULL;
+-
+-	if (!vsi)
+-		return 0;
+-
+-	if (!vsi->back)
+-		return -EINVAL;
+-
+-	pf = vsi->back;
+-
+-	if (!pf->vsi[vsi->idx] || pf->vsi[vsi->idx] != vsi) {
+-		dev_dbg(&pf->pdev->dev, "vsi does not exist at pf->vsi[%d]\n",
+-			vsi->idx);
+-		return -EINVAL;
 -	}
 -
- 	if (pi->root) {
- 		ice_free_sched_node(pi, pi->root);
- 		pi->root = NULL;
-@@ -676,31 +667,6 @@ void ice_sched_cleanup_all(struct ice_hw *hw)
- 	hw->max_cgds = 0;
- }
- 
--/**
-- * ice_sched_create_vsi_info_entry - create an empty new VSI entry
-- * @pi: port information structure
-- * @vsi_id: VSI Id
-- *
-- * This function creates a new VSI entry and adds it to list
-- */
--static struct ice_sched_vsi_info *
--ice_sched_create_vsi_info_entry(struct ice_port_info *pi, u16 vsi_id)
--{
--	struct ice_sched_vsi_info *vsi_elem;
+-	mutex_lock(&pf->sw_mutex);
+-	/* updates the PF for this cleared vsi */
 -
--	if (!pi)
--		return NULL;
+-	pf->vsi[vsi->idx] = NULL;
+-	if (vsi->idx < pf->next_vsi)
+-		pf->next_vsi = vsi->idx;
 -
--	vsi_elem = devm_kzalloc(ice_hw_to_dev(pi->hw), sizeof(*vsi_elem),
--				GFP_KERNEL);
--	if (!vsi_elem)
--		return NULL;
+-	ice_vsi_free_arrays(vsi, true);
+-	mutex_unlock(&pf->sw_mutex);
+-	devm_kfree(&pf->pdev->dev, vsi);
 -
--	list_add(&vsi_elem->list_entry, &pi->vsi_info_list);
--	vsi_elem->vsi_id = vsi_id;
--	return vsi_elem;
+-	return 0;
 -}
 -
  /**
-  * ice_sched_add_elems - add nodes to hw and SW DB
-  * @pi: port information structure
-@@ -1072,7 +1038,6 @@ enum ice_status ice_sched_init_port(struct ice_port_info *pi)
- 	pi->port_state = ICE_SCHED_PORT_STATE_READY;
- 	mutex_init(&pi->sched_lock);
- 	INIT_LIST_HEAD(&pi->agg_list);
--	INIT_LIST_HEAD(&pi->vsi_info_list);
- 
- err_init_port:
- 	if (status && pi->root) {
-@@ -1141,27 +1106,6 @@ enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw)
- 	return status;
+  * ice_vsi_alloc_q_vector - Allocate memory for a single interrupt vector
+  * @vsi: the VSI being configured
+@@ -3733,19 +3614,6 @@ static int ice_vsi_open(struct ice_vsi *vsi)
+ 	return err;
  }
  
 -/**
-- * ice_sched_get_vsi_info_entry - Get the vsi entry list for given vsi_id
-- * @pi: port information structure
-- * @vsi_id: vsi id
-- *
-- * This function retrieves the vsi list for the given vsi id
+- * ice_vsi_close - Shut down a VSI
+- * @vsi: the VSI being shut down
 - */
--static struct ice_sched_vsi_info *
--ice_sched_get_vsi_info_entry(struct ice_port_info *pi, u16 vsi_id)
+-static void ice_vsi_close(struct ice_vsi *vsi)
 -{
--	struct ice_sched_vsi_info *list_elem;
+-	if (!test_and_set_bit(__ICE_DOWN, vsi->state))
+-		ice_down(vsi);
 -
--	if (!pi)
--		return NULL;
--
--	list_for_each_entry(list_elem, &pi->vsi_info_list, list_entry)
--		if (list_elem->vsi_id == vsi_id)
--			return list_elem;
--	return NULL;
+-	ice_vsi_free_irq(vsi);
+-	ice_vsi_free_tx_rings(vsi);
+-	ice_vsi_free_rx_rings(vsi);
 -}
--
- /**
-  * ice_sched_find_node_in_subtree - Find node in part of base node subtree
-  * @hw: pointer to the hw struct
-@@ -1198,30 +1142,28 @@ ice_sched_find_node_in_subtree(struct ice_hw *hw, struct ice_sched_node *base,
- /**
-  * ice_sched_get_free_qparent - Get a free lan or rdma q group node
-  * @pi: port information structure
-- * @vsi_id: vsi id
-+ * @vsi_handle: software VSI handle
-  * @tc: branch number
-  * @owner: lan or rdma
-  *
-  * This function retrieves a free lan or rdma q group node
-  */
- struct ice_sched_node *
--ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_id, u8 tc,
-+ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- 			   u8 owner)
- {
- 	struct ice_sched_node *vsi_node, *qgrp_node = NULL;
--	struct ice_sched_vsi_info *list_elem;
-+	struct ice_vsi_ctx *vsi_ctx;
- 	u16 max_children;
- 	u8 qgrp_layer;
- 
- 	qgrp_layer = ice_sched_get_qgrp_layer(pi->hw);
- 	max_children = pi->hw->max_children[qgrp_layer];
- 
--	list_elem = ice_sched_get_vsi_info_entry(pi, vsi_id);
--	if (!list_elem)
--		goto lan_q_exit;
--
--	vsi_node = list_elem->vsi_node[tc];
--
-+	vsi_ctx = ice_get_vsi_ctx(pi->hw, vsi_handle);
-+	if (!vsi_ctx)
-+		return NULL;
-+	vsi_node = vsi_ctx->sched.vsi_node[tc];
- 	/* validate invalid VSI id */
- 	if (!vsi_node)
- 		goto lan_q_exit;
-@@ -1245,14 +1187,14 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_id, u8 tc,
-  * ice_sched_get_vsi_node - Get a VSI node based on VSI id
-  * @hw: pointer to the hw struct
-  * @tc_node: pointer to the TC node
-- * @vsi_id: VSI id
-+ * @vsi_handle: software VSI handle
-  *
-  * This function retrieves a VSI node for a given VSI id from a given
-  * TC branch
-  */
- static struct ice_sched_node *
- ice_sched_get_vsi_node(struct ice_hw *hw, struct ice_sched_node *tc_node,
--		       u16 vsi_id)
-+		       u16 vsi_handle)
- {
- 	struct ice_sched_node *node;
- 	u8 vsi_layer;
-@@ -1262,7 +1204,7 @@ ice_sched_get_vsi_node(struct ice_hw *hw, struct ice_sched_node *tc_node,
- 
- 	/* Check whether it already exists */
- 	while (node) {
--		if (node->vsi_id == vsi_id)
-+		if (node->vsi_handle == vsi_handle)
- 			return node;
- 		node = node->sibling;
- 	}
-@@ -1301,7 +1243,7 @@ ice_sched_calc_vsi_child_nodes(struct ice_hw *hw, u16 num_qs, u16 *num_nodes)
- /**
-  * ice_sched_add_vsi_child_nodes - add VSI child nodes to tree
-  * @pi: port information structure
-- * @vsi_id: VSI id
-+ * @vsi_handle: software VSI handle
-  * @tc_node: pointer to the TC node
-  * @num_nodes: pointer to the num nodes that needs to be added per layer
-  * @owner: node owner (lan or rdma)
-@@ -1310,7 +1252,7 @@ ice_sched_calc_vsi_child_nodes(struct ice_hw *hw, u16 num_qs, u16 *num_nodes)
-  * lan and rdma separately.
-  */
- static enum ice_status
--ice_sched_add_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id,
-+ice_sched_add_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
- 			      struct ice_sched_node *tc_node, u16 *num_nodes,
- 			      u8 owner)
- {
-@@ -1323,7 +1265,7 @@ ice_sched_add_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id,
- 
- 	qgl = ice_sched_get_qgrp_layer(hw);
- 	vsil = ice_sched_get_vsi_layer(hw);
--	parent = ice_sched_get_vsi_node(hw, tc_node, vsi_id);
-+	parent = ice_sched_get_vsi_node(hw, tc_node, vsi_handle);
- 	for (i = vsil + 1; i <= qgl; i++) {
- 		if (!parent)
- 			return ICE_ERR_CFG;
-@@ -1436,7 +1378,7 @@ ice_sched_calc_vsi_support_nodes(struct ice_hw *hw,
- /**
-  * ice_sched_add_vsi_support_nodes - add VSI supported nodes into tx tree
-  * @pi: port information structure
-- * @vsi_id: VSI Id
-+ * @vsi_handle: software VSI handle
-  * @tc_node: pointer to TC node
-  * @num_nodes: pointer to num nodes array
-  *
-@@ -1444,7 +1386,7 @@ ice_sched_calc_vsi_support_nodes(struct ice_hw *hw,
-  * VSI, its parent and intermediate nodes in below layers
-  */
- static enum ice_status
--ice_sched_add_vsi_support_nodes(struct ice_port_info *pi, u16 vsi_id,
-+ice_sched_add_vsi_support_nodes(struct ice_port_info *pi, u16 vsi_handle,
- 				struct ice_sched_node *tc_node, u16 *num_nodes)
- {
- 	struct ice_sched_node *parent = tc_node;
-@@ -1478,7 +1420,7 @@ ice_sched_add_vsi_support_nodes(struct ice_port_info *pi, u16 vsi_id,
- 			return ICE_ERR_CFG;
- 
- 		if (i == vsil)
--			parent->vsi_id = vsi_id;
-+			parent->vsi_handle = vsi_handle;
- 	}
- 
- 	return 0;
-@@ -1487,13 +1429,13 @@ ice_sched_add_vsi_support_nodes(struct ice_port_info *pi, u16 vsi_id,
- /**
-  * ice_sched_add_vsi_to_topo - add a new VSI into tree
-  * @pi: port information structure
-- * @vsi_id: VSI Id
-+ * @vsi_handle: software VSI handle
-  * @tc: TC number
-  *
-  * This function adds a new VSI into scheduler tree
-  */
- static enum ice_status
--ice_sched_add_vsi_to_topo(struct ice_port_info *pi, u16 vsi_id, u8 tc)
-+ice_sched_add_vsi_to_topo(struct ice_port_info *pi, u16 vsi_handle, u8 tc)
- {
- 	u16 num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
- 	struct ice_sched_node *tc_node;
-@@ -1507,13 +1449,14 @@ ice_sched_add_vsi_to_topo(struct ice_port_info *pi, u16 vsi_id, u8 tc)
- 	ice_sched_calc_vsi_support_nodes(hw, tc_node, num_nodes);
- 
- 	/* add vsi supported nodes to tc subtree */
--	return ice_sched_add_vsi_support_nodes(pi, vsi_id, tc_node, num_nodes);
-+	return ice_sched_add_vsi_support_nodes(pi, vsi_handle, tc_node,
-+					       num_nodes);
- }
  
  /**
-  * ice_sched_update_vsi_child_nodes - update VSI child nodes
-  * @pi: port information structure
-- * @vsi_id: VSI Id
-+ * @vsi_handle: software VSI handle
-  * @tc: TC number
-  * @new_numqs: new number of max queues
-  * @owner: owner of this subtree
-@@ -1521,14 +1464,14 @@ ice_sched_add_vsi_to_topo(struct ice_port_info *pi, u16 vsi_id, u8 tc)
-  * This function updates the VSI child nodes based on the number of queues
-  */
- static enum ice_status
--ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id, u8 tc,
--				 u16 new_numqs, u8 owner)
-+ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
-+				 u8 tc, u16 new_numqs, u8 owner)
- {
- 	u16 prev_num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
- 	u16 new_num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
- 	struct ice_sched_node *vsi_node;
- 	struct ice_sched_node *tc_node;
--	struct ice_sched_vsi_info *vsi;
-+	struct ice_vsi_ctx *vsi_ctx;
- 	enum ice_status status = 0;
- 	struct ice_hw *hw = pi->hw;
- 	u16 prev_numqs;
-@@ -1538,16 +1481,16 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id, u8 tc,
- 	if (!tc_node)
- 		return ICE_ERR_CFG;
- 
--	vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_id);
-+	vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_handle);
- 	if (!vsi_node)
- 		return ICE_ERR_CFG;
- 
--	vsi = ice_sched_get_vsi_info_entry(pi, vsi_id);
--	if (!vsi)
--		return ICE_ERR_CFG;
-+	vsi_ctx = ice_get_vsi_ctx(hw, vsi_handle);
-+	if (!vsi_ctx)
-+		return ICE_ERR_PARAM;
- 
- 	if (owner == ICE_SCHED_NODE_OWNER_LAN)
--		prev_numqs = vsi->max_lanq[tc];
-+		prev_numqs = vsi_ctx->sched.max_lanq[tc];
- 	else
- 		return ICE_ERR_PARAM;
- 
-@@ -1572,13 +1515,13 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id, u8 tc,
- 		for (i = 0; i < ICE_AQC_TOPO_MAX_LEVEL_NUM; i++)
- 			new_num_nodes[i] -= prev_num_nodes[i];
- 
--		status = ice_sched_add_vsi_child_nodes(pi, vsi_id, tc_node,
-+		status = ice_sched_add_vsi_child_nodes(pi, vsi_handle, tc_node,
- 						       new_num_nodes, owner);
- 		if (status)
- 			return status;
- 	}
- 
--	vsi->max_lanq[tc] = new_numqs;
-+	vsi_ctx->sched.max_lanq[tc] = new_numqs;
- 
- 	return status;
- }
-@@ -1586,7 +1529,7 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id, u8 tc,
- /**
-  * ice_sched_cfg_vsi - configure the new/exisiting VSI
-  * @pi: port information structure
-- * @vsi_id: VSI Id
-+ * @vsi_handle: software VSI handle
-  * @tc: TC number
-  * @maxqs: max number of queues
-  * @owner: lan or rdma
-@@ -1597,25 +1540,21 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_id, u8 tc,
-  * disabled then suspend the VSI if it is not already.
-  */
- enum ice_status
--ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_id, u8 tc, u16 maxqs,
-+ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
- 		  u8 owner, bool enable)
- {
- 	struct ice_sched_node *vsi_node, *tc_node;
--	struct ice_sched_vsi_info *vsi;
-+	struct ice_vsi_ctx *vsi_ctx;
- 	enum ice_status status = 0;
- 	struct ice_hw *hw = pi->hw;
- 
- 	tc_node = ice_sched_get_tc_node(pi, tc);
- 	if (!tc_node)
- 		return ICE_ERR_PARAM;
--
--	vsi = ice_sched_get_vsi_info_entry(pi, vsi_id);
--	if (!vsi)
--		vsi = ice_sched_create_vsi_info_entry(pi, vsi_id);
--	if (!vsi)
--		return ICE_ERR_NO_MEMORY;
--
--	vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_id);
-+	vsi_ctx = ice_get_vsi_ctx(hw, vsi_handle);
-+	if (!vsi_ctx)
-+		return ICE_ERR_PARAM;
-+	vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_handle);
- 
- 	/* suspend the VSI if tc is not enabled */
- 	if (!enable) {
-@@ -1632,20 +1571,26 @@ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_id, u8 tc, u16 maxqs,
- 
- 	/* TC is enabled, if it is a new VSI then add it to the tree */
- 	if (!vsi_node) {
--		status = ice_sched_add_vsi_to_topo(pi, vsi_id, tc);
-+		status = ice_sched_add_vsi_to_topo(pi, vsi_handle, tc);
- 		if (status)
- 			return status;
- 
--		vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_id);
-+		vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_handle);
- 		if (!vsi_node)
- 			return ICE_ERR_CFG;
- 
--		vsi->vsi_node[tc] = vsi_node;
-+		vsi_ctx->sched.vsi_node[tc] = vsi_node;
- 		vsi_node->in_use = true;
-+		/* invalidate the max queues whenever VSI gets added first time
-+		 * into the scheduler tree (boot or after reset). We need to
-+		 * recreate the child nodes all the time in these cases.
-+		 */
-+		vsi_ctx->sched.max_lanq[tc] = 0;
- 	}
- 
- 	/* update the VSI child nodes */
--	status = ice_sched_update_vsi_child_nodes(pi, vsi_id, tc, maxqs, owner);
-+	status = ice_sched_update_vsi_child_nodes(pi, vsi_handle, tc, maxqs,
-+						  owner);
- 	if (status)
- 		return status;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index badadcc120d3..5dc9cfa04c58 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -12,7 +12,6 @@
- struct ice_sched_agg_vsi_info {
- 	struct list_head list_entry;
- 	DECLARE_BITMAP(tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
--	u16 vsi_id;
- };
- 
- struct ice_sched_agg_info {
-@@ -35,9 +34,9 @@ ice_sched_add_node(struct ice_port_info *pi, u8 layer,
- void ice_free_sched_node(struct ice_port_info *pi, struct ice_sched_node *node);
- struct ice_sched_node *ice_sched_get_tc_node(struct ice_port_info *pi, u8 tc);
- struct ice_sched_node *
--ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_id, u8 tc,
-+ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- 			   u8 owner);
- enum ice_status
--ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_id, u8 tc, u16 maxqs,
-+ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
- 		  u8 owner, bool enable);
- #endif /* _ICE_SCHED_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 50927f79b9dc..aab3ade35cb1 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -283,7 +283,7 @@ ice_aq_update_vsi(struct ice_hw *hw, struct ice_vsi_ctx *vsi_ctx,
-  *
-  * check whether the VSI is valid or not
-  */
--static bool ice_is_vsi_valid(struct ice_hw *hw, u16 vsi_handle)
-+bool ice_is_vsi_valid(struct ice_hw *hw, u16 vsi_handle)
- {
- 	return vsi_handle < ICE_MAX_VSI && hw->vsi_ctx[vsi_handle];
- }
-@@ -296,7 +296,7 @@ static bool ice_is_vsi_valid(struct ice_hw *hw, u16 vsi_handle)
-  * return the hw VSI number
-  * Caution: call this function only if VSI is valid (ice_is_vsi_valid)
-  */
--static u16 ice_get_hw_vsi_num(struct ice_hw *hw, u16 vsi_handle)
-+u16 ice_get_hw_vsi_num(struct ice_hw *hw, u16 vsi_handle)
- {
- 	return hw->vsi_ctx[vsi_handle]->vsi_num;
- }
-@@ -308,7 +308,7 @@ static u16 ice_get_hw_vsi_num(struct ice_hw *hw, u16 vsi_handle)
-  *
-  * return the VSI context entry for a given VSI handle
-  */
--static struct ice_vsi_ctx *ice_get_vsi_ctx(struct ice_hw *hw, u16 vsi_handle)
-+struct ice_vsi_ctx *ice_get_vsi_ctx(struct ice_hw *hw, u16 vsi_handle)
- {
- 	return (vsi_handle >= ICE_MAX_VSI) ? NULL : hw->vsi_ctx[vsi_handle];
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index c188bbc3de2a..50ab036a17f3 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -17,6 +17,7 @@ struct ice_vsi_ctx {
- 	u16 vsis_unallocated;
- 	u16 flags;
- 	struct ice_aqc_vsi_props info;
-+	struct ice_sched_vsi_info sched;
- 	u8 alloc_from_pool;
- };
- 
-@@ -185,6 +186,8 @@ ice_free_vsi(struct ice_hw *hw, u16 vsi_handle, struct ice_vsi_ctx *vsi_ctx,
- enum ice_status
- ice_update_vsi(struct ice_hw *hw, u16 vsi_handle, struct ice_vsi_ctx *vsi_ctx,
- 	       struct ice_sq_cd *cd);
-+bool ice_is_vsi_valid(struct ice_hw *hw, u16 vsi_handle);
-+struct ice_vsi_ctx *ice_get_vsi_ctx(struct ice_hw *hw, u16 vsi_handle);
- enum ice_status ice_get_initial_sw_cfg(struct ice_hw *hw);
- 
- /* Switch/bridge related commands */
-@@ -197,6 +200,8 @@ enum ice_status ice_remove_vlan(struct ice_hw *hw, struct list_head *v_list);
- enum ice_status
- ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_handle, bool set, u8 direction);
- 
-+u16 ice_get_hw_vsi_num(struct ice_hw *hw, u16 vsi_handle);
-+
- enum ice_status ice_replay_all_fltr(struct ice_hw *hw);
- 
- enum ice_status ice_init_def_sw_recp(struct ice_hw *hw);
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index e681804be4d4..fa459329c1de 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -186,7 +186,7 @@ struct ice_sched_node {
- 	struct ice_sched_node **children;
- 	struct ice_aqc_txsched_elem_data info;
- 	u32 agg_id;			/* aggregator group id */
--	u16 vsi_id;
-+	u16 vsi_handle;
- 	u8 in_use;			/* suspended or in use */
- 	u8 tx_sched_layer;		/* Logical Layer (1-9) */
- 	u8 num_children;
-@@ -245,8 +245,6 @@ struct ice_port_info {
- 	struct ice_mac_info mac;
- 	struct ice_phy_info phy;
- 	struct mutex sched_lock;	/* protect access to TXSched tree */
--	struct ice_sched_tx_policy sched_policy;
--	struct list_head vsi_info_list;
- 	struct list_head agg_list;	/* lists all aggregator */
- 	u8 lport;
- #define ICE_LPORT_MASK		0xff
+  * ice_rss_clean - Delete RSS related VSI structures that hold user inputs
 -- 
 2.14.3
 
