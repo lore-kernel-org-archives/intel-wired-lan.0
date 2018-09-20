@@ -1,98 +1,47 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:43:03 -0700
-Subject: [Intel-wired-lan] [PATCH v2 11/16] ice: Add code to go from
- ICE_FWD_TO_VSI_LIST to ICE_FWD_TO_VSI
-In-Reply-To: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
-References: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920004308.13772-12-anirudh.venkataramanan@intel.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Thu, 20 Sep 2018 02:04:38 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] e1000: remove set but not used
+ variable 'txb2b'
+Message-ID: <1537409078-2374-1-git-send-email-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-When a switch rule is initially created we set the filter action to
-ICE_FWD_TO_VSI. The filter action changes to ICE_FWD_TO_VSI_LIST
-whenever more than one VSI is subscribed to the same switch rule. When
-the switch rule goes from 2 VSIs in the list to 1 VSI we remove and
-delete the VSI list rule, but we currently don't update the switch rule
-in hardware. This is causing switch rules to be lost, so fix that by
-making a call to ice_update_pkt_fwd_rule() with the necessary changes.
+drivers/net/ethernet/intel/e1000/e1000_main.c: In function 'e1000_watchdog':
+drivers/net/ethernet/intel/e1000/e1000_main.c:2436:9: warning:
+ variable 'txb2b' set but not used [-Wunused-but-set-variable]
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 38 ++++++++++++++++++++++-------
- 1 file changed, 29 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 822442fee327..c6d673bd5eaa 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -1422,8 +1422,8 @@ ice_rem_update_vsi_list(struct ice_hw *hw, u16 vsi_handle,
- 	fm_list->vsi_count--;
- 	clear_bit(vsi_handle, fm_list->vsi_list_info->vsi_map);
- 
--	if ((fm_list->vsi_count == 1 && lkup_type != ICE_SW_LKUP_VLAN) ||
--	    (fm_list->vsi_count == 0 && lkup_type == ICE_SW_LKUP_VLAN)) {
-+	if (fm_list->vsi_count == 1 && lkup_type != ICE_SW_LKUP_VLAN) {
-+		struct ice_fltr_info tmp_fltr_info = fm_list->fltr_info;
- 		struct ice_vsi_list_map_info *vsi_list_info =
- 			fm_list->vsi_list_info;
- 		u16 rem_vsi_handle;
-@@ -1432,6 +1432,8 @@ ice_rem_update_vsi_list(struct ice_hw *hw, u16 vsi_handle,
- 						ICE_MAX_VSI);
- 		if (!ice_is_vsi_valid(hw, rem_vsi_handle))
- 			return ICE_ERR_OUT_OF_RANGE;
-+
-+		/* Make sure VSI list is empty before removing it below */
- 		status = ice_update_vsi_list_rule(hw, &rem_vsi_handle, 1,
- 						  vsi_list_id, true,
- 						  ice_aqc_opc_update_sw_rules,
-@@ -1439,16 +1441,34 @@ ice_rem_update_vsi_list(struct ice_hw *hw, u16 vsi_handle,
- 		if (status)
- 			return status;
- 
-+		tmp_fltr_info.fltr_act = ICE_FWD_TO_VSI;
-+		tmp_fltr_info.fwd_id.hw_vsi_id =
-+			ice_get_hw_vsi_num(hw, rem_vsi_handle);
-+		tmp_fltr_info.vsi_handle = rem_vsi_handle;
-+		status = ice_update_pkt_fwd_rule(hw, &tmp_fltr_info);
-+		if (status) {
-+			ice_debug(hw, ICE_DBG_SW,
-+				  "Failed to update pkt fwd rule to FWD_TO_VSI on HW VSI %d, error %d\n",
-+				  tmp_fltr_info.fwd_id.hw_vsi_id, status);
-+			return status;
-+		}
-+
-+		fm_list->fltr_info = tmp_fltr_info;
-+	}
-+
-+	if ((fm_list->vsi_count == 1 && lkup_type != ICE_SW_LKUP_VLAN) ||
-+	    (fm_list->vsi_count == 0 && lkup_type == ICE_SW_LKUP_VLAN)) {
-+		struct ice_vsi_list_map_info *vsi_list_info =
-+			fm_list->vsi_list_info;
-+
- 		/* Remove the VSI list since it is no longer used */
- 		status = ice_remove_vsi_list_rule(hw, vsi_list_id, lkup_type);
--		if (status)
-+		if (status) {
-+			ice_debug(hw, ICE_DBG_SW,
-+				  "Failed to remove VSI list %d, error %d\n",
-+				  vsi_list_id, status);
- 			return status;
--
--		/* Change the list entry action from VSI_LIST to VSI */
--		fm_list->fltr_info.fltr_act = ICE_FWD_TO_VSI;
--		fm_list->fltr_info.fwd_id.hw_vsi_id =
--			ice_get_hw_vsi_num(hw, rem_vsi_handle);
--		fm_list->fltr_info.vsi_handle = rem_vsi_handle;
-+		}
- 
- 		list_del(&vsi_list_info->list_entry);
- 		devm_kfree(ice_hw_to_dev(hw), vsi_list_info);
--- 
-2.14.3
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 7e0f1f9..43b6d3c 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -2433,7 +2433,6 @@ static void e1000_watchdog(struct work_struct *work)
+ 	if (link) {
+ 		if (!netif_carrier_ok(netdev)) {
+ 			u32 ctrl;
+-			bool txb2b = true;
+ 			/* update snapshot of PHY registers on LSC */
+ 			e1000_get_speed_and_duplex(hw,
+ 						   &adapter->link_speed,
+@@ -2455,11 +2454,9 @@ static void e1000_watchdog(struct work_struct *work)
+ 			adapter->tx_timeout_factor = 1;
+ 			switch (adapter->link_speed) {
+ 			case SPEED_10:
+-				txb2b = false;
+ 				adapter->tx_timeout_factor = 16;
+ 				break;
+ 			case SPEED_100:
+-				txb2b = false;
+ 				/* maybe add some timeout factor ? */
+ 				break;
+ 			}
 
