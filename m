@@ -1,380 +1,401 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:23:08 -0700
-Subject: [Intel-wired-lan] [PATCH 05/16] ice: Move common functions out of
- ice_main.c part 5/7
+Date: Wed, 19 Sep 2018 17:23:14 -0700
+Subject: [Intel-wired-lan] [PATCH 11/16] ice: Implement VSI replay framework
 In-Reply-To: <20180920002319.10971-1-anirudh.venkataramanan@intel.com>
 References: <20180920002319.10971-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920002319.10971-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920002319.10971-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch continues the code move out of ice_main.c
+Currently, switch filters get replayed after reset. In addition to
+filters, other VSI attributes (like RSS configuration, Tx scheduler
+configuration, etc.) also need to be replayed after reset.
 
-The following top level functions (and related dependency functions) were
-moved to ice_lib.c:
-ice_vsi_clear
-ice_vsi_close
-ice_vsi_free_arrays
-ice_vsi_map_rings_to_vectors
+Thus, instead of replaying based on functional blocks (i.e. replay
+all filters for all VSIs, followed by RSS configuration replay for
+all VSIs, and so on), it makes more sense to have the replay centered
+around a VSI. In other words, replay all configurations for a VSI before
+moving on to rebuilding the next VSI.
+
+To that effect, this patch introduces a VSI replay framework in a new
+function ice_vsi_replay_all. Currently it only replays switch filters,
+but it will be expanded in the future to replay additional VSI attributes.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c  | 133 ++++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_lib.h  |   8 ++
- drivers/net/ethernet/intel/ice/ice_main.c | 132 -----------------------------
- 3 files changed, 141 insertions(+), 132 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c |  65 ++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_common.h |   2 +
+ drivers/net/ethernet/intel/ice/ice_main.c   |  44 +++++++++++-
+ drivers/net/ethernet/intel/ice/ice_switch.c | 107 ++++++++++++++++------------
+ drivers/net/ethernet/intel/ice/ice_switch.h |   8 ++-
+ drivers/net/ethernet/intel/ice/ice_type.h   |   3 +
+ 6 files changed, 178 insertions(+), 51 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index fa96279139d0..c9f82e351802 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -341,6 +341,71 @@ void ice_vsi_delete(struct ice_vsi *vsi)
- 			vsi->vsi_num);
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 62bc717e4a90..1b38610f8d19 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -422,7 +422,7 @@ static void ice_cleanup_fltr_mgmt_struct(struct ice_hw *hw)
+ 			devm_kfree(ice_hw_to_dev(hw), lst_itr);
+ 		}
+ 	}
+-
++	ice_rm_all_sw_replay_rule_info(hw);
+ 	devm_kfree(ice_hw_to_dev(hw), sw->recp_list);
+ 	devm_kfree(ice_hw_to_dev(hw), sw);
+ }
+@@ -2674,6 +2674,69 @@ ice_cfg_vsi_lan(struct ice_port_info *pi, u16 vsi_handle, u8 tc_bitmap,
+ 			      ICE_SCHED_NODE_OWNER_LAN);
  }
  
 +/**
-+ * ice_vsi_free_arrays - clean up vsi resources
-+ * @vsi: pointer to VSI being cleared
-+ * @free_qvectors: bool to specify if q_vectors should be deallocated
-+ */
-+void ice_vsi_free_arrays(struct ice_vsi *vsi, bool free_qvectors)
-+{
-+	struct ice_pf *pf = vsi->back;
-+
-+	/* free the ring and vector containers */
-+	if (free_qvectors && vsi->q_vectors) {
-+		devm_kfree(&pf->pdev->dev, vsi->q_vectors);
-+		vsi->q_vectors = NULL;
-+	}
-+	if (vsi->tx_rings) {
-+		devm_kfree(&pf->pdev->dev, vsi->tx_rings);
-+		vsi->tx_rings = NULL;
-+	}
-+	if (vsi->rx_rings) {
-+		devm_kfree(&pf->pdev->dev, vsi->rx_rings);
-+		vsi->rx_rings = NULL;
-+	}
-+}
-+
-+/**
-+ * ice_vsi_clear - clean up and deallocate the provided vsi
-+ * @vsi: pointer to VSI being cleared
++ * ice_replay_pre_init - replay pre initialization
++ * @hw: pointer to the hw struct
 + *
-+ * This deallocates the vsi's queue resources, removes it from the PF's
-+ * VSI array if necessary, and deallocates the VSI
-+ *
-+ * Returns 0 on success, negative on failure
++ * Initializes required config data for VSI, FD, ACL, and RSS before replay.
 + */
-+int ice_vsi_clear(struct ice_vsi *vsi)
++static enum ice_status ice_replay_pre_init(struct ice_hw *hw)
 +{
-+	struct ice_pf *pf = NULL;
++	struct ice_switch_info *sw = hw->switch_info;
++	u8 i;
 +
-+	if (!vsi)
-+		return 0;
-+
-+	if (!vsi->back)
-+		return -EINVAL;
-+
-+	pf = vsi->back;
-+
-+	if (!pf->vsi[vsi->idx] || pf->vsi[vsi->idx] != vsi) {
-+		dev_dbg(&pf->pdev->dev, "vsi does not exist at pf->vsi[%d]\n",
-+			vsi->idx);
-+		return -EINVAL;
-+	}
-+
-+	mutex_lock(&pf->sw_mutex);
-+	/* updates the PF for this cleared vsi */
-+
-+	pf->vsi[vsi->idx] = NULL;
-+	if (vsi->idx < pf->next_vsi)
-+		pf->next_vsi = vsi->idx;
-+
-+	ice_vsi_free_arrays(vsi, true);
-+	mutex_unlock(&pf->sw_mutex);
-+	devm_kfree(&pf->pdev->dev, vsi);
++	/* Delete old entries from replay filter list head if there is any */
++	ice_rm_all_sw_replay_rule_info(hw);
++	/* In start of replay, move entries into replay_rules list, it
++	 * will allow adding rules entries back to filt_rules list,
++	 * which is operational list.
++	 */
++	for (i = 0; i < ICE_SW_LKUP_LAST; i++)
++		list_replace_init(&sw->recp_list[i].filt_rules,
++				  &sw->recp_list[i].filt_replay_rules);
 +
 +	return 0;
 +}
 +
- /**
-  * ice_msix_clean_rings - MSIX mode Interrupt Handler
-  * @irq: interrupt number
-@@ -700,6 +765,60 @@ int ice_vsi_alloc_rings(struct ice_vsi *vsi)
- 	return -ENOMEM;
- }
- 
 +/**
-+ * ice_vsi_map_rings_to_vectors - Map VSI rings to interrupt vectors
-+ * @vsi: the VSI being configured
++ * ice_replay_vsi - replay vsi configuration
++ * @hw: pointer to the hw struct
++ * @vsi_handle: driver vsi handle
 + *
-+ * This function maps descriptor rings to the queue-specific vectors allotted
-+ * through the MSI-X enabling code. On a constrained vector budget, we map Tx
-+ * and Rx rings to the vector as "efficiently" as possible.
++ * Restore all VSI configuration after reset. It is required to call this
++ * function with main VSI first.
 + */
-+void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
++enum ice_status ice_replay_vsi(struct ice_hw *hw, u16 vsi_handle)
 +{
-+	int q_vectors = vsi->num_q_vectors;
-+	int tx_rings_rem, rx_rings_rem;
-+	int v_id;
++	enum ice_status status;
 +
-+	/* initially assigning remaining rings count to VSIs num queue value */
-+	tx_rings_rem = vsi->num_txq;
-+	rx_rings_rem = vsi->num_rxq;
++	if (!ice_is_vsi_valid(hw, vsi_handle))
++		return ICE_ERR_PARAM;
 +
-+	for (v_id = 0; v_id < q_vectors; v_id++) {
-+		struct ice_q_vector *q_vector = vsi->q_vectors[v_id];
-+		int tx_rings_per_v, rx_rings_per_v, q_id, q_base;
-+
-+		/* Tx rings mapping to vector */
-+		tx_rings_per_v = DIV_ROUND_UP(tx_rings_rem, q_vectors - v_id);
-+		q_vector->num_ring_tx = tx_rings_per_v;
-+		q_vector->tx.ring = NULL;
-+		q_base = vsi->num_txq - tx_rings_rem;
-+
-+		for (q_id = q_base; q_id < (q_base + tx_rings_per_v); q_id++) {
-+			struct ice_ring *tx_ring = vsi->tx_rings[q_id];
-+
-+			tx_ring->q_vector = q_vector;
-+			tx_ring->next = q_vector->tx.ring;
-+			q_vector->tx.ring = tx_ring;
-+		}
-+		tx_rings_rem -= tx_rings_per_v;
-+
-+		/* Rx rings mapping to vector */
-+		rx_rings_per_v = DIV_ROUND_UP(rx_rings_rem, q_vectors - v_id);
-+		q_vector->num_ring_rx = rx_rings_per_v;
-+		q_vector->rx.ring = NULL;
-+		q_base = vsi->num_rxq - rx_rings_rem;
-+
-+		for (q_id = q_base; q_id < (q_base + rx_rings_per_v); q_id++) {
-+			struct ice_ring *rx_ring = vsi->rx_rings[q_id];
-+
-+			rx_ring->q_vector = q_vector;
-+			rx_ring->next = q_vector->rx.ring;
-+			q_vector->rx.ring = rx_ring;
-+		}
-+		rx_rings_rem -= rx_rings_per_v;
++	/* Replay pre-initialization if there is any */
++	if (vsi_handle == ICE_MAIN_VSI_HANDLE) {
++		status = ice_replay_pre_init(hw);
++		if (status)
++			return status;
 +	}
++
++	/* Replay per VSI all filters */
++	status = ice_replay_vsi_all_fltr(hw, vsi_handle);
++	return status;
 +}
 +
- /**
-  * ice_add_mac_to_list - Add a mac address filter entry to the list
-  * @vsi: the VSI to be forwarded to
-@@ -1385,6 +1504,20 @@ void ice_vsi_free_rx_rings(struct ice_vsi *vsi)
- 			ice_free_rx_ring(vsi->rx_rings[i]);
- }
- 
 +/**
-+ * ice_vsi_close - Shut down a VSI
-+ * @vsi: the VSI being shut down
++ * ice_replay_post - post replay configuration cleanup
++ * @hw: pointer to the hw struct
++ *
++ * Post replay cleanup.
 + */
-+void ice_vsi_close(struct ice_vsi *vsi)
++void ice_replay_post(struct ice_hw *hw)
 +{
-+	if (!test_and_set_bit(__ICE_DOWN, vsi->state))
-+		ice_down(vsi);
-+
-+	ice_vsi_free_irq(vsi);
-+	ice_vsi_free_tx_rings(vsi);
-+	ice_vsi_free_rx_rings(vsi);
++	/* Delete old entries from replay filter list head */
++	ice_rm_all_sw_replay_rule_info(hw);
 +}
 +
  /**
-  * ice_free_res - free a block of resources
-  * @res: pointer to the resource
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index ab5a4e1edcf8..002bbca8e7ea 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -6,6 +6,8 @@
- 
- #include "ice.h"
- 
-+void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi);
-+
- int ice_vsi_alloc_rings(struct ice_vsi *vsi);
- 
- void ice_vsi_set_rss_params(struct ice_vsi *vsi);
-@@ -16,6 +18,8 @@ int ice_get_free_slot(void *array, int size, int curr);
- 
- int ice_vsi_init(struct ice_vsi *vsi);
- 
-+void ice_vsi_free_arrays(struct ice_vsi *vsi, bool free_qvectors);
-+
- void ice_vsi_clear_rings(struct ice_vsi *vsi);
- 
- int ice_vsi_alloc_arrays(struct ice_vsi *vsi, bool alloc_qvectors);
-@@ -51,6 +55,10 @@ int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena);
- 
- void ice_vsi_delete(struct ice_vsi *vsi);
- 
-+int ice_vsi_clear(struct ice_vsi *vsi);
-+
-+void ice_vsi_close(struct ice_vsi *vsi);
-+
- int ice_free_res(struct ice_res_tracker *res, u16 index, u16 id);
- 
- int
+  * ice_stat_update40 - read 40 bit stat from the chip and update stat values
+  * @hw: ptr to the hardware info
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 01384fb919df..5493266d4204 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -96,6 +96,8 @@ enum ice_status
+ ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u8 num_qgrps,
+ 		struct ice_aqc_add_tx_qgrp *buf, u16 buf_size,
+ 		struct ice_sq_cd *cd);
++enum ice_status ice_replay_vsi(struct ice_hw *hw, u16 vsi_handle);
++void ice_replay_post(struct ice_hw *hw);
+ void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf);
+ void ice_stat_update40(struct ice_hw *hw, u32 hireg, u32 loreg,
+ 		       bool prev_stat_loaded, u64 *prev_stat, u64 *cur_stat);
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 9ef8611d13b0..40f4e0c9b722 100644
+index cb12cb5b62a1..e59fe46b0469 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1313,60 +1313,6 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 	return ret;
- }
- 
--/**
-- * ice_vsi_map_rings_to_vectors - Map VSI rings to interrupt vectors
-- * @vsi: the VSI being configured
-- *
-- * This function maps descriptor rings to the queue-specific vectors allotted
-- * through the MSI-X enabling code. On a constrained vector budget, we map Tx
-- * and Rx rings to the vector as "efficiently" as possible.
-- */
--static void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
--{
--	int q_vectors = vsi->num_q_vectors;
--	int tx_rings_rem, rx_rings_rem;
--	int v_id;
--
--	/* initially assigning remaining rings count to VSIs num queue value */
--	tx_rings_rem = vsi->num_txq;
--	rx_rings_rem = vsi->num_rxq;
--
--	for (v_id = 0; v_id < q_vectors; v_id++) {
--		struct ice_q_vector *q_vector = vsi->q_vectors[v_id];
--		int tx_rings_per_v, rx_rings_per_v, q_id, q_base;
--
--		/* Tx rings mapping to vector */
--		tx_rings_per_v = DIV_ROUND_UP(tx_rings_rem, q_vectors - v_id);
--		q_vector->num_ring_tx = tx_rings_per_v;
--		q_vector->tx.ring = NULL;
--		q_base = vsi->num_txq - tx_rings_rem;
--
--		for (q_id = q_base; q_id < (q_base + tx_rings_per_v); q_id++) {
--			struct ice_ring *tx_ring = vsi->tx_rings[q_id];
--
--			tx_ring->q_vector = q_vector;
--			tx_ring->next = q_vector->tx.ring;
--			q_vector->tx.ring = tx_ring;
--		}
--		tx_rings_rem -= tx_rings_per_v;
--
--		/* Rx rings mapping to vector */
--		rx_rings_per_v = DIV_ROUND_UP(rx_rings_rem, q_vectors - v_id);
--		q_vector->num_ring_rx = rx_rings_per_v;
--		q_vector->rx.ring = NULL;
--		q_base = vsi->num_rxq - rx_rings_rem;
--
--		for (q_id = q_base; q_id < (q_base + rx_rings_per_v); q_id++) {
--			struct ice_ring *rx_ring = vsi->rx_rings[q_id];
--
--			rx_ring->q_vector = q_vector;
--			rx_ring->next = q_vector->rx.ring;
--			q_vector->rx.ring = rx_ring;
--		}
--		rx_rings_rem -= rx_rings_per_v;
--	}
--}
--
- /**
-  * ice_vsi_alloc - Allocates the next available struct vsi in the PF
-  * @pf: board private structure
-@@ -1770,71 +1716,6 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
+@@ -3159,6 +3159,44 @@ static int ice_vsi_rebuild_all(struct ice_pf *pf)
  	return 0;
  }
  
--/**
-- * ice_vsi_free_arrays - clean up vsi resources
-- * @vsi: pointer to VSI being cleared
-- * @free_qvectors: bool to specify if q_vectors should be deallocated
-- */
--static void ice_vsi_free_arrays(struct ice_vsi *vsi, bool free_qvectors)
--{
--	struct ice_pf *pf = vsi->back;
--
--	/* free the ring and vector containers */
--	if (free_qvectors && vsi->q_vectors) {
--		devm_kfree(&pf->pdev->dev, vsi->q_vectors);
--		vsi->q_vectors = NULL;
--	}
--	if (vsi->tx_rings) {
--		devm_kfree(&pf->pdev->dev, vsi->tx_rings);
--		vsi->tx_rings = NULL;
--	}
--	if (vsi->rx_rings) {
--		devm_kfree(&pf->pdev->dev, vsi->rx_rings);
--		vsi->rx_rings = NULL;
--	}
--}
--
--/**
-- * ice_vsi_clear - clean up and deallocate the provided vsi
-- * @vsi: pointer to VSI being cleared
-- *
-- * This deallocates the vsi's queue resources, removes it from the PF's
-- * VSI array if necessary, and deallocates the VSI
-- *
-- * Returns 0 on success, negative on failure
-- */
--static int ice_vsi_clear(struct ice_vsi *vsi)
--{
--	struct ice_pf *pf = NULL;
--
--	if (!vsi)
--		return 0;
--
--	if (!vsi->back)
--		return -EINVAL;
--
--	pf = vsi->back;
--
--	if (!pf->vsi[vsi->idx] || pf->vsi[vsi->idx] != vsi) {
--		dev_dbg(&pf->pdev->dev, "vsi does not exist at pf->vsi[%d]\n",
--			vsi->idx);
--		return -EINVAL;
--	}
--
--	mutex_lock(&pf->sw_mutex);
--	/* updates the PF for this cleared vsi */
--
--	pf->vsi[vsi->idx] = NULL;
--	if (vsi->idx < pf->next_vsi)
--		pf->next_vsi = vsi->idx;
--
--	ice_vsi_free_arrays(vsi, true);
--	mutex_unlock(&pf->sw_mutex);
--	devm_kfree(&pf->pdev->dev, vsi);
--
--	return 0;
--}
--
++/**
++ * ice_vsi_replay_all - replay all VSIs configuration in the PF
++ * @pf: the PF
++ */
++static int ice_vsi_replay_all(struct ice_pf *pf)
++{
++	struct ice_hw *hw = &pf->hw;
++	enum ice_status ret;
++	int i;
++
++	/* loop through pf->vsi array and replay the VSI if found */
++	for (i = 0; i < pf->num_alloc_vsi; i++) {
++		if (!pf->vsi[i])
++			continue;
++
++		ret = ice_replay_vsi(hw, pf->vsi[i]->idx);
++		if (ret) {
++			dev_err(&pf->pdev->dev,
++				"VSI at index %d replay failed %d\n",
++				pf->vsi[i]->idx, ret);
++			return -EIO;
++		}
++
++		/* Re-map HW VSI number, using VSI handle that has been
++		 * previously validated in ice_replay_vsi() call above
++		 */
++		pf->vsi[i]->vsi_num = ice_get_hw_vsi_num(hw, pf->vsi[i]->idx);
++
++		dev_info(&pf->pdev->dev,
++			 "VSI at index %d filter replayed successfully - vsi_num %i\n",
++			 pf->vsi[i]->idx, pf->vsi[i]->vsi_num);
++	}
++
++	/* Clean up replay filter after successful re-configuration */
++	ice_replay_post(hw);
++	return 0;
++}
++
  /**
-  * ice_vsi_alloc_q_vector - Allocate memory for a single interrupt vector
-  * @vsi: the VSI being configured
-@@ -3733,19 +3614,6 @@ static int ice_vsi_open(struct ice_vsi *vsi)
- 	return err;
+  * ice_rebuild - rebuild after reset
+  * @pf: pf to rebuild
+@@ -3205,10 +3243,10 @@ static void ice_rebuild(struct ice_pf *pf)
+ 		goto err_vsi_rebuild;
+ 	}
+ 
+-	ret = ice_replay_all_fltr(&pf->hw);
+-	if (ret) {
++	/* Replay all VSIs Configuration, including filters after reset */
++	if (ice_vsi_replay_all(pf)) {
+ 		dev_err(&pf->pdev->dev,
+-			"error replaying switch filter rules\n");
++			"error replaying VSI configurations with switch filter rules\n");
+ 		goto err_vsi_rebuild;
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index aab3ade35cb1..324232e5d99b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -106,6 +106,7 @@ ice_init_def_sw_recp(struct ice_hw *hw)
+ 	for (i = 0; i < ICE_SW_LKUP_LAST; i++) {
+ 		recps[i].root_rid = i;
+ 		INIT_LIST_HEAD(&recps[i].filt_rules);
++		INIT_LIST_HEAD(&recps[i].filt_replay_rules);
+ 		mutex_init(&recps[i].filt_rule_lock);
+ 	}
+ 
+@@ -2196,87 +2197,105 @@ void ice_remove_vsi_fltr(struct ice_hw *hw, u16 vsi_handle)
  }
  
--/**
-- * ice_vsi_close - Shut down a VSI
-- * @vsi: the VSI being shut down
-- */
--static void ice_vsi_close(struct ice_vsi *vsi)
--{
--	if (!test_and_set_bit(__ICE_DOWN, vsi->state))
--		ice_down(vsi);
+ /**
+- * ice_replay_fltr - Replay all the filters stored by a specific list head
++ * ice_replay_vsi_fltr - Replay filters for requested VSI
+  * @hw: pointer to the hardware structure
+- * @list_head: list for which filters needs to be replayed
++ * @vsi_handle: driver vsi handle
+  * @recp_id: Recipe id for which rules need to be replayed
++ * @list_head: list for which filters need to be replayed
++ *
++ * Replays the filter of recipe recp_id for a VSI represented via vsi_handle.
++ * It is required to pass valid VSI handle.
+  */
+ static enum ice_status
+-ice_replay_fltr(struct ice_hw *hw, u8 recp_id, struct list_head *list_head)
++ice_replay_vsi_fltr(struct ice_hw *hw, u16 vsi_handle, u8 recp_id,
++		    struct list_head *list_head)
+ {
+ 	struct ice_fltr_mgmt_list_entry *itr;
+-	struct list_head l_head;
+ 	enum ice_status status = 0;
++	u16 hw_vsi_id;
+ 
+ 	if (list_empty(list_head))
+ 		return status;
++	hw_vsi_id = ice_get_hw_vsi_num(hw, vsi_handle);
+ 
+-	/* Move entries from the given list_head to a temporary l_head so that
+-	 * they can be replayed. Otherwise when trying to re-add the same
+-	 * filter, the function will return already exists
+-	 */
+-	list_replace_init(list_head, &l_head);
 -
--	ice_vsi_free_irq(vsi);
--	ice_vsi_free_tx_rings(vsi);
--	ice_vsi_free_rx_rings(vsi);
--}
+-	/* Mark the given list_head empty by reinitializing it so filters
+-	 * could be added again by *handler
+-	 */
+-	list_for_each_entry(itr, &l_head, list_entry) {
++	list_for_each_entry(itr, list_head, list_entry) {
+ 		struct ice_fltr_list_entry f_entry;
+ 
+ 		f_entry.fltr_info = itr->fltr_info;
+-		if (itr->vsi_count < 2 && recp_id != ICE_SW_LKUP_VLAN) {
++		if (itr->vsi_count < 2 && recp_id != ICE_SW_LKUP_VLAN &&
++		    itr->fltr_info.vsi_handle == vsi_handle) {
++			/* update the src in case it is vsi num */
++			if (f_entry.fltr_info.src_id == ICE_SRC_ID_VSI)
++				f_entry.fltr_info.src = hw_vsi_id;
+ 			status = ice_add_rule_internal(hw, recp_id, &f_entry);
+ 			if (status)
+ 				goto end;
+ 			continue;
+ 		}
+-
+-		/* Add a filter per vsi separately */
+-		while (1) {
+-			u16 vsi;
+-
+-			vsi = find_first_bit(itr->vsi_list_info->vsi_map,
+-					     ICE_MAX_VSI);
+-			if (vsi == ICE_MAX_VSI)
+-				break;
+-
+-			clear_bit(vsi, itr->vsi_list_info->vsi_map);
+-			f_entry.fltr_info.fwd_id.hw_vsi_id = vsi;
+-			f_entry.fltr_info.fltr_act = ICE_FWD_TO_VSI;
+-			if (recp_id == ICE_SW_LKUP_VLAN)
+-				status = ice_add_vlan_internal(hw, &f_entry);
+-			else
+-				status = ice_add_rule_internal(hw, recp_id,
+-							       &f_entry);
+-			if (status)
+-				goto end;
+-		}
++		if (!test_bit(vsi_handle, itr->vsi_list_info->vsi_map))
++			continue;
++		/* Clearing it so that the logic can add it back */
++		clear_bit(vsi_handle, itr->vsi_list_info->vsi_map);
++		f_entry.fltr_info.vsi_handle = vsi_handle;
++		f_entry.fltr_info.fltr_act = ICE_FWD_TO_VSI;
++		/* update the src in case it is vsi num */
++		if (f_entry.fltr_info.src_id == ICE_SRC_ID_VSI)
++			f_entry.fltr_info.src = hw_vsi_id;
++		if (recp_id == ICE_SW_LKUP_VLAN)
++			status = ice_add_vlan_internal(hw, &f_entry);
++		else
++			status = ice_add_rule_internal(hw, recp_id, &f_entry);
++		if (status)
++			goto end;
+ 	}
+ end:
+-	/* Clear the filter management list */
+-	ice_rem_sw_rule_info(hw, &l_head);
+ 	return status;
+ }
  
  /**
-  * ice_rss_clean - Delete RSS related VSI structures that hold user inputs
+- * ice_replay_all_fltr - replay all filters stored in bookkeeping lists
++ * ice_replay_vsi_all_fltr - replay all filters stored in bookkeeping lists
+  * @hw: pointer to the hardware structure
++ * @vsi_handle: driver vsi handle
+  *
+- * NOTE: This function does not clean up partially added filters on error.
+- * It is up to caller of the function to issue a reset or fail early.
++ * Replays filters for requested VSI via vsi_handle.
+  */
+-enum ice_status ice_replay_all_fltr(struct ice_hw *hw)
++enum ice_status ice_replay_vsi_all_fltr(struct ice_hw *hw, u16 vsi_handle)
+ {
+ 	struct ice_switch_info *sw = hw->switch_info;
+ 	enum ice_status status = 0;
+ 	u8 i;
+ 
+ 	for (i = 0; i < ICE_SW_LKUP_LAST; i++) {
+-		struct list_head *head = &sw->recp_list[i].filt_rules;
++		struct list_head *head;
+ 
+-		status = ice_replay_fltr(hw, i, head);
++		head = &sw->recp_list[i].filt_replay_rules;
++		status = ice_replay_vsi_fltr(hw, vsi_handle, i, head);
+ 		if (status)
+ 			return status;
+ 	}
+ 	return status;
+ }
++
++/**
++ * ice_rm_all_sw_replay_rule_info - deletes filter replay rules
++ * @hw: pointer to the hw struct
++ *
++ * Deletes the filter replay rules.
++ */
++void ice_rm_all_sw_replay_rule_info(struct ice_hw *hw)
++{
++	struct ice_switch_info *sw = hw->switch_info;
++	u8 i;
++
++	if (!sw)
++		return;
++
++	for (i = 0; i < ICE_SW_LKUP_LAST; i++) {
++		if (!list_empty(&sw->recp_list[i].filt_replay_rules)) {
++			struct list_head *l_head;
++
++			l_head = &sw->recp_list[i].filt_replay_rules;
++			ice_rem_sw_rule_info(hw, l_head);
++		}
++	}
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 50ab036a17f3..7706e9b6003c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -126,6 +126,7 @@ struct ice_sw_recipe {
+ 
+ 	/* List of type ice_fltr_mgmt_list_entry */
+ 	struct list_head filt_rules;
++	struct list_head filt_replay_rules;
+ 
+ 	/* linked list of type recipe_list_entry */
+ 	struct list_head rg_list;
+@@ -200,10 +201,11 @@ enum ice_status ice_remove_vlan(struct ice_hw *hw, struct list_head *v_list);
+ enum ice_status
+ ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_handle, bool set, u8 direction);
+ 
++enum ice_status ice_init_def_sw_recp(struct ice_hw *hw);
+ u16 ice_get_hw_vsi_num(struct ice_hw *hw, u16 vsi_handle);
++bool ice_is_vsi_valid(struct ice_hw *hw, u16 vsi_handle);
+ 
+-enum ice_status ice_replay_all_fltr(struct ice_hw *hw);
+-
+-enum ice_status ice_init_def_sw_recp(struct ice_hw *hw);
++enum ice_status ice_replay_vsi_all_fltr(struct ice_hw *hw, u16 vsi_handle);
++void ice_rm_all_sw_replay_rule_info(struct ice_hw *hw);
+ 
+ #endif /* _ICE_SWITCH_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index fa459329c1de..4a64421b77a7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -18,6 +18,9 @@ static inline bool ice_is_tc_ena(u8 bitmap, u8 tc)
+ 	return test_bit(tc, (unsigned long *)&bitmap);
+ }
+ 
++/* Driver always calls main vsi_handle first */
++#define ICE_MAIN_VSI_HANDLE		0
++
+ /* debug masks - set these bits in hw->debug_mask to control output */
+ #define ICE_DBG_INIT		BIT_ULL(1)
+ #define ICE_DBG_LINK		BIT_ULL(4)
 -- 
 2.14.3
 
