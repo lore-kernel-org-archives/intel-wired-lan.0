@@ -1,77 +1,69 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:23:37 -0700
-Subject: [Intel-wired-lan] [PATCH 14/16] ice: Use the right function to
- enable/disable VSI
-In-Reply-To: <20180920002339.11107-1-anirudh.venkataramanan@intel.com>
-References: <20180920002339.11107-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920002339.11107-15-anirudh.venkataramanan@intel.com>
+Date: Wed, 19 Sep 2018 17:42:52 -0700
+Subject: [Intel-wired-lan] [PATCH v2 00/16] Add SR-IOV support,
+ feature updates
+Message-ID: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+This patchset adds SR-IOV support and miscellaneous implementation
+updates (ITR, filtering, bug fixes) for the ice driver.
 
-The ice_ena/dis_vsi should have a single differentiating
-factor to determine if the netdev_ops call is used or a
-direct call to ice_vsi_open/close.  This is if the netif is
-running or not.  If netif is running, use ndo_open/ndo_close.
-Else, use ice_vsi_open/ice_vsi_close.
+Anirudh Venkataramanan (10):
+  ice: Add support to detect SR-IOV capability and mailbox queues
+  ice: Add handler to configure SR-IOV
+  ice: Update VSI and queue management code to handle VF VSI
+  ice: Add support for VF reset events
+  ice: Add handlers for VF netdevice operations
+  ice: Implement virtchnl commands for AVF support
+  ice: Notify VF of link status change
+  ice: Extend malicious operations detection logic
+  ice: Fix forward to queue group logic
+  ice: Update version string
 
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
----
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_main.c | 23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
+Brett Creeley (2):
+  ice: Add code to go from ICE_FWD_TO_VSI_LIST to ICE_FWD_TO_VSI
+  ice: Add more flexibility on how we assign an ITR index
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 3e254281da63..ecd9cbc457d1 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3232,13 +3232,14 @@ static void ice_dis_vsi(struct ice_vsi *vsi)
- 
- 	set_bit(__ICE_NEEDS_RESTART, vsi->state);
- 
--	if (vsi->netdev && netif_running(vsi->netdev) &&
--	    vsi->type == ICE_VSI_PF) {
--		rtnl_lock();
--		vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
--		rtnl_unlock();
--	} else {
--		ice_vsi_close(vsi);
-+	if (vsi->type == ICE_VSI_PF && vsi->netdev) {
-+		if (netif_running(vsi->netdev)) {
-+			rtnl_lock();
-+			vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
-+			rtnl_unlock();
-+		} else {
-+			ice_vsi_close(vsi);
-+		}
- 	}
- }
- 
-@@ -3250,12 +3251,16 @@ static int ice_ena_vsi(struct ice_vsi *vsi)
- {
- 	int err = 0;
- 
--	if (test_and_clear_bit(__ICE_NEEDS_RESTART, vsi->state))
--		if (vsi->netdev && netif_running(vsi->netdev)) {
-+	if (test_and_clear_bit(__ICE_NEEDS_RESTART, vsi->state) &&
-+	    vsi->netdev) {
-+		if (netif_running(vsi->netdev)) {
- 			rtnl_lock();
- 			err = vsi->netdev->netdev_ops->ndo_open(vsi->netdev);
- 			rtnl_unlock();
-+		} else {
-+			err = ice_vsi_open(vsi);
- 		}
-+	}
- 
- 	return err;
- }
+Dave Ertman (3):
+  ice: Fix potential null pointer issues
+  ice: Use the right function to enable/disable VSI
+  ice: Fix error on driver remove
+
+Yashaswini Raghuram Prathivadi Bhayankaram (1):
+  virtchnl: Added support to exchange additional speed values
+
+ drivers/net/ethernet/intel/ice/Makefile          |    1 +
+ drivers/net/ethernet/intel/ice/ice.h             |   34 +
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |   20 +
+ drivers/net/ethernet/intel/ice/ice_common.c      |   78 +-
+ drivers/net/ethernet/intel/ice/ice_common.h      |    4 +-
+ drivers/net/ethernet/intel/ice/ice_controlq.c    |   46 +-
+ drivers/net/ethernet/intel/ice/ice_controlq.h    |    2 +
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |   69 +
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h   |   13 +
+ drivers/net/ethernet/intel/ice/ice_lib.c         |  283 ++-
+ drivers/net/ethernet/intel/ice/ice_lib.h         |    3 +-
+ drivers/net/ethernet/intel/ice/ice_main.c        |  156 +-
+ drivers/net/ethernet/intel/ice/ice_sriov.c       |  127 +
+ drivers/net/ethernet/intel/ice/ice_sriov.h       |   34 +
+ drivers/net/ethernet/intel/ice/ice_status.h      |    3 +
+ drivers/net/ethernet/intel/ice/ice_switch.c      |   66 +-
+ drivers/net/ethernet/intel/ice/ice_switch.h      |    1 +
+ drivers/net/ethernet/intel/ice/ice_txrx.h        |   13 +-
+ drivers/net/ethernet/intel/ice/ice_type.h        |   20 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2668 ++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  173 ++
+ include/linux/avf/virtchnl.h                     |   15 +
+ 22 files changed, 3720 insertions(+), 109 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_sriov.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_sriov.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+
 -- 
 2.14.3
 
