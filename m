@@ -1,266 +1,535 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:23:11 -0700
-Subject: [Intel-wired-lan] [PATCH 08/16] ice: Change pf state behavior to
- protect reset path
+Date: Wed, 19 Sep 2018 17:23:16 -0700
+Subject: [Intel-wired-lan] [PATCH 13/16] ice: Split irq_tracker into
+ sw_irq_tracker and hw_irq_tracker
 In-Reply-To: <20180920002319.10971-1-anirudh.venkataramanan@intel.com>
 References: <20180920002319.10971-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920002319.10971-9-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920002319.10971-14-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Preethi Banala <preethi.banala@intel.com>
 
-Currently, there is no bit, or set of bits, that protect the entirety
-of the reset path.
+For the PF driver, when mapping interrupts to queues, we need to request
+IRQs from the kernel and and we also have to allocate interrupts from
+the device.
 
-If the reset is originated by the driver, then the relevant
-one of the following bits will be set when the reset is scheduled:
-__ICE_PFR_REQ
-__ICE_CORER_REQ
-__ICE_GLOBR_REQ
-This bit will not be cleared until after the rebuild has completed.
+Similarly, when the VF driver (iavf.ko) initializes, it requests the kernel
+IRQs that it needs but it can't directly allocate interrupts in the device.
+Instead, it sends a mailbox message to the ice driver, which then allocates
+interrupts in the device on the VF driver's behalf.
 
-If the reset is originated by the FW, then the first the driver knows of
-it will be the reception of the OICR interrupt.  The __ICE_RESET_OICR_RECV
-bit will be set in the interrupt handler.  This will also be the indicator
-in a SW originated reset that we have completed the pre-OICR tasks and
-have informed the FW that a reset was requested.
+Currently both these cases end up having to reserve entries in
+pf->irq_tracker but irq_tracker itself is sized based on how many vectors
+the PF driver needs. Under the right circumstances, the VF driver can fail
+to get entries in irq_tracker, which will result in the VF driver failing
+probe.
 
-To utilize these bits, change the function:
-ice_is_reset_recovery_pending()
-	to be:
-ice_is_reset_in_progress()
+To fix this, sw_irq_tracker and hw_irq_tracker are introduced. The
+sw_irq_tracker tracks only the PF's IRQ request and doesn't play any
+role in VF init. hw_irq_tracker represents the device's interrupt space.
+When interrupts have to be allocated in the device for either PF or VF,
+hw_irq_tracker will be looked up to see if the device has run out of
+interrupts.
 
-The new function will check all of the above bits in the pf->state and
-will return a true if one or more of these bits are set.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
 ---
- drivers/net/ethernet/intel/ice/ice.h      |  2 +-
- drivers/net/ethernet/intel/ice/ice_lib.c  | 13 +++++----
- drivers/net/ethernet/intel/ice/ice_lib.h  |  2 +-
- drivers/net/ethernet/intel/ice/ice_main.c | 44 +++++++++++++++----------------
- 4 files changed, 31 insertions(+), 30 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h      |  21 ++++--
+ drivers/net/ethernet/intel/ice/ice_lib.c  |  75 +++++++++++++------
+ drivers/net/ethernet/intel/ice/ice_main.c | 116 +++++++++++++++++++++---------
+ 3 files changed, 148 insertions(+), 64 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index e84a612ffa71..9cce4cb91401 100644
+index 9cce4cb91401..88d13157ab5b 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -124,7 +124,7 @@ enum ice_state {
- 	__ICE_DOWN,
- 	__ICE_NEEDS_RESTART,
- 	__ICE_PREPARED_FOR_RESET,	/* set by driver when prepared */
--	__ICE_RESET_RECOVERY_PENDING,	/* set by driver when reset starts */
-+	__ICE_RESET_OICR_RECV,		/* set by driver after rcv reset OICR */
- 	__ICE_PFR_REQ,			/* set by driver and peers */
- 	__ICE_CORER_REQ,		/* set by driver and peers */
- 	__ICE_GLOBR_REQ,		/* set by driver and peers */
+@@ -172,7 +172,8 @@ struct ice_vsi {
+ 	u32 rx_buf_failed;
+ 	u32 rx_page_failed;
+ 	int num_q_vectors;
+-	int base_vector;
++	int sw_base_vector;		/* Irq base for OS reserved vectors */
++	int hw_base_vector;		/* HW (absolute) index of a vector */
+ 	enum ice_vsi_type type;
+ 	u16 vsi_num;			 /* HW (absolute) index of this VSI */
+ 	u16 idx;			 /* software index in pf->vsi[] */
+@@ -240,8 +241,14 @@ enum ice_pf_flags {
+ 
+ struct ice_pf {
+ 	struct pci_dev *pdev;
++
++	/* OS reserved irq details */
+ 	struct msix_entry *msix_entries;
+-	struct ice_res_tracker *irq_tracker;
++	struct ice_res_tracker *sw_irq_tracker;
++
++	/* HW reserved Interrupts for this PF */
++	struct ice_res_tracker *hw_irq_tracker;
++
+ 	struct ice_vsi **vsi;		/* VSIs created by the driver */
+ 	struct ice_sw *first_sw;	/* first switch created by firmware */
+ 	DECLARE_BITMAP(state, __ICE_STATE_NBITS);
+@@ -256,9 +263,11 @@ struct ice_pf {
+ 	struct mutex sw_mutex;		/* lock for protecting VSI alloc flow */
+ 	u32 msg_enable;
+ 	u32 hw_csum_rx_error;
+-	u32 oicr_idx;		/* Other interrupt cause vector index */
++	u32 sw_oicr_idx;	/* Other interrupt cause SW vector index */
++	u32 num_avail_sw_msix;	/* remaining MSIX SW vectors left unclaimed */
++	u32 hw_oicr_idx;	/* Other interrupt cause vector HW index */
++	u32 num_avail_hw_msix;	/* remaining HW MSIX vectors left unclaimed */
+ 	u32 num_lan_msix;	/* Total MSIX vectors for base driver */
+-	u32 num_avail_msix;	/* remaining MSIX vectors left unclaimed */
+ 	u16 num_lan_tx;		/* num lan tx queues setup */
+ 	u16 num_lan_rx;		/* num lan rx queues setup */
+ 	u16 q_left_tx;		/* remaining num tx queues left unclaimed */
+@@ -293,8 +302,8 @@ struct ice_netdev_priv {
+ static inline void ice_irq_dynamic_ena(struct ice_hw *hw, struct ice_vsi *vsi,
+ 				       struct ice_q_vector *q_vector)
+ {
+-	u32 vector = (vsi && q_vector) ? vsi->base_vector + q_vector->v_idx :
+-					((struct ice_pf *)hw->back)->oicr_idx;
++	u32 vector = (vsi && q_vector) ? vsi->hw_base_vector + q_vector->v_idx :
++				((struct ice_pf *)hw->back)->hw_oicr_idx;
+ 	int itr = ICE_ITR_NONE;
+ 	u32 val;
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 3d6d8a33b7bc..da9199d220a0 100644
+index 673123823d54..92bbbe99120c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2250,7 +2250,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 	 * currently. This is done to avoid check_flush_dependency() warning
- 	 * on this wq
- 	 */
--	if (vsi->netdev && !ice_is_reset_recovery_pending(pf->state)) {
-+	if (vsi->netdev && !ice_is_reset_in_progress(pf->state)) {
- 		unregister_netdev(vsi->netdev);
- 		free_netdev(vsi->netdev);
- 		vsi->netdev = NULL;
-@@ -2280,7 +2280,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 	 * free VSI netdev when PF is not in reset recovery pending state,\
- 	 * for ex: during rmmod.
- 	 */
--	if (!ice_is_reset_recovery_pending(pf->state))
-+	if (!ice_is_reset_in_progress(pf->state))
- 		ice_vsi_clear(vsi);
+@@ -1039,9 +1039,9 @@ static int ice_vsi_setup_vector_base(struct ice_vsi *vsi)
+ 	struct ice_pf *pf = vsi->back;
+ 	int num_q_vectors = 0;
  
+-	if (vsi->base_vector) {
+-		dev_dbg(&pf->pdev->dev, "VSI %d has non-zero base vector %d\n",
+-			vsi->vsi_num, vsi->base_vector);
++	if (vsi->sw_base_vector || vsi->hw_base_vector) {
++		dev_dbg(&pf->pdev->dev, "VSI %d has non-zero HW base vector %d or SW base vector %d\n",
++			vsi->vsi_num, vsi->hw_base_vector, vsi->sw_base_vector);
+ 		return -EEXIST;
+ 	}
+ 
+@@ -1051,6 +1051,21 @@ static int ice_vsi_setup_vector_base(struct ice_vsi *vsi)
+ 	switch (vsi->type) {
+ 	case ICE_VSI_PF:
+ 		num_q_vectors = vsi->num_q_vectors;
++		/* reserve slots from OS requested irqs */
++		vsi->sw_base_vector = ice_get_res(pf, pf->sw_irq_tracker,
++						  num_q_vectors, vsi->idx);
++		if (vsi->sw_base_vector < 0) {
++			dev_err(&pf->pdev->dev,
++				"Failed to get tracking for %d SW vectors for VSI %d, err=%d\n",
++				num_q_vectors, vsi->vsi_num,
++				vsi->sw_base_vector);
++			return -ENOENT;
++		}
++		pf->num_avail_sw_msix -= num_q_vectors;
++
++		/* reserve slots from HW interrupts */
++		vsi->hw_base_vector = ice_get_res(pf, pf->hw_irq_tracker,
++						  num_q_vectors, vsi->idx);
+ 		break;
+ 	default:
+ 		dev_warn(&vsi->back->pdev->dev, "Unknown VSI type %d\n",
+@@ -1058,17 +1073,18 @@ static int ice_vsi_setup_vector_base(struct ice_vsi *vsi)
+ 		break;
+ 	}
+ 
+-	if (num_q_vectors)
+-		vsi->base_vector = ice_get_res(pf, pf->irq_tracker,
+-					       num_q_vectors, vsi->idx);
+-
+-	if (vsi->base_vector < 0) {
++	if (vsi->hw_base_vector < 0) {
+ 		dev_err(&pf->pdev->dev,
+-			"Failed to get tracking for %d vectors for VSI %d, err=%d\n",
+-			num_q_vectors, vsi->vsi_num, vsi->base_vector);
++			"Failed to get tracking for %d HW vectors for VSI %d, err=%d\n",
++			num_q_vectors, vsi->vsi_num, vsi->hw_base_vector);
++		ice_free_res(vsi->back->sw_irq_tracker, vsi->sw_base_vector,
++			     vsi->idx);
++		pf->num_avail_sw_msix += num_q_vectors;
+ 		return -ENOENT;
+ 	}
+ 
++	pf->num_avail_hw_msix -= num_q_vectors;
++
  	return 0;
-@@ -2367,10 +2367,13 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
+ }
+ 
+@@ -1554,7 +1570,7 @@ int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
+ void ice_vsi_cfg_msix(struct ice_vsi *vsi)
+ {
+ 	struct ice_pf *pf = vsi->back;
+-	u16 vector = vsi->base_vector;
++	u16 vector = vsi->hw_base_vector;
+ 	struct ice_hw *hw = &pf->hw;
+ 	u32 txq = 0, rxq = 0;
+ 	int i, q, itr;
+@@ -1762,7 +1778,7 @@ int ice_vsi_stop_tx_rings(struct ice_vsi *vsi)
+ 		 * the queue to schedule napi handler
+ 		 */
+ 		v_idx = vsi->tx_rings[i]->q_vector->v_idx;
+-		wr32(hw, GLINT_DYN_CTL(vsi->base_vector + v_idx),
++		wr32(hw, GLINT_DYN_CTL(vsi->hw_base_vector + v_idx),
+ 		     GLINT_DYN_CTL_SWINT_TRIG_M | GLINT_DYN_CTL_INTENA_MSK_M);
+ 	}
+ 	status = ice_dis_vsi_txq(vsi->port_info, vsi->num_txq, q_ids, q_teids,
+@@ -1939,7 +1955,12 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 	return vsi;
+ 
+ unroll_vector_base:
+-	ice_free_res(vsi->back->irq_tracker, vsi->base_vector, vsi->idx);
++	/* reclaim SW interrupts back to the common pool */
++	ice_free_res(vsi->back->sw_irq_tracker, vsi->sw_base_vector, vsi->idx);
++	pf->num_avail_sw_msix += vsi->num_q_vectors;
++	/* reclaim HW interrupt back to the common pool */
++	ice_free_res(vsi->back->hw_irq_tracker, vsi->hw_base_vector, vsi->idx);
++	pf->num_avail_hw_msix += vsi->num_q_vectors;
+ unroll_alloc_q_vector:
+ 	ice_vsi_free_q_vectors(vsi);
+ unroll_vsi_init:
+@@ -1960,7 +1981,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ static void ice_vsi_release_msix(struct ice_vsi *vsi)
+ {
+ 	struct ice_pf *pf = vsi->back;
+-	u16 vector = vsi->base_vector;
++	u16 vector = vsi->hw_base_vector;
+ 	struct ice_hw *hw = &pf->hw;
+ 	u32 txq = 0;
+ 	u32 rxq = 0;
+@@ -1992,7 +2013,7 @@ static void ice_vsi_release_msix(struct ice_vsi *vsi)
+ void ice_vsi_free_irq(struct ice_vsi *vsi)
+ {
+ 	struct ice_pf *pf = vsi->back;
+-	int base = vsi->base_vector;
++	int base = vsi->sw_base_vector;
+ 
+ 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags)) {
+ 		int i;
+@@ -2000,6 +2021,8 @@ void ice_vsi_free_irq(struct ice_vsi *vsi)
+ 		if (!vsi->q_vectors || !vsi->irqs_ready)
+ 			return;
+ 
++		ice_vsi_release_msix(vsi);
++
+ 		vsi->irqs_ready = false;
+ 		for (i = 0; i < vsi->num_q_vectors; i++) {
+ 			u16 vector = i + base;
+@@ -2022,7 +2045,6 @@ void ice_vsi_free_irq(struct ice_vsi *vsi)
+ 			devm_free_irq(&pf->pdev->dev, irq_num,
+ 				      vsi->q_vectors[i]);
+ 		}
+-		ice_vsi_release_msix(vsi);
+ 	}
+ }
+ 
+@@ -2110,6 +2132,9 @@ static int ice_search_res(struct ice_res_tracker *res, u16 needed, u16 id)
+ 	int start = res->search_hint;
+ 	int end = start;
+ 
++	if ((start + needed) >  res->num_entries)
++		return -ENOMEM;
++
+ 	id |= ICE_RES_VALID_BIT;
+ 
+ 	do {
+@@ -2183,9 +2208,9 @@ ice_get_res(struct ice_pf *pf, struct ice_res_tracker *res, u16 needed, u16 id)
+  */
+ void ice_vsi_dis_irq(struct ice_vsi *vsi)
+ {
++	int base = vsi->sw_base_vector;
+ 	struct ice_pf *pf = vsi->back;
+ 	struct ice_hw *hw = &pf->hw;
+-	int base = vsi->base_vector;
+ 	u32 val;
+ 	int i;
+ 
+@@ -2218,8 +2243,8 @@ void ice_vsi_dis_irq(struct ice_vsi *vsi)
+ 
+ 	/* disable each interrupt */
+ 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags)) {
+-		for (i = vsi->base_vector;
+-		     i < (vsi->num_q_vectors + vsi->base_vector); i++)
++		for (i = vsi->hw_base_vector;
++		     i < (vsi->num_q_vectors + vsi->hw_base_vector); i++)
+ 			wr32(hw, GLINT_DYN_CTL(i), 0);
+ 
+ 		ice_flush(hw);
+@@ -2262,8 +2287,10 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 	ice_vsi_close(vsi);
+ 
+ 	/* reclaim interrupt vectors back to PF */
+-	ice_free_res(vsi->back->irq_tracker, vsi->base_vector, vsi->idx);
+-	pf->num_avail_msix += vsi->num_q_vectors;
++	ice_free_res(vsi->back->sw_irq_tracker, vsi->sw_base_vector, vsi->idx);
++	pf->num_avail_sw_msix += vsi->num_q_vectors;
++	ice_free_res(vsi->back->hw_irq_tracker, vsi->hw_base_vector, vsi->idx);
++	pf->num_avail_hw_msix += vsi->num_q_vectors;
+ 
+ 	ice_remove_vsi_fltr(&pf->hw, vsi->idx);
+ 	ice_vsi_delete(vsi);
+@@ -2299,8 +2326,10 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
+ 		return -EINVAL;
+ 
+ 	ice_vsi_free_q_vectors(vsi);
+-	ice_free_res(vsi->back->irq_tracker, vsi->base_vector, vsi->idx);
+-	vsi->base_vector = 0;
++	ice_free_res(vsi->back->sw_irq_tracker, vsi->sw_base_vector, vsi->idx);
++	ice_free_res(vsi->back->hw_irq_tracker, vsi->hw_base_vector, vsi->idx);
++	vsi->sw_base_vector = 0;
++	vsi->hw_base_vector = 0;
+ 	ice_vsi_clear_rings(vsi);
+ 	ice_vsi_free_arrays(vsi, false);
+ 	ice_vsi_set_num_qs(vsi);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index cc10eb28c8b3..9d9c963982ca 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -95,7 +95,7 @@ static void ice_check_for_hang_subtask(struct ice_pf *pf)
+ 				/* Trigger sw interrupt to revive the queue */
+ 				v_idx = tx_ring->q_vector->v_idx;
+ 				wr32(&vsi->back->hw,
+-				     GLINT_DYN_CTL(vsi->base_vector + v_idx),
++				     GLINT_DYN_CTL(vsi->hw_base_vector + v_idx),
+ 				     (itr << GLINT_DYN_CTL_ITR_INDX_S) |
+ 				     GLINT_DYN_CTL_SWINT_TRIG_M |
+ 				     GLINT_DYN_CTL_INTENA_MSK_M);
+@@ -1122,7 +1122,7 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi, char *basename)
+ {
+ 	int q_vectors = vsi->num_q_vectors;
+ 	struct ice_pf *pf = vsi->back;
+-	int base = vsi->base_vector;
++	int base = vsi->sw_base_vector;
+ 	int rx_int_idx = 0;
+ 	int tx_int_idx = 0;
+ 	int vector, err;
+@@ -1203,7 +1203,7 @@ static void ice_ena_misc_vector(struct ice_pf *pf)
+ 	wr32(hw, PFINT_OICR_ENA, val);
+ 
+ 	/* SW_ITR_IDX = 0, but don't change INTENA */
+-	wr32(hw, GLINT_DYN_CTL(pf->oicr_idx),
++	wr32(hw, GLINT_DYN_CTL(pf->hw_oicr_idx),
+ 	     GLINT_DYN_CTL_SW_ITR_INDX_M | GLINT_DYN_CTL_INTENA_MSK_M);
+ }
+ 
+@@ -1321,12 +1321,15 @@ static void ice_free_irq_msix_misc(struct ice_pf *pf)
+ 	ice_flush(&pf->hw);
+ 
+ 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags) && pf->msix_entries) {
+-		synchronize_irq(pf->msix_entries[pf->oicr_idx].vector);
++		synchronize_irq(pf->msix_entries[pf->sw_oicr_idx].vector);
+ 		devm_free_irq(&pf->pdev->dev,
+-			      pf->msix_entries[pf->oicr_idx].vector, pf);
++			      pf->msix_entries[pf->sw_oicr_idx].vector, pf);
+ 	}
+ 
+-	ice_free_res(pf->irq_tracker, pf->oicr_idx, ICE_RES_MISC_VEC_ID);
++	pf->num_avail_sw_msix += 1;
++	ice_free_res(pf->sw_irq_tracker, pf->sw_oicr_idx, ICE_RES_MISC_VEC_ID);
++	pf->num_avail_hw_msix += 1;
++	ice_free_res(pf->hw_irq_tracker, pf->hw_oicr_idx, ICE_RES_MISC_VEC_ID);
  }
  
  /**
-- * ice_is_reset_recovery_pending - schedule a reset
-+ * ice_is_reset_in_progress - check for a reset in progress
-  * @state: pf state field
-  */
--bool ice_is_reset_recovery_pending(unsigned long *state)
-+bool ice_is_reset_in_progress(unsigned long *state)
- {
--	return test_bit(__ICE_RESET_RECOVERY_PENDING, state);
-+	return test_bit(__ICE_RESET_OICR_RECV, state) ||
-+	       test_bit(__ICE_PFR_REQ, state) ||
-+	       test_bit(__ICE_CORER_REQ, state) ||
-+	       test_bit(__ICE_GLOBR_REQ, state);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index a76cde895bf3..4265464ee3d3 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -54,7 +54,7 @@ ice_get_res(struct ice_pf *pf, struct ice_res_tracker *res, u16 needed, u16 id);
- 
- int ice_vsi_rebuild(struct ice_vsi *vsi);
- 
--bool ice_is_reset_recovery_pending(unsigned long *state);
-+bool ice_is_reset_in_progress(unsigned long *state);
- 
- void ice_vsi_free_q_vectors(struct ice_vsi *vsi);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 0abf0aef366d..65e882b8277e 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -364,21 +364,17 @@ static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	dev_dbg(dev, "reset_type 0x%x requested\n", reset_type);
- 	WARN_ON(in_interrupt());
- 
--	/* PFR is a bit of a special case because it doesn't result in an OICR
--	 * interrupt. Set pending bit here which otherwise gets set in the
--	 * OICR handler.
--	 */
--	if (reset_type == ICE_RESET_PFR)
--		set_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
--
- 	ice_prepare_for_reset(pf);
- 
- 	/* trigger the reset */
- 	if (ice_reset(hw, reset_type)) {
- 		dev_err(dev, "reset %d failed\n", reset_type);
- 		set_bit(__ICE_RESET_FAILED, pf->state);
--		clear_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
-+		clear_bit(__ICE_RESET_OICR_RECV, pf->state);
- 		clear_bit(__ICE_PREPARED_FOR_RESET, pf->state);
-+		clear_bit(__ICE_PFR_REQ, pf->state);
-+		clear_bit(__ICE_CORER_REQ, pf->state);
-+		clear_bit(__ICE_GLOBR_REQ, pf->state);
- 		return;
- 	}
- 
-@@ -389,8 +385,8 @@ static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	if (reset_type == ICE_RESET_PFR) {
- 		pf->pfr_count++;
- 		ice_rebuild(pf);
--		clear_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
- 		clear_bit(__ICE_PREPARED_FOR_RESET, pf->state);
-+		clear_bit(__ICE_PFR_REQ, pf->state);
- 	}
- }
- 
-@@ -405,14 +401,14 @@ static void ice_reset_subtask(struct ice_pf *pf)
- 	/* When a CORER/GLOBR/EMPR is about to happen, the hardware triggers an
- 	 * OICR interrupt. The OICR handler (ice_misc_intr) determines what type
- 	 * of reset is pending and sets bits in pf->state indicating the reset
--	 * type and __ICE_RESET_RECOVERY_PENDING.  So, if the latter bit is set
-+	 * type and __ICE_RESET_OICR_RECV.  So, if the latter bit is set
- 	 * prepare for pending reset if not already (for PF software-initiated
- 	 * global resets the software should already be prepared for it as
- 	 * indicated by __ICE_PREPARED_FOR_RESET; for global resets initiated
- 	 * by firmware or software on other PFs, that bit is not set so prepare
- 	 * for the reset now), poll for reset done, rebuild and return.
- 	 */
--	if (ice_is_reset_recovery_pending(pf->state)) {
-+	if (test_bit(__ICE_RESET_OICR_RECV, pf->state)) {
- 		clear_bit(__ICE_GLOBR_RECV, pf->state);
- 		clear_bit(__ICE_CORER_RECV, pf->state);
- 		if (!test_bit(__ICE_PREPARED_FOR_RESET, pf->state))
-@@ -428,19 +424,22 @@ static void ice_reset_subtask(struct ice_pf *pf)
- 			/* clear bit to resume normal operations, but
- 			 * ICE_NEEDS_RESTART bit is set incase rebuild failed
- 			 */
--			clear_bit(__ICE_RESET_RECOVERY_PENDING, pf->state);
-+			clear_bit(__ICE_RESET_OICR_RECV, pf->state);
- 			clear_bit(__ICE_PREPARED_FOR_RESET, pf->state);
-+			clear_bit(__ICE_PFR_REQ, pf->state);
-+			clear_bit(__ICE_CORER_REQ, pf->state);
-+			clear_bit(__ICE_GLOBR_REQ, pf->state);
- 		}
- 
- 		return;
- 	}
- 
- 	/* No pending resets to finish processing. Check for new resets */
--	if (test_and_clear_bit(__ICE_PFR_REQ, pf->state))
-+	if (test_bit(__ICE_PFR_REQ, pf->state))
- 		reset_type = ICE_RESET_PFR;
--	if (test_and_clear_bit(__ICE_CORER_REQ, pf->state))
-+	if (test_bit(__ICE_CORER_REQ, pf->state))
- 		reset_type = ICE_RESET_CORER;
--	if (test_and_clear_bit(__ICE_GLOBR_REQ, pf->state))
-+	if (test_bit(__ICE_GLOBR_REQ, pf->state))
- 		reset_type = ICE_RESET_GLOBR;
- 	/* If no valid reset type requested just return */
- 	if (reset_type == ICE_RESET_INVAL)
-@@ -1029,7 +1028,7 @@ static void ice_service_task(struct work_struct *work)
- 	ice_reset_subtask(pf);
- 
- 	/* bail if a reset/recovery cycle is pending or rebuild failed */
--	if (ice_is_reset_recovery_pending(pf->state) ||
-+	if (ice_is_reset_in_progress(pf->state) ||
- 	    test_bit(__ICE_SUSPENDED, pf->state) ||
- 	    test_bit(__ICE_NEEDS_RESTART, pf->state)) {
- 		ice_service_task_complete(pf);
-@@ -1250,8 +1249,7 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 		 * We also make note of which reset happened so that peer
- 		 * devices/drivers can be informed.
- 		 */
--		if (!test_and_set_bit(__ICE_RESET_RECOVERY_PENDING,
--				      pf->state)) {
-+		if (!test_and_set_bit(__ICE_RESET_OICR_RECV, pf->state)) {
- 			if (reset == ICE_RESET_CORER)
- 				set_bit(__ICE_CORER_RECV, pf->state);
- 			else if (reset == ICE_RESET_GLOBR)
-@@ -1265,7 +1263,7 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 			 * is received and set back to false after the driver
- 			 * has determined that the hardware is out of reset.
- 			 *
--			 * __ICE_RESET_RECOVERY_PENDING in pf->state indicates
-+			 * __ICE_RESET_OICR_RECV in pf->state indicates
- 			 * that a post reset rebuild is required before the
- 			 * driver is operational again. This is set above.
- 			 *
-@@ -1355,7 +1353,7 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
- 	 * lost during reset. Note that this function is called only during
- 	 * rebuild path and not while reset is in progress.
- 	 */
--	if (ice_is_reset_recovery_pending(pf->state))
-+	if (ice_is_reset_in_progress(pf->state))
+@@ -1356,39 +1359,53 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+ 	if (ice_is_reset_in_progress(pf->state))
  		goto skip_req_irq;
  
- 	/* reserve one vector in irq_tracker for misc interrupts */
-@@ -1637,7 +1635,7 @@ static int ice_setup_pf_sw(struct ice_pf *pf)
- 	struct ice_vsi *vsi;
- 	int status = 0;
+-	/* reserve one vector in irq_tracker for misc interrupts */
+-	oicr_idx = ice_get_res(pf, pf->irq_tracker, 1, ICE_RES_MISC_VEC_ID);
++	/* reserve one vector in sw_irq_tracker for misc interrupts */
++	oicr_idx = ice_get_res(pf, pf->sw_irq_tracker, 1, ICE_RES_MISC_VEC_ID);
+ 	if (oicr_idx < 0)
+ 		return oicr_idx;
  
--	if (ice_is_reset_recovery_pending(pf->state))
-+	if (ice_is_reset_in_progress(pf->state))
- 		return -EBUSY;
+-	pf->oicr_idx = oicr_idx;
++	pf->num_avail_sw_msix -= 1;
++	pf->sw_oicr_idx = oicr_idx;
++
++	/* reserve one vector in hw_irq_tracker for misc interrupts */
++	oicr_idx = ice_get_res(pf, pf->hw_irq_tracker, 1, ICE_RES_MISC_VEC_ID);
++	if (oicr_idx < 0) {
++		ice_free_res(pf->sw_irq_tracker, 1, ICE_RES_MISC_VEC_ID);
++		pf->num_avail_sw_msix += 1;
++		return oicr_idx;
++	}
++	pf->num_avail_hw_msix -= 1;
++	pf->hw_oicr_idx = oicr_idx;
  
- 	vsi = ice_pf_vsi_setup(pf, pf->hw.port_info);
-@@ -2203,7 +2201,7 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
+ 	err = devm_request_irq(&pf->pdev->dev,
+-			       pf->msix_entries[pf->oicr_idx].vector,
++			       pf->msix_entries[pf->sw_oicr_idx].vector,
+ 			       ice_misc_intr, 0, pf->int_name, pf);
+ 	if (err) {
+ 		dev_err(&pf->pdev->dev,
+ 			"devm_request_irq for %s failed: %d\n",
+ 			pf->int_name, err);
+-		ice_free_res(pf->irq_tracker, 1, ICE_RES_MISC_VEC_ID);
++		ice_free_res(pf->sw_irq_tracker, 1, ICE_RES_MISC_VEC_ID);
++		pf->num_avail_sw_msix += 1;
++		ice_free_res(pf->hw_irq_tracker, 1, ICE_RES_MISC_VEC_ID);
++		pf->num_avail_hw_msix += 1;
+ 		return err;
  	}
  
- 	if (test_bit(__ICE_DOWN, pf->state) ||
--	    ice_is_reset_recovery_pending(pf->state)) {
-+	    ice_is_reset_in_progress(pf->state)) {
- 		netdev_err(netdev, "can't set mac %pM. device not ready\n",
- 			   mac);
- 		return -EBUSY;
-@@ -3280,7 +3278,7 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
- 	}
- 	/* if a reset is in progress, wait for some time for it to complete */
- 	do {
--		if (ice_is_reset_recovery_pending(pf->state)) {
-+		if (ice_is_reset_in_progress(pf->state)) {
- 			count++;
- 			usleep_range(1000, 2000);
+ skip_req_irq:
+ 	ice_ena_misc_vector(pf);
+ 
+-	val = ((pf->oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
++	val = ((pf->hw_oicr_idx & PFINT_OICR_CTL_MSIX_INDX_M) |
+ 	       PFINT_OICR_CTL_CAUSE_ENA_M);
+ 	wr32(hw, PFINT_OICR_CTL, val);
+ 
+ 	/* This enables Admin queue Interrupt causes */
+-	val = ((pf->oicr_idx & PFINT_FW_CTL_MSIX_INDX_M) |
++	val = ((pf->hw_oicr_idx & PFINT_FW_CTL_MSIX_INDX_M) |
+ 	       PFINT_FW_CTL_CAUSE_ENA_M);
+ 	wr32(hw, PFINT_FW_CTL, val);
+ 
+ 	itr_gran = hw->itr_gran_200;
+ 
+-	wr32(hw, GLINT_ITR(ICE_RX_ITR, pf->oicr_idx),
++	wr32(hw, GLINT_ITR(ICE_RX_ITR, pf->hw_oicr_idx),
+ 	     ITR_TO_REG(ICE_ITR_8K, itr_gran));
+ 
+ 	ice_flush(hw);
+@@ -1797,6 +1814,7 @@ static int ice_ena_msix_range(struct ice_pf *pf)
+ 	/* reserve vectors for LAN traffic */
+ 	pf->num_lan_msix = min_t(int, num_online_cpus(), v_left);
+ 	v_budget += pf->num_lan_msix;
++	v_left -= pf->num_lan_msix;
+ 
+ 	pf->msix_entries = devm_kcalloc(&pf->pdev->dev, v_budget,
+ 					sizeof(struct msix_entry), GFP_KERNEL);
+@@ -1824,10 +1842,11 @@ static int ice_ena_msix_range(struct ice_pf *pf)
+ 			 "not enough vectors. requested = %d, obtained = %d\n",
+ 			 v_budget, v_actual);
+ 		if (v_actual >= (pf->num_lan_msix + 1)) {
+-			pf->num_avail_msix = v_actual - (pf->num_lan_msix + 1);
++			pf->num_avail_sw_msix = v_actual -
++						(pf->num_lan_msix + 1);
+ 		} else if (v_actual >= 2) {
+ 			pf->num_lan_msix = 1;
+-			pf->num_avail_msix = v_actual - 2;
++			pf->num_avail_sw_msix = v_actual - 2;
  		} else {
+ 			pci_disable_msix(pf->pdev);
+ 			err = -ERANGE;
+@@ -1859,13 +1878,33 @@ static void ice_dis_msix(struct ice_pf *pf)
+ 	clear_bit(ICE_FLAG_MSIX_ENA, pf->flags);
+ }
+ 
++/**
++ * ice_clear_interrupt_scheme - Undo things done by ice_init_interrupt_scheme
++ * @pf: board private structure
++ */
++static void ice_clear_interrupt_scheme(struct ice_pf *pf)
++{
++	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
++		ice_dis_msix(pf);
++
++	if (pf->sw_irq_tracker) {
++		devm_kfree(&pf->pdev->dev, pf->sw_irq_tracker);
++		pf->sw_irq_tracker = NULL;
++	}
++
++	if (pf->hw_irq_tracker) {
++		devm_kfree(&pf->pdev->dev, pf->hw_irq_tracker);
++		pf->hw_irq_tracker = NULL;
++	}
++}
++
+ /**
+  * ice_init_interrupt_scheme - Determine proper interrupt scheme
+  * @pf: board private structure to initialize
+  */
+ static int ice_init_interrupt_scheme(struct ice_pf *pf)
+ {
+-	int vectors = 0;
++	int vectors = 0, hw_vectors = 0;
+ 	ssize_t size;
+ 
+ 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
+@@ -1879,30 +1918,31 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
+ 	/* set up vector assignment tracking */
+ 	size = sizeof(struct ice_res_tracker) + (sizeof(u16) * vectors);
+ 
+-	pf->irq_tracker = devm_kzalloc(&pf->pdev->dev, size, GFP_KERNEL);
+-	if (!pf->irq_tracker) {
++	pf->sw_irq_tracker = devm_kzalloc(&pf->pdev->dev, size, GFP_KERNEL);
++	if (!pf->sw_irq_tracker) {
+ 		ice_dis_msix(pf);
+ 		return -ENOMEM;
+ 	}
+ 
+-	pf->irq_tracker->num_entries = vectors;
++	/* populate SW interrupts pool with number of OS granted irqs. */
++	pf->num_avail_sw_msix = vectors;
++	pf->sw_irq_tracker->num_entries = vectors;
+ 
+-	return 0;
+-}
++	/* set up HW vector assignment tracking */
++	hw_vectors = pf->hw.func_caps.common_cap.num_msix_vectors;
++	size = sizeof(struct ice_res_tracker) + (sizeof(u16) * hw_vectors);
+ 
+-/**
+- * ice_clear_interrupt_scheme - Undo things done by ice_init_interrupt_scheme
+- * @pf: board private structure
+- */
+-static void ice_clear_interrupt_scheme(struct ice_pf *pf)
+-{
+-	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
+-		ice_dis_msix(pf);
+-
+-	if (pf->irq_tracker) {
+-		devm_kfree(&pf->pdev->dev, pf->irq_tracker);
+-		pf->irq_tracker = NULL;
++	pf->hw_irq_tracker = devm_kzalloc(&pf->pdev->dev, size, GFP_KERNEL);
++	if (!pf->hw_irq_tracker) {
++		ice_clear_interrupt_scheme(pf);
++		return -ENOMEM;
+ 	}
++
++	/* populate HW interrupts pool with number of HW supported irqs. */
++	pf->num_avail_hw_msix = hw_vectors;
++	pf->hw_irq_tracker->num_entries = hw_vectors;
++
++	return 0;
+ }
+ 
+ /**
+@@ -3237,6 +3277,12 @@ static void ice_rebuild(struct ice_pf *pf)
+ 	if (err)
+ 		goto err_sched_init_port;
+ 
++	/* reset search_hint of irq_trackers to 0 since interrupts are
++	 * reclaimed and could be allocated from beginning during VSI rebuild
++	 */
++	pf->sw_irq_tracker->search_hint = 0;
++	pf->hw_irq_tracker->search_hint = 0;
++
+ 	err = ice_vsi_rebuild_all(pf);
+ 	if (err) {
+ 		dev_err(dev, "ice_vsi_rebuild_all failed\n");
+@@ -3634,7 +3680,7 @@ static void ice_tx_timeout(struct net_device *netdev)
+ 		if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
+ 			val = rd32(&pf->hw,
+ 				   GLINT_DYN_CTL(tx_ring->q_vector->v_idx +
+-						tx_ring->vsi->base_vector - 1));
++					tx_ring->vsi->hw_base_vector));
+ 
+ 		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %d, NTC: 0x%x, HWB: 0x%x, NTU: 0x%x, TAIL: 0x%x, INT: 0x%x\n",
+ 			    vsi->vsi_num, hung_queue, tx_ring->next_to_clean,
 -- 
 2.14.3
 
