@@ -1,482 +1,421 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:23:28 -0700
-Subject: [Intel-wired-lan] [PATCH 05/16] ice: Add support for VF reset events
+Date: Wed, 19 Sep 2018 17:23:25 -0700
+Subject: [Intel-wired-lan] [PATCH 02/16] ice: Add support to detect SR-IOV
+ capability and mailbox queues
 In-Reply-To: <20180920002339.11107-1-anirudh.venkataramanan@intel.com>
 References: <20180920002339.11107-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920002339.11107-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920002339.11107-3-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Post VF initialization, there are a couple of different ways in which a
-VF reset can be triggered. One is when the underlying PF itself goes
-through a reset and other is via a VFLR interrupt. ice_reset_vf introduced
-in this patch handles both these cases.
+Mailbox queue is a type of control queue that's used for communication
+between PF and VF. This patch adds code to initialize, configure and
+use mailbox queues.
 
-Also introduced in this patch is a helper function ice_aq_send_msg_to_vf
-to send messages to VF over the mailbox queue. The PF uses this to send
-reset notifications to VFs.
+This patch also adds support to detect and parse SR-IOV capabilities
+returned by the hardware.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile          |   2 +-
- drivers/net/ethernet/intel/ice/ice.h             |   2 +
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |  17 +++
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c        |  15 +++
- drivers/net/ethernet/intel/ice/ice_sriov.c       |  41 ++++++
- drivers/net/ethernet/intel/ice/ice_sriov.h       |  25 ++++
- drivers/net/ethernet/intel/ice/ice_status.h      |   3 +
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 163 +++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |   4 +
- 10 files changed, 272 insertions(+), 1 deletion(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_sriov.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_sriov.h
+ drivers/net/ethernet/intel/ice/ice.h            |  5 +++
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  2 ++
+ drivers/net/ethernet/intel/ice/ice_common.c     | 22 ++++++++++++
+ drivers/net/ethernet/intel/ice/ice_controlq.c   | 46 +++++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_controlq.h   |  2 ++
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 21 +++++++++++
+ drivers/net/ethernet/intel/ice/ice_main.c       | 47 +++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_type.h       |  7 ++++
+ 8 files changed, 151 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 1999cd09239e..e5d6f684437e 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -16,4 +16,4 @@ ice-y := ice_main.o	\
- 	 ice_lib.o	\
- 	 ice_txrx.o	\
- 	 ice_ethtool.o
--ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o
-+ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index f97a23930cab..30eeb0d2d582 100644
+index 28002936a0cb..4deb6c88e199 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -37,6 +37,7 @@
- #include "ice_common.h"
- #include "ice_sched.h"
- #include "ice_virtchnl_pf.h"
-+#include "ice_sriov.h"
+@@ -46,6 +46,7 @@ extern const char ice_drv_ver[];
+ #define ICE_INT_NAME_STR_LEN	(IFNAMSIZ + 16)
+ #define ICE_ETHTOOL_FWVER_LEN	32
+ #define ICE_AQ_LEN		64
++#define ICE_MBXQ_LEN		64
+ #define ICE_MIN_MSIX		2
+ #define ICE_NO_VSI		0xffff
+ #define ICE_MAX_VSI_ALLOC	130
+@@ -63,6 +64,7 @@ extern const char ice_drv_ver[];
+ #define ICE_RES_MISC_VEC_ID	(ICE_RES_VALID_BIT - 1)
+ #define ICE_INVAL_Q_INDEX	0xffff
+ #define ICE_INVAL_VFID		256
++#define ICE_MAX_VF_COUNT	256
  
- extern const char ice_drv_ver[];
- #define ICE_BAR0		0
-@@ -155,6 +156,7 @@ enum ice_state {
+ #define ICE_VSIQF_HKEY_ARRAY_SIZE	((VSIQF_HKEY_MAX_INDEX + 1) *	4)
+ 
+@@ -134,6 +136,7 @@ enum ice_state {
+ 	__ICE_SUSPENDED,		/* set on module remove path */
+ 	__ICE_RESET_FAILED,		/* set by reset/rebuild */
  	__ICE_ADMINQ_EVENT_PENDING,
- 	__ICE_MAILBOXQ_EVENT_PENDING,
++	__ICE_MAILBOXQ_EVENT_PENDING,
  	__ICE_MDD_EVENT_PENDING,
-+	__ICE_VFLR_EVENT_PENDING,
  	__ICE_FLTR_OVERFLOW_PROMISC,
- 	__ICE_VF_DIS,
  	__ICE_CFG_BUSY,
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 7d793cc96a18..2c8f590316e9 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1077,6 +1077,19 @@ struct ice_aqc_nvm {
- 	__le32 addr_low;
+@@ -240,6 +243,7 @@ enum ice_pf_flags {
+ 	ICE_FLAG_MSIX_ENA,
+ 	ICE_FLAG_FLTR_SYNC,
+ 	ICE_FLAG_RSS_ENA,
++	ICE_FLAG_SRIOV_CAPABLE,
+ 	ICE_PF_FLAGS_NBITS		/* must be last */
  };
  
-+/**
-+ * Send to PF command (indirect 0x0801) id is only used by PF
-+ *
-+ * Send to VF command (indirect 0x0802) id is only used by PF
-+ *
-+ */
-+struct ice_aqc_pf_vf_msg {
-+	__le32 id;
-+	u32 reserved;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
- /* Get/Set RSS key (indirect 0x0B04/0x0B02) */
- struct ice_aqc_get_set_rss_key {
- #define ICE_AQC_GSET_RSS_KEY_VSI_VALID	BIT(15)
-@@ -1334,6 +1347,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_query_txsched_res query_sched_res;
- 		struct ice_aqc_add_move_delete_elem add_move_delete_elem;
- 		struct ice_aqc_nvm nvm;
-+		struct ice_aqc_pf_vf_msg virt;
- 		struct ice_aqc_get_set_rss_lut get_set_rss_lut;
- 		struct ice_aqc_get_set_rss_key get_set_rss_key;
- 		struct ice_aqc_add_txqs add_txqs;
-@@ -1431,6 +1445,9 @@ enum ice_adminq_opc {
- 	/* NVM commands */
- 	ice_aqc_opc_nvm_read				= 0x0701,
+@@ -255,6 +259,7 @@ struct ice_pf {
  
-+	/* PF/VF mailbox commands */
-+	ice_mbx_opc_send_msg_to_vf			= 0x0802,
+ 	struct ice_vsi **vsi;		/* VSIs created by the driver */
+ 	struct ice_sw *first_sw;	/* first switch created by firmware */
++	u16 num_vfs_supported;		/* num VFs supported for this PF */
+ 	DECLARE_BITMAP(state, __ICE_STATE_NBITS);
+ 	DECLARE_BITMAP(avail_txqs, ICE_MAX_TXQS);
+ 	DECLARE_BITMAP(avail_rxqs, ICE_MAX_RXQS);
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index c100b4bda195..7d793cc96a18 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -87,6 +87,8 @@ struct ice_aqc_list_caps {
+ /* Device/Function buffer entry, repeated per reported capability */
+ struct ice_aqc_list_caps_elem {
+ 	__le16 cap;
++#define ICE_AQC_CAPS_SRIOV				0x0012
++#define ICE_AQC_CAPS_VF					0x0013
+ #define ICE_AQC_CAPS_VSI				0x0017
+ #define ICE_AQC_CAPS_RSS				0x0040
+ #define ICE_AQC_CAPS_RXQS				0x0041
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index e9e5c601b321..4612d5fa9416 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1406,6 +1406,28 @@ ice_parse_caps(struct ice_hw *hw, void *buf, u32 cap_count,
+ 		u16 cap = le16_to_cpu(cap_resp->cap);
+ 
+ 		switch (cap) {
++		case ICE_AQC_CAPS_SRIOV:
++			caps->sr_iov_1_1 = (number == 1);
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: SR-IOV = %d\n", caps->sr_iov_1_1);
++			break;
++		case ICE_AQC_CAPS_VF:
++			if (dev_p) {
++				dev_p->num_vfs_exposed = number;
++				ice_debug(hw, ICE_DBG_INIT,
++					  "HW caps: VFs exposed = %d\n",
++					  dev_p->num_vfs_exposed);
++			} else if (func_p) {
++				func_p->num_allocd_vfs = number;
++				func_p->vf_base_id = logical_id;
++				ice_debug(hw, ICE_DBG_INIT,
++					  "HW caps: VFs allocated = %d\n",
++					  func_p->num_allocd_vfs);
++				ice_debug(hw, ICE_DBG_INIT,
++					  "HW caps: VF base_id = %d\n",
++					  func_p->vf_base_id);
++			}
++			break;
+ 		case ICE_AQC_CAPS_VSI:
+ 			if (dev_p) {
+ 				dev_p->num_vsi_allocd_to_host = number;
+diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
+index b25ce4f587f5..84c967294eaf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_controlq.c
++++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
+@@ -32,6 +32,36 @@ static void ice_adminq_init_regs(struct ice_hw *hw)
+ 	cq->rq.head_mask = PF_FW_ARQH_ARQH_M;
+ }
+ 
++/**
++ * ice_mailbox_init_regs - Initialize Mailbox registers
++ * @hw: pointer to the hardware structure
++ *
++ * This assumes the alloc_sq and alloc_rq functions have already been called
++ */
++static void ice_mailbox_init_regs(struct ice_hw *hw)
++{
++	struct ice_ctl_q_info *cq = &hw->mailboxq;
 +
- 	/* RSS commands */
- 	ice_aqc_opc_set_rss_key				= 0x0B02,
- 	ice_aqc_opc_set_rss_lut				= 0x0B03,
++	/* set head and tail registers in our local struct */
++	cq->sq.head = PF_MBX_ATQH;
++	cq->sq.tail = PF_MBX_ATQT;
++	cq->sq.len = PF_MBX_ATQLEN;
++	cq->sq.bah = PF_MBX_ATQBAH;
++	cq->sq.bal = PF_MBX_ATQBAL;
++	cq->sq.len_mask = PF_MBX_ATQLEN_ATQLEN_M;
++	cq->sq.len_ena_mask = PF_MBX_ATQLEN_ATQENABLE_M;
++	cq->sq.head_mask = PF_MBX_ATQH_ATQH_M;
++
++	cq->rq.head = PF_MBX_ARQH;
++	cq->rq.tail = PF_MBX_ARQT;
++	cq->rq.len = PF_MBX_ARQLEN;
++	cq->rq.bah = PF_MBX_ARQBAH;
++	cq->rq.bal = PF_MBX_ARQBAL;
++	cq->rq.len_mask = PF_MBX_ARQLEN_ARQLEN_M;
++	cq->rq.len_ena_mask = PF_MBX_ARQLEN_ARQENABLE_M;
++	cq->rq.head_mask = PF_MBX_ARQH_ARQH_M;
++}
++
+ /**
+  * ice_check_sq_alive
+  * @hw: pointer to the hw struct
+@@ -639,6 +669,10 @@ static enum ice_status ice_init_ctrlq(struct ice_hw *hw, enum ice_ctl_q q_type)
+ 		ice_adminq_init_regs(hw);
+ 		cq = &hw->adminq;
+ 		break;
++	case ICE_CTL_Q_MAILBOX:
++		ice_mailbox_init_regs(hw);
++		cq = &hw->mailboxq;
++		break;
+ 	default:
+ 		return ICE_ERR_PARAM;
+ 	}
+@@ -696,7 +730,12 @@ enum ice_status ice_init_all_ctrlq(struct ice_hw *hw)
+ 	if (ret_code)
+ 		return ret_code;
+ 
+-	return ice_init_check_adminq(hw);
++	ret_code = ice_init_check_adminq(hw);
++	if (ret_code)
++		return ret_code;
++
++	/* Init Mailbox queue */
++	return ice_init_ctrlq(hw, ICE_CTL_Q_MAILBOX);
+ }
+ 
+ /**
+@@ -714,6 +753,9 @@ static void ice_shutdown_ctrlq(struct ice_hw *hw, enum ice_ctl_q q_type)
+ 		if (ice_check_sq_alive(hw, cq))
+ 			ice_aq_q_shutdown(hw, true);
+ 		break;
++	case ICE_CTL_Q_MAILBOX:
++		cq = &hw->mailboxq;
++		break;
+ 	default:
+ 		return;
+ 	}
+@@ -736,6 +778,8 @@ void ice_shutdown_all_ctrlq(struct ice_hw *hw)
+ {
+ 	/* Shutdown FW admin queue */
+ 	ice_shutdown_ctrlq(hw, ICE_CTL_Q_ADMIN);
++	/* Shutdown PF-VF Mailbox */
++	ice_shutdown_ctrlq(hw, ICE_CTL_Q_MAILBOX);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.h b/drivers/net/ethernet/intel/ice/ice_controlq.h
+index ea02b89243e2..437f832fd7c4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_controlq.h
++++ b/drivers/net/ethernet/intel/ice/ice_controlq.h
+@@ -8,6 +8,7 @@
+ 
+ /* Maximum buffer lengths for all control queue types */
+ #define ICE_AQ_MAX_BUF_LEN 4096
++#define ICE_MBXQ_MAX_BUF_LEN 4096
+ 
+ #define ICE_CTL_Q_DESC(R, i) \
+ 	(&(((struct ice_aq_desc *)((R).desc_buf.va))[i]))
+@@ -28,6 +29,7 @@
+ enum ice_ctl_q {
+ 	ICE_CTL_Q_UNKNOWN = 0,
+ 	ICE_CTL_Q_ADMIN,
++	ICE_CTL_Q_MAILBOX,
+ };
+ 
+ /* Control Queue default settings */
 diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 12d4c862bf05..5a4fa22d0a83 100644
+index 9a78d83eaa3e..c2d867b756ef 100644
 --- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
 +++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -136,6 +136,7 @@
- #define PFINT_OICR_PCI_EXCEPTION_M		BIT(21)
- #define PFINT_OICR_HMC_ERR_M			BIT(26)
- #define PFINT_OICR_PE_CRITERR_M			BIT(28)
-+#define PFINT_OICR_VFLR_M			BIT(29)
- #define PFINT_OICR_CTL				0x0016CA80
- #define PFINT_OICR_CTL_MSIX_INDX_M		ICE_M(0x7FF, 0)
- #define PFINT_OICR_CTL_ITR_INDX_S		11
+@@ -29,6 +29,22 @@
+ #define PF_FW_ATQLEN_ATQCRIT_M			BIT(30)
+ #define PF_FW_ATQLEN_ATQENABLE_M		BIT(31)
+ #define PF_FW_ATQT				0x00080400
++#define PF_MBX_ARQBAH				0x0022E400
++#define PF_MBX_ARQBAL				0x0022E380
++#define PF_MBX_ARQH				0x0022E500
++#define PF_MBX_ARQH_ARQH_M			ICE_M(0x3FF, 0)
++#define PF_MBX_ARQLEN				0x0022E480
++#define PF_MBX_ARQLEN_ARQLEN_M			ICE_M(0x3FF, 0)
++#define PF_MBX_ARQLEN_ARQENABLE_M		BIT(31)
++#define PF_MBX_ARQT				0x0022E580
++#define PF_MBX_ATQBAH				0x0022E180
++#define PF_MBX_ATQBAL				0x0022E100
++#define PF_MBX_ATQH				0x0022E280
++#define PF_MBX_ATQH_ATQH_M			ICE_M(0x3FF, 0)
++#define PF_MBX_ATQLEN				0x0022E200
++#define PF_MBX_ATQLEN_ATQLEN_M			ICE_M(0x3FF, 0)
++#define PF_MBX_ATQLEN_ATQENABLE_M		BIT(31)
++#define PF_MBX_ATQT				0x0022E300
+ #define GLFLXP_RXDID_FLAGS(_i, _j)		(0x0045D000 + ((_i) * 4 + (_j) * 256))
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S	0
+ #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, 0)
+@@ -95,6 +111,11 @@
+ #define PFINT_FW_CTL_ITR_INDX_S			11
+ #define PFINT_FW_CTL_ITR_INDX_M			ICE_M(0x3, 11)
+ #define PFINT_FW_CTL_CAUSE_ENA_M		BIT(30)
++#define PFINT_MBX_CTL				0x0016B280
++#define PFINT_MBX_CTL_MSIX_INDX_M		ICE_M(0x7FF, 0)
++#define PFINT_MBX_CTL_ITR_INDX_S		11
++#define PFINT_MBX_CTL_ITR_INDX_M		ICE_M(0x3, 11)
++#define PFINT_MBX_CTL_CAUSE_ENA_M		BIT(30)
+ #define PFINT_OICR				0x0016CA00
+ #define PFINT_OICR_ECC_ERR_M			BIT(16)
+ #define PFINT_OICR_MAL_DETECT_M			BIT(19)
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 7e15f9e7ba95..9dd12f6cab98 100644
+index 4aa6b849a6cc..59bcf5edd447 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -342,6 +342,10 @@ ice_prepare_for_reset(struct ice_pf *pf)
- {
- 	struct ice_hw *hw = &pf->hw;
+@@ -711,6 +711,10 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
+ 		cq = &hw->adminq;
+ 		qtype = "Admin";
+ 		break;
++	case ICE_CTL_Q_MAILBOX:
++		cq = &hw->mailboxq;
++		qtype = "Mailbox";
++		break;
+ 	default:
+ 		dev_warn(&pf->pdev->dev, "Unknown control queue type 0x%x\n",
+ 			 q_type);
+@@ -850,6 +854,28 @@ static void ice_clean_adminq_subtask(struct ice_pf *pf)
+ 	ice_flush(hw);
+ }
  
-+	/* Notify VFs of impending reset */
-+	if (ice_check_sq_alive(hw, &hw->mailboxq))
-+		ice_vc_notify_reset(pf);
++/**
++ * ice_clean_mailboxq_subtask - clean the MailboxQ rings
++ * @pf: board private structure
++ */
++static void ice_clean_mailboxq_subtask(struct ice_pf *pf)
++{
++	struct ice_hw *hw = &pf->hw;
 +
- 	/* disable the VSIs and their queues that are not already DOWN */
- 	ice_pf_dis_all_vsi(pf);
- 
-@@ -1064,6 +1068,7 @@ static void ice_service_task(struct work_struct *work)
- 	ice_check_for_hang_subtask(pf);
- 	ice_sync_fltr_subtask(pf);
++	if (!test_bit(__ICE_MAILBOXQ_EVENT_PENDING, pf->state))
++		return;
++
++	if (__ice_clean_ctrlq(pf, ICE_CTL_Q_MAILBOX))
++		return;
++
++	clear_bit(__ICE_MAILBOXQ_EVENT_PENDING, pf->state);
++
++	if (ice_ctrlq_pending(hw, &hw->mailboxq))
++		__ice_clean_ctrlq(pf, ICE_CTL_Q_MAILBOX);
++
++	ice_flush(hw);
++}
++
+ /**
+  * ice_service_task_schedule - schedule the service task to wake up
+  * @pf: board private structure
+@@ -1040,6 +1066,7 @@ static void ice_service_task(struct work_struct *work)
  	ice_handle_mdd_event(pf);
-+	ice_process_vflr_event(pf);
  	ice_watchdog_subtask(pf);
  	ice_clean_adminq_subtask(pf);
- 	ice_clean_mailboxq_subtask(pf);
-@@ -1077,6 +1082,7 @@ static void ice_service_task(struct work_struct *work)
++	ice_clean_mailboxq_subtask(pf);
+ 
+ 	/* Clear __ICE_SERVICE_SCHED flag to allow scheduling next event */
+ 	ice_service_task_complete(pf);
+@@ -1050,6 +1077,7 @@ static void ice_service_task(struct work_struct *work)
  	 */
  	if (time_after(jiffies, (start_time + pf->serv_tmr_period)) ||
  	    test_bit(__ICE_MDD_EVENT_PENDING, pf->state) ||
-+	    test_bit(__ICE_VFLR_EVENT_PENDING, pf->state) ||
- 	    test_bit(__ICE_MAILBOXQ_EVENT_PENDING, pf->state) ||
++	    test_bit(__ICE_MAILBOXQ_EVENT_PENDING, pf->state) ||
  	    test_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state))
  		mod_timer(&pf->serv_tmr, jiffies);
-@@ -1229,6 +1235,7 @@ static void ice_ena_misc_vector(struct ice_pf *pf)
- 	       PFINT_OICR_MAL_DETECT_M |
- 	       PFINT_OICR_GRST_M |
- 	       PFINT_OICR_PCI_EXCEPTION_M |
-+	       PFINT_OICR_VFLR_M |
- 	       PFINT_OICR_HMC_ERR_M |
- 	       PFINT_OICR_PE_CRITERR_M);
+ }
+@@ -1064,6 +1092,10 @@ static void ice_set_ctrlq_len(struct ice_hw *hw)
+ 	hw->adminq.num_sq_entries = ICE_AQ_LEN;
+ 	hw->adminq.rq_buf_size = ICE_AQ_MAX_BUF_LEN;
+ 	hw->adminq.sq_buf_size = ICE_AQ_MAX_BUF_LEN;
++	hw->mailboxq.num_rq_entries = ICE_MBXQ_LEN;
++	hw->mailboxq.num_sq_entries = ICE_MBXQ_LEN;
++	hw->mailboxq.rq_buf_size = ICE_MBXQ_MAX_BUF_LEN;
++	hw->mailboxq.sq_buf_size = ICE_MBXQ_MAX_BUF_LEN;
+ }
  
-@@ -1261,6 +1268,10 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 		ena_mask &= ~PFINT_OICR_MAL_DETECT_M;
- 		set_bit(__ICE_MDD_EVENT_PENDING, pf->state);
- 	}
-+	if (oicr & PFINT_OICR_VFLR_M) {
-+		ena_mask &= ~PFINT_OICR_VFLR_M;
-+		set_bit(__ICE_VFLR_EVENT_PENDING, pf->state);
-+	}
+ /**
+@@ -1220,6 +1252,7 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+ 	u32 oicr, ena_mask;
  
- 	if (oicr & PFINT_OICR_GRST_M) {
- 		u32 reset;
-@@ -3242,6 +3253,10 @@ static int ice_vsi_rebuild_all(struct ice_pf *pf)
- 		if (!pf->vsi[i])
- 			continue;
+ 	set_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state);
++	set_bit(__ICE_MAILBOXQ_EVENT_PENDING, pf->state);
  
-+		/* VF VSI rebuild isn't supported yet */
-+		if (pf->vsi[i]->type == ICE_VSI_VF)
-+			continue;
+ 	oicr = rd32(hw, PFINT_OICR);
+ 	ena_mask = rd32(hw, PFINT_OICR_ENA);
+@@ -1406,6 +1439,11 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+ 	       PFINT_FW_CTL_CAUSE_ENA_M);
+ 	wr32(hw, PFINT_FW_CTL, val);
+ 
++	/* This enables Mailbox queue Interrupt causes */
++	val = ((pf->hw_oicr_idx & PFINT_MBX_CTL_MSIX_INDX_M) |
++	       PFINT_MBX_CTL_CAUSE_ENA_M);
++	wr32(hw, PFINT_MBX_CTL, val);
 +
- 		err = ice_vsi_rebuild(pf->vsi[i]);
- 		if (err) {
- 			dev_err(&pf->pdev->dev,
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-new file mode 100644
-index 000000000000..191e832134b6
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -0,0 +1,41 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2018, Intel Corporation. */
-+
-+#include "ice_common.h"
-+#include "ice_adminq_cmd.h"
-+#include "ice_sriov.h"
-+
-+/**
-+ * ice_aq_send_msg_to_vf
-+ * @hw: pointer to the hardware structure
-+ * @vfid: VF ID to send msg
-+ * @v_opcode: opcodes for VF-PF communication
-+ * @v_retval: return error code
-+ * @msg: pointer to the msg buffer
-+ * @msglen: msg length
-+ * @cd: pointer to command details
-+ *
-+ * Send message to VF driver (0x0802) using mailbox
-+ * queue and asynchronously sending message via
-+ * ice_sq_send_cmd() function
-+ */
-+enum ice_status
-+ice_aq_send_msg_to_vf(struct ice_hw *hw, u16 vfid, u32 v_opcode, u32 v_retval,
-+		      u8 *msg, u16 msglen, struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_pf_vf_msg *cmd;
-+	struct ice_aq_desc desc;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_mbx_opc_send_msg_to_vf);
-+
-+	cmd = &desc.params.virt;
-+	cmd->id = cpu_to_le32(vfid);
-+
-+	desc.cookie_high = cpu_to_le32(v_opcode);
-+	desc.cookie_low = cpu_to_le32(v_retval);
-+
-+	if (msglen)
-+		desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+
-+	return ice_sq_send_cmd(hw, &hw->mailboxq, &desc, msg, msglen, cd);
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.h b/drivers/net/ethernet/intel/ice/ice_sriov.h
-new file mode 100644
-index 000000000000..f9b86fd05c8b
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.h
-@@ -0,0 +1,25 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2018, Intel Corporation. */
-+
-+#ifndef _ICE_SRIOV_H_
-+#define _ICE_SRIOV_H_
-+
-+#include "ice_common.h"
-+
+ 	itr_gran = hw->itr_gran;
+ 
+ 	wr32(hw, GLINT_ITR(ICE_RX_ITR, pf->hw_oicr_idx),
+@@ -1775,6 +1813,15 @@ static void ice_init_pf(struct ice_pf *pf)
+ {
+ 	bitmap_zero(pf->flags, ICE_PF_FLAGS_NBITS);
+ 	set_bit(ICE_FLAG_MSIX_ENA, pf->flags);
 +#ifdef CONFIG_PCI_IOV
-+enum ice_status
-+ice_aq_send_msg_to_vf(struct ice_hw *hw, u16 vfid, u32 v_opcode, u32 v_retval,
-+		      u8 *msg, u16 msglen, struct ice_sq_cd *cd);
++	if (pf->hw.func_caps.common_cap.sr_iov_1_1) {
++		struct ice_hw *hw = &pf->hw;
 +
-+#else /* CONFIG_PCI_IOV */
-+static inline enum ice_status
-+ice_aq_send_msg_to_vf(struct ice_hw __always_unused *hw,
-+		      u16 __always_unused vfid, u32 __always_unused v_opcode,
-+		      u32 __always_unused v_retval, u8 __always_unused *msg,
-+		      u16 __always_unused msglen,
-+		      struct ice_sq_cd __always_unused *cd)
-+{
-+	return 0;
-+}
++		set_bit(ICE_FLAG_SRIOV_CAPABLE, pf->flags);
++		pf->num_vfs_supported = min_t(int, hw->func_caps.num_allocd_vfs,
++					      ICE_MAX_VF_COUNT);
++	}
 +#endif /* CONFIG_PCI_IOV */
-+#endif /* _ICE_SRIOV_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_status.h b/drivers/net/ethernet/intel/ice/ice_status.h
-index d2dae913d81e..f49f299ddf2c 100644
---- a/drivers/net/ethernet/intel/ice/ice_status.h
-+++ b/drivers/net/ethernet/intel/ice/ice_status.h
-@@ -6,6 +6,9 @@
  
- /* Error Codes */
- enum ice_status {
-+	ICE_SUCCESS				= 0,
-+
-+	/* Generic codes : Range -1..-49 */
- 	ICE_ERR_PARAM				= -1,
- 	ICE_ERR_NOT_IMPL			= -2,
- 	ICE_ERR_NOT_READY			= -3,
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 1b7017c1f190..f8f5cccb0b5c 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -4,6 +4,36 @@
- #include "ice.h"
- #include "ice_lib.h"
+ 	mutex_init(&pf->sw_mutex);
+ 	mutex_init(&pf->avail_q_mutex);
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index f5c8de0ed0eb..6d053fb5f941 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -84,6 +84,7 @@ enum ice_media_type {
  
-+/**
-+ * ice_vc_vf_broadcast - Broadcast a message to all VFs on PF
-+ * @pf: pointer to the PF structure
-+ * @v_opcode: operation code
-+ * @v_retval: return value
-+ * @msg: pointer to the msg buffer
-+ * @msglen: msg length
-+ */
-+static void
-+ice_vc_vf_broadcast(struct ice_pf *pf, enum virtchnl_ops v_opcode,
-+		    enum ice_status v_retval, u8 *msg, u16 msglen)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+	struct ice_vf *vf = pf->vf;
-+	int i;
-+
-+	for (i = 0; i < pf->num_alloc_vfs; i++, vf++) {
-+		/* Not all vfs are enabled so skip the ones that are not */
-+		if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states) &&
-+		    !test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
-+			continue;
-+
-+		/* Ignore return value on purpose - a given VF may fail, but
-+		 * we need to keep going and send to all of them
-+		 */
-+		ice_aq_send_msg_to_vf(hw, vf->vf_id, v_opcode, v_retval, msg,
-+				      msglen, NULL);
-+	}
-+}
-+
- /**
-  * ice_get_vf_vector - get VF interrupt vector register offset
-  * @vf_msix: number of msix vector per VF on a PF
-@@ -693,6 +723,97 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	return true;
- }
- 
-+/**
-+ * ice_reset_vf - Reset a particular VF
-+ * @vf: pointer to the VF structure
-+ * @is_vflr: true if VFLR was issued, false if not
-+ *
-+ * Returns true if the VF is reset, false otherwise.
-+ */
-+static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
-+{
-+	struct ice_pf *pf = vf->pf;
-+	struct ice_hw *hw = &pf->hw;
-+	bool rsd = false;
-+	u32 reg;
-+	int i;
-+
-+	/* If the VFs have been disabled, this means something else is
-+	 * resetting the VF, so we shouldn't continue.
-+	 */
-+	if (test_and_set_bit(__ICE_VF_DIS, pf->state))
-+		return false;
-+
-+	ice_trigger_vf_reset(vf, is_vflr);
-+
-+	if (test_bit(ICE_VF_STATE_ENA, vf->vf_states)) {
-+		ice_vsi_stop_tx_rings(pf->vsi[vf->lan_vsi_idx], ICE_VF_RESET,
-+				      vf->vf_id);
-+		ice_vsi_stop_rx_rings(pf->vsi[vf->lan_vsi_idx]);
-+		clear_bit(ICE_VF_STATE_ENA, vf->vf_states);
-+	} else {
-+		/* Call Disable LAN Tx queue AQ call even when queues are not
-+		 * enabled. This is needed for successful completiom of VFR
-+		 */
-+		ice_dis_vsi_txq(pf->vsi[vf->lan_vsi_idx]->port_info, 0,
-+				NULL, NULL, ICE_VF_RESET, vf->vf_id, NULL);
-+	}
-+
-+	/* poll VPGEN_VFRSTAT reg to make sure
-+	 * that reset is complete
-+	 */
-+	for (i = 0; i < 10; i++) {
-+		/* VF reset requires driver to first reset the VF and then
-+		 * poll the status register to make sure that the reset
-+		 * completed successfully.
-+		 */
-+		usleep_range(10000, 20000);
-+		reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
-+		if (reg & VPGEN_VFRSTAT_VFRD_M) {
-+			rsd = true;
-+			break;
-+		}
-+	}
-+
-+	/* Display a warning if VF didn't manage to reset in time, but need to
-+	 * continue on with the operation.
-+	 */
-+	if (!rsd)
-+		dev_warn(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
-+			 vf->vf_id);
-+
-+	usleep_range(10000, 20000);
-+
-+	/* free VF resources to begin resetting the VSI state */
-+	ice_free_vf_res(vf);
-+
-+	ice_cleanup_and_realloc_vf(vf);
-+
-+	ice_flush(hw);
-+	clear_bit(__ICE_VF_DIS, pf->state);
-+
-+	return true;
-+}
-+
-+/**
-+ * ice_vc_notify_reset - Send pending reset message to all VFs
-+ * @pf: pointer to the PF structure
-+ *
-+ * indicate a pending reset to all VFs on a given PF
-+ */
-+void ice_vc_notify_reset(struct ice_pf *pf)
-+{
-+	struct virtchnl_pf_event pfe;
-+
-+	if (!pf->num_alloc_vfs)
-+		return;
-+
-+	pfe.event = VIRTCHNL_EVENT_RESET_IMPENDING;
-+	pfe.severity = PF_EVENT_SEVERITY_CERTAIN_DOOM;
-+	ice_vc_vf_broadcast(pf, VIRTCHNL_OP_EVENT, ICE_SUCCESS,
-+			    (u8 *)&pfe, sizeof(struct virtchnl_pf_event));
-+}
-+
- /**
-  * ice_alloc_vfs - Allocate and set up VFs resources
-  * @pf: pointer to the PF structure
-@@ -845,3 +966,45 @@ int ice_sriov_configure(struct pci_dev *pdev, int num_vfs)
- 
- 	return 0;
- }
-+
-+/**
-+ * ice_process_vflr_event - Free VF resources via irq calls
-+ * @pf: pointer to the PF structure
-+ *
-+ * called from the vlfr irq handler to
-+ * free up VF resources and state variables
-+ */
-+void ice_process_vflr_event(struct ice_pf *pf)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+	int vf_id;
-+	u32 reg;
-+
-+	if (!test_bit(__ICE_VFLR_EVENT_PENDING, pf->state) ||
-+	    !pf->num_alloc_vfs)
-+		return;
-+
-+	/* Re-enable the VFLR interrupt cause here, before looking for which
-+	 * VF got reset. Otherwise, if another VF gets a reset while the
-+	 * first one is being processed, that interrupt will be lost, and
-+	 * that VF will be stuck in reset forever.
-+	 */
-+	reg = rd32(hw, PFINT_OICR_ENA);
-+	reg |= PFINT_OICR_VFLR_M;
-+	wr32(hw, PFINT_OICR_ENA, reg);
-+	ice_flush(hw);
-+
-+	clear_bit(__ICE_VFLR_EVENT_PENDING, pf->state);
-+	for (vf_id = 0; vf_id < pf->num_alloc_vfs; vf_id++) {
-+		struct ice_vf *vf = &pf->vf[vf_id];
-+		u32 reg_idx, bit_idx;
-+
-+		reg_idx = (hw->func_caps.vf_base_id + vf_id) / 32;
-+		bit_idx = (hw->func_caps.vf_base_id + vf_id) % 32;
-+		/* read GLGEN_VFLRSTAT register to find out the flr VFs */
-+		reg = rd32(hw, GLGEN_VFLRSTAT(reg_idx));
-+		if (reg & BIT(bit_idx))
-+			/* GLGEN_VFLRSTAT bit will be cleared in ice_reset_vf */
-+			ice_reset_vf(vf, true);
-+	}
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 3d5344d12efb..c6932559244f 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -51,11 +51,15 @@ struct ice_vf {
+ enum ice_vsi_type {
+ 	ICE_VSI_PF = 0,
++	ICE_VSI_VF,
  };
  
- #ifdef CONFIG_PCI_IOV
-+void ice_process_vflr_event(struct ice_pf *pf);
- int ice_sriov_configure(struct pci_dev *pdev, int num_vfs);
- void ice_free_vfs(struct ice_pf *pf);
-+void ice_vc_notify_reset(struct ice_pf *pf);
- bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr);
- #else /* CONFIG_PCI_IOV */
-+#define ice_process_vflr_event(pf) do {} while (0)
- #define ice_free_vfs(pf) do {} while (0)
-+#define ice_vc_notify_reset(pf) do {} while (0)
+ struct ice_link_status {
+@@ -127,6 +128,8 @@ struct ice_hw_common_caps {
+ 	/* Max MTU for function or device */
+ 	u16 max_mtu;
  
- static inline bool
- ice_reset_all_vfs(struct ice_pf __always_unused *pf,
++	/* Virtualization support */
++	u8 sr_iov_1_1;			/* SR-IOV enabled */
+ 	/* RSS related capabilities */
+ 	u16 rss_table_size;		/* 512 for PFs and 64 for VFs */
+ 	u8 rss_table_entry_width;	/* RSS Entry width in bits */
+@@ -135,12 +138,15 @@ struct ice_hw_common_caps {
+ /* Function specific capabilities */
+ struct ice_hw_func_caps {
+ 	struct ice_hw_common_caps common_cap;
++	u32 num_allocd_vfs;		/* Number of allocated VFs */
++	u32 vf_base_id;			/* Logical ID of the first VF */
+ 	u32 guaranteed_num_vsi;
+ };
+ 
+ /* Device wide capabilities */
+ struct ice_hw_dev_caps {
+ 	struct ice_hw_common_caps common_cap;
++	u32 num_vfs_exposed;		/* Total number of VFs exposed */
+ 	u32 num_vsi_allocd_to_host;	/* Excluding EMP VSI */
+ };
+ 
+@@ -321,6 +327,7 @@ struct ice_hw {
+ 
+ 	/* Control Queue info */
+ 	struct ice_ctl_q_info adminq;
++	struct ice_ctl_q_info mailboxq;
+ 
+ 	u8 api_branch;		/* API branch version */
+ 	u8 api_maj_ver;		/* API major version */
 -- 
 2.14.3
 
