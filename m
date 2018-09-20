@@ -1,77 +1,60 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:43:06 -0700
-Subject: [Intel-wired-lan] [PATCH v2 14/16] ice: Use the right function to
- enable/disable VSI
+Date: Wed, 19 Sep 2018 17:43:02 -0700
+Subject: [Intel-wired-lan] [PATCH v2 10/16] ice: Fix forward to queue group
+ logic
 In-Reply-To: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
 References: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920004308.13772-15-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920004308.13772-11-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+When adding a rule, queue region size needs to be provided as log base 2
+of the number of queues in region. Fix that.
 
-The ice_ena/dis_vsi should have a single differentiating
-factor to determine if the netdev_ops call is used or a
-direct call to ice_vsi_open/close.  This is if the netif is
-running or not.  If netif is running, use ndo_open/ndo_close.
-Else, use ice_vsi_open/ice_vsi_close.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_main.c | 23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 3e254281da63..ecd9cbc457d1 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3232,13 +3232,14 @@ static void ice_dis_vsi(struct ice_vsi *vsi)
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 47815359e2ec..822442fee327 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -656,6 +656,7 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
+ 	u8 *eth_hdr;
+ 	u32 act = 0;
+ 	__be16 *off;
++	u8 q_rgn;
  
- 	set_bit(__ICE_NEEDS_RESTART, vsi->state);
- 
--	if (vsi->netdev && netif_running(vsi->netdev) &&
--	    vsi->type == ICE_VSI_PF) {
--		rtnl_lock();
--		vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
--		rtnl_unlock();
--	} else {
--		ice_vsi_close(vsi);
-+	if (vsi->type == ICE_VSI_PF && vsi->netdev) {
-+		if (netif_running(vsi->netdev)) {
-+			rtnl_lock();
-+			vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
-+			rtnl_unlock();
-+		} else {
-+			ice_vsi_close(vsi);
-+		}
+ 	if (opc == ice_aqc_opc_remove_sw_rules) {
+ 		s_rule->pdata.lkup_tx_rx.act = 0;
+@@ -694,14 +695,19 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
+ 		act |= (f_info->fwd_id.q_id << ICE_SINGLE_ACT_Q_INDEX_S) &
+ 			ICE_SINGLE_ACT_Q_INDEX_M;
+ 		break;
++	case ICE_DROP_PACKET:
++		act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_DROP |
++			ICE_SINGLE_ACT_VALID_BIT;
++		break;
+ 	case ICE_FWD_TO_QGRP:
++		q_rgn = f_info->qgrp_size > 0 ?
++			(u8)ilog2(f_info->qgrp_size) : 0;
+ 		act |= ICE_SINGLE_ACT_TO_Q;
+-		act |= (f_info->qgrp_size << ICE_SINGLE_ACT_Q_REGION_S) &
++		act |= (f_info->fwd_id.q_id << ICE_SINGLE_ACT_Q_INDEX_S) &
++			ICE_SINGLE_ACT_Q_INDEX_M;
++		act |= (q_rgn << ICE_SINGLE_ACT_Q_REGION_S) &
+ 			ICE_SINGLE_ACT_Q_REGION_M;
+ 		break;
+-	case ICE_DROP_PACKET:
+-		act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_DROP;
+-		break;
+ 	default:
+ 		return;
  	}
- }
- 
-@@ -3250,12 +3251,16 @@ static int ice_ena_vsi(struct ice_vsi *vsi)
- {
- 	int err = 0;
- 
--	if (test_and_clear_bit(__ICE_NEEDS_RESTART, vsi->state))
--		if (vsi->netdev && netif_running(vsi->netdev)) {
-+	if (test_and_clear_bit(__ICE_NEEDS_RESTART, vsi->state) &&
-+	    vsi->netdev) {
-+		if (netif_running(vsi->netdev)) {
- 			rtnl_lock();
- 			err = vsi->netdev->netdev_ops->ndo_open(vsi->netdev);
- 			rtnl_unlock();
-+		} else {
-+			err = ice_vsi_open(vsi);
- 		}
-+	}
- 
- 	return err;
- }
 -- 
 2.14.3
 
