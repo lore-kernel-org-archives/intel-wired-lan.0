@@ -1,40 +1,149 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:23:03 -0700
-Subject: [Intel-wired-lan] [PATCH 0/8] Minor updates and bug fixes
-Message-ID: <20180920002311.10891-1-anirudh.venkataramanan@intel.com>
+Date: Wed, 19 Sep 2018 17:23:09 -0700
+Subject: [Intel-wired-lan] [PATCH 6/8] ice: Query the Tx scheduler node
+ before adding it
+In-Reply-To: <20180920002311.10891-1-anirudh.venkataramanan@intel.com>
+References: <20180920002311.10891-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920002311.10891-7-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anirudh Venkataramanan (2):
-  ice: Query the Tx scheduler node before adding it
-  ice: Update to capabilities admin queue command
+Query the Tx scheduler tree node information from FW before adding it to
+the driver's software database. This will keep the node information current
+in driver.
 
-Brett Creeley (1):
-  ice: Update comment for ice_fltr_mgmt_list_entry
-
-Bruce Allan (3):
-  ice: replace unnecessary memcpy with direct assignment
-  ice: update branding strings and supported device ids
-  ice: fix changing of ring descriptor size (ethtool -G)
-
-Jacob Keller (2):
-  ice: use [sr]q.count when checking if queue is initialized
-  ice: update fw version check logic
-
- drivers/net/ethernet/intel/ice/ice.h            |  4 +-
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  5 ++
- drivers/net/ethernet/intel/ice/ice_common.c     | 50 ++++++++++++------
- drivers/net/ethernet/intel/ice/ice_controlq.c   | 40 +++++++++------
- drivers/net/ethernet/intel/ice/ice_devids.h     | 10 ++--
- drivers/net/ethernet/intel/ice/ice_ethtool.c    | 17 +++++--
- drivers/net/ethernet/intel/ice/ice_main.c       |  2 -
  drivers/net/ethernet/intel/ice/ice_sched.c      | 67 ++++++++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_switch.h     |  3 +-
- 9 files changed, 150 insertions(+), 48 deletions(-)
+ 2 files changed, 71 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index f8dfd675486c..c100b4bda195 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -736,6 +736,10 @@ struct ice_aqc_add_elem {
+ 	struct ice_aqc_txsched_elem_data generic[1];
+ };
+ 
++struct ice_aqc_get_elem {
++	struct ice_aqc_txsched_elem_data generic[1];
++};
++
+ struct ice_aqc_get_topo_elem {
+ 	struct ice_aqc_txsched_topo_grp_info_hdr hdr;
+ 	struct ice_aqc_txsched_elem_data
+@@ -1409,6 +1413,7 @@ enum ice_adminq_opc {
+ 	/* transmit scheduler commands */
+ 	ice_aqc_opc_get_dflt_topo			= 0x0400,
+ 	ice_aqc_opc_add_sched_elems			= 0x0401,
++	ice_aqc_opc_get_sched_elems			= 0x0404,
+ 	ice_aqc_opc_suspend_sched_elems			= 0x0409,
+ 	ice_aqc_opc_resume_sched_elems			= 0x040A,
+ 	ice_aqc_opc_delete_sched_elems			= 0x040F,
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index 9b7b50554952..9c4f408f222d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -84,6 +84,62 @@ ice_sched_find_node_by_teid(struct ice_sched_node *start_node, u32 teid)
+ 	return NULL;
+ }
+ 
++/**
++ * ice_aq_query_sched_elems - query scheduler elements
++ * @hw: pointer to the hw struct
++ * @elems_req: number of elements to query
++ * @buf: pointer to buffer
++ * @buf_size: buffer size in bytes
++ * @elems_ret: returns total number of elements returned
++ * @cd: pointer to command details structure or NULL
++ *
++ * Query scheduling elements (0x0404)
++ */
++static enum ice_status
++ice_aq_query_sched_elems(struct ice_hw *hw, u16 elems_req,
++			 struct ice_aqc_get_elem *buf, u16 buf_size,
++			 u16 *elems_ret, struct ice_sq_cd *cd)
++{
++	struct ice_aqc_get_cfg_elem *cmd;
++	struct ice_aq_desc desc;
++	enum ice_status status;
++
++	cmd = &desc.params.get_update_elem;
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_sched_elems);
++	cmd->num_elem_req = cpu_to_le16(elems_req);
++	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
++	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
++	if (!status && elems_ret)
++		*elems_ret = le16_to_cpu(cmd->num_elem_resp);
++
++	return status;
++}
++
++/**
++ * ice_sched_query_elem - query element information from hw
++ * @hw: pointer to the hw struct
++ * @node_teid: node teid to be queried
++ * @buf: buffer to element information
++ *
++ * This function queries HW element information
++ */
++static enum ice_status
++ice_sched_query_elem(struct ice_hw *hw, u32 node_teid,
++		     struct ice_aqc_get_elem *buf)
++{
++	u16 buf_size, num_elem_ret = 0;
++	enum ice_status status;
++
++	buf_size = sizeof(*buf);
++	memset(buf, 0, buf_size);
++	buf->generic[0].node_teid = cpu_to_le32(node_teid);
++	status = ice_aq_query_sched_elems(hw, 1, buf, buf_size, &num_elem_ret,
++					  NULL);
++	if (status || num_elem_ret != 1)
++		ice_debug(hw, ICE_DBG_SCHED, "query element failed\n");
++	return status;
++}
++
+ /**
+  * ice_sched_add_node - Insert the Tx scheduler node in SW DB
+  * @pi: port information structure
+@@ -97,7 +153,9 @@ ice_sched_add_node(struct ice_port_info *pi, u8 layer,
+ 		   struct ice_aqc_txsched_elem_data *info)
+ {
+ 	struct ice_sched_node *parent;
++	struct ice_aqc_get_elem elem;
+ 	struct ice_sched_node *node;
++	enum ice_status status;
+ 	struct ice_hw *hw;
+ 
+ 	if (!pi)
+@@ -115,6 +173,13 @@ ice_sched_add_node(struct ice_port_info *pi, u8 layer,
+ 		return ICE_ERR_PARAM;
+ 	}
+ 
++	/* query the current node information from FW  before additing it
++	 * to the SW DB
++	 */
++	status = ice_sched_query_elem(hw, le32_to_cpu(info->node_teid), &elem);
++	if (status)
++		return status;
++
+ 	node = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*node), GFP_KERNEL);
+ 	if (!node)
+ 		return ICE_ERR_NO_MEMORY;
+@@ -133,7 +198,7 @@ ice_sched_add_node(struct ice_port_info *pi, u8 layer,
+ 	node->parent = parent;
+ 	node->tx_sched_layer = layer;
+ 	parent->children[parent->num_children++] = node;
+-	memcpy(&node->info, info, sizeof(*info));
++	memcpy(&node->info, &elem.generic[0], sizeof(node->info));
+ 	return 0;
+ }
+ 
 -- 
 2.14.3
 
