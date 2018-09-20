@@ -1,285 +1,82 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Sep 2018 17:43:05 -0700
-Subject: [Intel-wired-lan] [PATCH v2 13/16] ice: Add more flexibility on how
- we assign an ITR index
+Date: Wed, 19 Sep 2018 17:43:04 -0700
+Subject: [Intel-wired-lan] [PATCH v2 12/16] ice: Fix potential null pointer
+ issues
 In-Reply-To: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
 References: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20180920004308.13772-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20180920004308.13772-13-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Dave Ertman <david.m.ertman@intel.com>
 
-This issue came about when looking at the VF function
-ice_vc_cfg_irq_map_msg. Currently we are assigning the itr_setting value
-to the itr_idx received from the AVF driver, which is not correct and is
-not used for the VF flow anyway. Currently the only way we set the ITR
-index for both the PF and VF driver is by hardcoding ICE_TX_ITR or
-ICE_RX_ITR for the ITR index on each q_vector.
+Add checks in the filter handling flow to avoid dereferencing
+NULL pointers.
 
-To fix this, add the member itr_idx in struct ice_ring_container. Thisi
-can then be used to dynamically program the correct ITR index. This change
-also affected the PF driver so make the necessary changes there as well.
-
-Also, removed the itr_setting member in struct ice_ring because it is not
-being used meaningfully and is going to be removed in a future patch that
-includes dynamic itr.
-
-On another note, this will be useful moving forward if we decide to split
-rx/tx rings on different q_vectors instead of sharing them as queue pairs.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> minor cleanup for upstream submission]
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c         | 73 ++++++++++++++----------
- drivers/net/ethernet/intel/ice/ice_txrx.h        | 13 ++---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 20 ++++---
- 3 files changed, 59 insertions(+), 47 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 0dbf3245a9d9..5315a10c6849 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1203,7 +1203,6 @@ static int ice_vsi_alloc_rings(struct ice_vsi *vsi)
- 		ring->vsi = vsi;
- 		ring->dev = &pf->pdev->dev;
- 		ring->count = vsi->num_desc;
--		ring->itr_setting = ICE_DFLT_TX_ITR;
- 		vsi->tx_rings[i] = ring;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index c6d673bd5eaa..2a3d4a72ab3c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -2010,12 +2010,12 @@ ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_handle, bool set, u8 direction)
+ enum ice_status
+ ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
+ {
+-	struct ice_fltr_list_entry *list_itr;
++	struct ice_fltr_list_entry *list_itr, *tmp;
  
-@@ -1223,7 +1222,6 @@ static int ice_vsi_alloc_rings(struct ice_vsi *vsi)
- 		ring->netdev = vsi->netdev;
- 		ring->dev = &pf->pdev->dev;
- 		ring->count = vsi->num_desc;
--		ring->itr_setting = ICE_DFLT_RX_ITR;
- 		vsi->rx_rings[i] = ring;
- 	}
+ 	if (!m_list)
+ 		return ICE_ERR_PARAM;
  
-@@ -1260,6 +1258,7 @@ static void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
- 		tx_rings_per_v = DIV_ROUND_UP(tx_rings_rem, q_vectors - v_id);
- 		q_vector->num_ring_tx = tx_rings_per_v;
- 		q_vector->tx.ring = NULL;
-+		q_vector->tx.itr_idx = ICE_TX_ITR;
- 		q_base = vsi->num_txq - tx_rings_rem;
+-	list_for_each_entry(list_itr, m_list, list_entry) {
++	list_for_each_entry_safe(list_itr, tmp, m_list, list_entry) {
+ 		enum ice_sw_lkup_type l_type = list_itr->fltr_info.lkup_type;
  
- 		for (q_id = q_base; q_id < (q_base + tx_rings_per_v); q_id++) {
-@@ -1275,6 +1274,7 @@ static void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
- 		rx_rings_per_v = DIV_ROUND_UP(rx_rings_rem, q_vectors - v_id);
- 		q_vector->num_ring_rx = rx_rings_per_v;
- 		q_vector->rx.ring = NULL;
-+		q_vector->rx.itr_idx = ICE_RX_ITR;
- 		q_base = vsi->num_rxq - rx_rings_rem;
+ 		if (l_type != ICE_SW_LKUP_MAC)
+@@ -2037,12 +2037,12 @@ ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
+ enum ice_status
+ ice_remove_vlan(struct ice_hw *hw, struct list_head *v_list)
+ {
+-	struct ice_fltr_list_entry *v_list_itr;
++	struct ice_fltr_list_entry *v_list_itr, *tmp;
  
- 		for (q_id = q_base; q_id < (q_base + rx_rings_per_v); q_id++) {
-@@ -1682,6 +1682,37 @@ static u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran)
- 	return 0;
- }
+ 	if (!v_list || !hw)
+ 		return ICE_ERR_PARAM;
  
-+/**
-+ * ice_cfg_itr - configure the initial interrupt throttle values
-+ * @hw: pointer to the hw structure
-+ * @q_vector: interrupt vector that's being configured
-+ * @vector: hw vector index to apply the interrupt throttling to
-+ *
-+ * Configure interrupt throttling values for the ring containers that are
-+ * associated with the interrupt vector passed in.
-+ */
-+static void
-+ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector, u16 vector)
-+{
-+	u8 itr_gran = hw->itr_gran;
-+
-+	if (q_vector->num_ring_rx) {
-+		struct ice_ring_container *rc = &q_vector->rx;
-+
-+		rc->itr = ITR_TO_REG(ICE_DFLT_RX_ITR, itr_gran);
-+		rc->latency_range = ICE_LOW_LATENCY;
-+		wr32(hw, GLINT_ITR(rc->itr_idx, vector), rc->itr);
-+	}
-+
-+	if (q_vector->num_ring_tx) {
-+		struct ice_ring_container *rc = &q_vector->tx;
-+
-+		rc->itr = ITR_TO_REG(ICE_DFLT_TX_ITR, itr_gran);
-+		rc->latency_range = ICE_LOW_LATENCY;
-+		wr32(hw, GLINT_ITR(rc->itr_idx, vector), rc->itr);
-+	}
-+}
-+
- /**
-  * ice_vsi_cfg_msix - MSIX mode Interrupt Config in the HW
-  * @vsi: the VSI being configured
-@@ -1692,31 +1723,13 @@ void ice_vsi_cfg_msix(struct ice_vsi *vsi)
- 	u16 vector = vsi->hw_base_vector;
- 	struct ice_hw *hw = &pf->hw;
- 	u32 txq = 0, rxq = 0;
--	int i, q, itr;
--	u8 itr_gran;
-+	int i, q;
+-	list_for_each_entry(v_list_itr, v_list, list_entry) {
++	list_for_each_entry_safe(v_list_itr, tmp, v_list, list_entry) {
+ 		enum ice_sw_lkup_type l_type = v_list_itr->fltr_info.lkup_type;
  
- 	for (i = 0; i < vsi->num_q_vectors; i++, vector++) {
- 		struct ice_q_vector *q_vector = vsi->q_vectors[i];
+ 		if (l_type != ICE_SW_LKUP_VLAN)
+@@ -2142,7 +2142,7 @@ ice_add_to_vsi_fltr_list(struct ice_hw *hw, u16 vsi_handle,
+ 		struct ice_fltr_info *fi;
  
--		itr_gran = hw->itr_gran;
-+		ice_cfg_itr(hw, q_vector, vector);
+ 		fi = &fm_entry->fltr_info;
+-		if (!ice_vsi_uses_fltr(fm_entry, vsi_handle))
++		if (!fi || !ice_vsi_uses_fltr(fm_entry, vsi_handle))
+ 			continue;
  
--		q_vector->intrl = ICE_DFLT_INTRL;
--
--		if (q_vector->num_ring_rx) {
--			q_vector->rx.itr =
--				ITR_TO_REG(vsi->rx_rings[rxq]->itr_setting,
--					   itr_gran);
--			q_vector->rx.latency_range = ICE_LOW_LATENCY;
--		}
--
--		if (q_vector->num_ring_tx) {
--			q_vector->tx.itr =
--				ITR_TO_REG(vsi->tx_rings[txq]->itr_setting,
--					   itr_gran);
--			q_vector->tx.latency_range = ICE_LOW_LATENCY;
--		}
--		wr32(hw, GLINT_ITR(ICE_RX_ITR, vector), q_vector->rx.itr);
--		wr32(hw, GLINT_ITR(ICE_TX_ITR, vector), q_vector->tx.itr);
- 		wr32(hw, GLINT_RATE(vector),
- 		     ice_intrl_usec_to_reg(q_vector->intrl, hw->intrl_gran));
- 
-@@ -1732,32 +1745,32 @@ void ice_vsi_cfg_msix(struct ice_vsi *vsi)
- 		 * tracked for this PF.
- 		 */
- 		for (q = 0; q < q_vector->num_ring_tx; q++) {
-+			int itr_idx = q_vector->tx.itr_idx;
- 			u32 val;
- 
--			itr = ICE_ITR_NONE;
- 			if (vsi->type == ICE_VSI_VF)
- 				val = QINT_TQCTL_CAUSE_ENA_M |
--				      (itr << QINT_TQCTL_ITR_INDX_S)  |
-+				      (itr_idx << QINT_TQCTL_ITR_INDX_S)  |
- 				      ((i + 1) << QINT_TQCTL_MSIX_INDX_S);
- 			else
- 				val = QINT_TQCTL_CAUSE_ENA_M |
--				      (itr << QINT_TQCTL_ITR_INDX_S)  |
-+				      (itr_idx << QINT_TQCTL_ITR_INDX_S)  |
- 				      (vector << QINT_TQCTL_MSIX_INDX_S);
- 			wr32(hw, QINT_TQCTL(vsi->txq_map[txq]), val);
- 			txq++;
+ 		status = ice_add_entry_to_vsi_fltr_list(hw, vsi_handle,
+@@ -2259,7 +2259,8 @@ ice_replay_vsi_fltr(struct ice_hw *hw, u16 vsi_handle, u8 recp_id,
+ 				goto end;
+ 			continue;
  		}
- 
- 		for (q = 0; q < q_vector->num_ring_rx; q++) {
-+			int itr_idx = q_vector->rx.itr_idx;
- 			u32 val;
- 
--			itr = ICE_ITR_NONE;
- 			if (vsi->type == ICE_VSI_VF)
- 				val = QINT_RQCTL_CAUSE_ENA_M |
--				      (itr << QINT_RQCTL_ITR_INDX_S)  |
-+				      (itr_idx << QINT_RQCTL_ITR_INDX_S)  |
- 				      ((i + 1) << QINT_RQCTL_MSIX_INDX_S);
- 			else
- 				val = QINT_RQCTL_CAUSE_ENA_M |
--				      (itr << QINT_RQCTL_ITR_INDX_S)  |
-+				      (itr_idx << QINT_RQCTL_ITR_INDX_S)  |
- 				      (vector << QINT_RQCTL_MSIX_INDX_S);
- 			wr32(hw, QINT_RQCTL(vsi->rxq_map[rxq]), val);
- 			rxq++;
-@@ -2156,8 +2169,8 @@ static void ice_vsi_release_msix(struct ice_vsi *vsi)
- 	for (i = 0; i < vsi->num_q_vectors; i++, vector++) {
- 		struct ice_q_vector *q_vector = vsi->q_vectors[i];
- 
--		wr32(hw, GLINT_ITR(ICE_RX_ITR, vector), 0);
--		wr32(hw, GLINT_ITR(ICE_TX_ITR, vector), 0);
-+		wr32(hw, GLINT_ITR(ICE_IDX_ITR0, vector), 0);
-+		wr32(hw, GLINT_ITR(ICE_IDX_ITR1, vector), 0);
- 		for (q = 0; q < q_vector->num_ring_tx; q++) {
- 			wr32(hw, QINT_TQCTL(vsi->txq_map[txq]), 0);
- 			txq++;
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index a9b92974e041..1d0f58bd389b 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -105,8 +105,9 @@ enum ice_rx_dtype {
- #define ICE_TX_ITR	ICE_IDX_ITR1
- #define ICE_ITR_DYNAMIC	0x8000  /* use top bit as a flag */
- #define ICE_ITR_8K	125
--#define ICE_DFLT_TX_ITR	ICE_ITR_8K
--#define ICE_DFLT_RX_ITR	ICE_ITR_8K
-+#define ICE_ITR_20K	50
-+#define ICE_DFLT_TX_ITR	ICE_ITR_20K
-+#define ICE_DFLT_RX_ITR	ICE_ITR_20K
- /* apply ITR granularity translation to program the register. itr_gran is either
-  * 2 or 4 usecs so we need to divide by 2 first then shift by that value
-  */
-@@ -135,13 +136,6 @@ struct ice_ring {
- 	u16 q_index;			/* Queue number of ring */
- 	u32 txq_teid;			/* Added Tx queue TEID */
- 
--	/* high bit set means dynamic, use accessor routines to read/write.
--	 * hardware supports 4us/2us resolution for the ITR registers.
--	 * these values always store the USER setting, and must be converted
--	 * before programming to a register.
--	 */
--	u16 itr_setting;
--
- 	u16 count;			/* Number of descriptors */
- 	u16 reg_idx;			/* HW register index of the ring */
- 
-@@ -178,6 +172,7 @@ struct ice_ring_container {
- 	unsigned int total_bytes;	/* total bytes processed this int */
- 	unsigned int total_pkts;	/* total packets processed this int */
- 	enum ice_latency_range latency_range;
-+	int itr_idx;	/* index in the interrupt vector */
- 	u16 itr;
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 5d14b9f2682a..cd72a6482f53 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1678,26 +1678,30 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf *vf, u8 *msg)
- 		/* lookout for the invalid queue index */
- 		qmap = map->rxq_map;
- 		for_each_set_bit(vsi_q_id, &qmap, ICE_MAX_BASE_QS_PER_VF) {
-+			struct ice_q_vector *q_vector;
-+
- 			if (!ice_vc_isvalid_q_id(vf, vsi_id, vsi_q_id)) {
- 				aq_ret = ICE_ERR_PARAM;
- 				goto error_param;
- 			}
--			vsi->q_vectors[i]->num_ring_rx++;
--			vsi->rx_rings[vsi_q_id]->itr_setting =
--				map->rxitr_idx;
--			vsi->rx_rings[vsi_q_id]->q_vector = vsi->q_vectors[i];
-+			q_vector = vsi->q_vectors[i];
-+			q_vector->num_ring_rx++;
-+			q_vector->rx.itr_idx = map->rxitr_idx;
-+			vsi->rx_rings[vsi_q_id]->q_vector = q_vector;
- 		}
- 
- 		qmap = map->txq_map;
- 		for_each_set_bit(vsi_q_id, &qmap, ICE_MAX_BASE_QS_PER_VF) {
-+			struct ice_q_vector *q_vector;
-+
- 			if (!ice_vc_isvalid_q_id(vf, vsi_id, vsi_q_id)) {
- 				aq_ret = ICE_ERR_PARAM;
- 				goto error_param;
- 			}
--			vsi->q_vectors[i]->num_ring_tx++;
--			vsi->tx_rings[vsi_q_id]->itr_setting =
--				map->txitr_idx;
--			vsi->tx_rings[vsi_q_id]->q_vector = vsi->q_vectors[i];
-+			q_vector = vsi->q_vectors[i];
-+			q_vector->num_ring_tx++;
-+			q_vector->tx.itr_idx = map->txitr_idx;
-+			vsi->tx_rings[vsi_q_id]->q_vector = q_vector;
- 		}
- 	}
- 
+-		if (!test_bit(vsi_handle, itr->vsi_list_info->vsi_map))
++		if (!itr->vsi_list_info ||
++		    !test_bit(vsi_handle, itr->vsi_list_info->vsi_map))
+ 			continue;
+ 		/* Clearing it so that the logic can add it back */
+ 		clear_bit(vsi_handle, itr->vsi_list_info->vsi_map);
 -- 
 2.14.3
 
