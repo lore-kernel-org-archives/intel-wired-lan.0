@@ -1,129 +1,254 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 21 Sep 2018 09:35:51 +0200
-Subject: [Intel-wired-lan] [PATCH v2 1/4] i40e: clean zero-copy XDP Tx
- ring on shutdown/reset
-In-Reply-To: <20180907081848.5438-2-bjorn.topel@gmail.com>
-References: <20180907081848.5438-1-bjorn.topel@gmail.com>
- <20180907081848.5438-2-bjorn.topel@gmail.com>
-Message-ID: <CAJ+HfNgYwWo1Cmx81SGSRAPEtVzKvogaWSL17vPuorYpx-U-Lw@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 21 Sep 2018 15:45:25 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 334c8d9f49cdae060538ce7622185c1ae7dc9e67
+Message-ID: <5ba4a195.j3qHAeX1/IGvQIT6%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jeff,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 334c8d9f49cdae060538ce7622185c1ae7dc9e67  ixgbe: check return value of napi_complete_done()
 
-Den fre 7 sep. 2018 kl 10:29 skrev Bj?rn T?pel <bjorn.topel@gmail.com>:
->
-> From: Bj?rn T?pel <bjorn.topel@intel.com>
->
-> When the zero-copy enabled XDP Tx ring is torn down, due to
-> configuration changes, outstandning frames on the hardware descriptor
-> ring are queued on the completion ring.
->
-> The completion ring has a back-pressure mechanism that will guarantee
-> that there is sufficient space on the ring.
->
-> Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 17 +++++++----
->  .../ethernet/intel/i40e/i40e_txrx_common.h    |  2 ++
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 30 +++++++++++++++++++
->  3 files changed, 43 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> index 37bd4e50ccde..7f85d4ba8b54 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> @@ -636,13 +636,18 @@ void i40e_clean_tx_ring(struct i40e_ring *tx_ring)
->         unsigned long bi_size;
->         u16 i;
->
-> -       /* ring already cleared, nothing to do */
-> -       if (!tx_ring->tx_bi)
-> -               return;
-> +       if (ring_is_xdp(tx_ring) && tx_ring->xsk_umem) {
-> +               i40e_xsk_clean_tx_ring(tx_ring);
-> +       } else {
-> +               /* ring already cleared, nothing to do */
-> +               if (!tx_ring->tx_bi)
-> +                       return;
->
-> -       /* Free all the Tx ring sk_buffs */
-> -       for (i = 0; i < tx_ring->count; i++)
-> -               i40e_unmap_and_free_tx_resource(tx_ring, &tx_ring->tx_bi[i]);
-> +               /* Free all the Tx ring sk_buffs */
-> +               for (i = 0; i < tx_ring->count; i++)
-> +                       i40e_unmap_and_free_tx_resource(tx_ring,
-> +                                                       &tx_ring->tx_bi[i]);
-> +       }
->
->         bi_size = sizeof(struct i40e_tx_buffer) * tx_ring->count;
->         memset(tx_ring->tx_bi, 0, bi_size);
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-> index b5afd479a9c5..29c68b29d36f 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-> @@ -87,4 +87,6 @@ static inline void i40e_arm_wb(struct i40e_ring *tx_ring,
->         }
->  }
->
-> +void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring);
-> +
->  #endif /* I40E_TXRX_COMMON_ */
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> index 2ebfc78bbd09..99116277c4d2 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> @@ -830,3 +830,33 @@ int i40e_xsk_async_xmit(struct net_device *dev, u32 queue_id)
->
->         return 0;
->  }
-> +
-> +/**
-> + * i40e_xsk_clean_xdp_ring - Clean the XDP Tx ring on shutdown
-> + * @xdp_ring: XDP Tx ring
-> + **/
-> +void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring)
-> +{
-> +       u16 ntc = tx_ring->next_to_clean, ntu = tx_ring->next_to_use;
-> +       struct xdp_umem *umem = tx_ring->xsk_umem;
-> +       struct i40e_tx_buffer *tx_bi;
-> +       u32 xsk_frames = 0;
-> +
-> +       while (ntc != ntu) {
-> +               tx_bi = &tx_ring->tx_bi[ntc];
-> +
-> +               if (tx_bi->xdpf)
-> +                       i40e_clean_xdp_tx_buffer(tx_ring, tx_bi);
-> +               else
-> +                       xsk_frames++;
-> +
-> +               tx_bi->xdpf = NULL;
-> +
-> +               ntc++;
-> +               if (ntc > tx_ring->count)
+elapsed time: 497m
 
-This is an off-by-one error, and should be:
-if (ntc == tx_ring->count)
+configs tested: 230
 
-Can you fix it up, or should I respin the patch?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Thanks!
-Bj?rn
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+arm                  colibri_pxa300_defconfig
+m68k                        mvme147_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-c0-09211329
+arm                  colibri_pxa270_defconfig
+mips                          rb532_defconfig
+x86_64                           allmodconfig
+arm                        mvebu_v7_defconfig
+i386                 randconfig-x010-09200849
+i386                 randconfig-x011-09200849
+i386                 randconfig-x012-09200849
+i386                 randconfig-x013-09200849
+i386                 randconfig-x014-09200849
+i386                 randconfig-x015-09200849
+i386                 randconfig-x016-09200849
+i386                 randconfig-x017-09200849
+i386                 randconfig-x018-09200849
+i386                 randconfig-x019-09200849
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-09200849
+i386                   randconfig-n1-09200849
+i386                   randconfig-n2-09200849
+i386                   randconfig-n3-09200849
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+i386                             allmodconfig
+i386                 randconfig-x006-09200857
+i386                 randconfig-x002-09200857
+i386                 randconfig-x004-09200857
+i386                 randconfig-x008-09200857
+i386                 randconfig-x005-09200857
+i386                 randconfig-x003-09200857
+i386                 randconfig-x000-09200857
+i386                 randconfig-x009-09200857
+i386                 randconfig-x007-09200857
+i386                 randconfig-x001-09200857
+i386                   randconfig-x000-201837
+i386                   randconfig-x001-201837
+i386                   randconfig-x002-201837
+i386                   randconfig-x003-201837
+i386                   randconfig-x004-201837
+i386                   randconfig-x005-201837
+i386                   randconfig-x006-201837
+i386                   randconfig-x007-201837
+i386                   randconfig-x008-201837
+i386                   randconfig-x009-201837
+x86_64               randconfig-x010-09200857
+x86_64               randconfig-x011-09200857
+x86_64               randconfig-x012-09200857
+x86_64               randconfig-x013-09200857
+x86_64               randconfig-x014-09200857
+x86_64               randconfig-x015-09200857
+x86_64               randconfig-x016-09200857
+x86_64               randconfig-x017-09200857
+x86_64               randconfig-x018-09200857
+x86_64               randconfig-x019-09200857
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+x86_64                 randconfig-s0-09211213
+x86_64                 randconfig-s1-09211213
+x86_64                 randconfig-s2-09211213
+x86_64                 randconfig-s0-09211254
+x86_64                 randconfig-s1-09211254
+x86_64                 randconfig-s2-09211254
+x86_64                 randconfig-s0-09211359
+x86_64                 randconfig-s1-09211359
+x86_64                 randconfig-s2-09211359
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+arm                         assabet_defconfig
+mips                          ath25_defconfig
+powerpc                 mpc837x_mds_defconfig
+sh                           se7619_defconfig
+parisc                      default_defconfig
+powerpc                     redwood_defconfig
+sh                          rsk7201_defconfig
+xtensa                            allnoconfig
+arm                         cm_x2xx_defconfig
+arm                          nuc950_defconfig
+parisc                generic-32bit_defconfig
+powerpc                 mpc8315_rdb_defconfig
+m68k                          sun3x_defconfig
+mips                     decstation_defconfig
+mips                      loongson3_defconfig
+sparc64                          allyesconfig
+x86_64                 randconfig-x019-201837
+x86_64                 randconfig-x013-201837
+x86_64                 randconfig-x012-201837
+x86_64                 randconfig-x018-201837
+x86_64                 randconfig-x017-201837
+x86_64                 randconfig-x010-201837
+x86_64                 randconfig-x014-201837
+x86_64                 randconfig-x015-201837
+x86_64                 randconfig-x011-201837
+x86_64                 randconfig-x016-201837
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s0-201837
+i386                     randconfig-s3-201837
+i386                     randconfig-s2-201837
+i386                     randconfig-s1-201837
+x86_64                 randconfig-s3-09211203
+x86_64                 randconfig-s4-09211203
+x86_64                 randconfig-s5-09211203
+x86_64                 randconfig-s3-09211258
+x86_64                 randconfig-s4-09211258
+x86_64                 randconfig-s5-09211258
+x86_64                 randconfig-s3-09211337
+x86_64                 randconfig-s4-09211337
+x86_64                 randconfig-s5-09211337
+x86_64                 randconfig-s3-09211430
+x86_64                 randconfig-s4-09211430
+x86_64                 randconfig-s5-09211430
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+sh                          r7785rp_defconfig
+um                               allmodconfig
+m68k                         amcore_defconfig
+mips                       capcella_defconfig
+arm                            hisi_defconfig
+sh                           se7724_defconfig
+arm                            mps2_defconfig
+parisc                generic-64bit_defconfig
+arm                         cm_x300_defconfig
+microblaze                        allnoconfig
+ia64                      gensparse_defconfig
+powerpc                      ppc44x_defconfig
+arm                          badge4_defconfig
+arm                       netwinder_defconfig
+i386                             allyesconfig
+x86_64                 randconfig-u0-09210917
+x86_64                 randconfig-u0-09211229
+x86_64                 randconfig-u0-09211249
+x86_64                 randconfig-u0-09211309
+x86_64                 randconfig-u0-09211331
+powerpc                    adder875_defconfig
+powerpc                      pasemi_defconfig
+m68k                              allnoconfig
+sh                           se7751_defconfig
+s390                             allyesconfig
+sh                          rsk7264_defconfig
+x86_64                randconfig-ne0-09211412
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                   randconfig-x070-201837
+i386                   randconfig-x071-201837
+i386                   randconfig-x072-201837
+i386                   randconfig-x073-201837
+i386                   randconfig-x074-201837
+i386                   randconfig-x075-201837
+i386                   randconfig-x076-201837
+i386                   randconfig-x077-201837
+i386                   randconfig-x078-201837
+i386                   randconfig-x079-201837
+mips                 pnx8335_stb225_defconfig
+powerpc                     asp8347_defconfig
+riscv                               defconfig
+x86_64                   randconfig-g0-201837
+x86_64                   randconfig-g1-201837
+x86_64                   randconfig-g2-201837
+x86_64                   randconfig-g3-201837
+i386                  randconfig-sb0-09211318
+i386                  randconfig-sb0-09211428
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-x009-201837
+x86_64                 randconfig-x000-201837
+x86_64                 randconfig-x001-201837
+x86_64                 randconfig-x004-201837
+x86_64                 randconfig-x003-201837
+x86_64                 randconfig-x008-201837
+x86_64                 randconfig-x007-201837
+x86_64                 randconfig-x006-201837
+x86_64                 randconfig-x002-201837
+x86_64                 randconfig-x005-201837
+arm                            dove_defconfig
+powerpc                     mpc5200_defconfig
+x86_64                 randconfig-r0-09211532
 
-
-> +                       ntc = 0;
-> +       }
-> +
-> +       if (xsk_frames)
-> +               xsk_umem_complete_tx(umem, xsk_frames);
-> +}
-> --
-> 2.17.1
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
