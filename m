@@ -1,254 +1,64 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 21 Sep 2018 15:45:25 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 334c8d9f49cdae060538ce7622185c1ae7dc9e67
-Message-ID: <5ba4a195.j3qHAeX1/IGvQIT6%lkp@intel.com>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Fri, 21 Sep 2018 06:33:18 -0700
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: check return value of
+ napi_complete_done()
+In-Reply-To: <ACD41205-3FDD-4FD2-BF36-897DD98D63EC@fb.com>
+References: <20180920190113.490005-1-songliubraving@fb.com>
+ <c1251d5d-4b18-a1de-acd2-6de829b7c7ac@gmail.com>
+ <2ca0e823642d232092017f66e8151652e22e74a1.camel@intel.com>
+ <0DAF1AF9-E98D-4D0F-BD68-F5936A0312C6@fb.com>
+ <ee9b9a55-c967-cec3-7df1-79f84b06154c@gmail.com>
+ <E4A7BD0D-B091-4FBD-94A9-F0104729DCF6@fb.com>
+ <028b4cea-0e3f-fab5-7a74-cf003bbd1134@gmail.com>
+ <ACD41205-3FDD-4FD2-BF36-897DD98D63EC@fb.com>
+Message-ID: <74672b30-1627-efcd-383f-adda6cdf486f@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 334c8d9f49cdae060538ce7622185c1ae7dc9e67  ixgbe: check return value of napi_complete_done()
 
-elapsed time: 497m
 
-configs tested: 230
+On 09/21/2018 12:17 AM, Song Liu wrote:
+> 
+> 
+>> On Sep 20, 2018, at 4:49 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
+>>
+>>
+>>
+>> On 09/20/2018 04:43 PM, Song Liu wrote:
+>>>
+>>
+>>> I tried to totally skip ndo_poll_controller() here. It did avoid hitting
+>>> the issue. However, netpoll will drop (fail to send) more packets. 
+>>>
+>>
+>> Why is it failing ?
+>>
+>> If you are under high memory pressure, then maybe if you absolutely want memory to send
+>> netpoll packets, you want to grab all NAPI contexts as a way to prevent other cpus 
+>> from feeding incoming packets to the host and add more memory pressure ;)
+>>
+> 
+> I did the test with Eric's latest patch (and disable ndo_poll_controller 
+> in driver). The result didn't show significant increase in drop packets. 
+> I guess packet drops in my earlier test was caused by some other changes
+> I mixed there. 
+> 
+> So I think this patch does fix the issue. Thanks Eric!
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Great, this is awesome.
 
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-arm                  colibri_pxa300_defconfig
-m68k                        mvme147_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c0-09211329
-arm                  colibri_pxa270_defconfig
-mips                          rb532_defconfig
-x86_64                           allmodconfig
-arm                        mvebu_v7_defconfig
-i386                 randconfig-x010-09200849
-i386                 randconfig-x011-09200849
-i386                 randconfig-x012-09200849
-i386                 randconfig-x013-09200849
-i386                 randconfig-x014-09200849
-i386                 randconfig-x015-09200849
-i386                 randconfig-x016-09200849
-i386                 randconfig-x017-09200849
-i386                 randconfig-x018-09200849
-i386                 randconfig-x019-09200849
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-09200849
-i386                   randconfig-n1-09200849
-i386                   randconfig-n2-09200849
-i386                   randconfig-n3-09200849
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-i386                             allmodconfig
-i386                 randconfig-x006-09200857
-i386                 randconfig-x002-09200857
-i386                 randconfig-x004-09200857
-i386                 randconfig-x008-09200857
-i386                 randconfig-x005-09200857
-i386                 randconfig-x003-09200857
-i386                 randconfig-x000-09200857
-i386                 randconfig-x009-09200857
-i386                 randconfig-x007-09200857
-i386                 randconfig-x001-09200857
-i386                   randconfig-x000-201837
-i386                   randconfig-x001-201837
-i386                   randconfig-x002-201837
-i386                   randconfig-x003-201837
-i386                   randconfig-x004-201837
-i386                   randconfig-x005-201837
-i386                   randconfig-x006-201837
-i386                   randconfig-x007-201837
-i386                   randconfig-x008-201837
-i386                   randconfig-x009-201837
-x86_64               randconfig-x010-09200857
-x86_64               randconfig-x011-09200857
-x86_64               randconfig-x012-09200857
-x86_64               randconfig-x013-09200857
-x86_64               randconfig-x014-09200857
-x86_64               randconfig-x015-09200857
-x86_64               randconfig-x016-09200857
-x86_64               randconfig-x017-09200857
-x86_64               randconfig-x018-09200857
-x86_64               randconfig-x019-09200857
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                 randconfig-s0-09211213
-x86_64                 randconfig-s1-09211213
-x86_64                 randconfig-s2-09211213
-x86_64                 randconfig-s0-09211254
-x86_64                 randconfig-s1-09211254
-x86_64                 randconfig-s2-09211254
-x86_64                 randconfig-s0-09211359
-x86_64                 randconfig-s1-09211359
-x86_64                 randconfig-s2-09211359
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-arm                         assabet_defconfig
-mips                          ath25_defconfig
-powerpc                 mpc837x_mds_defconfig
-sh                           se7619_defconfig
-parisc                      default_defconfig
-powerpc                     redwood_defconfig
-sh                          rsk7201_defconfig
-xtensa                            allnoconfig
-arm                         cm_x2xx_defconfig
-arm                          nuc950_defconfig
-parisc                generic-32bit_defconfig
-powerpc                 mpc8315_rdb_defconfig
-m68k                          sun3x_defconfig
-mips                     decstation_defconfig
-mips                      loongson3_defconfig
-sparc64                          allyesconfig
-x86_64                 randconfig-x019-201837
-x86_64                 randconfig-x013-201837
-x86_64                 randconfig-x012-201837
-x86_64                 randconfig-x018-201837
-x86_64                 randconfig-x017-201837
-x86_64                 randconfig-x010-201837
-x86_64                 randconfig-x014-201837
-x86_64                 randconfig-x015-201837
-x86_64                 randconfig-x011-201837
-x86_64                 randconfig-x016-201837
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201837
-i386                     randconfig-s3-201837
-i386                     randconfig-s2-201837
-i386                     randconfig-s1-201837
-x86_64                 randconfig-s3-09211203
-x86_64                 randconfig-s4-09211203
-x86_64                 randconfig-s5-09211203
-x86_64                 randconfig-s3-09211258
-x86_64                 randconfig-s4-09211258
-x86_64                 randconfig-s5-09211258
-x86_64                 randconfig-s3-09211337
-x86_64                 randconfig-s4-09211337
-x86_64                 randconfig-s5-09211337
-x86_64                 randconfig-s3-09211430
-x86_64                 randconfig-s4-09211430
-x86_64                 randconfig-s5-09211430
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-sh                          r7785rp_defconfig
-um                               allmodconfig
-m68k                         amcore_defconfig
-mips                       capcella_defconfig
-arm                            hisi_defconfig
-sh                           se7724_defconfig
-arm                            mps2_defconfig
-parisc                generic-64bit_defconfig
-arm                         cm_x300_defconfig
-microblaze                        allnoconfig
-ia64                      gensparse_defconfig
-powerpc                      ppc44x_defconfig
-arm                          badge4_defconfig
-arm                       netwinder_defconfig
-i386                             allyesconfig
-x86_64                 randconfig-u0-09210917
-x86_64                 randconfig-u0-09211229
-x86_64                 randconfig-u0-09211249
-x86_64                 randconfig-u0-09211309
-x86_64                 randconfig-u0-09211331
-powerpc                    adder875_defconfig
-powerpc                      pasemi_defconfig
-m68k                              allnoconfig
-sh                           se7751_defconfig
-s390                             allyesconfig
-sh                          rsk7264_defconfig
-x86_64                randconfig-ne0-09211412
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                   randconfig-x070-201837
-i386                   randconfig-x071-201837
-i386                   randconfig-x072-201837
-i386                   randconfig-x073-201837
-i386                   randconfig-x074-201837
-i386                   randconfig-x075-201837
-i386                   randconfig-x076-201837
-i386                   randconfig-x077-201837
-i386                   randconfig-x078-201837
-i386                   randconfig-x079-201837
-mips                 pnx8335_stb225_defconfig
-powerpc                     asp8347_defconfig
-riscv                               defconfig
-x86_64                   randconfig-g0-201837
-x86_64                   randconfig-g1-201837
-x86_64                   randconfig-g2-201837
-x86_64                   randconfig-g3-201837
-i386                  randconfig-sb0-09211318
-i386                  randconfig-sb0-09211428
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-x009-201837
-x86_64                 randconfig-x000-201837
-x86_64                 randconfig-x001-201837
-x86_64                 randconfig-x004-201837
-x86_64                 randconfig-x003-201837
-x86_64                 randconfig-x008-201837
-x86_64                 randconfig-x007-201837
-x86_64                 randconfig-x006-201837
-x86_64                 randconfig-x002-201837
-x86_64                 randconfig-x005-201837
-arm                            dove_defconfig
-powerpc                     mpc5200_defconfig
-x86_64                 randconfig-r0-09211532
+I will prepare a patch series for net tree.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+The core infrastructure is just better at being able to drain TX completions
+without risking stealing the NAPI context forever.
+
+
+> 
+> For ixgbe, I think we need to check napi_complete_done() return value
+> anyway. Otherwise, the driver will enable IRQ in polling mode.  
+> 
+
+Sure, let's prepare such optimizations for net-next.
