@@ -1,48 +1,66 @@
-From: Nathan Chancellor <natechancellor@gmail.com>
-Date: Fri, 21 Sep 2018 03:13:59 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: Use proper enum in
- i40e_ndo_set_vf_link_state
-Message-ID: <20180921101359.23911-1-natechancellor@gmail.com>
+From: Alexei Starovoitov <ast@fb.com>
+Date: Fri, 21 Sep 2018 07:55:06 -0700
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: check return value of
+ napi_complete_done()
+In-Reply-To: <74672b30-1627-efcd-383f-adda6cdf486f@gmail.com>
+References: <20180920190113.490005-1-songliubraving@fb.com>
+ <c1251d5d-4b18-a1de-acd2-6de829b7c7ac@gmail.com>
+ <2ca0e823642d232092017f66e8151652e22e74a1.camel@intel.com>
+ <0DAF1AF9-E98D-4D0F-BD68-F5936A0312C6@fb.com>
+ <ee9b9a55-c967-cec3-7df1-79f84b06154c@gmail.com>
+ <E4A7BD0D-B091-4FBD-94A9-F0104729DCF6@fb.com>
+ <028b4cea-0e3f-fab5-7a74-cf003bbd1134@gmail.com>
+ <ACD41205-3FDD-4FD2-BF36-897DD98D63EC@fb.com>
+ <74672b30-1627-efcd-383f-adda6cdf486f@gmail.com>
+Message-ID: <71fd1305-17ad-2bdc-c123-9bc0ab37b0a4@fb.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Clang warns when one enumerated type is converted implicitly to another.
+On 9/21/18 6:33 AM, Eric Dumazet wrote:
+>
+>
+> On 09/21/2018 12:17 AM, Song Liu wrote:
+>>
+>>
+>>> On Sep 20, 2018, at 4:49 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
+>>>
+>>>
+>>>
+>>> On 09/20/2018 04:43 PM, Song Liu wrote:
+>>>>
+>>>
+>>>> I tried to totally skip ndo_poll_controller() here. It did avoid hitting
+>>>> the issue. However, netpoll will drop (fail to send) more packets.
+>>>>
+>>>
+>>> Why is it failing ?
+>>>
+>>> If you are under high memory pressure, then maybe if you absolutely want memory to send
+>>> netpoll packets, you want to grab all NAPI contexts as a way to prevent other cpus
+>>> from feeding incoming packets to the host and add more memory pressure ;)
+>>>
+>>
+>> I did the test with Eric's latest patch (and disable ndo_poll_controller
+>> in driver). The result didn't show significant increase in drop packets.
+>> I guess packet drops in my earlier test was caused by some other changes
+>> I mixed there.
+>>
+>> So I think this patch does fix the issue. Thanks Eric!
+>
+> Great, this is awesome.
+>
+> I will prepare a patch series for net tree.
+>
+> The core infrastructure is just better at being able to drain TX completions
+> without risking stealing the NAPI context forever.
 
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:4214:42: warning:
-implicit conversion from enumeration type 'enum i40e_aq_link_speed' to
-different enumeration type 'enum virtchnl_link_speed'
-      [-Wenum-conversion]
-                pfe.event_data.link_event.link_speed = I40E_LINK_SPEED_40GB;
-                                                     ~ ^~~~~~~~~~~~~~~~~~~~
-1 warning generated.
-
-Use the proper enum from virtchnl_link_speed, which has the same value
-as I40E_LINK_SPEED_40GB, VIRTCHNL_LINK_SPEED_40GB. This appears to be
-missed by commit ff3f4cc267f6 ("virtchnl: finish conversion to virtchnl
-interface").
-
-Link: https://github.com/ClangBuiltLinux/linux/issues/81
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 3e707c7e6782..916a98e6c0e6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -4211,7 +4211,7 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
- 		vf->link_forced = true;
- 		vf->link_up = true;
- 		pfe.event_data.link_event.link_status = true;
--		pfe.event_data.link_event.link_speed = I40E_LINK_SPEED_40GB;
-+		pfe.event_data.link_event.link_speed = VIRTCHNL_LINK_SPEED_40GB;
- 		break;
- 	case IFLA_VF_LINK_STATE_DISABLE:
- 		vf->link_forced = true;
--- 
-2.19.0
+should we remove ndo_poll_controller then?
+My understanding that the patch helps by not letting
+drivers do napi_schedule() for all queues into this_cpu, right?
+But most of the drivers do exactly that in their ndo_poll_controller
+implementations. Means most of the drivers will experience
+this nasty behavior.
 
