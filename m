@@ -1,43 +1,55 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Sun, 16 Sep 2018 13:04:07 -0700
-Subject: [Intel-wired-lan] using XPS on Intel i40e
-In-Reply-To: <CAGv3bDeHUA6vWen50QheqTygyDpLgTzYKLtd82amPZzK-anh_Q@mail.gmail.com>
-References: <CAGv3bDeHUA6vWen50QheqTygyDpLgTzYKLtd82amPZzK-anh_Q@mail.gmail.com>
-Message-ID: <CAKgT0Ufnpxp0MDXkiZ9T1jafYj_ebiTY49JOGhFwC4D+uy3YOw@mail.gmail.com>
+From: Radoslaw Tyl <radoslawx.tyl@intel.com>
+Date: Mon, 24 Sep 2018 09:24:20 +0200
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix crash with VFs and flow
+ director on interface flap
+Message-ID: <1537773860-42997-1-git-send-email-radoslawx.tyl@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Sep 16, 2018 at 12:55 AM Kushal Gautam <kushal.gautam@gmail.com> wrote:
->
-> Hi:
->
-> I am using the Intel i40e driver from kernel source tree of Kernel 4.15.12
-> My NIC is Intel X710.
->
-> I am composing and sending a packet from my custom kernel module as:
->
-> ...
-> skb->dev->netdev_ops->ndo_start_xmit(skb, skb->dev);
-> ...
->
-> Just like FDIR on the receiving side, is it possible to have a similar configuration on the sending side?
->
-> For instance, I want my packets sent via kernel module to pass through TX-Queue 5. Right now all my packets are being sent through just Tx-Queue 0. And maybe after that, it would make sense to use XPS(https://github.com/torvalds/linux/blob/v3.13/Documentation/networking/scaling.txt#L364)
->
-> Regards,
-> Kushal.
+This patch fix crash when we have restore flow director filters after reset
+adapter. In ixgbe_fdir_filter_restore() filter->action is outside of the
+rx_ring array, as it has a VF identifier in the upper 32 bits.
 
-Right now you are bypassing XPS entirely if you are using
-ndo_start_xmit to send you frames.
+Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-You might take a look at the pktgen code in the kernel as I believe
-that has examples where they use specific queues to send packets. All
-that is really involved is updating a field in the sk_buff data
-structure before you call ndo_start_xmit.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 604282f..88181c5 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5173,6 +5173,7 @@ static void ixgbe_fdir_filter_restore(struct ixgbe_adapter *adapter)
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	struct hlist_node *node2;
+ 	struct ixgbe_fdir_filter *filter;
++	u64 action;
+ 
+ 	spin_lock(&adapter->fdir_perfect_lock);
+ 
+@@ -5181,12 +5182,17 @@ static void ixgbe_fdir_filter_restore(struct ixgbe_adapter *adapter)
+ 
+ 	hlist_for_each_entry_safe(filter, node2,
+ 				  &adapter->fdir_filter_list, fdir_node) {
++		action = filter->action;
++		if (action != IXGBE_FDIR_DROP_QUEUE && action != 0)
++			action =
++			(action >> ETHTOOL_RX_FLOW_SPEC_RING_VF_OFF) - 1;
++
+ 		ixgbe_fdir_write_perfect_filter_82599(hw,
+ 				&filter->filter,
+ 				filter->sw_idx,
+-				(filter->action == IXGBE_FDIR_DROP_QUEUE) ?
++				(action == IXGBE_FDIR_DROP_QUEUE) ?
+ 				IXGBE_FDIR_DROP_QUEUE :
+-				adapter->rx_ring[filter->action]->reg_idx);
++				adapter->rx_ring[action]->reg_idx);
+ 	}
+ 
+ 	spin_unlock(&adapter->fdir_perfect_lock);
+-- 
+1.8.3.1
 
-Hope that helps.
-
-- Alex
