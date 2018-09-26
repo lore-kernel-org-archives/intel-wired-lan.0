@@ -1,57 +1,51 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 26 Sep 2018 23:07:09 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 58/78]
- drivers/net/ethernet/intel/ice/ice_main.c:3882:25: error: 'ice_netpoll'
- undeclared here (not in a function); did you mean 'ice_napi_poll'?
-Message-ID: <201809262307.gU0ytAX9%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 26 Sep 2018 16:37:07 +0000
+Subject: [Intel-wired-lan] [PATCH 1/8] ice: use [sr]q.count when
+ checking if queue is initialized
+In-Reply-To: <20180920002311.10891-2-anirudh.venkataramanan@intel.com>
+References: <20180920002311.10891-1-anirudh.venkataramanan@intel.com>
+ <20180920002311.10891-2-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FB3A0@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   5b3f08c3aca3b47795dd75807714a01ffcbf8b22
-commit: 3709d0587b84bd44d1b34cb8fb676ff4222d9160 [58/78] ice: Add handlers for VF netdevice operations
-config: xtensa-allmodconfig (attached as .config)
-compiler: xtensa-linux-gcc (GCC) 8.1.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 3709d0587b84bd44d1b34cb8fb676ff4222d9160
-        # save the attached .config to linux build tree
-        GCC_VERSION=8.1.0 make.cross ARCH=xtensa 
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Anirudh Venkataramanan
+> Sent: Wednesday, September 19, 2018 5:23 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH 1/8] ice: use [sr]q.count when checking if
+> queue is initialized
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> When shutting down the controlqs, we check if they are initialized before we
+> shut them down and destroy the lock. This is important, as it prevents
+> attempts to access the lock of an already shutdown queue.
+> 
+> Unfortunately, we checked rq.head and sq.head as the value to determine if
+> the queue was initialized. This doesn't work, because head is not reset when
+> the queue is shutdown. In some flows, the adminq will have already been
+> shut down prior to calling ice_shutdown_all_ctrlqs. This can result in a crash
+> due to attempting to access the already destroyed mutex.
+> 
+> Fix this by using rq.count and sq.count instead. Indeed, ice_shutdown_sq
+> and ice_shutdown_rq already indicate that this is the value we should be
+> using to determine of the queue was initialized.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
+> ---
+> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
+> up commit message]
+> ---
+>  drivers/net/ethernet/intel/ice/ice_controlq.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-All errors (new ones prefixed by >>):
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
->> drivers/net/ethernet/intel/ice/ice_main.c:3882:25: error: 'ice_netpoll' undeclared here (not in a function); did you mean 'ice_napi_poll'?
-     .ndo_poll_controller = ice_netpoll,
-                            ^~~~~~~~~~~
-                            ice_napi_poll
 
-vim +3882 drivers/net/ethernet/intel/ice/ice_main.c
-
-  3870	
-  3871	static const struct net_device_ops ice_netdev_ops = {
-  3872		.ndo_open = ice_open,
-  3873		.ndo_stop = ice_stop,
-  3874		.ndo_start_xmit = ice_start_xmit,
-  3875		.ndo_features_check = ice_features_check,
-  3876		.ndo_set_rx_mode = ice_set_rx_mode,
-  3877		.ndo_set_mac_address = ice_set_mac_address,
-  3878		.ndo_validate_addr = eth_validate_addr,
-  3879		.ndo_change_mtu = ice_change_mtu,
-  3880		.ndo_get_stats64 = ice_get_stats64,
-  3881	#ifdef CONFIG_NET_POLL_CONTROLLER
-> 3882		.ndo_poll_controller = ice_netpoll,
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 55095 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20180926/513be9ad/attachment-0001.bin>
