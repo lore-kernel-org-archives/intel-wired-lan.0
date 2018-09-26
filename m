@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 26 Sep 2018 16:51:38 +0000
-Subject: [Intel-wired-lan] [PATCH 05/16] ice: Add support for VF reset
- events
-In-Reply-To: <20180920002339.11107-6-anirudh.venkataramanan@intel.com>
+Date: Wed, 26 Sep 2018 16:52:06 +0000
+Subject: [Intel-wired-lan] [PATCH 06/16] ice: Add handlers for VF
+ netdevice operations
+In-Reply-To: <20180920002339.11107-7-anirudh.venkataramanan@intel.com>
 References: <20180920002339.11107-1-anirudh.venkataramanan@intel.com>
- <20180920002339.11107-6-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC454@ORSMSX106.amr.corp.intel.com>
+ <20180920002339.11107-7-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC466@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,34 +17,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Wednesday, September 19, 2018 5:23 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 05/16] ice: Add support for VF reset events
+> Subject: [Intel-wired-lan] [PATCH 06/16] ice: Add handlers for VF netdevice
+> operations
 > 
-> Post VF initialization, there are a couple of different ways in which a VF reset
-> can be triggered. One is when the underlying PF itself goes through a reset
-> and other is via a VFLR interrupt. ice_reset_vf introduced in this patch
-> handles both these cases.
+> This patch implements handlers for the following NDO operations:
 > 
-> Also introduced in this patch is a helper function ice_aq_send_msg_to_vf to
-> send messages to VF over the mailbox queue. The PF uses this to send reset
-> notifications to VFs.
+> .ndo_set_vf_spoofchk
+> .ndo_set_vf_mac
+> .ndo_get_vf_config
+> .ndo_set_vf_trust
+> .ndo_set_vf_vlan
+> .ndo_set_vf_link_state
 > 
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/Makefile          |   2 +-
->  drivers/net/ethernet/intel/ice/ice.h             |   2 +
->  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |  17 +++
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |   1 +
->  drivers/net/ethernet/intel/ice/ice_main.c        |  15 +++
->  drivers/net/ethernet/intel/ice/ice_sriov.c       |  41 ++++++
->  drivers/net/ethernet/intel/ice/ice_sriov.h       |  25 ++++
->  drivers/net/ethernet/intel/ice/ice_status.h      |   3 +
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 163
+>  drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h   |  12 +
+>  drivers/net/ethernet/intel/ice/ice_main.c        |   6 +
+>  drivers/net/ethernet/intel/ice/ice_sriov.c       |  86 +++++
+>  drivers/net/ethernet/intel/ice/ice_sriov.h       |   9 +
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 438
 > +++++++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |   4 +
->  10 files changed, 272 insertions(+), 1 deletion(-)  create mode 100644
-> drivers/net/ethernet/intel/ice/ice_sriov.c
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_sriov.h
+> drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  79 +++-
+>  6 files changed, 629 insertions(+), 1 deletion(-)
+
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
