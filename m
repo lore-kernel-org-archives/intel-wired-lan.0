@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 26 Sep 2018 17:04:20 +0000
-Subject: [Intel-wired-lan] [PATCH 03/16] ice: Add handler to configure
- SR-IOV
-In-Reply-To: <20180920002339.11107-4-anirudh.venkataramanan@intel.com>
+Date: Wed, 26 Sep 2018 17:05:19 +0000
+Subject: [Intel-wired-lan] [PATCH 04/16] ice: Update VSI and queue
+ management code to handle VF VSI
+In-Reply-To: <20180920002339.11107-5-anirudh.venkataramanan@intel.com>
 References: <20180920002339.11107-1-anirudh.venkataramanan@intel.com>
- <20180920002339.11107-4-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC5A6@ORSMSX106.amr.corp.intel.com>
+ <20180920002339.11107-5-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC5C5@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,42 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Wednesday, September 19, 2018 5:23 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 03/16] ice: Add handler to configure SR-IOV
+> Subject: [Intel-wired-lan] [PATCH 04/16] ice: Update VSI and queue
+> management code to handle VF VSI
 > 
-> This patch implements parts of ice_sriov_configure and VF reset flow.
-> 
-> To create virtual functions (VFs), the user sets a value in num_vfs through
-> sysfs. This results in the kernel calling the handler for .sriov_configure which
-> is ice_sriov_configure.
-> 
-> VF setup first starts with a VF reset, followed by allocation of the VF VSI using
-> ice_vf_vsi_setup. Once the VF setup is complete a state bit
-> ICE_VF_STATE_INIT is set in the vf->states bitmap to indicate that the VF is
-> ready to go.
-> 
-> Also for VF reset to go into effect, it's necessary to issue a disable queue
-> command (ice_aqc_opc_dis_txqs). So this patch updates multiple functions
-> in the disable queue flow to take additional parameters that distinguish if
-> queues are being disabled due to VF reset.
+> Until now, all the VSI and queue management code supported only the PF
+> VSI type (ICE_VSI_PF). Update these flows to handle the VF VSI type
+> (ICE_VSI_VF) type as well.
 > 
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/Makefile          |   1 +
->  drivers/net/ethernet/intel/ice/ice.h             |  24 +
->  drivers/net/ethernet/intel/ice/ice_common.c      |  56 +-
->  drivers/net/ethernet/intel/ice/ice_common.h      |   4 +-
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |  38 +
->  drivers/net/ethernet/intel/ice/ice_lib.c         |   7 +-
->  drivers/net/ethernet/intel/ice/ice_lib.h         |   3 +-
->  drivers/net/ethernet/intel/ice/ice_main.c        |   6 +-
->  drivers/net/ethernet/intel/ice/ice_type.h        |  10 +
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 847
-> +++++++++++++++++++++++
-> drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  74 ++
->  11 files changed, 1061 insertions(+), 9 deletions(-)  create mode 100644
-> drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+>  drivers/net/ethernet/intel/ice/ice.h            |   2 +
+>  drivers/net/ethernet/intel/ice/ice_hw_autogen.h |   1 +
+>  drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h  |   1 +
+>  drivers/net/ethernet/intel/ice/ice_lib.c        | 211 ++++++++++++++++++++-
+> ---
+>  drivers/net/ethernet/intel/ice/ice_switch.h     |   1 +
+>  drivers/net/ethernet/intel/ice/ice_type.h       |   3 +
+>  6 files changed, 184 insertions(+), 35 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
