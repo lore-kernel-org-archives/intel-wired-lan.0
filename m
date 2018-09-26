@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 26 Sep 2018 16:53:18 +0000
-Subject: [Intel-wired-lan] [PATCH 08/16] ice: Change pf state behavior
- to protect reset path
-In-Reply-To: <20180920002319.10971-9-anirudh.venkataramanan@intel.com>
+Date: Wed, 26 Sep 2018 16:54:22 +0000
+Subject: [Intel-wired-lan] [PATCH 06/16] ice: Move common functions out
+ of ice_main.c part 6/7
+In-Reply-To: <20180920002319.10971-7-anirudh.venkataramanan@intel.com>
 References: <20180920002319.10971-1-anirudh.venkataramanan@intel.com>
- <20180920002319.10971-9-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC487@ORSMSX106.amr.corp.intel.com>
+ <20180920002319.10971-7-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC49E@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,48 +17,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Wednesday, September 19, 2018 5:23 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 08/16] ice: Change pf state behavior to
-> protect reset path
+> Subject: [Intel-wired-lan] [PATCH 06/16] ice: Move common functions out of
+> ice_main.c part 6/7
 > 
-> From: Dave Ertman <david.m.ertman@intel.com>
+> This patch continues the code move out of ice_main.c
 > 
-> Currently, there is no bit, or set of bits, that protect the entirety of the reset
-> path.
+> The following top level functions (and related dependency functions) were
+> moved to ice_lib.c:
+> ice_vsi_setup_vector_base
+> ice_vsi_alloc_q_vectors
+> ice_vsi_get_qs
 > 
-> If the reset is originated by the driver, then the relevant one of the following
-> bits will be set when the reset is scheduled:
-> __ICE_PFR_REQ
-> __ICE_CORER_REQ
-> __ICE_GLOBR_REQ
-> This bit will not be cleared until after the rebuild has completed.
+> The following functions were made static again:
+> ice_vsi_free_arrays
+> ice_vsi_clear_rings
 > 
-> If the reset is originated by the FW, then the first the driver knows of it will
-> be the reception of the OICR interrupt.  The __ICE_RESET_OICR_RECV bit will
-> be set in the interrupt handler.  This will also be the indicator in a SW
-> originated reset that we have completed the pre-OICR tasks and have
-> informed the FW that a reset was requested.
+> Also, in this patch, the netdev and NAPI registration logic was de-coupled
+> from the VSI creation logic (ice_vsi_setup) as for SR-IOV, while we want to
+> create VF VSIs using ice_vsi_setup, we don't want to create netdevs.
 > 
-> To utilize these bits, change the function:
-> ice_is_reset_recovery_pending()
-> 	to be:
-> ice_is_reset_in_progress()
-> 
-> The new function will check all of the above bits in the pf->state and will
-> return a true if one or more of these bits are set.
-> 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
-> up commit message]
-> ---
->  drivers/net/ethernet/intel/ice/ice.h      |  2 +-
->  drivers/net/ethernet/intel/ice/ice_lib.c  | 13 +++++----
-> drivers/net/ethernet/intel/ice/ice_lib.h  |  2 +-
-> drivers/net/ethernet/intel/ice/ice_main.c | 44 +++++++++++++++------------
-> ----
->  4 files changed, 31 insertions(+), 30 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c  | 463
+> +++++++++++++++++++++++++++-  drivers/net/ethernet/intel/ice/ice_lib.h
+> |  16 +-  drivers/net/ethernet/intel/ice/ice_main.c | 492 +++--------------------
+> -------
+>  3 files changed, 521 insertions(+), 450 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
