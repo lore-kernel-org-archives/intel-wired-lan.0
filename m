@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 26 Sep 2018 16:58:16 +0000
-Subject: [Intel-wired-lan] [PATCH 14/16] ice: Use the right function to
- enable/disable VSI
-In-Reply-To: <20180920002339.11107-15-anirudh.venkataramanan@intel.com>
+Date: Wed, 26 Sep 2018 16:59:13 +0000
+Subject: [Intel-wired-lan] [PATCH 11/16] ice: Add code to go from
+ ICE_FWD_TO_VSI_LIST to ICE_FWD_TO_VSI
+In-Reply-To: <20180920002339.11107-12-anirudh.venkataramanan@intel.com>
 References: <20180920002339.11107-1-anirudh.venkataramanan@intel.com>
- <20180920002339.11107-15-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC4F6@ORSMSX106.amr.corp.intel.com>
+ <20180920002339.11107-12-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC518@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Wednesday, September 19, 2018 5:24 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 14/16] ice: Use the right function to
-> enable/disable VSI
+> Subject: [Intel-wired-lan] [PATCH 11/16] ice: Add code to go from
+> ICE_FWD_TO_VSI_LIST to ICE_FWD_TO_VSI
 > 
-> From: Dave Ertman <david.m.ertman@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> The ice_ena/dis_vsi should have a single differentiating factor to determine
-> if the netdev_ops call is used or a direct call to ice_vsi_open/close.  This is if
-> the netif is running or not.  If netif is running, use ndo_open/ndo_close.
-> Else, use ice_vsi_open/ice_vsi_close.
+> When a switch rule is initially created we set the filter action to
+> ICE_FWD_TO_VSI. The filter action changes to ICE_FWD_TO_VSI_LIST
+> whenever more than one VSI is subscribed to the same switch rule. When
+> the switch rule goes from 2 VSIs in the list to 1 VSI we remove and delete the
+> VSI list rule, but we currently don't update the switch rule in hardware. This is
+> causing switch rules to be lost, so fix that by making a call to
+> ice_update_pkt_fwd_rule() with the necessary changes.
 > 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
-> up commit message]
-> ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 23 ++++++++++++++---------
->  1 file changed, 14 insertions(+), 9 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_switch.c | 38
+> ++++++++++++++++++++++-------
+>  1 file changed, 29 insertions(+), 9 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
