@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 26 Sep 2018 17:04:53 +0000
-Subject: [Intel-wired-lan] [PATCH 08/16] ice: Notify VF of link status
- change
-In-Reply-To: <20180920002339.11107-9-anirudh.venkataramanan@intel.com>
-References: <20180920002339.11107-1-anirudh.venkataramanan@intel.com>
- <20180920002339.11107-9-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC5B2@ORSMSX106.amr.corp.intel.com>
+Date: Wed, 26 Sep 2018 17:09:22 +0000
+Subject: [Intel-wired-lan] [PATCH v2 11/16] ice: Add code to go from
+ ICE_FWD_TO_VSI_LIST to ICE_FWD_TO_VSI
+In-Reply-To: <20180920004308.13772-12-anirudh.venkataramanan@intel.com>
+References: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
+ <20180920004308.13772-12-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC630@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,19 +15,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Anirudh Venkataramanan
-> Sent: Wednesday, September 19, 2018 5:24 PM
+> Sent: Wednesday, September 19, 2018 5:43 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 08/16] ice: Notify VF of link status change
+> Subject: [Intel-wired-lan] [PATCH v2 11/16] ice: Add code to go from
+> ICE_FWD_TO_VSI_LIST to ICE_FWD_TO_VSI
 > 
-> When PF gets a link status change event, notify the VFs of the same.
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
+> When a switch rule is initially created we set the filter action to
+> ICE_FWD_TO_VSI. The filter action changes to ICE_FWD_TO_VSI_LIST
+> whenever more than one VSI is subscribed to the same switch rule. When
+> the switch rule goes from 2 VSIs in the list to 1 VSI we remove and delete the
+> VSI list rule, but we currently don't update the switch rule in hardware. This is
+> causing switch rules to be lost, so fix that by making a call to
+> ice_update_pkt_fwd_rule() with the necessary changes.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c        |  2 ++
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 12 ++++++++++++
-> drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  3 +++
->  3 files changed, 17 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_switch.c | 38
+> ++++++++++++++++++++++-------
+>  1 file changed, 29 insertions(+), 9 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
