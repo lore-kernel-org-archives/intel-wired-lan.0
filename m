@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 26 Sep 2018 17:09:50 +0000
-Subject: [Intel-wired-lan] [PATCH v2 10/16] ice: Fix forward to queue
- group logic
-In-Reply-To: <20180920004308.13772-11-anirudh.venkataramanan@intel.com>
+Date: Wed, 26 Sep 2018 17:11:14 +0000
+Subject: [Intel-wired-lan] [PATCH v2 07/16] ice: Implement virtchnl
+ commands for AVF support
+In-Reply-To: <20180920004308.13772-8-anirudh.venkataramanan@intel.com>
 References: <20180920004308.13772-1-anirudh.venkataramanan@intel.com>
- <20180920004308.13772-11-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC63F@ORSMSX106.amr.corp.intel.com>
+ <20180920004308.13772-8-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FC66F@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,17 +17,52 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Wednesday, September 19, 2018 5:43 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 10/16] ice: Fix forward to queue group
-> logic
+> Subject: [Intel-wired-lan] [PATCH v2 07/16] ice: Implement virtchnl
+> commands for AVF support
 > 
-> When adding a rule, queue region size needs to be provided as log base 2 of
-> the number of queues in region. Fix that.
+> virtchnl is a protocol/interface specification that allows the Intel "Adaptive
+> Virtual Function (AVF)" driver (iavf.ko) to work with more than one physical
+> function driver. The AVF driver sends "virtchnl commands"
+> (control plane only) to the PF driver over mailbox queues and the PF driver
+> executes these commands and returns a result to the VF, again over mailbox.
+> 
+> This patch adds AVF support for the ice PF driver by implementing the
+> following virtchnl commands:
+> 
+> VIRTCHNL_OP_VERSION
+> VIRTCHNL_OP_GET_VF_RESOURCES
+> VIRTCHNL_OP_RESET_VF
+> VIRTCHNL_OP_ADD_ETH_ADDR
+> VIRTCHNL_OP_DEL_ETH_ADDR
+> VIRTCHNL_OP_CONFIG_VSI_QUEUES
+> VIRTCHNL_OP_ENABLE_QUEUES
+> VIRTCHNL_OP_DISABLE_QUEUES
+> VIRTCHNL_OP_ADD_ETH_ADDR
+> VIRTCHNL_OP_DEL_ETH_ADDR
+> VIRTCHNL_OP_CONFIG_VSI_QUEUES
+> VIRTCHNL_OP_ENABLE_QUEUES
+> VIRTCHNL_OP_DISABLE_QUEUES
+> VIRTCHNL_OP_REQUEST_QUEUES
+> VIRTCHNL_OP_CONFIG_IRQ_MAP
+> VIRTCHNL_OP_CONFIG_RSS_KEY
+> VIRTCHNL_OP_CONFIG_RSS_LUT
+> VIRTCHNL_OP_GET_STATS
+> VIRTCHNL_OP_ADD_VLAN
+> VIRTCHNL_OP_DEL_VLAN
+> VIRTCHNL_OP_ENABLE_VLAN_STRIPPING
+> VIRTCHNL_OP_DISABLE_VLAN_STRIPPING
 > 
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_switch.c | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h             |    1 +
+>  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |    1 +
+>  drivers/net/ethernet/intel/ice/ice_main.c        |    3 +
+>  drivers/net/ethernet/intel/ice/ice_switch.c      |    1 +
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 1204
+> ++++++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |   11 +
+>  6 files changed, 1221 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
