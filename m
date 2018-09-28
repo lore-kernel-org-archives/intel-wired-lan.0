@@ -1,131 +1,169 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 27 Sep 2018 11:22:28 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: reset next_to_clean and
- next_to_use when we reset the head and tail
-In-Reply-To: <20180920104247.69280-1-sebastianx.basierski@intel.com>
-References: <20180920104247.69280-1-sebastianx.basierski@intel.com>
-Message-ID: <CAKgT0Uc4RnJoDyiWFzJXsB=uXKAgbBn0BMxhYcuGms9LgLQd=g@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 29 Sep 2018 06:44:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ efeb398d31f972f2a62cb1defceaad0e8124de51
+Message-ID: <5baeaec7.fu6gR+BC9+J4pSFR%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Sep 20, 2018 at 3:43 AM Sebastian Basierski
-<sebastianx.basierski@intel.com> wrote:
->
-> Only reset the next_to_clean and next_to_use values when we are resetting
-> the head and tail hardware registers.  This way we can avoid having
-> multiple functions doing the reset work and can more easily track the
-> correlation between the registers and these values.
->
-> Signed-off-by: Sebastian Basierski <sebastianx.basierski@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: efeb398d31f972f2a62cb1defceaad0e8124de51  ixgbe: check return value of napi_complete_done()
 
-The next_to_use and next_to_clean values should reflect the value of
-the software state and not be directly tied to hardware. In theory the
-hardware registers should follow them, not the other way around.
+elapsed time: 97m
 
-The problem is the Tx and Rx ring cleanup code doesn't actually clear
-the ring memory as I recall. Instead it is leaving it untouched and
-updating the next_to_clean and next_to_use values to indicate the ring
-is empty. It is only when the next_to_use value is updated in init
-that we reinitialize the descriptors and buffer info structures. The
-general idea is that we want to do as little memory updating as
-possible in both init and shutdown paths so that we can bring the
-rings up and down as quickly as possible and doing this achieved that.
+configs tested: 144
 
-This is the reason why we update each rings next_to_use/next_to_clean
-values in the setup_tx/rx_resources and clean_tx/rx_ring is because we
-update it once when the resources are allocated, and again when the
-have been cleared.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 25 +++++++++----------
->  1 file changed, 12 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 27a8546c88b2..0e83f5e8973d 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -3482,10 +3482,16 @@ void ixgbe_configure_tx_ring(struct ixgbe_adapter *adapter,
->         IXGBE_WRITE_REG(hw, IXGBE_TDBAH(reg_idx), (tdba >> 32));
->         IXGBE_WRITE_REG(hw, IXGBE_TDLEN(reg_idx),
->                         ring->count * sizeof(union ixgbe_adv_tx_desc));
-> +
-> +       /* reset head and tail pointers */
->         IXGBE_WRITE_REG(hw, IXGBE_TDH(reg_idx), 0);
->         IXGBE_WRITE_REG(hw, IXGBE_TDT(reg_idx), 0);
->         ring->tail = adapter->io_addr + IXGBE_TDT(reg_idx);
->
-> +       /* reset ntu and ntc to place SW in sync with hardwdare */
-> +       ring->next_to_clean = 0;
-> +       ring->next_to_use = 0;
-> +
->         /*
->          * set WTHRESH to encourage burst writeback, it should not be set
->          * higher than 1 when:
-> @@ -4046,10 +4052,16 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
->         /* Force flushing of IXGBE_RDLEN to prevent MDD */
->         IXGBE_WRITE_FLUSH(hw);
->
-> +       /* reset head and tail pointers */
->         IXGBE_WRITE_REG(hw, IXGBE_RDH(reg_idx), 0);
->         IXGBE_WRITE_REG(hw, IXGBE_RDT(reg_idx), 0);
->         ring->tail = adapter->io_addr + IXGBE_RDT(reg_idx);
->
-> +       /* reset ntu and ntc to place SW in sync with hardwdare */
-> +       ring->next_to_clean = 0;
-> +       ring->next_to_use = 0;
-> +       ring->next_to_alloc = 0;
-> +
->         ixgbe_configure_srrctl(adapter, ring);
->         ixgbe_configure_rscctl(adapter, ring);
->
-> @@ -5238,10 +5250,6 @@ static void ixgbe_clean_rx_ring(struct ixgbe_ring *rx_ring)
->                         rx_buffer = rx_ring->rx_buffer_info;
->                 }
->         }
-> -
-> -       rx_ring->next_to_alloc = 0;
-> -       rx_ring->next_to_clean = 0;
-> -       rx_ring->next_to_use = 0;
->  }
->
->  static int ixgbe_fwd_ring_up(struct ixgbe_adapter *adapter,
-> @@ -5933,10 +5941,6 @@ static void ixgbe_clean_tx_ring(struct ixgbe_ring *tx_ring)
->         /* reset BQL for queue */
->         if (!ring_is_xdp(tx_ring))
->                 netdev_tx_reset_queue(txring_txq(tx_ring));
-> -
-> -       /* reset next_to_use and next_to_clean */
-> -       tx_ring->next_to_use = 0;
-> -       tx_ring->next_to_clean = 0;
->  }
->
->  /**
-> @@ -6369,8 +6373,6 @@ int ixgbe_setup_tx_resources(struct ixgbe_ring *tx_ring)
->         if (!tx_ring->desc)
->                 goto err;
->
-> -       tx_ring->next_to_use = 0;
-> -       tx_ring->next_to_clean = 0;
->         return 0;
->
->  err:
-> @@ -6463,9 +6465,6 @@ int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
->         if (!rx_ring->desc)
->                 goto err;
->
-> -       rx_ring->next_to_clean = 0;
-> -       rx_ring->next_to_use = 0;
-> -
->         /* XDP RX-queue info */
->         if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
->                              rx_ring->queue_index) < 0)
-> --
-> 2.17.1
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                            mps2_defconfig
+powerpc                      ppc64e_defconfig
+powerpc                 mpc8272_ads_defconfig
+powerpc64                        allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                               tinyconfig
+i386                   randconfig-x018-201838
+i386                   randconfig-x017-201838
+i386                   randconfig-x010-201838
+i386                   randconfig-x011-201838
+i386                   randconfig-x016-201838
+i386                   randconfig-x013-201838
+i386                   randconfig-x012-201838
+i386                   randconfig-x014-201838
+i386                   randconfig-x015-201838
+i386                   randconfig-x019-201838
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201838
+i386                     randconfig-n1-201838
+i386                     randconfig-n2-201838
+i386                     randconfig-n3-201838
+x86_64                 randconfig-x004-201838
+x86_64                 randconfig-x001-201838
+x86_64                 randconfig-x000-201838
+x86_64                 randconfig-x009-201838
+x86_64                 randconfig-x007-201838
+x86_64                 randconfig-x008-201838
+x86_64                 randconfig-x003-201838
+x86_64                 randconfig-x005-201838
+x86_64                 randconfig-x002-201838
+x86_64                 randconfig-x006-201838
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201838
+i386                     randconfig-i1-201838
+i386                     randconfig-i2-201838
+i386                     randconfig-i3-201838
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+i386                   randconfig-x005-201838
+i386                   randconfig-x003-201838
+i386                   randconfig-x002-201838
+i386                   randconfig-x008-201838
+i386                   randconfig-x000-201838
+i386                   randconfig-x007-201838
+i386                   randconfig-x009-201838
+i386                   randconfig-x006-201838
+i386                   randconfig-x001-201838
+i386                   randconfig-x004-201838
+x86_64                 randconfig-x019-201838
+x86_64                 randconfig-x017-201838
+x86_64                 randconfig-x018-201838
+x86_64                 randconfig-x012-201838
+x86_64                 randconfig-x013-201838
+x86_64                 randconfig-x014-201838
+x86_64                 randconfig-x010-201838
+x86_64                 randconfig-x016-201838
+x86_64                 randconfig-x011-201838
+x86_64                 randconfig-x015-201838
+arm                            xcep_defconfig
+mips                        bcm63xx_defconfig
+powerpc                      bamboo_defconfig
+sparc                               defconfig
+arm                          nuc910_defconfig
+arm                        spear3xx_defconfig
+m68k                          multi_defconfig
+powerpc                 mpc837x_rdb_defconfig
+m68k                       m5475evb_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201838
+i386                     randconfig-s1-201838
+i386                     randconfig-s2-201838
+i386                     randconfig-s3-201838
+x86_64                 randconfig-s3-09290520
+x86_64                 randconfig-s4-09290520
+x86_64                 randconfig-s5-09290520
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201838
+x86_64                   randconfig-i1-201838
+x86_64                   randconfig-i2-201838
+x86_64                   randconfig-i3-201838
+sparc64                           allnoconfig
+sparc64                             defconfig
+sh                   sh7770_generic_defconfig
+xtensa                  nommu_kc705_defconfig
+powerpc                  storcenter_defconfig
+x86_64                 randconfig-u0-09290532
+x86_64                 randconfig-u0-09290617
+powerpc                    amigaone_defconfig
+powerpc                    mvme5100_defconfig
+arm                         cm_x300_defconfig
+powerpc                     tqm8541_defconfig
+x86_64                randconfig-ne0-09290243
+x86_64                randconfig-ne0-09290558
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-h0-09290359
+i386                   randconfig-x070-201838
+i386                   randconfig-x076-201838
+i386                   randconfig-x077-201838
+i386                   randconfig-x075-201838
+i386                   randconfig-x072-201838
+i386                   randconfig-x073-201838
+i386                   randconfig-x079-201838
+i386                   randconfig-x074-201838
+i386                   randconfig-x078-201838
+i386                   randconfig-x071-201838
+powerpc                     sbc8548_defconfig
+x86_64                   randconfig-g0-201838
+x86_64                   randconfig-g1-201838
+x86_64                   randconfig-g2-201838
+x86_64                   randconfig-g3-201838
+i386                  randconfig-sb0-09290412
+powerpc                     kmeter1_defconfig
+s390                             allyesconfig
+i386                   randconfig-x0-09290514
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
