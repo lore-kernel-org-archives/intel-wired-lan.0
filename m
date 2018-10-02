@@ -1,260 +1,225 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 27 Oct 2018 23:58:15 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 4aeae0bc7825f0e9f6ee4e3f658b6330b5c02960
-Message-ID: <5bd48b17.Qfg3OI2PW3Z7Gvqq%lkp@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Tue,  2 Oct 2018 10:00:30 +0200
+Subject: [Intel-wired-lan] [PATCH v2 1/5] ixgbe: added Rx/Tx ring
+ disable/enable functions
+In-Reply-To: <20181002080034.11754-1-bjorn.topel@gmail.com>
+References: <20181002080034.11754-1-bjorn.topel@gmail.com>
+Message-ID: <20181002080034.11754-2-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 4aeae0bc7825f0e9f6ee4e3f658b6330b5c02960  igc: Clean up code
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-elapsed time: 1312m
+Add functions for Rx/Tx ring enable/disable. Instead of resetting the
+whole device, only the affected ring is disabled or enabled.
 
-configs tested: 236
+This plumbing is used in later commits, when zero-copy AF_XDP support
+is introduced.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-openrisc                            defconfig
-s390                              allnoconfig
-x86_64                 randconfig-a0-10262156
-powerpc                     pq2fads_defconfig
-sh                          sdk7780_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10271557
-arm                            zeus_defconfig
-mips                       lemote2f_defconfig
-arm                         nhk8815_defconfig
-mips                           ip28_defconfig
-i386                   randconfig-x019-201842
-i386                   randconfig-x016-201842
-i386                   randconfig-x018-201842
-i386                   randconfig-x014-201842
-i386                   randconfig-x015-201842
-i386                   randconfig-x010-201842
-i386                   randconfig-x017-201842
-i386                   randconfig-x012-201842
-i386                   randconfig-x011-201842
-i386                   randconfig-x013-201842
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201842
-i386                     randconfig-n1-201842
-i386                     randconfig-n2-201842
-i386                     randconfig-n3-201842
-x86_64                 randconfig-x002-201842
-x86_64                 randconfig-x005-201842
-x86_64                 randconfig-x000-201842
-x86_64                 randconfig-x001-201842
-x86_64                 randconfig-x008-201842
-x86_64                 randconfig-x009-201842
-x86_64                 randconfig-x007-201842
-x86_64                 randconfig-x003-201842
-x86_64                 randconfig-x006-201842
-x86_64                 randconfig-x004-201842
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201842
-i386                     randconfig-i1-201842
-i386                     randconfig-i2-201842
-i386                     randconfig-i3-201842
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                 canyonlands_defconfig
-powerpc                      ppc6xx_defconfig
-arm                          pcm027_defconfig
-powerpc                     skiroot_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                        trizeps4_defconfig
-mips                         tb0226_defconfig
-parisc                           allyesconfig
-sh                           se7750_defconfig
-arm                         lubbock_defconfig
-arm                         mv78xx0_defconfig
-arm                           sama5_defconfig
-powerpc                     ksi8560_defconfig
-mips                      malta_kvm_defconfig
-sh                          polaris_defconfig
-xtensa                           allmodconfig
-x86_64                 randconfig-x017-201842
-x86_64                 randconfig-x011-201842
-x86_64                 randconfig-x016-201842
-x86_64                 randconfig-x013-201842
-x86_64                 randconfig-x012-201842
-x86_64                 randconfig-x019-201842
-x86_64                 randconfig-x018-201842
-x86_64                 randconfig-x014-201842
-x86_64                 randconfig-x010-201842
-x86_64                 randconfig-x015-201842
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201842
-i386                     randconfig-s1-201842
-i386                     randconfig-s3-201842
-i386                     randconfig-s2-201842
-x86_64                 randconfig-s3-10270204
-x86_64                 randconfig-s4-10270204
-x86_64                 randconfig-s5-10270204
-x86_64                 randconfig-s3-10271531
-x86_64                 randconfig-s4-10271531
-x86_64                 randconfig-s5-10271531
-x86_64                 randconfig-s3-10271559
-x86_64                 randconfig-s4-10271559
-x86_64                 randconfig-s5-10271559
-m68k                        m5307c3_defconfig
-powerpc                   motionpro_defconfig
-powerpc                     tqm8541_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201842
-x86_64                   randconfig-i1-201842
-x86_64                   randconfig-i2-201842
-x86_64                   randconfig-i3-201842
-i386                   randconfig-b0-10262147
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                       aspeed_g4_defconfig
-arm                        spear3xx_defconfig
-microblaze                          defconfig
-i386                             allyesconfig
-x86_64                 randconfig-b0-10262148
-x86_64                 randconfig-b0-10272128
-arm                         s5pv210_defconfig
-x86_64                           alldefconfig
-powerpc                     kilauea_defconfig
-arm                       netwinder_defconfig
-x86_64                 randconfig-u0-10270050
-x86_64                 randconfig-u0-10271538
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                                    lkp
-x86_64                 randconfig-k0-10261856
-x86_64                 randconfig-k1-10261856
-x86_64                 randconfig-k2-10261856
-x86_64                 randconfig-k3-10261856
-i386                   randconfig-k0-10261856
-i386                   randconfig-k1-10261856
-i386                   randconfig-k2-10261856
-i386                   randconfig-k3-10261856
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                        sh7763rdp_defconfig
-x86_64                randconfig-ne0-10270006
-mips                             alldefconfig
-sh                           sh2007_defconfig
-powerpc                     tqm5200_defconfig
-arm                         lpc32xx_defconfig
-sh                   secureedge5410_defconfig
-x86_64                 randconfig-h0-10270212
-i386                               tinyconfig
-i386                   randconfig-x077-201842
-i386                   randconfig-x072-201842
-i386                   randconfig-x075-201842
-i386                   randconfig-x070-201842
-i386                   randconfig-x073-201842
-i386                   randconfig-x071-201842
-i386                   randconfig-x074-201842
-i386                   randconfig-x078-201842
-i386                   randconfig-x076-201842
-i386                   randconfig-x079-201842
-i386                   randconfig-x002-201842
-i386                   randconfig-x007-201842
-i386                   randconfig-x000-201842
-i386                   randconfig-x005-201842
-i386                   randconfig-x006-201842
-i386                   randconfig-x004-201842
-i386                   randconfig-x001-201842
-i386                   randconfig-x009-201842
-i386                   randconfig-x008-201842
-i386                   randconfig-x003-201842
-x86_64                   randconfig-e2-201842
-x86_64                   randconfig-e0-201842
-x86_64                   randconfig-e1-201842
-x86_64                   randconfig-e3-201842
-nds32                               defconfig
-m68k                            mac_defconfig
-powerpc                     akebono_defconfig
-m68k                                defconfig
-um                               allyesconfig
-x86_64                randconfig-ws0-10270205
-x86_64                 randconfig-j0-10212027
-x86_64                 randconfig-j1-10212027
-x86_64                 randconfig-j2-10212027
-x86_64                 randconfig-j3-10212027
-i386                   randconfig-j0-10212027
-i386                   randconfig-j1-10212027
-i386                   randconfig-j2-10212027
-i386                   randconfig-j3-10212027
-x86_64                 randconfig-r0-10262157
-x86_64                 randconfig-r0-10270507
-i386                             allmodconfig
-c6x                        evmc6474_defconfig
-powerpc                      cm5200_defconfig
-alpha                             allnoconfig
-arm                           corgi_defconfig
-arm                           h3600_defconfig
-i386                   randconfig-x0-10270019
-i386                   randconfig-x0-10270527
-i386                   randconfig-x0-10271536
-i386                   randconfig-x0-10271601
-
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 158 ++++++++++++++++++
+ 2 files changed, 159 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 5c6fd42e90ed..265db172042a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -271,6 +271,7 @@ enum ixgbe_ring_state_t {
+ 	__IXGBE_TX_DETECT_HANG,
+ 	__IXGBE_HANG_CHECK_ARMED,
+ 	__IXGBE_TX_XDP_RING,
++	__IXGBE_TX_DISABLED,
+ };
+ 
+ #define ring_uses_build_skb(ring) \
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 187b78f950b5..6ff886498882 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8694,6 +8694,8 @@ static netdev_tx_t __ixgbe_xmit_frame(struct sk_buff *skb,
+ 		return NETDEV_TX_OK;
+ 
+ 	tx_ring = ring ? ring : adapter->tx_ring[skb->queue_mapping];
++	if (unlikely(test_bit(__IXGBE_TX_DISABLED, &tx_ring->state)))
++		return NETDEV_TX_BUSY;
+ 
+ 	return ixgbe_xmit_frame_ring(skb, adapter, tx_ring);
+ }
+@@ -10240,6 +10242,9 @@ static int ixgbe_xdp_xmit(struct net_device *dev, int n,
+ 	if (unlikely(!ring))
+ 		return -ENXIO;
+ 
++	if (unlikely(test_bit(__IXGBE_TX_DISABLED, &ring->state)))
++		return -ENXIO;
++
+ 	for (i = 0; i < n; i++) {
+ 		struct xdp_frame *xdpf = frames[i];
+ 		int err;
+@@ -10303,6 +10308,159 @@ static const struct net_device_ops ixgbe_netdev_ops = {
+ 	.ndo_xdp_xmit		= ixgbe_xdp_xmit,
+ };
+ 
++static void ixgbe_disable_txr_hw(struct ixgbe_adapter *adapter,
++				 struct ixgbe_ring *tx_ring)
++{
++	unsigned long wait_delay, delay_interval;
++	struct ixgbe_hw *hw = &adapter->hw;
++	u8 reg_idx = tx_ring->reg_idx;
++	int wait_loop;
++	u32 txdctl;
++
++	IXGBE_WRITE_REG(hw, IXGBE_TXDCTL(reg_idx), IXGBE_TXDCTL_SWFLSH);
++
++	/* delay mechanism from ixgbe_disable_tx */
++	delay_interval = ixgbe_get_completion_timeout(adapter) / 100;
++
++	wait_loop = IXGBE_MAX_RX_DESC_POLL;
++	wait_delay = delay_interval;
++
++	while (wait_loop--) {
++		usleep_range(wait_delay, wait_delay + 10);
++		wait_delay += delay_interval * 2;
++		txdctl = IXGBE_READ_REG(hw, IXGBE_TXDCTL(reg_idx));
++
++		if (!(txdctl & IXGBE_TXDCTL_ENABLE))
++			return;
++	}
++
++	e_err(drv, "TXDCTL.ENABLE not cleared within the polling period\n");
++}
++
++static void ixgbe_disable_txr(struct ixgbe_adapter *adapter,
++			      struct ixgbe_ring *tx_ring)
++{
++	set_bit(__IXGBE_TX_DISABLED, &tx_ring->state);
++	ixgbe_disable_txr_hw(adapter, tx_ring);
++}
++
++static void ixgbe_disable_rxr_hw(struct ixgbe_adapter *adapter,
++				 struct ixgbe_ring *rx_ring)
++{
++	unsigned long wait_delay, delay_interval;
++	struct ixgbe_hw *hw = &adapter->hw;
++	u8 reg_idx = rx_ring->reg_idx;
++	int wait_loop;
++	u32 rxdctl;
++
++	rxdctl = IXGBE_READ_REG(hw, IXGBE_RXDCTL(reg_idx));
++	rxdctl &= ~IXGBE_RXDCTL_ENABLE;
++	rxdctl |= IXGBE_RXDCTL_SWFLSH;
++
++	/* write value back with RXDCTL.ENABLE bit cleared */
++	IXGBE_WRITE_REG(hw, IXGBE_RXDCTL(reg_idx), rxdctl);
++
++	/* RXDCTL.EN may not change on 82598 if link is down, so skip it */
++	if (hw->mac.type == ixgbe_mac_82598EB &&
++	    !(IXGBE_READ_REG(hw, IXGBE_LINKS) & IXGBE_LINKS_UP))
++		return;
++
++	/* delay mechanism from ixgbe_disable_rx */
++	delay_interval = ixgbe_get_completion_timeout(adapter) / 100;
++
++	wait_loop = IXGBE_MAX_RX_DESC_POLL;
++	wait_delay = delay_interval;
++
++	while (wait_loop--) {
++		usleep_range(wait_delay, wait_delay + 10);
++		wait_delay += delay_interval * 2;
++		rxdctl = IXGBE_READ_REG(hw, IXGBE_RXDCTL(reg_idx));
++
++		if (!(rxdctl & IXGBE_RXDCTL_ENABLE))
++			return;
++	}
++
++	e_err(drv, "RXDCTL.ENABLE not cleared within the polling period\n");
++}
++
++static void ixgbe_reset_txr_stats(struct ixgbe_ring *tx_ring)
++{
++	memset(&tx_ring->stats, 0, sizeof(tx_ring->stats));
++	memset(&tx_ring->tx_stats, 0, sizeof(tx_ring->tx_stats));
++}
++
++static void ixgbe_reset_rxr_stats(struct ixgbe_ring *rx_ring)
++{
++	memset(&rx_ring->stats, 0, sizeof(rx_ring->stats));
++	memset(&rx_ring->rx_stats, 0, sizeof(rx_ring->rx_stats));
++}
++
++/**
++ * ixgbe_txrx_ring_disable - Disable Rx/Tx/XDP Tx rings
++ * @adapter: adapter structure
++ * @ring: ring index
++ *
++ * This function disables a certain Rx/Tx/XDP Tx ring. The function
++ * assumes that the netdev is running.
++ **/
++void ixgbe_txrx_ring_disable(struct ixgbe_adapter *adapter, int ring)
++{
++	struct ixgbe_ring *rx_ring, *tx_ring, *xdp_ring;
++
++	rx_ring = adapter->rx_ring[ring];
++	tx_ring = adapter->tx_ring[ring];
++	xdp_ring = adapter->xdp_ring[ring];
++
++	ixgbe_disable_txr(adapter, tx_ring);
++	if (xdp_ring)
++		ixgbe_disable_txr(adapter, xdp_ring);
++	ixgbe_disable_rxr_hw(adapter, rx_ring);
++
++	if (xdp_ring)
++		synchronize_sched();
++
++	/* Rx/Tx/XDP Tx share the same napi context. */
++	napi_disable(&rx_ring->q_vector->napi);
++
++	ixgbe_clean_tx_ring(tx_ring);
++	if (xdp_ring)
++		ixgbe_clean_tx_ring(xdp_ring);
++	ixgbe_clean_rx_ring(rx_ring);
++
++	ixgbe_reset_txr_stats(tx_ring);
++	if (xdp_ring)
++		ixgbe_reset_txr_stats(xdp_ring);
++	ixgbe_reset_rxr_stats(rx_ring);
++}
++
++/**
++ * ixgbe_txrx_ring_enable - Enable Rx/Tx/XDP Tx rings
++ * @adapter: adapter structure
++ * @ring: ring index
++ *
++ * This function enables a certain Rx/Tx/XDP Tx ring. The function
++ * assumes that the netdev is running.
++ **/
++void ixgbe_txrx_ring_enable(struct ixgbe_adapter *adapter, int ring)
++{
++	struct ixgbe_ring *rx_ring, *tx_ring, *xdp_ring;
++
++	rx_ring = adapter->rx_ring[ring];
++	tx_ring = adapter->tx_ring[ring];
++	xdp_ring = adapter->xdp_ring[ring];
++
++	/* Rx/Tx/XDP Tx share the same napi context. */
++	napi_enable(&rx_ring->q_vector->napi);
++
++	ixgbe_configure_tx_ring(adapter, tx_ring);
++	if (xdp_ring)
++		ixgbe_configure_tx_ring(adapter, xdp_ring);
++	ixgbe_configure_rx_ring(adapter, rx_ring);
++
++	clear_bit(__IXGBE_TX_DISABLED, &tx_ring->state);
++	clear_bit(__IXGBE_TX_DISABLED, &xdp_ring->state);
++}
++
+ /**
+  * ixgbe_enumerate_functions - Get the number of ports this device has
+  * @adapter: adapter structure
+-- 
+2.17.1
+
