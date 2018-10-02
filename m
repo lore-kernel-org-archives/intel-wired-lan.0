@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue,  2 Oct 2018 10:00:33 +0200
-Subject: [Intel-wired-lan] [PATCH v2 4/5] ixgbe: move common Tx functions to
- ixgbe_txrx_common.h
+Date: Tue,  2 Oct 2018 10:00:34 +0200
+Subject: [Intel-wired-lan] [PATCH v2 5/5] ixgbe: add AF_XDP zero-copy Tx
+ support
 In-Reply-To: <20181002080034.11754-1-bjorn.topel@gmail.com>
 References: <20181002080034.11754-1-bjorn.topel@gmail.com>
-Message-ID: <20181002080034.11754-5-bjorn.topel@gmail.com>
+Message-ID: <20181002080034.11754-6-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,73 +13,286 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-This patch prepares for the upcoming zero-copy Tx functionality by
-moving common functions used both by the regular path and zero-copy
-path.
+This patch adds zero-copy Tx support for AF_XDP sockets. It implements
+the ndo_xsk_async_xmit netdev ndo and performs all the Tx logic from a
+NAPI context. This means pulling egress packets from the Tx ring,
+placing the frames on the NIC HW descriptor ring and completing sent
+frames back to the application via the completion ring.
+
+The regular XDP Tx ring is used for AF_XDP as well. This rationale for
+this is as follows: XDP_REDIRECT guarantees mutual exclusion between
+different NAPI contexts based on CPU id. In other words, a netdev can
+XDP_REDIRECT to another netdev with a different NAPI context, since
+the operation is bound to a specific core and each core has its own
+hardware ring.
+
+As the AF_XDP Tx action is running in the same NAPI context and using
+the same ring, it will also be protected from XDP_REDIRECT actions
+with the exact same mechanism.
+
+As with AF_XDP Rx, all AF_XDP Tx specific functions are added to
+ixgbe_xsk.c.
 
 Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c        | 9 +++------
- drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h | 5 +++++
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  17 +-
+ .../ethernet/intel/ixgbe/ixgbe_txrx_common.h  |   4 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 175 ++++++++++++++++++
+ 3 files changed, 195 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 547092b8fe54..b211032f8682 100644
+index b211032f8682..ec31b32d6674 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -895,8 +895,8 @@ static void ixgbe_set_ivar(struct ixgbe_adapter *adapter, s8 direction,
+@@ -3161,7 +3161,11 @@ int ixgbe_poll(struct napi_struct *napi, int budget)
+ #endif
+ 
+ 	ixgbe_for_each_ring(ring, q_vector->tx) {
+-		if (!ixgbe_clean_tx_irq(q_vector, ring, budget))
++		bool wd = ring->xsk_umem ?
++			  ixgbe_clean_xdp_tx_irq(q_vector, ring, budget) :
++			  ixgbe_clean_tx_irq(q_vector, ring, budget);
++
++		if (!wd)
+ 			clean_complete = false;
  	}
- }
  
--static inline void ixgbe_irq_rearm_queues(struct ixgbe_adapter *adapter,
--					  u64 qmask)
-+void ixgbe_irq_rearm_queues(struct ixgbe_adapter *adapter,
-+			    u64 qmask)
- {
- 	u32 mask;
+@@ -3472,6 +3476,10 @@ void ixgbe_configure_tx_ring(struct ixgbe_adapter *adapter,
+ 	u32 txdctl = IXGBE_TXDCTL_ENABLE;
+ 	u8 reg_idx = ring->reg_idx;
  
-@@ -8156,9 +8156,6 @@ static inline int ixgbe_maybe_stop_tx(struct ixgbe_ring *tx_ring, u16 size)
- 	return __ixgbe_maybe_stop_tx(tx_ring, size);
- }
++	ring->xsk_umem = NULL;
++	if (ring_is_xdp(ring))
++		ring->xsk_umem = ixgbe_xsk_umem(adapter, ring);
++
+ 	/* disable queue to avoid issues while updating state */
+ 	IXGBE_WRITE_REG(hw, IXGBE_TXDCTL(reg_idx), 0);
+ 	IXGBE_WRITE_FLUSH(hw);
+@@ -5944,6 +5952,11 @@ static void ixgbe_clean_tx_ring(struct ixgbe_ring *tx_ring)
+ 	u16 i = tx_ring->next_to_clean;
+ 	struct ixgbe_tx_buffer *tx_buffer = &tx_ring->tx_buffer_info[i];
  
--#define IXGBE_TXD_CMD (IXGBE_TXD_CMD_EOP | \
--		       IXGBE_TXD_CMD_RS)
--
- static int ixgbe_tx_map(struct ixgbe_ring *tx_ring,
- 			struct ixgbe_tx_buffer *first,
- 			const u8 hdr_len)
-@@ -10259,7 +10256,7 @@ static int ixgbe_xdp(struct net_device *dev, struct netdev_bpf *xdp)
- 	}
- }
++	if (tx_ring->xsk_umem) {
++		ixgbe_xsk_clean_tx_ring(tx_ring);
++		goto out;
++	}
++
+ 	while (i != tx_ring->next_to_use) {
+ 		union ixgbe_adv_tx_desc *eop_desc, *tx_desc;
  
--static void ixgbe_xdp_ring_update_tail(struct ixgbe_ring *ring)
-+void ixgbe_xdp_ring_update_tail(struct ixgbe_ring *ring)
- {
- 	/* Force memory writes to complete before letting h/w know there
- 	 * are new descriptors to fetch.
+@@ -5995,6 +6008,7 @@ static void ixgbe_clean_tx_ring(struct ixgbe_ring *tx_ring)
+ 	if (!ring_is_xdp(tx_ring))
+ 		netdev_tx_reset_queue(txring_txq(tx_ring));
+ 
++out:
+ 	/* reset next_to_use and next_to_clean */
+ 	tx_ring->next_to_use = 0;
+ 	tx_ring->next_to_clean = 0;
+@@ -10350,6 +10364,7 @@ static const struct net_device_ops ixgbe_netdev_ops = {
+ 	.ndo_features_check	= ixgbe_features_check,
+ 	.ndo_bpf		= ixgbe_xdp,
+ 	.ndo_xdp_xmit		= ixgbe_xdp_xmit,
++	.ndo_xsk_async_xmit	= ixgbe_xsk_async_xmit,
+ };
+ 
+ static void ixgbe_disable_txr_hw(struct ixgbe_adapter *adapter,
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-index cf219f4e009d..56afb685c648 100644
+index 56afb685c648..53d4089f5644 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-@@ -9,6 +9,9 @@
- #define IXGBE_XDP_TX		BIT(1)
- #define IXGBE_XDP_REDIR		BIT(2)
+@@ -42,5 +42,9 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
+ 			  struct ixgbe_ring *rx_ring,
+ 			  const int budget);
+ void ixgbe_xsk_clean_rx_ring(struct ixgbe_ring *rx_ring);
++bool ixgbe_clean_xdp_tx_irq(struct ixgbe_q_vector *q_vector,
++			    struct ixgbe_ring *tx_ring, int napi_budget);
++int ixgbe_xsk_async_xmit(struct net_device *dev, u32 queue_id);
++void ixgbe_xsk_clean_tx_ring(struct ixgbe_ring *tx_ring);
  
-+#define IXGBE_TXD_CMD (IXGBE_TXD_CMD_EOP | \
-+		       IXGBE_TXD_CMD_RS)
+ #endif /* #define _IXGBE_TXRX_COMMON_H_ */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+index 61259036ff4b..cf1c6f2d97e5 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+@@ -626,3 +626,178 @@ void ixgbe_xsk_clean_rx_ring(struct ixgbe_ring *rx_ring)
+ 		}
+ 	}
+ }
 +
- int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
- 			struct xdp_frame *xdpf);
- bool ixgbe_cleanup_headers(struct ixgbe_ring *rx_ring,
-@@ -19,6 +22,8 @@ void ixgbe_process_skb_fields(struct ixgbe_ring *rx_ring,
- 			      struct sk_buff *skb);
- void ixgbe_rx_skb(struct ixgbe_q_vector *q_vector,
- 		  struct sk_buff *skb);
-+void ixgbe_xdp_ring_update_tail(struct ixgbe_ring *ring);
-+void ixgbe_irq_rearm_queues(struct ixgbe_adapter *adapter, u64 qmask);
- 
- void ixgbe_txrx_ring_disable(struct ixgbe_adapter *adapter, int ring);
- void ixgbe_txrx_ring_enable(struct ixgbe_adapter *adapter, int ring);
++static bool ixgbe_xmit_zc(struct ixgbe_ring *xdp_ring, unsigned int budget)
++{
++	union ixgbe_adv_tx_desc *tx_desc = NULL;
++	struct ixgbe_tx_buffer *tx_bi;
++	bool work_done = true;
++	u32 len, cmd_type;
++	dma_addr_t dma;
++
++	while (budget-- > 0) {
++		if (unlikely(!ixgbe_desc_unused(xdp_ring))) {
++			work_done = false;
++			break;
++		}
++
++		if (!xsk_umem_consume_tx(xdp_ring->xsk_umem, &dma, &len))
++			break;
++
++		dma_sync_single_for_device(xdp_ring->dev, dma, len,
++					   DMA_BIDIRECTIONAL);
++
++		tx_bi = &xdp_ring->tx_buffer_info[xdp_ring->next_to_use];
++		tx_bi->bytecount = len;
++		tx_bi->xdpf = NULL;
++
++		tx_desc = IXGBE_TX_DESC(xdp_ring, xdp_ring->next_to_use);
++		tx_desc->read.buffer_addr = cpu_to_le64(dma);
++
++		/* put descriptor type bits */
++		cmd_type = IXGBE_ADVTXD_DTYP_DATA |
++			   IXGBE_ADVTXD_DCMD_DEXT |
++			   IXGBE_ADVTXD_DCMD_IFCS;
++		cmd_type |= len | IXGBE_TXD_CMD;
++		tx_desc->read.cmd_type_len = cpu_to_le32(cmd_type);
++		tx_desc->read.olinfo_status =
++			cpu_to_le32(len << IXGBE_ADVTXD_PAYLEN_SHIFT);
++
++		xdp_ring->next_to_use++;
++		if (xdp_ring->next_to_use == xdp_ring->count)
++			xdp_ring->next_to_use = 0;
++	}
++
++	if (tx_desc) {
++		ixgbe_xdp_ring_update_tail(xdp_ring);
++		xsk_umem_consume_tx_done(xdp_ring->xsk_umem);
++	}
++
++	return !!budget && work_done;
++}
++
++static void ixgbe_clean_xdp_tx_buffer(struct ixgbe_ring *tx_ring,
++				      struct ixgbe_tx_buffer *tx_bi)
++{
++	xdp_return_frame(tx_bi->xdpf);
++	dma_unmap_single(tx_ring->dev,
++			 dma_unmap_addr(tx_bi, dma),
++			 dma_unmap_len(tx_bi, len), DMA_TO_DEVICE);
++	dma_unmap_len_set(tx_bi, len, 0);
++}
++
++bool ixgbe_clean_xdp_tx_irq(struct ixgbe_q_vector *q_vector,
++			    struct ixgbe_ring *tx_ring, int napi_budget)
++{
++	unsigned int total_packets = 0, total_bytes = 0;
++	u32 i = tx_ring->next_to_clean, xsk_frames = 0;
++	unsigned int budget = q_vector->tx.work_limit;
++	struct xdp_umem *umem = tx_ring->xsk_umem;
++	union ixgbe_adv_tx_desc *tx_desc;
++	struct ixgbe_tx_buffer *tx_bi;
++	bool xmit_done;
++
++	tx_bi = &tx_ring->tx_buffer_info[i];
++	tx_desc = IXGBE_TX_DESC(tx_ring, i);
++	i -= tx_ring->count;
++
++	do {
++		if (!(tx_desc->wb.status & cpu_to_le32(IXGBE_TXD_STAT_DD)))
++			break;
++
++		total_bytes += tx_bi->bytecount;
++		total_packets += tx_bi->gso_segs;
++
++		if (tx_bi->xdpf)
++			ixgbe_clean_xdp_tx_buffer(tx_ring, tx_bi);
++		else
++			xsk_frames++;
++
++		tx_bi->xdpf = NULL;
++		total_bytes += tx_bi->bytecount;
++
++		tx_bi++;
++		tx_desc++;
++		i++;
++		if (unlikely(!i)) {
++			i -= tx_ring->count;
++			tx_bi = tx_ring->tx_buffer_info;
++			tx_desc = IXGBE_TX_DESC(tx_ring, 0);
++		}
++
++		/* issue prefetch for next Tx descriptor */
++		prefetch(tx_desc);
++
++		/* update budget accounting */
++		budget--;
++	} while (likely(budget));
++
++	i += tx_ring->count;
++	tx_ring->next_to_clean = i;
++
++	u64_stats_update_begin(&tx_ring->syncp);
++	tx_ring->stats.bytes += total_bytes;
++	tx_ring->stats.packets += total_packets;
++	u64_stats_update_end(&tx_ring->syncp);
++	q_vector->tx.total_bytes += total_bytes;
++	q_vector->tx.total_packets += total_packets;
++
++	if (xsk_frames)
++		xsk_umem_complete_tx(umem, xsk_frames);
++
++	xmit_done = ixgbe_xmit_zc(tx_ring, q_vector->tx.work_limit);
++	return budget > 0 && xmit_done;
++}
++
++int ixgbe_xsk_async_xmit(struct net_device *dev, u32 qid)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(dev);
++	struct ixgbe_ring *ring;
++
++	if (test_bit(__IXGBE_DOWN, &adapter->state))
++		return -ENETDOWN;
++
++	if (!READ_ONCE(adapter->xdp_prog))
++		return -ENXIO;
++
++	if (qid >= adapter->num_xdp_queues)
++		return -ENXIO;
++
++	if (!adapter->xsk_umems || !adapter->xsk_umems[qid])
++		return -ENXIO;
++
++	ring = adapter->xdp_ring[qid];
++	if (!napi_if_scheduled_mark_missed(&ring->q_vector->napi)) {
++		u64 eics = BIT_ULL(ring->q_vector->v_idx);
++
++		ixgbe_irq_rearm_queues(adapter, eics);
++	}
++
++	return 0;
++}
++
++void ixgbe_xsk_clean_tx_ring(struct ixgbe_ring *tx_ring)
++{
++	u16 ntc = tx_ring->next_to_clean, ntu = tx_ring->next_to_use;
++	struct xdp_umem *umem = tx_ring->xsk_umem;
++	struct ixgbe_tx_buffer *tx_bi;
++	u32 xsk_frames = 0;
++
++	while (ntc != ntu) {
++		tx_bi = &tx_ring->tx_buffer_info[ntc];
++
++		if (tx_bi->xdpf)
++			ixgbe_clean_xdp_tx_buffer(tx_ring, tx_bi);
++		else
++			xsk_frames++;
++
++		tx_bi->xdpf = NULL;
++
++		ntc++;
++		if (ntc == tx_ring->count)
++			ntc = 0;
++	}
++
++	if (xsk_frames)
++		xsk_umem_complete_tx(umem, xsk_frames);
++}
 -- 
 2.17.1
 
