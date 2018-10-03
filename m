@@ -1,11 +1,11 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 03 Oct 2018 14:06:58 -0700
+Date: Wed, 03 Oct 2018 14:24:12 -0700
 Subject: [Intel-wired-lan] i40e Q
 In-Reply-To: <d4f60ae6ded4f39c6c912c6bc971394b9ed6d81d.camel@coverfire.com>
 References: <f3c0595d07643496e1d3f411bfaab2deec93d750.camel@coverfire.com>
  <09ad93bed0f6d9e0abe79e79953b83050e3e7a8a.camel@intel.com>
  <d4f60ae6ded4f39c6c912c6bc971394b9ed6d81d.camel@coverfire.com>
-Message-ID: <cb8104d446604cdea1659ca1cd303e845236efa0.camel@intel.com>
+Message-ID: <ecc94514565a7bccbf096a1c012a02fd7ac19295.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -65,13 +65,12 @@ On Wed, 2018-10-03 at 13:08 -0400, Dan Siemon wrote:
 > our software but I can write a script to create the same structure if
 > that would be helpful.
 
-If you could provide a script to create the same structure, that would
-be good.  You will most likely need to tar it up or put it in a text
-file to ensure it does not get stripped by mail servers.
+I forget to ask for dmesg output as well, if you could provide that, I
+would greatly appreciate it.
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181003/cceacf73/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181003/77e68611/attachment.asc>
