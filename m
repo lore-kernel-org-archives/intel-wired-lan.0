@@ -1,7 +1,7 @@
 From: Jia-Ju Bai <baijiaju1990@gmail.com>
-Date: Wed, 3 Oct 2018 21:03:38 +0800
-Subject: [Intel-wired-lan] [REPORT] net: e100: possible data races
-Message-ID: <8b3eba57-bdf3-3c0d-1889-12a971f277d1@gmail.com>
+Date: Wed, 3 Oct 2018 21:18:41 +0800
+Subject: [Intel-wired-lan] [REPORT] net: e1000e: possible data races
+Message-ID: <1b02ad06-ff89-3540-ca85-17f826acfadc@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -9,19 +9,19 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 CPU0:
-e100_set_multicast_list
-   e100_exec_cb
-     line 854: spin_lock_irqsave()
-     line 866: e100_configure (function pointer)
-       line 1114: nic->flags [READ]
-       line 1123: nic->flags [READ]
+e1000e_get_stats64
+     line 5944: spin_lock()
+     e1000e_update_stats
+         line 4949: hw->mac.tx_packet_delta = er32(TPT); [WRITE]
 
 CPU1:
-e100_watchdog
-   line 1731: nic->flags [WRITE]
-   line 1733: nic->flags [WRITE]
+e1000_watchdog_task
+     e1000e_update_adaptive
+         line 1762: mac->tx_packet_delta [READ]
+         line 1763: mac->tx_packet_delta [READ]
+         line 1776: mac->tx_packet_delta [READ]
 
-As for nic->flags, the WRITE operations in CPU0 are performed
+As for mac->tx_packet_delta, the WRITE operation in CPU0 is performed
 with holding a spinlock, but the READ operations in CPU1 are performed
 without holding this spinlock, so there may exist data races.
 
