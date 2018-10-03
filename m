@@ -1,76 +1,92 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 03 Oct 2018 14:24:12 -0700
-Subject: [Intel-wired-lan] i40e Q
-In-Reply-To: <d4f60ae6ded4f39c6c912c6bc971394b9ed6d81d.camel@coverfire.com>
-References: <f3c0595d07643496e1d3f411bfaab2deec93d750.camel@coverfire.com>
- <09ad93bed0f6d9e0abe79e79953b83050e3e7a8a.camel@intel.com>
- <d4f60ae6ded4f39c6c912c6bc971394b9ed6d81d.camel@coverfire.com>
-Message-ID: <ecc94514565a7bccbf096a1c012a02fd7ac19295.camel@intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Wed, 3 Oct 2018 16:30:54 -0500
+Subject: [Intel-wired-lan] [PATCH 1/9] PCI: sysfs: Export available PCIe
+ bandwidth
+In-Reply-To: <20180903180242.14504-2-mr.nuke.me@gmail.com>
+References: <20180903180242.14504-1-mr.nuke.me@gmail.com>
+ <20180903180242.14504-2-mr.nuke.me@gmail.com>
+Message-ID: <20181003213054.GH120535@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2018-10-03 at 13:08 -0400, Dan Siemon wrote:
-> On Wed, 2018-10-03 at 08:04 -0700, Jeff Kirsher wrote:
-> > On Tue, 2018-10-02 at 22:24 -0400, Dan Siemon wrote:
-> > > Sorry for the direct email but I see on Netdev that you do some
-> > > work
-> > > on
-> > > the i40e driver so I'm hoping you can point me in the right
-> > > direction
-> > > or to the right forum/person.
-> > > 
-> > > We have a product based on the X710 and Linux. We occasionally
-> see
-> > > kernel error messages like the one pasted below. Our product
-> > > creates
-> > > a
-> > > large number of qdiscs, this may be related to tearing down the
-> > > qdisc
-> > > hierarchy.
-> > > 
-> > > I'd appreciate any help you can give.
-> > 
-> > Adding the intel-wired-lan mailing list, as well as the current
-> i40e
-> > maintainer...
-> > 
-> > What kernel are you running?
-> > Also can you provide the output of lspci -vvv for the network
-> > interface?
-> > 
-> > You say you are running with a large number of qdiscs, can you
-> > provide
-> > the setup/configuration that you are running?  It would be helpful
-> in
-> > trying to reproduce the issue in-house and so we can debug the
-> issue.
-> 
-> Thank you for taking the time to forward this on.
-> 
-> The kernel version is 4.18.X, I don't recall which point release the
-> below dump below is from. I've seen similar errors on 4.17 and
-> probably
-> 4.16 as well though I don't have dumps from those available.
-> 
-> I have attached the lspci output.
-> 
-> The qdisc config is essentially a large flat tree of HTB classes each
-> with an FQ-CoDel qdisc attached (an eBPF program directs traffic to
-> the
-> appropriate class). At the moment I can't reproduce that easily
-> without
-> our software but I can write a script to create the same structure if
-> that would be helpful.
+[+cc Stephen, Martin (for possible lspci changes)]
 
-I forget to ask for dmesg output as well, if you could provide that, I
-would greatly appreciate it.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181003/77e68611/attachment.asc>
+Hi Alexandru,
+
+On Mon, Sep 03, 2018 at 01:02:28PM -0500, Alexandru Gagniuc wrote:
+> For certain bandwidth-critical devices (e.g. multi-port network cards)
+> it is useful to know the available bandwidth to the root complex. This
+> information is only available via the system log, which doesn't
+> account for link degradation after probing.
+> 
+> With a sysfs attribute, we can computes the bandwidth on-demand, and
+> will detect degraded links.
+> 
+> Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+> ---
+>  drivers/pci/pci-sysfs.c | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+> 
+> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+> index 9ecfe13157c0..6658e927b1f5 100644
+> --- a/drivers/pci/pci-sysfs.c
+> +++ b/drivers/pci/pci-sysfs.c
+> @@ -218,6 +218,18 @@ static ssize_t current_link_width_show(struct device *dev,
+>  }
+>  static DEVICE_ATTR_RO(current_link_width);
+>  
+> +static ssize_t available_bandwidth_show(struct device *dev,
+> +				       struct device_attribute *attr, char *buf)
+> +{
+> +	struct pci_dev *pci_dev = to_pci_dev(dev);
+> +	u32 bw_avail;
+> +
+> +	bw_avail = pcie_bandwidth_available(pci_dev, NULL, NULL, NULL);
+> +
+> +	return sprintf(buf, "%u.%03u Gb/s\n", bw_avail / 1000, bw_avail % 1000);
+> +}
+> +static DEVICE_ATTR_RO(available_bandwidth);
+
+Help me understand this.  We already have these sysfs attributes:
+
+  max_link_speed          # eg, 16 GT/s
+  max_link_width          # eg, 8
+  current_link_speed      # eg, 16 GT/s
+  current_link_width      # eg, 8
+
+so I think the raw materials are already exposed.
+
+The benefits I see for this new file are that
+
+  - pcie_bandwidth_available() does the work of traversing up the
+    tree, doing the computations (link width * speed, reduced by
+    encoding overhead), and finding the minimum, and
+
+  - it re-traverses the path every time we look at it, while the
+    boot-time check is a one-time event.
+
+In principle this could all be done in user space with the attributes
+that are already exported.  There's some precedent for things like
+this in lspci, e.g., "NUMA node" [1], and lspci might even be a more
+user-friendly place for users to look for this, as opposed to
+searching through sysfs.
+
+[1] https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git/commit/?id=90ec4a6d0ae8
+
+>  static ssize_t secondary_bus_number_show(struct device *dev,
+>  					 struct device_attribute *attr,
+>  					 char *buf)
+> @@ -786,6 +798,7 @@ static struct attribute *pcie_dev_attrs[] = {
+>  	&dev_attr_current_link_width.attr,
+>  	&dev_attr_max_link_width.attr,
+>  	&dev_attr_max_link_speed.attr,
+> +	&dev_attr_available_bandwidth.attr,
+>  	NULL,
+>  };
+>  
+> -- 
+> 2.17.1
+> 
