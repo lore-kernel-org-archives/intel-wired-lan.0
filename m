@@ -1,237 +1,55 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Thu,  4 Oct 2018 15:18:27 -0700
-Subject: [Intel-wired-lan] [next PATCH S97 4/7] i40e: Protect access to vf
- control methods
-In-Reply-To: <20181004221830.16212-1-alice.michael@intel.com>
-References: <20181004221830.16212-1-alice.michael@intel.com>
-Message-ID: <20181004221830.16212-4-alice.michael@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu,  4 Oct 2018 16:28:52 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: allow IPsec Tx offload in VEPA mode
+Message-ID: <1538695732-10203-1-git-send-email-shannon.nelson@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jan Sokolowski <jan.sokolowski@intel.com>
+When it's possible that the PF might end up trying to send a
+packet to one of its own VFs, we have to forbid IPsec offload
+because the device drops the packets into a black hole.
+See commit 47b6f50077e6 ("ixgbe: disallow IPsec Tx offload
+when in SR-IOV mode") for more info.
 
-A scenario has been found in which simultaneous
-addition/removal and modification of VF's might cause
-unstable behaviour, up to and including kernel panics.
+This really is only necessary when the device is in the default
+VEB mode.  If instead the device is running in VEPA mode,
+the packets will go through the encryption engine and out the
+MAC/PHY as normal, and get "hairpinned" as needed by the switch.
 
-Protect the methods that create/modify/destroy VF's
-by locking them behind an atomically set bit in PF status
-bitfield.
+So let's not block IPsec offload when in VEPA mode.  To get
+there with the ixgbe device, use the handy 'bridge' command:
+	bridge link set dev eth1 hwmode vepa
 
-Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h             |  1 +
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 64 ++++++++++++++++++++--
- 2 files changed, 60 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 11f0987..f575b03 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -147,6 +147,7 @@ enum i40e_state_t {
- 	__I40E_CLIENT_SERVICE_REQUESTED,
- 	__I40E_CLIENT_L2_CHANGE,
- 	__I40E_CLIENT_RESET,
-+	__I40E_VIRTCHNL_OP_PENDING,
- 	/* This must be last as it determines the size of the BITMAP */
- 	__I40E_STATE_SIZE__,
- };
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 81b0e1f8..4448f4e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1675,13 +1675,20 @@ static int i40e_pci_sriov_enable(struct pci_dev *pdev, int num_vfs)
- int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
- {
- 	struct i40e_pf *pf = pci_get_drvdata(pdev);
-+	int ret = 0;
-+
-+	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
-+		dev_warn(&pdev->dev, "Unable to configure VFs, other operation is pending.\n");
-+		return -EAGAIN;
-+	}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index fd1b054..4d77f42 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -4,6 +4,7 @@
+ #include "ixgbe.h"
+ #include <net/xfrm.h>
+ #include <crypto/aead.h>
++#include <linux/if_bridge.h>
  
- 	if (num_vfs) {
- 		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
- 			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
- 			i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
- 		}
--		return i40e_pci_sriov_enable(pdev, num_vfs);
-+		ret = i40e_pci_sriov_enable(pdev, num_vfs);
-+		goto sriov_configure_out;
- 	}
- 
- 	if (!pci_vfs_assigned(pf->pdev)) {
-@@ -1690,9 +1697,12 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
- 		i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
+ #define IXGBE_IPSEC_KEY_BITS  160
+ static const char aes_gcm_name[] = "rfc4106(gcm(aes))";
+@@ -693,7 +694,8 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
  	} else {
- 		dev_warn(&pdev->dev, "Unable to free VFs because some are assigned to VMs.\n");
--		return -EINVAL;
-+		ret = -EINVAL;
-+		goto sriov_configure_out;
- 	}
--	return 0;
-+sriov_configure_out:
-+	clear_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state);
-+	return ret;
- }
+ 		struct tx_sa tsa;
  
- /***********************virtual channel routines******************/
-@@ -3893,6 +3903,11 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 		goto error_param;
- 	}
+-		if (adapter->num_vfs)
++		if (adapter->num_vfs &&
++		    adapter->bridge_mode != BRIDGE_MODE_VEPA)
+ 			return -EOPNOTSUPP;
  
-+	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
-+		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
-+		return -EAGAIN;
-+	}
-+
- 	if (is_multicast_ether_addr(mac)) {
- 		dev_err(&pf->pdev->dev,
- 			"Invalid Ethernet address %pM for VF %d\n", mac, vf_id);
-@@ -3941,6 +3956,7 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 	dev_info(&pf->pdev->dev, "Bring down and up the VF interface to make this change effective.\n");
- 
- error_param:
-+	clear_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state);
- 	return ret;
- }
- 
-@@ -3992,6 +4008,11 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 	struct i40e_vf *vf;
- 	int ret = 0;
- 
-+	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
-+		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
-+		return -EAGAIN;
-+	}
-+
- 	/* validate the request */
- 	ret = i40e_validate_vf(pf, vf_id);
- 	if (ret)
-@@ -4107,6 +4128,7 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 	ret = 0;
- 
- error_pvid:
-+	clear_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state);
- 	return ret;
- }
- 
-@@ -4128,6 +4150,11 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 	struct i40e_vf *vf;
- 	int ret = 0;
- 
-+	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
-+		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
-+		return -EAGAIN;
-+	}
-+
- 	/* validate the request */
- 	ret = i40e_validate_vf(pf, vf_id);
- 	if (ret)
-@@ -4154,6 +4181,7 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 
- 	vf->tx_rate = max_tx_rate;
- error:
-+	clear_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state);
- 	return ret;
- }
- 
-@@ -4174,6 +4202,11 @@ int i40e_ndo_get_vf_config(struct net_device *netdev,
- 	struct i40e_vf *vf;
- 	int ret = 0;
- 
-+	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
-+		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
-+		return -EAGAIN;
-+	}
-+
- 	/* validate the request */
- 	ret = i40e_validate_vf(pf, vf_id);
- 	if (ret)
-@@ -4209,6 +4242,7 @@ int i40e_ndo_get_vf_config(struct net_device *netdev,
- 	ret = 0;
- 
- error_param:
-+	clear_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state);
- 	return ret;
- }
- 
-@@ -4230,6 +4264,11 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
- 	int abs_vf_id;
- 	int ret = 0;
- 
-+	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
-+		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
-+		return -EAGAIN;
-+	}
-+
- 	/* validate the request */
- 	if (vf_id >= pf->num_alloc_vfs) {
- 		dev_err(&pf->pdev->dev, "Invalid VF Identifier %d\n", vf_id);
-@@ -4273,6 +4312,7 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
- 			       0, (u8 *)&pfe, sizeof(pfe), NULL);
- 
- error_out:
-+	clear_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state);
- 	return ret;
- }
- 
-@@ -4294,6 +4334,11 @@ int i40e_ndo_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool enable)
- 	struct i40e_vf *vf;
- 	int ret = 0;
- 
-+	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
-+		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
-+		return -EAGAIN;
-+	}
-+
- 	/* validate the request */
- 	if (vf_id >= pf->num_alloc_vfs) {
- 		dev_err(&pf->pdev->dev, "Invalid VF Identifier %d\n", vf_id);
-@@ -4327,6 +4372,7 @@ int i40e_ndo_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool enable)
- 		ret = -EIO;
- 	}
- out:
-+	clear_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state);
- 	return ret;
- }
- 
-@@ -4345,15 +4391,22 @@ int i40e_ndo_set_vf_trust(struct net_device *netdev, int vf_id, bool setting)
- 	struct i40e_vf *vf;
- 	int ret = 0;
- 
-+	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
-+		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
-+		return -EAGAIN;
-+	}
-+
- 	/* validate the request */
- 	if (vf_id >= pf->num_alloc_vfs) {
- 		dev_err(&pf->pdev->dev, "Invalid VF Identifier %d\n", vf_id);
--		return -EINVAL;
-+		ret = -EINVAL;
-+		goto out;
- 	}
- 
- 	if (pf->flags & I40E_FLAG_MFP_ENABLED) {
- 		dev_err(&pf->pdev->dev, "Trusted VF not supported in MFP mode.\n");
--		return -EINVAL;
-+		ret = -EINVAL;
-+		goto out;
- 	}
- 
- 	vf = &pf->vf[vf_id];
-@@ -4376,5 +4429,6 @@ int i40e_ndo_set_vf_trust(struct net_device *netdev, int vf_id, bool setting)
- 	}
- 
- out:
-+	clear_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state);
- 	return ret;
- }
+ 		/* find the first unused index */
 -- 
-2.9.5
+2.7.4
 
