@@ -1,41 +1,130 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 4 Oct 2018 18:24:32 +0000
-Subject: [Intel-wired-lan] [PATCH 04/16] i40e: Replace spin_is_locked()
- with lockdep
-In-Reply-To: <20181003053902.6910-5-ldr709@gmail.com>
-References: <20181003053902.6910-1-ldr709@gmail.com>
- <20181003053902.6910-5-ldr709@gmail.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FD117@ORSMSX106.amr.corp.intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Thu, 4 Oct 2018 15:45:49 -0500
+Subject: [Intel-wired-lan] [PATCH 1/9] PCI: sysfs: Export available PCIe
+ bandwidth
+In-Reply-To: <f9fbc8babbb344eca593a3f8b0d096d9@ausx13mps321.AMER.DELL.COM>
+References: <20180903180242.14504-1-mr.nuke.me@gmail.com>
+ <20180903180242.14504-2-mr.nuke.me@gmail.com>
+ <20181003213054.GH120535@bhelgaas-glaptop.roam.corp.google.com>
+ <f9fbc8babbb344eca593a3f8b0d096d9@ausx13mps321.AMER.DELL.COM>
+Message-ID: <20181004204549.GI120535@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Lance Roy
-> Sent: Tuesday, October 2, 2018 10:39 PM
-> To: linux-kernel at vger.kernel.org
-> Cc: netdev at vger.kernel.org; Lance Roy <ldr709@gmail.com>; intel-wired-
-> lan at lists.osuosl.org; Paul E. McKenney <paulmck@linux.ibm.com>; David S.
-> Miller <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH 04/16] i40e: Replace spin_is_locked() with
-> lockdep
+[+cc Alex (VC mentioned below)]
+
+On Wed, Oct 03, 2018 at 10:00:19PM +0000, Alex_Gagniuc at Dellteam.com wrote:
+> On 10/03/2018 04:31 PM, Bjorn Helgaas wrote:
+> > On Mon, Sep 03, 2018 at 01:02:28PM -0500, Alexandru Gagniuc wrote:
+> >> For certain bandwidth-critical devices (e.g. multi-port network cards)
+> >> it is useful to know the available bandwidth to the root complex. This
+> >> information is only available via the system log, which doesn't
+> >> account for link degradation after probing.
+> >>
+> >> With a sysfs attribute, we can computes the bandwidth on-demand, and
+> >> will detect degraded links.
+> >>
+> >> Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+> >> ---
+> >>   drivers/pci/pci-sysfs.c | 13 +++++++++++++
+> >>   1 file changed, 13 insertions(+)
+> >>
+> >> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+> >> index 9ecfe13157c0..6658e927b1f5 100644
+> >> --- a/drivers/pci/pci-sysfs.c
+> >> +++ b/drivers/pci/pci-sysfs.c
+> >> @@ -218,6 +218,18 @@ static ssize_t current_link_width_show(struct device *dev,
+> >>   }
+> >>   static DEVICE_ATTR_RO(current_link_width);
+> >>   
+> >> +static ssize_t available_bandwidth_show(struct device *dev,
+> >> +				       struct device_attribute *attr, char *buf)
+> >> +{
+> >> +	struct pci_dev *pci_dev = to_pci_dev(dev);
+> >> +	u32 bw_avail;
+> >> +
+> >> +	bw_avail = pcie_bandwidth_available(pci_dev, NULL, NULL, NULL);
+> >> +
+> >> +	return sprintf(buf, "%u.%03u Gb/s\n", bw_avail / 1000, bw_avail % 1000);
+> >> +}
+> >> +static DEVICE_ATTR_RO(available_bandwidth);
+> > 
+> > Help me understand this.  We already have these sysfs attributes:
+> > 
+> >    max_link_speed          # eg, 16 GT/s
+> >    max_link_width          # eg, 8
+> >    current_link_speed      # eg, 16 GT/s
+> >    current_link_width      # eg, 8
+> > 
+> > so I think the raw materials are already exposed.
+> >
+> > The benefits I see for this new file are that
+> > 
+> >    - pcie_bandwidth_available() does the work of traversing up the
+> >      tree, doing the computations (link width * speed, reduced by
+> >      encoding overhead), and finding the minimum, and
+> > 
+> >    - it re-traverses the path every time we look at it, while the
+> >      boot-time check is a one-time event.
+> > 
+> > In principle this could all be done in user space with the attributes
+> > that are already exported.  There's some precedent for things like
+> > this in lspci, e.g., "NUMA node" [1], and lspci might even be a more
+> > user-friendly place for users to look for this, as opposed to
+> > searching through sysfs.
 > 
-> lockdep_assert_held() is better suited to checking locking requirements,
-> since it won't get confused when someone else holds the lock. This is also a
-> step towards possibly removing spin_is_locked().
+> Parsing the endpoint to root port bandwidth is, in principle, possible 
+> from userspace. It's just that in practice it's very clumsy to do, and, 
+> as you pointed out, not that reliable.
+
+I don't remember the reliability issue.  Was that in a previous
+conversation?  AFAICT, using current_link_speed and current_link_width
+should be as reliable as pcie_bandwidth_available() because they're
+both based on reading PCI_EXP_LNKSTA.
+
+This patch exposes only the available bandwidth, not the limiting
+device, link speed, or link width.  Maybe that extra information isn't
+important in this context.  Of course, it's easy to derive using
+current_link_speed and current_link_width, but if we do that, there's
+really no benefit to adding a new file.
+
+Linux doesn't really support Virtual Channels (VC) yet, and I don't
+know much about it, but it seems like Quality-of-Service features like
+VC could affect this idea of available bandwidth.
+
+Since we already expose the necessary information, and we might throw
+additional things like VC into the mix, I'm a little hesitant about
+adding things to sysfs because they're very difficult to change later.  
+
+> I understand it's not information that all users would jump in the air 
+> to know. However, it was important enough for certain use cases, that 
+> the kernel already has a very reliable way to calculate it.
 > 
-> Signed-off-by: Lance Roy <ldr709@gmail.com>
-> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: <netdev@vger.kernel.org>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+> It seems to me that the most elegant way is to let the kernel tell us, 
+> since the kernel already has this facility. To quote one of the texts 
+> under Documentation/, it is an elegant way to "avoid reinventing kernel 
+> wheels in userspace".
+> 
+> Alex
+> 
+> > [1] https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git/commit/?id=90ec4a6d0ae8
+> > 
+> >>   static ssize_t secondary_bus_number_show(struct device *dev,
+> >>   					 struct device_attribute *attr,
+> >>   					 char *buf)
+> >> @@ -786,6 +798,7 @@ static struct attribute *pcie_dev_attrs[] = {
+> >>   	&dev_attr_current_link_width.attr,
+> >>   	&dev_attr_max_link_width.attr,
+> >>   	&dev_attr_max_link_speed.attr,
+> >> +	&dev_attr_available_bandwidth.attr,
+> >>   	NULL,
+> >>   };
+> >>   
+> >> -- 
+> >> 2.17.1
+> >>
+> > 
+> 
