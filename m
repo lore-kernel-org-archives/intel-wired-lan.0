@@ -1,130 +1,351 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Thu, 4 Oct 2018 15:45:49 -0500
-Subject: [Intel-wired-lan] [PATCH 1/9] PCI: sysfs: Export available PCIe
- bandwidth
-In-Reply-To: <f9fbc8babbb344eca593a3f8b0d096d9@ausx13mps321.AMER.DELL.COM>
-References: <20180903180242.14504-1-mr.nuke.me@gmail.com>
- <20180903180242.14504-2-mr.nuke.me@gmail.com>
- <20181003213054.GH120535@bhelgaas-glaptop.roam.corp.google.com>
- <f9fbc8babbb344eca593a3f8b0d096d9@ausx13mps321.AMER.DELL.COM>
-Message-ID: <20181004204549.GI120535@bhelgaas-glaptop.roam.corp.google.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Thu, 4 Oct 2018 23:18:48 +0200
+Subject: [Intel-wired-lan] [PATCH v2 0/5] Introducing ixgbe AF_XDP ZC
+ support
+In-Reply-To: <20181002080034.11754-1-bjorn.topel@gmail.com>
+References: <20181002080034.11754-1-bjorn.topel@gmail.com>
+Message-ID: <20181004231848.33efd81f@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-[+cc Alex (VC mentioned below)]
+On Tue,  2 Oct 2018 10:00:29 +0200
+Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
 
-On Wed, Oct 03, 2018 at 10:00:19PM +0000, Alex_Gagniuc at Dellteam.com wrote:
-> On 10/03/2018 04:31 PM, Bjorn Helgaas wrote:
-> > On Mon, Sep 03, 2018 at 01:02:28PM -0500, Alexandru Gagniuc wrote:
-> >> For certain bandwidth-critical devices (e.g. multi-port network cards)
-> >> it is useful to know the available bandwidth to the root complex. This
-> >> information is only available via the system log, which doesn't
-> >> account for link degradation after probing.
-> >>
-> >> With a sysfs attribute, we can computes the bandwidth on-demand, and
-> >> will detect degraded links.
-> >>
-> >> Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
-> >> ---
-> >>   drivers/pci/pci-sysfs.c | 13 +++++++++++++
-> >>   1 file changed, 13 insertions(+)
-> >>
-> >> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-> >> index 9ecfe13157c0..6658e927b1f5 100644
-> >> --- a/drivers/pci/pci-sysfs.c
-> >> +++ b/drivers/pci/pci-sysfs.c
-> >> @@ -218,6 +218,18 @@ static ssize_t current_link_width_show(struct device *dev,
-> >>   }
-> >>   static DEVICE_ATTR_RO(current_link_width);
-> >>   
-> >> +static ssize_t available_bandwidth_show(struct device *dev,
-> >> +				       struct device_attribute *attr, char *buf)
-> >> +{
-> >> +	struct pci_dev *pci_dev = to_pci_dev(dev);
-> >> +	u32 bw_avail;
-> >> +
-> >> +	bw_avail = pcie_bandwidth_available(pci_dev, NULL, NULL, NULL);
-> >> +
-> >> +	return sprintf(buf, "%u.%03u Gb/s\n", bw_avail / 1000, bw_avail % 1000);
-> >> +}
-> >> +static DEVICE_ATTR_RO(available_bandwidth);
-> > 
-> > Help me understand this.  We already have these sysfs attributes:
-> > 
-> >    max_link_speed          # eg, 16 GT/s
-> >    max_link_width          # eg, 8
-> >    current_link_speed      # eg, 16 GT/s
-> >    current_link_width      # eg, 8
-> > 
-> > so I think the raw materials are already exposed.
-> >
-> > The benefits I see for this new file are that
-> > 
-> >    - pcie_bandwidth_available() does the work of traversing up the
-> >      tree, doing the computations (link width * speed, reduced by
-> >      encoding overhead), and finding the minimum, and
-> > 
-> >    - it re-traverses the path every time we look at it, while the
-> >      boot-time check is a one-time event.
-> > 
-> > In principle this could all be done in user space with the attributes
-> > that are already exported.  There's some precedent for things like
-> > this in lspci, e.g., "NUMA node" [1], and lspci might even be a more
-> > user-friendly place for users to look for this, as opposed to
-> > searching through sysfs.
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
 > 
-> Parsing the endpoint to root port bandwidth is, in principle, possible 
-> from userspace. It's just that in practice it's very clumsy to do, and, 
-> as you pointed out, not that reliable.
-
-I don't remember the reliability issue.  Was that in a previous
-conversation?  AFAICT, using current_link_speed and current_link_width
-should be as reliable as pcie_bandwidth_available() because they're
-both based on reading PCI_EXP_LNKSTA.
-
-This patch exposes only the available bandwidth, not the limiting
-device, link speed, or link width.  Maybe that extra information isn't
-important in this context.  Of course, it's easy to derive using
-current_link_speed and current_link_width, but if we do that, there's
-really no benefit to adding a new file.
-
-Linux doesn't really support Virtual Channels (VC) yet, and I don't
-know much about it, but it seems like Quality-of-Service features like
-VC could affect this idea of available bandwidth.
-
-Since we already expose the necessary information, and we might throw
-additional things like VC into the mix, I'm a little hesitant about
-adding things to sysfs because they're very difficult to change later.  
-
-> I understand it's not information that all users would jump in the air 
-> to know. However, it was important enough for certain use cases, that 
-> the kernel already has a very reliable way to calculate it.
+> Jeff: Please remove the v1 patches from your dev-queue!
 > 
-> It seems to me that the most elegant way is to let the kernel tell us, 
-> since the kernel already has this facility. To quote one of the texts 
-> under Documentation/, it is an elegant way to "avoid reinventing kernel 
-> wheels in userspace".
+> This patch set introduces zero-copy AF_XDP support for Intel's ixgbe
+> driver.
 > 
-> Alex
+> The ixgbe zero-copy code is located in its own file ixgbe_xsk.[ch],
+> analogous to the i40e ZC support. Again, as in i40e, code paths have
+> been copied from the XDP path to the zero-copy path. Going forward we
+> will try to generalize more code between the AF_XDP ZC drivers, and
+> also reduce the heavy C&P.
 > 
-> > [1] https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git/commit/?id=90ec4a6d0ae8
-> > 
-> >>   static ssize_t secondary_bus_number_show(struct device *dev,
-> >>   					 struct device_attribute *attr,
-> >>   					 char *buf)
-> >> @@ -786,6 +798,7 @@ static struct attribute *pcie_dev_attrs[] = {
-> >>   	&dev_attr_current_link_width.attr,
-> >>   	&dev_attr_max_link_width.attr,
-> >>   	&dev_attr_max_link_speed.attr,
-> >> +	&dev_attr_available_bandwidth.attr,
-> >>   	NULL,
-> >>   };
-> >>   
-> >> -- 
-> >> 2.17.1
-> >>
-> > 
+> We have run some benchmarks on a dual socket system with two Broadwell
+> E5 2660 @ 2.0 GHz with hyperthreading turned off. Each socket has 14
+> cores which gives a total of 28, but only two cores are used in these
+> experiments. One for TR/RX and one for the user space application. The
+> memory is DDR4 @ 2133 MT/s (1067 MHz) and the size of each DIMM is
+> 8192MB and with 8 of those DIMMs in the system we have 64 GB of total
+> memory. The compiler used is GCC 7.3.0. The NIC is Intel
+> 82599ES/X520-2 10Gbit/s using the ixgbe driver.
 > 
+> Below are the results in Mpps of the 82599ES/X520-2 NIC benchmark runs
+> for 64B and 1500B packets, generated by a commercial packet generator
+> HW blasting packets at full 10Gbit/s line rate. The results are with
+> retpoline and all other spectre and meltdown fixes.
+> 
+> AF_XDP performance 64B packets:
+> Benchmark   XDP_DRV with zerocopy
+> rxdrop        14.7
+> txpush        14.6
+
+I see similar performance numbers, but my system can crash with 'txonly'.
+
+See full crash log and my analysis, below.
+
+> l2fwd         11.1
+
+Got l2fwd 13.2 Mpps.
+
+
+> 
+> AF_XDP performance 1500B packets:
+> Benchmark   XDP_DRV with zerocopy
+> rxdrop        0.8
+> l2fwd         0.8
+> 
+> XDP performance on our system as a base line.
+> 
+> 64B packets:
+> XDP stats       CPU     Mpps       issue-pps
+> XDP-RX CPU      16      14.7       0
+> 
+> 1500B packets:
+> XDP stats       CPU     Mpps       issue-pps
+> XDP-RX CPU      16      0.8        0
+> 
+> The structure of the patch set is as follows:
+> 
+> Patch 1: Introduce Rx/Tx ring enable/disable functionality
+> Patch 2: Preparatory patche to ixgbe driver code for RX
+> Patch 3: ixgbe zero-copy support for RX
+> Patch 4: Preparatory patch to ixgbe driver code for TX
+> Patch 5: ixgbe zero-copy support for TX
+> 
+> Changes since v1:
+> 
+> * Removed redundant AF_XDP precondition checks, pointed out by
+>   Jakub. Now, the preconditions are only checked at XDP enable time.
+> * Fixed a crash in the egress path, due to incorrect usage of
+>   ixgbe_ring queue_index member. In v2 a ring_idx back reference is
+>   introduced, and used in favor of queue_index. William reported the
+>   crash, and helped me smoke out the issue. Kudos!
+> * In ixgbe_xsk_async_xmit, validate qid against num_xdp_queues,
+>   instead of num_rx_queues.
+> 
+> Cheers!
+> Bj?rn
+> 
+> Bj?rn T?pel (5):
+>   ixgbe: added Rx/Tx ring disable/enable functions
+>   ixgbe: move common Rx functions to ixgbe_txrx_common.h
+>   ixgbe: add AF_XDP zero-copy Rx support
+>   ixgbe: move common Tx functions to ixgbe_txrx_common.h
+>   ixgbe: add AF_XDP zero-copy Tx support
+> 
+>  drivers/net/ethernet/intel/ixgbe/Makefile     |   3 +-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  28 +-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |  17 +-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 291 ++++++-
+>  .../ethernet/intel/ixgbe/ixgbe_txrx_common.h  |  50 ++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 803 ++++++++++++++++++
+>  6 files changed, 1146 insertions(+), 46 deletions(-)
+>  create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
+>  create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+
+
+
+ sock0 at ixgbe2:0 rxdrop 	
+                pps         pkts        1.00       
+rx              14,572,284  36,093,496 
+tx              0           0          
+
+
+ sock0 at ixgbe2:0 l2fwd 	
+                pps         pkts        1.00       
+rx              13,287,830  108,616,192
+tx              13,287,830  108,616,284
+
+
+
+
+Notice, the crash only happens some times (on the second invocation):
+
+$ sudo ./xdpsock --interface ixgbe2 --txonly --zero
+samples/bpf/xdpsock_user.c:kick_tx:749: Assertion failed: 0: errno: 100/"Network is down"
+
+ sock0 at ixgbe2:0 txonly 	
+                pps         pkts        0.05       
+rx              0           0          
+tx              33,763      1,709      
+
+
+$ sudo ./xdpsock --interface ixgbe2 --txonly --zero
+
+ sock0 at ixgbe2:0 txonly 	
+                pps         pkts        1.00       
+rx              0           0          
+tx              14,730,354  14,733,404 
+
+
+$ sudo ./xdpsock --interface ixgbe2 --txonly --zero
+samples/bpf/xdpsock_user.c:kick_tx:749: Assertion failed: 0: errno: 100/"Network is down"
+
+ sock0 at ixgbe2:0 txonly 	
+                pps         pkts        0.26       
+rx              0           0          
+tx              2,054,927   524,680    
+
+$ sudo ./xdpsock --interface ixgbe2 --txonly --zero
+
+
+[  249.953547] ixgbe 0000:01:00.1 ixgbe2: detected SFP+: 4
+[  250.204158] ixgbe 0000:01:00.1 ixgbe2: NIC Link is Up 10 Gbps, Flow Control: None
+[  257.217496] ixgbe 0000:01:00.1: removed PHC on ixgbe2
+[  257.279328] ixgbe 0000:01:00.1: Multiqueue Disabled: Rx Queue count = 1, Tx Queue count = 1 XDP Queue count = 6
+[  257.308463] ixgbe 0000:01:00.1: registered PHC device on ixgbe2
+[  257.489166] ixgbe 0000:01:00.1 ixgbe2: detected SFP+: 4
+[  257.494923] ixgbe 0000:01:00.1 ixgbe2: initiating reset to clear Tx work after link loss
+[  257.716190] ixgbe 0000:01:00.1 ixgbe2: Reset adapter
+[  257.968552] ixgbe 0000:01:00.1 ixgbe2: detected SFP+: 4
+[  258.185273] ixgbe 0000:01:00.1 ixgbe2: NIC Link is Up 10 Gbps, Flow Control: None
+[  260.836196] BUG: unable to handle kernel NULL pointer dereference at 0000000000000040
+[  260.844652] PGD 0 P4D 0 
+[  260.847527] Oops: 0002 [#1] PREEMPT SMP PTI
+[  260.852042] CPU: 1 PID: 18 Comm: ksoftirqd/1 Not tainted 4.19.0-rc5-bpf-next-xdp-ixgbe-ZC+ #66
+[  260.861269] Hardware name: Supermicro Super Server/X10SRi-F, BIOS 2.0a 08/01/2016
+[  260.869381] RIP: 0010:xsk_umem_consume_tx+0xc9/0x180
+[  260.874682] Code: 24 75 be 48 8b 86 08 03 00 00 48 8d b0 f8 fc ff ff 48 39 c7 75 96 e8 26 bd 8a ff 5b 31 c0 41 5a 41 5c 41 5d 5d 49 8d 62 f8 c3 <89> 41 40 8b 4a 24 8b 42 1c 29 c8 75 0b 48 8b 42 28 8b 00 89 42 1c
+[  260.894317] RSP: 0018:ffffc9000323bd00 EFLAGS: 00010246
+[  260.899873] RAX: 0000000000000000 RBX: ffffc9000323bd68 RCX: 0000000000000000
+[  260.907339] RDX: ffff8808553e1c00 RSI: ffff880826e43000 RDI: ffff880854940818
+[  260.914801] RBP: ffffc9000323bd20 R08: 0000000000000010 R09: 0000000000000000
+[  260.922263] R10: ffffc9000323bd40 R11: 0000000000000000 R12: ffffc9000323bd64
+[  260.929726] R13: ffff880854940780 R14: 0000000000000000 R15: 0000000000000000
+[  260.937189] FS:  0000000000000000(0000) GS:ffff88085c640000(0000) knlGS:0000000000000000
+[  260.945871] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  260.951943] CR2: 0000000000000040 CR3: 000000087f20a006 CR4: 00000000003606e0
+[  260.959409] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  260.966872] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[  260.974333] Call Trace:
+[  260.977115]  ? ixgbe_clean_xdp_tx_irq+0x19d/0x2e0 [ixgbe]
+[  260.982843]  ixgbe_clean_xdp_tx_irq+0x19d/0x2e0 [ixgbe]
+[  260.988426]  ixgbe_poll+0x5a/0x700 [ixgbe]
+[  260.992850]  net_rx_action+0x141/0x3f0
+[  260.996931]  ? sort_range+0x20/0x20
+[  261.000743]  __do_softirq+0xe3/0x2f7
+[  261.004656]  ? sort_range+0x20/0x20
+[  261.008490]  run_ksoftirqd+0x26/0x30
+[  261.012420]  smpboot_thread_fn+0x114/0x1d0
+[  261.016848]  kthread+0x111/0x130
+[  261.020423]  ? kthread_create_worker_on_cpu+0x50/0x50
+[  261.025802]  ret_from_fork+0x1f/0x30
+[  261.029707] Modules linked in: ip6table_filter ip6_tables iptable_filter ip_tables x_tables tun nfnetlink bridge nf_defrag_ipv6 nf_defrag_ipv4 bpfilter sunrpc coretemp intel_cstate intel_uncore intel_rapl_perf pcspkr i2c_i801 wmi ipmi_si ipmi_devintf ipmi_msghandler acpi_pad pcc_cpufreq sch_fq_codel ixgbe mdio mlx5_core i40e igb nfp ptp i2c_algo_bit devlink i2c_core pps_core hid_generic [last unloaded: x_tables]
+[  261.067878] CR2: 0000000000000040
+[  261.071526] ---[ end trace f0011e17c3744ee4 ]---
+[  261.077903] RIP: 0010:xsk_umem_consume_tx+0xc9/0x180
+[  261.083191] Code: 24 75 be 48 8b 86 08 03 00 00 48 8d b0 f8 fc ff ff 48 39 c7 75 96 e8 26 bd 8a ff 5b 31 c0 41 5a 41 5c 41 5d 5d 49 8d 62 f8 c3 <89> 41 40 8b 4a 24 8b 42 1c 29 c8 75 0b 48 8b 42 28 8b 00 89 42 1c
+[  261.102852] RSP: 0018:ffffc9000323bd00 EFLAGS: 00010246
+[  261.108423] RAX: 0000000000000000 RBX: ffffc9000323bd68 RCX: 0000000000000000
+[  261.115889] RDX: ffff8808553e1c00 RSI: ffff880826e43000 RDI: ffff880854940818
+[  261.123382] RBP: ffffc9000323bd20 R08: 0000000000000010 R09: 0000000000000000
+[  261.130847] R10: ffffc9000323bd40 R11: 0000000000000000 R12: ffffc9000323bd64
+[  261.138325] R13: ffff880854940780 R14: 0000000000000000 R15: 0000000000000000
+[  261.145788] FS:  0000000000000000(0000) GS:ffff88085c640000(0000) knlGS:0000000000000000
+[  261.154503] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  261.160594] CR2: 0000000000000040 CR3: 000000087f20a006 CR4: 00000000003606e0
+[  261.168070] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  261.175547] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[  261.183012] Kernel panic - not syncing: Fatal exception in interrupt
+[  261.189743] Kernel Offset: disabled
+[  261.194954] ---[ end Kernel panic - not syncing: Fatal exception in interrupt ]---
+[  261.203123] ------------[ cut here ]------------
+[  261.208071] sched: Unexpected reschedule of offline CPU#0!
+[  261.213885] WARNING: CPU: 1 PID: 18 at arch/x86/kernel/smp.c:128 native_smp_send_reschedule+0x31/0x40
+[  261.223698] Modules linked in: ip6table_filter ip6_tables iptable_filter ip_tables x_tables tun nfnetlink bridge nf_defrag_ipv6 nf_defrag_ipv4 bpfilter sunrpc coretemp intel_cstate intel_uncore intel_rapl_perf pcspkr i2c_i801 wmi ipmi_si ipmi_devintf ipmi_msghandler acpi_pad pcc_cpufreq sch_fq_codel ixgbe mdio mlx5_core i40e igb nfp ptp i2c_algo_bit devlink i2c_core pps_core hid_generic [last unloaded: x_tables]
+[  261.261869] CPU: 1 PID: 18 Comm: ksoftirqd/1 Tainted: G      D           4.19.0-rc5-bpf-next-xdp-ixgbe-ZC+ #66
+[  261.272468] Hardware name: Supermicro Super Server/X10SRi-F, BIOS 2.0a 08/01/2016
+[  261.280549] RIP: 0010:native_smp_send_reschedule+0x31/0x40
+[  261.286361] Code: 48 0f a3 05 91 c7 3d 01 73 12 48 8b 05 e8 11 0c 01 be fd 00 00 00 48 8b 40 30 ff e0 89 fe 48 c7 c7 b8 36 09 82 e8 ff 7d 02 00 <0f> 0b c3 66 90 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 53 48
+[  261.306001] RSP: 0018:ffff88085c643cc0 EFLAGS: 00010082
+[  261.311553] RAX: 000000000000002e RBX: ffff88085c6213c0 RCX: 0000000000000006
+[  261.319023] RDX: 0000000000000007 RSI: 0000000000000092 RDI: ffff88085c6555e0
+[  261.326483] RBP: ffff88085306a0d4 R08: 0000000000000000 R09: 0000000000000478
+[  261.333943] R10: ffff88085c643bf8 R11: ffffffff82acfbad R12: ffff880853069640
+[  261.341407] R13: ffff88085c643d10 R14: 0000000000000086 R15: 00000000000213c0
+[  261.348869] FS:  0000000000000000(0000) GS:ffff88085c640000(0000) knlGS:0000000000000000
+[  261.357555] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  261.363624] CR2: 0000000000000040 CR3: 000000087f20a006 CR4: 00000000003606e0
+[  261.371090] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  261.378554] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[  261.386014] Call Trace:
+[  261.388788]  <IRQ>
+[  261.391128]  check_preempt_curr+0x6f/0x80
+[  261.395466]  ttwu_do_wakeup+0x19/0x150
+[  261.399548]  try_to_wake_up+0x19c/0x450
+[  261.403715]  ? enqueue_entity+0xad/0x2c0
+[  261.407964]  __wake_up_common+0x71/0x170
+[  261.412220]  ep_poll_callback+0xb5/0x2a0
+[  261.416474]  __wake_up_common+0x71/0x170
+[  261.420729]  __wake_up_common_lock+0x6c/0x90
+[  261.425335]  ? tick_sched_do_timer+0x60/0x60
+[  261.429935]  irq_work_run_list+0x47/0x70
+[  261.434190]  update_process_times+0x3b/0x50
+[  261.438705]  tick_sched_handle+0x21/0x70
+[  261.442959]  ? tick_sched_do_timer+0x50/0x60
+[  261.447554]  tick_sched_timer+0x37/0x70
+[  261.451719]  __hrtimer_run_queues+0xf8/0x2a0
+[  261.456317]  hrtimer_interrupt+0xe5/0x240
+[  261.460657]  ? sched_clock+0x5/0x10
+[  261.464478]  smp_apic_timer_interrupt+0x5e/0x140
+[  261.469420]  apic_timer_interrupt+0xf/0x20
+[  261.473847]  </IRQ>
+[  261.476271] RIP: 0010:panic+0x1e3/0x232
+[  261.480433] Code: eb ac 83 3d 30 07 a0 01 00 74 05 e8 39 36 02 00 48 c7 c6 a0 8b ac 82 48 c7 c7 10 af 09 82 e8 84 6a 05 00 fb 66 0f 1f 44 00 00 <31> db e8 f8 22 0b 00 4c 39 eb 7c 17 41 83 f4 01 44 89 e7 ff 15 d6
+[  261.500066] RSP: 0018:ffffc9000323baf8 EFLAGS: 00000292 ORIG_RAX: ffffffffffffff13
+[  261.508234] RAX: 0000000000000046 RBX: 0000000000000000 RCX: 0000000000000006
+[  261.515696] RDX: 0000000000000007 RSI: 0000000000000082 RDI: ffff88085c6555e0
+[  261.523160] RBP: ffffc9000323bb68 R08: 0000000000000000 R09: 0000000000000476
+[  261.530620] R10: 0000000000000008 R11: ffffffff82acfbad R12: 0000000000000000
+[  261.538084] R13: 0000000000000000 R14: 0000000000000009 R15: 0000000000000001
+[  261.545546]  ? panic+0x1dc/0x232
+[  261.549101]  oops_end+0xb9/0xd0
+[  261.552569]  no_context+0x156/0x3a0
+[  261.556392]  ? cpumask_next_and+0x1a/0x20
+[  261.560730]  ? find_busiest_group+0x112/0xa80
+[  261.565413]  __do_page_fault+0xd5/0x500
+[  261.569579]  page_fault+0x1e/0x30
+[  261.573220] RIP: 0010:xsk_umem_consume_tx+0xc9/0x180
+[  261.578508] Code: 24 75 be 48 8b 86 08 03 00 00 48 8d b0 f8 fc ff ff 48 39 c7 75 96 e8 26 bd 8a ff 5b 31 c0 41 5a 41 5c 41 5d 5d 49 8d 62 f8 c3 <89> 41 40 8b 4a 24 8b 42 1c 29 c8 75 0b 48 8b 42 28 8b 00 89 42 1c
+[  261.598148] RSP: 0018:ffffc9000323bd00 EFLAGS: 00010246
+[  261.603703] RAX: 0000000000000000 RBX: ffffc9000323bd68 RCX: 0000000000000000
+[  261.611169] RDX: ffff8808553e1c00 RSI: ffff880826e43000 RDI: ffff880854940818
+[  261.618631] RBP: ffffc9000323bd20 R08: 0000000000000010 R09: 0000000000000000
+[  261.626094] R10: ffffc9000323bd40 R11: 0000000000000000 R12: ffffc9000323bd64
+[  261.633557] R13: ffff880854940780 R14: 0000000000000000 R15: 0000000000000000
+[  261.641021]  ? ixgbe_clean_xdp_tx_irq+0x19d/0x2e0 [ixgbe]
+[  261.646755]  ixgbe_clean_xdp_tx_irq+0x19d/0x2e0 [ixgbe]
+[  261.652308]  ixgbe_poll+0x5a/0x700 [ixgbe]
+[  261.656735]  net_rx_action+0x141/0x3f0
+[  261.660814]  ? sort_range+0x20/0x20
+[  261.664627]  __do_softirq+0xe3/0x2f7
+[  261.668530]  ? sort_range+0x20/0x20
+[  261.672351]  run_ksoftirqd+0x26/0x30
+[  261.676250]  smpboot_thread_fn+0x114/0x1d0
+[  261.680671]  kthread+0x111/0x130
+[  261.684223]  ? kthread_create_worker_on_cpu+0x50/0x50
+[  261.689603]  ret_from_fork+0x1f/0x30
+[  261.701291] ---[ end trace f0011e17c3744ee5 ]---
+
+
+(gdb) list *(xsk_umem_consume_tx)+0xc9
+0xffffffff81883fe9 is in xsk_umem_consume_tx (./include/linux/compiler.h:214).
+209	static __always_inline void __write_once_size(volatile void *p, void *res, int size)
+210	{
+211		switch (size) {
+212		case 1: *(volatile __u8 *)p = *(__u8 *)res; break;
+213		case 2: *(volatile __u16 *)p = *(__u16 *)res; break;
+214		case 4: *(volatile __u32 *)p = *(__u32 *)res; break;
+215		case 8: *(volatile __u64 *)p = *(__u64 *)res; break;
+216		default:
+217			barrier();
+218			__builtin_memcpy((void *)p, (const void *)res, size);
+
+
+I think the bug occurs in the WRITE_ONCE in xskq_peek_desc() and
+it correspond to q->ring == NULL (as ring have offset 40)
+
+static inline struct xdp_desc *xskq_peek_desc(struct xsk_queue *q,
+					      struct xdp_desc *desc)
+{
+	if (q->cons_tail == q->cons_head) {
+		WRITE_ONCE(q->ring->consumer, q->cons_tail);
+		q->cons_head = q->cons_tail + xskq_nb_avail(q, RX_BATCH_SIZE);
+
+		/* Order consumer and data */
+		smp_rmb();
+	}
+
+	return xskq_validate_desc(q, desc);
+}
+
+$ pahole -C xsk_queue vmlinux
+struct xsk_queue {
+	u64                        chunk_mask;           /*     0     8 */
+	u64                        size;                 /*     8     8 */
+	u32                        ring_mask;            /*    16     4 */
+	u32                        nentries;             /*    20     4 */
+	u32                        prod_head;            /*    24     4 */
+	u32                        prod_tail;            /*    28     4 */
+	u32                        cons_head;            /*    32     4 */
+	u32                        cons_tail;            /*    36     4 */
+	struct xdp_ring *          ring;                 /*    40     8 */
+	u64                        invalid_descs;        /*    48     8 */
+
+	/* size: 56, cachelines: 1, members: 10 */
+	/* last cacheline: 56 bytes */
+};
+ 
+
+-- 
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
