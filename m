@@ -1,114 +1,43 @@
-From: Alex_Gagniuc@Dellteam.com <Alex_Gagniuc@Dellteam.com>
-Date: Wed, 3 Oct 2018 22:00:19 +0000
-Subject: [Intel-wired-lan] [PATCH 1/9] PCI: sysfs: Export available PCIe
- bandwidth
-References: <20180903180242.14504-1-mr.nuke.me@gmail.com>
- <20180903180242.14504-2-mr.nuke.me@gmail.com>
- <20181003213054.GH120535@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <f9fbc8babbb344eca593a3f8b0d096d9@ausx13mps321.AMER.DELL.COM>
+From: Dan Siemon <dan@coverfire.com>
+Date: Thu, 04 Oct 2018 09:49:26 -0400
+Subject: [Intel-wired-lan] i40e Q
+In-Reply-To: <cb8104d446604cdea1659ca1cd303e845236efa0.camel@intel.com>
+References: <f3c0595d07643496e1d3f411bfaab2deec93d750.camel@coverfire.com>
+ <09ad93bed0f6d9e0abe79e79953b83050e3e7a8a.camel@intel.com>
+ <d4f60ae6ded4f39c6c912c6bc971394b9ed6d81d.camel@coverfire.com>
+ <cb8104d446604cdea1659ca1cd303e845236efa0.camel@intel.com>
+Message-ID: <11470a947ce16e68e0bc802cf8f1afcf09ee3f53.camel@coverfire.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/03/2018 04:31 PM, Bjorn Helgaas wrote:
+On Wed, 2018-10-03 at 14:06 -0700, Jeff Kirsher wrote:
+> > The qdisc config is essentially a large flat tree of HTB classes
+> > each
+> > with an FQ-CoDel qdisc attached (an eBPF program directs traffic to
+> > the
+> > appropriate class). At the moment I can't reproduce that easily
+> > without
+> > our software but I can write a script to create the same structure
+> > if
+> > that would be helpful.
 > 
-> [EXTERNAL EMAIL]
-> Please report any suspicious attachments, links, or requests for sensitive information.
-> 
-> 
-> [+cc Stephen, Martin (for possible lspci changes)]
-> 
-> Hi Alexandru,
-> 
-> On Mon, Sep 03, 2018 at 01:02:28PM -0500, Alexandru Gagniuc wrote:
->> For certain bandwidth-critical devices (e.g. multi-port network cards)
->> it is useful to know the available bandwidth to the root complex. This
->> information is only available via the system log, which doesn't
->> account for link degradation after probing.
->>
->> With a sysfs attribute, we can computes the bandwidth on-demand, and
->> will detect degraded links.
->>
->> Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
->> ---
->>   drivers/pci/pci-sysfs.c | 13 +++++++++++++
->>   1 file changed, 13 insertions(+)
->>
->> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
->> index 9ecfe13157c0..6658e927b1f5 100644
->> --- a/drivers/pci/pci-sysfs.c
->> +++ b/drivers/pci/pci-sysfs.c
->> @@ -218,6 +218,18 @@ static ssize_t current_link_width_show(struct device *dev,
->>   }
->>   static DEVICE_ATTR_RO(current_link_width);
->>   
->> +static ssize_t available_bandwidth_show(struct device *dev,
->> +				       struct device_attribute *attr, char *buf)
->> +{
->> +	struct pci_dev *pci_dev = to_pci_dev(dev);
->> +	u32 bw_avail;
->> +
->> +	bw_avail = pcie_bandwidth_available(pci_dev, NULL, NULL, NULL);
->> +
->> +	return sprintf(buf, "%u.%03u Gb/s\n", bw_avail / 1000, bw_avail % 1000);
->> +}
->> +static DEVICE_ATTR_RO(available_bandwidth);
-> 
-> Help me understand this.  We already have these sysfs attributes:
-> 
->    max_link_speed          # eg, 16 GT/s
->    max_link_width          # eg, 8
->    current_link_speed      # eg, 16 GT/s
->    current_link_width      # eg, 8
-> 
-> so I think the raw materials are already exposed.
-> > The benefits I see for this new file are that
-> 
->    - pcie_bandwidth_available() does the work of traversing up the
->      tree, doing the computations (link width * speed, reduced by
->      encoding overhead), and finding the minimum, and
-> 
->    - it re-traverses the path every time we look at it, while the
->      boot-time check is a one-time event.
-> 
-> In principle this could all be done in user space with the attributes
-> that are already exported.  There's some precedent for things like
-> this in lspci, e.g., "NUMA node" [1], and lspci might even be a more
-> user-friendly place for users to look for this, as opposed to
-> searching through sysfs.
+> If you could provide a script to create the same structure, that
+> would
+> be good.  You will most likely need to tar it up or put it in a text
+> file to ensure it does not get stripped by mail servers.
 
-Parsing the endpoint to root port bandwidth is, in principle, possible 
-from userspace. It's just that in practice it's very clumsy to do, and, 
-as you pointed out, not that reliable.
-
-I understand it's not information that all users would jump in the air 
-to know. However, it was important enough for certain use cases, that 
-the kernel already has a very reliable way to calculate it.
-
-It seems to me that the most elegant way is to let the kernel tell us, 
-since the kernel already has this facility. To quote one of the texts 
-under Documentation/, it is an elegant way to "avoid reinventing kernel 
-wheels in userspace".
-
-Alex
-
-> [1] https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git/commit/?id=90ec4a6d0ae8
-> 
->>   static ssize_t secondary_bus_number_show(struct device *dev,
->>   					 struct device_attribute *attr,
->>   					 char *buf)
->> @@ -786,6 +798,7 @@ static struct attribute *pcie_dev_attrs[] = {
->>   	&dev_attr_current_link_width.attr,
->>   	&dev_attr_max_link_width.attr,
->>   	&dev_attr_max_link_speed.attr,
->> +	&dev_attr_available_bandwidth.attr,
->>   	NULL,
->>   };
->>   
->> -- 
->> 2.17.1
->>
-> 
-
+I have attached a tarball with a short script that approximates the
+qdisc setup that we use. When we see this problem, most of the classes
+are seeing some traffic. If you need a way to generate traffic for all
+these classes, I can provide a small program that does that (it just
+spoofs a bunch of UDP traffic).
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: script.tar
+Type: application/x-tar
+Size: 10240 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181004/b83ae322/attachment.tar>
