@@ -1,76 +1,81 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu,  4 Oct 2018 15:18:26 -0700
-Subject: [Intel-wired-lan] [next PATCH S97 3/7] i40e: Replace strncpy with
- strlcpy to ensure null termination
+Date: Thu,  4 Oct 2018 15:18:25 -0700
+Subject: [Intel-wired-lan] [next PATCH S97 2/7] i40e: Add capability flag
+ for stopping FW LLDP
 In-Reply-To: <20181004221830.16212-1-alice.michael@intel.com>
 References: <20181004221830.16212-1-alice.michael@intel.com>
-Message-ID: <20181004221830.16212-3-alice.michael@intel.com>
+Message-ID: <20181004221830.16212-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Patryk Ma?ek <patryk.malek@intel.com>
+From: Krzysztof Galazka <krzysztof.galazka@intel.com>
 
-Using strncpy allows destination buffer to be not null terminated
-after the copying takes place. strlcpy ensures that's not the
-case by explicitly setting last element in the buffer as '\0'.
+Add HW capability flag to indicate that firmware supports stopping
+LLDP agent. This feature has been added in FW API 1.7 for XL710
+devices and 1.6 for X722. Also raise expected minor version number
+for X722 FW API to 6.
 
-Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
+Signed-off-by: Krzysztof Galazka <krzysztof.galazka@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 14 +++++++-------
- drivers/net/ethernet/intel/i40e/i40e_ptp.c  |  2 +-
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c     | 6 ++++++
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 4 +++-
+ drivers/net/ethernet/intel/i40e/i40e_type.h       | 1 +
+ 3 files changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index f98e0bd..de82129 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -14525,23 +14525,23 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index 501ee71..7ab61f6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -588,6 +588,12 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
+ 	    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+ 	    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
+ 		hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
++		hw->flags |= I40E_HW_FLAG_FW_LLDP_STOPPABLE;
++	}
++	if (hw->mac.type == I40E_MAC_X722 &&
++	    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
++	    hw->aq.api_min_ver >= I40E_MINOR_VER_FW_LLDP_STOPPABLE_X722) {
++		hw->flags |= I40E_HW_FLAG_FW_LLDP_STOPPABLE;
+ 	}
  
- 		switch (hw->bus.speed) {
- 		case i40e_bus_speed_8000:
--			strncpy(speed, "8.0", PCI_SPEED_SIZE); break;
-+			strlcpy(speed, "8.0", PCI_SPEED_SIZE); break;
- 		case i40e_bus_speed_5000:
--			strncpy(speed, "5.0", PCI_SPEED_SIZE); break;
-+			strlcpy(speed, "5.0", PCI_SPEED_SIZE); break;
- 		case i40e_bus_speed_2500:
--			strncpy(speed, "2.5", PCI_SPEED_SIZE); break;
-+			strlcpy(speed, "2.5", PCI_SPEED_SIZE); break;
- 		default:
- 			break;
- 		}
- 		switch (hw->bus.width) {
- 		case i40e_bus_width_pcie_x8:
--			strncpy(width, "8", PCI_WIDTH_SIZE); break;
-+			strlcpy(width, "8", PCI_WIDTH_SIZE); break;
- 		case i40e_bus_width_pcie_x4:
--			strncpy(width, "4", PCI_WIDTH_SIZE); break;
-+			strlcpy(width, "4", PCI_WIDTH_SIZE); break;
- 		case i40e_bus_width_pcie_x2:
--			strncpy(width, "2", PCI_WIDTH_SIZE); break;
-+			strlcpy(width, "2", PCI_WIDTH_SIZE); break;
- 		case i40e_bus_width_pcie_x1:
--			strncpy(width, "1", PCI_WIDTH_SIZE); break;
-+			strlcpy(width, "1", PCI_WIDTH_SIZE); break;
- 		default:
- 			break;
- 		}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index 1199f05..e6fc0af 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -694,7 +694,7 @@ static long i40e_ptp_create_clock(struct i40e_pf *pf)
- 	if (!IS_ERR_OR_NULL(pf->ptp_clock))
- 		return 0;
+ 	/* Newer versions of firmware require lock when reading the NVM */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 80e3eec..1150610 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -11,7 +11,7 @@
+  */
  
--	strncpy(pf->ptp_caps.name, i40e_driver_name,
-+	strlcpy(pf->ptp_caps.name, i40e_driver_name,
- 		sizeof(pf->ptp_caps.name) - 1);
- 	pf->ptp_caps.owner = THIS_MODULE;
- 	pf->ptp_caps.max_adj = 999999999;
+ #define I40E_FW_API_VERSION_MAJOR	0x0001
+-#define I40E_FW_API_VERSION_MINOR_X722	0x0005
++#define I40E_FW_API_VERSION_MINOR_X722	0x0006
+ #define I40E_FW_API_VERSION_MINOR_X710	0x0007
+ 
+ #define I40E_FW_MINOR_VERSION(_h) ((_h)->mac.type == I40E_MAC_XL710 ? \
+@@ -20,6 +20,8 @@
+ 
+ /* API version 1.7 implements additional link and PHY-specific APIs  */
+ #define I40E_MINOR_VER_GET_LINK_INFO_XL710 0x0007
++/* API version 1.6 for X722 devices adds ability to stop FW LLDP agent */
++#define I40E_MINOR_VER_FW_LLDP_STOPPABLE_X722 0x0006
+ 
+ struct i40e_aq_desc {
+ 	__le16 flags;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 7df969c..17d9d78 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -615,6 +615,7 @@ struct i40e_hw {
+ #define I40E_HW_FLAG_802_1AD_CAPABLE        BIT_ULL(1)
+ #define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
+ #define I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK BIT_ULL(3)
++#define I40E_HW_FLAG_FW_LLDP_STOPPABLE	    BIT_ULL(4)
+ 	u64 flags;
+ 
+ 	/* Used in set switch config AQ command */
 -- 
 2.9.5
 
