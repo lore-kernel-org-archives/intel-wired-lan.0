@@ -1,38 +1,51 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  5 Oct 2018 09:33:55 -0700
-Subject: [Intel-wired-lan] [net-next 1/2] ixgbevf: add support for software
- timestamps
-Message-ID: <20181005163356.23996-1-jacob.e.keller@intel.com>
+From: Vinod <vkoul@kernel.org>
+Date: Fri, 5 Oct 2018 19:56:34 +0530
+Subject: [Intel-wired-lan] [PATCH] XXX PCI/AER: remove unused variables
+In-Reply-To: <20181002210426.2447078-1-arnd@arndb.de>
+References: <20181002210426.2447078-1-arnd@arndb.de>
+Message-ID: <20181005142634.GL2372@vkoul-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add a call to skb_tx_timestamp in the ixgbevf_tx_map function. This
-enables software timestamping for packets sent over this device driver.
-The call is placed just prior to when we notify hardware of the new
-packet, in order to software timestamp as close as possible to when the
-hardware will transmit.
+On 02-10-18, 23:02, Arnd Bergmann wrote:
+> A couple of files now contain a function with a return
+> code variable that is no longer used:
+> 
+> drivers/net/ethernet/sfc/efx.c: In function 'efx_io_slot_reset':
+> drivers/net/ethernet/sfc/efx.c:3824:6: error: unused variable 'rc' [-Werror=unused-variable]
+>   int rc;
+>       ^~
+> drivers/net/ethernet/sfc/falcon/efx.c: In function 'ef4_io_slot_reset':
+> Oza Pawandeep <poza@codeaurora.org>
+> drivers/net/ethernet/sfc/falcon/efx.c:3163:6: error: unused variable 'rc' [-Werror=unused-variable]
+>   int rc;
+>       ^~
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_io_slot_reset':
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:11143:6: error: unused variable 'err' [-Werror=unused-variable]
+>   int err;
+>       ^~~
+> drivers/net/ethernet/intel/i40e/i40e_main.c: In function 'i40e_pci_error_slot_reset':
+> drivers/net/ethernet/intel/i40e/i40e_main.c:14555:6: error: unused variable 'err' [-Werror=unused-variable]
+>   int err;
+> 
+> drivers/dma/ioat/init.c: In function 'ioat_pcie_error_slot_reset':
+> drivers/dma/ioat/init.c:1255:6: error: unused variable 'err' [-Werror=unused-variable]
+>   int err;
+> 
+> This removes all the ones I found during randconfig build testing.
+> 
+> Fixes: 6dcde3e574b2 ("XXX PCI/AER: Remove pci_cleanup_aer_uncorrect_error_status() calls")
+> Cc: Oza Pawandeep <poza@codeaurora.org>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/dma/ioat/init.c                       | 1 -
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+For this:
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 98707ee11d72..d8ebd75bf41e 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -4016,6 +4016,8 @@ static void ixgbevf_tx_map(struct ixgbevf_ring *tx_ring,
- 	/* set the timestamp */
- 	first->time_stamp = jiffies;
- 
-+	skb_tx_timestamp(skb);
-+
- 	/* Force memory writes to complete before letting h/w know there
- 	 * are new descriptors to fetch.  (Only applicable for weak-ordered
- 	 * memory model archs, such as IA-64).
+Acked-by: Vinod Koul <vkoul@kernel.org>
 -- 
-2.18.0.219.gaf81d287a9da
-
+~Vinod
