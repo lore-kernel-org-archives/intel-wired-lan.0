@@ -1,44 +1,149 @@
-From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
-Date: Mon, 8 Oct 2018 20:42:30 +0000
-Subject: [Intel-wired-lan] "ethq" - NIC queue monitoring app
-In-Reply-To: <22ce3acd-2eb1-7e6a-875b-c9b51294c6ec@isc.org>
-References: <22ce3acd-2eb1-7e6a-875b-c9b51294c6ec@isc.org>
-Message-ID: <9BBC4E0CF881AA4299206E2E1412B6267C6475E9@ORSMSX102.amr.corp.intel.com>
+From: Alex_Gagniuc@Dellteam.com <Alex_Gagniuc@Dellteam.com>
+Date: Mon, 8 Oct 2018 21:09:46 +0000
+Subject: [Intel-wired-lan] [PATCH 1/9] PCI: sysfs: Export available PCIe
+ bandwidth
+References: <20180903180242.14504-1-mr.nuke.me@gmail.com>
+ <20180903180242.14504-2-mr.nuke.me@gmail.com>
+ <20181003213054.GH120535@bhelgaas-glaptop.roam.corp.google.com>
+ <f9fbc8babbb344eca593a3f8b0d096d9@ausx13mps321.AMER.DELL.COM>
+ <20181004204549.GI120535@bhelgaas-glaptop.roam.corp.google.com>
+Message-ID: <5446492849dc4b7083b7a1f50a587d92@ausx13mps321.AMER.DELL.COM>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
-> Of Ray Bellis
-> Sent: Monday, October 08, 2018 1:30 AM
-> To: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] "ethq" - NIC queue monitoring app
+On 10/04/2018 03:45 PM, Bjorn Helgaas wrote:
 > 
-> I've recently developed and published "ethq", which generates a
-> "top"-like view of the traffic on each individual NIC queue.
+> [EXTERNAL EMAIL]
+> Please report any suspicious attachments, links, or requests for sensitive information.
 > 
-> Because there's no convention for the statistic strings (ETH_SS_STATS)
-> used by each NIC driver it's necessary to generate pattern matching code
-> to add driver support.  In the context of this list, there's already
-> support for the i40, igb and ixgbe drivers.
 > 
-> The source is at https://github.com/isc-projects/ethq.git
+> [+cc Alex (VC mentioned below)]
 > 
-> Ray Bellis
-> ISC Research Fellow
+> On Wed, Oct 03, 2018 at 10:00:19PM +0000, Alex_Gagniuc at Dellteam.com wrote:
+>> On 10/03/2018 04:31 PM, Bjorn Helgaas wrote:
+>>> On Mon, Sep 03, 2018 at 01:02:28PM -0500, Alexandru Gagniuc wrote:
+>>>> For certain bandwidth-critical devices (e.g. multi-port network cards)
+>>>> it is useful to know the available bandwidth to the root complex. This
+>>>> information is only available via the system log, which doesn't
+>>>> account for link degradation after probing.
+>>>>
+>>>> With a sysfs attribute, we can computes the bandwidth on-demand, and
+>>>> will detect degraded links.
+>>>>
+>>>> Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+>>>> ---
+>>>>    drivers/pci/pci-sysfs.c | 13 +++++++++++++
+>>>>    1 file changed, 13 insertions(+)
+>>>>
+>>>> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+>>>> index 9ecfe13157c0..6658e927b1f5 100644
+>>>> --- a/drivers/pci/pci-sysfs.c
+>>>> +++ b/drivers/pci/pci-sysfs.c
+>>>> @@ -218,6 +218,18 @@ static ssize_t current_link_width_show(struct device *dev,
+>>>>    }
+>>>>    static DEVICE_ATTR_RO(current_link_width);
+>>>>    
+>>>> +static ssize_t available_bandwidth_show(struct device *dev,
+>>>> +				       struct device_attribute *attr, char *buf)
+>>>> +{
+>>>> +	struct pci_dev *pci_dev = to_pci_dev(dev);
+>>>> +	u32 bw_avail;
+>>>> +
+>>>> +	bw_avail = pcie_bandwidth_available(pci_dev, NULL, NULL, NULL);
+>>>> +
+>>>> +	return sprintf(buf, "%u.%03u Gb/s\n", bw_avail / 1000, bw_avail % 1000);
+>>>> +}
+>>>> +static DEVICE_ATTR_RO(available_bandwidth);
+>>>
+>>> Help me understand this.  We already have these sysfs attributes:
+>>>
+>>>     max_link_speed          # eg, 16 GT/s
+>>>     max_link_width          # eg, 8
+>>>     current_link_speed      # eg, 16 GT/s
+>>>     current_link_width      # eg, 8
+>>>
+>>> so I think the raw materials are already exposed.
+>>>
+>>> The benefits I see for this new file are that
+>>>
+>>>     - pcie_bandwidth_available() does the work of traversing up the
+>>>       tree, doing the computations (link width * speed, reduced by
+>>>       encoding overhead), and finding the minimum, and
+>>>
+>>>     - it re-traverses the path every time we look at it, while the
+>>>       boot-time check is a one-time event.
+>>>
+>>> In principle this could all be done in user space with the attributes
+>>> that are already exported.  There's some precedent for things like
+>>> this in lspci, e.g., "NUMA node" [1], and lspci might even be a more
+>>> user-friendly place for users to look for this, as opposed to
+>>> searching through sysfs.
+>>
+>> Parsing the endpoint to root port bandwidth is, in principle, possible
+>> from userspace. It's just that in practice it's very clumsy to do, and,
+>> as you pointed out, not that reliable.
 > 
+> I don't remember the reliability issue.  Was that in a previous
+> conversation?  AFAICT, using current_link_speed and current_link_width
+> should be as reliable as pcie_bandwidth_available() because they're
+> both based on reading PCI_EXP_LNKSTA.
+> 
+> This patch exposes only the available bandwidth, not the limiting
+> device, link speed, or link width.  Maybe that extra information isn't
+> important in this context.  Of course, it's easy to derive using
+> current_link_speed and current_link_width, but if we do that, there's
+> really no benefit to adding a new file.
+> 
+> Linux doesn't really support Virtual Channels (VC) yet, and I don't
+> know much about it, but it seems like Quality-of-Service features like
+> VC could affect this idea of available bandwidth.
+> 
+> Since we already expose the necessary information, and we might throw
+> additional things like VC into the mix, I'm a little hesitant about
+> adding things to sysfs because they're very difficult to change later.
 
-Thanks for sending this Ray, we'll take a look at it.  
+I understand your concerns with VC and crazy PCIe outliers. 
+'available_bandwidth' is meant to mean physical bandwidth, rather than 
+"what comcast gives you". I see now the possibility for confusion.
+My motivation is to save drivers from the hassle of having to call 
+pcie_print_link_status(), and prevent the rare duplicate syslog messages.
 
-Carolyn
+I prefer re-using the kernel logic over doing it over again from 
+userspace, but I won't insist over your doubts.
 
+Alex
 
-Carolyn Wyborny 
-Linux Development 
-Networking Division 
-Intel Corporation 
-
+>> I understand it's not information that all users would jump in the air
+>> to know. However, it was important enough for certain use cases, that
+>> the kernel already has a very reliable way to calculate it.
+>>
+>> It seems to me that the most elegant way is to let the kernel tell us,
+>> since the kernel already has this facility. To quote one of the texts
+>> under Documentation/, it is an elegant way to "avoid reinventing kernel
+>> wheels in userspace".
+>>
+>> Alex
+>>
+>>> [1] https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git/commit/?id=90ec4a6d0ae8
+>>>
+>>>>    static ssize_t secondary_bus_number_show(struct device *dev,
+>>>>    					 struct device_attribute *attr,
+>>>>    					 char *buf)
+>>>> @@ -786,6 +798,7 @@ static struct attribute *pcie_dev_attrs[] = {
+>>>>    	&dev_attr_current_link_width.attr,
+>>>>    	&dev_attr_max_link_width.attr,
+>>>>    	&dev_attr_max_link_speed.attr,
+>>>> +	&dev_attr_available_bandwidth.attr,
+>>>>    	NULL,
+>>>>    };
+>>>>    
+>>>> -- 
+>>>> 2.17.1
+>>>>
+>>>
+>>
+> 
 
