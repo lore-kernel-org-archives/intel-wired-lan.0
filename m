@@ -1,18 +1,18 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 09 Oct 2018 02:58:46 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD INCOMPLETE
- 4233cfe6ec4683497d7318f55ce7617e97f2e610
-Message-ID: <5bbba8e6.8owZQmv4a3Fvhec+%lkp@intel.com>
+Date: Tue, 09 Oct 2018 03:00:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD INCOMPLETE
+ 5cc6c8b30c8476f308d2500a0fca35e316c6dc90
+Message-ID: <5bbba965.O877Zy+ybL2P3S0e%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: 4233cfe6ec4683497d7318f55ce7617e97f2e610  ixgbe: check return value of napi_complete_done()
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: 5cc6c8b30c8476f308d2500a0fca35e316c6dc90  ice: Update version string
 
-TIMEOUT after 609m
+TIMEOUT after 608m
 
 
 Sorry we cannot finish the testset for your branch within a reasonable time.
@@ -22,7 +22,7 @@ possible error reports when our build infrastructure is restored or catches up.
 There will be no more build success notification for this branch head, but you
 can expect reasonably good test coverage after waiting for 1 day.
 
-configs timed out: 187
+configs timed out: 186
 
 alpha                            allmodconfig
 alpha                            allyesconfig
@@ -100,7 +100,6 @@ i386                          randconfig-x076
 i386                          randconfig-x077
 i386                          randconfig-x078
 i386                          randconfig-x079
-i386                               tinyconfig
 ia64                             alldefconfig
 ia64                             allmodconfig
 ia64                              allnoconfig
@@ -212,8 +211,9 @@ xtensa                           allyesconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
 
-configs tested: 5
+configs tested: 6
 
+i386                               tinyconfig
 parisc                        c3000_defconfig
 parisc                         b180_defconfig
 parisc                              defconfig
