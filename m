@@ -1,18 +1,18 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 09 Oct 2018 03:00:53 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD INCOMPLETE
- 5cc6c8b30c8476f308d2500a0fca35e316c6dc90
-Message-ID: <5bbba965.O877Zy+ybL2P3S0e%lkp@intel.com>
+Date: Tue, 09 Oct 2018 03:01:17 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:10GbE] BUILD INCOMPLETE
+ 9003b369499b3320d3f16145145b729fb6ff3bd4
+Message-ID: <5bbba97d.7FXbFWpznIMn65ii%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-branch HEAD: 5cc6c8b30c8476f308d2500a0fca35e316c6dc90  ice: Update version string
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  10GbE
+branch HEAD: 9003b369499b3320d3f16145145b729fb6ff3bd4  r8169: always autoneg on resume
 
-TIMEOUT after 608m
+TIMEOUT after 612m
 
 
 Sorry we cannot finish the testset for your branch within a reasonable time.
@@ -22,10 +22,11 @@ possible error reports when our build infrastructure is restored or catches up.
 There will be no more build success notification for this branch head, but you
 can expect reasonably good test coverage after waiting for 1 day.
 
-configs timed out: 186
+configs timed out: 191
 
 alpha                            allmodconfig
 alpha                            allyesconfig
+alpha                               defconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -67,7 +68,6 @@ i386                            randconfig-n1
 i386                            randconfig-n2
 i386                            randconfig-n3
 i386                            randconfig-s0
-i386                            randconfig-s1
 i386                            randconfig-s2
 i386                            randconfig-s3
 i386                          randconfig-x000
@@ -100,6 +100,7 @@ i386                          randconfig-x076
 i386                          randconfig-x077
 i386                          randconfig-x078
 i386                          randconfig-x079
+i386                               tinyconfig
 ia64                             alldefconfig
 ia64                             allmodconfig
 ia64                              allnoconfig
@@ -124,7 +125,11 @@ mips                                     txx9
 nios2                         10m50_defconfig
 openrisc                    or1ksim_defconfig
 parisc                           allmodconfig
+parisc                            allnoconfig
 parisc                           allyesconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
 powerpc                          allyesconfig
@@ -211,14 +216,9 @@ xtensa                           allyesconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
 
-configs tested: 6
+configs tested: 1
 
-i386                               tinyconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
+i386                   randconfig-s1-10081446
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
