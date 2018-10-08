@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 8 Oct 2018 18:35:23 +0000
-Subject: [Intel-wired-lan] [net-next 2/2] intel-ethernet: software
- timestamp skbs as late as possible
-In-Reply-To: <20181005163356.23996-2-jacob.e.keller@intel.com>
-References: <20181005163356.23996-1-jacob.e.keller@intel.com>
- <20181005163356.23996-2-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FD5D6@ORSMSX106.amr.corp.intel.com>
+Date: Mon, 8 Oct 2018 18:38:44 +0000
+Subject: [Intel-wired-lan] [PATCH][-next] ixgbe: don't clear_bit on
+ xdp_ring->state if xdp_ring is null
+In-Reply-To: <20181004175732.28329-1-colin.king@canonical.com>
+References: <20181004175732.28329-1-colin.king@canonical.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D2FD5EB@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,31 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Friday, October 5, 2018 9:34 AM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net-next 2/2] intel-ethernet: software timestamp
-> skbs as late as possible
+> Behalf Of Colin King
+> Sent: Thursday, October 4, 2018 10:58 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David S . Miller
+> <davem@davemloft.net>; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org
+> Cc: kernel-janitors at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH][-next] ixgbe: don't clear_bit on xdp_ring-
+> >state if xdp_ring is null
 > 
-> Many of the Intel Ethernet drivers call skb_tx_timestamp() earlier than
-> necessary. Move the calls to this function to the latest point possible, just
-> prior to notifying hardware of the new Tx packet when we bump the tail
-> register.
+> From: Colin Ian King <colin.king@canonical.com>
 > 
-> This affects i40e, iavf, igb, igc, and ixgbe.
+> There is an earlier check to see if xdp_ring is null when configuring the tx ring,
+> so assuming that it can still be null, the clearing of the xdp_ring->state
+> currently could end up with a null pointer dereference.  Fix this by only
+> clearing the bit if xdp_ring is not null.
 > 
-> The e100, e1000, e1000e, fm10k, and ice drivers already call the
-> skb_tx_timestamp() function just prior to indicating the Tx packet to
-> hardware, so they do not need to be changed.
+> Detected by CoverityScan, CID#1473795 ("Dereference after null check")
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Fixes: 024aa5800f32 ("ixgbe: added Rx/Tx ring disable/enable functions")
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 4 ++--
->  drivers/net/ethernet/intel/iavf/iavf_txrx.c   | 4 ++--
->  drivers/net/ethernet/intel/igb/igb_main.c     | 4 ++--
->  drivers/net/ethernet/intel/igc/igc_main.c     | 4 ++--
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 4 ++--
->  5 files changed, 10 insertions(+), 10 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
