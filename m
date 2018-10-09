@@ -1,34 +1,40 @@
-From: Jags N <jagsnn@gmail.com>
-Date: Tue, 9 Oct 2018 22:23:35 +0530
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 9 Oct 2018 10:24:26 -0700
 Subject: [Intel-wired-lan] fm10k driver - flow control question
-Message-ID: <CALQkTo1P_QAyW+y_LE=LFK=y+oDfScqZJLxjdn7eifofNbycAQ@mail.gmail.com>
+In-Reply-To: <CALQkTo1P_QAyW+y_LE=LFK=y+oDfScqZJLxjdn7eifofNbycAQ@mail.gmail.com>
+References: <CALQkTo1P_QAyW+y_LE=LFK=y+oDfScqZJLxjdn7eifofNbycAQ@mail.gmail.com>
+Message-ID: <CAKgT0UetdOGsVPLu3Ji23FXq_dVVxWPSGsZjDLW9JX3q=CBSEQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+On Tue, Oct 9, 2018 at 10:12 AM Jags N <jagsnn@gmail.com> wrote:
+>
+> Hi,
+>
+> In FM10k intel data sheet, I see that the PCIe End Point (PEP) does not support generation of link based flow control or class based/priority based flow control pause frames to prevent Host Congestion.
+>
+> The same behaviour is oberved in dpdk 18.08 fm10k driver, wherein there is no pfc get or set driver functions defined, which I believe is consistent with data sheet.
+>
+> But, in FM10K linux driver ver 0.26.1 (latest), there is code for setting dcb ets, pfc, dcbx. So I am a bit confused as to how the fm10k driver could support pfc if the hardware data sheet does not mention about it.
+>
+> Could someone help me understand or provide any pointers to documents that details what kind of support is present in 0.26.1 with respect to pfc on PEP, and if fm10k can support pfc setting/getting on PEP interface to protect Host Congestion.
+>
+> Regards,
+> Jagdish
 
-In FM10k intel data sheet, I see that the PCIe End Point (PEP) does not
-support generation of link based flow control or class based/priority based
-flow control pause frames to prevent Host Congestion.
+It has been a little over 4 years since I wrote the driver so my
+recollection on this could be a bit rusty, but I believe most of the
+DCB code in the fm10k linux driver is related to configuring queues
+associated with traffic classes. Also while the part doesn't support
+PFC from the PCIe End Point it does have a bit called "DROP_ON_EMPTY"
+in the RXDCTL register of each queue that determines if we just drop
+the packet or put backpressure on the internal switch if the Rx ring
+doesn't have available descriptors. I believe that is how the DCB
+implementation for the Linux driver is configured.
 
-The same behaviour is oberved in dpdk 18.08 fm10k driver, wherein there is
-no pfc get or set driver functions defined, which I believe is consistent
-with data sheet.
+Thanks.
 
-But, in FM10K linux driver ver 0.26.1 (latest), there is code for setting
-dcb ets, pfc, dcbx. So I am a bit confused as to how the fm10k driver could
-support pfc if the hardware data sheet does not mention about it.
-
-Could someone help me understand or provide any pointers to documents that
-details what kind of support is present in 0.26.1 with respect to pfc on
-PEP, and if fm10k can support pfc setting/getting on PEP interface to
-protect Host Congestion.
-
-Regards,
-Jagdish
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181009/8d561978/attachment.html>
+- Alex
