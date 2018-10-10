@@ -1,83 +1,144 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 10 Oct 2018 12:16:01 -0700
-Subject: [Intel-wired-lan] [PATCH v2 00/12] Intel Wired LAN Documentation
- Updates
-Message-ID: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
+Date: Wed, 10 Oct 2018 12:16:06 -0700
+Subject: [Intel-wired-lan] [PATCH v2 05/12] Documentation: igbvf: Prepare
+ documentation for RST conversion
+In-Reply-To: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
+References: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20181010191613.2770-6-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-So I am resurrecting my previous kernel documentation update series of
-patches.  I finally grouped all the updates into a single series.
+Before making the conversion to the rst (reStructured Text) format, there
+are changes needed to the documentation so that there are no build errors.
 
-This series updates or adds missing kernel documentation on our Intel
-wired LAN drivers.  In addition, I converted the documentation to the
-reStructured Text (RST) format which is used in the Linux kernel
-documentation builds.
+Also fixed old/broken URLs to the correct or updated URL.
 
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
+ Documentation/networking/igbvf.txt | 82 ++++++++++++------------------
+ 1 file changed, 33 insertions(+), 49 deletions(-)
 
-Jeff Kirsher (12):
-  Documentation: e100, e1000: Add missing SPDX header
-  Documentation: ixgb: Prepare documentation for RST conversion
-  Documentation: e1000e: Prepare documentation for RST conversion
-  Documentation: igb: Prepare documentation for RST conversion
-  Documentation: igbvf: Prepare documentation for RST conversion
-  Documentation: ixgbe: Prepare documentation for RST conversion
-  Documentation: ixgbevf: Prepare documentation for RST conversion
-  Documentation: i40e: Prepare documentation for RST conversion
-  Documentation: iavf: Prepare documentation for RST conversion
-  Documentation: ice: Prepare documentation for RST conversion
-  Documentation: fm10k: Add kernel documentation
-  Documentation: intel: Convert to RST format
-
- Documentation/networking/00-INDEX    |  20 -
- Documentation/networking/e100.rst    |   3 +-
- Documentation/networking/e1000.rst   |   3 +-
- Documentation/networking/e1000e.rst  | 382 +++++++++++++
- Documentation/networking/e1000e.txt  | 312 -----------
- Documentation/networking/fm10k.rst   | 141 +++++
- Documentation/networking/i40e.rst    | 781 +++++++++++++++++++++++++++
- Documentation/networking/i40e.txt    | 190 -------
- Documentation/networking/iavf.rst    | 281 ++++++++++
- Documentation/networking/iavf.txt    |  56 --
- Documentation/networking/ice.rst     |  45 ++
- Documentation/networking/ice.txt     |  39 --
- Documentation/networking/igb.rst     | 193 +++++++
- Documentation/networking/igb.txt     | 129 -----
- Documentation/networking/igbvf.rst   |  64 +++
- Documentation/networking/igbvf.txt   |  80 ---
- Documentation/networking/index.rst   |  10 +
- Documentation/networking/ixgb.rst    | 467 ++++++++++++++++
- Documentation/networking/ixgb.txt    | 432 ---------------
- Documentation/networking/ixgbe.rst   | 527 ++++++++++++++++++
- Documentation/networking/ixgbe.txt   | 349 ------------
- Documentation/networking/ixgbevf.rst |  66 +++
- Documentation/networking/ixgbevf.txt |  52 --
- MAINTAINERS                          |  19 +-
- drivers/net/ethernet/intel/Kconfig   |  26 +-
- 25 files changed, 2993 insertions(+), 1674 deletions(-)
- create mode 100644 Documentation/networking/e1000e.rst
- delete mode 100644 Documentation/networking/e1000e.txt
- create mode 100644 Documentation/networking/fm10k.rst
- create mode 100644 Documentation/networking/i40e.rst
- delete mode 100644 Documentation/networking/i40e.txt
- create mode 100644 Documentation/networking/iavf.rst
- delete mode 100644 Documentation/networking/iavf.txt
- create mode 100644 Documentation/networking/ice.rst
- delete mode 100644 Documentation/networking/ice.txt
- create mode 100644 Documentation/networking/igb.rst
- delete mode 100644 Documentation/networking/igb.txt
- create mode 100644 Documentation/networking/igbvf.rst
- delete mode 100644 Documentation/networking/igbvf.txt
- create mode 100644 Documentation/networking/ixgb.rst
- delete mode 100644 Documentation/networking/ixgb.txt
- create mode 100644 Documentation/networking/ixgbe.rst
- delete mode 100644 Documentation/networking/ixgbe.txt
- create mode 100644 Documentation/networking/ixgbevf.rst
- delete mode 100644 Documentation/networking/ixgbevf.txt
-
+diff --git a/Documentation/networking/igbvf.txt b/Documentation/networking/igbvf.txt
+index bd404735fb46..a8a9ffa4f8d3 100644
+--- a/Documentation/networking/igbvf.txt
++++ b/Documentation/networking/igbvf.txt
+@@ -1,80 +1,64 @@
+-Linux* Base Driver for Intel(R) Ethernet Network Connection
+-===========================================================
++.. SPDX-License-Identifier: GPL-2.0+
+ 
+-Intel Gigabit Linux driver.
+-Copyright(c) 1999 - 2013 Intel Corporation.
++Linux* Base Virtual Function Driver for Intel(R) 1G Ethernet
++============================================================
++
++Intel Gigabit Virtual Function Linux driver.
++Copyright(c) 1999-2018 Intel Corporation.
+ 
+ Contents
+ ========
+-
+ - Identifying Your Adapter
+ - Additional Configurations
+ - Support
+ 
+-This file describes the igbvf Linux* Base Driver for Intel Network Connection.
++This driver supports Intel 82576-based virtual function devices-based virtual
++function devices that can only be activated on kernels that support SR-IOV.
+ 
+-The igbvf driver supports 82576-based virtual function devices that can only
+-be activated on kernels that support SR-IOV. SR-IOV requires the correct
+-platform and OS support.
++SR-IOV requires the correct platform and OS support.
+ 
+-The igbvf driver requires the igb driver, version 2.0 or later. The igbvf
+-driver supports virtual functions generated by the igb driver with a max_vfs
+-value of 1 or greater. For more information on the max_vfs parameter refer
+-to the README included with the igb driver.
++The guest OS loading this driver must support MSI-X interrupts.
+ 
+-The guest OS loading the igbvf driver must support MSI-X interrupts.
++For questions related to hardware requirements, refer to the documentation
++supplied with your Intel adapter. All hardware requirements listed apply to use
++with Linux.
+ 
+-This driver is only supported as a loadable module at this time.  Intel is
+-not supplying patches against the kernel source to allow for static linking
+-of the driver.  For questions related to hardware requirements, refer to the
+-documentation supplied with your Intel Gigabit adapter.  All hardware
+-requirements listed apply to use with Linux.
++Driver information can be obtained using ethtool, lspci, and ifconfig.
++Instructions on updating ethtool can be found in the section Additional
++Configurations later in this document.
+ 
+-Instructions on updating ethtool can be found in the section "Additional
+-Configurations" later in this document.
++NOTE: There is a limit of a total of 32 shared VLANs to 1 or more VFs.
+ 
+-VLANs: There is a limit of a total of 32 shared VLANs to 1 or more VFs.
+ 
+ Identifying Your Adapter
+ ========================
++For information on how to identify your adapter, and for the latest Intel
++network drivers, refer to the Intel Support website:
++http://www.intel.com/support
+ 
+-The igbvf driver supports 82576-based virtual function devices that can only
+-be activated on kernels that support SR-IOV.
+-
+-For more information on how to identify your adapter, go to the Adapter &
+-Driver ID Guide at:
+ 
+-    http://support.intel.com/support/go/network/adapter/idguide.htm
++Additional Features and Configurations
++======================================
+ 
+-For the latest Intel network drivers for Linux, refer to the following
+-website.  In the search field, enter your adapter name or type, or use the
+-networking link on the left to search for your adapter:
++ethtool
++-------
++The driver utilizes the ethtool interface for driver configuration and
++diagnostics, as well as displaying statistical information. The latest ethtool
++version is required for this functionality. Download it at:
+ 
+-    http://downloadcenter.intel.com/scripts-df-external/Support_Intel.aspx
++https://www.kernel.org/pub/software/network/ethtool/
+ 
+-Additional Configurations
+-=========================
+-
+-  ethtool
+-  -------
+-  The driver utilizes the ethtool interface for driver configuration and
+-  diagnostics, as well as displaying statistical information.  The ethtool
+-  version 3.0 or later is required for this functionality, although we
+-  strongly recommend downloading the latest version at:
+-
+-  https://www.kernel.org/pub/software/network/ethtool/
+ 
+ Support
+ =======
+-
+ For general information, go to the Intel support website at:
+ 
+-    http://support.intel.com
++https://www.intel.com/support/
+ 
+ or the Intel Wired Networking project hosted by Sourceforge at:
+ 
+-    http://sourceforge.net/projects/e1000
++https://sourceforge.net/projects/e1000
+ 
+-If an issue is identified with the released source code on the supported
+-kernel with a supported adapter, email the specific information related
+-to the issue to e1000-devel at lists.sf.net
++If an issue is identified with the released source code on a supported kernel
++with a supported adapter, email the specific information related to the issue
++to e1000-devel at lists.sf.net.
 -- 
 2.17.1
 
