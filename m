@@ -1,398 +1,86 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 10 Oct 2018 12:16:04 -0700
-Subject: [Intel-wired-lan] [PATCH v2 03/12] Documentation: e1000e: Prepare
- documentation for RST conversion
+Date: Wed, 10 Oct 2018 12:16:12 -0700
+Subject: [Intel-wired-lan] [PATCH v2 11/12] Documentation: fm10k: Add kernel
+ documentation
 In-Reply-To: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
 References: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20181010191613.2770-4-jeffrey.t.kirsher@intel.com>
+Message-ID: <20181010191613.2770-12-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Before making the conversion to the rst (reStructured Text) format, there
-are changes needed to the documentation so that there are no build errors.
-
-Also fixed old/broken URLs to the correct or updated URL.
+Added the fm10k kernel documentation, which apparently was missing.
 
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- Documentation/networking/e1000e.txt | 426 ++++++++++++++++------------
- 1 file changed, 248 insertions(+), 178 deletions(-)
+ Documentation/networking/fm10k.rst | 141 +++++++++++++++++++++++++++++
+ Documentation/networking/index.rst |   1 +
+ MAINTAINERS                        |   1 +
+ drivers/net/ethernet/intel/Kconfig |   3 +
+ 4 files changed, 146 insertions(+)
+ create mode 100644 Documentation/networking/fm10k.rst
 
-diff --git a/Documentation/networking/e1000e.txt b/Documentation/networking/e1000e.txt
-index 12089547baed..33554e5416c5 100644
---- a/Documentation/networking/e1000e.txt
-+++ b/Documentation/networking/e1000e.txt
-@@ -1,8 +1,10 @@
+diff --git a/Documentation/networking/fm10k.rst b/Documentation/networking/fm10k.rst
+new file mode 100644
+index 000000000000..bf5e5942f28d
+--- /dev/null
++++ b/Documentation/networking/fm10k.rst
+@@ -0,0 +1,141 @@
 +.. SPDX-License-Identifier: GPL-2.0+
 +
- Linux* Driver for Intel(R) Ethernet Network Connection
- ======================================================
- 
- Intel Gigabit Linux driver.
--Copyright(c) 1999 - 2013 Intel Corporation.
-+Copyright(c) 2008-2018 Intel Corporation.
- 
- Contents
- ========
-@@ -12,48 +14,43 @@ Contents
- - Additional Configurations
- - Support
- 
++Linux* Base Driver for Intel(R) Ethernet Multi-host Controller
++==============================================================
 +
- Identifying Your Adapter
- ========================
++August 20, 2018
++Copyright(c) 2015-2018 Intel Corporation.
++
++Contents
++========
++- Identifying Your Adapter
++- Additional Configurations
++- Performance Tuning
++- Known Issues
++- Support
++
++Identifying Your Adapter
++========================
++The driver in this release is compatible with devices based on the Intel(R)
++Ethernet Multi-host Controller.
++
 +For information on how to identify your adapter, and for the latest Intel
 +network drivers, refer to the Intel Support website:
-+https://www.intel.com/support
- 
--The e1000e driver supports all PCI Express Intel(R) Gigabit Network
--Connections, except those that are 82575, 82576 and 82580-based*.
--
--* NOTE: The Intel(R) PRO/1000 P Dual Port Server Adapter is supported by
--  the e1000 driver, not the e1000e driver due to the 82546 part being used
--  behind a PCI Express bridge.
- 
--For more information on how to identify your adapter, go to the Adapter &
--Driver ID Guide at:
--
--    http://support.intel.com/support/go/network/adapter/idguide.htm
-+Command Line Parameters
-+=======================
-+If the driver is built as a module, the following optional parameters are used
-+by entering them on the command line with the modprobe command using this
-+syntax::
- 
--For the latest Intel network drivers for Linux, refer to the following
--website.  In the search field, enter your adapter name or type, or use the
--networking link on the left to search for your adapter:
-+    modprobe e1000e [<option>=<VAL1>,<VAL2>,...]
- 
--    http://support.intel.com/support/go/network/adapter/home.htm
-+There needs to be a <VAL#> for each network port in the system supported by
-+this driver. The values will be applied to each instance, in function order.
++http://www.intel.com/support
++
++
++Flow Control
++------------
++The Intel(R) Ethernet Switch Host Interface Driver does not support Flow
++Control. It will not send pause frames. This may result in dropped frames.
++
++
++Virtual Functions (VFs)
++-----------------------
++Use sysfs to enable VFs.
++Valid Range: 0-64
++
 +For example::
- 
--Command Line Parameters
--=======================
-+    modprobe e1000e InterruptThrottleRate=16000,16000
- 
-+In this case, there are two network ports supported by e1000e in the system.
- The default value for each parameter is generally the recommended setting,
- unless otherwise noted.
- 
--NOTES:  For more information about the InterruptThrottleRate,
--        RxIntDelay, TxIntDelay, RxAbsIntDelay, and TxAbsIntDelay
--        parameters, see the application note at:
--        http://www.intel.com/design/network/applnots/ap450.htm
-+NOTE: A descriptor describes a data buffer and attributes related to the data
-+buffer. This information is accessed by the hardware.
- 
- InterruptThrottleRate
- ---------------------
--Valid Range:   0,1,3,4,100-100000 (0=off, 1=dynamic, 3=dynamic conservative,
--                                   4=simplified balancing)
--Default Value: 3
-+:Valid Range: 0,1,3,4,100-100000
-+:Default Value: 3
- 
--The driver can limit the amount of interrupts per second that the adapter
--will generate for incoming packets. It does this by writing a value to the
--adapter that is based on the maximum amount of interrupts that the adapter
--will generate per second.
-+Interrupt Throttle Rate controls the number of interrupts each interrupt
-+vector can generate per second. Increasing ITR lowers latency at the cost of
-+increased CPU utilization, though it may help throughput in some circumstances.
- 
- Setting InterruptThrottleRate to a value greater or equal to 100
- will program the adapter to send out a maximum of that many interrupts
-@@ -81,232 +78,305 @@ for small amounts of traffic and/or a significant percentage of small
- packets; and "Lowest latency", for almost completely small packets or
- minimal traffic.
- 
--In dynamic conservative mode, the InterruptThrottleRate value is set to 4000
--for traffic that falls in class "Bulk traffic". If traffic falls in the "Low
--latency" or "Lowest latency" class, the InterruptThrottleRate is increased
--stepwise to 20000. This default mode is suitable for most applications.
--
--For situations where low latency is vital such as cluster or
--grid computing, the algorithm can reduce latency even more when
--InterruptThrottleRate is set to mode 1. In this mode, which operates
--the same as mode 3, the InterruptThrottleRate will be increased stepwise to
--70000 for traffic in class "Lowest latency".
--
--In simplified mode the interrupt rate is based on the ratio of TX and
--RX traffic.  If the bytes per second rate is approximately equal, the
--interrupt rate will drop as low as 2000 interrupts per second.  If the
--traffic is mostly transmit or mostly receive, the interrupt rate could
--be as high as 8000.
--
--Setting InterruptThrottleRate to 0 turns off any interrupt moderation
--and may improve small packet latency, but is generally not suitable
--for bulk throughput traffic.
--
--NOTE:  InterruptThrottleRate takes precedence over the TxAbsIntDelay and
--       RxAbsIntDelay parameters.  In other words, minimizing the receive
--       and/or transmit absolute delays does not force the controller to
--       generate more interrupts than what the Interrupt Throttle Rate
--       allows.
--
--NOTE:  When e1000e is loaded with default settings and multiple adapters
--       are in use simultaneously, the CPU utilization may increase non-
--       linearly.  In order to limit the CPU utilization without impacting
--       the overall throughput, we recommend that you load the driver as
--       follows:
--
--           modprobe e1000e InterruptThrottleRate=3000,3000,3000
--
--       This sets the InterruptThrottleRate to 3000 interrupts/sec for
--       the first, second, and third instances of the driver.  The range
--       of 2000 to 3000 interrupts per second works on a majority of
--       systems and is a good starting point, but the optimal value will
--       be platform-specific.  If CPU utilization is not a concern, use
--       RX_POLLING (NAPI) and default driver settings.
-+ - 0: Off
-+      Turns off any interrupt moderation and may improve small packet latency.
-+      However, this is generally not suitable for bulk throughput traffic due
-+      to the increased CPU utilization of the higher interrupt rate.
-+ - 1: Dynamic mode
-+      This mode attempts to moderate interrupts per vector while maintaining
-+      very low latency. This can sometimes cause extra CPU utilization. If
-+      planning on deploying e1000e in a latency sensitive environment, this
-+      parameter should be considered.
-+ - 3: Dynamic Conservative mode (default)
-+      In dynamic conservative mode, the InterruptThrottleRate value is set to
-+      4000 for traffic that falls in class "Bulk traffic". If traffic falls in
-+      the "Low latency" or "Lowest latency" class, the InterruptThrottleRate is
-+      increased stepwise to 20000. This default mode is suitable for most
-+      applications.
-+ - 4: Simplified Balancing mode
-+      In simplified mode the interrupt rate is based on the ratio of TX and
-+      RX traffic.  If the bytes per second rate is approximately equal, the
-+      interrupt rate will drop as low as 2000 interrupts per second.  If the
-+      traffic is mostly transmit or mostly receive, the interrupt rate could
-+      be as high as 8000.
-+ - 100-100000:
-+      Setting InterruptThrottleRate to a value greater or equal to 100
-+      will program the adapter to send at most that many interrupts per second,
-+      even if more packets have come in. This reduces interrupt load on the
-+      system and can lower CPU utilization under heavy load, but will increase
-+      latency as packets are not processed as quickly.
 +
-+NOTE: InterruptThrottleRate takes precedence over the TxAbsIntDelay and
-+RxAbsIntDelay parameters. In other words, minimizing the receive and/or
-+transmit absolute delays does not force the controller to generate more
-+interrupts than what the Interrupt Throttle Rate allows.
- 
- RxIntDelay
- ----------
--Valid Range:   0-65535 (0=off)
--Default Value: 0
-+:Valid Range: 0-65535 (0=off)
-+:Default Value: 0
- 
- This value delays the generation of receive interrupts in units of 1.024
--microseconds.  Receive interrupt reduction can improve CPU efficiency if
--properly tuned for specific network traffic.  Increasing this value adds
--extra latency to frame reception and can end up decreasing the throughput
--of TCP traffic.  If the system is reporting dropped receives, this value
--may be set too high, causing the driver to run out of available receive
--descriptors.
--
--CAUTION:  When setting RxIntDelay to a value other than 0, adapters may
--          hang (stop transmitting) under certain network conditions.  If
--          this occurs a NETDEV WATCHDOG message is logged in the system
--          event log.  In addition, the controller is automatically reset,
--          restoring the network connection.  To eliminate the potential
--          for the hang ensure that RxIntDelay is set to 0.
-+microseconds. Receive interrupt reduction can improve CPU efficiency if
-+properly tuned for specific network traffic. Increasing this value adds extra
-+latency to frame reception and can end up decreasing the throughput of TCP
-+traffic. If the system is reporting dropped receives, this value may be set
-+too high, causing the driver to run out of available receive descriptors.
++    echo $num_vf_enabled > /sys/class/net/$dev/device/sriov_numvfs //enable VFs
++    echo 0 > /sys/class/net/$dev/device/sriov_numvfs //disable VFs
 +
-+CAUTION: When setting RxIntDelay to a value other than 0, adapters may hang
-+(stop transmitting) under certain network conditions. If this occurs a NETDEV
-+WATCHDOG message is logged in the system event log. In addition, the
-+controller is automatically reset, restoring the network connection. To
-+eliminate the potential for the hang ensure that RxIntDelay is set to 0.
- 
- RxAbsIntDelay
- -------------
--Valid Range:   0-65535 (0=off)
--Default Value: 8
-+:Valid Range: 0-65535 (0=off)
-+:Default Value: 8
- 
- This value, in units of 1.024 microseconds, limits the delay in which a
--receive interrupt is generated.  Useful only if RxIntDelay is non-zero,
--this value ensures that an interrupt is generated after the initial
--packet is received within the set amount of time.  Proper tuning,
--along with RxIntDelay, may improve traffic throughput in specific network
--conditions.
-+receive interrupt is generated. This value ensures that an interrupt is
-+generated after the initial packet is received within the set amount of time,
-+which is useful only if RxIntDelay is non-zero. Proper tuning, along with
-+RxIntDelay, may improve traffic throughput in specific network conditions.
- 
- TxIntDelay
- ----------
--Valid Range:   0-65535 (0=off)
--Default Value: 8
-+:Valid Range: 0-65535 (0=off)
-+:Default Value: 8
- 
--This value delays the generation of transmit interrupts in units of
--1.024 microseconds.  Transmit interrupt reduction can improve CPU
--efficiency if properly tuned for specific network traffic.  If the
--system is reporting dropped transmits, this value may be set too high
--causing the driver to run out of available transmit descriptors.
-+This value delays the generation of transmit interrupts in units of 1.024
-+microseconds. Transmit interrupt reduction can improve CPU efficiency if
-+properly tuned for specific network traffic. If the system is reporting
-+dropped transmits, this value may be set too high causing the driver to run
-+out of available transmit descriptors.
- 
- TxAbsIntDelay
- -------------
--Valid Range:   0-65535 (0=off)
--Default Value: 32
-+:Valid Range: 0-65535 (0=off)
-+:Default Value: 32
- 
- This value, in units of 1.024 microseconds, limits the delay in which a
--transmit interrupt is generated.  Useful only if TxIntDelay is non-zero,
--this value ensures that an interrupt is generated after the initial
--packet is sent on the wire within the set amount of time.  Proper tuning,
--along with TxIntDelay, may improve traffic throughput in specific
--network conditions.
-+transmit interrupt is generated. It is useful only if TxIntDelay is non-zero.
-+It ensures that an interrupt is generated after the initial Packet is sent on
-+the wire within the set amount of time. Proper tuning, along with TxIntDelay,
-+may improve traffic throughput in specific network conditions.
- 
--Copybreak
-+copybreak
- ---------
--Valid Range:   0-xxxxxxx (0=off)
--Default Value: 256
-+:Valid Range: 0-xxxxxxx (0=off)
-+:Default Value: 256
- 
--Driver copies all packets below or equaling this size to a fresh RX
-+The driver copies all packets below or equaling this size to a fresh receive
- buffer before handing it up the stack.
-+This parameter differs from other parameters because it is a single (not 1,1,1
-+etc.) parameter applied to all driver instances and it is also available
-+during runtime at /sys/module/e1000e/parameters/copybreak.
++NOTE: Neither the device nor the driver control how VFs are mapped into config
++space. Bus layout will vary by operating system. On operating systems that
++support it, you can check sysfs to find the mapping.
 +
-+To use copybreak, type::
- 
--This parameter is different than other parameters, in that it is a
--single (not 1,1,1 etc.) parameter applied to all driver instances and
--it is also available during runtime at
--/sys/module/e1000e/parameters/copybreak
-+    modprobe e1000e.ko copybreak=128
- 
- SmartPowerDownEnable
- --------------------
--Valid Range: 0-1
--Default Value:  0 (disabled)
-+:Valid Range: 0,1
-+:Default Value: 0 (disabled)
- 
--Allows PHY to turn off in lower power states. The user can set this parameter
--in supported chipsets.
-+Allows the PHY to turn off in lower power states. The user can turn off this
-+parameter in supported chipsets.
- 
- KumeranLockLoss
- ---------------
--Valid Range: 0-1
--Default Value: 1 (enabled)
-+:Valid Range: 0,1
-+:Default Value: 1 (enabled)
- 
--This workaround skips resetting the PHY at shutdown for the initial
--silicon releases of ICH8 systems.
-+This workaround skips resetting the PHY at shutdown for the initial silicon
-+releases of ICH8 systems.
- 
- IntMode
- -------
--Valid Range: 0-2 (0=legacy, 1=MSI, 2=MSI-X)
--Default Value: 2
-+:Valid Range: 0-2
-+:Default Value: 0
- 
--Allows changing the interrupt mode at module load time, without requiring a
--recompile. If the driver load fails to enable a specific interrupt mode, the
--driver will try other interrupt modes, from least to most compatible.  The
--interrupt order is MSI-X, MSI, Legacy.  If specifying MSI (IntMode=1)
--interrupts, only MSI and Legacy will be attempted.
-+   +-------+----------------+
-+   | Value | Interrupt Mode |
-+   +=======+================+
-+   |   0   |     Legacy     |
-+   +-------+----------------+
-+   |   1   |       MSI      |
-+   +-------+----------------+
-+   |   2   |      MSI-X     |
-+   +-------+----------------+
++NOTE: When SR-IOV mode is enabled, hardware VLAN filtering and VLAN tag
++stripping/insertion will remain enabled. Please remove the old VLAN filter
++before the new VLAN filter is added. For example::
 +
-+IntMode allows load time control over the type of interrupt registered for by
-+the driver. MSI-X is required for multiple queue support, and some kernels and
-+combinations of kernel .config options will force a lower level of interrupt
-+support.
-+
-+This command will show different values for each type of interrupt::
-+
-+  cat /proc/interrupts
- 
- CrcStripping
- ------------
--Valid Range: 0-1
--Default Value: 1 (enabled)
-+:Valid Range: 0,1
-+:Default Value: 1 (enabled)
- 
--Strip the CRC from received packets before sending up the network stack.  If
-+Strip the CRC from received packets before sending up the network stack. If
- you have a machine with a BMC enabled but cannot receive IPMI traffic after
- loading or enabling the driver, try disabling this feature.
- 
- WriteProtectNVM
- ---------------
--Valid Range: 0,1
--Default Value: 1
-+:Valid Range: 0,1
-+:Default Value: 1 (enabled)
- 
- If set to 1, configure the hardware to ignore all write/erase cycles to the
- GbE region in the ICHx NVM (in order to prevent accidental corruption of the
- NVM). This feature can be disabled by setting the parameter to 0 during initial
- driver load.
-+
- NOTE: The machine must be power cycled (full off/on) when enabling NVM writes
- via setting the parameter to zero. Once the NVM has been locked (via the
- parameter at 1 when the driver loads) it cannot be unlocked except via power
- cycle.
- 
--Additional Configurations
--=========================
-+Debug
-+-----
-+:Valid Range: 0-16 (0=none,...,16=all)
-+:Default Value: 0
- 
--  Jumbo Frames
--  ------------
--  Jumbo Frames support is enabled by changing the MTU to a value larger than
--  the default of 1500.  Use the ifconfig command to increase the MTU size.
--  For example:
-+This parameter adjusts the level of debug messages displayed in the system logs.
++    ip link set eth0 vf 0 vlan 100	// set vlan 100 for VF 0
++    ip link set eth0 vf 0 vlan 0	// Delete vlan 100
++    ip link set eth0 vf 0 vlan 200	// set a new vlan 200 for VF 0
 +
 +
 +Additional Features and Configurations
@@ -402,168 +90,123 @@ index 12089547baed..33554e5416c5 100644
 +------------
 +Jumbo Frames support is enabled by changing the Maximum Transmission Unit (MTU)
 +to a value larger than the default value of 1500.
- 
--       ifconfig eth<x> mtu 9000 up
++
 +Use the ifconfig command to increase the MTU size. For example, enter the
 +following where <x> is the interface number::
- 
--  This setting is not saved across reboots.
++
 +    ifconfig eth<x> mtu 9000 up
- 
--  Notes:
++
 +Alternatively, you can use the ip command as follows::
- 
--  - The maximum MTU setting for Jumbo Frames is 9216.  This value coincides
--    with the maximum Jumbo Frames size of 9234 bytes.
++
 +    ip link set mtu 9000 dev eth<x>
 +    ip link set up dev eth<x>
- 
--  - Using Jumbo frames at 10 or 100 Mbps is not supported and may result in
--    poor performance or loss of link.
++
 +This setting is not saved across reboots. The setting change can be made
 +permanent by adding 'MTU=9000' to the file:
- 
--  - Some adapters limit Jumbo Frames sized packets to a maximum of
--    4096 bytes and some adapters do not support Jumbo Frames.
++
 +- For RHEL: /etc/sysconfig/network-scripts/ifcfg-eth<x>
 +- For SLES: /etc/sysconfig/network/<config_file>
- 
--  - Jumbo Frames cannot be configured on an 82579-based Network device, if
--    MACSec is enabled on the system.
-+NOTE: The maximum MTU setting for Jumbo Frames is 8996. This value coincides
-+with the maximum Jumbo Frames size of 9018 bytes.
- 
--  ethtool
--  -------
--  The driver utilizes the ethtool interface for driver configuration and
--  diagnostics, as well as displaying statistical information.  We
--  strongly recommend downloading the latest version of ethtool at:
-+NOTE: Using Jumbo frames at 10 or 100 Mbps is not supported and may result in
-+poor performance or loss of link.
- 
--  https://kernel.org/pub/software/network/ethtool/
-+NOTE: The following adapters limit Jumbo Frames sized packets to a maximum of
-+4088 bytes:
- 
--  NOTE: When validating enable/disable tests on some parts (82578, for example)
--  you need to add a few seconds between tests when working with ethtool.
-+  - Intel(R) 82578DM Gigabit Network Connection
-+  - Intel(R) 82577LM Gigabit Network Connection
- 
--  Speed and Duplex
--  ----------------
--  Speed and Duplex are configured through the ethtool* utility. For
--  instructions,  refer to the ethtool man page.
-+The following adapters do not support Jumbo Frames:
- 
--  Enabling Wake on LAN* (WoL)
--  ---------------------------
--  WoL is configured through the ethtool* utility. For instructions on
--  enabling WoL with ethtool, refer to the ethtool man page.
-+  - Intel(R) PRO/1000 Gigabit Server Adapter
-+  - Intel(R) PRO/1000 PM Network Connection
-+  - Intel(R) 82562G 10/100 Network Connection
-+  - Intel(R) 82562G-2 10/100 Network Connection
-+  - Intel(R) 82562GT 10/100 Network Connection
-+  - Intel(R) 82562GT-2 10/100 Network Connection
-+  - Intel(R) 82562V 10/100 Network Connection
-+  - Intel(R) 82562V-2 10/100 Network Connection
-+  - Intel(R) 82566DC Gigabit Network Connection
-+  - Intel(R) 82566DC-2 Gigabit Network Connection
-+  - Intel(R) 82566DM Gigabit Network Connection
-+  - Intel(R) 82566MC Gigabit Network Connection
-+  - Intel(R) 82566MM Gigabit Network Connection
-+  - Intel(R) 82567V-3 Gigabit Network Connection
-+  - Intel(R) 82577LC Gigabit Network Connection
-+  - Intel(R) 82578DC Gigabit Network Connection
- 
--  WoL will be enabled on the system during the next shut down or reboot.
--  For this driver version, in order to enable WoL, the e1000e driver must be
--  loaded when shutting down or rebooting the system.
-+NOTE: Jumbo Frames cannot be configured on an 82579-based Network device if
-+MACSec is enabled on the system.
++
++NOTE: The maximum MTU setting for Jumbo Frames is 15342. This value coincides
++with the maximum Jumbo Frames size of 15364 bytes.
++
++NOTE: This driver will attempt to use multiple page sized buffers to receive
++each jumbo packet. This should help to avoid buffer starvation issues when
++allocating receive packets.
 +
 +
-+ethtool
-+-------
-+The driver utilizes the ethtool interface for driver configuration and
-+diagnostics, as well as displaying statistical information. The latest ethtool
-+version is required for this functionality. Download it at:
-+
-+https://www.kernel.org/pub/software/network/ethtool/
-+
-+NOTE: When validating enable/disable tests on some parts (for example, 82578),
-+it is necessary to add a few seconds between tests when working with ethtool.
++Generic Receive Offload, aka GRO
++--------------------------------
++The driver supports the in-kernel software implementation of GRO. GRO has
++shown that by coalescing Rx traffic into larger chunks of data, CPU
++utilization can be significantly reduced when under large Rx load. GRO is an
++evolution of the previously-used LRO interface. GRO is able to coalesce
++other protocols besides TCP. It's also safe to use with configurations that
++are problematic for LRO, namely bridging and iSCSI.
 +
 +
-+Speed and Duplex Configuration
-+------------------------------
-+In addressing speed and duplex configuration issues, you need to distinguish
-+between copper-based adapters and fiber-based adapters.
 +
-+In the default mode, an Intel(R) Ethernet Network Adapter using copper
-+connections will attempt to auto-negotiate with its link partner to determine
-+the best setting. If the adapter cannot establish link with the link partner
-+using auto-negotiation, you may need to manually configure the adapter and link
-+partner to identical settings to establish link and pass packets. This should
-+only be needed when attempting to link with an older switch that does not
-+support auto-negotiation or one that has been forced to a specific speed or
-+duplex mode. Your link partner must match the setting you choose. 1 Gbps speeds
-+and higher cannot be forced. Use the autonegotiation advertising setting to
-+manually set devices for 1 Gbps and higher.
++Supported ethtool Commands and Options for Filtering
++----------------------------------------------------
++-n --show-nfc
++  Retrieves the receive network flow classification configurations.
 +
-+Speed, duplex, and autonegotiation advertising are configured through the
-+ethtool* utility.
++rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
++  Retrieves the hash options for the specified network traffic type.
 +
-+Caution: Only experienced network administrators should force speed and duplex
-+or change autonegotiation advertising manually. The settings at the switch must
-+always match the adapter settings. Adapter performance may suffer or your
-+adapter may not operate if you configure the adapter differently from your
-+switch.
++-N --config-nfc
++  Configures the receive network flow classification.
 +
-+An Intel(R) Ethernet Network Adapter using fiber-based connections, however,
-+will not attempt to auto-negotiate with its link partner since those adapters
-+operate only in full duplex and only at their native speed.
++rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6 m|v|t|s|d|f|n|r
++  Configures the hash options for the specified network traffic type.
++
++- udp4: UDP over IPv4
++- udp6: UDP over IPv6
++- f Hash on bytes 0 and 1 of the Layer 4 header of the rx packet.
++- n Hash on bytes 2 and 3 of the Layer 4 header of the rx packet.
 +
 +
-+Enabling Wake on LAN* (WoL)
-+---------------------------
-+WoL is configured through the ethtool* utility.
++Known Issues/Troubleshooting
++============================
 +
-+WoL will be enabled on the system during the next shut down or reboot. For
-+this driver version, in order to enable WoL, the e1000e driver must be loaded
-+prior to shutting down or suspending the system.
++Enabling SR-IOV in a 64-bit Microsoft* Windows Server* 2012/R2 guest OS under Linux KVM
++---------------------------------------------------------------------------------------
++KVM Hypervisor/VMM supports direct assignment of a PCIe device to a VM. This
++includes traditional PCIe devices, as well as SR-IOV-capable devices based on
++the Intel Ethernet Controller XL710.
 +
-+NOTE: Wake on LAN is only supported on port A for the following devices:
-+- Intel(R) PRO/1000 PT Dual Port Network Connection
-+- Intel(R) PRO/1000 PT Dual Port Server Connection
-+- Intel(R) PRO/1000 PT Dual Port Server Adapter
-+- Intel(R) PRO/1000 PF Dual Port Server Adapter
-+- Intel(R) PRO/1000 PT Quad Port Server Adapter
-+- Intel(R) Gigabit PT Quad Port Server ExpressModule
- 
--  In most cases Wake On LAN is only supported on port A for multiple port
--  adapters. To verify if a port supports Wake on Lan run ethtool eth<X>.
- 
- Support
- =======
--
- For general information, go to the Intel support website at:
- 
--    www.intel.com/support/
++
++Support
++=======
++For general information, go to the Intel support website at:
++
 +https://www.intel.com/support/
- 
- or the Intel Wired Networking project hosted by Sourceforge at:
- 
--    http://sourceforge.net/projects/e1000
++
++or the Intel Wired Networking project hosted by Sourceforge at:
++
 +https://sourceforge.net/projects/e1000
- 
--If an issue is identified with the released source code on the supported
--kernel with a supported adapter, email the specific information related
--to the issue to e1000-devel at lists.sf.net
++
 +If an issue is identified with the released source code on a supported kernel
 +with a supported adapter, email the specific information related to the issue
 +to e1000-devel at lists.sf.net.
+diff --git a/Documentation/networking/index.rst b/Documentation/networking/index.rst
+index fcd710f2cc7a..8c8a0d2d39db 100644
+--- a/Documentation/networking/index.rst
++++ b/Documentation/networking/index.rst
+@@ -14,6 +14,7 @@ Contents:
+    dpaa2/index
+    e100
+    e1000
++   fm10k
+    kapi
+    z8530book
+    msg_zerocopy
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 54e719d02200..01a346754652 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -7347,6 +7347,7 @@ S:	Supported
+ F:	Documentation/networking/e100.rst
+ F:	Documentation/networking/e1000.rst
+ F:	Documentation/networking/e1000e.txt
++F:	Documentation/networking/fm10k.rst
+ F:	Documentation/networking/igb.txt
+ F:	Documentation/networking/igbvf.txt
+ F:	Documentation/networking/ixgb.txt
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 76f926d4bf13..9ff6da335b2a 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -284,6 +284,9 @@ config FM10K
+ 
+ 	  <http://support.intel.com>
+ 
++	  More specific information on configuring the driver is in
++	  <file:Documentation/networking/fm10k.rst>.
++
+ 	  To compile this driver as a module, choose M here. The module
+ 	  will be called fm10k.  MSI-X interrupt support is required
+ 
 -- 
 2.17.1
 
