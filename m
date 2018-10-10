@@ -1,334 +1,371 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 10 Oct 2018 12:16:10 -0700
-Subject: [Intel-wired-lan] [PATCH v2 09/12] Documentation: iavf: Prepare
- documentation for RST conversion
-In-Reply-To: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
-References: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20181010191613.2770-10-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 11 Oct 2018 03:20:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ d3bb0469b8099920dd3545ef264c9ff96ce1d80e
+Message-ID: <5bbe5100.ctrEYoCaiNNxqOmS%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Before making the conversion to the rst (reStructured Text) format, there
-are changes needed to the documentation so that there are no build errors.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: d3bb0469b8099920dd3545ef264c9ff96ce1d80e  intel-ethernet: software timestamp skbs as late as possible
 
-Also fixed old/broken URLs to the correct or updated URL.
+elapsed time: 298m
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+configs tested: 347
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+powerpc               mpc834x_itxgp_defconfig
+s390                              allnoconfig
+powerpc                   lite5200b_defconfig
+sh                     sh7710voipgw_defconfig
+openrisc                         allmodconfig
+s390                                defconfig
+arm                        keystone_defconfig
+mips                        maltaup_defconfig
+x86_64                 randconfig-a0-10110028
+x86_64                 randconfig-a0-10110051
+x86_64                 randconfig-a0-10110155
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+powerpc                     tqm5200_defconfig
+sparc                       sparc32_defconfig
+powerpc                          alldefconfig
+arm                        mini2440_defconfig
+mips                         tb0219_defconfig
+h8300                       h8s-sim_defconfig
+xtensa                            allnoconfig
+arm                      tct_hammer_defconfig
+powerpc                 mpc836x_rdk_defconfig
+arm64                             allnoconfig
+powerpc                      pmac32_defconfig
+i386                   randconfig-c0-10110051
+i386                   randconfig-c0-10110115
+i386                   randconfig-c0-10110209
+i386                   randconfig-c0-10110256
+mips                         cobalt_defconfig
+powerpc                     tqm8540_defconfig
+openrisc                            defconfig
+powerpc                       holly_defconfig
+arm                      jornada720_defconfig
+sh                           cayman_defconfig
+arm                            dove_defconfig
+mips                            ar7_defconfig
+i386                 randconfig-x010-10081334
+i386                 randconfig-x011-10081334
+i386                 randconfig-x012-10081334
+i386                 randconfig-x013-10081334
+i386                 randconfig-x014-10081334
+i386                 randconfig-x015-10081334
+i386                 randconfig-x016-10081334
+i386                 randconfig-x017-10081334
+i386                 randconfig-x018-10081334
+i386                 randconfig-x019-10081334
+x86_64                              fedora-25
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-10081334
+i386                   randconfig-n1-10081334
+i386                   randconfig-n2-10081334
+i386                   randconfig-n3-10081334
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-i0-10081525
+i386                   randconfig-i1-10081525
+i386                   randconfig-i2-10081525
+i386                   randconfig-i3-10081525
+arm                          ixp4xx_defconfig
+mips                           ip27_defconfig
+arm                       mainstone_defconfig
+arm                          pxa168_defconfig
+mips                         rt305x_defconfig
+um                               alldefconfig
+arm                      acs5k_tiny_defconfig
+arm                            zeus_defconfig
+mips                       lemote2f_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+x86_64                 randconfig-g0-10110017
+x86_64                 randconfig-g0-10110116
+x86_64                 randconfig-g0-10110211
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                   randconfig-x002-201840
+i386                   randconfig-x005-201840
+i386                   randconfig-x006-201840
+i386                   randconfig-x007-201840
+i386                   randconfig-x000-201840
+i386                   randconfig-x004-201840
+i386                   randconfig-x001-201840
+i386                   randconfig-x009-201840
+i386                   randconfig-x008-201840
+i386                   randconfig-x003-201840
+x86_64               randconfig-x010-10081439
+x86_64               randconfig-x011-10081439
+x86_64               randconfig-x012-10081439
+x86_64               randconfig-x013-10081439
+x86_64               randconfig-x014-10081439
+x86_64               randconfig-x015-10081439
+x86_64               randconfig-x016-10081439
+x86_64               randconfig-x017-10081439
+x86_64               randconfig-x018-10081439
+x86_64               randconfig-x019-10081439
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-s0-10110012
+x86_64                 randconfig-s1-10110012
+x86_64                 randconfig-s2-10110012
+x86_64                 randconfig-s0-10110051
+x86_64                 randconfig-s1-10110051
+x86_64                 randconfig-s2-10110051
+x86_64                 randconfig-s0-10110140
+x86_64                 randconfig-s1-10110140
+x86_64                 randconfig-s2-10110140
+x86_64                 randconfig-s0-10110211
+x86_64                 randconfig-s1-10110211
+x86_64                 randconfig-s2-10110211
+x86_64                 randconfig-s0-10110247
+x86_64                 randconfig-s1-10110247
+x86_64                 randconfig-s2-10110247
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                        vexpress_defconfig
+microblaze                        allnoconfig
+mips                  mips_paravirt_defconfig
+sh                ecovec24-romimage_defconfig
+arm                        cerfcube_defconfig
+m68k                       m5475evb_defconfig
+mips                  cavium_octeon_defconfig
+m68k                          sun3x_defconfig
+mips                          rm200_defconfig
+sh                        edosk7760_defconfig
+sh                            migor_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+powerpc                        fsp2_defconfig
+powerpc                 mpc834x_mds_defconfig
+c6x                        evmc6457_defconfig
+m68k                           sun3_defconfig
+sh                        apsh4ad0a_defconfig
+sh                             espt_defconfig
+arm                              zx_defconfig
+mips                             alldefconfig
+mips                         db1xxx_defconfig
+arm                          collie_defconfig
+arm                        raumfeld_defconfig
+m68k                         amcore_defconfig
+arm                            mps2_defconfig
+arm                          nuc910_defconfig
+mips                 pnx8335_stb225_defconfig
+powerpc                      makalu_defconfig
+powerpc                      obs600_defconfig
+arm                         palmz72_defconfig
+parisc                generic-32bit_defconfig
+sh                                  defconfig
+sh                           sh2007_defconfig
+arm                          ks8695_defconfig
+mips                          rb532_defconfig
+sh                          lboxre2_defconfig
+arm                          nuc950_defconfig
+arm                             pxa_defconfig
+powerpc                        cell_defconfig
+sh                         microdev_defconfig
+arm                          nuc960_defconfig
+arm                            u300_defconfig
+powerpc                      chrp32_defconfig
+powerpc                     taishan_defconfig
+arm                           corgi_defconfig
+arm64                               defconfig
+mips                        bcm63xx_defconfig
+parisc                         a500_defconfig
+powerpc                     mpc512x_defconfig
+powerpc                 mpc836x_mds_defconfig
+powerpc                     sbc8548_defconfig
+i386                   randconfig-s0-10081446
+i386                   randconfig-s1-10081446
+i386                   randconfig-s2-10081446
+i386                   randconfig-s3-10081446
+x86_64                 randconfig-s3-10110003
+x86_64                 randconfig-s4-10110003
+x86_64                 randconfig-s5-10110003
+x86_64                 randconfig-s3-10110045
+x86_64                 randconfig-s4-10110045
+x86_64                 randconfig-s5-10110045
+x86_64                 randconfig-s3-10110117
+x86_64                 randconfig-s4-10110117
+x86_64                 randconfig-s5-10110117
+x86_64                 randconfig-s3-10110154
+x86_64                 randconfig-s4-10110154
+x86_64                 randconfig-s5-10110154
+x86_64                 randconfig-s3-10110242
+x86_64                 randconfig-s4-10110242
+x86_64                 randconfig-s5-10110242
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-i0-10081336
+x86_64                 randconfig-i1-10081336
+x86_64                 randconfig-i2-10081336
+x86_64                 randconfig-i3-10081336
+i386                   randconfig-b0-10110046
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+microblaze                       allyesconfig
+mips                        vocore2_defconfig
+x86_64                 randconfig-b0-10110131
+alpha                            allmodconfig
+s390                          debug_defconfig
+sh                          urquell_defconfig
+powerpc                     virtex5_defconfig
+arm                        neponset_defconfig
+mips                           ip32_defconfig
+powerpc               mpc86xx_basic_defconfig
+i386                             alldefconfig
+arm                       imx_v4_v5_defconfig
+arm                       aspeed_g5_defconfig
+arm                            lart_defconfig
+arm                         assabet_defconfig
+i386                             allyesconfig
+x86_64                 randconfig-u0-10110016
+x86_64                 randconfig-u0-10110030
+x86_64                 randconfig-u0-10110052
+x86_64                 randconfig-u0-10110125
+x86_64                 randconfig-u0-10110149
+x86_64                 randconfig-u0-10110209
+x86_64                 randconfig-u0-10110237
+arm                            hisi_defconfig
+mips                        msp71xx_defconfig
+powerpc                      ppc6xx_defconfig
+mips                    maltaup_xpa_defconfig
+mips                          lasat_defconfig
+mips                      loongson3_defconfig
+arm                       cns3420vb_defconfig
+arm                       netwinder_defconfig
+x86_64                randconfig-ne0-10110038
+x86_64                randconfig-ne0-10110108
+x86_64                randconfig-ne0-10110206
+sh                          sdk7780_defconfig
+arm                           omap1_defconfig
+powerpc                  storcenter_defconfig
+x86_64                 randconfig-h0-10110038
+i386                 randconfig-x079-10081334
+i386                 randconfig-x074-10081334
+i386                 randconfig-x076-10081334
+i386                 randconfig-x070-10081334
+i386                 randconfig-x078-10081334
+i386                 randconfig-x077-10081334
+i386                 randconfig-x073-10081334
+i386                 randconfig-x075-10081334
+i386                 randconfig-x071-10081334
+i386                 randconfig-x072-10081334
+arm                       multi_v4t_defconfig
+mips                           mtx1_defconfig
+sh                           se7724_defconfig
+mips                        jmr3927_defconfig
+m68k                          multi_defconfig
+x86_64                 randconfig-g0-10082144
+x86_64                 randconfig-g1-10082144
+x86_64                 randconfig-g2-10082144
+x86_64                 randconfig-g3-10082144
+x86_64                 randconfig-x000-201840
+x86_64                 randconfig-x002-201840
+x86_64                 randconfig-x005-201840
+x86_64                 randconfig-x001-201840
+x86_64                 randconfig-x008-201840
+x86_64                 randconfig-x007-201840
+x86_64                 randconfig-x009-201840
+x86_64                 randconfig-x003-201840
+x86_64                 randconfig-x006-201840
+x86_64                 randconfig-x004-201840
+x86_64                 randconfig-e0-10081527
+x86_64                 randconfig-e1-10081527
+x86_64                 randconfig-e2-10081527
+x86_64                 randconfig-e3-10081527
+powerpc                   motionpro_defconfig
+mips                           ip22_defconfig
+um                               allyesconfig
+powerpc                     kmeter1_defconfig
+ia64                         bigsur_defconfig
+x86_64                randconfig-ws0-10110020
+x86_64                randconfig-ws0-10110111
+powerpc                     stx_gp3_defconfig
+powerpc64                         allnoconfig
+mips                       markeins_defconfig
+powerpc                 mpc85xx_cds_defconfig
+arm                         axm55xx_defconfig
+arm64                            allyesconfig
+x86_64                randconfig-ws0-10110116
+x86_64                randconfig-ws0-10110224
+mips                           ci20_defconfig
+openrisc                          allnoconfig
+powerpc                 mpc8540_ads_defconfig
+x86_64                 randconfig-j0-10081335
+x86_64                 randconfig-j1-10081335
+x86_64                 randconfig-j2-10081335
+x86_64                 randconfig-j3-10081335
+i386                   randconfig-j0-10081335
+i386                   randconfig-j1-10081335
+i386                   randconfig-j2-10081335
+i386                   randconfig-j3-10081335
+x86_64                 randconfig-r0-10110107
+i386                             allmodconfig
+sh                           se7619_defconfig
+arm                       aspeed_g4_defconfig
+nios2                         3c120_defconfig
+sh                         ecovec24_defconfig
+powerpc64                        allmodconfig
+arm                         s3c2410_defconfig
+arm                         shannon_defconfig
+i386                   randconfig-x0-10110035
+i386                   randconfig-x0-10110124
+i386                   randconfig-x0-10110150
+i386                   randconfig-x0-10110214
+
 ---
- Documentation/networking/iavf.txt | 271 +++++++++++++++++++++++++++---
- 1 file changed, 248 insertions(+), 23 deletions(-)
-
-diff --git a/Documentation/networking/iavf.txt b/Documentation/networking/iavf.txt
-index cc902a2369d6..821b675b227a 100644
---- a/Documentation/networking/iavf.txt
-+++ b/Documentation/networking/iavf.txt
-@@ -1,5 +1,7 @@
--Linux* Base Driver for Intel(R) Network Connection
--==================================================
-+.. SPDX-License-Identifier: GPL-2.0+
-+
-+Linux* Base Driver for Intel(R) Ethernet Adaptive Virtual Function
-+==================================================================
- 
- Intel Ethernet Adaptive Virtual Function Linux driver.
- Copyright(c) 2013-2018 Intel Corporation.
-@@ -8,49 +10,272 @@ Contents
- ========
- 
- - Identifying Your Adapter
-+- Additional Configurations
- - Known Issues/Troubleshooting
- - Support
- 
--This file describes the iavf Linux* Base Driver. This driver
--was formerly called i40evf.
-+This file describes the iavf Linux* Base Driver. This driver was formerly
-+called i40evf.
- 
--The iavf driver supports the below mentioned virtual function
--devices and can only be activated on kernels running the i40e or
--newer Physical Function (PF) driver compiled with CONFIG_PCI_IOV.
--The iavf driver requires CONFIG_PCI_MSI to be enabled.
-+The iavf driver supports the below mentioned virtual function devices and
-+can only be activated on kernels running the i40e or newer Physical Function
-+(PF) driver compiled with CONFIG_PCI_IOV.  The iavf driver requires
-+CONFIG_PCI_MSI to be enabled.
- 
- The guest OS loading the iavf driver must support MSI-X interrupts.
- 
--Supported Hardware
--==================
--Intel XL710 X710 Virtual Function
--Intel X722 Virtual Function
--Intel Ethernet Adaptive Virtual Function
--
- Identifying Your Adapter
- ========================
-+The driver in this kernel is compatible with devices based on the following:
-+ * Intel(R) XL710 X710 Virtual Function
-+ * Intel(R) X722 Virtual Function
-+ * Intel(R) XXV710 Virtual Function
-+ * Intel(R) Ethernet Adaptive Virtual Function
-+
-+For the best performance, make sure the latest NVM/FW is installed on your
-+device.
-+
-+For information on how to identify your adapter, and for the latest NVM/FW
-+images and Intel network drivers, refer to the Intel Support website:
-+http://www.intel.com/support
-+
-+
-+Additional Features and Configurations
-+======================================
-+
-+Viewing Link Messages
-+---------------------
-+Link messages will not be displayed to the console if the distribution is
-+restricting system messages. In order to see network driver link messages on
-+your console, set dmesg to eight by entering the following::
-+
-+  dmesg -n 8
-+
-+NOTE: This setting is not saved across reboots.
-+
-+ethtool
-+-------
-+The driver utilizes the ethtool interface for driver configuration and
-+diagnostics, as well as displaying statistical information. The latest ethtool
-+version is required for this functionality. Download it at:
-+https://www.kernel.org/pub/software/network/ethtool/
-+
-+Setting VLAN Tag Stripping
-+--------------------------
-+If you have applications that require Virtual Functions (VFs) to receive
-+packets with VLAN tags, you can disable VLAN tag stripping for the VF. The
-+Physical Function (PF) processes requests issued from the VF to enable or
-+disable VLAN tag stripping. Note that if the PF has assigned a VLAN to a VF,
-+then requests from that VF to set VLAN tag stripping will be ignored.
-+
-+To enable/disable VLAN tag stripping for a VF, issue the following command
-+from inside the VM in which you are running the VF::
-+
-+  ethtool -K <if_name> rxvlan on/off
-+
-+or alternatively::
-+
-+  ethtool --offload <if_name> rxvlan on/off
-+
-+Adaptive Virtual Function
-+-------------------------
-+Adaptive Virtual Function (AVF) allows the virtual function driver, or VF, to
-+adapt to changing feature sets of the physical function driver (PF) with which
-+it is associated. This allows system administrators to update a PF without
-+having to update all the VFs associated with it. All AVFs have a single common
-+device ID and branding string.
-+
-+AVFs have a minimum set of features known as "base mode," but may provide
-+additional features depending on what features are available in the PF with
-+which the AVF is associated. The following are base mode features:
-+
-+- 4 Queue Pairs (QP) and associated Configuration Status Registers (CSRs)
-+  for Tx/Rx.
-+- i40e descriptors and ring format.
-+- Descriptor write-back completion.
-+- 1 control queue, with i40e descriptors, CSRs and ring format.
-+- 5 MSI-X interrupt vectors and corresponding i40e CSRs.
-+- 1 Interrupt Throttle Rate (ITR) index.
-+- 1 Virtual Station Interface (VSI) per VF. 
-+- 1 Traffic Class (TC), TC0 
-+- Receive Side Scaling (RSS) with 64 entry indirection table and key,
-+  configured through the PF. 
-+- 1 unicast MAC address reserved per VF. 
-+- 16 MAC address filters for each VF. 
-+- Stateless offloads - non-tunneled checksums.
-+- AVF device ID.
-+- HW mailbox is used for VF to PF communications (including on Windows).
-+
-+IEEE 802.1ad (QinQ)?Support
-+---------------------------
-+The IEEE 802.1ad standard, informally known as QinQ, allows for multiple VLAN
-+IDs within a single Ethernet frame. VLAN IDs are sometimes referred to as
-+"tags," and multiple VLAN IDs are thus referred to as a "tag stack." Tag stacks
-+allow L2 tunneling and the ability to segregate traffic within a particular
-+VLAN ID, among other uses.
-+
-+The following are examples of how to configure 802.1ad (QinQ)::
-+
-+  ip link add link eth0 eth0.24 type vlan proto 802.1ad id 24
-+  ip link add link eth0.24 eth0.24.371 type vlan proto 802.1Q id 371
-+
-+Where "24" and "371" are example VLAN IDs.
-+
-+NOTES:
-+  Receive checksum offloads, cloud filters, and VLAN acceleration are not
-+  supported for 802.1ad (QinQ) packets.
-+
-+Application Device Queues (ADq)
-+-------------------------------
-+Application Device Queues (ADq) allows you to dedicate one or more queues to a
-+specific application. This can reduce latency for the specified application,
-+and allow Tx traffic to be rate limited per application. Follow the steps below
-+to set ADq.
-+
-+1. Create traffic classes (TCs). Maximum of 8 TCs can be created per interface.
-+The shaper bw_rlimit parameter is optional.
-+
-+Example: Sets up two tcs, tc0 and tc1, with 16 queues each and max tx rate set 
-+to 1Gbit for tc0 and 3Gbit for tc1.
- 
--For more information on how to identify your adapter, go to the
--Adapter & Driver ID Guide at:
-+::
- 
--    https://www.intel.com/content/www/us/en/support/articles/000005584/network-and-i-o/ethernet-products.html
-+  # tc qdisc add dev <interface> root mqprio num_tc 2 map 0 0 0 0 1 1 1 1 
-+  queues 16 at 0 16 at 16 hw 1 mode channel shaper bw_rlimit min_rate 1Gbit 2Gbit
-+  max_rate 1Gbit 3Gbit
-+
-+map: priority mapping for up to 16 priorities to tcs (e.g. map 0 0 0 0 1 1 1 1 
-+sets priorities 0-3 to use tc0 and 4-7 to use tc1)
-+
-+queues: for each tc, <num queues>@<offset> (e.g. queues 16 at 0 16 at 16 assigns
-+16 queues to tc0 at offset 0 and 16 queues to tc1 at offset 16. Max total
-+number of queues for all tcs is 64 or number of cores, whichever is lower.)
-+
-+hw 1 mode channel: ?channel? with ?hw? set to 1 is a new new hardware
-+offload mode in mqprio that makes full use of the mqprio options, the 
-+TCs, the queue configurations, and the QoS parameters.
-+
-+shaper bw_rlimit: for each tc, sets minimum and maximum bandwidth rates.
-+Totals must be equal or less than port speed.
-+
-+For example: min_rate 1Gbit 3Gbit: Verify bandwidth limit using network
-+monitoring tools such as ifstat or sar ?n DEV [interval] [number of samples]
-+
-+2. Enable HW TC offload on interface::
-+
-+    # ethtool -K <interface> hw-tc-offload on
-+
-+3. Apply TCs to ingress (RX) flow of interface::
-+
-+    # tc qdisc add dev <interface> ingress
-+
-+NOTES:
-+ - Run all tc commands from the iproute2 <pathtoiproute2>/tc/ directory.
-+ - ADq is not compatible with cloud filters.
-+ - Setting up channels via ethtool (ethtool -L) is not supported when the TCs
-+   are configured using mqprio.
-+ - You must have iproute2 latest version
-+ - NVM version 6.01 or later is required.
-+ - ADq cannot be enabled when any the following features are enabled: Data
-+   Center Bridging (DCB), Multiple Functions per Port (MFP), or Sideband Filters.
-+ - If another driver (for example, DPDK) has set cloud filters, you cannot
-+   enable ADq.
-+ - Tunnel filters are not supported in ADq. If encapsulated packets do arrive
-+   in non-tunnel mode, filtering will be done on the inner headers.  For example,
-+   for VXLAN traffic in non-tunnel mode, PCTYPE is identified as a VXLAN
-+   encapsulated packet, outer headers are ignored. Therefore, inner headers are
-+   matched.
-+ - If a TC filter on a PF matches traffic over a VF (on the PF), that traffic
-+   will be routed to the appropriate queue of the PF, and will not be passed on
-+   the VF. Such traffic will end up getting dropped higher up in the TCP/IP
-+   stack as it does not match PF address data.
-+ - If traffic matches multiple TC filters that point to different TCs, that
-+   traffic will be duplicated and sent to all matching TC queues.  The hardware
-+   switch mirrors the packet to a VSI list when multiple filters are matched.
- 
- 
- Known Issues/Troubleshooting
- ============================
- 
-+Traffic Is Not Being Passed Between VM and Client 
-+------------------------------------------------- 
-+You may not be able to pass traffic between a client system and a
-+Virtual Machine (VM) running on a separate host if the Virtual Function
-+(VF, or Virtual NIC) is not in trusted mode and spoof checking is enabled
-+on the VF. Note that this situation can occur in any combination of client,
-+host, and guest operating system. For information on how to set the VF to
-+trusted mode, refer to the section "VLAN Tag Packet Steering" in this
-+readme document. For information on setting spoof checking, refer to the
-+section "MAC and VLAN anti-spoofing feature" in this readme document.
-+
-+Do not unload port driver if VF with active VM is bound to it
-+-------------------------------------------------------------
-+Do not unload a port's driver if a Virtual Function (VF) with an active Virtual
-+Machine (VM) is bound to it. Doing so will cause the port to appear to hang.
-+Once the VM shuts down, or otherwise releases the VF, the command will complete.
-+
-+Virtual machine does not get link
-+---------------------------------
-+If the virtual machine has more than one virtual port assigned to it, and those
-+virtual ports are bound to different physical ports, you may not get link on
-+all of the virtual ports. The following command may work around the issue::
-+
-+  ethtool -r <PF>
-+
-+Where <PF> is the PF interface in the host, for example: p5p1. You may need to
-+run the command more than once to get link on all virtual ports.
-+
-+MAC address of Virtual Function changes unexpectedly
-+----------------------------------------------------
-+If a Virtual Function's MAC address is not assigned in the host, then the VF
-+(virtual function) driver will use a random MAC address. This random MAC
-+address may change each time the VF driver is reloaded. You can assign a static
-+MAC address in the host machine. This static MAC address will survive
-+a VF driver reload.
-+
-+Driver Buffer Overflow Fix
-+--------------------------
-+The fix to resolve CVE-2016-8105, referenced in Intel SA-00069
-+https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00069.html
-+is included in this and future versions of the driver.
-+
-+Multiple Interfaces on Same Ethernet Broadcast Network
-+------------------------------------------------------
-+Due to the default ARP behavior on Linux, it is not possible to have one system
-+on two IP networks in the same Ethernet broadcast domain (non-partitioned
-+switch) behave as expected. All Ethernet interfaces will respond to IP traffic
-+for any IP address assigned to the system. This results in unbalanced receive
-+traffic.
-+
-+If you have multiple interfaces in a server, either turn on ARP filtering by
-+entering::
-+
-+  echo 1 > /proc/sys/net/ipv4/conf/all/arp_filter
-+
-+NOTE: This setting is not saved across reboots. The configuration change can be
-+made permanent by adding the following line to the file /etc/sysctl.conf::
-+
-+  net.ipv4.conf.all.arp_filter = 1
-+
-+Another alternative is to install the interfaces in separate broadcast domains
-+(either in different switches or in a switch partitioned to VLANs).
-+
-+Rx Page Allocation Errors
-+-------------------------
-+'Page allocation failure. order:0' errors may occur under stress.
-+This is caused by the way the Linux kernel reports this stressed condition.
-+
- 
- Support
- =======
--
- For general information, go to the Intel support website at:
- 
--    http://support.intel.com
-+https://support.intel.com
- 
- or the Intel Wired Networking project hosted by Sourceforge at:
- 
--    http://sourceforge.net/projects/e1000
-+https://sourceforge.net/projects/e1000
- 
--If an issue is identified with the released source code on the supported
--kernel with a supported adapter, email the specific information related
--to the issue to e1000-devel at lists.sf.net
-+If an issue is identified with the released source code on the supported kernel
-+with a supported adapter, email the specific information related to the issue
-+to e1000-devel at lists.sf.net
--- 
-2.17.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
