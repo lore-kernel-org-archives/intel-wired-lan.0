@@ -1,371 +1,59 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 11 Oct 2018 03:20:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- d3bb0469b8099920dd3545ef264c9ff96ce1d80e
-Message-ID: <5bbe5100.ctrEYoCaiNNxqOmS%lkp@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 10 Oct 2018 12:43:45 -0700
+Subject: [Intel-wired-lan] i40e: Fix permission check for VF MAC filters
+In-Reply-To: <415A193C-5F84-4CED-B2F6-2FD58B88C76F@att.com>
+References: <E8B8AE1B-2618-4C58-A144-06BB8F2537D6@att.com>
+ <415A193C-5F84-4CED-B2F6-2FD58B88C76F@att.com>
+Message-ID: <a8663e5c9deea6f725f4609f57437f4e91be6e18.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: d3bb0469b8099920dd3545ef264c9ff96ce1d80e  intel-ethernet: software timestamp skbs as late as possible
+On Mon, 2018-10-08 at 20:57 +0000, MEHAN, MUNISH wrote:
+> Hi Jeff,
+>  
+>   I am testing bonding of vfs in a vms using i40e version - 2.4.18
+> and vm is using i40evf version 3.5.6. When a vf is brought down and
+> up inside vm I see the following on the host.  After this the vm bond
+> interface don?t work as desired. We cannot enable trust mode due to
+> security in multi-tenant env. I see you have fixed some related code 
+> https://github.com/torvalds/linux/commit/03ce7b1d23498c97bc530a1296852af0cdd2fe77#diff-932c10dedc2420dd5a100486efea9bff
+>  , do you know if this addresses this issue.
 
-elapsed time: 298m
+Well the patch you referred to was to address the link state in the VF,
+to ensure that it properly reflects the current link state.  While this
+may have some bearing on what you are experiencing, it does not seem
+likely that it would "fix" your issue.
 
-configs tested: 347
+If you could try the latest kernel in David Miller's net-next tree, to
+see if the issues persists, that would be useful information in trying
+to debug this issue.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Also, please CC intel-wired-lan at lists.osuosl.org so that all of the
+networking developers/engineers are able to review and weigh in on your
+issue.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc               mpc834x_itxgp_defconfig
-s390                              allnoconfig
-powerpc                   lite5200b_defconfig
-sh                     sh7710voipgw_defconfig
-openrisc                         allmodconfig
-s390                                defconfig
-arm                        keystone_defconfig
-mips                        maltaup_defconfig
-x86_64                 randconfig-a0-10110028
-x86_64                 randconfig-a0-10110051
-x86_64                 randconfig-a0-10110155
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-powerpc                     tqm5200_defconfig
-sparc                       sparc32_defconfig
-powerpc                          alldefconfig
-arm                        mini2440_defconfig
-mips                         tb0219_defconfig
-h8300                       h8s-sim_defconfig
-xtensa                            allnoconfig
-arm                      tct_hammer_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm64                             allnoconfig
-powerpc                      pmac32_defconfig
-i386                   randconfig-c0-10110051
-i386                   randconfig-c0-10110115
-i386                   randconfig-c0-10110209
-i386                   randconfig-c0-10110256
-mips                         cobalt_defconfig
-powerpc                     tqm8540_defconfig
-openrisc                            defconfig
-powerpc                       holly_defconfig
-arm                      jornada720_defconfig
-sh                           cayman_defconfig
-arm                            dove_defconfig
-mips                            ar7_defconfig
-i386                 randconfig-x010-10081334
-i386                 randconfig-x011-10081334
-i386                 randconfig-x012-10081334
-i386                 randconfig-x013-10081334
-i386                 randconfig-x014-10081334
-i386                 randconfig-x015-10081334
-i386                 randconfig-x016-10081334
-i386                 randconfig-x017-10081334
-i386                 randconfig-x018-10081334
-i386                 randconfig-x019-10081334
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-10081334
-i386                   randconfig-n1-10081334
-i386                   randconfig-n2-10081334
-i386                   randconfig-n3-10081334
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-i0-10081525
-i386                   randconfig-i1-10081525
-i386                   randconfig-i2-10081525
-i386                   randconfig-i3-10081525
-arm                          ixp4xx_defconfig
-mips                           ip27_defconfig
-arm                       mainstone_defconfig
-arm                          pxa168_defconfig
-mips                         rt305x_defconfig
-um                               alldefconfig
-arm                      acs5k_tiny_defconfig
-arm                            zeus_defconfig
-mips                       lemote2f_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-x86_64                 randconfig-g0-10110017
-x86_64                 randconfig-g0-10110116
-x86_64                 randconfig-g0-10110211
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                   randconfig-x002-201840
-i386                   randconfig-x005-201840
-i386                   randconfig-x006-201840
-i386                   randconfig-x007-201840
-i386                   randconfig-x000-201840
-i386                   randconfig-x004-201840
-i386                   randconfig-x001-201840
-i386                   randconfig-x009-201840
-i386                   randconfig-x008-201840
-i386                   randconfig-x003-201840
-x86_64               randconfig-x010-10081439
-x86_64               randconfig-x011-10081439
-x86_64               randconfig-x012-10081439
-x86_64               randconfig-x013-10081439
-x86_64               randconfig-x014-10081439
-x86_64               randconfig-x015-10081439
-x86_64               randconfig-x016-10081439
-x86_64               randconfig-x017-10081439
-x86_64               randconfig-x018-10081439
-x86_64               randconfig-x019-10081439
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-s0-10110012
-x86_64                 randconfig-s1-10110012
-x86_64                 randconfig-s2-10110012
-x86_64                 randconfig-s0-10110051
-x86_64                 randconfig-s1-10110051
-x86_64                 randconfig-s2-10110051
-x86_64                 randconfig-s0-10110140
-x86_64                 randconfig-s1-10110140
-x86_64                 randconfig-s2-10110140
-x86_64                 randconfig-s0-10110211
-x86_64                 randconfig-s1-10110211
-x86_64                 randconfig-s2-10110211
-x86_64                 randconfig-s0-10110247
-x86_64                 randconfig-s1-10110247
-x86_64                 randconfig-s2-10110247
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                        vexpress_defconfig
-microblaze                        allnoconfig
-mips                  mips_paravirt_defconfig
-sh                ecovec24-romimage_defconfig
-arm                        cerfcube_defconfig
-m68k                       m5475evb_defconfig
-mips                  cavium_octeon_defconfig
-m68k                          sun3x_defconfig
-mips                          rm200_defconfig
-sh                        edosk7760_defconfig
-sh                            migor_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-powerpc                        fsp2_defconfig
-powerpc                 mpc834x_mds_defconfig
-c6x                        evmc6457_defconfig
-m68k                           sun3_defconfig
-sh                        apsh4ad0a_defconfig
-sh                             espt_defconfig
-arm                              zx_defconfig
-mips                             alldefconfig
-mips                         db1xxx_defconfig
-arm                          collie_defconfig
-arm                        raumfeld_defconfig
-m68k                         amcore_defconfig
-arm                            mps2_defconfig
-arm                          nuc910_defconfig
-mips                 pnx8335_stb225_defconfig
-powerpc                      makalu_defconfig
-powerpc                      obs600_defconfig
-arm                         palmz72_defconfig
-parisc                generic-32bit_defconfig
-sh                                  defconfig
-sh                           sh2007_defconfig
-arm                          ks8695_defconfig
-mips                          rb532_defconfig
-sh                          lboxre2_defconfig
-arm                          nuc950_defconfig
-arm                             pxa_defconfig
-powerpc                        cell_defconfig
-sh                         microdev_defconfig
-arm                          nuc960_defconfig
-arm                            u300_defconfig
-powerpc                      chrp32_defconfig
-powerpc                     taishan_defconfig
-arm                           corgi_defconfig
-arm64                               defconfig
-mips                        bcm63xx_defconfig
-parisc                         a500_defconfig
-powerpc                     mpc512x_defconfig
-powerpc                 mpc836x_mds_defconfig
-powerpc                     sbc8548_defconfig
-i386                   randconfig-s0-10081446
-i386                   randconfig-s1-10081446
-i386                   randconfig-s2-10081446
-i386                   randconfig-s3-10081446
-x86_64                 randconfig-s3-10110003
-x86_64                 randconfig-s4-10110003
-x86_64                 randconfig-s5-10110003
-x86_64                 randconfig-s3-10110045
-x86_64                 randconfig-s4-10110045
-x86_64                 randconfig-s5-10110045
-x86_64                 randconfig-s3-10110117
-x86_64                 randconfig-s4-10110117
-x86_64                 randconfig-s5-10110117
-x86_64                 randconfig-s3-10110154
-x86_64                 randconfig-s4-10110154
-x86_64                 randconfig-s5-10110154
-x86_64                 randconfig-s3-10110242
-x86_64                 randconfig-s4-10110242
-x86_64                 randconfig-s5-10110242
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-i0-10081336
-x86_64                 randconfig-i1-10081336
-x86_64                 randconfig-i2-10081336
-x86_64                 randconfig-i3-10081336
-i386                   randconfig-b0-10110046
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-microblaze                       allyesconfig
-mips                        vocore2_defconfig
-x86_64                 randconfig-b0-10110131
-alpha                            allmodconfig
-s390                          debug_defconfig
-sh                          urquell_defconfig
-powerpc                     virtex5_defconfig
-arm                        neponset_defconfig
-mips                           ip32_defconfig
-powerpc               mpc86xx_basic_defconfig
-i386                             alldefconfig
-arm                       imx_v4_v5_defconfig
-arm                       aspeed_g5_defconfig
-arm                            lart_defconfig
-arm                         assabet_defconfig
-i386                             allyesconfig
-x86_64                 randconfig-u0-10110016
-x86_64                 randconfig-u0-10110030
-x86_64                 randconfig-u0-10110052
-x86_64                 randconfig-u0-10110125
-x86_64                 randconfig-u0-10110149
-x86_64                 randconfig-u0-10110209
-x86_64                 randconfig-u0-10110237
-arm                            hisi_defconfig
-mips                        msp71xx_defconfig
-powerpc                      ppc6xx_defconfig
-mips                    maltaup_xpa_defconfig
-mips                          lasat_defconfig
-mips                      loongson3_defconfig
-arm                       cns3420vb_defconfig
-arm                       netwinder_defconfig
-x86_64                randconfig-ne0-10110038
-x86_64                randconfig-ne0-10110108
-x86_64                randconfig-ne0-10110206
-sh                          sdk7780_defconfig
-arm                           omap1_defconfig
-powerpc                  storcenter_defconfig
-x86_64                 randconfig-h0-10110038
-i386                 randconfig-x079-10081334
-i386                 randconfig-x074-10081334
-i386                 randconfig-x076-10081334
-i386                 randconfig-x070-10081334
-i386                 randconfig-x078-10081334
-i386                 randconfig-x077-10081334
-i386                 randconfig-x073-10081334
-i386                 randconfig-x075-10081334
-i386                 randconfig-x071-10081334
-i386                 randconfig-x072-10081334
-arm                       multi_v4t_defconfig
-mips                           mtx1_defconfig
-sh                           se7724_defconfig
-mips                        jmr3927_defconfig
-m68k                          multi_defconfig
-x86_64                 randconfig-g0-10082144
-x86_64                 randconfig-g1-10082144
-x86_64                 randconfig-g2-10082144
-x86_64                 randconfig-g3-10082144
-x86_64                 randconfig-x000-201840
-x86_64                 randconfig-x002-201840
-x86_64                 randconfig-x005-201840
-x86_64                 randconfig-x001-201840
-x86_64                 randconfig-x008-201840
-x86_64                 randconfig-x007-201840
-x86_64                 randconfig-x009-201840
-x86_64                 randconfig-x003-201840
-x86_64                 randconfig-x006-201840
-x86_64                 randconfig-x004-201840
-x86_64                 randconfig-e0-10081527
-x86_64                 randconfig-e1-10081527
-x86_64                 randconfig-e2-10081527
-x86_64                 randconfig-e3-10081527
-powerpc                   motionpro_defconfig
-mips                           ip22_defconfig
-um                               allyesconfig
-powerpc                     kmeter1_defconfig
-ia64                         bigsur_defconfig
-x86_64                randconfig-ws0-10110020
-x86_64                randconfig-ws0-10110111
-powerpc                     stx_gp3_defconfig
-powerpc64                         allnoconfig
-mips                       markeins_defconfig
-powerpc                 mpc85xx_cds_defconfig
-arm                         axm55xx_defconfig
-arm64                            allyesconfig
-x86_64                randconfig-ws0-10110116
-x86_64                randconfig-ws0-10110224
-mips                           ci20_defconfig
-openrisc                          allnoconfig
-powerpc                 mpc8540_ads_defconfig
-x86_64                 randconfig-j0-10081335
-x86_64                 randconfig-j1-10081335
-x86_64                 randconfig-j2-10081335
-x86_64                 randconfig-j3-10081335
-i386                   randconfig-j0-10081335
-i386                   randconfig-j1-10081335
-i386                   randconfig-j2-10081335
-i386                   randconfig-j3-10081335
-x86_64                 randconfig-r0-10110107
-i386                             allmodconfig
-sh                           se7619_defconfig
-arm                       aspeed_g4_defconfig
-nios2                         3c120_defconfig
-sh                         ecovec24_defconfig
-powerpc64                        allmodconfig
-arm                         s3c2410_defconfig
-arm                         shannon_defconfig
-i386                   randconfig-x0-10110035
-i386                   randconfig-x0-10110124
-i386                   randconfig-x0-10110150
-i386                   randconfig-x0-10110214
+>  
+> Host dmesg
+>  
+> [1040608.711702] i40e 0000:3b:00.0: VF is not trusted, switch the VF
+> to trusted to add more functionality
+> [1040608.721012] i40e 0000:3b:00.0: VF 30 failed opcode 10, retval:
+> -1
+>  
+> VM dmesg
+>  
+> [ 2155.767125] i40evf 0000:00:05.0 ens5: NIC Link is Up 40 Gbps Full
+> Duplex
+> [ 2157.773884] i40evf 0000:00:05.0: Failed to add MAC filter, error
+> I40E_ERR_NVM
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181010/68858829/attachment.asc>
