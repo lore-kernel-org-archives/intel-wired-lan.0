@@ -1,82 +1,64 @@
-From: Jags N <jagsnn@gmail.com>
-Date: Wed, 10 Oct 2018 19:10:20 +0530
-Subject: [Intel-wired-lan] fm10k driver - flow control question
-In-Reply-To: <CAKgT0UetdOGsVPLu3Ji23FXq_dVVxWPSGsZjDLW9JX3q=CBSEQ@mail.gmail.com>
-References: <CALQkTo1P_QAyW+y_LE=LFK=y+oDfScqZJLxjdn7eifofNbycAQ@mail.gmail.com>
- <CAKgT0UetdOGsVPLu3Ji23FXq_dVVxWPSGsZjDLW9JX3q=CBSEQ@mail.gmail.com>
-Message-ID: <CALQkTo2eqJs0pJcjkGh3bs0yhJ5iz2SJ_e8G+9zYYm2H-k6HQw@mail.gmail.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 10 Oct 2018 08:25:16 -0700
+Subject: [Intel-wired-lan] [Question] i40e: Enabling of promiscuous mode
+ when MAC-VLAN Filter Table is Full
+In-Reply-To: <F4CC6FACFEB3C54C9141D49AD221F7F93BF2D9F2@FRAEML521-MBX.china.huawei.com>
+References: <F4CC6FACFEB3C54C9141D49AD221F7F93BF2D9F2@FRAEML521-MBX.china.huawei.com>
+Message-ID: <CAKgT0UfoFKTB92-ef3VAFowzz7E9oJh7uvZNabXwLVhDvth+Wg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Alex,
-
-Thank You ! That really helped me understand the scope of the
-implementation.
-
-If I may ask, I see that  "PCIE_RXDCTL.DropOnEmpty" if not set, can hold
-the packet till "PCIE_DMA_CTRL.MaxHoldTime" expires, after which the queue
-is set to DROP to avoid future time out on this queue.
-
-"PCIE_DMA_CTRL.MaxHoldTime" is defined as log2() of maximum waiting time
-for descriptors to become available.The maximum time is 2^^31 * PCLK.
-
-With PCLK at 500 MHz for Gen3.0, would the following calculation be correct
-:
-
-(2^^31 * PCLK) means, 2^^31 * 2ns = 4294967296 ns = 4 sec, is the maximum
-hold time that the back pressure on the internal switch will be present
-after which the queue is set to Drop.
-
-Appreciate much your kind response.
-
-Regards,
-Jagdish
-
-On Tue, Oct 9, 2018 at 10:54 PM Alexander Duyck <alexander.duyck@gmail.com>
-wrote:
-
-> On Tue, Oct 9, 2018 at 10:12 AM Jags N <jagsnn@gmail.com> wrote:
-> >
-> > Hi,
-> >
-> > In FM10k intel data sheet, I see that the PCIe End Point (PEP) does not
-> support generation of link based flow control or class based/priority based
-> flow control pause frames to prevent Host Congestion.
-> >
-> > The same behaviour is oberved in dpdk 18.08 fm10k driver, wherein there
-> is no pfc get or set driver functions defined, which I believe is
-> consistent with data sheet.
-> >
-> > But, in FM10K linux driver ver 0.26.1 (latest), there is code for
-> setting dcb ets, pfc, dcbx. So I am a bit confused as to how the fm10k
-> driver could support pfc if the hardware data sheet does not mention about
-> it.
-> >
-> > Could someone help me understand or provide any pointers to documents
-> that details what kind of support is present in 0.26.1 with respect to pfc
-> on PEP, and if fm10k can support pfc setting/getting on PEP interface to
-> protect Host Congestion.
-> >
-> > Regards,
-> > Jagdish
+On Wed, Oct 10, 2018 at 4:59 AM Salil Mehta <salil.mehta@huawei.com> wrote:
 >
-> It has been a little over 4 years since I wrote the driver so my
-> recollection on this could be a bit rusty, but I believe most of the
-> DCB code in the fm10k linux driver is related to configuring queues
-> associated with traffic classes. Also while the part doesn't support
-> PFC from the PCIe End Point it does have a bit called "DROP_ON_EMPTY"
-> in the RXDCTL register of each queue that determines if we just drop
-> the packet or put backpressure on the internal switch if the Rx ring
-> doesn't have available descriptors. I believe that is how the DCB
-> implementation for the Linux driver is configured.
+> Hi Alex,
+> I was going through the Intel i40e driver and I could see in the function i40e_aqc_add_filters()
+> enabling promiscuous mode when the filter table is full.
+
+
+Hi Salil,
+
+I have added the intel-wired-lan list as I am no longer working on the
+i40e driver or wired networking within Intel.
+
+I have included the answers as best as I know them below.
+
+> Below is excerpt from comment over the function:
 >
-> Thanks.
+> *
+>  * Send a request to firmware via AdminQ to add a chunk of filters. Will set
+>  * __I40E_VSI_OVERFLOW_PROMISC bit in vsi->state if the firmware has run out of
+>  * space for more filters.
+>  */
 >
-> - Alex
+> Questions:
 >
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181010/5e00e708/attachment.html>
+> 1. Could this be a security issue since all the packet would now be send to PF?
+
+It shouldn't be because the PF can still filter based on unicast
+address in the network stack.
+
+> 2. In above case will the VLAN filtering still act on the packet? would the PF
+>    also start receiving packets from unknown VLANs i.e. not configured in VLAN Table?
+
+I think VLAN filtering is still active, but I could be wrong. I would
+need somebody who is on the networking team to clarify.
+
+> 3. If the VFs are *trusted* then would it still be appropriate to send traffic of one
+>    VF belonging to same PF to other VF? I guess, the current scenario it can happen - right?
+
+Are you running a VF in promiscuous mode while this is all going on?
+I'm not quite sure how we jumped from MACVLAN to VFs.
+
+>
+> Thanks
+> Salil
+
+I hope this helps. I'm hoping somebody from networking team can
+clarify on the points where I was not certain on things.
+
+Thanks.
+
+- Alex
