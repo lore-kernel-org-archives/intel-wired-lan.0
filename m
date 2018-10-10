@@ -1,272 +1,299 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 10 Oct 2018 12:16:13 -0700
-Subject: [Intel-wired-lan] [PATCH v2 12/12] Documentation: intel: Convert to
- RST format
+Date: Wed, 10 Oct 2018 12:16:05 -0700
+Subject: [Intel-wired-lan] [PATCH v2 04/12] Documentation: igb: Prepare
+ documentation for RST conversion
 In-Reply-To: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
 References: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20181010191613.2770-13-jeffrey.t.kirsher@intel.com>
+Message-ID: <20181010191613.2770-5-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Now that the documents have been updated to conform to the reStructured Text
-guidelines, we can now change the file extensions and update the other
-related references.
+Before making the conversion to the rst (reStructured Text) format, there
+are changes needed to the documentation so that there are no build errors.
 
-This converts all of the Intel wired LAN driver documentation to *.rst.
+Also fixed old/broken URLs to the correct or updated URL.
 
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- Documentation/networking/00-INDEX             | 20 ----------------
- .../networking/{e1000e.txt => e1000e.rst}     |  0
- .../networking/{i40e.txt => i40e.rst}         |  0
- .../networking/{iavf.txt => iavf.rst}         |  0
- Documentation/networking/{ice.txt => ice.rst} |  0
- Documentation/networking/{igb.txt => igb.rst} |  0
- .../networking/{igbvf.txt => igbvf.rst}       |  0
- Documentation/networking/index.rst            |  9 ++++++++
- .../networking/{ixgb.txt => ixgb.rst}         |  0
- .../networking/{ixgbe.txt => ixgbe.rst}       |  0
- .../networking/{ixgbevf.txt => ixgbevf.rst}   |  0
- MAINTAINERS                                   | 18 +++++++--------
- drivers/net/ethernet/intel/Kconfig            | 23 +++++++++++++++----
- 13 files changed, 37 insertions(+), 33 deletions(-)
- rename Documentation/networking/{e1000e.txt => e1000e.rst} (100%)
- rename Documentation/networking/{i40e.txt => i40e.rst} (100%)
- rename Documentation/networking/{iavf.txt => iavf.rst} (100%)
- rename Documentation/networking/{ice.txt => ice.rst} (100%)
- rename Documentation/networking/{igb.txt => igb.rst} (100%)
- rename Documentation/networking/{igbvf.txt => igbvf.rst} (100%)
- rename Documentation/networking/{ixgb.txt => ixgb.rst} (100%)
- rename Documentation/networking/{ixgbe.txt => ixgbe.rst} (100%)
- rename Documentation/networking/{ixgbevf.txt => ixgbevf.rst} (100%)
+ Documentation/networking/igb.txt | 214 ++++++++++++++++++++-----------
+ 1 file changed, 139 insertions(+), 75 deletions(-)
 
-diff --git a/Documentation/networking/00-INDEX b/Documentation/networking/00-INDEX
-index f4f2b5d6c8d8..1fc00ed79a5d 100644
---- a/Documentation/networking/00-INDEX
-+++ b/Documentation/networking/00-INDEX
-@@ -68,12 +68,6 @@ driver.txt
- 	- Softnet driver issues.
- ena.txt
- 	- info on Amazon's Elastic Network Adapter (ENA)
--e100.txt
--	- info on Intel's EtherExpress PRO/100 line of 10/100 boards
--e1000.txt
--	- info on Intel's E1000 line of gigabit ethernet boards
--e1000e.txt
--	- README for the Intel Gigabit Ethernet Driver (e1000e).
- eql.txt
- 	- serial IP load balancing
- fib_trie.txt
-@@ -92,16 +86,8 @@ generic_netlink.txt
- 	- info on Generic Netlink
- gianfar.txt
- 	- Gianfar Ethernet Driver.
--i40e.txt
--	- README for the Intel Ethernet Controller XL710 Driver (i40e).
--iavf.txt
--	- README for the Intel Ethernet Adaptive Virtual Function Driver (iavf).
- ieee802154.txt
- 	- Linux IEEE 802.15.4 implementation, API and drivers
--igb.txt
--	- README for the Intel Gigabit Ethernet Driver (igb).
--igbvf.txt
--	- README for the Intel Gigabit Ethernet Driver (igbvf).
- ip-sysctl.txt
- 	- /proc/sys/net/ipv4/* variables
- ip_dynaddr.txt
-@@ -118,12 +104,6 @@ ipvs-sysctl.txt
- 	- Per-inode explanation of the /proc/sys/net/ipv4/vs interface.
- irda.txt
- 	- where to get IrDA (infrared) utilities and info for Linux.
--ixgb.txt
--	- README for the Intel 10 Gigabit Ethernet Driver (ixgb).
--ixgbe.txt
--	- README for the Intel 10 Gigabit Ethernet Driver (ixgbe).
--ixgbevf.txt
--	- README for the Intel Virtual Function (VF) Driver (ixgbevf).
- l2tp.txt
- 	- User guide to the L2TP tunnel protocol.
- lapb-module.txt
-diff --git a/Documentation/networking/e1000e.txt b/Documentation/networking/e1000e.rst
-similarity index 100%
-rename from Documentation/networking/e1000e.txt
-rename to Documentation/networking/e1000e.rst
-diff --git a/Documentation/networking/i40e.txt b/Documentation/networking/i40e.rst
-similarity index 100%
-rename from Documentation/networking/i40e.txt
-rename to Documentation/networking/i40e.rst
-diff --git a/Documentation/networking/iavf.txt b/Documentation/networking/iavf.rst
-similarity index 100%
-rename from Documentation/networking/iavf.txt
-rename to Documentation/networking/iavf.rst
-diff --git a/Documentation/networking/ice.txt b/Documentation/networking/ice.rst
-similarity index 100%
-rename from Documentation/networking/ice.txt
-rename to Documentation/networking/ice.rst
-diff --git a/Documentation/networking/igb.txt b/Documentation/networking/igb.rst
-similarity index 100%
-rename from Documentation/networking/igb.txt
-rename to Documentation/networking/igb.rst
-diff --git a/Documentation/networking/igbvf.txt b/Documentation/networking/igbvf.rst
-similarity index 100%
-rename from Documentation/networking/igbvf.txt
-rename to Documentation/networking/igbvf.rst
-diff --git a/Documentation/networking/index.rst b/Documentation/networking/index.rst
-index 8c8a0d2d39db..bd89dae8d578 100644
---- a/Documentation/networking/index.rst
-+++ b/Documentation/networking/index.rst
-@@ -14,7 +14,16 @@ Contents:
-    dpaa2/index
-    e100
-    e1000
-+   e1000e
-    fm10k
-+   igb
-+   igbvf
-+   ixgb
-+   ixgbe
-+   ixgbevf
-+   i40e
-+   iavf
-+   ice
-    kapi
-    z8530book
-    msg_zerocopy
-diff --git a/Documentation/networking/ixgb.txt b/Documentation/networking/ixgb.rst
-similarity index 100%
-rename from Documentation/networking/ixgb.txt
-rename to Documentation/networking/ixgb.rst
-diff --git a/Documentation/networking/ixgbe.txt b/Documentation/networking/ixgbe.rst
-similarity index 100%
-rename from Documentation/networking/ixgbe.txt
-rename to Documentation/networking/ixgbe.rst
-diff --git a/Documentation/networking/ixgbevf.txt b/Documentation/networking/ixgbevf.rst
-similarity index 100%
-rename from Documentation/networking/ixgbevf.txt
-rename to Documentation/networking/ixgbevf.rst
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 01a346754652..6060679c7bdb 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7346,16 +7346,16 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
- S:	Supported
- F:	Documentation/networking/e100.rst
- F:	Documentation/networking/e1000.rst
--F:	Documentation/networking/e1000e.txt
-+F:	Documentation/networking/e1000e.rst
- F:	Documentation/networking/fm10k.rst
--F:	Documentation/networking/igb.txt
--F:	Documentation/networking/igbvf.txt
--F:	Documentation/networking/ixgb.txt
--F:	Documentation/networking/ixgbe.txt
--F:	Documentation/networking/ixgbevf.txt
--F:	Documentation/networking/i40e.txt
--F:	Documentation/networking/iavf.txt
--F:	Documentation/networking/ice.txt
-+F:	Documentation/networking/igb.rst
-+F:	Documentation/networking/igbvf.rst
-+F:	Documentation/networking/ixgb.rst
-+F:	Documentation/networking/ixgbe.rst
-+F:	Documentation/networking/ixgbevf.rst
-+F:	Documentation/networking/i40e.rst
-+F:	Documentation/networking/iavf.rst
-+F:	Documentation/networking/ice.rst
- F:	drivers/net/ethernet/intel/
- F:	drivers/net/ethernet/intel/*/
- F:	include/linux/avf/virtchnl.h
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 9ff6da335b2a..fd3373d82a9e 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -68,6 +68,9 @@ config E1000E
- 
- 	  <http://support.intel.com>
- 
-+	  More specific information on configuring the driver is in
-+	  <file:Documentation/networking/e1000e.rst>.
+diff --git a/Documentation/networking/igb.txt b/Documentation/networking/igb.txt
+index f90643ef39c9..ba16b86d5593 100644
+--- a/Documentation/networking/igb.txt
++++ b/Documentation/networking/igb.txt
+@@ -1,129 +1,193 @@
++.. SPDX-License-Identifier: GPL-2.0+
 +
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called e1000e.
+ Linux* Base Driver for Intel(R) Ethernet Network Connection
+ ===========================================================
  
-@@ -94,7 +97,7 @@ config IGB
- 	  <http://support.intel.com>
+ Intel Gigabit Linux driver.
+-Copyright(c) 1999 - 2013 Intel Corporation.
++Copyright(c) 1999-2018 Intel Corporation.
  
- 	  More specific information on configuring the driver is in
--	  <file:Documentation/networking/e1000.rst>.
-+	  <file:Documentation/networking/igb.rst>.
+ Contents
+ ========
  
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called igb.
-@@ -130,7 +133,7 @@ config IGBVF
- 	  <http://support.intel.com>
+ - Identifying Your Adapter
++- Command Line Parameters
+ - Additional Configurations
+ - Support
  
- 	  More specific information on configuring the driver is in
--	  <file:Documentation/networking/e1000.rst>.
-+	  <file:Documentation/networking/igbvf.rst>.
- 
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called igbvf.
-@@ -147,7 +150,7 @@ config IXGB
- 	  <http://support.intel.com>
- 
- 	  More specific information on configuring the driver is in
--	  <file:Documentation/networking/ixgb.txt>.
-+	  <file:Documentation/networking/ixgb.rst>.
- 
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called ixgb.
-@@ -164,6 +167,9 @@ config IXGBE
- 
- 	  <http://support.intel.com>
- 
-+	  More specific information on configuring the driver is in
-+	  <file:Documentation/networking/ixgbe.rst>.
 +
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called ixgbe.
+ Identifying Your Adapter
+ ========================
++For information on how to identify your adapter, and for the latest Intel
++network drivers, refer to the Intel Support website:
++http://www.intel.com/support
  
-@@ -205,7 +211,7 @@ config IXGBEVF
- 	  <http://support.intel.com>
+-This driver supports all 82575, 82576 and 82580-based Intel (R) gigabit network
+-connections.
  
- 	  More specific information on configuring the driver is in
--	  <file:Documentation/networking/ixgbevf.txt>.
-+	  <file:Documentation/networking/ixgbevf.rst>.
+-For specific information on how to identify your adapter, go to the Adapter &
+-Driver ID Guide at:
++Command Line Parameters
++========================
++If the driver is built as a module, the following optional parameters are used
++by entering them on the command line with the modprobe command using this
++syntax::
  
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called ixgbevf.  MSI-X interrupt support is required
-@@ -222,6 +228,9 @@ config I40E
+-    http://support.intel.com/support/go/network/adapter/idguide.htm
++    modprobe igb [<option>=<VAL1>,<VAL2>,...]
  
- 	  <http://support.intel.com>
- 
-+	  More specific information on configuring the driver is in
-+	  <file:Documentation/networking/i40e.rst>.
+-Command Line Parameters
+-=======================
++There needs to be a <VAL#> for each network port in the system supported by
++this driver. The values will be applied to each instance, in function order.
++For example::
 +
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called i40e.
- 
-@@ -254,6 +263,9 @@ config I40EVF
- 
- 	  This driver was formerly named i40evf.
- 
-+	  More specific information on configuring the driver is in
-+	  <file:Documentation/networking/iavf.rst>.
++    modprobe igb max_vfs=2,4
 +
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called iavf.  MSI-X interrupt support is required
- 	  for this driver to work correctly.
-@@ -269,6 +281,9 @@ config ICE
++In this case, there are two network ports supported by igb in the system.
  
- 	  <http://support.intel.com>
+-The default value for each parameter is generally the recommended setting,
+-unless otherwise noted.
++NOTE: A descriptor describes a data buffer and attributes related to the data
++buffer. This information is accessed by the hardware.
  
-+	  More specific information on configuring the driver is in
-+	  <file:Documentation/networking/ice.rst>.
+ max_vfs
+ -------
+-Valid Range:   0-7
+-Default Value: 0
++:Valid Range: 0-7
+ 
+-This parameter adds support for SR-IOV.  It causes the driver to spawn up to
+-max_vfs worth of virtual function.
++This parameter adds support for SR-IOV. It causes the driver to spawn up to
++max_vfs worth of virtual functions.  If the value is greater than 0 it will
++also force the VMDq parameter to be 1 or more.
+ 
+-Additional Configurations
+-=========================
++The parameters for the driver are referenced by position. Thus, if you have a
++dual port adapter, or more than one adapter in your system, and want N virtual
++functions per port, you must specify a number for each port with each parameter
++separated by a comma. For example::
+ 
+-  Jumbo Frames
+-  ------------
+-  Jumbo Frames support is enabled by changing the MTU to a value larger than
+-  the default of 1500.  Use the ip command to increase the MTU size.
+-  For example:
++    modprobe igb max_vfs=4
+ 
+-       ip link set dev eth<x> mtu 9000
++This will spawn 4 VFs on the first port.
+ 
+-  This setting is not saved across reboots.
++::
+ 
+-  Notes:
++    modprobe igb max_vfs=2,4
+ 
+-  - The maximum MTU setting for Jumbo Frames is 9216.  This value coincides
+-    with the maximum Jumbo Frames size of 9234 bytes.
++This will spawn 2 VFs on the first port and 4 VFs on the second port.
+ 
+-  - Using Jumbo frames at 10 or 100 Mbps is not supported and may result in
+-    poor performance or loss of link.
++NOTE: Caution must be used in loading the driver with these parameters.
++Depending on your system configuration, number of slots, etc., it is impossible
++to predict in all cases where the positions would be on the command line.
+ 
+-  ethtool
+-  -------
+-  The driver utilizes the ethtool interface for driver configuration and
+-  diagnostics, as well as displaying statistical information. The latest
+-  version of ethtool can be found at:
++NOTE: Neither the device nor the driver control how VFs are mapped into config
++space. Bus layout will vary by operating system. On operating systems that
++support it, you can check sysfs to find the mapping.
+ 
+-  https://www.kernel.org/pub/software/network/ethtool/
++NOTE: When either SR-IOV mode or VMDq mode is enabled, hardware VLAN filtering
++and VLAN tag stripping/insertion will remain enabled. Please remove the old
++VLAN filter before the new VLAN filter is added. For example::
+ 
+-  Enabling Wake on LAN* (WoL)
+-  ---------------------------
+-  WoL is configured through the ethtool* utility.
++    ip link set eth0 vf 0 vlan 100	// set vlan 100 for VF 0
++    ip link set eth0 vf 0 vlan 0	// Delete vlan 100
++    ip link set eth0 vf 0 vlan 200	// set a new vlan 200 for VF 0
+ 
+-  For instructions on enabling WoL with ethtool, refer to the ethtool man page.
++Debug
++-----
++:Valid Range: 0-16 (0=none,...,16=all)
++:Default Value: 0
+ 
+-  WoL will be enabled on the system during the next shut down or reboot.
+-  For this driver version, in order to enable WoL, the igb driver must be
+-  loaded when shutting down or rebooting the system.
++This parameter adjusts the level debug messages displayed in the system logs.
+ 
+-  Wake On LAN is only supported on port A of multi-port adapters.
+ 
+-  Wake On LAN is not supported for the Intel(R) Gigabit VT Quad Port Server
+-  Adapter.
++Additional Features and Configurations
++======================================
+ 
+-  Multiqueue
+-  ----------
+-  In this mode, a separate MSI-X vector is allocated for each queue and one
+-  for "other" interrupts such as link status change and errors.  All
+-  interrupts are throttled via interrupt moderation.  Interrupt moderation
+-  must be used to avoid interrupt storms while the driver is processing one
+-  interrupt.  The moderation value should be at least as large as the expected
+-  time for the driver to process an interrupt. Multiqueue is off by default.
++Jumbo Frames
++------------
++Jumbo Frames support is enabled by changing the Maximum Transmission Unit (MTU)
++to a value larger than the default value of 1500.
+ 
+-  REQUIREMENTS: MSI-X support is required for Multiqueue. If MSI-X is not
+-  found, the system will fallback to MSI or to Legacy interrupts.
++Use the ifconfig command to increase the MTU size. For example, enter the
++following where <x> is the interface number::
+ 
+-  MAC and VLAN anti-spoofing feature
+-  ----------------------------------
+-  When a malicious driver attempts to send a spoofed packet, it is dropped by
+-  the hardware and not transmitted.  An interrupt is sent to the PF driver
+-  notifying it of the spoof attempt.
++    ifconfig eth<x> mtu 9000 up
+ 
+-  When a spoofed packet is detected the PF driver will send the following
+-  message to the system log (displayed by  the "dmesg" command):
++Alternatively, you can use the ip command as follows::
+ 
+-  Spoof event(s) detected on VF(n)
++    ip link set mtu 9000 dev eth<x>
++    ip link set up dev eth<x>
 +
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called ice.
++This setting is not saved across reboots. The setting change can be made
++permanent by adding 'MTU=9000' to the file:
++
++- For RHEL: /etc/sysconfig/network-scripts/ifcfg-eth<x>
++- For SLES: /etc/sysconfig/network/<config_file>
++
++NOTE: The maximum MTU setting for Jumbo Frames is 9216. This value coincides
++with the maximum Jumbo Frames size of 9234 bytes.
++
++NOTE: Using Jumbo frames at 10 or 100 Mbps is not supported and may result in
++poor performance or loss of link.
++
++
++ethtool
++-------
++The driver utilizes the ethtool interface for driver configuration and
++diagnostics, as well as displaying statistical information. The latest ethtool
++version is required for this functionality. Download it at:
  
+-  Where n=the VF that attempted to do the spoofing.
++https://www.kernel.org/pub/software/network/ethtool/
+ 
+-  Setting MAC Address, VLAN and Rate Limit Using IProute2 Tool
+-  ------------------------------------------------------------
+-  You can set a MAC address of a Virtual Function (VF), a default VLAN and the
+-  rate limit using the IProute2 tool. Download the latest version of the
+-  iproute2 tool from Sourceforge if your version does not have all the
+-  features you require.
++
++Enabling Wake on LAN* (WoL)
++---------------------------
++WoL is configured through the ethtool* utility.
++
++WoL will be enabled on the system during the next shut down or reboot. For
++this driver version, in order to enable WoL, the igb driver must be loaded
++prior to shutting down or suspending the system.
++
++NOTE: Wake on LAN is only supported on port A of multi-port devices.  Also
++Wake On LAN is not supported for the following device:
++- Intel(R) Gigabit VT Quad Port Server Adapter
++
++
++Multiqueue
++----------
++In this mode, a separate MSI-X vector is allocated for each queue and one for
++"other" interrupts such as link status change and errors. All interrupts are
++throttled via interrupt moderation. Interrupt moderation must be used to avoid
++interrupt storms while the driver is processing one interrupt. The moderation
++value should be at least as large as the expected time for the driver to
++process an interrupt. Multiqueue is off by default.
++
++REQUIREMENTS: MSI-X support is required for Multiqueue. If MSI-X is not found,
++the system will fallback to MSI or to Legacy interrupts. This driver supports
++receive multiqueue on all kernels that support MSI-X.
++
++NOTE: On some kernels a reboot is required to switch between single queue mode
++and multiqueue mode or vice-versa.
++
++
++MAC and VLAN anti-spoofing feature
++----------------------------------
++When a malicious driver attempts to send a spoofed packet, it is dropped by the
++hardware and not transmitted.
++
++An interrupt is sent to the PF driver notifying it of the spoof attempt. When a
++spoofed packet is detected, the PF driver will send the following message to
++the system log (displayed by the "dmesg" command):
++Spoof event(s) detected on VF(n), where n = the VF that attempted to do the
++spoofing
++
++
++Setting MAC Address, VLAN and Rate Limit Using IProute2 Tool
++------------------------------------------------------------
++You can set a MAC address of a Virtual Function (VF), a default VLAN and the
++rate limit using the IProute2 tool. Download the latest version of the
++IProute2 tool from Sourceforge if your version does not have all the features
++you require.
+ 
+ 
+ Support
+ =======
+-
+ For general information, go to the Intel support website at:
+ 
+-    www.intel.com/support/
++https://www.intel.com/support/
+ 
+ or the Intel Wired Networking project hosted by Sourceforge at:
+ 
+-    http://sourceforge.net/projects/e1000
++https://sourceforge.net/projects/e1000
+ 
+-If an issue is identified with the released source code on the supported
+-kernel with a supported adapter, email the specific information related
+-to the issue to e1000-devel at lists.sf.net
++If an issue is identified with the released source code on a supported kernel
++with a supported adapter, email the specific information related to the issue
++to e1000-devel at lists.sf.net.
 -- 
 2.17.1
 
