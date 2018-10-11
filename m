@@ -1,954 +1,1262 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu, 11 Oct 2018 10:17:34 +0300
-Subject: [Intel-wired-lan] [PATCH v8 10/11] igc: Add setup link functionality
-Message-ID: <20181011071734.1996-1-sasha.neftin@intel.com>
+Date: Thu, 11 Oct 2018 10:17:28 +0300
+Subject: [Intel-wired-lan] [PATCH v8 08/11] igc: Add NVM support
+Message-ID: <20181011071728.1908-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add link establishment methods
-Add auto negotiation methods
-Add read MAC address method
+Add code for NVM support and get MAC address, complete probe
+method.
 
 Sasha Neftin (v2):
 minor cosmetic changes
 
-Sasha Neftin (v3):
-remove not addressed methods
+Alexander Duyck (v3):
+NVM access code optimization
 
 Sasha Neftin (v4):
-address comments
-remove improperly insertion of method from a patch
+fix xmas tree layout
+remove no need spaces
+rework igc_read_nvm_srrd/srwr and igc_validate_nvm_checksum_i225
+fix few methods as suggested by Shannon Nelson's approach
+remove obsolete comments
 replace e1000_ prefix with igc_ prefix
-remove duplicate PHY MII defines
+remove unused NVM control definitions
+remove unused NVM Word offsets
+remove unused SW FW SYNC definition
+fix duplication of mask definition
 
 Sasha Neftin (v5):
-code clean
-remove obsolete flash_address reference
-fix initial autoneg advertisement and add 2.5G option
-add option to clear the 2.5 Gbps advertising bit and disable 2.5 Gbps speed
+no changes
 
 Sasha Neftin (v6):
 minor cosmetic changes
+remove duplication of defines
 
 Sasha Neftin (v7):
-no changes
+fix kbuild test robot warning
+remove unneeded ret_val from igc_init_nvm_params_i225 method
 
 Sasha Neftin (v8):
 fix whitespaces in comments
 remove unneeded forward declarations
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h         |   1 +
- drivers/net/ethernet/intel/igc/igc_base.c    |  40 ++++
- drivers/net/ethernet/intel/igc/igc_defines.h |  38 +++
- drivers/net/ethernet/intel/igc/igc_mac.c     | 271 ++++++++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_mac.h     |   2 +
- drivers/net/ethernet/intel/igc/igc_main.c    |  30 +++
- drivers/net/ethernet/intel/igc/igc_phy.c     | 334 +++++++++++++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_phy.h     |   1 +
- 8 files changed, 717 insertions(+)
+ drivers/net/ethernet/intel/igc/Makefile      |   2 +-
+ drivers/net/ethernet/intel/igc/igc.h         |   6 +
+ drivers/net/ethernet/intel/igc/igc_base.c    | 109 +++++++++
+ drivers/net/ethernet/intel/igc/igc_defines.h |  52 ++++
+ drivers/net/ethernet/intel/igc/igc_hw.h      |   3 +
+ drivers/net/ethernet/intel/igc/igc_i225.c    | 349 +++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_i225.h    |   3 +
+ drivers/net/ethernet/intel/igc/igc_mac.c     | 170 +++++++++++++
+ drivers/net/ethernet/intel/igc/igc_mac.h     |   6 +
+ drivers/net/ethernet/intel/igc/igc_main.c    |  20 +-
+ drivers/net/ethernet/intel/igc/igc_nvm.c     | 215 +++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_nvm.h     |  14 ++
+ drivers/net/ethernet/intel/igc/igc_regs.h    |   3 +
+ 13 files changed, 949 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_nvm.c
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_nvm.h
 
+diff --git a/drivers/net/ethernet/intel/igc/Makefile b/drivers/net/ethernet/intel/igc/Makefile
+index 8b8022ea590a..2b5378d96c7b 100644
+--- a/drivers/net/ethernet/intel/igc/Makefile
++++ b/drivers/net/ethernet/intel/igc/Makefile
+@@ -7,4 +7,4 @@
+ 
+ obj-$(CONFIG_IGC) += igc.o
+ 
+-igc-objs := igc_main.o igc_mac.o igc_i225.o igc_base.o
++igc-objs := igc_main.o igc_mac.o igc_i225.o igc_base.o igc_nvm.o
 diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 7cfbd83d25e4..86fa889b4ab6 100644
+index 88ee451e36fd..6dcf51c112f4 100644
 --- a/drivers/net/ethernet/intel/igc/igc.h
 +++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -314,6 +314,7 @@ struct igc_adapter {
- 	struct work_struct reset_task;
- 	struct work_struct watchdog_task;
- 	struct work_struct dma_err_task;
-+	bool fc_autoneg;
+@@ -131,6 +131,10 @@ enum igc_tx_flags {
+ 	IGC_TX_FLAGS_CSUM	= 0x20,
+ };
  
- 	u8 tx_timeout_factor;
++enum igc_boards {
++	board_base,
++};
++
+ /* The largest size we can write to the descriptor is 65535.  In order to
+  * maintain a power of two alignment we have to limit ourselves to 32K.
+  */
+@@ -342,6 +346,8 @@ struct igc_adapter {
+ 	spinlock_t nfc_lock;
  
+ 	struct igc_mac_addr *mac_table;
++
++	struct igc_info ei;
+ };
+ 
+ /* igc_desc_unused - calculate if we have unused descriptors */
 diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-index 55faef987479..832da609d9a7 100644
+index 4efb47497e6b..2d49814966d3 100644
 --- a/drivers/net/ethernet/intel/igc/igc_base.c
 +++ b/drivers/net/ethernet/intel/igc/igc_base.c
-@@ -178,6 +178,29 @@ static s32 igc_init_nvm_params_base(struct igc_hw *hw)
+@@ -54,6 +54,22 @@ static s32 igc_set_pcie_completion_timeout(struct igc_hw *hw)
  }
  
  /**
-+ * igc_setup_copper_link_base - Configure copper link settings
++ * igc_check_for_link_base - Check for link
 + * @hw: pointer to the HW structure
 + *
-+ * Configures the link for auto-neg or forced speed and duplex.  Then we check
-+ * for link, once link is established calls to configure collision distance
-+ * and flow control are called.
++ * If sgmii is enabled, then use the pcs register to determine link, otherwise
++ * use the generic interface for determining link.
 + */
-+static s32 igc_setup_copper_link_base(struct igc_hw *hw)
++static s32 igc_check_for_link_base(struct igc_hw *hw)
 +{
-+	s32  ret_val = 0;
-+	u32 ctrl;
++	s32 ret_val = 0;
 +
-+	ctrl = rd32(IGC_CTRL);
-+	ctrl |= IGC_CTRL_SLU;
-+	ctrl &= ~(IGC_CTRL_FRCSPD | IGC_CTRL_FRCDPX);
-+	wr32(IGC_CTRL, ctrl);
-+
-+	ret_val = igc_setup_copper_link(hw);
++	ret_val = igc_check_for_copper_link(hw);
 +
 +	return ret_val;
++}
++
++/**
+  * igc_reset_hw_base - Reset hardware
+  * @hw: pointer to the HW structure
+  *
+@@ -108,11 +124,50 @@ static s32 igc_reset_hw_base(struct igc_hw *hw)
+ }
+ 
+ /**
++ * igc_init_nvm_params_base - Init NVM func ptrs.
++ * @hw: pointer to the HW structure
++ */
++static s32 igc_init_nvm_params_base(struct igc_hw *hw)
++{
++	struct igc_nvm_info *nvm = &hw->nvm;
++	u32 eecd = rd32(IGC_EECD);
++	u16 size;
++
++	size = (u16)((eecd & IGC_EECD_SIZE_EX_MASK) >>
++		     IGC_EECD_SIZE_EX_SHIFT);
++
++	/* Added to a constant, "size" becomes the left-shift value
++	 * for setting word_size.
++	 */
++	size += NVM_WORD_SIZE_BASE_SHIFT;
++
++	/* Just in case size is out of range, cap it to the largest
++	 * EEPROM size supported
++	 */
++	if (size > 15)
++		size = 15;
++
++	nvm->word_size = BIT(size);
++	nvm->opcode_bits = 8;
++	nvm->delay_usec = 1;
++
++	nvm->page_size = eecd & IGC_EECD_ADDR_BITS ? 32 : 8;
++	nvm->address_bits = eecd & IGC_EECD_ADDR_BITS ?
++			    16 : 8;
++
++	if (nvm->word_size == BIT(15))
++		nvm->page_size = 128;
++
++	return 0;
 +}
 +
 +/**
   * igc_init_mac_params_base - Init MAC func ptrs.
   * @hw: pointer to the HW structure
   */
-@@ -200,6 +223,9 @@ static s32 igc_init_mac_params_base(struct igc_hw *hw)
- 	if (mac->type == igc_i225)
- 		dev_spec->clear_semaphore_once = true;
+ static s32 igc_init_mac_params_base(struct igc_hw *hw)
+ {
++	struct igc_dev_spec_base *dev_spec = &hw->dev_spec._base;
+ 	struct igc_mac_info *mac = &hw->mac;
  
-+	/* physical interface link setup */
-+	mac->ops.setup_physical_interface = igc_setup_copper_link_base;
+ 	/* Set mta register count */
+@@ -125,6 +180,10 @@ static s32 igc_init_mac_params_base(struct igc_hw *hw)
+ 	mac->ops.acquire_swfw_sync = igc_acquire_swfw_sync_i225;
+ 	mac->ops.release_swfw_sync = igc_release_swfw_sync_i225;
+ 
++	/* Allow a single clear of the SW semaphore on I225 */
++	if (mac->type == igc_i225)
++		dev_spec->clear_semaphore_once = true;
 +
  	return 0;
  }
  
-@@ -242,6 +268,8 @@ static s32 igc_init_phy_params_base(struct igc_hw *hw)
+@@ -142,11 +201,44 @@ static s32 igc_get_invariants_base(struct igc_hw *hw)
  	if (ret_val)
- 		return ret_val;
+ 		goto out;
  
-+	igc_check_for_link_base(hw);
-+
- 	/* Verify phy id and set remaining function pointers */
- 	switch (phy->id) {
- 	case I225_I_PHY_ID:
-@@ -258,10 +286,22 @@ static s32 igc_init_phy_params_base(struct igc_hw *hw)
- 
- static s32 igc_get_invariants_base(struct igc_hw *hw)
- {
-+	struct igc_mac_info *mac = &hw->mac;
- 	u32 link_mode = 0;
- 	u32 ctrl_ext = 0;
- 	s32 ret_val = 0;
- 
-+	switch (hw->device_id) {
-+	case IGC_DEV_ID_I225_LM:
-+	case IGC_DEV_ID_I225_V:
-+		mac->type = igc_i225;
++	/* NVM initialization */
++	ret_val = igc_init_nvm_params_base(hw);
++	switch (hw->mac.type) {
++	case igc_i225:
++		ret_val = igc_init_nvm_params_i225(hw);
 +		break;
 +	default:
-+		return -IGC_ERR_MAC_INIT;
++		break;
 +	}
 +
-+	hw->phy.media_type = igc_media_type_copper;
-+
- 	ctrl_ext = rd32(IGC_CTRL_EXT);
- 	link_mode = ctrl_ext & IGC_CTRL_EXT_LINK_MODE_MASK;
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index d271671e6825..70275a0e85d7 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -13,6 +13,11 @@
- /* Physical Func Reset Done Indication */
- #define IGC_CTRL_EXT_LINK_MODE_MASK	0x00C00000
- 
-+/* Loop limit on how long we wait for auto-negotiation to complete */
-+#define COPPER_LINK_UP_LIMIT		10
-+#define PHY_AUTO_NEG_LIMIT		45
-+#define PHY_FORCE_LIMIT			20
-+
- /* Number of 100 microseconds we wait for PCI Express master disable */
- #define MASTER_DISABLE_TIMEOUT		800
- /*Blocks new Master requests */
-@@ -54,6 +59,12 @@
- #define IGC_CTRL_RST		0x04000000  /* Global reset */
- 
- #define IGC_CTRL_PHY_RST	0x80000000  /* PHY Reset */
-+#define IGC_CTRL_SLU		0x00000040  /* Set link up (Force Link) */
-+#define IGC_CTRL_FRCSPD		0x00000800  /* Force Speed */
-+#define IGC_CTRL_FRCDPX		0x00001000  /* Force Duplex */
-+
-+#define IGC_CTRL_RFCE		0x08000000  /* Receive Flow Control enable */
-+#define IGC_CTRL_TFCE		0x10000000  /* Transmit flow control enable */
- 
- /* PBA constants */
- #define IGC_PBA_34K		0x0022
-@@ -66,6 +77,29 @@
- #define IGC_SWFW_EEP_SM		0x1
- #define IGC_SWFW_PHY0_SM	0x2
- 
-+/* Autoneg Advertisement Register */
-+#define NWAY_AR_10T_HD_CAPS	0x0020   /* 10T   Half Duplex Capable */
-+#define NWAY_AR_10T_FD_CAPS	0x0040   /* 10T   Full Duplex Capable */
-+#define NWAY_AR_100TX_HD_CAPS	0x0080   /* 100TX Half Duplex Capable */
-+#define NWAY_AR_100TX_FD_CAPS	0x0100   /* 100TX Full Duplex Capable */
-+#define NWAY_AR_PAUSE		0x0400   /* Pause operation desired */
-+#define NWAY_AR_ASM_DIR		0x0800   /* Asymmetric Pause Direction bit */
-+
-+/* Link Partner Ability Register (Base Page) */
-+#define NWAY_LPAR_PAUSE		0x0400 /* LP Pause operation desired */
-+#define NWAY_LPAR_ASM_DIR	0x0800 /* LP Asymmetric Pause Direction bit */
-+
-+/* 1000BASE-T Control Register */
-+#define CR_1000T_ASYM_PAUSE	0x0080 /* Advertise asymmetric pause bit */
-+#define CR_1000T_HD_CAPS	0x0100 /* Advertise 1000T HD capability */
-+#define CR_1000T_FD_CAPS	0x0200 /* Advertise 1000T FD capability  */
-+
-+/* PHY GPY 211 registers */
-+#define STANDARD_AN_REG_MASK	0x0007 /* MMD */
-+#define ANEG_MULTIGBT_AN_CTRL	0x0020 /* MULTI GBT AN Control Register */
-+#define MMD_DEVADDR_SHIFT	16     /* Shift MMD to higher bits */
-+#define CR_2500T_FD_CAPS	0x0080 /* Advertise 2500T FD capability */
-+
- /* NVM Control */
- /* Number of milliseconds for NVM auto read done after MAC reset. */
- #define AUTO_READ_DONE_TIMEOUT		10
-@@ -318,6 +352,10 @@
- #define PHY_STATUS		0x01 /* Status Register */
- #define PHY_ID1			0x02 /* Phy Id Reg (word 1) */
- #define PHY_ID2			0x03 /* Phy Id Reg (word 2) */
-+#define PHY_AUTONEG_ADV		0x04 /* Autoneg Advertisement */
-+#define PHY_LP_ABILITY		0x05 /* Link Partner Ability (Base Page) */
-+#define PHY_1000T_CTRL		0x09 /* 1000Base-T Control Reg */
-+#define PHY_1000T_STATUS	0x0A /* 1000Base-T Status Reg */
- 
- /* Bit definitions for valid PHY IDs. I = Integrated E = External */
- #define I225_I_PHY_ID		0x67C9DC00
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-index fce7f7f5aa46..f7683d3ae47c 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.c
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-@@ -92,6 +92,8 @@ s32 igc_setup_link(struct igc_hw *hw)
- 	/* In the case of the phy reset being blocked, we already have a link.
- 	 * We do not need to set it up again.
- 	 */
-+	if (igc_check_reset_block(hw))
++	if (ret_val)
 +		goto out;
- 
- 	/* If requested flow control is set to default, set flow control
- 	 * based on the EEPROM flow control settings.
-@@ -142,10 +144,74 @@ s32 igc_setup_link(struct igc_hw *hw)
-  */
- static s32 igc_set_default_fc(struct igc_hw *hw)
- {
-+	hw->fc.requested_mode = igc_fc_full;
- 	return 0;
++
+ out:
+ 	return ret_val;
  }
  
  /**
-+ * igc_force_mac_fc - Force the MAC's flow control settings
++ * igc_get_link_up_info_base - Get link speed/duplex info
 + * @hw: pointer to the HW structure
++ * @speed: stores the current speed
++ * @duplex: stores the current duplex
 + *
-+ * Force the MAC's flow control settings.  Sets the TFCE and RFCE bits in the
-+ * device control register to reflect the adapter settings.  TFCE and RFCE
-+ * need to be explicitly set by software when a copper PHY is used because
-+ * autonegotiation is managed by the PHY rather than the MAC.  Software must
-+ * also configure these bits when link is forced on a fiber connection.
++ * This is a wrapper function, if using the serial gigabit media independent
++ * interface, use PCS to retrieve the link speed and duplex information.
++ * Otherwise, use the generic function to get the link speed and duplex info.
 + */
-+s32 igc_force_mac_fc(struct igc_hw *hw)
++static s32 igc_get_link_up_info_base(struct igc_hw *hw, u16 *speed,
++				     u16 *duplex)
++{
++	s32 ret_val;
++
++	ret_val = igc_get_speed_and_duplex_copper(hw, speed, duplex);
++
++	return ret_val;
++}
++
++/**
+  * igc_init_hw_base - Initialize hardware
+  * @hw: pointer to the HW structure
+  *
+@@ -185,6 +277,19 @@ static s32 igc_init_hw_base(struct igc_hw *hw)
+ }
+ 
+ /**
++ * igc_read_mac_addr_base - Read device MAC address
++ * @hw: pointer to the HW structure
++ */
++static s32 igc_read_mac_addr_base(struct igc_hw *hw)
 +{
 +	s32 ret_val = 0;
-+	u32 ctrl;
 +
-+	ctrl = rd32(IGC_CTRL);
++	ret_val = igc_read_mac_addr(hw);
 +
-+	/* Because we didn't get link via the internal auto-negotiation
-+	 * mechanism (we either forced link or we got link via PHY
-+	 * auto-neg), we have to manually enable/disable transmit an
-+	 * receive flow control.
-+	 *
-+	 * The "Case" statement below enables/disable flow control
-+	 * according to the "hw->fc.current_mode" parameter.
-+	 *
-+	 * The possible values of the "fc" parameter are:
-+	 *      0:  Flow control is completely disabled
-+	 *      1:  Rx flow control is enabled (we can receive pause
-+	 *          frames but not send pause frames).
-+	 *      2:  Tx flow control is enabled (we can send pause frames
-+	 *          frames but we do not receive pause frames).
-+	 *      3:  Both Rx and TX flow control (symmetric) is enabled.
-+	 *  other:  No other values should be possible at this point.
++	return ret_val;
++}
++
++/**
+  * igc_rx_fifo_flush_base - Clean rx fifo after Rx enable
+  * @hw: pointer to the HW structure
+  *
+@@ -262,6 +367,10 @@ void igc_rx_fifo_flush_base(struct igc_hw *hw)
+ 
+ static struct igc_mac_operations igc_mac_ops_base = {
+ 	.init_hw		= igc_init_hw_base,
++	.check_for_link		= igc_check_for_link_base,
++	.rar_set		= igc_rar_set,
++	.read_mac_addr		= igc_read_mac_addr_base,
++	.get_speed_and_duplex	= igc_get_link_up_info_base,
+ };
+ 
+ const struct igc_info igc_base_info = {
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 3d6c2cee0ad3..e5736577009a 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -35,6 +35,8 @@
+  */
+ #define IGC_RAH_AV		0x80000000 /* Receive descriptor valid */
+ #define IGC_RAH_POOL_1		0x00040000
++#define IGC_RAL_MAC_ADDR_LEN	4
++#define IGC_RAH_MAC_ADDR_LEN	2
+ 
+ /* Error Codes */
+ #define IGC_SUCCESS			0
+@@ -57,9 +59,51 @@
+ #define IGC_SWSM_SMBI		0x00000001 /* Driver Semaphore bit */
+ #define IGC_SWSM_SWESMBI	0x00000002 /* FW Semaphore bit */
+ 
++/* SWFW_SYNC Definitions */
++#define IGC_SWFW_EEP_SM		0x1
++#define IGC_SWFW_PHY0_SM	0x2
++
++/* NVM Control */
+ /* Number of milliseconds for NVM auto read done after MAC reset. */
+ #define AUTO_READ_DONE_TIMEOUT		10
+ #define IGC_EECD_AUTO_RD		0x00000200  /* NVM Auto Read done */
++#define IGC_EECD_REQ		0x00000040 /* NVM Access Request */
++#define IGC_EECD_GNT		0x00000080 /* NVM Access Grant */
++/* NVM Addressing bits based on type 0=small, 1=large */
++#define IGC_EECD_ADDR_BITS		0x00000400
++#define IGC_NVM_GRANT_ATTEMPTS		1000 /* NVM # attempts to gain grant */
++#define IGC_EECD_SIZE_EX_MASK		0x00007800  /* NVM Size */
++#define IGC_EECD_SIZE_EX_SHIFT		11
++#define IGC_EECD_FLUPD_I225		0x00800000 /* Update FLASH */
++#define IGC_EECD_FLUDONE_I225		0x04000000 /* Update FLASH done*/
++#define IGC_EECD_FLASH_DETECTED_I225	0x00080000 /* FLASH detected */
++#define IGC_FLUDONE_ATTEMPTS		20000
++#define IGC_EERD_EEWR_MAX_COUNT		512 /* buffered EEPROM words rw */
++
++/* Offset to data in NVM read/write registers */
++#define IGC_NVM_RW_REG_DATA	16
++#define IGC_NVM_RW_REG_DONE	2    /* Offset to READ/WRITE done bit */
++#define IGC_NVM_RW_REG_START	1    /* Start operation */
++#define IGC_NVM_RW_ADDR_SHIFT	2    /* Shift to the address bits */
++#define IGC_NVM_POLL_READ	0    /* Flag for polling for read complete */
++
++/* NVM Word Offsets */
++#define NVM_CHECKSUM_REG		0x003F
++
++/* For checksumming, the sum of all words in the NVM should equal 0xBABA. */
++#define NVM_SUM				0xBABA
++
++#define NVM_PBA_OFFSET_0		8
++#define NVM_PBA_OFFSET_1		9
++#define NVM_RESERVED_WORD		0xFFFF
++#define NVM_PBA_PTR_GUARD		0xFAFA
++#define NVM_WORD_SIZE_BASE_SHIFT	6
++
++/* Collision related configuration parameters */
++#define IGC_COLLISION_THRESHOLD		15
++#define IGC_CT_SHIFT			4
++#define IGC_COLLISION_DISTANCE		63
++#define IGC_COLD_SHIFT			12
+ 
+ /* Device Status */
+ #define IGC_STATUS_FD		0x00000001      /* Full duplex.0=half,1=full */
+@@ -70,6 +114,14 @@
+ #define IGC_STATUS_TXOFF	0x00000010      /* transmission paused */
+ #define IGC_STATUS_SPEED_100	0x00000040      /* Speed 100Mb/s */
+ #define IGC_STATUS_SPEED_1000	0x00000080      /* Speed 1000Mb/s */
++#define IGC_STATUS_SPEED_2500	0x00400000	/* Speed 2.5Gb/s */
++
++#define SPEED_10		10
++#define SPEED_100		100
++#define SPEED_1000		1000
++#define SPEED_2500		2500
++#define HALF_DUPLEX		1
++#define FULL_DUPLEX		2
+ 
+ /* Interrupt Cause Read */
+ #define IGC_ICR_TXDW		BIT(0)	/* Transmit desc written back */
+diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
+index e31d85f1ee12..107d6461924b 100644
+--- a/drivers/net/ethernet/intel/igc/igc_hw.h
++++ b/drivers/net/ethernet/intel/igc/igc_hw.h
+@@ -11,6 +11,7 @@
+ #include "igc_regs.h"
+ #include "igc_defines.h"
+ #include "igc_mac.h"
++#include "igc_nvm.h"
+ #include "igc_i225.h"
+ #include "igc_base.h"
+ 
+@@ -56,6 +57,8 @@ struct igc_info {
+ 	struct igc_nvm_operations *nvm_ops;
+ };
+ 
++extern const struct igc_info igc_base_info;
++
+ struct igc_mac_info {
+ 	struct igc_mac_operations ops;
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_i225.c b/drivers/net/ethernet/intel/igc/igc_i225.c
+index fb1487727d79..c25f555aaf82 100644
+--- a/drivers/net/ethernet/intel/igc/igc_i225.c
++++ b/drivers/net/ethernet/intel/igc/igc_i225.c
+@@ -9,6 +9,32 @@
+  * igc_get_hw_semaphore_i225 - Acquire hardware semaphore
+  * @hw: pointer to the HW structure
+  *
++ * Acquire the necessary semaphores for exclusive access to the EEPROM.
++ * Set the EEPROM access request bit and wait for EEPROM access grant bit.
++ * Return successful if access grant bit set, else clear the request for
++ * EEPROM access and return -IGC_ERR_NVM (-1).
++ */
++static s32 igc_acquire_nvm_i225(struct igc_hw *hw)
++{
++	return igc_acquire_swfw_sync_i225(hw, IGC_SWFW_EEP_SM);
++}
++
++/**
++ * igc_release_nvm_i225 - Release exclusive access to EEPROM
++ * @hw: pointer to the HW structure
++ *
++ * Stop any current commands to the EEPROM and clear the EEPROM request bit,
++ * then release the semaphores acquired.
++ */
++static void igc_release_nvm_i225(struct igc_hw *hw)
++{
++	igc_release_swfw_sync_i225(hw, IGC_SWFW_EEP_SM);
++}
++
++/**
++ * igc_get_hw_semaphore_i225 - Acquire hardware semaphore
++ * @hw: pointer to the HW structure
++ *
+  * Acquire the HW semaphore to access the PHY or NVM
+  */
+ static s32 igc_get_hw_semaphore_i225(struct igc_hw *hw)
+@@ -139,3 +165,326 @@ void igc_release_swfw_sync_i225(struct igc_hw *hw, u16 mask)
+ 
+ 	igc_put_hw_semaphore(hw);
+ }
++
++/**
++ * igc_read_nvm_srrd_i225 - Reads Shadow Ram using EERD register
++ * @hw: pointer to the HW structure
++ * @offset: offset of word in the Shadow Ram to read
++ * @words: number of words to read
++ * @data: word read from the Shadow Ram
++ *
++ * Reads a 16 bit word from the Shadow Ram using the EERD register.
++ * Uses necessary synchronization semaphores.
++ */
++static s32 igc_read_nvm_srrd_i225(struct igc_hw *hw, u16 offset, u16 words,
++				  u16 *data)
++{
++	s32 status = 0;
++	u16 i, count;
++
++	/* We cannot hold synchronization semaphores for too long,
++	 * because of forceful takeover procedure. However it is more efficient
++	 * to read in bursts than synchronizing access for each word.
 +	 */
-+	hw_dbg("hw->fc.current_mode = %u\n", hw->fc.current_mode);
++	for (i = 0; i < words; i += IGC_EERD_EEWR_MAX_COUNT) {
++		count = (words - i) / IGC_EERD_EEWR_MAX_COUNT > 0 ?
++			IGC_EERD_EEWR_MAX_COUNT : (words - i);
 +
-+	switch (hw->fc.current_mode) {
-+	case igc_fc_none:
-+		ctrl &= (~(IGC_CTRL_TFCE | IGC_CTRL_RFCE));
-+		break;
-+	case igc_fc_rx_pause:
-+		ctrl &= (~IGC_CTRL_TFCE);
-+		ctrl |= IGC_CTRL_RFCE;
-+		break;
-+	case igc_fc_tx_pause:
-+		ctrl &= (~IGC_CTRL_RFCE);
-+		ctrl |= IGC_CTRL_TFCE;
-+		break;
-+	case igc_fc_full:
-+		ctrl |= (IGC_CTRL_TFCE | IGC_CTRL_RFCE);
-+		break;
-+	default:
-+		hw_dbg("Flow control param set incorrectly\n");
-+		ret_val = -IGC_ERR_CONFIG;
++		status = hw->nvm.ops.acquire(hw);
++		if (status)
++			break;
++
++		status = igc_read_nvm_eerd(hw, offset, count, data + i);
++		hw->nvm.ops.release(hw);
++		if (status)
++			break;
++	}
++
++	return status;
++}
++
++/**
++ * igc_write_nvm_srwr - Write to Shadow Ram using EEWR
++ * @hw: pointer to the HW structure
++ * @offset: offset within the Shadow Ram to be written to
++ * @words: number of words to write
++ * @data: 16 bit word(s) to be written to the Shadow Ram
++ *
++ * Writes data to Shadow Ram at offset using EEWR register.
++ *
++ * If igc_update_nvm_checksum is not called after this function , the
++ * Shadow Ram will most likely contain an invalid checksum.
++ */
++static s32 igc_write_nvm_srwr(struct igc_hw *hw, u16 offset, u16 words,
++			      u16 *data)
++{
++	struct igc_nvm_info *nvm = &hw->nvm;
++	u32 attempts = 100000;
++	u32 i, k, eewr = 0;
++	s32 ret_val = 0;
++
++	/* A check for invalid values:  offset too large, too many words,
++	 * too many words for the offset, and not enough words.
++	 */
++	if (offset >= nvm->word_size || (words > (nvm->word_size - offset)) ||
++	    words == 0) {
++		hw_dbg("nvm parameter(s) out of bounds\n");
++		ret_val = -IGC_ERR_NVM;
 +		goto out;
 +	}
 +
-+	wr32(IGC_CTRL, ctrl);
++	for (i = 0; i < words; i++) {
++		eewr = ((offset + i) << IGC_NVM_RW_ADDR_SHIFT) |
++			(data[i] << IGC_NVM_RW_REG_DATA) |
++			IGC_NVM_RW_REG_START;
++
++		wr32(IGC_SRWR, eewr);
++
++		for (k = 0; k < attempts; k++) {
++			if (IGC_NVM_RW_REG_DONE &
++			    rd32(IGC_SRWR)) {
++				ret_val = 0;
++				break;
++			}
++			udelay(5);
++		}
++
++		if (ret_val) {
++			hw_dbg("Shadow RAM write EEWR timed out\n");
++			break;
++		}
++	}
 +
 +out:
 +	return ret_val;
 +}
 +
 +/**
-  * igc_set_fc_watermarks - Set flow control high/low watermarks
-  * @hw: pointer to the HW structure
-  *
-@@ -371,6 +437,7 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
- 	 * settings because we may have had to re-autoneg with a
- 	 * different link partner.
- 	 */
-+	ret_val = igc_config_fc_after_link_up(hw);
- 	if (ret_val)
- 		hw_dbg("Error configuring flow control\n");
- 
-@@ -400,6 +467,210 @@ void igc_config_collision_dist(struct igc_hw *hw)
- }
- 
- /**
-+ * igc_config_fc_after_link_up - Configures flow control after link
++ * igc_write_nvm_srwr_i225 - Write to Shadow RAM using EEWR
 + * @hw: pointer to the HW structure
++ * @offset: offset within the Shadow RAM to be written to
++ * @words: number of words to write
++ * @data: 16 bit word(s) to be written to the Shadow RAM
 + *
-+ * Checks the status of auto-negotiation after link up to ensure that the
-+ * speed and duplex were not forced.  If the link needed to be forced, then
-+ * flow control needs to be forced also.  If auto-negotiation is enabled
-+ * and did not fail, then we configure flow control based on our link
-+ * partner.
++ * Writes data to Shadow RAM@offset using EEWR register.
++ *
++ * If igc_update_nvm_checksum is not called after this function , the
++ * data will not be committed to FLASH and also Shadow RAM will most likely
++ * contain an invalid checksum.
++ *
++ * If error code is returned, data and Shadow RAM may be inconsistent - buffer
++ * partially written.
 + */
-+s32 igc_config_fc_after_link_up(struct igc_hw *hw)
++static s32 igc_write_nvm_srwr_i225(struct igc_hw *hw, u16 offset, u16 words,
++				   u16 *data)
 +{
-+	u16 mii_status_reg, mii_nway_adv_reg, mii_nway_lp_ability_reg;
-+	struct igc_mac_info *mac = &hw->mac;
-+	u16 speed, duplex;
-+	s32 ret_val = 0;
++	s32 status = 0;
++	u16 i, count;
 +
-+	/* Check for the case where we have fiber media and auto-neg failed
-+	 * so we had to force link.  In this case, we need to force the
-+	 * configuration of the MAC to match the "fc" parameter.
++	/* We cannot hold synchronization semaphores for too long,
++	 * because of forceful takeover procedure. However it is more efficient
++	 * to write in bursts than synchronizing access for each word.
 +	 */
-+	if (mac->autoneg_failed) {
-+		if (hw->phy.media_type == igc_media_type_copper)
-+			ret_val = igc_force_mac_fc(hw);
++	for (i = 0; i < words; i += IGC_EERD_EEWR_MAX_COUNT) {
++		count = (words - i) / IGC_EERD_EEWR_MAX_COUNT > 0 ?
++			IGC_EERD_EEWR_MAX_COUNT : (words - i);
++
++		status = hw->nvm.ops.acquire(hw);
++		if (status)
++			break;
++
++		status = igc_write_nvm_srwr(hw, offset, count, data + i);
++		hw->nvm.ops.release(hw);
++		if (status)
++			break;
 +	}
 +
-+	if (ret_val) {
-+		hw_dbg("Error forcing flow control settings\n");
++	return status;
++}
++
++/**
++ * igc_validate_nvm_checksum_i225 - Validate EEPROM checksum
++ * @hw: pointer to the HW structure
++ *
++ * Calculates the EEPROM checksum by reading/adding each word of the EEPROM
++ * and then verifies that the sum of the EEPROM is equal to 0xBABA.
++ */
++static s32 igc_validate_nvm_checksum_i225(struct igc_hw *hw)
++{
++	s32 (*read_op_ptr)(struct igc_hw *hw, u16 offset, u16 count,
++			   u16 *data);
++	s32 status = 0;
++
++	status = hw->nvm.ops.acquire(hw);
++	if (status)
++		goto out;
++
++	/* Replace the read function with semaphore grabbing with
++	 * the one that skips this for a while.
++	 * We have semaphore taken already here.
++	 */
++	read_op_ptr = hw->nvm.ops.read;
++	hw->nvm.ops.read = igc_read_nvm_eerd;
++
++	status = igc_validate_nvm_checksum(hw);
++
++	/* Revert original read operation. */
++	hw->nvm.ops.read = read_op_ptr;
++
++	hw->nvm.ops.release(hw);
++
++out:
++	return status;
++}
++
++/**
++ * igc_pool_flash_update_done_i225 - Pool FLUDONE status
++ * @hw: pointer to the HW structure
++ */
++static s32 igc_pool_flash_update_done_i225(struct igc_hw *hw)
++{
++	s32 ret_val = -IGC_ERR_NVM;
++	u32 i, reg;
++
++	for (i = 0; i < IGC_FLUDONE_ATTEMPTS; i++) {
++		reg = rd32(IGC_EECD);
++		if (reg & IGC_EECD_FLUDONE_I225) {
++			ret_val = 0;
++			break;
++		}
++		udelay(5);
++	}
++
++	return ret_val;
++}
++
++/**
++ * igc_update_flash_i225 - Commit EEPROM to the flash
++ * @hw: pointer to the HW structure
++ */
++static s32 igc_update_flash_i225(struct igc_hw *hw)
++{
++	s32 ret_val = 0;
++	u32 flup;
++
++	ret_val = igc_pool_flash_update_done_i225(hw);
++	if (ret_val == -IGC_ERR_NVM) {
++		hw_dbg("Flash update time out\n");
 +		goto out;
 +	}
 +
-+	/* Check for the case where we have copper media and auto-neg is
-+	 * enabled.  In this case, we need to check and see if Auto-Neg
-+	 * has completed, and if so, how the PHY and link partner has
-+	 * flow control configured.
-+	 */
-+	if (hw->phy.media_type == igc_media_type_copper && mac->autoneg) {
-+		/* Read the MII Status Register and check to see if AutoNeg
-+		 * has completed.  We read this twice because this reg has
-+		 * some "sticky" (latched) bits.
-+		 */
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS,
-+					       &mii_status_reg);
-+		if (ret_val)
-+			goto out;
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS,
-+					       &mii_status_reg);
-+		if (ret_val)
-+			goto out;
++	flup = rd32(IGC_EECD) | IGC_EECD_FLUPD_I225;
++	wr32(IGC_EECD, flup);
 +
-+		if (!(mii_status_reg & MII_SR_AUTONEG_COMPLETE)) {
-+			hw_dbg("Copper PHY and Auto Neg has not completed.\n");
-+			goto out;
-+		}
-+
-+		/* The AutoNeg process has completed, so we now need to
-+		 * read both the Auto Negotiation Advertisement
-+		 * Register (Address 4) and the Auto_Negotiation Base
-+		 * Page Ability Register (Address 5) to determine how
-+		 * flow control was negotiated.
-+		 */
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_AUTONEG_ADV,
-+					       &mii_nway_adv_reg);
-+		if (ret_val)
-+			goto out;
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_LP_ABILITY,
-+					       &mii_nway_lp_ability_reg);
-+		if (ret_val)
-+			goto out;
-+		/* Two bits in the Auto Negotiation Advertisement Register
-+		 * (Address 4) and two bits in the Auto Negotiation Base
-+		 * Page Ability Register (Address 5) determine flow control
-+		 * for both the PHY and the link partner.  The following
-+		 * table, taken out of the IEEE 802.3ab/D6.0 dated March 25,
-+		 * 1999, describes these PAUSE resolution bits and how flow
-+		 * control is determined based upon these settings.
-+		 * NOTE:  DC = Don't Care
-+		 *
-+		 *   LOCAL DEVICE  |   LINK PARTNER
-+		 * PAUSE | ASM_DIR | PAUSE | ASM_DIR | NIC Resolution
-+		 *-------|---------|-------|---------|--------------------
-+		 *   0   |    0    |  DC   |   DC    | igc_fc_none
-+		 *   0   |    1    |   0   |   DC    | igc_fc_none
-+		 *   0   |    1    |   1   |    0    | igc_fc_none
-+		 *   0   |    1    |   1   |    1    | igc_fc_tx_pause
-+		 *   1   |    0    |   0   |   DC    | igc_fc_none
-+		 *   1   |   DC    |   1   |   DC    | igc_fc_full
-+		 *   1   |    1    |   0   |    0    | igc_fc_none
-+		 *   1   |    1    |   0   |    1    | igc_fc_rx_pause
-+		 *
-+		 * Are both PAUSE bits set to 1?  If so, this implies
-+		 * Symmetric Flow Control is enabled at both ends.  The
-+		 * ASM_DIR bits are irrelevant per the spec.
-+		 *
-+		 * For Symmetric Flow Control:
-+		 *
-+		 *   LOCAL DEVICE  |   LINK PARTNER
-+		 * PAUSE | ASM_DIR | PAUSE | ASM_DIR | Result
-+		 *-------|---------|-------|---------|--------------------
-+		 *   1   |   DC    |   1   |   DC    | IGC_fc_full
-+		 *
-+		 */
-+		if ((mii_nway_adv_reg & NWAY_AR_PAUSE) &&
-+		    (mii_nway_lp_ability_reg & NWAY_LPAR_PAUSE)) {
-+			/* Now we need to check if the user selected RX ONLY
-+			 * of pause frames.  In this case, we had to advertise
-+			 * FULL flow control because we could not advertise RX
-+			 * ONLY. Hence, we must now check to see if we need to
-+			 * turn OFF  the TRANSMISSION of PAUSE frames.
-+			 */
-+			if (hw->fc.requested_mode == igc_fc_full) {
-+				hw->fc.current_mode = igc_fc_full;
-+				hw_dbg("Flow Control = FULL.\n");
-+			} else {
-+				hw->fc.current_mode = igc_fc_rx_pause;
-+				hw_dbg("Flow Control = RX PAUSE frames only.\n");
-+			}
-+		}
-+
-+		/* For receiving PAUSE frames ONLY.
-+		 *
-+		 *   LOCAL DEVICE  |   LINK PARTNER
-+		 * PAUSE | ASM_DIR | PAUSE | ASM_DIR | Result
-+		 *-------|---------|-------|---------|--------------------
-+		 *   0   |    1    |   1   |    1    | igc_fc_tx_pause
-+		 */
-+		else if (!(mii_nway_adv_reg & NWAY_AR_PAUSE) &&
-+			 (mii_nway_adv_reg & NWAY_AR_ASM_DIR) &&
-+			 (mii_nway_lp_ability_reg & NWAY_LPAR_PAUSE) &&
-+			 (mii_nway_lp_ability_reg & NWAY_LPAR_ASM_DIR)) {
-+			hw->fc.current_mode = igc_fc_tx_pause;
-+			hw_dbg("Flow Control = TX PAUSE frames only.\n");
-+		}
-+		/* For transmitting PAUSE frames ONLY.
-+		 *
-+		 *   LOCAL DEVICE  |   LINK PARTNER
-+		 * PAUSE | ASM_DIR | PAUSE | ASM_DIR | Result
-+		 *-------|---------|-------|---------|--------------------
-+		 *   1   |    1    |   0   |    1    | igc_fc_rx_pause
-+		 */
-+		else if ((mii_nway_adv_reg & NWAY_AR_PAUSE) &&
-+			 (mii_nway_adv_reg & NWAY_AR_ASM_DIR) &&
-+			 !(mii_nway_lp_ability_reg & NWAY_LPAR_PAUSE) &&
-+			 (mii_nway_lp_ability_reg & NWAY_LPAR_ASM_DIR)) {
-+			hw->fc.current_mode = igc_fc_rx_pause;
-+			hw_dbg("Flow Control = RX PAUSE frames only.\n");
-+		}
-+		/* Per the IEEE spec, at this point flow control should be
-+		 * disabled.  However, we want to consider that we could
-+		 * be connected to a legacy switch that doesn't advertise
-+		 * desired flow control, but can be forced on the link
-+		 * partner.  So if we advertised no flow control, that is
-+		 * what we will resolve to.  If we advertised some kind of
-+		 * receive capability (Rx Pause Only or Full Flow Control)
-+		 * and the link partner advertised none, we will configure
-+		 * ourselves to enable Rx Flow Control only.  We can do
-+		 * this safely for two reasons:  If the link partner really
-+		 * didn't want flow control enabled, and we enable Rx, no
-+		 * harm done since we won't be receiving any PAUSE frames
-+		 * anyway.  If the intent on the link partner was to have
-+		 * flow control enabled, then by us enabling RX only, we
-+		 * can at least receive pause frames and process them.
-+		 * This is a good idea because in most cases, since we are
-+		 * predominantly a server NIC, more times than not we will
-+		 * be asked to delay transmission of packets than asking
-+		 * our link partner to pause transmission of frames.
-+		 */
-+		else if ((hw->fc.requested_mode == igc_fc_none) ||
-+			 (hw->fc.requested_mode == igc_fc_tx_pause) ||
-+			 (hw->fc.strict_ieee)) {
-+			hw->fc.current_mode = igc_fc_none;
-+			hw_dbg("Flow Control = NONE.\n");
-+		} else {
-+			hw->fc.current_mode = igc_fc_rx_pause;
-+			hw_dbg("Flow Control = RX PAUSE frames only.\n");
-+		}
-+
-+		/* Now we need to do one last check...  If we auto-
-+		 * negotiated to HALF DUPLEX, flow control should not be
-+		 * enabled per IEEE 802.3 spec.
-+		 */
-+		ret_val = hw->mac.ops.get_speed_and_duplex(hw, &speed, &duplex);
-+		if (ret_val) {
-+			hw_dbg("Error getting link speed and duplex\n");
-+			goto out;
-+		}
-+
-+		if (duplex == HALF_DUPLEX)
-+			hw->fc.current_mode = igc_fc_none;
-+
-+		/* Now we call a subroutine to actually force the MAC
-+		 * controller to use the correct flow control settings.
-+		 */
-+		ret_val = igc_force_mac_fc(hw);
-+		if (ret_val) {
-+			hw_dbg("Error forcing flow control settings\n");
-+			goto out;
-+		}
-+	}
++	ret_val = igc_pool_flash_update_done_i225(hw);
++	if (ret_val)
++		hw_dbg("Flash update time out\n");
++	else
++		hw_dbg("Flash update complete\n");
 +
 +out:
++	return ret_val;
++}
++
++/**
++ * igc_update_nvm_checksum_i225 - Update EEPROM checksum
++ * @hw: pointer to the HW structure
++ *
++ * Updates the EEPROM checksum by reading/adding each word of the EEPROM
++ * up to the checksum.  Then calculates the EEPROM checksum and writes the
++ * value to the EEPROM. Next commit EEPROM data onto the Flash.
++ */
++static s32 igc_update_nvm_checksum_i225(struct igc_hw *hw)
++{
++	u16 checksum = 0;
++	s32 ret_val = 0;
++	u16 i, nvm_data;
++
++	/* Read the first word from the EEPROM. If this times out or fails, do
++	 * not continue or we could be in for a very long wait while every
++	 * EEPROM read fails
++	 */
++	ret_val = igc_read_nvm_eerd(hw, 0, 1, &nvm_data);
++	if (ret_val) {
++		hw_dbg("EEPROM read failed\n");
++		goto out;
++	}
++
++	ret_val = hw->nvm.ops.acquire(hw);
++	if (ret_val)
++		goto out;
++
++	/* Do not use hw->nvm.ops.write, hw->nvm.ops.read
++	 * because we do not want to take the synchronization
++	 * semaphores twice here.
++	 */
++
++	for (i = 0; i < NVM_CHECKSUM_REG; i++) {
++		ret_val = igc_read_nvm_eerd(hw, i, 1, &nvm_data);
++		if (ret_val) {
++			hw->nvm.ops.release(hw);
++			hw_dbg("NVM Read Error while updating checksum.\n");
++			goto out;
++		}
++		checksum += nvm_data;
++	}
++	checksum = (u16)NVM_SUM - checksum;
++	ret_val = igc_write_nvm_srwr(hw, NVM_CHECKSUM_REG, 1,
++				     &checksum);
++	if (ret_val) {
++		hw->nvm.ops.release(hw);
++		hw_dbg("NVM Write Error while updating checksum.\n");
++		goto out;
++	}
++
++	hw->nvm.ops.release(hw);
++
++	ret_val = igc_update_flash_i225(hw);
++
++out:
++	return ret_val;
++}
++
++/**
++ * igc_get_flash_presence_i225 - Check if flash device is detected
++ * @hw: pointer to the HW structure
++ */
++bool igc_get_flash_presence_i225(struct igc_hw *hw)
++{
++	bool ret_val = false;
++	u32 eec = 0;
++
++	eec = rd32(IGC_EECD);
++	if (eec & IGC_EECD_FLASH_DETECTED_I225)
++		ret_val = true;
++
++	return ret_val;
++}
++
++/**
++ * igc_init_nvm_params_i225 - Init NVM func ptrs.
++ * @hw: pointer to the HW structure
++ */
++s32 igc_init_nvm_params_i225(struct igc_hw *hw)
++{
++	struct igc_nvm_info *nvm = &hw->nvm;
++
++	nvm->ops.acquire = igc_acquire_nvm_i225;
++	nvm->ops.release = igc_release_nvm_i225;
++
++	/* NVM Function Pointers */
++	if (igc_get_flash_presence_i225(hw)) {
++		hw->nvm.type = igc_nvm_flash_hw;
++		nvm->ops.read = igc_read_nvm_srrd_i225;
++		nvm->ops.write = igc_write_nvm_srwr_i225;
++		nvm->ops.validate = igc_validate_nvm_checksum_i225;
++		nvm->ops.update = igc_update_nvm_checksum_i225;
++	} else {
++		hw->nvm.type = igc_nvm_invm;
++		nvm->ops.read = igc_read_nvm_eerd;
++		nvm->ops.write = NULL;
++		nvm->ops.validate = NULL;
++		nvm->ops.update = NULL;
++	}
 +	return 0;
++}
+diff --git a/drivers/net/ethernet/intel/igc/igc_i225.h b/drivers/net/ethernet/intel/igc/igc_i225.h
+index 461cd8c7e352..7b66e1f9c0e6 100644
+--- a/drivers/net/ethernet/intel/igc/igc_i225.h
++++ b/drivers/net/ethernet/intel/igc/igc_i225.h
+@@ -7,4 +7,7 @@
+ s32 igc_acquire_swfw_sync_i225(struct igc_hw *hw, u16 mask);
+ void igc_release_swfw_sync_i225(struct igc_hw *hw, u16 mask);
+ 
++s32 igc_init_nvm_params_i225(struct igc_hw *hw);
++bool igc_get_flash_presence_i225(struct igc_hw *hw);
++
+ #endif
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
+index 90a98ee14550..249ac03b05d8 100644
+--- a/drivers/net/ethernet/intel/igc/igc_mac.c
++++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+@@ -275,6 +275,129 @@ void igc_clear_hw_cntrs_base(struct igc_hw *hw)
+ }
+ 
+ /**
++ * igc_rar_set - Set receive address register
++ * @hw: pointer to the HW structure
++ * @addr: pointer to the receive address
++ * @index: receive address array register
++ *
++ * Sets the receive address array register at index to the address passed
++ * in by addr.
++ */
++void igc_rar_set(struct igc_hw *hw, u8 *addr, u32 index)
++{
++	u32 rar_low, rar_high;
++
++	/* HW expects these in little endian so we reverse the byte order
++	 * from network order (big endian) to little endian
++	 */
++	rar_low = ((u32)addr[0] |
++		   ((u32)addr[1] << 8) |
++		   ((u32)addr[2] << 16) | ((u32)addr[3] << 24));
++
++	rar_high = ((u32)addr[4] | ((u32)addr[5] << 8));
++
++	/* If MAC address zero, no need to set the AV bit */
++	if (rar_low || rar_high)
++		rar_high |= IGC_RAH_AV;
++
++	/* Some bridges will combine consecutive 32-bit writes into
++	 * a single burst write, which will malfunction on some parts.
++	 * The flushes avoid this.
++	 */
++	wr32(IGC_RAL(index), rar_low);
++	wrfl();
++	wr32(IGC_RAH(index), rar_high);
++	wrfl();
++}
++
++/**
++ * igc_check_for_copper_link - Check for link (Copper)
++ * @hw: pointer to the HW structure
++ *
++ * Checks to see of the link status of the hardware has changed.  If a
++ * change in link status has been detected, then we read the PHY registers
++ * to get the current speed/duplex if link exists.
++ */
++s32 igc_check_for_copper_link(struct igc_hw *hw)
++{
++	struct igc_mac_info *mac = &hw->mac;
++	s32 ret_val;
++	bool link;
++
++	/* We only want to go out to the PHY registers to see if Auto-Neg
++	 * has completed and/or if our link status has changed.  The
++	 * get_link_status flag is set upon receiving a Link Status
++	 * Change or Rx Sequence Error interrupt.
++	 */
++	if (!mac->get_link_status) {
++		ret_val = 0;
++		goto out;
++	}
++
++	/* First we want to see if the MII Status Register reports
++	 * link.  If so, then we want to get the current speed/duplex
++	 * of the PHY.
++	 */
++	if (ret_val)
++		goto out;
++
++	if (!link)
++		goto out; /* No link detected */
++
++	mac->get_link_status = false;
++
++	/* Check if there was DownShift, must be checked
++	 * immediately after link-up
++	 */
++
++	/* If we are forcing speed/duplex, then we simply return since
++	 * we have already determined whether we have link or not.
++	 */
++	if (!mac->autoneg) {
++		ret_val = -IGC_ERR_CONFIG;
++		goto out;
++	}
++
++	/* Auto-Neg is enabled.  Auto Speed Detection takes care
++	 * of MAC speed/duplex configuration.  So we only need to
++	 * configure Collision Distance in the MAC.
++	 */
++	igc_config_collision_dist(hw);
++
++	/* Configure Flow Control now that Auto-Neg has completed.
++	 * First, we need to restore the desired flow control
++	 * settings because we may have had to re-autoneg with a
++	 * different link partner.
++	 */
++	if (ret_val)
++		hw_dbg("Error configuring flow control\n");
++
++out:
++	return ret_val;
++}
++
++/**
++ * igc_config_collision_dist - Configure collision distance
++ * @hw: pointer to the HW structure
++ *
++ * Configures the collision distance to the default value and is used
++ * during link setup. Currently no func pointer exists and all
++ * implementations are handled in the generic version of this function.
++ */
++void igc_config_collision_dist(struct igc_hw *hw)
++{
++	u32 tctl;
++
++	tctl = rd32(IGC_TCTL);
++
++	tctl &= ~IGC_TCTL_COLD;
++	tctl |= IGC_COLLISION_DISTANCE << IGC_COLD_SHIFT;
++
++	wr32(IGC_TCTL, tctl);
++	wrfl();
 +}
 +
 +/**
   * igc_get_auto_rd_done - Check for auto read completion
   * @hw: pointer to the HW structure
   *
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.h b/drivers/net/ethernet/intel/igc/igc_mac.h
-index c842cc561123..782bc995badc 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.h
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.h
-@@ -15,6 +15,8 @@
- /* forward declaration */
- s32 igc_disable_pcie_master(struct igc_hw *hw);
- s32 igc_check_for_copper_link(struct igc_hw *hw);
-+s32 igc_config_fc_after_link_up(struct igc_hw *hw);
-+s32 igc_force_mac_fc(struct igc_hw *hw);
- void igc_init_rx_addrs(struct igc_hw *hw, u16 rar_count);
- s32 igc_setup_link(struct igc_hw *hw);
- void igc_clear_hw_cntrs_base(struct igc_hw *hw);
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 14f324826604..e1a078e084f0 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3403,6 +3403,25 @@ static int igc_probe(struct pci_dev *pdev,
- 	netdev->min_mtu = ETH_MIN_MTU;
- 	netdev->max_mtu = MAX_STD_JUMBO_FRAME_SIZE;
- 
-+	/* before reading the NVM, reset the controller to put the device in a
-+	 * known good starting state
-+	 */
-+	hw->mac.ops.reset_hw(hw);
-+
-+	if (eth_platform_get_mac_address(&pdev->dev, hw->mac.addr)) {
-+		/* copy the MAC address out of the NVM */
-+		if (hw->mac.ops.read_mac_addr(hw))
-+			dev_err(&pdev->dev, "NVM Read Error\n");
-+	}
-+
-+	memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);
-+
-+	if (!is_valid_ether_addr(netdev->dev_addr)) {
-+		dev_err(&pdev->dev, "Invalid MAC Address\n");
-+		err = -EIO;
-+		goto err_eeprom;
-+	}
-+
- 	/* configure RXPBSIZE and TXPBSIZE */
- 	wr32(IGC_RXPBS, I225_RXPBSIZE_DEFAULT);
- 	wr32(IGC_TXPBS, I225_TXPBSIZE_DEFAULT);
-@@ -3411,6 +3430,14 @@ static int igc_probe(struct pci_dev *pdev,
- 
- 	INIT_WORK(&adapter->reset_task, igc_reset_task);
- 
-+	/* Initialize link properties that are user-changeable */
-+	adapter->fc_autoneg = true;
-+	hw->mac.autoneg = true;
-+	hw->phy.autoneg_advertised = 0xaf;
-+
-+	hw->fc.requested_mode = igc_fc_default;
-+	hw->fc.current_mode = igc_fc_default;
-+
- 	/* reset the hardware with the new settings */
- 	igc_reset(adapter);
- 
-@@ -3438,6 +3465,9 @@ static int igc_probe(struct pci_dev *pdev,
- 
- err_register:
- 	igc_release_hw_control(adapter);
-+err_eeprom:
-+	if (!igc_check_reset_block(hw))
-+		igc_reset_phy(hw);
- err_sw_init:
- 	igc_clear_interrupt_scheme(adapter);
- 	iounmap(adapter->io_addr);
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
-index 88583c1d4970..38e43e6fc1c7 100644
---- a/drivers/net/ethernet/intel/igc/igc_phy.c
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.c
-@@ -3,6 +3,10 @@
- 
- #include "igc_phy.h"
- 
-+/* forward declaration */
-+static s32 igc_phy_setup_autoneg(struct igc_hw *hw);
-+static s32 igc_wait_autoneg(struct igc_hw *hw);
-+
- /**
-  * igc_check_reset_block - Check if PHY reset is blocked
-  * @hw: pointer to the HW structure
-@@ -212,6 +216,336 @@ s32 igc_phy_hw_reset(struct igc_hw *hw)
+@@ -303,6 +426,53 @@ s32 igc_get_auto_rd_done(struct igc_hw *hw)
  }
  
  /**
-+ * igc_copper_link_autoneg - Setup/Enable autoneg for copper link
++ * igc_get_speed_and_duplex_copper - Retrieve current speed/duplex
 + * @hw: pointer to the HW structure
++ * @speed: stores the current speed
++ * @duplex: stores the current duplex
 + *
-+ * Performs initial bounds checking on autoneg advertisement parameter, then
-+ * configure to advertise the full capability.  Setup the PHY to autoneg
-+ * and restart the negotiation process between the link partner.  If
-+ * autoneg_wait_to_complete, then wait for autoneg to complete before exiting.
++ * Read the status register for the current speed/duplex and store the current
++ * speed and duplex for copper connections.
 + */
-+static s32 igc_copper_link_autoneg(struct igc_hw *hw)
++s32 igc_get_speed_and_duplex_copper(struct igc_hw *hw, u16 *speed,
++				    u16 *duplex)
 +{
-+	struct igc_phy_info *phy = &hw->phy;
-+	u16 phy_ctrl;
-+	s32 ret_val;
++	u32 status;
 +
-+	/* Perform some bounds checking on the autoneg advertisement
-+	 * parameter.
-+	 */
-+	phy->autoneg_advertised &= phy->autoneg_mask;
-+
-+	/* If autoneg_advertised is zero, we assume it was not defaulted
-+	 * by the calling code so we set to advertise full capability.
-+	 */
-+	if (phy->autoneg_advertised == 0)
-+		phy->autoneg_advertised = phy->autoneg_mask;
-+
-+	hw_dbg("Reconfiguring auto-neg advertisement params\n");
-+	ret_val = igc_phy_setup_autoneg(hw);
-+	if (ret_val) {
-+		hw_dbg("Error Setting up Auto-Negotiation\n");
-+		goto out;
-+	}
-+	hw_dbg("Restarting Auto-Neg\n");
-+
-+	/* Restart auto-negotiation by setting the Auto Neg Enable bit and
-+	 * the Auto Neg Restart bit in the PHY control register.
-+	 */
-+	ret_val = phy->ops.read_reg(hw, PHY_CONTROL, &phy_ctrl);
-+	if (ret_val)
-+		goto out;
-+
-+	phy_ctrl |= (MII_CR_AUTO_NEG_EN | MII_CR_RESTART_AUTO_NEG);
-+	ret_val = phy->ops.write_reg(hw, PHY_CONTROL, phy_ctrl);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Does the user want to wait for Auto-Neg to complete here, or
-+	 * check at a later time (for example, callback routine).
-+	 */
-+	if (phy->autoneg_wait_to_complete) {
-+		ret_val = igc_wait_autoneg(hw);
-+		if (ret_val) {
-+			hw_dbg("Error while waiting for autoneg to complete\n");
-+			goto out;
++	status = rd32(IGC_STATUS);
++	if (status & IGC_STATUS_SPEED_1000) {
++		/* For I225, STATUS will indicate 1G speed in both 1 Gbps
++		 * and 2.5 Gbps link modes. An additional bit is used
++		 * to differentiate between 1 Gbps and 2.5 Gbps.
++		 */
++		if (hw->mac.type == igc_i225 &&
++		    (status & IGC_STATUS_SPEED_2500)) {
++			*speed = SPEED_2500;
++			hw_dbg("2500 Mbs, ");
++		} else {
++			*speed = SPEED_1000;
++			hw_dbg("1000 Mbs, ");
 +		}
-+	}
-+
-+	hw->mac.get_link_status = true;
-+
-+out:
-+	return ret_val;
-+}
-+
-+/**
-+ * igc_wait_autoneg - Wait for auto-neg completion
-+ * @hw: pointer to the HW structure
-+ *
-+ * Waits for auto-negotiation to complete or for the auto-negotiation time
-+ * limit to expire, which ever happens first.
-+ */
-+static s32 igc_wait_autoneg(struct igc_hw *hw)
-+{
-+	u16 i, phy_status;
-+	s32 ret_val = 0;
-+
-+	/* Break after autoneg completes or PHY_AUTO_NEG_LIMIT expires. */
-+	for (i = PHY_AUTO_NEG_LIMIT; i > 0; i--) {
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS, &phy_status);
-+		if (ret_val)
-+			break;
-+		ret_val = hw->phy.ops.read_reg(hw, PHY_STATUS, &phy_status);
-+		if (ret_val)
-+			break;
-+		if (phy_status & MII_SR_AUTONEG_COMPLETE)
-+			break;
-+		msleep(100);
-+	}
-+
-+	/* PHY_AUTO_NEG_TIME expiration doesn't guarantee auto-negotiation
-+	 * has completed.
-+	 */
-+	return ret_val;
-+}
-+
-+/**
-+ * igc_phy_setup_autoneg - Configure PHY for auto-negotiation
-+ * @hw: pointer to the HW structure
-+ *
-+ * Reads the MII auto-neg advertisement register and/or the 1000T control
-+ * register and if the PHY is already setup for auto-negotiation, then
-+ * return successful.  Otherwise, setup advertisement and flow control to
-+ * the appropriate values for the wanted auto-negotiation.
-+ */
-+static s32 igc_phy_setup_autoneg(struct igc_hw *hw)
-+{
-+	struct igc_phy_info *phy = &hw->phy;
-+	u16 aneg_multigbt_an_ctrl = 0;
-+	u16 mii_1000t_ctrl_reg = 0;
-+	u16 mii_autoneg_adv_reg;
-+	s32 ret_val;
-+
-+	phy->autoneg_advertised &= phy->autoneg_mask;
-+
-+	/* Read the MII Auto-Neg Advertisement Register (Address 4). */
-+	ret_val = phy->ops.read_reg(hw, PHY_AUTONEG_ADV, &mii_autoneg_adv_reg);
-+	if (ret_val)
-+		return ret_val;
-+
-+	if (phy->autoneg_mask & ADVERTISE_1000_FULL) {
-+		/* Read the MII 1000Base-T Control Register (Address 9). */
-+		ret_val = phy->ops.read_reg(hw, PHY_1000T_CTRL,
-+					    &mii_1000t_ctrl_reg);
-+		if (ret_val)
-+			return ret_val;
-+	}
-+
-+	if ((phy->autoneg_mask & ADVERTISE_2500_FULL) &&
-+	    hw->phy.id == I225_I_PHY_ID) {
-+		/* Read the MULTI GBT AN Control Register - reg 7.32 */
-+		ret_val = phy->ops.read_reg(hw, (STANDARD_AN_REG_MASK <<
-+					    MMD_DEVADDR_SHIFT) |
-+					    ANEG_MULTIGBT_AN_CTRL,
-+					    &aneg_multigbt_an_ctrl);
-+
-+		if (ret_val)
-+			return ret_val;
-+	}
-+
-+	/* Need to parse both autoneg_advertised and fc and set up
-+	 * the appropriate PHY registers.  First we will parse for
-+	 * autoneg_advertised software override.  Since we can advertise
-+	 * a plethora of combinations, we need to check each bit
-+	 * individually.
-+	 */
-+
-+	/* First we clear all the 10/100 mb speed bits in the Auto-Neg
-+	 * Advertisement Register (Address 4) and the 1000 mb speed bits in
-+	 * the  1000Base-T Control Register (Address 9).
-+	 */
-+	mii_autoneg_adv_reg &= ~(NWAY_AR_100TX_FD_CAPS |
-+				 NWAY_AR_100TX_HD_CAPS |
-+				 NWAY_AR_10T_FD_CAPS   |
-+				 NWAY_AR_10T_HD_CAPS);
-+	mii_1000t_ctrl_reg &= ~(CR_1000T_HD_CAPS | CR_1000T_FD_CAPS);
-+
-+	hw_dbg("autoneg_advertised %x\n", phy->autoneg_advertised);
-+
-+	/* Do we want to advertise 10 Mb Half Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_10_HALF) {
-+		hw_dbg("Advertise 10mb Half duplex\n");
-+		mii_autoneg_adv_reg |= NWAY_AR_10T_HD_CAPS;
-+	}
-+
-+	/* Do we want to advertise 10 Mb Full Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_10_FULL) {
-+		hw_dbg("Advertise 10mb Full duplex\n");
-+		mii_autoneg_adv_reg |= NWAY_AR_10T_FD_CAPS;
-+	}
-+
-+	/* Do we want to advertise 100 Mb Half Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_100_HALF) {
-+		hw_dbg("Advertise 100mb Half duplex\n");
-+		mii_autoneg_adv_reg |= NWAY_AR_100TX_HD_CAPS;
-+	}
-+
-+	/* Do we want to advertise 100 Mb Full Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_100_FULL) {
-+		hw_dbg("Advertise 100mb Full duplex\n");
-+		mii_autoneg_adv_reg |= NWAY_AR_100TX_FD_CAPS;
-+	}
-+
-+	/* We do not allow the Phy to advertise 1000 Mb Half Duplex */
-+	if (phy->autoneg_advertised & ADVERTISE_1000_HALF)
-+		hw_dbg("Advertise 1000mb Half duplex request denied!\n");
-+
-+	/* Do we want to advertise 1000 Mb Full Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_1000_FULL) {
-+		hw_dbg("Advertise 1000mb Full duplex\n");
-+		mii_1000t_ctrl_reg |= CR_1000T_FD_CAPS;
-+	}
-+
-+	/* We do not allow the Phy to advertise 2500 Mb Half Duplex */
-+	if (phy->autoneg_advertised & ADVERTISE_2500_HALF)
-+		hw_dbg("Advertise 2500mb Half duplex request denied!\n");
-+
-+	/* Do we want to advertise 2500 Mb Full Duplex? */
-+	if (phy->autoneg_advertised & ADVERTISE_2500_FULL) {
-+		hw_dbg("Advertise 2500mb Full duplex\n");
-+		aneg_multigbt_an_ctrl |= CR_2500T_FD_CAPS;
++	} else if (status & IGC_STATUS_SPEED_100) {
++		*speed = SPEED_100;
++		hw_dbg("100 Mbs, ");
 +	} else {
-+		aneg_multigbt_an_ctrl &= ~CR_2500T_FD_CAPS;
++		*speed = SPEED_10;
++		hw_dbg("10 Mbs, ");
 +	}
 +
-+	/* Check for a software override of the flow control settings, and
-+	 * setup the PHY advertisement registers accordingly.  If
-+	 * auto-negotiation is enabled, then software will have to set the
-+	 * "PAUSE" bits to the correct value in the Auto-Negotiation
-+	 * Advertisement Register (PHY_AUTONEG_ADV) and re-start auto-
-+	 * negotiation.
-+	 *
-+	 * The possible values of the "fc" parameter are:
-+	 *      0:  Flow control is completely disabled
-+	 *      1:  Rx flow control is enabled (we can receive pause frames
-+	 *          but not send pause frames).
-+	 *      2:  Tx flow control is enabled (we can send pause frames
-+	 *          but we do not support receiving pause frames).
-+	 *      3:  Both Rx and Tx flow control (symmetric) are enabled.
-+	 *  other:  No software override.  The flow control configuration
-+	 *          in the EEPROM is used.
-+	 */
-+	switch (hw->fc.current_mode) {
-+	case igc_fc_none:
-+		/* Flow control (Rx & Tx) is completely disabled by a
-+		 * software over-ride.
-+		 */
-+		mii_autoneg_adv_reg &= ~(NWAY_AR_ASM_DIR | NWAY_AR_PAUSE);
-+		break;
-+	case igc_fc_rx_pause:
-+		/* Rx Flow control is enabled, and Tx Flow control is
-+		 * disabled, by a software over-ride.
-+		 *
-+		 * Since there really isn't a way to advertise that we are
-+		 * capable of Rx Pause ONLY, we will advertise that we
-+		 * support both symmetric and asymmetric Rx PAUSE.  Later
-+		 * (in igc_config_fc_after_link_up) we will disable the
-+		 * hw's ability to send PAUSE frames.
-+		 */
-+		mii_autoneg_adv_reg |= (NWAY_AR_ASM_DIR | NWAY_AR_PAUSE);
-+		break;
-+	case igc_fc_tx_pause:
-+		/* Tx Flow control is enabled, and Rx Flow control is
-+		 * disabled, by a software over-ride.
-+		 */
-+		mii_autoneg_adv_reg |= NWAY_AR_ASM_DIR;
-+		mii_autoneg_adv_reg &= ~NWAY_AR_PAUSE;
-+		break;
-+	case igc_fc_full:
-+		/* Flow control (both Rx and Tx) is enabled by a software
-+		 * over-ride.
-+		 */
-+		mii_autoneg_adv_reg |= (NWAY_AR_ASM_DIR | NWAY_AR_PAUSE);
-+		break;
-+	default:
-+		hw_dbg("Flow control param set incorrectly\n");
-+		return -IGC_ERR_CONFIG;
++	if (status & IGC_STATUS_FD) {
++		*duplex = FULL_DUPLEX;
++		hw_dbg("Full Duplex\n");
++	} else {
++		*duplex = HALF_DUPLEX;
++		hw_dbg("Half Duplex\n");
 +	}
 +
-+	ret_val = phy->ops.write_reg(hw, PHY_AUTONEG_ADV, mii_autoneg_adv_reg);
-+	if (ret_val)
-+		return ret_val;
-+
-+	hw_dbg("Auto-Neg Advertising %x\n", mii_autoneg_adv_reg);
-+
-+	if (phy->autoneg_mask & ADVERTISE_1000_FULL)
-+		ret_val = phy->ops.write_reg(hw, PHY_1000T_CTRL,
-+					     mii_1000t_ctrl_reg);
-+
-+	if ((phy->autoneg_mask & ADVERTISE_2500_FULL) &&
-+	    hw->phy.id == I225_I_PHY_ID)
-+		ret_val = phy->ops.write_reg(hw,
-+					     (STANDARD_AN_REG_MASK <<
-+					     MMD_DEVADDR_SHIFT) |
-+					     ANEG_MULTIGBT_AN_CTRL,
-+					     aneg_multigbt_an_ctrl);
-+
-+	return ret_val;
++	return 0;
 +}
 +
 +/**
-+ * igc_setup_copper_link - Configure copper link settings
-+ * @hw: pointer to the HW structure
-+ *
-+ * Calls the appropriate function to configure the link for auto-neg or forced
-+ * speed and duplex.  Then we check for link, once link is established calls
-+ * to configure collision distance and flow control are called.  If link is
-+ * not established, we return -IGC_ERR_PHY (-2).
-+ */
-+s32 igc_setup_copper_link(struct igc_hw *hw)
-+{
-+	s32 ret_val = 0;
-+	bool link;
-+
-+	if (hw->mac.autoneg) {
-+		/* Setup autoneg and flow control advertisement and perform
-+		 * autonegotiation.
-+		 */
-+		ret_val = igc_copper_link_autoneg(hw);
-+		if (ret_val)
-+			goto out;
-+	} else {
-+		/* PHY will be set to 10H, 10F, 100H or 100F
-+		 * depending on user settings.
-+		 */
-+		hw_dbg("Forcing Speed and Duplex\n");
-+		ret_val = hw->phy.ops.force_speed_duplex(hw);
-+		if (ret_val) {
-+			hw_dbg("Error Forcing Speed and Duplex\n");
-+			goto out;
-+		}
-+	}
-+
-+	/* Check link status. Wait up to 100 microseconds for link to become
-+	 * valid.
-+	 */
-+	ret_val = igc_phy_has_link(hw, COPPER_LINK_UP_LIMIT, 10, &link);
-+	if (ret_val)
-+		goto out;
-+
-+	if (link) {
-+		hw_dbg("Valid link established!!!\n");
-+		igc_config_collision_dist(hw);
-+		ret_val = igc_config_fc_after_link_up(hw);
-+	} else {
-+		hw_dbg("Unable to establish link!!!\n");
-+	}
-+
-+out:
-+	return ret_val;
-+}
-+
-+/**
-  * igc_read_phy_reg_mdic - Read MDI control register
+  * igc_put_hw_semaphore - Release hardware semaphore
   * @hw: pointer to the HW structure
-  * @offset: register offset to be read
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.h b/drivers/net/ethernet/intel/igc/igc_phy.h
-index 6a62f381559d..25cba33de7e2 100644
---- a/drivers/net/ethernet/intel/igc/igc_phy.h
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.h
-@@ -12,6 +12,7 @@ s32 igc_get_phy_id(struct igc_hw *hw);
- s32 igc_phy_has_link(struct igc_hw *hw, u32 iterations,
- 		     u32 usec_interval, bool *success);
- s32 igc_check_downshift(struct igc_hw *hw);
-+s32 igc_setup_copper_link(struct igc_hw *hw);
- void igc_power_up_phy_copper(struct igc_hw *hw);
- void igc_power_down_phy_copper(struct igc_hw *hw);
- s32 igc_write_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 data);
+  *
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.h b/drivers/net/ethernet/intel/igc/igc_mac.h
+index 88bdb8dd6f3f..88599661d017 100644
+--- a/drivers/net/ethernet/intel/igc/igc_mac.h
++++ b/drivers/net/ethernet/intel/igc/igc_mac.h
+@@ -13,10 +13,16 @@
+ 
+ /* forward declaration */
+ s32 igc_disable_pcie_master(struct igc_hw *hw);
++s32 igc_check_for_copper_link(struct igc_hw *hw);
+ void igc_init_rx_addrs(struct igc_hw *hw, u16 rar_count);
+ s32 igc_setup_link(struct igc_hw *hw);
+ void igc_clear_hw_cntrs_base(struct igc_hw *hw);
+ s32 igc_get_auto_rd_done(struct igc_hw *hw);
+ void igc_put_hw_semaphore(struct igc_hw *hw);
++void igc_rar_set(struct igc_hw *hw, u8 *addr, u32 index);
++void igc_config_collision_dist(struct igc_hw *hw);
++
++s32 igc_get_speed_and_duplex_copper(struct igc_hw *hw, u16 *speed,
++				    u16 *duplex);
+ 
+ #endif
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index f2ad49fcd39b..115fc2a544d7 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -27,9 +27,13 @@ static const char igc_driver_string[] = DRV_SUMMARY;
+ static const char igc_copyright[] =
+ 	"Copyright(c) 2018 Intel Corporation.";
+ 
++static const struct igc_info *igc_info_tbl[] = {
++	[board_base] = &igc_base_info,
++};
++
+ static const struct pci_device_id igc_pci_tbl[] = {
+-	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LM) },
+-	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_V) },
++	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LM), board_base },
++	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_V), board_base },
+ 	/* required last entry */
+ 	{0, }
+ };
+@@ -3289,6 +3293,7 @@ static int igc_probe(struct pci_dev *pdev,
+ 	struct igc_adapter *adapter;
+ 	struct net_device *netdev;
+ 	struct igc_hw *hw;
++	const struct igc_info *ei = igc_info_tbl[ent->driver_data];
+ 	int err, pci_using_dac;
+ 
+ 	err = pci_enable_device_mem(pdev);
+@@ -3370,6 +3375,14 @@ static int igc_probe(struct pci_dev *pdev,
+ 	hw->subsystem_vendor_id = pdev->subsystem_vendor;
+ 	hw->subsystem_device_id = pdev->subsystem_device;
+ 
++	/* Copy the default MAC and PHY function pointers */
++	memcpy(&hw->mac.ops, ei->mac_ops, sizeof(hw->mac.ops));
++
++	/* Initialize skew-specific constants */
++	err = ei->get_invariants(hw);
++	if (err)
++		goto err_sw_init;
++
+ 	/* setup the private structure */
+ 	err = igc_sw_init(adapter);
+ 	if (err)
+@@ -3403,6 +3416,9 @@ static int igc_probe(struct pci_dev *pdev,
+ 	 /* carrier off reporting is important to ethtool even BEFORE open */
+ 	netif_carrier_off(netdev);
+ 
++	/* Check if Media Autosense is enabled */
++	adapter->ei = *ei;
++
+ 	/* print pcie link status and MAC address */
+ 	pcie_print_link_status(pdev);
+ 	netdev_info(netdev, "MAC: %pM\n", netdev->dev_addr);
+diff --git a/drivers/net/ethernet/intel/igc/igc_nvm.c b/drivers/net/ethernet/intel/igc/igc_nvm.c
+new file mode 100644
+index 000000000000..58f81aba0144
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igc/igc_nvm.c
+@@ -0,0 +1,215 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (c)  2018 Intel Corporation */
++
++#include "igc_mac.h"
++#include "igc_nvm.h"
++
++/**
++ * igc_poll_eerd_eewr_done - Poll for EEPROM read/write completion
++ * @hw: pointer to the HW structure
++ * @ee_reg: EEPROM flag for polling
++ *
++ * Polls the EEPROM status bit for either read or write completion based
++ * upon the value of 'ee_reg'.
++ */
++static s32 igc_poll_eerd_eewr_done(struct igc_hw *hw, int ee_reg)
++{
++	s32 ret_val = -IGC_ERR_NVM;
++	u32 attempts = 100000;
++	u32 i, reg = 0;
++
++	for (i = 0; i < attempts; i++) {
++		if (ee_reg == IGC_NVM_POLL_READ)
++			reg = rd32(IGC_EERD);
++		else
++			reg = rd32(IGC_EEWR);
++
++		if (reg & IGC_NVM_RW_REG_DONE) {
++			ret_val = 0;
++			break;
++		}
++
++		udelay(5);
++	}
++
++	return ret_val;
++}
++
++/**
++ * igc_acquire_nvm - Generic request for access to EEPROM
++ * @hw: pointer to the HW structure
++ *
++ * Set the EEPROM access request bit and wait for EEPROM access grant bit.
++ * Return successful if access grant bit set, else clear the request for
++ * EEPROM access and return -IGC_ERR_NVM (-1).
++ */
++s32 igc_acquire_nvm(struct igc_hw *hw)
++{
++	s32 timeout = IGC_NVM_GRANT_ATTEMPTS;
++	u32 eecd = rd32(IGC_EECD);
++	s32 ret_val = 0;
++
++	wr32(IGC_EECD, eecd | IGC_EECD_REQ);
++	eecd = rd32(IGC_EECD);
++
++	while (timeout) {
++		if (eecd & IGC_EECD_GNT)
++			break;
++		udelay(5);
++		eecd = rd32(IGC_EECD);
++		timeout--;
++	}
++
++	if (!timeout) {
++		eecd &= ~IGC_EECD_REQ;
++		wr32(IGC_EECD, eecd);
++		hw_dbg("Could not acquire NVM grant\n");
++		ret_val = -IGC_ERR_NVM;
++	}
++
++	return ret_val;
++}
++
++/**
++ * igc_release_nvm - Release exclusive access to EEPROM
++ * @hw: pointer to the HW structure
++ *
++ * Stop any current commands to the EEPROM and clear the EEPROM request bit.
++ */
++void igc_release_nvm(struct igc_hw *hw)
++{
++	u32 eecd;
++
++	eecd = rd32(IGC_EECD);
++	eecd &= ~IGC_EECD_REQ;
++	wr32(IGC_EECD, eecd);
++}
++
++/**
++ * igc_read_nvm_eerd - Reads EEPROM using EERD register
++ * @hw: pointer to the HW structure
++ * @offset: offset of word in the EEPROM to read
++ * @words: number of words to read
++ * @data: word read from the EEPROM
++ *
++ * Reads a 16 bit word from the EEPROM using the EERD register.
++ */
++s32 igc_read_nvm_eerd(struct igc_hw *hw, u16 offset, u16 words, u16 *data)
++{
++	struct igc_nvm_info *nvm = &hw->nvm;
++	u32 i, eerd = 0;
++	s32 ret_val = 0;
++
++	/* A check for invalid values:  offset too large, too many words,
++	 * and not enough words.
++	 */
++	if (offset >= nvm->word_size || (words > (nvm->word_size - offset)) ||
++	    words == 0) {
++		hw_dbg("nvm parameter(s) out of bounds\n");
++		ret_val = -IGC_ERR_NVM;
++		goto out;
++	}
++
++	for (i = 0; i < words; i++) {
++		eerd = ((offset + i) << IGC_NVM_RW_ADDR_SHIFT) +
++			IGC_NVM_RW_REG_START;
++
++		wr32(IGC_EERD, eerd);
++		ret_val = igc_poll_eerd_eewr_done(hw, IGC_NVM_POLL_READ);
++		if (ret_val)
++			break;
++
++		data[i] = (rd32(IGC_EERD) >> IGC_NVM_RW_REG_DATA);
++	}
++
++out:
++	return ret_val;
++}
++
++/**
++ * igc_read_mac_addr - Read device MAC address
++ * @hw: pointer to the HW structure
++ */
++s32 igc_read_mac_addr(struct igc_hw *hw)
++{
++	u32 rar_high;
++	u32 rar_low;
++	u16 i;
++
++	rar_high = rd32(IGC_RAH(0));
++	rar_low = rd32(IGC_RAL(0));
++
++	for (i = 0; i < IGC_RAL_MAC_ADDR_LEN; i++)
++		hw->mac.perm_addr[i] = (u8)(rar_low >> (i * 8));
++
++	for (i = 0; i < IGC_RAH_MAC_ADDR_LEN; i++)
++		hw->mac.perm_addr[i + 4] = (u8)(rar_high >> (i * 8));
++
++	for (i = 0; i < ETH_ALEN; i++)
++		hw->mac.addr[i] = hw->mac.perm_addr[i];
++
++	return 0;
++}
++
++/**
++ * igc_validate_nvm_checksum - Validate EEPROM checksum
++ * @hw: pointer to the HW structure
++ *
++ * Calculates the EEPROM checksum by reading/adding each word of the EEPROM
++ * and then verifies that the sum of the EEPROM is equal to 0xBABA.
++ */
++s32 igc_validate_nvm_checksum(struct igc_hw *hw)
++{
++	u16 checksum = 0;
++	u16 i, nvm_data;
++	s32 ret_val = 0;
++
++	for (i = 0; i < (NVM_CHECKSUM_REG + 1); i++) {
++		ret_val = hw->nvm.ops.read(hw, i, 1, &nvm_data);
++		if (ret_val) {
++			hw_dbg("NVM Read Error\n");
++			goto out;
++		}
++		checksum += nvm_data;
++	}
++
++	if (checksum != (u16)NVM_SUM) {
++		hw_dbg("NVM Checksum Invalid\n");
++		ret_val = -IGC_ERR_NVM;
++		goto out;
++	}
++
++out:
++	return ret_val;
++}
++
++/**
++ * igc_update_nvm_checksum - Update EEPROM checksum
++ * @hw: pointer to the HW structure
++ *
++ * Updates the EEPROM checksum by reading/adding each word of the EEPROM
++ * up to the checksum.  Then calculates the EEPROM checksum and writes the
++ * value to the EEPROM.
++ */
++s32 igc_update_nvm_checksum(struct igc_hw *hw)
++{
++	u16 checksum = 0;
++	u16 i, nvm_data;
++	s32  ret_val;
++
++	for (i = 0; i < NVM_CHECKSUM_REG; i++) {
++		ret_val = hw->nvm.ops.read(hw, i, 1, &nvm_data);
++		if (ret_val) {
++			hw_dbg("NVM Read Error while updating checksum.\n");
++			goto out;
++		}
++		checksum += nvm_data;
++	}
++	checksum = (u16)NVM_SUM - checksum;
++	ret_val = hw->nvm.ops.write(hw, NVM_CHECKSUM_REG, 1, &checksum);
++	if (ret_val)
++		hw_dbg("NVM Write Error while updating checksum.\n");
++
++out:
++	return ret_val;
++}
+diff --git a/drivers/net/ethernet/intel/igc/igc_nvm.h b/drivers/net/ethernet/intel/igc/igc_nvm.h
+new file mode 100644
+index 000000000000..f9fc2e9cfb03
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igc/igc_nvm.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c)  2018 Intel Corporation */
++
++#ifndef _IGC_NVM_H_
++#define _IGC_NVM_H_
++
++s32 igc_acquire_nvm(struct igc_hw *hw);
++void igc_release_nvm(struct igc_hw *hw);
++s32 igc_read_mac_addr(struct igc_hw *hw);
++s32 igc_read_nvm_eerd(struct igc_hw *hw, u16 offset, u16 words, u16 *data);
++s32 igc_validate_nvm_checksum(struct igc_hw *hw);
++s32 igc_update_nvm_checksum(struct igc_hw *hw);
++
++#endif
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index c57f573fb864..b5996e474c3c 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -191,6 +191,9 @@
+ /* Management registers */
+ #define IGC_MANC	0x05820  /* Management Control - RW */
+ 
++/* Shadow Ram Write Register - RW */
++#define IGC_SRWR	0x12018
++
+ /* forward declaration */
+ struct igc_hw;
+ u32 igc_rd32(struct igc_hw *hw, u32 reg);
 -- 
 2.11.0
 
