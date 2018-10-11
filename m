@@ -1,40 +1,35 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Thu, 11 Oct 2018 14:47:51 +0300
-Subject: [Intel-wired-lan] [bug report] ixgbe: added Rx/Tx ring
- disable/enable functions
-Message-ID: <20181011114751.GA21224@mwanda>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 11 Oct 2018 15:39:38 +0000
+Subject: [Intel-wired-lan] [PATCH v2 02/12] Documentation: ixgb: Prepare
+ documentation for RST conversion
+In-Reply-To: <20181010191613.2770-3-jeffrey.t.kirsher@intel.com>
+References: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
+ <20181010191613.2770-3-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D30CD93@FMSMSX152.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Bj?rn T?pel,
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Wednesday, October 10, 2018 12:16 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v2 02/12] Documentation: ixgb: Prepare
+> documentation for RST conversion
+> 
+> Before making the conversion to the rst (reStructured Text) format, there
+> are changes needed to the documentation so that there are no build errors.
+> 
+> Also fixed old/broken URLs to the correct or updated URL.
+> 
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> ---
+>  Documentation/networking/ixgb.txt | 529 ++++++++++++++++--------------
+>  1 file changed, 282 insertions(+), 247 deletions(-)
 
-This is a semi-automatic email about new static checker warnings.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-The patch 024aa5800f32: "ixgbe: added Rx/Tx ring disable/enable 
-functions" from Oct 2, 2018, leads to the following Smatch complaint:
 
-    drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:10520 ixgbe_txrx_ring_enable()
-    error: we previously assumed 'xdp_ring' could be null (see line 10515)
-
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
- 10514		ixgbe_configure_tx_ring(adapter, tx_ring);
- 10515		if (xdp_ring)
-                    ^^^^^^^^
-The patch adds a check for NULL.
-
- 10516			ixgbe_configure_tx_ring(adapter, xdp_ring);
- 10517		ixgbe_configure_rx_ring(adapter, rx_ring);
- 10518	
- 10519		clear_bit(__IXGBE_TX_DISABLED, &tx_ring->state);
- 10520		clear_bit(__IXGBE_TX_DISABLED, &xdp_ring->state);
-                                                ^^^^^^^^^^^^^^^
-but it also adds an unchecked dereference.
-
- 10521	}
- 10522	
-
-regards,
-dan carpenter
