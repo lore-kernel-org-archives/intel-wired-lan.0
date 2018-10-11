@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 11 Oct 2018 21:27:21 +0000
-Subject: [Intel-wired-lan] [PATCH v2 04/12] Documentation: igb: Prepare
- documentation for RST conversion
-In-Reply-To: <20181010191613.2770-5-jeffrey.t.kirsher@intel.com>
+Date: Thu, 11 Oct 2018 21:39:35 +0000
+Subject: [Intel-wired-lan] [PATCH v2 05/12] Documentation: igbvf:
+ Prepare documentation for RST conversion
+In-Reply-To: <20181010191613.2770-6-jeffrey.t.kirsher@intel.com>
 References: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
- <20181010191613.2770-5-jeffrey.t.kirsher@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9657A47B@ORSMSX101.amr.corp.intel.com>
+ <20181010191613.2770-6-jeffrey.t.kirsher@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9657A49E@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,7 +16,7 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Wednesday, October 10, 2018 12:16 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 04/12] Documentation: igb: Prepare
+> Subject: [Intel-wired-lan] [PATCH v2 05/12] Documentation: igbvf: Prepare
 > documentation for RST conversion
 > 
 > Before making the conversion to the rst (reStructured Text) format, there
@@ -26,333 +26,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > 
 > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 > ---
->  Documentation/networking/igb.txt | 214 ++++++++++++++++++++----------
-> -
->  1 file changed, 139 insertions(+), 75 deletions(-)
+>  Documentation/networking/igbvf.txt | 82 ++++++++++++------------------
+>  1 file changed, 33 insertions(+), 49 deletions(-)
 > 
 
-With a few minor exceptions (inline) ...
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+... with one minor suggestion below.
+<snip>
 
-> diff --git a/Documentation/networking/igb.txt
-> b/Documentation/networking/igb.txt
-> index f90643ef39c9..ba16b86d5593 100644
-> --- a/Documentation/networking/igb.txt
-> +++ b/Documentation/networking/igb.txt
-> @@ -1,129 +1,193 @@
-> +.. SPDX-License-Identifier: GPL-2.0+
-> +
->  Linux* Base Driver for Intel(R) Ethernet Network Connection
-> 
-> ==========================================================
-> =
-> 
->  Intel Gigabit Linux driver.
-> -Copyright(c) 1999 - 2013 Intel Corporation.
-> +Copyright(c) 1999-2018 Intel Corporation.
-> 
->  Contents
->  ========
-> 
->  - Identifying Your Adapter
-> +- Command Line Parameters
->  - Additional Configurations
->  - Support
-> 
-> +
 >  Identifying Your Adapter
 >  ========================
 > +For information on how to identify your adapter, and for the latest Intel
 > +network drivers, refer to the Intel Support website:
 > +http://www.intel.com/support
+>
+This should be https:// This does currently resolve to https:// so it works, but should be https:// to match the second (near) instance of this URL below.  
 
-This should be https://.  It does get redirected so this will work, but should be https for consistency with the " https://www.intel.com/support"  URL at the end of the file.
+> -The igbvf driver supports 82576-based virtual function devices that can only
+> -be activated on kernels that support SR-IOV.
 
-> 
-> -This driver supports all 82575, 82576 and 82580-based Intel (R) gigabit
-> network
-> -connections.
-> 
-> -For specific information on how to identify your adapter, go to the Adapter
-> &
-> -Driver ID Guide at:
-> +Command Line Parameters
-> +========================
-> +If the driver is built as a module, the following optional parameters are used
-> +by entering them on the command line with the modprobe command using
-> this
-> +syntax::
-> 
-> -    http://support.intel.com/support/go/network/adapter/idguide.htm
-> +    modprobe igb [<option>=<VAL1>,<VAL2>,...]
-> 
-> -Command Line Parameters
-> -=======================
-> +There needs to be a <VAL#> for each network port in the system supported
-> by
-> +this driver. The values will be applied to each instance, in function order.
-> +For example::
-> +
-> +    modprobe igb max_vfs=2,4
-> +
-> +In this case, there are two network ports supported by igb in the system.
-> 
-> -The default value for each parameter is generally the recommended setting,
-> -unless otherwise noted.
-> +NOTE: A descriptor describes a data buffer and attributes related to the
-> data
-> +buffer. This information is accessed by the hardware.
-
-Does this need to be included?  The file does not have any other mention of the word descriptor.
-
-> 
->  max_vfs
->  -------
-> -Valid Range:   0-7
-> -Default Value: 0
-> +:Valid Range: 0-7
-> 
-> -This parameter adds support for SR-IOV.  It causes the driver to spawn up to
-> -max_vfs worth of virtual function.
-> +This parameter adds support for SR-IOV. It causes the driver to spawn up to
-> +max_vfs worth of virtual functions.  If the value is greater than 0 it will
-> +also force the VMDq parameter to be 1 or more.
-> 
-> -Additional Configurations
-> -=========================
-> +The parameters for the driver are referenced by position. Thus, if you have
-> a
-> +dual port adapter, or more than one adapter in your system, and want N
-> virtual
-> +functions per port, you must specify a number for each port with each
-> parameter
-> +separated by a comma. For example::
-> 
-> -  Jumbo Frames
-> -  ------------
-> -  Jumbo Frames support is enabled by changing the MTU to a value larger
-> than
-> -  the default of 1500.  Use the ip command to increase the MTU size.
-> -  For example:
-> +    modprobe igb max_vfs=4
-> 
-> -       ip link set dev eth<x> mtu 9000
-> +This will spawn 4 VFs on the first port.
-> 
-> -  This setting is not saved across reboots.
-> +::
-> 
-> -  Notes:
-> +    modprobe igb max_vfs=2,4
-> 
-> -  - The maximum MTU setting for Jumbo Frames is 9216.  This value coincides
-> -    with the maximum Jumbo Frames size of 9234 bytes.
-> +This will spawn 2 VFs on the first port and 4 VFs on the second port.
-> 
-> -  - Using Jumbo frames at 10 or 100 Mbps is not supported and may result in
-> -    poor performance or loss of link.
-> +NOTE: Caution must be used in loading the driver with these parameters.
-> +Depending on your system configuration, number of slots, etc., it is
-> impossible
-> +to predict in all cases where the positions would be on the command line.
-> 
-> -  ethtool
-> -  -------
-> -  The driver utilizes the ethtool interface for driver configuration and
-> -  diagnostics, as well as displaying statistical information. The latest
-> -  version of ethtool can be found at:
-> +NOTE: Neither the device nor the driver control how VFs are mapped into
-> config
-> +space. Bus layout will vary by operating system. On operating systems that
-> +support it, you can check sysfs to find the mapping.
-> 
-> -  https://www.kernel.org/pub/software/network/ethtool/
-> +NOTE: When either SR-IOV mode or VMDq mode is enabled, hardware
-> VLAN filtering
-> +and VLAN tag stripping/insertion will remain enabled. Please remove the
-> old
-> +VLAN filter before the new VLAN filter is added. For example::
-> 
-> -  Enabling Wake on LAN* (WoL)
-> -  ---------------------------
-> -  WoL is configured through the ethtool* utility.
-> +    ip link set eth0 vf 0 vlan 100	// set vlan 100 for VF 0
-> +    ip link set eth0 vf 0 vlan 0	// Delete vlan 100
-> +    ip link set eth0 vf 0 vlan 200	// set a new vlan 200 for VF 0
-> 
-> -  For instructions on enabling WoL with ethtool, refer to the ethtool man
-> page.
-> +Debug
-> +-----
-> +:Valid Range: 0-16 (0=none,...,16=all)
-> +:Default Value: 0
-> 
-> -  WoL will be enabled on the system during the next shut down or reboot.
-> -  For this driver version, in order to enable WoL, the igb driver must be
-> -  loaded when shutting down or rebooting the system.
-> +This parameter adjusts the level debug messages displayed in the system
-> logs.
-> 
-> -  Wake On LAN is only supported on port A of multi-port adapters.
-> 
-> -  Wake On LAN is not supported for the Intel(R) Gigabit VT Quad Port Server
-> -  Adapter.
-> +Additional Features and Configurations
-> +======================================
-> 
-> -  Multiqueue
-> -  ----------
-> -  In this mode, a separate MSI-X vector is allocated for each queue and one
-> -  for "other" interrupts such as link status change and errors.  All
-> -  interrupts are throttled via interrupt moderation.  Interrupt moderation
-> -  must be used to avoid interrupt storms while the driver is processing one
-> -  interrupt.  The moderation value should be at least as large as the expected
-> -  time for the driver to process an interrupt. Multiqueue is off by default.
-> +Jumbo Frames
-> +------------
-> +Jumbo Frames support is enabled by changing the Maximum Transmission
-> Unit (MTU)
-> +to a value larger than the default value of 1500.
-> 
-> -  REQUIREMENTS: MSI-X support is required for Multiqueue. If MSI-X is not
-> -  found, the system will fallback to MSI or to Legacy interrupts.
-> +Use the ifconfig command to increase the MTU size. For example, enter the
-> +following where <x> is the interface number::
-> 
-> -  MAC and VLAN anti-spoofing feature
-> -  ----------------------------------
-> -  When a malicious driver attempts to send a spoofed packet, it is dropped
-> by
-> -  the hardware and not transmitted.  An interrupt is sent to the PF driver
-> -  notifying it of the spoof attempt.
-> +    ifconfig eth<x> mtu 9000 up
-> 
-> -  When a spoofed packet is detected the PF driver will send the following
-> -  message to the system log (displayed by  the "dmesg" command):
-> +Alternatively, you can use the ip command as follows::
-> 
-> -  Spoof event(s) detected on VF(n)
-> +    ip link set mtu 9000 dev eth<x>
-> +    ip link set up dev eth<x>
-> +
-> +This setting is not saved across reboots. The setting change can be made
-> +permanent by adding 'MTU=9000' to the file:
-> +
-> +- For RHEL: /etc/sysconfig/network-scripts/ifcfg-eth<x>
-> +- For SLES: /etc/sysconfig/network/<config_file>
-> +
-> +NOTE: The maximum MTU setting for Jumbo Frames is 9216. This value
-> coincides
-> +with the maximum Jumbo Frames size of 9234 bytes.
-> +
-> +NOTE: Using Jumbo frames at 10 or 100 Mbps is not supported and may
-> result in
-> +poor performance or loss of link.
-> +
-> +
-> +ethtool
-> +-------
-> +The driver utilizes the ethtool interface for driver configuration and
-> +diagnostics, as well as displaying statistical information. The latest ethtool
-> +version is required for this functionality. Download it at:
-> 
-> -  Where n=the VF that attempted to do the spoofing.
-> +https://www.kernel.org/pub/software/network/ethtool/
-> 
-> -  Setting MAC Address, VLAN and Rate Limit Using IProute2 Tool
-> -  ------------------------------------------------------------
-> -  You can set a MAC address of a Virtual Function (VF), a default VLAN and
-> the
-> -  rate limit using the IProute2 tool. Download the latest version of the
-> -  iproute2 tool from Sourceforge if your version does not have all the
-> -  features you require.
-> +
-> +Enabling Wake on LAN* (WoL)
-> +---------------------------
-> +WoL is configured through the ethtool* utility.
-> +
-> +WoL will be enabled on the system during the next shut down or reboot.
-> For
-> +this driver version, in order to enable WoL, the igb driver must be loaded
-> +prior to shutting down or suspending the system.
-> +
-> +NOTE: Wake on LAN is only supported on port A of multi-port devices.  Also
-> +Wake On LAN is not supported for the following device:
-> +- Intel(R) Gigabit VT Quad Port Server Adapter
-> +
-> +
-> +Multiqueue
-> +----------
-> +In this mode, a separate MSI-X vector is allocated for each queue and one
-> for
-> +"other" interrupts such as link status change and errors. All interrupts are
-> +throttled via interrupt moderation. Interrupt moderation must be used to
-> avoid
-> +interrupt storms while the driver is processing one interrupt. The
-> moderation
-> +value should be at least as large as the expected time for the driver to
-> +process an interrupt. Multiqueue is off by default.
-> +
-> +REQUIREMENTS: MSI-X support is required for Multiqueue. If MSI-X is not
-> found,
-> +the system will fallback to MSI or to Legacy interrupts. This driver supports
-> +receive multiqueue on all kernels that support MSI-X.
-> +
-> +NOTE: On some kernels a reboot is required to switch between single
-> queue mode
-> +and multiqueue mode or vice-versa.
-> +
-> +
-> +MAC and VLAN anti-spoofing feature
-> +----------------------------------
-> +When a malicious driver attempts to send a spoofed packet, it is dropped by
-> the
-> +hardware and not transmitted.
-> +
-> +An interrupt is sent to the PF driver notifying it of the spoof attempt. When
-> a
-> +spoofed packet is detected, the PF driver will send the following message
-> to
-> +the system log (displayed by the "dmesg" command):
-> +Spoof event(s) detected on VF(n), where n = the VF that attempted to do
-> the
-> +spoofing
-> +
-> +
-> +Setting MAC Address, VLAN and Rate Limit Using IProute2 Tool
-> +------------------------------------------------------------
-> +You can set a MAC address of a Virtual Function (VF), a default VLAN and
-> the
-> +rate limit using the IProute2 tool. Download the latest version of the
-> +IProute2 tool from Sourceforge if your version does not have all the
-> features
-> +you require.
-> 
-> 
->  Support
->  =======
-> -
->  For general information, go to the Intel support website at:
-> 
-> -    www.intel.com/support/
-> +https://www.intel.com/support/
-> 
->  or the Intel Wired Networking project hosted by Sourceforge at:
-> 
-> -    http://sourceforge.net/projects/e1000
-> +https://sourceforge.net/projects/e1000
-> 
-> -If an issue is identified with the released source code on the supported
-> -kernel with a supported adapter, email the specific information related
-> -to the issue to e1000-devel at lists.sf.net
-> +If an issue is identified with the released source code on a supported kernel
-> +with a supported adapter, email the specific information related to the
-> issue
-> +to e1000-devel at lists.sf.net.
-> --
-> 2.17.1
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+<snip>
