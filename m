@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 11 Oct 2018 21:45:16 +0000
-Subject: [Intel-wired-lan] [PATCH v2 07/12] Documentation: ixgbevf:
+Date: Thu, 11 Oct 2018 23:50:25 +0000
+Subject: [Intel-wired-lan] [PATCH v2 06/12] Documentation: ixgbe:
  Prepare documentation for RST conversion
-In-Reply-To: <20181010191613.2770-8-jeffrey.t.kirsher@intel.com>
+In-Reply-To: <20181010191613.2770-7-jeffrey.t.kirsher@intel.com>
 References: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
- <20181010191613.2770-8-jeffrey.t.kirsher@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9657A4B7@ORSMSX101.amr.corp.intel.com>
+ <20181010191613.2770-7-jeffrey.t.kirsher@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9657A568@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,7 +16,7 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Wednesday, October 10, 2018 12:16 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 07/12] Documentation: ixgbevf: Prepare
+> Subject: [Intel-wired-lan] [PATCH v2 06/12] Documentation: ixgbe: Prepare
 > documentation for RST conversion
 > 
 > Before making the conversion to the rst (reStructured Text) format, there
@@ -26,8 +26,8 @@ List-ID: <intel-wired-lan.osuosl.org>
 > 
 > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 > ---
->  Documentation/networking/ixgbevf.txt | 62 +++++++++++++++++-----------
->  1 file changed, 38 insertions(+), 24 deletions(-)
+>  Documentation/networking/ixgbe.txt | 654 ++++++++++++++++++-----------
+>  1 file changed, 416 insertions(+), 238 deletions(-)
 > 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
