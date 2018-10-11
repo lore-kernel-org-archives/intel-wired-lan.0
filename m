@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 11 Oct 2018 15:39:38 +0000
-Subject: [Intel-wired-lan] [PATCH v2 02/12] Documentation: ixgb: Prepare
- documentation for RST conversion
-In-Reply-To: <20181010191613.2770-3-jeffrey.t.kirsher@intel.com>
+Date: Thu, 11 Oct 2018 15:39:11 +0000
+Subject: [Intel-wired-lan] [PATCH v2 01/12] Documentation: e100,
+ e1000: Add missing SPDX header
+In-Reply-To: <20181010191613.2770-2-jeffrey.t.kirsher@intel.com>
 References: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
- <20181010191613.2770-3-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D30CD93@FMSMSX152.amr.corp.intel.com>
+ <20181010191613.2770-2-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D30CD87@FMSMSX152.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,18 +17,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Wednesday, October 10, 2018 12:16 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 02/12] Documentation: ixgb: Prepare
-> documentation for RST conversion
+> Subject: [Intel-wired-lan] [PATCH v2 01/12] Documentation: e100, e1000:
+> Add missing SPDX header
 > 
-> Before making the conversion to the rst (reStructured Text) format, there
-> are changes needed to the documentation so that there are no build errors.
-> 
-> Also fixed old/broken URLs to the correct or updated URL.
+> Add the SPDX-Lincense-Identifier to the Intel wired Ethernet *.rst kernel
+> documentation.
 > 
 > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 > ---
->  Documentation/networking/ixgb.txt | 529 ++++++++++++++++--------------
->  1 file changed, 282 insertions(+), 247 deletions(-)
+>  Documentation/networking/e100.rst  | 3 ++-
+> Documentation/networking/e1000.rst | 3 ++-
+>  2 files changed, 4 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
