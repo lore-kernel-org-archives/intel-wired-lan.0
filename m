@@ -1,56 +1,33 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 12 Oct 2018 01:28:44 +0000
-Subject: [Intel-wired-lan] [PATCH v2 12/12] Documentation: intel:
- Convert to RST format
-In-Reply-To: <20181010191613.2770-13-jeffrey.t.kirsher@intel.com>
-References: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
- <20181010191613.2770-13-jeffrey.t.kirsher@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9657A633@ORSMSX101.amr.corp.intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 12 Oct 2018 10:17:09 +0300
+Subject: [Intel-wired-lan] [PATCH] ice: remove an unneeded NULL check
+Message-ID: <20181012071709.GA10212@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Wednesday, October 10, 2018 12:16 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 12/12] Documentation: intel: Convert to
-> RST format
-> 
-> Now that the documents have been updated to conform to the reStructured
-> Text
-> guidelines, we can now change the file extensions and update the other
-> related references.
-> 
-> This converts all of the Intel wired LAN driver documentation to *.rst.
-> 
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> ---
->  Documentation/networking/00-INDEX             | 20 ----------------
->  .../networking/{e1000e.txt => e1000e.rst}     |  0
->  .../networking/{i40e.txt => i40e.rst}         |  0
->  .../networking/{iavf.txt => iavf.rst}         |  0
->  Documentation/networking/{ice.txt => ice.rst} |  0
->  Documentation/networking/{igb.txt => igb.rst} |  0
->  .../networking/{igbvf.txt => igbvf.rst}       |  0
->  Documentation/networking/index.rst            |  9 ++++++++
->  .../networking/{ixgb.txt => ixgb.rst}         |  0
->  .../networking/{ixgbe.txt => ixgbe.rst}       |  0
->  .../networking/{ixgbevf.txt => ixgbevf.rst}   |  0
->  MAINTAINERS                                   | 18 +++++++--------
->  drivers/net/ethernet/intel/Kconfig            | 23 +++++++++++++++----
->  13 files changed, 37 insertions(+), 33 deletions(-)
->  rename Documentation/networking/{e1000e.txt => e1000e.rst} (100%)
->  rename Documentation/networking/{i40e.txt => i40e.rst} (100%)
->  rename Documentation/networking/{iavf.txt => iavf.rst} (100%)
->  rename Documentation/networking/{ice.txt => ice.rst} (100%)
->  rename Documentation/networking/{igb.txt => igb.rst} (100%)
->  rename Documentation/networking/{igbvf.txt => igbvf.rst} (100%)
->  rename Documentation/networking/{ixgb.txt => ixgb.rst} (100%)
->  rename Documentation/networking/{ixgbe.txt => ixgbe.rst} (100%)
->  rename Documentation/networking/{ixgbevf.txt => ixgbevf.rst} (100%)
-> 
+We added a NULL check in commit 072f0c3db9da ("ice: Fix potential null
+pointer issues") but it causes static checker warnings.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+    drivers/net/ethernet/intel/ice/ice_switch.c:2145 ice_add_to_vsi_fltr_list()
+    warn: address of 'fm_entry->fltr_info' is non-NULL
+
+We can just remove it.
+
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 33403f39f1b3..a9ef19da6e61 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -2142,7 +2142,7 @@ ice_add_to_vsi_fltr_list(struct ice_hw *hw, u16 vsi_handle,
+ 		struct ice_fltr_info *fi;
+ 
+ 		fi = &fm_entry->fltr_info;
+-		if (!fi || !ice_vsi_uses_fltr(fm_entry, vsi_handle))
++		if (!ice_vsi_uses_fltr(fm_entry, vsi_handle))
+ 			continue;
+ 
+ 		status = ice_add_entry_to_vsi_fltr_list(hw, vsi_handle,
