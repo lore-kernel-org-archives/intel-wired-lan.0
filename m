@@ -1,33 +1,55 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 12 Oct 2018 10:17:09 +0300
-Subject: [Intel-wired-lan] [PATCH] ice: remove an unneeded NULL check
-Message-ID: <20181012071709.GA10212@mwanda>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Fri, 12 Oct 2018 10:41:02 +0200
+Subject: [Intel-wired-lan] [bug report] ixgbe: added Rx/Tx ring
+ disable/enable functions
+In-Reply-To: <20181011114751.GA21224@mwanda>
+References: <20181011114751.GA21224@mwanda>
+Message-ID: <CAJ+HfNikU3iHCXkDJ86B29oXKSRKV_8gBP4CBT4GkCWZGEBzsA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We added a NULL check in commit 072f0c3db9da ("ice: Fix potential null
-pointer issues") but it causes static checker warnings.
+Den tors 11 okt. 2018 kl 13:48 skrev Dan Carpenter <dan.carpenter@oracle.com>:
+>
+> Hello Bj?rn T?pel,
+>
+> This is a semi-automatic email about new static checker warnings.
+>
+> The patch 024aa5800f32: "ixgbe: added Rx/Tx ring disable/enable
+> functions" from Oct 2, 2018, leads to the following Smatch complaint:
+>
+>     drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:10520 ixgbe_txrx_ring_enable()
+>     error: we previously assumed 'xdp_ring' could be null (see line 10515)
+>
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>  10514          ixgbe_configure_tx_ring(adapter, tx_ring);
+>  10515          if (xdp_ring)
+>                     ^^^^^^^^
+> The patch adds a check for NULL.
+>
+>  10516                  ixgbe_configure_tx_ring(adapter, xdp_ring);
+>  10517          ixgbe_configure_rx_ring(adapter, rx_ring);
+>  10518
+>  10519          clear_bit(__IXGBE_TX_DISABLED, &tx_ring->state);
+>  10520          clear_bit(__IXGBE_TX_DISABLED, &xdp_ring->state);
+>                                                 ^^^^^^^^^^^^^^^
+> but it also adds an unchecked dereference.
+>
+>  10521  }
+>  10522
+>
+> regards,
+> dan carpenter
 
-    drivers/net/ethernet/intel/ice/ice_switch.c:2145 ice_add_to_vsi_fltr_list()
-    warn: address of 'fm_entry->fltr_info' is non-NULL
+Thank you. I'll have a look and get back with a patch.
 
-We can just remove it.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Bj?rn
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 33403f39f1b3..a9ef19da6e61 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -2142,7 +2142,7 @@ ice_add_to_vsi_fltr_list(struct ice_hw *hw, u16 vsi_handle,
- 		struct ice_fltr_info *fi;
- 
- 		fi = &fm_entry->fltr_info;
--		if (!fi || !ice_vsi_uses_fltr(fm_entry, vsi_handle))
-+		if (!ice_vsi_uses_fltr(fm_entry, vsi_handle))
- 			continue;
- 
- 		status = ice_add_entry_to_vsi_fltr_list(hw, vsi_handle,
+
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
