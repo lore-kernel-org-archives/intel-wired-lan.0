@@ -1,55 +1,55 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 12 Oct 2018 10:41:02 +0200
-Subject: [Intel-wired-lan] [bug report] ixgbe: added Rx/Tx ring
- disable/enable functions
-In-Reply-To: <20181011114751.GA21224@mwanda>
-References: <20181011114751.GA21224@mwanda>
-Message-ID: <CAJ+HfNikU3iHCXkDJ86B29oXKSRKV_8gBP4CBT4GkCWZGEBzsA@mail.gmail.com>
+From: Miroslav Lichvar <mlichvar@redhat.com>
+Date: Fri, 12 Oct 2018 13:13:39 +0200
+Subject: [Intel-wired-lan] [PATCH] igb: shorten maximum PHC timecounter
+ update interval
+Message-ID: <20181012111339.1361-1-mlichvar@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Den tors 11 okt. 2018 kl 13:48 skrev Dan Carpenter <dan.carpenter@oracle.com>:
->
-> Hello Bj?rn T?pel,
->
-> This is a semi-automatic email about new static checker warnings.
->
-> The patch 024aa5800f32: "ixgbe: added Rx/Tx ring disable/enable
-> functions" from Oct 2, 2018, leads to the following Smatch complaint:
->
->     drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:10520 ixgbe_txrx_ring_enable()
->     error: we previously assumed 'xdp_ring' could be null (see line 10515)
->
-> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->  10514          ixgbe_configure_tx_ring(adapter, tx_ring);
->  10515          if (xdp_ring)
->                     ^^^^^^^^
-> The patch adds a check for NULL.
->
->  10516                  ixgbe_configure_tx_ring(adapter, xdp_ring);
->  10517          ixgbe_configure_rx_ring(adapter, rx_ring);
->  10518
->  10519          clear_bit(__IXGBE_TX_DISABLED, &tx_ring->state);
->  10520          clear_bit(__IXGBE_TX_DISABLED, &xdp_ring->state);
->                                                 ^^^^^^^^^^^^^^^
-> but it also adds an unchecked dereference.
->
->  10521  }
->  10522
->
-> regards,
-> dan carpenter
+The timecounter needs to be updated at least once per ~550 seconds in
+order to avoid a 40-bit SYSTIM timestamp to be misinterpreted as an old
+timestamp.
 
-Thank you. I'll have a look and get back with a patch.
+Since commit 500462a9d ("timers: Switch to a non-cascading wheel"),
+scheduling of delayed work seems to be less accurate and a requested
+delay of 540 seconds may actually be longer than 550 seconds. Shorten
+the delay to 480 seconds to be sure the timecounter is updated in time.
 
+This fixes an issue with HW timestamps on 82580/I350/I354 being off by
+~1100 seconds for few seconds every ~9 minutes.
 
-Bj?rn
+Cc: Jacob Keller <jacob.e.keller@intel.com>
+Cc: Richard Cochran <richardcochran@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
+---
+ drivers/net/ethernet/intel/igb/igb_ptp.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
+index 9f4d700e09df..29ced6b74d36 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ptp.c
++++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+@@ -51,9 +51,15 @@
+  *
+  * The 40 bit 82580 SYSTIM overflows every
+  *   2^40 * 10^-9 /  60  = 18.3 minutes.
++ *
++ * SYSTIM is converted to real time using a timecounter. As
++ * timecounter_cyc2time() allows old timestamps, the timecounter
++ * needs to be updated at least once per half of the SYSTIM interval.
++ * Scheduling of delayed work is not very accurate, so we aim for 8
++ * minutes to be sure the actual interval is shorter than 9.16 minutes.
+  */
+ 
+-#define IGB_SYSTIM_OVERFLOW_PERIOD	(HZ * 60 * 9)
++#define IGB_SYSTIM_OVERFLOW_PERIOD	(HZ * 60 * 8)
+ #define IGB_PTP_TX_TIMEOUT		(HZ * 15)
+ #define INCPERIOD_82576			BIT(E1000_TIMINCA_16NS_SHIFT)
+ #define INCVALUE_82576_MASK		GENMASK(E1000_TIMINCA_16NS_SHIFT - 1, 0)
+-- 
+2.17.1
 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
