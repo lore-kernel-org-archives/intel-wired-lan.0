@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 12 Oct 2018 01:29:30 +0000
-Subject: [Intel-wired-lan] [PATCH v2 10/12] Documentation: ice: Prepare
- documentation for RST conversion
-In-Reply-To: <20181010191613.2770-11-jeffrey.t.kirsher@intel.com>
+Date: Fri, 12 Oct 2018 01:28:44 +0000
+Subject: [Intel-wired-lan] [PATCH v2 12/12] Documentation: intel:
+ Convert to RST format
+In-Reply-To: <20181010191613.2770-13-jeffrey.t.kirsher@intel.com>
 References: <20181010191613.2770-1-jeffrey.t.kirsher@intel.com>
- <20181010191613.2770-11-jeffrey.t.kirsher@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9657A641@ORSMSX101.amr.corp.intel.com>
+ <20181010191613.2770-13-jeffrey.t.kirsher@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9657A633@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,18 +16,41 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Wednesday, October 10, 2018 12:16 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 10/12] Documentation: ice: Prepare
-> documentation for RST conversion
+> Subject: [Intel-wired-lan] [PATCH v2 12/12] Documentation: intel: Convert to
+> RST format
 > 
-> Before making the conversion to the rst (reStructured Text) format, there
-> are changes needed to the documentation so that there are no build errors.
+> Now that the documents have been updated to conform to the reStructured
+> Text
+> guidelines, we can now change the file extensions and update the other
+> related references.
 > 
-> Also fixed old/broken URLs to the correct or updated URL.
+> This converts all of the Intel wired LAN driver documentation to *.rst.
 > 
 > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 > ---
->  Documentation/networking/ice.txt | 34 +++++++++++++++++++-------------
->  1 file changed, 20 insertions(+), 14 deletions(-)
+>  Documentation/networking/00-INDEX             | 20 ----------------
+>  .../networking/{e1000e.txt => e1000e.rst}     |  0
+>  .../networking/{i40e.txt => i40e.rst}         |  0
+>  .../networking/{iavf.txt => iavf.rst}         |  0
+>  Documentation/networking/{ice.txt => ice.rst} |  0
+>  Documentation/networking/{igb.txt => igb.rst} |  0
+>  .../networking/{igbvf.txt => igbvf.rst}       |  0
+>  Documentation/networking/index.rst            |  9 ++++++++
+>  .../networking/{ixgb.txt => ixgb.rst}         |  0
+>  .../networking/{ixgbe.txt => ixgbe.rst}       |  0
+>  .../networking/{ixgbevf.txt => ixgbevf.rst}   |  0
+>  MAINTAINERS                                   | 18 +++++++--------
+>  drivers/net/ethernet/intel/Kconfig            | 23 +++++++++++++++----
+>  13 files changed, 37 insertions(+), 33 deletions(-)
+>  rename Documentation/networking/{e1000e.txt => e1000e.rst} (100%)
+>  rename Documentation/networking/{i40e.txt => i40e.rst} (100%)
+>  rename Documentation/networking/{iavf.txt => iavf.rst} (100%)
+>  rename Documentation/networking/{ice.txt => ice.rst} (100%)
+>  rename Documentation/networking/{igb.txt => igb.rst} (100%)
+>  rename Documentation/networking/{igbvf.txt => igbvf.rst} (100%)
+>  rename Documentation/networking/{ixgb.txt => ixgb.rst} (100%)
+>  rename Documentation/networking/{ixgbe.txt => ixgbe.rst} (100%)
+>  rename Documentation/networking/{ixgbevf.txt => ixgbevf.rst} (100%)
 > 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
