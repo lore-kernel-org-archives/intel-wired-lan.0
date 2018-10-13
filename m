@@ -1,9 +1,9 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 13 Oct 2018 02:03:20 +0000
-Subject: [Intel-wired-lan] [PATCH v8 09/11] igc: Add code for PHY support
-In-Reply-To: <20181011071731.1952-1-sasha.neftin@intel.com>
-References: <20181011071731.1952-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9657AD24@ORSMSX101.amr.corp.intel.com>
+Date: Sat, 13 Oct 2018 02:03:52 +0000
+Subject: [Intel-wired-lan] [PATCH v8 08/11] igc: Add NVM support
+In-Reply-To: <20181011071728.1908-1-sasha.neftin@intel.com>
+References: <20181011071728.1908-1-sasha.neftin@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9657AD39@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,72 +12,67 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
 > Of Sasha Neftin
-> Sent: Thursday, October 11, 2018 12:18 AM
+> Sent: Thursday, October 11, 2018 12:17 AM
 > To: Neftin, Sasha <sasha.neftin@intel.com>; intel-wired-lan at lists.osuosl.org
 > Cc: Duyck, Alexander H <alexander.h.duyck@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v8 09/11] igc: Add code for PHY support
+> Subject: [Intel-wired-lan] [PATCH v8 08/11] igc: Add NVM support
 > 
-> Add PHY's ID support
-> Add support for initialization, acquire and release of phy
-> Enable register access
+> Add code for NVM support and get MAC address, complete probe
+> method.
 > 
 > Sasha Neftin (v2):
 > minor cosmetic changes
 > 
-> Alexander Duyck (v3.5):
-> Made non-gpy versions of phy functions static
-> Move xmdio functions to avoid need for prototype function
-> Move reset, read_reg, and write_reg ops into e1000_phy_ops_base
-> Drop code implying more than one function
-> Fix merge conflict with v3.5 of NVM code.
-> 
-> Sasha Neftin (v3):
-> Introduce temporary workaround for PHY power down.
+> Alexander Duyck (v3):
+> NVM access code optimization
 > 
 > Sasha Neftin (v4):
-> address comments
-> remove space
-> fix minor grammar typo
+> fix xmas tree layout
+> remove no need spaces
+> rework igc_read_nvm_srrd/srwr and igc_validate_nvm_checksum_i225
+> fix few methods as suggested by Shannon Nelson's approach
+> remove obsolete comments
 > replace e1000_ prefix with igc_ prefix
+> remove unused NVM control definitions
+> remove unused NVM Word offsets
+> remove unused SW FW SYNC definition
+> fix duplication of mask definition
 > 
 > Sasha Neftin (v5):
-> update IGC_GEN_POLL_TIMEOUT value to 1920
-> fix code indentation
+> no changes
 > 
 > Sasha Neftin (v6):
-> remove double defines from igc_defines.h
-> remove unused defines from igc_defines.h
-> remove unused code from igc_phy.c
-> fix enum igc_bus_type definition
 > minor cosmetic changes
+> remove duplication of defines
 > 
 > Sasha Neftin (v7):
-> no changes
+> fix kbuild test robot warning
+> remove unneeded ret_val from igc_init_nvm_params_i225 method
 > 
 > Sasha Neftin (v8):
 > fix whitespaces in comments
-> remove unneeded blank lines
 > remove unneeded forward declarations
 > 
 > Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
 >  drivers/net/ethernet/intel/igc/Makefile      |   2 +-
->  drivers/net/ethernet/intel/igc/igc.h         |  16 +
->  drivers/net/ethernet/intel/igc/igc_base.c    | 122 +++++++
->  drivers/net/ethernet/intel/igc/igc_base.h    |   1 +
->  drivers/net/ethernet/intel/igc/igc_defines.h |  79 +++++
->  drivers/net/ethernet/intel/igc/igc_hw.h      |  54 ++++
->  drivers/net/ethernet/intel/igc/igc_mac.c     |  45 +++
->  drivers/net/ethernet/intel/igc/igc_mac.h     |  11 +
->  drivers/net/ethernet/intel/igc/igc_main.c    |  11 +
->  drivers/net/ethernet/intel/igc/igc_phy.c     | 457
+>  drivers/net/ethernet/intel/igc/igc.h         |   6 +
+>  drivers/net/ethernet/intel/igc/igc_base.c    | 109 +++++++++
+>  drivers/net/ethernet/intel/igc/igc_defines.h |  52 ++++
+>  drivers/net/ethernet/intel/igc/igc_hw.h      |   3 +
+>  drivers/net/ethernet/intel/igc/igc_i225.c    | 349
 > +++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/igc/igc_phy.h     |  20 ++
+>  drivers/net/ethernet/intel/igc/igc_i225.h    |   3 +
+>  drivers/net/ethernet/intel/igc/igc_mac.c     | 170 +++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_mac.h     |   6 +
+>  drivers/net/ethernet/intel/igc/igc_main.c    |  20 +-
+>  drivers/net/ethernet/intel/igc/igc_nvm.c     | 215 +++++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_nvm.h     |  14 ++
 >  drivers/net/ethernet/intel/igc/igc_regs.h    |   3 +
->  12 files changed, 820 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/net/ethernet/intel/igc/igc_phy.c
->  create mode 100644 drivers/net/ethernet/intel/igc/igc_phy.h
+>  13 files changed, 949 insertions(+), 3 deletions(-)
+>  create mode 100644 drivers/net/ethernet/intel/igc/igc_nvm.c
+>  create mode 100644 drivers/net/ethernet/intel/igc/igc_nvm.h
 > 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
