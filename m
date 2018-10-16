@@ -1,162 +1,249 @@
-From: Shannon Nelson <shannon.nelson@oracle.com>
-Date: Tue, 16 Oct 2018 09:35:44 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: fix XFRM_ALGO
- dependency
-In-Reply-To: <20181016100848.1329843-1-arnd@arndb.de>
-References: <20181016100848.1329843-1-arnd@arndb.de>
-Message-ID: <07e372cb-06da-bf95-bc53-64ee09fc8e76@oracle.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 17 Oct 2018 05:07:00 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 9465130a99368b1ef6ac0ee909b9ba7c243862b4
+Message-ID: <5bc652f4.Qp0izC0+g094KnPg%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/16/2018 3:03 AM, Arnd Bergmann wrote:
-> When XFRM_ALGO is not enabled, the new igxge ipsec code produces a
-> link error:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 9465130a99368b1ef6ac0ee909b9ba7c243862b4  fm10k: bump driver version to match out-of-tree release
 
-s/igxge/ixgbe/
+elapsed time: 337m
 
-> 
-> drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.o: In function `ixgbe_ipsec_vf_add_sa':
-> ixgbe_ipsec.c:(.text+0x1266): undefined reference to `xfrm_aead_get_byname'
-> 
-> Simply selectin XFRM_ALGO from here causes circular dependencies, so
+configs tested: 225
 
-s/selectin/selecting/
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> to fix it, we probably want this slightly more complex solution that is
-> similar to what other drivers with XFRM offload do:
-> 
-> A separate Kconfig symbol now controls whether we include the ipsec
-> offload code. To keep the old behavior, this is left as 'default y'. The
-> dependency in XFRM_OFFLOAD still causes a circular dependency but is
-> not actually needed because this symbol is not user visible, so removing
-> that dependency on top makes it all work.
-> 
-> Fixes: eda0333ac293 ("ixgbe: add VF IPsec management")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->   drivers/net/ethernet/intel/Kconfig            | 10 ++++++++++
->   drivers/net/ethernet/intel/ixgbe/Makefile     |  2 +-
->   drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  8 ++++----
->   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  6 +++---
->   net/xfrm/Kconfig                              |  1 -
->   5 files changed, 18 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-> index b542aba6f0e8..d1db382d8299 100644
-> --- a/drivers/net/ethernet/intel/Kconfig
-> +++ b/drivers/net/ethernet/intel/Kconfig
-> @@ -194,6 +194,16 @@ config IXGBE_DCB
->   
->   	  If unsure, say N.
->   
-> +config IXGBE_IPSEC
-> +	bool "IPSec XFRM cryptography-offload accelaration"
-> +	default n
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+mips                          malta_defconfig
+sparc                             allnoconfig
+x86_64                 randconfig-a0-10162116
+mips                           ip27_defconfig
+mips                        nlm_xlp_defconfig
+i386                   randconfig-c0-10162352
+powerpc                      bamboo_defconfig
+xtensa                           allmodconfig
+i386                   randconfig-x019-201841
+i386                   randconfig-x016-201841
+i386                   randconfig-x018-201841
+i386                   randconfig-x014-201841
+i386                   randconfig-x015-201841
+i386                   randconfig-x011-201841
+i386                   randconfig-x012-201841
+i386                   randconfig-x017-201841
+i386                   randconfig-x010-201841
+i386                   randconfig-x013-201841
+x86_64                              fedora-25
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201841
+i386                     randconfig-n1-201841
+i386                     randconfig-n2-201841
+i386                     randconfig-n3-201841
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201841
+i386                     randconfig-i1-201841
+i386                     randconfig-i2-201841
+i386                     randconfig-i3-201841
+sh                   rts7751r2dplus_defconfig
+xtensa                generic_kc705_defconfig
+powerpc               corenet_basic_defconfig
+powerpc                  mpc866_ads_defconfig
+x86_64                 randconfig-g0-10162351
+x86_64                 randconfig-g0-10170337
+x86_64                 randconfig-x017-201841
+x86_64                 randconfig-x013-201841
+x86_64                 randconfig-x016-201841
+x86_64                 randconfig-x011-201841
+x86_64                 randconfig-x012-201841
+x86_64                 randconfig-x018-201841
+x86_64                 randconfig-x019-201841
+x86_64                 randconfig-x014-201841
+x86_64                 randconfig-x010-201841
+x86_64                 randconfig-x015-201841
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-s0-10162353
+x86_64                 randconfig-s1-10162353
+x86_64                 randconfig-s2-10162353
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+sh                     sh7710voipgw_defconfig
+sh                             shx3_defconfig
+sparc64                          allmodconfig
+mips                        bcm63xx_defconfig
+mips                         cobalt_defconfig
+powerpc                 xes_mpc85xx_defconfig
+sh                           se7343_defconfig
+c6x                        evmc6474_defconfig
+h8300                       h8s-sim_defconfig
+openrisc                            defconfig
+sh                               allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201841
+i386                     randconfig-s1-201841
+i386                     randconfig-s3-201841
+i386                     randconfig-s2-201841
+x86_64                 randconfig-s3-10162235
+x86_64                 randconfig-s4-10162235
+x86_64                 randconfig-s5-10162235
+x86_64                 randconfig-s3-10170020
+x86_64                 randconfig-s4-10170020
+x86_64                 randconfig-s5-10170020
+mips                 pnx8335_stb225_defconfig
+powerpc                mpc7448_hpc2_defconfig
+sh                      rts7751r2d1_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201841
+x86_64                   randconfig-i1-201841
+x86_64                   randconfig-i2-201841
+x86_64                   randconfig-i3-201841
+i386                   randconfig-b0-10162143
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                     pseries_defconfig
+sh                           se7750_defconfig
+arm                           h5000_defconfig
+arm                       mainstone_defconfig
+xtensa                           allyesconfig
+x86_64                 randconfig-b0-10162201
+x86_64                 randconfig-b0-10170349
+mips                        workpad_defconfig
+powerpc                     tqm8548_defconfig
+arm                          simpad_defconfig
+powerpc                 mpc834x_itx_defconfig
+x86_64                 randconfig-u0-10162358
+x86_64                 randconfig-u0-10170028
+arm                        realview_defconfig
+arm                             rpc_defconfig
+arm                          tango4_defconfig
+i386                   randconfig-h0-10162141
+i386                   randconfig-h1-10162141
+powerpc                      cm5200_defconfig
+sh                               alldefconfig
+arm                        magician_defconfig
+arm                           sama5_defconfig
+x86_64                randconfig-ne0-10162345
+x86_64                randconfig-ne0-10170031
+ia64                             allmodconfig
+mips                         mpc30x_defconfig
+powerpc64                           defconfig
+powerpc                     akebono_defconfig
+powerpc                 linkstation_defconfig
+x86_64                 randconfig-h0-10162219
+x86_64                 randconfig-h0-10170040
+i386                               tinyconfig
+i386                   randconfig-x077-201841
+i386                   randconfig-x073-201841
+i386                   randconfig-x070-201841
+i386                   randconfig-x075-201841
+i386                   randconfig-x072-201841
+i386                   randconfig-x071-201841
+i386                   randconfig-x074-201841
+i386                   randconfig-x078-201841
+i386                   randconfig-x079-201841
+i386                   randconfig-x076-201841
+arm                         assabet_defconfig
+arm                          iop33x_defconfig
+m68k                          hp300_defconfig
+powerpc                     mpc5200_defconfig
+x86_64                   randconfig-g0-201841
+x86_64                   randconfig-g1-201841
+x86_64                   randconfig-g2-201841
+x86_64                   randconfig-g3-201841
+i386                  randconfig-sb0-10162151
+i386                  randconfig-sb0-10170034
+i386                   randconfig-x002-201841
+i386                   randconfig-x006-201841
+i386                   randconfig-x005-201841
+i386                   randconfig-x000-201841
+i386                   randconfig-x007-201841
+i386                   randconfig-x004-201841
+i386                   randconfig-x001-201841
+i386                   randconfig-x009-201841
+i386                   randconfig-x008-201841
+i386                   randconfig-x003-201841
+x86_64                 randconfig-x000-201841
+x86_64                 randconfig-x005-201841
+x86_64                 randconfig-x002-201841
+x86_64                 randconfig-x001-201841
+x86_64                 randconfig-x008-201841
+x86_64                 randconfig-x007-201841
+x86_64                 randconfig-x009-201841
+x86_64                 randconfig-x003-201841
+x86_64                 randconfig-x006-201841
+x86_64                 randconfig-x004-201841
+x86_64                   randconfig-e0-201841
+x86_64                   randconfig-e1-201841
+x86_64                   randconfig-e2-201841
+x86_64                   randconfig-e3-201841
+arm                       cns3420vb_defconfig
+openrisc                         allyesconfig
+arm                         vf610m4_defconfig
+powerpc               mpc86xx_basic_defconfig
+x86_64                randconfig-ws0-10170004
+microblaze                          defconfig
+x86_64                randconfig-ws0-10162145
+m68k                       m5249evb_defconfig
+sh                             sh03_defconfig
+x86_64                 randconfig-r0-10162314
+i386                             allmodconfig
+powerpc                  storcenter_defconfig
+i386                   randconfig-x0-10162350
 
-remove this "default n" line?
-
-> +	depends on IXGBE
-> +	depends on XFRM_OFFLOAD
-> +	default y
-> +	select XFRM_ALGO
-> +	---help---
-> +	  Enable support for IPSec offload in ixgbe.ko
-> +
->   config IXGBEVF
->   	tristate "Intel(R) 10GbE PCI Express Virtual Function Ethernet support"
->   	depends on PCI_MSI
-> diff --git a/drivers/net/ethernet/intel/ixgbe/Makefile b/drivers/net/ethernet/intel/ixgbe/Makefile
-> index ca6b0c458e4a..4fb0d9e3f2da 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/Makefile
-> +++ b/drivers/net/ethernet/intel/ixgbe/Makefile
-> @@ -17,4 +17,4 @@ ixgbe-$(CONFIG_IXGBE_DCB) +=  ixgbe_dcb.o ixgbe_dcb_82598.o \
->   ixgbe-$(CONFIG_IXGBE_HWMON) += ixgbe_sysfs.o
->   ixgbe-$(CONFIG_DEBUG_FS) += ixgbe_debugfs.o
->   ixgbe-$(CONFIG_FCOE:m=y) += ixgbe_fcoe.o
-> -ixgbe-$(CONFIG_XFRM_OFFLOAD) += ixgbe_ipsec.o
-> +ixgbe-$(CONFIG_IXGBE_IPSEC) += ixgbe_ipsec.o
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> index 7a7679e7be84..1d5d66436eac 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> @@ -770,9 +770,9 @@ struct ixgbe_adapter {
->   #define IXGBE_RSS_KEY_SIZE     40  /* size of RSS Hash Key in bytes */
->   	u32 *rss_key;
->   
-> -#ifdef CONFIG_XFRM_OFFLOAD
-> +#ifdef CONFIG_IXGBE_IPSEC
->   	struct ixgbe_ipsec *ipsec;
-> -#endif /* CONFIG_XFRM_OFFLOAD */
-> +#endif /* CONFIG_IXGBE_IPSEC */
-
-You'll probably want to apply these changes to the ixgbevf code as well.
-
-Cheers,
-sln
-
->   
->   	/* AF_XDP zero-copy */
->   	struct xdp_umem **xsk_umems;
-> @@ -1009,7 +1009,7 @@ void ixgbe_store_key(struct ixgbe_adapter *adapter);
->   void ixgbe_store_reta(struct ixgbe_adapter *adapter);
->   s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32 adv_reg, u32 lp_reg,
->   		       u32 adv_sym, u32 adv_asm, u32 lp_sym, u32 lp_asm);
-> -#ifdef CONFIG_XFRM_OFFLOAD
-> +#ifdef CONFIG_IXGBE_IPSEC
->   void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter);
->   void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter);
->   void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter);
-> @@ -1037,5 +1037,5 @@ static inline int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter,
->   					u32 *mbuf, u32 vf) { return -EACCES; }
->   static inline int ixgbe_ipsec_vf_del_sa(struct ixgbe_adapter *adapter,
->   					u32 *mbuf, u32 vf) { return -EACCES; }
-> -#endif /* CONFIG_XFRM_OFFLOAD */
-> +#endif /* CONFIG_IXGBE_IPSEC */
->   #endif /* _IXGBE_H_ */
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 0049a2becd7e..113b38e0defb 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -8694,7 +8694,7 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
->   
->   #endif /* IXGBE_FCOE */
->   
-> -#ifdef CONFIG_XFRM_OFFLOAD
-> +#ifdef CONFIG_IXGBE_IPSEC
->   	if (skb->sp && !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
->   		goto out_drop;
->   #endif
-> @@ -10190,7 +10190,7 @@ ixgbe_features_check(struct sk_buff *skb, struct net_device *dev,
->   	 * the TSO, so it's the exception.
->   	 */
->   	if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID)) {
-> -#ifdef CONFIG_XFRM_OFFLOAD
-> +#ifdef CONFIG_IXGBE_IPSEC
->   		if (!skb->sp)
->   #endif
->   			features &= ~NETIF_F_TSO;
-> @@ -10883,7 +10883,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->   	if (hw->mac.type >= ixgbe_mac_82599EB)
->   		netdev->features |= NETIF_F_SCTP_CRC;
->   
-> -#ifdef CONFIG_XFRM_OFFLOAD
-> +#ifdef CONFIG_IXGBE_IPSEC
->   #define IXGBE_ESP_FEATURES	(NETIF_F_HW_ESP | \
->   				 NETIF_F_HW_ESP_TX_CSUM | \
->   				 NETIF_F_GSO_ESP)
-> diff --git a/net/xfrm/Kconfig b/net/xfrm/Kconfig
-> index 4a9ee2d83158..140270a13d54 100644
-> --- a/net/xfrm/Kconfig
-> +++ b/net/xfrm/Kconfig
-> @@ -8,7 +8,6 @@ config XFRM
->   
->   config XFRM_OFFLOAD
->          bool
-> -       depends on XFRM
->   
->   config XFRM_ALGO
->   	tristate
-> 
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
