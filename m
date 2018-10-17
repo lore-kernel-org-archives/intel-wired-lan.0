@@ -1,201 +1,38 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 17 Oct 2018 08:56:35 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: fix XFRM_ALGO
- dependency
-In-Reply-To: <07e372cb-06da-bf95-bc53-64ee09fc8e76@oracle.com>
-References: <20181016100848.1329843-1-arnd@arndb.de>
- <07e372cb-06da-bf95-bc53-64ee09fc8e76@oracle.com>
-Message-ID: <3f8e7a6e9532abcd772927432d5f00cebeba08b8.camel@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 17 Oct 2018 16:03:33 +0000
+Subject: [Intel-wired-lan] [PATCH v3 08/12] Documentation: i40e: Prepare
+ documentation for RST conversion
+In-Reply-To: <20181017152153.4662-1-jeffrey.t.kirsher@intel.com>
+References: <20181017152153.4662-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D30E46A@FMSMSX152.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2018-10-16 at 09:35 -0700, Shannon Nelson wrote:
-> On 10/16/2018 3:03 AM, Arnd Bergmann wrote:
-> > When XFRM_ALGO is not enabled, the new igxge ipsec code produces a
-> > link error:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Wednesday, October 17, 2018 8:22 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v3 08/12] Documentation: i40e: Prepare
+> documentation for RST conversion
 > 
-> s/igxge/ixgbe/
+> Before making the conversion to the RST (reStructured Text) format, there
+> are changes needed to the documentation so that there are no build errors.
 > 
-> > 
-> > drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.o: In function
-> > `ixgbe_ipsec_vf_add_sa':
-> > ixgbe_ipsec.c:(.text+0x1266): undefined reference to
-> > `xfrm_aead_get_byname'
-> > 
-> > Simply selectin XFRM_ALGO from here causes circular dependencies,
-> > so
+> Also fixed old/broken URLs to the correct or updated URL.
 > 
-> s/selectin/selecting/
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> ---
+> v3: removed documentation that did not apply to the in-kernel driver,
+>     which was found by Shannon Nelson
 > 
-> > to fix it, we probably want this slightly more complex solution
-> > that is
-> > similar to what other drivers with XFRM offload do:
-> > 
-> > A separate Kconfig symbol now controls whether we include the ipsec
-> > offload code. To keep the old behavior, this is left as 'default
-> > y'. The
-> > dependency in XFRM_OFFLOAD still causes a circular dependency but
-> > is
-> > not actually needed because this symbol is not user visible, so
-> > removing
-> > that dependency on top makes it all work.
-> > 
-> > Fixes: eda0333ac293 ("ixgbe: add VF IPsec management")
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>  Documentation/networking/i40e.txt | 826 +++++++++++++++++++++++++-
+> ----
+>  1 file changed, 703 insertions(+), 123 deletions(-)
 
-I agree with Shannon's suggested changes.  Arnd, are you working on v2?
-Or would you like me to take care of it?
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-> > ---
-> >   drivers/net/ethernet/intel/Kconfig            | 10 ++++++++++
-> >   drivers/net/ethernet/intel/ixgbe/Makefile     |  2 +-
-> >   drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  8 ++++----
-> >   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  6 +++---
-> >   net/xfrm/Kconfig                              |  1 -
-> >   5 files changed, 18 insertions(+), 9 deletions(-)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/Kconfig
-> > b/drivers/net/ethernet/intel/Kconfig
-> > index b542aba6f0e8..d1db382d8299 100644
-> > --- a/drivers/net/ethernet/intel/Kconfig
-> > +++ b/drivers/net/ethernet/intel/Kconfig
-> > @@ -194,6 +194,16 @@ config IXGBE_DCB
-> >   
-> >   	  If unsure, say N.
-> >   
-> > +config IXGBE_IPSEC
-> > +	bool "IPSec XFRM cryptography-offload accelaration"
-> > +	default n
-> 
-> remove this "default n" line?
-> 
-> > +	depends on IXGBE
-> > +	depends on XFRM_OFFLOAD
-> > +	default y
-> > +	select XFRM_ALGO
-> > +	---help---
-> > +	  Enable support for IPSec offload in ixgbe.ko
-> > +
-> >   config IXGBEVF
-> >   	tristate "Intel(R) 10GbE PCI Express Virtual Function Ethernet
-> > support"
-> >   	depends on PCI_MSI
-> > diff --git a/drivers/net/ethernet/intel/ixgbe/Makefile
-> > b/drivers/net/ethernet/intel/ixgbe/Makefile
-> > index ca6b0c458e4a..4fb0d9e3f2da 100644
-> > --- a/drivers/net/ethernet/intel/ixgbe/Makefile
-> > +++ b/drivers/net/ethernet/intel/ixgbe/Makefile
-> > @@ -17,4 +17,4 @@ ixgbe-$(CONFIG_IXGBE_DCB) +=  ixgbe_dcb.o
-> > ixgbe_dcb_82598.o \
-> >   ixgbe-$(CONFIG_IXGBE_HWMON) += ixgbe_sysfs.o
-> >   ixgbe-$(CONFIG_DEBUG_FS) += ixgbe_debugfs.o
-> >   ixgbe-$(CONFIG_FCOE:m=y) += ixgbe_fcoe.o
-> > -ixgbe-$(CONFIG_XFRM_OFFLOAD) += ixgbe_ipsec.o
-> > +ixgbe-$(CONFIG_IXGBE_IPSEC) += ixgbe_ipsec.o
-> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> > b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> > index 7a7679e7be84..1d5d66436eac 100644
-> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> > @@ -770,9 +770,9 @@ struct ixgbe_adapter {
-> >   #define IXGBE_RSS_KEY_SIZE     40  /* size of RSS Hash Key in
-> > bytes */
-> >   	u32 *rss_key;
-> >   
-> > -#ifdef CONFIG_XFRM_OFFLOAD
-> > +#ifdef CONFIG_IXGBE_IPSEC
-> >   	struct ixgbe_ipsec *ipsec;
-> > -#endif /* CONFIG_XFRM_OFFLOAD */
-> > +#endif /* CONFIG_IXGBE_IPSEC */
-> 
-> You'll probably want to apply these changes to the ixgbevf code as
-> well.
-> 
-> Cheers,
-> sln
-> 
-> >   
-> >   	/* AF_XDP zero-copy */
-> >   	struct xdp_umem **xsk_umems;
-> > @@ -1009,7 +1009,7 @@ void ixgbe_store_key(struct ixgbe_adapter
-> > *adapter);
-> >   void ixgbe_store_reta(struct ixgbe_adapter *adapter);
-> >   s32 ixgbe_negotiate_fc(struct ixgbe_hw *hw, u32 adv_reg, u32
-> > lp_reg,
-> >   		       u32 adv_sym, u32 adv_asm, u32 lp_sym, u32
-> > lp_asm);
-> > -#ifdef CONFIG_XFRM_OFFLOAD
-> > +#ifdef CONFIG_IXGBE_IPSEC
-> >   void ixgbe_init_ipsec_offload(struct ixgbe_adapter *adapter);
-> >   void ixgbe_stop_ipsec_offload(struct ixgbe_adapter *adapter);
-> >   void ixgbe_ipsec_restore(struct ixgbe_adapter *adapter);
-> > @@ -1037,5 +1037,5 @@ static inline int
-> > ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter,
-> >   					u32 *mbuf, u32 vf) { return
-> > -EACCES; }
-> >   static inline int ixgbe_ipsec_vf_del_sa(struct ixgbe_adapter
-> > *adapter,
-> >   					u32 *mbuf, u32 vf) { return
-> > -EACCES; }
-> > -#endif /* CONFIG_XFRM_OFFLOAD */
-> > +#endif /* CONFIG_IXGBE_IPSEC */
-> >   #endif /* _IXGBE_H_ */
-> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > index 0049a2becd7e..113b38e0defb 100644
-> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > @@ -8694,7 +8694,7 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct
-> > sk_buff *skb,
-> >   
-> >   #endif /* IXGBE_FCOE */
-> >   
-> > -#ifdef CONFIG_XFRM_OFFLOAD
-> > +#ifdef CONFIG_IXGBE_IPSEC
-> >   	if (skb->sp && !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
-> >   		goto out_drop;
-> >   #endif
-> > @@ -10190,7 +10190,7 @@ ixgbe_features_check(struct sk_buff *skb,
-> > struct net_device *dev,
-> >   	 * the TSO, so it's the exception.
-> >   	 */
-> >   	if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID)) {
-> > -#ifdef CONFIG_XFRM_OFFLOAD
-> > +#ifdef CONFIG_IXGBE_IPSEC
-> >   		if (!skb->sp)
-> >   #endif
-> >   			features &= ~NETIF_F_TSO;
-> > @@ -10883,7 +10883,7 @@ static int ixgbe_probe(struct pci_dev
-> > *pdev, const struct pci_device_id *ent)
-> >   	if (hw->mac.type >= ixgbe_mac_82599EB)
-> >   		netdev->features |= NETIF_F_SCTP_CRC;
-> >   
-> > -#ifdef CONFIG_XFRM_OFFLOAD
-> > +#ifdef CONFIG_IXGBE_IPSEC
-> >   #define IXGBE_ESP_FEATURES	(NETIF_F_HW_ESP | \
-> >   				 NETIF_F_HW_ESP_TX_CSUM | \
-> >   				 NETIF_F_GSO_ESP)
-> > diff --git a/net/xfrm/Kconfig b/net/xfrm/Kconfig
-> > index 4a9ee2d83158..140270a13d54 100644
-> > --- a/net/xfrm/Kconfig
-> > +++ b/net/xfrm/Kconfig
-> > @@ -8,7 +8,6 @@ config XFRM
-> >   
-> >   config XFRM_OFFLOAD
-> >          bool
-> > -       depends on XFRM
-> >   
-> >   config XFRM_ALGO
-> >   	tristate
-> > 
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181017/f671f376/attachment.asc>
