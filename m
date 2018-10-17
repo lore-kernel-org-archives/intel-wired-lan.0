@@ -1,15 +1,31 @@
-From: Kielan, Tymoteusz <tymoteusz.kielan@intel.com>
-Date: Wed, 17 Oct 2018 18:01:03 +0000
+From: Henning Svane <hsv@energy.dk>
+Date: Wed, 17 Oct 2018 18:09:48 +0000
 Subject: [Intel-wired-lan] X550 VF do not support PTP
-In-Reply-To: <3A7E81AC661B4646A4CE6F2E09B7B74E05C8F738@HASMSX106.ger.corp.intel.com>
+In-Reply-To: <37EA2F27FEDED94487ADB266632B54EF73069C4B@IRSMSX107.ger.corp.intel.com>
 References: <5ABC601D16A6044981773D154D5C9F7101CC6B0C99@XMail-DAG1.energy.local>
  <3A7E81AC661B4646A4CE6F2E09B7B74E05C8F738@HASMSX106.ger.corp.intel.com>
-Message-ID: <37EA2F27FEDED94487ADB266632B54EF73069C4B@IRSMSX107.ger.corp.intel.com>
+ <37EA2F27FEDED94487ADB266632B54EF73069C4B@IRSMSX107.ger.corp.intel.com>
+Message-ID: <5ABC601D16A6044981773D154D5C9F7101CC6F4CE5@XMail-DAG2.energy.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+Hi Tim
+
+Thanks for the answer, but that also means that hardware PTP in a virtual machine cannot be made.
+There are some finance regulation (high speed trading) here in Europe which need hardware PTP to be precise enough.
+
+So this need to be made in a physical server. Pass-through is not the way to go as you cannot vMotion the VM, so no benefit
+
+Regards
+Henning
+
+Fra: Kielan, Tymoteusz <tymoteusz.kielan@intel.com>
+Sendt: 17. oktober 2018 20:01
+Til: Basierski, SebastianX <sebastianx.basierski@intel.com>; Henning Svane <hsv@energy.dk>; intel-wired-lan at lists.osuosl.org
+Emne: RE: X550 VF do not support PTP
 
 Hi,
 
@@ -23,7 +39,7 @@ Thanks, Tim
 
 From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Basierski, SebastianX
 Sent: Monday, September 17, 2018 10:28 AM
-To: Henning Svane <hsv@energy.dk>; intel-wired-lan at lists.osuosl.org
+To: Henning Svane <hsv at energy.dk<mailto:hsv@energy.dk>>; intel-wired-lan at lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
 Subject: Re: [Intel-wired-lan] X550 VF do not support PTP
 
 Hello,
@@ -126,22 +142,21 @@ Hardware Receive Filter Modes:
         ptpv1-l4-sync         (HWTSTAMP_FILTER_PTP_V1_L4_SYNC)
         ptpv1-l4-delay-req    (HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ)
         ptpv2-event           (HWTSTAMP_FILTER_PTP_V2_EVENT)
---------------------------------------------------------------------
 
+---------------------------------------------------------------------
 Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+ul. S?owackiego 173 | 80-298 Gda?sk | S?d Rejonowy Gda?sk P??noc | VII Wydzia? Gospodarczy Krajowego Rejestru S?dowego - KRS 101882 | NIP 957-07-52-316 | Kapita? zak?adowy 200.000 PLN.
 
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
+Ta wiadomo?? wraz z za??cznikami jest przeznaczona dla okre?lonego adresata i mo?e zawiera? informacje poufne. W razie przypadkowego otrzymania tej wiadomo?ci, prosimy o powiadomienie nadawcy oraz trwa?e jej usuni?cie; jakiekolwiek przegl?danie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+
 -------------- next part --------------
 An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181017/f6b385e3/attachment-0001.html>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181017/e7159e5c/attachment-0001.html>
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: image001.png
 Type: image/png
 Size: 5461 bytes
 Desc: image001.png
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181017/f6b385e3/attachment-0001.png>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181017/e7159e5c/attachment-0001.png>
