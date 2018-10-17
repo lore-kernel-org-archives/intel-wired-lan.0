@@ -1,249 +1,53 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 17 Oct 2018 05:07:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 9465130a99368b1ef6ac0ee909b9ba7c243862b4
-Message-ID: <5bc652f4.Qp0izC0+g094KnPg%lkp@intel.com>
+From: David Arcari <darcari@redhat.com>
+Date: Wed, 17 Oct 2018 10:04:54 -0400
+Subject: [Intel-wired-lan] [PATCH] ice: remove an unneeded NULL check
+In-Reply-To: <20181016105945.6ryege7672uhnnwd@mwanda>
+References: <20181012071709.GA10212@mwanda>
+ <804857E1F29AAC47BF68C404FC60A184F24B35A4@FMSMSX151.amr.corp.intel.com>
+ <20181016105945.6ryege7672uhnnwd@mwanda>
+Message-ID: <3e42b278-b46c-6d9b-ae0e-68d65657a8af@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 9465130a99368b1ef6ac0ee909b9ba7c243862b4  fm10k: bump driver version to match out-of-tree release
+On 10/16/2018 06:59 AM, Dan Carpenter wrote:
+> On Mon, Oct 15, 2018 at 04:18:35PM +0000, Allan, Bruce W wrote:
+>>> -----Original Message-----
+>>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
+>>> Of Dan Carpenter
+>>> Sent: Friday, October 12, 2018 12:17 AM
+>>> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Ertman, David M
+>>> <david.m.ertman@intel.com>
+>>> Cc: kernel-janitors at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+>>> Subject: [Intel-wired-lan] [PATCH] ice: remove an unneeded NULL check
+>>>
+>>> We added a NULL check in commit 072f0c3db9da ("ice: Fix potential null
+>>> pointer issues") but it causes static checker warnings.
+>>
+>> Which static checker and with what options?
+>>
+> 
+> Future versions of Smatch will complain probably.  It turns out there
+> are many many unnecessary NULL checks and they seldome indicate a bug so
+> I'm waffling on this...
 
-elapsed time: 337m
+I don't see how fi could ever be NULL.  It's set to the address of
+fm_entry->fltr_info.
 
-configs tested: 225
+Given that, it really seems like the check should go, since it is clearly
+unnecessary.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+-Dave
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-mips                          malta_defconfig
-sparc                             allnoconfig
-x86_64                 randconfig-a0-10162116
-mips                           ip27_defconfig
-mips                        nlm_xlp_defconfig
-i386                   randconfig-c0-10162352
-powerpc                      bamboo_defconfig
-xtensa                           allmodconfig
-i386                   randconfig-x019-201841
-i386                   randconfig-x016-201841
-i386                   randconfig-x018-201841
-i386                   randconfig-x014-201841
-i386                   randconfig-x015-201841
-i386                   randconfig-x011-201841
-i386                   randconfig-x012-201841
-i386                   randconfig-x017-201841
-i386                   randconfig-x010-201841
-i386                   randconfig-x013-201841
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201841
-i386                     randconfig-n1-201841
-i386                     randconfig-n2-201841
-i386                     randconfig-n3-201841
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201841
-i386                     randconfig-i1-201841
-i386                     randconfig-i2-201841
-i386                     randconfig-i3-201841
-sh                   rts7751r2dplus_defconfig
-xtensa                generic_kc705_defconfig
-powerpc               corenet_basic_defconfig
-powerpc                  mpc866_ads_defconfig
-x86_64                 randconfig-g0-10162351
-x86_64                 randconfig-g0-10170337
-x86_64                 randconfig-x017-201841
-x86_64                 randconfig-x013-201841
-x86_64                 randconfig-x016-201841
-x86_64                 randconfig-x011-201841
-x86_64                 randconfig-x012-201841
-x86_64                 randconfig-x018-201841
-x86_64                 randconfig-x019-201841
-x86_64                 randconfig-x014-201841
-x86_64                 randconfig-x010-201841
-x86_64                 randconfig-x015-201841
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-s0-10162353
-x86_64                 randconfig-s1-10162353
-x86_64                 randconfig-s2-10162353
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-sh                     sh7710voipgw_defconfig
-sh                             shx3_defconfig
-sparc64                          allmodconfig
-mips                        bcm63xx_defconfig
-mips                         cobalt_defconfig
-powerpc                 xes_mpc85xx_defconfig
-sh                           se7343_defconfig
-c6x                        evmc6474_defconfig
-h8300                       h8s-sim_defconfig
-openrisc                            defconfig
-sh                               allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201841
-i386                     randconfig-s1-201841
-i386                     randconfig-s3-201841
-i386                     randconfig-s2-201841
-x86_64                 randconfig-s3-10162235
-x86_64                 randconfig-s4-10162235
-x86_64                 randconfig-s5-10162235
-x86_64                 randconfig-s3-10170020
-x86_64                 randconfig-s4-10170020
-x86_64                 randconfig-s5-10170020
-mips                 pnx8335_stb225_defconfig
-powerpc                mpc7448_hpc2_defconfig
-sh                      rts7751r2d1_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201841
-x86_64                   randconfig-i1-201841
-x86_64                   randconfig-i2-201841
-x86_64                   randconfig-i3-201841
-i386                   randconfig-b0-10162143
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                     pseries_defconfig
-sh                           se7750_defconfig
-arm                           h5000_defconfig
-arm                       mainstone_defconfig
-xtensa                           allyesconfig
-x86_64                 randconfig-b0-10162201
-x86_64                 randconfig-b0-10170349
-mips                        workpad_defconfig
-powerpc                     tqm8548_defconfig
-arm                          simpad_defconfig
-powerpc                 mpc834x_itx_defconfig
-x86_64                 randconfig-u0-10162358
-x86_64                 randconfig-u0-10170028
-arm                        realview_defconfig
-arm                             rpc_defconfig
-arm                          tango4_defconfig
-i386                   randconfig-h0-10162141
-i386                   randconfig-h1-10162141
-powerpc                      cm5200_defconfig
-sh                               alldefconfig
-arm                        magician_defconfig
-arm                           sama5_defconfig
-x86_64                randconfig-ne0-10162345
-x86_64                randconfig-ne0-10170031
-ia64                             allmodconfig
-mips                         mpc30x_defconfig
-powerpc64                           defconfig
-powerpc                     akebono_defconfig
-powerpc                 linkstation_defconfig
-x86_64                 randconfig-h0-10162219
-x86_64                 randconfig-h0-10170040
-i386                               tinyconfig
-i386                   randconfig-x077-201841
-i386                   randconfig-x073-201841
-i386                   randconfig-x070-201841
-i386                   randconfig-x075-201841
-i386                   randconfig-x072-201841
-i386                   randconfig-x071-201841
-i386                   randconfig-x074-201841
-i386                   randconfig-x078-201841
-i386                   randconfig-x079-201841
-i386                   randconfig-x076-201841
-arm                         assabet_defconfig
-arm                          iop33x_defconfig
-m68k                          hp300_defconfig
-powerpc                     mpc5200_defconfig
-x86_64                   randconfig-g0-201841
-x86_64                   randconfig-g1-201841
-x86_64                   randconfig-g2-201841
-x86_64                   randconfig-g3-201841
-i386                  randconfig-sb0-10162151
-i386                  randconfig-sb0-10170034
-i386                   randconfig-x002-201841
-i386                   randconfig-x006-201841
-i386                   randconfig-x005-201841
-i386                   randconfig-x000-201841
-i386                   randconfig-x007-201841
-i386                   randconfig-x004-201841
-i386                   randconfig-x001-201841
-i386                   randconfig-x009-201841
-i386                   randconfig-x008-201841
-i386                   randconfig-x003-201841
-x86_64                 randconfig-x000-201841
-x86_64                 randconfig-x005-201841
-x86_64                 randconfig-x002-201841
-x86_64                 randconfig-x001-201841
-x86_64                 randconfig-x008-201841
-x86_64                 randconfig-x007-201841
-x86_64                 randconfig-x009-201841
-x86_64                 randconfig-x003-201841
-x86_64                 randconfig-x006-201841
-x86_64                 randconfig-x004-201841
-x86_64                   randconfig-e0-201841
-x86_64                   randconfig-e1-201841
-x86_64                   randconfig-e2-201841
-x86_64                   randconfig-e3-201841
-arm                       cns3420vb_defconfig
-openrisc                         allyesconfig
-arm                         vf610m4_defconfig
-powerpc               mpc86xx_basic_defconfig
-x86_64                randconfig-ws0-10170004
-microblaze                          defconfig
-x86_64                randconfig-ws0-10162145
-m68k                       m5249evb_defconfig
-sh                             sh03_defconfig
-x86_64                 randconfig-r0-10162314
-i386                             allmodconfig
-powerpc                  storcenter_defconfig
-i386                   randconfig-x0-10162350
+> 
+> regards,
+> dan carpenter
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
