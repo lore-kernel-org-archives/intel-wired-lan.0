@@ -1,68 +1,147 @@
-From: Miroslav Lichvar <mlichvar@redhat.com>
-Date: Wed, 17 Oct 2018 18:16:21 +0200
-Subject: [Intel-wired-lan] [RFC PATCH] e1000e: allow non-monotonic SYSTIM
- readings
-Message-ID: <20181017161621.6081-1-mlichvar@redhat.com>
+From: Kielan, Tymoteusz <tymoteusz.kielan@intel.com>
+Date: Wed, 17 Oct 2018 18:01:03 +0000
+Subject: [Intel-wired-lan] X550 VF do not support PTP
+In-Reply-To: <3A7E81AC661B4646A4CE6F2E09B7B74E05C8F738@HASMSX106.ger.corp.intel.com>
+References: <5ABC601D16A6044981773D154D5C9F7101CC6B0C99@XMail-DAG1.energy.local>
+ <3A7E81AC661B4646A4CE6F2E09B7B74E05C8F738@HASMSX106.ger.corp.intel.com>
+Message-ID: <37EA2F27FEDED94487ADB266632B54EF73069C4B@IRSMSX107.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-It seems with some NICs supported by the e1000e driver a SYSTIM reading
-may occasionally be few microseconds before the previous reading and if
-enabled also pass e1000e_sanitize_systim() without reaching the maximum
-number of rereads, even if the function is modified to check three
-consecutive readings (i.e. it doesn't look like a double read error).
-This causes an underflow in the timecounter and the PHC time jumps hours
-ahead.
+Hi,
 
-This was observed on 82574, I217 and I219. The fastest way to reproduce
-it is to run a program that continuously calls the PTP_SYS_OFFSET ioctl
-on the PHC.
+I can confirm that PTP is NOT supported on X550 VF device.
+It works when one port is in pass-through mode as this is a PF device being mapped into the VM and not VF.
 
-Modify e1000e_phc_gettime() to use timecounter_cyc2time() instead of
-timecounter_read() in order to allow non-monotonic SYSTIM readings and
-prevent the PHC from jumping.
+You can see in the ixgbevf driver that SIOCSHWTSTAMP ioctl is not handled.
+There is no plan for PTP support for ixgbevf as for now.
 
-Cc: Jacob Keller <jacob.e.keller@intel.com>
-Cc: Richard Cochran <richardcochran@gmail.com>
-Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
----
- drivers/net/ethernet/intel/e1000e/ptp.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+Thanks, Tim
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
-index 37c76945ad9b..ec6477c88a4f 100644
---- a/drivers/net/ethernet/intel/e1000e/ptp.c
-+++ b/drivers/net/ethernet/intel/e1000e/ptp.c
-@@ -173,10 +173,14 @@ static int e1000e_phc_gettime(struct ptp_clock_info *ptp, struct timespec64 *ts)
- 	struct e1000_adapter *adapter = container_of(ptp, struct e1000_adapter,
- 						     ptp_clock_info);
- 	unsigned long flags;
--	u64 ns;
-+	u64 cycles, ns;
- 
- 	spin_lock_irqsave(&adapter->systim_lock, flags);
--	ns = timecounter_read(&adapter->tc);
-+
-+	/* Use timecounter_cyc2time() to allow non-monotonic SYSTIM readings */
-+	cycles = adapter->cc.read(&adapter->cc);
-+	ns = timecounter_cyc2time(&adapter->tc, cycles);
-+
- 	spin_unlock_irqrestore(&adapter->systim_lock, flags);
- 
- 	*ts = ns_to_timespec64(ns);
-@@ -233,6 +237,9 @@ static void e1000e_systim_overflow_work(struct work_struct *work)
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct timespec64 ts;
- 
-+	/* Update the timecounter */
-+	timecounter_read(&adapter->tc);
-+
- 	adapter->ptp_clock_info.gettime64(&adapter->ptp_clock_info, &ts);
- 
- 	e_dbg("SYSTIM overflow check at %lld.%09lu\n",
--- 
-2.17.1
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Basierski, SebastianX
+Sent: Monday, September 17, 2018 10:28 AM
+To: Henning Svane <hsv@energy.dk>; intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] X550 VF do not support PTP
 
+Hello,
+
+As far as I know, PTP is not (and probably will not be) supported by VF driver.
+
+Thanks
+Sebastian Basierski
+SII Engineer
+Delivering outsourced services to Intel
+e-mail: sebastianx.basierski at intel.com<mailto:sebastianx.basierski@intel.com>
+
+[sii-logo]
+
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Henning Svane
+Sent: Sunday, September 16, 2018 12:54 AM
+To: intel-wired-lan@lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
+Subject: [Intel-wired-lan] X550 VF do not support PTP
+
+Hi
+
+I cannot get PTP hardware to work on a Virtual Function Ethernet Controller.
+Here below you can see what I have tried with no luck.
+
+How can I enable PTP hardware on Virtual function NIC, as from what I can read in the documentation this should work, but how?
+
+As hypervisor I use VMware ESXi 6.7 (9484548)
+
+Regards
+Henning
+
+On Ubuntu 18.04.1 (4.15.0-34-generic)
+I am trying to get PTP to work on a X550 dual port, which has been setup so one port is SR-IOV (24 VF) and the other as Passthrough.
+
+04:00.0 Ethernet controller: Intel Corporation Ethernet Controller 10G X550T (rev 01)
+0b:00.0 Ethernet controller: Intel Corporation X550 Virtual Function
+13:00.0 Ethernet controller: Intel Corporation X550 Virtual Function
+
+To be sure that the drive support PTP I downloaded the newest driver
+ixgbevf-4.3.5.tar.gz
+sudo make CFLAGS_EXTRA="-DIXGBE_PTP" install (The documentation says this options has to be set)
+https://downloadmirror.intel.com/26950/eng/readme.txt
+
+:~/ixgbevf-4.3.5/src$ modinfo ixgbevf
+filename:       /lib/modules/4.15.0-34-generic/updates/drivers/net/ethernet/intel/ixgbevf/ixgbevf.ko
+version:        4.3.5
+license:        GPL
+description:    Intel(R) 10 Gigabit Virtual Function Network Driver
+author:         Intel Corporation, <linux.nics at intel.com<mailto:linux.nics@intel.com>>
+srcversion:     DE0A8FE27F168DAF11C29F6
+alias:          pci:v00008086d000015B4sv*sd*bc*sc*i*
+alias:          pci:v00008086d000015C5sv*sd*bc*sc*i*
+alias:          pci:v00008086d000015A9sv*sd*bc*sc*i*
+alias:          pci:v00008086d000015A8sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001564sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001565sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001530sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001515sv*sd*bc*sc*i*
+alias:          pci:v00008086d0000152Esv*sd*bc*sc*i*
+alias:          pci:v00008086d000010EDsv*sd*bc*sc*i*
+depends:
+retpoline:      Y
+name:           ixgbevf
+vermagic:       4.15.0-34-generic SMP mod_unload
+
+:~/ixgbevf-4.3.5/src$ ethtool -T ens224
+Time stamping parameters for ens224:
+Capabilities:
+        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+PTP Hardware Clock: none
+Hardware Transmit Timestamp Modes: none
+Hardware Receive Filter Modes: none
+hsv at ptpc2ntps01:~/ixgbevf-4.3.5/src$<mailto:hsv@ptpc2ntps01:~/ixgbevf-4.3.5/src$> ethtool -T ens256
+Time stamping parameters for ens256:
+Capabilities:
+        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+PTP Hardware Clock: none
+Hardware Transmit Timestamp Modes: none
+Hardware Receive Filter Modes: none
+
+Ens161 is the Passthrough NIC and here PTP works.
+:~/ixgbevf-4.3.5/src$ ethtool -T ens161
+Time stamping parameters for ens161:
+Capabilities:
+        hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE)
+        software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
+        hardware-receive      (SOF_TIMESTAMPING_RX_HARDWARE)
+        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+        hardware-raw-clock    (SOF_TIMESTAMPING_RAW_HARDWARE)
+PTP Hardware Clock: none
+Hardware Transmit Timestamp Modes:
+        off                   (HWTSTAMP_TX_OFF)
+        on                    (HWTSTAMP_TX_ON)
+Hardware Receive Filter Modes:
+        none                  (HWTSTAMP_FILTER_NONE)
+        all                   (HWTSTAMP_FILTER_ALL)
+        ptpv1-l4-sync         (HWTSTAMP_FILTER_PTP_V1_L4_SYNC)
+        ptpv1-l4-delay-req    (HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ)
+        ptpv2-event           (HWTSTAMP_FILTER_PTP_V2_EVENT)
+--------------------------------------------------------------------
+
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181017/f6b385e3/attachment-0001.html>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: image001.png
+Type: image/png
+Size: 5461 bytes
+Desc: image001.png
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181017/f6b385e3/attachment-0001.png>
