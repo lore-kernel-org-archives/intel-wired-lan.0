@@ -1,110 +1,250 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 18 Oct 2018 08:37:07 -0700
-Subject: [Intel-wired-lan] [PATCH 5/7] ice: Introduce ice_dev_onetime_setup
+Date: Thu, 18 Oct 2018 08:37:09 -0700
+Subject: [Intel-wired-lan] [PATCH 7/7] ice: Poll for link status change
 In-Reply-To: <20181018153709.32664-1-anirudh.venkataramanan@intel.com>
 References: <20181018153709.32664-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181018153709.32664-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20181018153709.32664-8-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ice_dev_onetime_setup contains a couple of driver workarounds for current
-firmware limitations. These workarounds are expected to go away once
-these limitations are fixed in the firmware.
+When the physical link goes up or down, the driver is supposed to
+receive a link status event (LSE). The driver currently has the code
+to handle LSEs but there is no firmware support for this feature yet.
+So this patch adds the ability for the driver to poll for link status
+changes. The polling itself is done in ice_watchdog_subtask.
+
+For namespace cleanliness, this patch also removes code that handles
+LSE. This code will be reintroduced once the feature is officially
+supported.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c     | 19 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h     |  3 +++
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  2 ++
- drivers/net/ethernet/intel/ice/ice_lib.c        |  1 +
- 4 files changed, 25 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_common.c |  29 +-------
+ drivers/net/ethernet/intel/ice/ice_common.h |   6 --
+ drivers/net/ethernet/intel/ice/ice_main.c   | 110 ++++++----------------------
+ 3 files changed, 25 insertions(+), 120 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 78df54b25bf1..5a91a9087d1e 100644
+index 5a91a9087d1e..8cd6a2401fd9 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.c
 +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -42,6 +42,23 @@ static enum ice_status ice_set_mac_type(struct ice_hw *hw)
- 	return 0;
+@@ -235,7 +235,7 @@ static enum ice_media_type ice_get_media_type(struct ice_port_info *pi)
+  *
+  * Get Link Status (0x607). Returns the link status of the adapter.
+  */
+-enum ice_status
++static enum ice_status
+ ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
+ 		     struct ice_link_status *link, struct ice_sq_cd *cd)
+ {
+@@ -2004,33 +2004,6 @@ ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
+ 	return ice_aq_send_cmd(pi->hw, &desc, NULL, 0, cd);
  }
  
-+/**
-+ * ice_dev_onetime_setup - Temporary HW/FW workarounds
-+ * @hw: pointer to the HW structure
-+ *
-+ * This function provides temporary workarounds for certain issues
-+ * that are expected to be fixed in the HW/FW.
-+ */
-+void ice_dev_onetime_setup(struct ice_hw *hw)
-+{
-+	/* configure Rx - set non pxe mode */
-+	wr32(hw, GLLAN_RCTL_0, 0x1);
-+
-+#define MBX_PF_VT_PFALLOC	0x00231E80
-+	/* set VFs per PF */
-+	wr32(hw, MBX_PF_VT_PFALLOC, rd32(hw, PF_VT_PFALLOC_HIF));
-+}
-+
+-/**
+- * ice_aq_set_event_mask
+- * @hw: pointer to the hw struct
+- * @port_num: port number of the physical function
+- * @mask: event mask to be set
+- * @cd: pointer to command details structure or NULL
+- *
+- * Set event mask (0x0613)
+- */
+-enum ice_status
+-ice_aq_set_event_mask(struct ice_hw *hw, u8 port_num, u16 mask,
+-		      struct ice_sq_cd *cd)
+-{
+-	struct ice_aqc_set_event_mask *cmd;
+-	struct ice_aq_desc desc;
+-
+-	cmd = &desc.params.set_event_mask;
+-
+-	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_event_mask);
+-
+-	cmd->lport_num = port_num;
+-
+-	cmd->event_mask = cpu_to_le16(mask);
+-
+-	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
+-}
+-
  /**
-  * ice_clear_pf_cfg - Clear PF configuration
+  * __ice_aq_get_set_rss_lut
   * @hw: pointer to the hardware structure
-@@ -740,6 +757,8 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
- 	if (status)
- 		goto err_unroll_sched;
- 
-+	ice_dev_onetime_setup(hw);
-+
- 	/* Get MAC information */
- 	/* A single port can report up to two (LAN and WoL) addresses */
- 	mac_buf = devm_kcalloc(ice_hw_to_dev(hw), 2,
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 1900681289a4..876347e32b6f 100644
+index 876347e32b6f..cf760c24a6aa 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.h
 +++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -34,6 +34,9 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
- 		struct ice_sq_cd *cd);
- void ice_clear_pxe_mode(struct ice_hw *hw);
- enum ice_status ice_get_caps(struct ice_hw *hw);
-+
-+void ice_dev_onetime_setup(struct ice_hw *hw);
-+
+@@ -86,12 +86,6 @@ enum ice_status
+ ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
+ 			   struct ice_sq_cd *cd);
  enum ice_status
- ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
- 		  u32 rxq_index);
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index a6679a9bfd3a..228afcad6fc3 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -157,6 +157,7 @@
- #define VPINT_ALLOC_LAST_S			12
- #define VPINT_ALLOC_LAST_M			ICE_M(0x7FF, 12)
- #define VPINT_ALLOC_VALID_M			BIT(31)
-+#define GLLAN_RCTL_0				0x002941F8
- #define QRX_CONTEXT(_i, _QRX)			(0x00280000 + ((_i) * 8192 + (_QRX) * 4))
- #define QRX_CTRL(_QRX)				(0x00120000 + ((_QRX) * 4))
- #define QRX_CTRL_MAX_INDEX			2047
-@@ -320,6 +321,7 @@
- #define GLV_UPRCL(_i)				(0x003B2000 + ((_i) * 8))
- #define GLV_UPTCH(_i)				(0x0030A004 + ((_i) * 8))
- #define GLV_UPTCL(_i)				(0x0030A000 + ((_i) * 8))
-+#define PF_VT_PFALLOC_HIF			0x0009DD80
- #define VSIQF_HKEY_MAX_INDEX			12
- #define VSIQF_HLUT_MAX_INDEX			15
- #define VFINT_DYN_CTLN(_i)			(0x00003800 + ((_i) * 4))
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index e750702bcdce..5bacad01f0c9 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2529,6 +2529,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
- 	vsi->hw_base_vector = 0;
- 	ice_vsi_clear_rings(vsi);
- 	ice_vsi_free_arrays(vsi, false);
-+	ice_dev_onetime_setup(&vsi->back->hw);
- 	ice_vsi_set_num_qs(vsi);
+-ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
+-		     struct ice_link_status *link, struct ice_sq_cd *cd);
+-enum ice_status
+-ice_aq_set_event_mask(struct ice_hw *hw, u8 port_num, u16 mask,
+-		      struct ice_sq_cd *cd);
+-enum ice_status
+ ice_dis_vsi_txq(struct ice_port_info *pi, u8 num_queues, u16 *q_ids,
+ 		u32 *q_teids, enum ice_disq_rst_src rst_src, u16 vmvf_num,
+ 		struct ice_sq_cd *cmd_details);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 0084b7290b2b..05993451147a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -456,35 +456,6 @@ static void ice_reset_subtask(struct ice_pf *pf)
+ 	}
+ }
  
- 	/* Initialize VSI struct elements and create VSI in FW */
+-/**
+- * ice_watchdog_subtask - periodic tasks not using event driven scheduling
+- * @pf: board private structure
+- */
+-static void ice_watchdog_subtask(struct ice_pf *pf)
+-{
+-	int i;
+-
+-	/* if interface is down do nothing */
+-	if (test_bit(__ICE_DOWN, pf->state) ||
+-	    test_bit(__ICE_CFG_BUSY, pf->state))
+-		return;
+-
+-	/* make sure we don't do these things too often */
+-	if (time_before(jiffies,
+-			pf->serv_tmr_prev + pf->serv_tmr_period))
+-		return;
+-
+-	pf->serv_tmr_prev = jiffies;
+-
+-	/* Update the stats for active netdevs so the network stack
+-	 * can look at updated numbers whenever it cares to
+-	 */
+-	ice_update_pf_stats(pf);
+-	for (i = 0; i < pf->num_alloc_vsi; i++)
+-		if (pf->vsi[i] && pf->vsi[i]->netdev)
+-			ice_update_vsi_stats(pf->vsi[i]);
+-}
+-
+ /**
+  * ice_print_link_msg - print link up or down message
+  * @vsi: the VSI whose link status is being queried
+@@ -554,36 +525,6 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
+ 		    speed, fc);
+ }
+ 
+-/**
+- * ice_init_link_events - enable/initialize link events
+- * @pi: pointer to the port_info instance
+- *
+- * Returns -EIO on failure, 0 on success
+- */
+-static int ice_init_link_events(struct ice_port_info *pi)
+-{
+-	u16 mask;
+-
+-	mask = ~((u16)(ICE_AQ_LINK_EVENT_UPDOWN | ICE_AQ_LINK_EVENT_MEDIA_NA |
+-		       ICE_AQ_LINK_EVENT_MODULE_QUAL_FAIL));
+-
+-	if (ice_aq_set_event_mask(pi->hw, pi->lport, mask, NULL)) {
+-		dev_dbg(ice_hw_to_dev(pi->hw),
+-			"Failed to set link event mask for port %d\n",
+-			pi->lport);
+-		return -EIO;
+-	}
+-
+-	if (ice_aq_get_link_info(pi, true, NULL, NULL)) {
+-		dev_dbg(ice_hw_to_dev(pi->hw),
+-			"Failed to enable link events for port %d\n",
+-			pi->lport);
+-		return -EIO;
+-	}
+-
+-	return 0;
+-}
+-
+ /**
+  * ice_vsi_link_event - update the vsi's netdev
+  * @vsi: the vsi on which the link event occurred
+@@ -671,27 +612,35 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi)
+ }
+ 
+ /**
+- * ice_handle_link_event - handle link event via ARQ
+- * @pf: pf that the link event is associated with
+- *
+- * Return -EINVAL if port_info is null
+- * Return status on succes
++ * ice_watchdog_subtask - periodic tasks not using event driven scheduling
++ * @pf: board private structure
+  */
+-static int ice_handle_link_event(struct ice_pf *pf)
++static void ice_watchdog_subtask(struct ice_pf *pf)
+ {
+-	struct ice_port_info *port_info;
+-	int status;
++	int i;
+ 
+-	port_info = pf->hw.port_info;
+-	if (!port_info)
+-		return -EINVAL;
++	/* if interface is down do nothing */
++	if (test_bit(__ICE_DOWN, pf->state) ||
++	    test_bit(__ICE_CFG_BUSY, pf->state))
++		return;
+ 
+-	status = ice_link_event(pf, port_info);
+-	if (status)
+-		dev_dbg(&pf->pdev->dev,
+-			"Could not process link event, error %d\n", status);
++	/* make sure we don't do these things too often */
++	if (time_before(jiffies,
++			pf->serv_tmr_prev + pf->serv_tmr_period))
++		return;
+ 
+-	return status;
++	pf->serv_tmr_prev = jiffies;
++
++	if (ice_link_event(pf, pf->hw.port_info))
++		dev_dbg(&pf->pdev->dev, "ice_link_event failed\n");
++
++	/* Update the stats for active netdevs so the network stack
++	 * can look at updated numbers whenever it cares to
++	 */
++	ice_update_pf_stats(pf);
++	for (i = 0; i < pf->num_alloc_vsi; i++)
++		if (pf->vsi[i] && pf->vsi[i]->netdev)
++			ice_update_vsi_stats(pf->vsi[i]);
+ }
+ 
+ /**
+@@ -797,11 +746,6 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
+ 		opcode = le16_to_cpu(event.desc.opcode);
+ 
+ 		switch (opcode) {
+-		case ice_aqc_opc_get_link_status:
+-			if (ice_handle_link_event(pf))
+-				dev_err(&pf->pdev->dev,
+-					"Could not handle link event\n");
+-			break;
+ 		case ice_mbx_opc_send_msg_to_pf:
+ 			ice_vc_process_vf_msg(pf, &event);
+ 			break;
+@@ -2207,12 +2151,6 @@ static int ice_probe(struct pci_dev *pdev,
+ 	/* since everything is good, start the service timer */
+ 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
+ 
+-	err = ice_init_link_events(pf->hw.port_info);
+-	if (err) {
+-		dev_err(&pdev->dev, "ice_init_link_events failed: %d\n", err);
+-		goto err_alloc_sw_unroll;
+-	}
+-
+ 	return 0;
+ 
+ err_alloc_sw_unroll:
 -- 
 2.14.3
 
