@@ -1,39 +1,118 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 18 Oct 2018 08:37:06 -0700
-Subject: [Intel-wired-lan] [PATCH 4/7] ice: Use capability count returned by
- the firmware
-In-Reply-To: <20181018153709.32664-1-anirudh.venkataramanan@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
+Date: Thu, 18 Oct 2018 09:06:51 -0700
+Subject: [Intel-wired-lan] [PATCH 5/7] ice: Introduce
+ ice_dev_onetime_setup
+In-Reply-To: <20181018153709.32664-6-anirudh.venkataramanan@intel.com>
 References: <20181018153709.32664-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181018153709.32664-5-anirudh.venkataramanan@intel.com>
+ <20181018153709.32664-6-anirudh.venkataramanan@intel.com>
+Message-ID: <18a2f2e3-1d48-cc76-359e-838226a172ce@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The firmware now returns the capability count in the command buffer.
-Use it.
+On 10/18/2018 8:37 AM, Anirudh Venkataramanan wrote:
+> ice_dev_onetime_setup contains a couple of driver workarounds for current
+> firmware limitations. These workarounds are expected to go away once
+> these limitations are fixed in the firmware.
 
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_common.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+Can you add a check for firmware version or feature to see if this is 
+needed before using it?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index c52f450f2c0d..78df54b25bf1 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1531,9 +1531,7 @@ ice_aq_discover_caps(struct ice_hw *hw, void *buf, u16 buf_size, u32 *cap_count,
- 	if (!status)
- 		ice_parse_caps(hw, buf, le32_to_cpu(cmd->count), opc);
- 	else if (hw->adminq.sq_last_status == ICE_AQ_RC_ENOMEM)
--		*cap_count =
--			DIV_ROUND_UP(le16_to_cpu(desc.datalen),
--				     sizeof(struct ice_aqc_list_caps_elem));
-+		*cap_count = le32_to_cpu(cmd->count);
- 	return status;
- }
- 
--- 
-2.14.3
+sln
 
+
+> 
+> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> ---
+>   drivers/net/ethernet/intel/ice/ice_common.c     | 19 +++++++++++++++++++
+>   drivers/net/ethernet/intel/ice/ice_common.h     |  3 +++
+>   drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  2 ++
+>   drivers/net/ethernet/intel/ice/ice_lib.c        |  1 +
+>   4 files changed, 25 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+> index 78df54b25bf1..5a91a9087d1e 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_common.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_common.c
+> @@ -42,6 +42,23 @@ static enum ice_status ice_set_mac_type(struct ice_hw *hw)
+>   	return 0;
+>   }
+>   
+> +/**
+> + * ice_dev_onetime_setup - Temporary HW/FW workarounds
+> + * @hw: pointer to the HW structure
+> + *
+> + * This function provides temporary workarounds for certain issues
+> + * that are expected to be fixed in the HW/FW.
+> + */
+> +void ice_dev_onetime_setup(struct ice_hw *hw)
+> +{
+> +	/* configure Rx - set non pxe mode */
+> +	wr32(hw, GLLAN_RCTL_0, 0x1);
+> +
+> +#define MBX_PF_VT_PFALLOC	0x00231E80
+> +	/* set VFs per PF */
+> +	wr32(hw, MBX_PF_VT_PFALLOC, rd32(hw, PF_VT_PFALLOC_HIF));
+> +}
+> +
+>   /**
+>    * ice_clear_pf_cfg - Clear PF configuration
+>    * @hw: pointer to the hardware structure
+> @@ -740,6 +757,8 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
+>   	if (status)
+>   		goto err_unroll_sched;
+>   
+> +	ice_dev_onetime_setup(hw);
+> +
+>   	/* Get MAC information */
+>   	/* A single port can report up to two (LAN and WoL) addresses */
+>   	mac_buf = devm_kcalloc(ice_hw_to_dev(hw), 2,
+> diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+> index 1900681289a4..876347e32b6f 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_common.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_common.h
+> @@ -34,6 +34,9 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+>   		struct ice_sq_cd *cd);
+>   void ice_clear_pxe_mode(struct ice_hw *hw);
+>   enum ice_status ice_get_caps(struct ice_hw *hw);
+> +
+> +void ice_dev_onetime_setup(struct ice_hw *hw);
+> +
+>   enum ice_status
+>   ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
+>   		  u32 rxq_index);
+> diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> index a6679a9bfd3a..228afcad6fc3 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> @@ -157,6 +157,7 @@
+>   #define VPINT_ALLOC_LAST_S			12
+>   #define VPINT_ALLOC_LAST_M			ICE_M(0x7FF, 12)
+>   #define VPINT_ALLOC_VALID_M			BIT(31)
+> +#define GLLAN_RCTL_0				0x002941F8
+>   #define QRX_CONTEXT(_i, _QRX)			(0x00280000 + ((_i) * 8192 + (_QRX) * 4))
+>   #define QRX_CTRL(_QRX)				(0x00120000 + ((_QRX) * 4))
+>   #define QRX_CTRL_MAX_INDEX			2047
+> @@ -320,6 +321,7 @@
+>   #define GLV_UPRCL(_i)				(0x003B2000 + ((_i) * 8))
+>   #define GLV_UPTCH(_i)				(0x0030A004 + ((_i) * 8))
+>   #define GLV_UPTCL(_i)				(0x0030A000 + ((_i) * 8))
+> +#define PF_VT_PFALLOC_HIF			0x0009DD80
+>   #define VSIQF_HKEY_MAX_INDEX			12
+>   #define VSIQF_HLUT_MAX_INDEX			15
+>   #define VFINT_DYN_CTLN(_i)			(0x00003800 + ((_i) * 4))
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+> index e750702bcdce..5bacad01f0c9 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+> @@ -2529,6 +2529,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
+>   	vsi->hw_base_vector = 0;
+>   	ice_vsi_clear_rings(vsi);
+>   	ice_vsi_free_arrays(vsi, false);
+> +	ice_dev_onetime_setup(&vsi->back->hw);
+>   	ice_vsi_set_num_qs(vsi);
+>   
+>   	/* Initialize VSI struct elements and create VSI in FW */
+> 
