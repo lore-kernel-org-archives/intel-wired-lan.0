@@ -1,34 +1,48 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 18 Oct 2018 08:37:02 -0700
-Subject: [Intel-wired-lan] [PATCH 0/7] ice bug fixes and minor
- implementation updates
-Message-ID: <20181018153709.32664-1-anirudh.venkataramanan@intel.com>
+Date: Thu, 18 Oct 2018 08:37:03 -0700
+Subject: [Intel-wired-lan] [PATCH 1/7] ice: Make ice_msix_clean_rings static
+In-Reply-To: <20181018153709.32664-1-anirudh.venkataramanan@intel.com>
+References: <20181018153709.32664-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20181018153709.32664-2-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anirudh Venkataramanan (7):
-  ice: Make ice_msix_clean_rings static
-  ice: Change device ID define names to align with branding string
-  ice: Update expected FW version
-  ice: Use capability count returned by the firmware
-  ice: Introduce ice_dev_onetime_setup
-  ice: Allocate VF interrupts and set queue map
-  ice: Poll for link status change
+commit 158a08a694c4e ("ice: remove ndo_poll_controller") removed
+ice_netpoll and introduced a namespace warning for ice_msix_clean_rings.
+Fix the namespace warning by making ice_msix_clean_rings static.
 
- drivers/net/ethernet/intel/ice/ice_common.c      |  52 ++++------
- drivers/net/ethernet/intel/ice/ice_common.h      |   9 +-
- drivers/net/ethernet/intel/ice/ice_controlq.h    |   5 +-
- drivers/net/ethernet/intel/ice/ice_devids.h      |   6 +-
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |   8 ++
- drivers/net/ethernet/intel/ice/ice_lib.c         |   3 +-
- drivers/net/ethernet/intel/ice/ice_lib.h         |   1 -
- drivers/net/ethernet/intel/ice/ice_main.c        | 116 ++++++-----------------
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  15 ++-
- 9 files changed, 77 insertions(+), 138 deletions(-)
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_lib.h | 1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 49f1940772ed..e750702bcdce 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -433,7 +433,7 @@ int ice_vsi_clear(struct ice_vsi *vsi)
+  * @irq: interrupt number
+  * @data: pointer to a q_vector
+  */
+-irqreturn_t ice_msix_clean_rings(int __always_unused irq, void *data)
++static irqreturn_t ice_msix_clean_rings(int __always_unused irq, void *data)
+ {
+ 	struct ice_q_vector *q_vector = (struct ice_q_vector *)data;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 677db40338f5..3831b4f0960a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -73,5 +73,4 @@ int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc);
+ 
+ int ice_vsi_manage_rss_lut(struct ice_vsi *vsi, bool ena);
+ 
+-irqreturn_t ice_msix_clean_rings(int __always_unused irq, void *data);
+ #endif /* !_ICE_LIB_H_ */
 -- 
 2.14.3
 
