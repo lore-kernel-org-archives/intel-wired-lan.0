@@ -1,242 +1,74 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 19 Oct 2018 11:31:21 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 291cd538418b8b4f51318f2ba1cf8f5c2ea192ae
-Message-ID: <5bc95009.5l1kEEPLGJLOYag+%lkp@intel.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Fri, 19 Oct 2018 12:40:30 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] igc: Remove set but not used
+ variables 'ctrl_ext, link_mode'
+Message-ID: <1539952830-187358-1-git-send-email-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 291cd538418b8b4f51318f2ba1cf8f5c2ea192ae  ixgbe/ixgbevf: fix XFRM_ALGO dependency
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-elapsed time: 238m
+drivers/net/ethernet/intel/igc/igc_base.c: In function 'igc_init_phy_params_base':
+drivers/net/ethernet/intel/igc/igc_base.c:240:6: warning:
+ variable 'ctrl_ext' set but not used [-Wunused-but-set-variable]
+  u32 ctrl_ext;
+  
+drivers/net/ethernet/intel/igc/igc_base.c: In function 'igc_get_invariants_base':
+drivers/net/ethernet/intel/igc/igc_base.c:290:6: warning:
+ variable 'link_mode' set but not used [-Wunused-but-set-variable]
+  u32 link_mode = 0;
 
-configs tested: 217
+It never used since introduction in
+commit c0071c7aa5fe ("igc: Add HW initialization code")
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-arm                          ks8695_defconfig
-mips                        nlm_xlp_defconfig
-mips                       rbtx49xx_defconfig
-powerpc                       ppc64_defconfig
-x86_64                 randconfig-a0-10190450
-x86_64                 randconfig-a0-10190918
-arm                              zx_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10190705
-i386                   randconfig-c0-10190901
-ia64                            sim_defconfig
-xtensa                    smp_lx200_defconfig
-arm                         lpc18xx_defconfig
-powerpc                           allnoconfig
-alpha                            allyesconfig
-i386                   randconfig-x019-201841
-i386                   randconfig-x016-201841
-i386                   randconfig-x018-201841
-i386                   randconfig-x014-201841
-i386                   randconfig-x015-201841
-i386                   randconfig-x011-201841
-i386                   randconfig-x012-201841
-i386                   randconfig-x017-201841
-i386                   randconfig-x010-201841
-i386                   randconfig-x013-201841
-i386                     randconfig-n0-201841
-i386                     randconfig-n1-201841
-i386                     randconfig-n2-201841
-i386                     randconfig-n3-201841
-x86_64                 randconfig-x000-201841
-x86_64                 randconfig-x005-201841
-x86_64                 randconfig-x002-201841
-x86_64                 randconfig-x001-201841
-x86_64                 randconfig-x008-201841
-x86_64                 randconfig-x007-201841
-x86_64                 randconfig-x009-201841
-x86_64                 randconfig-x003-201841
-x86_64                 randconfig-x006-201841
-x86_64                 randconfig-x004-201841
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                             allmodconfig
-mips                malta_kvm_guest_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64       rhel-7.2-CONFIG_DEBUG_INFO_REDUCED
-powerpc                             defconfig
-s390                        default_defconfig
-x86_64                 randconfig-g0-10190548
-x86_64                 randconfig-g0-10190936
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x017-201841
-x86_64                 randconfig-x013-201841
-x86_64                 randconfig-x016-201841
-x86_64                 randconfig-x011-201841
-x86_64                 randconfig-x012-201841
-x86_64                 randconfig-x018-201841
-x86_64                 randconfig-x019-201841
-x86_64                 randconfig-x014-201841
-x86_64                 randconfig-x010-201841
-x86_64                 randconfig-x015-201841
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                 randconfig-s0-10190742
-x86_64                 randconfig-s1-10190742
-x86_64                 randconfig-s2-10190742
-x86_64                 randconfig-s0-10190858
-x86_64                 randconfig-s1-10190858
-x86_64                 randconfig-s2-10190858
-x86_64                 randconfig-s0-10190946
-x86_64                 randconfig-s1-10190946
-x86_64                 randconfig-s2-10190946
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-ia64                         bigsur_defconfig
-mips                        qi_lb60_defconfig
-openrisc                            defconfig
-powerpc                    amigaone_defconfig
-m68k                            mac_defconfig
-mips                        maltaup_defconfig
-mips                       markeins_defconfig
-powerpc                       ep405_defconfig
-powerpc                      tqm8xx_defconfig
-s390                             alldefconfig
-sh                          kfr2r09_defconfig
-arm                          moxart_defconfig
-m68k                          multi_defconfig
-powerpc                       maple_defconfig
-powerpc64                        allmodconfig
-mips                      loongson3_defconfig
-mips                      maltaaprp_defconfig
-powerpc                    ge_imp3a_defconfig
-powerpc               mpc834x_itxgp_defconfig
-m68k                           sun3_defconfig
-m68k                       m5475evb_defconfig
-x86_64                 randconfig-s3-10190709
-x86_64                 randconfig-s4-10190709
-x86_64                 randconfig-s5-10190709
-x86_64                 randconfig-s3-10190830
-x86_64                 randconfig-s4-10190830
-x86_64                 randconfig-s5-10190830
-x86_64                 randconfig-s3-10190903
-x86_64                 randconfig-s4-10190903
-x86_64                 randconfig-s5-10190903
-x86_64                   randconfig-i0-201841
-x86_64                   randconfig-i1-201841
-x86_64                   randconfig-i2-201841
-x86_64                   randconfig-i3-201841
-i386                   randconfig-b0-10190612
-i386                   randconfig-b0-10190929
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-b0-10190509
-powerpc                          g5_defconfig
-powerpc                     taishan_defconfig
-mips                          rb532_defconfig
-powerpc                 mpc8272_ads_defconfig
-arm                  colibri_pxa300_defconfig
-x86_64                            allnoconfig
-powerpc                 mpc832x_mds_defconfig
-x86_64                 randconfig-u0-10190753
-x86_64                 randconfig-u0-10190817
-x86_64                 randconfig-u0-10190832
-x86_64                 randconfig-u0-10190929
-x86_64                 randconfig-u0-10190948
-i386                   randconfig-h0-10190412
-i386                   randconfig-h1-10190412
-powerpc                 linkstation_defconfig
-s390                             allyesconfig
-x86_64                randconfig-ne0-10190608
-x86_64                randconfig-ne0-10190857
-m68k                          hp300_defconfig
-powerpc                          allmodconfig
-powerpc                     tqm8541_defconfig
-xtensa                            allnoconfig
-x86_64                 randconfig-h0-10190729
-x86_64                 randconfig-h0-10190920
-i386                   randconfig-x077-201841
-i386                   randconfig-x073-201841
-i386                   randconfig-x070-201841
-i386                   randconfig-x075-201841
-i386                   randconfig-x072-201841
-i386                   randconfig-x071-201841
-i386                   randconfig-x074-201841
-i386                   randconfig-x078-201841
-i386                   randconfig-x079-201841
-i386                   randconfig-x076-201841
-ia64                             allmodconfig
-powerpc                         ps3_defconfig
-i386                  randconfig-sb0-10190606
-i386                   randconfig-x002-201841
-i386                   randconfig-x006-201841
-i386                   randconfig-x005-201841
-i386                   randconfig-x000-201841
-i386                   randconfig-x007-201841
-i386                   randconfig-x004-201841
-i386                   randconfig-x001-201841
-i386                   randconfig-x009-201841
-i386                   randconfig-x008-201841
-i386                   randconfig-x003-201841
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-parisc                           allmodconfig
-powerpc                   bluestone_defconfig
-x86_64                randconfig-ws0-10190802
-x86_64                randconfig-ws0-10190917
-arm                           viper_defconfig
-ia64                             allyesconfig
-x86_64                randconfig-ws0-10190717
-x86_64                randconfig-ws0-10190857
-m68k                          sun3x_defconfig
-powerpc                   currituck_defconfig
-um                                  defconfig
-powerpc               mpc86xx_basic_defconfig
-um                               allmodconfig
-x86_64                 randconfig-r0-10190714
-x86_64                 randconfig-r0-10190927
-i386                               tinyconfig
-arm                            dove_defconfig
-powerpc                 mpc832x_rdb_defconfig
-parisc                        c8000_defconfig
-sh                        sh7763rdp_defconfig
-sparc                            allmodconfig
-i386                   randconfig-x0-10190738
-i386                   randconfig-x0-10190934
-
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+I'm not sure that reading IGC_CTRL_EXT is necessary.
+---
+ drivers/net/ethernet/intel/igc/igc_base.c | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
+index 832da609..df40af7 100644
+--- a/drivers/net/ethernet/intel/igc/igc_base.c
++++ b/drivers/net/ethernet/intel/igc/igc_base.c
+@@ -237,7 +237,6 @@ static s32 igc_init_phy_params_base(struct igc_hw *hw)
+ {
+ 	struct igc_phy_info *phy = &hw->phy;
+ 	s32 ret_val = 0;
+-	u32 ctrl_ext;
+ 
+ 	if (hw->phy.media_type != igc_media_type_copper) {
+ 		phy->type = igc_phy_none;
+@@ -247,8 +246,6 @@ static s32 igc_init_phy_params_base(struct igc_hw *hw)
+ 	phy->autoneg_mask	= AUTONEG_ADVERTISE_SPEED_DEFAULT_2500;
+ 	phy->reset_delay_us	= 100;
+ 
+-	ctrl_ext = rd32(IGC_CTRL_EXT);
+-
+ 	/* set lan id */
+ 	hw->bus.func = (rd32(IGC_STATUS) & IGC_STATUS_FUNC_MASK) >>
+ 			IGC_STATUS_FUNC_SHIFT;
+@@ -287,8 +284,6 @@ static s32 igc_init_phy_params_base(struct igc_hw *hw)
+ static s32 igc_get_invariants_base(struct igc_hw *hw)
+ {
+ 	struct igc_mac_info *mac = &hw->mac;
+-	u32 link_mode = 0;
+-	u32 ctrl_ext = 0;
+ 	s32 ret_val = 0;
+ 
+ 	switch (hw->device_id) {
+@@ -302,9 +297,6 @@ static s32 igc_get_invariants_base(struct igc_hw *hw)
+ 
+ 	hw->phy.media_type = igc_media_type_copper;
+ 
+-	ctrl_ext = rd32(IGC_CTRL_EXT);
+-	link_mode = ctrl_ext & IGC_CTRL_EXT_LINK_MODE_MASK;
+-
+ 	/* mac initialization and operations */
+ 	ret_val = igc_init_mac_params_base(hw);
+ 	if (ret_val)
+
