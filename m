@@ -1,56 +1,49 @@
 From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 19 Oct 2018 22:57:47 +0300
-Subject: [Intel-wired-lan] [PATCH] igc: Tidy up some white space
-Message-ID: <20181019195747.e4h2oihuyroi5vwn@kili.mountain>
+Date: Fri, 19 Oct 2018 22:58:02 +0300
+Subject: [Intel-wired-lan] [bug report] igc: Add code for PHY support
+Message-ID: <20181019195802.onmku47rayekrpti@kili.mountain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I just cleaned up a couple small white space issues.
+Hello Sasha Neftin,
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/net/ethernet/intel/igc/igc_main.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+The patch 5586838fe9ce: "igc: Add code for PHY support" from Oct 11,
+2018, leads to the following static checker warning:
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 9d85707e8a81..3233141c594b 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -1108,7 +1108,7 @@ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
- 
- 	/* update pointers within the skb to store the data */
- 	skb_reserve(skb, IGC_SKB_PAD);
--	 __skb_put(skb, size);
-+	__skb_put(skb, size);
- 
- 	/* update buffer offset */
- #if (PAGE_SIZE < 8192)
-@@ -1160,9 +1160,9 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
- 				(va + headlen) - page_address(rx_buffer->page),
- 				size, truesize);
- #if (PAGE_SIZE < 8192)
--	rx_buffer->page_offset ^= truesize;
-+		rx_buffer->page_offset ^= truesize;
- #else
--	rx_buffer->page_offset += truesize;
-+		rx_buffer->page_offset += truesize;
- #endif
- 	} else {
- 		rx_buffer->pagecnt_bias++;
-@@ -1668,8 +1668,8 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
- 				tx_buffer->next_to_watch,
- 				jiffies,
- 				tx_buffer->next_to_watch->wb.status);
--				netif_stop_subqueue(tx_ring->netdev,
--						    tx_ring->queue_index);
-+			netif_stop_subqueue(tx_ring->netdev,
-+					    tx_ring->queue_index);
- 
- 			/* we are about to reset, no point in enabling stuff */
- 			return true;
--- 
-2.11.0
+	drivers/net/ethernet/intel/igc/igc_phy.c:167 igc_check_downshift()
+	info: ignoring unreachable code.
 
+drivers/net/ethernet/intel/igc/igc_phy.c
+   152  s32 igc_check_downshift(struct igc_hw *hw)
+   153  {
+   154          struct igc_phy_info *phy = &hw->phy;
+   155          u16 phy_data, offset, mask;
+   156          s32 ret_val;
+   157  
+   158          switch (phy->type) {
+   159          case igc_phy_i225:
+
+Presumably there was supposed to be break here?  In the current code,
+this function always just does "goto out;"
+
+   160          default:
+   161                  /* speed downshift not supported */
+   162                  phy->speed_downgraded = false;
+   163                  ret_val = 0;
+   164                  goto out;
+   165          }
+   166  
+   167          ret_val = phy->ops.read_reg(hw, offset, &phy_data);
+   168  
+   169          if (!ret_val)
+   170                  phy->speed_downgraded = (phy_data & mask) ? true : false;
+   171  
+   172  out:
+   173          return ret_val;
+   174  }
+
+regards,
+dan carpenter
