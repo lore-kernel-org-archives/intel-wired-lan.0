@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 22 Oct 2018 19:37:45 +0000
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe/ixgbevf: fix XFRM_ALGO
- dependency
-In-Reply-To: <20181018223943.3709-1-jeffrey.t.kirsher@intel.com>
-References: <20181018223943.3709-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D310D5D@FMSMSX152.amr.corp.intel.com>
+Date: Mon, 22 Oct 2018 19:39:28 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: allow IPsec Tx offload in VEPA
+ mode
+In-Reply-To: <1538695732-10203-1-git-send-email-shannon.nelson@oracle.com>
+References: <1538695732-10203-1-git-send-email-shannon.nelson@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D310D70@FMSMSX152.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,50 +13,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Thursday, October 18, 2018 3:40 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Subject: [Intel-wired-lan] [PATCH v2] ixgbe/ixgbevf: fix XFRM_ALGO
-> dependency
+> Behalf Of Shannon Nelson
+> Sent: Thursday, October 4, 2018 4:29 PM
+> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: allow IPsec Tx offload in VEPA
+> mode
 > 
-> Based on the original work from Arnd Bergmann.
+> When it's possible that the PF might end up trying to send a packet to one of
+> its own VFs, we have to forbid IPsec offload because the device drops the
+> packets into a black hole.
+> See commit 47b6f50077e6 ("ixgbe: disallow IPsec Tx offload when in SR-IOV
+> mode") for more info.
 > 
-> When XFRM_ALGO is not enabled, the new ixgbe IPsec code produces a link
-> error:
+> This really is only necessary when the device is in the default VEB mode.  If
+> instead the device is running in VEPA mode, the packets will go through the
+> encryption engine and out the MAC/PHY as normal, and get "hairpinned" as
+> needed by the switch.
 > 
-> drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.o: In function
-> `ixgbe_ipsec_vf_add_sa':
-> ixgbe_ipsec.c:(.text+0x1266): undefined reference to
-> `xfrm_aead_get_byname'
+> So let's not block IPsec offload when in VEPA mode.  To get there with the
+> ixgbe device, use the handy 'bridge' command:
+> 	bridge link set dev eth1 hwmode vepa
 > 
-> Simply selecting XFRM_ALGO from here causes circular dependencies, so to
-> fix it, we probably want this slightly more complex solution that is similar to
-> what other drivers with XFRM offload do:
-> 
-> A separate Kconfig symbol now controls whether we include the IPsec
-> offload code. To keep the old behavior, this is left as 'default y'. The
-> dependency in XFRM_OFFLOAD still causes a circular dependency but is not
-> actually needed because this symbol is not user visible, so removing that
-> dependency on top makes it all work.
-> 
-> CC: Arnd Bergmann <arnd@arndb.de>
-> CC: Shannon Nelson <shannon.nelson@oracle.com>
-> Fixes: eda0333ac293 ("ixgbe: add VF IPsec management")
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 > ---
-> v2: fixed spelling errors, also added the changes to ixgbevf driver as
->     well
-> 
->  drivers/net/ethernet/intel/Kconfig             | 18 ++++++++++++++++++
->  drivers/net/ethernet/intel/ixgbe/Makefile      |  2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  8 ++++----
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  6 +++---
->  drivers/net/ethernet/intel/ixgbevf/Makefile    |  2 +-
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h   |  4 ++--
->  .../net/ethernet/intel/ixgbevf/ixgbevf_main.c  |  2 +-
->  net/xfrm/Kconfig                               |  1 -
->  8 files changed, 30 insertions(+), 13 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
