@@ -1,99 +1,153 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 23 Oct 2018 16:32:50 +0000
-Subject: [Intel-wired-lan] [PATCH v1] e1000e: allow non-monotonic SYSTIM
- readings
-In-Reply-To: <20181023123739.12489-1-mlichvar@redhat.com>
-References: <20181023123739.12489-1-mlichvar@redhat.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5884CE17CD@ORSMSX115.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 24 Oct 2018 00:55:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 153fe170512da2116f25df694a127070459e6c6c
+Message-ID: <5bcf5284.2q4mhU9JCwaZG8wO%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Miroslav Lichvar [mailto:mlichvar at redhat.com]
-> Sent: Tuesday, October 23, 2018 5:38 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Miroslav Lichvar <mlichvar@redhat.com>; Keller, Jacob E
-> <jacob.e.keller@intel.com>; Richard Cochran <richardcochran@gmail.com>
-> Subject: [PATCH v1] e1000e: allow non-monotonic SYSTIM readings
-> 
-> It seems with some NICs supported by the e1000e driver a SYSTIM reading
-> may occasionally be few microseconds before the previous reading and if
-> enabled also pass e1000e_sanitize_systim() without reaching the maximum
-> number of rereads, even if the function is modified to check three
-> consecutive readings (i.e. it doesn't look like a double read error).
-> This causes an underflow in the timecounter and the PHC time jumps hours
-> ahead.
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 153fe170512da2116f25df694a127070459e6c6c  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-Weird issue, but I think this is a better solution than returning garbage time data like we were before.
+elapsed time: 53m
 
-> This was observed on 82574, I217 and I219. The fastest way to reproduce
-> it is to run a program that continuously calls the PTP_SYS_OFFSET ioctl
-> on the PHC.
-> 
-> Modify e1000e_phc_gettime() to use timecounter_cyc2time() instead of
-> timecounter_read() in order to allow non-monotonic SYSTIM readings and
-> prevent the PHC from jumping.
-> 
+configs tested: 128
 
-Thanks for the patch. This looks good to me.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Acked-by: Jacob Keller <jacob.e.keller@intel.com>
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-x019-201842
+i386                   randconfig-x016-201842
+i386                   randconfig-x018-201842
+i386                   randconfig-x014-201842
+i386                   randconfig-x015-201842
+i386                   randconfig-x010-201842
+i386                   randconfig-x017-201842
+i386                   randconfig-x012-201842
+i386                   randconfig-x011-201842
+i386                   randconfig-x013-201842
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-10212014
+i386                   randconfig-n1-10212014
+i386                   randconfig-n2-10212014
+i386                   randconfig-n3-10212014
+x86_64                 randconfig-x002-201842
+x86_64                 randconfig-x005-201842
+x86_64                 randconfig-x000-201842
+x86_64                 randconfig-x001-201842
+x86_64                 randconfig-x008-201842
+x86_64                 randconfig-x009-201842
+x86_64                 randconfig-x007-201842
+x86_64                 randconfig-x003-201842
+x86_64                 randconfig-x006-201842
+x86_64                 randconfig-x004-201842
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-i0-10212032
+i386                   randconfig-i1-10212032
+i386                   randconfig-i2-10212032
+i386                   randconfig-i3-10212032
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                    vt8500_v6_v7_defconfig
+microblaze                       allmodconfig
+parisc                        c8000_defconfig
+powerpc                     powernv_defconfig
+x86_64                 randconfig-x017-201842
+x86_64                 randconfig-x011-201842
+x86_64                 randconfig-x016-201842
+x86_64                 randconfig-x013-201842
+x86_64                 randconfig-x012-201842
+x86_64                 randconfig-x019-201842
+x86_64                 randconfig-x018-201842
+x86_64                 randconfig-x014-201842
+x86_64                 randconfig-x010-201842
+x86_64                 randconfig-x015-201842
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-10220917
+i386                   randconfig-s1-10220917
+i386                   randconfig-s2-10220917
+i386                   randconfig-s3-10220917
+x86_64                 randconfig-s3-10232348
+x86_64                 randconfig-s4-10232348
+x86_64                 randconfig-s5-10232348
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+ia64                            sim_defconfig
+x86_64                randconfig-ne0-10232351
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-h0-10232328
+i386                               tinyconfig
+i386                   randconfig-x077-201842
+i386                   randconfig-x072-201842
+i386                   randconfig-x075-201842
+i386                   randconfig-x070-201842
+i386                   randconfig-x073-201842
+i386                   randconfig-x071-201842
+i386                   randconfig-x074-201842
+i386                   randconfig-x078-201842
+i386                   randconfig-x076-201842
+i386                   randconfig-x079-201842
+i386                   randconfig-x002-201842
+i386                   randconfig-x007-201842
+i386                   randconfig-x000-201842
+i386                   randconfig-x005-201842
+i386                   randconfig-x006-201842
+i386                   randconfig-x004-201842
+i386                   randconfig-x001-201842
+i386                   randconfig-x009-201842
+i386                   randconfig-x008-201842
+i386                   randconfig-x003-201842
+x86_64                 randconfig-e0-10212032
+x86_64                 randconfig-e1-10212032
+x86_64                 randconfig-e2-10212032
+x86_64                 randconfig-e3-10212032
+mips                         tb0287_defconfig
+sh                             sh03_defconfig
+i386                   randconfig-x0-10231750
 
-> Cc: Jacob Keller <jacob.e.keller@intel.com>
-> Cc: Richard Cochran <richardcochran@gmail.com>
-> Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
-> ---
-> 
-> Notes:
->     RFC->v1:
->     - Removed unnecessary call of PTP gettime64() in
->       e1000e_systim_overflow_work()
-> 
->  drivers/net/ethernet/intel/e1000e/ptp.c | 13 ++++++++++---
->  1 file changed, 10 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c
-> b/drivers/net/ethernet/intel/e1000e/ptp.c
-> index 37c76945ad9b..e1f821edbc21 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ptp.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ptp.c
-> @@ -173,10 +173,14 @@ static int e1000e_phc_gettime(struct ptp_clock_info *ptp,
-> struct timespec64 *ts)
->  	struct e1000_adapter *adapter = container_of(ptp, struct e1000_adapter,
->  						     ptp_clock_info);
->  	unsigned long flags;
-> -	u64 ns;
-> +	u64 cycles, ns;
-> 
->  	spin_lock_irqsave(&adapter->systim_lock, flags);
-> -	ns = timecounter_read(&adapter->tc);
-> +
-> +	/* Use timecounter_cyc2time() to allow non-monotonic SYSTIM readings */
-> +	cycles = adapter->cc.read(&adapter->cc);
-> +	ns = timecounter_cyc2time(&adapter->tc, cycles);
-> +
->  	spin_unlock_irqrestore(&adapter->systim_lock, flags);
-> 
->  	*ts = ns_to_timespec64(ns);
-> @@ -232,9 +236,12 @@ static void e1000e_systim_overflow_work(struct
-> work_struct *work)
->  						     systim_overflow_work.work);
->  	struct e1000_hw *hw = &adapter->hw;
->  	struct timespec64 ts;
-> +	u64 ns;
-> 
-> -	adapter->ptp_clock_info.gettime64(&adapter->ptp_clock_info, &ts);
-> +	/* Update the timecounter */
-> +	ns = timecounter_read(&adapter->tc);
-> 
-> +	ts = ns_to_timespec64(ns);
->  	e_dbg("SYSTIM overflow check at %lld.%09lu\n",
->  	      (long long) ts.tv_sec, ts.tv_nsec);
-> 
-> --
-> 2.17.1
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
