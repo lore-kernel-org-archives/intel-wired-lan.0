@@ -1,9 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 23 Oct 2018 23:17:36 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Update status codes
-In-Reply-To: <20181019211103.13873-1-alice.michael@intel.com>
-References: <20181019211103.13873-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D310FC8@FMSMSX152.amr.corp.intel.com>
+Date: Tue, 23 Oct 2018 23:30:23 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: fix MAC anti-spoofing filter
+ after VFLR
+In-Reply-To: <1540190671-43799-1-git-send-email-radoslawx.tyl@intel.com>
+References: <1540190671-43799-1-git-send-email-radoslawx.tyl@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D310FDA@FMSMSX152.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,24 +13,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Friday, October 19, 2018 2:11 PM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: Update status codes
+> Behalf Of Radoslaw Tyl
+> Sent: Sunday, October 21, 2018 11:45 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Tyl, RadoslawX <radoslawx.tyl@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: fix MAC anti-spoofing filter after
+> VFLR
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> This change resolves a driver bug where the driver is logging a message that
+> says "Spoofed packets detected". This can occur on the PF
+> (host) when a VF has VLAN+MACVLAN enabled and is re-started with a
+> different MAC address.
 > 
-> Add a few new status code which will be used by the ice driver, and rename
-> a few to make them more consistent. Error code are mapped to similar
-> values as in i40e_status.h, so as to be compatible with older VF drivers not
-> using this status enum.
+> MAC and VLAN anti-spoofing filters are to be enabled together.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  2 +-
->  include/linux/avf/virtchnl.h                       | 12 +++++++++---
->  2 files changed, 10 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
