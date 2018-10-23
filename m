@@ -1,41 +1,78 @@
 From: Miroslav Lichvar <mlichvar@redhat.com>
-Date: Tue, 23 Oct 2018 13:31:59 +0200
-Subject: [Intel-wired-lan] [RFC PATCH] e1000e: allow non-monotonic
- SYSTIM readings
-In-Reply-To: <02874ECE860811409154E81DA85FBB5884CDDA0E@ORSMSX115.amr.corp.intel.com>
-References: <20181017161621.6081-1-mlichvar@redhat.com>
- <02874ECE860811409154E81DA85FBB5884CDDA0E@ORSMSX115.amr.corp.intel.com>
-Message-ID: <20181023113159.GR4407@localhost>
+Date: Tue, 23 Oct 2018 14:37:39 +0200
+Subject: [Intel-wired-lan] [PATCH v1] e1000e: allow non-monotonic SYSTIM
+ readings
+Message-ID: <20181023123739.12489-1-mlichvar@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Oct 19, 2018 at 04:56:02PM +0000, Keller, Jacob E wrote:
-> > @@ -233,6 +237,9 @@ static void e1000e_systim_overflow_work(struct
-> > work_struct *work)
-> >  	struct e1000_hw *hw = &adapter->hw;
-> >  	struct timespec64 ts;
-> > 
-> > +	/* Update the timecounter */
-> > +	timecounter_read(&adapter->tc);
-> > +
-> 
-> yea, we previously depended on the gettime64 to do timecounter_read implicitly.
-> 
-> >  	adapter->ptp_clock_info.gettime64(&adapter->ptp_clock_info, &ts);
-> 
-> Can't we drop this line now?
+It seems with some NICs supported by the e1000e driver a SYSTIM reading
+may occasionally be few microseconds before the previous reading and if
+enabled also pass e1000e_sanitize_systim() without reaching the maximum
+number of rereads, even if the function is modified to check three
+consecutive readings (i.e. it doesn't look like a double read error).
+This causes an underflow in the timecounter and the PHC time jumps hours
+ahead.
 
-Yes. We can save the value returned by the timecounter_read call and
-convert it to timespec for the debug message below. I'll send a new
-patch.
+This was observed on 82574, I217 and I219. The fastest way to reproduce
+it is to run a program that continuously calls the PTP_SYS_OFFSET ioctl
+on the PHC.
 
-> > 
-> >  	e_dbg("SYSTIM overflow check at %lld.%09lu\n",
+Modify e1000e_phc_gettime() to use timecounter_cyc2time() instead of
+timecounter_read() in order to allow non-monotonic SYSTIM readings and
+prevent the PHC from jumping.
 
-Thanks,
+Cc: Jacob Keller <jacob.e.keller@intel.com>
+Cc: Richard Cochran <richardcochran@gmail.com>
+Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
+---
 
+Notes:
+    RFC->v1:
+    - Removed unnecessary call of PTP gettime64() in
+      e1000e_systim_overflow_work()
+
+ drivers/net/ethernet/intel/e1000e/ptp.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
+index 37c76945ad9b..e1f821edbc21 100644
+--- a/drivers/net/ethernet/intel/e1000e/ptp.c
++++ b/drivers/net/ethernet/intel/e1000e/ptp.c
+@@ -173,10 +173,14 @@ static int e1000e_phc_gettime(struct ptp_clock_info *ptp, struct timespec64 *ts)
+ 	struct e1000_adapter *adapter = container_of(ptp, struct e1000_adapter,
+ 						     ptp_clock_info);
+ 	unsigned long flags;
+-	u64 ns;
++	u64 cycles, ns;
+ 
+ 	spin_lock_irqsave(&adapter->systim_lock, flags);
+-	ns = timecounter_read(&adapter->tc);
++
++	/* Use timecounter_cyc2time() to allow non-monotonic SYSTIM readings */
++	cycles = adapter->cc.read(&adapter->cc);
++	ns = timecounter_cyc2time(&adapter->tc, cycles);
++
+ 	spin_unlock_irqrestore(&adapter->systim_lock, flags);
+ 
+ 	*ts = ns_to_timespec64(ns);
+@@ -232,9 +236,12 @@ static void e1000e_systim_overflow_work(struct work_struct *work)
+ 						     systim_overflow_work.work);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	struct timespec64 ts;
++	u64 ns;
+ 
+-	adapter->ptp_clock_info.gettime64(&adapter->ptp_clock_info, &ts);
++	/* Update the timecounter */
++	ns = timecounter_read(&adapter->tc);
+ 
++	ts = ns_to_timespec64(ns);
+ 	e_dbg("SYSTIM overflow check at %lld.%09lu\n",
+ 	      (long long) ts.tv_sec, ts.tv_nsec);
+ 
 -- 
-Miroslav Lichvar
+2.17.1
+
