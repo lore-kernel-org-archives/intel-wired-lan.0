@@ -1,46 +1,41 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 22 Oct 2018 19:39:28 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: allow IPsec Tx offload in VEPA
- mode
-In-Reply-To: <1538695732-10203-1-git-send-email-shannon.nelson@oracle.com>
-References: <1538695732-10203-1-git-send-email-shannon.nelson@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D310D70@FMSMSX152.amr.corp.intel.com>
+From: Miroslav Lichvar <mlichvar@redhat.com>
+Date: Tue, 23 Oct 2018 13:31:59 +0200
+Subject: [Intel-wired-lan] [RFC PATCH] e1000e: allow non-monotonic
+ SYSTIM readings
+In-Reply-To: <02874ECE860811409154E81DA85FBB5884CDDA0E@ORSMSX115.amr.corp.intel.com>
+References: <20181017161621.6081-1-mlichvar@redhat.com>
+ <02874ECE860811409154E81DA85FBB5884CDDA0E@ORSMSX115.amr.corp.intel.com>
+Message-ID: <20181023113159.GR4407@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Shannon Nelson
-> Sent: Thursday, October 4, 2018 4:29 PM
-> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: allow IPsec Tx offload in VEPA
-> mode
+On Fri, Oct 19, 2018 at 04:56:02PM +0000, Keller, Jacob E wrote:
+> > @@ -233,6 +237,9 @@ static void e1000e_systim_overflow_work(struct
+> > work_struct *work)
+> >  	struct e1000_hw *hw = &adapter->hw;
+> >  	struct timespec64 ts;
+> > 
+> > +	/* Update the timecounter */
+> > +	timecounter_read(&adapter->tc);
+> > +
 > 
-> When it's possible that the PF might end up trying to send a packet to one of
-> its own VFs, we have to forbid IPsec offload because the device drops the
-> packets into a black hole.
-> See commit 47b6f50077e6 ("ixgbe: disallow IPsec Tx offload when in SR-IOV
-> mode") for more info.
+> yea, we previously depended on the gettime64 to do timecounter_read implicitly.
 > 
-> This really is only necessary when the device is in the default VEB mode.  If
-> instead the device is running in VEPA mode, the packets will go through the
-> encryption engine and out the MAC/PHY as normal, and get "hairpinned" as
-> needed by the switch.
+> >  	adapter->ptp_clock_info.gettime64(&adapter->ptp_clock_info, &ts);
 > 
-> So let's not block IPsec offload when in VEPA mode.  To get there with the
-> ixgbe device, use the handy 'bridge' command:
-> 	bridge link set dev eth1 hwmode vepa
-> 
-> Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> Can't we drop this line now?
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Yes. We can save the value returned by the timecounter_read call and
+convert it to timespec for the debug message below. I'll send a new
+patch.
 
+> > 
+> >  	e_dbg("SYSTIM overflow check at %lld.%09lu\n",
 
+Thanks,
+
+-- 
+Miroslav Lichvar
