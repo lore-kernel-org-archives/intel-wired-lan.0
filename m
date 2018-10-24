@@ -1,51 +1,58 @@
-From: Miroslav Lichvar <mlichvar@redhat.com>
-Date: Wed, 24 Oct 2018 11:46:16 +0200
-Subject: [Intel-wired-lan] [PATCH v1] e1000e: allow non-monotonic SYSTIM
- readings
-In-Reply-To: <02874ECE860811409154E81DA85FBB5884CE17CD@ORSMSX115.amr.corp.intel.com>
-References: <20181023123739.12489-1-mlichvar@redhat.com>
- <02874ECE860811409154E81DA85FBB5884CE17CD@ORSMSX115.amr.corp.intel.com>
-Message-ID: <20181024094616.GC12019@localhost>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Wed, 24 Oct 2018 12:55:14 +0300
+Subject: [Intel-wired-lan] [PATCH net-next] igc: Remove set but not used
+ variable 'pci_using_dac'
+In-Reply-To: <1539953291-189201-1-git-send-email-yuehaibing@huawei.com>
+References: <1539953291-189201-1-git-send-email-yuehaibing@huawei.com>
+Message-ID: <3fd978fe-73c7-503b-c6f6-8e1096199aba@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 23, 2018 at 04:32:50PM +0000, Keller, Jacob E wrote:
-> > It seems with some NICs supported by the e1000e driver a SYSTIM reading
-> > may occasionally be few microseconds before the previous reading and if
-> > enabled also pass e1000e_sanitize_systim() without reaching the maximum
-> > number of rereads, even if the function is modified to check three
-> > consecutive readings (i.e. it doesn't look like a double read error).
-> > This causes an underflow in the timecounter and the PHC time jumps hours
-> > ahead.
-> > 
+On 10/19/2018 15:48, YueHaibing wrote:
+> Fixes gcc '-Wunused-but-set-variable' warning:
 > 
-> Weird issue, but I think this is a better solution than returning garbage time data like we were before.
+> drivers/net/ethernet/intel/igc/igc_main.c: In function 'igc_probe':
+> drivers/net/ethernet/intel/igc/igc_main.c:3535:11: warning:
+>   variable 'pci_using_dac' set but not used [-Wunused-but-set-variable]
+> 
+> It never used since introduction in commit
+> d89f88419f99 ("igc: Add skeletal frame for Intel(R) 2.5G Ethernet Controller support")
+> 
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_main.c | 5 +----
+>   1 file changed, 1 insertion(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 9d85707..06a4afbe 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -3532,19 +3532,16 @@ static int igc_probe(struct pci_dev *pdev,
+>   	struct net_device *netdev;
+>   	struct igc_hw *hw;
+>   	const struct igc_info *ei = igc_info_tbl[ent->driver_data];
+> -	int err, pci_using_dac;
+> +	int err;
+>   
+>   	err = pci_enable_device_mem(pdev);
+>   	if (err)
+>   		return err;
+>   
+> -	pci_using_dac = 0;
+>   	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
+>   	if (!err) {
+>   		err = dma_set_coherent_mask(&pdev->dev,
+>   					    DMA_BIT_MASK(64));
+> -		if (!err)
+> -			pci_using_dac = 1;
+>   	} else {
+>   		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
+>   		if (err) {
+> 
+Thanks for the patch. Good.
 
-It is indeed a weird issue. I think one explanation could be a double
-overflow of SYSTIML with the unreliable latching of SYSTIMH.
+Acked-by: Sasha Neftin <sasha.neftin@intel.com>
 
-If my math is right, depending on the frequency of the clock the
-SYSTIML register overflows about every 8, 16, or 262 microseconds.
-That seems too short to reliably contain reading of two registers.
-
-Let's say the first reading of SYSMTIML is 0xffff0000 and the second
-reading is 0xff000000. An overflow is detected. But before SYSTIMH is
-read for the second time, another overflow may happen, which will
-cause the returned time to be ahead of the true PHC time and the next
-correct reading may be out-of-order.
-
-I'm wondering whether the commit 37b12910 ("e1000e: Fix tight loop
-implementation of systime read algorithm") made this more likely to
-happen (if it really is what happens).
-
-The best fix might be to use a much smaller INCVALUE, so that the
-double overflow cannot happen, and implement the frequency adjustment
-in software, similarly to the system clock. This could be reused in
-other drivers that don't support a one-step clock in order to simplify
-their code.
-
--- 
-Miroslav Lichvar
