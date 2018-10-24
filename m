@@ -1,53 +1,31 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 24 Oct 2018 17:10:42 +0200
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Wed, 24 Oct 2018 18:38:45 +0300
 Subject: [Intel-wired-lan] [PATCH] igc: Minor cleaning up of code
-In-Reply-To: <20181024145000.39034-1-sasha.neftin@intel.com>
+In-Reply-To: <f171207c4a9fa28ea33d3e10ff71ba4e685bb4f5.camel@intel.com>
 References: <20181024145000.39034-1-sasha.neftin@intel.com>
-Message-ID: <7290c313-46f0-5ab9-ab34-1b9309e718b5@molgen.mpg.de>
+ <f171207c4a9fa28ea33d3e10ff71ba4e685bb4f5.camel@intel.com>
+Message-ID: <ba7d1003-2e6e-230d-658c-e5b15ae3c1eb@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Sasha,
-
-
-On 10/24/18 16:50, Sasha Neftin wrote:
-> Address few community comments.
-> Remove unused code, will be add per demand.
-
-added
-
-> Remove blank lines and unneeded includes.
-> Update driver version accordance to kernel version.
-
-in accordance
-
-So, what is the new versioning scheme?
-
-Why not split this up into three small commits?
-
-
-
-Also, imperative mood seems more often used in the
-summary.
-
-> igc: Clean up code
-
-> igc: Do minor code clean-up
-
-[?]
-
-
-Kind regards,
-
-Paul
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 5174 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181024/aa2cebc6/attachment.p7s>
+On 10/24/2018 18:09, Jeff Kirsher wrote:
+> On Wed, 2018-10-24 at 17:50 +0300, Sasha Neftin wrote:
+>> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+>> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+>> @@ -9,7 +9,7 @@
+>>   #include "igc.h"
+>>   #include "igc_hw.h"
+>>   
+>> -#define DRV_VERSION    "0.0.1-k"
+>> +#define DRV_VERSION    "0.4.20-k"
+>>   #define DRV_SUMMARY    "Intel(R) 2.5G Ethernet Linux Driver"
+>>   
+>>   static int debug = -1;
+> 
+> This is the only change that I do not agree with and feel we should not
+> implement the suggested change.
+> 
+I will fix and re-send. We will follow our previous convention.
