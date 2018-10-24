@@ -1,60 +1,94 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Wed, 24 Oct 2018 14:03:55 +0300
-Subject: [Intel-wired-lan] [PATCH] igc: Tidy up some white space
-In-Reply-To: <20181019195747.e4h2oihuyroi5vwn@kili.mountain>
-References: <20181019195747.e4h2oihuyroi5vwn@kili.mountain>
-Message-ID: <72ff26fd-d61b-1107-d1c3-a4e4deb93adc@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed, 24 Oct 2018 17:50:00 +0300
+Subject: [Intel-wired-lan] [PATCH] igc: Minor cleaning up of code
+Message-ID: <20181024145000.39034-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/19/2018 22:57, Dan Carpenter wrote:
-> I just cleaned up a couple small white space issues.
-> 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
->   drivers/net/ethernet/intel/igc/igc_main.c | 10 +++++-----
->   1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 9d85707e8a81..3233141c594b 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -1108,7 +1108,7 @@ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
->   
->   	/* update pointers within the skb to store the data */
->   	skb_reserve(skb, IGC_SKB_PAD);
-> -	 __skb_put(skb, size);
-> +	__skb_put(skb, size);
->   
->   	/* update buffer offset */
->   #if (PAGE_SIZE < 8192)
-> @@ -1160,9 +1160,9 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
->   				(va + headlen) - page_address(rx_buffer->page),
->   				size, truesize);
->   #if (PAGE_SIZE < 8192)
-> -	rx_buffer->page_offset ^= truesize;
-> +		rx_buffer->page_offset ^= truesize;
->   #else
-> -	rx_buffer->page_offset += truesize;
-> +		rx_buffer->page_offset += truesize;
->   #endif
->   	} else {
->   		rx_buffer->pagecnt_bias++;
-> @@ -1668,8 +1668,8 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
->   				tx_buffer->next_to_watch,
->   				jiffies,
->   				tx_buffer->next_to_watch->wb.status);
-> -				netif_stop_subqueue(tx_ring->netdev,
-> -						    tx_ring->queue_index);
-> +			netif_stop_subqueue(tx_ring->netdev,
-> +					    tx_ring->queue_index);
->   
->   			/* we are about to reset, no point in enabling stuff */
->   			return true;
-> 
-Thanks for the patch. Good catch of typos.
+Address few community comments.
+Remove unused code, will be add per demand.
+Remove blank lines and unneeded includes.
+Update driver version accordance to kernel version.
 
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc.h      |  9 ---------
+ drivers/net/ethernet/intel/igc/igc_main.c | 17 +----------------
+ 2 files changed, 1 insertion(+), 25 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index cdf18a5d9e08..3b00b109b34a 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -5,23 +5,14 @@
+ #define _IGC_H_
+ 
+ #include <linux/kobject.h>
+-
+ #include <linux/pci.h>
+ #include <linux/netdevice.h>
+ #include <linux/vmalloc.h>
+-
+ #include <linux/ethtool.h>
+-
+ #include <linux/sctp.h>
+ 
+ #define IGC_ERR(args...) pr_err("igc: " args)
+ 
+-#define PFX "igc: "
+-
+-#include <linux/timecounter.h>
+-#include <linux/net_tstamp.h>
+-#include <linux/ptp_clock_kernel.h>
+-
+ #include "igc_hw.h"
+ 
+ /* main */
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 9d85707e8a81..27d836f35bc2 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -9,7 +9,7 @@
+ #include "igc.h"
+ #include "igc_hw.h"
+ 
+-#define DRV_VERSION	"0.0.1-k"
++#define DRV_VERSION	"0.4.20-k"
+ #define DRV_SUMMARY	"Intel(R) 2.5G Ethernet Linux Driver"
+ 
+ static int debug = -1;
+@@ -1700,20 +1700,6 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ }
+ 
+ /**
+- * igc_ioctl - I/O control method
+- * @netdev: network interface device structure
+- * @ifreq: frequency
+- * @cmd: command
+- */
+-static int igc_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
+-{
+-	switch (cmd) {
+-	default:
+-		return -EOPNOTSUPP;
+-	}
+-}
+-
+-/**
+  * igc_up - Open the interface and prepare it to handle traffic
+  * @adapter: board private structure
+  */
+@@ -3445,7 +3431,6 @@ static const struct net_device_ops igc_netdev_ops = {
+ 	.ndo_set_mac_address	= igc_set_mac,
+ 	.ndo_change_mtu		= igc_change_mtu,
+ 	.ndo_get_stats		= igc_get_stats,
+-	.ndo_do_ioctl		= igc_ioctl,
+ };
+ 
+ /* PCIe configuration access */
+-- 
+2.11.0
+
