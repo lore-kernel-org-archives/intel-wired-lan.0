@@ -1,211 +1,82 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 10:40:58 -0700
-Subject: [Intel-wired-lan] [PATCH S8 09/16] ice: Fix tx_timeout in PF driver
-In-Reply-To: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
-References: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026174105.11628-10-anirudh.venkataramanan@intel.com>
+Date: Fri, 26 Oct 2018 11:44:41 -0700
+Subject: [Intel-wired-lan] [PATCH S9 09/15] ice: Do not set LAN_EN for
+ MAC-VLAN filters
+In-Reply-To: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
+References: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026184447.13547-10-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Yashaswini Raghuram Prathivadi Bhayankaram <yashaswini.raghuram.prathivadi.bhayankaram@intel.com>
 
-Prior to this commit the driver was running into tx_timeouts when a
-queue was stressed enough. This was happening because the HW tail
-and SW tail (NTU) were incorrectly out of sync. Consequently this was
-causing the HW head to collide with the HW tail, which to the hardware
-means that all descriptors posted for Tx have been processed.
+In the action fields for a MAC-VLAN filter, do not set the LAN_EN flag
+if the MAC in the MAC-VLAN is unicast MAC. The unicast packets that
+match should not be forwarded to the wire.
 
-Due to the Tx logic used in the driver SW tail and HW tail are allowed
-to be out of sync. This is done as an optimization because it allows the
-driver to write HW tail as infrequently as possible, while still
-updating the SW tail index to keep track. However, there are situations
-where this results in the tail never getting updated, resulting in Tx
-timeouts.
-
-Tx HW tail write condition:
-	if (netif_xmit_stopped(txring_txq(tx_ring) || !skb->xmit_more)
-		writel(sw_tail, tx_ring->tail);
-
-An issue was found in the Tx logic that was causing the aformentioned
-condition for updating HW tail to never happen, causing tx_timeouts.
-
-In ice_xmit_frame_ring we calculate how many descriptors we need for the
-Tx transaction based on the skb the kernel hands us. This is then passed
-into ice_maybe_stop_tx along with some extra padding to determine if we
-have enough descriptors available for this transaction. If we don't then
-we return -EBUSY to the stack, otherwise we move on and eventually
-prepare the Tx descriptors accordingly in ice_tx_map and set
-next_to_watch. In ice_tx_map we make another call to ice_maybe_stop_tx
-with a value of MAX_SKB_FRAGS + 4. The key here is that this value is
-possibly less than the value we sent in the first call to
-ice_maybe_stop_tx in ice_xmit_frame_ring. Now, if the number of unused
-descriptors is between MAX_SKB_FRAGS + 4 and the value used in the first
-call to ice_maybe_stop_tx in ice_xmit_frame_ring then we do not update
-the HW tail because of the "Tx HW tail write condition" above. This is
-because in ice_maybe_stop_tx we return success from ice_maybe_stop_tx
-instead of calling __ice_maybe_stop_tx and subsequently calling
-netif_stop_subqueue, which sets the __QUEUE_STATE_DEV_XOFF bit. This
-bit is then checked in the "Tx HW tail write condition" by calling
-netif_xmit_stopped and subsequently updating HW tail if the
-aformentioned bit is set.
-
-In ice_clean_tx_irq, if next_to_watch is not NULL, we end up cleaning
-the descriptors that HW sets the DD bit on and we have the budget. The
-HW head will eventuallly run into the HW tail in response to the
-description in the paragraph above.
-
-The next time through ice_xmit_frame_ring we make the initial call to
-ice_maybe_stop_tx with another skb from the stack. This time we do not
-have enough descriptors available and we return NETDEV_TX_BUSY to the
-stack and end up setting next_to_watch to NULL.
-
-This is where we are stuck. In ice_clean_tx_irq we never clean anything
-because next_to_watch is always NULL and in ice_xmit_frame_ring we never
-update HW tail because we already return NETDEV_TX_BUSY to the stack and
-eventually we hit a tx_timeout.
-
-This issue was fixed by making sure that the second call to
-ice_maybe_stop_tx in ice_tx_map is passed a value that is >= the value
-that was used on the initial call to ice_maybe_stop_tx in
-ice_xmit_frame_ring. This was done by adding the following defines to
-make the logic more clear and to reduce the chance of mucking this up
-again:
-
-ICE_CACHE_LINE_BYTES		64
-ICE_DESCS_PER_CACHE_LINE	(ICE_CACHE_LINE_BYTES / \
-				 sizeof(struct ice_tx_desc))
-ICE_DESCS_FOR_CTX_DESC		1
-ICE_DESCS_FOR_SKB_DATA_PTR	1
-
-The ICE_CACHE_LINE_BYTES being 64 is an assumption being made so we
-don't have to figure this out on every pass through the Tx path. Instead
-I added a sanity check in ice_probe to verify cache line size and print
-a message if it's not 64 Bytes. This will make it easier to file issues
-if they are seen when the cache line size is not 64 Bytes when reading
-from the GLPCI_CNF2 register.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Yashaswini Raghuram Prathivadi Bhayankaram <yashaswini.raghuram.prathivadi.bhayankaram@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  2 ++
- drivers/net/ethernet/intel/ice/ice_main.c       | 18 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_txrx.c       |  9 +++++----
- drivers/net/ethernet/intel/ice/ice_txrx.h       | 17 +++++++++++++++--
- 4 files changed, 40 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 37 +++++++++++++++++++----------
+ 1 file changed, 24 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 5fdea6ec7675..596b9fb1c510 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -242,6 +242,8 @@
- #define GLNVM_ULD				0x000B6008
- #define GLNVM_ULD_CORER_DONE_M			BIT(3)
- #define GLNVM_ULD_GLOBR_DONE_M			BIT(4)
-+#define GLPCI_CNF2				0x000BE004
-+#define GLPCI_CNF2_CACHELINE_SIZE_M		BIT(1)
- #define PF_FUNC_RID				0x0009E880
- #define PF_FUNC_RID_FUNC_NUM_S			0
- #define PF_FUNC_RID_FUNC_NUM_M			ICE_M(0x7, 0)
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 82f49dbd762c..333312a1d595 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1994,6 +1994,22 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
- 	return 0;
- }
- 
-+/**
-+ * ice_verify_cacheline_size - verify driver's assumption of 64 Byte cache lines
-+ * @pf: pointer to the PF structure
-+ *
-+ * There is no error returned here because the driver should be able to handle
-+ * 128 Byte cache lines, so we only print a warning in case issues are seen,
-+ * specifically with Tx.
-+ */
-+static void ice_verify_cacheline_size(struct ice_pf *pf)
-+{
-+	if (rd32(&pf->hw, GLPCI_CNF2) & GLPCI_CNF2_CACHELINE_SIZE_M)
-+		dev_warn(&pf->pdev->dev,
-+			 "%d Byte cache line assumption is invalid, driver may have Tx timeouts!\n",
-+			 ICE_CACHE_LINE_BYTES);
-+}
-+
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 40c9c6558956..107ca08899b6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -629,25 +629,36 @@ enum ice_status ice_get_initial_sw_cfg(struct ice_hw *hw)
  /**
-  * ice_probe - Device initialization routine
-  * @pdev: PCI device information struct
-@@ -2144,6 +2160,8 @@ static int ice_probe(struct pci_dev *pdev,
- 	/* since everything is good, start the service timer */
- 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
- 
-+	ice_verify_cacheline_size(pf);
-+
- 	return 0;
- 
- err_alloc_sw_unroll:
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 5dae968d853e..3387c67c848d 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1556,15 +1556,15 @@ int ice_tso(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
-  * magnitude greater than our largest possible GSO size.
+  * ice_fill_sw_info - Helper function to populate lb_en and lan_en
+  * @hw: pointer to the hardware structure
+- * @f_info: filter info structure to fill/update
++ * @fi: filter info structure to fill/update
   *
-  * This would then be implemented as:
-- *     return (((size >> 12) * 85) >> 8) + 1;
-+ *     return (((size >> 12) * 85) >> 8) + ICE_DESCS_FOR_SKB_DATA_PTR;
-  *
-  * Since multiplication and division are commutative, we can reorder
-  * operations into:
-- *     return ((size * 85) >> 20) + 1;
-+ *     return ((size * 85) >> 20) + ICE_DESCS_FOR_SKB_DATA_PTR;
+  * This helper function populates the lb_en and lan_en elements of the provided
+  * ice_fltr_info struct using the switch's type and characteristics of the
+  * switch rule being configured.
   */
- static unsigned int ice_txd_use_count(unsigned int size)
+-static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *f_info)
++static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *fi)
  {
--	return ((size * 85) >> 20) + 1;
-+	return ((size * 85) >> 20) + ICE_DESCS_FOR_SKB_DATA_PTR;
+-	f_info->lb_en = false;
+-	f_info->lan_en = false;
+-	if ((f_info->flag & ICE_FLTR_TX) &&
+-	    (f_info->fltr_act == ICE_FWD_TO_VSI ||
+-	     f_info->fltr_act == ICE_FWD_TO_VSI_LIST ||
+-	     f_info->fltr_act == ICE_FWD_TO_Q ||
+-	     f_info->fltr_act == ICE_FWD_TO_QGRP)) {
+-		f_info->lb_en = true;
+-		if (!(hw->evb_veb && f_info->lkup_type == ICE_SW_LKUP_MAC &&
+-		      is_unicast_ether_addr(f_info->l_data.mac.mac_addr)))
+-			f_info->lan_en = true;
++	fi->lb_en = false;
++	fi->lan_en = false;
++	if ((fi->flag & ICE_FLTR_TX) &&
++	    (fi->fltr_act == ICE_FWD_TO_VSI ||
++	     fi->fltr_act == ICE_FWD_TO_VSI_LIST ||
++	     fi->fltr_act == ICE_FWD_TO_Q ||
++	     fi->fltr_act == ICE_FWD_TO_QGRP)) {
++		fi->lb_en = true;
++		/* Do not set lan_en to TRUE if
++		 * 1. The switch is a VEB AND
++		 * 2
++		 * 2.1 The lookup is MAC with unicast addr for MAC, OR
++		 * 2.2 The lookup is MAC_VLAN with unicast addr for MAC
++		 *
++		 * In all other cases, the LAN enable has to be set to true.
++		 */
++		if (!(hw->evb_veb &&
++		      ((fi->lkup_type == ICE_SW_LKUP_MAC &&
++			is_unicast_ether_addr(fi->l_data.mac.mac_addr)) ||
++		       (fi->lkup_type == ICE_SW_LKUP_MAC_VLAN &&
++			is_unicast_ether_addr(fi->l_data.mac_vlan.mac_addr)))))
++			fi->lan_en = true;
+ 	}
  }
  
- /**
-@@ -1706,7 +1706,8 @@ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_ring *tx_ring)
- 	 *       + 1 desc for context descriptor,
- 	 * otherwise try next time
- 	 */
--	if (ice_maybe_stop_tx(tx_ring, count + 4 + 1)) {
-+	if (ice_maybe_stop_tx(tx_ring, count + ICE_DESCS_PER_CACHE_LINE +
-+			      ICE_DESCS_FOR_CTX_DESC)) {
- 		tx_ring->tx_stats.tx_busy++;
- 		return NETDEV_TX_BUSY;
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 1d0f58bd389b..75d0eaf6c9dd 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -22,8 +22,21 @@
- #define ICE_RX_BUF_WRITE	16	/* Must be power of 2 */
- #define ICE_MAX_TXQ_PER_TXQG	128
- 
--/* Tx Descriptors needed, worst case */
--#define DESC_NEEDED (MAX_SKB_FRAGS + 4)
-+/* We are assuming that the cache line is always 64 Bytes here for ice.
-+ * In order to make sure that is a correct assumption there is a check in probe
-+ * to print a warning if the read from GLPCI_CNF2 tells us that the cache line
-+ * size is 128 bytes. We do it this way because we do not want to read the
-+ * GLPCI_CNF2 register or a variable containing the value on every pass through
-+ * the Tx path.
-+ */
-+#define ICE_CACHE_LINE_BYTES		64
-+#define ICE_DESCS_PER_CACHE_LINE	(ICE_CACHE_LINE_BYTES / \
-+					 sizeof(struct ice_tx_desc))
-+#define ICE_DESCS_FOR_CTX_DESC		1
-+#define ICE_DESCS_FOR_SKB_DATA_PTR	1
-+/* Tx descriptors needed, worst case */
-+#define DESC_NEEDED (MAX_SKB_FRAGS + ICE_DESCS_FOR_CTX_DESC + \
-+		     ICE_DESCS_PER_CACHE_LINE + ICE_DESCS_FOR_SKB_DATA_PTR)
- #define ICE_DESC_UNUSED(R)	\
- 	((((R)->next_to_clean > (R)->next_to_use) ? 0 : (R)->count) + \
- 	(R)->next_to_clean - (R)->next_to_use - 1)
 -- 
 2.14.3
 
