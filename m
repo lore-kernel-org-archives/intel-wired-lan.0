@@ -1,60 +1,69 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 10:40:50 -0700
-Subject: [Intel-wired-lan] [PATCH S8 01/16] ice: Set carrier state and
- start/stop queues in rebuild
+Date: Fri, 26 Oct 2018 10:40:57 -0700
+Subject: [Intel-wired-lan] [PATCH S8 08/16] ice: Fix napi delete calls for
+ remove
 In-Reply-To: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
 References: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026174105.11628-2-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026174105.11628-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Set the carrier state post rebuild by querying the link status. Also
-start/stop queues based on link status.
+From: Dave Ertman <david.m.ertman@intel.com>
 
+In the remove path, the vsi->netdev is being set to NULL before the call
+to free vectors. This is causing the netif_napi_del call to never be made.
+
+Add a call to ice_napi_del to the same location as the calls to
+unregister_netdev and just prior to them. This will use the reverse flow
+as the register and netif_napi_add calls.
+
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice.h      | 1 +
+ drivers/net/ethernet/intel/ice/ice_lib.c  | 1 +
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ 3 files changed, 3 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 1639e955f158..b8548370f1c7 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -370,5 +370,6 @@ int ice_set_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
+ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
+ void ice_fill_rss_lut(u8 *lut, u16 rss_table_size, u16 rss_size);
+ void ice_print_link_msg(struct ice_vsi *vsi, bool isup);
++void ice_napi_del(struct ice_vsi *vsi);
+ 
+ #endif /* _ICE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index c604a44c8cfb..1041fa2a7767 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2458,6 +2458,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 	 * on this wq
+ 	 */
+ 	if (vsi->netdev && !ice_is_reset_in_progress(pf->state)) {
++		ice_napi_del(vsi);
+ 		unregister_netdev(vsi->netdev);
+ 		free_netdev(vsi->netdev);
+ 		vsi->netdev = NULL;
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 05993451147a..6d31ffb64940 100644
+index 338abb1b9233..82f49dbd762c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3296,7 +3296,7 @@ static void ice_rebuild(struct ice_pf *pf)
- 	struct device *dev = &pf->pdev->dev;
- 	struct ice_hw *hw = &pf->hw;
- 	enum ice_status ret;
--	int err;
-+	int err, i;
+@@ -1465,7 +1465,7 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
+  * ice_napi_del - Remove NAPI handler for the VSI
+  * @vsi: VSI for which NAPI handler is to be removed
+  */
+-static void ice_napi_del(struct ice_vsi *vsi)
++void ice_napi_del(struct ice_vsi *vsi)
+ {
+ 	int v_idx;
  
- 	if (test_bit(__ICE_DOWN, pf->state))
- 		goto clear_recovery;
-@@ -3370,6 +3370,22 @@ static void ice_rebuild(struct ice_pf *pf)
- 	}
- 
- 	ice_reset_all_vfs(pf, true);
-+
-+	for (i = 0; i < pf->num_alloc_vsi; i++) {
-+		bool link_up;
-+
-+		if (!pf->vsi[i] || pf->vsi[i]->type != ICE_VSI_PF)
-+			continue;
-+		ice_get_link_status(pf->vsi[i]->port_info, &link_up);
-+		if (link_up) {
-+			netif_carrier_on(pf->vsi[i]->netdev);
-+			netif_tx_wake_all_queues(pf->vsi[i]->netdev);
-+		} else {
-+			netif_carrier_off(pf->vsi[i]->netdev);
-+			netif_tx_stop_all_queues(pf->vsi[i]->netdev);
-+		}
-+	}
-+
- 	/* if we get here, reset flow is successful */
- 	clear_bit(__ICE_RESET_FAILED, pf->state);
- 	return;
 -- 
 2.14.3
 
