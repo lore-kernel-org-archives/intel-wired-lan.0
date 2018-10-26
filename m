@@ -1,345 +1,359 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 11:44:35 -0700
-Subject: [Intel-wired-lan] [PATCH S9 03/15] ice: Fix to make VLAN priority
- tagged traffic to appear on all TCs
+Date: Fri, 26 Oct 2018 11:44:39 -0700
+Subject: [Intel-wired-lan] [PATCH S9 07/15] ice: Cleanup duplicate control
+ queue code
 In-Reply-To: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
 References: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026184447.13547-4-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026184447.13547-8-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Usha Ketineni <usha.k.ketineni@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-This patch includes below changes to resolve the issue of ETS bandwidth
-shaping to work.
+1. Assigning the register offset and mask values contains duplicate code
+   that can easily be replaced with a macro.
 
-1. Allocation of Tx queues is accounted for based on the enabled TC's
-   in ice_vsi_setup_q_map() and enabled the Tx queues on those TC's via
-   ice_vsi_cfg_txqs()
+2. Separate functions for freeing send queue and receive queue rings are
+   not needed; replace with a single function that uses a pointer to the
+   struct ice_ctl_q_ring structure as a parameter instead of a pointer to
+   the struct ice_ctl_q_info structure.
 
-2. Get the mapped netdev TC # for the user priority and set the priority
-   to TC mapping for the VSI.
+3. Initializing register settings for both send queue and receive queue
+   contains duplicate code that can easily be replaced with a helper
+   function.
 
-Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
+4. Separate functions for freeing send queue and receive queue buffers are
+   not needed; duplicate code can easily be replaced with a macro.
+
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> squashed mutiple commits]
 ---
- drivers/net/ethernet/intel/ice/ice.h       |   4 +-
- drivers/net/ethernet/intel/ice/ice_lib.c   | 121 +++++++++++++++++------------
- drivers/net/ethernet/intel/ice/ice_main.c  |   4 +-
- drivers/net/ethernet/intel/ice/ice_sched.c |   2 +-
- drivers/net/ethernet/intel/ice/ice_sched.h |   1 +
- 5 files changed, 81 insertions(+), 51 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_controlq.c | 218 +++++++++-----------------
+ 1 file changed, 76 insertions(+), 142 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index ba03cbd3638e..7d8575d11786 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -112,7 +112,9 @@ extern const char ice_drv_ver[];
+diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
+index 84c967294eaf..b920403c6616 100644
+--- a/drivers/net/ethernet/intel/ice/ice_controlq.c
++++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
+@@ -3,6 +3,26 @@
  
- struct ice_tc_info {
- 	u16 qoffset;
--	u16 qcount;
-+	u16 qcount_tx;
-+	u16 qcount_rx;
-+	u8 netdev_tc;
- };
+ #include "ice_common.h"
  
- struct ice_tc_cfg {
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index f6e21363c8d6..597005f39919 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -774,11 +774,13 @@ static void ice_set_dflt_vsi_ctx(struct ice_vsi_ctx *ctxt)
-  */
- static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
++#define ICE_CQ_INIT_REGS(qinfo, prefix)				\
++do {								\
++	(qinfo)->sq.head = prefix##_ATQH;			\
++	(qinfo)->sq.tail = prefix##_ATQT;			\
++	(qinfo)->sq.len = prefix##_ATQLEN;			\
++	(qinfo)->sq.bah = prefix##_ATQBAH;			\
++	(qinfo)->sq.bal = prefix##_ATQBAL;			\
++	(qinfo)->sq.len_mask = prefix##_ATQLEN_ATQLEN_M;	\
++	(qinfo)->sq.len_ena_mask = prefix##_ATQLEN_ATQENABLE_M;	\
++	(qinfo)->sq.head_mask = prefix##_ATQH_ATQH_M;		\
++	(qinfo)->rq.head = prefix##_ARQH;			\
++	(qinfo)->rq.tail = prefix##_ARQT;			\
++	(qinfo)->rq.len = prefix##_ARQLEN;			\
++	(qinfo)->rq.bah = prefix##_ARQBAH;			\
++	(qinfo)->rq.bal = prefix##_ARQBAL;			\
++	(qinfo)->rq.len_mask = prefix##_ARQLEN_ARQLEN_M;	\
++	(qinfo)->rq.len_ena_mask = prefix##_ARQLEN_ARQENABLE_M;	\
++	(qinfo)->rq.head_mask = prefix##_ARQH_ARQH_M;		\
++} while (0)
++
+ /**
+  * ice_adminq_init_regs - Initialize AdminQ registers
+  * @hw: pointer to the hardware structure
+@@ -13,23 +33,7 @@ static void ice_adminq_init_regs(struct ice_hw *hw)
  {
--	u16 offset = 0, qmap = 0, numq_tc;
--	u16 pow = 0, max_rss = 0, qcount;
-+	u16 offset = 0, qmap = 0, tx_count = 0;
- 	u16 qcount_tx = vsi->alloc_txq;
- 	u16 qcount_rx = vsi->alloc_rxq;
-+	u16 tx_numq_tc, rx_numq_tc;
-+	u16 pow = 0, max_rss = 0;
- 	bool ena_tc0 = false;
-+	u8 netdev_tc = 0;
- 	int i;
+ 	struct ice_ctl_q_info *cq = &hw->adminq;
  
- 	/* at least TC0 should be enabled by default */
-@@ -794,7 +796,12 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- 		vsi->tc_cfg.ena_tc |= 1;
- 	}
- 
--	numq_tc = qcount_rx / vsi->tc_cfg.numtc;
-+	rx_numq_tc = qcount_rx / vsi->tc_cfg.numtc;
-+	if (!rx_numq_tc)
-+		rx_numq_tc = 1;
-+	tx_numq_tc = qcount_tx / vsi->tc_cfg.numtc;
-+	if (!tx_numq_tc)
-+		tx_numq_tc = 1;
- 
- 	/* TC mapping is a function of the number of Rx queues assigned to the
- 	 * VSI for each traffic class and the offset of these queues.
-@@ -808,7 +815,8 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- 	 * Setup number and offset of Rx queues for all TCs for the VSI
- 	 */
- 
--	qcount = numq_tc;
-+	qcount_rx = rx_numq_tc;
-+
- 	/* qcount will change if RSS is enabled */
- 	if (test_bit(ICE_FLAG_RSS_ENA, vsi->back->flags)) {
- 		if (vsi->type == ICE_VSI_PF || vsi->type == ICE_VSI_VF) {
-@@ -816,37 +824,41 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- 				max_rss = ICE_MAX_LG_RSS_QS;
- 			else
- 				max_rss = ICE_MAX_SMALL_RSS_QS;
--			qcount = min_t(int, numq_tc, max_rss);
--			qcount = min_t(int, qcount, vsi->rss_size);
-+			qcount_rx = min_t(int, rx_numq_tc, max_rss);
-+			qcount_rx = min_t(int, qcount_rx, vsi->rss_size);
- 		}
- 	}
- 
- 	/* find the (rounded up) power-of-2 of qcount */
--	pow = order_base_2(qcount);
-+	pow = order_base_2(qcount_rx);
- 
- 	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
- 		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
- 			/* TC is not enabled */
- 			vsi->tc_cfg.tc_info[i].qoffset = 0;
--			vsi->tc_cfg.tc_info[i].qcount = 1;
-+			vsi->tc_cfg.tc_info[i].qcount_rx = 1;
-+			vsi->tc_cfg.tc_info[i].qcount_tx = 1;
-+			vsi->tc_cfg.tc_info[i].netdev_tc = 0;
- 			ctxt->info.tc_mapping[i] = 0;
- 			continue;
- 		}
- 
- 		/* TC is enabled */
- 		vsi->tc_cfg.tc_info[i].qoffset = offset;
--		vsi->tc_cfg.tc_info[i].qcount = qcount;
-+		vsi->tc_cfg.tc_info[i].qcount_rx = qcount_rx;
-+		vsi->tc_cfg.tc_info[i].qcount_tx = tx_numq_tc;
-+		vsi->tc_cfg.tc_info[i].netdev_tc = netdev_tc++;
- 
- 		qmap = ((offset << ICE_AQ_VSI_TC_Q_OFFSET_S) &
- 			ICE_AQ_VSI_TC_Q_OFFSET_M) |
- 			((pow << ICE_AQ_VSI_TC_Q_NUM_S) &
- 			 ICE_AQ_VSI_TC_Q_NUM_M);
--		offset += qcount;
-+		offset += qcount_rx;
-+		tx_count += tx_numq_tc;
- 		ctxt->info.tc_mapping[i] = cpu_to_le16(qmap);
- 	}
+-	cq->sq.head = PF_FW_ATQH;
+-	cq->sq.tail = PF_FW_ATQT;
+-	cq->sq.len = PF_FW_ATQLEN;
+-	cq->sq.bah = PF_FW_ATQBAH;
+-	cq->sq.bal = PF_FW_ATQBAL;
+-	cq->sq.len_mask = PF_FW_ATQLEN_ATQLEN_M;
+-	cq->sq.len_ena_mask = PF_FW_ATQLEN_ATQENABLE_M;
+-	cq->sq.head_mask = PF_FW_ATQH_ATQH_M;
 -
--	vsi->num_txq = qcount_tx;
- 	vsi->num_rxq = offset;
-+	vsi->num_txq = tx_count;
+-	cq->rq.head = PF_FW_ARQH;
+-	cq->rq.tail = PF_FW_ARQT;
+-	cq->rq.len = PF_FW_ARQLEN;
+-	cq->rq.bah = PF_FW_ARQBAH;
+-	cq->rq.bal = PF_FW_ARQBAL;
+-	cq->rq.len_mask = PF_FW_ARQLEN_ARQLEN_M;
+-	cq->rq.len_ena_mask = PF_FW_ARQLEN_ARQENABLE_M;
+-	cq->rq.head_mask = PF_FW_ARQH_ARQH_M;
++	ICE_CQ_INIT_REGS(cq, PF_FW);
+ }
  
- 	if (vsi->type == ICE_VSI_VF && vsi->num_txq != vsi->num_rxq) {
- 		dev_dbg(&vsi->back->pdev->dev, "VF VSI should have same number of Tx and Rx queues. Hence making them equal\n");
-@@ -1611,10 +1623,10 @@ int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
- 	struct ice_aqc_add_tx_qgrp *qg_buf;
- 	struct ice_aqc_add_txqs_perq *txq;
- 	struct ice_pf *pf = vsi->back;
-+	u8 num_q_grps, q_idx = 0;
- 	enum ice_status status;
- 	u16 buf_len, i, pf_q;
- 	int err = 0, tc = 0;
--	u8 num_q_grps;
- 
- 	buf_len = sizeof(struct ice_aqc_add_tx_qgrp);
- 	qg_buf = devm_kzalloc(&pf->pdev->dev, buf_len, GFP_KERNEL);
-@@ -1628,38 +1640,49 @@ int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
- 	qg_buf->num_txqs = 1;
- 	num_q_grps = 1;
- 
--	/* set up and configure the Tx queues */
--	ice_for_each_txq(vsi, i) {
--		struct ice_tlan_ctx tlan_ctx = { 0 };
-+	/* set up and configure the Tx queues for each enabled TC */
-+	for (tc = 0; tc < ICE_MAX_TRAFFIC_CLASS; tc++) {
-+		if (!(vsi->tc_cfg.ena_tc & BIT(tc)))
-+			break;
- 
--		pf_q = vsi->txq_map[i];
--		ice_setup_tx_ctx(vsi->tx_rings[i], &tlan_ctx, pf_q);
--		/* copy context contents into the qg_buf */
--		qg_buf->txqs[0].txq_id = cpu_to_le16(pf_q);
--		ice_set_ctx((u8 *)&tlan_ctx, qg_buf->txqs[0].txq_ctx,
--			    ice_tlan_ctx_info);
-+		for (i = 0; i < vsi->tc_cfg.tc_info[tc].qcount_tx; i++) {
-+			struct ice_tlan_ctx tlan_ctx = { 0 };
-+
-+			pf_q = vsi->txq_map[q_idx];
-+			ice_setup_tx_ctx(vsi->tx_rings[q_idx], &tlan_ctx,
-+					 pf_q);
-+			/* copy context contents into the qg_buf */
-+			qg_buf->txqs[0].txq_id = cpu_to_le16(pf_q);
-+			ice_set_ctx((u8 *)&tlan_ctx, qg_buf->txqs[0].txq_ctx,
-+				    ice_tlan_ctx_info);
-+
-+			/* init queue specific tail reg. It is referred as
-+			 * transmit comm scheduler queue doorbell.
-+			 */
-+			vsi->tx_rings[q_idx]->tail =
-+				pf->hw.hw_addr + QTX_COMM_DBELL(pf_q);
-+			status = ice_ena_vsi_txq(vsi->port_info, vsi->idx, tc,
-+						 num_q_grps, qg_buf, buf_len,
-+						 NULL);
-+			if (status) {
-+				dev_err(&vsi->back->pdev->dev,
-+					"Failed to set LAN Tx queue context, error: %d\n",
-+					status);
-+				err = -ENODEV;
-+				goto err_cfg_txqs;
-+			}
- 
--		/* init queue specific tail reg. It is referred as transmit
--		 * comm scheduler queue doorbell.
--		 */
--		vsi->tx_rings[i]->tail = pf->hw.hw_addr + QTX_COMM_DBELL(pf_q);
--		status = ice_ena_vsi_txq(vsi->port_info, vsi->idx, tc,
--					 num_q_grps, qg_buf, buf_len, NULL);
--		if (status) {
--			dev_err(&vsi->back->pdev->dev,
--				"Failed to set LAN Tx queue context, error: %d\n",
--				status);
--			err = -ENODEV;
--			goto err_cfg_txqs;
--		}
-+			/* Add Tx Queue TEID into the VSI Tx ring from the
-+			 * response. This will complete configuring and
-+			 * enabling the queue.
-+			 */
-+			txq = &qg_buf->txqs[0];
-+			if (pf_q == le16_to_cpu(txq->txq_id))
-+				vsi->tx_rings[q_idx]->txq_teid =
-+					le32_to_cpu(txq->q_teid);
- 
--		/* Add Tx Queue TEID into the VSI Tx ring from the response
--		 * This will complete configuring and enabling the queue.
--		 */
--		txq = &qg_buf->txqs[0];
--		if (pf_q == le16_to_cpu(txq->txq_id))
--			vsi->tx_rings[i]->txq_teid =
--				le32_to_cpu(txq->q_teid);
-+			q_idx++;
-+		}
- 	}
- err_cfg_txqs:
- 	devm_kfree(&pf->pdev->dev, qg_buf);
-@@ -2057,6 +2080,9 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	/* set RSS capabilities */
- 	ice_vsi_set_rss_params(vsi);
- 
-+	/* set tc configuration */
-+	ice_vsi_set_tc_cfg(vsi);
-+
- 	/* create the VSI */
- 	ret = ice_vsi_init(vsi);
- 	if (ret)
-@@ -2120,11 +2146,9 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 		goto unroll_vsi_init;
- 	}
- 
--	ice_vsi_set_tc_cfg(vsi);
--
- 	/* configure VSI nodes based on number of queues and TC's */
- 	for (i = 0; i < vsi->tc_cfg.numtc; i++)
--		max_txqs[i] = vsi->num_txq;
-+		max_txqs[i] = pf->num_lan_tx;
- 
- 	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
- 			      max_txqs);
-@@ -2520,11 +2544,13 @@ int ice_vsi_release(struct ice_vsi *vsi)
- int ice_vsi_rebuild(struct ice_vsi *vsi)
+ /**
+@@ -42,24 +46,7 @@ static void ice_mailbox_init_regs(struct ice_hw *hw)
  {
- 	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
-+	struct ice_pf *pf;
- 	int ret, i;
+ 	struct ice_ctl_q_info *cq = &hw->mailboxq;
  
- 	if (!vsi)
- 		return -EINVAL;
- 
-+	pf = vsi->back;
- 	ice_vsi_free_q_vectors(vsi);
- 	ice_free_res(vsi->back->sw_irq_tracker, vsi->sw_base_vector, vsi->idx);
- 	ice_free_res(vsi->back->hw_irq_tracker, vsi->hw_base_vector, vsi->idx);
-@@ -2534,6 +2560,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
- 	ice_vsi_free_arrays(vsi, false);
- 	ice_dev_onetime_setup(&vsi->back->hw);
- 	ice_vsi_set_num_qs(vsi);
-+	ice_vsi_set_tc_cfg(vsi);
- 
- 	/* Initialize VSI struct elements and create VSI in FW */
- 	ret = ice_vsi_init(vsi);
-@@ -2580,11 +2607,9 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
- 		break;
- 	}
- 
--	ice_vsi_set_tc_cfg(vsi);
+-	/* set head and tail registers in our local struct */
+-	cq->sq.head = PF_MBX_ATQH;
+-	cq->sq.tail = PF_MBX_ATQT;
+-	cq->sq.len = PF_MBX_ATQLEN;
+-	cq->sq.bah = PF_MBX_ATQBAH;
+-	cq->sq.bal = PF_MBX_ATQBAL;
+-	cq->sq.len_mask = PF_MBX_ATQLEN_ATQLEN_M;
+-	cq->sq.len_ena_mask = PF_MBX_ATQLEN_ATQENABLE_M;
+-	cq->sq.head_mask = PF_MBX_ATQH_ATQH_M;
 -
- 	/* configure VSI nodes based on number of queues and TC's */
- 	for (i = 0; i < vsi->tc_cfg.numtc; i++)
--		max_txqs[i] = vsi->num_txq;
-+		max_txqs[i] = pf->num_lan_tx;
+-	cq->rq.head = PF_MBX_ARQH;
+-	cq->rq.tail = PF_MBX_ARQT;
+-	cq->rq.len = PF_MBX_ARQLEN;
+-	cq->rq.bah = PF_MBX_ARQBAH;
+-	cq->rq.bal = PF_MBX_ARQBAL;
+-	cq->rq.len_mask = PF_MBX_ARQLEN_ARQLEN_M;
+-	cq->rq.len_ena_mask = PF_MBX_ARQLEN_ARQENABLE_M;
+-	cq->rq.head_mask = PF_MBX_ARQH_ARQH_M;
++	ICE_CQ_INIT_REGS(cq, PF_MBX);
+ }
  
- 	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
- 			      max_txqs);
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 089b0f0b2e71..292d19e65af0 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -349,6 +349,9 @@ ice_prepare_for_reset(struct ice_pf *pf)
- 	/* disable the VSIs and their queues that are not already DOWN */
- 	ice_pf_dis_all_vsi(pf);
+ /**
+@@ -131,37 +118,20 @@ ice_alloc_ctrlq_rq_ring(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ }
  
-+	if (hw->port_info)
-+		ice_sched_clear_port(hw->port_info);
-+
- 	ice_shutdown_all_ctrlq(hw);
- 
- 	set_bit(__ICE_PREPARED_FOR_RESET, pf->state);
-@@ -2543,7 +2546,6 @@ static int ice_vsi_cfg(struct ice_vsi *vsi)
- 		if (err)
- 			return err;
- 	}
+ /**
+- * ice_free_ctrlq_sq_ring - Free Control Transmit Queue (ATQ) rings
+- * @hw: pointer to the hardware structure
+- * @cq: pointer to the specific Control queue
+- *
+- * This assumes the posted send buffers have already been cleaned
+- * and de-allocated
+- */
+-static void ice_free_ctrlq_sq_ring(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+-{
+-	dmam_free_coherent(ice_hw_to_dev(hw), cq->sq.desc_buf.size,
+-			   cq->sq.desc_buf.va, cq->sq.desc_buf.pa);
+-	cq->sq.desc_buf.va = NULL;
+-	cq->sq.desc_buf.pa = 0;
+-	cq->sq.desc_buf.size = 0;
+-}
 -
- 	err = ice_vsi_cfg_txqs(vsi);
- 	if (!err)
- 		err = ice_vsi_cfg_rxqs(vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 3d57f5b4834d..c950ebc11d98 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -630,7 +630,7 @@ static void ice_sched_clear_tx_topo(struct ice_port_info *pi)
+-/**
+- * ice_free_ctrlq_rq_ring - Free Control Receive Queue (ARQ) rings
++ * ice_free_cq_ring - Free control queue ring
+  * @hw: pointer to the hardware structure
+- * @cq: pointer to the specific Control queue
++ * @ring: pointer to the specific control queue ring
   *
-  * Cleanup scheduling elements from SW DB
+- * This assumes the posted receive buffers have already been cleaned
++ * This assumes the posted buffers have already been cleaned
+  * and de-allocated
   */
--static void ice_sched_clear_port(struct ice_port_info *pi)
-+void ice_sched_clear_port(struct ice_port_info *pi)
+-static void ice_free_ctrlq_rq_ring(struct ice_hw *hw, struct ice_ctl_q_info *cq)
++static void ice_free_cq_ring(struct ice_hw *hw, struct ice_ctl_q_ring *ring)
  {
- 	if (!pi || pi->port_state != ICE_SCHED_PORT_STATE_READY)
- 		return;
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index dc59fbac7dde..da5b4c166da8 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -26,6 +26,7 @@ struct ice_sched_agg_info {
- /* FW AQ command calls */
- enum ice_status ice_sched_init_port(struct ice_port_info *pi);
- enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw);
-+void ice_sched_clear_port(struct ice_port_info *pi);
- void ice_sched_cleanup_all(struct ice_hw *hw);
- struct ice_sched_node *
- ice_sched_find_node_by_teid(struct ice_sched_node *start_node, u32 teid);
+-	dmam_free_coherent(ice_hw_to_dev(hw), cq->rq.desc_buf.size,
+-			   cq->rq.desc_buf.va, cq->rq.desc_buf.pa);
+-	cq->rq.desc_buf.va = NULL;
+-	cq->rq.desc_buf.pa = 0;
+-	cq->rq.desc_buf.size = 0;
++	dmam_free_coherent(ice_hw_to_dev(hw), ring->desc_buf.size,
++			   ring->desc_buf.va, ring->desc_buf.pa);
++	ring->desc_buf.va = NULL;
++	ring->desc_buf.pa = 0;
++	ring->desc_buf.size = 0;
+ }
+ 
+ /**
+@@ -280,54 +250,23 @@ ice_alloc_sq_bufs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ 	return ICE_ERR_NO_MEMORY;
+ }
+ 
+-/**
+- * ice_free_rq_bufs - Free ARQ buffer info elements
+- * @hw: pointer to the hardware structure
+- * @cq: pointer to the specific Control queue
+- */
+-static void ice_free_rq_bufs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+-{
+-	int i;
+-
+-	/* free descriptors */
+-	for (i = 0; i < cq->num_rq_entries; i++) {
+-		dmam_free_coherent(ice_hw_to_dev(hw), cq->rq.r.rq_bi[i].size,
+-				   cq->rq.r.rq_bi[i].va, cq->rq.r.rq_bi[i].pa);
+-		cq->rq.r.rq_bi[i].va = NULL;
+-		cq->rq.r.rq_bi[i].pa = 0;
+-		cq->rq.r.rq_bi[i].size = 0;
+-	}
+-
+-	/* free the dma header */
+-	devm_kfree(ice_hw_to_dev(hw), cq->rq.dma_head);
+-}
+-
+-/**
+- * ice_free_sq_bufs - Free ATQ buffer info elements
+- * @hw: pointer to the hardware structure
+- * @cq: pointer to the specific Control queue
+- */
+-static void ice_free_sq_bufs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
++static enum ice_status
++ice_cfg_cq_regs(struct ice_hw *hw, struct ice_ctl_q_ring *ring, u16 num_entries)
+ {
+-	int i;
++	/* Clear Head and Tail */
++	wr32(hw, ring->head, 0);
++	wr32(hw, ring->tail, 0);
+ 
+-	/* only unmap if the address is non-NULL */
+-	for (i = 0; i < cq->num_sq_entries; i++)
+-		if (cq->sq.r.sq_bi[i].pa) {
+-			dmam_free_coherent(ice_hw_to_dev(hw),
+-					   cq->sq.r.sq_bi[i].size,
+-					   cq->sq.r.sq_bi[i].va,
+-					   cq->sq.r.sq_bi[i].pa);
+-			cq->sq.r.sq_bi[i].va = NULL;
+-			cq->sq.r.sq_bi[i].pa = 0;
+-			cq->sq.r.sq_bi[i].size = 0;
+-		}
++	/* set starting point */
++	wr32(hw, ring->len, (num_entries | ring->len_ena_mask));
++	wr32(hw, ring->bal, lower_32_bits(ring->desc_buf.pa));
++	wr32(hw, ring->bah, upper_32_bits(ring->desc_buf.pa));
+ 
+-	/* free the buffer info list */
+-	devm_kfree(ice_hw_to_dev(hw), cq->sq.cmd_buf);
++	/* Check one register to verify that config was applied */
++	if (rd32(hw, ring->bal) != lower_32_bits(ring->desc_buf.pa))
++		return ICE_ERR_AQ_ERROR;
+ 
+-	/* free the dma header */
+-	devm_kfree(ice_hw_to_dev(hw), cq->sq.dma_head);
++	return 0;
+ }
+ 
+ /**
+@@ -340,23 +279,7 @@ static void ice_free_sq_bufs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ static enum ice_status
+ ice_cfg_sq_regs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ {
+-	u32 reg = 0;
+-
+-	/* Clear Head and Tail */
+-	wr32(hw, cq->sq.head, 0);
+-	wr32(hw, cq->sq.tail, 0);
+-
+-	/* set starting point */
+-	wr32(hw, cq->sq.len, (cq->num_sq_entries | cq->sq.len_ena_mask));
+-	wr32(hw, cq->sq.bal, lower_32_bits(cq->sq.desc_buf.pa));
+-	wr32(hw, cq->sq.bah, upper_32_bits(cq->sq.desc_buf.pa));
+-
+-	/* Check one register to verify that config was applied */
+-	reg = rd32(hw, cq->sq.bal);
+-	if (reg != lower_32_bits(cq->sq.desc_buf.pa))
+-		return ICE_ERR_AQ_ERROR;
+-
+-	return 0;
++	return ice_cfg_cq_regs(hw, &cq->sq, cq->num_sq_entries);
+ }
+ 
+ /**
+@@ -369,25 +292,15 @@ ice_cfg_sq_regs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ static enum ice_status
+ ice_cfg_rq_regs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ {
+-	u32 reg = 0;
+-
+-	/* Clear Head and Tail */
+-	wr32(hw, cq->rq.head, 0);
+-	wr32(hw, cq->rq.tail, 0);
++	enum ice_status status;
+ 
+-	/* set starting point */
+-	wr32(hw, cq->rq.len, (cq->num_rq_entries | cq->rq.len_ena_mask));
+-	wr32(hw, cq->rq.bal, lower_32_bits(cq->rq.desc_buf.pa));
+-	wr32(hw, cq->rq.bah, upper_32_bits(cq->rq.desc_buf.pa));
++	status = ice_cfg_cq_regs(hw, &cq->rq, cq->num_rq_entries);
++	if (status)
++		return status;
+ 
+ 	/* Update tail in the HW to post pre-allocated buffers */
+ 	wr32(hw, cq->rq.tail, (u32)(cq->num_rq_entries - 1));
+ 
+-	/* Check one register to verify that config was applied */
+-	reg = rd32(hw, cq->rq.bal);
+-	if (reg != lower_32_bits(cq->rq.desc_buf.pa))
+-		return ICE_ERR_AQ_ERROR;
+-
+ 	return 0;
+ }
+ 
+@@ -444,7 +357,7 @@ static enum ice_status ice_init_sq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ 	goto init_ctrlq_exit;
+ 
+ init_ctrlq_free_rings:
+-	ice_free_ctrlq_sq_ring(hw, cq);
++	ice_free_cq_ring(hw, &cq->sq);
+ 
+ init_ctrlq_exit:
+ 	return ret_code;
+@@ -503,12 +416,33 @@ static enum ice_status ice_init_rq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ 	goto init_ctrlq_exit;
+ 
+ init_ctrlq_free_rings:
+-	ice_free_ctrlq_rq_ring(hw, cq);
++	ice_free_cq_ring(hw, &cq->rq);
+ 
+ init_ctrlq_exit:
+ 	return ret_code;
+ }
+ 
++#define ICE_FREE_CQ_BUFS(hw, qi, ring)					\
++do {									\
++	int i;								\
++	/* free descriptors */						\
++	for (i = 0; i < (qi)->num_##ring##_entries; i++)		\
++		if ((qi)->ring.r.ring##_bi[i].pa) {			\
++			dmam_free_coherent(ice_hw_to_dev(hw),		\
++					   (qi)->ring.r.ring##_bi[i].size,\
++					   (qi)->ring.r.ring##_bi[i].va,\
++					   (qi)->ring.r.ring##_bi[i].pa);\
++			(qi)->ring.r.ring##_bi[i].va = NULL;		\
++			(qi)->ring.r.ring##_bi[i].pa = 0;		\
++			(qi)->ring.r.ring##_bi[i].size = 0;		\
++		}							\
++	/* free the buffer info list */					\
++	if ((qi)->ring.cmd_buf)						\
++		devm_kfree(ice_hw_to_dev(hw), (qi)->ring.cmd_buf);	\
++	/* free dma head */						\
++	devm_kfree(ice_hw_to_dev(hw), (qi)->ring.dma_head);		\
++} while (0)
++
+ /**
+  * ice_shutdown_sq - shutdown the Control ATQ
+  * @hw: pointer to the hardware structure
+@@ -538,8 +472,8 @@ ice_shutdown_sq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ 	cq->sq.count = 0;	/* to indicate uninitialized queue */
+ 
+ 	/* free ring buffers and the ring itself */
+-	ice_free_sq_bufs(hw, cq);
+-	ice_free_ctrlq_sq_ring(hw, cq);
++	ICE_FREE_CQ_BUFS(hw, cq, sq);
++	ice_free_cq_ring(hw, &cq->sq);
+ 
+ shutdown_sq_out:
+ 	mutex_unlock(&cq->sq_lock);
+@@ -606,8 +540,8 @@ ice_shutdown_rq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ 	cq->rq.count = 0;
+ 
+ 	/* free ring buffers and the ring itself */
+-	ice_free_rq_bufs(hw, cq);
+-	ice_free_ctrlq_rq_ring(hw, cq);
++	ICE_FREE_CQ_BUFS(hw, cq, rq);
++	ice_free_cq_ring(hw, &cq->rq);
+ 
+ shutdown_rq_out:
+ 	mutex_unlock(&cq->rq_lock);
 -- 
 2.14.3
 
