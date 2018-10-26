@@ -1,44 +1,90 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 10:41:01 -0700
-Subject: [Intel-wired-lan] [PATCH S8 12/16] ice: Check for q_vector when
- stopping rings
+Date: Fri, 26 Oct 2018 10:41:00 -0700
+Subject: [Intel-wired-lan] [PATCH S8 11/16] ice: Fix debug print in
+ ice_tx_timeout
 In-Reply-To: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
 References: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026174105.11628-13-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026174105.11628-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-There is a gap in time between a VF reset, which sets the q_vector to
-NULL, and the VF requesting mapping of the q_vectors. If
-ice_vsi_stop_tx_rings() is called during this time, a NULL pointer
-dereference is encountered. Add a check in ice_vsi_stop_tx_rings()
-to ensure the q_vector is set to avoid this situation from occurring.
+Currently the debug print in ice_tx_timeout is printing useless and
+duplicate values. First, head is being assigned to tx_ring->next_to_clean
+and we are printing both of those values, but naming them HWB and NTC
+respectively. Also, reading tail always returns 0 so remove that as well.
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Instead of assigning head the SW head (NTC) read the actual head register
+and change the debug print to note that this is HW_HEAD. Also reduce thei
+scope of a couple variables.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  3 +++
+ drivers/net/ethernet/intel/ice/ice_main.c       | 15 +++++++++------
+ 2 files changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 1041fa2a7767..11d0ab185dd2 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1908,7 +1908,8 @@ int ice_vsi_stop_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
- 	ice_for_each_txq(vsi, i) {
- 		u16 v_idx;
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 596b9fb1c510..5507928c8fbe 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -7,6 +7,9 @@
+ #define _ICE_HW_AUTOGEN_H_
  
--		if (!vsi->tx_rings || !vsi->tx_rings[i]) {
-+		if (!vsi->tx_rings || !vsi->tx_rings[i] ||
-+		    !vsi->tx_rings[i]->q_vector) {
- 			err = -EINVAL;
- 			goto err_out;
- 		}
+ #define QTX_COMM_DBELL(_DBQM)			(0x002C0000 + ((_DBQM) * 4))
++#define QTX_COMM_HEAD(_DBQM)			(0x000E0000 + ((_DBQM) * 4))
++#define QTX_COMM_HEAD_HEAD_S			0
++#define QTX_COMM_HEAD_HEAD_M			ICE_M(0x1FFF, 0)
+ #define PF_FW_ARQBAH				0x00080180
+ #define PF_FW_ARQBAL				0x00080080
+ #define PF_FW_ARQH				0x00080380
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 333312a1d595..8584061e1bc6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3691,8 +3691,8 @@ static void ice_tx_timeout(struct net_device *netdev)
+ 	struct ice_ring *tx_ring = NULL;
+ 	struct ice_vsi *vsi = np->vsi;
+ 	struct ice_pf *pf = vsi->back;
+-	u32 head, val = 0, i;
+ 	int hung_queue = -1;
++	u32 i;
+ 
+ 	pf->tx_timeout_count++;
+ 
+@@ -3736,17 +3736,20 @@ static void ice_tx_timeout(struct net_device *netdev)
+ 		return;
+ 
+ 	if (tx_ring) {
+-		head = tx_ring->next_to_clean;
++		struct ice_hw *hw = &pf->hw;
++		u32 head, val = 0;
++
++		head = (rd32(hw, QTX_COMM_HEAD(vsi->txq_map[hung_queue])) &
++			QTX_COMM_HEAD_HEAD_M) >> QTX_COMM_HEAD_HEAD_S;
+ 		/* Read interrupt register */
+ 		if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
+-			val = rd32(&pf->hw,
++			val = rd32(hw,
+ 				   GLINT_DYN_CTL(tx_ring->q_vector->v_idx +
+ 					tx_ring->vsi->hw_base_vector));
+ 
+-		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %d, NTC: 0x%x, HWB: 0x%x, NTU: 0x%x, TAIL: 0x%x, INT: 0x%x\n",
++		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %d, NTC: 0x%x, HW_HEAD: 0x%x, NTU: 0x%x, INT: 0x%x\n",
+ 			    vsi->vsi_num, hung_queue, tx_ring->next_to_clean,
+-			    head, tx_ring->next_to_use,
+-			    readl(tx_ring->tail), val);
++			    head, tx_ring->next_to_use, val);
+ 	}
+ 
+ 	pf->tx_timeout_last_recovery = jiffies;
 -- 
 2.14.3
 
