@@ -1,179 +1,58 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 27 Oct 2018 02:52:24 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- b2ae86f96f1acb2c1ec0f6c6c93b5a56c68225eb
-Message-ID: <5bd36268.mSl7PX+Yqte1N0zU%lkp@intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Fri, 26 Oct 2018 14:33:30 -0700
+Subject: [Intel-wired-lan] [next PATCH S98 3/6] virtchnl: white space and
+ reorder
+In-Reply-To: <20181026213333.51495-1-alice.michael@intel.com>
+References: <20181026213333.51495-1-alice.michael@intel.com>
+Message-ID: <20181026213333.51495-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: b2ae86f96f1acb2c1ec0f6c6c93b5a56c68225eb  checkpatch.pl: seed camelcase from the provided kernel tree root
+White space change.
 
-elapsed time: 107m
+Move the check on the virtchnl_vsi_queue_config_info struct
+to be close to the struct like all the other similar checks.
+This keeps it clearer and easier to read.
 
-configs tested: 155
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                               tinyconfig
-i386                   randconfig-x019-201842
-i386                   randconfig-x016-201842
-i386                   randconfig-x018-201842
-i386                   randconfig-x014-201842
-i386                   randconfig-x015-201842
-i386                   randconfig-x010-201842
-i386                   randconfig-x017-201842
-i386                   randconfig-x012-201842
-i386                   randconfig-x011-201842
-i386                   randconfig-x013-201842
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                              fedora-25
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201842
-i386                     randconfig-n1-201842
-i386                     randconfig-n2-201842
-i386                     randconfig-n3-201842
-x86_64                 randconfig-x000-201842
-x86_64                 randconfig-x001-201842
-x86_64                 randconfig-x002-201842
-x86_64                 randconfig-x003-201842
-x86_64                 randconfig-x004-201842
-x86_64                 randconfig-x005-201842
-x86_64                 randconfig-x006-201842
-x86_64                 randconfig-x007-201842
-x86_64                 randconfig-x008-201842
-x86_64                 randconfig-x009-201842
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i0-201842
-i386                     randconfig-i1-201842
-i386                     randconfig-i2-201842
-i386                     randconfig-i3-201842
-powerpc                 canyonlands_defconfig
-powerpc                      ppc6xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-m68k                           sun3_defconfig
-mips                     decstation_defconfig
-riscv                               defconfig
-sh                        edosk7760_defconfig
-arm                        trizeps4_defconfig
-mips                         tb0226_defconfig
-parisc                           allyesconfig
-sh                           se7750_defconfig
-x86_64                 randconfig-x017-201842
-x86_64                 randconfig-x011-201842
-x86_64                 randconfig-x016-201842
-x86_64                 randconfig-x013-201842
-x86_64                 randconfig-x012-201842
-x86_64                 randconfig-x019-201842
-x86_64                 randconfig-x018-201842
-x86_64                 randconfig-x014-201842
-x86_64                 randconfig-x010-201842
-x86_64                 randconfig-x015-201842
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-i386                     randconfig-s0-201842
-i386                     randconfig-s1-201842
-i386                     randconfig-s3-201842
-i386                     randconfig-s2-201842
-x86_64                 randconfig-s3-10270204
-x86_64                 randconfig-s4-10270204
-x86_64                 randconfig-s5-10270204
-i386                             allmodconfig
-x86_64                   randconfig-i0-201842
-x86_64                   randconfig-i1-201842
-x86_64                   randconfig-i2-201842
-x86_64                   randconfig-i3-201842
-i386                   randconfig-b0-10262147
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-i386                             allyesconfig
-x86_64                 randconfig-k0-10261856
-x86_64                 randconfig-k1-10261856
-x86_64                 randconfig-k2-10261856
-x86_64                 randconfig-k3-10261856
-i386                   randconfig-k0-10261856
-i386                   randconfig-k1-10261856
-i386                   randconfig-k2-10261856
-i386                   randconfig-k3-10261856
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                          pxa168_defconfig
-sh                            hp6xx_defconfig
-mips                             alldefconfig
-sh                           sh2007_defconfig
-x86_64                 randconfig-h0-10270212
-i386                   randconfig-x077-201842
-i386                   randconfig-x072-201842
-i386                   randconfig-x075-201842
-i386                   randconfig-x070-201842
-i386                   randconfig-x073-201842
-i386                   randconfig-x071-201842
-i386                   randconfig-x074-201842
-i386                   randconfig-x078-201842
-i386                   randconfig-x076-201842
-i386                   randconfig-x079-201842
-i386                   randconfig-x002-201842
-i386                   randconfig-x007-201842
-i386                   randconfig-x000-201842
-i386                   randconfig-x005-201842
-i386                   randconfig-x006-201842
-i386                   randconfig-x004-201842
-i386                   randconfig-x001-201842
-i386                   randconfig-x009-201842
-i386                   randconfig-x008-201842
-i386                   randconfig-x003-201842
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-e0-201842
-x86_64                   randconfig-e1-201842
-x86_64                   randconfig-e2-201842
-x86_64                   randconfig-e3-201842
-nds32                               defconfig
-x86_64                randconfig-ws0-10270205
-x86_64                 randconfig-r0-10262157
-
+Signed-off-by: Alice Michael <alice.michael@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ include/linux/avf/virtchnl.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index b248805..3130dec 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -171,7 +171,7 @@ struct virtchnl_msg {
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(20, virtchnl_msg);
+ 
+-/* Message descriptions and data structures.*/
++/* Message descriptions and data structures. */
+ 
+ /* VIRTCHNL_OP_VERSION
+  * VF posts its version number to the PF. PF responds with its version number
+@@ -342,6 +342,8 @@ struct virtchnl_vsi_queue_config_info {
+ 	struct virtchnl_queue_pair_info qpair[1];
+ };
+ 
++VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_vsi_queue_config_info);
++
+ /* VIRTCHNL_OP_REQUEST_QUEUES
+  * VF sends this message to request the PF to allocate additional queues to
+  * this VF.  Each VF gets a guaranteed number of queues on init but asking for
+@@ -357,8 +359,6 @@ struct virtchnl_vf_res_request {
+ 	u16 num_queue_pairs;
+ };
+ 
+-VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_vsi_queue_config_info);
+-
+ /* VIRTCHNL_OP_CONFIG_IRQ_MAP
+  * VF uses this message to map vectors to queues.
+  * The rxq_map and txq_map fields are bitmaps used to indicate which queues
+-- 
+2.9.5
+
