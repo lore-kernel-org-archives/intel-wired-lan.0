@@ -1,46 +1,185 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 10:40:59 -0700
-Subject: [Intel-wired-lan] [PATCH S8 10/16] ice: Fix the bytecount sent to
- netdev_tx_sent_queue
+Date: Fri, 26 Oct 2018 10:41:02 -0700
+Subject: [Intel-wired-lan] [PATCH S8 13/16] ice: Remove node before
+ releasing VSI
 In-Reply-To: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
 References: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026174105.11628-11-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026174105.11628-14-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+Before releasing the VSI, remove the VSI scheduler node. If not,
+the node is left in the scheduler tree and, on subsequent load, the
+scheduler tree contains the node so it does not set it in vsi_ctx.
+This, later, causes the node to not be found in ice_sched_get_free_qparent
+which leads to a "Failed to set LAN Tx queue context, error: -1".
 
-Currently if the driver does a TSO offload the bytecount sent to
-netdev_tx_sent_queue will be incorrect. This is because in ice_tso we
-overwrite the initial value that we set in ice_tx_map. This creates a
-mismatch between the Tx and Tx clean flow. In the Tx clean flow we
-calculate the bytecount (called total_bytes) as we clean the
-descriptors so the value used in the Tx clean path is correct. Fix this
-by using += in ice_tso instead of =. This fixes the mismatch in
-bytecount mentioned above.
+To remove the scheduler node, this patch introduces ice_rm_vsi_lan_cfg
+and related helpers.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c   |   1 +
+ drivers/net/ethernet/intel/ice/ice_sched.c | 108 ++++++++++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_sched.h |   2 +
+ 3 files changed, 110 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 3387c67c848d..fe5bbabbb41e 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1520,7 +1520,7 @@ int ice_tso(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 11d0ab185dd2..1efd760debc2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2492,6 +2492,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 	}
  
- 	/* update gso_segs and bytecount */
- 	first->gso_segs = skb_shinfo(skb)->gso_segs;
--	first->bytecount = (first->gso_segs - 1) * off->header_len;
-+	first->bytecount += (first->gso_segs - 1) * off->header_len;
+ 	ice_remove_vsi_fltr(&pf->hw, vsi->idx);
++	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
+ 	ice_vsi_delete(vsi);
+ 	ice_vsi_free_q_vectors(vsi);
+ 	ice_vsi_clear_rings(vsi);
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index 7cc8aa18a22b..3d57f5b4834d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1527,7 +1527,7 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ }
  
- 	cd_tso_len = skb->len - off->header_len;
- 	cd_mss = skb_shinfo(skb)->gso_size;
+ /**
+- * ice_sched_cfg_vsi - configure the new/exisiting VSI
++ * ice_sched_cfg_vsi - configure the new/existing VSI
+  * @pi: port information structure
+  * @vsi_handle: software VSI handle
+  * @tc: TC number
+@@ -1605,3 +1605,109 @@ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
+ 
+ 	return status;
+ }
++
++/**
++ * ice_sched_rm_agg_vsi_entry - remove agg related vsi info entry
++ * @pi: port information structure
++ * @vsi_handle: software VSI handle
++ *
++ * This function removes single aggregator vsi info entry from
++ * aggregator list.
++ */
++static void
++ice_sched_rm_agg_vsi_info(struct ice_port_info *pi, u16 vsi_handle)
++{
++	struct ice_sched_agg_info *agg_info;
++	struct ice_sched_agg_info *atmp;
++
++	list_for_each_entry_safe(agg_info, atmp, &pi->agg_list, list_entry) {
++		struct ice_sched_agg_vsi_info *agg_vsi_info;
++		struct ice_sched_agg_vsi_info *vtmp;
++
++		list_for_each_entry_safe(agg_vsi_info, vtmp,
++					 &agg_info->agg_vsi_list, list_entry)
++			if (agg_vsi_info->vsi_handle == vsi_handle) {
++				list_del(&agg_vsi_info->list_entry);
++				devm_kfree(ice_hw_to_dev(pi->hw),
++					   agg_vsi_info);
++				return;
++			}
++	}
++}
++
++/**
++ * ice_sched_rm_vsi_cfg - remove the VSI and its children nodes
++ * @pi: port information structure
++ * @vsi_handle: software VSI handle
++ * @owner: lan or rdma
++ *
++ * This function removes the VSI and its lan or rdma children nodes from the
++ * scheduler tree.
++ */
++static enum ice_status
++ice_sched_rm_vsi_cfg(struct ice_port_info *pi, u16 vsi_handle, u8 owner)
++{
++	enum ice_status status = ICE_ERR_PARAM;
++	struct ice_vsi_ctx *vsi_ctx;
++	u8 i, j = 0;
++
++	if (!ice_is_vsi_valid(pi->hw, vsi_handle))
++		return status;
++	mutex_lock(&pi->sched_lock);
++	vsi_ctx = ice_get_vsi_ctx(pi->hw, vsi_handle);
++	if (!vsi_ctx)
++		goto exit_sched_rm_vsi_cfg;
++
++	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
++		struct ice_sched_node *vsi_node, *tc_node;
++
++		tc_node = ice_sched_get_tc_node(pi, i);
++		if (!tc_node)
++			continue;
++
++		vsi_node = ice_sched_get_vsi_node(pi->hw, tc_node, vsi_handle);
++		if (!vsi_node)
++			continue;
++
++		while (j < vsi_node->num_children) {
++			if (vsi_node->children[j]->owner == owner) {
++				ice_free_sched_node(pi, vsi_node->children[j]);
++
++				/* reset the counter again since the num
++				 * children will be updated after node removal
++				 */
++				j = 0;
++			} else {
++				j++;
++			}
++		}
++		/* remove the VSI if it has no children */
++		if (!vsi_node->num_children) {
++			ice_free_sched_node(pi, vsi_node);
++			vsi_ctx->sched.vsi_node[i] = NULL;
++
++			/* clean up agg related vsi info if any */
++			ice_sched_rm_agg_vsi_info(pi, vsi_handle);
++		}
++		if (owner == ICE_SCHED_NODE_OWNER_LAN)
++			vsi_ctx->sched.max_lanq[i] = 0;
++	}
++	status = 0;
++
++exit_sched_rm_vsi_cfg:
++	mutex_unlock(&pi->sched_lock);
++	return status;
++}
++
++/**
++ * ice_rm_vsi_lan_cfg - remove VSI and its lan children nodes
++ * @pi: port information structure
++ * @vsi_handle: software VSI handle
++ *
++ * This function clears the VSI and its lan children nodes from scheduler tree
++ * for all TCs.
++ */
++enum ice_status ice_rm_vsi_lan_cfg(struct ice_port_info *pi, u16 vsi_handle)
++{
++	return ice_sched_rm_vsi_cfg(pi, vsi_handle, ICE_SCHED_NODE_OWNER_LAN);
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
+index 5dc9cfa04c58..dc59fbac7dde 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.h
++++ b/drivers/net/ethernet/intel/ice/ice_sched.h
+@@ -12,6 +12,7 @@
+ struct ice_sched_agg_vsi_info {
+ 	struct list_head list_entry;
+ 	DECLARE_BITMAP(tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
++	u16 vsi_handle;
+ };
+ 
+ struct ice_sched_agg_info {
+@@ -39,4 +40,5 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ enum ice_status
+ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
+ 		  u8 owner, bool enable);
++enum ice_status ice_rm_vsi_lan_cfg(struct ice_port_info *pi, u16 vsi_handle);
+ #endif /* _ICE_SCHED_H_ */
 -- 
 2.14.3
 
