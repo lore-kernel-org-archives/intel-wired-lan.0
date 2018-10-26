@@ -1,10 +1,10 @@
 From: Miroslav Lichvar <mlichvar@redhat.com>
-Date: Fri, 26 Oct 2018 18:27:41 +0200
-Subject: [Intel-wired-lan] [RFC PATCH 3/4] igb: add support for extended PHC
- gettime
+Date: Fri, 26 Oct 2018 18:27:42 +0200
+Subject: [Intel-wired-lan] [RFC PATCH 4/4] ixgbe: add support for extended
+ PHC gettime
 In-Reply-To: <20181026162742.631-1-mlichvar@redhat.com>
 References: <20181026162742.631-1-mlichvar@redhat.com>
-Message-ID: <20181026162742.631-4-mlichvar@redhat.com>
+Message-ID: <20181026162742.631-5-mlichvar@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,84 +15,98 @@ Cc: Richard Cochran <richardcochran@gmail.com>
 Cc: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
 ---
- drivers/net/ethernet/intel/igb/igb_ptp.c | 43 ++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 57 ++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 29ced6b74d36..6294d18b5a60 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -310,6 +310,46 @@ static int igb_ptp_gettime_i210(struct ptp_clock_info *ptp,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+index b3e0d8bb5cbd..d31e8d3effc7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+@@ -466,6 +466,60 @@ static int ixgbe_ptp_gettime(struct ptp_clock_info *ptp, struct timespec64 *ts)
  	return 0;
  }
  
-+static int igb_ptp_gettimex(struct ptp_clock_info *ptp,
-+			    struct ptp_system_timestamp *sts)
++/**
++ * ixgbe_ptp_gettimex
++ * @ptp: the ptp clock structure
++ * @sts: structure to hold the system time before reading the PHC,
++ * the PHC timestamp, and system time after reading the PHC
++ *
++ * read the timecounter and return the correct value on ns,
++ * after converting it into a struct timespec.
++ */
++static int ixgbe_ptp_gettimex(struct ptp_clock_info *ptp,
++			      struct ptp_system_timestamp *sts)
 +{
-+	struct igb_adapter *igb = container_of(ptp, struct igb_adapter,
-+					       ptp_caps);
-+	struct e1000_hw *hw = &igb->hw;
++	struct ixgbe_adapter *adapter =
++		container_of(ptp, struct ixgbe_adapter, ptp_caps);
++	struct ixgbe_hw *hw = &adapter->hw;
 +	unsigned long flags;
-+	u32 lo, hi;
-+	u64 ns;
++	struct timespec64 ts;
++	u64 ns, stamp;
 +
-+	spin_lock_irqsave(&igb->tmreg_lock, flags);
++	spin_lock_irqsave(&adapter->tmreg_lock, flags);
 +
-+	/* 82576 doesn't have SYSTIMR */
-+	if (igb->hw.mac.type == e1000_82576) {
++	switch (adapter->hw.mac.type) {
++	case ixgbe_mac_X550:
++	case ixgbe_mac_X550EM_x:
++	case ixgbe_mac_x550em_a:
++		/* Upper 32 bits represent billions of cycles, lower 32 bits
++		 * represent cycles. However, we use timespec64_to_ns for the
++		 * correct math even though the units haven't been corrected
++		 * yet.
++		 */
 +		ptp_read_system_prets(sts);
-+		lo = rd32(E1000_SYSTIML);
++		IXGBE_READ_REG(hw, IXGBE_SYSTIMR);
 +		ptp_read_system_postts(sts);
-+		hi = rd32(E1000_SYSTIMH);
-+	} else {
++		ts.tv_nsec = IXGBE_READ_REG(hw, IXGBE_SYSTIML);
++		ts.tv_sec = IXGBE_READ_REG(hw, IXGBE_SYSTIMH);
++		stamp = timespec64_to_ns(&ts);
++		break;
++	default:
 +		ptp_read_system_prets(sts);
-+		rd32(E1000_SYSTIMR);
++		stamp = IXGBE_READ_REG(hw, IXGBE_SYSTIML);
 +		ptp_read_system_postts(sts);
-+		lo = rd32(E1000_SYSTIML);
-+		hi = rd32(E1000_SYSTIMH);
++		stamp |= (u64)IXGBE_READ_REG(hw, IXGBE_SYSTIMH) << 32;
++		break;
 +	}
 +
-+	/* SYSTIM on I210/I211 counts time in seconds and nanoseconds */
-+	if (igb->hw.mac.type == e1000_i210 || igb->hw.mac.type == e1000_i211) {
-+		sts->phc_ts.tv_sec = hi;
-+		sts->phc_ts.tv_nsec = lo;
-+	} else {
-+		ns = timecounter_cyc2time(&igb->tc, ((u64)hi << 32) | lo);
-+		sts->phc_ts = ns_to_timespec64(ns);
-+	}
++	ns = timecounter_cyc2time(&adapter->hw_tc, stamp);
 +
-+	spin_unlock_irqrestore(&igb->tmreg_lock, flags);
++	spin_unlock_irqrestore(&adapter->tmreg_lock, flags);
++
++	sts->phc_ts = ns_to_timespec64(ns);
 +
 +	return 0;
 +}
 +
- static int igb_ptp_settime_82576(struct ptp_clock_info *ptp,
- 				 const struct timespec64 *ts)
- {
-@@ -1125,6 +1165,7 @@ void igb_ptp_init(struct igb_adapter *adapter)
- 		adapter->ptp_caps.adjfreq = igb_ptp_adjfreq_82576;
- 		adapter->ptp_caps.adjtime = igb_ptp_adjtime_82576;
- 		adapter->ptp_caps.gettime64 = igb_ptp_gettime_82576;
-+		adapter->ptp_caps.gettimex64 = igb_ptp_gettimex;
- 		adapter->ptp_caps.settime64 = igb_ptp_settime_82576;
- 		adapter->ptp_caps.enable = igb_ptp_feature_enable;
- 		adapter->cc.read = igb_ptp_read_82576;
-@@ -1144,6 +1185,7 @@ void igb_ptp_init(struct igb_adapter *adapter)
- 		adapter->ptp_caps.adjfine = igb_ptp_adjfine_82580;
- 		adapter->ptp_caps.adjtime = igb_ptp_adjtime_82576;
- 		adapter->ptp_caps.gettime64 = igb_ptp_gettime_82576;
-+		adapter->ptp_caps.gettimex64 = igb_ptp_gettimex;
- 		adapter->ptp_caps.settime64 = igb_ptp_settime_82576;
- 		adapter->ptp_caps.enable = igb_ptp_feature_enable;
- 		adapter->cc.read = igb_ptp_read_82580;
-@@ -1172,6 +1214,7 @@ void igb_ptp_init(struct igb_adapter *adapter)
- 		adapter->ptp_caps.adjfine = igb_ptp_adjfine_82580;
- 		adapter->ptp_caps.adjtime = igb_ptp_adjtime_i210;
- 		adapter->ptp_caps.gettime64 = igb_ptp_gettime_i210;
-+		adapter->ptp_caps.gettimex64 = igb_ptp_gettimex;
- 		adapter->ptp_caps.settime64 = igb_ptp_settime_i210;
- 		adapter->ptp_caps.enable = igb_ptp_feature_enable_i210;
- 		adapter->ptp_caps.verify = igb_ptp_verify_pin;
+ /**
+  * ixgbe_ptp_settime
+  * @ptp: the ptp clock structure
+@@ -1217,6 +1271,7 @@ static long ixgbe_ptp_create_clock(struct ixgbe_adapter *adapter)
+ 		adapter->ptp_caps.adjfreq = ixgbe_ptp_adjfreq_82599;
+ 		adapter->ptp_caps.adjtime = ixgbe_ptp_adjtime;
+ 		adapter->ptp_caps.gettime64 = ixgbe_ptp_gettime;
++		adapter->ptp_caps.gettimex64 = ixgbe_ptp_gettimex;
+ 		adapter->ptp_caps.settime64 = ixgbe_ptp_settime;
+ 		adapter->ptp_caps.enable = ixgbe_ptp_feature_enable;
+ 		adapter->ptp_setup_sdp = ixgbe_ptp_setup_sdp_x540;
+@@ -1234,6 +1289,7 @@ static long ixgbe_ptp_create_clock(struct ixgbe_adapter *adapter)
+ 		adapter->ptp_caps.adjfreq = ixgbe_ptp_adjfreq_82599;
+ 		adapter->ptp_caps.adjtime = ixgbe_ptp_adjtime;
+ 		adapter->ptp_caps.gettime64 = ixgbe_ptp_gettime;
++		adapter->ptp_caps.gettimex64 = ixgbe_ptp_gettimex;
+ 		adapter->ptp_caps.settime64 = ixgbe_ptp_settime;
+ 		adapter->ptp_caps.enable = ixgbe_ptp_feature_enable;
+ 		break;
+@@ -1250,6 +1306,7 @@ static long ixgbe_ptp_create_clock(struct ixgbe_adapter *adapter)
+ 		adapter->ptp_caps.adjfreq = ixgbe_ptp_adjfreq_X550;
+ 		adapter->ptp_caps.adjtime = ixgbe_ptp_adjtime;
+ 		adapter->ptp_caps.gettime64 = ixgbe_ptp_gettime;
++		adapter->ptp_caps.gettimex64 = ixgbe_ptp_gettimex;
+ 		adapter->ptp_caps.settime64 = ixgbe_ptp_settime;
+ 		adapter->ptp_caps.enable = ixgbe_ptp_feature_enable;
+ 		adapter->ptp_setup_sdp = NULL;
 -- 
 2.17.2
 
