@@ -1,81 +1,54 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 11:44:45 -0700
-Subject: [Intel-wired-lan] [PATCH S9 13/15] ice: Cleanup short function
- signatures
+Date: Fri, 26 Oct 2018 11:44:38 -0700
+Subject: [Intel-wired-lan] [PATCH S9 06/15] ice: Do autoneg based on VSI
+ state
 In-Reply-To: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
 References: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026184447.13547-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026184447.13547-7-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-Function signatures that do not exceed 80-characters should be on a single
-line.
+If VSI state is up, we should do autoneg with link up, otherwise
+with link down.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 3 +--
- drivers/net/ethernet/intel/ice/ice_sched.c  | 6 ++----
- drivers/net/ethernet/intel/ice/ice_switch.c | 3 +--
- 3 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 0b528602c4c9..b3d73be9f649 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1713,8 +1713,7 @@ void ice_clear_pxe_mode(struct ice_hw *hw)
-  * If no bit gets set, ICE_LINK_SPEED_UNKNOWN will be returned
-  * If more than one bit gets set, ICE_LINK_SPEED_UNKNOWN will be returned
-  */
--static u16
--ice_get_link_speed_based_on_phy_type(u64 phy_type_low)
-+static u16 ice_get_link_speed_based_on_phy_type(u64 phy_type_low)
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 648acdb4c644..4d3e3113741d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -1392,17 +1392,17 @@ static int ice_nway_reset(struct net_device *netdev)
  {
- 	u16 speed_phy_type_low = ICE_AQ_LINK_SPEED_UNKNOWN;
+ 	/* restart autonegotiation */
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+-	struct ice_link_status *hw_link_info;
+ 	struct ice_vsi *vsi = np->vsi;
+ 	struct ice_port_info *pi;
+ 	enum ice_status status;
+-	bool link_up;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index c950ebc11d98..b39484da5a7d 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -894,8 +894,7 @@ static u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
-  * This function removes the leaf node that was created by the FW
-  * during initialization
-  */
--static void
--ice_rm_dflt_leaf_node(struct ice_port_info *pi)
-+static void ice_rm_dflt_leaf_node(struct ice_port_info *pi)
- {
- 	struct ice_sched_node *node;
+ 	pi = vsi->port_info;
+-	hw_link_info = &pi->phy.link_info;
+-	link_up = hw_link_info->link_info & ICE_AQ_LINK_UP;
++	/* If VSI state is up, then restart autoneg with link up */
++	if (!test_bit(__ICE_DOWN, vsi->back->state))
++		status = ice_aq_set_link_restart_an(pi, true, NULL);
++	else
++		status = ice_aq_set_link_restart_an(pi, false, NULL);
  
-@@ -923,8 +922,7 @@ ice_rm_dflt_leaf_node(struct ice_port_info *pi)
-  * This function frees all the nodes except root and TC that were created by
-  * the FW during initialization
-  */
--static void
--ice_sched_rm_dflt_nodes(struct ice_port_info *pi)
-+static void ice_sched_rm_dflt_nodes(struct ice_port_info *pi)
- {
- 	struct ice_sched_node *node;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 107ca08899b6..af55c74c2378 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -92,8 +92,7 @@ ice_aq_alloc_free_res(struct ice_hw *hw, u16 num_entries,
-  * Allocate memory for the entire recipe table and initialize the structures/
-  * entries corresponding to basic recipes.
-  */
--enum ice_status
--ice_init_def_sw_recp(struct ice_hw *hw)
-+enum ice_status ice_init_def_sw_recp(struct ice_hw *hw)
- {
- 	struct ice_sw_recipe *recps;
- 	u8 i;
+-	status = ice_aq_set_link_restart_an(pi, link_up, NULL);
+ 	if (status) {
+ 		netdev_info(netdev, "link restart failed, err %d aq_err %d\n",
+ 			    status, pi->hw->adminq.sq_last_status);
 -- 
 2.14.3
 
