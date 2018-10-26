@@ -1,82 +1,49 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 11:44:41 -0700
-Subject: [Intel-wired-lan] [PATCH S9 09/15] ice: Do not set LAN_EN for
- MAC-VLAN filters
+Date: Fri, 26 Oct 2018 11:44:42 -0700
+Subject: [Intel-wired-lan] [PATCH S9 10/15] ice: Constify global structures
+ that can/should be
 In-Reply-To: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
 References: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026184447.13547-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026184447.13547-11-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Yashaswini Raghuram Prathivadi Bhayankaram <yashaswini.raghuram.prathivadi.bhayankaram@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-In the action fields for a MAC-VLAN filter, do not set the LAN_EN flag
-if the MAC in the MAC-VLAN is unicast MAC. The unicast packets that
-match should not be forwarded to the wire.
+Indicate these structs should not be modified and take advantage of some
+compiler optimizations by making these structs const.
 
-Signed-off-by: Yashaswini Raghuram Prathivadi Bhayankaram <yashaswini.raghuram.prathivadi.bhayankaram@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 37 +++++++++++++++++++----------
- 1 file changed, 24 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 40c9c6558956..107ca08899b6 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -629,25 +629,36 @@ enum ice_status ice_get_initial_sw_cfg(struct ice_hw *hw)
- /**
-  * ice_fill_sw_info - Helper function to populate lb_en and lan_en
-  * @hw: pointer to the hardware structure
-- * @f_info: filter info structure to fill/update
-+ * @fi: filter info structure to fill/update
-  *
-  * This helper function populates the lb_en and lan_en elements of the provided
-  * ice_fltr_info struct using the switch's type and characteristics of the
-  * switch rule being configured.
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 4d3e3113741d..990d660f527a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -62,7 +62,7 @@ static const struct ice_stats ice_gstrings_vsi_stats[] = {
+  * The PF_STATs are appended to the netdev stats only when ethtool -S
+  * is queried on the base PF netdev.
   */
--static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *f_info)
-+static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *fi)
- {
--	f_info->lb_en = false;
--	f_info->lan_en = false;
--	if ((f_info->flag & ICE_FLTR_TX) &&
--	    (f_info->fltr_act == ICE_FWD_TO_VSI ||
--	     f_info->fltr_act == ICE_FWD_TO_VSI_LIST ||
--	     f_info->fltr_act == ICE_FWD_TO_Q ||
--	     f_info->fltr_act == ICE_FWD_TO_QGRP)) {
--		f_info->lb_en = true;
--		if (!(hw->evb_veb && f_info->lkup_type == ICE_SW_LKUP_MAC &&
--		      is_unicast_ether_addr(f_info->l_data.mac.mac_addr)))
--			f_info->lan_en = true;
-+	fi->lb_en = false;
-+	fi->lan_en = false;
-+	if ((fi->flag & ICE_FLTR_TX) &&
-+	    (fi->fltr_act == ICE_FWD_TO_VSI ||
-+	     fi->fltr_act == ICE_FWD_TO_VSI_LIST ||
-+	     fi->fltr_act == ICE_FWD_TO_Q ||
-+	     fi->fltr_act == ICE_FWD_TO_QGRP)) {
-+		fi->lb_en = true;
-+		/* Do not set lan_en to TRUE if
-+		 * 1. The switch is a VEB AND
-+		 * 2
-+		 * 2.1 The lookup is MAC with unicast addr for MAC, OR
-+		 * 2.2 The lookup is MAC_VLAN with unicast addr for MAC
-+		 *
-+		 * In all other cases, the LAN enable has to be set to true.
-+		 */
-+		if (!(hw->evb_veb &&
-+		      ((fi->lkup_type == ICE_SW_LKUP_MAC &&
-+			is_unicast_ether_addr(fi->l_data.mac.mac_addr)) ||
-+		       (fi->lkup_type == ICE_SW_LKUP_MAC_VLAN &&
-+			is_unicast_ether_addr(fi->l_data.mac_vlan.mac_addr)))))
-+			fi->lan_en = true;
- 	}
- }
+-static struct ice_stats ice_gstrings_pf_stats[] = {
++static const struct ice_stats ice_gstrings_pf_stats[] = {
+ 	ICE_PF_STAT("tx_bytes", stats.eth.tx_bytes),
+ 	ICE_PF_STAT("rx_bytes", stats.eth.rx_bytes),
+ 	ICE_PF_STAT("tx_unicast", stats.eth.tx_unicast),
+@@ -104,7 +104,7 @@ static struct ice_stats ice_gstrings_pf_stats[] = {
+ 	ICE_PF_STAT("mac_remote_faults", stats.mac_remote_faults),
+ };
  
+-static u32 ice_regs_dump_list[] = {
++static const u32 ice_regs_dump_list[] = {
+ 	PFGEN_STATE,
+ 	PRTGEN_STATUS,
+ 	QRX_CTRL(0),
 -- 
 2.14.3
 
