@@ -1,72 +1,152 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 10:41:04 -0700
-Subject: [Intel-wired-lan] [PATCH S8 15/16] ice: Avoid nested RTNL locking
- in ice_dis_vsi
+Date: Fri, 26 Oct 2018 10:41:03 -0700
+Subject: [Intel-wired-lan] [PATCH S8 14/16] ice: Calculate guaranteed VSIs
+ per function and use it
 In-Reply-To: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
 References: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026174105.11628-16-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026174105.11628-15-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+Currently we are setting the guar_num_vsi to equal to ICE_MAX_VSI
+which is the device limit of 768. This is incorrect and could have
+unintended consequences. To fix this use the valid_function's 8-bit
+bitmap returned from discovering device capabilities to determine the
+guar_num_vsi per function. guar_num_vsi value is then passed on to
+pf->num_alloc_vsi.
 
-ice_dis_vsi() performs an rtnl_lock() if it detects a netdev that is
-running on the VSI. In cases where the RTNL lock has already been
-acquired, a deadlock results. Add a boolean to pass to ice_dis_vsi to
-tell it if the RTNL lock is already held.
+Also shorten instances of "guaranteed" to "guar"
 
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_main.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h            |  1 -
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  1 +
+ drivers/net/ethernet/intel/ice/ice_common.c     | 31 +++++++++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_main.c       |  3 +--
+ drivers/net/ethernet/intel/ice/ice_type.h       |  4 +++-
+ 5 files changed, 34 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index ea79e5e1f589..089b0f0b2e71 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3137,8 +3137,9 @@ static void ice_vsi_release_all(struct ice_pf *pf)
- /**
-  * ice_dis_vsi - pause a VSI
-  * @vsi: the VSI being paused
-+ * @locked: is the rtnl_lock already held
-  */
--static void ice_dis_vsi(struct ice_vsi *vsi)
-+static void ice_dis_vsi(struct ice_vsi *vsi, bool locked)
- {
- 	if (test_bit(__ICE_DOWN, vsi->state))
- 		return;
-@@ -3147,9 +3148,13 @@ static void ice_dis_vsi(struct ice_vsi *vsi)
- 
- 	if (vsi->type == ICE_VSI_PF && vsi->netdev) {
- 		if (netif_running(vsi->netdev)) {
--			rtnl_lock();
--			vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
--			rtnl_unlock();
-+			if (!locked) {
-+				rtnl_lock();
-+				vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
-+				rtnl_unlock();
-+			} else {
-+				vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
-+			}
- 		} else {
- 			ice_vsi_close(vsi);
- 		}
-@@ -3188,7 +3193,7 @@ static void ice_pf_dis_all_vsi(struct ice_pf *pf)
- 
- 	ice_for_each_vsi(pf, v)
- 		if (pf->vsi[v])
--			ice_dis_vsi(pf->vsi[v]);
-+			ice_dis_vsi(pf->vsi[v], false);
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index b8548370f1c7..ba03cbd3638e 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -52,7 +52,6 @@ extern const char ice_drv_ver[];
+ #define ICE_MBXQ_LEN		64
+ #define ICE_MIN_MSIX		2
+ #define ICE_NO_VSI		0xffff
+-#define ICE_MAX_VSI_ALLOC	130
+ #define ICE_MAX_TXQS		2048
+ #define ICE_MAX_RXQS		2048
+ #define ICE_VSI_MAP_CONTIG	0
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 6653555f55dd..602f02a0a2d1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -87,6 +87,7 @@ struct ice_aqc_list_caps {
+ /* Device/Function buffer entry, repeated per reported capability */
+ struct ice_aqc_list_caps_elem {
+ 	__le16 cap;
++#define ICE_AQC_CAPS_VALID_FUNCTIONS			0x0005
+ #define ICE_AQC_CAPS_SRIOV				0x0012
+ #define ICE_AQC_CAPS_VF					0x0013
+ #define ICE_AQC_CAPS_VSI				0x0017
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 554fd707a6d6..9de5a3aac77d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1386,6 +1386,27 @@ void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res)
+ 	}
  }
  
++/**
++ * ice_get_guar_num_vsi - determine number of guar VSI for a PF
++ * @hw: pointer to the hw structure
++ *
++ * Determine the number of valid functions by going through the bitmap returned
++ * from parsing capabilities and use this to calculate the number of VSI per PF.
++ */
++static u32 ice_get_guar_num_vsi(struct ice_hw *hw)
++{
++	u8 funcs;
++
++#define ICE_CAPS_VALID_FUNCS_M	0xFF
++	funcs = hweight8(hw->dev_caps.common_cap.valid_functions &
++			 ICE_CAPS_VALID_FUNCS_M);
++
++	if (!funcs)
++		return 0;
++
++	return ICE_MAX_VSI / funcs;
++}
++
  /**
+  * ice_parse_caps - parse function/device capabilities
+  * @hw: pointer to the hw struct
+@@ -1428,6 +1449,12 @@ ice_parse_caps(struct ice_hw *hw, void *buf, u32 cap_count,
+ 		u16 cap = le16_to_cpu(cap_resp->cap);
+ 
+ 		switch (cap) {
++		case ICE_AQC_CAPS_VALID_FUNCTIONS:
++			caps->valid_functions = number;
++			ice_debug(hw, ICE_DBG_INIT,
++				  "HW caps: Valid Functions = %d\n",
++				  caps->valid_functions);
++			break;
+ 		case ICE_AQC_CAPS_SRIOV:
+ 			caps->sr_iov_1_1 = (number == 1);
+ 			ice_debug(hw, ICE_DBG_INIT,
+@@ -1457,10 +1484,10 @@ ice_parse_caps(struct ice_hw *hw, void *buf, u32 cap_count,
+ 					  "HW caps: Dev.VSI cnt = %d\n",
+ 					  dev_p->num_vsi_allocd_to_host);
+ 			} else if (func_p) {
+-				func_p->guaranteed_num_vsi = number;
++				func_p->guar_num_vsi = ice_get_guar_num_vsi(hw);
+ 				ice_debug(hw, ICE_DBG_INIT,
+ 					  "HW caps: Func.VSI cnt = %d\n",
+-					  func_p->guaranteed_num_vsi);
++					  number);
+ 			}
+ 			break;
+ 		case ICE_AQC_CAPS_RSS:
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 8584061e1bc6..ea79e5e1f589 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2091,8 +2091,7 @@ static int ice_probe(struct pci_dev *pdev,
+ 
+ 	ice_determine_q_usage(pf);
+ 
+-	pf->num_alloc_vsi = min_t(u16, ICE_MAX_VSI_ALLOC,
+-				  hw->func_caps.guaranteed_num_vsi);
++	pf->num_alloc_vsi = hw->func_caps.guar_num_vsi;
+ 	if (!pf->num_alloc_vsi) {
+ 		err = -EIO;
+ 		goto err_init_pf_unroll;
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 12f9432abf11..e5657be86c74 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -124,6 +124,8 @@ struct ice_phy_info {
+ 
+ /* Common HW capabilities for SW use */
+ struct ice_hw_common_caps {
++	u32 valid_functions;
++
+ 	/* TX/RX queues */
+ 	u16 num_rxq;		/* Number/Total RX queues */
+ 	u16 rxq_first_id;	/* First queue ID for RX queues */
+@@ -150,7 +152,7 @@ struct ice_hw_func_caps {
+ 	struct ice_hw_common_caps common_cap;
+ 	u32 num_allocd_vfs;		/* Number of allocated VFs */
+ 	u32 vf_base_id;			/* Logical ID of the first VF */
+-	u32 guaranteed_num_vsi;
++	u32 guar_num_vsi;
+ };
+ 
+ /* Device wide capabilities */
 -- 
 2.14.3
 
