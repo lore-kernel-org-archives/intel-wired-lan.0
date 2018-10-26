@@ -1,50 +1,43 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 26 Oct 2018 14:33:33 -0700
-Subject: [Intel-wired-lan] [next PATCH S98 6/6] i40e: suppress bogus error
- message
+Date: Fri, 26 Oct 2018 14:33:31 -0700
+Subject: [Intel-wired-lan] [next PATCH S98 4/6] virtchnl: Fix off by one
+ error
 In-Reply-To: <20181026213333.51495-1-alice.michael@intel.com>
 References: <20181026213333.51495-1-alice.michael@intel.com>
-Message-ID: <20181026213333.51495-6-alice.michael@intel.com>
+Message-ID: <20181026213333.51495-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+When calculating the valid length for a VIRTCHNL_OP_ENABLE_CHANNELS
+message, we accidentally allowed messages with one extra
+virtchnl_channel_info structure on the end. This happened due
+to an off by one error, because we forgot that valid_len already
+accounted for one virtchnl_channel_info structure, so we need to
+subtract one from the num_tc value.
 
-The i40e driver complains about unprivileged VFs trying to configure
-promiscuous mode each time a VF reset occurs. This isn't the fault of
-the poor VF driver - the PF driver itself is making the request.
-
-To fix this, skip the privilege check if the request is to disable all
-promiscuous activity. This gets rid of the bogus message, but doesn't
-affect privilege checks, since we really only care if the unprivileged
-VF is trying to enable promiscuous mode.
-
-Testing Hints (required if no HSD): watch dmesg log while VF resets
-occur. You can trigger a VFR by unloading i40evf or shutting down the VM
-with an assigned VF.
-
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Alice Michael <alice.michael@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/linux/avf/virtchnl.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index ac5698e..c41e8ad 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1112,7 +1112,8 @@ static i40e_status i40e_config_vf_promiscuous_mode(struct i40e_vf *vf,
- 	if (!i40e_vc_isvalid_vsi_id(vf, vsi_id) || !vsi)
- 		return I40E_ERR_PARAM;
- 
--	if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
-+	if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps) &&
-+	    (allmulti || alluni)) {
- 		dev_err(&pf->pdev->dev,
- 			"Unprivileged VF %d is attempting to configure promiscuous mode\n",
- 			vf->vf_id);
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index 3130dec..7605b59 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -819,8 +819,8 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
+ 		if (msglen >= valid_len) {
+ 			struct virtchnl_tc_info *vti =
+ 				(struct virtchnl_tc_info *)msg;
+-			valid_len += vti->num_tc *
+-				sizeof(struct virtchnl_channel_info);
++			valid_len += (vti->num_tc - 1) *
++				     sizeof(struct virtchnl_channel_info);
+ 			if (vti->num_tc == 0)
+ 				err_msg_format = true;
+ 		}
 -- 
 2.9.5
 
