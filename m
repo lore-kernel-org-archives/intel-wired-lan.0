@@ -1,193 +1,88 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 27 Oct 2018 05:50:34 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 654e2731db254e4d601b86d448fe04b5858f9c08
-Message-ID: <5bd38c2a.a2dKN40w+hxs4XQu%lkp@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri, 26 Oct 2018 15:16:47 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 1/4] ptp: add
+ PTP_SYS_OFFSET_EXTENDED ioctl
+In-Reply-To: <20181026162742.631-2-mlichvar@redhat.com>
+References: <20181026162742.631-1-mlichvar@redhat.com>
+ <20181026162742.631-2-mlichvar@redhat.com>
+Message-ID: <87in1o73qo.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 654e2731db254e4d601b86d448fe04b5858f9c08  igb: shorten maximum PHC timecounter update interval
+Hi Miroslav,
 
-elapsed time: 176m
+Miroslav Lichvar <mlichvar@redhat.com> writes:
 
-configs tested: 169
+> The PTP_SYS_OFFSET ioctl, which can be used to measure the offset
+> between a PHC and the system clock, includes the total time that the
+> gettime64 function of a driver needs to read the PHC timestamp.
+>
+> This typically involves reading of multiple PCI registers (sometimes in
+> multiple iterations) and the register that contains the lowest bits of
+> the timestamp is not read in the middle between the two readings of the
+> system clock. This asymmetry causes the measured offset to have a
+> significant error.
+>
+> Introduce a new ioctl, driver function, and helper functions, which
+> allow the reading of the lowest register to be isolated from the other
+> readings in order to reduce the asymmetry. The ioctl and driver function
+> return three timestamps for each measurement:
+> - system time right before reading the lowest bits of the PHC timestamp
+> - PHC time
+> - system time immediately after reading the lowest bits of the PHC
+>   timestamp
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Cool stuff!
 
-x86_64                 randconfig-a0-10262156
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10262158
-i386                   randconfig-x019-201842
-i386                   randconfig-x016-201842
-i386                   randconfig-x018-201842
-i386                   randconfig-x014-201842
-i386                   randconfig-x015-201842
-i386                   randconfig-x010-201842
-i386                   randconfig-x017-201842
-i386                   randconfig-x012-201842
-i386                   randconfig-x011-201842
-i386                   randconfig-x013-201842
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201842
-i386                     randconfig-n1-201842
-i386                     randconfig-n2-201842
-i386                     randconfig-n3-201842
-x86_64                 randconfig-x002-201842
-x86_64                 randconfig-x005-201842
-x86_64                 randconfig-x000-201842
-x86_64                 randconfig-x001-201842
-x86_64                 randconfig-x008-201842
-x86_64                 randconfig-x009-201842
-x86_64                 randconfig-x007-201842
-x86_64                 randconfig-x003-201842
-x86_64                 randconfig-x006-201842
-x86_64                 randconfig-x004-201842
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201842
-i386                     randconfig-i1-201842
-i386                     randconfig-i2-201842
-i386                     randconfig-i3-201842
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                              alldefconfig
-parisc                          712_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                        trizeps4_defconfig
-mips                         tb0226_defconfig
-parisc                           allyesconfig
-sh                           se7750_defconfig
-x86_64                 randconfig-x017-201842
-x86_64                 randconfig-x011-201842
-x86_64                 randconfig-x016-201842
-x86_64                 randconfig-x013-201842
-x86_64                 randconfig-x012-201842
-x86_64                 randconfig-x019-201842
-x86_64                 randconfig-x018-201842
-x86_64                 randconfig-x014-201842
-x86_64                 randconfig-x010-201842
-x86_64                 randconfig-x015-201842
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201842
-i386                     randconfig-s1-201842
-i386                     randconfig-s2-201842
-i386                     randconfig-s3-201842
-x86_64                 randconfig-s3-10270204
-x86_64                 randconfig-s4-10270204
-x86_64                 randconfig-s5-10270204
-x86_64                 randconfig-s3-10270414
-x86_64                 randconfig-s4-10270414
-x86_64                 randconfig-s5-10270414
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201842
-x86_64                   randconfig-i1-201842
-x86_64                   randconfig-i3-201842
-x86_64                   randconfig-i2-201842
-i386                   randconfig-b0-10262147
-arm                       aspeed_g4_defconfig
-arm                        spear3xx_defconfig
-microblaze                          defconfig
-i386                             allyesconfig
-x86_64                 randconfig-b0-10262148
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-u0-10270050
-i386                   randconfig-k0-10261856
-x86_64                 randconfig-k0-10261856
-i386                   randconfig-k3-10261856
-i386                   randconfig-k2-10261856
-x86_64                 randconfig-k2-10261856
-x86_64                 randconfig-k3-10261856
-i386                   randconfig-k1-10261856
-x86_64                 randconfig-k1-10261856
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                randconfig-ne0-10270006
-i386                               tinyconfig
-i386                   randconfig-x077-201842
-i386                   randconfig-x072-201842
-i386                   randconfig-x075-201842
-i386                   randconfig-x070-201842
-i386                   randconfig-x073-201842
-i386                   randconfig-x071-201842
-i386                   randconfig-x074-201842
-i386                   randconfig-x078-201842
-i386                   randconfig-x076-201842
-i386                   randconfig-x079-201842
-i386                   randconfig-x002-201842
-i386                   randconfig-x007-201842
-i386                   randconfig-x000-201842
-i386                   randconfig-x005-201842
-i386                   randconfig-x006-201842
-i386                   randconfig-x004-201842
-i386                   randconfig-x001-201842
-i386                   randconfig-x009-201842
-i386                   randconfig-x008-201842
-i386                   randconfig-x003-201842
-x86_64                   randconfig-e0-201842
-x86_64                   randconfig-e1-201842
-x86_64                   randconfig-e2-201842
-x86_64                   randconfig-e3-201842
-x86_64                randconfig-ws0-10270205
-x86_64                 randconfig-r0-10262157
-arm                            netx_defconfig
-powerpc64                           defconfig
-c6x                        evmc6474_defconfig
-powerpc                      cm5200_defconfig
-i386                   randconfig-x0-10270019
+Just one little thing below. Feel free to add my ack to the series.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Acked-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+
+>
+> Cc: Richard Cochran <richardcochran@gmail.com>
+> Cc: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
+> ---
+>  drivers/ptp/ptp_chardev.c        | 39 ++++++++++++++++++++++++++++++++
+>  include/linux/ptp_clock_kernel.h | 26 +++++++++++++++++++++
+>  include/uapi/linux/ptp_clock.h   | 12 ++++++++++
+>  3 files changed, 77 insertions(+)
+>
+> diff --git a/drivers/ptp/ptp_chardev.c b/drivers/ptp/ptp_chardev.c
+> index 2012551d93e0..1a04c437fd4f 100644
+> --- a/drivers/ptp/ptp_chardev.c
+> +++ b/drivers/ptp/ptp_chardev.c
+> @@ -124,11 +124,13 @@ long ptp_ioctl(struct posix_clock *pc, unsigned int cmd, unsigned long arg)
+>  	struct ptp_clock_caps caps;
+>  	struct ptp_clock_request req;
+>  	struct ptp_sys_offset *sysoff = NULL;
+> +	struct ptp_sys_offset_extended *sysoff_extended = NULL;
+>  	struct ptp_sys_offset_precise precise_offset;
+>  	struct ptp_pin_desc pd;
+>  	struct ptp_clock *ptp = container_of(pc, struct ptp_clock, clock);
+>  	struct ptp_clock_info *ops = ptp->info;
+>  	struct ptp_clock_time *pct;
+> +	struct ptp_system_timestamp sts;
+>  	struct timespec64 ts;
+>  	struct system_device_crosststamp xtstamp;
+>  	int enable, err = 0;
+> @@ -211,6 +213,43 @@ long ptp_ioctl(struct posix_clock *pc, unsigned int cmd, unsigned long arg)
+>  			err = -EFAULT;
+>  		break;
+>  
+> +	case PTP_SYS_OFFSET_EXTENDED:
+> +		if (!ptp->info->gettimex64) {
+> +			err = -EOPNOTSUPP;
+> +			break;
+> +		}
+> +		sysoff_extended = memdup_user((void __user *)arg,
+> +					      sizeof(*sysoff_extended));
+
+Looks like you forgot to free 'sysoff_extended', no? 
+
+
+--
+Vinicius
