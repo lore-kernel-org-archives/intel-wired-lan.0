@@ -1,90 +1,36 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 10:41:00 -0700
-Subject: [Intel-wired-lan] [PATCH S8 11/16] ice: Fix debug print in
- ice_tx_timeout
+Date: Fri, 26 Oct 2018 10:40:56 -0700
+Subject: [Intel-wired-lan] [PATCH S8 07/16] ice: Fix typo in error message
 In-Reply-To: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
 References: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026174105.11628-12-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026174105.11628-8-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+Print should say "Enabling" instead of "Enaabling"
 
-Currently the debug print in ice_tx_timeout is printing useless and
-duplicate values. First, head is being assigned to tx_ring->next_to_clean
-and we are printing both of those values, but naming them HWB and NTC
-respectively. Also, reading tail always returns 0 so remove that as well.
-
-Instead of assigning head the SW head (NTC) read the actual head register
-and change the debug print to note that this is HW_HEAD. Also reduce thei
-scope of a couple variables.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  3 +++
- drivers/net/ethernet/intel/ice/ice_main.c       | 15 +++++++++------
- 2 files changed, 12 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 596b9fb1c510..5507928c8fbe 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -7,6 +7,9 @@
- #define _ICE_HW_AUTOGEN_H_
- 
- #define QTX_COMM_DBELL(_DBQM)			(0x002C0000 + ((_DBQM) * 4))
-+#define QTX_COMM_HEAD(_DBQM)			(0x000E0000 + ((_DBQM) * 4))
-+#define QTX_COMM_HEAD_HEAD_S			0
-+#define QTX_COMM_HEAD_HEAD_M			ICE_M(0x1FFF, 0)
- #define PF_FW_ARQBAH				0x00080180
- #define PF_FW_ARQBAL				0x00080080
- #define PF_FW_ARQH				0x00080380
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 333312a1d595..8584061e1bc6 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3691,8 +3691,8 @@ static void ice_tx_timeout(struct net_device *netdev)
- 	struct ice_ring *tx_ring = NULL;
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
--	u32 head, val = 0, i;
- 	int hung_queue = -1;
-+	u32 i;
- 
- 	pf->tx_timeout_count++;
- 
-@@ -3736,17 +3736,20 @@ static void ice_tx_timeout(struct net_device *netdev)
- 		return;
- 
- 	if (tx_ring) {
--		head = tx_ring->next_to_clean;
-+		struct ice_hw *hw = &pf->hw;
-+		u32 head, val = 0;
-+
-+		head = (rd32(hw, QTX_COMM_HEAD(vsi->txq_map[hung_queue])) &
-+			QTX_COMM_HEAD_HEAD_M) >> QTX_COMM_HEAD_HEAD_S;
- 		/* Read interrupt register */
- 		if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
--			val = rd32(&pf->hw,
-+			val = rd32(hw,
- 				   GLINT_DYN_CTL(tx_ring->q_vector->v_idx +
- 					tx_ring->vsi->hw_base_vector));
- 
--		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %d, NTC: 0x%x, HWB: 0x%x, NTU: 0x%x, TAIL: 0x%x, INT: 0x%x\n",
-+		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %d, NTC: 0x%x, HW_HEAD: 0x%x, NTU: 0x%x, INT: 0x%x\n",
- 			    vsi->vsi_num, hung_queue, tx_ring->next_to_clean,
--			    head, tx_ring->next_to_use,
--			    readl(tx_ring->tail), val);
-+			    head, tx_ring->next_to_use, val);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 5bacad01f0c9..c604a44c8cfb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1997,7 +1997,7 @@ int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena)
+ 	status = ice_update_vsi(&vsi->back->hw, vsi->idx, ctxt, NULL);
+ 	if (status) {
+ 		netdev_err(vsi->netdev, "%sabling VLAN pruning on VSI handle: %d, VSI HW ID: %d failed, err = %d, aq_err = %d\n",
+-			   ena ? "Ena" : "Dis", vsi->idx, vsi->vsi_num, status,
++			   ena ? "En" : "Dis", vsi->idx, vsi->vsi_num, status,
+ 			   vsi->back->hw.adminq.sq_last_status);
+ 		goto err_out;
  	}
- 
- 	pf->tx_timeout_last_recovery = jiffies;
 -- 
 2.14.3
 
