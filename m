@@ -1,43 +1,70 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 11:44:36 -0700
-Subject: [Intel-wired-lan] [PATCH S9 04/15] ice: Destroy scheduler tree in
- reset path
+Date: Fri, 26 Oct 2018 11:44:34 -0700
+Subject: [Intel-wired-lan] [PATCH S9 02/15] ice: Call pci_disable_sriov
+ before stopping queues for VF
 In-Reply-To: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
 References: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026184447.13547-5-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026184447.13547-3-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Henry Tieman <henry.w.tieman@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-The scheduler tree is is always rebuilt during reset. The existing code
-adds new scheduler nodes for queues but may not clean up earlier nodes.
-This patch removed the old scheduler tree during reset before it is
-rebuilt.
+Previous to this commit the driver was immediately stopping Tx/Rx
+queues when doing the following "echo 0 > sriov_numvfs" and then it was
+calling pci_disable_sriov if the VFs are not assigned. This was causing
+the VIRTCHNL_OP_DISABLE_QUEUES to fail because it was trying to stop
+the queues for a second time.
 
-Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+Fix this by calling pci_disable_sriov before stopping the Tx/Rx queues.
+This allows the VIRTCHNL_OP_DISABLE_QUEUES to get processed before the
+driver tries to stop the Rx/Tx queues in ice_free_vfs.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_lib.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 597005f39919..53685a66125b 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2551,6 +2551,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
- 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index e71065f9d391..20b94dee0036 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -215,6 +215,15 @@ void ice_free_vfs(struct ice_pf *pf)
+ 	while (test_and_set_bit(__ICE_VF_DIS, pf->state))
+ 		usleep_range(1000, 2000);
  
- 	pf = vsi->back;
-+	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
- 	ice_vsi_free_q_vectors(vsi);
- 	ice_free_res(vsi->back->sw_irq_tracker, vsi->sw_base_vector, vsi->idx);
- 	ice_free_res(vsi->back->hw_irq_tracker, vsi->hw_base_vector, vsi->idx);
++	/* Disable IOV before freeing resources. This lets any VF drivers
++	 * running in the host get themselves cleaned up before we yank
++	 * the carpet out from underneath their feet.
++	 */
++	if (!pci_vfs_assigned(pf->pdev))
++		pci_disable_sriov(pf->pdev);
++	else
++		dev_warn(&pf->pdev->dev, "VFs are assigned - not disabling SR-IOV\n");
++
+ 	/* Avoid wait time by stopping all VFs at the same time */
+ 	for (i = 0; i < pf->num_alloc_vfs; i++) {
+ 		if (!test_bit(ICE_VF_STATE_ENA, pf->vf[i].vf_states))
+@@ -228,15 +237,6 @@ void ice_free_vfs(struct ice_pf *pf)
+ 		clear_bit(ICE_VF_STATE_ENA, pf->vf[i].vf_states);
+ 	}
+ 
+-	/* Disable IOV before freeing resources. This lets any VF drivers
+-	 * running in the host get themselves cleaned up before we yank
+-	 * the carpet out from underneath their feet.
+-	 */
+-	if (!pci_vfs_assigned(pf->pdev))
+-		pci_disable_sriov(pf->pdev);
+-	else
+-		dev_warn(&pf->pdev->dev, "VFs are assigned - not disabling SR-IOV\n");
+-
+ 	tmp = pf->num_alloc_vfs;
+ 	pf->num_vf_qps = 0;
+ 	pf->num_alloc_vfs = 0;
 -- 
 2.14.3
 
