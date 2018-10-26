@@ -1,75 +1,179 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 27 Oct 2018 02:46:23 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master 12/14]
- drivers/net/ethernet/mellanox/mlx4/en_rx.c:586:20: error: dereferencing
- pointer to incomplete type 'struct iphdr'
-Message-ID: <201810270220.mdBPprX4%fengguang.wu@intel.com>
+Date: Sat, 27 Oct 2018 02:52:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ b2ae86f96f1acb2c1ec0f6c6c93b5a56c68225eb
+Message-ID: <5bd36268.mSl7PX+Yqte1N0zU%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git master
-head:   bf4cc40e9343bbe6c7400ff6f4feb46fb9338087
-commit: 55469bc6b5770ffdf0f87c38ce2573f8ddbaa33f [12/14] drivers: net: remove <net/busy_poll.h> inclusion when not needed
-config: powerpc-defconfig (attached as .config)
-compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 55469bc6b5770ffdf0f87c38ce2573f8ddbaa33f
-        # save the attached .config to linux build tree
-        GCC_VERSION=7.2.0 make.cross ARCH=powerpc 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: b2ae86f96f1acb2c1ec0f6c6c93b5a56c68225eb  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-All error/warnings (new ones prefixed by >>):
+elapsed time: 107m
 
->> drivers/net/ethernet/mellanox/mlx4/en_rx.c:582:18: warning: 'struct iphdr' declared inside parameter list will not be visible outside of this definition or declaration
-              struct iphdr *iph)
-                     ^~~~~
-   drivers/net/ethernet/mellanox/mlx4/en_rx.c: In function 'get_fixed_ipv4_csum':
->> drivers/net/ethernet/mellanox/mlx4/en_rx.c:586:20: error: dereferencing pointer to incomplete type 'struct iphdr'
-     __u8 ipproto = iph->protocol;
-                       ^~
+configs tested: 155
 
-vim +586 drivers/net/ethernet/mellanox/mlx4/en_rx.c
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-f8c6455bb Shani Michaeli 2014-11-09  576  
-f8c6455bb Shani Michaeli 2014-11-09  577  /* Although the stack expects checksum which doesn't include the pseudo
-f8c6455bb Shani Michaeli 2014-11-09  578   * header, the HW adds it. To address that, we are subtracting the pseudo
-f8c6455bb Shani Michaeli 2014-11-09  579   * header checksum from the checksum value provided by the HW.
-f8c6455bb Shani Michaeli 2014-11-09  580   */
-e718fe450 Davide Caratti 2017-08-03  581  static int get_fixed_ipv4_csum(__wsum hw_checksum, struct sk_buff *skb,
-f8c6455bb Shani Michaeli 2014-11-09 @582  			       struct iphdr *iph)
-f8c6455bb Shani Michaeli 2014-11-09  583  {
-f8c6455bb Shani Michaeli 2014-11-09  584  	__u16 length_for_csum = 0;
-f8c6455bb Shani Michaeli 2014-11-09  585  	__wsum csum_pseudo_header = 0;
-e718fe450 Davide Caratti 2017-08-03 @586  	__u8 ipproto = iph->protocol;
-e718fe450 Davide Caratti 2017-08-03  587  
-e718fe450 Davide Caratti 2017-08-03  588  	if (unlikely(ipproto == IPPROTO_SCTP))
-e718fe450 Davide Caratti 2017-08-03  589  		return -1;
-f8c6455bb Shani Michaeli 2014-11-09  590  
-f8c6455bb Shani Michaeli 2014-11-09  591  	length_for_csum = (be16_to_cpu(iph->tot_len) - (iph->ihl << 2));
-f8c6455bb Shani Michaeli 2014-11-09  592  	csum_pseudo_header = csum_tcpudp_nofold(iph->saddr, iph->daddr,
-e718fe450 Davide Caratti 2017-08-03  593  						length_for_csum, ipproto, 0);
-f8c6455bb Shani Michaeli 2014-11-09  594  	skb->csum = csum_sub(hw_checksum, csum_pseudo_header);
-e718fe450 Davide Caratti 2017-08-03  595  	return 0;
-f8c6455bb Shani Michaeli 2014-11-09  596  }
-f8c6455bb Shani Michaeli 2014-11-09  597  
-
-:::::: The code at line 586 was first introduced by commit
-:::::: e718fe450e616227b74d27a233cdf37b4df0c82b net/mlx4_en: don't set CHECKSUM_COMPLETE on SCTP packets
-
-:::::: TO: Davide Caratti <dcaratti@redhat.com>
-:::::: CC: David S. Miller <davem@davemloft.net>
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                               tinyconfig
+i386                   randconfig-x019-201842
+i386                   randconfig-x016-201842
+i386                   randconfig-x018-201842
+i386                   randconfig-x014-201842
+i386                   randconfig-x015-201842
+i386                   randconfig-x010-201842
+i386                   randconfig-x017-201842
+i386                   randconfig-x012-201842
+i386                   randconfig-x011-201842
+i386                   randconfig-x013-201842
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                              fedora-25
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201842
+i386                     randconfig-n1-201842
+i386                     randconfig-n2-201842
+i386                     randconfig-n3-201842
+x86_64                 randconfig-x000-201842
+x86_64                 randconfig-x001-201842
+x86_64                 randconfig-x002-201842
+x86_64                 randconfig-x003-201842
+x86_64                 randconfig-x004-201842
+x86_64                 randconfig-x005-201842
+x86_64                 randconfig-x006-201842
+x86_64                 randconfig-x007-201842
+x86_64                 randconfig-x008-201842
+x86_64                 randconfig-x009-201842
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-i0-201842
+i386                     randconfig-i1-201842
+i386                     randconfig-i2-201842
+i386                     randconfig-i3-201842
+powerpc                 canyonlands_defconfig
+powerpc                      ppc6xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+m68k                           sun3_defconfig
+mips                     decstation_defconfig
+riscv                               defconfig
+sh                        edosk7760_defconfig
+arm                        trizeps4_defconfig
+mips                         tb0226_defconfig
+parisc                           allyesconfig
+sh                           se7750_defconfig
+x86_64                 randconfig-x017-201842
+x86_64                 randconfig-x011-201842
+x86_64                 randconfig-x016-201842
+x86_64                 randconfig-x013-201842
+x86_64                 randconfig-x012-201842
+x86_64                 randconfig-x019-201842
+x86_64                 randconfig-x018-201842
+x86_64                 randconfig-x014-201842
+x86_64                 randconfig-x010-201842
+x86_64                 randconfig-x015-201842
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+i386                     randconfig-s0-201842
+i386                     randconfig-s1-201842
+i386                     randconfig-s3-201842
+i386                     randconfig-s2-201842
+x86_64                 randconfig-s3-10270204
+x86_64                 randconfig-s4-10270204
+x86_64                 randconfig-s5-10270204
+i386                             allmodconfig
+x86_64                   randconfig-i0-201842
+x86_64                   randconfig-i1-201842
+x86_64                   randconfig-i2-201842
+x86_64                   randconfig-i3-201842
+i386                   randconfig-b0-10262147
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                             allyesconfig
+x86_64                 randconfig-k0-10261856
+x86_64                 randconfig-k1-10261856
+x86_64                 randconfig-k2-10261856
+x86_64                 randconfig-k3-10261856
+i386                   randconfig-k0-10261856
+i386                   randconfig-k1-10261856
+i386                   randconfig-k2-10261856
+i386                   randconfig-k3-10261856
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                          pxa168_defconfig
+sh                            hp6xx_defconfig
+mips                             alldefconfig
+sh                           sh2007_defconfig
+x86_64                 randconfig-h0-10270212
+i386                   randconfig-x077-201842
+i386                   randconfig-x072-201842
+i386                   randconfig-x075-201842
+i386                   randconfig-x070-201842
+i386                   randconfig-x073-201842
+i386                   randconfig-x071-201842
+i386                   randconfig-x074-201842
+i386                   randconfig-x078-201842
+i386                   randconfig-x076-201842
+i386                   randconfig-x079-201842
+i386                   randconfig-x002-201842
+i386                   randconfig-x007-201842
+i386                   randconfig-x000-201842
+i386                   randconfig-x005-201842
+i386                   randconfig-x006-201842
+i386                   randconfig-x004-201842
+i386                   randconfig-x001-201842
+i386                   randconfig-x009-201842
+i386                   randconfig-x008-201842
+i386                   randconfig-x003-201842
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-e0-201842
+x86_64                   randconfig-e1-201842
+x86_64                   randconfig-e2-201842
+x86_64                   randconfig-e3-201842
+nds32                               defconfig
+x86_64                randconfig-ws0-10270205
+x86_64                 randconfig-r0-10262157
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 23972 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181027/840c3395/attachment-0001.bin>
