@@ -1,46 +1,42 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 11:44:43 -0700
-Subject: [Intel-wired-lan] [PATCH S9 11/15] ice: Fix return value from NAPI
- poll
+Date: Fri, 26 Oct 2018 11:44:40 -0700
+Subject: [Intel-wired-lan] [PATCH S9 08/15] ice: Pass the return value of
+ ice_init_def_sw_recp().
 In-Reply-To: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
 References: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026184447.13547-12-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026184447.13547-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Jaroslaw Ilgiewicz <jaroslaw.ilgiewicz@intel.com>
 
-ice_napi_poll is hard-coded to return zero when it's done. It should
-instead return the work done (if any work was done). The only time it
-should return zero is if an interrupt or poll is handled and no work
-is performed. So change the return value to be the minimum of work
-done or budget-1.
+Added check of return value for ice_init_def_sw_recp().
+Now we know if memory was correctly allocated.
 
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Jaroslaw Ilgiewicz <jaroslaw.ilgiewicz@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_txrx.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index fe5bbabbb41e..99954089a7fb 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1107,7 +1107,8 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
- 	napi_complete_done(napi, work_done);
- 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
- 		ice_irq_dynamic_ena(&vsi->back->hw, vsi, q_vector);
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 9de5a3aac77d..0b528602c4c9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -405,9 +405,7 @@ static enum ice_status ice_init_fltr_mgmt_struct(struct ice_hw *hw)
+ 
+ 	INIT_LIST_HEAD(&sw->vsi_list_map_head);
+ 
+-	ice_init_def_sw_recp(hw);
+-
 -	return 0;
-+
-+	return min(work_done, budget - 1);
++	return ice_init_def_sw_recp(hw);
  }
  
- /* helper function for building cmd/type/offset */
+ /**
 -- 
 2.14.3
 
