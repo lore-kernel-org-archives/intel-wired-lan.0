@@ -1,145 +1,59 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 26 Oct 2018 16:54:57 +0000
-Subject: [Intel-wired-lan] [RFC PATCH 4/4] ixgbe: add support for
- extended PHC gettime
-In-Reply-To: <20181026162742.631-5-mlichvar@redhat.com>
-References: <20181026162742.631-1-mlichvar@redhat.com>
- <20181026162742.631-5-mlichvar@redhat.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5884CE4B8C@ORSMSX115.amr.corp.intel.com>
+From: Miroslav Lichvar <mlichvar@redhat.com>
+Date: Fri, 26 Oct 2018 19:13:00 +0200
+Subject: [Intel-wired-lan] [PATCH v2 net] igb: shorten maximum PHC
+ timecounter update interval
+Message-ID: <20181026171300.12720-1-mlichvar@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+The timecounter needs to be updated at least once per ~550 seconds in
+order to avoid a 40-bit SYSTIM timestamp to be misinterpreted as an old
+timestamp.
 
+Since commit 500462a9de65 ("timers: Switch to a non-cascading wheel"),
+scheduling of delayed work seems to be less accurate and a requested
+delay of 540 seconds may actually be longer than 550 seconds. Also, the
+PHC may be adjusted to run up to 6% faster than real time and the system
+clock up to 10% slower. Shorten the delay to 360 seconds to be sure the
+timecounter is updated in time.
 
-> -----Original Message-----
-> From: Miroslav Lichvar [mailto:mlichvar at redhat.com]
-> Sent: Friday, October 26, 2018 9:28 AM
-> To: netdev at vger.kernel.org
-> Cc: intel-wired-lan at lists.osuosl.org; Richard Cochran <richardcochran@gmail.com>;
-> Keller, Jacob E <jacob.e.keller@intel.com>; Miroslav Lichvar <mlichvar@redhat.com>
-> Subject: [RFC PATCH 4/4] ixgbe: add support for extended PHC gettime
-> 
-> Cc: Richard Cochran <richardcochran@gmail.com>
-> Cc: Jacob Keller <jacob.e.keller@intel.com>
-> Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 57 ++++++++++++++++++++
->  1 file changed, 57 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-> index b3e0d8bb5cbd..d31e8d3effc7 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-> @@ -466,6 +466,60 @@ static int ixgbe_ptp_gettime(struct ptp_clock_info *ptp,
-> struct timespec64 *ts)
->  	return 0;
->  }
-> 
-> +/**
-> + * ixgbe_ptp_gettimex
-> + * @ptp: the ptp clock structure
-> + * @sts: structure to hold the system time before reading the PHC,
-> + * the PHC timestamp, and system time after reading the PHC
-> + *
-> + * read the timecounter and return the correct value on ns,
-> + * after converting it into a struct timespec.
-> + */
-> +static int ixgbe_ptp_gettimex(struct ptp_clock_info *ptp,
-> +			      struct ptp_system_timestamp *sts)
-> +{
-> +	struct ixgbe_adapter *adapter =
-> +		container_of(ptp, struct ixgbe_adapter, ptp_caps);
-> +	struct ixgbe_hw *hw = &adapter->hw;
-> +	unsigned long flags;
-> +	struct timespec64 ts;
-> +	u64 ns, stamp;
-> +
-> +	spin_lock_irqsave(&adapter->tmreg_lock, flags);
-> +
-> +	switch (adapter->hw.mac.type) {
-> +	case ixgbe_mac_X550:
-> +	case ixgbe_mac_X550EM_x:
-> +	case ixgbe_mac_x550em_a:
-> +		/* Upper 32 bits represent billions of cycles, lower 32 bits
-> +		 * represent cycles. However, we use timespec64_to_ns for the
-> +		 * correct math even though the units haven't been corrected
-> +		 * yet.
-> +		 */
-> +		ptp_read_system_prets(sts);
-> +		IXGBE_READ_REG(hw, IXGBE_SYSTIMR);
-> +		ptp_read_system_postts(sts);
-> +		ts.tv_nsec = IXGBE_READ_REG(hw, IXGBE_SYSTIML);
-> +		ts.tv_sec = IXGBE_READ_REG(hw, IXGBE_SYSTIMH);
-> +		stamp = timespec64_to_ns(&ts);
-> +		break;
-> +	default:
-> +		ptp_read_system_prets(sts);
-> +		stamp = IXGBE_READ_REG(hw, IXGBE_SYSTIML);
-> +		ptp_read_system_postts(sts);
-> +		stamp |= (u64)IXGBE_READ_REG(hw, IXGBE_SYSTIMH) << 32;
-> +		break;
-> +	}
-> +
-> +	ns = timecounter_cyc2time(&adapter->hw_tc, stamp);
-> +
-> +	spin_unlock_irqrestore(&adapter->tmreg_lock, flags);
-> +
-> +	sts->phc_ts = ns_to_timespec64(ns);
-> +
-> +	return 0;
-> +}
-> +
+This fixes an issue with HW timestamps on 82580/I350/I354 being off by
+~1100 seconds for few seconds every ~9 minutes.
 
+Cc: Jacob Keller <jacob.e.keller@intel.com>
+Cc: Richard Cochran <richardcochran@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
+---
+ drivers/net/ethernet/intel/igb/igb_ptp.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-What about replacing gettime64 with:
-
-static int ixgbe_ptp_gettimex(struct ptp_clock_info *ptp, struct timespec64 *ts)
-{
-    struct ptp_system_timestamp sts
-    
-    ixgbe_ptp_gettimex(ptp, &tst);
-    *ts = sts.phc_ts
-}
-
-Actually, could that even just be provided by the PTP core if gettime64 isn't implemented? This way new drivers only have to implement the new interface, and userspace will just get the old behavior if they use the old call?
-
-Thanks,
-Jake
-
->  /**
->   * ixgbe_ptp_settime
->   * @ptp: the ptp clock structure
-> @@ -1217,6 +1271,7 @@ static long ixgbe_ptp_create_clock(struct ixgbe_adapter
-> *adapter)
->  		adapter->ptp_caps.adjfreq = ixgbe_ptp_adjfreq_82599;
->  		adapter->ptp_caps.adjtime = ixgbe_ptp_adjtime;
->  		adapter->ptp_caps.gettime64 = ixgbe_ptp_gettime;
-> +		adapter->ptp_caps.gettimex64 = ixgbe_ptp_gettimex;
->  		adapter->ptp_caps.settime64 = ixgbe_ptp_settime;
->  		adapter->ptp_caps.enable = ixgbe_ptp_feature_enable;
->  		adapter->ptp_setup_sdp = ixgbe_ptp_setup_sdp_x540;
-> @@ -1234,6 +1289,7 @@ static long ixgbe_ptp_create_clock(struct ixgbe_adapter
-> *adapter)
->  		adapter->ptp_caps.adjfreq = ixgbe_ptp_adjfreq_82599;
->  		adapter->ptp_caps.adjtime = ixgbe_ptp_adjtime;
->  		adapter->ptp_caps.gettime64 = ixgbe_ptp_gettime;
-> +		adapter->ptp_caps.gettimex64 = ixgbe_ptp_gettimex;
->  		adapter->ptp_caps.settime64 = ixgbe_ptp_settime;
->  		adapter->ptp_caps.enable = ixgbe_ptp_feature_enable;
->  		break;
-> @@ -1250,6 +1306,7 @@ static long ixgbe_ptp_create_clock(struct ixgbe_adapter
-> *adapter)
->  		adapter->ptp_caps.adjfreq = ixgbe_ptp_adjfreq_X550;
->  		adapter->ptp_caps.adjtime = ixgbe_ptp_adjtime;
->  		adapter->ptp_caps.gettime64 = ixgbe_ptp_gettime;
-> +		adapter->ptp_caps.gettimex64 = ixgbe_ptp_gettimex;
->  		adapter->ptp_caps.settime64 = ixgbe_ptp_settime;
->  		adapter->ptp_caps.enable = ixgbe_ptp_feature_enable;
->  		adapter->ptp_setup_sdp = NULL;
-> --
-> 2.17.2
+diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
+index 9f4d700e09df..2b95dc9c7a6a 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ptp.c
++++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+@@ -51,9 +51,17 @@
+  *
+  * The 40 bit 82580 SYSTIM overflows every
+  *   2^40 * 10^-9 /  60  = 18.3 minutes.
++ *
++ * SYSTIM is converted to real time using a timecounter. As
++ * timecounter_cyc2time() allows old timestamps, the timecounter needs
++ * to be updated at least once per half of the SYSTIM interval.
++ * Scheduling of delayed work is not very accurate, and also the NIC
++ * clock can be adjusted to run up to 6% faster and the system clock
++ * up to 10% slower, so we aim for 6 minutes to be sure the actual
++ * interval in the NIC time is shorter than 9.16 minutes.
+  */
+ 
+-#define IGB_SYSTIM_OVERFLOW_PERIOD	(HZ * 60 * 9)
++#define IGB_SYSTIM_OVERFLOW_PERIOD	(HZ * 60 * 6)
+ #define IGB_PTP_TX_TIMEOUT		(HZ * 15)
+ #define INCPERIOD_82576			BIT(E1000_TIMINCA_16NS_SHIFT)
+ #define INCVALUE_82576_MASK		GENMASK(E1000_TIMINCA_16NS_SHIFT - 1, 0)
+-- 
+2.17.2
 
