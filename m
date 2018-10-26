@@ -1,45 +1,52 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 11:44:37 -0700
-Subject: [Intel-wired-lan] [PATCH S9 05/15] ice: Remove ICE_MAX_TXQ_PER_TXQG
- check when configuring Tx queue
+Date: Fri, 26 Oct 2018 11:44:33 -0700
+Subject: [Intel-wired-lan] [PATCH S9 01/15] ice: Increase rx queue disable
+ timeout
 In-Reply-To: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
 References: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026184447.13547-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026184447.13547-2-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+From: Piotr Raczynski <piotr.raczynski@intel.com>
 
-This patch removes the condition checking of VSI TX queue number to
-ICE_MAX_TXQ_PER_TXQG. This is an unnecessary check and causes a driver
-load error on hosts that have more than 128 cores.
+With much traffic coming into the port, rx queue disable
+procedure can take more time until all pending queue
+requests on PCIe finish. Reuse ICE_Q_WAIT_MAX_RETRY macro
+and increase the delay itself.
 
-Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+Signed-off-by: Piotr Raczynski <piotr.raczynski@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_lib.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 53685a66125b..a5961a8fe73c 100644
+index 1efd760debc2..f6e21363c8d6 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1633,10 +1633,6 @@ int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
- 	if (!qg_buf)
- 		return -ENOMEM;
+@@ -174,15 +174,15 @@ static int ice_pf_rxq_wait(struct ice_pf *pf, int pf_q, bool ena)
+ {
+ 	int i;
  
--	if (vsi->num_txq > ICE_MAX_TXQ_PER_TXQG) {
--		err = -EINVAL;
--		goto err_cfg_txqs;
--	}
- 	qg_buf->num_txqs = 1;
- 	num_q_grps = 1;
+-	for (i = 0; i < ICE_Q_WAIT_RETRY_LIMIT; i++) {
++	for (i = 0; i < ICE_Q_WAIT_MAX_RETRY; i++) {
+ 		u32 rx_reg = rd32(&pf->hw, QRX_CTRL(pf_q));
  
+ 		if (ena == !!(rx_reg & QRX_CTRL_QENA_STAT_M))
+ 			break;
+ 
+-		usleep_range(10, 20);
++		usleep_range(20, 40);
+ 	}
+-	if (i >= ICE_Q_WAIT_RETRY_LIMIT)
++	if (i >= ICE_Q_WAIT_MAX_RETRY)
+ 		return -ETIMEDOUT;
+ 
+ 	return 0;
 -- 
 2.14.3
 
