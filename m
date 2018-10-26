@@ -1,185 +1,211 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 10:41:02 -0700
-Subject: [Intel-wired-lan] [PATCH S8 13/16] ice: Remove node before
- releasing VSI
+Date: Fri, 26 Oct 2018 10:40:58 -0700
+Subject: [Intel-wired-lan] [PATCH S8 09/16] ice: Fix tx_timeout in PF driver
 In-Reply-To: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
 References: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026174105.11628-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20181026174105.11628-10-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Before releasing the VSI, remove the VSI scheduler node. If not,
-the node is left in the scheduler tree and, on subsequent load, the
-scheduler tree contains the node so it does not set it in vsi_ctx.
-This, later, causes the node to not be found in ice_sched_get_free_qparent
-which leads to a "Failed to set LAN Tx queue context, error: -1".
+From: Brett Creeley <brett.creeley@intel.com>
 
-To remove the scheduler node, this patch introduces ice_rm_vsi_lan_cfg
-and related helpers.
+Prior to this commit the driver was running into tx_timeouts when a
+queue was stressed enough. This was happening because the HW tail
+and SW tail (NTU) were incorrectly out of sync. Consequently this was
+causing the HW head to collide with the HW tail, which to the hardware
+means that all descriptors posted for Tx have been processed.
 
+Due to the Tx logic used in the driver SW tail and HW tail are allowed
+to be out of sync. This is done as an optimization because it allows the
+driver to write HW tail as infrequently as possible, while still
+updating the SW tail index to keep track. However, there are situations
+where this results in the tail never getting updated, resulting in Tx
+timeouts.
+
+Tx HW tail write condition:
+	if (netif_xmit_stopped(txring_txq(tx_ring) || !skb->xmit_more)
+		writel(sw_tail, tx_ring->tail);
+
+An issue was found in the Tx logic that was causing the aformentioned
+condition for updating HW tail to never happen, causing tx_timeouts.
+
+In ice_xmit_frame_ring we calculate how many descriptors we need for the
+Tx transaction based on the skb the kernel hands us. This is then passed
+into ice_maybe_stop_tx along with some extra padding to determine if we
+have enough descriptors available for this transaction. If we don't then
+we return -EBUSY to the stack, otherwise we move on and eventually
+prepare the Tx descriptors accordingly in ice_tx_map and set
+next_to_watch. In ice_tx_map we make another call to ice_maybe_stop_tx
+with a value of MAX_SKB_FRAGS + 4. The key here is that this value is
+possibly less than the value we sent in the first call to
+ice_maybe_stop_tx in ice_xmit_frame_ring. Now, if the number of unused
+descriptors is between MAX_SKB_FRAGS + 4 and the value used in the first
+call to ice_maybe_stop_tx in ice_xmit_frame_ring then we do not update
+the HW tail because of the "Tx HW tail write condition" above. This is
+because in ice_maybe_stop_tx we return success from ice_maybe_stop_tx
+instead of calling __ice_maybe_stop_tx and subsequently calling
+netif_stop_subqueue, which sets the __QUEUE_STATE_DEV_XOFF bit. This
+bit is then checked in the "Tx HW tail write condition" by calling
+netif_xmit_stopped and subsequently updating HW tail if the
+aformentioned bit is set.
+
+In ice_clean_tx_irq, if next_to_watch is not NULL, we end up cleaning
+the descriptors that HW sets the DD bit on and we have the budget. The
+HW head will eventuallly run into the HW tail in response to the
+description in the paragraph above.
+
+The next time through ice_xmit_frame_ring we make the initial call to
+ice_maybe_stop_tx with another skb from the stack. This time we do not
+have enough descriptors available and we return NETDEV_TX_BUSY to the
+stack and end up setting next_to_watch to NULL.
+
+This is where we are stuck. In ice_clean_tx_irq we never clean anything
+because next_to_watch is always NULL and in ice_xmit_frame_ring we never
+update HW tail because we already return NETDEV_TX_BUSY to the stack and
+eventually we hit a tx_timeout.
+
+This issue was fixed by making sure that the second call to
+ice_maybe_stop_tx in ice_tx_map is passed a value that is >= the value
+that was used on the initial call to ice_maybe_stop_tx in
+ice_xmit_frame_ring. This was done by adding the following defines to
+make the logic more clear and to reduce the chance of mucking this up
+again:
+
+ICE_CACHE_LINE_BYTES		64
+ICE_DESCS_PER_CACHE_LINE	(ICE_CACHE_LINE_BYTES / \
+				 sizeof(struct ice_tx_desc))
+ICE_DESCS_FOR_CTX_DESC		1
+ICE_DESCS_FOR_SKB_DATA_PTR	1
+
+The ICE_CACHE_LINE_BYTES being 64 is an assumption being made so we
+don't have to figure this out on every pass through the Tx path. Instead
+I added a sanity check in ice_probe to verify cache line size and print
+a message if it's not 64 Bytes. This will make it easier to file issues
+if they are seen when the cache line size is not 64 Bytes when reading
+from the GLPCI_CNF2 register.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c   |   1 +
- drivers/net/ethernet/intel/ice/ice_sched.c | 108 ++++++++++++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_sched.h |   2 +
- 3 files changed, 110 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  2 ++
+ drivers/net/ethernet/intel/ice/ice_main.c       | 18 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_txrx.c       |  9 +++++----
+ drivers/net/ethernet/intel/ice/ice_txrx.h       | 17 +++++++++++++++--
+ 4 files changed, 40 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 11d0ab185dd2..1efd760debc2 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2492,6 +2492,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 5fdea6ec7675..596b9fb1c510 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -242,6 +242,8 @@
+ #define GLNVM_ULD				0x000B6008
+ #define GLNVM_ULD_CORER_DONE_M			BIT(3)
+ #define GLNVM_ULD_GLOBR_DONE_M			BIT(4)
++#define GLPCI_CNF2				0x000BE004
++#define GLPCI_CNF2_CACHELINE_SIZE_M		BIT(1)
+ #define PF_FUNC_RID				0x0009E880
+ #define PF_FUNC_RID_FUNC_NUM_S			0
+ #define PF_FUNC_RID_FUNC_NUM_M			ICE_M(0x7, 0)
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 82f49dbd762c..333312a1d595 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1994,6 +1994,22 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
+ 	return 0;
+ }
  
- 	ice_remove_vsi_fltr(&pf->hw, vsi->idx);
-+	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
- 	ice_vsi_delete(vsi);
- 	ice_vsi_free_q_vectors(vsi);
- 	ice_vsi_clear_rings(vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 7cc8aa18a22b..3d57f5b4834d 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -1527,7 +1527,7 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
++/**
++ * ice_verify_cacheline_size - verify driver's assumption of 64 Byte cache lines
++ * @pf: pointer to the PF structure
++ *
++ * There is no error returned here because the driver should be able to handle
++ * 128 Byte cache lines, so we only print a warning in case issues are seen,
++ * specifically with Tx.
++ */
++static void ice_verify_cacheline_size(struct ice_pf *pf)
++{
++	if (rd32(&pf->hw, GLPCI_CNF2) & GLPCI_CNF2_CACHELINE_SIZE_M)
++		dev_warn(&pf->pdev->dev,
++			 "%d Byte cache line assumption is invalid, driver may have Tx timeouts!\n",
++			 ICE_CACHE_LINE_BYTES);
++}
++
+ /**
+  * ice_probe - Device initialization routine
+  * @pdev: PCI device information struct
+@@ -2144,6 +2160,8 @@ static int ice_probe(struct pci_dev *pdev,
+ 	/* since everything is good, start the service timer */
+ 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
+ 
++	ice_verify_cacheline_size(pf);
++
+ 	return 0;
+ 
+ err_alloc_sw_unroll:
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 5dae968d853e..3387c67c848d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1556,15 +1556,15 @@ int ice_tso(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+  * magnitude greater than our largest possible GSO size.
+  *
+  * This would then be implemented as:
+- *     return (((size >> 12) * 85) >> 8) + 1;
++ *     return (((size >> 12) * 85) >> 8) + ICE_DESCS_FOR_SKB_DATA_PTR;
+  *
+  * Since multiplication and division are commutative, we can reorder
+  * operations into:
+- *     return ((size * 85) >> 20) + 1;
++ *     return ((size * 85) >> 20) + ICE_DESCS_FOR_SKB_DATA_PTR;
+  */
+ static unsigned int ice_txd_use_count(unsigned int size)
+ {
+-	return ((size * 85) >> 20) + 1;
++	return ((size * 85) >> 20) + ICE_DESCS_FOR_SKB_DATA_PTR;
  }
  
  /**
-- * ice_sched_cfg_vsi - configure the new/exisiting VSI
-+ * ice_sched_cfg_vsi - configure the new/existing VSI
-  * @pi: port information structure
-  * @vsi_handle: software VSI handle
-  * @tc: TC number
-@@ -1605,3 +1605,109 @@ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
+@@ -1706,7 +1706,8 @@ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_ring *tx_ring)
+ 	 *       + 1 desc for context descriptor,
+ 	 * otherwise try next time
+ 	 */
+-	if (ice_maybe_stop_tx(tx_ring, count + 4 + 1)) {
++	if (ice_maybe_stop_tx(tx_ring, count + ICE_DESCS_PER_CACHE_LINE +
++			      ICE_DESCS_FOR_CTX_DESC)) {
+ 		tx_ring->tx_stats.tx_busy++;
+ 		return NETDEV_TX_BUSY;
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 1d0f58bd389b..75d0eaf6c9dd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -22,8 +22,21 @@
+ #define ICE_RX_BUF_WRITE	16	/* Must be power of 2 */
+ #define ICE_MAX_TXQ_PER_TXQG	128
  
- 	return status;
- }
-+
-+/**
-+ * ice_sched_rm_agg_vsi_entry - remove agg related vsi info entry
-+ * @pi: port information structure
-+ * @vsi_handle: software VSI handle
-+ *
-+ * This function removes single aggregator vsi info entry from
-+ * aggregator list.
+-/* Tx Descriptors needed, worst case */
+-#define DESC_NEEDED (MAX_SKB_FRAGS + 4)
++/* We are assuming that the cache line is always 64 Bytes here for ice.
++ * In order to make sure that is a correct assumption there is a check in probe
++ * to print a warning if the read from GLPCI_CNF2 tells us that the cache line
++ * size is 128 bytes. We do it this way because we do not want to read the
++ * GLPCI_CNF2 register or a variable containing the value on every pass through
++ * the Tx path.
 + */
-+static void
-+ice_sched_rm_agg_vsi_info(struct ice_port_info *pi, u16 vsi_handle)
-+{
-+	struct ice_sched_agg_info *agg_info;
-+	struct ice_sched_agg_info *atmp;
-+
-+	list_for_each_entry_safe(agg_info, atmp, &pi->agg_list, list_entry) {
-+		struct ice_sched_agg_vsi_info *agg_vsi_info;
-+		struct ice_sched_agg_vsi_info *vtmp;
-+
-+		list_for_each_entry_safe(agg_vsi_info, vtmp,
-+					 &agg_info->agg_vsi_list, list_entry)
-+			if (agg_vsi_info->vsi_handle == vsi_handle) {
-+				list_del(&agg_vsi_info->list_entry);
-+				devm_kfree(ice_hw_to_dev(pi->hw),
-+					   agg_vsi_info);
-+				return;
-+			}
-+	}
-+}
-+
-+/**
-+ * ice_sched_rm_vsi_cfg - remove the VSI and its children nodes
-+ * @pi: port information structure
-+ * @vsi_handle: software VSI handle
-+ * @owner: lan or rdma
-+ *
-+ * This function removes the VSI and its lan or rdma children nodes from the
-+ * scheduler tree.
-+ */
-+static enum ice_status
-+ice_sched_rm_vsi_cfg(struct ice_port_info *pi, u16 vsi_handle, u8 owner)
-+{
-+	enum ice_status status = ICE_ERR_PARAM;
-+	struct ice_vsi_ctx *vsi_ctx;
-+	u8 i, j = 0;
-+
-+	if (!ice_is_vsi_valid(pi->hw, vsi_handle))
-+		return status;
-+	mutex_lock(&pi->sched_lock);
-+	vsi_ctx = ice_get_vsi_ctx(pi->hw, vsi_handle);
-+	if (!vsi_ctx)
-+		goto exit_sched_rm_vsi_cfg;
-+
-+	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
-+		struct ice_sched_node *vsi_node, *tc_node;
-+
-+		tc_node = ice_sched_get_tc_node(pi, i);
-+		if (!tc_node)
-+			continue;
-+
-+		vsi_node = ice_sched_get_vsi_node(pi->hw, tc_node, vsi_handle);
-+		if (!vsi_node)
-+			continue;
-+
-+		while (j < vsi_node->num_children) {
-+			if (vsi_node->children[j]->owner == owner) {
-+				ice_free_sched_node(pi, vsi_node->children[j]);
-+
-+				/* reset the counter again since the num
-+				 * children will be updated after node removal
-+				 */
-+				j = 0;
-+			} else {
-+				j++;
-+			}
-+		}
-+		/* remove the VSI if it has no children */
-+		if (!vsi_node->num_children) {
-+			ice_free_sched_node(pi, vsi_node);
-+			vsi_ctx->sched.vsi_node[i] = NULL;
-+
-+			/* clean up agg related vsi info if any */
-+			ice_sched_rm_agg_vsi_info(pi, vsi_handle);
-+		}
-+		if (owner == ICE_SCHED_NODE_OWNER_LAN)
-+			vsi_ctx->sched.max_lanq[i] = 0;
-+	}
-+	status = 0;
-+
-+exit_sched_rm_vsi_cfg:
-+	mutex_unlock(&pi->sched_lock);
-+	return status;
-+}
-+
-+/**
-+ * ice_rm_vsi_lan_cfg - remove VSI and its lan children nodes
-+ * @pi: port information structure
-+ * @vsi_handle: software VSI handle
-+ *
-+ * This function clears the VSI and its lan children nodes from scheduler tree
-+ * for all TCs.
-+ */
-+enum ice_status ice_rm_vsi_lan_cfg(struct ice_port_info *pi, u16 vsi_handle)
-+{
-+	return ice_sched_rm_vsi_cfg(pi, vsi_handle, ICE_SCHED_NODE_OWNER_LAN);
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index 5dc9cfa04c58..dc59fbac7dde 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -12,6 +12,7 @@
- struct ice_sched_agg_vsi_info {
- 	struct list_head list_entry;
- 	DECLARE_BITMAP(tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
-+	u16 vsi_handle;
- };
- 
- struct ice_sched_agg_info {
-@@ -39,4 +40,5 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- enum ice_status
- ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
- 		  u8 owner, bool enable);
-+enum ice_status ice_rm_vsi_lan_cfg(struct ice_port_info *pi, u16 vsi_handle);
- #endif /* _ICE_SCHED_H_ */
++#define ICE_CACHE_LINE_BYTES		64
++#define ICE_DESCS_PER_CACHE_LINE	(ICE_CACHE_LINE_BYTES / \
++					 sizeof(struct ice_tx_desc))
++#define ICE_DESCS_FOR_CTX_DESC		1
++#define ICE_DESCS_FOR_SKB_DATA_PTR	1
++/* Tx descriptors needed, worst case */
++#define DESC_NEEDED (MAX_SKB_FRAGS + ICE_DESCS_FOR_CTX_DESC + \
++		     ICE_DESCS_PER_CACHE_LINE + ICE_DESCS_FOR_SKB_DATA_PTR)
+ #define ICE_DESC_UNUSED(R)	\
+ 	((((R)->next_to_clean > (R)->next_to_use) ? 0 : (R)->count) + \
+ 	(R)->next_to_clean - (R)->next_to_use - 1)
 -- 
 2.14.3
 
