@@ -1,49 +1,67 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri, 26 Oct 2018 11:44:42 -0700
-Subject: [Intel-wired-lan] [PATCH S9 10/15] ice: Constify global structures
- that can/should be
-In-Reply-To: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
-References: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181026184447.13547-11-anirudh.venkataramanan@intel.com>
+Date: Fri, 26 Oct 2018 11:44:32 -0700
+Subject: [Intel-wired-lan] [PATCH S9 00/15] Bug fixes for ice, set 2/2
+Message-ID: <20181026184447.13547-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+Akeem G Abodunrin (1):
+  ice: Do autoneg based on VSI state
 
-Indicate these structs should not be modified and take advantage of some
-compiler optimizations by making these structs const.
+Anirudh Venkataramanan (2):
+  ice: Cosmetic formatting changes
+  ice: Use Tx|Rx in comments
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Brett Creeley (1):
+  ice: Call pci_disable_sriov before stopping queues for VF
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 4d3e3113741d..990d660f527a 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -62,7 +62,7 @@ static const struct ice_stats ice_gstrings_vsi_stats[] = {
-  * The PF_STATs are appended to the netdev stats only when ethtool -S
-  * is queried on the base PF netdev.
-  */
--static struct ice_stats ice_gstrings_pf_stats[] = {
-+static const struct ice_stats ice_gstrings_pf_stats[] = {
- 	ICE_PF_STAT("tx_bytes", stats.eth.tx_bytes),
- 	ICE_PF_STAT("rx_bytes", stats.eth.rx_bytes),
- 	ICE_PF_STAT("tx_unicast", stats.eth.tx_unicast),
-@@ -104,7 +104,7 @@ static struct ice_stats ice_gstrings_pf_stats[] = {
- 	ICE_PF_STAT("mac_remote_faults", stats.mac_remote_faults),
- };
- 
--static u32 ice_regs_dump_list[] = {
-+static const u32 ice_regs_dump_list[] = {
- 	PFGEN_STATE,
- 	PRTGEN_STATUS,
- 	QRX_CTRL(0),
+Bruce Allan (4):
+  ice: Cleanup duplicate control queue code
+  ice: Constify global structures that can/should be
+  ice: Cleanup ice_tx_timeout()
+  ice: Cleanup short function signatures
+
+Dave Ertman (1):
+  ice: Fix return value from NAPI poll
+
+Henry Tieman (1):
+  ice: Destroy scheduler tree in reset path
+
+Jaroslaw Ilgiewicz (1):
+  ice: Pass the return value of ice_init_def_sw_recp().
+
+Md Fahad Iqbal Polash (1):
+  ice: Remove ICE_MAX_TXQ_PER_TXQG check when configuring Tx queue
+
+Piotr Raczynski (1):
+  ice: Increase rx queue disable timeout
+
+Usha Ketineni (1):
+  ice: Fix to make VLAN priority tagged traffic to appear on all TCs
+
+Yashaswini Raghuram Prathivadi Bhayankaram (1):
+  ice: Do not set LAN_EN for MAC-VLAN filters
+
+ drivers/net/ethernet/intel/ice/ice.h             |  34 ++--
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |  16 +-
+ drivers/net/ethernet/intel/ice/ice_common.c      |  13 +-
+ drivers/net/ethernet/intel/ice/ice_controlq.c    | 223 ++++++++---------------
+ drivers/net/ethernet/intel/ice/ice_ethtool.c     |  26 +--
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h   |  79 ++++----
+ drivers/net/ethernet/intel/ice/ice_lib.c         | 148 ++++++++-------
+ drivers/net/ethernet/intel/ice/ice_main.c        |  42 ++---
+ drivers/net/ethernet/intel/ice/ice_sched.c       |  14 +-
+ drivers/net/ethernet/intel/ice/ice_sched.h       |   1 +
+ drivers/net/ethernet/intel/ice/ice_sriov.c       |   2 +-
+ drivers/net/ethernet/intel/ice/ice_switch.c      |  52 +++---
+ drivers/net/ethernet/intel/ice/ice_txrx.c        |  36 ++--
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  34 ++--
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |   2 +-
+ 15 files changed, 342 insertions(+), 380 deletions(-)
+
 -- 
 2.14.3
 
