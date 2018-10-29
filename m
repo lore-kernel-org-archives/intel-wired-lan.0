@@ -1,49 +1,66 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 29 Oct 2018 10:52:42 -0700
-Subject: [Intel-wired-lan] [net 1/2] i40e: restore NETIF_F_GSO_IPXIP[46] to
- netdev features
-Message-ID: <20181029175243.13453-1-jacob.e.keller@intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Mon, 29 Oct 2018 11:27:21 -0700
+Subject: [Intel-wired-lan] [next PATCH] i40e: prevent overlapping tx_timeout
+ recover
+Message-ID: <20181029182721.19003-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Since commit bacd75cfac8a ("i40e/i40evf: Add capability exchange for
-outer checksum", 2017-04-06) the i40e driver has not reported support
-for IP-in-IP offloads. This likely occurred due to a bad rebase, as the
-commit extracts hw_enc_features into its own variable. As part of this
-change, it dropped the NETIF_F_FSO_IPXIP flags from the
-netdev->hw_enc_features. This was unfortunately not caught during code
-review.
+From: Alan Brady <alan.brady@intel.com>
 
-Fix this by adding back the missing feature flags.
+If a TX hang occurs, we attempt to recover by incrementally resetting.
+If we're starved for CPU time, it's possible the reset doesn't actually
+complete (or even fire) before another tx_timeout fires causing us to
+fly through the different resets without actually doing them.
 
-For reference, NETIF_F_GSO_IPXIP4 was added in commit 7e13318daa4a
-("net: define gso types for IPx over IPv4 and IPv6", 2016-05-20),
-replacing NETIF_F_GSO_IPIP and NETIF_F_GSO_SIT.
+This adds a bit to set and check if a timeout recovery is already
+pending and, if so, bail out of tx_timeout.  The bit will get cleared at
+the end of i40e_rebuild when reset is complete.
 
-NETIF_F_GSO_IPXIP6 was added in commit bf2d1df39502 ("intel: Add support
-for IPv6 IP-in-IP offload", 2016-05-20).
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e.h      | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
+ 2 files changed, 6 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 876cac3..8245ff1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -122,6 +122,7 @@ enum i40e_state_t {
+ 	__I40E_MDD_EVENT_PENDING,
+ 	__I40E_VFLR_EVENT_PENDING,
+ 	__I40E_RESET_RECOVERY_PENDING,
++	__I40E_TIMEOUT_RECOVERY_PENDING,
+ 	__I40E_MISC_IRQ_REQUESTED,
+ 	__I40E_RESET_INTR_RECEIVED,
+ 	__I40E_REINIT_REQUESTED,
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index bc71a21c1dc2..3ff5ee49818b 100644
+index f4905fe..9d52d7e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -12249,6 +12249,8 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 			  NETIF_F_GSO_GRE		|
- 			  NETIF_F_GSO_GRE_CSUM		|
- 			  NETIF_F_GSO_PARTIAL		|
-+			  NETIF_F_GSO_IPXIP4		|
-+			  NETIF_F_GSO_IPXIP6		|
- 			  NETIF_F_GSO_UDP_TUNNEL	|
- 			  NETIF_F_GSO_UDP_TUNNEL_CSUM	|
- 			  NETIF_F_SCTP_CRC		|
+@@ -338,6 +338,10 @@ static void i40e_tx_timeout(struct net_device *netdev)
+ 		      (pf->tx_timeout_last_recovery + netdev->watchdog_timeo)))
+ 		return;   /* don't do any new action before the next timeout */
+ 
++	/* don't kick off another recovery if one is already pending */
++	if (test_and_set_bit(__I40E_TIMEOUT_RECOVERY_PENDING, pf->state))
++		return;
++
+ 	if (tx_ring) {
+ 		head = i40e_get_head(tx_ring);
+ 		/* Read interrupt register */
+@@ -9631,6 +9635,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 	clear_bit(__I40E_RESET_FAILED, pf->state);
+ clear_recovery:
+ 	clear_bit(__I40E_RESET_RECOVERY_PENDING, pf->state);
++	clear_bit(__I40E_TIMEOUT_RECOVERY_PENDING, pf->state);
+ }
+ 
+ /**
 -- 
-2.18.0.219.gaf81d287a9da
+2.9.5
 
