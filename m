@@ -1,79 +1,54 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Mon, 29 Oct 2018 16:02:57 +0000
-Subject: [Intel-wired-lan] [RFC PATCH 4/4] ixgbe: add support for
- extended PHC gettime
-In-Reply-To: <20181029133109.GD31668@localhost>
-References: <20181026162742.631-1-mlichvar@redhat.com>
- <20181026162742.631-5-mlichvar@redhat.com>
- <02874ECE860811409154E81DA85FBB5884CE4B8C@ORSMSX115.amr.corp.intel.com>
- <20181029133109.GD31668@localhost>
-Message-ID: <02874ECE860811409154E81DA85FBB5884CFF78A@ORSMSX115.amr.corp.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 29 Oct 2018 10:52:43 -0700
+Subject: [Intel-wired-lan] [net 2/2] i40e: enable NETIF_F_NTUPLE and
+ NETIF_F_HW_TC at driver load
+In-Reply-To: <20181029175243.13453-1-jacob.e.keller@intel.com>
+References: <20181029175243.13453-1-jacob.e.keller@intel.com>
+Message-ID: <20181029175243.13453-2-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org] On
-> Behalf Of Miroslav Lichvar
-> Sent: Monday, October 29, 2018 6:31 AM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Richard Cochran
-> <richardcochran@gmail.com>
-> Subject: Re: [RFC PATCH 4/4] ixgbe: add support for extended PHC gettime
-> 
-> On Fri, Oct 26, 2018 at 04:54:57PM +0000, Keller, Jacob E wrote:
-> > > -----Original Message-----
-> > > From: Miroslav Lichvar [mailto:mlichvar at redhat.com]
-> > > Sent: Friday, October 26, 2018 9:28 AM
-> > > To: netdev at vger.kernel.org
-> > > Cc: intel-wired-lan at lists.osuosl.org; Richard Cochran
-> <richardcochran@gmail.com>;
-> > > Keller, Jacob E <jacob.e.keller@intel.com>; Miroslav Lichvar
-> <mlichvar@redhat.com>
-> > > Subject: [RFC PATCH 4/4] ixgbe: add support for extended PHC gettime
-> > >
-> > > Cc: Richard Cochran <richardcochran@gmail.com>
-> > > Cc: Jacob Keller <jacob.e.keller@intel.com>
-> > > Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
-> 
-> > What about replacing gettime64 with:
-> >
-> > static int ixgbe_ptp_gettimex(struct ptp_clock_info *ptp, struct timespec64 *ts)
-> > {
-> >     struct ptp_system_timestamp sts
-> >
-> >     ixgbe_ptp_gettimex(ptp, &tst);
-> >     *ts = sts.phc_ts
-> > }
-> 
-> That will work, but it will be slower. With HPET as a clocksource
-> there would be few microseconds of an extra (symmetric) delay and the
-> applications would have to assume a larger maximum error.
-> 
+The assignment of the feature flag NETIF_F_NTUPLE and NETIF_F_HW_TC
+occurs prior to the initial setup of the local hw_features variable.
 
-Right. My intention for this would be that we'd switch from gettime64 to gettime64x going forward, and provide this as a way to avoid having to duplicate logic in drivers while we're transitioning? Thus, new applications should be using the new call if it's available in the driver.
+This means the features are set as user-changeable, but are not set in
+the currently active feature list. This results in the features being
+disabled at the driver's initial load.
 
-Hmm.
+Move the assignment after the initial assignment of hw_features, and
+assign to the local variable. This ensures that NETIF_F_NTUPLE and
+NETIF_F_HW_TC are marked as user-changeable, and also enables them by
+default when the driver loads.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 3ff5ee49818b..21c2688d6308 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -12268,13 +12268,13 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 	/* record features VLANs can make use of */
+ 	netdev->vlan_features |= hw_enc_features | NETIF_F_TSO_MANGLEID;
  
-> I think there could be a flag in ptp_system_timestamp, or a parameter
-> of gettimex64(), which would enable/disable reading of the system
-> clock.
-> 
-> > Actually, could that even just be provided by the PTP core if gettime64 isn't
-> implemented? This way new drivers only have to implement the new interface, and
-> userspace will just get the old behavior if they use the old call?
-> 
-> Good idea.
+-	if (!(pf->flags & I40E_FLAG_MFP_ENABLED))
+-		netdev->hw_features |= NETIF_F_NTUPLE | NETIF_F_HW_TC;
+-
+ 	hw_features = hw_enc_features		|
+ 		      NETIF_F_HW_VLAN_CTAG_TX	|
+ 		      NETIF_F_HW_VLAN_CTAG_RX;
+ 
++	if (!(pf->flags & I40E_FLAG_MFP_ENABLED))
++		hw_features |= NETIF_F_NTUPLE | NETIF_F_HW_TC;
++
+ 	netdev->hw_features |= hw_features;
+ 
+ 	netdev->features |= hw_features | NETIF_F_HW_VLAN_CTAG_FILTER;
+-- 
+2.18.0.219.gaf81d287a9da
 
-Ideally we can find a way that minimizes the overhead for the old call.
-
-Thanks,
-Jake
-
-> 
-> Thanks,
-> 
-> --
-> Miroslav Lichvar
