@@ -1,76 +1,225 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 30 Oct 2018 10:50:44 -0700
-Subject: [Intel-wired-lan] [next S97 v2 3/6] i40e: Replace strncpy with
- strlcpy to ensure null termination
-In-Reply-To: <20181030175047.18874-1-jeffrey.t.kirsher@intel.com>
-References: <20181030175047.18874-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20181030175047.18874-3-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 31 Oct 2018 03:12:17 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 64d4a20906399bc9094da4b69f1fdedd513ac254
+Message-ID: <5bd8ad11.nogP6Je49XfWHM9a%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Patryk Ma?ek <patryk.malek@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 64d4a20906399bc9094da4b69f1fdedd513ac254  ixgbe: add ipsec hw offload note to ixgbe Documentation
 
-Using strncpy allows destination buffer to be not null terminated
-after the copying takes place. strlcpy ensures that's not the
-case by explicitly setting last element in the buffer as '\0'.
+elapsed time: 126m
 
-Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
+configs tested: 201
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+arm                        cerfcube_defconfig
+powerpc                       ep405_defconfig
+powerpc                      ppc44x_defconfig
+um                               allyesconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10310140
+i386                   randconfig-x019-201843
+i386                   randconfig-x016-201843
+i386                   randconfig-x018-201843
+i386                   randconfig-x014-201843
+i386                   randconfig-x015-201843
+i386                   randconfig-x017-201843
+i386                   randconfig-x010-201843
+i386                   randconfig-x011-201843
+i386                   randconfig-x012-201843
+i386                   randconfig-x013-201843
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n1-201843
+i386                     randconfig-n3-201843
+i386                     randconfig-n2-201843
+i386                     randconfig-n0-201843
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i1-201843
+i386                     randconfig-i0-201843
+i386                     randconfig-i2-201843
+i386                     randconfig-i3-201843
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-g0-10310121
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x002-201843
+i386                   randconfig-x000-201843
+i386                   randconfig-x007-201843
+i386                   randconfig-x006-201843
+i386                   randconfig-x005-201843
+i386                   randconfig-x004-201843
+i386                   randconfig-x001-201843
+i386                   randconfig-x009-201843
+i386                   randconfig-x008-201843
+i386                   randconfig-x003-201843
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+x86_64                 randconfig-s0-10310124
+x86_64                 randconfig-s1-10310124
+x86_64                 randconfig-s2-10310124
+x86_64                 randconfig-s0-10310231
+x86_64                 randconfig-s1-10310231
+x86_64                 randconfig-s2-10310231
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm64                               defconfig
+mips                           jazz_defconfig
+sh                        dreamcast_defconfig
+xtensa                  nommu_kc705_defconfig
+arm                             rpc_defconfig
+m68k                             allmodconfig
+powerpc                      ppc40x_defconfig
+powerpc                      ppc64e_defconfig
+arm                         s5pv210_defconfig
+mips                  maltasmvp_eva_defconfig
+powerpc                 mpc8315_rdb_defconfig
+mips                            gpr_defconfig
+mips                        vocore2_defconfig
+sh                         microdev_defconfig
+x86_64                 randconfig-x017-201843
+x86_64                 randconfig-x016-201843
+x86_64                 randconfig-x011-201843
+x86_64                 randconfig-x013-201843
+x86_64                 randconfig-x012-201843
+x86_64                 randconfig-x019-201843
+x86_64                 randconfig-x018-201843
+x86_64                 randconfig-x014-201843
+x86_64                 randconfig-x010-201843
+x86_64                 randconfig-x015-201843
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201843
+i386                     randconfig-s1-201843
+i386                     randconfig-s2-201843
+i386                     randconfig-s3-201843
+x86_64                 randconfig-s3-10310112
+x86_64                 randconfig-s4-10310112
+x86_64                 randconfig-s5-10310112
+arm                         mv78xx0_defconfig
+arm                        oxnas_v6_defconfig
+arm                           sunxi_defconfig
+x86_64                 randconfig-i0-10282257
+x86_64                 randconfig-i1-10282257
+x86_64                 randconfig-i2-10282257
+x86_64                 randconfig-i3-10282257
+i386                   randconfig-b0-10302146
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm64                             allnoconfig
+x86_64                 randconfig-b0-10310109
+alpha                            allmodconfig
+mips                            ar7_defconfig
+microblaze                       allmodconfig
+x86_64                 randconfig-u0-10302337
+x86_64                              fedora-25
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                randconfig-ne0-10310122
+parisc                           allyesconfig
+powerpc                      pmac32_defconfig
+x86_64                 randconfig-h0-10310120
+i386                   randconfig-x077-201843
+i386                   randconfig-x075-201843
+i386                   randconfig-x072-201843
+i386                   randconfig-x073-201843
+i386                   randconfig-x070-201843
+i386                   randconfig-x071-201843
+i386                   randconfig-x074-201843
+i386                   randconfig-x078-201843
+i386                   randconfig-x079-201843
+i386                   randconfig-x076-201843
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-x005-201843
+x86_64                 randconfig-x002-201843
+x86_64                 randconfig-x000-201843
+x86_64                 randconfig-x001-201843
+x86_64                 randconfig-x008-201843
+x86_64                 randconfig-x009-201843
+x86_64                 randconfig-x007-201843
+x86_64                 randconfig-x003-201843
+x86_64                 randconfig-x006-201843
+x86_64                 randconfig-x004-201843
+x86_64                 randconfig-e0-10291134
+x86_64                 randconfig-e1-10291134
+x86_64                 randconfig-e2-10291134
+x86_64                 randconfig-e3-10291134
+mips                  cavium_octeon_defconfig
+parisc                           alldefconfig
+arm                         nhk8815_defconfig
+m68k                       m5208evb_defconfig
+arm                         assabet_defconfig
+powerpc                     ksi8560_defconfig
+x86_64                 randconfig-j0-10290909
+x86_64                 randconfig-j1-10290909
+x86_64                 randconfig-j2-10290909
+x86_64                 randconfig-j3-10290909
+i386                   randconfig-j0-10290909
+i386                   randconfig-j1-10290909
+i386                   randconfig-j2-10290909
+i386                   randconfig-j3-10290909
+x86_64                 randconfig-r0-10310115
+i386                             allmodconfig
+i386                   randconfig-x0-10310111
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 14 +++++++-------
- drivers/net/ethernet/intel/i40e/i40e_ptp.c  |  2 +-
- 2 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 8dc5aaac4241..c14a1c5b1c21 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -14526,23 +14526,23 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 		switch (hw->bus.speed) {
- 		case i40e_bus_speed_8000:
--			strncpy(speed, "8.0", PCI_SPEED_SIZE); break;
-+			strlcpy(speed, "8.0", PCI_SPEED_SIZE); break;
- 		case i40e_bus_speed_5000:
--			strncpy(speed, "5.0", PCI_SPEED_SIZE); break;
-+			strlcpy(speed, "5.0", PCI_SPEED_SIZE); break;
- 		case i40e_bus_speed_2500:
--			strncpy(speed, "2.5", PCI_SPEED_SIZE); break;
-+			strlcpy(speed, "2.5", PCI_SPEED_SIZE); break;
- 		default:
- 			break;
- 		}
- 		switch (hw->bus.width) {
- 		case i40e_bus_width_pcie_x8:
--			strncpy(width, "8", PCI_WIDTH_SIZE); break;
-+			strlcpy(width, "8", PCI_WIDTH_SIZE); break;
- 		case i40e_bus_width_pcie_x4:
--			strncpy(width, "4", PCI_WIDTH_SIZE); break;
-+			strlcpy(width, "4", PCI_WIDTH_SIZE); break;
- 		case i40e_bus_width_pcie_x2:
--			strncpy(width, "2", PCI_WIDTH_SIZE); break;
-+			strlcpy(width, "2", PCI_WIDTH_SIZE); break;
- 		case i40e_bus_width_pcie_x1:
--			strncpy(width, "1", PCI_WIDTH_SIZE); break;
-+			strlcpy(width, "1", PCI_WIDTH_SIZE); break;
- 		default:
- 			break;
- 		}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index 1199f0502d6d..e6fc0aff8c99 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -694,7 +694,7 @@ static long i40e_ptp_create_clock(struct i40e_pf *pf)
- 	if (!IS_ERR_OR_NULL(pf->ptp_clock))
- 		return 0;
- 
--	strncpy(pf->ptp_caps.name, i40e_driver_name,
-+	strlcpy(pf->ptp_caps.name, i40e_driver_name,
- 		sizeof(pf->ptp_caps.name) - 1);
- 	pf->ptp_caps.owner = THIS_MODULE;
- 	pf->ptp_caps.max_adj = 999999999;
--- 
-2.17.2
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
