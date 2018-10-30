@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 30 Oct 2018 22:01:03 +0000
-Subject: [Intel-wired-lan] [PATCH S8 11/16] ice: Fix debug print in
- ice_tx_timeout
-In-Reply-To: <20181026174105.11628-12-anirudh.venkataramanan@intel.com>
+Date: Tue, 30 Oct 2018 22:01:30 +0000
+Subject: [Intel-wired-lan] [PATCH S8 12/16] ice: Check for q_vector when
+ stopping rings
+In-Reply-To: <20181026174105.11628-13-anirudh.venkataramanan@intel.com>
 References: <20181026174105.11628-1-anirudh.venkataramanan@intel.com>
- <20181026174105.11628-12-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D328D2A@ORSMSX104.amr.corp.intel.com>
+ <20181026174105.11628-13-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D328D3A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,30 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Friday, October 26, 2018 10:41 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S8 11/16] ice: Fix debug print in
-> ice_tx_timeout
+> Subject: [Intel-wired-lan] [PATCH S8 12/16] ice: Check for q_vector when
+> stopping rings
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Tony Nguyen <anthony.l.nguyen@intel.com>
 > 
-> Currently the debug print in ice_tx_timeout is printing useless and duplicate
-> values. First, head is being assigned to tx_ring->next_to_clean and we are
-> printing both of those values, but naming them HWB and NTC respectively.
-> Also, reading tail always returns 0 so remove that as well.
+> There is a gap in time between a VF reset, which sets the q_vector to NULL,
+> and the VF requesting mapping of the q_vectors. If
+> ice_vsi_stop_tx_rings() is called during this time, a NULL pointer dereference
+> is encountered. Add a check in ice_vsi_stop_tx_rings() to ensure the
+> q_vector is set to avoid this situation from occurring.
 > 
-> Instead of assigning head the SW head (NTC) read the actual head register
-> and change the debug print to note that this is HW_HEAD. Also reduce thei
-> scope of a couple variables.
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
-> up commit message]
-> ---
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  3 +++
->  drivers/net/ethernet/intel/ice/ice_main.c       | 15 +++++++++------
->  2 files changed, 12 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
