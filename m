@@ -1,40 +1,29 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 31 Oct 2018 19:17:24 +0000
-Subject: [Intel-wired-lan] [next S97 v2 6/6] i40e: Allow disabling FW
- LLDP on X722 devices
-In-Reply-To: <20181030175047.18874-6-jeffrey.t.kirsher@intel.com>
-References: <20181030175047.18874-1-jeffrey.t.kirsher@intel.com>
- <20181030175047.18874-6-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D329057@ORSMSX104.amr.corp.intel.com>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Wed, 31 Oct 2018 14:16:32 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 4/4] ixgbe: add support for
+ extended PHC gettime
+In-Reply-To: <20181031144935.GR31668@localhost>
+References: <20181026162742.631-1-mlichvar@redhat.com>
+ <20181026162742.631-5-mlichvar@redhat.com>
+ <02874ECE860811409154E81DA85FBB5884CE4B8C@ORSMSX115.amr.corp.intel.com>
+ <20181029133109.GD31668@localhost>
+ <20181031144003.qs235wjmiuwaprps@localhost>
+ <20181031144935.GR31668@localhost>
+Message-ID: <20181031211632.f7imvzvrsn6pbwgb@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Tuesday, October 30, 2018 10:51 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Patryk Ma?ek <patryk.malek@intel.com>
-> Subject: [Intel-wired-lan] [next S97 v2 6/6] i40e: Allow disabling FW LLDP on
-> X722 devices
+On Wed, Oct 31, 2018 at 03:49:35PM +0100, Miroslav Lichvar wrote:
 > 
-> From: Patryk Ma?ek <patryk.malek@intel.com>
-> 
-> This patch allows disabling FW LLDP agent on X722 devices.
-> It also changes a source of information for this feature from
-> pf->hw_features to pf->hw.flags which are set in i40e_init_adminq.
-> 
-> Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h         |  1 -
->  drivers/net/ethernet/intel/i40e/i40e_common.c  |  3 +++
-> drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 13 +++++++------
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 15 +++++++--------
->  4 files changed, 17 insertions(+), 15 deletions(-)
+> How about separating the PHC timestamp from the ptp_system_timestamp
+> structure and use NULL to indicate we don't want to read the system
+> clock? A gettimex64(ptp, ts, NULL) call would be equal to
+> gettime64(ptp, ts).
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Doesn't sound too bad to me.
 
-
+Thanks,
+Richard
