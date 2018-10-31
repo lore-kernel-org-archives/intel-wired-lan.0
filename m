@@ -1,44 +1,26 @@
-From: Miroslav Lichvar <mlichvar@redhat.com>
-Date: Wed, 31 Oct 2018 10:39:35 +0100
-Subject: [Intel-wired-lan] [RFC PATCH 3/4] igb: add support for extended
- PHC gettime
-In-Reply-To: <20181031022916.nuvbjegnn6bsqxss@localhost>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Wed, 31 Oct 2018 07:40:03 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 4/4] ixgbe: add support for
+ extended PHC gettime
+In-Reply-To: <20181029133109.GD31668@localhost>
 References: <20181026162742.631-1-mlichvar@redhat.com>
- <20181026162742.631-4-mlichvar@redhat.com>
- <20181031022916.nuvbjegnn6bsqxss@localhost>
-Message-ID: <20181031093935.GL31668@localhost>
+ <20181026162742.631-5-mlichvar@redhat.com>
+ <02874ECE860811409154E81DA85FBB5884CE4B8C@ORSMSX115.amr.corp.intel.com>
+ <20181029133109.GD31668@localhost>
+Message-ID: <20181031144003.qs235wjmiuwaprps@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 30, 2018 at 07:29:16PM -0700, Richard Cochran wrote:
-> On Fri, Oct 26, 2018 at 06:27:41PM +0200, Miroslav Lichvar wrote:
-> > +static int igb_ptp_gettimex(struct ptp_clock_info *ptp,
-> > +			    struct ptp_system_timestamp *sts)
-> > +{
-> > +	struct igb_adapter *igb = container_of(ptp, struct igb_adapter,
-> > +					       ptp_caps);
-> > +	struct e1000_hw *hw = &igb->hw;
-> > +	unsigned long flags;
-> > +	u32 lo, hi;
-> > +	u64 ns;
-> > +
-> > +	spin_lock_irqsave(&igb->tmreg_lock, flags);
-> > +
-> > +	/* 82576 doesn't have SYSTIMR */
-> > +	if (igb->hw.mac.type == e1000_82576) {
-> 
-> Instead of if/then/else, can't you follow the pattern of providing
-> different function flavors ...
+On Mon, Oct 29, 2018 at 02:31:09PM +0100, Miroslav Lichvar wrote:
+> I think there could be a flag in ptp_system_timestamp, or a parameter
+> of gettimex64(), which would enable/disable reading of the system
+> clock.
 
-I can. I was just trying to minimize the amount of triplicated code.
-In the next version I'll add a patch to deprecate the old gettime
-functions, as Jacob suggested, and replace them with the extended
-versions, so the amount of code will not change that much.
+I'm not a fan of functions that change their behavior based on flags
+in their input parameters.
 
 Thanks,
-
--- 
-Miroslav Lichvar
+Richard
