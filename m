@@ -1,29 +1,46 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Wed, 31 Oct 2018 14:16:32 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 4/4] ixgbe: add support for
- extended PHC gettime
-In-Reply-To: <20181031144935.GR31668@localhost>
-References: <20181026162742.631-1-mlichvar@redhat.com>
- <20181026162742.631-5-mlichvar@redhat.com>
- <02874ECE860811409154E81DA85FBB5884CE4B8C@ORSMSX115.amr.corp.intel.com>
- <20181029133109.GD31668@localhost>
- <20181031144003.qs235wjmiuwaprps@localhost>
- <20181031144935.GR31668@localhost>
-Message-ID: <20181031211632.f7imvzvrsn6pbwgb@localhost>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 31 Oct 2018 21:36:53 +0000
+Subject: [Intel-wired-lan] [net 1/2] i40e: restore NETIF_F_GSO_IPXIP[46]
+ to netdev features
+In-Reply-To: <20181029175243.13453-1-jacob.e.keller@intel.com>
+References: <20181029175243.13453-1-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3291A6@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Oct 31, 2018 at 03:49:35PM +0100, Miroslav Lichvar wrote:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jacob Keller
+> Sent: Monday, October 29, 2018 10:53 AM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [net 1/2] i40e: restore NETIF_F_GSO_IPXIP[46] to
+> netdev features
 > 
-> How about separating the PHC timestamp from the ptp_system_timestamp
-> structure and use NULL to indicate we don't want to read the system
-> clock? A gettimex64(ptp, ts, NULL) call would be equal to
-> gettime64(ptp, ts).
+> Since commit bacd75cfac8a ("i40e/i40evf: Add capability exchange for outer
+> checksum", 2017-04-06) the i40e driver has not reported support for IP-in-IP
+> offloads. This likely occurred due to a bad rebase, as the commit extracts
+> hw_enc_features into its own variable. As part of this change, it dropped the
+> NETIF_F_FSO_IPXIP flags from the
+> netdev->hw_enc_features. This was unfortunately not caught during code
+> review.
+> 
+> Fix this by adding back the missing feature flags.
+> 
+> For reference, NETIF_F_GSO_IPXIP4 was added in commit 7e13318daa4a
+> ("net: define gso types for IPx over IPv4 and IPv6", 2016-05-20), replacing
+> NETIF_F_GSO_IPIP and NETIF_F_GSO_SIT.
+> 
+> NETIF_F_GSO_IPXIP6 was added in commit bf2d1df39502 ("intel: Add
+> support for IPv6 IP-in-IP offload", 2016-05-20).
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
+>  1 file changed, 2 insertions(+)
 
-Doesn't sound too bad to me.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Thanks,
-Richard
+
