@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 31 Oct 2018 21:37:17 +0000
-Subject: [Intel-wired-lan] [net 2/2] i40e: enable NETIF_F_NTUPLE and
- NETIF_F_HW_TC at driver load
-In-Reply-To: <20181029175243.13453-2-jacob.e.keller@intel.com>
-References: <20181029175243.13453-1-jacob.e.keller@intel.com>
- <20181029175243.13453-2-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3291B5@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 31 Oct 2018 21:37:48 +0000
+Subject: [Intel-wired-lan] [next PATCH] i40e: prevent overlapping
+ tx_timeout recover
+In-Reply-To: <20181029182721.19003-1-alice.michael@intel.com>
+References: <20181029182721.19003-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3291C6@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,28 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Monday, October 29, 2018 10:53 AM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net 2/2] i40e: enable NETIF_F_NTUPLE and
-> NETIF_F_HW_TC at driver load
+> Behalf Of Alice Michael
+> Sent: Monday, October 29, 2018 11:27 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH] i40e: prevent overlapping tx_timeout
+> recover
 > 
-> The assignment of the feature flag NETIF_F_NTUPLE and NETIF_F_HW_TC
-> occurs prior to the initial setup of the local hw_features variable.
+> From: Alan Brady <alan.brady@intel.com>
 > 
-> This means the features are set as user-changeable, but are not set in the
-> currently active feature list. This results in the features being disabled at the
-> driver's initial load.
+> If a TX hang occurs, we attempt to recover by incrementally resetting.
+> If we're starved for CPU time, it's possible the reset doesn't actually
+> complete (or even fire) before another tx_timeout fires causing us to fly
+> through the different resets without actually doing them.
 > 
-> Move the assignment after the initial assignment of hw_features, and assign
-> to the local variable. This ensures that NETIF_F_NTUPLE and NETIF_F_HW_TC
-> are marked as user-changeable, and also enables them by default when the
-> driver loads.
+> This adds a bit to set and check if a timeout recovery is already pending and,
+> if so, bail out of tx_timeout.  The bit will get cleared at the end of
+> i40e_rebuild when reset is complete.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h      | 1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
+>  2 files changed, 6 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
