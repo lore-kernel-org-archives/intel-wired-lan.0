@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 31 Oct 2018 19:15:59 +0000
-Subject: [Intel-wired-lan] [next S97 v2 3/6] i40e: Replace strncpy with
- strlcpy to ensure null termination
-In-Reply-To: <20181030175047.18874-3-jeffrey.t.kirsher@intel.com>
+Date: Wed, 31 Oct 2018 19:16:29 +0000
+Subject: [Intel-wired-lan] [next S97 v2 4/6] i40e: Protect access to vf
+ control methods
+In-Reply-To: <20181030175047.18874-4-jeffrey.t.kirsher@intel.com>
 References: <20181030175047.18874-1-jeffrey.t.kirsher@intel.com>
- <20181030175047.18874-3-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32902A@ORSMSX104.amr.corp.intel.com>
+ <20181030175047.18874-4-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32903B@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Tuesday, October 30, 2018 10:51 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Patryk Ma?ek <patryk.malek@intel.com>
-> Subject: [Intel-wired-lan] [next S97 v2 3/6] i40e: Replace strncpy with strlcpy
-> to ensure null termination
+> Subject: [Intel-wired-lan] [next S97 v2 4/6] i40e: Protect access to vf control
+> methods
 > 
-> From: Patryk Ma?ek <patryk.malek@intel.com>
+> From: Jan Sokolowski <jan.sokolowski@intel.com>
 > 
-> Using strncpy allows destination buffer to be not null terminated after the
-> copying takes place. strlcpy ensures that's not the case by explicitly setting
-> last element in the buffer as '\0'.
+> A scenario has been found in which simultaneous addition/removal and
+> modification of VF's might cause unstable behaviour, up to and including
+> kernel panics.
 > 
-> Signed-off-by: Patryk Ma?ek <patryk.malek@intel.com>
+> Protect the methods that create/modify/destroy VF's by locking them
+> behind an atomically set bit in PF status bitfield.
+> 
+> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 14 +++++++-------
-> drivers/net/ethernet/intel/i40e/i40e_ptp.c  |  2 +-
->  2 files changed, 8 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h        |  1 +
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 64 +++++++++++++++++--
+>  2 files changed, 60 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
