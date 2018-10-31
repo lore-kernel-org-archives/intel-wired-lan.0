@@ -1,46 +1,42 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 31 Oct 2018 16:28:13 +0000
-Subject: [Intel-wired-lan] [next PATCH S98 6/6] i40e: suppress bogus
- error message
-In-Reply-To: <20181026213333.51495-6-alice.michael@intel.com>
-References: <20181026213333.51495-1-alice.michael@intel.com>
- <20181026213333.51495-6-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D328FC7@ORSMSX104.amr.corp.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Wed, 31 Oct 2018 16:55:20 +0000
+Subject: [Intel-wired-lan] [RFC PATCH 4/4] ixgbe: add support for
+ extended PHC gettime
+In-Reply-To: <20181031144003.qs235wjmiuwaprps@localhost>
+References: <20181026162742.631-1-mlichvar@redhat.com>
+ <20181026162742.631-5-mlichvar@redhat.com>
+ <02874ECE860811409154E81DA85FBB5884CE4B8C@ORSMSX115.amr.corp.intel.com>
+ <20181029133109.GD31668@localhost>
+ <20181031144003.qs235wjmiuwaprps@localhost>
+Message-ID: <02874ECE860811409154E81DA85FBB5884D0FDD0@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+
+
 > -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Friday, October 26, 2018 2:34 PM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> From: Richard Cochran [mailto:richardcochran at gmail.com]
+> Sent: Wednesday, October 31, 2018 7:40 AM
+> To: Miroslav Lichvar <mlichvar@redhat.com>
+> Cc: Keller, Jacob E <jacob.e.keller@intel.com>; netdev at vger.kernel.org; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S98 6/6] i40e: suppress bogus error
-> message
+> Subject: Re: [RFC PATCH 4/4] ixgbe: add support for extended PHC gettime
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> On Mon, Oct 29, 2018 at 02:31:09PM +0100, Miroslav Lichvar wrote:
+> > I think there could be a flag in ptp_system_timestamp, or a parameter
+> > of gettimex64(), which would enable/disable reading of the system
+> > clock.
 > 
-> The i40e driver complains about unprivileged VFs trying to configure
-> promiscuous mode each time a VF reset occurs. This isn't the fault of the
-> poor VF driver - the PF driver itself is making the request.
+> I'm not a fan of functions that change their behavior based on flags
+> in their input parameters.
 > 
-> To fix this, skip the privilege check if the request is to disable all promiscuous
-> activity. This gets rid of the bogus message, but doesn't affect privilege
-> checks, since we really only care if the unprivileged VF is trying to enable
-> promiscuous mode.
-> 
-> Testing Hints (required if no HSD): watch dmesg log while VF resets occur.
-> You can trigger a VFR by unloading i40evf or shutting down the VM with an
-> assigned VF.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> Thanks,
+> Richard
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Neither am I. I do however want to find a solution that avoids having drivers needlessly duplicate almost the same functionality.
 
-
+Thanks,
+Jake
