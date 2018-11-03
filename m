@@ -1,10 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 3 Nov 2018 01:58:28 +0000
-Subject: [Intel-wired-lan] [RFC PATCH] e1000e: allow non-monotonic
- SYSTIM readings
-In-Reply-To: <20181017161621.6081-1-mlichvar@redhat.com>
-References: <20181017161621.6081-1-mlichvar@redhat.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96599E6F@ORSMSX101.amr.corp.intel.com>
+Date: Sat, 3 Nov 2018 02:10:33 +0000
+Subject: [Intel-wired-lan] [PATCH v1] e1000e: allow non-monotonic SYSTIM
+ readings
+In-Reply-To: <20181023123739.12489-1-mlichvar@redhat.com>
+References: <20181023123739.12489-1-mlichvar@redhat.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96599E8C@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,10 +13,10 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Miroslav Lichvar
-> Sent: Wednesday, October 17, 2018 9:16 AM
+> Sent: Tuesday, October 23, 2018 5:38 AM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Richard Cochran <richardcochran@gmail.com>
-> Subject: [Intel-wired-lan] [RFC PATCH] e1000e: allow non-monotonic SYSTIM
+> Subject: [Intel-wired-lan] [PATCH v1] e1000e: allow non-monotonic SYSTIM
 > readings
 > 
 > It seems with some NICs supported by the e1000e driver a SYSTIM reading
@@ -39,8 +39,14 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Richard Cochran <richardcochran@gmail.com>
 > Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/ptp.c | 11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
+> 
+> Notes:
+>     RFC->v1:
+>     - Removed unnecessary call of PTP gettime64() in
+>       e1000e_systim_overflow_work()
+> 
+>  drivers/net/ethernet/intel/e1000e/ptp.c | 13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
 > 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
