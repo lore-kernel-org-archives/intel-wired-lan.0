@@ -1,52 +1,69 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 3 Nov 2018 02:10:33 +0000
-Subject: [Intel-wired-lan] [PATCH v1] e1000e: allow non-monotonic SYSTIM
- readings
-In-Reply-To: <20181023123739.12489-1-mlichvar@redhat.com>
-References: <20181023123739.12489-1-mlichvar@redhat.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96599E8C@ORSMSX101.amr.corp.intel.com>
+From: Robert Eshleman <bobbyeshleman@gmail.com>
+Date: Sat,  3 Nov 2018 17:17:19 -0700
+Subject: [Intel-wired-lan] [PATCH] e1000e: Change watchdog task to be
+ delayed work
+Message-ID: <1541290645-25033-1-git-send-email-bobbyeshleman@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Miroslav Lichvar
-> Sent: Tuesday, October 23, 2018 5:38 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Richard Cochran <richardcochran@gmail.com>
-> Subject: [Intel-wired-lan] [PATCH v1] e1000e: allow non-monotonic SYSTIM
-> readings
-> 
-> It seems with some NICs supported by the e1000e driver a SYSTIM reading
-> may occasionally be few microseconds before the previous reading and if
-> enabled also pass e1000e_sanitize_systim() without reaching the maximum
-> number of rereads, even if the function is modified to check three
-> consecutive readings (i.e. it doesn't look like a double read error).
-> This causes an underflow in the timecounter and the PHC time jumps hours
-> ahead.
-> 
-> This was observed on 82574, I217 and I219. The fastest way to reproduce
-> it is to run a program that continuously calls the PTP_SYS_OFFSET ioctl
-> on the PHC.
-> 
-> Modify e1000e_phc_gettime() to use timecounter_cyc2time() instead of
-> timecounter_read() in order to allow non-monotonic SYSTIM readings and
-> prevent the PHC from jumping.
-> 
-> Cc: Jacob Keller <jacob.e.keller@intel.com>
-> Cc: Richard Cochran <richardcochran@gmail.com>
-> Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
-> ---
-> 
-> Notes:
->     RFC->v1:
->     - Removed unnecessary call of PTP gettime64() in
->       e1000e_systim_overflow_work()
-> 
->  drivers/net/ethernet/intel/e1000e/ptp.c | 13 ++++++++++---
->  1 file changed, 10 insertions(+), 3 deletions(-)
-> 
+This completes a pending TODO to use queue_delayed_work() instead of
+schedule_work().
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Signed-off-by: Robert Eshleman <bobbyeshleman@gmail.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 16a73bd..a387b21 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -39,6 +39,8 @@ static int debug = -1;
+ module_param(debug, int, 0);
+ MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
+ 
++struct workqueue_struct *e1000e_workqueue;
++
+ static const struct e1000_info *e1000_info_tbl[] = {
+ 	[board_82571]		= &e1000_82571_info,
+ 	[board_82572]		= &e1000_82572_info,
+@@ -5137,9 +5139,9 @@ static void e1000_watchdog(struct timer_list *t)
+ 	struct e1000_adapter *adapter = from_timer(adapter, t, watchdog_timer);
+ 
+ 	/* Do the rest outside of interrupt context */
+-	schedule_work(&adapter->watchdog_task);
++	struct delayed_work *dwork = to_delayed_work(&adapter->watchdog_task);
+ 
+-	/* TODO: make this use queue_delayed_work() */
++	queue_delayed_work(e1000e_workqueue, dwork, 1);
+ }
+ 
+ static void e1000_watchdog_task(struct work_struct *work)
+@@ -7572,6 +7574,13 @@ static int __init e1000_init_module(void)
+ 		e1000e_driver_version);
+ 	pr_info("Copyright(c) 1999 - 2015 Intel Corporation.\n");
+ 
++	e1000e_workqueue = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0,
++					   e1000e_driver_name);
++	if (!e1000e_workqueue) {
++		pr_err("%s: Failed to create workqueue\n", e1000e_driver_name);
++		return -ENOMEM;
++	}
++
+ 	return pci_register_driver(&e1000_driver);
+ }
+ module_init(e1000_init_module);
+@@ -7585,6 +7594,7 @@ module_init(e1000_init_module);
+ static void __exit e1000_exit_module(void)
+ {
+ 	pci_unregister_driver(&e1000_driver);
++	destroy_workqueue(e1000e_workqueue);
+ }
+ module_exit(e1000_exit_module);
+ 
+-- 
+2.7.4
+
