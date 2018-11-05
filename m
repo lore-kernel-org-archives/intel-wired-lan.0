@@ -1,240 +1,48 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 06 Nov 2018 03:49:14 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 14d6ff10fbe6fe968c7446fbcb137b87cd4eafd9
-Message-ID: <5be09eba.mJ6NOeLYkaT5+B3m%lkp@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Date: Mon,  5 Nov 2018 12:18:35 -0800
+Subject: [Intel-wired-lan] [PATCH] ice: Change req_speeds to be u16
+Message-ID: <20181105201835.2166-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 14d6ff10fbe6fe968c7446fbcb137b87cd4eafd9  i40e: enable NETIF_F_NTUPLE and NETIF_F_HW_TC at driver load
+From: Chinh T Cao <chinh.t.cao@intel.com>
 
-elapsed time: 74m
+Since the req_speeds field in struct ice_link_status is a u8,
+req_speeds & ICE_AQ_LINK_SPEED_40GB always returns 0. This was caught
+by a coverity scan.
 
-configs tested: 215
+Fix this by changing req_speeds to be u16.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-a0-11060239
-arm                             mxs_defconfig
-powerpc                          allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11060200
-i386                   randconfig-x019-201844
-i386                   randconfig-x016-201844
-i386                   randconfig-x014-201844
-i386                   randconfig-x018-201844
-i386                   randconfig-x015-201844
-i386                   randconfig-x013-201844
-i386                   randconfig-x012-201844
-i386                   randconfig-x011-201844
-i386                   randconfig-x010-201844
-i386                   randconfig-x017-201844
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201844
-i386                     randconfig-n1-201844
-i386                     randconfig-n2-201844
-i386                     randconfig-n3-201844
-x86_64                 randconfig-x001-201844
-x86_64                 randconfig-x000-201844
-x86_64                 randconfig-x002-201844
-x86_64                 randconfig-x005-201844
-x86_64                 randconfig-x007-201844
-x86_64                 randconfig-x009-201844
-x86_64                 randconfig-x008-201844
-x86_64                 randconfig-x003-201844
-x86_64                 randconfig-x006-201844
-x86_64                 randconfig-x004-201844
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201844
-i386                     randconfig-i1-201844
-i386                     randconfig-i2-201844
-i386                     randconfig-i3-201844
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                      integrator_defconfig
-powerpc                      makalu_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x002-201844
-i386                   randconfig-x004-201844
-i386                   randconfig-x005-201844
-i386                   randconfig-x006-201844
-i386                   randconfig-x007-201844
-i386                   randconfig-x000-201844
-i386                   randconfig-x001-201844
-i386                   randconfig-x009-201844
-i386                   randconfig-x003-201844
-i386                   randconfig-x008-201844
-x86_64                 randconfig-x017-201844
-x86_64                 randconfig-x012-201844
-x86_64                 randconfig-x013-201844
-x86_64                 randconfig-x011-201844
-x86_64                 randconfig-x016-201844
-x86_64                 randconfig-x014-201844
-x86_64                 randconfig-x018-201844
-x86_64                 randconfig-x019-201844
-x86_64                 randconfig-x010-201844
-x86_64                 randconfig-x015-201844
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                 randconfig-s0-11060215
-x86_64                 randconfig-s1-11060215
-x86_64                 randconfig-s2-11060215
-x86_64                 randconfig-s0-11060314
-x86_64                 randconfig-s1-11060314
-x86_64                 randconfig-s2-11060314
-mips                        maltaup_defconfig
-powerpc                    ge_imp3a_defconfig
-powerpc                 mpc837x_mds_defconfig
-powerpc               mpc85xx_basic_defconfig
-mips                            e55_defconfig
-mips                        vocore2_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201844
-i386                     randconfig-s1-201844
-i386         randconfig-s1-201844-CONFIG_DEBUG_INFO_REDUCED
-i386                     randconfig-s2-201844
-i386                     randconfig-s3-201844
-x86_64                 randconfig-s3-11060222
-x86_64                 randconfig-s4-11060222
-x86_64                 randconfig-s5-11060222
-x86_64                 randconfig-s3-11060315
-x86_64                 randconfig-s4-11060315
-x86_64                 randconfig-s5-11060315
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201844
-x86_64                   randconfig-i1-201844
-x86_64                   randconfig-i2-201844
-x86_64                   randconfig-i3-201844
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-ia64                      gensparse_defconfig
-mips                        nlm_xlp_defconfig
-powerpc                    amigaone_defconfig
-x86_64                 randconfig-b0-11060204
-powerpc                       holly_defconfig
-powerpc                 mpc8313_rdb_defconfig
-alpha                            allmodconfig
-arm                          lpd270_defconfig
-x86_64                 randconfig-u0-11060219
-x86_64                 randconfig-u0-11060324
-x86_64                 randconfig-k0-11051200
-x86_64                 randconfig-k1-11051200
-x86_64                 randconfig-k2-11051200
-x86_64                 randconfig-k3-11051200
-i386                   randconfig-k0-11051200
-i386                   randconfig-k1-11051200
-i386                   randconfig-k2-11051200
-i386                   randconfig-k3-11051200
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m68k                        mvme16x_defconfig
-mips                             alldefconfig
-mips                        bcm47xx_defconfig
-x86_64                randconfig-ne0-11060219
-x86_64                 randconfig-h0-11060225
-i386                   randconfig-x070-201844
-i386                   randconfig-x071-201844
-i386                   randconfig-x072-201844
-i386                   randconfig-x073-201844
-i386                   randconfig-x074-201844
-i386                   randconfig-x075-201844
-i386                   randconfig-x076-201844
-i386                   randconfig-x077-201844
-i386                   randconfig-x078-201844
-i386                   randconfig-x079-201844
-m68k                             allmodconfig
-powerpc                    gamecube_defconfig
-i386                  randconfig-sb0-11060231
-x86_64                   randconfig-e0-201844
-x86_64                   randconfig-e1-201844
-x86_64                   randconfig-e2-201844
-x86_64                   randconfig-e3-201844
-microblaze                        allnoconfig
-arm                           acs5k_defconfig
-sh                        sh7763rdp_defconfig
-m68k                        m5272c3_defconfig
-sh                          lboxre2_defconfig
-x86_64                randconfig-ws0-11060220
-sparc                            allyesconfig
-x86_64                randconfig-ws0-11060145
-x86_64                randconfig-ws0-11060259
-x86_64                randconfig-ws0-11060325
-microblaze                          defconfig
-sh                             espt_defconfig
-x86_64                   randconfig-j0-201844
-x86_64                   randconfig-j1-201844
-x86_64                   randconfig-j2-201844
-x86_64                   randconfig-j3-201844
-i386                     randconfig-j0-201844
-i386                     randconfig-j1-201844
-i386                     randconfig-j2-201844
-i386                     randconfig-j3-201844
-x86_64                 randconfig-r0-11052237
-i386                               tinyconfig
-mips                           ip27_defconfig
-sh                           se7705_defconfig
-i386                   randconfig-x0-11060227
-
+Reported-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Chinh T Cao <chinh.t.cao@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_type.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index e5657be86c74..0ea428104215 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -92,12 +92,12 @@ struct ice_link_status {
+ 	u64 phy_type_low;
+ 	u16 max_frame_size;
+ 	u16 link_speed;
++	u16 req_speeds;
+ 	u8 lse_ena;	/* Link Status Event notification */
+ 	u8 link_info;
+ 	u8 an_info;
+ 	u8 ext_info;
+ 	u8 pacing;
+-	u8 req_speeds;
+ 	/* Refer to #define from module_type[ICE_MODULE_TYPE_TOTAL_BYTE] of
+ 	 * ice_aqc_get_phy_caps structure
+ 	 */
+-- 
+2.14.3
+
