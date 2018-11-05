@@ -1,103 +1,240 @@
-From: Ben Greear <greearb@candelatech.com>
-Date: Fri, 30 Nov 2018 07:42:21 -0800
-Subject: [Intel-wired-lan] Any idea when 2.5G Ethernet NICs will be
- available?
-In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69A4D1113@ORSMSX110.amr.corp.intel.com>
-References: <05fccb2a-284b-de94-9bd6-e295e87a8796@candelatech.com>
- <9B4A1B1917080E46B64F07F2989DADD69A4D0DE3@ORSMSX110.amr.corp.intel.com>
- <dbe24a68-5732-b900-f70f-5b04b98c255b@candelatech.com>
- <9B4A1B1917080E46B64F07F2989DADD69A4D0E57@ORSMSX110.amr.corp.intel.com>
- <9B4A1B1917080E46B64F07F2989DADD69A4D1113@ORSMSX110.amr.corp.intel.com>
-Message-ID: <38e59bf5-4fdf-f148-1ff9-ba254629690d@candelatech.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 06 Nov 2018 03:49:14 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 14d6ff10fbe6fe968c7446fbcb137b87cd4eafd9
+Message-ID: <5be09eba.mJ6NOeLYkaT5+B3m%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I think that will be fine for my needs.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 14d6ff10fbe6fe968c7446fbcb137b87cd4eafd9  i40e: enable NETIF_F_NTUPLE and NETIF_F_HW_TC at driver load
 
-Thanks for the info!
+elapsed time: 74m
 
-Ben
+configs tested: 215
 
-On 11/30/2018 07:37 AM, Fujinaka, Todd wrote:
-> The driver developers tell me that my understanding is correct, and if you have a 2.5G partner the x550 will do 2.5G. No way to force it, though. I think this is a limitation of the driver.
->
-> Todd Fujinaka
-> Software Application Engineer
-> Datacenter Engineering Group
-> Intel Corporation
-> todd.fujinaka at intel.com
->
->
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Fujinaka, Todd
-> Sent: Thursday, November 29, 2018 3:03 PM
-> To: Ben Greear <greearb@candelatech.com>; intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-> Subject: Re: [Intel-wired-lan] Any idea when 2.5G Ethernet NICs will be available?
->
-> It should work with the ixgbe driver, but I'm not sure if you can explicitly set 2.5G. Let me ask around.
->
-> Todd Fujinaka
-> Software Application Engineer
-> Datacenter Engineering Group
-> Intel Corporation
-> todd.fujinaka at intel.com
->
->
-> -----Original Message-----
-> From: Ben Greear [mailto:greearb at candelatech.com]
-> Sent: Thursday, November 29, 2018 2:08 PM
-> To: Fujinaka, Todd <todd.fujinaka@intel.com>; intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-> Subject: Re: [Intel-wired-lan] Any idea when 2.5G Ethernet NICs will be available?
->
-> At this point, functionality is more important than price for me.
->
-> Do I need any special driver changes (or very recent drivers) to make this work with 2.5G?
->
-> Thanks,
-> Ben
->
-> On 11/29/2018 02:04 PM, Fujinaka, Todd wrote:
->> The Intel(r) Ethernet Converged Network Adapter X550-T1 and -T2 should do 2.5G but I'm guessing you're looking for a lower cost solution.
->>
->> Todd Fujinaka
->> Software Application Engineer
->> Datacenter Engineering Group
->> Intel Corporation
->> todd.fujinaka at intel.com
->>
->> -----Original Message-----
->> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
->> Behalf Of Ben Greear
->> Sent: Thursday, November 29, 2018 8:59 AM
->> To: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
->> Subject: [Intel-wired-lan] Any idea when 2.5G Ethernet NICs will be available?
->>
->> Hello,
->>
->> I notice there is some driver support coming soon for a 2.5G Intel NIC.
->>
->> Anyone know when we might expect to be able to buy pcie NICs with this chipset?
->>
->> Thanks,
->> Ben
->>
->
->
-> --
-> Ben Greear <greearb@candelatech.com>
-> Candela Technologies Inc  http://www.candelatech.com
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-a0-11060239
+arm                             mxs_defconfig
+powerpc                          allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-11060200
+i386                   randconfig-x019-201844
+i386                   randconfig-x016-201844
+i386                   randconfig-x014-201844
+i386                   randconfig-x018-201844
+i386                   randconfig-x015-201844
+i386                   randconfig-x013-201844
+i386                   randconfig-x012-201844
+i386                   randconfig-x011-201844
+i386                   randconfig-x010-201844
+i386                   randconfig-x017-201844
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201844
+i386                     randconfig-n1-201844
+i386                     randconfig-n2-201844
+i386                     randconfig-n3-201844
+x86_64                 randconfig-x001-201844
+x86_64                 randconfig-x000-201844
+x86_64                 randconfig-x002-201844
+x86_64                 randconfig-x005-201844
+x86_64                 randconfig-x007-201844
+x86_64                 randconfig-x009-201844
+x86_64                 randconfig-x008-201844
+x86_64                 randconfig-x003-201844
+x86_64                 randconfig-x006-201844
+x86_64                 randconfig-x004-201844
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201844
+i386                     randconfig-i1-201844
+i386                     randconfig-i2-201844
+i386                     randconfig-i3-201844
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                      integrator_defconfig
+powerpc                      makalu_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x002-201844
+i386                   randconfig-x004-201844
+i386                   randconfig-x005-201844
+i386                   randconfig-x006-201844
+i386                   randconfig-x007-201844
+i386                   randconfig-x000-201844
+i386                   randconfig-x001-201844
+i386                   randconfig-x009-201844
+i386                   randconfig-x003-201844
+i386                   randconfig-x008-201844
+x86_64                 randconfig-x017-201844
+x86_64                 randconfig-x012-201844
+x86_64                 randconfig-x013-201844
+x86_64                 randconfig-x011-201844
+x86_64                 randconfig-x016-201844
+x86_64                 randconfig-x014-201844
+x86_64                 randconfig-x018-201844
+x86_64                 randconfig-x019-201844
+x86_64                 randconfig-x010-201844
+x86_64                 randconfig-x015-201844
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+x86_64                 randconfig-s0-11060215
+x86_64                 randconfig-s1-11060215
+x86_64                 randconfig-s2-11060215
+x86_64                 randconfig-s0-11060314
+x86_64                 randconfig-s1-11060314
+x86_64                 randconfig-s2-11060314
+mips                        maltaup_defconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                 mpc837x_mds_defconfig
+powerpc               mpc85xx_basic_defconfig
+mips                            e55_defconfig
+mips                        vocore2_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201844
+i386                     randconfig-s1-201844
+i386         randconfig-s1-201844-CONFIG_DEBUG_INFO_REDUCED
+i386                     randconfig-s2-201844
+i386                     randconfig-s3-201844
+x86_64                 randconfig-s3-11060222
+x86_64                 randconfig-s4-11060222
+x86_64                 randconfig-s5-11060222
+x86_64                 randconfig-s3-11060315
+x86_64                 randconfig-s4-11060315
+x86_64                 randconfig-s5-11060315
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201844
+x86_64                   randconfig-i1-201844
+x86_64                   randconfig-i2-201844
+x86_64                   randconfig-i3-201844
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+ia64                      gensparse_defconfig
+mips                        nlm_xlp_defconfig
+powerpc                    amigaone_defconfig
+x86_64                 randconfig-b0-11060204
+powerpc                       holly_defconfig
+powerpc                 mpc8313_rdb_defconfig
+alpha                            allmodconfig
+arm                          lpd270_defconfig
+x86_64                 randconfig-u0-11060219
+x86_64                 randconfig-u0-11060324
+x86_64                 randconfig-k0-11051200
+x86_64                 randconfig-k1-11051200
+x86_64                 randconfig-k2-11051200
+x86_64                 randconfig-k3-11051200
+i386                   randconfig-k0-11051200
+i386                   randconfig-k1-11051200
+i386                   randconfig-k2-11051200
+i386                   randconfig-k3-11051200
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m68k                        mvme16x_defconfig
+mips                             alldefconfig
+mips                        bcm47xx_defconfig
+x86_64                randconfig-ne0-11060219
+x86_64                 randconfig-h0-11060225
+i386                   randconfig-x070-201844
+i386                   randconfig-x071-201844
+i386                   randconfig-x072-201844
+i386                   randconfig-x073-201844
+i386                   randconfig-x074-201844
+i386                   randconfig-x075-201844
+i386                   randconfig-x076-201844
+i386                   randconfig-x077-201844
+i386                   randconfig-x078-201844
+i386                   randconfig-x079-201844
+m68k                             allmodconfig
+powerpc                    gamecube_defconfig
+i386                  randconfig-sb0-11060231
+x86_64                   randconfig-e0-201844
+x86_64                   randconfig-e1-201844
+x86_64                   randconfig-e2-201844
+x86_64                   randconfig-e3-201844
+microblaze                        allnoconfig
+arm                           acs5k_defconfig
+sh                        sh7763rdp_defconfig
+m68k                        m5272c3_defconfig
+sh                          lboxre2_defconfig
+x86_64                randconfig-ws0-11060220
+sparc                            allyesconfig
+x86_64                randconfig-ws0-11060145
+x86_64                randconfig-ws0-11060259
+x86_64                randconfig-ws0-11060325
+microblaze                          defconfig
+sh                             espt_defconfig
+x86_64                   randconfig-j0-201844
+x86_64                   randconfig-j1-201844
+x86_64                   randconfig-j2-201844
+x86_64                   randconfig-j3-201844
+i386                     randconfig-j0-201844
+i386                     randconfig-j1-201844
+i386                     randconfig-j2-201844
+i386                     randconfig-j3-201844
+x86_64                 randconfig-r0-11052237
+i386                               tinyconfig
+mips                           ip27_defconfig
+sh                           se7705_defconfig
+i386                   randconfig-x0-11060227
 
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
