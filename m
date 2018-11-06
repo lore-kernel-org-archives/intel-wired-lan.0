@@ -1,48 +1,99 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Mon,  5 Nov 2018 12:18:35 -0800
-Subject: [Intel-wired-lan] [PATCH] ice: Change req_speeds to be u16
-Message-ID: <20181105201835.2166-1-anirudh.venkataramanan@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 06 Nov 2018 08:21:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 9edf2bcebea73cbcec4d69092ccaaa77a5e0a603
+Message-ID: <5be0de76.jG5bNCk4sdwBMrez%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Chinh T Cao <chinh.t.cao@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 9edf2bcebea73cbcec4d69092ccaaa77a5e0a603  e1000e: Change watchdog task to be delayed work
 
-Since the req_speeds field in struct ice_link_status is a u8,
-req_speeds & ICE_AQ_LINK_SPEED_40GB always returns 0. This was caught
-by a coverity scan.
+elapsed time: 26m
 
-Fix this by changing req_speeds to be u16.
+configs tested: 74
 
-Reported-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Chinh T Cao <chinh.t.cao@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                   randconfig-x019-201844
+i386                   randconfig-x016-201844
+i386                   randconfig-x014-201844
+i386                   randconfig-x018-201844
+i386                   randconfig-x015-201844
+i386                   randconfig-x013-201844
+i386                   randconfig-x012-201844
+i386                   randconfig-x011-201844
+i386                   randconfig-x010-201844
+i386                   randconfig-x017-201844
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-x001-201844
+x86_64                 randconfig-x000-201844
+x86_64                 randconfig-x002-201844
+x86_64                 randconfig-x005-201844
+x86_64                 randconfig-x007-201844
+x86_64                 randconfig-x009-201844
+x86_64                 randconfig-x008-201844
+x86_64                 randconfig-x003-201844
+x86_64                 randconfig-x006-201844
+x86_64                 randconfig-x004-201844
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x017-201844
+x86_64                 randconfig-x012-201844
+x86_64                 randconfig-x013-201844
+x86_64                 randconfig-x011-201844
+x86_64                 randconfig-x016-201844
+x86_64                 randconfig-x014-201844
+x86_64                 randconfig-x018-201844
+x86_64                 randconfig-x019-201844
+x86_64                 randconfig-x010-201844
+x86_64                 randconfig-x015-201844
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                              allnoconfig
+parisc                           alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-x002-201844
+i386                   randconfig-x004-201844
+i386                   randconfig-x005-201844
+i386                   randconfig-x006-201844
+i386                   randconfig-x007-201844
+i386                   randconfig-x000-201844
+i386                   randconfig-x001-201844
+i386                   randconfig-x009-201844
+i386                   randconfig-x003-201844
+i386                   randconfig-x008-201844
+i386                               tinyconfig
+i386                   randconfig-x0-11060749
+
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
----
- drivers/net/ethernet/intel/ice/ice_type.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index e5657be86c74..0ea428104215 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -92,12 +92,12 @@ struct ice_link_status {
- 	u64 phy_type_low;
- 	u16 max_frame_size;
- 	u16 link_speed;
-+	u16 req_speeds;
- 	u8 lse_ena;	/* Link Status Event notification */
- 	u8 link_info;
- 	u8 an_info;
- 	u8 ext_info;
- 	u8 pacing;
--	u8 req_speeds;
- 	/* Refer to #define from module_type[ICE_MODULE_TYPE_TOTAL_BYTE] of
- 	 * ice_aqc_get_phy_caps structure
- 	 */
--- 
-2.14.3
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
