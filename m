@@ -1,46 +1,55 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Fri, 09 Nov 2018 02:17:43 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 8bf858e30dc394f83afab029b95a44b688d797ec
-Message-ID: <5be47dc7.zvOBk/pD+ghcWPbw%lkp@intel.com>
+Date: Fri, 09 Nov 2018 02:57:40 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 229c2babe555e9ffee8b52ab2436bcb175c062ee
+Message-ID: <5be48724.YZfQi3QVM78VZ4VO%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 8bf858e30dc394f83afab029b95a44b688d797ec  igb: fix uninitialized variables
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 229c2babe555e9ffee8b52ab2436bcb175c062ee  ice: Fix possible NULL pointer de-reference
 
-elapsed time: 90m
+elapsed time: 128m
 
-configs tested: 168
+configs tested: 207
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                       netwinder_defconfig
-arm                      pxa255-idp_defconfig
-x86_64                 randconfig-a0-11082109
-i386                               tinyconfig
-arm                     davinci_all_defconfig
-powerpc                     stx_gp3_defconfig
-i386                   randconfig-c0-11090033
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
+microblaze                       allyesconfig
+sh                         ap325rxa_defconfig
+i386                   randconfig-x019-201844
+i386                   randconfig-x016-201844
+i386                   randconfig-x014-201844
+i386                   randconfig-x018-201844
+i386                   randconfig-x015-201844
+i386                   randconfig-x013-201844
+i386                   randconfig-x012-201844
+i386                   randconfig-x011-201844
+i386                   randconfig-x010-201844
+i386                   randconfig-x017-201844
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
-i386                     randconfig-n0-201844
-i386                     randconfig-n1-201844
 i386                     randconfig-n2-201844
 i386                     randconfig-n3-201844
+i386                     randconfig-n1-201844
+i386                     randconfig-n0-201844
+x86_64                 randconfig-x001-201844
+x86_64                 randconfig-x000-201844
+x86_64                 randconfig-x002-201844
+x86_64                 randconfig-x005-201844
+x86_64                 randconfig-x007-201844
+x86_64                 randconfig-x009-201844
+x86_64                 randconfig-x008-201844
+x86_64                 randconfig-x003-201844
+x86_64                 randconfig-x006-201844
+x86_64                 randconfig-x004-201844
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
 powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
@@ -49,6 +58,25 @@ i386                     randconfig-i1-201844
 i386                     randconfig-i3-201844
 i386                     randconfig-i2-201844
 i386                     randconfig-i0-201844
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                              fedora-25
+i386                   randconfig-x002-201844
+i386                   randconfig-x004-201844
+i386                   randconfig-x005-201844
+i386                   randconfig-x006-201844
+i386                   randconfig-x007-201844
+i386                   randconfig-x000-201844
+i386                   randconfig-x001-201844
+i386                   randconfig-x009-201844
+i386                   randconfig-x003-201844
+i386                   randconfig-x008-201844
 x86_64                 randconfig-x017-201844
 x86_64                 randconfig-x012-201844
 x86_64                 randconfig-x013-201844
@@ -59,9 +87,19 @@ x86_64                 randconfig-x018-201844
 x86_64                 randconfig-x019-201844
 x86_64                 randconfig-x010-201844
 x86_64                 randconfig-x015-201844
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
@@ -69,6 +107,9 @@ sh                            titan_defconfig
 x86_64                 randconfig-s0-11090031
 x86_64                 randconfig-s1-11090031
 x86_64                 randconfig-s2-11090031
+x86_64                 randconfig-s0-11090229
+x86_64                 randconfig-s1-11090229
+x86_64                 randconfig-s2-11090229
 openrisc                    or1ksim_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
@@ -79,11 +120,17 @@ xtensa                       common_defconfig
 xtensa                          iss_defconfig
 arm                           h3600_defconfig
 arm                          simpad_defconfig
-arm64                            alldefconfig
 parisc                        c8000_defconfig
+arm                         assabet_defconfig
+arm                      integrator_defconfig
+mips                      maltasmvp_defconfig
+mips                         mpc30x_defconfig
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
 i386                     randconfig-s0-201844
 i386                     randconfig-s1-201844
 i386                     randconfig-s2-201844
@@ -91,7 +138,11 @@ i386                     randconfig-s3-201844
 x86_64                 randconfig-s3-11090048
 x86_64                 randconfig-s4-11090048
 x86_64                 randconfig-s5-11090048
-i386                             allmodconfig
+x86_64                 randconfig-s3-11090221
+x86_64                 randconfig-s4-11090221
+x86_64                 randconfig-s5-11090221
+m68k                        mvme16x_defconfig
+powerpc                 linkstation_defconfig
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                              allnoconfig
@@ -99,6 +150,10 @@ mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                      malta_kvm_defconfig
 mips                                     txx9
+x86_64                   randconfig-i0-201844
+x86_64                   randconfig-i2-201844
+x86_64                   randconfig-i3-201844
+x86_64                   randconfig-i1-201844
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
@@ -112,9 +167,11 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                             allnoconfig
 arm64                               defconfig
+x86_64                 randconfig-b0-11082119
 arm                          ep93xx_defconfig
 openrisc                 simple_smp_defconfig
 x86_64                 randconfig-u0-11090059
+x86_64                                    lkp
 x86_64                 randconfig-k2-11051200
 x86_64                 randconfig-k1-11051200
 i386                   randconfig-k1-11051200
@@ -123,50 +180,16 @@ x86_64                 randconfig-k3-11051200
 x86_64                 randconfig-k0-11051200
 i386                   randconfig-k2-11051200
 i386                   randconfig-k3-11051200
-i386                   randconfig-x019-201844
-i386                   randconfig-x016-201844
-i386                   randconfig-x014-201844
-i386                   randconfig-x018-201844
-i386                   randconfig-x015-201844
-i386                   randconfig-x013-201844
-i386                   randconfig-x012-201844
-i386                   randconfig-x011-201844
-i386                   randconfig-x010-201844
-i386                   randconfig-x017-201844
-arm                            zeus_defconfig
-m68k                       m5208evb_defconfig
-x86_64                randconfig-ne0-11082219
+arm                     eseries_pxa_defconfig
+arm                            lart_defconfig
+x86_64                randconfig-ne0-11090157
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                  randconfig-sb0-11090105
-i386                   randconfig-x002-201844
-i386                   randconfig-x004-201844
-i386                   randconfig-x005-201844
-i386                   randconfig-x006-201844
-i386                   randconfig-x007-201844
-i386                   randconfig-x000-201844
-i386                   randconfig-x001-201844
-i386                   randconfig-x009-201844
-i386                   randconfig-x003-201844
-i386                   randconfig-x008-201844
-x86_64                 randconfig-x001-201844
-x86_64                 randconfig-x000-201844
-x86_64                 randconfig-x002-201844
-x86_64                 randconfig-x005-201844
-x86_64                 randconfig-x007-201844
-x86_64                 randconfig-x009-201844
-x86_64                 randconfig-x008-201844
-x86_64                 randconfig-x003-201844
-x86_64                 randconfig-x006-201844
-x86_64                 randconfig-x004-201844
-x86_64                   randconfig-e0-201844
-x86_64                   randconfig-e1-201844
-x86_64                   randconfig-e2-201844
-x86_64                   randconfig-e3-201844
+i386                             allmodconfig
+powerpc64                        allmodconfig
+um                                  defconfig
+x86_64                 randconfig-h0-11082238
 i386                   randconfig-x077-201844
 i386                   randconfig-x071-201844
 i386                   randconfig-x070-201844
@@ -177,15 +200,31 @@ i386                   randconfig-x074-201844
 i386                   randconfig-x076-201844
 i386                   randconfig-x079-201844
 i386                   randconfig-x078-201844
-x86_64                   randconfig-f0-201844
-x86_64                   randconfig-f1-201844
-x86_64                   randconfig-f2-201844
+arm                              allyesconfig
+powerpc                 mpc85xx_cds_defconfig
+i386                  randconfig-sb0-11090105
+i386                  randconfig-sb0-11090233
+x86_64                   randconfig-e2-201844
+x86_64                   randconfig-e0-201844
+x86_64                   randconfig-e1-201844
+x86_64                   randconfig-e3-201844
+i386                     randconfig-j3-201844
+x86_64                   randconfig-j1-201844
+i386                     randconfig-j1-201844
+x86_64                   randconfig-j0-201844
+i386                     randconfig-j0-201844
+x86_64                   randconfig-j2-201844
+i386                     randconfig-j2-201844
+x86_64                   randconfig-j3-201844
 x86_64                   randconfig-f3-201844
-i386                     randconfig-f0-201844
-i386                     randconfig-f1-201844
+x86_64                   randconfig-f2-201844
+x86_64                   randconfig-f1-201844
+x86_64                   randconfig-f0-201844
 i386                     randconfig-f2-201844
 i386                     randconfig-f3-201844
-i386                   randconfig-x0-11090050
+i386                     randconfig-f0-201844
+i386                     randconfig-f1-201844
+i386                               tinyconfig
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
