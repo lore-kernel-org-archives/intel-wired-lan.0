@@ -1,35 +1,324 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed,  7 Nov 2018 21:40:17 -0800
-Subject: [Intel-wired-lan] [net-next v1 1/2] docs-networking: fix typo in
- define
-Message-ID: <20181108054018.32293-1-jesse.brandeburg@intel.com>
+Date: Wed,  7 Nov 2018 21:40:18 -0800
+Subject: [Intel-wired-lan] [net-next v1 2/2] ethernet/intel: consolidate
+ napi and napi exit
+In-Reply-To: <20181108054018.32293-1-jesse.brandeburg@intel.com>
+References: <20181108054018.32293-1-jesse.brandeburg@intel.com>
+Message-ID: <20181108054018.32293-2-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The #define for NETIF_F_GSO_UDP_L4 was incorrect in the
-documentation, fix it by making it match the actual code.
+While reviewing code, I noticed that Eric Dumazet recommends that
+drivers check the return code of napi_complete_done, and use that
+to decide to enable interrupts or not when exiting poll.  One of
+the Intel drivers was already fixed (ixgbe).
+
+Upon looking at the Intel drivers as a whole, we are handling our
+polling and napi exit in a few different ways based on whether we
+have multiqueue and whether we have tx cleanup included. Several
+drivers had the bug of exiting napi with return 0, which appears
+to mess up the accounting in the stack.
+
+Consolidate all the napi routines to do best known way of exiting
+and to just mostly look like each other.
+1) check return code of napi_complete_done to control interrupt enable
+2) return the actual amount of work done.
+3) return budget immediately if need napi poll again
+
+Tested the changes on e1000e with a high interrupt rate set, and
+it shows about an 8% reduction in the CPU utilization when busy
+polling because we aren't re-enabling interrupts when we're about
+to be polled.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- Documentation/networking/netdev-features.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e100.c             | 10 +++++----
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 11 +++++-----
+ drivers/net/ethernet/intel/e1000e/netdev.c    | 17 +++++++-------
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 10 ++++-----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  9 ++++----
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c   |  9 ++++----
+ drivers/net/ethernet/intel/ice/ice_txrx.c     | 13 ++++++-----
+ drivers/net/ethernet/intel/igb/igb_main.c     | 10 +++++----
+ drivers/net/ethernet/intel/igbvf/netdev.c     |  9 +++++---
+ drivers/net/ethernet/intel/igc/igc_main.c     | 10 +++++----
+ .../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 22 +++++++++++--------
+ 11 files changed, 75 insertions(+), 55 deletions(-)
 
-diff --git a/Documentation/networking/netdev-features.txt b/Documentation/networking/netdev-features.txt
-index c4a54c162547..58dd1c1e3c65 100644
---- a/Documentation/networking/netdev-features.txt
-+++ b/Documentation/networking/netdev-features.txt
-@@ -115,7 +115,7 @@ set, be it TCPv4 (when NETIF_F_TSO is enabled) or TCPv6 (NETIF_F_TSO6).
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index 7c4b55482f72..5e5c57db0d3f 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -2225,11 +2225,13 @@ static int e100_poll(struct napi_struct *napi, int budget)
+ 	e100_rx_clean(nic, &work_done, budget);
+ 	e100_tx_clean(nic);
  
-  * Transmit UDP segmentation offload
+-	/* If budget not fully consumed, exit the polling mode */
+-	if (work_done < budget) {
+-		napi_complete_done(napi, work_done);
++	/* If budget fully consumed, continue polling */
++	if (work_done == budget)
++		return budget;
++
++	/* only re-enable interrupt if stack agrees polling is really done */
++	if (likely(napi_complete_done(napi, work_done)))
+ 		e100_enable_irq(nic);
+-	}
  
--NETIF_F_GSO_UDP_GSO_L4 accepts a single UDP header with a payload that exceeds
-+NETIF_F_GSO_UDP_L4 accepts a single UDP header with a payload that exceeds
- gso_size. On segmentation, it segments the payload on gso_size boundaries and
- replicates the network and UDP headers (fixing up the last one if less than
- gso_size).
+ 	return work_done;
+ }
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 43b6d3cec3b3..8fe9af0e2ab7 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -3803,14 +3803,15 @@ static int e1000_clean(struct napi_struct *napi, int budget)
+ 
+ 	adapter->clean_rx(adapter, &adapter->rx_ring[0], &work_done, budget);
+ 
+-	if (!tx_clean_complete)
+-		work_done = budget;
++	if (!tx_clean_complete || work_done == budget)
++		return budget;
+ 
+-	/* If budget not fully consumed, exit the polling mode */
+-	if (work_done < budget) {
++	/* Exit the polling mode, but don't re-enable interrupts if stack might
++	 * poll us due to busy-polling
++	 */
++	if (likely(napi_complete_done(napi, work_done))) {
+ 		if (likely(adapter->itr_setting & 3))
+ 			e1000_set_itr(adapter);
+-		napi_complete_done(napi, work_done);
+ 		if (!test_bit(__E1000_DOWN, &adapter->flags))
+ 			e1000_irq_enable(adapter);
+ 	}
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 16a73bd9f4cb..698639f50eac 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -2651,9 +2651,9 @@ static int e1000_alloc_queues(struct e1000_adapter *adapter)
+ /**
+  * e1000e_poll - NAPI Rx polling callback
+  * @napi: struct associated with this polling callback
+- * @weight: number of packets driver is allowed to process this poll
++ * @budget: number of packets driver is allowed to process this poll
+  **/
+-static int e1000e_poll(struct napi_struct *napi, int weight)
++static int e1000e_poll(struct napi_struct *napi, int budget)
+ {
+ 	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter,
+ 						     napi);
+@@ -2667,16 +2667,17 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
+ 	    (adapter->rx_ring->ims_val & adapter->tx_ring->ims_val))
+ 		tx_cleaned = e1000_clean_tx_irq(adapter->tx_ring);
+ 
+-	adapter->clean_rx(adapter->rx_ring, &work_done, weight);
++	adapter->clean_rx(adapter->rx_ring, &work_done, budget);
+ 
+-	if (!tx_cleaned)
+-		work_done = weight;
++	if (!tx_cleaned || work_done == budget)
++		return budget;
+ 
+-	/* If weight not fully consumed, exit the polling mode */
+-	if (work_done < weight) {
++	/* Exit the polling mode, but don't re-enable interrupts if stack might
++	 * poll us due to busy-polling
++	 */
++	if (likely(napi_complete_done(napi, work_done))) {
+ 		if (adapter->itr_setting & 3)
+ 			e1000_set_itr(adapter);
+-		napi_complete_done(napi, work_done);
+ 		if (!test_bit(__E1000_DOWN, &adapter->state)) {
+ 			if (adapter->msix_entries)
+ 				ew32(IMS, adapter->rx_ring->ims_val);
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 5b2a50e5798f..6fd15a734324 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -1465,11 +1465,11 @@ static int fm10k_poll(struct napi_struct *napi, int budget)
+ 	if (!clean_complete)
+ 		return budget;
+ 
+-	/* all work done, exit the polling mode */
+-	napi_complete_done(napi, work_done);
+-
+-	/* re-enable the q_vector */
+-	fm10k_qv_enable(q_vector);
++	/* Exit the polling mode, but don't re-enable interrupts if stack might
++	 * poll us due to busy-polling
++	 */
++	if (likely(napi_complete_done(napi, work_done)))
++		fm10k_qv_enable(q_vector);
+ 
+ 	return min(work_done, budget - 1);
+ }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index aef3c89ee79c..4c796ac80daa 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2667,10 +2667,11 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+ 	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
+ 		q_vector->arm_wb_state = false;
+ 
+-	/* Work is done so exit the polling mode and re-enable the interrupt */
+-	napi_complete_done(napi, work_done);
+-
+-	i40e_update_enable_itr(vsi, q_vector);
++	/* Exit the polling mode, but don't re-enable interrupts if stack might
++	 * poll us due to busy-polling
++	 */
++	if (likely(napi_complete_done(napi, work_done)))
++		i40e_update_enable_itr(vsi, q_vector);
+ 
+ 	return min(work_done, budget - 1);
+ }
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index fb9bfad96daf..cf965e5eb7ec 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -1761,10 +1761,11 @@ int iavf_napi_poll(struct napi_struct *napi, int budget)
+ 	if (vsi->back->flags & IAVF_TXR_FLAGS_WB_ON_ITR)
+ 		q_vector->arm_wb_state = false;
+ 
+-	/* Work is done so exit the polling mode and re-enable the interrupt */
+-	napi_complete_done(napi, work_done);
+-
+-	iavf_update_enable_itr(vsi, q_vector);
++	/* Exit the polling mode, but don't re-enable interrupts if stack might
++	 * poll us due to busy-polling
++	 */
++	if (likely(napi_complete_done(napi, work_done)))
++		iavf_update_enable_itr(vsi, q_vector);
+ 
+ 	return min(work_done, budget - 1);
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 5dae968d853e..ffc3e3bbb3cd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1103,11 +1103,14 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
+ 	if (!clean_complete)
+ 		return budget;
+ 
+-	/* Work is done so exit the polling mode and re-enable the interrupt */
+-	napi_complete_done(napi, work_done);
+-	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
+-		ice_irq_dynamic_ena(&vsi->back->hw, vsi, q_vector);
+-	return 0;
++	/* Exit the polling mode, but don't re-enable interrupts if stack might
++	 * poll us due to busy-polling
++	 */
++	if (likely(napi_complete_done(napi, work_done)))
++		if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
++			ice_irq_dynamic_ena(&vsi->back->hw, vsi, q_vector);
++
++	return min(work_done, budget - 1);
+ }
+ 
+ /* helper function for building cmd/type/offset */
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 5df88ad8ac81..f5592910978d 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -7753,11 +7753,13 @@ static int igb_poll(struct napi_struct *napi, int budget)
+ 	if (!clean_complete)
+ 		return budget;
+ 
+-	/* If not enough Rx work done, exit the polling mode */
+-	napi_complete_done(napi, work_done);
+-	igb_ring_irq_enable(q_vector);
++	/* Exit the polling mode, but don't re-enable interrupts if stack might
++	 * poll us due to busy-polling
++	 */
++	if (likely(napi_complete_done(napi, work_done)))
++		igb_ring_irq_enable(q_vector);
+ 
+-	return 0;
++	return min(work_done, budget - 1);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
+index 820d49eb41ab..4eab83faec62 100644
+--- a/drivers/net/ethernet/intel/igbvf/netdev.c
++++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+@@ -1186,10 +1186,13 @@ static int igbvf_poll(struct napi_struct *napi, int budget)
+ 
+ 	igbvf_clean_rx_irq(adapter, &work_done, budget);
+ 
+-	/* If not enough Rx work done, exit the polling mode */
+-	if (work_done < budget) {
+-		napi_complete_done(napi, work_done);
++	if (work_done == budget)
++		return budget;
+ 
++	/* Exit the polling mode, but don't re-enable interrupts if stack might
++	 * poll us due to busy-polling
++	 */
++	if (likely(napi_complete_done(napi, work_done))) {
+ 		if (adapter->requested_itr & 3)
+ 			igbvf_set_itr(adapter);
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 9d85707e8a81..3ca8d859caf3 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -2866,11 +2866,13 @@ static int igc_poll(struct napi_struct *napi, int budget)
+ 	if (!clean_complete)
+ 		return budget;
+ 
+-	/* If not enough Rx work done, exit the polling mode */
+-	napi_complete_done(napi, work_done);
+-	igc_ring_irq_enable(q_vector);
++	/* Exit the polling mode, but don't re-enable interrupts if stack might
++	 * poll us due to busy-polling
++	 */
++	if (likely(napi_complete_done(napi, work_done)))
++		igc_ring_irq_enable(q_vector);
+ 
+-	return 0;
++	return min(work_done, budget - 1);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 5e47ede7e832..30a3c800a6ea 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1293,16 +1293,20 @@ static int ixgbevf_poll(struct napi_struct *napi, int budget)
+ 	/* If all work not completed, return budget and keep polling */
+ 	if (!clean_complete)
+ 		return budget;
+-	/* all work done, exit the polling mode */
+-	napi_complete_done(napi, work_done);
+-	if (adapter->rx_itr_setting == 1)
+-		ixgbevf_set_itr(q_vector);
+-	if (!test_bit(__IXGBEVF_DOWN, &adapter->state) &&
+-	    !test_bit(__IXGBEVF_REMOVING, &adapter->state))
+-		ixgbevf_irq_enable_queues(adapter,
+-					  BIT(q_vector->v_idx));
+ 
+-	return 0;
++	/* Exit the polling mode, but don't re-enable interrupts if stack might
++	 * poll us due to busy-polling
++	 */
++	if (likely(napi_complete_done(napi, work_done))) {
++		if (adapter->rx_itr_setting == 1)
++			ixgbevf_set_itr(q_vector);
++		if (!test_bit(__IXGBEVF_DOWN, &adapter->state) &&
++		    !test_bit(__IXGBEVF_REMOVING, &adapter->state))
++			ixgbevf_irq_enable_queues(adapter,
++						  BIT(q_vector->v_idx));
++	}
++
++	return min(work_done, budget - 1);
+ }
+ 
+ /**
 -- 
 2.19.1
 
