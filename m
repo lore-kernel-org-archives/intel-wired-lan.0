@@ -1,325 +1,190 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu,  8 Nov 2018 14:55:32 -0800
-Subject: [Intel-wired-lan] [net-next v2 2/2] ethernet/intel: consolidate
- napi and napi exit
-Message-ID: <20181108225532.26078-1-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 09 Nov 2018 09:07:01 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ edf994e8659afc500140829f8508e019b85073ce
+Message-ID: <5be4ddb5.DxT7XfIE2/DuvfkO%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: edf994e8659afc500140829f8508e019b85073ce  docs-networking: fix typo in define
 
-While reviewing code, I noticed that Eric Dumazet recommends that
-drivers check the return code of napi_complete_done, and use that
-to decide to enable interrupts or not when exiting poll.  One of
-the Intel drivers was already fixed (ixgbe).
+elapsed time: 166m
 
-Upon looking at the Intel drivers as a whole, we are handling our
-polling and napi exit in a few different ways based on whether we
-have multiqueue and whether we have tx cleanup included. Several
-drivers had the bug of exiting napi with return 0, which appears
-to mess up the accounting in the stack.
+configs tested: 165
 
-Consolidate all the napi routines to do best known way of exiting
-and to just mostly look like each other.
-1) check return code of napi_complete_done to control interrupt enable
-2) return the actual amount of work done.
-3) return budget immediately if need napi poll again
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Tested the changes on e1000e with a high interrupt rate set, and
-it shows about an 8% reduction in the CPU utilization when busy
-polling because we aren't re-enabling interrupts when we're about
-to be polled.
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                              fedora-25
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201844
+i386                     randconfig-n1-201844
+i386                     randconfig-n2-201844
+i386                     randconfig-n3-201844
+i386                     randconfig-i1-201844
+i386                     randconfig-i3-201844
+i386                     randconfig-i2-201844
+i386                     randconfig-i0-201844
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-s0-11090850
+x86_64                 randconfig-s1-11090850
+x86_64                 randconfig-s2-11090850
+m68k                          atari_defconfig
+mips                        nlm_xlp_defconfig
+um                               allmodconfig
+x86_64                 randconfig-x017-201844
+x86_64                 randconfig-x012-201844
+x86_64                 randconfig-x013-201844
+x86_64                 randconfig-x011-201844
+x86_64                 randconfig-x016-201844
+x86_64                 randconfig-x014-201844
+x86_64                 randconfig-x018-201844
+x86_64                 randconfig-x019-201844
+x86_64                 randconfig-x010-201844
+x86_64                 randconfig-x015-201844
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201844
+i386                     randconfig-s1-201844
+i386                     randconfig-s3-201844
+i386                     randconfig-s2-201844
+x86_64                           allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201844
+x86_64                   randconfig-i1-201844
+x86_64                   randconfig-i2-201844
+x86_64                   randconfig-i3-201844
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-x019-201844
+i386                   randconfig-x016-201844
+i386                   randconfig-x014-201844
+i386                   randconfig-x018-201844
+i386                   randconfig-x015-201844
+i386                   randconfig-x013-201844
+i386                   randconfig-x012-201844
+i386                   randconfig-x011-201844
+i386                   randconfig-x010-201844
+i386                   randconfig-x017-201844
+m68k                           sun3_defconfig
+sh                           sh2007_defconfig
+arm                         hackkit_defconfig
+s390                             allyesconfig
+x86_64                randconfig-ne0-11090845
+i386                   randconfig-x077-201844
+i386                   randconfig-x071-201844
+i386                   randconfig-x070-201844
+i386                   randconfig-x073-201844
+i386                   randconfig-x072-201844
+i386                   randconfig-x075-201844
+i386                   randconfig-x074-201844
+i386                   randconfig-x076-201844
+i386                   randconfig-x079-201844
+i386                   randconfig-x078-201844
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+i386                   randconfig-x002-201844
+i386                   randconfig-x004-201844
+i386                   randconfig-x005-201844
+i386                   randconfig-x006-201844
+i386                   randconfig-x007-201844
+i386                   randconfig-x000-201844
+i386                   randconfig-x001-201844
+i386                   randconfig-x009-201844
+i386                   randconfig-x003-201844
+i386                   randconfig-x008-201844
+x86_64                 randconfig-x001-201844
+x86_64                 randconfig-x000-201844
+x86_64                 randconfig-x002-201844
+x86_64                 randconfig-x005-201844
+x86_64                 randconfig-x007-201844
+x86_64                 randconfig-x009-201844
+x86_64                 randconfig-x008-201844
+x86_64                 randconfig-x003-201844
+x86_64                 randconfig-x006-201844
+x86_64                 randconfig-x004-201844
+x86_64                   randconfig-e2-201844
+x86_64                   randconfig-e0-201844
+x86_64                   randconfig-e1-201844
+x86_64                   randconfig-e3-201844
+mips                           jazz_defconfig
+mips                     loongson1c_defconfig
+m68k                          hp300_defconfig
+riscv                               defconfig
+x86_64                   randconfig-j0-201844
+x86_64                   randconfig-j1-201844
+x86_64                   randconfig-j2-201844
+x86_64                   randconfig-j3-201844
+i386                     randconfig-j0-201844
+i386                     randconfig-j1-201844
+i386                     randconfig-j2-201844
+i386                     randconfig-j3-201844
+x86_64                   randconfig-f0-201844
+x86_64                   randconfig-f1-201844
+x86_64                   randconfig-f2-201844
+x86_64                   randconfig-f3-201844
+i386                     randconfig-f0-201844
+i386                     randconfig-f1-201844
+i386                     randconfig-f2-201844
+i386                     randconfig-f3-201844
+arm                         cm_x300_defconfig
+xtensa                           allyesconfig
+i386                   randconfig-x0-11090847
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
-v2: fixed conflicts when applied to my next-queue tree, dev-queue
-    branch.  Most notably the hunk toward the ice driver did not apply
-    due to upstream driver changes already applied to my tree
-
- drivers/net/ethernet/intel/e100.c             | 10 +++++----
- drivers/net/ethernet/intel/e1000/e1000_main.c | 11 +++++-----
- drivers/net/ethernet/intel/e1000e/netdev.c    | 17 +++++++-------
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 10 ++++-----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  9 ++++----
- drivers/net/ethernet/intel/iavf/iavf_txrx.c   |  9 ++++----
- drivers/net/ethernet/intel/ice/ice_txrx.c     | 10 +++++----
- drivers/net/ethernet/intel/igb/igb_main.c     | 10 +++++----
- drivers/net/ethernet/intel/igbvf/netdev.c     |  9 +++++---
- drivers/net/ethernet/intel/igc/igc_main.c     | 10 +++++----
- .../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 22 +++++++++++--------
- 11 files changed, 73 insertions(+), 54 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 7c4b55482f72..5e5c57db0d3f 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -2225,11 +2225,13 @@ static int e100_poll(struct napi_struct *napi, int budget)
- 	e100_rx_clean(nic, &work_done, budget);
- 	e100_tx_clean(nic);
- 
--	/* If budget not fully consumed, exit the polling mode */
--	if (work_done < budget) {
--		napi_complete_done(napi, work_done);
-+	/* If budget fully consumed, continue polling */
-+	if (work_done == budget)
-+		return budget;
-+
-+	/* only re-enable interrupt if stack agrees polling is really done */
-+	if (likely(napi_complete_done(napi, work_done)))
- 		e100_enable_irq(nic);
--	}
- 
- 	return work_done;
- }
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 43b6d3cec3b3..8fe9af0e2ab7 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -3803,14 +3803,15 @@ static int e1000_clean(struct napi_struct *napi, int budget)
- 
- 	adapter->clean_rx(adapter, &adapter->rx_ring[0], &work_done, budget);
- 
--	if (!tx_clean_complete)
--		work_done = budget;
-+	if (!tx_clean_complete || work_done == budget)
-+		return budget;
- 
--	/* If budget not fully consumed, exit the polling mode */
--	if (work_done < budget) {
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done))) {
- 		if (likely(adapter->itr_setting & 3))
- 			e1000_set_itr(adapter);
--		napi_complete_done(napi, work_done);
- 		if (!test_bit(__E1000_DOWN, &adapter->flags))
- 			e1000_irq_enable(adapter);
- 	}
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index a387b21312e8..4244983fcd37 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -2653,9 +2653,9 @@ static int e1000_alloc_queues(struct e1000_adapter *adapter)
- /**
-  * e1000e_poll - NAPI Rx polling callback
-  * @napi: struct associated with this polling callback
-- * @weight: number of packets driver is allowed to process this poll
-+ * @budget: number of packets driver is allowed to process this poll
-  **/
--static int e1000e_poll(struct napi_struct *napi, int weight)
-+static int e1000e_poll(struct napi_struct *napi, int budget)
- {
- 	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter,
- 						     napi);
-@@ -2669,16 +2669,17 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
- 	    (adapter->rx_ring->ims_val & adapter->tx_ring->ims_val))
- 		tx_cleaned = e1000_clean_tx_irq(adapter->tx_ring);
- 
--	adapter->clean_rx(adapter->rx_ring, &work_done, weight);
-+	adapter->clean_rx(adapter->rx_ring, &work_done, budget);
- 
--	if (!tx_cleaned)
--		work_done = weight;
-+	if (!tx_cleaned || work_done == budget)
-+		return budget;
- 
--	/* If weight not fully consumed, exit the polling mode */
--	if (work_done < weight) {
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done))) {
- 		if (adapter->itr_setting & 3)
- 			e1000_set_itr(adapter);
--		napi_complete_done(napi, work_done);
- 		if (!test_bit(__E1000_DOWN, &adapter->state)) {
- 			if (adapter->msix_entries)
- 				ew32(IMS, adapter->rx_ring->ims_val);
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 5b2a50e5798f..6fd15a734324 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1465,11 +1465,11 @@ static int fm10k_poll(struct napi_struct *napi, int budget)
- 	if (!clean_complete)
- 		return budget;
- 
--	/* all work done, exit the polling mode */
--	napi_complete_done(napi, work_done);
--
--	/* re-enable the q_vector */
--	fm10k_qv_enable(q_vector);
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done)))
-+		fm10k_qv_enable(q_vector);
- 
- 	return min(work_done, budget - 1);
- }
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index c4d44096cdaf..a0b1575468fc 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2667,10 +2667,11 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
- 	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
- 		q_vector->arm_wb_state = false;
- 
--	/* Work is done so exit the polling mode and re-enable the interrupt */
--	napi_complete_done(napi, work_done);
--
--	i40e_update_enable_itr(vsi, q_vector);
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done)))
-+		i40e_update_enable_itr(vsi, q_vector);
- 
- 	return min(work_done, budget - 1);
- }
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 3b1dc77ae368..9b4d7cec2e18 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -1761,10 +1761,11 @@ int iavf_napi_poll(struct napi_struct *napi, int budget)
- 	if (vsi->back->flags & IAVF_TXR_FLAGS_WB_ON_ITR)
- 		q_vector->arm_wb_state = false;
- 
--	/* Work is done so exit the polling mode and re-enable the interrupt */
--	napi_complete_done(napi, work_done);
--
--	iavf_update_enable_itr(vsi, q_vector);
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done)))
-+		iavf_update_enable_itr(vsi, q_vector);
- 
- 	return min(work_done, budget - 1);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 4b92863b3500..49fc38094185 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1103,10 +1103,12 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
- 	if (!clean_complete)
- 		return budget;
- 
--	/* Work is done so exit the polling mode and re-enable the interrupt */
--	napi_complete_done(napi, work_done);
--	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
--		ice_irq_dynamic_ena(&vsi->back->hw, vsi, q_vector);
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done)))
-+		if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
-+			ice_irq_dynamic_ena(&vsi->back->hw, vsi, q_vector);
- 
- 	return min(work_done, budget - 1);
- }
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index b0f17d9f3cb0..bb4f3f64fbf0 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -7752,11 +7752,13 @@ static int igb_poll(struct napi_struct *napi, int budget)
- 	if (!clean_complete)
- 		return budget;
- 
--	/* If not enough Rx work done, exit the polling mode */
--	napi_complete_done(napi, work_done);
--	igb_ring_irq_enable(q_vector);
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done)))
-+		igb_ring_irq_enable(q_vector);
- 
--	return 0;
-+	return min(work_done, budget - 1);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 820d49eb41ab..4eab83faec62 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -1186,10 +1186,13 @@ static int igbvf_poll(struct napi_struct *napi, int budget)
- 
- 	igbvf_clean_rx_irq(adapter, &work_done, budget);
- 
--	/* If not enough Rx work done, exit the polling mode */
--	if (work_done < budget) {
--		napi_complete_done(napi, work_done);
-+	if (work_done == budget)
-+		return budget;
- 
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done))) {
- 		if (adapter->requested_itr & 3)
- 			igbvf_set_itr(adapter);
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index d002055c0623..28ffe98f8921 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2852,11 +2852,13 @@ static int igc_poll(struct napi_struct *napi, int budget)
- 	if (!clean_complete)
- 		return budget;
- 
--	/* If not enough Rx work done, exit the polling mode */
--	napi_complete_done(napi, work_done);
--	igc_ring_irq_enable(q_vector);
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done)))
-+		igc_ring_irq_enable(q_vector);
- 
--	return 0;
-+	return min(work_done, budget - 1);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 196b890467b2..2de81f046fb5 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1293,16 +1293,20 @@ static int ixgbevf_poll(struct napi_struct *napi, int budget)
- 	/* If all work not completed, return budget and keep polling */
- 	if (!clean_complete)
- 		return budget;
--	/* all work done, exit the polling mode */
--	napi_complete_done(napi, work_done);
--	if (adapter->rx_itr_setting == 1)
--		ixgbevf_set_itr(q_vector);
--	if (!test_bit(__IXGBEVF_DOWN, &adapter->state) &&
--	    !test_bit(__IXGBEVF_REMOVING, &adapter->state))
--		ixgbevf_irq_enable_queues(adapter,
--					  BIT(q_vector->v_idx));
- 
--	return 0;
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done))) {
-+		if (adapter->rx_itr_setting == 1)
-+			ixgbevf_set_itr(q_vector);
-+		if (!test_bit(__IXGBEVF_DOWN, &adapter->state) &&
-+		    !test_bit(__IXGBEVF_REMOVING, &adapter->state))
-+			ixgbevf_irq_enable_queues(adapter,
-+						  BIT(q_vector->v_idx));
-+	}
-+
-+	return min(work_done, budget - 1);
- }
- 
- /**
--- 
-2.19.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
