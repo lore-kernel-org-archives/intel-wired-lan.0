@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 9 Nov 2018 18:26:59 +0000
-Subject: [Intel-wired-lan] [net-next v2 2/2] ethernet/intel: consolidate
- napi and napi exit
-In-Reply-To: <20181108225532.26078-1-jeffrey.t.kirsher@intel.com>
-References: <20181108225532.26078-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D329D14@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 9 Nov 2018 18:27:36 +0000
+Subject: [Intel-wired-lan] [PATCH] ice: Fix possible NULL pointer
+ de-reference
+In-Reply-To: <20181107181935.10337-1-anirudh.venkataramanan@intel.com>
+References: <20181107181935.10337-1-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D329D24@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,52 +13,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Thursday, November 8, 2018 2:56 PM
+> Behalf Of Anirudh Venkataramanan
+> Sent: Wednesday, November 7, 2018 10:20 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net-next v2 2/2] ethernet/intel: consolidate napi
-> and napi exit
+> Subject: [Intel-wired-lan] [PATCH] ice: Fix possible NULL pointer de-
+> reference
 > 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> While reviewing code, I noticed that Eric Dumazet recommends that drivers
-> check the return code of napi_complete_done, and use that to decide to
-> enable interrupts or not when exiting poll.  One of the Intel drivers was
-> already fixed (ixgbe).
+> A recent update to smatch is causing it to report the error "we previously
+> assumed 'm_entry->vsi_list_info' could be null". Fix that.
 > 
-> Upon looking at the Intel drivers as a whole, we are handling our polling and
-> napi exit in a few different ways based on whether we have multiqueue and
-> whether we have tx cleanup included. Several drivers had the bug of exiting
-> napi with return 0, which appears to mess up the accounting in the stack.
-> 
-> Consolidate all the napi routines to do best known way of exiting and to just
-> mostly look like each other.
-> 1) check return code of napi_complete_done to control interrupt enable
-> 2) return the actual amount of work done.
-> 3) return budget immediately if need napi poll again
-> 
-> Tested the changes on e1000e with a high interrupt rate set, and it shows
-> about an 8% reduction in the CPU utilization when busy polling because we
-> aren't re-enabling interrupts when we're about to be polled.
-> 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
 > ---
-> v2: fixed conflicts when applied to my next-queue tree, dev-queue
->     branch.  Most notably the hunk toward the ice driver did not apply
->     due to upstream driver changes already applied to my tree
-> 
->  drivers/net/ethernet/intel/e100.c             | 10 +++++----
->  drivers/net/ethernet/intel/e1000/e1000_main.c | 11 +++++-----
->  drivers/net/ethernet/intel/e1000e/netdev.c    | 17 +++++++-------
->  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 10 ++++-----
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  9 ++++----
->  drivers/net/ethernet/intel/iavf/iavf_txrx.c   |  9 ++++----
->  drivers/net/ethernet/intel/ice/ice_txrx.c     | 10 +++++----
->  drivers/net/ethernet/intel/igb/igb_main.c     | 10 +++++----
->  drivers/net/ethernet/intel/igbvf/netdev.c     |  9 +++++---
->  drivers/net/ethernet/intel/igc/igc_main.c     | 10 +++++----
->  .../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 22 +++++++++++--------
->  11 files changed, 73 insertions(+), 54 deletions(-)
+> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
+> up commit message]
+> ---
+>  drivers/net/ethernet/intel/ice/ice_switch.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
