@@ -1,149 +1,65 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 09 Nov 2018 12:03:23 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- cbd2146a8d79d8134ec7544a568a29eab7773294
-Message-ID: <5be5070b.6k2f/4BJ79RQd0wO%lkp@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 9 Nov 2018 18:26:59 +0000
+Subject: [Intel-wired-lan] [net-next v2 2/2] ethernet/intel: consolidate
+ napi and napi exit
+In-Reply-To: <20181108225532.26078-1-jeffrey.t.kirsher@intel.com>
+References: <20181108225532.26078-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D329D14@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: cbd2146a8d79d8134ec7544a568a29eab7773294  ethernet/intel: consolidate napi and napi exit
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Thursday, November 8, 2018 2:56 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [net-next v2 2/2] ethernet/intel: consolidate napi
+> and napi exit
+> 
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> While reviewing code, I noticed that Eric Dumazet recommends that drivers
+> check the return code of napi_complete_done, and use that to decide to
+> enable interrupts or not when exiting poll.  One of the Intel drivers was
+> already fixed (ixgbe).
+> 
+> Upon looking at the Intel drivers as a whole, we are handling our polling and
+> napi exit in a few different ways based on whether we have multiqueue and
+> whether we have tx cleanup included. Several drivers had the bug of exiting
+> napi with return 0, which appears to mess up the accounting in the stack.
+> 
+> Consolidate all the napi routines to do best known way of exiting and to just
+> mostly look like each other.
+> 1) check return code of napi_complete_done to control interrupt enable
+> 2) return the actual amount of work done.
+> 3) return budget immediately if need napi poll again
+> 
+> Tested the changes on e1000e with a high interrupt rate set, and it shows
+> about an 8% reduction in the CPU utilization when busy polling because we
+> aren't re-enabling interrupts when we're about to be polled.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> ---
+> v2: fixed conflicts when applied to my next-queue tree, dev-queue
+>     branch.  Most notably the hunk toward the ice driver did not apply
+>     due to upstream driver changes already applied to my tree
+> 
+>  drivers/net/ethernet/intel/e100.c             | 10 +++++----
+>  drivers/net/ethernet/intel/e1000/e1000_main.c | 11 +++++-----
+>  drivers/net/ethernet/intel/e1000e/netdev.c    | 17 +++++++-------
+>  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 10 ++++-----
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  9 ++++----
+>  drivers/net/ethernet/intel/iavf/iavf_txrx.c   |  9 ++++----
+>  drivers/net/ethernet/intel/ice/ice_txrx.c     | 10 +++++----
+>  drivers/net/ethernet/intel/igb/igb_main.c     | 10 +++++----
+>  drivers/net/ethernet/intel/igbvf/netdev.c     |  9 +++++---
+>  drivers/net/ethernet/intel/igc/igc_main.c     | 10 +++++----
+>  .../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 22 +++++++++++--------
+>  11 files changed, 73 insertions(+), 54 deletions(-)
 
-elapsed time: 133m
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-configs tested: 124
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-x019-201844
-i386                   randconfig-x016-201844
-i386                   randconfig-x014-201844
-i386                   randconfig-x018-201844
-i386                   randconfig-x015-201844
-i386                   randconfig-x013-201844
-i386                   randconfig-x012-201844
-i386                   randconfig-x011-201844
-i386                   randconfig-x010-201844
-i386                   randconfig-x017-201844
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                              fedora-25
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-x001-201844
-x86_64                 randconfig-x000-201844
-x86_64                 randconfig-x002-201844
-x86_64                 randconfig-x005-201844
-x86_64                 randconfig-x007-201844
-x86_64                 randconfig-x009-201844
-x86_64                 randconfig-x008-201844
-x86_64                 randconfig-x003-201844
-x86_64                 randconfig-x006-201844
-x86_64                 randconfig-x004-201844
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i1-201844
-i386                     randconfig-i3-201844
-i386                     randconfig-i2-201844
-i386                     randconfig-i0-201844
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x017-201844
-x86_64                 randconfig-x012-201844
-x86_64                 randconfig-x013-201844
-x86_64                 randconfig-x011-201844
-x86_64                 randconfig-x016-201844
-x86_64                 randconfig-x014-201844
-x86_64                 randconfig-x018-201844
-x86_64                 randconfig-x019-201844
-x86_64                 randconfig-x010-201844
-x86_64                 randconfig-x015-201844
-i386                     randconfig-s0-201844
-i386                     randconfig-s1-201844
-i386                     randconfig-s3-201844
-i386                     randconfig-s2-201844
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                           allmodconfig
-i386                   randconfig-x002-201844
-i386                   randconfig-x004-201844
-i386                   randconfig-x005-201844
-i386                   randconfig-x006-201844
-i386                   randconfig-x007-201844
-i386                   randconfig-x000-201844
-i386                   randconfig-x001-201844
-i386                   randconfig-x009-201844
-i386                   randconfig-x003-201844
-i386                   randconfig-x008-201844
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-e2-201844
-x86_64                   randconfig-e0-201844
-x86_64                   randconfig-e1-201844
-x86_64                   randconfig-e3-201844
-i386                   randconfig-x077-201844
-i386                   randconfig-x071-201844
-i386                   randconfig-x070-201844
-i386                   randconfig-x073-201844
-i386                   randconfig-x072-201844
-i386                   randconfig-x075-201844
-i386                   randconfig-x074-201844
-i386                   randconfig-x076-201844
-i386                   randconfig-x079-201844
-i386                   randconfig-x078-201844
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                               tinyconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
