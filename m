@@ -1,50 +1,247 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 9 Nov 2018 23:29:29 +0000
-Subject: [Intel-wired-lan] [net-next v2 2/2] ethernet/intel: consolidate
- napi and napi exit
-In-Reply-To: <20181108225532.26078-1-jeffrey.t.kirsher@intel.com>
-References: <20181108225532.26078-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5884D20C8D@ORSMSX115.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 10 Nov 2018 13:08:07 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ a929eff9b53f74ca80a542ddf411a0c1db8d26bd
+Message-ID: <5be667b7.kuIqimwpZQvaGoSt%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Jeff
-> Kirsher
-> Sent: Thursday, November 08, 2018 2:56 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net-next v2 2/2] ethernet/intel: consolidate napi and napi
-> exit
-> 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> 
-> While reviewing code, I noticed that Eric Dumazet recommends that
-> drivers check the return code of napi_complete_done, and use that
-> to decide to enable interrupts or not when exiting poll.  One of
-> the Intel drivers was already fixed (ixgbe).
-> 
-> Upon looking at the Intel drivers as a whole, we are handling our
-> polling and napi exit in a few different ways based on whether we
-> have multiqueue and whether we have tx cleanup included. Several
-> drivers had the bug of exiting napi with return 0, which appears
-> to mess up the accounting in the stack.
-> 
-> Consolidate all the napi routines to do best known way of exiting
-> and to just mostly look like each other.
-> 1) check return code of napi_complete_done to control interrupt enable
-> 2) return the actual amount of work done.
-> 3) return budget immediately if need napi poll again
-> 
-> Tested the changes on e1000e with a high interrupt rate set, and
-> it shows about an 8% reduction in the CPU utilization when busy
-> polling because we aren't re-enabling interrupts when we're about
-> to be polled.
-> 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: a929eff9b53f74ca80a542ddf411a0c1db8d26bd  igb: fix uninitialized variables
 
-The fm10k changes look good to me. Thanks Jesse! For those:
+elapsed time: 204m
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+configs tested: 222
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+m68k                                defconfig
+m68k                       m5275evb_defconfig
+powerpc                         ps3_defconfig
+sh                          rsk7203_defconfig
+nds32                               defconfig
+sh                   secureedge5410_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                               tinyconfig
+arm                            pleb_defconfig
+mips                        qi_lb60_defconfig
+arm                            mps2_defconfig
+sh                           se7721_defconfig
+arm                          pxa3xx_defconfig
+powerpc                  storcenter_defconfig
+i386                   randconfig-x019-201844
+i386                   randconfig-x016-201844
+i386                   randconfig-x014-201844
+i386                   randconfig-x018-201844
+i386                   randconfig-x015-201844
+i386                   randconfig-x013-201844
+i386                   randconfig-x012-201844
+i386                   randconfig-x011-201844
+i386                   randconfig-x010-201844
+i386                   randconfig-x017-201844
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201844
+i386                     randconfig-n1-201844
+i386                     randconfig-n2-201844
+i386                     randconfig-n3-201844
+x86_64                 randconfig-x001-201844
+x86_64                 randconfig-x000-201844
+x86_64                 randconfig-x002-201844
+x86_64                 randconfig-x005-201844
+x86_64                 randconfig-x007-201844
+x86_64                 randconfig-x009-201844
+x86_64                 randconfig-x008-201844
+x86_64                 randconfig-x003-201844
+x86_64                 randconfig-x006-201844
+x86_64                 randconfig-x004-201844
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                            hisi_defconfig
+csky                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+arm                       omap2plus_defconfig
+arm                              allmodconfig
+arm                        mvebu_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       imx_v6_v7_defconfig
+arm64                            allmodconfig
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm                                      arm5
+arm                                     arm67
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+x86_64                 randconfig-s0-11101216
+x86_64                 randconfig-s1-11101216
+x86_64                 randconfig-s2-11101216
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                          ep93xx_defconfig
+arm                        vexpress_defconfig
+mips                        omega2p_defconfig
+powerpc                 mpc8313_rdb_defconfig
+arm                            zeus_defconfig
+ia64                             allyesconfig
+powerpc                     tqm8540_defconfig
+arm                            qcom_defconfig
+sh                          rsk7201_defconfig
+sparc                            allmodconfig
+mips                         tb0219_defconfig
+powerpc                      pcm030_defconfig
+sh                          kfr2r09_defconfig
+mips                        maltaup_defconfig
+powerpc                 mpc8540_ads_defconfig
+sh                   rts7751r2dplus_defconfig
+sh                           se7712_defconfig
+x86_64                 randconfig-x017-201844
+x86_64                 randconfig-x012-201844
+x86_64                 randconfig-x013-201844
+x86_64                 randconfig-x011-201844
+x86_64                 randconfig-x016-201844
+x86_64                 randconfig-x014-201844
+x86_64                 randconfig-x018-201844
+x86_64                 randconfig-x019-201844
+x86_64                 randconfig-x010-201844
+x86_64                 randconfig-x015-201844
+i386                     randconfig-s0-201844
+i386                     randconfig-s1-201844
+i386                     randconfig-s3-201844
+i386                     randconfig-s2-201844
+x86_64                 randconfig-s3-11101220
+x86_64                 randconfig-s4-11101220
+x86_64                 randconfig-s5-11101220
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201844
+x86_64                   randconfig-i1-201844
+x86_64                   randconfig-i2-201844
+x86_64                   randconfig-i3-201844
+i386                   randconfig-b0-11101217
+arm                                 defconfig
+powerpc                      pmac32_defconfig
+xtensa                generic_kc705_defconfig
+powerpc                    amigaone_defconfig
+i386                             alldefconfig
+arm                         orion5x_defconfig
+x86_64                 randconfig-b0-11101221
+x86_64                 randconfig-b0-11101237
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+h8300                     edosk2674_defconfig
+mips                          ath79_defconfig
+sh                        edosk7760_defconfig
+parisc                           alldefconfig
+sh                           se7722_defconfig
+x86_64                 randconfig-u0-11101206
+x86_64                 randconfig-u0-11101228
+x86_64                 randconfig-u0-11101236
+x86_64                 randconfig-u0-11101249
+arm                       mainstone_defconfig
+arm64                             allnoconfig
+powerpc                  mpc885_ads_defconfig
+arm                               allnoconfig
+mips                           ip22_defconfig
+mips                       bmips_be_defconfig
+sh                           se7619_defconfig
+arm                           sama5_defconfig
+x86_64                randconfig-ne0-11101207
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                            allnoconfig
+powerpc                          g5_defconfig
+sh                 kfr2r09-romimage_defconfig
+sh                   sh7724_generic_defconfig
+powerpc                     stx_gp3_defconfig
+um                                  defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-x002-201844
+i386                   randconfig-x004-201844
+i386                   randconfig-x005-201844
+i386                   randconfig-x006-201844
+i386                   randconfig-x007-201844
+i386                   randconfig-x000-201844
+i386                   randconfig-x001-201844
+i386                   randconfig-x009-201844
+i386                   randconfig-x003-201844
+i386                   randconfig-x008-201844
+x86_64                   randconfig-e0-201844
+x86_64                   randconfig-e1-201844
+x86_64                   randconfig-e2-201844
+x86_64                   randconfig-e3-201844
+arm                            mmp2_defconfig
+arm                          ks8695_defconfig
+sh                        edosk7705_defconfig
+arm                         lubbock_defconfig
+m68k                          sun3x_defconfig
+x86_64                randconfig-ws0-11101228
+x86_64                randconfig-ws0-11101240
+m68k                          hp300_defconfig
+powerpc64                        alldefconfig
+arm                         bcm2835_defconfig
+arm                       spear13xx_defconfig
+powerpc                  iss476-smp_defconfig
+sh                           sh2007_defconfig
+arm                           omap1_defconfig
+m68k                        m5272c3_defconfig
+x86_64                randconfig-ws0-11101207
+x86_64                randconfig-ws0-11101234
+arm                        mvebu_v5_defconfig
+sh                        dreamcast_defconfig
+x86_64                   randconfig-j0-201844
+x86_64                   randconfig-j1-201844
+x86_64                   randconfig-j2-201844
+x86_64                   randconfig-j3-201844
+i386                     randconfig-j0-201844
+i386                     randconfig-j1-201844
+i386                     randconfig-j2-201844
+i386                     randconfig-j3-201844
+i386                   randconfig-x077-201844
+i386                   randconfig-x071-201844
+i386                   randconfig-x070-201844
+i386                   randconfig-x073-201844
+i386                   randconfig-x072-201844
+i386                   randconfig-x075-201844
+i386                   randconfig-x074-201844
+i386                   randconfig-x076-201844
+i386                   randconfig-x079-201844
+i386                   randconfig-x078-201844
+i386                              allnoconfig
+i386                                defconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
