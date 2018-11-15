@@ -1,30 +1,31 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 15 Nov 2018 00:17:22 +0000
-Subject: [Intel-wired-lan] [net-next v1 1/2] docs-networking: fix typo
- in define
-In-Reply-To: <20181108054018.32293-1-jesse.brandeburg@intel.com>
-References: <20181108054018.32293-1-jesse.brandeburg@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B965C10C3@ORSMSX101.amr.corp.intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Wed, 14 Nov 2018 17:04:53 -0800
+Subject: [Intel-wired-lan] [PATCH] igb: Fix format with line
+ continuation whitespace
+In-Reply-To: <1b31c663afa1aa7b3d231917f00f58b9cb604231.camel@perches.com>
+References: <1b31c663afa1aa7b3d231917f00f58b9cb604231.camel@perches.com>
+Message-ID: <878t1v2lsa.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jesse Brandeburg
-> Sent: Wednesday, November 7, 2018 9:40 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net-next v1 1/2] docs-networking: fix typo in
-> define
-> 
-> The #define for NETIF_F_GSO_UDP_L4 was incorrect in the
-> documentation, fix it by making it match the actual code.
-> 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> ---
->  Documentation/networking/netdev-features.txt | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
+Joe Perches <joe@perches.com> writes:
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+> The line continuation unintentionally adds whitespace so
+> instead use a coalesced format to remove the whitespace.
+>
+> Miscellanea:
+>
+> o Use a more typical style for ternaries and arguments
+>   for this logging message
+>
+> Signed-off-by: Joe Perches <joe@perches.com>
+
+Acked-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+
+
+Cheers,
+--
+Vinicius
