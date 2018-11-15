@@ -1,31 +1,35 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 15 Nov 2018 00:12:34 +0000
-Subject: [Intel-wired-lan] [PATCH net] igb: fix uninitialized variables
-In-Reply-To: <1541492832-10412-1-git-send-email-wangyunjian@huawei.com>
-References: <1541492832-10412-1-git-send-email-wangyunjian@huawei.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B965C1098@ORSMSX101.amr.corp.intel.com>
+Date: Thu, 15 Nov 2018 00:17:17 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: Fix format with line
+ continuation whitespace
+In-Reply-To: <1b31c663afa1aa7b3d231917f00f58b9cb604231.camel@perches.com>
+References: <1b31c663afa1aa7b3d231917f00f58b9cb604231.camel@perches.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B965C10B5@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of wangyunjian
-> Sent: Tuesday, November 6, 2018 12:27 AM
-> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Cc: stone.zhou at huawei.com; Yunjian Wang <wangyunjian@huawei.com>
-> Subject: [Intel-wired-lan] [PATCH net] igb: fix uninitialized variables
+> From: netdev-owner at vger.kernel.org [mailto:netdev-
+> owner at vger.kernel.org] On Behalf Of Joe Perches
+> Sent: Thursday, November 1, 2018 12:04 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: David S. Miller <davem@davemloft.net>; intel-wired-
+> lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [PATCH] igb: Fix format with line continuation whitespace
 > 
-> From: Yunjian Wang <wangyunjian@huawei.com>
+> The line continuation unintentionally adds whitespace so
+> instead use a coalesced format to remove the whitespace.
 > 
-> This patch fixes the variable 'phy_word' may be used uninitialized.
+> Miscellanea:
 > 
-> Signed-off-by: Yunjian Wang <wangyunjian@huawei.com>
+> o Use a more typical style for ternaries and arguments
+>   for this logging message
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 > ---
->  drivers/net/ethernet/intel/igb/e1000_i210.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
+>  drivers/net/ethernet/intel/igb/igb_main.c | 13 ++++++-------
+>  1 file changed, 6 insertions(+), 7 deletions(-)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-
