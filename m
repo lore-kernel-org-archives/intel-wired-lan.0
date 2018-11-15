@@ -1,35 +1,30 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 15 Nov 2018 00:17:17 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: Fix format with line
- continuation whitespace
-In-Reply-To: <1b31c663afa1aa7b3d231917f00f58b9cb604231.camel@perches.com>
-References: <1b31c663afa1aa7b3d231917f00f58b9cb604231.camel@perches.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B965C10B5@ORSMSX101.amr.corp.intel.com>
+Date: Thu, 15 Nov 2018 00:17:22 +0000
+Subject: [Intel-wired-lan] [net-next v1 1/2] docs-networking: fix typo
+ in define
+In-Reply-To: <20181108054018.32293-1-jesse.brandeburg@intel.com>
+References: <20181108054018.32293-1-jesse.brandeburg@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B965C10C3@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-
-> owner at vger.kernel.org] On Behalf Of Joe Perches
-> Sent: Thursday, November 1, 2018 12:04 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: David S. Miller <davem@davemloft.net>; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [PATCH] igb: Fix format with line continuation whitespace
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jesse Brandeburg
+> Sent: Wednesday, November 7, 2018 9:40 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [net-next v1 1/2] docs-networking: fix typo in
+> define
 > 
-> The line continuation unintentionally adds whitespace so
-> instead use a coalesced format to remove the whitespace.
+> The #define for NETIF_F_GSO_UDP_L4 was incorrect in the
+> documentation, fix it by making it match the actual code.
 > 
-> Miscellanea:
-> 
-> o Use a more typical style for ternaries and arguments
->   for this logging message
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 13 ++++++-------
->  1 file changed, 6 insertions(+), 7 deletions(-)
+>  Documentation/networking/netdev-features.txt | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
