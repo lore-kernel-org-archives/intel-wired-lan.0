@@ -1,69 +1,39 @@
-From: Robert Eshleman <bobbyeshleman@gmail.com>
-Date: Sat,  3 Nov 2018 17:17:19 -0700
-Subject: [Intel-wired-lan] [PATCH] e1000e: Change watchdog task to be
- delayed work
-Message-ID: <1541290645-25033-1-git-send-email-bobbyeshleman@gmail.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Mon, 19 Nov 2018 20:48:19 +0800
+Subject: [Intel-wired-lan] [PATCH net-next] e100: Fix passing zero to
+ 'PTR_ERR' warning in e100_load_ucode_wait
+Message-ID: <20181119124819.15860-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This completes a pending TODO to use queue_delayed_work() instead of
-schedule_work().
+Fix a static code checker warning:
+drivers/net/ethernet/intel/e100.c:1349
+ e100_load_ucode_wait() warn: passing zero to 'PTR_ERR'
 
-Signed-off-by: Robert Eshleman <bobbyeshleman@gmail.com>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/e100.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 16a73bd..a387b21 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -39,6 +39,8 @@ static int debug = -1;
- module_param(debug, int, 0);
- MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index 7c4b554..736115b 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -1345,8 +1345,8 @@ static inline int e100_load_ucode_wait(struct nic *nic)
  
-+struct workqueue_struct *e1000e_workqueue;
-+
- static const struct e1000_info *e1000_info_tbl[] = {
- 	[board_82571]		= &e1000_82571_info,
- 	[board_82572]		= &e1000_82572_info,
-@@ -5137,9 +5139,9 @@ static void e1000_watchdog(struct timer_list *t)
- 	struct e1000_adapter *adapter = from_timer(adapter, t, watchdog_timer);
+ 	fw = e100_request_firmware(nic);
+ 	/* If it's NULL, then no ucode is required */
+-	if (!fw || IS_ERR(fw))
+-		return PTR_ERR(fw);
++	if (IS_ERR_OR_NULL(fw))
++		return PTR_ERR_OR_ZERO(fw);
  
- 	/* Do the rest outside of interrupt context */
--	schedule_work(&adapter->watchdog_task);
-+	struct delayed_work *dwork = to_delayed_work(&adapter->watchdog_task);
- 
--	/* TODO: make this use queue_delayed_work() */
-+	queue_delayed_work(e1000e_workqueue, dwork, 1);
- }
- 
- static void e1000_watchdog_task(struct work_struct *work)
-@@ -7572,6 +7574,13 @@ static int __init e1000_init_module(void)
- 		e1000e_driver_version);
- 	pr_info("Copyright(c) 1999 - 2015 Intel Corporation.\n");
- 
-+	e1000e_workqueue = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0,
-+					   e1000e_driver_name);
-+	if (!e1000e_workqueue) {
-+		pr_err("%s: Failed to create workqueue\n", e1000e_driver_name);
-+		return -ENOMEM;
-+	}
-+
- 	return pci_register_driver(&e1000_driver);
- }
- module_init(e1000_init_module);
-@@ -7585,6 +7594,7 @@ module_init(e1000_init_module);
- static void __exit e1000_exit_module(void)
- {
- 	pci_unregister_driver(&e1000_driver);
-+	destroy_workqueue(e1000e_workqueue);
- }
- module_exit(e1000_exit_module);
- 
+ 	if ((err = e100_exec_cb(nic, (void *)fw, e100_setup_ucode)))
+ 		netif_err(nic, probe, nic->netdev,
 -- 
-2.7.4
+2.7.0
+
 
