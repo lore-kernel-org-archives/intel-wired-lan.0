@@ -1,56 +1,40 @@
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Date: Sat, 24 Nov 2018 16:43:15 +0530
-Subject: [Intel-wired-lan] [PATCH] mm: Replace all open encodings for
- NUMA_NO_NODE
-In-Reply-To: <20181123154415.42898a42e28a31488749738a@linux-foundation.org>
-References: <1542966856-12619-1-git-send-email-anshuman.khandual@arm.com>
- <20181123154415.42898a42e28a31488749738a@linux-foundation.org>
-Message-ID: <8e16e9d1-8f64-d2ca-7d06-985ce601f75b@arm.com>
+From: Josh Elsasser <jelsasser@appneta.com>
+Date: Sat, 24 Nov 2018 12:57:33 -0800
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: recognize 1000BaseLX SFP
+ modules as 1Gbps
+Message-ID: <20181124205801.67828-1-jelsasser@appneta.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Add the two 1000BaseLX enum values to the X550's check for 1Gbps modules,
+allowing the core driver code to establish a link over this SFP type.
 
+This is done by the out-of-tree driver but the fix wasn't in mainline.
 
-On 11/24/2018 05:14 AM, Andrew Morton wrote:
-> On Fri, 23 Nov 2018 15:24:16 +0530 Anshuman Khandual <anshuman.khandual@arm.com> wrote:
-> 
->> At present there are multiple places where invalid node number is encoded
->> as -1. Even though implicitly understood it is always better to have macros
->> in there. Replace these open encodings for an invalid node number with the
->> global macro NUMA_NO_NODE. This helps remove NUMA related assumptions like
->> 'invalid node' from various places redirecting them to a common definition.
->>
->> ...
->>
->> Build tested this with multiple cross compiler options like alpha, sparc,
->> arm64, x86, powerpc, powerpc64le etc with their default config which might
->> not have compiled tested all driver related changes. I will appreciate
->> folks giving this a test in their respective build environment.
->>
->> All these places for replacement were found by running the following grep
->> patterns on the entire kernel code. Please let me know if this might have
->> missed some instances. This might also have replaced some false positives.
->> I will appreciate suggestions, inputs and review.
->>
->> 1. git grep "nid == -1"
->> 2. git grep "node == -1"
->> 3. git grep "nid = -1"
->> 4. git grep "node = -1"
-> 
-> The build testing is good, but I worry that some of the affected files
-> don't clearly have numa.h in their include paths, for the NUMA_NO_NODE
-> definition.
-> 
-> The first thing I looked it is arch/powerpc/include/asm/pci-bridge.h. 
-> Maybe it somehow manages to include numa.h via some nested include, but
-> if so, is that reliable across all config combinations and as code
-> evolves?
-> 
-> So I think that the patch should have added an explicit include of
-> numa.h, especially in cases where the affected file previously had no
-> references to any of the things which numa.h defines.
+Fixes: 6a14ee0cfb19 ("ixgbe: Add X550 support function pointers")
+Signed-off-by: Josh Elsasser <jelsasser@appneta.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Fair enough. Will include numa.h in those particular files.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 10dbaf4f6e80..9c42f741ed5e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -2262,7 +2262,9 @@ static s32 ixgbe_get_link_capabilities_X550em(struct ixgbe_hw *hw,
+ 		*autoneg = false;
+ 
+ 		if (hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core0 ||
+-		    hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1) {
++		    hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1 ||
++		    hw->phy.sfp_type == ixgbe_sfp_type_1g_lx_core0 ||
++		    hw->phy.sfp_type == ixgbe_sfp_type_1g_lx_core1) {
+ 			*speed = IXGBE_LINK_SPEED_1GB_FULL;
+ 			return 0;
+ 		}
+-- 
+2.19.1
+
