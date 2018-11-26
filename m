@@ -1,40 +1,46 @@
-From: Jens Axboe <axboe@kernel.dk>
-Date: Mon, 26 Nov 2018 11:04:24 -0700
-Subject: [Intel-wired-lan] [PATCH V2] mm: Replace all open encodings for
- NUMA_NO_NODE
-In-Reply-To: <c1b8de1a8e9d4d215b56498e2d5b83a02083483a.camel@intel.com>
-References: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
- <c1b8de1a8e9d4d215b56498e2d5b83a02083483a.camel@intel.com>
-Message-ID: <4d0840f2-bd96-e671-8120-56ef33a37816@kernel.dk>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 26 Nov 2018 23:34:47 +0000
+Subject: [Intel-wired-lan] [PATCH 1/1] drivers/net/i40e: define proper
+ net_device::neigh_priv_len
+In-Reply-To: <20181123161028.22633-2-khorenko@virtuozzo.com>
+References: <20181123161028.22633-1-khorenko@virtuozzo.com>
+ <20181123161028.22633-2-khorenko@virtuozzo.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32ACE0@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 11/26/18 10:56 AM, Jeff Kirsher wrote:
-> On Mon, 2018-11-26 at 17:56 +0530, Anshuman Khandual wrote:
->> At present there are multiple places where invalid node number is
->> encoded
->> as -1. Even though implicitly understood it is always better to have
->> macros
->> in there. Replace these open encodings for an invalid node number
->> with the
->> global macro NUMA_NO_NODE. This helps remove NUMA related assumptions
->> like
->> 'invalid node' from various places redirecting them to a common
->> definition.
->>
->> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Konstantin Khorenko
+> Sent: Friday, November 23, 2018 8:10 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org; Konstantin Khorenko <khorenko@virtuozzo.com>;
+> David S . Miller <davem@davemloft.net>
+> Subject: [Intel-wired-lan] [PATCH 1/1] drivers/net/i40e: define proper
+> net_device::neigh_priv_len
 > 
-> For the 'ixgbe' driver changes.
+> Out of bound read reported by KASan.
 > 
-> Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> i40iw_net_event() reads unconditionally 16 bytes from
+> neigh->primary_key while the memory allocated for
+> "neighbour" struct is evaluated in neigh_alloc() as
+> 
+>   tbl->entry_size + dev->neigh_priv_len
+> 
+> where "dev" is a net_device.
+> 
+> But the driver does not setup dev->neigh_priv_len and we read beyond the
+> neigh entry allocated memory, so the patch in the next mail fixes this.
+> 
+> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
-Lost the original, but for mtip32xx:
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Acked-by: Jens Axboe <axboe@kernel.dk>
-
--- 
-Jens Axboe
 
