@@ -1,37 +1,39 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 26 Nov 2018 23:35:49 +0000
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 26 Nov 2018 15:52:02 -0800
 Subject: [Intel-wired-lan] [PATCH net] ixgbe: recognize 1000BaseLX SFP
  modules as 1Gbps
-In-Reply-To: <20181124205801.67828-1-jelsasser@appneta.com>
+In-Reply-To: <40FD0CE5-973C-4A7F-91BD-66C1A1699223@appneta.com>
 References: <20181124205801.67828-1-jelsasser@appneta.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32ACF0@ORSMSX104.amr.corp.intel.com>
+ <87efb92z5w.fsf@miraculix.mork.no>
+ <40FD0CE5-973C-4A7F-91BD-66C1A1699223@appneta.com>
+Message-ID: <937675447ad1ec2665d0b6f70390d498a01255d0.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Josh Elsasser
-> Sent: Saturday, November 24, 2018 12:58 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; David S. Miller <davem@davemloft.net>; Josh
-> Elsasser <jelsasser@appneta.com>; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH net] ixgbe: recognize 1000BaseLX SFP
-> modules as 1Gbps
+On Mon, 2018-11-26 at 09:54 -0800, Josh Elsasser wrote:
+> Bj?rn Mork <bjorn@mork.no> wrote:
 > 
-> Add the two 1000BaseLX enum values to the X550's check for 1Gbps
-> modules, allowing the core driver code to establish a link over this SFP type.
+> > Not that it matters much I guess, but I think LX SFPs were
+> > unsupported
+> > at that time. The LX support appears to have been added under the
+> > radar
+> > while refactoring ixgbe_setup_sfp_modules_X550em in commit
+> > e23f33367882
+> > ("ixgbe: Fix 1G and 10G link stability for X550EM_x SFP+")
 > 
-> This is done by the out-of-tree driver but the fix wasn't in mainline.
-> 
-> Fixes: 6a14ee0cfb19 ("ixgbe: Add X550 support function pointers")
-> Signed-off-by: Josh Elsasser <jelsasser@appneta.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> Looks like you?re right. Want me to respin with an additional ?Fixes?
+> tag?
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+No need to re-spin the patch, just reply with the additional "Fixes"
+tag and if patchwork does not pick it up, I will add it to the patch I
+have in my tree for validation and review.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181126/96702f71/attachment-0001.asc>
