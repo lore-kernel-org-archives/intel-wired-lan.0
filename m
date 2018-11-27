@@ -1,34 +1,91 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 27 Nov 2018 09:31:38 -0800
-Subject: [Intel-wired-lan] [PATCH] i40e: fix kerneldoc for xsk methods
-In-Reply-To: <8DB98857419E2C4496D37EA0B91B597076B0D9EA@IRSMSX103.ger.corp.intel.com>
-References: <8DB98857419E2C4496D37EA0B91B597076B0D9EA@IRSMSX103.ger.corp.intel.com>
-Message-ID: <95231638a51066b8ea826777fd196285c3b49d45.camel@intel.com>
+Date: Tue, 27 Nov 2018 09:35:35 -0800
+Subject: [Intel-wired-lan] [PATCH v2] i40e: fix kerneldoc for xsk methods
+Message-ID: <20181127173536.7501-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2018-11-27 at 08:19 +0000, Sokolowski, Jan wrote:
-> One method, xsk_umem_setup, had an incorrect kernel doc
-> description, which has been corrected.
->  
-> Also fixes small typos found in the comments.
->  
-> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
-> ---
-> drivers/net/ethernet/intel/i40e/i40e_xsk.c | 14 +++++++-------
-> 1 file changed, 7 insertions(+), 7 deletions(-)
+From: Jan Sokolowski <jan.sokolowski@intel.com>
 
-Hmm, not sure why your patch is so corrupted.  Are you sending it as
-plain text?
+One method, xsk_umem_setup, had an incorrect kernel doc
+description, which has been corrected.
 
-I have fixed it up and will resubmit it to IWl for you.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181127/27d23df1/attachment-0001.asc>
+Also fixes small typos found in the comments.
+
+Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+---
+v2: fixed patch corruption possibly caused by internal mail server
+
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index add1e457886d..433c8e688c78 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -33,7 +33,7 @@ static int i40e_alloc_xsk_umems(struct i40e_vsi *vsi)
+ }
+ 
+ /**
+- * i40e_add_xsk_umem - Store an UMEM for a certain ring/qid
++ * i40e_add_xsk_umem - Store a UMEM for a certain ring/qid
+  * @vsi: Current VSI
+  * @umem: UMEM to store
+  * @qid: Ring/qid to associate with the UMEM
+@@ -56,7 +56,7 @@ static int i40e_add_xsk_umem(struct i40e_vsi *vsi, struct xdp_umem *umem,
+ }
+ 
+ /**
+- * i40e_remove_xsk_umem - Remove an UMEM for a certain ring/qid
++ * i40e_remove_xsk_umem - Remove a UMEM for a certain ring/qid
+  * @vsi: Current VSI
+  * @qid: Ring/qid associated with the UMEM
+  **/
+@@ -130,7 +130,7 @@ static void i40e_xsk_umem_dma_unmap(struct i40e_vsi *vsi, struct xdp_umem *umem)
+ }
+ 
+ /**
+- * i40e_xsk_umem_enable - Enable/associate an UMEM to a certain ring/qid
++ * i40e_xsk_umem_enable - Enable/associate a UMEM to a certain ring/qid
+  * @vsi: Current VSI
+  * @umem: UMEM
+  * @qid: Rx ring to associate UMEM to
+@@ -189,7 +189,7 @@ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
+ }
+ 
+ /**
+- * i40e_xsk_umem_disable - Diassociate an UMEM from a certain ring/qid
++ * i40e_xsk_umem_disable - Disassociate a UMEM from a certain ring/qid
+  * @vsi: Current VSI
+  * @qid: Rx ring to associate UMEM to
+  *
+@@ -255,12 +255,12 @@ int i40e_xsk_umem_query(struct i40e_vsi *vsi, struct xdp_umem **umem,
+ }
+ 
+ /**
+- * i40e_xsk_umem_query - Queries a certain ring/qid for its UMEM
++ * i40e_xsk_umem_setup - Enable/disassociate a UMEM to/from a ring/qid
+  * @vsi: Current VSI
+  * @umem: UMEM to enable/associate to a ring, or NULL to disable
+  * @qid: Rx ring to (dis)associate UMEM (from)to
+  *
+- * This function enables or disables an UMEM to a certain ring.
++ * This function enables or disables a UMEM to a certain ring.
+  *
+  * Returns 0 on success, <0 on failure
+  **/
+@@ -276,7 +276,7 @@ int i40e_xsk_umem_setup(struct i40e_vsi *vsi, struct xdp_umem *umem,
+  * @rx_ring: Rx ring
+  * @xdp: xdp_buff used as input to the XDP program
+  *
+- * This function enables or disables an UMEM to a certain ring.
++ * This function enables or disables a UMEM to a certain ring.
+  *
+  * Returns any of I40E_XDP_{PASS, CONSUMED, TX, REDIR}
+  **/
+-- 
+2.19.1
+
