@@ -1,40 +1,32 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Date: Tue, 27 Nov 2018 10:07:24 -0800
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: recognize 1000BaseLX SFP
- modules as 1Gbps
-In-Reply-To: <20181126.205247.1196368459821644290.davem@davemloft.net>
-References: <40FD0CE5-973C-4A7F-91BD-66C1A1699223@appneta.com>
- <937675447ad1ec2665d0b6f70390d498a01255d0.camel@intel.com>
- <F6168EB4-8C74-456F-B571-6492162CFA0F@appneta.com>
- <20181126.205247.1196368459821644290.davem@davemloft.net>
-Message-ID: <9e45af90-0a62-79a1-8eac-0bc27cf3d531@gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 27 Nov 2018 20:15:34 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: fix kerneldoc for xsk methods
+In-Reply-To: <8DB98857419E2C4496D37EA0B91B597076B0D9EA@IRSMSX103.ger.corp.intel.com>
+References: <8DB98857419E2C4496D37EA0B91B597076B0D9EA@IRSMSX103.ger.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32BED7@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Sokolowski, Jan
+Sent: Tuesday, November 27, 2018 12:20 AM
+To: intel-wired-lan@osuosl.org
+Cc: netdev at vger.kernel.org
+Subject: [Intel-wired-lan] [PATCH] i40e: fix kerneldoc for xsk methods
 
+One method, xsk_umem_setup, had an incorrect kernel doc
+description, which has been corrected.
 
-On 11/26/2018 8:52 PM, David Miller wrote:
-> From: Josh Elsasser <jelsasser@appneta.com>
-> Date: Mon, 26 Nov 2018 16:54:11 -0800
-> 
->> Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
->>
->>> No need to re-spin the patch, just reply with the additional "Fixes"
->>> tag and if patchwork does not pick it up, I will add it to the patch I
->>> have in my tree for validation and review.
->>
->> Thanks, let?s try that.
->>
->> Fixes: e23f33367882 ("ixgbe: Fix 1G and 10G link stability for X550EM_x SFP+?)
-> 
-> Unfortunately, patchwork isn't smart enough to pick up Fixes: tags
-> still.
-> 
+Also fixes small typos found in the comments.
 
-This is something that can be added easily in the patchwork
-administration panel, maybe ask Jeremy or Stephen to do that?
--- 
-Florian
+Signed-off-by: Jan Sokolowski <jan.sokolowski at intel.com<mailto:jan.sokolowski@intel.com>>
+---
+drivers/net/ethernet/intel/i40e/i40e_xsk.c | 14 +++++++-------
+1 file changed, 7 insertions(+), 7 deletions(-)
+
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181127/2cd87884/attachment.html>
