@@ -1,65 +1,28 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 27 Nov 2018 18:57:11 +1100
+From: Vinod Koul <vkoul@kernel.org>
+Date: Tue, 27 Nov 2018 19:28:09 +0530
 Subject: [Intel-wired-lan] [PATCH V2] mm: Replace all open encodings for
  NUMA_NO_NODE
 In-Reply-To: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
 References: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
-Message-ID: <87mupvgdgo.fsf@concordia.ellerman.id.au>
+Message-ID: <20181127135809.GB3175@vkoul-mobl.Dlink>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anshuman Khandual <anshuman.khandual@arm.com> writes:
+On 26-11-18, 17:56, Anshuman Khandual wrote:
 > At present there are multiple places where invalid node number is encoded
 > as -1. Even though implicitly understood it is always better to have macros
 > in there. Replace these open encodings for an invalid node number with the
 > global macro NUMA_NO_NODE. This helps remove NUMA related assumptions like
 > 'invalid node' from various places redirecting them to a common definition.
->
-> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
-> ---
-> Changes in V2:
->
-> - Added inclusion of 'numa.h' header at various places per Andrew
-> - Updated 'dev_to_node' to use NUMA_NO_NODE instead per Vinod
->
-> Changes in V1: (https://lkml.org/lkml/2018/11/23/485)
->
-> - Dropped OCFS2 changes per Joseph
-> - Dropped media/video drivers changes per Hans
->
-> RFC - https://patchwork.kernel.org/patch/10678035/
->
-> Build tested this with multiple cross compiler options like alpha, sparc,
-> arm64, x86, powerpc, powerpc64le etc with their default config which might
-> not have compiled tested all driver related changes. I will appreciate
-> folks giving this a test in their respective build environment.
->
-> All these places for replacement were found by running the following grep
-> patterns on the entire kernel code. Please let me know if this might have
-> missed some instances. This might also have replaced some false positives.
-> I will appreciate suggestions, inputs and review.
->
-> 1. git grep "nid == -1"
-> 2. git grep "node == -1"
-> 3. git grep "nid = -1"
-> 4. git grep "node = -1"
->
->  arch/alpha/include/asm/topology.h             |  3 ++-
->  arch/ia64/kernel/numa.c                       |  2 +-
->  arch/ia64/mm/discontig.c                      |  6 +++---
->  arch/ia64/sn/kernel/io_common.c               |  3 ++-
->  arch/powerpc/include/asm/pci-bridge.h         |  3 ++-
->  arch/powerpc/kernel/paca.c                    |  3 ++-
->  arch/powerpc/kernel/pci-common.c              |  3 ++-
->  arch/powerpc/mm/numa.c                        | 14 +++++++-------
->  arch/powerpc/platforms/powernv/memtrace.c     |  5 +++--
+> 
 
-These powerpc changes all look fine.
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+>  drivers/dma/dmaengine.c                       |  4 +++-
 
 
-cheers
+Acked-by: Vinod Koul <vkoul@kernel.org>
+
+-- 
+~Vinod
