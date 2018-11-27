@@ -1,229 +1,65 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 27 Nov 2018 23:57:28 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- cf12dc4237ccb79b02060b01528230a07ad92437
-Message-ID: <5bfd6968.AKs8ghiB5rPqCMD/%lkp@intel.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 27 Nov 2018 18:57:11 +1100
+Subject: [Intel-wired-lan] [PATCH V2] mm: Replace all open encodings for
+ NUMA_NO_NODE
+In-Reply-To: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
+References: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
+Message-ID: <87mupvgdgo.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: cf12dc4237ccb79b02060b01528230a07ad92437  i40e: define proper net_device::neigh_priv_len
+Anshuman Khandual <anshuman.khandual@arm.com> writes:
+> At present there are multiple places where invalid node number is encoded
+> as -1. Even though implicitly understood it is always better to have macros
+> in there. Replace these open encodings for an invalid node number with the
+> global macro NUMA_NO_NODE. This helps remove NUMA related assumptions like
+> 'invalid node' from various places redirecting them to a common definition.
+>
+> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> ---
+> Changes in V2:
+>
+> - Added inclusion of 'numa.h' header at various places per Andrew
+> - Updated 'dev_to_node' to use NUMA_NO_NODE instead per Vinod
+>
+> Changes in V1: (https://lkml.org/lkml/2018/11/23/485)
+>
+> - Dropped OCFS2 changes per Joseph
+> - Dropped media/video drivers changes per Hans
+>
+> RFC - https://patchwork.kernel.org/patch/10678035/
+>
+> Build tested this with multiple cross compiler options like alpha, sparc,
+> arm64, x86, powerpc, powerpc64le etc with their default config which might
+> not have compiled tested all driver related changes. I will appreciate
+> folks giving this a test in their respective build environment.
+>
+> All these places for replacement were found by running the following grep
+> patterns on the entire kernel code. Please let me know if this might have
+> missed some instances. This might also have replaced some false positives.
+> I will appreciate suggestions, inputs and review.
+>
+> 1. git grep "nid == -1"
+> 2. git grep "node == -1"
+> 3. git grep "nid = -1"
+> 4. git grep "node = -1"
+>
+>  arch/alpha/include/asm/topology.h             |  3 ++-
+>  arch/ia64/kernel/numa.c                       |  2 +-
+>  arch/ia64/mm/discontig.c                      |  6 +++---
+>  arch/ia64/sn/kernel/io_common.c               |  3 ++-
+>  arch/powerpc/include/asm/pci-bridge.h         |  3 ++-
+>  arch/powerpc/kernel/paca.c                    |  3 ++-
+>  arch/powerpc/kernel/pci-common.c              |  3 ++-
+>  arch/powerpc/mm/numa.c                        | 14 +++++++-------
+>  arch/powerpc/platforms/powernv/memtrace.c     |  5 +++--
 
-elapsed time: 1098m
+These powerpc changes all look fine.
 
-configs tested: 205
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-mips                             allmodconfig
-powerpc                      katmai_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-11270816
-m68k                          sun3x_defconfig
-nds32                               defconfig
-i386                   randconfig-x019-201847
-i386                   randconfig-x016-201847
-i386                   randconfig-x014-201847
-i386                   randconfig-x018-201847
-i386                   randconfig-x015-201847
-i386                   randconfig-x013-201847
-i386                   randconfig-x017-201847
-i386                   randconfig-x010-201847
-i386                   randconfig-x011-201847
-i386                   randconfig-x012-201847
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                         rhel-7.2-clear
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-nds32                             allnoconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-riscv                             allnoconfig
-riscv                               defconfig
-arm                           tegra_defconfig
-sh                                  defconfig
-x86_64                 randconfig-g0-11270818
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                 randconfig-s0-11270804
-x86_64                 randconfig-s1-11270804
-x86_64                 randconfig-s2-11270804
-x86_64                 randconfig-s0-11270836
-x86_64                 randconfig-s1-11270836
-x86_64                 randconfig-s2-11270836
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                          pxa168_defconfig
-arm                       versatile_defconfig
-m68k                         amcore_defconfig
-um                               allyesconfig
-arm                        oxnas_v6_defconfig
-parisc                generic-32bit_defconfig
-powerpc                      pcm030_defconfig
-arm                          nuc960_defconfig
-arm                    vt8500_v6_v7_defconfig
-ia64                      gensparse_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                     powernv_defconfig
-powerpc                    sam440ep_defconfig
-s390                          debug_defconfig
-x86_64                 randconfig-x017-201847
-x86_64                 randconfig-x012-201847
-x86_64                 randconfig-x016-201847
-x86_64                 randconfig-x011-201847
-x86_64                 randconfig-x013-201847
-x86_64                 randconfig-x014-201847
-x86_64                 randconfig-x019-201847
-x86_64                 randconfig-x018-201847
-x86_64                 randconfig-x010-201847
-x86_64                 randconfig-x015-201847
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201847
-i386                     randconfig-s1-201847
-i386                     randconfig-s3-201847
-i386                     randconfig-s2-201847
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-11270744
-x86_64                 randconfig-s4-11270744
-x86_64                 randconfig-s5-11270744
-x86_64                 randconfig-s3-11270825
-x86_64                 randconfig-s4-11270825
-x86_64                 randconfig-s5-11270825
-i386                   randconfig-b0-11270752
-i386                   randconfig-b0-11270819
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                            xcep_defconfig
-sh                          rsk7264_defconfig
-m68k                             alldefconfig
-sparc                             allnoconfig
-x86_64                 randconfig-b0-11270835
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                   randconfig-h0-11270800
-i386                   randconfig-h1-11270800
-arm                        realview_defconfig
-mips                          lasat_defconfig
-powerpc                       maple_defconfig
-x86_64                randconfig-ne0-11270746
-x86_64                randconfig-ne0-11270808
-x86_64                randconfig-ne0-11270825
-x86_64                randconfig-ne0-11270838
-mips                      maltasmvp_defconfig
-sh                        sh7763rdp_defconfig
-arm                            mps2_defconfig
-mips                        omega2p_defconfig
-x86_64                 randconfig-h0-11270749
-s390                              allnoconfig
-i386                  randconfig-sb0-11270823
-i386                   randconfig-x002-201847
-i386                   randconfig-x004-201847
-i386                   randconfig-x000-201847
-i386                   randconfig-x007-201847
-i386                   randconfig-x006-201847
-i386                   randconfig-x005-201847
-i386                   randconfig-x001-201847
-i386                   randconfig-x009-201847
-i386                   randconfig-x003-201847
-i386                   randconfig-x008-201847
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-x001-201847
-x86_64                 randconfig-x005-201847
-x86_64                 randconfig-x002-201847
-x86_64                 randconfig-x000-201847
-x86_64                 randconfig-x009-201847
-x86_64                 randconfig-x007-201847
-x86_64                 randconfig-x008-201847
-x86_64                 randconfig-x003-201847
-x86_64                 randconfig-x006-201847
-x86_64                 randconfig-x004-201847
-sh                   secureedge5410_defconfig
-x86_64                randconfig-ws0-11270826
-sh                         microdev_defconfig
-parisc                      default_defconfig
-x86_64                randconfig-ws0-11270757
-arm                           omap1_defconfig
-powerpc                     mpc83xx_defconfig
-x86_64                 randconfig-r0-11270805
-i386                   randconfig-x077-201847
-i386                   randconfig-x071-201847
-i386                   randconfig-x075-201847
-i386                   randconfig-x072-201847
-i386                   randconfig-x073-201847
-i386                   randconfig-x070-201847
-i386                   randconfig-x074-201847
-i386                   randconfig-x079-201847
-i386                   randconfig-x076-201847
-i386                   randconfig-x078-201847
-riscv                              tinyconfig
-i386                               tinyconfig
-powerpc                     kmeter1_defconfig
-sh                          r7785rp_defconfig
-i386                   randconfig-x0-11270756
-i386                   randconfig-x0-11270806
-i386                   randconfig-x0-11270827
-i386                   randconfig-x0-11270833
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+cheers
