@@ -1,95 +1,63 @@
-From: Miroslav Lichvar <mlichvar@redhat.com>
-Date: Wed, 28 Nov 2018 17:07:49 +0100
-Subject: [Intel-wired-lan] [PATCH] i40e: extend PTP gettime function to read
- system clock
-Message-ID: <20181128160749.14040-1-mlichvar@redhat.com>
+From: Yang Xiao <YangX92@hotmail.com>
+Date: Wed, 28 Nov 2018 12:24:17 +0000
+Subject: [Intel-wired-lan] [PATCH] intel: ice: Do not enable NAPI on
+ q_vectors that have no rings
+Message-ID: <HK0PR01MB2163357339526D3645190770ADD10@HK0PR01MB2163.apcprd01.prod.exchangelabs.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This adds support for the PTP_SYS_OFFSET_EXTENDED ioctl.
+From: Young Xiao <YangX92@hotmail.com>
 
-Cc: Richard Cochran <richardcochran@gmail.com>
-Cc: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Miroslav Lichvar <mlichvar@redhat.com>
+If ice driver has q_vectors w/ active NAPI that has no rings,
+then this will result in a divide by zero error. To correct it
+I am updating the driver code so that we only support NAPI on
+q_vectors that have 1 or more rings allocated to them.
+
+See commit 13a8cd191a2b ("i40e: Do not enable NAPI on q_vectors
+that have no rings") for detail.
+
+Signed-off-by: Young Xiao <YangX92@hotmail.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ptp.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index e6fc0aff8c99..5fb4353c742b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -28,19 +28,23 @@
-  * i40e_ptp_read - Read the PHC time from the device
-  * @pf: Board private structure
-  * @ts: timespec structure to hold the current time value
-+ * @sts: structure to hold the system time before and after reading the PHC
-  *
-  * This function reads the PRTTSYN_TIME registers and stores them in a
-  * timespec. However, since the registers are 64 bits of nanoseconds, we must
-  * convert the result to a timespec before we can return.
-  **/
--static void i40e_ptp_read(struct i40e_pf *pf, struct timespec64 *ts)
-+static void i40e_ptp_read(struct i40e_pf *pf, struct timespec64 *ts,
-+			  struct ptp_system_timestamp *sts)
- {
- 	struct i40e_hw *hw = &pf->hw;
- 	u32 hi, lo;
- 	u64 ns;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 333312a..9cc988a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2563,8 +2563,12 @@ static void ice_napi_enable_all(struct ice_vsi *vsi)
+ 	if (!vsi->netdev)
+ 		return;
  
- 	/* The timer latches on the lowest register read. */
-+	ptp_read_system_prets(sts);
- 	lo = rd32(hw, I40E_PRTTSYN_TIME_L);
-+	ptp_read_system_postts(sts);
- 	hi = rd32(hw, I40E_PRTTSYN_TIME_H);
- 
- 	ns = (((u64)hi) << 32) | lo;
-@@ -146,7 +150,7 @@ static int i40e_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
- 
- 	mutex_lock(&pf->tmreg_lock);
- 
--	i40e_ptp_read(pf, &now);
-+	i40e_ptp_read(pf, &now, NULL);
- 	timespec64_add_ns(&now, delta);
- 	i40e_ptp_write(pf, (const struct timespec64 *)&now);
- 
-@@ -156,19 +160,21 @@ static int i40e_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
+-	for (q_idx = 0; q_idx < vsi->num_q_vectors; q_idx++)
+-		napi_enable(&vsi->q_vectors[q_idx]->napi);
++	for (q_idx = 0; q_idx < vsi->num_q_vectors; q_idx++) {
++		struct ice_q_vector *q_vector = vsi->q_vectors[q_idx];
++
++		if (q_vector->rx.ring || q_vector->tx.ring)
++			napi_enable(&q_vector->napi);
++	}
  }
  
  /**
-- * i40e_ptp_gettime - Get the time of the PHC
-+ * i40e_ptp_gettimex - Get the time of the PHC
-  * @ptp: The PTP clock structure
-  * @ts: timespec structure to hold the current time value
-+ * @sts: structure to hold the system time before and after reading the PHC
-  *
-  * Read the device clock and return the correct value on ns, after converting it
-  * into a timespec struct.
-  **/
--static int i40e_ptp_gettime(struct ptp_clock_info *ptp, struct timespec64 *ts)
-+static int i40e_ptp_gettimex(struct ptp_clock_info *ptp, struct timespec64 *ts,
-+			     struct ptp_system_timestamp *sts)
- {
- 	struct i40e_pf *pf = container_of(ptp, struct i40e_pf, ptp_caps);
+@@ -2931,8 +2935,12 @@ static void ice_napi_disable_all(struct ice_vsi *vsi)
+ 	if (!vsi->netdev)
+ 		return;
  
- 	mutex_lock(&pf->tmreg_lock);
--	i40e_ptp_read(pf, ts);
-+	i40e_ptp_read(pf, ts, sts);
- 	mutex_unlock(&pf->tmreg_lock);
+-	for (q_idx = 0; q_idx < vsi->num_q_vectors; q_idx++)
+-		napi_disable(&vsi->q_vectors[q_idx]->napi);
++	for (q_idx = 0; q_idx < vsi->num_q_vectors; q_idx++) {
++		struct ice_q_vector *q_vector = vsi->q_vectors[q_idx];
++
++		if (q_vector->rx.ring || q_vector->tx.ring)
++			napi_enable(&q_vector->napi);
++	}
+ }
  
- 	return 0;
-@@ -702,7 +708,7 @@ static long i40e_ptp_create_clock(struct i40e_pf *pf)
- 	pf->ptp_caps.pps = 0;
- 	pf->ptp_caps.adjfreq = i40e_ptp_adjfreq;
- 	pf->ptp_caps.adjtime = i40e_ptp_adjtime;
--	pf->ptp_caps.gettime64 = i40e_ptp_gettime;
-+	pf->ptp_caps.gettimex64 = i40e_ptp_gettimex;
- 	pf->ptp_caps.settime64 = i40e_ptp_settime;
- 	pf->ptp_caps.enable = i40e_ptp_feature_enable;
- 
+ /**
 -- 
-2.17.2
+2.7.4
 
