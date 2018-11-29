@@ -1,21 +1,36 @@
-From: Ben Greear <greearb@candelatech.com>
-Date: Thu, 29 Nov 2018 14:08:17 -0800
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Thu, 29 Nov 2018 23:02:51 +0000
 Subject: [Intel-wired-lan] Any idea when 2.5G Ethernet NICs will be
  available?
-In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69A4D0DE3@ORSMSX110.amr.corp.intel.com>
+In-Reply-To: <dbe24a68-5732-b900-f70f-5b04b98c255b@candelatech.com>
 References: <05fccb2a-284b-de94-9bd6-e295e87a8796@candelatech.com>
  <9B4A1B1917080E46B64F07F2989DADD69A4D0DE3@ORSMSX110.amr.corp.intel.com>
-Message-ID: <dbe24a68-5732-b900-f70f-5b04b98c255b@candelatech.com>
+ <dbe24a68-5732-b900-f70f-5b04b98c255b@candelatech.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD69A4D0E57@ORSMSX110.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+It should work with the ixgbe driver, but I'm not sure if you can explicitly set 2.5G. Let me ask around.
+
+Todd Fujinaka
+Software Application Engineer
+Datacenter Engineering Group
+Intel Corporation
+todd.fujinaka at intel.com
+
+
+-----Original Message-----
+From: Ben Greear [mailto:greearb at candelatech.com] 
+Sent: Thursday, November 29, 2018 2:08 PM
+To: Fujinaka, Todd <todd.fujinaka@intel.com>; intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+Subject: Re: [Intel-wired-lan] Any idea when 2.5G Ethernet NICs will be available?
+
 At this point, functionality is more important than price for me.
 
-Do I need any special driver changes (or very recent drivers)
-to make this work with 2.5G?
+Do I need any special driver changes (or very recent drivers) to make this work with 2.5G?
 
 Thanks,
 Ben
@@ -30,7 +45,8 @@ On 11/29/2018 02:04 PM, Fujinaka, Todd wrote:
 > todd.fujinaka at intel.com
 >
 > -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Ben Greear
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On 
+> Behalf Of Ben Greear
 > Sent: Thursday, November 29, 2018 8:59 AM
 > To: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
 > Subject: [Intel-wired-lan] Any idea when 2.5G Ethernet NICs will be available?
@@ -46,7 +62,7 @@ On 11/29/2018 02:04 PM, Fujinaka, Todd wrote:
 >
 
 
--- 
+--
 Ben Greear <greearb@candelatech.com>
 Candela Technologies Inc  http://www.candelatech.com
 
