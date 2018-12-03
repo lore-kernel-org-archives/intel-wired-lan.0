@@ -1,68 +1,60 @@
-From: Steve Douthit <stephend@silicom-usa.com>
-Date: Mon, 3 Dec 2018 20:15:24 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v4 2/2] ixgbe: use mii_bus to
- handle MII related ioctls
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Mon, 3 Dec 2018 12:51:21 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v4 0/2] Add mii_bus to ixgbe
+ driver for dsa devs
 In-Reply-To: <20181203201432.18252-1-stephend@silicom-usa.com>
 References: <20181203163227.5107-1-stephend@silicom-usa.com>
  <20181203201432.18252-1-stephend@silicom-usa.com>
-Message-ID: <20181203201432.18252-3-stephend@silicom-usa.com>
+Message-ID: <19b22292-f2b3-ccb8-bb37-0952cfa93135@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use the mii_bus callbacks to address the entire clause 22/45 address
-space.  Enables userspace to poke switch registers instead of a single
-PHY address.
+On 12/3/18 12:14 PM, Steve Douthit wrote:
+> Changes from v3 -> v4
+> * Remove unecessary pointer casts
+> * Fix copy/paste issues in comments
+> * Simplify setting of swfw semaphore flags
+> * Collect Reviewed-by: tags
+> 
+> Changes from v2 -> v3
+> * Added warnings about interactions between this code and PHY polling
+>   unit to the commit messages.
+> 
+> Changes from v1 -> v2
+> [PATCH 1/2] ixgbe: register a mdiobus
+> * Add intel-wired-lan at lists.osuosl.org to CC list, see
+> * select MII in Kconfig (thanks to the kbuild bot)
+> * Only call mdiobus_regsiter for single x500em_a device
+> * Use readx_poll_timeout() in ixgbe_msca_cmd()
+> * Register different bus->read/write callbacks in ixgbe_mii_bus_init()
+>   so there's device id check on every access
+> * Use device pci_name() in bus->id instead of parent bridge's name
+> 
+> [PATCH 2/2] ixgbe: use mii_bus to handle MII related ioctls
+> * Only use mdiobus_read/write for adapters that registered a mdiobus
 
-The ixgbe firmware may be polling PHYs in a way that is not protected by
-the mii_bus lock.  This isn't new behavior, but as Andrew Lunn pointed
-out there are more addresses available for conflicts.
+Not directly related to this patch series, are you using the legacy or
+"new" way of passing platform data in order to register the DSA switch?
+Since you mentioned 6390, I would assume this must be the "new" way of
+registering DSA devices with mdio_boardinfo etc. In that case, have you
+found yourself limited by the current dsa_chip_platform_data?
 
-Signed-off-by: Stephen Douthit <stephend@silicom-usa.com>
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
-Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+> 
+> Stephen Douthit (2):
+>   ixgbe: register a mdiobus
+>   ixgbe: use mii_bus to handle MII related ioctls
+> 
+>  drivers/net/ethernet/intel/Kconfig            |   1 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   2 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  23 ++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 307 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |   2 +
+>  5 files changed, 335 insertions(+)
+> 
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index b7907674c565..caa64afdedfb 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8790,6 +8790,15 @@ ixgbe_mdio_read(struct net_device *netdev, int prtad, int devad, u16 addr)
- 	u16 value;
- 	int rc;
- 
-+	if (adapter->mii_bus) {
-+		int regnum = addr;
-+
-+		if (devad != MDIO_DEVAD_NONE)
-+			regnum |= (devad << 16) | MII_ADDR_C45;
-+
-+		return mdiobus_read(adapter->mii_bus, prtad, regnum);
-+	}
-+
- 	if (prtad != hw->phy.mdio.prtad)
- 		return -EINVAL;
- 	rc = hw->phy.ops.read_reg(hw, addr, devad, &value);
-@@ -8804,6 +8813,15 @@ static int ixgbe_mdio_write(struct net_device *netdev, int prtad, int devad,
- 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
- 	struct ixgbe_hw *hw = &adapter->hw;
- 
-+	if (adapter->mii_bus) {
-+		int regnum = addr;
-+
-+		if (devad != MDIO_DEVAD_NONE)
-+			regnum |= (devad << 16) | MII_ADDR_C45;
-+
-+		return mdiobus_write(adapter->mii_bus, prtad, regnum, value);
-+	}
-+
- 	if (prtad != hw->phy.mdio.prtad)
- 		return -EINVAL;
- 	return hw->phy.ops.write_reg(hw, addr, devad, value);
+
 -- 
-2.17.2
-
+Florian
