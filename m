@@ -1,68 +1,50 @@
 From: Steve Douthit <stephend@silicom-usa.com>
-Date: Mon, 3 Dec 2018 19:44:22 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] ixgbe: register a
- mdiobus
-In-Reply-To: <b5de925d-bfef-0dff-61c7-63bd16113b1d@gmail.com>
+Date: Mon, 3 Dec 2018 20:14:55 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v4 0/2] Add mii_bus to ixgbe
+ driver for dsa devs
+In-Reply-To: <20181203163227.5107-1-stephend@silicom-usa.com>
 References: <20181203163227.5107-1-stephend@silicom-usa.com>
- <20181203185454.6357-1-stephend@silicom-usa.com>
- <20181203185454.6357-2-stephend@silicom-usa.com>
- <b5de925d-bfef-0dff-61c7-63bd16113b1d@gmail.com>
-Message-ID: <98205032-e218-7a6a-992f-65800e4f6351@silicom-usa.com>
+Message-ID: <20181203201432.18252-1-stephend@silicom-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/3/18 2:07 PM, Florian Fainelli wrote:
-> On 12/3/18 10:55 AM, Steve Douthit wrote:
->> Most dsa devices expect a 'struct mii_bus' pointer to talk to switches
->> via the MII interface.
->>
->> While this works for dsa devices, it will not work safely with Linux
->> PHYs in all configurations since the firmware of the ixgbe device may
->> be polling some PHY addresses in the background.
->>
->> Signed-off-by: Stephen Douthit <stephend@silicom-usa.com>
->> ---
-> 
-> [snip]
-> 
->> +/**
->> + *  ixgbe_mii_bus_write - Write a clause 22/45 register
->> + *  @hw: pointer to hardware structure
->> + *  @addr: address
->> + *  @regnum: register number
->> + *  @regnum: valueto write
-> 
-> This should be @val to match the function parameters
+Changes from v3 -> v4
+* Remove unecessary pointer casts
+* Fix copy/paste issues in comments
+* Simplify setting of swfw semaphore flags
+* Collect Reviewed-by: tags
 
-OK
+Changes from v2 -> v3
+* Added warnings about interactions between this code and PHY polling
+  unit to the commit messages.
 
->> + **/
->> +static s32 ixgbe_mii_bus_write(struct mii_bus *bus, int addr, int regnum,
->> +			       u16 val)
->> +{
->> +	struct ixgbe_adapter *adapter = (struct ixgbe_adapter *)bus->priv;
-> 
-> Nitpick: cast is not necessary since this is a void * pointer (for that
-> reason).
+Changes from v1 -> v2
+[PATCH 1/2] ixgbe: register a mdiobus
+* Add intel-wired-lan at lists.osuosl.org to CC list, see
+* select MII in Kconfig (thanks to the kbuild bot)
+* Only call mdiobus_regsiter for single x500em_a device
+* Use readx_poll_timeout() in ixgbe_msca_cmd()
+* Register different bus->read/write callbacks in ixgbe_mii_bus_init()
+  so there's device id check on every access
+* Use device pci_name() in bus->id instead of parent bridge's name
 
-OK, I'll clean up this and other unnecessary casts.
+[PATCH 2/2] ixgbe: use mii_bus to handle MII related ioctls
+* Only use mdiobus_read/write for adapters that registered a mdiobus
 
-I forgot Andrew's suggestion to squash the swfw semaphore masks from:
+Stephen Douthit (2):
+  ixgbe: register a mdiobus
+  ixgbe: use mii_bus to handle MII related ioctls
 
-+	u32 gssr = hw->phy.phy_semaphore_mask | IXGBE_GSSR_TOKEN_SM;
-+
-+	if (hw->bus.lan_id)
-+		gssr |= IXGBE_GSSR_PHY1_SM;
-+	else
-+		gssr |= IXGBE_GSSR_PHY0_SM;
+ drivers/net/ethernet/intel/Kconfig            |   1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   2 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  23 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 307 ++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |   2 +
+ 5 files changed, 335 insertions(+)
 
-to
+-- 
+2.17.2
 
-+	u32 gssr = hw->phy.phy_semaphore_mask;
-+	gssr |= IXGBE_GSSR_TOKEN_SM | IXGBE_GSSR_PHY0_SM;
-
-Is it ok to collect both of your 'Reviewed-by:'s with that additional
-change for v4?
