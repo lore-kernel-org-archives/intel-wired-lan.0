@@ -1,50 +1,61 @@
 From: Steve Douthit <stephend@silicom-usa.com>
-Date: Mon, 3 Dec 2018 16:32:47 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 0/2] Add mii_bus to ixgbe
- driver for dsa devs
-Message-ID: <20181203163227.5107-1-stephend@silicom-usa.com>
+Date: Mon, 3 Dec 2018 16:33:01 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 2/2] ixgbe: use mii_bus to
+ handle MII related ioctls
+In-Reply-To: <20181203163227.5107-1-stephend@silicom-usa.com>
+References: <20181203163227.5107-1-stephend@silicom-usa.com>
+Message-ID: <20181203163227.5107-3-stephend@silicom-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Address review comments from v1.  I missed the intel-wired-lan list on
-the first submission, so check out the netdev list archive for the first
-rev of the patch.
+Use the mii_bus callbacks to address the entire clause 22/45 address
+space.  Enables userspace to poke switch registers instead of a single
+PHY address.
 
-I think it's still up in the air on how best to register a single bus
-that's shared among up to four MACs.  This code works for me, but there
-might be a better way to do this.
+Signed-off-by: Stephen Douthit <stephend@silicom-usa.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-Same caveats about testing still apply.  My test setup is a Marvell
-Peridot switch hanging off of a Intel C3000 SoC.  Clause 45 devices and
-other ixgbe devices have not been tested.
-
-Changes from v1 -> v2
-[PATCH 1/2] ixgbe: register a mdiobus
-* Add intel-wired-lan at lists.osuosl.org to CC list, see
-* select MII in Kconfig (thanks to the kbuild bot)
-* Only call mdiobus_regsiter for single x500em_a device
-* Use readx_poll_timeout() in ixgbe_msca_cmd()
-* Register different bus->read/write callbacks in ixgbe_mii_bus_init()
-  so there's device id check on every access
-* Use device pci_name() in bus->id instead of parent bridge's name
-
-[PATCH 2/2] ixgbe: use mii_bus to handle MII related ioctls
-* Only use mdiobus_read/write for adapters that registered a mdiobus
-
-Stephen Douthit (2):
-  ixgbe: register a mdiobus
-  ixgbe: use mii_bus to handle MII related ioctls
-
- drivers/net/ethernet/intel/Kconfig            |   1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   2 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  23 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 307 ++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |   2 +
- 5 files changed, 335 insertions(+)
-
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 82af3b24d222..fb066c491abe 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8790,6 +8790,15 @@ ixgbe_mdio_read(struct net_device *netdev, int prtad, int devad, u16 addr)
+ 	u16 value;
+ 	int rc;
+ 
++	if (adapter->mii_bus) {
++		int regnum = addr;
++
++		if (devad != MDIO_DEVAD_NONE)
++			regnum |= (devad << 16) | MII_ADDR_C45;
++
++		return mdiobus_read(adapter->mii_bus, prtad, regnum);
++	}
++
+ 	if (prtad != hw->phy.mdio.prtad)
+ 		return -EINVAL;
+ 	rc = hw->phy.ops.read_reg(hw, addr, devad, &value);
+@@ -8804,6 +8813,15 @@ static int ixgbe_mdio_write(struct net_device *netdev, int prtad, int devad,
+ 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 
++	if (adapter->mii_bus) {
++		int regnum = addr;
++
++		if (devad != MDIO_DEVAD_NONE)
++			regnum |= (devad << 16) | MII_ADDR_C45;
++
++		return mdiobus_write(adapter->mii_bus, prtad, regnum, value);
++	}
++
+ 	if (prtad != hw->phy.mdio.prtad)
+ 		return -EINVAL;
+ 	return hw->phy.ops.write_reg(hw, addr, devad, value);
 -- 
 2.17.2
 
