@@ -1,67 +1,36 @@
-From: Doug Ledford <dledford@redhat.com>
-Date: Mon, 03 Dec 2018 13:59:08 -0500
-Subject: [Intel-wired-lan] [PATCH V2] mm: Replace all open encodings for
- NUMA_NO_NODE
-In-Reply-To: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
-References: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
-Message-ID: <e295bca26fce6408c7265292e81107b04a1a144d.camel@redhat.com>
+From: Steve Douthit <stephend@silicom-usa.com>
+Date: Mon, 3 Dec 2018 23:42:38 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v4 0/2] Add mii_bus to ixgbe
+ driver for dsa devs
+In-Reply-To: <19b22292-f2b3-ccb8-bb37-0952cfa93135@gmail.com>
+References: <20181203163227.5107-1-stephend@silicom-usa.com>
+ <20181203201432.18252-1-stephend@silicom-usa.com>
+ <19b22292-f2b3-ccb8-bb37-0952cfa93135@gmail.com>
+Message-ID: <5c8b517a-6632-931d-c695-ec8a5302bfa4@silicom-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2018-11-26 at 17:56 +0530, Anshuman Khandual wrote:
-> At present there are multiple places where invalid node number is encoded
-> as -1. Even though implicitly understood it is always better to have macros
-> in there. Replace these open encodings for an invalid node number with the
-> global macro NUMA_NO_NODE. This helps remove NUMA related assumptions like
-> 'invalid node' from various places redirecting them to a common definition.
-> 
-> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
-> ---
-> Changes in V2:
-> 
-> - Added inclusion of 'numa.h' header at various places per Andrew
-> - Updated 'dev_to_node' to use NUMA_NO_NODE instead per Vinod
-> 
-> Changes in V1: (https://lkml.org/lkml/2018/11/23/485)
-> 
-> - Dropped OCFS2 changes per Joseph
-> - Dropped media/video drivers changes per Hans
-> 
-> RFC - https://patchwork.kernel.org/patch/10678035/
-> 
-> Build tested this with multiple cross compiler options like alpha, sparc,
-> arm64, x86, powerpc, powerpc64le etc with their default config which might
-> not have compiled tested all driver related changes. I will appreciate
-> folks giving this a test in their respective build environment.
-> 
-> All these places for replacement were found by running the following grep
-> patterns on the entire kernel code. Please let me know if this might have
-> missed some instances. This might also have replaced some false positives.
-> I will appreciate suggestions, inputs and review.
-> 
-> 1. git grep "nid == -1"
-> 2. git grep "node == -1"
-> 3. git grep "nid = -1"
-> 4. git grep "node = -1"
-> 
->  drivers/infiniband/hw/hfi1/affinity.c         |  3 ++-
->  drivers/infiniband/hw/hfi1/init.c             |  3 ++-
+> Not directly related to this patch series, are you using the legacy or
+> "new" way of passing platform data in order to register the DSA switch?
+> Since you mentioned 6390, I would assume this must be the "new" way of
+> registering DSA devices with mdio_boardinfo etc. In that case, have you
+> found yourself limited by the current dsa_chip_platform_data?
 
-For the drivers/infiniband changes,
+With the new method I had an off-by-one error where the 'enabled_ports'
+bitmask and 'port_names' array didn't match up in my first attempt.
+That's definitely my fault, but the loop that searches for the "cpu"
+string didn't like it and segfaulted.
 
-Acked-by: Doug Ledford <dledford@redhat.com>
+I've got something of a chicken-and-the-egg problem between where I'm
+deferring while waiting for netdevs to show up, and registering the
+mdio_board_info that needs those same pointers.  For testing I exported
+mdiobus_setup_mdiodev_from_board_info() and mdiobus_create_device() so I
+could call the setup function again when the data was actually ready.
 
--- 
-Doug Ledford <dledford@redhat.com>
-    GPG KeyID: B826A3330E572FDD
-    Key fingerprint = AE6B 1BDA 122B 23B4 265B  1274 B826 A333 0E57 2FDD
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181203/64639e8e/attachment-0001.asc>
+It'd be nice to have more than one "cpu" port on a switch and have some
+way to associate downstream and "cpu" ports.  Not sure exactly what that
+would look like, and it's not something I'm going to try and tackle at
+the moment, but it's one for the wish list.
