@@ -1,38 +1,68 @@
 From: Steve Douthit <stephend@silicom-usa.com>
-Date: Mon, 3 Dec 2018 17:02:40 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 1/2] ixgbe: register a
+Date: Mon, 3 Dec 2018 19:44:22 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] ixgbe: register a
  mdiobus
-In-Reply-To: <20181203165445.GI25748@lunn.ch>
+In-Reply-To: <b5de925d-bfef-0dff-61c7-63bd16113b1d@gmail.com>
 References: <20181203163227.5107-1-stephend@silicom-usa.com>
- <20181203163227.5107-2-stephend@silicom-usa.com>
- <20181203165445.GI25748@lunn.ch>
-Message-ID: <70350444-f05f-c57f-d4d8-0e059b4d896c@silicom-usa.com>
+ <20181203185454.6357-1-stephend@silicom-usa.com>
+ <20181203185454.6357-2-stephend@silicom-usa.com>
+ <b5de925d-bfef-0dff-61c7-63bd16113b1d@gmail.com>
+Message-ID: <98205032-e218-7a6a-992f-65800e4f6351@silicom-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/3/18 11:54 AM, Andrew Lunn wrote:
->> +static s32 ixgbe_x550em_a_mii_bus_read(struct mii_bus *bus, int addr,
->> +				       int regnum)
+On 12/3/18 2:07 PM, Florian Fainelli wrote:
+> On 12/3/18 10:55 AM, Steve Douthit wrote:
+>> Most dsa devices expect a 'struct mii_bus' pointer to talk to switches
+>> via the MII interface.
+>>
+>> While this works for dsa devices, it will not work safely with Linux
+>> PHYs in all configurations since the firmware of the ixgbe device may
+>> be polling some PHY addresses in the background.
+>>
+>> Signed-off-by: Stephen Douthit <stephend@silicom-usa.com>
+>> ---
+> 
+> [snip]
+> 
+>> +/**
+>> + *  ixgbe_mii_bus_write - Write a clause 22/45 register
+>> + *  @hw: pointer to hardware structure
+>> + *  @addr: address
+>> + *  @regnum: register number
+>> + *  @regnum: valueto write
+> 
+> This should be @val to match the function parameters
+
+OK
+
+>> + **/
+>> +static s32 ixgbe_mii_bus_write(struct mii_bus *bus, int addr, int regnum,
+>> +			       u16 val)
 >> +{
 >> +	struct ixgbe_adapter *adapter = (struct ixgbe_adapter *)bus->priv;
->> +	struct ixgbe_hw *hw = &adapter->hw;
->> +	u32 gssr = hw->phy.phy_semaphore_mask | IXGBE_GSSR_TOKEN_SM;
->> +
->> +	if (hw->bus.lan_id)
->> +		gssr |= IXGBE_GSSR_PHY1_SM;
->> +	else
->> +		gssr |= IXGBE_GSSR_PHY0_SM;
 > 
-> Hi Steve
-> 
-> If you only have one bus, do you still need this? One semaphore is all
-> you need. And i'm not even sure you need that. The MDIO layer will
-> perform locking, assuming everything goes through the MDIO layer.
+> Nitpick: cast is not necessary since this is a void * pointer (for that
+> reason).
 
-AFAIK I still need part of it.  There's a PHY polling unit in the card
-that we need to sync with independent of the locking in the MDIO layer.
-I can drop the hw->bus.lan_id check though and unconditionally OR in the
-IXGBE_GSSR_PHY0_SM since we always register on function 0 now.
+OK, I'll clean up this and other unnecessary casts.
+
+I forgot Andrew's suggestion to squash the swfw semaphore masks from:
+
++	u32 gssr = hw->phy.phy_semaphore_mask | IXGBE_GSSR_TOKEN_SM;
++
++	if (hw->bus.lan_id)
++		gssr |= IXGBE_GSSR_PHY1_SM;
++	else
++		gssr |= IXGBE_GSSR_PHY0_SM;
+
+to
+
++	u32 gssr = hw->phy.phy_semaphore_mask;
++	gssr |= IXGBE_GSSR_TOKEN_SM | IXGBE_GSSR_PHY0_SM;
+
+Is it ok to collect both of your 'Reviewed-by:'s with that additional
+change for v4?
