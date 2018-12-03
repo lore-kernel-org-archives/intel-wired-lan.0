@@ -1,50 +1,67 @@
-From: Steve Douthit <stephend@silicom-usa.com>
-Date: Mon, 3 Dec 2018 20:14:55 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v4 0/2] Add mii_bus to ixgbe
- driver for dsa devs
-In-Reply-To: <20181203163227.5107-1-stephend@silicom-usa.com>
-References: <20181203163227.5107-1-stephend@silicom-usa.com>
-Message-ID: <20181203201432.18252-1-stephend@silicom-usa.com>
+From: Doug Ledford <dledford@redhat.com>
+Date: Mon, 03 Dec 2018 13:59:08 -0500
+Subject: [Intel-wired-lan] [PATCH V2] mm: Replace all open encodings for
+ NUMA_NO_NODE
+In-Reply-To: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
+References: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
+Message-ID: <e295bca26fce6408c7265292e81107b04a1a144d.camel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Changes from v3 -> v4
-* Remove unecessary pointer casts
-* Fix copy/paste issues in comments
-* Simplify setting of swfw semaphore flags
-* Collect Reviewed-by: tags
+On Mon, 2018-11-26 at 17:56 +0530, Anshuman Khandual wrote:
+> At present there are multiple places where invalid node number is encoded
+> as -1. Even though implicitly understood it is always better to have macros
+> in there. Replace these open encodings for an invalid node number with the
+> global macro NUMA_NO_NODE. This helps remove NUMA related assumptions like
+> 'invalid node' from various places redirecting them to a common definition.
+> 
+> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> ---
+> Changes in V2:
+> 
+> - Added inclusion of 'numa.h' header at various places per Andrew
+> - Updated 'dev_to_node' to use NUMA_NO_NODE instead per Vinod
+> 
+> Changes in V1: (https://lkml.org/lkml/2018/11/23/485)
+> 
+> - Dropped OCFS2 changes per Joseph
+> - Dropped media/video drivers changes per Hans
+> 
+> RFC - https://patchwork.kernel.org/patch/10678035/
+> 
+> Build tested this with multiple cross compiler options like alpha, sparc,
+> arm64, x86, powerpc, powerpc64le etc with their default config which might
+> not have compiled tested all driver related changes. I will appreciate
+> folks giving this a test in their respective build environment.
+> 
+> All these places for replacement were found by running the following grep
+> patterns on the entire kernel code. Please let me know if this might have
+> missed some instances. This might also have replaced some false positives.
+> I will appreciate suggestions, inputs and review.
+> 
+> 1. git grep "nid == -1"
+> 2. git grep "node == -1"
+> 3. git grep "nid = -1"
+> 4. git grep "node = -1"
+> 
+>  drivers/infiniband/hw/hfi1/affinity.c         |  3 ++-
+>  drivers/infiniband/hw/hfi1/init.c             |  3 ++-
 
-Changes from v2 -> v3
-* Added warnings about interactions between this code and PHY polling
-  unit to the commit messages.
+For the drivers/infiniband changes,
 
-Changes from v1 -> v2
-[PATCH 1/2] ixgbe: register a mdiobus
-* Add intel-wired-lan at lists.osuosl.org to CC list, see
-* select MII in Kconfig (thanks to the kbuild bot)
-* Only call mdiobus_regsiter for single x500em_a device
-* Use readx_poll_timeout() in ixgbe_msca_cmd()
-* Register different bus->read/write callbacks in ixgbe_mii_bus_init()
-  so there's device id check on every access
-* Use device pci_name() in bus->id instead of parent bridge's name
-
-[PATCH 2/2] ixgbe: use mii_bus to handle MII related ioctls
-* Only use mdiobus_read/write for adapters that registered a mdiobus
-
-Stephen Douthit (2):
-  ixgbe: register a mdiobus
-  ixgbe: use mii_bus to handle MII related ioctls
-
- drivers/net/ethernet/intel/Kconfig            |   1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   2 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  23 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 307 ++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |   2 +
- 5 files changed, 335 insertions(+)
+Acked-by: Doug Ledford <dledford@redhat.com>
 
 -- 
-2.17.2
-
+Doug Ledford <dledford@redhat.com>
+    GPG KeyID: B826A3330E572FDD
+    Key fingerprint = AE6B 1BDA 122B 23B4 265B  1274 B826 A333 0E57 2FDD
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20181203/64639e8e/attachment-0001.asc>
