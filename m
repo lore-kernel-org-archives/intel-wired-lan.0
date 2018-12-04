@@ -1,137 +1,82 @@
-From: =?unknown-8bit?q?Micha=C5=82_Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Tue, 04 Dec 2018 18:31:14 +0100
-Subject: [Intel-wired-lan] [PATCH v3 1/2] i40e: fix VLAN.TCI == 0 RX HW
- offload
-Message-ID: <6a993b48a235e7a65d522642a74a28a7391ad964.1543944510.git.mirq-linux@rere.qmqm.pl>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 4 Dec 2018 18:44:53 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: fix mac filter delete when
+ setting mac address
+In-Reply-To: <20181204141852.13893-1-sassmann@kpanic.de>
+References: <20181204141852.13893-1-sassmann@kpanic.de>
+Message-ID: <02874ECE860811409154E81DA85FBB588D52C543@ORSMSX122.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This fixes two bugs in hardware VLAN offload:
- 1. VLAN.TCI == 0 was being dropped
- 2. there was a race between disabling of VLAN RX feature in hardware
-    and processing RX queue, where packets processed in this window
-    could have their VLAN information dropped
+> -----Original Message-----
+> From: Stefan Assmann [mailto:sassmann at kpanic.de]
+> Sent: Tuesday, December 04, 2018 6:19 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; davem at davemloft.net; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; Keller, Jacob E <jacob.e.keller@intel.com>;
+> sassmann at kpanic.de
+> Subject: [PATCH] i40e: fix mac filter delete when setting mac address
+> 
+> A previous commit moved the ether_addr_copy() in i40e_set_mac() before
+> the mac filter del/add to avoid a race. However it wasn't taken into
+> account that this alters the mac address being handed to
+> i40e_del_mac_filter().
 
-Fix moves the VLAN handling into i40e_process_skb_fields() to save on
-duplicated code. i40e_receive_skb() becomes trivial and so is removed.
+Woops!
 
-Signed-off-by: Micha? Miros?aw <michal.miroslaw@atendesoftware.pl>
-Signed-off-by: Micha? Miros?aw <mirq-linux@rere.qmqm.pl>
----
-v3:
- * fix whitespace for checkpatch
-v2:
- * no changes
----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 31 +++++--------------
- .../ethernet/intel/i40e/i40e_txrx_common.h    |  2 --
- drivers/net/ethernet/intel/i40e/i40e_xsk.c    |  6 +---
- 3 files changed, 9 insertions(+), 30 deletions(-)
+> 
+> Also changed i40e_add_mac_filter() to operate on netdev->dev_addr,
+> hopefully that makes the code easier to read.
+> 
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index aef3c89ee79c..bc6a873ec574 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1558,24 +1558,6 @@ static bool i40e_alloc_mapped_page(struct i40e_ring *rx_ring,
- 	return true;
- }
- 
--/**
-- * i40e_receive_skb - Send a completed packet up the stack
-- * @rx_ring:  rx ring in play
-- * @skb: packet to send up
-- * @vlan_tag: vlan tag for packet
-- **/
--void i40e_receive_skb(struct i40e_ring *rx_ring,
--		      struct sk_buff *skb, u16 vlan_tag)
--{
--	struct i40e_q_vector *q_vector = rx_ring->q_vector;
--
--	if ((rx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_RX) &&
--	    (vlan_tag & VLAN_VID_MASK))
--		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan_tag);
--
--	napi_gro_receive(&q_vector->napi, skb);
--}
--
- /**
-  * i40e_alloc_rx_buffers - Replace used receive buffers
-  * @rx_ring: ring to place buffers on
-@@ -1812,6 +1794,13 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
- 
- 	skb_record_rx_queue(skb, rx_ring->queue_index);
- 
-+	if (qword & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)) {
-+		u16 vlan_tag = rx_desc->wb.qword0.lo_dword.l2tag1;
-+
-+		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q),
-+				       le16_to_cpu(vlan_tag));
-+	}
-+
- 	/* modifies the skb - consumes the enet header */
- 	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
- }
-@@ -2350,7 +2339,6 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		struct i40e_rx_buffer *rx_buffer;
- 		union i40e_rx_desc *rx_desc;
- 		unsigned int size;
--		u16 vlan_tag;
- 		u8 rx_ptype;
- 		u64 qword;
- 
-@@ -2451,11 +2439,8 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		/* populate checksum, VLAN, and protocol */
- 		i40e_process_skb_fields(rx_ring, rx_desc, skb, rx_ptype);
- 
--		vlan_tag = (qword & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)) ?
--			   le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1) : 0;
--
- 		i40e_trace(clean_rx_irq_rx, rx_ring, rx_desc, skb);
--		i40e_receive_skb(rx_ring, skb, vlan_tag);
-+		napi_gro_receive(&rx_ring->q_vector->napi, skb);
- 		skb = NULL;
- 
- 		/* update budget accounting */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-index 09809dffe399..2c077f1c4eca 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
-@@ -14,8 +14,6 @@ struct i40e_rx_buffer *i40e_clean_programming_status(
- void i40e_process_skb_fields(struct i40e_ring *rx_ring,
- 			     union i40e_rx_desc *rx_desc, struct sk_buff *skb,
- 			     u8 rx_ptype);
--void i40e_receive_skb(struct i40e_ring *rx_ring,
--		      struct sk_buff *skb, u16 vlan_tag);
- void i40e_xdp_ring_update_tail(struct i40e_ring *xdp_ring);
- void i40e_update_rx_stats(struct i40e_ring *rx_ring,
- 			  unsigned int total_rx_bytes,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 433c8e688c78..a6ea2b249471 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -634,7 +634,6 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
- 		struct i40e_rx_buffer *bi;
- 		union i40e_rx_desc *rx_desc;
- 		unsigned int size;
--		u16 vlan_tag;
- 		u8 rx_ptype;
- 		u64 qword;
- 
-@@ -717,10 +716,7 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
- 		rx_ptype = (qword & I40E_RXD_QW1_PTYPE_MASK) >>
- 			   I40E_RXD_QW1_PTYPE_SHIFT;
- 		i40e_process_skb_fields(rx_ring, rx_desc, skb, rx_ptype);
--
--		vlan_tag = (qword & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)) ?
--			   le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1) : 0;
--		i40e_receive_skb(rx_ring, skb, vlan_tag);
-+		napi_gro_receive(&rx_ring->q_vector->napi, skb);
- 	}
- 
- 	i40e_finalize_xdp_rx(rx_ring, xdp_xmit);
--- 
-2.19.2
+Makes sense.
+
+> Fixes: 458867b2ca0c ("i40e: don't remove netdev->dev_addr when syncing uc list")
+> 
+
+Good catch. This looks correct to me.
+
+Acked-by: Jacob Keller <jacob.e.keller@intel.com>
+
+> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 6d5b13f69dec..901ef799d2ad 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -1546,17 +1546,17 @@ static int i40e_set_mac(struct net_device *netdev, void
+> *p)
+>  		netdev_info(netdev, "set new mac address %pM\n", addr->sa_data);
+> 
+>  	/* Copy the address first, so that we avoid a possible race with
+> -	 * .set_rx_mode(). If we copy after changing the address in the filter
+> -	 * list, we might open ourselves to a narrow race window where
+> -	 * .set_rx_mode could delete our dev_addr filter and prevent traffic
+> -	 * from passing.
+> +	 * .set_rx_mode().
+> +	 * - Remove old address from MAC filter
+> +	 * - Copy new address
+> +	 * - Add new address to MAC filter
+>  	 */
+> -	ether_addr_copy(netdev->dev_addr, addr->sa_data);
+> -
+>  	spin_lock_bh(&vsi->mac_filter_hash_lock);
+>  	i40e_del_mac_filter(vsi, netdev->dev_addr);
+> -	i40e_add_mac_filter(vsi, addr->sa_data);
+> +	ether_addr_copy(netdev->dev_addr, addr->sa_data);
+> +	i40e_add_mac_filter(vsi, netdev->dev_addr);
+>  	spin_unlock_bh(&vsi->mac_filter_hash_lock);
+> +
+>  	if (vsi->type == I40E_VSI_MAIN) {
+>  		i40e_status ret;
+> 
+> --
+> 2.19.2
 
