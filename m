@@ -1,12 +1,12 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 4 Dec 2018 16:58:46 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v4 1/2] ixgbe: register a
- mdiobus
-In-Reply-To: <20181203201432.18252-2-stephend@silicom-usa.com>
+Date: Tue, 4 Dec 2018 16:59:21 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v4 2/2] ixgbe: use mii_bus to
+ handle MII related ioctls
+In-Reply-To: <20181203201432.18252-3-stephend@silicom-usa.com>
 References: <20181203163227.5107-1-stephend@silicom-usa.com>
  <20181203201432.18252-1-stephend@silicom-usa.com>
- <20181203201432.18252-2-stephend@silicom-usa.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32C606@ORSMSX104.amr.corp.intel.com>
+ <20181203201432.18252-3-stephend@silicom-usa.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32C616@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,25 +21,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Andrew Lunn <andrew@lunn.ch>; Florian Fainelli <f.fainelli@gmail.com>;
 > netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; David S. Miller
 > <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH net-next v4 1/2] ixgbe: register a mdiobus
+> Subject: [Intel-wired-lan] [PATCH net-next v4 2/2] ixgbe: use mii_bus to
+> handle MII related ioctls
 > 
-> Most dsa devices expect a 'struct mii_bus' pointer to talk to switches via the
-> MII interface.
+> Use the mii_bus callbacks to address the entire clause 22/45 address space.
+> Enables userspace to poke switch registers instead of a single PHY address.
 > 
-> While this works for dsa devices, it will not work safely with Linux PHYs in all
-> configurations since the firmware of the ixgbe device may be polling some
-> PHY addresses in the background.
+> The ixgbe firmware may be polling PHYs in a way that is not protected by the
+> mii_bus lock.  This isn't new behavior, but as Andrew Lunn pointed out there
+> are more addresses available for conflicts.
 > 
 > Signed-off-by: Stephen Douthit <stephend@silicom-usa.com>
 > Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 > Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
 > ---
->  drivers/net/ethernet/intel/Kconfig            |   1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   2 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   5 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 299 ++++++++++++++++++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |   2 +
->  5 files changed, 309 insertions(+)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
