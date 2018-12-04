@@ -1,10 +1,12 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 4 Dec 2018 16:57:34 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: fix mac filter delete when
- setting mac address
-In-Reply-To: <20181204141852.13893-1-sassmann@kpanic.de>
-References: <20181204141852.13893-1-sassmann@kpanic.de>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32C5F6@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 4 Dec 2018 16:58:46 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v4 1/2] ixgbe: register a
+ mdiobus
+In-Reply-To: <20181203201432.18252-2-stephend@silicom-usa.com>
+References: <20181203163227.5107-1-stephend@silicom-usa.com>
+ <20181203201432.18252-1-stephend@silicom-usa.com>
+ <20181203201432.18252-2-stephend@silicom-usa.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32C606@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,27 +15,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Stefan Assmann
-> Sent: Tuesday, December 4, 2018 6:19 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; davem at davemloft.net; sassmann at kpanic.de
-> Subject: [Intel-wired-lan] [PATCH] i40e: fix mac filter delete when setting
-> mac address
+> Behalf Of Steve Douthit
+> Sent: Monday, December 3, 2018 12:15 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: Andrew Lunn <andrew@lunn.ch>; Florian Fainelli <f.fainelli@gmail.com>;
+> netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; David S. Miller
+> <davem@davemloft.net>
+> Subject: [Intel-wired-lan] [PATCH net-next v4 1/2] ixgbe: register a mdiobus
 > 
-> A previous commit moved the ether_addr_copy() in i40e_set_mac() before
-> the mac filter del/add to avoid a race. However it wasn't taken into account
-> that this alters the mac address being handed to i40e_del_mac_filter().
+> Most dsa devices expect a 'struct mii_bus' pointer to talk to switches via the
+> MII interface.
 > 
-> Also changed i40e_add_mac_filter() to operate on netdev->dev_addr,
-> hopefully that makes the code easier to read.
+> While this works for dsa devices, it will not work safely with Linux PHYs in all
+> configurations since the firmware of the ixgbe device may be polling some
+> PHY addresses in the background.
 > 
-> Fixes: 458867b2ca0c ("i40e: don't remove netdev->dev_addr when syncing
-> uc list")
-> 
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+> Signed-off-by: Stephen Douthit <stephend@silicom-usa.com>
+> Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+> Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/Kconfig            |   1 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   2 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   5 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 299 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |   2 +
+>  5 files changed, 309 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
