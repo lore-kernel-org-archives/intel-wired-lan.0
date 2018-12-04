@@ -1,12 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 4 Dec 2018 16:59:21 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v4 2/2] ixgbe: use mii_bus to
- handle MII related ioctls
-In-Reply-To: <20181203201432.18252-3-stephend@silicom-usa.com>
-References: <20181203163227.5107-1-stephend@silicom-usa.com>
- <20181203201432.18252-1-stephend@silicom-usa.com>
- <20181203201432.18252-3-stephend@silicom-usa.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32C616@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 4 Dec 2018 17:01:24 +0000
+Subject: [Intel-wired-lan] [PATCH] intel: ice: Do not enable NAPI on
+ q_vectors that have no rings
+In-Reply-To: <HK0PR01MB21630071FC7DAA5B3189A40EADD20@HK0PR01MB2163.apcprd01.prod.exchangelabs.com>
+References: <HK0PR01MB21630071FC7DAA5B3189A40EADD20@HK0PR01MB2163.apcprd01.prod.exchangelabs.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32C629@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,28 +13,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Steve Douthit
-> Sent: Monday, December 3, 2018 12:15 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: Andrew Lunn <andrew@lunn.ch>; Florian Fainelli <f.fainelli@gmail.com>;
-> netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; David S. Miller
-> <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH net-next v4 2/2] ixgbe: use mii_bus to
-> handle MII related ioctls
+> Behalf Of Yang Xiao
+> Sent: Wednesday, November 28, 2018 5:54 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Yang Xiao
+> <YangX92@hotmail.com>
+> Subject: [Intel-wired-lan] [PATCH] intel: ice: Do not enable NAPI on
+> q_vectors that have no rings
 > 
-> Use the mii_bus callbacks to address the entire clause 22/45 address space.
-> Enables userspace to poke switch registers instead of a single PHY address.
+> From: Young Xiao <YangX92@hotmail.com>
 > 
-> The ixgbe firmware may be polling PHYs in a way that is not protected by the
-> mii_bus lock.  This isn't new behavior, but as Andrew Lunn pointed out there
-> are more addresses available for conflicts.
+> If ice driver has q_vectors w/ active NAPI that has no rings, then this will
+> result in a divide by zero error. To correct it I am updating the driver code so
+> that we only support NAPI on q_vectors that have 1 or more rings allocated
+> to them.
 > 
-> Signed-off-by: Stephen Douthit <stephend@silicom-usa.com>
-> Reviewed-by: Andrew Lunn <andrew@lunn.ch>
-> Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
+> See commit 13a8cd191a2b ("i40e: Do not enable NAPI on q_vectors that have
+> no rings") for detail.
+> 
+> Signed-off-by: Young Xiao <YangX92@hotmail.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 16 ++++++++++++----
+>  1 file changed, 12 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
