@@ -1,26 +1,58 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Tue, 4 Dec 2018 11:40:38 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v4 0/2] Add mii_bus to ixgbe
- driver for dsa devs
-In-Reply-To: <c8e3976f-73f9-80be-f6d6-c9a1f064a096@gmail.com>
-References: <20181203163227.5107-1-stephend@silicom-usa.com>
- <20181203201432.18252-1-stephend@silicom-usa.com>
- <19b22292-f2b3-ccb8-bb37-0952cfa93135@gmail.com>
- <5c8b517a-6632-931d-c695-ec8a5302bfa4@silicom-usa.com>
- <c8e3976f-73f9-80be-f6d6-c9a1f064a096@gmail.com>
-Message-ID: <20181204104038.GB741@lunn.ch>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Tue,  4 Dec 2018 15:18:52 +0100
+Subject: [Intel-wired-lan] [PATCH] i40e: fix mac filter delete when setting
+ mac address
+Message-ID: <20181204141852.13893-1-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> Yes the current solution whereby we need to get a hold on the network
-> device's struct device reference is not quite ideal, AFAIR, Andrew has
-> had the same problem.
+A previous commit moved the ether_addr_copy() in i40e_set_mac() before
+the mac filter del/add to avoid a race. However it wasn't taken into
+account that this alters the mac address being handed to
+i40e_del_mac_filter().
 
-Yes, it is not nice, and there is a race with systemd renaming the
-interfaces using its naming rules. We need a way to lookup an
-interface based on a bus location, or similar, not by name.
+Also changed i40e_add_mac_filter() to operate on netdev->dev_addr,
+hopefully that makes the code easier to read.
 
-	  Andrew
+Fixes: 458867b2ca0c ("i40e: don't remove netdev->dev_addr when syncing uc list")
+
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 6d5b13f69dec..901ef799d2ad 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1546,17 +1546,17 @@ static int i40e_set_mac(struct net_device *netdev, void *p)
+ 		netdev_info(netdev, "set new mac address %pM\n", addr->sa_data);
+ 
+ 	/* Copy the address first, so that we avoid a possible race with
+-	 * .set_rx_mode(). If we copy after changing the address in the filter
+-	 * list, we might open ourselves to a narrow race window where
+-	 * .set_rx_mode could delete our dev_addr filter and prevent traffic
+-	 * from passing.
++	 * .set_rx_mode().
++	 * - Remove old address from MAC filter
++	 * - Copy new address
++	 * - Add new address to MAC filter
+ 	 */
+-	ether_addr_copy(netdev->dev_addr, addr->sa_data);
+-
+ 	spin_lock_bh(&vsi->mac_filter_hash_lock);
+ 	i40e_del_mac_filter(vsi, netdev->dev_addr);
+-	i40e_add_mac_filter(vsi, addr->sa_data);
++	ether_addr_copy(netdev->dev_addr, addr->sa_data);
++	i40e_add_mac_filter(vsi, netdev->dev_addr);
+ 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
++
+ 	if (vsi->type == I40E_VSI_MAIN) {
+ 		i40e_status ret;
+ 
+-- 
+2.19.2
+
