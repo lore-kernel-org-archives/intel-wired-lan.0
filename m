@@ -1,52 +1,243 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Date: Mon, 3 Dec 2018 15:46:19 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v4 0/2] Add mii_bus to ixgbe
- driver for dsa devs
-In-Reply-To: <5c8b517a-6632-931d-c695-ec8a5302bfa4@silicom-usa.com>
-References: <20181203163227.5107-1-stephend@silicom-usa.com>
- <20181203201432.18252-1-stephend@silicom-usa.com>
- <19b22292-f2b3-ccb8-bb37-0952cfa93135@gmail.com>
- <5c8b517a-6632-931d-c695-ec8a5302bfa4@silicom-usa.com>
-Message-ID: <c8e3976f-73f9-80be-f6d6-c9a1f064a096@gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 04 Dec 2018 09:42:38 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
+ 98ec48718c953166d8f48d19691d70275e7581ee
+Message-ID: <5c05db8e.YWwjoaEn64JLzcpi%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/3/18 3:42 PM, Steve Douthit wrote:
->> Not directly related to this patch series, are you using the legacy or
->> "new" way of passing platform data in order to register the DSA switch?
->> Since you mentioned 6390, I would assume this must be the "new" way of
->> registering DSA devices with mdio_boardinfo etc. In that case, have you
->> found yourself limited by the current dsa_chip_platform_data?
-> 
-> With the new method I had an off-by-one error where the 'enabled_ports'
-> bitmask and 'port_names' array didn't match up in my first attempt.
-> That's definitely my fault, but the loop that searches for the "cpu"
-> string didn't like it and segfaulted.
-> 
-> I've got something of a chicken-and-the-egg problem between where I'm
-> deferring while waiting for netdevs to show up, and registering the
-> mdio_board_info that needs those same pointers.  For testing I exported
-> mdiobus_setup_mdiodev_from_board_info() and mdiobus_create_device() so I
-> could call the setup function again when the data was actually ready.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 98ec48718c953166d8f48d19691d70275e7581ee  igc: Clean up code
 
-Yes the current solution whereby we need to get a hold on the network
-device's struct device reference is not quite ideal, AFAIR, Andrew has
-had the same problem.
+TIMEOUT after 602m
 
-> 
-> It'd be nice to have more than one "cpu" port on a switch and have some
-> way to associate downstream and "cpu" ports.  Not sure exactly what that
-> would look like, and it's not something I'm going to try and tackle at
-> the moment, but it's one for the wish list.
 
-Yes, we have been discussing that topic with Andrew and have a few ideas
-on how that could be achieved, but not code to use that at the moment.
-One of the idea was to finally allow enslaving the DSA master network
-device, that way you could assign specific ports to a specific CPU/DSA
-master network port within the switch, though that requires setting up a
-bridge. Would that work for your use case?
---
-Florian
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 102
+
+alpha                            allmodconfig
+alpha                            allyesconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                            randconfig-a0
+i386                            randconfig-a1
+i386                            randconfig-a2
+i386                            randconfig-a3
+i386                            randconfig-f0
+i386                            randconfig-f1
+i386                            randconfig-f2
+i386                            randconfig-f3
+i386                            randconfig-i0
+i386                            randconfig-i1
+i386                            randconfig-i2
+i386                            randconfig-i3
+i386                            randconfig-j0
+i386                            randconfig-j1
+i386                            randconfig-j2
+i386                            randconfig-j3
+i386                            randconfig-k0
+i386                            randconfig-k1
+i386                            randconfig-k2
+i386                            randconfig-k3
+i386                            randconfig-n0
+i386                            randconfig-n1
+i386                            randconfig-n2
+i386                            randconfig-n3
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                             allyesconfig
+mips                                   jz4740
+mips                                     txx9
+nds32                            allmodconfig
+nds32                            allyesconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+s390                             allmodconfig
+s390                             allyesconfig
+sh                               allmodconfig
+sh                               allyesconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+sparc64                          allmodconfig
+sparc64                          allyesconfig
+x86_64                             acpi-redef
+x86_64                           allyesconfig
+x86_64                           allyesdebian
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                          randconfig-e0
+x86_64                          randconfig-e1
+x86_64                          randconfig-e2
+x86_64                          randconfig-e3
+x86_64                          randconfig-f0
+x86_64                          randconfig-f1
+x86_64                          randconfig-f2
+x86_64                          randconfig-f3
+x86_64                          randconfig-g0
+x86_64                          randconfig-g1
+x86_64                          randconfig-g2
+x86_64                          randconfig-g3
+x86_64                          randconfig-h0
+x86_64                          randconfig-h1
+x86_64                          randconfig-h2
+x86_64                          randconfig-h3
+x86_64                          randconfig-i0
+x86_64                          randconfig-i1
+x86_64                          randconfig-i2
+x86_64                          randconfig-i3
+x86_64                          randconfig-j0
+x86_64                          randconfig-j1
+x86_64                          randconfig-j2
+x86_64                          randconfig-j3
+x86_64                          randconfig-k0
+x86_64                          randconfig-k1
+x86_64                          randconfig-k2
+x86_64                          randconfig-k3
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                         rhel-7.2-clear
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+
+configs tested: 108
+
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-x019-201848
+i386                   randconfig-x016-201848
+i386                   randconfig-x018-201848
+i386                   randconfig-x014-201848
+i386                   randconfig-x012-201848
+i386                   randconfig-x011-201848
+i386                   randconfig-x010-201848
+i386                   randconfig-x017-201848
+i386                   randconfig-x013-201848
+i386                   randconfig-x015-201848
+nds32                               defconfig
+nds32                             allnoconfig
+riscv                             allnoconfig
+riscv                               defconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+i386                             allmodconfig
+i386                   randconfig-x005-201848
+i386                   randconfig-x006-201848
+i386                   randconfig-x007-201848
+i386                   randconfig-x000-201848
+i386                   randconfig-x004-201848
+i386                   randconfig-x002-201848
+i386                   randconfig-x009-201848
+i386                   randconfig-x001-201848
+i386                   randconfig-x008-201848
+i386                   randconfig-x003-201848
+x86_64                 randconfig-x017-201848
+x86_64                 randconfig-x013-201848
+x86_64                 randconfig-x011-201848
+x86_64                 randconfig-x016-201848
+x86_64                 randconfig-x012-201848
+x86_64                 randconfig-x018-201848
+x86_64                 randconfig-x019-201848
+x86_64                 randconfig-x014-201848
+x86_64                 randconfig-x015-201848
+x86_64                 randconfig-x010-201848
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+arm                       omap2plus_defconfig
+arm                              allmodconfig
+arm                        mvebu_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                       imx_v6_v7_defconfig
+arm64                            allmodconfig
+arm                           tegra_defconfig
+arm64                            alldefconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s0-201848
+i386                     randconfig-s1-201848
+i386                     randconfig-s3-201848
+i386                     randconfig-s2-201848
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x000-201848
+x86_64                 randconfig-x002-201848
+x86_64                 randconfig-x005-201848
+x86_64                 randconfig-x001-201848
+x86_64                 randconfig-x008-201848
+x86_64                 randconfig-x007-201848
+x86_64                 randconfig-x009-201848
+x86_64                 randconfig-x006-201848
+x86_64                 randconfig-x003-201848
+x86_64                 randconfig-x004-201848
+i386                 randconfig-x079-12030102
+i386                 randconfig-x074-12030102
+i386                 randconfig-x078-12030102
+i386                 randconfig-x071-12030102
+i386                 randconfig-x070-12030102
+i386                 randconfig-x077-12030102
+i386                 randconfig-x075-12030102
+i386                 randconfig-x076-12030102
+i386                 randconfig-x072-12030102
+i386                 randconfig-x073-12030102
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
