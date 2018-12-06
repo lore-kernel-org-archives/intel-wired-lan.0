@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 6 Dec 2018 22:47:41 +0000
-Subject: [Intel-wired-lan] [PATCH v3 2/2] i40e: DRY rx_ptype handling
- code
-In-Reply-To: <d1719aa5baadcab54eaf822ed519934ab34ea5a5.1543944510.git.mirq-linux@rere.qmqm.pl>
-References: <6a993b48a235e7a65d522642a74a28a7391ad964.1543944510.git.mirq-linux@rere.qmqm.pl>
- <d1719aa5baadcab54eaf822ed519934ab34ea5a5.1543944510.git.mirq-linux@rere.qmqm.pl>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32C9FA@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 6 Dec 2018 22:48:18 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix race when the VF driver
+ does a reset
+In-Reply-To: <20181205135426.26431-1-ross.lagerwall@citrix.com>
+References: <20181205135426.26431-1-ross.lagerwall@citrix.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32CA0D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,26 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Michal Miroslaw
-> Sent: Tuesday, December 4, 2018 9:31 AM
+> Behalf Of Ross Lagerwall
+> Sent: Wednesday, December 5, 2018 5:54 AM
 > To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 2/2] i40e: DRY rx_ptype handling code
+> Cc: Ross Lagerwall <ross.lagerwall@citrix.com>; David S. Miller
+> <davem@davemloft.net>
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix race when the VF driver does a
+> reset
 > 
-> Move rx_ptype extracting to i40e_process_skb_fields() to avoid duplicating
-> the code.
+> When the VF driver does a reset, it (at least the Linux one) writes to the
+> VFCTRL register to issue a reset and then immediately sends a reset message
+> using the mailbox API. This is racy because when the PF driver detects that
+> the VFCTRL register reset pin has been asserted, it clears the mailbox
+> memory. Depending on ordering, the reset message sent by the VF could be
+> cleared by the PF driver. It then responds to the cleared message with a
+> NACK which causes the VF driver to malfunction.
+> Fix this by deferring clearing the mailbox memory until the reset message is
+> received.
 > 
-> Signed-off-by: Micha? Miros?aw <michal.miroslaw@atendesoftware.pl>
-> Signed-off-by: Micha? Miros?aw <mirq-linux@rere.qmqm.pl>
+> Fixes: 939b701ad633 ("ixgbe: fix driver behaviour after issuing VFLR")
+> Signed-off-by: Ross Lagerwall <ross.lagerwall@citrix.com>
 > ---
-> v3:
->  * no changes
-> v2:
->  * fix prototype in i40e_txrx_common.h
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 12 ++++--------
->  drivers/net/ethernet/intel/i40e/i40e_txrx_common.h |  3 +--
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c         |  6 +-----
->  3 files changed, 6 insertions(+), 15 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 11 ++++++++++-
+>  1 file changed, 10 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
