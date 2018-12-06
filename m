@@ -1,18 +1,168 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Thu, 06 Dec 2018 10:19:38 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
- 4410354d59dbbd3751437125705c0eb6c75205e0
-Message-ID: <5c08873a.12AM0PQb1coqNBBR%lkp@intel.com>
+Date: Thu, 06 Dec 2018 13:19:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ d3daa6adeda2134473d321a6c34587fcf9e8a000
+Message-ID: <5c08b178.u8/Nnjg6O3oDNx/F%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 4410354d59dbbd3751437125705c0eb6c75205e0  igc: Clean up code
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: d3daa6adeda2134473d321a6c34587fcf9e8a000  ixgbe: Fix race when the VF driver does a reset
 
-TIMEOUT after 609m
+Regressions in current branch:
+
+ERROR: "__mdiobus_register" [drivers/net/ethernet/intel/ixgbe/ixgbe.ko] undefined!
+ERROR: "devm_mdiobus_alloc_size" [drivers/net/ethernet/intel/ixgbe/ixgbe.ko] undefined!
+ERROR: "devm_mdiobus_free" [drivers/net/ethernet/intel/ixgbe/ixgbe.ko] undefined!
+ERROR: "mdiobus_unregister" [drivers/net/ethernet/intel/ixgbe/ixgbe.ko] undefined!
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:11197: undefined reference to `mdiobus_unregister'
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8800: undefined reference to `mdiobus_read'
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:8823: undefined reference to `mdiobus_write'
+drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c:952: undefined reference to `__mdiobus_register'
+drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c:955: undefined reference to `devm_mdiobus_free'
+include/linux/phy.h:264: undefined reference to `devm_mdiobus_alloc_size'
+
+Error ids grouped by kconfigs:
+
+recent_errors
+|-- i386-randconfig-b0-12060538
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- i386-randconfig-b0-12060606
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- i386-randconfig-h0-12060610
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- i386-randconfig-sb0-12060525
+|   |-- ERROR:__mdiobus_register-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_alloc_size-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_free-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   `-- ERROR:mdiobus_unregister-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|-- i386-randconfig-sb0-12060613
+|   |-- ERROR:__mdiobus_register-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_alloc_size-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_free-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   `-- ERROR:mdiobus_unregister-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|-- x86_64-randconfig-a0-12060542
+|   |-- ERROR:__mdiobus_register-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_alloc_size-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_free-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   `-- ERROR:mdiobus_unregister-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|-- x86_64-randconfig-a0-12060629
+|   |-- ERROR:__mdiobus_register-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_alloc_size-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_free-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   `-- ERROR:mdiobus_unregister-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|-- x86_64-randconfig-b0-12060516
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- x86_64-randconfig-b0-12060548
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- x86_64-randconfig-g0-12060606
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- x86_64-randconfig-s0-12060627
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- x86_64-randconfig-s1-12060501
+|   |-- ERROR:__mdiobus_register-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_alloc_size-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_free-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   `-- ERROR:mdiobus_unregister-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|-- x86_64-randconfig-s1-12060531
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- x86_64-randconfig-s3-12060503
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- x86_64-randconfig-s3-12060627
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- x86_64-randconfig-s5-12060503
+|   |-- ERROR:__mdiobus_register-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_alloc_size-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_free-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   `-- ERROR:mdiobus_unregister-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|-- x86_64-randconfig-s5-12060530
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- x86_64-randconfig-s5-12060600
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- x86_64-randconfig-s5-12060627
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+|   `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+|-- x86_64-randconfig-u0-12060541
+|   |-- ERROR:__mdiobus_register-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_alloc_size-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   |-- ERROR:devm_mdiobus_free-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+|   `-- ERROR:mdiobus_unregister-drivers-net-ethernet-intel-ixgbe-ixgbe.ko-undefined
+`-- x86_64-randconfig-u0-12060631
+    |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_read
+    |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_unregister
+    |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:undefined-reference-to-mdiobus_write
+    |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-__mdiobus_register
+    |-- drivers-net-ethernet-intel-ixgbe-ixgbe_phy.c:undefined-reference-to-devm_mdiobus_free
+    `-- include-linux-phy.h:undefined-reference-to-devm_mdiobus_alloc_size
+
+TIMEOUT after 601m
 
 
 Sorry we cannot finish the testset for your branch within a reasonable time.
@@ -22,129 +172,28 @@ possible error reports when our build infrastructure is restored or catches up.
 There will be no more build success notification for this branch head, but you
 can expect reasonably good test coverage after waiting for 1 day.
 
-configs timed out: 90
-
-alpha                            allmodconfig
-alpha                            allyesconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-i386                            randconfig-a0
-i386                            randconfig-a1
-i386                            randconfig-a2
-i386                            randconfig-a3
-i386                            randconfig-f0
-i386                            randconfig-f1
-i386                            randconfig-f2
-i386                            randconfig-f3
-i386                            randconfig-i0
-i386                            randconfig-i1
-i386                            randconfig-i2
-i386                            randconfig-i3
-i386                            randconfig-j0
-i386                            randconfig-j1
-i386                            randconfig-j2
-i386                            randconfig-j3
-i386                            randconfig-k0
-i386                            randconfig-k1
-i386                            randconfig-k2
-i386                            randconfig-k3
-i386                            randconfig-n0
-i386                            randconfig-n1
-i386                            randconfig-n2
-i386                            randconfig-n3
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-nds32                            allmodconfig
-nds32                            allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-riscv                            allmodconfig
-s390                             allmodconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc                            allmodconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-x86_64                             acpi-redef
-x86_64                           allyesconfig
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                          randconfig-e0
-x86_64                          randconfig-e1
-x86_64                          randconfig-e2
-x86_64                          randconfig-e3
-x86_64                          randconfig-f0
-x86_64                          randconfig-f1
-x86_64                          randconfig-f2
-x86_64                          randconfig-f3
-x86_64                          randconfig-g1
-x86_64                          randconfig-g2
-x86_64                          randconfig-g3
-x86_64                          randconfig-h0
-x86_64                          randconfig-h1
-x86_64                          randconfig-h2
-x86_64                          randconfig-h3
-x86_64                          randconfig-i0
-x86_64                          randconfig-i1
-x86_64                          randconfig-i2
-x86_64                          randconfig-i3
-x86_64                          randconfig-j0
-x86_64                          randconfig-j1
-x86_64                          randconfig-j2
-x86_64                          randconfig-j3
-x86_64                          randconfig-k0
-x86_64                          randconfig-k1
-x86_64                          randconfig-k2
-x86_64                          randconfig-k3
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                         rhel-7.2-clear
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-
-configs tested: 250
+configs tested: 275
 
 alpha                               defconfig
 parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
-arm                  colibri_pxa300_defconfig
-powerpc                        fsp2_defconfig
-m68k                        stmark2_defconfig
-openrisc                         alldefconfig
-arm                          simpad_defconfig
-mips                          ath25_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                 mpc834x_mds_defconfig
-x86_64                 randconfig-a0-12060727
-riscv                              tinyconfig
-i386                               tinyconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-arm                              allyesconfig
-xtensa                       common_defconfig
-powerpc                          g5_defconfig
-sh                   sh7724_generic_defconfig
-i386                             allmodconfig
-mips                        generic_defconfig
-arm64                            allyesconfig
-powerpc                      bamboo_defconfig
+alpha                            allmodconfig
+sh                          rsk7264_defconfig
+arm                         hackkit_defconfig
+powerpc                     tqm8540_defconfig
+arm                            xcep_defconfig
+m68k                        mvme16x_defconfig
+x86_64                 randconfig-a0-12060509
+x86_64                 randconfig-a0-12060542
+x86_64                 randconfig-a0-12060629
+m68k                           sun3_defconfig
+powerpc                      pmac32_defconfig
+arm                          nuc950_defconfig
+powerpc                 canyonlands_defconfig
+arm                            lart_defconfig
+sh                          rsk7201_defconfig
 i386                 randconfig-x010-12051023
 i386                 randconfig-x011-12051023
 i386                 randconfig-x012-12051023
@@ -155,64 +204,45 @@ i386                 randconfig-x016-12051023
 i386                 randconfig-x017-12051023
 i386                 randconfig-x018-12051023
 i386                 randconfig-x019-12051023
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64               randconfig-x004-12051024
-x86_64               randconfig-x008-12051024
-x86_64               randconfig-x005-12051024
-x86_64               randconfig-x007-12051024
-x86_64               randconfig-x002-12051024
-x86_64               randconfig-x006-12051024
-x86_64               randconfig-x003-12051024
-x86_64               randconfig-x000-12051024
-x86_64               randconfig-x001-12051024
-x86_64               randconfig-x009-12051024
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
-nds32                               defconfig
 nds32                             allnoconfig
+nds32                               defconfig
 powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 s390                        default_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
-mips                          lasat_defconfig
-mips                     loongson1c_defconfig
-powerpc                       maple_defconfig
-riscv                            allyesconfig
-x86_64                 randconfig-g0-12060652
-x86_64                 randconfig-g0-12060701
-x86_64                 randconfig-g0-12060726
-x86_64                 randconfig-g0-12060802
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-c6x                        evmc6678_defconfig
-xtensa                          iss_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-i386                 randconfig-x003-12051027
-i386                 randconfig-x006-12051027
-i386                 randconfig-x008-12051027
-i386                 randconfig-x005-12051027
-i386                 randconfig-x002-12051027
-i386                 randconfig-x004-12051027
-i386                 randconfig-x000-12051027
-i386                 randconfig-x009-12051027
-i386                 randconfig-x007-12051027
-i386                 randconfig-x001-12051027
-x86_64               randconfig-x010-12051027
-x86_64               randconfig-x011-12051027
-x86_64               randconfig-x012-12051027
+mips                           ci20_defconfig
+mips                      pic32mzda_defconfig
+parisc                      default_defconfig
+arm                        neponset_defconfig
+mips                           ip27_defconfig
+i386                             allyesconfig
+powerpc                 mpc837x_mds_defconfig
+x86_64                 randconfig-g0-12060606
+i386                   randconfig-x005-201848
+i386                   randconfig-x006-201848
+i386                   randconfig-x007-201848
+i386                   randconfig-x000-201848
+i386                   randconfig-x004-201848
+i386                   randconfig-x002-201848
+i386                   randconfig-x009-201848
+i386                   randconfig-x001-201848
+i386                   randconfig-x008-201848
+i386                   randconfig-x003-201848
 x86_64               randconfig-x013-12051027
-x86_64               randconfig-x014-12051027
-x86_64               randconfig-x015-12051027
-x86_64               randconfig-x016-12051027
+x86_64               randconfig-x012-12051027
 x86_64               randconfig-x017-12051027
-x86_64               randconfig-x018-12051027
 x86_64               randconfig-x019-12051027
+x86_64               randconfig-x018-12051027
+x86_64               randconfig-x016-12051027
+x86_64               randconfig-x014-12051027
+x86_64               randconfig-x011-12051027
+x86_64               randconfig-x015-12051027
+x86_64               randconfig-x010-12051027
 arm                              allmodconfig
 arm                                      arm5
 arm                                     arm67
@@ -226,125 +256,180 @@ arm                                        sh
 arm                           tegra_defconfig
 arm64                            alldefconfig
 arm64                            allmodconfig
-x86_64                 randconfig-s0-12060659
-x86_64                 randconfig-s1-12060659
-x86_64                 randconfig-s2-12060659
-x86_64                 randconfig-s0-12060740
-x86_64                 randconfig-s1-12060740
-x86_64                 randconfig-s2-12060740
-x86_64                 randconfig-s0-12060811
-x86_64                 randconfig-s1-12060811
-x86_64                 randconfig-s2-12060811
-arm                            zeus_defconfig
-sh                               allmodconfig
-sh                      rts7751r2d1_defconfig
-arm                       aspeed_g5_defconfig
-arm                      footbridge_defconfig
-powerpc                         ps3_defconfig
-xtensa                              defconfig
-arm                        keystone_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                     pseries_defconfig
-arm                        oxnas_v6_defconfig
-sh                           se7712_defconfig
-sparc                            allyesconfig
-sparc                       sparc32_defconfig
-x86_64               randconfig-x010-12051035
-x86_64               randconfig-x017-12051035
-x86_64               randconfig-x014-12051035
-x86_64               randconfig-x019-12051035
-x86_64               randconfig-x018-12051035
-x86_64               randconfig-x015-12051035
-x86_64               randconfig-x012-12051035
-x86_64               randconfig-x011-12051035
-x86_64               randconfig-x013-12051035
-x86_64               randconfig-x016-12051035
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-s0-12060501
+x86_64                 randconfig-s1-12060501
+x86_64                 randconfig-s2-12060501
+x86_64                 randconfig-s0-12060531
+x86_64                 randconfig-s1-12060531
+x86_64                 randconfig-s2-12060531
+x86_64                 randconfig-s0-12060604
+x86_64                 randconfig-s1-12060604
+x86_64                 randconfig-s2-12060604
+x86_64                 randconfig-s0-12060627
+x86_64                 randconfig-s1-12060627
+x86_64                 randconfig-s2-12060627
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mips                        nlm_xlr_defconfig
+powerpc                          g5_defconfig
+m68k                       m5249evb_defconfig
+powerpc64                         allnoconfig
+sh                          r7780mp_defconfig
+um                               alldefconfig
+arm                       mainstone_defconfig
+arm                           sama5_defconfig
+arm                         axm55xx_defconfig
+arm                     eseries_pxa_defconfig
+sh                         ecovec24_defconfig
+xtensa                  nommu_kc705_defconfig
+arm                         lpc18xx_defconfig
+arm                       netwinder_defconfig
+arm                          pcm027_defconfig
+powerpc                  mpc866_ads_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
 i386                   randconfig-s0-12051035
-i386                   randconfig-s3-12051035
-i386                   randconfig-s2-12051035
 i386                   randconfig-s1-12051035
-x86_64                 randconfig-s3-12060658
-x86_64                 randconfig-s4-12060658
-x86_64                 randconfig-s5-12060658
-x86_64                 randconfig-s3-12060732
-x86_64                 randconfig-s4-12060732
-x86_64                 randconfig-s5-12060732
-parisc                generic-64bit_defconfig
-powerpc               corenet_basic_defconfig
-powerpc                      virtex_defconfig
-x86_64                           allmodconfig
-m68k                        mvme16x_defconfig
-sparc                             allnoconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                                   jz4740
-mips                                     txx9
-i386                   randconfig-b0-12060708
+i386                   randconfig-s2-12051035
+i386                   randconfig-s3-12051035
+x86_64                 randconfig-s3-12060503
+x86_64                 randconfig-s4-12060503
+x86_64                 randconfig-s5-12060503
+x86_64                 randconfig-s3-12060530
+x86_64                 randconfig-s4-12060530
+x86_64                 randconfig-s5-12060530
+x86_64                 randconfig-s3-12060600
+x86_64                 randconfig-s4-12060600
+x86_64                 randconfig-s5-12060600
+x86_64                 randconfig-s3-12060627
+x86_64                 randconfig-s4-12060627
+x86_64                 randconfig-s5-12060627
+i386                             allmodconfig
+arm                        oxnas_v6_defconfig
+c6x                        evmc6474_defconfig
+mips                           xway_defconfig
+arm                       versatile_defconfig
+sh                           se7705_defconfig
+xtensa                              defconfig
+mips                      maltaaprp_defconfig
+powerpc               mpc86xx_basic_defconfig
+powerpc                      pasemi_defconfig
+i386                   randconfig-b0-12060538
+i386                   randconfig-b0-12060606
+i386                   randconfig-b0-12060620
+openrisc                         alldefconfig
+powerpc                    klondike_defconfig
+sh                        edosk7705_defconfig
+arm                           u8500_defconfig
+parisc                          712_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-b0-12060516
+x86_64                 randconfig-b0-12060548
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
-mips                           xway_defconfig
-powerpc                 xes_mpc85xx_defconfig
-sh                          polaris_defconfig
-x86_64                 randconfig-b0-12060642
-x86_64                 randconfig-b0-12060713
-powerpc                     sbc8548_defconfig
-arm                         mv78xx0_defconfig
-sh                           se7724_defconfig
-sh                         ap325rxa_defconfig
-m68k                             allmodconfig
-powerpc                     tqm5200_defconfig
-powerpc                   lite5200b_defconfig
-powerpc                     ppa8548_defconfig
-powerpc                  storcenter_defconfig
-m68k                           sun3_defconfig
-powerpc                     tqm8548_defconfig
-x86_64                 randconfig-u0-12060704
-x86_64                 randconfig-u0-12060721
-x86_64                 randconfig-u0-12060731
-x86_64                 randconfig-u0-12060744
-x86_64                           alldefconfig
-arm                          iop32x_defconfig
-powerpc                   currituck_defconfig
-openrisc                 simple_smp_defconfig
-i386                   randconfig-h0-12060706
-i386                   randconfig-h1-12060706
-i386                   randconfig-h0-12060738
-i386                   randconfig-h1-12060738
-m68k                        m5307c3_defconfig
-powerpc                      ppc6xx_defconfig
-mips                           jazz_defconfig
-sh                           se7751_defconfig
-x86_64                randconfig-ne0-12060640
-x86_64                randconfig-ne0-12060733
-arm                          collie_defconfig
-powerpc               mpc834x_itxgp_defconfig
-mips                   sb1250_swarm_defconfig
-powerpc                     ksi8560_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                  randconfig-sb0-12060711
-i386                  randconfig-sb0-12060715
-i386                  randconfig-sb0-12060721
-powerpc                    klondike_defconfig
-sh                        dreamcast_defconfig
-arm                           u8500_defconfig
-sh                           se7705_defconfig
-powerpc                 mpc832x_mds_defconfig
-powerpc                     tqm8541_defconfig
-x86_64                randconfig-ws0-12060711
-x86_64                randconfig-ws0-12060807
-arm64                               defconfig
-powerpc                  iss476-smp_defconfig
+powerpc                      obs600_defconfig
+xtensa                    smp_lx200_defconfig
+openrisc                          allnoconfig
+s390                             allmodconfig
+powerpc                      katmai_defconfig
+powerpc                      tqm8xx_defconfig
+arm                         ebsa110_defconfig
+sh                        edosk7760_defconfig
+powerpc                       ebony_defconfig
+x86_64                 randconfig-u0-12060508
+x86_64                 randconfig-u0-12060532
+x86_64                 randconfig-u0-12060541
+x86_64                 randconfig-u0-12060631
+arm                          nuc960_defconfig
+arm                        cerfcube_defconfig
+sh                         microdev_defconfig
+sh                   sh7770_generic_defconfig
 powerpc                      ppc40x_defconfig
-sh                          r7780mp_defconfig
-powerpc                     powernv_defconfig
-arm                        multi_v7_defconfig
-csky                                defconfig
-x86_64                 randconfig-r0-12060719
+i386                   randconfig-h0-12060610
+i386                   randconfig-h1-12060610
+powerpc                     tqm8555_defconfig
+sh                      rts7751r2d1_defconfig
+xtensa                           allmodconfig
+arm                            u300_defconfig
+x86_64                randconfig-ne0-12060522
+x86_64                randconfig-ne0-12060547
+x86_64                randconfig-ne0-12060612
+x86_64                randconfig-ne0-12060631
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                 randconfig-x070-12051024
+i386                 randconfig-x071-12051024
+i386                 randconfig-x072-12051024
+i386                 randconfig-x073-12051024
+i386                 randconfig-x074-12051024
+i386                 randconfig-x075-12051024
+i386                 randconfig-x076-12051024
+i386                 randconfig-x077-12051024
+i386                 randconfig-x078-12051024
+i386                 randconfig-x079-12051024
+arm                         lubbock_defconfig
+m68k                       m5475evb_defconfig
+powerpc                    adder875_defconfig
+arm                         bcm2835_defconfig
+mips                         cobalt_defconfig
+mips                      fuloong2e_defconfig
+m68k                          multi_defconfig
+i386                  randconfig-sb0-12060455
+i386                  randconfig-sb0-12060519
+i386                  randconfig-sb0-12060525
+i386                  randconfig-sb0-12060613
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64               randconfig-x000-12051028
+x86_64               randconfig-x001-12051028
+x86_64               randconfig-x002-12051028
+x86_64               randconfig-x003-12051028
+x86_64               randconfig-x004-12051028
+x86_64               randconfig-x005-12051028
+x86_64               randconfig-x006-12051028
+x86_64               randconfig-x007-12051028
+x86_64               randconfig-x008-12051028
+x86_64               randconfig-x009-12051028
+alpha                            alldefconfig
+sh                            hp6xx_defconfig
+powerpc                     virtex5_defconfig
+x86_64                randconfig-ws0-12060546
+parisc                           alldefconfig
+powerpc                      pcm030_defconfig
+sparc                             allnoconfig
+x86_64                randconfig-ws0-12060541
+powerpc                     ppa8548_defconfig
+arm                     am200epdkit_defconfig
+mips                         mpc30x_defconfig
+sparc64                          allyesconfig
+arm                             mxs_defconfig
+mips                           ip28_defconfig
+x86_64                           alldefconfig
+mips                                defconfig
+mips                        omega2p_defconfig
+sh                           se7343_defconfig
+mips                    maltaup_xpa_defconfig
+x86_64                 randconfig-r0-12060503
+x86_64                 randconfig-r0-12060620
+x86_64                 randconfig-r0-12060627
 i386                 randconfig-x076-12051027
 i386                 randconfig-x073-12051027
 i386                 randconfig-x070-12051027
@@ -355,18 +440,14 @@ i386                 randconfig-x071-12051027
 i386                 randconfig-x075-12051027
 i386                 randconfig-x072-12051027
 i386                 randconfig-x074-12051027
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-arm                           h5000_defconfig
-sh                ecovec24-romimage_defconfig
-x86_64                            allnoconfig
-mips                          ath79_defconfig
-x86_64                              defconfig
-arm                         em_x270_defconfig
-i386                   randconfig-x0-12060644
-i386                   randconfig-x0-12060719
-i386                   randconfig-x0-12060806
+powerpc                 mpc834x_mds_defconfig
+powerpc                     rainier_defconfig
+arm                         s3c6400_defconfig
+powerpc                  storcenter_defconfig
+mips                             allmodconfig
+mips                            gpr_defconfig
+i386                   randconfig-x0-12060508
+i386                   randconfig-x0-12060541
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
