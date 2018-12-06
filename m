@@ -1,54 +1,46 @@
-From: Steve Douthit <stephend@silicom-usa.com>
-Date: Thu, 6 Dec 2018 15:50:34 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5 0/2] Add mii_bus to ixgbe
- driver for dsa devs
-In-Reply-To: <20181203163227.5107-1-stephend@silicom-usa.com>
-References: <20181203163227.5107-1-stephend@silicom-usa.com>
-Message-ID: <20181206154955.334-1-stephend@silicom-usa.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 6 Dec 2018 22:47:17 +0000
+Subject: [Intel-wired-lan] [PATCH v3 1/2] i40e: fix VLAN.TCI == 0 RX HW
+ offload
+In-Reply-To: <6a993b48a235e7a65d522642a74a28a7391ad964.1543944510.git.mirq-linux@rere.qmqm.pl>
+References: <6a993b48a235e7a65d522642a74a28a7391ad964.1543944510.git.mirq-linux@rere.qmqm.pl>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D32C9EE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Changes from v4 -> v5
-* select MDIO_DEVICE instead of MII in Kconfig
-* Collect Tested-by: tags
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Michal Miroslaw
+> Sent: Tuesday, December 4, 2018 9:31 AM
+> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v3 1/2] i40e: fix VLAN.TCI == 0 RX HW
+> offload
+> 
+> This fixes two bugs in hardware VLAN offload:
+>  1. VLAN.TCI == 0 was being dropped
+>  2. there was a race between disabling of VLAN RX feature in hardware
+>     and processing RX queue, where packets processed in this window
+>     could have their VLAN information dropped
+> 
+> Fix moves the VLAN handling into i40e_process_skb_fields() to save on
+> duplicated code. i40e_receive_skb() becomes trivial and so is removed.
+> 
+> Signed-off-by: Micha? Miros?aw <michal.miroslaw@atendesoftware.pl>
+> Signed-off-by: Micha? Miros?aw <mirq-linux@rere.qmqm.pl>
+> ---
+> v3:
+>  * fix whitespace for checkpatch
+> v2:
+>  * no changes
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 31 +++++--------------
+>  .../ethernet/intel/i40e/i40e_txrx_common.h    |  2 --
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c    |  6 +---
+>  3 files changed, 9 insertions(+), 30 deletions(-)
 
-Changes from v3 -> v4
-* Remove unecessary pointer casts
-* Fix copy/paste issues in comments
-* Simplify setting of swfw semaphore flags
-* Collect Reviewed-by: tags
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Changes from v2 -> v3
-* Added warnings about interactions between this code and PHY polling
-  unit to the commit messages.
-
-Changes from v1 -> v2
-[PATCH 1/2] ixgbe: register a mdiobus
-* Add intel-wired-lan at lists.osuosl.org to CC list, see
-* select MII in Kconfig (thanks to the kbuild bot)
-* Only call mdiobus_regsiter for single x500em_a device
-* Use readx_poll_timeout() in ixgbe_msca_cmd()
-* Register different bus->read/write callbacks in ixgbe_mii_bus_init()
-  so there's device id check on every access
-* Use device pci_name() in bus->id instead of parent bridge's name
-
-[PATCH 2/2] ixgbe: use mii_bus to handle MII related ioctls
-* Only use mdiobus_read/write for adapters that registered a mdiobus
-
-Stephen Douthit (2):
-  ixgbe: register a mdiobus
-  ixgbe: use mii_bus to handle MII related ioctls
-
- drivers/net/ethernet/intel/Kconfig            |   1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   2 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  23 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 307 ++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |   2 +
- 5 files changed, 335 insertions(+)
-
--- 
-2.17.2
 
