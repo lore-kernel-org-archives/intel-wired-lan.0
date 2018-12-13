@@ -1,184 +1,249 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 12 Dec 2018 14:44:24 -0800
-Subject: [Intel-wired-lan] [next v2] docs/networking: fix formatting of
- Intel drivers documentation
-Message-ID: <20181212224424.16787-1-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 13 Dec 2018 10:38:55 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 5a2e2febcfa2079d24c6c29b63b38cbf071819ba
+Message-ID: <5c11c63f.AMND2AnAguYliMaR%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mike Rapoport <rppt@linux.ibm.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 5a2e2febcfa2079d24c6c29b63b38cbf071819ba  docs/networking: fix formatting of Intel drivers documentation
 
-The documentation of Intel drivers is missing the heading adornment for
-document titles.
+elapsed time: 231m
 
-This causes the generated html to have TOC entries from these documents to
-appear as top level TOC entries:
+configs tested: 224
 
-* Linux* Base Driver for Intel(R) Ethernet Network Connection
-* Contents
-* Identifying Your Adapter
-* Command Line Parameters
-  * AutoNeg
-  * Duplex
-  ...
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Add overline heading adornment to document titles.
+arm                           h3600_defconfig
+ia64                         bigsur_defconfig
+m68k                              allnoconfig
+sh                      rts7751r2d1_defconfig
+mips                        jmr3927_defconfig
+powerpc               mpc834x_itxgp_defconfig
+arm                         axm55xx_defconfig
+powerpc64                           defconfig
+sh                   rts7751r2dplus_defconfig
+sh                         apsh4a3a_defconfig
+x86_64                 randconfig-a0-12130728
+riscv                              tinyconfig
+i386                               tinyconfig
+i386                   randconfig-c0-12130713
+arm                            qcom_defconfig
+mips                    maltaup_xpa_defconfig
+i386                   randconfig-x019-201849
+i386                   randconfig-x016-201849
+i386                   randconfig-x018-201849
+i386                   randconfig-x014-201849
+i386                   randconfig-x011-201849
+i386                   randconfig-x012-201849
+i386                   randconfig-x017-201849
+i386                   randconfig-x010-201849
+i386                   randconfig-x013-201849
+i386                   randconfig-x015-201849
+x86_64                 randconfig-x000-201849
+x86_64                 randconfig-x005-201849
+x86_64                 randconfig-x002-201849
+x86_64                 randconfig-x001-201849
+x86_64                 randconfig-x008-201849
+x86_64                 randconfig-x007-201849
+x86_64                 randconfig-x009-201849
+x86_64                 randconfig-x006-201849
+x86_64                 randconfig-x003-201849
+x86_64                 randconfig-x004-201849
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+powerpc                     tqm8548_defconfig
+um                               allyesconfig
+m68k                             allmodconfig
+powerpc                 mpc832x_rdb_defconfig
+x86_64                 randconfig-g0-12130724
+x86_64                 randconfig-g0-12131013
+x86_64                 randconfig-g0-12131017
+x86_64                 randconfig-g0-12131022
+i386                   randconfig-x006-201849
+i386                   randconfig-x005-201849
+i386                   randconfig-x000-201849
+i386                   randconfig-x007-201849
+i386                   randconfig-x004-201849
+i386                   randconfig-x002-201849
+i386                   randconfig-x009-201849
+i386                   randconfig-x001-201849
+i386                   randconfig-x008-201849
+i386                   randconfig-x003-201849
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-s0-12130658
+x86_64                 randconfig-s1-12130658
+x86_64                 randconfig-s2-12130658
+x86_64                 randconfig-s0-12131000
+x86_64                 randconfig-s1-12131000
+x86_64                 randconfig-s2-12131000
+i386                                defconfig
+arm                            u300_defconfig
+microblaze                    nommu_defconfig
+m68k                        m5307c3_defconfig
+powerpc                       ebony_defconfig
+powerpc                 mpc836x_mds_defconfig
+sh                   sh7724_generic_defconfig
+arm                         lubbock_defconfig
+ia64                             allyesconfig
+sh                          polaris_defconfig
+x86_64                           alldefconfig
+arm                           corgi_defconfig
+arm                            zeus_defconfig
+ia64                        generic_defconfig
+powerpc                 mpc8540_ads_defconfig
+sh                           cayman_defconfig
+sh                             espt_defconfig
+sh                           se7780_defconfig
+powerpc                      chrp32_defconfig
+sh                               alldefconfig
+arm                            mps2_defconfig
+powerpc                    adder875_defconfig
+powerpc                        fsp2_defconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                      ppc40x_defconfig
+powerpc                     ps3_nfs_defconfig
+c6x                        evmc6474_defconfig
+mips                     loongson1c_defconfig
+mips                           mtx1_defconfig
+x86_64                 randconfig-x017-201849
+x86_64                 randconfig-x013-201849
+x86_64                 randconfig-x016-201849
+x86_64                 randconfig-x011-201849
+x86_64                 randconfig-x012-201849
+x86_64                 randconfig-x018-201849
+x86_64                 randconfig-x019-201849
+x86_64                 randconfig-x014-201849
+x86_64                 randconfig-x015-201849
+x86_64                 randconfig-x010-201849
+i386                             alldefconfig
+i386                              allnoconfig
+i386                   randconfig-s0-12100145
+i386                   randconfig-s1-12100145
+i386                   randconfig-s2-12100145
+i386                   randconfig-s3-12100145
+x86_64                 randconfig-s3-12130636
+x86_64                 randconfig-s4-12130636
+x86_64                 randconfig-s5-12130636
+x86_64                 randconfig-s3-12130942
+x86_64                 randconfig-s4-12130942
+x86_64                 randconfig-s5-12130942
+x86_64                 randconfig-s3-12131000
+x86_64                 randconfig-s4-12131000
+x86_64                 randconfig-s5-12131000
+x86_64                 randconfig-s3-12131009
+x86_64                 randconfig-s4-12131009
+x86_64                 randconfig-s5-12131009
+arm                           efm32_defconfig
+powerpc                         wii_defconfig
+mips                      maltasmvp_defconfig
+i386                   randconfig-b0-12131005
+sh                        apsh4ad0a_defconfig
+sh                          landisk_defconfig
+parisc                           allmodconfig
+sh                     sh7710voipgw_defconfig
+x86_64                 randconfig-b0-12130719
+x86_64                 randconfig-b0-12130943
+arm                                 defconfig
+mips                      loongson3_defconfig
+powerpc                     powernv_defconfig
+powerpc                    sam440ep_defconfig
+mips                          rb532_defconfig
+mips                          malta_defconfig
+m68k                          sun3x_defconfig
+powerpc           ps3_petitboot_nfs_defconfig
+arm                       cns3420vb_defconfig
+arm                         em_x270_defconfig
+x86_64                 randconfig-u0-12130655
+x86_64                 randconfig-u0-12131001
+x86_64                 randconfig-u0-12131003
+x86_64                 randconfig-u0-12131006
+x86_64                 randconfig-u0-12131032
+x86_64                 randconfig-u0-12131035
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                         at91_dt_defconfig
+sh                           se7206_defconfig
+arm                       multi_v4t_defconfig
+um                               alldefconfig
+x86_64                randconfig-ne0-12130725
+x86_64                randconfig-ne0-12131030
+mips                          ath25_defconfig
+powerpc                 xes_mpc85xx_defconfig
+arm                          ks8695_defconfig
+i386                   randconfig-x073-201849
+i386                   randconfig-x070-201849
+i386                   randconfig-x075-201849
+i386                   randconfig-x072-201849
+i386                   randconfig-x071-201849
+i386                   randconfig-x077-201849
+i386                   randconfig-x074-201849
+i386                   randconfig-x078-201849
+i386                   randconfig-x079-201849
+i386                   randconfig-x076-201849
+sh                          urquell_defconfig
+alpha                            allmodconfig
+sh                               j2_defconfig
+i386                  randconfig-sb0-12130700
+i386                  randconfig-sb0-12131008
+i386                  randconfig-sb0-12131010
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sh                            shmin_defconfig
+arm                         vf610m4_defconfig
+powerpc                          allmodconfig
+x86_64                randconfig-ws0-12130708
+arm                         orion5x_defconfig
+arm                        mvebu_v5_defconfig
+ia64                      gensparse_defconfig
+mips                        qi_lb60_defconfig
+powerpc                  storcenter_defconfig
+mips                      bmips_stb_defconfig
+arm                           omap1_defconfig
+powerpc                       maple_defconfig
+powerpc               ps3_petitboot_defconfig
+x86_64                 randconfig-r0-12130625
+x86_64                 randconfig-r0-12131016
+i386                   randconfig-x0-12130658
+i386                   randconfig-x0-12130944
+i386                   randconfig-x0-12130948
 
-Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 ---
-v2: update the Documentation path with the current net-next tree
-
-Another interesting thing is that many of these documents have very similar
-or even identical titles.
-It would be nice to include the adapter name in the titles to make them
-distinguishable.
-
- Documentation/networking/device_drivers/intel/e100.rst    | 1 +
- Documentation/networking/device_drivers/intel/e1000.rst   | 1 +
- Documentation/networking/device_drivers/intel/e1000e.rst  | 1 +
- Documentation/networking/device_drivers/intel/fm10k.rst   | 1 +
- Documentation/networking/device_drivers/intel/i40e.rst    | 1 +
- Documentation/networking/device_drivers/intel/iavf.rst    | 1 +
- Documentation/networking/device_drivers/intel/ice.rst     | 1 +
- Documentation/networking/device_drivers/intel/igb.rst     | 1 +
- Documentation/networking/device_drivers/intel/igbvf.rst   | 1 +
- Documentation/networking/device_drivers/intel/ixgb.rst    | 1 +
- Documentation/networking/device_drivers/intel/ixgbe.rst   | 1 +
- Documentation/networking/device_drivers/intel/ixgbevf.rst | 1 +
- 12 files changed, 12 insertions(+)
-
-diff --git a/Documentation/networking/device_drivers/intel/e100.rst b/Documentation/networking/device_drivers/intel/e100.rst
-index 5e2839b..2b9f488 100644
---- a/Documentation/networking/device_drivers/intel/e100.rst
-+++ b/Documentation/networking/device_drivers/intel/e100.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+==============================================================
- Linux* Base Driver for the Intel(R) PRO/100 Family of Adapters
- ==============================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/e1000.rst b/Documentation/networking/device_drivers/intel/e1000.rst
-index 6379d4d..956560b 100644
---- a/Documentation/networking/device_drivers/intel/e1000.rst
-+++ b/Documentation/networking/device_drivers/intel/e1000.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+===========================================================
- Linux* Base Driver for Intel(R) Ethernet Network Connection
- ===========================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/e1000e.rst b/Documentation/networking/device_drivers/intel/e1000e.rst
-index 33554e5..01999f0 100644
---- a/Documentation/networking/device_drivers/intel/e1000e.rst
-+++ b/Documentation/networking/device_drivers/intel/e1000e.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+======================================================
- Linux* Driver for Intel(R) Ethernet Network Connection
- ======================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/fm10k.rst b/Documentation/networking/device_drivers/intel/fm10k.rst
-index bf5e594..ac3269e 100644
---- a/Documentation/networking/device_drivers/intel/fm10k.rst
-+++ b/Documentation/networking/device_drivers/intel/fm10k.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+==============================================================
- Linux* Base Driver for Intel(R) Ethernet Multi-host Controller
- ==============================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/i40e.rst b/Documentation/networking/device_drivers/intel/i40e.rst
-index 0cc16c5..848fd38 100644
---- a/Documentation/networking/device_drivers/intel/i40e.rst
-+++ b/Documentation/networking/device_drivers/intel/i40e.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+==================================================================
- Linux* Base Driver for the Intel(R) Ethernet Controller 700 Series
- ==================================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/iavf.rst b/Documentation/networking/device_drivers/intel/iavf.rst
-index f8b42b6..2d0c3ba 100644
---- a/Documentation/networking/device_drivers/intel/iavf.rst
-+++ b/Documentation/networking/device_drivers/intel/iavf.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+==================================================================
- Linux* Base Driver for Intel(R) Ethernet Adaptive Virtual Function
- ==================================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/ice.rst b/Documentation/networking/device_drivers/intel/ice.rst
-index 4d118b8..c220aa2 100644
---- a/Documentation/networking/device_drivers/intel/ice.rst
-+++ b/Documentation/networking/device_drivers/intel/ice.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+===================================================================
- Linux* Base Driver for the Intel(R) Ethernet Connection E800 Series
- ===================================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/igb.rst b/Documentation/networking/device_drivers/intel/igb.rst
-index ba16b86..e8f99af 100644
---- a/Documentation/networking/device_drivers/intel/igb.rst
-+++ b/Documentation/networking/device_drivers/intel/igb.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+===========================================================
- Linux* Base Driver for Intel(R) Ethernet Network Connection
- ===========================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/igbvf.rst b/Documentation/networking/device_drivers/intel/igbvf.rst
-index a8a9ffa..9cddabe 100644
---- a/Documentation/networking/device_drivers/intel/igbvf.rst
-+++ b/Documentation/networking/device_drivers/intel/igbvf.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+============================================================
- Linux* Base Virtual Function Driver for Intel(R) 1G Ethernet
- ============================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/ixgb.rst b/Documentation/networking/device_drivers/intel/ixgb.rst
-index 8bd80e27..9450182 100644
---- a/Documentation/networking/device_drivers/intel/ixgb.rst
-+++ b/Documentation/networking/device_drivers/intel/ixgb.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+=====================================================================
- Linux Base Driver for 10 Gigabit Intel(R) Ethernet Network Connection
- =====================================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/ixgbe.rst b/Documentation/networking/device_drivers/intel/ixgbe.rst
-index 725fc69..255bfe1 100644
---- a/Documentation/networking/device_drivers/intel/ixgbe.rst
-+++ b/Documentation/networking/device_drivers/intel/ixgbe.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+=============================================================================
- Linux* Base Driver for the Intel(R) Ethernet 10 Gigabit PCI Express Adapters
- =============================================================================
- 
-diff --git a/Documentation/networking/device_drivers/intel/ixgbevf.rst b/Documentation/networking/device_drivers/intel/ixgbevf.rst
-index 56cde63..5d49773 100644
---- a/Documentation/networking/device_drivers/intel/ixgbevf.rst
-+++ b/Documentation/networking/device_drivers/intel/ixgbevf.rst
-@@ -1,5 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+=============================================================
- Linux* Base Virtual Function Driver for Intel(R) 10G Ethernet
- =============================================================
- 
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
