@@ -1,33 +1,135 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 15 Dec 2018 04:22:57 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 56fbbb6bd51981fefc438755be25c79100abe67a
-Message-ID: <5c141121.jCzfTnmkh1fciqn9%lkp@intel.com>
+Date: Sat, 15 Dec 2018 11:16:45 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
+ 20302cb006c2821457db497ad148d850a3b6fc62
+Message-ID: <5c14721d.saE1kbMoQCtbEWSf%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 56fbbb6bd51981fefc438755be25c79100abe67a  docs/networking: fix formatting of Intel drivers documentation
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 20302cb006c2821457db497ad148d850a3b6fc62  igc: Clean up code
 
-elapsed time: 186m
+TIMEOUT after 600m
 
-configs tested: 174
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 98
+
+alpha                            allmodconfig
+alpha                            allyesconfig
+arm64                            allyesconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+i386                            randconfig-a0
+i386                            randconfig-a1
+i386                            randconfig-a2
+i386                            randconfig-a3
+i386                            randconfig-f0
+i386                            randconfig-f1
+i386                            randconfig-f2
+i386                            randconfig-f3
+i386                            randconfig-i0
+i386                            randconfig-i1
+i386                            randconfig-i2
+i386                            randconfig-i3
+i386                            randconfig-j0
+i386                            randconfig-j1
+i386                            randconfig-j2
+i386                            randconfig-j3
+i386                            randconfig-k0
+i386                            randconfig-k1
+i386                            randconfig-k2
+i386                            randconfig-k3
+i386                            randconfig-n0
+i386                            randconfig-n1
+i386                            randconfig-n2
+i386                            randconfig-n3
+i386                            randconfig-s0
+i386                            randconfig-s1
+i386                            randconfig-s2
+i386                            randconfig-s3
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+mips                             allmodconfig
+mips                             allyesconfig
+nds32                            allmodconfig
+nds32                            allyesconfig
+nios2                         10m50_defconfig
+openrisc                    or1ksim_defconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+s390                             allmodconfig
+s390                             allyesconfig
+sh                               allmodconfig
+sh                               allyesconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                             defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+x86_64                                  kexec
+x86_64                          randconfig-e0
+x86_64                          randconfig-e1
+x86_64                          randconfig-e2
+x86_64                          randconfig-e3
+x86_64                          randconfig-f0
+x86_64                          randconfig-f1
+x86_64                          randconfig-f2
+x86_64                          randconfig-f3
+x86_64                          randconfig-g0
+x86_64                          randconfig-g1
+x86_64                          randconfig-g2
+x86_64                          randconfig-g3
+x86_64                          randconfig-h0
+x86_64                          randconfig-h1
+x86_64                          randconfig-h2
+x86_64                          randconfig-h3
+x86_64                          randconfig-i0
+x86_64                          randconfig-i1
+x86_64                          randconfig-i2
+x86_64                          randconfig-i3
+x86_64                          randconfig-j0
+x86_64                          randconfig-j1
+x86_64                          randconfig-j2
+x86_64                          randconfig-j3
+x86_64                          randconfig-k0
+x86_64                          randconfig-k1
+x86_64                          randconfig-k2
+x86_64                          randconfig-k3
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+
+configs tested: 119
 
 alpha                               defconfig
 parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
 i386                   randconfig-x019-201849
 i386                   randconfig-x016-201849
 i386                   randconfig-x018-201849
@@ -38,11 +140,6 @@ i386                   randconfig-x017-201849
 i386                   randconfig-x010-201849
 i386                   randconfig-x013-201849
 i386                   randconfig-x015-201849
-x86_64                              fedora-25
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                         rhel-7.2-clear
 x86_64                 randconfig-x000-201849
 x86_64                 randconfig-x005-201849
 x86_64                 randconfig-x002-201849
@@ -53,10 +150,8 @@ x86_64                 randconfig-x009-201849
 x86_64                 randconfig-x006-201849
 x86_64                 randconfig-x003-201849
 x86_64                 randconfig-x004-201849
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 arm                               allnoconfig
@@ -69,17 +164,10 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                             allnoconfig
 arm64                               defconfig
-ia64                             allmodconfig
-mips                      pistachio_defconfig
-sh                        apsh4ad0a_defconfig
-arm                              alldefconfig
-xtensa                  audio_kc705_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
@@ -96,20 +184,10 @@ arm                                        sh
 arm                           tegra_defconfig
 arm64                            alldefconfig
 arm64                            allmodconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                            netx_defconfig
-powerpc                        fsp2_defconfig
-powerpc                        icon_defconfig
-m68k                           sun3_defconfig
-mips                 pnx8335_stb225_defconfig
-powerpc                     tqm8548_defconfig
-arm                      jornada720_defconfig
-arm                         lpc32xx_defconfig
-mips                      maltaaprp_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
 x86_64                 randconfig-x017-201849
 x86_64                 randconfig-x013-201849
 x86_64                 randconfig-x016-201849
@@ -120,69 +198,22 @@ x86_64                 randconfig-x019-201849
 x86_64                 randconfig-x014-201849
 x86_64                 randconfig-x015-201849
 x86_64                 randconfig-x010-201849
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                 randconfig-s3-12150350
-x86_64                 randconfig-s4-12150350
-x86_64                 randconfig-s5-12150350
-x86_64                 randconfig-s3-12150407
-x86_64                 randconfig-s4-12150407
-x86_64                 randconfig-s5-12150407
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-b0-12150349
-i386                   randconfig-b0-12150351
-i386                   randconfig-b0-12150353
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                             allmodconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
+x86_64                              fedora-25
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                         rhel-7.2-clear
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
-powerpc                 mpc834x_mds_defconfig
-powerpc                     tqm8541_defconfig
-arm                  colibri_pxa270_defconfig
-sh                         ecovec24_defconfig
-x86_64                randconfig-ne0-12150404
-x86_64                randconfig-ne0-12150406
 riscv                              tinyconfig
 i386                               tinyconfig
-powerpc                      ppc64e_defconfig
-sh                          rsk7203_defconfig
-arm                            mps2_defconfig
-mips                           xway_defconfig
-powerpc                      katmai_defconfig
-arm                          lpd270_defconfig
-arm                            u300_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-i386                  randconfig-sb0-12150412
-i386                   randconfig-x006-201849
-i386                   randconfig-x005-201849
-i386                   randconfig-x000-201849
-i386                   randconfig-x007-201849
-i386                   randconfig-x004-201849
-i386                   randconfig-x002-201849
-i386                   randconfig-x009-201849
-i386                   randconfig-x001-201849
-i386                   randconfig-x008-201849
-i386                   randconfig-x003-201849
-sh                          urquell_defconfig
-xtensa                  cadence_csp_defconfig
-mips                           ip27_defconfig
-mips                           mtx1_defconfig
-s390                          debug_defconfig
-m68k                          atari_defconfig
-mips                           gcw0_defconfig
-arm                         s3c6400_defconfig
-sh                           se7751_defconfig
-x86_64                 randconfig-r0-12150353
-x86_64                 randconfig-r0-12150412
 i386                   randconfig-x073-201849
 i386                   randconfig-x070-201849
 i386                   randconfig-x075-201849
@@ -193,6 +224,26 @@ i386                   randconfig-x074-201849
 i386                   randconfig-x078-201849
 i386                   randconfig-x079-201849
 i386                   randconfig-x076-201849
+i386                   randconfig-x006-201849
+i386                   randconfig-x005-201849
+i386                   randconfig-x000-201849
+i386                   randconfig-x007-201849
+i386                   randconfig-x004-201849
+i386                   randconfig-x002-201849
+i386                   randconfig-x009-201849
+i386                   randconfig-x001-201849
+i386                   randconfig-x008-201849
+i386                   randconfig-x003-201849
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
