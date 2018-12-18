@@ -1,246 +1,45 @@
-From: Jan Sokolowski <jan.sokolowski@intel.com>
-Date: Tue, 18 Dec 2018 13:45:14 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] i40e: Remove umem from VSI
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Tue, 18 Dec 2018 15:48:22 +0100
+Subject: [Intel-wired-lan] [PATCH 1/2] xsk: export xdp_get_umem_from_qid
 In-Reply-To: <20181218134514.6388-1-jan.sokolowski@intel.com>
 References: <20181218134514.6388-1-jan.sokolowski@intel.com>
-Message-ID: <20181218134514.6388-2-jan.sokolowski@intel.com>
+Message-ID: <CAJ+HfNhMDU+BzEt7Tgi6pfTR5hT6kM6daWTqJaPqxk=swstK3w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-As current implementation of netdev already contains and provides
-umems for us, we no longer have the need to contain these
-structures in i40e_vsi.
+Den tis 18 dec. 2018 kl 14:48 skrev Jan Sokolowski <jan.sokolowski@intel.com>:
+>
+> Export xdp_get_umem_from_qid for other modules to use.
+>
+> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
 
-Refactor the code to operate on netdev-provided umems.
+Adding netdev.
 
-Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h     |  10 +-
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 110 ++++-----------------
- 2 files changed, 21 insertions(+), 99 deletions(-)
+Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 876cac317e79..c24163ac41da 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -34,6 +34,7 @@
- #include <net/pkt_cls.h>
- #include <net/tc_act/tc_gact.h>
- #include <net/tc_act/tc_mirred.h>
-+#include <net/xdp_sock.h>
- #include "i40e_type.h"
- #include "i40e_prototype.h"
- #include "i40e_client.h"
-@@ -786,11 +787,6 @@ struct i40e_vsi {
- 
- 	/* VSI specific handlers */
- 	irqreturn_t (*irq_handler)(int irq, void *data);
--
--	/* AF_XDP zero-copy */
--	struct xdp_umem **xsk_umems;
--	u16 num_xsk_umems_used;
--	u16 num_xsk_umems;
- } ____cacheline_internodealigned_in_smp;
- 
- struct i40e_netdev_priv {
-@@ -1103,10 +1099,10 @@ static inline struct xdp_umem *i40e_xsk_umem(struct i40e_ring *ring)
- 	if (ring_is_xdp(ring))
- 		qid -= ring->vsi->alloc_queue_pairs;
- 
--	if (!ring->vsi->xsk_umems || !ring->vsi->xsk_umems[qid] || !xdp_on)
-+	if (!xdp_on)
- 		return NULL;
- 
--	return ring->vsi->xsk_umems[qid];
-+	return xdp_get_umem_from_qid(ring->vsi->netdev, qid);
- }
- 
- int i40e_create_queue_channel(struct i40e_vsi *vsi, struct i40e_channel *ch);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 433c8e688c78..2980997e74b5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -9,69 +9,6 @@
- #include "i40e_txrx_common.h"
- #include "i40e_xsk.h"
- 
--/**
-- * i40e_alloc_xsk_umems - Allocate an array to store per ring UMEMs
-- * @vsi: Current VSI
-- *
-- * Returns 0 on success, <0 on failure
-- **/
--static int i40e_alloc_xsk_umems(struct i40e_vsi *vsi)
--{
--	if (vsi->xsk_umems)
--		return 0;
--
--	vsi->num_xsk_umems_used = 0;
--	vsi->num_xsk_umems = vsi->alloc_queue_pairs;
--	vsi->xsk_umems = kcalloc(vsi->num_xsk_umems, sizeof(*vsi->xsk_umems),
--				 GFP_KERNEL);
--	if (!vsi->xsk_umems) {
--		vsi->num_xsk_umems = 0;
--		return -ENOMEM;
--	}
--
--	return 0;
--}
--
--/**
-- * i40e_add_xsk_umem - Store a UMEM for a certain ring/qid
-- * @vsi: Current VSI
-- * @umem: UMEM to store
-- * @qid: Ring/qid to associate with the UMEM
-- *
-- * Returns 0 on success, <0 on failure
-- **/
--static int i40e_add_xsk_umem(struct i40e_vsi *vsi, struct xdp_umem *umem,
--			     u16 qid)
--{
--	int err;
--
--	err = i40e_alloc_xsk_umems(vsi);
--	if (err)
--		return err;
--
--	vsi->xsk_umems[qid] = umem;
--	vsi->num_xsk_umems_used++;
--
--	return 0;
--}
--
--/**
-- * i40e_remove_xsk_umem - Remove a UMEM for a certain ring/qid
-- * @vsi: Current VSI
-- * @qid: Ring/qid associated with the UMEM
-- **/
--static void i40e_remove_xsk_umem(struct i40e_vsi *vsi, u16 qid)
--{
--	vsi->xsk_umems[qid] = NULL;
--	vsi->num_xsk_umems_used--;
--
--	if (vsi->num_xsk_umems == 0) {
--		kfree(vsi->xsk_umems);
--		vsi->xsk_umems = NULL;
--		vsi->num_xsk_umems = 0;
--	}
--}
--
- /**
-  * i40e_xsk_umem_dma_map - DMA maps all UMEM memory for the netdev
-  * @vsi: Current VSI
-@@ -140,6 +77,7 @@ static void i40e_xsk_umem_dma_unmap(struct i40e_vsi *vsi, struct xdp_umem *umem)
- static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
- 				u16 qid)
- {
-+	struct net_device *netdev = vsi->netdev;
- 	struct xdp_umem_fq_reuse *reuseq;
- 	bool if_running;
- 	int err;
-@@ -150,12 +88,9 @@ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
- 	if (qid >= vsi->num_queue_pairs)
- 		return -EINVAL;
- 
--	if (vsi->xsk_umems) {
--		if (qid >= vsi->num_xsk_umems)
--			return -EINVAL;
--		if (vsi->xsk_umems[qid])
--			return -EBUSY;
--	}
-+	if (qid >= netdev->real_num_rx_queues ||
-+	    qid >= netdev->real_num_tx_queues)
-+		return -EINVAL;
- 
- 	reuseq = xsk_reuseq_prepare(vsi->rx_rings[0]->count);
- 	if (!reuseq)
-@@ -173,13 +108,7 @@ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
- 		err = i40e_queue_pair_disable(vsi, qid);
- 		if (err)
- 			return err;
--	}
--
--	err = i40e_add_xsk_umem(vsi, umem, qid);
--	if (err)
--		return err;
- 
--	if (if_running) {
- 		err = i40e_queue_pair_enable(vsi, qid);
- 		if (err)
- 			return err;
-@@ -197,11 +126,13 @@ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
-  **/
- static int i40e_xsk_umem_disable(struct i40e_vsi *vsi, u16 qid)
- {
-+	struct net_device *netdev = vsi->netdev;
-+	struct xdp_umem *umem;
- 	bool if_running;
- 	int err;
- 
--	if (!vsi->xsk_umems || qid >= vsi->num_xsk_umems ||
--	    !vsi->xsk_umems[qid])
-+	umem = xdp_get_umem_from_qid(netdev, qid);
-+	if (!umem)
- 		return -EINVAL;
- 
- 	if_running = netif_running(vsi->netdev) && i40e_enabled_xdp_vsi(vsi);
-@@ -212,8 +143,7 @@ static int i40e_xsk_umem_disable(struct i40e_vsi *vsi, u16 qid)
- 			return err;
- 	}
- 
--	i40e_xsk_umem_dma_unmap(vsi, vsi->xsk_umems[qid]);
--	i40e_remove_xsk_umem(vsi, qid);
-+	i40e_xsk_umem_dma_unmap(vsi, umem);
- 
- 	if (if_running) {
- 		err = i40e_queue_pair_enable(vsi, qid);
-@@ -237,20 +167,18 @@ static int i40e_xsk_umem_disable(struct i40e_vsi *vsi, u16 qid)
- int i40e_xsk_umem_query(struct i40e_vsi *vsi, struct xdp_umem **umem,
- 			u16 qid)
- {
-+	struct net_device *netdev = vsi->netdev;
-+	struct xdp_umem *queried_umem;
-+
- 	if (vsi->type != I40E_VSI_MAIN)
- 		return -EINVAL;
- 
--	if (qid >= vsi->num_queue_pairs)
--		return -EINVAL;
-+	queried_umem = xdp_get_umem_from_qid(netdev, qid);
- 
--	if (vsi->xsk_umems) {
--		if (qid >= vsi->num_xsk_umems)
--			return -EINVAL;
--		*umem = vsi->xsk_umems[qid];
--		return 0;
--	}
-+	if (!queried_umem)
-+		return -EINVAL;
- 
--	*umem = NULL;
-+	*umem = queried_umem;
- 	return 0;
- }
- 
-@@ -953,13 +881,11 @@ void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring)
-  **/
- bool i40e_xsk_any_rx_ring_enabled(struct i40e_vsi *vsi)
- {
-+	struct net_device *netdev = vsi->netdev;
- 	int i;
- 
--	if (!vsi->xsk_umems)
--		return false;
--
- 	for (i = 0; i < vsi->num_queue_pairs; i++) {
--		if (vsi->xsk_umems[i])
-+		if (xdp_get_umem_from_qid(netdev, i))
- 			return true;
- 	}
- 
--- 
-2.18.1
-
+> ---
+>  net/xdp/xdp_umem.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/net/xdp/xdp_umem.c b/net/xdp/xdp_umem.c
+> index a264cf2accd0..424ae2538f9f 100644
+> --- a/net/xdp/xdp_umem.c
+> +++ b/net/xdp/xdp_umem.c
+> @@ -60,6 +60,7 @@ struct xdp_umem *xdp_get_umem_from_qid(struct net_device *dev,
+>
+>         return NULL;
+>  }
+> +EXPORT_SYMBOL(xdp_get_umem_from_qid);
+>
+>  static void xdp_clear_umem_at_qid(struct net_device *dev, u16 queue_id)
+>  {
+> --
+> 2.18.1
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
