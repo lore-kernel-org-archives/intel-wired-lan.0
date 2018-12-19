@@ -1,161 +1,64 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Dec 2018 10:03:23 -0800
-Subject: [Intel-wired-lan] [PATCH S10 04/15] ice: Add ethtool set_phys_id
- handler
-In-Reply-To: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
-References: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181219180334.1104-5-anirudh.venkataramanan@intel.com>
+Date: Wed, 19 Dec 2018 10:03:19 -0800
+Subject: [Intel-wired-lan] [PATCH S10 00/15] Feature updates for ice
+Message-ID: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add led blinking handler to ethtool. Since led blinking is
-controlled by FW/HW only ETHTOOL_ID_ACTIVE and ETHTOOL_ID_INACTIVE
-are really needed.
+This patchset implements another round of feature updates for the
+ice driver. Most notably, support for additional PHY/link speeds,
+adaptive interrupt moderation and some ethtool handlers were added.
 
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 12 +++++++++++
- drivers/net/ethernet/intel/ice/ice_common.c     | 28 +++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h     |  4 ++++
- drivers/net/ethernet/intel/ice/ice_ethtool.c    | 24 +++++++++++++++++++++
- 4 files changed, 68 insertions(+)
+Anirudh Venkataramanan (6):
+  ice: Refactor a few Tx scheduler functions
+  ice: Add ethtool set_phys_id handler
+  ice: Rework queue manangement code for reuse
+  ice: Move aggregator list into ice_hw instance
+  ice: Offload SCTP checksum
+  ice: Add support for new PHY types
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 4c7e3af07254..245068b21982 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1048,6 +1048,16 @@ struct ice_aqc_set_event_mask {
- 	u8	reserved1[6];
- };
- 
-+/* Set Port Identification LED (direct, 0x06E9) */
-+struct ice_aqc_set_port_id_led {
-+	u8 lport_num;
-+	u8 lport_num_valid;
-+	u8 ident_mode;
-+#define ICE_AQC_PORT_IDENT_LED_BLINK	BIT(0)
-+#define ICE_AQC_PORT_IDENT_LED_ORIG	0
-+	u8 rsvd[13];
-+};
-+
- /* NVM Read command (indirect 0x0701)
-  * NVM Erase commands (direct 0x0702)
-  * NVM Update commands (indirect 0x0703)
-@@ -1334,6 +1344,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_get_phy_caps get_phy;
- 		struct ice_aqc_set_phy_cfg set_phy;
- 		struct ice_aqc_restart_an restart_an;
-+		struct ice_aqc_set_port_id_led set_port_id_led;
- 		struct ice_aqc_get_sw_cfg get_sw_conf;
- 		struct ice_aqc_sw_rules sw_rules;
- 		struct ice_aqc_get_topo get_topo;
-@@ -1434,6 +1445,7 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_restart_an				= 0x0605,
- 	ice_aqc_opc_get_link_status			= 0x0607,
- 	ice_aqc_opc_set_event_mask			= 0x0613,
-+	ice_aqc_opc_set_port_id_led			= 0x06E9,
- 
- 	/* NVM commands */
- 	ice_aqc_opc_nvm_read				= 0x0701,
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 4c1d35da940d..2bcd8230d35e 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -2031,6 +2031,34 @@ ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
- 	return ice_aq_send_cmd(pi->hw, &desc, NULL, 0, cd);
- }
- 
-+/**
-+ * ice_aq_set_port_id_led
-+ * @pi: pointer to the port information
-+ * @is_orig_mode: is this LED set to original mode (by the net-list)
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Set LED value for the given port (0x06e9)
-+ */
-+enum ice_status
-+ice_aq_set_port_id_led(struct ice_port_info *pi, bool is_orig_mode,
-+		       struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_set_port_id_led *cmd;
-+	struct ice_hw *hw = pi->hw;
-+	struct ice_aq_desc desc;
-+
-+	cmd = &desc.params.set_port_id_led;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_port_id_led);
-+
-+	if (is_orig_mode)
-+		cmd->ident_mode = ICE_AQC_PORT_IDENT_LED_ORIG;
-+	else
-+		cmd->ident_mode = ICE_AQC_PORT_IDENT_LED_BLINK;
-+
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
-+}
-+
- /**
-  * __ice_aq_get_set_rss_lut
-  * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index cf760c24a6aa..b86cfe540045 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -86,6 +86,10 @@ enum ice_status
- ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
- 			   struct ice_sq_cd *cd);
- enum ice_status
-+ice_aq_set_port_id_led(struct ice_port_info *pi, bool is_orig_mode,
-+		       struct ice_sq_cd *cd);
-+
-+enum ice_status
- ice_dis_vsi_txq(struct ice_port_info *pi, u8 num_queues, u16 *q_ids,
- 		u32 *q_teids, enum ice_disq_rst_src rst_src, u16 vmvf_num,
- 		struct ice_sq_cd *cmd_details);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 3b6e387f5440..6facb0a7eed4 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -249,6 +249,29 @@ static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
- 	}
- }
- 
-+static int
-+ice_set_phys_id(struct net_device *netdev, enum ethtool_phys_id_state state)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	bool led_active;
-+
-+	switch (state) {
-+	case ETHTOOL_ID_ACTIVE:
-+		led_active = true;
-+		break;
-+	case ETHTOOL_ID_INACTIVE:
-+		led_active = false;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (ice_aq_set_port_id_led(np->vsi->port_info, !led_active, NULL))
-+		return -EIO;
-+
-+	return 0;
-+}
-+
- static int ice_get_sset_count(struct net_device *netdev, int sset)
- {
- 	switch (sset) {
-@@ -1677,6 +1700,7 @@ static const struct ethtool_ops ice_ethtool_ops = {
- 	.set_msglevel           = ice_set_msglevel,
- 	.get_link		= ethtool_op_get_link,
- 	.get_strings		= ice_get_strings,
-+	.set_phys_id		= ice_set_phys_id,
- 	.get_ethtool_stats      = ice_get_ethtool_stats,
- 	.get_sset_count		= ice_get_sset_count,
- 	.get_rxnfc		= ice_get_rxnfc,
+Brett Creeley (3):
+  ice: Set physical link up/down when an interface is set up/down
+  ice: Add support for adaptive interrupt moderation
+  ice: Implement getting and setting ethtool coalesce
+
+Bruce Allan (3):
+  ice: Fix unused variable build warning
+  ice: Implement support for normal get_eeprom[_len] ethtool ops
+  ice: Add ethtool private flag to make forcing link down optional
+
+Jacob Keller (1):
+  ice: add const qualifier to mac_addr parameter
+
+Md Fahad Iqbal Polash (1):
+  ice: Configure RSS LUT and HASH KEY in rebuild path
+
+Tony Nguyen (1):
+  ice: Allow for software timestamping
+
+ drivers/net/ethernet/intel/ice/ice.h             |  16 +
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |  77 ++-
+ drivers/net/ethernet/intel/ice/ice_common.c      | 160 +++++-
+ drivers/net/ethernet/intel/ice/ice_common.h      |  11 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c     | 680 ++++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |   1 +
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h   |   3 +
+ drivers/net/ethernet/intel/ice/ice_lib.c         | 264 +++++----
+ drivers/net/ethernet/intel/ice/ice_lib.h         |   5 +-
+ drivers/net/ethernet/intel/ice/ice_main.c        | 132 ++++-
+ drivers/net/ethernet/intel/ice/ice_nvm.c         |  81 +++
+ drivers/net/ethernet/intel/ice/ice_sched.c       | 156 +++---
+ drivers/net/ethernet/intel/ice/ice_sched.h       |   2 +
+ drivers/net/ethernet/intel/ice/ice_sriov.c       |   9 +
+ drivers/net/ethernet/intel/ice/ice_txrx.c        |  71 ++-
+ drivers/net/ethernet/intel/ice/ice_txrx.h        |  32 +-
+ drivers/net/ethernet/intel/ice/ice_type.h        |   4 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  24 +-
+ 18 files changed, 1444 insertions(+), 284 deletions(-)
+
 -- 
 2.14.5
 
