@@ -1,29 +1,36 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 19 Dec 2018 19:56:19 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] xsk: export xdp_get_umem_from_qid
-In-Reply-To: <20181218134514.6388-1-jan.sokolowski@intel.com>
-References: <20181218134514.6388-1-jan.sokolowski@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D343816@ORSMSX104.amr.corp.intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Wed, 19 Dec 2018 06:45:37 -0800
+Subject: [Intel-wired-lan] [next PATCH S1 1/6] i40e: Limiting RSS queues to
+ CPUs.
+Message-ID: <20181219144542.85924-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jan Sokolowski
-> Sent: Tuesday, December 18, 2018 5:45 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 1/2] xsk: export xdp_get_umem_from_qid
-> 
-> Export xdp_get_umem_from_qid for other modules to use.
-> 
-> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
-> ---
->  net/xdp/xdp_umem.c | 1 +
->  1 file changed, 1 insertion(+)
+From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Limiting RSS queues number to online CPUs number in order to
+avoid issues with creating misconfigured RSS queues.
 
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 1e61c22c27f4..b4ae4ba84aa3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -11554,6 +11554,7 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
+ 	if (!(pf->flags & I40E_FLAG_RSS_ENABLED))
+ 		return 0;
+ 
++	queue_count = min_t(int, queue_count, num_online_cpus());
+ 	new_rss_size = min_t(int, queue_count, pf->rss_size_max);
+ 
+ 	if (queue_count != vsi->num_queue_pairs) {
+-- 
+2.19.2
 
