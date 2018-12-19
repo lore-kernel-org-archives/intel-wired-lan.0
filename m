@@ -1,155 +1,217 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Dec 2018 10:03:28 -0800
-Subject: [Intel-wired-lan] [PATCH S10 09/15] ice: Move aggregator list into
- ice_hw instance
+Date: Wed, 19 Dec 2018 10:03:24 -0800
+Subject: [Intel-wired-lan] [PATCH S10 05/15] ice: Implement support for
+ normal get_eeprom[_len] ethtool ops
 In-Reply-To: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
 References: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181219180334.1104-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20181219180334.1104-6-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The aggregator list needs to be preserved for use after a reset. This
-patch moves it out of the port_info instance and into the ice_hw instance.
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Signed-off-by: Tarun Singh <tarun.k.singh@intel.com>
+Add support for get_eeprom and get_eeprom_len ethtool ops
+
+Specification states that PF software accesses NVM (shadow-ram) via AQ
+commands (e.g. NVM Read, NVM Write) in the range 0x000000-0x00FFFF (64KB),
+so the get_eeprom_len op should return 64KB.  If additional regions of the
+16MB NVM must be read, another access method must be used.
+
+The ethtool kernel code, by default, will ask for multiple page-size hunks
+of the NVM not to exceed the value returned by ice_get_eeprom_len().
+ice_read_sr_buf() deals with arch page sizes different than 4KB.
+
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c |  2 ++
- drivers/net/ethernet/intel/ice/ice_sched.c  | 34 ++++++++++++++++++-----------
- drivers/net/ethernet/intel/ice/ice_sched.h  |  2 ++
- drivers/net/ethernet/intel/ice/ice_type.h   |  2 +-
- 4 files changed, 26 insertions(+), 14 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_common.h  |  2 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 51 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_nvm.c     | 81 ++++++++++++++++++++++++++++
+ 3 files changed, 134 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 2bcd8230d35e..19695749f903 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -750,6 +750,7 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
- 		status = ICE_ERR_CFG;
- 		goto err_unroll_sched;
- 	}
-+	INIT_LIST_HEAD(&hw->agg_list);
- 
- 	status = ice_init_fltr_mgmt_struct(hw);
- 	if (status)
-@@ -800,6 +801,7 @@ void ice_deinit_hw(struct ice_hw *hw)
- 	ice_cleanup_fltr_mgmt_struct(hw);
- 
- 	ice_sched_cleanup_all(hw);
-+	ice_sched_clear_agg(hw);
- 
- 	if (hw->port_info) {
- 		devm_kfree(ice_hw_to_dev(hw), hw->port_info);
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 99d51990bd54..8091179362d1 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -561,23 +561,18 @@ ice_sched_suspend_resume_elems(struct ice_hw *hw, u8 num_nodes, u32 *node_teids,
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index b86cfe540045..81c1bb77a9fc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -28,6 +28,8 @@ ice_acquire_res(struct ice_hw *hw, enum ice_aq_res_ids res,
+ 		enum ice_aq_res_access_type access, u32 timeout);
+ void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res);
+ enum ice_status ice_init_nvm(struct ice_hw *hw);
++enum ice_status ice_read_sr_buf(struct ice_hw *hw, u16 offset, u16 *words,
++				u16 *data);
+ enum ice_status
+ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+ 		struct ice_aq_desc *desc, void *buf, u16 buf_size,
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 6facb0a7eed4..2a0bcd460d23 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -203,6 +203,55 @@ static void ice_set_msglevel(struct net_device *netdev, u32 data)
+ #endif /* !CONFIG_DYNAMIC_DEBUG */
  }
  
- /**
-- * ice_sched_clear_tx_topo - clears the schduler tree nodes
-- * @pi: port information structure
-+ * ice_sched_clear_agg - clears the agg related information
-+ * @hw: pointer to the hardware structure
-  *
-- * This function removes all the nodes from HW as well as from SW DB.
-+ * This function removes agg list and free up agg related memory
-+ * previously allocated.
-  */
--static void ice_sched_clear_tx_topo(struct ice_port_info *pi)
-+void ice_sched_clear_agg(struct ice_hw *hw)
- {
- 	struct ice_sched_agg_info *agg_info;
- 	struct ice_sched_agg_info *atmp;
--	struct ice_hw *hw;
- 
--	if (!pi)
--		return;
--
--	hw = pi->hw;
--
--	list_for_each_entry_safe(agg_info, atmp, &pi->agg_list, list_entry) {
-+	list_for_each_entry_safe(agg_info, atmp, &hw->agg_list, list_entry) {
- 		struct ice_sched_agg_vsi_info *agg_vsi_info;
- 		struct ice_sched_agg_vsi_info *vtmp;
- 
-@@ -586,8 +581,21 @@ static void ice_sched_clear_tx_topo(struct ice_port_info *pi)
- 			list_del(&agg_vsi_info->list_entry);
- 			devm_kfree(ice_hw_to_dev(hw), agg_vsi_info);
- 		}
-+		list_del(&agg_info->list_entry);
-+		devm_kfree(ice_hw_to_dev(hw), agg_info);
- 	}
++static int ice_get_eeprom_len(struct net_device *netdev)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_pf *pf = np->vsi->back;
++
++	return (int)(pf->hw.nvm.sr_words * sizeof(u16));
 +}
++
++static int
++ice_get_eeprom(struct net_device *netdev, struct ethtool_eeprom *eeprom,
++	       u8 *bytes)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
++	u16 first_word, last_word, nwords;
++	struct ice_vsi *vsi = np->vsi;
++	struct ice_pf *pf = vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	enum ice_status status;
++	struct device *dev;
++	int ret = 0;
++	u16 *buf;
++
++	dev = &pf->pdev->dev;
++
++	eeprom->magic = hw->vendor_id | (hw->device_id << 16);
++
++	first_word = eeprom->offset >> 1;
++	last_word = (eeprom->offset + eeprom->len - 1) >> 1;
++	nwords = last_word - first_word + 1;
++
++	buf = devm_kcalloc(dev, nwords, sizeof(u16), GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	status = ice_read_sr_buf(hw, first_word, &nwords, buf);
++	if (status) {
++		dev_err(dev, "ice_read_sr_buf failed, err %d aq_err %d\n",
++			status, hw->adminq.sq_last_status);
++		eeprom->len = sizeof(u16) * nwords;
++		ret = -EIO;
++		goto out;
++	}
++
++	memcpy(bytes, (u8 *)buf + (eeprom->offset & 1), eeprom->len);
++out:
++	devm_kfree(dev, buf);
++	return ret;
++}
++
+ static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+@@ -1699,6 +1748,8 @@ static const struct ethtool_ops ice_ethtool_ops = {
+ 	.get_msglevel           = ice_get_msglevel,
+ 	.set_msglevel           = ice_set_msglevel,
+ 	.get_link		= ethtool_op_get_link,
++	.get_eeprom_len		= ice_get_eeprom_len,
++	.get_eeprom		= ice_get_eeprom,
+ 	.get_strings		= ice_get_strings,
+ 	.set_phys_id		= ice_set_phys_id,
+ 	.get_ethtool_stats      = ice_get_ethtool_stats,
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index 3274c543283c..ce64cecdae9c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -124,6 +124,62 @@ ice_read_sr_word_aq(struct ice_hw *hw, u16 offset, u16 *data)
+ 	return status;
+ }
  
 +/**
-+ * ice_sched_clear_tx_topo - clears the schduler tree nodes
-+ * @pi: port information structure
++ * ice_read_sr_buf_aq - Reads Shadow RAM buf via AQ
++ * @hw: pointer to the HW structure
++ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
++ * @words: (in) number of words to read; (out) number of words actually read
++ * @data: words read from the Shadow RAM
 + *
-+ * This function removes all the nodes from HW as well as from SW DB.
++ * Reads 16 bit words (data buf) from the SR using the ice_read_sr_aq
++ * method. Ownership of the NVM is taken before reading the buffer and later
++ * released.
 + */
-+static void ice_sched_clear_tx_topo(struct ice_port_info *pi)
++static enum ice_status
++ice_read_sr_buf_aq(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
 +{
-+	if (!pi)
-+		return;
- 	if (pi->root) {
- 		ice_free_sched_node(pi, pi->root);
- 		pi->root = NULL;
-@@ -1005,7 +1013,6 @@ enum ice_status ice_sched_init_port(struct ice_port_info *pi)
- 	/* initialize the port for handling the scheduler tree */
- 	pi->port_state = ICE_SCHED_PORT_STATE_READY;
- 	mutex_init(&pi->sched_lock);
--	INIT_LIST_HEAD(&pi->agg_list);
- 
- err_init_port:
- 	if (status && pi->root) {
-@@ -1588,7 +1595,8 @@ ice_sched_rm_agg_vsi_info(struct ice_port_info *pi, u16 vsi_handle)
- 	struct ice_sched_agg_info *agg_info;
- 	struct ice_sched_agg_info *atmp;
- 
--	list_for_each_entry_safe(agg_info, atmp, &pi->agg_list, list_entry) {
-+	list_for_each_entry_safe(agg_info, atmp, &pi->hw->agg_list,
-+				 list_entry) {
- 		struct ice_sched_agg_vsi_info *agg_vsi_info;
- 		struct ice_sched_agg_vsi_info *vtmp;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index da5b4c166da8..bee8221ad146 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -28,6 +28,8 @@ enum ice_status ice_sched_init_port(struct ice_port_info *pi);
- enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw);
- void ice_sched_clear_port(struct ice_port_info *pi);
- void ice_sched_cleanup_all(struct ice_hw *hw);
-+void ice_sched_clear_agg(struct ice_hw *hw);
++	enum ice_status status;
++	bool last_cmd = false;
++	u16 words_read = 0;
++	u16 i = 0;
 +
- struct ice_sched_node *
- ice_sched_find_node_by_teid(struct ice_sched_node *start_node, u32 teid);
- enum ice_status
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 0ea428104215..a078e2c98871 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -272,7 +272,6 @@ struct ice_port_info {
- 	struct ice_mac_info mac;
- 	struct ice_phy_info phy;
- 	struct mutex sched_lock;	/* protect access to TXSched tree */
--	struct list_head agg_list;	/* lists all aggregator */
- 	u8 lport;
- #define ICE_LPORT_MASK		0xff
- 	u8 is_vf;
-@@ -326,6 +325,7 @@ struct ice_hw {
- 	u8 max_cgds;
- 	u8 sw_entry_point_layer;
- 	u16 max_children[ICE_AQC_TOPO_MAX_LEVEL_NUM];
-+	struct list_head agg_list;	/* lists all aggregator */
++	do {
++		u16 read_size, off_w;
++
++		/* Calculate number of bytes we should read in this step.
++		 * It's not allowed to read more than one page at a time or
++		 * to cross page boundaries.
++		 */
++		off_w = offset % ICE_SR_SECTOR_SIZE_IN_WORDS;
++		read_size = off_w ?
++			min(*words,
++			    (u16)(ICE_SR_SECTOR_SIZE_IN_WORDS - off_w)) :
++			min((*words - words_read), ICE_SR_SECTOR_SIZE_IN_WORDS);
++
++		/* Check if this is last command, if so set proper flag */
++		if ((words_read + read_size) >= *words)
++			last_cmd = true;
++
++		status = ice_read_sr_aq(hw, offset, read_size,
++					data + words_read, last_cmd);
++		if (status)
++			goto read_nvm_buf_aq_exit;
++
++		/* Increment counter for words already read and move offset to
++		 * new read location
++		 */
++		words_read += read_size;
++		offset += read_size;
++	} while (words_read < *words);
++
++	for (i = 0; i < *words; i++)
++		data[i] = le16_to_cpu(((__le16 *)data)[i]);
++
++read_nvm_buf_aq_exit:
++	*words = words_read;
++	return status;
++}
++
+ /**
+  * ice_acquire_nvm - Generic request for acquiring the NVM ownership
+  * @hw: pointer to the HW structure
+@@ -234,3 +290,28 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
  
- 	struct ice_vsi_ctx *vsi_ctx[ICE_MAX_VSI];
- 	u8 evb_veb;		/* true for VEB, false for VEPA */
+ 	return status;
+ }
++
++/**
++ * ice_read_sr_buf - Reads Shadow RAM buf and acquire lock if necessary
++ * @hw: pointer to the HW structure
++ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
++ * @words: (in) number of words to read; (out) number of words actually read
++ * @data: words read from the Shadow RAM
++ *
++ * Reads 16 bit words (data buf) from the SR using the ice_read_nvm_buf_aq
++ * method. The buf read is preceded by the NVM ownership take
++ * and followed by the release.
++ */
++enum ice_status
++ice_read_sr_buf(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
++{
++	enum ice_status status;
++
++	status = ice_acquire_nvm(hw, ICE_RES_READ);
++	if (!status) {
++		status = ice_read_sr_buf_aq(hw, offset, words, data);
++		ice_release_nvm(hw);
++	}
++
++	return status;
++}
 -- 
 2.14.5
 
