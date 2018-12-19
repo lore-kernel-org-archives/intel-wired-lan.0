@@ -1,262 +1,43 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Dec 2018 10:03:21 -0800
-Subject: [Intel-wired-lan] [PATCH S10 02/15] ice: Refactor a few Tx
- scheduler functions
+Date: Wed, 19 Dec 2018 10:03:22 -0800
+Subject: [Intel-wired-lan] [PATCH S10 03/15] ice: Configure RSS LUT and HASH
+ KEY in rebuild path
 In-Reply-To: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
 References: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181219180334.1104-3-anirudh.venkataramanan@intel.com>
+Message-ID: <20181219180334.1104-4-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The following functions were refactored to call a new common function,
-ice_aqc_send_sched_elem_cmd():
+From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
 
-- ice_aq_add_sched_elems()
-- ice_aq_delete_sched_elems()
-- ice_aq_move_sched_elems()
-- ice_aq_query_sched_elems()
-- ice_aq_cfg_sched_elems()
-- ice_aq_suspend_sched_elems()
-- ice_aq_resume_sched_elems()
+This patch configures the RSS lookup table and hash key post reset.
 
-Signed-off-by: Greg Priest <greg.priest@intel.com>
+Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  22 ++---
- drivers/net/ethernet/intel/ice/ice_sched.c      | 122 +++++++++---------------
- 2 files changed, 53 insertions(+), 91 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index fcdcd80b18e7..4c7e3af07254 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -657,8 +657,13 @@ struct ice_aqc_get_topo {
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 29b1dcfd4331..3bd24173b39c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2581,6 +2581,12 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
+ 			goto err_vectors;
  
- /* Update TSE (indirect 0x0403)
-  * Get TSE (indirect 0x0404)
-+ * Add TSE (indirect 0x0401)
-+ * Delete TSE (indirect 0x040F)
-+ * Move TSE (indirect 0x0408)
-+ * Suspend Nodes (indirect 0x0409)
-+ * Resume Nodes (indirect 0x040A)
-  */
--struct ice_aqc_get_cfg_elem {
-+struct ice_aqc_sched_elem_cmd {
- 	__le16 num_elem_req;	/* Used by commands */
- 	__le16 num_elem_resp;	/* Used by responses */
- 	__le32 reserved;
-@@ -674,18 +679,6 @@ struct ice_aqc_suspend_resume_elem {
- 	__le32 teid[1];
- };
- 
--/* Add TSE (indirect 0x0401)
-- * Delete TSE (indirect 0x040F)
-- * Move TSE (indirect 0x0408)
-- */
--struct ice_aqc_add_move_delete_elem {
--	__le16 num_grps_req;
--	__le16 num_grps_updated;
--	__le32 reserved;
--	__le32 addr_high;
--	__le32 addr_low;
--};
--
- struct ice_aqc_elem_info_bw {
- 	__le16 bw_profile_idx;
- 	__le16 bw_alloc;
-@@ -1344,9 +1337,8 @@ struct ice_aq_desc {
- 		struct ice_aqc_get_sw_cfg get_sw_conf;
- 		struct ice_aqc_sw_rules sw_rules;
- 		struct ice_aqc_get_topo get_topo;
--		struct ice_aqc_get_cfg_elem get_update_elem;
-+		struct ice_aqc_sched_elem_cmd sched_elem_cmd;
- 		struct ice_aqc_query_txsched_res query_sched_res;
--		struct ice_aqc_add_move_delete_elem add_move_delete_elem;
- 		struct ice_aqc_nvm nvm;
- 		struct ice_aqc_pf_vf_msg virt;
- 		struct ice_aqc_get_set_rss_lut get_set_rss_lut;
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index a1681853df2e..99d51990bd54 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -85,36 +85,58 @@ ice_sched_find_node_by_teid(struct ice_sched_node *start_node, u32 teid)
- }
- 
- /**
-- * ice_aq_query_sched_elems - query scheduler elements
-+ * ice_aqc_send_sched_elem_cmd - send scheduling elements cmd
-  * @hw: pointer to the hw struct
-- * @elems_req: number of elements to query
-+ * @cmd_opc: cmd opcode
-+ * @elems_req: number of elements to request
-  * @buf: pointer to buffer
-  * @buf_size: buffer size in bytes
-- * @elems_ret: returns total number of elements returned
-+ * @elems_resp: returns total number of elements response
-  * @cd: pointer to command details structure or NULL
-  *
-- * Query scheduling elements (0x0404)
-+ * This function sends a scheduling elements cmd (cmd_opc)
-  */
- static enum ice_status
--ice_aq_query_sched_elems(struct ice_hw *hw, u16 elems_req,
--			 struct ice_aqc_get_elem *buf, u16 buf_size,
--			 u16 *elems_ret, struct ice_sq_cd *cd)
-+ice_aqc_send_sched_elem_cmd(struct ice_hw *hw, enum ice_adminq_opc cmd_opc,
-+			    u16 elems_req, void *buf, u16 buf_size,
-+			    u16 *elems_resp, struct ice_sq_cd *cd)
- {
--	struct ice_aqc_get_cfg_elem *cmd;
-+	struct ice_aqc_sched_elem_cmd *cmd;
- 	struct ice_aq_desc desc;
- 	enum ice_status status;
- 
--	cmd = &desc.params.get_update_elem;
--	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_sched_elems);
-+	cmd = &desc.params.sched_elem_cmd;
-+	ice_fill_dflt_direct_cmd_desc(&desc, cmd_opc);
- 	cmd->num_elem_req = cpu_to_le16(elems_req);
- 	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
- 	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
--	if (!status && elems_ret)
--		*elems_ret = le16_to_cpu(cmd->num_elem_resp);
-+	if (!status && elems_resp)
-+		*elems_resp = le16_to_cpu(cmd->num_elem_resp);
- 
- 	return status;
- }
- 
-+/**
-+ * ice_aq_query_sched_elems - query scheduler elements
-+ * @hw: pointer to the hw struct
-+ * @elems_req: number of elements to query
-+ * @buf: pointer to buffer
-+ * @buf_size: buffer size in bytes
-+ * @elems_ret: returns total number of elements returned
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Query scheduling elements (0x0404)
-+ */
-+static enum ice_status
-+ice_aq_query_sched_elems(struct ice_hw *hw, u16 elems_req,
-+			 struct ice_aqc_get_elem *buf, u16 buf_size,
-+			 u16 *elems_ret, struct ice_sq_cd *cd)
-+{
-+	return ice_aqc_send_sched_elem_cmd(hw, ice_aqc_opc_get_sched_elems,
-+					   elems_req, (void *)buf, buf_size,
-+					   elems_ret, cd);
-+}
-+
- /**
-  * ice_sched_query_elem - query element information from hw
-  * @hw: pointer to the hw struct
-@@ -218,20 +240,9 @@ ice_aq_delete_sched_elems(struct ice_hw *hw, u16 grps_req,
- 			  struct ice_aqc_delete_elem *buf, u16 buf_size,
- 			  u16 *grps_del, struct ice_sq_cd *cd)
- {
--	struct ice_aqc_add_move_delete_elem *cmd;
--	struct ice_aq_desc desc;
--	enum ice_status status;
--
--	cmd = &desc.params.add_move_delete_elem;
--	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_delete_sched_elems);
--	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
--	cmd->num_grps_req = cpu_to_le16(grps_req);
--
--	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
--	if (!status && grps_del)
--		*grps_del = le16_to_cpu(cmd->num_grps_updated);
--
--	return status;
-+	return ice_aqc_send_sched_elem_cmd(hw, ice_aqc_opc_delete_sched_elems,
-+					   grps_req, (void *)buf, buf_size,
-+					   grps_del, cd);
- }
- 
- /**
-@@ -442,52 +453,9 @@ ice_aq_add_sched_elems(struct ice_hw *hw, u16 grps_req,
- 		       struct ice_aqc_add_elem *buf, u16 buf_size,
- 		       u16 *grps_added, struct ice_sq_cd *cd)
- {
--	struct ice_aqc_add_move_delete_elem *cmd;
--	struct ice_aq_desc desc;
--	enum ice_status status;
--
--	cmd = &desc.params.add_move_delete_elem;
--	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_add_sched_elems);
--	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
--
--	cmd->num_grps_req = cpu_to_le16(grps_req);
--	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
--	if (!status && grps_added)
--		*grps_added = le16_to_cpu(cmd->num_grps_updated);
--
--	return status;
--}
--
--/**
-- * ice_suspend_resume_elems - suspend/resume scheduler elements
-- * @hw: pointer to the hw struct
-- * @elems_req: number of elements to suspend
-- * @buf: pointer to buffer
-- * @buf_size: buffer size in bytes
-- * @elems_ret: returns total number of elements suspended
-- * @cd: pointer to command details structure or NULL
-- * @cmd_code: command code for suspend or resume
-- *
-- * suspend/resume scheduler elements
-- */
--static enum ice_status
--ice_suspend_resume_elems(struct ice_hw *hw, u16 elems_req,
--			 struct ice_aqc_suspend_resume_elem *buf, u16 buf_size,
--			 u16 *elems_ret, struct ice_sq_cd *cd,
--			 enum ice_adminq_opc cmd_code)
--{
--	struct ice_aqc_get_cfg_elem *cmd;
--	struct ice_aq_desc desc;
--	enum ice_status status;
--
--	cmd = &desc.params.get_update_elem;
--	ice_fill_dflt_direct_cmd_desc(&desc, cmd_code);
--	cmd->num_elem_req = cpu_to_le16(elems_req);
--	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
--	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
--	if (!status && elems_ret)
--		*elems_ret = le16_to_cpu(cmd->num_elem_resp);
--	return status;
-+	return ice_aqc_send_sched_elem_cmd(hw, ice_aqc_opc_add_sched_elems,
-+					   grps_req, (void *)buf, buf_size,
-+					   grps_added, cd);
- }
- 
- /**
-@@ -506,8 +474,9 @@ ice_aq_suspend_sched_elems(struct ice_hw *hw, u16 elems_req,
- 			   struct ice_aqc_suspend_resume_elem *buf,
- 			   u16 buf_size, u16 *elems_ret, struct ice_sq_cd *cd)
- {
--	return ice_suspend_resume_elems(hw, elems_req, buf, buf_size, elems_ret,
--					cd, ice_aqc_opc_suspend_sched_elems);
-+	return ice_aqc_send_sched_elem_cmd(hw, ice_aqc_opc_suspend_sched_elems,
-+					   elems_req, (void *)buf, buf_size,
-+					   elems_ret, cd);
- }
- 
- /**
-@@ -526,8 +495,9 @@ ice_aq_resume_sched_elems(struct ice_hw *hw, u16 elems_req,
- 			  struct ice_aqc_suspend_resume_elem *buf,
- 			  u16 buf_size, u16 *elems_ret, struct ice_sq_cd *cd)
- {
--	return ice_suspend_resume_elems(hw, elems_req, buf, buf_size, elems_ret,
--					cd, ice_aqc_opc_resume_sched_elems);
-+	return ice_aqc_send_sched_elem_cmd(hw, ice_aqc_opc_resume_sched_elems,
-+					   elems_req, (void *)buf, buf_size,
-+					   elems_ret, cd);
- }
- 
- /**
+ 		ice_vsi_map_rings_to_vectors(vsi);
++		/* Do not exit if configuring RSS had an issue, at least
++		 * receive traffic on first queue. Hence no need to capture
++		 * return value
++		 */
++		if (test_bit(ICE_FLAG_RSS_ENA, vsi->back->flags))
++			ice_vsi_cfg_rss_lut_key(vsi);
+ 		break;
+ 	case ICE_VSI_VF:
+ 		ret = ice_vsi_alloc_q_vectors(vsi);
 -- 
 2.14.5
 
