@@ -1,71 +1,54 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 19 Dec 2018 06:45:41 -0800
-Subject: [Intel-wired-lan] [next PATCH S1 5/6] i40e: remove debugfs
- tx_timeout support
+Date: Wed, 19 Dec 2018 06:45:40 -0800
+Subject: [Intel-wired-lan] [next PATCH S1 4/6] i40e: check queue pairs num
+ in config queues handler
 In-Reply-To: <20181219144542.85924-1-alice.michael@intel.com>
 References: <20181219144542.85924-1-alice.michael@intel.com>
-Message-ID: <20181219144542.85924-5-alice.michael@intel.com>
+Message-ID: <20181219144542.85924-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Lihong Yang <lihong.yang@intel.com>
+From: Sergey Nemov <sergey.nemov@intel.com>
 
-The tx_timeout command from debugfs was originally intended to support
-early silicon validation efforts. It is no longer needed. Thus remove it to
-avoid misuse of triggering tx_timeout through debugfs.
+Check if num_queue_pairs number requested by VF is less than
+maximum possible value in VIRTCHNL_OP_CONFIG_VSI_QUEUES handler.
 
-Signed-off-by: Lihong Yang <lihong.yang@intel.com>
+Also check if local_vf_id >= 0 in common handler since it is of
+int type and can potentially be negative.
+
+Signed-off-by: Sergey Nemov <sergey.nemov@intel.com>
 ---
- .../net/ethernet/intel/i40e/i40e_debugfs.c    | 26 +------------------
- 1 file changed, 1 insertion(+), 25 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index a20d1cf058ad..c67d485d6f99 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -1642,30 +1642,7 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
- 		count = buf_tmp - i40e_dbg_netdev_ops_buf + 1;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 2ac23ebfbf31..f62937045c5d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2069,6 +2069,11 @@ static int i40e_vc_config_queues_msg(struct i40e_vf *vf, u8 *msg)
+ 		goto error_param;
  	}
  
--	if (strncmp(i40e_dbg_netdev_ops_buf, "tx_timeout", 10) == 0) {
--		cnt = sscanf(&i40e_dbg_netdev_ops_buf[11], "%i", &vsi_seid);
--		if (cnt != 1) {
--			dev_info(&pf->pdev->dev, "tx_timeout <vsi_seid>\n");
--			goto netdev_ops_write_done;
--		}
--		vsi = i40e_dbg_find_vsi(pf, vsi_seid);
--		if (!vsi) {
--			dev_info(&pf->pdev->dev,
--				 "tx_timeout: VSI %d not found\n", vsi_seid);
--		} else if (!vsi->netdev) {
--			dev_info(&pf->pdev->dev, "tx_timeout: no netdev for VSI %d\n",
--				 vsi_seid);
--		} else if (test_bit(__I40E_VSI_DOWN, vsi->state)) {
--			dev_info(&pf->pdev->dev, "tx_timeout: VSI %d not UP\n",
--				 vsi_seid);
--		} else if (rtnl_trylock()) {
--			vsi->netdev->netdev_ops->ndo_tx_timeout(vsi->netdev);
--			rtnl_unlock();
--			dev_info(&pf->pdev->dev, "tx_timeout called\n");
--		} else {
--			dev_info(&pf->pdev->dev, "Could not acquire RTNL - please try again\n");
--		}
--	} else if (strncmp(i40e_dbg_netdev_ops_buf, "change_mtu", 10) == 0) {
-+	if (strncmp(i40e_dbg_netdev_ops_buf, "change_mtu", 10) == 0) {
- 		int mtu;
++	if (qci->num_queue_pairs > I40E_MAX_VF_QUEUES) {
++		aq_ret = I40E_ERR_PARAM;
++		goto error_param;
++	}
++
+ 	for (i = 0; i < qci->num_queue_pairs; i++) {
+ 		qpi = &qci->qpair[i];
  
- 		cnt = sscanf(&i40e_dbg_netdev_ops_buf[11], "%i %i",
-@@ -1733,7 +1710,6 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
- 		dev_info(&pf->pdev->dev, "unknown command '%s'\n",
- 			 i40e_dbg_netdev_ops_buf);
- 		dev_info(&pf->pdev->dev, "available commands\n");
--		dev_info(&pf->pdev->dev, "  tx_timeout <vsi_seid>\n");
- 		dev_info(&pf->pdev->dev, "  change_mtu <vsi_seid> <mtu>\n");
- 		dev_info(&pf->pdev->dev, "  set_rx_mode <vsi_seid>\n");
- 		dev_info(&pf->pdev->dev, "  napi <vsi_seid>\n");
+@@ -3656,7 +3661,7 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
+ 	int ret;
+ 
+ 	pf->vf_aq_requests++;
+-	if (local_vf_id >= pf->num_alloc_vfs)
++	if (local_vf_id < 0 || local_vf_id >= pf->num_alloc_vfs)
+ 		return -EINVAL;
+ 	vf = &(pf->vf[local_vf_id]);
+ 
 -- 
 2.19.2
 
