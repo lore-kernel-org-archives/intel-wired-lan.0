@@ -1,79 +1,534 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Dec 2018 10:03:32 -0800
-Subject: [Intel-wired-lan] [PATCH S10 13/15] ice: Offload SCTP checksum
+Date: Wed, 19 Dec 2018 10:03:27 -0800
+Subject: [Intel-wired-lan] [PATCH S10 08/15] ice: Rework queue manangement
+ code for reuse
 In-Reply-To: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
 References: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181219180334.1104-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20181219180334.1104-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds the ability to offload SCTP checksum calculations to the
-NIC.
+This patch reworks the queue management code to allow for reuse with the
+XDP feature (to be added in a future patch).
 
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h           | 1 +
- drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 1 +
- drivers/net/ethernet/intel/ice/ice_main.c      | 1 +
- drivers/net/ethernet/intel/ice/ice_txrx.c      | 6 ++++++
- 4 files changed, 9 insertions(+)
+ drivers/net/ethernet/intel/ice/ice.h             |  11 ++
+ drivers/net/ethernet/intel/ice/ice_lib.c         | 234 ++++++++++++-----------
+ drivers/net/ethernet/intel/ice/ice_lib.h         |   5 +-
+ drivers/net/ethernet/intel/ice/ice_main.c        |   6 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  24 ++-
+ 5 files changed, 157 insertions(+), 123 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index ac8bf7491d08..55944e089558 100644
+index 8af882a2b070..ffe4ffe16912 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -26,6 +26,7 @@
- #include <linux/bitmap.h>
- #include <linux/log2.h>
- #include <linux/ip.h>
-+#include <linux/sctp.h>
- #include <linux/ipv6.h>
- #include <linux/if_bridge.h>
- #include <linux/avf/virtchnl.h>
-diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-index bb51dd7defb5..bd7c01db8c63 100644
---- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-@@ -346,6 +346,7 @@ enum ice_tx_desc_cmd_bits {
- 	ICE_TX_DESC_CMD_IIPT_IPV4		= 0x0040, /* 2 BITS */
- 	ICE_TX_DESC_CMD_IIPT_IPV4_CSUM		= 0x0060, /* 2 BITS */
- 	ICE_TX_DESC_CMD_L4T_EOFT_TCP		= 0x0100, /* 2 BITS */
-+	ICE_TX_DESC_CMD_L4T_EOFT_SCTP		= 0x0200, /* 2 BITS */
- 	ICE_TX_DESC_CMD_L4T_EOFT_UDP		= 0x0300, /* 2 BITS */
+@@ -129,6 +129,17 @@ struct ice_res_tracker {
+ 	u16 list[1];
  };
  
++struct ice_qs_cfg {
++	struct mutex *qs_mutex;  /* will be assgined to &pf->avail_q_mutex */
++	unsigned long *pf_map;
++	unsigned long pf_map_size;
++	unsigned int q_count;
++	unsigned int scatter_count;
++	u16 *vsi_map;
++	u16 vsi_map_offset;
++	u8 mapping_mode;
++};
++
+ struct ice_sw {
+ 	struct ice_pf *pf;
+ 	u16 sw_id;		/* switch ID for this switch */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 3bd24173b39c..67f01292337a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -514,109 +514,86 @@ static struct ice_vsi *ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type type)
+ }
+ 
+ /**
+- * ice_vsi_get_qs_contig - Assign a contiguous chunk of queues to VSI
+- * @vsi: the VSI getting queues
++ * __ice_vsi_get_qs_contig - Assign a contiguous chunk of queues to VSI
++ * @qs_cfg: gathered variables needed for PF->VSI queues assignment
+  *
+- * Return 0 on success and a negative value on error
++ * Return 0 on success and -ENOMEM in case of no left space in PF queue bitmap
+  */
+-static int ice_vsi_get_qs_contig(struct ice_vsi *vsi)
++static int __ice_vsi_get_qs_contig(struct ice_qs_cfg *qs_cfg)
+ {
+-	struct ice_pf *pf = vsi->back;
+-	int offset, ret = 0;
+-
+-	mutex_lock(&pf->avail_q_mutex);
+-	/* look for contiguous block of queues for Tx */
+-	offset = bitmap_find_next_zero_area(pf->avail_txqs, ICE_MAX_TXQS,
+-					    0, vsi->alloc_txq, 0);
+-	if (offset < ICE_MAX_TXQS) {
+-		int i;
++	int offset, i;
+ 
+-		bitmap_set(pf->avail_txqs, offset, vsi->alloc_txq);
+-		for (i = 0; i < vsi->alloc_txq; i++)
+-			vsi->txq_map[i] = i + offset;
+-	} else {
+-		ret = -ENOMEM;
+-		vsi->tx_mapping_mode = ICE_VSI_MAP_SCATTER;
++	mutex_lock(qs_cfg->qs_mutex);
++	offset = bitmap_find_next_zero_area(qs_cfg->pf_map, qs_cfg->pf_map_size,
++					    0, qs_cfg->q_count, 0);
++	if (offset >= qs_cfg->pf_map_size) {
++		mutex_unlock(qs_cfg->qs_mutex);
++		return -ENOMEM;
+ 	}
+ 
+-	/* look for contiguous block of queues for Rx */
+-	offset = bitmap_find_next_zero_area(pf->avail_rxqs, ICE_MAX_RXQS,
+-					    0, vsi->alloc_rxq, 0);
+-	if (offset < ICE_MAX_RXQS) {
+-		int i;
+-
+-		bitmap_set(pf->avail_rxqs, offset, vsi->alloc_rxq);
+-		for (i = 0; i < vsi->alloc_rxq; i++)
+-			vsi->rxq_map[i] = i + offset;
+-	} else {
+-		ret = -ENOMEM;
+-		vsi->rx_mapping_mode = ICE_VSI_MAP_SCATTER;
+-	}
+-	mutex_unlock(&pf->avail_q_mutex);
++	bitmap_set(qs_cfg->pf_map, offset, qs_cfg->q_count);
++	for (i = 0; i < qs_cfg->q_count; i++)
++		qs_cfg->vsi_map[i + qs_cfg->vsi_map_offset] = i + offset;
++	mutex_unlock(qs_cfg->qs_mutex);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ /**
+- * ice_vsi_get_qs_scatter - Assign a scattered queues to VSI
+- * @vsi: the VSI getting queues
++ * __ice_vsi_get_qs_sc - Assign a scattered queues from PF to VSI
++ * @qs_cfg: gathered variables needed for PF->VSI queues assignment
+  *
+- * Return 0 on success and a negative value on error
++ * Return 0 on success and -ENOMEM in case of no left space in PF queue bitmap
+  */
+-static int ice_vsi_get_qs_scatter(struct ice_vsi *vsi)
++static int __ice_vsi_get_qs_sc(struct ice_qs_cfg *qs_cfg)
+ {
+-	struct ice_pf *pf = vsi->back;
+ 	int i, index = 0;
+ 
+-	mutex_lock(&pf->avail_q_mutex);
+-
+-	if (vsi->tx_mapping_mode == ICE_VSI_MAP_SCATTER) {
+-		for (i = 0; i < vsi->alloc_txq; i++) {
+-			index = find_next_zero_bit(pf->avail_txqs,
+-						   ICE_MAX_TXQS, index);
+-			if (index < ICE_MAX_TXQS) {
+-				set_bit(index, pf->avail_txqs);
+-				vsi->txq_map[i] = index;
+-			} else {
+-				goto err_scatter_tx;
+-			}
+-		}
+-	}
+-
+-	if (vsi->rx_mapping_mode == ICE_VSI_MAP_SCATTER) {
+-		for (i = 0; i < vsi->alloc_rxq; i++) {
+-			index = find_next_zero_bit(pf->avail_rxqs,
+-						   ICE_MAX_RXQS, index);
+-			if (index < ICE_MAX_RXQS) {
+-				set_bit(index, pf->avail_rxqs);
+-				vsi->rxq_map[i] = index;
+-			} else {
+-				goto err_scatter_rx;
+-			}
+-		}
++	mutex_lock(qs_cfg->qs_mutex);
++	for (i = 0; i < qs_cfg->q_count; i++) {
++		index = find_next_zero_bit(qs_cfg->pf_map,
++					   qs_cfg->pf_map_size, index);
++		if (index >= qs_cfg->pf_map_size)
++			goto err_scatter;
++		set_bit(index, qs_cfg->pf_map);
++		qs_cfg->vsi_map[i + qs_cfg->vsi_map_offset] = index;
+ 	}
++	mutex_unlock(qs_cfg->qs_mutex);
+ 
+-	mutex_unlock(&pf->avail_q_mutex);
+ 	return 0;
+-
+-err_scatter_rx:
+-	/* unflag any queues we have grabbed (i is failed position) */
++err_scatter:
+ 	for (index = 0; index < i; index++) {
+-		clear_bit(vsi->rxq_map[index], pf->avail_rxqs);
+-		vsi->rxq_map[index] = 0;
+-	}
+-	i = vsi->alloc_txq;
+-err_scatter_tx:
+-	/* i is either position of failed attempt or vsi->alloc_txq */
+-	for (index = 0; index < i; index++) {
+-		clear_bit(vsi->txq_map[index], pf->avail_txqs);
+-		vsi->txq_map[index] = 0;
++		clear_bit(qs_cfg->vsi_map[index], qs_cfg->pf_map);
++		qs_cfg->vsi_map[index + qs_cfg->vsi_map_offset] = 0;
+ 	}
++	mutex_unlock(qs_cfg->qs_mutex);
+ 
+-	mutex_unlock(&pf->avail_q_mutex);
+ 	return -ENOMEM;
+ }
+ 
++/**
++ * __ice_vsi_get_qs - internal function for assigning queues from PF to VSI
++ *                    tries to find contigous space at first, if not then try
++ *                    with scatter approach
++ * @qs_cfg: gathered variables needed for PF->VSI queues assignment
++ *
++ * Return 0 on success and -ENOMEM in case of no left space in PF queue bitmap
++ */
++static int __ice_vsi_get_qs(struct ice_qs_cfg *qs_cfg)
++{
++	int ret = 0;
++
++	ret = __ice_vsi_get_qs_contig(qs_cfg);
++	if (ret) {
++		/* contig failed, so try with scatter approach */
++		qs_cfg->mapping_mode = ICE_VSI_MAP_SCATTER;
++		qs_cfg->q_count = min_t(u16, qs_cfg->q_count,
++					qs_cfg->scatter_count);
++		ret = __ice_vsi_get_qs_sc(qs_cfg);
++	}
++	return ret;
++}
++
+ /**
+  * ice_vsi_get_qs - Assign queues from PF to VSI
+  * @vsi: the VSI to assign queues to
+@@ -625,25 +602,35 @@ static int ice_vsi_get_qs_scatter(struct ice_vsi *vsi)
+  */
+ static int ice_vsi_get_qs(struct ice_vsi *vsi)
+ {
++	struct ice_pf *pf = vsi->back;
++	struct ice_qs_cfg tx_qs_cfg = {
++		.qs_mutex = &pf->avail_q_mutex,
++		.pf_map = pf->avail_txqs,
++		.pf_map_size = ICE_MAX_TXQS,
++		.q_count = vsi->alloc_txq,
++		.scatter_count = ICE_MAX_SCATTER_TXQS,
++		.vsi_map = vsi->txq_map,
++		.vsi_map_offset = 0,
++		.mapping_mode = vsi->tx_mapping_mode
++	};
++	struct ice_qs_cfg rx_qs_cfg = {
++		.qs_mutex = &pf->avail_q_mutex,
++		.pf_map = pf->avail_rxqs,
++		.pf_map_size = ICE_MAX_RXQS,
++		.q_count = vsi->alloc_rxq,
++		.scatter_count = ICE_MAX_SCATTER_RXQS,
++		.vsi_map = vsi->rxq_map,
++		.vsi_map_offset = 0,
++		.mapping_mode = vsi->rx_mapping_mode
++	};
+ 	int ret = 0;
+ 
+ 	vsi->tx_mapping_mode = ICE_VSI_MAP_CONTIG;
+ 	vsi->rx_mapping_mode = ICE_VSI_MAP_CONTIG;
+ 
+-	/* NOTE: ice_vsi_get_qs_contig() will set the Rx/Tx mapping
+-	 * modes individually to scatter if assigning contiguous queues
+-	 * to Rx or Tx fails
+-	 */
+-	ret = ice_vsi_get_qs_contig(vsi);
+-	if (ret < 0) {
+-		if (vsi->tx_mapping_mode == ICE_VSI_MAP_SCATTER)
+-			vsi->alloc_txq = max_t(u16, vsi->alloc_txq,
+-					       ICE_MAX_SCATTER_TXQS);
+-		if (vsi->rx_mapping_mode == ICE_VSI_MAP_SCATTER)
+-			vsi->alloc_rxq = max_t(u16, vsi->alloc_rxq,
+-					       ICE_MAX_SCATTER_RXQS);
+-		ret = ice_vsi_get_qs_scatter(vsi);
+-	}
++	ret = __ice_vsi_get_qs(&tx_qs_cfg);
++	if (!ret)
++		ret = __ice_vsi_get_qs(&rx_qs_cfg);
+ 
+ 	return ret;
+ }
+@@ -1614,11 +1601,14 @@ int ice_vsi_cfg_rxqs(struct ice_vsi *vsi)
+ /**
+  * ice_vsi_cfg_txqs - Configure the VSI for Tx
+  * @vsi: the VSI being configured
++ * @rings: Tx ring array to be configured
++ * @offset: offset within vsi->txq_map
+  *
+  * Return 0 on success and a negative value on error
+  * Configure the Tx VSI for operation.
+  */
+-int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
++static int
++ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_ring **rings, int offset)
+ {
+ 	struct ice_aqc_add_tx_qgrp *qg_buf;
+ 	struct ice_aqc_add_txqs_perq *txq;
+@@ -1626,7 +1616,7 @@ int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
+ 	u8 num_q_grps, q_idx = 0;
+ 	enum ice_status status;
+ 	u16 buf_len, i, pf_q;
+-	int err = 0, tc = 0;
++	int err = 0, tc;
+ 
+ 	buf_len = sizeof(struct ice_aqc_add_tx_qgrp);
+ 	qg_buf = devm_kzalloc(&pf->pdev->dev, buf_len, GFP_KERNEL);
+@@ -1644,9 +1634,8 @@ int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
+ 		for (i = 0; i < vsi->tc_cfg.tc_info[tc].qcount_tx; i++) {
+ 			struct ice_tlan_ctx tlan_ctx = { 0 };
+ 
+-			pf_q = vsi->txq_map[q_idx];
+-			ice_setup_tx_ctx(vsi->tx_rings[q_idx], &tlan_ctx,
+-					 pf_q);
++			pf_q = vsi->txq_map[q_idx + offset];
++			ice_setup_tx_ctx(rings[q_idx], &tlan_ctx, pf_q);
+ 			/* copy context contents into the qg_buf */
+ 			qg_buf->txqs[0].txq_id = cpu_to_le16(pf_q);
+ 			ice_set_ctx((u8 *)&tlan_ctx, qg_buf->txqs[0].txq_ctx,
+@@ -1655,7 +1644,7 @@ int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
+ 			/* init queue specific tail reg. It is referred as
+ 			 * transmit comm scheduler queue doorbell.
+ 			 */
+-			vsi->tx_rings[q_idx]->tail =
++			rings[q_idx]->tail =
+ 				pf->hw.hw_addr + QTX_COMM_DBELL(pf_q);
+ 			status = ice_ena_vsi_txq(vsi->port_info, vsi->idx, tc,
+ 						 num_q_grps, qg_buf, buf_len,
+@@ -1674,7 +1663,7 @@ int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
+ 			 */
+ 			txq = &qg_buf->txqs[0];
+ 			if (pf_q == le16_to_cpu(txq->txq_id))
+-				vsi->tx_rings[q_idx]->txq_teid =
++				rings[q_idx]->txq_teid =
+ 					le32_to_cpu(txq->q_teid);
+ 
+ 			q_idx++;
+@@ -1685,6 +1674,18 @@ int ice_vsi_cfg_txqs(struct ice_vsi *vsi)
+ 	return err;
+ }
+ 
++/**
++ * ice_vsi_cfg_lan_txqs - Configure the VSI for Tx
++ * @vsi: the VSI being configured
++ *
++ * Return 0 on success and a negative value on error
++ * Configure the Tx VSI for operation.
++ */
++int ice_vsi_cfg_lan_txqs(struct ice_vsi *vsi)
++{
++	return ice_vsi_cfg_txqs(vsi, vsi->tx_rings, 0);
++}
++
+ /**
+  * ice_intrl_usec_to_reg - convert interrupt rate limit to register value
+  * @intrl: interrupt rate limit in usecs
+@@ -1897,9 +1898,12 @@ int ice_vsi_stop_rx_rings(struct ice_vsi *vsi)
+  * @vsi: the VSI being configured
+  * @rst_src: reset source
+  * @rel_vmvf_num: Relative id of VF/VM
++ * @rings: Tx ring array to be stopped
++ * @offset: offset within vsi->txq_map
+  */
+-int ice_vsi_stop_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
+-			  u16 rel_vmvf_num)
++static int
++ice_vsi_stop_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
++		      u16 rel_vmvf_num, struct ice_ring **rings, int offset)
+ {
+ 	struct ice_pf *pf = vsi->back;
+ 	struct ice_hw *hw = &pf->hw;
+@@ -1927,19 +1931,18 @@ int ice_vsi_stop_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
+ 	ice_for_each_txq(vsi, i) {
+ 		u16 v_idx;
+ 
+-		if (!vsi->tx_rings || !vsi->tx_rings[i] ||
+-		    !vsi->tx_rings[i]->q_vector) {
++		if (!rings || !rings[i] || !rings[i]->q_vector) {
+ 			err = -EINVAL;
+ 			goto err_out;
+ 		}
+ 
+-		q_ids[i] = vsi->txq_map[i];
+-		q_teids[i] = vsi->tx_rings[i]->txq_teid;
++		q_ids[i] = vsi->txq_map[i + offset];
++		q_teids[i] = rings[i]->txq_teid;
+ 
+ 		/* clear cause_ena bit for disabled queues */
+-		val = rd32(hw, QINT_TQCTL(vsi->tx_rings[i]->reg_idx));
++		val = rd32(hw, QINT_TQCTL(rings[i]->reg_idx));
+ 		val &= ~QINT_TQCTL_CAUSE_ENA_M;
+-		wr32(hw, QINT_TQCTL(vsi->tx_rings[i]->reg_idx), val);
++		wr32(hw, QINT_TQCTL(rings[i]->reg_idx), val);
+ 
+ 		/* software is expected to wait for 100 ns */
+ 		ndelay(100);
+@@ -1947,7 +1950,7 @@ int ice_vsi_stop_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
+ 		/* trigger a software interrupt for the vector associated to
+ 		 * the queue to schedule NAPI handler
+ 		 */
+-		v_idx = vsi->tx_rings[i]->q_vector->v_idx;
++		v_idx = rings[i]->q_vector->v_idx;
+ 		wr32(hw, GLINT_DYN_CTL(vsi->hw_base_vector + v_idx),
+ 		     GLINT_DYN_CTL_SWINT_TRIG_M | GLINT_DYN_CTL_INTENA_MSK_M);
+ 	}
+@@ -1976,6 +1979,19 @@ int ice_vsi_stop_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
+ 	return err;
+ }
+ 
++/**
++ * ice_vsi_stop_lan_tx_rings - Disable lan Tx rings
++ * @vsi: the VSI being configured
++ * @rst_src: reset source
++ * @rel_vmvf_num: Relative id of VF/VM
++ */
++int ice_vsi_stop_lan_tx_rings(struct ice_vsi *vsi,
++			      enum ice_disq_rst_src rst_src, u16 rel_vmvf_num)
++{
++	return ice_vsi_stop_tx_rings(vsi, rst_src, rel_vmvf_num, vsi->tx_rings,
++				     0);
++}
++
+ /**
+  * ice_cfg_vlan_pruning - enable or disable VLAN pruning on the VSI
+  * @vsi: VSI to enable or disable VLAN pruning on
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 3831b4f0960a..7988a53729a9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -15,7 +15,7 @@ void ice_update_eth_stats(struct ice_vsi *vsi);
+ 
+ int ice_vsi_cfg_rxqs(struct ice_vsi *vsi);
+ 
+-int ice_vsi_cfg_txqs(struct ice_vsi *vsi);
++int ice_vsi_cfg_lan_txqs(struct ice_vsi *vsi);
+ 
+ void ice_vsi_cfg_msix(struct ice_vsi *vsi);
+ 
+@@ -31,7 +31,8 @@ int ice_vsi_start_rx_rings(struct ice_vsi *vsi);
+ 
+ int ice_vsi_stop_rx_rings(struct ice_vsi *vsi);
+ 
+-int ice_vsi_stop_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
++int
++ice_vsi_stop_lan_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
+ 			  u16 rel_vmvf_num);
+ 
+ int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena);
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 081337bd9dd4..fa9bdbaad2c7 100644
+index bcf4a9326446..508644087a9b 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1528,6 +1528,7 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
- 
- 	csumo_features = NETIF_F_RXCSUM	  |
- 			 NETIF_F_IP_CSUM  |
-+			 NETIF_F_SCTP_CRC |
- 			 NETIF_F_IPV6_CSUM;
- 
- 	vlano_features = NETIF_F_HW_VLAN_CTAG_FILTER |
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index f76a3666f2cd..8d053a5fa49a 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1465,6 +1465,12 @@ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
- 		offset |= l4_len << ICE_TX_DESC_LEN_L4_LEN_S;
- 		break;
- 	case IPPROTO_SCTP:
-+		/* enable SCTP checksum offload */
-+		cmd |= ICE_TX_DESC_CMD_L4T_EOFT_SCTP;
-+		l4_len = sizeof(struct sctphdr) >> 2;
-+		offset |= l4_len << ICE_TX_DESC_LEN_L4_LEN_S;
-+		break;
+@@ -2546,7 +2546,8 @@ static int ice_vsi_cfg(struct ice_vsi *vsi)
+ 		if (err)
+ 			return err;
+ 	}
+-	err = ice_vsi_cfg_txqs(vsi);
 +
- 	default:
- 		if (first->tx_flags & ICE_TX_FLAGS_TSO)
- 			return -1;
++	err = ice_vsi_cfg_lan_txqs(vsi);
+ 	if (!err)
+ 		err = ice_vsi_cfg_rxqs(vsi);
+ 
+@@ -3040,7 +3041,8 @@ int ice_down(struct ice_vsi *vsi)
+ 	}
+ 
+ 	ice_vsi_dis_irq(vsi);
+-	tx_err = ice_vsi_stop_tx_rings(vsi, ICE_NO_RESET, 0);
++
++	tx_err = ice_vsi_stop_lan_tx_rings(vsi, ICE_NO_RESET, 0);
+ 	if (tx_err)
+ 		netdev_err(vsi->netdev,
+ 			   "Failed stop Tx rings, VSI %d error %d\n",
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 05ff4f910649..80b50e67cbef 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -224,13 +224,15 @@ void ice_free_vfs(struct ice_pf *pf)
+ 
+ 	/* Avoid wait time by stopping all VFs at the same time */
+ 	for (i = 0; i < pf->num_alloc_vfs; i++) {
++		struct ice_vsi *vsi;
++
+ 		if (!test_bit(ICE_VF_STATE_ENA, pf->vf[i].vf_states))
+ 			continue;
+ 
++		vsi = pf->vsi[pf->vf[i].lan_vsi_idx];
+ 		/* stop rings without wait time */
+-		ice_vsi_stop_tx_rings(pf->vsi[pf->vf[i].lan_vsi_idx],
+-				      ICE_NO_RESET, i);
+-		ice_vsi_stop_rx_rings(pf->vsi[pf->vf[i].lan_vsi_idx]);
++		ice_vsi_stop_lan_tx_rings(vsi, ICE_NO_RESET, i);
++		ice_vsi_stop_rx_rings(vsi);
+ 
+ 		clear_bit(ICE_VF_STATE_ENA, pf->vf[i].vf_states);
+ 	}
+@@ -831,6 +833,7 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ {
+ 	struct ice_pf *pf = vf->pf;
+ 	struct ice_hw *hw = &pf->hw;
++	struct ice_vsi *vsi;
+ 	bool rsd = false;
+ 	u32 reg;
+ 	int i;
+@@ -843,17 +846,18 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 
+ 	ice_trigger_vf_reset(vf, is_vflr);
+ 
++	vsi = pf->vsi[vf->lan_vsi_idx];
++
+ 	if (test_bit(ICE_VF_STATE_ENA, vf->vf_states)) {
+-		ice_vsi_stop_tx_rings(pf->vsi[vf->lan_vsi_idx], ICE_VF_RESET,
+-				      vf->vf_id);
+-		ice_vsi_stop_rx_rings(pf->vsi[vf->lan_vsi_idx]);
++		ice_vsi_stop_lan_tx_rings(vsi, ICE_VF_RESET, vf->vf_id);
++		ice_vsi_stop_rx_rings(vsi);
+ 		clear_bit(ICE_VF_STATE_ENA, vf->vf_states);
+ 	} else {
+ 		/* Call Disable LAN Tx queue AQ call even when queues are not
+ 		 * enabled. This is needed for successful completiom of VFR
+ 		 */
+-		ice_dis_vsi_txq(pf->vsi[vf->lan_vsi_idx]->port_info, 0,
+-				NULL, NULL, ICE_VF_RESET, vf->vf_id, NULL);
++		ice_dis_vsi_txq(vsi->port_info, 0, NULL, NULL, ICE_VF_RESET,
++				vf->vf_id, NULL);
+ 	}
+ 
+ 	/* poll VPGEN_VFRSTAT reg to make sure
+@@ -1614,7 +1618,7 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
+-	if (ice_vsi_stop_tx_rings(vsi, ICE_NO_RESET, vf->vf_id)) {
++	if (ice_vsi_stop_lan_tx_rings(vsi, ICE_NO_RESET, vf->vf_id)) {
+ 		dev_err(&vsi->back->pdev->dev,
+ 			"Failed to stop tx rings on VSI %d\n",
+ 			vsi->vsi_num);
+@@ -1784,7 +1788,7 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
+ 	vsi->num_txq = qci->num_queue_pairs;
+ 	vsi->num_rxq = qci->num_queue_pairs;
+ 
+-	if (!ice_vsi_cfg_txqs(vsi) && !ice_vsi_cfg_rxqs(vsi))
++	if (!ice_vsi_cfg_lan_txqs(vsi) && !ice_vsi_cfg_rxqs(vsi))
+ 		aq_ret = 0;
+ 	else
+ 		aq_ret = ICE_ERR_PARAM;
 -- 
 2.14.5
 
