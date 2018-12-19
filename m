@@ -1,197 +1,68 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 19 Dec 2018 10:03:25 -0800
-Subject: [Intel-wired-lan] [PATCH S10 06/15] ice: Set physical link up/down
- when an interface is set up/down
+Date: Wed, 19 Dec 2018 10:03:34 -0800
+Subject: [Intel-wired-lan] [PATCH S10 15/15] ice: add const qualifier to
+ mac_addr parameter
 In-Reply-To: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
 References: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20181219180334.1104-7-anirudh.venkataramanan@intel.com>
+Message-ID: <20181219180334.1104-16-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-When a netdev is set up/down we need to set the phsyical link state
-accordingly. This patch adds that functionality by calling
-ice_force_phys_link_state(vsi, link_up) in both the ice_stop() and
-ice_open() paths.
+The function ice_aq_manage_mac_write takes a pointer to a MAC address.
+The parameter is not marked const, even though the function doesn't need
+to modify it. This prevents passing a parameter that is already marked
+const. Update the function prototype to take a const pointer, to allow
+passing constant pointers to this function.
 
-In order to force link, ice_force_phys_link_state(vsi, link_up) will
-first determine the current phy capabilities. If link has not changed
-there is nothing to do. If link has changed, previous PHY capabilities
-are saved and the "Enable Automatic Link Update" and "Link Establishment
-State Machine (LESM)" enable bits are set. Then the new PHY config is
-saved. The "Enable Automatic Link Update" will force the FW to execute
-Setup link and restart auto-negotiation. This *should* then result in a
-"Link Status Event (LSE)" which will cause the driver to get the current
-link status.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  4 +-
- drivers/net/ethernet/intel/ice/ice_main.c       | 97 ++++++++++++++++++++++++-
- 2 files changed, 96 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 6 +++---
+ drivers/net/ethernet/intel/ice/ice_common.h | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 245068b21982..526224ede3fa 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -851,7 +851,7 @@ struct ice_aqc_get_phy_caps {
- 
- struct ice_aqc_get_phy_caps_data {
- 	__le64 phy_type_low; /* Use values from ICE_PHY_TYPE_LOW_* */
--	__le64 reserved;
-+	__le64 phy_type_high; /* Use values from ICE_PHY_TYPE_HIGH_* */
- 	u8 caps;
- #define ICE_AQC_PHY_EN_TX_LINK_PAUSE			BIT(0)
- #define ICE_AQC_PHY_EN_RX_LINK_PAUSE			BIT(1)
-@@ -916,7 +916,7 @@ struct ice_aqc_set_phy_cfg {
- /* Set PHY config command data structure */
- struct ice_aqc_set_phy_cfg_data {
- 	__le64 phy_type_low; /* Use values from ICE_PHY_TYPE_LOW_* */
--	__le64 rsvd0;
-+	__le64 phy_type_high; /* Use values from ICE_PHY_TYPE_HIGH_* */
- 	u8 caps;
- #define ICE_AQ_PHY_ENA_TX_PAUSE_ABILITY		BIT(0)
- #define ICE_AQ_PHY_ENA_RX_PAUSE_ABILITY		BIT(1)
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 90773b477d19..6434deec359d 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2944,13 +2944,92 @@ static void ice_napi_disable_all(struct ice_vsi *vsi)
- 	}
- }
- 
-+/**
-+ * ice_force_phys_link_state - Force the physical link state
-+ * @vsi: vsi to force the physical link state to up/down
-+ * @link_up: true/false indicates to set the physical link to up/down
-+ *
-+ * Force the physical link state by getting the current phy capabilities from
-+ * hardware and setting the phy config based on the determined capabilities. If
-+ * link changes a link event will be triggered because both the Enable Automatic
-+ * Link Update and LESM Enable bits are set when setting the PHY capabilities.
-+ *
-+ * Returns 0 on succcess, negative on failure
-+ */
-+static int ice_force_phys_link_state(struct ice_vsi *vsi, bool link_up)
-+{
-+	struct ice_aqc_get_phy_caps_data *pcaps;
-+	struct ice_aqc_set_phy_cfg_data *cfg;
-+	struct ice_port_info *pi;
-+	struct device *dev;
-+	int retcode;
-+
-+	if (!vsi || !vsi->port_info || !vsi->back)
-+		return -EINVAL;
-+	if (vsi->type != ICE_VSI_PF)
-+		return 0;
-+
-+	dev = &vsi->back->pdev->dev;
-+
-+	pi = vsi->port_info;
-+
-+	pcaps = devm_kzalloc(dev, sizeof(*pcaps), GFP_KERNEL);
-+	if (!pcaps)
-+		return -ENOMEM;
-+
-+	retcode = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_SW_CFG, pcaps,
-+				      NULL);
-+	if (retcode) {
-+		dev_err(dev,
-+			"Failed to get phy capabilities, VSI %d error %d\n",
-+			vsi->vsi_num, retcode);
-+		retcode = -EIO;
-+		goto out;
-+	}
-+
-+	/* No change in link */
-+	if (link_up == !!(pcaps->caps & ICE_AQC_PHY_EN_LINK) &&
-+	    link_up == !!(pi->phy.link_info.link_info & ICE_AQ_LINK_UP))
-+		goto out;
-+
-+	cfg = devm_kzalloc(dev, sizeof(*cfg), GFP_KERNEL);
-+	if (!cfg) {
-+		retcode = -ENOMEM;
-+		goto out;
-+	}
-+
-+	cfg->phy_type_low = pcaps->phy_type_low;
-+	cfg->phy_type_high = pcaps->phy_type_high;
-+	cfg->caps = pcaps->caps | ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
-+	cfg->low_power_ctrl = pcaps->low_power_ctrl;
-+	cfg->eee_cap = pcaps->eee_cap;
-+	cfg->eeer_value = pcaps->eeer_value;
-+	cfg->link_fec_opt = pcaps->link_fec_options;
-+	if (link_up)
-+		cfg->caps |= ICE_AQ_PHY_ENA_LINK;
-+	else
-+		cfg->caps &= ~ICE_AQ_PHY_ENA_LINK;
-+
-+	retcode = ice_aq_set_phy_cfg(&vsi->back->hw, pi->lport, cfg, NULL);
-+	if (retcode) {
-+		dev_err(dev, "Failed to set phy config, VSI %d error %d\n",
-+			vsi->vsi_num, retcode);
-+		retcode = -EIO;
-+	}
-+
-+	devm_kfree(dev, cfg);
-+out:
-+	devm_kfree(dev, pcaps);
-+	return retcode;
-+}
-+
- /**
-  * ice_down - Shutdown the connection
-  * @vsi: The VSI being stopped
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index ab308fc88920..b17ade424423 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1685,7 +1685,7 @@ enum ice_status ice_get_caps(struct ice_hw *hw)
+  * This function is used to write MAC address to the NVM (0x0108).
   */
- int ice_down(struct ice_vsi *vsi)
+ enum ice_status
+-ice_aq_manage_mac_write(struct ice_hw *hw, u8 *mac_addr, u8 flags,
++ice_aq_manage_mac_write(struct ice_hw *hw, const u8 *mac_addr, u8 flags,
+ 			struct ice_sq_cd *cd)
  {
--	int i, tx_err, rx_err;
-+	int i, tx_err, rx_err, link_err;
+ 	struct ice_aqc_manage_mac_write *cmd;
+@@ -1697,8 +1697,8 @@ ice_aq_manage_mac_write(struct ice_hw *hw, u8 *mac_addr, u8 flags,
+ 	cmd->flags = flags;
  
- 	/* Caller of this function is expected to set the
- 	 * vsi->state __ICE_DOWN bit
-@@ -2975,13 +3054,19 @@ int ice_down(struct ice_vsi *vsi)
+ 	/* Prep values for flags, sah, sal */
+-	cmd->sah = htons(*((u16 *)mac_addr));
+-	cmd->sal = htonl(*((u32 *)(mac_addr + 2)));
++	cmd->sah = htons(*((const u16 *)mac_addr));
++	cmd->sal = htonl(*((const u32 *)(mac_addr + 2)));
  
- 	ice_napi_disable_all(vsi);
- 
-+	link_err = ice_force_phys_link_state(vsi, false);
-+	if (link_err)
-+		netdev_err(vsi->netdev,
-+			   "Failed to set physical link down, VSI %d error %d\n",
-+			   vsi->vsi_num, link_err);
-+
- 	ice_for_each_txq(vsi, i)
- 		ice_clean_tx_ring(vsi->tx_rings[i]);
- 
- 	ice_for_each_rxq(vsi, i)
- 		ice_clean_rx_ring(vsi->rx_rings[i]);
- 
--	if (tx_err || rx_err) {
-+	if (tx_err || rx_err || link_err) {
- 		netdev_err(vsi->netdev,
- 			   "Failed to close VSI 0x%04X on switch 0x%04X\n",
- 			   vsi->vsi_num, vsi->vsw->sw_id);
-@@ -3815,8 +3900,14 @@ static int ice_open(struct net_device *netdev)
- 
- 	netif_carrier_off(netdev);
- 
--	err = ice_vsi_open(vsi);
-+	err = ice_force_phys_link_state(vsi, true);
-+	if (err) {
-+		netdev_err(netdev,
-+			   "Failed to set physical link up, error %d\n", err);
-+		return err;
-+	}
- 
-+	err = ice_vsi_open(vsi);
- 	if (err)
- 		netdev_err(netdev, "Failed to open VSI 0x%04X on switch 0x%04X\n",
- 			   vsi->vsi_num, vsi->vsw->sw_id);
+ 	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 17e21874b75b..d7c7c2ed8823 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -75,7 +75,7 @@ void
+ ice_update_phy_type(u64 *phy_type_low, u64 *phy_type_high,
+ 		    u16 link_speeds_bitmap);
+ enum ice_status
+-ice_aq_manage_mac_write(struct ice_hw *hw, u8 *mac_addr, u8 flags,
++ice_aq_manage_mac_write(struct ice_hw *hw, const u8 *mac_addr, u8 flags,
+ 			struct ice_sq_cd *cd);
+ enum ice_status ice_clear_pf_cfg(struct ice_hw *hw);
+ enum ice_status
 -- 
 2.14.5
 
