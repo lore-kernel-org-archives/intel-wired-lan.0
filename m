@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 20 Dec 2018 21:38:35 +0000
-Subject: [Intel-wired-lan] [PATCH S10 08/15] ice: Rework queue
- manangement code for reuse
-In-Reply-To: <20181219180334.1104-9-anirudh.venkataramanan@intel.com>
+Date: Thu, 20 Dec 2018 21:39:16 +0000
+Subject: [Intel-wired-lan] [PATCH S10 09/15] ice: Move aggregator list
+ into ice_hw instance
+In-Reply-To: <20181219180334.1104-10-anirudh.venkataramanan@intel.com>
 References: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
- <20181219180334.1104-9-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D343A48@ORSMSX104.amr.corp.intel.com>
+ <20181219180334.1104-10-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D343A58@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Wednesday, December 19, 2018 10:03 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S10 08/15] ice: Rework queue
-> manangement code for reuse
+> Subject: [Intel-wired-lan] [PATCH S10 09/15] ice: Move aggregator list into
+> ice_hw instance
 > 
-> This patch reworks the queue management code to allow for reuse with the
-> XDP feature (to be added in a future patch).
+> The aggregator list needs to be preserved for use after a reset. This patch
+> moves it out of the port_info instance and into the ice_hw instance.
 > 
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Signed-off-by: Tarun Singh <tarun.k.singh@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h             |  11 ++
->  drivers/net/ethernet/intel/ice/ice_lib.c         | 234 ++++++++++++-----------
->  drivers/net/ethernet/intel/ice/ice_lib.h         |   5 +-
->  drivers/net/ethernet/intel/ice/ice_main.c        |   6 +-
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  24 ++-
->  5 files changed, 157 insertions(+), 123 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c |  2 ++
+> drivers/net/ethernet/intel/ice/ice_sched.c  | 34 ++++++++++++++++++------
+> -----  drivers/net/ethernet/intel/ice/ice_sched.h  |  2 ++
+>  drivers/net/ethernet/intel/ice/ice_type.h   |  2 +-
+>  4 files changed, 26 insertions(+), 14 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
