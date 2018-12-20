@@ -1,56 +1,289 @@
-From: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-Date: Thu, 20 Dec 2018 08:36:26 +0000
-Subject: [Intel-wired-lan] [next PATCH S1 1/6] i40e: Limiting RSS queues
- to CPUs.
-In-Reply-To: <20181219144542.85924-1-alice.michael@intel.com>
-References: <20181219144542.85924-1-alice.michael@intel.com>
-Message-ID: <0EF347314CF65544BA015993979A29CD0F45B852@IRSMSX104.ger.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 20 Dec 2018 17:21:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
+ 0b31d6306f785a5986cde08520bc33fa1cb86b9c
+Message-ID: <5c1b5f06.MsNRjOrGX/hiey0y%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 0b31d6306f785a5986cde08520bc33fa1cb86b9c  igc: Clean up code
 
------Original Message-----
-From: Michael, Alice 
-Sent: Wednesday, December 19, 2018 3:46 PM
-To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-Subject: [next PATCH S1 1/6] i40e: Limiting RSS queues to CPUs.
+TIMEOUT after 605m
 
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
-Limiting RSS queues number to online CPUs number in order to avoid issues with creating misconfigured RSS queues.
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
 
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+configs timed out: 106
+
+alpha                            allmodconfig
+alpha                            allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+i386                            randconfig-a0
+i386                            randconfig-a1
+i386                            randconfig-a2
+i386                            randconfig-a3
+i386                            randconfig-f0
+i386                            randconfig-f1
+i386                            randconfig-f2
+i386                            randconfig-f3
+i386                            randconfig-i0
+i386                            randconfig-i1
+i386                            randconfig-i2
+i386                            randconfig-i3
+i386                            randconfig-j0
+i386                            randconfig-j1
+i386                            randconfig-j2
+i386                            randconfig-j3
+i386                            randconfig-k0
+i386                            randconfig-k1
+i386                            randconfig-k2
+i386                            randconfig-k3
+i386                            randconfig-n0
+i386                            randconfig-n1
+i386                            randconfig-n2
+i386                            randconfig-n3
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+m68k                       m5475evb_defconfig
+mips                             allmodconfig
+mips                             allyesconfig
+nds32                            allmodconfig
+nds32                            allyesconfig
+nios2                         10m50_defconfig
+openrisc                    or1ksim_defconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+s390                             allmodconfig
+s390                             allyesconfig
+sh                               allmodconfig
+sh                               allyesconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+sparc64                          allmodconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                          randconfig-e0
+x86_64                          randconfig-e1
+x86_64                          randconfig-e2
+x86_64                          randconfig-e3
+x86_64                          randconfig-f0
+x86_64                          randconfig-f1
+x86_64                          randconfig-f2
+x86_64                          randconfig-f3
+x86_64                          randconfig-g1
+x86_64                          randconfig-g2
+x86_64                          randconfig-g3
+x86_64                          randconfig-h0
+x86_64                          randconfig-h1
+x86_64                          randconfig-h2
+x86_64                          randconfig-h3
+x86_64                          randconfig-i0
+x86_64                          randconfig-i1
+x86_64                          randconfig-i2
+x86_64                          randconfig-i3
+x86_64                          randconfig-j0
+x86_64                          randconfig-j1
+x86_64                          randconfig-j2
+x86_64                          randconfig-j3
+x86_64                          randconfig-k0
+x86_64                          randconfig-k1
+x86_64                          randconfig-k2
+x86_64                          randconfig-k3
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                         rhel-7.2-clear
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+
+configs tested: 150
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                         axm55xx_defconfig
+ia64                              allnoconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+ia64                             alldefconfig
+ia64                                defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+arm                            zeus_defconfig
+sh                          urquell_defconfig
+arm                         bcm2835_defconfig
+mips                        qi_lb60_defconfig
+arm                          gemini_defconfig
+sparc                             allnoconfig
+x86_64                 randconfig-g0-12201649
+i386                             allmodconfig
+x86_64                 randconfig-s0-12201633
+x86_64                 randconfig-s1-12201633
+x86_64                 randconfig-s2-12201633
+x86_64                 randconfig-s0-12201659
+x86_64                 randconfig-s1-12201659
+x86_64                 randconfig-s2-12201659
+arm                            dove_defconfig
+arm                          moxart_defconfig
+powerpc                      ppc44x_defconfig
+powerpc                     ps3_nfs_defconfig
+arm                       multi_v4t_defconfig
+arm                       netwinder_defconfig
+powerpc                     tqm8548_defconfig
+sparc64                          allyesconfig
+mips                     loongson1c_defconfig
+mips                   sb1250_swarm_defconfig
+powerpc                     tqm8541_defconfig
+xtensa                  cadence_csp_defconfig
+x86_64                 randconfig-x013-201850
+x86_64                 randconfig-x011-201850
+x86_64                 randconfig-x015-201850
+x86_64                 randconfig-x019-201850
+x86_64                 randconfig-x010-201850
+x86_64                 randconfig-x016-201850
+x86_64                 randconfig-x012-201850
+x86_64                 randconfig-x018-201850
+x86_64                 randconfig-x014-201850
+x86_64                 randconfig-x017-201850
+i386                   randconfig-s0-12160735
+i386                   randconfig-s1-12160735
+i386                   randconfig-s2-12160735
+i386                   randconfig-s3-12160735
+x86_64                 randconfig-s3-12201635
+x86_64                 randconfig-s4-12201635
+x86_64                 randconfig-s5-12201635
+x86_64                 randconfig-s3-12201651
+x86_64                 randconfig-s4-12201651
+x86_64                 randconfig-s5-12201651
+arm                            hisi_defconfig
+mips                        bcm47xx_defconfig
+powerpc                 linkstation_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+csky                                defconfig
+sh                           se7722_defconfig
+sh                          kfr2r09_defconfig
+arm                            netx_defconfig
+mips                       markeins_defconfig
+powerpc                     ksi8560_defconfig
+arm                             rpc_defconfig
+mips                             alldefconfig
+powerpc                       ebony_defconfig
+mips                        generic_defconfig
+parisc                           alldefconfig
+x86_64                 randconfig-u0-12201640
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                             allmodconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-x015-201850
+i386                   randconfig-x011-201850
+i386                   randconfig-x016-201850
+i386                   randconfig-x017-201850
+i386                   randconfig-x013-201850
+i386                   randconfig-x018-201850
+i386                   randconfig-x014-201850
+i386                   randconfig-x012-201850
+i386                   randconfig-x010-201850
+i386                   randconfig-x019-201850
+x86_64                randconfig-ne0-12201634
+x86_64                randconfig-ne0-12201640
+x86_64                randconfig-ne0-12201644
+i386                   randconfig-x079-201850
+i386                   randconfig-x077-201850
+i386                   randconfig-x073-201850
+i386                   randconfig-x074-201850
+i386                   randconfig-x075-201850
+i386                   randconfig-x071-201850
+i386                   randconfig-x078-201850
+i386                   randconfig-x076-201850
+i386                   randconfig-x070-201850
+i386                   randconfig-x072-201850
+i386                   randconfig-x008-201850
+i386                   randconfig-x002-201850
+i386                   randconfig-x006-201850
+i386                   randconfig-x001-201850
+i386                   randconfig-x000-201850
+i386                   randconfig-x004-201850
+i386                   randconfig-x009-201850
+i386                   randconfig-x003-201850
+i386                   randconfig-x005-201850
+i386                   randconfig-x007-201850
+x86_64                 randconfig-x006-201850
+x86_64                 randconfig-x008-201850
+x86_64                 randconfig-x003-201850
+x86_64                 randconfig-x005-201850
+x86_64                 randconfig-x001-201850
+x86_64                 randconfig-x007-201850
+x86_64                 randconfig-x009-201850
+x86_64                 randconfig-x004-201850
+x86_64                 randconfig-x000-201850
+x86_64                 randconfig-x002-201850
+x86_64                 randconfig-r0-12201629
+x86_64                 randconfig-r0-12201646
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1e61c22c27f4..b4ae4ba84aa3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11554,6 +11554,7 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
- 	if (!(pf->flags & I40E_FLAG_RSS_ENABLED))
- 		return 0;
- 
-+	queue_count = min_t(int, queue_count, num_online_cpus());
- 	new_rss_size = min_t(int, queue_count, pf->rss_size_max);
- 
- 	if (queue_count != vsi->num_queue_pairs) {
---
-2.19.2
-
---------------------------------------------------------------------
-
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
