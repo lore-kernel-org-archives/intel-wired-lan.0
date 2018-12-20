@@ -1,48 +1,44 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 20 Dec 2018 21:40:16 +0000
-Subject: [Intel-wired-lan] [PATCH S10 11/15] ice: Implement getting and
- setting ethtool coalesce
-In-Reply-To: <20181219180334.1104-12-anirudh.venkataramanan@intel.com>
-References: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
- <20181219180334.1104-12-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D343A79@ORSMSX104.amr.corp.intel.com>
+From: Kangjie Lu <kjlu@umn.edu>
+Date: Thu, 20 Dec 2018 15:23:59 -0600
+Subject: [Intel-wired-lan] [PATCH] net: 80003es2lan: fix a missing check of
+ read failure
+Message-ID: <20181220212359.564-1-kjlu@umn.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Anirudh Venkataramanan
-> Sent: Wednesday, December 19, 2018 10:04 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S10 11/15] ice: Implement getting and
-> setting ethtool coalesce
-> 
-> From: Brett Creeley <brett.creeley@intel.com>
-> 
-> This patch includes the following ethtool operations:
-> 
-> 1. get_coalesce
-> 2. set_coalesce
-> 3. get_per_q_coalesce
-> 4. set_per_q_coalesce
-> 
-> Each itr value (current_itr/target_itr) are stored on a per ice_ring_container
-> basis. This is because each valid ice_ring_container can have 1 or more rings
-> that are tied to the same q_vector ITR index.
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice.h         |   3 +
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 256
-> +++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_txrx.h    |   2 +
->  3 files changed, 261 insertions(+)
+When e1000_read_kmrn_reg_80003es2lan() fails, "kum_reg_data" is
+uninitialized and may contain random value. However, it is further
+used in the following execution, which will lead to undefined
+behaviors.
+The fix checks the failure of e1000_read_kmrn_reg_80003es2lan() and
+returns with its error code if it fails.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+---
+ drivers/net/ethernet/intel/e1000e/80003es2lan.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/e1000e/80003es2lan.c b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
+index 257bd59bc9c6..8a6f8e80e062 100644
+--- a/drivers/net/ethernet/intel/e1000e/80003es2lan.c
++++ b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
+@@ -754,8 +754,11 @@ static s32 e1000_init_hw_80003es2lan(struct e1000_hw *hw)
+ 		return ret_val;
+ 
+ 	/* Disable IBIST slave mode (far-end loopback) */
+-	e1000_read_kmrn_reg_80003es2lan(hw, E1000_KMRNCTRLSTA_INBAND_PARAM,
+-					&kum_reg_data);
++	ret_val = 
++	    e1000_read_kmrn_reg_80003es2lan(hw, E1000_KMRNCTRLSTA_INBAND_PARAM,
++					    &kum_reg_data);
++	if (ret_val)
++		return ret_val;
+ 	kum_reg_data |= E1000_KMRNCTRLSTA_IBIST_DISABLE;
+ 	e1000_write_kmrn_reg_80003es2lan(hw, E1000_KMRNCTRLSTA_INBAND_PARAM,
+ 					 kum_reg_data);
+-- 
+2.17.1
 
