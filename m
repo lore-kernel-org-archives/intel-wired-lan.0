@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 20 Dec 2018 21:40:55 +0000
-Subject: [Intel-wired-lan] [PATCH S10 12/15] ice: Allow for software
- timestamping
-In-Reply-To: <20181219180334.1104-13-anirudh.venkataramanan@intel.com>
+Date: Thu, 20 Dec 2018 21:41:23 +0000
+Subject: [Intel-wired-lan] [PATCH S10 13/15] ice: Offload SCTP checksum
+In-Reply-To: <20181219180334.1104-14-anirudh.venkataramanan@intel.com>
 References: <20181219180334.1104-1-anirudh.venkataramanan@intel.com>
- <20181219180334.1104-13-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D343A88@ORSMSX104.amr.corp.intel.com>
+ <20181219180334.1104-14-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D343A9D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +16,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Wednesday, December 19, 2018 10:04 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S10 12/15] ice: Allow for software
-> timestamping
+> Subject: [Intel-wired-lan] [PATCH S10 13/15] ice: Offload SCTP checksum
 > 
-> From: Tony Nguyen <anthony.l.nguyen@intel.com>
+> This patch adds the ability to offload SCTP checksum calculations to the NIC.
 > 
-> Use ethtool_op_get_ts_info to provide software timestamping.
-> 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/ice/ice.h           | 1 +
+>  drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 1 +
+>  drivers/net/ethernet/intel/ice/ice_main.c      | 1 +
+>  drivers/net/ethernet/intel/ice/ice_txrx.c      | 6 ++++++
+>  4 files changed, 9 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
