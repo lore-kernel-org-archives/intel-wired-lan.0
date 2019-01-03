@@ -1,78 +1,52 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu,  3 Jan 2019 15:54:04 -0800
-Subject: [Intel-wired-lan] [PATCH] e1000e: fix a missing check for return
- value
-Message-ID: <20190103235404.9491-1-jeffrey.t.kirsher@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 3 Jan 2019 23:57:37 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: fix Kconfig when driver is not
+ a module
+In-Reply-To: <20190103213519.9754-1-jeffrey.t.kirsher@intel.com>
+References: <20190103213519.9754-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D34E9C7@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The change is based on the issue found by Kangjie Lu <kjlu@umn.edu> where
-we not checking the return value of a register read/write which could result
-in a NULL pointer dereference if the read/write fails.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Thursday, January 3, 2019 1:35 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; Florian Fainelli <f.fainelli@gmail.com>; Dave
+> Jones <davej@codemonkey.org.uk>
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: fix Kconfig when driver is not a
+> module
+> 
+> The new ability added to the driver to use mii_bus to handle MII related
+> ioctls is causing compile issues when the driver is compiled into the kernel
+> (i.e. not a module).
+> 
+> The simple solution of requiring the driver to be compiled as a module when
+> MDIO_BUS is a module, causes a recursion Kconfig issue due to IPSec
+> dependencies.
+> 
+> So created another Kconfig option for ixgbe, to enable mdio_bus support for
+> DSA devices.  This solution solves the problem when the ixgbe driver is
+> compiled into the kernel and MDIO_BUS is compiled as a module.  In this
+> case, the IXGBE_MDIO option is disabled and the code is not compiled into
+> the driver.
+> 
+> CC: Dave Jones <davej@codemonkey.org.uk>
+> CC: Steve Douthit <stephend@silicom-usa.com>
+> CC: Florian Fainelli <f.fainelli@gmail.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> ---
+>  drivers/net/ethernet/intel/Kconfig            | 11 ++++++++++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  4 ++++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 12 ++++++++++--
+> drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |  4 ++++
+> drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |  3 ++-
+>  5 files changed, 30 insertions(+), 4 deletions(-)
 
-Since we are only trying to disable the far-end loopback, if the read
-and write of register fails, we do not want to bail out of the function.
-We just want to log that it failed to disable and continue on.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-CC: Sasha Neftin <sasha.neftin@intel.com>
-CC: Kangjie Lu <kjlu@umn.edu>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
- .../net/ethernet/intel/e1000e/80003es2lan.c   | 31 +++++++++++++------
- 1 file changed, 21 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/80003es2lan.c b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-index 257bd59bc9c6..fde91aa663d7 100644
---- a/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-@@ -696,11 +696,15 @@ static s32 e1000_reset_hw_80003es2lan(struct e1000_hw *hw)
- 	ret_val =
- 	    e1000_read_kmrn_reg_80003es2lan(hw, E1000_KMRNCTRLSTA_INBAND_PARAM,
- 					    &kum_reg_data);
--	if (ret_val)
--		return ret_val;
--	kum_reg_data |= E1000_KMRNCTRLSTA_IBIST_DISABLE;
--	e1000_write_kmrn_reg_80003es2lan(hw, E1000_KMRNCTRLSTA_INBAND_PARAM,
--					 kum_reg_data);
-+	if (!ret_val)
-+		kum_reg_data |= E1000_KMRNCTRLSTA_IBIST_DISABLE;
-+		ret_val = e1000_write_kmrn_reg_80003es2lan(hw,
-+						 E1000_KMRNCTRLSTA_INBAND_PARAM,
-+						 kum_reg_data);
-+		if (ret_val)
-+			e_dbg("Error disabling far-end loopback\n");
-+	} else
-+		e_dbg("Error disabling far-end loopback\n");
- 
- 	ret_val = e1000e_get_auto_rd_done(hw);
- 	if (ret_val)
-@@ -754,11 +758,18 @@ static s32 e1000_init_hw_80003es2lan(struct e1000_hw *hw)
- 		return ret_val;
- 
- 	/* Disable IBIST slave mode (far-end loopback) */
--	e1000_read_kmrn_reg_80003es2lan(hw, E1000_KMRNCTRLSTA_INBAND_PARAM,
--					&kum_reg_data);
--	kum_reg_data |= E1000_KMRNCTRLSTA_IBIST_DISABLE;
--	e1000_write_kmrn_reg_80003es2lan(hw, E1000_KMRNCTRLSTA_INBAND_PARAM,
--					 kum_reg_data);
-+	ret_val =
-+	    e1000_read_kmrn_reg_80003es2lan(hw, E1000_KMRNCTRLSTA_INBAND_PARAM,
-+					    &kum_reg_data);
-+	if (!ret_val) {
-+		kum_reg_data |= E1000_KMRNCTRLSTA_IBIST_DISABLE;
-+		ret_val = e1000_write_kmrn_reg_80003es2lan(hw,
-+						 E1000_KMRNCTRLSTA_INBAND_PARAM,
-+						 kum_reg_data);
-+		if (ret_val)
-+			e_dbg("Error disabling far-end loopback\n");
-+	} else
-+		e_dbg("Error disabling far-end loopback\n");
- 
- 	/* Set the transmit descriptor write-back policy */
- 	reg_data = er32(TXDCTL(0));
--- 
-2.20.1
 
