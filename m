@@ -1,52 +1,35 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 3 Jan 2019 23:57:37 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix Kconfig when driver is not
- a module
-In-Reply-To: <20190103213519.9754-1-jeffrey.t.kirsher@intel.com>
-References: <20190103213519.9754-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D34E9C7@ORSMSX104.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 03 Jan 2019 15:58:10 -0800
+Subject: [Intel-wired-lan] [PATCH 3/8] i40e: increase indentation
+In-Reply-To: <1546185195-25676-4-git-send-email-Julia.Lawall@lip6.fr>
+References: <1546185195-25676-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1546185195-25676-4-git-send-email-Julia.Lawall@lip6.fr>
+Message-ID: <2320c3ac2267d17ee9fc9ff3e3df60b7ca405590.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Thursday, January 3, 2019 1:35 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; Florian Fainelli <f.fainelli@gmail.com>; Dave
-> Jones <davej@codemonkey.org.uk>
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: fix Kconfig when driver is not a
-> module
+On Sun, 2018-12-30 at 16:53 +0100, Julia Lawall wrote:
+> Convert spaces to tabs to get correct alignment.
 > 
-> The new ability added to the driver to use mii_bus to handle MII related
-> ioctls is causing compile issues when the driver is compiled into the kernel
-> (i.e. not a module).
+> Found with the help of Coccinelle.
 > 
-> The simple solution of requiring the driver to be compiled as a module when
-> MDIO_BUS is a module, causes a recursion Kconfig issue due to IPSec
-> dependencies.
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 > 
-> So created another Kconfig option for ixgbe, to enable mdio_bus support for
-> DSA devices.  This solution solves the problem when the ixgbe driver is
-> compiled into the kernel and MDIO_BUS is compiled as a module.  In this
-> case, the IXGBE_MDIO option is disabled and the code is not compiled into
-> the driver.
-> 
-> CC: Dave Jones <davej@codemonkey.org.uk>
-> CC: Steve Douthit <stephend@silicom-usa.com>
-> CC: Florian Fainelli <f.fainelli@gmail.com>
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 > ---
->  drivers/net/ethernet/intel/Kconfig            | 11 ++++++++++-
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  4 ++++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 12 ++++++++++--
-> drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |  4 ++++
-> drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |  3 ++-
->  5 files changed, 30 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-
+Dave, since this is apart of a series, please feel free to commit this
+patch with the series.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190103/29c563d0/attachment.asc>
