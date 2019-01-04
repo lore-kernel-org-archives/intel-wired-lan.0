@@ -1,61 +1,60 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 04 Jan 2019 13:47:09 -0800
+From: David Miller <davem@davemloft.net>
+Date: Fri, 04 Jan 2019 14:02:42 -0800 (PST)
 Subject: [Intel-wired-lan] [net v3] ixgbe: fix Kconfig when driver is
  not a module
-In-Reply-To: <20190104.133943.1670966834258094158.davem@davemloft.net>
+In-Reply-To: <c3270b7b9a9e0f73402da1ebfd871fc11fba6e05.camel@intel.com>
 References: <20190104184802.4730-1-jeffrey.t.kirsher@intel.com>
  <20190104.133943.1670966834258094158.davem@davemloft.net>
-Message-ID: <c3270b7b9a9e0f73402da1ebfd871fc11fba6e05.camel@intel.com>
+ <c3270b7b9a9e0f73402da1ebfd871fc11fba6e05.camel@intel.com>
+Message-ID: <20190104.140242.1314816715266508961.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2019-01-04 at 13:39 -0800, David Miller wrote:
-> From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Date: Fri,  4 Jan 2019 10:48:02 -0800
-> 
-> > The new ability added to the driver to use mii_bus to handle MII
-> > related
-> > ioctls is causing compile issues when the driver is compiled into
-> > the
-> > kernel (i.e. not a module).
-> > 
-> > The problem was in selecting MDIO_DEVICE instead of the preferred
-> > PHYLIB
-> > Kconfig option.  The reason being that MDIO_DEVICE had a dependency
-> > on
-> > PHYLIB and would be compiled as a module when PHYLIB was a module,
-> > no
-> > matter whether ixgbe was compiled into the kernel.
-> > 
-> > CC: Dave Jones <davej@codemonkey.org.uk>
-> > CC: Steve Douthit <stephend@silicom-usa.com>
-> > CC: Florian Fainelli <f.fainelli@gmail.com>
-> > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> > ---
-> > v2: fixed up the Kconfig help section to include the clause 22/45
-> >   address information and also changed the IXGBE_MDIO config option
-> > to be
-> >   dependent upon PHYLIB versus MDIO_BUS since that appears to be
-> > the
-> >   common usage
-> > 
-> > v3: Steve Douthit found a much simpler solution of changing the
-> >   dependency from MDIO_DEVICE to PHYLIB, which is consistent with
-> > other
-> >   Ethernet drivers
-> 
-> Jeff, would you like me to apply this directly?
-> 
-> Thanks.
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 04 Jan 2019 13:47:09 -0800
 
-Yes, please.  It is the only fix I have for your net tree.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190104/ed6c4e62/attachment.asc>
+> On Fri, 2019-01-04 at 13:39 -0800, David Miller wrote:
+>> From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+>> Date: Fri,  4 Jan 2019 10:48:02 -0800
+>> 
+>> > The new ability added to the driver to use mii_bus to handle MII
+>> > related
+>> > ioctls is causing compile issues when the driver is compiled into
+>> > the
+>> > kernel (i.e. not a module).
+>> > 
+>> > The problem was in selecting MDIO_DEVICE instead of the preferred
+>> > PHYLIB
+>> > Kconfig option.  The reason being that MDIO_DEVICE had a dependency
+>> > on
+>> > PHYLIB and would be compiled as a module when PHYLIB was a module,
+>> > no
+>> > matter whether ixgbe was compiled into the kernel.
+>> > 
+>> > CC: Dave Jones <davej@codemonkey.org.uk>
+>> > CC: Steve Douthit <stephend@silicom-usa.com>
+>> > CC: Florian Fainelli <f.fainelli@gmail.com>
+>> > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+>> > ---
+>> > v2: fixed up the Kconfig help section to include the clause 22/45
+>> >   address information and also changed the IXGBE_MDIO config option
+>> > to be
+>> >   dependent upon PHYLIB versus MDIO_BUS since that appears to be
+>> > the
+>> >   common usage
+>> > 
+>> > v3: Steve Douthit found a much simpler solution of changing the
+>> >   dependency from MDIO_DEVICE to PHYLIB, which is consistent with
+>> > other
+>> >   Ethernet drivers
+>> 
+>> Jeff, would you like me to apply this directly?
+>> 
+>> Thanks.
+> 
+> Yes, please.  It is the only fix I have for your net tree.
+
+Awesome, done.
