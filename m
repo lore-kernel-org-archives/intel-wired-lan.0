@@ -1,17 +1,19 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Date: Fri, 4 Jan 2019 12:43:50 -0800
+From: David Miller <davem@davemloft.net>
+Date: Fri, 04 Jan 2019 13:39:43 -0800 (PST)
 Subject: [Intel-wired-lan] [net v3] ixgbe: fix Kconfig when driver is
  not a module
 In-Reply-To: <20190104184802.4730-1-jeffrey.t.kirsher@intel.com>
 References: <20190104184802.4730-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <2bff487e-2dd8-c2a4-ba2a-8e8759980a24@gmail.com>
+Message-ID: <20190104.133943.1670966834258094158.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/4/19 10:48 AM, Jeff Kirsher wrote:
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri,  4 Jan 2019 10:48:02 -0800
+
 > The new ability added to the driver to use mii_bus to handle MII related
 > ioctls is causing compile issues when the driver is compiled into the
 > kernel (i.e. not a module).
@@ -25,13 +27,6 @@ On 1/4/19 10:48 AM, Jeff Kirsher wrote:
 > CC: Steve Douthit <stephend@silicom-usa.com>
 > CC: Florian Fainelli <f.fainelli@gmail.com>
 > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-
-Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
-
-Other drivers do make use of PHYLIB entirely, and are both a mii_bus
-provider and using PHYLIB this driver is just a mii_bus provider,
-anyway, probably the best fix for the buck :)
-
 > ---
 > v2: fixed up the Kconfig help section to include the clause 22/45
 >   address information and also changed the IXGBE_MDIO config option to be
@@ -41,25 +36,7 @@ anyway, probably the best fix for the buck :)
 > v3: Steve Douthit found a much simpler solution of changing the
 >   dependency from MDIO_DEVICE to PHYLIB, which is consistent with other
 >   Ethernet drivers
-> 
->  drivers/net/ethernet/intel/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-> index 31fb76ee9d82..a1246e89aad4 100644
-> --- a/drivers/net/ethernet/intel/Kconfig
-> +++ b/drivers/net/ethernet/intel/Kconfig
-> @@ -159,7 +159,7 @@ config IXGBE
->  	tristate "Intel(R) 10GbE PCI Express adapters support"
->  	depends on PCI
->  	select MDIO
-> -	select MDIO_DEVICE
-> +	select PHYLIB
->  	imply PTP_1588_CLOCK
->  	---help---
->  	  This driver supports Intel(R) 10GbE PCI Express family of
-> 
 
+Jeff, would you like me to apply this directly?
 
--- 
-Florian
+Thanks.
