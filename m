@@ -1,73 +1,100 @@
 From: Jan-Marek Glogowski <glogow@fbihome.de>
-Date: Fri,  4 Jan 2019 14:31:06 +0100
-Subject: [Intel-wired-lan] [PATCH 2/3] e1000e: ignore status during
- auto-negotiation
+Date: Fri,  4 Jan 2019 14:31:07 +0100
+Subject: [Intel-wired-lan] [PATCH 3/3] e1000e: add some status debug output
 In-Reply-To: <1546608667-25498-1-git-send-email-glogow@fbihome.de>
 References: <e080046a-6630-ad07-ebbb-603e820766f4@fbihome.de>
  <1546608667-25498-1-git-send-email-glogow@fbihome.de>
-Message-ID: <1546608667-25498-3-git-send-email-glogow@fbihome.de>
+Message-ID: <1546608667-25498-4-git-send-email-glogow@fbihome.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-My problem is the fallback of the hardware to 10 Mbps after a
-re-connect, which happens almost all times. In the broken case
-the status field has always the 0x40000000 bit set.
-
-Still the naming for the status flag is just a guess. Ignoring
-the status, when this bit is set, solves my problem. But I just
-have one notebook hardware (I219-LM, rev 21), which exhibits the
-problem. It doesn't happen for my other notebook with I219-V
-(rev 21) hardware (or it's just much more unlikely).
+Add dynamic debug info for flow control advertising and dump
+the status when extracting speed and duplex from it.
 
 Signed-off-by: Jan-Marek Glogowski <glogow@fbihome.de>
 ---
- drivers/net/ethernet/intel/e1000e/defines.h | 1 +
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 3 ++-
- drivers/net/ethernet/intel/e1000e/mac.c     | 2 ++
- 3 files changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e1000e/mac.c | 10 +++++++---
+ drivers/net/ethernet/intel/e1000e/phy.c |  6 +++++-
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
-index fd550de..3cd9f99 100644
---- a/drivers/net/ethernet/intel/e1000e/defines.h
-+++ b/drivers/net/ethernet/intel/e1000e/defines.h
-@@ -221,6 +221,7 @@
- #define E1000_STATUS_LAN_INIT_DONE 0x00000200   /* Lan Init Completion by NVM */
- #define E1000_STATUS_PHYRA      0x00000400      /* PHY Reset Asserted */
- #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master Req status */
-+#define E1000_STATUS_AUTONEG    0x40000000      /* in auto-negotiation */
- 
- #define HALF_DUPLEX 1
- #define FULL_DUPLEX 2
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index fd59970..8588eb7 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1390,7 +1390,8 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 		u16 speed;
- 		u8 duplex;
- 
--		e1000e_get_speed_and_duplex_copper(hw, &speed, &duplex);
-+		if (e1000e_get_speed_and_duplex_copper(hw, &speed, &duplex))
-+			goto out;
- 		tipg_reg = er32(TIPG);
- 		tipg_reg &= ~E1000_TIPG_IPGT_MASK;
- 
 diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
-index 19c816c..ada8fbb 100644
+index ada8fbb..daa7be8 100644
 --- a/drivers/net/ethernet/intel/e1000e/mac.c
 +++ b/drivers/net/ethernet/intel/e1000e/mac.c
-@@ -1310,6 +1310,8 @@ s32 e1000e_get_speed_and_duplex_copper(struct e1000_hw *hw, u16 *speed,
+@@ -1310,10 +1310,14 @@ s32 e1000e_get_speed_and_duplex_copper(struct e1000_hw *hw, u16 *speed,
  
  	status = er32(STATUS);
  
-+	if (status & E1000_STATUS_AUTONEG)
-+		return 1;
- 	if (!(status & E1000_STATUS_LU))
+-	if (status & E1000_STATUS_AUTONEG)
++	if (status & E1000_STATUS_AUTONEG) {
++		e_dbg("status 0x%x => in auto-neg, no valid config\n", status);
  		return 1;
+-	if (!(status & E1000_STATUS_LU))
++	}
++	if (!(status & E1000_STATUS_LU)) {
++		e_dbg("status 0x%x => no link, no valid config\n", status);
+ 		return 1;
++	}
  
+ 	if (status & E1000_STATUS_SPEED_1000)
+ 		*speed = SPEED_1000;
+@@ -1327,7 +1331,7 @@ s32 e1000e_get_speed_and_duplex_copper(struct e1000_hw *hw, u16 *speed,
+ 	else
+ 		*duplex = HALF_DUPLEX;
+ 
+-	e_dbg("%u Mbps, %s Duplex\n",
++	e_dbg("status 0x%x => %u Mbps, %s Duplex\n", status,
+ 	      *speed == SPEED_1000 ? 1000 : *speed == SPEED_100 ? 100 : 10,
+ 	      *duplex == FULL_DUPLEX ? "Full" : "Half");
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+index 4223301..91da35c 100644
+--- a/drivers/net/ethernet/intel/e1000e/phy.c
++++ b/drivers/net/ethernet/intel/e1000e/phy.c
+@@ -1011,6 +1011,7 @@ static s32 e1000_phy_setup_autoneg(struct e1000_hw *hw)
+ 		 */
+ 		mii_autoneg_adv_reg &=
+ 		    ~(ADVERTISE_PAUSE_ASYM | ADVERTISE_PAUSE_CAP);
++		e_dbg("Advertise no flow control\n");
+ 		break;
+ 	case e1000_fc_rx_pause:
+ 		/* Rx Flow control is enabled, and Tx Flow control is
+@@ -1024,6 +1025,7 @@ static s32 e1000_phy_setup_autoneg(struct e1000_hw *hw)
+ 		 */
+ 		mii_autoneg_adv_reg |=
+ 		    (ADVERTISE_PAUSE_ASYM | ADVERTISE_PAUSE_CAP);
++		e_dbg("Advertise no flow control\n");
+ 		break;
+ 	case e1000_fc_tx_pause:
+ 		/* Tx Flow control is enabled, and Rx Flow control is
+@@ -1031,6 +1033,7 @@ static s32 e1000_phy_setup_autoneg(struct e1000_hw *hw)
+ 		 */
+ 		mii_autoneg_adv_reg |= ADVERTISE_PAUSE_ASYM;
+ 		mii_autoneg_adv_reg &= ~ADVERTISE_PAUSE_CAP;
++		e_dbg("Advertise Tx flow control\n");
+ 		break;
+ 	case e1000_fc_full:
+ 		/* Flow control (both Rx and Tx) is enabled by a software
+@@ -1038,6 +1041,7 @@ static s32 e1000_phy_setup_autoneg(struct e1000_hw *hw)
+ 		 */
+ 		mii_autoneg_adv_reg |=
+ 		    (ADVERTISE_PAUSE_ASYM | ADVERTISE_PAUSE_CAP);
++		e_dbg("Advertise Tx and Rx flow control\n");
+ 		break;
+ 	default:
+ 		e_dbg("Flow control param set incorrectly\n");
+@@ -1048,7 +1052,7 @@ static s32 e1000_phy_setup_autoneg(struct e1000_hw *hw)
+ 	if (ret_val)
+ 		return ret_val;
+ 
+-	e_dbg("Auto-Neg Advertising %x\n", mii_autoneg_adv_reg);
++	e_dbg("Auto-Neg Advertising 0x%x\n", mii_autoneg_adv_reg);
+ 
+ 	if (phy->autoneg_mask & ADVERTISE_1000_FULL)
+ 		ret_val = e1e_wphy(hw, MII_CTRL1000, mii_1000t_ctrl_reg);
 -- 
 2.1.4
 
