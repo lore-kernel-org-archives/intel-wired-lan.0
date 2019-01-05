@@ -1,32 +1,222 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 5 Jan 2019 04:06:47 +0000
-Subject: [Intel-wired-lan] [PATCH 1/1] igc: Fix code redundancy
-In-Reply-To: <20181218092954.29914-1-sasha.neftin@intel.com>
-References: <20181218092954.29914-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9660FC07@ORSMSX103.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sun, 06 Jan 2019 04:58:07 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 9b62d1d9dfe78947ee2b64d4229d6ca16fdd09a0
+Message-ID: <5c311a5f.fppFYxySFivkxnAS%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Sasha Neftin
-> Sent: Tuesday, December 18, 2018 1:30 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 1/1] igc: Fix code redundancy
-> 
-> Remove redundant igc_check_for_link_base code and replace it with
-> an igc_check_for_copper_link method.
-> Fix duplication of IGC_ADVTXD_PAYLEN_SHIFT mask declaration.
-> Remove obsolete IGC_SCVPC register definition.
-> 
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc_base.c | 20 ++------------------
->  drivers/net/ethernet/intel/igc/igc_base.h |  3 ---
->  drivers/net/ethernet/intel/igc/igc_regs.h |  1 -
->  3 files changed, 2 insertions(+), 22 deletions(-)
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 9b62d1d9dfe78947ee2b64d4229d6ca16fdd09a0  ixgbe: fix Kconfig when driver is not a module
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+elapsed time: 1538m
+
+configs tested: 198
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+ia64                        generic_defconfig
+powerpc                      obs600_defconfig
+x86_64                 randconfig-a0-01050601
+arm                         nhk8815_defconfig
+parisc                          712_defconfig
+i386                   randconfig-c0-01050653
+riscv                              tinyconfig
+i386                               tinyconfig
+riscv                             allnoconfig
+s390                             allmodconfig
+i386                   randconfig-x010-201900
+i386                   randconfig-x011-201900
+i386                   randconfig-x012-201900
+i386                   randconfig-x013-201900
+i386                   randconfig-x014-201900
+i386                   randconfig-x015-201900
+i386                   randconfig-x016-201900
+i386                   randconfig-x017-201900
+i386                   randconfig-x018-201900
+i386                   randconfig-x019-201900
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-01041219
+i386                   randconfig-n1-01041219
+i386                   randconfig-n2-01041219
+i386                   randconfig-n3-01041219
+nds32                               defconfig
+nds32                             allnoconfig
+powerpc                             defconfig
+s390                        default_defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+i386                   randconfig-i3-01041219
+i386                   randconfig-i1-01041219
+i386                   randconfig-i2-01041219
+i386                   randconfig-i0-01041219
+riscv                               defconfig
+i386                             allmodconfig
+i386                   randconfig-x007-201900
+i386                   randconfig-x006-201900
+i386                   randconfig-x000-201900
+i386                   randconfig-x002-201900
+i386                   randconfig-x001-201900
+i386                   randconfig-x009-201900
+i386                   randconfig-x003-201900
+i386                   randconfig-x008-201900
+i386                   randconfig-x004-201900
+i386                   randconfig-x005-201900
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a3-201900
+i386                     randconfig-a2-201900
+i386                     randconfig-a0-201900
+i386                     randconfig-a1-201900
+sh                               allmodconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                 randconfig-s0-01050537
+x86_64                 randconfig-s1-01050537
+x86_64                 randconfig-s2-01050537
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+c6x                        evmc6678_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+nios2                         10m50_defconfig
+h8300                    h8300h-sim_defconfig
+arm                          nuc910_defconfig
+ia64                         bigsur_defconfig
+openrisc                 simple_smp_defconfig
+powerpc                      pmac32_defconfig
+x86_64                 randconfig-x013-201900
+x86_64                 randconfig-x017-201900
+x86_64                 randconfig-x016-201900
+x86_64                 randconfig-x012-201900
+x86_64                 randconfig-x019-201900
+x86_64                 randconfig-x018-201900
+x86_64                 randconfig-x011-201900
+x86_64                 randconfig-x015-201900
+x86_64                 randconfig-x010-201900
+x86_64                 randconfig-x014-201900
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                     randconfig-s0-201900
+i386         randconfig-s2-201900+bisect_validate
+i386                     randconfig-s1-201900
+i386                     randconfig-s2-201900
+i386                     randconfig-s3-201900
+x86_64                 randconfig-s3-01050704
+x86_64                 randconfig-s4-01050704
+x86_64                 randconfig-s5-01050704
+arm                           efm32_defconfig
+powerpc                    amigaone_defconfig
+powerpc                      bamboo_defconfig
+i386                   randconfig-b0-01050525
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+powerpc                       holly_defconfig
+powerpc                 mpc836x_rdk_defconfig
+sh                   secureedge5410_defconfig
+x86_64                 randconfig-b0-01050401
+x86_64                           allmodconfig
+x86_64                 randconfig-u0-01050747
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+x86_64                                  kexec
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                              fedora-25
+powerpc                 mpc832x_mds_defconfig
+xtensa                    smp_lx200_defconfig
+i386                   randconfig-x079-201900
+i386                   randconfig-x072-201900
+i386                   randconfig-x073-201900
+i386                   randconfig-x075-201900
+i386                   randconfig-x077-201900
+i386                   randconfig-x074-201900
+i386                   randconfig-x078-201900
+i386                   randconfig-x076-201900
+i386                   randconfig-x071-201900
+i386                   randconfig-x070-201900
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+x86_64                 randconfig-g0-01041330
+x86_64                 randconfig-g1-01041330
+x86_64                 randconfig-g2-01041330
+x86_64                 randconfig-g3-01041330
+i386                  randconfig-sb0-01050734
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+x86_64                 randconfig-x005-201900
+x86_64                 randconfig-x009-201900
+x86_64                 randconfig-x008-201900
+x86_64                 randconfig-x001-201900
+x86_64                 randconfig-x002-201900
+x86_64                 randconfig-x006-201900
+x86_64                 randconfig-x003-201900
+x86_64                 randconfig-x007-201900
+x86_64                 randconfig-x000-201900
+x86_64                 randconfig-x004-201900
+x86_64                 randconfig-e3-01041219
+x86_64                 randconfig-e2-01041219
+x86_64                 randconfig-e0-01041219
+x86_64                 randconfig-e1-01041219
+x86_64                randconfig-ws0-01050454
+x86_64                randconfig-ws0-01050519
+x86_64                 randconfig-j2-01041155
+x86_64                 randconfig-j0-01041155
+i386                   randconfig-j3-01041155
+i386                   randconfig-j2-01041155
+i386                   randconfig-j1-01041155
+i386                   randconfig-j0-01041155
+x86_64                 randconfig-j3-01041155
+x86_64                 randconfig-j1-01041155
+x86_64                 randconfig-r0-01050548
+i386                   randconfig-x0-01050806
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
