@@ -1,222 +1,87 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sun, 06 Jan 2019 04:58:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 9b62d1d9dfe78947ee2b64d4229d6ca16fdd09a0
-Message-ID: <5c311a5f.fppFYxySFivkxnAS%lkp@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Sun, 6 Jan 2019 17:28:42 +0200
+Subject: [Intel-wired-lan] [PATCH 2/3] e1000e: ignore status during
+ auto-negotiation
+In-Reply-To: <1546608667-25498-3-git-send-email-glogow@fbihome.de>
+References: <e080046a-6630-ad07-ebbb-603e820766f4@fbihome.de>
+ <1546608667-25498-1-git-send-email-glogow@fbihome.de>
+ <1546608667-25498-3-git-send-email-glogow@fbihome.de>
+Message-ID: <67d195a8-0b04-ee72-71fb-f194c009107e@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 9b62d1d9dfe78947ee2b64d4229d6ca16fdd09a0  ixgbe: fix Kconfig when driver is not a module
-
-elapsed time: 1538m
-
-configs tested: 198
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-ia64                        generic_defconfig
-powerpc                      obs600_defconfig
-x86_64                 randconfig-a0-01050601
-arm                         nhk8815_defconfig
-parisc                          712_defconfig
-i386                   randconfig-c0-01050653
-riscv                              tinyconfig
-i386                               tinyconfig
-riscv                             allnoconfig
-s390                             allmodconfig
-i386                   randconfig-x010-201900
-i386                   randconfig-x011-201900
-i386                   randconfig-x012-201900
-i386                   randconfig-x013-201900
-i386                   randconfig-x014-201900
-i386                   randconfig-x015-201900
-i386                   randconfig-x016-201900
-i386                   randconfig-x017-201900
-i386                   randconfig-x018-201900
-i386                   randconfig-x019-201900
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-01041219
-i386                   randconfig-n1-01041219
-i386                   randconfig-n2-01041219
-i386                   randconfig-n3-01041219
-nds32                               defconfig
-nds32                             allnoconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-i386                   randconfig-i3-01041219
-i386                   randconfig-i1-01041219
-i386                   randconfig-i2-01041219
-i386                   randconfig-i0-01041219
-riscv                               defconfig
-i386                             allmodconfig
-i386                   randconfig-x007-201900
-i386                   randconfig-x006-201900
-i386                   randconfig-x000-201900
-i386                   randconfig-x002-201900
-i386                   randconfig-x001-201900
-i386                   randconfig-x009-201900
-i386                   randconfig-x003-201900
-i386                   randconfig-x008-201900
-i386                   randconfig-x004-201900
-i386                   randconfig-x005-201900
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a3-201900
-i386                     randconfig-a2-201900
-i386                     randconfig-a0-201900
-i386                     randconfig-a1-201900
-sh                               allmodconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                 randconfig-s0-01050537
-x86_64                 randconfig-s1-01050537
-x86_64                 randconfig-s2-01050537
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-nios2                         10m50_defconfig
-h8300                    h8300h-sim_defconfig
-arm                          nuc910_defconfig
-ia64                         bigsur_defconfig
-openrisc                 simple_smp_defconfig
-powerpc                      pmac32_defconfig
-x86_64                 randconfig-x013-201900
-x86_64                 randconfig-x017-201900
-x86_64                 randconfig-x016-201900
-x86_64                 randconfig-x012-201900
-x86_64                 randconfig-x019-201900
-x86_64                 randconfig-x018-201900
-x86_64                 randconfig-x011-201900
-x86_64                 randconfig-x015-201900
-x86_64                 randconfig-x010-201900
-x86_64                 randconfig-x014-201900
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                     randconfig-s0-201900
-i386         randconfig-s2-201900+bisect_validate
-i386                     randconfig-s1-201900
-i386                     randconfig-s2-201900
-i386                     randconfig-s3-201900
-x86_64                 randconfig-s3-01050704
-x86_64                 randconfig-s4-01050704
-x86_64                 randconfig-s5-01050704
-arm                           efm32_defconfig
-powerpc                    amigaone_defconfig
-powerpc                      bamboo_defconfig
-i386                   randconfig-b0-01050525
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-powerpc                       holly_defconfig
-powerpc                 mpc836x_rdk_defconfig
-sh                   secureedge5410_defconfig
-x86_64                 randconfig-b0-01050401
-x86_64                           allmodconfig
-x86_64                 randconfig-u0-01050747
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-x86_64                                  kexec
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                              fedora-25
-powerpc                 mpc832x_mds_defconfig
-xtensa                    smp_lx200_defconfig
-i386                   randconfig-x079-201900
-i386                   randconfig-x072-201900
-i386                   randconfig-x073-201900
-i386                   randconfig-x075-201900
-i386                   randconfig-x077-201900
-i386                   randconfig-x074-201900
-i386                   randconfig-x078-201900
-i386                   randconfig-x076-201900
-i386                   randconfig-x071-201900
-i386                   randconfig-x070-201900
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-x86_64                 randconfig-g0-01041330
-x86_64                 randconfig-g1-01041330
-x86_64                 randconfig-g2-01041330
-x86_64                 randconfig-g3-01041330
-i386                  randconfig-sb0-01050734
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-x86_64                 randconfig-x005-201900
-x86_64                 randconfig-x009-201900
-x86_64                 randconfig-x008-201900
-x86_64                 randconfig-x001-201900
-x86_64                 randconfig-x002-201900
-x86_64                 randconfig-x006-201900
-x86_64                 randconfig-x003-201900
-x86_64                 randconfig-x007-201900
-x86_64                 randconfig-x000-201900
-x86_64                 randconfig-x004-201900
-x86_64                 randconfig-e3-01041219
-x86_64                 randconfig-e2-01041219
-x86_64                 randconfig-e0-01041219
-x86_64                 randconfig-e1-01041219
-x86_64                randconfig-ws0-01050454
-x86_64                randconfig-ws0-01050519
-x86_64                 randconfig-j2-01041155
-x86_64                 randconfig-j0-01041155
-i386                   randconfig-j3-01041155
-i386                   randconfig-j2-01041155
-i386                   randconfig-j1-01041155
-i386                   randconfig-j0-01041155
-x86_64                 randconfig-j3-01041155
-x86_64                 randconfig-j1-01041155
-x86_64                 randconfig-r0-01050548
-i386                   randconfig-x0-01050806
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+On 1/4/2019 15:31, Jan-Marek Glogowski wrote:
+> My problem is the fallback of the hardware to 10 Mbps after a
+> re-connect, which happens almost all times. In the broken case
+> the status field has always the 0x40000000 bit set.
+> 
+> Still the naming for the status flag is just a guess. Ignoring
+> the status, when this bit is set, solves my problem. But I just
+> have one notebook hardware (I219-LM, rev 21), which exhibits the
+> problem. It doesn't happen for my other notebook with I219-V
+> (rev 21) hardware (or it's just much more unlikely).
+> 
+> Signed-off-by: Jan-Marek Glogowski <glogow@fbihome.de>
+> ---
+>   drivers/net/ethernet/intel/e1000e/defines.h | 1 +
+>   drivers/net/ethernet/intel/e1000e/ich8lan.c | 3 ++-
+>   drivers/net/ethernet/intel/e1000e/mac.c     | 2 ++
+>   3 files changed, 5 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
+> index fd550de..3cd9f99 100644
+> --- a/drivers/net/ethernet/intel/e1000e/defines.h
+> +++ b/drivers/net/ethernet/intel/e1000e/defines.h
+> @@ -221,6 +221,7 @@
+>   #define E1000_STATUS_LAN_INIT_DONE 0x00000200   /* Lan Init Completion by NVM */
+>   #define E1000_STATUS_PHYRA      0x00000400      /* PHY Reset Asserted */
+>   #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master Req status */
+> +#define E1000_STATUS_AUTONEG    0x40000000      /* in auto-negotiation */
+>   
+There is no such indication. Should be removed.
+>   #define HALF_DUPLEX 1
+>   #define FULL_DUPLEX 2
+> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> index fd59970..8588eb7 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> @@ -1390,7 +1390,8 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+>   		u16 speed;
+>   		u8 duplex;
+>   
+> -		e1000e_get_speed_and_duplex_copper(hw, &speed, &duplex);
+> +		if (e1000e_get_speed_and_duplex_copper(hw, &speed, &duplex))
+> +			goto out;
+>   		tipg_reg = er32(TIPG);
+>   		tipg_reg &= ~E1000_TIPG_IPGT_MASK;
+>   
+> diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
+> index 19c816c..ada8fbb 100644
+> --- a/drivers/net/ethernet/intel/e1000e/mac.c
+> +++ b/drivers/net/ethernet/intel/e1000e/mac.c
+> @@ -1310,6 +1310,8 @@ s32 e1000e_get_speed_and_duplex_copper(struct e1000_hw *hw, u16 *speed,
+>   
+>   	status = er32(STATUS);
+>   
+> +	if (status & E1000_STATUS_AUTONEG)
+> +		return 1;
+This is wrong. We have no AUTONEG indication in bit 30 of E1000_STATUS 
+(0x0008) register. These code piece should be removed.
+>   	if (!(status & E1000_STATUS_LU))
+>   		return 1;
+>   
+> 
+Hello Jan-Marek,
+That's okay to use u8 size for a duplex indication and u16 size for a 
+link indication, as you refer in previous patch. But use the 'autoneg 
+status' is wrong. I wonder how this can solve the problem. Do you 
+encountered with this problem on other platforms with our devices? (I 
+meant different, no similar HW)
+Anyway, 0x40000000 indication is not relevant to the auto-negotiation.
+May I ask do your experiments with ME disable (via BIOS) and see if same 
+problem still happen.
+Thanks,
+Sasha
