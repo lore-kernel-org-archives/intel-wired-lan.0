@@ -1,70 +1,61 @@
-From: Nathan Chancellor <natechancellor@gmail.com>
-Date: Wed,  9 Jan 2019 21:21:57 -0700
-Subject: [Intel-wired-lan] [PATCH] iavf: Use printf instead of gnu_printf
- for iavf_debug_d
-Message-ID: <20190110042157.8445-1-natechancellor@gmail.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Thu, 10 Jan 2019 10:18:57 +0200
+Subject: [Intel-wired-lan] [PATCH] intel-ethernet: warn when fatal read
+ failure happens
+In-Reply-To: <1547015454-77750-1-git-send-email-feng.tang@intel.com>
+References: <1547015454-77750-1-git-send-email-feng.tang@intel.com>
+Message-ID: <5f4afeda-a154-eff6-208e-85f789b8818d@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Clang warns:
-
-In file included from drivers/net/ethernet/intel/iavf/iavf_main.c:4:
-In file included from drivers/net/ethernet/intel/iavf/iavf.h:37:
-In file included from drivers/net/ethernet/intel/iavf/iavf_type.h:8:
-drivers/net/ethernet/intel/iavf/iavf_osdep.h:49:18: warning: 'format' attribute argument not supported: gnu_printf [-Wignored-attributes]
-        __attribute__ ((format(gnu_printf, 3, 4)));
-                        ^
-1 warning generated.
-
-We can convert from gnu_printf to printf without any side effects for
-two reasons:
-
-1. All iavf_debug instances use standard printf formats, as pointed out
-   by Miguel Ojeda at the below link, meaning gnu_printf is not strictly
-   required.
-
-2. However, GCC has aliased printf to gnu_printf on Linux since at least
-   2010 based on git history.
-
-   From gcc/c-family/c-format.c:
-
-   /* Attributes such as "printf" are equivalent to those such as
-      "gnu_printf" unless this is overridden by a target.  */
-   static const target_ovr_attr gnu_target_overrides_format_attributes[] =
-   {
-     { "gnu_printf",   "printf" },
-     { "gnu_scanf",    "scanf" },
-     { "gnu_strftime", "strftime" },
-     { "gnu_strfmon",  "strfmon" },
-     { NULL,           NULL }
-   };
-
-The mentioned override only happens on Windows (mingw32). Changing from
-gnu_printf to printf is a no-op for GCC and stops Clang from warning.
-
-Link: https://github.com/ClangBuiltLinux/linux/issues/111
-Suggested-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
- drivers/net/ethernet/intel/iavf/iavf_osdep.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_osdep.h b/drivers/net/ethernet/intel/iavf/iavf_osdep.h
-index e6e0b0328706..c90cafb526d0 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_osdep.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_osdep.h
-@@ -46,7 +46,7 @@ struct iavf_virt_mem {
- 
- #define iavf_debug(h, m, s, ...)  iavf_debug_d(h, m, s, ##__VA_ARGS__)
- extern void iavf_debug_d(void *hw, u32 mask, char *fmt_str, ...)
--	__attribute__ ((format(gnu_printf, 3, 4)));
-+	__printf(3, 4);
- 
- typedef enum iavf_status_code iavf_status;
- #endif /* _IAVF_OSDEP_H_ */
--- 
-2.20.1
-
+On 1/9/2019 08:30, Feng Tang wrote:
+> Failed in read the HW register is very serious for igb/igc driver,
+> as its hw_addr will be set to NULL and cause the adapter be seen as
+> "REMOVED".
+> 
+> We saw the error only a few times in the MTBF test for suspend/resume,
+> but can hardly get any useful info to debug.
+> 
+> Adding WARN() so that we can get the necessary information about
+> where and how it happens, and use it for root causing and fixing
+> this "PCIe link lost issue"
+> 
+> This affects igb, igc.
+> 
+> Signed-off-by: Feng Tang <feng.tang@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igb/igb_main.c | 1 +
+>   drivers/net/ethernet/intel/igc/igc_main.c | 1 +
+>   2 files changed, 2 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 87bdf16..eaa3d6d 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -753,6 +753,7 @@ u32 igb_rd32(struct e1000_hw *hw, u32 reg)
+>   		struct net_device *netdev = igb->netdev;
+>   		hw->hw_addr = NULL;
+>   		netdev_err(netdev, "PCIe link lost\n");
+> +		WARN(1, "igb: Failed to read reg 0x%x!", reg);
+>   	}
+>   
+>   	return value;
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index f201830..72e4263 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -3496,6 +3496,7 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+>   		hw->hw_addr = NULL;
+>   		netif_device_detach(netdev);
+>   		netdev_err(netdev, "PCIe link lost, device now detached\n");
+> +		WARN(1, "igc: Failed to read reg 0x%x!", reg);
+Looks good. Small suggestion: add end of the line "\n"
+WARN(1, "igc: Failed to read reg 0x%x!\n", reg);
+>   	}
+>   
+>   	return value;
+> 
+Sasha
