@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 11 Jan 2019 18:44:57 +0000
-Subject: [Intel-wired-lan] [PATCH 3/8] i40e: increase indentation
-In-Reply-To: <1546185195-25676-4-git-send-email-Julia.Lawall@lip6.fr>
-References: <1546185195-25676-1-git-send-email-Julia.Lawall@lip6.fr>
- <1546185195-25676-4-git-send-email-Julia.Lawall@lip6.fr>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3510B4@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 11 Jan 2019 18:46:22 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: remove magic constant in
+ ixgbe_reset_hw_82599()
+In-Reply-To: <nycvar.YFH.7.76.1901022016380.14047@cbobk.fhfr.pm>
+References: <nycvar.YFH.7.76.1901022016380.14047@cbobk.fhfr.pm>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3510C4@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,22 +13,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Julia Lawall
-> Sent: Sunday, December 30, 2018 7:53 AM
+> Behalf Of Jiri Kosina
+> Sent: Wednesday, January 2, 2019 11:21 AM
 > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org; kernel-janitors at vger.kernel.org; David
-> S. Miller <davem@davemloft.net>; linux-kernel at vger.kernel.org;
-> netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH 3/8] i40e: increase indentation
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: remove magic constant in
+> ixgbe_reset_hw_82599()
 > 
-> Convert spaces to tabs to get correct alignment.
+> From: Jiri Kosina <jkosina@suse.cz>
 > 
-> Found with the help of Coccinelle.
+> ixgbe_reset_hw_82599() resets the value of hw->mac.num_rar_entries to
+> pre-defined value of 128. Let's get rid of that hardcoded literal, and use
+> IXGBE_82599_RAR_ENTRIES instead, the same way the normal initialization
+> path does.
 > 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-> 
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c |    2 +-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
