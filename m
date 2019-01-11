@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 11 Jan 2019 18:43:47 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: clean up several indentation
- issues
-In-Reply-To: <20190107225928.12855-1-colin.king@canonical.com>
-References: <20190107225928.12855-1-colin.king@canonical.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3510A4@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 11 Jan 2019 18:44:57 +0000
+Subject: [Intel-wired-lan] [PATCH 3/8] i40e: increase indentation
+In-Reply-To: <1546185195-25676-4-git-send-email-Julia.Lawall@lip6.fr>
+References: <1546185195-25676-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1546185195-25676-4-git-send-email-Julia.Lawall@lip6.fr>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3510B4@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,25 +13,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Colin King
-> Sent: Monday, January 7, 2019 2:59 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David S . Miller
-> <davem@davemloft.net>; intel-wired-lan at lists.osuosl.org;
+> Behalf Of Julia Lawall
+> Sent: Sunday, December 30, 2018 7:53 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org; kernel-janitors at vger.kernel.org; David
+> S. Miller <davem@davemloft.net>; linux-kernel at vger.kernel.org;
 > netdev at vger.kernel.org
-> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: clean up several indentation issues
+> Subject: [Intel-wired-lan] [PATCH 3/8] i40e: increase indentation
 > 
-> From: Colin Ian King <colin.king@canonical.com>
+> Convert spaces to tabs to get correct alignment.
 > 
-> There are several statements that have incorrect levels of indentation, fix
-> these.
+> Found with the help of Coccinelle.
 > 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 8 ++++----
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 6 +++---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 ++--
->  3 files changed, 9 insertions(+), 9 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
