@@ -1,66 +1,90 @@
-From: Ruhl, Michael J <michael.j.ruhl@intel.com>
-Date: Fri, 25 Jan 2019 12:58:15 +0000
-Subject: [Intel-wired-lan] FW: lock dep issue
-In-Reply-To: <1EF4DF93-8A2A-41A0-BC2A-7604B59875A4@intel.com>
-References: <14063C7AD467DE4B82DEDB5C278E8663BE656B4C@FMSMSX108.amr.corp.intel.com>
- <1EF4DF93-8A2A-41A0-BC2A-7604B59875A4@intel.com>
-Message-ID: <14063C7AD467DE4B82DEDB5C278E8663BE656FE3@FMSMSX108.amr.corp.intel.com>
+From: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+Date: Mon, 14 Jan 2019 16:29:30 +0300
+Subject: [Intel-wired-lan] [PATCH] e1000e: fix cyclic resets at link up with
+ active tx
+Message-ID: <154747257030.250168.12931902291381446144.stgit@buzz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+I'm seeing series of e1000e resets (sometimes endless) at system boot
+if something generates tx traffic at this time. In my case this is
+netconsole who sends message "e1000e 0000:02:00.0: Some CPU C-states
+have been disabled in order to enable jumbo frames" from e1000e itself.
+As result e1000_watchdog_task sees used tx buffer while carrier is off
+and start this reset cycle again.
 
-While running a 5.0.0.rc1 kernel with the LOCKDEP debug configuration turned on, and I saw this LOCKDEP error:
+[   17.794359] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+[   17.794714] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
+[   22.936455] e1000e 0000:02:00.0 eth1: changing MTU from 1500 to 9000
+[   23.033336] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   26.102364] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+[   27.174495] 8021q: 802.1Q VLAN Support v1.8
+[   27.174513] 8021q: adding VLAN 0 to HW filter on device eth1
+[   30.671724] cgroup: cgroup: disabling cgroup2 socket matching due to net_prio or net_cls activation
+[   30.898564] netpoll: netconsole: local port 6666
+[   30.898566] netpoll: netconsole: local IPv6 address 2a02:6b8:0:80b:beae:c5ff:fe28:23f8
+[   30.898567] netpoll: netconsole: interface 'eth1'
+[   30.898568] netpoll: netconsole: remote port 6666
+[   30.898568] netpoll: netconsole: remote IPv6 address 2a02:6b8:b000:605c:e61d:2dff:fe03:3790
+[   30.898569] netpoll: netconsole: remote ethernet address b0:a8:6e:f4:ff:c0
+[   30.917747] console [netcon0] enabled
+[   30.917749] netconsole: network logging started
+[   31.453353] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   34.185730] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   34.321840] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   34.465822] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   34.597423] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   34.745417] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   34.877356] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   35.005441] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   35.157376] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   35.289362] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   35.417441] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+[   37.790342] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
 
---
- BUG: sleeping function called from invalid context at kernel/locking/mutex.c:908
- in_atomic(): 1, irqs_disabled(): 0, pid: 2583, name: sadc
- 2 locks held by sadc/2583:
-  #0: 00000000e5ef963c (&p->lock){+.+.}, at: seq_read+0x3c/0x3a0
-  #1: 00000000f89a2b22 (rcu_read_lock){....}, at: dev_seq_start+0x5/0x110
- CPU: 29 PID: 2583 Comm: sadc Tainted: G        W I       5.0.0-rc1+ #2
- Hardware name: Intel Corporation S2600WT2/S2600WT2, BIOS SE5C610.86B.01.01.0008.021120151325 02/11/2015
- Call Trace:
-  dump_stack+0x78/0xb3
-  ___might_sleep+0x22d/0x250
-  __mutex_lock+0x56/0x910
-  ? _raw_spin_unlock+0x24/0x30
-  ? deactivate_slab.isra.73+0x5b2/0x6f0
-  ? igb_get_stats64+0x29/0xf0 
-  ? seq_read+0x305/0x3a0
-  ? set_track+0x6d/0x1a0
-  igb_get_stats64+0x29/0xf0 
-  dev_get_stats+0x74/0x130
-  dev_seq_printf_stats+0x34/0x120
-  ? __lock_acquire+0x69a/0x1160
-  dev_seq_show+0x10/0x30
-  seq_read+0x266/0x3a0
-  proc_reg_read+0x3c/0x70
-  __vfs_read+0x36/0x190
-  vfs_read+0x9b/0x150
-  ksys_read+0x55/0xc0
-  do_syscall_64+0x60/0x210
-  entry_SYSCALL_64_after_hwframe+0x49/0xbe
- RIP: 0033:0x7f650013ec00
- Code: 0b 31 c0 48 83 c4 08 e9 be fe ff ff 48 8d 3d 17 b9 09 00 e8 52 8a 02 00 66 90 83 3d 9d c3 2d 00 00 75 10 b8 00 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 31 c3 48 83 ec 08 e8 4e cc 01 00 48 89 04 24
- RSP: 002b:00007fffed163aa8 EFLAGS: 00000246 ORIG_RAX: 0000000000000000
- RAX: ffffffffffffffda RBX: 0000000001f6b8b0 RCX: 00007f650013ec00
- RDX: 0000000000000400 RSI: 00007f650084a000 RDI: 0000000000000003
- RBP: 00007f65004123a0 R08: ffffffffffffffff R09: 0000000000000000
- R10: 0000000000000022 R11: 0000000000000246 R12: 00007f6500411858
- R13: 0000000000000d70 R14: 0000000000000d70 R15: 00007f6500411858
---
+This patch flushes tx buffers only once when carrier is off
+rather than at each watchdog iteration.
 
-I saw this on the console while not doing anything on the system (i.e. no test were running, or any overt network work).
+Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c |   15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
-Since this didn't seem like a good thing I thought I would drop this  note.
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 189f231075c2..d10083beec83 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5309,8 +5309,13 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 			/* 8000ES2LAN requires a Rx packet buffer work-around
+ 			 * on link down event; reset the controller to flush
+ 			 * the Rx packet buffer.
++			 *
++			 * If the link is lost the controller stops DMA, but
++			 * if there is queued Tx work it cannot be done.  So
++			 * reset the controller to flush the Tx packet buffers.
+ 			 */
+-			if (adapter->flags & FLAG_RX_NEEDS_RESTART)
++			if ((adapter->flags & FLAG_RX_NEEDS_RESTART) ||
++			    e1000_desc_unused(tx_ring) + 1 < tx_ring->count)
+ 				adapter->flags |= FLAG_RESTART_NOW;
+ 			else
+ 				pm_schedule_suspend(netdev->dev.parent,
+@@ -5333,14 +5338,6 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 	adapter->gotc_old = adapter->stats.gotc;
+ 	spin_unlock(&adapter->stats64_lock);
  
-If you need any more information, please let me know.
-
-Thanks,
-
-Mike
+-	/* If the link is lost the controller stops DMA, but
+-	 * if there is queued Tx work it cannot be done.  So
+-	 * reset the controller to flush the Tx packet buffers.
+-	 */
+-	if (!netif_carrier_ok(netdev) &&
+-	    (e1000_desc_unused(tx_ring) + 1 < tx_ring->count))
+-		adapter->flags |= FLAG_RESTART_NOW;
+-
+ 	/* If reset is necessary, do it outside of interrupt context. */
+ 	if (adapter->flags & FLAG_RESTART_NOW) {
+ 		schedule_work(&adapter->reset_task);
 
