@@ -1,90 +1,85 @@
-From: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-Date: Mon, 14 Jan 2019 16:29:30 +0300
-Subject: [Intel-wired-lan] [PATCH] e1000e: fix cyclic resets at link up with
- active tx
-Message-ID: <154747257030.250168.12931902291381446144.stgit@buzz>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
+Date: Mon, 14 Jan 2019 19:37:53 +0100
+Subject: [Intel-wired-lan] [PATCH bpf] xsk: Check if a queue exists
+ during umem setup
+In-Reply-To: <DB7PR06MB57240DE5D6FBA762739789D596800@DB7PR06MB5724.eurprd06.prod.outlook.com>
+References: <DB7PR06MB57240DE5D6FBA762739789D596800@DB7PR06MB5724.eurprd06.prod.outlook.com>
+Message-ID: <b5602f16-82fa-be12-114e-e5056b8aded3@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I'm seeing series of e1000e resets (sometimes endless) at system boot
-if something generates tx traffic at this time. In my case this is
-netconsole who sends message "e1000e 0000:02:00.0: Some CPU C-states
-have been disabled in order to enable jumbo frames" from e1000e itself.
-As result e1000_watchdog_task sees used tx buffer while carrier is off
-and start this reset cycle again.
+On 2019-01-14 18:50, Krzysztof Kazimierczak wrote:
+> From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+> 
+> In the xdp_umem_assign_dev() path, the xsk code does not
+> check if a queue for which umem is to be created exists.
+> It leads to a situation where umem is not assigned to any
+> Tx/Rx queue of a netdevice, without notifying the stack
+> about an error. This affects both XDP_SKB and XDP_DRV
+> modes - in case of XDP_DRV_ZC, queue index is checked by
+> the driver.
+> 
+> This patch fixes xsk code, so that in both XDP_SKB and
+> XDP_DRV mode of AF_XDP, an error is returned when requested
+> queue index exceedes an existing maximum.
+> 
+> Fixes: c9b47cc1fabca ("xsk: fix bug when trying to use both copy and zero-copy on one queue id")
+> Reported-by: Jakub Spizewski <jakub.spizewski@intel.com>
+> Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 
-[   17.794359] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
-[   17.794714] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
-[   22.936455] e1000e 0000:02:00.0 eth1: changing MTU from 1500 to 9000
-[   23.033336] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   26.102364] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
-[   27.174495] 8021q: 802.1Q VLAN Support v1.8
-[   27.174513] 8021q: adding VLAN 0 to HW filter on device eth1
-[   30.671724] cgroup: cgroup: disabling cgroup2 socket matching due to net_prio or net_cls activation
-[   30.898564] netpoll: netconsole: local port 6666
-[   30.898566] netpoll: netconsole: local IPv6 address 2a02:6b8:0:80b:beae:c5ff:fe28:23f8
-[   30.898567] netpoll: netconsole: interface 'eth1'
-[   30.898568] netpoll: netconsole: remote port 6666
-[   30.898568] netpoll: netconsole: remote IPv6 address 2a02:6b8:b000:605c:e61d:2dff:fe03:3790
-[   30.898569] netpoll: netconsole: remote ethernet address b0:a8:6e:f4:ff:c0
-[   30.917747] console [netcon0] enabled
-[   30.917749] netconsole: network logging started
-[   31.453353] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   34.185730] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   34.321840] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   34.465822] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   34.597423] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   34.745417] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   34.877356] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   35.005441] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   35.157376] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   35.289362] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   35.417441] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
-[   37.790342] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+Thank you for this! LGTM!
 
-This patch flushes tx buffers only once when carrier is off
-rather than at each watchdog iteration.
+Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
----
- drivers/net/ethernet/intel/e1000e/netdev.c |   15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+Adding intel-wired-lan.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 189f231075c2..d10083beec83 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -5309,8 +5309,13 @@ static void e1000_watchdog_task(struct work_struct *work)
- 			/* 8000ES2LAN requires a Rx packet buffer work-around
- 			 * on link down event; reset the controller to flush
- 			 * the Rx packet buffer.
-+			 *
-+			 * If the link is lost the controller stops DMA, but
-+			 * if there is queued Tx work it cannot be done.  So
-+			 * reset the controller to flush the Tx packet buffers.
- 			 */
--			if (adapter->flags & FLAG_RX_NEEDS_RESTART)
-+			if ((adapter->flags & FLAG_RX_NEEDS_RESTART) ||
-+			    e1000_desc_unused(tx_ring) + 1 < tx_ring->count)
- 				adapter->flags |= FLAG_RESTART_NOW;
- 			else
- 				pm_schedule_suspend(netdev->dev.parent,
-@@ -5333,14 +5338,6 @@ static void e1000_watchdog_task(struct work_struct *work)
- 	adapter->gotc_old = adapter->stats.gotc;
- 	spin_unlock(&adapter->stats64_lock);
- 
--	/* If the link is lost the controller stops DMA, but
--	 * if there is queued Tx work it cannot be done.  So
--	 * reset the controller to flush the Tx packet buffers.
--	 */
--	if (!netif_carrier_ok(netdev) &&
--	    (e1000_desc_unused(tx_ring) + 1 < tx_ring->count))
--		adapter->flags |= FLAG_RESTART_NOW;
--
- 	/* If reset is necessary, do it outside of interrupt context. */
- 	if (adapter->flags & FLAG_RESTART_NOW) {
- 		schedule_work(&adapter->reset_task);
 
+Bj?rn
+
+> ---
+>   net/xdp/xdp_umem.c | 16 +++++++++++++---
+>   1 file changed, 13 insertions(+), 3 deletions(-)
+> 
+> diff --git a/net/xdp/xdp_umem.c b/net/xdp/xdp_umem.c
+> index a264cf2accd0..d4de871e7d4d 100644
+> --- a/net/xdp/xdp_umem.c
+> +++ b/net/xdp/xdp_umem.c
+> @@ -41,13 +41,20 @@ void xdp_del_sk_umem(struct xdp_umem *umem, struct xdp_sock *xs)
+>    * not know if the device has more tx queues than rx, or the opposite.
+>    * This might also change during run time.
+>    */
+> -static void xdp_reg_umem_at_qid(struct net_device *dev, struct xdp_umem *umem,
+> -				u16 queue_id)
+> +static int xdp_reg_umem_at_qid(struct net_device *dev, struct xdp_umem *umem,
+> +			       u16 queue_id)
+>   {
+> +	if (queue_id >= max_t(unsigned int,
+> +			      dev->real_num_rx_queues,
+> +			      dev->real_num_tx_queues))
+> +		return -EINVAL;
+> +
+>   	if (queue_id < dev->real_num_rx_queues)
+>   		dev->_rx[queue_id].umem = umem;
+>   	if (queue_id < dev->real_num_tx_queues)
+>   		dev->_tx[queue_id].umem = umem;
+> +
+> +	return 0;
+>   }
+>   
+>   struct xdp_umem *xdp_get_umem_from_qid(struct net_device *dev,
+> @@ -88,7 +95,10 @@ int xdp_umem_assign_dev(struct xdp_umem *umem, struct net_device *dev,
+>   		goto out_rtnl_unlock;
+>   	}
+>   
+> -	xdp_reg_umem_at_qid(dev, umem, queue_id);
+> +	err = xdp_reg_umem_at_qid(dev, umem, queue_id);
+> +	if (err)
+> +		goto out_rtnl_unlock;
+> +
+>   	umem->dev = dev;
+>   	umem->queue_id = queue_id;
+>   	if (force_copy)
+> 
