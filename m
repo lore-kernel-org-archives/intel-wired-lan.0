@@ -1,51 +1,36 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 15 Jan 2019 17:43:49 +0200
-Subject: [Intel-wired-lan] [RfC] fix auto-negotiation after reconnect
-In-Reply-To: <23247527-7d7d-9e64-f4cf-adbf290c022d@fbihome.de>
-References: <e080046a-6630-ad07-ebbb-603e820766f4@fbihome.de>
- <1546608667-25498-1-git-send-email-glogow@fbihome.de>
- <23247527-7d7d-9e64-f4cf-adbf290c022d@fbihome.de>
-Message-ID: <8d6523ad-fccd-3bfa-aa8e-bc397f01c685@intel.com>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Date: Tue, 15 Jan 2019 21:03:49 +0100
+Subject: [Intel-wired-lan] [PATCH bpf] xsk: Check if a queue exists
+ during umem setup
+In-Reply-To: <A2709E16AE7E444B9FD2D20EF44E15072BC9B039@IRSMSX104.ger.corp.intel.com>
+References: <A2709E16AE7E444B9FD2D20EF44E15072BC9B039@IRSMSX104.ger.corp.intel.com>
+Message-ID: <7023223e-b552-e353-d8cd-9563a7f7afe5@iogearbox.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/15/2019 17:22, Jan-Marek Glogowski wrote:
-> Hi,
+On 01/15/2019 10:19 AM, Kazimierczak, Krzysztof wrote:
+> From 6cbcfa3d0909bc27af0be6122dc6bfbfa4c9269e Mon Sep 17 00:00:00 2001
+> From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+> Date: Thu, 10 Jan 2019 20:29:02 +0100
+> Subject: [PATCH bpf] xsk: Check if a queue exists during umem setup
 > 
-> I still don't know how to proceed. The last statement for patch 2 is:
+> In the xdp_umem_assign_dev() path, the xsk code does not
+> check if a queue for which umem is to be created exists.
+> It leads to a situation where umem is not assigned to any
+> Tx/Rx queue of a netdevice, without notifying the stack
+> about an error. This affects both XDP_SKB and XDP_DRV
+> modes - in case of XDP_DRV_ZC, queue index is checked by
+> the driver.
 > 
-> Am 09.01.19 um 16:07 schrieb Neftin, Sasha:
+> This patch fixes xsk code, so that in both XDP_SKB and
+> XDP_DRV mode of AF_XDP, an error is returned when requested
+> queue index exceedes an existing maximum.
 > 
->> You might try to contact your HW vendor. Probably your HW was Windows OS oriented.
->> You may ask for a FW/NVM update no ME or try to replace the HW on none ME.
-> 
-> So this hardware is a build-in part of laptops. I don't know if there will be Linux or Windows
-> installed on them. I can't make much sense of "Probably your HW was Windows OS oriented".
-> I'll talk with our hardware supplier, which can probably talk with Fujitsu, if this needs some
-> firmware based fix. Should I point them to this thread and ask them to contact Intel?
-> 
-> As I already wrote the old hardware worked fine and also has ME enabled, which can't be completely
-> disabled AFAIK.
-> 
-> Then there is still patch 1 and 3, which I will re-send independent of the broken 2nd patch.
-> 
-> Anything else that can or should be done?
-> 
-> Jan-Marek
-> 
-> 
-> 
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
-You can make changes and resend patches 1 and 3. There is 'u8' type use 
-instead of 'u16' - I not sure in benefit of it. Debug prints from patch 
-3 are essential I thought.
-Regard your problem. Fujitsu can contacts our customer representative.
-Sasha
+> Fixes: c9b47cc1fabca ("xsk: fix bug when trying to use both copy and zero-copy on one queue id")
+> Reported-by: Jakub Spizewski <jakub.spizewski@intel.com>
+> Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+
+Applied, thanks!
