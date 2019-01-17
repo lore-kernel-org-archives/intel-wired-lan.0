@@ -1,66 +1,51 @@
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Wed, 16 Jan 2019 23:38:27 +0100
-Subject: [Intel-wired-lan] [PATCH] iavf: Use printf instead of
- gnu_printf for iavf_debug_d
-In-Reply-To: <20190110042157.8445-1-natechancellor@gmail.com>
-References: <20190110042157.8445-1-natechancellor@gmail.com>
-Message-ID: <CANiq72kO233qL0Yqv4iSW7_4MGxmijrLF8bRwzKacsMVyOLKQA@mail.gmail.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Thu, 17 Jan 2019 09:43:50 +0200
+Subject: [Intel-wired-lan] [RfC] fix auto-negotiation after reconnect
+In-Reply-To: <56149f83-d9c8-6ab0-f74c-43de435d8cee@fbihome.de>
+References: <e080046a-6630-ad07-ebbb-603e820766f4@fbihome.de>
+ <1546608667-25498-1-git-send-email-glogow@fbihome.de>
+ <23247527-7d7d-9e64-f4cf-adbf290c022d@fbihome.de>
+ <8d6523ad-fccd-3bfa-aa8e-bc397f01c685@intel.com>
+ <56149f83-d9c8-6ab0-f74c-43de435d8cee@fbihome.de>
+Message-ID: <cee387c9-9ea8-8edf-a3a5-35dfea10fe8d@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Nathan,
+On 1/16/2019 19:33, Jan-Marek Glogowski wrote:
+> 
+> 
+> Am 15.01.19 um 16:43 schrieb Neftin, Sasha:
+>> You can make changes and resend patches 1 and 3. There is 'u8' type use instead of 'u16' - I not
+>> sure in benefit of it. Debug prints from patch 3 are essential I thought.
+> 
+> Regarding the u8: after I used the the reference of &cmd->base.duplex in the
+> e1000e_get_speed_and_duplex_copper call, the compiler complained about duplex being u8 in the UAPI
+> struct, but u16 as the duplex reference parameter.
+> 
+> The same actually happened when I tried the &cmd->base.speed, where the UAPI is u32, but internally
+> e1000e uses u16 in a lot of places.
+> 
+> I decided to keep u16 speed and change the few u8 duplex places. Really don't care, but if you have
+> a preference, I'll change it before sending v2, using a temporary duplex variable.
+There is no too much benefit from these patches (IMHO). I won't stop 
+you. In case you consider resubmit please be consistent and replace the 
+type in all relevant places.
+> 
+>> Regard your problem. Fujitsu can contacts our customer representative.
+> 
+> Already in touch with Fujitsu.
+>
+Good.
 
-On Thu, Jan 10, 2019 at 5:22 AM Nathan Chancellor
-<natechancellor@gmail.com> wrote:
->
-> Clang warns:
->
-> In file included from drivers/net/ethernet/intel/iavf/iavf_main.c:4:
-> In file included from drivers/net/ethernet/intel/iavf/iavf.h:37:
-> In file included from drivers/net/ethernet/intel/iavf/iavf_type.h:8:
-> drivers/net/ethernet/intel/iavf/iavf_osdep.h:49:18: warning: 'format' attribute argument not supported: gnu_printf [-Wignored-attributes]
->         __attribute__ ((format(gnu_printf, 3, 4)));
->                         ^
-> 1 warning generated.
->
-> We can convert from gnu_printf to printf without any side effects for
-> two reasons:
->
-> 1. All iavf_debug instances use standard printf formats, as pointed out
->    by Miguel Ojeda at the below link, meaning gnu_printf is not strictly
->    required.
->
-> 2. However, GCC has aliased printf to gnu_printf on Linux since at least
->    2010 based on git history.
->
->    From gcc/c-family/c-format.c:
->
->    /* Attributes such as "printf" are equivalent to those such as
->       "gnu_printf" unless this is overridden by a target.  */
->    static const target_ovr_attr gnu_target_overrides_format_attributes[] =
->    {
->      { "gnu_printf",   "printf" },
->      { "gnu_scanf",    "scanf" },
->      { "gnu_strftime", "strftime" },
->      { "gnu_strfmon",  "strfmon" },
->      { NULL,           NULL }
->    };
->
-> The mentioned override only happens on Windows (mingw32). Changing from
-> gnu_printf to printf is a no-op for GCC and stops Clang from warning.
->
-> Link: https://github.com/ClangBuiltLinux/linux/issues/111
-> Suggested-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
-
-I forgot, in case you wanted it:
-
-    Reviewed-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-
-Thanks for taking care of writing the patch!
-
-Cheers,
-Miguel
+> Thanks for your help!
+> 
+> Jan-Marek
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
+Sasha
