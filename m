@@ -1,51 +1,102 @@
 From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 17 Jan 2019 09:43:50 +0200
-Subject: [Intel-wired-lan] [RfC] fix auto-negotiation after reconnect
-In-Reply-To: <56149f83-d9c8-6ab0-f74c-43de435d8cee@fbihome.de>
-References: <e080046a-6630-ad07-ebbb-603e820766f4@fbihome.de>
- <1546608667-25498-1-git-send-email-glogow@fbihome.de>
- <23247527-7d7d-9e64-f4cf-adbf290c022d@fbihome.de>
- <8d6523ad-fccd-3bfa-aa8e-bc397f01c685@intel.com>
- <56149f83-d9c8-6ab0-f74c-43de435d8cee@fbihome.de>
-Message-ID: <cee387c9-9ea8-8edf-a3a5-35dfea10fe8d@intel.com>
+Date: Thu, 17 Jan 2019 09:57:43 +0200
+Subject: [Intel-wired-lan] [PATCH] e1000e: fix cyclic resets at link up
+ with active tx
+In-Reply-To: <154747257030.250168.12931902291381446144.stgit@buzz>
+References: <154747257030.250168.12931902291381446144.stgit@buzz>
+Message-ID: <031e1689-e133-5398-ad00-8f45f679ffff@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/16/2019 19:33, Jan-Marek Glogowski wrote:
+On 1/14/2019 15:29, Konstantin Khlebnikov wrote:
+> I'm seeing series of e1000e resets (sometimes endless) at system boot
+> if something generates tx traffic at this time. In my case this is
+> netconsole who sends message "e1000e 0000:02:00.0: Some CPU C-states
+> have been disabled in order to enable jumbo frames" from e1000e itself.
+> As result e1000_watchdog_task sees used tx buffer while carrier is off
+> and start this reset cycle again.
 > 
+> [   17.794359] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+> [   17.794714] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
+> [   22.936455] e1000e 0000:02:00.0 eth1: changing MTU from 1500 to 9000
+> [   23.033336] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   26.102364] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+> [   27.174495] 8021q: 802.1Q VLAN Support v1.8
+> [   27.174513] 8021q: adding VLAN 0 to HW filter on device eth1
+> [   30.671724] cgroup: cgroup: disabling cgroup2 socket matching due to net_prio or net_cls activation
+> [   30.898564] netpoll: netconsole: local port 6666
+> [   30.898566] netpoll: netconsole: local IPv6 address 2a02:6b8:0:80b:beae:c5ff:fe28:23f8
+> [   30.898567] netpoll: netconsole: interface 'eth1'
+> [   30.898568] netpoll: netconsole: remote port 6666
+> [   30.898568] netpoll: netconsole: remote IPv6 address 2a02:6b8:b000:605c:e61d:2dff:fe03:3790
+> [   30.898569] netpoll: netconsole: remote ethernet address b0:a8:6e:f4:ff:c0
+> [   30.917747] console [netcon0] enabled
+> [   30.917749] netconsole: network logging started
+> [   31.453353] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   34.185730] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   34.321840] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   34.465822] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   34.597423] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   34.745417] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   34.877356] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   35.005441] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   35.157376] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   35.289362] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   35.417441] e1000e 0000:02:00.0: Some CPU C-states have been disabled in order to enable jumbo frames
+> [   37.790342] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
 > 
-> Am 15.01.19 um 16:43 schrieb Neftin, Sasha:
->> You can make changes and resend patches 1 and 3. There is 'u8' type use instead of 'u16' - I not
->> sure in benefit of it. Debug prints from patch 3 are essential I thought.
+> This patch flushes tx buffers only once when carrier is off
+> rather than at each watchdog iteration.
 > 
-> Regarding the u8: after I used the the reference of &cmd->base.duplex in the
-> e1000e_get_speed_and_duplex_copper call, the compiler complained about duplex being u8 in the UAPI
-> struct, but u16 as the duplex reference parameter.
+> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+> ---
+>   drivers/net/ethernet/intel/e1000e/netdev.c |   15 ++++++---------
+>   1 file changed, 6 insertions(+), 9 deletions(-)
 > 
-> The same actually happened when I tried the &cmd->base.speed, where the UAPI is u32, but internally
-> e1000e uses u16 in a lot of places.
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 189f231075c2..d10083beec83 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -5309,8 +5309,13 @@ static void e1000_watchdog_task(struct work_struct *work)
+>   			/* 8000ES2LAN requires a Rx packet buffer work-around
+>   			 * on link down event; reset the controller to flush
+>   			 * the Rx packet buffer.
+> +			 *
+> +			 * If the link is lost the controller stops DMA, but
+> +			 * if there is queued Tx work it cannot be done.  So
+> +			 * reset the controller to flush the Tx packet buffers.
+>   			 */
+> -			if (adapter->flags & FLAG_RX_NEEDS_RESTART)
+> +			if ((adapter->flags & FLAG_RX_NEEDS_RESTART) ||
+> +			    e1000_desc_unused(tx_ring) + 1 < tx_ring->count)
+>   				adapter->flags |= FLAG_RESTART_NOW;
+>   			else
+>   				pm_schedule_suspend(netdev->dev.parent,
+> @@ -5333,14 +5338,6 @@ static void e1000_watchdog_task(struct work_struct *work)
+>   	adapter->gotc_old = adapter->stats.gotc;
+>   	spin_unlock(&adapter->stats64_lock);
+>   
+> -	/* If the link is lost the controller stops DMA, but
+> -	 * if there is queued Tx work it cannot be done.  So
+> -	 * reset the controller to flush the Tx packet buffers.
+> -	 */
+> -	if (!netif_carrier_ok(netdev) &&
+> -	    (e1000_desc_unused(tx_ring) + 1 < tx_ring->count))
+> -		adapter->flags |= FLAG_RESTART_NOW;
+> -
+>   	/* If reset is necessary, do it outside of interrupt context. */
+>   	if (adapter->flags & FLAG_RESTART_NOW) {
+>   		schedule_work(&adapter->reset_task);
 > 
-> I decided to keep u16 speed and change the few u8 duplex places. Really don't care, but if you have
-> a preference, I'll change it before sending v2, using a temporary duplex variable.
-There is no too much benefit from these patches (IMHO). I won't stop 
-you. In case you consider resubmit please be consistent and replace the 
-type in all relevant places.
-> 
->> Regard your problem. Fujitsu can contacts our customer representative.
-> 
-> Already in touch with Fujitsu.
->
-Good.
-
-> Thanks for your help!
-> 
-> Jan-Marek
 > _______________________________________________
 > Intel-wired-lan mailing list
 > Intel-wired-lan at osuosl.org
 > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 > 
-Sasha
+What is the HW setup you encountered this issue? Could you try to 
+disable the jumbo frame and recheck? We cannot allow the low CPU states 
+when the jumbo feature is enabled. This is HW design.
+We will try to review this patch next week. Please, be patient.
