@@ -1,77 +1,31 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Thu, 24 Jan 2019 09:36:11 +1300
-Subject: [Intel-wired-lan] [Intel-gfx] [PATCH 1/3] treewide: Lift switch
- variables out of switches
-In-Reply-To: <20190123191802.GB15311@bombadil.infradead.org>
-References: <20190123110349.35882-1-keescook@chromium.org>
- <20190123110349.35882-2-keescook@chromium.org>
- <20190123115829.GA31385@kroah.com> <874l9z31c5.fsf@intel.com>
- <20190123191802.GB15311@bombadil.infradead.org>
-Message-ID: <CAGXu5jLNvHVhbyr5Cbyoe8o0ARv52sU-NEpD+u2UYfESM3ofCw@mail.gmail.com>
+From: Todd Fujinaka <todd.fujinaka@intel.com>
+Date: Wed, 23 Jan 2019 14:56:30 -0800
+Subject: [Intel-wired-lan] [PATCH] igb: Bump version number
+Message-ID: <20190123225630.2724-1-todd.fujinaka@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Jan 24, 2019 at 8:18 AM Matthew Wilcox <willy@infradead.org> wrote:
->
-> On Wed, Jan 23, 2019 at 04:17:30PM +0200, Jani Nikula wrote:
-> > Can't have:
-> >
-> >       switch (i) {
-> >               int j;
-> >       case 0:
-> >               /* ... */
-> >       }
-> >
-> > because it can't be turned into:
-> >
-> >       switch (i) {
-> >               int j = 0; /* not valid C */
-> >       case 0:
-> >               /* ... */
-> >       }
-> >
-> > but can have e.g.:
-> >
-> >       switch (i) {
-> >       case 0:
-> >               {
-> >                       int j = 0;
-> >                       /* ... */
-> >               }
-> >       }
-> >
-> > I think Kees' approach of moving such variable declarations to the
-> > enclosing block scope is better than adding another nesting block.
->
-> Another nesting level would be bad, but I think this is OK:
->
->         switch (i) {
->         case 0: {
->                 int j = 0;
->                 /* ... */
->         }
->         case 1: {
->                 void *p = q;
->                 /* ... */
->         }
->         }
->
-> I can imagine Kees' patch might have a bad effect on stack consumption,
-> unless GCC can be relied on to be smart enough to notice the
-> non-overlapping liveness of the vriables and use the same stack slots
-> for both.
+Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-GCC is reasonable at this. The main issue, though, was most of these
-places were using the variables in multiple case statements, so they
-couldn't be limited to a single block (or they'd need to be manually
-repeated in each block, which is even more ugly, IMO).
-
-Whatever the consensus, I'm happy to tweak the patch.
-
-Thanks!
-
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index e0e8f7a708e9..e47149fbd440 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -39,7 +39,7 @@
+ #include "igb.h"
+ 
+ #define MAJ 5
+-#define MIN 4
++#define MIN 6
+ #define BUILD 0
+ #define DRV_VERSION __stringify(MAJ) "." __stringify(MIN) "." \
+ __stringify(BUILD) "-k"
 -- 
-Kees Cook
+2.20.1
+
