@@ -1,34 +1,73 @@
-From: William Kucharski <william.kucharski@oracle.com>
-Date: Wed, 23 Jan 2019 06:21:44 -0700
-Subject: [Intel-wired-lan] [PATCH 1/3] treewide: Lift switch variables
- out of switches
-In-Reply-To: <CAG48ez2vfXkr9dozJiGmze8k49VOXfs=K7M8bv0aQsDDpzrEFQ@mail.gmail.com>
+From: Jani Nikula <jani.nikula@linux.intel.com>
+Date: Wed, 23 Jan 2019 16:17:30 +0200
+Subject: [Intel-wired-lan] [Intel-gfx] [PATCH 1/3] treewide: Lift switch
+ variables out of switches
+In-Reply-To: <20190123115829.GA31385@kroah.com>
 References: <20190123110349.35882-1-keescook@chromium.org>
  <20190123110349.35882-2-keescook@chromium.org>
  <20190123115829.GA31385@kroah.com>
- <CAG48ez2vfXkr9dozJiGmze8k49VOXfs=K7M8bv0aQsDDpzrEFQ@mail.gmail.com>
-Message-ID: <536BB69D-6E93-4E32-8303-16D92E07D8AA@oracle.com>
+Message-ID: <874l9z31c5.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Wed, 23 Jan 2019, Greg KH <gregkh@linuxfoundation.org> wrote:
+> On Wed, Jan 23, 2019 at 03:03:47AM -0800, Kees Cook wrote:
+>> Variables declared in a switch statement before any case statements
+>> cannot be initialized, so move all instances out of the switches.
+>> After this, future always-initialized stack variables will work
+>> and not throw warnings like this:
+>> 
+>> fs/fcntl.c: In function ?send_sigio_to_task?:
+>> fs/fcntl.c:738:13: warning: statement will never be executed [-Wswitch-unreachable]
+>>    siginfo_t si;
+>>              ^~
+>
+> That's a pain, so this means we can't have any new variables in { }
+> scope except for at the top of a function?
+>
+> That's going to be a hard thing to keep from happening over time, as
+> this is valid C :(
+
+Not all valid C is meant to be used! ;)
+
+Anyway, I think you're mistaking the limitation to arbitrary blocks
+while it's only about the switch block IIUC.
+
+Can't have:
+
+	switch (i) {
+		int j;
+	case 0:
+        	/* ... */
+	}
+
+because it can't be turned into:
+
+	switch (i) {
+		int j = 0; /* not valid C */
+	case 0:
+        	/* ... */
+	}
+
+but can have e.g.:
+
+	switch (i) {
+	case 0:
+		{
+			int j = 0;
+	        	/* ... */
+		}
+	}
+
+I think Kees' approach of moving such variable declarations to the
+enclosing block scope is better than adding another nesting block.
+
+BR,
+Jani.
 
 
-> On Jan 23, 2019, at 5:09 AM, Jann Horn <jannh@google.com> wrote:
-> 
-> AFAICS this only applies to switch statements (because they jump to a
-> case and don't execute stuff at the start of the block), not blocks
-> after if/while/... .
-
-It bothers me that we are going out of our way to deprecate valid C constructs
-in favor of placing the declarations elsewhere.
-
-As current compiler warnings would catch any reference before initialization
-usage anyway, it seems like we are letting a compiler warning rather than the
-language standard dictate syntax.
-
-Certainly if we want to make it a best practice coding style issue we can, and
-then an appropriate note explaining why should be added to
-Documentation/process/coding-style.rst.
+-- 
+Jani Nikula, Intel Open Source Graphics Center
