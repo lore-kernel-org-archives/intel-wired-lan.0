@@ -1,149 +1,70 @@
-From: Kai Heng Feng <kai.heng.feng@canonical.com>
-Date: Wed, 23 Jan 2019 15:17:37 +0800
-Subject: [Intel-wired-lan] [PATCH] PCI / ACPI: Don't clear pme_poll on
- device that has unreliable ACPI wake
-In-Reply-To: <20190122235134.GE14636@google.com>
-References: <20190122064544.27426-1-kai.heng.feng@canonical.com>
- <20190122235134.GE14636@google.com>
-Message-ID: <91E74111-5BB6-4604-A1D7-B537AB42C317@canonical.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 23 Jan 2019 03:03:46 -0800
+Subject: [Intel-wired-lan] [PATCH 0/3] gcc-plugins: Introduce stackinit
+ plugin
+Message-ID: <20190123110349.35882-1-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+This adds a new plugin "stackinit" that attempts to perform unconditional
+initialization of all stack variables[1]. It has wider effects than
+GCC_PLUGIN_STRUCTLEAK_BYREF_ALL=y since BYREF_ALL does not consider
+non-structures. A notable weakness is that padding bytes in many cases
+remain uninitialized since GCC treats these bytes as "undefined". I'm
+hoping we can improve the compiler (or the plugin) to cover that too.
+(It's worth noting that BYREF_ALL actually does handle the padding --
+I think this is due to the different method of detecting if initialization
+is needed.)
 
+Included is a tree-wide change to move switch variables up and out of
+their switch and into the top-level variable declarations.
 
-> On Jan 23, 2019, at 7:51 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> 
-> On Tue, Jan 22, 2019 at 02:45:44PM +0800, Kai-Heng Feng wrote:
->> There are some e1000e devices can only be woken up from D3 one time, by
->> plugging ethernet cable. Subsequent cable plugging does set PME bit
->> correctly, but it still doesn't get woken up.
->> 
->> Since e1000e connects to the root complex directly, we rely on ACPI to
->> wake it up. In this case, the GPE from _PRW only works once and stops
->> working after that.
->> 
->> So introduce a new PCI quirk, to avoid clearing pme_poll flag for buggy
->> platform firmwares that have unreliable GPE wake.
-> 
-> This quirk applies to all 0x15bb (E1000_DEV_ID_PCH_CNP_I219_LM7) and
-> 0x15bd (E1000_DEV_ID_PCH_CNP_I219_LM6) devices.  The e1000e driver
-> claims about a zillion different device IDs.
-> 
-> I would be surprised if these two devices are defective but all the
-> others work correctly.  Could it be that there is a problem with the
-> wiring on this particular motherboard or with the ACPI _PRW methods
-> (or the way Linux interprets them) in this firmware?
+Included is a set of test cases for evaluating stack initialization,
+which checks for padding, different types, etc.
 
-If this is a motherboard issue or platform specific, do you prefer to use
-DMI matches here?
+Feedback welcome! :)
 
-As for _PRW, it?s shared by USB controller, Audio controller and ethernet.
-Only the ethernet (e1000e) has this issue.
+-Kees
 
-When this issue happens, the e1000e doesn?t get woken up by ethernet cable
-plugging, but inserting a USB device or plugging audio jack can wake up all
-three devices. So I think Linux interprets ACPI correctly here.
+[1] https://lkml.kernel.org/r/CA+55aFykZL+cSBJjBBts7ebEFfyGPdMzTmLSxKnT_29=j942dA at mail.gmail.com
 
-Their _PRW here:
-USB controller:
-    Scope (_SB.PCI0)                       
-    {                                      
-        Device (XDCI)                            
-        {                    
-            Method (_PRW, 0, NotSerialized)  // _PRW: Power Resources for Wake
-            {            
-                Return (GPRW (0x6D, 0x04))
-            } 
+Kees Cook (3):
+  treewide: Lift switch variables out of switches
+  gcc-plugins: Introduce stackinit plugin
+  lib: Introduce test_stackinit module
 
-Audio controller:
-Scope (_SB.PCI0)                                                                                           
-    {                                                                                                          
-        Device (HDAS)                                  
-        {                                                                             
-            ?         
-            Method (_PRW, 0, NotSerialized)  // _PRW: Power Resources for Wake                 
-            {                                        
-                Return (GPRW (0x6D, 0x04))           
-            }                                  
+ arch/x86/xen/enlighten_pv.c                   |   7 +-
+ drivers/char/pcmcia/cm4000_cs.c               |   2 +-
+ drivers/char/ppdev.c                          |  20 +-
+ drivers/gpu/drm/drm_edid.c                    |   4 +-
+ drivers/gpu/drm/i915/intel_display.c          |   2 +-
+ drivers/gpu/drm/i915/intel_pm.c               |   4 +-
+ drivers/net/ethernet/intel/e1000/e1000_main.c |   3 +-
+ drivers/tty/n_tty.c                           |   3 +-
+ drivers/usb/gadget/udc/net2280.c              |   5 +-
+ fs/fcntl.c                                    |   3 +-
+ lib/Kconfig.debug                             |   9 +
+ lib/Makefile                                  |   1 +
+ lib/test_stackinit.c                          | 327 ++++++++++++++++++
+ mm/shmem.c                                    |   5 +-
+ net/core/skbuff.c                             |   4 +-
+ net/ipv6/ip6_gre.c                            |   4 +-
+ net/ipv6/ip6_tunnel.c                         |   4 +-
+ net/openvswitch/flow_netlink.c                |   7 +-
+ scripts/Makefile.gcc-plugins                  |   6 +
+ scripts/gcc-plugins/Kconfig                   |   9 +
+ scripts/gcc-plugins/gcc-common.h              |  11 +-
+ scripts/gcc-plugins/stackinit_plugin.c        |  79 +++++
+ security/tomoyo/common.c                      |   3 +-
+ security/tomoyo/condition.c                   |   7 +-
+ security/tomoyo/util.c                        |   4 +-
+ 25 files changed, 484 insertions(+), 49 deletions(-)
+ create mode 100644 lib/test_stackinit.c
+ create mode 100644 scripts/gcc-plugins/stackinit_plugin.c
 
-Ethernet controller:
-    Scope (_SB.PCI0)                                                                     
-    {                                                                     
-        Device (GLAN)                                                  
-        {                                                                            
-           ?
-            Method (_PRW, 0, NotSerialized)  // _PRW: Power Resources for Wake                 
-            {                                        
-                Return (GPRW (0x6D, 0x04))                       
-            }                                                              
-        }                                                             
-    }  
-
-
-> 
-> Would you mind attaching a complete dmesg log and "sudo lspci -vvv"
-> output to the bugzilla, please?
-
-Sure.
-
-Kai-Heng
-
-> 
->> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
->> ---
->> drivers/pci/pci-acpi.c | 2 +-
->> drivers/pci/quirks.c   | 8 ++++++++
->> include/linux/pci.h    | 1 +
->> 3 files changed, 10 insertions(+), 1 deletion(-)
->> 
->> diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
->> index e1949f7efd9c..184e2fc8a294 100644
->> --- a/drivers/pci/pci-acpi.c
->> +++ b/drivers/pci/pci-acpi.c
->> @@ -430,7 +430,7 @@ static void pci_acpi_wake_dev(struct acpi_device_wakeup_context *context)
->> 
->> 	pci_dev = to_pci_dev(context->dev);
->> 
->> -	if (pci_dev->pme_poll)
->> +	if (pci_dev->pme_poll && !pci_dev->unreliable_acpi_wake)
->> 		pci_dev->pme_poll = false;
->> 
->> 	if (pci_dev->current_state == PCI_D3cold) {
->> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
->> index b0a413f3f7ca..ed4863496fa8 100644
->> --- a/drivers/pci/quirks.c
->> +++ b/drivers/pci/quirks.c
->> @@ -4948,6 +4948,14 @@ DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_VENDOR_ID_AMD, PCI_ANY_ID,
->> DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID,
->> 			      PCI_CLASS_MULTIMEDIA_HD_AUDIO, 8, quirk_gpu_hda);
->> 
->> +static void quirk_unreliable_acpi_wake(struct pci_dev *pdev)
->> +{
->> +	pci_info(pdev, "ACPI Wake unreliable, always poll PME\n");
->> +	pdev->unreliable_acpi_wake = 1;
->> +}
->> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x15bb, quirk_unreliable_acpi_wake);
->> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x15bd, quirk_unreliable_acpi_wake);
->> +
->> /*
->>  * Some IDT switches incorrectly flag an ACS Source Validation error on
->>  * completions for config read requests even though PCIe r4.0, sec
->> diff --git a/include/linux/pci.h b/include/linux/pci.h
->> index 65f1d8c2f082..d22065c1576f 100644
->> --- a/include/linux/pci.h
->> +++ b/include/linux/pci.h
->> @@ -331,6 +331,7 @@ struct pci_dev {
->> 	unsigned int	pme_support:5;	/* Bitmask of states from which PME#
->> 					   can be generated */
->> 	unsigned int	pme_poll:1;	/* Poll device's PME status bit */
->> +	unsigned int	unreliable_acpi_wake:1;	/* ACPI Wake doesn't always work */
->> 	unsigned int	d1_support:1;	/* Low power state D1 is supported */
->> 	unsigned int	d2_support:1;	/* Low power state D2 is supported */
->> 	unsigned int	no_d1d2:1;	/* D1 and D2 are forbidden */
->> -- 
->> 2.17.1
->> 
+-- 
+2.17.1
 
