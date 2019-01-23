@@ -1,57 +1,51 @@
-From: Jani Nikula <jani.nikula@linux.intel.com>
-Date: Wed, 23 Jan 2019 17:46:14 +0200
-Subject: [Intel-wired-lan] [Intel-gfx] [PATCH 1/3] treewide: Lift switch
- variables out of switches
-In-Reply-To: <000001d4b32a$845e06e0$8d1a14a0$@211mainstreet.net>
-References: <20190123110349.35882-1-keescook@chromium.org>
- <20190123110349.35882-2-keescook@chromium.org>
- <20190123115829.GA31385@kroah.com> <874l9z31c5.fsf@intel.com>
- <000001d4b32a$845e06e0$8d1a14a0$@211mainstreet.net>
-Message-ID: <87va2f1int.fsf@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 23 Jan 2019 09:04:27 -0800
+Subject: [Intel-wired-lan] [PATCH net-next] intel: Mark expected switch
+ fall-throughs
+In-Reply-To: <20190123074849.GA24230@embeddedor>
+References: <20190123074849.GA24230@embeddedor>
+Message-ID: <e356e64d3267bbca1cfa0373b7ce965edaf159bd.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 23 Jan 2019, Edwin Zimmerman <edwin@211mainstreet.net> wrote:
-> On Wed, 23 Jan 2019, Jani Nikula <jani.nikula@linux.intel.com> wrote:
->> On Wed, 23 Jan 2019, Greg KH <gregkh@linuxfoundation.org> wrote:
->> > On Wed, Jan 23, 2019 at 03:03:47AM -0800, Kees Cook wrote:
->> >> Variables declared in a switch statement before any case statements
->> >> cannot be initialized, so move all instances out of the switches.
->> >> After this, future always-initialized stack variables will work
->> >> and not throw warnings like this:
->> >>
->> >> fs/fcntl.c: In function ?send_sigio_to_task?:
->> >> fs/fcntl.c:738:13: warning: statement will never be executed [-Wswitch-unreachable]
->> >>    siginfo_t si;
->> >>              ^~
->> >
->> > That's a pain, so this means we can't have any new variables in { }
->> > scope except for at the top of a function?
->> >
->> > That's going to be a hard thing to keep from happening over time, as
->> > this is valid C :(
->> 
->> Not all valid C is meant to be used! ;)
->
-> Very true.  The other thing to keep in mind is the burden of enforcing
-> a prohibition on a valid C construct like this.  It seems to me that
-> patch reviewers and maintainers have enough to do without forcing them
-> to watch for variable declarations in switch statements.  Automating
-> this prohibition, should it be accepted, seems like a good idea to me.
+On Wed, 2019-01-23 at 01:48 -0600, Gustavo A. R. Silva wrote:
+> In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+> where we are expecting to fall through.
+> 
+> This patch fixes the following warnings:
+> 
+> drivers/net/ethernet/intel/igb/e1000_82575.c:636:6: warning: this
+> statement may fall through [-Wimplicit-fallthrough=]
+> drivers/net/ethernet/intel/igb/igb_main.c:6710:6: warning: this
+> statement may fall through [-Wimplicit-fallthrough=]
+> drivers/net/ethernet/intel/i40e/i40e_xsk.c:237:3: warning: this
+> statement may fall through [-Wimplicit-fallthrough=]
+> 
+> Warning level 3 was used: -Wimplicit-fallthrough=3
+> 
+> This patch is part of the ongoing efforts to enabling
+> -Wimplicit-fallthrough.
+> 
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c   | 3 ++-
+>  drivers/net/ethernet/intel/igb/e1000_82575.c | 2 +-
+>  drivers/net/ethernet/intel/igb/igb_main.c    | 2 +-
+>  3 files changed, 4 insertions(+), 3 deletions(-)
 
-Considering that the treewide diffstat to fix this is:
+NAK on the igb changes.  There is already a "fall through" code comment
+which is fine, adding a hyphen does not make the comment any more
+readable.
 
- 18 files changed, 45 insertions(+), 46 deletions(-)
-
-and using the gcc plugin in question will trigger the switch-unreachable
-warning, I think we're good. There'll probably be the occasional
-declarations that pass through, and will get fixed afterwards.
-
-BR,
-Jani.
-
--- 
-Jani Nikula, Intel Open Source Graphics Center
+The i40e changes are acceptable, if you want to re-submit with only
+those changes.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190123/c1cb4dab/attachment-0001.asc>
