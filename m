@@ -1,53 +1,37 @@
-From: Garrett K <gkuchta@gmail.com>
-Date: Fri, 25 Jan 2019 14:48:09 -0600
-Subject: [Intel-wired-lan] i40e XDP - inform user if MTU exceeds rx_buf_len
- when loading program
-Message-ID: <CAH1YEqHzsuUETUi-P6c75bp1ThNfWAiE4m+wqKW3PXpsgoUJ-Q@mail.gmail.com>
+From: Cong Wang <xiyou.wangcong@gmail.com>
+Date: Fri, 25 Jan 2019 15:10:54 -0800
+Subject: [Intel-wired-lan] FW: lock dep issue
+In-Reply-To: <14063C7AD467DE4B82DEDB5C278E8663BE656FE3@FMSMSX108.amr.corp.intel.com>
+References: <14063C7AD467DE4B82DEDB5C278E8663BE656B4C@FMSMSX108.amr.corp.intel.com>
+ <1EF4DF93-8A2A-41A0-BC2A-7604B59875A4@intel.com>
+ <14063C7AD467DE4B82DEDB5C278E8663BE656FE3@FMSMSX108.amr.corp.intel.com>
+Message-ID: <CAM_iQpWBrHQy2-sfNmWkua=yAA8No+F4hiFS9hpGbrKBdxeZFw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+On Fri, Jan 25, 2019 at 5:03 AM Ruhl, Michael J
+<michael.j.ruhl@intel.com> wrote:
+>
+> Hi,
+>
+> While running a 5.0.0.rc1 kernel with the LOCKDEP debug configuration turned on, and I saw this LOCKDEP error:
+...
+>
+> I saw this on the console while not doing anything on the system (i.e. no test were running, or any overt network work).
+>
+> Since this didn't seem like a good thing I thought I would drop this  note.
 
-A coworker reached out to me after updating distributions on a lab machine.
-A previously-working eBFP/XDP program suddenly stopped working, reporting
-"invalid argument" when attempting to load it with iproute2.
+Yes, the offending commit has been reverted:
 
-write(2, "RTNETLINK answers: Invalid argum"..., 36RTNETLINK answers:
-Invalid argument
+commit 5642e27bf6a935c1d0d9149e83d625dfba286463
+Author: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date:   Wed Jan 9 09:10:53 2019 -0800
 
-It looks like their MTU was somehow set to 9000 after the update. Reducing
-the MTU allowed the program to load.
+    Revert "igb: reduce CPU0 latency when updating statistics"
 
-I _think_ that error was coming from i40e_main.c:i40e_xdp_setup(). If
-that's the indeed true, and if it's possible, it might be helpful to bubble
-an error message back up to the user. Maybe something like this?
+Please try a newer kernel.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index f52e2c46e6a7..134ecbbbb84f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11872,8 +11872,11 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
-        int i;
-
-        /* Don't allow frames that span over multiple buffers */
--       if (frame_size > vsi->rx_buf_len)
-+       if (frame_size > vsi->rx_buf_len) {
-+               netdev_warn(vsi->netdev, "Frame size %d exceeds rx_buf_len
-%d; reduce device MTU.\n",
-+                       frame_size, vsi->rx_buf_len);
-                return -EINVAL;
-+       }
-
-Thank you for the consideration, and apologies if this isn't the right list
-for this report.
-
-Cheers,
-
-Garrett Kuchta
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190125/919a84df/attachment.html>
+Thanks for your report.
