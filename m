@@ -1,43 +1,35 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 28 Jan 2019 09:45:01 -0800
-Subject: [Intel-wired-lan] [net] ixgbe: fix older devices that do not
- support IXGBE_MRQC_L3L4TXSWEN
-Message-ID: <20190128174501.26421-1-jeffrey.t.kirsher@intel.com>
+Date: Mon, 28 Jan 2019 13:22:43 -0800
+Subject: [Intel-wired-lan] ixgbe driver to provide tempeture info
+ through hwmon?
+In-Reply-To: <d91e7a2f-dbcb-288f-a04a-3e096ae01ac0@gmail.com>
+References: <d91e7a2f-dbcb-288f-a04a-3e096ae01ac0@gmail.com>
+Message-ID: <f15ef8cf07f50a70b0a991c58f3b17334767b488.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The enabling L3/L4 filtering for transmit switched packets for all
-devices caused unforeseen issue on older devices when trying to send UDP
-traffic in an ordered sequence.  This bit was originally intended for X550
-devices, which supported this feature, so limit the scope of this bit to
-only X550 devices.
+On Wed, 2019-01-23 at 16:06 +0100, Mikko Laaksonen wrote:
+> Dears,
+> A Mr. Lyson?k from Red Hat suggested I write to you. I understand
+> that the X550-T2 has temperature sensors and a way of getting that
+> data out of it. I don't understand how to get that data to
+> lm_sensors, but Mr. Lyson?k suggests that the ixgbe maintainer could
+> see if the temperature info can be gotten out to hwmon, after which
+> he could see about making sensors-detect detect it.
+> Any ideas?
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index daff8183534b..3cbb7e0324fd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -3953,8 +3953,11 @@ static void ixgbe_setup_mrqc(struct ixgbe_adapter *adapter)
- 			else
- 				mrqc = IXGBE_MRQC_VMDQRSS64EN;
- 
--			/* Enable L3/L4 for Tx Switched packets */
--			mrqc |= IXGBE_MRQC_L3L4TXSWEN;
-+			/* Enable L3/L4 for Tx Switched packets only for X550,
-+			 * older devices do not support this feature
-+			 */
-+			if (hw->mac.type >= ixgbe_mac_X550)
-+				mrqc |= IXGBE_MRQC_L3L4TXSWEN;
- 		} else {
- 			if (tcs > 4)
- 				mrqc = IXGBE_MRQC_RTRSS8TCEN;
--- 
-2.20.1
-
+Our current driver does not have the ability to have hwmon retrieve the
+temperature sensor data currently.  It would take some work to
+implement such a feature, which we currently cannot commit to.  We do
+welcome patches from the community if you are interested in
+implementing it.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190128/e2b06f51/attachment.asc>
