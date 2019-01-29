@@ -1,137 +1,92 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 29 Jan 2019 18:34:23 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- d1b3fa861c62e21bb4dc598f0aee73b6ccf5d051
-Message-ID: <5c502c2f.ltiUG08hgeLbFncc%lkp@intel.com>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Date: Tue, 29 Jan 2019 12:17:14 +0100
+Subject: [Intel-wired-lan] [PATCH v2] i40e: replace switch-statement to
+ speed-up retpoline-enabled builds
+In-Reply-To: <20190129095754.9390-1-bjorn.topel@gmail.com>
+References: <20190129095754.9390-1-bjorn.topel@gmail.com>
+Message-ID: <5650fdb7-5b86-9c7d-c112-1ff5ee7812b7@iogearbox.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: d1b3fa861c62e21bb4dc598f0aee73b6ccf5d051  i40e: clean up several indentation issues
+On 01/29/2019 10:57 AM, bjorn.topel at gmail.com wrote:
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
+> 
+> GCC will generate jump tables for switch-statements with more than 5
+> case statements. An entry into the jump table is an indirect call,
+> which means that for CONFIG_RETPOLINE builds, this is rather
+> expensive.
+> 
+> This commit replaces the switch-statement that acts on the XDP program
+> result with an if-clause.
+> 
+> The if-clause was also refactored into a common function that can be
+> used by AF_XDP zero-copy and non-zero-copy code.
+> 
+> Performance prior this patch:
+> $ sudo ./xdp_rxq_info --dev enp134s0f0 --action XDP_DROP
+> Running XDP on dev:enp134s0f0 (ifindex:7) action:XDP_DROP options:no_touch
+> XDP stats       CPU     pps         issue-pps
+> XDP-RX CPU      20      18983018    0
+> XDP-RX CPU      total   18983018
+> 
+> RXQ stats       RXQ:CPU pps         issue-pps
+> rx_queue_index   20:20  18983012    0
+> rx_queue_index   20:sum 18983012
+> 
+> $ sudo ./xdpsock -i enp134s0f0 -q 20 -n 2 -z -r
+>  sock0 at enp134s0f0:20 rxdrop
+>                 pps         pkts        2.00
+> rx              14,641,496  144,751,092
+> tx              0           0
+> 
+> And after:
+> $ sudo ./xdp_rxq_info --dev enp134s0f0 --action XDP_DROP
+> Running XDP on dev:enp134s0f0 (ifindex:7) action:XDP_DROP options:no_touch
+> XDP stats       CPU     pps         issue-pps
+> XDP-RX CPU      20      24000986    0
+> XDP-RX CPU      total   24000986
+> 
+> RXQ stats       RXQ:CPU pps         issue-pps
+> rx_queue_index   20:20  24000985    0
+> rx_queue_index   20:sum 24000985
+> 
+>   +26%
+> 
+> $ sudo ./xdpsock -i enp134s0f0 -q 20 -n 2 -z -r
+>  sock0 at enp134s0f0:20 rxdrop
+>                 pps         pkts        2.00
+> rx              17,623,578  163,503,263
+> tx              0           0
+> 
+>   +20%
+> 
+> Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 
-elapsed time: 3475m
+Looks good. Given the performance improvements, wondering in general whether
+it would make sense to raise the default limit for generating jump tables if
+we have CONFIG_RETPOLINE enabled; as in:
 
-configs tested: 112
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 9c5a67d..33495a9 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -217,6 +217,8 @@ KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
+ # Avoid indirect branches in kernel to deal with Spectre
+ ifdef CONFIG_RETPOLINE
+   KBUILD_CFLAGS += $(RETPOLINE_CFLAGS)
++  # Avoid generating slow indirect jumps for small number of switch cases
++  KBUILD_CFLAGS += --param case-values-threshold=12
+ endif
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+ archscripts: scripts_basic
 
-mips                          ath25_defconfig
-sparc                       sparc64_defconfig
-c6x                        evmc6472_defconfig
-mips                            gpr_defconfig
-arm                             rpc_defconfig
-powerpc                     mpc5200_defconfig
-powerpc                             defconfig
-sh                          lboxre2_defconfig
-sh                               allmodconfig
-mips                           ip28_defconfig
-um                               allyesconfig
-sh                          landisk_defconfig
-sparc64                          allmodconfig
-sparc                             allnoconfig
-xtensa                              defconfig
-x86_64                           allmodconfig
-arm                            mps2_defconfig
-powerpc                      walnut_defconfig
-x86_64                              defconfig
-arm                            zeus_defconfig
-mips                 pnx8335_stb225_defconfig
-sh                          rsk7269_defconfig
-mips                       lemote2f_defconfig
-powerpc                      ppc44x_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-i386                   randconfig-b0-01291827
-powerpc               mpc834x_itxgp_defconfig
-s390                          debug_defconfig
-xtensa                            allnoconfig
-arm                            hisi_defconfig
-riscv                            allyesconfig
-arm                         s3c2410_defconfig
-mips                         cobalt_defconfig
-x86_64                 randconfig-u0-01291828
-x86_64                 randconfig-u0-01291829
-x86_64                 randconfig-u0-01291831
-powerpc               mpc86xx_basic_defconfig
-powerpc                     skiroot_defconfig
-ia64                         bigsur_defconfig
-sh                                  defconfig
-sh                          r7780mp_defconfig
-sh                            titan_defconfig
-nios2                            alldefconfig
-powerpc                       ebony_defconfig
-arm                         mv78xx0_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-x86_64                                  kexec
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                              fedora-25
-arm                        spear6xx_defconfig
-mips                            ar7_defconfig
-arm                          ixp4xx_defconfig
-sh                        sh7763rdp_defconfig
-arm                         bcm2835_defconfig
-mips                     loongson1c_defconfig
-powerpc                 mpc834x_mds_defconfig
-sh                               j2_defconfig
-arm                        mini2440_defconfig
-powerpc                      katmai_defconfig
-h8300                             allnoconfig
-sh                          urquell_defconfig
-c6x                              allyesconfig
-microblaze                          defconfig
-powerpc                 mpc8560_ads_defconfig
-sh                          polaris_defconfig
-powerpc                      mgcoge_defconfig
-sparc64                          alldefconfig
-arm                       versatile_defconfig
-powerpc                      arches_defconfig
-arm                          iop32x_defconfig
-i386                   randconfig-x0-01291827
-i386                   randconfig-x0-01291829
+That would likely bloat the kernel a bit also in slow-path places where it
+would not be needed, but it would generically catch majority of cases. I'll
+run some experiments later today (but in any case that should not block this
+patch here).
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Cheers,
+Daniel
