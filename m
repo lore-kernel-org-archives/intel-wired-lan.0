@@ -1,84 +1,36 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 29 Jan 2019 12:43:19 -0800
-Subject: [Intel-wired-lan] [PATCH] namespace: fix namespace.pl script to
- support relative paths
-Message-ID: <20190129204319.15238-1-jacob.e.keller@intel.com>
+From: Alexander Popov <alex.popov@linux.com>
+Date: Tue, 29 Jan 2019 03:12:24 +0300
+Subject: [Intel-wired-lan] [PATCH 0/3] gcc-plugins: Introduce stackinit
+ plugin
+In-Reply-To: <20190123110349.35882-1-keescook@chromium.org>
+References: <20190123110349.35882-1-keescook@chromium.org>
+Message-ID: <874b8c23-068b-f8e7-2168-12947c06e145@linux.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The namespace.pl script does not work properly if objtree is not set to
-an absolute path. The do_nm function is run from within the find
-function, which changes directories.
+On 23.01.2019 14:03, Kees Cook wrote:
+> This adds a new plugin "stackinit" that attempts to perform unconditional
+> initialization of all stack variables
 
-Because of this, appending objtree, $File::Find::dir, and $source, will
-return a path which is not valid from the current directory.
+Hello Kees! Hello everyone!
 
-This used to work when objtree was set to an absolute path when using
-"make namespacecheck". It appears to have not worked when calling
-./scripts/namespace.pl directly.
+I was curious about the performance impact of the initialization of all stack
+variables. So I did a very brief test with this plugin on top of 4.20.5.
 
-This behavior was changed in 7e1c04779efd ("kbuild: Use relative path
-for $(objtree)", 2014-05-14)
+hackbench on Intel Core i7-4770 showed ~0.7% slowdown.
+hackbench on Kirin 620 (ARM Cortex-A53 Octa-core 1.2GHz) showed ~1.3% slowdown.
 
-Rather than fixing the Makefile to set objtree to an absolute path, just
-fix namespace.pl to work when srctree and objtree are relative. Also fix
-the script to use an absolute path for these by default.
+This test involves the kernel scheduler and allocator. I can't say whether they
+use stack aggressively. Maybe performance tests of other subsystems (e.g.
+network subsystem) can show different numbers. Did you try?
 
-Use the File::Spec module for this purpose. It's been part of perl
-5 since 5.005.
+I've heard a hypothesis that the initialization of all stack variables would
+pollute CPU caches, which is critical for some types of computations. Maybe some
+micro-benchmarks can disprove/confirm that?
 
-The curdir() function is used to get the current directory when the
-objtree and srctree aren't set in the environment.
-
-rel2abs() is used to convert possibly relative objtree and srctree
-environment variables to absolute paths.
-
-Finally, the catfile() function is used instead of string appending
-paths together, since this is more robust when joining paths together.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- scripts/namespace.pl | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/scripts/namespace.pl b/scripts/namespace.pl
-index 6135574a6f39..1da7bca201a4 100755
---- a/scripts/namespace.pl
-+++ b/scripts/namespace.pl
-@@ -65,13 +65,14 @@
- use warnings;
- use strict;
- use File::Find;
-+use File::Spec;
- 
- my $nm = ($ENV{'NM'} || "nm") . " -p";
- my $objdump = ($ENV{'OBJDUMP'} || "objdump") . " -s -j .comment";
--my $srctree = "";
--my $objtree = "";
--$srctree = "$ENV{'srctree'}/" if (exists($ENV{'srctree'}));
--$objtree = "$ENV{'objtree'}/" if (exists($ENV{'objtree'}));
-+my $srctree = File::Spec->curdir();
-+my $objtree = File::Spec->curdir();
-+$srctree = File::Spec->rel2abs($ENV{'srctree'}) if (exists($ENV{'srctree'}));
-+$objtree = File::Spec->rel2abs($ENV{'objtree'}) if (exists($ENV{'objtree'}));
- 
- if ($#ARGV != -1) {
- 	print STDERR "usage: $0 takes no parameters\n";
-@@ -231,9 +232,9 @@ sub do_nm
- 	}
- 	($source = $basename) =~ s/\.o$//;
- 	if (-e "$source.c" || -e "$source.S") {
--		$source = "$objtree$File::Find::dir/$source";
-+		$source = File::Spec->catfile($objtree, $File::Find::dir, $source)
- 	} else {
--		$source = "$srctree$File::Find::dir/$source";
-+		$source = File::Spec->catfile($srctree, $File::Find::dir, $source)
- 	}
- 	if (! -e "$source.c" && ! -e "$source.S") {
- 		# No obvious source, exclude the object if it is conglomerate
--- 
-2.18.0.219.gaf81d287a9da
-
+Thanks!
+Best regards,
+Alexander
