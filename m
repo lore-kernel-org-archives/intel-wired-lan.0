@@ -1,93 +1,226 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue, 29 Jan 2019 10:54:15 +0100
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 24/26]
- include/net/xdp.h:111:6: error: implicit declaration of function 'unlikely';
- did you mean 'inline'?
-In-Reply-To: <201901291634.dgYxCoMs%fengguang.wu@intel.com>
-References: <201901291634.dgYxCoMs%fengguang.wu@intel.com>
-Message-ID: <CAJ+HfNi2OSyi4BwwXGPWnJddEzs_dR5LV=9+xF3h5n2=smdofQ@mail.gmail.com>
+From: bjorn.topel@gmail.com <bjorn.topel@gmail.com>
+Date: Tue, 29 Jan 2019 10:57:54 +0100
+Subject: [Intel-wired-lan] [PATCH v2] i40e: replace switch-statement to
+ speed-up retpoline-enabled builds
+Message-ID: <20190129095754.9390-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Den tis 29 jan. 2019 kl 09:25 skrev kbuild test robot <lkp@intel.com>:
->
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-> head:   0877d96a712abecbec128a65bb335bd1a21a73f8
-> commit: 6f20ba0a6c9292ca36b484990dd1f8f25ee7154f [24/26] i40e: replace switch-statement with if-clause
-> config: alpha-allmodconfig (attached as .config)
-> compiler: alpha-linux-gnu-gcc (Debian 8.2.0-11) 8.2.0
-> reproduce:
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         git checkout 6f20ba0a6c9292ca36b484990dd1f8f25ee7154f
->         # save the attached .config to linux build tree
->         GCC_VERSION=8.2.0 make.cross ARCH=alpha
->
-> All errors (new ones prefixed by >>):
->
->    In file included from drivers/net/ethernet/intel/i40e/i40e_txrx.c:5:
->    include/net/xdp.h: In function 'convert_to_xdp_frame':
-> >> include/net/xdp.h:111:6: error: implicit declaration of function 'unlikely'; did you mean 'inline'? [-Werror=implicit-function-declaration]
->      if (unlikely((headroom - metasize) < sizeof(*xdp_frame)))
->          ^~~~~~~~
->          inline
->    cc1: some warnings being treated as errors
->
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Argh, I'll spin up a v2.
+GCC will generate jump tables for switch-statements with more than 5
+case statements. An entry into the jump table is an indirect call,
+which means that for CONFIG_RETPOLINE builds, this is rather
+expensive.
 
+This commit replaces the switch-statement that acts on the XDP program
+result with an if-clause.
 
-Bj?rn
+The if-clause was also refactored into a common function that can be
+used by AF_XDP zero-copy and non-zero-copy code.
 
-> vim +111 include/net/xdp.h
->
-> b0d1beef Bj?rn T?pel            2018-08-28   95
-> c0048cff Jesper Dangaard Brouer 2018-04-17   96  /* Convert xdp_buff to xdp_frame */
-> c0048cff Jesper Dangaard Brouer 2018-04-17   97  static inline
-> c0048cff Jesper Dangaard Brouer 2018-04-17   98  struct xdp_frame *convert_to_xdp_frame(struct xdp_buff *xdp)
-> c0048cff Jesper Dangaard Brouer 2018-04-17   99  {
-> c0048cff Jesper Dangaard Brouer 2018-04-17  100         struct xdp_frame *xdp_frame;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  101         int metasize;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  102         int headroom;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  103
-> 02b55e56 Bj?rn T?pel            2018-06-04  104         if (xdp->rxq->mem.type == MEM_TYPE_ZERO_COPY)
-> b0d1beef Bj?rn T?pel            2018-08-28  105                 return xdp_convert_zc_to_xdp_frame(xdp);
-> 02b55e56 Bj?rn T?pel            2018-06-04  106
-> c0048cff Jesper Dangaard Brouer 2018-04-17  107         /* Assure headroom is available for storing info */
-> c0048cff Jesper Dangaard Brouer 2018-04-17  108         headroom = xdp->data - xdp->data_hard_start;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  109         metasize = xdp->data - xdp->data_meta;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  110         metasize = metasize > 0 ? metasize : 0;
-> c0048cff Jesper Dangaard Brouer 2018-04-17 @111         if (unlikely((headroom - metasize) < sizeof(*xdp_frame)))
-> c0048cff Jesper Dangaard Brouer 2018-04-17  112                 return NULL;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  113
-> c0048cff Jesper Dangaard Brouer 2018-04-17  114         /* Store info in top of packet */
-> c0048cff Jesper Dangaard Brouer 2018-04-17  115         xdp_frame = xdp->data_hard_start;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  116
-> c0048cff Jesper Dangaard Brouer 2018-04-17  117         xdp_frame->data = xdp->data;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  118         xdp_frame->len  = xdp->data_end - xdp->data;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  119         xdp_frame->headroom = headroom - sizeof(*xdp_frame);
-> c0048cff Jesper Dangaard Brouer 2018-04-17  120         xdp_frame->metasize = metasize;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  121
-> c0048cff Jesper Dangaard Brouer 2018-04-17  122         /* rxq only valid until napi_schedule ends, convert to xdp_mem_info */
-> c0048cff Jesper Dangaard Brouer 2018-04-17  123         xdp_frame->mem = xdp->rxq->mem;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  124
-> c0048cff Jesper Dangaard Brouer 2018-04-17  125         return xdp_frame;
-> c0048cff Jesper Dangaard Brouer 2018-04-17  126  }
-> c0048cff Jesper Dangaard Brouer 2018-04-17  127
->
-> :::::: The code at line 111 was first introduced by commit
-> :::::: c0048cff8abb69c956ce1277d17a3f7a14e41522 xdp: introduce a new xdp_frame type
->
-> :::::: TO: Jesper Dangaard Brouer <brouer@redhat.com>
-> :::::: CC: David S. Miller <davem@davemloft.net>
->
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Performance prior this patch:
+$ sudo ./xdp_rxq_info --dev enp134s0f0 --action XDP_DROP
+Running XDP on dev:enp134s0f0 (ifindex:7) action:XDP_DROP options:no_touch
+XDP stats       CPU     pps         issue-pps
+XDP-RX CPU      20      18983018    0
+XDP-RX CPU      total   18983018
+
+RXQ stats       RXQ:CPU pps         issue-pps
+rx_queue_index   20:20  18983012    0
+rx_queue_index   20:sum 18983012
+
+$ sudo ./xdpsock -i enp134s0f0 -q 20 -n 2 -z -r
+ sock0 at enp134s0f0:20 rxdrop
+                pps         pkts        2.00
+rx              14,641,496  144,751,092
+tx              0           0
+
+And after:
+$ sudo ./xdp_rxq_info --dev enp134s0f0 --action XDP_DROP
+Running XDP on dev:enp134s0f0 (ifindex:7) action:XDP_DROP options:no_touch
+XDP stats       CPU     pps         issue-pps
+XDP-RX CPU      20      24000986    0
+XDP-RX CPU      total   24000986
+
+RXQ stats       RXQ:CPU pps         issue-pps
+rx_queue_index   20:20  24000985    0
+rx_queue_index   20:sum 24000985
+
+  +26%
+
+$ sudo ./xdpsock -i enp134s0f0 -q 20 -n 2 -z -r
+ sock0 at enp134s0f0:20 rxdrop
+                pps         pkts        2.00
+rx              17,623,578  163,503,263
+tx              0           0
+
+  +20%
+
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+---
+v1->v2: 
+
+* Fixed build error on alpha "error: implicit declaration of function
+  'unlikely'; did you mean 'inline'? " (kbuild test robot)
+
+* Improved commit message (Paul Menzel)
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 32 ++++---------------
+ .../ethernet/intel/i40e/i40e_txrx_common.h    | 27 ++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 24 ++------------
+ 3 files changed, 36 insertions(+), 47 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index a7e14e98889f..4f530427ce61 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2,7 +2,7 @@
+ /* Copyright(c) 2013 - 2018 Intel Corporation. */
+ 
+ #include <linux/prefetch.h>
+-#include <linux/bpf_trace.h>
++#include <linux/compiler.h>
+ #include <net/xdp.h>
+ #include "i40e.h"
+ #include "i40e_trace.h"
+@@ -2195,41 +2195,23 @@ int i40e_xmit_xdp_tx_ring(struct xdp_buff *xdp, struct i40e_ring *xdp_ring)
+ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
+ 				    struct xdp_buff *xdp)
+ {
+-	int err, result = I40E_XDP_PASS;
+-	struct i40e_ring *xdp_ring;
+ 	struct bpf_prog *xdp_prog;
++	int result;
+ 	u32 act;
+ 
+ 	rcu_read_lock();
+ 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+ 
+-	if (!xdp_prog)
++	if (!xdp_prog) {
++		result = I40E_XDP_PASS;
+ 		goto xdp_out;
++	}
+ 
+ 	prefetchw(xdp->data_hard_start); /* xdp_frame write */
+ 
+ 	act = bpf_prog_run_xdp(xdp_prog, xdp);
+-	switch (act) {
+-	case XDP_PASS:
+-		break;
+-	case XDP_TX:
+-		xdp_ring = rx_ring->vsi->xdp_rings[rx_ring->queue_index];
+-		result = i40e_xmit_xdp_tx_ring(xdp, xdp_ring);
+-		break;
+-	case XDP_REDIRECT:
+-		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
+-		result = !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
+-		break;
+-	default:
+-		bpf_warn_invalid_xdp_action(act);
+-		/* fall through */
+-	case XDP_ABORTED:
+-		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
+-		/* fall through -- handle aborts by dropping packet */
+-	case XDP_DROP:
+-		result = I40E_XDP_CONSUMED;
+-		break;
+-	}
++	i40e_xdp_do_action(act, &result, rx_ring, xdp, xdp_prog);
++
+ xdp_out:
+ 	rcu_read_unlock();
+ 	return ERR_PTR(-result);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
+index 8af0e99c6c0d..8cc4d8365f9e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx_common.h
+@@ -4,6 +4,8 @@
+ #ifndef I40E_TXRX_COMMON_
+ #define I40E_TXRX_COMMON_
+ 
++#include <linux/bpf_trace.h>
++
+ void i40e_fd_handle_status(struct i40e_ring *rx_ring,
+ 			   union i40e_rx_desc *rx_desc, u8 prog_id);
+ int i40e_xmit_xdp_tx_ring(struct xdp_buff *xdp, struct i40e_ring *xdp_ring);
+@@ -88,4 +90,29 @@ void i40e_xsk_clean_rx_ring(struct i40e_ring *rx_ring);
+ void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring);
+ bool i40e_xsk_any_rx_ring_enabled(struct i40e_vsi *vsi);
+ 
++static inline void i40e_xdp_do_action(u32 act, int *result,
++				      struct i40e_ring *rx_ring,
++				      struct xdp_buff *xdp,
++				      struct bpf_prog *xdp_prog)
++{
++	struct i40e_ring *xdp_ring;
++	int err;
++
++	if (act == XDP_TX) {
++		xdp_ring = rx_ring->vsi->xdp_rings[rx_ring->queue_index];
++		*result = i40e_xmit_xdp_tx_ring(xdp, xdp_ring);
++	} else if (act == XDP_REDIRECT) {
++		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
++		*result = !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
++	} else if (act == XDP_PASS) {
++		*result = I40E_XDP_PASS;
++	} else if (act == XDP_DROP) {
++		*result = I40E_XDP_CONSUMED;
++	} else {
++		if (act != XDP_ABORTED)
++			bpf_warn_invalid_xdp_action(act);
++		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
++		*result = I40E_XDP_CONSUMED;
++	}
++}
+ #endif /* I40E_TXRX_COMMON_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index 96d849460d9b..c9d58f49f7a2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -210,9 +210,8 @@ int i40e_xsk_umem_setup(struct i40e_vsi *vsi, struct xdp_umem *umem,
+  **/
+ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
+ {
+-	int err, result = I40E_XDP_PASS;
+-	struct i40e_ring *xdp_ring;
+ 	struct bpf_prog *xdp_prog;
++	int result;
+ 	u32 act;
+ 
+ 	rcu_read_lock();
+@@ -222,26 +221,7 @@ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
+ 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+ 	act = bpf_prog_run_xdp(xdp_prog, xdp);
+ 	xdp->handle += xdp->data - xdp->data_hard_start;
+-	switch (act) {
+-	case XDP_PASS:
+-		break;
+-	case XDP_TX:
+-		xdp_ring = rx_ring->vsi->xdp_rings[rx_ring->queue_index];
+-		result = i40e_xmit_xdp_tx_ring(xdp, xdp_ring);
+-		break;
+-	case XDP_REDIRECT:
+-		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
+-		result = !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
+-		break;
+-	default:
+-		bpf_warn_invalid_xdp_action(act);
+-	case XDP_ABORTED:
+-		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
+-		/* fallthrough -- handle aborts by dropping packet */
+-	case XDP_DROP:
+-		result = I40E_XDP_CONSUMED;
+-		break;
+-	}
++	i40e_xdp_do_action(act, &result, rx_ring, xdp, xdp_prog);
+ 	rcu_read_unlock();
+ 	return result;
+ }
+-- 
+2.19.1
+
