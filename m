@@ -1,8 +1,8 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 29 Jan 2019 12:23:42 -0800
+Date: Tue, 29 Jan 2019 12:43:19 -0800
 Subject: [Intel-wired-lan] [PATCH] namespace: fix namespace.pl script to
  support relative paths
-Message-ID: <20190129202342.5613-1-jacob.e.keller@intel.com>
+Message-ID: <20190129204319.15238-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
