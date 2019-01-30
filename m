@@ -1,315 +1,109 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 30 Jan 2019 19:04:04 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- da1b73a9acd80c3c15979b5c4e1da442925f6c43
-Message-ID: <5c5184a4.cgCHqgjvxKn/PUYf%lkp@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Wed, 30 Jan 2019 15:16:15 +0100
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix potential RX buffer
+ starvation for AF_XDP
+In-Reply-To: <CAJ8uoz1GJBmC0GFbURvEzY4kDZZ6C7O9+1F+gV0y=GOMGLobUQ@mail.gmail.com>
+References: <1548770630-16189-1-git-send-email-magnus.karlsson@intel.com>
+ <20190129111411.3a4c3599@cakuba.hsd1.ca.comcast.net>
+ <CAJ8uoz1GJBmC0GFbURvEzY4kDZZ6C7O9+1F+gV0y=GOMGLobUQ@mail.gmail.com>
+Message-ID: <CAJ+HfNg=vUqUszLX+C6LvYRq8J_X_UiU4x63FCaXWqdRjV5DGA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: da1b73a9acd80c3c15979b5c4e1da442925f6c43  igb: Bump version number
+Den ons 30 jan. 2019 kl 10:35 skrev Magnus Karlsson <magnus.karlsson@gmail.com>:
+>
+> On Tue, Jan 29, 2019 at 8:15 PM Jakub Kicinski
+> <jakub.kicinski@netronome.com> wrote:
+[...]
+> >
+> > I may not understand the problem fully, but isn't it kind of normal
+> > that if you create a ring empty you'll never receive packets?  And it
+> > should be reasonably easy to catch while writing an app from scratch
+> > (i.e. it behaves deterministically).
+>
+> Agree that this should be the normal behavior for a NIC. The question
+> is how to get out of this situation.There are two options: punt this
+> to the application writer or fix this in the driver. I chose to fix
+> the driver since this removes complexity in the application.
+>
 
-TIMEOUT after 607m
+Magnus' fix addresses a race/timing issue. At zero-copy initialization
+point, if the fill ring was empty, the driver (both i40e and ixgbe)
+would stop retrying to "allocate" zero-copy frames from the fill
+ring. So, frames would never be received, even if the fill ring was
+filled at a later point.
+
+If the driver runs-dry in terms of Rx buffer if one or more frames has
+been received, the driver will retry polling the fill-ring. However at
+initialization point, if the fill-ring was empty, the driver would
+just give up and never retry.
+
+As Magnus stated, there is no "notify the kernel that the items has
+appeared in the fill ring" (other than a HW mechanism where the tail
+pointer is a door bell) on the Rx side, so for the Intel drivers it's
+up to the driver to solve this.
+
+> > Plus user space can already do the kick manually: create the ring empty,
+> > attach prog, put packets on the ring, and kick xmit - that would work,
+> > no?
+>
+> Unfortunately there is no way such a kick could be guaranteed to work
+> since it only guarantees to wake up Tx. If the Rx is in another NAPI
+> context, then this will not work. On i40e and ixgbe, the Rx and Tx
+> processing is in the same NAPI so this would indeed work. But can I
+> guarantee that this is true for all current and future NICs?
+> Personally I would like to have Tx in a separate NAPI as I could get
+> better performance that way, at least in the i40e driver. You also do
+> not need to have any Tx at all in your socket, as it could be Rx only.
+> These arguments are why I went with the approach to fix this in the
+> driver, instead of a hard-to-explain extra step in the application
+> that might or might not work depending on your driver.
+>
+> I believe the crux of the problem is that we need to tell the driver
+> to take buffers from the fill ring then put references to them in the
+> HW Rx ring so that packets can be received from the wire. In this
+> patch I went for installing an XDP program and calling bind() as "the"
+> two places. But there could be a scenario where I do bind then install
+> the XDP program and after that populate my fill queue and not call any
+> other syscall ever! This would not be covered by this patch :-(.
+>
+> So you might be correct that the only way to fix this is from the
+> application. But how to do it in a simple and elegant way? I do not
+> think sendto() is the right answer, but what about poll()? Can we wire
+> that up to kick Rx through the busy poll mechanism? I would like the
+> solution to be simple and not complicate things for the user, if
+> possible. Another idea would be to use a timer in the driver to
+> periodically check the fill queue in the case it is empty. This would
+> be easy for application writers but add complexity for people
+> implementing AF_XDP ZC support in their drivers. Any ideas? What do
+> you prefer?
+>
+
+Hmm, actually your patch *does* cover the starve Rx scenarios. One
+downside, which is related to the fact that the AF_XDP ZC ndo doens't
+state if there actually is a socket that needs Rx (we'll just enable
+Rx zero unconditionally), is that the driver will try to allocate
+buffers from the fill ring even if the are no sockets with Rx
+queues. In this case, the fill ring probably never be filled from
+userland. :-) But fixing that would go in to another patch IMO!
+
+I think we can leave the NAPI discussion a side for now. Currently,
+the SPSC queue setup require a single NAPI context. Let's relax that
+later (if ever). (Or did I misunderstand your points?)
 
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+Cheers,
+Bj?rn
 
-configs timed out: 24
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-i386                               tinyconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-nds32                            allmodconfig
-nds32                            allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-riscv                              tinyconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-sparc64                          allyesconfig
-x86_64                           allyesconfig
-x86_64                          randconfig-h0
-x86_64                          randconfig-h1
-x86_64                          randconfig-h2
-x86_64                          randconfig-h3
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-
-configs tested: 258
-
-mips                      pic32mzda_defconfig
-powerpc64                        allyesconfig
-x86_64                 randconfig-a0-01291848
-m68k                                defconfig
-parisc                           allyesconfig
-i386                   randconfig-c0-01290401
-x86_64                           allmodconfig
-ia64                                defconfig
-mips                                defconfig
-i386                 randconfig-x010-01300126
-i386                 randconfig-x011-01300126
-i386                 randconfig-x012-01300126
-i386                 randconfig-x013-01300126
-i386                 randconfig-x014-01300126
-i386                 randconfig-x015-01300126
-i386                 randconfig-x016-01300126
-i386                 randconfig-x017-01300126
-i386                 randconfig-x018-01300126
-i386                 randconfig-x019-01300126
-i386                   randconfig-x010-201904
-i386                   randconfig-x011-201904
-i386                   randconfig-x012-201904
-i386                   randconfig-x013-201904
-i386                   randconfig-x014-201904
-i386                   randconfig-x015-201904
-i386                   randconfig-x016-201904
-i386                   randconfig-x017-201904
-i386                   randconfig-x018-201904
-i386                   randconfig-x019-201904
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-01300126
-i386                   randconfig-n1-01300126
-i386                   randconfig-n2-01300126
-i386                   randconfig-n3-01300126
-x86_64                 randconfig-x000-201904
-x86_64                 randconfig-x001-201904
-x86_64                 randconfig-x002-201904
-x86_64                 randconfig-x003-201904
-x86_64                 randconfig-x004-201904
-x86_64                 randconfig-x005-201904
-x86_64                 randconfig-x006-201904
-x86_64                 randconfig-x007-201904
-x86_64                 randconfig-x008-201904
-x86_64                 randconfig-x009-201904
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-nds32                             allnoconfig
-nds32                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201904
-i386                     randconfig-i1-201904
-i386                     randconfig-i2-201904
-i386                     randconfig-i3-201904
-riscv                             allnoconfig
-riscv                               defconfig
-i386                             allmodconfig
-i386                   randconfig-x000-201904
-i386                   randconfig-x001-201904
-i386                   randconfig-x002-201904
-i386                   randconfig-x003-201904
-i386                   randconfig-x004-201904
-i386                   randconfig-x005-201904
-i386                   randconfig-x006-201904
-i386                   randconfig-x007-201904
-i386                   randconfig-x008-201904
-i386                   randconfig-x009-201904
-x86_64                 randconfig-x010-201904
-x86_64                 randconfig-x011-201904
-x86_64                 randconfig-x012-201904
-x86_64                 randconfig-x013-201904
-x86_64                 randconfig-x014-201904
-x86_64                 randconfig-x015-201904
-x86_64                 randconfig-x016-201904
-x86_64                 randconfig-x017-201904
-x86_64                 randconfig-x018-201904
-x86_64                 randconfig-x019-201904
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-i386                     randconfig-a0-201904
-i386                     randconfig-a1-201904
-i386                     randconfig-a2-201904
-i386                     randconfig-a3-201904
-i386                   randconfig-a0-01300239
-i386                   randconfig-a1-01300239
-i386                   randconfig-a2-01300239
-i386                   randconfig-a3-01300239
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-s0-01300824
-x86_64                 randconfig-s1-01300824
-x86_64                 randconfig-s2-01300824
-x86_64                 randconfig-s0-01301252
-x86_64                 randconfig-s1-01301252
-x86_64                 randconfig-s2-01301252
-x86_64                 randconfig-s0-01301548
-x86_64                 randconfig-s1-01301548
-x86_64                 randconfig-s2-01301548
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mips                       rbtx49xx_defconfig
-parisc                           allmodconfig
-sh                          landisk_defconfig
-sh                           se7712_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201904
-i386                     randconfig-s1-201904
-i386                     randconfig-s2-201904
-i386                     randconfig-s3-201904
-x86_64                 randconfig-s3-01290430
-x86_64                 randconfig-s4-01290430
-x86_64                 randconfig-s5-01290430
-x86_64                 randconfig-i0-01290413
-x86_64                 randconfig-i1-01290413
-x86_64                 randconfig-i2-01290413
-x86_64                 randconfig-i3-01290413
-i386                   randconfig-b0-01291833
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-i386                             allyesconfig
-x86_64                 randconfig-b0-01291830
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-mips                             allyesconfig
-sh                          sdk7780_defconfig
-x86_64                 randconfig-u0-01300859
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-x86_64                 randconfig-k0-01290403
-x86_64                 randconfig-k1-01290403
-x86_64                 randconfig-k2-01290403
-x86_64                 randconfig-k3-01290403
-i386                   randconfig-k0-01290403
-i386                   randconfig-k1-01290403
-i386                   randconfig-k2-01290403
-i386                   randconfig-k3-01290403
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-i386                   randconfig-h0-01290401
-i386                   randconfig-h1-01290401
-x86_64                randconfig-ne0-01292005
-x86_64                randconfig-ne0-01301050
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-i386                 randconfig-x070-01290405
-i386                 randconfig-x071-01290405
-i386                 randconfig-x072-01290405
-i386                 randconfig-x073-01290405
-i386                 randconfig-x074-01290405
-i386                 randconfig-x075-01290405
-i386                 randconfig-x076-01290405
-i386                 randconfig-x077-01290405
-i386                 randconfig-x078-01290405
-i386                 randconfig-x079-01290405
-m68k                         apollo_defconfig
-powerpc                 mpc8272_ads_defconfig
-arm                        cerfcube_defconfig
-s390                             allmodconfig
-x86_64                 randconfig-g0-01290904
-x86_64                 randconfig-g1-01290904
-x86_64                 randconfig-g2-01290904
-x86_64                 randconfig-g3-01290904
-i386                  randconfig-sb0-01290904
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                               rhel-7.2
-x86_64                         rhel-7.2-clear
-x86_64                   randconfig-e0-201904
-x86_64                   randconfig-e1-201904
-x86_64                   randconfig-e2-201904
-x86_64                   randconfig-e3-201904
-arm                          nuc950_defconfig
-mips                         tb0219_defconfig
-x86_64                randconfig-ws0-01290440
-x86_64                 randconfig-j0-01290405
-x86_64                 randconfig-j1-01290405
-x86_64                 randconfig-j2-01290405
-x86_64                 randconfig-j3-01290405
-i386                   randconfig-j0-01290405
-i386                   randconfig-j1-01290405
-i386                   randconfig-j2-01290405
-i386                   randconfig-j3-01290405
-x86_64                 randconfig-r0-01300252
-i386                 randconfig-x075-01290406
-i386                 randconfig-x079-01290406
-i386                 randconfig-x072-01290406
-i386                 randconfig-x076-01290406
-i386                 randconfig-x070-01290406
-i386                 randconfig-x078-01290406
-i386                 randconfig-x074-01290406
-i386                 randconfig-x073-01290406
-i386                 randconfig-x077-01290406
-i386                 randconfig-x071-01290406
-x86_64                 randconfig-f0-01290406
-x86_64                 randconfig-f1-01290406
-x86_64                 randconfig-f2-01290406
-x86_64                 randconfig-f3-01290406
-i386                   randconfig-f0-01290406
-i386                   randconfig-f1-01290406
-i386                   randconfig-f2-01290406
-i386                   randconfig-f3-01290406
-arm                          pxa3xx_defconfig
-powerpc                 mpc837x_mds_defconfig
-i386                   randconfig-x0-01301147
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> Thanks: Magnus
+>
+> > Putting the kick in ixgbe_xdp_setup() seems a tiny bit random to me,
+> > but perhaps I'm not seeing the rationale clearly.
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
