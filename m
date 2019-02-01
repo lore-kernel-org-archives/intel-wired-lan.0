@@ -1,209 +1,68 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 01 Feb 2019 06:45:27 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- bea428678e3b6f578145f59d13cedd5625de3a00
-Message-ID: <5c537a87.af2Cs1V54oY8xuEB%lkp@intel.com>
+From: Megha Dey <megha.dey@linux.intel.com>
+Date: Fri,  1 Feb 2019 11:14:07 -0800
+Subject: [Intel-wired-lan] [RFC v4 0/6] Introduce dynamic allocation/freeing
+ of MSI-X vectors
+Message-ID: <1549048453-3584-1-git-send-email-megha.dey@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: bea428678e3b6f578145f59d13cedd5625de3a00  igc: Add ethtool support
+Currently, MSI-X vector enabling and allocation for a PCIe device is static
+i.e. a device driver gets only one chance to enable a specific number of
+MSI-X vectors, usually during device probe. Also, in many cases, drivers
+usually reserve more than required number of vectors anticipating their
+use, which unnecessarily blocks resources that could have been made available
+to other devices. Lastly, there is no way for drivers to reserve more vectors,
+if the MSI-x has already been enabled for that device.
 
-elapsed time: 104m
+Hence, a dynamic MSI-X kernel infrastructure can benefit drivers by deferring
+MSI-X allocation to post probe phase, where actual demand information is
+available.
 
-configs tested: 184
+This patchset enables the dynamic allocation/de-allocation of MSI-X vectors
+by introducing 2 new APIs: pci_alloc_irq_vectors_dyn() and
+pci_free_irq_vectors_grp().
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Changes V3->V4
+1. Initialised first_desc for MSI as well.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-01290401
-x86_64                           allmodconfig
-i386                   randconfig-x019-201904
-i386                   randconfig-x015-201904
-i386                   randconfig-x016-201904
-i386                   randconfig-x014-201904
-i386                   randconfig-x012-201904
-i386                   randconfig-x013-201904
-i386                   randconfig-x010-201904
-i386                   randconfig-x011-201904
-i386                   randconfig-x017-201904
-i386                   randconfig-x018-201904
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                         rhel-7.2-clear
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-x000-201904
-x86_64                 randconfig-x001-201904
-x86_64                 randconfig-x002-201904
-x86_64                 randconfig-x003-201904
-x86_64                 randconfig-x004-201904
-x86_64                 randconfig-x005-201904
-x86_64                 randconfig-x006-201904
-x86_64                 randconfig-x007-201904
-x86_64                 randconfig-x008-201904
-x86_64                 randconfig-x009-201904
-nds32                             allnoconfig
-nds32                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i0-201904
-i386                     randconfig-i1-201904
-i386                     randconfig-i2-201904
-i386                     randconfig-i3-201904
-riscv                             allnoconfig
-riscv                               defconfig
-i386                             allmodconfig
-i386                   randconfig-x007-201904
-i386                   randconfig-x006-201904
-i386                   randconfig-x000-201904
-i386                   randconfig-x002-201904
-i386                   randconfig-x001-201904
-i386                   randconfig-x009-201904
-i386                   randconfig-x003-201904
-i386                   randconfig-x008-201904
-i386                   randconfig-x005-201904
-i386                   randconfig-x004-201904
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-a2-201904
-i386                     randconfig-a3-201904
-i386                     randconfig-a0-201904
-i386                     randconfig-a1-201904
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-mips                         cobalt_defconfig
-powerpc64                        allyesconfig
-powerpc64                           defconfig
-x86_64                 randconfig-x013-201904
-x86_64                 randconfig-x017-201904
-x86_64                 randconfig-x016-201904
-x86_64                 randconfig-x019-201904
-x86_64                 randconfig-x012-201904
-x86_64                 randconfig-x018-201904
-x86_64                 randconfig-x011-201904
-x86_64                 randconfig-x010-201904
-x86_64                 randconfig-x015-201904
-x86_64                 randconfig-x014-201904
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201904
-i386                     randconfig-s1-201904
-i386                     randconfig-s2-201904
-i386                     randconfig-s3-201904
-x86_64                 randconfig-s3-01290430
-x86_64                 randconfig-s4-01290430
-x86_64                 randconfig-s5-01290430
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-b0-01311449
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-b0-01311753
-powerpc                          allyesconfig
-powerpc                 mpc832x_mds_defconfig
-x86_64                 randconfig-u0-02010335
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                           se7724_defconfig
-sparc64                          allyesconfig
-mips                      pistachio_defconfig
-mips                        qi_lb60_defconfig
-powerpc                    gamecube_defconfig
-sh                      rts7751r2d1_defconfig
-arm                              allyesconfig
-m68k                            q40_defconfig
-c6x                              allyesconfig
-mips                malta_kvm_guest_defconfig
-mips                      loongson3_defconfig
-powerpc                     kmeter1_defconfig
-powerpc                     mpc5200_defconfig
-xtensa                  cadence_csp_defconfig
-powerpc               mpc85xx_basic_defconfig
-powerpc                      ppc44x_defconfig
-arm                        raumfeld_defconfig
-powerpc                     kilauea_defconfig
-powerpc                     pq2fads_defconfig
-sh                           cayman_defconfig
-arm                           omap1_defconfig
-arm                  colibri_pxa270_defconfig
-powerpc                 mpc834x_mds_defconfig
-h8300                     edosk2674_defconfig
-arm                         ebsa110_defconfig
-arm                           tegra_defconfig
-arm                      integrator_defconfig
-arm                        mvebu_v5_defconfig
-sh                          urquell_defconfig
-i386                   randconfig-h0-01310057
-i386                   randconfig-h1-01310057
-riscv                              tinyconfig
-i386                               tinyconfig
-i386                   randconfig-x072-201904
-i386                   randconfig-x079-201904
-i386                   randconfig-x073-201904
-i386                   randconfig-x075-201904
-i386                   randconfig-x077-201904
-i386                   randconfig-x078-201904
-i386                   randconfig-x074-201904
-i386                   randconfig-x076-201904
-i386                   randconfig-x070-201904
-i386                   randconfig-x071-201904
-i386                   randconfig-x0-01311602
+Changes V2->V3
+1. Added a separate patch to include documentation
+2. Added a lookup function pci_irq_vector_group based on group id
+3. Added a 'one_shot' field to struct device
+4. Ensure msix table base gets mapped only once
+5. Removed redundant checks
+6. Use pointer for msi related data to reduce memory footprint of struct device
+7. Initialization of idrs used internally by MSI code done by the core code
+   instead of drivers/callers..
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Changes V1->V2
+1. Added relavant documentation
+2. Avoid code duplication by ensuring pci_alloc_irq_vectors_affinity calls
+   pci_alloc_irq_vectors_affinity_dyn function
+3. Add the pci_free_irq_vectors_grp API
+
+Megha Dey (6):
+  PCI/MSI: New structures/macros for dynamic MSI-X allocation
+  PCI/MSI: Dynamic allocation of MSI-X vectors by group
+  x86: Introduce the dynamic teardown function
+  PCI/MSI: Introduce new structure to manage MSI-x entries
+  PCI/MSI: Free MSI-X resources by group
+  Documentation: PCI/MSI: Document dynamic MSI-X infrastructure
+
+ Documentation/PCI/MSI-HOWTO.txt |  36 +++++
+ arch/x86/include/asm/x86_init.h |   1 +
+ arch/x86/kernel/x86_init.c      |   6 +
+ drivers/pci/msi.c               | 350 +++++++++++++++++++++++++++++++++++++---
+ drivers/pci/probe.c             |  20 +++
+ include/linux/device.h          |  14 ++
+ include/linux/msi.h             |  11 ++
+ include/linux/pci.h             |  56 +++++++
+ kernel/irq/msi.c                |  37 ++++-
+ 9 files changed, 503 insertions(+), 28 deletions(-)
+
+-- 
+2.7.4
+
