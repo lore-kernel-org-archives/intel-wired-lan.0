@@ -1,37 +1,87 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 1 Feb 2019 23:15:34 +0000
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add ethtool support
-In-Reply-To: <20190130171314.2829-1-sasha.neftin@intel.com>
-References: <20190130171314.2829-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96621201@ORSMSX103.amr.corp.intel.com>
+Date: Fri, 1 Feb 2019 23:28:57 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: fix cyclic resets at link up
+ with active tx
+In-Reply-To: <154747257030.250168.12931902291381446144.stgit@buzz>
+References: <154747257030.250168.12931902291381446144.stgit@buzz>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96621259@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Sasha Neftin
-> Sent: Wednesday, January 30, 2019 9:13 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add ethtool support
+
+
+> -----Original Message-----
+> From: netdev-owner at vger.kernel.org [mailto:netdev-
+> owner at vger.kernel.org] On Behalf Of Konstantin Khlebnikov
+> Sent: Monday, January 14, 2019 5:30 AM
+> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher,
+> Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: linux-kernel at vger.kernel.org; David S. Miller <davem@davemloft.net>
+> Subject: [PATCH] e1000e: fix cyclic resets at link up with active tx
 > 
-> This patch adds basic ethtool support to the device to allow
-> for configuration.
+> I'm seeing series of e1000e resets (sometimes endless) at system boot
+> if something generates tx traffic at this time. In my case this is
+> netconsole who sends message "e1000e 0000:02:00.0: Some CPU C-states
+> have been disabled in order to enable jumbo frames" from e1000e itself.
+> As result e1000_watchdog_task sees used tx buffer while carrier is off
+> and start this reset cycle again.
 > 
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> [   17.794359] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: None
+> [   17.794714] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
+> [   22.936455] e1000e 0000:02:00.0 eth1: changing MTU from 1500 to 9000
+> [   23.033336] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   26.102364] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: None
+> [   27.174495] 8021q: 802.1Q VLAN Support v1.8
+> [   27.174513] 8021q: adding VLAN 0 to HW filter on device eth1
+> [   30.671724] cgroup: cgroup: disabling cgroup2 socket matching due to
+> net_prio or net_cls activation
+> [   30.898564] netpoll: netconsole: local port 6666
+> [   30.898566] netpoll: netconsole: local IPv6 address
+> 2a02:6b8:0:80b:beae:c5ff:fe28:23f8
+> [   30.898567] netpoll: netconsole: interface 'eth1'
+> [   30.898568] netpoll: netconsole: remote port 6666
+> [   30.898568] netpoll: netconsole: remote IPv6 address
+> 2a02:6b8:b000:605c:e61d:2dff:fe03:3790
+> [   30.898569] netpoll: netconsole: remote ethernet address b0:a8:6e:f4:ff:c0
+> [   30.917747] console [netcon0] enabled
+> [   30.917749] netconsole: network logging started
+> [   31.453353] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   34.185730] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   34.321840] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   34.465822] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   34.597423] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   34.745417] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   34.877356] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   35.005441] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   35.157376] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   35.289362] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   35.417441] e1000e 0000:02:00.0: Some CPU C-states have been disabled in
+> order to enable jumbo frames
+> [   37.790342] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow
+> Control: None
+> 
+> This patch flushes tx buffers only once when carrier is off
+> rather than at each watchdog iteration.
+> 
+> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
 > ---
->  drivers/net/ethernet/intel/igc/Makefile      |    3 +-
->  drivers/net/ethernet/intel/igc/igc.h         |   34 +-
->  drivers/net/ethernet/intel/igc/igc_base.c    |    1 +
->  drivers/net/ethernet/intel/igc/igc_defines.h |    4 +
->  drivers/net/ethernet/intel/igc/igc_ethtool.c | 1032
-> ++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/igc/igc_hw.h      |    1 +
->  drivers/net/ethernet/intel/igc/igc_main.c    |  109 ++-
->  drivers/net/ethernet/intel/igc/igc_regs.h    |    3 +
->  8 files changed, 1169 insertions(+), 18 deletions(-)
->  create mode 100644 drivers/net/ethernet/intel/igc/igc_ethtool.c
-> 
+>  drivers/net/ethernet/intel/e1000e/netdev.c |   15 ++++++---------
+>  1 file changed, 6 insertions(+), 9 deletions(-)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
