@@ -1,44 +1,45 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Sun,  3 Feb 2019 01:40:16 +0800
-Subject: [Intel-wired-lan] [PATCH] e1000e: Disable runtime PM on CNP+
-Message-ID: <20190202174016.28539-1-kai.heng.feng@canonical.com>
+From: Kai Heng Feng <kai.heng.feng@canonical.com>
+Date: Sun, 3 Feb 2019 01:46:50 +0800
+Subject: [Intel-wired-lan] [PATCH] PCI / ACPI: Don't clear pme_poll on
+ device that has unreliable ACPI wake
+In-Reply-To: <C7E9B3C9-7E20-4CEB-8B56-D9A8D2E76DD0@canonical.com>
+References: <20190122064544.27426-1-kai.heng.feng@canonical.com>
+ <20190122235134.GE14636@google.com>
+ <91E74111-5BB6-4604-A1D7-B537AB42C317@canonical.com>
+ <20190124151524.GF14636@google.com>
+ <FFC6EC3F-3608-41FC-8B14-815D1747C4B6@canonical.com>
+ <20190124200508.GH14636@google.com>
+ <C7E9B3C9-7E20-4CEB-8B56-D9A8D2E76DD0@canonical.com>
+Message-ID: <CFAC1243-982E-4BAC-BAF6-41568C1C1A9E@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There are some new e1000e devices can only be woken up from D3 one time,
-by plugging ethernet cable. Subsequent cable plugging does set PME bit
-correctly, but it still doesn't get woken up.
+Hi Bjorn,
 
-Since e1000e connects to the root complex directly, we rely on ACPI to
-wake it up. In this case, the GPE from _PRW only works once and stops
-working after that. Though it appears to be a platform bug, e1000e
-maintainers confirmed that I219 does not support D3.
+> On Jan 28, 2019, at 3:51 PM, Kai Heng Feng <kai.heng.feng@canonical.com> wrote:
+[snipped]
 
-So disable runtime PM on CNP+ chips. We may need to disable earlier
-generations if this bug also hit older platforms.
+>> If I understand correctly, the bugzilla lspci
+>> (https://bugzilla.kernel.org/attachment.cgi?id=280691) was collected
+>> at point 8, and it shows PME_Status=1 when it should be 0.
+>> 
+>> If we write a 1 to PME_Status to clear it, and it remains set, that's
+>> obviously a hardware defect, and Intel should document that in an
+>> erratum, and a quirk would be the appropriate way to work around it.
+>> But I doubt that's what's happening.
+> 
+> I?ll ask them if they can provide an erratum.
 
-Bugzilla: https://bugzilla.kernel.org/attachment.cgi?id=280819
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Got confirmed with e1000e folks, I219 (the device in question) doesn?t really support runtime D3.
+I also checked the behavior of the device under Windows, and it stays at D0 all the time even when it?s not in use.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 189f231075c2..9366b9d19a6f 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7351,7 +7351,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	e1000_print_device_info(adapter);
- 
--	if (pci_dev_run_wake(pdev))
-+	if (pci_dev_run_wake(pdev) && hw->mac.type < e1000_pch_cnp)
- 		pm_runtime_put_noidle(&pdev->dev);
- 
- 	return 0;
--- 
-2.17.1
+So I sent a patch [1] to disable it.
+
+[1] https://lkml.org/lkml/2019/2/2/200
+
+Kai-Heng
+
 
