@@ -1,66 +1,246 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Mon, 4 Feb 2019 11:20:57 -0600
-Subject: [Intel-wired-lan] [PATCH] PCI / ACPI: Don't clear pme_poll on
- device that has unreliable ACPI wake
-In-Reply-To: <CFAC1243-982E-4BAC-BAF6-41568C1C1A9E@canonical.com>
-References: <20190122064544.27426-1-kai.heng.feng@canonical.com>
- <20190122235134.GE14636@google.com>
- <91E74111-5BB6-4604-A1D7-B537AB42C317@canonical.com>
- <20190124151524.GF14636@google.com>
- <FFC6EC3F-3608-41FC-8B14-815D1747C4B6@canonical.com>
- <20190124200508.GH14636@google.com>
- <C7E9B3C9-7E20-4CEB-8B56-D9A8D2E76DD0@canonical.com>
- <CFAC1243-982E-4BAC-BAF6-41568C1C1A9E@canonical.com>
-Message-ID: <20190204172057.GB9160@google.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 05 Feb 2019 02:45:16 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ b7bb2eb8ba3d6e1463ba371ecf61700220f70815
+Message-ID: <5c58883c.mcWuRItael1ubyRZ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Feb 03, 2019 at 01:46:50AM +0800, Kai Heng Feng wrote:
-> > On Jan 28, 2019, at 3:51 PM, Kai Heng Feng <kai.heng.feng@canonical.com> wrote:
-> 
-> >> If I understand correctly, the bugzilla lspci
-> >> (https://bugzilla.kernel.org/attachment.cgi?id=280691) was collected
-> >> at point 8, and it shows PME_Status=1 when it should be 0.
-> >> 
-> >> If we write a 1 to PME_Status to clear it, and it remains set, that's
-> >> obviously a hardware defect, and Intel should document that in an
-> >> erratum, and a quirk would be the appropriate way to work around it.
-> >> But I doubt that's what's happening.
-> > 
-> > I?ll ask them if they can provide an erratum.
-> 
-> Got confirmed with e1000e folks, I219 (the device in question) doesn?t
-> really support runtime D3.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: b7bb2eb8ba3d6e1463ba371ecf61700220f70815  Documentation: PCI/MSI: Document dynamic MSI-X infrastructure
 
-Did you get a reference, e.g., an intel.com URL for that?  Intel
-usually publishes errata for hardware defects, which is nice because
-it means every customer doesn't have to experimentally rediscover
-them.
+Regressions in current branch:
 
-> I also checked the behavior of the device under Windows, and it
-> stays at D0 all the time even when it?s not in use.
+include/linux/pci.h:1430:20: error: expected ';' before '}' token
+include/linux/pci.h:1430:21: error: expected ';' before '}' token
+include/linux/pci.h:1430:24: error: expected ';' before '}' token
 
-I think there are two possible explanations for this:
+Error ids grouped by kconfigs:
 
-  1) This device requires a Windows or a driver update with a
-  device-specific quirk similar to what you're proposing for Linux.
+recent_errors
+??? alpha-defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-a2-02040849
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-a3-02040849
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-i1-02040506
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-i3-02040506
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-l1-02032043
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-l2-02032043
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-s1-02041749
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x002-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x004-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x006-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x011-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x012-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x014-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x019-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x071-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x072-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x073-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x074-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x075-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x076-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x077-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? i386-randconfig-x078-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? m68k-m5475evb_defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? mips-malta_kvm_guest_defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? mips-maltasmvp_defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? parisc-b180_defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? parisc-c3000_defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? parisc-defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? powerpc-mpc837x_mds_defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? sh-sh7785lcr_32bit_defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? sh-titan_defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? sparc-defconfig
+??? ??? include-linux-pci.h:error:expected-before-token
+??? x86_64-randconfig-l2-02032043
+??? ??? include-linux-pci.h:error:expected-before-token
+??? x86_64-randconfig-x000-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? x86_64-randconfig-x002-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? x86_64-randconfig-x003-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? x86_64-randconfig-x005-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? x86_64-randconfig-x006-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? x86_64-randconfig-x009-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? x86_64-randconfig-x012-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? x86_64-randconfig-x018-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? x86_64-randconfig-x019-201905
+??? ??? include-linux-pci.h:error:expected-before-token
+??? xtensa-common_defconfig
+    ??? include-linux-pci.h:error:expected-before-token
 
-  2) Windows correctly detects that this device doesn't support D3,
-  and Linux has a bug and does not detect that.
+elapsed time: 99m
 
-Obviously nobody wants to require OS or driver updates just for minor
-device changes, and the PCI and ACPI specs are designed to allow
-generic, non device-specific code to detect D3 support, so the first
-case should be a result of a hardware defect.
+configs tested: 126
 
-> So I sent a patch [1] to disable it.
-> 
-> [1] https://lkml.org/lkml/2019/2/2/200
+i386                   randconfig-x010-201905
+i386                   randconfig-x011-201905
+i386                   randconfig-x012-201905
+i386                   randconfig-x013-201905
+i386                   randconfig-x014-201905
+i386                   randconfig-x015-201905
+i386                   randconfig-x016-201905
+i386                   randconfig-x017-201905
+i386                   randconfig-x018-201905
+i386                   randconfig-x019-201905
+x86_64                 randconfig-x005-201905
+x86_64                 randconfig-x008-201905
+x86_64                 randconfig-x009-201905
+x86_64                 randconfig-x001-201905
+x86_64                 randconfig-x002-201905
+x86_64                 randconfig-x003-201905
+x86_64                 randconfig-x006-201905
+x86_64                 randconfig-x007-201905
+x86_64                 randconfig-x000-201905
+x86_64                 randconfig-x004-201905
+nds32                             allnoconfig
+nds32                               defconfig
+i386                   randconfig-i0-02040506
+i386                   randconfig-i1-02040506
+i386                   randconfig-i2-02040506
+i386                   randconfig-i3-02040506
+riscv                             allnoconfig
+riscv                               defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x013-201905
+x86_64                 randconfig-x017-201905
+x86_64                 randconfig-x016-201905
+x86_64                 randconfig-x019-201905
+x86_64                 randconfig-x012-201905
+x86_64                 randconfig-x018-201905
+x86_64                 randconfig-x011-201905
+x86_64                 randconfig-x010-201905
+x86_64                 randconfig-x015-201905
+x86_64                 randconfig-x014-201905
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-a1-02040849
+i386                   randconfig-a0-02040849
+i386                   randconfig-a3-02040849
+i386                   randconfig-a2-02040849
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-02041749
+i386                   randconfig-s3-02041749
+i386                   randconfig-s2-02041749
+i386                   randconfig-s1-02041749
+csky                                defconfig
+mips                malta_kvm_guest_defconfig
+c6x                        evmc6472_defconfig
+mips                      maltasmvp_defconfig
+mips                             allyesconfig
+x86_64                 randconfig-u0-02042128
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                         rhel-7.2-clear
+x86_64                 randconfig-l3-02032043
+i386                   randconfig-l3-02032043
+x86_64                 randconfig-l2-02032043
+x86_64                 randconfig-l0-02032043
+i386                   randconfig-l0-02032043
+i386                   randconfig-l2-02032043
+i386                   randconfig-l1-02032043
+x86_64                 randconfig-l1-02032043
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+i386                   randconfig-h0-02020943
+i386                   randconfig-h1-02020943
+i386                   randconfig-x007-201905
+i386                   randconfig-x006-201905
+i386                   randconfig-x000-201905
+i386                   randconfig-x002-201905
+i386                   randconfig-x001-201905
+i386                   randconfig-x009-201905
+i386                   randconfig-x003-201905
+i386                   randconfig-x008-201905
+i386                   randconfig-x005-201905
+i386                   randconfig-x004-201905
+i386                   randconfig-x072-201905
+i386                   randconfig-x079-201905
+i386                   randconfig-x073-201905
+i386                   randconfig-x075-201905
+i386                   randconfig-x077-201905
+i386                   randconfig-x078-201905
+i386                   randconfig-x074-201905
+i386                   randconfig-x076-201905
+i386                   randconfig-x070-201905
+i386                   randconfig-x071-201905
+powerpc                 mpc837x_mds_defconfig
+sh                        sh7763rdp_defconfig
 
-OK.  Since that's in drivers/net/..., I have no objection and the
-e1000e maintainers would deal with that.
-
-Bjorn
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
