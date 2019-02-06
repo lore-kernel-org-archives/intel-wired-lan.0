@@ -1,40 +1,53 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  6 Feb 2019 11:36:22 -0800
-Subject: [Intel-wired-lan] [next PATCH S2 13/13] i40e: Fix misleading error
- message
+Date: Wed,  6 Feb 2019 11:36:12 -0800
+Subject: [Intel-wired-lan] [next PATCH S2 03/13] i40e: don't allow changes
+ to HW vlan stripping on active port vlans
 In-Reply-To: <20190206193622.69370-1-alice.michael@intel.com>
 References: <20190206193622.69370-1-alice.michael@intel.com>
-Message-ID: <20190206193622.69370-13-alice.michael@intel.com>
+Message-ID: <20190206193622.69370-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+From: Nicholas Nunley <nicholas.d.nunley@intel.com>
 
-This patch changes an error code for an admin queue
-head overrun to use I40E_ERR_ADMIN_QUEUE_FULL instead
-of I40E_ERR_QUEUE_EMPTY.
+Modifying the vlan stripping options when a port vlan is configured
+will break traffic for the VSI, and conceptually doesn't make sense,
+so don't allow this.
 
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index 7ab61f6ebb5f..45f6adc8ff2f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -749,7 +749,7 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
- 	if (val >= hw->aq.num_asq_entries) {
- 		i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
- 			   "AQTX: head overrun at %d\n", val);
--		status = I40E_ERR_QUEUE_EMPTY;
-+		status = I40E_ERR_ADMIN_QUEUE_FULL;
- 		goto asq_send_command_error;
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b45fe3f32407..55caed65284c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2654,6 +2654,10 @@ void i40e_vlan_stripping_enable(struct i40e_vsi *vsi)
+ 	struct i40e_vsi_context ctxt;
+ 	i40e_status ret;
  
++	/* Don't modify stripping options if a port vlan is active */
++	if (vsi->info.pvid)
++		return;
++
+ 	if ((vsi->info.valid_sections &
+ 	     cpu_to_le16(I40E_AQ_VSI_PROP_VLAN_VALID)) &&
+ 	    ((vsi->info.port_vlan_flags & I40E_AQ_VSI_PVLAN_MODE_MASK) == 0))
+@@ -2684,6 +2688,10 @@ void i40e_vlan_stripping_disable(struct i40e_vsi *vsi)
+ 	struct i40e_vsi_context ctxt;
+ 	i40e_status ret;
+ 
++	/* Don't modify stripping options if a port vlan is active */
++	if (vsi->info.pvid)
++		return;
++
+ 	if ((vsi->info.valid_sections &
+ 	     cpu_to_le16(I40E_AQ_VSI_PROP_VLAN_VALID)) &&
+ 	    ((vsi->info.port_vlan_flags & I40E_AQ_VSI_PVLAN_EMOD_MASK) ==
 -- 
 2.19.2
 
