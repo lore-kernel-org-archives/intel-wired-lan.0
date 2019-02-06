@@ -1,211 +1,169 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 06 Feb 2019 15:21:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
- 8c5ad0dae93c9931dc32b9f4a98e73922c6ab2e0
-Message-ID: <5c5a8b14.Py52AjQp9BkuqkZ6%lkp@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed,  6 Feb 2019 09:48:37 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add multiple receive queues
+ control supporting
+Message-ID: <20190206074837.4851-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
-branch HEAD: 8c5ad0dae93c9931dc32b9f4a98e73922c6ab2e0  igc: Add ethtool support
+Enable the multi queues to receive.
+Program the direction of packets to specified queuies according
+to the mode selected in the MRQC register.
+Multiple receive queues defined by filters and RSS for 4 queues.
+Enable/disable RSS hashing and also to enable multiple receive queues.
+This patch will allow further ethtool support development.
 
-elapsed time: 167m
-
-configs tested: 187
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-i386                   randconfig-c0-02041452
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-02021212
-i386                   randconfig-n1-02021212
-i386                   randconfig-n2-02021212
-i386                   randconfig-n3-02021212
-x86_64                 randconfig-x005-201905
-x86_64                 randconfig-x008-201905
-x86_64                 randconfig-x009-201905
-x86_64                 randconfig-x001-201905
-x86_64                 randconfig-x002-201905
-x86_64                 randconfig-x003-201905
-x86_64                 randconfig-x006-201905
-x86_64                 randconfig-x007-201905
-x86_64                 randconfig-x000-201905
-x86_64                 randconfig-x004-201905
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-i386                             allmodconfig
-i386                   randconfig-x007-201905
-i386                   randconfig-x006-201905
-i386                   randconfig-x000-201905
-i386                   randconfig-x002-201905
-i386                   randconfig-x001-201905
-i386                   randconfig-x009-201905
-i386                   randconfig-x003-201905
-i386                   randconfig-x008-201905
-i386                   randconfig-x005-201905
-i386                   randconfig-x004-201905
-i386                   randconfig-a0-02061325
-i386                   randconfig-a1-02061325
-i386                   randconfig-a3-02061325
-i386                   randconfig-a2-02061325
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-x86_64                 randconfig-x013-201905
-x86_64                 randconfig-x017-201905
-x86_64                 randconfig-x016-201905
-x86_64                 randconfig-x019-201905
-x86_64                 randconfig-x012-201905
-x86_64                 randconfig-x018-201905
-x86_64                 randconfig-x011-201905
-x86_64                 randconfig-x010-201905
-x86_64                 randconfig-x015-201905
-x86_64                 randconfig-x014-201905
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-02041749
-i386                   randconfig-s3-02041749
-i386                   randconfig-s2-02041749
-i386                   randconfig-s1-02041749
-x86_64                 randconfig-s3-02041749
-x86_64                 randconfig-s4-02041749
-x86_64                 randconfig-s5-02041749
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-i0-02040903
-x86_64                 randconfig-i1-02040903
-x86_64                 randconfig-i2-02040903
-x86_64                 randconfig-i3-02040903
-i386                   randconfig-b0-02061058
-x86_64                 randconfig-b0-02061312
-x86_64                 randconfig-u0-02061140
-x86_64                 randconfig-u0-02061430
-x86_64                 randconfig-k0-02041323
-x86_64                 randconfig-k1-02041323
-x86_64                 randconfig-k2-02041323
-x86_64                 randconfig-k3-02041323
-i386                   randconfig-k0-02041323
-i386                   randconfig-k1-02041323
-i386                   randconfig-k2-02041323
-i386                   randconfig-k3-02041323
-riscv                              tinyconfig
-i386                               tinyconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-l0-02060944
-x86_64                 randconfig-l1-02060944
-x86_64                 randconfig-l2-02060944
-x86_64                 randconfig-l3-02060944
-i386                   randconfig-l0-02060944
-i386                   randconfig-l1-02060944
-i386                   randconfig-l2-02060944
-i386                   randconfig-l3-02060944
-x86_64                 randconfig-s3-02061304
-x86_64                 randconfig-s4-02061304
-x86_64                 randconfig-s5-02061304
-i386                   randconfig-x019-201905
-i386                   randconfig-x015-201905
-i386                   randconfig-x016-201905
-i386                   randconfig-x014-201905
-i386                   randconfig-x012-201905
-i386                   randconfig-x013-201905
-i386                   randconfig-x010-201905
-i386                   randconfig-x011-201905
-i386                   randconfig-x018-201905
-i386                   randconfig-x017-201905
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-i386                   randconfig-x072-201905
-i386                   randconfig-x079-201905
-i386                   randconfig-x073-201905
-i386                   randconfig-x075-201905
-i386                   randconfig-x077-201905
-i386                   randconfig-x078-201905
-i386                   randconfig-x074-201905
-i386                   randconfig-x076-201905
-i386                   randconfig-x070-201905
-i386                   randconfig-x071-201905
-sh                           se7206_defconfig
-arm                         lubbock_defconfig
-mips                 pnx8335_stb225_defconfig
-i386                  randconfig-sb0-02032014
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                               rhel-7.2
-x86_64                         rhel-7.2-clear
-x86_64                randconfig-ws0-02041245
-x86_64                 randconfig-j0-02040958
-x86_64                 randconfig-j1-02040958
-x86_64                 randconfig-j2-02040958
-x86_64                 randconfig-j3-02040958
-i386                   randconfig-j0-02040958
-i386                   randconfig-j1-02040958
-i386                   randconfig-j2-02040958
-i386                   randconfig-j3-02040958
-x86_64                 randconfig-r0-02060941
-powerpc                     skiroot_defconfig
-i386                   randconfig-x0-02061302
-
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/igc/igc.h         |  9 +++++
+ drivers/net/ethernet/intel/igc/igc_defines.h | 10 ++++++
+ drivers/net/ethernet/intel/igc/igc_main.c    | 49 ++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_regs.h    |  5 +++
+ 4 files changed, 73 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 80faccc34cda..473a65c51382 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -29,6 +29,7 @@ unsigned int igc_get_max_rss_queues(struct igc_adapter *adapter);
+ void igc_set_flag_queue_pairs(struct igc_adapter *adapter,
+ 			      const u32 max_rss_queues);
+ int igc_reinit_queues(struct igc_adapter *adapter);
++void igc_write_rss_indir_tbl(struct igc_adapter *adapter);
+ bool igc_has_link(struct igc_adapter *adapter);
+ void igc_reset(struct igc_adapter *adapter);
+ int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx);
+@@ -51,6 +52,13 @@ extern char igc_driver_version[];
+ #define IGC_FLAG_VLAN_PROMISC		BIT(15)
+ #define IGC_FLAG_RX_LEGACY		BIT(16)
+ 
++#define IGC_FLAG_RSS_FIELD_IPV4_UDP	BIT(6)
++#define IGC_FLAG_RSS_FIELD_IPV6_UDP	BIT(7)
++
++#define IGC_MRQC_ENABLE_RSS_MQ		0x00000002
++#define IGC_MRQC_RSS_FIELD_IPV4_UDP	0x00400000
++#define IGC_MRQC_RSS_FIELD_IPV6_UDP	0x00800000
++
+ #define IGC_START_ITR			648 /* ~6000 ints/sec */
+ #define IGC_4K_ITR			980
+ #define IGC_20K_ITR			196
+@@ -359,6 +367,7 @@ struct igc_adapter {
+ 	u32 *shadow_vfta;
+ 
+ 	u32 rss_queues;
++	u32 rss_indir_tbl_init;
+ 
+ 	/* lock for RX network flow classification filter */
+ 	spinlock_t nfc_lock;
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 7d1bdcd1225a..3666f8837cc8 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -310,6 +310,12 @@
+ 	IGC_RXDEXT_STATERR_CXE |	\
+ 	IGC_RXDEXT_STATERR_RXE)
+ 
++#define IGC_MRQC_RSS_FIELD_IPV4_TCP	0x00010000
++#define IGC_MRQC_RSS_FIELD_IPV4		0x00020000
++#define IGC_MRQC_RSS_FIELD_IPV6_TCP_EX	0x00040000
++#define IGC_MRQC_RSS_FIELD_IPV6		0x00100000
++#define IGC_MRQC_RSS_FIELD_IPV6_TCP	0x00200000
++
+ /* Header split receive */
+ #define IGC_RFCTL_IPV6_EX_DIS	0x00010000
+ #define IGC_RFCTL_LEF		0x00040000
+@@ -325,6 +331,10 @@
+ #define I225_RXPBSIZE_DEFAULT	0x000000A2 /* RXPBSIZE default */
+ #define I225_TXPBSIZE_DEFAULT	0x04000014 /* TXPBSIZE default */
+ 
++/* Receive Checksum Control */
++#define IGC_RXCSUM_CRCOFL	0x00000800   /* CRC32 offload enable */
++#define IGC_RXCSUM_PCSD		0x00002000   /* packet checksum disabled */
++
+ /* GPY211 - I225 defines */
+ #define GPY_MMD_MASK		0xFFFF0000
+ #define GPY_MMD_SHIFT		16
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 9e4afbd764ec..476d0a858bde 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -620,6 +620,55 @@ static void igc_configure_tx(struct igc_adapter *adapter)
+  */
+ static void igc_setup_mrqc(struct igc_adapter *adapter)
+ {
++	struct igc_hw *hw = &adapter->hw;
++	u32 j, num_rx_queues;
++	u32 mrqc, rxcsum;
++	u32 rss_key[10];
++
++	netdev_rss_key_fill(rss_key, sizeof(rss_key));
++	for (j = 0; j < 10; j++)
++		wr32(IGC_RSSRK(j), rss_key[j]);
++
++	num_rx_queues = adapter->rss_queues;
++
++	if (adapter->rss_indir_tbl_init != num_rx_queues) {
++		for (j = 0; j < IGC_RETA_SIZE; j++)
++			adapter->rss_indir_tbl[j] =
++			(j * num_rx_queues) / IGC_RETA_SIZE;
++		adapter->rss_indir_tbl_init = num_rx_queues;
++	}
++	igc_write_rss_indir_tbl(adapter);
++
++	/* Disable raw packet checksumming so that RSS hash is placed in
++	 * descriptor on writeback.  No need to enable TCP/UDP/IP checksum
++	 * offloads as they are enabled by default
++	 */
++	rxcsum = rd32(IGC_RXCSUM);
++	rxcsum |= IGC_RXCSUM_PCSD;
++
++	/* Enable Receive Checksum Offload for SCTP */
++	rxcsum |= IGC_RXCSUM_CRCOFL;
++
++	/* Don't need to set TUOFL or IPOFL, they default to 1 */
++	wr32(IGC_RXCSUM, rxcsum);
++
++	/* Generate RSS hash based on packet types, TCP/UDP
++	 * port numbers and/or IPv4/v6 src and dst addresses
++	 */
++	mrqc = IGC_MRQC_RSS_FIELD_IPV4 |
++	       IGC_MRQC_RSS_FIELD_IPV4_TCP |
++	       IGC_MRQC_RSS_FIELD_IPV6 |
++	       IGC_MRQC_RSS_FIELD_IPV6_TCP |
++	       IGC_MRQC_RSS_FIELD_IPV6_TCP_EX;
++
++	if (adapter->flags & IGC_FLAG_RSS_FIELD_IPV4_UDP)
++		mrqc |= IGC_MRQC_RSS_FIELD_IPV4_UDP;
++	if (adapter->flags & IGC_FLAG_RSS_FIELD_IPV6_UDP)
++		mrqc |= IGC_MRQC_RSS_FIELD_IPV6_UDP;
++
++	mrqc |= IGC_MRQC_ENABLE_RSS_MQ;
++
++	wr32(IGC_MRQC, mrqc);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index 5afe7a8d3faf..325109cb20cc 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -80,8 +80,13 @@
+ /* MSI-X Table Register Descriptions */
+ #define IGC_PBACL		0x05B68  /* MSIx PBA Clear - R/W 1 to clear */
+ 
++/* RSS registers */
++#define IGC_MRQC		0x05818 /* Multiple Receive Control - RW */
++
+ /* Redirection Table - RW Array */
+ #define IGC_RETA(_i)		(0x05C00 + ((_i) * 4))
++/* RSS Random Key - RW Array */
++#define IGC_RSSRK(_i)		(0x05C80 + ((_i) * 4))
+ 
+ /* Receive Register Descriptions */
+ #define IGC_RCTL		0x00100  /* Rx Control - RW */
+-- 
+2.11.0
+
