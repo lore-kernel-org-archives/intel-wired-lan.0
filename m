@@ -1,22 +1,30 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  6 Feb 2019 11:36:14 -0800
-Subject: [Intel-wired-lan] [next PATCH S2 05/13] i40e: Fix for 10G ports LED
- not blinking
-In-Reply-To: <20190206193622.69370-1-alice.michael@intel.com>
+From: Marczak, Piotr <piotr.marczak@intel.com>
+Date: Wed, 6 Feb 2019 19:48:11 +0000
+Subject: [Intel-wired-lan] [next PATCH S2 05/13] i40e: Fix for 10G ports
+ LED not blinking
+In-Reply-To: <20190206193622.69370-5-alice.michael@intel.com>
 References: <20190206193622.69370-1-alice.michael@intel.com>
-Message-ID: <20190206193622.69370-5-alice.michael@intel.com>
+ <20190206193622.69370-5-alice.michael@intel.com>
+Message-ID: <BD558F072FDA374BB8561E84707C7CEA47DD18@IRSMSX106.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+ACK
+
+-----Original Message-----
+From: Michael, Alice 
+Sent: Wednesday, February 6, 2019 8:36 PM
+To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
+Cc: Marczak, Piotr <piotr.marczak@intel.com>
+Subject: [next PATCH S2 05/13] i40e: Fix for 10G ports LED not blinking
+
 From: Piotr Marczak <piotr.marczak@intel.com>
 
 On some hardware LEDs would not blink after command 'ethtool -p {eth-port}'
-in certain circumstances. Now, function does not care about the activity
-of the LED (though still preserves its state) but forcibly executes
-identification blinking and then restores the LED state.
+in certain circumstances. Now, function does not care about the activity of the LED (though still preserves its state) but forcibly executes identification blinking and then restores the LED state.
 
 Signed-off-by: Piotr Marczak <piotr.marczak@intel.com>
 ---
@@ -59,8 +67,7 @@ index 486a406789b8..dd6b3b3ac5c6 100644
  		break;
 @@ -1513,7 +1497,6 @@ u32 i40e_led_get(struct i40e_hw *hw)
   **/
- void i40e_led_set(struct i40e_hw *hw, u32 mode, bool blink)
- {
+ void i40e_led_set(struct i40e_hw *hw, u32 mode, bool blink)  {
 -	u32 current_mode = 0;
  	int i;
  
@@ -88,6 +95,15 @@ index 486a406789b8..dd6b3b3ac5c6 100644
  		gpio_val &= ~I40E_GLGEN_GPIO_CTL_LED_MODE_MASK;
  		/* this & is a bit of paranoia, but serves as a range check */
  		gpio_val |= ((mode << I40E_GLGEN_GPIO_CTL_LED_MODE_SHIFT) &
--- 
+--
 2.19.2
 
+--------------------------------------------------------------------
+
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
