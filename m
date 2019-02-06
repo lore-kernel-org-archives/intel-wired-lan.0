@@ -1,10 +1,8 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  6 Feb 2019 11:36:21 -0800
-Subject: [Intel-wired-lan] [next PATCH S2 12/13] i40e: Able to add up to 16
- MAC filters on an untrusted VF
-In-Reply-To: <20190206193622.69370-1-alice.michael@intel.com>
-References: <20190206193622.69370-1-alice.michael@intel.com>
-Message-ID: <20190206193622.69370-12-alice.michael@intel.com>
+Date: Wed,  6 Feb 2019 11:36:10 -0800
+Subject: [Intel-wired-lan] [next PATCH S2 01/13] i40e: Queues are reserved
+ despite "Invalid argument" error.
+Message-ID: <20190206193622.69370-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,35 +11,43 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
 
-This patch fixes the problem with the driver being able to add only 7
-multicast MAC address filters instead of 16. The problem is fixed by
-changing the maximum number of MAC address filters to 16+1+1 (two extra
-are needed because the driver uses 1 for unicast MAC address and 1 for
-broadcast).
+Added a new local variable in the i40e_setup_tc function named
+old_queue_pairs so num_queue_pairs can be restored to the correct
+value in case configuring queue channels fails. Additionally, moved
+the exit label in the i40e_setup_tc function so the if (need_reset)
+block can be executed.
+Also, fixed data packing in the i40e_setup_tc function.
 
 Signed-off-by: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 831d52bc3c9a..d804320eb476 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2454,8 +2454,11 @@ static int i40e_vc_get_stats_msg(struct i40e_vf *vf, u8 *msg)
- 				      (u8 *)&stats, sizeof(stats));
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index c02613be5e6e..40a966ae94fd 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -7290,10 +7290,12 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
+ 	struct i40e_pf *pf = vsi->back;
+ 	u8 enabled_tc = 0, num_tc, hw;
+ 	bool need_reset = false;
++	int old_queue_pairs;
+ 	int ret = -EINVAL;
+ 	u16 mode;
+ 	int i;
  
--/* If the VF is not trusted restrict the number of MAC/VLAN it can program */
--#define I40E_VC_MAX_MAC_ADDR_PER_VF 12
-+/**
-+ * If the VF is not trusted restrict the number of MAC/VLAN it can program
-+ * MAC filters: 16 for multicast, 1 for MAC, 1 for broadcast
-+ **/
-+#define I40E_VC_MAX_MAC_ADDR_PER_VF (16 + 1 + 1)
- #define I40E_VC_MAX_VLAN_PER_VF 8
- 
- /**
++	old_queue_pairs = vsi->num_queue_pairs;
+ 	num_tc = mqprio_qopt->qopt.num_tc;
+ 	hw = mqprio_qopt->qopt.hw;
+ 	mode = mqprio_qopt->mode;
+@@ -7394,6 +7396,7 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
+ 		}
+ 		ret = i40e_configure_queue_channels(vsi);
+ 		if (ret) {
++			vsi->num_queue_pairs = old_queue_pairs;
+ 			netdev_info(netdev,
+ 				    "Failed configuring queue channels\n");
+ 			need_reset = true;
 -- 
 2.19.2
 
