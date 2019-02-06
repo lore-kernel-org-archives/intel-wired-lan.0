@@ -1,8 +1,10 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed,  6 Feb 2019 11:36:10 -0800
-Subject: [Intel-wired-lan] [next PATCH S2 01/13] i40e: Queues are reserved
- despite "Invalid argument" error.
-Message-ID: <20190206193622.69370-1-alice.michael@intel.com>
+Date: Wed,  6 Feb 2019 11:36:20 -0800
+Subject: [Intel-wired-lan] [next PATCH S2 11/13] i40e: Report advertised
+ link modes on 40GBASE_SR4
+In-Reply-To: <20190206193622.69370-1-alice.michael@intel.com>
+References: <20190206193622.69370-1-alice.michael@intel.com>
+Message-ID: <20190206193622.69370-11-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,43 +13,41 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
 
-Added a new local variable in the i40e_setup_tc function named
-old_queue_pairs so num_queue_pairs can be restored to the correct
-value in case configuring queue channels fails. Additionally, moved
-the exit label in the i40e_setup_tc function so the if (need_reset)
-block can be executed.
-Also, fixed data packing in the i40e_setup_tc function.
+Defined the advertised link mode field for 40000baseSR4_Full for
+use with ethtool.
 
 Signed-off-by: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index c02613be5e6e..40a966ae94fd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7290,10 +7290,12 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
- 	struct i40e_pf *pf = vsi->back;
- 	u8 enabled_tc = 0, num_tc, hw;
- 	bool need_reset = false;
-+	int old_queue_pairs;
- 	int ret = -EINVAL;
- 	u16 mode;
- 	int i;
- 
-+	old_queue_pairs = vsi->num_queue_pairs;
- 	num_tc = mqprio_qopt->qopt.num_tc;
- 	hw = mqprio_qopt->qopt.hw;
- 	mode = mqprio_qopt->mode;
-@@ -7394,6 +7396,7 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
- 		}
- 		ret = i40e_configure_queue_channels(vsi);
- 		if (ret) {
-+			vsi->num_queue_pairs = old_queue_pairs;
- 			netdev_info(netdev,
- 				    "Failed configuring queue channels\n");
- 			need_reset = true;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 4e347637e36a..14b52f8aedd0 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -535,9 +535,12 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf,
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     1000baseT_Full);
+ 	}
+-	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_SR4)
++	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_SR4) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     40000baseSR4_Full);
++		ethtool_link_ksettings_add_link_mode(ks, advertising,
++						     40000baseSR4_Full);
++	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_LR4)
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     40000baseLR4_Full);
+@@ -724,6 +727,8 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 	case I40E_PHY_TYPE_40GBASE_SR4:
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     40000baseSR4_Full);
++		ethtool_link_ksettings_add_link_mode(ks, advertising,
++						     40000baseSR4_Full);
+ 		break;
+ 	case I40E_PHY_TYPE_40GBASE_LR4:
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
 -- 
 2.19.2
 
