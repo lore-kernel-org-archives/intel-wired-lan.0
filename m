@@ -1,48 +1,45 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:51:05 -0800
-Subject: [Intel-wired-lan] [PATCH S13 09/16] ice: Do not set LB_EN for prune
- switch rules
+Date: Fri,  8 Feb 2019 12:51:10 -0800
+Subject: [Intel-wired-lan] [PATCH S13 14/16] ice: Restore VLAN switch rule
+ if port VLAN existed before
 In-Reply-To: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
 References: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205112.12180-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205112.12180-15-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Christopher N Bednarz <christopher.n.bednarz@intel.com>
+From: Michal Swiatkowski <michal.swiatkowski@intel.com>
 
-LB_EN for prune switch rules was causing all TX traffic
-to loopback to the internal switch and dropped.  When
-running bi-directional stress workloads with RDMA
-the RDPU would hang blocking tx and rx traffic.
+The VLAN rule is lost when VM starts or the AVF driver (iavf.ko) is
+reloaded. So it is necessary to add this rule again.
 
-Signed-off-by: Christopher N Bednarz <christopher.n.bednarz@intel.com>
-Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 8e73eb11235d..b969a99b2a72 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -643,7 +643,12 @@ static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *fi)
- 	     fi->fltr_act == ICE_FWD_TO_VSI_LIST ||
- 	     fi->fltr_act == ICE_FWD_TO_Q ||
- 	     fi->fltr_act == ICE_FWD_TO_QGRP)) {
--		fi->lb_en = true;
-+		/* Setting LB for prune actions will result in replicated
-+		 * packets to the internal switch that will be dropped.
-+		 */
-+		if (fi->lkup_type != ICE_SW_LKUP_VLAN)
-+			fi->lb_en = true;
-+
- 		/* Set lan_en to TRUE if
- 		 * 1. The switch is a VEB AND
- 		 * 2
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index b84620068a3c..ca8780891540 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -457,8 +457,10 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
+ 	vsi->hw_base_vector += 1;
+ 
+ 	/* Check if port VLAN exist before, and restore it accordingly */
+-	if (vf->port_vlan_id)
++	if (vf->port_vlan_id) {
+ 		ice_vsi_manage_pvid(vsi, vf->port_vlan_id, true);
++		ice_vsi_add_vlan(vsi, vf->port_vlan_id & ICE_VLAN_M);
++	}
+ 
+ 	eth_broadcast_addr(broadcast);
+ 
 -- 
 2.14.5
 
