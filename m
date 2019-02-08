@@ -1,180 +1,72 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:51:08 -0800
-Subject: [Intel-wired-lan] [PATCH S13 12/16] ice: Get VF VSI instances
- directly via PF
+Date: Fri,  8 Feb 2019 12:51:04 -0800
+Subject: [Intel-wired-lan] [PATCH S13 08/16] ice: Enable LAN_EN for the
+ right recipes
 In-Reply-To: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
 References: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205112.12180-13-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205112.12180-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Yashaswini Raghuram Prathivadi Bhayankaram <yashaswini.raghuram.prathivadi.bhayankaram@intel.com>
 
-This patch changes how we get VF VSIs instances. Instead of relying on
-mailbox virtual channel message to retrieve VSI, it is more reliable
-getting it directly via VF object in PF data structure.
+In VEB mode, enable LAN_EN bit in the action fields for filter rules
+corresponding to the right recipes.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Yashaswini Raghuram Prathivadi Bhayankaram <yashaswini.raghuram.prathivadi.bhayankaram@intel.com>
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 35 ++++++++++++++++++------
- 1 file changed, 27 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 29 ++++++++++++++++++++---------
+ 1 file changed, 20 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 70bd81ea1943..b84620068a3c 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1390,6 +1390,11 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
- 
- 	vfres->vf_cap_flags = VIRTCHNL_VF_OFFLOAD_L2;
- 	vsi = pf->vsi[vf->lan_vsi_idx];
-+	if (!vsi) {
-+		aq_ret = ICE_ERR_PARAM;
-+		goto err;
-+	}
-+
- 	if (!vsi->info.pvid)
- 		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_VLAN;
- 
-@@ -1523,6 +1528,7 @@ static int ice_vc_config_rss_key(struct ice_vf *vf, u8 *msg)
- 	struct virtchnl_rss_key *vrk =
- 		(struct virtchnl_rss_key *)msg;
- 	struct ice_vsi *vsi = NULL;
-+	struct ice_pf *pf = vf->pf;
- 	enum ice_status aq_ret;
- 	int ret;
- 
-@@ -1536,7 +1542,7 @@ static int ice_vc_config_rss_key(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index f84f3bf0132a..8e73eb11235d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -644,20 +644,31 @@ static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *fi)
+ 	     fi->fltr_act == ICE_FWD_TO_Q ||
+ 	     fi->fltr_act == ICE_FWD_TO_QGRP)) {
+ 		fi->lb_en = true;
+-		/* Do not set lan_en to TRUE if
++		/* Set lan_en to TRUE if
+ 		 * 1. The switch is a VEB AND
+ 		 * 2
+-		 * 2.1 The lookup is MAC with unicast addr for MAC, OR
+-		 * 2.2 The lookup is MAC_VLAN with unicast addr for MAC
++		 * 2.1 The lookup is VLAN, OR
++		 * 2.2 The lookup is default port mode, OR
++		 * 2.3 The lookup is MAC with mcast or bcast addr for MAC, OR
++		 * 2.4 The lookup is MAC_VLAN with mcast or bcast addr for MAC.
+ 		 *
+-		 * In all other cases, the LAN enable has to be set to true.
++		 * OR
++		 *
++		 * The switch is a VEPA.
++		 *
++		 * In all other cases, the LAN enable has to be set to false.
+ 		 */
+-		if (!(hw->evb_veb &&
+-		      ((fi->lkup_type == ICE_SW_LKUP_MAC &&
+-			is_unicast_ether_addr(fi->l_data.mac.mac_addr)) ||
+-		       (fi->lkup_type == ICE_SW_LKUP_MAC_VLAN &&
+-			is_unicast_ether_addr(fi->l_data.mac_vlan.mac_addr)))))
++		if (hw->evb_veb) {
++			if (fi->lkup_type == ICE_SW_LKUP_VLAN ||
++			    fi->lkup_type == ICE_SW_LKUP_DFLT ||
++			    (fi->lkup_type == ICE_SW_LKUP_MAC &&
++			     !is_unicast_ether_addr(fi->l_data.mac.mac_addr)) ||
++			    (fi->lkup_type == ICE_SW_LKUP_MAC_VLAN &&
++			     !is_unicast_ether_addr(fi->l_data.mac.mac_addr)))
++				fi->lan_en = true;
++		} else {
+ 			fi->lan_en = true;
++		}
  	}
- 
--	vsi = ice_find_vsi_from_id(vf->pf, vrk->vsi_id);
-+	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!vsi) {
- 		aq_ret = ICE_ERR_PARAM;
- 		goto error_param;
-@@ -1570,6 +1576,7 @@ static int ice_vc_config_rss_lut(struct ice_vf *vf, u8 *msg)
- {
- 	struct virtchnl_rss_lut *vrl = (struct virtchnl_rss_lut *)msg;
- 	struct ice_vsi *vsi = NULL;
-+	struct ice_pf *pf = vf->pf;
- 	enum ice_status aq_ret;
- 	int ret;
- 
-@@ -1583,7 +1590,7 @@ static int ice_vc_config_rss_lut(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
--	vsi = ice_find_vsi_from_id(vf->pf, vrl->vsi_id);
-+	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!vsi) {
- 		aq_ret = ICE_ERR_PARAM;
- 		goto error_param;
-@@ -1618,6 +1625,7 @@ static int ice_vc_get_stats_msg(struct ice_vf *vf, u8 *msg)
- 	struct virtchnl_queue_select *vqs =
- 		(struct virtchnl_queue_select *)msg;
- 	enum ice_status aq_ret = 0;
-+	struct ice_pf *pf = vf->pf;
- 	struct ice_eth_stats stats;
- 	struct ice_vsi *vsi;
- 
-@@ -1631,7 +1639,7 @@ static int ice_vc_get_stats_msg(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
--	vsi = ice_find_vsi_from_id(vf->pf, vqs->vsi_id);
-+	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!vsi) {
- 		aq_ret = ICE_ERR_PARAM;
- 		goto error_param;
-@@ -1660,6 +1668,7 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
- 	struct virtchnl_queue_select *vqs =
- 	    (struct virtchnl_queue_select *)msg;
- 	enum ice_status aq_ret = 0;
-+	struct ice_pf *pf = vf->pf;
- 	struct ice_vsi *vsi;
- 
- 	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
-@@ -1677,7 +1686,7 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
--	vsi = ice_find_vsi_from_id(vf->pf, vqs->vsi_id);
-+	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!vsi) {
- 		aq_ret = ICE_ERR_PARAM;
- 		goto error_param;
-@@ -1713,6 +1722,7 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
- 	struct virtchnl_queue_select *vqs =
- 	    (struct virtchnl_queue_select *)msg;
- 	enum ice_status aq_ret = 0;
-+	struct ice_pf *pf = vf->pf;
- 	struct ice_vsi *vsi;
- 
- 	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states) &&
-@@ -1731,7 +1741,7 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
--	vsi = ice_find_vsi_from_id(vf->pf, vqs->vsi_id);
-+	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!vsi) {
- 		aq_ret = ICE_ERR_PARAM;
- 		goto error_param;
-@@ -1797,7 +1807,7 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf *vf, u8 *msg)
- 			goto error_param;
- 		}
- 
--		vsi = ice_find_vsi_from_id(vf->pf, vsi_id);
-+		vsi = pf->vsi[vf->lan_vsi_idx];
- 		if (!vsi) {
- 			aq_ret = ICE_ERR_PARAM;
- 			goto error_param;
-@@ -1868,7 +1878,7 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
--	vsi = ice_find_vsi_from_id(vf->pf, qci->vsi_id);
-+	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!vsi) {
- 		aq_ret = ICE_ERR_PARAM;
- 		goto error_param;
-@@ -1998,6 +2008,10 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
- 	}
- 
- 	vsi = pf->vsi[vf->lan_vsi_idx];
-+	if (!vsi) {
-+		ret = ICE_ERR_PARAM;
-+		goto handle_mac_exit;
-+	}
- 
- 	for (i = 0; i < al->num_elements; i++) {
- 		u8 *maddr = al->list[i].addr;
-@@ -2291,7 +2305,7 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
- 	}
- 
- 	hw = &pf->hw;
--	vsi = ice_find_vsi_from_id(vf->pf, vfl->vsi_id);
-+	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!vsi) {
- 		aq_ret = ICE_ERR_PARAM;
- 		goto error_param;
-@@ -2452,6 +2466,11 @@ static int ice_vc_dis_vlan_stripping(struct ice_vf *vf)
- 	}
- 
- 	vsi = pf->vsi[vf->lan_vsi_idx];
-+	if (!vsi) {
-+		aq_ret = ICE_ERR_PARAM;
-+		goto error_param;
-+	}
-+
- 	if (ice_vsi_manage_vlan_stripping(vsi, false))
- 		aq_ret = ICE_ERR_AQ_ERROR;
+ }
  
 -- 
 2.14.5
