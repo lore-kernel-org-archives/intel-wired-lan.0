@@ -1,61 +1,66 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:51:06 -0800
-Subject: [Intel-wired-lan] [PATCH S13 10/16] ice: Set LAN_EN for all
- directional rules
+Date: Fri,  8 Feb 2019 12:51:07 -0800
+Subject: [Intel-wired-lan] [PATCH S13 11/16] ice: Don't let VF know that it
+ is untrusted
 In-Reply-To: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
 References: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205112.12180-11-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205112.12180-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Yashaswini Raghuram Prathivadi Bhayankaram <yashaswini.raghuram.prathivadi.bhayankaram@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-The LAN_EN bit for a switch rule determines if the packet can go out
-on the wire or not. Set the LAN_EN flag in the switch action for all
-directional rules.
+Don't let the VF know it's not trusted when it tries to add more than
+permitted additional MAC addresses.
 
-Signed-off-by: Yashaswini Raghuram Prathivadi Bhayankaram <yashaswini.raghuram.prathivadi.bhayankaram@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
 [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index b969a99b2a72..e52cf73b2a55 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -652,8 +652,10 @@ static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *fi)
- 		/* Set lan_en to TRUE if
- 		 * 1. The switch is a VEB AND
- 		 * 2
--		 * 2.1 The lookup is VLAN, OR
--		 * 2.2 The lookup is default port mode, OR
-+		 * 2.1 The lookup is a directional lookup like ethertype,
-+		 * promiscuous, ethertype-mac, promiscuous-vlan
-+		 * and default-port OR
-+		 * 2.2 The lookup is VLAN, OR
- 		 * 2.3 The lookup is MAC with mcast or bcast addr for MAC, OR
- 		 * 2.4 The lookup is MAC_VLAN with mcast or bcast addr for MAC.
- 		 *
-@@ -664,8 +666,12 @@ static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *fi)
- 		 * In all other cases, the LAN enable has to be set to false.
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index f0de80d182d0..70bd81ea1943 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1969,7 +1969,7 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
+ 	    (struct virtchnl_ether_addr_list *)msg;
+ 	struct ice_pf *pf = vf->pf;
+ 	enum virtchnl_ops vc_op;
+-	enum ice_status ret;
++	enum ice_status ret = 0;
+ 	LIST_HEAD(mac_list);
+ 	struct ice_vsi *vsi;
+ 	int mac_count = 0;
+@@ -1989,8 +1989,11 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
+ 	if (set && !ice_is_vf_trusted(vf) &&
+ 	    (vf->num_mac + al->num_elements) > ICE_MAX_MACADDR_PER_VF) {
+ 		dev_err(&pf->pdev->dev,
+-			"Can't add more MAC addresses, because VF is not trusted, switch the VF to trusted mode in order to add more functionalities\n");
+-		ret = ICE_ERR_PARAM;
++			"Can't add more MAC addresses, because VF-%d is not trusted, switch the VF to trusted mode in order to add more functionalities\n",
++			vf->vf_id);
++		/* There is no need to let VF know about not being trusted
++		 * to add more MAC addr, so we can just return success message.
++		 */
+ 		goto handle_mac_exit;
+ 	}
+ 
+@@ -2270,7 +2273,8 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
+ 	if (add_v && !ice_is_vf_trusted(vf) &&
+ 	    vf->num_vlan >= ICE_MAX_VLAN_PER_VF) {
+ 		dev_info(&pf->pdev->dev,
+-			 "VF is not trusted, switch the VF to trusted mode, in order to add more VLAN addresses\n");
++			 "VF-%d is not trusted, switch the VF to trusted mode, in order to add more VLAN addresses\n",
++			 vf->vf_id);
+ 		/* There is no need to let VF know about being not trusted,
+ 		 * so we can just return success message here
  		 */
- 		if (hw->evb_veb) {
--			if (fi->lkup_type == ICE_SW_LKUP_VLAN ||
-+			if (fi->lkup_type == ICE_SW_LKUP_ETHERTYPE ||
-+			    fi->lkup_type == ICE_SW_LKUP_PROMISC ||
-+			    fi->lkup_type == ICE_SW_LKUP_ETHERTYPE_MAC ||
-+			    fi->lkup_type == ICE_SW_LKUP_PROMISC_VLAN ||
- 			    fi->lkup_type == ICE_SW_LKUP_DFLT ||
-+			    fi->lkup_type == ICE_SW_LKUP_VLAN ||
- 			    (fi->lkup_type == ICE_SW_LKUP_MAC &&
- 			     !is_unicast_ether_addr(fi->l_data.mac.mac_addr)) ||
- 			    (fi->lkup_type == ICE_SW_LKUP_MAC_VLAN &&
 -- 
 2.14.5
 
