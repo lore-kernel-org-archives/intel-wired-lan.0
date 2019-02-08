@@ -1,54 +1,97 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:50:47 -0800
-Subject: [Intel-wired-lan] [PATCH S12 00/14] Bug fixes and minor feature
- updates for ice
-Message-ID: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
+Date: Fri,  8 Feb 2019 12:51:02 -0800
+Subject: [Intel-wired-lan] [PATCH S13 06/16] ice: code cleanup in ice_sched.c
+In-Reply-To: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
+References: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205112.12180-7-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Akeem G Abodunrin (5):
-  ice: Fix issue with VF reset and multiple VFs support on PFs
-  ice: Implement flow to reset VFs with PFR and other resets
-  ice: Reset all VFs with VFLR during SR-IOV init flow
-  ice: Enable MAC anti-spoof by default
-  ice: Fix issue reclaiming resources back to the pool after reset
+From: Victor Raj <victor.raj@intel.com>
 
-Brett Creeley (5):
-  ice: remove redundant variable and if condition
-  ice: use ice_for_each_vsi macro when possible
-  ice: configure GLINT_ITR to always have an ITR gran of 2
-  ice: Get resources per function
-  ice: Determine descriptor count and ring size based on PAGE_SIZE
+This patch does some clean up in the Tx scheduler code:
 
-Bruce Allan (1):
-  ice: avoid multiple unnecessary de-references in probe
+1. Adjust the stack variable usage
+2. Modify the debug prints to display the FW error
+3. Add additional debug prints while adding/removing VSIs
 
-Chinh T Cao (1):
-  ice : Ensure only valid bits are set in ice_aq_set_phy_cfg
+Signed-off-by: Victor Raj <victor.raj@intel.com>
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_sched.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-Henry Tieman (1):
-  ice: implement ethtool set channels
-
-Michal Swiatkowski (1):
-  ice: Fix broadcast traffic in port VLAN mode
-
- drivers/net/ethernet/intel/ice/ice.h             |  19 ++-
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |   5 +-
- drivers/net/ethernet/intel/ice/ice_common.c      |  24 +++-
- drivers/net/ethernet/intel/ice/ice_ethtool.c     |  88 ++++++++++++-
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |  10 ++
- drivers/net/ethernet/intel/ice/ice_lib.c         | 157 +++++++++++++++++++----
- drivers/net/ethernet/intel/ice/ice_lib.h         |   2 +-
- drivers/net/ethernet/intel/ice/ice_main.c        | 125 +++++++++++-------
- drivers/net/ethernet/intel/ice/ice_txrx.c        |  10 +-
- drivers/net/ethernet/intel/ice/ice_txrx.h        |   1 +
- drivers/net/ethernet/intel/ice/ice_type.h        |   1 +
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 100 +++++++++------
- 12 files changed, 411 insertions(+), 131 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index 086a4c7254c5..cf1142ec16ee 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -276,7 +276,8 @@ ice_sched_remove_elems(struct ice_hw *hw, struct ice_sched_node *parent,
+ 	status = ice_aq_delete_sched_elems(hw, 1, buf, buf_size,
+ 					   &num_groups_removed, NULL);
+ 	if (status || num_groups_removed != 1)
+-		ice_debug(hw, ICE_DBG_SCHED, "remove elements failed\n");
++		ice_debug(hw, ICE_DBG_SCHED, "remove node failed FW error %d\n",
++			  hw->adminq.sq_last_status);
+ 
+ 	devm_kfree(ice_hw_to_dev(hw), buf);
+ 	return status;
+@@ -360,12 +361,8 @@ void ice_free_sched_node(struct ice_port_info *pi, struct ice_sched_node *node)
+ 	    node->info.data.elem_type != ICE_AQC_ELEM_TYPE_ROOT_PORT &&
+ 	    node->info.data.elem_type != ICE_AQC_ELEM_TYPE_LEAF) {
+ 		u32 teid = le32_to_cpu(node->info.node_teid);
+-		enum ice_status status;
+ 
+-		status = ice_sched_remove_elems(hw, node->parent, 1, &teid);
+-		if (status)
+-			ice_debug(hw, ICE_DBG_SCHED,
+-				  "remove element failed %d\n", status);
++		ice_sched_remove_elems(hw, node->parent, 1, &teid);
+ 	}
+ 	parent = node->parent;
+ 	/* root has no parent */
+@@ -697,7 +694,8 @@ ice_sched_add_elems(struct ice_port_info *pi, struct ice_sched_node *tc_node,
+ 	status = ice_aq_add_sched_elems(hw, 1, buf, buf_size,
+ 					&num_groups_added, NULL);
+ 	if (status || num_groups_added != 1) {
+-		ice_debug(hw, ICE_DBG_SCHED, "add elements failed\n");
++		ice_debug(hw, ICE_DBG_SCHED, "add node failed FW Error %d\n",
++			  hw->adminq.sq_last_status);
+ 		devm_kfree(ice_hw_to_dev(hw), buf);
+ 		return ICE_ERR_CFG;
+ 	}
+@@ -1527,6 +1525,7 @@ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
+ 	enum ice_status status = 0;
+ 	struct ice_hw *hw = pi->hw;
+ 
++	ice_debug(pi->hw, ICE_DBG_SCHED, "add/config VSI %d\n", vsi_handle);
+ 	tc_node = ice_sched_get_tc_node(pi, tc);
+ 	if (!tc_node)
+ 		return ICE_ERR_PARAM;
+@@ -1646,8 +1645,9 @@ ice_sched_rm_vsi_cfg(struct ice_port_info *pi, u16 vsi_handle, u8 owner)
+ {
+ 	enum ice_status status = ICE_ERR_PARAM;
+ 	struct ice_vsi_ctx *vsi_ctx;
+-	u8 i, j = 0;
++	u8 i;
+ 
++	ice_debug(pi->hw, ICE_DBG_SCHED, "removing VSI %d\n", vsi_handle);
+ 	if (!ice_is_vsi_valid(pi->hw, vsi_handle))
+ 		return status;
+ 	mutex_lock(&pi->sched_lock);
+@@ -1657,6 +1657,7 @@ ice_sched_rm_vsi_cfg(struct ice_port_info *pi, u16 vsi_handle, u8 owner)
+ 
+ 	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
+ 		struct ice_sched_node *vsi_node, *tc_node;
++		u8 j = 0;
+ 
+ 		tc_node = ice_sched_get_tc_node(pi, i);
+ 		if (!tc_node)
 -- 
 2.14.5
 
