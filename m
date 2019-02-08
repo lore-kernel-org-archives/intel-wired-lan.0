@@ -1,10 +1,10 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:51:00 -0800
-Subject: [Intel-wired-lan] [PATCH S12 13/14] ice: Enable MAC anti-spoof by
- default
+Date: Fri,  8 Feb 2019 12:50:58 -0800
+Subject: [Intel-wired-lan] [PATCH S12 11/14] ice: Reset all VFs with VFLR
+ during SR-IOV init flow
 In-Reply-To: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
 References: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205101.12078-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205101.12078-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,42 +13,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-This patch enables MAC anti-spoof by default, with creation of VF VSIs or
-when the VF VSIs are being re-initialized.
+During SR-IOV initialization, we allocate and setup VFs with reset, and
+since we were going to inform Firmware about our intention to do VFLR by
+disabling LAN TX Queue, then we really have to complete VF reset flow with
+VFLR using appropriate registers - Otherwise, reset status bit for VF in
+the Guest OS might returns DEADBEEF.
+This resolves issue to properly initialize VFs in the Guest OS via PCI
+passthrough.
 
 Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 864007bc945e..d528640fc5b1 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -952,6 +952,7 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
- 	if (!ctxt)
- 		return -ENOMEM;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 99c8cddb2162..a93db0a7ac1c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1029,7 +1029,7 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
+ 	pf->num_alloc_vfs = num_alloc_vfs;
  
-+	ctxt->info = vsi->info;
- 	switch (vsi->type) {
- 	case ICE_VSI_PF:
- 		ctxt->flags = ICE_AQ_VSI_TYPE_PF;
-@@ -978,6 +979,14 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
- 	ctxt->info.sw_id = vsi->port_info->sw_id;
- 	ice_vsi_setup_q_map(vsi, ctxt);
+ 	/* VF resources get allocated during reset */
+-	if (!ice_reset_all_vfs(pf, false))
++	if (!ice_reset_all_vfs(pf, true))
+ 		goto err_unroll_sriov;
  
-+	/* Enable MAC Antispoof with new VSI being initialized or updated */
-+	if (vsi->type == ICE_VSI_VF && pf->vf[vsi->vf_id].spoofchk) {
-+		ctxt->info.valid_sections |=
-+			cpu_to_le16(ICE_AQ_VSI_PROP_SECURITY_VALID);
-+		ctxt->info.sec_flags |=
-+			ICE_AQ_VSI_SEC_FLAG_ENA_MAC_ANTI_SPOOF;
-+	}
-+
- 	if (init_vsi) {
- 		ret = ice_add_vsi(hw, vsi->idx, ctxt, NULL);
- 		if (ret) {
+ 	goto err_unroll_intr;
 -- 
 2.14.5
 
