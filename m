@@ -1,10 +1,9 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:50:55 -0800
-Subject: [Intel-wired-lan] [PATCH S12 08/14] ice: configure GLINT_ITR to
- always have an ITR gran of 2
+Date: Fri,  8 Feb 2019 12:50:57 -0800
+Subject: [Intel-wired-lan] [PATCH S12 10/14] ice: Get resources per function
 In-Reply-To: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
 References: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205101.12078-9-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205101.12078-11-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,141 +12,62 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Instead of hoping that our ITR granularity will be 2 usec program the
-GLINT_CTL register to make sure the ITR granularity is always 2 usecs.
-
-Now that we know what the ITR granularity will be get rid of the check
-in ice_probe() to verify our previous assumption.
+ice_get_guar_num_vsi currently calculates the number of VSIs per PF.
+Rework this into a general function ice_get_num_per_func, that can
+calculate per PF allocations for not just VSIs but across multiple
+resource types.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 10 ++++++++
- drivers/net/ethernet/intel/ice/ice_lib.c        | 33 +++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_main.c       | 18 --------------
- drivers/net/ethernet/intel/ice/ice_txrx.h       |  1 +
- 4 files changed, 44 insertions(+), 18 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_common.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 6bf5cc064270..24255ff64ab0 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -106,6 +106,16 @@
- #define VPGEN_VFRTRIG_VFSWR_M			BIT(0)
- #define PFHMC_ERRORDATA				0x00520500
- #define PFHMC_ERRORINFO				0x00520400
-+#define GLINT_CTL				0x0016CC54
-+#define GLINT_CTL_DIS_AUTOMASK_M		BIT(0)
-+#define GLINT_CTL_ITR_GRAN_200_S		16
-+#define GLINT_CTL_ITR_GRAN_200_M		ICE_M(0xF, 16)
-+#define GLINT_CTL_ITR_GRAN_100_S		20
-+#define GLINT_CTL_ITR_GRAN_100_M		ICE_M(0xF, 20)
-+#define GLINT_CTL_ITR_GRAN_50_S			24
-+#define GLINT_CTL_ITR_GRAN_50_M			ICE_M(0xF, 24)
-+#define GLINT_CTL_ITR_GRAN_25_S			28
-+#define GLINT_CTL_ITR_GRAN_25_M			ICE_M(0xF, 28)
- #define GLINT_DYN_CTL(_INT)			(0x00160000 + ((_INT) * 4))
- #define GLINT_DYN_CTL_INTENA_M			BIT(0)
- #define GLINT_DYN_CTL_CLEARPBA_M		BIT(1)
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 1418251b9275..40e9df15777b 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1738,6 +1738,37 @@ static u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran)
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 2dc5c3249e12..d2e1e6f440b8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1415,13 +1415,15 @@ void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res)
  }
  
-+/**
-+ * ice_cfg_itr_gran - set the ITR granularity to 2 usecs if not already set
-+ * @hw: board specific structure
-+ */
-+static void ice_cfg_itr_gran(struct ice_hw *hw)
-+{
-+	u32 regval = rd32(hw, GLINT_CTL);
-+
-+	/* no need to update global register if ITR gran is already set */
-+	if (!(regval & GLINT_CTL_DIS_AUTOMASK_M) &&
-+	    (((regval & GLINT_CTL_ITR_GRAN_200_M) >>
-+	     GLINT_CTL_ITR_GRAN_200_S) == ICE_ITR_GRAN_US) &&
-+	    (((regval & GLINT_CTL_ITR_GRAN_100_M) >>
-+	     GLINT_CTL_ITR_GRAN_100_S) == ICE_ITR_GRAN_US) &&
-+	    (((regval & GLINT_CTL_ITR_GRAN_50_M) >>
-+	     GLINT_CTL_ITR_GRAN_50_S) == ICE_ITR_GRAN_US) &&
-+	    (((regval & GLINT_CTL_ITR_GRAN_25_M) >>
-+	      GLINT_CTL_ITR_GRAN_25_S) == ICE_ITR_GRAN_US))
-+		return;
-+
-+	regval = ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_200_S) &
-+		  GLINT_CTL_ITR_GRAN_200_M) |
-+		 ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_100_S) &
-+		  GLINT_CTL_ITR_GRAN_100_M) |
-+		 ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_50_S) &
-+		  GLINT_CTL_ITR_GRAN_50_M) |
-+		 ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_25_S) &
-+		  GLINT_CTL_ITR_GRAN_25_M);
-+	wr32(hw, GLINT_CTL, regval);
-+}
-+
  /**
-  * ice_cfg_itr - configure the initial interrupt throttle values
-  * @hw: pointer to the HW structure
-@@ -1750,6 +1781,8 @@ static u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran)
- static void
- ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector, u16 vector)
+- * ice_get_guar_num_vsi - determine number of guar VSI for a PF
++ * ice_get_num_per_func - determine number of resources per PF
+  * @hw: pointer to the hw structure
++ * @max: value to be evenly split between each PF
+  *
+  * Determine the number of valid functions by going through the bitmap returned
+- * from parsing capabilities and use this to calculate the number of VSI per PF.
++ * from parsing capabilities and use this to calculate the number of resources
++ * per PF based on the max value passed in.
+  */
+-static u32 ice_get_guar_num_vsi(struct ice_hw *hw)
++static u32 ice_get_num_per_func(struct ice_hw *hw, u32 max)
  {
-+	ice_cfg_itr_gran(hw);
-+
- 	if (q_vector->num_ring_rx) {
- 		struct ice_ring_container *rc = &q_vector->rx;
+ 	u8 funcs;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index f5ade04cb9de..23db0cda6655 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2032,23 +2032,6 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
- 	return 0;
+@@ -1432,7 +1434,7 @@ static u32 ice_get_guar_num_vsi(struct ice_hw *hw)
+ 	if (!funcs)
+ 		return 0;
+ 
+-	return ICE_MAX_VSI / funcs;
++	return max / funcs;
  }
  
--/**
-- * ice_verify_itr_gran - verify driver's assumption of ITR granularity
-- * @pf: pointer to the PF structure
-- *
-- * There is no error returned here because the driver will be able to handle a
-- * different ITR granularity, but interrupt moderation will not be accurate if
-- * the driver's assumptions are not verified. This assumption is made so we can
-- * use constants in the hot path instead of accessing structure members.
-- */
--static void ice_verify_itr_gran(struct ice_pf *pf)
--{
--	if (pf->hw.itr_gran != (ICE_ITR_GRAN_S << 1))
--		dev_warn(&pf->pdev->dev,
--			 "%d ITR granularity assumption is invalid, actual ITR granularity is %d. Interrupt moderation will be inaccurate!\n",
--			 (ICE_ITR_GRAN_S << 1), pf->hw.itr_gran);
--}
--
  /**
-  * ice_verify_cacheline_size - verify driver's assumption of 64 Byte cache lines
-  * @pf: pointer to the PF structure
-@@ -2212,7 +2195,6 @@ static int ice_probe(struct pci_dev *pdev,
- 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
- 
- 	ice_verify_cacheline_size(pf);
--	ice_verify_itr_gran(pf);
- 
- 	return 0;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index fc358ea81816..b7ff0ff82517 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -125,6 +125,7 @@ enum ice_rx_dtype {
- #define ITR_IS_DYNAMIC(setting) (!!((setting) & ICE_ITR_DYNAMIC))
- #define ITR_TO_REG(setting)	((setting) & ~ICE_ITR_DYNAMIC)
- #define ICE_ITR_GRAN_S		1	/* Assume ITR granularity is 2us */
-+#define ICE_ITR_GRAN_US		BIT(ICE_ITR_GRAN_S)
- #define ICE_ITR_MASK		0x1FFE	/* ITR register value alignment mask */
- #define ITR_REG_ALIGN(setting)	__ALIGN_MASK(setting, ~ICE_ITR_MASK)
- 
+@@ -1512,7 +1514,8 @@ ice_parse_caps(struct ice_hw *hw, void *buf, u32 cap_count,
+ 					  "HW caps: Dev.VSI cnt = %d\n",
+ 					  dev_p->num_vsi_allocd_to_host);
+ 			} else if (func_p) {
+-				func_p->guar_num_vsi = ice_get_guar_num_vsi(hw);
++				func_p->guar_num_vsi =
++					ice_get_num_per_func(hw, ICE_MAX_VSI);
+ 				ice_debug(hw, ICE_DBG_INIT,
+ 					  "HW caps: Func.VSI cnt = %d\n",
+ 					  number);
 -- 
 2.14.5
 
