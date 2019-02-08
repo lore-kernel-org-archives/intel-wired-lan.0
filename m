@@ -1,10 +1,10 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:50:32 -0800
-Subject: [Intel-wired-lan] [PATCH S11 05/16] ice: fix stack hogs from struct
- ice_vsi_ctx structures
+Date: Fri,  8 Feb 2019 12:50:31 -0800
+Subject: [Intel-wired-lan] [PATCH S11 04/16] ice: sizeof(<type>) should be
+ avoided
 In-Reply-To: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
 References: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205043.11975-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205043.11975-5-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,377 +13,339 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bruce Allan <bruce.w.allan@intel.com>
 
-struct ice_vsi_ctx has gotten large enough that function local declarations
-of it on the stack are causing stack hogs.  Fix that by allocating the
-structs on heap.  Cleanup some formatting issues in the code around these
-changes and fix incorrect data type uses of returned functions in a couple
-places.
+With sizeof(), it is preferable to use the variable of type <type> instead
+of sizeof(<type>).
+
+There are multiple places where a temporary variable is used to hold a
+'size' value which is then used for a subsequent alloc/memset. Get rid
+of the temporary variable by calculating size as part of the alloc/memset
+statement.
+
+Also remove unnecessary type-cast.
 
 Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c         | 98 +++++++++++++++---------
- drivers/net/ethernet/intel/ice/ice_main.c        | 27 ++++---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 59 ++++++++------
- 3 files changed, 117 insertions(+), 67 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> fixed checkpatch errors]
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> edited commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 15 +++++++--------
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 10 +++++-----
+ drivers/net/ethernet/intel/ice/ice_main.c    | 23 +++++++++++------------
+ drivers/net/ethernet/intel/ice/ice_sched.c   |  9 ++++-----
+ drivers/net/ethernet/intel/ice/ice_switch.c  |  2 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c    | 24 ++++++++++--------------
+ 6 files changed, 38 insertions(+), 45 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index a82f0202652d..a93daf660171 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -1084,7 +1084,7 @@ ice_get_settings_link_up(struct ethtool_link_ksettings *ks,
+ 	 * current PHY type, get what is supported by the NVM and intersect
+ 	 * them to get what is truly supported
+ 	 */
+-	memset(&cap_ksettings, 0, sizeof(struct ethtool_link_ksettings));
++	memset(&cap_ksettings, 0, sizeof(cap_ksettings));
+ 	ice_phy_type_to_ethtool(netdev, &cap_ksettings);
+ 	ethtool_intersect_link_masks(ks, &cap_ksettings);
+ 
+@@ -1416,7 +1416,7 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 		return -EOPNOTSUPP;
+ 
+ 	/* copy the ksettings to copy_ks to avoid modifying the original */
+-	memcpy(&copy_ks, ks, sizeof(struct ethtool_link_ksettings));
++	memcpy(&copy_ks, ks, sizeof(copy_ks));
+ 
+ 	/* save autoneg out of ksettings */
+ 	autoneg = copy_ks.base.autoneg;
+@@ -1435,7 +1435,7 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 		return -EINVAL;
+ 
+ 	/* get our own copy of the bits to check against */
+-	memset(&safe_ks, 0, sizeof(struct ethtool_link_ksettings));
++	memset(&safe_ks, 0, sizeof(safe_ks));
+ 	safe_ks.base.cmd = copy_ks.base.cmd;
+ 	safe_ks.base.link_mode_masks_nwords =
+ 		copy_ks.base.link_mode_masks_nwords;
+@@ -1449,8 +1449,7 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 	/* If copy_ks.base and safe_ks.base are not the same now, then they are
+ 	 * trying to set something that we do not support.
+ 	 */
+-	if (memcmp(&copy_ks.base, &safe_ks.base,
+-		   sizeof(struct ethtool_link_settings)))
++	if (memcmp(&copy_ks.base, &safe_ks.base, sizeof(copy_ks.base)))
+ 		return -EOPNOTSUPP;
+ 
+ 	while (test_and_set_bit(__ICE_CFG_BUSY, pf->state)) {
+@@ -1474,7 +1473,7 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 	}
+ 
+ 	/* Copy abilities to config in case autoneg is not set below */
+-	memset(&config, 0, sizeof(struct ice_aqc_set_phy_cfg_data));
++	memset(&config, 0, sizeof(config));
+ 	config.caps = abilities->caps & ~ICE_AQC_PHY_AN_MODE;
+ 	if (abilities->caps & ICE_AQC_PHY_AN_MODE)
+ 		config.caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
+@@ -1668,7 +1667,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
+ 		    vsi->tx_rings[0]->count, new_tx_cnt);
+ 
+ 	tx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_txq,
+-				sizeof(struct ice_ring), GFP_KERNEL);
++				sizeof(*tx_rings), GFP_KERNEL);
+ 	if (!tx_rings) {
+ 		err = -ENOMEM;
+ 		goto done;
+@@ -1700,7 +1699,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
+ 		    vsi->rx_rings[0]->count, new_rx_cnt);
+ 
+ 	rx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_rxq,
+-				sizeof(struct ice_ring), GFP_KERNEL);
++				sizeof(*rx_rings), GFP_KERNEL);
+ 	if (!rx_rings) {
+ 		err = -ENOMEM;
+ 		goto done;
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 82aae530d6c5..d93a0d5a783c 100644
+index 27c3760ae5cb..82aae530d6c5 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -348,19 +348,25 @@ static int ice_get_free_slot(void *array, int size, int curr)
- void ice_vsi_delete(struct ice_vsi *vsi)
- {
- 	struct ice_pf *pf = vsi->back;
--	struct ice_vsi_ctx ctxt;
-+	struct ice_vsi_ctx *ctxt;
- 	enum ice_status status;
+@@ -249,12 +249,12 @@ static int ice_vsi_alloc_arrays(struct ice_vsi *vsi, bool alloc_qvectors)
  
-+	ctxt = devm_kzalloc(&pf->pdev->dev, sizeof(*ctxt), GFP_KERNEL);
-+	if (!ctxt)
-+		return;
-+
- 	if (vsi->type == ICE_VSI_VF)
--		ctxt.vf_num = vsi->vf_id;
--	ctxt.vsi_num = vsi->vsi_num;
-+		ctxt->vf_num = vsi->vf_id;
-+	ctxt->vsi_num = vsi->vsi_num;
+ 	/* allocate memory for both Tx and Rx ring pointers */
+ 	vsi->tx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_txq,
+-				     sizeof(struct ice_ring *), GFP_KERNEL);
++				     sizeof(*vsi->tx_rings), GFP_KERNEL);
+ 	if (!vsi->tx_rings)
+ 		goto err_txrings;
  
--	memcpy(&ctxt.info, &vsi->info, sizeof(ctxt.info));
-+	memcpy(&ctxt->info, &vsi->info, sizeof(ctxt->info));
+ 	vsi->rx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_rxq,
+-				     sizeof(struct ice_ring *), GFP_KERNEL);
++				     sizeof(*vsi->rx_rings), GFP_KERNEL);
+ 	if (!vsi->rx_rings)
+ 		goto err_rxrings;
  
--	status = ice_free_vsi(&pf->hw, vsi->idx, &ctxt, false, NULL);
-+	status = ice_free_vsi(&pf->hw, vsi->idx, ctxt, false, NULL);
+@@ -262,7 +262,7 @@ static int ice_vsi_alloc_arrays(struct ice_vsi *vsi, bool alloc_qvectors)
+ 		/* allocate memory for q_vector pointers */
+ 		vsi->q_vectors = devm_kcalloc(&pf->pdev->dev,
+ 					      vsi->num_q_vectors,
+-					      sizeof(struct ice_q_vector *),
++					      sizeof(*vsi->q_vectors),
+ 					      GFP_KERNEL);
+ 		if (!vsi->q_vectors)
+ 			goto err_vectors;
+@@ -355,7 +355,7 @@ void ice_vsi_delete(struct ice_vsi *vsi)
+ 		ctxt.vf_num = vsi->vf_id;
+ 	ctxt.vsi_num = vsi->vsi_num;
+ 
+-	memcpy(&ctxt.info, &vsi->info, sizeof(struct ice_aqc_vsi_props));
++	memcpy(&ctxt.info, &vsi->info, sizeof(ctxt.info));
+ 
+ 	status = ice_free_vsi(&pf->hw, vsi->idx, &ctxt, false, NULL);
  	if (status)
- 		dev_err(&pf->pdev->dev, "Failed to delete VSI %i in FW\n",
- 			vsi->vsi_num);
-+
-+	devm_kfree(&pf->pdev->dev, ctxt);
- }
+@@ -1620,7 +1620,7 @@ ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_ring **rings, int offset)
+ 	u16 buf_len, i, pf_q;
+ 	int err = 0, tc;
  
- /**
-@@ -908,37 +914,41 @@ static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
-  */
- static int ice_vsi_init(struct ice_vsi *vsi)
- {
--	struct ice_vsi_ctx ctxt = { 0 };
- 	struct ice_pf *pf = vsi->back;
- 	struct ice_hw *hw = &pf->hw;
-+	struct ice_vsi_ctx *ctxt;
- 	int ret = 0;
- 
-+	ctxt = devm_kzalloc(&pf->pdev->dev, sizeof(*ctxt), GFP_KERNEL);
-+	if (!ctxt)
-+		return -ENOMEM;
-+
- 	switch (vsi->type) {
- 	case ICE_VSI_PF:
--		ctxt.flags = ICE_AQ_VSI_TYPE_PF;
-+		ctxt->flags = ICE_AQ_VSI_TYPE_PF;
- 		break;
- 	case ICE_VSI_VF:
--		ctxt.flags = ICE_AQ_VSI_TYPE_VF;
-+		ctxt->flags = ICE_AQ_VSI_TYPE_VF;
- 		/* VF number here is the absolute VF number (0-255) */
--		ctxt.vf_num = vsi->vf_id + hw->func_caps.vf_base_id;
-+		ctxt->vf_num = vsi->vf_id + hw->func_caps.vf_base_id;
- 		break;
- 	default:
- 		return -ENODEV;
- 	}
- 
--	ice_set_dflt_vsi_ctx(&ctxt);
-+	ice_set_dflt_vsi_ctx(ctxt);
- 	/* if the switch is in VEB mode, allow VSI loopback */
- 	if (vsi->vsw->bridge_mode == BRIDGE_MODE_VEB)
--		ctxt.info.sw_flags |= ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
-+		ctxt->info.sw_flags |= ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
- 
- 	/* Set LUT type and HASH type if RSS is enabled */
- 	if (test_bit(ICE_FLAG_RSS_ENA, pf->flags))
--		ice_set_rss_vsi_ctx(&ctxt, vsi);
-+		ice_set_rss_vsi_ctx(ctxt, vsi);
- 
--	ctxt.info.sw_id = vsi->port_info->sw_id;
--	ice_vsi_setup_q_map(vsi, &ctxt);
-+	ctxt->info.sw_id = vsi->port_info->sw_id;
-+	ice_vsi_setup_q_map(vsi, ctxt);
- 
--	ret = ice_add_vsi(hw, vsi->idx, &ctxt, NULL);
-+	ret = ice_add_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (ret) {
- 		dev_err(&pf->pdev->dev,
- 			"Add VSI failed, err %d\n", ret);
-@@ -946,11 +956,12 @@ static int ice_vsi_init(struct ice_vsi *vsi)
- 	}
- 
- 	/* keep context for update VSI operations */
--	vsi->info = ctxt.info;
-+	vsi->info = ctxt->info;
- 
- 	/* record VSI number returned */
--	vsi->vsi_num = ctxt.vsi_num;
-+	vsi->vsi_num = ctxt->vsi_num;
- 
-+	devm_kfree(&pf->pdev->dev, ctxt);
- 	return ret;
- }
- 
-@@ -1823,26 +1834,34 @@ int ice_vsi_manage_vlan_insertion(struct ice_vsi *vsi)
- {
- 	struct device *dev = &vsi->back->pdev->dev;
- 	struct ice_hw *hw = &vsi->back->hw;
--	struct ice_vsi_ctx ctxt = { 0 };
-+	struct ice_vsi_ctx *ctxt;
- 	enum ice_status status;
-+	int ret = 0;
-+
-+	ctxt = devm_kzalloc(dev, sizeof(*ctxt), GFP_KERNEL);
-+	if (!ctxt)
-+		return -ENOMEM;
- 
- 	/* Here we are configuring the VSI to let the driver add VLAN tags by
- 	 * setting vlan_flags to ICE_AQ_VSI_VLAN_MODE_ALL. The actual VLAN tag
- 	 * insertion happens in the Tx hot path, in ice_tx_map.
- 	 */
--	ctxt.info.vlan_flags = ICE_AQ_VSI_VLAN_MODE_ALL;
-+	ctxt->info.vlan_flags = ICE_AQ_VSI_VLAN_MODE_ALL;
- 
--	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
-+	ctxt->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
- 
--	status = ice_update_vsi(hw, vsi->idx, &ctxt, NULL);
-+	status = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (status) {
- 		dev_err(dev, "update VSI for VLAN insert failed, err %d aq_err %d\n",
- 			status, hw->adminq.sq_last_status);
--		return -EIO;
-+		ret = -EIO;
-+		goto out;
- 	}
- 
--	vsi->info.vlan_flags = ctxt.info.vlan_flags;
--	return 0;
-+	vsi->info.vlan_flags = ctxt->info.vlan_flags;
-+out:
-+	devm_kfree(dev, ctxt);
-+	return ret;
- }
- 
- /**
-@@ -1854,35 +1873,42 @@ int ice_vsi_manage_vlan_stripping(struct ice_vsi *vsi, bool ena)
- {
- 	struct device *dev = &vsi->back->pdev->dev;
- 	struct ice_hw *hw = &vsi->back->hw;
--	struct ice_vsi_ctx ctxt = { 0 };
-+	struct ice_vsi_ctx *ctxt;
- 	enum ice_status status;
-+	int ret = 0;
-+
-+	ctxt = devm_kzalloc(dev, sizeof(*ctxt), GFP_KERNEL);
-+	if (!ctxt)
-+		return -ENOMEM;
- 
- 	/* Here we are configuring what the VSI should do with the VLAN tag in
- 	 * the Rx packet. We can either leave the tag in the packet or put it in
- 	 * the Rx descriptor.
- 	 */
--	if (ena) {
-+	if (ena)
- 		/* Strip VLAN tag from Rx packet and put it in the desc */
--		ctxt.info.vlan_flags = ICE_AQ_VSI_VLAN_EMOD_STR_BOTH;
--	} else {
-+		ctxt->info.vlan_flags = ICE_AQ_VSI_VLAN_EMOD_STR_BOTH;
-+	else
- 		/* Disable stripping. Leave tag in packet */
--		ctxt.info.vlan_flags = ICE_AQ_VSI_VLAN_EMOD_NOTHING;
--	}
-+		ctxt->info.vlan_flags = ICE_AQ_VSI_VLAN_EMOD_NOTHING;
- 
- 	/* Allow all packets untagged/tagged */
--	ctxt.info.vlan_flags |= ICE_AQ_VSI_VLAN_MODE_ALL;
-+	ctxt->info.vlan_flags |= ICE_AQ_VSI_VLAN_MODE_ALL;
- 
--	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
-+	ctxt->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
- 
--	status = ice_update_vsi(hw, vsi->idx, &ctxt, NULL);
-+	status = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (status) {
- 		dev_err(dev, "update VSI for VLAN strip failed, ena = %d err %d aq_err %d\n",
- 			ena, status, hw->adminq.sq_last_status);
--		return -EIO;
-+		ret = -EIO;
-+		goto out;
- 	}
- 
--	vsi->info.vlan_flags = ctxt.info.vlan_flags;
--	return 0;
-+	vsi->info.vlan_flags = ctxt->info.vlan_flags;
-+out:
-+	devm_kfree(dev, ctxt);
-+	return ret;
- }
- 
- /**
+-	buf_len = sizeof(struct ice_aqc_add_tx_qgrp);
++	buf_len = sizeof(*qg_buf);
+ 	qg_buf = devm_kzalloc(&pf->pdev->dev, buf_len, GFP_KERNEL);
+ 	if (!qg_buf)
+ 		return -ENOMEM;
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 0731b8994958..aff348e42562 100644
+index 9d266d754445..0731b8994958 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3707,30 +3707,39 @@ static int ice_vsi_update_bridge_mode(struct ice_vsi *vsi, u16 bmode)
- 	struct device *dev = &vsi->back->pdev->dev;
- 	struct ice_aqc_vsi_props *vsi_props;
- 	struct ice_hw *hw = &vsi->back->hw;
--	struct ice_vsi_ctx ctxt = { 0 };
-+	struct ice_vsi_ctx *ctxt;
- 	enum ice_status status;
-+	int ret = 0;
+@@ -1513,8 +1513,8 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
+ 	u8 mac_addr[ETH_ALEN];
+ 	int err;
  
- 	vsi_props = &vsi->info;
--	ctxt.info = vsi->info;
-+
-+	ctxt = devm_kzalloc(dev, sizeof(*ctxt), GFP_KERNEL);
-+	if (!ctxt)
-+		return -ENOMEM;
-+
-+	ctxt->info = vsi->info;
+-	netdev = alloc_etherdev_mqs(sizeof(struct ice_netdev_priv),
+-				    vsi->alloc_txq, vsi->alloc_rxq);
++	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
++				    vsi->alloc_rxq);
+ 	if (!netdev)
+ 		return -ENOMEM;
  
- 	if (bmode == BRIDGE_MODE_VEB)
- 		/* change from VEPA to VEB mode */
--		ctxt.info.sw_flags |= ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
-+		ctxt->info.sw_flags |= ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
- 	else
- 		/* change from VEB to VEPA mode */
--		ctxt.info.sw_flags &= ~ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
--	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SW_VALID);
-+		ctxt->info.sw_flags &= ~ICE_AQ_VSI_SW_FLAG_ALLOW_LB;
-+	ctxt->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SW_VALID);
+@@ -1867,7 +1867,7 @@ static int ice_ena_msix_range(struct ice_pf *pf)
+ 	v_left -= pf->num_lan_msix;
  
--	status = ice_update_vsi(hw, vsi->idx, &ctxt, NULL);
-+	status = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (status) {
- 		dev_err(dev, "update VSI for bridge mode failed, bmode = %d err %d aq_err %d\n",
- 			bmode, status, hw->adminq.sq_last_status);
--		return -EIO;
-+		ret = -EIO;
-+		goto out;
- 	}
- 	/* Update sw flags for book keeping */
--	vsi_props->sw_flags = ctxt.info.sw_flags;
-+	vsi_props->sw_flags = ctxt->info.sw_flags;
+ 	pf->msix_entries = devm_kcalloc(&pf->pdev->dev, v_budget,
+-					sizeof(struct msix_entry), GFP_KERNEL);
++					sizeof(*pf->msix_entries), GFP_KERNEL);
  
--	return 0;
-+out:
-+	devm_kfree(dev, ctxt);
-+	return ret;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 80b50e67cbef..79d793a76042 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -345,25 +345,33 @@ static int ice_vsi_set_pvid(struct ice_vsi *vsi, u16 vid)
+ 	if (!pf->msix_entries) {
+ 		err = -ENOMEM;
+@@ -1955,7 +1955,6 @@ static void ice_clear_interrupt_scheme(struct ice_pf *pf)
+ static int ice_init_interrupt_scheme(struct ice_pf *pf)
  {
- 	struct device *dev = &vsi->back->pdev->dev;
- 	struct ice_hw *hw = &vsi->back->hw;
--	struct ice_vsi_ctx ctxt = { 0 };
-+	struct ice_vsi_ctx *ctxt;
- 	enum ice_status status;
-+	int ret = 0;
-+
-+	ctxt = devm_kzalloc(dev, sizeof(*ctxt), GFP_KERNEL);
-+	if (!ctxt)
-+		return -ENOMEM;
+ 	int vectors = 0, hw_vectors = 0;
+-	ssize_t size;
  
--	ctxt.info.vlan_flags = ICE_AQ_VSI_VLAN_MODE_UNTAGGED |
--			       ICE_AQ_VSI_PVLAN_INSERT_PVID |
--			       ICE_AQ_VSI_VLAN_EMOD_STR;
--	ctxt.info.pvid = cpu_to_le16(vid);
--	ctxt.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
-+	ctxt->info.vlan_flags = (ICE_AQ_VSI_VLAN_MODE_UNTAGGED |
-+				 ICE_AQ_VSI_PVLAN_INSERT_PVID |
-+				 ICE_AQ_VSI_VLAN_EMOD_STR);
-+	ctxt->info.pvid = cpu_to_le16(vid);
-+	ctxt->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
+ 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
+ 		vectors = ice_ena_msix_range(pf);
+@@ -1966,9 +1965,9 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
+ 		return vectors;
  
--	status = ice_update_vsi(hw, vsi->idx, &ctxt, NULL);
-+	status = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (status) {
- 		dev_info(dev, "update VSI for VLAN insert failed, err %d aq_err %d\n",
- 			 status, hw->adminq.sq_last_status);
--		return -EIO;
-+		ret = -EIO;
-+		goto out;
- 	}
- 
--	vsi->info.pvid = ctxt.info.pvid;
--	vsi->info.vlan_flags = ctxt.info.vlan_flags;
--	return 0;
-+	vsi->info.pvid = ctxt->info.pvid;
-+	vsi->info.vlan_flags = ctxt->info.vlan_flags;
-+out:
-+	devm_kfree(dev, ctxt);
-+	return ret;
- }
- 
- /**
-@@ -2479,11 +2487,12 @@ int ice_get_vf_cfg(struct net_device *netdev, int vf_id,
- int ice_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool ena)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
--	struct ice_vsi_ctx ctx = { 0 };
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
-+	struct ice_vsi_ctx *ctx;
-+	enum ice_status status;
- 	struct ice_vf *vf;
--	int status;
-+	int ret = 0;
- 
- 	/* validate the request */
- 	if (vf_id >= pf->num_alloc_vfs) {
-@@ -2503,25 +2512,31 @@ int ice_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool ena)
- 		return 0;
- 	}
- 
--	ctx.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SECURITY_VALID);
-+	ctx = devm_kzalloc(&pf->pdev->dev, sizeof(*ctx), GFP_KERNEL);
-+	if (!ctx)
-+		return -ENOMEM;
-+
-+	ctx->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SECURITY_VALID);
- 
- 	if (ena) {
--		ctx.info.sec_flags |= ICE_AQ_VSI_SEC_FLAG_ENA_MAC_ANTI_SPOOF;
--		ctx.info.sw_flags2 |= ICE_AQ_VSI_SW_FLAG_RX_PRUNE_EN_M;
-+		ctx->info.sec_flags |= ICE_AQ_VSI_SEC_FLAG_ENA_MAC_ANTI_SPOOF;
-+		ctx->info.sw_flags2 |= ICE_AQ_VSI_SW_FLAG_RX_PRUNE_EN_M;
- 	}
- 
--	status = ice_update_vsi(&pf->hw, vsi->idx, &ctx, NULL);
-+	status = ice_update_vsi(&pf->hw, vsi->idx, ctx, NULL);
- 	if (status) {
- 		dev_dbg(&pf->pdev->dev,
- 			"Error %d, failed to update VSI* parameters\n", status);
--		return -EIO;
-+		ret = -EIO;
-+		goto out;
- 	}
- 
- 	vf->spoofchk = ena;
--	vsi->info.sec_flags = ctx.info.sec_flags;
--	vsi->info.sw_flags2 = ctx.info.sw_flags2;
+ 	/* set up vector assignment tracking */
+-	size = sizeof(struct ice_res_tracker) + (sizeof(u16) * vectors);
 -
--	return status;
-+	vsi->info.sec_flags = ctx->info.sec_flags;
-+	vsi->info.sw_flags2 = ctx->info.sw_flags2;
-+out:
-+	devm_kfree(&pf->pdev->dev, ctx);
-+	return ret;
- }
+-	pf->sw_irq_tracker = devm_kzalloc(&pf->pdev->dev, size, GFP_KERNEL);
++	pf->sw_irq_tracker =
++		devm_kzalloc(&pf->pdev->dev, sizeof(*pf->sw_irq_tracker) +
++			     (sizeof(u16) * vectors), GFP_KERNEL);
+ 	if (!pf->sw_irq_tracker) {
+ 		ice_dis_msix(pf);
+ 		return -ENOMEM;
+@@ -1980,9 +1979,9 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
  
- /**
+ 	/* set up HW vector assignment tracking */
+ 	hw_vectors = pf->hw.func_caps.common_cap.num_msix_vectors;
+-	size = sizeof(struct ice_res_tracker) + (sizeof(u16) * hw_vectors);
+-
+-	pf->hw_irq_tracker = devm_kzalloc(&pf->pdev->dev, size, GFP_KERNEL);
++	pf->hw_irq_tracker =
++		devm_kzalloc(&pf->pdev->dev, sizeof(*pf->hw_irq_tracker) +
++			     (sizeof(u16) * hw_vectors), GFP_KERNEL);
+ 	if (!pf->hw_irq_tracker) {
+ 		ice_clear_interrupt_scheme(pf);
+ 		return -ENOMEM;
+@@ -2116,7 +2115,7 @@ static int ice_probe(struct pci_dev *pdev,
+ 	}
+ 
+ 	pf->vsi = devm_kcalloc(&pdev->dev, pf->num_alloc_vsi,
+-			       sizeof(struct ice_vsi *), GFP_KERNEL);
++			       sizeof(*pf->vsi), GFP_KERNEL);
+ 	if (!pf->vsi) {
+ 		err = -ENOMEM;
+ 		goto err_init_pf_unroll;
+@@ -2148,7 +2147,7 @@ static int ice_probe(struct pci_dev *pdev,
+ 	}
+ 
+ 	/* create switch struct for the switch element created by FW on boot */
+-	pf->first_sw = devm_kzalloc(&pdev->dev, sizeof(struct ice_sw),
++	pf->first_sw = devm_kzalloc(&pdev->dev, sizeof(*pf->first_sw),
+ 				    GFP_KERNEL);
+ 	if (!pf->first_sw) {
+ 		err = -ENOMEM;
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index 81fb7d19c0fd..f355f59d8b64 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1066,11 +1066,10 @@ enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw)
+ 		hw->max_children[i] = le16_to_cpu(max_sibl);
+ 	}
+ 
+-	hw->layer_info = (struct ice_aqc_layer_props *)
+-			  devm_kmemdup(ice_hw_to_dev(hw), buf->layer_props,
+-				       (hw->num_tx_sched_layers *
+-					sizeof(*hw->layer_info)),
+-				       GFP_KERNEL);
++	hw->layer_info = devm_kmemdup(ice_hw_to_dev(hw), buf->layer_props,
++				      (hw->num_tx_sched_layers *
++				       sizeof(*hw->layer_info)),
++				      GFP_KERNEL);
+ 	if (!hw->layer_info) {
+ 		status = ICE_ERR_NO_MEMORY;
+ 		goto sched_query_out;
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 3c5a66edaf7f..528b90cdd9da 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -98,7 +98,7 @@ enum ice_status ice_init_def_sw_recp(struct ice_hw *hw)
+ 	u8 i;
+ 
+ 	recps = devm_kcalloc(ice_hw_to_dev(hw), ICE_MAX_NUM_RECIPES,
+-			     sizeof(struct ice_sw_recipe), GFP_KERNEL);
++			     sizeof(*recps), GFP_KERNEL);
+ 	if (!recps)
+ 		return ICE_ERR_NO_MEMORY;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 2357fcac996b..67d129bfe489 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -48,7 +48,6 @@ static struct netdev_queue *txring_txq(const struct ice_ring *ring)
+  */
+ void ice_clean_tx_ring(struct ice_ring *tx_ring)
+ {
+-	unsigned long size;
+ 	u16 i;
+ 
+ 	/* ring already cleared, nothing to do */
+@@ -59,8 +58,7 @@ void ice_clean_tx_ring(struct ice_ring *tx_ring)
+ 	for (i = 0; i < tx_ring->count; i++)
+ 		ice_unmap_and_free_tx_buf(tx_ring, &tx_ring->tx_buf[i]);
+ 
+-	size = sizeof(struct ice_tx_buf) * tx_ring->count;
+-	memset(tx_ring->tx_buf, 0, size);
++	memset(tx_ring->tx_buf, 0, sizeof(*tx_ring->tx_buf) * tx_ring->count);
+ 
+ 	/* Zero out the descriptor ring */
+ 	memset(tx_ring->desc, 0, tx_ring->size);
+@@ -226,21 +224,21 @@ static bool ice_clean_tx_irq(struct ice_vsi *vsi, struct ice_ring *tx_ring,
+ int ice_setup_tx_ring(struct ice_ring *tx_ring)
+ {
+ 	struct device *dev = tx_ring->dev;
+-	int bi_size;
+ 
+ 	if (!dev)
+ 		return -ENOMEM;
+ 
+ 	/* warn if we are about to overwrite the pointer */
+ 	WARN_ON(tx_ring->tx_buf);
+-	bi_size = sizeof(struct ice_tx_buf) * tx_ring->count;
+-	tx_ring->tx_buf = devm_kzalloc(dev, bi_size, GFP_KERNEL);
++	tx_ring->tx_buf =
++		devm_kzalloc(dev, sizeof(*tx_ring->tx_buf) * tx_ring->count,
++			     GFP_KERNEL);
+ 	if (!tx_ring->tx_buf)
+ 		return -ENOMEM;
+ 
+ 	/* round up to nearest 4K */
+-	tx_ring->size = tx_ring->count * sizeof(struct ice_tx_desc);
+-	tx_ring->size = ALIGN(tx_ring->size, 4096);
++	tx_ring->size = ALIGN(tx_ring->count * sizeof(struct ice_tx_desc),
++			      4096);
+ 	tx_ring->desc = dmam_alloc_coherent(dev, tx_ring->size, &tx_ring->dma,
+ 					    GFP_KERNEL);
+ 	if (!tx_ring->desc) {
+@@ -267,7 +265,6 @@ int ice_setup_tx_ring(struct ice_ring *tx_ring)
+ void ice_clean_rx_ring(struct ice_ring *rx_ring)
+ {
+ 	struct device *dev = rx_ring->dev;
+-	unsigned long size;
+ 	u16 i;
+ 
+ 	/* ring already cleared, nothing to do */
+@@ -292,8 +289,7 @@ void ice_clean_rx_ring(struct ice_ring *rx_ring)
+ 		rx_buf->page_offset = 0;
+ 	}
+ 
+-	size = sizeof(struct ice_rx_buf) * rx_ring->count;
+-	memset(rx_ring->rx_buf, 0, size);
++	memset(rx_ring->rx_buf, 0, sizeof(*rx_ring->rx_buf) * rx_ring->count);
+ 
+ 	/* Zero out the descriptor ring */
+ 	memset(rx_ring->desc, 0, rx_ring->size);
+@@ -331,15 +327,15 @@ void ice_free_rx_ring(struct ice_ring *rx_ring)
+ int ice_setup_rx_ring(struct ice_ring *rx_ring)
+ {
+ 	struct device *dev = rx_ring->dev;
+-	int bi_size;
+ 
+ 	if (!dev)
+ 		return -ENOMEM;
+ 
+ 	/* warn if we are about to overwrite the pointer */
+ 	WARN_ON(rx_ring->rx_buf);
+-	bi_size = sizeof(struct ice_rx_buf) * rx_ring->count;
+-	rx_ring->rx_buf = devm_kzalloc(dev, bi_size, GFP_KERNEL);
++	rx_ring->rx_buf =
++		devm_kzalloc(dev, sizeof(*rx_ring->rx_buf) * rx_ring->count,
++			     GFP_KERNEL);
+ 	if (!rx_ring->rx_buf)
+ 		return -ENOMEM;
+ 
 -- 
 2.14.5
 
