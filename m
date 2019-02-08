@@ -1,227 +1,27 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 08 Feb 2019 13:03:49 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 524f3e35f1777fb4eb886026ce5c81024cc6eee4
-Message-ID: <5c5d0db5.jT+SHZBnDuVq5/Af%lkp@intel.com>
+From: Nathan Chancellor <natechancellor@gmail.com>
+Date: Thu, 7 Feb 2019 22:09:21 -0700
+Subject: [Intel-wired-lan] Clang warning in
+ drivers/net/ethernet/intel/igc/igc_ethtool.c
+Message-ID: <20190208050921.GA8758@archlinux-ryzen>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 524f3e35f1777fb4eb886026ce5c81024cc6eee4  i40e driver changes to test dynamic MSI-X
+Hi all,
 
-elapsed time: 172m
+After commit 8c5ad0dae93c ("igc: Add ethtool support"), Clang warns:
 
-configs tested: 202
+drivers/net/ethernet/intel/igc/igc_ethtool.c:9:19: warning: variable 'igc_priv_flags_strings' is not needed and will not be emitted [-Wunneeded-internal-declaration]
+static const char igc_priv_flags_strings[][ETH_GSTRING_LEN] = {
+                  ^
+1 warning generated.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+igc_priv_flags_strings is only used in an ARRAY_SIZE macro, which is a
+compile time evaluation, so no reference to it is being emitted in the
+final assembly. Is it actually needed and was forgotten to be used
+somewhere or could it be eliminated so that Clang no longer warns?
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-sh                           se7206_defconfig
-sh                        sh7763rdp_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                           tegra_defconfig
-riscv                             allnoconfig
-i386                   randconfig-x019-201905
-i386                   randconfig-x015-201905
-i386                   randconfig-x016-201905
-i386                   randconfig-x014-201905
-i386                   randconfig-x012-201905
-i386                   randconfig-x013-201905
-i386                   randconfig-x010-201905
-i386                   randconfig-x011-201905
-i386                   randconfig-x018-201905
-i386                   randconfig-x017-201905
-x86_64                                  kexec
-x86_64                         rhel-7.2-clear
-x86_64                               rhel-7.2
-x86_64                              fedora-25
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-02071000
-i386                   randconfig-n1-02071000
-i386                   randconfig-n2-02071000
-i386                   randconfig-n3-02071000
-x86_64                 randconfig-x005-201905
-x86_64                 randconfig-x008-201905
-x86_64                 randconfig-x009-201905
-x86_64                 randconfig-x001-201905
-x86_64                 randconfig-x002-201905
-x86_64                 randconfig-x003-201905
-x86_64                 randconfig-x006-201905
-x86_64                 randconfig-x007-201905
-x86_64                 randconfig-x000-201905
-x86_64                 randconfig-x004-201905
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x013-201905
-x86_64                 randconfig-x017-201905
-x86_64                 randconfig-x016-201905
-x86_64                 randconfig-x019-201905
-x86_64                 randconfig-x012-201905
-x86_64                 randconfig-x018-201905
-x86_64                 randconfig-x011-201905
-x86_64                 randconfig-x010-201905
-x86_64                 randconfig-x015-201905
-x86_64                 randconfig-x014-201905
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201905
-i386                     randconfig-a1-201905
-i386                     randconfig-a2-201905
-i386                     randconfig-a3-201905
-x86_64                 randconfig-s0-02081216
-x86_64                 randconfig-s1-02081216
-x86_64                 randconfig-s2-02081216
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-powerpc                     tqm8541_defconfig
-sh                         ap325rxa_defconfig
-sh                          sdk7780_defconfig
-sh                           se7750_defconfig
-arm                            netx_defconfig
-mips                      maltasmvp_defconfig
-powerpc               corenet_basic_defconfig
-arm                           omap1_defconfig
-microblaze                       allmodconfig
-powerpc                 mpc8560_ads_defconfig
-sh                            hp6xx_defconfig
-arm                            lart_defconfig
-mips                      fuloong2e_defconfig
-openrisc                            defconfig
-parisc                generic-32bit_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-02041749
-i386                   randconfig-s1-02041749
-i386                   randconfig-s2-02041749
-i386                   randconfig-s3-02041749
-arm                             mxs_defconfig
-mips                      pic32mzda_defconfig
-powerpc                      ppc6xx_defconfig
-arm                       versatile_defconfig
-h8300                            alldefconfig
-arm                       mainstone_defconfig
-sh                        sh7757lcr_defconfig
-powerpc                 mpc836x_mds_defconfig
-i386                             alldefconfig
-mips                         mpc30x_defconfig
-x86_64                 randconfig-u0-02081237
-x86_64                 randconfig-u0-02081238
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-l3-02080157
-x86_64                 randconfig-l0-02080157
-i386                   randconfig-l2-02080157
-i386                   randconfig-l3-02080157
-i386                   randconfig-l0-02080157
-i386                   randconfig-l1-02080157
-x86_64                 randconfig-l1-02080157
-x86_64                 randconfig-l2-02080157
-x86_64                 randconfig-l0-02081121
-x86_64                 randconfig-l1-02081121
-x86_64                 randconfig-l2-02081121
-x86_64                 randconfig-l3-02081121
-i386                   randconfig-l0-02081121
-i386                   randconfig-l1-02081121
-i386                   randconfig-l2-02081121
-i386                   randconfig-l3-02081121
-x86_64                 randconfig-s3-02081230
-x86_64                 randconfig-s4-02081230
-x86_64                 randconfig-s5-02081230
-i386                   randconfig-x072-201905
-i386                   randconfig-x079-201905
-i386                   randconfig-x073-201905
-i386                   randconfig-x075-201905
-i386                   randconfig-x077-201905
-i386                   randconfig-x078-201905
-i386                   randconfig-x074-201905
-i386                   randconfig-x076-201905
-i386                   randconfig-x070-201905
-i386                   randconfig-x071-201905
-i386                              allnoconfig
-i386                                defconfig
-x86_64          lkp-CONFIG_DEBUG_INFO_REDUCED
-arm                          badge4_defconfig
-mips                  cavium_octeon_defconfig
-i386                   randconfig-x007-201905
-i386                   randconfig-x006-201905
-i386                   randconfig-x000-201905
-i386                   randconfig-x002-201905
-i386                   randconfig-x001-201905
-i386                   randconfig-x009-201905
-i386                   randconfig-x003-201905
-i386                   randconfig-x008-201905
-i386                   randconfig-x005-201905
-i386                   randconfig-x004-201905
-riscv                              tinyconfig
-i386                               tinyconfig
-arm                          pcm027_defconfig
-sh                            shmin_defconfig
-arm                              alldefconfig
-sh                           sh2007_defconfig
-i386                   randconfig-x0-02081215
-i386                   randconfig-x0-02081217
-i386                   randconfig-x0-02081300
-i386                   randconfig-x0-02081302
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Thanks,
+Nathan
