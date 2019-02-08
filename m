@@ -1,45 +1,45 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:51:10 -0800
-Subject: [Intel-wired-lan] [PATCH S13 14/16] ice: Restore VLAN switch rule
- if port VLAN existed before
+Date: Fri,  8 Feb 2019 12:51:11 -0800
+Subject: [Intel-wired-lan] [PATCH S13 15/16] ice: use irq_num var in
+ ice_vsi_req_irq_msix
 In-Reply-To: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
 References: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205112.12180-15-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205112.12180-16-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+From: Alan Brady <alan.brady@intel.com>
 
-The VLAN rule is lost when VM starts or the AVF driver (iavf.ko) is
-reloaded. So it is necessary to add this rule again.
+Someone went through the effort of making this a variable so let's use
+it instead of recalculating it again.
 
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index b84620068a3c..ca8780891540 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -457,8 +457,10 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
- 	vsi->hw_base_vector += 1;
- 
- 	/* Check if port VLAN exist before, and restore it accordingly */
--	if (vf->port_vlan_id)
-+	if (vf->port_vlan_id) {
- 		ice_vsi_manage_pvid(vsi, vf->port_vlan_id, true);
-+		ice_vsi_add_vlan(vsi, vf->port_vlan_id & ICE_VLAN_M);
-+	}
- 
- 	eth_broadcast_addr(broadcast);
- 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index fa7351638815..fbeb7e023520 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1248,10 +1248,9 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi, char *basename)
+ 			/* skip this unused q_vector */
+ 			continue;
+ 		}
+-		err = devm_request_irq(&pf->pdev->dev,
+-				       pf->msix_entries[base + vector].vector,
+-				       vsi->irq_handler, 0, q_vector->name,
+-				       q_vector);
++		err = devm_request_irq(&pf->pdev->dev, irq_num,
++				       vsi->irq_handler, 0,
++				       q_vector->name, q_vector);
+ 		if (err) {
+ 			netdev_err(vsi->netdev,
+ 				   "MSIX request_irq failed, error: %d\n", err);
 -- 
 2.14.5
 
