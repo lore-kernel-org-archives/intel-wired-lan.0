@@ -1,350 +1,51 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:50:31 -0800
-Subject: [Intel-wired-lan] [PATCH S11 04/16] ice: sizeof(<type>) should be
- avoided
+Date: Fri,  8 Feb 2019 12:50:41 -0800
+Subject: [Intel-wired-lan] [PATCH S11 14/16] ice: use absolute vector ID for
+ VFs
 In-Reply-To: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
 References: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205043.11975-5-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205043.11975-15-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-With sizeof(), it is preferable to use the variable of type <type> instead
-of sizeof(<type>).
+When the PF driver sets up the VF MSI-X vector allocation, it needs to
+use the hardware absolute vector ID, not the per-PF vector ID. Without
+this change we see (apparent) TX hangs when using VFs on multiple PFs.
 
-There are multiple places where a temporary variable is used to hold a
-'size' value which is then used for a subsequent alloc/memset. Get rid
-of the temporary variable by calculating size as part of the alloc/memset
-statement.
-
-Also remove unnecessary type-cast.
-
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> fixed checkpatch errors]
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> edited commit message]
----
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 15 +++++++--------
- drivers/net/ethernet/intel/ice/ice_lib.c     | 10 +++++-----
- drivers/net/ethernet/intel/ice/ice_main.c    | 23 +++++++++++------------
- drivers/net/ethernet/intel/ice/ice_sched.c   |  9 ++++-----
- drivers/net/ethernet/intel/ice/ice_switch.c  |  2 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c    | 24 ++++++++++--------------
- 6 files changed, 38 insertions(+), 45 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index a82f0202652d..a93daf660171 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1084,7 +1084,7 @@ ice_get_settings_link_up(struct ethtool_link_ksettings *ks,
- 	 * current PHY type, get what is supported by the NVM and intersect
- 	 * them to get what is truly supported
- 	 */
--	memset(&cap_ksettings, 0, sizeof(struct ethtool_link_ksettings));
-+	memset(&cap_ksettings, 0, sizeof(cap_ksettings));
- 	ice_phy_type_to_ethtool(netdev, &cap_ksettings);
- 	ethtool_intersect_link_masks(ks, &cap_ksettings);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 458e179ea863..57155b4a59dc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -173,7 +173,8 @@ static void ice_dis_vf_mappings(struct ice_vf *vf)
+ 	wr32(hw, VPINT_ALLOC(vf->vf_id), 0);
+ 	wr32(hw, VPINT_ALLOC_PCI(vf->vf_id), 0);
  
-@@ -1416,7 +1416,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 		return -EOPNOTSUPP;
+-	first = vf->first_vector_idx;
++	first = vf->first_vector_idx +
++		hw->func_caps.common_cap.msix_vector_first_id;
+ 	last = first + pf->num_vf_msix - 1;
+ 	for (v = first; v <= last; v++) {
+ 		u32 reg;
+@@ -523,7 +524,8 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
  
- 	/* copy the ksettings to copy_ks to avoid modifying the original */
--	memcpy(&copy_ks, ks, sizeof(struct ethtool_link_ksettings));
-+	memcpy(&copy_ks, ks, sizeof(copy_ks));
- 
- 	/* save autoneg out of ksettings */
- 	autoneg = copy_ks.base.autoneg;
-@@ -1435,7 +1435,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 		return -EINVAL;
- 
- 	/* get our own copy of the bits to check against */
--	memset(&safe_ks, 0, sizeof(struct ethtool_link_ksettings));
-+	memset(&safe_ks, 0, sizeof(safe_ks));
- 	safe_ks.base.cmd = copy_ks.base.cmd;
- 	safe_ks.base.link_mode_masks_nwords =
- 		copy_ks.base.link_mode_masks_nwords;
-@@ -1449,8 +1449,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 	/* If copy_ks.base and safe_ks.base are not the same now, then they are
- 	 * trying to set something that we do not support.
- 	 */
--	if (memcmp(&copy_ks.base, &safe_ks.base,
--		   sizeof(struct ethtool_link_settings)))
-+	if (memcmp(&copy_ks.base, &safe_ks.base, sizeof(copy_ks.base)))
- 		return -EOPNOTSUPP;
- 
- 	while (test_and_set_bit(__ICE_CFG_BUSY, pf->state)) {
-@@ -1474,7 +1473,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 	}
- 
- 	/* Copy abilities to config in case autoneg is not set below */
--	memset(&config, 0, sizeof(struct ice_aqc_set_phy_cfg_data));
-+	memset(&config, 0, sizeof(config));
- 	config.caps = abilities->caps & ~ICE_AQC_PHY_AN_MODE;
- 	if (abilities->caps & ICE_AQC_PHY_AN_MODE)
- 		config.caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
-@@ -1668,7 +1667,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 		    vsi->tx_rings[0]->count, new_tx_cnt);
- 
- 	tx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_txq,
--				sizeof(struct ice_ring), GFP_KERNEL);
-+				sizeof(*tx_rings), GFP_KERNEL);
- 	if (!tx_rings) {
- 		err = -ENOMEM;
- 		goto done;
-@@ -1700,7 +1699,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 		    vsi->rx_rings[0]->count, new_rx_cnt);
- 
- 	rx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_rxq,
--				sizeof(struct ice_ring), GFP_KERNEL);
-+				sizeof(*rx_rings), GFP_KERNEL);
- 	if (!rx_rings) {
- 		err = -ENOMEM;
- 		goto done;
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 27c3760ae5cb..82aae530d6c5 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -249,12 +249,12 @@ static int ice_vsi_alloc_arrays(struct ice_vsi *vsi, bool alloc_qvectors)
- 
- 	/* allocate memory for both Tx and Rx ring pointers */
- 	vsi->tx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_txq,
--				     sizeof(struct ice_ring *), GFP_KERNEL);
-+				     sizeof(*vsi->tx_rings), GFP_KERNEL);
- 	if (!vsi->tx_rings)
- 		goto err_txrings;
- 
- 	vsi->rx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_rxq,
--				     sizeof(struct ice_ring *), GFP_KERNEL);
-+				     sizeof(*vsi->rx_rings), GFP_KERNEL);
- 	if (!vsi->rx_rings)
- 		goto err_rxrings;
- 
-@@ -262,7 +262,7 @@ static int ice_vsi_alloc_arrays(struct ice_vsi *vsi, bool alloc_qvectors)
- 		/* allocate memory for q_vector pointers */
- 		vsi->q_vectors = devm_kcalloc(&pf->pdev->dev,
- 					      vsi->num_q_vectors,
--					      sizeof(struct ice_q_vector *),
-+					      sizeof(*vsi->q_vectors),
- 					      GFP_KERNEL);
- 		if (!vsi->q_vectors)
- 			goto err_vectors;
-@@ -355,7 +355,7 @@ void ice_vsi_delete(struct ice_vsi *vsi)
- 		ctxt.vf_num = vsi->vf_id;
- 	ctxt.vsi_num = vsi->vsi_num;
- 
--	memcpy(&ctxt.info, &vsi->info, sizeof(struct ice_aqc_vsi_props));
-+	memcpy(&ctxt.info, &vsi->info, sizeof(ctxt.info));
- 
- 	status = ice_free_vsi(&pf->hw, vsi->idx, &ctxt, false, NULL);
- 	if (status)
-@@ -1620,7 +1620,7 @@ ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_ring **rings, int offset)
- 	u16 buf_len, i, pf_q;
- 	int err = 0, tc;
- 
--	buf_len = sizeof(struct ice_aqc_add_tx_qgrp);
-+	buf_len = sizeof(*qg_buf);
- 	qg_buf = devm_kzalloc(&pf->pdev->dev, buf_len, GFP_KERNEL);
- 	if (!qg_buf)
- 		return -ENOMEM;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 9d266d754445..0731b8994958 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1513,8 +1513,8 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
- 	u8 mac_addr[ETH_ALEN];
- 	int err;
- 
--	netdev = alloc_etherdev_mqs(sizeof(struct ice_netdev_priv),
--				    vsi->alloc_txq, vsi->alloc_rxq);
-+	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
-+				    vsi->alloc_rxq);
- 	if (!netdev)
- 		return -ENOMEM;
- 
-@@ -1867,7 +1867,7 @@ static int ice_ena_msix_range(struct ice_pf *pf)
- 	v_left -= pf->num_lan_msix;
- 
- 	pf->msix_entries = devm_kcalloc(&pf->pdev->dev, v_budget,
--					sizeof(struct msix_entry), GFP_KERNEL);
-+					sizeof(*pf->msix_entries), GFP_KERNEL);
- 
- 	if (!pf->msix_entries) {
- 		err = -ENOMEM;
-@@ -1955,7 +1955,6 @@ static void ice_clear_interrupt_scheme(struct ice_pf *pf)
- static int ice_init_interrupt_scheme(struct ice_pf *pf)
- {
- 	int vectors = 0, hw_vectors = 0;
--	ssize_t size;
- 
- 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags))
- 		vectors = ice_ena_msix_range(pf);
-@@ -1966,9 +1965,9 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
- 		return vectors;
- 
- 	/* set up vector assignment tracking */
--	size = sizeof(struct ice_res_tracker) + (sizeof(u16) * vectors);
--
--	pf->sw_irq_tracker = devm_kzalloc(&pf->pdev->dev, size, GFP_KERNEL);
-+	pf->sw_irq_tracker =
-+		devm_kzalloc(&pf->pdev->dev, sizeof(*pf->sw_irq_tracker) +
-+			     (sizeof(u16) * vectors), GFP_KERNEL);
- 	if (!pf->sw_irq_tracker) {
- 		ice_dis_msix(pf);
- 		return -ENOMEM;
-@@ -1980,9 +1979,9 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
- 
- 	/* set up HW vector assignment tracking */
- 	hw_vectors = pf->hw.func_caps.common_cap.num_msix_vectors;
--	size = sizeof(struct ice_res_tracker) + (sizeof(u16) * hw_vectors);
--
--	pf->hw_irq_tracker = devm_kzalloc(&pf->pdev->dev, size, GFP_KERNEL);
-+	pf->hw_irq_tracker =
-+		devm_kzalloc(&pf->pdev->dev, sizeof(*pf->hw_irq_tracker) +
-+			     (sizeof(u16) * hw_vectors), GFP_KERNEL);
- 	if (!pf->hw_irq_tracker) {
- 		ice_clear_interrupt_scheme(pf);
- 		return -ENOMEM;
-@@ -2116,7 +2115,7 @@ static int ice_probe(struct pci_dev *pdev,
- 	}
- 
- 	pf->vsi = devm_kcalloc(&pdev->dev, pf->num_alloc_vsi,
--			       sizeof(struct ice_vsi *), GFP_KERNEL);
-+			       sizeof(*pf->vsi), GFP_KERNEL);
- 	if (!pf->vsi) {
- 		err = -ENOMEM;
- 		goto err_init_pf_unroll;
-@@ -2148,7 +2147,7 @@ static int ice_probe(struct pci_dev *pdev,
- 	}
- 
- 	/* create switch struct for the switch element created by FW on boot */
--	pf->first_sw = devm_kzalloc(&pdev->dev, sizeof(struct ice_sw),
-+	pf->first_sw = devm_kzalloc(&pdev->dev, sizeof(*pf->first_sw),
- 				    GFP_KERNEL);
- 	if (!pf->first_sw) {
- 		err = -ENOMEM;
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 81fb7d19c0fd..f355f59d8b64 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -1066,11 +1066,10 @@ enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw)
- 		hw->max_children[i] = le16_to_cpu(max_sibl);
- 	}
- 
--	hw->layer_info = (struct ice_aqc_layer_props *)
--			  devm_kmemdup(ice_hw_to_dev(hw), buf->layer_props,
--				       (hw->num_tx_sched_layers *
--					sizeof(*hw->layer_info)),
--				       GFP_KERNEL);
-+	hw->layer_info = devm_kmemdup(ice_hw_to_dev(hw), buf->layer_props,
-+				      (hw->num_tx_sched_layers *
-+				       sizeof(*hw->layer_info)),
-+				      GFP_KERNEL);
- 	if (!hw->layer_info) {
- 		status = ICE_ERR_NO_MEMORY;
- 		goto sched_query_out;
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 3c5a66edaf7f..528b90cdd9da 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -98,7 +98,7 @@ enum ice_status ice_init_def_sw_recp(struct ice_hw *hw)
- 	u8 i;
- 
- 	recps = devm_kcalloc(ice_hw_to_dev(hw), ICE_MAX_NUM_RECIPES,
--			     sizeof(struct ice_sw_recipe), GFP_KERNEL);
-+			     sizeof(*recps), GFP_KERNEL);
- 	if (!recps)
- 		return ICE_ERR_NO_MEMORY;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 2357fcac996b..67d129bfe489 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -48,7 +48,6 @@ static struct netdev_queue *txring_txq(const struct ice_ring *ring)
-  */
- void ice_clean_tx_ring(struct ice_ring *tx_ring)
- {
--	unsigned long size;
- 	u16 i;
- 
- 	/* ring already cleared, nothing to do */
-@@ -59,8 +58,7 @@ void ice_clean_tx_ring(struct ice_ring *tx_ring)
- 	for (i = 0; i < tx_ring->count; i++)
- 		ice_unmap_and_free_tx_buf(tx_ring, &tx_ring->tx_buf[i]);
- 
--	size = sizeof(struct ice_tx_buf) * tx_ring->count;
--	memset(tx_ring->tx_buf, 0, size);
-+	memset(tx_ring->tx_buf, 0, sizeof(*tx_ring->tx_buf) * tx_ring->count);
- 
- 	/* Zero out the descriptor ring */
- 	memset(tx_ring->desc, 0, tx_ring->size);
-@@ -226,21 +224,21 @@ static bool ice_clean_tx_irq(struct ice_vsi *vsi, struct ice_ring *tx_ring,
- int ice_setup_tx_ring(struct ice_ring *tx_ring)
- {
- 	struct device *dev = tx_ring->dev;
--	int bi_size;
- 
- 	if (!dev)
- 		return -ENOMEM;
- 
- 	/* warn if we are about to overwrite the pointer */
- 	WARN_ON(tx_ring->tx_buf);
--	bi_size = sizeof(struct ice_tx_buf) * tx_ring->count;
--	tx_ring->tx_buf = devm_kzalloc(dev, bi_size, GFP_KERNEL);
-+	tx_ring->tx_buf =
-+		devm_kzalloc(dev, sizeof(*tx_ring->tx_buf) * tx_ring->count,
-+			     GFP_KERNEL);
- 	if (!tx_ring->tx_buf)
- 		return -ENOMEM;
- 
- 	/* round up to nearest 4K */
--	tx_ring->size = tx_ring->count * sizeof(struct ice_tx_desc);
--	tx_ring->size = ALIGN(tx_ring->size, 4096);
-+	tx_ring->size = ALIGN(tx_ring->count * sizeof(struct ice_tx_desc),
-+			      4096);
- 	tx_ring->desc = dmam_alloc_coherent(dev, tx_ring->size, &tx_ring->dma,
- 					    GFP_KERNEL);
- 	if (!tx_ring->desc) {
-@@ -267,7 +265,6 @@ int ice_setup_tx_ring(struct ice_ring *tx_ring)
- void ice_clean_rx_ring(struct ice_ring *rx_ring)
- {
- 	struct device *dev = rx_ring->dev;
--	unsigned long size;
- 	u16 i;
- 
- 	/* ring already cleared, nothing to do */
-@@ -292,8 +289,7 @@ void ice_clean_rx_ring(struct ice_ring *rx_ring)
- 		rx_buf->page_offset = 0;
- 	}
- 
--	size = sizeof(struct ice_rx_buf) * rx_ring->count;
--	memset(rx_ring->rx_buf, 0, size);
-+	memset(rx_ring->rx_buf, 0, sizeof(*rx_ring->rx_buf) * rx_ring->count);
- 
- 	/* Zero out the descriptor ring */
- 	memset(rx_ring->desc, 0, rx_ring->size);
-@@ -331,15 +327,15 @@ void ice_free_rx_ring(struct ice_ring *rx_ring)
- int ice_setup_rx_ring(struct ice_ring *rx_ring)
- {
- 	struct device *dev = rx_ring->dev;
--	int bi_size;
- 
- 	if (!dev)
- 		return -ENOMEM;
- 
- 	/* warn if we are about to overwrite the pointer */
- 	WARN_ON(rx_ring->rx_buf);
--	bi_size = sizeof(struct ice_rx_buf) * rx_ring->count;
--	rx_ring->rx_buf = devm_kzalloc(dev, bi_size, GFP_KERNEL);
-+	rx_ring->rx_buf =
-+		devm_kzalloc(dev, sizeof(*rx_ring->rx_buf) * rx_ring->count,
-+			     GFP_KERNEL);
- 	if (!rx_ring->rx_buf)
- 		return -ENOMEM;
+ 	hw = &pf->hw;
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+-	first = vf->first_vector_idx;
++	first = vf->first_vector_idx +
++		hw->func_caps.common_cap.msix_vector_first_id;
+ 	last = (first + pf->num_vf_msix) - 1;
+ 	abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
  
 -- 
 2.14.5
