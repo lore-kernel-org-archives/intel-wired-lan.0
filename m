@@ -1,66 +1,64 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:50:56 -0800
-Subject: [Intel-wired-lan] [PATCH S13 00/16] Bug fixes and minor feature
- updates for ice
-Message-ID: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
+Date: Fri,  8 Feb 2019 12:50:38 -0800
+Subject: [Intel-wired-lan] [PATCH S11 11/16] ice: clear VF ARQLEN register
+ on reset
+In-Reply-To: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
+References: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205043.11975-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Akeem G Abodunrin (4):
-  ice: Fix issue reconfiguring VF queues
-  ice: Add support for PF/VF promiscuous mode
-  ice: Don't let VF know that it is untrusted
-  ice: Get VF VSI instances directly via PF
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Alan Brady (1):
-  ice: use irq_num var in ice_vsi_req_irq_msix
+On older devices like X710 and X722, the VF's ARQLEN register is cleared
+on reset, so the VF driver uses that register to detect an unannouced
+reset. Unfortunately, on devices controlled by ice, this register is NOT
+cleared on reset. This causes the VF to miss resets, and even on
+properly-announced resets, the VF driver complains that it didn't see
+the reset.
 
-Anirudh Venkataramanan (1):
-  ice: Remove unused vsi_id field
+To fix this, we'll do it in software. When we handle a VF reset (whether
+triggered by software or VFLR), clear this register after the HW reset
+is complete.
 
-Brett Creeley (1):
-  ice: Enable link events over the ARQ
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h  | 1 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 5 +++++
+ 2 files changed, 6 insertions(+)
 
-Bruce Allan (2):
-  ice: fix static analysis warnings
-  ice: fix some function prototype and signature style issues
-
-Christopher N Bednarz (1):
-  ice: Do not set LB_EN for prune switch rules
-
-Kiran Patil (1):
-  ice: fix the divide by zero issue
-
-Michal Swiatkowski (1):
-  ice: Restore VLAN switch rule if port VLAN existed before
-
-Victor Raj (2):
-  ice: code cleanup in ice_sched.c
-  ice: update VSI config dynamically
-
-Yashaswini Raghuram Prathivadi Bhayankaram (2):
-  ice: Enable LAN_EN for the right recipes
-  ice: Set LAN_EN for all directional rules
-
- drivers/net/ethernet/intel/ice/ice.h             |  23 +-
- drivers/net/ethernet/intel/ice/ice_common.c      |  65 +++--
- drivers/net/ethernet/intel/ice/ice_common.h      |  24 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c     |  25 +-
- drivers/net/ethernet/intel/ice/ice_lib.c         |  61 +++-
- drivers/net/ethernet/intel/ice/ice_lib.h         |   2 +-
- drivers/net/ethernet/intel/ice/ice_main.c        | 202 +++++++++++---
- drivers/net/ethernet/intel/ice/ice_sched.c       |  94 ++-----
- drivers/net/ethernet/intel/ice/ice_switch.c      | 339 ++++++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_switch.h      |  25 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c        |  48 ++--
- drivers/net/ethernet/intel/ice/ice_type.h        |   1 -
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 243 +++++++++++++---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  15 +-
- 14 files changed, 924 insertions(+), 243 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index f9a38f2cd470..6bf5cc064270 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -30,6 +30,7 @@
+ #define PF_FW_ATQLEN_ATQVFE_M			BIT(28)
+ #define PF_FW_ATQLEN_ATQOVFL_M			BIT(29)
+ #define PF_FW_ATQLEN_ATQCRIT_M			BIT(30)
++#define VF_MBX_ARQLEN(_VF)			(0x0022BC00 + ((_VF) * 4))
+ #define PF_FW_ATQLEN_ATQENABLE_M		BIT(31)
+ #define PF_FW_ATQT				0x00080400
+ #define PF_MBX_ARQBAH				0x0022E400
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 79d793a76042..458e179ea863 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -310,6 +310,11 @@ static void ice_trigger_vf_reset(struct ice_vf *vf, bool is_vflr)
+ 	 */
+ 	clear_bit(ICE_VF_STATE_INIT, vf->vf_states);
+ 
++	/* Clear the VF's ARQLEN register. This is how the VF detects reset,
++	 * since the VFGEN_RSTAT register doesn't stick at 0 after reset.
++	 */
++	wr32(hw, VF_MBX_ARQLEN(vf_abs_id), 0);
++
+ 	/* In the case of a VFLR, the HW has already reset the VF and we
+ 	 * just need to clean up, so don't hit the VFRTRIG register.
+ 	 */
 -- 
 2.14.5
 
