@@ -1,194 +1,142 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:51:12 -0800
-Subject: [Intel-wired-lan] [PATCH S13 16/16] ice: Enable link events over
- the ARQ
+Date: Fri,  8 Feb 2019 12:51:09 -0800
+Subject: [Intel-wired-lan] [PATCH S13 13/16] ice: update VSI config
+ dynamically
 In-Reply-To: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
 References: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205112.12180-17-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205112.12180-14-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Victor Raj <victor.raj@intel.com>
 
-The hardware now supports link events over the admin receive queue (ARQ),
-so enable HW link events over the ARQ and remove code for link event
-polling.
+When VSI increases the number of queues dynamically, the scheduler
+just needs to add the new required nodes rather than re-adjusting with
+previously allocated number of nodes. Readjusting didn't provide enough
+parents to add the upper layer nodes also can't place lan and rdma
+subtrees separately.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+In decrese case, keep the VSI configuration with max number of queues
+always. This will leave some extra nodes in the tree but no harm done.
+
+Signed-off-by: Victor Raj <victor.raj@intel.com>
 Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
----
- drivers/net/ethernet/intel/ice/ice_common.c | 28 +++++++++++-
- drivers/net/ethernet/intel/ice/ice_common.h |  6 +++
- drivers/net/ethernet/intel/ice/ice_main.c   | 68 +++++++++++++++++++++++++++--
- 3 files changed, 98 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sched.c | 75 ++++++------------------------
+ 1 file changed, 13 insertions(+), 62 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 06a1a2cb5358..be67d07b75cb 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -262,7 +262,7 @@ static enum ice_media_type ice_get_media_type(struct ice_port_info *pi)
-  *
-  * Get Link Status (0x607). Returns the link status of the adapter.
-  */
--static enum ice_status
-+enum ice_status
- ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
- 		     struct ice_link_status *link, struct ice_sq_cd *cd)
- {
-@@ -2150,6 +2150,32 @@ ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
- 	return ice_aq_send_cmd(pi->hw, &desc, NULL, 0, cd);
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index cf1142ec16ee..efbebf7a050f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1268,42 +1268,6 @@ ice_sched_add_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 	return 0;
  }
  
-+/**
-+ * ice_aq_set_event_mask
-+ * @hw: pointer to the HW struct
-+ * @port_num: port number of the physical function
-+ * @mask: event mask to be set
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Set event mask (0x0613)
-+ */
-+enum ice_status
-+ice_aq_set_event_mask(struct ice_hw *hw, u8 port_num, u16 mask,
-+		      struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_set_event_mask *cmd;
-+	struct ice_aq_desc desc;
-+
-+	cmd = &desc.params.set_event_mask;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_event_mask);
-+
-+	cmd->lport_num = port_num;
-+
-+	cmd->event_mask = cpu_to_le16(mask);
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
-+}
-+
- /**
-  * ice_aq_set_port_id_led
-  * @pi: pointer to the port information
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 38578f7c3622..fbdfdee353bc 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -89,6 +89,12 @@ enum ice_status
- ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
- 			   struct ice_sq_cd *cd);
- enum ice_status
-+ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
-+		     struct ice_link_status *link, struct ice_sq_cd *cd);
-+enum ice_status
-+ice_aq_set_event_mask(struct ice_hw *hw, u8 port_num, u16 mask,
-+		      struct ice_sq_cd *cd);
-+enum ice_status
- ice_aq_set_port_id_led(struct ice_port_info *pi, bool is_orig_mode,
- 		       struct ice_sq_cd *cd);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index fbeb7e023520..c0b7e695cc43 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -698,9 +698,6 @@ static void ice_watchdog_subtask(struct ice_pf *pf)
- 
- 	pf->serv_tmr_prev = jiffies;
- 
--	if (ice_link_event(pf, pf->hw.port_info))
--		dev_dbg(&pf->pdev->dev, "ice_link_event failed\n");
+-/**
+- * ice_sched_rm_vsi_child_nodes - remove VSI child nodes from the tree
+- * @pi: port information structure
+- * @vsi_node: pointer to the VSI node
+- * @num_nodes: pointer to the num nodes that needs to be removed per layer
+- * @owner: node owner (lan or rdma)
+- *
+- * This function removes the VSI child nodes from the tree. It gets called for
+- * lan and rdma separately.
+- */
+-static void
+-ice_sched_rm_vsi_child_nodes(struct ice_port_info *pi,
+-			     struct ice_sched_node *vsi_node, u16 *num_nodes,
+-			     u8 owner)
+-{
+-	struct ice_sched_node *node, *next;
+-	u8 i, qgl, vsil;
+-	u16 num;
 -
- 	/* Update the stats for active netdevs so the network stack
- 	 * can look at updated numbers whenever it cares to
- 	 */
-@@ -710,6 +707,60 @@ static void ice_watchdog_subtask(struct ice_pf *pf)
- 			ice_update_vsi_stats(pf->vsi[i]);
- }
- 
-+/**
-+ * ice_init_link_events - enable/initialize link events
-+ * @pi: pointer to the port_info instance
-+ *
-+ * Returns -EIO on failure, 0 on success
-+ */
-+static int ice_init_link_events(struct ice_port_info *pi)
-+{
-+	u16 mask;
-+
-+	mask = ~((u16)(ICE_AQ_LINK_EVENT_UPDOWN | ICE_AQ_LINK_EVENT_MEDIA_NA |
-+		       ICE_AQ_LINK_EVENT_MODULE_QUAL_FAIL));
-+
-+	if (ice_aq_set_event_mask(pi->hw, pi->lport, mask, NULL)) {
-+		dev_dbg(ice_hw_to_dev(pi->hw),
-+			"Failed to set link event mask for port %d\n",
-+			pi->lport);
-+		return -EIO;
-+	}
-+
-+	if (ice_aq_get_link_info(pi, true, NULL, NULL)) {
-+		dev_dbg(ice_hw_to_dev(pi->hw),
-+			"Failed to enable link events for port %d\n",
-+			pi->lport);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_handle_link_event - handle link event via ARQ
-+ * @pf: pf that the link event is associated with
-+ *
-+ * Return -EINVAL if port_info is null
-+ * Return status on success
-+ */
-+static int ice_handle_link_event(struct ice_pf *pf)
-+{
-+	struct ice_port_info *port_info;
-+	int status;
-+
-+	port_info = pf->hw.port_info;
-+	if (!port_info)
-+		return -EINVAL;
-+
-+	status = ice_link_event(pf, port_info);
-+	if (status)
-+		dev_dbg(&pf->pdev->dev,
-+			"Could not process link event, error %d\n", status);
-+
-+	return status;
-+}
-+
+-	qgl = ice_sched_get_qgrp_layer(pi->hw);
+-	vsil = ice_sched_get_vsi_layer(pi->hw);
+-
+-	for (i = qgl; i > vsil; i--) {
+-		num = num_nodes[i];
+-		node = ice_sched_get_first_node(pi->hw, vsi_node, i);
+-		while (node && num) {
+-			next = node->sibling;
+-			if (node->owner == owner && !node->num_children) {
+-				ice_free_sched_node(pi, node);
+-				num--;
+-			}
+-			node = next;
+-		}
+-	}
+-}
+-
  /**
-  * __ice_clean_ctrlq - helper function to clean controlq rings
-  * @pf: ptr to struct ice_pf
-@@ -813,6 +864,11 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- 		opcode = le16_to_cpu(event.desc.opcode);
+  * ice_sched_calc_vsi_support_nodes - calculate number of VSI support nodes
+  * @hw: pointer to the hw struct
+@@ -1444,7 +1408,6 @@ static enum ice_status
+ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 				 u8 tc, u16 new_numqs, u8 owner)
+ {
+-	u16 prev_num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
+ 	u16 new_num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
+ 	struct ice_sched_node *vsi_node;
+ 	struct ice_sched_node *tc_node;
+@@ -1452,7 +1415,6 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 	enum ice_status status = 0;
+ 	struct ice_hw *hw = pi->hw;
+ 	u16 prev_numqs;
+-	u8 i;
  
- 		switch (opcode) {
-+		case ice_aqc_opc_get_link_status:
-+			if (ice_handle_link_event(pf))
-+				dev_err(&pf->pdev->dev,
-+					"Could not handle link event\n");
-+			break;
- 		case ice_mbx_opc_send_msg_to_pf:
- 			ice_vc_process_vf_msg(pf, &event);
- 			break;
-@@ -2267,6 +2323,12 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	/* since everything is good, start the service timer */
- 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
+ 	tc_node = ice_sched_get_tc_node(pi, tc);
+ 	if (!tc_node)
+@@ -1471,33 +1433,22 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 	else
+ 		return ICE_ERR_PARAM;
  
-+	err = ice_init_link_events(pf->hw.port_info);
-+	if (err) {
-+		dev_err(dev, "ice_init_link_events failed: %d\n", err);
-+		goto err_alloc_sw_unroll;
-+	}
-+
- 	ice_verify_cacheline_size(pf);
+-	/* num queues are not changed */
+-	if (prev_numqs == new_numqs)
++	/* num queues are not changed or less than the previous number */
++	if (new_numqs <= prev_numqs)
+ 		return status;
+-
+-	/* calculate number of nodes based on prev/new number of qs */
+-	if (prev_numqs)
+-		ice_sched_calc_vsi_child_nodes(hw, prev_numqs, prev_num_nodes);
+-
+ 	if (new_numqs)
+ 		ice_sched_calc_vsi_child_nodes(hw, new_numqs, new_num_nodes);
+-
+-	if (prev_numqs > new_numqs) {
+-		for (i = 0; i < ICE_AQC_TOPO_MAX_LEVEL_NUM; i++)
+-			new_num_nodes[i] = prev_num_nodes[i] - new_num_nodes[i];
+-
+-		ice_sched_rm_vsi_child_nodes(pi, vsi_node, new_num_nodes,
+-					     owner);
+-	} else {
+-		for (i = 0; i < ICE_AQC_TOPO_MAX_LEVEL_NUM; i++)
+-			new_num_nodes[i] -= prev_num_nodes[i];
+-
+-		status = ice_sched_add_vsi_child_nodes(pi, vsi_handle, tc_node,
+-						       new_num_nodes, owner);
+-		if (status)
+-			return status;
+-	}
+-
++	/* Keep the max number of queue configuration all the time. Update the
++	 * tree only if number of queues > previous number of queues. This may
++	 * leave some extra nodes in the tree if number of queues < previous
++	 * number but that wouldn't harm anything. Removing those extra nodes
++	 * may complicate the code if those nodes are part of SRL or
++	 * individually rate limited.
++	 */
++	status = ice_sched_add_vsi_child_nodes(pi, vsi_handle, tc_node,
++					       new_num_nodes, owner);
++	if (status)
++		return status;
+ 	vsi_ctx->sched.max_lanq[tc] = new_numqs;
  
  	return 0;
 -- 
