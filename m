@@ -1,56 +1,79 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:50:51 -0800
-Subject: [Intel-wired-lan] [PATCH S12 04/14] ice: remove redundant variable
- and if condition
+Date: Fri,  8 Feb 2019 12:50:49 -0800
+Subject: [Intel-wired-lan] [PATCH S12 02/14] ice: Fix issue with VF reset
+ and multiple VFs support on PFs
 In-Reply-To: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
 References: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205101.12078-5-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205101.12078-3-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-In ice_pf_rxq_wait we are using an unnecessary local variable and also
-we are checking if the timeout time was reached after the loop. Get rid
-of the local variable and return 0 right when we get a successful
-result. This makes it so we can return -ETIMEDOUT if we ever exit the
-loop because we know the timeout time has been hit.
+This patch fixes issues with VF queues being disabled, and VF netdev
+network carrier being lost after reset. Basically, we need to check if VF
+is enabled, and queue configured in reset_all_vfs flow, and disable/enable
+those queues appropriately whenever the function is called after
+Global/CORER/PFR reset/rebuild/replay.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index fa61203bee26..5215180d08a3 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -175,17 +175,14 @@ static int ice_pf_rxq_wait(struct ice_pf *pf, int pf_q, bool ena)
- 	int i;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 089881b53677..a7e1594521ec 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -775,6 +775,7 @@ static void ice_cleanup_and_realloc_vf(struct ice_vf *vf)
+ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ {
+ 	struct ice_hw *hw = &pf->hw;
++	struct ice_vf *vf;
+ 	int v, i;
  
- 	for (i = 0; i < ICE_Q_WAIT_MAX_RETRY; i++) {
--		u32 rx_reg = rd32(&pf->hw, QRX_CTRL(pf_q));
--
--		if (ena == !!(rx_reg & QRX_CTRL_QENA_STAT_M))
--			break;
-+		if (ena == !!(rd32(&pf->hw, QRX_CTRL(pf_q)) &
-+			      QRX_CTRL_QENA_STAT_M))
-+			return 0;
+ 	/* If we don't have any VFs, then there is nothing to reset */
+@@ -789,12 +790,17 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	for (v = 0; v < pf->num_alloc_vfs; v++)
+ 		ice_trigger_vf_reset(&pf->vf[v], is_vflr);
  
- 		usleep_range(20, 40);
- 	}
--	if (i >= ICE_Q_WAIT_MAX_RETRY)
--		return -ETIMEDOUT;
+-	/* Call Disable LAN Tx queue AQ call with VFR bit set and 0
+-	 * queues to inform Firmware about VF reset.
+-	 */
+-	for (v = 0; v < pf->num_alloc_vfs; v++)
+-		ice_dis_vsi_txq(pf->vsi[0]->port_info, 0, NULL, NULL,
+-				ICE_VF_RESET, v, NULL);
++	for (v = 0; v < pf->num_alloc_vfs; v++) {
++		struct ice_vsi *vsi;
++
++		vf = &pf->vf[v];
++		vsi = pf->vsi[vf->lan_vsi_idx];
++		if (test_bit(ICE_VF_STATE_ENA, vf->vf_states)) {
++			ice_vsi_stop_lan_tx_rings(vsi, ICE_VF_RESET, vf->vf_id);
++			ice_vsi_stop_rx_rings(vsi);
++			clear_bit(ICE_VF_STATE_ENA, vf->vf_states);
++		}
++	}
  
--	return 0;
-+	return -ETIMEDOUT;
- }
+ 	/* HW requires some time to make sure it can flush the FIFO for a VF
+ 	 * when it resets it. Poll the VPGEN_VFRSTAT register for each VF in
+@@ -807,9 +813,9 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
  
- /**
+ 		/* Check each VF in sequence */
+ 		while (v < pf->num_alloc_vfs) {
+-			struct ice_vf *vf = &pf->vf[v];
+ 			u32 reg;
+ 
++			vf = &pf->vf[v];
+ 			reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
+ 			if (!(reg & VPGEN_VFRSTAT_VFRD_M))
+ 				break;
 -- 
 2.14.5
 
