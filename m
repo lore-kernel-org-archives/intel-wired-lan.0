@@ -1,70 +1,152 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:50:56 -0800
-Subject: [Intel-wired-lan] [PATCH S12 09/14] ice: Implement flow to reset
- VFs with PFR and other resets
+Date: Fri,  8 Feb 2019 12:50:55 -0800
+Subject: [Intel-wired-lan] [PATCH S12 08/14] ice: configure GLINT_ITR to
+ always have an ITR gran of 2
 In-Reply-To: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
 References: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205101.12078-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205101.12078-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-All VF VSIs need to be reset and rebuild with the main VSIs before
-replaying all VSIs, so that all existing switch filters, scheduler tree
-and other configuration could be replayed at once. This fixes issues when
-doing PFR and CORER reset.
+Instead of hoping that our ITR granularity will be 2 usec program the
+GLINT_CTL register to make sure the ITR granularity is always 2 usecs.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Now that we know what the ITR granularity will be get rid of the check
+in ice_probe() to verify our previous assumption.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_main.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 10 ++++++++
+ drivers/net/ethernet/intel/ice/ice_lib.c        | 33 +++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_main.c       | 18 --------------
+ drivers/net/ethernet/intel/ice/ice_txrx.h       |  1 +
+ 4 files changed, 44 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 23db0cda6655..dcb5a9fab87d 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -394,6 +394,7 @@ static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
- 		ice_rebuild(pf);
- 		clear_bit(__ICE_PREPARED_FOR_RESET, pf->state);
- 		clear_bit(__ICE_PFR_REQ, pf->state);
-+		ice_reset_all_vfs(pf, true);
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 6bf5cc064270..24255ff64ab0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -106,6 +106,16 @@
+ #define VPGEN_VFRTRIG_VFSWR_M			BIT(0)
+ #define PFHMC_ERRORDATA				0x00520500
+ #define PFHMC_ERRORINFO				0x00520400
++#define GLINT_CTL				0x0016CC54
++#define GLINT_CTL_DIS_AUTOMASK_M		BIT(0)
++#define GLINT_CTL_ITR_GRAN_200_S		16
++#define GLINT_CTL_ITR_GRAN_200_M		ICE_M(0xF, 16)
++#define GLINT_CTL_ITR_GRAN_100_S		20
++#define GLINT_CTL_ITR_GRAN_100_M		ICE_M(0xF, 20)
++#define GLINT_CTL_ITR_GRAN_50_S			24
++#define GLINT_CTL_ITR_GRAN_50_M			ICE_M(0xF, 24)
++#define GLINT_CTL_ITR_GRAN_25_S			28
++#define GLINT_CTL_ITR_GRAN_25_M			ICE_M(0xF, 28)
+ #define GLINT_DYN_CTL(_INT)			(0x00160000 + ((_INT) * 4))
+ #define GLINT_DYN_CTL_INTENA_M			BIT(0)
+ #define GLINT_DYN_CTL_CLEARPBA_M		BIT(1)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 1418251b9275..40e9df15777b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1738,6 +1738,37 @@ static u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran)
+ 	return 0;
  }
  
-@@ -436,6 +437,7 @@ static void ice_reset_subtask(struct ice_pf *pf)
- 			clear_bit(__ICE_PFR_REQ, pf->state);
- 			clear_bit(__ICE_CORER_REQ, pf->state);
- 			clear_bit(__ICE_GLOBR_REQ, pf->state);
-+			ice_reset_all_vfs(pf, true);
- 		}
++/**
++ * ice_cfg_itr_gran - set the ITR granularity to 2 usecs if not already set
++ * @hw: board specific structure
++ */
++static void ice_cfg_itr_gran(struct ice_hw *hw)
++{
++	u32 regval = rd32(hw, GLINT_CTL);
++
++	/* no need to update global register if ITR gran is already set */
++	if (!(regval & GLINT_CTL_DIS_AUTOMASK_M) &&
++	    (((regval & GLINT_CTL_ITR_GRAN_200_M) >>
++	     GLINT_CTL_ITR_GRAN_200_S) == ICE_ITR_GRAN_US) &&
++	    (((regval & GLINT_CTL_ITR_GRAN_100_M) >>
++	     GLINT_CTL_ITR_GRAN_100_S) == ICE_ITR_GRAN_US) &&
++	    (((regval & GLINT_CTL_ITR_GRAN_50_M) >>
++	     GLINT_CTL_ITR_GRAN_50_S) == ICE_ITR_GRAN_US) &&
++	    (((regval & GLINT_CTL_ITR_GRAN_25_M) >>
++	      GLINT_CTL_ITR_GRAN_25_S) == ICE_ITR_GRAN_US))
++		return;
++
++	regval = ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_200_S) &
++		  GLINT_CTL_ITR_GRAN_200_M) |
++		 ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_100_S) &
++		  GLINT_CTL_ITR_GRAN_100_M) |
++		 ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_50_S) &
++		  GLINT_CTL_ITR_GRAN_50_M) |
++		 ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_25_S) &
++		  GLINT_CTL_ITR_GRAN_25_M);
++	wr32(hw, GLINT_CTL, regval);
++}
++
+ /**
+  * ice_cfg_itr - configure the initial interrupt throttle values
+  * @hw: pointer to the HW structure
+@@ -1750,6 +1781,8 @@ static u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran)
+ static void
+ ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector, u16 vector)
+ {
++	ice_cfg_itr_gran(hw);
++
+ 	if (q_vector->num_ring_rx) {
+ 		struct ice_ring_container *rc = &q_vector->rx;
  
- 		return;
-@@ -3360,10 +3362,6 @@ static int ice_vsi_rebuild_all(struct ice_pf *pf)
- 		if (!pf->vsi[i])
- 			continue;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index f5ade04cb9de..23db0cda6655 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2032,23 +2032,6 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
+ 	return 0;
+ }
  
--		/* VF VSI rebuild isn't supported yet */
--		if (pf->vsi[i]->type == ICE_VSI_VF)
--			continue;
+-/**
+- * ice_verify_itr_gran - verify driver's assumption of ITR granularity
+- * @pf: pointer to the PF structure
+- *
+- * There is no error returned here because the driver will be able to handle a
+- * different ITR granularity, but interrupt moderation will not be accurate if
+- * the driver's assumptions are not verified. This assumption is made so we can
+- * use constants in the hot path instead of accessing structure members.
+- */
+-static void ice_verify_itr_gran(struct ice_pf *pf)
+-{
+-	if (pf->hw.itr_gran != (ICE_ITR_GRAN_S << 1))
+-		dev_warn(&pf->pdev->dev,
+-			 "%d ITR granularity assumption is invalid, actual ITR granularity is %d. Interrupt moderation will be inaccurate!\n",
+-			 (ICE_ITR_GRAN_S << 1), pf->hw.itr_gran);
+-}
 -
- 		err = ice_vsi_rebuild(pf->vsi[i], true);
- 		if (err) {
- 			dev_err(&pf->pdev->dev,
-@@ -3500,8 +3498,6 @@ static void ice_rebuild(struct ice_pf *pf)
- 		goto err_vsi_rebuild;
- 	}
+ /**
+  * ice_verify_cacheline_size - verify driver's assumption of 64 Byte cache lines
+  * @pf: pointer to the PF structure
+@@ -2212,7 +2195,6 @@ static int ice_probe(struct pci_dev *pdev,
+ 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
  
--	ice_reset_all_vfs(pf, true);
--
- 	ice_for_each_vsi(pf, i) {
- 		bool link_up;
+ 	ice_verify_cacheline_size(pf);
+-	ice_verify_itr_gran(pf);
+ 
+ 	return 0;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index fc358ea81816..b7ff0ff82517 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -125,6 +125,7 @@ enum ice_rx_dtype {
+ #define ITR_IS_DYNAMIC(setting) (!!((setting) & ICE_ITR_DYNAMIC))
+ #define ITR_TO_REG(setting)	((setting) & ~ICE_ITR_DYNAMIC)
+ #define ICE_ITR_GRAN_S		1	/* Assume ITR granularity is 2us */
++#define ICE_ITR_GRAN_US		BIT(ICE_ITR_GRAN_S)
+ #define ICE_ITR_MASK		0x1FFE	/* ITR register value alignment mask */
+ #define ITR_REG_ALIGN(setting)	__ALIGN_MASK(setting, ~ICE_ITR_MASK)
  
 -- 
 2.14.5
