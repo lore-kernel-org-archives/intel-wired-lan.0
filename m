@@ -1,97 +1,52 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:51:02 -0800
-Subject: [Intel-wired-lan] [PATCH S13 06/16] ice: code cleanup in ice_sched.c
-In-Reply-To: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
-References: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205112.12180-7-anirudh.venkataramanan@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 8 Feb 2019 22:07:13 +0000
+Subject: [Intel-wired-lan] [PATCH v3] i40e: Add macvlan support on i40e
+In-Reply-To: <20190116235414.4946-1-harshitha.ramamurthy@intel.com>
+References: <20190116235414.4946-1-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D35FA32@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Victor Raj <victor.raj@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Harshitha Ramamurthy
+> Sent: Wednesday, January 16, 2019 3:54 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Duyck, Alexander H <alexander.h.duyck@intel.com>
+> Subject: [Intel-wired-lan] [PATCH v3] i40e: Add macvlan support on i40e
+> 
+> This patch enables macvlan offloads for i40e. The idea is to use channels as
+> macvlan interfaces. The channels are VSIs of type VMDQ. When the first
+> macvlan is created, the maximum number of channels possible are created.
+> From then on, as a macvlan interface is created, a mac filter is added to these
+> already created channels (VSIs).
+> 
+> This patch builds on top of the recent changes which move away from the
+> select_queue implementation of picking the tx queue.
+> 
+> Steps to configure macvlan offloads:
+> 1. sudo ethtool -K ens261f1 l2-fwd-offload on 2. ip link add link ens261f1
+> name macvlan1 type macvlan 3. sudo ip link add link ens261f1 name macvlan1
+> type macvlan 4. sudo ip link set macvlan1 up
+> 
+> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> ---
+> v3: Renamed i40e_remove_macvlan_channels() to
+> i40e_free_macvlan_channels()
+>     Fixed an indentation issue and added some comments
+>     Removed a code name from the commit message
+>     Addressed some more of Shannon's comments
+> 
+> v2: Addressed Shannon's comments
+>     Added a new function to remove all macvlan VSIs
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h      |  26 ++
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 481 +++++++++++++++++++-
+>  2 files changed, 505 insertions(+), 2 deletions(-)
 
-This patch does some clean up in the Tx scheduler code:
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-1. Adjust the stack variable usage
-2. Modify the debug prints to display the FW error
-3. Add additional debug prints while adding/removing VSIs
-
-Signed-off-by: Victor Raj <victor.raj@intel.com>
-Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
----
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_sched.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 086a4c7254c5..cf1142ec16ee 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -276,7 +276,8 @@ ice_sched_remove_elems(struct ice_hw *hw, struct ice_sched_node *parent,
- 	status = ice_aq_delete_sched_elems(hw, 1, buf, buf_size,
- 					   &num_groups_removed, NULL);
- 	if (status || num_groups_removed != 1)
--		ice_debug(hw, ICE_DBG_SCHED, "remove elements failed\n");
-+		ice_debug(hw, ICE_DBG_SCHED, "remove node failed FW error %d\n",
-+			  hw->adminq.sq_last_status);
- 
- 	devm_kfree(ice_hw_to_dev(hw), buf);
- 	return status;
-@@ -360,12 +361,8 @@ void ice_free_sched_node(struct ice_port_info *pi, struct ice_sched_node *node)
- 	    node->info.data.elem_type != ICE_AQC_ELEM_TYPE_ROOT_PORT &&
- 	    node->info.data.elem_type != ICE_AQC_ELEM_TYPE_LEAF) {
- 		u32 teid = le32_to_cpu(node->info.node_teid);
--		enum ice_status status;
- 
--		status = ice_sched_remove_elems(hw, node->parent, 1, &teid);
--		if (status)
--			ice_debug(hw, ICE_DBG_SCHED,
--				  "remove element failed %d\n", status);
-+		ice_sched_remove_elems(hw, node->parent, 1, &teid);
- 	}
- 	parent = node->parent;
- 	/* root has no parent */
-@@ -697,7 +694,8 @@ ice_sched_add_elems(struct ice_port_info *pi, struct ice_sched_node *tc_node,
- 	status = ice_aq_add_sched_elems(hw, 1, buf, buf_size,
- 					&num_groups_added, NULL);
- 	if (status || num_groups_added != 1) {
--		ice_debug(hw, ICE_DBG_SCHED, "add elements failed\n");
-+		ice_debug(hw, ICE_DBG_SCHED, "add node failed FW Error %d\n",
-+			  hw->adminq.sq_last_status);
- 		devm_kfree(ice_hw_to_dev(hw), buf);
- 		return ICE_ERR_CFG;
- 	}
-@@ -1527,6 +1525,7 @@ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
- 	enum ice_status status = 0;
- 	struct ice_hw *hw = pi->hw;
- 
-+	ice_debug(pi->hw, ICE_DBG_SCHED, "add/config VSI %d\n", vsi_handle);
- 	tc_node = ice_sched_get_tc_node(pi, tc);
- 	if (!tc_node)
- 		return ICE_ERR_PARAM;
-@@ -1646,8 +1645,9 @@ ice_sched_rm_vsi_cfg(struct ice_port_info *pi, u16 vsi_handle, u8 owner)
- {
- 	enum ice_status status = ICE_ERR_PARAM;
- 	struct ice_vsi_ctx *vsi_ctx;
--	u8 i, j = 0;
-+	u8 i;
- 
-+	ice_debug(pi->hw, ICE_DBG_SCHED, "removing VSI %d\n", vsi_handle);
- 	if (!ice_is_vsi_valid(pi->hw, vsi_handle))
- 		return status;
- 	mutex_lock(&pi->sched_lock);
-@@ -1657,6 +1657,7 @@ ice_sched_rm_vsi_cfg(struct ice_port_info *pi, u16 vsi_handle, u8 owner)
- 
- 	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
- 		struct ice_sched_node *vsi_node, *tc_node;
-+		u8 j = 0;
- 
- 		tc_node = ice_sched_get_tc_node(pi, i);
- 		if (!tc_node)
--- 
-2.14.5
 
