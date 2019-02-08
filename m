@@ -1,79 +1,138 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:50:49 -0800
-Subject: [Intel-wired-lan] [PATCH S12 02/14] ice: Fix issue with VF reset
- and multiple VFs support on PFs
+Date: Fri,  8 Feb 2019 12:50:50 -0800
+Subject: [Intel-wired-lan] [PATCH S12 03/14] ice: avoid multiple unnecessary
+ de-references in probe
 In-Reply-To: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
 References: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205101.12078-3-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205101.12078-4-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-This patch fixes issues with VF queues being disabled, and VF netdev
-network carrier being lost after reset. Basically, we need to check if VF
-is enabled, and queue configured in reset_all_vfs flow, and disable/enable
-those queues appropriately whenever the function is called after
-Global/CORER/PFR reset/rebuild/replay.
+Add a local variable struct device *dev to avoid unnecessary de-references
+throughout ice_probe().
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 33 ++++++++++++++-----------------
+ 1 file changed, 15 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 089881b53677..a7e1594521ec 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -775,6 +775,7 @@ static void ice_cleanup_and_realloc_vf(struct ice_vf *vf)
- bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 47cc3f905b7f..d353de4456f5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2075,6 +2075,7 @@ static void ice_verify_cacheline_size(struct ice_pf *pf)
+ static int ice_probe(struct pci_dev *pdev,
+ 		     const struct pci_device_id __always_unused *ent)
  {
- 	struct ice_hw *hw = &pf->hw;
-+	struct ice_vf *vf;
- 	int v, i;
++	struct device *dev = &pdev->dev;
+ 	struct ice_pf *pf;
+ 	struct ice_hw *hw;
+ 	int err;
+@@ -2086,20 +2087,20 @@ static int ice_probe(struct pci_dev *pdev,
  
- 	/* If we don't have any VFs, then there is nothing to reset */
-@@ -789,12 +790,17 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	for (v = 0; v < pf->num_alloc_vfs; v++)
- 		ice_trigger_vf_reset(&pf->vf[v], is_vflr);
+ 	err = pcim_iomap_regions(pdev, BIT(ICE_BAR0), pci_name(pdev));
+ 	if (err) {
+-		dev_err(&pdev->dev, "BAR0 I/O map error %d\n", err);
++		dev_err(dev, "BAR0 I/O map error %d\n", err);
+ 		return err;
+ 	}
  
--	/* Call Disable LAN Tx queue AQ call with VFR bit set and 0
--	 * queues to inform Firmware about VF reset.
--	 */
--	for (v = 0; v < pf->num_alloc_vfs; v++)
--		ice_dis_vsi_txq(pf->vsi[0]->port_info, 0, NULL, NULL,
--				ICE_VF_RESET, v, NULL);
-+	for (v = 0; v < pf->num_alloc_vfs; v++) {
-+		struct ice_vsi *vsi;
-+
-+		vf = &pf->vf[v];
-+		vsi = pf->vsi[vf->lan_vsi_idx];
-+		if (test_bit(ICE_VF_STATE_ENA, vf->vf_states)) {
-+			ice_vsi_stop_lan_tx_rings(vsi, ICE_VF_RESET, vf->vf_id);
-+			ice_vsi_stop_rx_rings(vsi);
-+			clear_bit(ICE_VF_STATE_ENA, vf->vf_states);
-+		}
-+	}
+-	pf = devm_kzalloc(&pdev->dev, sizeof(*pf), GFP_KERNEL);
++	pf = devm_kzalloc(dev, sizeof(*pf), GFP_KERNEL);
+ 	if (!pf)
+ 		return -ENOMEM;
  
- 	/* HW requires some time to make sure it can flush the FIFO for a VF
- 	 * when it resets it. Poll the VPGEN_VFRSTAT register for each VF in
-@@ -807,9 +813,9 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	/* set up for high or low dma */
+-	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
++	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
+ 	if (err)
+-		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
++		err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32));
+ 	if (err) {
+-		dev_err(&pdev->dev, "DMA configuration failed: 0x%x\n", err);
++		dev_err(dev, "DMA configuration failed: 0x%x\n", err);
+ 		return err;
+ 	}
  
- 		/* Check each VF in sequence */
- 		while (v < pf->num_alloc_vfs) {
--			struct ice_vf *vf = &pf->vf[v];
- 			u32 reg;
+@@ -2133,12 +2134,12 @@ static int ice_probe(struct pci_dev *pdev,
  
-+			vf = &pf->vf[v];
- 			reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
- 			if (!(reg & VPGEN_VFRSTAT_VFRD_M))
- 				break;
+ 	err = ice_init_hw(hw);
+ 	if (err) {
+-		dev_err(&pdev->dev, "ice_init_hw failed: %d\n", err);
++		dev_err(dev, "ice_init_hw failed: %d\n", err);
+ 		err = -EIO;
+ 		goto err_exit_unroll;
+ 	}
+ 
+-	dev_info(&pdev->dev, "firmware %d.%d.%05d api %d.%d\n",
++	dev_info(dev, "firmware %d.%d.%05d api %d.%d\n",
+ 		 hw->fw_maj_ver, hw->fw_min_ver, hw->fw_build,
+ 		 hw->api_maj_ver, hw->api_min_ver);
+ 
+@@ -2152,8 +2153,8 @@ static int ice_probe(struct pci_dev *pdev,
+ 		goto err_init_pf_unroll;
+ 	}
+ 
+-	pf->vsi = devm_kcalloc(&pdev->dev, pf->num_alloc_vsi,
+-			       sizeof(*pf->vsi), GFP_KERNEL);
++	pf->vsi = devm_kcalloc(dev, pf->num_alloc_vsi, sizeof(*pf->vsi),
++			       GFP_KERNEL);
+ 	if (!pf->vsi) {
+ 		err = -ENOMEM;
+ 		goto err_init_pf_unroll;
+@@ -2161,8 +2162,7 @@ static int ice_probe(struct pci_dev *pdev,
+ 
+ 	err = ice_init_interrupt_scheme(pf);
+ 	if (err) {
+-		dev_err(&pdev->dev,
+-			"ice_init_interrupt_scheme failed: %d\n", err);
++		dev_err(dev, "ice_init_interrupt_scheme failed: %d\n", err);
+ 		err = -EIO;
+ 		goto err_init_interrupt_unroll;
+ 	}
+@@ -2178,15 +2178,13 @@ static int ice_probe(struct pci_dev *pdev,
+ 	if (test_bit(ICE_FLAG_MSIX_ENA, pf->flags)) {
+ 		err = ice_req_irq_msix_misc(pf);
+ 		if (err) {
+-			dev_err(&pdev->dev,
+-				"setup of misc vector failed: %d\n", err);
++			dev_err(dev, "setup of misc vector failed: %d\n", err);
+ 			goto err_init_interrupt_unroll;
+ 		}
+ 	}
+ 
+ 	/* create switch struct for the switch element created by FW on boot */
+-	pf->first_sw = devm_kzalloc(&pdev->dev, sizeof(*pf->first_sw),
+-				    GFP_KERNEL);
++	pf->first_sw = devm_kzalloc(dev, sizeof(*pf->first_sw), GFP_KERNEL);
+ 	if (!pf->first_sw) {
+ 		err = -ENOMEM;
+ 		goto err_msix_misc_unroll;
+@@ -2204,8 +2202,7 @@ static int ice_probe(struct pci_dev *pdev,
+ 
+ 	err = ice_setup_pf_sw(pf);
+ 	if (err) {
+-		dev_err(&pdev->dev,
+-			"probe failed due to setup pf switch:%d\n", err);
++		dev_err(dev, "probe failed due to setup pf switch:%d\n", err);
+ 		goto err_alloc_sw_unroll;
+ 	}
+ 
+@@ -2227,7 +2224,7 @@ static int ice_probe(struct pci_dev *pdev,
+ 	ice_free_irq_msix_misc(pf);
+ err_init_interrupt_unroll:
+ 	ice_clear_interrupt_scheme(pf);
+-	devm_kfree(&pdev->dev, pf->vsi);
++	devm_kfree(dev, pf->vsi);
+ err_init_pf_unroll:
+ 	ice_deinit_pf(pf);
+ 	ice_deinit_hw(hw);
 -- 
 2.14.5
 
