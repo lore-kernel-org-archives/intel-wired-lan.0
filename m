@@ -1,261 +1,129 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Fri,  8 Feb 2019 12:50:58 -0800
-Subject: [Intel-wired-lan] [PATCH S13 02/16] ice: Fix issue reconfiguring VF
- queues
-In-Reply-To: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
-References: <20190208205112.12180-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190208205112.12180-3-anirudh.venkataramanan@intel.com>
+Date: Fri,  8 Feb 2019 12:50:43 -0800
+Subject: [Intel-wired-lan] [PATCH S11 16/16] ice: fix overlong string,
+ update stats output
+In-Reply-To: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
+References: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20190208205043.11975-17-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-When VF requested for queues changes, we need to update LAN Tx queue with
-correct number of VF queue pairs and re-allocate VF resources based on
-this new requested number of queues, which is constraint within maximum
-queue supported per VF.
+A test started warning on a string truncation. This led to an unfortunate
+realization that we are likely not accounting for the stats length
+correctly before this patch, so fix the issue by putting "port." in front
+of all the PF stats, instead of magically prepending it at runtime.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c         | 34 +++++++++++---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 58 ++++++++++++++++++++----
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  1 +
- 3 files changed, 77 insertions(+), 16 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 80 ++++++++++++++--------------
+ 1 file changed, 40 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index af72bb4f8f6f..be377107d9a9 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -297,13 +297,19 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
- /**
-  * ice_vsi_set_num_qs - Set number of queues, descriptors and vectors for a VSI
-  * @vsi: the VSI being configured
-+ * @vf_id: Id of the VF being configured
-  *
-  * Return 0 on success and a negative value on error
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 295571b1c4e8..eb8d149e317c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -63,45 +63,45 @@ static const struct ice_stats ice_gstrings_vsi_stats[] = {
+  * is queried on the base PF netdev.
   */
--static void ice_vsi_set_num_qs(struct ice_vsi *vsi)
-+static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
- {
- 	struct ice_pf *pf = vsi->back;
- 
-+	struct ice_vf *vf = NULL;
-+
-+	if (vsi->type == ICE_VSI_VF)
-+		vsi->vf_id = vf_id;
-+
- 	switch (vsi->type) {
- 	case ICE_VSI_PF:
- 		vsi->alloc_txq = pf->num_lan_tx;
-@@ -319,8 +325,9 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi)
- 		vsi->num_q_vectors = max_t(int, pf->num_lan_rx, pf->num_lan_tx);
- 		break;
- 	case ICE_VSI_VF:
--		vsi->alloc_txq = pf->num_vf_qps;
--		vsi->alloc_rxq = pf->num_vf_qps;
-+		vf = &pf->vf[vsi->vf_id];
-+		vsi->alloc_txq = vf->num_vf_qs;
-+		vsi->alloc_rxq = vf->num_vf_qs;
- 		/* pf->num_vf_msix includes (VF miscellaneous vector +
- 		 * data queue interrupts). Since vsi->num_q_vectors is number
- 		 * of queues vectors, subtract 1 from the original vector
-@@ -480,10 +487,12 @@ static irqreturn_t ice_msix_clean_rings(int __always_unused irq, void *data)
-  * ice_vsi_alloc - Allocates the next available struct VSI in the PF
-  * @pf: board private structure
-  * @type: type of VSI
-+ * @vf_id: Id of the VF being configured
-  *
-  * returns a pointer to a VSI on success, NULL on failure.
-  */
--static struct ice_vsi *ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type type)
-+static struct ice_vsi *
-+ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type type, u16 vf_id)
- {
- 	struct ice_vsi *vsi = NULL;
- 
-@@ -509,7 +518,11 @@ static struct ice_vsi *ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type type)
- 	vsi->idx = pf->next_vsi;
- 	vsi->work_lmt = ICE_DFLT_IRQ_WORK;
- 
--	ice_vsi_set_num_qs(vsi);
-+	vsi->idx = pf->next_vsi;
-+	if (type == ICE_VSI_VF)
-+		ice_vsi_set_num_qs(vsi, vf_id);
-+	else
-+		ice_vsi_set_num_qs(vsi, ICE_INVAL_VFID);
- 
- 	switch (vsi->type) {
- 	case ICE_VSI_PF:
-@@ -2196,7 +2209,11 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	struct ice_vsi *vsi;
- 	int ret, i;
- 
--	vsi = ice_vsi_alloc(pf, type);
-+	if (type == ICE_VSI_VF)
-+		vsi = ice_vsi_alloc(pf, type, vf_id);
-+	else
-+		vsi = ice_vsi_alloc(pf, type, ICE_INVAL_VFID);
-+
- 	if (!vsi) {
- 		dev_err(dev, "could not allocate VSI\n");
- 		return NULL;
-@@ -2719,7 +2736,10 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 	ice_dev_onetime_setup(&vsi->back->hw);
- 	if (vsi->req_txq || vsi->req_rxq)
- 		ice_vsi_put_qs(vsi);
--	ice_vsi_set_num_qs(vsi);
-+	if (vsi->type == ICE_VSI_VF)
-+		ice_vsi_set_num_qs(vsi, vf->vf_id);
-+	else
-+		ice_vsi_set_num_qs(vsi, ICE_INVAL_VFID);
- 	if (vsi->req_txq || vsi->req_rxq)
- 		ice_vsi_get_qs(vsi);
- 	ice_vsi_set_tc_cfg(vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index a93db0a7ac1c..c4f2bea0b670 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -495,6 +495,8 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
-  */
- static int ice_alloc_vf_res(struct ice_vf *vf)
- {
-+	struct ice_pf *pf = vf->pf;
-+	int tx_rx_queue_left;
- 	int status;
- 
- 	/* setup VF VSI and necessary resources */
-@@ -502,6 +504,15 @@ static int ice_alloc_vf_res(struct ice_vf *vf)
- 	if (status)
- 		goto ice_alloc_vf_res_exit;
- 
-+	/* Update number of VF queues, in case VF had requested for queue
-+	 * changes
-+	 */
-+	tx_rx_queue_left = min_t(int, pf->q_left_tx, pf->q_left_rx);
-+	tx_rx_queue_left += ICE_DFLT_QS_PER_VF;
-+	if (vf->num_req_qs && vf->num_req_qs <= tx_rx_queue_left &&
-+	    vf->num_req_qs != vf->num_vf_qs)
-+		vf->num_vf_qs = vf->num_req_qs;
-+
- 	if (vf->trusted)
- 		set_bit(ICE_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps);
- 	else
-@@ -835,8 +846,18 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	usleep_range(10000, 20000);
- 
- 	/* free VF resources to begin resetting the VSI state */
--	for (v = 0; v < pf->num_alloc_vfs; v++)
--		ice_free_vf_res(&pf->vf[v]);
-+	for (v = 0; v < pf->num_alloc_vfs; v++) {
-+		vf = &pf->vf[v];
-+
-+		ice_free_vf_res(vf);
-+
-+		/* Free VF queues as well, and reallocate later.
-+		 * If a given VF has different number of queues
-+		 * configured, the request for update will come
-+		 * via mailbox communication.
-+		 */
-+		vf->num_vf_qs = 0;
-+	}
- 
- 	if (ice_check_avail_res(pf)) {
- 		dev_err(&pf->pdev->dev,
-@@ -845,8 +866,15 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	}
- 
- 	/* Finish the reset on each VF */
--	for (v = 0; v < pf->num_alloc_vfs; v++)
--		ice_cleanup_and_realloc_vf(&pf->vf[v]);
-+	for (v = 0; v < pf->num_alloc_vfs; v++) {
-+		vf = &pf->vf[v];
-+
-+		vf->num_vf_qs = pf->num_vf_qps;
-+		dev_dbg(&pf->pdev->dev,
-+			"VF-id %d has %d queues configured\n",
-+			vf->vf_id, vf->num_vf_qs);
-+		ice_cleanup_and_realloc_vf(vf);
-+	}
- 
- 	ice_flush(hw);
- 	clear_bit(__ICE_VF_DIS, pf->state);
-@@ -1766,6 +1794,7 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 	struct virtchnl_vsi_queue_config_info *qci =
- 	    (struct virtchnl_vsi_queue_config_info *)msg;
- 	struct virtchnl_queue_pair_info *qpi;
-+	struct ice_pf *pf = vf->pf;
- 	enum ice_status aq_ret = 0;
- 	struct ice_vsi *vsi;
- 	int i;
-@@ -1786,6 +1815,14 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
-+	if (qci->num_queue_pairs > ICE_MAX_BASE_QS_PER_VF) {
-+		dev_err(&pf->pdev->dev,
-+			"VF-%d requesting more than supported number of queues: %d\n",
-+			vf->vf_id, qci->num_queue_pairs);
-+		aq_ret = ICE_ERR_PARAM;
-+		goto error_param;
-+	}
-+
- 	for (i = 0; i < qci->num_queue_pairs; i++) {
- 		qpi = &qci->qpair[i];
- 		if (qpi->txq.vsi_id != qci->vsi_id ||
-@@ -2013,6 +2050,7 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
- 	int req_queues = vfres->num_queue_pairs;
- 	enum ice_status aq_ret = 0;
- 	struct ice_pf *pf = vf->pf;
-+	int max_allowed_vf_queues;
- 	int tx_rx_queue_left;
- 	int cur_queues;
- 
-@@ -2021,22 +2059,24 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
--	cur_queues = pf->num_vf_qps;
-+	cur_queues = vf->num_vf_qs;
- 	tx_rx_queue_left = min_t(int, pf->q_left_tx, pf->q_left_rx);
-+	max_allowed_vf_queues = tx_rx_queue_left + cur_queues;
- 	if (req_queues <= 0) {
- 		dev_err(&pf->pdev->dev,
- 			"VF %d tried to request %d queues. Ignoring.\n",
- 			vf->vf_id, req_queues);
--	} else if (req_queues > ICE_MAX_QS_PER_VF) {
-+	} else if (req_queues > ICE_MAX_BASE_QS_PER_VF) {
- 		dev_err(&pf->pdev->dev,
- 			"VF %d tried to request more than %d queues.\n",
--			vf->vf_id, ICE_MAX_QS_PER_VF);
--		vfres->num_queue_pairs = ICE_MAX_QS_PER_VF;
-+			vf->vf_id, ICE_MAX_BASE_QS_PER_VF);
-+		vfres->num_queue_pairs = ICE_MAX_BASE_QS_PER_VF;
- 	} else if (req_queues - cur_queues > tx_rx_queue_left) {
- 		dev_warn(&pf->pdev->dev,
- 			 "VF %d requested %d more queues, but only %d left.\n",
- 			 vf->vf_id, req_queues - cur_queues, tx_rx_queue_left);
--		vfres->num_queue_pairs = tx_rx_queue_left + cur_queues;
-+		vfres->num_queue_pairs = min_t(int, max_allowed_vf_queues,
-+					       ICE_MAX_BASE_QS_PER_VF);
- 	} else {
- 		/* request is successful, then reset VF */
- 		vf->num_req_qs = req_queues;
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 01470a8ee03a..7bf3535feffb 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -70,6 +70,7 @@ struct ice_vf {
- 	u8 spoofchk;
- 	u16 num_mac;
- 	u16 num_vlan;
-+	u16 num_vf_qs;			/* num of queue configured per VF */
- 	u8 num_req_qs;			/* num of queue pairs requested by VF */
+ static const struct ice_stats ice_gstrings_pf_stats[] = {
+-	ICE_PF_STAT("tx_bytes", stats.eth.tx_bytes),
+-	ICE_PF_STAT("rx_bytes", stats.eth.rx_bytes),
+-	ICE_PF_STAT("tx_unicast", stats.eth.tx_unicast),
+-	ICE_PF_STAT("rx_unicast", stats.eth.rx_unicast),
+-	ICE_PF_STAT("tx_multicast", stats.eth.tx_multicast),
+-	ICE_PF_STAT("rx_multicast", stats.eth.rx_multicast),
+-	ICE_PF_STAT("tx_broadcast", stats.eth.tx_broadcast),
+-	ICE_PF_STAT("rx_broadcast", stats.eth.rx_broadcast),
+-	ICE_PF_STAT("tx_errors", stats.eth.tx_errors),
+-	ICE_PF_STAT("tx_size_64", stats.tx_size_64),
+-	ICE_PF_STAT("rx_size_64", stats.rx_size_64),
+-	ICE_PF_STAT("tx_size_127", stats.tx_size_127),
+-	ICE_PF_STAT("rx_size_127", stats.rx_size_127),
+-	ICE_PF_STAT("tx_size_255", stats.tx_size_255),
+-	ICE_PF_STAT("rx_size_255", stats.rx_size_255),
+-	ICE_PF_STAT("tx_size_511", stats.tx_size_511),
+-	ICE_PF_STAT("rx_size_511", stats.rx_size_511),
+-	ICE_PF_STAT("tx_size_1023", stats.tx_size_1023),
+-	ICE_PF_STAT("rx_size_1023", stats.rx_size_1023),
+-	ICE_PF_STAT("tx_size_1522", stats.tx_size_1522),
+-	ICE_PF_STAT("rx_size_1522", stats.rx_size_1522),
+-	ICE_PF_STAT("tx_size_big", stats.tx_size_big),
+-	ICE_PF_STAT("rx_size_big", stats.rx_size_big),
+-	ICE_PF_STAT("link_xon_tx", stats.link_xon_tx),
+-	ICE_PF_STAT("link_xon_rx", stats.link_xon_rx),
+-	ICE_PF_STAT("link_xoff_tx", stats.link_xoff_tx),
+-	ICE_PF_STAT("link_xoff_rx", stats.link_xoff_rx),
+-	ICE_PF_STAT("tx_dropped_link_down", stats.tx_dropped_link_down),
+-	ICE_PF_STAT("rx_undersize", stats.rx_undersize),
+-	ICE_PF_STAT("rx_fragments", stats.rx_fragments),
+-	ICE_PF_STAT("rx_oversize", stats.rx_oversize),
+-	ICE_PF_STAT("rx_jabber", stats.rx_jabber),
+-	ICE_PF_STAT("rx_csum_bad", hw_csum_rx_error),
+-	ICE_PF_STAT("rx_length_errors", stats.rx_len_errors),
+-	ICE_PF_STAT("rx_dropped", stats.eth.rx_discards),
+-	ICE_PF_STAT("rx_crc_errors", stats.crc_errors),
+-	ICE_PF_STAT("illegal_bytes", stats.illegal_bytes),
+-	ICE_PF_STAT("mac_local_faults", stats.mac_local_faults),
+-	ICE_PF_STAT("mac_remote_faults", stats.mac_remote_faults),
++	ICE_PF_STAT("port.tx_bytes", stats.eth.tx_bytes),
++	ICE_PF_STAT("port.rx_bytes", stats.eth.rx_bytes),
++	ICE_PF_STAT("port.tx_unicast", stats.eth.tx_unicast),
++	ICE_PF_STAT("port.rx_unicast", stats.eth.rx_unicast),
++	ICE_PF_STAT("port.tx_multicast", stats.eth.tx_multicast),
++	ICE_PF_STAT("port.rx_multicast", stats.eth.rx_multicast),
++	ICE_PF_STAT("port.tx_broadcast", stats.eth.tx_broadcast),
++	ICE_PF_STAT("port.rx_broadcast", stats.eth.rx_broadcast),
++	ICE_PF_STAT("port.tx_errors", stats.eth.tx_errors),
++	ICE_PF_STAT("port.tx_size_64", stats.tx_size_64),
++	ICE_PF_STAT("port.rx_size_64", stats.rx_size_64),
++	ICE_PF_STAT("port.tx_size_127", stats.tx_size_127),
++	ICE_PF_STAT("port.rx_size_127", stats.rx_size_127),
++	ICE_PF_STAT("port.tx_size_255", stats.tx_size_255),
++	ICE_PF_STAT("port.rx_size_255", stats.rx_size_255),
++	ICE_PF_STAT("port.tx_size_511", stats.tx_size_511),
++	ICE_PF_STAT("port.rx_size_511", stats.rx_size_511),
++	ICE_PF_STAT("port.tx_size_1023", stats.tx_size_1023),
++	ICE_PF_STAT("port.rx_size_1023", stats.rx_size_1023),
++	ICE_PF_STAT("port.tx_size_1522", stats.tx_size_1522),
++	ICE_PF_STAT("port.rx_size_1522", stats.rx_size_1522),
++	ICE_PF_STAT("port.tx_size_big", stats.tx_size_big),
++	ICE_PF_STAT("port.rx_size_big", stats.rx_size_big),
++	ICE_PF_STAT("port.link_xon_tx", stats.link_xon_tx),
++	ICE_PF_STAT("port.link_xon_rx", stats.link_xon_rx),
++	ICE_PF_STAT("port.link_xoff_tx", stats.link_xoff_tx),
++	ICE_PF_STAT("port.link_xoff_rx", stats.link_xoff_rx),
++	ICE_PF_STAT("port.tx_dropped_link_down", stats.tx_dropped_link_down),
++	ICE_PF_STAT("port.rx_undersize", stats.rx_undersize),
++	ICE_PF_STAT("port.rx_fragments", stats.rx_fragments),
++	ICE_PF_STAT("port.rx_oversize", stats.rx_oversize),
++	ICE_PF_STAT("port.rx_jabber", stats.rx_jabber),
++	ICE_PF_STAT("port.rx_csum_bad", hw_csum_rx_error),
++	ICE_PF_STAT("port.rx_length_errors", stats.rx_len_errors),
++	ICE_PF_STAT("port.rx_dropped", stats.eth.rx_discards),
++	ICE_PF_STAT("port.rx_crc_errors", stats.crc_errors),
++	ICE_PF_STAT("port.illegal_bytes", stats.illegal_bytes),
++	ICE_PF_STAT("port.mac_local_faults", stats.mac_local_faults),
++	ICE_PF_STAT("port.mac_remote_faults", stats.mac_remote_faults),
  };
  
+ static const u32 ice_regs_dump_list[] = {
+@@ -304,7 +304,7 @@ static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+ 			return;
+ 
+ 		for (i = 0; i < ICE_PF_STATS_LEN; i++) {
+-			snprintf(p, ETH_GSTRING_LEN, "port.%s",
++			snprintf(p, ETH_GSTRING_LEN, "%s",
+ 				 ice_gstrings_pf_stats[i].stat_string);
+ 			p += ETH_GSTRING_LEN;
+ 		}
 -- 
 2.14.5
 
