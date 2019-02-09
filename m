@@ -1,10 +1,9 @@
 From: David Miller <davem@davemloft.net>
-Date: Fri, 08 Feb 2019 22:58:50 -0800 (PST)
-Subject: [Intel-wired-lan] [PATCH net-next] fm10k: use struct_size() in
- kzalloc()
-In-Reply-To: <20190208035537.GA12318@embeddedor>
-References: <20190208035537.GA12318@embeddedor>
-Message-ID: <20190208.225850.1465671376713835581.davem@davemloft.net>
+Date: Fri, 08 Feb 2019 23:04:18 -0800 (PST)
+Subject: [Intel-wired-lan] [PATCH net-next] igb: use struct_size() helper
+In-Reply-To: <20190208041540.GA28817@embeddedor>
+References: <20190208041540.GA28817@embeddedor>
+Message-ID: <20190208.230418.1459100519321461684.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,7 +11,7 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Thu, 7 Feb 2019 21:55:37 -0600
+Date: Thu, 7 Feb 2019 22:15:40 -0600
 
 > One of the more common cases of allocation size calculations is finding
 > the size of a structure that has a zero-sized array at the end, along
@@ -24,15 +23,12 @@ Date: Thu, 7 Feb 2019 21:55:37 -0600
 > };
 > 
 > size = sizeof(struct foo) + count * sizeof(struct boo);
-> instance = kzalloc(size, GFP_KERNEL);
+> instance = alloc(size, GFP_KERNEL);
 > 
 > Instead of leaving these open-coded and prone to type mistakes, we can
 > now use the new struct_size() helper:
 > 
-> instance = kzalloc(struct_size(instance, entry, count), GFP_KERNEL);
-> 
-> Notice that, in this case, variable size is not necessary, hence
-> it is removed.
+> size = struct_size(instance, entry, count);
 > 
 > This code was detected with the help of Coccinelle.
 > 
