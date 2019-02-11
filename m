@@ -1,173 +1,158 @@
-From: Nicholas Nunley <nicholas.d.nunley@intel.com>
-Date: Mon, 11 Feb 2019 11:22:24 -0800
-Subject: [Intel-wired-lan] [PATCH v3 3/6] ethtool: introduce new ioctl for
- per-queue settings
-In-Reply-To: <20190211192227.34960-1-nicholas.d.nunley@intel.com>
-References: <20190211192227.34960-1-nicholas.d.nunley@intel.com>
-Message-ID: <20190211192227.34960-3-nicholas.d.nunley@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 12 Feb 2019 05:44:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 80cd86d797eb46a4c02ffea2ec1fc5d8faab434d
+Message-ID: <5c61ecd4.xs24eASUbdcYwD68%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Introduce a new ioctl for applying per-queue parameters.
-Users can apply commands to specific queues by setting SUB_COMMAND and
-queue_mask with the following ethtool command:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 80cd86d797eb46a4c02ffea2ec1fc5d8faab434d  i40e driver changes to test dynamic MSI-X
 
- ethtool -Q|--per-queue DEVNAME [queue_mask %x] SUB_COMMAND
+elapsed time: 178m
 
-If queue_mask is not set, the SUB_COMMAND will be applied to all queues.
+configs tested: 133
 
-SUB_COMMANDs for per-queue settings will be implemented in following
-patches.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Based on patch by Kan Liang <kan.liang@intel.com>
+x86_64                 randconfig-x005-201906
+x86_64                 randconfig-x008-201906
+x86_64                 randconfig-x009-201906
+x86_64                 randconfig-x001-201906
+x86_64                 randconfig-x002-201906
+x86_64                 randconfig-x003-201906
+x86_64                 randconfig-x006-201906
+x86_64                 randconfig-x007-201906
+x86_64                 randconfig-x000-201906
+x86_64                 randconfig-x004-201906
+riscv                             allnoconfig
+riscv                               defconfig
+i386                   randconfig-x007-201906
+i386                   randconfig-x000-201906
+i386                   randconfig-x006-201906
+i386                   randconfig-x002-201906
+i386                   randconfig-x001-201906
+i386                   randconfig-x003-201906
+i386                   randconfig-x009-201906
+i386                   randconfig-x008-201906
+i386                   randconfig-x005-201906
+i386                   randconfig-x004-201906
+x86_64                 randconfig-x013-201906
+x86_64                 randconfig-x017-201906
+x86_64                 randconfig-x016-201906
+x86_64                 randconfig-x019-201906
+x86_64                 randconfig-x012-201906
+x86_64                 randconfig-x011-201906
+x86_64                 randconfig-x018-201906
+x86_64                 randconfig-x010-201906
+x86_64                 randconfig-x015-201906
+x86_64                 randconfig-x014-201906
+i386                     randconfig-a2-201906
+i386                     randconfig-a3-201906
+i386                     randconfig-a0-201906
+i386                     randconfig-a1-201906
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                              allmodconfig
+arm64                            allyesconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201906
+i386                     randconfig-s1-201906
+i386                     randconfig-s2-201906
+i386                     randconfig-s3-201906
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+parisc                        c3000_defconfig
+um                                  defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                   randconfig-x019-201906
+i386                   randconfig-x015-201906
+i386                   randconfig-x016-201906
+i386                   randconfig-x014-201906
+i386                   randconfig-x012-201906
+i386                   randconfig-x013-201906
+i386                   randconfig-x010-201906
+i386                   randconfig-x017-201906
+i386                   randconfig-x018-201906
+i386                   randconfig-x011-201906
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                             allmodconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+x86_64                                  kexec
+x86_64                         rhel-7.2-clear
+x86_64                              fedora-25
+i386                   randconfig-x072-201906
+i386                   randconfig-x079-201906
+i386                   randconfig-x075-201906
+i386                   randconfig-x073-201906
+i386                   randconfig-x077-201906
+i386                   randconfig-x078-201906
+i386                   randconfig-x074-201906
+i386                   randconfig-x076-201906
+i386                   randconfig-x070-201906
+i386                   randconfig-x071-201906
 
-Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
 ---
- ethtool.8.in | 20 ++++++++++++++++
- ethtool.c    | 75 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 95 insertions(+)
-
-diff --git a/ethtool.8.in b/ethtool.8.in
-index 5a26cff..10f24db 100644
---- a/ethtool.8.in
-+++ b/ethtool.8.in
-@@ -391,6 +391,14 @@ ethtool \- query or control network driver and hardware settings
- .I devname
- .B encoding
- .BR auto | off | rs | baser \ [...]
-+.HP
-+.B ethtool \-Q|\-\-per\-queue
-+.I devname
-+.RB [ queue_mask
-+.IR %x ]
-+.I sub_command
-+.RB ...
-+ .
- .
- .\" Adjust lines (i.e. full justification) and hyphenate.
- .ad
-@@ -1135,6 +1143,18 @@ RS	Force RS-FEC encoding
- BaseR	Force BaseR encoding
- .TE
- .RE
-+.TP
-+.B \-Q|\-\-per\-queue
-+Applies provided sub command to specific queues.
-+.RS 4
-+.TP
-+.B queue_mask %x
-+Sets the specific queues which the sub command is applied to.
-+If queue_mask is not set, the sub command will be applied to all queues.
-+.TP
-+.B sub_command
-+Sub command to apply.
-+.RE
- .SH BUGS
- Not supported (in part or whole) on all network drivers.
- .SH AUTHOR
-diff --git a/ethtool.c b/ethtool.c
-index d9850f4..5f72741 100644
---- a/ethtool.c
-+++ b/ethtool.c
-@@ -5051,6 +5051,8 @@ static int do_sfec(struct cmd_context *ctx)
- 	return 0;
- }
- 
-+static int do_perqueue(struct cmd_context *ctx);
-+
- #ifndef TEST_ETHTOOL
- int send_ioctl(struct cmd_context *ctx, void *cmd)
- {
-@@ -5246,6 +5248,8 @@ static const struct option {
- 	{ "--show-fec", 1, do_gfec, "Show FEC settings"},
- 	{ "--set-fec", 1, do_sfec, "Set FEC settings",
- 	  "		[ encoding auto|off|rs|baser [...]]\n"},
-+	{ "-Q|--per-queue", 1, do_perqueue, "Apply per-queue command",
-+	  "             [queue_mask %x] SUB_COMMAND\n"},
- 	{ "-h|--help", 0, show_usage, "Show this help" },
- 	{ "--version", 0, do_version, "Show version number" },
- 	{}
-@@ -5297,6 +5301,77 @@ static int find_option(int argc, char **argp)
- 	return -1;
- }
- 
-+#define MAX(x, y) (x > y ? x : y)
-+
-+static int find_max_num_queues(struct cmd_context *ctx)
-+{
-+	struct ethtool_channels echannels;
-+
-+	echannels.cmd = ETHTOOL_GCHANNELS;
-+	if (send_ioctl(ctx, &echannels))
-+		return -1;
-+
-+	return MAX(echannels.rx_count, echannels.tx_count) +
-+		echannels.combined_count;
-+}
-+
-+static int do_perqueue(struct cmd_context *ctx)
-+{
-+	__u32 queue_mask[__KERNEL_DIV_ROUND_UP(MAX_NUM_QUEUE, 32)] = {0};
-+	int i, n_queues = 0;
-+
-+	if (ctx->argc == 0)
-+		exit_bad_args();
-+
-+	/*
-+	 * The sub commands will be applied to
-+	 * all queues if no queue_mask set
-+	 */
-+	if (strncmp(*ctx->argp, "queue_mask", 11)) {
-+		n_queues = find_max_num_queues(ctx);
-+		if (n_queues < 0) {
-+			perror("Cannot get number of queues");
-+			return -EFAULT;
-+		} else if (n_queues > MAX_NUM_QUEUE) {
-+			n_queues = MAX_NUM_QUEUE;
-+		}
-+		for (i = 0; i < n_queues / 32; i++)
-+			queue_mask[i] = ~0;
-+		if (n_queues % 32)
-+			queue_mask[i] = (1 << (n_queues - i * 32)) - 1;
-+		fprintf(stdout,
-+			"The sub commands will be applied to all %d queues\n",
-+			n_queues);
-+	} else {
-+		ctx->argc--;
-+		ctx->argp++;
-+		if (parse_hex_u32_bitmap(*ctx->argp, MAX_NUM_QUEUE,
-+		    queue_mask)) {
-+			fprintf(stdout, "Invalid queue mask\n");
-+			return -1;
-+		}
-+		for (i = 0; i < __KERNEL_DIV_ROUND_UP(MAX_NUM_QUEUE, 32); i++) {
-+			__u32 mask = queue_mask[i];
-+
-+			while (mask > 0) {
-+				if (mask & 0x1)
-+					n_queues++;
-+				mask = mask >> 1;
-+			}
-+		}
-+		ctx->argc--;
-+		ctx->argp++;
-+	}
-+
-+	i = find_option(ctx->argc, ctx->argp);
-+	if (i < 0)
-+		exit_bad_args();
-+
-+	/* no sub_command support yet */
-+
-+	return -EOPNOTSUPP;
-+}
-+
- int main(int argc, char **argp)
- {
- 	int (*func)(struct cmd_context *);
--- 
-2.14.4
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
