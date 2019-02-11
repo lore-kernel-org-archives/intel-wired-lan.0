@@ -1,226 +1,92 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 23 Feb 2019 11:13:01 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 824d9c36c15c6f96b842a60cb90685f5039d4f20
-Message-ID: <5c70ba3d.58RyUURBP/cJrA+S%lkp@intel.com>
+From: Nicholas Nunley <nicholas.d.nunley@intel.com>
+Date: Mon, 11 Feb 2019 11:22:22 -0800
+Subject: [Intel-wired-lan] [PATCH v3 1/6] ethtool: move option parsing
+ related code into function
+Message-ID: <20190211192227.34960-1-nicholas.d.nunley@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 824d9c36c15c6f96b842a60cb90685f5039d4f20  ice: Bump version
+Move option parsing code into find_option function.
 
-elapsed time: 182m
+No behavior changes.
 
-configs tested: 202
+Based on patch by Kan Liang <kan.liang@intel.com>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-arm                         cm_x2xx_defconfig
-mips                        bcm63xx_defconfig
-i386                   randconfig-x019-201907
-i386                   randconfig-x015-201907
-i386                   randconfig-x016-201907
-i386                   randconfig-x014-201907
-i386                   randconfig-x012-201907
-i386                   randconfig-x013-201907
-i386                   randconfig-x010-201907
-i386                   randconfig-x018-201907
-i386                   randconfig-x017-201907
-i386                   randconfig-x011-201907
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-x005-201907
-x86_64                 randconfig-x008-201907
-x86_64                 randconfig-x009-201907
-x86_64                 randconfig-x001-201907
-x86_64                 randconfig-x002-201907
-x86_64                 randconfig-x003-201907
-x86_64                 randconfig-x006-201907
-x86_64                 randconfig-x007-201907
-x86_64                 randconfig-x000-201907
-x86_64                 randconfig-x004-201907
-nds32                             allnoconfig
-nds32                               defconfig
-i386                     randconfig-i0-201907
-i386                     randconfig-i1-201907
-i386                     randconfig-i2-201907
-i386                     randconfig-i3-201907
-riscv                             allnoconfig
-riscv                               defconfig
-i386                             allmodconfig
-i386                   randconfig-x007-201907
-i386                   randconfig-x000-201907
-i386                   randconfig-x006-201907
-i386                   randconfig-x002-201907
-i386                   randconfig-x001-201907
-i386                   randconfig-x003-201907
-i386                   randconfig-x009-201907
-i386                   randconfig-x008-201907
-i386                   randconfig-x005-201907
-i386                   randconfig-x004-201907
-x86_64                 randconfig-x013-201907
-x86_64                 randconfig-x017-201907
-x86_64                 randconfig-x016-201907
-x86_64                 randconfig-x019-201907
-x86_64                 randconfig-x012-201907
-x86_64                 randconfig-x011-201907
-x86_64                 randconfig-x018-201907
-x86_64                 randconfig-x010-201907
-x86_64                 randconfig-x015-201907
-x86_64                 randconfig-x014-201907
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a2-201907
-i386                     randconfig-a3-201907
-i386                     randconfig-a0-201907
-i386                     randconfig-a1-201907
-x86_64                 randconfig-s0-02231028
-x86_64                 randconfig-s1-02231028
-x86_64                 randconfig-s2-02231028
-powerpc                    socrates_defconfig
-powerpc                        warp_defconfig
-s390                          debug_defconfig
-sh                         ecovec24_defconfig
-arm                       aspeed_g5_defconfig
-arm                          lpd270_defconfig
-arm                        multi_v5_defconfig
-sh                          rsk7269_defconfig
-arc                              alldefconfig
-arm                          simpad_defconfig
-m68k                         amcore_defconfig
-xtensa                            allnoconfig
-h8300                    h8300h-sim_defconfig
-mips                  mips_paravirt_defconfig
-parisc                generic-64bit_defconfig
-powerpc                       holly_defconfig
-arm                        clps711x_defconfig
-arm                          collie_defconfig
-mips                      fuloong2e_defconfig
-arm                  colibri_pxa270_defconfig
-powerpc                   motionpro_defconfig
-sh                   sh7770_generic_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201907
-i386                     randconfig-s1-201907
-i386                     randconfig-s2-201907
-i386                     randconfig-s3-201907
-arm                           efm32_defconfig
-powerpc               mpc86xx_basic_defconfig
-arm                       spear13xx_defconfig
-sh                           se7722_defconfig
-arm                          iop32x_defconfig
-arm                       netwinder_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                          exynos_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                         rhel-7.2-clear
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-m0-02211051
-x86_64                 randconfig-m1-02211051
-x86_64                 randconfig-m2-02211051
-x86_64                 randconfig-m3-02211051
-i386                   randconfig-m0-02211051
-i386                   randconfig-m1-02211051
-i386                   randconfig-m2-02211051
-i386                   randconfig-m3-02211051
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-l3-02222232
-i386                   randconfig-l1-02222232
-x86_64                 randconfig-l1-02222232
-x86_64                 randconfig-l2-02222232
-i386                   randconfig-l0-02222232
-i386                   randconfig-l3-02222232
-x86_64                 randconfig-l0-02222232
-i386                   randconfig-l2-02222232
-x86_64                 randconfig-s3-02231042
-x86_64                 randconfig-s4-02231042
-x86_64                 randconfig-s5-02231042
-x86_64                 randconfig-s3-02231052
-x86_64                 randconfig-s4-02231052
-x86_64                 randconfig-s5-02231052
-i386                   randconfig-x070-201907
-i386                   randconfig-x071-201907
-i386                   randconfig-x072-201907
-i386                   randconfig-x073-201907
-i386                   randconfig-x074-201907
-i386                   randconfig-x075-201907
-i386                   randconfig-x076-201907
-i386                   randconfig-x077-201907
-i386                   randconfig-x078-201907
-i386                   randconfig-x079-201907
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-xtensa                  audio_kc705_defconfig
-
+Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ ethtool.c | 49 +++++++++++++++++++++++++++++++------------------
+ 1 file changed, 31 insertions(+), 18 deletions(-)
+
+diff --git a/ethtool.c b/ethtool.c
+index fb4c088..917626f 100644
+--- a/ethtool.c
++++ b/ethtool.c
+@@ -5268,6 +5268,29 @@ static int show_usage(struct cmd_context *ctx)
+ 	return 0;
+ }
+ 
++static int find_option(int argc, char **argp)
++{
++	const char *opt;
++	size_t len;
++	int k;
++
++	for (k = 0; args[k].opts; k++) {
++		opt = args[k].opts;
++		for (;;) {
++			len = strcspn(opt, "|");
++			if (strncmp(*argp, opt, len) == 0 &&
++			    (*argp)[len] == 0)
++				return k;
++
++			if (opt[len] == 0)
++				break;
++			opt += len + 1;
++		}
++	}
++
++	return -1;
++}
++
+ int main(int argc, char **argp)
+ {
+ 	int (*func)(struct cmd_context *);
+@@ -5287,24 +5310,14 @@ int main(int argc, char **argp)
+ 	 */
+ 	if (argc == 0)
+ 		exit_bad_args();
+-	for (k = 0; args[k].opts; k++) {
+-		const char *opt;
+-		size_t len;
+-		opt = args[k].opts;
+-		for (;;) {
+-			len = strcspn(opt, "|");
+-			if (strncmp(*argp, opt, len) == 0 &&
+-			    (*argp)[len] == 0) {
+-				argp++;
+-				argc--;
+-				func = args[k].func;
+-				want_device = args[k].want_device;
+-				goto opt_found;
+-			}
+-			if (opt[len] == 0)
+-				break;
+-			opt += len + 1;
+-		}
++
++	k = find_option(argc, argp);
++	if (k >= 0) {
++		argp++;
++		argc--;
++		func = args[k].func;
++		want_device = args[k].want_device;
++		goto opt_found;
+ 	}
+ 	if ((*argp)[0] == '-')
+ 		exit_bad_args();
+-- 
+2.14.4
+
