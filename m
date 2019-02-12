@@ -1,111 +1,82 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue, 12 Feb 2019 09:52:05 +0100
-Subject: [Intel-wired-lan] [PATCH 2/2] i40e: add tracking of AF_XDP ZC state
- for each queue pair
-In-Reply-To: <20190212085205.7848-1-bjorn.topel@gmail.com>
-References: <20190212085205.7848-1-bjorn.topel@gmail.com>
-Message-ID: <20190212085205.7848-3-bjorn.topel@gmail.com>
+From: Ludkiewicz, Adam <adam.ludkiewicz@intel.com>
+Date: Tue, 12 Feb 2019 09:41:16 +0000
+Subject: [Intel-wired-lan] [next PATCH S2-V2 09/12] i40e: The driver now
+ prints the API version in error message
+In-Reply-To: <20190206230826.24970-9-alice.michael@intel.com>
+References: <20190206230826.24970-1-alice.michael@intel.com>
+ <20190206230826.24970-9-alice.michael@intel.com>
+Message-ID: <DF8E614BFAF5EA4981FDD45CE6FAFAED3661BEE0@irsmsx105.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
+ACK
 
-In commit f3fef2b6e1cc ("i40e: Remove umem from VSI") a regression was
-introduced; When the VSI was reset, the setup code would try to enable
-AF_XDP ZC unconditionally (as long as there was a umem placed in the
-netdev._rx struct). Here, we add a bitmap to the VSI that tracks if a
-certain queue pair has been "zero-copy enabled" via the ndo_bpf. The
-bitmap is used in i40e_xsk_umem, and enables zero-copy if and only if
-XDP is enabled, the corresponding qid in the bitmap is set and the
-umem is non-NULL.
+-----Original Message-----
+From: Michael, Alice 
+Sent: Thursday, February 7, 2019 12:08 AM
+To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
+Cc: Ludkiewicz, Adam <adam.ludkiewicz@intel.com>
+Subject: [next PATCH S2-V2 09/12] i40e: The driver now prints the API version in error message
 
-Fixes: f3fef2b6e1cc ("i40e: Remove umem from VSI")
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+From: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
+
+Added the API version in the error message for clarity.
+
+Signed-off-by: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++++++-
- drivers/net/ethernet/intel/i40e/i40e_xsk.c  |  3 +++
- 3 files changed, 14 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index cc583ad5236b..d3cc3427caad 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -790,6 +790,8 @@ struct i40e_vsi {
- 
- 	/* VSI specific handlers */
- 	irqreturn_t (*irq_handler)(int irq, void *data);
-+
-+	unsigned long *af_xdp_zc_qps; /* tracks AF_XDP ZC enabled qps */
- } ____cacheline_internodealigned_in_smp;
- 
- struct i40e_netdev_priv {
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index ba1a84a2c8e5..0dd00d58c524 100644
+index bae4c05e9d7e..081bd7ce1b4f 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3077,7 +3077,7 @@ static struct xdp_umem *i40e_xsk_umem(struct i40e_ring *ring)
- 	if (ring_is_xdp(ring))
- 		qid -= ring->vsi->alloc_queue_pairs;
+@@ -14512,7 +14512,11 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (err) {
+ 		if (err == I40E_ERR_FIRMWARE_API_VERSION)
+ 			dev_info(&pdev->dev,
+-				 "The driver for the device stopped because the NVM image is newer than expected. You must install the most recent version of the network driver.\n");
++				 "The driver for the device stopped because the NVM image v%u.%u is newer than expected v%u.%u. You must install the most recent version of the network driver.\n",
++				 hw->aq.api_maj_ver,
++				 hw->aq.api_min_ver,
++				 I40E_FW_API_VERSION_MAJOR,
++				 I40E_FW_MINOR_VERSION(hw));
+ 		else
+ 			dev_info(&pdev->dev,
+ 				 "The driver for the device stopped because the device firmware failed to init. Try updating your NVM image.\n"); @@ -14530,10 +14534,18 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+ 	    hw->aq.api_min_ver > I40E_FW_MINOR_VERSION(hw))
+ 		dev_info(&pdev->dev,
+-			 "The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.\n");
++			 "The driver for the device detected a newer version of the NVM image v%u.%u than expected v%u.%u. Please install the most recent version of the network driver.\n",
++			 hw->aq.api_maj_ver,
++			 hw->aq.api_min_ver,
++			 I40E_FW_API_VERSION_MAJOR,
++			 I40E_FW_MINOR_VERSION(hw));
+ 	else if (hw->aq.api_maj_ver == 1 && hw->aq.api_min_ver < 4)
+ 		dev_info(&pdev->dev,
+-			 "The driver for the device detected an older version of the NVM image than expected. Please update the NVM image.\n");
++			 "The driver for the device detected an older version of the NVM image v%u.%u than expected v%u.%u. Please update the NVM image.\n",
++			 hw->aq.api_maj_ver,
++			 hw->aq.api_min_ver,
++			 I40E_FW_API_VERSION_MAJOR,
++			 I40E_FW_MINOR_VERSION(hw));
  
--	if (!xdp_on)
-+	if (!xdp_on || !test_bit(qid, ring->vsi->af_xdp_zc_qps))
- 		return NULL;
+ 	i40e_verify_eeprom(pf);
  
- 	return xdp_get_umem_from_qid(ring->vsi->netdev, qid);
-@@ -10076,6 +10076,12 @@ static int i40e_vsi_mem_alloc(struct i40e_pf *pf, enum i40e_vsi_type type)
- 	hash_init(vsi->mac_filter_hash);
- 	vsi->irqs_ready = false;
- 
-+	if (type == I40E_VSI_MAIN) {
-+		vsi->af_xdp_zc_qps = bitmap_zalloc(pf->num_lan_qps, GFP_KERNEL);
-+		if (!vsi->af_xdp_zc_qps)
-+			goto err_rings;
-+	}
-+
- 	ret = i40e_set_num_rings_in_vsi(vsi);
- 	if (ret)
- 		goto err_rings;
-@@ -10094,6 +10100,7 @@ static int i40e_vsi_mem_alloc(struct i40e_pf *pf, enum i40e_vsi_type type)
- 	goto unlock_pf;
- 
- err_rings:
-+	bitmap_free(vsi->af_xdp_zc_qps);
- 	pf->next_vsi = i - 1;
- 	kfree(vsi);
- unlock_pf:
-@@ -10174,6 +10181,7 @@ static int i40e_vsi_clear(struct i40e_vsi *vsi)
- 	i40e_put_lump(pf->qp_pile, vsi->base_queue, vsi->idx);
- 	i40e_put_lump(pf->irq_pile, vsi->base_vector, vsi->idx);
- 
-+	bitmap_free(vsi->af_xdp_zc_qps);
- 	i40e_vsi_free_arrays(vsi, true);
- 	i40e_clear_rss_config_user(vsi);
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 96d849460d9b..2737fee338c4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -102,6 +102,8 @@ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
- 	if (err)
- 		return err;
- 
-+	set_bit(qid, vsi->af_xdp_zc_qps);
-+
- 	if_running = netif_running(vsi->netdev) && i40e_enabled_xdp_vsi(vsi);
- 
- 	if (if_running) {
-@@ -143,6 +145,7 @@ static int i40e_xsk_umem_disable(struct i40e_vsi *vsi, u16 qid)
- 			return err;
- 	}
- 
-+	clear_bit(qid, vsi->af_xdp_zc_qps);
- 	i40e_xsk_umem_dma_unmap(vsi, umem);
- 
- 	if (if_running) {
--- 
-2.19.1
+--
+2.19.2
+
+--------------------------------------------------------------------
+
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
 
