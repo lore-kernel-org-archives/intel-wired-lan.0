@@ -1,72 +1,49 @@
-From: Ludkiewicz, Adam <adam.ludkiewicz@intel.com>
-Date: Tue, 12 Feb 2019 09:41:59 +0000
-Subject: [Intel-wired-lan] [next PATCH S2-V2 10/12] i40e: Report
- advertised link modes on 40GBASE_SR4
-In-Reply-To: <20190206230826.24970-10-alice.michael@intel.com>
-References: <20190206230826.24970-1-alice.michael@intel.com>
- <20190206230826.24970-10-alice.michael@intel.com>
-Message-ID: <DF8E614BFAF5EA4981FDD45CE6FAFAED3661BEEF@irsmsx105.ger.corp.intel.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 12 Feb 2019 09:54:38 -0800
+Subject: [Intel-wired-lan] [PATCH 0/3] gcc-plugins: Introduce stackinit
+ plugin
+In-Reply-To: <874b8c23-068b-f8e7-2168-12947c06e145@linux.com>
+References: <20190123110349.35882-1-keescook@chromium.org>
+ <874b8c23-068b-f8e7-2168-12947c06e145@linux.com>
+Message-ID: <CAGXu5j+xz8_wkY2rVRML_iq1o7ZoF1jVp2mi73LjxaKuMNw1cw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+On Mon, Jan 28, 2019 at 4:12 PM Alexander Popov <alex.popov@linux.com> wrote:
+>
+> On 23.01.2019 14:03, Kees Cook wrote:
+> > This adds a new plugin "stackinit" that attempts to perform unconditional
+> > initialization of all stack variables
+>
+> Hello Kees! Hello everyone!
+>
+> I was curious about the performance impact of the initialization of all stack
+> variables. So I did a very brief test with this plugin on top of 4.20.5.
+>
+> hackbench on Intel Core i7-4770 showed ~0.7% slowdown.
+> hackbench on Kirin 620 (ARM Cortex-A53 Octa-core 1.2GHz) showed ~1.3% slowdown.
 
------Original Message-----
-From: Michael, Alice 
-Sent: Thursday, February 7, 2019 12:08 AM
-To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: Ludkiewicz, Adam <adam.ludkiewicz@intel.com>
-Subject: [next PATCH S2-V2 10/12] i40e: Report advertised link modes on 40GBASE_SR4
+Thanks for looking at this! I'll be including my hackbench
+measurements for the v2 here in a moment.
 
-From: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
+> This test involves the kernel scheduler and allocator. I can't say whether they
+> use stack aggressively. Maybe performance tests of other subsystems (e.g.
+> network subsystem) can show different numbers. Did you try?
 
-Defined the advertised link mode field for 40000baseSR4_Full for use with ethtool.
+I haven't found a stable network test yet. If someone can find a
+reasonable workload, I'd love to hear about it.
 
-Signed-off-by: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+> I've heard a hypothesis that the initialization of all stack variables would
+> pollute CPU caches, which is critical for some types of computations. Maybe some
+> micro-benchmarks can disprove/confirm that?
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 4e347637e36a..14b52f8aedd0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -535,9 +535,12 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf,
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     1000baseT_Full);
- 	}
--	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_SR4)
-+	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_SR4) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     40000baseSR4_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     40000baseSR4_Full);
-+	}
- 	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_LR4)
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     40000baseLR4_Full);
-@@ -724,6 +727,8 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 	case I40E_PHY_TYPE_40GBASE_SR4:
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     40000baseSR4_Full);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     40000baseSR4_Full);
- 		break;
- 	case I40E_PHY_TYPE_40GBASE_LR4:
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
---
-2.19.2
+I kind of think micro-benchmarks aren't so useful because they don't
+represent a real-world workload. I've heard people talk about SAP-HANA
+as a good test, but I can't get my hands on it. I wonder if anyone has
+tried "mysqlslap"?
 
---------------------------------------------------------------------
-
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
-
+-- 
+Kees Cook
