@@ -1,186 +1,134 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 12 Feb 2019 13:56:24 -0800
-Subject: [Intel-wired-lan] [next S2-v3 04/12] i40e: save PTP time before a
- device reset
-Message-ID: <20190212215624.10049-1-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 13 Feb 2019 09:49:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ c65285428b6e7797f1bb063f33b0ae7e93397b7b
+Message-ID: <5c6377bb.LM7VuLhkbrH3eSxj%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: c65285428b6e7797f1bb063f33b0ae7e93397b7b  sfc: initialise found bitmap in efx_ef10_mtd_probe
 
-In the case where PTP is running on the hardware clock, but the kernel
-system time is not being synced, a device reset can mess up the clock
-time.
+elapsed time: 180m
 
-This occurs because we reset the clock time based on the kernel time
-every reset. This causes us to potentially completely reset the PTP
-time, and can cause unexpected behavior in programs like ptp4l.
+configs tested: 109
 
-Avoid this by saving the PTP time prior to device reset, and then
-restoring using that time after the reset.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Directly restoring the PTP time we saved isn't perfect, because time
-should have continued running, but the clock will essentially be stopped
-during the reset. This is still better than the current solution of
-assuming that the PTP HW clock is synced to the CLOCK_REALTIME.
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-x005-201906
+x86_64                 randconfig-x008-201906
+x86_64                 randconfig-x009-201906
+x86_64                 randconfig-x001-201906
+x86_64                 randconfig-x002-201906
+x86_64                 randconfig-x003-201906
+x86_64                 randconfig-x006-201906
+x86_64                 randconfig-x007-201906
+x86_64                 randconfig-x000-201906
+x86_64                 randconfig-x004-201906
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-x013-201906
+x86_64                 randconfig-x017-201906
+x86_64                 randconfig-x016-201906
+x86_64                 randconfig-x019-201906
+x86_64                 randconfig-x012-201906
+x86_64                 randconfig-x011-201906
+x86_64                 randconfig-x018-201906
+x86_64                 randconfig-x010-201906
+x86_64                 randconfig-x015-201906
+x86_64                 randconfig-x014-201906
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-a0-02130501
+i386                   randconfig-a1-02130501
+i386                   randconfig-a2-02130501
+i386                   randconfig-a3-02130501
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                     randconfig-s0-201906
+i386                     randconfig-s1-201906
+i386                     randconfig-s2-201906
+i386                     randconfig-s3-201906
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                         rhel-7.2-clear
+riscv                             allnoconfig
+riscv                               defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+i386                   randconfig-x072-201906
+i386                   randconfig-x079-201906
+i386                   randconfig-x075-201906
+i386                   randconfig-x073-201906
+i386                   randconfig-x077-201906
+i386                   randconfig-x078-201906
+i386                   randconfig-x074-201906
+i386                   randconfig-x076-201906
+i386                   randconfig-x070-201906
+i386                   randconfig-x071-201906
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                   randconfig-x007-201906
+i386                   randconfig-x000-201906
+i386                   randconfig-x006-201906
+i386                   randconfig-x002-201906
+i386                   randconfig-x001-201906
+i386                   randconfig-x003-201906
+i386                   randconfig-x009-201906
+i386                   randconfig-x008-201906
+i386                   randconfig-x005-201906
+i386                   randconfig-x004-201906
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
 
-We can do even better, by saving the ktime and calculating
-a differential, using ktime_get(). This is based on CLOCK_MONOTONIC, and
-allows us to get a fairly precise measure of the time difference between
-saving and restoring the time.
-
-Using this, we can update the saved PTP time, and use that as the value
-to write to the hardware clock registers. This, of course is not perfect.
-However, it does help ensure that the PTP time is restored as close as
-feasible to the time it should have been if the reset had not occurred.
-
-During device initialization, continue using the system time as the
-source for the creation of the PTP clock, since this is the best known
-current time source at driver load.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-v3: added fix to check to see if the PTP flag is enabled
-
- drivers/net/ethernet/intel/i40e/i40e.h      |  4 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c |  5 ++
- drivers/net/ethernet/intel/i40e/i40e_ptp.c  | 58 +++++++++++++++++++--
- 3 files changed, 63 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 3bf9c50c3394..b11255c6be64 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -632,6 +632,8 @@ struct i40e_pf {
- 	struct sk_buff *ptp_tx_skb;
- 	unsigned long ptp_tx_start;
- 	struct hwtstamp_config tstamp_config;
-+	struct timespec64 ptp_prev_hw_time;
-+	ktime_t ptp_reset_start;
- 	struct mutex tmreg_lock; /* Used to protect the SYSTIME registers. */
- 	u32 ptp_adj_mult;
- 	u32 tx_hwtstamp_timeouts;
-@@ -1132,6 +1134,8 @@ void i40e_ptp_rx_hwtstamp(struct i40e_pf *pf, struct sk_buff *skb, u8 index);
- void i40e_ptp_set_increment(struct i40e_pf *pf);
- int i40e_ptp_set_ts_config(struct i40e_pf *pf, struct ifreq *ifr);
- int i40e_ptp_get_ts_config(struct i40e_pf *pf, struct ifreq *ifr);
-+void i40e_ptp_save_hw_time(struct i40e_pf *pf);
-+void i40e_ptp_restore_hw_time(struct i40e_pf *pf);
- void i40e_ptp_init(struct i40e_pf *pf);
- void i40e_ptp_stop(struct i40e_pf *pf);
- int i40e_is_vsi_uplink_mode_veb(struct i40e_vsi *vsi);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 3b6768980d8c..37f875f759d0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9745,6 +9745,11 @@ static void i40e_prep_for_reset(struct i40e_pf *pf, bool lock_acquired)
- 			dev_warn(&pf->pdev->dev,
- 				 "shutdown_lan_hmc failed: %d\n", ret);
- 	}
-+
-+	/* Save the current PTP time so that we can restore the time after the
-+	 * reset completes.
-+	 */
-+	i40e_ptp_save_hw_time(pf);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index 5fb4353c742b..66147c3f5f2c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -724,9 +724,56 @@ static long i40e_ptp_create_clock(struct i40e_pf *pf)
- 	pf->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
- 	pf->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
- 
-+	/* Set the previous "reset" time to the current Kernel clock time */
-+	pf->ptp_prev_hw_time = ktime_to_timespec64(ktime_get_real());
-+	pf->ptp_reset_start = ktime_get();
-+
- 	return 0;
- }
- 
-+/**
-+ * i40e_ptp_save_hw_time - Save the current PTP time as ptp_prev_hw_time
-+ * @pf: Board private structure
-+ *
-+ * Read the current PTP time and save it into pf->ptp_prev_hw_time. This should
-+ * be called at the end of preparing to reset, just before hardware reset
-+ * occurs, in order to preserve the PTP time as close as possible across
-+ * resets.
-+ */
-+void i40e_ptp_save_hw_time(struct i40e_pf *pf)
-+{
-+	/* don't try to access the PTP clock if it's not enabled */
-+	if (!(pf->flags & I40E_FLAG_PTP))
-+		return;
-+
-+	i40e_ptp_gettimex(&pf->ptp_caps, &pf->ptp_prev_hw_time, NULL);
-+	/* Get a monotonic starting time for this reset */
-+	pf->ptp_reset_start = ktime_get();
-+}
-+
-+/**
-+ * i40e_ptp_restore_hw_time - Restore the ptp_prev_hw_time + delta to PTP regs
-+ * @pf: Board private structure
-+ *
-+ * Restore the PTP hardware clock registers. We previously cached the PTP
-+ * hardware time as pf->ptp_prev_hw_time. To be as accurate as possible,
-+ * update this value based on the time delta since the time was saved, using
-+ * CLOCK_MONOTONIC (via ktime_get()) to calculate the time difference.
-+ *
-+ * This ensures that the hardware clock is restored to nearly what it should
-+ * have been if a reset had not occurred.
-+ */
-+void i40e_ptp_restore_hw_time(struct i40e_pf *pf)
-+{
-+	ktime_t delta = ktime_sub(ktime_get(), pf->ptp_reset_start);
-+
-+	/* Update the previous HW time with the ktime delta */
-+	timespec64_add_ns(&pf->ptp_prev_hw_time, ktime_to_ns(delta));
-+
-+	/* Restore the hardware clock registers */
-+	i40e_ptp_settime(&pf->ptp_caps, &pf->ptp_prev_hw_time);
-+}
-+
- /**
-  * i40e_ptp_init - Initialize the 1588 support after device probe or reset
-  * @pf: Board private structure
-@@ -734,6 +781,11 @@ static long i40e_ptp_create_clock(struct i40e_pf *pf)
-  * This function sets device up for 1588 support. The first time it is run, it
-  * will create a PHC clock device. It does not create a clock device if one
-  * already exists. It also reconfigures the device after a reset.
-+ *
-+ * The first time a clock is created, i40e_ptp_create_clock will set
-+ * pf->ptp_prev_hw_time to the current system time. During resets, it is
-+ * expected that this timespec will be set to the last known PTP clock time,
-+ * in order to preserve the clock time as close as possible across a reset.
-  **/
- void i40e_ptp_init(struct i40e_pf *pf)
- {
-@@ -765,7 +817,6 @@ void i40e_ptp_init(struct i40e_pf *pf)
- 		dev_err(&pf->pdev->dev, "%s: ptp_clock_register failed\n",
- 			__func__);
- 	} else if (pf->ptp_clock) {
--		struct timespec64 ts;
- 		u32 regval;
- 
- 		if (pf->hw.debug_mask & I40E_DEBUG_LAN)
-@@ -786,9 +837,8 @@ void i40e_ptp_init(struct i40e_pf *pf)
- 		/* reset timestamping mode */
- 		i40e_ptp_set_timestamp_mode(pf, &pf->tstamp_config);
- 
--		/* Set the clock value. */
--		ts = ktime_to_timespec64(ktime_get_real());
--		i40e_ptp_settime(&pf->ptp_caps, &ts);
-+		/* Restore the clock time based on last known value */
-+		i40e_ptp_restore_hw_time(pf);
- 	}
- }
- 
--- 
-2.20.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
