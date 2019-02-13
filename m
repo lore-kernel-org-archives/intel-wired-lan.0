@@ -1,55 +1,117 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 13 Feb 2019 10:51:00 -0800
-Subject: [Intel-wired-lan] [PATCH S14 00/15] Implementation updates for ice
-Message-ID: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
+Date: Wed, 13 Feb 2019 10:51:11 -0800
+Subject: [Intel-wired-lan] [PATCH S14 11/15] ice: Create a generic name for
+ the ice_rx_flg64_bits structure
+In-Reply-To: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
+References: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20190213185115.25877-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Brett Creeley (2):
-  ice: Put __ICE_PREPARED_FOR_RESET check in ice_prepare_for_reset
-  ice: Implement pci_error_handler ops
+From: Chinh T Cao <chinh.t.cao@intel.com>
 
-Bruce Allan (1):
-  ice: add and use new ice_for_each_traffic_class() macro
+This structure is used to define the packet flags. These flags are
+applicable for both TX and RX packet. Thus, this patch changes its
+name from ice_rx_flag64_bits to ice_flg64_bits, and its member definition.
 
-Chinh T Cao (1):
-  ice: Create a generic name for the ice_rx_flg64_bits structure
+Signed-off-by: Chinh T Cao <chinh.t.cao@intel.com>
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_common.c    | 26 ++++++++++----------
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 34 +++++++++++++-------------
+ 2 files changed, 30 insertions(+), 30 deletions(-)
 
-Dave Ertman (1):
-  ice: Prevent unintended multiple chain resets
-
-Jeremiah Kyle (1):
-  ice: Remove unnecessary newlines from log messages
-
-Maciej Fijalkowski (7):
-  ice: Retrieve rx_buf in separate function
-  ice: Pull out page reuse checks onto separate function
-  ice: Get rid of ice_pull_tail
-  ice: Introduce bulk update for page count
-  ice: Gather the rx buf clean-up logic for better reuse
-  ice: Limit the ice_add_rx_frag to frag addition
-  ice: map rx buffer pages with DMA attributes
-
-Mitch Williams (1):
-  ice: use virt channel status codes
-
-Preethi Banala (1):
-  ice: change VF VSI tc info along with num_queues
-
- drivers/net/ethernet/intel/ice/ice_common.c      |  28 +-
- drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h   |  34 +--
- drivers/net/ethernet/intel/ice/ice_lib.c         |   4 +-
- drivers/net/ethernet/intel/ice/ice_main.c        | 168 ++++++++++-
- drivers/net/ethernet/intel/ice/ice_sched.c       |   2 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c        | 351 +++++++++++++----------
- drivers/net/ethernet/intel/ice/ice_txrx.h        |   4 +
- drivers/net/ethernet/intel/ice/ice_type.h        |   3 +
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 280 ++++++++++--------
- 9 files changed, 563 insertions(+), 311 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index ca9a8c52a8d6..5e7a31421c0d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -358,22 +358,22 @@ static void ice_init_flex_flags(struct ice_hw *hw, enum ice_rxdid prof_id)
+ 	 */
+ 	case ICE_RXDID_FLEX_NIC:
+ 	case ICE_RXDID_FLEX_NIC_2:
+-		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_RXFLG_PKT_FRG,
+-				   ICE_RXFLG_UDP_GRE, ICE_RXFLG_PKT_DSI,
+-				   ICE_RXFLG_FIN, idx++);
++		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_PKT_FRG,
++				   ICE_FLG_UDP_GRE, ICE_FLG_PKT_DSI,
++				   ICE_FLG_FIN, idx++);
+ 		/* flex flag 1 is not used for flexi-flag programming, skipping
+ 		 * these four FLG64 bits.
+ 		 */
+-		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_RXFLG_SYN, ICE_RXFLG_RST,
+-				   ICE_RXFLG_PKT_DSI, ICE_RXFLG_PKT_DSI, idx++);
+-		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_RXFLG_PKT_DSI,
+-				   ICE_RXFLG_PKT_DSI, ICE_RXFLG_EVLAN_x8100,
+-				   ICE_RXFLG_EVLAN_x9100, idx++);
+-		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_RXFLG_VLAN_x8100,
+-				   ICE_RXFLG_TNL_VLAN, ICE_RXFLG_TNL_MAC,
+-				   ICE_RXFLG_TNL0, idx++);
+-		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_RXFLG_TNL1, ICE_RXFLG_TNL2,
+-				   ICE_RXFLG_PKT_DSI, ICE_RXFLG_PKT_DSI, idx);
++		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_SYN, ICE_FLG_RST,
++				   ICE_FLG_PKT_DSI, ICE_FLG_PKT_DSI, idx++);
++		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_PKT_DSI,
++				   ICE_FLG_PKT_DSI, ICE_FLG_EVLAN_x8100,
++				   ICE_FLG_EVLAN_x9100, idx++);
++		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_VLAN_x8100,
++				   ICE_FLG_TNL_VLAN, ICE_FLG_TNL_MAC,
++				   ICE_FLG_TNL0, idx++);
++		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_TNL1, ICE_FLG_TNL2,
++				   ICE_FLG_PKT_DSI, ICE_FLG_PKT_DSI, idx);
+ 		break;
+ 
+ 	default:
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index ef4c79b5aa32..2e87b69aff4f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -208,23 +208,23 @@ enum ice_flex_rx_mdid {
+ 	ICE_RX_MDID_HASH_HIGH,
+ };
+ 
+-/* Rx Flag64 packet flag bits */
+-enum ice_rx_flg64_bits {
+-	ICE_RXFLG_PKT_DSI	= 0,
+-	ICE_RXFLG_EVLAN_x8100	= 15,
+-	ICE_RXFLG_EVLAN_x9100,
+-	ICE_RXFLG_VLAN_x8100,
+-	ICE_RXFLG_TNL_MAC	= 22,
+-	ICE_RXFLG_TNL_VLAN,
+-	ICE_RXFLG_PKT_FRG,
+-	ICE_RXFLG_FIN		= 32,
+-	ICE_RXFLG_SYN,
+-	ICE_RXFLG_RST,
+-	ICE_RXFLG_TNL0		= 38,
+-	ICE_RXFLG_TNL1,
+-	ICE_RXFLG_TNL2,
+-	ICE_RXFLG_UDP_GRE,
+-	ICE_RXFLG_RSVD		= 63
++/* RX/TX Flag64 packet flag bits */
++enum ice_flg64_bits {
++	ICE_FLG_PKT_DSI		= 0,
++	ICE_FLG_EVLAN_x8100	= 15,
++	ICE_FLG_EVLAN_x9100,
++	ICE_FLG_VLAN_x8100,
++	ICE_FLG_TNL_MAC		= 22,
++	ICE_FLG_TNL_VLAN,
++	ICE_FLG_PKT_FRG,
++	ICE_FLG_FIN		= 32,
++	ICE_FLG_SYN,
++	ICE_FLG_RST,
++	ICE_FLG_TNL0		= 38,
++	ICE_FLG_TNL1,
++	ICE_FLG_TNL2,
++	ICE_FLG_UDP_GRE,
++	ICE_FLG_RSVD		= 63
+ };
+ 
+ /* for ice_32byte_rx_flex_desc.ptype_flexi_flags0 member */
 -- 
 2.14.5
 
