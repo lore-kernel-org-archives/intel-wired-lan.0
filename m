@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 13 Feb 2019 18:57:41 +0000
-Subject: [Intel-wired-lan] [next PATCH S2-V2 01/12] i40e: Queues are
- reserved despite "Invalid argument" error.
-In-Reply-To: <20190206230826.24970-1-alice.michael@intel.com>
+Date: Wed, 13 Feb 2019 20:14:44 +0000
+Subject: [Intel-wired-lan] [next PATCH S2-V2 02/12] i40e: Implement DDP
+ support in i40e driver
+In-Reply-To: <20190206230826.24970-2-alice.michael@intel.com>
 References: <20190206230826.24970-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D365F1E@ORSMSX104.amr.corp.intel.com>
+ <20190206230826.24970-2-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D365FA0@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +18,43 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, February 6, 2019 3:08 PM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: Ludkiewicz, Adam <adam.ludkiewicz@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S2-V2 01/12] i40e: Queues are
-> reserved despite "Invalid argument" error.
+> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S2-V2 02/12] i40e: Implement DDP
+> support in i40e driver
 > 
-> From: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
+> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > 
-> Added a new local variable in the i40e_setup_tc function named
-> old_queue_pairs so num_queue_pairs can be restored to the correct value
-> in case configuring queue channels fails. Additionally, moved the exit label in
-> the i40e_setup_tc function so the if (need_reset) block can be executed.
-> Also, fixed data packing in the i40e_setup_tc function.
+> This patch introduces DDP (Dynamic Device Personalization) which allows
+> loading profiles that change the way internal parser interprets processed
+> frames. To load DDP profiles it utilizes ethtool flash feature. The files with
+> recipes must be located in /var/lib/firmware directory. Afterwards the recipe
+> can be loaded by invoking:
 > 
-> Signed-off-by: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
+>     ethtool -f <if_name> <file_name> 100
+>     ethtool -f <if_name> - 100
+> 
+> See further usage details of this feature in the i40e documentation, or visit
+> https://software.intel.com/en-us/articles/dynamic-device-personalization-
+> for-intel-ethernet-700-series
+> 
+> The driver shall verify DDP profile can be loaded in accordance with the rules:
+> * Package with Group ID 0 are exclusive and can only be loaded the first.
+> * Packages with Group ID 0x01-0xFE can only be loaded simultaneously
+>    with the packages from the same group.
+> * Packages with Group ID 0xFF are compatible with all other packages.
+> 
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/net/ethernet/intel/i40e/Makefile      |   1 +
+>  drivers/net/ethernet/intel/i40e/i40e.h        |  25 +
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 253 ++++++++-
+>  drivers/net/ethernet/intel/i40e/i40e_ddp.c    | 481 ++++++++++++++++++
+>  .../net/ethernet/intel/i40e/i40e_ethtool.c    |   1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c   |   1 +
+>  .../net/ethernet/intel/i40e/i40e_prototype.h  |   6 +
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   |  23 +
+>  8 files changed, 769 insertions(+), 22 deletions(-)  create mode 100644
+> drivers/net/ethernet/intel/i40e/i40e_ddp.c
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
