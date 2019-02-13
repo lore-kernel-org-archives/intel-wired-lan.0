@@ -1,189 +1,141 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Wed, 13 Feb 2019 18:09:14 +0100
-Subject: [Intel-wired-lan] [PATCH bpf-next] net: bpf: remove
- XDP_QUERY_XSK_UMEM enumerator
-In-Reply-To: <20190213170729.13845-1-bjorn.topel@gmail.com>
-References: <20190213170729.13845-1-bjorn.topel@gmail.com>
-Message-ID: <CAJ+HfNjnANh41X82AJSSCR4WmpB=tSNBCw_HgA0LPoSA51Mhaw@mail.gmail.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Date: Wed, 13 Feb 2019 10:51:04 -0800
+Subject: [Intel-wired-lan] [PATCH S14 04/15] ice: Introduce bulk update for
+ page count
+In-Reply-To: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
+References: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20190213185115.25877-5-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 13 Feb 2019 at 18:07, Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
->
-> From: Jan Sokolowski <jan.sokolowski@intel.com>
->
-> Commit c9b47cc1fabc ("xsk: fix bug when trying to use both copy and
-> zero-copy on one queue id") moved the umem query code to the AF_XDP
-> core, and therefore removed the need to query the netdevice for a
-> umem.
->
-> This patch removes XDP_QUERY_XSK_UMEM and all code that implement that
-> behavior, which is just dead code.
->
-> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 
-Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
+{get,put}_page are atomic operations which we use for page count
+handling. The current logic for refcount handling is that we increment
+it when passing a skb with the data from the first half of page up to
+netstack and recycle the second half of page. This operation protects us
+from losing a page since the network stack can decrement the refcount of
+page from skb.
 
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c   |  3 --
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 28 -------------------
->  drivers/net/ethernet/intel/i40e/i40e_xsk.h    |  2 --
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  3 --
->  .../ethernet/intel/ixgbe/ixgbe_txrx_common.h  |  2 --
->  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 17 -----------
->  include/linux/netdevice.h                     |  7 ++---
->  7 files changed, 3 insertions(+), 59 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 44856a84738d..5e74a5127849 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -12128,9 +12128,6 @@ static int i40e_xdp(struct net_device *dev,
->         case XDP_QUERY_PROG:
->                 xdp->prog_id = vsi->xdp_prog ? vsi->xdp_prog->aux->id : 0;
->                 return 0;
-> -       case XDP_QUERY_XSK_UMEM:
-> -               return i40e_xsk_umem_query(vsi, &xdp->xsk.umem,
-> -                                          xdp->xsk.queue_id);
->         case XDP_SETUP_XSK_UMEM:
->                 return i40e_xsk_umem_setup(vsi, xdp->xsk.umem,
->                                            xdp->xsk.queue_id);
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> index 96d849460d9b..e190a2c2b9ff 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> @@ -154,34 +154,6 @@ static int i40e_xsk_umem_disable(struct i40e_vsi *vsi, u16 qid)
->         return 0;
->  }
->
-> -/**
-> - * i40e_xsk_umem_query - Queries a certain ring/qid for its UMEM
-> - * @vsi: Current VSI
-> - * @umem: UMEM associated to the ring, if any
-> - * @qid: Rx ring to associate UMEM to
-> - *
-> - * This function will store, if any, the UMEM associated to certain ring.
-> - *
-> - * Returns 0 on success, <0 on failure
-> - **/
-> -int i40e_xsk_umem_query(struct i40e_vsi *vsi, struct xdp_umem **umem,
-> -                       u16 qid)
-> -{
-> -       struct net_device *netdev = vsi->netdev;
-> -       struct xdp_umem *queried_umem;
-> -
-> -       if (vsi->type != I40E_VSI_MAIN)
-> -               return -EINVAL;
-> -
-> -       queried_umem = xdp_get_umem_from_qid(netdev, qid);
-> -
-> -       if (!queried_umem)
-> -               return -EINVAL;
-> -
-> -       *umem = queried_umem;
-> -       return 0;
-> -}
-> -
->  /**
->   * i40e_xsk_umem_setup - Enable/disassociate a UMEM to/from a ring/qid
->   * @vsi: Current VSI
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.h b/drivers/net/ethernet/intel/i40e/i40e_xsk.h
-> index 9038c5d5cf08..8cc0a2e7d9a2 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.h
-> @@ -10,8 +10,6 @@ struct zero_copy_allocator;
->
->  int i40e_queue_pair_disable(struct i40e_vsi *vsi, int queue_pair);
->  int i40e_queue_pair_enable(struct i40e_vsi *vsi, int queue_pair);
-> -int i40e_xsk_umem_query(struct i40e_vsi *vsi, struct xdp_umem **umem,
-> -                       u16 qid);
->  int i40e_xsk_umem_setup(struct i40e_vsi *vsi, struct xdp_umem *umem,
->                         u16 qid);
->  void i40e_zca_free(struct zero_copy_allocator *alloc, unsigned long handle);
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index b53087a980ef..38c430b94ae3 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -10280,9 +10280,6 @@ static int ixgbe_xdp(struct net_device *dev, struct netdev_bpf *xdp)
->                 xdp->prog_id = adapter->xdp_prog ?
->                         adapter->xdp_prog->aux->id : 0;
->                 return 0;
-> -       case XDP_QUERY_XSK_UMEM:
-> -               return ixgbe_xsk_umem_query(adapter, &xdp->xsk.umem,
-> -                                           xdp->xsk.queue_id);
->         case XDP_SETUP_XSK_UMEM:
->                 return ixgbe_xsk_umem_setup(adapter, xdp->xsk.umem,
->                                             xdp->xsk.queue_id);
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-> index 53d4089f5644..d93a690aff74 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-> @@ -30,8 +30,6 @@ void ixgbe_txrx_ring_enable(struct ixgbe_adapter *adapter, int ring);
->
->  struct xdp_umem *ixgbe_xsk_umem(struct ixgbe_adapter *adapter,
->                                 struct ixgbe_ring *ring);
-> -int ixgbe_xsk_umem_query(struct ixgbe_adapter *adapter, struct xdp_umem **umem,
-> -                        u16 qid);
->  int ixgbe_xsk_umem_setup(struct ixgbe_adapter *adapter, struct xdp_umem *umem,
->                          u16 qid);
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> index 65c3e2c979d4..98870707b51a 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> @@ -174,23 +174,6 @@ static int ixgbe_xsk_umem_disable(struct ixgbe_adapter *adapter, u16 qid)
->         return 0;
->  }
->
-> -int ixgbe_xsk_umem_query(struct ixgbe_adapter *adapter, struct xdp_umem **umem,
-> -                        u16 qid)
-> -{
-> -       if (qid >= adapter->num_rx_queues)
-> -               return -EINVAL;
-> -
-> -       if (adapter->xsk_umems) {
-> -               if (qid >= adapter->num_xsk_umems)
-> -                       return -EINVAL;
-> -               *umem = adapter->xsk_umems[qid];
-> -               return 0;
-> -       }
-> -
-> -       *umem = NULL;
-> -       return 0;
-> -}
-> -
->  int ixgbe_xsk_umem_setup(struct ixgbe_adapter *adapter, struct xdp_umem *umem,
->                          u16 qid)
->  {
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index 1d95e634f3fe..6aedaf1e9a25 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> @@ -868,7 +868,6 @@ enum bpf_netdev_command {
->         /* BPF program for offload callbacks, invoked at program load time. */
->         BPF_OFFLOAD_MAP_ALLOC,
->         BPF_OFFLOAD_MAP_FREE,
-> -       XDP_QUERY_XSK_UMEM,
->         XDP_SETUP_XSK_UMEM,
->  };
->
-> @@ -895,10 +894,10 @@ struct netdev_bpf {
->                 struct {
->                         struct bpf_offloaded_map *offmap;
->                 };
-> -               /* XDP_QUERY_XSK_UMEM, XDP_SETUP_XSK_UMEM */
-> +               /* XDP_SETUP_XSK_UMEM */
->                 struct {
-> -                       struct xdp_umem *umem; /* out for query*/
-> -                       u16 queue_id; /* in for query */
-> +                       struct xdp_umem *umem;
-> +                       u16 queue_id;
->                 } xsk;
->         };
->  };
-> --
-> 2.19.1
->
+The performance can be gently improved by doing the bulk updates of
+refcount instead of doing it one by one. During the buffer initialization,
+maximize the page's refcount and don't allow the refcount to become
+less than two.
+
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 26 +++++++++++++++++++-------
+ drivers/net/ethernet/intel/ice/ice_txrx.h |  1 +
+ 2 files changed, 20 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 03dddbd8c108..1c49d245d889 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -283,7 +283,7 @@ void ice_clean_rx_ring(struct ice_ring *rx_ring)
+ 			continue;
+ 
+ 		dma_unmap_page(dev, rx_buf->dma, PAGE_SIZE, DMA_FROM_DEVICE);
+-		__free_pages(rx_buf->page, 0);
++		__page_frag_cache_drain(rx_buf->page, rx_buf->pagecnt_bias);
+ 
+ 		rx_buf->page = NULL;
+ 		rx_buf->page_offset = 0;
+@@ -423,6 +423,8 @@ ice_alloc_mapped_page(struct ice_ring *rx_ring, struct ice_rx_buf *bi)
+ 	bi->dma = dma;
+ 	bi->page = page;
+ 	bi->page_offset = 0;
++	page_ref_add(page, USHRT_MAX - 1);
++	bi->pagecnt_bias = USHRT_MAX;
+ 
+ 	return true;
+ }
+@@ -509,6 +511,7 @@ static bool ice_page_is_reserved(struct page *page)
+ static bool ice_can_reuse_rx_page(struct ice_rx_buf *rx_buf,
+ 				  unsigned int truesize)
+ {
++	unsigned int pagecnt_bias = rx_buf->pagecnt_bias;
+ 	struct page *page = rx_buf->page;
+ 
+ 	/* avoid re-using remote pages */
+@@ -517,7 +520,7 @@ static bool ice_can_reuse_rx_page(struct ice_rx_buf *rx_buf,
+ 
+ #if (PAGE_SIZE < 8192)
+ 	/* if we are only owner of page we can reuse it */
+-	if (unlikely(page_count(page) != 1))
++	if (unlikely((page_count(page) - pagecnt_bias) > 1))
+ 		return false;
+ 
+ 	/* flip page offset to other buffer */
+@@ -530,10 +533,14 @@ static bool ice_can_reuse_rx_page(struct ice_rx_buf *rx_buf,
+ 		return false;
+ #endif /* PAGE_SIZE < 8192) */
+ 
+-	/* Even if we own the page, we are not allowed to use atomic_set()
+-	 * This would break get_page_unless_zero() users.
++	/* If we have drained the page fragment pool we need to update
++	 * the pagecnt_bias and page count so that we fully restock the
++	 * number of references the driver holds.
+ 	 */
+-	get_page(page);
++	if (unlikely(pagecnt_bias == 1)) {
++		page_ref_add(page, USHRT_MAX - 1);
++		rx_buf->pagecnt_bias = USHRT_MAX;
++	}
+ 
+ 	return true;
+ }
+@@ -576,11 +583,12 @@ ice_add_rx_frag(struct ice_rx_buf *rx_buf, struct sk_buff *skb,
+ 		memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
+ 
+ 		/* page is not reserved, we can reuse buffer as-is */
+-		if (likely(!ice_page_is_reserved(page)))
++		if (likely(!ice_page_is_reserved(page))) {
++			rx_buf->pagecnt_bias++;
+ 			return true;
++		}
+ 
+ 		/* this page cannot be reused so discard it */
+-		__free_pages(page, 0);
+ 		return false;
+ 	}
+ 
+@@ -650,6 +658,9 @@ ice_get_rx_buf(struct ice_ring *rx_ring, const unsigned int size)
+ 				      rx_buf->page_offset, size,
+ 				      DMA_FROM_DEVICE);
+ 
++	/* We have pulled a buffer for use, so decrement pagecnt_bias */
++	rx_buf->pagecnt_bias--;
++
+ 	return rx_buf;
+ }
+ 
+@@ -703,6 +714,7 @@ ice_fetch_rx_buf(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf,
+ 		/* we are not reusing the buffer so unmap it */
+ 		dma_unmap_page(rx_ring->dev, rx_buf->dma, PAGE_SIZE,
+ 			       DMA_FROM_DEVICE);
++		__page_frag_cache_drain(rx_buf->page, rx_buf->pagecnt_bias);
+ 	}
+ 
+ 	/* clear contents of buffer_info */
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index b7ff0ff82517..43b39e7ce470 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -73,6 +73,7 @@ struct ice_rx_buf {
+ 	dma_addr_t dma;
+ 	struct page *page;
+ 	unsigned int page_offset;
++	u16 pagecnt_bias;
+ };
+ 
+ struct ice_q_stats {
+-- 
+2.14.5
+
