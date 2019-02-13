@@ -1,54 +1,181 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 13 Feb 2019 10:51:08 -0800
-Subject: [Intel-wired-lan] [PATCH S14 08/15] ice: Prevent unintended
- multiple chain resets
+Date: Wed, 13 Feb 2019 10:51:01 -0800
+Subject: [Intel-wired-lan] [PATCH S14 01/15] ice: Retrieve rx_buf in
+ separate function
 In-Reply-To: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
 References: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190213185115.25877-9-anirudh.venkataramanan@intel.com>
+Message-ID: <20190213185115.25877-2-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 
-In the current implementation of ice_reset_subtask, if multiple reset
-types are set in the pf->state, the most intrusive one is meant to be
-performed only, but the bits requesting the other types are not being
-cleared. This would lead to another reset being performed the next time
-the service task is scheduled.
+Introduce ice_get_rx_buf, which will fetch the rx buffer and do the DMA
+synchronization. Length of the packet that hardware rx descriptor
+contains is now read in ice_clean_rx_irq, so we can feed ice_get_rx_buf
+with it and resign from rx_desc passed as argument in ice_fetch_rx_buf
+and ice_add_rx_frag.
 
-Change the flow of ice_reset_subtask so that all reset request bits in
-pf->state are cleared, and we still perform the most intrusive of the
-resets requested.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 75 +++++++++++++++++--------------
+ 1 file changed, 42 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index c0b7e695cc43..ced774dd879b 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -478,8 +478,14 @@ static void ice_reset_subtask(struct ice_pf *pf)
- 	 * for the reset now), poll for reset done, rebuild and return.
- 	 */
- 	if (test_bit(__ICE_RESET_OICR_RECV, pf->state)) {
--		clear_bit(__ICE_GLOBR_RECV, pf->state);
--		clear_bit(__ICE_CORER_RECV, pf->state);
-+		/* Perform the largest reset requested */
-+		if (test_and_clear_bit(__ICE_CORER_RECV, pf->state))
-+			reset_type = ICE_RESET_CORER;
-+		if (test_and_clear_bit(__ICE_GLOBR_RECV, pf->state))
-+			reset_type = ICE_RESET_GLOBR;
-+		/* return if no valid reset type requested */
-+		if (reset_type == ICE_RESET_INVAL)
-+			return;
- 		if (!test_bit(__ICE_PREPARED_FOR_RESET, pf->state))
- 			ice_prepare_for_reset(pf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 64baedee6336..8c0a8b63670b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -499,8 +499,8 @@ static bool ice_page_is_reserved(struct page *page)
+ /**
+  * ice_add_rx_frag - Add contents of Rx buffer to sk_buff
+  * @rx_buf: buffer containing page to add
+- * @rx_desc: descriptor containing length of buffer written by hardware
+  * @skb: sk_buf to place the data into
++ * @size: the length of the packet
+  *
+  * This function will add the data contained in rx_buf->page to the skb.
+  * This is done either through a direct copy if the data in the buffer is
+@@ -511,8 +511,8 @@ static bool ice_page_is_reserved(struct page *page)
+  * true if the buffer can be reused by the adapter.
+  */
+ static bool
+-ice_add_rx_frag(struct ice_rx_buf *rx_buf, union ice_32b_rx_flex_desc *rx_desc,
+-		struct sk_buff *skb)
++ice_add_rx_frag(struct ice_rx_buf *rx_buf, struct sk_buff *skb,
++		unsigned int size)
+ {
+ #if (PAGE_SIZE < 8192)
+ 	unsigned int truesize = ICE_RXBUF_2048;
+@@ -522,10 +522,6 @@ ice_add_rx_frag(struct ice_rx_buf *rx_buf, union ice_32b_rx_flex_desc *rx_desc,
+ #endif /* PAGE_SIZE < 8192) */
+ 
+ 	struct page *page;
+-	unsigned int size;
+-
+-	size = le16_to_cpu(rx_desc->wb.pkt_len) &
+-		ICE_RX_FLX_DESC_PKT_LEN_M;
+ 
+ 	page = rx_buf->page;
+ 
+@@ -603,10 +599,35 @@ ice_reuse_rx_page(struct ice_ring *rx_ring, struct ice_rx_buf *old_buf)
+ 	*new_buf = *old_buf;
+ }
+ 
++/**
++ * ice_get_rx_buf - Fetch Rx buffer and synchronize data for use
++ * @rx_ring: Rx descriptor ring to transact packets on
++ * @size: size of buffer to add to skb
++ *
++ * This function will pull an Rx buffer from the ring and synchronize it
++ * for use by the CPU.
++ */
++static struct ice_rx_buf *
++ice_get_rx_buf(struct ice_ring *rx_ring, const unsigned int size)
++{
++	struct ice_rx_buf *rx_buf;
++
++	rx_buf = &rx_ring->rx_buf[rx_ring->next_to_clean];
++	prefetchw(rx_buf->page);
++
++	/* we are reusing so sync this buffer for CPU use */
++	dma_sync_single_range_for_cpu(rx_ring->dev, rx_buf->dma,
++				      rx_buf->page_offset, size,
++				      DMA_FROM_DEVICE);
++
++	return rx_buf;
++}
++
+ /**
+  * ice_fetch_rx_buf - Allocate skb and populate it
+  * @rx_ring: Rx descriptor ring to transact packets on
+- * @rx_desc: descriptor containing info written by hardware
++ * @rx_buf: Rx buffer to pull data from
++ * @size: the length of the packet
+  *
+  * This function allocates an skb on the fly, and populates it with the page
+  * data from the current receive descriptor, taking care to set up the skb
+@@ -614,20 +635,14 @@ ice_reuse_rx_page(struct ice_ring *rx_ring, struct ice_rx_buf *old_buf)
+  * necessary.
+  */
+ static struct sk_buff *
+-ice_fetch_rx_buf(struct ice_ring *rx_ring, union ice_32b_rx_flex_desc *rx_desc)
++ice_fetch_rx_buf(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf,
++		 unsigned int size)
+ {
+-	struct ice_rx_buf *rx_buf;
+-	struct sk_buff *skb;
+-	struct page *page;
+-
+-	rx_buf = &rx_ring->rx_buf[rx_ring->next_to_clean];
+-	page = rx_buf->page;
+-	prefetchw(page);
+-
+-	skb = rx_buf->skb;
++	struct sk_buff *skb = rx_buf->skb;
+ 
+ 	if (likely(!skb)) {
+-		u8 *page_addr = page_address(page) + rx_buf->page_offset;
++		u8 *page_addr = page_address(rx_buf->page) +
++				rx_buf->page_offset;
+ 
+ 		/* prefetch first cache line of first page */
+ 		prefetch(page_addr);
+@@ -644,25 +659,13 @@ ice_fetch_rx_buf(struct ice_ring *rx_ring, union ice_32b_rx_flex_desc *rx_desc)
+ 			return NULL;
+ 		}
+ 
+-		/* we will be copying header into skb->data in
+-		 * pskb_may_pull so it is in our interest to prefetch
+-		 * it now to avoid a possible cache miss
+-		 */
+-		prefetchw(skb->data);
+-
+ 		skb_record_rx_queue(skb, rx_ring->q_index);
+ 	} else {
+-		/* we are reusing so sync this buffer for CPU use */
+-		dma_sync_single_range_for_cpu(rx_ring->dev, rx_buf->dma,
+-					      rx_buf->page_offset,
+-					      ICE_RXBUF_2048,
+-					      DMA_FROM_DEVICE);
+-
+ 		rx_buf->skb = NULL;
+ 	}
+ 
+ 	/* pull page into skb */
+-	if (ice_add_rx_frag(rx_buf, rx_desc, skb)) {
++	if (ice_add_rx_frag(rx_buf, skb, size)) {
+ 		/* hand second half of page back to the ring */
+ 		ice_reuse_rx_page(rx_ring, rx_buf);
+ 		rx_ring->rx_stats.page_reuse_count++;
+@@ -963,7 +966,9 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 	/* start the loop to process RX packets bounded by 'budget' */
+ 	while (likely(total_rx_pkts < (unsigned int)budget)) {
+ 		union ice_32b_rx_flex_desc *rx_desc;
++		struct ice_rx_buf *rx_buf;
+ 		struct sk_buff *skb;
++		unsigned int size;
+ 		u16 stat_err_bits;
+ 		u16 vlan_tag = 0;
+ 		u8 rx_ptype;
+@@ -993,8 +998,12 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 		 */
+ 		dma_rmb();
+ 
++		size = le16_to_cpu(rx_desc->wb.pkt_len) &
++			ICE_RX_FLX_DESC_PKT_LEN_M;
++
++		rx_buf = ice_get_rx_buf(rx_ring, size);
+ 		/* allocate (if needed) and populate skb */
+-		skb = ice_fetch_rx_buf(rx_ring, rx_desc);
++		skb = ice_fetch_rx_buf(rx_ring, rx_buf, size);
+ 		if (!skb)
+ 			break;
  
 -- 
 2.14.5
