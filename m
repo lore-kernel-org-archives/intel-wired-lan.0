@@ -1,41 +1,111 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 13 Feb 2019 10:51:09 -0800
-Subject: [Intel-wired-lan] [PATCH S14 09/15] ice: change VF VSI tc info
- along with num_queues
+Date: Wed, 13 Feb 2019 10:51:07 -0800
+Subject: [Intel-wired-lan] [PATCH S14 07/15] ice: map rx buffer pages with
+ DMA attributes
 In-Reply-To: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
 References: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190213185115.25877-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20190213185115.25877-8-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Preethi Banala <preethi.banala@intel.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 
-Update VF VSI tc info along with vsi->num_txq/num_rxq when VF requests to
-configure queues.
+Provide DMA_ATTR_WEAK_ORDERING and DMA_ATTR_SKIP_CPU_SYNC attributes to
+the DMA API during the mapping operations on rx side. With this change
+the non-x86 platforms will be able to sync only with what is being used
+(2k buffer) instead of entire page. This should yield a slight
+performance improvement.
 
-Signed-off-by: Preethi Banala <preethi.banala@intel.com>
+Furthermore, DMA unmap may destroy the changes that were made to the
+buffer by CPU when platform is not a x86 one. DMA_ATTR_SKIP_CPU_SYNC
+attribute usage fixes this issue.
+
+Also add a sync_single_for_device call during the rx buffer assignment,
+to make sure that the cache lines are cleared before device attempting
+to write to the buffer.
+
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 3 +++
- 1 file changed, 3 insertions(+)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 24 ++++++++++++++++++++----
+ drivers/net/ethernet/intel/ice/ice_txrx.h |  3 +++
+ 2 files changed, 23 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index ca8780891540..cc15b3c90656 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1927,6 +1927,9 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 	 */
- 	vsi->num_txq = qci->num_queue_pairs;
- 	vsi->num_rxq = qci->num_queue_pairs;
-+	/* All queues of VF VSI are in TC 0 */
-+	vsi->tc_cfg.tc_info[0].qcount_tx = qci->num_queue_pairs;
-+	vsi->tc_cfg.tc_info[0].qcount_rx = qci->num_queue_pairs;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index aaa29ac18cdb..2f5981dbdff9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -282,7 +282,16 @@ void ice_clean_rx_ring(struct ice_ring *rx_ring)
+ 		if (!rx_buf->page)
+ 			continue;
  
- 	if (!ice_vsi_cfg_lan_txqs(vsi) && !ice_vsi_cfg_rxqs(vsi))
- 		aq_ret = 0;
+-		dma_unmap_page(dev, rx_buf->dma, PAGE_SIZE, DMA_FROM_DEVICE);
++		/* Invalidate cache lines that may have been written to by
++		 * device so that we avoid corrupting memory.
++		 */
++		dma_sync_single_range_for_cpu(dev, rx_buf->dma,
++					      rx_buf->page_offset,
++					      ICE_RXBUF_2048, DMA_FROM_DEVICE);
++
++		/* free resources associated with mapping */
++		dma_unmap_page_attrs(dev, rx_buf->dma, PAGE_SIZE,
++				     DMA_FROM_DEVICE, ICE_RX_DMA_ATTR);
+ 		__page_frag_cache_drain(rx_buf->page, rx_buf->pagecnt_bias);
+ 
+ 		rx_buf->page = NULL;
+@@ -409,7 +418,8 @@ ice_alloc_mapped_page(struct ice_ring *rx_ring, struct ice_rx_buf *bi)
+ 	}
+ 
+ 	/* map page for use */
+-	dma = dma_map_page(rx_ring->dev, page, 0, PAGE_SIZE, DMA_FROM_DEVICE);
++	dma = dma_map_page_attrs(rx_ring->dev, page, 0, PAGE_SIZE,
++				 DMA_FROM_DEVICE, ICE_RX_DMA_ATTR);
+ 
+ 	/* if mapping failed free memory back to system since
+ 	 * there isn't much point in holding memory we can't use
+@@ -454,6 +464,12 @@ bool ice_alloc_rx_bufs(struct ice_ring *rx_ring, u16 cleaned_count)
+ 		if (!ice_alloc_mapped_page(rx_ring, bi))
+ 			goto no_bufs;
+ 
++		/* sync the buffer for use by the device */
++		dma_sync_single_range_for_device(rx_ring->dev, bi->dma,
++						 bi->page_offset,
++						 ICE_RXBUF_2048,
++						 DMA_FROM_DEVICE);
++
+ 		/* Refresh the desc even if buffer_addrs didn't change
+ 		 * because each write-back erases this info.
+ 		 */
+@@ -726,8 +742,8 @@ static void ice_put_rx_buf(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf)
+ 		rx_ring->rx_stats.page_reuse_count++;
+ 	} else {
+ 		/* we are not reusing the buffer so unmap it */
+-		dma_unmap_page(rx_ring->dev, rx_buf->dma, PAGE_SIZE,
+-			       DMA_FROM_DEVICE);
++		dma_unmap_page_attrs(rx_ring->dev, rx_buf->dma, PAGE_SIZE,
++				     DMA_FROM_DEVICE, ICE_RX_DMA_ATTR);
+ 		__page_frag_cache_drain(rx_buf->page, rx_buf->pagecnt_bias);
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 43b39e7ce470..bd446ed423e5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -47,6 +47,9 @@
+ #define ICE_TX_FLAGS_VLAN_M	0xffff0000
+ #define ICE_TX_FLAGS_VLAN_S	16
+ 
++#define ICE_RX_DMA_ATTR \
++	(DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_WEAK_ORDERING)
++
+ struct ice_tx_buf {
+ 	struct ice_tx_desc *next_to_watch;
+ 	struct sk_buff *skb;
 -- 
 2.14.5
 
