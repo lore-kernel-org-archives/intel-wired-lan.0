@@ -1,182 +1,92 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Wed, 13 Feb 2019 10:51:01 -0800
-Subject: [Intel-wired-lan] [PATCH S14 01/15] ice: Retrieve rx_buf in
- separate function
+Date: Wed, 13 Feb 2019 10:51:10 -0800
+Subject: [Intel-wired-lan] [PATCH S14 10/15] ice: add and use new
+ ice_for_each_traffic_class() macro
 In-Reply-To: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
 References: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190213185115.25877-2-anirudh.venkataramanan@intel.com>
+Message-ID: <20190213185115.25877-11-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Introduce ice_get_rx_buf, which will fetch the rx buffer and do the DMA
-synchronization. Length of the packet that hardware rx descriptor
-contains is now read in ice_clean_rx_irq, so we can feed ice_get_rx_buf
-with it and resign from rx_desc passed as argument in ice_fetch_rx_buf
-and ice_add_rx_frag.
+There are numerous for() loops iterating over each of the max traffic
+classes.  Use a simple iterator macro instead to make the code cleaner.
 
-Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_txrx.c | 75 +++++++++++++++++--------------
- 1 file changed, 42 insertions(+), 33 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c    | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_sched.c  | 2 +-
+ drivers/net/ethernet/intel/ice/ice_type.h   | 3 +++
+ 4 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 64baedee6336..8c0a8b63670b 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -499,8 +499,8 @@ static bool ice_page_is_reserved(struct page *page)
- /**
-  * ice_add_rx_frag - Add contents of Rx buffer to sk_buff
-  * @rx_buf: buffer containing page to add
-- * @rx_desc: descriptor containing length of buffer written by hardware
-  * @skb: sk_buf to place the data into
-+ * @size: the length of the packet
-  *
-  * This function will add the data contained in rx_buf->page to the skb.
-  * This is done either through a direct copy if the data in the buffer is
-@@ -511,8 +511,8 @@ static bool ice_page_is_reserved(struct page *page)
-  * true if the buffer can be reused by the adapter.
-  */
- static bool
--ice_add_rx_frag(struct ice_rx_buf *rx_buf, union ice_32b_rx_flex_desc *rx_desc,
--		struct sk_buff *skb)
-+ice_add_rx_frag(struct ice_rx_buf *rx_buf, struct sk_buff *skb,
-+		unsigned int size)
- {
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = ICE_RXBUF_2048;
-@@ -522,10 +522,6 @@ ice_add_rx_frag(struct ice_rx_buf *rx_buf, union ice_32b_rx_flex_desc *rx_desc,
- #endif /* PAGE_SIZE < 8192) */
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index be67d07b75cb..ca9a8c52a8d6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -2949,7 +2949,7 @@ ice_cfg_vsi_qs(struct ice_port_info *pi, u16 vsi_handle, u8 tc_bitmap,
  
- 	struct page *page;
--	unsigned int size;
--
--	size = le16_to_cpu(rx_desc->wb.pkt_len) &
--		ICE_RX_FLX_DESC_PKT_LEN_M;
+ 	mutex_lock(&pi->sched_lock);
  
- 	page = rx_buf->page;
+-	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
++	ice_for_each_traffic_class(i) {
+ 		/* configuration is possible only if TC node is present */
+ 		if (!ice_sched_get_tc_node(pi, i))
+ 			continue;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 914e59272a91..f0c87c40fd9d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -868,7 +868,7 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ 	/* find the (rounded up) power-of-2 of qcount */
+ 	pow = order_base_2(qcount_rx);
  
-@@ -603,10 +599,35 @@ ice_reuse_rx_page(struct ice_ring *rx_ring, struct ice_rx_buf *old_buf)
- 	*new_buf = *old_buf;
- }
+-	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
++	ice_for_each_traffic_class(i) {
+ 		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
+ 			/* TC is not enabled */
+ 			vsi->tc_cfg.tc_info[i].qoffset = 0;
+@@ -1715,7 +1715,7 @@ ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_ring **rings, int offset)
+ 	num_q_grps = 1;
  
-+/**
-+ * ice_get_rx_buf - Fetch Rx buffer and synchronize data for use
-+ * @rx_ring: Rx descriptor ring to transact packets on
-+ * @size: size of buffer to add to skb
-+ *
-+ * This function will pull an Rx buffer from the ring and synchronize it
-+ * for use by the CPU.
-+ */
-+static struct ice_rx_buf *
-+ice_get_rx_buf(struct ice_ring *rx_ring, const unsigned int size)
-+{
-+	struct ice_rx_buf *rx_buf;
-+
-+	rx_buf = &rx_ring->rx_buf[rx_ring->next_to_clean];
-+	prefetchw(rx_buf->page);
-+
-+	/* we are reusing so sync this buffer for CPU use */
-+	dma_sync_single_range_for_cpu(rx_ring->dev, rx_buf->dma,
-+				      rx_buf->page_offset, size,
-+				      DMA_FROM_DEVICE);
-+
-+	return rx_buf;
-+}
-+
- /**
-  * ice_fetch_rx_buf - Allocate skb and populate it
-  * @rx_ring: Rx descriptor ring to transact packets on
-- * @rx_desc: descriptor containing info written by hardware
-+ * @rx_buf: Rx buffer to pull data from
-+ * @size: the length of the packet
-  *
-  * This function allocates an skb on the fly, and populates it with the page
-  * data from the current receive descriptor, taking care to set up the skb
-@@ -614,20 +635,14 @@ ice_reuse_rx_page(struct ice_ring *rx_ring, struct ice_rx_buf *old_buf)
-  * necessary.
-  */
- static struct sk_buff *
--ice_fetch_rx_buf(struct ice_ring *rx_ring, union ice_32b_rx_flex_desc *rx_desc)
-+ice_fetch_rx_buf(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf,
-+		 unsigned int size)
- {
--	struct ice_rx_buf *rx_buf;
--	struct sk_buff *skb;
--	struct page *page;
--
--	rx_buf = &rx_ring->rx_buf[rx_ring->next_to_clean];
--	page = rx_buf->page;
--	prefetchw(page);
--
--	skb = rx_buf->skb;
-+	struct sk_buff *skb = rx_buf->skb;
- 
- 	if (likely(!skb)) {
--		u8 *page_addr = page_address(page) + rx_buf->page_offset;
-+		u8 *page_addr = page_address(rx_buf->page) +
-+				rx_buf->page_offset;
- 
- 		/* prefetch first cache line of first page */
- 		prefetch(page_addr);
-@@ -644,25 +659,13 @@ ice_fetch_rx_buf(struct ice_ring *rx_ring, union ice_32b_rx_flex_desc *rx_desc)
- 			return NULL;
- 		}
- 
--		/* we will be copying header into skb->data in
--		 * pskb_may_pull so it is in our interest to prefetch
--		 * it now to avoid a possible cache miss
--		 */
--		prefetchw(skb->data);
--
- 		skb_record_rx_queue(skb, rx_ring->q_index);
- 	} else {
--		/* we are reusing so sync this buffer for CPU use */
--		dma_sync_single_range_for_cpu(rx_ring->dev, rx_buf->dma,
--					      rx_buf->page_offset,
--					      ICE_RXBUF_2048,
--					      DMA_FROM_DEVICE);
--
- 		rx_buf->skb = NULL;
- 	}
- 
- 	/* pull page into skb */
--	if (ice_add_rx_frag(rx_buf, rx_desc, skb)) {
-+	if (ice_add_rx_frag(rx_buf, skb, size)) {
- 		/* hand second half of page back to the ring */
- 		ice_reuse_rx_page(rx_ring, rx_buf);
- 		rx_ring->rx_stats.page_reuse_count++;
-@@ -963,7 +966,9 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
- 	/* start the loop to process RX packets bounded by 'budget' */
- 	while (likely(total_rx_pkts < (unsigned int)budget)) {
- 		union ice_32b_rx_flex_desc *rx_desc;
-+		struct ice_rx_buf *rx_buf;
- 		struct sk_buff *skb;
-+		unsigned int size;
- 		u16 stat_err_bits;
- 		u16 vlan_tag = 0;
- 		u8 rx_ptype;
-@@ -993,8 +998,12 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
- 		 */
- 		dma_rmb();
- 
-+		size = le16_to_cpu(rx_desc->wb.pkt_len) &
-+			ICE_RX_FLX_DESC_PKT_LEN_M;
-+
-+		rx_buf = ice_get_rx_buf(rx_ring, size);
- 		/* allocate (if needed) and populate skb */
--		skb = ice_fetch_rx_buf(rx_ring, rx_desc);
-+		skb = ice_fetch_rx_buf(rx_ring, rx_buf, size);
- 		if (!skb)
+ 	/* set up and configure the Tx queues for each enabled TC */
+-	for (tc = 0; tc < ICE_MAX_TRAFFIC_CLASS; tc++) {
++	ice_for_each_traffic_class(tc) {
+ 		if (!(vsi->tc_cfg.ena_tc & BIT(tc)))
  			break;
  
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index efbebf7a050f..e0218f4c8f0b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1606,7 +1606,7 @@ ice_sched_rm_vsi_cfg(struct ice_port_info *pi, u16 vsi_handle, u8 owner)
+ 	if (!vsi_ctx)
+ 		goto exit_sched_rm_vsi_cfg;
+ 
+-	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
++	ice_for_each_traffic_class(i) {
+ 		struct ice_sched_node *vsi_node, *tc_node;
+ 		u8 j = 0;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 584f260f2e4f..3a4e67484487 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -210,6 +210,9 @@ struct ice_nvm_info {
+ #define ICE_MAX_TRAFFIC_CLASS 8
+ #define ICE_TXSCHED_MAX_BRANCHES ICE_MAX_TRAFFIC_CLASS
+ 
++#define ice_for_each_traffic_class(_i)	\
++	for ((_i) = 0; (_i) < ICE_MAX_TRAFFIC_CLASS; (_i)++)
++
+ struct ice_sched_node {
+ 	struct ice_sched_node *parent;
+ 	struct ice_sched_node *sibling; /* next sibling in the same layer */
 -- 
 2.14.5
 
