@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 14 Feb 2019 22:32:21 +0000
-Subject: [Intel-wired-lan] [PATCH S11 01/16] ice: Mark extack argument
- as __always_unused
-In-Reply-To: <20190208205043.11975-2-anirudh.venkataramanan@intel.com>
+Date: Thu, 14 Feb 2019 22:46:57 +0000
+Subject: [Intel-wired-lan] [PATCH S11 02/16] ice: Fix the calculation of
+ ICE_MAX_MTU
+In-Reply-To: <20190208205043.11975-3-anirudh.venkataramanan@intel.com>
 References: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
- <20190208205043.11975-2-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3661CD@ORSMSX104.amr.corp.intel.com>
+ <20190208205043.11975-3-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3661E2@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Friday, February 8, 2019 12:50 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S11 01/16] ice: Mark extack argument as
-> __always_unused
+> Subject: [Intel-wired-lan] [PATCH S11 02/16] ice: Fix the calculation of
+> ICE_MAX_MTU
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > 
-> Commit 87b0984ebfab ("net: Add extack argument to ndo_fdb_add()") in
-> net-next added an extended parameter to the .ndo_fdb_add op and
-> changed
-> ice_fdb_add() accordingly. Update the function header and add the
-> __always_unused attribute to the new parameter to avoid -Wunused-
-> parameter warnings.
+> Currently ICE_MAX_MTU subtracts only ETH_HLEN from max frame size and
+> adds ETH_FCS_LEN and VLAN_HLEN, which is not what was intended.
+> The ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN expression should be
+> surrounded with parentheses.
 > 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Wrap mentioned expression and take into account VLAN double tagging.
+> 
+> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote
-> commit message]
-> ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
