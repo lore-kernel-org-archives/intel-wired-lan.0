@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 14 Feb 2019 22:51:40 +0000
-Subject: [Intel-wired-lan] [PATCH S11 04/16] ice: sizeof(<type>) should
- be avoided
-In-Reply-To: <20190208205043.11975-5-anirudh.venkataramanan@intel.com>
+Date: Thu, 14 Feb 2019 22:52:24 +0000
+Subject: [Intel-wired-lan] [PATCH S11 05/16] ice: fix stack hogs from
+ struct ice_vsi_ctx structures
+In-Reply-To: <20190208205043.11975-6-anirudh.venkataramanan@intel.com>
 References: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
- <20190208205043.11975-5-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3661F2@ORSMSX104.amr.corp.intel.com>
+ <20190208205043.11975-6-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D366202@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,35 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Friday, February 8, 2019 12:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S11 04/16] ice: sizeof(<type>) should be
-> avoided
+> Subject: [Intel-wired-lan] [PATCH S11 05/16] ice: fix stack hogs from struct
+> ice_vsi_ctx structures
 > 
 > From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> With sizeof(), it is preferable to use the variable of type <type> instead of
-> sizeof(<type>).
-> 
-> There are multiple places where a temporary variable is used to hold a 'size'
-> value which is then used for a subsequent alloc/memset. Get rid of the
-> temporary variable by calculating size as part of the alloc/memset statement.
-> 
-> Also remove unnecessary type-cast.
+> struct ice_vsi_ctx has gotten large enough that function local declarations of
+> it on the stack are causing stack hogs.  Fix that by allocating the structs on
+> heap.  Cleanup some formatting issues in the code around these changes
+> and fix incorrect data type uses of returned functions in a couple places.
 > 
 > Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> fixed
-> checkpatch errors] [Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com> edited commit message]
-> ---
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 15 +++++++--------
->  drivers/net/ethernet/intel/ice/ice_lib.c     | 10 +++++-----
->  drivers/net/ethernet/intel/ice/ice_main.c    | 23 +++++++++++------------
->  drivers/net/ethernet/intel/ice/ice_sched.c   |  9 ++++-----
->  drivers/net/ethernet/intel/ice/ice_switch.c  |  2 +-
->  drivers/net/ethernet/intel/ice/ice_txrx.c    | 24 ++++++++++--------------
->  6 files changed, 38 insertions(+), 45 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c         | 98 +++++++++++++++---------
+>  drivers/net/ethernet/intel/ice/ice_main.c        | 27 ++++---
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 59 ++++++++------
+>  3 files changed, 117 insertions(+), 67 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
