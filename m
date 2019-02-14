@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 14 Feb 2019 23:50:05 +0000
-Subject: [Intel-wired-lan] [PATCH S11 06/16] ice: fix
- ice_remove_rule_internal vsi_list handling
-In-Reply-To: <20190208205043.11975-7-anirudh.venkataramanan@intel.com>
+Date: Thu, 14 Feb 2019 23:58:48 +0000
+Subject: [Intel-wired-lan] [PATCH S11 07/16] ice: fix issue where host
+ reboots on unload when iommu=on
+In-Reply-To: <20190208205043.11975-8-anirudh.venkataramanan@intel.com>
 References: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
- <20190208205043.11975-7-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D366248@ORSMSX104.amr.corp.intel.com>
+ <20190208205043.11975-8-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D366262@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,54 +17,39 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Friday, February 8, 2019 12:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S11 06/16] ice: fix
-> ice_remove_rule_internal vsi_list handling
+> Subject: [Intel-wired-lan] [PATCH S11 07/16] ice: fix issue where host reboots
+> on unload when iommu=on
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> When adding multiple VLANs to the same VSI, the ice_add_vlan code will
-> share the VSI list, so as not to create multiple unnecessary VSI lists.
+> Currently if the kernel has the intel_iommu=on parameter set, on some
+> platforms removing the driver causes a system reboot. In initialization we
+> associate the control queue interrupts with the pf->hw_oicr_idx and enable
+> the interrupts by setting the CAUSE_ENA bit. The problem comes on
+> teardown because we are not clearing the CAUSE_ENA bit for the control
+> queues, but the vector at pf->hw_oicr_idx (miscellaneous interrupt vector)
+> gets disabled.
 > 
-> Consider the following flow
+> Fix this by clearing the CAUSE_ENA bit in the appropriate control queue
+> registers on when freeing the misceallaneous interrupt vector. Also, move
+> the call to ice_free_irq_msix_misc() to after ice_deinit_sw() in
+> ice_remove() because ice_deinit_sw() makes an AQ call, but
+> ice_free_irq_msix_misc() disables the miscellaneous vector and it's
+> associated interrupts.
 > 
->   ice_add_vlan(hw, <VSI 0 VID 7, VSI 0 VID 8, VSI 0 VID 9>)
+> Also, create two small helper functions to enable and disable the control
+> queue interrupts respectively.
 > 
-> Where we add three VLAN filters for VIDs 7, 8, and 9, all for VSI 0.
-> 
-> The ice_add_vlan will create a single vsi_list and share it among all the filters.
-> 
-> Later, if we try to remove a VLAN,
-> 
->   ice_remove_vlan(hw, <VSI 0 VID 7>)
-> 
-> Then the removal code will update the vsi_list and remove VSI 0 from it.
-> But, since the vsi_list is shared, this breaks the list for the other users who
-> reference it. We actually even free the VSI list memory, and may result in
-> segmentation faults.
-> 
-> This is due to the way that VLAN rule share VSI lists with reference counts,
-> and is caused because we call ice_rem_update_vsi_list even when the
-> ref_cnt is greater than one.
-> 
-> To fix this, handle the case where ref_cnt is greater than one separately. In
-> this case, we need to remove the associated rule without modifying the
-> vsi_list, since it is currently being referenced by another rule. Instead, we
-> just need to decrement the VSI list ref_cnt.
-> 
-> The case for handling sharing of VSI lists with multiple VSIs is not currently
-> supported by this code. No such rules will be created today, and this code will
-> require changes if/when such code is added.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
 > [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
 > up commit message]
 > ---
->  drivers/net/ethernet/intel/ice/ice_switch.c | 15 +++++++++++++--
->  1 file changed, 13 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 71
+> +++++++++++++++++++++++--------
+>  1 file changed, 54 insertions(+), 17 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
