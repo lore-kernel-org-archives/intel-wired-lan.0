@@ -1,92 +1,39 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Thu, 14 Feb 2019 14:03:02 +0100
-Subject: [Intel-wired-lan] [PATCH net] i40e: fix XDP_REDIRECT/XDP xmit ring
- cleanup race
-Message-ID: <20190214130302.29434-1-bjorn.topel@gmail.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Thu, 14 Feb 2019 21:28:53 +0000
+Subject: [Intel-wired-lan] [net] ixgbe: fix older devices that do not
+ support IXGBE_MRQC_L3L4TXSWEN
+In-Reply-To: <315E3AFC3F1FCC4A88C68B5581547E0682A71DE4@dggemm513-mbx.china.huawei.com>
+References: <315E3AFC3F1FCC4A88C68B5581547E0682A71DE4@dggemm513-mbx.china.huawei.com>
+Message-ID: <87618083B2453E4A8714035B62D67992EC2165F5@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
+>-----Original Message-----
+>From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+>Behalf Of Xuguizhu (Guzhu Xu, Intelligent Computing Business Dept)
+>Sent: Wednesday, February 13, 2019 7:48 PM
+>Subject: Re: [Intel-wired-lan] [net] ixgbe: fix older devices that do
+>not support IXGBE_MRQC_L3L4TXSWEN
+>
+>Hi guys:
+>	We would like to know what kind of issues this patch may cause
+>before it is modified, or what triggers you to make this change. How can
+>we reproduce this issue in the lab? The cards we can find in our lab are
+>82599, X540 and X550. Please guide us to verify this issue, thank you
+>very much. After comparing the data sheets of the 82599 and X550, we
+>found that the L3L4TXSWEN bit in the 82599 NIC is reserved, but this
+>flag is writable.
 
-When the driver clears the XDP xmit ring due to re-configuration or
-teardown, in-progress ndo_xdp_xmit must be taken into consideration.
+This patch is resolving a bug that was reported on 82599 where a packet loss
+(as a side effect of out-of-order packets) was observed by a user in their
+environment. The packet loss was bisected to the patch that introduced the
+write to MRQC.L3L4TXSWEN. The reason this bit is needed on X550 is to allow
+for RSS hashing of traffic between VFs. Parts older than X550 do not support
+per-VF RSS configuration and hence this bit should not be set.
 
-The ndo_xdp_xmit function is typically called from a napi context that
-the driver does not control. Therefore, we must be careful not to
-clear the XDP ring, while the call is on-going. This patch adds a
-synchronize_rcu() to wait for napi(s) (preempt-disable regions and
-softirqs), prior clearing the queue. Further, the __I40E_CONFIG_BUSY
-flag is checked in the ndo_xdp_xmit implementation to avoid touching
-the XDP xmit queue during re-configuration.
-
-Fixes: d9314c474d4f ("i40e: add support for XDP_REDIRECT")
-Fixes: 123cecd427b6 ("i40e: added queue pair disable/enable functions")
-Reported-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 14 ++++++++++++--
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |  4 +++-
- 2 files changed, 15 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index f52e2c46e6a7..6a54a1e2f4ae 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6725,8 +6725,13 @@ void i40e_down(struct i40e_vsi *vsi)
- 
- 	for (i = 0; i < vsi->num_queue_pairs; i++) {
- 		i40e_clean_tx_ring(vsi->tx_rings[i]);
--		if (i40e_enabled_xdp_vsi(vsi))
-+		if (i40e_enabled_xdp_vsi(vsi)) {
-+			/* Make sure that in-progress ndo_xdp_xmit
-+			 * calls are completed.
-+			 */
-+			synchronize_rcu();
- 			i40e_clean_tx_ring(vsi->xdp_rings[i]);
-+		}
- 		i40e_clean_rx_ring(vsi->rx_rings[i]);
- 	}
- 
-@@ -11955,8 +11960,13 @@ static void i40e_queue_pair_reset_stats(struct i40e_vsi *vsi, int queue_pair)
- static void i40e_queue_pair_clean_rings(struct i40e_vsi *vsi, int queue_pair)
- {
- 	i40e_clean_tx_ring(vsi->tx_rings[queue_pair]);
--	if (i40e_enabled_xdp_vsi(vsi))
-+	if (i40e_enabled_xdp_vsi(vsi)) {
-+		/* Make sure that in-progress ndo_xdp_xmit calls are
-+		 * completed.
-+		 */
-+		synchronize_rcu();
- 		i40e_clean_tx_ring(vsi->xdp_rings[queue_pair]);
-+	}
- 	i40e_clean_rx_ring(vsi->rx_rings[queue_pair]);
- }
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index a7e14e98889f..6c97667d20ef 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -3709,6 +3709,7 @@ int i40e_xdp_xmit(struct net_device *dev, int n, struct xdp_frame **frames,
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	unsigned int queue_index = smp_processor_id();
- 	struct i40e_vsi *vsi = np->vsi;
-+	struct i40e_pf *pf = vsi->back;
- 	struct i40e_ring *xdp_ring;
- 	int drops = 0;
- 	int i;
-@@ -3716,7 +3717,8 @@ int i40e_xdp_xmit(struct net_device *dev, int n, struct xdp_frame **frames,
- 	if (test_bit(__I40E_VSI_DOWN, vsi->state))
- 		return -ENETDOWN;
- 
--	if (!i40e_enabled_xdp_vsi(vsi) || queue_index >= vsi->num_queue_pairs)
-+	if (!i40e_enabled_xdp_vsi(vsi) || queue_index >= vsi->num_queue_pairs ||
-+	    test_bit(__I40E_CONFIG_BUSY, pf->state))
- 		return -ENXIO;
- 
- 	if (unlikely(flags & ~XDP_XMIT_FLAGS_MASK))
--- 
-2.19.1
+Thanks,
+Emil
 
