@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 15 Feb 2019 00:02:39 +0000
-Subject: [Intel-wired-lan] [PATCH S11 11/16] ice: clear VF ARQLEN
- register on reset
-In-Reply-To: <20190208205043.11975-12-anirudh.venkataramanan@intel.com>
+Date: Fri, 15 Feb 2019 00:06:48 +0000
+Subject: [Intel-wired-lan] [PATCH S11 15/16] ice: Fix for FC get rx/tx
+ pause params
+In-Reply-To: <20190208205043.11975-16-anirudh.venkataramanan@intel.com>
 References: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
- <20190208205043.11975-12-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3662A4@ORSMSX104.amr.corp.intel.com>
+ <20190208205043.11975-16-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3662B4@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,28 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Friday, February 8, 2019 12:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S11 11/16] ice: clear VF ARQLEN register on
-> reset
+> Subject: [Intel-wired-lan] [PATCH S11 15/16] ice: Fix for FC get rx/tx pause
+> params
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Lukasz Czapnik <lukasz.czapnik@intel.com>
 > 
-> On older devices like X710 and X722, the VF's ARQLEN register is cleared on
-> reset, so the VF driver uses that register to detect an unannouced reset.
-> Unfortunately, on devices controlled by ice, this register is NOT cleared on
-> reset. This causes the VF to miss resets, and even on properly-announced
-> resets, the VF driver complains that it didn't see the reset.
+> Ethtool reported pause params based on the currently negotiated link
+> settings instead of current PHY config. User was not able to turn off pause
+> params because ethtool was incorrectly reporting parameters as off when
+> link was down even though PHY was configured to support pause frames.
+> Now pause params are taken from PHY config instead of link status.
 > 
-> To fix this, we'll do it in software. When we handle a VF reset (whether
-> triggered by software or VFLR), clear this register after the HW reset is
-> complete.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h  | 1 +
-> drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 5 +++++
->  2 files changed, 6 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 37 +++++++++++++++++++--
+> -------
+>  1 file changed, 26 insertions(+), 11 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
