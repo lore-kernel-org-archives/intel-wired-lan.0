@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 15 Feb 2019 00:06:48 +0000
-Subject: [Intel-wired-lan] [PATCH S11 15/16] ice: Fix for FC get rx/tx
- pause params
-In-Reply-To: <20190208205043.11975-16-anirudh.venkataramanan@intel.com>
+Date: Fri, 15 Feb 2019 00:13:20 +0000
+Subject: [Intel-wired-lan] [PATCH S11 16/16] ice: fix overlong string,
+ update stats output
+In-Reply-To: <20190208205043.11975-17-anirudh.venkataramanan@intel.com>
 References: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
- <20190208205043.11975-16-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3662B4@ORSMSX104.amr.corp.intel.com>
+ <20190208205043.11975-17-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3662C6@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Friday, February 8, 2019 12:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S11 15/16] ice: Fix for FC get rx/tx pause
-> params
+> Subject: [Intel-wired-lan] [PATCH S11 16/16] ice: fix overlong string, update
+> stats output
 > 
-> From: Lukasz Czapnik <lukasz.czapnik@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> Ethtool reported pause params based on the currently negotiated link
-> settings instead of current PHY config. User was not able to turn off pause
-> params because ethtool was incorrectly reporting parameters as off when
-> link was down even though PHY was configured to support pause frames.
-> Now pause params are taken from PHY config instead of link status.
+> A test started warning on a string truncation. This led to an unfortunate
+> realization that we are likely not accounting for the stats length correctly
+> before this patch, so fix the issue by putting "port." in front of all the PF stats,
+> instead of magically prepending it at runtime.
 > 
-> Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 37 +++++++++++++++++++--
-> -------
->  1 file changed, 26 insertions(+), 11 deletions(-)
+> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
+> up commit message]
+> ---
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 80 ++++++++++++++----------
+> ----
+>  1 file changed, 40 insertions(+), 40 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
