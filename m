@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 15 Feb 2019 00:00:04 +0000
-Subject: [Intel-wired-lan] [PATCH S11 09/16] ice: only use the VF for
- ICE_VSI_VF in ice_vsi_release
-In-Reply-To: <20190208205043.11975-10-anirudh.venkataramanan@intel.com>
+Date: Fri, 15 Feb 2019 00:00:51 +0000
+Subject: [Intel-wired-lan] [PATCH S11 10/16] ice: don't spam VFs with
+ link messages
+In-Reply-To: <20190208205043.11975-11-anirudh.venkataramanan@intel.com>
 References: <20190208205043.11975-1-anirudh.venkataramanan@intel.com>
- <20190208205043.11975-10-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D366282@ORSMSX104.amr.corp.intel.com>
+ <20190208205043.11975-11-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D366294@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Friday, February 8, 2019 12:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S11 09/16] ice: only use the VF for
-> ICE_VSI_VF in ice_vsi_release
+> Subject: [Intel-wired-lan] [PATCH S11 10/16] ice: don't spam VFs with link
+> messages
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> In ice_vsi_release we are always assigning a value to the local VF variable.
-> Change this to only be assigned if the VSI is a VF VSI.
+> Don't send a link message to the VFs unless link actually changes state.
+> This avoids a small timing hole in some VF drivers that can cause an apparent
+> TX hang if they receive a link status message at the wrong time.
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Although we have fixed the timing hole in the current VF driver, there are
+> still lots of drivers in the field that have this timing hole. Let's not fall into it if
+> we can avoid it.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
