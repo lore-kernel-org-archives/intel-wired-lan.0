@@ -1,27 +1,42 @@
-From: Daniel Borkmann <daniel@iogearbox.net>
-Date: Fri, 15 Feb 2019 15:23:58 +0100
-Subject: [Intel-wired-lan] [PATCH bpf-next] net: bpf: remove
- XDP_QUERY_XSK_UMEM enumerator
-In-Reply-To: <20190213170729.13845-1-bjorn.topel@gmail.com>
-References: <20190213170729.13845-1-bjorn.topel@gmail.com>
-Message-ID: <5a6168bd-1848-60e8-b0ff-bb65ce7db460@iogearbox.net>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 15 Feb 2019 20:37:35 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: Disable runtime PM on CNP+
+In-Reply-To: <20190202174016.28539-1-kai.heng.feng@canonical.com>
+References: <20190202174016.28539-1-kai.heng.feng@canonical.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96641B63@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 02/13/2019 06:07 PM, Bj?rn T?pel wrote:
-> From: Jan Sokolowski <jan.sokolowski@intel.com>
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Kai-Heng Feng
+> Sent: Saturday, February 2, 2019 9:40 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; Kai-Heng Feng
+> <kai.heng.feng@canonical.com>; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] e1000e: Disable runtime PM on CNP+
 > 
-> Commit c9b47cc1fabc ("xsk: fix bug when trying to use both copy and
-> zero-copy on one queue id") moved the umem query code to the AF_XDP
-> core, and therefore removed the need to query the netdevice for a
-> umem.
+> There are some new e1000e devices can only be woken up from D3 one
+> time,
+> by plugging ethernet cable. Subsequent cable plugging does set PME bit
+> correctly, but it still doesn't get woken up.
 > 
-> This patch removes XDP_QUERY_XSK_UMEM and all code that implement that
-> behavior, which is just dead code.
+> Since e1000e connects to the root complex directly, we rely on ACPI to
+> wake it up. In this case, the GPE from _PRW only works once and stops
+> working after that. Though it appears to be a platform bug, e1000e
+> maintainers confirmed that I219 does not support D3.
 > 
-> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+> So disable runtime PM on CNP+ chips. We may need to disable earlier
+> generations if this bug also hit older platforms.
+> 
+> Bugzilla: https://bugzilla.kernel.org/attachment.cgi?id=280819
+> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
-Applied, thanks!
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
