@@ -1,38 +1,36 @@
-From: Wei Yongjun <weiyongjun1@huawei.com>
-Date: Sat, 16 Feb 2019 02:04:42 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] igc: Make function
- igc_write_rss_indir_tbl() static
-Message-ID: <20190216020442.14206-1-weiyongjun1@huawei.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Sat, 16 Feb 2019 02:54:19 +0000
+Subject: [Intel-wired-lan] [PATCH 1/2] i40e: move i40e_xsk_umem function
+In-Reply-To: <20190212085205.7848-2-bjorn.topel@gmail.com>
+References: <20190212085205.7848-1-bjorn.topel@gmail.com>
+ <20190212085205.7848-2-bjorn.topel@gmail.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96641ECE@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fixes the following sparse warning:
+> From: netdev-owner at vger.kernel.org [mailto:netdev-
+> owner at vger.kernel.org] On Behalf Of Bj?rn T?pel
+> Sent: Tuesday, February 12, 2019 12:52 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Topel, Bjorn <bjorn.topel@intel.com>; Karlsson, Magnus
+> <magnus.karlsson@intel.com>; magnus.karlsson at gmail.com;
+> netdev at vger.kernel.org; Sokolowski, Jan <jan.sokolowski@intel.com>
+> Subject: [PATCH 1/2] i40e: move i40e_xsk_umem function
+> 
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
+> 
+> The i40e_xsk_umem function was explicitly inlined in i40e.h. There is
+> no reason for that, so move it to i40e_main.c instead.
+> 
+> Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h      | 14 --------------
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 20 ++++++++++++++++++++
+>  2 files changed, 20 insertions(+), 14 deletions(-)
+> 
 
-drivers/net/ethernet/intel/igc/igc_ethtool.c:646:6: warning:
- symbol 'igc_write_rss_indir_tbl' was not declared. Should it be static?
-
-Fixes: 8c5ad0dae93c ("igc: Add ethtool support")
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
----
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index eff37a6c0afa..544239422577 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -643,7 +643,7 @@ static int igc_set_coalesce(struct net_device *netdev,
- 	return 0;
- }
- 
--void igc_write_rss_indir_tbl(struct igc_adapter *adapter)
-+static void igc_write_rss_indir_tbl(struct igc_adapter *adapter)
- {
- 	struct igc_hw *hw = &adapter->hw;
- 	u32 reg = IGC_RETA(0);
-
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
