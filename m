@@ -1,9 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 15 Feb 2019 20:37:35 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: Disable runtime PM on CNP+
-In-Reply-To: <20190202174016.28539-1-kai.heng.feng@canonical.com>
-References: <20190202174016.28539-1-kai.heng.feng@canonical.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96641B63@ORSMSX101.amr.corp.intel.com>
+Date: Sat, 16 Feb 2019 01:35:12 +0000
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add multiple receive
+ queues control supporting
+In-Reply-To: <20190206074837.4851-1-sasha.neftin@intel.com>
+References: <20190206074837.4851-1-sasha.neftin@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96641E39@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,32 +12,27 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Kai-Heng Feng
-> Sent: Saturday, February 2, 2019 9:40 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; Kai-Heng Feng
-> <kai.heng.feng@canonical.com>; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] e1000e: Disable runtime PM on CNP+
+> Behalf Of Sasha Neftin
+> Sent: Tuesday, February 5, 2019 11:49 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add multiple receive queues
+> control supporting
 > 
-> There are some new e1000e devices can only be woken up from D3 one
-> time,
-> by plugging ethernet cable. Subsequent cable plugging does set PME bit
-> correctly, but it still doesn't get woken up.
+> Enable the multi queues to receive.
+> Program the direction of packets to specified queuies according
+> to the mode selected in the MRQC register.
+> Multiple receive queues defined by filters and RSS for 4 queues.
+> Enable/disable RSS hashing and also to enable multiple receive queues.
+> This patch will allow further ethtool support development.
 > 
-> Since e1000e connects to the root complex directly, we rely on ACPI to
-> wake it up. In this case, the GPE from _PRW only works once and stops
-> working after that. Though it appears to be a platform bug, e1000e
-> maintainers confirmed that I219 does not support D3.
-> 
-> So disable runtime PM on CNP+ chips. We may need to disable earlier
-> generations if this bug also hit older platforms.
-> 
-> Bugzilla: https://bugzilla.kernel.org/attachment.cgi?id=280819
-> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/igc/igc.h         |  9 +++++
+>  drivers/net/ethernet/intel/igc/igc_defines.h | 10 ++++++
+>  drivers/net/ethernet/intel/igc/igc_main.c    | 49
+> ++++++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_regs.h    |  5 +++
+>  4 files changed, 73 insertions(+)
 > 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
