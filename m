@@ -1,38 +1,38 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 16 Feb 2019 01:35:12 +0000
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add multiple receive
- queues control supporting
-In-Reply-To: <20190206074837.4851-1-sasha.neftin@intel.com>
-References: <20190206074837.4851-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B96641E39@ORSMSX101.amr.corp.intel.com>
+From: Wei Yongjun <weiyongjun1@huawei.com>
+Date: Sat, 16 Feb 2019 02:04:42 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] igc: Make function
+ igc_write_rss_indir_tbl() static
+Message-ID: <20190216020442.14206-1-weiyongjun1@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Sasha Neftin
-> Sent: Tuesday, February 5, 2019 11:49 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add multiple receive queues
-> control supporting
-> 
-> Enable the multi queues to receive.
-> Program the direction of packets to specified queuies according
-> to the mode selected in the MRQC register.
-> Multiple receive queues defined by filters and RSS for 4 queues.
-> Enable/disable RSS hashing and also to enable multiple receive queues.
-> This patch will allow further ethtool support development.
-> 
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc.h         |  9 +++++
->  drivers/net/ethernet/intel/igc/igc_defines.h | 10 ++++++
->  drivers/net/ethernet/intel/igc/igc_main.c    | 49
-> ++++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/igc/igc_regs.h    |  5 +++
->  4 files changed, 73 insertions(+)
-> 
+Fixes the following sparse warning:
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+drivers/net/ethernet/intel/igc/igc_ethtool.c:646:6: warning:
+ symbol 'igc_write_rss_indir_tbl' was not declared. Should it be static?
+
+Fixes: 8c5ad0dae93c ("igc: Add ethtool support")
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+---
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index eff37a6c0afa..544239422577 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -643,7 +643,7 @@ static int igc_set_coalesce(struct net_device *netdev,
+ 	return 0;
+ }
+ 
+-void igc_write_rss_indir_tbl(struct igc_adapter *adapter)
++static void igc_write_rss_indir_tbl(struct igc_adapter *adapter)
+ {
+ 	struct igc_hw *hw = &adapter->hw;
+ 	u32 reg = IGC_RETA(0);
+
+
+
