@@ -1,481 +1,89 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon, 18 Feb 2019 10:37:31 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add support for statistics
-Message-ID: <20190218083731.16211-1-sasha.neftin@intel.com>
+From: Kai Heng Feng <kai.heng.feng@canonical.com>
+Date: Mon, 18 Feb 2019 16:30:35 +0100
+Subject: [Intel-wired-lan] [PATCH] PCI / ACPI: Don't clear pme_poll on
+ device that has unreliable ACPI wake
+In-Reply-To: <20190204172057.GB9160@google.com>
+References: <20190122064544.27426-1-kai.heng.feng@canonical.com>
+ <20190122235134.GE14636@google.com>
+ <91E74111-5BB6-4604-A1D7-B537AB42C317@canonical.com>
+ <20190124151524.GF14636@google.com>
+ <FFC6EC3F-3608-41FC-8B14-815D1747C4B6@canonical.com>
+ <20190124200508.GH14636@google.com>
+ <C7E9B3C9-7E20-4CEB-8B56-D9A8D2E76DD0@canonical.com>
+ <CFAC1243-982E-4BAC-BAF6-41568C1C1A9E@canonical.com>
+ <20190204172057.GB9160@google.com>
+Message-ID: <7070C6C7-AA47-4F5F-A456-7DEEA7405F48@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add support for statistics and show basic counters.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc.h         |   4 +
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 233 +++++++++++++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_main.c    | 167 ++++++++++++++++++-
- 3 files changed, 403 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 7eee12972d86..0f5534ce27b0 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -37,6 +37,7 @@ int igc_add_mac_steering_filter(struct igc_adapter *adapter,
- 				const u8 *addr, u8 queue, u8 flags);
- int igc_del_mac_steering_filter(struct igc_adapter *adapter,
- 				const u8 *addr, u8 queue, u8 flags);
-+void igc_update_stats(struct igc_adapter *adapter);
- 
- extern char igc_driver_name[];
- extern char igc_driver_version[];
-@@ -403,6 +404,9 @@ struct igc_adapter {
- 	u16 tx_ring_count;
- 	u16 rx_ring_count;
- 
-+	u32 tx_hwtstamp_timeouts;
-+	u32 tx_hwtstamp_skipped;
-+	u32 rx_hwtstamp_cleared;
- 	u32 *shadow_vfta;
- 
- 	u32 rss_queues;
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 25d14fc82bf8..aaa1f97d5920 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -7,6 +7,115 @@
- 
- #include "igc.h"
- 
-+/* forward declaration */
-+struct igc_stats {
-+	char stat_string[ETH_GSTRING_LEN];
-+	int sizeof_stat;
-+	int stat_offset;
-+};
-+
-+#define IGC_STAT(_name, _stat) { \
-+	.stat_string = _name, \
-+	.sizeof_stat = FIELD_SIZEOF(struct igc_adapter, _stat), \
-+	.stat_offset = offsetof(struct igc_adapter, _stat) \
-+}
-+
-+static const struct igc_stats igc_gstrings_stats[] = {
-+	IGC_STAT("rx_packets", stats.gprc),
-+	IGC_STAT("tx_packets", stats.gptc),
-+	IGC_STAT("rx_bytes", stats.gorc),
-+	IGC_STAT("tx_bytes", stats.gotc),
-+	IGC_STAT("rx_broadcast", stats.bprc),
-+	IGC_STAT("tx_broadcast", stats.bptc),
-+	IGC_STAT("rx_multicast", stats.mprc),
-+	IGC_STAT("tx_multicast", stats.mptc),
-+	IGC_STAT("multicast", stats.mprc),
-+	IGC_STAT("collisions", stats.colc),
-+	IGC_STAT("rx_crc_errors", stats.crcerrs),
-+	IGC_STAT("rx_no_buffer_count", stats.rnbc),
-+	IGC_STAT("rx_missed_errors", stats.mpc),
-+	IGC_STAT("tx_aborted_errors", stats.ecol),
-+	IGC_STAT("tx_carrier_errors", stats.tncrs),
-+	IGC_STAT("tx_window_errors", stats.latecol),
-+	IGC_STAT("tx_abort_late_coll", stats.latecol),
-+	IGC_STAT("tx_deferred_ok", stats.dc),
-+	IGC_STAT("tx_single_coll_ok", stats.scc),
-+	IGC_STAT("tx_multi_coll_ok", stats.mcc),
-+	IGC_STAT("tx_timeout_count", tx_timeout_count),
-+	IGC_STAT("rx_long_length_errors", stats.roc),
-+	IGC_STAT("rx_short_length_errors", stats.ruc),
-+	IGC_STAT("rx_align_errors", stats.algnerrc),
-+	IGC_STAT("tx_tcp_seg_good", stats.tsctc),
-+	IGC_STAT("tx_tcp_seg_failed", stats.tsctfc),
-+	IGC_STAT("rx_flow_control_xon", stats.xonrxc),
-+	IGC_STAT("rx_flow_control_xoff", stats.xoffrxc),
-+	IGC_STAT("tx_flow_control_xon", stats.xontxc),
-+	IGC_STAT("tx_flow_control_xoff", stats.xofftxc),
-+	IGC_STAT("rx_long_byte_count", stats.gorc),
-+	IGC_STAT("tx_dma_out_of_sync", stats.doosync),
-+	IGC_STAT("tx_smbus", stats.mgptc),
-+	IGC_STAT("rx_smbus", stats.mgprc),
-+	IGC_STAT("dropped_smbus", stats.mgpdc),
-+	IGC_STAT("os2bmc_rx_by_bmc", stats.o2bgptc),
-+	IGC_STAT("os2bmc_tx_by_bmc", stats.b2ospc),
-+	IGC_STAT("os2bmc_tx_by_host", stats.o2bspc),
-+	IGC_STAT("os2bmc_rx_by_host", stats.b2ogprc),
-+	IGC_STAT("tx_hwtstamp_timeouts", tx_hwtstamp_timeouts),
-+	IGC_STAT("tx_hwtstamp_skipped", tx_hwtstamp_skipped),
-+	IGC_STAT("rx_hwtstamp_cleared", rx_hwtstamp_cleared),
-+};
-+
-+#define IGC_NETDEV_STAT(_net_stat) { \
-+	.stat_string = __stringify(_net_stat), \
-+	.sizeof_stat = FIELD_SIZEOF(struct rtnl_link_stats64, _net_stat), \
-+	.stat_offset = offsetof(struct rtnl_link_stats64, _net_stat) \
-+}
-+
-+static const struct igc_stats igc_gstrings_net_stats[] = {
-+	IGC_NETDEV_STAT(rx_errors),
-+	IGC_NETDEV_STAT(tx_errors),
-+	IGC_NETDEV_STAT(tx_dropped),
-+	IGC_NETDEV_STAT(rx_length_errors),
-+	IGC_NETDEV_STAT(rx_over_errors),
-+	IGC_NETDEV_STAT(rx_frame_errors),
-+	IGC_NETDEV_STAT(rx_fifo_errors),
-+	IGC_NETDEV_STAT(tx_fifo_errors),
-+	IGC_NETDEV_STAT(tx_heartbeat_errors)
-+};
-+
-+enum igc_diagnostics_results {
-+	TEST_REG = 0,
-+	TEST_EEP,
-+	TEST_IRQ,
-+	TEST_LOOP,
-+	TEST_LINK
-+};
-+
-+static const char igc_gstrings_test[][ETH_GSTRING_LEN] = {
-+	[TEST_REG]  = "Register test  (offline)",
-+	[TEST_EEP]  = "Eeprom test    (offline)",
-+	[TEST_IRQ]  = "Interrupt test (offline)",
-+	[TEST_LOOP] = "Loopback test  (offline)",
-+	[TEST_LINK] = "Link test   (on/offline)"
-+};
-+
-+#define IGC_TEST_LEN (sizeof(igc_gstrings_test) / ETH_GSTRING_LEN)
-+
-+#define IGC_GLOBAL_STATS_LEN	\
-+	(sizeof(igc_gstrings_stats) / sizeof(struct igc_stats))
-+#define IGC_NETDEV_STATS_LEN	\
-+	(sizeof(igc_gstrings_net_stats) / sizeof(struct igc_stats))
-+#define IGC_RX_QUEUE_STATS_LEN \
-+	(sizeof(struct igc_rx_queue_stats) / sizeof(u64))
-+#define IGC_TX_QUEUE_STATS_LEN 3 /* packets, bytes, restart_queue */
-+#define IGC_QUEUE_STATS_LEN \
-+	((((struct igc_adapter *)netdev_priv(netdev))->num_rx_queues * \
-+	  IGC_RX_QUEUE_STATS_LEN) + \
-+	 (((struct igc_adapter *)netdev_priv(netdev))->num_tx_queues * \
-+	  IGC_TX_QUEUE_STATS_LEN))
-+#define IGC_STATS_LEN \
-+	(IGC_GLOBAL_STATS_LEN + IGC_NETDEV_STATS_LEN + IGC_QUEUE_STATS_LEN)
-+
- static const char igc_priv_flags_strings[][ETH_GSTRING_LEN] = {
- #define IGC_PRIV_FLAGS_LEGACY_RX	BIT(0)
- 	"legacy-rx",
-@@ -546,6 +655,127 @@ static int igc_set_pauseparam(struct net_device *netdev,
- 	return retval;
- }
- 
-+static void igc_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
-+{
-+	struct igc_adapter *adapter = netdev_priv(netdev);
-+	u8 *p = data;
-+	int i;
-+
-+	switch (stringset) {
-+	case ETH_SS_TEST:
-+		memcpy(data, *igc_gstrings_test,
-+		       IGC_TEST_LEN * ETH_GSTRING_LEN);
-+		break;
-+	case ETH_SS_STATS:
-+		for (i = 0; i < IGC_GLOBAL_STATS_LEN; i++) {
-+			memcpy(p, igc_gstrings_stats[i].stat_string,
-+			       ETH_GSTRING_LEN);
-+			p += ETH_GSTRING_LEN;
-+		}
-+		for (i = 0; i < IGC_NETDEV_STATS_LEN; i++) {
-+			memcpy(p, igc_gstrings_net_stats[i].stat_string,
-+			       ETH_GSTRING_LEN);
-+			p += ETH_GSTRING_LEN;
-+		}
-+		for (i = 0; i < adapter->num_tx_queues; i++) {
-+			sprintf(p, "tx_queue_%u_packets", i);
-+			p += ETH_GSTRING_LEN;
-+			sprintf(p, "tx_queue_%u_bytes", i);
-+			p += ETH_GSTRING_LEN;
-+			sprintf(p, "tx_queue_%u_restart", i);
-+			p += ETH_GSTRING_LEN;
-+		}
-+		for (i = 0; i < adapter->num_rx_queues; i++) {
-+			sprintf(p, "rx_queue_%u_packets", i);
-+			p += ETH_GSTRING_LEN;
-+			sprintf(p, "rx_queue_%u_bytes", i);
-+			p += ETH_GSTRING_LEN;
-+			sprintf(p, "rx_queue_%u_drops", i);
-+			p += ETH_GSTRING_LEN;
-+			sprintf(p, "rx_queue_%u_csum_err", i);
-+			p += ETH_GSTRING_LEN;
-+			sprintf(p, "rx_queue_%u_alloc_failed", i);
-+			p += ETH_GSTRING_LEN;
-+		}
-+		/* BUG_ON(p - data != IGC_STATS_LEN * ETH_GSTRING_LEN); */
-+		break;
-+	case ETH_SS_PRIV_FLAGS:
-+		memcpy(data, igc_priv_flags_strings,
-+		       IGC_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
-+		break;
-+	}
-+}
-+
-+static int igc_get_sset_count(struct net_device *netdev, int sset)
-+{
-+	switch (sset) {
-+	case ETH_SS_STATS:
-+		return IGC_STATS_LEN;
-+	case ETH_SS_TEST:
-+		return IGC_TEST_LEN;
-+	case ETH_SS_PRIV_FLAGS:
-+		return IGC_PRIV_FLAGS_STR_LEN;
-+	default:
-+		return -ENOTSUPP;
-+	}
-+}
-+
-+static void igc_get_ethtool_stats(struct net_device *netdev,
-+				  struct ethtool_stats *stats, u64 *data)
-+{
-+	struct igc_adapter *adapter = netdev_priv(netdev);
-+	struct rtnl_link_stats64 *net_stats = &adapter->stats64;
-+	unsigned int start;
-+	struct igc_ring *ring;
-+	int i, j;
-+	char *p;
-+
-+	spin_lock(&adapter->stats64_lock);
-+	igc_update_stats(adapter);
-+
-+	for (i = 0; i < IGC_GLOBAL_STATS_LEN; i++) {
-+		p = (char *)adapter + igc_gstrings_stats[i].stat_offset;
-+		data[i] = (igc_gstrings_stats[i].sizeof_stat ==
-+			sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
-+	}
-+	for (j = 0; j < IGC_NETDEV_STATS_LEN; j++, i++) {
-+		p = (char *)net_stats + igc_gstrings_net_stats[j].stat_offset;
-+		data[i] = (igc_gstrings_net_stats[j].sizeof_stat ==
-+			sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
-+	}
-+	for (j = 0; j < adapter->num_tx_queues; j++) {
-+		u64	restart2;
-+
-+		ring = adapter->tx_ring[j];
-+		do {
-+			start = u64_stats_fetch_begin_irq(&ring->tx_syncp);
-+			data[i]   = ring->tx_stats.packets;
-+			data[i + 1] = ring->tx_stats.bytes;
-+			data[i + 2] = ring->tx_stats.restart_queue;
-+		} while (u64_stats_fetch_retry_irq(&ring->tx_syncp, start));
-+		do {
-+			start = u64_stats_fetch_begin_irq(&ring->tx_syncp2);
-+			restart2  = ring->tx_stats.restart_queue2;
-+		} while (u64_stats_fetch_retry_irq(&ring->tx_syncp2, start));
-+		data[i + 2] += restart2;
-+
-+		i += IGC_TX_QUEUE_STATS_LEN;
-+	}
-+	for (j = 0; j < adapter->num_rx_queues; j++) {
-+		ring = adapter->rx_ring[j];
-+		do {
-+			start = u64_stats_fetch_begin_irq(&ring->rx_syncp);
-+			data[i]   = ring->rx_stats.packets;
-+			data[i + 1] = ring->rx_stats.bytes;
-+			data[i + 2] = ring->rx_stats.drops;
-+			data[i + 3] = ring->rx_stats.csum_err;
-+			data[i + 4] = ring->rx_stats.alloc_failed;
-+		} while (u64_stats_fetch_retry_irq(&ring->rx_syncp, start));
-+		i += IGC_RX_QUEUE_STATS_LEN;
-+	}
-+	spin_unlock(&adapter->stats64_lock);
-+}
-+
- static int igc_get_coalesce(struct net_device *netdev,
- 			    struct ethtool_coalesce *ec)
- {
-@@ -1611,6 +1841,9 @@ static const struct ethtool_ops igc_ethtool_ops = {
- 	.set_ringparam		= igc_set_ringparam,
- 	.get_pauseparam		= igc_get_pauseparam,
- 	.set_pauseparam		= igc_set_pauseparam,
-+	.get_strings		= igc_get_strings,
-+	.get_sset_count		= igc_get_sset_count,
-+	.get_ethtool_stats	= igc_get_ethtool_stats,
- 	.get_coalesce		= igc_get_coalesce,
- 	.set_coalesce		= igc_set_coalesce,
- 	.get_rxnfc		= igc_get_rxnfc,
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 4c8c4f9a7aa2..36b86229d839 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -1787,8 +1787,173 @@ void igc_up(struct igc_adapter *adapter)
-  * igc_update_stats - Update the board statistics counters
-  * @adapter: board private structure
-  */
--static void igc_update_stats(struct igc_adapter *adapter)
-+void igc_update_stats(struct igc_adapter *adapter)
- {
-+	struct rtnl_link_stats64 *net_stats = &adapter->stats64;
-+	struct pci_dev *pdev = adapter->pdev;
-+	struct igc_hw *hw = &adapter->hw;
-+	u64 _bytes, _packets;
-+	u64 bytes, packets;
-+	unsigned int start;
-+	u32 mpc;
-+	int i;
-+
-+	/* Prevent stats update while adapter is being reset, or if the pci
-+	 * connection is down.
-+	 */
-+	if (adapter->link_speed == 0)
-+		return;
-+	if (pci_channel_offline(pdev))
-+		return;
-+
-+	packets = 0;
-+	bytes = 0;
-+
-+	rcu_read_lock();
-+	for (i = 0; i < adapter->num_rx_queues; i++) {
-+		struct igc_ring *ring = adapter->rx_ring[i];
-+		u32 rqdpc = rd32(IGC_RQDPC(i));
-+
-+		if (hw->mac.type >= igc_i225)
-+			wr32(IGC_RQDPC(i), 0);
-+
-+		if (rqdpc) {
-+			ring->rx_stats.drops += rqdpc;
-+			net_stats->rx_fifo_errors += rqdpc;
-+		}
-+
-+		do {
-+			start = u64_stats_fetch_begin_irq(&ring->rx_syncp);
-+			_bytes = ring->rx_stats.bytes;
-+			_packets = ring->rx_stats.packets;
-+		} while (u64_stats_fetch_retry_irq(&ring->rx_syncp, start));
-+		bytes += _bytes;
-+		packets += _packets;
-+	}
-+
-+	net_stats->rx_bytes = bytes;
-+	net_stats->rx_packets = packets;
-+
-+	packets = 0;
-+	bytes = 0;
-+	for (i = 0; i < adapter->num_tx_queues; i++) {
-+		struct igc_ring *ring = adapter->tx_ring[i];
-+
-+		do {
-+			start = u64_stats_fetch_begin_irq(&ring->tx_syncp);
-+			_bytes = ring->tx_stats.bytes;
-+			_packets = ring->tx_stats.packets;
-+		} while (u64_stats_fetch_retry_irq(&ring->tx_syncp, start));
-+		bytes += _bytes;
-+		packets += _packets;
-+	}
-+	net_stats->tx_bytes = bytes;
-+	net_stats->tx_packets = packets;
-+	rcu_read_unlock();
-+
-+	/* read stats registers */
-+	adapter->stats.crcerrs += rd32(IGC_CRCERRS);
-+	adapter->stats.gprc += rd32(IGC_GPRC);
-+	adapter->stats.gorc += rd32(IGC_GORCL);
-+	rd32(IGC_GORCH); /* clear GORCL */
-+	adapter->stats.bprc += rd32(IGC_BPRC);
-+	adapter->stats.mprc += rd32(IGC_MPRC);
-+	adapter->stats.roc += rd32(IGC_ROC);
-+
-+	adapter->stats.prc64 += rd32(IGC_PRC64);
-+	adapter->stats.prc127 += rd32(IGC_PRC127);
-+	adapter->stats.prc255 += rd32(IGC_PRC255);
-+	adapter->stats.prc511 += rd32(IGC_PRC511);
-+	adapter->stats.prc1023 += rd32(IGC_PRC1023);
-+	adapter->stats.prc1522 += rd32(IGC_PRC1522);
-+	adapter->stats.symerrs += rd32(IGC_SYMERRS);
-+	adapter->stats.sec += rd32(IGC_SEC);
-+
-+	mpc = rd32(IGC_MPC);
-+	adapter->stats.mpc += mpc;
-+	net_stats->rx_fifo_errors += mpc;
-+	adapter->stats.scc += rd32(IGC_SCC);
-+	adapter->stats.ecol += rd32(IGC_ECOL);
-+	adapter->stats.mcc += rd32(IGC_MCC);
-+	adapter->stats.latecol += rd32(IGC_LATECOL);
-+	adapter->stats.dc += rd32(IGC_DC);
-+	adapter->stats.rlec += rd32(IGC_RLEC);
-+	adapter->stats.xonrxc += rd32(IGC_XONRXC);
-+	adapter->stats.xontxc += rd32(IGC_XONTXC);
-+	adapter->stats.xoffrxc += rd32(IGC_XOFFRXC);
-+	adapter->stats.xofftxc += rd32(IGC_XOFFTXC);
-+	adapter->stats.fcruc += rd32(IGC_FCRUC);
-+	adapter->stats.gptc += rd32(IGC_GPTC);
-+	adapter->stats.gotc += rd32(IGC_GOTCL);
-+	rd32(IGC_GOTCH); /* clear GOTCL */
-+	adapter->stats.rnbc += rd32(IGC_RNBC);
-+	adapter->stats.ruc += rd32(IGC_RUC);
-+	adapter->stats.rfc += rd32(IGC_RFC);
-+	adapter->stats.rjc += rd32(IGC_RJC);
-+	adapter->stats.tor += rd32(IGC_TORH);
-+	adapter->stats.tot += rd32(IGC_TOTH);
-+	adapter->stats.tpr += rd32(IGC_TPR);
-+
-+	adapter->stats.ptc64 += rd32(IGC_PTC64);
-+	adapter->stats.ptc127 += rd32(IGC_PTC127);
-+	adapter->stats.ptc255 += rd32(IGC_PTC255);
-+	adapter->stats.ptc511 += rd32(IGC_PTC511);
-+	adapter->stats.ptc1023 += rd32(IGC_PTC1023);
-+	adapter->stats.ptc1522 += rd32(IGC_PTC1522);
-+
-+	adapter->stats.mptc += rd32(IGC_MPTC);
-+	adapter->stats.bptc += rd32(IGC_BPTC);
-+
-+	adapter->stats.tpt += rd32(IGC_TPT);
-+	adapter->stats.colc += rd32(IGC_COLC);
-+
-+	adapter->stats.algnerrc += rd32(IGC_ALGNERRC);
-+
-+	adapter->stats.tsctc += rd32(IGC_TSCTC);
-+	adapter->stats.tsctfc += rd32(IGC_TSCTFC);
-+
-+	adapter->stats.iac += rd32(IGC_IAC);
-+	adapter->stats.icrxoc += rd32(IGC_ICRXOC);
-+	adapter->stats.icrxptc += rd32(IGC_ICRXPTC);
-+	adapter->stats.icrxatc += rd32(IGC_ICRXATC);
-+	adapter->stats.ictxptc += rd32(IGC_ICTXPTC);
-+	adapter->stats.ictxatc += rd32(IGC_ICTXATC);
-+	adapter->stats.ictxqec += rd32(IGC_ICTXQEC);
-+	adapter->stats.ictxqmtc += rd32(IGC_ICTXQMTC);
-+	adapter->stats.icrxdmtc += rd32(IGC_ICRXDMTC);
-+
-+	/* Fill out the OS statistics structure */
-+	net_stats->multicast = adapter->stats.mprc;
-+	net_stats->collisions = adapter->stats.colc;
-+
-+	/* Rx Errors */
-+
-+	/* RLEC on some newer hardware can be incorrect so build
-+	 * our own version based on RUC and ROC
-+	 */
-+	net_stats->rx_errors = adapter->stats.rxerrc +
-+		adapter->stats.crcerrs + adapter->stats.algnerrc +
-+		adapter->stats.ruc + adapter->stats.roc +
-+		adapter->stats.cexterr;
-+	net_stats->rx_length_errors = adapter->stats.ruc +
-+				      adapter->stats.roc;
-+	net_stats->rx_crc_errors = adapter->stats.crcerrs;
-+	net_stats->rx_frame_errors = adapter->stats.algnerrc;
-+	net_stats->rx_missed_errors = adapter->stats.mpc;
-+
-+	/* Tx Errors */
-+	net_stats->tx_errors = adapter->stats.ecol +
-+			       adapter->stats.latecol;
-+	net_stats->tx_aborted_errors = adapter->stats.ecol;
-+	net_stats->tx_window_errors = adapter->stats.latecol;
-+	net_stats->tx_carrier_errors = adapter->stats.tncrs;
-+
-+	/* Tx Dropped needs to be maintained elsewhere */
-+
-+	/* Management Stats */
-+	adapter->stats.mgptc += rd32(IGC_MGTPTC);
-+	adapter->stats.mgprc += rd32(IGC_MGTPRC);
-+	adapter->stats.mgpdc += rd32(IGC_MGTPDC);
- }
- 
- static void igc_nfc_filter_exit(struct igc_adapter *adapter)
--- 
-2.11.0
+> On Feb 4, 2019, at 6:20 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> 
+> On Sun, Feb 03, 2019 at 01:46:50AM +0800, Kai Heng Feng wrote:
+>>> On Jan 28, 2019, at 3:51 PM, Kai Heng Feng <kai.heng.feng@canonical.com> wrote:
+>> 
+>>>> If I understand correctly, the bugzilla lspci
+>>>> (https://bugzilla.kernel.org/attachment.cgi?id=280691) was collected
+>>>> at point 8, and it shows PME_Status=1 when it should be 0.
+>>>> 
+>>>> If we write a 1 to PME_Status to clear it, and it remains set, that's
+>>>> obviously a hardware defect, and Intel should document that in an
+>>>> erratum, and a quirk would be the appropriate way to work around it.
+>>>> But I doubt that's what's happening.
+>>> 
+>>> I?ll ask them if they can provide an erratum.
+>> 
+>> Got confirmed with e1000e folks, I219 (the device in question) doesn?t
+>> really support runtime D3.
+> 
+> Did you get a reference, e.g., an intel.com URL for that?  Intel
+> usually publishes errata for hardware defects, which is nice because
+> it means every customer doesn't have to experimentally rediscover
+> them.
+
+Unfortunately no.
+
+> 
+>> I also checked the behavior of the device under Windows, and it
+>> stays at D0 all the time even when it?s not in use.
+> 
+> I think there are two possible explanations for this:
+> 
+>  1) This device requires a Windows or a driver update with a
+>  device-specific quirk similar to what you're proposing for Linux.
+
+I am sure the latest driver is loaded under Windows.
+
+> 
+>  2) Windows correctly detects that this device doesn't support D3,
+>  and Linux has a bug and does not detect that.
+
+I think that?s the case.
+
+> 
+> Obviously nobody wants to require OS or driver updates just for minor
+> device changes, and the PCI and ACPI specs are designed to allow
+> generic, non device-specific code to detect D3 support, so the first
+> case should be a result of a hardware defect.
+
+Yea, that?s why my original idea is to workaround it in PCI/ACPI.
+
+> 
+>> So I sent a patch [1] to disable it.
+>> 
+>> [1] https://lkml.org/lkml/2019/2/2/200
+> 
+> OK.  Since that's in drivers/net/..., I have no objection and the
+> e1000e maintainers would deal with that.
+
+Thanks.
+
+Kai-Heng
+
+> 
+> Bjorn
 
