@@ -1,89 +1,47 @@
-From: Kai Heng Feng <kai.heng.feng@canonical.com>
-Date: Mon, 18 Feb 2019 16:30:35 +0100
-Subject: [Intel-wired-lan] [PATCH] PCI / ACPI: Don't clear pme_poll on
- device that has unreliable ACPI wake
-In-Reply-To: <20190204172057.GB9160@google.com>
-References: <20190122064544.27426-1-kai.heng.feng@canonical.com>
- <20190122235134.GE14636@google.com>
- <91E74111-5BB6-4604-A1D7-B537AB42C317@canonical.com>
- <20190124151524.GF14636@google.com>
- <FFC6EC3F-3608-41FC-8B14-815D1747C4B6@canonical.com>
- <20190124200508.GH14636@google.com>
- <C7E9B3C9-7E20-4CEB-8B56-D9A8D2E76DD0@canonical.com>
- <CFAC1243-982E-4BAC-BAF6-41568C1C1A9E@canonical.com>
- <20190204172057.GB9160@google.com>
-Message-ID: <7070C6C7-AA47-4F5F-A456-7DEEA7405F48@canonical.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Tue, 19 Feb 2019 09:17:04 -0800
+Subject: [Intel-wired-lan] [next-queue] fm10k: add missing field
+ initializers to TLV attributes)
+Message-ID: <20190219171704.2852-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+From: "nosbuild (Code Review)" <nosbuild@intel.com>
 
+Add the missing field initializers for a couple of the TLV attribute
+macros. This resolves the last few -Wmissing-field-initializers warnings
+for the fm10k Linux driver.
 
-> On Feb 4, 2019, at 6:20 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> 
-> On Sun, Feb 03, 2019 at 01:46:50AM +0800, Kai Heng Feng wrote:
->>> On Jan 28, 2019, at 3:51 PM, Kai Heng Feng <kai.heng.feng@canonical.com> wrote:
->> 
->>>> If I understand correctly, the bugzilla lspci
->>>> (https://bugzilla.kernel.org/attachment.cgi?id=280691) was collected
->>>> at point 8, and it shows PME_Status=1 when it should be 0.
->>>> 
->>>> If we write a 1 to PME_Status to clear it, and it remains set, that's
->>>> obviously a hardware defect, and Intel should document that in an
->>>> erratum, and a quirk would be the appropriate way to work around it.
->>>> But I doubt that's what's happening.
->>> 
->>> I?ll ask them if they can provide an erratum.
->> 
->> Got confirmed with e1000e folks, I219 (the device in question) doesn?t
->> really support runtime D3.
-> 
-> Did you get a reference, e.g., an intel.com URL for that?  Intel
-> usually publishes errata for hardware defects, which is nice because
-> it means every customer doesn't have to experimentally rediscover
-> them.
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_tlv.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Unfortunately no.
-
-> 
->> I also checked the behavior of the device under Windows, and it
->> stays at D0 all the time even when it?s not in use.
-> 
-> I think there are two possible explanations for this:
-> 
->  1) This device requires a Windows or a driver update with a
->  device-specific quirk similar to what you're proposing for Linux.
-
-I am sure the latest driver is loaded under Windows.
-
-> 
->  2) Windows correctly detects that this device doesn't support D3,
->  and Linux has a bug and does not detect that.
-
-I think that?s the case.
-
-> 
-> Obviously nobody wants to require OS or driver updates just for minor
-> device changes, and the PCI and ACPI specs are designed to allow
-> generic, non device-specific code to detect D3 support, so the first
-> case should be a result of a hardware defect.
-
-Yea, that?s why my original idea is to workaround it in PCI/ACPI.
-
-> 
->> So I sent a patch [1] to disable it.
->> 
->> [1] https://lkml.org/lkml/2019/2/2/200
-> 
-> OK.  Since that's in drivers/net/..., I have no objection and the
-> e1000e maintainers would deal with that.
-
-Thanks.
-
-Kai-Heng
-
-> 
-> Bjorn
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
+index 160bc5b78f99..ceb9b791f799 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
+@@ -1,5 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+-/* Copyright(c) 2013 - 2018 Intel Corporation. */
++/* Copyright(c) 2013 - 2019 Intel Corporation. */
+ 
+ #ifndef _FM10K_TLV_H_
+ #define _FM10K_TLV_H_
+@@ -76,8 +76,8 @@ struct fm10k_tlv_attr {
+ #define FM10K_TLV_ATTR_S32(id)		    { id, FM10K_TLV_SIGNED, 4 }
+ #define FM10K_TLV_ATTR_S64(id)		    { id, FM10K_TLV_SIGNED, 8 }
+ #define FM10K_TLV_ATTR_LE_STRUCT(id, len)   { id, FM10K_TLV_LE_STRUCT, len }
+-#define FM10K_TLV_ATTR_NESTED(id)	    { id, FM10K_TLV_NESTED }
+-#define FM10K_TLV_ATTR_LAST		    { FM10K_TLV_ERROR }
++#define FM10K_TLV_ATTR_NESTED(id)	    { id, FM10K_TLV_NESTED, 0 }
++#define FM10K_TLV_ATTR_LAST		    { FM10K_TLV_ERROR, 0, 0 }
+ 
+ struct fm10k_msg_data {
+ 	unsigned int		    id;
+-- 
+2.18.0.219.gaf81d287a9da
 
