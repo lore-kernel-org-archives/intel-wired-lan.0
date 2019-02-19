@@ -1,64 +1,59 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 19 Feb 2019 22:27:41 +0000
-Subject: [Intel-wired-lan] [next-queue] fm10k: add missing field
- initializers to TLV attributes)
-In-Reply-To: <20190219171704.2852-1-jacob.e.keller@intel.com>
-References: <20190219171704.2852-1-jacob.e.keller@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB589230613F@ORSMSX121.amr.corp.intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Date: Tue, 19 Feb 2019 15:04:00 -0800
+Subject: [Intel-wired-lan] [PATCH S15 00/14] Bug fixes and minor clean up
+ for ice
+Message-ID: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Keller, Jacob E
-> Sent: Tuesday, February 19, 2019 9:17 AM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Cc: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Keller, Jacob E
-> <jacob.e.keller@intel.com>; nosbuild <nosbuild@intel.com>
-> Subject: [next-queue] fm10k: add missing field initializers to TLV attributes)
-> 
-> From: "nosbuild (Code Review)" <nosbuild@intel.com>
-> 
+Akeem G Abodunrin (1):
+  ice: Fix issue with VF attempt to delete default MAC address
 
-Not quite sure how the authorship got screwed up here. I've sent a v2 with this corrected.
+Anirudh Venkataramanan (8):
+  ice: Fix for adaptive interrupt moderation
+  ice: Remove unused function prototype
+  ice: Remove unnecessary braces
+  ice: Update function header for __ice_vsi_get_qs
+  ice: Remove "2 BITS" comment
+  ice: Fix typos in code comments
+  ice: Fix incorrect use of abbreviations
+  ice: Bump version
 
-Thanks,
-Jake
+Brett Creeley (3):
+  ice: Audit hotpath structures with pahole
+  ice: Add missing case in print_link_msg for printing flow control
+  ice: Update comment regarding the ITR_GRAN_S
 
-> Add the missing field initializers for a couple of the TLV attribute
-> macros. This resolves the last few -Wmissing-field-initializers warnings
-> for the fm10k Linux driver.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/fm10k/fm10k_tlv.h | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
-> b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
-> index 160bc5b78f99..ceb9b791f799 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
-> @@ -1,5 +1,5 @@
->  /* SPDX-License-Identifier: GPL-2.0 */
-> -/* Copyright(c) 2013 - 2018 Intel Corporation. */
-> +/* Copyright(c) 2013 - 2019 Intel Corporation. */
-> 
->  #ifndef _FM10K_TLV_H_
->  #define _FM10K_TLV_H_
-> @@ -76,8 +76,8 @@ struct fm10k_tlv_attr {
->  #define FM10K_TLV_ATTR_S32(id)		    { id, FM10K_TLV_SIGNED, 4 }
->  #define FM10K_TLV_ATTR_S64(id)		    { id, FM10K_TLV_SIGNED, 8 }
->  #define FM10K_TLV_ATTR_LE_STRUCT(id, len)   { id, FM10K_TLV_LE_STRUCT, len }
-> -#define FM10K_TLV_ATTR_NESTED(id)	    { id, FM10K_TLV_NESTED }
-> -#define FM10K_TLV_ATTR_LAST		    { FM10K_TLV_ERROR }
-> +#define FM10K_TLV_ATTR_NESTED(id)	    { id, FM10K_TLV_NESTED, 0 }
-> +#define FM10K_TLV_ATTR_LAST		    { FM10K_TLV_ERROR, 0, 0 }
-> 
->  struct fm10k_msg_data {
->  	unsigned int		    id;
-> --
-> 2.18.0.219.gaf81d287a9da
+Mitch Williams (1):
+  ice: enable VF admin queue interrupts
+
+Preethi Banala (1):
+  ice: Do not bail out when filter already exists
+
+ drivers/net/ethernet/intel/ice/ice.h             |  32 ++-
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |  20 +-
+ drivers/net/ethernet/intel/ice/ice_common.c      | 100 +++----
+ drivers/net/ethernet/intel/ice/ice_controlq.c    |  10 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c     |  20 +-
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |   2 +
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h   |  24 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c         |  33 ++-
+ drivers/net/ethernet/intel/ice/ice_lib.h         |   2 -
+ drivers/net/ethernet/intel/ice/ice_main.c        |  87 ++++---
+ drivers/net/ethernet/intel/ice/ice_nvm.c         |   6 +-
+ drivers/net/ethernet/intel/ice/ice_sched.c       | 104 ++++----
+ drivers/net/ethernet/intel/ice/ice_switch.c      | 108 ++++----
+ drivers/net/ethernet/intel/ice/ice_switch.h      |  10 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c        | 315 ++++++++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_txrx.h        |  18 +-
+ drivers/net/ethernet/intel/ice/ice_type.h        |  22 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  79 +++---
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |   8 +-
+ 19 files changed, 627 insertions(+), 373 deletions(-)
+
+-- 
+2.14.5
 
