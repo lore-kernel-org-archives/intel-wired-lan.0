@@ -1,88 +1,139 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 19 Feb 2019 15:04:03 -0800
-Subject: [Intel-wired-lan] [PATCH S15 03/14] ice: Fix issue with VF attempt
- to delete default MAC address
+Date: Tue, 19 Feb 2019 15:04:05 -0800
+Subject: [Intel-wired-lan] [PATCH S15 05/14] ice: Audit hotpath structures
+ with pahole
 In-Reply-To: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
 References: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190219230414.25627-4-anirudh.venkataramanan@intel.com>
+Message-ID: <20190219230414.25627-6-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-This patch fixes issue that occurs when VF is attempting to remove
-default LAN/MAC address, which is programmed by the administrator.
-We shouldn't return error for the call by the VF, but continue with
-the remaining steps to handle MAC opcode.
+Currently the ice_q_vector structure and ice_ring_container structure
+are taking up more space than necessary due to cache alignment holes
+and unnecessary variables respectively. This is not helping the
+driver's performance. The following fixes were done to improve cahche
+alignment, reduce wasted space, and increase performance.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+1. Remove the ice_latency_range enum as it is unused.
+2. Remove the latency_range variable in the ice_ring_container structure.
+3. Change the size of the itr_idx in the ice_ring_container structure
+   from an int to an u16. This reduced the size of ice_ring_container
+   structure to 32 Bytes so it has no holes or padding.
+4. Re-arrange the ice_q_vector structure using pahole to align
+   members as best as possible in regards to 64 Byte cache line size.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h      | 21 +++++++++++++--------
+ drivers/net/ethernet/intel/ice/ice_lib.c  |  2 --
+ drivers/net/ethernet/intel/ice/ice_txrx.c |  2 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.h | 10 +---------
+ 4 files changed, 15 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 7a4f86ad8149..e322bde45c59 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -2061,23 +2061,22 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
- 				 * already added. Just continue.
- 				 */
- 				dev_info(&pf->pdev->dev,
--					 "mac %pM already set for VF %d\n",
-+					 "MAC %pM already set for VF %d\n",
- 					 maddr, vf->vf_id);
- 				continue;
- 			} else {
- 				/* VF can't remove dflt_lan_addr/bcast mac */
- 				dev_err(&pf->pdev->dev,
--					"can't remove mac %pM for VF %d\n",
-+					"VF can't remove default MAC address or MAC %pM programmed by PF for VF %d\n",
- 					maddr, vf->vf_id);
--				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
--				goto handle_mac_exit;
-+				continue;
- 			}
- 		}
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 933297e81fb4..046d05a028b2 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -296,20 +296,25 @@ struct ice_vsi {
+ /* struct that defines an interrupt vector */
+ struct ice_q_vector {
+ 	struct ice_vsi *vsi;
+-	cpumask_t affinity_mask;
+-	struct napi_struct napi;
+-	struct ice_ring_container rx;
+-	struct ice_ring_container tx;
+-	struct irq_affinity_notify affinity_notify;
++
+ 	u16 v_idx;			/* index in the vsi->q_vector array. */
+-	u8 num_ring_tx;			/* total number of Tx rings in vector */
+ 	u8 num_ring_rx;			/* total number of Rx rings in vector */
+-	char name[ICE_INT_NAME_STR_LEN];
++	u8 num_ring_tx;			/* total number of Tx rings in vector */
++	u8 itr_countdown;		/* when 0 should adjust adaptive ITR */
+ 	/* in usecs, need to use ice_intrl_to_usecs_reg() before writing this
+ 	 * value to the device
+ 	 */
+ 	u8 intrl;
+-	u8 itr_countdown;	/* when 0 should adjust adaptive ITR */
++
++	struct napi_struct napi;
++
++	struct ice_ring_container rx;
++	struct ice_ring_container tx;
++
++	cpumask_t affinity_mask;
++	struct irq_affinity_notify affinity_notify;
++
++	char name[ICE_INT_NAME_STR_LEN];
+ } ____cacheline_internodealigned_in_smp;
  
- 		/* check for the invalid cases and bail if necessary */
- 		if (is_zero_ether_addr(maddr)) {
- 			dev_err(&pf->pdev->dev,
--				"invalid mac %pM provided for VF %d\n",
-+				"invalid MAC %pM provided for VF %d\n",
- 				maddr, vf->vf_id);
- 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 			goto handle_mac_exit;
-@@ -2086,7 +2085,7 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
- 		if (is_unicast_ether_addr(maddr) &&
- 		    !ice_can_vf_change_mac(vf)) {
- 			dev_err(&pf->pdev->dev,
--				"can't change unicast mac for untrusted VF %d\n",
-+				"can't change unicast MAC for untrusted VF %d\n",
- 				vf->vf_id);
- 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 			goto handle_mac_exit;
-@@ -2108,7 +2107,7 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
+ enum ice_pf_flags {
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index f0c87c40fd9d..484c9bfd39ba 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1846,7 +1846,6 @@ ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector, u16 vector)
+ 		rc->target_itr = ITR_TO_REG(rc->itr_setting);
+ 		rc->next_update = jiffies + 1;
+ 		rc->current_itr = rc->target_itr;
+-		rc->latency_range = ICE_LOW_LATENCY;
+ 		wr32(hw, GLINT_ITR(rc->itr_idx, vector),
+ 		     ITR_REG_ALIGN(rc->current_itr) >> ICE_ITR_GRAN_S);
+ 	}
+@@ -1861,7 +1860,6 @@ ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector, u16 vector)
+ 		rc->target_itr = ITR_TO_REG(rc->itr_setting);
+ 		rc->next_update = jiffies + 1;
+ 		rc->current_itr = rc->target_itr;
+-		rc->latency_range = ICE_LOW_LATENCY;
+ 		wr32(hw, GLINT_ITR(rc->itr_idx, vector),
+ 		     ITR_REG_ALIGN(rc->current_itr) >> ICE_ITR_GRAN_S);
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 549bcaa1c6d0..f2a984cbd40c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1323,7 +1323,7 @@ ice_update_itr(struct ice_q_vector *q_vector, struct ice_ring_container *rc)
+  * @itr_idx: interrupt throttling index
+  * @itr: interrupt throttling value in usecs
+  */
+-static u32 ice_buildreg_itr(int itr_idx, u16 itr)
++static u32 ice_buildreg_itr(u16 itr_idx, u16 itr)
+ {
+ 	/* The itr value is reported in microseconds, and the register value is
+ 	 * recorded in 2 microsecond units. For this reason we only need to
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 69625857c482..2c8af98ff640 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -184,21 +184,13 @@ struct ice_ring {
+ 	u16 next_to_alloc;
+ } ____cacheline_internodealigned_in_smp;
  
- 	if (v_ret) {
- 		dev_err(&pf->pdev->dev,
--			"can't update mac filters for VF %d, error %d\n",
-+			"can't update MAC filters for VF %d, error %d\n",
- 			vf->vf_id, v_ret);
- 	} else {
- 		if (set)
-@@ -2809,7 +2808,7 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 	ether_addr_copy(vf->dflt_lan_addr.addr, mac);
- 	vf->pf_set_mac = true;
- 	netdev_info(netdev,
--		    "mac on VF %d set to %pM. VF driver will be reinitialized\n",
-+		    "MAC on VF %d set to %pM. VF driver will be reinitialized\n",
- 		    vf_id, mac);
- 
- 	ice_vc_dis_vf(vf);
+-enum ice_latency_range {
+-	ICE_LOWEST_LATENCY = 0,
+-	ICE_LOW_LATENCY = 1,
+-	ICE_BULK_LATENCY = 2,
+-	ICE_ULTRA_LATENCY = 3,
+-};
+-
+ struct ice_ring_container {
+ 	/* head of linked-list of rings */
+ 	struct ice_ring *ring;
+ 	unsigned long next_update;	/* jiffies value of next queue update */
+ 	unsigned int total_bytes;	/* total bytes processed this int */
+ 	unsigned int total_pkts;	/* total packets processed this int */
+-	enum ice_latency_range latency_range;
+-	int itr_idx;		/* index in the interrupt vector */
++	u16 itr_idx;		/* index in the interrupt vector */
+ 	u16 target_itr;		/* value in usecs divided by the hw->itr_gran */
+ 	u16 current_itr;	/* value in usecs divided by the hw->itr_gran */
+ 	/* high bit set means dynamic ITR, rest is used to store user
 -- 
 2.14.5
 
