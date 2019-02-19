@@ -1,42 +1,48 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 19 Feb 2019 15:04:09 -0800
-Subject: [Intel-wired-lan] [PATCH S15 09/14] ice: Update function header for
- __ice_vsi_get_qs
+Date: Tue, 19 Feb 2019 15:04:11 -0800
+Subject: [Intel-wired-lan] [PATCH S15 11/14] ice: Remove "2 BITS" comment
 In-Reply-To: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
 References: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190219230414.25627-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20190219230414.25627-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove some redundant text in the function header for __ice_vsi_get_qs
+Some enums in ice_tx_desc_cmd_bits have a trailing /* 2 BITS */ comment,
+but the value has just one bit set (ex. ICE_TX_DESC_CMD_L4T_EOFT_SCTP
+has the value 0x200 (i.e. only bit 9 is set). This is confusing and
+misleading. So remove the comment.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 484c9bfd39ba..f248d08425e2 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -617,11 +617,10 @@ static int __ice_vsi_get_qs_sc(struct ice_qs_cfg *qs_cfg)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index 2e87b69aff4f..a8c3fe87d7aa 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -342,12 +342,12 @@ enum ice_tx_desc_cmd_bits {
+ 	ICE_TX_DESC_CMD_EOP			= 0x0001,
+ 	ICE_TX_DESC_CMD_RS			= 0x0002,
+ 	ICE_TX_DESC_CMD_IL2TAG1			= 0x0008,
+-	ICE_TX_DESC_CMD_IIPT_IPV6		= 0x0020, /* 2 BITS */
+-	ICE_TX_DESC_CMD_IIPT_IPV4		= 0x0040, /* 2 BITS */
+-	ICE_TX_DESC_CMD_IIPT_IPV4_CSUM		= 0x0060, /* 2 BITS */
+-	ICE_TX_DESC_CMD_L4T_EOFT_TCP		= 0x0100, /* 2 BITS */
+-	ICE_TX_DESC_CMD_L4T_EOFT_SCTP		= 0x0200, /* 2 BITS */
+-	ICE_TX_DESC_CMD_L4T_EOFT_UDP		= 0x0300, /* 2 BITS */
++	ICE_TX_DESC_CMD_IIPT_IPV6		= 0x0020,
++	ICE_TX_DESC_CMD_IIPT_IPV4		= 0x0040,
++	ICE_TX_DESC_CMD_IIPT_IPV4_CSUM		= 0x0060,
++	ICE_TX_DESC_CMD_L4T_EOFT_TCP		= 0x0100,
++	ICE_TX_DESC_CMD_L4T_EOFT_SCTP		= 0x0200,
++	ICE_TX_DESC_CMD_L4T_EOFT_UDP		= 0x0300,
+ };
  
- /**
-  * __ice_vsi_get_qs - helper function for assigning queues from PF to VSI
-- * @qs_cfg: gathered variables needed for PF->VSI queues assignment
-+ * @qs_cfg: gathered variables needed for pf->vsi queues assignment
-  *
-- * This is an internal function for assigning queues from the PF to VSI and
-- * initially tries to find contiguous space.  If it is not successful to find
-- * contiguous space, then it tries with the scatter approach.
-+ * This function first tries to find contiguous space. If it is not successful,
-+ * it tries with the scatter approach.
-  *
-  * Return 0 on success and -ENOMEM in case of no left space in PF queue bitmap
-  */
+ #define ICE_TXD_QW1_OFFSET_S	16
 -- 
 2.14.5
 
