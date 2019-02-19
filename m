@@ -1,139 +1,37 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 19 Feb 2019 15:04:05 -0800
-Subject: [Intel-wired-lan] [PATCH S15 05/14] ice: Audit hotpath structures
- with pahole
+Date: Tue, 19 Feb 2019 15:04:08 -0800
+Subject: [Intel-wired-lan] [PATCH S15 08/14] ice: Remove unnecessary braces
 In-Reply-To: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
 References: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190219230414.25627-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20190219230414.25627-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+Single statement if conditions don't need braces. Remove it.
 
-Currently the ice_q_vector structure and ice_ring_container structure
-are taking up more space than necessary due to cache alignment holes
-and unnecessary variables respectively. This is not helping the
-driver's performance. The following fixes were done to improve cahche
-alignment, reduce wasted space, and increase performance.
-
-1. Remove the ice_latency_range enum as it is unused.
-2. Remove the latency_range variable in the ice_ring_container structure.
-3. Change the size of the itr_idx in the ice_ring_container structure
-   from an int to an u16. This reduced the size of ice_ring_container
-   structure to 32 Bytes so it has no holes or padding.
-4. Re-arrange the ice_q_vector structure using pahole to align
-   members as best as possible in regards to 64 Byte cache line size.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h      | 21 +++++++++++++--------
- drivers/net/ethernet/intel/ice/ice_lib.c  |  2 --
- drivers/net/ethernet/intel/ice/ice_txrx.c |  2 +-
- drivers/net/ethernet/intel/ice/ice_txrx.h | 10 +---------
- 4 files changed, 15 insertions(+), 20 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 933297e81fb4..046d05a028b2 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -296,20 +296,25 @@ struct ice_vsi {
- /* struct that defines an interrupt vector */
- struct ice_q_vector {
- 	struct ice_vsi *vsi;
--	cpumask_t affinity_mask;
--	struct napi_struct napi;
--	struct ice_ring_container rx;
--	struct ice_ring_container tx;
--	struct irq_affinity_notify affinity_notify;
-+
- 	u16 v_idx;			/* index in the vsi->q_vector array. */
--	u8 num_ring_tx;			/* total number of Tx rings in vector */
- 	u8 num_ring_rx;			/* total number of Rx rings in vector */
--	char name[ICE_INT_NAME_STR_LEN];
-+	u8 num_ring_tx;			/* total number of Tx rings in vector */
-+	u8 itr_countdown;		/* when 0 should adjust adaptive ITR */
- 	/* in usecs, need to use ice_intrl_to_usecs_reg() before writing this
- 	 * value to the device
- 	 */
- 	u8 intrl;
--	u8 itr_countdown;	/* when 0 should adjust adaptive ITR */
-+
-+	struct napi_struct napi;
-+
-+	struct ice_ring_container rx;
-+	struct ice_ring_container tx;
-+
-+	cpumask_t affinity_mask;
-+	struct irq_affinity_notify affinity_notify;
-+
-+	char name[ICE_INT_NAME_STR_LEN];
- } ____cacheline_internodealigned_in_smp;
- 
- enum ice_pf_flags {
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index f0c87c40fd9d..484c9bfd39ba 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1846,7 +1846,6 @@ ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector, u16 vector)
- 		rc->target_itr = ITR_TO_REG(rc->itr_setting);
- 		rc->next_update = jiffies + 1;
- 		rc->current_itr = rc->target_itr;
--		rc->latency_range = ICE_LOW_LATENCY;
- 		wr32(hw, GLINT_ITR(rc->itr_idx, vector),
- 		     ITR_REG_ALIGN(rc->current_itr) >> ICE_ITR_GRAN_S);
- 	}
-@@ -1861,7 +1860,6 @@ ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector, u16 vector)
- 		rc->target_itr = ITR_TO_REG(rc->itr_setting);
- 		rc->next_update = jiffies + 1;
- 		rc->current_itr = rc->target_itr;
--		rc->latency_range = ICE_LOW_LATENCY;
- 		wr32(hw, GLINT_ITR(rc->itr_idx, vector),
- 		     ITR_REG_ALIGN(rc->current_itr) >> ICE_ITR_GRAN_S);
- 	}
 diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 549bcaa1c6d0..f2a984cbd40c 100644
+index f2a984cbd40c..85008e154aa2 100644
 --- a/drivers/net/ethernet/intel/ice/ice_txrx.c
 +++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1323,7 +1323,7 @@ ice_update_itr(struct ice_q_vector *q_vector, struct ice_ring_container *rc)
-  * @itr_idx: interrupt throttling index
-  * @itr: interrupt throttling value in usecs
-  */
--static u32 ice_buildreg_itr(int itr_idx, u16 itr)
-+static u32 ice_buildreg_itr(u16 itr_idx, u16 itr)
+@@ -968,9 +968,8 @@ static void
+ ice_receive_skb(struct ice_ring *rx_ring, struct sk_buff *skb, u16 vlan_tag)
  {
- 	/* The itr value is reported in microseconds, and the register value is
- 	 * recorded in 2 microsecond units. For this reason we only need to
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 69625857c482..2c8af98ff640 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -184,21 +184,13 @@ struct ice_ring {
- 	u16 next_to_alloc;
- } ____cacheline_internodealigned_in_smp;
+ 	if ((rx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_RX) &&
+-	    (vlan_tag & VLAN_VID_MASK)) {
++	    (vlan_tag & VLAN_VID_MASK))
+ 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan_tag);
+-	}
+ 	napi_gro_receive(&rx_ring->q_vector->napi, skb);
+ }
  
--enum ice_latency_range {
--	ICE_LOWEST_LATENCY = 0,
--	ICE_LOW_LATENCY = 1,
--	ICE_BULK_LATENCY = 2,
--	ICE_ULTRA_LATENCY = 3,
--};
--
- struct ice_ring_container {
- 	/* head of linked-list of rings */
- 	struct ice_ring *ring;
- 	unsigned long next_update;	/* jiffies value of next queue update */
- 	unsigned int total_bytes;	/* total bytes processed this int */
- 	unsigned int total_pkts;	/* total packets processed this int */
--	enum ice_latency_range latency_range;
--	int itr_idx;		/* index in the interrupt vector */
-+	u16 itr_idx;		/* index in the interrupt vector */
- 	u16 target_itr;		/* value in usecs divided by the hw->itr_gran */
- 	u16 current_itr;	/* value in usecs divided by the hw->itr_gran */
- 	/* high bit set means dynamic ITR, rest is used to store user
 -- 
 2.14.5
 
