@@ -1,148 +1,42 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed, 20 Feb 2019 14:39:31 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add support for the ntuple
- feature
-Message-ID: <20190220123931.31441-1-sasha.neftin@intel.com>
+From: Jan Sokolowski <jan.sokolowski@intel.com>
+Date: Wed, 20 Feb 2019 15:20:14 +0000
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: don't do any AF_XDP zero-copy
+ transmit if netif is not OK
+Message-ID: <20190220152014.13376-1-jan.sokolowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Copy the ntuple feature into list of user selectable features.
-Enable the ntuple feature.
+An issue has been found while testing zero-copy XDP that
+causes a reset to be triggered. As it takes some time to
+turn the carrier on after setting zc, and we already
+start trying to transmit some packets, watchdog considers
+this as an erroneous state and triggers a reset.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Don't do any work if netif carrier is not OK.
+
+Fixes: 8221c5eba8c13 (ixgbe: add AF_XDP zero-copy Tx support)
+Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_defines.h |  3 +
- drivers/net/ethernet/intel/igc/igc_main.c    | 86 ++++++++++++++++++++++++++++
- 2 files changed, 89 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 925c89b57ec5..a9a30268de59 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -400,6 +400,9 @@
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+index 98870707b51a..51c29358c2a9 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+@@ -617,7 +617,8 @@ static bool ixgbe_xmit_zc(struct ixgbe_ring *xdp_ring, unsigned int budget)
+ 	dma_addr_t dma;
  
- #define IGC_N0_QUEUE -1
- 
-+#define IGC_MAX_MAC_HDR_LEN	127
-+#define IGC_MAX_NETWORK_HDR_LEN	511
-+
- #define IGC_VLAPQF_QUEUE_SEL(_n, q_idx) ((q_idx) << ((_n) * 4))
- #define IGC_VLAPQF_P_VALID(_n)	(0x1 << (3 + (_n) * 4))
- #define IGC_VLAPQF_QUEUE_MASK	0x03
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 1d21b95d9e2c..cf49bacbb84a 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2127,6 +2127,86 @@ static struct net_device_stats *igc_get_stats(struct net_device *netdev)
- 	return &netdev->stats;
- }
- 
-+static netdev_features_t igc_fix_features(struct net_device *netdev,
-+					  netdev_features_t features)
-+{
-+	/* Since there is no support for separate Rx/Tx vlan accel
-+	 * enable/disable make sure Tx flag is always in same state as Rx.
-+	 */
-+	if (features & NETIF_F_HW_VLAN_CTAG_RX)
-+		features |= NETIF_F_HW_VLAN_CTAG_TX;
-+	else
-+		features &= ~NETIF_F_HW_VLAN_CTAG_TX;
-+
-+	return features;
-+}
-+
-+static int igc_set_features(struct net_device *netdev,
-+			    netdev_features_t features)
-+{
-+	netdev_features_t changed = netdev->features ^ features;
-+	struct igc_adapter *adapter = netdev_priv(netdev);
-+
-+	/* Add VLAN support */
-+	if (!(changed & (NETIF_F_RXALL | NETIF_F_NTUPLE)))
-+		return 0;
-+
-+	if (!(features & NETIF_F_NTUPLE)) {
-+		struct hlist_node *node2;
-+		struct igc_nfc_filter *rule;
-+
-+		spin_lock(&adapter->nfc_lock);
-+		hlist_for_each_entry_safe(rule, node2,
-+					  &adapter->nfc_filter_list, nfc_node) {
-+			igc_erase_filter(adapter, rule);
-+			hlist_del(&rule->nfc_node);
-+			kfree(rule);
-+		}
-+		spin_unlock(&adapter->nfc_lock);
-+		adapter->nfc_filter_count = 0;
-+	}
-+
-+	netdev->features = features;
-+
-+	if (netif_running(netdev))
-+		igc_reinit_locked(adapter);
-+	else
-+		igc_reset(adapter);
-+
-+	return 1;
-+}
-+
-+static netdev_features_t
-+igc_features_check(struct sk_buff *skb, struct net_device *dev,
-+		   netdev_features_t features)
-+{
-+	unsigned int network_hdr_len, mac_hdr_len;
-+
-+	/* Make certain the headers can be described by a context descriptor */
-+	mac_hdr_len = skb_network_header(skb) - skb->data;
-+	if (unlikely(mac_hdr_len > IGC_MAX_MAC_HDR_LEN))
-+		return features & ~(NETIF_F_HW_CSUM |
-+				    NETIF_F_SCTP_CRC |
-+				    NETIF_F_HW_VLAN_CTAG_TX |
-+				    NETIF_F_TSO |
-+				    NETIF_F_TSO6);
-+
-+	network_hdr_len = skb_checksum_start(skb) - skb_network_header(skb);
-+	if (unlikely(network_hdr_len >  IGC_MAX_NETWORK_HDR_LEN))
-+		return features & ~(NETIF_F_HW_CSUM |
-+				    NETIF_F_SCTP_CRC |
-+				    NETIF_F_TSO |
-+				    NETIF_F_TSO6);
-+
-+	/* We can only support IPV4 TSO in tunnels if we can mangle the
-+	 * inner IP ID field, so strip TSO if MANGLEID is not supported.
-+	 */
-+	if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID))
-+		features &= ~NETIF_F_TSO;
-+
-+	return features;
-+}
-+
- /**
-  * igc_configure - configure the hardware for RX and TX
-  * @adapter: private board structure
-@@ -3793,6 +3873,9 @@ static const struct net_device_ops igc_netdev_ops = {
- 	.ndo_set_mac_address	= igc_set_mac,
- 	.ndo_change_mtu		= igc_change_mtu,
- 	.ndo_get_stats		= igc_get_stats,
-+	.ndo_fix_features	= igc_fix_features,
-+	.ndo_set_features	= igc_set_features,
-+	.ndo_features_check	= igc_features_check,
- };
- 
- /* PCIe configuration access */
-@@ -4022,6 +4105,9 @@ static int igc_probe(struct pci_dev *pdev,
- 	if (err)
- 		goto err_sw_init;
- 
-+	/* copy netdev features into list of user selectable features */
-+	netdev->hw_features |= NETIF_F_NTUPLE;
-+
- 	/* MTU range: 68 - 9216 */
- 	netdev->min_mtu = ETH_MIN_MTU;
- 	netdev->max_mtu = MAX_STD_JUMBO_FRAME_SIZE;
+ 	while (budget-- > 0) {
+-		if (unlikely(!ixgbe_desc_unused(xdp_ring))) {
++		if (unlikely(!ixgbe_desc_unused(xdp_ring)) ||
++		    !netif_carrier_ok(xdp_ring->netdev)) {
+ 			work_done = false;
+ 			break;
+ 		}
 -- 
-2.11.0
+2.18.1
 
