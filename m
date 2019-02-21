@@ -1,70 +1,72 @@
-From: Joel Fernandes <joel@joelfernandes.org>
-Date: Thu, 21 Feb 2019 12:17:19 -0500
-Subject: [Intel-wired-lan] [PATCH RFC 4/5] sched/topology: Annonate RCU
- pointers properly
-In-Reply-To: <20190221152944.GS32494@hirez.programming.kicks-ass.net>
+From: Paul E. McKenney <paulmck@linux.ibm.com>
+Date: Thu, 21 Feb 2019 07:52:18 -0800
+Subject: [Intel-wired-lan] [PATCH RFC 3/5] sched/cpufreq: Fix incorrect
+ RCU API usage
+In-Reply-To: <20190221153117.GT32494@hirez.programming.kicks-ass.net>
 References: <20190221054942.132388-1-joel@joelfernandes.org>
- <20190221054942.132388-5-joel@joelfernandes.org>
- <20190221091944.GY32477@hirez.programming.kicks-ass.net>
- <20190221151057.GA19213@google.com>
- <20190221152944.GS32494@hirez.programming.kicks-ass.net>
-Message-ID: <20190221171719.GB118415@google.com>
+ <20190221054942.132388-4-joel@joelfernandes.org>
+ <20190221091805.GX32477@hirez.programming.kicks-ass.net>
+ <20190221152139.GB19213@google.com>
+ <20190221153117.GT32494@hirez.programming.kicks-ass.net>
+Message-ID: <20190221155218.GZ11787@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Feb 21, 2019 at 04:29:44PM +0100, Peter Zijlstra wrote:
-> On Thu, Feb 21, 2019 at 10:10:57AM -0500, Joel Fernandes wrote:
-> > Hi Peter,
-> > 
-> > Thanks for taking a look.
-> > 
-> > On Thu, Feb 21, 2019 at 10:19:44AM +0100, Peter Zijlstra wrote:
-> > > On Thu, Feb 21, 2019 at 12:49:41AM -0500, Joel Fernandes (Google) wrote:
-> > > 
-> > > > Also replace rcu_assign_pointer call on rq->sd with WRITE_ONCE. This
-> > > > should be sufficient for the rq->sd initialization.
-> > > 
-> > > > @@ -668,7 +668,7 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
+On Thu, Feb 21, 2019 at 04:31:17PM +0100, Peter Zijlstra wrote:
+> On Thu, Feb 21, 2019 at 10:21:39AM -0500, Joel Fernandes wrote:
+> > On Thu, Feb 21, 2019 at 10:18:05AM +0100, Peter Zijlstra wrote:
+> > > On Thu, Feb 21, 2019 at 12:49:40AM -0500, Joel Fernandes (Google) wrote:
+> > > > @@ -34,8 +34,12 @@ void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
+> > > >  	if (WARN_ON(!data || !func))
+> > > >  		return;
 > > > >  
-> > > >  	rq_attach_root(rq, rd);
-> > > >  	tmp = rq->sd;
-> > > > -	rcu_assign_pointer(rq->sd, sd);
-> > > > +	WRITE_ONCE(rq->sd, sd);
-> > > >  	dirty_sched_domain_sysctl(cpu);
-> > > >  	destroy_sched_domains(tmp);
+> > > > -	if (WARN_ON(per_cpu(cpufreq_update_util_data, cpu)))
+> > > > +	rcu_read_lock();
+> > > > +	if (WARN_ON(rcu_dereference(per_cpu(cpufreq_update_util_data, cpu)))) {
+> > > > +		rcu_read_unlock();
+> > > >  		return;
+> > > > +	}
+> > > > +	rcu_read_unlock();
+> > > >  
+> > > >  	data->func = func;
+> > > >  	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), data);
 > > > 
-> > > Where did the RELEASE barrier go?
+> > > This doesn't make any kind of sense to me.
 > > > 
-> > > That was a publish operation, now it is not.
 > > 
-> > Funny thing is, initially I had written this patch with smp_store_release()
-> > instead of WRITE_ONCE, but checkpatch complaints with that since it needs a
-> > comment on top of it, and I wasn't sure if RELEASE barrier was the intent of
-> > using rcu_assign_pointer (all the more reason to replace it with something
-> > more explicit).
+> > As per the rcu_assign_pointer() line, I inferred that
+> > cpufreq_update_util_data is expected to be RCU protected. Reading the pointer
+> > value of RCU pointers generally needs to be done from RCU read section, and
+> > using rcu_dereference() (or using rcu_access()).
 > > 
-> > I will replace it with the following and resubmit it then:
+> > In this patch, I changed cpufreq_update_util_data to be __rcu annotated to
+> > avoid the sparse error thrown by rcu_assign_pointer().
 > > 
-> > /* Release barrier */
-> > smp_store_release(&rq->sd, sd);
+> > Instead of doing that, If your intention here is RELEASE barrier, should I
+> > just replace in this function:
+> > 	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), data);
+> > with:
+> > 	smp_store_release(per_cpu(cpufreq_update_util_data, cpu), data))
+> > ?
 > > 
-> > Or do we want to just drop the "Release barrier" comment and live with the
-> > checkpatch warning?
+> > It would be nice IMO to be explicit about the intention of release/publish
+> > semantics by using smp_store_release().
 > 
-> How about we keep using rcu_assign_pointer(), the whole sched domain
-> tree is under rcu; peruse that destroy_sched_domains() function for
-> instance.
+> No, it is RCU managed, it should be RCU. The problem is that the hunk
+> above is utter crap.
 > 
-> Also check how for_each_domain() uses rcu_dereference().
+> All that does is read the pointer, it never actually dereferences it.
 
-May be then, all those pointers should be made __rcu as well. Then we can use
-rcu_assign_pointer() here. I will look more into it and study these functions
-as you are suggesting.
+For whatever it is worth, in that case it could use rcu_access_pointer().
+And this primitive does not do the lockdep check for being within an RCU
+read-side critical section.  As Peter says, if there is no dereferencing,
+there can be no use-after-free bug, so the RCU read-side critical is
+not needed.
 
-thanks,
+Good eyes, Peter!  ;-)
 
-- Joel
+							Thanx, Paul
 
