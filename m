@@ -1,110 +1,78 @@
 From: Joel Fernandes (Google) <joel@joelfernandes.org>
-Date: Thu, 21 Feb 2019 00:49:39 -0500
-Subject: [Intel-wired-lan] [PATCH RFC 2/5] ixgbe: Fix incorrect RCU API usage
+Date: Thu, 21 Feb 2019 00:49:40 -0500
+Subject: [Intel-wired-lan] [PATCH RFC 3/5] sched/cpufreq: Fix incorrect RCU
+ API usage
 In-Reply-To: <20190221054942.132388-1-joel@joelfernandes.org>
 References: <20190221054942.132388-1-joel@joelfernandes.org>
-Message-ID: <20190221054942.132388-3-joel@joelfernandes.org>
+Message-ID: <20190221054942.132388-4-joel@joelfernandes.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Recently, I added an RCU annotation check in rcu_assign_pointer. This
-caused a sparse error to be reported by the ixgbe driver.
+Recently I added an RCU annotation check to rcu_assign_pointer(). All
+pointers assigned to RCU protected data are to be annotated with __rcu
+inorder to be able to use rcu_assign_pointer() similar to checks in
+other RCU APIs.
 
-Further looking, it seems the adapter->xdp_prog pointer is not annotated
-with __rcu. Annonating it fixed the error, but caused a bunch of other
-warnings.
+This resulted in a sparse error: kernel//sched/cpufreq.c:41:9: sparse:
+error: incompatible types in comparison expression (different address
+spaces)
 
-This patch tries to fix all warnings by using RCU API properly. This
-makes sense to do because not using RCU properly can result in various
-hard to find bugs. This is a best effort fix and is only build tested.
-The sparse errors and warnings go away with the change. I request
-maintainers / developers in this area to test it properly.
+Fix this by using the correct APIs for RCU accesses. This will
+potentially avoid any future bugs in the code. If it is felt that RCU
+protection is not needed here, then the rcu_assign_pointer call can be
+dropped and replaced with, say, WRITE_ONCE or smp_store_release. Or, may
+be we add a new API to do it. But calls rcu_assign_pointer seems an
+abuse of the RCU API unless RCU is being used.
 
 Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  4 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 17 ++++++++++++-----
- 2 files changed, 14 insertions(+), 7 deletions(-)
+ kernel/sched/cpufreq.c | 8 ++++++--
+ kernel/sched/sched.h   | 2 +-
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 08d85e336bd4..3b14daf27516 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -311,7 +311,7 @@ struct ixgbe_ring {
- 	struct ixgbe_ring *next;	/* pointer to next ring in q_vector */
- 	struct ixgbe_q_vector *q_vector; /* backpointer to host q_vector */
- 	struct net_device *netdev;	/* netdev ring belongs to */
--	struct bpf_prog *xdp_prog;
-+	struct bpf_prog __rcu *xdp_prog;
- 	struct device *dev;		/* device for DMA mapping */
- 	void *desc;			/* descriptor ring memory */
- 	union {
-@@ -560,7 +560,7 @@ struct ixgbe_adapter {
- 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
- 	/* OS defined structs */
- 	struct net_device *netdev;
--	struct bpf_prog *xdp_prog;
-+	struct bpf_prog __rcu *xdp_prog;
- 	struct pci_dev *pdev;
- 	struct mii_bus *mii_bus;
+diff --git a/kernel/sched/cpufreq.c b/kernel/sched/cpufreq.c
+index 22bd8980f32f..c9aeb3bf5dc2 100644
+--- a/kernel/sched/cpufreq.c
++++ b/kernel/sched/cpufreq.c
+@@ -7,7 +7,7 @@
+  */
+ #include "sched.h"
  
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index daff8183534b..6aa59bb13a14 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2199,7 +2199,7 @@ static struct sk_buff *ixgbe_run_xdp(struct ixgbe_adapter *adapter,
- 	u32 act;
+-DEFINE_PER_CPU(struct update_util_data *, cpufreq_update_util_data);
++DEFINE_PER_CPU(struct update_util_data __rcu *, cpufreq_update_util_data);
  
- 	rcu_read_lock();
--	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
-+	xdp_prog = rcu_dereference(rx_ring->xdp_prog);
+ /**
+  * cpufreq_add_update_util_hook - Populate the CPU's update_util_data pointer.
+@@ -34,8 +34,12 @@ void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
+ 	if (WARN_ON(!data || !func))
+ 		return;
  
- 	if (!xdp_prog)
- 		goto xdp_out;
-@@ -6547,7 +6547,7 @@ int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
- 			     rx_ring->queue_index) < 0)
- 		goto err;
- 
--	rx_ring->xdp_prog = adapter->xdp_prog;
-+	rcu_assign_pointer(rx_ring->xdp_prog, adapter->xdp_prog);
- 
- 	return 0;
- err:
-@@ -10246,7 +10246,10 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
- 	if (nr_cpu_ids > MAX_XDP_QUEUES)
- 		return -ENOMEM;
- 
--	old_prog = xchg(&adapter->xdp_prog, prog);
+-	if (WARN_ON(per_cpu(cpufreq_update_util_data, cpu)))
 +	rcu_read_lock();
-+	old_prog = rcu_dereference(adapter->xdp_prog);
-+	rcu_assign_pointer(adapter->xdp_prog, prog);
++	if (WARN_ON(rcu_dereference(per_cpu(cpufreq_update_util_data, cpu)))) {
++		rcu_read_unlock();
+ 		return;
++	}
 +	rcu_read_unlock();
  
- 	/* If transitioning XDP modes reconfigure rings */
- 	if (!!prog != !!old_prog) {
-@@ -10271,13 +10274,17 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
- static int ixgbe_xdp(struct net_device *dev, struct netdev_bpf *xdp)
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(dev);
-+	struct bpf_prog *prog;
+ 	data->func = func;
+ 	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), data);
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index d04530bf251f..2ab545d40381 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -2166,7 +2166,7 @@ static inline u64 irq_time_read(int cpu)
+ #endif /* CONFIG_IRQ_TIME_ACCOUNTING */
  
- 	switch (xdp->command) {
- 	case XDP_SETUP_PROG:
- 		return ixgbe_xdp_setup(dev, xdp->prog);
- 	case XDP_QUERY_PROG:
--		xdp->prog_id = adapter->xdp_prog ?
--			adapter->xdp_prog->aux->id : 0;
-+		rcu_read_lock();
-+		prog = rcu_dereference(adapter->xdp_prog);
-+		xdp->prog_id = prog ? prog->aux->id : 0;
-+		rcu_read_unlock();
-+
- 		return 0;
- 	case XDP_QUERY_XSK_UMEM:
- 		return ixgbe_xsk_umem_query(adapter, &xdp->xsk.umem,
+ #ifdef CONFIG_CPU_FREQ
+-DECLARE_PER_CPU(struct update_util_data *, cpufreq_update_util_data);
++DECLARE_PER_CPU(struct update_util_data __rcu *, cpufreq_update_util_data);
+ 
+ /**
+  * cpufreq_update_util - Take a note about CPU utilization changes.
 -- 
 2.21.0.rc0.258.g878e2cd30e-goog
 
