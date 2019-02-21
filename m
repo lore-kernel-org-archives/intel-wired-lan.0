@@ -1,57 +1,63 @@
 From: Joel Fernandes <joel@joelfernandes.org>
-Date: Thu, 21 Feb 2019 10:21:39 -0500
+Date: Thu, 21 Feb 2019 12:13:11 -0500
 Subject: [Intel-wired-lan] [PATCH RFC 3/5] sched/cpufreq: Fix incorrect
  RCU API usage
-In-Reply-To: <20190221091805.GX32477@hirez.programming.kicks-ass.net>
+In-Reply-To: <20190221161144.GU32494@hirez.programming.kicks-ass.net>
 References: <20190221054942.132388-1-joel@joelfernandes.org>
  <20190221054942.132388-4-joel@joelfernandes.org>
  <20190221091805.GX32477@hirez.programming.kicks-ass.net>
-Message-ID: <20190221152139.GB19213@google.com>
+ <20190221152139.GB19213@google.com>
+ <20190221153117.GT32494@hirez.programming.kicks-ass.net>
+ <20190221155218.GZ11787@linux.ibm.com>
+ <20190221161144.GU32494@hirez.programming.kicks-ass.net>
+Message-ID: <20190221171311.GA118415@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Feb 21, 2019 at 10:18:05AM +0100, Peter Zijlstra wrote:
-> On Thu, Feb 21, 2019 at 12:49:40AM -0500, Joel Fernandes (Google) wrote:
-> > @@ -34,8 +34,12 @@ void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
-> >  	if (WARN_ON(!data || !func))
-> >  		return;
-> >  
-> > -	if (WARN_ON(per_cpu(cpufreq_update_util_data, cpu)))
-> > +	rcu_read_lock();
-> > +	if (WARN_ON(rcu_dereference(per_cpu(cpufreq_update_util_data, cpu)))) {
-> > +		rcu_read_unlock();
-> >  		return;
-> > +	}
-> > +	rcu_read_unlock();
-> >  
-> >  	data->func = func;
-> >  	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), data);
+On Thu, Feb 21, 2019 at 05:11:44PM +0100, Peter Zijlstra wrote:
+> On Thu, Feb 21, 2019 at 07:52:18AM -0800, Paul E. McKenney wrote:
+> > On Thu, Feb 21, 2019 at 04:31:17PM +0100, Peter Zijlstra wrote:
+> > > On Thu, Feb 21, 2019 at 10:21:39AM -0500, Joel Fernandes wrote:
+> > > > On Thu, Feb 21, 2019 at 10:18:05AM +0100, Peter Zijlstra wrote:
+> > > > > On Thu, Feb 21, 2019 at 12:49:40AM -0500, Joel Fernandes (Google) wrote:
+> > > > > > @@ -34,8 +34,12 @@ void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
+> > > > > >  	if (WARN_ON(!data || !func))
+> > > > > >  		return;
+> > > > > >  
+> > > > > > -	if (WARN_ON(per_cpu(cpufreq_update_util_data, cpu)))
+> > > > > > +	rcu_read_lock();
+> > > > > > +	if (WARN_ON(rcu_dereference(per_cpu(cpufreq_update_util_data, cpu)))) {
+> > > > > > +		rcu_read_unlock();
+> > > > > >  		return;
+> > > > > > +	}
+> > > > > > +	rcu_read_unlock();
+> > > > > >  
+> > > > > >  	data->func = func;
+> > > > > >  	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), data);
 > 
-> This doesn't make any kind of sense to me.
+> > For whatever it is worth, in that case it could use rcu_access_pointer().
+> > And this primitive does not do the lockdep check for being within an RCU
+> > read-side critical section.  As Peter says, if there is no dereferencing,
+> > there can be no use-after-free bug, so the RCU read-side critical is
+> > not needed.
 > 
+> On top of that, I suspect this is under the write-side lock (we're doing
+> assignment after all).
 
-As per the rcu_assign_pointer() line, I inferred that
-cpufreq_update_util_data is expected to be RCU protected. Reading the pointer
-value of RCU pointers generally needs to be done from RCU read section, and
-using rcu_dereference() (or using rcu_access()).
+Yes it is under a policy->rwsem, just confirmed that.
 
-In this patch, I changed cpufreq_update_util_data to be __rcu annotated to
-avoid the sparse error thrown by rcu_assign_pointer().
+And indeed rcu_read_lock() is not needed here in this patch, thanks for
+pointing that out. Sometimes the word "dereference" plays some visual tricks
+and in this case tempted me to add an RCU reader section ;-) Assuming you
+guys are in agreement with usage of rcu_access_pointer() here to keep sparse
+happy, I'll rework the patch accordingly and resubmit with that.
 
-Instead of doing that, If your intention here is RELEASE barrier, should I
-just replace in this function:
-	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), data);
-with:
-	smp_store_release(per_cpu(cpufreq_update_util_data, cpu), data))
-?
-
-It would be nice IMO to be explicit about the intention of release/publish
-semantics by using smp_store_release().
-
-thanks,
+thanks!
 
  - Joel
+
+
 
