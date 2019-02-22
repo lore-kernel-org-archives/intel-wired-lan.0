@@ -1,20 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Fri, 22 Feb 2019 10:03:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- ae4ce4d28a7e904d90a6b9621393c5a29dd7a307
-Message-ID: <5c6f588b.WKB8CxcGQoE5DgtE%lkp@intel.com>
+Date: Fri, 22 Feb 2019 10:04:28 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:40GbE] BUILD SUCCESS
+ c685c69fba71462c3f9f6a1fb6151cded6c74d42
+Message-ID: <5c6f58ac.qklDXYnm6NAkoCzE%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: ae4ce4d28a7e904d90a6b9621393c5a29dd7a307  checkpatch.pl: seed camelcase from the provided kernel tree root
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  40GbE
+branch HEAD: c685c69fba71462c3f9f6a1fb6151cded6c74d42  ixgbe: don't do any AF_XDP zero-copy transmit if netif is not OK
 
 elapsed time: 170m
 
-configs tested: 174
+configs tested: 186
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -27,12 +27,16 @@ x86_64                                    lkp
 x86_64                                nfsroot
 x86_64                                   rhel
 x86_64                               rhel-7.2
+riscv                              tinyconfig
+i386                               tinyconfig
 ia64                              allnoconfig
 sh                          lboxre2_defconfig
 mips                         tb0226_defconfig
 parisc                              defconfig
 mips                        vocore2_defconfig
 powerpc                           allnoconfig
+arm                         at91_dt_defconfig
+openrisc                          allnoconfig
 i386                   randconfig-x019-201907
 i386                   randconfig-x015-201907
 i386                   randconfig-x016-201907
@@ -45,29 +49,19 @@ i386                   randconfig-x017-201907
 i386                   randconfig-x011-201907
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
-x86_64                 randconfig-x005-201907
-x86_64                 randconfig-x008-201907
-x86_64                 randconfig-x009-201907
-x86_64                 randconfig-x001-201907
-x86_64                 randconfig-x002-201907
-x86_64                 randconfig-x003-201907
-x86_64                 randconfig-x006-201907
-x86_64                 randconfig-x007-201907
-x86_64                 randconfig-x000-201907
-x86_64                 randconfig-x004-201907
 nds32                             allnoconfig
 nds32                               defconfig
 i386                             allmodconfig
-x86_64                 randconfig-x013-201907
-x86_64                 randconfig-x017-201907
-x86_64                 randconfig-x016-201907
-x86_64                 randconfig-x019-201907
-x86_64                 randconfig-x012-201907
-x86_64                 randconfig-x011-201907
-x86_64                 randconfig-x018-201907
-x86_64                 randconfig-x010-201907
-x86_64                 randconfig-x015-201907
-x86_64                 randconfig-x014-201907
+i386                   randconfig-x007-201907
+i386                   randconfig-x000-201907
+i386                   randconfig-x006-201907
+i386                   randconfig-x002-201907
+i386                   randconfig-x001-201907
+i386                   randconfig-x003-201907
+i386                   randconfig-x009-201907
+i386                   randconfig-x008-201907
+i386                   randconfig-x005-201907
+i386                   randconfig-x004-201907
 ia64                             alldefconfig
 ia64                             allmodconfig
 ia64                                defconfig
@@ -94,6 +88,16 @@ x86_64                 randconfig-s2-02220906
 m68k                             allmodconfig
 powerpc                 mpc85xx_cds_defconfig
 sh                         ap325rxa_defconfig
+x86_64                 randconfig-x013-201907
+x86_64                 randconfig-x017-201907
+x86_64                 randconfig-x016-201907
+x86_64                 randconfig-x019-201907
+x86_64                 randconfig-x012-201907
+x86_64                 randconfig-x011-201907
+x86_64                 randconfig-x018-201907
+x86_64                 randconfig-x010-201907
+x86_64                 randconfig-x015-201907
+x86_64                 randconfig-x014-201907
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
@@ -112,6 +116,16 @@ m68k                        m5272c3_defconfig
 mips                malta_kvm_guest_defconfig
 x86_64                 randconfig-u0-02220927
 x86_64                 randconfig-u0-02220928
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 s390                        default_defconfig
@@ -167,21 +181,6 @@ parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 um                                  defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-arm                          collie_defconfig
-mips                malta_qemu_32r6_defconfig
-parisc                          712_defconfig
-i386                   randconfig-x007-201907
-i386                   randconfig-x000-201907
-i386                   randconfig-x006-201907
-i386                   randconfig-x002-201907
-i386                   randconfig-x001-201907
-i386                   randconfig-x003-201907
-i386                   randconfig-x009-201907
-i386                   randconfig-x008-201907
-i386                   randconfig-x005-201907
-i386                   randconfig-x004-201907
 i386                   randconfig-x072-201907
 i386                   randconfig-x079-201907
 i386                   randconfig-x075-201907
@@ -192,6 +191,19 @@ i386                   randconfig-x074-201907
 i386                   randconfig-x076-201907
 i386                   randconfig-x070-201907
 i386                   randconfig-x071-201907
+arm                          collie_defconfig
+mips                malta_qemu_32r6_defconfig
+parisc                          712_defconfig
+x86_64                 randconfig-x005-201907
+x86_64                 randconfig-x008-201907
+x86_64                 randconfig-x009-201907
+x86_64                 randconfig-x001-201907
+x86_64                 randconfig-x002-201907
+x86_64                 randconfig-x003-201907
+x86_64                 randconfig-x006-201907
+x86_64                 randconfig-x007-201907
+x86_64                 randconfig-x000-201907
+x86_64                 randconfig-x004-201907
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
