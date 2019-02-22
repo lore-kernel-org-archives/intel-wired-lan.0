@@ -1,76 +1,169 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Date: Thu, 21 Feb 2019 20:09:28 -0800
-Subject: [Intel-wired-lan] [PATCH net-next 3/4] e1000e: Fix
- -Wformat-truncation warnings
-In-Reply-To: <20190222040929.16657-1-f.fainelli@gmail.com>
-References: <20190222040929.16657-1-f.fainelli@gmail.com>
-Message-ID: <20190222040929.16657-4-f.fainelli@gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 22 Feb 2019 23:14:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 06405562357b15ede6842321fdbce4278817f6ee
+Message-ID: <5c7011cc.TTSphCLDoO2C2vPA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Provide precision hints to snprintf() since we know the destination
-buffer size of the RX/TX ring names are IFNAMSIZ + 5 - 1. This fixes the
-following warnings:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 06405562357b15ede6842321fdbce4278817f6ee  ice: Bump version
 
-drivers/net/ethernet/intel/e1000e/netdev.c: In function
-'e1000_request_msix':
-drivers/net/ethernet/intel/e1000e/netdev.c:2109:13: warning: 'snprintf'
-output may be truncated before the last format character
-[-Wformat-truncation=]
-     "%s-rx-0", netdev->name);
-             ^
-drivers/net/ethernet/intel/e1000e/netdev.c:2107:3: note: 'snprintf'
-output between 6 and 21 bytes into a destination of size 20
-   snprintf(adapter->rx_ring->name,
-   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     sizeof(adapter->rx_ring->name) - 1,
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     "%s-rx-0", netdev->name);
-     ~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/e1000e/netdev.c:2125:13: warning: 'snprintf'
-output may be truncated before the last format character
-[-Wformat-truncation=]
-     "%s-tx-0", netdev->name);
-             ^
-drivers/net/ethernet/intel/e1000e/netdev.c:2123:3: note: 'snprintf'
-output between 6 and 21 bytes into a destination of size 20
-   snprintf(adapter->tx_ring->name,
-   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     sizeof(adapter->tx_ring->name) - 1,
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     "%s-tx-0", netdev->name);
-     ~~~~~~~~~~~~~~~~~~~~~~~~
+elapsed time: 164m
 
-Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+configs tested: 144
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-x019-201907
+i386                   randconfig-x015-201907
+i386                   randconfig-x016-201907
+i386                   randconfig-x014-201907
+i386                   randconfig-x012-201907
+i386                   randconfig-x013-201907
+i386                   randconfig-x010-201907
+i386                   randconfig-x018-201907
+i386                   randconfig-x017-201907
+i386                   randconfig-x011-201907
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-x005-201907
+x86_64                 randconfig-x008-201907
+x86_64                 randconfig-x009-201907
+x86_64                 randconfig-x001-201907
+x86_64                 randconfig-x002-201907
+x86_64                 randconfig-x003-201907
+x86_64                 randconfig-x006-201907
+x86_64                 randconfig-x007-201907
+x86_64                 randconfig-x000-201907
+x86_64                 randconfig-x004-201907
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+nds32                             allnoconfig
+nds32                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+i386                             allmodconfig
+i386                     randconfig-a2-201907
+i386                     randconfig-a3-201907
+i386                     randconfig-a0-201907
+i386                     randconfig-a1-201907
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x013-201907
+x86_64                 randconfig-x017-201907
+x86_64                 randconfig-x016-201907
+x86_64                 randconfig-x019-201907
+x86_64                 randconfig-x012-201907
+x86_64                 randconfig-x011-201907
+x86_64                 randconfig-x018-201907
+x86_64                 randconfig-x010-201907
+x86_64                 randconfig-x015-201907
+x86_64                 randconfig-x014-201907
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201907
+i386                     randconfig-s1-201907
+i386                     randconfig-s2-201907
+i386                     randconfig-s3-201907
+x86_64                           allmodconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                         rhel-7.2-clear
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+i386                   randconfig-l3-02221339
+x86_64                 randconfig-l2-02221339
+x86_64                 randconfig-l0-02221339
+i386                   randconfig-l1-02221339
+i386                   randconfig-l2-02221339
+i386                   randconfig-l0-02221339
+x86_64                 randconfig-l3-02221339
+x86_64                 randconfig-l1-02221339
+i386                   randconfig-x072-201907
+i386                   randconfig-x079-201907
+i386                   randconfig-x075-201907
+i386                   randconfig-x073-201907
+i386                   randconfig-x077-201907
+i386                   randconfig-x078-201907
+i386                   randconfig-x074-201907
+i386                   randconfig-x076-201907
+i386                   randconfig-x070-201907
+i386                   randconfig-x071-201907
+i386                   randconfig-x007-201907
+i386                   randconfig-x000-201907
+i386                   randconfig-x006-201907
+i386                   randconfig-x002-201907
+i386                   randconfig-x001-201907
+i386                   randconfig-x003-201907
+i386                   randconfig-x009-201907
+i386                   randconfig-x008-201907
+i386                   randconfig-x005-201907
+i386                   randconfig-x004-201907
+riscv                              tinyconfig
+i386                               tinyconfig
+
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 736fa51878f8..7acc61e4f645 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -2106,7 +2106,7 @@ static int e1000_request_msix(struct e1000_adapter *adapter)
- 	if (strlen(netdev->name) < (IFNAMSIZ - 5))
- 		snprintf(adapter->rx_ring->name,
- 			 sizeof(adapter->rx_ring->name) - 1,
--			 "%s-rx-0", netdev->name);
-+			 "%.14s-rx-0", netdev->name);
- 	else
- 		memcpy(adapter->rx_ring->name, netdev->name, IFNAMSIZ);
- 	err = request_irq(adapter->msix_entries[vector].vector,
-@@ -2122,7 +2122,7 @@ static int e1000_request_msix(struct e1000_adapter *adapter)
- 	if (strlen(netdev->name) < (IFNAMSIZ - 5))
- 		snprintf(adapter->tx_ring->name,
- 			 sizeof(adapter->tx_ring->name) - 1,
--			 "%s-tx-0", netdev->name);
-+			 "%.14s-tx-0", netdev->name);
- 	else
- 		memcpy(adapter->tx_ring->name, netdev->name, IFNAMSIZ);
- 	err = request_irq(adapter->msix_entries[vector].vector,
--- 
-2.19.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
