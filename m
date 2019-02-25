@@ -1,77 +1,57 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Mon, 25 Feb 2019 20:26:13 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 3/4] e1000e: Fix
- -Wformat-truncation warnings
-In-Reply-To: <20190222040929.16657-4-f.fainelli@gmail.com>
-References: <20190222040929.16657-1-f.fainelli@gmail.com>
- <20190222040929.16657-4-f.fainelli@gmail.com>
-Message-ID: <69782768-4bba-6442-a1e4-3b019847e53b@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 25 Feb 2019 11:20:05 -0800
+Subject: [Intel-wired-lan] [PATCH] i40e: fix i40e_ptp_adjtime when given a
+ negative delta
+Message-ID: <20190225192005.3233-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 22/02/2019 6:09, Florian Fainelli wrote:
-> Provide precision hints to snprintf() since we know the destination
-> buffer size of the RX/TX ring names are IFNAMSIZ + 5 - 1. This fixes the
-> following warnings:
-> 
-> drivers/net/ethernet/intel/e1000e/netdev.c: In function
-> 'e1000_request_msix':
-> drivers/net/ethernet/intel/e1000e/netdev.c:2109:13: warning: 'snprintf'
-> output may be truncated before the last format character
-> [-Wformat-truncation=]
->       "%s-rx-0", netdev->name);
->               ^
-> drivers/net/ethernet/intel/e1000e/netdev.c:2107:3: note: 'snprintf'
-> output between 6 and 21 bytes into a destination of size 20
->     snprintf(adapter->rx_ring->name,
->     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->       sizeof(adapter->rx_ring->name) - 1,
->       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->       "%s-rx-0", netdev->name);
->       ~~~~~~~~~~~~~~~~~~~~~~~~
-> drivers/net/ethernet/intel/e1000e/netdev.c:2125:13: warning: 'snprintf'
-> output may be truncated before the last format character
-> [-Wformat-truncation=]
->       "%s-tx-0", netdev->name);
->               ^
-> drivers/net/ethernet/intel/e1000e/netdev.c:2123:3: note: 'snprintf'
-> output between 6 and 21 bytes into a destination of size 20
->     snprintf(adapter->tx_ring->name,
->     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->       sizeof(adapter->tx_ring->name) - 1,
->       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->       "%s-tx-0", netdev->name);
->       ~~~~~~~~~~~~~~~~~~~~~~~~
-> 
-> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 736fa51878f8..7acc61e4f645 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -2106,7 +2106,7 @@ static int e1000_request_msix(struct e1000_adapter *adapter)
->   	if (strlen(netdev->name) < (IFNAMSIZ - 5))
->   		snprintf(adapter->rx_ring->name,
->   			 sizeof(adapter->rx_ring->name) - 1,
-> -			 "%s-rx-0", netdev->name);
-> +			 "%.14s-rx-0", netdev->name);
->   	else
->   		memcpy(adapter->rx_ring->name, netdev->name, IFNAMSIZ);
->   	err = request_irq(adapter->msix_entries[vector].vector,
-> @@ -2122,7 +2122,7 @@ static int e1000_request_msix(struct e1000_adapter *adapter)
->   	if (strlen(netdev->name) < (IFNAMSIZ - 5))
->   		snprintf(adapter->tx_ring->name,
->   			 sizeof(adapter->tx_ring->name) - 1,
-> -			 "%s-tx-0", netdev->name);
-> +			 "%.14s-tx-0", netdev->name);
->   	else
->   		memcpy(adapter->tx_ring->name, netdev->name, IFNAMSIZ);
->   	err = request_irq(adapter->msix_entries[vector].vector,
-> 
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+Commit 0ac30ce43323 ("i40e: fix up 32 bit timespec references",
+2017-07-26) claims to be cleaning up references to 32-bit timespecs.
+
+The actual contents of the commit make no sense, as it converts a call
+to timespec64_add into timespec64_add_ns. This would seem ok, if (a) the
+change was documented in the commit message, and (b) timespec64_add_ns
+supported negative numbers.
+
+timespec64_add_ns doesn't work with signed deltas, because the
+implementation is based around iter_div_u64_rem. This change resulted in
+a regression where i40e_ptp_adjtime would interpret small negative
+adjustments as large positive additions, resulting in incorrect
+behavior.
+
+This commit doesn't appear to fix anything, is not well explained, and
+introduces a bug, so lets just revert it.
+
+Reverts: 0ac30ce43323 ("i40e: fix up 32 bit timespec references", 2017-07-26)
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+index 66147c3f5f2c..439c35f0c581 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+@@ -146,12 +146,13 @@ static int i40e_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
+ static int i40e_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
+ {
+ 	struct i40e_pf *pf = container_of(ptp, struct i40e_pf, ptp_caps);
+-	struct timespec64 now;
++	struct timespec64 now, then;
+ 
++	then = ns_to_timespec64(delta);
+ 	mutex_lock(&pf->tmreg_lock);
+ 
+ 	i40e_ptp_read(pf, &now, NULL);
+-	timespec64_add_ns(&now, delta);
++	now = timespec64_add(now, then);
+ 	i40e_ptp_write(pf, (const struct timespec64 *)&now);
+ 
+ 	mutex_unlock(&pf->tmreg_lock);
+-- 
+2.18.0.219.gaf81d287a9da
+
