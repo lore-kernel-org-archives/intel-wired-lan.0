@@ -1,61 +1,196 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 26 Feb 2019 16:35:17 -0800
-Subject: [Intel-wired-lan] [PATCH S13 v2 11/17] ice: Set LAN_EN for all
- directional rules
+Date: Tue, 26 Feb 2019 16:35:23 -0800
+Subject: [Intel-wired-lan] [PATCH S13 v2 17/17] ice: Enable link events over
+ the ARQ
 In-Reply-To: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
 References: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190227003523.28733-12-anirudh.venkataramanan@intel.com>
+Message-ID: <20190227003523.28733-18-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Yashaswini Raghuram Prathivadi Bhayankaram <yashaswini.raghuram.prathivadi.bhayankaram@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-The LAN_EN bit for a switch rule determines if the packet can go out
-on the wire or not. Set the LAN_EN flag in the switch action for all
-directional rules.
+The hardware now supports link events over the admin receive queue (ARQ),
+so enable HW link events over the ARQ and remove code for link event
+polling.
 
-Signed-off-by: Yashaswini Raghuram Prathivadi Bhayankaram <yashaswini.raghuram.prathivadi.bhayankaram@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 28 +++++++++++-
+ drivers/net/ethernet/intel/ice/ice_common.h |  6 +++
+ drivers/net/ethernet/intel/ice/ice_main.c   | 68 +++++++++++++++++++++++++++--
+ 3 files changed, 98 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index b969a99b2a72..e52cf73b2a55 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -652,8 +652,10 @@ static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *fi)
- 		/* Set lan_en to TRUE if
- 		 * 1. The switch is a VEB AND
- 		 * 2
--		 * 2.1 The lookup is VLAN, OR
--		 * 2.2 The lookup is default port mode, OR
-+		 * 2.1 The lookup is a directional lookup like ethertype,
-+		 * promiscuous, ethertype-mac, promiscuous-vlan
-+		 * and default-port OR
-+		 * 2.2 The lookup is VLAN, OR
- 		 * 2.3 The lookup is MAC with mcast or bcast addr for MAC, OR
- 		 * 2.4 The lookup is MAC_VLAN with mcast or bcast addr for MAC.
- 		 *
-@@ -664,8 +666,12 @@ static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *fi)
- 		 * In all other cases, the LAN enable has to be set to false.
- 		 */
- 		if (hw->evb_veb) {
--			if (fi->lkup_type == ICE_SW_LKUP_VLAN ||
-+			if (fi->lkup_type == ICE_SW_LKUP_ETHERTYPE ||
-+			    fi->lkup_type == ICE_SW_LKUP_PROMISC ||
-+			    fi->lkup_type == ICE_SW_LKUP_ETHERTYPE_MAC ||
-+			    fi->lkup_type == ICE_SW_LKUP_PROMISC_VLAN ||
- 			    fi->lkup_type == ICE_SW_LKUP_DFLT ||
-+			    fi->lkup_type == ICE_SW_LKUP_VLAN ||
- 			    (fi->lkup_type == ICE_SW_LKUP_MAC &&
- 			     !is_unicast_ether_addr(fi->l_data.mac.mac_addr)) ||
- 			    (fi->lkup_type == ICE_SW_LKUP_MAC_VLAN &&
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 06a1a2cb5358..be67d07b75cb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -262,7 +262,7 @@ static enum ice_media_type ice_get_media_type(struct ice_port_info *pi)
+  *
+  * Get Link Status (0x607). Returns the link status of the adapter.
+  */
+-static enum ice_status
++enum ice_status
+ ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
+ 		     struct ice_link_status *link, struct ice_sq_cd *cd)
+ {
+@@ -2150,6 +2150,32 @@ ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
+ 	return ice_aq_send_cmd(pi->hw, &desc, NULL, 0, cd);
+ }
+ 
++/**
++ * ice_aq_set_event_mask
++ * @hw: pointer to the HW struct
++ * @port_num: port number of the physical function
++ * @mask: event mask to be set
++ * @cd: pointer to command details structure or NULL
++ *
++ * Set event mask (0x0613)
++ */
++enum ice_status
++ice_aq_set_event_mask(struct ice_hw *hw, u8 port_num, u16 mask,
++		      struct ice_sq_cd *cd)
++{
++	struct ice_aqc_set_event_mask *cmd;
++	struct ice_aq_desc desc;
++
++	cmd = &desc.params.set_event_mask;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_event_mask);
++
++	cmd->lport_num = port_num;
++
++	cmd->event_mask = cpu_to_le16(mask);
++	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
++}
++
+ /**
+  * ice_aq_set_port_id_led
+  * @pi: pointer to the port information
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 38578f7c3622..fbdfdee353bc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -89,6 +89,12 @@ enum ice_status
+ ice_aq_set_link_restart_an(struct ice_port_info *pi, bool ena_link,
+ 			   struct ice_sq_cd *cd);
+ enum ice_status
++ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
++		     struct ice_link_status *link, struct ice_sq_cd *cd);
++enum ice_status
++ice_aq_set_event_mask(struct ice_hw *hw, u8 port_num, u16 mask,
++		      struct ice_sq_cd *cd);
++enum ice_status
+ ice_aq_set_port_id_led(struct ice_port_info *pi, bool is_orig_mode,
+ 		       struct ice_sq_cd *cd);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 4731b5d147b7..d0ea4d059a05 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -698,9 +698,6 @@ static void ice_watchdog_subtask(struct ice_pf *pf)
+ 
+ 	pf->serv_tmr_prev = jiffies;
+ 
+-	if (ice_link_event(pf, pf->hw.port_info))
+-		dev_dbg(&pf->pdev->dev, "ice_link_event failed\n");
+-
+ 	/* Update the stats for active netdevs so the network stack
+ 	 * can look at updated numbers whenever it cares to
+ 	 */
+@@ -710,6 +707,60 @@ static void ice_watchdog_subtask(struct ice_pf *pf)
+ 			ice_update_vsi_stats(pf->vsi[i]);
+ }
+ 
++/**
++ * ice_init_link_events - enable/initialize link events
++ * @pi: pointer to the port_info instance
++ *
++ * Returns -EIO on failure, 0 on success
++ */
++static int ice_init_link_events(struct ice_port_info *pi)
++{
++	u16 mask;
++
++	mask = ~((u16)(ICE_AQ_LINK_EVENT_UPDOWN | ICE_AQ_LINK_EVENT_MEDIA_NA |
++		       ICE_AQ_LINK_EVENT_MODULE_QUAL_FAIL));
++
++	if (ice_aq_set_event_mask(pi->hw, pi->lport, mask, NULL)) {
++		dev_dbg(ice_hw_to_dev(pi->hw),
++			"Failed to set link event mask for port %d\n",
++			pi->lport);
++		return -EIO;
++	}
++
++	if (ice_aq_get_link_info(pi, true, NULL, NULL)) {
++		dev_dbg(ice_hw_to_dev(pi->hw),
++			"Failed to enable link events for port %d\n",
++			pi->lport);
++		return -EIO;
++	}
++
++	return 0;
++}
++
++/**
++ * ice_handle_link_event - handle link event via ARQ
++ * @pf: pf that the link event is associated with
++ *
++ * Return -EINVAL if port_info is null
++ * Return status on success
++ */
++static int ice_handle_link_event(struct ice_pf *pf)
++{
++	struct ice_port_info *port_info;
++	int status;
++
++	port_info = pf->hw.port_info;
++	if (!port_info)
++		return -EINVAL;
++
++	status = ice_link_event(pf, port_info);
++	if (status)
++		dev_dbg(&pf->pdev->dev,
++			"Could not process link event, error %d\n", status);
++
++	return status;
++}
++
+ /**
+  * __ice_clean_ctrlq - helper function to clean controlq rings
+  * @pf: ptr to struct ice_pf
+@@ -813,6 +864,11 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
+ 		opcode = le16_to_cpu(event.desc.opcode);
+ 
+ 		switch (opcode) {
++		case ice_aqc_opc_get_link_status:
++			if (ice_handle_link_event(pf))
++				dev_err(&pf->pdev->dev,
++					"Could not handle link event\n");
++			break;
+ 		case ice_mbx_opc_send_msg_to_pf:
+ 			ice_vc_process_vf_msg(pf, &event);
+ 			break;
+@@ -2267,6 +2323,12 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	/* since everything is good, start the service timer */
+ 	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
+ 
++	err = ice_init_link_events(pf->hw.port_info);
++	if (err) {
++		dev_err(dev, "ice_init_link_events failed: %d\n", err);
++		goto err_alloc_sw_unroll;
++	}
++
+ 	ice_verify_cacheline_size(pf);
+ 
+ 	return 0;
 -- 
 2.14.5
 
