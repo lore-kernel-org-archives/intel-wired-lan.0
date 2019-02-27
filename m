@@ -1,48 +1,54 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 26 Feb 2019 16:35:16 -0800
-Subject: [Intel-wired-lan] [PATCH S13 v2 10/17] ice: Do not set LB_EN for
- prune switch rules
+Date: Tue, 26 Feb 2019 16:35:10 -0800
+Subject: [Intel-wired-lan] [PATCH S13 v2 04/17] ice: fix the divide by zero
+ issue
 In-Reply-To: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
 References: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190227003523.28733-11-anirudh.venkataramanan@intel.com>
+Message-ID: <20190227003523.28733-5-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Christopher N Bednarz <christopher.n.bednarz@intel.com>
+From: Kiran Patil <kiran.patil@intel.com>
 
-LB_EN for prune switch rules was causing all TX traffic
-to loopback to the internal switch and dropped.  When
-running bi-directional stress workloads with RDMA
-the RDPU would hang blocking tx and rx traffic.
+Static analysis flagged a potential divide by zero error because
+vsi->num_rxq can become zero in certain condition and it is used as
+divisor.
 
-Signed-off-by: Christopher N Bednarz <christopher.n.bednarz@intel.com>
-Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 8e73eb11235d..b969a99b2a72 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -643,7 +643,12 @@ static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *fi)
- 	     fi->fltr_act == ICE_FWD_TO_VSI_LIST ||
- 	     fi->fltr_act == ICE_FWD_TO_Q ||
- 	     fi->fltr_act == ICE_FWD_TO_QGRP)) {
--		fi->lb_en = true;
-+		/* Setting LB for prune actions will result in replicated
-+		 * packets to the internal switch that will be dropped.
-+		 */
-+		if (fi->lkup_type != ICE_SW_LKUP_VLAN)
-+			fi->lb_en = true;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index a602bd329cfa..5d364b79eb4d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -881,7 +881,18 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ 		tx_count += tx_numq_tc;
+ 		ctxt->info.tc_mapping[i] = cpu_to_le16(qmap);
+ 	}
+-	vsi->num_rxq = offset;
 +
- 		/* Set lan_en to TRUE if
- 		 * 1. The switch is a VEB AND
- 		 * 2
++	/* if offset is non-zero, means it is calculated correctly based on
++	 * enabled TCs for a given VSI otherwise qcount_rx will always
++	 * be correct and non-zero because it is based off - VSI's
++	 * allocated Rx queues which is at least 1 (hence qcount_tx will be
++	 * at least 1)
++	 */
++	if (offset)
++		vsi->num_rxq = offset;
++	else
++		vsi->num_rxq = qcount_rx;
++
+ 	vsi->num_txq = tx_count;
+ 
+ 	if (vsi->type == ICE_VSI_VF && vsi->num_txq != vsi->num_rxq) {
 -- 
 2.14.5
 
