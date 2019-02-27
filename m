@@ -1,35 +1,45 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 26 Feb 2019 16:35:12 -0800
-Subject: [Intel-wired-lan] [PATCH S13 v2 06/17] ice: Remove unused vsi_id
- field
+Date: Tue, 26 Feb 2019 16:35:22 -0800
+Subject: [Intel-wired-lan] [PATCH S13 v2 16/17] ice: use irq_num var in
+ ice_vsi_req_irq_msix
 In-Reply-To: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
 References: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190227003523.28733-7-anirudh.venkataramanan@intel.com>
+Message-ID: <20190227003523.28733-17-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove unused vsi_id field from struct ice_sched_vsi_info.
+From: Alan Brady <alan.brady@intel.com>
 
+Someone went through the effort of making this a variable so let's use
+it instead of recalculating it again.
+
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_type.h | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 560b0d2d46ff..584f260f2e4f 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -248,7 +248,6 @@ struct ice_sched_vsi_info {
- 	struct ice_sched_node *ag_node[ICE_MAX_TRAFFIC_CLASS];
- 	struct list_head list_entry;
- 	u16 max_lanq[ICE_MAX_TRAFFIC_CLASS];
--	u16 vsi_id;
- };
- 
- /* driver defines the policy */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 879c1f176a17..4731b5d147b7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1248,10 +1248,9 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi, char *basename)
+ 			/* skip this unused q_vector */
+ 			continue;
+ 		}
+-		err = devm_request_irq(&pf->pdev->dev,
+-				       pf->msix_entries[base + vector].vector,
+-				       vsi->irq_handler, 0, q_vector->name,
+-				       q_vector);
++		err = devm_request_irq(&pf->pdev->dev, irq_num,
++				       vsi->irq_handler, 0,
++				       q_vector->name, q_vector);
+ 		if (err) {
+ 			netdev_err(vsi->netdev,
+ 				   "MSIX request_irq failed, error: %d\n", err);
 -- 
 2.14.5
 
