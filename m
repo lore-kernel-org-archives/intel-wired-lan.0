@@ -1,66 +1,301 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 26 Feb 2019 16:35:18 -0800
-Subject: [Intel-wired-lan] [PATCH S13 v2 12/17] ice: Don't let VF know that
- it is untrusted
-In-Reply-To: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
-References: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190227003523.28733-13-anirudh.venkataramanan@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 27 Feb 2019 11:01:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 7519d6fc1bf4f21016748e13896a55f3d6489b82
+Message-ID: <5c75fd71.P/l6XAZ2lqUzCBUL%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 7519d6fc1bf4f21016748e13896a55f3d6489b82  i40e: fix i40e_ptp_adjtime when given a negative delta
 
-Don't let the VF know it's not trusted when it tries to add more than
-permitted additional MAC addresses.
+elapsed time: 220m
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+configs tested: 276
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+c6x                        evmc6472_defconfig
+mips                         db1xxx_defconfig
+powerpc                      mgcoge_defconfig
+powerpc                     ppa8548_defconfig
+riscv                            allyesconfig
+sh                          kfr2r09_defconfig
+m68k                            q40_defconfig
+mips                       bmips_be_defconfig
+x86_64                 randconfig-a0-02270930
+arm                                 defconfig
+m68k                           sun3_defconfig
+arm                             pxa_defconfig
+riscv                               defconfig
+csky                                defconfig
+powerpc                          g5_defconfig
+powerpc                        fsp2_defconfig
+powerpc                      ppc64e_defconfig
+arm                            hisi_defconfig
+sh                         ecovec24_defconfig
+sh                          sdk7780_defconfig
+sparc                            allmodconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                             alldefconfig
+sh                        sh7785lcr_defconfig
+mips                        bcm47xx_defconfig
+powerpc                      obs600_defconfig
+m68k                          multi_defconfig
+mips                         tb0226_defconfig
+ia64                         bigsur_defconfig
+nds32                               defconfig
+arm                       netwinder_defconfig
+mips                              allnoconfig
+powerpc                      walnut_defconfig
+i386                   randconfig-n0-02261914
+i386                   randconfig-n1-02261914
+i386                   randconfig-n2-02261914
+i386                   randconfig-n3-02261914
+x86_64                 randconfig-x009-201908
+x86_64                 randconfig-x008-201908
+x86_64                 randconfig-x005-201908
+x86_64                 randconfig-x002-201908
+x86_64                 randconfig-x001-201908
+x86_64                 randconfig-x007-201908
+x86_64                 randconfig-x006-201908
+x86_64                 randconfig-x003-201908
+x86_64                 randconfig-x004-201908
+x86_64                 randconfig-x000-201908
+i386                     randconfig-i0-201908
+i386                     randconfig-i1-201908
+i386                     randconfig-i2-201908
+i386                     randconfig-i3-201908
+i386                   randconfig-x006-201908
+i386                   randconfig-x000-201908
+i386                   randconfig-x007-201908
+i386                   randconfig-x002-201908
+i386                   randconfig-x009-201908
+i386                   randconfig-x003-201908
+i386                   randconfig-x001-201908
+i386                   randconfig-x004-201908
+i386                   randconfig-x005-201908
+i386                   randconfig-x008-201908
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+x86_64                 randconfig-s0-02270929
+x86_64                 randconfig-s1-02270929
+x86_64                 randconfig-s2-02270929
+x86_64                 randconfig-s0-02270946
+x86_64                 randconfig-s1-02270946
+x86_64                 randconfig-s2-02270946
+x86_64                 randconfig-s0-02271013
+x86_64                 randconfig-s1-02271013
+x86_64                 randconfig-s2-02271013
+ia64                      gensparse_defconfig
+powerpc                     rainier_defconfig
+powerpc                  storcenter_defconfig
+x86_64                           allyesconfig
+arm                       aspeed_g5_defconfig
+arm                        oxnas_v6_defconfig
+alpha                             allnoconfig
+arm                        neponset_defconfig
+c6x                        evmc6474_defconfig
+xtensa                           allmodconfig
+arm                     eseries_pxa_defconfig
+powerpc                    gamecube_defconfig
+sh                           se7705_defconfig
+x86_64                           alldefconfig
+h8300                               defconfig
+m68k                              allnoconfig
+mips                                defconfig
+alpha                            allyesconfig
+arm                        cerfcube_defconfig
+arm                           sunxi_defconfig
+mips                         mpc30x_defconfig
+arm                        mvebu_v5_defconfig
+c6x                              allyesconfig
+m68k                         amcore_defconfig
+mips                   sb1250_swarm_defconfig
+powerpc                     akebono_defconfig
+powerpc                 mpc8540_ads_defconfig
+sh                        edosk7705_defconfig
+x86_64                 randconfig-x017-201908
+x86_64                 randconfig-x013-201908
+x86_64                 randconfig-x016-201908
+x86_64                 randconfig-x018-201908
+x86_64                 randconfig-x011-201908
+x86_64                 randconfig-x012-201908
+x86_64                 randconfig-x019-201908
+x86_64                 randconfig-x014-201908
+x86_64                 randconfig-x015-201908
+x86_64                 randconfig-x010-201908
+i386                              allnoconfig
+i386                                defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+arm                            netx_defconfig
+um                               allmodconfig
+ia64                            zx1_defconfig
+powerpc                     pseries_defconfig
+um                             i386_defconfig
+arm                       aspeed_g4_defconfig
+arm                          exynos_defconfig
+powerpc64                        allyesconfig
+x86_64                 randconfig-i0-02241335
+x86_64                 randconfig-i1-02241335
+x86_64                 randconfig-i2-02241335
+x86_64                 randconfig-i3-02241335
+i386                   randconfig-b0-02270924
+i386                   randconfig-b0-02270928
+i386                   randconfig-b0-02270946
+i386                   randconfig-b0-02271004
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+x86_64                 randconfig-b0-02270930
+x86_64                 randconfig-b0-02270950
+h8300                            allyesconfig
+microblaze                    nommu_defconfig
+arm                         hackkit_defconfig
+arm                            xcep_defconfig
+sh                           cayman_defconfig
+mips                           xway_defconfig
+sh                ecovec24-romimage_defconfig
+powerpc                     ep8248e_defconfig
+powerpc                 mpc832x_mds_defconfig
+x86_64                 randconfig-u0-02270917
+x86_64                 randconfig-u0-02271009
+x86_64                 randconfig-u0-02271013
+x86_64                 randconfig-u0-02271015
+riscv                              tinyconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+nds32                             allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                  kexec
+x86_64                         rhel-7.2-clear
+x86_64                               rhel-7.2
+x86_64                              fedora-25
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+riscv                             allnoconfig
+x86_64                 randconfig-l0-02270750
+x86_64                 randconfig-l1-02270750
+x86_64                 randconfig-l2-02270750
+x86_64                 randconfig-l3-02270750
+i386                   randconfig-l0-02270750
+i386                   randconfig-l1-02270750
+i386                   randconfig-l2-02270750
+i386                   randconfig-l3-02270750
+x86_64                 randconfig-s3-02271017
+x86_64                 randconfig-s4-02271017
+x86_64                 randconfig-s5-02271017
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+arm                             ezx_defconfig
+openrisc                         allmodconfig
+mips                         tb0287_defconfig
+powerpc                     tqm8560_defconfig
+s390                             alldefconfig
+sh                          rsk7203_defconfig
+mips                 pnx8335_stb225_defconfig
+sh                          lboxre2_defconfig
+arm                          nuc950_defconfig
+powerpc                    amigaone_defconfig
+i386                   randconfig-x015-201908
+i386                   randconfig-x019-201908
+i386                   randconfig-x014-201908
+i386                   randconfig-x016-201908
+i386                   randconfig-x013-201908
+i386                   randconfig-x012-201908
+i386                   randconfig-x011-201908
+i386                   randconfig-x017-201908
+i386                   randconfig-x018-201908
+i386                   randconfig-x010-201908
+microblaze                      mmu_defconfig
+arm                            qcom_defconfig
+arm                             rpc_defconfig
+xtensa                              defconfig
+x86_64                 randconfig-h0-02270941
+riscv                            allmodconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+mips                         cobalt_defconfig
+powerpc                      tqm8xx_defconfig
+mips                      pic32mzda_defconfig
+arm                          pxa910_defconfig
+powerpc                 mpc837x_mds_defconfig
+i386                   randconfig-x073-201908
+i386                   randconfig-x075-201908
+i386                   randconfig-x079-201908
+i386                   randconfig-x072-201908
+i386                   randconfig-x077-201908
+i386                   randconfig-x076-201908
+i386                   randconfig-x074-201908
+i386                   randconfig-x078-201908
+i386                   randconfig-x071-201908
+i386                   randconfig-x070-201908
+i386                             allmodconfig
+parisc                generic-32bit_defconfig
+arm                         vf610m4_defconfig
+microblaze                          defconfig
+powerpc                 xes_mpc85xx_defconfig
+powerpc                 canyonlands_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             alldefconfig
+sh                      rts7751r2d1_defconfig
+i386                   randconfig-x0-02270925
+i386                   randconfig-x0-02270943
+i386                   randconfig-x0-02270958
+i386                   randconfig-x0-02271005
+
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index f0de80d182d0..70bd81ea1943 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1969,7 +1969,7 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
- 	    (struct virtchnl_ether_addr_list *)msg;
- 	struct ice_pf *pf = vf->pf;
- 	enum virtchnl_ops vc_op;
--	enum ice_status ret;
-+	enum ice_status ret = 0;
- 	LIST_HEAD(mac_list);
- 	struct ice_vsi *vsi;
- 	int mac_count = 0;
-@@ -1989,8 +1989,11 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
- 	if (set && !ice_is_vf_trusted(vf) &&
- 	    (vf->num_mac + al->num_elements) > ICE_MAX_MACADDR_PER_VF) {
- 		dev_err(&pf->pdev->dev,
--			"Can't add more MAC addresses, because VF is not trusted, switch the VF to trusted mode in order to add more functionalities\n");
--		ret = ICE_ERR_PARAM;
-+			"Can't add more MAC addresses, because VF-%d is not trusted, switch the VF to trusted mode in order to add more functionalities\n",
-+			vf->vf_id);
-+		/* There is no need to let VF know about not being trusted
-+		 * to add more MAC addr, so we can just return success message.
-+		 */
- 		goto handle_mac_exit;
- 	}
- 
-@@ -2270,7 +2273,8 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
- 	if (add_v && !ice_is_vf_trusted(vf) &&
- 	    vf->num_vlan >= ICE_MAX_VLAN_PER_VF) {
- 		dev_info(&pf->pdev->dev,
--			 "VF is not trusted, switch the VF to trusted mode, in order to add more VLAN addresses\n");
-+			 "VF-%d is not trusted, switch the VF to trusted mode, in order to add more VLAN addresses\n",
-+			 vf->vf_id);
- 		/* There is no need to let VF know about being not trusted,
- 		 * so we can just return success message here
- 		 */
--- 
-2.14.5
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
