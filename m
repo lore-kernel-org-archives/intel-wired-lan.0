@@ -1,45 +1,144 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 26 Feb 2019 16:35:21 -0800
-Subject: [Intel-wired-lan] [PATCH S13 v2 15/17] ice: Restore VLAN switch
- rule if port VLAN existed before
+Date: Tue, 26 Feb 2019 16:35:20 -0800
+Subject: [Intel-wired-lan] [PATCH S13 v2 14/17] ice: update VSI config
+ dynamically
 In-Reply-To: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
 References: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190227003523.28733-16-anirudh.venkataramanan@intel.com>
+Message-ID: <20190227003523.28733-15-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+From: Victor Raj <victor.raj@intel.com>
 
-The VLAN rule is lost when VM starts or the AVF driver (iavf.ko) is
-reloaded. So it is necessary to add this rule again.
+When VSI increases the number of queues dynamically, the scheduler
+just needs to add the new required nodes rather than re-adjusting with
+previously allocated number of nodes. Readjusting didn't provide enough
+parents to add the upper layer nodes also can't place lan and rdma
+subtrees separately.
 
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+In decrese case, keep the VSI configuration with max number of queues
+always. This will leave some extra nodes in the tree but no harm done.
+
+Signed-off-by: Victor Raj <victor.raj@intel.com>
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_sched.c | 75 ++++++------------------------
+ 1 file changed, 13 insertions(+), 62 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index b84620068a3c..ca8780891540 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -457,8 +457,10 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
- 	vsi->hw_base_vector += 1;
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index cf1142ec16ee..efbebf7a050f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1268,42 +1268,6 @@ ice_sched_add_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 	return 0;
+ }
  
- 	/* Check if port VLAN exist before, and restore it accordingly */
--	if (vf->port_vlan_id)
-+	if (vf->port_vlan_id) {
- 		ice_vsi_manage_pvid(vsi, vf->port_vlan_id, true);
-+		ice_vsi_add_vlan(vsi, vf->port_vlan_id & ICE_VLAN_M);
-+	}
+-/**
+- * ice_sched_rm_vsi_child_nodes - remove VSI child nodes from the tree
+- * @pi: port information structure
+- * @vsi_node: pointer to the VSI node
+- * @num_nodes: pointer to the num nodes that needs to be removed per layer
+- * @owner: node owner (lan or rdma)
+- *
+- * This function removes the VSI child nodes from the tree. It gets called for
+- * lan and rdma separately.
+- */
+-static void
+-ice_sched_rm_vsi_child_nodes(struct ice_port_info *pi,
+-			     struct ice_sched_node *vsi_node, u16 *num_nodes,
+-			     u8 owner)
+-{
+-	struct ice_sched_node *node, *next;
+-	u8 i, qgl, vsil;
+-	u16 num;
+-
+-	qgl = ice_sched_get_qgrp_layer(pi->hw);
+-	vsil = ice_sched_get_vsi_layer(pi->hw);
+-
+-	for (i = qgl; i > vsil; i--) {
+-		num = num_nodes[i];
+-		node = ice_sched_get_first_node(pi->hw, vsi_node, i);
+-		while (node && num) {
+-			next = node->sibling;
+-			if (node->owner == owner && !node->num_children) {
+-				ice_free_sched_node(pi, node);
+-				num--;
+-			}
+-			node = next;
+-		}
+-	}
+-}
+-
+ /**
+  * ice_sched_calc_vsi_support_nodes - calculate number of VSI support nodes
+  * @hw: pointer to the hw struct
+@@ -1444,7 +1408,6 @@ static enum ice_status
+ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 				 u8 tc, u16 new_numqs, u8 owner)
+ {
+-	u16 prev_num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
+ 	u16 new_num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
+ 	struct ice_sched_node *vsi_node;
+ 	struct ice_sched_node *tc_node;
+@@ -1452,7 +1415,6 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 	enum ice_status status = 0;
+ 	struct ice_hw *hw = pi->hw;
+ 	u16 prev_numqs;
+-	u8 i;
  
- 	eth_broadcast_addr(broadcast);
+ 	tc_node = ice_sched_get_tc_node(pi, tc);
+ 	if (!tc_node)
+@@ -1471,33 +1433,22 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 	else
+ 		return ICE_ERR_PARAM;
  
+-	/* num queues are not changed */
+-	if (prev_numqs == new_numqs)
++	/* num queues are not changed or less than the previous number */
++	if (new_numqs <= prev_numqs)
+ 		return status;
+-
+-	/* calculate number of nodes based on prev/new number of qs */
+-	if (prev_numqs)
+-		ice_sched_calc_vsi_child_nodes(hw, prev_numqs, prev_num_nodes);
+-
+ 	if (new_numqs)
+ 		ice_sched_calc_vsi_child_nodes(hw, new_numqs, new_num_nodes);
+-
+-	if (prev_numqs > new_numqs) {
+-		for (i = 0; i < ICE_AQC_TOPO_MAX_LEVEL_NUM; i++)
+-			new_num_nodes[i] = prev_num_nodes[i] - new_num_nodes[i];
+-
+-		ice_sched_rm_vsi_child_nodes(pi, vsi_node, new_num_nodes,
+-					     owner);
+-	} else {
+-		for (i = 0; i < ICE_AQC_TOPO_MAX_LEVEL_NUM; i++)
+-			new_num_nodes[i] -= prev_num_nodes[i];
+-
+-		status = ice_sched_add_vsi_child_nodes(pi, vsi_handle, tc_node,
+-						       new_num_nodes, owner);
+-		if (status)
+-			return status;
+-	}
+-
++	/* Keep the max number of queue configuration all the time. Update the
++	 * tree only if number of queues > previous number of queues. This may
++	 * leave some extra nodes in the tree if number of queues < previous
++	 * number but that wouldn't harm anything. Removing those extra nodes
++	 * may complicate the code if those nodes are part of SRL or
++	 * individually rate limited.
++	 */
++	status = ice_sched_add_vsi_child_nodes(pi, vsi_handle, tc_node,
++					       new_num_nodes, owner);
++	if (status)
++		return status;
+ 	vsi_ctx->sched.max_lanq[tc] = new_numqs;
+ 
+ 	return 0;
 -- 
 2.14.5
 
