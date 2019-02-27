@@ -1,260 +1,84 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 26 Feb 2019 16:35:09 -0800
-Subject: [Intel-wired-lan] [PATCH S13 v2 03/17] ice: Fix issue reconfiguring
- VF queues
+Date: Tue, 26 Feb 2019 16:35:07 -0800
+Subject: [Intel-wired-lan] [PATCH S13 v2 01/17] ice: fix static analysis
+ warnings
 In-Reply-To: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
 References: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190227003523.28733-4-anirudh.venkataramanan@intel.com>
+Message-ID: <20190227003523.28733-2-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-When VF requested for queues changes, we need to update LAN Tx queue with
-correct number of VF queue pairs and re-allocate VF resources based on
-this new requested number of queues, which is constraint within maximum
-queue supported per VF.
+cppcheck warns "Identical condition '<var>', second condition is always
+false". Fix them.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c         | 33 +++++++++++---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 58 ++++++++++++++++++++----
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  1 +
- 3 files changed, 76 insertions(+), 16 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_main.c   | 2 +-
+ drivers/net/ethernet/intel/ice/ice_sched.c  | 2 +-
+ drivers/net/ethernet/intel/ice/ice_switch.c | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 4763df009ed1..a602bd329cfa 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -297,13 +297,19 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index d2e1e6f440b8..db6ec77506df 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -331,7 +331,7 @@ ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
+ 	/* flag cleared so calling functions don't call AQ again */
+ 	pi->phy.get_link_info = false;
+ 
+-	return status;
++	return 0;
+ }
+ 
  /**
-  * ice_vsi_set_num_qs - Set number of queues, descriptors and vectors for a VSI
-  * @vsi: the VSI being configured
-+ * @vf_id: Id of the VF being configured
-  *
-  * Return 0 on success and a negative value on error
-  */
--static void ice_vsi_set_num_qs(struct ice_vsi *vsi)
-+static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
- {
- 	struct ice_pf *pf = vsi->back;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index c75a4f4ae6e9..3fb01eb4d19e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2647,7 +2647,7 @@ static int ice_up_complete(struct ice_vsi *vsi)
  
-+	struct ice_vf *vf = NULL;
-+
-+	if (vsi->type == ICE_VSI_VF)
-+		vsi->vf_id = vf_id;
-+
- 	switch (vsi->type) {
- 	case ICE_VSI_PF:
- 		vsi->alloc_txq = pf->num_lan_tx;
-@@ -311,8 +317,9 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi)
- 		vsi->num_q_vectors = max_t(int, pf->num_lan_rx, pf->num_lan_tx);
- 		break;
- 	case ICE_VSI_VF:
--		vsi->alloc_txq = pf->num_vf_qps;
--		vsi->alloc_rxq = pf->num_vf_qps;
-+		vf = &pf->vf[vsi->vf_id];
-+		vsi->alloc_txq = vf->num_vf_qs;
-+		vsi->alloc_rxq = vf->num_vf_qs;
- 		/* pf->num_vf_msix includes (VF miscellaneous vector +
- 		 * data queue interrupts). Since vsi->num_q_vectors is number
- 		 * of queues vectors, subtract 1 from the original vector
-@@ -472,10 +479,12 @@ static irqreturn_t ice_msix_clean_rings(int __always_unused irq, void *data)
-  * ice_vsi_alloc - Allocates the next available struct VSI in the PF
-  * @pf: board private structure
-  * @type: type of VSI
-+ * @vf_id: Id of the VF being configured
-  *
-  * returns a pointer to a VSI on success, NULL on failure.
-  */
--static struct ice_vsi *ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type type)
-+static struct ice_vsi *
-+ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type type, u16 vf_id)
- {
- 	struct ice_vsi *vsi = NULL;
+ 	ice_service_task_schedule(pf);
  
-@@ -501,7 +510,10 @@ static struct ice_vsi *ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type type)
- 	vsi->idx = pf->next_vsi;
- 	vsi->work_lmt = ICE_DFLT_IRQ_WORK;
+-	return err;
++	return 0;
+ }
  
--	ice_vsi_set_num_qs(vsi);
-+	if (type == ICE_VSI_VF)
-+		ice_vsi_set_num_qs(vsi, vf_id);
-+	else
-+		ice_vsi_set_num_qs(vsi, ICE_INVAL_VFID);
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index 56049739a250..086a4c7254c5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1502,7 +1502,7 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
  
- 	switch (vsi->type) {
- 	case ICE_VSI_PF:
-@@ -2171,7 +2183,11 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	struct ice_vsi *vsi;
- 	int ret, i;
+ 	vsi_ctx->sched.max_lanq[tc] = new_numqs;
  
--	vsi = ice_vsi_alloc(pf, type);
-+	if (type == ICE_VSI_VF)
-+		vsi = ice_vsi_alloc(pf, type, vf_id);
-+	else
-+		vsi = ice_vsi_alloc(pf, type, ICE_INVAL_VFID);
-+
- 	if (!vsi) {
- 		dev_err(dev, "could not allocate VSI\n");
- 		return NULL;
-@@ -2691,7 +2707,10 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
- 	ice_vsi_clear_rings(vsi);
- 	ice_vsi_free_arrays(vsi, false);
- 	ice_dev_onetime_setup(&vsi->back->hw);
--	ice_vsi_set_num_qs(vsi);
-+	if (vsi->type == ICE_VSI_VF)
-+		ice_vsi_set_num_qs(vsi, vf->vf_id);
-+	else
-+		ice_vsi_set_num_qs(vsi, ICE_INVAL_VFID);
- 	ice_vsi_set_tc_cfg(vsi);
+-	return status;
++	return 0;
+ }
  
- 	/* Initialize VSI struct elements and create VSI in FW */
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index a93db0a7ac1c..c4f2bea0b670 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -495,6 +495,8 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
-  */
- static int ice_alloc_vf_res(struct ice_vf *vf)
- {
-+	struct ice_pf *pf = vf->pf;
-+	int tx_rx_queue_left;
- 	int status;
- 
- 	/* setup VF VSI and necessary resources */
-@@ -502,6 +504,15 @@ static int ice_alloc_vf_res(struct ice_vf *vf)
- 	if (status)
- 		goto ice_alloc_vf_res_exit;
- 
-+	/* Update number of VF queues, in case VF had requested for queue
-+	 * changes
-+	 */
-+	tx_rx_queue_left = min_t(int, pf->q_left_tx, pf->q_left_rx);
-+	tx_rx_queue_left += ICE_DFLT_QS_PER_VF;
-+	if (vf->num_req_qs && vf->num_req_qs <= tx_rx_queue_left &&
-+	    vf->num_req_qs != vf->num_vf_qs)
-+		vf->num_vf_qs = vf->num_req_qs;
-+
- 	if (vf->trusted)
- 		set_bit(ICE_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps);
- 	else
-@@ -835,8 +846,18 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	usleep_range(10000, 20000);
- 
- 	/* free VF resources to begin resetting the VSI state */
--	for (v = 0; v < pf->num_alloc_vfs; v++)
--		ice_free_vf_res(&pf->vf[v]);
-+	for (v = 0; v < pf->num_alloc_vfs; v++) {
-+		vf = &pf->vf[v];
-+
-+		ice_free_vf_res(vf);
-+
-+		/* Free VF queues as well, and reallocate later.
-+		 * If a given VF has different number of queues
-+		 * configured, the request for update will come
-+		 * via mailbox communication.
-+		 */
-+		vf->num_vf_qs = 0;
-+	}
- 
- 	if (ice_check_avail_res(pf)) {
- 		dev_err(&pf->pdev->dev,
-@@ -845,8 +866,15 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index bee08d1a44e0..2a30caef6687 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -398,7 +398,7 @@ ice_add_vsi(struct ice_hw *hw, u16 vsi_handle, struct ice_vsi_ctx *vsi_ctx,
+ 			tmp_vsi_ctx->vsi_num = vsi_ctx->vsi_num;
  	}
  
- 	/* Finish the reset on each VF */
--	for (v = 0; v < pf->num_alloc_vfs; v++)
--		ice_cleanup_and_realloc_vf(&pf->vf[v]);
-+	for (v = 0; v < pf->num_alloc_vfs; v++) {
-+		vf = &pf->vf[v];
-+
-+		vf->num_vf_qs = pf->num_vf_qps;
-+		dev_dbg(&pf->pdev->dev,
-+			"VF-id %d has %d queues configured\n",
-+			vf->vf_id, vf->num_vf_qs);
-+		ice_cleanup_and_realloc_vf(vf);
-+	}
+-	return status;
++	return 0;
+ }
  
- 	ice_flush(hw);
- 	clear_bit(__ICE_VF_DIS, pf->state);
-@@ -1766,6 +1794,7 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 	struct virtchnl_vsi_queue_config_info *qci =
- 	    (struct virtchnl_vsi_queue_config_info *)msg;
- 	struct virtchnl_queue_pair_info *qpi;
-+	struct ice_pf *pf = vf->pf;
- 	enum ice_status aq_ret = 0;
- 	struct ice_vsi *vsi;
- 	int i;
-@@ -1786,6 +1815,14 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
-+	if (qci->num_queue_pairs > ICE_MAX_BASE_QS_PER_VF) {
-+		dev_err(&pf->pdev->dev,
-+			"VF-%d requesting more than supported number of queues: %d\n",
-+			vf->vf_id, qci->num_queue_pairs);
-+		aq_ret = ICE_ERR_PARAM;
-+		goto error_param;
-+	}
-+
- 	for (i = 0; i < qci->num_queue_pairs; i++) {
- 		qpi = &qci->qpair[i];
- 		if (qpi->txq.vsi_id != qci->vsi_id ||
-@@ -2013,6 +2050,7 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
- 	int req_queues = vfres->num_queue_pairs;
- 	enum ice_status aq_ret = 0;
- 	struct ice_pf *pf = vf->pf;
-+	int max_allowed_vf_queues;
- 	int tx_rx_queue_left;
- 	int cur_queues;
- 
-@@ -2021,22 +2059,24 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
--	cur_queues = pf->num_vf_qps;
-+	cur_queues = vf->num_vf_qs;
- 	tx_rx_queue_left = min_t(int, pf->q_left_tx, pf->q_left_rx);
-+	max_allowed_vf_queues = tx_rx_queue_left + cur_queues;
- 	if (req_queues <= 0) {
- 		dev_err(&pf->pdev->dev,
- 			"VF %d tried to request %d queues. Ignoring.\n",
- 			vf->vf_id, req_queues);
--	} else if (req_queues > ICE_MAX_QS_PER_VF) {
-+	} else if (req_queues > ICE_MAX_BASE_QS_PER_VF) {
- 		dev_err(&pf->pdev->dev,
- 			"VF %d tried to request more than %d queues.\n",
--			vf->vf_id, ICE_MAX_QS_PER_VF);
--		vfres->num_queue_pairs = ICE_MAX_QS_PER_VF;
-+			vf->vf_id, ICE_MAX_BASE_QS_PER_VF);
-+		vfres->num_queue_pairs = ICE_MAX_BASE_QS_PER_VF;
- 	} else if (req_queues - cur_queues > tx_rx_queue_left) {
- 		dev_warn(&pf->pdev->dev,
- 			 "VF %d requested %d more queues, but only %d left.\n",
- 			 vf->vf_id, req_queues - cur_queues, tx_rx_queue_left);
--		vfres->num_queue_pairs = tx_rx_queue_left + cur_queues;
-+		vfres->num_queue_pairs = min_t(int, max_allowed_vf_queues,
-+					       ICE_MAX_BASE_QS_PER_VF);
- 	} else {
- 		/* request is successful, then reset VF */
- 		vf->num_req_qs = req_queues;
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 1790b2c457b7..b1d28ec11058 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -70,6 +70,7 @@ struct ice_vf {
- 	u8 spoofchk;
- 	u16 num_mac;
- 	u16 num_vlan;
-+	u16 num_vf_qs;			/* num of queue configured per VF */
- 	u8 num_req_qs;			/* num of queue pairs requested by VF */
- };
- 
+ /**
 -- 
 2.14.5
 
