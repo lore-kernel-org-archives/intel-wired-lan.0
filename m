@@ -1,396 +1,143 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 28 Feb 2019 15:24:22 -0800
-Subject: [Intel-wired-lan] [PATCH S16 01/11] ice: Add code for DCB
- initialization part 1/4
+Date: Thu, 28 Feb 2019 15:24:26 -0800
+Subject: [Intel-wired-lan] [PATCH S16 05/11] ice: Add code to process LLDP
+ MIB change events
 In-Reply-To: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
 References: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190228232432.31659-2-anirudh.venkataramanan@intel.com>
+Message-ID: <20190228232432.31659-6-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch introduces a skeleton for ice_init_pf_dcb, the top level
-function for DCB initialization. Subsequent patches will add to this
-DCB init flow.
+This patch adds support to process LLDP MIB change notifications sent
+by the firmware.
 
-In this patch, ice_init_pf_dcb checks if DCB is a supported capability.
-If so, an admin queue call to start the LLDP and DCBx in firmware is
-issued. If not, an error is reported. Note that we don't fail the driver
-init if DCB init fails.
-
-Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile         |  1 +
- drivers/net/ethernet/intel/ice/ice.h            |  3 +
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 26 ++++++++
- drivers/net/ethernet/intel/ice/ice_dcb.c        | 85 +++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcb.h        | 37 +++++++++++
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c    | 42 ++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h    | 19 ++++++
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  3 +
- drivers/net/ethernet/intel/ice/ice_main.c       | 10 +++
- drivers/net/ethernet/intel/ice/ice_type.h       |  4 ++
- 10 files changed, 230 insertions(+)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_dcb.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_dcb.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_dcb_lib.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+ drivers/net/ethernet/intel/ice/ice_dcb.c     |  5 ++--
+ drivers/net/ethernet/intel/ice/ice_dcb.h     |  2 ++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 36 ++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  4 ++++
+ drivers/net/ethernet/intel/ice/ice_main.c    |  3 +++
+ 5 files changed, 47 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index e5d6f684437e..2d140ba83781 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -17,3 +17,4 @@ ice-y := ice_main.o	\
- 	 ice_txrx.o	\
- 	 ice_ethtool.o
- ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o
-+ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_lib.o
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index c04debc1a0ea..d76333c808a3 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -34,6 +34,7 @@
- #include "ice_devids.h"
- #include "ice_type.h"
- #include "ice_txrx.h"
-+#include "ice_dcb.h"
- #include "ice_switch.h"
- #include "ice_common.h"
- #include "ice_sched.h"
-@@ -321,6 +322,8 @@ enum ice_pf_flags {
- 	ICE_FLAG_RSS_ENA,
- 	ICE_FLAG_SRIOV_ENA,
- 	ICE_FLAG_SRIOV_CAPABLE,
-+	ICE_FLAG_DCB_CAPABLE,
-+	ICE_FLAG_DCB_ENA,
- 	ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA,
- 	ICE_PF_FLAGS_NBITS		/* must be last */
- };
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 757848f85072..4809e5ac55f4 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1132,6 +1132,27 @@ struct ice_aqc_pf_vf_msg {
- 	__le32 addr_low;
- };
- 
-+/* Start LLDP (direct 0x0A06) */
-+struct ice_aqc_lldp_start {
-+	u8 command;
-+#define ICE_AQ_LLDP_AGENT_START		BIT(0)
-+#define ICE_AQ_LLDP_AGENT_PERSIST_ENA	BIT(1)
-+	u8 reserved[15];
-+};
-+
-+/* Stop/Start LLDP Agent (direct 0x0A09)
-+ * Used for stopping/starting specific LLDP agent. e.g. DCBx.
-+ * The same structure is used for the response, with the command field
-+ * being used as the status field.
-+ */
-+struct ice_aqc_lldp_stop_start_specific_agent {
-+	u8 command;
-+#define ICE_AQC_START_STOP_AGENT_M		BIT(0)
-+#define ICE_AQC_START_STOP_AGENT_STOP_DCBX	0
-+#define ICE_AQC_START_STOP_AGENT_START_DCBX	ICE_AQC_START_STOP_AGENT_M
-+	u8 reserved[15];
-+};
-+
- /* Get/Set RSS key (indirect 0x0B04/0x0B02) */
- struct ice_aqc_get_set_rss_key {
- #define ICE_AQC_GSET_RSS_KEY_VSI_VALID	BIT(15)
-@@ -1390,6 +1411,8 @@ struct ice_aq_desc {
- 		struct ice_aqc_query_txsched_res query_sched_res;
- 		struct ice_aqc_nvm nvm;
- 		struct ice_aqc_pf_vf_msg virt;
-+		struct ice_aqc_lldp_start lldp_start;
-+		struct ice_aqc_lldp_stop_start_specific_agent lldp_agent_ctrl;
- 		struct ice_aqc_get_set_rss_lut get_set_rss_lut;
- 		struct ice_aqc_get_set_rss_key get_set_rss_key;
- 		struct ice_aqc_add_txqs add_txqs;
-@@ -1491,6 +1514,9 @@ enum ice_adminq_opc {
- 	/* PF/VF mailbox commands */
- 	ice_mbx_opc_send_msg_to_pf			= 0x0801,
- 	ice_mbx_opc_send_msg_to_vf			= 0x0802,
-+	/* LLDP commands */
-+	ice_aqc_opc_lldp_start				= 0x0A06,
-+	ice_aqc_opc_lldp_stop_start_specific_agent	= 0x0A09,
- 
- 	/* RSS commands */
- 	ice_aqc_opc_set_rss_key				= 0x0B02,
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-new file mode 100644
-index 000000000000..19ab7433e330
---- /dev/null
+index 1ad36b40974a..ff8267f84c8c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -0,0 +1,85 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2018, Intel Corporation. */
-+
-+#include "ice_common.h"
-+#include "ice_sched.h"
-+#include "ice_dcb.h"
-+
-+/**
-+ * ice_aq_start_lldp
-+ * @hw: pointer to the HW struct
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Start the embedded LLDP Agent on all ports. (0x0A06)
-+ */
-+enum ice_status ice_aq_start_lldp(struct ice_hw *hw, struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_lldp_start *cmd;
-+	struct ice_aq_desc desc;
-+
-+	cmd = &desc.params.lldp_start;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_lldp_start);
-+
-+	cmd->command = ICE_AQ_LLDP_AGENT_START;
-+
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
-+}
-+
-+/**
-+ * ice_get_dcbx_status
-+ * @hw: pointer to the HW struct
-+ *
-+ * Get the DCBX status from the Firmware
-+ */
-+u8 ice_get_dcbx_status(struct ice_hw *hw)
-+{
-+	u32 reg;
-+
-+	reg = rd32(hw, PRTDCB_GENS);
-+	return (u8)((reg & PRTDCB_GENS_DCBX_STATUS_M) >>
-+		    PRTDCB_GENS_DCBX_STATUS_S);
-+}
-+
-+/**
-+ * ice_aq_start_stop_dcbx - Start/Stop DCBx service in FW
-+ * @hw: pointer to the HW struct
-+ * @start_dcbx_agent: True if DCBx Agent needs to be started
-+ *		      False if DCBx Agent needs to be stopped
-+ * @dcbx_agent_status: FW indicates back the DCBx agent status
-+ *		       True if DCBx Agent is active
-+ *		       False if DCBx Agent is stopped
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Start/Stop the embedded dcbx Agent. In case that this wrapper function
-+ * returns ICE_SUCCESS, caller will need to check if FW returns back the same
-+ * value as stated in dcbx_agent_status, and react accordingly. (0x0A09)
-+ */
-+enum ice_status
-+ice_aq_start_stop_dcbx(struct ice_hw *hw, bool start_dcbx_agent,
-+		       bool *dcbx_agent_status, struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_lldp_stop_start_specific_agent *cmd;
-+	enum ice_status status;
-+	struct ice_aq_desc desc;
-+	u16 opcode;
-+
-+	cmd = &desc.params.lldp_agent_ctrl;
-+
-+	opcode = ice_aqc_opc_lldp_stop_start_specific_agent;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, opcode);
-+
-+	if (start_dcbx_agent)
-+		cmd->command = ICE_AQC_START_STOP_AGENT_START_DCBX;
-+
-+	status = ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
-+
-+	*dcbx_agent_status = false;
-+
-+	if (!status &&
-+	    cmd->command == ICE_AQC_START_STOP_AGENT_START_DCBX)
-+		*dcbx_agent_status = true;
-+
-+	return status;
-+}
+@@ -588,8 +588,7 @@ ice_parse_org_tlv(struct ice_lldp_org_tlv *tlv, struct ice_dcbx_cfg *dcbcfg)
+  *
+  * Parse DCB configuration from the LLDPDU
+  */
+-static enum ice_status
+-ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg)
++enum ice_status ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg)
+ {
+ 	struct ice_lldp_org_tlv *tlv;
+ 	enum ice_status ret = 0;
+@@ -871,7 +870,7 @@ ice_get_ieee_or_cee_dcb_cfg(struct ice_port_info *pi, u8 dcbx_mode)
+  *
+  * Get DCB configuration from the Firmware
+  */
+-static enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi)
++enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi)
+ {
+ 	struct ice_aqc_get_cee_dcb_cfg_resp cee_cfg;
+ 	struct ice_dcbx_cfg *dcbx_cfg;
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.h b/drivers/net/ethernet/intel/ice/ice_dcb.h
-new file mode 100644
-index 000000000000..05ed9fd2fe38
---- /dev/null
+index 03e310a679f0..5e2b67ee1131 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb.h
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb.h
-@@ -0,0 +1,37 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2018, Intel Corporation. */
-+
-+#ifndef _ICE_DCB_H_
-+#define _ICE_DCB_H_
-+
-+#include "ice_type.h"
-+
-+#define ICE_DCBX_STATUS_IN_PROGRESS	1
-+#define ICE_DCBX_STATUS_DONE		2
-+
-+u8 ice_get_dcbx_status(struct ice_hw *hw);
-+#ifdef CONFIG_DCB
-+enum ice_status ice_aq_start_lldp(struct ice_hw *hw, struct ice_sq_cd *cd);
-+enum ice_status
-+ice_aq_start_stop_dcbx(struct ice_hw *hw, bool start_dcbx_agent,
-+		       bool *dcbx_agent_status, struct ice_sq_cd *cd);
-+#else /* CONFIG_DCB */
-+static inline enum ice_status
-+ice_aq_start_lldp(struct ice_hw __always_unused *hw,
-+		  struct ice_sq_cd __always_unused *cd)
-+{
-+	return 0;
-+}
-+
-+static inline enum ice_status
-+ice_aq_start_stop_dcbx(struct ice_hw __always_unused *hw,
-+		       bool __always_unused start_dcbx_agent,
-+		       bool *dcbx_agent_status,
-+		       struct ice_sq_cd __always_unused *cd)
-+{
-+	*dcbx_agent_status = false;
-+
-+	return 0;
-+}
-+#endif /* CONFIG_DCB */
-+#endif /* _ICE_DCB_H_ */
+@@ -121,6 +121,8 @@ struct ice_cee_app_prio {
+ } __packed;
+ 
+ u8 ice_get_dcbx_status(struct ice_hw *hw);
++enum ice_status ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg);
++enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi);
+ enum ice_status ice_set_dcb_cfg(struct ice_port_info *pi);
+ enum ice_status ice_init_dcb(struct ice_hw *hw);
+ enum ice_status
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-new file mode 100644
-index 000000000000..424a745d9783
---- /dev/null
+index 67b3fab74f7a..bb9c282ee35e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -0,0 +1,42 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2018, Intel Corporation. */
-+
-+#include "ice_dcb_lib.h"
+@@ -320,3 +320,39 @@ int ice_init_pf_dcb(struct ice_pf *pf)
+ 	dev_err(dev, "DCB init failed\n");
+ 	return err;
+ }
 +
 +/**
-+ * ice_init_pf_dcb - initialize DCB for a PF
-+ * @pf: pf to initiialize DCB for
++ * ice_dcb_process_lldp_set_mib_change - Process MIB change
++ * @pf: ptr to ice_pf
++ * @event: pointer to the admin queue receive event
 + */
-+int ice_init_pf_dcb(struct ice_pf *pf)
++void
++ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
++				    struct ice_rq_event_info *event)
 +{
-+	struct device *dev = &pf->pdev->dev;
-+	struct ice_port_info *port_info;
-+	struct ice_hw *hw = &pf->hw;
++	if (pf->dcbx_cap & DCB_CAP_DCBX_LLD_MANAGED) {
++		struct ice_dcbx_cfg *dcbcfg, *prev_cfg;
++		int err;
 +
-+	port_info = hw->port_info;
++		prev_cfg = &pf->hw.port_info->local_dcbx_cfg;
++		dcbcfg = devm_kmemdup(&pf->pdev->dev, prev_cfg,
++				      sizeof(*dcbcfg), GFP_KERNEL);
++		if (!dcbcfg)
++			return;
 +
-+	/* check if device is DCB capable */
-+	if (!hw->func_caps.common_cap.dcb) {
-+		dev_dbg(dev, "DCB not supported\n");
-+		return -EOPNOTSUPP;
++		err = ice_lldp_to_dcb_cfg(event->msg_buf, dcbcfg);
++		if (!err)
++			ice_pf_dcb_cfg(pf, dcbcfg);
++
++		devm_kfree(&pf->pdev->dev, dcbcfg);
++
++		/* Get updated DCBx data from firmware */
++		err = ice_get_dcb_cfg(pf->hw.port_info);
++		if (err)
++			dev_err(&pf->pdev->dev,
++				"Failed to get DCB config\n");
++	} else {
++		dev_dbg(&pf->pdev->dev,
++			"MIB Change Event in HOST mode\n");
 +	}
-+
-+	/* Best effort to put DCBx and LLDP into a good state */
-+	port_info->dcbx_status = ice_get_dcbx_status(hw);
-+	if (port_info->dcbx_status != ICE_DCBX_STATUS_DONE &&
-+	    port_info->dcbx_status != ICE_DCBX_STATUS_IN_PROGRESS) {
-+		bool dcbx_status;
-+
-+		/* Attempt to start LLDP engine. Ignore errors
-+		 * as this will error if it is already started
-+		 */
-+		ice_aq_start_lldp(hw, NULL);
-+
-+		/* Attempt to start DCBX. Ignore errors as this
-+		 * will error if it is already started
-+		 */
-+		ice_aq_start_stop_dcbx(hw, true, &dcbx_status, NULL);
-+	}
-+
-+	return 0;
 +}
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-new file mode 100644
-index 000000000000..592811b7c61a
---- /dev/null
+index 1c60bf4ca593..a2e42f85fa55 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-@@ -0,0 +1,19 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2018, Intel Corporation. */
-+
-+#ifndef _ICE_DCB_LIB_H_
-+#define _ICE_DCB_LIB_H_
-+
-+#include "ice.h"
-+#include "ice_lib.h"
-+
-+#ifdef CONFIG_DCB
-+int ice_init_pf_dcb(struct ice_pf *pf);
-+#else
-+static inline int ice_init_pf_dcb(struct ice_pf *pf)
-+{
-+	dev_dbg(&pf->pdev->dev, "DCB not supported\n");
-+	return -EOPNOTSUPP;
-+}
-+#endif /* CONFIG_DCB */
-+#endif /* _ICE_DCB_LIB_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index af6f32358363..dfc180d2b282 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -49,6 +49,9 @@
- #define PF_MBX_ATQLEN_ATQLEN_M			ICE_M(0x3FF, 0)
- #define PF_MBX_ATQLEN_ATQENABLE_M		BIT(31)
- #define PF_MBX_ATQT				0x0022E300
-+#define PRTDCB_GENS				0x00083020
-+#define PRTDCB_GENS_DCBX_STATUS_S		0
-+#define PRTDCB_GENS_DCBX_STATUS_M		ICE_M(0x7, 0)
- #define GLFLXP_RXDID_FLAGS(_i, _j)		(0x0045D000 + ((_i) * 4 + (_j) * 256))
- #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S	0
- #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, 0)
+@@ -11,6 +11,9 @@
+ u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg *dcbcfg);
+ u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
+ int ice_init_pf_dcb(struct ice_pf *pf);
++void
++ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
++				    struct ice_rq_event_info *event);
+ #else
+ static inline u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg __always_unused *dcbcfg)
+ {
+@@ -28,5 +31,6 @@ static inline int ice_init_pf_dcb(struct ice_pf *pf)
+ 	return -EOPNOTSUPP;
+ }
+ 
++#define ice_dcb_process_lldp_set_mib_change(pf, event) do {} while (0)
+ #endif /* CONFIG_DCB */
+ #endif /* _ICE_DCB_LIB_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index d7dafd355e57..72fc6e702ab5 100644
+index 158339769097..9b58f156ceee 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -7,6 +7,7 @@
- 
- #include "ice.h"
- #include "ice_lib.h"
-+#include "ice_dcb_lib.h"
- 
- #define DRV_VERSION	"0.7.3-k"
- #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
-@@ -2285,6 +2286,15 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 
- 	ice_init_pf(pf);
- 
-+	err = ice_init_pf_dcb(pf);
-+	if (err) {
-+		clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
-+		clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
-+
-+		/* do not fail overall init if DCB init fails */
-+		err = 0;
-+	}
-+
- 	ice_determine_q_usage(pf);
- 
- 	pf->num_alloc_vsi = hw->func_caps.guar_num_vsi;
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 119fda5674cc..e21ea271b48e 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -148,6 +148,8 @@ struct ice_hw_common_caps {
- 	/* RSS related capabilities */
- 	u16 rss_table_size;		/* 512 for PFs and 64 for VFs */
- 	u8 rss_table_entry_width;	/* RSS Entry width in bits */
-+
-+	u8 dcb;
- };
- 
- /* Function specific capabilities */
-@@ -277,6 +279,8 @@ struct ice_port_info {
- 	struct ice_mac_info mac;
- 	struct ice_phy_info phy;
- 	struct mutex sched_lock;	/* protect access to TXSched tree */
-+	/* LLDP/DCBX Status */
-+	u8 dcbx_status;
- 	u8 lport;
- #define ICE_LPORT_MASK		0xff
- 	u8 is_vf;
+@@ -936,6 +936,9 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
+ 		case ice_aqc_opc_fw_logging:
+ 			ice_output_fw_log(hw, &event.desc, event.msg_buf);
+ 			break;
++		case ice_aqc_opc_lldp_set_mib_change:
++			ice_dcb_process_lldp_set_mib_change(pf, &event);
++			break;
+ 		default:
+ 			dev_dbg(&pf->pdev->dev,
+ 				"%s Receive Queue unknown event 0x%04x ignored\n",
 -- 
 2.14.5
 
