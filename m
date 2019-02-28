@@ -1,62 +1,64 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 28 Feb 2019 09:52:48 -0800
-Subject: [Intel-wired-lan] [next PATCH S3 2/9] i40e: change behavior on PF
- in response to MDD event
+Date: Thu, 28 Feb 2019 09:52:53 -0800
+Subject: [Intel-wired-lan] [next PATCH S3 7/9] i40e: remove out-of-range
+ comparisions in i40e_validate_cloud_filter
 In-Reply-To: <20190228175255.54754-1-alice.michael@intel.com>
 References: <20190228175255.54754-1-alice.michael@intel.com>
-Message-ID: <20190228175255.54754-2-alice.michael@intel.com>
+Message-ID: <20190228175255.54754-7-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-TX MDD events reported on the PF are the result of the
-PF misconfiguring a descriptor and not because of "bad actions"
-by anything else.  No need to reset now because if it
-results in a tx hang, the tx hang check will take care of it.
+The function i40e_validate_cloud_filter checks that the destination and
+source port numbers are valid by attempting to ensure that the number is
+non-zero and no larger than 0xFFFF. However, the types for the dst_port
+and src_port variable are __be16 which by definition cannot be larger
+than 0xFFFF
 
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Since these values cannot be larger than 2 bytes, the check to see if
+they exceed 0xFFFF is meaningless.
+
+One might consider these checks as some sort of defensive coding, in
+case the type was later changed. However, these checks also byte-swap
+the value before comparision using be16_to_cpu, which will truncate the
+values to 16bits anyways. Additionally, changing the type would require
+updating the opcodes to support new data layout of these virtchnl
+commands.
+
+Remove the check to silence the -Wtype-limits warning that was added to
+GCC 8.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index f4d58a197445..e53b18b3ad6b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9696,7 +9696,6 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
- {
- 	struct i40e_hw *hw = &pf->hw;
- 	bool mdd_detected = false;
--	bool pf_mdd_detected = false;
- 	struct i40e_vf *vf;
- 	u32 reg;
- 	int i;
-@@ -9742,19 +9741,12 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
- 		reg = rd32(hw, I40E_PF_MDET_TX);
- 		if (reg & I40E_PF_MDET_TX_VALID_MASK) {
- 			wr32(hw, I40E_PF_MDET_TX, 0xFFFF);
--			dev_info(&pf->pdev->dev, "TX driver issue detected, PF reset issued\n");
--			pf_mdd_detected = true;
-+			dev_dbg(&pf->pdev->dev, "TX driver issue detected on PF\n");
- 		}
- 		reg = rd32(hw, I40E_PF_MDET_RX);
- 		if (reg & I40E_PF_MDET_RX_VALID_MASK) {
- 			wr32(hw, I40E_PF_MDET_RX, 0xFFFF);
--			dev_info(&pf->pdev->dev, "RX driver issue detected, PF reset issued\n");
--			pf_mdd_detected = true;
--		}
--		/* Queue belongs to the PF, initiate a reset */
--		if (pf_mdd_detected) {
--			set_bit(__I40E_PF_RESET_REQUESTED, pf->state);
--			i40e_service_event_schedule(pf);
-+			dev_dbg(&pf->pdev->dev, "RX driver issue detected on PF\n");
- 		}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 24628de8e624..925ca880bea3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -3129,7 +3129,7 @@ static int i40e_validate_cloud_filter(struct i40e_vf *vf,
  	}
  
+ 	if (mask.dst_port & data.dst_port) {
+-		if (!data.dst_port || be16_to_cpu(data.dst_port) > 0xFFFF) {
++		if (!data.dst_port) {
+ 			dev_info(&pf->pdev->dev, "VF %d: Invalid Dest port\n",
+ 				 vf->vf_id);
+ 			goto err;
+@@ -3137,7 +3137,7 @@ static int i40e_validate_cloud_filter(struct i40e_vf *vf,
+ 	}
+ 
+ 	if (mask.src_port & data.src_port) {
+-		if (!data.src_port || be16_to_cpu(data.src_port) > 0xFFFF) {
++		if (!data.src_port) {
+ 			dev_info(&pf->pdev->dev, "VF %d: Invalid Source port\n",
+ 				 vf->vf_id);
+ 			goto err;
 -- 
 2.19.2
 
