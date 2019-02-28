@@ -1,59 +1,48 @@
-From: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-Date: Thu, 28 Feb 2019 17:57:02 +0000
-Subject: [Intel-wired-lan] [next PATCH S3 3/9] i40e: remove error msg
- when vf with port vlan tries to remove vlan 0
-In-Reply-To: <20190228175255.54754-3-alice.michael@intel.com>
-References: <20190228175255.54754-1-alice.michael@intel.com>
- <20190228175255.54754-3-alice.michael@intel.com>
-Message-ID: <0EF347314CF65544BA015993979A29CD25D179CB@irsmsx105.ger.corp.intel.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Thu, 28 Feb 2019 20:29:58 +0100
+Subject: [Intel-wired-lan] [PATCH v3] net: e1000e: add MAC address
+ kernel cmd line parameter
+In-Reply-To: <6a7a37813e71420b929c769dd1e77664@asem.it>
+References: <1551361135-404-1-git-send-email-f.suligoi@asem.it>
+ <1551361951-1595-1-git-send-email-f.suligoi@asem.it>
+ <20190228153245.GA17912@lunn.ch>
+ <b12067de92864d5db83bd3da9456e2fe@asem.it>
+ <20190228163729.GB17912@lunn.ch>
+ <6a7a37813e71420b929c769dd1e77664@asem.it>
+Message-ID: <20190228192958.GA24085@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+On Thu, Feb 28, 2019 at 05:13:27PM +0000, Flavio Suligoi wrote:
+> > > Hi Andrew,
+> > >
+> > > we produce a lot of boards and we have to change the MAC address,
+> > > from u-boot, for every board.  So I must save in the u-boot
+> > > environment (SPI NOR flash) the MAC address for every board.
+> > 
+> > Hi Flavio
+> > 
+> > u-boot should be able to write the MAC address in the correct part of
+> > device tree. Boards have been doing this a long time.
+> > 
+> > Module parameters are considered bad. You should only do it if you
+> > have no other option. Here you do have another options, so it is going
+> > to be a hard sell getting David to access your patch.
+> > 
+> > You will have more success by adding a call to
+> > eth_platform_get_mac_address() to the e1000e driver.
+> 
+> You have right, and thanks for your suggestions, 
+> but with a kernel parameter I can use the same method
+> for any board where the NVM is missed, independently of any architecture
+> (with or without the device tree presence - ARM or x86 or others).
 
------Original Message-----
-From: Michael, Alice 
-Sent: Thursday, February 28, 2019 6:53 PM
-To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-Subject: [next PATCH S3 3/9] i40e: remove error msg when vf with port vlan tries to remove vlan 0
+Hi Flavio
 
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Well, lets wait for David to say what he thinks about the module
+parameter.
 
-VF's attempt to delete vlan 0 when a port vlan is configured is harmless in this case pf driver just does nothing.  If vf will try to remove other vlans when a port vlan is configured it will still produce error as before.
-
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 71cd159e7902..24628de8e624 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2766,7 +2766,8 @@ static int i40e_vc_remove_vlan_msg(struct i40e_vf *vf, u8 *msg)
- 
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (vsi->info.pvid) {
--		aq_ret = I40E_ERR_PARAM;
-+		if (vfl->num_elements > 1 || vfl->vlan_id[0])
-+			aq_ret = I40E_ERR_PARAM;
- 		goto error_param;
- 	}
- 
---
-2.19.2
-
---------------------------------------------------------------------
-
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
-
+	Andrew
