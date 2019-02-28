@@ -1,143 +1,146 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 28 Feb 2019 15:24:26 -0800
-Subject: [Intel-wired-lan] [PATCH S16 05/11] ice: Add code to process LLDP
- MIB change events
+Date: Thu, 28 Feb 2019 15:24:27 -0800
+Subject: [Intel-wired-lan] [PATCH S16 06/11] ice: Update rings based on TC
+ information
 In-Reply-To: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
 References: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190228232432.31659-6-anirudh.venkataramanan@intel.com>
+Message-ID: <20190228232432.31659-7-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds support to process LLDP MIB change notifications sent
-by the firmware.
+This patch adds a new function ice_vsi_cfg_dcb_rings which updates a
+VSI's rings based on DCB traffic class information.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb.c     |  5 ++--
- drivers/net/ethernet/intel/ice/ice_dcb.h     |  2 ++
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 36 ++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  4 ++++
- drivers/net/ethernet/intel/ice/ice_main.c    |  3 +++
- 5 files changed, 47 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 38 ++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  8 ++++++
+ drivers/net/ethernet/intel/ice/ice_lib.c     |  2 ++
+ drivers/net/ethernet/intel/ice/ice_main.c    |  1 +
+ drivers/net/ethernet/intel/ice/ice_txrx.h    |  3 +++
+ 5 files changed, 52 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index 1ad36b40974a..ff8267f84c8c 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -588,8 +588,7 @@ ice_parse_org_tlv(struct ice_lldp_org_tlv *tlv, struct ice_dcbx_cfg *dcbcfg)
-  *
-  * Parse DCB configuration from the LLDPDU
-  */
--static enum ice_status
--ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg)
-+enum ice_status ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg)
- {
- 	struct ice_lldp_org_tlv *tlv;
- 	enum ice_status ret = 0;
-@@ -871,7 +870,7 @@ ice_get_ieee_or_cee_dcb_cfg(struct ice_port_info *pi, u8 dcbx_mode)
-  *
-  * Get DCB configuration from the Firmware
-  */
--static enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi)
-+enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi)
- {
- 	struct ice_aqc_get_cee_dcb_cfg_resp cee_cfg;
- 	struct ice_dcbx_cfg *dcbx_cfg;
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.h b/drivers/net/ethernet/intel/ice/ice_dcb.h
-index 03e310a679f0..5e2b67ee1131 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.h
-@@ -121,6 +121,8 @@ struct ice_cee_app_prio {
- } __packed;
- 
- u8 ice_get_dcbx_status(struct ice_hw *hw);
-+enum ice_status ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg);
-+enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi);
- enum ice_status ice_set_dcb_cfg(struct ice_port_info *pi);
- enum ice_status ice_init_dcb(struct ice_hw *hw);
- enum ice_status
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 67b3fab74f7a..bb9c282ee35e 100644
+index bb9c282ee35e..68df3d78a534 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -320,3 +320,39 @@ int ice_init_pf_dcb(struct ice_pf *pf)
- 	dev_err(dev, "DCB init failed\n");
- 	return err;
+@@ -57,6 +57,44 @@ u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg)
+ 	return ret;
  }
-+
+ 
 +/**
-+ * ice_dcb_process_lldp_set_mib_change - Process MIB change
-+ * @pf: ptr to ice_pf
-+ * @event: pointer to the admin queue receive event
++ * ice_vsi_cfg_dcb_rings - Update rings to reflect DCB TC
++ * @vsi: VSI owner of rings being updated
 + */
-+void
-+ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
-+				    struct ice_rq_event_info *event)
++void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi)
 +{
-+	if (pf->dcbx_cap & DCB_CAP_DCBX_LLD_MANAGED) {
-+		struct ice_dcbx_cfg *dcbcfg, *prev_cfg;
-+		int err;
++	struct ice_ring *tx_ring, *rx_ring;
++	u16 qoffset, qcount;
++	int i, n;
 +
-+		prev_cfg = &pf->hw.port_info->local_dcbx_cfg;
-+		dcbcfg = devm_kmemdup(&pf->pdev->dev, prev_cfg,
-+				      sizeof(*dcbcfg), GFP_KERNEL);
-+		if (!dcbcfg)
-+			return;
++	if (!test_bit(ICE_FLAG_DCB_ENA, vsi->back->flags)) {
++		/* Reset the TC information */
++		for (i = 0; i < vsi->num_txq; i++) {
++			tx_ring = vsi->tx_rings[i];
++			tx_ring->dcb_tc = 0;
++		}
++		for (i = 0; i < vsi->num_rxq; i++) {
++			rx_ring = vsi->rx_rings[i];
++			rx_ring->dcb_tc = 0;
++		}
++		return;
++	}
 +
-+		err = ice_lldp_to_dcb_cfg(event->msg_buf, dcbcfg);
-+		if (!err)
-+			ice_pf_dcb_cfg(pf, dcbcfg);
++	ice_for_each_traffic_class(n) {
++		if (!(vsi->tc_cfg.ena_tc & BIT(n)))
++			break;
 +
-+		devm_kfree(&pf->pdev->dev, dcbcfg);
-+
-+		/* Get updated DCBx data from firmware */
-+		err = ice_get_dcb_cfg(pf->hw.port_info);
-+		if (err)
-+			dev_err(&pf->pdev->dev,
-+				"Failed to get DCB config\n");
-+	} else {
-+		dev_dbg(&pf->pdev->dev,
-+			"MIB Change Event in HOST mode\n");
++		qoffset = vsi->tc_cfg.tc_info[n].qoffset;
++		qcount = vsi->tc_cfg.tc_info[n].qcount_tx;
++		for (i = qoffset; i < (qoffset + qcount); i++) {
++			tx_ring = vsi->tx_rings[i];
++			rx_ring = vsi->rx_rings[i];
++			tx_ring->dcb_tc = n;
++			rx_ring->dcb_tc = n;
++		}
 +	}
 +}
++
+ /**
+  * ice_pf_dcb_recfg - Reconfigure all VEBs and VSIs
+  * @pf: pointer to the PF struct
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-index 1c60bf4ca593..a2e42f85fa55 100644
+index a2e42f85fa55..449e3735ca1b 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-@@ -11,6 +11,9 @@
+@@ -10,10 +10,16 @@
+ #ifdef CONFIG_DCB
  u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg *dcbcfg);
  u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
++void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
  int ice_init_pf_dcb(struct ice_pf *pf);
-+void
-+ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
-+				    struct ice_rq_event_info *event);
+ void
+ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 				    struct ice_rq_event_info *event);
++static inline void
++ice_set_cgd_num(struct ice_tlan_ctx *tlan_ctx, struct ice_ring *ring)
++{
++	tlan_ctx->cgd_num = ring->dcb_tc;
++}
  #else
  static inline u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg __always_unused *dcbcfg)
  {
-@@ -28,5 +31,6 @@ static inline int ice_init_pf_dcb(struct ice_pf *pf)
+@@ -31,6 +37,8 @@ static inline int ice_init_pf_dcb(struct ice_pf *pf)
  	return -EOPNOTSUPP;
  }
  
-+#define ice_dcb_process_lldp_set_mib_change(pf, event) do {} while (0)
++#define ice_vsi_cfg_dcb_rings(vsi) do {} while (0)
+ #define ice_dcb_process_lldp_set_mib_change(pf, event) do {} while (0)
++#define ice_set_cgd_num(tlan_ctx, ring) do {} while (0)
  #endif /* CONFIG_DCB */
  #endif /* _ICE_DCB_LIB_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index f3574daa147c..f31129e4e9cf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -125,6 +125,8 @@ ice_setup_tx_ctx(struct ice_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf_q)
+ 	/* Transmit Queue Length */
+ 	tlan_ctx->qlen = ring->count;
+ 
++	ice_set_cgd_num(tlan_ctx, ring);
++
+ 	/* PF number */
+ 	tlan_ctx->pf_num = hw->pf_id;
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 158339769097..9b58f156ceee 100644
+index 9b58f156ceee..367e9559b1ca 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -936,6 +936,9 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- 		case ice_aqc_opc_fw_logging:
- 			ice_output_fw_log(hw, &event.desc, event.msg_buf);
- 			break;
-+		case ice_aqc_opc_lldp_set_mib_change:
-+			ice_dcb_process_lldp_set_mib_change(pf, &event);
-+			break;
- 		default:
- 			dev_dbg(&pf->pdev->dev,
- 				"%s Receive Queue unknown event 0x%04x ignored\n",
+@@ -2940,6 +2940,7 @@ static int ice_vsi_cfg(struct ice_vsi *vsi)
+ 		if (err)
+ 			return err;
+ 	}
++	ice_vsi_cfg_dcb_rings(vsi);
+ 
+ 	err = ice_vsi_cfg_lan_txqs(vsi);
+ 	if (!err)
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 60131b84b021..53903f846834 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -160,6 +160,9 @@ struct ice_ring {
+ 	};
+ 	u16 q_index;			/* Queue number of ring */
+ 	u32 txq_teid;			/* Added Tx queue TEID */
++#ifdef CONFIG_DCB
++	u8 dcb_tc;		/* Traffic class of ring */
++#endif /* CONFIG_DCB */
+ 
+ 	u16 count;			/* Number of descriptors */
+ 	u16 reg_idx;			/* HW register index of the ring */
 -- 
 2.14.5
 
