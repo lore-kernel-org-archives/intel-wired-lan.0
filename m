@@ -1,345 +1,150 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 28 Feb 2019 15:24:31 -0800
-Subject: [Intel-wired-lan] [PATCH S16 10/11] ice: Add code to control FW
- LLDP and DCBX
+Date: Thu, 28 Feb 2019 15:24:30 -0800
+Subject: [Intel-wired-lan] [PATCH S16 09/11] ice: Add code for DCB rebuild
 In-Reply-To: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
 References: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190228232432.31659-11-anirudh.venkataramanan@intel.com>
+Message-ID: <20190228232432.31659-10-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds code to start or stop LLDP and DCBX in firmware through
-use of ethtool private flags.
+This patch introduces a new function ice_dcb_rebuild which reinitializes
+DCB after a reset.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h            |  2 +
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 12 ++++
- drivers/net/ethernet/intel/ice/ice_dcb.c        | 28 +++++++-
- drivers/net/ethernet/intel/ice/ice_dcb.h        | 23 ++++++
- drivers/net/ethernet/intel/ice/ice_ethtool.c    | 96 ++++++++++++++++++++++++-
- 5 files changed, 159 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 78 ++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  5 ++
+ drivers/net/ethernet/intel/ice/ice_main.c    |  2 +
+ 3 files changed, 85 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 6ca1094cb24a..878a75182d6d 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -325,6 +325,8 @@ enum ice_pf_flags {
- 	ICE_FLAG_DCB_CAPABLE,
- 	ICE_FLAG_DCB_ENA,
- 	ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA,
-+	ICE_FLAG_DISABLE_FW_LLDP,
-+	ICE_FLAG_ETHTOOL_CTXT,		/* set when ethtool holds RTNL lock */
- 	ICE_PF_FLAGS_NBITS		/* must be last */
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index cda93826a065..583f92d4db4c 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1200,6 +1200,16 @@ struct ice_aqc_lldp_set_mib_change {
- 	u8 reserved[15];
- };
- 
-+/* Stop LLDP (direct 0x0A05) */
-+struct ice_aqc_lldp_stop {
-+	u8 command;
-+#define ICE_AQ_LLDP_AGENT_STATE_MASK	BIT(0)
-+#define ICE_AQ_LLDP_AGENT_STOP		0x0
-+#define ICE_AQ_LLDP_AGENT_SHUTDOWN	ICE_AQ_LLDP_AGENT_STATE_MASK
-+#define ICE_AQ_LLDP_AGENT_PERSIST_DIS	BIT(1)
-+	u8 reserved[15];
-+};
-+
- /* Start LLDP (direct 0x0A06) */
- struct ice_aqc_lldp_start {
- 	u8 command;
-@@ -1529,6 +1539,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_pf_vf_msg virt;
- 		struct ice_aqc_lldp_get_mib lldp_get_mib;
- 		struct ice_aqc_lldp_set_mib_change lldp_set_event;
-+		struct ice_aqc_lldp_stop lldp_stop;
- 		struct ice_aqc_lldp_start lldp_start;
- 		struct ice_aqc_lldp_set_local_mib lldp_set_mib;
- 		struct ice_aqc_lldp_stop_start_specific_agent lldp_agent_ctrl;
-@@ -1639,6 +1650,7 @@ enum ice_adminq_opc {
- 	/* LLDP commands */
- 	ice_aqc_opc_lldp_get_mib			= 0x0A00,
- 	ice_aqc_opc_lldp_set_mib_change			= 0x0A01,
-+	ice_aqc_opc_lldp_stop				= 0x0A05,
- 	ice_aqc_opc_lldp_start				= 0x0A06,
- 	ice_aqc_opc_get_cee_dcb_cfg			= 0x0A07,
- 	ice_aqc_opc_lldp_set_local_mib			= 0x0A08,
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index ff8267f84c8c..70e0a5739c1d 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -60,7 +60,7 @@ ice_aq_get_lldp_mib(struct ice_hw *hw, u8 bridge_type, u8 mib_type, void *buf,
-  * Enable or Disable posting of an event on ARQ when LLDP MIB
-  * associated with the interface changes (0x0A01)
-  */
--static enum ice_status
-+enum ice_status
- ice_aq_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_update,
- 			   struct ice_sq_cd *cd)
- {
-@@ -77,6 +77,32 @@ ice_aq_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_update,
- 	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index c6ddb748ef53..32546aef2500 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -197,6 +197,84 @@ static int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg)
+ 	return ret;
  }
  
 +/**
-+ * ice_aq_stop_lldp
-+ * @hw: pointer to the HW struct
-+ * @shutdown_lldp_agent: True if LLDP Agent needs to be Shutdown
-+ *			 False if LLDP Agent needs to be Stopped
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Stop or Shutdown the embedded LLDP Agent (0x0A05)
++ * ice_dcb_rebuild - rebuild DCB post reset
++ * @pf: physical function instance
 + */
-+enum ice_status
-+ice_aq_stop_lldp(struct ice_hw *hw, bool shutdown_lldp_agent,
-+		 struct ice_sq_cd *cd)
++void ice_dcb_rebuild(struct ice_pf *pf)
 +{
-+	struct ice_aqc_lldp_stop *cmd;
-+	struct ice_aq_desc desc;
++	struct ice_aqc_port_ets_elem buf = { 0 };
++	struct ice_dcbx_cfg *prev_cfg;
++	enum ice_status ret;
++	u8 willing;
 +
-+	cmd = &desc.params.lldp_stop;
++	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
++	if (ret) {
++		dev_err(&pf->pdev->dev, "Query Port ETS failed\n");
++		goto dcb_error;
++	}
 +
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_lldp_stop);
++	/* If DCB was not enabled previously, we are done */
++	if (!test_bit(ICE_FLAG_DCB_ENA, pf->flags))
++		return;
 +
-+	if (shutdown_lldp_agent)
-+		cmd->command |= ICE_AQ_LLDP_AGENT_SHUTDOWN;
++	/* Save current willing state and force FW to unwilling */
++	willing = pf->hw.port_info->local_dcbx_cfg.etscfg.willing;
++	pf->hw.port_info->local_dcbx_cfg.etscfg.willing = 0x0;
++	ret = ice_set_dcb_cfg(pf->hw.port_info);
++	if (ret) {
++		dev_err(&pf->pdev->dev, "Failed to set DCB to unwilling\n");
++		goto dcb_error;
++	}
 +
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
++	/* Retrieve DCB config and ensure same as current in SW */
++	prev_cfg = devm_kmemdup(&pf->pdev->dev,
++				&pf->hw.port_info->local_dcbx_cfg,
++				sizeof(*prev_cfg), GFP_KERNEL);
++	if (!prev_cfg) {
++		dev_err(&pf->pdev->dev, "Failed to alloc space for DCB cfg\n");
++		goto dcb_error;
++	}
++
++	ice_init_dcb(&pf->hw);
++	if (memcmp(prev_cfg, &pf->hw.port_info->local_dcbx_cfg,
++		   sizeof(*prev_cfg))) {
++		/* difference in cfg detected - disable DCB till next MIB */
++		dev_err(&pf->pdev->dev, "Set local MIB not accurate\n");
++		devm_kfree(&pf->pdev->dev, prev_cfg);
++		goto dcb_error;
++	}
++
++	/* fetched config congruent to previous configuration */
++	devm_kfree(&pf->pdev->dev, prev_cfg);
++
++	/* Configuration replayed - reset willing state to previous */
++	pf->hw.port_info->local_dcbx_cfg.etscfg.willing = willing;
++	ret = ice_set_dcb_cfg(pf->hw.port_info);
++	if (ret) {
++		dev_err(&pf->pdev->dev, "Fail restoring prev willing state\n");
++		goto dcb_error;
++	}
++	dev_info(&pf->pdev->dev, "DCB restored after reset\n");
++	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
++	if (ret) {
++		dev_err(&pf->pdev->dev, "Query Port ETS failed\n");
++		goto dcb_error;
++	}
++
++	return;
++
++dcb_error:
++	dev_err(&pf->pdev->dev, "Disabling DCB until new settings occur\n");
++	prev_cfg = devm_kzalloc(&pf->pdev->dev, sizeof(*prev_cfg), GFP_KERNEL);
++	prev_cfg->etscfg.willing = true;
++	prev_cfg->etscfg.tcbwtable[0] = ICE_TC_MAX_BW;
++	prev_cfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
++	memcpy(&prev_cfg->etsrec, &prev_cfg->etscfg, sizeof(prev_cfg->etsrec));
++	ice_pf_dcb_cfg(pf, prev_cfg);
++	devm_kfree(&pf->pdev->dev, prev_cfg);
 +}
 +
  /**
-  * ice_aq_start_lldp
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.h b/drivers/net/ethernet/intel/ice/ice_dcb.h
-index 5e2b67ee1131..41360e3dc07e 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.h
-@@ -130,11 +130,25 @@ ice_query_port_ets(struct ice_port_info *pi,
- 		   struct ice_aqc_port_ets_elem *buf, u16 buf_size,
- 		   struct ice_sq_cd *cmd_details);
+  * ice_dcb_init_cfg - set the initial DCB config in SW
+  * @pf: pf to apply config to
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+index 1b4159d44617..7786ec94b06a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+@@ -8,6 +8,9 @@
+ #include "ice_lib.h"
+ 
  #ifdef CONFIG_DCB
-+enum ice_status
-+ice_aq_stop_lldp(struct ice_hw *hw, bool shutdown_lldp_agent,
-+		 struct ice_sq_cd *cd);
- enum ice_status ice_aq_start_lldp(struct ice_hw *hw, struct ice_sq_cd *cd);
- enum ice_status
- ice_aq_start_stop_dcbx(struct ice_hw *hw, bool start_dcbx_agent,
- 		       bool *dcbx_agent_status, struct ice_sq_cd *cd);
-+enum ice_status
-+ice_aq_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_update,
-+			   struct ice_sq_cd *cd);
- #else /* CONFIG_DCB */
-+static inline enum ice_status
-+ice_aq_stop_lldp(struct ice_hw __always_unused *hw,
-+		 bool __always_unused shutdown_lldp_agent,
-+		 struct ice_sq_cd __always_unused *cd)
-+{
-+	return 0;
-+}
++#define ICE_TC_MAX_BW 100 /* Default Max BW percentage */
 +
- static inline enum ice_status
- ice_aq_start_lldp(struct ice_hw __always_unused *hw,
- 		  struct ice_sq_cd __always_unused *cd)
-@@ -152,5 +166,14 @@ ice_aq_start_stop_dcbx(struct ice_hw __always_unused *hw,
- 
- 	return 0;
++void ice_dcb_rebuild(struct ice_pf *pf);
+ u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg *dcbcfg);
+ u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
+ void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
+@@ -25,6 +28,8 @@ ice_set_cgd_num(struct ice_tlan_ctx *tlan_ctx, struct ice_ring *ring)
+ 	tlan_ctx->cgd_num = ring->dcb_tc;
  }
+ #else
++#define ice_dcb_rebuild(pf) do {} while (0)
 +
-+static inline enum ice_status
-+ice_aq_cfg_lldp_mib_change(struct ice_hw __always_unused *hw,
-+			   bool __always_unused ena_update,
-+			   struct ice_sq_cd __always_unused *cd)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_DCB */
- #endif /* _ICE_DCB_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index ea8558954cb4..64a4c4456ba0 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -4,6 +4,8 @@
- /* ethtool support for ice */
- 
- #include "ice.h"
-+#include "ice_lib.h"
-+#include "ice_dcb_lib.h"
- 
- struct ice_stats {
- 	char stat_string[ETH_GSTRING_LEN];
-@@ -132,6 +134,7 @@ struct ice_priv_flag {
- 
- static const struct ice_priv_flag ice_gstrings_priv_flags[] = {
- 	ICE_PRIV_FLAG("link-down-on-close", ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA),
-+	ICE_PRIV_FLAG("disable-fw-lldp", ICE_FLAG_DISABLE_FW_LLDP),
- };
- 
- #define ICE_PRIV_FLAG_ARRAY_SIZE	ARRAY_SIZE(ice_gstrings_priv_flags)
-@@ -404,13 +407,19 @@ static u32 ice_get_priv_flags(struct net_device *netdev)
- static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
+ static inline u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg __always_unused *dcbcfg)
  {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	DECLARE_BITMAP(change_flags, ICE_PF_FLAGS_NBITS);
-+	DECLARE_BITMAP(orig_flags, ICE_PF_FLAGS_NBITS);
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
-+	int ret = 0;
- 	u32 i;
+ 	return ICE_DFLT_TRAFFIC_CLASS;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 1a37132446a3..fba4eb086578 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3793,6 +3793,8 @@ static void ice_rebuild(struct ice_pf *pf)
+ 	if (err)
+ 		goto err_sched_init_port;
  
- 	if (flags > BIT(ICE_PRIV_FLAG_ARRAY_SIZE))
- 		return -EINVAL;
- 
-+	set_bit(ICE_FLAG_ETHTOOL_CTXT, pf->flags);
++	ice_dcb_rebuild(pf);
 +
-+	bitmap_copy(orig_flags, pf->flags, ICE_PF_FLAGS_NBITS);
- 	for (i = 0; i < ICE_PRIV_FLAG_ARRAY_SIZE; i++) {
- 		const struct ice_priv_flag *priv_flag;
- 
-@@ -422,7 +431,79 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			clear_bit(priv_flag->bitno, pf->flags);
- 	}
- 
--	return 0;
-+	bitmap_xor(change_flags, pf->flags, orig_flags, ICE_PF_FLAGS_NBITS);
-+
-+	if (test_bit(ICE_FLAG_DISABLE_FW_LLDP, change_flags)) {
-+		if (test_bit(ICE_FLAG_DISABLE_FW_LLDP, pf->flags)) {
-+			enum ice_status status;
-+
-+			status = ice_aq_cfg_lldp_mib_change(&pf->hw, false,
-+							    NULL);
-+			/* If unregistering for LLDP events fails, this is
-+			 * not an error state, as there shouldn't be any
-+			 * events to respond to.
-+			 */
-+			if (status)
-+				dev_info(&pf->pdev->dev,
-+					 "Failed to unreg for LLDP events\n");
-+
-+			/* The AQ call to stop the FW LLDP agent will generate
-+			 * an error if the agent is already stopped.
-+			 */
-+			status = ice_aq_stop_lldp(&pf->hw, true, NULL);
-+			if (status)
-+				dev_warn(&pf->pdev->dev,
-+					 "Fail to stop LLDP agent\n");
-+			/* Use case for having the FW LLDP agent stopped
-+			 * will likely not need DCB, so failure to init is
-+			 * not a concern of ethtool
-+			 */
-+			status = ice_init_pf_dcb(pf);
-+			if (status)
-+				dev_warn(&pf->pdev->dev, "Fail to init DCB\n");
-+		} else {
-+			enum ice_status status;
-+			bool dcbx_agent_status;
-+
-+			/* AQ command to start FW LLDP agent will return an
-+			 * error if the agent is already started
-+			 */
-+			status = ice_aq_start_lldp(&pf->hw, NULL);
-+			if (status)
-+				dev_warn(&pf->pdev->dev,
-+					 "Fail to start LLDP Agent\n");
-+
-+			/* AQ command to start FW DCBx agent will fail if
-+			 * the agent is already started
-+			 */
-+			status = ice_aq_start_stop_dcbx(&pf->hw, true,
-+							&dcbx_agent_status,
-+							NULL);
-+			if (status)
-+				dev_dbg(&pf->pdev->dev,
-+					"Failed to start FW DCBX\n");
-+
-+			dev_info(&pf->pdev->dev, "FW DCBX agent is %s\n",
-+				 dcbx_agent_status ? "ACTIVE" : "DISABLED");
-+
-+			/* Failure to configure MIB change or init DCB is not
-+			 * relevant to ethtool.  Print notification that
-+			 * registration/init failed but do not return error
-+			 * state to ethtool
-+			 */
-+			status = ice_aq_cfg_lldp_mib_change(&pf->hw, false,
-+							    NULL);
-+			if (status)
-+				dev_dbg(&pf->pdev->dev,
-+					"Fail to reg for MIB change\n");
-+
-+			status = ice_init_pf_dcb(pf);
-+			if (status)
-+				dev_dbg(&pf->pdev->dev, "Fail to init DCB\n");
-+		}
-+	}
-+	clear_bit(ICE_FLAG_ETHTOOL_CTXT, pf->flags);
-+	return ret;
- }
- 
- static int ice_get_sset_count(struct net_device *netdev, int sset)
-@@ -1854,12 +1935,15 @@ ice_get_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
- 	struct ice_port_info *pi = np->vsi->port_info;
- 	struct ice_aqc_get_phy_caps_data *pcaps;
- 	struct ice_vsi *vsi = np->vsi;
-+	struct ice_dcbx_cfg *dcbx_cfg;
- 	enum ice_status status;
- 
- 	/* Initialize pause params */
- 	pause->rx_pause = 0;
- 	pause->tx_pause = 0;
- 
-+	dcbx_cfg = &pi->local_dcbx_cfg;
-+
- 	pcaps = devm_kzalloc(&vsi->back->pdev->dev, sizeof(*pcaps),
- 			     GFP_KERNEL);
- 	if (!pcaps)
-@@ -1874,6 +1958,10 @@ ice_get_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
- 	pause->autoneg = ((pcaps->caps & ICE_AQC_PHY_AN_MODE) ?
- 			AUTONEG_ENABLE : AUTONEG_DISABLE);
- 
-+	if (dcbx_cfg->pfc.pfcena)
-+		/* PFC enabled so report LFC as off */
-+		goto out;
-+
- 	if (pcaps->caps & ICE_AQC_PHY_EN_TX_LINK_PAUSE)
- 		pause->tx_pause = 1;
- 	if (pcaps->caps & ICE_AQC_PHY_EN_RX_LINK_PAUSE)
-@@ -1894,6 +1982,7 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_link_status *hw_link_info;
- 	struct ice_pf *pf = np->vsi->back;
-+	struct ice_dcbx_cfg *dcbx_cfg;
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_hw *hw = &pf->hw;
- 	struct ice_port_info *pi;
-@@ -1904,6 +1993,7 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
- 
- 	pi = vsi->port_info;
- 	hw_link_info = &pi->phy.link_info;
-+	dcbx_cfg = &pi->local_dcbx_cfg;
- 	link_up = hw_link_info->link_info & ICE_AQ_LINK_UP;
- 
- 	/* Changing the port's flow control is not supported if this isn't the
-@@ -1926,6 +2016,10 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
- 		netdev_info(netdev, "Autoneg did not complete so changing settings may not result in an actual change.\n");
- 	}
- 
-+	if (dcbx_cfg->pfc.pfcena) {
-+		netdev_info(netdev, "Priority flow control enabled. Cannot set link flow control.\n");
-+		return -EOPNOTSUPP;
-+	}
- 	if (pause->rx_pause && pause->tx_pause)
- 		pi->fc.req_mode = ICE_FC_FULL;
- 	else if (pause->rx_pause && !pause->tx_pause)
+ 	/* reset search_hint of irq_trackers to 0 since interrupts are
+ 	 * reclaimed and could be allocated from beginning during VSI rebuild
+ 	 */
 -- 
 2.14.5
 
