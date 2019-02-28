@@ -1,150 +1,35 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 28 Feb 2019 15:24:30 -0800
-Subject: [Intel-wired-lan] [PATCH S16 09/11] ice: Add code for DCB rebuild
+Date: Thu, 28 Feb 2019 15:24:32 -0800
+Subject: [Intel-wired-lan] [PATCH S16 11/11] ice: Bump driver version
 In-Reply-To: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
 References: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190228232432.31659-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20190228232432.31659-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch introduces a new function ice_dcb_rebuild which reinitializes
-DCB after a reset.
+Update driver version to 0.7.4
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 78 ++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  5 ++
- drivers/net/ethernet/intel/ice/ice_main.c    |  2 +
- 3 files changed, 85 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index c6ddb748ef53..32546aef2500 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -197,6 +197,84 @@ static int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg)
- 	return ret;
- }
- 
-+/**
-+ * ice_dcb_rebuild - rebuild DCB post reset
-+ * @pf: physical function instance
-+ */
-+void ice_dcb_rebuild(struct ice_pf *pf)
-+{
-+	struct ice_aqc_port_ets_elem buf = { 0 };
-+	struct ice_dcbx_cfg *prev_cfg;
-+	enum ice_status ret;
-+	u8 willing;
-+
-+	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
-+	if (ret) {
-+		dev_err(&pf->pdev->dev, "Query Port ETS failed\n");
-+		goto dcb_error;
-+	}
-+
-+	/* If DCB was not enabled previously, we are done */
-+	if (!test_bit(ICE_FLAG_DCB_ENA, pf->flags))
-+		return;
-+
-+	/* Save current willing state and force FW to unwilling */
-+	willing = pf->hw.port_info->local_dcbx_cfg.etscfg.willing;
-+	pf->hw.port_info->local_dcbx_cfg.etscfg.willing = 0x0;
-+	ret = ice_set_dcb_cfg(pf->hw.port_info);
-+	if (ret) {
-+		dev_err(&pf->pdev->dev, "Failed to set DCB to unwilling\n");
-+		goto dcb_error;
-+	}
-+
-+	/* Retrieve DCB config and ensure same as current in SW */
-+	prev_cfg = devm_kmemdup(&pf->pdev->dev,
-+				&pf->hw.port_info->local_dcbx_cfg,
-+				sizeof(*prev_cfg), GFP_KERNEL);
-+	if (!prev_cfg) {
-+		dev_err(&pf->pdev->dev, "Failed to alloc space for DCB cfg\n");
-+		goto dcb_error;
-+	}
-+
-+	ice_init_dcb(&pf->hw);
-+	if (memcmp(prev_cfg, &pf->hw.port_info->local_dcbx_cfg,
-+		   sizeof(*prev_cfg))) {
-+		/* difference in cfg detected - disable DCB till next MIB */
-+		dev_err(&pf->pdev->dev, "Set local MIB not accurate\n");
-+		devm_kfree(&pf->pdev->dev, prev_cfg);
-+		goto dcb_error;
-+	}
-+
-+	/* fetched config congruent to previous configuration */
-+	devm_kfree(&pf->pdev->dev, prev_cfg);
-+
-+	/* Configuration replayed - reset willing state to previous */
-+	pf->hw.port_info->local_dcbx_cfg.etscfg.willing = willing;
-+	ret = ice_set_dcb_cfg(pf->hw.port_info);
-+	if (ret) {
-+		dev_err(&pf->pdev->dev, "Fail restoring prev willing state\n");
-+		goto dcb_error;
-+	}
-+	dev_info(&pf->pdev->dev, "DCB restored after reset\n");
-+	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
-+	if (ret) {
-+		dev_err(&pf->pdev->dev, "Query Port ETS failed\n");
-+		goto dcb_error;
-+	}
-+
-+	return;
-+
-+dcb_error:
-+	dev_err(&pf->pdev->dev, "Disabling DCB until new settings occur\n");
-+	prev_cfg = devm_kzalloc(&pf->pdev->dev, sizeof(*prev_cfg), GFP_KERNEL);
-+	prev_cfg->etscfg.willing = true;
-+	prev_cfg->etscfg.tcbwtable[0] = ICE_TC_MAX_BW;
-+	prev_cfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
-+	memcpy(&prev_cfg->etsrec, &prev_cfg->etscfg, sizeof(prev_cfg->etsrec));
-+	ice_pf_dcb_cfg(pf, prev_cfg);
-+	devm_kfree(&pf->pdev->dev, prev_cfg);
-+}
-+
- /**
-  * ice_dcb_init_cfg - set the initial DCB config in SW
-  * @pf: pf to apply config to
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-index 1b4159d44617..7786ec94b06a 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-@@ -8,6 +8,9 @@
- #include "ice_lib.h"
- 
- #ifdef CONFIG_DCB
-+#define ICE_TC_MAX_BW 100 /* Default Max BW percentage */
-+
-+void ice_dcb_rebuild(struct ice_pf *pf);
- u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg *dcbcfg);
- u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
- void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
-@@ -25,6 +28,8 @@ ice_set_cgd_num(struct ice_tlan_ctx *tlan_ctx, struct ice_ring *ring)
- 	tlan_ctx->cgd_num = ring->dcb_tc;
- }
- #else
-+#define ice_dcb_rebuild(pf) do {} while (0)
-+
- static inline u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg __always_unused *dcbcfg)
- {
- 	return ICE_DFLT_TRAFFIC_CLASS;
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 1a37132446a3..fba4eb086578 100644
+index fba4eb086578..94105f0a0b48 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3793,6 +3793,8 @@ static void ice_rebuild(struct ice_pf *pf)
- 	if (err)
- 		goto err_sched_init_port;
+@@ -9,7 +9,7 @@
+ #include "ice_lib.h"
+ #include "ice_dcb_lib.h"
  
-+	ice_dcb_rebuild(pf);
-+
- 	/* reset search_hint of irq_trackers to 0 since interrupts are
- 	 * reclaimed and could be allocated from beginning during VSI rebuild
- 	 */
+-#define DRV_VERSION	"0.7.3-k"
++#define DRV_VERSION	"0.7.4-k"
+ #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
+ const char ice_drv_ver[] = DRV_VERSION;
+ static const char ice_driver_string[] = DRV_SUMMARY;
 -- 
 2.14.5
 
