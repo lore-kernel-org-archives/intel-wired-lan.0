@@ -1,10 +1,10 @@
 From: Flavio Suligoi <f.suligoi@asem.it>
-Date: Thu, 28 Feb 2019 14:38:55 +0100
-Subject: [Intel-wired-lan] [PATCH v2] net: e1000e: add MAC address kernel
+Date: Thu, 28 Feb 2019 14:52:31 +0100
+Subject: [Intel-wired-lan] [PATCH v3] net: e1000e: add MAC address kernel
  cmd line parameter
-In-Reply-To: <1551345635-10291-1-git-send-email-f.suligoi@asem.it>
-References: <1551345635-10291-1-git-send-email-f.suligoi@asem.it>
-Message-ID: <1551361135-404-1-git-send-email-f.suligoi@asem.it>
+In-Reply-To: <1551361135-404-1-git-send-email-f.suligoi@asem.it>
+References: <1551361135-404-1-git-send-email-f.suligoi@asem.it>
+Message-ID: <1551361951-1595-1-git-send-email-f.suligoi@asem.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,11 +19,12 @@ and directly force the MAC address using a kernel command-line
 parameter (macaddr).
 
 Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+---
 
+v3: - move patch changelog in the right place
 v2: - e1000_probe: remove wrong newline in the middle of the local variable list
 v1: - written
 
----
  drivers/net/ethernet/intel/e1000e/netdev.c | 49 +++++++++++++++++++-----------
  1 file changed, 32 insertions(+), 17 deletions(-)
 
