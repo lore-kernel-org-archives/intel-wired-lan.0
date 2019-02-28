@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 Feb 2019 23:16:14 +0000
-Subject: [Intel-wired-lan] [PATCH S14 06/15] ice: Limit the
- ice_add_rx_frag to frag addition
-In-Reply-To: <20190213185115.25877-7-anirudh.venkataramanan@intel.com>
+Date: Thu, 28 Feb 2019 23:16:57 +0000
+Subject: [Intel-wired-lan] [PATCH S14 07/15] ice: map rx buffer pages
+ with DMA attributes
+In-Reply-To: <20190213185115.25877-8-anirudh.venkataramanan@intel.com>
 References: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
- <20190213185115.25877-7-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D36715C@ORSMSX104.amr.corp.intel.com>
+ <20190213185115.25877-8-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D36716C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,28 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Wednesday, February 13, 2019 10:51 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S14 06/15] ice: Limit the ice_add_rx_frag to
-> frag addition
+> Subject: [Intel-wired-lan] [PATCH S14 07/15] ice: map rx buffer pages with
+> DMA attributes
 > 
 > From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > 
-> Refactor ice_fetch_rx_buf and ice_add_rx_frag in a way that we have
-> standalone functions that do either the skb construction or frag addition to
-> previously constructed skb.
+> Provide DMA_ATTR_WEAK_ORDERING and DMA_ATTR_SKIP_CPU_SYNC
+> attributes to the DMA API during the mapping operations on rx side. With
+> this change the non-x86 platforms will be able to sync only with what is being
+> used (2k buffer) instead of entire page. This should yield a slight
+> performance improvement.
 > 
-> The skb handling between rx_bufs is spread among various functions. The
-> ice_get_rx_buf will retrieve the skb pointer from rx_buf and if it is a NULL
-> pointer then we do the ice_construct_skb, otherwise we add a frag to the
-> current skb via ice_add_rx_frag. Then, on the ice_put_rx_buf the skb
-> pointer that belongs to rx_buf will be cleared. Moving further, if the current
-> frame is not EOP frame we assign the current skb to the rx_buf that is
-> pointed by updated next_to_clean indicator.
+> Furthermore, DMA unmap may destroy the changes that were made to the
+> buffer by CPU when platform is not a x86 one. DMA_ATTR_SKIP_CPU_SYNC
+> attribute usage fixes this issue.
 > 
-> What is more during the buffer reuse let's assign each member of ice_rx_buf
-> individually so we avoid the unnecessary copy of skb.
-> 
-> Last but not least, this logic split will allow us for better code reuse when
-> adding a support for build_skb.
+> Also add a sync_single_for_device call during the rx buffer assignment, to
+> make sure that the cache lines are cleared before device attempting to write
+> to the buffer.
 > 
 > Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
@@ -47,9 +43,9 @@ List-ID: <intel-wired-lan.osuosl.org>
 > [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
 > up commit message]
 > ---
->  drivers/net/ethernet/intel/ice/ice_txrx.c | 160 +++++++++++++++-----------
-> ----
->  1 file changed, 79 insertions(+), 81 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_txrx.c | 24 ++++++++++++++++++++----
+> drivers/net/ethernet/intel/ice/ice_txrx.h |  3 +++
+>  2 files changed, 23 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
