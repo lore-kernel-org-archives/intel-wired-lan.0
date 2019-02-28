@@ -1,146 +1,144 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 28 Feb 2019 15:24:27 -0800
-Subject: [Intel-wired-lan] [PATCH S16 06/11] ice: Update rings based on TC
- information
+Date: Thu, 28 Feb 2019 15:24:25 -0800
+Subject: [Intel-wired-lan] [PATCH S16 04/11] ice: Add code for DCB
+ initialization part 4/4
 In-Reply-To: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
 References: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190228232432.31659-7-anirudh.venkataramanan@intel.com>
+Message-ID: <20190228232432.31659-5-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds a new function ice_vsi_cfg_dcb_rings which updates a
-VSI's rings based on DCB traffic class information.
+When the firmware doesn't support LLDP or DCBX, the driver should switch
+to "software LLDP mode". This patch adds support for the same.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 38 ++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  8 ++++++
- drivers/net/ethernet/intel/ice/ice_lib.c     |  2 ++
- drivers/net/ethernet/intel/ice/ice_main.c    |  1 +
- drivers/net/ethernet/intel/ice/ice_txrx.h    |  3 +++
- 5 files changed, 52 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_dcb.h     |  1 +
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 82 +++++++++++++++++++++++++++-
+ 2 files changed, 81 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.h b/drivers/net/ethernet/intel/ice/ice_dcb.h
+index 068ec5b98708..03e310a679f0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb.h
++++ b/drivers/net/ethernet/intel/ice/ice_dcb.h
+@@ -6,6 +6,7 @@
+ 
+ #include "ice_type.h"
+ 
++#define ICE_DCBX_STATUS_NOT_STARTED	0
+ #define ICE_DCBX_STATUS_IN_PROGRESS	1
+ #define ICE_DCBX_STATUS_DONE		2
+ #define ICE_DCBX_STATUS_DIS		7
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index bb9c282ee35e..68df3d78a534 100644
+index 102a9d7efb3c..67b3fab74f7a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -57,6 +57,44 @@ u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg)
+@@ -186,6 +186,50 @@ static int ice_dcb_init_cfg(struct ice_pf *pf)
  	return ret;
  }
  
 +/**
-+ * ice_vsi_cfg_dcb_rings - Update rings to reflect DCB TC
-+ * @vsi: VSI owner of rings being updated
++ * ice_dcb_sw_default_config - Apply a default DCB config
++ * @pf: pf to apply config to
 + */
-+void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi)
++static int ice_dcb_sw_dflt_cfg(struct ice_pf *pf)
 +{
-+	struct ice_ring *tx_ring, *rx_ring;
-+	u16 qoffset, qcount;
-+	int i, n;
++	struct ice_aqc_port_ets_elem buf = { 0 };
++	struct ice_dcbx_cfg *dcbcfg;
++	struct ice_port_info *pi;
++	struct ice_hw *hw;
++	int ret;
 +
-+	if (!test_bit(ICE_FLAG_DCB_ENA, vsi->back->flags)) {
-+		/* Reset the TC information */
-+		for (i = 0; i < vsi->num_txq; i++) {
-+			tx_ring = vsi->tx_rings[i];
-+			tx_ring->dcb_tc = 0;
-+		}
-+		for (i = 0; i < vsi->num_rxq; i++) {
-+			rx_ring = vsi->rx_rings[i];
-+			rx_ring->dcb_tc = 0;
-+		}
-+		return;
-+	}
++	hw = &pf->hw;
++	pi = hw->port_info;
++	dcbcfg = devm_kzalloc(&pf->pdev->dev, sizeof(*dcbcfg), GFP_KERNEL);
 +
-+	ice_for_each_traffic_class(n) {
-+		if (!(vsi->tc_cfg.ena_tc & BIT(n)))
-+			break;
++	memset(dcbcfg, 0, sizeof(*dcbcfg));
++	memset(&pi->local_dcbx_cfg, 0, sizeof(*dcbcfg));
 +
-+		qoffset = vsi->tc_cfg.tc_info[n].qoffset;
-+		qcount = vsi->tc_cfg.tc_info[n].qcount_tx;
-+		for (i = qoffset; i < (qoffset + qcount); i++) {
-+			tx_ring = vsi->tx_rings[i];
-+			rx_ring = vsi->rx_rings[i];
-+			tx_ring->dcb_tc = n;
-+			rx_ring->dcb_tc = n;
-+		}
-+	}
++	dcbcfg->etscfg.willing = 1;
++	dcbcfg->etscfg.maxtcs = 8;
++	dcbcfg->etscfg.tcbwtable[0] = 100;
++	dcbcfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
++
++	memcpy(&dcbcfg->etsrec, &dcbcfg->etscfg,
++	       sizeof(dcbcfg->etsrec));
++	dcbcfg->etsrec.willing = 0;
++
++	dcbcfg->pfc.willing = 1;
++	dcbcfg->pfc.pfccap = IEEE_8021QAZ_MAX_TCS;
++
++	dcbcfg->numapps = 1;
++	dcbcfg->app[0].selector = ICE_APP_SEL_ETHTYPE;
++	dcbcfg->app[0].priority = 3;
++	dcbcfg->app[0].prot_id = ICE_APP_PROT_ID_FCOE;
++
++	ret = ice_pf_dcb_cfg(pf, dcbcfg);
++	devm_kfree(&pf->pdev->dev, dcbcfg);
++	if (ret)
++		return ret;
++
++	return ice_query_port_ets(pi, &buf, sizeof(buf), NULL);
 +}
 +
  /**
-  * ice_pf_dcb_recfg - Reconfigure all VEBs and VSIs
-  * @pf: pointer to the PF struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-index a2e42f85fa55..449e3735ca1b 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-@@ -10,10 +10,16 @@
- #ifdef CONFIG_DCB
- u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg *dcbcfg);
- u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
-+void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
- int ice_init_pf_dcb(struct ice_pf *pf);
- void
- ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
- 				    struct ice_rq_event_info *event);
-+static inline void
-+ice_set_cgd_num(struct ice_tlan_ctx *tlan_ctx, struct ice_ring *ring)
-+{
-+	tlan_ctx->cgd_num = ring->dcb_tc;
-+}
- #else
- static inline u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg __always_unused *dcbcfg)
- {
-@@ -31,6 +37,8 @@ static inline int ice_init_pf_dcb(struct ice_pf *pf)
- 	return -EOPNOTSUPP;
- }
+  * ice_init_pf_dcb - initialize DCB for a PF
+  * @pf: pf to initiialize DCB for
+@@ -195,6 +239,7 @@ int ice_init_pf_dcb(struct ice_pf *pf)
+ 	struct device *dev = &pf->pdev->dev;
+ 	struct ice_port_info *port_info;
+ 	struct ice_hw *hw = &pf->hw;
++	int sw_default = 0;
+ 	int err;
  
-+#define ice_vsi_cfg_dcb_rings(vsi) do {} while (0)
- #define ice_dcb_process_lldp_set_mib_change(pf, event) do {} while (0)
-+#define ice_set_cgd_num(tlan_ctx, ring) do {} while (0)
- #endif /* CONFIG_DCB */
- #endif /* _ICE_DCB_LIB_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index f3574daa147c..f31129e4e9cf 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -125,6 +125,8 @@ ice_setup_tx_ctx(struct ice_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf_q)
- 	/* Transmit Queue Length */
- 	tlan_ctx->qlen = ring->count;
- 
-+	ice_set_cgd_num(tlan_ctx, ring);
-+
- 	/* PF number */
- 	tlan_ctx->pf_num = hw->pf_id;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 9b58f156ceee..367e9559b1ca 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2940,6 +2940,7 @@ static int ice_vsi_cfg(struct ice_vsi *vsi)
- 		if (err)
- 			return err;
+ 	port_info = hw->port_info;
+@@ -223,8 +268,41 @@ int ice_init_pf_dcb(struct ice_pf *pf)
  	}
-+	ice_vsi_cfg_dcb_rings(vsi);
  
- 	err = ice_vsi_cfg_lan_txqs(vsi);
- 	if (!err)
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 60131b84b021..53903f846834 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -160,6 +160,9 @@ struct ice_ring {
- 	};
- 	u16 q_index;			/* Queue number of ring */
- 	u32 txq_teid;			/* Added Tx queue TEID */
-+#ifdef CONFIG_DCB
-+	u8 dcb_tc;		/* Traffic class of ring */
-+#endif /* CONFIG_DCB */
+ 	err = ice_init_dcb(hw);
+-	if (err)
+-		goto dcb_init_err;
++	if (err) {
++		/* FW LLDP not in usable state, default to SW DCBx/LLDP */
++		dev_info(&pf->pdev->dev, "FW LLDP not in usable state\n");
++		hw->port_info->dcbx_status = ICE_DCBX_STATUS_NOT_STARTED;
++		hw->port_info->is_sw_lldp = true;
++	}
++
++	if (port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
++		dev_info(&pf->pdev->dev, "DCBX disabled\n");
++
++	/* LLDP disabled in FW */
++	if (port_info->is_sw_lldp) {
++		sw_default = 1;
++		dev_info(&pf->pdev->dev, "DCBx/LLDP in SW mode.\n");
++	}
++
++	if (port_info->dcbx_status == ICE_DCBX_STATUS_NOT_STARTED) {
++		sw_default = 1;
++		dev_info(&pf->pdev->dev, "DCBX not started\n");
++	}
++
++	if (sw_default) {
++		err = ice_dcb_sw_dflt_cfg(pf);
++		if (err) {
++			dev_err(&pf->pdev->dev,
++				"Failed to set local DCB config %d\n", err);
++			err = -EIO;
++			goto dcb_init_err;
++		}
++
++		pf->dcbx_cap = DCB_CAP_DCBX_HOST | DCB_CAP_DCBX_VER_IEEE;
++		set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
++		set_bit(ICE_FLAG_DCB_ENA, pf->flags);
++		return 0;
++	}
  
- 	u16 count;			/* Number of descriptors */
- 	u16 reg_idx;			/* HW register index of the ring */
+ 	/* DCBX in FW and LLDP enabled in FW */
+ 	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
 -- 
 2.14.5
 
