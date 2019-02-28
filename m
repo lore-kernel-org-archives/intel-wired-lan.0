@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 Feb 2019 19:34:27 +0000
-Subject: [Intel-wired-lan] [PATCH S12 10/14] ice: Get resources per
- function
-In-Reply-To: <20190208205101.12078-11-anirudh.venkataramanan@intel.com>
+Date: Thu, 28 Feb 2019 19:34:56 +0000
+Subject: [Intel-wired-lan] [PATCH S12 11/14] ice: Reset all VFs with
+ VFLR during SR-IOV init flow
+In-Reply-To: <20190208205101.12078-12-anirudh.venkataramanan@intel.com>
 References: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
- <20190208205101.12078-11-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D367047@ORSMSX104.amr.corp.intel.com>
+ <20190208205101.12078-12-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D367053@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Friday, February 8, 2019 12:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S12 10/14] ice: Get resources per function
+> Subject: [Intel-wired-lan] [PATCH S12 11/14] ice: Reset all VFs with VFLR
+> during SR-IOV init flow
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > 
-> ice_get_guar_num_vsi currently calculates the number of VSIs per PF.
-> Rework this into a general function ice_get_num_per_func, that can
-> calculate per PF allocations for not just VSIs but across multiple resource
-> types.
+> During SR-IOV initialization, we allocate and setup VFs with reset, and since
+> we were going to inform Firmware about our intention to do VFLR by
+> disabling LAN TX Queue, then we really have to complete VF reset flow with
+> VFLR using appropriate registers - Otherwise, reset status bit for VF in the
+> Guest OS might returns DEADBEEF.
+> This resolves issue to properly initialize VFs in the Guest OS via PCI
+> passthrough.
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote
-> commit message]
-> ---
->  drivers/net/ethernet/intel/ice/ice_common.c | 13 ++++++++-----
->  1 file changed, 8 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
