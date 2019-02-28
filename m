@@ -1,64 +1,209 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 28 Feb 2019 15:25:46 -0800
-Subject: [Intel-wired-lan] [PATCH S17 00/17] Implementation updates for ice
-Message-ID: <20190228232603.32156-1-anirudh.venkataramanan@intel.com>
+Date: Thu, 28 Feb 2019 15:25:47 -0800
+Subject: [Intel-wired-lan] [PATCH S17 01/17] ice: Calculate ITR increment
+ based on direct calculation
+In-Reply-To: <20190228232603.32156-1-anirudh.venkataramanan@intel.com>
+References: <20190228232603.32156-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20190228232603.32156-2-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Akeem G Abodunrin (2):
-  ice: Return configuration error without queue to disable
-  ice: Fix issue when adding more than allowed VLANs
+From: Brett Creeley <brett.creeley@intel.com>
 
-Anirudh Venkataramanan (1):
-  ice: Create framework for VSI queue context
+Currently when calculating how much to increment ITR by inside of
+ice_update_itr() we do some estimations and intermediate
+calculations. Instead of doing estimations, just do the
+calculation directly. This allows for a more accurate value and it
+makes it easier for the next person to understand and update.
 
-Brett Creeley (8):
-  ice: Calculate ITR increment based on direct calculation
-  ice: Reduce scope of variable in ice_vsi_cfg_rxqs
-  ice: Use ice_for_each_q_vector macro where possible
-  ice: Add ability to update rx-usecs-high
-  ice: Remove unnecessary wait when disabling/enabling Rx queues
-  ice: Add reg_idx variable in ice_q_vector structure
-  ice: Refactor link event flow
-  ice: Use dev_err when ice_cfg_vsi_lan fails
+Also, remove the dividing the ITR value by 2 when latency
+driven because the ITR values are already so low for 100Gbps
+speed. This should help get to the desired ITR value faster.
 
-Bruce Allan (1):
-  ice: Resolve static analysis reported issue
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 135 ++++++++++++++----------------
+ 1 file changed, 63 insertions(+), 72 deletions(-)
 
-Jesse Brandeburg (1):
-  ice: Use pf instead of vsi-back
-
-Maciej Fijalkowski (1):
-  ice: Validate ring existence and its q_vector per VSI
-
-Md Fahad Iqbal Polash (1):
-  ice: Remove runtime change of PFINT_OICR_ENA register
-
-Paul Greenwalt (1):
-  ice: Add 52 byte RSS hash key support
-
-Tony Nguyen (1):
-  ice: Add missing PHY type to link settings
-
- drivers/net/ethernet/intel/ice/ice.h             |  23 +-
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |   3 +
- drivers/net/ethernet/intel/ice/ice_common.c      |  91 +++++--
- drivers/net/ethernet/intel/ice/ice_common.h      |  11 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c     |  32 ++-
- drivers/net/ethernet/intel/ice/ice_lib.c         | 308 ++++++++++++++---------
- drivers/net/ethernet/intel/ice/ice_lib.h         |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c        | 129 +++++-----
- drivers/net/ethernet/intel/ice/ice_sched.c       |  54 +++-
- drivers/net/ethernet/intel/ice/ice_switch.c      |  22 ++
- drivers/net/ethernet/intel/ice/ice_switch.h      |   9 +
- drivers/net/ethernet/intel/ice/ice_txrx.c        | 137 +++++-----
- drivers/net/ethernet/intel/ice/ice_txrx.h        |   1 +
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  30 +--
- 14 files changed, 541 insertions(+), 310 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 4b08cb3be28e..fabee3e59eff 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1097,19 +1097,69 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 	return failure ? budget : (int)total_rx_pkts;
+ }
+ 
+-static unsigned int ice_itr_divisor(struct ice_port_info *pi)
++/**
++ * ice_adjust_itr_by_size_and_speed - Adjust ITR based on current traffic
++ * @port_info: port_info structure containing the current link speed
++ * @avg_pkt_size: average size of Tx or Rx packets based on clean routine
++ * @itr: itr value to update
++ *
++ * Calculate how big of an increment should be applied to the ITR value passed
++ * in based on wmem_default, SKB overhead, ethernet overhead, and the current
++ * link speed.
++ *
++ * The following is a calculation derived from:
++ *  wmem_default / (size + overhead) = desired_pkts_per_int
++ *  rate / bits_per_byte / (size + ethernet overhead) = pkt_rate
++ *  (desired_pkt_rate / pkt_rate) * usecs_per_sec = ITR value
++ *
++ * Assuming wmem_default is 212992 and overhead is 640 bytes per
++ * packet, (256 skb, 64 headroom, 320 shared info), we can reduce the
++ * formula down to:
++ *
++ *	 wmem_default * bits_per_byte * usecs_per_sec   pkt_size + 24
++ * ITR = -------------------------------------------- * --------------
++ *			     rate			pkt_size + 640
++ */
++static unsigned int
++ice_adjust_itr_by_size_and_speed(struct ice_port_info *port_info,
++				 unsigned int avg_pkt_size,
++				 unsigned int itr)
+ {
+-	switch (pi->phy.link_info.link_speed) {
++	switch (port_info->phy.link_info.link_speed) {
++	case ICE_AQ_LINK_SPEED_100GB:
++		itr += DIV_ROUND_UP(17 * (avg_pkt_size + 24),
++				    avg_pkt_size + 640);
++		break;
++	case ICE_AQ_LINK_SPEED_50GB:
++		itr += DIV_ROUND_UP(34 * (avg_pkt_size + 24),
++				    avg_pkt_size + 640);
++		break;
+ 	case ICE_AQ_LINK_SPEED_40GB:
+-		return ICE_ITR_ADAPTIVE_MIN_INC * 1024;
++		itr += DIV_ROUND_UP(43 * (avg_pkt_size + 24),
++				    avg_pkt_size + 640);
++		break;
+ 	case ICE_AQ_LINK_SPEED_25GB:
++		itr += DIV_ROUND_UP(68 * (avg_pkt_size + 24),
++				    avg_pkt_size + 640);
++		break;
+ 	case ICE_AQ_LINK_SPEED_20GB:
+-		return ICE_ITR_ADAPTIVE_MIN_INC * 512;
+-	case ICE_AQ_LINK_SPEED_100MB:
+-		return ICE_ITR_ADAPTIVE_MIN_INC * 32;
++		itr += DIV_ROUND_UP(85 * (avg_pkt_size + 24),
++				    avg_pkt_size + 640);
++		break;
++	case ICE_AQ_LINK_SPEED_10GB:
++		/* fall through */
+ 	default:
+-		return ICE_ITR_ADAPTIVE_MIN_INC * 256;
++		itr += DIV_ROUND_UP(170 * (avg_pkt_size + 24),
++				    avg_pkt_size + 640);
++		break;
+ 	}
++
++	if ((itr & ICE_ITR_MASK) > ICE_ITR_ADAPTIVE_MAX_USECS) {
++		itr &= ICE_ITR_ADAPTIVE_LATENCY;
++		itr += ICE_ITR_ADAPTIVE_MAX_USECS;
++	}
++
++	return itr;
+ }
+ 
+ /**
+@@ -1128,8 +1178,8 @@ static unsigned int ice_itr_divisor(struct ice_port_info *pi)
+ static void
+ ice_update_itr(struct ice_q_vector *q_vector, struct ice_ring_container *rc)
+ {
+-	unsigned int avg_wire_size, packets, bytes, itr;
+ 	unsigned long next_update = jiffies;
++	unsigned int packets, bytes, itr;
+ 	bool container_is_rx;
+ 
+ 	if (!rc->ring || !ITR_IS_DYNAMIC(rc->itr_setting))
+@@ -1174,7 +1224,7 @@ ice_update_itr(struct ice_q_vector *q_vector, struct ice_ring_container *rc)
+ 		if (packets && packets < 4 && bytes < 9000 &&
+ 		    (q_vector->tx.target_itr & ICE_ITR_ADAPTIVE_LATENCY)) {
+ 			itr = ICE_ITR_ADAPTIVE_LATENCY;
+-			goto adjust_by_size;
++			goto adjust_by_size_and_speed;
+ 		}
+ 	} else if (packets < 4) {
+ 		/* If we have Tx and Rx ITR maxed and Tx ITR is running in
+@@ -1242,70 +1292,11 @@ ice_update_itr(struct ice_q_vector *q_vector, struct ice_ring_container *rc)
+ 	 */
+ 	itr = ICE_ITR_ADAPTIVE_BULK;
+ 
+-adjust_by_size:
+-	/* If packet counts are 256 or greater we can assume we have a gross
+-	 * overestimation of what the rate should be. Instead of trying to fine
+-	 * tune it just use the formula below to try and dial in an exact value
+-	 * gives the current packet size of the frame.
+-	 */
+-	avg_wire_size = bytes / packets;
++adjust_by_size_and_speed:
+ 
+-	/* The following is a crude approximation of:
+-	 *  wmem_default / (size + overhead) = desired_pkts_per_int
+-	 *  rate / bits_per_byte / (size + ethernet overhead) = pkt_rate
+-	 *  (desired_pkt_rate / pkt_rate) * usecs_per_sec = ITR value
+-	 *
+-	 * Assuming wmem_default is 212992 and overhead is 640 bytes per
+-	 * packet, (256 skb, 64 headroom, 320 shared info), we can reduce the
+-	 * formula down to
+-	 *
+-	 *  (170 * (size + 24)) / (size + 640) = ITR
+-	 *
+-	 * We first do some math on the packet size and then finally bitshift
+-	 * by 8 after rounding up. We also have to account for PCIe link speed
+-	 * difference as ITR scales based on this.
+-	 */
+-	if (avg_wire_size <= 60) {
+-		/* Start at 250k ints/sec */
+-		avg_wire_size = 4096;
+-	} else if (avg_wire_size <= 380) {
+-		/* 250K ints/sec to 60K ints/sec */
+-		avg_wire_size *= 40;
+-		avg_wire_size += 1696;
+-	} else if (avg_wire_size <= 1084) {
+-		/* 60K ints/sec to 36K ints/sec */
+-		avg_wire_size *= 15;
+-		avg_wire_size += 11452;
+-	} else if (avg_wire_size <= 1980) {
+-		/* 36K ints/sec to 30K ints/sec */
+-		avg_wire_size *= 5;
+-		avg_wire_size += 22420;
+-	} else {
+-		/* plateau@a limit of 30K ints/sec */
+-		avg_wire_size = 32256;
+-	}
+-
+-	/* If we are in low latency mode halve our delay which doubles the
+-	 * rate to somewhere between 100K to 16K ints/sec
+-	 */
+-	if (itr & ICE_ITR_ADAPTIVE_LATENCY)
+-		avg_wire_size >>= 1;
+-
+-	/* Resultant value is 256 times larger than it needs to be. This
+-	 * gives us room to adjust the value as needed to either increase
+-	 * or decrease the value based on link speeds of 10G, 2.5G, 1G, etc.
+-	 *
+-	 * Use addition as we have already recorded the new latency flag
+-	 * for the ITR value.
+-	 */
+-	itr += DIV_ROUND_UP(avg_wire_size,
+-			    ice_itr_divisor(q_vector->vsi->port_info)) *
+-	       ICE_ITR_ADAPTIVE_MIN_INC;
+-
+-	if ((itr & ICE_ITR_MASK) > ICE_ITR_ADAPTIVE_MAX_USECS) {
+-		itr &= ICE_ITR_ADAPTIVE_LATENCY;
+-		itr += ICE_ITR_ADAPTIVE_MAX_USECS;
+-	}
++	/* based on checks above packets cannot be 0 so division is safe */
++	itr = ice_adjust_itr_by_size_and_speed(q_vector->vsi->port_info,
++					       bytes / packets, itr);
+ 
+ clear_counts:
+ 	/* write back value */
 -- 
 2.14.5
 
