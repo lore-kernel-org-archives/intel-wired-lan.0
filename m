@@ -1,101 +1,72 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 28 Feb 2019 15:25:57 -0800
-Subject: [Intel-wired-lan] [PATCH S17 11/17] ice: Fix issue when adding more
- than allowed VLANs
+Date: Thu, 28 Feb 2019 15:25:54 -0800
+Subject: [Intel-wired-lan] [PATCH S17 08/17] ice: Add 52 byte RSS hash key
+ support
 In-Reply-To: <20190228232603.32156-1-anirudh.venkataramanan@intel.com>
 References: <20190228232603.32156-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190228232603.32156-12-anirudh.venkataramanan@intel.com>
+Message-ID: <20190228232603.32156-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Paul Greenwalt <paul.greenwalt@intel.com>
 
-This patch fixes issue with non trusted VFs being able to add more than
-permitted number of VLANs by adding a check in ice_vc_process_vlan_msg.
-Also don't return an error in this case as the VF does not need to know
-that it is not trusted.
+Add support to set 52 byte RSS hash key.
 
-Also rework ice_vsi_kill_vlan to use the right types.
-
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_lib.c         | 15 +++++++++------
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 13 ++++++++++++-
- 2 files changed, 21 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  3 +++
+ drivers/net/ethernet/intel/ice/ice_lib.c        | 12 +++++-------
+ 2 files changed, 8 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 583f92d4db4c..6ef083002f5b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1291,6 +1291,9 @@ struct ice_aqc_get_set_rss_key {
+ 
+ #define ICE_AQC_GET_SET_RSS_KEY_DATA_RSS_KEY_SIZE	0x28
+ #define ICE_AQC_GET_SET_RSS_KEY_DATA_HASH_KEY_SIZE	0xC
++#define ICE_GET_SET_RSS_KEY_EXTEND_KEY_SIZE \
++				(ICE_AQC_GET_SET_RSS_KEY_DATA_RSS_KEY_SIZE + \
++				 ICE_AQC_GET_SET_RSS_KEY_DATA_HASH_KEY_SIZE)
+ 
+ struct ice_aqc_get_set_rss_keys {
+ 	u8 standard_rss_key[ICE_AQC_GET_SET_RSS_KEY_DATA_RSS_KEY_SIZE];
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 8e0a23e6b563..6d9571c8826d 100644
+index e75d8c4fadc6..982a3a9e9b8d 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1598,7 +1598,8 @@ int ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
- 	struct ice_fltr_list_entry *list;
+@@ -1394,7 +1394,6 @@ int ice_vsi_manage_rss_lut(struct ice_vsi *vsi, bool ena)
+  */
+ static int ice_vsi_cfg_rss_lut_key(struct ice_vsi *vsi)
+ {
+-	u8 seed[ICE_AQC_GET_SET_RSS_KEY_DATA_RSS_KEY_SIZE];
+ 	struct ice_aqc_get_set_rss_keys *key;
  	struct ice_pf *pf = vsi->back;
- 	LIST_HEAD(tmp_add_list);
--	int status = 0;
-+	enum ice_status status;
-+	int err = 0;
- 
- 	list = devm_kzalloc(&pf->pdev->dev, sizeof(*list), GFP_KERNEL);
- 	if (!list)
-@@ -1614,14 +1615,16 @@ int ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
- 	INIT_LIST_HEAD(&list->list_entry);
- 	list_add(&list->list_entry, &tmp_add_list);
- 
--	if (ice_remove_vlan(&pf->hw, &tmp_add_list)) {
--		dev_err(&pf->pdev->dev, "Error removing VLAN %d on vsi %i\n",
--			vid, vsi->vsi_num);
--		status = -EIO;
-+	status = ice_remove_vlan(&pf->hw, &tmp_add_list);
-+	if (status) {
-+		dev_err(&pf->pdev->dev,
-+			"Error removing VLAN %d on vsi %i error: %d\n",
-+			vid, vsi->vsi_num, status);
-+		err = -EIO;
+ 	enum ice_status status;
+@@ -1429,13 +1428,12 @@ static int ice_vsi_cfg_rss_lut_key(struct ice_vsi *vsi)
  	}
  
- 	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
--	return status;
-+	return err;
- }
+ 	if (vsi->rss_hkey_user)
+-		memcpy(seed, vsi->rss_hkey_user,
+-		       ICE_AQC_GET_SET_RSS_KEY_DATA_RSS_KEY_SIZE);
++		memcpy(key,
++		       (struct ice_aqc_get_set_rss_keys *)vsi->rss_hkey_user,
++		       ICE_GET_SET_RSS_KEY_EXTEND_KEY_SIZE);
+ 	else
+-		netdev_rss_key_fill((void *)seed,
+-				    ICE_AQC_GET_SET_RSS_KEY_DATA_RSS_KEY_SIZE);
+-	memcpy(&key->standard_rss_key, seed,
+-	       ICE_AQC_GET_SET_RSS_KEY_DATA_RSS_KEY_SIZE);
++		netdev_rss_key_fill((void *)key,
++				    ICE_GET_SET_RSS_KEY_EXTEND_KEY_SIZE);
  
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 789b6f10b381..f52f0fc52f46 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -2329,7 +2329,6 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
- 		/* There is no need to let VF know about being not trusted,
- 		 * so we can just return success message here
- 		 */
--		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 		goto error_param;
- 	}
+ 	status = ice_aq_set_rss_key(&pf->hw, vsi->idx, key);
  
-@@ -2370,6 +2369,18 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
- 		for (i = 0; i < vfl->num_elements; i++) {
- 			u16 vid = vfl->vlan_id[i];
- 
-+			if (!ice_is_vf_trusted(vf) &&
-+			    vf->num_vlan >= ICE_MAX_VLAN_PER_VF) {
-+				dev_info(&pf->pdev->dev,
-+					 "VF-%d is not trusted, switch the VF to trusted mode, in order to add more VLAN addresses\n",
-+					 vf->vf_id);
-+				/* There is no need to let VF know about being
-+				 * not trusted, so we can just return success
-+				 * message here as well.
-+				 */
-+				goto error_param;
-+			}
-+
- 			if (ice_vsi_add_vlan(vsi, vid)) {
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 				goto error_param;
 -- 
 2.14.5
 
