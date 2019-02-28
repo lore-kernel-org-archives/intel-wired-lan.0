@@ -1,44 +1,53 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 Feb 2019 23:18:00 +0000
-Subject: [Intel-wired-lan] [PATCH S14 08/15] ice: Prevent unintended
- multiple chain resets
-In-Reply-To: <20190213185115.25877-9-anirudh.venkataramanan@intel.com>
-References: <20190213185115.25877-1-anirudh.venkataramanan@intel.com>
- <20190213185115.25877-9-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D36717C@ORSMSX104.amr.corp.intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Date: Thu, 28 Feb 2019 15:24:21 -0800
+Subject: [Intel-wired-lan] [PATCH S16 00/11] Add support for Data Center
+ Bridging (DCB)
+Message-ID: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Anirudh Venkataramanan
-> Sent: Wednesday, February 13, 2019 10:51 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S14 08/15] ice: Prevent unintended
-> multiple chain resets
-> 
-> From: Dave Ertman <david.m.ertman@intel.com>
-> 
-> In the current implementation of ice_reset_subtask, if multiple reset types
-> are set in the pf->state, the most intrusive one is meant to be performed
-> only, but the bits requesting the other types are not being cleared. This
-> would lead to another reset being performed the next time the service task
-> is scheduled.
-> 
-> Change the flow of ice_reset_subtask so that all reset request bits in
-> pf->state are cleared, and we still perform the most intrusive of the
-> resets requested.
-> 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
+Anirudh Venkataramanan (11):
+  ice: Add code for DCB initialization part 1/4
+  ice: Add code for DCB initialization part 2/4
+  ice: Add code for DCB initialization part 3/4
+  ice: Add code for DCB initialization part 4/4
+  ice: Add code to process LLDP MIB change events
+  ice: Update rings based on TC information
+  ice: Add priority information into VLAN header
+  ice: Add code to get DCB related statistics
+  ice: Add code for DCB rebuild
+  ice: Add code to control FW LLDP and DCBX
+  ice: Bump driver version
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+ drivers/net/ethernet/intel/ice/Makefile         |    1 +
+ drivers/net/ethernet/intel/ice/ice.h            |   18 +-
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  164 +++
+ drivers/net/ethernet/intel/ice/ice_common.c     |   25 +
+ drivers/net/ethernet/intel/ice/ice_common.h     |    3 +
+ drivers/net/ethernet/intel/ice/ice_dcb.c        | 1392 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcb.h        |  179 +++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c    |  551 +++++++++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h    |   61 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c    |  132 ++-
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |    8 +
+ drivers/net/ethernet/intel/ice/ice_lib.c        |  137 +++
+ drivers/net/ethernet/intel/ice/ice_lib.h        |    8 +
+ drivers/net/ethernet/intel/ice/ice_main.c       |  138 ++-
+ drivers/net/ethernet/intel/ice/ice_sched.c      |   27 +-
+ drivers/net/ethernet/intel/ice/ice_sched.h      |    4 +
+ drivers/net/ethernet/intel/ice/ice_status.h     |    1 +
+ drivers/net/ethernet/intel/ice/ice_txrx.c       |    6 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.h       |    5 +
+ drivers/net/ethernet/intel/ice/ice_type.h       |   69 ++
+ 20 files changed, 2841 insertions(+), 88 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dcb.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dcb.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dcb_lib.h
 
+-- 
+2.14.5
 
