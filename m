@@ -1,209 +1,64 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 28 Feb 2019 15:24:29 -0800
-Subject: [Intel-wired-lan] [PATCH S16 08/11] ice: Add code to get DCB
- related statistics
-In-Reply-To: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
-References: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190228232432.31659-9-anirudh.venkataramanan@intel.com>
+Date: Thu, 28 Feb 2019 15:25:46 -0800
+Subject: [Intel-wired-lan] [PATCH S17 00/17] Implementation updates for ice
+Message-ID: <20190228232603.32156-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds a new function ice_update_dcb_stats to get DCB stats
-from the hardware and ethtool support for displaying these stats.
+Akeem G Abodunrin (2):
+  ice: Return configuration error without queue to disable
+  ice: Fix issue when adding more than allowed VLANs
 
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c    | 38 +++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h    |  2 ++
- drivers/net/ethernet/intel/ice/ice_ethtool.c    | 36 +++++++++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  5 ++++
- drivers/net/ethernet/intel/ice/ice_main.c       |  2 ++
- drivers/net/ethernet/intel/ice/ice_type.h       |  5 ++++
- 6 files changed, 86 insertions(+), 2 deletions(-)
+Anirudh Venkataramanan (1):
+  ice: Create framework for VSI queue context
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index fe4765483040..c6ddb748ef53 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -359,6 +359,44 @@ int ice_init_pf_dcb(struct ice_pf *pf)
- 	return err;
- }
- 
-+/**
-+ * ice_update_dcb_stats - Update DCB stats counters
-+ * @pf: PF whose stats needs to be updated
-+ */
-+void ice_update_dcb_stats(struct ice_pf *pf)
-+{
-+	struct ice_hw_port_stats *prev_ps, *cur_ps;
-+	struct ice_hw *hw = &pf->hw;
-+	u8 pf_id = hw->pf_id;
-+	int i;
-+
-+	prev_ps = &pf->stats_prev;
-+	cur_ps = &pf->stats;
-+
-+	for (i = 0; i < 8; i++) {
-+		ice_stat_update32(hw, GLPRT_PXOFFRXC(pf_id, i),
-+				  pf->stat_prev_loaded,
-+				  &prev_ps->priority_xoff_rx[i],
-+				  &cur_ps->priority_xoff_rx[i]);
-+		ice_stat_update32(hw, GLPRT_PXONRXC(pf_id, i),
-+				  pf->stat_prev_loaded,
-+				  &prev_ps->priority_xon_rx[i],
-+				  &cur_ps->priority_xon_rx[i]);
-+		ice_stat_update32(hw, GLPRT_PXONTXC(pf_id, i),
-+				  pf->stat_prev_loaded,
-+				  &prev_ps->priority_xon_tx[i],
-+				  &cur_ps->priority_xon_tx[i]);
-+		ice_stat_update32(hw, GLPRT_PXOFFTXC(pf_id, i),
-+				  pf->stat_prev_loaded,
-+				  &prev_ps->priority_xoff_tx[i],
-+				  &cur_ps->priority_xoff_tx[i]);
-+		ice_stat_update32(hw, GLPRT_RXON2OFFCNT(pf_id, i),
-+				  pf->stat_prev_loaded,
-+				  &prev_ps->priority_xon_2_xoff[i],
-+				  &cur_ps->priority_xon_2_xoff[i]);
-+	}
-+}
-+
- /**
-  * ice_tx_prepare_vlan_flags_dcb - prepare VLAN tagging for DCB
-  * @tx_ring: ring to send buffer on
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-index 1a430a45acf7..1b4159d44617 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-@@ -12,6 +12,7 @@ u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg *dcbcfg);
- u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
- void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
- int ice_init_pf_dcb(struct ice_pf *pf);
-+void ice_update_dcb_stats(struct ice_pf *pf);
- int
- ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
- 			      struct ice_tx_buf *first);
-@@ -47,6 +48,7 @@ ice_tx_prepare_vlan_flags_dcb(struct ice_ring __always_unused *tx_ring,
- 	return 0;
- }
- 
-+#define ice_update_dcb_stats(pf) do {} while (0)
- #define ice_vsi_cfg_dcb_rings(vsi) do {} while (0)
- #define ice_dcb_process_lldp_set_mib_change(pf, event) do {} while (0)
- #define ice_set_cgd_num(tlan_ctx, ring) do {} while (0)
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 1447ffc5d2b0..ea8558954cb4 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -33,8 +33,14 @@ static int ice_q_stats_len(struct net_device *netdev)
- #define ICE_PF_STATS_LEN	ARRAY_SIZE(ice_gstrings_pf_stats)
- #define ICE_VSI_STATS_LEN	ARRAY_SIZE(ice_gstrings_vsi_stats)
- 
--#define ICE_ALL_STATS_LEN(n)	(ICE_PF_STATS_LEN + ICE_VSI_STATS_LEN + \
--				 ice_q_stats_len(n))
-+#define ICE_PFC_STATS_LEN ( \
-+		(FIELD_SIZEOF(struct ice_pf, stats.priority_xoff_rx) + \
-+		 FIELD_SIZEOF(struct ice_pf, stats.priority_xon_rx) + \
-+		 FIELD_SIZEOF(struct ice_pf, stats.priority_xoff_tx) + \
-+		 FIELD_SIZEOF(struct ice_pf, stats.priority_xon_tx)) \
-+		 / sizeof(u64))
-+#define ICE_ALL_STATS_LEN(n)	(ICE_PF_STATS_LEN + ICE_PFC_STATS_LEN + \
-+				 ICE_VSI_STATS_LEN + ice_q_stats_len(n))
- 
- static const struct ice_stats ice_gstrings_vsi_stats[] = {
- 	ICE_VSI_STAT("tx_unicast", eth_stats.tx_unicast),
-@@ -309,6 +315,22 @@ static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
- 			p += ETH_GSTRING_LEN;
- 		}
- 
-+		for (i = 0; i < ICE_MAX_USER_PRIORITY; i++) {
-+			snprintf(p, ETH_GSTRING_LEN,
-+				 "port.tx-priority-%u-xon", i);
-+			p += ETH_GSTRING_LEN;
-+			snprintf(p, ETH_GSTRING_LEN,
-+				 "port.tx-priority-%u-xoff", i);
-+			p += ETH_GSTRING_LEN;
-+		}
-+		for (i = 0; i < ICE_MAX_USER_PRIORITY; i++) {
-+			snprintf(p, ETH_GSTRING_LEN,
-+				 "port.rx-priority-%u-xon", i);
-+			p += ETH_GSTRING_LEN;
-+			snprintf(p, ETH_GSTRING_LEN,
-+				 "port.rx-priority-%u-xoff", i);
-+			p += ETH_GSTRING_LEN;
-+		}
- 		break;
- 	case ETH_SS_PRIV_FLAGS:
- 		for (i = 0; i < ICE_PRIV_FLAG_ARRAY_SIZE; i++) {
-@@ -486,6 +508,16 @@ ice_get_ethtool_stats(struct net_device *netdev,
- 		data[i++] = (ice_gstrings_pf_stats[j].sizeof_stat ==
- 			     sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
- 	}
-+
-+	for (j = 0; j < ICE_MAX_USER_PRIORITY; j++) {
-+		data[i++] = pf->stats.priority_xon_tx[j];
-+		data[i++] = pf->stats.priority_xoff_tx[j];
-+	}
-+
-+	for (j = 0; j < ICE_MAX_USER_PRIORITY; j++) {
-+		data[i++] = pf->stats.priority_xon_rx[j];
-+		data[i++] = pf->stats.priority_xoff_rx[j];
-+	}
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index dfc180d2b282..e172ca002a0a 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -321,11 +321,16 @@
- #define GLPRT_PTC64L(_i)			(0x00380B80 + ((_i) * 8))
- #define GLPRT_PTC9522H(_i)			(0x00380D04 + ((_i) * 8))
- #define GLPRT_PTC9522L(_i)			(0x00380D00 + ((_i) * 8))
-+#define GLPRT_PXOFFRXC(_i, _j)			(0x00380500 + ((_i) * 8 + (_j) * 64))
-+#define GLPRT_PXOFFTXC(_i, _j)			(0x00380F40 + ((_i) * 8 + (_j) * 64))
-+#define GLPRT_PXONRXC(_i, _j)			(0x00380300 + ((_i) * 8 + (_j) * 64))
-+#define GLPRT_PXONTXC(_i, _j)			(0x00380D40 + ((_i) * 8 + (_j) * 64))
- #define GLPRT_RFC(_i)				(0x00380AC0 + ((_i) * 8))
- #define GLPRT_RJC(_i)				(0x00380B00 + ((_i) * 8))
- #define GLPRT_RLEC(_i)				(0x00380140 + ((_i) * 8))
- #define GLPRT_ROC(_i)				(0x00380240 + ((_i) * 8))
- #define GLPRT_RUC(_i)				(0x00380200 + ((_i) * 8))
-+#define GLPRT_RXON2OFFCNT(_i, _j)		(0x00380700 + ((_i) * 8 + (_j) * 64))
- #define GLPRT_TDOLD(_i)				(0x00381280 + ((_i) * 8))
- #define GLPRT_UPRCH(_i)				(0x00381304 + ((_i) * 8))
- #define GLPRT_UPRCL(_i)				(0x00381300 + ((_i) * 8))
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 367e9559b1ca..1a37132446a3 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3251,6 +3251,8 @@ static void ice_update_pf_stats(struct ice_pf *pf)
- 	ice_stat_update32(hw, GLPRT_LXOFFTXC(pf_id), pf->stat_prev_loaded,
- 			  &prev_ps->link_xoff_tx, &cur_ps->link_xoff_tx);
- 
-+	ice_update_dcb_stats(pf);
-+
- 	ice_stat_update32(hw, GLPRT_CRCERRS(pf_id), pf->stat_prev_loaded,
- 			  &prev_ps->crc_errors, &cur_ps->crc_errors);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index c4cdfb2e0c4b..77bc0439e108 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -477,6 +477,11 @@ struct ice_hw_port_stats {
- 	u64 link_xoff_rx;		/* lxoffrxc */
- 	u64 link_xon_tx;		/* lxontxc */
- 	u64 link_xoff_tx;		/* lxofftxc */
-+	u64 priority_xon_rx[8];		/* pxonrxc[8] */
-+	u64 priority_xoff_rx[8];	/* pxoffrxc[8] */
-+	u64 priority_xon_tx[8];		/* pxontxc[8] */
-+	u64 priority_xoff_tx[8];	/* pxofftxc[8] */
-+	u64 priority_xon_2_xoff[8];	/* pxon2offc[8] */
- 	u64 rx_size_64;			/* prc64 */
- 	u64 rx_size_127;		/* prc127 */
- 	u64 rx_size_255;		/* prc255 */
+Brett Creeley (8):
+  ice: Calculate ITR increment based on direct calculation
+  ice: Reduce scope of variable in ice_vsi_cfg_rxqs
+  ice: Use ice_for_each_q_vector macro where possible
+  ice: Add ability to update rx-usecs-high
+  ice: Remove unnecessary wait when disabling/enabling Rx queues
+  ice: Add reg_idx variable in ice_q_vector structure
+  ice: Refactor link event flow
+  ice: Use dev_err when ice_cfg_vsi_lan fails
+
+Bruce Allan (1):
+  ice: Resolve static analysis reported issue
+
+Jesse Brandeburg (1):
+  ice: Use pf instead of vsi-back
+
+Maciej Fijalkowski (1):
+  ice: Validate ring existence and its q_vector per VSI
+
+Md Fahad Iqbal Polash (1):
+  ice: Remove runtime change of PFINT_OICR_ENA register
+
+Paul Greenwalt (1):
+  ice: Add 52 byte RSS hash key support
+
+Tony Nguyen (1):
+  ice: Add missing PHY type to link settings
+
+ drivers/net/ethernet/intel/ice/ice.h             |  23 +-
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |   3 +
+ drivers/net/ethernet/intel/ice/ice_common.c      |  91 +++++--
+ drivers/net/ethernet/intel/ice/ice_common.h      |  11 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c     |  32 ++-
+ drivers/net/ethernet/intel/ice/ice_lib.c         | 308 ++++++++++++++---------
+ drivers/net/ethernet/intel/ice/ice_lib.h         |   1 +
+ drivers/net/ethernet/intel/ice/ice_main.c        | 129 +++++-----
+ drivers/net/ethernet/intel/ice/ice_sched.c       |  54 +++-
+ drivers/net/ethernet/intel/ice/ice_switch.c      |  22 ++
+ drivers/net/ethernet/intel/ice/ice_switch.h      |   9 +
+ drivers/net/ethernet/intel/ice/ice_txrx.c        | 137 +++++-----
+ drivers/net/ethernet/intel/ice/ice_txrx.h        |   1 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  30 +--
+ 14 files changed, 541 insertions(+), 310 deletions(-)
+
 -- 
 2.14.5
 
