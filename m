@@ -1,144 +1,149 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 28 Feb 2019 15:24:25 -0800
-Subject: [Intel-wired-lan] [PATCH S16 04/11] ice: Add code for DCB
- initialization part 4/4
+Date: Thu, 28 Feb 2019 15:24:28 -0800
+Subject: [Intel-wired-lan] [PATCH S16 07/11] ice: Add priority information
+ into VLAN header
 In-Reply-To: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
 References: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190228232432.31659-5-anirudh.venkataramanan@intel.com>
+Message-ID: <20190228232432.31659-8-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When the firmware doesn't support LLDP or DCBX, the driver should switch
-to "software LLDP mode". This patch adds support for the same.
+This patch introduces a new function ice_tx_prepare_vlan_flags_dcb to
+insert 802.1p priority information into the VLAN header
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb.h     |  1 +
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 82 +++++++++++++++++++++++++++-
- 2 files changed, 81 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 39 ++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h | 10 +++++++
+ drivers/net/ethernet/intel/ice/ice_txrx.c    |  6 ++---
+ drivers/net/ethernet/intel/ice/ice_txrx.h    |  2 ++
+ 4 files changed, 54 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.h b/drivers/net/ethernet/intel/ice/ice_dcb.h
-index 068ec5b98708..03e310a679f0 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.h
-@@ -6,6 +6,7 @@
- 
- #include "ice_type.h"
- 
-+#define ICE_DCBX_STATUS_NOT_STARTED	0
- #define ICE_DCBX_STATUS_IN_PROGRESS	1
- #define ICE_DCBX_STATUS_DONE		2
- #define ICE_DCBX_STATUS_DIS		7
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 102a9d7efb3c..67b3fab74f7a 100644
+index 68df3d78a534..fe4765483040 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -186,6 +186,50 @@ static int ice_dcb_init_cfg(struct ice_pf *pf)
- 	return ret;
+@@ -359,6 +359,45 @@ int ice_init_pf_dcb(struct ice_pf *pf)
+ 	return err;
  }
  
 +/**
-+ * ice_dcb_sw_default_config - Apply a default DCB config
-+ * @pf: pf to apply config to
++ * ice_tx_prepare_vlan_flags_dcb - prepare VLAN tagging for DCB
++ * @tx_ring: ring to send buffer on
++ * @first: pointer to struct ice_tx_buf
 + */
-+static int ice_dcb_sw_dflt_cfg(struct ice_pf *pf)
++int
++ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
++			      struct ice_tx_buf *first)
 +{
-+	struct ice_aqc_port_ets_elem buf = { 0 };
-+	struct ice_dcbx_cfg *dcbcfg;
-+	struct ice_port_info *pi;
-+	struct ice_hw *hw;
-+	int ret;
++	struct sk_buff *skb = first->skb;
 +
-+	hw = &pf->hw;
-+	pi = hw->port_info;
-+	dcbcfg = devm_kzalloc(&pf->pdev->dev, sizeof(*dcbcfg), GFP_KERNEL);
++	if (!test_bit(ICE_FLAG_DCB_ENA, tx_ring->vsi->back->flags))
++		return 0;
 +
-+	memset(dcbcfg, 0, sizeof(*dcbcfg));
-+	memset(&pi->local_dcbx_cfg, 0, sizeof(*dcbcfg));
++	/* Insert 802.1p priority into VLAN header */
++	if ((first->tx_flags & (ICE_TX_FLAGS_HW_VLAN | ICE_TX_FLAGS_SW_VLAN)) ||
++	    skb->priority != TC_PRIO_CONTROL) {
++		first->tx_flags &= ~ICE_TX_FLAGS_VLAN_PR_M;
++		/* Mask the lower 3 bits to set the 802.1p priority */
++		first->tx_flags |= (skb->priority & 0x7) <<
++				   ICE_TX_FLAGS_VLAN_PR_S;
++		if (first->tx_flags & ICE_TX_FLAGS_SW_VLAN) {
++			struct vlan_ethhdr *vhdr;
++			int rc;
 +
-+	dcbcfg->etscfg.willing = 1;
-+	dcbcfg->etscfg.maxtcs = 8;
-+	dcbcfg->etscfg.tcbwtable[0] = 100;
-+	dcbcfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
++			rc = skb_cow_head(skb, 0);
++			if (rc < 0)
++				return rc;
++			vhdr = (struct vlan_ethhdr *)skb->data;
++			vhdr->h_vlan_TCI = htons(first->tx_flags >>
++						 ICE_TX_FLAGS_VLAN_S);
++		} else {
++			first->tx_flags |= ICE_TX_FLAGS_HW_VLAN;
++		}
++	}
 +
-+	memcpy(&dcbcfg->etsrec, &dcbcfg->etscfg,
-+	       sizeof(dcbcfg->etsrec));
-+	dcbcfg->etsrec.willing = 0;
-+
-+	dcbcfg->pfc.willing = 1;
-+	dcbcfg->pfc.pfccap = IEEE_8021QAZ_MAX_TCS;
-+
-+	dcbcfg->numapps = 1;
-+	dcbcfg->app[0].selector = ICE_APP_SEL_ETHTYPE;
-+	dcbcfg->app[0].priority = 3;
-+	dcbcfg->app[0].prot_id = ICE_APP_PROT_ID_FCOE;
-+
-+	ret = ice_pf_dcb_cfg(pf, dcbcfg);
-+	devm_kfree(&pf->pdev->dev, dcbcfg);
-+	if (ret)
-+		return ret;
-+
-+	return ice_query_port_ets(pi, &buf, sizeof(buf), NULL);
++	return 0;
 +}
 +
  /**
-  * ice_init_pf_dcb - initialize DCB for a PF
-  * @pf: pf to initiialize DCB for
-@@ -195,6 +239,7 @@ int ice_init_pf_dcb(struct ice_pf *pf)
- 	struct device *dev = &pf->pdev->dev;
- 	struct ice_port_info *port_info;
- 	struct ice_hw *hw = &pf->hw;
-+	int sw_default = 0;
- 	int err;
+  * ice_dcb_process_lldp_set_mib_change - Process MIB change
+  * @pf: ptr to ice_pf
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+index 449e3735ca1b..1a430a45acf7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+@@ -12,6 +12,9 @@ u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg *dcbcfg);
+ u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
+ void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
+ int ice_init_pf_dcb(struct ice_pf *pf);
++int
++ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
++			      struct ice_tx_buf *first);
+ void
+ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 				    struct ice_rq_event_info *event);
+@@ -37,6 +40,13 @@ static inline int ice_init_pf_dcb(struct ice_pf *pf)
+ 	return -EOPNOTSUPP;
+ }
  
- 	port_info = hw->port_info;
-@@ -223,8 +268,41 @@ int ice_init_pf_dcb(struct ice_pf *pf)
++static inline int
++ice_tx_prepare_vlan_flags_dcb(struct ice_ring __always_unused *tx_ring,
++			      struct ice_tx_buf __always_unused *first)
++{
++	return 0;
++}
++
+ #define ice_vsi_cfg_dcb_rings(vsi) do {} while (0)
+ #define ice_dcb_process_lldp_set_mib_change(pf, event) do {} while (0)
+ #define ice_set_cgd_num(tlan_ctx, ring) do {} while (0)
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 35ac0b84a6b4..4b08cb3be28e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -6,6 +6,7 @@
+ #include <linux/prefetch.h>
+ #include <linux/mm.h>
+ #include "ice.h"
++#include "ice_dcb_lib.h"
+ 
+ #define ICE_RX_HDR_SIZE		256
+ 
+@@ -1798,7 +1799,7 @@ ice_tx_prepare_vlan_flags(struct ice_ring *tx_ring, struct ice_tx_buf *first)
+ 		 * to the encapsulated ethertype.
+ 		 */
+ 		skb->protocol = vlan_get_protocol(skb);
+-		goto out;
++		return 0;
  	}
  
- 	err = ice_init_dcb(hw);
--	if (err)
--		goto dcb_init_err;
-+	if (err) {
-+		/* FW LLDP not in usable state, default to SW DCBx/LLDP */
-+		dev_info(&pf->pdev->dev, "FW LLDP not in usable state\n");
-+		hw->port_info->dcbx_status = ICE_DCBX_STATUS_NOT_STARTED;
-+		hw->port_info->is_sw_lldp = true;
-+	}
-+
-+	if (port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
-+		dev_info(&pf->pdev->dev, "DCBX disabled\n");
-+
-+	/* LLDP disabled in FW */
-+	if (port_info->is_sw_lldp) {
-+		sw_default = 1;
-+		dev_info(&pf->pdev->dev, "DCBx/LLDP in SW mode.\n");
-+	}
-+
-+	if (port_info->dcbx_status == ICE_DCBX_STATUS_NOT_STARTED) {
-+		sw_default = 1;
-+		dev_info(&pf->pdev->dev, "DCBX not started\n");
-+	}
-+
-+	if (sw_default) {
-+		err = ice_dcb_sw_dflt_cfg(pf);
-+		if (err) {
-+			dev_err(&pf->pdev->dev,
-+				"Failed to set local DCB config %d\n", err);
-+			err = -EIO;
-+			goto dcb_init_err;
-+		}
-+
-+		pf->dcbx_cap = DCB_CAP_DCBX_HOST | DCB_CAP_DCBX_VER_IEEE;
-+		set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
-+		set_bit(ICE_FLAG_DCB_ENA, pf->flags);
-+		return 0;
-+	}
+ 	/* if we have a HW VLAN tag being added, default to the HW one */
+@@ -1820,8 +1821,7 @@ ice_tx_prepare_vlan_flags(struct ice_ring *tx_ring, struct ice_tx_buf *first)
+ 		first->tx_flags |= ICE_TX_FLAGS_SW_VLAN;
+ 	}
  
- 	/* DCBX in FW and LLDP enabled in FW */
- 	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
+-out:
+-	return 0;
++	return ice_tx_prepare_vlan_flags_dcb(tx_ring, first);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 53903f846834..c75d9fd12a68 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -45,6 +45,8 @@
+ #define ICE_TX_FLAGS_HW_VLAN	BIT(1)
+ #define ICE_TX_FLAGS_SW_VLAN	BIT(2)
+ #define ICE_TX_FLAGS_VLAN_M	0xffff0000
++#define ICE_TX_FLAGS_VLAN_PR_M	0xe0000000
++#define ICE_TX_FLAGS_VLAN_PR_S	29
+ #define ICE_TX_FLAGS_VLAN_S	16
+ 
+ #define ICE_RX_DMA_ATTR \
 -- 
 2.14.5
 
