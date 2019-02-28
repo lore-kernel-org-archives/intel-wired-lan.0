@@ -1,44 +1,50 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 Feb 2019 19:36:34 +0000
-Subject: [Intel-wired-lan] [PATCH S12 14/14] ice: Fix issue reclaiming
- resources back to the pool after reset
-In-Reply-To: <20190208205101.12078-15-anirudh.venkataramanan@intel.com>
-References: <20190208205101.12078-1-anirudh.venkataramanan@intel.com>
- <20190208205101.12078-15-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D367086@ORSMSX104.amr.corp.intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Thu, 28 Feb 2019 11:47:07 -0800 (PST)
+Subject: [Intel-wired-lan] [PATCH v3] net: e1000e: add MAC address
+ kernel cmd line parameter
+In-Reply-To: <20190228192958.GA24085@lunn.ch>
+References: <20190228163729.GB17912@lunn.ch>
+ <6a7a37813e71420b929c769dd1e77664@asem.it>
+ <20190228192958.GA24085@lunn.ch>
+Message-ID: <20190228.114707.11382969767373748.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Anirudh Venkataramanan
-> Sent: Friday, February 8, 2019 12:51 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S12 14/14] ice: Fix issue reclaiming
-> resources back to the pool after reset
-> 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> 
-> This patch fixes issue reclaiming VF resources back to the pool after reset -
-> Since we only allocate HW vector for all VFs and track together with
-> resources allocation for PF with ice_search_res, we need to free VFs
-> resources separately, using first VF vector index to traverse the list.
-> Otherwise tracker starts from the last assigned vectors list and causes
-> maximum supported number of HW vectors, 1024 to be exhausted,
-> depending on the number of VFs enabled, which causes a lot of unwanted
-> issues, and failed to reassign vectors for VFs.
-> 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 26 +++++++++++++++++++++++--
-> -
->  1 file changed, 23 insertions(+), 3 deletions(-)
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Thu, 28 Feb 2019 20:29:58 +0100
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+> On Thu, Feb 28, 2019 at 05:13:27PM +0000, Flavio Suligoi wrote:
+>> > > Hi Andrew,
+>> > >
+>> > > we produce a lot of boards and we have to change the MAC address,
+>> > > from u-boot, for every board.  So I must save in the u-boot
+>> > > environment (SPI NOR flash) the MAC address for every board.
+>> > 
+>> > Hi Flavio
+>> > 
+>> > u-boot should be able to write the MAC address in the correct part of
+>> > device tree. Boards have been doing this a long time.
+>> > 
+>> > Module parameters are considered bad. You should only do it if you
+>> > have no other option. Here you do have another options, so it is going
+>> > to be a hard sell getting David to access your patch.
+>> > 
+>> > You will have more success by adding a call to
+>> > eth_platform_get_mac_address() to the e1000e driver.
+>> 
+>> You have right, and thanks for your suggestions, 
+>> but with a kernel parameter I can use the same method
+>> for any board where the NVM is missed, independently of any architecture
+>> (with or without the device tree presence - ARM or x86 or others).
+> 
+> Hi Flavio
+> 
+> Well, lets wait for David to say what he thinks about the module
+> parameter.
 
-
+I already rejected this, no way... Drivers that already have the
+unacceptable module parameter are no an argument for spreading this
+mistake further.
