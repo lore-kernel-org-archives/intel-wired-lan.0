@@ -1,8 +1,10 @@
 From: Flavio Suligoi <f.suligoi@asem.it>
-Date: Thu, 28 Feb 2019 10:56:46 +0100
-Subject: [Intel-wired-lan] [PATCH] net: e1000e: add MAC address kernel cmd
- line parameter
-Message-ID: <1551347806-12732-1-git-send-email-f.suligoi@asem.it>
+Date: Thu, 28 Feb 2019 14:38:55 +0100
+Subject: [Intel-wired-lan] [PATCH v2] net: e1000e: add MAC address kernel
+ cmd line parameter
+In-Reply-To: <1551345635-10291-1-git-send-email-f.suligoi@asem.it>
+References: <1551345635-10291-1-git-send-email-f.suligoi@asem.it>
+Message-ID: <1551361135-404-1-git-send-email-f.suligoi@asem.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,12 +19,16 @@ and directly force the MAC address using a kernel command-line
 parameter (macaddr).
 
 Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
+
+v2: - e1000_probe: remove wrong newline in the middle of the local variable list
+v1: - written
+
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 50 ++++++++++++++++++++----------
- 1 file changed, 33 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/intel/e1000e/netdev.c | 49 +++++++++++++++++++-----------
+ 1 file changed, 32 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 189f231..054c398 100644
+index 189f231..34ab560 100644
 --- a/drivers/net/ethernet/intel/e1000e/netdev.c
 +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
 @@ -39,6 +39,10 @@ static int debug = -1;
@@ -36,15 +42,7 @@ index 189f231..054c398 100644
  static const struct e1000_info *e1000_info_tbl[] = {
  	[board_82571]		= &e1000_82571_info,
  	[board_82572]		= &e1000_82572_info,
-@@ -7053,6 +7057,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	static int cards_found;
- 	u16 aspm_disable_flag = 0;
- 	int bars, i, err, pci_using_dac;
-+
- 	u16 eeprom_data = 0;
- 	u16 eeprom_apme_mask = E1000_EEPROM_APME;
- 	s32 ret_val = 0;
-@@ -7232,27 +7237,38 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -7232,27 +7236,38 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  	 */
  	adapter->hw.mac.ops.reset_hw(&adapter->hw);
  
