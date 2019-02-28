@@ -1,55 +1,42 @@
-From: Flavio Suligoi <f.suligoi@asem.it>
-Date: Thu, 28 Feb 2019 17:13:27 +0000
-Subject: [Intel-wired-lan] [PATCH v3] net: e1000e: add MAC address
- kernel cmd line parameter
-In-Reply-To: <20190228163729.GB17912@lunn.ch>
-References: <1551361135-404-1-git-send-email-f.suligoi@asem.it>
- <1551361951-1595-1-git-send-email-f.suligoi@asem.it>
- <20190228153245.GA17912@lunn.ch> <b12067de92864d5db83bd3da9456e2fe@asem.it>
- <20190228163729.GB17912@lunn.ch>
-Message-ID: <6a7a37813e71420b929c769dd1e77664@asem.it>
+From: Alice Michael <alice.michael@intel.com>
+Date: Thu, 28 Feb 2019 09:52:49 -0800
+Subject: [Intel-wired-lan] [next PATCH S3 3/9] i40e: remove error msg when
+ vf with port vlan tries to remove vlan 0
+In-Reply-To: <20190228175255.54754-1-alice.michael@intel.com>
+References: <20190228175255.54754-1-alice.michael@intel.com>
+Message-ID: <20190228175255.54754-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> > Hi Andrew,
-> >
-> > we produce a lot of boards and we have to change the MAC address,
-> > from u-boot, for every board.  So I must save in the u-boot
-> > environment (SPI NOR flash) the MAC address for every board.
-> 
-> Hi Flavio
-> 
-> u-boot should be able to write the MAC address in the correct part of
-> device tree. Boards have been doing this a long time.
-> 
-> Module parameters are considered bad. You should only do it if you
-> have no other option. Here you do have another options, so it is going
-> to be a hard sell getting David to access your patch.
-> 
-> You will have more success by adding a call to
-> eth_platform_get_mac_address() to the e1000e driver.
+From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
-You have right, and thanks for your suggestions, 
-but with a kernel parameter I can use the same method
-for any board where the NVM is missed, independently of any architecture
-(with or without the device tree presence - ARM or x86 or others).
+VF's attempt to delete vlan 0 when a port vlan is configured is harmless
+in this case pf driver just does nothing.  If vf will try to remove
+other vlans when a port vlan is configured it will still produce error
+as before.
 
-In fact slso the drivers/net/ethernet/freescale/fec_main.c provides
-a kernel parameter for the MAC address, in fec_get_mac:
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-	/*
-	 * try to get mac address in following order:
-	 *
-	 * 1) module parameter via kernel command line in form
-	 *    fec.macaddr=0x00,0x04,0x9f,0x01,0x30,0xe0
-	 */
-	iap = macaddr;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 71cd159e7902..24628de8e624 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2766,7 +2766,8 @@ static int i40e_vc_remove_vlan_msg(struct i40e_vf *vf, u8 *msg)
+ 
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	if (vsi->info.pvid) {
+-		aq_ret = I40E_ERR_PARAM;
++		if (vfl->num_elements > 1 || vfl->vlan_id[0])
++			aq_ret = I40E_ERR_PARAM;
+ 		goto error_param;
+ 	}
+ 
+-- 
+2.19.2
 
-Thanks,
-
-Flavio
-
->    Andrew
