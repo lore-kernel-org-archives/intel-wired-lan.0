@@ -1,28 +1,34 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 28 Feb 2019 09:52:52 -0800
-Subject: [Intel-wired-lan] [next PATCH S3 6/9] i40e: Further implementation
- of LLDP
-In-Reply-To: <20190228175255.54754-1-alice.michael@intel.com>
+From: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
+Date: Thu, 28 Feb 2019 17:56:45 +0000
+Subject: [Intel-wired-lan] [next PATCH S3 6/9] i40e: Further
+ implementation of LLDP
+In-Reply-To: <20190228175255.54754-6-alice.michael@intel.com>
 References: <20190228175255.54754-1-alice.michael@intel.com>
-Message-ID: <20190228175255.54754-6-alice.michael@intel.com>
+ <20190228175255.54754-6-alice.michael@intel.com>
+Message-ID: <0EF347314CF65544BA015993979A29CD25D179C0@irsmsx105.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+ACK
+
+-----Original Message-----
+From: Michael, Alice 
+Sent: Thursday, February 28, 2019 6:53 PM
+To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
+Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
+Subject: [next PATCH S3 6/9] i40e: Further implementation of LLDP
+
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
-This code implements driver code changes necessary for LLDP
-Agent support. Modified i40e_aq_start_lldp() and
-i40e_aq_stop_lldp() adding false parameter whether LLDP state
-should be persistent across power cycles.
+This code implements driver code changes necessary for LLDP Agent support. Modified i40e_aq_start_lldp() and
+i40e_aq_stop_lldp() adding false parameter whether LLDP state should be persistent across power cycles.
 
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c |  5 ++
- .../net/ethernet/intel/i40e/i40e_adminq_cmd.h | 20 ++++--
- drivers/net/ethernet/intel/i40e/i40e_common.c | 62 ++++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c |  5 ++  .../net/ethernet/intel/i40e/i40e_adminq_cmd.h | 20 ++++--  drivers/net/ethernet/intel/i40e/i40e_common.c | 62 ++++++++++++++++++-
  .../net/ethernet/intel/i40e/i40e_debugfs.c    |  4 +-
  .../net/ethernet/intel/i40e/i40e_ethtool.c    |  4 +-
  drivers/net/ethernet/intel/i40e/i40e_main.c   |  2 +-
@@ -86,8 +92,8 @@ index 522058a7d4be..abcf79eb3261 100644
  
  I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_stop_start_specific_agent);
  
-+/* Restore LLDP Agent factory settings (direct 0x0A0A) */
-+struct i40e_aqc_lldp_restore {
++/* Restore LLDP Agent factory settings (direct 0x0A0A) */ struct 
++i40e_aqc_lldp_restore {
 +	u8	command;
 +#define I40E_AQ_LLDP_AGENT_RESTORE_NOT		0x0
 +#define I40E_AQ_LLDP_AGENT_RESTORE		0x1
@@ -96,8 +102,7 @@ index 522058a7d4be..abcf79eb3261 100644
 +
 +I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_restore);
 +
- /* Add Udp Tunnel command and completion (direct 0x0B00) */
- struct i40e_aqc_add_udp_tunnel {
+ /* Add Udp Tunnel command and completion (direct 0x0B00) */  struct i40e_aqc_add_udp_tunnel {
  	__le16	udp_port;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
 index dd6b3b3ac5c6..e7d500f92a90 100644
@@ -114,13 +119,13 @@ index dd6b3b3ac5c6..e7d500f92a90 100644
 + * @restore: True if factory settings should be restored
 + * @cmd_details: pointer to command details structure or NULL
 + *
-+ * Restore LLDP Agent factory settings if @restore set to True. In other case
++ * Restore LLDP Agent factory settings if @restore set to True. In 
++other case
 + * only returns factory setting in AQ response.
 + **/
 +enum i40e_status_code
 +i40e_aq_restore_lldp(struct i40e_hw *hw, u8 *setting, bool restore,
-+		     struct i40e_asq_cmd_details *cmd_details)
-+{
++		     struct i40e_asq_cmd_details *cmd_details) {
 +	struct i40e_aq_desc desc;
 +	struct i40e_aqc_lldp_restore *cmd =
 +		(struct i40e_aqc_lldp_restore *)&desc.params.raw;
@@ -149,15 +154,15 @@ index dd6b3b3ac5c6..e7d500f92a90 100644
   * i40e_aq_stop_lldp
   * @hw: pointer to the hw struct
   * @shutdown_agent: True if LLDP Agent needs to be Shutdown
-+ * @persist: True if stop of LLDP should be persistent across power cycles
++ * @persist: True if stop of LLDP should be persistent across power 
++ cycles
   * @cmd_details: pointer to command details structure or NULL
   *
   * Stop or Shutdown the embedded LLDP Agent
   **/
  i40e_status i40e_aq_stop_lldp(struct i40e_hw *hw, bool shutdown_agent,
 +				bool persist,
- 				struct i40e_asq_cmd_details *cmd_details)
- {
+ 				struct i40e_asq_cmd_details *cmd_details)  {
  	struct i40e_aq_desc desc;
 @@ -3644,6 +3684,14 @@ i40e_status i40e_aq_stop_lldp(struct i40e_hw *hw, bool shutdown_agent,
  	if (shutdown_agent)
@@ -178,7 +183,8 @@ index dd6b3b3ac5c6..e7d500f92a90 100644
   * i40e_aq_start_lldp
   * @hw: pointer to the hw struct
   * @buff: buffer for result
-+ * @persist: True if start of LLDP should be persistent across power cycles
++ * @persist: True if start of LLDP should be persistent across power 
++ cycles
   * @buff_size: buffer size
   * @cmd_details: pointer to command details structure or NULL
   *
@@ -219,8 +225,7 @@ index c67d485d6f99..7ea4f09229e4 100644
 +			ret = i40e_aq_stop_lldp(&pf->hw, false, false, NULL);
  			if (ret) {
  				dev_info(&pf->pdev->dev,
- 					 "Stop LLDP AQ command failed =0x%x\n",
-@@ -1358,7 +1358,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+ 					 "Stop LLDP AQ command failed =0x%x\n", @@ -1358,7 +1358,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
  				/* Continue and start FW LLDP anyways */
  			}
  
@@ -228,8 +233,7 @@ index c67d485d6f99..7ea4f09229e4 100644
 +			ret = i40e_aq_start_lldp(&pf->hw, false, NULL);
  			if (ret) {
  				dev_info(&pf->pdev->dev,
- 					 "Start LLDP AQ command failed =0x%x\n",
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+ 					 "Start LLDP AQ command failed =0x%x\n", diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 index 304ae6799de3..c0bfefa3980e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
@@ -263,13 +267,11 @@ index e53b18b3ad6b..2557423c3ae6 100644
 +		i40e_aq_stop_lldp(hw, true, false, NULL);
  	}
  
- 	/* allow a platform config to override the HW addr */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+ 	/* allow a platform config to override the HW addr */ diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
 index 663c8bf4d3d8..882627073dce 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -203,14 +203,18 @@ i40e_status i40e_aq_get_lldp_mib(struct i40e_hw *hw, u8 bridge_type,
- i40e_status i40e_aq_cfg_lldp_mib_change_event(struct i40e_hw *hw,
+@@ -203,14 +203,18 @@ i40e_status i40e_aq_get_lldp_mib(struct i40e_hw *hw, u8 bridge_type,  i40e_status i40e_aq_cfg_lldp_mib_change_event(struct i40e_hw *hw,
  				bool enable_update,
  				struct i40e_asq_cmd_details *cmd_details);
 +enum i40e_status_code
@@ -277,8 +279,7 @@ index 663c8bf4d3d8..882627073dce 100644
 +		     struct i40e_asq_cmd_details *cmd_details);
  i40e_status i40e_aq_stop_lldp(struct i40e_hw *hw, bool shutdown_agent,
 +			      bool persist,
- 				struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_set_dcb_parameters(struct i40e_hw *hw,
+ 				struct i40e_asq_cmd_details *cmd_details);  i40e_status i40e_aq_set_dcb_parameters(struct i40e_hw *hw,
  				       bool dcb_enable,
  				       struct i40e_asq_cmd_details
  				       *cmd_details);
@@ -288,19 +289,27 @@ index 663c8bf4d3d8..882627073dce 100644
 +			       struct i40e_asq_cmd_details *cmd_details);
  i40e_status i40e_aq_get_cee_dcb_config(struct i40e_hw *hw,
  				       void *buff, u16 buff_size,
- 				       struct i40e_asq_cmd_details *cmd_details);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+ 				       struct i40e_asq_cmd_details *cmd_details); diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
 index 79420bcc7414..820af0043cc8 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
 @@ -616,6 +616,7 @@ struct i40e_hw {
- #define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)
- #define I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK BIT_ULL(3)
+ #define I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE  BIT_ULL(2)  #define I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK BIT_ULL(3)
  #define I40E_HW_FLAG_FW_LLDP_STOPPABLE      BIT_ULL(4)
 +#define I40E_HW_FLAG_FW_LLDP_PERSISTENT     BIT_ULL(5)
  	u64 flags;
  
  	/* Used in set switch config AQ command */
--- 
+--
 2.19.2
+
+--------------------------------------------------------------------
+
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
 
