@@ -1,159 +1,105 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 28 Feb 2019 08:46:01 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 6d64aa9b9048d339cf93a9f53b5c831e46dfcb33
-Message-ID: <5c772f49.5EFj/lqPLfWOIjA1%lkp@intel.com>
+From: Flavio Suligoi <f.suligoi@asem.it>
+Date: Thu, 28 Feb 2019 10:56:46 +0100
+Subject: [Intel-wired-lan] [PATCH] net: e1000e: add MAC address kernel cmd
+ line parameter
+Message-ID: <1551347806-12732-1-git-send-email-f.suligoi@asem.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 6d64aa9b9048d339cf93a9f53b5c831e46dfcb33  i40e: fix i40e_ptp_adjtime when given a negative delta
+Sometimes, in some embedded systems boards (i.e. ARM boards),
+the NVM eeprom is not mounted, to save cost and space.
 
-elapsed time: 212m
+In this case it is necessary to bypass the NVM management
+and directly force the MAC address using a kernel command-line
+parameter (macaddr).
 
-configs tested: 135
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                   randconfig-x015-201908
-i386                   randconfig-x019-201908
-i386                   randconfig-x014-201908
-i386                   randconfig-x016-201908
-i386                   randconfig-x013-201908
-i386                   randconfig-x012-201908
-i386                   randconfig-x011-201908
-i386                   randconfig-x017-201908
-i386                   randconfig-x018-201908
-i386                   randconfig-x010-201908
-x86_64                 randconfig-x009-201908
-x86_64                 randconfig-x008-201908
-x86_64                 randconfig-x005-201908
-x86_64                 randconfig-x002-201908
-x86_64                 randconfig-x001-201908
-x86_64                 randconfig-x007-201908
-x86_64                 randconfig-x006-201908
-x86_64                 randconfig-x003-201908
-x86_64                 randconfig-x004-201908
-x86_64                 randconfig-x000-201908
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-a0-02271645
-i386                   randconfig-a1-02271645
-i386                   randconfig-a2-02271645
-i386                   randconfig-a3-02271645
-x86_64                 randconfig-x017-201908
-x86_64                 randconfig-x013-201908
-x86_64                 randconfig-x016-201908
-x86_64                 randconfig-x018-201908
-x86_64                 randconfig-x011-201908
-x86_64                 randconfig-x012-201908
-x86_64                 randconfig-x019-201908
-x86_64                 randconfig-x014-201908
-x86_64                 randconfig-x015-201908
-x86_64                 randconfig-x010-201908
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s3-02271654
-i386                   randconfig-s2-02271654
-i386                   randconfig-s1-02271654
-i386                   randconfig-s0-02271654
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-arm                              allmodconfig
-arm64                            allyesconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allmodconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-x86_64                               rhel-7.6
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                 randconfig-l1-02272346
-i386                   randconfig-l1-02272346
-i386                   randconfig-l0-02272346
-x86_64                 randconfig-l3-02272346
-x86_64                 randconfig-l2-02272346
-x86_64                 randconfig-l0-02272346
-i386                   randconfig-l3-02272346
-i386                   randconfig-l2-02272346
-riscv                              tinyconfig
-i386                               tinyconfig
-i386                   randconfig-x006-201908
-i386                   randconfig-x000-201908
-i386                   randconfig-x007-201908
-i386                   randconfig-x002-201908
-i386                   randconfig-x009-201908
-i386                   randconfig-x003-201908
-i386                   randconfig-x001-201908
-i386                   randconfig-x004-201908
-i386                   randconfig-x005-201908
-i386                   randconfig-x008-201908
-i386                   randconfig-x073-201908
-i386                   randconfig-x075-201908
-i386                   randconfig-x079-201908
-i386                   randconfig-x072-201908
-i386                   randconfig-x077-201908
-i386                   randconfig-x076-201908
-i386                   randconfig-x074-201908
-i386                   randconfig-x078-201908
-i386                   randconfig-x071-201908
-i386                   randconfig-x070-201908
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-
+Signed-off-by: Flavio Suligoi <f.suligoi@asem.it>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/e1000e/netdev.c | 50 ++++++++++++++++++++----------
+ 1 file changed, 33 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 189f231..054c398 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -39,6 +39,10 @@ static int debug = -1;
+ module_param(debug, int, 0);
+ MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
+ 
++static unsigned char macaddr[ETH_ALEN] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
++module_param_array(macaddr, byte, NULL, 0);
++MODULE_PARM_DESC(macaddr, "e1000e Ethernet MAC address");
++
+ static const struct e1000_info *e1000_info_tbl[] = {
+ 	[board_82571]		= &e1000_82571_info,
+ 	[board_82572]		= &e1000_82572_info,
+@@ -7053,6 +7057,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	static int cards_found;
+ 	u16 aspm_disable_flag = 0;
+ 	int bars, i, err, pci_using_dac;
++
+ 	u16 eeprom_data = 0;
+ 	u16 eeprom_apme_mask = E1000_EEPROM_APME;
+ 	s32 ret_val = 0;
+@@ -7232,27 +7237,38 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	 */
+ 	adapter->hw.mac.ops.reset_hw(&adapter->hw);
+ 
+-	/* systems with ASPM and others may see the checksum fail on the first
+-	 * attempt. Let's give it a few tries
+-	 */
+-	for (i = 0;; i++) {
+-		if (e1000_validate_nvm_checksum(&adapter->hw) >= 0)
+-			break;
+-		if (i == 2) {
+-			dev_err(&pdev->dev, "The NVM Checksum Is Not Valid\n");
+-			err = -EIO;
+-			goto err_eeprom;
++	/* If the MAC address is supplied by the bootloader, use it! */
++	if (!is_multicast_ether_addr(macaddr)) {
++		dev_info(&pdev->dev,
++			 "MAC address from kernel command line argument\n");
++		memcpy(adapter->hw.mac.addr, macaddr, netdev->addr_len);
++		memcpy(netdev->dev_addr,     macaddr, netdev->addr_len);
++	} else {
++		/* systems with ASPM and others may see the checksum fail on
++		 * the first attempt. Let's give it a few tries
++		 */
++		dev_info(&pdev->dev, "MAC address from NVM\n");
++		for (i = 0;; i++) {
++			if (e1000_validate_nvm_checksum(&adapter->hw) >= 0)
++				break;
++			if (i == 2) {
++				dev_err(&pdev->dev,
++					"The NVM Checksum Is Not Valid\n");
++				err = -EIO;
++				goto err_eeprom;
++			}
+ 		}
+-	}
+ 
+-	e1000_eeprom_checks(adapter);
++		e1000_eeprom_checks(adapter);
+ 
+-	/* copy the MAC address */
+-	if (e1000e_read_mac_addr(&adapter->hw))
+-		dev_err(&pdev->dev,
+-			"NVM Read Error while reading MAC address\n");
++		/* copy the MAC address */
++		if (e1000e_read_mac_addr(&adapter->hw))
++			dev_err(&pdev->dev,
++				"NVM Read Error while reading MAC address\n");
+ 
+-	memcpy(netdev->dev_addr, adapter->hw.mac.addr, netdev->addr_len);
++		memcpy(netdev->dev_addr, adapter->hw.mac.addr,
++		       netdev->addr_len);
++	}
+ 
+ 	if (!is_valid_ether_addr(netdev->dev_addr)) {
+ 		dev_err(&pdev->dev, "Invalid MAC Address: %pM\n",
+-- 
+2.7.4
+
