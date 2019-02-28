@@ -1,286 +1,251 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 28 Feb 2019 15:24:24 -0800
-Subject: [Intel-wired-lan] [PATCH S16 03/11] ice: Add code for DCB
- initialization part 3/4
+Date: Thu, 28 Feb 2019 15:24:23 -0800
+Subject: [Intel-wired-lan] [PATCH S16 02/11] ice: Add code for DCB
+ initialization part 2/4
 In-Reply-To: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
 References: <20190228232432.31659-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190228232432.31659-4-anirudh.venkataramanan@intel.com>
+Message-ID: <20190228232432.31659-3-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds a new function ice_pf_dcb_cfg (and related helpers)
-which applies the DCB configuration obtained from the firmware. As
-part of this, VSIs/netdevs are updated with traffic class information.
+This patch introduces a new top level function ice_init_dcb (and
+related lower level helper functions) which continues the DCB init
+flow.
 
-This patch requires a bit of a refactor of existing code.
+This function uses ice_get_dcb_cfg to get, parse and store the DCB
+configuration. Once this is done, it sets itself up to be notified
+by the firmware on LLDP MIB change events.
 
-1. For a MIB change event, the associated VSI is closed and brought up
-   again. The gap between closing and opening the VSI can cause a race
-   condition. Fix this by grabbing the rtnl_lock prior to closing the
-   VSI and then only free it after re-opening the VSI during a MIB
-   change event.
-
-2. ice_sched_query_elem is used in ice_sched.c and with this patch, in
-   ice_dcb.c as well. However, ice_dcb.c is not built when CONFIG_DCB is
-   unset. This results in namespace warnings (ice_sched.o: Externally
-   defined symbols with no external references) when CONFIG_DCB is unset.
-   To avoid this move ice_sched_query_elem from ice_sched.c to
-   ice_common.c.
-
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h            |  13 +-
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  47 +++
- drivers/net/ethernet/intel/ice/ice_common.c     |  25 ++
- drivers/net/ethernet/intel/ice/ice_common.h     |   3 +
- drivers/net/ethernet/intel/ice/ice_dcb.c        | 463 ++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcb.h        |  17 +
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c    | 204 ++++++++++-
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h    |  13 +
- drivers/net/ethernet/intel/ice/ice_lib.c        | 135 +++++++
- drivers/net/ethernet/intel/ice/ice_lib.h        |   8 +
- drivers/net/ethernet/intel/ice/ice_main.c       | 118 +++---
- drivers/net/ethernet/intel/ice/ice_sched.c      |  27 +-
- drivers/net/ethernet/intel/ice/ice_sched.h      |   4 +
- drivers/net/ethernet/intel/ice/ice_type.h       |   2 +
- 14 files changed, 997 insertions(+), 82 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  79 +++
+ drivers/net/ethernet/intel/ice/ice_dcb.c        | 819 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcb.h        |  99 +++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c    |   2 +-
+ drivers/net/ethernet/intel/ice/ice_status.h     |   1 +
+ drivers/net/ethernet/intel/ice/ice_type.h       |  58 ++
+ 6 files changed, 1057 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index d76333c808a3..6ca1094cb24a 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -378,6 +378,9 @@ struct ice_pf {
- 	struct ice_hw_port_stats stats_prev;
- 	struct ice_hw hw;
- 	u8 stat_prev_loaded;	/* has previous stats been loaded */
-+#ifdef CONFIG_DCB
-+	u16 dcbx_cap;
-+#endif /* CONFIG_DCB */
- 	u32 tx_timeout_count;
- 	unsigned long tx_timeout_last_recovery;
- 	u32 tx_timeout_recovery_level;
-@@ -414,12 +417,6 @@ ice_irq_dynamic_ena(struct ice_hw *hw, struct ice_vsi *vsi,
- 	wr32(hw, GLINT_DYN_CTL(vector), val);
- }
- 
--static inline void ice_vsi_set_tc_cfg(struct ice_vsi *vsi)
--{
--	vsi->tc_cfg.ena_tc =  ICE_DFLT_TRAFFIC_CLASS;
--	vsi->tc_cfg.numtc = 1;
--}
--
- void ice_set_ethtool_ops(struct net_device *netdev);
- int ice_up(struct ice_vsi *vsi);
- int ice_down(struct ice_vsi *vsi);
-@@ -428,5 +425,9 @@ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
- void ice_fill_rss_lut(u8 *lut, u16 rss_table_size, u16 rss_size);
- void ice_print_link_msg(struct ice_vsi *vsi, bool isup);
- void ice_napi_del(struct ice_vsi *vsi);
-+#ifdef CONFIG_DCB
-+int ice_pf_ena_all_vsi(struct ice_pf *pf, bool locked);
-+void ice_pf_dis_all_vsi(struct ice_pf *pf, bool locked);
-+#endif /* CONFIG_DCB */
- 
- #endif /* _ICE_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index bbceaca11541..cda93826a065 100644
+index 4809e5ac55f4..bbceaca11541 100644
 --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
 +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -747,6 +747,32 @@ struct ice_aqc_delete_elem {
- 	__le32 teid[1];
+@@ -1132,6 +1132,48 @@ struct ice_aqc_pf_vf_msg {
+ 	__le32 addr_low;
  };
  
-+/* Query Port ETS (indirect 0x040E)
-+ *
-+ * This indirect command is used to query port TC node configuration.
++/* Get LLDP MIB (indirect 0x0A00)
++ * Note: This is also used by the LLDP MIB Change Event (0x0A01)
++ * as the format is the same.
 + */
-+struct ice_aqc_query_port_ets {
-+	__le32 port_teid;
-+	__le32 reserved;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+struct ice_aqc_port_ets_elem {
-+	u8 tc_valid_bits;
-+	u8 reserved[3];
-+	/* 3 bits for UP per TC 0-7, 4th byte reserved */
-+	__le32 up2tc;
-+	u8 tc_bw_share[8];
-+	__le32 port_eir_prof_id;
-+	__le32 port_cir_prof_id;
-+	/* 3 bits per Node priority to TC 0-7, 4th byte reserved */
-+	__le32 tc_node_prio;
-+#define ICE_TC_NODE_PRIO_S	0x4
-+	u8 reserved1[4];
-+	__le32 tc_node_teid[8]; /* Used for response, reserved in command */
-+};
-+
- /* Query Scheduler Resource Allocation (indirect 0x0412)
-  * This indirect command retrieves the scheduler resources allocated by
-  * EMP Firmware to the given PF.
-@@ -1212,6 +1238,23 @@ struct ice_aqc_get_cee_dcb_cfg_resp {
- 	u8 reserved[12];
- };
- 
-+/* Set Local LLDP MIB (indirect 0x0A08)
-+ * Used to replace the local MIB of a given LLDP agent. e.g. DCBx
-+ */
-+struct ice_aqc_lldp_set_local_mib {
++struct ice_aqc_lldp_get_mib {
 +	u8 type;
-+#define SET_LOCAL_MIB_TYPE_DCBX_M		BIT(0)
-+#define SET_LOCAL_MIB_TYPE_LOCAL_MIB		0
-+#define SET_LOCAL_MIB_TYPE_CEE_M		BIT(1)
-+#define SET_LOCAL_MIB_TYPE_CEE_WILLING		0
-+#define SET_LOCAL_MIB_TYPE_CEE_NON_WILLING	SET_LOCAL_MIB_TYPE_CEE_M
-+	u8 reserved0;
-+	__le16 length;
-+	u8 reserved1[4];
++#define ICE_AQ_LLDP_MIB_TYPE_S			0
++#define ICE_AQ_LLDP_MIB_TYPE_M			(0x3 << ICE_AQ_LLDP_MIB_TYPE_S)
++#define ICE_AQ_LLDP_MIB_LOCAL			0
++#define ICE_AQ_LLDP_MIB_REMOTE			1
++#define ICE_AQ_LLDP_MIB_LOCAL_AND_REMOTE	2
++#define ICE_AQ_LLDP_BRID_TYPE_S			2
++#define ICE_AQ_LLDP_BRID_TYPE_M			(0x3 << ICE_AQ_LLDP_BRID_TYPE_S)
++#define ICE_AQ_LLDP_BRID_TYPE_NEAREST_BRID	0
++#define ICE_AQ_LLDP_BRID_TYPE_NON_TPMR		1
++/* Tx pause flags in the 0xA01 event use ICE_AQ_LLDP_TX_* */
++#define ICE_AQ_LLDP_TX_S			0x4
++#define ICE_AQ_LLDP_TX_M			(0x03 << ICE_AQ_LLDP_TX_S)
++#define ICE_AQ_LLDP_TX_ACTIVE			0
++#define ICE_AQ_LLDP_TX_SUSPENDED		1
++#define ICE_AQ_LLDP_TX_FLUSHED			3
++/* The following bytes are reserved for the Get LLDP MIB command (0x0A00)
++ * and in the LLDP MIB Change Event (0x0A01). They are valid for the
++ * Get LLDP MIB (0x0A00) response only.
++ */
++	u8 reserved1;
++	__le16 local_len;
++	__le16 remote_len;
++	u8 reserved2[2];
 +	__le32 addr_high;
 +	__le32 addr_low;
++};
++
++/* Configure LLDP MIB Change Event (direct 0x0A01) */
++/* For MIB Change Event use ice_aqc_lldp_get_mib structure above */
++struct ice_aqc_lldp_set_mib_change {
++	u8 command;
++#define ICE_AQ_LLDP_MIB_UPDATE_ENABLE		0x0
++#define ICE_AQ_LLDP_MIB_UPDATE_DIS		0x1
++	u8 reserved[15];
++};
++
+ /* Start LLDP (direct 0x0A06) */
+ struct ice_aqc_lldp_start {
+ 	u8 command;
+@@ -1140,6 +1182,36 @@ struct ice_aqc_lldp_start {
+ 	u8 reserved[15];
+ };
+ 
++/* Get CEE DCBX Oper Config (0x0A07)
++ * The command uses the generic descriptor struct and
++ * returns the struct below as an indirect response.
++ */
++struct ice_aqc_get_cee_dcb_cfg_resp {
++	u8 oper_num_tc;
++	u8 oper_prio_tc[4];
++	u8 oper_tc_bw[8];
++	u8 oper_pfc_en;
++	__le16 oper_app_prio;
++#define ICE_AQC_CEE_APP_FCOE_S		0
++#define ICE_AQC_CEE_APP_FCOE_M		(0x7 << ICE_AQC_CEE_APP_FCOE_S)
++#define ICE_AQC_CEE_APP_ISCSI_S		3
++#define ICE_AQC_CEE_APP_ISCSI_M		(0x7 << ICE_AQC_CEE_APP_ISCSI_S)
++#define ICE_AQC_CEE_APP_FIP_S		8
++#define ICE_AQC_CEE_APP_FIP_M		(0x7 << ICE_AQC_CEE_APP_FIP_S)
++	__le32 tlv_status;
++#define ICE_AQC_CEE_PG_STATUS_S		0
++#define ICE_AQC_CEE_PG_STATUS_M		(0x7 << ICE_AQC_CEE_PG_STATUS_S)
++#define ICE_AQC_CEE_PFC_STATUS_S	3
++#define ICE_AQC_CEE_PFC_STATUS_M	(0x7 << ICE_AQC_CEE_PFC_STATUS_S)
++#define ICE_AQC_CEE_FCOE_STATUS_S	8
++#define ICE_AQC_CEE_FCOE_STATUS_M	(0x7 << ICE_AQC_CEE_FCOE_STATUS_S)
++#define ICE_AQC_CEE_ISCSI_STATUS_S	11
++#define ICE_AQC_CEE_ISCSI_STATUS_M	(0x7 << ICE_AQC_CEE_ISCSI_STATUS_S)
++#define ICE_AQC_CEE_FIP_STATUS_S	16
++#define ICE_AQC_CEE_FIP_STATUS_M	(0x7 << ICE_AQC_CEE_FIP_STATUS_S)
++	u8 reserved[12];
 +};
 +
  /* Stop/Start LLDP Agent (direct 0x0A09)
   * Used for stopping/starting specific LLDP agent. e.g. DCBx.
   * The same structure is used for the response, with the command field
-@@ -1481,11 +1524,13 @@ struct ice_aq_desc {
- 		struct ice_aqc_get_topo get_topo;
- 		struct ice_aqc_sched_elem_cmd sched_elem_cmd;
+@@ -1411,6 +1483,8 @@ struct ice_aq_desc {
  		struct ice_aqc_query_txsched_res query_sched_res;
-+		struct ice_aqc_query_port_ets port_ets;
  		struct ice_aqc_nvm nvm;
  		struct ice_aqc_pf_vf_msg virt;
- 		struct ice_aqc_lldp_get_mib lldp_get_mib;
- 		struct ice_aqc_lldp_set_mib_change lldp_set_event;
++		struct ice_aqc_lldp_get_mib lldp_get_mib;
++		struct ice_aqc_lldp_set_mib_change lldp_set_event;
  		struct ice_aqc_lldp_start lldp_start;
-+		struct ice_aqc_lldp_set_local_mib lldp_set_mib;
  		struct ice_aqc_lldp_stop_start_specific_agent lldp_agent_ctrl;
  		struct ice_aqc_get_set_rss_lut get_set_rss_lut;
- 		struct ice_aqc_get_set_rss_key get_set_rss_key;
-@@ -1573,6 +1618,7 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_get_sched_elems			= 0x0404,
- 	ice_aqc_opc_suspend_sched_elems			= 0x0409,
- 	ice_aqc_opc_resume_sched_elems			= 0x040A,
-+	ice_aqc_opc_query_port_ets			= 0x040E,
- 	ice_aqc_opc_delete_sched_elems			= 0x040F,
- 	ice_aqc_opc_query_sched_res			= 0x0412,
- 
-@@ -1595,6 +1641,7 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_lldp_set_mib_change			= 0x0A01,
+@@ -1445,6 +1519,8 @@ struct ice_aq_desc {
+ /* error codes */
+ enum ice_aq_err {
+ 	ICE_AQ_RC_OK		= 0,  /* Success */
++	ICE_AQ_RC_EPERM		= 1,  /* Operation not permitted */
++	ICE_AQ_RC_ENOENT	= 2,  /* No such element */
+ 	ICE_AQ_RC_ENOMEM	= 9,  /* Out of memory */
+ 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
+ 	ICE_AQ_RC_EEXIST	= 13, /* Object already exists */
+@@ -1515,7 +1591,10 @@ enum ice_adminq_opc {
+ 	ice_mbx_opc_send_msg_to_pf			= 0x0801,
+ 	ice_mbx_opc_send_msg_to_vf			= 0x0802,
+ 	/* LLDP commands */
++	ice_aqc_opc_lldp_get_mib			= 0x0A00,
++	ice_aqc_opc_lldp_set_mib_change			= 0x0A01,
  	ice_aqc_opc_lldp_start				= 0x0A06,
- 	ice_aqc_opc_get_cee_dcb_cfg			= 0x0A07,
-+	ice_aqc_opc_lldp_set_local_mib			= 0x0A08,
++	ice_aqc_opc_get_cee_dcb_cfg			= 0x0A07,
  	ice_aqc_opc_lldp_stop_start_specific_agent	= 0x0A09,
  
  	/* RSS commands */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 3730daf1bc1a..2937c6be1aee 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -3106,3 +3106,28 @@ ice_stat_update32(struct ice_hw *hw, u32 reg, bool prev_stat_loaded,
- 		/* to manage the potential roll-over */
- 		*cur_stat = (new_data + BIT_ULL(32)) - *prev_stat;
- }
-+
-+/**
-+ * ice_sched_query_elem - query element information from HW
-+ * @hw: pointer to the HW struct
-+ * @node_teid: node TEID to be queried
-+ * @buf: buffer to element information
-+ *
-+ * This function queries HW element information
-+ */
-+enum ice_status
-+ice_sched_query_elem(struct ice_hw *hw, u32 node_teid,
-+		     struct ice_aqc_get_elem *buf)
-+{
-+	u16 buf_size, num_elem_ret = 0;
-+	enum ice_status status;
-+
-+	buf_size = sizeof(*buf);
-+	memset(buf, 0, buf_size);
-+	buf->generic[0].node_teid = cpu_to_le32(node_teid);
-+	status = ice_aq_query_sched_elems(hw, 1, buf, buf_size, &num_elem_ret,
-+					  NULL);
-+	if (status || num_elem_ret != 1)
-+		ice_debug(hw, ICE_DBG_SCHED, "query element failed\n");
-+	return status;
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index fbdfdee353bc..faefc45e4a1e 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -118,4 +118,7 @@ ice_stat_update40(struct ice_hw *hw, u32 hireg, u32 loreg,
- void
- ice_stat_update32(struct ice_hw *hw, u32 reg, bool prev_stat_loaded,
- 		  u64 *prev_stat, u64 *cur_stat);
-+enum ice_status
-+ice_sched_query_elem(struct ice_hw *hw, u32 node_teid,
-+		     struct ice_aqc_get_elem *buf);
- #endif /* _ICE_COMMON_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index b59c145fb958..1ad36b40974a 100644
+index 19ab7433e330..b59c145fb958 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcb.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -98,6 +98,39 @@ enum ice_status ice_aq_start_lldp(struct ice_hw *hw, struct ice_sq_cd *cd)
- 	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
- }
+@@ -5,6 +5,78 @@
+ #include "ice_sched.h"
+ #include "ice_dcb.h"
  
 +/**
-+ * ice_aq_set_lldp_mib - Set the LLDP MIB
++ * ice_aq_get_lldp_mib
 + * @hw: pointer to the HW struct
++ * @bridge_type: type of bridge requested
 + * @mib_type: Local, Remote or both Local and Remote MIBs
 + * @buf: pointer to the caller-supplied buffer to store the MIB block
 + * @buf_size: size of the buffer (in bytes)
++ * @local_len: length of the returned Local LLDP MIB
++ * @remote_len: length of the returned Remote LLDP MIB
 + * @cd: pointer to command details structure or NULL
 + *
-+ * Set the LLDP MIB. (0x0A08)
++ * Requests the complete LLDP MIB (entire packet). (0x0A00)
 + */
 +static enum ice_status
-+ice_aq_set_lldp_mib(struct ice_hw *hw, u8 mib_type, void *buf, u16 buf_size,
++ice_aq_get_lldp_mib(struct ice_hw *hw, u8 bridge_type, u8 mib_type, void *buf,
++		    u16 buf_size, u16 *local_len, u16 *remote_len,
 +		    struct ice_sq_cd *cd)
 +{
-+	struct ice_aqc_lldp_set_local_mib *cmd;
++	struct ice_aqc_lldp_get_mib *cmd;
 +	struct ice_aq_desc desc;
++	enum ice_status status;
 +
-+	cmd = &desc.params.lldp_set_mib;
++	cmd = &desc.params.lldp_get_mib;
 +
 +	if (buf_size == 0 || !buf)
 +		return ICE_ERR_PARAM;
 +
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_lldp_set_local_mib);
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_lldp_get_mib);
 +
-+	desc.flags |= cpu_to_le16((u16)ICE_AQ_FLAG_RD);
++	cmd->type = mib_type & ICE_AQ_LLDP_MIB_TYPE_M;
++	cmd->type |= (bridge_type << ICE_AQ_LLDP_BRID_TYPE_S) &
++		ICE_AQ_LLDP_BRID_TYPE_M;
++
 +	desc.datalen = cpu_to_le16(buf_size);
 +
-+	cmd->type = mib_type;
-+	cmd->length = cpu_to_le16(buf_size);
++	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
++	if (!status) {
++		if (local_len)
++			*local_len = le16_to_cpu(cmd->local_len);
++		if (remote_len)
++			*remote_len = le16_to_cpu(cmd->remote_len);
++	}
 +
-+	return ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
++	return status;
++}
++
++/**
++ * ice_aq_cfg_lldp_mib_change
++ * @hw: pointer to the HW struct
++ * @ena_update: Enable or Disable event posting
++ * @cd: pointer to command details structure or NULL
++ *
++ * Enable or Disable posting of an event on ARQ when LLDP MIB
++ * associated with the interface changes (0x0A01)
++ */
++static enum ice_status
++ice_aq_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_update,
++			   struct ice_sq_cd *cd)
++{
++	struct ice_aqc_lldp_set_mib_change *cmd;
++	struct ice_aq_desc desc;
++
++	cmd = &desc.params.lldp_set_event;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_lldp_set_mib_change);
++
++	if (!ena_update)
++		cmd->command |= ICE_AQ_LLDP_MIB_UPDATE_DIS;
++
++	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
 +}
 +
  /**
-  * ice_get_dcbx_status
+  * ice_aq_start_lldp
   * @hw: pointer to the HW struct
-@@ -902,3 +935,433 @@ enum ice_status ice_init_dcb(struct ice_hw *hw)
- 
- 	return ret;
+@@ -41,6 +113,523 @@ u8 ice_get_dcbx_status(struct ice_hw *hw)
+ 		    PRTDCB_GENS_DCBX_STATUS_S);
  }
-+
+ 
 +/**
-+ * ice_add_ieee_ets_common_tlv
-+ * @buf: Data buffer to be populated with ice_dcb_ets_cfg data
-+ * @ets_cfg: Container for ice_dcb_ets_cfg data
++ * ice_parse_ieee_ets_common_tlv
++ * @buf: Data buffer to be parsed for ETS CFG/REC data
++ * @ets_cfg: Container to store parsed data
 + *
-+ * Populate the TLV buffer with ice_dcb_ets_cfg data
++ * Parses the common data of IEEE 802.1Qaz ETS CFG/REC TLV
 + */
 +static void
-+ice_add_ieee_ets_common_tlv(u8 *buf, struct ice_dcb_ets_cfg *ets_cfg)
++ice_parse_ieee_ets_common_tlv(u8 *buf, struct ice_dcb_ets_cfg *ets_cfg)
 +{
-+	u8 priority0, priority1;
 +	u8 offset = 0;
 +	int i;
 +
@@ -292,10 +257,13 @@ index b59c145fb958..1ad36b40974a 100644
 +	 *   Bits:|7  4|3  0|7  4|3  0|7  4|3  0|7  4|3  0|
 +	 *        -----------------------------------------
 +	 */
-+	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS / 2; i++) {
-+		priority0 = ets_cfg->prio_table[i * 2] & 0xF;
-+		priority1 = ets_cfg->prio_table[i * 2 + 1] & 0xF;
-+		buf[offset] = (priority0 << ICE_IEEE_ETS_PRIO_1_S) | priority1;
++	for (i = 0; i < 4; i++) {
++		ets_cfg->prio_table[i * 2] =
++			((buf[offset] & ICE_IEEE_ETS_PRIO_1_M) >>
++			 ICE_IEEE_ETS_PRIO_1_S);
++		ets_cfg->prio_table[i * 2 + 1] =
++			((buf[offset] & ICE_IEEE_ETS_PRIO_0_M) >>
++			 ICE_IEEE_ETS_PRIO_0_S);
 +		offset++;
 +	}
 +
@@ -306,41 +274,30 @@ index b59c145fb958..1ad36b40974a 100644
 +	 *        ---------------------------------
 +	 *
 +	 * TSA Assignment Table (8 octets)
-+	 * Octets:| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
++	 * Octets:| 9 | 10| 11| 12| 13| 14| 15| 16|
 +	 *        ---------------------------------
 +	 *        |tc0|tc1|tc2|tc3|tc4|tc5|tc6|tc7|
 +	 *        ---------------------------------
 +	 */
 +	ice_for_each_traffic_class(i) {
-+		buf[offset] = ets_cfg->tcbwtable[i];
-+		buf[ICE_MAX_TRAFFIC_CLASS + offset] = ets_cfg->tsatable[i];
-+		offset++;
++		ets_cfg->tcbwtable[i] = buf[offset];
++		ets_cfg->tsatable[i] = buf[ICE_MAX_TRAFFIC_CLASS + offset++];
 +	}
 +}
 +
 +/**
-+ * ice_add_ieee_ets_tlv - Prepare ETS TLV in IEEE format
-+ * @tlv: Fill the ETS config data in IEEE format
-+ * @dcbcfg: Local store which holds the DCB Config
++ * ice_parse_ieee_etscfg_tlv
++ * @tlv: IEEE 802.1Qaz ETS CFG TLV
++ * @dcbcfg: Local store to update ETS CFG data
 + *
-+ * Prepare IEEE 802.1Qaz ETS CFG TLV
++ * Parses IEEE 802.1Qaz ETS CFG TLV
 + */
 +static void
-+ice_add_ieee_ets_tlv(struct ice_lldp_org_tlv *tlv, struct ice_dcbx_cfg *dcbcfg)
++ice_parse_ieee_etscfg_tlv(struct ice_lldp_org_tlv *tlv,
++			  struct ice_dcbx_cfg *dcbcfg)
 +{
 +	struct ice_dcb_ets_cfg *etscfg;
 +	u8 *buf = tlv->tlvinfo;
-+	u8 maxtcwilling = 0;
-+	u32 ouisubtype;
-+	u16 typelen;
-+
-+	typelen = ((ICE_TLV_TYPE_ORG << ICE_LLDP_TLV_TYPE_S) |
-+		   ICE_IEEE_ETS_TLV_LEN);
-+	tlv->typelen = htons(typelen);
-+
-+	ouisubtype = ((ICE_IEEE_8021QAZ_OUI << ICE_LLDP_TLV_OUI_S) |
-+		      ICE_IEEE_SUBTYPE_ETS_CFG);
-+	tlv->ouisubtype = htonl(ouisubtype);
 +
 +	/* First Octet post subtype
 +	 * --------------------------
@@ -350,67 +307,45 @@ index b59c145fb958..1ad36b40974a 100644
 +	 * |1bit | 1bit|3 bits|3bits|
 +	 */
 +	etscfg = &dcbcfg->etscfg;
-+	if (etscfg->willing)
-+		maxtcwilling = BIT(ICE_IEEE_ETS_WILLING_S);
-+	maxtcwilling |= etscfg->maxtcs & ICE_IEEE_ETS_MAXTC_M;
-+	buf[0] = maxtcwilling;
++	etscfg->willing = ((buf[0] & ICE_IEEE_ETS_WILLING_M) >>
++			   ICE_IEEE_ETS_WILLING_S);
++	etscfg->cbs = ((buf[0] & ICE_IEEE_ETS_CBS_M) >> ICE_IEEE_ETS_CBS_S);
++	etscfg->maxtcs = ((buf[0] & ICE_IEEE_ETS_MAXTC_M) >>
++			  ICE_IEEE_ETS_MAXTC_S);
 +
-+	/* Begin adding at Priority Assignment Table (offset 1 in buf) */
-+	ice_add_ieee_ets_common_tlv(&buf[1], etscfg);
++	/* Begin parsing at Priority Assignment Table (offset 1 in buf) */
++	ice_parse_ieee_ets_common_tlv(&buf[1], etscfg);
 +}
 +
 +/**
-+ * ice_add_ieee_etsrec_tlv - Prepare ETS Recommended TLV in IEEE format
-+ * @tlv: Fill ETS Recommended TLV in IEEE format
-+ * @dcbcfg: Local store which holds the DCB Config
++ * ice_parse_ieee_etsrec_tlv
++ * @tlv: IEEE 802.1Qaz ETS REC TLV
++ * @dcbcfg: Local store to update ETS REC data
 + *
-+ * Prepare IEEE 802.1Qaz ETS REC TLV
++ * Parses IEEE 802.1Qaz ETS REC TLV
 + */
 +static void
-+ice_add_ieee_etsrec_tlv(struct ice_lldp_org_tlv *tlv,
-+			struct ice_dcbx_cfg *dcbcfg)
++ice_parse_ieee_etsrec_tlv(struct ice_lldp_org_tlv *tlv,
++			  struct ice_dcbx_cfg *dcbcfg)
 +{
-+	struct ice_dcb_ets_cfg *etsrec;
 +	u8 *buf = tlv->tlvinfo;
-+	u32 ouisubtype;
-+	u16 typelen;
 +
-+	typelen = ((ICE_TLV_TYPE_ORG << ICE_LLDP_TLV_TYPE_S) |
-+		   ICE_IEEE_ETS_TLV_LEN);
-+	tlv->typelen = htons(typelen);
-+
-+	ouisubtype = ((ICE_IEEE_8021QAZ_OUI << ICE_LLDP_TLV_OUI_S) |
-+		      ICE_IEEE_SUBTYPE_ETS_REC);
-+	tlv->ouisubtype = htonl(ouisubtype);
-+
-+	etsrec = &dcbcfg->etsrec;
-+
-+	/* First Octet is reserved */
-+	/* Begin adding at Priority Assignment Table (offset 1 in buf) */
-+	ice_add_ieee_ets_common_tlv(&buf[1], etsrec);
++	/* Begin parsing at Priority Assignment Table (offset 1 in buf) */
++	ice_parse_ieee_ets_common_tlv(&buf[1], &dcbcfg->etsrec);
 +}
 +
 +/**
-+ * ice_add_ieee_pfc_tlv - Prepare PFC TLV in IEEE format
-+ * @tlv: Fill PFC TLV in IEEE format
-+ * @dcbcfg: Local store which holds the PFC CFG data
++ * ice_parse_ieee_pfccfg_tlv
++ * @tlv: IEEE 802.1Qaz PFC CFG TLV
++ * @dcbcfg: Local store to update PFC CFG data
 + *
-+ * Prepare IEEE 802.1Qaz PFC CFG TLV
++ * Parses IEEE 802.1Qaz PFC CFG TLV
 + */
 +static void
-+ice_add_ieee_pfc_tlv(struct ice_lldp_org_tlv *tlv, struct ice_dcbx_cfg *dcbcfg)
++ice_parse_ieee_pfccfg_tlv(struct ice_lldp_org_tlv *tlv,
++			  struct ice_dcbx_cfg *dcbcfg)
 +{
 +	u8 *buf = tlv->tlvinfo;
-+	u32 ouisubtype;
-+	u16 typelen;
-+
-+	typelen = ((ICE_TLV_TYPE_ORG << ICE_LLDP_TLV_TYPE_S) |
-+		   ICE_IEEE_PFC_TLV_LEN);
-+	tlv->typelen = htons(typelen);
-+
-+	ouisubtype = ((ICE_IEEE_8021QAZ_OUI << ICE_LLDP_TLV_OUI_S) |
-+		      ICE_IEEE_SUBTYPE_PFC_CFG);
-+	tlv->ouisubtype = htonl(ouisubtype);
 +
 +	/* ----------------------------------------
 +	 * |will-|MBC  | Re-  | PFC |  PFC Enable  |
@@ -418,41 +353,43 @@ index b59c145fb958..1ad36b40974a 100644
 +	 * -----------------------------------------
 +	 * |1bit | 1bit|2 bits|4bits| 1 octet      |
 +	 */
-+	if (dcbcfg->pfc.willing)
-+		buf[0] = BIT(ICE_IEEE_PFC_WILLING_S);
-+
-+	if (dcbcfg->pfc.mbc)
-+		buf[0] |= BIT(ICE_IEEE_PFC_MBC_S);
-+
-+	buf[0] |= dcbcfg->pfc.pfccap & 0xF;
-+	buf[1] = dcbcfg->pfc.pfcena;
++	dcbcfg->pfc.willing = ((buf[0] & ICE_IEEE_PFC_WILLING_M) >>
++			       ICE_IEEE_PFC_WILLING_S);
++	dcbcfg->pfc.mbc = ((buf[0] & ICE_IEEE_PFC_MBC_M) >> ICE_IEEE_PFC_MBC_S);
++	dcbcfg->pfc.pfccap = ((buf[0] & ICE_IEEE_PFC_CAP_M) >>
++			      ICE_IEEE_PFC_CAP_S);
++	dcbcfg->pfc.pfcena = buf[1];
 +}
 +
 +/**
-+ * ice_add_ieee_app_pri_tlv -  Prepare APP TLV in IEEE format
-+ * @tlv: Fill APP TLV in IEEE format
-+ * @dcbcfg: Local store which holds the APP CFG data
++ * ice_parse_ieee_app_tlv
++ * @tlv: IEEE 802.1Qaz APP TLV
++ * @dcbcfg: Local store to update APP PRIO data
 + *
-+ * Prepare IEEE 802.1Qaz APP CFG TLV
++ * Parses IEEE 802.1Qaz APP PRIO TLV
 + */
 +static void
-+ice_add_ieee_app_pri_tlv(struct ice_lldp_org_tlv *tlv,
-+			 struct ice_dcbx_cfg *dcbcfg)
++ice_parse_ieee_app_tlv(struct ice_lldp_org_tlv *tlv,
++		       struct ice_dcbx_cfg *dcbcfg)
 +{
-+	u16 typelen, len, offset = 0;
-+	u8 priority, selector, i = 0;
-+	u8 *buf = tlv->tlvinfo;
-+	u32 ouisubtype;
++	u16 offset = 0;
++	u16 typelen;
++	int i = 0;
++	u16 len;
++	u8 *buf;
 +
-+	/* No APP TLVs then just return */
-+	if (dcbcfg->numapps == 0)
-+		return;
-+	ouisubtype = ((ICE_IEEE_8021QAZ_OUI << ICE_LLDP_TLV_OUI_S) |
-+		      ICE_IEEE_SUBTYPE_APP_PRI);
-+	tlv->ouisubtype = htonl(ouisubtype);
++	typelen = ntohs(tlv->typelen);
++	len = ((typelen & ICE_LLDP_TLV_LEN_M) >> ICE_LLDP_TLV_LEN_S);
++	buf = tlv->tlvinfo;
++
++	/* Removing sizeof(ouisubtype) and reserved byte from len.
++	 * Remaining len div 3 is number of APP TLVs.
++	 */
++	len -= (sizeof(tlv->ouisubtype) + 1);
 +
 +	/* Move offset to App Priority Table */
 +	offset++;
++
 +	/* Application Priority Table (3 octets)
 +	 * Octets:|         1          |    2    |    3    |
 +	 *        -----------------------------------------
@@ -461,48 +398,54 @@ index b59c145fb958..1ad36b40974a 100644
 +	 *   Bits:|23    21|20 19|18 16|15                0|
 +	 *        -----------------------------------------
 +	 */
-+	while (i < dcbcfg->numapps) {
-+		priority = dcbcfg->app[i].priority & 0x7;
-+		selector = dcbcfg->app[i].selector & 0x7;
-+		buf[offset] = (priority << ICE_IEEE_APP_PRIO_S) | selector;
-+		buf[offset + 1] = (dcbcfg->app[i].prot_id >> 0x8) & 0xFF;
-+		buf[offset + 2] = dcbcfg->app[i].prot_id & 0xFF;
++	while (offset < len) {
++		dcbcfg->app[i].priority = ((buf[offset] &
++					    ICE_IEEE_APP_PRIO_M) >>
++					   ICE_IEEE_APP_PRIO_S);
++		dcbcfg->app[i].selector = ((buf[offset] &
++					    ICE_IEEE_APP_SEL_M) >>
++					   ICE_IEEE_APP_SEL_S);
++		dcbcfg->app[i].prot_id = (buf[offset + 1] << 0x8) |
++			buf[offset + 2];
 +		/* Move to next app */
 +		offset += 3;
 +		i++;
 +		if (i >= ICE_DCBX_MAX_APPS)
 +			break;
 +	}
-+	/* len includes size of ouisubtype + 1 reserved + 3*numapps */
-+	len = sizeof(tlv->ouisubtype) + 1 + (i * 3);
-+	typelen = ((ICE_TLV_TYPE_ORG << ICE_LLDP_TLV_TYPE_S) | (len & 0x1FF));
-+	tlv->typelen = htons(typelen);
++
++	dcbcfg->numapps = i;
 +}
 +
 +/**
-+ * ice_add_dcb_tlv - Add all IEEE TLVs
-+ * @tlv: Fill TLV data in IEEE format
-+ * @dcbcfg: Local store which holds the DCB Config
-+ * @tlvid: Type of IEEE TLV
++ * ice_parse_ieee_tlv
++ * @tlv: IEEE 802.1Qaz TLV
++ * @dcbcfg: Local store to update ETS REC data
 + *
-+ * Add tlv information
++ * Get the TLV subtype and send it to parsing function
++ * based on the subtype value
 + */
 +static void
-+ice_add_dcb_tlv(struct ice_lldp_org_tlv *tlv, struct ice_dcbx_cfg *dcbcfg,
-+		u16 tlvid)
++ice_parse_ieee_tlv(struct ice_lldp_org_tlv *tlv, struct ice_dcbx_cfg *dcbcfg)
 +{
-+	switch (tlvid) {
-+	case ICE_IEEE_TLV_ID_ETS_CFG:
-+		ice_add_ieee_ets_tlv(tlv, dcbcfg);
++	u32 ouisubtype;
++	u8 subtype;
++
++	ouisubtype = ntohl(tlv->ouisubtype);
++	subtype = (u8)((ouisubtype & ICE_LLDP_TLV_SUBTYPE_M) >>
++		       ICE_LLDP_TLV_SUBTYPE_S);
++	switch (subtype) {
++	case ICE_IEEE_SUBTYPE_ETS_CFG:
++		ice_parse_ieee_etscfg_tlv(tlv, dcbcfg);
 +		break;
-+	case ICE_IEEE_TLV_ID_ETS_REC:
-+		ice_add_ieee_etsrec_tlv(tlv, dcbcfg);
++	case ICE_IEEE_SUBTYPE_ETS_REC:
++		ice_parse_ieee_etsrec_tlv(tlv, dcbcfg);
 +		break;
-+	case ICE_IEEE_TLV_ID_PFC_CFG:
-+		ice_add_ieee_pfc_tlv(tlv, dcbcfg);
++	case ICE_IEEE_SUBTYPE_PFC_CFG:
++		ice_parse_ieee_pfccfg_tlv(tlv, dcbcfg);
 +		break;
-+	case ICE_IEEE_TLV_ID_APP_PRI:
-+		ice_add_ieee_app_pri_tlv(tlv, dcbcfg);
++	case ICE_IEEE_SUBTYPE_APP_PRI:
++		ice_parse_ieee_app_tlv(tlv, dcbcfg);
 +		break;
 +	default:
 +		break;
@@ -510,934 +453,756 @@ index b59c145fb958..1ad36b40974a 100644
 +}
 +
 +/**
-+ * ice_dcb_cfg_to_lldp - Convert DCB configuration to MIB format
-+ * @lldpmib: pointer to the HW struct
-+ * @miblen: length of LLDP MIB
-+ * @dcbcfg: Local store which holds the DCB Config
++ * ice_parse_cee_pgcfg_tlv
++ * @tlv: CEE DCBX PG CFG TLV
++ * @dcbcfg: Local store to update ETS CFG data
 + *
-+ * Convert the DCB configuration to MIB format
++ * Parses CEE DCBX PG CFG TLV
 + */
 +static void
-+ice_dcb_cfg_to_lldp(u8 *lldpmib, u16 *miblen, struct ice_dcbx_cfg *dcbcfg)
++ice_parse_cee_pgcfg_tlv(struct ice_cee_feat_tlv *tlv,
++			struct ice_dcbx_cfg *dcbcfg)
 +{
-+	u16 len, offset = 0, tlvid = ICE_TLV_ID_START;
-+	struct ice_lldp_org_tlv *tlv;
-+	u16 typelen;
++	struct ice_dcb_ets_cfg *etscfg;
++	u8 *buf = tlv->tlvinfo;
++	u16 offset = 0;
++	int i;
 +
-+	tlv = (struct ice_lldp_org_tlv *)lldpmib;
-+	while (1) {
-+		ice_add_dcb_tlv(tlv, dcbcfg, tlvid++);
-+		typelen = ntohs(tlv->typelen);
-+		len = (typelen & ICE_LLDP_TLV_LEN_M) >> ICE_LLDP_TLV_LEN_S;
-+		if (len)
-+			offset += len + 2;
-+		/* END TLV or beyond LLDPDU size */
-+		if (tlvid >= ICE_TLV_ID_END_OF_LLDPPDU ||
-+		    offset > ICE_LLDPDU_SIZE)
-+			break;
-+		/* Move to next TLV */
-+		if (len)
-+			tlv = (struct ice_lldp_org_tlv *)
-+				((char *)tlv + sizeof(tlv->typelen) + len);
++	etscfg = &dcbcfg->etscfg;
++
++	if (tlv->en_will_err & ICE_CEE_FEAT_TLV_WILLING_M)
++		etscfg->willing = 1;
++
++	etscfg->cbs = 0;
++	/* Priority Group Table (4 octets)
++	 * Octets:|    1    |    2    |    3    |    4    |
++	 *        -----------------------------------------
++	 *        |pri0|pri1|pri2|pri3|pri4|pri5|pri6|pri7|
++	 *        -----------------------------------------
++	 *   Bits:|7  4|3  0|7  4|3  0|7  4|3  0|7  4|3  0|
++	 *        -----------------------------------------
++	 */
++	for (i = 0; i < 4; i++) {
++		etscfg->prio_table[i * 2] =
++			((buf[offset] & ICE_CEE_PGID_PRIO_1_M) >>
++			 ICE_CEE_PGID_PRIO_1_S);
++		etscfg->prio_table[i * 2 + 1] =
++			((buf[offset] & ICE_CEE_PGID_PRIO_0_M) >>
++			 ICE_CEE_PGID_PRIO_0_S);
++		offset++;
 +	}
-+	*miblen = offset;
++
++	/* PG Percentage Table (8 octets)
++	 * Octets:| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
++	 *        ---------------------------------
++	 *        |pg0|pg1|pg2|pg3|pg4|pg5|pg6|pg7|
++	 *        ---------------------------------
++	 */
++	ice_for_each_traffic_class(i)
++		etscfg->tcbwtable[i] = buf[offset++];
++
++	/* Number of TCs supported (1 octet) */
++	etscfg->maxtcs = buf[offset];
 +}
 +
 +/**
-+ * ice_set_dcb_cfg - Set the local LLDP MIB to FW
-+ * @pi: port information structure
++ * ice_parse_cee_pfccfg_tlv
++ * @tlv: CEE DCBX PFC CFG TLV
++ * @dcbcfg: Local store to update PFC CFG data
 + *
-+ * Set DCB configuration to the Firmware
++ * Parses CEE DCBX PFC CFG TLV
 + */
-+enum ice_status ice_set_dcb_cfg(struct ice_port_info *pi)
++static void
++ice_parse_cee_pfccfg_tlv(struct ice_cee_feat_tlv *tlv,
++			 struct ice_dcbx_cfg *dcbcfg)
 +{
-+	u8 mib_type, *lldpmib = NULL;
-+	struct ice_dcbx_cfg *dcbcfg;
-+	enum ice_status ret;
-+	struct ice_hw *hw;
-+	u16 miblen;
++	u8 *buf = tlv->tlvinfo;
 +
-+	if (!pi)
++	if (tlv->en_will_err & ICE_CEE_FEAT_TLV_WILLING_M)
++		dcbcfg->pfc.willing = 1;
++
++	/* ------------------------
++	 * | PFC Enable | PFC TCs |
++	 * ------------------------
++	 * | 1 octet    | 1 octet |
++	 */
++	dcbcfg->pfc.pfcena = buf[0];
++	dcbcfg->pfc.pfccap = buf[1];
++}
++
++/**
++ * ice_parse_cee_app_tlv
++ * @tlv: CEE DCBX APP TLV
++ * @dcbcfg: Local store to update APP PRIO data
++ *
++ * Parses CEE DCBX APP PRIO TLV
++ */
++static void
++ice_parse_cee_app_tlv(struct ice_cee_feat_tlv *tlv, struct ice_dcbx_cfg *dcbcfg)
++{
++	u16 len, typelen, offset = 0;
++	struct ice_cee_app_prio *app;
++	u8 i;
++
++	typelen = ntohs(tlv->hdr.typelen);
++	len = ((typelen & ICE_LLDP_TLV_LEN_M) >> ICE_LLDP_TLV_LEN_S);
++
++	dcbcfg->numapps = len / sizeof(*app);
++	if (!dcbcfg->numapps)
++		return;
++	if (dcbcfg->numapps > ICE_DCBX_MAX_APPS)
++		dcbcfg->numapps = ICE_DCBX_MAX_APPS;
++
++	for (i = 0; i < dcbcfg->numapps; i++) {
++		u8 up, selector;
++
++		app = (struct ice_cee_app_prio *)(tlv->tlvinfo + offset);
++		for (up = 0; up < ICE_MAX_USER_PRIORITY; up++)
++			if (app->prio_map & BIT(up))
++				break;
++
++		dcbcfg->app[i].priority = up;
++
++		/* Get Selector from lower 2 bits, and convert to IEEE */
++		selector = (app->upper_oui_sel & ICE_CEE_APP_SELECTOR_M);
++		switch (selector) {
++		case ICE_CEE_APP_SEL_ETHTYPE:
++			dcbcfg->app[i].selector = ICE_APP_SEL_ETHTYPE;
++			break;
++		case ICE_CEE_APP_SEL_TCPIP:
++			dcbcfg->app[i].selector = ICE_APP_SEL_TCPIP;
++			break;
++		default:
++			/* Keep selector as it is for unknown types */
++			dcbcfg->app[i].selector = selector;
++		}
++
++		dcbcfg->app[i].prot_id = ntohs(app->protocol);
++		/* Move to next app */
++		offset += sizeof(*app);
++	}
++}
++
++/**
++ * ice_parse_cee_tlv
++ * @tlv: CEE DCBX TLV
++ * @dcbcfg: Local store to update DCBX config data
++ *
++ * Get the TLV subtype and send it to parsing function
++ * based on the subtype value
++ */
++static void
++ice_parse_cee_tlv(struct ice_lldp_org_tlv *tlv, struct ice_dcbx_cfg *dcbcfg)
++{
++	struct ice_cee_feat_tlv *sub_tlv;
++	u8 subtype, feat_tlv_count = 0;
++	u16 len, tlvlen, typelen;
++	u32 ouisubtype;
++
++	ouisubtype = ntohl(tlv->ouisubtype);
++	subtype = (u8)((ouisubtype & ICE_LLDP_TLV_SUBTYPE_M) >>
++		       ICE_LLDP_TLV_SUBTYPE_S);
++	/* Return if not CEE DCBX */
++	if (subtype != ICE_CEE_DCBX_TYPE)
++		return;
++
++	typelen = ntohs(tlv->typelen);
++	tlvlen = ((typelen & ICE_LLDP_TLV_LEN_M) >> ICE_LLDP_TLV_LEN_S);
++	len = sizeof(tlv->typelen) + sizeof(ouisubtype) +
++		sizeof(struct ice_cee_ctrl_tlv);
++	/* Return if no CEE DCBX Feature TLVs */
++	if (tlvlen <= len)
++		return;
++
++	sub_tlv = (struct ice_cee_feat_tlv *)((char *)tlv + len);
++	while (feat_tlv_count < ICE_CEE_MAX_FEAT_TYPE) {
++		u16 sublen;
++
++		typelen = ntohs(sub_tlv->hdr.typelen);
++		sublen = ((typelen & ICE_LLDP_TLV_LEN_M) >> ICE_LLDP_TLV_LEN_S);
++		subtype = (u8)((typelen & ICE_LLDP_TLV_TYPE_M) >>
++			       ICE_LLDP_TLV_TYPE_S);
++		switch (subtype) {
++		case ICE_CEE_SUBTYPE_PG_CFG:
++			ice_parse_cee_pgcfg_tlv(sub_tlv, dcbcfg);
++			break;
++		case ICE_CEE_SUBTYPE_PFC_CFG:
++			ice_parse_cee_pfccfg_tlv(sub_tlv, dcbcfg);
++			break;
++		case ICE_CEE_SUBTYPE_APP_PRI:
++			ice_parse_cee_app_tlv(sub_tlv, dcbcfg);
++			break;
++		default:
++			return;	/* Invalid Sub-type return */
++		}
++		feat_tlv_count++;
++		/* Move to next sub TLV */
++		sub_tlv = (struct ice_cee_feat_tlv *)
++			  ((char *)sub_tlv + sizeof(sub_tlv->hdr.typelen) +
++			   sublen);
++	}
++}
++
++/**
++ * ice_parse_org_tlv
++ * @tlv: Organization specific TLV
++ * @dcbcfg: Local store to update ETS REC data
++ *
++ * Currently only IEEE 802.1Qaz TLV is supported, all others
++ * will be returned
++ */
++static void
++ice_parse_org_tlv(struct ice_lldp_org_tlv *tlv, struct ice_dcbx_cfg *dcbcfg)
++{
++	u32 ouisubtype;
++	u32 oui;
++
++	ouisubtype = ntohl(tlv->ouisubtype);
++	oui = ((ouisubtype & ICE_LLDP_TLV_OUI_M) >> ICE_LLDP_TLV_OUI_S);
++	switch (oui) {
++	case ICE_IEEE_8021QAZ_OUI:
++		ice_parse_ieee_tlv(tlv, dcbcfg);
++		break;
++	case ICE_CEE_DCBX_OUI:
++		ice_parse_cee_tlv(tlv, dcbcfg);
++		break;
++	default:
++		break;
++	}
++}
++
++/**
++ * ice_lldp_to_dcb_cfg
++ * @lldpmib: LLDPDU to be parsed
++ * @dcbcfg: store for LLDPDU data
++ *
++ * Parse DCB configuration from the LLDPDU
++ */
++static enum ice_status
++ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg)
++{
++	struct ice_lldp_org_tlv *tlv;
++	enum ice_status ret = 0;
++	u16 offset = 0;
++	u16 typelen;
++	u16 type;
++	u16 len;
++
++	if (!lldpmib || !dcbcfg)
 +		return ICE_ERR_PARAM;
 +
-+	hw = pi->hw;
++	/* set to the start of LLDPDU */
++	lldpmib += ETH_HLEN;
++	tlv = (struct ice_lldp_org_tlv *)lldpmib;
++	while (1) {
++		typelen = ntohs(tlv->typelen);
++		type = ((typelen & ICE_LLDP_TLV_TYPE_M) >> ICE_LLDP_TLV_TYPE_S);
++		len = ((typelen & ICE_LLDP_TLV_LEN_M) >> ICE_LLDP_TLV_LEN_S);
++		offset += sizeof(typelen) + len;
 +
-+	/* update the HW local config */
-+	dcbcfg = &pi->local_dcbx_cfg;
++		/* END TLV or beyond LLDPDU size */
++		if (type == ICE_TLV_TYPE_END || offset > ICE_LLDPDU_SIZE)
++			break;
++
++		switch (type) {
++		case ICE_TLV_TYPE_ORG:
++			ice_parse_org_tlv(tlv, dcbcfg);
++			break;
++		default:
++			break;
++		}
++
++		/* Move to next TLV */
++		tlv = (struct ice_lldp_org_tlv *)
++		      ((char *)tlv + sizeof(tlv->typelen) + len);
++	}
++
++	return ret;
++}
++
++/**
++ * ice_aq_get_dcb_cfg
++ * @hw: pointer to the HW struct
++ * @mib_type: mib type for the query
++ * @bridgetype: bridge type for the query (remote)
++ * @dcbcfg: store for LLDPDU data
++ *
++ * Query DCB configuration from the firmware
++ */
++static enum ice_status
++ice_aq_get_dcb_cfg(struct ice_hw *hw, u8 mib_type, u8 bridgetype,
++		   struct ice_dcbx_cfg *dcbcfg)
++{
++	enum ice_status ret;
++	u8 *lldpmib;
++
 +	/* Allocate the LLDPDU */
 +	lldpmib = devm_kzalloc(ice_hw_to_dev(hw), ICE_LLDPDU_SIZE, GFP_KERNEL);
 +	if (!lldpmib)
 +		return ICE_ERR_NO_MEMORY;
 +
-+	mib_type = SET_LOCAL_MIB_TYPE_LOCAL_MIB;
-+	if (dcbcfg->app_mode == ICE_DCBX_APPS_NON_WILLING)
-+		mib_type |= SET_LOCAL_MIB_TYPE_CEE_NON_WILLING;
++	ret = ice_aq_get_lldp_mib(hw, bridgetype, mib_type, (void *)lldpmib,
++				  ICE_LLDPDU_SIZE, NULL, NULL, NULL);
 +
-+	ice_dcb_cfg_to_lldp(lldpmib, &miblen, dcbcfg);
-+	ret = ice_aq_set_lldp_mib(hw, mib_type, (void *)lldpmib, miblen,
-+				  NULL);
++	if (!ret)
++		/* Parse LLDP MIB to get DCB configuration */
++		ret = ice_lldp_to_dcb_cfg(lldpmib, dcbcfg);
 +
 +	devm_kfree(ice_hw_to_dev(hw), lldpmib);
 +
 +	return ret;
 +}
 +
+ /**
+  * ice_aq_start_stop_dcbx - Start/Stop DCBx service in FW
+  * @hw: pointer to the HW struct
+@@ -83,3 +672,233 @@ ice_aq_start_stop_dcbx(struct ice_hw *hw, bool start_dcbx_agent,
+ 
+ 	return status;
+ }
++
 +/**
-+ * ice_aq_query_port_ets - query port ets configuration
-+ * @pi: port information structure
-+ * @buf: pointer to buffer
-+ * @buf_size: buffer size in bytes
++ * ice_aq_get_cee_dcb_cfg
++ * @hw: pointer to the HW struct
++ * @buff: response buffer that stores CEE operational configuration
 + * @cd: pointer to command details structure or NULL
 + *
-+ * query current port ets configuration
++ * Get CEE DCBX mode operational configuration from firmware (0x0A07)
 + */
 +static enum ice_status
-+ice_aq_query_port_ets(struct ice_port_info *pi,
-+		      struct ice_aqc_port_ets_elem *buf, u16 buf_size,
-+		      struct ice_sq_cd *cd)
++ice_aq_get_cee_dcb_cfg(struct ice_hw *hw,
++		       struct ice_aqc_get_cee_dcb_cfg_resp *buff,
++		       struct ice_sq_cd *cd)
 +{
-+	struct ice_aqc_query_port_ets *cmd;
 +	struct ice_aq_desc desc;
-+	enum ice_status status;
 +
-+	if (!pi)
-+		return ICE_ERR_PARAM;
-+	cmd = &desc.params.port_ets;
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_query_port_ets);
-+	cmd->port_teid = pi->root->info.node_teid;
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_cee_dcb_cfg);
 +
-+	status = ice_aq_send_cmd(pi->hw, &desc, buf, buf_size, cd);
-+	return status;
++	return ice_aq_send_cmd(hw, &desc, (void *)buff, sizeof(*buff), cd);
 +}
 +
 +/**
-+ * ice_update_port_tc_tree_cfg - update TC tree configuration
-+ * @pi: port information structure
-+ * @buf: pointer to buffer
++ * ice_cee_to_dcb_cfg
++ * @cee_cfg: pointer to CEE configuration struct
++ * @dcbcfg: DCB configuration struct
 + *
-+ * update the SW DB with the new TC changes
++ * Convert CEE configuration from firmware to DCB configuration
++ */
++static void
++ice_cee_to_dcb_cfg(struct ice_aqc_get_cee_dcb_cfg_resp *cee_cfg,
++		   struct ice_dcbx_cfg *dcbcfg)
++{
++	u32 status, tlv_status = le32_to_cpu(cee_cfg->tlv_status);
++	u32 ice_aqc_cee_status_mask, ice_aqc_cee_status_shift;
++	u16 app_prio = le16_to_cpu(cee_cfg->oper_app_prio);
++	u8 i, err, sync, oper, app_index, ice_app_sel_type;
++	u16 ice_aqc_cee_app_mask, ice_aqc_cee_app_shift;
++	u16 ice_app_prot_id_type;
++
++	/* CEE PG data to ETS config */
++	dcbcfg->etscfg.maxtcs = cee_cfg->oper_num_tc;
++
++	/* Note that the FW creates the oper_prio_tc nibbles reversed
++	 * from those in the CEE Priority Group sub-TLV.
++	 */
++	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS / 2; i++) {
++		dcbcfg->etscfg.prio_table[i * 2] =
++			((cee_cfg->oper_prio_tc[i] & ICE_CEE_PGID_PRIO_0_M) >>
++			 ICE_CEE_PGID_PRIO_0_S);
++		dcbcfg->etscfg.prio_table[i * 2 + 1] =
++			((cee_cfg->oper_prio_tc[i] & ICE_CEE_PGID_PRIO_1_M) >>
++			 ICE_CEE_PGID_PRIO_1_S);
++	}
++
++	ice_for_each_traffic_class(i) {
++		dcbcfg->etscfg.tcbwtable[i] = cee_cfg->oper_tc_bw[i];
++
++		if (dcbcfg->etscfg.prio_table[i] == ICE_CEE_PGID_STRICT) {
++			/* Map it to next empty TC */
++			dcbcfg->etscfg.prio_table[i] = cee_cfg->oper_num_tc - 1;
++			dcbcfg->etscfg.tsatable[i] = ICE_IEEE_TSA_STRICT;
++		} else {
++			dcbcfg->etscfg.tsatable[i] = ICE_IEEE_TSA_ETS;
++		}
++	}
++
++	/* CEE PFC data to ETS config */
++	dcbcfg->pfc.pfcena = cee_cfg->oper_pfc_en;
++	dcbcfg->pfc.pfccap = ICE_MAX_TRAFFIC_CLASS;
++
++	app_index = 0;
++	for (i = 0; i < 3; i++) {
++		if (i == 0) {
++			/* FCoE APP */
++			ice_aqc_cee_status_mask = ICE_AQC_CEE_FCOE_STATUS_M;
++			ice_aqc_cee_status_shift = ICE_AQC_CEE_FCOE_STATUS_S;
++			ice_aqc_cee_app_mask = ICE_AQC_CEE_APP_FCOE_M;
++			ice_aqc_cee_app_shift = ICE_AQC_CEE_APP_FCOE_S;
++			ice_app_sel_type = ICE_APP_SEL_ETHTYPE;
++			ice_app_prot_id_type = ICE_APP_PROT_ID_FCOE;
++		} else if (i == 1) {
++			/* iSCSI APP */
++			ice_aqc_cee_status_mask = ICE_AQC_CEE_ISCSI_STATUS_M;
++			ice_aqc_cee_status_shift = ICE_AQC_CEE_ISCSI_STATUS_S;
++			ice_aqc_cee_app_mask = ICE_AQC_CEE_APP_ISCSI_M;
++			ice_aqc_cee_app_shift = ICE_AQC_CEE_APP_ISCSI_S;
++			ice_app_sel_type = ICE_APP_SEL_TCPIP;
++			ice_app_prot_id_type = ICE_APP_PROT_ID_ISCSI;
++		} else {
++			/* FIP APP */
++			ice_aqc_cee_status_mask = ICE_AQC_CEE_FIP_STATUS_M;
++			ice_aqc_cee_status_shift = ICE_AQC_CEE_FIP_STATUS_S;
++			ice_aqc_cee_app_mask = ICE_AQC_CEE_APP_FIP_M;
++			ice_aqc_cee_app_shift = ICE_AQC_CEE_APP_FIP_S;
++			ice_app_sel_type = ICE_APP_SEL_ETHTYPE;
++			ice_app_prot_id_type = ICE_APP_PROT_ID_FIP;
++		}
++
++		status = (tlv_status & ice_aqc_cee_status_mask) >>
++			 ice_aqc_cee_status_shift;
++		err = (status & ICE_TLV_STATUS_ERR) ? 1 : 0;
++		sync = (status & ICE_TLV_STATUS_SYNC) ? 1 : 0;
++		oper = (status & ICE_TLV_STATUS_OPER) ? 1 : 0;
++		/* Add FCoE/iSCSI/FIP APP if Error is False and
++		 * Oper/Sync is True
++		 */
++		if (!err && sync && oper) {
++			dcbcfg->app[app_index].priority =
++				(app_prio & ice_aqc_cee_app_mask) >>
++				ice_aqc_cee_app_shift;
++			dcbcfg->app[app_index].selector = ice_app_sel_type;
++			dcbcfg->app[app_index].prot_id = ice_app_prot_id_type;
++			app_index++;
++		}
++	}
++
++	dcbcfg->numapps = app_index;
++}
++
++/**
++ * ice_get_ieee_dcb_cfg
++ * @pi: port information structure
++ * @dcbx_mode: mode of DCBX (IEEE or CEE)
++ *
++ * Get IEEE or CEE mode DCB configuration from the Firmware
 + */
 +static enum ice_status
-+ice_update_port_tc_tree_cfg(struct ice_port_info *pi,
-+			    struct ice_aqc_port_ets_elem *buf)
++ice_get_ieee_or_cee_dcb_cfg(struct ice_port_info *pi, u8 dcbx_mode)
 +{
-+	struct ice_sched_node *node, *tc_node;
-+	struct ice_aqc_get_elem elem;
-+	enum ice_status status = 0;
-+	u32 teid1, teid2;
-+	u8 i, j;
++	struct ice_dcbx_cfg *dcbx_cfg = NULL;
++	enum ice_status ret;
 +
 +	if (!pi)
 +		return ICE_ERR_PARAM;
-+	/* suspend the missing TC nodes */
-+	for (i = 0; i < pi->root->num_children; i++) {
-+		teid1 = le32_to_cpu(pi->root->children[i]->info.node_teid);
-+		ice_for_each_traffic_class(j) {
-+			teid2 = le32_to_cpu(buf->tc_node_teid[j]);
-+			if (teid1 == teid2)
-+				break;
-+		}
-+		if (j < ICE_MAX_TRAFFIC_CLASS)
-+			continue;
-+		/* TC is missing */
-+		pi->root->children[i]->in_use = false;
-+	}
-+	/* add the new TC nodes */
-+	ice_for_each_traffic_class(j) {
-+		teid2 = le32_to_cpu(buf->tc_node_teid[j]);
-+		if (teid2 == ICE_INVAL_TEID)
-+			continue;
-+		/* Is it already present in the tree ? */
-+		for (i = 0; i < pi->root->num_children; i++) {
-+			tc_node = pi->root->children[i];
-+			if (!tc_node)
-+				continue;
-+			teid1 = le32_to_cpu(tc_node->info.node_teid);
-+			if (teid1 == teid2) {
-+				tc_node->tc_num = j;
-+				tc_node->in_use = true;
-+				break;
-+			}
-+		}
-+		if (i < pi->root->num_children)
-+			continue;
-+		/* new TC */
-+		status = ice_sched_query_elem(pi->hw, teid2, &elem);
-+		if (!status)
-+			status = ice_sched_add_node(pi, 1, &elem.generic[0]);
-+		if (status)
-+			break;
-+		/* update the TC number */
-+		node = ice_sched_find_node_by_teid(pi->root, teid2);
-+		if (node)
-+			node->tc_num = j;
-+	}
-+	return status;
++
++	if (dcbx_mode == ICE_DCBX_MODE_IEEE)
++		dcbx_cfg = &pi->local_dcbx_cfg;
++	else if (dcbx_mode == ICE_DCBX_MODE_CEE)
++		dcbx_cfg = &pi->desired_dcbx_cfg;
++
++	/* Get Local DCB Config in case of ICE_DCBX_MODE_IEEE
++	 * or get CEE DCB Desired Config in case of ICE_DCBX_MODE_CEE
++	 */
++	ret = ice_aq_get_dcb_cfg(pi->hw, ICE_AQ_LLDP_MIB_LOCAL,
++				 ICE_AQ_LLDP_BRID_TYPE_NEAREST_BRID, dcbx_cfg);
++	if (ret)
++		goto out;
++
++	/* Get Remote DCB Config */
++	dcbx_cfg = &pi->remote_dcbx_cfg;
++	ret = ice_aq_get_dcb_cfg(pi->hw, ICE_AQ_LLDP_MIB_REMOTE,
++				 ICE_AQ_LLDP_BRID_TYPE_NEAREST_BRID, dcbx_cfg);
++	/* Don't treat ENOENT as an error for Remote MIBs */
++	if (pi->hw->adminq.sq_last_status == ICE_AQ_RC_ENOENT)
++		ret = 0;
++
++out:
++	return ret;
 +}
 +
 +/**
-+ * ice_query_port_ets - query port ets configuration
++ * ice_get_dcb_cfg
 + * @pi: port information structure
-+ * @buf: pointer to buffer
-+ * @buf_size: buffer size in bytes
-+ * @cd: pointer to command details structure or NULL
 + *
-+ * query current port ets configuration and update the
-+ * SW DB with the TC changes
++ * Get DCB configuration from the Firmware
 + */
-+enum ice_status
-+ice_query_port_ets(struct ice_port_info *pi,
-+		   struct ice_aqc_port_ets_elem *buf, u16 buf_size,
-+		   struct ice_sq_cd *cd)
++static enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi)
 +{
-+	enum ice_status status;
++	struct ice_aqc_get_cee_dcb_cfg_resp cee_cfg;
++	struct ice_dcbx_cfg *dcbx_cfg;
++	enum ice_status ret;
 +
-+	mutex_lock(&pi->sched_lock);
-+	status = ice_aq_query_port_ets(pi, buf, buf_size, cd);
-+	if (!status)
-+		status = ice_update_port_tc_tree_cfg(pi, buf);
-+	mutex_unlock(&pi->sched_lock);
-+	return status;
++	if (!pi)
++		return ICE_ERR_PARAM;
++
++	ret = ice_aq_get_cee_dcb_cfg(pi->hw, &cee_cfg, NULL);
++	if (!ret) {
++		/* CEE mode */
++		dcbx_cfg = &pi->local_dcbx_cfg;
++		dcbx_cfg->dcbx_mode = ICE_DCBX_MODE_CEE;
++		dcbx_cfg->tlv_status = le32_to_cpu(cee_cfg.tlv_status);
++		ice_cee_to_dcb_cfg(&cee_cfg, dcbx_cfg);
++		ret = ice_get_ieee_or_cee_dcb_cfg(pi, ICE_DCBX_MODE_CEE);
++	} else if (pi->hw->adminq.sq_last_status == ICE_AQ_RC_ENOENT) {
++		/* CEE mode not enabled try querying IEEE data */
++		dcbx_cfg = &pi->local_dcbx_cfg;
++		dcbx_cfg->dcbx_mode = ICE_DCBX_MODE_IEEE;
++		ret = ice_get_ieee_or_cee_dcb_cfg(pi, ICE_DCBX_MODE_IEEE);
++	}
++
++	return ret;
++}
++
++/**
++ * ice_init_dcb
++ * @hw: pointer to the HW struct
++ *
++ * Update DCB configuration from the Firmware
++ */
++enum ice_status ice_init_dcb(struct ice_hw *hw)
++{
++	struct ice_port_info *pi = hw->port_info;
++	enum ice_status ret = 0;
++
++	if (!hw->func_caps.common_cap.dcb)
++		return ICE_ERR_NOT_SUPPORTED;
++
++	pi->is_sw_lldp = true;
++
++	/* Get DCBX status */
++	pi->dcbx_status = ice_get_dcbx_status(hw);
++
++	if (pi->dcbx_status == ICE_DCBX_STATUS_DONE ||
++	    pi->dcbx_status == ICE_DCBX_STATUS_IN_PROGRESS) {
++		/* Get current DCBX configuration */
++		ret = ice_get_dcb_cfg(pi);
++		pi->is_sw_lldp = (hw->adminq.sq_last_status == ICE_AQ_RC_EPERM);
++		if (ret)
++			return ret;
++	} else if (pi->dcbx_status == ICE_DCBX_STATUS_DIS) {
++		return ICE_ERR_NOT_READY;
++	}
++
++	/* Configure the LLDP MIB change event */
++	ret = ice_aq_cfg_lldp_mib_change(hw, true, NULL);
++	if (!ret)
++		pi->is_sw_lldp = false;
++
++	return ret;
 +}
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.h b/drivers/net/ethernet/intel/ice/ice_dcb.h
-index f0f47567113b..068ec5b98708 100644
+index 05ed9fd2fe38..f0f47567113b 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcb.h
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb.h
-@@ -70,6 +70,18 @@
- #define ICE_IEEE_APP_PRIO_S		5
- #define ICE_IEEE_APP_PRIO_M		(0x7 << ICE_IEEE_APP_PRIO_S)
+@@ -8,8 +8,107 @@
  
-+/* TLV definitions for preparing MIB */
-+#define ICE_IEEE_TLV_ID_ETS_CFG		3
-+#define ICE_IEEE_TLV_ID_ETS_REC		4
-+#define ICE_IEEE_TLV_ID_PFC_CFG		5
-+#define ICE_IEEE_TLV_ID_APP_PRI		6
-+#define ICE_TLV_ID_END_OF_LLDPPDU	7
-+#define ICE_TLV_ID_START		ICE_IEEE_TLV_ID_ETS_CFG
+ #define ICE_DCBX_STATUS_IN_PROGRESS	1
+ #define ICE_DCBX_STATUS_DONE		2
++#define ICE_DCBX_STATUS_DIS		7
 +
-+#define ICE_IEEE_ETS_TLV_LEN		25
-+#define ICE_IEEE_PFC_TLV_LEN		6
-+#define ICE_IEEE_APP_TLV_LEN		11
++#define ICE_TLV_TYPE_END		0
++#define ICE_TLV_TYPE_ORG		127
 +
- /* IEEE 802.1AB LLDP Organization specific TLV */
- struct ice_lldp_org_tlv {
- 	__be16 typelen;
-@@ -108,7 +120,12 @@ struct ice_cee_app_prio {
- } __packed;
++#define ICE_IEEE_8021QAZ_OUI		0x0080C2
++#define ICE_IEEE_SUBTYPE_ETS_CFG	9
++#define ICE_IEEE_SUBTYPE_ETS_REC	10
++#define ICE_IEEE_SUBTYPE_PFC_CFG	11
++#define ICE_IEEE_SUBTYPE_APP_PRI	12
++
++#define ICE_CEE_DCBX_OUI		0x001B21
++#define ICE_CEE_DCBX_TYPE		2
++#define ICE_CEE_SUBTYPE_PG_CFG		2
++#define ICE_CEE_SUBTYPE_PFC_CFG		3
++#define ICE_CEE_SUBTYPE_APP_PRI		4
++#define ICE_CEE_MAX_FEAT_TYPE		3
++/* Defines for LLDP TLV header */
++#define ICE_LLDP_TLV_LEN_S		0
++#define ICE_LLDP_TLV_LEN_M		(0x01FF << ICE_LLDP_TLV_LEN_S)
++#define ICE_LLDP_TLV_TYPE_S		9
++#define ICE_LLDP_TLV_TYPE_M		(0x7F << ICE_LLDP_TLV_TYPE_S)
++#define ICE_LLDP_TLV_SUBTYPE_S		0
++#define ICE_LLDP_TLV_SUBTYPE_M		(0xFF << ICE_LLDP_TLV_SUBTYPE_S)
++#define ICE_LLDP_TLV_OUI_S		8
++#define ICE_LLDP_TLV_OUI_M		(0xFFFFFFUL << ICE_LLDP_TLV_OUI_S)
++
++/* Defines for IEEE ETS TLV */
++#define ICE_IEEE_ETS_MAXTC_S	0
++#define ICE_IEEE_ETS_MAXTC_M		(0x7 << ICE_IEEE_ETS_MAXTC_S)
++#define ICE_IEEE_ETS_CBS_S		6
++#define ICE_IEEE_ETS_CBS_M		BIT(ICE_IEEE_ETS_CBS_S)
++#define ICE_IEEE_ETS_WILLING_S		7
++#define ICE_IEEE_ETS_WILLING_M		BIT(ICE_IEEE_ETS_WILLING_S)
++#define ICE_IEEE_ETS_PRIO_0_S		0
++#define ICE_IEEE_ETS_PRIO_0_M		(0x7 << ICE_IEEE_ETS_PRIO_0_S)
++#define ICE_IEEE_ETS_PRIO_1_S		4
++#define ICE_IEEE_ETS_PRIO_1_M		(0x7 << ICE_IEEE_ETS_PRIO_1_S)
++#define ICE_CEE_PGID_PRIO_0_S		0
++#define ICE_CEE_PGID_PRIO_0_M		(0xF << ICE_CEE_PGID_PRIO_0_S)
++#define ICE_CEE_PGID_PRIO_1_S		4
++#define ICE_CEE_PGID_PRIO_1_M		(0xF << ICE_CEE_PGID_PRIO_1_S)
++#define ICE_CEE_PGID_STRICT		15
++
++/* Defines for IEEE TSA types */
++#define ICE_IEEE_TSA_STRICT		0
++#define ICE_IEEE_TSA_ETS		2
++
++/* Defines for IEEE PFC TLV */
++#define ICE_IEEE_PFC_CAP_S		0
++#define ICE_IEEE_PFC_CAP_M		(0xF << ICE_IEEE_PFC_CAP_S)
++#define ICE_IEEE_PFC_MBC_S		6
++#define ICE_IEEE_PFC_MBC_M		BIT(ICE_IEEE_PFC_MBC_S)
++#define ICE_IEEE_PFC_WILLING_S		7
++#define ICE_IEEE_PFC_WILLING_M		BIT(ICE_IEEE_PFC_WILLING_S)
++
++/* Defines for IEEE APP TLV */
++#define ICE_IEEE_APP_SEL_S		0
++#define ICE_IEEE_APP_SEL_M		(0x7 << ICE_IEEE_APP_SEL_S)
++#define ICE_IEEE_APP_PRIO_S		5
++#define ICE_IEEE_APP_PRIO_M		(0x7 << ICE_IEEE_APP_PRIO_S)
++
++/* IEEE 802.1AB LLDP Organization specific TLV */
++struct ice_lldp_org_tlv {
++	__be16 typelen;
++	__be32 ouisubtype;
++	u8 tlvinfo[1];
++} __packed;
++
++struct ice_cee_tlv_hdr {
++	__be16 typelen;
++	u8 operver;
++	u8 maxver;
++};
++
++struct ice_cee_ctrl_tlv {
++	struct ice_cee_tlv_hdr hdr;
++	__be32 seqno;
++	__be32 ackno;
++};
++
++struct ice_cee_feat_tlv {
++	struct ice_cee_tlv_hdr hdr;
++	u8 en_will_err; /* Bits: |En|Will|Err|Reserved(5)| */
++#define ICE_CEE_FEAT_TLV_ENA_M		0x80
++#define ICE_CEE_FEAT_TLV_WILLING_M	0x40
++#define ICE_CEE_FEAT_TLV_ERR_M		0x20
++	u8 subtype;
++	u8 tlvinfo[1];
++};
++
++struct ice_cee_app_prio {
++	__be16 protocol;
++	u8 upper_oui_sel; /* Bits: |Upper OUI(6)|Selector(2)| */
++#define ICE_CEE_APP_SELECTOR_M	0x03
++	__be16 lower_oui;
++	u8 prio_map;
++} __packed;
  
  u8 ice_get_dcbx_status(struct ice_hw *hw);
-+enum ice_status ice_set_dcb_cfg(struct ice_port_info *pi);
- enum ice_status ice_init_dcb(struct ice_hw *hw);
-+enum ice_status
-+ice_query_port_ets(struct ice_port_info *pi,
-+		   struct ice_aqc_port_ets_elem *buf, u16 buf_size,
-+		   struct ice_sq_cd *cmd_details);
++enum ice_status ice_init_dcb(struct ice_hw *hw);
  #ifdef CONFIG_DCB
  enum ice_status ice_aq_start_lldp(struct ice_hw *hw, struct ice_sq_cd *cd);
  enum ice_status
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 9f7c3d4d3f01..102a9d7efb3c 100644
+index 424a745d9783..9f7c3d4d3f01 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -3,6 +3,189 @@
- 
- #include "ice_dcb_lib.h"
- 
-+/**
-+ * ice_dcb_get_ena_tc - return bitmap of enabled TCs
-+ * @dcbcfg: DCB config to evaluate for enabled TCs
-+ */
-+u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg *dcbcfg)
-+{
-+	u8 i, num_tc, ena_tc = 1;
-+
-+	num_tc = ice_dcb_get_num_tc(dcbcfg);
-+
-+	for (i = 0; i < num_tc; i++)
-+		ena_tc |= BIT(i);
-+
-+	return ena_tc;
-+}
-+
-+/**
-+ * ice_dcb_get_num_tc - Get the number of TCs from DCBX config
-+ * @dcbcfg: config to retrieve number of TCs from
-+ */
-+u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg)
-+{
-+	bool tc_unused = false;
-+	u8 num_tc = 0;
-+	u8 ret = 0;
-+	int i;
-+
-+	/* Scan the ETS Config Priority Table to find traffic classes
-+	 * enabled and create a bitmask of enabled TCs
-+	 */
-+	for (i = 0; i < CEE_DCBX_MAX_PRIO; i++)
-+		num_tc |= BIT(dcbcfg->etscfg.prio_table[i]);
-+
-+	/* Scan bitmask for contiguous TCs starting with TC0 */
-+	for (i = 0; i < IEEE_8021QAZ_MAX_TCS; i++) {
-+		if (num_tc & BIT(i)) {
-+			if (!tc_unused) {
-+				ret++;
-+			} else {
-+				pr_err("Non-contiguous TCs - Disabling DCB\n");
-+				return 1;
-+			}
-+		} else {
-+			tc_unused = true;
-+		}
-+	}
-+
-+	/* There is always@least 1 TC */
-+	if (!ret)
-+		ret = 1;
-+
-+	return ret;
-+}
-+
-+/**
-+ * ice_pf_dcb_recfg - Reconfigure all VEBs and VSIs
-+ * @pf: pointer to the PF struct
-+ *
-+ * Assumed caller has already disabled all VSIs before
-+ * calling this function. Reconfiguring DCB based on
-+ * local_dcbx_cfg.
-+ */
-+static void ice_pf_dcb_recfg(struct ice_pf *pf)
-+{
-+	struct ice_dcbx_cfg *dcbcfg = &pf->hw.port_info->local_dcbx_cfg;
-+	u8 tc_map = 0;
-+	int v, ret;
-+
-+	/* Update each VSI */
-+	ice_for_each_vsi(pf, v) {
-+		if (!pf->vsi[v])
-+			continue;
-+
-+		if (pf->vsi[v]->type == ICE_VSI_PF)
-+			tc_map = ice_dcb_get_ena_tc(dcbcfg);
-+		else
-+			tc_map = ICE_DFLT_TRAFFIC_CLASS;
-+
-+		ret = ice_vsi_cfg_tc(pf->vsi[v], tc_map);
-+		if (ret)
-+			dev_err(&pf->pdev->dev,
-+				"Failed to config TC for VSI index: %d\n",
-+				pf->vsi[v]->idx);
-+		else
-+			ice_vsi_map_rings_to_vectors(pf->vsi[v]);
-+	}
-+}
-+
-+/**
-+ * ice_pf_dcb_cfg - Apply new DCB configuration
-+ * @pf: pointer to the PF struct
-+ * @new_cfg: DCBX config to apply
-+ */
-+static int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg)
-+{
-+	struct ice_dcbx_cfg *old_cfg, *curr_cfg;
-+	struct ice_aqc_port_ets_elem buf = { 0 };
-+	int ret = 0;
-+
-+	curr_cfg = &pf->hw.port_info->local_dcbx_cfg;
-+
-+	/* Enable DCB tagging only when more than one TC */
-+	if (ice_dcb_get_num_tc(new_cfg) > 1) {
-+		dev_dbg(&pf->pdev->dev, "DCB tagging enabled (num TC > 1)\n");
-+		set_bit(ICE_FLAG_DCB_ENA, pf->flags);
-+	} else {
-+		dev_dbg(&pf->pdev->dev, "DCB tagging disabled (num TC = 1)\n");
-+		clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
-+	}
-+
-+	if (!memcmp(new_cfg, curr_cfg, sizeof(*new_cfg))) {
-+		dev_dbg(&pf->pdev->dev, "No change in DCB config required\n");
-+		return ret;
-+	}
-+
-+	/* Store old config in case FW config fails */
-+	old_cfg = devm_kzalloc(&pf->pdev->dev, sizeof(*old_cfg), GFP_KERNEL);
-+	memcpy(old_cfg, curr_cfg, sizeof(*old_cfg));
-+
-+	/* avoid race conditions by holding the lock while disabling and
-+	 * re-enabling the VSI
-+	 */
-+	rtnl_lock();
-+	ice_pf_dis_all_vsi(pf, true);
-+
-+	memcpy(curr_cfg, new_cfg, sizeof(*curr_cfg));
-+	memcpy(&curr_cfg->etsrec, &curr_cfg->etscfg, sizeof(curr_cfg->etsrec));
-+
-+	/* Only send new config to HW if we are in SW LLDP mode. Otherwise,
-+	 * the new config came from the HW in the first place.
-+	 */
-+	if (pf->hw.port_info->is_sw_lldp) {
-+		ret = ice_set_dcb_cfg(pf->hw.port_info);
-+		if (ret) {
-+			dev_err(&pf->pdev->dev, "Set DCB Config failed\n");
-+			/* Restore previous settings to local config */
-+			memcpy(curr_cfg, old_cfg, sizeof(*curr_cfg));
-+			goto out;
-+		}
-+	}
-+
-+	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
-+	if (ret) {
-+		dev_err(&pf->pdev->dev, "Query Port ETS failed\n");
-+		goto out;
-+	}
-+
-+	ice_pf_dcb_recfg(pf);
-+
-+out:
-+	ice_pf_ena_all_vsi(pf, true);
-+	rtnl_unlock();
-+	devm_kfree(&pf->pdev->dev, old_cfg);
-+	return ret;
-+}
-+
-+/**
-+ * ice_dcb_init_cfg - set the initial DCB config in SW
-+ * @pf: pf to apply config to
-+ */
-+static int ice_dcb_init_cfg(struct ice_pf *pf)
-+{
-+	struct ice_dcbx_cfg *newcfg;
-+	struct ice_port_info *pi;
-+	int ret = 0;
-+
-+	pi = pf->hw.port_info;
-+	newcfg = devm_kzalloc(&pf->pdev->dev, sizeof(*newcfg), GFP_KERNEL);
-+	if (!newcfg)
-+		return -ENOMEM;
-+
-+	memcpy(newcfg, &pi->local_dcbx_cfg, sizeof(*newcfg));
-+	memset(&pi->local_dcbx_cfg, 0, sizeof(*newcfg));
-+
-+	dev_info(&pf->pdev->dev, "Configuring initial DCB values\n");
-+	if (ice_pf_dcb_cfg(pf, newcfg))
-+		ret = -EINVAL;
-+
-+	devm_kfree(&pf->pdev->dev, newcfg);
-+
-+	return ret;
-+}
-+
- /**
-  * ice_init_pf_dcb - initialize DCB for a PF
-  * @pf: pf to initiialize DCB for
-@@ -12,6 +195,7 @@ int ice_init_pf_dcb(struct ice_pf *pf)
- 	struct device *dev = &pf->pdev->dev;
- 	struct ice_port_info *port_info;
- 	struct ice_hw *hw = &pf->hw;
-+	int err;
- 
- 	port_info = hw->port_info;
- 
-@@ -38,5 +222,23 @@ int ice_init_pf_dcb(struct ice_pf *pf)
+@@ -38,5 +38,5 @@ int ice_init_pf_dcb(struct ice_pf *pf)
  		ice_aq_start_stop_dcbx(hw, true, &dcbx_status, NULL);
  	}
  
--	return ice_init_dcb(hw);
-+	err = ice_init_dcb(hw);
-+	if (err)
-+		goto dcb_init_err;
-+
-+	/* DCBX in FW and LLDP enabled in FW */
-+	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
-+
-+	set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
-+
-+	err = ice_dcb_init_cfg(pf);
-+	if (err)
-+		goto dcb_init_err;
-+
-+	dev_info(&pf->pdev->dev, "DCBX offload supported\n");
-+	return err;
-+
-+dcb_init_err:
-+	dev_err(dev, "DCB init failed\n");
-+	return err;
+-	return 0;
++	return ice_init_dcb(hw);
  }
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-index 592811b7c61a..1c60bf4ca593 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-@@ -8,12 +8,25 @@
- #include "ice_lib.h"
- 
- #ifdef CONFIG_DCB
-+u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg *dcbcfg);
-+u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
- int ice_init_pf_dcb(struct ice_pf *pf);
- #else
-+static inline u8 ice_dcb_get_ena_tc(struct ice_dcbx_cfg __always_unused *dcbcfg)
-+{
-+	return ICE_DFLT_TRAFFIC_CLASS;
-+}
-+
-+static inline u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg __always_unused *dcbcfg)
-+{
-+	return 1;
-+}
-+
- static inline int ice_init_pf_dcb(struct ice_pf *pf)
- {
- 	dev_dbg(&pf->pdev->dev, "DCB not supported\n");
- 	return -EOPNOTSUPP;
- }
-+
- #endif /* CONFIG_DCB */
- #endif /* _ICE_DCB_LIB_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index d24da511b775..f3574daa147c 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3,6 +3,7 @@
- 
- #include "ice.h"
- #include "ice_lib.h"
-+#include "ice_dcb_lib.h"
- 
- /**
-  * ice_setup_rx_ctx - Configure a receive ring context
-@@ -1301,7 +1302,11 @@ static int ice_vsi_alloc_rings(struct ice_vsi *vsi)
-  * through the MSI-X enabling code. On a constrained vector budget, we map Tx
-  * and Rx rings to the vector as "efficiently" as possible.
-  */
-+#ifdef CONFIG_DCB
-+void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
-+#else
- static void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi)
-+#endif /* CONFIG_DCB */
- {
- 	int q_vectors = vsi->num_q_vectors;
- 	int tx_rings_rem, rx_rings_rem;
-@@ -2172,6 +2177,14 @@ int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena, bool vlan_promisc)
- 	return -EIO;
- }
- 
-+static void ice_vsi_set_tc_cfg(struct ice_vsi *vsi)
-+{
-+	struct ice_dcbx_cfg *cfg = &vsi->port_info->local_dcbx_cfg;
-+
-+	vsi->tc_cfg.ena_tc = ice_dcb_get_ena_tc(cfg);
-+	vsi->tc_cfg.numtc = ice_dcb_get_num_tc(cfg);
-+}
-+
- /**
-  * ice_vsi_setup - Set up a VSI by a given type
-  * @pf: board private structure
-@@ -2815,3 +2828,125 @@ bool ice_is_reset_in_progress(unsigned long *state)
- 	       test_bit(__ICE_CORER_REQ, state) ||
- 	       test_bit(__ICE_GLOBR_REQ, state);
- }
-+
-+#ifdef CONFIG_DCB
-+/**
-+ * ice_vsi_update_q_map - update our copy of the VSI info with new queue map
-+ * @vsi: VSI being configured
-+ * @ctx: the context buffer returned from AQ VSI update command
-+ */
-+static void ice_vsi_update_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctx)
-+{
-+	vsi->info.mapping_flags = ctx->info.mapping_flags;
-+	memcpy(&vsi->info.q_mapping, &ctx->info.q_mapping,
-+	       sizeof(vsi->info.q_mapping));
-+	memcpy(&vsi->info.tc_mapping, ctx->info.tc_mapping,
-+	       sizeof(vsi->info.tc_mapping));
-+}
-+
-+/**
-+ * ice_vsi_cfg_netdev_tc - Setup the netdev TC configuration
-+ * @vsi: the VSI being configured
-+ * @ena_tc: TC map to be enabled
-+ */
-+static void ice_vsi_cfg_netdev_tc(struct ice_vsi *vsi, u8 ena_tc)
-+{
-+	struct net_device *netdev = vsi->netdev;
-+	struct ice_pf *pf = vsi->back;
-+	struct ice_dcbx_cfg *dcbcfg;
-+	u8 netdev_tc;
-+	int i;
-+
-+	if (!netdev)
-+		return;
-+
-+	if (!ena_tc) {
-+		netdev_reset_tc(netdev);
-+		return;
-+	}
-+
-+	if (netdev_set_num_tc(netdev, vsi->tc_cfg.numtc))
-+		return;
-+
-+	dcbcfg = &pf->hw.port_info->local_dcbx_cfg;
-+
-+	ice_for_each_traffic_class(i)
-+		if (vsi->tc_cfg.ena_tc & BIT(i))
-+			netdev_set_tc_queue(netdev,
-+					    vsi->tc_cfg.tc_info[i].netdev_tc,
-+					    vsi->tc_cfg.tc_info[i].qcount_tx,
-+					    vsi->tc_cfg.tc_info[i].qoffset);
-+
-+	for (i = 0; i < ICE_MAX_USER_PRIORITY; i++) {
-+		u8 ets_tc = dcbcfg->etscfg.prio_table[i];
-+
-+		/* Get the mapped netdev TC# for the UP */
-+		netdev_tc = vsi->tc_cfg.tc_info[ets_tc].netdev_tc;
-+		netdev_set_prio_tc_map(netdev, i, netdev_tc);
-+	}
-+}
-+
-+/**
-+ * ice_vsi_cfg_tc - Configure VSI Tx Sched for given TC map
-+ * @vsi: VSI to be configured
-+ * @ena_tc: TC bitmap
-+ *
-+ * VSI queues expected to be quiesced before calling this function
-+ */
-+int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc)
-+{
-+	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
-+	struct ice_vsi_ctx *ctx;
-+	struct ice_pf *pf = vsi->back;
-+	enum ice_status status;
-+	int i, ret = 0;
-+	u8 num_tc = 0;
-+
-+	ice_for_each_traffic_class(i) {
-+		/* build bitmap of enabled TCs */
-+		if (ena_tc & BIT(i))
-+			num_tc++;
-+		/* populate max_txqs per TC */
-+		max_txqs[i] = pf->num_lan_tx;
-+	}
-+
-+	vsi->tc_cfg.ena_tc = ena_tc;
-+	vsi->tc_cfg.numtc = num_tc;
-+
-+	ctx = devm_kzalloc(&pf->pdev->dev, sizeof(*ctx), GFP_KERNEL);
-+	if (!ctx)
-+		return -ENOMEM;
-+
-+	ctx->vf_num = 0;
-+	ctx->info = vsi->info;
-+
-+	ice_vsi_setup_q_map(vsi, ctx);
-+
-+	/* must to indicate which section of VSI context are being modified */
-+	ctx->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_RXQ_MAP_VALID);
-+	status = ice_update_vsi(&pf->hw, vsi->idx, ctx, NULL);
-+	if (status) {
-+		dev_info(&pf->pdev->dev, "Failed VSI Update\n");
-+		ret = -EIO;
-+		goto out;
-+	}
-+
-+	status = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
-+				 max_txqs);
-+
-+	if (status) {
-+		dev_err(&pf->pdev->dev,
-+			"VSI %d failed TC config, error %d\n",
-+			vsi->vsi_num, status);
-+		ret = -EIO;
-+		goto out;
-+	}
-+	ice_vsi_update_q_map(vsi, ctx);
-+	vsi->info.valid_sections = 0;
-+
-+	ice_vsi_cfg_netdev_tc(vsi, ena_tc);
-+out:
-+	devm_kfree(&pf->pdev->dev, ctx);
-+	return ret;
-+}
-+#endif /* CONFIG_DCB */
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index 519ef59e9e43..714ace077796 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -41,6 +41,10 @@ void ice_vsi_delete(struct ice_vsi *vsi);
- 
- int ice_vsi_clear(struct ice_vsi *vsi);
- 
-+#ifdef CONFIG_DCB
-+int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc);
-+#endif /* CONFIG_DCB */
-+
- struct ice_vsi *
- ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	      enum ice_vsi_type type, u16 vf_id);
-@@ -62,6 +66,10 @@ void ice_vsi_free_q_vectors(struct ice_vsi *vsi);
- 
- void ice_vsi_put_qs(struct ice_vsi *vsi);
- 
-+#ifdef CONFIG_DCB
-+void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi);
-+#endif /* CONFIG_DCB */
-+
- void ice_vsi_dis_irq(struct ice_vsi *vsi);
- 
- void ice_vsi_free_irq(struct ice_vsi *vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 72fc6e702ab5..158339769097 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -31,7 +31,6 @@ MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all)");
- static struct workqueue_struct *ice_wq;
- static const struct net_device_ops ice_netdev_ops;
- 
--static void ice_pf_dis_all_vsi(struct ice_pf *pf);
- static void ice_rebuild(struct ice_pf *pf);
- 
- static void ice_vsi_release_all(struct ice_pf *pf);
-@@ -397,6 +396,51 @@ static void ice_sync_fltr_subtask(struct ice_pf *pf)
- 		}
- }
- 
-+/**
-+ * ice_dis_vsi - pause a VSI
-+ * @vsi: the VSI being paused
-+ * @locked: is the rtnl_lock already held
-+ */
-+static void ice_dis_vsi(struct ice_vsi *vsi, bool locked)
-+{
-+	if (test_bit(__ICE_DOWN, vsi->state))
-+		return;
-+
-+	set_bit(__ICE_NEEDS_RESTART, vsi->state);
-+
-+	if (vsi->type == ICE_VSI_PF && vsi->netdev) {
-+		if (netif_running(vsi->netdev)) {
-+			if (!locked) {
-+				rtnl_lock();
-+				vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
-+				rtnl_unlock();
-+			} else {
-+				vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
-+			}
-+		} else {
-+			ice_vsi_close(vsi);
-+		}
-+	}
-+}
-+
-+/**
-+ * ice_pf_dis_all_vsi - Pause all VSIs on a PF
-+ * @pf: the PF
-+ * @locked: is the rtnl_lock already held
-+ */
-+#ifdef CONFIG_DCB
-+void ice_pf_dis_all_vsi(struct ice_pf *pf, bool locked)
-+#else
-+static void ice_pf_dis_all_vsi(struct ice_pf *pf, bool locked)
-+#endif /* CONFIG_DCB */
-+{
-+	int v;
-+
-+	ice_for_each_vsi(pf, v)
-+		if (pf->vsi[v])
-+			ice_dis_vsi(pf->vsi[v], locked);
-+}
-+
- /**
-  * ice_prepare_for_reset - prep for the core to reset
-  * @pf: board private structure
-@@ -417,7 +461,7 @@ ice_prepare_for_reset(struct ice_pf *pf)
- 		ice_vc_notify_reset(pf);
- 
- 	/* disable the VSIs and their queues that are not already DOWN */
--	ice_pf_dis_all_vsi(pf);
-+	ice_pf_dis_all_vsi(pf, false);
- 
- 	if (hw->port_info)
- 		ice_sched_clear_port(hw->port_info);
-@@ -3581,46 +3625,30 @@ static void ice_vsi_release_all(struct ice_pf *pf)
- }
- 
- /**
-- * ice_dis_vsi - pause a VSI
-- * @vsi: the VSI being paused
-+ * ice_ena_vsi - resume a VSI
-+ * @vsi: the VSI being resume
-  * @locked: is the rtnl_lock already held
-  */
--static void ice_dis_vsi(struct ice_vsi *vsi, bool locked)
-+static int ice_ena_vsi(struct ice_vsi *vsi, bool locked)
- {
--	if (test_bit(__ICE_DOWN, vsi->state))
--		return;
-+	int err = 0;
- 
--	set_bit(__ICE_NEEDS_RESTART, vsi->state);
-+	if (!test_bit(__ICE_NEEDS_RESTART, vsi->state))
-+		return err;
-+
-+	clear_bit(__ICE_NEEDS_RESTART, vsi->state);
-+
-+	if (vsi->netdev && vsi->type == ICE_VSI_PF) {
-+		struct net_device *netd = vsi->netdev;
- 
--	if (vsi->type == ICE_VSI_PF && vsi->netdev) {
- 		if (netif_running(vsi->netdev)) {
--			if (!locked) {
-+			if (locked) {
-+				err = netd->netdev_ops->ndo_open(netd);
-+			} else {
- 				rtnl_lock();
--				vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
-+				err = netd->netdev_ops->ndo_open(netd);
- 				rtnl_unlock();
--			} else {
--				vsi->netdev->netdev_ops->ndo_stop(vsi->netdev);
- 			}
--		} else {
--			ice_vsi_close(vsi);
--		}
--	}
--}
--
--/**
-- * ice_ena_vsi - resume a VSI
-- * @vsi: the VSI being resume
-- */
--static int ice_ena_vsi(struct ice_vsi *vsi)
--{
--	int err = 0;
--
--	if (test_and_clear_bit(__ICE_NEEDS_RESTART, vsi->state) &&
--	    vsi->netdev) {
--		if (netif_running(vsi->netdev)) {
--			rtnl_lock();
--			err = vsi->netdev->netdev_ops->ndo_open(vsi->netdev);
--			rtnl_unlock();
- 		} else {
- 			err = ice_vsi_open(vsi);
- 		}
-@@ -3629,30 +3657,22 @@ static int ice_ena_vsi(struct ice_vsi *vsi)
- 	return err;
- }
- 
--/**
-- * ice_pf_dis_all_vsi - Pause all VSIs on a PF
-- * @pf: the PF
-- */
--static void ice_pf_dis_all_vsi(struct ice_pf *pf)
--{
--	int v;
--
--	ice_for_each_vsi(pf, v)
--		if (pf->vsi[v])
--			ice_dis_vsi(pf->vsi[v], false);
--}
--
- /**
-  * ice_pf_ena_all_vsi - Resume all VSIs on a PF
-  * @pf: the PF
-+ * @locked: is the rtnl_lock already held
-  */
--static int ice_pf_ena_all_vsi(struct ice_pf *pf)
-+#ifdef CONFIG_DCB
-+int ice_pf_ena_all_vsi(struct ice_pf *pf, bool locked)
-+#else
-+static int ice_pf_ena_all_vsi(struct ice_pf *pf, bool locked)
-+#endif /* CONFIG_DCB */
- {
- 	int v;
- 
- 	ice_for_each_vsi(pf, v)
- 		if (pf->vsi[v])
--			if (ice_ena_vsi(pf->vsi[v]))
-+			if (ice_ena_vsi(pf->vsi[v], locked))
- 				return -EIO;
- 
- 	return 0;
-@@ -3800,7 +3820,7 @@ static void ice_rebuild(struct ice_pf *pf)
- 	}
- 
- 	/* restart the VSIs that were rebuilt and running before the reset */
--	err = ice_pf_ena_all_vsi(pf);
-+	err = ice_pf_ena_all_vsi(pf, false);
- 	if (err) {
- 		dev_err(&pf->pdev->dev, "error enabling VSIs\n");
- 		/* no need to disable VSIs in tear down path in ice_rebuild()
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 3d1c941a938e..124feaf0e730 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -127,7 +127,7 @@ ice_aqc_send_sched_elem_cmd(struct ice_hw *hw, enum ice_adminq_opc cmd_opc,
-  *
-  * Query scheduling elements (0x0404)
-  */
--static enum ice_status
-+enum ice_status
- ice_aq_query_sched_elems(struct ice_hw *hw, u16 elems_req,
- 			 struct ice_aqc_get_elem *buf, u16 buf_size,
- 			 u16 *elems_ret, struct ice_sq_cd *cd)
-@@ -137,31 +137,6 @@ ice_aq_query_sched_elems(struct ice_hw *hw, u16 elems_req,
- 					   elems_ret, cd);
- }
- 
--/**
-- * ice_sched_query_elem - query element information from HW
-- * @hw: pointer to the HW struct
-- * @node_teid: node TEID to be queried
-- * @buf: buffer to element information
-- *
-- * This function queries HW element information
-- */
--static enum ice_status
--ice_sched_query_elem(struct ice_hw *hw, u32 node_teid,
--		     struct ice_aqc_get_elem *buf)
--{
--	u16 buf_size, num_elem_ret = 0;
--	enum ice_status status;
--
--	buf_size = sizeof(*buf);
--	memset(buf, 0, buf_size);
--	buf->generic[0].node_teid = cpu_to_le32(node_teid);
--	status = ice_aq_query_sched_elems(hw, 1, buf, buf_size, &num_elem_ret,
--					  NULL);
--	if (status || num_elem_ret != 1)
--		ice_debug(hw, ICE_DBG_SCHED, "query element failed\n");
--	return status;
--}
--
- /**
-  * ice_sched_add_node - Insert the Tx scheduler node in SW DB
-  * @pi: port information structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index bee8221ad146..3902a8ad3025 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -24,6 +24,10 @@ struct ice_sched_agg_info {
- };
- 
- /* FW AQ command calls */
-+enum ice_status
-+ice_aq_query_sched_elems(struct ice_hw *hw, u16 elems_req,
-+			 struct ice_aqc_get_elem *buf, u16 buf_size,
-+			 u16 *elems_ret, struct ice_sq_cd *cd);
- enum ice_status ice_sched_init_port(struct ice_port_info *pi);
- enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw);
- void ice_sched_clear_port(struct ice_port_info *pi);
+diff --git a/drivers/net/ethernet/intel/ice/ice_status.h b/drivers/net/ethernet/intel/ice/ice_status.h
+index 683f48824a29..17afe6acb18a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_status.h
++++ b/drivers/net/ethernet/intel/ice/ice_status.h
+@@ -12,6 +12,7 @@ enum ice_status {
+ 	ICE_ERR_PARAM				= -1,
+ 	ICE_ERR_NOT_IMPL			= -2,
+ 	ICE_ERR_NOT_READY			= -3,
++	ICE_ERR_NOT_SUPPORTED			= -4,
+ 	ICE_ERR_BAD_PTR				= -5,
+ 	ICE_ERR_INVAL_SIZE			= -6,
+ 	ICE_ERR_DEVICE_NOT_SUPPORTED		= -8,
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index d276e9a952db..c4cdfb2e0c4b 100644
+index e21ea271b48e..d276e9a952db 100644
 --- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -215,6 +215,8 @@ struct ice_nvm_info {
- #define ice_for_each_traffic_class(_i)	\
- 	for ((_i) = 0; (_i) < ICE_MAX_TRAFFIC_CLASS; (_i)++)
+@@ -262,6 +262,59 @@ struct ice_sched_tx_policy {
+ 	u8 rdma_ena;
+ };
  
-+#define ICE_INVAL_TEID 0xFFFFFFFF
++/* CEE or IEEE 802.1Qaz ETS Configuration data */
++struct ice_dcb_ets_cfg {
++	u8 willing;
++	u8 cbs;
++	u8 maxtcs;
++	u8 prio_table[ICE_MAX_TRAFFIC_CLASS];
++	u8 tcbwtable[ICE_MAX_TRAFFIC_CLASS];
++	u8 tsatable[ICE_MAX_TRAFFIC_CLASS];
++};
 +
- struct ice_sched_node {
- 	struct ice_sched_node *parent;
- 	struct ice_sched_node *sibling; /* next sibling in the same layer */
++/* CEE or IEEE 802.1Qaz PFC Configuration data */
++struct ice_dcb_pfc_cfg {
++	u8 willing;
++	u8 mbc;
++	u8 pfccap;
++	u8 pfcena;
++};
++
++/* CEE or IEEE 802.1Qaz Application Priority data */
++struct ice_dcb_app_priority_table {
++	u16 prot_id;
++	u8 priority;
++	u8 selector;
++};
++
++#define ICE_MAX_USER_PRIORITY	8
++#define ICE_DCBX_MAX_APPS	32
++#define ICE_LLDPDU_SIZE		1500
++#define ICE_TLV_STATUS_OPER	0x1
++#define ICE_TLV_STATUS_SYNC	0x2
++#define ICE_TLV_STATUS_ERR	0x4
++#define ICE_APP_PROT_ID_FCOE	0x8906
++#define ICE_APP_PROT_ID_ISCSI	0x0cbc
++#define ICE_APP_PROT_ID_FIP	0x8914
++#define ICE_APP_SEL_ETHTYPE	0x1
++#define ICE_APP_SEL_TCPIP	0x2
++#define ICE_CEE_APP_SEL_ETHTYPE	0x0
++#define ICE_CEE_APP_SEL_TCPIP	0x1
++
++struct ice_dcbx_cfg {
++	u32 numapps;
++	u32 tlv_status; /* CEE mode TLV status */
++	struct ice_dcb_ets_cfg etscfg;
++	struct ice_dcb_ets_cfg etsrec;
++	struct ice_dcb_pfc_cfg pfc;
++	struct ice_dcb_app_priority_table app[ICE_DCBX_MAX_APPS];
++	u8 dcbx_mode;
++#define ICE_DCBX_MODE_CEE	0x1
++#define ICE_DCBX_MODE_IEEE	0x2
++	u8 app_mode;
++#define ICE_DCBX_APPS_NON_WILLING	0x1
++};
++
+ struct ice_port_info {
+ 	struct ice_sched_node *root;	/* Root Node per Port */
+ 	struct ice_hw *hw;		/* back pointer to HW instance */
+@@ -279,8 +332,13 @@ struct ice_port_info {
+ 	struct ice_mac_info mac;
+ 	struct ice_phy_info phy;
+ 	struct mutex sched_lock;	/* protect access to TXSched tree */
++	struct ice_dcbx_cfg local_dcbx_cfg;	/* Oper/Local Cfg */
++	/* DCBX info */
++	struct ice_dcbx_cfg remote_dcbx_cfg;	/* Peer Cfg */
++	struct ice_dcbx_cfg desired_dcbx_cfg;	/* CEE Desired Cfg */
+ 	/* LLDP/DCBX Status */
+ 	u8 dcbx_status;
++	u8 is_sw_lldp;
+ 	u8 lport;
+ #define ICE_LPORT_MASK		0xff
+ 	u8 is_vf;
 -- 
 2.14.5
 
