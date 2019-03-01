@@ -1,177 +1,42 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 02 Mar 2019 00:13:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- b25cd1b748e73b78b365aaf77b9d5235e056ed4d
-Message-ID: <5c795a33.Z1bY2BIDw8lGIIyH%lkp@intel.com>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Fri, 1 Mar 2019 10:28:35 -0800
+Subject: [Intel-wired-lan] Clang warning in
+ drivers/net/ethernet/intel/igc/igc_ethtool.c
+In-Reply-To: <20190208143403.GD7035@unicorn.suse.cz>
+References: <20190208050921.GA8758@archlinux-ryzen>
+ <20190208143403.GD7035@unicorn.suse.cz>
+Message-ID: <CAKwvOdkNv_HUREJhUdOgHBgmVghPvJUun5wYuknCfTO0zN5TAg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: b25cd1b748e73b78b365aaf77b9d5235e056ed4d  i40e: fix misleading message about promisc setting on un-trusted VF
+On Fri, Feb 8, 2019 at 6:34 AM Michal Kubecek <mkubecek@suse.cz> wrote:
+>
+> On Thu, Feb 07, 2019 at 10:09:21PM -0700, Nathan Chancellor wrote:
+> > Hi all,
+> >
+> > After commit 8c5ad0dae93c ("igc: Add ethtool support"), Clang warns:
+> >
+> > drivers/net/ethernet/intel/igc/igc_ethtool.c:9:19: warning: variable 'igc_priv_flags_strings' is not needed and will not be emitted [-Wunneeded-internal-declaration]
+> > static const char igc_priv_flags_strings[][ETH_GSTRING_LEN] = {
+> >                   ^
+> > 1 warning generated.
+> >
+> > igc_priv_flags_strings is only used in an ARRAY_SIZE macro, which is a
+> > compile time evaluation, so no reference to it is being emitted in the
+> > final assembly. Is it actually needed and was forgotten to be used
+> > somewhere or could it be eliminated so that Clang no longer warns?
+>
+> That's because the driver provides get_priv_flags() and set_priv_flags()
+> callbacks in its ethtool_ops to allow querying and setting legacy-rx
+> private flag but it does not provide get_sset_count() and get_strings()
+> to provide list of private flags to userspace ethtool.
 
-elapsed time: 120m
+So the variable declaration should get a `__unused` annotation then
+(and maybe a comment)?
 
-configs tested: 153
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-i386                   randconfig-x015-201908
-i386                   randconfig-x019-201908
-i386                   randconfig-x014-201908
-i386                   randconfig-x016-201908
-i386                   randconfig-x013-201908
-i386                   randconfig-x012-201908
-i386                   randconfig-x011-201908
-i386                   randconfig-x017-201908
-i386                   randconfig-x018-201908
-i386                   randconfig-x010-201908
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-x009-201908
-x86_64                 randconfig-x008-201908
-x86_64                 randconfig-x005-201908
-x86_64                 randconfig-x002-201908
-x86_64                 randconfig-x001-201908
-x86_64                 randconfig-x007-201908
-x86_64                 randconfig-x006-201908
-x86_64                 randconfig-x003-201908
-x86_64                 randconfig-x004-201908
-x86_64                 randconfig-x000-201908
-x86_64                 randconfig-x010-201908
-x86_64                 randconfig-x011-201908
-x86_64                 randconfig-x012-201908
-x86_64                 randconfig-x013-201908
-x86_64                 randconfig-x014-201908
-x86_64                 randconfig-x015-201908
-x86_64                 randconfig-x016-201908
-x86_64                 randconfig-x017-201908
-x86_64                 randconfig-x018-201908
-x86_64                 randconfig-x019-201908
-i386                   randconfig-a1-03010829
-i386                   randconfig-a0-03010829
-i386                   randconfig-a3-03010829
-i386                   randconfig-a2-03010829
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                   randconfig-s2-03010831
-i386                   randconfig-s0-03010831
-i386                   randconfig-s3-03010831
-i386                   randconfig-s1-03010831
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                               rhel-7.2
-x86_64                         rhel-7.2-clear
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-m0-02280836
-x86_64                 randconfig-m1-02280836
-i386                   randconfig-m3-02280836
-i386                   randconfig-m2-02280836
-x86_64                 randconfig-m2-02280836
-x86_64                 randconfig-m3-02280836
-i386                   randconfig-m1-02280836
-i386                   randconfig-m0-02280836
-riscv                             allnoconfig
-riscv                               defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-l0-03010559
-i386                   randconfig-l1-03010559
-i386                   randconfig-l3-03010559
-i386                   randconfig-l0-03010559
-x86_64                 randconfig-l2-03010559
-x86_64                 randconfig-l1-03010559
-x86_64                 randconfig-l3-03010559
-i386                   randconfig-l2-03010559
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-i386                   randconfig-x070-201908
-i386                   randconfig-x071-201908
-i386                   randconfig-x072-201908
-i386                   randconfig-x073-201908
-i386                   randconfig-x074-201908
-i386                   randconfig-x075-201908
-i386                   randconfig-x076-201908
-i386                   randconfig-x077-201908
-i386                   randconfig-x078-201908
-i386                   randconfig-x079-201908
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-x006-201908
-i386                   randconfig-x000-201908
-i386                   randconfig-x007-201908
-i386                   randconfig-x002-201908
-i386                   randconfig-x009-201908
-i386                   randconfig-x003-201908
-i386                   randconfig-x001-201908
-i386                   randconfig-x004-201908
-i386                   randconfig-x005-201908
-i386                   randconfig-x008-201908
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                             allmodconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-- 
+Thanks,
+~Nick Desaulniers
