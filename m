@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 1 Mar 2019 23:52:33 +0000
-Subject: [Intel-wired-lan] [PATCH S15 11/14] ice: Remove "2 BITS" comment
-In-Reply-To: <20190219230414.25627-12-anirudh.venkataramanan@intel.com>
+Date: Fri, 1 Mar 2019 23:53:02 +0000
+Subject: [Intel-wired-lan] [PATCH S15 12/14] ice: Fix typos in code
+ comments
+In-Reply-To: <20190219230414.25627-13-anirudh.venkataramanan@intel.com>
 References: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
- <20190219230414.25627-12-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D367621@ORSMSX104.amr.corp.intel.com>
+ <20190219230414.25627-13-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D367631@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,18 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Tuesday, February 19, 2019 3:04 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S15 11/14] ice: Remove "2 BITS" comment
+> Subject: [Intel-wired-lan] [PATCH S15 12/14] ice: Fix typos in code comments
 > 
-> Some enums in ice_tx_desc_cmd_bits have a trailing /* 2 BITS */ comment,
-> but the value has just one bit set (ex. ICE_TX_DESC_CMD_L4T_EOFT_SCTP
-> has the value 0x200 (i.e. only bit 9 is set). This is confusing and misleading. So
-> remove the comment.
+> This patch fixes typos in code comments.
 > 
+> Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h             | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_common.c      | 6 +++---
+>  drivers/net/ethernet/intel/ice/ice_main.c        | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
+>  4 files changed, 6 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
