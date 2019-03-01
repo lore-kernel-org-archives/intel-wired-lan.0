@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 1 Mar 2019 23:49:47 +0000
-Subject: [Intel-wired-lan] [PATCH S15 05/14] ice: Audit hotpath
- structures with pahole
-In-Reply-To: <20190219230414.25627-6-anirudh.venkataramanan@intel.com>
+Date: Fri, 1 Mar 2019 23:50:14 +0000
+Subject: [Intel-wired-lan] [PATCH S15 06/14] ice: Add missing case in
+ print_link_msg for printing flow control
+In-Reply-To: <20190219230414.25627-7-anirudh.venkataramanan@intel.com>
 References: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
- <20190219230414.25627-6-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3675C1@ORSMSX104.amr.corp.intel.com>
+ <20190219230414.25627-7-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3675D1@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,34 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Tuesday, February 19, 2019 3:04 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S15 05/14] ice: Audit hotpath structures
-> with pahole
+> Subject: [Intel-wired-lan] [PATCH S15 06/14] ice: Add missing case in
+> print_link_msg for printing flow control
 > 
 > From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Currently the ice_q_vector structure and ice_ring_container structure are
-> taking up more space than necessary due to cache alignment holes and
-> unnecessary variables respectively. This is not helping the driver's
-> performance. The following fixes were done to improve cahche alignment,
-> reduce wasted space, and increase performance.
-> 
-> 1. Remove the ice_latency_range enum as it is unused.
-> 2. Remove the latency_range variable in the ice_ring_container structure.
-> 3. Change the size of the itr_idx in the ice_ring_container structure
->    from an int to an u16. This reduced the size of ice_ring_container
->    structure to 32 Bytes so it has no holes or padding.
-> 4. Re-arrange the ice_q_vector structure using pahole to align
->    members as best as possible in regards to 64 Byte cache line size.
+> Currently we aren't checking for the ICE_FC_NONE case for the current flow
+> control mode. This is causing "Unknown" to be printed for the current flow
+> control method if flow control is disabled. Fix this by adding the case for
+> ICE_FC_NONE to print "None".
 > 
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h      | 21 +++++++++++++--------
->  drivers/net/ethernet/intel/ice/ice_lib.c  |  2 --
-> drivers/net/ethernet/intel/ice/ice_txrx.c |  2 +-
-> drivers/net/ethernet/intel/ice/ice_txrx.h | 10 +---------
->  4 files changed, 15 insertions(+), 20 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
