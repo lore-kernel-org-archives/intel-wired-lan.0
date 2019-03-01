@@ -1,49 +1,187 @@
-From: Flavio Suligoi <f.suligoi@asem.it>
-Date: Fri, 1 Mar 2019 08:15:39 +0000
-Subject: [Intel-wired-lan] [PATCH v3] net: e1000e: add MAC address
- kernel cmd line parameter
-In-Reply-To: <20190228.114707.11382969767373748.davem@davemloft.net>
-References: <20190228163729.GB17912@lunn.ch>
- <6a7a37813e71420b929c769dd1e77664@asem.it>
- <20190228192958.GA24085@lunn.ch>
- <20190228.114707.11382969767373748.davem@davemloft.net>
-Message-ID: <a9381ec45e9b4e5a8388c8414aadda98@asem.it>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 01 Mar 2019 17:07:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
+ 9deaf81d9ca473648421d7562e08bf20c8dc3fd4
+Message-ID: <5c78f63d.N78qffBIjvRFKSI3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> >> > Hi Flavio
-> >> >
-> >> > u-boot should be able to write the MAC address in the correct part of
-> >> > device tree. Boards have been doing this a long time.
-> >> >
-> >> > Module parameters are considered bad. You should only do it if you
-> >> > have no other option. Here you do have another options, so it is
-> going
-> >> > to be a hard sell getting David to access your patch.
-> >> >
-> >> > You will have more success by adding a call to
-> >> > eth_platform_get_mac_address() to the e1000e driver.
-> >>
-> >> You have right, and thanks for your suggestions,
-> >> but with a kernel parameter I can use the same method
-> >> for any board where the NVM is missed, independently of any
-> architecture
-> >> (with or without the device tree presence - ARM or x86 or others).
-> >
-> > Hi Flavio
-> >
-> > Well, lets wait for David to say what he thinks about the module
-> > parameter.
-> 
-> I already rejected this, no way... Drivers that already have the
-> unacceptable module parameter are no an argument for spreading this
-> mistake further.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+branch HEAD: 9deaf81d9ca473648421d7562e08bf20c8dc3fd4  i40e: Fix misleading error message
 
-Hi David and Andrew,
+elapsed time: 242m
 
-ok, thank you for your suggestions and your time!
+configs tested: 163
 
-Flavio
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                   randconfig-x015-201908
+i386                   randconfig-x019-201908
+i386                   randconfig-x014-201908
+i386                   randconfig-x016-201908
+i386                   randconfig-x013-201908
+i386                   randconfig-x012-201908
+i386                   randconfig-x011-201908
+i386                   randconfig-x017-201908
+i386                   randconfig-x018-201908
+i386                   randconfig-x010-201908
+x86_64                                  kexec
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-x009-201908
+x86_64                 randconfig-x008-201908
+x86_64                 randconfig-x005-201908
+x86_64                 randconfig-x002-201908
+x86_64                 randconfig-x001-201908
+x86_64                 randconfig-x007-201908
+x86_64                 randconfig-x006-201908
+x86_64                 randconfig-x003-201908
+x86_64                 randconfig-x004-201908
+x86_64                 randconfig-x000-201908
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                   randconfig-x006-201908
+i386                   randconfig-x000-201908
+i386                   randconfig-x007-201908
+i386                   randconfig-x002-201908
+i386                   randconfig-x009-201908
+i386                   randconfig-x003-201908
+i386                   randconfig-x001-201908
+i386                   randconfig-x004-201908
+i386                   randconfig-x005-201908
+i386                   randconfig-x008-201908
+x86_64                 randconfig-x017-201908
+x86_64                 randconfig-x013-201908
+x86_64                 randconfig-x016-201908
+x86_64                 randconfig-x018-201908
+x86_64                 randconfig-x011-201908
+x86_64                 randconfig-x012-201908
+x86_64                 randconfig-x019-201908
+x86_64                 randconfig-x014-201908
+x86_64                 randconfig-x015-201908
+x86_64                 randconfig-x010-201908
+i386                   randconfig-a1-03010829
+i386                   randconfig-a0-03010829
+i386                   randconfig-a3-03010829
+i386                   randconfig-a2-03010829
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s2-03010831
+i386                   randconfig-s0-03010831
+i386                   randconfig-s3-03010831
+i386                   randconfig-s1-03010831
+arm                           h3600_defconfig
+arm                          pcm027_defconfig
+x86_64                 randconfig-u0-03011648
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-m0-02280836
+x86_64                 randconfig-m1-02280836
+i386                   randconfig-m3-02280836
+i386                   randconfig-m2-02280836
+x86_64                 randconfig-m2-02280836
+x86_64                 randconfig-m3-02280836
+i386                   randconfig-m1-02280836
+i386                   randconfig-m0-02280836
+riscv                             allnoconfig
+riscv                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-l0-03010559
+i386                   randconfig-l1-03010559
+i386                   randconfig-l3-03010559
+i386                   randconfig-l0-03010559
+x86_64                 randconfig-l2-03010559
+x86_64                 randconfig-l1-03010559
+x86_64                 randconfig-l3-03010559
+i386                   randconfig-l2-03010559
+x86_64                 randconfig-s3-03011648
+x86_64                 randconfig-s4-03011648
+x86_64                 randconfig-s5-03011648
+i386                   randconfig-h0-02271700
+i386                   randconfig-h1-02271700
+i386                   randconfig-x073-201908
+i386                   randconfig-x075-201908
+i386                   randconfig-x079-201908
+i386                   randconfig-x072-201908
+i386                   randconfig-x077-201908
+i386                   randconfig-x076-201908
+i386                   randconfig-x074-201908
+i386                   randconfig-x078-201908
+i386                   randconfig-x071-201908
+i386                   randconfig-x070-201908
+powerpc                      cm5200_defconfig
+um                               alldefconfig
+i386                  randconfig-sb0-02250442
+mips                                defconfig
+i386                             allmodconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
