@@ -1,45 +1,52 @@
-From: Michal Kubecek <mkubecek@suse.cz>
-Date: Fri, 1 Mar 2019 21:40:42 +0100
-Subject: [Intel-wired-lan] Clang warning in
- drivers/net/ethernet/intel/igc/igc_ethtool.c
-In-Reply-To: <CAKwvOdkNv_HUREJhUdOgHBgmVghPvJUun5wYuknCfTO0zN5TAg@mail.gmail.com>
-References: <20190208050921.GA8758@archlinux-ryzen>
- <20190208143403.GD7035@unicorn.suse.cz>
- <CAKwvOdkNv_HUREJhUdOgHBgmVghPvJUun5wYuknCfTO0zN5TAg@mail.gmail.com>
-Message-ID: <20190301204042.GM29992@unicorn.suse.cz>
+From: Nicholas Nunley <nicholas.d.nunley@intel.com>
+Date: Fri,  1 Mar 2019 15:31:54 -0800
+Subject: [Intel-wired-lan] [PATCH v4 6/6] ethtool: fix up dump_coalesce
+ output to match actual option names
+In-Reply-To: <20190301233154.46636-1-nicholas.d.nunley@intel.com>
+References: <20190301233154.46636-1-nicholas.d.nunley@intel.com>
+Message-ID: <20190301233154.46636-6-nicholas.d.nunley@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Mar 01, 2019 at 10:28:35AM -0800, Nick Desaulniers wrote:
-> On Fri, Feb 8, 2019 at 6:34 AM Michal Kubecek <mkubecek@suse.cz> wrote:
-> >
-> > On Thu, Feb 07, 2019 at 10:09:21PM -0700, Nathan Chancellor wrote:
-> > > Hi all,
-> > >
-> > > After commit 8c5ad0dae93c ("igc: Add ethtool support"), Clang warns:
-> > >
-> > > drivers/net/ethernet/intel/igc/igc_ethtool.c:9:19: warning: variable 'igc_priv_flags_strings' is not needed and will not be emitted [-Wunneeded-internal-declaration]
-> > > static const char igc_priv_flags_strings[][ETH_GSTRING_LEN] = {
-> > >                   ^
-> > > 1 warning generated.
-> > >
-> > > igc_priv_flags_strings is only used in an ARRAY_SIZE macro, which is a
-> > > compile time evaluation, so no reference to it is being emitted in the
-> > > final assembly. Is it actually needed and was forgotten to be used
-> > > somewhere or could it be eliminated so that Clang no longer warns?
-> >
-> > That's because the driver provides get_priv_flags() and set_priv_flags()
-> > callbacks in its ethtool_ops to allow querying and setting legacy-rx
-> > private flag but it does not provide get_sset_count() and get_strings()
-> > to provide list of private flags to userspace ethtool.
-> 
-> So the variable declaration should get a `__unused` annotation then
-> (and maybe a comment)?
+When the coalesce settings are printed with --show-coalesce a few of the
+option names lack the pluralization that is present in the man page and
+usage info, but are otherwise identical.
 
-I would rather suggest to add missing ethtool_ops handlers so that the
-flag can be actually shown and set using ethtool.
+This inconsistency could lead to some confusion if a user attempts to set
+the coalesce settings by matching the output they see from --show-coalesce,
+so fix this.
 
-Michal Kubecek
+Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
+---
+ ethtool.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/ethtool.c b/ethtool.c
+index ee5dbf7..1275803 100644
+--- a/ethtool.c
++++ b/ethtool.c
+@@ -1373,14 +1373,14 @@ static int dump_coalesce(const struct ethtool_coalesce *ecoal)
+ 		"tx-frames-irq: %u\n"
+ 		"\n"
+ 		"rx-usecs-low: %u\n"
+-		"rx-frame-low: %u\n"
++		"rx-frames-low: %u\n"
+ 		"tx-usecs-low: %u\n"
+-		"tx-frame-low: %u\n"
++		"tx-frames-low: %u\n"
+ 		"\n"
+ 		"rx-usecs-high: %u\n"
+-		"rx-frame-high: %u\n"
++		"rx-frames-high: %u\n"
+ 		"tx-usecs-high: %u\n"
+-		"tx-frame-high: %u\n"
++		"tx-frames-high: %u\n"
+ 		"\n",
+ 		ecoal->stats_block_coalesce_usecs,
+ 		ecoal->rate_sample_interval,
+-- 
+2.14.4
+
