@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 1 Mar 2019 23:46:39 +0000
-Subject: [Intel-wired-lan] [PATCH S15 01/14] ice: Fix for adaptive
- interrupt moderation
-In-Reply-To: <20190219230414.25627-2-anirudh.venkataramanan@intel.com>
+Date: Fri, 1 Mar 2019 23:47:22 +0000
+Subject: [Intel-wired-lan] [PATCH S15 02/14] ice: enable VF admin queue
+ interrupts
+In-Reply-To: <20190219230414.25627-3-anirudh.venkataramanan@intel.com>
 References: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
- <20190219230414.25627-2-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D367578@ORSMSX104.amr.corp.intel.com>
+ <20190219230414.25627-3-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D367588@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Tuesday, February 19, 2019 3:04 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S15 01/14] ice: Fix for adaptive interrupt
-> moderation
+> Subject: [Intel-wired-lan] [PATCH S15 02/14] ice: enable VF admin queue
+> interrupts
 > 
-> commit 63f545ed1285 ("ice: Add support for adaptive interrupt moderation")
-> was meant to add support for adaptive interrupt moderation but there was
-> an error on my part while formatting the patch, and thus only part of the
-> patch ended up being submitted.
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> This patch rectifies the error by adding the rest of the code.
+> The VPINT_MBX_CTL register array must be programmed to enable VF
+> admin queue interrupts. Without this, VFs never get interrupts on vector 0,
+> and some VF drivers will fail to init.
 > 
-> Fixes: 63f545ed1285 ("ice: Add support for adaptive interrupt moderation")
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h      |   1 +
->  drivers/net/ethernet/intel/ice/ice_txrx.c | 292
-> +++++++++++++++++++++++++++---
->  drivers/net/ethernet/intel/ice/ice_txrx.h |   6 +
->  3 files changed, 275 insertions(+), 24 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_hw_autogen.h  | 2 ++
+> drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 4 ++++
+>  2 files changed, 6 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
