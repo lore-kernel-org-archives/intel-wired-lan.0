@@ -1,33 +1,236 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 4 Mar 2019 20:42:33 +0000
-Subject: [Intel-wired-lan] [PATCH S15 09/14] ice: Update function header
- for __ice_vsi_get_qs
-In-Reply-To: <20190219230414.25627-10-anirudh.venkataramanan@intel.com>
-References: <20190219230414.25627-1-anirudh.venkataramanan@intel.com>
- <20190219230414.25627-10-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D367925@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 05 Mar 2019 05:57:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 62f9e532acd5b49b85451fef8a6274ddf71e5fd6
+Message-ID: <5c7d9f60.ud9aEFFnJCvldEsc%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Anirudh Venkataramanan
-> Sent: Tuesday, February 19, 2019 3:04 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S15 09/14] ice: Update function header for
-> __ice_vsi_get_qs
-> 
-> Remove some redundant text in the function header for __ice_vsi_get_qs
-> 
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 62f9e532acd5b49b85451fef8a6274ddf71e5fd6  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 180m
 
+configs tested: 211
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+arm                       multi_v4t_defconfig
+sparc                       sparc32_defconfig
+arm                        spear3xx_defconfig
+sh                           cayman_defconfig
+powerpc                        fsp2_defconfig
+powerpc                mpc7448_hpc2_defconfig
+x86_64                 randconfig-x009-201909
+x86_64                 randconfig-x008-201909
+x86_64                 randconfig-x005-201909
+x86_64                 randconfig-x002-201909
+x86_64                 randconfig-x001-201909
+x86_64                 randconfig-x007-201909
+x86_64                 randconfig-x006-201909
+x86_64                 randconfig-x003-201909
+x86_64                 randconfig-x004-201909
+x86_64                 randconfig-x000-201909
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-x017-201909
+x86_64                 randconfig-x013-201909
+x86_64                 randconfig-x016-201909
+x86_64                 randconfig-x018-201909
+x86_64                 randconfig-x011-201909
+x86_64                 randconfig-x012-201909
+x86_64                 randconfig-x019-201909
+x86_64                 randconfig-x014-201909
+x86_64                 randconfig-x015-201909
+x86_64                 randconfig-x010-201909
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                     randconfig-a3-201909
+i386                     randconfig-a2-201909
+i386                     randconfig-a1-201909
+i386                     randconfig-a0-201909
+powerpc                     tqm8560_defconfig
+s390                             allmodconfig
+sh                             sh03_defconfig
+arm                         axm55xx_defconfig
+arm                            lart_defconfig
+powerpc                      chrp32_defconfig
+arm                           corgi_defconfig
+c6x                               allnoconfig
+sh                          r7780mp_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201909
+i386                     randconfig-s1-201909
+i386                     randconfig-s2-201909
+i386                     randconfig-s3-201909
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+arm                       aspeed_g5_defconfig
+powerpc                     ep8248e_defconfig
+powerpc                    gamecube_defconfig
+powerpc                 mpc8540_ads_defconfig
+powerpc                 mpc8272_ads_defconfig
+powerpc                 mpc834x_itx_defconfig
+openrisc                            defconfig
+sh                               j2_defconfig
+arm                           spitz_defconfig
+ia64                         bigsur_defconfig
+arc                              allyesconfig
+arm                          pcm027_defconfig
+nios2                            alldefconfig
+arm                         assabet_defconfig
+h8300                             allnoconfig
+arm                         cm_x2xx_defconfig
+openrisc                         allmodconfig
+x86_64                 randconfig-u0-03050502
+x86_64                 randconfig-u0-03050505
+x86_64                 randconfig-u0-03050507
+x86_64                 randconfig-u0-03050509
+x86_64                 randconfig-u0-03050511
+x86_64                 randconfig-u0-03050513
+x86_64                 randconfig-u0-03050521
+x86_64                 randconfig-u0-03050540
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+sh                               allmodconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                     randconfig-m1-201909
+x86_64                   randconfig-m0-201909
+i386                     randconfig-m0-201909
+i386                     randconfig-m2-201909
+x86_64                   randconfig-m1-201909
+x86_64                   randconfig-m3-201909
+i386                     randconfig-m3-201909
+x86_64                   randconfig-m2-201909
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                 randconfig-l1-03050255
+x86_64                 randconfig-l0-03050255
+i386                   randconfig-l1-03050255
+x86_64                 randconfig-l2-03050255
+x86_64                 randconfig-l3-03050255
+i386                   randconfig-l0-03050255
+i386                   randconfig-l3-03050255
+i386                   randconfig-l2-03050255
+i386                   randconfig-x015-201909
+i386                   randconfig-x019-201909
+i386                   randconfig-x014-201909
+i386                   randconfig-x016-201909
+i386                   randconfig-x013-201909
+i386                   randconfig-x012-201909
+i386                   randconfig-x011-201909
+i386                   randconfig-x018-201909
+i386                   randconfig-x017-201909
+i386                   randconfig-x010-201909
+riscv                              tinyconfig
+i386                               tinyconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-g0-03040301
+x86_64                 randconfig-g1-03040301
+x86_64                 randconfig-g2-03040301
+x86_64                 randconfig-g3-03040301
+i386                   randconfig-x006-201909
+i386                   randconfig-x000-201909
+i386                   randconfig-x007-201909
+i386                   randconfig-x002-201909
+i386                   randconfig-x009-201909
+i386                   randconfig-x003-201909
+i386                   randconfig-x001-201909
+i386                   randconfig-x004-201909
+i386                   randconfig-x005-201909
+i386                   randconfig-x008-201909
+x86_64                                  kexec
+x86_64                              fedora-25
+x86_64                 randconfig-e0-03031744
+x86_64                 randconfig-e1-03031744
+x86_64                 randconfig-e2-03031744
+x86_64                 randconfig-e3-03031744
+i386                   randconfig-x073-201909
+i386                   randconfig-x075-201909
+i386                   randconfig-x079-201909
+i386                   randconfig-x072-201909
+i386                   randconfig-x077-201909
+i386                   randconfig-x076-201909
+i386                   randconfig-x074-201909
+i386                   randconfig-x078-201909
+i386                   randconfig-x071-201909
+i386                   randconfig-x070-201909
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
