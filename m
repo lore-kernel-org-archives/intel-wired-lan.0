@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 8 Mar 2019 00:36:05 +0000
-Subject: [Intel-wired-lan] [PATCH S17 14/17] ice: Add missing PHY type
- to link settings
-In-Reply-To: <20190228232603.32156-15-anirudh.venkataramanan@intel.com>
+Date: Fri, 8 Mar 2019 00:36:39 +0000
+Subject: [Intel-wired-lan] [PATCH S17 15/17] ice: Refactor link event
+ flow
+In-Reply-To: <20190228232603.32156-16-anirudh.venkataramanan@intel.com>
 References: <20190228232603.32156-1-anirudh.venkataramanan@intel.com>
- <20190228232603.32156-15-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D368F0B@ORSMSX104.amr.corp.intel.com>
+ <20190228232603.32156-16-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D368F17@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Thursday, February 28, 2019 3:26 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S17 14/17] ice: Add missing PHY type to link
-> settings
+> Subject: [Intel-wired-lan] [PATCH S17 15/17] ice: Refactor link event flow
 > 
-> From: Tony Nguyen <anthony.l.nguyen@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> The PHY type ICE_PHY_TYPE_LOW_25G_AUI_C2C is missing from
-> ice_get_settings_link_up() which is causing a warning message for
-> unrecognized PHY.  Add the PHY type to correctly set the settings and avoid
-> the warning message.
+> Currently the link event flow works, but can be much better.
+> Refactor the link event flow to make it cleaner and more clear on what is
+> going on.
 > 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 1 +
->  1 file changed, 1 insertion(+)
+> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
+> up commit message]
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h      | 20 +++++++
+>  drivers/net/ethernet/intel/ice/ice_main.c | 93 +++++++++++++++------------
+> ----
+>  2 files changed, 65 insertions(+), 48 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
