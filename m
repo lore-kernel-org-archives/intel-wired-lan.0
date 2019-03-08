@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 8 Mar 2019 00:49:12 +0000
-Subject: [Intel-wired-lan] [PATCH S13 v2 03/17] ice: Fix issue
- reconfiguring VF queues
-In-Reply-To: <20190227003523.28733-4-anirudh.venkataramanan@intel.com>
+Date: Fri, 8 Mar 2019 00:51:19 +0000
+Subject: [Intel-wired-lan] [PATCH S13 v2 10/17] ice: Do not set LB_EN
+ for prune switch rules
+In-Reply-To: <20190227003523.28733-11-anirudh.venkataramanan@intel.com>
 References: <20190227003523.28733-1-anirudh.venkataramanan@intel.com>
- <20190227003523.28733-4-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D368F4C@ORSMSX104.amr.corp.intel.com>
+ <20190227003523.28733-11-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D368F74@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Tuesday, February 26, 2019 4:35 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S13 v2 03/17] ice: Fix issue reconfiguring VF
-> queues
+> Subject: [Intel-wired-lan] [PATCH S13 v2 10/17] ice: Do not set LB_EN for
+> prune switch rules
 > 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> From: Christopher N Bednarz <christopher.n.bednarz@intel.com>
 > 
-> When VF requested for queues changes, we need to update LAN Tx queue
-> with correct number of VF queue pairs and re-allocate VF resources based on
-> this new requested number of queues, which is constraint within maximum
-> queue supported per VF.
+> LB_EN for prune switch rules was causing all TX traffic to loopback to the
+> internal switch and dropped.  When running bi-directional stress workloads
+> with RDMA the RDPU would hang blocking tx and rx traffic.
 > 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Signed-off-by: Christopher N Bednarz <christopher.n.bednarz@intel.com>
+> Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c         | 33 +++++++++++---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 58
-> ++++++++++++++++++++----
-> drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  1 +
->  3 files changed, 76 insertions(+), 16 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_switch.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
