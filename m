@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 8 Mar 2019 00:26:33 +0000
-Subject: [Intel-wired-lan] [PATCH S17 02/17] ice: Create framework for
- VSI queue context
-In-Reply-To: <20190228232603.32156-3-anirudh.venkataramanan@intel.com>
+Date: Fri, 8 Mar 2019 00:27:04 +0000
+Subject: [Intel-wired-lan] [PATCH S17 03/17] ice: Return configuration
+ error without queue to disable
+In-Reply-To: <20190228232603.32156-4-anirudh.venkataramanan@intel.com>
 References: <20190228232603.32156-1-anirudh.venkataramanan@intel.com>
- <20190228232603.32156-3-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D368E49@ORSMSX104.amr.corp.intel.com>
+ <20190228232603.32156-4-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D368E5A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Thursday, February 28, 2019 3:26 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S17 02/17] ice: Create framework for VSI
-> queue context
+> Subject: [Intel-wired-lan] [PATCH S17 03/17] ice: Return configuration error
+> without queue to disable
 > 
-> This patch introduces a framework to store queue specific information in VSI
-> queue contexts. Currently VSI queue context (represented by struct
-> ice_q_ctx) only has q_handle as a member. In future patches, this structure
-> will be updated to hold queue specific information.
+> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > 
+> If there is no queue to disable, return appropriate configuration error earlier
+> without acquiring the lock.
+> 
+> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c      | 62 +++++++++++++--
->  drivers/net/ethernet/intel/ice/ice_common.h      | 11 +--
->  drivers/net/ethernet/intel/ice/ice_lib.c         | 99 ++++++++++++++----------
->  drivers/net/ethernet/intel/ice/ice_sched.c       | 54 +++++++++++--
->  drivers/net/ethernet/intel/ice/ice_switch.c      | 22 ++++++
->  drivers/net/ethernet/intel/ice/ice_switch.h      |  9 +++
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  4 +-
->  7 files changed, 205 insertions(+), 56 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c | 17 ++++++++++-------
+>  1 file changed, 10 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
