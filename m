@@ -1,43 +1,45 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 7 Mar 2019 09:37:13 -0800
-Subject: [Intel-wired-lan] [PATCH] igc: remove unused
- igc_priv_flags_strings array
-In-Reply-To: <20190307.092929.277930617530301779.davem@davemloft.net>
-References: <20190307093014.3293229-1-arnd@arndb.de>
- <20190307.092929.277930617530301779.davem@davemloft.net>
-Message-ID: <dbc02b0b-8f85-cdc9-2e8d-9a29adefbf6b@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 8 Mar 2019 00:26:01 +0000
+Subject: [Intel-wired-lan] [PATCH S17 01/17] ice: Calculate ITR
+ increment based on direct calculation
+In-Reply-To: <20190228232603.32156-2-anirudh.venkataramanan@intel.com>
+References: <20190228232603.32156-1-anirudh.venkataramanan@intel.com>
+ <20190228232603.32156-2-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D368E3A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/7/2019 09:29, David Miller wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> Date: Thu,  7 Mar 2019 10:29:57 +0100
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Anirudh Venkataramanan
+> Sent: Thursday, February 28, 2019 3:26 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S17 01/17] ice: Calculate ITR increment
+> based on direct calculation
 > 
->> clang points out that the igc_priv_flags_strings[] array is never
->> referenced, aside from being used for calculating its length:
->>
->> drivers/net/ethernet/intel/igc/igc_ethtool.c:9:19: error: variable 'igc_priv_flags_strings' is not needed and will not
->>        be emitted [-Werror,-Wunneeded-internal-declaration]
->> static const char igc_priv_flags_strings[][ETH_GSTRING_LEN] = {
->>
->> A similar array is present in several other intel ethernet drivers,
->> but all the others use it in their .get_strings() callback, which
->> igc does not implement (yet).
->>
->> Probably it should be implemented, but as I have no way of testing
->> it, this does the simpler alternative of removing the array to
->> get rid of the warning.
->>
->> Fixes: 8c5ad0dae93c ("igc: Add ethtool support")
->> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Jeff, I assume you will pick this up.
+> Currently when calculating how much to increment ITR by inside of
+> ice_update_itr() we do some estimations and intermediate calculations.
+> Instead of doing estimations, just do the calculation directly. This allows for a
+> more accurate value and it makes it easier for the next person to understand
+> and update.
 > 
-I've submitted igc: Add support for statistics commit 
-7aa2547613233a232b9b2e1942d67da4997e6ad0. This patch in Jeff's Kirsher 
-next-queue and used igc_priv_flags_strings.
-Thanks,
-Sasha
+> Also, remove the dividing the ITR value by 2 when latency driven because the
+> ITR values are already so low for 100Gbps speed. This should help get to the
+> desired ITR value faster.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_txrx.c | 135 ++++++++++++++-------------
+> ---
+>  1 file changed, 63 insertions(+), 72 deletions(-)
+
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
