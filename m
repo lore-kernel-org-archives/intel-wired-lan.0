@@ -1,184 +1,118 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 13 Mar 2019 09:05:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 9df2a9528a8845aeef451785a74b250ce63d82ea
-Message-ID: <5c885769.RpP0oLrmbOaugt79%lkp@intel.com>
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Wed, 13 Mar 2019 10:39:49 +0100
+Subject: [Intel-wired-lan] [bpf-next, 02/11] xsk: introduce xdp_umem_page
+In-Reply-To: <20180604120601.18123-3-bjorn.topel@gmail.com>
+References: <20180604120601.18123-3-bjorn.topel@gmail.com>
+Message-ID: <c1cb2ca8-6a14-3980-8672-f3de0bb38dfd@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 9df2a9528a8845aeef451785a74b250ce63d82ea  i40e: print PCI vendor and device ID during probe
+On 04. 06. 18, 14:05, Bj?rn T?pel wrote:
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
+> 
+> The xdp_umem_page holds the address for a page. Trade memory for
+> faster lookup. Later, we'll add DMA address here as well.
+...
+> --- a/include/net/xdp_sock.h
+> +++ b/include/net/xdp_sock.h
+...
+> --- a/net/xdp/xdp_umem.c
+> +++ b/net/xdp/xdp_umem.c
+> @@ -65,6 +65,9 @@ static void xdp_umem_release(struct xdp_umem *umem)
+>  		goto out;
+>  
+>  	mmput(mm);
+> +	kfree(umem->pages);
+> +	umem->pages = NULL;
+> +
 
-elapsed time: 181m
+Are you sure about the placement of kfree here? Why is it dependent on
+task && mm above?
 
-configs tested: 159
+IMO the kfree should be below "out:":
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+>  	xdp_umem_unaccount_pages(umem);
+>  out:
+>  	kfree(umem);
+Syzkaller reported this memleak:
+r0 = socket$xdp(0x2c, 0x3, 0x0)
+setsockopt$XDP_UMEM_REG(r0, 0x11b, 0x4,
+&(0x7f0000000100)={&(0x7f0000000000)=""/210, 0x20000, 0x1000, 0x7}, 0x18)
+BUG: memory leak
+unreferenced object 0xffff88003648de68 (size 512):
+  comm "syz-executor.3", pid 11688, jiffies 4295555546 (age 15.752s)
+  hex dump (first 32 bytes):
+    00 00 40 23 00 88 ff ff 00 00 00 00 00 00 00 00  ..@#............
+    00 10 40 23 00 88 ff ff 00 00 00 00 00 00 00 00  ..@#............
+  backtrace:
+    [<ffffffffa9f8346c>] xsk_setsockopt+0x40c/0x510 net/xdp/xsk.c:539
+    [<ffffffffa9935c41>] SyS_setsockopt+0x171/0x370 net/socket.c:1862
+    [<ffffffffa800b28c>] do_syscall_64+0x26c/0x6e0
+arch/x86/entry/common.c:284
+    [<ffffffffaa00009a>] entry_SYSCALL_64_after_hwframe+0x3d/0xa2
+    [<ffffffffffffffff>] 0xffffffffffffffff
 
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-arm                           corgi_defconfig
-mips                          rm200_defconfig
-i386                   randconfig-x010-201910
-i386                   randconfig-x018-201910
-i386                   randconfig-x017-201910
-i386                   randconfig-x013-201910
-i386                   randconfig-x014-201910
-i386                   randconfig-x011-201910
-i386                   randconfig-x015-201910
-i386                   randconfig-x019-201910
-i386                   randconfig-x012-201910
-i386                   randconfig-x016-201910
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-03121831
-i386                   randconfig-n1-03121831
-i386                   randconfig-n2-03121831
-i386                   randconfig-n3-03121831
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                   randconfig-i0-03121832
-i386                   randconfig-i1-03121832
-i386                   randconfig-i2-03121832
-i386                   randconfig-i3-03121832
-x86_64                           allyesconfig
-i386                             allmodconfig
-x86_64                 randconfig-x015-201910
-x86_64                 randconfig-x016-201910
-x86_64                 randconfig-x013-201910
-x86_64                 randconfig-x012-201910
-x86_64                 randconfig-x017-201910
-x86_64                 randconfig-x018-201910
-x86_64                 randconfig-x010-201910
-x86_64                 randconfig-x014-201910
-x86_64                 randconfig-x019-201910
-x86_64                 randconfig-x011-201910
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-a2-03121736
-i386                   randconfig-a3-03121736
-i386                   randconfig-a0-03121736
-i386                   randconfig-a1-03121736
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                          ep93xx_defconfig
-powerpc                     mpc512x_defconfig
-powerpc                 mpc8313_rdb_defconfig
-powerpc                  storcenter_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-03121752
-i386                   randconfig-s1-03121752
-i386                   randconfig-s2-03121752
-i386                   randconfig-s3-03121752
-arm                         axm55xx_defconfig
-arm                         lubbock_defconfig
-mips                malta_qemu_32r6_defconfig
-parisc                generic-32bit_defconfig
-m68k                        m5407c3_defconfig
-powerpc                      walnut_defconfig
-parisc                        c3000_defconfig
-powerpc                 mpc85xx_cds_defconfig
-mips                             alldefconfig
-arm                          nuc950_defconfig
-parisc                            allnoconfig
-arm                         assabet_defconfig
-powerpc                      pmac32_defconfig
-x86_64                 randconfig-u0-03130828
-x86_64                 randconfig-u0-03130831
-x86_64                 randconfig-u0-03130845
-x86_64                 randconfig-u0-03130846
-x86_64                 randconfig-u0-03130848
-x86_64                 randconfig-u0-03130849
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-m1-03121734
-x86_64                 randconfig-m0-03121734
-i386                   randconfig-m2-03121734
-i386                   randconfig-m3-03121734
-i386                   randconfig-m0-03121734
-i386                   randconfig-m1-03121734
-x86_64                 randconfig-m3-03121734
-x86_64                 randconfig-m2-03121734
-riscv                             allnoconfig
-riscv                               defconfig
-alpha                               defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-um                                  defconfig
-i386                   randconfig-x077-201910
-i386                   randconfig-x070-201910
-i386                   randconfig-x074-201910
-i386                   randconfig-x072-201910
-i386                   randconfig-x075-201910
-i386                   randconfig-x071-201910
-i386                   randconfig-x078-201910
-i386                   randconfig-x079-201910
-i386                   randconfig-x076-201910
-i386                   randconfig-x073-201910
-arm                         em_x270_defconfig
-ia64                          tiger_defconfig
-i386                   randconfig-x002-201910
-i386                   randconfig-x005-201910
-i386                   randconfig-x001-201910
-i386                   randconfig-x007-201910
-i386                   randconfig-x000-201910
-i386                   randconfig-x008-201910
-i386                   randconfig-x004-201910
-i386                   randconfig-x009-201910
-i386                   randconfig-x003-201910
-i386                   randconfig-x006-201910
-x86_64                                  kexec
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                 randconfig-x000-201910
-x86_64                 randconfig-x001-201910
-x86_64                 randconfig-x004-201910
-x86_64                 randconfig-x003-201910
-x86_64                 randconfig-x008-201910
-x86_64                 randconfig-x007-201910
-x86_64                 randconfig-x002-201910
-x86_64                 randconfig-x006-201910
-x86_64                 randconfig-x005-201910
-x86_64                 randconfig-x009-201910
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-openrisc                         alldefconfig
-arm                            mmp2_defconfig
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Given the size of the leak, it looks like umem->pages is leaked:
+mr->len/page_size*sizeof(*umem->pages)
+0x20000/4096*16=512
+
+So I added a check, and really, task is NULL in my testcase -- the
+program is gone when the deferred work triggers. But umem->pages is not
+freed.
+
+Moving the free after "out:", no leaks happen anymore.
+
+Easily reproducible with:
+#include <err.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include <linux/if_xdp.h>
+
+void fun()
+{
+        static char buffer[0x20000] __attribute__((aligned(4096)));
+        struct xdp_umem_reg mr = {
+                (unsigned long)buffer,
+                0x20000,
+                0x1000,
+                0x7,
+         //&(0x7f0000000100)={&(0x7f0000000000)=""/210, 0x20000, 0x1000,
+0x7}
+        };
+        int r0;
+        r0 = socket(AF_XDP, SOCK_RAW, 0);
+        if (r0 < 0)
+                err(1, "socket");
+        if (setsockopt(r0, SOL_XDP, XDP_UMEM_REG, &mr, sizeof(mr)) < 0)
+                err(1, "setsockopt");
+        close(r0);
+}
+
+int main()
+{
+        int a;
+        while (1) {
+                for (a = 0; a < 40; a++)
+                        if (!fork()) {
+                                fun();
+                                exit(0);
+                        }
+                for (a = 0; a < 100; a++)
+                        wait(NULL);
+        }
+}
+
+
+thanks,
+-- 
+js
+suse labs
