@@ -1,8 +1,8 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 14 Mar 2019 18:01:23 -0700
+Date: Thu, 14 Mar 2019 18:03:34 -0700
 Subject: [Intel-wired-lan] [PATCH] checkpatch: fix camel case seeding when
  run with --root
-Message-ID: <20190315010123.4334-1-jacob.e.keller@intel.com>
+Message-ID: <20190315010334.5707-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -35,12 +35,7 @@ being run from within another git repository.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-
-I sent this a long time ago, https://patchwork.ozlabs.org/patch/663831/ but
-it was never noticed or reviewed.
-
-I thought I'd dredge it back up and write a better description of the
-problem and the fix.
+(Resending with a not-invalid address for the netdev mailing list...)
 
  scripts/checkpatch.pl | 9 +++++----
  1 file changed, 5 insertions(+), 4 deletions(-)
