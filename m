@@ -1,73 +1,48 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 14 Mar 2019 18:03:34 -0700
-Subject: [Intel-wired-lan] [PATCH] checkpatch: fix camel case seeding when
- run with --root
-Message-ID: <20190315010334.5707-1-jacob.e.keller@intel.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Fri, 15 Mar 2019 19:08:25 +0800
+Subject: [Intel-wired-lan] Opportunistic S0ix blocked by e1000e when
+ ethernet is in use
+Message-ID: <074E1145-A512-4835-9A6D-8FB6634DBD3C@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-checkpatch.pl avoids warning about camel case of some definitions by
-seeding a file that tracks all of the currently committed camel case
-definitions.
+Hi Jeffrey,
 
-To build this seed file, checkpatch.pl decides between using git or the
---root parameter.
+There are several platforms that uses e1000e can?t enter Opportunistic S0ix  
+(PC10) when the ethernet has a link partner.
 
-This works as long as you don't run checkpatch.pl from within
-a different git tree that is not the Linux kernel.
+This behavior also exits in out-of-tree e1000e driver 3.4.2.1, but seems  
+like 3.4.2.3 fixes the issue.
 
-In this case, the check for ".git" will return true, and checkpatch will
-attempt to seed a camel case file using the current directory. This
-works fine if --root is not provided, but can result in an incorrect
-camel case seed file resulting in false positive warnings.
+A quick diff between the two versions shows that this code section may be  
+our solution:
 
-Fix this by checking for $root/.git instead, so that we use the --root
-parameter properly when seeding the camel case list.
+         /* Read from EXTCNF_CTRL in e1000_acquire_swflag_ich8lan function
+          * may occur during global reset and cause system hang.
+          * Configuration space access creates the needed delay.
+          * Write to E1000_STRAP RO register E1000_PCI_VENDOR_ID_REGISTER value
+          * insures configuration space read is done before global reset.
+          */
+         pci_read_config_word(hw->adapter->pdev, E1000_PCI_VENDOR_ID_REGISTER,
+                              &pci_cfg);
+         ew32(STRAP, pci_cfg);
+         e_dbg("Issuing a global reset to ich8lan\n");
+         ew32(CTRL, (ctrl | E1000_CTRL_RST));
+         /* cannot issue a flush here because it hangs the hardware */
+         msleep(20);
 
-Additionally, when generating the list of files to be checked, prefix
-the $root path so that the correct file will be found.
+         /* Configuration space access improve HW level time sync mechanism.
+          * Write to E1000_STRAP RO register E1000_PCI_VENDOR_ID_REGISTER
+          * value to insure configuration space read is done
+          * before any access to mac register.
+          */
+         pci_read_config_word(hw->adapter->pdev, E1000_PCI_VENDOR_ID_REGISTER,
+                              &pci_cfg);
+         ew32(STRAP, pci_cfg);
 
-These changes allow checkpatch.pl to honor the --root parameter even if
-being run from within another git repository.
+Is there any plan to support this in the upstream kernel?
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
-(Resending with a not-invalid address for the netdev mailing list...)
-
- scripts/checkpatch.pl | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index d0001fd1112d..358add495e18 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -903,8 +903,8 @@ sub seed_camelcase_includes {
- 
- 	$camelcase_seeded = 1;
- 
--	if (-e ".git") {
--		my $git_last_include_commit = `git log --no-merges --pretty=format:"%h%n" -1 -- include`;
-+	if (-e "$root/.git") {
-+		my $git_last_include_commit = `cd $root && git log --no-merges --pretty=format:"%h%n" -1 -- include`;
- 		chomp $git_last_include_commit;
- 		$camelcase_cache = ".checkpatch-camelcase.git.$git_last_include_commit";
- 	} else {
-@@ -931,9 +931,10 @@ sub seed_camelcase_includes {
- 		return;
- 	}
- 
--	if (-e ".git") {
--		$files = `git ls-files "include/*.h"`;
-+	if (-e "$root/.git") {
-+		$files = `cd $root && git ls-files "include/*.h"`;
- 		@include_files = split('\n', $files);
-+		@include_files = map("$root/$_", @include_files);
- 	}
- 
- 	foreach my $file (@include_files) {
--- 
-2.18.0.219.gaf81d287a9da
-
+Kai-Heng
