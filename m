@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 21 Mar 2019 22:38:13 +0000
-Subject: [Intel-wired-lan] [PATCH] net: ixgbevf: fix a missing check of
- ixgbevf_write_msg_read_ack
-In-Reply-To: <20190309033123.30001-1-kjlu@umn.edu>
-References: <20190309033123.30001-1-kjlu@umn.edu>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D376ADC@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 21 Mar 2019 22:39:06 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: Fix a potential NULL pointer
+ dereference
+In-Reply-To: <20190321144223.14392-1-yuehaibing@huawei.com>
+References: <20190321144223.14392-1-yuehaibing@huawei.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D376AEC@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,21 +13,72 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Kangjie Lu
-> Sent: Friday, March 8, 2019 7:31 PM
-> To: kjlu at umn.edu
-> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org; pakki001 at umn.edu; David S. Miller
-> <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH] net: ixgbevf: fix a missing check of
-> ixgbevf_write_msg_read_ack
+> Behalf Of Yue Haibing
+> Sent: Thursday, March 21, 2019 7:42 AM
+> To: davem at davemloft.net; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; YueHaibing <yuehaibing@huawei.com>; intel-
+> wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] fm10k: Fix a potential NULL pointer
+> dereference
 > 
-> If ixgbevf_write_msg_read_ack fails, return its error code upstream
+> From: YueHaibing <yuehaibing@huawei.com>
 > 
-> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+> Syzkaller report this:
+> 
+> kasan: GPF could be caused by NULL-ptr deref or user memory access
+> general protection fault: 0000 [#1] SMP KASAN PTI
+> CPU: 0 PID: 4378 Comm: syz-executor.0 Tainted: G         C        5.0.0+ #5
+> Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.10.2-
+> 1ubuntu1 04/01/2014
+> RIP: 0010:__lock_acquire+0x95b/0x3200 kernel/locking/lockdep.c:3573
+> Code: 00 0f 85 28 1e 00 00 48 81 c4 08 01 00 00 5b 5d 41 5c 41 5d 41 5e 41 5f c3
+> 4c 89 ea 48 b8 00 00 00 00 00 fc ff df 48 c1 ea 03 <80> 3c 02 00 0f 85 cc 24 00 00
+> 49 81 7d 00 e0 de 03 a6 41 bc 00 00
+> RSP: 0018:ffff8881e3c07a40 EFLAGS: 00010002
+> RAX: dffffc0000000000 RBX: 0000000000000000 RCX: 0000000000000000
+> RDX: 0000000000000010 RSI: 0000000000000000 RDI: 0000000000000080
+> RBP: 0000000000000000 R08: 0000000000000001 R09: 0000000000000000
+> R10: ffff8881e3c07d98 R11: ffff8881c7f21f80 R12: 0000000000000001
+> R13: 0000000000000080 R14: 0000000000000000 R15: 0000000000000001
+> FS:  00007fce2252e700(0000) GS:ffff8881f2400000(0000)
+> knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> CR2: 00007fffc7eb0228 CR3: 00000001e5bea002 CR4: 00000000007606f0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+> PKRU: 55555554
+> Call Trace:
+>  lock_acquire+0xff/0x2c0 kernel/locking/lockdep.c:4211
+> __mutex_lock_common kernel/locking/mutex.c:925 [inline]
+>  __mutex_lock+0xdf/0x1050 kernel/locking/mutex.c:1072
+>  drain_workqueue+0x24/0x3f0 kernel/workqueue.c:2934
+>  destroy_workqueue+0x23/0x630 kernel/workqueue.c:4319
+> __do_sys_delete_module kernel/module.c:1018 [inline]
+> __se_sys_delete_module kernel/module.c:961 [inline]
+>  __x64_sys_delete_module+0x30c/0x480 kernel/module.c:961
+>  do_syscall_64+0x9f/0x450 arch/x86/entry/common.c:290
+> entry_SYSCALL_64_after_hwframe+0x49/0xbe
+> RIP: 0033:0x462e99
+> Code: f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6
+> 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7
+> c1 bc ff ff ff f7 d8 64 89 01 48
+> RSP: 002b:00007fce2252dc58 EFLAGS: 00000246 ORIG_RAX:
+> 00000000000000b0
+> RAX: ffffffffffffffda RBX: 000000000073bf00 RCX: 0000000000462e99
+> RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000020000140
+> RBP: 0000000000000002 R08: 0000000000000000 R09: 0000000000000000
+> R10: 0000000000000000 R11: 0000000000000246 R12: 00007fce2252e6bc
+> R13: 00000000004bcca9 R14: 00000000006f6b48 R15: 00000000ffffffff
+> 
+> If alloc_workqueue fails, it should return -ENOMEM, otherwise may trigger
+> this NULL pointer dereference while unloading drivers.
+> 
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Fixes: 0a38c17a21a0 ("fm10k: Remove create_workqueue")
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/vf.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 ++
+>  1 file changed, 2 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
