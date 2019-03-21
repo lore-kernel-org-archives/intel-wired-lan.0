@@ -1,9 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 21 Mar 2019 22:32:47 +0000
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix mdio bus registration
-In-Reply-To: <20190315084515.22983-1-ivecera@redhat.com>
-References: <20190315084515.22983-1-ivecera@redhat.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D376AA9@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 21 Mar 2019 22:38:13 +0000
+Subject: [Intel-wired-lan] [PATCH] net: ixgbevf: fix a missing check of
+ ixgbevf_write_msg_read_ack
+In-Reply-To: <20190309033123.30001-1-kjlu@umn.edu>
+References: <20190309033123.30001-1-kjlu@umn.edu>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D376ADC@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,23 +13,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Ivan Vecera
-> Sent: Friday, March 15, 2019 1:45 AM
-> To: netdev at vger.kernel.org
-> Cc: open list <linux-kernel@vger.kernel.org>; moderated list:INTEL
-> ETHERNET DRIVERS <intel-wired-lan@lists.osuosl.org>; David S. Miller
+> Behalf Of Kangjie Lu
+> Sent: Friday, March 8, 2019 7:31 PM
+> To: kjlu at umn.edu
+> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org; intel-wired-
+> lan at lists.osuosl.org; pakki001 at umn.edu; David S. Miller
 > <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix mdio bus registration
+> Subject: [Intel-wired-lan] [PATCH] net: ixgbevf: fix a missing check of
+> ixgbevf_write_msg_read_ack
 > 
-> The ixgbe ignores errors returned from mdiobus_register() and leaves
-> adapter->mii_bus non-NULL and MDIO bus state as MDIOBUS_ALLOCATED.
-> This triggers a BUG from mdiobus_unregister() during ixgbe_remove() call.
+> If ixgbevf_write_msg_read_ack fails, return its error code upstream
 > 
-> Fixes: 8fa10ef01260 ("ixgbe: register a mdiobus")
-> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 16 +++++++++-------
->  1 file changed, 9 insertions(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/vf.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
