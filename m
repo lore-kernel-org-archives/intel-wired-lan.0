@@ -1,58 +1,64 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 26 Mar 2019 15:21:41 -0700
-Subject: [Intel-wired-lan] [PATCH] net: fm10k: fix a potential NULL
- pointer dereference
-In-Reply-To: <FA2DD268-9578-49B5-8E9E-D3FA8C9AEDFC@umn.edu>
-References: <20190311061732.19064-1-kjlu@umn.edu>
- <FA2DD268-9578-49B5-8E9E-D3FA8C9AEDFC@umn.edu>
-Message-ID: <5bf2a409fb5f3fbb44ac3eda591ba0cbc6122d44.camel@intel.com>
+From: Quentin Deslandes <quentin.deslandes@itdev.co.uk>
+Date: Tue, 26 Mar 2019 21:39:21 +0000
+Subject: [Intel-wired-lan] [PATCH v2] e1000: remove extern declarations in
+ .c file.
+Message-ID: <20190326213917.GA24133@jiffies>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2019-03-22 at 22:26 -0500, Kangjie Lu wrote:
-> > On Mar 11, 2019, at 1:17 AM, Kangjie Lu <kjlu@umn.edu> wrote:
-> > 
-> > In case alloc_workqueue fails, the fix returns -ENOMEM to avoid
-> > potential NULL pointer dereference.
-> > 
-> > Signed-off-by: Kangjie Lu <kjlu@umn.edu>
-> > ---
-> > drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 ++
-> > 1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> > b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> > index 5a0419421511..215f232674f1 100644
-> > --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> > @@ -41,6 +41,8 @@ static int __init fm10k_init_module(void)
-> > 	/* create driver workqueue */
-> > 	fm10k_workqueue = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0,
-> > 					  fm10k_driver_name);
-> > +	if (unlikely(!fm10k_workqueue))
-> > +		return -ENOMEM;
-> > 
-> 
-> Jeff, can you review this patch?
+This patch fixes the following checkpatch.pl warning:
 
-Yep, sorry for the delay in getting back to you.  I already had this
-change in my tree queued up from Yue Haibing.  I am actually preparing
-to push this fix and few others to Dave in a couple of hours.
+WARNING: externs should be avoided in .c files
 
-> 
-> > 	fm10k_dbg_init();
-> > 
-> > -- 
-> > 2.17.1
-> > 
+Some of the driver's function declared in e1000.h were declared a second
+time in e1000_main.c, triggering checkpatch.pl warnings.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190326/56e908f9/attachment.asc>
+This patch is v2 as the first one had the wrong subject.
+
+Signed-off-by: Quentin Deslandes <quentin.deslandes@itdev.co.uk>
+---
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 11 -----------
+ 1 file changed, 11 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 8fe9af0e2ab7..b3d5cd750dca 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -65,14 +65,6 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+ 
+ MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
+ 
+-int e1000_up(struct e1000_adapter *adapter);
+-void e1000_down(struct e1000_adapter *adapter);
+-void e1000_reinit_locked(struct e1000_adapter *adapter);
+-void e1000_reset(struct e1000_adapter *adapter);
+-int e1000_setup_all_tx_resources(struct e1000_adapter *adapter);
+-int e1000_setup_all_rx_resources(struct e1000_adapter *adapter);
+-void e1000_free_all_tx_resources(struct e1000_adapter *adapter);
+-void e1000_free_all_rx_resources(struct e1000_adapter *adapter);
+ static int e1000_setup_tx_resources(struct e1000_adapter *adapter,
+ 				    struct e1000_tx_ring *txdr);
+ static int e1000_setup_rx_resources(struct e1000_adapter *adapter,
+@@ -81,7 +73,6 @@ static void e1000_free_tx_resources(struct e1000_adapter *adapter,
+ 				    struct e1000_tx_ring *tx_ring);
+ static void e1000_free_rx_resources(struct e1000_adapter *adapter,
+ 				    struct e1000_rx_ring *rx_ring);
+-void e1000_update_stats(struct e1000_adapter *adapter);
+ 
+ static int e1000_init_module(void);
+ static void e1000_exit_module(void);
+@@ -89,8 +80,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
+ static void e1000_remove(struct pci_dev *pdev);
+ static int e1000_alloc_queues(struct e1000_adapter *adapter);
+ static int e1000_sw_init(struct e1000_adapter *adapter);
+-int e1000_open(struct net_device *netdev);
+-int e1000_close(struct net_device *netdev);
+ static void e1000_configure_tx(struct e1000_adapter *adapter);
+ static void e1000_configure_rx(struct e1000_adapter *adapter);
+ static void e1000_setup_rctl(struct e1000_adapter *adapter);
+-- 
+2.20.1
+
