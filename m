@@ -1,88 +1,58 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 26 Mar 2019 15:05:13 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: fix i40e_ptp_adjtime when given
- a negative delta
-In-Reply-To: <02874ECE860811409154E81DA85FBB589233261D@ORSMSX121.amr.corp.intel.com>
-References: <20190225192005.3233-1-jacob.e.keller@intel.com>
- <CAK8P3a3gDmbUBAK2oq22rArD5Eou_6irduMNst+jM-7_kw7Dzg@mail.gmail.com>
- <CAK8P3a0vozSXboQan+ifExAMo0Ag=T-kAvAX3QC9adDDQ+COzQ@mail.gmail.com>
- <02874ECE860811409154E81DA85FBB589233261D@ORSMSX121.amr.corp.intel.com>
-Message-ID: <6e2c5943f48496b23d3659efe358736f05ef5560.camel@intel.com>
+Date: Tue, 26 Mar 2019 15:21:41 -0700
+Subject: [Intel-wired-lan] [PATCH] net: fm10k: fix a potential NULL
+ pointer dereference
+In-Reply-To: <FA2DD268-9578-49B5-8E9E-D3FA8C9AEDFC@umn.edu>
+References: <20190311061732.19064-1-kjlu@umn.edu>
+ <FA2DD268-9578-49B5-8E9E-D3FA8C9AEDFC@umn.edu>
+Message-ID: <5bf2a409fb5f3fbb44ac3eda591ba0cbc6122d44.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2019-03-25 at 10:23 -0700, Keller, Jacob E wrote:
-> > -----Original Message-----
-> > From: Arnd Bergmann [mailto:arnd at arndb.de]
-> > Sent: Monday, March 25, 2019 9:45 AM
-> > To: Keller, Jacob E <jacob.e.keller@intel.com>
-> > Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>; Kirsher,
-> > Jeffrey T
-> > <jeffrey.t.kirsher@intel.com>
-> > Subject: Re: [PATCH] i40e: fix i40e_ptp_adjtime when given a
-> > negative delta
+On Fri, 2019-03-22 at 22:26 -0500, Kangjie Lu wrote:
+> > On Mar 11, 2019, at 1:17 AM, Kangjie Lu <kjlu@umn.edu> wrote:
 > > 
-> > On Mon, Feb 25, 2019 at 8:46 PM Arnd Bergmann <arnd@arndb.de>
-> > wrote:
-> > > On Mon, Feb 25, 2019 at 8:20 PM Jacob Keller <
-> > > jacob.e.keller at intel.com> wrote:
-> > > > Commit 0ac30ce43323 ("i40e: fix up 32 bit timespec references",
-> > > > 2017-07-26) claims to be cleaning up references to 32-bit
-> > > > timespecs.
-> > > > 
-> > > > The actual contents of the commit make no sense, as it converts
-> > > > a call
-> > > > to timespec64_add into timespec64_add_ns. This would seem ok,
-> > > > if (a) the
-> > > > change was documented in the commit message, and (b)
-> > > > timespec64_add_ns
-> > > > supported negative numbers.
-> > > > 
-> > > > timespec64_add_ns doesn't work with signed deltas, because the
-> > > > implementation is based around iter_div_u64_rem. This change
-> > > > resulted in
-> > > > a regression where i40e_ptp_adjtime would interpret small
-> > > > negative
-> > > > adjustments as large positive additions, resulting in incorrect
-> > > > behavior.
-> > > > 
-> > > > This commit doesn't appear to fix anything, is not well
-> > > > explained, and
-> > > > introduces a bug, so lets just revert it.
-> > > 
-> > > Ah, this is not the bug I was referring to but actually worse.
-> > > I was only worried about hogging the CPU while doing billions
-> > > of additions in a loop, and had not realized it also changes
-> > > the result.
-> > > 
-> > > > Reverts: 0ac30ce43323 ("i40e: fix up 32 bit timespec
-> > > > references", 2017-07-26)
-> > > > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > > 
-> > > Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> > In case alloc_workqueue fails, the fix returns -ENOMEM to avoid
+> > potential NULL pointer dereference.
 > > 
-> > Any update on this? Your patch doesn't seem to have made it in as
-> > a bugfix, or into linux-next yet.
+> > Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+> > ---
+> > drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 ++
+> > 1 file changed, 2 insertions(+)
 > > 
-> >         Arnd
+> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> > b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> > index 5a0419421511..215f232674f1 100644
+> > --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> > @@ -41,6 +41,8 @@ static int __init fm10k_init_module(void)
+> > 	/* create driver workqueue */
+> > 	fm10k_workqueue = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0,
+> > 					  fm10k_driver_name);
+> > +	if (unlikely(!fm10k_workqueue))
+> > +		return -ENOMEM;
+> > 
 > 
-> It's still marked as under review on patchworks. It was marked as
-> tested by Andrew Bowers, so I am not sure what else holdup is.
-> 
-> Jeff?
-> 
-> I think this patch could/should go through net because it's a bug
-> fix.
+> Jeff, can you review this patch?
 
-I apologize, I got bogged down with ice driver patches.  I will push
-the fix to Dave's net tree now.
+Yep, sorry for the delay in getting back to you.  I already had this
+change in my tree queued up from Yue Haibing.  I am actually preparing
+to push this fix and few others to Dave in a couple of hours.
+
+> 
+> > 	fm10k_dbg_init();
+> > 
+> > -- 
+> > 2.17.1
+> > 
+
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190326/c5a8fc4f/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190326/56e908f9/attachment.asc>
