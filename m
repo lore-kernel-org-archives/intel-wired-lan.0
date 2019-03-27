@@ -1,66 +1,46 @@
-From: Quentin Deslandes <quentin.deslandes@itdev.co.uk>
-Date: Wed, 27 Mar 2019 10:05:30 +0000
-Subject: [Intel-wired-lan] [PATCH v3] e1000: remove extern declarations in
- .c file.
-Message-ID: <20190327100526.GA954@qd-ubuntu>
+From: Xuguizhu (Guzhu Xu, Intelligent Computing Business Dept) <xuguizhu@huawei.com>
+Date: Wed, 27 Mar 2019 10:58:35 +0000
+Subject: [Intel-wired-lan] [question] i40e: Question about the
+ i40e_clear_pxe_mode() function
+Message-ID: <315E3AFC3F1FCC4A88C68B5581547E0682A9D1D5@dggemm513-mbx.china.huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix the following checkpatch.pl warning:
+In the process of testing the NCSI function of the X722 NIC, when we started the ubuntu 18.04 system using the legacy mode, the system was put into the panic state by injecting a fault into the system through the "echo c > /proc/sysrq-trigger" command. When using the i40e driver in the ubuntu system, NCSI is broken after the injection failure. After upgrading the kernel to 5.1-rc2, the problem still exists. After using the driver released in sourceforge.net, the same test is performed and the NSCI function is normal.
 
-WARNING: externs should be avoided in .c files
+After comparing the drivers of the two branches, we found that this problem may be related to the i40e_clear_pxe_mode() function. The code for the I40E driver released in the kernel community is as follows:
+void i40e_clear_pxe_mode(struct i40e_hw *hw)
+{
+	u32 reg;
 
-Some of the driver's function declared in e1000.h were declared a second
-time in e1000_main.c, triggering checkpatch.pl warnings.
+	if (i40e_check_asq_alive(hw))
+		i40e_aq_clear_pxe_mode(hw, NULL);
 
-Reviewed-by: Mukesh Ojha <mojha@codeaurora.org>
-Signed-off-by: Quentin Deslandes <quentin.deslandes@itdev.co.uk>
----
- v2: Fix mail subject.
- v3: Remove patch version details from patch.
----
- drivers/net/ethernet/intel/e1000/e1000_main.c | 11 -----------
- 1 file changed, 11 deletions(-)
+	/* Clear single descriptor fetch/write-back mode */
+	reg = rd32(hw, I40E_GLLAN_RCTL_0);
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 8fe9af0e2ab7..b3d5cd750dca 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -65,14 +65,6 @@ static const struct pci_device_id e1000_pci_tbl[] = {
- 
- MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
- 
--int e1000_up(struct e1000_adapter *adapter);
--void e1000_down(struct e1000_adapter *adapter);
--void e1000_reinit_locked(struct e1000_adapter *adapter);
--void e1000_reset(struct e1000_adapter *adapter);
--int e1000_setup_all_tx_resources(struct e1000_adapter *adapter);
--int e1000_setup_all_rx_resources(struct e1000_adapter *adapter);
--void e1000_free_all_tx_resources(struct e1000_adapter *adapter);
--void e1000_free_all_rx_resources(struct e1000_adapter *adapter);
- static int e1000_setup_tx_resources(struct e1000_adapter *adapter,
- 				    struct e1000_tx_ring *txdr);
- static int e1000_setup_rx_resources(struct e1000_adapter *adapter,
-@@ -81,7 +73,6 @@ static void e1000_free_tx_resources(struct e1000_adapter *adapter,
- 				    struct e1000_tx_ring *tx_ring);
- static void e1000_free_rx_resources(struct e1000_adapter *adapter,
- 				    struct e1000_rx_ring *rx_ring);
--void e1000_update_stats(struct e1000_adapter *adapter);
- 
- static int e1000_init_module(void);
- static void e1000_exit_module(void);
-@@ -89,8 +80,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
- static void e1000_remove(struct pci_dev *pdev);
- static int e1000_alloc_queues(struct e1000_adapter *adapter);
- static int e1000_sw_init(struct e1000_adapter *adapter);
--int e1000_open(struct net_device *netdev);
--int e1000_close(struct net_device *netdev);
- static void e1000_configure_tx(struct e1000_adapter *adapter);
- static void e1000_configure_rx(struct e1000_adapter *adapter);
- static void e1000_setup_rctl(struct e1000_adapter *adapter);
--- 
-2.17.1
+	if (hw->revision_id == 0) {
+		/* As a work around clear PXE_MODE instead of setting it */
+		wr32(hw, I40E_GLLAN_RCTL_0, (reg & (~I40E_GLLAN_RCTL_0_PXE_MODE_MASK)));
+	} else {
+		wr32(hw, I40E_GLLAN_RCTL_0, (reg | I40E_GLLAN_RCTL_0_PXE_MODE_MASK));
+	}
+}
+
+The code for the i40e_clear_pxe_mode() function in the driver released in sourceforge.net is as follows:
+void i40e_clear_pxe_mode(struct i40e_hw *hw)
+{
+	if (i40e_check_asq_alive(hw))
+		i40e_aq_clear_pxe_mode(hw, NULL);
+}
+
+We only modify the code of the i40e_clear_pxe_mode() function based on the code released by sourceforge.net. After testing, we can still reproduce the issue of NCSI break.
+
+Our question is: what is the reason for adding this code, how to solve the problem we are now facing.
+
+
+
 
