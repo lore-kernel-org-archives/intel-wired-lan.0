@@ -1,64 +1,230 @@
-From: Quentin Deslandes <quentin.deslandes@itdev.co.uk>
-Date: Tue, 26 Mar 2019 21:39:21 +0000
-Subject: [Intel-wired-lan] [PATCH v2] e1000: remove extern declarations in
- .c file.
-Message-ID: <20190326213917.GA24133@jiffies>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 27 Mar 2019 10:11:28 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ a744ee79dd6cd1a82804cfbdf3bb94dae24b1202
+Message-ID: <5c9adbd0.M1EyQ2w2Z4Rbm7Zb%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes the following checkpatch.pl warning:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: a744ee79dd6cd1a82804cfbdf3bb94dae24b1202  fm10k: Fix a potential NULL pointer dereference
 
-WARNING: externs should be avoided in .c files
+elapsed time: 176m
 
-Some of the driver's function declared in e1000.h were declared a second
-time in e1000_main.c, triggering checkpatch.pl warnings.
+configs tested: 205
 
-This patch is v2 as the first one had the wrong subject.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Quentin Deslandes <quentin.deslandes@itdev.co.uk>
+arm                       spear13xx_defconfig
+s390                             allyesconfig
+x86_64                 randconfig-a0-03270901
+mips                    maltaup_xpa_defconfig
+sh                   secureedge5410_defconfig
+h8300                       h8s-sim_defconfig
+mips                  mips_paravirt_defconfig
+sh                          landisk_defconfig
+sh                           se7343_defconfig
+powerpc                      cm5200_defconfig
+sparc                            alldefconfig
+arm                           h3600_defconfig
+sh                             shx3_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+powerpc                     tqm5200_defconfig
+s390                                defconfig
+i386                   randconfig-x010-201912
+i386                   randconfig-x018-201912
+i386                   randconfig-x017-201912
+i386                   randconfig-x013-201912
+i386                   randconfig-x014-201912
+i386                   randconfig-x011-201912
+i386                   randconfig-x015-201912
+i386                   randconfig-x019-201912
+i386                   randconfig-x012-201912
+i386                   randconfig-x016-201912
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+i386                   randconfig-n0-03261527
+i386                   randconfig-n1-03261527
+i386                   randconfig-n2-03261527
+i386                   randconfig-n3-03261527
+x86_64                 randconfig-x000-201912
+x86_64                 randconfig-x004-201912
+x86_64                 randconfig-x001-201912
+x86_64                 randconfig-x003-201912
+x86_64                 randconfig-x008-201912
+x86_64                 randconfig-x007-201912
+x86_64                 randconfig-x002-201912
+x86_64                 randconfig-x006-201912
+x86_64                 randconfig-x005-201912
+x86_64                 randconfig-x009-201912
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-i0-03251056
+i386                   randconfig-i1-03251056
+i386                   randconfig-i2-03251056
+i386                   randconfig-i3-03251056
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                 randconfig-x015-201912
+x86_64                 randconfig-x016-201912
+x86_64                 randconfig-x013-201912
+x86_64                 randconfig-x017-201912
+x86_64                 randconfig-x012-201912
+x86_64                 randconfig-x018-201912
+x86_64                 randconfig-x010-201912
+x86_64                 randconfig-x014-201912
+x86_64                 randconfig-x019-201912
+x86_64                 randconfig-x011-201912
+i386                     randconfig-a0-201912
+i386                     randconfig-a1-201912
+i386                     randconfig-a2-201912
+i386                     randconfig-a3-201912
+x86_64                           allyesconfig
+i386                             allmodconfig
+x86_64                 randconfig-i0-03250758
+x86_64                 randconfig-i1-03250758
+x86_64                 randconfig-i2-03250758
+x86_64                 randconfig-i3-03250758
+i386                   randconfig-b0-03270934
+x86_64                           allmodconfig
+i386                             alldefconfig
+powerpc                        icon_defconfig
+powerpc                      walnut_defconfig
+alpha                             allnoconfig
+xtensa                       common_defconfig
+ia64                            zx1_defconfig
+powerpc                       holly_defconfig
+mips                     loongson1c_defconfig
+mips                       markeins_defconfig
+arm                            xcep_defconfig
+s390                       zfcpdump_defconfig
+x86_64                 randconfig-u0-03270913
+x86_64                 randconfig-k0-03241917
+x86_64                 randconfig-k1-03241917
+x86_64                 randconfig-k2-03241917
+x86_64                 randconfig-k3-03241917
+i386                   randconfig-k0-03241917
+i386                   randconfig-k1-03241917
+i386                   randconfig-k2-03241917
+i386                   randconfig-k3-03241917
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                          iss_defconfig
+i386                     randconfig-m0-201912
+x86_64                   randconfig-m2-201912
+i386                     randconfig-m3-201912
+i386                     randconfig-m2-201912
+x86_64                   randconfig-m1-201912
+x86_64                   randconfig-m0-201912
+i386                     randconfig-m1-201912
+x86_64                   randconfig-m3-201912
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-l0-03270905
+x86_64                 randconfig-l1-03270905
+x86_64                 randconfig-l2-03270905
+x86_64                 randconfig-l3-03270905
+i386                   randconfig-l0-03270905
+i386                   randconfig-l1-03270905
+i386                   randconfig-l2-03270905
+i386                   randconfig-l3-03270905
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-x077-201912
+i386                   randconfig-x070-201912
+i386                   randconfig-x074-201912
+i386                   randconfig-x072-201912
+i386                   randconfig-x075-201912
+i386                   randconfig-x071-201912
+i386                   randconfig-x078-201912
+i386                   randconfig-x079-201912
+i386                   randconfig-x076-201912
+i386                   randconfig-x073-201912
+i386                              allnoconfig
+i386                                defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-g0-03250441
+x86_64                 randconfig-g1-03250441
+x86_64                 randconfig-g2-03250441
+x86_64                 randconfig-g3-03250441
+i386                   randconfig-x002-201912
+i386                   randconfig-x005-201912
+i386                   randconfig-x001-201912
+i386                   randconfig-x007-201912
+i386                   randconfig-x000-201912
+i386                   randconfig-x008-201912
+i386                   randconfig-x004-201912
+i386                   randconfig-x009-201912
+i386                   randconfig-x003-201912
+i386                   randconfig-x006-201912
+m68k                       m5275evb_defconfig
+mips                  cavium_octeon_defconfig
+arm                         vf610m4_defconfig
+mips                         bigsur_defconfig
+powerpc                      pasemi_defconfig
+arm                            mmp2_defconfig
+powerpc                      ppc6xx_defconfig
+
 ---
- drivers/net/ethernet/intel/e1000/e1000_main.c | 11 -----------
- 1 file changed, 11 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 8fe9af0e2ab7..b3d5cd750dca 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -65,14 +65,6 @@ static const struct pci_device_id e1000_pci_tbl[] = {
- 
- MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
- 
--int e1000_up(struct e1000_adapter *adapter);
--void e1000_down(struct e1000_adapter *adapter);
--void e1000_reinit_locked(struct e1000_adapter *adapter);
--void e1000_reset(struct e1000_adapter *adapter);
--int e1000_setup_all_tx_resources(struct e1000_adapter *adapter);
--int e1000_setup_all_rx_resources(struct e1000_adapter *adapter);
--void e1000_free_all_tx_resources(struct e1000_adapter *adapter);
--void e1000_free_all_rx_resources(struct e1000_adapter *adapter);
- static int e1000_setup_tx_resources(struct e1000_adapter *adapter,
- 				    struct e1000_tx_ring *txdr);
- static int e1000_setup_rx_resources(struct e1000_adapter *adapter,
-@@ -81,7 +73,6 @@ static void e1000_free_tx_resources(struct e1000_adapter *adapter,
- 				    struct e1000_tx_ring *tx_ring);
- static void e1000_free_rx_resources(struct e1000_adapter *adapter,
- 				    struct e1000_rx_ring *rx_ring);
--void e1000_update_stats(struct e1000_adapter *adapter);
- 
- static int e1000_init_module(void);
- static void e1000_exit_module(void);
-@@ -89,8 +80,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
- static void e1000_remove(struct pci_dev *pdev);
- static int e1000_alloc_queues(struct e1000_adapter *adapter);
- static int e1000_sw_init(struct e1000_adapter *adapter);
--int e1000_open(struct net_device *netdev);
--int e1000_close(struct net_device *netdev);
- static void e1000_configure_tx(struct e1000_adapter *adapter);
- static void e1000_configure_rx(struct e1000_adapter *adapter);
- static void e1000_setup_rctl(struct e1000_adapter *adapter);
--- 
-2.20.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
