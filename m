@@ -1,46 +1,301 @@
-From: Xuguizhu (Guzhu Xu, Intelligent Computing Business Dept) <xuguizhu@huawei.com>
-Date: Wed, 27 Mar 2019 10:58:35 +0000
-Subject: [Intel-wired-lan] [question] i40e: Question about the
- i40e_clear_pxe_mode() function
-Message-ID: <315E3AFC3F1FCC4A88C68B5581547E0682A9D1D5@dggemm513-mbx.china.huawei.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 28 Mar 2019 10:05:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ d99cea52ea70446e597708d2e126118e41183a62
+Message-ID: <5c9c2bde.Rz1QMWmpP1Cw/BT1%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In the process of testing the NCSI function of the X722 NIC, when we started the ubuntu 18.04 system using the legacy mode, the system was put into the panic state by injecting a fault into the system through the "echo c > /proc/sysrq-trigger" command. When using the i40e driver in the ubuntu system, NCSI is broken after the injection failure. After upgrading the kernel to 5.1-rc2, the problem still exists. After using the driver released in sourceforge.net, the same test is performed and the NSCI function is normal.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: d99cea52ea70446e597708d2e126118e41183a62  fm10k: Fix a potential NULL pointer dereference
 
-After comparing the drivers of the two branches, we found that this problem may be related to the i40e_clear_pxe_mode() function. The code for the I40E driver released in the kernel community is as follows:
-void i40e_clear_pxe_mode(struct i40e_hw *hw)
-{
-	u32 reg;
+elapsed time: 238m
 
-	if (i40e_check_asq_alive(hw))
-		i40e_aq_clear_pxe_mode(hw, NULL);
+configs tested: 276
 
-	/* Clear single descriptor fetch/write-back mode */
-	reg = rd32(hw, I40E_GLLAN_RCTL_0);
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-	if (hw->revision_id == 0) {
-		/* As a work around clear PXE_MODE instead of setting it */
-		wr32(hw, I40E_GLLAN_RCTL_0, (reg & (~I40E_GLLAN_RCTL_0_PXE_MODE_MASK)));
-	} else {
-		wr32(hw, I40E_GLLAN_RCTL_0, (reg | I40E_GLLAN_RCTL_0_PXE_MODE_MASK));
-	}
-}
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+arm                            pleb_defconfig
+sh                          sdk7780_defconfig
+arm                       netwinder_defconfig
+openrisc                         allmodconfig
+x86_64                              defconfig
+ia64                        generic_defconfig
+arm                       omap2plus_defconfig
+nios2                         10m50_defconfig
+arm                       spear13xx_defconfig
+sh                           se7619_defconfig
+x86_64                 randconfig-a0-03280831
+x86_64                 randconfig-a0-03280856
+x86_64                 randconfig-a0-03280933
+powerpc                     asp8347_defconfig
+riscv                             allnoconfig
+powerpc                 canyonlands_defconfig
+powerpc                      cm5200_defconfig
+arm                        mvebu_v7_defconfig
+powerpc                 mpc837x_rdb_defconfig
+ia64                             alldefconfig
+xtensa                           allmodconfig
+arm                        clps711x_defconfig
+nios2                         3c120_defconfig
+sh                         ap325rxa_defconfig
+xtensa                              defconfig
+powerpc                      obs600_defconfig
+sh                          r7785rp_defconfig
+arm                     davinci_all_defconfig
+powerpc                    socrates_defconfig
+x86_64                           allmodconfig
+i386                             alldefconfig
+mips                           ci20_defconfig
+mips                            e55_defconfig
+arm                      acs5k_tiny_defconfig
+parisc                         a500_defconfig
+mips                       capcella_defconfig
+powerpc                     mpc5200_defconfig
+arm                      pxa255-idp_defconfig
+nds32                             allnoconfig
+m68k                        m5272c3_defconfig
+powerpc                      ppc44x_defconfig
+i386                   randconfig-x010-201912
+i386                   randconfig-x018-201912
+i386                   randconfig-x017-201912
+i386                   randconfig-x013-201912
+i386                   randconfig-x014-201912
+i386                   randconfig-x011-201912
+i386                   randconfig-x015-201912
+i386                   randconfig-x019-201912
+i386                   randconfig-x012-201912
+i386                   randconfig-x016-201912
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-03261527
+i386                   randconfig-n1-03261527
+i386                   randconfig-n2-03261527
+i386                   randconfig-n3-03261527
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-i0-03251056
+i386                   randconfig-i1-03251056
+i386                   randconfig-i2-03251056
+i386                   randconfig-i3-03251056
+riscv                               defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+x86_64                 randconfig-x015-201912
+x86_64                 randconfig-x016-201912
+x86_64                 randconfig-x013-201912
+x86_64                 randconfig-x017-201912
+x86_64                 randconfig-x012-201912
+x86_64                 randconfig-x018-201912
+x86_64                 randconfig-x010-201912
+x86_64                 randconfig-x014-201912
+x86_64                 randconfig-x019-201912
+x86_64                 randconfig-x011-201912
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+i386                   randconfig-a0-03272337
+i386                   randconfig-a1-03272337
+i386                   randconfig-a2-03272337
+i386                   randconfig-a3-03272337
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+powerpc                     virtex5_defconfig
+sh                               alldefconfig
+x86_64                 randconfig-i0-03250758
+x86_64                 randconfig-i1-03250758
+x86_64                 randconfig-i2-03250758
+x86_64                 randconfig-i3-03250758
+i386                   randconfig-b0-03280818
+x86_64                 randconfig-b0-03280838
+arm                        spear3xx_defconfig
+arm                      tct_hammer_defconfig
+mips                             allyesconfig
+powerpc                      bamboo_defconfig
+mips                       markeins_defconfig
+arm                                 defconfig
+ia64                            sim_defconfig
+mips                     decstation_defconfig
+powerpc                      pcm030_defconfig
+arm                       aspeed_g5_defconfig
+mips                        bcm47xx_defconfig
+arm                        magician_defconfig
+sh                               allyesconfig
+mips                           ip28_defconfig
+mips                      maltaaprp_defconfig
+microblaze                          defconfig
+powerpc                          allmodconfig
+powerpc                 mpc85xx_cds_defconfig
+mips                            ar7_defconfig
+mips                         rt305x_defconfig
+sh                           sh2007_defconfig
+sh                              ul2_defconfig
+powerpc                      ppc40x_defconfig
+sparc64                          alldefconfig
+powerpc                 mpc8315_rdb_defconfig
+powerpc                      ppc6xx_defconfig
+arm                         vf610m4_defconfig
+x86_64                 randconfig-u0-03280756
+x86_64                 randconfig-u0-03280824
+x86_64                 randconfig-u0-03280840
+x86_64                 randconfig-u0-03280900
+x86_64                 randconfig-u0-03280928
+x86_64                 randconfig-u0-03280949
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                 randconfig-k0-03241917
+x86_64                 randconfig-k1-03241917
+x86_64                 randconfig-k2-03241917
+x86_64                 randconfig-k3-03241917
+i386                   randconfig-k0-03241917
+i386                   randconfig-k1-03241917
+i386                   randconfig-k2-03241917
+i386                   randconfig-k3-03241917
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                   randconfig-m0-201912
+x86_64                   randconfig-m1-201912
+x86_64                   randconfig-m2-201912
+x86_64                   randconfig-m3-201912
+i386                     randconfig-m0-201912
+i386                     randconfig-m1-201912
+i386                     randconfig-m2-201912
+i386                     randconfig-m3-201912
+x86_64                 randconfig-l0-03280645
+x86_64                 randconfig-l1-03280645
+x86_64                 randconfig-l2-03280645
+x86_64                 randconfig-l3-03280645
+i386                   randconfig-l0-03280645
+i386                   randconfig-l1-03280645
+i386                   randconfig-l2-03280645
+i386                   randconfig-l3-03280645
+x86_64                 randconfig-s3-03280851
+x86_64                 randconfig-s4-03280851
+x86_64                 randconfig-s5-03280851
+x86_64                 randconfig-s3-03280928
+x86_64                 randconfig-s4-03280928
+x86_64                 randconfig-s5-03280928
+powerpc                     rainier_defconfig
+h8300                            alldefconfig
+i386                   randconfig-x077-201912
+i386                   randconfig-x070-201912
+i386                   randconfig-x074-201912
+i386                   randconfig-x072-201912
+i386                   randconfig-x075-201912
+i386                   randconfig-x071-201912
+i386                   randconfig-x078-201912
+i386                   randconfig-x079-201912
+i386                   randconfig-x076-201912
+i386                   randconfig-x073-201912
+powerpc                       ebony_defconfig
+x86_64                            allnoconfig
+parisc                      default_defconfig
+xtensa                    smp_lx200_defconfig
+x86_64                 randconfig-g0-03250441
+x86_64                 randconfig-g1-03250441
+x86_64                 randconfig-g2-03250441
+x86_64                 randconfig-g3-03250441
+i386                   randconfig-x002-201912
+i386                   randconfig-x005-201912
+i386                   randconfig-x001-201912
+i386                   randconfig-x007-201912
+i386                   randconfig-x000-201912
+i386                   randconfig-x008-201912
+i386                   randconfig-x004-201912
+i386                   randconfig-x009-201912
+i386                   randconfig-x003-201912
+i386                   randconfig-x006-201912
+x86_64                 randconfig-x000-201912
+x86_64                 randconfig-x004-201912
+x86_64                 randconfig-x001-201912
+x86_64                 randconfig-x003-201912
+x86_64                 randconfig-x008-201912
+x86_64                 randconfig-x007-201912
+x86_64                 randconfig-x002-201912
+x86_64                 randconfig-x006-201912
+x86_64                 randconfig-x005-201912
+x86_64                 randconfig-x009-201912
+c6x                        evmc6472_defconfig
+x86_64                 randconfig-j0-03242227
+x86_64                 randconfig-j1-03242227
+x86_64                 randconfig-j2-03242227
+x86_64                 randconfig-j3-03242227
+i386                   randconfig-j0-03242227
+i386                   randconfig-j1-03242227
+i386                   randconfig-j2-03242227
+i386                   randconfig-j3-03242227
+i386                              allnoconfig
+i386                                defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+arm                       cns3420vb_defconfig
+powerpc                     pseries_defconfig
+h8300                             allnoconfig
+powerpc                       holly_defconfig
+arm                             rpc_defconfig
+arm                           u8500_defconfig
 
-The code for the i40e_clear_pxe_mode() function in the driver released in sourceforge.net is as follows:
-void i40e_clear_pxe_mode(struct i40e_hw *hw)
-{
-	if (i40e_check_asq_alive(hw))
-		i40e_aq_clear_pxe_mode(hw, NULL);
-}
-
-We only modify the code of the i40e_clear_pxe_mode() function based on the code released by sourceforge.net. After testing, we can still reproduce the issue of NCSI break.
-
-Our question is: what is the reason for adding this code, how to solve the problem we are now facing.
-
-
-
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
