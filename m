@@ -1,56 +1,149 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 29 Mar 2019 16:38:46 -0700
-Subject: [Intel-wired-lan] [PATCH 2/6] igb: mark expected switch fall-through
-In-Reply-To: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
-References: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20190329233850.29630-2-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 30 Mar 2019 07:43:34 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 5c6145718f9e0ad204b5a64f2846b0b10b4b1b58
+Message-ID: <5c9eada6.Yl+hSNbkxl+82EXv%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 5c6145718f9e0ad204b5a64f2846b0b10b4b1b58  i40e: Introduce recovery mode support
 
-In preparation to enabling -Wimplicit-fallthrough, mark switch cases
-where we are expecting to fall through.
+elapsed time: 99m
 
-This patch fixes the following warning:
+configs tested: 124
 
-drivers/net/ethernet/intel/igb/e1000_82575.c: In function ?igb_get_invariants_82575?:
-drivers/net/ethernet/intel/igb/e1000_82575.c:636:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
-   if (igb_sgmii_uses_mdio_82575(hw)) {
-      ^
-drivers/net/ethernet/intel/igb/e1000_82575.c:642:2: note: here
-  case E1000_CTRL_EXT_LINK_MODE_PCIE_SERDES:
-  ^~~~
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Warning level 3 was used: -Wimplicit-fallthrough=3
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+sh                               j2_defconfig
+sh                             shx3_defconfig
+x86_64                 randconfig-a0-03300626
+mips                             alldefconfig
+powerpc                      obs600_defconfig
+i386                   randconfig-c0-03241549
+i386                   randconfig-x010-201912
+i386                   randconfig-x011-201912
+i386                   randconfig-x012-201912
+i386                   randconfig-x013-201912
+i386                   randconfig-x014-201912
+i386                   randconfig-x015-201912
+i386                   randconfig-x016-201912
+i386                   randconfig-x017-201912
+i386                   randconfig-x018-201912
+i386                   randconfig-x019-201912
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-x000-201912
+x86_64                 randconfig-x004-201912
+x86_64                 randconfig-x001-201912
+x86_64                 randconfig-x003-201912
+x86_64                 randconfig-x008-201912
+x86_64                 randconfig-x007-201912
+x86_64                 randconfig-x002-201912
+x86_64                 randconfig-x006-201912
+x86_64                 randconfig-x005-201912
+x86_64                 randconfig-x009-201912
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+nds32                             allnoconfig
+nds32                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                 randconfig-x010-201912
+x86_64                 randconfig-x011-201912
+x86_64                 randconfig-x012-201912
+x86_64                 randconfig-x013-201912
+x86_64                 randconfig-x014-201912
+x86_64                 randconfig-x015-201912
+x86_64                 randconfig-x016-201912
+x86_64                 randconfig-x017-201912
+x86_64                 randconfig-x018-201912
+x86_64                 randconfig-x019-201912
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-a0-201912
+i386                     randconfig-a1-201912
+i386                     randconfig-a2-201912
+i386                     randconfig-a3-201912
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                         lubbock_defconfig
+powerpc                 mpc837x_mds_defconfig
+x86_64                 randconfig-u0-03300654
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                         cm_x300_defconfig
+sh                          rsk7201_defconfig
+x86_64                 randconfig-h0-03300515
+powerpc                      ep88xc_defconfig
+powerpc                     kmeter1_defconfig
+i386                  randconfig-sb0-03250441
+i386                   randconfig-x002-201912
+i386                   randconfig-x005-201912
+i386                   randconfig-x001-201912
+i386                   randconfig-x007-201912
+i386                   randconfig-x000-201912
+i386                   randconfig-x008-201912
+i386                   randconfig-x004-201912
+i386                   randconfig-x009-201912
+i386                   randconfig-x003-201912
+i386                   randconfig-x006-201912
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                               rhel-7.6
+x86_64                randconfig-ws0-03251103
+x86_64                 randconfig-r0-03300357
+i386                   randconfig-x077-201912
+i386                   randconfig-x070-201912
+i386                   randconfig-x074-201912
+i386                   randconfig-x072-201912
+i386                   randconfig-x075-201912
+i386                   randconfig-x071-201912
+i386                   randconfig-x078-201912
+i386                   randconfig-x079-201912
+i386                   randconfig-x076-201912
+i386                   randconfig-x073-201912
 
-Notice that, in this particular case, the code comment is modified
-in accordance with what GCC is expecting to find.
-
-This patch is part of the ongoing efforts to enable
--Wimplicit-fallthrough.
-
-Signed-off-by: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_82575.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index bafdcf70a353..3ec2ce0725d5 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -638,7 +638,7 @@ static s32 igb_get_invariants_82575(struct e1000_hw *hw)
- 			dev_spec->sgmii_active = true;
- 			break;
- 		}
--		/* fall through for I2C based SGMII */
-+		/* fall through - for I2C based SGMII */
- 	case E1000_CTRL_EXT_LINK_MODE_PCIE_SERDES:
- 		/* read media type from SFP EEPROM */
- 		ret_val = igb_set_sfp_media_type_82575(hw);
--- 
-2.20.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
