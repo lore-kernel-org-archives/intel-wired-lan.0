@@ -1,9 +1,7 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 29 Mar 2019 16:38:49 -0700
-Subject: [Intel-wired-lan] [PATCH 5/6] i40e: Use struct_size() in kzalloc()
-In-Reply-To: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
-References: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20190329233850.29630-5-jeffrey.t.kirsher@intel.com>
+Date: Fri, 29 Mar 2019 16:38:45 -0700
+Subject: [Intel-wired-lan] [PATCH 1/6] igb: mark expected switch fall-through
+Message-ID: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,51 +10,45 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 
-One of the more common cases of allocation size calculations is finding
-the size of a structure that has a zero-sized array at the end, along
-with memory for some number of elements for that array. For example:
+In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+where we are expecting to fall through.
 
-struct foo {
-    int stuff;
-    struct boo entry[];
-};
+This patch fixes the following warning:
 
-size = sizeof(struct foo) + count * sizeof(struct boo);
-instance = kzalloc(size, GFP_KERNEL)
+drivers/net/ethernet/intel/igb/igb_main.c: In function ?__igb_notify_dca?:
+drivers/net/ethernet/intel/igb/igb_main.c:6694:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   if (dca_add_requester(dev) == 0) {
+      ^
+drivers/net/ethernet/intel/igb/igb_main.c:6701:2: note: here
+  case DCA_PROVIDER_REMOVE:
+  ^~~~
 
-Instead of leaving these open-coded and prone to type mistakes, we can
-now use the new struct_size() helper:
+Warning level 3 was used: -Wimplicit-fallthrough=3
 
-instance = kzalloc(struct_size(instance, entry, count), GFP_KERNEL)
+Notice that, in this particular case, the code comment is modified
+in accordance with what GCC is expecting to find.
 
-Notice that, in this case, variable size is not necessary, hence it
-is removed.
-
-This code was detected with the help of Coccinelle.
+This patch is part of the ongoing efforts to enable
+-Wimplicit-fallthrough.
 
 Signed-off-by: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_client.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 5f3b8b9ff511..e81530ca08d0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -578,11 +578,9 @@ static int i40e_client_setup_qvlist(struct i40e_info *ldev,
- 	struct i40e_hw *hw = &pf->hw;
- 	struct i40e_qv_info *qv_info;
- 	u32 v_idx, i, reg_idx, reg;
--	u32 size;
- 
--	size = sizeof(struct i40e_qvlist_info) +
--	       (sizeof(struct i40e_qv_info) * (qvlist_info->num_vectors - 1));
--	ldev->qvlist_info = kzalloc(size, GFP_KERNEL);
-+	ldev->qvlist_info = kzalloc(struct_size(ldev->qvlist_info, qv_info,
-+				    qvlist_info->num_vectors - 1), GFP_KERNEL);
- 	if (!ldev->qvlist_info)
- 		return -ENOMEM;
- 	ldev->qvlist_info->num_vectors = qvlist_info->num_vectors;
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 834e879e1d57..e8042b0254bc 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -6701,7 +6701,7 @@ static int __igb_notify_dca(struct device *dev, void *data)
+ 			igb_setup_dca(adapter);
+ 			break;
+ 		}
+-		/* Fall Through since DCA is disabled. */
++		/* Fall Through - since DCA is disabled. */
+ 	case DCA_PROVIDER_REMOVE:
+ 		if (adapter->flags & IGB_FLAG_DCA_ENABLED) {
+ 			/* without this a class_device is left
 -- 
 2.20.1
 
