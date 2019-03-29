@@ -1,55 +1,46 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 29 Mar 2019 15:08:33 -0700
-Subject: [Intel-wired-lan] [next PATCH S4 04/11] i40e: add functions stubs
- to support EEE
+Date: Fri, 29 Mar 2019 15:08:32 -0700
+Subject: [Intel-wired-lan] [next PATCH S4 03/11] i40e: Setting VF to VLAN 0
+ requires restart
 In-Reply-To: <20190329220840.51187-1-alice.michael@intel.com>
 References: <20190329220840.51187-1-alice.michael@intel.com>
-Message-ID: <20190329220840.51187-4-alice.michael@intel.com>
+Message-ID: <20190329220840.51187-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+From: Grzegorz Siwik <grzegorz.siwik@intel.com>
 
-This patch adds functions stubs to support EEE on/off.
+This patch fixes a bug where changing VLAN to 0 was not set until VF
+restart.
 
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Now we are setting pvid info to 0 when we have to change VLAN to 0.
+Without this change when VF VLAN was changed to 0 nothing happened until
+VF restart. For changing to VLAN different than 0 it worked correctly.
+
+Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 32e137499063..c056d47dfc72 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -5141,6 +5141,16 @@ static int i40e_get_module_eeprom(struct net_device *netdev,
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 9fe040f4049d..af0670ea940e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2970,9 +2970,9 @@ int i40e_vsi_add_pvid(struct i40e_vsi *vsi, u16 vid)
+  **/
+ void i40e_vsi_remove_pvid(struct i40e_vsi *vsi)
+ {
+-	i40e_vlan_stripping_disable(vsi);
+-
+ 	vsi->info.pvid = 0;
++
++	i40e_vlan_stripping_disable(vsi);
  }
  
-+static int i40e_get_eee(struct net_device *netdev, struct ethtool_eee *edata)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static int i40e_set_eee(struct net_device *netdev, struct ethtool_eee *edata)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
- static const struct ethtool_ops i40e_ethtool_ops = {
- 	.get_drvinfo		= i40e_get_drvinfo,
- 	.get_regs_len		= i40e_get_regs_len,
-@@ -5162,6 +5172,8 @@ static const struct ethtool_ops i40e_ethtool_ops = {
- 	.set_rxnfc		= i40e_set_rxnfc,
- 	.self_test		= i40e_diag_test,
- 	.get_strings		= i40e_get_strings,
-+	.get_eee		= i40e_get_eee,
-+	.set_eee		= i40e_set_eee,
- 	.set_phys_id		= i40e_set_phys_id,
- 	.get_sset_count		= i40e_get_sset_count,
- 	.get_ethtool_stats	= i40e_get_ethtool_stats,
+ /**
 -- 
 2.19.2
 
