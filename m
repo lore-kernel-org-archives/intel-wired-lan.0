@@ -1,9 +1,9 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 29 Mar 2019 16:38:48 -0700
-Subject: [Intel-wired-lan] [PATCH 4/6] iavf: use struct_size() in kzalloc()
+Date: Fri, 29 Mar 2019 16:38:47 -0700
+Subject: [Intel-wired-lan] [PATCH 3/6] ice: Use struct_size() helper
 In-Reply-To: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
 References: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <20190329233850.29630-4-jeffrey.t.kirsher@intel.com>
+Message-ID: <20190329233850.29630-3-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,50 +22,37 @@ struct foo {
 };
 
 size = sizeof(struct foo) + count * sizeof(struct boo);
-instance = kzalloc(size, GFP_KERNEL)
+instance = alloc(size, GFP_KERNEL);
 
 Instead of leaving these open-coded and prone to type mistakes, we can
 now use the new struct_size() helper:
 
-instance = kzalloc(struct_size(instance, entry, count), GFP_KERNEL)
-
-Notice that, in this case, variable bufsz is not necessary, hence it
-is removed.
+size = struct_size(instance, entry, count);
 
 This code was detected with the help of Coccinelle.
 
 Signed-off-by: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sched.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 4569d69a2b55..78340b297dab 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -3353,7 +3353,7 @@ static void iavf_init_task(struct work_struct *work)
- 	struct net_device *netdev = adapter->netdev;
- 	struct iavf_hw *hw = &adapter->hw;
- 	struct pci_dev *pdev = adapter->pdev;
--	int err, bufsz;
-+	int err;
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index 8d49f83be7a5..2a232504379d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -683,10 +683,10 @@ ice_sched_add_elems(struct ice_port_info *pi, struct ice_sched_node *tc_node,
+ 	u16 i, num_groups_added = 0;
+ 	enum ice_status status = 0;
+ 	struct ice_hw *hw = pi->hw;
+-	u16 buf_size;
++	size_t buf_size;
+ 	u32 teid;
  
- 	switch (adapter->state) {
- 	case __IAVF_STARTUP:
-@@ -3423,10 +3423,9 @@ static void iavf_init_task(struct work_struct *work)
- 	case __IAVF_INIT_GET_RESOURCES:
- 		/* aq msg sent, awaiting reply */
- 		if (!adapter->vf_res) {
--			bufsz = sizeof(struct virtchnl_vf_resource) +
--				(IAVF_MAX_VF_VSI *
--				 sizeof(struct virtchnl_vsi_resource));
--			adapter->vf_res = kzalloc(bufsz, GFP_KERNEL);
-+			adapter->vf_res = kzalloc(struct_size(adapter->vf_res,
-+						  vsi_res, IAVF_MAX_VF_VSI),
-+						  GFP_KERNEL);
- 			if (!adapter->vf_res)
- 				goto err;
- 		}
+-	buf_size = sizeof(*buf) + sizeof(*buf->generic) * (num_nodes - 1);
++	buf_size = struct_size(buf, generic, num_nodes - 1);
+ 	buf = devm_kzalloc(ice_hw_to_dev(hw), buf_size, GFP_KERNEL);
+ 	if (!buf)
+ 		return ICE_ERR_NO_MEMORY;
 -- 
 2.20.1
 
