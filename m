@@ -1,45 +1,30 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 29 Mar 2019 15:37:33 -0700
-Subject: [Intel-wired-lan] [PATCH][next] iavf: iavf_client: use
- struct_size() helper
-In-Reply-To: <20190328203613.GA23692@embeddedor>
-References: <20190328203613.GA23692@embeddedor>
-Message-ID: <59cd9dd2381c029fe0ca81510f016e28ff906f18.camel@intel.com>
+From: Don Buchholz <donald.buchholz@intel.com>
+Date: Fri, 29 Mar 2019 15:41:22 -0700
+Subject: [Intel-wired-lan] [PATCH] i40e: Introduce recovery mode support
+In-Reply-To: <20190329182639.78880-1-alice.michael@intel.com>
+References: <20190329182639.78880-1-alice.michael@intel.com>
+Message-ID: <3e0765f9-db9e-291e-cba9-c83c9b389992@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2019-03-28 at 15:36 -0500, Gustavo A. R. Silva wrote:
-> One of the more common cases of allocation size calculations is finding
-> the size of a structure that has a zero-sized array at the end, along
-> with memory for some number of elements for that array. For example:
-> 
-> struct foo {
->     int stuff;
->     struct boo entry[];
-> };
-> 
-> size = sizeof(struct foo) + count * sizeof(struct boo);
-> 
-> Instead of leaving these open-coded and prone to type mistakes, we can
-> now use the new struct_size() helper:
-> 
-> size = struct_size(instance, entry, count);
-> 
-> This code was detected with the help of Coccinelle.
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+On 03/29/2019 11:26 AM, Alice Michael wrote:
+> This patch introduces "recovery mode" to the i40e driver. It is
+> part of a new Any2Any idea of upgrading the firmware. In this
+> approach, it is required for the driver to have support for
+> "transition firmware", that is used for migrating from structured
+> to flat firmware image. In this new, very basic mode, i40e driver
+> must be able to handle particular IOCTL calls from the NVM Update
+> Tool and run a small set of AQ commands.
+>
+> Signed-off-by: Alice Michael <alice.michael@intel.com>
+> Signed-off-by: Piotr Marczak <piotr.marczak@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf_client.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
-
-Thanks Gustavo, I will queue this up.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190329/4f2ac4b2/attachment.asc>
+>   drivers/net/ethernet/intel/i40e/i40e.h        |   1 +
+>   .../net/ethernet/intel/i40e/i40e_ethtool.c    |  14 +-
+>   drivers/net/ethernet/intel/i40e/i40e_main.c   | 321 ++++++++++++++++--
+>   3 files changed, 305 insertions(+), 31 deletions(-)
+>
+Tested-by: Don Buchholz <donald.buchholz@intel.com>
