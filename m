@@ -1,247 +1,515 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 29 Mar 2019 11:25:43 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 799823b9acf39de53546e31f88ec3160bf2da93f
-Message-ID: <5c9d9037.M9s20F4xmMgymvu8%lkp@intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Fri, 29 Mar 2019 11:26:39 -0700
+Subject: [Intel-wired-lan] [PATCH] i40e: Introduce recovery mode support
+Message-ID: <20190329182639.78880-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 799823b9acf39de53546e31f88ec3160bf2da93f  fm10k: Fix a potential NULL pointer dereference
+This patch introduces "recovery mode" to the i40e driver. It is
+part of a new Any2Any idea of upgrading the firmware. In this
+approach, it is required for the driver to have support for
+"transition firmware", that is used for migrating from structured
+to flat firmware image. In this new, very basic mode, i40e driver
+must be able to handle particular IOCTL calls from the NVM Update
+Tool and run a small set of AQ commands.
 
-elapsed time: 239m
-
-configs tested: 222
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-arm                        magician_defconfig
-c6x                              alldefconfig
-alpha                            allyesconfig
-ia64                        generic_defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-arm                       multi_v4t_defconfig
-arm                          pxa3xx_defconfig
-arm                               allnoconfig
-m68k                        m5407c3_defconfig
-arm                        multi_v5_defconfig
-powerpc                     skiroot_defconfig
-mips                          lasat_defconfig
-xtensa                  audio_kc705_defconfig
-i386                   randconfig-x010-201912
-i386                   randconfig-x018-201912
-i386                   randconfig-x017-201912
-i386                   randconfig-x013-201912
-i386                   randconfig-x014-201912
-i386                   randconfig-x011-201912
-i386                   randconfig-x015-201912
-i386                   randconfig-x019-201912
-i386                   randconfig-x012-201912
-i386                   randconfig-x016-201912
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-03261527
-i386                   randconfig-n1-03261527
-i386                   randconfig-n2-03261527
-i386                   randconfig-n3-03261527
-x86_64                 randconfig-x000-201912
-x86_64                 randconfig-x004-201912
-x86_64                 randconfig-x001-201912
-x86_64                 randconfig-x003-201912
-x86_64                 randconfig-x008-201912
-x86_64                 randconfig-x007-201912
-x86_64                 randconfig-x002-201912
-x86_64                 randconfig-x006-201912
-x86_64                 randconfig-x005-201912
-x86_64                 randconfig-x009-201912
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-nds32                             allnoconfig
-nds32                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                   randconfig-i0-03251056
-i386                   randconfig-i1-03251056
-i386                   randconfig-i2-03251056
-i386                   randconfig-i3-03251056
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-i386                   randconfig-x002-201912
-i386                   randconfig-x005-201912
-i386                   randconfig-x001-201912
-i386                   randconfig-x007-201912
-i386                   randconfig-x000-201912
-i386                   randconfig-x008-201912
-i386                   randconfig-x004-201912
-i386                   randconfig-x009-201912
-i386                   randconfig-x003-201912
-i386                   randconfig-x006-201912
-x86_64                 randconfig-x015-201912
-x86_64                 randconfig-x016-201912
-x86_64                 randconfig-x013-201912
-x86_64                 randconfig-x017-201912
-x86_64                 randconfig-x012-201912
-x86_64                 randconfig-x018-201912
-x86_64                 randconfig-x010-201912
-x86_64                 randconfig-x014-201912
-x86_64                 randconfig-x019-201912
-x86_64                 randconfig-x011-201912
-i386                   randconfig-a0-03272337
-i386                   randconfig-a1-03272337
-i386                   randconfig-a2-03272337
-i386                   randconfig-a3-03272337
-x86_64                 randconfig-s0-03290932
-x86_64                 randconfig-s1-03290932
-x86_64                 randconfig-s2-03290932
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-i0-03250758
-x86_64                 randconfig-i1-03250758
-x86_64                 randconfig-i2-03250758
-x86_64                 randconfig-i3-03250758
-i386                   randconfig-b0-03290933
-i386                   randconfig-b0-03291005
-arm                            hisi_defconfig
-mips                       bmips_be_defconfig
-mips                          rm200_defconfig
-sh                          polaris_defconfig
-arm                      tct_hammer_defconfig
-mips                        omega2p_defconfig
-arm                          moxart_defconfig
-powerpc                  storcenter_defconfig
-arm                           spitz_defconfig
-mips                           xway_defconfig
-s390                       zfcpdump_defconfig
-powerpc                 mpc836x_mds_defconfig
-h8300                     edosk2674_defconfig
-sh                   sh7724_generic_defconfig
-powerpc           ps3_petitboot_nfs_defconfig
-powerpc                     stx_gp3_defconfig
-sh                   secureedge5410_defconfig
-arm                            u300_defconfig
-powerpc                        fsp2_defconfig
-m68k                          sun3x_defconfig
-m68k                          multi_defconfig
-sparc                            alldefconfig
-powerpc                 mpc837x_rdb_defconfig
-x86_64                 randconfig-u0-03290910
-x86_64                 randconfig-u0-03290957
-x86_64                 randconfig-u0-03291018
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                 randconfig-k0-03241917
-x86_64                 randconfig-k1-03241917
-x86_64                 randconfig-k2-03241917
-x86_64                 randconfig-k3-03241917
-i386                   randconfig-k0-03241917
-i386                   randconfig-k1-03241917
-i386                   randconfig-k2-03241917
-i386                   randconfig-k3-03241917
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                   randconfig-m0-201912
-x86_64                   randconfig-m1-201912
-x86_64                   randconfig-m2-201912
-x86_64                   randconfig-m3-201912
-i386                     randconfig-m0-201912
-i386                     randconfig-m1-201912
-i386                     randconfig-m2-201912
-i386                     randconfig-m3-201912
-i386                   randconfig-x077-201912
-i386                   randconfig-x070-201912
-i386                   randconfig-x074-201912
-i386                   randconfig-x072-201912
-i386                   randconfig-x075-201912
-i386                   randconfig-x071-201912
-i386                   randconfig-x078-201912
-i386                   randconfig-x079-201912
-i386                   randconfig-x076-201912
-i386                   randconfig-x073-201912
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                         socfpga_defconfig
-sh                     magicpanelr2_defconfig
-m68k                        m5307c3_defconfig
-powerpc                      katmai_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arm                      pxa255-idp_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-g0-03250441
-x86_64                 randconfig-g1-03250441
-x86_64                 randconfig-g2-03250441
-x86_64                 randconfig-g3-03250441
-mips                        bcm47xx_defconfig
-powerpc                     redwood_defconfig
-
+Signed-off-by: Alice Michael <alice.michael@intel.com>
+Signed-off-by: Piotr Marczak <piotr.marczak@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/i40e/i40e.h        |   1 +
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |  14 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 321 ++++++++++++++++--
+ 3 files changed, 305 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index c44f9f7acbb5..24ef1694ecb0 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -150,6 +150,7 @@ enum i40e_state_t {
+ 	__I40E_CLIENT_L2_CHANGE,
+ 	__I40E_CLIENT_RESET,
+ 	__I40E_VIRTCHNL_OP_PENDING,
++	__I40E_RECOVERY_MODE,
+ 	/* This must be last as it determines the size of the BITMAP */
+ 	__I40E_STATE_SIZE__,
+ };
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 32e137499063..2c81afbd7c58 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -5141,6 +5141,12 @@ static int i40e_get_module_eeprom(struct net_device *netdev,
+ 	return 0;
+ }
+ 
++static const struct ethtool_ops i40e_ethtool_recovery_mode_ops = {
++	.set_eeprom		= i40e_set_eeprom,
++	.get_eeprom_len		= i40e_get_eeprom_len,
++	.get_eeprom		= i40e_get_eeprom,
++};
++
+ static const struct ethtool_ops i40e_ethtool_ops = {
+ 	.get_drvinfo		= i40e_get_drvinfo,
+ 	.get_regs_len		= i40e_get_regs_len,
+@@ -5189,5 +5195,11 @@ static const struct ethtool_ops i40e_ethtool_ops = {
+ 
+ void i40e_set_ethtool_ops(struct net_device *netdev)
+ {
+-	netdev->ethtool_ops = &i40e_ethtool_ops;
++	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	struct i40e_pf		*pf = np->vsi->back;
++
++	if (!test_bit(__I40E_RECOVERY_MODE, pf->state))
++		netdev->ethtool_ops = &i40e_ethtool_ops;
++	else
++		netdev->ethtool_ops = &i40e_ethtool_recovery_mode_ops;
+ }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index cadee0e3ba94..dc5236f89f26 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -46,6 +46,10 @@ static int i40e_setup_pf_filter_control(struct i40e_pf *pf);
+ static void i40e_prep_for_reset(struct i40e_pf *pf, bool lock_acquired);
+ static int i40e_reset(struct i40e_pf *pf);
+ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired);
++static int i40e_setup_misc_vector_for_recovery_mode(struct i40e_pf *pf);
++static int i40e_restore_interrupt_scheme(struct i40e_pf *pf);
++static bool i40e_check_recovery_mode(struct i40e_pf *pf);
++static int i40e_init_recovery_mode(struct i40e_pf *pf, struct i40e_hw *hw);
+ static void i40e_fdir_sb_setup(struct i40e_pf *pf);
+ static int i40e_veb_get_bw_info(struct i40e_veb *veb);
+ static int i40e_get_capabilities(struct i40e_pf *pf,
+@@ -278,8 +282,9 @@ struct i40e_vsi *i40e_find_vsi_from_id(struct i40e_pf *pf, u16 id)
+  **/
+ void i40e_service_event_schedule(struct i40e_pf *pf)
+ {
+-	if (!test_bit(__I40E_DOWN, pf->state) &&
+-	    !test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state))
++	if ((!test_bit(__I40E_DOWN, pf->state) &&
++	     !test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state)) ||
++	      test_bit(__I40E_RECOVERY_MODE, pf->state))
+ 		queue_work(i40e_wq, &pf->service_task);
+ }
+ 
+@@ -4019,7 +4024,8 @@ static irqreturn_t i40e_intr(int irq, void *data)
+ enable_intr:
+ 	/* re-enable interrupt causes */
+ 	wr32(hw, I40E_PFINT_ICR0_ENA, ena_mask);
+-	if (!test_bit(__I40E_DOWN, pf->state)) {
++	if (!test_bit(__I40E_DOWN, pf->state) ||
++	    test_bit(__I40E_RECOVERY_MODE, pf->state)) {
+ 		i40e_service_event_schedule(pf);
+ 		i40e_irq_dynamic_enable_icr0(pf);
+ 	}
+@@ -9881,6 +9887,7 @@ static int i40e_reset(struct i40e_pf *pf)
+  **/
+ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ {
++	int old_recovery_mode_bit = test_bit(__I40E_RECOVERY_MODE, pf->state);
+ 	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
+ 	struct i40e_hw *hw = &pf->hw;
+ 	u8 set_fc_aq_fail = 0;
+@@ -9888,7 +9895,16 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 	u32 val;
+ 	int v;
+ 
+-	if (test_bit(__I40E_DOWN, pf->state))
++	if (test_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state) &&
++	    i40e_check_recovery_mode(pf)) {
++#ifdef SIOCETHTOOL
++		i40e_set_ethtool_ops(pf->vsi[pf->lan_vsi]->netdev);
++#endif
++	}
++
++	if (test_bit(__I40E_DOWN, pf->state) &&
++	    !test_bit(__I40E_RECOVERY_MODE, pf->state) &&
++	    !old_recovery_mode_bit)
+ 		goto clear_recovery;
+ 	dev_dbg(&pf->pdev->dev, "Rebuilding internal switch\n");
+ 
+@@ -9917,6 +9933,44 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 	if (test_and_clear_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state))
+ 		i40e_verify_eeprom(pf);
+ 
++	/* if we are going out of or into recovery mode we have to act
++	 * accordingly with regard to resources initialization
++	 * and deinitialization
++	 */
++	if (test_bit(__I40E_RECOVERY_MODE, pf->state) ||
++	    old_recovery_mode_bit) {
++		if (i40e_get_capabilities(pf,
++					  i40e_aqc_opc_list_func_capabilities))
++			goto end_unlock;
++
++		if (test_bit(__I40E_RECOVERY_MODE, pf->state)) {
++			/* we're staying in recovery mode so we'll reinitialize
++			 * misc vector here
++			 */
++			if (i40e_setup_misc_vector_for_recovery_mode(pf))
++				goto end_unlock;
++		} else {
++			if (!lock_acquired)
++				rtnl_lock();
++			/* we're going out of recovery mode so we'll free
++			 * the IRQ allocated specifically for recovery mode
++			 * and restore the interrupt scheme
++			 */
++			free_irq(pf->pdev->irq, pf);
++			i40e_clear_interrupt_scheme(pf);
++			if (i40e_restore_interrupt_scheme(pf))
++				goto end_unlock;
++		}
++
++		/* tell the firmware that we're starting */
++		i40e_send_version(pf);
++
++		/* bail out in case recovery mode was detected, as there is
++		 * no need for further configuration.
++		 */
++		goto end_unlock;
++	}
++
+ 	i40e_clear_pxe_mode(hw);
+ 	ret = i40e_get_capabilities(pf, i40e_aqc_opc_list_func_capabilities);
+ 	if (ret)
+@@ -10368,31 +10422,38 @@ static void i40e_service_task(struct work_struct *work)
+ 	unsigned long start_time = jiffies;
+ 
+ 	/* don't bother with service tasks if a reset is in progress */
+-	if (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state))
++	if (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state) ||
++	    test_bit(__I40E_SUSPENDED, pf->state))
+ 		return;
+ 
+ 	if (test_and_set_bit(__I40E_SERVICE_SCHED, pf->state))
+ 		return;
+ 
+-	i40e_detect_recover_hung(pf->vsi[pf->lan_vsi]);
+-	i40e_sync_filters_subtask(pf);
+-	i40e_reset_subtask(pf);
+-	i40e_handle_mdd_event(pf);
+-	i40e_vc_process_vflr_event(pf);
+-	i40e_watchdog_subtask(pf);
+-	i40e_fdir_reinit_subtask(pf);
+-	if (test_and_clear_bit(__I40E_CLIENT_RESET, pf->state)) {
+-		/* Client subtask will reopen next time through. */
+-		i40e_notify_client_of_netdev_close(pf->vsi[pf->lan_vsi], true);
++	if (!test_bit(__I40E_RECOVERY_MODE, pf->state)) {
++		i40e_detect_recover_hung(pf->vsi[pf->lan_vsi]);
++		i40e_sync_filters_subtask(pf);
++		i40e_reset_subtask(pf);
++		i40e_handle_mdd_event(pf);
++		i40e_vc_process_vflr_event(pf);
++		i40e_watchdog_subtask(pf);
++		i40e_fdir_reinit_subtask(pf);
++		if (test_and_clear_bit(__I40E_CLIENT_RESET, pf->state)) {
++			/* Client subtask will reopen next time through. */
++			i40e_notify_client_of_netdev_close(pf->vsi[pf->lan_vsi],
++							   true);
++		} else {
++			i40e_client_subtask(pf);
++			if (test_and_clear_bit(__I40E_CLIENT_L2_CHANGE,
++					       pf->state))
++				i40e_notify_client_of_l2_param_changes(
++								pf->vsi[pf->lan_vsi]);
++		}
++		i40e_sync_filters_subtask(pf);
++		i40e_sync_udp_filters_subtask(pf);
+ 	} else {
+-		i40e_client_subtask(pf);
+-		if (test_and_clear_bit(__I40E_CLIENT_L2_CHANGE,
+-				       pf->state))
+-			i40e_notify_client_of_l2_param_changes(
+-							pf->vsi[pf->lan_vsi]);
+-	}
+-	i40e_sync_filters_subtask(pf);
+-	i40e_sync_udp_filters_subtask(pf);
++		i40e_reset_subtask(pf);
++	}
++
+ 	i40e_clean_adminq_subtask(pf);
+ 
+ 	/* flush memory to make sure state is correct before next watchdog */
+@@ -11214,6 +11275,48 @@ static int i40e_restore_interrupt_scheme(struct i40e_pf *pf)
+ 	return err;
+ }
+ 
++/**
++ * i40e_setup_misc_vector_for_recovery_mode - Setup the misc vector to handle
++ * non queue events in recovery mode
++ * @pf: board private structure
++ *
++ * This sets up the handler for MSIX 0 or MSI/legacy, which is used to manage
++ * the non-queue interrupts, e.g. AdminQ and errors in recovery mode.
++ * This is handled differently than in recovery mode since no Tx/Rx resources
++ * are being allocated.
++ **/
++static int i40e_setup_misc_vector_for_recovery_mode(struct i40e_pf *pf)
++{
++	int err;
++
++	if (pf->flags & I40E_FLAG_MSIX_ENABLED) {
++		err = i40e_setup_misc_vector(pf);
++
++		if (err) {
++			dev_info(&pf->pdev->dev,
++				 "MSI-X misc vector request failed, error %d\n",
++				 err);
++			return err;
++		}
++	} else {
++		u32 flags = pf->flags & I40E_FLAG_MSI_ENABLED ? 0 : IRQF_SHARED;
++
++		err = request_irq(pf->pdev->irq, i40e_intr, flags,
++				  pf->int_name, pf);
++
++		if (err) {
++			dev_info(&pf->pdev->dev,
++				 "MSI/legacy misc vector request failed, error %d\n",
++				 err);
++			return err;
++		}
++		i40e_enable_misc_int_causes(pf);
++		i40e_irq_dynamic_enable_icr0(pf);
++	}
++
++	return 0;
++}
++
+ /**
+  * i40e_setup_misc_vector - Setup the misc vector to handle non queue events
+  * @pf: board private structure
+@@ -14384,6 +14487,134 @@ void i40e_set_fec_in_flags(u8 fec_cfg, u32 *flags)
+ 		*flags &= ~(I40E_FLAG_RS_FEC | I40E_FLAG_BASE_R_FEC);
+ }
+ 
++/**
++ * i40e_check_recovery_mode - check if we are running transition firmware
++ * @pf: board private structure
++ *
++ * Check registers indicating the firmware runs in recovery mode. Sets the
++ * appropriate driver state.
++ *
++ * Returns true if the recovery mode was detected, false otherwise
++ **/
++static bool i40e_check_recovery_mode(struct i40e_pf *pf)
++{
++	u32 val = rd32(&pf->hw, I40E_GL_FWSTS);
++
++	if (val & I40E_GL_FWSTS_FWS1B_MASK) {
++		dev_notice(&pf->pdev->dev, "Firmware recovery mode detected. Limiting functionality.\n");
++		dev_notice(&pf->pdev->dev, "Refer to the Intel(R) Ethernet Adapters and Devices User Guide for details on firmware recovery mode.\n");
++		set_bit(__I40E_RECOVERY_MODE, pf->state);
++
++		return true;
++	}
++	if (test_and_clear_bit(__I40E_RECOVERY_MODE, pf->state))
++		dev_info(&pf->pdev->dev, "Reinitializing in normal mode with full functionality.\n");
++
++	return false;
++}
++
++/**
++ * i40e_init_recovery_mode - initialize subsystems needed in recovery mode
++ * @pf: board private structure
++ * @hw: ptr to the hardware info
++ *
++ * This function does a minimal setup of all subsystems needed for running
++ * recovery mode.
++ *
++ * Returns 0 on success, negative on failure
++ **/
++static int i40e_init_recovery_mode(struct i40e_pf *pf, struct i40e_hw *hw)
++{
++	struct i40e_vsi *vsi;
++	int err;
++	int v_idx;
++
++#ifdef HAVE_PCI_ERS
++	pci_save_state(pf->pdev);
++#endif
++
++	/* set up periodic task facility */
++	timer_setup(&pf->service_timer, i40e_service_timer, 0);
++	pf->service_timer_period = HZ;
++
++	INIT_WORK(&pf->service_task, i40e_service_task);
++	clear_bit(__I40E_SERVICE_SCHED, pf->state);
++
++	err = i40e_init_interrupt_scheme(pf);
++	if (err)
++		goto err_switch_setup;
++
++	/* The number of VSIs reported by the FW is the minimum guaranteed
++	 * to us; HW supports far more and we share the remaining pool with
++	 * the other PFs. We allocate space for more than the guarantee with
++	 * the understanding that we might not get them all later.
++	 */
++	if (pf->hw.func_caps.num_vsis < I40E_MIN_VSI_ALLOC)
++		pf->num_alloc_vsi = I40E_MIN_VSI_ALLOC;
++	else
++		pf->num_alloc_vsi = pf->hw.func_caps.num_vsis;
++
++	/* Set up the vsi struct and our local tracking of the MAIN PF vsi. */
++	pf->vsi = kcalloc(pf->num_alloc_vsi, sizeof(struct i40e_vsi *),
++			  GFP_KERNEL);
++	if (!pf->vsi) {
++		err = -ENOMEM;
++		goto err_switch_setup;
++	}
++
++	/* We allocate one VSI which is needed as absolute minimum
++	 * in order to register the netdev
++	 */
++	v_idx = i40e_vsi_mem_alloc(pf, I40E_VSI_MAIN);
++	if (v_idx < 0)
++		goto err_switch_setup;
++	pf->lan_vsi = v_idx;
++	vsi = pf->vsi[v_idx];
++	if (!vsi)
++		goto err_switch_setup;
++	vsi->alloc_queue_pairs = 1;
++	err = i40e_config_netdev(vsi);
++	if (err)
++		goto err_switch_setup;
++	err = register_netdev(vsi->netdev);
++	if (err)
++		goto err_switch_setup;
++	vsi->netdev_registered = true;
++	i40e_dbg_pf_init(pf);
++
++	err = i40e_setup_misc_vector_for_recovery_mode(pf);
++	if (err)
++		goto err_switch_setup;
++
++	/* tell the firmware that we're starting */
++	i40e_send_version(pf);
++
++	/* since everything's happy, start the service_task timer */
++	mod_timer(&pf->service_timer,
++		  round_jiffies(jiffies + pf->service_timer_period));
++
++	return 0;
++
++err_switch_setup:
++	i40e_reset_interrupt_capability(pf);
++	del_timer_sync(&pf->service_timer);
++#ifdef NOT_FOR_UPSTREAM
++	dev_warn(&pf->pdev->dev, "previous errors forcing module to load in debug mode\n");
++	i40e_dbg_pf_init(pf);
++	set_bit(__I40E_DEBUG_MODE, pf->state);
++	return 0;
++#else
++	i40e_shutdown_adminq(hw);
++	iounmap(hw->hw_addr);
++	pci_disable_pcie_error_reporting(pf->pdev);
++	pci_release_mem_regions(pf->pdev);
++	pci_disable_device(pf->pdev);
++	kfree(pf);
++
++	return err;
++#endif
++}
++
+ /**
+  * i40e_probe - Device initialization routine
+  * @pdev: PCI device information struct
+@@ -14509,13 +14740,14 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	/* Reset here to make sure all is clean and to define PF 'n' */
+ 	i40e_clear_hw(hw);
+-	err = i40e_pf_reset(hw);
+-	if (err) {
+-		dev_info(&pdev->dev, "Initial pf_reset failed: %d\n", err);
+-		goto err_pf_reset;
++	if (!i40e_check_recovery_mode(pf)) {
++		err = i40e_pf_reset(hw);
++		if (err) {
++			dev_info(&pdev->dev, "Initial pf_reset failed: %d\n", err);
++			goto err_pf_reset;
++		}
++		pf->pfr_count++;
+ 	}
+-	pf->pfr_count++;
+-
+ 	hw->aq.num_arq_entries = I40E_AQ_LEN;
+ 	hw->aq.num_asq_entries = I40E_AQ_LEN;
+ 	hw->aq.arq_buf_size = I40E_MAX_AQ_BUF_SIZE;
+@@ -14583,6 +14815,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		dev_warn(&pdev->dev, "This device is a pre-production adapter/LOM. Please be aware there may be issues with your hardware. If you are experiencing problems please contact your Intel or hardware representative who provided you with this hardware.\n");
+ 
+ 	i40e_clear_pxe_mode(hw);
++
+ 	err = i40e_get_capabilities(pf, i40e_aqc_opc_list_func_capabilities);
+ 	if (err)
+ 		goto err_adminq_setup;
+@@ -14593,6 +14826,9 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto err_sw_init;
+ 	}
+ 
++	if (test_bit(__I40E_RECOVERY_MODE, pf->state))
++		return i40e_init_recovery_mode(pf, hw);
++
+ 	err = i40e_init_lan_hmc(hw, hw->func_caps.num_tx_qp,
+ 				hw->func_caps.num_rx_qp, 0, 0);
+ 	if (err) {
+@@ -14978,6 +15214,19 @@ static void i40e_remove(struct pci_dev *pdev)
+ 	if (pf->service_task.func)
+ 		cancel_work_sync(&pf->service_task);
+ 
++	if (test_bit(__I40E_RECOVERY_MODE, pf->state)) {
++		struct i40e_vsi *vsi = pf->vsi[0];
++
++		/* We know that we have allocated only one vsi for this PF,
++		 * it was just for registering netdevice, so the interface
++		 * could be visible in the 'ifconfig' output
++		 */
++		unregister_netdev(vsi->netdev);
++		free_netdev(vsi->netdev);
++
++		goto unmap;
++	}
++
+ 	/* Client close must be called explicitly here because the timer
+ 	 * has been stopped.
+ 	 */
+@@ -15027,6 +15276,12 @@ static void i40e_remove(struct pci_dev *pdev)
+ 				 ret_code);
+ 	}
+ 
++unmap:
++	/* Free MSI/legacy interrupt 0 when in recovery mode. */
++	if (test_bit(__I40E_RECOVERY_MODE, pf->state) &&
++	    !(pf->flags & I40E_FLAG_MSIX_ENABLED))
++		free_irq(pf->pdev->irq, pf);
++
+ 	/* shutdown the adminq */
+ 	i40e_shutdown_adminq(hw);
+ 
+@@ -15039,7 +15294,8 @@ static void i40e_remove(struct pci_dev *pdev)
+ 	i40e_clear_interrupt_scheme(pf);
+ 	for (i = 0; i < pf->num_alloc_vsi; i++) {
+ 		if (pf->vsi[i]) {
+-			i40e_vsi_clear_rings(pf->vsi[i]);
++			if (!test_bit(__I40E_RECOVERY_MODE, pf->state))
++				i40e_vsi_clear_rings(pf->vsi[i]);
+ 			i40e_vsi_clear(pf->vsi[i]);
+ 			pf->vsi[i] = NULL;
+ 		}
+@@ -15247,6 +15503,11 @@ static void i40e_shutdown(struct pci_dev *pdev)
+ 	wr32(hw, I40E_PFPM_WUFC,
+ 	     (pf->wol_en ? I40E_PFPM_WUFC_MAG_MASK : 0));
+ 
++	/* Free MSI/legacy interrupt 0 when in recovery mode. */
++	if (test_bit(__I40E_RECOVERY_MODE, pf->state) &&
++	    !(pf->flags & I40E_FLAG_MSIX_ENABLED))
++		free_irq(pf->pdev->irq, pf);
++
+ 	/* Since we're going to destroy queues during the
+ 	 * i40e_clear_interrupt_scheme() we should hold the RTNL lock for this
+ 	 * whole section
+-- 
+2.19.2
+
