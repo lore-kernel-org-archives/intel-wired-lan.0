@@ -1,45 +1,42 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 29 Mar 2019 15:08:34 -0700
-Subject: [Intel-wired-lan] [next PATCH S4 05/11] i40e: fix wrapping around
- netif_set_real_num_tx_queues
+Date: Fri, 29 Mar 2019 15:08:37 -0700
+Subject: [Intel-wired-lan] [next PATCH S4 08/11] i40e: Wrong truncation from
+ u16 to u8
 In-Reply-To: <20190329220840.51187-1-alice.michael@intel.com>
 References: <20190329220840.51187-1-alice.michael@intel.com>
-Message-ID: <20190329220840.51187-5-alice.michael@intel.com>
+Message-ID: <20190329220840.51187-8-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Grzegorz Siwik <grzegorz.siwik@intel.com>
 
-After total number of queues are updated under heavy traffic with
-ethtool -L command, the driver may receive few skbuffs with
-queue_mapping value greater than new total number of queues causing
-kernel panic.
+In this patch fixed wrong truncation method from u16 to u8 during
+validation.
 
-This fix flushes all skbs after netif_set_real_num_tx_queues call
-while reconfiguring total tx queues. This helps in avoiding skbs
-with invalid queue_mapping.
+It was changed by changing u8 to u32 parameter in method declaration
+and arguments were changed to u32.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index af0670ea940e..a3b225502f23 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8223,6 +8223,8 @@ int i40e_vsi_open(struct i40e_vsi *vsi)
- 		if (err)
- 			goto err_set_queues;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 25490cfb06fc..d0e3677b7dc8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -196,7 +196,7 @@ static inline bool i40e_vc_isvalid_queue_id(struct i40e_vf *vf, u16 vsi_id,
+  *
+  * check for the valid vector id
+  **/
+-static inline bool i40e_vc_isvalid_vector_id(struct i40e_vf *vf, u8 vector_id)
++static inline bool i40e_vc_isvalid_vector_id(struct i40e_vf *vf, u32 vector_id)
+ {
+ 	struct i40e_pf *pf = vf->pf;
  
-+		qdisc_reset_all_tx(vsi->netdev);
-+
- 		err = netif_set_real_num_rx_queues(vsi->netdev,
- 						   vsi->num_queue_pairs);
- 		if (err)
 -- 
 2.19.2
 
