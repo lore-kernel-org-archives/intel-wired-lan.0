@@ -1,76 +1,57 @@
-From: Stanislav Fomichev <sdf@fomichev.me>
-Date: Fri, 19 Apr 2019 16:29:44 -0700
-Subject: [Intel-wired-lan] [PATCH bpf-next v5 5/6] net: pass net
- argument to the eth_get_headlen
-In-Reply-To: <20190419045026.ayalgmunvizwxc7j@ast-mbp.dhcp.thefacebook.com>
-References: <20190415173801.257254-1-sdf@google.com>
- <20190415173801.257254-6-sdf@google.com>
- <20190419002851.7efgfnyo3swvtwvo@ast-mbp.dhcp.thefacebook.com>
- <20190419004350.GC8631@mini-arch.hsd1.ca.comcast.net>
- <20190419045026.ayalgmunvizwxc7j@ast-mbp.dhcp.thefacebook.com>
-Message-ID: <20190419232944.GA27730@mini-arch.hsd1.ca.comcast.net>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 1 Apr 2019 09:55:57 +0300
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 89/89]
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c:581 i40e_update_nvm_checksum()
+ error: uninitialized symbol 'checksum'.
+Message-ID: <20190401065557.GY32613@kadam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 04/18, Alexei Starovoitov wrote:
-> On Thu, Apr 18, 2019 at 05:43:50PM -0700, Stanislav Fomichev wrote:
-> > On 04/18, Alexei Starovoitov wrote:
-> > > On Mon, Apr 15, 2019 at 10:38:00AM -0700, Stanislav Fomichev wrote:
-> > > > Update all users eth_get_headlen to pass network namespace
-> > > > and pass it down to the flow dissector. This commit is a noop
-> > > > until administrator inserts BPF flow dissector program.
-> > > > 
-> > > > Cc: Maxim Krasnyansky <maxk@qti.qualcomm.com>
-> > > > Cc: Saeed Mahameed <saeedm@mellanox.com>
-> > > > Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> > > > Cc: intel-wired-lan at lists.osuosl.org
-> > > > Cc: Yisen Zhuang <yisen.zhuang@huawei.com>
-> > > > Cc: Salil Mehta <salil.mehta@huawei.com>
-> > > > Cc: Michael Chan <michael.chan@broadcom.com>
-> > > > Cc: Igor Russkikh <igor.russkikh@aquantia.com>
-> > > > Signed-off-by: Stanislav Fomichev <sdf@google.com>
-> ... 
-> > > Also please add C based test for skb-less flow_dissector.
-> > > Current test_flow_dissector.sh doesn't seem to cover it.
-> > It doesn't look like we can exercise skb-less flow dissector from
-> > test_flow_dissector.sh; we need to trigger some driver code, which is
-> > hard when we send the packets on the localhost in
-> > test_flow_dissector.sh.
-> > 
-> > To test skb-less dissector I convert BPF_PROG_TEST_RUN to always use skb-less
-> > mode. test_flow_dissector.sh tests skb-mode, prog_tests/flow_dissector.c
-> > tests skb-less mode.
-> 
-> I saw that but I'm afraid it's not enough.
-> tun_get_user() is calling it, so it should be possible to test
-> skb-less mode via tun.
-Spent some time today looking into how to exercise this path in the tun
-driver: doing writev() with IFF_NAPI_FRAGS IFF_TAP device would trigger
-eth_get_headlen, but it looks like there is no way to do a test with
-pass/no-pass result around that.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   bad1e96b272699629ba8f5b702e52555e39a5f2c
+commit: bad1e96b272699629ba8f5b702e52555e39a5f2c [89/89] i40e: Revert ShadowRAM checksum calculation change
 
-The problem is - we don't actually do anything with the result of
-eth_get_headlen, there is only a sanity check for "headlen >
-skb_headlen(skb)" which can't trigger for BPF flow dissector; we
-carefully clamp thoff/nhoff and should not return offset outside the
-input buffer.
+smatch warnings:
+drivers/net/ethernet/intel/i40e/i40e_nvm.c:581 i40e_update_nvm_checksum() error: uninitialized symbol 'checksum'.
 
-By reading git history it looks like this call to eth_get_headlen was
-added there to only make it possible for tools like syzbot to fuzz flow
-dissector. That's why we don't care about the result, we just do that
-simple sanity check. The main goal is to trigger some problem
-(loop/warning) in the flow dissector code.
+# https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/commit/?id=bad1e96b272699629ba8f5b702e52555e39a5f2c
+git remote add jkirsher-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+git remote update jkirsher-next-queue
+git checkout bad1e96b272699629ba8f5b702e52555e39a5f2c
+vim +/checksum +581 drivers/net/ethernet/intel/i40e/i40e_nvm.c
 
-tl;dr - no mater which bpf flow dissector is attached to the namespace,
-it would not change behavior of the tun device; even empty 'return
-false' program would not alter it.
+56a62fc8 Jesse Brandeburg  2013-09-11  565  
+56a62fc8 Jesse Brandeburg  2013-09-11  566  /**
+cd552cb4 Shannon Nelson    2014-07-09  567   * i40e_update_nvm_checksum - Updates the NVM checksum
+cd552cb4 Shannon Nelson    2014-07-09  568   * @hw: pointer to hardware structure
+cd552cb4 Shannon Nelson    2014-07-09  569   *
+cd552cb4 Shannon Nelson    2014-07-09  570   * NVM ownership must be acquired before calling this function and released
+cd552cb4 Shannon Nelson    2014-07-09  571   * on ARQ completion event reception by caller.
+cd552cb4 Shannon Nelson    2014-07-09  572   * This function will commit SR to NVM.
+cd552cb4 Shannon Nelson    2014-07-09  573   **/
+cd552cb4 Shannon Nelson    2014-07-09  574  i40e_status i40e_update_nvm_checksum(struct i40e_hw *hw)
+cd552cb4 Shannon Nelson    2014-07-09  575  {
+0e5229c6 Jean Sacren       2015-10-13  576  	i40e_status ret_code;
+bad1e96b Maciej Paczkowski 2019-03-29  577  	u16 checksum;
+dd38c583 Jesse Brandeburg  2015-08-26  578  	__le16 le_sum;
+cd552cb4 Shannon Nelson    2014-07-09  579  
+cd552cb4 Shannon Nelson    2014-07-09  580  	ret_code = i40e_calc_nvm_checksum(hw, &checksum);
+dd38c583 Jesse Brandeburg  2015-08-26 @581  	le_sum = cpu_to_le16(checksum);
+                                                         ^^^^^^^^^^^^^^^^^^^^
+bad1e96b Maciej Paczkowski 2019-03-29  582  	if (!ret_code)
+                                                    ^^^^^^^^^
+This is obvoiusly not a real bug, but Smatch complains.
 
-Let me know if you had something different in mind; because so far I
-don't see how to do a test around that. Changing that "headlen >
-skb_headlen(skb)" check into something meaningful also doesn't seem possible.
-I thought about checking the result of eth_get_headlen against
-skb_transport_offset(), but at that point transport offset of the skb
-is not yet set (napi_gro_frags and gro layer later does that) :-(
+cd552cb4 Shannon Nelson    2014-07-09  583  		ret_code = i40e_write_nvm_aq(hw, 0x00, I40E_SR_SW_CHECKSUM_WORD,
+dd38c583 Jesse Brandeburg  2015-08-26  584  					     1, &le_sum, true);
+cd552cb4 Shannon Nelson    2014-07-09  585  
+cd552cb4 Shannon Nelson    2014-07-09  586  	return ret_code;
+cd552cb4 Shannon Nelson    2014-07-09  587  }
+cd552cb4 Shannon Nelson    2014-07-09  588  
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
