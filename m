@@ -1,20 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 02 Apr 2019 13:10:43 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:40GbE] BUILD SUCCESS
- 44ddd4f1709249dd1779dda7c907668a0b9ef833
-Message-ID: <5ca2eed3.boXSHE7SFdEn/uCO%lkp@intel.com>
+Date: Tue, 02 Apr 2019 13:18:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 25caa9acd09008f57c572f1a09b804bf60f7486b
+Message-ID: <5ca2f08d.g0gPM3r7g9/K9vI9%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  40GbE
-branch HEAD: 44ddd4f1709249dd1779dda7c907668a0b9ef833  i40e: add tracking of AF_XDP ZC state for each queue pair
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 25caa9acd09008f57c572f1a09b804bf60f7486b  net: ixgbevf: fix a missing check of ixgbevf_write_msg_read_ack
 
-elapsed time: 438m
+elapsed time: 445m
 
-configs tested: 193
+configs tested: 212
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -23,10 +23,17 @@ arm                          moxart_defconfig
 arm                      pxa255-idp_defconfig
 arm                         cm_x2xx_defconfig
 powerpc                     tqm5200_defconfig
+mips                            gpr_defconfig
+mips                       lemote2f_defconfig
 c6x                        evmc6472_defconfig
 powerpc                     mpc512x_defconfig
 ia64                              allnoconfig
 powerpc                        icon_defconfig
+sh                               allmodconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
 arm                            hisi_defconfig
 arm                          nuc950_defconfig
 arm64                               defconfig
@@ -37,11 +44,21 @@ powerpc                   currituck_defconfig
 riscv                               defconfig
 arm                        trizeps4_defconfig
 sh                           se7722_defconfig
-x86_64                              fedora-25
+i386                   randconfig-x010-201913
+i386                   randconfig-x018-201913
+i386                   randconfig-x017-201913
+i386                   randconfig-x013-201913
+i386                   randconfig-x014-201913
+i386                   randconfig-x011-201913
+i386                   randconfig-x015-201913
+i386                   randconfig-x019-201913
+i386                   randconfig-x012-201913
+i386                   randconfig-x016-201913
 x86_64                                  kexec
 x86_64                                    lkp
 x86_64                                   rhel
 x86_64                               rhel-7.6
+x86_64                              fedora-25
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                   randconfig-n0-04010147
@@ -58,24 +75,10 @@ x86_64                 randconfig-x002-201913
 x86_64                 randconfig-x006-201913
 x86_64                 randconfig-x005-201913
 x86_64                 randconfig-x009-201913
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
 i386                   randconfig-i0-03312105
 i386                   randconfig-i1-03312105
 i386                   randconfig-i2-03312105
 i386                   randconfig-i3-03312105
-i386                   randconfig-x002-201913
-i386                   randconfig-x005-201913
-i386                   randconfig-x001-201913
-i386                   randconfig-x007-201913
-i386                   randconfig-x000-201913
-i386                   randconfig-x008-201913
-i386                   randconfig-x004-201913
-i386                   randconfig-x009-201913
-i386                   randconfig-x003-201913
-i386                   randconfig-x006-201913
 x86_64                 randconfig-x015-201913
 x86_64                 randconfig-x016-201913
 x86_64                 randconfig-x013-201913
@@ -90,10 +93,10 @@ i386                     randconfig-a1-201913
 i386                     randconfig-a2-201913
 i386                     randconfig-a0-201913
 i386                     randconfig-a3-201913
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
 mips                  decstation_64_defconfig
 sh                          lboxre2_defconfig
 parisc                            allnoconfig
@@ -109,8 +112,13 @@ powerpc                      acadia_defconfig
 sh                        sh7757lcr_defconfig
 parisc                generic-64bit_defconfig
 powerpc                      chrp32_defconfig
+arm                         axm55xx_defconfig
+openrisc                 simple_smp_defconfig
+arm                         lubbock_defconfig
+nds32                            allyesconfig
 x86_64                 randconfig-u0-04021213
 x86_64                 randconfig-u0-04021253
+x86_64                 randconfig-u0-04021304
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
@@ -120,17 +128,15 @@ powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 s390                        default_defconfig
-sh                               allmodconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
 openrisc                    or1ksim_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
 nds32                             allnoconfig
 nds32                               defconfig
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
 c6x                        evmc6678_defconfig
 h8300                    h8300h-sim_defconfig
 nios2                         10m50_defconfig
@@ -168,36 +174,44 @@ x86_64                 randconfig-l1-04011721
 i386                   randconfig-l2-04011721
 x86_64                 randconfig-l3-04011721
 x86_64                 randconfig-l0-04011721
+x86_64                 randconfig-s3-04021236
+x86_64                 randconfig-s4-04021236
+x86_64                 randconfig-s5-04021236
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+arm                        clps711x_defconfig
+powerpc                     tqm8555_defconfig
 parisc                        c3000_defconfig
 um                                  defconfig
 parisc                         b180_defconfig
 parisc                              defconfig
 alpha                               defconfig
-i386                   randconfig-x010-201913
-i386                   randconfig-x018-201913
-i386                   randconfig-x017-201913
-i386                   randconfig-x013-201913
-i386                   randconfig-x014-201913
-i386                   randconfig-x011-201913
-i386                   randconfig-x015-201913
-i386                   randconfig-x019-201913
-i386                   randconfig-x012-201913
-i386                   randconfig-x016-201913
-arm                        clps711x_defconfig
-powerpc                     tqm8555_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
+x86_64                           allmodconfig
 arm                            mps2_defconfig
 arm                         vf610m4_defconfig
 csky                                defconfig
 sh                   sh7770_generic_defconfig
 arc                              allmodconfig
 sh                                  defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
 x86_64                 randconfig-g0-03311721
 x86_64                 randconfig-g1-03311721
 x86_64                 randconfig-g2-03311721
 x86_64                 randconfig-g3-03311721
+i386                   randconfig-x002-201913
+i386                   randconfig-x005-201913
+i386                   randconfig-x001-201913
+i386                   randconfig-x007-201913
+i386                   randconfig-x000-201913
+i386                   randconfig-x008-201913
+i386                   randconfig-x004-201913
+i386                   randconfig-x009-201913
+i386                   randconfig-x003-201913
+i386                   randconfig-x006-201913
 i386                   randconfig-x077-201913
 i386                   randconfig-x070-201913
 i386                   randconfig-x074-201913
@@ -208,10 +222,15 @@ i386                   randconfig-x078-201913
 i386                   randconfig-x079-201913
 i386                   randconfig-x076-201913
 i386                   randconfig-x073-201913
+x86_64                           allyesconfig
+i386                             allmodconfig
 ia64                        generic_defconfig
 m68k                              allnoconfig
 mips                         rt305x_defconfig
 powerpc                     ps3_nfs_defconfig
+arm                        spear3xx_defconfig
+mips                        omega2p_defconfig
+sh                        apsh4ad0a_defconfig
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
