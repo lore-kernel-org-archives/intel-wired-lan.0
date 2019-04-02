@@ -1,10 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 2 Apr 2019 18:42:51 +0000
-Subject: [Intel-wired-lan] [PATCH v2 2/2] ixgbe: remove umem from adapter
-In-Reply-To: <20190322211638.28545-2-jeffrey.t.kirsher@intel.com>
-References: <20190322211638.28545-1-jeffrey.t.kirsher@intel.com>
- <20190322211638.28545-2-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D378633@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 2 Apr 2019 18:43:36 +0000
+Subject: [Intel-wired-lan] [PATCH] iavf: Limiting RSS queues to CPUs
+In-Reply-To: <20190329194850.79377-1-alice.michael@intel.com>
+References: <20190329194850.79377-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D378643@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,26 +12,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Friday, March 22, 2019 2:17 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 2/2] ixgbe: remove umem from adapter
+> Behalf Of Alice Michael
+> Sent: Friday, March 29, 2019 12:49 PM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] iavf: Limiting RSS queues to CPUs
 > 
-> From: Jan Sokolowski <jan.sokolowski@intel.com>
+> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > 
-> As current implementation of netdev already contains and provides umems
-> for us, we no longer have the need to contain these structures in
-> ixgbe_adapter.
+> Limiting RSS queues number to online CPUs number in order to avoid issues
+> with creating misconfigured RSS queues.
 > 
-> Refactor the code to operate on netdev-provided umems.
-> 
-> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > ---
-> v2: fixed merge issues with the current next-queue tree
-> 
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h     | 11 +--
->  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 79 ++++----------------
->  2 files changed, 19 insertions(+), 71 deletions(-)
+>  drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
