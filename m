@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 2 Apr 2019 18:45:32 +0000
-Subject: [Intel-wired-lan] [PATCH 5/6] i40e: Use struct_size() in
- kzalloc()
-In-Reply-To: <20190329233850.29630-5-jeffrey.t.kirsher@intel.com>
+Date: Tue, 2 Apr 2019 18:45:54 +0000
+Subject: [Intel-wired-lan] [PATCH 6/6] iavf: iavf_client: use
+ struct_size() helper
+In-Reply-To: <20190329233850.29630-6-jeffrey.t.kirsher@intel.com>
 References: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
- <20190329233850.29630-5-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D378673@ORSMSX104.amr.corp.intel.com>
+ <20190329233850.29630-6-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D378684@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,7 +17,8 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Friday, March 29, 2019 4:39 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 5/6] i40e: Use struct_size() in kzalloc()
+> Subject: [Intel-wired-lan] [PATCH 6/6] iavf: iavf_client: use struct_size()
+> helper
 > 
 > From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 > 
@@ -30,23 +31,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 >     struct boo entry[];
 > };
 > 
-> size = sizeof(struct foo) + count * sizeof(struct boo); instance = kzalloc(size,
-> GFP_KERNEL)
+> size = sizeof(struct foo) + count * sizeof(struct boo);
 > 
 > Instead of leaving these open-coded and prone to type mistakes, we can
 > now use the new struct_size() helper:
 > 
-> instance = kzalloc(struct_size(instance, entry, count), GFP_KERNEL)
-> 
-> Notice that, in this case, variable size is not necessary, hence it is removed.
+> size = struct_size(instance, entry, count);
 > 
 > This code was detected with the help of Coccinelle.
 > 
 > Signed-off-by: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_client.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/iavf/iavf_client.c | 7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
