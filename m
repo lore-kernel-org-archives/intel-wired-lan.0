@@ -1,8 +1,8 @@
 From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Tue, 2 Apr 2019 21:33:04 +0000
+Date: Tue, 2 Apr 2019 21:41:12 +0000
 Subject: [Intel-wired-lan] Problem when igb is forced to 10-HD on both
  sides.
-In-Reply-To: <f2fd3e20-6260-5347-b7d0-4b286ca3e287@candelatech.com>
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69AF51A04@ORSMSX115.amr.corp.intel.com>
 References: <4e4b56a7-8695-ca9e-018c-4c54d8ba9da1@candelatech.com>
  <9B4A1B1917080E46B64F07F2989DADD69AF518AA@ORSMSX115.amr.corp.intel.com>
  <28f0a365-d0d8-053e-cd59-cfe7cab8bc3f@candelatech.com>
@@ -10,12 +10,28 @@ References: <4e4b56a7-8695-ca9e-018c-4c54d8ba9da1@candelatech.com>
  <610c9955-5f0d-b569-401a-7223dd022198@candelatech.com>
  <9B4A1B1917080E46B64F07F2989DADD69AF519E0@ORSMSX115.amr.corp.intel.com>
  <f2fd3e20-6260-5347-b7d0-4b286ca3e287@candelatech.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD69AF51A04@ORSMSX115.amr.corp.intel.com>
+ <9B4A1B1917080E46B64F07F2989DADD69AF51A04@ORSMSX115.amr.corp.intel.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD69AF51A27@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+man ethtool will show you how to change advertised speeds.
+
+Todd Fujinaka
+Software Application Engineer
+Datacenter Engineering Group
+Intel Corporation
+todd.fujinaka at intel.com
+
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Fujinaka, Todd
+Sent: Tuesday, April 2, 2019 2:33 PM
+To: Ben Greear <greearb@candelatech.com>; intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] Problem when igb is forced to 10-HD on both sides.
 
 Autonegotiate isn't the same for 10, 100, and 1G. If you start at 1G and don't advertise 1G it's one thing, but slower speeds are different. Like I said, you may need to read the IEEE documentation.
 
@@ -29,7 +45,7 @@ todd.fujinaka at intel.com
 
 
 -----Original Message-----
-From: Ben Greear [mailto:greearb at candelatech.com] 
+From: Ben Greear [mailto:greearb at candelatech.com]
 Sent: Tuesday, April 2, 2019 2:29 PM
 To: Fujinaka, Todd <todd.fujinaka@intel.com>; intel-wired-lan at lists.osuosl.org
 Subject: Re: [Intel-wired-lan] Problem when igb is forced to 10-HD on both sides.
@@ -105,7 +121,7 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 >>>>
 >>>>
 >>>> -----Original Message-----
->>>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] 
+>>>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org]
 >>>> On Behalf Of Ben Greear
 >>>> Sent: Tuesday, April 2, 2019 11:13 AM
 >>>> To: intel-wired-lan at lists.osuosl.org
@@ -217,7 +233,7 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 >>> Set Speed: 10? dplx: 0? autoneg: 0? forced-speed-duplex: 1 
 >>> [360695.863858] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
 >>>>
->>>> [360614.051481] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 
+>>>> [360614.051481] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up
 >>>> 1000 Mbps Full Duplex, Flow Control: RX/TX [360614.605478] igb
 >>>> 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, 
 >>>> Flow Control: RX/TX [360632.902730] igb 0000:01:00.2: Set Speed: 10
@@ -277,7 +293,7 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 >>>> Unsupported+
 >>>>  ??????????? RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+ FLReset-
 >>>>  ??????????? MaxPayload 256 bytes, MaxReadReq 512 bytes
->>>>  ??????? DevSta:??? CorrErr+ UncorrErr- FatalErr- UnsuppReq+ 
+>>>>  ??????? DevSta:??? CorrErr+ UncorrErr- FatalErr- UnsuppReq+
 >>>> AuxPwr+
 >>>> TransPend-
 >>>>  ??????? LnkCap:??? Port #0, Speed 5GT/s, Width x4, ASPM L0s L1, 
@@ -287,7 +303,7 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 >>>>  ??????????? ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
 >>>>  ??????? LnkSta:??? Speed 5GT/s, Width x4, TrErr- Train- SlotClk+
 >>>> DLActive- BWMgmt- ABWMgmt-
->>>>  ??????? DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, 
+>>>>  ??????? DevCap2: Completion Timeout: Range ABCD, TimeoutDis+,
 >>>> LTR+, OBFF Not Supported
 >>>>  ???????????? AtomicOpsCap: 32bit- 64bit- 128bitCAS-
 >>>>  ??????? DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, 
@@ -298,10 +314,10 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 >>>>  ???????????? EqualizationPhase2-, EqualizationPhase3-,
 >>>> LinkEqualizationRequest-
 >>>>  ????Capabilities: [100 v2] Advanced Error Reporting
->>>>  ??????? UESta:??? DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- 
+>>>>  ??????? UESta:??? DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
 >>>> UnxCmplt-
 >>>> RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
->>>>  ??????? UEMsk:??? DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- 
+>>>>  ??????? UEMsk:??? DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
 >>>> UnxCmplt-
 >>>> RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
 >>>>  ??????? UESvrt:??? DLP+ SDES+ TLP- FCP+ CmpltTO- CmpltAbrt-
@@ -322,16 +338,16 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 >>>>  ??????? ARICtl:??? MFVC- ACS-, Function Group: 0
 >>>>  ????Capabilities: [160 v1] Single Root I/O Virtualization (SR-IOV)
 >>>>  ??????? IOVCap:??? Migration-, Interrupt Message Number: 000
->>>>  ??????? IOVCtl:??? Enable- Migration- Interrupt- MSE- 
+>>>>  ??????? IOVCtl:??? Enable- Migration- Interrupt- MSE-
 >>>> ARIHierarchy-
 >>>>  ??????? IOVSta:??? Migration-
 >>>>  ??????? Initial VFs: 8, Total VFs: 8, Number of VFs: 0, Function 
 >>>> Dependency Link: 02
 >>>>  ??????? VF offset: 128, stride: 4, Device ID: 1520
 >>>>  ??????? Supported Page Size: 00000553, System Page Size: 00000001
->>>>  ??????? Region 0: Memory at 000000008b080000 (64-bit, 
+>>>>  ??????? Region 0: Memory at 000000008b080000 (64-bit,
 >>>> prefetchable)
->>>>  ??????? Region 3: Memory at 000000008b0a0000 (64-bit, 
+>>>>  ??????? Region 3: Memory at 000000008b0a0000 (64-bit,
 >>>> prefetchable)
 >>>>  ??????? VF Migration: offset: 00000000, BIR: 0
 >>>>  ????Capabilities: [1a0 v1] Transaction Processing Hints
@@ -377,7 +393,7 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 >>>> Unsupported+
 >>>>  ??????????? RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+ FLReset-
 >>>>  ??????????? MaxPayload 256 bytes, MaxReadReq 512 bytes
->>>>  ??????? DevSta:??? CorrErr+ UncorrErr- FatalErr- UnsuppReq+ 
+>>>>  ??????? DevSta:??? CorrErr+ UncorrErr- FatalErr- UnsuppReq+
 >>>> AuxPwr+
 >>>> TransPend-
 >>>>  ??????? LnkCap:??? Port #0, Speed 5GT/s, Width x4, ASPM L0s L1, 
@@ -387,7 +403,7 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 >>>>  ??????????? ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
 >>>>  ??????? LnkSta:??? Speed 5GT/s, Width x4, TrErr- Train- SlotClk+
 >>>> DLActive- BWMgmt- ABWMgmt-
->>>>  ??????? DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, 
+>>>>  ??????? DevCap2: Completion Timeout: Range ABCD, TimeoutDis+,
 >>>> LTR+, OBFF Not Supported
 >>>>  ???????????? AtomicOpsCap: 32bit- 64bit- 128bitCAS-
 >>>>  ??????? DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, 
@@ -398,10 +414,10 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 >>>>  ???????????? EqualizationPhase2-, EqualizationPhase3-,
 >>>> LinkEqualizationRequest-
 >>>>  ????Capabilities: [100 v2] Advanced Error Reporting
->>>>  ??????? UESta:??? DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- 
+>>>>  ??????? UESta:??? DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
 >>>> UnxCmplt-
 >>>> RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
->>>>  ??????? UEMsk:??? DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- 
+>>>>  ??????? UEMsk:??? DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt-
 >>>> UnxCmplt-
 >>>> RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
 >>>>  ??????? UESvrt:??? DLP+ SDES+ TLP- FCP+ CmpltTO- CmpltAbrt-
@@ -422,16 +438,16 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 >>>>  ??????? ARICtl:??? MFVC- ACS-, Function Group: 0
 >>>>  ????Capabilities: [160 v1] Single Root I/O Virtualization (SR-IOV)
 >>>>  ??????? IOVCap:??? Migration-, Interrupt Message Number: 000
->>>>  ??????? IOVCtl:??? Enable- Migration- Interrupt- MSE- 
+>>>>  ??????? IOVCtl:??? Enable- Migration- Interrupt- MSE-
 >>>> ARIHierarchy-
 >>>>  ??????? IOVSta:??? Migration-
 >>>>  ??????? Initial VFs: 8, Total VFs: 8, Number of VFs: 0, Function 
 >>>> Dependency Link: 03
 >>>>  ??????? VF offset: 128, stride: 4, Device ID: 1520
 >>>>  ??????? Supported Page Size: 00000553, System Page Size: 00000001
->>>>  ??????? Region 0: Memory at 000000008b0c0000 (64-bit, 
+>>>>  ??????? Region 0: Memory at 000000008b0c0000 (64-bit,
 >>>> prefetchable)
->>>>  ??????? Region 3: Memory at 000000008b0e0000 (64-bit, 
+>>>>  ??????? Region 3: Memory at 000000008b0e0000 (64-bit,
 >>>> prefetchable)
 >>>>  ??????? VF Migration: offset: 00000000, BIR: 0
 >>>>  ????Capabilities: [1a0 v1] Transaction Processing Hints
@@ -476,3 +492,7 @@ On 4/2/19 2:19 PM, Fujinaka, Todd wrote:
 Ben Greear <greearb@candelatech.com>
 Candela Technologies Inc  http://www.candelatech.com
 
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
