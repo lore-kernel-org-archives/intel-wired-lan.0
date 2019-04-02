@@ -1,380 +1,262 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 02 Apr 2019 16:02:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD INCOMPLETE
- b506bc975f60f06e13e74adb35e708a23dc4e87c
-Message-ID: <5ca316ff.+K2pg4YtN/pczG/T%lkp@intel.com>
+From: Ben Greear <greearb@candelatech.com>
+Date: Tue, 2 Apr 2019 11:12:57 -0700
+Subject: [Intel-wired-lan] Problem when igb is forced to 10-HD on both sides.
+Message-ID: <4e4b56a7-8695-ca9e-018c-4c54d8ba9da1@candelatech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: b506bc975f60f06e13e74adb35e708a23dc4e87c  tcp: fix a potential NULL pointer dereference in tcp_sk_exit
+Hello,
 
-TIMEOUT after 609m
+We found a problem with igb when forcing the negotiation rates.
+
+If I leave one side to 1GB AUTO, then I can force the other side to any
+supported combination and it appears to work fine.
+
+But, if I set both sides to 10-HD, then link will not be established.  I
+added a bit of debugging to the kernel and I see this in the logs.
+
+Our user was also setting MTU to 3800, but it turns out that is not
+needed to reproduce the issue.
+
+[360212.156670] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
+[360212.156672] igb: Copyright (c) 2007-2014 Intel Corporation.
+[360212.216114] igb 0000:01:00.0: added PHC on eth0
+[360212.216116] igb 0000:01:00.0: Intel(R) Gigabit Ethernet Network Connection
+[360212.216118] igb 0000:01:00.0: eth0: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:77
+[360212.216200] igb 0000:01:00.0: eth0: PBA No: 106300-000
+[360212.216202] igb 0000:01:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
+[360212.271608] igb 0000:01:00.1: added PHC on eth1
+[360212.271610] igb 0000:01:00.1: Intel(R) Gigabit Ethernet Network Connection
+[360212.271611] igb 0000:01:00.1: eth1: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:78
+[360212.271694] igb 0000:01:00.1: eth1: PBA No: 106300-000
+[360212.271695] igb 0000:01:00.1: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
+[360212.326533] igb 0000:01:00.2: added PHC on eth2
+[360212.326535] igb 0000:01:00.2: Intel(R) Gigabit Ethernet Network Connection
+[360212.326537] igb 0000:01:00.2: eth2: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:79
+[360212.326620] igb 0000:01:00.2: eth2: PBA No: 106300-000
+[360212.326621] igb 0000:01:00.2: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
+[360212.438974] igb 0000:01:00.3: added PHC on eth3
+[360212.438977] igb 0000:01:00.3: Intel(R) Gigabit Ethernet Network Connection
+[360212.438979] igb 0000:01:00.3: eth3: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:7a
+[360212.439070] igb 0000:01:00.3: eth3: PBA No: 106300-000
+[360212.439076] igb 0000:01:00.3: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
+[360212.482565] igb 0000:02:00.0: added PHC on eth4
+[360212.482566] igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection
+[360212.482568] igb 0000:02:00.0: eth4: (PCIe:2.5Gb/s:Width x1) 00:30:18:01:64:7b
+[360212.482569] igb 0000:02:00.0: eth4: PBA No: FFFFFF-0FF
+[360212.482570] igb 0000:02:00.0: Using MSI-X interrupts. 2 rx queue(s), 2 tx queue(s)
+[360215.943458] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360216.276567] igb 0000:01:00.1 eth1: igb: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360216.493576] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360255.427240] igb 0000:01:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360275.927145] igb 0000:01:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360388.503634] igb 0000:01:00.2: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
+[360389.299798] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
+[360391.609996] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
+[360391.609998] igb 0000:01:00.2: EEE Disabled: unsupported at half duplex. Re-enable using ethtool when at full duplex.
+[360391.610233] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
+[360391.610234] igb 0000:01:00.3: EEE Disabled: unsupported at half duplex. Re-enable using ethtool when at full duplex.
+[360421.400233] igb 0000:01:00.2: Set Speed: 10  dplx: 1  autoneg: 0  forced-speed-duplex: 2
+[360421.513446] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
+[360423.815595] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
+[360423.815928] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
+[360465.832992] igb 0000:01:00.2: Set Speed: 100  dplx: 0  autoneg: 0  forced-speed-duplex: 4
+[360465.948361] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
+[360468.272516] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 100 Mbps Half Duplex, Flow Control: None
+[360468.318388] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 100 Mbps Half Duplex, Flow Control: None
+[360486.514016] igb 0000:01:00.2: Set Speed: 100  dplx: 1  autoneg: 0  forced-speed-duplex: 8
+[360486.539733] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
+[360488.707926] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 100 Mbps Half Duplex, Flow Control: None
+[360488.753727] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 100 Mbps Full Duplex, Flow Control: None
+[360503.658416] igb 0000:01:00.2: Set Speed: 1000  dplx: 1  autoneg: 1  forced-speed-duplex: 8
+[360503.684089] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
+[360506.572410] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
+[360507.120348] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+[360543.873779] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
+[360546.701102] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
+[360547.204119] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+[360564.547193] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
+[360567.404614] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360567.973547] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360597.366482] igb 0000:01:00.2: changing MTU from 1500 to 3800
+[360598.098996] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
+[360601.028214] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360601.581234] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360611.266742] igb 0000:01:00.3: changing MTU from 1500 to 3800
+[360611.591268] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
+[360614.051481] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360614.605478] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360632.902730] igb 0000:01:00.2: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
+[360633.276708] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
+[360635.584020] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
+[360635.584253] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
+[360695.743292] igb 0000:01:00.3: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
+[360695.863858] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
+
+[360614.051481] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360614.605478] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[360632.902730] igb 0000:01:00.2: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
+[360633.276708] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
+[360635.584020] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
+[360635.584253] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
+[360695.743292] igb 0000:01:00.3: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
+[360695.863858] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
+[361049.119412] igb 0000:01:00.2: changing MTU from 3800 to 1500
+[361064.275721] igb 0000:01:00.3: changing MTU from 3800 to 1500
+[361106.100172] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
+[361106.101351] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
+[361120.462094] igb 0000:01:00.3: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
+[361120.578506] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
 
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+Kernel is 4.20.17+ local hacks (no significant local patches applied to igb though)
 
-configs timed out: 77
 
-alpha                            allyesconfig
-i386                            randconfig-f0
-i386                            randconfig-f1
-i386                            randconfig-f2
-i386                            randconfig-f3
-i386                            randconfig-j0
-i386                            randconfig-j1
-i386                            randconfig-j2
-i386                            randconfig-j3
-i386                            randconfig-k0
-i386                            randconfig-k1
-i386                            randconfig-k2
-i386                            randconfig-k3
-i386                            randconfig-s0
-i386                            randconfig-s1
-i386                            randconfig-s2
-i386                            randconfig-s3
-i386                               tinyconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-mips                             allyesconfig
-nds32                            allmodconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-riscv                            allyesconfig
-riscv                              tinyconfig
-s390                             allyesconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                          randconfig-f0
-x86_64                          randconfig-f1
-x86_64                          randconfig-f2
-x86_64                          randconfig-f3
-x86_64                          randconfig-h1
-x86_64                          randconfig-h2
-x86_64                          randconfig-h3
-x86_64                          randconfig-j0
-x86_64                          randconfig-j1
-x86_64                          randconfig-j2
-x86_64                          randconfig-j3
-x86_64                          randconfig-k0
-x86_64                          randconfig-k1
-x86_64                          randconfig-k2
-x86_64                          randconfig-k3
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-x86_64                        randconfig-x010
-x86_64                        randconfig-x011
-x86_64                        randconfig-x012
-x86_64                        randconfig-x013
-x86_64                        randconfig-x014
-x86_64                        randconfig-x015
-x86_64                        randconfig-x016
-x86_64                        randconfig-x017
-x86_64                        randconfig-x018
-x86_64                        randconfig-x019
-xtensa                           allmodconfig
-xtensa                           allyesconfig
+lspci output:
+01:00.2 Ethernet controller: Intel Corporation I350 Gigabit Network Connection (rev 01)
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin C routed to IRQ 18
+	Region 0: Memory at df720000 (32-bit, non-prefetchable) [size=128K]
+	Region 2: I/O ports at e020 [size=32]
+	Region 3: Memory at df784000 (32-bit, non-prefetchable) [size=16K]
+	Capabilities: [40] Power Management version 3
+		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
+	Capabilities: [50] MSI: Enable- Count=1/1 Maskable+ 64bit+
+		Address: 0000000000000000  Data: 0000
+		Masking: 00000000  Pending: 00000000
+	Capabilities: [70] MSI-X: Enable+ Count=10 Masked-
+		Vector table: BAR=3 offset=00000000
+		PBA: BAR=3 offset=00002000
+	Capabilities: [a0] Express (v2) Endpoint, MSI 00
+		DevCap:	MaxPayload 512 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
+			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset+ SlotPowerLimit 0.000W
+		DevCtl:	Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+ FLReset-
+			MaxPayload 256 bytes, MaxReadReq 512 bytes
+		DevSta:	CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+		LnkCap:	Port #0, Speed 5GT/s, Width x4, ASPM L0s L1, Exit Latency L0s <4us, L1 <32us
+			ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp+
+		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+		DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR+, OBFF Not Supported
+			 AtomicOpsCap: 32bit- 64bit- 128bitCAS-
+		DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, LTR-, OBFF Disabled
+			 AtomicOpsCtl: ReqEn-
+		LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete-, EqualizationPhase1-
+			 EqualizationPhase2-, EqualizationPhase3-, LinkEqualizationRequest-
+	Capabilities: [100 v2] Advanced Error Reporting
+		UESta:	DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+		UEMsk:	DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+		UESvrt:	DLP+ SDES+ TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
+		CESta:	RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
+		CEMsk:	RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
+		AERCap:	First Error Pointer: 00, ECRCGenCap+ ECRCGenEn- ECRCChkCap+ ECRCChkEn-
+			MultHdrRecCap- MultHdrRecEn- TLPPfxPres- HdrLogCap-
+		HeaderLog: 00000000 00000000 00000000 00000000
+	Capabilities: [140 v1] Device Serial Number 00-30-18-ff-ff-01-64-77
+	Capabilities: [150 v1] Alternative Routing-ID Interpretation (ARI)
+		ARICap:	MFVC- ACS-, Next Function: 3
+		ARICtl:	MFVC- ACS-, Function Group: 0
+	Capabilities: [160 v1] Single Root I/O Virtualization (SR-IOV)
+		IOVCap:	Migration-, Interrupt Message Number: 000
+		IOVCtl:	Enable- Migration- Interrupt- MSE- ARIHierarchy-
+		IOVSta:	Migration-
+		Initial VFs: 8, Total VFs: 8, Number of VFs: 0, Function Dependency Link: 02
+		VF offset: 128, stride: 4, Device ID: 1520
+		Supported Page Size: 00000553, System Page Size: 00000001
+		Region 0: Memory at 000000008b080000 (64-bit, prefetchable)
+		Region 3: Memory@000000008b0a0000 (64-bit, prefetchable)
+		VF Migration: offset: 00000000, BIR: 0
+	Capabilities: [1a0 v1] Transaction Processing Hints
+		Device specific mode supported
+		Steering table in TPH capability structure
+	Capabilities: [1d0 v1] Access Control Services
+		ACSCap:	SrcValid- TransBlk- ReqRedir- CmpltRedir- UpstreamFwd- EgressCtrl- DirectTrans-
+		ACSCtl:	SrcValid- TransBlk- ReqRedir- CmpltRedir- UpstreamFwd- EgressCtrl- DirectTrans-
+	Kernel driver in use: igb
+	Kernel modules: igb
 
-configs tested: 270
+01:00.3 Ethernet controller: Intel Corporation I350 Gigabit Network Connection (rev 01)
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin D routed to IRQ 19
+	Region 0: Memory at df700000 (32-bit, non-prefetchable) [size=128K]
+	Region 2: I/O ports at e000 [size=32]
+	Region 3: Memory at df780000 (32-bit, non-prefetchable) [size=16K]
+	Capabilities: [40] Power Management version 3
+		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
+	Capabilities: [50] MSI: Enable- Count=1/1 Maskable+ 64bit+
+		Address: 0000000000000000  Data: 0000
+		Masking: 00000000  Pending: 00000000
+	Capabilities: [70] MSI-X: Enable+ Count=10 Masked-
+		Vector table: BAR=3 offset=00000000
+		PBA: BAR=3 offset=00002000
+	Capabilities: [a0] Express (v2) Endpoint, MSI 00
+		DevCap:	MaxPayload 512 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
+			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset+ SlotPowerLimit 0.000W
+		DevCtl:	Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+ FLReset-
+			MaxPayload 256 bytes, MaxReadReq 512 bytes
+		DevSta:	CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+		LnkCap:	Port #0, Speed 5GT/s, Width x4, ASPM L0s L1, Exit Latency L0s <4us, L1 <32us
+			ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp+
+		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+		DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR+, OBFF Not Supported
+			 AtomicOpsCap: 32bit- 64bit- 128bitCAS-
+		DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, LTR-, OBFF Disabled
+			 AtomicOpsCtl: ReqEn-
+		LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete-, EqualizationPhase1-
+			 EqualizationPhase2-, EqualizationPhase3-, LinkEqualizationRequest-
+	Capabilities: [100 v2] Advanced Error Reporting
+		UESta:	DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+		UEMsk:	DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+		UESvrt:	DLP+ SDES+ TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
+		CESta:	RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
+		CEMsk:	RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
+		AERCap:	First Error Pointer: 00, ECRCGenCap+ ECRCGenEn- ECRCChkCap+ ECRCChkEn-
+			MultHdrRecCap- MultHdrRecEn- TLPPfxPres- HdrLogCap-
+		HeaderLog: 00000000 00000000 00000000 00000000
+	Capabilities: [140 v1] Device Serial Number 00-30-18-ff-ff-01-64-77
+	Capabilities: [150 v1] Alternative Routing-ID Interpretation (ARI)
+		ARICap:	MFVC- ACS-, Next Function: 0
+		ARICtl:	MFVC- ACS-, Function Group: 0
+	Capabilities: [160 v1] Single Root I/O Virtualization (SR-IOV)
+		IOVCap:	Migration-, Interrupt Message Number: 000
+		IOVCtl:	Enable- Migration- Interrupt- MSE- ARIHierarchy-
+		IOVSta:	Migration-
+		Initial VFs: 8, Total VFs: 8, Number of VFs: 0, Function Dependency Link: 03
+		VF offset: 128, stride: 4, Device ID: 1520
+		Supported Page Size: 00000553, System Page Size: 00000001
+		Region 0: Memory at 000000008b0c0000 (64-bit, prefetchable)
+		Region 3: Memory at 000000008b0e0000 (64-bit, prefetchable)
+		VF Migration: offset: 00000000, BIR: 0
+	Capabilities: [1a0 v1] Transaction Processing Hints
+		Device specific mode supported
+		Steering table in TPH capability structure
+	Capabilities: [1d0 v1] Access Control Services
+		ACSCap:	SrcValid- TransBlk- ReqRedir- CmpltRedir- UpstreamFwd- EgressCtrl- DirectTrans-
+		ACSCtl:	SrcValid- TransBlk- ReqRedir- CmpltRedir- UpstreamFwd- EgressCtrl- DirectTrans-
+	Kernel driver in use: igb
+	Kernel modules: igb
 
-arm                          moxart_defconfig
-arm                      pxa255-idp_defconfig
-arm                         cm_x2xx_defconfig
-powerpc                     tqm5200_defconfig
-mips                            gpr_defconfig
-mips                       lemote2f_defconfig
-arm64                            alldefconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                             defconfig
-powerpc               mpc86xx_basic_defconfig
-powerpc                      pasemi_defconfig
-riscv                            allmodconfig
-ia64                          tiger_defconfig
-powerpc                      walnut_defconfig
-m68k                        mvme147_defconfig
-parisc                            allnoconfig
-x86_64                 randconfig-a0-04021239
-x86_64                 randconfig-a0-04021322
-x86_64                 randconfig-a0-04021357
-x86_64                 randconfig-a0-04021414
-c6x                        evmc6472_defconfig
-powerpc                     mpc512x_defconfig
-ia64                              allnoconfig
-powerpc                        icon_defconfig
-alpha                            allmodconfig
-s390                       zfcpdump_defconfig
-powerpc                      arches_defconfig
-arm                        magician_defconfig
-microblaze                        allnoconfig
-arm                            hisi_defconfig
-arm                          nuc950_defconfig
-arm64                               defconfig
-sh                     magicpanelr2_defconfig
-mips                          ath79_defconfig
-mips                       markeins_defconfig
-powerpc                   currituck_defconfig
-riscv                               defconfig
-arm                        trizeps4_defconfig
-sh                           se7722_defconfig
-arm                         socfpga_defconfig
-sh                               allmodconfig
-mips                         db1xxx_defconfig
-um                           x86_64_defconfig
-m68k                          sun3x_defconfig
-powerpc                 mpc837x_rdb_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-04010147
-i386                   randconfig-n1-04010147
-i386                   randconfig-n2-04010147
-i386                   randconfig-n3-04010147
-i386                   randconfig-i0-03312105
-i386                   randconfig-i1-03312105
-i386                   randconfig-i2-03312105
-i386                   randconfig-i3-03312105
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            allmodconfig
-i386                     randconfig-a0-201913
-i386                     randconfig-a1-201913
-i386                     randconfig-a2-201913
-i386                     randconfig-a3-201913
-x86_64                 randconfig-s0-04021306
-x86_64                 randconfig-s1-04021306
-x86_64                 randconfig-s2-04021306
-x86_64                 randconfig-s0-04021410
-x86_64                 randconfig-s1-04021410
-x86_64                 randconfig-s2-04021410
-arm                             rpc_defconfig
-mips                       capcella_defconfig
-mips                           ci20_defconfig
-powerpc                      ppc64e_defconfig
-mips                        maltaup_defconfig
-um                                allnoconfig
-nios2                         10m50_defconfig
-powerpc64                        allmodconfig
-s390                          debug_defconfig
-x86_64                 randconfig-i0-03312259
-x86_64                 randconfig-i1-03312259
-x86_64                 randconfig-i2-03312259
-x86_64                 randconfig-i3-03312259
-i386                   randconfig-b0-04021316
-i386                   randconfig-b0-04021321
-i386                   randconfig-b0-04021333
-i386                   randconfig-b0-04021352
-x86_64                 randconfig-b0-04021402
-x86_64                 randconfig-b0-04021422
-mips                  decstation_64_defconfig
-sh                          lboxre2_defconfig
-powerpc                    klondike_defconfig
-m68k                          atari_defconfig
-mips                        nlm_xlr_defconfig
-mips                     loongson1c_defconfig
-sh                        edosk7760_defconfig
-parisc                generic-32bit_defconfig
-arm                        keystone_defconfig
-xtensa                              defconfig
-powerpc                      acadia_defconfig
-sh                        sh7757lcr_defconfig
-parisc                generic-64bit_defconfig
-powerpc                      chrp32_defconfig
-arm                         axm55xx_defconfig
-openrisc                 simple_smp_defconfig
-arm                         lubbock_defconfig
-nds32                            allyesconfig
-mips                        workpad_defconfig
-sh                        sh7763rdp_defconfig
-powerpc                       eiger_defconfig
-powerpc                     virtex5_defconfig
-arm                        vexpress_defconfig
-powerpc                     tqm8548_defconfig
-m68k                       m5249evb_defconfig
-m68k                          multi_defconfig
-mips                        qi_lb60_defconfig
-h8300                    h8300h-sim_defconfig
-arm                          exynos_defconfig
-powerpc                     tqm8540_defconfig
-m68k                         apollo_defconfig
-sh                           se7780_defconfig
-powerpc                   motionpro_defconfig
-mips                           gcw0_defconfig
-mips                      maltaaprp_defconfig
-mips                            e55_defconfig
-powerpc64                        alldefconfig
-arm                     eseries_pxa_defconfig
-mips                        vocore2_defconfig
-arm                          pxa910_defconfig
-mips                        bcm63xx_defconfig
-powerpc                 mpc834x_mds_defconfig
-arm                         mv78xx0_defconfig
-powerpc                      tqm8xx_defconfig
-nios2                         3c120_defconfig
-sh                               allyesconfig
-sh                          polaris_defconfig
-mips                      maltasmvp_defconfig
-s390                             allmodconfig
-x86_64                 randconfig-u0-04021213
-x86_64                 randconfig-u0-04021253
-x86_64                 randconfig-u0-04021304
-x86_64                 randconfig-u0-04021317
-x86_64                 randconfig-u0-04021346
-x86_64                 randconfig-u0-04021358
-x86_64                 randconfig-u0-04021411
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-powerpc                           allnoconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-c6x                        evmc6678_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-m0-201913
-x86_64                   randconfig-m1-201913
-x86_64                   randconfig-m2-201913
-x86_64                   randconfig-m3-201913
-i386                     randconfig-m0-201913
-i386                     randconfig-m1-201913
-i386                     randconfig-m2-201913
-i386                     randconfig-m3-201913
-riscv                             allnoconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                                defconfig
-x86_64                 randconfig-l0-04011721
-x86_64                 randconfig-l1-04011721
-x86_64                 randconfig-l2-04011721
-x86_64                 randconfig-l3-04011721
-i386                   randconfig-l0-04011721
-i386                   randconfig-l1-04011721
-i386                   randconfig-l2-04011721
-i386                   randconfig-l3-04011721
-x86_64                 randconfig-s3-04021236
-x86_64                 randconfig-s4-04021236
-x86_64                 randconfig-s5-04021236
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                randconfig-ne0-04021238
-arm                        clps711x_defconfig
-powerpc                     tqm8555_defconfig
-arm                          iop33x_defconfig
-arm                            mmp2_defconfig
-parisc                         b180_defconfig
-powerpc                      pmac32_defconfig
-x86_64                 randconfig-h0-04021304
-alpha                               defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-arm                            mps2_defconfig
-arm                         vf610m4_defconfig
-csky                                defconfig
-sh                   sh7770_generic_defconfig
-arc                              allmodconfig
-sh                                  defconfig
-mips                        omega2p_defconfig
-mips                                defconfig
-mips                          rm200_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-g0-03311721
-x86_64                 randconfig-g1-03311721
-x86_64                 randconfig-g2-03311721
-x86_64                 randconfig-g3-03311721
-x86_64                 randconfig-e0-03311307
-x86_64                 randconfig-e1-03311307
-x86_64                 randconfig-e2-03311307
-x86_64                 randconfig-e3-03311307
-arm                           acs5k_defconfig
-mips                malta_kvm_guest_defconfig
-arm                        mvebu_v5_defconfig
-powerpc                     mpc83xx_defconfig
-i386                   randconfig-x077-201913
-i386                   randconfig-x070-201913
-i386                   randconfig-x074-201913
-i386                   randconfig-x072-201913
-i386                   randconfig-x075-201913
-i386                   randconfig-x071-201913
-i386                   randconfig-x078-201913
-i386                   randconfig-x079-201913
-i386                   randconfig-x076-201913
-i386                   randconfig-x073-201913
-x86_64                           allyesconfig
-i386                             allmodconfig
-ia64                        generic_defconfig
-m68k                              allnoconfig
-mips                         rt305x_defconfig
-powerpc                     ps3_nfs_defconfig
-arm                        spear3xx_defconfig
-sh                        apsh4ad0a_defconfig
-arm                          pxa168_defconfig
-arm                          tango4_defconfig
-i386                   randconfig-x0-04021232
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+I will be happy to try patches or provide other debugging.  The problem is fully reproducible.
+
+Thanks,
+Ben
+
+-- 
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
+
