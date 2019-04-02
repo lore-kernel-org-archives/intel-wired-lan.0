@@ -1,115 +1,47 @@
-From: Ben Greear <greearb@candelatech.com>
-Date: Tue, 2 Apr 2019 11:12:57 -0700
-Subject: [Intel-wired-lan] Problem when igb is forced to 10-HD on both sides.
-Message-ID: <4e4b56a7-8695-ca9e-018c-4c54d8ba9da1@candelatech.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Tue, 2 Apr 2019 18:36:36 +0000
+Subject: [Intel-wired-lan] Problem when igb is forced to 10-HD on both
+ sides.
+In-Reply-To: <4e4b56a7-8695-ca9e-018c-4c54d8ba9da1@candelatech.com>
+References: <4e4b56a7-8695-ca9e-018c-4c54d8ba9da1@candelatech.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD69AF518AA@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Are those back-to-back or through a switch. I'm wondering if auto-MDI/MDI-X was turned off and you need to use a crossover cable.
+
+Todd Fujinaka
+Software Application Engineer
+Datacenter Engineering Group
+Intel Corporation
+todd.fujinaka at intel.com
+
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Ben Greear
+Sent: Tuesday, April 2, 2019 11:13 AM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] Problem when igb is forced to 10-HD on both sides.
+
 Hello,
 
 We found a problem with igb when forcing the negotiation rates.
 
-If I leave one side to 1GB AUTO, then I can force the other side to any
-supported combination and it appears to work fine.
+If I leave one side to 1GB AUTO, then I can force the other side to any supported combination and it appears to work fine.
 
-But, if I set both sides to 10-HD, then link will not be established.  I
-added a bit of debugging to the kernel and I see this in the logs.
+But, if I set both sides to 10-HD, then link will not be established.  I added a bit of debugging to the kernel and I see this in the logs.
 
-Our user was also setting MTU to 3800, but it turns out that is not
-needed to reproduce the issue.
+Our user was also setting MTU to 3800, but it turns out that is not needed to reproduce the issue.
 
-[360212.156670] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
-[360212.156672] igb: Copyright (c) 2007-2014 Intel Corporation.
-[360212.216114] igb 0000:01:00.0: added PHC on eth0
-[360212.216116] igb 0000:01:00.0: Intel(R) Gigabit Ethernet Network Connection
-[360212.216118] igb 0000:01:00.0: eth0: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:77
-[360212.216200] igb 0000:01:00.0: eth0: PBA No: 106300-000
-[360212.216202] igb 0000:01:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
-[360212.271608] igb 0000:01:00.1: added PHC on eth1
-[360212.271610] igb 0000:01:00.1: Intel(R) Gigabit Ethernet Network Connection
-[360212.271611] igb 0000:01:00.1: eth1: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:78
-[360212.271694] igb 0000:01:00.1: eth1: PBA No: 106300-000
-[360212.271695] igb 0000:01:00.1: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
-[360212.326533] igb 0000:01:00.2: added PHC on eth2
-[360212.326535] igb 0000:01:00.2: Intel(R) Gigabit Ethernet Network Connection
-[360212.326537] igb 0000:01:00.2: eth2: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:79
-[360212.326620] igb 0000:01:00.2: eth2: PBA No: 106300-000
-[360212.326621] igb 0000:01:00.2: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
-[360212.438974] igb 0000:01:00.3: added PHC on eth3
-[360212.438977] igb 0000:01:00.3: Intel(R) Gigabit Ethernet Network Connection
-[360212.438979] igb 0000:01:00.3: eth3: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:7a
-[360212.439070] igb 0000:01:00.3: eth3: PBA No: 106300-000
-[360212.439076] igb 0000:01:00.3: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
-[360212.482565] igb 0000:02:00.0: added PHC on eth4
-[360212.482566] igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection
-[360212.482568] igb 0000:02:00.0: eth4: (PCIe:2.5Gb/s:Width x1) 00:30:18:01:64:7b
-[360212.482569] igb 0000:02:00.0: eth4: PBA No: FFFFFF-0FF
-[360212.482570] igb 0000:02:00.0: Using MSI-X interrupts. 2 rx queue(s), 2 tx queue(s)
-[360215.943458] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360216.276567] igb 0000:01:00.1 eth1: igb: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360216.493576] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360255.427240] igb 0000:01:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360275.927145] igb 0000:01:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360388.503634] igb 0000:01:00.2: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
-[360389.299798] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
-[360391.609996] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
-[360391.609998] igb 0000:01:00.2: EEE Disabled: unsupported at half duplex. Re-enable using ethtool when at full duplex.
-[360391.610233] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
-[360391.610234] igb 0000:01:00.3: EEE Disabled: unsupported at half duplex. Re-enable using ethtool when at full duplex.
-[360421.400233] igb 0000:01:00.2: Set Speed: 10  dplx: 1  autoneg: 0  forced-speed-duplex: 2
-[360421.513446] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
-[360423.815595] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
-[360423.815928] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
-[360465.832992] igb 0000:01:00.2: Set Speed: 100  dplx: 0  autoneg: 0  forced-speed-duplex: 4
-[360465.948361] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
-[360468.272516] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 100 Mbps Half Duplex, Flow Control: None
-[360468.318388] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 100 Mbps Half Duplex, Flow Control: None
-[360486.514016] igb 0000:01:00.2: Set Speed: 100  dplx: 1  autoneg: 0  forced-speed-duplex: 8
-[360486.539733] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
-[360488.707926] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 100 Mbps Half Duplex, Flow Control: None
-[360488.753727] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 100 Mbps Full Duplex, Flow Control: None
-[360503.658416] igb 0000:01:00.2: Set Speed: 1000  dplx: 1  autoneg: 1  forced-speed-duplex: 8
-[360503.684089] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
-[360506.572410] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
-[360507.120348] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
-[360543.873779] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
-[360546.701102] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
-[360547.204119] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
-[360564.547193] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
-[360567.404614] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360567.973547] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360597.366482] igb 0000:01:00.2: changing MTU from 1500 to 3800
-[360598.098996] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
-[360601.028214] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360601.581234] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360611.266742] igb 0000:01:00.3: changing MTU from 1500 to 3800
-[360611.591268] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
-[360614.051481] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360614.605478] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360632.902730] igb 0000:01:00.2: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
-[360633.276708] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
-[360635.584020] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
-[360635.584253] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
-[360695.743292] igb 0000:01:00.3: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
-[360695.863858] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
+[360212.156670] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k [360212.156672] igb: Copyright (c) 2007-2014 Intel Corporation.
+[360212.216114] igb 0000:01:00.0: added PHC on eth0 [360212.216116] igb 0000:01:00.0: Intel(R) Gigabit Ethernet Network Connection [360212.216118] igb 0000:01:00.0: eth0: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:77 [360212.216200] igb 0000:01:00.0: eth0: PBA No: 106300-000 [360212.216202] igb 0000:01:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s) [360212.271608] igb 0000:01:00.1: added PHC on eth1 [360212.271610] igb 0000:01:00.1: Intel(R) Gigabit Ethernet Network Connection [360212.271611] igb 0000:01:00.1: eth1: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:78 [360212.271694] igb 0000:01:00.1: eth1: PBA No: 106300-000 [360212.271695] igb 0000:01:00.1: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s) [360212.326533] igb 0000:01:00.2: added PHC on eth2 [360212.326535] igb 0000:01:00.2: Intel(R) Gigabit Ethernet Network Connection [360212.326537] igb 0000:01:00.2: eth2: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:79 [360212.326620] igb 0000:01:00.2: eth2: PBA No: 106300-000 [360212.326621] igb 0000:01:00.2: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s) [360212.438974] igb 0000:01:00.3: added PHC on eth3 [360212.438977] igb 0000:01:00.3: Intel(R) Gigabit Ethernet Network Connection [360212.438979] igb 0000:01:00.3: eth3: (PCIe:5.0Gb/s:Width x4) 00:30:18:01:64:7a [360212.439070] igb 0000:01:00.3: eth3: PBA No: 106300-000 [360212.439076] igb 0000:01:00.3: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s) [360212.482565] igb 0000:02:00.0: added PHC on eth4 [360212.482566] igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection [360212.482568] igb 0000:02:00.0: eth4: (PCIe:2.5Gb/s:Width x1) 00:30:18:01:64:7b [360212.482569] igb 0000:02:00.0: eth4: PBA No: FFFFFF-0FF [360212.482570] igb 0000:02:00.0: Using MSI-X interrupts. 2 rx queue(s), 2 tx queue(s) [360215.943458] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360216.276567] igb 0000:01:00.1 eth1: igb: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360216.493576] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360255.427240] igb 0000:01:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360275.927145] igb 0000:01:00.0 eth0: igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360388.503634] igb 0000:01:00.2: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1 [360389.299798] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down [360391.609996] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None [360391.609998] igb 0000:01:00.2: EEE Disabled: unsupported at half duplex. Re-enable using ethtool when at full duplex.
+[360391.610233] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None [360391.610234] igb 0000:01:00.3: EEE Disabled: unsupported at half duplex. Re-enable using ethtool when at full duplex.
+[360421.400233] igb 0000:01:00.2: Set Speed: 10  dplx: 1  autoneg: 0  forced-speed-duplex: 2 [360421.513446] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down [360423.815595] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Full Duplex, Flow Control: None [360423.815928] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None [360465.832992] igb 0000:01:00.2: Set Speed: 100  dplx: 0  autoneg: 0  forced-speed-duplex: 4 [360465.948361] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down [360468.272516] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 100 Mbps Half Duplex, Flow Control: None [360468.318388] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 100 Mbps Half Duplex, Flow Control: None [360486.514016] igb 0000:01:00.2: Set Speed: 100  dplx: 1  autoneg: 0  forced-speed-duplex: 8 [360486.539733] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down [360488.707926] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 100 Mbps Half Duplex, Flow Control: None [360488.753727] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 100 Mbps Full Duplex, Flow Control: None [360503.658416] igb 0000:01:00.2: Set Speed: 1000  dplx: 1  autoneg: 1  forced-speed-duplex: 8 [360503.684089] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down [360506.572410] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX [360507.120348] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None [360543.873779] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down [360546.701102] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX [360547.204119] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None [360564.547193] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down [360567.404614] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360567.973547] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360597.366482] igb 0000:01:00.2: changing MTU from 1500 to 3800 [360598.098996] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down [360601.028214] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360601.581234] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360611.266742] igb 0000:01:00.3: changing MTU from 1500 to 3800 [360611.591268] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down [360614.051481] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360614.605478] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360632.902730] igb 0000:01:00.2: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1 [360633.276708] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down [360635.584020] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None [360635.584253] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None [360695.743292] igb 0000:01:00.3: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1 [360695.863858] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
 
-[360614.051481] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360614.605478] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[360632.902730] igb 0000:01:00.2: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
-[360633.276708] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down
-[360635.584020] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
-[360635.584253] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
-[360695.743292] igb 0000:01:00.3: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
-[360695.863858] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
-[361049.119412] igb 0000:01:00.2: changing MTU from 3800 to 1500
-[361064.275721] igb 0000:01:00.3: changing MTU from 3800 to 1500
-[361106.100172] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
-[361106.101351] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None
-[361120.462094] igb 0000:01:00.3: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1
-[361120.578506] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
+[360614.051481] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360614.605478] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX [360632.902730] igb 0000:01:00.2: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1 [360633.276708] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Down [360635.584020] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None [360635.584253] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None [360695.743292] igb 0000:01:00.3: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1 [360695.863858] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down [361049.119412] igb 0000:01:00.2: changing MTU from 3800 to 1500 [361064.275721] igb 0000:01:00.3: changing MTU from 3800 to 1500 [361106.100172] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None [361106.101351] igb 0000:01:00.3 eth3: igb: eth3 NIC Link is Up 10 Mbps Half Duplex, Flow Control: None [361120.462094] igb 0000:01:00.3: Set Speed: 10  dplx: 0  autoneg: 0  forced-speed-duplex: 1 [361120.578506] igb 0000:01:00.2 eth2: igb: eth2 NIC Link is Down
 
 
 Kernel is 4.20.17+ local hacks (no significant local patches applied to igb though)
@@ -256,7 +188,11 @@ I will be happy to try patches or provide other debugging.  The problem is fully
 Thanks,
 Ben
 
--- 
+--
 Ben Greear <greearb@candelatech.com>
 Candela Technologies Inc  http://www.candelatech.com
 
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
