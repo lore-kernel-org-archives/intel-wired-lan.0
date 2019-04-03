@@ -1,35 +1,39 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed,  3 Apr 2019 16:58:04 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Fix double definitions
-Message-ID: <20190403135804.9229-1-sasha.neftin@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 3 Apr 2019 21:54:11 +0000
+Subject: [Intel-wired-lan] [next PATCH S4 01/11] i40e: VF's promiscuous
+ attribute is not kept
+In-Reply-To: <20190329220840.51187-1-alice.michael@intel.com>
+References: <20190329220840.51187-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D378791@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Collision threshold and threshold's shift has been defined twice.
-This patch comes to fix that.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Friday, March 29, 2019 3:09 PM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: Siwik, Grzegorz <grzegorz.siwik@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S4 01/11] i40e: VF's promiscuous
+> attribute is not kept
+> 
+> From: Grzegorz Siwik <grzegorz.siwik@intel.com>
+> 
+> This patch fixes a bug where the promiscuous mode was not being kept
+> when the VF switched to a new VLAN.
+> Now we are config two times a promiscuous mode when we switch VLAN.
+> Without this change when we change VF VLAN we still receive all the packets
+> from previous VLAN and only unicast from new VLAN.
+> 
+> Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
+> ---
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 23 +++++++++++++++++++
+>  1 file changed, 23 insertions(+)
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_defines.h | 3 ---
- 1 file changed, 3 deletions(-)
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index a9a30268de59..6f17ed3de995 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -264,9 +264,6 @@
- #define IGC_TCTL_RTLC		0x01000000 /* Re-transmit on late collision */
- #define IGC_TCTL_MULR		0x10000000 /* Multiple request support */
- 
--#define IGC_CT_SHIFT			4
--#define IGC_COLLISION_THRESHOLD		15
--
- /* Flow Control Constants */
- #define FLOW_CONTROL_ADDRESS_LOW	0x00C28001
- #define FLOW_CONTROL_ADDRESS_HIGH	0x00000100
--- 
-2.11.0
 
