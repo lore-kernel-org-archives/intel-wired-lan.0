@@ -1,176 +1,76 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 05 Apr 2019 04:24:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 24f3427c98150bead00f17f2957b188087285c9d
-Message-ID: <5ca66807.l3vf6TZVHSV1Gv/a%lkp@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Thu,  4 Apr 2019 14:56:32 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v1] igb: Fix limiting the
+ number of queues to number of cpus
+Message-ID: <20190404215632.9881-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 24f3427c98150bead00f17f2957b188087285c9d  ixgbe: fix AF_XDP tx packet count
+We have seen some reports[1] of users complaining that they aren't
+able to use some queues when their machines have less than 4 cpus.
+This affects some TSN workloads, as different traffic classes are
+assigned different queues. The current behavior limits the number of
+traffic classes that can be reliably handled.
 
-Regressions in current branch:
+In practice, what is not working, it returns an invalid parameter
+error, in hosts with less than 4 cpus is something like this:
 
-drivers/net/ethernet/intel/i40e/i40e_main.c:14842:2-8: ERROR: missing iounmap; ioremap on line 14700 and execution via conditional on line 14841
+$ tc qdisc replace dev IFACE parent root mqprio	\
+     	   num_tc 3 map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2	\
+	   queues 1 at 0 1 at 1 2 at 2 hw 0
 
-Error ids grouped by kconfigs:
+Because changing the default logic of the allocation of queues could
+bring other effects, we propose adding a module parameter so expert
+users may override that decision.
 
-recent_errors
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
-??? x86_64-allyesconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
+[1] https://github.com/jeez/iproute2/issues/1
 
-elapsed time: 219m
-
-configs tested: 142
-
-i386                   randconfig-x010-201913
-i386                   randconfig-x018-201913
-i386                   randconfig-x017-201913
-i386                   randconfig-x013-201913
-i386                   randconfig-x014-201913
-i386                   randconfig-x011-201913
-i386                   randconfig-x015-201913
-i386                   randconfig-x019-201913
-i386                   randconfig-x012-201913
-i386                   randconfig-x016-201913
-i386                   randconfig-n3-04010147
-i386                   randconfig-n2-04010147
-i386                   randconfig-n1-04010147
-i386                   randconfig-n0-04010147
-riscv                             allnoconfig
-riscv                               defconfig
-i386                   randconfig-x002-201913
-i386                   randconfig-x005-201913
-i386                   randconfig-x001-201913
-i386                   randconfig-x007-201913
-i386                   randconfig-x000-201913
-i386                   randconfig-x008-201913
-i386                   randconfig-x004-201913
-i386                   randconfig-x009-201913
-i386                   randconfig-x003-201913
-i386                   randconfig-x006-201913
-x86_64                 randconfig-x015-201913
-x86_64                 randconfig-x016-201913
-x86_64                 randconfig-x013-201913
-x86_64                 randconfig-x017-201913
-x86_64                 randconfig-x012-201913
-x86_64                 randconfig-x018-201913
-x86_64                 randconfig-x010-201913
-x86_64                 randconfig-x014-201913
-x86_64                 randconfig-x019-201913
-x86_64                 randconfig-x011-201913
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                     randconfig-a1-201913
-i386                     randconfig-a2-201913
-i386                     randconfig-a0-201913
-i386                     randconfig-a3-201913
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-x86_64                                    lkp
-x86_64                                   rhel
-arm                              allmodconfig
-arm64                            allyesconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allmodconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-x86_64                   randconfig-m2-201913
-i386                     randconfig-m0-201913
-i386                     randconfig-m3-201913
-i386                     randconfig-m2-201913
-x86_64                   randconfig-m1-201913
-x86_64                   randconfig-m0-201913
-i386                     randconfig-m1-201913
-x86_64                   randconfig-m3-201913
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-parisc                        c3000_defconfig
-um                                  defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-x86_64                                  kexec
-x86_64                               rhel-7.2
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                 randconfig-x000-201913
-x86_64                 randconfig-x004-201913
-x86_64                 randconfig-x001-201913
-x86_64                 randconfig-x003-201913
-x86_64                 randconfig-x007-201913
-x86_64                 randconfig-x008-201913
-x86_64                 randconfig-x002-201913
-x86_64                 randconfig-x006-201913
-x86_64                 randconfig-x005-201913
-x86_64                 randconfig-x009-201913
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                   randconfig-x077-201913
-i386                   randconfig-x070-201913
-i386                   randconfig-x074-201913
-i386                   randconfig-x072-201913
-i386                   randconfig-x075-201913
-i386                   randconfig-x071-201913
-i386                   randconfig-x078-201913
-i386                   randconfig-x079-201913
-i386                   randconfig-x076-201913
-i386                   randconfig-x073-201913
-i386                              allnoconfig
-i386                                defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-
+Reported-by: Bhagath Singh Karunakaran <bhagath@kalycito.com>
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+
+A similar fix should also be needed for igc, even if I don't have the
+hardware to test, I can produce a patch, if others are able to test.
+
+I am not totally sure that using a module parameter is the best
+solution, so, suggestions are welcome.
+
+ drivers/net/ethernet/intel/igb/igb_main.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 32d61d5a2706..87072d47c305 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -247,6 +247,10 @@ static int debug = -1;
+ module_param(debug, int, 0);
+ MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
+ 
++static unsigned int num_queues;
++module_param(num_queues, uint, 0);
++MODULE_PARM_DESC(num_queues, "Allocate at maximum this number of queues (0=num_cpus(), default)");
++
+ struct igb_reg_info {
+ 	u32 ofs;
+ 	char *name;
+@@ -3763,7 +3767,13 @@ static void igb_init_queue_configuration(struct igb_adapter *adapter)
+ 	u32 max_rss_queues;
+ 
+ 	max_rss_queues = igb_get_max_rss_queues(adapter);
+-	adapter->rss_queues = min_t(u32, max_rss_queues, num_online_cpus());
++
++	if (num_queues > 0)
++		adapter->rss_queues = min_t(u32, max_rss_queues,
++					    num_queues);
++	else
++		adapter->rss_queues = min_t(u32, max_rss_queues,
++					    num_online_cpus());
+ 
+ 	igb_set_flag_queue_pairs(adapter, max_rss_queues);
+ }
+-- 
+2.21.0
+
