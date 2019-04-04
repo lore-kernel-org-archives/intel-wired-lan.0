@@ -1,37 +1,34 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu,  4 Apr 2019 13:26:53 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Clean up unused pointers
-Message-ID: <20190404102653.24472-1-sasha.neftin@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu,  4 Apr 2019 09:36:54 -0700
+Subject: [Intel-wired-lan] [1/2] ixgbe: fix AF_XDP tx byte count
+Message-ID: <20190404163655.27662-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Few function pointers from phy_operations structure were unused.
-This patch cleans those.
+From: William Tu <u9012063@gmail.com>
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+The tx bytecount is done twice.  When running
+'./xdpsock -t -N -i eth3' and 'ip -s link show dev eth3'
+The avg packet size is 120 instead of 60. So remove the
+extra one.
+
+Signed-off-by: William Tu <u9012063@gmail.com>
 ---
- drivers/net/ethernet/intel/igc/igc_hw.h | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 7c88b7bd4799..1039a224ac80 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -114,11 +114,8 @@ struct igc_nvm_operations {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+index bfe95ce0bd7f..71b8474a9b4c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+@@ -704,7 +704,6 @@ bool ixgbe_clean_xdp_tx_irq(struct ixgbe_q_vector *q_vector,
+ 			xsk_frames++;
  
- struct igc_phy_operations {
- 	s32 (*acquire)(struct igc_hw *hw);
--	s32 (*check_polarity)(struct igc_hw *hw);
- 	s32 (*check_reset_block)(struct igc_hw *hw);
- 	s32 (*force_speed_duplex)(struct igc_hw *hw);
--	s32 (*get_cfg_done)(struct igc_hw *hw);
--	s32 (*get_cable_length)(struct igc_hw *hw);
- 	s32 (*get_phy_info)(struct igc_hw *hw);
- 	s32 (*read_reg)(struct igc_hw *hw, u32 address, u16 *data);
- 	void (*release)(struct igc_hw *hw);
--- 
-2.11.0
-
+ 		tx_bi->xdpf = NULL;
+-		total_bytes += tx_bi->bytecount;
+ 
+ 		tx_bi++;
+ 		tx_desc++;
