@@ -1,186 +1,36 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 06 Apr 2019 05:02:10 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- fa0d28cd94b8d7d4696d3ee9ea141e75583908e7
-Message-ID: <5ca7c252.UU98uVWuTixyUtJD%lkp@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 5 Apr 2019 21:34:09 +0000
+Subject: [Intel-wired-lan] [next S4 v2 04/11] i40e: add functions stubs
+ to support EEE
+In-Reply-To: <20190330000456.23221-1-jeffrey.t.kirsher@intel.com>
+References: <20190330000456.23221-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3809C6@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: fa0d28cd94b8d7d4696d3ee9ea141e75583908e7  ixgbe: fix AF_XDP tx packet count
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Friday, March 29, 2019 5:05 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
+> Subject: [Intel-wired-lan] [next S4 v2 04/11] i40e: add functions stubs to
+> support EEE
+> 
+> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> 
+> This patch adds functions stubs to support EEE on/off.
+> 
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+> v2: fixed merge issue
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 
-Regressions in current branch:
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-drivers/net/ethernet/intel/i40e/i40e_main.c:14842:2-8: ERROR: missing iounmap; ioremap on line 14700 and execution via conditional on line 14841
 
-Error ids grouped by kconfigs:
-
-recent_errors
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
-??? x86_64-allyesconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
-
-elapsed time: 226m
-
-configs tested: 152
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-i386                   randconfig-x010-201913
-i386                   randconfig-x018-201913
-i386                   randconfig-x017-201913
-i386                   randconfig-x013-201913
-i386                   randconfig-x014-201913
-i386                   randconfig-x011-201913
-i386                   randconfig-x015-201913
-i386                   randconfig-x019-201913
-i386                   randconfig-x012-201913
-i386                   randconfig-x016-201913
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n3-04010147
-i386                   randconfig-n2-04010147
-i386                   randconfig-n1-04010147
-i386                   randconfig-n0-04010147
-i386                   randconfig-x002-201913
-i386                   randconfig-x005-201913
-i386                   randconfig-x001-201913
-i386                   randconfig-x007-201913
-i386                   randconfig-x000-201913
-i386                   randconfig-x008-201913
-i386                   randconfig-x004-201913
-i386                   randconfig-x009-201913
-i386                   randconfig-x003-201913
-i386                   randconfig-x006-201913
-x86_64                 randconfig-x015-201913
-x86_64                 randconfig-x016-201913
-x86_64                 randconfig-x013-201913
-x86_64                 randconfig-x017-201913
-x86_64                 randconfig-x012-201913
-x86_64                 randconfig-x018-201913
-x86_64                 randconfig-x010-201913
-x86_64                 randconfig-x014-201913
-x86_64                 randconfig-x019-201913
-x86_64                 randconfig-x011-201913
-i386                     randconfig-a1-201913
-i386                     randconfig-a2-201913
-i386                     randconfig-a0-201913
-i386                     randconfig-a3-201913
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-arm                              allmodconfig
-arm64                            allyesconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allmodconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                               rhel-7.6
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-m0-04050455
-x86_64                 randconfig-m2-04050455
-x86_64                 randconfig-m1-04050455
-i386                   randconfig-m2-04050455
-x86_64                 randconfig-m3-04050455
-i386                   randconfig-m3-04050455
-i386                   randconfig-m1-04050455
-x86_64                 randconfig-m0-04050455
-riscv                             allnoconfig
-riscv                               defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-l1-04051428
-x86_64                 randconfig-l0-04051428
-i386                   randconfig-l3-04051428
-x86_64                 randconfig-l3-04051428
-i386                   randconfig-l0-04051428
-i386                   randconfig-l2-04051428
-x86_64                 randconfig-l2-04051428
-i386                   randconfig-l1-04051428
-i386                   randconfig-x077-201913
-i386                   randconfig-x070-201913
-i386                   randconfig-x074-201913
-i386                   randconfig-x072-201913
-i386                   randconfig-x075-201913
-i386                   randconfig-x071-201913
-i386                   randconfig-x078-201913
-i386                   randconfig-x079-201913
-i386                   randconfig-x076-201913
-i386                   randconfig-x073-201913
-x86_64                           allmodconfig
-i386                             alldefconfig
-x86_64                 randconfig-x000-201913
-x86_64                 randconfig-x004-201913
-x86_64                 randconfig-x001-201913
-x86_64                 randconfig-x003-201913
-x86_64                 randconfig-x007-201913
-x86_64                 randconfig-x008-201913
-x86_64                 randconfig-x002-201913
-x86_64                 randconfig-x006-201913
-x86_64                 randconfig-x005-201913
-x86_64                 randconfig-x009-201913
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
