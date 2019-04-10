@@ -1,36 +1,37 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Thu, 11 Apr 2019 09:11:33 -0700
-Subject: [Intel-wired-lan] [PATCH 1/4] net: Add a define for LLDP ethertype
-In-Reply-To: <20190411161136.1541-1-anirudh.venkataramanan@intel.com>
-References: <20190411161136.1541-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190411161136.1541-2-anirudh.venkataramanan@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 10 Apr 2019 09:00:40 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 91/92] ERROR:
+ "__aeabi_uldivmod" [drivers/net/ethernet/intel/ixgbe/ixgbe.ko] undefined!
+Message-ID: <201904100938.syQPKPsW%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add a new define ETH_P_LLDP for Link Layer Discovery Protocol (LLDP)
-ethertype.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   1fb63ba6081fcff6e3749feb161ec011458d3072
+commit: e5ce07e126190433f802dffacf5013dc19f8c1e5 [91/92] ixgbe: implement support for SDP/PPS output on X550 hardware
+config: arm-allmodconfig (attached as .config)
+compiler: arm-linux-gnueabi-gcc (Debian 7.2.0-11) 7.2.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout e5ce07e126190433f802dffacf5013dc19f8c1e5
+        # save the attached .config to linux build tree
+        GCC_VERSION=7.2.0 make.cross ARCH=arm 
 
-Suggested-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+All errors (new ones prefixed by >>):
+
+>> ERROR: "__aeabi_uldivmod" [drivers/net/ethernet/intel/ixgbe/ixgbe.ko] undefined!
+
 ---
- include/uapi/linux/if_ether.h | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/include/uapi/linux/if_ether.h b/include/uapi/linux/if_ether.h
-index 3a45b4ad71a3..89807b9a9164 100644
---- a/include/uapi/linux/if_ether.h
-+++ b/include/uapi/linux/if_ether.h
-@@ -91,6 +91,7 @@
- #define ETH_P_802_EX1	0x88B5		/* 802.1 Local Experimental 1.  */
- #define ETH_P_PREAUTH	0x88C7		/* 802.11 Preauthentication */
- #define ETH_P_TIPC	0x88CA		/* TIPC 			*/
-+#define ETH_P_LLDP	0x88CC		/* Link Layer Discovery Protocol */
- #define ETH_P_MACSEC	0x88E5		/* 802.1ae MACsec */
- #define ETH_P_8021AH	0x88E7          /* 802.1ah Backbone Service Tag */
- #define ETH_P_MVRP	0x88F5          /* 802.1Q MVRP                  */
--- 
-2.20.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 68340 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190410/4fd7c077/attachment-0001.bin>
