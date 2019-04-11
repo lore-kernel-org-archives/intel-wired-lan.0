@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 11 Apr 2019 22:02:02 +0000
-Subject: [Intel-wired-lan] [PATCH 2/5] ixgbe: fix PTP SDP pin setup on
- X540 hardware
-In-Reply-To: <20190408235202.10676-2-jacob.e.keller@intel.com>
+Date: Thu, 11 Apr 2019 22:02:28 +0000
+Subject: [Intel-wired-lan] [PATCH 3/5] ixgbe: implement support for
+ SDP/PPS output on X550 hardware
+In-Reply-To: <20190408235202.10676-3-jacob.e.keller@intel.com>
 References: <20190408235202.10676-1-jacob.e.keller@intel.com>
- <20190408235202.10676-2-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D38D219@ORSMSX104.amr.corp.intel.com>
+ <20190408235202.10676-3-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D38D226@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jacob Keller
 > Sent: Monday, April 8, 2019 4:52 PM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH 2/5] ixgbe: fix PTP SDP pin setup on X540
-> hardware
+> Subject: [Intel-wired-lan] [PATCH 3/5] ixgbe: implement support for SDP/PPS
+> output on X550 hardware
 > 
-> The function ixgbe_ptp_setup_sdp_X540 attempts to program a software
-> defined pin, in order to generate a pulse-per-second output on SDP 0.
+> Similar to the X540 hardware, enable support for generating a 1pps output
+> signal on SDP0.
 > 
-> It does work to generate the output, but does not align the output on the full
-> second. Additionally, it does not take into account the cyclecounter
-> multiplier. This leads to somewhat confusing code which is likely to be
-> incorrect if blindly copied to another hardware type.
+> This support is slightly different to the X540 hardware, because of the
+> register layout changes. First, the system time register is now represented in
+> 'cycles' and 'billions of cycles'. Second, we need to also program the TSSDP
+> register, as well as the ESDP register. Third, the clock output uses only
+> FREQOUT, instead of a full 64bit value for the output clock period. Finally, we
+> have to use the ST0 bit instead of the SYNCLK bit in the TSAUXC register.
 > 
-> Update this code to account for the cyclecounter multiplier, and to directly
-> use timecounter_read.
+> This support should work even for the hardware with a higher frequency
+> clock, as it carefully takes into account the multiply and shift of the cycle
+> counter used.
 > 
-> This change ensures that the SDP output will align properly on a full second,
-> and makes the intent of the calculations a bit more clear.
+> We also set the pps configuration to 1, since we now support generating a
+> pulse per second output.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 71 ++++++++++++--------
->  1 file changed, 42 insertions(+), 29 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c  | 99 ++++++++++++++++++-
+> drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 14 ++-
+>  2 files changed, 108 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
