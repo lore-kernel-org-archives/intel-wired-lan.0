@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 11 Apr 2019 22:02:57 +0000
-Subject: [Intel-wired-lan] [PATCH 4/5] ixgbe: use 'cc' instead of
- 'hw_cc' for local variable
-In-Reply-To: <20190408235202.10676-4-jacob.e.keller@intel.com>
+Date: Thu, 11 Apr 2019 22:03:23 +0000
+Subject: [Intel-wired-lan] [PATCH 5/5] ixgbe: add a kernel documentation
+ comment for ixgbe_ptp_get_ts_config
+In-Reply-To: <20190408235202.10676-5-jacob.e.keller@intel.com>
 References: <20190408235202.10676-1-jacob.e.keller@intel.com>
- <20190408235202.10676-4-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D38D236@ORSMSX104.amr.corp.intel.com>
+ <20190408235202.10676-5-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D38D249@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jacob Keller
 > Sent: Monday, April 8, 2019 4:52 PM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH 4/5] ixgbe: use 'cc' instead of 'hw_cc' for
-> local variable
+> Subject: [Intel-wired-lan] [PATCH 5/5] ixgbe: add a kernel documentation
+> comment for ixgbe_ptp_get_ts_config
 > 
-> The ixgbe_ptp.c file sometimes uses hw_cc as the local variable for the cycle
-> counter in ixgbe_ptp_read_X550. However, we use just 'cc' as a local variable
-> for this by convention else where in the file.
-> 
-> Convert this lone usage of 'hw_cc' into just the shorter 'cc' name to match
-> the other read functions in the file.
+> This function was missing a documentation comment. Add one now.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
