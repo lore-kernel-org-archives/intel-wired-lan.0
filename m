@@ -1,32 +1,128 @@
-From: syzbot <syzbot+554266c04a41d1f9754d@syzkaller.appspotmail.com>
-Date: Sat, 13 Apr 2019 02:39:00 -0700
-Subject: [Intel-wired-lan] general protection fault in requeue_rx_msgs
-In-Reply-To: <0000000000000482ce056d7c1436@google.com>
-Message-ID: <0000000000006a8b3505866630b5@google.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Mon, 15 Apr 2019 14:10:35 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove the obsolete workaround
+Message-ID: <20190415111035.31815-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-syzbot has bisected this bug to:
+Enables a resend request after the completion timeout workaround is not
+relevant for i225 device. This patch is clean code relevant this
+workaround.
+Minor cosmetic fixes, replace the 'spaces' with 'tabs'
 
-commit 11a350c965cc5ac2f5d0ed1fb336735a0c1a6344
-Author: Alan Brady <alan.brady@intel.com>
-Date:   Fri Dec 29 13:48:33 2017 +0000
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_base.c    | 49 ----------------------------
+ drivers/net/ethernet/intel/igc/igc_defines.h | 12 ++-----
+ 2 files changed, 3 insertions(+), 58 deletions(-)
 
-     i40e: fix typo in function description
+diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
+index 51a8b8769c67..59258d791106 100644
+--- a/drivers/net/ethernet/intel/igc/igc_base.c
++++ b/drivers/net/ethernet/intel/igc/igc_base.c
+@@ -10,50 +10,6 @@
+ #include "igc.h"
+ 
+ /**
+- * igc_set_pcie_completion_timeout - set pci-e completion timeout
+- * @hw: pointer to the HW structure
+- */
+-static s32 igc_set_pcie_completion_timeout(struct igc_hw *hw)
+-{
+-	u32 gcr = rd32(IGC_GCR);
+-	u16 pcie_devctl2;
+-	s32 ret_val = 0;
+-
+-	/* only take action if timeout value is defaulted to 0 */
+-	if (gcr & IGC_GCR_CMPL_TMOUT_MASK)
+-		goto out;
+-
+-	/* if capabilities version is type 1 we can write the
+-	 * timeout of 10ms to 200ms through the GCR register
+-	 */
+-	if (!(gcr & IGC_GCR_CAP_VER2)) {
+-		gcr |= IGC_GCR_CMPL_TMOUT_10ms;
+-		goto out;
+-	}
+-
+-	/* for version 2 capabilities we need to write the config space
+-	 * directly in order to set the completion timeout value for
+-	 * 16ms to 55ms
+-	 */
+-	ret_val = igc_read_pcie_cap_reg(hw, PCIE_DEVICE_CONTROL2,
+-					&pcie_devctl2);
+-	if (ret_val)
+-		goto out;
+-
+-	pcie_devctl2 |= PCIE_DEVICE_CONTROL2_16ms;
+-
+-	ret_val = igc_write_pcie_cap_reg(hw, PCIE_DEVICE_CONTROL2,
+-					 &pcie_devctl2);
+-out:
+-	/* disable completion timeout resend */
+-	gcr &= ~IGC_GCR_CMPL_TMOUT_RESEND;
+-
+-	wr32(IGC_GCR, gcr);
+-
+-	return ret_val;
+-}
+-
+-/**
+  * igc_reset_hw_base - Reset hardware
+  * @hw: pointer to the HW structure
+  *
+@@ -72,11 +28,6 @@ static s32 igc_reset_hw_base(struct igc_hw *hw)
+ 	if (ret_val)
+ 		hw_dbg("PCI-E Master disable polling has failed.\n");
+ 
+-	/* set the completion timeout for interface */
+-	ret_val = igc_set_pcie_completion_timeout(hw);
+-	if (ret_val)
+-		hw_dbg("PCI-E Set completion timeout has failed.\n");
+-
+ 	hw_dbg("Masking off all interrupts\n");
+ 	wr32(IGC_IMC, 0xffffffff);
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 6f17ed3de995..5f6bc67cb33b 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -5,8 +5,8 @@
+ #define _IGC_DEFINES_H_
+ 
+ /* Number of Transmit and Receive Descriptors must be a multiple of 8 */
+-#define REQ_TX_DESCRIPTOR_MULTIPLE  8
+-#define REQ_RX_DESCRIPTOR_MULTIPLE  8
++#define REQ_TX_DESCRIPTOR_MULTIPLE	8
++#define REQ_RX_DESCRIPTOR_MULTIPLE	8
+ 
+ #define IGC_CTRL_EXT_DRV_LOAD	0x10000000 /* Drv loaded bit for FW */
+ 
+@@ -29,12 +29,6 @@
+ /* Status of Master requests. */
+ #define IGC_STATUS_GIO_MASTER_ENABLE	0x00080000
+ 
+-/* PCI Express Control */
+-#define IGC_GCR_CMPL_TMOUT_MASK		0x0000F000
+-#define IGC_GCR_CMPL_TMOUT_10ms		0x00001000
+-#define IGC_GCR_CMPL_TMOUT_RESEND	0x00010000
+-#define IGC_GCR_CAP_VER2		0x00040000
+-
+ /* Receive Address
+  * Number of high/low register pairs in the RAR. The RAR (Receive Address
+  * Registers) holds the directed and multicast addresses that we monitor.
+@@ -395,7 +389,7 @@
+ #define IGC_MDIC_ERROR		0x40000000
+ #define IGC_MDIC_DEST		0x80000000
+ 
+-#define IGC_N0_QUEUE -1
++#define IGC_N0_QUEUE		-1
+ 
+ #define IGC_MAX_MAC_HDR_LEN	127
+ #define IGC_MAX_NETWORK_HDR_LEN	511
+-- 
+2.11.0
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1534b397200000
-start commit:   0044cdeb Merge branch 'for-linus' of git://git.kernel.org/..
-git tree:       upstream
-final crash:    https://syzkaller.appspot.com/x/report.txt?x=1734b397200000
-console output: https://syzkaller.appspot.com/x/log.txt?x=1334b397200000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=968b0b23c7854c0b
-dashboard link: https://syzkaller.appspot.com/bug?extid=554266c04a41d1f9754d
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=131a208f800000
-
-Reported-by: syzbot+554266c04a41d1f9754d at syzkaller.appspotmail.com
-Fixes: 11a350c965cc ("i40e: fix typo in function description")
-
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
