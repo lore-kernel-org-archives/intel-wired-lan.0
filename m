@@ -1,63 +1,38 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:30:37 -0700
-Subject: [Intel-wired-lan] [PATCH S20 00/15] Fixes and feature updates for
- ice
-Message-ID: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
+Date: Tue, 16 Apr 2019 10:30:38 -0700
+Subject: [Intel-wired-lan] [PATCH S20 01/15] ice: Remove direct write for
+ GLLAN_RCTL_0
+In-Reply-To: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
+References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173052.28928-2-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anirudh Venkataramanan (3):
-  ice: Remove direct write for GLLAN_RCTL_0
-  ice: Add handler for ethtool selftest
-  ice: Minor cleanup in ice_switch.h
+Clear PXE mode AQ call (opcode 0x0110) is now supported in FW. So
+remove the direct register write to GLLAN_RCTL_0.
 
-Brett Creeley (5):
-  ice: Set minimum default Rx descriptor count to 512
-  ice: Don't call ice_cfg_itr() for SR-IOV
-  ice: Refactor interrupt tracking
-  ice: Add a helper to trigger software interrupt
-  ice: Use GLINT_DYN_CTL to disable VF's interrupts
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_common.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-Bruce Allan (1):
-  ice: Resolve static analysis warning
-
-Dan Nowlin (1):
-  ice: Add ice_get_fw_log_cfg to init FW logging
-
-Dave Ertman (1):
-  ice: Remove redundant and premature event config
-
-Md Fahad Iqbal Polash (1):
-  ice: Configure RSS LUT key only if RSS is enabled
-
-Mitch Williams (2):
-  ice: Check all VFs for MDD activity, don't disable
-  ice: Change message level
-
-Tony Nguyen (1):
-  ice: Implement toggling ethtool rx-vlan-filter
-
- drivers/net/ethernet/intel/ice/ice.h          |  48 +-
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  24 +
- drivers/net/ethernet/intel/ice/ice_common.c   |  74 ++-
- drivers/net/ethernet/intel/ice/ice_common.h   |   5 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 601 +++++++++++++++++-
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   4 +
- drivers/net/ethernet/intel/ice/ice_lib.c      | 245 ++++---
- drivers/net/ethernet/intel/ice/ice_lib.h      |   2 +
- drivers/net/ethernet/intel/ice/ice_main.c     | 159 +++--
- drivers/net/ethernet/intel/ice/ice_nvm.c      |  31 +
- drivers/net/ethernet/intel/ice/ice_status.h   |   1 +
- drivers/net/ethernet/intel/ice/ice_switch.h   |   7 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c     |   8 +-
- drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 227 +++++--
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   8 +
- 16 files changed, 1142 insertions(+), 303 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 87b75d42460b..a14c6ec219b3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -51,9 +51,6 @@ static enum ice_status ice_set_mac_type(struct ice_hw *hw)
+  */
+ void ice_dev_onetime_setup(struct ice_hw *hw)
+ {
+-	/* configure Rx - set non pxe mode */
+-	wr32(hw, GLLAN_RCTL_0, 0x1);
+-
+ #define MBX_PF_VT_PFALLOC	0x00231E80
+ 	/* set VFs per PF */
+ 	wr32(hw, MBX_PF_VT_PFALLOC, rd32(hw, PF_VT_PFALLOC_HIF));
 -- 
 2.20.1
 
