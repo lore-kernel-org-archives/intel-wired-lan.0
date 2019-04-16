@@ -1,83 +1,42 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:34:53 -0700
-Subject: [Intel-wired-lan] [PATCH S21 04/14] ice: Use right type for
- ice_cfg_vsi_lan return
+Date: Tue, 16 Apr 2019 10:34:56 -0700
+Subject: [Intel-wired-lan] [PATCH S21 07/14] ice: Change minimum descriptor
+ count value for Tx/Rx rings
 In-Reply-To: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
 References: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173503.29847-5-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173503.29847-8-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Preethi Banala <preethi.banala@intel.com>
 
-ice_cfg_vsi_lan returns a value of type enum ice_status. So
-use a local of the same type to capture the return value.
+Change minimum number of descriptor count from 32 to 64. This is to have
+a feature parity with previous Intel NIC drivers.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index a21b817642ad..d0410c686ef4 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2365,6 +2365,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- {
- 	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
- 	struct device *dev = &pf->pdev->dev;
-+	enum ice_status status;
- 	struct ice_vsi *vsi;
- 	int ret, i;
- 
-@@ -2472,12 +2473,12 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	for (i = 0; i < vsi->tc_cfg.numtc; i++)
- 		max_txqs[i] = pf->num_lan_tx;
- 
--	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
--			      max_txqs);
--	if (ret) {
-+	status = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
-+				 max_txqs);
-+	if (status) {
- 		dev_err(&pf->pdev->dev,
- 			"VSI %d failed lan queue config, error %d\n",
--			vsi->vsi_num, ret);
-+			vsi->vsi_num, status);
- 		goto unroll_vector_base;
- 	}
- 
-@@ -2868,6 +2869,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
- {
- 	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
- 	struct ice_vf *vf = NULL;
-+	enum ice_status status;
- 	struct ice_pf *pf;
- 	int ret, i;
- 
-@@ -2961,12 +2963,12 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
- 	for (i = 0; i < vsi->tc_cfg.numtc; i++)
- 		max_txqs[i] = pf->num_lan_tx;
- 
--	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
--			      max_txqs);
--	if (ret) {
-+	status = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
-+				 max_txqs);
-+	if (status) {
- 		dev_err(&pf->pdev->dev,
- 			"VSI %d failed lan queue config, error %d\n",
--			vsi->vsi_num, ret);
-+			vsi->vsi_num, status);
- 		goto err_vectors;
- 	}
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index fe7241df8ee5..7c9647082939 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -44,7 +44,7 @@
+ extern const char ice_drv_ver[];
+ #define ICE_BAR0		0
+ #define ICE_REQ_DESC_MULTIPLE	32
+-#define ICE_MIN_NUM_DESC	ICE_REQ_DESC_MULTIPLE
++#define ICE_MIN_NUM_DESC	64
+ #define ICE_MAX_NUM_DESC	8160
+ #define ICE_DFLT_MIN_RX_DESC	512
+ /* if the default number of Rx descriptors between ICE_MAX_NUM_DESC and the
 -- 
 2.20.1
 
