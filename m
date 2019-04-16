@@ -1,110 +1,48 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:30:49 -0700
-Subject: [Intel-wired-lan] [PATCH S20 12/15] ice: Add ice_get_fw_log_cfg to
- init FW logging
+Date: Tue, 16 Apr 2019 10:30:40 -0700
+Subject: [Intel-wired-lan] [PATCH S20 03/15] ice: Resolve static analysis
+ warning
 In-Reply-To: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
 References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173052.28928-13-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173052.28928-4-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dan Nowlin <dan.nowlin@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-In order to initialize the current status of the FW logging,
-this patch adds ice_get_fw_log_cfg. The function retrieves
-the current setting of the FW logging from HW and updates the
-ice_hw structure accordingly.
+Some static analysis tools can complain when doing a bitop assignment using
+operands of different sizes. Fix that.
 
-Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
 [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_common.c   | 48 +++++++++++++++++++
- 2 files changed, 49 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 99eeee930dfa..8680ee2ffa1b 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1694,6 +1694,7 @@ enum ice_adminq_opc {
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index e9a6c866f616..a19dde262dee 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1879,10 +1879,10 @@ int ice_tso(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+ 	cd_mss = skb_shinfo(skb)->gso_size;
  
- 	/* debug commands */
- 	ice_aqc_opc_fw_logging				= 0xFF09,
-+	ice_aqc_opc_fw_logging_info			= 0xFF10,
- };
- 
- #endif /* _ICE_ADMINQ_CMD_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 2826711873d1..b870cc0a363b 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -472,6 +472,49 @@ static void ice_cleanup_fltr_mgmt_struct(struct ice_hw *hw)
- #define ICE_FW_LOG_DESC_SIZE_MAX	\
- 	ICE_FW_LOG_DESC_SIZE(ICE_AQC_FW_LOG_ID_MAX)
- 
-+/**
-+ * ice_get_fw_log_cfg - get FW logging configuration
-+ * @hw: pointer to the HW struct
-+ */
-+static enum ice_status ice_get_fw_log_cfg(struct ice_hw *hw)
-+{
-+	struct ice_aqc_fw_logging_data *config;
-+	struct ice_aq_desc desc;
-+	enum ice_status status;
-+	u16 size;
-+
-+	size = ICE_FW_LOG_DESC_SIZE_MAX;
-+	config = devm_kzalloc(ice_hw_to_dev(hw), size, GFP_KERNEL);
-+	if (!config)
-+		return ICE_ERR_NO_MEMORY;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logging_info);
-+
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_BUF);
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+
-+	status = ice_aq_send_cmd(hw, &desc, config, size, NULL);
-+	if (!status) {
-+		u16 i;
-+
-+		/* Save fw logging information into the hw structure */
-+		for (i = 0; i < ICE_AQC_FW_LOG_ID_MAX; i++) {
-+			u16 v, m, flgs;
-+
-+			v = le16_to_cpu(config->entry[i]);
-+			m = (v & ICE_AQC_FW_LOG_ID_M) >> ICE_AQC_FW_LOG_ID_S;
-+			flgs = (v & ICE_AQC_FW_LOG_EN_M) >> ICE_AQC_FW_LOG_EN_S;
-+
-+			if (m < ICE_AQC_FW_LOG_ID_MAX)
-+				hw->fw_log.evnts[m].cur = flgs;
-+		}
-+	}
-+
-+	devm_kfree(ice_hw_to_dev(hw), config);
-+
-+	return status;
-+}
-+
- /**
-  * ice_cfg_fw_log - configure FW logging
-  * @hw: pointer to the HW struct
-@@ -526,6 +569,11 @@ static enum ice_status ice_cfg_fw_log(struct ice_hw *hw, bool enable)
- 	    (!hw->fw_log.actv_evnts || !ice_check_sq_alive(hw, &hw->adminq)))
- 		return 0;
- 
-+	/* Get current FW log settings */
-+	status = ice_get_fw_log_cfg(hw);
-+	if (status)
-+		return status;
-+
- 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logging);
- 	cmd = &desc.params.fw_logging;
- 
+ 	/* record cdesc_qw1 with TSO parameters */
+-	off->cd_qw1 |= ICE_TX_DESC_DTYPE_CTX |
+-			 (ICE_TX_CTX_DESC_TSO << ICE_TXD_CTX_QW1_CMD_S) |
+-			 (cd_tso_len << ICE_TXD_CTX_QW1_TSO_LEN_S) |
+-			 (cd_mss << ICE_TXD_CTX_QW1_MSS_S);
++	off->cd_qw1 |= (u64)(ICE_TX_DESC_DTYPE_CTX |
++			     (ICE_TX_CTX_DESC_TSO << ICE_TXD_CTX_QW1_CMD_S) |
++			     (cd_tso_len << ICE_TXD_CTX_QW1_TSO_LEN_S) |
++			     (cd_mss << ICE_TXD_CTX_QW1_MSS_S));
+ 	first->tx_flags |= ICE_TX_FLAGS_TSO;
+ 	return 1;
+ }
 -- 
 2.20.1
 
