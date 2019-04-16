@@ -1,39 +1,122 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:30:46 -0700
-Subject: [Intel-wired-lan] [PATCH S20 09/15] ice: Change message level
+Date: Tue, 16 Apr 2019 10:30:52 -0700
+Subject: [Intel-wired-lan] [PATCH S20 15/15] ice: Use GLINT_DYN_CTL to
+ disable VF's interrupts
 In-Reply-To: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
 References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173052.28928-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173052.28928-16-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Change the message level of the MTU change log message from debug to
-info.
+Currently in ice_free_vf_res() we are writing to the VFINT_DYN_CTLN
+register in the PF's function space to disable all VF's interrupts. This
+is incorrect because this register is only for use in the VF's function
+space. This becomes obvious when seeing that the valid indices used for
+the VFINT_DYN_CTLN register is from 0-63, which is the maximum number of
+interrupts for a VF (not including the OICR interrupt). Fix this by
+writing to the GLINT_DYN_CTL register for each VF. We can do this
+because we keep track of each VF's first_vector_idx inside of the PF's
+function space and the number of interrupts given to each VF.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Also in ice_free_vfs() we were disabling Rx/Tx queues after calling
+pci_disable_sriov(). One part of disabling the Tx queues causes the PF
+driver to trigger a software interrupt, which causes the VF's napi
+routine to run. This doesn't currently work because pci_disable_sriov()
+causes iavf_remove() to be called which disables interrupts. Fix this by
+disabling Rx/Tx queues prior to pci_disable_sriov().
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 41 ++++++-------------
+ 1 file changed, 13 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 59971f6224f1..95ac79bfd92a 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3892,7 +3892,7 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
- 		}
- 	}
- 
--	netdev_dbg(netdev, "changed mtu to %d\n", new_mtu);
-+	netdev_info(netdev, "changed MTU to %d\n", new_mtu);
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 0f79cf0e4ee8..9c6d9c95f4f6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -140,18 +140,6 @@ static void ice_vc_notify_vf_link_state(struct ice_vf *vf)
+ 			      sizeof(pfe), NULL);
  }
  
+-/**
+- * ice_get_vf_vector - get VF interrupt vector register offset
+- * @vf_msix: number of MSIx vector per VF on a PF
+- * @vf_id: VF identifier
+- * @i: index of MSIx vector
+- */
+-static u32 ice_get_vf_vector(int vf_msix, int vf_id, int i)
+-{
+-	return ((i == 0) ? VFINT_DYN_CTLN(vf_id) :
+-		 VFINT_DYN_CTLN(((vf_msix - 1) * (vf_id)) + (i - 1)));
+-}
+-
+ /**
+  * ice_free_vf_res - Free a VF's resources
+  * @vf: pointer to the VF info
+@@ -159,7 +147,7 @@ static u32 ice_get_vf_vector(int vf_msix, int vf_id, int i)
+ static void ice_free_vf_res(struct ice_vf *vf)
+ {
+ 	struct ice_pf *pf = vf->pf;
+-	int i, pf_vf_msix;
++	int i, last_vector_idx;
+ 
+ 	/* First, disable VF's configuration API to prevent OS from
+ 	 * accessing the VF's VSI after it's freed or invalidated.
+@@ -174,13 +162,10 @@ static void ice_free_vf_res(struct ice_vf *vf)
+ 		vf->num_mac = 0;
+ 	}
+ 
+-	pf_vf_msix = pf->num_vf_msix;
++	last_vector_idx = vf->first_vector_idx + pf->num_vf_msix - 1;
+ 	/* Disable interrupts so that VF starts in a known state */
+-	for (i = 0; i < pf_vf_msix; i++) {
+-		u32 reg_idx;
+-
+-		reg_idx = ice_get_vf_vector(pf_vf_msix, vf->vf_id, i);
+-		wr32(&pf->hw, reg_idx, VFINT_DYN_CTLN_CLEARPBA_M);
++	for (i = vf->first_vector_idx; i <= last_vector_idx; i++) {
++		wr32(&pf->hw, GLINT_DYN_CTL(i), GLINT_DYN_CTL_CLEARPBA_M);
+ 		ice_flush(&pf->hw);
+ 	}
+ 	/* reset some of the state variables keeping track of the resources */
+@@ -281,15 +266,6 @@ void ice_free_vfs(struct ice_pf *pf)
+ 	while (test_and_set_bit(__ICE_VF_DIS, pf->state))
+ 		usleep_range(1000, 2000);
+ 
+-	/* Disable IOV before freeing resources. This lets any VF drivers
+-	 * running in the host get themselves cleaned up before we yank
+-	 * the carpet out from underneath their feet.
+-	 */
+-	if (!pci_vfs_assigned(pf->pdev))
+-		pci_disable_sriov(pf->pdev);
+-	else
+-		dev_warn(&pf->pdev->dev, "VFs are assigned - not disabling SR-IOV\n");
+-
+ 	/* Avoid wait time by stopping all VFs at the same time */
+ 	for (i = 0; i < pf->num_alloc_vfs; i++) {
+ 		struct ice_vsi *vsi;
+@@ -305,6 +281,15 @@ void ice_free_vfs(struct ice_pf *pf)
+ 		clear_bit(ICE_VF_STATE_ENA, pf->vf[i].vf_states);
+ 	}
+ 
++	/* Disable IOV before freeing resources. This lets any VF drivers
++	 * running in the host get themselves cleaned up before we yank
++	 * the carpet out from underneath their feet.
++	 */
++	if (!pci_vfs_assigned(pf->pdev))
++		pci_disable_sriov(pf->pdev);
++	else
++		dev_warn(&pf->pdev->dev, "VFs are assigned - not disabling SR-IOV\n");
++
+ 	tmp = pf->num_alloc_vfs;
+ 	pf->num_vf_qps = 0;
+ 	pf->num_alloc_vfs = 0;
 -- 
 2.20.1
 
