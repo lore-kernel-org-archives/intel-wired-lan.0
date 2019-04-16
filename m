@@ -1,40 +1,219 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:21:22 -0700
-Subject: [Intel-wired-lan] [PATCH S18 09/15] ice: Remove __always_unused
- attribute
+Date: Tue, 16 Apr 2019 10:21:24 -0700
+Subject: [Intel-wired-lan] [PATCH S18 11/15] ice: Add function to program
+ ethertype based filter rule on VSIs
 In-Reply-To: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
 References: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416172128.27184-10-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172128.27184-12-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-The variable netdev is being used in this function; remove the
-__always_unused attribute from it.
+This patch adds function to program VSI with ethertype based filter rule,
+so that all flow control frames would be disallowed from being transmitted
+to the client, in order to prevent malicious VSI, especially VF from
+sending out PAUSE or PFC frames, and then control other VSIs traffic.
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice.h        |  2 +
+ drivers/net/ethernet/intel/ice/ice_lib.c    | 55 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_switch.c | 59 +++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_switch.h |  4 ++
+ 4 files changed, 120 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 08ec2f3c5977..1341fde8d53f 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1251,7 +1251,7 @@ ice_get_settings_link_up(struct ethtool_link_ksettings *ks,
-  */
- static void
- ice_get_settings_link_down(struct ethtool_link_ksettings *ks,
--			   struct net_device __always_unused *netdev)
-+			   struct net_device *netdev)
- {
- 	/* link is down and the driver needs to fall back on
- 	 * supported PHY types to figure out what info to display
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 6f970edf50c7..792e6e42030e 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -255,6 +255,8 @@ struct ice_vsi {
+ 
+ 	s16 vf_id;			/* VF ID for SR-IOV VSIs */
+ 
++	u16 ethtype;			/* Ethernet protocol for pause frame */
++
+ 	/* RSS config */
+ 	u16 rss_table_size;	/* HW RSS table size */
+ 	u16 rss_size;		/* Allocated RSS queues */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 7a88bf639376..fbf1eba0cc2a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2250,6 +2250,46 @@ ice_vsi_set_q_vectors_reg_idx(struct ice_vsi *vsi)
+ 	return -EINVAL;
+ }
+ 
++/**
++ * ice_vsi_add_rem_eth_mac - Program VSI ethertype based filter with rule
++ * @vsi: the VSI being configured
++ * @add_rule: boolean value to add or remove ethertype filter rule
++ */
++static void
++ice_vsi_add_rem_eth_mac(struct ice_vsi *vsi, bool add_rule)
++{
++	struct ice_fltr_list_entry *list;
++	struct ice_pf *pf = vsi->back;
++	LIST_HEAD(tmp_add_list);
++	enum ice_status status;
++
++	list = devm_kzalloc(&pf->pdev->dev, sizeof(*list), GFP_KERNEL);
++	if (!list)
++		return;
++
++	list->fltr_info.lkup_type = ICE_SW_LKUP_ETHERTYPE;
++	list->fltr_info.fltr_act = ICE_DROP_PACKET;
++	list->fltr_info.flag = ICE_FLTR_TX;
++	list->fltr_info.src_id = ICE_SRC_ID_VSI;
++	list->fltr_info.vsi_handle = vsi->idx;
++	list->fltr_info.l_data.ethertype_mac.ethertype = vsi->ethtype;
++
++	INIT_LIST_HEAD(&list->list_entry);
++	list_add(&list->list_entry, &tmp_add_list);
++
++	if (add_rule)
++		status = ice_add_eth_mac(&pf->hw, &tmp_add_list);
++	else
++		status = ice_remove_eth_mac(&pf->hw, &tmp_add_list);
++
++	if (status)
++		dev_err(&pf->pdev->dev,
++			"Failure Adding or Removing Ethertype on VSI %i error: %d\n",
++			vsi->vsi_num, status);
++
++	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
++}
++
+ /**
+  * ice_vsi_setup - Set up a VSI by a given type
+  * @pf: board private structure
+@@ -2285,6 +2325,9 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 
+ 	vsi->port_info = pi;
+ 	vsi->vsw = pf->first_sw;
++	if (vsi->type == ICE_VSI_PF)
++		vsi->ethtype = ETH_P_PAUSE;
++
+ 	if (vsi->type == ICE_VSI_VF)
+ 		vsi->vf_id = vf_id;
+ 
+@@ -2382,6 +2425,15 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 		goto unroll_vector_base;
+ 	}
+ 
++	/* Add switch rule to drop all Tx Flow Control Frames, of look up
++	 * type ETHERTYPE from VSIs, and restrict malicious VF from sending
++	 * out PAUSE or PFC frames. If enabled, FW can still send FC frames.
++	 * The rule is added once for PF VSI in order to create appropriate
++	 * recipe, since VSI/VSI list is ignored with drop action...
++	 */
++	if (vsi->type == ICE_VSI_PF)
++		ice_vsi_add_rem_eth_mac(vsi, true);
++
+ 	return vsi;
+ 
+ unroll_vector_base:
+@@ -2740,6 +2792,9 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 		pf->num_avail_hw_msix += pf->num_vf_msix;
+ 	}
+ 
++	if (vsi->type == ICE_VSI_PF)
++		ice_vsi_add_rem_eth_mac(vsi, false);
++
+ 	ice_remove_vsi_fltr(&pf->hw, vsi->idx);
+ 	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
+ 	ice_vsi_delete(vsi);
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index b7975971403d..471003ba1e99 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -1969,6 +1969,65 @@ ice_add_vlan(struct ice_hw *hw, struct list_head *v_list)
+ 	return 0;
+ }
+ 
++/**
++ * ice_add_eth_mac - Add ethertype and MAC based filter rule
++ * @hw: pointer to the hardware structure
++ * @em_list: list of ether type MAC filter, MAC is optional
++ */
++enum ice_status
++ice_add_eth_mac(struct ice_hw *hw, struct list_head *em_list)
++{
++	struct ice_fltr_list_entry *em_list_itr;
++
++	if (!em_list || !hw)
++		return ICE_ERR_PARAM;
++
++	list_for_each_entry(em_list_itr, em_list, list_entry) {
++		enum ice_sw_lkup_type l_type =
++			em_list_itr->fltr_info.lkup_type;
++
++		if (l_type != ICE_SW_LKUP_ETHERTYPE_MAC &&
++		    l_type != ICE_SW_LKUP_ETHERTYPE)
++			return ICE_ERR_PARAM;
++
++		em_list_itr->fltr_info.flag = ICE_FLTR_TX;
++		em_list_itr->status = ice_add_rule_internal(hw, l_type,
++							    em_list_itr);
++		if (em_list_itr->status)
++			return em_list_itr->status;
++	}
++	return 0;
++}
++
++/**
++ * ice_remove_eth_mac - Remove an ethertype (or MAC) based filter rule
++ * @hw: pointer to the hardware structure
++ * @em_list: list of ethertype or ethertype MAC entries
++ */
++enum ice_status
++ice_remove_eth_mac(struct ice_hw *hw, struct list_head *em_list)
++{
++	struct ice_fltr_list_entry *em_list_itr, *tmp;
++
++	if (!em_list || !hw)
++		return ICE_ERR_PARAM;
++
++	list_for_each_entry_safe(em_list_itr, tmp, em_list, list_entry) {
++		enum ice_sw_lkup_type l_type =
++			em_list_itr->fltr_info.lkup_type;
++
++		if (l_type != ICE_SW_LKUP_ETHERTYPE_MAC &&
++		    l_type != ICE_SW_LKUP_ETHERTYPE)
++			return ICE_ERR_PARAM;
++
++		em_list_itr->status = ice_remove_rule_internal(hw, l_type,
++							       em_list_itr);
++		if (em_list_itr->status)
++			return em_list_itr->status;
++	}
++	return 0;
++}
++
+ /**
+  * ice_rem_sw_rule_info
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 88eb4be4d5a4..732b0b9b2e15 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -218,6 +218,10 @@ enum ice_status ice_get_initial_sw_cfg(struct ice_hw *hw);
+ enum ice_status ice_update_sw_rule_bridge_mode(struct ice_hw *hw);
+ enum ice_status ice_add_mac(struct ice_hw *hw, struct list_head *m_lst);
+ enum ice_status ice_remove_mac(struct ice_hw *hw, struct list_head *m_lst);
++enum ice_status
++ice_add_eth_mac(struct ice_hw *hw, struct list_head *em_list);
++enum ice_status
++ice_remove_eth_mac(struct ice_hw *hw, struct list_head *em_list);
+ void ice_remove_vsi_fltr(struct ice_hw *hw, u16 vsi_handle);
+ enum ice_status
+ ice_add_vlan(struct ice_hw *hw, struct list_head *m_list);
 -- 
 2.20.1
 
