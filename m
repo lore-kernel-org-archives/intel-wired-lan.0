@@ -1,45 +1,52 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:21:21 -0700
-Subject: [Intel-wired-lan] [PATCH S18 08/15] ice: Suppress false-positive
- style issues reported by static analyzer
+Date: Tue, 16 Apr 2019 10:21:26 -0700
+Subject: [Intel-wired-lan] [PATCH S18 13/15] ice: Use more efficient
+ structures
 In-Reply-To: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
 References: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416172128.27184-9-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172128.27184-14-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-A recent version of cppcheck falsely reports-
-    Variable ip.hdr is assigned a value that is never used.
+Move a bunch of members around to make more efficient use of
+memory, eliminating holes where possible. None of these members
+are hot path so cache line alignment is not very important here.
 
-ip is a union so the pointer ip.hdr is actually used when referenced as
-ip.v4 and ip.v6.  Silence these false reports when using cppcheck with the
---inline-suppr command-line option.
-
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_txrx.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/ice/ice_controlq.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index bf3bf98e0b1c..e9a6c866f616 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1849,6 +1849,7 @@ int ice_tso(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
- 	if (err < 0)
- 		return err;
+diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.h b/drivers/net/ethernet/intel/ice/ice_controlq.h
+index 0038a4109c99..e0585394d984 100644
+--- a/drivers/net/ethernet/intel/ice/ice_controlq.h
++++ b/drivers/net/ethernet/intel/ice/ice_controlq.h
+@@ -79,6 +79,7 @@ struct ice_rq_event_info {
+ /* Control Queue information */
+ struct ice_ctl_q_info {
+ 	enum ice_ctl_q qtype;
++	enum ice_aq_err rq_last_status;	/* last status on receive queue */
+ 	struct ice_ctl_q_ring rq;	/* receive queue */
+ 	struct ice_ctl_q_ring sq;	/* send queue */
+ 	u32 sq_cmd_timeout;		/* send queue cmd write back timeout */
+@@ -86,10 +87,9 @@ struct ice_ctl_q_info {
+ 	u16 num_sq_entries;		/* send queue depth */
+ 	u16 rq_buf_size;		/* receive queue buffer size */
+ 	u16 sq_buf_size;		/* send queue buffer size */
++	enum ice_aq_err sq_last_status;	/* last status on send queue */
+ 	struct mutex sq_lock;		/* Send queue lock */
+ 	struct mutex rq_lock;		/* Receive queue lock */
+-	enum ice_aq_err sq_last_status;	/* last status on send queue */
+-	enum ice_aq_err rq_last_status;	/* last status on receive queue */
+ };
  
-+	/* cppcheck-suppress unreadVariable */
- 	ip.hdr = skb_network_header(skb);
- 	l4.hdr = skb_transport_header(skb);
- 
+ #endif /* _ICE_CONTROLQ_H_ */
 -- 
 2.20.1
 
