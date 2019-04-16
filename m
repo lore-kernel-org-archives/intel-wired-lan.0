@@ -1,243 +1,135 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:24:31 -0700
-Subject: [Intel-wired-lan] [PATCH S19 07/15] ice: Refactor the LLDP MIB
- change event handling
+Date: Tue, 16 Apr 2019 10:24:34 -0700
+Subject: [Intel-wired-lan] [PATCH S19 10/15] ice: Reorganize tx_buf and ring
+ structs
 In-Reply-To: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
 References: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416172439.27908-8-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172439.27908-11-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Usha Ketineni <usha.k.ketineni@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-This patch fixes the LLDP MIB change event handling code by removing
-the workarounds in the current code. Added ice_dcb_need_recfg() to
-print the DCB configuration changes detected via MIB change event.
+Use more efficient structure ordering by using the pahole tool
+and a lot of code inspection to get hot cache lines to have
+packed data (no holes if possible) and adjacent warm data.
 
-Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
+ice_ring prior to this change:
+  /* size: 192, cachelines: 3, members: 23 */
+  /* sum members: 158, holes: 4, sum holes: 12 */
+  /* padding: 22 */
+
+ice_ring after this change:
+  /* size: 192, cachelines: 3, members: 25 */
+  /* sum members: 162, holes: 1, sum holes: 1 */
+  /* padding: 29 */
+
+ice_tx_buf prior to this change:
+  /* size: 48, cachelines: 1, members: 7 */
+  /* sum members: 38, holes: 2, sum holes: 6 */
+  /* padding: 4 */
+  /* last cacheline: 48 bytes */
+
+ice_tx_buf after this change:
+  /* size: 40, cachelines: 1, members: 7 */
+  /* sum members: 38, holes: 1, sum holes: 2 */
+  /* last cacheline: 40 bytes */
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb.c     |   5 +-
- drivers/net/ethernet/intel/ice/ice_dcb.h     |   4 +-
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 153 ++++++++++++++++---
- 3 files changed, 140 insertions(+), 22 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.h | 35 ++++++++++++++---------
+ 1 file changed, 21 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index da35f1323c86..817ae688082b 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -624,7 +624,8 @@ ice_parse_org_tlv(struct ice_lldp_org_tlv *tlv, struct ice_dcbx_cfg *dcbcfg)
-  *
-  * Parse DCB configuration from the LLDPDU
-  */
--enum ice_status ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg)
-+static enum ice_status
-+ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg)
- {
- 	struct ice_lldp_org_tlv *tlv;
- 	enum ice_status ret = 0;
-@@ -674,7 +675,7 @@ enum ice_status ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg)
-  *
-  * Query DCB configuration from the firmware
-  */
--static enum ice_status
-+enum ice_status
- ice_aq_get_dcb_cfg(struct ice_hw *hw, u8 mib_type, u8 bridgetype,
- 		   struct ice_dcbx_cfg *dcbcfg)
- {
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.h b/drivers/net/ethernet/intel/ice/ice_dcb.h
-index 0bf0cf54783f..8c79d12a459d 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.h
-@@ -120,7 +120,9 @@ struct ice_cee_app_prio {
- 	u8 prio_map;
- } __packed;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 66e05032ee56..4cff52ffefe0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -58,19 +58,19 @@ struct ice_tx_buf {
+ 	unsigned int bytecount;
+ 	unsigned short gso_segs;
+ 	u32 tx_flags;
+-	DEFINE_DMA_UNMAP_ADDR(dma);
+ 	DEFINE_DMA_UNMAP_LEN(len);
++	DEFINE_DMA_UNMAP_ADDR(dma);
+ };
  
--enum ice_status ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg);
-+enum ice_status
-+ice_aq_get_dcb_cfg(struct ice_hw *hw, u8 mib_type, u8 bridgetype,
-+		   struct ice_dcbx_cfg *dcbcfg);
- enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi);
- enum ice_status ice_set_dcb_cfg(struct ice_port_info *pi);
- enum ice_status ice_init_dcb(struct ice_hw *hw);
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 7da22f044d4a..b04295ab35d5 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -501,6 +501,55 @@ ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
- 	return 0;
- }
+ struct ice_tx_offload_params {
+-	u8 header_len;
++	u64 cd_qw1;
++	struct ice_ring *tx_ring;
+ 	u32 td_cmd;
+ 	u32 td_offset;
+ 	u32 td_l2tag1;
+-	u16 cd_l2tag2;
+ 	u32 cd_tunnel_params;
+-	u64 cd_qw1;
+-	struct ice_ring *tx_ring;
++	u16 cd_l2tag2;
++	u8 header_len;
+ };
  
-+/**
-+ * ice_dcb_need_recfg - Check if DCB needs reconfig
-+ * @pf: board private structure
-+ * @old_cfg: current DCB config
-+ * @new_cfg: new DCB config
-+ */
-+static bool ice_dcb_need_recfg(struct ice_pf *pf, struct ice_dcbx_cfg *old_cfg,
-+			       struct ice_dcbx_cfg *new_cfg)
-+{
-+	bool need_reconfig = false;
+ struct ice_rx_buf {
+@@ -150,6 +150,7 @@ enum ice_rx_dtype {
+ 
+ /* descriptor ring, associated with a VSI */
+ struct ice_ring {
++	/* CL1 - 1st cacheline starts here */
+ 	struct ice_ring *next;		/* pointer to next ring in q_vector */
+ 	void *desc;			/* Descriptor ring memory */
+ 	struct device *dev;		/* Used for DMA mapping */
+@@ -161,11 +162,11 @@ struct ice_ring {
+ 		struct ice_tx_buf *tx_buf;
+ 		struct ice_rx_buf *rx_buf;
+ 	};
++	/* CL2 - 2nd cacheline starts here */
+ 	u16 q_index;			/* Queue number of ring */
+-	u32 txq_teid;			/* Added Tx queue TEID */
+-#ifdef CONFIG_DCB
+-	u8 dcb_tc;		/* Traffic class of ring */
+-#endif /* CONFIG_DCB */
++	u16 q_handle;			/* Queue handle per TC */
 +
-+	/* Check if ETS configuration has changed */
-+	if (memcmp(&new_cfg->etscfg, &old_cfg->etscfg,
-+		   sizeof(new_cfg->etscfg))) {
-+		/* If Priority Table has changed reconfig is needed */
-+		if (memcmp(&new_cfg->etscfg.prio_table,
-+			   &old_cfg->etscfg.prio_table,
-+			   sizeof(new_cfg->etscfg.prio_table))) {
-+			need_reconfig = true;
-+			dev_dbg(&pf->pdev->dev, "ETS UP2TC changed.\n");
-+		}
-+
-+		if (memcmp(&new_cfg->etscfg.tcbwtable,
-+			   &old_cfg->etscfg.tcbwtable,
-+			   sizeof(new_cfg->etscfg.tcbwtable)))
-+			dev_dbg(&pf->pdev->dev, "ETS TC BW Table changed.\n");
-+
-+		if (memcmp(&new_cfg->etscfg.tsatable,
-+			   &old_cfg->etscfg.tsatable,
-+			   sizeof(new_cfg->etscfg.tsatable)))
-+			dev_dbg(&pf->pdev->dev, "ETS TSA Table changed.\n");
-+	}
-+
-+	/* Check if PFC configuration has changed */
-+	if (memcmp(&new_cfg->pfc, &old_cfg->pfc, sizeof(new_cfg->pfc))) {
-+		need_reconfig = true;
-+		dev_dbg(&pf->pdev->dev, "PFC config change detected.\n");
-+	}
-+
-+	/* Check if APP Table has changed */
-+	if (memcmp(&new_cfg->app, &old_cfg->app, sizeof(new_cfg->app))) {
-+		need_reconfig = true;
-+		dev_dbg(&pf->pdev->dev, "APP Table change detected.\n");
-+	}
-+
-+	dev_dbg(&pf->pdev->dev, "dcb need_reconfig=%d\n", need_reconfig);
-+	return need_reconfig;
-+}
-+
- /**
-  * ice_dcb_process_lldp_set_mib_change - Process MIB change
-  * @pf: ptr to ice_pf
-@@ -510,29 +559,95 @@ void
- ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
- 				    struct ice_rq_event_info *event)
- {
--	if (pf->dcbx_cap & DCB_CAP_DCBX_LLD_MANAGED) {
--		struct ice_dcbx_cfg *dcbcfg, *prev_cfg;
--		int err;
++	u8 ring_active;			/* is ring online or not */
+ 
+ 	u16 count;			/* Number of descriptors */
+ 	u16 reg_idx;			/* HW register index of the ring */
+@@ -173,8 +174,7 @@ struct ice_ring {
+ 	/* used in interrupt processing */
+ 	u16 next_to_use;
+ 	u16 next_to_clean;
 -
--		prev_cfg = &pf->hw.port_info->local_dcbx_cfg;
--		dcbcfg = devm_kmemdup(&pf->pdev->dev, prev_cfg,
--				      sizeof(*dcbcfg), GFP_KERNEL);
--		if (!dcbcfg)
-+	struct ice_aqc_port_ets_elem buf = { 0 };
-+	struct ice_aqc_lldp_get_mib *mib;
-+	struct ice_dcbx_cfg tmp_dcbx_cfg;
-+	bool need_reconfig = false;
-+	struct ice_port_info *pi;
-+	u8 type;
-+	int ret;
-+
-+	/* Not DCB capable or capability disabled */
-+	if (!(test_bit(ICE_FLAG_DCB_CAPABLE, pf->flags)))
-+		return;
-+
-+	if (pf->dcbx_cap & DCB_CAP_DCBX_HOST) {
-+		dev_dbg(&pf->pdev->dev,
-+			"MIB Change Event in HOST mode\n");
-+		return;
-+	}
-+
-+	pi = pf->hw.port_info;
-+	mib = (struct ice_aqc_lldp_get_mib *)&event->desc.params.raw;
-+	/* Ignore if event is not for Nearest Bridge */
-+	type = ((mib->type >> ICE_AQ_LLDP_BRID_TYPE_S) &
-+		ICE_AQ_LLDP_BRID_TYPE_M);
-+	dev_dbg(&pf->pdev->dev, "LLDP event MIB bridge type 0x%x\n", type);
-+	if (type != ICE_AQ_LLDP_BRID_TYPE_NEAREST_BRID)
-+		return;
-+
-+	/* Check MIB Type and return if event for Remote MIB update */
-+	type = mib->type & ICE_AQ_LLDP_MIB_TYPE_M;
-+	dev_dbg(&pf->pdev->dev,
-+		"LLDP event mib type %s\n", type ? "remote" : "local");
-+	if (type == ICE_AQ_LLDP_MIB_REMOTE) {
-+		/* Update the remote cached instance and return */
-+		ret = ice_aq_get_dcb_cfg(pi->hw, ICE_AQ_LLDP_MIB_REMOTE,
-+					 ICE_AQ_LLDP_BRID_TYPE_NEAREST_BRID,
-+					 &pi->remote_dcbx_cfg);
-+		if (ret) {
-+			dev_err(&pf->pdev->dev, "Failed to get remote DCB config\n");
- 			return;
-+		}
-+	}
+-	u8 ring_active;			/* is ring online or not */
++	u16 next_to_alloc;
  
--		err = ice_lldp_to_dcb_cfg(event->msg_buf, dcbcfg);
--		if (!err)
--			ice_pf_dcb_cfg(pf, dcbcfg, false);
-+	/* store the old configuration */
-+	tmp_dcbx_cfg = pf->hw.port_info->local_dcbx_cfg;
+ 	/* stats structs */
+ 	struct ice_q_stats	stats;
+@@ -184,10 +184,17 @@ struct ice_ring {
+ 		struct ice_rxq_stats rx_stats;
+ 	};
  
--		devm_kfree(&pf->pdev->dev, dcbcfg);
-+	/* Reset the old DCBx configuration data */
-+	memset(&pi->local_dcbx_cfg, 0, sizeof(pi->local_dcbx_cfg));
+-	unsigned int size;		/* length of descriptor ring in bytes */
+-	dma_addr_t dma;			/* physical address of ring */
+ 	struct rcu_head rcu;		/* to avoid race on free */
+-	u16 next_to_alloc;
++	/* CLX - the below items are only accessed infrequently and should be
++	 * in their own cache line if possible
++	 */
++	dma_addr_t dma;			/* physical address of ring */
++	unsigned int size;		/* length of descriptor ring in bytes */
++	u32 txq_teid;			/* Added Tx queue TEID */
++	u16 rx_buf_len;
++#ifdef CONFIG_DCB
++	u8 dcb_tc;			/* Traffic class of ring */
++#endif /* CONFIG_DCB */
+ } ____cacheline_internodealigned_in_smp;
  
--		/* Get updated DCBx data from firmware */
--		err = ice_get_dcb_cfg(pf->hw.port_info);
--		if (err)
--			dev_err(&pf->pdev->dev,
--				"Failed to get DCB config\n");
--	} else {
-+	/* Get updated DCBx data from firmware */
-+	ret = ice_get_dcb_cfg(pf->hw.port_info);
-+	if (ret) {
-+		dev_err(&pf->pdev->dev, "Failed to get DCB config\n");
-+		return;
-+	}
-+
-+	/* No change detected in DCBX configs */
-+	if (!memcmp(&tmp_dcbx_cfg, &pi->local_dcbx_cfg, sizeof(tmp_dcbx_cfg))) {
- 		dev_dbg(&pf->pdev->dev,
--			"MIB Change Event in HOST mode\n");
-+			"No change detected in DCBX configuration.\n");
-+		return;
- 	}
-+
-+	need_reconfig = ice_dcb_need_recfg(pf, &tmp_dcbx_cfg,
-+					   &pi->local_dcbx_cfg);
-+	if (!need_reconfig)
-+		return;
-+
-+	/* Enable DCB tagging only when more than one TC */
-+	if (ice_dcb_get_num_tc(&pi->local_dcbx_cfg) > 1) {
-+		dev_dbg(&pf->pdev->dev, "DCB tagging enabled (num TC > 1)\n");
-+		set_bit(ICE_FLAG_DCB_ENA, pf->flags);
-+	} else {
-+		dev_dbg(&pf->pdev->dev, "DCB tagging disabled (num TC = 1)\n");
-+		clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
-+	}
-+
-+	rtnl_lock();
-+	ice_pf_dis_all_vsi(pf, true);
-+
-+	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
-+	if (ret) {
-+		dev_err(&pf->pdev->dev, "Query Port ETS failed\n");
-+		rtnl_unlock();
-+		return;
-+	}
-+
-+	/* changes in configuration update VSI */
-+	ice_pf_dcb_recfg(pf);
-+
-+	ice_pf_ena_all_vsi(pf, true);
-+	rtnl_unlock();
- }
+ struct ice_ring_container {
 -- 
 2.20.1
 
