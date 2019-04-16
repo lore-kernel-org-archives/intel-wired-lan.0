@@ -1,48 +1,103 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:30:40 -0700
-Subject: [Intel-wired-lan] [PATCH S20 03/15] ice: Resolve static analysis
- warning
+Date: Tue, 16 Apr 2019 10:30:45 -0700
+Subject: [Intel-wired-lan] [PATCH S20 08/15] ice: Check all VFs for MDD
+ activity, don't disable
 In-Reply-To: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
 References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173052.28928-4-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173052.28928-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Some static analysis tools can complain when doing a bitop assignment using
-operands of different sizes. Fix that.
+Don't use the mdd_detected variable as an exit condition for this loop;
+the first VF to NOT have an MDD event will cause the loop to terminate.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Instead just look at all of the VFs, but don't disable them. This
+prevents proper release of resources if the VFs are rebooted or the VF
+driver reloaded. Instead, just log a message and call out repeat
+offenders.
+
+To make it clear what we are doing, use a differently-named variable in
+the loop.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_txrx.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index e9a6c866f616..a19dde262dee 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1879,10 +1879,10 @@ int ice_tso(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
- 	cd_mss = skb_shinfo(skb)->gso_size;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 6fc4d8176d14..59971f6224f1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1161,16 +1161,16 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		}
+ 	}
  
- 	/* record cdesc_qw1 with TSO parameters */
--	off->cd_qw1 |= ICE_TX_DESC_DTYPE_CTX |
--			 (ICE_TX_CTX_DESC_TSO << ICE_TXD_CTX_QW1_CMD_S) |
--			 (cd_tso_len << ICE_TXD_CTX_QW1_TSO_LEN_S) |
--			 (cd_mss << ICE_TXD_CTX_QW1_MSS_S);
-+	off->cd_qw1 |= (u64)(ICE_TX_DESC_DTYPE_CTX |
-+			     (ICE_TX_CTX_DESC_TSO << ICE_TXD_CTX_QW1_CMD_S) |
-+			     (cd_tso_len << ICE_TXD_CTX_QW1_TSO_LEN_S) |
-+			     (cd_mss << ICE_TXD_CTX_QW1_MSS_S));
- 	first->tx_flags |= ICE_TX_FLAGS_TSO;
- 	return 1;
+-	/* see if one of the VFs needs to be reset */
+-	for (i = 0; i < pf->num_alloc_vfs && mdd_detected; i++) {
++	/* check to see if one of the VFs caused the MDD */
++	for (i = 0; i < pf->num_alloc_vfs; i++) {
+ 		struct ice_vf *vf = &pf->vf[i];
+ 
+-		mdd_detected = false;
++		bool vf_mdd_detected = false;
+ 
+ 		reg = rd32(hw, VP_MDET_TX_PQM(i));
+ 		if (reg & VP_MDET_TX_PQM_VALID_M) {
+ 			wr32(hw, VP_MDET_TX_PQM(i), 0xFFFF);
+-			mdd_detected = true;
++			vf_mdd_detected = true;
+ 			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
+ 				 i);
+ 		}
+@@ -1178,7 +1178,7 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		reg = rd32(hw, VP_MDET_TX_TCLAN(i));
+ 		if (reg & VP_MDET_TX_TCLAN_VALID_M) {
+ 			wr32(hw, VP_MDET_TX_TCLAN(i), 0xFFFF);
+-			mdd_detected = true;
++			vf_mdd_detected = true;
+ 			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
+ 				 i);
+ 		}
+@@ -1186,7 +1186,7 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		reg = rd32(hw, VP_MDET_TX_TDPU(i));
+ 		if (reg & VP_MDET_TX_TDPU_VALID_M) {
+ 			wr32(hw, VP_MDET_TX_TDPU(i), 0xFFFF);
+-			mdd_detected = true;
++			vf_mdd_detected = true;
+ 			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
+ 				 i);
+ 		}
+@@ -1194,19 +1194,18 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		reg = rd32(hw, VP_MDET_RX(i));
+ 		if (reg & VP_MDET_RX_VALID_M) {
+ 			wr32(hw, VP_MDET_RX(i), 0xFFFF);
+-			mdd_detected = true;
++			vf_mdd_detected = true;
+ 			dev_info(&pf->pdev->dev, "RX driver issue detected on VF %d\n",
+ 				 i);
+ 		}
+ 
+-		if (mdd_detected) {
++		if (vf_mdd_detected) {
+ 			vf->num_mdd_events++;
+-			dev_info(&pf->pdev->dev,
+-				 "Use PF Control I/F to re-enable the VF\n");
+-			set_bit(ICE_VF_STATE_DIS, vf->vf_states);
++			if (vf->num_mdd_events > 1)
++				dev_info(&pf->pdev->dev, "VF %d has had %llu MDD events since last boot\n",
++					 i, vf->num_mdd_events);
+ 		}
+ 	}
+-
  }
+ 
+ /**
 -- 
 2.20.1
 
