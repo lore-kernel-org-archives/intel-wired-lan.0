@@ -1,62 +1,44 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:30:41 -0700
-Subject: [Intel-wired-lan] [PATCH S20 04/15] ice: Set minimum default Rx
- descriptor count to 512
+Date: Tue, 16 Apr 2019 10:30:50 -0700
+Subject: [Intel-wired-lan] [PATCH S20 13/15] ice: Configure RSS LUT key only
+ if RSS is enabled
 In-Reply-To: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
 References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173052.28928-5-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173052.28928-14-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
 
-Currently we set the default number of Rx descriptors per
-queue to the system's page size divided by the number of bytes per
-descriptor. For 4K page size systems this is resulting in 128 Rx
-descriptors per queue. This is causing more dropped packets than desired
-in the default configuration. Fix this by setting the minimum default
-Rx descriptor count per queue to 512.
+Call ice_vsi_cfg_rss_lut_key only if RSS is enabled.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h | 19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index b5990ba0ee4c..0555d09614d8 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -46,13 +46,20 @@ extern const char ice_drv_ver[];
- #define ICE_REQ_DESC_MULTIPLE	32
- #define ICE_MIN_NUM_DESC	ICE_REQ_DESC_MULTIPLE
- #define ICE_MAX_NUM_DESC	8160
--/* set default number of Rx/Tx descriptors to the minimum between
-- * ICE_MAX_NUM_DESC and the number of descriptors to fill up an entire page
-+#define ICE_DFLT_MIN_RX_DESC	512
-+/* if the default number of Rx descriptors between ICE_MAX_NUM_DESC and the
-+ * number of descriptors to fill up an entire page is greater than or equal to
-+ * ICE_DFLT_MIN_RX_DESC set it based on page size, otherwise set it to
-+ * ICE_DFLT_MIN_RX_DESC
-+ */
-+#define ICE_DFLT_NUM_RX_DESC \
-+	min_t(u16, ICE_MAX_NUM_DESC, \
-+	      max_t(u16, ALIGN(PAGE_SIZE / sizeof(union ice_32byte_rx_desc), \
-+			       ICE_REQ_DESC_MULTIPLE), \
-+		    ICE_DFLT_MIN_RX_DESC))
-+/* set default number of Tx descriptors to the minimum between ICE_MAX_NUM_DESC
-+ * and the number of descriptors to fill up an entire page
-  */
--#define ICE_DFLT_NUM_RX_DESC	min_t(u16, ICE_MAX_NUM_DESC, \
--				      ALIGN(PAGE_SIZE / \
--					    sizeof(union ice_32byte_rx_desc), \
--					    ICE_REQ_DESC_MULTIPLE))
- #define ICE_DFLT_NUM_TX_DESC	min_t(u16, ICE_MAX_NUM_DESC, \
- 				      ALIGN(PAGE_SIZE / \
- 					    sizeof(struct ice_tx_desc), \
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 515b154547c5..74008d748f3a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2400,6 +2400,13 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 
+ 		pf->q_left_tx -= vsi->alloc_txq;
+ 		pf->q_left_rx -= vsi->alloc_rxq;
++
++		/* Do not exit if configuring RSS had an issue, at least
++		 * receive traffic on first queue. Hence no need to capture
++		 * return value
++		 */
++		if (test_bit(ICE_FLAG_RSS_ENA, pf->flags))
++			ice_vsi_cfg_rss_lut_key(vsi);
+ 		break;
+ 	case ICE_VSI_LB:
+ 		ret = ice_vsi_alloc_rings(vsi);
 -- 
 2.20.1
 
