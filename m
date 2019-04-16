@@ -1,275 +1,67 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:24:30 -0700
-Subject: [Intel-wired-lan] [PATCH S19 06/15] ice: Advertise supported link
- modes if none requested
+Date: Tue, 16 Apr 2019 10:24:32 -0700
+Subject: [Intel-wired-lan] [PATCH S19 08/15] ice: Gracefully handle reset
+ failure in ice_alloc_vfs()
 In-Reply-To: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
 References: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416172439.27908-7-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172439.27908-9-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-User requested link modes affect what is returned as an advertised
-link mode.  If no modes have been requested, we are not advertising
-any link modes.  Advertise what we are capable of supporting if no
-link modes have been requested.
+Currently if ice_reset_all_vfs() fails in ice_alloc_vfs() we fail to
+free some resources, reset variables, and return an error value.
+Fix this by adding another unroll case to free the pf->vf array, set
+the pf->num_alloc_vfs to 0, and return an error code.
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Without this, if ice_reset_all_vfs() fails in ice_alloc_vfs() we will
+not be able to do SRIOV without hard rebooting the system because
+rmmoding the driver does not work.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 75 +++++++++++++-------
- 1 file changed, 50 insertions(+), 25 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index c1511393846f..91e3c451c66c 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -628,7 +628,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_100M_SGMII) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     100baseT_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100MB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100MB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     100baseT_Full);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 80d01ee2e967..fd19ab53653d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1134,7 +1134,7 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
+ 			   GFP_KERNEL);
+ 	if (!vfs) {
+ 		ret = -ENOMEM;
+-		goto err_unroll_sriov;
++		goto err_pci_disable_sriov;
  	}
-@@ -636,14 +637,16 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_1G_SGMII) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     1000baseT_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     1000baseT_Full);
- 	}
- 	if (phy_types_low & ICE_PHY_TYPE_LOW_1000BASE_KX) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     1000baseKX_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     1000baseKX_Full);
- 	}
-@@ -651,14 +654,16 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_1000BASE_LX) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     1000baseX_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     1000baseX_Full);
- 	}
- 	if (phy_types_low & ICE_PHY_TYPE_LOW_2500BASE_T) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     2500baseT_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_2500MB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_2500MB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     2500baseT_Full);
- 	}
-@@ -666,7 +671,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_2500BASE_KX) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     2500baseX_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_2500MB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_2500MB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     2500baseX_Full);
- 	}
-@@ -674,7 +680,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_5GBASE_KR) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     5000baseT_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_5GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_5GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     5000baseT_Full);
- 	}
-@@ -684,28 +691,32 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_10G_SFI_C2C) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     10000baseT_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     10000baseT_Full);
- 	}
- 	if (phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_KR_CR1) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     10000baseKR_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     10000baseKR_Full);
- 	}
- 	if (phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_SR) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     10000baseSR_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     10000baseSR_Full);
- 	}
- 	if (phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_LR) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     10000baseLR_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     10000baseLR_Full);
- 	}
-@@ -717,7 +728,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_25G_AUI_C2C) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     25000baseCR_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     25000baseCR_Full);
- 	}
-@@ -725,7 +737,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_LR) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     25000baseSR_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     25000baseSR_Full);
- 	}
-@@ -734,14 +747,16 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_KR1) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     25000baseKR_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     25000baseKR_Full);
- 	}
- 	if (phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_KR4) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     40000baseKR4_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     40000baseKR4_Full);
- 	}
-@@ -750,21 +765,24 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_40G_XLAUI) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     40000baseCR4_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     40000baseCR4_Full);
- 	}
- 	if (phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_SR4) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     40000baseSR4_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     40000baseSR4_Full);
- 	}
- 	if (phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_LR4) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     40000baseLR4_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     40000baseLR4_Full);
- 	}
-@@ -779,7 +797,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_50G_AUI1) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     50000baseCR2_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     50000baseCR2_Full);
- 	}
-@@ -787,7 +806,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_50GBASE_KR_PAM4) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     50000baseKR2_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     50000baseKR2_Full);
- 	}
-@@ -797,7 +817,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_50GBASE_LR) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     50000baseSR2_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
- 			ethtool_link_ksettings_add_link_mode(ks, advertising,
- 							     50000baseSR2_Full);
- 	}
-@@ -814,7 +835,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_high & ICE_PHY_TYPE_HIGH_100G_AUI2) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     100000baseCR4_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
- 			need_add_adv_mode = true;
- 	}
- 	if (need_add_adv_mode) {
-@@ -826,7 +848,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_100GBASE_SR2) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     100000baseSR4_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
- 			need_add_adv_mode = true;
- 	}
- 	if (need_add_adv_mode) {
-@@ -838,7 +861,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_low & ICE_PHY_TYPE_LOW_100GBASE_DR) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     100000baseLR4_ER4_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
- 			need_add_adv_mode = true;
- 	}
- 	if (need_add_adv_mode) {
-@@ -851,7 +875,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
- 	    phy_types_high & ICE_PHY_TYPE_HIGH_100GBASE_KR2_PAM4) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     100000baseKR4_Full);
--		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
-+		if (!hw_link_info->req_speeds ||
-+		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
- 			need_add_adv_mode = true;
- 	}
- 	if (need_add_adv_mode)
+ 	pf->vf = vfs;
+ 
+@@ -1154,12 +1154,19 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
+ 	pf->num_alloc_vfs = num_alloc_vfs;
+ 
+ 	/* VF resources get allocated during reset */
+-	if (!ice_reset_all_vfs(pf, true))
++	if (!ice_reset_all_vfs(pf, true)) {
++		ret = -EIO;
+ 		goto err_unroll_sriov;
++	}
+ 
+ 	goto err_unroll_intr;
+ 
+ err_unroll_sriov:
++	pf->vf = NULL;
++	devm_kfree(&pf->pdev->dev, vfs);
++	vfs = NULL;
++	pf->num_alloc_vfs = 0;
++err_pci_disable_sriov:
+ 	pci_disable_sriov(pf->pdev);
+ err_unroll_intr:
+ 	/* rearm interrupts here */
 -- 
 2.20.1
 
