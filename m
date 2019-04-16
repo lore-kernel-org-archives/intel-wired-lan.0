@@ -1,98 +1,39 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:24:35 -0700
-Subject: [Intel-wired-lan] [PATCH S19 11/15] ice: Use bitfields when possible
+Date: Tue, 16 Apr 2019 10:24:39 -0700
+Subject: [Intel-wired-lan] [PATCH S19 15/15] ice: Fix LINE_SPACING style
+ issue
 In-Reply-To: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
 References: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416172439.27908-12-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172439.27908-16-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-We can use bitfields to store boolean values and when the
-bitfields are next to each other, the compiler will combine them
-(as long as the size holds enough).
+Fix a checkpatch "LINE_SPACING: Please don't use multiple blank lines"
+issue that has snuck in to the code.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h             | 10 +++++-----
- drivers/net/ethernet/intel/ice/ice_txrx.h        |  2 +-
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h | 10 +++++-----
- 3 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 7958f2bac8da..23e30a69f5fa 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -277,10 +277,10 @@ struct ice_vsi {
- 	struct list_head tmp_sync_list;		/* MAC filters to be synced */
- 	struct list_head tmp_unsync_list;	/* MAC filters to be unsynced */
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 5e2ec1eab5e5..87b75d42460b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -2928,7 +2928,6 @@ ice_dis_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u8 num_queues,
+ 	if (!pi || pi->port_state != ICE_SCHED_PORT_STATE_READY)
+ 		return ICE_ERR_CFG;
  
--	u8 irqs_ready;
--	u8 current_isup;		 /* Sync 'link up' logging */
--	u8 stat_offsets_loaded;
--	u8 vlan_ena;
-+	u8 irqs_ready:1;
-+	u8 current_isup:1;		 /* Sync 'link up' logging */
-+	u8 stat_offsets_loaded:1;
-+	u8 vlan_ena:1;
- 
- 	/* queue information */
- 	u8 tx_mapping_mode;		 /* ICE_MAP_MODE_[CONTIG|SCATTER] */
-@@ -384,7 +384,7 @@ struct ice_pf {
- 	struct ice_hw_port_stats stats;
- 	struct ice_hw_port_stats stats_prev;
- 	struct ice_hw hw;
--	u8 stat_prev_loaded;	/* has previous stats been loaded */
-+	u8 stat_prev_loaded:1; /* has previous stats been loaded */
- #ifdef CONFIG_DCB
- 	u16 dcbx_cap;
- #endif /* CONFIG_DCB */
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 4cff52ffefe0..ec76aba347b9 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -166,7 +166,7 @@ struct ice_ring {
- 	u16 q_index;			/* Queue number of ring */
- 	u16 q_handle;			/* Queue handle per TC */
- 
--	u8 ring_active;			/* is ring online or not */
-+	u8 ring_active:1;		/* is ring online or not */
- 
- 	u16 count;			/* Number of descriptors */
- 	u16 reg_idx;			/* HW register index of the ring */
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 3725aea16840..60f024ae281d 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -55,8 +55,8 @@ struct ice_vf {
- 	struct virtchnl_version_info vf_ver;
- 	struct virtchnl_ether_addr dflt_lan_addr;
- 	u16 port_vlan_id;
--	u8 pf_set_mac;			/* VF MAC address set by VMM admin */
--	u8 trusted;
-+	u8 pf_set_mac:1;		/* VF MAC address set by VMM admin */
-+	u8 trusted:1;
- 	u16 lan_vsi_idx;		/* index into PF struct */
- 	u16 lan_vsi_num;		/* ID as used by firmware */
- 	u64 num_mdd_events;		/* number of MDD events detected */
-@@ -65,9 +65,9 @@ struct ice_vf {
- 	unsigned long vf_caps;		/* VF's adv. capabilities */
- 	DECLARE_BITMAP(vf_states, ICE_VF_STATES_NBITS);	/* VF runtime states */
- 	unsigned int tx_rate;		/* Tx bandwidth limit in Mbps */
--	u8 link_forced;
--	u8 link_up;			/* only valid if VF link is forced */
--	u8 spoofchk;
-+	u8 link_forced:1;
-+	u8 link_up:1;			/* only valid if VF link is forced */
-+	u8 spoofchk:1;
- 	u16 num_mac;
- 	u16 num_vlan;
- 	u16 num_vf_qs;			/* num of queue configured per VF */
+-
+ 	if (!num_queues) {
+ 		/* if queue is disabled already yet the disable queue command
+ 		 * has to be sent to complete the VF reset, then call
 -- 
 2.20.1
 
