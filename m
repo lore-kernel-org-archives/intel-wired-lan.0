@@ -1,38 +1,44 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:30:38 -0700
-Subject: [Intel-wired-lan] [PATCH S20 01/15] ice: Remove direct write for
- GLLAN_RCTL_0
+Date: Tue, 16 Apr 2019 10:30:42 -0700
+Subject: [Intel-wired-lan] [PATCH S20 05/15] ice: Don't call ice_cfg_itr()
+ for SR-IOV
 In-Reply-To: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
 References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173052.28928-2-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173052.28928-6-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Clear PXE mode AQ call (opcode 0x0110) is now supported in FW. So
-remove the direct register write to GLLAN_RCTL_0.
+From: Brett Creeley <brett.creeley@intel.com>
 
+ice_cfg_itr() sets the ITR granularity and default ITR values for the
+PF's interrupt vectors. For VF's this will be done in the AVF driver
+flow. Fix this by not calling ice_cfg_itr() for SR-IOV.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 3 ---
- 1 file changed, 3 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 87b75d42460b..a14c6ec219b3 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -51,9 +51,6 @@ static enum ice_status ice_set_mac_type(struct ice_hw *hw)
-  */
- void ice_dev_onetime_setup(struct ice_hw *hw)
- {
--	/* configure Rx - set non pxe mode */
--	wr32(hw, GLLAN_RCTL_0, 0x1);
--
- #define MBX_PF_VT_PFALLOC	0x00231E80
- 	/* set VFs per PF */
- 	wr32(hw, MBX_PF_VT_PFALLOC, rd32(hw, PF_VT_PFALLOC_HIF));
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index f14fa51cc704..749d36add524 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1856,7 +1856,8 @@ void ice_vsi_cfg_msix(struct ice_vsi *vsi)
+ 		struct ice_q_vector *q_vector = vsi->q_vectors[i];
+ 		u16 reg_idx = q_vector->reg_idx;
+ 
+-		ice_cfg_itr(hw, q_vector);
++		if (vsi->type != ICE_VSI_VF)
++			ice_cfg_itr(hw, q_vector);
+ 
+ 		wr32(hw, GLINT_RATE(reg_idx),
+ 		     ice_intrl_usec_to_reg(q_vector->intrl, hw->intrl_gran));
 -- 
 2.20.1
 
