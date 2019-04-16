@@ -1,234 +1,203 @@
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:34:55 -0700
-Subject: [Intel-wired-lan] [PATCH S21 06/14] ice: Add switch rules to handle
- LLDP packets
-In-Reply-To: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
-References: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173503.29847-7-anirudh.venkataramanan@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 17 Apr 2019 06:15:48 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ f6282c6b37bf452a2ec63896a63aa9137376f885
+Message-ID: <5cb65414.5Hwc3C0g1dixRMkc%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: f6282c6b37bf452a2ec63896a63aa9137376f885  i40e: Fix of memory leak and integer truncation in i40e_virtchnl.c
 
-Add call to configure dropping egress LLDP packets in ice_vsi_setup
-and remove the rule in ice_vsi_release.
+Regressions in current branch:
 
-Add calls to add/remove rule to route LLDP packets to default VSI when
-FW LLDP engine is disabled/enabled and remove rule if applied during
-ice_vsi_release.
+drivers/net/ethernet/intel/i40e/i40e_main.c:14842:2-8: ERROR: missing iounmap; ioremap on line 14700 and execution via conditional on line 14841
 
-In the function ice_add_eth_mac(), there is a line that hardcodes the
-filter info flag to TX. This is incorrect as this flag will be set by
-the calling function that built the list of filters to add. So remove
-the hardcoded value.
+Error ids grouped by kconfigs:
 
-This patch also contains a fix to stop treating the DCBx state of
-"Not Started" as an error state that kicks DCB in SW mode. This will
-address having non-cabled interfaces automatically go into SW mode
-with the FW engine running.
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
+??? x86_64-allyesconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
 
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+elapsed time: 347m
+
+configs tested: 169
+
+i386                     randconfig-n2-201915
+i386                     randconfig-n3-201915
+i386                     randconfig-n0-201915
+i386                     randconfig-n1-201915
+i386                     randconfig-i1-201915
+i386                     randconfig-i0-201915
+i386                     randconfig-i3-201915
+i386                     randconfig-i2-201915
+x86_64                           allyesconfig
+i386                             allmodconfig
+x86_64                 randconfig-x015-201915
+x86_64                 randconfig-x016-201915
+x86_64                 randconfig-x012-201915
+x86_64                 randconfig-x017-201915
+x86_64                 randconfig-x013-201915
+x86_64                 randconfig-x018-201915
+x86_64                 randconfig-x010-201915
+x86_64                 randconfig-x014-201915
+x86_64                 randconfig-x019-201915
+x86_64                 randconfig-x011-201915
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-a1-201915
+i386                     randconfig-a2-201915
+i386                     randconfig-a0-201915
+i386                     randconfig-a3-201915
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                   randconfig-k2-201915
+i386                     randconfig-k2-201915
+i386                     randconfig-k3-201915
+i386                     randconfig-k0-201915
+x86_64                   randconfig-k1-201915
+x86_64                   randconfig-k3-201915
+i386                     randconfig-k1-201915
+x86_64                   randconfig-k0-201915
+x86_64                                    lkp
+x86_64                                   rhel
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                               rhel-7.6
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-m2-201915
+i386                     randconfig-m0-201915
+i386                     randconfig-m3-201915
+i386                     randconfig-m2-201915
+x86_64                   randconfig-m1-201915
+x86_64                   randconfig-m0-201915
+x86_64                   randconfig-m3-201915
+i386                     randconfig-m1-201915
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                 randconfig-l3-04160016
+x86_64                 randconfig-l0-04160016
+i386                   randconfig-l3-04160016
+i386                   randconfig-l2-04160016
+x86_64                 randconfig-l1-04160016
+i386                   randconfig-l0-04160016
+i386                   randconfig-l1-04160016
+x86_64                 randconfig-l2-04160016
+x86_64                           allmodconfig
+i386                             alldefconfig
+x86_64                   randconfig-i1-201915
+x86_64                   randconfig-i2-201915
+x86_64                   randconfig-i3-201915
+x86_64                   randconfig-i0-201915
+i386                   randconfig-x010-201915
+i386                   randconfig-x018-201915
+i386                   randconfig-x017-201915
+i386                   randconfig-x013-201915
+i386                   randconfig-x011-201915
+i386                   randconfig-x014-201915
+i386                   randconfig-x019-201915
+i386                   randconfig-x015-201915
+i386                   randconfig-x016-201915
+i386                   randconfig-x012-201915
+i386                              allnoconfig
+i386                                defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+i386                   randconfig-x077-201915
+i386                   randconfig-x074-201915
+i386                   randconfig-x070-201915
+i386                   randconfig-x072-201915
+i386                   randconfig-x075-201915
+i386                   randconfig-x071-201915
+i386                   randconfig-x079-201915
+i386                   randconfig-x078-201915
+i386                   randconfig-x073-201915
+i386                   randconfig-x076-201915
+x86_64                 randconfig-g2-04141729
+x86_64                 randconfig-g3-04141729
+x86_64                 randconfig-g0-04141729
+x86_64                 randconfig-g1-04141729
+i386                   randconfig-x002-201915
+i386                   randconfig-x001-201915
+i386                   randconfig-x005-201915
+i386                   randconfig-x007-201915
+i386                   randconfig-x000-201915
+i386                   randconfig-x004-201915
+i386                   randconfig-x008-201915
+i386                   randconfig-x009-201915
+i386                   randconfig-x006-201915
+i386                   randconfig-x003-201915
+x86_64                 randconfig-x001-201915
+x86_64                 randconfig-x004-201915
+x86_64                 randconfig-x000-201915
+x86_64                 randconfig-x003-201915
+x86_64                 randconfig-x007-201915
+x86_64                 randconfig-x008-201915
+x86_64                 randconfig-x002-201915
+x86_64                 randconfig-x006-201915
+x86_64                 randconfig-x009-201915
+x86_64                 randconfig-x005-201915
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  4 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 11 +++
- drivers/net/ethernet/intel/ice/ice_lib.c     | 70 +++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_lib.h     |  2 +
- drivers/net/ethernet/intel/ice/ice_switch.c  |  5 +-
- 5 files changed, 86 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index b04295ab35d5..e1db24cde38a 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -387,10 +387,8 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 		set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
- 	}
- 
--	if (port_info->dcbx_status == ICE_DCBX_STATUS_NOT_STARTED) {
--		sw_default = 1;
-+	if (port_info->dcbx_status == ICE_DCBX_STATUS_NOT_STARTED)
- 		dev_info(&pf->pdev->dev, "DCBX not started\n");
--	}
- 
- 	if (sw_default) {
- 		err = ice_dcb_sw_dflt_cfg(pf, locked);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 2da83847b9dc..6beb918f625f 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1205,6 +1205,7 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags)) {
- 			enum ice_status status;
- 
-+			/* Disable FW LLDP engine */
- 			status = ice_aq_cfg_lldp_mib_change(&pf->hw, false,
- 							    NULL);
- 			/* If unregistering for LLDP events fails, this is
-@@ -1229,6 +1230,11 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			status = ice_init_pf_dcb(pf, true);
- 			if (status)
- 				dev_warn(&pf->pdev->dev, "Fail to init DCB\n");
-+
-+			/* Forward LLDP packets to default VSI so that they
-+			 * are passed up the stack
-+			 */
-+			ice_cfg_sw_lldp(vsi, false, true);
- 		} else {
- 			enum ice_status status;
- 			bool dcbx_agent_status;
-@@ -1262,6 +1268,11 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			status = ice_init_pf_dcb(pf, true);
- 			if (status)
- 				dev_dbg(&pf->pdev->dev, "Fail to init DCB\n");
-+
-+			/* Remove rule to direct LLDP packets to default VSI.
-+			 * The FW LLDP engine will now be consuming them.
-+			 */
-+			ice_cfg_sw_lldp(vsi, false, false);
- 		}
- 	}
- 	clear_bit(ICE_FLAG_ETHTOOL_CTXT, pf->flags);
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index d0410c686ef4..e203c7114803 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2345,6 +2345,53 @@ ice_vsi_add_rem_eth_mac(struct ice_vsi *vsi, bool add_rule)
- 	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
- }
- 
-+/** ice_cfg_sw_lldp - Config switch rules for LLDP packet handling
-+ * @vsi: the VSI being configured
-+ * @tx: bool to determine Tx or Rx rule
-+ * @create: bool to determine create or remove Rule
-+ */
-+void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create)
-+{
-+	struct ice_fltr_list_entry *list;
-+	struct ice_pf *pf = vsi->back;
-+	LIST_HEAD(tmp_add_list);
-+	enum ice_status status;
-+
-+	list = devm_kzalloc(&pf->pdev->dev, sizeof(*list), GFP_KERNEL);
-+	if (!list)
-+		return;
-+
-+	list->fltr_info.lkup_type = ICE_SW_LKUP_ETHERTYPE;
-+	list->fltr_info.vsi_handle = vsi->idx;
-+	list->fltr_info.l_data.ethertype_mac.ethertype = ETH_P_LLDP;
-+
-+	if (tx) {
-+		list->fltr_info.fltr_act = ICE_DROP_PACKET;
-+		list->fltr_info.flag = ICE_FLTR_TX;
-+		list->fltr_info.src_id = ICE_SRC_ID_VSI;
-+	} else {
-+		list->fltr_info.fltr_act = ICE_FWD_TO_VSI;
-+		list->fltr_info.flag = ICE_FLTR_RX;
-+		list->fltr_info.src_id = ICE_SRC_ID_LPORT;
-+	}
-+
-+	INIT_LIST_HEAD(&list->list_entry);
-+	list_add(&list->list_entry, &tmp_add_list);
-+
-+	if (create)
-+		status = ice_add_eth_mac(&pf->hw, &tmp_add_list);
-+	else
-+		status = ice_remove_eth_mac(&pf->hw, &tmp_add_list);
-+
-+	if (status)
-+		dev_err(&pf->pdev->dev,
-+			"Fail %s %s LLDP rule on VSI %i error: %d\n",
-+			create ? "adding" : "removing", tx ? "TX" : "RX",
-+			vsi->vsi_num, status);
-+
-+	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
-+}
-+
- /**
-  * ice_vsi_setup - Set up a VSI by a given type
-  * @pf: board private structure
-@@ -2487,10 +2534,22 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	 * out PAUSE or PFC frames. If enabled, FW can still send FC frames.
- 	 * The rule is added once for PF VSI in order to create appropriate
- 	 * recipe, since VSI/VSI list is ignored with drop action...
-+	 * Also add rules to handle LLDP Tx and Rx packets.  Tx LLDP packets
-+	 * need to be dropped so that VFs cannot send LLDP packets to reconfig
-+	 * DCB settings in the HW.  Also, if the FW DCBx engine is not running
-+	 * then Rx LLDP packets need to be redirected up the stack.
- 	 */
--	if (vsi->type == ICE_VSI_PF)
-+	if (vsi->type == ICE_VSI_PF) {
- 		ice_vsi_add_rem_eth_mac(vsi, true);
- 
-+		/* Tx LLDP packets */
-+		ice_cfg_sw_lldp(vsi, true, true);
-+
-+		/* Rx LLDP packets */
-+		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags))
-+			ice_cfg_sw_lldp(vsi, false, true);
-+	}
-+
- 	return vsi;
- 
- unroll_vector_base:
-@@ -2829,8 +2888,15 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 		pf->num_avail_sw_msix += vsi->num_q_vectors;
- 	}
- 
--	if (vsi->type == ICE_VSI_PF)
-+	if (vsi->type == ICE_VSI_PF) {
- 		ice_vsi_add_rem_eth_mac(vsi, false);
-+		ice_cfg_sw_lldp(vsi, true, false);
-+		/* The Rx rule will only exist to remove if the LLDP FW
-+		 * engine is currently stopped
-+		 */
-+		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags))
-+			ice_cfg_sw_lldp(vsi, false, false);
-+	}
- 
- 	ice_remove_vsi_fltr(&pf->hw, vsi->idx);
- 	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index 2acae3215f5f..6e43ef03bfc3 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -45,6 +45,8 @@ ice_vsi_stop_lan_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
- 
- int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena, bool vlan_promisc);
- 
-+void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create);
-+
- void ice_vsi_delete(struct ice_vsi *vsi);
- 
- int ice_vsi_clear(struct ice_vsi *vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 6a7aadbc508e..3dc29aa5fbcd 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -1973,6 +1973,10 @@ ice_add_vlan(struct ice_hw *hw, struct list_head *v_list)
-  * ice_add_eth_mac - Add ethertype and MAC based filter rule
-  * @hw: pointer to the hardware structure
-  * @em_list: list of ether type MAC filter, MAC is optional
-+ *
-+ * This function requires the caller to populate the entries in
-+ * the filter list with the necessary fields (including flags to
-+ * indicate Tx or Rx rules).
-  */
- enum ice_status
- ice_add_eth_mac(struct ice_hw *hw, struct list_head *em_list)
-@@ -1990,7 +1994,6 @@ ice_add_eth_mac(struct ice_hw *hw, struct list_head *em_list)
- 		    l_type != ICE_SW_LKUP_ETHERTYPE)
- 			return ICE_ERR_PARAM;
- 
--		em_list_itr->fltr_info.flag = ICE_FLTR_TX;
- 		em_list_itr->status = ice_add_rule_internal(hw, l_type,
- 							    em_list_itr);
- 		if (em_list_itr->status)
--- 
-2.20.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
