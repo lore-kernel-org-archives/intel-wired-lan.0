@@ -1,51 +1,110 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:30:48 -0700
-Subject: [Intel-wired-lan] [PATCH S20 11/15] ice: Minor cleanup in
- ice_switch.h
+Date: Tue, 16 Apr 2019 10:30:49 -0700
+Subject: [Intel-wired-lan] [PATCH S20 12/15] ice: Add ice_get_fw_log_cfg to
+ init FW logging
 In-Reply-To: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
 References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173052.28928-12-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173052.28928-13-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove duplicate define for ICE_INVAL_Q_HANDLE. Move defines to the
-top of the file.
+From: Dan Nowlin <dan.nowlin@intel.com>
 
+In order to initialize the current status of the FW logging,
+this patch adds ice_get_fw_log_cfg. The function retrieves
+the current setting of the FW logging from HW and updates the
+ice_hw structure accordingly.
+
+Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_switch.h | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
+ drivers/net/ethernet/intel/ice/ice_common.c   | 48 +++++++++++++++++++
+ 2 files changed, 49 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 732b0b9b2e15..cb123fbe30be 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -8,9 +8,11 @@
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 99eeee930dfa..8680ee2ffa1b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1694,6 +1694,7 @@ enum ice_adminq_opc {
  
- #define ICE_SW_CFG_MAX_BUF_LEN 2048
- #define ICE_DFLT_VSI_INVAL 0xff
-+#define ICE_FLTR_RX BIT(0)
-+#define ICE_FLTR_TX BIT(1)
-+#define ICE_FLTR_TX_RX (ICE_FLTR_RX | ICE_FLTR_TX)
- #define ICE_VSI_INVAL_ID 0xffff
- #define ICE_INVAL_Q_HANDLE 0xFFFF
--#define ICE_INVAL_Q_HANDLE 0xFFFF
+ 	/* debug commands */
+ 	ice_aqc_opc_fw_logging				= 0xFF09,
++	ice_aqc_opc_fw_logging_info			= 0xFF10,
+ };
  
- /* VSI queue context structure */
- struct ice_q_ctx {
-@@ -69,9 +71,6 @@ struct ice_fltr_info {
- 	/* rule ID returned by firmware once filter rule is created */
- 	u16 fltr_rule_id;
- 	u16 flag;
--#define ICE_FLTR_RX		BIT(0)
--#define ICE_FLTR_TX		BIT(1)
--#define ICE_FLTR_TX_RX		(ICE_FLTR_RX | ICE_FLTR_TX)
+ #endif /* _ICE_ADMINQ_CMD_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 2826711873d1..b870cc0a363b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -472,6 +472,49 @@ static void ice_cleanup_fltr_mgmt_struct(struct ice_hw *hw)
+ #define ICE_FW_LOG_DESC_SIZE_MAX	\
+ 	ICE_FW_LOG_DESC_SIZE(ICE_AQC_FW_LOG_ID_MAX)
  
- 	/* Source VSI for LOOKUP_TX or source port for LOOKUP_RX */
- 	u16 src;
++/**
++ * ice_get_fw_log_cfg - get FW logging configuration
++ * @hw: pointer to the HW struct
++ */
++static enum ice_status ice_get_fw_log_cfg(struct ice_hw *hw)
++{
++	struct ice_aqc_fw_logging_data *config;
++	struct ice_aq_desc desc;
++	enum ice_status status;
++	u16 size;
++
++	size = ICE_FW_LOG_DESC_SIZE_MAX;
++	config = devm_kzalloc(ice_hw_to_dev(hw), size, GFP_KERNEL);
++	if (!config)
++		return ICE_ERR_NO_MEMORY;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logging_info);
++
++	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_BUF);
++	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
++
++	status = ice_aq_send_cmd(hw, &desc, config, size, NULL);
++	if (!status) {
++		u16 i;
++
++		/* Save fw logging information into the hw structure */
++		for (i = 0; i < ICE_AQC_FW_LOG_ID_MAX; i++) {
++			u16 v, m, flgs;
++
++			v = le16_to_cpu(config->entry[i]);
++			m = (v & ICE_AQC_FW_LOG_ID_M) >> ICE_AQC_FW_LOG_ID_S;
++			flgs = (v & ICE_AQC_FW_LOG_EN_M) >> ICE_AQC_FW_LOG_EN_S;
++
++			if (m < ICE_AQC_FW_LOG_ID_MAX)
++				hw->fw_log.evnts[m].cur = flgs;
++		}
++	}
++
++	devm_kfree(ice_hw_to_dev(hw), config);
++
++	return status;
++}
++
+ /**
+  * ice_cfg_fw_log - configure FW logging
+  * @hw: pointer to the HW struct
+@@ -526,6 +569,11 @@ static enum ice_status ice_cfg_fw_log(struct ice_hw *hw, bool enable)
+ 	    (!hw->fw_log.actv_evnts || !ice_check_sq_alive(hw, &hw->adminq)))
+ 		return 0;
+ 
++	/* Get current FW log settings */
++	status = ice_get_fw_log_cfg(hw);
++	if (status)
++		return status;
++
+ 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logging);
+ 	cmd = &desc.params.fw_logging;
+ 
 -- 
 2.20.1
 
