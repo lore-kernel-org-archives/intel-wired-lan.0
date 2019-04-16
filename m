@@ -1,57 +1,83 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:21:13 -0700
-Subject: [Intel-wired-lan] [PATCH S18 00/15] Fixes and feature updates for
- ice
-Message-ID: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
+Date: Tue, 16 Apr 2019 10:21:14 -0700
+Subject: [Intel-wired-lan] [PATCH S18 01/15] ice: Fix for allowing too many
+ MDD events on VF
+In-Reply-To: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
+References: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172128.27184-2-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Akeem G Abodunrin (2):
-  ice: Don't remove VLAN filters that were never programmed
-  ice: Add function to program ethertype based filter rule on VSIs
+From: Michal Swiatkowski <michal.swiatkowski@intel.com>
 
-Anirudh Venkataramanan (1):
-  ice: Fix double spacing
+Disable VF if any malicious device driver (MDD) event is detected by
+hardware. Track vf->num_mdd_events for information about VF MDD events.
 
-Brett Creeley (2):
-  ice: Always free/allocate q_vectors
-  ice: Refactor getting/setting coalesce
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-Bruce Allan (2):
-  ice: Do not unnecessarily initialize local variable
-  ice: Suppress false-positive style issues reported by static analyzer
-
-Jesse Brandeburg (2):
-  ice: Use bitfields where possible
-  ice: Use more efficient structures
-
-Michal Swiatkowski (3):
-  ice: Fix for allowing too many MDD events on VF
-  ice: Add more validation in ice_vc_cfg_irq_map_msg
-  ice: Disable sniffing VF traffic on PF
-
-Tony Nguyen (3):
-  ice: Preserve VLAN Rx stripping settings
-  ice: Remove __always_unused attribute
-  ice: Separate if conditions for ice_set_features()
-
- drivers/net/ethernet/intel/ice/ice.h          |   4 +
- drivers/net/ethernet/intel/ice/ice_common.c   |   2 +-
- drivers/net/ethernet/intel/ice/ice_controlq.h |   4 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 154 +++++++++++-------
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   4 +
- drivers/net/ethernet/intel/ice/ice_lib.c      | 131 +++++++++++----
- drivers/net/ethernet/intel/ice/ice_main.c     |  49 ++----
- drivers/net/ethernet/intel/ice/ice_switch.c   |  59 +++++++
- drivers/net/ethernet/intel/ice/ice_switch.h   |   4 +
- drivers/net/ethernet/intel/ice/ice_txrx.c     |   1 +
- drivers/net/ethernet/intel/ice/ice_type.h     |  10 +-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  38 +++--
- 12 files changed, 310 insertions(+), 150 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 6b27be93bdf5..2352b4129a62 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1185,10 +1185,12 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 	for (i = 0; i < pf->num_alloc_vfs && mdd_detected; i++) {
+ 		struct ice_vf *vf = &pf->vf[i];
+ 
++		mdd_detected = false;
++
+ 		reg = rd32(hw, VP_MDET_TX_PQM(i));
+ 		if (reg & VP_MDET_TX_PQM_VALID_M) {
+ 			wr32(hw, VP_MDET_TX_PQM(i), 0xFFFF);
+-			vf->num_mdd_events++;
++			mdd_detected = true;
+ 			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
+ 				 i);
+ 		}
+@@ -1196,7 +1198,7 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		reg = rd32(hw, VP_MDET_TX_TCLAN(i));
+ 		if (reg & VP_MDET_TX_TCLAN_VALID_M) {
+ 			wr32(hw, VP_MDET_TX_TCLAN(i), 0xFFFF);
+-			vf->num_mdd_events++;
++			mdd_detected = true;
+ 			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
+ 				 i);
+ 		}
+@@ -1204,7 +1206,7 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		reg = rd32(hw, VP_MDET_TX_TDPU(i));
+ 		if (reg & VP_MDET_TX_TDPU_VALID_M) {
+ 			wr32(hw, VP_MDET_TX_TDPU(i), 0xFFFF);
+-			vf->num_mdd_events++;
++			mdd_detected = true;
+ 			dev_info(&pf->pdev->dev, "TX driver issue detected on VF %d\n",
+ 				 i);
+ 		}
+@@ -1212,14 +1214,13 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		reg = rd32(hw, VP_MDET_RX(i));
+ 		if (reg & VP_MDET_RX_VALID_M) {
+ 			wr32(hw, VP_MDET_RX(i), 0xFFFF);
+-			vf->num_mdd_events++;
++			mdd_detected = true;
+ 			dev_info(&pf->pdev->dev, "RX driver issue detected on VF %d\n",
+ 				 i);
+ 		}
+ 
+-		if (vf->num_mdd_events > ICE_DFLT_NUM_MDD_EVENTS_ALLOWED) {
+-			dev_info(&pf->pdev->dev,
+-				 "Too many MDD events on VF %d, disabled\n", i);
++		if (mdd_detected) {
++			vf->num_mdd_events++;
+ 			dev_info(&pf->pdev->dev,
+ 				 "Use PF Control I/F to re-enable the VF\n");
+ 			set_bit(ICE_VF_STATE_DIS, vf->vf_states);
 -- 
 2.20.1
 
