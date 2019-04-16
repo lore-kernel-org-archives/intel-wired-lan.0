@@ -1,44 +1,39 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:30:50 -0700
-Subject: [Intel-wired-lan] [PATCH S20 13/15] ice: Configure RSS LUT key only
- if RSS is enabled
+Date: Tue, 16 Apr 2019 10:30:46 -0700
+Subject: [Intel-wired-lan] [PATCH S20 09/15] ice: Change message level
 In-Reply-To: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
 References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173052.28928-14-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173052.28928-10-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Call ice_vsi_cfg_rss_lut_key only if RSS is enabled.
+Change the message level of the MTU change log message from debug to
+info.
 
-Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 515b154547c5..74008d748f3a 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2400,6 +2400,13 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 59971f6224f1..95ac79bfd92a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3892,7 +3892,7 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
+ 		}
+ 	}
  
- 		pf->q_left_tx -= vsi->alloc_txq;
- 		pf->q_left_rx -= vsi->alloc_rxq;
-+
-+		/* Do not exit if configuring RSS had an issue, at least
-+		 * receive traffic on first queue. Hence no need to capture
-+		 * return value
-+		 */
-+		if (test_bit(ICE_FLAG_RSS_ENA, pf->flags))
-+			ice_vsi_cfg_rss_lut_key(vsi);
- 		break;
- 	case ICE_VSI_LB:
- 		ret = ice_vsi_alloc_rings(vsi);
+-	netdev_dbg(netdev, "changed mtu to %d\n", new_mtu);
++	netdev_info(netdev, "changed MTU to %d\n", new_mtu);
+ 	return 0;
+ }
+ 
 -- 
 2.20.1
 
