@@ -1,135 +1,275 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:24:34 -0700
-Subject: [Intel-wired-lan] [PATCH S19 10/15] ice: Reorganize tx_buf and ring
- structs
+Date: Tue, 16 Apr 2019 10:24:30 -0700
+Subject: [Intel-wired-lan] [PATCH S19 06/15] ice: Advertise supported link
+ modes if none requested
 In-Reply-To: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
 References: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416172439.27908-11-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172439.27908-7-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
 
-Use more efficient structure ordering by using the pahole tool
-and a lot of code inspection to get hot cache lines to have
-packed data (no holes if possible) and adjacent warm data.
+User requested link modes affect what is returned as an advertised
+link mode.  If no modes have been requested, we are not advertising
+any link modes.  Advertise what we are capable of supporting if no
+link modes have been requested.
 
-ice_ring prior to this change:
-  /* size: 192, cachelines: 3, members: 23 */
-  /* sum members: 158, holes: 4, sum holes: 12 */
-  /* padding: 22 */
-
-ice_ring after this change:
-  /* size: 192, cachelines: 3, members: 25 */
-  /* sum members: 162, holes: 1, sum holes: 1 */
-  /* padding: 29 */
-
-ice_tx_buf prior to this change:
-  /* size: 48, cachelines: 1, members: 7 */
-  /* sum members: 38, holes: 2, sum holes: 6 */
-  /* padding: 4 */
-  /* last cacheline: 48 bytes */
-
-ice_tx_buf after this change:
-  /* size: 40, cachelines: 1, members: 7 */
-  /* sum members: 38, holes: 1, sum holes: 2 */
-  /* last cacheline: 40 bytes */
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice_txrx.h | 35 ++++++++++++++---------
- 1 file changed, 21 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 75 +++++++++++++-------
+ 1 file changed, 50 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 66e05032ee56..4cff52ffefe0 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -58,19 +58,19 @@ struct ice_tx_buf {
- 	unsigned int bytecount;
- 	unsigned short gso_segs;
- 	u32 tx_flags;
--	DEFINE_DMA_UNMAP_ADDR(dma);
- 	DEFINE_DMA_UNMAP_LEN(len);
-+	DEFINE_DMA_UNMAP_ADDR(dma);
- };
- 
- struct ice_tx_offload_params {
--	u8 header_len;
-+	u64 cd_qw1;
-+	struct ice_ring *tx_ring;
- 	u32 td_cmd;
- 	u32 td_offset;
- 	u32 td_l2tag1;
--	u16 cd_l2tag2;
- 	u32 cd_tunnel_params;
--	u64 cd_qw1;
--	struct ice_ring *tx_ring;
-+	u16 cd_l2tag2;
-+	u8 header_len;
- };
- 
- struct ice_rx_buf {
-@@ -150,6 +150,7 @@ enum ice_rx_dtype {
- 
- /* descriptor ring, associated with a VSI */
- struct ice_ring {
-+	/* CL1 - 1st cacheline starts here */
- 	struct ice_ring *next;		/* pointer to next ring in q_vector */
- 	void *desc;			/* Descriptor ring memory */
- 	struct device *dev;		/* Used for DMA mapping */
-@@ -161,11 +162,11 @@ struct ice_ring {
- 		struct ice_tx_buf *tx_buf;
- 		struct ice_rx_buf *rx_buf;
- 	};
-+	/* CL2 - 2nd cacheline starts here */
- 	u16 q_index;			/* Queue number of ring */
--	u32 txq_teid;			/* Added Tx queue TEID */
--#ifdef CONFIG_DCB
--	u8 dcb_tc;		/* Traffic class of ring */
--#endif /* CONFIG_DCB */
-+	u16 q_handle;			/* Queue handle per TC */
-+
-+	u8 ring_active;			/* is ring online or not */
- 
- 	u16 count;			/* Number of descriptors */
- 	u16 reg_idx;			/* HW register index of the ring */
-@@ -173,8 +174,7 @@ struct ice_ring {
- 	/* used in interrupt processing */
- 	u16 next_to_use;
- 	u16 next_to_clean;
--
--	u8 ring_active;			/* is ring online or not */
-+	u16 next_to_alloc;
- 
- 	/* stats structs */
- 	struct ice_q_stats	stats;
-@@ -184,10 +184,17 @@ struct ice_ring {
- 		struct ice_rxq_stats rx_stats;
- 	};
- 
--	unsigned int size;		/* length of descriptor ring in bytes */
--	dma_addr_t dma;			/* physical address of ring */
- 	struct rcu_head rcu;		/* to avoid race on free */
--	u16 next_to_alloc;
-+	/* CLX - the below items are only accessed infrequently and should be
-+	 * in their own cache line if possible
-+	 */
-+	dma_addr_t dma;			/* physical address of ring */
-+	unsigned int size;		/* length of descriptor ring in bytes */
-+	u32 txq_teid;			/* Added Tx queue TEID */
-+	u16 rx_buf_len;
-+#ifdef CONFIG_DCB
-+	u8 dcb_tc;			/* Traffic class of ring */
-+#endif /* CONFIG_DCB */
- } ____cacheline_internodealigned_in_smp;
- 
- struct ice_ring_container {
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index c1511393846f..91e3c451c66c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -628,7 +628,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_100M_SGMII) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     100baseT_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100MB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100MB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     100baseT_Full);
+ 	}
+@@ -636,14 +637,16 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_1G_SGMII) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     1000baseT_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     1000baseT_Full);
+ 	}
+ 	if (phy_types_low & ICE_PHY_TYPE_LOW_1000BASE_KX) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     1000baseKX_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     1000baseKX_Full);
+ 	}
+@@ -651,14 +654,16 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_1000BASE_LX) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     1000baseX_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_1000MB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     1000baseX_Full);
+ 	}
+ 	if (phy_types_low & ICE_PHY_TYPE_LOW_2500BASE_T) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     2500baseT_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_2500MB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_2500MB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     2500baseT_Full);
+ 	}
+@@ -666,7 +671,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_2500BASE_KX) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     2500baseX_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_2500MB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_2500MB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     2500baseX_Full);
+ 	}
+@@ -674,7 +680,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_5GBASE_KR) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     5000baseT_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_5GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_5GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     5000baseT_Full);
+ 	}
+@@ -684,28 +691,32 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_10G_SFI_C2C) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     10000baseT_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     10000baseT_Full);
+ 	}
+ 	if (phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_KR_CR1) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     10000baseKR_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     10000baseKR_Full);
+ 	}
+ 	if (phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_SR) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     10000baseSR_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     10000baseSR_Full);
+ 	}
+ 	if (phy_types_low & ICE_PHY_TYPE_LOW_10GBASE_LR) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     10000baseLR_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_10GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     10000baseLR_Full);
+ 	}
+@@ -717,7 +728,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_25G_AUI_C2C) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     25000baseCR_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     25000baseCR_Full);
+ 	}
+@@ -725,7 +737,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_LR) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     25000baseSR_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     25000baseSR_Full);
+ 	}
+@@ -734,14 +747,16 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_25GBASE_KR1) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     25000baseKR_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_25GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     25000baseKR_Full);
+ 	}
+ 	if (phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_KR4) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     40000baseKR4_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     40000baseKR4_Full);
+ 	}
+@@ -750,21 +765,24 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_40G_XLAUI) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     40000baseCR4_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     40000baseCR4_Full);
+ 	}
+ 	if (phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_SR4) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     40000baseSR4_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     40000baseSR4_Full);
+ 	}
+ 	if (phy_types_low & ICE_PHY_TYPE_LOW_40GBASE_LR4) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     40000baseLR4_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_40GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     40000baseLR4_Full);
+ 	}
+@@ -779,7 +797,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_50G_AUI1) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     50000baseCR2_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     50000baseCR2_Full);
+ 	}
+@@ -787,7 +806,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_50GBASE_KR_PAM4) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     50000baseKR2_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     50000baseKR2_Full);
+ 	}
+@@ -797,7 +817,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_50GBASE_LR) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     50000baseSR2_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_50GB)
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 							     50000baseSR2_Full);
+ 	}
+@@ -814,7 +835,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_high & ICE_PHY_TYPE_HIGH_100G_AUI2) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     100000baseCR4_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
+ 			need_add_adv_mode = true;
+ 	}
+ 	if (need_add_adv_mode) {
+@@ -826,7 +848,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_100GBASE_SR2) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     100000baseSR4_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
+ 			need_add_adv_mode = true;
+ 	}
+ 	if (need_add_adv_mode) {
+@@ -838,7 +861,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_low & ICE_PHY_TYPE_LOW_100GBASE_DR) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     100000baseLR4_ER4_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
+ 			need_add_adv_mode = true;
+ 	}
+ 	if (need_add_adv_mode) {
+@@ -851,7 +875,8 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	    phy_types_high & ICE_PHY_TYPE_HIGH_100GBASE_KR2_PAM4) {
+ 		ethtool_link_ksettings_add_link_mode(ks, supported,
+ 						     100000baseKR4_Full);
+-		if (hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
++		if (!hw_link_info->req_speeds ||
++		    hw_link_info->req_speeds & ICE_AQ_LINK_SPEED_100GB)
+ 			need_add_adv_mode = true;
+ 	}
+ 	if (need_add_adv_mode)
 -- 
 2.20.1
 
