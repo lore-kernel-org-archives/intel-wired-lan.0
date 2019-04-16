@@ -1,197 +1,45 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:21:17 -0700
-Subject: [Intel-wired-lan] [PATCH S18 04/15] ice: Add more validation in
- ice_vc_cfg_irq_map_msg
+Date: Tue, 16 Apr 2019 10:21:18 -0700
+Subject: [Intel-wired-lan] [PATCH S18 05/15] ice: Do not unnecessarily
+ initialize local variable
 In-Reply-To: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
 References: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416172128.27184-5-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172128.27184-6-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Add few checks to validate msg from iavf driver.
+The local variable speed does not need to be initialized and can cause some
+static analysis tools to complain the initial assigned value is never used.
 
-Test if we have got enough q_vectors allocated in VSI connected with VF.
-Add masks for itr_indx and msix_indx to avoid writing to reserved fieldi
-of QINT. Clear q_vector->num_ring_rx/tx, without it we can increment this
-value every time we send irq map msg from VF. So after second call this
-value will be incorrect.
-
-Decrement num_vectors from msg, because last vector in iavf msg is misc
-vector (we don't set map for it).
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
 [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
 ---
- drivers/net/ethernet/intel/ice/ice.h          |  2 ++
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |  4 +++
- drivers/net/ethernet/intel/ice/ice_lib.c      | 32 +++++++++++--------
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 26 +++++++--------
- 4 files changed, 36 insertions(+), 28 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 804d12c2f1df..6f970edf50c7 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -83,6 +83,8 @@ extern const char ice_drv_ver[];
- #define ICE_MAX_QS_PER_VF		256
- #define ICE_MIN_QS_PER_VF		1
- #define ICE_DFLT_QS_PER_VF		4
-+#define ICE_NONQ_VECS_VF		1
-+#define ICE_MAX_SCATTER_QS_PER_VF	16
- #define ICE_MAX_BASE_QS_PER_VF		16
- #define ICE_MAX_INTR_PER_VF		65
- #define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index e172ca002a0a..ec25f26069b0 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -163,11 +163,15 @@
- #define PFINT_OICR_ENA				0x0016C900
- #define QINT_RQCTL(_QRX)			(0x00150000 + ((_QRX) * 4))
- #define QINT_RQCTL_MSIX_INDX_S			0
-+#define QINT_RQCTL_MSIX_INDX_M			ICE_M(0x7FF, 0)
- #define QINT_RQCTL_ITR_INDX_S			11
-+#define QINT_RQCTL_ITR_INDX_M			ICE_M(0x3, 11)
- #define QINT_RQCTL_CAUSE_ENA_M			BIT(30)
- #define QINT_TQCTL(_DBQM)			(0x00140000 + ((_DBQM) * 4))
- #define QINT_TQCTL_MSIX_INDX_S			0
-+#define QINT_TQCTL_MSIX_INDX_M			ICE_M(0x7FF, 0)
- #define QINT_TQCTL_ITR_INDX_S			11
-+#define QINT_TQCTL_ITR_INDX_M			ICE_M(0x3, 11)
- #define QINT_TQCTL_CAUSE_ENA_M			BIT(30)
- #define VPINT_ALLOC(_VF)			(0x001D1000 + ((_VF) * 4))
- #define VPINT_ALLOC_FIRST_S			0
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 83d0aef7f77e..caa00e8873ec 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1879,33 +1879,37 @@ void ice_vsi_cfg_msix(struct ice_vsi *vsi)
- 		 * tracked for this PF.
- 		 */
- 		for (q = 0; q < q_vector->num_ring_tx; q++) {
--			int itr_idx = q_vector->tx.itr_idx;
-+			int itr_idx = (q_vector->tx.itr_idx <<
-+				       QINT_TQCTL_ITR_INDX_S) &
-+				QINT_TQCTL_ITR_INDX_M;
- 			u32 val;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 977e2a50dc93..28d7eacfb801 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1880,10 +1880,10 @@ void
+ ice_update_phy_type(u64 *phy_type_low, u64 *phy_type_high,
+ 		    u16 link_speeds_bitmap)
+ {
+-	u16 speed = ICE_AQ_LINK_SPEED_UNKNOWN;
+ 	u64 pt_high;
+ 	u64 pt_low;
+ 	int index;
++	u16 speed;
  
- 			if (vsi->type == ICE_VSI_VF)
--				val = QINT_TQCTL_CAUSE_ENA_M |
--				      (itr_idx << QINT_TQCTL_ITR_INDX_S)  |
--				      ((i + 1) << QINT_TQCTL_MSIX_INDX_S);
-+				val = QINT_TQCTL_CAUSE_ENA_M | itr_idx |
-+				      (((i + 1) << QINT_TQCTL_MSIX_INDX_S) &
-+				       QINT_TQCTL_MSIX_INDX_M);
- 			else
--				val = QINT_TQCTL_CAUSE_ENA_M |
--				      (itr_idx << QINT_TQCTL_ITR_INDX_S)  |
--				      (reg_idx << QINT_TQCTL_MSIX_INDX_S);
-+				val = QINT_TQCTL_CAUSE_ENA_M | itr_idx |
-+				      ((reg_idx << QINT_TQCTL_MSIX_INDX_S) &
-+				       QINT_TQCTL_MSIX_INDX_M);
- 			wr32(hw, QINT_TQCTL(vsi->txq_map[txq]), val);
- 			txq++;
- 		}
- 
- 		for (q = 0; q < q_vector->num_ring_rx; q++) {
--			int itr_idx = q_vector->rx.itr_idx;
-+			int itr_idx = (q_vector->rx.itr_idx <<
-+				       QINT_RQCTL_ITR_INDX_S) &
-+				QINT_RQCTL_ITR_INDX_M;
- 			u32 val;
- 
- 			if (vsi->type == ICE_VSI_VF)
--				val = QINT_RQCTL_CAUSE_ENA_M |
--				      (itr_idx << QINT_RQCTL_ITR_INDX_S)  |
--				      ((i + 1) << QINT_RQCTL_MSIX_INDX_S);
-+				val = QINT_RQCTL_CAUSE_ENA_M | itr_idx |
-+					(((i + 1) << QINT_RQCTL_MSIX_INDX_S) &
-+					 QINT_RQCTL_MSIX_INDX_M);
- 			else
--				val = QINT_RQCTL_CAUSE_ENA_M |
--				      (itr_idx << QINT_RQCTL_ITR_INDX_S)  |
--				      (reg_idx << QINT_RQCTL_MSIX_INDX_S);
-+				val = QINT_RQCTL_CAUSE_ENA_M | itr_idx |
-+					((reg_idx << QINT_RQCTL_MSIX_INDX_S) &
-+					 QINT_RQCTL_MSIX_INDX_M);
- 			wr32(hw, QINT_RQCTL(vsi->rxq_map[rxq]), val);
- 			rxq++;
- 		}
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index f4b466cd4b7a..a805cbdd69be 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1814,14 +1814,22 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf *vf, u8 *msg)
- 	struct ice_vsi *vsi = NULL;
- 	struct ice_pf *pf = vf->pf;
- 	unsigned long qmap;
-+	u16 num_q_vectors;
- 	int i;
- 
--	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
-+	num_q_vectors = irqmap_info->num_vectors - ICE_NONQ_VECS_VF;
-+	vsi = pf->vsi[vf->lan_vsi_idx];
-+
-+	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states) ||
-+	    !vsi || vsi->num_q_vectors < num_q_vectors ||
-+	    irqmap_info->num_vectors == 0) {
- 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 		goto error_param;
- 	}
- 
--	for (i = 0; i < irqmap_info->num_vectors; i++) {
-+	for (i = 0; i < num_q_vectors; i++) {
-+		struct ice_q_vector *q_vector = vsi->q_vectors[i];
-+
- 		map = &irqmap_info->vecmap[i];
- 
- 		vector_id = map->vector_id;
-@@ -1833,36 +1841,26 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf *vf, u8 *msg)
- 			goto error_param;
- 		}
- 
--		vsi = pf->vsi[vf->lan_vsi_idx];
--		if (!vsi) {
--			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
--			goto error_param;
--		}
--
- 		/* lookout for the invalid queue index */
- 		qmap = map->rxq_map;
-+		q_vector->num_ring_rx = 0;
- 		for_each_set_bit(vsi_q_id, &qmap, ICE_MAX_BASE_QS_PER_VF) {
--			struct ice_q_vector *q_vector;
--
- 			if (!ice_vc_isvalid_q_id(vf, vsi_id, vsi_q_id)) {
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 				goto error_param;
- 			}
--			q_vector = vsi->q_vectors[i];
- 			q_vector->num_ring_rx++;
- 			q_vector->rx.itr_idx = map->rxitr_idx;
- 			vsi->rx_rings[vsi_q_id]->q_vector = q_vector;
- 		}
- 
- 		qmap = map->txq_map;
-+		q_vector->num_ring_tx = 0;
- 		for_each_set_bit(vsi_q_id, &qmap, ICE_MAX_BASE_QS_PER_VF) {
--			struct ice_q_vector *q_vector;
--
- 			if (!ice_vc_isvalid_q_id(vf, vsi_id, vsi_q_id)) {
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 				goto error_param;
- 			}
--			q_vector = vsi->q_vectors[i];
- 			q_vector->num_ring_tx++;
- 			q_vector->tx.itr_idx = map->txitr_idx;
- 			vsi->tx_rings[vsi_q_id]->q_vector = q_vector;
+ 	/* We first check with low part of phy_type */
+ 	for (index = 0; index <= ICE_PHY_TYPE_LOW_MAX_INDEX; index++) {
 -- 
 2.20.1
 
