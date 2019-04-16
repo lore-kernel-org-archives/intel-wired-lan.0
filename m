@@ -1,82 +1,56 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:21:27 -0700
-Subject: [Intel-wired-lan] [PATCH S18 14/15] ice: Disable sniffing VF
- traffic on PF
+Date: Tue, 16 Apr 2019 10:21:23 -0700
+Subject: [Intel-wired-lan] [PATCH S18 10/15] ice: Separate if conditions for
+ ice_set_features()
 In-Reply-To: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
 References: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416172128.27184-15-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172128.27184-11-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
 
-Delete code that add default Tx rule on PF. With this rule PF can see
-Tx VF traffic that should go outside. For traffic from VF to another
-VF default Tx rule on PF doesn't apply because of lower priority than
-VF mac rule.
+Set features can have multiple features turned on|off in a single
+call.  Grouping these all in an if/else means after one condition
+is met, other conditions/features will not be evaluated.  Break
+the if/else statements by feature to ensure all features will be
+handled properly.
 
-With this change on PF in promisc mode we can see only Rx traffic that
-doesn't match any other rule (mac etc.). We can't see Tx traffic from
-other VSI.
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 24 ++---------------------
- 1 file changed, 2 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index aa832d9b2458..7843abf4d44d 100644
+index 2352b4129a62..aa832d9b2458 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -317,42 +317,22 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
- 	    test_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags)) {
- 		clear_bit(ICE_VSI_FLAG_PROMISC_CHANGED, vsi->flags);
- 		if (vsi->current_netdev_flags & IFF_PROMISC) {
--			/* Apply Tx filter rule to get traffic from VMs */
--			status = ice_cfg_dflt_vsi(hw, vsi->idx, true,
--						  ICE_FLTR_TX);
--			if (status) {
--				netdev_err(netdev, "Error setting default VSI %i tx rule\n",
--					   vsi->vsi_num);
--				vsi->current_netdev_flags &= ~IFF_PROMISC;
--				err = -EIO;
--				goto out_promisc;
--			}
- 			/* Apply Rx filter rule to get traffic from wire */
- 			status = ice_cfg_dflt_vsi(hw, vsi->idx, true,
- 						  ICE_FLTR_RX);
- 			if (status) {
--				netdev_err(netdev, "Error setting default VSI %i rx rule\n",
-+				netdev_err(netdev, "Error setting default VSI %i Rx rule\n",
- 					   vsi->vsi_num);
- 				vsi->current_netdev_flags &= ~IFF_PROMISC;
- 				err = -EIO;
- 				goto out_promisc;
- 			}
- 		} else {
--			/* Clear Tx filter rule to stop traffic from VMs */
--			status = ice_cfg_dflt_vsi(hw, vsi->idx, false,
--						  ICE_FLTR_TX);
--			if (status) {
--				netdev_err(netdev, "Error clearing default VSI %i tx rule\n",
--					   vsi->vsi_num);
--				vsi->current_netdev_flags |= IFF_PROMISC;
--				err = -EIO;
--				goto out_promisc;
--			}
- 			/* Clear Rx filter to remove traffic from wire */
- 			status = ice_cfg_dflt_vsi(hw, vsi->idx, false,
- 						  ICE_FLTR_RX);
- 			if (status) {
--				netdev_err(netdev, "Error clearing default VSI %i rx rule\n",
-+				netdev_err(netdev, "Error clearing default VSI %i Rx rule\n",
- 					   vsi->vsi_num);
- 				vsi->current_netdev_flags |= IFF_PROMISC;
- 				err = -EIO;
+@@ -2873,6 +2873,9 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
+ 	struct ice_vsi *vsi = np->vsi;
+ 	int ret = 0;
+ 
++	/* Multiple features can be changed in one call so keep features in
++	 * separate if/else statements to guarantee each feature is checked
++	 */
+ 	if (features & NETIF_F_RXHASH && !(netdev->features & NETIF_F_RXHASH))
+ 		ret = ice_vsi_manage_rss_lut(vsi, true);
+ 	else if (!(features & NETIF_F_RXHASH) &&
+@@ -2885,8 +2888,9 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
+ 	else if (!(features & NETIF_F_HW_VLAN_CTAG_RX) &&
+ 		 (netdev->features & NETIF_F_HW_VLAN_CTAG_RX))
+ 		ret = ice_vsi_manage_vlan_stripping(vsi, false);
+-	else if ((features & NETIF_F_HW_VLAN_CTAG_TX) &&
+-		 !(netdev->features & NETIF_F_HW_VLAN_CTAG_TX))
++
++	if ((features & NETIF_F_HW_VLAN_CTAG_TX) &&
++	    !(netdev->features & NETIF_F_HW_VLAN_CTAG_TX))
+ 		ret = ice_vsi_manage_vlan_insertion(vsi);
+ 	else if (!(features & NETIF_F_HW_VLAN_CTAG_TX) &&
+ 		 (netdev->features & NETIF_F_HW_VLAN_CTAG_TX))
 -- 
 2.20.1
 
