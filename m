@@ -1,61 +1,76 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:24:24 -0700
-Subject: [Intel-wired-lan] [PATCH S19 00/15] Fixes and feature updates for
- ice
-Message-ID: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
+Date: Tue, 16 Apr 2019 10:24:38 -0700
+Subject: [Intel-wired-lan] [PATCH S19 14/15] ice: Silence semantic parser
+ warnings
+In-Reply-To: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
+References: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172439.27908-15-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anirudh Venkataramanan (3):
-  ice: Implement LLDP persistence
-  ice: Remove braces for single statement blocks
-  ice: Call out dev/func caps when printing
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Brett Creeley (2):
-  ice: Gracefully handle reset failure in ice_alloc_vfs()
-  ice: Fix couple of issues in ice_vsi_release
+Recent versions of sparse warn about casting pointers to/from restricted
+endian types in the Linux driver.  Silence those with the compiler
+attribute __force macro from the Linux kernel to force casts to/from
+restricted endian types.
 
-Bruce Allan (3):
-  ice: Cleanup an unnecessary variable initialization
-  ice: Silence semantic parser warnings
-  ice: Fix LINE_SPACING style issue
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_nvm.c    | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_switch.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Dave Ertman (1):
-  ice: Fix hang when ethtool disables FW LLDP
-
-Jesse Brandeburg (3):
-  ice: Reorganize tx_buf and ring structs
-  ice: Use bitfields when possible
-  ice: Reorganize ice_vf struct
-
-Richard Rodriguez (1):
-  ice: Format ethtool reported stats
-
-Tony Nguyen (1):
-  ice: Advertise supported link modes if none requested
-
-Usha Ketineni (1):
-  ice: Refactor the LLDP MIB change event handling
-
- drivers/net/ethernet/intel/ice/ice.h          |  13 +-
- drivers/net/ethernet/intel/ice/ice_common.c   |  57 ++---
- drivers/net/ethernet/intel/ice/ice_dcb.c      |  21 +-
- drivers/net/ethernet/intel/ice/ice_dcb.h      |  12 +-
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c  | 212 +++++++++++++-----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |   5 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 197 +++++++++-------
- drivers/net/ethernet/intel/ice/ice_lib.c      |  24 +-
- drivers/net/ethernet/intel/ice/ice_main.c     |   4 +-
- drivers/net/ethernet/intel/ice/ice_nvm.c      |   4 +-
- drivers/net/ethernet/intel/ice/ice_switch.c   |   4 +-
- drivers/net/ethernet/intel/ice/ice_txrx.h     |  35 +--
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  20 +-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  25 ++-
- 14 files changed, 399 insertions(+), 234 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index 62571d33d0d6..6d4adaed5810 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -119,7 +119,7 @@ ice_read_sr_word_aq(struct ice_hw *hw, u16 offset, u16 *data)
+ 
+ 	status = ice_read_sr_aq(hw, offset, 1, data, true);
+ 	if (!status)
+-		*data = le16_to_cpu(*(__le16 *)data);
++		*data = le16_to_cpu(*(__force __le16 *)data);
+ 
+ 	return status;
+ }
+@@ -174,7 +174,7 @@ ice_read_sr_buf_aq(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
+ 	} while (words_read < *words);
+ 
+ 	for (i = 0; i < *words; i++)
+-		data[i] = le16_to_cpu(((__le16 *)data)[i]);
++		data[i] = le16_to_cpu(((__force __le16 *)data)[i]);
+ 
+ read_nvm_buf_aq_exit:
+ 	*words = words_read;
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 471003ba1e99..6a7aadbc508e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -799,7 +799,7 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
+ 		daddr = f_info->l_data.ethertype_mac.mac_addr;
+ 		/* fall-through */
+ 	case ICE_SW_LKUP_ETHERTYPE:
+-		off = (__be16 *)(eth_hdr + ICE_ETH_ETHTYPE_OFFSET);
++		off = (__force __be16 *)(eth_hdr + ICE_ETH_ETHTYPE_OFFSET);
+ 		*off = cpu_to_be16(f_info->l_data.ethertype_mac.ethertype);
+ 		break;
+ 	case ICE_SW_LKUP_MAC_VLAN:
+@@ -829,7 +829,7 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
+ 		ether_addr_copy(eth_hdr + ICE_ETH_DA_OFFSET, daddr);
+ 
+ 	if (!(vlan_id > ICE_MAX_VLAN_ID)) {
+-		off = (__be16 *)(eth_hdr + ICE_ETH_VLAN_TCI_OFFSET);
++		off = (__force __be16 *)(eth_hdr + ICE_ETH_VLAN_TCI_OFFSET);
+ 		*off = cpu_to_be16(vlan_id);
+ 	}
+ 
 -- 
 2.20.1
 
