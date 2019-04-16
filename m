@@ -1,62 +1,83 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:34:49 -0700
-Subject: [Intel-wired-lan] [PATCH S21 00/14] Fixes and feature updates for
- ice
-Message-ID: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
+Date: Tue, 16 Apr 2019 10:34:53 -0700
+Subject: [Intel-wired-lan] [PATCH S21 04/14] ice: Use right type for
+ ice_cfg_vsi_lan return
+In-Reply-To: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
+References: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173503.29847-5-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Akeem G Abodunrin (1):
-  ice: Use right type for ice_cfg_vsi_lan return
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-Anirudh Venkataramanan (7):
-  ice: Add support for virtchnl_vector_map.[rxq|txq]_map
-  ice: Use continue instead of an else block
-  ice: Align to updated AQ command formats
-  ice: Move define for ICE_AQC_DRIVER_UNLOADING
-  ice: Update function header
-  ice: Recognize higher speeds
-  ice: Trivial cosmetic changes
+ice_cfg_vsi_lan returns a value of type enum ice_status. So
+use a local of the same type to capture the return value.
 
-Bruce Allan (1):
-  ice: Cleanup ice_update_link_info
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> rewrote commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-Dave Ertman (1):
-  ice: Add switch rules to handle LLDP packets
-
-Jacob Keller (1):
-  ice: Use a different ICE_DBG bit for firmware log messages
-
-Paul Greenwalt (1):
-  ice: Add support for Forward Error Correction (FEC)
-
-Preethi Banala (1):
-  ice: Change minimum descriptor count value for Tx/Rx rings
-
-Tony Nguyen (1):
-  ice: Introduce ice_init_mac_fltr and move ice_napi_del
-
- drivers/net/ethernet/intel/ice/ice.h          |   2 +-
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  25 +-
- drivers/net/ethernet/intel/ice/ice_common.c   | 127 ++++++++--
- drivers/net/ethernet/intel/ice/ice_common.h   |   6 +-
- drivers/net/ethernet/intel/ice/ice_controlq.c |   2 +-
- drivers/net/ethernet/intel/ice/ice_controlq.h |   2 +-
- drivers/net/ethernet/intel/ice/ice_dcb.c      |  14 +-
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |  24 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 229 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_lib.c      | 213 ++++++++++++----
- drivers/net/ethernet/intel/ice/ice_lib.h      |  12 +
- drivers/net/ethernet/intel/ice/ice_main.c     | 199 ++++++++++-----
- drivers/net/ethernet/intel/ice/ice_switch.c   |   7 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c     |   8 +-
- drivers/net/ethernet/intel/ice/ice_type.h     |  12 +-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  54 +++--
- 16 files changed, 742 insertions(+), 194 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index a21b817642ad..d0410c686ef4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2365,6 +2365,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ {
+ 	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
+ 	struct device *dev = &pf->pdev->dev;
++	enum ice_status status;
+ 	struct ice_vsi *vsi;
+ 	int ret, i;
+ 
+@@ -2472,12 +2473,12 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 	for (i = 0; i < vsi->tc_cfg.numtc; i++)
+ 		max_txqs[i] = pf->num_lan_tx;
+ 
+-	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
+-			      max_txqs);
+-	if (ret) {
++	status = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
++				 max_txqs);
++	if (status) {
+ 		dev_err(&pf->pdev->dev,
+ 			"VSI %d failed lan queue config, error %d\n",
+-			vsi->vsi_num, ret);
++			vsi->vsi_num, status);
+ 		goto unroll_vector_base;
+ 	}
+ 
+@@ -2868,6 +2869,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
+ {
+ 	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
+ 	struct ice_vf *vf = NULL;
++	enum ice_status status;
+ 	struct ice_pf *pf;
+ 	int ret, i;
+ 
+@@ -2961,12 +2963,12 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
+ 	for (i = 0; i < vsi->tc_cfg.numtc; i++)
+ 		max_txqs[i] = pf->num_lan_tx;
+ 
+-	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
+-			      max_txqs);
+-	if (ret) {
++	status = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
++				 max_txqs);
++	if (status) {
+ 		dev_err(&pf->pdev->dev,
+ 			"VSI %d failed lan queue config, error %d\n",
+-			vsi->vsi_num, ret);
++			vsi->vsi_num, status);
+ 		goto err_vectors;
+ 	}
+ 	return 0;
 -- 
 2.20.1
 
