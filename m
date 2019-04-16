@@ -1,528 +1,234 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:35:03 -0700
-Subject: [Intel-wired-lan] [PATCH S21 14/14] ice: Trivial cosmetic changes
+Date: Tue, 16 Apr 2019 10:34:55 -0700
+Subject: [Intel-wired-lan] [PATCH S21 06/14] ice: Add switch rules to handle
+ LLDP packets
 In-Reply-To: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
 References: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173503.29847-15-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173503.29847-7-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch mostly capitalizes abbreviations in code comments. Fixed some
-typos and removed some unnecessary newlines as well.
+From: Dave Ertman <david.m.ertman@intel.com>
 
+Add call to configure dropping egress LLDP packets in ice_vsi_setup
+and remove the rule in ice_vsi_release.
+
+Add calls to add/remove rule to route LLDP packets to default VSI when
+FW LLDP engine is disabled/enabled and remove rule if applied during
+ice_vsi_release.
+
+In the function ice_add_eth_mac(), there is a line that hardcodes the
+filter info flag to TX. This is incorrect as this flag will be set by
+the calling function that built the list of filters to add. So remove
+the hardcoded value.
+
+This patch also contains a fix to stop treating the DCBx state of
+"Not Started" as an error state that kicks DCB in SW mode. This will
+address having non-cabled interfaces automatically go into SW mode
+with the FW engine running.
+
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  4 +-
- drivers/net/ethernet/intel/ice/ice_common.c   | 12 +++---
- drivers/net/ethernet/intel/ice/ice_controlq.c |  2 +-
- drivers/net/ethernet/intel/ice/ice_controlq.h |  2 +-
- drivers/net/ethernet/intel/ice/ice_dcb.c      | 14 +++----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c  | 12 +++---
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |  2 +-
- drivers/net/ethernet/intel/ice/ice_lib.c      |  4 +-
- drivers/net/ethernet/intel/ice/ice_main.c     | 42 +++++++++----------
- drivers/net/ethernet/intel/ice/ice_switch.c   |  2 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c     |  8 ++--
- drivers/net/ethernet/intel/ice/ice_type.h     |  2 +-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  9 ++--
- 13 files changed, 57 insertions(+), 58 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
+---
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  4 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 11 +++
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 70 +++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_lib.h     |  2 +
+ drivers/net/ethernet/intel/ice/ice_switch.c  |  5 +-
+ 5 files changed, 86 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 7a9da5320e96..765e3c2ed045 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1273,7 +1273,7 @@ struct ice_aqc_get_cee_dcb_cfg_resp {
- };
- 
- /* Set Local LLDP MIB (indirect 0x0A08)
-- * Used to replace the local MIB of a given LLDP agent. e.g. DCBx
-+ * Used to replace the local MIB of a given LLDP agent. e.g. DCBX
-  */
- struct ice_aqc_lldp_set_local_mib {
- 	u8 type;
-@@ -1290,7 +1290,7 @@ struct ice_aqc_lldp_set_local_mib {
- };
- 
- /* Stop/Start LLDP Agent (direct 0x0A09)
-- * Used for stopping/starting specific LLDP agent. e.g. DCBx.
-+ * Used for stopping/starting specific LLDP agent. e.g. DCBX.
-  * The same structure is used for the response, with the command field
-  * being used as the status field.
-  */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index ba6ad90e8907..8a3b04c38e2f 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -499,7 +499,7 @@ static enum ice_status ice_get_fw_log_cfg(struct ice_hw *hw)
- 	if (!status) {
- 		u16 i;
- 
--		/* Save fw logging information into the hw structure */
-+		/* Save fw logging information into the HW structure */
- 		for (i = 0; i < ICE_AQC_FW_LOG_ID_MAX; i++) {
- 			u16 v, m, flgs;
- 
-@@ -691,7 +691,7 @@ void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf)
-  * ice_get_itr_intrl_gran - determine int/intrl granularity
-  * @hw: pointer to the HW struct
-  *
-- * Determines the itr/intrl granularities based on the maximum aggregate
-+ * Determines the ITR/intrl granularities based on the maximum aggregate
-  * bandwidth according to the device's configuration during power-on.
-  */
- static void ice_get_itr_intrl_gran(struct ice_hw *hw)
-@@ -2699,7 +2699,7 @@ ice_aq_dis_lan_txq(struct ice_hw *hw, u8 num_qgrps,
- 			ice_debug(hw, ICE_DBG_SCHED, "VM%d disable failed %d\n",
- 				  vmvf_num, hw->adminq.sq_last_status);
- 		else
--			ice_debug(hw, ICE_DBG_SCHED, "disable Q %d failed %d\n",
-+			ice_debug(hw, ICE_DBG_SCHED, "disable queue %d failed %d\n",
- 				  le16_to_cpu(qg_list[0].q_id[0]),
- 				  hw->adminq.sq_last_status);
- 	}
-@@ -2930,10 +2930,10 @@ ice_set_ctx(u8 *src_ctx, u8 *dest_ctx, const struct ice_ctx_ele *ce_info)
- }
- 
- /**
-- * ice_get_lan_q_ctx - get the lan queue context for the given VSI and TC
-- * @hw: pointer to the hw struct
-+ * ice_get_lan_q_ctx - get the LAN queue context for the given VSI and TC
-+ * @hw: pointer to the HW struct
-  * @vsi_handle: software VSI handle
-- * @tc: tc number
-+ * @tc: TC number
-  * @q_handle: software queue handle
-  */
- static struct ice_q_ctx *
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index cc8cb5fdcdc1..e91ac4df0242 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -439,7 +439,7 @@ do {									\
- 	/* free the buffer info list */					\
- 	if ((qi)->ring.cmd_buf)						\
- 		devm_kfree(ice_hw_to_dev(hw), (qi)->ring.cmd_buf);	\
--	/* free dma head */						\
-+	/* free DMA head */						\
- 	devm_kfree(ice_hw_to_dev(hw), (qi)->ring.dma_head);		\
- } while (0)
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.h b/drivers/net/ethernet/intel/ice/ice_controlq.h
-index e0585394d984..44945c2165d8 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.h
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.h
-@@ -35,7 +35,7 @@ enum ice_ctl_q {
- #define ICE_CTL_Q_SQ_CMD_TIMEOUT	250  /* msecs */
- 
- struct ice_ctl_q_ring {
--	void *dma_head;			/* Virtual address to dma head */
-+	void *dma_head;			/* Virtual address to DMA head */
- 	struct ice_dma_mem desc_buf;	/* descriptor ring memory */
- 	void *cmd_buf;			/* command buffer memory */
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index 817ae688082b..c70c3d6ba916 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -669,7 +669,7 @@ ice_lldp_to_dcb_cfg(u8 *lldpmib, struct ice_dcbx_cfg *dcbcfg)
- /**
-  * ice_aq_get_dcb_cfg
-  * @hw: pointer to the HW struct
-- * @mib_type: mib type for the query
-+ * @mib_type: MIB type for the query
-  * @bridgetype: bridge type for the query (remote)
-  * @dcbcfg: store for LLDPDU data
-  *
-@@ -700,13 +700,13 @@ ice_aq_get_dcb_cfg(struct ice_hw *hw, u8 mib_type, u8 bridgetype,
- }
- 
- /**
-- * ice_aq_start_stop_dcbx - Start/Stop DCBx service in FW
-+ * ice_aq_start_stop_dcbx - Start/Stop DCBX service in FW
-  * @hw: pointer to the HW struct
-- * @start_dcbx_agent: True if DCBx Agent needs to be started
-- *		      False if DCBx Agent needs to be stopped
-- * @dcbx_agent_status: FW indicates back the DCBx agent status
-- *		       True if DCBx Agent is active
-- *		       False if DCBx Agent is stopped
-+ * @start_dcbx_agent: True if DCBX Agent needs to be started
-+ *		      False if DCBX Agent needs to be stopped
-+ * @dcbx_agent_status: FW indicates back the DCBX agent status
-+ *		       True if DCBX Agent is active
-+ *		       False if DCBX Agent is stopped
-  * @cd: pointer to command details structure or NULL
-  *
-  * Start/Stop the embedded dcbx Agent. In case that this wrapper function
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index b2e05ba79123..f0827e447043 100644
+index b04295ab35d5..e1db24cde38a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -283,7 +283,7 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+@@ -387,10 +387,8 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 		set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
+ 	}
  
- /**
-  * ice_dcb_init_cfg - set the initial DCB config in SW
-- * @pf: pf to apply config to
-+ * @pf: PF to apply config to
-  * @locked: Is the RTNL held
-  */
- static int ice_dcb_init_cfg(struct ice_pf *pf, bool locked)
-@@ -311,7 +311,7 @@ static int ice_dcb_init_cfg(struct ice_pf *pf, bool locked)
+-	if (port_info->dcbx_status == ICE_DCBX_STATUS_NOT_STARTED) {
+-		sw_default = 1;
++	if (port_info->dcbx_status == ICE_DCBX_STATUS_NOT_STARTED)
+ 		dev_info(&pf->pdev->dev, "DCBX not started\n");
+-	}
  
- /**
-  * ice_dcb_sw_default_config - Apply a default DCB config
-- * @pf: pf to apply config to
-+ * @pf: PF to apply config to
-  * @locked: was this function called with RTNL held
-  */
- static int ice_dcb_sw_dflt_cfg(struct ice_pf *pf, bool locked)
-@@ -356,7 +356,7 @@ static int ice_dcb_sw_dflt_cfg(struct ice_pf *pf, bool locked)
- 
- /**
-  * ice_init_pf_dcb - initialize DCB for a PF
-- * @pf: pf to initiialize DCB for
-+ * @pf: PF to initiialize DCB for
-  * @locked: Was function called with RTNL held
-  */
- int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
-@@ -371,7 +371,7 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 
- 	err = ice_init_dcb(hw);
- 	if (err) {
--		/* FW LLDP is not active, default to SW DCBx/LLDP */
-+		/* FW LLDP is not active, default to SW DCBX/LLDP */
- 		dev_info(&pf->pdev->dev, "FW LLDP is not active\n");
- 		hw->port_info->dcbx_status = ICE_DCBX_STATUS_NOT_STARTED;
- 		hw->port_info->is_sw_lldp = true;
-@@ -604,10 +604,10 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
- 	/* store the old configuration */
- 	tmp_dcbx_cfg = pf->hw.port_info->local_dcbx_cfg;
- 
--	/* Reset the old DCBx configuration data */
-+	/* Reset the old DCBX configuration data */
- 	memset(&pi->local_dcbx_cfg, 0, sizeof(pi->local_dcbx_cfg));
- 
--	/* Get updated DCBx data from firmware */
-+	/* Get updated DCBX data from firmware */
- 	ret = ice_get_dcb_cfg(pf->hw.port_info);
- 	if (ret) {
- 		dev_err(&pf->pdev->dev, "Failed to get DCB config\n");
+ 	if (sw_default) {
+ 		err = ice_dcb_sw_dflt_cfg(pf, locked);
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 6beb918f625f..52083a63dee6 100644
+index 2da83847b9dc..6beb918f625f 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1247,7 +1247,7 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 				dev_warn(&pf->pdev->dev,
- 					 "Fail to start LLDP Agent\n");
+@@ -1205,6 +1205,7 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
+ 		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags)) {
+ 			enum ice_status status;
  
--			/* AQ command to start FW DCBx agent will fail if
-+			/* AQ command to start FW DCBX agent will fail if
- 			 * the agent is already started
- 			 */
- 			status = ice_aq_start_stop_dcbx(&pf->hw, true,
++			/* Disable FW LLDP engine */
+ 			status = ice_aq_cfg_lldp_mib_change(&pf->hw, false,
+ 							    NULL);
+ 			/* If unregistering for LLDP events fails, this is
+@@ -1229,6 +1230,11 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
+ 			status = ice_init_pf_dcb(pf, true);
+ 			if (status)
+ 				dev_warn(&pf->pdev->dev, "Fail to init DCB\n");
++
++			/* Forward LLDP packets to default VSI so that they
++			 * are passed up the stack
++			 */
++			ice_cfg_sw_lldp(vsi, false, true);
+ 		} else {
+ 			enum ice_status status;
+ 			bool dcbx_agent_status;
+@@ -1262,6 +1268,11 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
+ 			status = ice_init_pf_dcb(pf, true);
+ 			if (status)
+ 				dev_dbg(&pf->pdev->dev, "Fail to init DCB\n");
++
++			/* Remove rule to direct LLDP packets to default VSI.
++			 * The FW LLDP engine will now be consuming them.
++			 */
++			ice_cfg_sw_lldp(vsi, false, false);
+ 		}
+ 	}
+ 	clear_bit(ICE_FLAG_ETHTOOL_CTXT, pf->flags);
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index e203c7114803..91a914b5a9e1 100644
+index d0410c686ef4..e203c7114803 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2536,7 +2536,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	 * recipe, since VSI/VSI list is ignored with drop action...
- 	 * Also add rules to handle LLDP Tx and Rx packets.  Tx LLDP packets
- 	 * need to be dropped so that VFs cannot send LLDP packets to reconfig
--	 * DCB settings in the HW.  Also, if the FW DCBx engine is not running
-+	 * DCB settings in the HW.  Also, if the FW DCBX engine is not running
- 	 * then Rx LLDP packets need to be redirected up the stack.
- 	 */
- 	if (vsi->type == ICE_VSI_PF) {
-@@ -3056,7 +3056,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
- 
- /**
-  * ice_is_reset_in_progress - check for a reset in progress
-- * @state: pf state field
-+ * @state: PF state field
-  */
- bool ice_is_reset_in_progress(unsigned long *state)
- {
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index d34e2d529165..28ec0d57941d 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -112,7 +112,7 @@ static void ice_check_for_hang_subtask(struct ice_pf *pf)
-  * ice_init_mac_fltr - Set initial MAC filters
-  * @pf: board private structure
-  *
-- * Set initial set of mac filters for PF VSI; configure filters for permanent
-+ * Set initial set of MAC filters for PF VSI; configure filters for permanent
-  * address and broadcast address. If an error is encountered, netdevice will be
-  * unregistered.
-  */
-@@ -682,13 +682,13 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
- 
- 	switch (vsi->port_info->fc.current_mode) {
- 	case ICE_FC_FULL:
--		fc = "RX/TX";
-+		fc = "Rx/Tx";
- 		break;
- 	case ICE_FC_TX_PAUSE:
--		fc = "TX";
-+		fc = "Tx";
- 		break;
- 	case ICE_FC_RX_PAUSE:
--		fc = "RX";
-+		fc = "Rx";
- 		break;
- 	case ICE_FC_NONE:
- 		fc = "None";
-@@ -770,7 +770,7 @@ static void ice_vsi_link_event(struct ice_vsi *vsi, bool link_up)
- 
- /**
-  * ice_link_event - process the link event
-- * @pf: pf that the link event is associated with
-+ * @pf: PF that the link event is associated with
-  * @pi: port_info for the port that the link event is associated with
-  * @link_up: true if the physical link is up and false if it is down
-  * @link_speed: current link speed received from the link event
-@@ -880,7 +880,7 @@ static int ice_init_link_events(struct ice_port_info *pi)
- 
- /**
-  * ice_handle_link_event - handle link event via ARQ
-- * @pf: pf that the link event is associated with
-+ * @pf: PF that the link event is associated with
-  * @event: event structure containing link status info
-  */
- static int
-@@ -2301,7 +2301,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	if (!pf)
- 		return -ENOMEM;
- 
--	/* set up for high or low dma */
-+	/* set up for high or low DMA */
- 	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
- 	if (err)
- 		err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32));
-@@ -2417,7 +2417,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 
- 	err = ice_setup_pf_sw(pf);
- 	if (err) {
--		dev_err(dev, "probe failed due to setup pf switch:%d\n", err);
-+		dev_err(dev, "probe failed due to setup PF switch:%d\n", err);
- 		goto err_alloc_sw_unroll;
- 	}
- 
-@@ -2674,7 +2674,7 @@ static int __init ice_module_init(void)
- 
- 	status = pci_register_driver(&ice_driver);
- 	if (status) {
--		pr_err("failed to register pci driver, err %d\n", status);
-+		pr_err("failed to register PCI driver, err %d\n", status);
- 		destroy_workqueue(ice_wq);
- 	}
- 
-@@ -2774,21 +2774,21 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
- 	ice_free_fltr_list(&pf->pdev->dev, &a_mac_list);
- 
- 	if (err) {
--		netdev_err(netdev, "can't set mac %pM. filter update failed\n",
-+		netdev_err(netdev, "can't set MAC %pM. filter update failed\n",
- 			   mac);
- 		return err;
- 	}
- 
- 	/* change the netdev's MAC address */
- 	memcpy(netdev->dev_addr, mac, netdev->addr_len);
--	netdev_dbg(vsi->netdev, "updated mac address to %pM\n",
-+	netdev_dbg(vsi->netdev, "updated MAC address to %pM\n",
- 		   netdev->dev_addr);
- 
- 	/* write new MAC address to the firmware */
- 	flags = ICE_AQC_MAN_MAC_UPDATE_LAA_WOL;
- 	status = ice_aq_manage_mac_write(hw, mac, flags, NULL);
- 	if (status) {
--		netdev_err(netdev, "can't set mac %pM. write to firmware failed.\n",
-+		netdev_err(netdev, "can't set MAC %pM. write to firmware failed.\n",
- 			   mac);
- 	}
- 	return 0;
-@@ -3714,7 +3714,7 @@ static int ice_pf_ena_all_vsi(struct ice_pf *pf, bool locked)
+@@ -2345,6 +2345,53 @@ ice_vsi_add_rem_eth_mac(struct ice_vsi *vsi, bool add_rule)
+ 	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
  }
  
++/** ice_cfg_sw_lldp - Config switch rules for LLDP packet handling
++ * @vsi: the VSI being configured
++ * @tx: bool to determine Tx or Rx rule
++ * @create: bool to determine create or remove Rule
++ */
++void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create)
++{
++	struct ice_fltr_list_entry *list;
++	struct ice_pf *pf = vsi->back;
++	LIST_HEAD(tmp_add_list);
++	enum ice_status status;
++
++	list = devm_kzalloc(&pf->pdev->dev, sizeof(*list), GFP_KERNEL);
++	if (!list)
++		return;
++
++	list->fltr_info.lkup_type = ICE_SW_LKUP_ETHERTYPE;
++	list->fltr_info.vsi_handle = vsi->idx;
++	list->fltr_info.l_data.ethertype_mac.ethertype = ETH_P_LLDP;
++
++	if (tx) {
++		list->fltr_info.fltr_act = ICE_DROP_PACKET;
++		list->fltr_info.flag = ICE_FLTR_TX;
++		list->fltr_info.src_id = ICE_SRC_ID_VSI;
++	} else {
++		list->fltr_info.fltr_act = ICE_FWD_TO_VSI;
++		list->fltr_info.flag = ICE_FLTR_RX;
++		list->fltr_info.src_id = ICE_SRC_ID_LPORT;
++	}
++
++	INIT_LIST_HEAD(&list->list_entry);
++	list_add(&list->list_entry, &tmp_add_list);
++
++	if (create)
++		status = ice_add_eth_mac(&pf->hw, &tmp_add_list);
++	else
++		status = ice_remove_eth_mac(&pf->hw, &tmp_add_list);
++
++	if (status)
++		dev_err(&pf->pdev->dev,
++			"Fail %s %s LLDP rule on VSI %i error: %d\n",
++			create ? "adding" : "removing", tx ? "TX" : "RX",
++			vsi->vsi_num, status);
++
++	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
++}
++
  /**
-- * ice_vsi_rebuild_all - rebuild all VSIs in pf
-+ * ice_vsi_rebuild_all - rebuild all VSIs in PF
-  * @pf: the PF
-  */
- static int ice_vsi_rebuild_all(struct ice_pf *pf)
-@@ -3784,7 +3784,7 @@ static int ice_vsi_replay_all(struct ice_pf *pf)
+  * ice_vsi_setup - Set up a VSI by a given type
+  * @pf: board private structure
+@@ -2487,10 +2534,22 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 	 * out PAUSE or PFC frames. If enabled, FW can still send FC frames.
+ 	 * The rule is added once for PF VSI in order to create appropriate
+ 	 * recipe, since VSI/VSI list is ignored with drop action...
++	 * Also add rules to handle LLDP Tx and Rx packets.  Tx LLDP packets
++	 * need to be dropped so that VFs cannot send LLDP packets to reconfig
++	 * DCB settings in the HW.  Also, if the FW DCBx engine is not running
++	 * then Rx LLDP packets need to be redirected up the stack.
+ 	 */
+-	if (vsi->type == ICE_VSI_PF)
++	if (vsi->type == ICE_VSI_PF) {
+ 		ice_vsi_add_rem_eth_mac(vsi, true);
  
- /**
-  * ice_rebuild - rebuild after reset
-- * @pf: pf to rebuild
-+ * @pf: PF to rebuild
-  */
- static void ice_rebuild(struct ice_pf *pf)
- {
-@@ -3796,7 +3796,7 @@ static void ice_rebuild(struct ice_pf *pf)
- 	if (test_bit(__ICE_DOWN, pf->state))
- 		goto clear_recovery;
++		/* Tx LLDP packets */
++		ice_cfg_sw_lldp(vsi, true, true);
++
++		/* Rx LLDP packets */
++		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags))
++			ice_cfg_sw_lldp(vsi, false, true);
++	}
++
+ 	return vsi;
  
--	dev_dbg(dev, "rebuilding pf\n");
-+	dev_dbg(dev, "rebuilding PF\n");
- 
- 	ret = ice_init_all_ctrlq(hw);
- 	if (ret) {
-@@ -3907,16 +3907,16 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
- 	u8 count = 0;
- 
- 	if (new_mtu == netdev->mtu) {
--		netdev_warn(netdev, "mtu is already %u\n", netdev->mtu);
-+		netdev_warn(netdev, "MTU is already %u\n", netdev->mtu);
- 		return 0;
+ unroll_vector_base:
+@@ -2829,8 +2888,15 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 		pf->num_avail_sw_msix += vsi->num_q_vectors;
  	}
  
- 	if (new_mtu < netdev->min_mtu) {
--		netdev_err(netdev, "new mtu invalid. min_mtu is %d\n",
-+		netdev_err(netdev, "new MTU invalid. min_mtu is %d\n",
- 			   netdev->min_mtu);
- 		return -EINVAL;
- 	} else if (new_mtu > netdev->max_mtu) {
--		netdev_err(netdev, "new mtu invalid. max_mtu is %d\n",
-+		netdev_err(netdev, "new MTU invalid. max_mtu is %d\n",
- 			   netdev->min_mtu);
- 		return -EINVAL;
- 	}
-@@ -3932,7 +3932,7 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
- 	} while (count < 100);
+-	if (vsi->type == ICE_VSI_PF)
++	if (vsi->type == ICE_VSI_PF) {
+ 		ice_vsi_add_rem_eth_mac(vsi, false);
++		ice_cfg_sw_lldp(vsi, true, false);
++		/* The Rx rule will only exist to remove if the LLDP FW
++		 * engine is currently stopped
++		 */
++		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags))
++			ice_cfg_sw_lldp(vsi, false, false);
++	}
  
- 	if (count == 100) {
--		netdev_err(netdev, "can't change mtu. Device is busy\n");
-+		netdev_err(netdev, "can't change MTU. Device is busy\n");
- 		return -EBUSY;
- 	}
+ 	ice_remove_vsi_fltr(&pf->hw, vsi->idx);
+ 	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 2acae3215f5f..6e43ef03bfc3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -45,6 +45,8 @@ ice_vsi_stop_lan_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
  
-@@ -3944,13 +3944,13 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
+ int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena, bool vlan_promisc);
  
- 		err = ice_down(vsi);
- 		if (err) {
--			netdev_err(netdev, "change mtu if_up err %d\n", err);
-+			netdev_err(netdev, "change MTU if_up err %d\n", err);
- 			return err;
- 		}
++void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create);
++
+ void ice_vsi_delete(struct ice_vsi *vsi);
  
- 		err = ice_up(vsi);
- 		if (err) {
--			netdev_err(netdev, "change mtu if_up err %d\n", err);
-+			netdev_err(netdev, "change MTU if_up err %d\n", err);
- 			return err;
- 		}
- 	}
+ int ice_vsi_clear(struct ice_vsi *vsi);
 diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 3dc29aa5fbcd..6b68ff8dae18 100644
+index 6a7aadbc508e..3dc29aa5fbcd 100644
 --- a/drivers/net/ethernet/intel/ice/ice_switch.c
 +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -330,7 +330,7 @@ ice_save_vsi_ctx(struct ice_hw *hw, u16 vsi_handle, struct ice_vsi_ctx *vsi)
- 
- /**
-  * ice_clear_vsi_q_ctx - clear VSI queue contexts for all TCs
-- * @hw: pointer to the hw struct
-+ * @hw: pointer to the HW struct
-  * @vsi_handle: VSI handle
+@@ -1973,6 +1973,10 @@ ice_add_vlan(struct ice_hw *hw, struct list_head *v_list)
+  * ice_add_eth_mac - Add ethertype and MAC based filter rule
+  * @hw: pointer to the hardware structure
+  * @em_list: list of ether type MAC filter, MAC is optional
++ *
++ * This function requires the caller to populate the entries in
++ * the filter list with the necessary fields (including flags to
++ * indicate Tx or Rx rules).
   */
- static void ice_clear_vsi_q_ctx(struct ice_hw *hw, u16 vsi_handle)
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index a19dde262dee..8ee8d0d2814f 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -55,7 +55,7 @@ void ice_clean_tx_ring(struct ice_ring *tx_ring)
- 	if (!tx_ring->tx_buf)
- 		return;
+ enum ice_status
+ ice_add_eth_mac(struct ice_hw *hw, struct list_head *em_list)
+@@ -1990,7 +1994,6 @@ ice_add_eth_mac(struct ice_hw *hw, struct list_head *em_list)
+ 		    l_type != ICE_SW_LKUP_ETHERTYPE)
+ 			return ICE_ERR_PARAM;
  
--	/* Free all the Tx ring sk_bufss */
-+	/* Free all the Tx ring sk_buffs */
- 	for (i = 0; i < tx_ring->count; i++)
- 		ice_unmap_and_free_tx_buf(tx_ring, &tx_ring->tx_buf[i]);
- 
-@@ -1101,7 +1101,7 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
-  * ice_adjust_itr_by_size_and_speed - Adjust ITR based on current traffic
-  * @port_info: port_info structure containing the current link speed
-  * @avg_pkt_size: average size of Tx or Rx packets based on clean routine
-- * @itr: itr value to update
-+ * @itr: ITR value to update
-  *
-  * Calculate how big of an increment should be applied to the ITR value passed
-  * in based on wmem_default, SKB overhead, ethernet overhead, and the current
-@@ -1316,7 +1316,7 @@ ice_update_itr(struct ice_q_vector *q_vector, struct ice_ring_container *rc)
-  */
- static u32 ice_buildreg_itr(u16 itr_idx, u16 itr)
- {
--	/* The itr value is reported in microseconds, and the register value is
-+	/* The ITR value is reported in microseconds, and the register value is
- 	 * recorded in 2 microsecond units. For this reason we only need to
- 	 * shift by the GLINT_DYN_CTL_INTERVAL_S - ICE_ITR_GRAN_S to apply this
- 	 * granularity as a shift instead of division. The mask makes sure the
-@@ -1650,7 +1650,7 @@ ice_tx_map(struct ice_ring *tx_ring, struct ice_tx_buf *first,
- 	return;
- 
- dma_error:
--	/* clear dma mappings for failed tx_buf map */
-+	/* clear DMA mappings for failed tx_buf map */
- 	for (;;) {
- 		tx_buf = &tx_ring->tx_buf[i];
- 		ice_unmap_and_free_tx_buf(tx_ring, tx_buf);
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 3474bccbab6d..24bbef8bbe69 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -434,7 +434,7 @@ struct ice_hw {
- 	struct ice_fw_log_cfg fw_log;
- 
- /* Device max aggregate bandwidths corresponding to the GL_PWR_MODE_CTL
-- * register. Used for determining the itr/intrl granularity during
-+ * register. Used for determining the ITR/intrl granularity during
-  * initialization.
-  */
- #define ICE_MAX_AGG_BW_200G	0x0
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index fff59ebf07ca..5d24b539648f 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -154,7 +154,7 @@ static void ice_free_vf_res(struct ice_vf *vf)
- 	 */
- 	clear_bit(ICE_VF_STATE_INIT, vf->vf_states);
- 
--	/* free vsi & disconnect it from the parent uplink */
-+	/* free VSI and disconnect it from the parent uplink */
- 	if (vf->lan_vsi_idx) {
- 		ice_vsi_release(pf->vsi[vf->lan_vsi_idx]);
- 		vf->lan_vsi_idx = 0;
-@@ -514,7 +514,6 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
- 	vf->first_vector_idx = ice_calc_vf_first_vector_idx(pf, vf);
- 
- 	vsi = ice_vf_vsi_setup(pf, pf->hw.port_info, vf->vf_id);
--
- 	if (!vsi) {
- 		dev_err(&pf->pdev->dev, "Failed to create VF VSI\n");
- 		return -ENOMEM;
-@@ -1312,8 +1311,8 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- }
- 
- /**
-- * ice_pf_state_is_nominal - checks the pf for nominal state
-- * @pf: pointer to pf to check
-+ * ice_pf_state_is_nominal - checks the PF for nominal state
-+ * @pf: pointer to PF to check
-  *
-  * Check the PF's state for a collection of bits that would indicate
-  * the PF is in a state that would inhibit normal operation for
-@@ -1640,7 +1639,7 @@ static void ice_vc_reset_vf_msg(struct ice_vf *vf)
- 
- /**
-  * ice_find_vsi_from_id
-- * @pf: the pf structure to search for the VSI
-+ * @pf: the PF structure to search for the VSI
-  * @id: ID of the VSI it is searching for
-  *
-  * searches for the VSI with the given ID
+-		em_list_itr->fltr_info.flag = ICE_FLTR_TX;
+ 		em_list_itr->status = ice_add_rule_internal(hw, l_type,
+ 							    em_list_itr);
+ 		if (em_list_itr->status)
 -- 
 2.20.1
 
