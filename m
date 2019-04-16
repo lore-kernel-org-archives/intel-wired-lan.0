@@ -1,219 +1,139 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:21:24 -0700
-Subject: [Intel-wired-lan] [PATCH S18 11/15] ice: Add function to program
- ethertype based filter rule on VSIs
+Date: Tue, 16 Apr 2019 10:21:19 -0700
+Subject: [Intel-wired-lan] [PATCH S18 06/15] ice: Always free/allocate
+ q_vectors
 In-Reply-To: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
 References: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416172128.27184-12-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416172128.27184-7-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-This patch adds function to program VSI with ethertype based filter rule,
-so that all flow control frames would be disallowed from being transmitted
-to the client, in order to prevent malicious VSI, especially VF from
-sending out PAUSE or PFC frames, and then control other VSIs traffic.
+Currently when probing/removing the driver we allocate/deallocate
+each vsi->q_vectors array in ice_vsi_alloc_arrays() and
+ice_vsi_free_arrays() respectively. However, we don't do this
+during the reset and VSI rebuild flow. This is inconsistent
+and unnecessary to have a difference between the two flows.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+This patch makes the change to always allocate/deallocate the
+vsi->q_vectors array regardless of the driver flow we are in.
+
+Also, update the comment for ice_vsi_free_arrays() to be more
+descriptive.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
-[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned up commit message]
----
- drivers/net/ethernet/intel/ice/ice.h        |  2 +
- drivers/net/ethernet/intel/ice/ice_lib.c    | 55 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_switch.c | 59 +++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_switch.h |  4 ++
- 4 files changed, 120 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 34 ++++++++++--------------
+ 1 file changed, 14 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 6f970edf50c7..792e6e42030e 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -255,6 +255,8 @@ struct ice_vsi {
- 
- 	s16 vf_id;			/* VF ID for SR-IOV VSIs */
- 
-+	u16 ethtype;			/* Ethernet protocol for pause frame */
-+
- 	/* RSS config */
- 	u16 rss_table_size;	/* HW RSS table size */
- 	u16 rss_size;		/* Allocated RSS queues */
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 7a88bf639376..fbf1eba0cc2a 100644
+index caa00e8873ec..7a88bf639376 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2250,6 +2250,46 @@ ice_vsi_set_q_vectors_reg_idx(struct ice_vsi *vsi)
- 	return -EINVAL;
- }
- 
-+/**
-+ * ice_vsi_add_rem_eth_mac - Program VSI ethertype based filter with rule
-+ * @vsi: the VSI being configured
-+ * @add_rule: boolean value to add or remove ethertype filter rule
-+ */
-+static void
-+ice_vsi_add_rem_eth_mac(struct ice_vsi *vsi, bool add_rule)
-+{
-+	struct ice_fltr_list_entry *list;
-+	struct ice_pf *pf = vsi->back;
-+	LIST_HEAD(tmp_add_list);
-+	enum ice_status status;
-+
-+	list = devm_kzalloc(&pf->pdev->dev, sizeof(*list), GFP_KERNEL);
-+	if (!list)
-+		return;
-+
-+	list->fltr_info.lkup_type = ICE_SW_LKUP_ETHERTYPE;
-+	list->fltr_info.fltr_act = ICE_DROP_PACKET;
-+	list->fltr_info.flag = ICE_FLTR_TX;
-+	list->fltr_info.src_id = ICE_SRC_ID_VSI;
-+	list->fltr_info.vsi_handle = vsi->idx;
-+	list->fltr_info.l_data.ethertype_mac.ethertype = vsi->ethtype;
-+
-+	INIT_LIST_HEAD(&list->list_entry);
-+	list_add(&list->list_entry, &tmp_add_list);
-+
-+	if (add_rule)
-+		status = ice_add_eth_mac(&pf->hw, &tmp_add_list);
-+	else
-+		status = ice_remove_eth_mac(&pf->hw, &tmp_add_list);
-+
-+	if (status)
-+		dev_err(&pf->pdev->dev,
-+			"Failure Adding or Removing Ethertype on VSI %i error: %d\n",
-+			vsi->vsi_num, status);
-+
-+	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
-+}
-+
+@@ -232,12 +232,11 @@ static int ice_vsi_ctrl_rx_rings(struct ice_vsi *vsi, bool ena)
  /**
-  * ice_vsi_setup - Set up a VSI by a given type
-  * @pf: board private structure
-@@ -2285,6 +2325,9 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+  * ice_vsi_alloc_arrays - Allocate queue and vector pointer arrays for the VSI
+  * @vsi: VSI pointer
+- * @alloc_qvectors: a bool to specify if q_vectors need to be allocated.
+  *
+  * On error: returns error code (negative)
+  * On success: returns 0
+  */
+-static int ice_vsi_alloc_arrays(struct ice_vsi *vsi, bool alloc_qvectors)
++static int ice_vsi_alloc_arrays(struct ice_vsi *vsi)
+ {
+ 	struct ice_pf *pf = vsi->back;
  
- 	vsi->port_info = pi;
- 	vsi->vsw = pf->first_sw;
-+	if (vsi->type == ICE_VSI_PF)
-+		vsi->ethtype = ETH_P_PAUSE;
-+
- 	if (vsi->type == ICE_VSI_VF)
- 		vsi->vf_id = vf_id;
+@@ -252,15 +251,11 @@ static int ice_vsi_alloc_arrays(struct ice_vsi *vsi, bool alloc_qvectors)
+ 	if (!vsi->rx_rings)
+ 		goto err_rxrings;
  
-@@ -2382,6 +2425,15 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 		goto unroll_vector_base;
- 	}
+-	if (alloc_qvectors) {
+-		/* allocate memory for q_vector pointers */
+-		vsi->q_vectors = devm_kcalloc(&pf->pdev->dev,
+-					      vsi->num_q_vectors,
+-					      sizeof(*vsi->q_vectors),
+-					      GFP_KERNEL);
+-		if (!vsi->q_vectors)
+-			goto err_vectors;
+-	}
++	/* allocate memory for q_vector pointers */
++	vsi->q_vectors = devm_kcalloc(&pf->pdev->dev, vsi->num_q_vectors,
++				      sizeof(*vsi->q_vectors), GFP_KERNEL);
++	if (!vsi->q_vectors)
++		goto err_vectors;
  
-+	/* Add switch rule to drop all Tx Flow Control Frames, of look up
-+	 * type ETHERTYPE from VSIs, and restrict malicious VF from sending
-+	 * out PAUSE or PFC frames. If enabled, FW can still send FC frames.
-+	 * The rule is added once for PF VSI in order to create appropriate
-+	 * recipe, since VSI/VSI list is ignored with drop action...
-+	 */
-+	if (vsi->type == ICE_VSI_PF)
-+		ice_vsi_add_rem_eth_mac(vsi, true);
-+
- 	return vsi;
- 
- unroll_vector_base:
-@@ -2740,6 +2792,9 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 		pf->num_avail_hw_msix += pf->num_vf_msix;
- 	}
- 
-+	if (vsi->type == ICE_VSI_PF)
-+		ice_vsi_add_rem_eth_mac(vsi, false);
-+
- 	ice_remove_vsi_fltr(&pf->hw, vsi->idx);
- 	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
- 	ice_vsi_delete(vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index b7975971403d..471003ba1e99 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -1969,6 +1969,65 @@ ice_add_vlan(struct ice_hw *hw, struct list_head *v_list)
  	return 0;
+ 
+@@ -389,16 +384,15 @@ void ice_vsi_delete(struct ice_vsi *vsi)
  }
  
-+/**
-+ * ice_add_eth_mac - Add ethertype and MAC based filter rule
-+ * @hw: pointer to the hardware structure
-+ * @em_list: list of ether type MAC filter, MAC is optional
-+ */
-+enum ice_status
-+ice_add_eth_mac(struct ice_hw *hw, struct list_head *em_list)
-+{
-+	struct ice_fltr_list_entry *em_list_itr;
-+
-+	if (!em_list || !hw)
-+		return ICE_ERR_PARAM;
-+
-+	list_for_each_entry(em_list_itr, em_list, list_entry) {
-+		enum ice_sw_lkup_type l_type =
-+			em_list_itr->fltr_info.lkup_type;
-+
-+		if (l_type != ICE_SW_LKUP_ETHERTYPE_MAC &&
-+		    l_type != ICE_SW_LKUP_ETHERTYPE)
-+			return ICE_ERR_PARAM;
-+
-+		em_list_itr->fltr_info.flag = ICE_FLTR_TX;
-+		em_list_itr->status = ice_add_rule_internal(hw, l_type,
-+							    em_list_itr);
-+		if (em_list_itr->status)
-+			return em_list_itr->status;
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * ice_remove_eth_mac - Remove an ethertype (or MAC) based filter rule
-+ * @hw: pointer to the hardware structure
-+ * @em_list: list of ethertype or ethertype MAC entries
-+ */
-+enum ice_status
-+ice_remove_eth_mac(struct ice_hw *hw, struct list_head *em_list)
-+{
-+	struct ice_fltr_list_entry *em_list_itr, *tmp;
-+
-+	if (!em_list || !hw)
-+		return ICE_ERR_PARAM;
-+
-+	list_for_each_entry_safe(em_list_itr, tmp, em_list, list_entry) {
-+		enum ice_sw_lkup_type l_type =
-+			em_list_itr->fltr_info.lkup_type;
-+
-+		if (l_type != ICE_SW_LKUP_ETHERTYPE_MAC &&
-+		    l_type != ICE_SW_LKUP_ETHERTYPE)
-+			return ICE_ERR_PARAM;
-+
-+		em_list_itr->status = ice_remove_rule_internal(hw, l_type,
-+							       em_list_itr);
-+		if (em_list_itr->status)
-+			return em_list_itr->status;
-+	}
-+	return 0;
-+}
-+
  /**
-  * ice_rem_sw_rule_info
-  * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 88eb4be4d5a4..732b0b9b2e15 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -218,6 +218,10 @@ enum ice_status ice_get_initial_sw_cfg(struct ice_hw *hw);
- enum ice_status ice_update_sw_rule_bridge_mode(struct ice_hw *hw);
- enum ice_status ice_add_mac(struct ice_hw *hw, struct list_head *m_lst);
- enum ice_status ice_remove_mac(struct ice_hw *hw, struct list_head *m_lst);
-+enum ice_status
-+ice_add_eth_mac(struct ice_hw *hw, struct list_head *em_list);
-+enum ice_status
-+ice_remove_eth_mac(struct ice_hw *hw, struct list_head *em_list);
- void ice_remove_vsi_fltr(struct ice_hw *hw, u16 vsi_handle);
- enum ice_status
- ice_add_vlan(struct ice_hw *hw, struct list_head *m_list);
+- * ice_vsi_free_arrays - clean up VSI resources
++ * ice_vsi_free_arrays - De-allocate queue and vector pointer arrays for the VSI
+  * @vsi: pointer to VSI being cleared
+- * @free_qvectors: bool to specify if q_vectors should be deallocated
+  */
+-static void ice_vsi_free_arrays(struct ice_vsi *vsi, bool free_qvectors)
++static void ice_vsi_free_arrays(struct ice_vsi *vsi)
+ {
+ 	struct ice_pf *pf = vsi->back;
+ 
+ 	/* free the ring and vector containers */
+-	if (free_qvectors && vsi->q_vectors) {
++	if (vsi->q_vectors) {
+ 		devm_kfree(&pf->pdev->dev, vsi->q_vectors);
+ 		vsi->q_vectors = NULL;
+ 	}
+@@ -446,7 +440,7 @@ int ice_vsi_clear(struct ice_vsi *vsi)
+ 	if (vsi->idx < pf->next_vsi)
+ 		pf->next_vsi = vsi->idx;
+ 
+-	ice_vsi_free_arrays(vsi, true);
++	ice_vsi_free_arrays(vsi);
+ 	mutex_unlock(&pf->sw_mutex);
+ 	devm_kfree(&pf->pdev->dev, vsi);
+ 
+@@ -512,14 +506,14 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type type, u16 vf_id)
+ 
+ 	switch (vsi->type) {
+ 	case ICE_VSI_PF:
+-		if (ice_vsi_alloc_arrays(vsi, true))
++		if (ice_vsi_alloc_arrays(vsi))
+ 			goto err_rings;
+ 
+ 		/* Setup default MSIX irq handler for VSI */
+ 		vsi->irq_handler = ice_msix_clean_rings;
+ 		break;
+ 	case ICE_VSI_VF:
+-		if (ice_vsi_alloc_arrays(vsi, true))
++		if (ice_vsi_alloc_arrays(vsi))
+ 			goto err_rings;
+ 		break;
+ 	default:
+@@ -2809,7 +2803,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
+ 	vsi->hw_base_vector = 0;
+ 
+ 	ice_vsi_clear_rings(vsi);
+-	ice_vsi_free_arrays(vsi, false);
++	ice_vsi_free_arrays(vsi);
+ 	ice_dev_onetime_setup(&pf->hw);
+ 	if (vsi->type == ICE_VSI_VF)
+ 		ice_vsi_set_num_qs(vsi, vf->vf_id);
+@@ -2822,7 +2816,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
+ 	if (ret < 0)
+ 		goto err_vsi;
+ 
+-	ret = ice_vsi_alloc_arrays(vsi, false);
++	ret = ice_vsi_alloc_arrays(vsi);
+ 	if (ret < 0)
+ 		goto err_vsi;
+ 
 -- 
 2.20.1
 
