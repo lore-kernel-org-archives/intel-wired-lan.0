@@ -1,60 +1,87 @@
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Date: Tue, 16 Apr 2019 10:35:01 -0700
-Subject: [Intel-wired-lan] [PATCH S21 12/14] ice: Use a different ICE_DBG
- bit for firmware log messages
+Date: Tue, 16 Apr 2019 10:34:58 -0700
+Subject: [Intel-wired-lan] [PATCH S21 09/14] ice: Align to updated AQ
+ command formats
 In-Reply-To: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
 References: <20190416173503.29847-1-anirudh.venkataramanan@intel.com>
-Message-ID: <20190416173503.29847-13-anirudh.venkataramanan@intel.com>
+Message-ID: <20190416173503.29847-10-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+The current specification has updates to the command formats for
+manage MAC opcodes (opcodes 0x0107 and 0x0108) and get PHY caps
+(opcode 0x0600). Update the code to reflect this.
 
-Replace the use of the ICE_DBG_AQ_MSG bit when dumping firmware logging
-messages with a separate distinct type ICE_DBG_FW_LOG. This is useful
-so that developers may enable ICE_DBG_FW_LOG and get firmware logging
-messages, without also dumping AdminQ messages at the same time.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 6 +++---
- drivers/net/ethernet/intel/ice/ice_type.h   | 1 +
- 2 files changed, 4 insertions(+), 3 deletions(-)
+[Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> squashed multiple commits]
+---
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 6d3b863e3302..ba6ad90e8907 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -681,10 +681,10 @@ static enum ice_status ice_cfg_fw_log(struct ice_hw *hw, bool enable)
-  */
- void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf)
- {
--	ice_debug(hw, ICE_DBG_AQ_MSG, "[ FW Log Msg Start ]\n");
--	ice_debug_array(hw, ICE_DBG_AQ_MSG, 16, 1, (u8 *)buf,
-+	ice_debug(hw, ICE_DBG_FW_LOG, "[ FW Log Msg Start ]\n");
-+	ice_debug_array(hw, ICE_DBG_FW_LOG, 16, 1, (u8 *)buf,
- 			le16_to_cpu(desc->datalen));
--	ice_debug(hw, ICE_DBG_AQ_MSG, "[ FW Log Msg End ]\n");
-+	ice_debug(hw, ICE_DBG_FW_LOG, "[ FW Log Msg End ]\n");
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index b233f6ca8f0f..b1efe55e4d7e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -120,11 +120,9 @@ struct ice_aqc_manage_mac_read {
+ #define ICE_AQC_MAN_MAC_WOL_ADDR_VALID		BIT(7)
+ #define ICE_AQC_MAN_MAC_READ_S			4
+ #define ICE_AQC_MAN_MAC_READ_M			(0xF << ICE_AQC_MAN_MAC_READ_S)
+-	u8 lport_num;
+-	u8 lport_num_valid;
+-#define ICE_AQC_MAN_MAC_PORT_NUM_IS_VALID	BIT(0)
++	u8 rsvd[2];
+ 	u8 num_addr; /* Used in response */
+-	u8 reserved[3];
++	u8 rsvd1[3];
+ 	__le32 addr_high;
+ 	__le32 addr_low;
+ };
+@@ -140,7 +138,7 @@ struct ice_aqc_manage_mac_read_resp {
  
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index b6d0399f49b9..3474bccbab6d 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -23,6 +23,7 @@ static inline bool ice_is_tc_ena(u8 bitmap, u8 tc)
+ /* Manage MAC address, write command - direct (0x0108) */
+ struct ice_aqc_manage_mac_write {
+-	u8 port_num;
++	u8 rsvd;
+ 	u8 flags;
+ #define ICE_AQC_MAN_MAC_WR_MC_MAG_EN		BIT(0)
+ #define ICE_AQC_MAN_MAC_WR_WOL_LAA_PFR_KEEP	BIT(1)
+@@ -934,6 +932,7 @@ struct ice_aqc_get_phy_caps_data {
+ #define ICE_AQC_PHY_EEE_EN_40GBASE_KR4			BIT(6)
+ 	__le16 eeer_value;
+ 	u8 phy_id_oui[4]; /* PHY/Module ID connected on the port */
++	u8 phy_fw_ver[8];
+ 	u8 link_fec_options;
+ #define ICE_AQC_PHY_FEC_10G_KR_40G_KR4_EN		BIT(0)
+ #define ICE_AQC_PHY_FEC_10G_KR_40G_KR4_REQ		BIT(1)
+@@ -943,6 +942,7 @@ struct ice_aqc_get_phy_caps_data {
+ #define ICE_AQC_PHY_FEC_25G_RS_CLAUSE91_EN		BIT(6)
+ #define ICE_AQC_PHY_FEC_25G_KR_CLAUSE74_EN		BIT(7)
+ #define ICE_AQC_PHY_FEC_MASK				ICE_M(0xdf, 0)
++	u8 rsvd1;	/* Byte 35 reserved */
+ 	u8 extended_compliance_code;
+ #define ICE_MODULE_TYPE_TOTAL_BYTE			3
+ 	u8 module_type[ICE_MODULE_TYPE_TOTAL_BYTE];
+@@ -957,13 +957,14 @@ struct ice_aqc_get_phy_caps_data {
+ #define ICE_AQC_MOD_TYPE_BYTE2_SFP_PLUS			0xA0
+ #define ICE_AQC_MOD_TYPE_BYTE2_QSFP_PLUS		0x86
+ 	u8 qualified_module_count;
++	u8 rsvd2[7];	/* Bytes 47:41 reserved */
+ #define ICE_AQC_QUAL_MOD_COUNT_MAX			16
+ 	struct {
+ 		u8 v_oui[3];
+-		u8 rsvd1;
++		u8 rsvd3;
+ 		u8 v_part[16];
+ 		__le32 v_rev;
+-		__le64 rsvd8;
++		__le64 rsvd4;
+ 	} qual_modules[ICE_AQC_QUAL_MOD_COUNT_MAX];
+ };
  
- /* debug masks - set these bits in hw->debug_mask to control output */
- #define ICE_DBG_INIT		BIT_ULL(1)
-+#define ICE_DBG_FW_LOG		BIT_ULL(3)
- #define ICE_DBG_LINK		BIT_ULL(4)
- #define ICE_DBG_PHY		BIT_ULL(5)
- #define ICE_DBG_QCTX		BIT_ULL(6)
 -- 
 2.20.1
 
