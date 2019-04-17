@@ -1,189 +1,103 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 18 Apr 2019 05:55:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- f918d2696bf9fa4a448b94646a0a24cb397d7db8
-Message-ID: <5cb7a0bb.MqTWFXq5LnbUaDZM%lkp@intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Wed, 17 Apr 2019 15:17:29 -0700
+Subject: [Intel-wired-lan] [next PATCH S4 iavf 1/9] iavf: Rename
+ i40e_adminq* files to iavf_adminq*
+Message-ID: <20190417221737.11460-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: f918d2696bf9fa4a448b94646a0a24cb397d7db8  ice: Gracefully handle reset failure in ice_alloc_vfs()
+With the rename of the iavf driver, there were some
+files that were missed in renaming.  Update these to
+be iavf as well.
 
-elapsed time: 206m
-
-configs tested: 164
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-i386                     randconfig-n2-201915
-i386                     randconfig-n3-201915
-i386                     randconfig-n0-201915
-i386                     randconfig-n1-201915
-x86_64                 randconfig-x001-201915
-x86_64                 randconfig-x004-201915
-x86_64                 randconfig-x000-201915
-x86_64                 randconfig-x003-201915
-x86_64                 randconfig-x007-201915
-x86_64                 randconfig-x008-201915
-x86_64                 randconfig-x002-201915
-x86_64                 randconfig-x006-201915
-x86_64                 randconfig-x009-201915
-x86_64                 randconfig-x005-201915
-i386                     randconfig-i0-201915
-i386                     randconfig-i1-201915
-i386                     randconfig-i2-201915
-i386                     randconfig-i3-201915
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-i386                   randconfig-x002-201915
-i386                   randconfig-x001-201915
-i386                   randconfig-x005-201915
-i386                   randconfig-x007-201915
-i386                   randconfig-x000-201915
-i386                   randconfig-x004-201915
-i386                   randconfig-x008-201915
-i386                   randconfig-x009-201915
-i386                   randconfig-x006-201915
-i386                   randconfig-x003-201915
-x86_64                 randconfig-x015-201915
-x86_64                 randconfig-x016-201915
-x86_64                 randconfig-x012-201915
-x86_64                 randconfig-x017-201915
-x86_64                 randconfig-x013-201915
-x86_64                 randconfig-x018-201915
-x86_64                 randconfig-x010-201915
-x86_64                 randconfig-x014-201915
-x86_64                 randconfig-x019-201915
-x86_64                 randconfig-x011-201915
-i386                     randconfig-a1-201915
-i386                     randconfig-a2-201915
-i386                     randconfig-a0-201915
-i386                     randconfig-a3-201915
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                               rhel-7.6
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-m0-04170939
-i386                   randconfig-m2-04170939
-i386                   randconfig-m1-04170939
-i386                   randconfig-m3-04170939
-i386                   randconfig-m0-04170939
-x86_64                 randconfig-m2-04170939
-x86_64                 randconfig-m1-04170939
-x86_64                 randconfig-m3-04170939
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-l0-04180125
-x86_64                 randconfig-l1-04180125
-x86_64                 randconfig-l2-04180125
-x86_64                 randconfig-l3-04180125
-i386                   randconfig-l0-04180125
-i386                   randconfig-l1-04180125
-i386                   randconfig-l2-04180125
-i386                   randconfig-l3-04180125
-x86_64                   randconfig-i1-201915
-x86_64                   randconfig-i2-201915
-x86_64                   randconfig-i3-201915
-x86_64                   randconfig-i0-201915
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-i386                   randconfig-x010-201915
-i386                   randconfig-x018-201915
-i386                   randconfig-x017-201915
-i386                   randconfig-x013-201915
-i386                   randconfig-x011-201915
-i386                   randconfig-x014-201915
-i386                   randconfig-x019-201915
-i386                   randconfig-x015-201915
-i386                   randconfig-x016-201915
-i386                   randconfig-x012-201915
-riscv                              tinyconfig
-i386                               tinyconfig
-i386                   randconfig-x077-201915
-i386                   randconfig-x074-201915
-i386                   randconfig-x070-201915
-i386                   randconfig-x072-201915
-i386                   randconfig-x075-201915
-i386                   randconfig-x071-201915
-i386                   randconfig-x079-201915
-i386                   randconfig-x078-201915
-i386                   randconfig-x073-201915
-i386                   randconfig-x076-201915
-x86_64                 randconfig-g2-04141729
-x86_64                 randconfig-g3-04141729
-x86_64                 randconfig-g0-04141729
-x86_64                 randconfig-g1-04141729
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                              allnoconfig
-i386                                defconfig
-
+Signed-off-by: Alice Michael <alice.michael@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/iavf/Makefile                        | 2 +-
+ .../net/ethernet/intel/iavf/{i40e_adminq.c => iavf_adminq.c}    | 2 +-
+ .../net/ethernet/intel/iavf/{i40e_adminq.h => iavf_adminq.h}    | 2 +-
+ .../intel/iavf/{i40e_adminq_cmd.h => iavf_adminq_cmd.h}         | 0
+ drivers/net/ethernet/intel/iavf/iavf_common.c                   | 2 +-
+ drivers/net/ethernet/intel/iavf/iavf_type.h                     | 2 +-
+ 6 files changed, 5 insertions(+), 5 deletions(-)
+ rename drivers/net/ethernet/intel/iavf/{i40e_adminq.c => iavf_adminq.c} (99%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_adminq.h => iavf_adminq.h} (99%)
+ rename drivers/net/ethernet/intel/iavf/{i40e_adminq_cmd.h => iavf_adminq_cmd.h} (100%)
+
+diff --git a/drivers/net/ethernet/intel/iavf/Makefile b/drivers/net/ethernet/intel/iavf/Makefile
+index 9cbb5743ed12..c997063ed728 100644
+--- a/drivers/net/ethernet/intel/iavf/Makefile
++++ b/drivers/net/ethernet/intel/iavf/Makefile
+@@ -12,4 +12,4 @@ subdir-ccflags-y += -I$(src)
+ obj-$(CONFIG_IAVF) += iavf.o
+ 
+ iavf-objs := iavf_main.o iavf_ethtool.o iavf_virtchnl.o \
+-	     iavf_txrx.o iavf_common.o i40e_adminq.o iavf_client.o
++	     iavf_txrx.o iavf_common.o iavf_adminq.o iavf_client.o
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.c b/drivers/net/ethernet/intel/iavf/iavf_adminq.c
+similarity index 99%
+rename from drivers/net/ethernet/intel/iavf/i40e_adminq.c
+rename to drivers/net/ethernet/intel/iavf/iavf_adminq.c
+index fca1ecfd9f71..04b44614ec38 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_adminq.c
+@@ -4,7 +4,7 @@
+ #include "iavf_status.h"
+ #include "iavf_type.h"
+ #include "iavf_register.h"
+-#include "i40e_adminq.h"
++#include "iavf_adminq.h"
+ #include "iavf_prototype.h"
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq.h b/drivers/net/ethernet/intel/iavf/iavf_adminq.h
+similarity index 99%
+rename from drivers/net/ethernet/intel/iavf/i40e_adminq.h
+rename to drivers/net/ethernet/intel/iavf/iavf_adminq.h
+index ee983889eab0..7c06752c0fea 100644
+--- a/drivers/net/ethernet/intel/iavf/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_adminq.h
+@@ -6,7 +6,7 @@
+ 
+ #include "iavf_osdep.h"
+ #include "iavf_status.h"
+-#include "i40e_adminq_cmd.h"
++#include "iavf_adminq_cmd.h"
+ 
+ #define IAVF_ADMINQ_DESC(R, i)   \
+ 	(&(((struct i40e_aq_desc *)((R).desc_buf.va))[i]))
+diff --git a/drivers/net/ethernet/intel/iavf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/iavf/iavf_adminq_cmd.h
+similarity index 100%
+rename from drivers/net/ethernet/intel/iavf/i40e_adminq_cmd.h
+rename to drivers/net/ethernet/intel/iavf/iavf_adminq_cmd.h
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_common.c b/drivers/net/ethernet/intel/iavf/iavf_common.c
+index 768369c89e77..d9d9f6060353 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_common.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_common.c
+@@ -2,7 +2,7 @@
+ /* Copyright(c) 2013 - 2018 Intel Corporation. */
+ 
+ #include "iavf_type.h"
+-#include "i40e_adminq.h"
++#include "iavf_adminq.h"
+ #include "iavf_prototype.h"
+ #include <linux/avf/virtchnl.h>
+ 
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_type.h b/drivers/net/ethernet/intel/iavf/iavf_type.h
+index ca89583613fb..58b3efd1ed04 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_type.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_type.h
+@@ -7,7 +7,7 @@
+ #include "iavf_status.h"
+ #include "iavf_osdep.h"
+ #include "iavf_register.h"
+-#include "i40e_adminq.h"
++#include "iavf_adminq.h"
+ #include "iavf_devids.h"
+ 
+ #define IAVF_RXQ_CTX_DBUFF_SHIFT 7
+-- 
+2.19.2
+
