@@ -1,273 +1,75 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 17 Apr 2019 10:53:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 6e114debb2eb3775b350609811522d3a84f86886
-Message-ID: <5cb69513.4q/reC9U15sdwOnq%lkp@intel.com>
+From: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+Date: Wed, 17 Apr 2019 11:13:20 +0300
+Subject: [Intel-wired-lan] [PATCH 2/2] e1000e: start network tx queue only
+ when link is up
+In-Reply-To: <155548879651.3454.13167784936351314661.stgit@buzz>
+References: <155548879651.3454.13167784936351314661.stgit@buzz>
+Message-ID: <155548880068.3454.1621821881762819373.stgit@buzz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 6e114debb2eb3775b350609811522d3a84f86886  i40e: Fix misleading error message
+Driver does not want to keep packets in tx queue when link is lost.
+But present code only reset NIC to flush them, but does not prevent
+queuing new packets. Moreover reset sequence itself could generate
+new packets via netconsole and NIC falls into endless reset loop.
 
-elapsed time: 237m
+This patch wakes tx queue only when NIC is ready to send packets.
 
-configs tested: 248
+This is proper fix for problem addressed by commit 0f9e980bf5ee
+("e1000e: fix cyclic resets at link up with active tx").
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-riscv                              tinyconfig
-i386                               tinyconfig
-arm                        neponset_defconfig
-sh                   sh7724_generic_defconfig
-powerpc                 canyonlands_defconfig
-sh                               alldefconfig
-arm                         lpc18xx_defconfig
-arm                         shannon_defconfig
-powerpc                      ppc6xx_defconfig
-powerpc                     stx_gp3_defconfig
-i386                   randconfig-x010-201915
-i386                   randconfig-x018-201915
-i386                   randconfig-x017-201915
-i386                   randconfig-x013-201915
-i386                   randconfig-x011-201915
-i386                   randconfig-x014-201915
-i386                   randconfig-x019-201915
-i386                   randconfig-x015-201915
-i386                   randconfig-x016-201915
-i386                   randconfig-x012-201915
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n2-201915
-i386                     randconfig-n3-201915
-i386                     randconfig-n0-201915
-i386                     randconfig-n1-201915
-x86_64                 randconfig-x001-201915
-x86_64                 randconfig-x004-201915
-x86_64                 randconfig-x000-201915
-x86_64                 randconfig-x003-201915
-x86_64                 randconfig-x007-201915
-x86_64                 randconfig-x008-201915
-x86_64                 randconfig-x002-201915
-x86_64                 randconfig-x006-201915
-x86_64                 randconfig-x009-201915
-x86_64                 randconfig-x005-201915
-i386                     randconfig-i1-201915
-i386                     randconfig-i0-201915
-i386                     randconfig-i3-201915
-i386                     randconfig-i2-201915
-i386                   randconfig-x002-201915
-i386                   randconfig-x001-201915
-i386                   randconfig-x005-201915
-i386                   randconfig-x007-201915
-i386                   randconfig-x000-201915
-i386                   randconfig-x004-201915
-i386                   randconfig-x008-201915
-i386                   randconfig-x009-201915
-i386                   randconfig-x006-201915
-i386                   randconfig-x003-201915
-x86_64                 randconfig-x015-201915
-x86_64                 randconfig-x016-201915
-x86_64                 randconfig-x012-201915
-x86_64                 randconfig-x017-201915
-x86_64                 randconfig-x013-201915
-x86_64                 randconfig-x018-201915
-x86_64                 randconfig-x010-201915
-x86_64                 randconfig-x014-201915
-x86_64                 randconfig-x019-201915
-x86_64                 randconfig-x011-201915
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-i386                     randconfig-a1-201915
-i386                     randconfig-a2-201915
-i386                     randconfig-a0-201915
-i386                     randconfig-a3-201915
-x86_64                 randconfig-s0-04171034
-x86_64                 randconfig-s1-04171034
-x86_64                 randconfig-s2-04171034
-alpha                            allmodconfig
-arm                     eseries_pxa_defconfig
-powerpc                    gamecube_defconfig
-arm                            dove_defconfig
-h8300                            allmodconfig
-arm                          badge4_defconfig
-ia64                            sim_defconfig
-mips                   sb1250_swarm_defconfig
-powerpc                    klondike_defconfig
-x86_64                 randconfig-u0-04171030
-x86_64                 randconfig-u0-04171041
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                   randconfig-k0-201915
-x86_64                   randconfig-k1-201915
-x86_64                   randconfig-k2-201915
-x86_64                   randconfig-k3-201915
-i386                     randconfig-k0-201915
-i386                     randconfig-k1-201915
-i386                     randconfig-k2-201915
-i386                     randconfig-k3-201915
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                   randconfig-m2-201915
-i386                     randconfig-m0-201915
-i386                     randconfig-m3-201915
-i386                     randconfig-m2-201915
-x86_64                   randconfig-m1-201915
-x86_64                   randconfig-m0-201915
-x86_64                   randconfig-m3-201915
-i386                     randconfig-m1-201915
-x86_64                 randconfig-m0-04170939
-x86_64                 randconfig-m1-04170939
-x86_64                 randconfig-m2-04170939
-x86_64                 randconfig-m3-04170939
-i386                   randconfig-m0-04170939
-i386                   randconfig-m1-04170939
-i386                   randconfig-m2-04170939
-i386                   randconfig-m3-04170939
-riscv                             allnoconfig
-riscv                               defconfig
-i386                   randconfig-l3-04170630
-x86_64                 randconfig-l0-04170630
-i386                   randconfig-l1-04170630
-x86_64                 randconfig-l3-04170630
-i386                   randconfig-l2-04170630
-x86_64                 randconfig-l2-04170630
-x86_64                 randconfig-l1-04170630
-i386                   randconfig-l0-04170630
-arm                          exynos_defconfig
-arm                         mv78xx0_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-m68k                            q40_defconfig
-mips                             allyesconfig
-x86_64                 randconfig-a0-04171034
-arm                         hackkit_defconfig
-powerpc                       holly_defconfig
-mips                           ip22_defconfig
-powerpc               corenet_basic_defconfig
-arm                      tct_hammer_defconfig
-mips                           ip28_defconfig
-i386                   randconfig-c0-04171026
-i386                   randconfig-c0-04171037
-x86_64                           alldefconfig
-arm                       multi_v4t_defconfig
-sh                         ecovec24_defconfig
-m68k                        mvme16x_defconfig
-sh                      rts7751r2d1_defconfig
-mips                         cobalt_defconfig
-mips                       lemote2f_defconfig
-x86_64                   randconfig-i1-201915
-x86_64                   randconfig-i2-201915
-x86_64                   randconfig-i3-201915
-x86_64                   randconfig-i0-201915
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm64                            allyesconfig
-mips                         tb0219_defconfig
-mips                      malta_kvm_defconfig
-powerpc                      virtex_defconfig
-sh                 kfr2r09-romimage_defconfig
-mips                            ar7_defconfig
-mips                      pic32mzda_defconfig
-nios2                            allmodconfig
-alpha                             allnoconfig
-arm                           omap1_defconfig
-arm                              allyesconfig
-mips                 decstation_r4k_defconfig
-powerpc                     tqm8548_defconfig
-arm                       aspeed_g5_defconfig
-mips                                defconfig
-x86_64                 randconfig-b0-04171026
-x86_64                 randconfig-b0-04171047
-x86_64                 randconfig-b0-04171048
-x86_64                 randconfig-b0-04171049
-m68k                       m5249evb_defconfig
-mips                        qi_lb60_defconfig
-sh                            shmin_defconfig
-arm                     davinci_all_defconfig
-m68k                        stmark2_defconfig
-m68k                           sun3_defconfig
-arm                        trizeps4_defconfig
-nios2                         3c120_defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-i386                   randconfig-x077-201915
-i386                   randconfig-x074-201915
-i386                   randconfig-x070-201915
-i386                   randconfig-x072-201915
-i386                   randconfig-x075-201915
-i386                   randconfig-x071-201915
-i386                   randconfig-x079-201915
-i386                   randconfig-x078-201915
-i386                   randconfig-x073-201915
-i386                   randconfig-x076-201915
-x86_64                           allmodconfig
-i386                             alldefconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-x86_64                 randconfig-g2-04141729
-x86_64                 randconfig-g3-04141729
-x86_64                 randconfig-g0-04141729
-x86_64                 randconfig-g1-04141729
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-riscv                            alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-
+Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/e1000e/netdev.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index ba96e52aa8d1..fe643d66aa10 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4209,7 +4209,7 @@ void e1000e_up(struct e1000_adapter *adapter)
+ 		e1000_configure_msix(adapter);
+ 	e1000_irq_enable(adapter);
+ 
+-	netif_start_queue(adapter->netdev);
++	/* tx queue started by watchdog timer when link is up */
+ 
+ 	e1000e_trigger_lsc(adapter);
+ }
+@@ -4607,6 +4607,7 @@ int e1000e_open(struct net_device *netdev)
+ 	pm_runtime_get_sync(&pdev->dev);
+ 
+ 	netif_carrier_off(netdev);
++	netif_stop_queue(netdev);
+ 
+ 	/* allocate transmit descriptors */
+ 	err = e1000e_setup_tx_resources(adapter->tx_ring);
+@@ -4667,7 +4668,6 @@ int e1000e_open(struct net_device *netdev)
+ 	e1000_irq_enable(adapter);
+ 
+ 	adapter->tx_hang_recheck = false;
+-	netif_start_queue(netdev);
+ 
+ 	hw->mac.get_link_status = true;
+ 	pm_runtime_put(&pdev->dev);
+@@ -5289,6 +5289,7 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 			if (phy->ops.cfg_on_link_up)
+ 				phy->ops.cfg_on_link_up(hw);
+ 
++			netif_wake_queue(netdev);
+ 			netif_carrier_on(netdev);
+ 
+ 			if (!test_bit(__E1000_DOWN, &adapter->state))
+@@ -5302,6 +5303,7 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 			/* Link status message must follow this format */
+ 			pr_info("%s NIC Link is Down\n", adapter->netdev->name);
+ 			netif_carrier_off(netdev);
++			netif_stop_queue(netdev);
+ 			if (!test_bit(__E1000_DOWN, &adapter->state))
+ 				mod_timer(&adapter->phy_info_timer,
+ 					  round_jiffies(jiffies + 2 * HZ));
+
