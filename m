@@ -1,518 +1,673 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 17 Apr 2019 15:17:34 -0700
-Subject: [Intel-wired-lan] [next PATCH S4 iavf 6/9] iavf: rename
- iavf_client.h defines to match driver name
+Date: Wed, 17 Apr 2019 15:17:30 -0700
+Subject: [Intel-wired-lan] [next PATCH S4 iavf 2/9] iavf: change
+ iavf_status_code to iavf_status
 In-Reply-To: <20190417221737.11460-1-alice.michael@intel.com>
 References: <20190417221737.11460-1-alice.michael@intel.com>
-Message-ID: <20190417221737.11460-6-alice.michael@intel.com>
+Message-ID: <20190417221737.11460-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The defines in iavf_client.h were still vastly i40e, and they
-should be iavf.
+From: Sergey Nemov <sergey.nemov@intel.com>
 
-Signed-off-by: Alice Michael <alice.michael@intel.com>
+Instead of typedefing the enum iavf_status_code with iavf_status,
+just shorten the enum itself and get rid of typedef.
+
+Signed-off-by: Sergey Nemov <sergey.nemov@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf.h        |   2 +-
- drivers/net/ethernet/intel/iavf/iavf_client.c |  84 +++++++-------
- drivers/net/ethernet/intel/iavf/iavf_client.h | 104 +++++++++---------
- 3 files changed, 95 insertions(+), 95 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf.h        |  2 +-
+ drivers/net/ethernet/intel/iavf/iavf_adminq.c | 67 ++++++++++---------
+ drivers/net/ethernet/intel/iavf/iavf_alloc.h  | 17 +++--
+ drivers/net/ethernet/intel/iavf/iavf_client.c |  6 +-
+ drivers/net/ethernet/intel/iavf/iavf_common.c | 53 ++++++++-------
+ drivers/net/ethernet/intel/iavf/iavf_main.c   | 20 +++---
+ drivers/net/ethernet/intel/iavf/iavf_osdep.h  |  1 -
+ .../net/ethernet/intel/iavf/iavf_prototype.h  | 52 +++++++-------
+ drivers/net/ethernet/intel/iavf/iavf_status.h |  2 +-
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 14 ++--
+ 10 files changed, 121 insertions(+), 113 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 42118f63f4f0..5a537d57a531 100644
+index 272d76b733aa..42118f63f4f0 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf.h
 +++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -244,7 +244,7 @@ struct iavf_adapter {
- 	int num_iwarp_msix;
- 	int iwarp_base_vector;
- 	u32 client_pending;
--	struct i40e_client_instance *cinst;
-+	struct iavf_client_instance *cinst;
- 	struct msix_entry *msix_entries;
- 
- 	u32 flags;
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_client.c b/drivers/net/ethernet/intel/iavf/iavf_client.c
-index 196ce7324ea4..079a22849fcb 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_client.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_client.c
-@@ -10,19 +10,19 @@
- 
- static
- const char iavf_client_interface_version_str[] = IAVF_CLIENT_VERSION_STR;
--static struct i40e_client *vf_registered_client;
-+static struct iavf_client  *vf_registered_client;
- static LIST_HEAD(i40e_devices);
- static DEFINE_MUTEX(iavf_device_mutex);
- 
--static u32 iavf_client_virtchnl_send(struct i40e_info *ldev,
--				     struct i40e_client *client,
-+static u32 iavf_client_virtchnl_send(struct iavf_info *ldev,
-+				     struct iavf_client  *client,
- 				     u8 *msg, u16 len);
- 
--static int iavf_client_setup_qvlist(struct i40e_info *ldev,
--				    struct i40e_client *client,
--				    struct i40e_qvlist_info *qvlist_info);
-+static int iavf_client_setup_qvlist(struct iavf_info *ldev,
-+				    struct iavf_client  *client,
-+				    struct iavf_qvlist_info *qvlist_info);
- 
--static struct i40e_ops iavf_lan_ops = {
-+static struct iavf_ops iavf_lan_ops = {
- 	.virtchnl_send = iavf_client_virtchnl_send,
- 	.setup_qvlist = iavf_client_setup_qvlist,
- };
-@@ -33,11 +33,11 @@ static struct i40e_ops iavf_lan_ops = {
-  * @params: client param struct
+@@ -402,7 +402,7 @@ void iavf_enable_vlan_stripping(struct iavf_adapter *adapter);
+ void iavf_disable_vlan_stripping(struct iavf_adapter *adapter);
+ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 			      enum virtchnl_ops v_opcode,
+-			      iavf_status v_retval, u8 *msg, u16 msglen);
++			      enum iavf_status v_retval, u8 *msg, u16 msglen);
+ int iavf_config_rss(struct iavf_adapter *adapter);
+ int iavf_lan_add_device(struct iavf_adapter *adapter);
+ int iavf_lan_del_device(struct iavf_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_adminq.c b/drivers/net/ethernet/intel/iavf/iavf_adminq.c
+index 04b44614ec38..22d3b79a6049 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_adminq.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_adminq.c
+@@ -32,9 +32,9 @@ static void i40e_adminq_init_regs(struct iavf_hw *hw)
+  *  i40e_alloc_adminq_asq_ring - Allocate Admin Queue send rings
+  *  @hw: pointer to the hardware structure
   **/
- static
--void iavf_client_get_params(struct iavf_vsi *vsi, struct i40e_params *params)
-+void iavf_client_get_params(struct iavf_vsi *vsi, struct iavf_params *params)
+-static iavf_status i40e_alloc_adminq_asq_ring(struct iavf_hw *hw)
++static enum iavf_status i40e_alloc_adminq_asq_ring(struct iavf_hw *hw)
  {
+-	iavf_status ret_code;
++	enum iavf_status ret_code;
+ 
+ 	ret_code = iavf_allocate_dma_mem(hw, &hw->aq.asq.desc_buf,
+ 					 i40e_mem_atq_ring,
+@@ -59,9 +59,9 @@ static iavf_status i40e_alloc_adminq_asq_ring(struct iavf_hw *hw)
+  *  i40e_alloc_adminq_arq_ring - Allocate Admin Queue receive rings
+  *  @hw: pointer to the hardware structure
+  **/
+-static iavf_status i40e_alloc_adminq_arq_ring(struct iavf_hw *hw)
++static enum iavf_status i40e_alloc_adminq_arq_ring(struct iavf_hw *hw)
+ {
+-	iavf_status ret_code;
++	enum iavf_status ret_code;
+ 
+ 	ret_code = iavf_allocate_dma_mem(hw, &hw->aq.arq.desc_buf,
+ 					 i40e_mem_arq_ring,
+@@ -100,11 +100,11 @@ static void i40e_free_adminq_arq(struct iavf_hw *hw)
+  *  i40e_alloc_arq_bufs - Allocate pre-posted buffers for the receive queue
+  *  @hw: pointer to the hardware structure
+  **/
+-static iavf_status i40e_alloc_arq_bufs(struct iavf_hw *hw)
++static enum iavf_status i40e_alloc_arq_bufs(struct iavf_hw *hw)
+ {
+ 	struct i40e_aq_desc *desc;
+ 	struct iavf_dma_mem *bi;
+-	iavf_status ret_code;
++	enum iavf_status ret_code;
  	int i;
  
--	memset(params, 0, sizeof(struct i40e_params));
-+	memset(params, 0, sizeof(struct iavf_params));
- 	params->mtu = vsi->netdev->mtu;
- 	params->link_up = vsi->back->link_up;
- 
-@@ -57,7 +57,7 @@ void iavf_client_get_params(struct iavf_vsi *vsi, struct i40e_params *params)
+ 	/* We'll be allocating the buffer info memory first, then we can
+@@ -168,10 +168,10 @@ static iavf_status i40e_alloc_arq_bufs(struct iavf_hw *hw)
+  *  i40e_alloc_asq_bufs - Allocate empty buffer structs for the send queue
+  *  @hw: pointer to the hardware structure
   **/
- void iavf_notify_client_message(struct iavf_vsi *vsi, u8 *msg, u16 len)
+-static iavf_status i40e_alloc_asq_bufs(struct iavf_hw *hw)
++static enum iavf_status i40e_alloc_asq_bufs(struct iavf_hw *hw)
  {
--	struct i40e_client_instance *cinst;
-+	struct iavf_client_instance *cinst;
+ 	struct iavf_dma_mem *bi;
+-	iavf_status ret_code;
++	enum iavf_status ret_code;
+ 	int i;
  
- 	if (!vsi)
- 		return;
-@@ -81,8 +81,8 @@ void iavf_notify_client_message(struct iavf_vsi *vsi, u8 *msg, u16 len)
-  **/
- void iavf_notify_client_l2_params(struct iavf_vsi *vsi)
- {
--	struct i40e_client_instance *cinst;
--	struct i40e_params params;
-+	struct iavf_client_instance *cinst;
-+	struct iavf_params params;
- 
- 	if (!vsi)
- 		return;
-@@ -110,7 +110,7 @@ void iavf_notify_client_l2_params(struct iavf_vsi *vsi)
- void iavf_notify_client_open(struct iavf_vsi *vsi)
- {
- 	struct iavf_adapter *adapter = vsi->back;
--	struct i40e_client_instance *cinst = adapter->cinst;
-+	struct iavf_client_instance *cinst = adapter->cinst;
- 	int ret;
- 
- 	if (!cinst || !cinst->client || !cinst->client->ops ||
-@@ -119,10 +119,10 @@ void iavf_notify_client_open(struct iavf_vsi *vsi)
- 			"Cannot locate client instance open function\n");
- 		return;
- 	}
--	if (!(test_bit(__I40E_CLIENT_INSTANCE_OPENED, &cinst->state))) {
-+	if (!(test_bit(__IAVF_CLIENT_INSTANCE_OPENED, &cinst->state))) {
- 		ret = cinst->client->ops->open(&cinst->lan_info, cinst->client);
- 		if (!ret)
--			set_bit(__I40E_CLIENT_INSTANCE_OPENED, &cinst->state);
-+			set_bit(__IAVF_CLIENT_INSTANCE_OPENED, &cinst->state);
- 	}
- }
- 
-@@ -132,7 +132,7 @@ void iavf_notify_client_open(struct iavf_vsi *vsi)
+ 	/* No mapped memory needed yet, just the buffer info structures */
+@@ -253,9 +253,9 @@ static void i40e_free_asq_bufs(struct iavf_hw *hw)
   *
-  * Return 0 on success or < 0 on error
+  *  Configure base address and length registers for the transmit queue
   **/
--static int iavf_client_release_qvlist(struct i40e_info *ldev)
-+static int iavf_client_release_qvlist(struct iavf_info *ldev)
+-static iavf_status i40e_config_asq_regs(struct iavf_hw *hw)
++static enum iavf_status i40e_config_asq_regs(struct iavf_hw *hw)
+ {
+-	iavf_status ret_code = 0;
++	enum iavf_status ret_code = 0;
+ 	u32 reg = 0;
+ 
+ 	/* Clear Head and Tail */
+@@ -282,9 +282,9 @@ static iavf_status i40e_config_asq_regs(struct iavf_hw *hw)
+  *
+  * Configure base address and length registers for the receive (event queue)
+  **/
+-static iavf_status i40e_config_arq_regs(struct iavf_hw *hw)
++static enum iavf_status i40e_config_arq_regs(struct iavf_hw *hw)
+ {
+-	iavf_status ret_code = 0;
++	enum iavf_status ret_code = 0;
+ 	u32 reg = 0;
+ 
+ 	/* Clear Head and Tail */
+@@ -321,9 +321,9 @@ static iavf_status i40e_config_arq_regs(struct iavf_hw *hw)
+  *  Do *NOT* hold the lock when calling this as the memory allocation routines
+  *  called are not going to be atomic context safe
+  **/
+-static iavf_status i40e_init_asq(struct iavf_hw *hw)
++static enum iavf_status i40e_init_asq(struct iavf_hw *hw)
+ {
+-	iavf_status ret_code = 0;
++	enum iavf_status ret_code = 0;
+ 
+ 	if (hw->aq.asq.count > 0) {
+ 		/* queue already initialized */
+@@ -380,9 +380,9 @@ static iavf_status i40e_init_asq(struct iavf_hw *hw)
+  *  Do *NOT* hold the lock when calling this as the memory allocation routines
+  *  called are not going to be atomic context safe
+  **/
+-static iavf_status i40e_init_arq(struct iavf_hw *hw)
++static enum iavf_status i40e_init_arq(struct iavf_hw *hw)
+ {
+-	iavf_status ret_code = 0;
++	enum iavf_status ret_code = 0;
+ 
+ 	if (hw->aq.arq.count > 0) {
+ 		/* queue already initialized */
+@@ -432,9 +432,9 @@ static iavf_status i40e_init_arq(struct iavf_hw *hw)
+  *
+  *  The main shutdown routine for the Admin Send Queue
+  **/
+-static iavf_status i40e_shutdown_asq(struct iavf_hw *hw)
++static enum iavf_status i40e_shutdown_asq(struct iavf_hw *hw)
+ {
+-	iavf_status ret_code = 0;
++	enum iavf_status ret_code = 0;
+ 
+ 	mutex_lock(&hw->aq.asq_mutex);
+ 
+@@ -466,9 +466,9 @@ static iavf_status i40e_shutdown_asq(struct iavf_hw *hw)
+  *
+  *  The main shutdown routine for the Admin Receive Queue
+  **/
+-static iavf_status i40e_shutdown_arq(struct iavf_hw *hw)
++static enum iavf_status i40e_shutdown_arq(struct iavf_hw *hw)
+ {
+-	iavf_status ret_code = 0;
++	enum iavf_status ret_code = 0;
+ 
+ 	mutex_lock(&hw->aq.arq_mutex);
+ 
+@@ -505,9 +505,9 @@ static iavf_status i40e_shutdown_arq(struct iavf_hw *hw)
+  *     - hw->aq.arq_buf_size
+  *     - hw->aq.asq_buf_size
+  **/
+-iavf_status iavf_init_adminq(struct iavf_hw *hw)
++enum iavf_status iavf_init_adminq(struct iavf_hw *hw)
+ {
+-	iavf_status ret_code;
++	enum iavf_status ret_code;
+ 
+ 	/* verify input for valid configuration */
+ 	if ((hw->aq.num_arq_entries == 0) ||
+@@ -549,9 +549,9 @@ iavf_status iavf_init_adminq(struct iavf_hw *hw)
+  *  iavf_shutdown_adminq - shutdown routine for the Admin Queue
+  *  @hw: pointer to the hardware structure
+  **/
+-iavf_status iavf_shutdown_adminq(struct iavf_hw *hw)
++enum iavf_status iavf_shutdown_adminq(struct iavf_hw *hw)
+ {
+-	iavf_status ret_code = 0;
++	enum iavf_status ret_code = 0;
+ 
+ 	if (iavf_check_asq_alive(hw))
+ 		iavf_aq_queue_shutdown(hw, true);
+@@ -629,16 +629,17 @@ bool iavf_asq_done(struct iavf_hw *hw)
+  *  This is the main send command driver routine for the Admin Queue send
+  *  queue.  It runs the queue, cleans the queue, etc
+  **/
+-iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+-				  void *buff, /* can be NULL */
+-				  u16  buff_size,
+-				  struct i40e_asq_cmd_details *cmd_details)
++enum iavf_status iavf_asq_send_command(struct iavf_hw *hw,
++				       struct i40e_aq_desc *desc,
++				       void *buff, /* can be NULL */
++				       u16  buff_size,
++				       struct i40e_asq_cmd_details *cmd_details)
+ {
+ 	struct iavf_dma_mem *dma_buff = NULL;
+ 	struct i40e_asq_cmd_details *details;
+ 	struct i40e_aq_desc *desc_on_ring;
+ 	bool cmd_completed = false;
+-	iavf_status status = 0;
++	enum iavf_status status = 0;
+ 	u16  retval = 0;
+ 	u32  val = 0;
+ 
+@@ -841,13 +842,13 @@ void iavf_fill_default_direct_cmd_desc(struct i40e_aq_desc *desc, u16 opcode)
+  *  the contents through e.  It can also return how many events are
+  *  left to process through 'pending'
+  **/
+-iavf_status iavf_clean_arq_element(struct iavf_hw *hw,
+-				   struct i40e_arq_event_info *e,
+-				   u16 *pending)
++enum iavf_status iavf_clean_arq_element(struct iavf_hw *hw,
++					struct i40e_arq_event_info *e,
++					u16 *pending)
+ {
+ 	u16 ntc = hw->aq.arq.next_to_clean;
+ 	struct i40e_aq_desc *desc;
+-	iavf_status ret_code = 0;
++	enum iavf_status ret_code = 0;
+ 	struct iavf_dma_mem *bi;
+ 	u16 desc_idx;
+ 	u16 datalen;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_alloc.h b/drivers/net/ethernet/intel/iavf/iavf_alloc.h
+index bf2753146f30..2711573c14ec 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_alloc.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_alloc.h
+@@ -20,12 +20,15 @@ enum iavf_memory_type {
+ };
+ 
+ /* prototype for functions used for dynamic memory allocation */
+-iavf_status iavf_allocate_dma_mem(struct iavf_hw *hw, struct iavf_dma_mem *mem,
+-				  enum iavf_memory_type type,
+-				  u64 size, u32 alignment);
+-iavf_status iavf_free_dma_mem(struct iavf_hw *hw, struct iavf_dma_mem *mem);
+-iavf_status iavf_allocate_virt_mem(struct iavf_hw *hw,
+-				   struct iavf_virt_mem *mem, u32 size);
+-iavf_status iavf_free_virt_mem(struct iavf_hw *hw, struct iavf_virt_mem *mem);
++enum iavf_status iavf_allocate_dma_mem(struct iavf_hw *hw,
++				       struct iavf_dma_mem *mem,
++				       enum iavf_memory_type type,
++				       u64 size, u32 alignment);
++enum iavf_status iavf_free_dma_mem(struct iavf_hw *hw,
++				   struct iavf_dma_mem *mem);
++enum iavf_status iavf_allocate_virt_mem(struct iavf_hw *hw,
++					struct iavf_virt_mem *mem, u32 size);
++enum iavf_status iavf_free_virt_mem(struct iavf_hw *hw,
++				    struct iavf_virt_mem *mem);
+ 
+ #endif /* _IAVF_ALLOC_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_client.c b/drivers/net/ethernet/intel/iavf/iavf_client.c
+index ab9db7e9f09d..3cdcaac75b70 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_client.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_client.c
+@@ -135,7 +135,7 @@ void iavf_notify_client_open(struct iavf_vsi *vsi)
+ static int iavf_client_release_qvlist(struct i40e_info *ldev)
  {
  	struct iavf_adapter *adapter = ldev->vf;
- 	enum iavf_status err;
-@@ -162,7 +162,7 @@ static int iavf_client_release_qvlist(struct i40e_info *ldev)
- void iavf_notify_client_close(struct iavf_vsi *vsi, bool reset)
- {
- 	struct iavf_adapter *adapter = vsi->back;
--	struct i40e_client_instance *cinst = adapter->cinst;
-+	struct iavf_client_instance *cinst = adapter->cinst;
+-	iavf_status err;
++	enum iavf_status err;
  
- 	if (!cinst || !cinst->client || !cinst->client->ops ||
- 	    !cinst->client->ops->close) {
-@@ -172,7 +172,7 @@ void iavf_notify_client_close(struct iavf_vsi *vsi, bool reset)
- 	}
- 	cinst->client->ops->close(&cinst->lan_info, cinst->client, reset);
- 	iavf_client_release_qvlist(&cinst->lan_info);
--	clear_bit(__I40E_CLIENT_INSTANCE_OPENED, &cinst->state);
-+	clear_bit(__IAVF_CLIENT_INSTANCE_OPENED, &cinst->state);
- }
- 
- /**
-@@ -181,13 +181,13 @@ void iavf_notify_client_close(struct iavf_vsi *vsi, bool reset)
-  *
-  * Returns cinst ptr on success, NULL on failure
-  **/
--static struct i40e_client_instance *
-+static struct iavf_client_instance *
- iavf_client_add_instance(struct iavf_adapter *adapter)
- {
--	struct i40e_client_instance *cinst = NULL;
-+	struct iavf_client_instance *cinst = NULL;
- 	struct iavf_vsi *vsi = &adapter->vsi;
- 	struct netdev_hw_addr *mac = NULL;
--	struct i40e_params params;
-+	struct iavf_params params;
- 
- 	if (!vf_registered_client)
- 		goto out;
-@@ -205,7 +205,7 @@ iavf_client_add_instance(struct iavf_adapter *adapter)
- 	cinst->lan_info.netdev = vsi->netdev;
- 	cinst->lan_info.pcidev = adapter->pdev;
- 	cinst->lan_info.fid = 0;
--	cinst->lan_info.ftype = I40E_CLIENT_FTYPE_VF;
-+	cinst->lan_info.ftype = IAVF_CLIENT_FTYPE_VF;
- 	cinst->lan_info.hw_addr = adapter->hw.hw_addr;
- 	cinst->lan_info.ops = &iavf_lan_ops;
- 	cinst->lan_info.version.major = IAVF_CLIENT_VERSION_MAJOR;
-@@ -213,7 +213,7 @@ iavf_client_add_instance(struct iavf_adapter *adapter)
- 	cinst->lan_info.version.build = IAVF_CLIENT_VERSION_BUILD;
- 	iavf_client_get_params(vsi, &params);
- 	cinst->lan_info.params = params;
--	set_bit(__I40E_CLIENT_INSTANCE_NONE, &cinst->state);
-+	set_bit(__IAVF_CLIENT_INSTANCE_NONE, &cinst->state);
- 
- 	cinst->lan_info.msix_count = adapter->num_iwarp_msix;
- 	cinst->lan_info.msix_entries =
-@@ -250,8 +250,8 @@ void iavf_client_del_instance(struct iavf_adapter *adapter)
-  **/
- void iavf_client_subtask(struct iavf_adapter *adapter)
- {
--	struct i40e_client *client = vf_registered_client;
--	struct i40e_client_instance *cinst;
-+	struct iavf_client  *client = vf_registered_client;
-+	struct iavf_client_instance *cinst;
- 	int ret = 0;
- 
- 	if (adapter->state < __IAVF_DOWN)
-@@ -269,13 +269,13 @@ void iavf_client_subtask(struct iavf_adapter *adapter)
- 	dev_info(&adapter->pdev->dev, "Added instance of Client %s\n",
- 		 client->name);
- 
--	if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED, &cinst->state)) {
-+	if (!test_bit(__IAVF_CLIENT_INSTANCE_OPENED, &cinst->state)) {
- 		/* Send an Open request to the client */
- 
- 		if (client->ops && client->ops->open)
- 			ret = client->ops->open(&cinst->lan_info, client);
- 		if (!ret)
--			set_bit(__I40E_CLIENT_INSTANCE_OPENED,
-+			set_bit(__IAVF_CLIENT_INSTANCE_OPENED,
- 				&cinst->state);
- 		else
- 			/* remove client instance */
-@@ -357,9 +357,9 @@ int iavf_lan_del_device(struct iavf_adapter *adapter)
-  * @client: pointer to the registered client
-  *
-  **/
--static void iavf_client_release(struct i40e_client *client)
-+static void iavf_client_release(struct iavf_client  *client)
- {
--	struct i40e_client_instance *cinst;
-+	struct iavf_client_instance *cinst;
- 	struct i40e_device *ldev;
- 	struct iavf_adapter *adapter;
- 
-@@ -369,12 +369,12 @@ static void iavf_client_release(struct i40e_client *client)
- 		cinst = adapter->cinst;
- 		if (!cinst)
- 			continue;
--		if (test_bit(__I40E_CLIENT_INSTANCE_OPENED, &cinst->state)) {
-+		if (test_bit(__IAVF_CLIENT_INSTANCE_OPENED, &cinst->state)) {
- 			if (client->ops && client->ops->close)
- 				client->ops->close(&cinst->lan_info, client,
- 						   false);
- 			iavf_client_release_qvlist(&cinst->lan_info);
--			clear_bit(__I40E_CLIENT_INSTANCE_OPENED, &cinst->state);
-+			clear_bit(__IAVF_CLIENT_INSTANCE_OPENED, &cinst->state);
- 
- 			dev_warn(&adapter->pdev->dev,
- 				 "Client %s instance closed\n", client->name);
-@@ -392,7 +392,7 @@ static void iavf_client_release(struct i40e_client *client)
-  * @client: pointer to the registered client
-  *
-  **/
--static void iavf_client_prepare(struct i40e_client *client)
-+static void iavf_client_prepare(struct iavf_client  *client)
- {
- 	struct i40e_device *ldev;
- 	struct iavf_adapter *adapter;
-@@ -415,8 +415,8 @@ static void iavf_client_prepare(struct i40e_client *client)
-  *
-  * Return 0 on success or < 0 on error
-  **/
--static u32 iavf_client_virtchnl_send(struct i40e_info *ldev,
--				     struct i40e_client *client,
-+static u32 iavf_client_virtchnl_send(struct iavf_info *ldev,
-+				     struct iavf_client  *client,
+ 	if (adapter->aq_required)
+ 		return -EAGAIN;
+@@ -420,7 +420,7 @@ static u32 iavf_client_virtchnl_send(struct i40e_info *ldev,
  				     u8 *msg, u16 len)
  {
  	struct iavf_adapter *adapter = ldev->vf;
-@@ -442,13 +442,13 @@ static u32 iavf_client_virtchnl_send(struct i40e_info *ldev,
-  *
-  * Return 0 on success or < 0 on error
-  **/
--static int iavf_client_setup_qvlist(struct i40e_info *ldev,
--				    struct i40e_client *client,
--				    struct i40e_qvlist_info *qvlist_info)
-+static int iavf_client_setup_qvlist(struct iavf_info *ldev,
-+				    struct iavf_client  *client,
-+				    struct iavf_qvlist_info *qvlist_info)
- {
+-	iavf_status err;
++	enum iavf_status err;
+ 
+ 	if (adapter->aq_required)
+ 		return -EAGAIN;
+@@ -449,7 +449,7 @@ static int iavf_client_setup_qvlist(struct i40e_info *ldev,
  	struct virtchnl_iwarp_qvlist_info *v_qvlist_info;
  	struct iavf_adapter *adapter = ldev->vf;
--	struct i40e_qv_info *qv_info;
-+	struct iavf_qv_info *qv_info;
- 	enum iavf_status err;
+ 	struct i40e_qv_info *qv_info;
+-	iavf_status err;
++	enum iavf_status err;
  	u32 v_idx, i;
  	size_t msg_size;
-@@ -499,11 +499,11 @@ static int iavf_client_setup_qvlist(struct i40e_info *ldev,
  
- /**
-  * iavf_register_client - Register a i40e client driver with the L2 driver
-- * @client: pointer to the i40e_client struct
-+ * @client: pointer to the iavf_client  struct
-  *
-  * Returns 0 on success or non-0 on error
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_common.c b/drivers/net/ethernet/intel/iavf/iavf_common.c
+index d9d9f6060353..44cd15793bb5 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_common.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_common.c
+@@ -13,9 +13,9 @@
+  * This function sets the mac type of the adapter based on the
+  * vendor ID and device ID stored in the hw structure.
   **/
--int iavf_register_client(struct i40e_client *client)
-+int iavf_register_client(struct iavf_client  *client)
+-iavf_status iavf_set_mac_type(struct iavf_hw *hw)
++enum iavf_status iavf_set_mac_type(struct iavf_hw *hw)
  {
- 	int ret = 0;
+-	iavf_status status = 0;
++	enum iavf_status status = 0;
  
-@@ -550,11 +550,11 @@ EXPORT_SYMBOL(iavf_register_client);
- 
- /**
-  * iavf_unregister_client - Unregister a i40e client driver with the L2 driver
-- * @client: pointer to the i40e_client struct
-+ * @client: pointer to the iavf_client  struct
-  *
-  * Returns 0 on success or non-0 on error
+ 	if (hw->vendor_id == PCI_VENDOR_ID_INTEL) {
+ 		switch (hw->device_id) {
+@@ -104,7 +104,7 @@ const char *iavf_aq_str(struct iavf_hw *hw, enum i40e_admin_queue_err aq_err)
+  * @hw: pointer to the HW structure
+  * @stat_err: the status error code to convert
   **/
--int iavf_unregister_client(struct i40e_client *client)
-+int iavf_unregister_client(struct iavf_client  *client)
+-const char *iavf_stat_str(struct iavf_hw *hw, iavf_status stat_err)
++const char *iavf_stat_str(struct iavf_hw *hw, enum iavf_status stat_err)
  {
- 	int ret = 0;
+ 	switch (stat_err) {
+ 	case 0:
+@@ -327,12 +327,12 @@ bool iavf_check_asq_alive(struct iavf_hw *hw)
+  * Tell the Firmware that we're shutting down the AdminQ and whether
+  * or not the driver is unloading as well.
+  **/
+-iavf_status iavf_aq_queue_shutdown(struct iavf_hw *hw, bool unloading)
++enum iavf_status iavf_aq_queue_shutdown(struct iavf_hw *hw, bool unloading)
+ {
+ 	struct i40e_aq_desc desc;
+ 	struct i40e_aqc_queue_shutdown *cmd =
+ 		(struct i40e_aqc_queue_shutdown *)&desc.params.raw;
+-	iavf_status status;
++	enum iavf_status status;
  
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_client.h b/drivers/net/ethernet/intel/iavf/iavf_client.h
-index e216fc9dfd81..4936ec1ba1bf 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_client.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_client.h
-@@ -17,86 +17,86 @@
- 	__stringify(IAVF_CLIENT_VERSION_MINOR) "." \
- 	__stringify(IAVF_CLIENT_VERSION_BUILD)
+ 	iavf_fill_default_direct_cmd_desc(&desc, i40e_aqc_opc_queue_shutdown);
  
--struct i40e_client_version {
-+struct iavf_client_version {
- 	u8 major;
- 	u8 minor;
- 	u8 build;
- 	u8 rsvd;
- };
+@@ -354,12 +354,12 @@ iavf_status iavf_aq_queue_shutdown(struct iavf_hw *hw, bool unloading)
+  *
+  * Internal function to get or set RSS look up table
+  **/
+-static iavf_status iavf_aq_get_set_rss_lut(struct iavf_hw *hw,
+-					   u16 vsi_id, bool pf_lut,
+-					   u8 *lut, u16 lut_size,
+-					   bool set)
++static enum iavf_status iavf_aq_get_set_rss_lut(struct iavf_hw *hw,
++						u16 vsi_id, bool pf_lut,
++						u8 *lut, u16 lut_size,
++						bool set)
+ {
+-	iavf_status status;
++	enum iavf_status status;
+ 	struct i40e_aq_desc desc;
+ 	struct i40e_aqc_get_set_rss_lut *cmd_resp =
+ 		   (struct i40e_aqc_get_set_rss_lut *)&desc.params.raw;
+@@ -407,8 +407,8 @@ static iavf_status iavf_aq_get_set_rss_lut(struct iavf_hw *hw,
+  *
+  * get the RSS lookup table, PF or VSI type
+  **/
+-iavf_status iavf_aq_get_rss_lut(struct iavf_hw *hw, u16 vsi_id,
+-				bool pf_lut, u8 *lut, u16 lut_size)
++enum iavf_status iavf_aq_get_rss_lut(struct iavf_hw *hw, u16 vsi_id,
++				     bool pf_lut, u8 *lut, u16 lut_size)
+ {
+ 	return iavf_aq_get_set_rss_lut(hw, vsi_id, pf_lut, lut, lut_size,
+ 				       false);
+@@ -424,8 +424,8 @@ iavf_status iavf_aq_get_rss_lut(struct iavf_hw *hw, u16 vsi_id,
+  *
+  * set the RSS lookup table, PF or VSI type
+  **/
+-iavf_status iavf_aq_set_rss_lut(struct iavf_hw *hw, u16 vsi_id,
+-				bool pf_lut, u8 *lut, u16 lut_size)
++enum iavf_status iavf_aq_set_rss_lut(struct iavf_hw *hw, u16 vsi_id,
++				     bool pf_lut, u8 *lut, u16 lut_size)
+ {
+ 	return iavf_aq_get_set_rss_lut(hw, vsi_id, pf_lut, lut, lut_size, true);
+ }
+@@ -439,12 +439,12 @@ iavf_status iavf_aq_set_rss_lut(struct iavf_hw *hw, u16 vsi_id,
+  *
+  * get the RSS key per VSI
+  **/
+-static
++static enum
+ iavf_status iavf_aq_get_set_rss_key(struct iavf_hw *hw, u16 vsi_id,
+ 				    struct i40e_aqc_get_set_rss_key_data *key,
+ 				    bool set)
+ {
+-	iavf_status status;
++	enum iavf_status status;
+ 	struct i40e_aq_desc desc;
+ 	struct i40e_aqc_get_set_rss_key *cmd_resp =
+ 			(struct i40e_aqc_get_set_rss_key *)&desc.params.raw;
+@@ -479,8 +479,8 @@ iavf_status iavf_aq_get_set_rss_key(struct iavf_hw *hw, u16 vsi_id,
+  * @key: pointer to key info struct
+  *
+  **/
+-iavf_status iavf_aq_get_rss_key(struct iavf_hw *hw, u16 vsi_id,
+-				struct i40e_aqc_get_set_rss_key_data *key)
++enum iavf_status iavf_aq_get_rss_key(struct iavf_hw *hw, u16 vsi_id,
++				     struct i40e_aqc_get_set_rss_key_data *key)
+ {
+ 	return iavf_aq_get_set_rss_key(hw, vsi_id, key, false);
+ }
+@@ -493,8 +493,8 @@ iavf_status iavf_aq_get_rss_key(struct iavf_hw *hw, u16 vsi_id,
+  *
+  * set the RSS key per VSI
+  **/
+-iavf_status iavf_aq_set_rss_key(struct iavf_hw *hw, u16 vsi_id,
+-				struct i40e_aqc_get_set_rss_key_data *key)
++enum iavf_status iavf_aq_set_rss_key(struct iavf_hw *hw, u16 vsi_id,
++				     struct i40e_aqc_get_set_rss_key_data *key)
+ {
+ 	return iavf_aq_get_set_rss_key(hw, vsi_id, key, true);
+ }
+@@ -877,14 +877,15 @@ struct iavf_rx_ptype_decoded iavf_ptype_lookup[] = {
+  * is sent asynchronously, i.e. iavf_asq_send_command() does not wait for
+  * completion before returning.
+  **/
+-iavf_status iavf_aq_send_msg_to_pf(struct iavf_hw *hw,
+-				   enum virtchnl_ops v_opcode,
+-				   iavf_status v_retval, u8 *msg, u16 msglen,
+-				   struct i40e_asq_cmd_details *cmd_details)
++enum iavf_status iavf_aq_send_msg_to_pf(struct iavf_hw *hw,
++					enum virtchnl_ops v_opcode,
++					enum iavf_status v_retval,
++					u8 *msg, u16 msglen,
++					struct i40e_asq_cmd_details *cmd_details)
+ {
+ 	struct i40e_asq_cmd_details details;
+ 	struct i40e_aq_desc desc;
+-	iavf_status status;
++	enum iavf_status status;
  
--enum i40e_client_state {
--	__I40E_CLIENT_NULL,
--	__I40E_CLIENT_REGISTERED
-+enum iavf_client_state {
-+	__IAVF_CLIENT_NULL,
-+	__IAVF_CLIENT_REGISTERED
- };
+ 	iavf_fill_default_direct_cmd_desc(&desc, i40e_aqc_opc_send_msg_to_pf);
+ 	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_SI);
+@@ -948,7 +949,7 @@ void iavf_vf_parse_hw_config(struct iavf_hw *hw,
+  * as none will be forthcoming. Immediately after calling this function,
+  * the admin queue should be shut down and (optionally) reinitialized.
+  **/
+-iavf_status iavf_vf_reset(struct iavf_hw *hw)
++enum iavf_status iavf_vf_reset(struct iavf_hw *hw)
+ {
+ 	return iavf_aq_send_msg_to_pf(hw, VIRTCHNL_OP_RESET_VF,
+ 				      0, NULL, 0, NULL);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 78340b297dab..ab4e3573f9db 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -66,9 +66,9 @@ static struct workqueue_struct *iavf_wq;
+  * @size: size of memory requested
+  * @alignment: what to align the allocation to
+  **/
+-iavf_status iavf_allocate_dma_mem_d(struct iavf_hw *hw,
+-				    struct iavf_dma_mem *mem,
+-				    u64 size, u32 alignment)
++enum iavf_status iavf_allocate_dma_mem_d(struct iavf_hw *hw,
++					 struct iavf_dma_mem *mem,
++					 u64 size, u32 alignment)
+ {
+ 	struct iavf_adapter *adapter = (struct iavf_adapter *)hw->back;
  
--enum i40e_client_instance_state {
--	__I40E_CLIENT_INSTANCE_NONE,
--	__I40E_CLIENT_INSTANCE_OPENED,
-+enum iavf_client_instance_state {
-+	__IAVF_CLIENT_INSTANCE_NONE,
-+	__IAVF_CLIENT_INSTANCE_OPENED,
- };
+@@ -89,7 +89,8 @@ iavf_status iavf_allocate_dma_mem_d(struct iavf_hw *hw,
+  * @hw:   pointer to the HW structure
+  * @mem:  ptr to mem struct to free
+  **/
+-iavf_status iavf_free_dma_mem_d(struct iavf_hw *hw, struct iavf_dma_mem *mem)
++enum iavf_status iavf_free_dma_mem_d(struct iavf_hw *hw,
++				     struct iavf_dma_mem *mem)
+ {
+ 	struct iavf_adapter *adapter = (struct iavf_adapter *)hw->back;
  
--struct i40e_ops;
--struct i40e_client;
-+struct iavf_ops;
-+struct iavf_client;
+@@ -106,8 +107,8 @@ iavf_status iavf_free_dma_mem_d(struct iavf_hw *hw, struct iavf_dma_mem *mem)
+  * @mem:  ptr to mem struct to fill out
+  * @size: size of memory requested
+  **/
+-iavf_status iavf_allocate_virt_mem_d(struct iavf_hw *hw,
+-				     struct iavf_virt_mem *mem, u32 size)
++enum iavf_status iavf_allocate_virt_mem_d(struct iavf_hw *hw,
++					  struct iavf_virt_mem *mem, u32 size)
+ {
+ 	if (!mem)
+ 		return I40E_ERR_PARAM;
+@@ -126,7 +127,8 @@ iavf_status iavf_allocate_virt_mem_d(struct iavf_hw *hw,
+  * @hw:   pointer to the HW structure
+  * @mem:  ptr to mem struct to free
+  **/
+-iavf_status iavf_free_virt_mem_d(struct iavf_hw *hw, struct iavf_virt_mem *mem)
++enum iavf_status iavf_free_virt_mem_d(struct iavf_hw *hw,
++				      struct iavf_virt_mem *mem)
+ {
+ 	if (!mem)
+ 		return I40E_ERR_PARAM;
+@@ -2022,7 +2024,7 @@ static void iavf_adminq_task(struct work_struct *work)
+ 	struct iavf_hw *hw = &adapter->hw;
+ 	struct i40e_arq_event_info event;
+ 	enum virtchnl_ops v_op;
+-	iavf_status ret, v_ret;
++	enum iavf_status ret, v_ret;
+ 	u32 val, oldval;
+ 	u16 pending;
  
- /* HW does not define a type value for AEQ; only for RX/TX and CEQ.
-  * In order for us to keep the interface simple, SW will define a
-  * unique type value for AEQ.
+@@ -2037,7 +2039,7 @@ static void iavf_adminq_task(struct work_struct *work)
+ 	do {
+ 		ret = iavf_clean_arq_element(hw, &event, &pending);
+ 		v_op = (enum virtchnl_ops)le32_to_cpu(event.desc.cookie_high);
+-		v_ret = (iavf_status)le32_to_cpu(event.desc.cookie_low);
++		v_ret = (enum iavf_status)le32_to_cpu(event.desc.cookie_low);
+ 
+ 		if (ret || !v_op)
+ 			break; /* No event to process or error cleaning ARQ */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_osdep.h b/drivers/net/ethernet/intel/iavf/iavf_osdep.h
+index c90cafb526d0..d39684558597 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_osdep.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_osdep.h
+@@ -48,5 +48,4 @@ struct iavf_virt_mem {
+ extern void iavf_debug_d(void *hw, u32 mask, char *fmt_str, ...)
+ 	__printf(3, 4);
+ 
+-typedef enum iavf_status_code iavf_status;
+ #endif /* _IAVF_OSDEP_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_prototype.h b/drivers/net/ethernet/intel/iavf/iavf_prototype.h
+index d6685103af39..2ff49dc75e31 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_prototype.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_prototype.h
+@@ -16,16 +16,17 @@
   */
--#define I40E_QUEUE_TYPE_PE_AEQ  0x80
--#define I40E_QUEUE_INVALID_IDX	0xFFFF
-+#define IAVF_QUEUE_TYPE_PE_AEQ  0x80
-+#define IAVF_QUEUE_INVALID_IDX	0xFFFF
  
--struct i40e_qv_info {
-+struct iavf_qv_info {
- 	u32 v_idx; /* msix_vector */
- 	u16 ceq_idx;
- 	u16 aeq_idx;
- 	u8 itr_idx;
- };
+ /* adminq functions */
+-iavf_status iavf_init_adminq(struct iavf_hw *hw);
+-iavf_status iavf_shutdown_adminq(struct iavf_hw *hw);
++enum iavf_status iavf_init_adminq(struct iavf_hw *hw);
++enum iavf_status iavf_shutdown_adminq(struct iavf_hw *hw);
+ void i40e_adminq_init_ring_data(struct iavf_hw *hw);
+-iavf_status iavf_clean_arq_element(struct iavf_hw *hw,
+-				   struct i40e_arq_event_info *e,
+-				   u16 *events_pending);
+-iavf_status iavf_asq_send_command(struct iavf_hw *hw, struct i40e_aq_desc *desc,
+-				  void *buff, /* can be NULL */
+-				  u16 buff_size,
+-				  struct i40e_asq_cmd_details *cmd_details);
++enum iavf_status iavf_clean_arq_element(struct iavf_hw *hw,
++					struct i40e_arq_event_info *e,
++					u16 *events_pending);
++enum iavf_status iavf_asq_send_command(struct iavf_hw *hw,
++				       struct i40e_aq_desc *desc,
++				       void *buff, /* can be NULL */
++				       u16 buff_size,
++				       struct i40e_asq_cmd_details *cmd_details);
+ bool iavf_asq_done(struct iavf_hw *hw);
  
--struct i40e_qvlist_info {
-+struct iavf_qvlist_info {
- 	u32 num_vectors;
--	struct i40e_qv_info qv_info[1];
-+	struct iavf_qv_info qv_info[1];
- };
+ /* debug function for adminq */
+@@ -35,20 +36,20 @@ void iavf_debug_aq(struct iavf_hw *hw, enum iavf_debug_mask mask,
+ void i40e_idle_aq(struct iavf_hw *hw);
+ void iavf_resume_aq(struct iavf_hw *hw);
+ bool iavf_check_asq_alive(struct iavf_hw *hw);
+-iavf_status iavf_aq_queue_shutdown(struct iavf_hw *hw, bool unloading);
++enum iavf_status iavf_aq_queue_shutdown(struct iavf_hw *hw, bool unloading);
+ const char *iavf_aq_str(struct iavf_hw *hw, enum i40e_admin_queue_err aq_err);
+-const char *iavf_stat_str(struct iavf_hw *hw, iavf_status stat_err);
++const char *iavf_stat_str(struct iavf_hw *hw, enum iavf_status stat_err);
  
--#define I40E_CLIENT_MSIX_ALL 0xFFFFFFFF
-+#define IAVF_CLIENT_MSIX_ALL 0xFFFFFFFF
+-iavf_status iavf_aq_get_rss_lut(struct iavf_hw *hw, u16 seid,
+-				bool pf_lut, u8 *lut, u16 lut_size);
+-iavf_status iavf_aq_set_rss_lut(struct iavf_hw *hw, u16 seid,
+-				bool pf_lut, u8 *lut, u16 lut_size);
+-iavf_status iavf_aq_get_rss_key(struct iavf_hw *hw, u16 seid,
+-				struct i40e_aqc_get_set_rss_key_data *key);
+-iavf_status iavf_aq_set_rss_key(struct iavf_hw *hw, u16 seid,
+-				struct i40e_aqc_get_set_rss_key_data *key);
++enum iavf_status iavf_aq_get_rss_lut(struct iavf_hw *hw, u16 seid,
++				     bool pf_lut, u8 *lut, u16 lut_size);
++enum iavf_status iavf_aq_set_rss_lut(struct iavf_hw *hw, u16 seid,
++				     bool pf_lut, u8 *lut, u16 lut_size);
++enum iavf_status iavf_aq_get_rss_key(struct iavf_hw *hw, u16 seid,
++				     struct i40e_aqc_get_set_rss_key_data *key);
++enum iavf_status iavf_aq_set_rss_key(struct iavf_hw *hw, u16 seid,
++				     struct i40e_aqc_get_set_rss_key_data *key);
  
- /* set of LAN parameters useful for clients managed by LAN */
+-iavf_status iavf_set_mac_type(struct iavf_hw *hw);
++enum iavf_status iavf_set_mac_type(struct iavf_hw *hw);
  
- /* Struct to hold per priority info */
--struct i40e_prio_qos_params {
-+struct iavf_prio_qos_params {
- 	u16 qs_handle; /* qs handle for prio */
- 	u8 tc; /* TC mapped to prio */
- 	u8 reserved;
- };
+ extern struct iavf_rx_ptype_decoded iavf_ptype_lookup[];
  
--#define I40E_CLIENT_MAX_USER_PRIORITY        8
-+#define IAVF_CLIENT_MAX_USER_PRIORITY        8
- /* Struct to hold Client QoS */
--struct i40e_qos_params {
--	struct i40e_prio_qos_params prio_qos[I40E_CLIENT_MAX_USER_PRIORITY];
-+struct iavf_qos_params {
-+	struct iavf_prio_qos_params prio_qos[IAVF_CLIENT_MAX_USER_PRIORITY];
- };
+@@ -59,9 +60,10 @@ static inline struct iavf_rx_ptype_decoded decode_rx_desc_ptype(u8 ptype)
  
--struct i40e_params {
--	struct i40e_qos_params qos;
-+struct iavf_params {
-+	struct iavf_qos_params qos;
- 	u16 mtu;
- 	u16 link_up; /* boolean */
- };
+ void iavf_vf_parse_hw_config(struct iavf_hw *hw,
+ 			     struct virtchnl_vf_resource *msg);
+-iavf_status iavf_vf_reset(struct iavf_hw *hw);
+-iavf_status iavf_aq_send_msg_to_pf(struct iavf_hw *hw,
+-				   enum virtchnl_ops v_opcode,
+-				   iavf_status v_retval, u8 *msg, u16 msglen,
+-				   struct i40e_asq_cmd_details *cmd_details);
++enum iavf_status iavf_vf_reset(struct iavf_hw *hw);
++enum iavf_status iavf_aq_send_msg_to_pf(struct iavf_hw *hw,
++					enum virtchnl_ops v_opcode,
++					enum iavf_status v_retval,
++					u8 *msg, u16 msglen,
++					struct i40e_asq_cmd_details *cmd_details);
+ #endif /* _IAVF_PROTOTYPE_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_status.h b/drivers/net/ethernet/intel/iavf/iavf_status.h
+index 46742fab7b8c..95026298685d 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_status.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_status.h
+@@ -5,7 +5,7 @@
+ #define _IAVF_STATUS_H_
  
- /* Structure to hold LAN device info for a client device */
--struct i40e_info {
--	struct i40e_client_version version;
-+struct iavf_info {
-+	struct iavf_client_version version;
- 	u8 lanmac[6];
- 	struct net_device *netdev;
- 	struct pci_dev *pcidev;
- 	u8 __iomem *hw_addr;
- 	u8 fid;	/* function id, PF id or VF id */
--#define I40E_CLIENT_FTYPE_PF 0
--#define I40E_CLIENT_FTYPE_VF 1
-+#define IAVF_CLIENT_FTYPE_PF 0
-+#define IAVF_CLIENT_FTYPE_VF 1
- 	u8 ftype; /* function type, PF or VF */
- 	void *vf; /* cast to iavf_adapter */
+ /* Error Codes */
+-enum iavf_status_code {
++enum iavf_status {
+ 	I40E_SUCCESS				= 0,
+ 	I40E_ERR_NVM				= -1,
+ 	I40E_ERR_NVM_CHECKSUM			= -2,
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 357c74bc3265..95457869f249 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -22,7 +22,7 @@ static int iavf_send_pf_msg(struct iavf_adapter *adapter,
+ 			    enum virtchnl_ops op, u8 *msg, u16 len)
+ {
+ 	struct iavf_hw *hw = &adapter->hw;
+-	iavf_status err;
++	enum iavf_status err;
  
- 	/* All L2 params that could change during the life span of the device
- 	 * and needs to be communicated to the client when they change
- 	 */
--	struct i40e_params params;
--	struct i40e_ops *ops;
-+	struct iavf_params params;
-+	struct iavf_ops *ops;
+ 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
+ 		return 0; /* nothing to see here, move along */
+@@ -69,7 +69,7 @@ int iavf_verify_api_ver(struct iavf_adapter *adapter)
+ 	struct iavf_hw *hw = &adapter->hw;
+ 	struct i40e_arq_event_info event;
+ 	enum virtchnl_ops op;
+-	iavf_status err;
++	enum iavf_status err;
  
- 	u16 msix_count;	 /* number of msix vectors*/
- 	/* Array down below will be dynamically allocated based on msix_count */
-@@ -104,66 +104,66 @@ struct i40e_info {
- 	u16 itr_index; /* Which ITR index the PE driver is suppose to use */
- };
+ 	event.buf_len = IAVF_MAX_AQ_BUF_SIZE;
+ 	event.msg_buf = kzalloc(event.buf_len, GFP_KERNEL);
+@@ -92,7 +92,7 @@ int iavf_verify_api_ver(struct iavf_adapter *adapter)
+ 	}
  
--struct i40e_ops {
-+struct iavf_ops {
- 	/* setup_q_vector_list enables queues with a particular vector */
--	int (*setup_qvlist)(struct i40e_info *ldev, struct i40e_client *client,
--			    struct i40e_qvlist_info *qv_info);
-+	int (*setup_qvlist)(struct iavf_info *ldev, struct iavf_client *client,
-+			    struct iavf_qvlist_info *qv_info);
  
--	u32 (*virtchnl_send)(struct i40e_info *ldev, struct i40e_client *client,
-+	u32 (*virtchnl_send)(struct iavf_info *ldev, struct iavf_client *client,
- 			     u8 *msg, u16 len);
+-	err = (iavf_status)le32_to_cpu(event.desc.cookie_low);
++	err = (enum iavf_status)le32_to_cpu(event.desc.cookie_low);
+ 	if (err)
+ 		goto out_alloc;
  
- 	/* If the PE Engine is unresponsive, RDMA driver can request a reset.*/
--	void (*request_reset)(struct i40e_info *ldev,
--			      struct i40e_client *client);
-+	void (*request_reset)(struct iavf_info *ldev,
-+			      struct iavf_client *client);
- };
+@@ -191,7 +191,7 @@ int iavf_get_vf_config(struct iavf_adapter *adapter)
+ 	struct iavf_hw *hw = &adapter->hw;
+ 	struct i40e_arq_event_info event;
+ 	enum virtchnl_ops op;
+-	iavf_status err;
++	enum iavf_status err;
+ 	u16 len;
  
--struct i40e_client_ops {
-+struct iavf_client_ops {
- 	/* Should be called from register_client() or whenever the driver is
- 	 * ready to create a specific client instance.
- 	 */
--	int (*open)(struct i40e_info *ldev, struct i40e_client *client);
-+	int (*open)(struct iavf_info *ldev, struct iavf_client *client);
+ 	len =  sizeof(struct virtchnl_vf_resource) +
+@@ -216,7 +216,7 @@ int iavf_get_vf_config(struct iavf_adapter *adapter)
+ 			break;
+ 	}
  
- 	/* Should be closed when netdev is unavailable or when unregister
- 	 * call comes in. If the close happens due to a reset, set the reset
- 	 * bit to true.
- 	 */
--	void (*close)(struct i40e_info *ldev, struct i40e_client *client,
-+	void (*close)(struct iavf_info *ldev, struct iavf_client *client,
- 		      bool reset);
+-	err = (iavf_status)le32_to_cpu(event.desc.cookie_low);
++	err = (enum iavf_status)le32_to_cpu(event.desc.cookie_low);
+ 	memcpy(adapter->vf_res, event.msg_buf, min(event.msg_len, len));
  
- 	/* called when some l2 managed parameters changes - mss */
--	void (*l2_param_change)(struct i40e_info *ldev,
--				struct i40e_client *client,
--				struct i40e_params *params);
-+	void (*l2_param_change)(struct iavf_info *ldev,
-+				struct iavf_client *client,
-+				struct iavf_params *params);
+ 	/* some PFs send more queues than we should have so validate that
+@@ -1184,8 +1184,8 @@ void iavf_request_reset(struct iavf_adapter *adapter)
+  * This function handles the reply messages.
+  **/
+ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+-			      enum virtchnl_ops v_opcode, iavf_status v_retval,
+-			      u8 *msg, u16 msglen)
++			      enum virtchnl_ops v_opcode,
++			      enum iavf_status v_retval, u8 *msg, u16 msglen)
+ {
+ 	struct net_device *netdev = adapter->netdev;
  
- 	/* called when a message is received from the PF */
--	int (*virtchnl_receive)(struct i40e_info *ldev,
--				struct i40e_client *client,
-+	int (*virtchnl_receive)(struct iavf_info *ldev,
-+				struct iavf_client *client,
- 				u8 *msg, u16 len);
- };
- 
- /* Client device */
--struct i40e_client_instance {
-+struct iavf_client_instance {
- 	struct list_head list;
--	struct i40e_info lan_info;
--	struct i40e_client *client;
-+	struct iavf_info lan_info;
-+	struct iavf_client *client;
- 	unsigned long  state;
- };
- 
--struct i40e_client {
-+struct iavf_client {
- 	struct list_head list;		/* list of registered clients */
- 	char name[IAVF_CLIENT_STR_LENGTH];
--	struct i40e_client_version version;
-+	struct iavf_client_version version;
- 	unsigned long state;		/* client state */
- 	atomic_t ref_cnt;  /* Count of all the client devices of this kind */
- 	u32 flags;
--#define I40E_CLIENT_FLAGS_LAUNCH_ON_PROBE	BIT(0)
--#define I40E_TX_FLAGS_NOTIFY_OTHER_EVENTS	BIT(2)
-+#define IAVF_CLIENT_FLAGS_LAUNCH_ON_PROBE	BIT(0)
-+#define IAVF_TX_FLAGS_NOTIFY_OTHER_EVENTS	BIT(2)
- 	u8 type;
--#define I40E_CLIENT_IWARP 0
--	struct i40e_client_ops *ops;	/* client ops provided by the client */
-+#define IAVF_CLIENT_IWARP 0
-+	struct iavf_client_ops *ops;	/* client ops provided by the client */
- };
- 
- /* used by clients */
--int iavf_register_client(struct i40e_client *client);
--int iavf_unregister_client(struct i40e_client *client);
-+int iavf_register_client(struct iavf_client *client);
-+int iavf_unregister_client(struct iavf_client *client);
- #endif /* _IAVF_CLIENT_H_ */
 -- 
 2.19.2
 
