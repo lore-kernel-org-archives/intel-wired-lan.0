@@ -1,84 +1,69 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 17 Apr 2019 15:50:17 -0700
-Subject: [Intel-wired-lan] [PATCH S20 04/15] ice: Set minimum default Rx
- descriptor count to 512
-In-Reply-To: <20190416173052.28928-5-anirudh.venkataramanan@intel.com>
-References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
- <20190416173052.28928-5-anirudh.venkataramanan@intel.com>
-Message-ID: <b88ec45828a00b55fbbcc310428ce2922de8a1dc.camel@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu, 18 Apr 2019 10:11:08 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add flow control support
+Message-ID: <20190418071108.35151-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2019-04-16 at 10:30 -0700, Anirudh Venkataramanan wrote:
-> From: Brett Creeley <brett.creeley@intel.com>
-> 
-> Currently we set the default number of Rx descriptors per
-> queue to the system's page size divided by the number of bytes per
-> descriptor. For 4K page size systems this is resulting in 128 Rx
-> descriptors per queue. This is causing more dropped packets than
-> desired
-> in the default configuration. Fix this by setting the minimum default
-> Rx descriptor count per queue to 512.
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Anirudh Venkataramanan <
-> anirudh.venkataramanan at intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice.h | 19 +++++++++++++------
->  1 file changed, 13 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice.h
-> b/drivers/net/ethernet/intel/ice/ice.h
-> index b5990ba0ee4c..0555d09614d8 100644
-> --- a/drivers/net/ethernet/intel/ice/ice.h
-> +++ b/drivers/net/ethernet/intel/ice/ice.h
-> @@ -46,13 +46,20 @@ extern const char ice_drv_ver[];
->  #define ICE_REQ_DESC_MULTIPLE	32
->  #define ICE_MIN_NUM_DESC	ICE_REQ_DESC_MULTIPLE
->  #define ICE_MAX_NUM_DESC	8160
-> -/* set default number of Rx/Tx descriptors to the minimum between
-> - * ICE_MAX_NUM_DESC and the number of descriptors to fill up an
-> entire page
-> +#define ICE_DFLT_MIN_RX_DESC	512
-> +/* if the default number of Rx descriptors between ICE_MAX_NUM_DESC
-> and the
-> + * number of descriptors to fill up an entire page is greater than
-> or equal to
-> + * ICE_DFLT_MIN_RX_DESC set it based on page size, otherwise set it
-> to
-> + * ICE_DFLT_MIN_RX_DESC
-> + */
-> +#define ICE_DFLT_NUM_RX_DESC \
-> +	min_t(u16, ICE_MAX_NUM_DESC, \
-> +	      max_t(u16, ALIGN(PAGE_SIZE / sizeof(union
-> ice_32byte_rx_desc), \
-> +			       ICE_REQ_DESC_MULTIPLE), \
-> +		    ICE_DFLT_MIN_RX_DESC))
+This change adds flow control settings. This is required to
+enable the legacy flow control support.
 
-This macro is overly wrapped, when it can be reduced by a line.  I have
-fixed the wrapping in my tree for review and validation.
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_defines.h |  3 +++
+ drivers/net/ethernet/intel/igc/igc_main.c    | 22 ++++++++++++++++++++++
+ 2 files changed, 25 insertions(+)
 
-> +/* set default number of Tx descriptors to the minimum between
-> ICE_MAX_NUM_DESC
-> + * and the number of descriptors to fill up an entire page
->   */
-> -#define ICE_DFLT_NUM_RX_DESC	min_t(u16, ICE_MAX_NUM_DESC, \
-> -				      ALIGN(PAGE_SIZE / \
-> -					    sizeof(union
-> ice_32byte_rx_desc), \
-> -					    ICE_REQ_DESC_MULTIPLE))
->  #define ICE_DFLT_NUM_TX_DESC	min_t(u16, ICE_MAX_NUM_DESC, \
->  				      ALIGN(PAGE_SIZE / \
->  					    sizeof(struct ice_tx_desc),
-> \
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 5f6bc67cb33b..fc0ccfe38a20 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -66,6 +66,9 @@
+ 
+ #define IGC_CONNSW_AUTOSENSE_EN	0x1
+ 
++/* As per the EAS the maximum supported size is 9.5KB (9728 bytes) */
++#define MAX_JUMBO_FRAME_SIZE	0x2600
++
+ /* PBA constants */
+ #define IGC_PBA_34K		0x0022
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index cb8477b84d37..810d44fb77bf 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -72,6 +72,28 @@ void igc_reset(struct igc_adapter *adapter)
+ {
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	struct igc_hw *hw = &adapter->hw;
++	struct igc_fc_info *fc = &hw->fc;
++	u32 pba, hwm;
++
++	/* Repartition PBA for greater than 9k mtu if required
++	 */
++	pba = IGC_PBA_34K;
++
++	/* flow control settings
++	 * The high water mark must be low enough to fit one full frame
++	 * after transmitting the pause frame.  As such we must have enough
++	 * space to allow for us to complete our current transmit and then
++	 * receive the frame that is in progress from the link partner.
++	 * Set it to:
++	 * - the full Rx FIFO size minus one full Tx plus one full Rx frame
++	 */
++	hwm = (pba << 10) - (adapter->max_frame_size + MAX_JUMBO_FRAME_SIZE);
++
++	fc->high_water = hwm & 0xFFFFFFF0;	/* 16-byte granularity */
++	fc->low_water = fc->high_water - 16;
++	fc->pause_time = 0xFFFF;
++	fc->send_xon = 1;
++	fc->current_mode = fc->requested_mode;
+ 
+ 	hw->mac.ops.reset_hw(hw);
+ 
+-- 
+2.11.0
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190417/42df0d79/attachment.asc>
