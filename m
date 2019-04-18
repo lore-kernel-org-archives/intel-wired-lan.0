@@ -1,88 +1,28 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 18 Apr 2019 13:31:53 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: Memory leak in
- i40e_config_iwarp_qvlist
-Message-ID: <20190418203153.37605-1-alice.michael@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Thu, 18 Apr 2019 13:57:26 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v1] igb: Fix limiting the
+ number of queues to number of cpus
+In-Reply-To: <461c66428b411644e78ad5a9a44c47442c9b6edf.camel@intel.com>
+References: <20190404215632.9881-1-vinicius.gomes@intel.com>
+ <461c66428b411644e78ad5a9a44c47442c9b6edf.camel@intel.com>
+Message-ID: <87d0ljhw09.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Martyna Szapar <martyna.szapar@intel.com>
+Hi Jeff,
 
-Added freeing the old allocation of vf->qvlist_info in function
-i40e_config_iwarp_qvlist before overwriting it with
-the new allocation.
+Jeff Kirsher <jeffrey.t.kirsher@intel.com> writes:
 
-Signed-off-by: Martyna Szapar <martyna.szapar@intel.com>
----
- .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 23 ++++++++++++-------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+> I will discuss the issue with my fellow developers and hopefully we can
+> come up with a kernel interface that all drivers can use to handle this
+> issue.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index ebe18276cea1..479bc60c8f71 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -441,6 +441,7 @@ static int i40e_config_iwarp_qvlist(struct i40e_vf *vf,
- 	u32 v_idx, i, reg_idx, reg;
- 	u32 next_q_idx, next_q_type;
- 	u32 msix_vf, size;
-+	int ret = 0;
- 
- 	msix_vf = pf->hw.func_caps.num_msix_vectors_vf;
- 
-@@ -449,16 +450,19 @@ static int i40e_config_iwarp_qvlist(struct i40e_vf *vf,
- 			 "Incorrect number of iwarp vectors %u. Maximum %u allowed.\n",
- 			 qvlist_info->num_vectors,
- 			 msix_vf);
--		goto err;
-+		ret = -EINVAL;
-+		goto err_out;
- 	}
- 
- 	size = sizeof(struct virtchnl_iwarp_qvlist_info) +
- 	       (sizeof(struct virtchnl_iwarp_qv_info) *
- 						(qvlist_info->num_vectors - 1));
-+	kfree(vf->qvlist_info);
- 	vf->qvlist_info = kzalloc(size, GFP_KERNEL);
--	if (!vf->qvlist_info)
--		return -ENOMEM;
--
-+	if (!vf->qvlist_info) {
-+		ret = -ENOMEM;
-+		goto err_out;
-+	}
- 	vf->qvlist_info->num_vectors = qvlist_info->num_vectors;
- 
- 	msix_vf = pf->hw.func_caps.num_msix_vectors_vf;
-@@ -469,8 +473,10 @@ static int i40e_config_iwarp_qvlist(struct i40e_vf *vf,
- 		v_idx = qv_info->v_idx;
- 
- 		/* Validate vector id belongs to this vf */
--		if (!i40e_vc_isvalid_vector_id(vf, v_idx))
--			goto err;
-+		if (!i40e_vc_isvalid_vector_id(vf, v_idx)) {
-+			ret = -EINVAL;
-+			goto err_free;
-+		}
- 
- 		vf->qvlist_info->qv_info[i] = *qv_info;
- 
-@@ -512,10 +518,11 @@ static int i40e_config_iwarp_qvlist(struct i40e_vf *vf,
- 	}
- 
- 	return 0;
--err:
-+err_free:
- 	kfree(vf->qvlist_info);
- 	vf->qvlist_info = NULL;
--	return -EINVAL;
-+err_out:
-+	return ret;
- }
- 
- /**
--- 
-2.19.2
+Did you have the chance to discuss this issue?
 
+
+Cheers,
+--
+Vinicius
