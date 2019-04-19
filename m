@@ -1,48 +1,183 @@
-From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Date: Thu, 18 Apr 2019 21:50:28 -0700
-Subject: [Intel-wired-lan] [PATCH bpf-next v5 5/6] net: pass net
- argument to the eth_get_headlen
-In-Reply-To: <20190419004350.GC8631@mini-arch.hsd1.ca.comcast.net>
-References: <20190415173801.257254-1-sdf@google.com>
- <20190415173801.257254-6-sdf@google.com>
- <20190419002851.7efgfnyo3swvtwvo@ast-mbp.dhcp.thefacebook.com>
- <20190419004350.GC8631@mini-arch.hsd1.ca.comcast.net>
-Message-ID: <20190419045026.ayalgmunvizwxc7j@ast-mbp.dhcp.thefacebook.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 20 Apr 2019 05:26:28 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 8412bb480d950d67e34a5eb05eac230ac15d43c6
+Message-ID: <5cba3d04.XaieKLcDYCA7gpja%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Apr 18, 2019 at 05:43:50PM -0700, Stanislav Fomichev wrote:
-> On 04/18, Alexei Starovoitov wrote:
-> > On Mon, Apr 15, 2019 at 10:38:00AM -0700, Stanislav Fomichev wrote:
-> > > Update all users eth_get_headlen to pass network namespace
-> > > and pass it down to the flow dissector. This commit is a noop
-> > > until administrator inserts BPF flow dissector program.
-> > > 
-> > > Cc: Maxim Krasnyansky <maxk@qti.qualcomm.com>
-> > > Cc: Saeed Mahameed <saeedm@mellanox.com>
-> > > Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> > > Cc: intel-wired-lan at lists.osuosl.org
-> > > Cc: Yisen Zhuang <yisen.zhuang@huawei.com>
-> > > Cc: Salil Mehta <salil.mehta@huawei.com>
-> > > Cc: Michael Chan <michael.chan@broadcom.com>
-> > > Cc: Igor Russkikh <igor.russkikh@aquantia.com>
-> > > Signed-off-by: Stanislav Fomichev <sdf@google.com>
-... 
-> > Also please add C based test for skb-less flow_dissector.
-> > Current test_flow_dissector.sh doesn't seem to cover it.
-> It doesn't look like we can exercise skb-less flow dissector from
-> test_flow_dissector.sh; we need to trigger some driver code, which is
-> hard when we send the packets on the localhost in
-> test_flow_dissector.sh.
-> 
-> To test skb-less dissector I convert BPF_PROG_TEST_RUN to always use skb-less
-> mode. test_flow_dissector.sh tests skb-mode, prog_tests/flow_dissector.c
-> tests skb-less mode.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 8412bb480d950d67e34a5eb05eac230ac15d43c6  i40e: Memory leak in i40e_config_iwarp_qvlist
 
-I saw that but I'm afraid it's not enough.
-tun_get_user() is calling it, so it should be possible to test
-skb-less mode via tun.
+elapsed time: 192m
 
+configs tested: 158
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+mips                     loongson1c_defconfig
+powerpc                     tqm5200_defconfig
+i386                   randconfig-x010-201915
+i386                   randconfig-x018-201915
+i386                   randconfig-x017-201915
+i386                   randconfig-x013-201915
+i386                   randconfig-x011-201915
+i386                   randconfig-x014-201915
+i386                   randconfig-x019-201915
+i386                   randconfig-x015-201915
+i386                   randconfig-x016-201915
+i386                   randconfig-x012-201915
+i386                     randconfig-n0-201915
+i386                     randconfig-n1-201915
+i386                     randconfig-n2-201915
+i386                     randconfig-n3-201915
+x86_64                 randconfig-x000-201915
+x86_64                 randconfig-x001-201915
+x86_64                 randconfig-x002-201915
+x86_64                 randconfig-x003-201915
+x86_64                 randconfig-x004-201915
+x86_64                 randconfig-x005-201915
+x86_64                 randconfig-x006-201915
+x86_64                 randconfig-x007-201915
+x86_64                 randconfig-x008-201915
+x86_64                 randconfig-x009-201915
+nds32                             allnoconfig
+nds32                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+i386                     randconfig-i0-201915
+i386                     randconfig-i1-201915
+i386                     randconfig-i2-201915
+i386                     randconfig-i3-201915
+i386                   randconfig-x002-201915
+i386                   randconfig-x001-201915
+i386                   randconfig-x005-201915
+i386                   randconfig-x007-201915
+i386                   randconfig-x000-201915
+i386                   randconfig-x004-201915
+i386                   randconfig-x008-201915
+i386                   randconfig-x009-201915
+i386                   randconfig-x006-201915
+i386                   randconfig-x003-201915
+x86_64                 randconfig-x015-201915
+x86_64                 randconfig-x016-201915
+x86_64                 randconfig-x012-201915
+x86_64                 randconfig-x017-201915
+x86_64                 randconfig-x013-201915
+x86_64                 randconfig-x018-201915
+x86_64                 randconfig-x010-201915
+x86_64                 randconfig-x014-201915
+x86_64                 randconfig-x019-201915
+x86_64                 randconfig-x011-201915
+x86_64                 randconfig-s0-04200255
+x86_64                 randconfig-s1-04200255
+x86_64                 randconfig-s2-04200255
+nios2                         10m50_defconfig
+sh                         microdev_defconfig
+powerpc                     ksi8560_defconfig
+powerpc                     skiroot_defconfig
+x86_64                 randconfig-u0-04200313
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                               rhel-7.6
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-m0-04192325
+x86_64                 randconfig-m1-04192325
+x86_64                 randconfig-m2-04192325
+x86_64                 randconfig-m3-04192325
+i386                   randconfig-m0-04192325
+i386                   randconfig-m1-04192325
+i386                   randconfig-m2-04192325
+i386                   randconfig-m3-04192325
+riscv                             allnoconfig
+riscv                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-l0-04192118
+x86_64                 randconfig-l1-04192118
+x86_64                 randconfig-l2-04192118
+x86_64                 randconfig-l3-04192118
+i386                   randconfig-l0-04192118
+i386                   randconfig-l1-04192118
+i386                   randconfig-l2-04192118
+i386                   randconfig-l3-04192118
+x86_64                 randconfig-s3-04200258
+x86_64                 randconfig-s4-04200258
+x86_64                 randconfig-s5-04200258
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+parisc                generic-64bit_defconfig
+powerpc                      ppc64e_defconfig
+powerpc                      bamboo_defconfig
+powerpc               mpc86xx_basic_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+arm                              alldefconfig
+powerpc                 mpc834x_mds_defconfig
+x86_64                   randconfig-g0-201915
+x86_64                   randconfig-g1-201915
+x86_64                   randconfig-g2-201915
+x86_64                   randconfig-g3-201915
+i386                  randconfig-sb0-04200220
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                randconfig-ws0-04142317
+arm                          pxa168_defconfig
+m68k                       m5249evb_defconfig
+x86_64                randconfig-ws0-04150651
+i386                   randconfig-x077-201915
+i386                   randconfig-x074-201915
+i386                   randconfig-x070-201915
+i386                   randconfig-x072-201915
+i386                   randconfig-x075-201915
+i386                   randconfig-x071-201915
+i386                   randconfig-x079-201915
+i386                   randconfig-x078-201915
+i386                   randconfig-x073-201915
+i386                   randconfig-x076-201915
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
