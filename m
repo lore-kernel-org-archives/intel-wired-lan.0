@@ -1,20 +1,20 @@
 From: Joseph Yasi <joe.yasi@gmail.com>
-Date: Mon, 22 Apr 2019 20:49:46 -0400
+Date: Mon, 22 Apr 2019 20:50:49 -0400
 Subject: [Intel-wired-lan] [PATCH 2/2] e1000e: start network tx queue
  only when link is up
 In-Reply-To: <155548880068.3454.1621821881762819373.stgit@buzz>
 References: <155548879651.3454.13167784936351314661.stgit@buzz>
  <155548880068.3454.1621821881762819373.stgit@buzz>
-Message-ID: <CADzA9om9AEKFZi0JAthO2XxSSpD8FWDtYi1bGwwCF_=v2P0zSg@mail.gmail.com>
+Message-ID: <CADzA9o=zsmWz6wO1cmccegAj8Vuqkjm-LwRVe=kptd-1mBfy1g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 17, 2019 at 4:13 AM Konstantin Khlebnikov <
-khlebnikov@yandex-team.ru> wrote:
-
+On Wed, Apr 17, 2019 at 4:13 AM Konstantin Khlebnikov
+<khlebnikov@yandex-team.ru> wrote:
+>
 > Driver does not want to keep packets in tx queue when link is lost.
 > But present code only reset NIC to flush them, but does not prevent
 > queuing new packets. Moreover reset sequence itself could generate
@@ -27,15 +27,12 @@ khlebnikov@yandex-team.ru> wrote:
 >
 > Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
 > Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
->
 Tested-by: Joseph Yasi <joe.yasi@gmail.com>
-
 > ---
 >  drivers/net/ethernet/intel/e1000e/netdev.c |    6 ++++--
 >  1 file changed, 4 insertions(+), 2 deletions(-)
 >
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
-> b/drivers/net/ethernet/intel/e1000e/netdev.c
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
 > index ba96e52aa8d1..fe643d66aa10 100644
 > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
 > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
@@ -64,8 +61,7 @@ Tested-by: Joseph Yasi <joe.yasi@gmail.com>
 >
 >         hw->mac.get_link_status = true;
 >         pm_runtime_put(&pdev->dev);
-> @@ -5289,6 +5289,7 @@ static void e1000_watchdog_task(struct work_struct
-> *work)
+> @@ -5289,6 +5289,7 @@ static void e1000_watchdog_task(struct work_struct *work)
 >                         if (phy->ops.cfg_on_link_up)
 >                                 phy->ops.cfg_on_link_up(hw);
 >
@@ -73,18 +69,12 @@ Tested-by: Joseph Yasi <joe.yasi@gmail.com>
 >                         netif_carrier_on(netdev);
 >
 >                         if (!test_bit(__E1000_DOWN, &adapter->state))
-> @@ -5302,6 +5303,7 @@ static void e1000_watchdog_task(struct work_struct
-> *work)
+> @@ -5302,6 +5303,7 @@ static void e1000_watchdog_task(struct work_struct *work)
 >                         /* Link status message must follow this format */
->                         pr_info("%s NIC Link is Down\n",
-> adapter->netdev->name);
+>                         pr_info("%s NIC Link is Down\n", adapter->netdev->name);
 >                         netif_carrier_off(netdev);
 > +                       netif_stop_queue(netdev);
 >                         if (!test_bit(__E1000_DOWN, &adapter->state))
 >                                 mod_timer(&adapter->phy_info_timer,
 >                                           round_jiffies(jiffies + 2 * HZ));
 >
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190422/8d0147c7/attachment-0001.html>
