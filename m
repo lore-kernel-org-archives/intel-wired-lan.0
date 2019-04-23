@@ -1,85 +1,214 @@
-From: Joseph Yasi <joe.yasi@gmail.com>
-Date: Mon, 22 Apr 2019 20:51:09 -0400
-Subject: [Intel-wired-lan] [PATCH 1/2] Revert "e1000e: fix cyclic resets
- at link up with active tx"
-In-Reply-To: <155548879651.3454.13167784936351314661.stgit@buzz>
-References: <155548879651.3454.13167784936351314661.stgit@buzz>
-Message-ID: <CADzA9o=6gUg4xrsqOKhgSXfXWiAtD6BbD4PsN4gf4H4GYyvvHg@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 24 Apr 2019 05:54:46 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ e00791b696333bb3e1ea47e0aa52455a420e3bdb
+Message-ID: <5cbf89a6.D/sEUilRYM5K5o9/%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 17, 2019 at 4:13 AM Konstantin Khlebnikov
-<khlebnikov@yandex-team.ru> wrote:
->
-> This reverts commit 0f9e980bf5ee1a97e2e401c846b2af989eb21c61.
->
-> That change cased false-positive warning about hardware hang:
->
-> e1000e: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: Rx/Tx
-> IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-> e1000e 0000:00:1f.6 eth0: Detected Hardware Unit Hang:
->    TDH                  <0>
->    TDT                  <1>
->    next_to_use          <1>
->    next_to_clean        <0>
-> buffer_info[next_to_clean]:
->    time_stamp           <fffba7a7>
->    next_to_watch        <0>
->    jiffies              <fffbb140>
->    next_to_watch.status <0>
-> MAC Status             <40080080>
-> PHY Status             <7949>
-> PHY 1000BASE-T Status  <0>
-> PHY Extended Status    <3000>
-> PCI Status             <10>
-> e1000e: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: Rx/Tx
->
-> Besides warning everything works fine.
-> Original issue will be fixed property in following patch.
->
-> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-> Reported-by: Joseph Yasi <joe.yasi@gmail.com>
-Tested-by: Joseph Yasi <joe.yasi@gmail.com>
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=203175
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c |   15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 7acc61e4f645..ba96e52aa8d1 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -5309,13 +5309,8 @@ static void e1000_watchdog_task(struct work_struct *work)
->                         /* 8000ES2LAN requires a Rx packet buffer work-around
->                          * on link down event; reset the controller to flush
->                          * the Rx packet buffer.
-> -                        *
-> -                        * If the link is lost the controller stops DMA, but
-> -                        * if there is queued Tx work it cannot be done.  So
-> -                        * reset the controller to flush the Tx packet buffers.
->                          */
-> -                       if ((adapter->flags & FLAG_RX_NEEDS_RESTART) ||
-> -                           e1000_desc_unused(tx_ring) + 1 < tx_ring->count)
-> +                       if (adapter->flags & FLAG_RX_NEEDS_RESTART)
->                                 adapter->flags |= FLAG_RESTART_NOW;
->                         else
->                                 pm_schedule_suspend(netdev->dev.parent,
-> @@ -5338,6 +5333,14 @@ static void e1000_watchdog_task(struct work_struct *work)
->         adapter->gotc_old = adapter->stats.gotc;
->         spin_unlock(&adapter->stats64_lock);
->
-> +       /* If the link is lost the controller stops DMA, but
-> +        * if there is queued Tx work it cannot be done.  So
-> +        * reset the controller to flush the Tx packet buffers.
-> +        */
-> +       if (!netif_carrier_ok(netdev) &&
-> +           (e1000_desc_unused(tx_ring) + 1 < tx_ring->count))
-> +               adapter->flags |= FLAG_RESTART_NOW;
-> +
->         /* If reset is necessary, do it outside of interrupt context. */
->         if (adapter->flags & FLAG_RESTART_NOW) {
->                 schedule_work(&adapter->reset_task);
->
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: e00791b696333bb3e1ea47e0aa52455a420e3bdb  i40e: Memory leak in i40e_config_iwarp_qvlist
+
+Regressions in current branch:
+
+drivers/net/ethernet/intel/i40e/i40e_main.c:14840:2-8: ERROR: missing iounmap; ioremap on line 14698 and execution via conditional on line 14839
+drivers/net/ethernet/intel/iavf/iavf_adminq.c:554:18-26: Unneeded variable: "ret_code". Return "0" on line 562
+
+Error ids grouped by kconfigs:
+
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
+??? ??? drivers-net-ethernet-intel-iavf-iavf_adminq.c:Unneeded-variable:ret_code-Return-on-line
+??? x86_64-allyesconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
+    ??? drivers-net-ethernet-intel-iavf-iavf_adminq.c:Unneeded-variable:ret_code-Return-on-line
+
+elapsed time: 281m
+
+configs tested: 177
+
+um                           x86_64_defconfig
+i386                   randconfig-x010-201916
+i386                   randconfig-x018-201916
+i386                   randconfig-x017-201916
+i386                   randconfig-x013-201916
+i386                   randconfig-x011-201916
+i386                   randconfig-x014-201916
+i386                   randconfig-x019-201916
+i386                   randconfig-x015-201916
+i386                   randconfig-x016-201916
+i386                   randconfig-x012-201916
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n2-201916
+i386                     randconfig-n3-201916
+i386                     randconfig-n0-201916
+i386                     randconfig-n1-201916
+x86_64                 randconfig-x004-201916
+x86_64                 randconfig-x001-201916
+x86_64                 randconfig-x000-201916
+x86_64                 randconfig-x003-201916
+x86_64                 randconfig-x008-201916
+x86_64                 randconfig-x007-201916
+x86_64                 randconfig-x002-201916
+x86_64                 randconfig-x006-201916
+x86_64                 randconfig-x009-201916
+x86_64                 randconfig-x005-201916
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+i386                     randconfig-i1-201916
+i386                     randconfig-i0-201916
+i386                     randconfig-i3-201916
+i386                     randconfig-i2-201916
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+x86_64                 randconfig-x015-201916
+x86_64                 randconfig-x016-201916
+x86_64                 randconfig-x017-201916
+x86_64                 randconfig-x012-201916
+x86_64                 randconfig-x013-201916
+x86_64                 randconfig-x018-201916
+x86_64                 randconfig-x010-201916
+x86_64                 randconfig-x014-201916
+x86_64                 randconfig-x019-201916
+x86_64                 randconfig-x011-201916
+arm                              allmodconfig
+arm64                            allmodconfig
+i386                     randconfig-a1-201916
+i386                     randconfig-a2-201916
+i386                     randconfig-a0-201916
+i386                     randconfig-a3-201916
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+x86_64                 randconfig-k0-04220059
+x86_64                 randconfig-k1-04220059
+x86_64                 randconfig-k2-04220059
+x86_64                 randconfig-k3-04220059
+i386                   randconfig-k0-04220059
+i386                   randconfig-k1-04220059
+i386                   randconfig-k2-04220059
+i386                   randconfig-k3-04220059
+arm64                            allyesconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+i386                             alldefconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                     randconfig-m0-201916
+x86_64                   randconfig-m2-201916
+i386                     randconfig-m3-201916
+i386                     randconfig-m2-201916
+x86_64                   randconfig-m1-201916
+x86_64                   randconfig-m0-201916
+x86_64                   randconfig-m3-201916
+i386                     randconfig-m1-201916
+x86_64                 randconfig-l1-04230313
+x86_64                 randconfig-l3-04230313
+i386                   randconfig-l2-04230313
+i386                   randconfig-l3-04230313
+x86_64                 randconfig-l0-04230313
+i386                   randconfig-l1-04230313
+i386                   randconfig-l0-04230313
+x86_64                 randconfig-l2-04230313
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+x86_64                 randconfig-i0-04210908
+x86_64                 randconfig-i1-04210908
+x86_64                 randconfig-i2-04210908
+x86_64                 randconfig-i3-04210908
+x86_64                 randconfig-g1-04220745
+x86_64                 randconfig-g3-04220745
+x86_64                 randconfig-g2-04220745
+x86_64                 randconfig-g0-04220745
+i386                              allnoconfig
+i386                                defconfig
+xtensa                           allmodconfig
+i386                   randconfig-x077-201916
+i386                   randconfig-x074-201916
+i386                   randconfig-x070-201916
+i386                   randconfig-x072-201916
+i386                   randconfig-x075-201916
+i386                   randconfig-x071-201916
+i386                   randconfig-x079-201916
+i386                   randconfig-x078-201916
+i386                   randconfig-x073-201916
+i386                   randconfig-x076-201916
+i386                   randconfig-x002-201916
+i386                   randconfig-x001-201916
+i386                   randconfig-x005-201916
+i386                   randconfig-x007-201916
+i386                   randconfig-x000-201916
+i386                   randconfig-x004-201916
+i386                   randconfig-x008-201916
+i386                   randconfig-x009-201916
+i386                   randconfig-x006-201916
+i386                   randconfig-x003-201916
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+x86_64                 randconfig-e0-04220048
+x86_64                 randconfig-e1-04220048
+x86_64                 randconfig-e2-04220048
+x86_64                 randconfig-e3-04220048
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
