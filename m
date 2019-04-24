@@ -1,198 +1,41 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 25 Apr 2019 03:39:03 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 7b556efbb9bb59cec2ddba0e239e7693a7c4557b
-Message-ID: <5cc0bb57.T1gx5mkTuttvtOjr%lkp@intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Wed, 24 Apr 2019 05:20:48 -0700
+Subject: [Intel-wired-lan] [next PATCH S5 03/10] i40e: Use signed variable
+In-Reply-To: <20190424122055.27896-1-alice.michael@intel.com>
+References: <20190424122055.27896-1-alice.michael@intel.com>
+Message-ID: <20190424122055.27896-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 7b556efbb9bb59cec2ddba0e239e7693a7c4557b  i40e: Memory leak in i40e_config_iwarp_qvlist
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Regressions in current branch:
+The counter variable in i40e_clean_tx_irq starts out negative and climbs
+to 0. So it should not be defined as a u16. This was working by accident
+due to the fact the u16 overflows and underflows predictably.
 
-drivers/net/ethernet/intel/i40e/i40e_main.c:14840:2-8: ERROR: missing iounmap; ioremap on line 14698 and execution via conditional on line 14839
-drivers/net/ethernet/intel/iavf/iavf_adminq.c:554:18-26: Unneeded variable: "ret_code". Return "0" on line 562
+Replace the u16 with int, which is signed and can handle the negativity.
 
-Error ids grouped by kconfigs:
-
-recent_errors
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
-??? ??? drivers-net-ethernet-intel-iavf-iavf_adminq.c:Unneeded-variable:ret_code-Return-on-line
-??? x86_64-allyesconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:ERROR:missing-iounmap-ioremap-on-line-and-execution-via-conditional-on-line
-    ??? drivers-net-ethernet-intel-iavf-iavf_adminq.c:Unneeded-variable:ret_code-Return-on-line
-
-elapsed time: 186m
-
-configs tested: 161
-
-i386                             alldefconfig
-arm                              allmodconfig
-i386                   randconfig-x010-201916
-i386                   randconfig-x018-201916
-i386                   randconfig-x017-201916
-i386                   randconfig-x013-201916
-i386                   randconfig-x011-201916
-i386                   randconfig-x014-201916
-i386                   randconfig-x019-201916
-i386                   randconfig-x015-201916
-i386                   randconfig-x016-201916
-i386                   randconfig-x012-201916
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201916
-i386                     randconfig-n1-201916
-i386                     randconfig-n2-201916
-i386                     randconfig-n3-201916
-x86_64                 randconfig-x004-201916
-x86_64                 randconfig-x001-201916
-x86_64                 randconfig-x000-201916
-x86_64                 randconfig-x003-201916
-x86_64                 randconfig-x008-201916
-x86_64                 randconfig-x007-201916
-x86_64                 randconfig-x002-201916
-x86_64                 randconfig-x006-201916
-x86_64                 randconfig-x009-201916
-x86_64                 randconfig-x005-201916
-i386                     randconfig-i1-201916
-i386                     randconfig-i0-201916
-i386                     randconfig-i3-201916
-i386                     randconfig-i2-201916
-x86_64                           allyesconfig
-i386                             allmodconfig
-x86_64                 randconfig-x015-201916
-x86_64                 randconfig-x016-201916
-x86_64                 randconfig-x017-201916
-x86_64                 randconfig-x012-201916
-x86_64                 randconfig-x013-201916
-x86_64                 randconfig-x018-201916
-x86_64                 randconfig-x010-201916
-x86_64                 randconfig-x014-201916
-x86_64                 randconfig-x019-201916
-x86_64                 randconfig-x011-201916
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-a0-201916
-i386                     randconfig-a1-201916
-i386                     randconfig-a2-201916
-i386                     randconfig-a3-201916
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-m0-201916
-x86_64                   randconfig-m1-201916
-x86_64                   randconfig-m2-201916
-x86_64                   randconfig-m3-201916
-i386                     randconfig-m0-201916
-i386                     randconfig-m1-201916
-i386                     randconfig-m2-201916
-i386                     randconfig-m3-201916
-riscv                             allnoconfig
-riscv                               defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-i0-04210908
-x86_64                 randconfig-i1-04210908
-x86_64                 randconfig-i2-04210908
-x86_64                 randconfig-i3-04210908
-x86_64                 randconfig-g0-04220745
-x86_64                 randconfig-g1-04220745
-x86_64                 randconfig-g2-04220745
-x86_64                 randconfig-g3-04220745
-m68k                             allmodconfig
-powerpc                          allmodconfig
-i386                   randconfig-x077-201916
-i386                   randconfig-x074-201916
-i386                   randconfig-x070-201916
-i386                   randconfig-x072-201916
-i386                   randconfig-x075-201916
-i386                   randconfig-x071-201916
-i386                   randconfig-x079-201916
-i386                   randconfig-x078-201916
-i386                   randconfig-x073-201916
-i386                   randconfig-x076-201916
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x002-201916
-i386                   randconfig-x001-201916
-i386                   randconfig-x005-201916
-i386                   randconfig-x007-201916
-i386                   randconfig-x000-201916
-i386                   randconfig-x004-201916
-i386                   randconfig-x008-201916
-i386                   randconfig-x009-201916
-i386                   randconfig-x006-201916
-i386                   randconfig-x003-201916
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-e0-04220048
-x86_64                 randconfig-e1-04220048
-x86_64                 randconfig-e2-04220048
-x86_64                 randconfig-e3-04220048
-
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index edd6532c943f..ef41de9faa26 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -774,7 +774,7 @@ void i40e_detect_recover_hung(struct i40e_vsi *vsi)
+ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 			      struct i40e_ring *tx_ring, int napi_budget)
+ {
+-	u16 i = tx_ring->next_to_clean;
++	int i = tx_ring->next_to_clean;
+ 	struct i40e_tx_buffer *tx_buf;
+ 	struct i40e_tx_desc *tx_head;
+ 	struct i40e_tx_desc *tx_desc;
+-- 
+2.19.2
+
