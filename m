@@ -1,145 +1,152 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 24 Apr 2019 05:20:50 -0700
-Subject: [Intel-wired-lan] [next PATCH S5 05/10] i40e: Improve AQ log
- granularity
+Date: Wed, 24 Apr 2019 05:20:55 -0700
+Subject: [Intel-wired-lan] [next PATCH S5 10/10] i40e: Missing response
+ checks in driver when starting/stopping FW LLDP
 In-Reply-To: <20190424122055.27896-1-alice.michael@intel.com>
 References: <20190424122055.27896-1-alice.michael@intel.com>
-Message-ID: <20190424122055.27896-5-alice.michael@intel.com>
+Message-ID: <20190424122055.27896-10-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Doug Dziggel <douglas.a.dziggel@intel.com>
+From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
-This patch makes it possible to log only AQ descriptors, without the
-entire AQ message buffers being dumped too. It should greatly reduce
-kernel log size in cases where a full AQ dump is not needed.
-Selection is made by setting flags in hw->debug_mask.
+Driver updated pf->flags before calling i40e_aq_start_lldp().
+This patch moved down updating pf->flags down so flags will be
+updated only in case of successful i40e_aq_start_lldp() call.
+Also was introduced is_reset_needed local flag to avoid unnecessary h/w
+reset in case 40e_aq_start_lldp() didn't change lldp state.
 
-Additionally, some debug messages that preceded an AQ dump have been
-moved to I40E_DEBUG_AQ_COMMAND class, which seems more appropriate.
-
-Signed-off-by: Doug Dziggel <douglas.a.dziggel@intel.com>
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c |  8 ++--
- drivers/net/ethernet/intel/i40e/i40e_common.c | 40 ++++++++++---------
- 2 files changed, 25 insertions(+), 23 deletions(-)
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    | 45 ++++++++++---------
+ 1 file changed, 24 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index 243dcd4bec19..814acbe79ffd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -675,7 +675,7 @@ static u16 i40e_clean_asq(struct i40e_hw *hw)
- 	desc = I40E_ADMINQ_DESC(*asq, ntc);
- 	details = I40E_ADMINQ_DETAILS(*asq, ntc);
- 	while (rd32(hw, hw->aq.asq.head) != ntc) {
--		i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
-+		i40e_debug(hw, I40E_DEBUG_AQ_COMMAND,
- 			   "ntc %d head %d.\n", ntc, rd32(hw, hw->aq.asq.head));
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 0837c6b3e15e..bc70b0d581a1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -4856,6 +4856,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	enum i40e_admin_queue_err adq_err;
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
++	bool is_reset_needed;
+ 	i40e_status status;
+ 	u32 i, j;
  
- 		if (details->callback) {
-@@ -835,7 +835,7 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
- 	}
+@@ -4900,6 +4901,10 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ flags_complete:
+ 	changed_flags = orig_flags ^ new_flags;
  
- 	/* bump the tail */
--	i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE, "AQTX: desc and buffer:\n");
-+	i40e_debug(hw, I40E_DEBUG_AQ_COMMAND, "AQTX: desc and buffer:\n");
- 	i40e_debug_aq(hw, I40E_DEBUG_AQ_COMMAND, (void *)desc_on_ring,
- 		      buff, buff_size);
- 	(hw->aq.asq.next_to_use)++;
-@@ -886,7 +886,7 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
- 		hw->aq.asq_last_status = (enum i40e_admin_queue_err)retval;
- 	}
- 
--	i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
-+	i40e_debug(hw, I40E_DEBUG_AQ_COMMAND,
- 		   "AQTX: desc and buffer writeback:\n");
- 	i40e_debug_aq(hw, I40E_DEBUG_AQ_COMMAND, (void *)desc, buff, buff_size);
- 
-@@ -995,7 +995,7 @@ i40e_status i40e_clean_arq_element(struct i40e_hw *hw,
- 		memcpy(e->msg_buf, hw->aq.arq.r.arq_bi[desc_idx].va,
- 		       e->msg_len);
- 
--	i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE, "AQRX: desc and buffer:\n");
-+	i40e_debug(hw, I40E_DEBUG_AQ_COMMAND, "AQRX: desc and buffer:\n");
- 	i40e_debug_aq(hw, I40E_DEBUG_AQ_COMMAND, (void *)desc, e->msg_buf,
- 		      hw->aq.arq_buf_size);
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index ecb1adaa54ec..641b500ad919 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -281,47 +281,49 @@ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
- 		   void *buffer, u16 buf_len)
- {
- 	struct i40e_aq_desc *aq_desc = (struct i40e_aq_desc *)desc;
-+	u32 effective_mask = hw->debug_mask & mask;
-+	char prefix[27];
- 	u16 len;
- 	u8 *buf = (u8 *)buffer;
- 
--	if ((!(mask & hw->debug_mask)) || (desc == NULL))
-+	if (!effective_mask || !desc)
- 		return;
- 
- 	len = le16_to_cpu(aq_desc->datalen);
- 
--	i40e_debug(hw, mask,
-+	i40e_debug(hw, mask & I40E_DEBUG_AQ_DESCRIPTOR,
- 		   "AQ CMD: opcode 0x%04X, flags 0x%04X, datalen 0x%04X, retval 0x%04X\n",
- 		   le16_to_cpu(aq_desc->opcode),
- 		   le16_to_cpu(aq_desc->flags),
- 		   le16_to_cpu(aq_desc->datalen),
- 		   le16_to_cpu(aq_desc->retval));
--	i40e_debug(hw, mask, "\tcookie (h,l) 0x%08X 0x%08X\n",
-+	i40e_debug(hw, mask & I40E_DEBUG_AQ_DESCRIPTOR,
-+		   "\tcookie (h,l) 0x%08X 0x%08X\n",
- 		   le32_to_cpu(aq_desc->cookie_high),
- 		   le32_to_cpu(aq_desc->cookie_low));
--	i40e_debug(hw, mask, "\tparam (0,1)  0x%08X 0x%08X\n",
-+	i40e_debug(hw, mask & I40E_DEBUG_AQ_DESCRIPTOR,
-+		   "\tparam (0,1)  0x%08X 0x%08X\n",
- 		   le32_to_cpu(aq_desc->params.internal.param0),
- 		   le32_to_cpu(aq_desc->params.internal.param1));
--	i40e_debug(hw, mask, "\taddr (h,l)   0x%08X 0x%08X\n",
-+	i40e_debug(hw, mask & I40E_DEBUG_AQ_DESCRIPTOR,
-+		   "\taddr (h,l)   0x%08X 0x%08X\n",
- 		   le32_to_cpu(aq_desc->params.external.addr_high),
- 		   le32_to_cpu(aq_desc->params.external.addr_low));
- 
--	if ((buffer != NULL) && (aq_desc->datalen != 0)) {
-+	if (buffer && buf_len != 0 && len != 0 &&
-+	    (effective_mask & I40E_DEBUG_AQ_DESC_BUFFER)) {
- 		i40e_debug(hw, mask, "AQ CMD Buffer:\n");
- 		if (buf_len < len)
- 			len = buf_len;
--		/* write the full 16-byte chunks */
--		if (hw->debug_mask & mask) {
--			char prefix[27];
--
--			snprintf(prefix, sizeof(prefix),
--				 "i40e %02x:%02x.%x: \t0x",
--				 hw->bus.bus_id,
--				 hw->bus.device,
--				 hw->bus.func);
--
--			print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_OFFSET,
--				       16, 1, buf, len, false);
--		}
++	is_reset_needed = !!(changed_flags & (I40E_FLAG_VEB_STATS_ENABLED |
++		I40E_FLAG_LEGACY_RX | I40E_FLAG_SOURCE_PRUNING_DISABLED |
++		I40E_FLAG_DISABLE_FW_LLDP));
 +
-+		snprintf(prefix, sizeof(prefix),
-+			 "i40e %02x:%02x.%x: \t0x",
-+			 hw->bus.bus_id,
-+			 hw->bus.device,
-+			 hw->bus.func);
-+
-+		print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_OFFSET,
-+			       16, 1, buf, len, false);
+ 	/* Before we finalize any flag changes, we need to perform some
+ 	 * checks to ensure that the changes are supported and safe.
+ 	 */
+@@ -4934,13 +4939,6 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 		return -EOPNOTSUPP;
  	}
- }
  
+-	/* Now that we've checked to ensure that the new flags are valid, load
+-	 * them into place. Since we only modify flags either (a) during
+-	 * initialization or (b) while holding the RTNL lock, we don't need
+-	 * anything fancy here.
+-	 */
+-	pf->flags = new_flags;
+-
+ 	/* Process any additional changes needed as a result of flag changes.
+ 	 * The changed_flags value reflects the list of bits that were
+ 	 * changed in the code above.
+@@ -4948,7 +4946,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 
+ 	/* Flush current ATR settings if ATR was disabled */
+ 	if ((changed_flags & I40E_FLAG_FD_ATR_ENABLED) &&
+-	    !(pf->flags & I40E_FLAG_FD_ATR_ENABLED)) {
++	    !(new_flags & I40E_FLAG_FD_ATR_ENABLED)) {
+ 		set_bit(__I40E_FD_ATR_AUTO_DISABLED, pf->state);
+ 		set_bit(__I40E_FD_FLUSH_REQUESTED, pf->state);
+ 	}
+@@ -4957,7 +4955,7 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 		u16 sw_flags = 0, valid_flags = 0;
+ 		int ret;
+ 
+-		if (!(pf->flags & I40E_FLAG_TRUE_PROMISC_SUPPORT))
++		if (!(new_flags & I40E_FLAG_TRUE_PROMISC_SUPPORT))
+ 			sw_flags = I40E_AQ_SET_SWITCH_CFG_PROMISC;
+ 		valid_flags = I40E_AQ_SET_SWITCH_CFG_PROMISC;
+ 		ret = i40e_aq_set_switch_config(&pf->hw, sw_flags, valid_flags,
+@@ -4976,13 +4974,13 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	    (changed_flags & I40E_FLAG_BASE_R_FEC)) {
+ 		u8 fec_cfg = 0;
+ 
+-		if (pf->flags & I40E_FLAG_RS_FEC &&
+-		    pf->flags & I40E_FLAG_BASE_R_FEC) {
++		if (new_flags & I40E_FLAG_RS_FEC &&
++		    new_flags & I40E_FLAG_BASE_R_FEC) {
+ 			fec_cfg = I40E_AQ_SET_FEC_AUTO;
+-		} else if (pf->flags & I40E_FLAG_RS_FEC) {
++		} else if (new_flags & I40E_FLAG_RS_FEC) {
+ 			fec_cfg = (I40E_AQ_SET_FEC_REQUEST_RS |
+ 				   I40E_AQ_SET_FEC_ABILITY_RS);
+-		} else if (pf->flags & I40E_FLAG_BASE_R_FEC) {
++		} else if (new_flags & I40E_FLAG_BASE_R_FEC) {
+ 			fec_cfg = (I40E_AQ_SET_FEC_REQUEST_KR |
+ 				   I40E_AQ_SET_FEC_ABILITY_KR);
+ 		}
+@@ -4990,14 +4988,14 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 			dev_warn(&pf->pdev->dev, "Cannot change FEC config\n");
+ 	}
+ 
+-	if ((changed_flags & pf->flags &
++	if ((changed_flags & new_flags &
+ 	     I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED) &&
+-	    (pf->flags & I40E_FLAG_MFP_ENABLED))
++	    (new_flags & I40E_FLAG_MFP_ENABLED))
+ 		dev_warn(&pf->pdev->dev,
+ 			 "Turning on link-down-on-close flag may affect other partitions\n");
+ 
+ 	if (changed_flags & I40E_FLAG_DISABLE_FW_LLDP) {
+-		if (pf->flags & I40E_FLAG_DISABLE_FW_LLDP) {
++		if (new_flags & I40E_FLAG_DISABLE_FW_LLDP) {
+ 			struct i40e_dcbx_config *dcbcfg;
+ 
+ 			i40e_aq_stop_lldp(&pf->hw, true, false, NULL);
+@@ -5022,7 +5020,8 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 				case I40E_AQ_RC_EEXIST:
+ 					dev_warn(&pf->pdev->dev,
+ 						 "FW LLDP agent is already running\n");
+-					return 0;
++					is_reset_needed = false;
++					break;
+ 				case I40E_AQ_RC_EPERM:
+ 					dev_warn(&pf->pdev->dev,
+ 						 "Device configuration forbids SW from starting the LLDP agent.\n");
+@@ -5040,13 +5039,17 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 		}
+ 	}
+ 
++	/* Now that we've checked to ensure that the new flags are valid, load
++	 * them into place. Since we only modify flags either (a) during
++	 * initialization or (b) while holding the RTNL lock, we don't need
++	 * anything fancy here.
++	 */
++	pf->flags = new_flags;
++
+ 	/* Issue reset to cause things to take effect, as additional bits
+ 	 * are added we will need to create a mask of bits requiring reset
+ 	 */
+-	if (changed_flags & (I40E_FLAG_VEB_STATS_ENABLED |
+-			     I40E_FLAG_LEGACY_RX |
+-			     I40E_FLAG_SOURCE_PRUNING_DISABLED |
+-			     I40E_FLAG_DISABLE_FW_LLDP))
++	if (is_reset_needed)
+ 		i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED), true);
+ 
+ 	return 0;
 -- 
 2.19.2
 
