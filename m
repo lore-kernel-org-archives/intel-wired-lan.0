@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 26 Apr 2019 20:37:29 +0000
-Subject: [Intel-wired-lan] [PATCH S18 11/15] ice: Add function to
- program ethertype based filter rule on VSIs
-In-Reply-To: <20190416172128.27184-12-anirudh.venkataramanan@intel.com>
+Date: Fri, 26 Apr 2019 20:37:55 +0000
+Subject: [Intel-wired-lan] [PATCH S18 12/15] ice: Use bitfields where
+ possible
+In-Reply-To: <20190416172128.27184-13-anirudh.venkataramanan@intel.com>
 References: <20190416172128.27184-1-anirudh.venkataramanan@intel.com>
- <20190416172128.27184-12-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39993C@ORSMSX106.amr.corp.intel.com>
+ <20190416172128.27184-13-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39994C@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,28 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Tuesday, April 16, 2019 10:21 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S18 11/15] ice: Add function to program
-> ethertype based filter rule on VSIs
+> Subject: [Intel-wired-lan] [PATCH S18 12/15] ice: Use bitfields where possible
 > 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> This patch adds function to program VSI with ethertype based filter rule, so
-> that all flow control frames would be disallowed from being transmitted to
-> the client, in order to prevent malicious VSI, especially VF from sending out
-> PAUSE or PFC frames, and then control other VSIs traffic.
+> The driver was converted to not use bool, but it was neglected that the bools
+> should have been converted to bitfields as bitfields in software structures
+> are ok, as long as they use the correct kinds of unsigned types. This avoids
+> wasting lots of storage space to store single bit values.
 > 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> One of the change hunks moves a variable lport out of a group of
+> "combinable" bitfields because all bits of the u8 lport are valid and the
+> variable can be packed in the struct in struct holes.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
-> up commit message]
-> ---
->  drivers/net/ethernet/intel/ice/ice.h        |  2 +
->  drivers/net/ethernet/intel/ice/ice_lib.c    | 55 +++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_switch.c | 59 +++++++++++++++++++++
-> drivers/net/ethernet/intel/ice/ice_switch.h |  4 ++
->  4 files changed, 120 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_type.h | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
