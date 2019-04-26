@@ -1,84 +1,79 @@
 From: Oleksandr Natalenko <oleksandr@redhat.com>
-Date: Fri, 26 Apr 2019 16:11:26 +0200
-Subject: [Intel-wired-lan] [PATCH 1/2] Revert "e1000e: fix cyclic resets
- at link up with active tx"
-In-Reply-To: <155548879651.3454.13167784936351314661.stgit@buzz>
+Date: Fri, 26 Apr 2019 16:12:00 +0200
+Subject: [Intel-wired-lan] [PATCH 2/2] e1000e: start network tx queue
+ only when link is up
+In-Reply-To: <155548880068.3454.1621821881762819373.stgit@buzz>
 References: <155548879651.3454.13167784936351314661.stgit@buzz>
-Message-ID: <20190426141126.shpgjeya5lciudiw@butterfly.localdomain>
+ <155548880068.3454.1621821881762819373.stgit@buzz>
+Message-ID: <20190426141159.c5e4t4er4zjry7om@butterfly.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 17, 2019 at 11:13:16AM +0300, Konstantin Khlebnikov wrote:
-> This reverts commit 0f9e980bf5ee1a97e2e401c846b2af989eb21c61.
+On Wed, Apr 17, 2019 at 11:13:20AM +0300, Konstantin Khlebnikov wrote:
+> Driver does not want to keep packets in tx queue when link is lost.
+> But present code only reset NIC to flush them, but does not prevent
+> queuing new packets. Moreover reset sequence itself could generate
+> new packets via netconsole and NIC falls into endless reset loop.
 > 
-> That change cased false-positive warning about hardware hang:
+> This patch wakes tx queue only when NIC is ready to send packets.
 > 
-> e1000e: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: Rx/Tx
-> IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-> e1000e 0000:00:1f.6 eth0: Detected Hardware Unit Hang:
->    TDH                  <0>
->    TDT                  <1>
->    next_to_use          <1>
->    next_to_clean        <0>
-> buffer_info[next_to_clean]:
->    time_stamp           <fffba7a7>
->    next_to_watch        <0>
->    jiffies              <fffbb140>
->    next_to_watch.status <0>
-> MAC Status             <40080080>
-> PHY Status             <7949>
-> PHY 1000BASE-T Status  <0>
-> PHY Extended Status    <3000>
-> PCI Status             <10>
-> e1000e: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: Rx/Tx
-> 
-> Besides warning everything works fine.
-> Original issue will be fixed property in following patch.
+> This is proper fix for problem addressed by commit 0f9e980bf5ee
+> ("e1000e: fix cyclic resets at link up with active tx").
 > 
 > Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-> Reported-by: Joseph Yasi <joe.yasi@gmail.com>
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=203175
+> Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c |   15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/e1000e/netdev.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
 > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 7acc61e4f645..ba96e52aa8d1 100644
+> index ba96e52aa8d1..fe643d66aa10 100644
 > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
 > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -5309,13 +5309,8 @@ static void e1000_watchdog_task(struct work_struct *work)
->  			/* 8000ES2LAN requires a Rx packet buffer work-around
->  			 * on link down event; reset the controller to flush
->  			 * the Rx packet buffer.
-> -			 *
-> -			 * If the link is lost the controller stops DMA, but
-> -			 * if there is queued Tx work it cannot be done.  So
-> -			 * reset the controller to flush the Tx packet buffers.
->  			 */
-> -			if ((adapter->flags & FLAG_RX_NEEDS_RESTART) ||
-> -			    e1000_desc_unused(tx_ring) + 1 < tx_ring->count)
-> +			if (adapter->flags & FLAG_RX_NEEDS_RESTART)
->  				adapter->flags |= FLAG_RESTART_NOW;
->  			else
->  				pm_schedule_suspend(netdev->dev.parent,
-> @@ -5338,6 +5333,14 @@ static void e1000_watchdog_task(struct work_struct *work)
->  	adapter->gotc_old = adapter->stats.gotc;
->  	spin_unlock(&adapter->stats64_lock);
+> @@ -4209,7 +4209,7 @@ void e1000e_up(struct e1000_adapter *adapter)
+>  		e1000_configure_msix(adapter);
+>  	e1000_irq_enable(adapter);
 >  
-> +	/* If the link is lost the controller stops DMA, but
-> +	 * if there is queued Tx work it cannot be done.  So
-> +	 * reset the controller to flush the Tx packet buffers.
-> +	 */
-> +	if (!netif_carrier_ok(netdev) &&
-> +	    (e1000_desc_unused(tx_ring) + 1 < tx_ring->count))
-> +		adapter->flags |= FLAG_RESTART_NOW;
-> +
->  	/* If reset is necessary, do it outside of interrupt context. */
->  	if (adapter->flags & FLAG_RESTART_NOW) {
->  		schedule_work(&adapter->reset_task);
+> -	netif_start_queue(adapter->netdev);
+> +	/* tx queue started by watchdog timer when link is up */
+>  
+>  	e1000e_trigger_lsc(adapter);
+>  }
+> @@ -4607,6 +4607,7 @@ int e1000e_open(struct net_device *netdev)
+>  	pm_runtime_get_sync(&pdev->dev);
+>  
+>  	netif_carrier_off(netdev);
+> +	netif_stop_queue(netdev);
+>  
+>  	/* allocate transmit descriptors */
+>  	err = e1000e_setup_tx_resources(adapter->tx_ring);
+> @@ -4667,7 +4668,6 @@ int e1000e_open(struct net_device *netdev)
+>  	e1000_irq_enable(adapter);
+>  
+>  	adapter->tx_hang_recheck = false;
+> -	netif_start_queue(netdev);
+>  
+>  	hw->mac.get_link_status = true;
+>  	pm_runtime_put(&pdev->dev);
+> @@ -5289,6 +5289,7 @@ static void e1000_watchdog_task(struct work_struct *work)
+>  			if (phy->ops.cfg_on_link_up)
+>  				phy->ops.cfg_on_link_up(hw);
+>  
+> +			netif_wake_queue(netdev);
+>  			netif_carrier_on(netdev);
+>  
+>  			if (!test_bit(__E1000_DOWN, &adapter->state))
+> @@ -5302,6 +5303,7 @@ static void e1000_watchdog_task(struct work_struct *work)
+>  			/* Link status message must follow this format */
+>  			pr_info("%s NIC Link is Down\n", adapter->netdev->name);
+>  			netif_carrier_off(netdev);
+> +			netif_stop_queue(netdev);
+>  			if (!test_bit(__E1000_DOWN, &adapter->state))
+>  				mod_timer(&adapter->phy_info_timer,
+>  					  round_jiffies(jiffies + 2 * HZ));
 > 
 
 Tested-by: Oleksandr Natalenko <oleksandr@redhat.com>
