@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 26 Apr 2019 22:01:49 +0000
-Subject: [Intel-wired-lan] [PATCH S19 13/15] ice: Fix couple of issues
- in ice_vsi_release
-In-Reply-To: <20190416172439.27908-14-anirudh.venkataramanan@intel.com>
+Date: Fri, 26 Apr 2019 22:02:24 +0000
+Subject: [Intel-wired-lan] [PATCH S19 14/15] ice: Silence semantic
+ parser warnings
+In-Reply-To: <20190416172439.27908-15-anirudh.venkataramanan@intel.com>
 References: <20190416172439.27908-1-anirudh.venkataramanan@intel.com>
- <20190416172439.27908-14-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D399A2D@ORSMSX106.amr.corp.intel.com>
+ <20190416172439.27908-15-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D399A39@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,29 +17,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Tuesday, April 16, 2019 10:25 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S19 13/15] ice: Fix couple of issues in
-> ice_vsi_release
+> Subject: [Intel-wired-lan] [PATCH S19 14/15] ice: Silence semantic parser
+> warnings
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> Currently the driver is calling ice_napi_del() and then unregister_netdev().
-> The call to unregister_netdev() will result in a call to ice_stop() and then
-> ice_vsi_close(). This is where we call
-> napi_disable() for all the MSI-X vectors. This flow is reversed so make the
-> changes to ensure napi_disable() happens prior to napi_del().
+> Recent versions of sparse warn about casting pointers to/from restricted
+> endian types in the Linux driver.  Silence those with the compiler attribute
+> __force macro from the Linux kernel to force casts to/from restricted endian
+> types.
 > 
-> Before calling napi_del() and free_netdev() make sure
-> unregister_netdev() was called. This is done by making sure the
-> __ICE_DOWN bit is set in the vsi->state for the interested VSI.
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h      |  1 -
->  drivers/net/ethernet/intel/ice/ice_lib.c  | 24 ++++++++++++-----------
-> drivers/net/ethernet/intel/ice/ice_main.c |  2 +-
->  3 files changed, 14 insertions(+), 13 deletions(-)
+> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
+> up commit message]
+> ---
+>  drivers/net/ethernet/intel/ice/ice_nvm.c    | 4 ++--
+>  drivers/net/ethernet/intel/ice/ice_switch.c | 4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
