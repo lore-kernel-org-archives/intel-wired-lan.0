@@ -1,84 +1,34 @@
-From: Oleksandr Natalenko <oleksandr@redhat.com>
-Date: Fri, 26 Apr 2019 16:12:00 +0200
-Subject: [Intel-wired-lan] [PATCH 2/2] e1000e: start network tx queue
- only when link is up
-In-Reply-To: <155548880068.3454.1621821881762819373.stgit@buzz>
-References: <155548879651.3454.13167784936351314661.stgit@buzz>
- <155548880068.3454.1621821881762819373.stgit@buzz>
-Message-ID: <20190426141159.c5e4t4er4zjry7om@butterfly.localdomain>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 29 Apr 2019 18:09:53 +0000
+Subject: [Intel-wired-lan] [PATCH S20 01/15] ice: Remove direct write
+ for GLLAN_RCTL_0
+In-Reply-To: <20190416173052.28928-2-anirudh.venkataramanan@intel.com>
+References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
+ <20190416173052.28928-2-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39AC2F@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 17, 2019 at 11:13:20AM +0300, Konstantin Khlebnikov wrote:
-> Driver does not want to keep packets in tx queue when link is lost.
-> But present code only reset NIC to flush them, but does not prevent
-> queuing new packets. Moreover reset sequence itself could generate
-> new packets via netconsole and NIC falls into endless reset loop.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Anirudh Venkataramanan
+> Sent: Tuesday, April 16, 2019 10:31 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S20 01/15] ice: Remove direct write for
+> GLLAN_RCTL_0
 > 
-> This patch wakes tx queue only when NIC is ready to send packets.
+> Clear PXE mode AQ call (opcode 0x0110) is now supported in FW. So remove
+> the direct register write to GLLAN_RCTL_0.
 > 
-> This is proper fix for problem addressed by commit 0f9e980bf5ee
-> ("e1000e: fix cyclic resets at link up with active tx").
-> 
-> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-> Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index ba96e52aa8d1..fe643d66aa10 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -4209,7 +4209,7 @@ void e1000e_up(struct e1000_adapter *adapter)
->  		e1000_configure_msix(adapter);
->  	e1000_irq_enable(adapter);
->  
-> -	netif_start_queue(adapter->netdev);
-> +	/* tx queue started by watchdog timer when link is up */
->  
->  	e1000e_trigger_lsc(adapter);
->  }
-> @@ -4607,6 +4607,7 @@ int e1000e_open(struct net_device *netdev)
->  	pm_runtime_get_sync(&pdev->dev);
->  
->  	netif_carrier_off(netdev);
-> +	netif_stop_queue(netdev);
->  
->  	/* allocate transmit descriptors */
->  	err = e1000e_setup_tx_resources(adapter->tx_ring);
-> @@ -4667,7 +4668,6 @@ int e1000e_open(struct net_device *netdev)
->  	e1000_irq_enable(adapter);
->  
->  	adapter->tx_hang_recheck = false;
-> -	netif_start_queue(netdev);
->  
->  	hw->mac.get_link_status = true;
->  	pm_runtime_put(&pdev->dev);
-> @@ -5289,6 +5289,7 @@ static void e1000_watchdog_task(struct work_struct *work)
->  			if (phy->ops.cfg_on_link_up)
->  				phy->ops.cfg_on_link_up(hw);
->  
-> +			netif_wake_queue(netdev);
->  			netif_carrier_on(netdev);
->  
->  			if (!test_bit(__E1000_DOWN, &adapter->state))
-> @@ -5302,6 +5303,7 @@ static void e1000_watchdog_task(struct work_struct *work)
->  			/* Link status message must follow this format */
->  			pr_info("%s NIC Link is Down\n", adapter->netdev->name);
->  			netif_carrier_off(netdev);
-> +			netif_stop_queue(netdev);
->  			if (!test_bit(__E1000_DOWN, &adapter->state))
->  				mod_timer(&adapter->phy_info_timer,
->  					  round_jiffies(jiffies + 2 * HZ));
-> 
+>  drivers/net/ethernet/intel/ice/ice_common.c | 3 ---
+>  1 file changed, 3 deletions(-)
 
-Tested-by: Oleksandr Natalenko <oleksandr@redhat.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
--- 
-  Best regards,
-    Oleksandr Natalenko (post-factum)
-    Senior Software Maintenance Engineer
+
