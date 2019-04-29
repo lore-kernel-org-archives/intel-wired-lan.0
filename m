@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 29 Apr 2019 18:15:45 +0000
-Subject: [Intel-wired-lan] [PATCH S20 09/15] ice: Change message level
-In-Reply-To: <20190416173052.28928-10-anirudh.venkataramanan@intel.com>
+Date: Mon, 29 Apr 2019 18:16:15 +0000
+Subject: [Intel-wired-lan] [PATCH S20 10/15] ice: Remove redundant and
+ premature event config
+In-Reply-To: <20190416173052.28928-11-anirudh.venkataramanan@intel.com>
 References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
- <20190416173052.28928-10-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39ACB7@ORSMSX106.amr.corp.intel.com>
+ <20190416173052.28928-11-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39ACC8@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,19 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Tuesday, April 16, 2019 10:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S20 09/15] ice: Change message level
+> Subject: [Intel-wired-lan] [PATCH S20 10/15] ice: Remove redundant and
+> premature event config
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Dave Ertman <david.m.ertman@intel.com>
 > 
-> Change the message level of the MTU change log message from debug to
-> info.
+> In the path for re-enabling FW LLDP engine, there is a call to register for LLDP
+> MIB change events.  This call is redundant, in that the call to ice_pf_dcb_cfg
+> will already register the driver for these events.  Also, the call as it stands
+> now is too early in the flow before before DCB is configured.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Remove the redundant call.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 6 ------
+>  1 file changed, 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
