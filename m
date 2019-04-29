@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 29 Apr 2019 18:11:02 +0000
-Subject: [Intel-wired-lan] [PATCH S20 03/15] ice: Resolve static
- analysis warning
-In-Reply-To: <20190416173052.28928-4-anirudh.venkataramanan@intel.com>
+Date: Mon, 29 Apr 2019 18:11:57 +0000
+Subject: [Intel-wired-lan] [PATCH S20 04/15] ice: Set minimum default Rx
+ descriptor count to 512
+In-Reply-To: <20190416173052.28928-5-anirudh.venkataramanan@intel.com>
 References: <20190416173052.28928-1-anirudh.venkataramanan@intel.com>
- <20190416173052.28928-4-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39AC4E@ORSMSX106.amr.corp.intel.com>
+ <20190416173052.28928-5-anirudh.venkataramanan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39AC68@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,23 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Anirudh Venkataramanan
 > Sent: Tuesday, April 16, 2019 10:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S20 03/15] ice: Resolve static analysis
-> warning
+> Subject: [Intel-wired-lan] [PATCH S20 04/15] ice: Set minimum default Rx
+> descriptor count to 512
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Some static analysis tools can complain when doing a bitop assignment using
-> operands of different sizes. Fix that.
+> Currently we set the default number of Rx descriptors per queue to the
+> system's page size divided by the number of bytes per descriptor. For 4K
+> page size systems this is resulting in 128 Rx descriptors per queue. This is
+> causing more dropped packets than desired in the default configuration. Fix
+> this by setting the minimum default Rx descriptor count per queue to 512.
 > 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
-> [Anirudh Venkataramanan <anirudh.venkataramanan@intel.com> cleaned
-> up commit message]
-> ---
->  drivers/net/ethernet/intel/ice/ice_txrx.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h | 19 +++++++++++++------
+>  1 file changed, 13 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
