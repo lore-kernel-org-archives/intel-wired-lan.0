@@ -1,94 +1,38 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 2 May 2019 13:59:46 -0700
-Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
- IPsec packets
-In-Reply-To: <20190502185250.vlsainugtn6zjd6p@csclub.uwaterloo.ca>
-References: <20190501205215.ptoi2czhklte5jbm@csclub.uwaterloo.ca>
- <CAKgT0UczVvREiXwde6yJ8_i9RT2z7FhenEutXJKW8AmDypn_0g@mail.gmail.com>
- <20190502151140.gf5ugodqamtdd5tz@csclub.uwaterloo.ca>
- <CAKgT0Uc_OUAcPfRe6yCSwpYXCXomOXKG2Yvy9c1_1RJn-7Cb5g@mail.gmail.com>
- <20190502171636.3yquioe3gcwsxlus@csclub.uwaterloo.ca>
- <CAKgT0Ufk8LXMb9vVWfvgbjbQFKAuenncf95pfkA0P1t-3+Ni_g@mail.gmail.com>
- <20190502175513.ei7kjug3az6fe753@csclub.uwaterloo.ca>
- <20190502185250.vlsainugtn6zjd6p@csclub.uwaterloo.ca>
-Message-ID: <CAKgT0Uc_YVzns+26-TL+hhmErqG4_w4evRqLCaa=7nME7Zq+Vg@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 2 May 2019 21:44:01 +0000
+Subject: [Intel-wired-lan] [next PATCH S4 iavf 1/9] iavf: Rename
+ i40e_adminq* files to iavf_adminq*
+In-Reply-To: <20190417221737.11460-1-alice.michael@intel.com>
+References: <20190417221737.11460-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39C46F@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, May 2, 2019 at 11:52 AM Lennart Sorensen
-<lsorense@csclub.uwaterloo.ca> wrote:
->
-> On Thu, May 02, 2019 at 01:55:13PM -0400, Lennart Sorensen wrote:
-> > Here is the same packets as before with the link level header included
-> > (I forgot to use -XX rather than -X):
-> >
-> > 13:43:49.081567 54:ee:75:30:f1:e1 > a4:bf:01:4e:0c:87, ethertype IPv4 (0x0800), length 174: (tos 0x0, ttl 64, id 21783, offset 0, flags [DF], proto UDP (17), length 160)
-> >     1.99.99.2.4500 > 1.99.99.1.4500: [no cksum] UDP-encap: ESP(spi=0x8de82290,seq=0x6a56), length 132
-> >         0x0000:  a4bf 014e 0c87 54ee 7530 f1e1 0800 4500  ...N..T.u0....E.
-> >         0x0010:  00a0 5517 4000 4011 1c6d 0163 6302 0163  ..U. at .@..m.cc..c
-> >         0x0020:  6301 1194 1194 008c 0000 8de8 2290 0000  c..........."...
-> >         0x0030:  6a56 72da 0734 52f6 406e 9346 f946 c698  jVr..4R. at n.F.F..
-> >         0x0040:  a38c 280c 94da 53e1 91e0 35bf 812a 4500  ..(...S...5..*E.
-> >         0x0050:  6003 ca7d 6872 a50b d41a 5c4d 7c22 3fb8  `..}hr....\M|"?.
-> >         0x0060:  56d8 2a0f bc3f d3a6 5853 682c 914c c1b1  V.*..?..XSh,.L..
-> >         0x0070:  c5c3 94e8 4789 d8b4 4ab4 e5f9 d20a e5ef  ....G...J.......
-> >         0x0080:  de1d 05dd e98a 996b 5c11 6657 b667 6af1  .......k\.fW.gj.
-> >         0x0090:  2a97 694b 16de 74e2 f8fe 13a3 d45e e3e9  *.iK..t......^..
-> >         0x00a0:  f0b1 b83b 99e3 55cb b40b 5ba8 9c23       ...;..U...[..#
-> > 13:43:49.081658 a4:bf:01:4e:0c:87 > 54:ee:75:30:f1:e1, ethertype IPv4 (0x0800), length 174: (tos 0x0, ttl 64, id 44552, offset 0, flags [none], proto UDP (17), length 160)
-> >     1.99.99.1.4500 > 1.99.99.2.4500: [no cksum] UDP-encap: ESP(spi=0x1d4ecfdf,seq=0x6a56), length 132
-> >         0x0000:  54ee 7530 f1e1 a4bf 014e 0c87 0800 4500  T.u0.....N....E.
-> >         0x0010:  00a0 ae08 0000 4011 037c 0163 6301 0163  ...... at ..|.cc..c
-> >         0x0020:  6302 1194 1194 008c 0000 1d4e cfdf 0000  c..........N....
-> >         0x0030:  6a56 28ca 4809 8933 911d f2be 4510 e757  jV(.H..3....E..W
-> >         0x0040:  3885 7d26 5238 8c58 38e3 6c07 2f8e 335a  8.}&R8.X8.l./.3Z
-> >         0x0050:  6d48 2a72 4619 e8a3 c421 bc54 48b2 6239  mH*rF....!.TH.b9
-> >         0x0060:  5e07 7e89 a68e 0161 4e6a 5b6f 8b89 9f53  ^.~....aNj[o...S
-> >         0x0070:  4c40 1c6c d159 60f8 68e7 24db 8b21 2ec2  L at .l.Y`.h.$..!..
-> >         0x0080:  4b67 9b83 643b b0ac 6e2d bf4f 1ee1 9508  Kg..d;..n-.O....
-> >         0x0090:  d1bd dcd4 74ee e4dc 78d0 578a 5905 1f4d  ....t...x.W.Y..M
-> >         0x00a0:  74be e643 910b b4d3 f428 8822 e22b       t..C.....(.".+
-> >
-> > I will try to see what I can do with netperf.
->
-> Hmm, maybe UDP isn't doing as well as I thought.
->
-> Playing with packit doing this:
->
-> packit -t UDP -d 1.99.99.1 -D 32432 -S 4500 -i enp0s25 -h -p "0x 00 11 22 33 44 55 66 77 88 99 00 11 22 33 44 55 66 77 88 99 00 11 22 33 44 55 66 77 88 99" -c 5
->
-> I have played with the source and destination port numbers, and so far
-> I have only managed to hit queues 0, 1 and 2 (mostly 0 and 2).  No port
-> number I have tried has made it hit any other queue.  That is weird.
-> Making random changes ought to distribute more than that.  And changing
-> the hkey certainly ought to make a difference, and so far it doesn't
-> seem to for these packets (I know I saw icmp move around just fine before
-> when changing the hkey).
->
-> --
-> Len Sorensen
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Wednesday, April 17, 2019 3:17 PM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S4 iavf 1/9] iavf: Rename
+> i40e_adminq* files to iavf_adminq*
+> 
+> With the rename of the iavf driver, there were some files that were missed
+> in renaming.  Update these to be iavf as well.
+> 
+> Signed-off-by: Alice Michael <alice.michael@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/Makefile                        | 2 +-
+>  .../net/ethernet/intel/iavf/{i40e_adminq.c => iavf_adminq.c}    | 2 +-
+>  .../net/ethernet/intel/iavf/{i40e_adminq.h => iavf_adminq.h}    | 2 +-
+>  .../intel/iavf/{i40e_adminq_cmd.h => iavf_adminq_cmd.h}         | 0
+>  drivers/net/ethernet/intel/iavf/iavf_common.c                   | 2 +-
+>  drivers/net/ethernet/intel/iavf/iavf_type.h                     | 2 +-
+>  6 files changed, 5 insertions(+), 5 deletions(-)  rename
 
-If I recall correctly RSS is only using something like the lower 9
-bits (indirection table size of 512) of the resultant hash on the
-X722, even fewer if you have fewer queues that are a power of 2 and
-happen to program the indirection table in a round robin fashion. So
-for example on my system setup with 32 queues it is technically only
-using the lower 5 bits of the hash.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-One issue as a result of that is that you can end up with swaths of
-bits that don't really seem to impact the hash all that much since it
-will never actually change those bits of the resultant hash. In order
-to guarantee that every bit in the input impacts the hash you have to
-make certain you have to gaps in the key wider than the bits you
-examine in the final hash.
 
-A quick and dirty way to verify that the hash key is part of the issue
-would be to use something like a simple repeating value such as AA:55
-as your hash key. With something like that every bit you change in the
-UDP port number should result in a change in the final RSS hash for
-queue counts of 3 or greater. The downside is the upper 16 bits of the
-hash are identical to the lower 16 so the actual hash value itself
-isn't as useful.
