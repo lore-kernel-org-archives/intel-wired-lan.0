@@ -1,208 +1,56 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 02 May 2019 22:54:14 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- caadc58950421f0ecc435f51e1288160f6ebd312
-Message-ID: <5ccb0496.MWMA9ldLJHRrnyJQ%lkp@intel.com>
+From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Date: Thu, 2 May 2019 11:11:40 -0400
+Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
+ IPsec packets
+In-Reply-To: <CAKgT0UczVvREiXwde6yJ8_i9RT2z7FhenEutXJKW8AmDypn_0g@mail.gmail.com>
+References: <20190501205215.ptoi2czhklte5jbm@csclub.uwaterloo.ca>
+ <CAKgT0UczVvREiXwde6yJ8_i9RT2z7FhenEutXJKW8AmDypn_0g@mail.gmail.com>
+Message-ID: <20190502151140.gf5ugodqamtdd5tz@csclub.uwaterloo.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: caadc58950421f0ecc435f51e1288160f6ebd312  i40e: Missing response checks in driver when starting/stopping FW LLDP
+On Wed, May 01, 2019 at 03:52:57PM -0700, Alexander Duyck wrote:
+> I'm not sure how RSS will do much for you here. Basically you only
+> have the source IP address as your only source of entropy when it
+> comes to RSS since the destination IP should always be the same if you
+> are performing a server role and terminating packets on the local
+> system and as far as the ports in your example you seem to only be
+> using 4500 for both the source and the destination.
 
-Regressions in current branch:
+I have thousands of IPsec clients connecting.  Simply treating them as
+normal UDP packets would work.  The IP address is different, and often
+the port too.
 
-drivers/net/ethernet/aquantia/atlantic/aq_main.c:26:12: sparse: sparse: symbol 'aq_ndev_driver_name' was not declared. Should it be static?
+> In your testing are you only looking at a point to point connection
+> between two systems, or do you have multiple systems accessing the
+> system you are testing? I ask as the only way this should do any
+> traffic spreading via RSS would be if the source IPs are different and
+> that would require multiple client systems accessing the server.
 
-Error ids grouped by kconfigs:
+I tried changing the client IP address and the RSS hash key.  It never
+changed to another queue.  Something is broken.
 
-recent_errors
-??? x86_64-allmodconfig
-    ??? drivers-net-ethernet-aquantia-atlantic-aq_main.c:sparse:sparse:symbol-aq_ndev_driver_name-was-not-declared.-Should-it-be-static
+> In the case of other encapsulation types over UDP, such as VXLAN, I
+> know that a hash value is stored in the UDP source port location
+> instead of the true source port number. This allows the RSS hashing to
+> occur on this extra information which would allow for a greater
+> diversity in hash results. Depending on how you are generating the ESP
+> encapsulation you might look at seeing if it would be possible to have
+> a hash on the inner data used as the UDP source port in the outgoing
+> packets. This would help to resolve this sort of issue.
 
-elapsed time: 315m
+Well it works on every other network card except this one.  Every other
+intel card in the past we have used had no problem doing this right.
 
-configs tested: 176
+You want all the packets for a given ipsec tunnel to go to the same queue.
+That is not a problem here.  What you don't want is every ipsec packet
+from everyone going to the same queue (always queue 0).  So simply
+treating them as UDP packets with a source and destination IP and port
+would work perfectly fine.  The X722 isn't doing that.  It is always
+assigning a hash value of 0 to these packets.
 
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n2-201917
-i386                     randconfig-n3-201917
-i386                     randconfig-n0-201917
-i386                     randconfig-n1-201917
-x86_64                 randconfig-x004-201917
-x86_64                 randconfig-x001-201917
-x86_64                 randconfig-x000-201917
-x86_64                 randconfig-x003-201917
-x86_64                 randconfig-x007-201917
-x86_64                 randconfig-x008-201917
-x86_64                 randconfig-x002-201917
-x86_64                 randconfig-x006-201917
-x86_64                 randconfig-x009-201917
-x86_64                 randconfig-x005-201917
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                     randconfig-i1-201917
-i386                     randconfig-i0-201917
-i386                     randconfig-i3-201917
-i386                     randconfig-i2-201917
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                   randconfig-k2-201917
-i386                     randconfig-k2-201917
-i386                     randconfig-k3-201917
-i386                     randconfig-k0-201917
-x86_64                   randconfig-k1-201917
-x86_64                   randconfig-k3-201917
-i386                     randconfig-k1-201917
-x86_64                   randconfig-k0-201917
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                   randconfig-m0-201917
-x86_64                   randconfig-m1-201917
-x86_64                   randconfig-m2-201917
-x86_64                   randconfig-m3-201917
-i386                     randconfig-m0-201917
-i386                     randconfig-m1-201917
-i386                     randconfig-m2-201917
-i386                     randconfig-m3-201917
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-l0-05020737
-x86_64                 randconfig-l1-05020737
-x86_64                 randconfig-l2-05020737
-x86_64                 randconfig-l3-05020737
-i386                   randconfig-l0-05020737
-i386                   randconfig-l1-05020737
-i386                   randconfig-l2-05020737
-i386                   randconfig-l3-05020737
-x86_64                   randconfig-l0-201917
-x86_64                   randconfig-l1-201917
-x86_64                   randconfig-l2-201917
-x86_64                   randconfig-l3-201917
-i386                     randconfig-l0-201917
-i386                     randconfig-l1-201917
-i386                     randconfig-l2-201917
-i386                     randconfig-l3-201917
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-x86_64                   randconfig-g0-201917
-x86_64                   randconfig-g3-201917
-x86_64                   randconfig-g2-201917
-x86_64                   randconfig-g1-201917
-x86_64                           allmodconfig
-i386                             alldefconfig
-i386                   randconfig-x010-201917
-i386                   randconfig-x018-201917
-i386                   randconfig-x017-201917
-i386                   randconfig-x013-201917
-i386                   randconfig-x011-201917
-i386                   randconfig-x014-201917
-i386                   randconfig-x019-201917
-i386                   randconfig-x015-201917
-i386                   randconfig-x016-201917
-i386                   randconfig-x012-201917
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-x86_64                 randconfig-x015-201917
-x86_64                 randconfig-x016-201917
-x86_64                 randconfig-x017-201917
-x86_64                 randconfig-x012-201917
-x86_64                 randconfig-x013-201917
-x86_64                 randconfig-x018-201917
-x86_64                 randconfig-x010-201917
-x86_64                 randconfig-x014-201917
-x86_64                 randconfig-x019-201917
-x86_64                 randconfig-x011-201917
-i386                     randconfig-a1-201917
-i386                     randconfig-a2-201917
-i386                     randconfig-a0-201917
-i386                     randconfig-a3-201917
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-i386                   randconfig-x077-201917
-i386                   randconfig-x074-201917
-i386                   randconfig-x070-201917
-i386                   randconfig-x072-201917
-i386                   randconfig-x075-201917
-i386                   randconfig-x071-201917
-i386                   randconfig-x079-201917
-i386                   randconfig-x078-201917
-i386                   randconfig-x073-201917
-i386                   randconfig-x076-201917
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x002-201917
-i386                   randconfig-x001-201917
-i386                   randconfig-x005-201917
-i386                   randconfig-x007-201917
-i386                   randconfig-x000-201917
-i386                   randconfig-x004-201917
-i386                   randconfig-x008-201917
-i386                   randconfig-x009-201917
-i386                   randconfig-x006-201917
-i386                   randconfig-x003-201917
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-- 
+Len Sorensen
