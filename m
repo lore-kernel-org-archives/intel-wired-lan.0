@@ -1,51 +1,60 @@
-From: Jia-Ju Bai <baijiaju1990@gmail.com>
-Date: Fri,  3 May 2019 22:28:23 +0800
-Subject: [Intel-wired-lan] [PATCH] net: e1000: Fix some bugs in error
- handling code of e1000_probe()
-Message-ID: <20190503142823.15319-1-baijiaju1990@gmail.com>
+From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Date: Fri, 3 May 2019 11:14:21 -0400
+Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
+ IPsec packets
+In-Reply-To: <CAKgT0Uc_YVzns+26-TL+hhmErqG4_w4evRqLCaa=7nME7Zq+Vg@mail.gmail.com>
+References: <20190501205215.ptoi2czhklte5jbm@csclub.uwaterloo.ca>
+ <CAKgT0UczVvREiXwde6yJ8_i9RT2z7FhenEutXJKW8AmDypn_0g@mail.gmail.com>
+ <20190502151140.gf5ugodqamtdd5tz@csclub.uwaterloo.ca>
+ <CAKgT0Uc_OUAcPfRe6yCSwpYXCXomOXKG2Yvy9c1_1RJn-7Cb5g@mail.gmail.com>
+ <20190502171636.3yquioe3gcwsxlus@csclub.uwaterloo.ca>
+ <CAKgT0Ufk8LXMb9vVWfvgbjbQFKAuenncf95pfkA0P1t-3+Ni_g@mail.gmail.com>
+ <20190502175513.ei7kjug3az6fe753@csclub.uwaterloo.ca>
+ <20190502185250.vlsainugtn6zjd6p@csclub.uwaterloo.ca>
+ <CAKgT0Uc_YVzns+26-TL+hhmErqG4_w4evRqLCaa=7nME7Zq+Vg@mail.gmail.com>
+Message-ID: <20190503151421.akvmu77lghxcouni@csclub.uwaterloo.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When "hw->ce4100_gbe_mdio_base_virt = ioremap(...)" fails, the driver
-does not free the memory allocated in e1000_sw_init(), and also calls
-"iounmap(hw->ce4100_gbe_mido_base_virt)" that is unnecessary.
+On Thu, May 02, 2019 at 01:59:46PM -0700, Alexander Duyck wrote:
+> If I recall correctly RSS is only using something like the lower 9
+> bits (indirection table size of 512) of the resultant hash on the
+> X722, even fewer if you have fewer queues that are a power of 2 and
+> happen to program the indirection table in a round robin fashion. So
+> for example on my system setup with 32 queues it is technically only
+> using the lower 5 bits of the hash.
+> 
+> One issue as a result of that is that you can end up with swaths of
+> bits that don't really seem to impact the hash all that much since it
+> will never actually change those bits of the resultant hash. In order
+> to guarantee that every bit in the input impacts the hash you have to
+> make certain you have to gaps in the key wider than the bits you
+> examine in the final hash.
+> 
+> A quick and dirty way to verify that the hash key is part of the issue
+> would be to use something like a simple repeating value such as AA:55
+> as your hash key. With something like that every bit you change in the
+> UDP port number should result in a change in the final RSS hash for
+> queue counts of 3 or greater. The downside is the upper 16 bits of the
+> hash are identical to the lower 16 so the actual hash value itself
+> isn't as useful.
 
-Besides, when e1000_sw_init() fails, the driver also calls 
-"iounmap(hw->ce4100_gbe_mido_base_virt)" but 
-hw->ce4100_gbe_mido_base_virt has not been assigned.
+OK I set the hkey to
+aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55
+and still only see queue 0 and 2 getting hit with a couple of dozen
+different UDP port numbers I picked.  Changing the hash with ethtool to
+that didn't even move where the tcp packets for my ssh connection are
+going (they are always on queue 2 it seems).
 
-These bugs are found by a runtime fuzzing tool named FIZZER written by us.
+Does it just not hash UDP packets correctly?  Is it even doing RSS?
+(the register I checked claimed it is).
 
-To fix these bugs, the error handling code of e1000_probe() is adjusted.
+This system has 40 queues assigned by default since that is how many
+CPUs there are.  Changing it to a lower number didn't make a difference
+(I tried 32 and 8).
 
-Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
----
- drivers/net/ethernet/intel/e1000/e1000_main.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 8fe9af0e2ab7..7743c4d9723f 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -1227,12 +1227,12 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	if (hw->flash_address)
- 		iounmap(hw->flash_address);
-+	iounmap(hw->ce4100_gbe_mdio_base_virt);
-+err_mdio_ioremap:
- 	kfree(adapter->tx_ring);
- 	kfree(adapter->rx_ring);
--err_dma:
- err_sw_init:
--err_mdio_ioremap:
--	iounmap(hw->ce4100_gbe_mdio_base_virt);
-+err_dma:
- 	iounmap(hw->hw_addr);
- err_ioremap:
- 	disable_dev = !test_and_set_bit(__E1000_DISABLED, &adapter->flags);
 -- 
-2.17.0
-
+Len Sorensen
