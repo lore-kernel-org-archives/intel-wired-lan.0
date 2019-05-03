@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 3 May 2019 23:38:02 +0000
-Subject: [Intel-wired-lan] [next PATCH S5 05/10] i40e: Improve AQ log
- granularity
-In-Reply-To: <20190424122055.27896-5-alice.michael@intel.com>
+Date: Fri, 3 May 2019 23:38:32 +0000
+Subject: [Intel-wired-lan] [next PATCH S5 06/10] i40e: add input
+ validation for virtchnl handlers
+In-Reply-To: <20190424122055.27896-6-alice.michael@intel.com>
 References: <20190424122055.27896-1-alice.michael@intel.com>
- <20190424122055.27896-5-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39C6BF@ORSMSX106.amr.corp.intel.com>
+ <20190424122055.27896-6-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39C6CF@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,26 +18,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, April 24, 2019 5:21 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: Dziggel, Douglas A <douglas.a.dziggel@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S5 05/10] i40e: Improve AQ log
-> granularity
+> Subject: [Intel-wired-lan] [next PATCH S5 06/10] i40e: add input validation for
+> virtchnl handlers
 > 
-> From: Doug Dziggel <douglas.a.dziggel@intel.com>
+> From: Sergey Nemov <sergey.nemov@intel.com>
 > 
-> This patch makes it possible to log only AQ descriptors, without the entire AQ
-> message buffers being dumped too. It should greatly reduce kernel log size
-> in cases where a full AQ dump is not needed.
-> Selection is made by setting flags in hw->debug_mask.
+> Change some data to unsigned int instead of integer when we compare.
 > 
-> Additionally, some debug messages that preceded an AQ dump have been
-> moved to I40E_DEBUG_AQ_COMMAND class, which seems more
-> appropriate.
+> Check LUT values in VIRTCHNL_OP_CONFIG_RSS_LUT handler.
 > 
-> Signed-off-by: Doug Dziggel <douglas.a.dziggel@intel.com>
+> Also enhance error/warning messages to print the real values of
+> I40E_MAX_VF_QUEUES, I40E_MAX_VF_VSI and
+> I40E_DEFAULT_QUEUES_PER_VF instead of plain text.
+> 
+> Refactor code to comply with 'check first then assign' policy.
+> 
+> Remove duplicate checks for VIRTCHNL_OP_CONFIG_RSS_KEY and
+> VIRTCHNL_OP_CONFIG_RSS_LUT opcodes in i40e_vc_process_vf_msg(). We
+> have the very same checks inside the handlers already.
+> 
+> Signed-off-by: Sergey Nemov <sergey.nemov@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c |  8 ++--
-> drivers/net/ethernet/intel/i40e/i40e_common.c | 40 ++++++++++---------
->  2 files changed, 25 insertions(+), 23 deletions(-)
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 74 ++++++++-----------
+>  1 file changed, 31 insertions(+), 43 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
