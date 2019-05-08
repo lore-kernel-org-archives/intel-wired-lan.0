@@ -1,114 +1,79 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Mon, 06 May 2019 18:44:21 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 4b43437004a92a6942bc74f47e2e3e536a1c39a4
-Message-ID: <5cd01005.7/JcYaoQCDJSh4zY%lkp@intel.com>
+From: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Date: Wed, 8 May 2019 12:59:47 -0500
+Subject: [Intel-wired-lan] [PATCH 1/6] igb: mark expected switch
+ fall-through
+In-Reply-To: <b5f1f0c0-e27b-f861-c36e-35e493f45dff@embeddedor.com>
+References: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
+ <b5f1f0c0-e27b-f861-c36e-35e493f45dff@embeddedor.com>
+Message-ID: <dd2974a0-b559-cfd1-c3d8-0839594ef03c@embeddedor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 4b43437004a92a6942bc74f47e2e3e536a1c39a4  i40e: Missing response checks in driver when starting/stopping FW LLDP
+Hi Jeff,
 
-elapsed time: 108m
+I wonder if there is any chance for this series to be queued up for 5.2-rc1.
 
-configs tested: 89
+Thanks
+--
+Gustavo
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                   randconfig-x018-201918
-i386                   randconfig-x010-201918
-i386                   randconfig-x013-201918
-i386                   randconfig-x017-201918
-i386                   randconfig-x014-201918
-i386                   randconfig-x011-201918
-i386                   randconfig-x012-201918
-i386                   randconfig-x016-201918
-i386                   randconfig-x015-201918
-i386                   randconfig-x019-201918
-i386                   randconfig-x005-201918
-i386                   randconfig-x001-201918
-i386                   randconfig-x002-201918
-i386                   randconfig-x007-201918
-i386                   randconfig-x008-201918
-i386                   randconfig-x004-201918
-i386                   randconfig-x000-201918
-i386                   randconfig-x003-201918
-i386                   randconfig-x006-201918
-i386                   randconfig-x009-201918
-x86_64                 randconfig-x016-201918
-x86_64                 randconfig-x015-201918
-x86_64                 randconfig-x018-201918
-x86_64                 randconfig-x013-201918
-x86_64                 randconfig-x012-201918
-x86_64                 randconfig-x017-201918
-x86_64                 randconfig-x014-201918
-x86_64                 randconfig-x010-201918
-x86_64                 randconfig-x011-201918
-x86_64                 randconfig-x019-201918
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                 randconfig-x000-201918
-x86_64                 randconfig-x001-201918
-x86_64                 randconfig-x004-201918
-x86_64                 randconfig-x008-201918
-x86_64                 randconfig-x007-201918
-x86_64                 randconfig-x003-201918
-x86_64                 randconfig-x002-201918
-x86_64                 randconfig-x005-201918
-x86_64                 randconfig-x009-201918
-x86_64                 randconfig-x006-201918
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-i386                   randconfig-x070-201918
-i386                   randconfig-x074-201918
-i386                   randconfig-x077-201918
-i386                   randconfig-x072-201918
-i386                   randconfig-x071-201918
-i386                   randconfig-x075-201918
-i386                   randconfig-x076-201918
-i386                   randconfig-x073-201918
-i386                   randconfig-x078-201918
-i386                   randconfig-x079-201918
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+On 4/24/19 11:42 AM, Gustavo A. R. Silva wrote:
+> Hi Jeff,
+> 
+> I just wanted to check if this series has already been applied somewhere.
+> 
+> Thanks
+> --
+> Gustavo
+> 
+> On 3/29/19 6:38 PM, Jeff Kirsher wrote:
+>> From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+>>
+>> In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+>> where we are expecting to fall through.
+>>
+>> This patch fixes the following warning:
+>>
+>> drivers/net/ethernet/intel/igb/igb_main.c: In function ?__igb_notify_dca?:
+>> drivers/net/ethernet/intel/igb/igb_main.c:6694:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
+>>    if (dca_add_requester(dev) == 0) {
+>>       ^
+>> drivers/net/ethernet/intel/igb/igb_main.c:6701:2: note: here
+>>   case DCA_PROVIDER_REMOVE:
+>>   ^~~~
+>>
+>> Warning level 3 was used: -Wimplicit-fallthrough=3
+>>
+>> Notice that, in this particular case, the code comment is modified
+>> in accordance with what GCC is expecting to find.
+>>
+>> This patch is part of the ongoing efforts to enable
+>> -Wimplicit-fallthrough.
+>>
+>> Signed-off-by: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+>> ---
+>>  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+>> index 834e879e1d57..e8042b0254bc 100644
+>> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+>> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+>> @@ -6701,7 +6701,7 @@ static int __igb_notify_dca(struct device *dev, void *data)
+>>  			igb_setup_dca(adapter);
+>>  			break;
+>>  		}
+>> -		/* Fall Through since DCA is disabled. */
+>> +		/* Fall Through - since DCA is disabled. */
+>>  	case DCA_PROVIDER_REMOVE:
+>>  		if (adapter->flags & IGB_FLAG_DCA_ENABLED) {
+>>  			/* without this a class_device is left
+>>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
