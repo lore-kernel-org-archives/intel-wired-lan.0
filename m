@@ -1,29 +1,24 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 14 May 2019 03:24:08 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 8e3c1e868c480d0ff633cd24773f577921dc6a04
-Message-ID: <5cd9c458.vV6AvhMuioDFHnxN%lkp@intel.com>
+Date: Tue, 14 May 2019 03:32:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ d4c26eb6e721683a0f93e346ce55bc8dc3cbb175
+Message-ID: <5cd9c635.RnoYWVAg7SkAcR49%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 8e3c1e868c480d0ff633cd24773f577921dc6a04  i40e: Missing response checks in driver when starting/stopping FW LLDP
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: d4c26eb6e721683a0f93e346ce55bc8dc3cbb175  net: ethernet: stmmac: dwmac-sun8i: enable support of unicast filtering
 
-elapsed time: 207m
+elapsed time: 150m
 
-configs tested: 171
+configs tested: 174
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
 x86_64                 randconfig-k0-05131404
 x86_64                 randconfig-k1-05131404
 x86_64                 randconfig-k2-05131404
@@ -32,8 +27,19 @@ i386                   randconfig-k0-05131404
 i386                   randconfig-k1-05131404
 i386                   randconfig-k2-05131404
 i386                   randconfig-k3-05131404
-riscv                              tinyconfig
-i386                               tinyconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
 powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
@@ -54,11 +60,19 @@ sparc                               defconfig
 sparc64                          allmodconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
 c6x                        evmc6678_defconfig
 h8300                    h8300h-sim_defconfig
 nios2                         10m50_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                             allmodconfig
@@ -95,12 +109,14 @@ parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
 um                                  defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
 x86_64                   randconfig-i0-201919
 x86_64                   randconfig-i1-201919
 x86_64                   randconfig-i2-201919
 x86_64                   randconfig-i3-201919
-x86_64                           allyesconfig
-i386                             allmodconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
 x86_64                   randconfig-h0-201919
 x86_64                   randconfig-h1-201919
 x86_64                   randconfig-h2-201919
@@ -113,28 +129,26 @@ x86_64                   randconfig-g0-201919
 x86_64                   randconfig-g1-201919
 x86_64                   randconfig-g2-201919
 x86_64                   randconfig-g3-201919
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                                defconfig
-arm                              allmodconfig
-alpha                            allmodconfig
 i386                   randconfig-x070-201919
-i386                   randconfig-x074-201919
-i386                   randconfig-x077-201919
-i386                   randconfig-x072-201919
 i386                   randconfig-x071-201919
+i386                   randconfig-x072-201919
+i386                   randconfig-x073-201919
+i386                   randconfig-x074-201919
 i386                   randconfig-x075-201919
 i386                   randconfig-x076-201919
-i386                   randconfig-x073-201919
+i386                   randconfig-x077-201919
 i386                   randconfig-x078-201919
 i386                   randconfig-x079-201919
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                   randconfig-e0-201919
-x86_64                   randconfig-e1-201919
-x86_64                   randconfig-e2-201919
-x86_64                   randconfig-e3-201919
+x86_64                 randconfig-x000-201919
+x86_64                 randconfig-x001-201919
+x86_64                 randconfig-x004-201919
+x86_64                 randconfig-x007-201919
+x86_64                 randconfig-x008-201919
+x86_64                 randconfig-x003-201919
+x86_64                 randconfig-x002-201919
+x86_64                 randconfig-x005-201919
+x86_64                 randconfig-x009-201919
+x86_64                 randconfig-x006-201919
 i386                   randconfig-x005-201919
 i386                   randconfig-x001-201919
 i386                   randconfig-x002-201919
@@ -155,12 +169,10 @@ x86_64                 randconfig-x014-201919
 x86_64                 randconfig-x010-201919
 x86_64                 randconfig-x011-201919
 x86_64                 randconfig-x019-201919
-arm64                            allmodconfig
 i386                     randconfig-a0-201919
 i386                     randconfig-a1-201919
 i386                     randconfig-a2-201919
 i386                     randconfig-a3-201919
-arm                           sunxi_defconfig
 i386                   randconfig-x018-201919
 i386                   randconfig-x010-201919
 i386                   randconfig-x013-201919
@@ -175,21 +187,12 @@ i386                     randconfig-n0-201919
 i386                     randconfig-n1-201919
 i386                     randconfig-n2-201919
 i386                     randconfig-n3-201919
-x86_64                 randconfig-x000-201919
-x86_64                 randconfig-x001-201919
-x86_64                 randconfig-x004-201919
-x86_64                 randconfig-x007-201919
-x86_64                 randconfig-x008-201919
-x86_64                 randconfig-x003-201919
-x86_64                 randconfig-x002-201919
-x86_64                 randconfig-x005-201919
-x86_64                 randconfig-x009-201919
-x86_64                 randconfig-x006-201919
 i386                     randconfig-i0-201919
 i386                     randconfig-i1-201919
 i386                     randconfig-i2-201919
 i386                     randconfig-i3-201919
 i386                              allnoconfig
+i386                                defconfig
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
