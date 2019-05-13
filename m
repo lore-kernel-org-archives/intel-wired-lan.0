@@ -1,144 +1,196 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 13 May 2019 12:04:00 -0700
-Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
- IPsec packets
-In-Reply-To: <20190513165547.alkkgcsdelaznw6v@csclub.uwaterloo.ca>
-References: <20190502151140.gf5ugodqamtdd5tz@csclub.uwaterloo.ca>
- <CAKgT0Uc_OUAcPfRe6yCSwpYXCXomOXKG2Yvy9c1_1RJn-7Cb5g@mail.gmail.com>
- <20190502171636.3yquioe3gcwsxlus@csclub.uwaterloo.ca>
- <CAKgT0Ufk8LXMb9vVWfvgbjbQFKAuenncf95pfkA0P1t-3+Ni_g@mail.gmail.com>
- <20190502175513.ei7kjug3az6fe753@csclub.uwaterloo.ca>
- <20190502185250.vlsainugtn6zjd6p@csclub.uwaterloo.ca>
- <CAKgT0Uc_YVzns+26-TL+hhmErqG4_w4evRqLCaa=7nME7Zq+Vg@mail.gmail.com>
- <20190503151421.akvmu77lghxcouni@csclub.uwaterloo.ca>
- <CAKgT0UcV2wCr6iUYktZ+Bju_GNpXKzR=M+NLfKhUsw4bsJSiyA@mail.gmail.com>
- <20190503205935.bg45rsso5jjj3gnx@csclub.uwaterloo.ca>
- <20190513165547.alkkgcsdelaznw6v@csclub.uwaterloo.ca>
-Message-ID: <CAKgT0Uf_nqZtCnHmC=-oDFz-3PuSM6=30BvJSDiAgzK062OY6w@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 14 May 2019 03:24:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 8e3c1e868c480d0ff633cd24773f577921dc6a04
+Message-ID: <5cd9c458.vV6AvhMuioDFHnxN%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, May 13, 2019 at 9:55 AM Lennart Sorensen
-<lsorense@csclub.uwaterloo.ca> wrote:
->
-> On Fri, May 03, 2019 at 04:59:35PM -0400, Lennart Sorensen wrote:
-> > On Fri, May 03, 2019 at 10:19:47AM -0700, Alexander Duyck wrote:
-> > > The TCP flow could be bypassing RSS and may be using ATR to decide
-> > > where the Rx packets are processed. Now that I think about it there is
-> > > a possibility that ATR could be interfering with the queue selection.
-> > > You might try disabling it by running:
-> > >     ethtool --set-priv-flags <iface> flow-director-atr off
-> >
-> > Hmm, I thought I had killed ATR (I certainly meant to), but it appears
-> > I had not.  I will experiment to see if that makes a difference.
-> >
-> > > The problem is RSS can be bypassed for queue selection by things like
-> > > ATR which I called out above. One possibility is that if the
-> > > encryption you were using was leaving the skb->encapsulation flag set,
-> > > and the NIC might have misidentified the packets as something it could
-> > > parse and set up a bunch of rules that were rerouting incoming traffic
-> > > based on outgoing traffic. Disabling the feature should switch off
-> > > that behavior if that is in fact the case.
-> > >
-> > > You are probably fine using 40 queues. That isn't an even power of two
-> > > so it would actually improve the entropy a bit since the lower bits
-> > > don't have a many:1 mapping to queues.
-> >
-> > I will let you know Monday how my tests go with atr off.  I really
-> > thought that was off already since it was supposed to be.  We always
-> > try to turn that off because it does not work well.
->
-> OK it took a while to try a bunch of stuff to make sure ATR really really
-> was off.
->
-> I still see the problem it seems.
->
-> # ethtool --show-priv-flags eth2
-> Private flags for eth2:
-> MFP              : off
-> LinkPolling      : off
-> flow-director-atr: off
-> veb-stats        : off
-> hw-atr-eviction  : on
-> legacy-rx        : off
->
-> # ethtool -i eth2
-> driver: i40e
-> version: 2.1.7-k
-> firmware-version: 4.00 0x80001577 1.1767.0
-> expansion-rom-version:
-> bus-info: 0000:3d:00.1
-> supports-statistics: yes
-> supports-test: yes
-> supports-eeprom-access: yes
-> supports-register-dump: yes
-> supports-priv-flags: yes
->
->
-> Here are two packets that for some reason both go to queue 0 which
-> seems odd.  As far as I can tell all of the packets for UDP port 4500
-> traffic from any IP is going to queue 0.
->
-> UDP from 10.49.1.50:4500 to 10.49.1.1:4500 encapsulating ESP:
->
-> a4bf 014e 0c88 001f 45ff f410 0800 45e0
-> 0060 166e 4000 4011 0b1b 0af9 0132 0af9
-> 0101 1194 1194 004c 0000 0000 0201 0000
-> 0000 4eaf 2f76 58cd aae0 4d92 8cb7 0835
-> 1141 7a23 9f06 f323 b816 1a2b c88d 322c
-> 5f16 d4a6 ba72 7c89 2258 9d20 085e d6ed
-> c7a4 5cc1 3ef2 0753 783d b691 e9d6
->
-> UDP from 10.49.1.51:4500 to 10.49.1.1:4500 encapsulating ESP:
->
-> a4bf 014e 0c88 20f3 99ae c688 0800 45e0
-> 0060 1671 4000 4011 0b17 0af9 0133 0af9
-> 0101 1194 1194 004c 0000 0000 0200 0000
-> 0000 4ec5 253f 27f1 7fdd 4d82 0697 bef2
-> 45bd 281f 8ecf ac4f 06ed 79ba 3cbb 5eaf
-> 494b 146e a013 8b93 1c38 8aef da3f a73d
-> 6f13 5f80 e946 82e2 7da7 21e8 9d03
->
->
-> # ethtool -x eth2
-> RX flow hash indirection table for eth2 with 12 RX ring(s):
->     0:      0     1     2     3     4     5     6     7
->     8:      8     9    10    11     0     1     2     3
->    16:      4     5     6     7     8     9    10    11
-> ...
->   488:      8     9    10    11     0     1     2     3
->   496:      4     5     6     7     8     9    10    11
->   504:      0     1     2     3     4     5     6     7
-> RSS hash key:
-> 60:56:66:39:8e:70:46:02:5d:33:5e:9c:5f:f6:fa:9d:ac:50:63:7c:ca:01:23:22:07:a3:8a:23:98:fd:38:5b:74:96:7e:72:0c:aa:83:fc:10:aa:6d:35:bb:8c:4e:eb:46:03:07:6a
->
-> Changing the key to:
->
-> aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55:aa:55
->
-> makes no change in the queue the packets are going to.
->
-> --
-> Len Sorensen
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 8e3c1e868c480d0ff633cd24773f577921dc6a04  i40e: Missing response checks in driver when starting/stopping FW LLDP
 
-So I recreated the first packet you listed via text2pcap, replayed it
-on my test system via tcpreplay, updated my configuration to 12
-queues, and used the 2 hash keys you listed. I ended up seeing the
-traffic bounce between queues 4 and 8 with an X710 I had to test with
-when I was changing the key value.
+elapsed time: 207m
 
-Unfortunately I don't have an X722 to test with. I'm suspecting that
-there may be some difference in the RSS setup, specifically it seems
-like values in the PFQF_HENA register were changed for the X722 part
-that may be causing the issues we are seeing.
+configs tested: 171
 
-I will see if I can get someone from the networking division to take a
-look at this since I don't have access to the part in question nor a
-datasheet for it so I am not sure if I can help much more.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Thanks.
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                 randconfig-k0-05131404
+x86_64                 randconfig-k1-05131404
+x86_64                 randconfig-k2-05131404
+x86_64                 randconfig-k3-05131404
+i386                   randconfig-k0-05131404
+i386                   randconfig-k1-05131404
+i386                   randconfig-k2-05131404
+i386                   randconfig-k3-05131404
+riscv                              tinyconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+i386                             alldefconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                   randconfig-m0-201919
+x86_64                   randconfig-m1-201919
+x86_64                   randconfig-m2-201919
+x86_64                   randconfig-m3-201919
+i386                     randconfig-m0-201919
+i386                     randconfig-m1-201919
+i386                     randconfig-m2-201919
+i386                     randconfig-m3-201919
+riscv                             allnoconfig
+riscv                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-l0-05131727
+x86_64                 randconfig-l1-05131727
+x86_64                 randconfig-l2-05131727
+x86_64                 randconfig-l3-05131727
+i386                   randconfig-l0-05131727
+i386                   randconfig-l1-05131727
+i386                   randconfig-l2-05131727
+i386                   randconfig-l3-05131727
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+x86_64                   randconfig-i0-201919
+x86_64                   randconfig-i1-201919
+x86_64                   randconfig-i2-201919
+x86_64                   randconfig-i3-201919
+x86_64                           allyesconfig
+i386                             allmodconfig
+x86_64                   randconfig-h0-201919
+x86_64                   randconfig-h1-201919
+x86_64                   randconfig-h2-201919
+x86_64                   randconfig-h3-201919
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                   randconfig-g0-201919
+x86_64                   randconfig-g1-201919
+x86_64                   randconfig-g2-201919
+x86_64                   randconfig-g3-201919
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                                defconfig
+arm                              allmodconfig
+alpha                            allmodconfig
+i386                   randconfig-x070-201919
+i386                   randconfig-x074-201919
+i386                   randconfig-x077-201919
+i386                   randconfig-x072-201919
+i386                   randconfig-x071-201919
+i386                   randconfig-x075-201919
+i386                   randconfig-x076-201919
+i386                   randconfig-x073-201919
+i386                   randconfig-x078-201919
+i386                   randconfig-x079-201919
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                   randconfig-e0-201919
+x86_64                   randconfig-e1-201919
+x86_64                   randconfig-e2-201919
+x86_64                   randconfig-e3-201919
+i386                   randconfig-x005-201919
+i386                   randconfig-x001-201919
+i386                   randconfig-x002-201919
+i386                   randconfig-x007-201919
+i386                   randconfig-x008-201919
+i386                   randconfig-x004-201919
+i386                   randconfig-x000-201919
+i386                   randconfig-x003-201919
+i386                   randconfig-x006-201919
+i386                   randconfig-x009-201919
+x86_64                 randconfig-x016-201919
+x86_64                 randconfig-x015-201919
+x86_64                 randconfig-x018-201919
+x86_64                 randconfig-x013-201919
+x86_64                 randconfig-x012-201919
+x86_64                 randconfig-x017-201919
+x86_64                 randconfig-x014-201919
+x86_64                 randconfig-x010-201919
+x86_64                 randconfig-x011-201919
+x86_64                 randconfig-x019-201919
+arm64                            allmodconfig
+i386                     randconfig-a0-201919
+i386                     randconfig-a1-201919
+i386                     randconfig-a2-201919
+i386                     randconfig-a3-201919
+arm                           sunxi_defconfig
+i386                   randconfig-x018-201919
+i386                   randconfig-x010-201919
+i386                   randconfig-x013-201919
+i386                   randconfig-x017-201919
+i386                   randconfig-x014-201919
+i386                   randconfig-x011-201919
+i386                   randconfig-x012-201919
+i386                   randconfig-x016-201919
+i386                   randconfig-x015-201919
+i386                   randconfig-x019-201919
+i386                     randconfig-n0-201919
+i386                     randconfig-n1-201919
+i386                     randconfig-n2-201919
+i386                     randconfig-n3-201919
+x86_64                 randconfig-x000-201919
+x86_64                 randconfig-x001-201919
+x86_64                 randconfig-x004-201919
+x86_64                 randconfig-x007-201919
+x86_64                 randconfig-x008-201919
+x86_64                 randconfig-x003-201919
+x86_64                 randconfig-x002-201919
+x86_64                 randconfig-x005-201919
+x86_64                 randconfig-x009-201919
+x86_64                 randconfig-x006-201919
+i386                     randconfig-i0-201919
+i386                     randconfig-i1-201919
+i386                     randconfig-i2-201919
+i386                     randconfig-i3-201919
+i386                              allnoconfig
 
-- Alex
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
