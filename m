@@ -1,108 +1,56 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 14 May 2019 10:37:09 -0700
-Subject: [Intel-wired-lan] [next PATCH S5 iavf 11/11] iavf: allow null RX
- descriptors
+Date: Tue, 14 May 2019 10:37:08 -0700
+Subject: [Intel-wired-lan] [next PATCH S5 iavf 10/11] iavf: add call to
+ iavf_[add|del]_cloud_filter
 In-Reply-To: <20190514173709.62431-1-alice.michael@intel.com>
 References: <20190514173709.62431-1-alice.michael@intel.com>
-Message-ID: <20190514173709.62431-11-alice.michael@intel.com>
+Message-ID: <20190514173709.62431-10-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Paul Greenwalt <paul.greenwalt@intel.com>
 
-In some circumstances, the hardware can hand us a null receive
-descriptor, with no data attached but otherwise valid. Unfortunately,
-the driver was ill-equipped to handle such an event, and would stop
-processing packets at that point.
+Add call to iavf_add_cloud_filter and iavf_del_cloud_filter from
+iavf_process_aq_command to clear aq_required
+IAVF_FLAG_AQ_ADD_CLOUD_FILTER and IAVF_FLAG_AQ_DEL_CLOUD_FILTER bits.
 
-To fix this, use the Descriptor Done bit instead of the size to
-determine whether or not a descriptor is ready to be processed. Add some
-checks to allow for unused buffers.
+aq_required IAVF_FLAG_AQ_DEL_CLOUD_FILTER bit is being set in
+iavf_down and iavf_delete_clsflower, and are never cleared.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+aq_required IAVF_FLAG_AQ_ADD_CLOUD_FILTER bit is being set in
+iavf_handle_reset and iavf_configure_clsflower, and are never
+cleared.
+
+Since the aq_required is not zero, iavf_watchdog_task is setting the
+queue_delayed_work to 20 msec instead of the longer delay.
+
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_txrx.c | 21 ++++++++++++++++++---
- 1 file changed, 18 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index d28b57937245..1cde1601bc32 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -1236,6 +1236,9 @@ static void iavf_add_rx_frag(struct iavf_ring *rx_ring,
- 	unsigned int truesize = SKB_DATA_ALIGN(size + iavf_rx_offset(rx_ring));
- #endif
- 
-+	if (!size)
-+		return;
-+
- 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
- 			rx_buffer->page_offset, size, truesize);
- 
-@@ -1260,6 +1263,9 @@ static struct iavf_rx_buffer *iavf_get_rx_buffer(struct iavf_ring *rx_ring,
- {
- 	struct iavf_rx_buffer *rx_buffer;
- 
-+	if (!size)
-+		return NULL;
-+
- 	rx_buffer = &rx_ring->rx_bi[rx_ring->next_to_clean];
- 	prefetchw(rx_buffer->page);
- 
-@@ -1299,6 +1305,8 @@ static struct sk_buff *iavf_construct_skb(struct iavf_ring *rx_ring,
- 	unsigned int headlen;
- 	struct sk_buff *skb;
- 
-+	if (!rx_buffer)
-+		return NULL;
- 	/* prefetch first cache line of first page */
- 	prefetch(va);
- #if L1_CACHE_BYTES < 128
-@@ -1363,6 +1371,8 @@ static struct sk_buff *iavf_build_skb(struct iavf_ring *rx_ring,
- #endif
- 	struct sk_buff *skb;
- 
-+	if (!rx_buffer)
-+		return NULL;
- 	/* prefetch first cache line of first page */
- 	prefetch(va);
- #if L1_CACHE_BYTES < 128
-@@ -1398,6 +1408,9 @@ static struct sk_buff *iavf_build_skb(struct iavf_ring *rx_ring,
- static void iavf_put_rx_buffer(struct iavf_ring *rx_ring,
- 			       struct iavf_rx_buffer *rx_buffer)
- {
-+	if (!rx_buffer)
-+		return;
-+
- 	if (iavf_can_reuse_rx_page(rx_buffer)) {
- 		/* hand second half of page back to the ring */
- 		iavf_reuse_rx_page(rx_ring, rx_buffer);
-@@ -1496,11 +1509,12 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
- 		 * verified the descriptor has been written back.
- 		 */
- 		dma_rmb();
-+#define IAVF_RXD_DD BIT(IAVF_RX_DESC_STATUS_DD_SHIFT)
-+		if (!iavf_test_staterr(rx_desc, IAVF_RXD_DD))
-+			break;
- 
- 		size = (qword & IAVF_RXD_QW1_LENGTH_PBUF_MASK) >>
- 		       IAVF_RXD_QW1_LENGTH_PBUF_SHIFT;
--		if (!size)
--			break;
- 
- 		iavf_trace(clean_rx_irq, rx_ring, rx_desc, skb);
- 		rx_buffer = iavf_get_rx_buffer(rx_ring, size);
-@@ -1516,7 +1530,8 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
- 		/* exit if we failed to retrieve a buffer */
- 		if (!skb) {
- 			rx_ring->rx_stats.alloc_buff_failed++;
--			rx_buffer->pagecnt_bias++;
-+			if (rx_buffer)
-+				rx_buffer->pagecnt_bias++;
- 			break;
- 		}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 8763486ff2b2..a833219c62d0 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -1658,7 +1658,14 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
+ 		iavf_del_cloud_filter(adapter);
+ 		return 0;
+ 	}
+-
++	if (adapter->aq_required & IAVF_FLAG_AQ_DEL_CLOUD_FILTER) {
++		iavf_del_cloud_filter(adapter);
++		return 0;
++	}
++	if (adapter->aq_required & IAVF_FLAG_AQ_ADD_CLOUD_FILTER) {
++		iavf_add_cloud_filter(adapter);
++		return 0;
++	}
+ 	return -EAGAIN;
+ }
  
 -- 
 2.19.2
