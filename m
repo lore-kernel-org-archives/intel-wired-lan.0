@@ -1,43 +1,43 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Tue, 14 May 2019 12:34:44 -0400
-Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
- IPsec packets
-In-Reply-To: <CAKgT0Uf_nqZtCnHmC=-oDFz-3PuSM6=30BvJSDiAgzK062OY6w@mail.gmail.com>
-References: <20190502171636.3yquioe3gcwsxlus@csclub.uwaterloo.ca>
- <CAKgT0Ufk8LXMb9vVWfvgbjbQFKAuenncf95pfkA0P1t-3+Ni_g@mail.gmail.com>
- <20190502175513.ei7kjug3az6fe753@csclub.uwaterloo.ca>
- <20190502185250.vlsainugtn6zjd6p@csclub.uwaterloo.ca>
- <CAKgT0Uc_YVzns+26-TL+hhmErqG4_w4evRqLCaa=7nME7Zq+Vg@mail.gmail.com>
- <20190503151421.akvmu77lghxcouni@csclub.uwaterloo.ca>
- <CAKgT0UcV2wCr6iUYktZ+Bju_GNpXKzR=M+NLfKhUsw4bsJSiyA@mail.gmail.com>
- <20190503205935.bg45rsso5jjj3gnx@csclub.uwaterloo.ca>
- <20190513165547.alkkgcsdelaznw6v@csclub.uwaterloo.ca>
- <CAKgT0Uf_nqZtCnHmC=-oDFz-3PuSM6=30BvJSDiAgzK062OY6w@mail.gmail.com>
-Message-ID: <20190514163443.glfjva3ofqcy7lbg@csclub.uwaterloo.ca>
+From: Alice Michael <alice.michael@intel.com>
+Date: Tue, 14 May 2019 10:37:00 -0700
+Subject: [Intel-wired-lan] [next PATCH S5 iavf 02/11] iavf: use signed
+ variable
+In-Reply-To: <20190514173709.62431-1-alice.michael@intel.com>
+References: <20190514173709.62431-1-alice.michael@intel.com>
+Message-ID: <20190514173709.62431-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, May 13, 2019 at 12:04:00PM -0700, Alexander Duyck wrote:
-> So I recreated the first packet you listed via text2pcap, replayed it
-> on my test system via tcpreplay, updated my configuration to 12
-> queues, and used the 2 hash keys you listed. I ended up seeing the
-> traffic bounce between queues 4 and 8 with an X710 I had to test with
-> when I was changing the key value.
-> 
-> Unfortunately I don't have an X722 to test with. I'm suspecting that
-> there may be some difference in the RSS setup, specifically it seems
-> like values in the PFQF_HENA register were changed for the X722 part
-> that may be causing the issues we are seeing.
-> 
-> I will see if I can get someone from the networking division to take a
-> look at this since I don't have access to the part in question nor a
-> datasheet for it so I am not sure if I can help much more.
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Great.  I hope someone can figure this out because it is working very
-badly so far.
+The counter variable in iavf_clean_tx_irq starts out negative and climbs
+to 0. So allocating it as u16 is actually a really bad idea that just
+happens to work because the value underflows and overflows consistently
+on most architectures.
 
+Replace the u16 with an int so signed math works as expected.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index 6d43cbe29c49..d28b57937245 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -190,7 +190,7 @@ void iavf_detect_recover_hung(struct iavf_vsi *vsi)
+ static bool iavf_clean_tx_irq(struct iavf_vsi *vsi,
+ 			      struct iavf_ring *tx_ring, int napi_budget)
+ {
+-	u16 i = tx_ring->next_to_clean;
++	int i = tx_ring->next_to_clean;
+ 	struct iavf_tx_buffer *tx_buf;
+ 	struct iavf_tx_desc *tx_desc;
+ 	unsigned int total_bytes = 0, total_packets = 0;
 -- 
-Len Sorensen
+2.19.2
+
