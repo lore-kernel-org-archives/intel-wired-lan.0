@@ -1,308 +1,109 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 14 May 2019 10:37:05 -0700
-Subject: [Intel-wired-lan] [next PATCH S5 iavf 07/11] iavf: Remove timer for
- work triggering, use delaying work instead
+Date: Tue, 14 May 2019 10:37:09 -0700
+Subject: [Intel-wired-lan] [next PATCH S5 iavf 11/11] iavf: allow null RX
+ descriptors
 In-Reply-To: <20190514173709.62431-1-alice.michael@intel.com>
 References: <20190514173709.62431-1-alice.michael@intel.com>
-Message-ID: <20190514173709.62431-7-alice.michael@intel.com>
+Message-ID: <20190514173709.62431-11-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jakub Pawlak <jakub.pawlak@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Remove the watchdog timer, instead declare watchdog task
-as delayed work and use dedicated workqueue to service driver
-tasks. The dedicated driver workqueue iavf_wq is common
-for all driver instances.
+In some circumstances, the hardware can hand us a null receive
+descriptor, with no data attached but otherwise valid. Unfortunately,
+the driver was ill-equipped to handle such an event, and would stop
+processing packets at that point.
 
-Signed-off-by: Jakub Pawlak <jakub.pawlak@intel.com>
+To fix this, use the Descriptor Done bit instead of the size to
+determine whether or not a descriptor is ready to be processed. Add some
+checks to allow for unused buffers.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf.h        |  4 +-
- .../net/ethernet/intel/iavf/iavf_ethtool.c    |  4 +-
- drivers/net/ethernet/intel/iavf/iavf_main.c   | 66 ++++++++-----------
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  2 +-
- 4 files changed, 31 insertions(+), 45 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c | 21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 657019418693..45dfb1a3bb40 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -216,7 +216,6 @@ struct iavf_cloud_filter {
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index d28b57937245..1cde1601bc32 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -1236,6 +1236,9 @@ static void iavf_add_rx_frag(struct iavf_ring *rx_ring,
+ 	unsigned int truesize = SKB_DATA_ALIGN(size + iavf_rx_offset(rx_ring));
+ #endif
  
- /* board specific private data structure */
- struct iavf_adapter {
--	struct timer_list watchdog_timer;
- 	struct work_struct reset_task;
- 	struct work_struct adminq_task;
- 	struct delayed_work client_task;
-@@ -303,7 +302,7 @@ struct iavf_adapter {
- 	enum iavf_state_t state;
- 	unsigned long crit_section;
++	if (!size)
++		return;
++
+ 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
+ 			rx_buffer->page_offset, size, truesize);
  
--	struct work_struct watchdog_task;
-+	struct delayed_work watchdog_task;
- 	bool netdev_registered;
- 	bool link_up;
- 	enum virtchnl_link_speed link_speed;
-@@ -359,6 +358,7 @@ struct iavf_device {
- /* needed by iavf_ethtool.c */
- extern char iavf_driver_name[];
- extern const char iavf_driver_version[];
-+extern struct workqueue_struct *iavf_wq;
- 
- int iavf_up(struct iavf_adapter *adapter);
- void iavf_down(struct iavf_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 5bdcd78f216d..dad3eec8ccd8 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -510,7 +510,7 @@ static int iavf_set_priv_flags(struct net_device *netdev, u32 flags)
- 	if (changed_flags & IAVF_FLAG_LEGACY_RX) {
- 		if (netif_running(netdev)) {
- 			adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--			schedule_work(&adapter->reset_task);
-+			queue_work(iavf_wq, &adapter->reset_task);
- 		}
- 	}
- 
-@@ -622,7 +622,7 @@ static int iavf_set_ringparam(struct net_device *netdev,
- 
- 	if (netif_running(netdev)) {
- 		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--		schedule_work(&adapter->reset_task);
-+		queue_work(iavf_wq, &adapter->reset_task);
- 	}
- 
- 	return 0;
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index f1b51d87ee71..7d994802d82e 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -57,7 +57,7 @@ MODULE_DESCRIPTION("Intel(R) Ethernet Adaptive Virtual Function Network Driver")
- MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
- 
--static struct workqueue_struct *iavf_wq;
-+struct workqueue_struct *iavf_wq;
- 
- /**
-  * iavf_allocate_dma_mem_d - OS specific memory alloc for shared code
-@@ -170,7 +170,7 @@ void iavf_schedule_reset(struct iavf_adapter *adapter)
- 	if (!(adapter->flags &
- 	      (IAVF_FLAG_RESET_PENDING | IAVF_FLAG_RESET_NEEDED))) {
- 		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--		schedule_work(&adapter->reset_task);
-+		queue_work(iavf_wq, &adapter->reset_task);
- 	}
- }
- 
-@@ -289,7 +289,7 @@ static irqreturn_t iavf_msix_aq(int irq, void *data)
- 	rd32(hw, IAVF_VFINT_ICR0_ENA1);
- 
- 	/* schedule work on the private workqueue */
--	schedule_work(&adapter->adminq_task);
-+	queue_work(iavf_wq, &adapter->adminq_task);
- 
- 	return IRQ_HANDLED;
- }
-@@ -980,7 +980,7 @@ static void iavf_up_complete(struct iavf_adapter *adapter)
- 	adapter->aq_required |= IAVF_FLAG_AQ_ENABLE_QUEUES;
- 	if (CLIENT_ENABLED(adapter))
- 		adapter->flags |= IAVF_FLAG_CLIENT_NEEDS_OPEN;
--	mod_timer_pending(&adapter->watchdog_timer, jiffies + 1);
-+	mod_delayed_work(iavf_wq, &adapter->watchdog_task, 0);
- }
- 
- /**
-@@ -1044,7 +1044,7 @@ void iavf_down(struct iavf_adapter *adapter)
- 		adapter->aq_required |= IAVF_FLAG_AQ_DISABLE_QUEUES;
- 	}
- 
--	mod_timer_pending(&adapter->watchdog_timer, jiffies + 1);
-+	mod_delayed_work(iavf_wq, &adapter->watchdog_task, 0);
- }
- 
- /**
-@@ -1532,19 +1532,6 @@ static int iavf_reinit_interrupt_scheme(struct iavf_adapter *adapter)
- 	return err;
- }
- 
--/**
-- * iavf_watchdog_timer - Periodic call-back timer
-- * @data: pointer to adapter disguised as unsigned long
-- **/
--static void iavf_watchdog_timer(struct timer_list *t)
--{
--	struct iavf_adapter *adapter = from_timer(adapter, t,
--						    watchdog_timer);
--
--	schedule_work(&adapter->watchdog_task);
--	/* timer will be rescheduled in watchdog task */
--}
--
- /**
-  * iavf_process_aq_command - process aq_required flags
-  * and sends aq command
-@@ -1680,7 +1667,7 @@ static void iavf_watchdog_task(struct work_struct *work)
+@@ -1260,6 +1263,9 @@ static struct iavf_rx_buffer *iavf_get_rx_buffer(struct iavf_ring *rx_ring,
  {
- 	struct iavf_adapter *adapter = container_of(work,
- 						      struct iavf_adapter,
--						      watchdog_task);
-+						      watchdog_task.work);
- 	struct iavf_hw *hw = &adapter->hw;
- 	u32 reg_val;
+ 	struct iavf_rx_buffer *rx_buffer;
  
-@@ -1696,7 +1683,7 @@ static void iavf_watchdog_task(struct work_struct *work)
- 			dev_err(&adapter->pdev->dev, "Hardware came out of reset. Attemptingreinit.\n");
- 			adapter->state = __IAVF_STARTUP;
- 			adapter->flags &= ~IAVF_FLAG_PF_COMMS_FAILED;
--			schedule_delayed_work(&adapter->init_task, 10);
-+			queue_delayed_work(iavf_wq, &adapter->init_task, 10);
- 			clear_bit(__IAVF_IN_CRITICAL_TASK,
- 				  &adapter->crit_section);
- 			/* Don't reschedule the watchdog, since we've restarted
-@@ -1721,7 +1708,7 @@ static void iavf_watchdog_task(struct work_struct *work)
- 		adapter->state = __IAVF_RESETTING;
- 		adapter->flags |= IAVF_FLAG_RESET_PENDING;
- 		dev_err(&adapter->pdev->dev, "Hardware reset detected\n");
--		schedule_work(&adapter->reset_task);
-+		queue_work(iavf_wq, &adapter->reset_task);
- 		adapter->aq_required = 0;
- 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
- 		goto watchdog_done;
-@@ -1753,11 +1740,11 @@ static void iavf_watchdog_task(struct work_struct *work)
- 	if (adapter->state == __IAVF_REMOVE)
- 		return;
- 	if (adapter->aq_required)
--		mod_timer(&adapter->watchdog_timer,
--			  jiffies + msecs_to_jiffies(20));
-+		queue_delayed_work(iavf_wq, &adapter->watchdog_task,
-+				   msecs_to_jiffies(20));
- 	else
--		mod_timer(&adapter->watchdog_timer, jiffies + (HZ * 2));
--	schedule_work(&adapter->adminq_task);
-+		queue_delayed_work(iavf_wq, &adapter->watchdog_task, HZ * 2);
-+	queue_work(iavf_wq, &adapter->adminq_task);
- }
++	if (!size)
++		return NULL;
++
+ 	rx_buffer = &rx_ring->rx_bi[rx_ring->next_to_clean];
+ 	prefetchw(rx_buffer->page);
  
- static void iavf_disable_vf(struct iavf_adapter *adapter)
-@@ -1981,7 +1968,7 @@ static void iavf_reset_task(struct work_struct *work)
- 	adapter->aq_required |= IAVF_FLAG_AQ_ADD_CLOUD_FILTER;
- 	iavf_misc_irq_enable(adapter);
+@@ -1299,6 +1305,8 @@ static struct sk_buff *iavf_construct_skb(struct iavf_ring *rx_ring,
+ 	unsigned int headlen;
+ 	struct sk_buff *skb;
  
--	mod_timer(&adapter->watchdog_timer, jiffies + 2);
-+	mod_delayed_work(iavf_wq, &adapter->watchdog_task, 2);
++	if (!rx_buffer)
++		return NULL;
+ 	/* prefetch first cache line of first page */
+ 	prefetch(va);
+ #if L1_CACHE_BYTES < 128
+@@ -1363,6 +1371,8 @@ static struct sk_buff *iavf_build_skb(struct iavf_ring *rx_ring,
+ #endif
+ 	struct sk_buff *skb;
  
- 	/* We were running when the reset started, so we need to restore some
- 	 * state here.
-@@ -2922,7 +2909,7 @@ static int iavf_setup_tc(struct net_device *netdev, enum tc_setup_type type,
-  * The open entry point is called when a network interface is made
-  * active by the system (IFF_UP).  At this point all resources needed
-  * for transmit and receive operations are allocated, the interrupt
-- * handler is registered with the OS, the watchdog timer is started,
-+ * handler is registered with the OS, the watchdog is started,
-  * and the stack is notified that the interface is ready.
-  **/
- static int iavf_open(struct net_device *netdev)
-@@ -3057,7 +3044,7 @@ static int iavf_change_mtu(struct net_device *netdev, int new_mtu)
- 		adapter->flags |= IAVF_FLAG_SERVICE_CLIENT_REQUESTED;
- 	}
- 	adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--	schedule_work(&adapter->reset_task);
-+	queue_work(iavf_wq, &adapter->reset_task);
++	if (!rx_buffer)
++		return NULL;
+ 	/* prefetch first cache line of first page */
+ 	prefetch(va);
+ #if L1_CACHE_BYTES < 128
+@@ -1398,6 +1408,9 @@ static struct sk_buff *iavf_build_skb(struct iavf_ring *rx_ring,
+ static void iavf_put_rx_buffer(struct iavf_ring *rx_ring,
+ 			       struct iavf_rx_buffer *rx_buffer)
+ {
++	if (!rx_buffer)
++		return;
++
+ 	if (iavf_can_reuse_rx_page(rx_buffer)) {
+ 		/* hand second half of page back to the ring */
+ 		iavf_reuse_rx_page(rx_ring, rx_buffer);
+@@ -1496,11 +1509,12 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
+ 		 * verified the descriptor has been written back.
+ 		 */
+ 		dma_rmb();
++#define IAVF_RXD_DD BIT(IAVF_RX_DESC_STATUS_DD_SHIFT)
++		if (!iavf_test_staterr(rx_desc, IAVF_RXD_DD))
++			break;
  
- 	return 0;
- }
-@@ -3492,8 +3479,7 @@ static void iavf_init_task(struct work_struct *work)
- 		ether_addr_copy(netdev->perm_addr, adapter->hw.mac.addr);
- 	}
+ 		size = (qword & IAVF_RXD_QW1_LENGTH_PBUF_MASK) >>
+ 		       IAVF_RXD_QW1_LENGTH_PBUF_SHIFT;
+-		if (!size)
+-			break;
  
--	timer_setup(&adapter->watchdog_timer, iavf_watchdog_timer, 0);
--	mod_timer(&adapter->watchdog_timer, jiffies + 1);
-+	queue_delayed_work(iavf_wq, &adapter->watchdog_task, 1);
- 
- 	adapter->tx_desc_count = IAVF_DEFAULT_TXD;
- 	adapter->rx_desc_count = IAVF_DEFAULT_RXD;
-@@ -3544,13 +3530,14 @@ static void iavf_init_task(struct work_struct *work)
- 
- 	if (RSS_AQ(adapter)) {
- 		adapter->aq_required |= IAVF_FLAG_AQ_CONFIGURE_RSS;
--		mod_timer_pending(&adapter->watchdog_timer, jiffies + 1);
-+		mod_delayed_work(iavf_wq, &adapter->watchdog_task, 1);
- 	} else {
- 		iavf_init_rss(adapter);
- 	}
- 	return;
- restart:
--	schedule_delayed_work(&adapter->init_task, msecs_to_jiffies(30));
-+	queue_delayed_work(iavf_wq, &adapter->init_task,
-+			   msecs_to_jiffies(30));
- 	return;
- err_mem:
- 	iavf_free_rss(adapter);
-@@ -3568,10 +3555,10 @@ static void iavf_init_task(struct work_struct *work)
- 		adapter->flags |= IAVF_FLAG_PF_COMMS_FAILED;
- 		iavf_shutdown_adminq(hw);
- 		adapter->state = __IAVF_STARTUP;
--		schedule_delayed_work(&adapter->init_task, HZ * 5);
-+		queue_delayed_work(iavf_wq, &adapter->init_task, HZ * 5);
- 		return;
- 	}
--	schedule_delayed_work(&adapter->init_task, HZ);
-+	queue_delayed_work(iavf_wq, &adapter->init_task, HZ);
- }
- 
- /**
-@@ -3696,11 +3683,11 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	INIT_WORK(&adapter->reset_task, iavf_reset_task);
- 	INIT_WORK(&adapter->adminq_task, iavf_adminq_task);
--	INIT_WORK(&adapter->watchdog_task, iavf_watchdog_task);
-+	INIT_DELAYED_WORK(&adapter->watchdog_task, iavf_watchdog_task);
- 	INIT_DELAYED_WORK(&adapter->client_task, iavf_client_task);
- 	INIT_DELAYED_WORK(&adapter->init_task, iavf_init_task);
--	schedule_delayed_work(&adapter->init_task,
--			      msecs_to_jiffies(5 * (pdev->devfn & 0x07)));
-+	queue_delayed_work(iavf_wq, &adapter->init_task,
-+			   msecs_to_jiffies(5 * (pdev->devfn & 0x07)));
- 
- 	/* Setup the wait queue for indicating transition to down status */
- 	init_waitqueue_head(&adapter->down_waitqueue);
-@@ -3796,7 +3783,7 @@ static int iavf_resume(struct pci_dev *pdev)
- 		return err;
- 	}
- 
--	schedule_work(&adapter->reset_task);
-+	queue_work(iavf_wq, &adapter->reset_task);
- 
- 	netif_device_attach(netdev);
- 
-@@ -3856,8 +3843,7 @@ static void iavf_remove(struct pci_dev *pdev)
- 	iavf_reset_interrupt_capability(adapter);
- 	iavf_free_q_vectors(adapter);
- 
--	if (adapter->watchdog_timer.function)
--		del_timer_sync(&adapter->watchdog_timer);
-+	cancel_delayed_work_sync(&adapter->watchdog_task);
- 
- 	cancel_work_sync(&adapter->adminq_task);
- 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index dd97509e2da1..cb7c56c5afe6 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -1238,7 +1238,7 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 			if (!(adapter->flags & IAVF_FLAG_RESET_PENDING)) {
- 				adapter->flags |= IAVF_FLAG_RESET_PENDING;
- 				dev_info(&adapter->pdev->dev, "Scheduling reset task\n");
--				schedule_work(&adapter->reset_task);
-+				queue_work(iavf_wq, &adapter->reset_task);
- 			}
+ 		iavf_trace(clean_rx_irq, rx_ring, rx_desc, skb);
+ 		rx_buffer = iavf_get_rx_buffer(rx_ring, size);
+@@ -1516,7 +1530,8 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
+ 		/* exit if we failed to retrieve a buffer */
+ 		if (!skb) {
+ 			rx_ring->rx_stats.alloc_buff_failed++;
+-			rx_buffer->pagecnt_bias++;
++			if (rx_buffer)
++				rx_buffer->pagecnt_bias++;
  			break;
- 		default:
+ 		}
+ 
 -- 
 2.19.2
 
