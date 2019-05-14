@@ -1,57 +1,153 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 14 May 2019 10:37:08 -0700
-Subject: [Intel-wired-lan] [next PATCH S5 iavf 10/11] iavf: add call to
- iavf_[add|del]_cloud_filter
+Date: Tue, 14 May 2019 10:37:06 -0700
+Subject: [Intel-wired-lan] [next PATCH S5 iavf 08/11] iavf: Refactor the
+ watchdog state machine
 In-Reply-To: <20190514173709.62431-1-alice.michael@intel.com>
 References: <20190514173709.62431-1-alice.michael@intel.com>
-Message-ID: <20190514173709.62431-10-alice.michael@intel.com>
+Message-ID: <20190514173709.62431-8-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paul Greenwalt <paul.greenwalt@intel.com>
+From: Jan Sokolowski <jan.sokolowski@intel.com>
 
-Add call to iavf_add_cloud_filter and iavf_del_cloud_filter from
-iavf_process_aq_command to clear aq_required
-IAVF_FLAG_AQ_ADD_CLOUD_FILTER and IAVF_FLAG_AQ_DEL_CLOUD_FILTER bits.
+Refactor the watchdog state machine implementation.
+Add the additional state __IAVF_COMM_FAILED to process
+the PF communication fails. Prepare the watchdog state machine
+to integrate with init state machine.
 
-aq_required IAVF_FLAG_AQ_DEL_CLOUD_FILTER bit is being set in
-iavf_down and iavf_delete_clsflower, and are never cleared.
-
-aq_required IAVF_FLAG_AQ_ADD_CLOUD_FILTER bit is being set in
-iavf_handle_reset and iavf_configure_clsflower, and are never
-cleared.
-
-Since the aq_required is not zero, iavf_watchdog_task is setting the
-queue_delayed_work to 20 msec instead of the longer delay.
-
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+Signed-off-by: Jakub Pawlak <jakub.pawlak@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/iavf/iavf.h      |  1 +
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 73 ++++++++++++---------
+ 2 files changed, 44 insertions(+), 30 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index 45dfb1a3bb40..9fc635d816d2 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -171,6 +171,7 @@ enum iavf_state_t {
+ 	__IAVF_INIT_GET_RESOURCES,	/* aq msg sent, awaiting reply */
+ 	__IAVF_INIT_SW,		/* got resources, setting up structs */
+ 	__IAVF_RESETTING,		/* in reset */
++	__IAVF_COMM_FAILED,		/* communication with PF failed */
+ 	/* Below here, watchdog is running */
+ 	__IAVF_DOWN,			/* ready, can be opened */
+ 	__IAVF_DOWN_PENDING,		/* descending, waiting for watchdog */
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 8763486ff2b2..a833219c62d0 100644
+index 7d994802d82e..5c25cf3754bb 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1658,7 +1658,14 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
- 		iavf_del_cloud_filter(adapter);
- 		return 0;
- 	}
--
-+	if (adapter->aq_required & IAVF_FLAG_AQ_DEL_CLOUD_FILTER) {
-+		iavf_del_cloud_filter(adapter);
-+		return 0;
-+	}
-+	if (adapter->aq_required & IAVF_FLAG_AQ_ADD_CLOUD_FILTER) {
-+		iavf_add_cloud_filter(adapter);
-+		return 0;
-+	}
- 	return -EAGAIN;
- }
+@@ -1674,13 +1674,18 @@ static void iavf_watchdog_task(struct work_struct *work)
+ 	if (test_and_set_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section))
+ 		goto restart_watchdog;
  
+-	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED) {
++	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
++		adapter->state = __IAVF_COMM_FAILED;
++
++	switch (adapter->state) {
++	case __IAVF_COMM_FAILED:
+ 		reg_val = rd32(hw, IAVF_VFGEN_RSTAT) &
+ 			  IAVF_VFGEN_RSTAT_VFR_STATE_MASK;
+ 		if (reg_val == VIRTCHNL_VFR_VFACTIVE ||
+ 		    reg_val == VIRTCHNL_VFR_COMPLETED) {
+ 			/* A chance for redemption! */
+-			dev_err(&adapter->pdev->dev, "Hardware came out of reset. Attemptingreinit.\n");
++			dev_err(&adapter->pdev->dev,
++				"Hardware came out of reset. Attempting reinit.\n");
+ 			adapter->state = __IAVF_STARTUP;
+ 			adapter->flags &= ~IAVF_FLAG_PF_COMMS_FAILED;
+ 			queue_delayed_work(iavf_wq, &adapter->init_task, 10);
+@@ -1695,50 +1700,58 @@ static void iavf_watchdog_task(struct work_struct *work)
+ 		}
+ 		adapter->aq_required = 0;
+ 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
++		clear_bit(__IAVF_IN_CRITICAL_TASK,
++			  &adapter->crit_section);
++		queue_delayed_work(iavf_wq,
++				   &adapter->watchdog_task,
++				   msecs_to_jiffies(10));
+ 		goto watchdog_done;
++	case __IAVF_RESETTING:
++		clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
++		queue_delayed_work(iavf_wq, &adapter->watchdog_task, HZ * 2);
++		return;
++	case __IAVF_DOWN:
++	case __IAVF_DOWN_PENDING:
++	case __IAVF_TESTING:
++	case __IAVF_RUNNING:
++		if (adapter->current_op) {
++			if (!iavf_asq_done(hw)) {
++				dev_dbg(&adapter->pdev->dev,
++					"Admin queue timeout\n");
++				iavf_send_api_ver(adapter);
++			}
++		} else {
++			if (!iavf_process_aq_command(adapter) &&
++			    adapter->state == __IAVF_RUNNING)
++				iavf_request_stats(adapter);
++		}
++		break;
++	case __IAVF_REMOVE:
++		clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
++		return;
++	default:
++		goto restart_watchdog;
+ 	}
+ 
+-	if (adapter->state < __IAVF_DOWN ||
+-	    (adapter->flags & IAVF_FLAG_RESET_PENDING))
+-		goto watchdog_done;
+-
+-	/* check for reset */
++		/* check for hw reset */
+ 	reg_val = rd32(hw, IAVF_VF_ARQLEN1) & IAVF_VF_ARQLEN1_ARQENABLE_MASK;
+-	if (!(adapter->flags & IAVF_FLAG_RESET_PENDING) && !reg_val) {
++	if (!reg_val) {
+ 		adapter->state = __IAVF_RESETTING;
+ 		adapter->flags |= IAVF_FLAG_RESET_PENDING;
+-		dev_err(&adapter->pdev->dev, "Hardware reset detected\n");
+-		queue_work(iavf_wq, &adapter->reset_task);
+ 		adapter->aq_required = 0;
+ 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
++		dev_err(&adapter->pdev->dev, "Hardware reset detected\n");
++		queue_work(iavf_wq, &adapter->reset_task);
+ 		goto watchdog_done;
+ 	}
+ 
+-	/* Process admin queue tasks. After init, everything gets done
+-	 * here so we don't race on the admin queue.
+-	 * The check is made against -EAGAIN, as it's the error code that
+-	 * would be returned on no op to run. Failures of called functions
+-	 * return other values.
+-	 */
+-	if (adapter->current_op) {
+-		if (!iavf_asq_done(hw)) {
+-			dev_dbg(&adapter->pdev->dev, "Admin queue timeout\n");
+-			iavf_send_api_ver(adapter);
+-		}
+-	} else if (iavf_process_aq_command(adapter) == -EAGAIN &&
+-		   adapter->state == __IAVF_RUNNING) {
+-		iavf_request_stats(adapter);
+-	}
+-
+ 	schedule_delayed_work(&adapter->client_task, msecs_to_jiffies(5));
+-
+ watchdog_done:
+-	if (adapter->state == __IAVF_RUNNING)
++	if (adapter->state == __IAVF_RUNNING ||
++	    adapter->state == __IAVF_COMM_FAILED)
+ 		iavf_detect_recover_hung(&adapter->vsi);
+ 	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
+ restart_watchdog:
+-	if (adapter->state == __IAVF_REMOVE)
+-		return;
+ 	if (adapter->aq_required)
+ 		queue_delayed_work(iavf_wq, &adapter->watchdog_task,
+ 				   msecs_to_jiffies(20));
 -- 
 2.19.2
 
