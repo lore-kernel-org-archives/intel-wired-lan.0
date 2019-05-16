@@ -1,58 +1,193 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 16 May 2019 15:36:14 -0700
-Subject: [Intel-wired-lan] ixgbe device for Intel C3508
-In-Reply-To: <CAMcMvsgiebYeAc7csDog=j4cj9h2_QdLm7dO=7hU5BOceN6anw@mail.gmail.com>
-References: <CAMcMvsgiebYeAc7csDog=j4cj9h2_QdLm7dO=7hU5BOceN6anw@mail.gmail.com>
-Message-ID: <19c1d6910766549625766d4209ded28c26cebfe8.camel@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 17 May 2019 07:26:30 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 436cdd4fcfa546785feac9de4e88d6186f1f0498
+Message-ID: <5cddf1a6.x3J+Z5eHPq2hcgpH%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2019-05-16 at 12:53 -0700, Paul Stewart wrote:
-> I was pleased to fine that the ixgbe driver had good support for the
-> 10GBit interfaces on the Atom C3708 device I was using.  However, the
-> same is not true of the 2.5GBit interfaces on the Atom C3508.  The
-> PCI
-> IDs on these interfaces are very similar -- 8086:15cf on the C3508 vs
-> 8086:15ce on the C3708.  Modifying the ixgbe driver to simply treat
-> 8086:15cf almost works -- the 4 Ethernet interfaces are discovered
-> and
-> *something* happens when I plug in a Gigiabit ethernet cable into the
-> SFP port:
-> 
-> [  269.233242] ixgbe 0000:0c:00.0 eth1: NIC Link is Up 1 Gbps, Flow
-> Control: RX/
-> TX
-> [  269.240733] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes
-> ready
-> [  269.337230] ixgbe 0000:0c:00.0 eth1: NIC Link is Down
-> [  289.682588] ixgbe 0000:0c:00.1 eth2: detected SFP+: 6
-> [  392.859888] ixgbe 0000:0c:00.0: removed PHC on eth1
-> [  393.497099] ixgbe 0000:0c:00.1: removed PHC on eth2
-> [  394./MA257214] ixgbe 0000:0d:00.0: removed PHC on eth3
-> [  394.867122] ixgbe 0000:0d:00.1 eth4: NIC Link is Up 1 Gbps, Flow
-> Control: RX/TX
-> [  394.889384] ixgbe 0000:0d:00.1: removed PHC on eth4
-> 
-> Clearly not all is well, as could be expected -- I'm sure there's a
-> real reason why these are separate PCI IDs.   Is there someone out
-> there that can point me at docs I can use to support the device
-> myself, or does anyone know if support is coming?  Should this device
-> be considered an X550 or is this a different device fundamentally
-> (should I not use the Intel X550 docs as a reference, if I were to
-> hunt down some documentation about the difference between these
-> parts?)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 436cdd4fcfa546785feac9de4e88d6186f1f0498  iavf: allow null RX descriptors
 
-Adding the intel-wired-lan mailing, which is the proper mailing list
-for issues like this.
+elapsed time: 241m
 
-Let me look into this and get back to you.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190516/8fccabb2/attachment.asc>
+configs tested: 168
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                 randconfig-k0-05131404
+x86_64                 randconfig-k1-05131404
+x86_64                 randconfig-k2-05131404
+x86_64                 randconfig-k3-05131404
+i386                   randconfig-k0-05131404
+i386                   randconfig-k1-05131404
+i386                   randconfig-k2-05131404
+i386                   randconfig-k3-05131404
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+i386                             alldefconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-m0-05161448
+x86_64                 randconfig-m1-05161448
+x86_64                 randconfig-m2-05161448
+x86_64                 randconfig-m3-05161448
+i386                   randconfig-m0-05161448
+i386                   randconfig-m1-05161448
+i386                   randconfig-m2-05161448
+i386                   randconfig-m3-05161448
+riscv                             allnoconfig
+riscv                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-l0-05162303
+x86_64                 randconfig-l2-05162303
+i386                   randconfig-l1-05162303
+i386                   randconfig-l2-05162303
+x86_64                 randconfig-l0-05162303
+i386                   randconfig-l3-05162303
+x86_64                 randconfig-l1-05162303
+x86_64                 randconfig-l3-05162303
+parisc                        c3000_defconfig
+um                                  defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                   randconfig-g0-201919
+x86_64                   randconfig-g1-201919
+x86_64                   randconfig-g2-201919
+x86_64                   randconfig-g3-201919
+i386                   randconfig-x070-201919
+i386                   randconfig-x074-201919
+i386                   randconfig-x077-201919
+i386                   randconfig-x072-201919
+i386                   randconfig-x071-201919
+i386                   randconfig-x075-201919
+i386                   randconfig-x076-201919
+i386                   randconfig-x073-201919
+i386                   randconfig-x078-201919
+i386                   randconfig-x079-201919
+i386                              allnoconfig
+i386                                defconfig
+i386                   randconfig-x018-201919
+i386                   randconfig-x010-201919
+i386                   randconfig-x013-201919
+i386                   randconfig-x017-201919
+i386                   randconfig-x014-201919
+i386                   randconfig-x011-201919
+i386                   randconfig-x012-201919
+i386                   randconfig-x016-201919
+i386                   randconfig-x015-201919
+i386                   randconfig-x019-201919
+x86_64                 randconfig-x000-201919
+x86_64                 randconfig-x001-201919
+x86_64                 randconfig-x004-201919
+x86_64                 randconfig-x007-201919
+x86_64                 randconfig-x008-201919
+x86_64                 randconfig-x003-201919
+x86_64                 randconfig-x002-201919
+x86_64                 randconfig-x005-201919
+x86_64                 randconfig-x009-201919
+x86_64                 randconfig-x006-201919
+i386                   randconfig-x005-201919
+i386                   randconfig-x001-201919
+i386                   randconfig-x002-201919
+i386                   randconfig-x007-201919
+i386                   randconfig-x008-201919
+i386                   randconfig-x004-201919
+i386                   randconfig-x000-201919
+i386                   randconfig-x003-201919
+i386                   randconfig-x006-201919
+i386                   randconfig-x009-201919
+x86_64                 randconfig-x016-201919
+x86_64                 randconfig-x015-201919
+x86_64                 randconfig-x018-201919
+x86_64                 randconfig-x013-201919
+x86_64                 randconfig-x012-201919
+x86_64                 randconfig-x017-201919
+x86_64                 randconfig-x014-201919
+x86_64                 randconfig-x010-201919
+x86_64                 randconfig-x011-201919
+x86_64                 randconfig-x019-201919
+i386                     randconfig-a0-201919
+i386                     randconfig-a1-201919
+i386                     randconfig-a2-201919
+i386                     randconfig-a3-201919
+riscv                              tinyconfig
+i386                               tinyconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-05160946
+i386                   randconfig-n1-05160946
+i386                   randconfig-n2-05160946
+i386                   randconfig-n3-05160946
+i386                   randconfig-i0-05160946
+i386                   randconfig-i1-05160946
+i386                   randconfig-i2-05160946
+i386                   randconfig-i3-05160946
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
