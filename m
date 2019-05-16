@@ -1,77 +1,102 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Thu, 16 May 2019 14:37:05 -0400
-Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
- IPsec packets
-In-Reply-To: <20190516183407.qswotwyjwtjqfdqm@csclub.uwaterloo.ca>
-References: <20190502185250.vlsainugtn6zjd6p@csclub.uwaterloo.ca>
- <CAKgT0Uc_YVzns+26-TL+hhmErqG4_w4evRqLCaa=7nME7Zq+Vg@mail.gmail.com>
- <20190503151421.akvmu77lghxcouni@csclub.uwaterloo.ca>
- <CAKgT0UcV2wCr6iUYktZ+Bju_GNpXKzR=M+NLfKhUsw4bsJSiyA@mail.gmail.com>
- <20190503205935.bg45rsso5jjj3gnx@csclub.uwaterloo.ca>
- <20190513165547.alkkgcsdelaznw6v@csclub.uwaterloo.ca>
- <CAKgT0Uf_nqZtCnHmC=-oDFz-3PuSM6=30BvJSDiAgzK062OY6w@mail.gmail.com>
- <20190514163443.glfjva3ofqcy7lbg@csclub.uwaterloo.ca>
- <CAKgT0UdPDyCBsShQVwwE5C8fBKkMcfS6_S5m3T7JP-So9fzVgA@mail.gmail.com>
- <20190516183407.qswotwyjwtjqfdqm@csclub.uwaterloo.ca>
-Message-ID: <20190516183705.e4zflbli7oujlbek@csclub.uwaterloo.ca>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 16 May 2019 12:17:53 -0700
+Subject: [Intel-wired-lan] [PATCH 1/6] igb: mark expected switch
+ fall-through
+In-Reply-To: <dd2974a0-b559-cfd1-c3d8-0839594ef03c@embeddedor.com>
+References: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
+ <b5f1f0c0-e27b-f861-c36e-35e493f45dff@embeddedor.com>
+ <dd2974a0-b559-cfd1-c3d8-0839594ef03c@embeddedor.com>
+Message-ID: <4fd1c087e5a19eea44521abc6b8d1213bca3ec22.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, May 16, 2019 at 02:34:08PM -0400, Lennart Sorensen wrote:
-> Here is what I see:
+On Wed, 2019-05-08 at 12:59 -0500, Gustavo A. R. Silva wrote:
+> Hi Jeff,
 > 
-> i40e: Intel(R) Ethernet Connection XL710 Network Driver - version 2.1.7-k
-> i40e: Copyright (c) 2013 - 2014 Intel Corporation.
-> i40e 0000:3d:00.0: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
-> i40e 0000:3d:00.0: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
-> i40e 0000:3d:00.0: MAC address: a4:bf:01:4e:0c:87
-> i40e 0000:3d:00.0: flow_type: 63 input_mask:0x0000000000004000
-> i40e 0000:3d:00.0: flow_type: 46 input_mask:0x0007fff800000000
-> i40e 0000:3d:00.0: flow_type: 45 input_mask:0x0007fff800000000
-> i40e 0000:3d:00.0: flow_type: 44 input_mask:0x0007ffff80000000
-> i40e 0000:3d:00.0: flow_type: 43 input_mask:0x0007fffe00000000
-> i40e 0000:3d:00.0: flow_type: 42 input_mask:0x0007fffe00000000
-> i40e 0000:3d:00.0: flow_type: 41 input_mask:0x0007fffe00000000
-> i40e 0000:3d:00.0: flow_type: 40 input_mask:0x0007fffe00000000
-> i40e 0000:3d:00.0: flow_type: 39 input_mask:0x0007fffe00000000
-> i40e 0000:3d:00.0: flow_type: 36 input_mask:0x0006060000000000
-> i40e 0000:3d:00.0: flow_type: 35 input_mask:0x0006060000000000
-> i40e 0000:3d:00.0: flow_type: 34 input_mask:0x0006060780000000
-> i40e 0000:3d:00.0: flow_type: 33 input_mask:0x0006060600000000
-> i40e 0000:3d:00.0: flow_type: 32 input_mask:0x0006060600000000
-> i40e 0000:3d:00.0: flow_type: 31 input_mask:0x0006060600000000
-> i40e 0000:3d:00.0: flow_type: 30 input_mask:0x0006060600000000
-> i40e 0000:3d:00.0: flow_type: 29 input_mask:0x0006060600000000
-> i40e 0000:3d:00.0: Features: PF-id[0] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
-> i40e 0000:3d:00.1: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
-> i40e 0000:3d:00.1: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
-> i40e 0000:3d:00.1: MAC address: a4:bf:01:4e:0c:88
-> i40e 0000:3d:00.1: flow_type: 63 input_mask:0x0000000000004000
-> i40e 0000:3d:00.1: flow_type: 46 input_mask:0x0007fff800000000
-> i40e 0000:3d:00.1: flow_type: 45 input_mask:0x0007fff800000000
-> i40e 0000:3d:00.1: flow_type: 44 input_mask:0x0007ffff80000000
-> i40e 0000:3d:00.1: flow_type: 43 input_mask:0x0007fffe00000000
-> i40e 0000:3d:00.1: flow_type: 42 input_mask:0x0007fffe00000000
-> i40e 0000:3d:00.1: flow_type: 41 input_mask:0x0007fffe00000000
-> i40e 0000:3d:00.1: flow_type: 40 input_mask:0x0007fffe00000000
-> i40e 0000:3d:00.1: flow_type: 39 input_mask:0x0007fffe00000000
-> i40e 0000:3d:00.1: flow_type: 36 input_mask:0x0006060000000000
-> i40e 0000:3d:00.1: flow_type: 35 input_mask:0x0006060000000000
-> i40e 0000:3d:00.1: flow_type: 34 input_mask:0x0006060780000000
-> i40e 0000:3d:00.1: flow_type: 33 input_mask:0x0006060600000000
-> i40e 0000:3d:00.1: flow_type: 32 input_mask:0x0006060600000000
-> i40e 0000:3d:00.1: flow_type: 31 input_mask:0x0006060600000000
-> i40e 0000:3d:00.1: flow_type: 30 input_mask:0x0006060600000000
-> i40e 0000:3d:00.1: flow_type: 29 input_mask:0x0006060600000000
-> i40e 0000:3d:00.1: Features: PF-id[1] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
-> i40e 0000:3d:00.1 eth2: NIC Link is Up, 1000 Mbps Full Duplex, Flow Control: None
-> i40e_ioctl: power down: eth1
-> i40e_ioctl: power down: eth2
+> I wonder if there is any chance for this series to be queued up for
+> 5.2-rc1.
 
-Those last two lines is something I added, so ignore those.
+Possibly, but since the nature of your patch is to just modify a code
+comment because the tools used to check are not sophisticated enough to
+realize the code comment already clearly states "Fall through ...", I
+do not feel this is *really* necessary to get into 'net'.  If I have
+other 'fixes' in my queue that need to get pushed, I may add this
+change to the series.  I have not decided yet whether it warrants being
+in 'net' or could wait till 'net-next'.
 
--- 
-Len Sorensen
+> 
+> On 4/24/19 11:42 AM, Gustavo A. R. Silva wrote:
+> > Hi Jeff,
+> > 
+> > I just wanted to check if this series has already been applied
+> > somewhere.
+> > 
+> > Thanks
+> > --
+> > Gustavo
+> > 
+> > On 3/29/19 6:38 PM, Jeff Kirsher wrote:
+> > > From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+> > > 
+> > > In preparation to enabling -Wimplicit-fallthrough, mark switch
+> > > cases
+> > > where we are expecting to fall through.
+> > > 
+> > > This patch fixes the following warning:
+> > > 
+> > > drivers/net/ethernet/intel/igb/igb_main.c: In function
+> > > ?__igb_notify_dca?:
+> > > drivers/net/ethernet/intel/igb/igb_main.c:6694:6: warning: this
+> > > statement may fall through [-Wimplicit-fallthrough=]
+> > >    if (dca_add_requester(dev) == 0) {
+> > >       ^
+> > > drivers/net/ethernet/intel/igb/igb_main.c:6701:2: note: here
+> > >   case DCA_PROVIDER_REMOVE:
+> > >   ^~~~
+> > > 
+> > > Warning level 3 was used: -Wimplicit-fallthrough=3
+> > > 
+> > > Notice that, in this particular case, the code comment is
+> > > modified
+> > > in accordance with what GCC is expecting to find.
+> > > 
+> > > This patch is part of the ongoing efforts to enable
+> > > -Wimplicit-fallthrough.
+> > > 
+> > > Signed-off-by: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+> > > ---
+> > >  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
+> > > b/drivers/net/ethernet/intel/igb/igb_main.c
+> > > index 834e879e1d57..e8042b0254bc 100644
+> > > --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> > > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> > > @@ -6701,7 +6701,7 @@ static int __igb_notify_dca(struct device
+> > > *dev, void *data)
+> > >  			igb_setup_dca(adapter);
+> > >  			break;
+> > >  		}
+> > > -		/* Fall Through since DCA is disabled. */
+> > > +		/* Fall Through - since DCA is disabled. */
+> > >  	case DCA_PROVIDER_REMOVE:
+> > >  		if (adapter->flags & IGB_FLAG_DCA_ENABLED) {
+> > >  			/* without this a class_device is left
+> > > 
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at osuosl.org
+> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> > 
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190516/2801b9e1/attachment-0001.asc>
