@@ -1,60 +1,58 @@
-From: Nikunj Kela (nkela) <nkela@cisco.com>
-Date: Thu, 16 May 2019 22:33:15 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: add parameter to ignore nvm
- checksum validation
-In-Reply-To: <4469196a-0705-5459-8aca-3f08e9889d61@gmail.com>
-References: <1557357269-9498-1-git-send-email-nkela@cisco.com>
- <9be117dc6e818ab83376cd8e0f79dbfaaf193aa9.camel@intel.com>
- <76B41175-0CEE-466C-91BF-89A1CA857061@cisco.com>
- <4469196a-0705-5459-8aca-3f08e9889d61@gmail.com>
-Message-ID: <F028ADDC-EA02-46C3-AC7A-A1A6606BC3F5@cisco.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 16 May 2019 15:36:14 -0700
+Subject: [Intel-wired-lan] ixgbe device for Intel C3508
+In-Reply-To: <CAMcMvsgiebYeAc7csDog=j4cj9h2_QdLm7dO=7hU5BOceN6anw@mail.gmail.com>
+References: <CAMcMvsgiebYeAc7csDog=j4cj9h2_QdLm7dO=7hU5BOceN6anw@mail.gmail.com>
+Message-ID: <19c1d6910766549625766d4209ded28c26cebfe8.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Thu, 2019-05-16 at 12:53 -0700, Paul Stewart wrote:
+> I was pleased to fine that the ixgbe driver had good support for the
+> 10GBit interfaces on the Atom C3708 device I was using.  However, the
+> same is not true of the 2.5GBit interfaces on the Atom C3508.  The
+> PCI
+> IDs on these interfaces are very similar -- 8086:15cf on the C3508 vs
+> 8086:15ce on the C3708.  Modifying the ixgbe driver to simply treat
+> 8086:15cf almost works -- the 4 Ethernet interfaces are discovered
+> and
+> *something* happens when I plug in a Gigiabit ethernet cable into the
+> SFP port:
+> 
+> [  269.233242] ixgbe 0000:0c:00.0 eth1: NIC Link is Up 1 Gbps, Flow
+> Control: RX/
+> TX
+> [  269.240733] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes
+> ready
+> [  269.337230] ixgbe 0000:0c:00.0 eth1: NIC Link is Down
+> [  289.682588] ixgbe 0000:0c:00.1 eth2: detected SFP+: 6
+> [  392.859888] ixgbe 0000:0c:00.0: removed PHC on eth1
+> [  393.497099] ixgbe 0000:0c:00.1: removed PHC on eth2
+> [  394./MA257214] ixgbe 0000:0d:00.0: removed PHC on eth3
+> [  394.867122] ixgbe 0000:0d:00.1 eth4: NIC Link is Up 1 Gbps, Flow
+> Control: RX/TX
+> [  394.889384] ixgbe 0000:0d:00.1: removed PHC on eth4
+> 
+> Clearly not all is well, as could be expected -- I'm sure there's a
+> real reason why these are separate PCI IDs.   Is there someone out
+> there that can point me at docs I can use to support the device
+> myself, or does anyone know if support is coming?  Should this device
+> be considered an X550 or is this a different device fundamentally
+> (should I not use the Intel X550 docs as a reference, if I were to
+> hunt down some documentation about the difference between these
+> parts?)
 
+Adding the intel-wired-lan mailing, which is the proper mailing list
+for issues like this.
 
-On 5/16/19, 3:02 PM, "Florian Fainelli" <f.fainelli@gmail.com> wrote:
-
-    On 5/16/19 12:55 PM, Nikunj Kela (nkela) wrote:
-    >> 
-    >> 
-    >> On 5/16/19, 12:35 PM, "Jeff Kirsher" <jeffrey.t.kirsher@intel.com> wrote:
-    >> 
-    >>     On Wed, 2019-05-08 at 23:14 +0000, Nikunj Kela wrote:
-    >>    >> Some of the broken NICs don't have EEPROM programmed correctly. It
-    >>    >> results
-    >>    >> in probe to fail. This change adds a module parameter that can be
-    >>    >> used to
-    >>    >> ignore nvm checksum validation.
-    >>    >> 
-    >>    >> Cc: xe-linux-external at cisco.com
-    >>    >> Signed-off-by: Nikunj Kela <nkela@cisco.com>
-    >>    >> ---
-    >>    >>  drivers/net/ethernet/intel/igb/igb_main.c | 28
-    >>    >> ++++++++++++++++++++++------
-    >>    >>  1 file changed, 22 insertions(+), 6 deletions(-)
-    >>     
-    >>     >NAK for two reasons.  First, module parameters are not desirable
-    >>     >because their individual to one driver and a global solution should be
-    >>     >found so that all networking device drivers can use the solution.  This
-    >>     >will keep the interface to change/setup/modify networking drivers
-    >>     >consistent for all drivers.
-    >> 
-    >>     
-    >>     >Second and more importantly, if your NIC is broken, fix it.  Do not try
-    >>     >and create a software workaround so that you can continue to use a
-    >>     >broken NIC.  There are methods/tools available to properly reprogram
-    >>     >the EEPROM on a NIC, which is the right solution for your issue.
-    >> 
-    >> I am proposing this as a debug parameter. Obviously, we need to fix EEPROM but this helps us continuing the development while manufacturing fixes NIC.
-    
-    >Then why even bother with sending this upstream?
-    >-- 
-    >Florian
-
-My colleagues wanted me to upstream so if there is anyone else in the same situations, maybe there is a better solution. 
-    
-
+Let me look into this and get back to you.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190516/8fccabb2/attachment.asc>
