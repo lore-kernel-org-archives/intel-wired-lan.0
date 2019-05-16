@@ -1,193 +1,114 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 17 May 2019 07:26:30 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 436cdd4fcfa546785feac9de4e88d6186f1f0498
-Message-ID: <5cddf1a6.x3J+Z5eHPq2hcgpH%lkp@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 16 May 2019 16:32:28 -0700
+Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
+ IPsec packets
+In-Reply-To: <20190516183705.e4zflbli7oujlbek@csclub.uwaterloo.ca>
+References: <20190502185250.vlsainugtn6zjd6p@csclub.uwaterloo.ca>
+ <CAKgT0Uc_YVzns+26-TL+hhmErqG4_w4evRqLCaa=7nME7Zq+Vg@mail.gmail.com>
+ <20190503151421.akvmu77lghxcouni@csclub.uwaterloo.ca>
+ <CAKgT0UcV2wCr6iUYktZ+Bju_GNpXKzR=M+NLfKhUsw4bsJSiyA@mail.gmail.com>
+ <20190503205935.bg45rsso5jjj3gnx@csclub.uwaterloo.ca>
+ <20190513165547.alkkgcsdelaznw6v@csclub.uwaterloo.ca>
+ <CAKgT0Uf_nqZtCnHmC=-oDFz-3PuSM6=30BvJSDiAgzK062OY6w@mail.gmail.com>
+ <20190514163443.glfjva3ofqcy7lbg@csclub.uwaterloo.ca>
+ <CAKgT0UdPDyCBsShQVwwE5C8fBKkMcfS6_S5m3T7JP-So9fzVgA@mail.gmail.com>
+ <20190516183407.qswotwyjwtjqfdqm@csclub.uwaterloo.ca>
+ <20190516183705.e4zflbli7oujlbek@csclub.uwaterloo.ca>
+Message-ID: <CAKgT0UfSa-dM2+7xntK9tB7Zw5N8nDd3U1n4OSK0gbWbkNSKJQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 436cdd4fcfa546785feac9de4e88d6186f1f0498  iavf: allow null RX descriptors
+On Thu, May 16, 2019 at 11:37 AM Lennart Sorensen
+<lsorense@csclub.uwaterloo.ca> wrote:
+>
+> On Thu, May 16, 2019 at 02:34:08PM -0400, Lennart Sorensen wrote:
+> > Here is what I see:
+> >
+> > i40e: Intel(R) Ethernet Connection XL710 Network Driver - version 2.1.7-k
+> > i40e: Copyright (c) 2013 - 2014 Intel Corporation.
+> > i40e 0000:3d:00.0: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
+> > i40e 0000:3d:00.0: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
+> > i40e 0000:3d:00.0: MAC address: a4:bf:01:4e:0c:87
+> > i40e 0000:3d:00.0: flow_type: 63 input_mask:0x0000000000004000
+> > i40e 0000:3d:00.0: flow_type: 46 input_mask:0x0007fff800000000
+> > i40e 0000:3d:00.0: flow_type: 45 input_mask:0x0007fff800000000
+> > i40e 0000:3d:00.0: flow_type: 44 input_mask:0x0007ffff80000000
+> > i40e 0000:3d:00.0: flow_type: 43 input_mask:0x0007fffe00000000
+> > i40e 0000:3d:00.0: flow_type: 42 input_mask:0x0007fffe00000000
+> > i40e 0000:3d:00.0: flow_type: 41 input_mask:0x0007fffe00000000
+> > i40e 0000:3d:00.0: flow_type: 40 input_mask:0x0007fffe00000000
+> > i40e 0000:3d:00.0: flow_type: 39 input_mask:0x0007fffe00000000
+> > i40e 0000:3d:00.0: flow_type: 36 input_mask:0x0006060000000000
+> > i40e 0000:3d:00.0: flow_type: 35 input_mask:0x0006060000000000
+> > i40e 0000:3d:00.0: flow_type: 34 input_mask:0x0006060780000000
+> > i40e 0000:3d:00.0: flow_type: 33 input_mask:0x0006060600000000
+> > i40e 0000:3d:00.0: flow_type: 32 input_mask:0x0006060600000000
+> > i40e 0000:3d:00.0: flow_type: 31 input_mask:0x0006060600000000
+> > i40e 0000:3d:00.0: flow_type: 30 input_mask:0x0006060600000000
+> > i40e 0000:3d:00.0: flow_type: 29 input_mask:0x0006060600000000
+> > i40e 0000:3d:00.0: Features: PF-id[0] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
+> > i40e 0000:3d:00.1: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
+> > i40e 0000:3d:00.1: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
+> > i40e 0000:3d:00.1: MAC address: a4:bf:01:4e:0c:88
+> > i40e 0000:3d:00.1: flow_type: 63 input_mask:0x0000000000004000
+> > i40e 0000:3d:00.1: flow_type: 46 input_mask:0x0007fff800000000
+> > i40e 0000:3d:00.1: flow_type: 45 input_mask:0x0007fff800000000
+> > i40e 0000:3d:00.1: flow_type: 44 input_mask:0x0007ffff80000000
+> > i40e 0000:3d:00.1: flow_type: 43 input_mask:0x0007fffe00000000
+> > i40e 0000:3d:00.1: flow_type: 42 input_mask:0x0007fffe00000000
+> > i40e 0000:3d:00.1: flow_type: 41 input_mask:0x0007fffe00000000
+> > i40e 0000:3d:00.1: flow_type: 40 input_mask:0x0007fffe00000000
+> > i40e 0000:3d:00.1: flow_type: 39 input_mask:0x0007fffe00000000
+> > i40e 0000:3d:00.1: flow_type: 36 input_mask:0x0006060000000000
+> > i40e 0000:3d:00.1: flow_type: 35 input_mask:0x0006060000000000
+> > i40e 0000:3d:00.1: flow_type: 34 input_mask:0x0006060780000000
+> > i40e 0000:3d:00.1: flow_type: 33 input_mask:0x0006060600000000
+> > i40e 0000:3d:00.1: flow_type: 32 input_mask:0x0006060600000000
+> > i40e 0000:3d:00.1: flow_type: 31 input_mask:0x0006060600000000
+> > i40e 0000:3d:00.1: flow_type: 30 input_mask:0x0006060600000000
+> > i40e 0000:3d:00.1: flow_type: 29 input_mask:0x0006060600000000
+> > i40e 0000:3d:00.1: Features: PF-id[1] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
+> > i40e 0000:3d:00.1 eth2: NIC Link is Up, 1000 Mbps Full Duplex, Flow Control: None
+> > i40e_ioctl: power down: eth1
+> > i40e_ioctl: power down: eth2
+>
+> Those last two lines is something I added, so ignore those.
 
-elapsed time: 241m
+No problem.
 
-configs tested: 168
+So just looking at the data provided I am going to guess that IPv6 w/
+UDP likely works without any issues and it is just going to be IPv4
+that is the problem. When you compare the UDP setup from mine versus
+yours it looks like for some reason somebody swapped around the input
+bits for the L3 src and destination fields. I'm basing that on the
+input set masks in the i40e_txrx.h header:
+/* INPUT SET MASK for RSS, flow director, and flexible payload */
+#define I40E_L3_SRC_SHIFT               47
+#define I40E_L3_SRC_MASK                (0x3ULL << I40E_L3_SRC_SHIFT)
+#define I40E_L3_V6_SRC_SHIFT            43
+#define I40E_L3_V6_SRC_MASK             (0xFFULL << I40E_L3_V6_SRC_SHIFT)
+#define I40E_L3_DST_SHIFT               35
+#define I40E_L3_DST_MASK                (0x3ULL << I40E_L3_DST_SHIFT)
+#define I40E_L3_V6_DST_SHIFT            35
+#define I40E_L3_V6_DST_MASK             (0xFFULL << I40E_L3_V6_DST_SHIFT)
+#define I40E_L4_SRC_SHIFT               34
+#define I40E_L4_SRC_MASK                (0x1ULL << I40E_L4_SRC_SHIFT)
+#define I40E_L4_DST_SHIFT               33
+#define I40E_L4_DST_MASK                (0x1ULL << I40E_L4_DST_SHIFT)
+#define I40E_VERIFY_TAG_SHIFT           31
+#define I40E_VERIFY_TAG_MASK            (0x3ULL << I40E_VERIFY_TAG_SHIFT)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The easiest way to verify would be to rewrite the registers for
+flow_type 29, 30, and 31 to match the value that I had shown earlier
+from my dump:
+[  294.687087] i40e 0000:81:00.1: flow_type: 31 input_mask:0x0001801e00000000
 
-x86_64                 randconfig-k0-05131404
-x86_64                 randconfig-k1-05131404
-x86_64                 randconfig-k2-05131404
-x86_64                 randconfig-k3-05131404
-i386                   randconfig-k0-05131404
-i386                   randconfig-k1-05131404
-i386                   randconfig-k2-05131404
-i386                   randconfig-k3-05131404
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-m0-05161448
-x86_64                 randconfig-m1-05161448
-x86_64                 randconfig-m2-05161448
-x86_64                 randconfig-m3-05161448
-i386                   randconfig-m0-05161448
-i386                   randconfig-m1-05161448
-i386                   randconfig-m2-05161448
-i386                   randconfig-m3-05161448
-riscv                             allnoconfig
-riscv                               defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-l0-05162303
-x86_64                 randconfig-l2-05162303
-i386                   randconfig-l1-05162303
-i386                   randconfig-l2-05162303
-x86_64                 randconfig-l0-05162303
-i386                   randconfig-l3-05162303
-x86_64                 randconfig-l1-05162303
-x86_64                 randconfig-l3-05162303
-parisc                        c3000_defconfig
-um                                  defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                   randconfig-g0-201919
-x86_64                   randconfig-g1-201919
-x86_64                   randconfig-g2-201919
-x86_64                   randconfig-g3-201919
-i386                   randconfig-x070-201919
-i386                   randconfig-x074-201919
-i386                   randconfig-x077-201919
-i386                   randconfig-x072-201919
-i386                   randconfig-x071-201919
-i386                   randconfig-x075-201919
-i386                   randconfig-x076-201919
-i386                   randconfig-x073-201919
-i386                   randconfig-x078-201919
-i386                   randconfig-x079-201919
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x018-201919
-i386                   randconfig-x010-201919
-i386                   randconfig-x013-201919
-i386                   randconfig-x017-201919
-i386                   randconfig-x014-201919
-i386                   randconfig-x011-201919
-i386                   randconfig-x012-201919
-i386                   randconfig-x016-201919
-i386                   randconfig-x015-201919
-i386                   randconfig-x019-201919
-x86_64                 randconfig-x000-201919
-x86_64                 randconfig-x001-201919
-x86_64                 randconfig-x004-201919
-x86_64                 randconfig-x007-201919
-x86_64                 randconfig-x008-201919
-x86_64                 randconfig-x003-201919
-x86_64                 randconfig-x002-201919
-x86_64                 randconfig-x005-201919
-x86_64                 randconfig-x009-201919
-x86_64                 randconfig-x006-201919
-i386                   randconfig-x005-201919
-i386                   randconfig-x001-201919
-i386                   randconfig-x002-201919
-i386                   randconfig-x007-201919
-i386                   randconfig-x008-201919
-i386                   randconfig-x004-201919
-i386                   randconfig-x000-201919
-i386                   randconfig-x003-201919
-i386                   randconfig-x006-201919
-i386                   randconfig-x009-201919
-x86_64                 randconfig-x016-201919
-x86_64                 randconfig-x015-201919
-x86_64                 randconfig-x018-201919
-x86_64                 randconfig-x013-201919
-x86_64                 randconfig-x012-201919
-x86_64                 randconfig-x017-201919
-x86_64                 randconfig-x014-201919
-x86_64                 randconfig-x010-201919
-x86_64                 randconfig-x011-201919
-x86_64                 randconfig-x019-201919
-i386                     randconfig-a0-201919
-i386                     randconfig-a1-201919
-i386                     randconfig-a2-201919
-i386                     randconfig-a3-201919
-riscv                              tinyconfig
-i386                               tinyconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-05160946
-i386                   randconfig-n1-05160946
-i386                   randconfig-n2-05160946
-i386                   randconfig-n3-05160946
-i386                   randconfig-i0-05160946
-i386                   randconfig-i1-05160946
-i386                   randconfig-i2-05160946
-i386                   randconfig-i3-05160946
+I will take a look@putting together a patch that can be tested to
+verify if this is actually the issue tomorrow.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Thanks.
+
+- Alex
