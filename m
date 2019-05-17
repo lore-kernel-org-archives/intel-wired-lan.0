@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 17 May 2019 22:25:25 +0000
-Subject: [Intel-wired-lan] [next PATCH S5 iavf 03/11] iavf: wait longer
- for close to complete
-In-Reply-To: <20190514173709.62431-3-alice.michael@intel.com>
+Date: Fri, 17 May 2019 22:25:55 +0000
+Subject: [Intel-wired-lan] [next PATCH S5 iavf 04/11] iavf: Change
+ GFP_KERNEL to GFP_ATOMIC in kzalloc()
+In-Reply-To: <20190514173709.62431-4-alice.michael@intel.com>
 References: <20190514173709.62431-1-alice.michael@intel.com>
- <20190514173709.62431-3-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DB715@ORSMSX104.amr.corp.intel.com>
+ <20190514173709.62431-4-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DB728@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,18 +18,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, May 14, 2019 10:37 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S5 iavf 03/11] iavf: wait longer for
-> close to complete
+> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S5 iavf 04/11] iavf: Change
+> GFP_KERNEL to GFP_ATOMIC in kzalloc()
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > 
-> On some hardware/driver/architecture combinations, it may take longer
-> than 200msec for all close operations to be completed, causing a spurious
-> error message to be logged.
+> iavf_add_vlan() is being called in atomic context so kzalloc() needs
+> GFP_ATOMIC. This patch fixes it.
 > 
-> Increase the timeout value to 500msec to avoid this erroneous error.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > ---
 >  drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
