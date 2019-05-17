@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 17 May 2019 22:29:06 +0000
-Subject: [Intel-wired-lan] [next PATCH S5 iavf 11/11] iavf: allow null
- RX descriptors
-In-Reply-To: <20190514173709.62431-11-alice.michael@intel.com>
-References: <20190514173709.62431-1-alice.michael@intel.com>
- <20190514173709.62431-11-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DB797@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 17 May 2019 22:34:19 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e/i40evf: cleanup
+ i40e_update_nvm_checksum()
+In-Reply-To: <20190509101051.GB7024@mwanda>
+References: <20190509101051.GB7024@mwanda>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DB7A7@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,29 +13,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Tuesday, May 14, 2019 10:37 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S5 iavf 11/11] iavf: allow null RX
-> descriptors
+> Behalf Of Dan Carpenter
+> Sent: Thursday, May 9, 2019 3:11 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: kernel-janitors at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] i40e/i40evf: cleanup
+> i40e_update_nvm_checksum()
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> Smatch complains that we use 'checksum' when it's uninitialized.
 > 
-> In some circumstances, the hardware can hand us a null receive descriptor,
-> with no data attached but otherwise valid. Unfortunately, the driver was ill-
-> equipped to handle such an event, and would stop processing packets at that
-> point.
+>     drivers/net/ethernet/intel/i40e/i40e_nvm.c:581
+> i40e_update_nvm_checksum()
+>     error: uninitialized symbol 'checksum'.
 > 
-> To fix this, use the Descriptor Done bit instead of the size to determine
-> whether or not a descriptor is ready to be processed. Add some checks to
-> allow for unused buffers.
+> This is true, but it harmless because we don't use it again.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf_txrx.c | 21 ++++++++++++++++++---
->  1 file changed, 18 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+kernel-janitors at vger.kernel.org; intel-wired-lan at lists.osuosl.org
 
 
