@@ -1,84 +1,38 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 17 May 2019 15:20:02 -0700
-Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
- IPsec packets
-In-Reply-To: <20190517172317.amopafirjfizlgej@csclub.uwaterloo.ca>
-References: <CAKgT0UcV2wCr6iUYktZ+Bju_GNpXKzR=M+NLfKhUsw4bsJSiyA@mail.gmail.com>
- <20190503205935.bg45rsso5jjj3gnx@csclub.uwaterloo.ca>
- <20190513165547.alkkgcsdelaznw6v@csclub.uwaterloo.ca>
- <CAKgT0Uf_nqZtCnHmC=-oDFz-3PuSM6=30BvJSDiAgzK062OY6w@mail.gmail.com>
- <20190514163443.glfjva3ofqcy7lbg@csclub.uwaterloo.ca>
- <CAKgT0UdPDyCBsShQVwwE5C8fBKkMcfS6_S5m3T7JP-So9fzVgA@mail.gmail.com>
- <20190516183407.qswotwyjwtjqfdqm@csclub.uwaterloo.ca>
- <20190516183705.e4zflbli7oujlbek@csclub.uwaterloo.ca>
- <CAKgT0UfSa-dM2+7xntK9tB7Zw5N8nDd3U1n4OSK0gbWbkNSKJQ@mail.gmail.com>
- <CAKgT0Ucd0s_0F5_nwqXknRngwROyuecUt+4bYzWvp1-2cNSg7g@mail.gmail.com>
- <20190517172317.amopafirjfizlgej@csclub.uwaterloo.ca>
-Message-ID: <CAKgT0UdM28pSTCsaT=TWqmQwCO44NswS0PqFLAzgs9pmn41VeQ@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 17 May 2019 22:24:34 +0000
+Subject: [Intel-wired-lan] [next PATCH S5 iavf 01/11] iavf: Create VLAN
+ tag elements starting from the first element
+In-Reply-To: <20190514173709.62431-1-alice.michael@intel.com>
+References: <20190514173709.62431-1-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DB6F9@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, May 17, 2019 at 10:23 AM Lennart Sorensen
-<lsorense@csclub.uwaterloo.ca> wrote:
-> OK I applied that and see this:
->
-> i40e: Intel(R) Ethernet Connection XL710 Network Driver - version 2.1.7-k
-> i40e: Copyright (c) 2013 - 2014 Intel Corporation.
-> i40e 0000:3d:00.0: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
-> i40e 0000:3d:00.0: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
-> i40e 0000:3d:00.0: MAC address: a4:bf:01:4e:0c:87
-> i40e 0000:3d:00.0: flow type: 36 update input mask from:0x0006060000000000, to:0x0001801800000000
-> i40e 0000:3d:00.0: flow type: 35 update input mask from:0x0006060000000000, to:0x0001801800000000
-> i40e 0000:3d:00.0: flow type: 34 update input mask from:0x0006060780000000, to:0x0001801f80000000
-> i40e 0000:3d:00.0: flow type: 33 update input mask from:0x0006060600000000, to:0x0001801e00000000
-> i40e 0000:3d:00.0: flow type: 32 update input mask from:0x0006060600000000, to:0x0001801e00000000
-> i40e 0000:3d:00.0: flow type: 31 update input mask from:0x0006060600000000, to:0x0001801e00000000
-> i40e 0000:3d:00.0: flow type: 30 update input mask from:0x0006060600000000, to:0x0001801e00000000
-> i40e 0000:3d:00.0: flow type: 29 update input mask from:0x0006060600000000, to:0x0001801e00000000
-> i40e 0000:3d:00.0: Features: PF-id[0] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
-> i40e 0000:3d:00.1: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
-> i40e 0000:3d:00.1: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
-> i40e 0000:3d:00.1: MAC address: a4:bf:01:4e:0c:88
-> i40e 0000:3d:00.1: Features: PF-id[1] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
-> i40e 0000:3d:00.1 eth2: NIC Link is Up, 1000 Mbps Full Duplex, Flow Control: None
->
-> Unfortunately (much to my disappointment, I hoped it would work) I see
-> no change in behaviour.
->
-> --
-> Len Sorensen
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Alice Michael
+> Sent: Tuesday, May 14, 2019 10:37 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: Abodunrin, Akeem G <akeem.g.abodunrin@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S5 iavf 01/11] iavf: Create VLAN tag
+> elements starting from the first element
+> 
+> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> 
+> This patch changes how VLAN tag are being populated and programmed into
+> the HW - Instead of start adding VF VLAN tag from the last member of the
+> element list, start from the first member of the list, until number of allowed
+> VLAN tags is exhausted in the HW.
+> 
+> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-I was hoping it would work too. It seemed like it should have been the
-answer since it definitely didn't seem right. Now it has me wondering
-about some of the other code in the driver.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-By any chance have you run anything like DPDK on any of the X722
-interfaces on this system recently? I ask because it occurs to me that
-if you had and it loaded something like a custom parsing profile it
-could cause issues similar to this.
 
-A debugging step you might try would be to revert back to my earlier
-patch that only displayed the input mask instead of changing it. Once
-you have done that you could look at doing a full power cycle on the
-system by either physically disconnecting the power, or using the
-power switch on the power supply itself if one is available. It is
-necessary to disconnect the motherboard/NIC from power in order to
-fully clear the global state stored in the device as it is retained
-when the system is in standby.
-
-What I want to verify is if the input mask that we have ran into is
-the natural power-on input mask of if that is something that was
-overridden by something else. The mask change I made should be reset
-if the system loses power, and then it will either default back to the
-value with the 6's if that is it's natural state, or it will match
-what I had if it was not.
-
-Other than that I really can't think up too much else. I suppose there
-is the possibility of the NVM either setting up a DCB setting or
-HREGION register causing an override that is limiting the queues to 1.
-However, the likelihood of that should be really low.
-
-- Alex
