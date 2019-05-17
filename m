@@ -1,358 +1,92 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Fri, 17 May 2019 16:55:00 +0200
-Subject: [Intel-wired-lan] [PATCH] Reduce e1000e boot time by tightening
- sleep ranges
-Message-ID: <8ef1b846-caf6-45de-33aa-a46406548167@molgen.mpg.de>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 17 May 2019 08:16:34 -0700
+Subject: [Intel-wired-lan] [PATCH] igb: add parameter to ignore nvm
+ checksum validation
+In-Reply-To: <bd9e6a93-c8e8-a90e-25b0-26ccbf65b7c4@gmail.com>
+References: <1557357269-9498-1-git-send-email-nkela@cisco.com>
+ <9be117dc6e818ab83376cd8e0f79dbfaaf193aa9.camel@intel.com>
+ <76B41175-0CEE-466C-91BF-89A1CA857061@cisco.com>
+ <4469196a-0705-5459-8aca-3f08e9889d61@gmail.com>
+ <20190517010330.2wynopuhsqycqzuq@zorba>
+ <bd9e6a93-c8e8-a90e-25b0-26ccbf65b7c4@gmail.com>
+Message-ID: <CAKgT0Uev7sfpOOhusAg9jFLkFeE9JtTntyTd0aAHz2db69L13g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
- From 6ce17ba6e04802462425ee9d38084523fc1a7ab6 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Mon, 25 Jul 2016 06:44:34 -0500
+On Thu, May 16, 2019 at 6:48 PM Florian Fainelli <f.fainelli@gmail.com> wrote:
+>
+>
+>
+> On 5/16/2019 6:03 PM, Daniel Walker wrote:
+> > On Thu, May 16, 2019 at 03:02:18PM -0700, Florian Fainelli wrote:
+> >> On 5/16/19 12:55 PM, Nikunj Kela (nkela) wrote:
+> >>>
+> >>>
+> >>> On 5/16/19, 12:35 PM, "Jeff Kirsher" <jeffrey.t.kirsher@intel.com> wrote:
+> >>>
+> >>>     On Wed, 2019-05-08 at 23:14 +0000, Nikunj Kela wrote:
+> >>>    >> Some of the broken NICs don't have EEPROM programmed correctly. It
+> >>>    >> results
+> >>>    >> in probe to fail. This change adds a module parameter that can be
+> >>>    >> used to
+> >>>    >> ignore nvm checksum validation.
+> >>>    >>
+> >>>    >> Cc: xe-linux-external at cisco.com
+> >>>    >> Signed-off-by: Nikunj Kela <nkela@cisco.com>
+> >>>    >> ---
+> >>>    >>  drivers/net/ethernet/intel/igb/igb_main.c | 28
+> >>>    >> ++++++++++++++++++++++------
+> >>>    >>  1 file changed, 22 insertions(+), 6 deletions(-)
+> >>>
+> >>>     >NAK for two reasons.  First, module parameters are not desirable
+> >>>     >because their individual to one driver and a global solution should be
+> >>>     >found so that all networking device drivers can use the solution.  This
+> >>>     >will keep the interface to change/setup/modify networking drivers
+> >>>     >consistent for all drivers.
+> >>>
+> >>>
+> >>>     >Second and more importantly, if your NIC is broken, fix it.  Do not try
+> >>>     >and create a software workaround so that you can continue to use a
+> >>>     >broken NIC.  There are methods/tools available to properly reprogram
+> >>>     >the EEPROM on a NIC, which is the right solution for your issue.
+> >>>
+> >>> I am proposing this as a debug parameter. Obviously, we need to fix EEPROM but this helps us continuing the development while manufacturing fixes NIC.
+> >>
+> >> Then why even bother with sending this upstream?
+> >
+> > It seems rather drastic to disable the entire driver because the checksum
+> > doesn't match. It really should be a warning, even a big warning, to let people
+> > know something is wrong, but disabling the whole driver doesn't make sense.
+>
+> You could generate a random Ethernet MAC address if you don't have a
+> valid one, a lot of drivers do that, and that's a fairly reasonable
+> behavior. At some point in your product development someone will
+> certainly verify that the provisioned MAC address matches the network
+> interface's MAC address.
+> --
+> Florian
 
-The e1000e driver is a great user of the usleep_range() API,
-and has nice ranges that in principle help power management.
+The thing is the EEPROM contains much more than just the MAC address.
+There ends up being configuration for some of the PCIe interface in
+the hardware as well as PHY configuration. If that is somehow mangled
+we shouldn't be bringing up the part because there are one or more
+pieces of the device configuration that are likely wrong.
 
-However the ranges that are used only during system startup are
-very long (and can add easily 100 msec to the boot time) while
-the power savings of such long ranges is irrelevant due to the
-one-off, boot only, nature of these functions.
+The checksum is being used to make sure the EEPROM is valid, without
+that we would need to go through and validate each individual section
+of the EEPROM before enabling the the portions of the device related
+to it. The concern is that this will become a slippery slope where we
+eventually have to code all the configuration of the EEPROM into the
+driver itself.
 
-This patch shrinks some of the longest ranges to be shorter
-(while still using a power friendly 1 msec range); this saves
-100msec+ of boot time on my BDW NUCs
+We need to make the checksum a hard stop. If the part is broken then
+it needs to be addressed. Workarounds just end up being used and
+forgotten, which makes it that much harder to support the product.
+Better to mark the part as being broken, and get it fixed now, than to
+have parts start shipping that require workarounds in order to
+function.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
----
-
-This upstreams a patch carried by the Clear Linux project [1].
-
-[1]: 
-https://github.com/clearlinux-pkgs/linux/blob/master/0111-reduce-e1000e-boot-time-by-tightening-sleep-ranges.patch
-
-  .../net/ethernet/intel/e1000e/80003es2lan.c   |  2 +-
-  drivers/net/ethernet/intel/e1000e/82571.c     |  2 +-
-  drivers/net/ethernet/intel/e1000e/ethtool.c   | 14 ++++++-------
-  drivers/net/ethernet/intel/e1000e/ich8lan.c   | 20 +++++++++----------
-  drivers/net/ethernet/intel/e1000e/mac.c       |  2 +-
-  drivers/net/ethernet/intel/e1000e/netdev.c    | 14 ++++++-------
-  drivers/net/ethernet/intel/e1000e/nvm.c       |  2 +-
-  7 files changed, 28 insertions(+), 28 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/80003es2lan.c 
-b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-index 257bd59bc9c6..94bce9823336 100644
---- a/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-@@ -680,7 +680,7 @@ static s32 e1000_reset_hw_80003es2lan(struct 
-e1000_hw *hw)
-  	ew32(TCTL, E1000_TCTL_PSP);
-  	e1e_flush();
-
--	usleep_range(10000, 20000);
-+	usleep_range(10000, 11000);
-
-  	ctrl = er32(CTRL);
-
-diff --git a/drivers/net/ethernet/intel/e1000e/82571.c 
-b/drivers/net/ethernet/intel/e1000e/82571.c
-index b9309302c29e..2c1bab377b2a 100644
---- a/drivers/net/ethernet/intel/e1000e/82571.c
-+++ b/drivers/net/ethernet/intel/e1000e/82571.c
-@@ -959,7 +959,7 @@ static s32 e1000_reset_hw_82571(struct e1000_hw *hw)
-  	ew32(TCTL, tctl);
-  	e1e_flush();
-
--	usleep_range(10000, 20000);
-+	usleep_range(10000, 11000);
-
-  	/* Must acquire the MDIO ownership before MAC reset.
-  	 * Ownership defaults to firmware after a reset.
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c 
-b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 02ebf208f48b..08342698386d 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -1014,7 +1014,7 @@ static int e1000_intr_test(struct e1000_adapter 
-*adapter, u64 *data)
-  	/* Disable all the interrupts */
-  	ew32(IMC, 0xFFFFFFFF);
-  	e1e_flush();
--	usleep_range(10000, 20000);
-+	usleep_range(10000, 11000);
-
-  	/* Test each interrupt */
-  	for (i = 0; i < 10; i++) {
-@@ -1046,7 +1046,7 @@ static int e1000_intr_test(struct e1000_adapter 
-*adapter, u64 *data)
-  			ew32(IMC, mask);
-  			ew32(ICS, mask);
-  			e1e_flush();
--			usleep_range(10000, 20000);
-+			usleep_range(10000, 11000);
-
-  			if (adapter->test_icr & mask) {
-  				*data = 3;
-@@ -1064,7 +1064,7 @@ static int e1000_intr_test(struct e1000_adapter 
-*adapter, u64 *data)
-  		ew32(IMS, mask);
-  		ew32(ICS, mask);
-  		e1e_flush();
--		usleep_range(10000, 20000);
-+		usleep_range(10000, 11000);
-
-  		if (!(adapter->test_icr & mask)) {
-  			*data = 4;
-@@ -1082,7 +1082,7 @@ static int e1000_intr_test(struct e1000_adapter 
-*adapter, u64 *data)
-  			ew32(IMC, ~mask & 0x00007FFF);
-  			ew32(ICS, ~mask & 0x00007FFF);
-  			e1e_flush();
--			usleep_range(10000, 20000);
-+			usleep_range(10000, 11000);
-
-  			if (adapter->test_icr) {
-  				*data = 5;
-@@ -1094,7 +1094,7 @@ static int e1000_intr_test(struct e1000_adapter 
-*adapter, u64 *data)
-  	/* Disable all the interrupts */
-  	ew32(IMC, 0xFFFFFFFF);
-  	e1e_flush();
--	usleep_range(10000, 20000);
-+	usleep_range(10000, 11000);
-
-  	/* Unhook test interrupt handler */
-  	free_irq(irq, netdev);
-@@ -1470,7 +1470,7 @@ static int e1000_set_82571_fiber_loopback(struct 
-e1000_adapter *adapter)
-  	 */
-  	ew32(SCTL, E1000_SCTL_ENABLE_SERDES_LOOPBACK);
-  	e1e_flush();
--	usleep_range(10000, 20000);
-+	usleep_range(10000, 11000);
-
-  	return 0;
-  }
-@@ -1584,7 +1584,7 @@ static void e1000_loopback_cleanup(struct 
-e1000_adapter *adapter)
-  		    hw->phy.media_type == e1000_media_type_internal_serdes) {
-  			ew32(SCTL, E1000_SCTL_DISABLE_SERDES_LOOPBACK);
-  			e1e_flush();
--			usleep_range(10000, 20000);
-+			usleep_range(10000, 11000);
-  			break;
-  		}
-  		/* Fall Through */
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c 
-b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index cdae0efde8e6..395b05701480 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -271,7 +271,7 @@ static void e1000_toggle_lanphypc_pch_lpt(struct 
-e1000_hw *hw)
-  		u16 count = 20;
-
-  		do {
--			usleep_range(5000, 10000);
-+			usleep_range(5000, 6000);
-  		} while (!(er32(CTRL_EXT) & E1000_CTRL_EXT_LPCD) && count--);
-
-  		msleep(30);
-@@ -405,7 +405,7 @@ static s32 e1000_init_phy_workarounds_pchlan(struct 
-e1000_hw *hw)
-  	/* Ungate automatic PHY configuration on non-managed 82579 */
-  	if ((hw->mac.type == e1000_pch2lan) &&
-  	    !(fwsm & E1000_ICH_FWSM_FW_VALID)) {
--		usleep_range(10000, 20000);
-+		usleep_range(10000, 11000);
-  		e1000_gate_hw_phy_config_ich8lan(hw, false);
-  	}
-
-@@ -531,7 +531,7 @@ static s32 e1000_init_phy_params_ich8lan(struct 
-e1000_hw *hw)
-  	phy->id = 0;
-  	while ((e1000_phy_unknown == e1000e_get_phy_type_from_id(phy->id)) &&
-  	       (i++ < 100)) {
--		usleep_range(1000, 2000);
-+		usleep_range(1000, 1100);
-  		ret_val = e1000e_get_phy_id(hw);
-  		if (ret_val)
-  			return ret_val;
-@@ -1244,7 +1244,7 @@ static s32 e1000_disable_ulp_lpt_lp(struct 
-e1000_hw *hw, bool force)
-  				goto out;
-  			}
-
--			usleep_range(10000, 20000);
-+			usleep_range(10000, 11000);
-  		}
-  		e_dbg("ULP_CONFIG_DONE cleared after %dmsec\n", i * 10);
-
-@@ -1999,7 +1999,7 @@ static s32 e1000_check_reset_block_ich8lan(struct 
-e1000_hw *hw)
-
-  	while ((blocked = !(er32(FWSM) & E1000_ICH_FWSM_RSPCIPHY)) &&
-  	       (i++ < 30))
--		usleep_range(10000, 20000);
-+		usleep_range(10000, 11000);
-  	return blocked ? E1000_BLK_PHY_RESET : 0;
-  }
-
-@@ -2818,7 +2818,7 @@ static s32 e1000_post_phy_reset_ich8lan(struct 
-e1000_hw *hw)
-  		return 0;
-
-  	/* Allow time for h/w to get to quiescent state after reset */
--	usleep_range(10000, 20000);
-+	usleep_range(10000, 11000);
-
-  	/* Perform any necessary post-reset workarounds */
-  	switch (hw->mac.type) {
-@@ -2854,7 +2854,7 @@ static s32 e1000_post_phy_reset_ich8lan(struct 
-e1000_hw *hw)
-  	if (hw->mac.type == e1000_pch2lan) {
-  		/* Ungate automatic PHY configuration on non-managed 82579 */
-  		if (!(er32(FWSM) & E1000_ICH_FWSM_FW_VALID)) {
--			usleep_range(10000, 20000);
-+			usleep_range(10000, 11000);
-  			e1000_gate_hw_phy_config_ich8lan(hw, false);
-  		}
-
-@@ -3875,7 +3875,7 @@ static s32 e1000_update_nvm_checksum_spt(struct 
-e1000_hw *hw)
-  	 */
-  	if (!ret_val) {
-  		nvm->ops.reload(hw);
--		usleep_range(10000, 20000);
-+		usleep_range(10000, 11000);
-  	}
-
-  out:
-@@ -4026,7 +4026,7 @@ static s32 
-e1000_update_nvm_checksum_ich8lan(struct e1000_hw *hw)
-  	 */
-  	if (!ret_val) {
-  		nvm->ops.reload(hw);
--		usleep_range(10000, 20000);
-+		usleep_range(10000, 11000);
-  	}
-
-  out:
-@@ -4650,7 +4650,7 @@ static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw)
-  	ew32(TCTL, E1000_TCTL_PSP);
-  	e1e_flush();
-
--	usleep_range(10000, 20000);
-+	usleep_range(10000, 11000);
-
-  	/* Workaround for ICH8 bit corruption issue in FIFO memory */
-  	if (hw->mac.type == e1000_ich8lan) {
-diff --git a/drivers/net/ethernet/intel/e1000e/mac.c 
-b/drivers/net/ethernet/intel/e1000e/mac.c
-index 4abd55d646c5..e531976f8a67 100644
---- a/drivers/net/ethernet/intel/e1000e/mac.c
-+++ b/drivers/net/ethernet/intel/e1000e/mac.c
-@@ -797,7 +797,7 @@ static s32 
-e1000_poll_fiber_serdes_link_generic(struct e1000_hw *hw)
-  	 * milliseconds even if the other end is doing it in SW).
-  	 */
-  	for (i = 0; i < FIBER_LINK_UP_LIMIT; i++) {
--		usleep_range(10000, 20000);
-+		usleep_range(10000, 11000);
-  		status = er32(STATUS);
-  		if (status & E1000_STATUS_LU)
-  			break;
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c 
-b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 189f231075c2..ce4aaa9f2163 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3208,7 +3208,7 @@ static void e1000_configure_rx(struct 
-e1000_adapter *adapter)
-  	if (!(adapter->flags2 & FLAG2_NO_DISABLE_RX))
-  		ew32(RCTL, rctl & ~E1000_RCTL_EN);
-  	e1e_flush();
--	usleep_range(10000, 20000);
-+	usleep_range(10000, 11000);
-
-  	if (adapter->flags2 & FLAG2_DMA_BURST) {
-  		/* set the writeback threshold (only takes effect if the RDTR
-@@ -4273,7 +4273,7 @@ void e1000e_down(struct e1000_adapter *adapter, 
-bool reset)
-
-  	/* flush both disables and wait for them to finish */
-  	e1e_flush();
--	usleep_range(10000, 20000);
-+	usleep_range(10000, 11000);
-
-  	e1000_irq_disable(adapter);
-
-@@ -4311,7 +4311,7 @@ void e1000e_reinit_locked(struct e1000_adapter 
-*adapter)
-  {
-  	might_sleep();
-  	while (test_and_set_bit(__E1000_RESETTING, &adapter->state))
--		usleep_range(1000, 2000);
-+		usleep_range(1000, 1100);
-  	e1000e_down(adapter, true);
-  	e1000e_up(adapter);
-  	clear_bit(__E1000_RESETTING, &adapter->state);
-@@ -4708,7 +4708,7 @@ int e1000e_close(struct net_device *netdev)
-  	int count = E1000_CHECK_RESET_COUNT;
-
-  	while (test_bit(__E1000_RESETTING, &adapter->state) && count--)
--		usleep_range(10000, 20000);
-+		usleep_range(10000, 11000);
-
-  	WARN_ON(test_bit(__E1000_RESETTING, &adapter->state));
-
-@@ -6026,7 +6026,7 @@ static int e1000_change_mtu(struct net_device 
-*netdev, int new_mtu)
-  	}
-
-  	while (test_and_set_bit(__E1000_RESETTING, &adapter->state))
--		usleep_range(1000, 2000);
-+		usleep_range(1000, 1100);
-  	/* e1000e_down -> e1000e_reset dependent on max_frame_size & mtu */
-  	adapter->max_frame_size = max_frame;
-  	e_info("changing MTU from %d to %d\n", netdev->mtu, new_mtu);
-@@ -6306,7 +6306,7 @@ static int e1000e_pm_freeze(struct device *dev)
-  		int count = E1000_CHECK_RESET_COUNT;
-
-  		while (test_bit(__E1000_RESETTING, &adapter->state) && count--)
--			usleep_range(10000, 20000);
-+			usleep_range(10000, 11000);
-
-  		WARN_ON(test_bit(__E1000_RESETTING, &adapter->state));
-
-@@ -6721,7 +6721,7 @@ static int e1000e_pm_runtime_suspend(struct device 
-*dev)
-  		int count = E1000_CHECK_RESET_COUNT;
-
-  		while (test_bit(__E1000_RESETTING, &adapter->state) && count--)
--			usleep_range(10000, 20000);
-+			usleep_range(10000, 11000);
-
-  		WARN_ON(test_bit(__E1000_RESETTING, &adapter->state));
-
-diff --git a/drivers/net/ethernet/intel/e1000e/nvm.c 
-b/drivers/net/ethernet/intel/e1000e/nvm.c
-index 937f9af22d26..e609f4df86f4 100644
---- a/drivers/net/ethernet/intel/e1000e/nvm.c
-+++ b/drivers/net/ethernet/intel/e1000e/nvm.c
-@@ -392,7 +392,7 @@ s32 e1000e_write_nvm_spi(struct e1000_hw *hw, u16 
-offset, u16 words, u16 *data)
-  				break;
-  			}
-  		}
--		usleep_range(10000, 20000);
-+		usleep_range(10000, 11000);
-  		nvm->ops.release(hw);
-  	}
-
--- 
-2.20.1
+- Alex
