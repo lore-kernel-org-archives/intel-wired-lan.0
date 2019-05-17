@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 17 May 2019 22:28:42 +0000
-Subject: [Intel-wired-lan] [next PATCH S5 iavf 10/11] iavf: add call to
- iavf_[add|del]_cloud_filter
-In-Reply-To: <20190514173709.62431-10-alice.michael@intel.com>
+Date: Fri, 17 May 2019 22:29:06 +0000
+Subject: [Intel-wired-lan] [next PATCH S5 iavf 11/11] iavf: allow null
+ RX descriptors
+In-Reply-To: <20190514173709.62431-11-alice.michael@intel.com>
 References: <20190514173709.62431-1-alice.michael@intel.com>
- <20190514173709.62431-10-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DB787@ORSMSX104.amr.corp.intel.com>
+ <20190514173709.62431-11-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DB797@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,29 +18,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, May 14, 2019 10:37 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S5 iavf 10/11] iavf: add call to
-> iavf_[add|del]_cloud_filter
+> Subject: [Intel-wired-lan] [next PATCH S5 iavf 11/11] iavf: allow null RX
+> descriptors
 > 
-> From: Paul Greenwalt <paul.greenwalt@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> Add call to iavf_add_cloud_filter and iavf_del_cloud_filter from
-> iavf_process_aq_command to clear aq_required
-> IAVF_FLAG_AQ_ADD_CLOUD_FILTER and
-> IAVF_FLAG_AQ_DEL_CLOUD_FILTER bits.
+> In some circumstances, the hardware can hand us a null receive descriptor,
+> with no data attached but otherwise valid. Unfortunately, the driver was ill-
+> equipped to handle such an event, and would stop processing packets at that
+> point.
 > 
-> aq_required IAVF_FLAG_AQ_DEL_CLOUD_FILTER bit is being set in
-> iavf_down and iavf_delete_clsflower, and are never cleared.
+> To fix this, use the Descriptor Done bit instead of the size to determine
+> whether or not a descriptor is ready to be processed. Add some checks to
+> allow for unused buffers.
 > 
-> aq_required IAVF_FLAG_AQ_ADD_CLOUD_FILTER bit is being set in
-> iavf_handle_reset and iavf_configure_clsflower, and are never cleared.
-> 
-> Since the aq_required is not zero, iavf_watchdog_task is setting the
-> queue_delayed_work to 20 msec instead of the longer delay.
-> 
-> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/iavf/iavf_txrx.c | 21 ++++++++++++++++++---
+>  1 file changed, 18 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
