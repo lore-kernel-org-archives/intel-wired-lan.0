@@ -1,70 +1,84 @@
-From: Daniel Walker <danielwa@cisco.com>
-Date: Fri, 17 May 2019 11:09:36 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: add parameter to ignore nvm
- checksum validation
-In-Reply-To: <CAKgT0Ue0b1QxG2ijegbHFz-2Wpxga0ffvhsfDg4VLDRaDSFvdw@mail.gmail.com>
-References: <1557357269-9498-1-git-send-email-nkela@cisco.com>
- <9be117dc6e818ab83376cd8e0f79dbfaaf193aa9.camel@intel.com>
- <76B41175-0CEE-466C-91BF-89A1CA857061@cisco.com>
- <4469196a-0705-5459-8aca-3f08e9889d61@gmail.com>
- <20190517010330.2wynopuhsqycqzuq@zorba>
- <bd9e6a93-c8e8-a90e-25b0-26ccbf65b7c4@gmail.com>
- <CAKgT0Uev7sfpOOhusAg9jFLkFeE9JtTntyTd0aAHz2db69L13g@mail.gmail.com>
- <20190517163643.7tlch7xqplxohoq7@zorba>
- <CAKgT0Ue0b1QxG2ijegbHFz-2Wpxga0ffvhsfDg4VLDRaDSFvdw@mail.gmail.com>
-Message-ID: <20190517180936.nwsw7brjo2yfvnol@zorba>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 17 May 2019 15:20:02 -0700
+Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
+ IPsec packets
+In-Reply-To: <20190517172317.amopafirjfizlgej@csclub.uwaterloo.ca>
+References: <CAKgT0UcV2wCr6iUYktZ+Bju_GNpXKzR=M+NLfKhUsw4bsJSiyA@mail.gmail.com>
+ <20190503205935.bg45rsso5jjj3gnx@csclub.uwaterloo.ca>
+ <20190513165547.alkkgcsdelaznw6v@csclub.uwaterloo.ca>
+ <CAKgT0Uf_nqZtCnHmC=-oDFz-3PuSM6=30BvJSDiAgzK062OY6w@mail.gmail.com>
+ <20190514163443.glfjva3ofqcy7lbg@csclub.uwaterloo.ca>
+ <CAKgT0UdPDyCBsShQVwwE5C8fBKkMcfS6_S5m3T7JP-So9fzVgA@mail.gmail.com>
+ <20190516183407.qswotwyjwtjqfdqm@csclub.uwaterloo.ca>
+ <20190516183705.e4zflbli7oujlbek@csclub.uwaterloo.ca>
+ <CAKgT0UfSa-dM2+7xntK9tB7Zw5N8nDd3U1n4OSK0gbWbkNSKJQ@mail.gmail.com>
+ <CAKgT0Ucd0s_0F5_nwqXknRngwROyuecUt+4bYzWvp1-2cNSg7g@mail.gmail.com>
+ <20190517172317.amopafirjfizlgej@csclub.uwaterloo.ca>
+Message-ID: <CAKgT0UdM28pSTCsaT=TWqmQwCO44NswS0PqFLAzgs9pmn41VeQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, May 17, 2019 at 09:58:46AM -0700, Alexander Duyck wrote:
-> > I don't think you can say because the checksum is valid that all data contained
-> > inside is also valid. You can have a valid checksum , and someone screwed up the
-> > data prior to the checksum getting computed.
-> 
-> If someone screwed up the data prior to writing the checksum then that
-> is on them. In theory we could also have a multi-bit error that could
-> similarly be missed. However if the checksum is not valid then the
-> data contained in the NVM does not match what was originally written,
-> so we know we have bad data. Why should we act on the data if we know
-> it is bad?
- 
-It's hypothetical , but it's likely someone has screwed up the data prior to the
-checksum getting computed.
+On Fri, May 17, 2019 at 10:23 AM Lennart Sorensen
+<lsorense@csclub.uwaterloo.ca> wrote:
+> OK I applied that and see this:
+>
+> i40e: Intel(R) Ethernet Connection XL710 Network Driver - version 2.1.7-k
+> i40e: Copyright (c) 2013 - 2014 Intel Corporation.
+> i40e 0000:3d:00.0: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
+> i40e 0000:3d:00.0: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
+> i40e 0000:3d:00.0: MAC address: a4:bf:01:4e:0c:87
+> i40e 0000:3d:00.0: flow type: 36 update input mask from:0x0006060000000000, to:0x0001801800000000
+> i40e 0000:3d:00.0: flow type: 35 update input mask from:0x0006060000000000, to:0x0001801800000000
+> i40e 0000:3d:00.0: flow type: 34 update input mask from:0x0006060780000000, to:0x0001801f80000000
+> i40e 0000:3d:00.0: flow type: 33 update input mask from:0x0006060600000000, to:0x0001801e00000000
+> i40e 0000:3d:00.0: flow type: 32 update input mask from:0x0006060600000000, to:0x0001801e00000000
+> i40e 0000:3d:00.0: flow type: 31 update input mask from:0x0006060600000000, to:0x0001801e00000000
+> i40e 0000:3d:00.0: flow type: 30 update input mask from:0x0006060600000000, to:0x0001801e00000000
+> i40e 0000:3d:00.0: flow type: 29 update input mask from:0x0006060600000000, to:0x0001801e00000000
+> i40e 0000:3d:00.0: Features: PF-id[0] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
+> i40e 0000:3d:00.1: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
+> i40e 0000:3d:00.1: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
+> i40e 0000:3d:00.1: MAC address: a4:bf:01:4e:0c:88
+> i40e 0000:3d:00.1: Features: PF-id[1] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
+> i40e 0000:3d:00.1 eth2: NIC Link is Up, 1000 Mbps Full Duplex, Flow Control: None
+>
+> Unfortunately (much to my disappointment, I hoped it would work) I see
+> no change in behaviour.
+>
+> --
+> Len Sorensen
 
-> > > We need to make the checksum a hard stop. If the part is broken then
-> > > it needs to be addressed. Workarounds just end up being used and
-> > > forgotten, which makes it that much harder to support the product.
-> > > Better to mark the part as being broken, and get it fixed now, than to
-> > > have parts start shipping that require workarounds in order to
-> > > function.o
-> >
-> > I don't think it's realistic to define the development process for large
-> > corporations like Cisco, or like what your doing , to define the development
-> > process for all corporations and products which may use intel parts. It's better
-> > to be flexible.
-> >
-> > Daniel
-> 
-> This isn't about development. If you are doing development you can do
-> whatever you want with your own downstream driver. What you are
-> attempting to do is update the upstream driver which is used in
-> production environments.
- 
-Cisco has this issue in development, and in production. So your right, it's not
-about development in isolation. People make mistakes..
+I was hoping it would work too. It seemed like it should have been the
+answer since it definitely didn't seem right. Now it has me wondering
+about some of the other code in the driver.
 
-> What concerns me is when this module parameter gets used in a
-> development environment and then slips into being required for a
-> production environment. At that point it defeats the whole point of
-> the checksum in the first place.
+By any chance have you run anything like DPDK on any of the X722
+interfaces on this system recently? I ask because it occurs to me that
+if you had and it loaded something like a custom parsing profile it
+could cause issues similar to this.
 
-I agree .. Ultimately it's the choice of the OEM, if it gets into production
-then it's their product and they support the product. As I was saying in a prior
-email it should be a priority of the driver to give flexibility for mistakes
-people will inevitably make.
+A debugging step you might try would be to revert back to my earlier
+patch that only displayed the input mask instead of changing it. Once
+you have done that you could look at doing a full power cycle on the
+system by either physically disconnecting the power, or using the
+power switch on the power supply itself if one is available. It is
+necessary to disconnect the motherboard/NIC from power in order to
+fully clear the global state stored in the device as it is retained
+when the system is in standby.
 
-Daniel
+What I want to verify is if the input mask that we have ran into is
+the natural power-on input mask of if that is something that was
+overridden by something else. The mask change I made should be reset
+if the system loses power, and then it will either default back to the
+value with the 6's if that is it's natural state, or it will match
+what I had if it was not.
 
+Other than that I really can't think up too much else. I suppose there
+is the possibility of the NVM either setting up a DCB setting or
+HREGION register causing an override that is limiting the queues to 1.
+However, the likelihood of that should be really low.
+
+- Alex
