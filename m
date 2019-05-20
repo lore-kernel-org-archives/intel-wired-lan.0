@@ -1,33 +1,49 @@
 From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Mon, 20 May 2019 08:31:32 +0300
-Subject: [Intel-wired-lan] [PATCH] Reduce e1000e boot time by tightening
- sleep ranges
-In-Reply-To: <057ec48b-6d98-7177-d280-15679c8e66ac@molgen.mpg.de>
-References: <8ef1b846-caf6-45de-33aa-a46406548167@molgen.mpg.de>
- <057ec48b-6d98-7177-d280-15679c8e66ac@molgen.mpg.de>
-Message-ID: <9e2407a7-09c6-884d-e3e0-0af808552831@intel.com>
+Date: Mon, 20 May 2019 09:08:36 +0300
+Subject: [Intel-wired-lan] [PATCH] e1000e: Increase pause and refresh
+ time
+In-Reply-To: <d185164e-d09f-39ab-74f0-0c483ab52e67@molgen.mpg.de>
+References: <d185164e-d09f-39ab-74f0-0c483ab52e67@molgen.mpg.de>
+Message-ID: <5507809f-b2f1-429a-64a7-e59d60c76a4a@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 5/17/2019 17:58, Paul Menzel wrote:
-> Dear Jeff,
+On 5/17/2019 18:01, Paul Menzel wrote:
+> From: Miguel Bernal Marin <miguel.bernal.marin@linux.intel.com>
+> Date: Mon, 27 Mar 2017 16:01:56 -0600
 > 
+> Suggested-by: Tim Pepper <timothy.c.pepper@linux.intel.com>
+> Signed-off-by: Miguel Bernal Marin <miguel.bernal.marin@linux.intel.com>
+> Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
+> ---
+> Miguel, it?d be great, if you could write a commit message stating the 
+> motivation for that change, that means, why is it preferable to increase 
+> these values, and set the pause time unconditionally.
 > 
-> Mozilla Thunderbird probably mangled the patch, so please find it attached.
+>  ?drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++--
+>  ?1 file changed, 2 insertions(+), 2 deletions(-)
 > 
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c 
+> b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index ce4aaa9f2163..597d3ca19555 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -4047,12 +4047,12 @@ void e1000e_reset(struct e1000_adapter *adapter)
+>  ???? case e1000_pch_lpt:
+>  ???? case e1000_pch_spt:
+>  ???? case e1000_pch_cnp:
+> -??????? fc->refresh_time = 0x0400;
+> +??????? fc->refresh_time = 0xFFFF;
+> +??????? fc->pause_time = 0xFFFF;
 > 
-> Kind regards,
+>  ???????? if (adapter->netdev->mtu <= ETH_DATA_LEN) {
+>  ???????????? fc->high_water = 0x05C20;
+>  ???????????? fc->low_water = 0x05048;
+> -??????????? fc->pause_time = 0x0650;
+>  ???????????? break;
+>  ???????? }
 > 
-> Paul
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
-The e1000e driver supports a pretty long list of 1G devices. We are 
-afraid that initialization flow could be a break for some devices. 
-Although this works on BDW,  we cannot confirm this for all other devices.
+I am good with this patch.
