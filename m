@@ -1,34 +1,33 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 30 Apr 2019 23:22:09 +0000
-Subject: [Intel-wired-lan] [PATCH 2/4] i40e: Use LLDP ethertype define
- ETH_P_LLDP
-In-Reply-To: <20190411161136.1541-3-anirudh.venkataramanan@intel.com>
-References: <20190411161136.1541-1-anirudh.venkataramanan@intel.com>
- <20190411161136.1541-3-anirudh.venkataramanan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D39B07E@ORSMSX106.amr.corp.intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Mon, 20 May 2019 08:31:32 +0300
+Subject: [Intel-wired-lan] [PATCH] Reduce e1000e boot time by tightening
+ sleep ranges
+In-Reply-To: <057ec48b-6d98-7177-d280-15679c8e66ac@molgen.mpg.de>
+References: <8ef1b846-caf6-45de-33aa-a46406548167@molgen.mpg.de>
+ <057ec48b-6d98-7177-d280-15679c8e66ac@molgen.mpg.de>
+Message-ID: <9e2407a7-09c6-884d-e3e0-0af808552831@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Anirudh Venkataramanan
-> Sent: Thursday, April 11, 2019 9:12 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 2/4] i40e: Use LLDP ethertype define
-> ETH_P_LLDP
+On 5/17/2019 17:58, Paul Menzel wrote:
+> Dear Jeff,
 > 
-> Remove references to I40E_ETH_P_LLDP and use ETH_P_LLDP instead.
 > 
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h         | 2 --
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 4 ++--
->  2 files changed, 2 insertions(+), 4 deletions(-)
-
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+> Mozilla Thunderbird probably mangled the patch, so please find it attached.
+> 
+> 
+> Kind regards,
+> 
+> Paul
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
+The e1000e driver supports a pretty long list of 1G devices. We are 
+afraid that initialization flow could be a break for some devices. 
+Although this works on BDW,  we cannot confirm this for all other devices.
