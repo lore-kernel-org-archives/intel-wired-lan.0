@@ -1,56 +1,164 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Mon, 20 May 2019 18:17:26 +0300
-Subject: [Intel-wired-lan] [PATCH] e1000e: Increase pause and refresh
- time
-In-Reply-To: <5507809f-b2f1-429a-64a7-e59d60c76a4a@intel.com>
-References: <d185164e-d09f-39ab-74f0-0c483ab52e67@molgen.mpg.de>
- <5507809f-b2f1-429a-64a7-e59d60c76a4a@intel.com>
-Message-ID: <91202837-19cf-21c8-eadf-a1e2e90849c4@intel.com>
+From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Date: Tue, 21 May 2019 11:15:37 -0400
+Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
+ IPsec packets
+In-Reply-To: <CAKgT0UdM28pSTCsaT=TWqmQwCO44NswS0PqFLAzgs9pmn41VeQ@mail.gmail.com>
+References: <20190513165547.alkkgcsdelaznw6v@csclub.uwaterloo.ca>
+ <CAKgT0Uf_nqZtCnHmC=-oDFz-3PuSM6=30BvJSDiAgzK062OY6w@mail.gmail.com>
+ <20190514163443.glfjva3ofqcy7lbg@csclub.uwaterloo.ca>
+ <CAKgT0UdPDyCBsShQVwwE5C8fBKkMcfS6_S5m3T7JP-So9fzVgA@mail.gmail.com>
+ <20190516183407.qswotwyjwtjqfdqm@csclub.uwaterloo.ca>
+ <20190516183705.e4zflbli7oujlbek@csclub.uwaterloo.ca>
+ <CAKgT0UfSa-dM2+7xntK9tB7Zw5N8nDd3U1n4OSK0gbWbkNSKJQ@mail.gmail.com>
+ <CAKgT0Ucd0s_0F5_nwqXknRngwROyuecUt+4bYzWvp1-2cNSg7g@mail.gmail.com>
+ <20190517172317.amopafirjfizlgej@csclub.uwaterloo.ca>
+ <CAKgT0UdM28pSTCsaT=TWqmQwCO44NswS0PqFLAzgs9pmn41VeQ@mail.gmail.com>
+Message-ID: <20190521151537.xga4aiq3gjtiif4j@csclub.uwaterloo.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 5/20/2019 09:08, Neftin, Sasha wrote:
-> On 5/17/2019 18:01, Paul Menzel wrote:
->> From: Miguel Bernal Marin <miguel.bernal.marin@linux.intel.com>
->> Date: Mon, 27 Mar 2017 16:01:56 -0600
->>
->> Suggested-by: Tim Pepper <timothy.c.pepper@linux.intel.com>
->> Signed-off-by: Miguel Bernal Marin <miguel.bernal.marin@linux.intel.com>
->> Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
->> ---
->> Miguel, it?d be great, if you could write a commit message stating the 
->> motivation for that change, that means, why is it preferable to 
->> increase these values, and set the pause time unconditionally.
->>
->> ??drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++--
->> ??1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c 
->> b/drivers/net/ethernet/intel/e1000e/netdev.c
->> index ce4aaa9f2163..597d3ca19555 100644
->> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
->> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
->> @@ -4047,12 +4047,12 @@ void e1000e_reset(struct e1000_adapter *adapter)
->> ????? case e1000_pch_lpt:
->> ????? case e1000_pch_spt:
->> ????? case e1000_pch_cnp:
->> -??????? fc->refresh_time = 0x0400;
->> +??????? fc->refresh_time = 0xFFFF;
->> +??????? fc->pause_time = 0xFFFF;
->>
->> ????????? if (adapter->netdev->mtu <= ETH_DATA_LEN) {
->> ????????????? fc->high_water = 0x05C20;
->> ????????????? fc->low_water = 0x05048;
->> -??????????? fc->pause_time = 0x0650;
->> ????????????? break;
->> ????????? }
->>
-> I am good with this patch.
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+On Fri, May 17, 2019 at 03:20:02PM -0700, Alexander Duyck wrote:
+> I was hoping it would work too. It seemed like it should have been the
+> answer since it definitely didn't seem right. Now it has me wondering
+> about some of the other code in the driver.
+> 
+> By any chance have you run anything like DPDK on any of the X722
+> interfaces on this system recently? I ask because it occurs to me that
+> if you had and it loaded something like a custom parsing profile it
+> could cause issues similar to this.
+
+I have never used DPDK on anything.  I was hoping never to do so. :)
+
+This system has so far booted Debian (with a 4.19 kernel) and our own OS
+(which has a 4.9 kernel).
+
+> A debugging step you might try would be to revert back to my earlier
+> patch that only displayed the input mask instead of changing it. Once
+> you have done that you could look at doing a full power cycle on the
+> system by either physically disconnecting the power, or using the
+> power switch on the power supply itself if one is available. It is
+> necessary to disconnect the motherboard/NIC from power in order to
+> fully clear the global state stored in the device as it is retained
+> when the system is in standby.
+> 
+> What I want to verify is if the input mask that we have ran into is
+> the natural power-on input mask of if that is something that was
+> overridden by something else. The mask change I made should be reset
+> if the system loses power, and then it will either default back to the
+> value with the 6's if that is it's natural state, or it will match
+> what I had if it was not.
+> 
+> Other than that I really can't think up too much else. I suppose there
+> is the possibility of the NVM either setting up a DCB setting or
+> HREGION register causing an override that is limiting the queues to 1.
+> However, the likelihood of that should be really low.
+
+Here is the register dump after a full power off:
+
+40e: Intel(R) Ethernet Connection XL710 Network Driver - version 2.1.7-k
+i40e: Copyright (c) 2013 - 2014 Intel Corporation.
+i40e 0000:3d:00.0: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
+i40e 0000:3d:00.0: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
+i40e 0000:3d:00.0: MAC address: a4:bf:01:4e:0c:87
+i40e 0000:3d:00.0: flow_type: 63 input_mask:0x0000000000004000
+i40e 0000:3d:00.0: flow_type: 46 input_mask:0x0007fff800000000
+i40e 0000:3d:00.0: flow_type: 45 input_mask:0x0007fff800000000
+i40e 0000:3d:00.0: flow_type: 44 input_mask:0x0007ffff80000000
+i40e 0000:3d:00.0: flow_type: 43 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type: 42 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type: 41 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type: 40 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type: 39 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type: 36 input_mask:0x0006060000000000
+i40e 0000:3d:00.0: flow_type: 35 input_mask:0x0006060000000000
+i40e 0000:3d:00.0: flow_type: 34 input_mask:0x0006060780000000
+i40e 0000:3d:00.0: flow_type: 33 input_mask:0x0006060600000000
+i40e 0000:3d:00.0: flow_type: 32 input_mask:0x0006060600000000
+i40e 0000:3d:00.0: flow_type: 31 input_mask:0x0006060600000000
+i40e 0000:3d:00.0: flow_type: 30 input_mask:0x0006060600000000
+i40e 0000:3d:00.0: flow_type: 29 input_mask:0x0006060600000000
+i40e 0000:3d:00.0: Features: PF-id[0] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
+i40e 0000:3d:00.1: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
+i40e 0000:3d:00.1: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
+i40e 0000:3d:00.1: MAC address: a4:bf:01:4e:0c:88
+i40e 0000:3d:00.1: flow_type: 63 input_mask:0x0000000000004000
+i40e 0000:3d:00.1: flow_type: 46 input_mask:0x0007fff800000000
+i40e 0000:3d:00.1: flow_type: 45 input_mask:0x0007fff800000000
+i40e 0000:3d:00.1: flow_type: 44 input_mask:0x0007ffff80000000
+i40e 0000:3d:00.1: flow_type: 43 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.1: flow_type: 42 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.1: flow_type: 41 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.1: flow_type: 40 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.1: flow_type: 39 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.1: flow_type: 36 input_mask:0x0006060000000000
+i40e 0000:3d:00.1: flow_type: 35 input_mask:0x0006060000000000
+i40e 0000:3d:00.1: flow_type: 34 input_mask:0x0006060780000000
+i40e 0000:3d:00.1: flow_type: 33 input_mask:0x0006060600000000
+i40e 0000:3d:00.1: flow_type: 32 input_mask:0x0006060600000000
+i40e 0000:3d:00.1: flow_type: 31 input_mask:0x0006060600000000
+i40e 0000:3d:00.1: flow_type: 30 input_mask:0x0006060600000000
+i40e 0000:3d:00.1: flow_type: 29 input_mask:0x0006060600000000
+i40e 0000:3d:00.1: Features: PF-id[1] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
+i40e 0000:3d:00.1 eth2: NIC Link is Up, 1000 Mbps Full Duplex, Flow Control: None
+
+Pretty sure that is identical to before.
+
+If I dump the registers after doing the update I see this (just did a
+reboot this time, not a power cycle):
+
+i40e: Intel(R) Ethernet Connection XL710 Network Driver - version 2.1.7-k
+i40e: Copyright (c) 2013 - 2014 Intel Corporation.
+i40e 0000:3d:00.0: fw 3.10.52896 api 1.6 nvm 4.00 0x80001577 1.1767.0
+i40e 0000:3d:00.0: The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.
+i40e 0000:3d:00.0: MAC address: a4:bf:01:4e:0c:87
+i40e 0000:3d:00.0: flow_type: 63 input_mask:0x0000000000004000
+i40e 0000:3d:00.0: flow_type: 46 input_mask:0x0007fff800000000
+i40e 0000:3d:00.0: flow_type: 45 input_mask:0x0007fff800000000
+i40e 0000:3d:00.0: flow_type: 44 input_mask:0x0007ffff80000000
+i40e 0000:3d:00.0: flow_type: 43 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type: 42 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type: 41 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type: 40 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type: 39 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type: 36 input_mask:0x0006060000000000
+i40e 0000:3d:00.0: flow_type: 35 input_mask:0x0006060000000000
+i40e 0000:3d:00.0: flow_type: 34 input_mask:0x0006060780000000
+i40e 0000:3d:00.0: flow_type: 33 input_mask:0x0006060600000000
+i40e 0000:3d:00.0: flow_type: 32 input_mask:0x0006060600000000
+i40e 0000:3d:00.0: flow_type: 31 input_mask:0x0006060600000000
+i40e 0000:3d:00.0: flow_type: 30 input_mask:0x0006060600000000
+i40e 0000:3d:00.0: flow_type: 29 input_mask:0x0006060600000000
+i40e 0000:3d:00.0: flow type: 36 update input mask from:0x0006060000000000, to:0x0001801800000000
+i40e 0000:3d:00.0: flow type: 35 update input mask from:0x0006060000000000, to:0x0001801800000000
+i40e 0000:3d:00.0: flow type: 34 update input mask from:0x0006060780000000, to:0x0001801f80000000
+i40e 0000:3d:00.0: flow type: 33 update input mask from:0x0006060600000000, to:0x0001801e00000000
+i40e 0000:3d:00.0: flow type: 32 update input mask from:0x0006060600000000, to:0x0001801e00000000
+i40e 0000:3d:00.0: flow type: 31 update input mask from:0x0006060600000000, to:0x0001801e00000000
+i40e 0000:3d:00.0: flow type: 30 update input mask from:0x0006060600000000, to:0x0001801e00000000
+i40e 0000:3d:00.0: flow type: 29 update input mask from:0x0006060600000000, to:0x0001801e00000000
+i40e 0000:3d:00.0: flow_type after update: 63 input_mask:0x0000000000004000
+i40e 0000:3d:00.0: flow_type after update: 46 input_mask:0x0007fff800000000
+i40e 0000:3d:00.0: flow_type after update: 45 input_mask:0x0007fff800000000
+i40e 0000:3d:00.0: flow_type after update: 44 input_mask:0x0007ffff80000000
+i40e 0000:3d:00.0: flow_type after update: 43 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type after update: 42 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type after update: 41 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type after update: 40 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type after update: 39 input_mask:0x0007fffe00000000
+i40e 0000:3d:00.0: flow_type after update: 36 input_mask:0x0001801800000000
+i40e 0000:3d:00.0: flow_type after update: 35 input_mask:0x0001801800000000
+i40e 0000:3d:00.0: flow_type after update: 34 input_mask:0x0001801f80000000
+i40e 0000:3d:00.0: flow_type after update: 33 input_mask:0x0001801e00000000
+i40e 0000:3d:00.0: flow_type after update: 32 input_mask:0x0001801e00000000
+i40e 0000:3d:00.0: flow_type after update: 31 input_mask:0x0001801e00000000
+i40e 0000:3d:00.0: flow_type after update: 30 input_mask:0x0001801e00000000
+i40e 0000:3d:00.0: flow_type after update: 29 input_mask:0x0001801e00000000
+i40e 0000:3d:00.0: Features: PF-id[0] VSIs: 34 QP: 12 TXQ: 13 RSS VxLAN Geneve VEPA
+
+So at least it appears the update did apply.
+
+-- 
+Len Sorensen
