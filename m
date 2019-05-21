@@ -1,8 +1,8 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Tue, 21 May 2019 13:54:56 -0400
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 21 May 2019 16:22:17 -0700
 Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
  IPsec packets
-In-Reply-To: <CAKgT0UfpZ-ve3Hx26gDkb+YTDHvN3=MJ7NZd2NE7ewF5g=kHHw@mail.gmail.com>
+In-Reply-To: <20190521175456.zlkiiov5hry2l4q2@csclub.uwaterloo.ca>
 References: <20190514163443.glfjva3ofqcy7lbg@csclub.uwaterloo.ca>
  <CAKgT0UdPDyCBsShQVwwE5C8fBKkMcfS6_S5m3T7JP-So9fzVgA@mail.gmail.com>
  <20190516183407.qswotwyjwtjqfdqm@csclub.uwaterloo.ca>
@@ -13,61 +13,104 @@ References: <20190514163443.glfjva3ofqcy7lbg@csclub.uwaterloo.ca>
  <CAKgT0UdM28pSTCsaT=TWqmQwCO44NswS0PqFLAzgs9pmn41VeQ@mail.gmail.com>
  <20190521151537.xga4aiq3gjtiif4j@csclub.uwaterloo.ca>
  <CAKgT0UfpZ-ve3Hx26gDkb+YTDHvN3=MJ7NZd2NE7ewF5g=kHHw@mail.gmail.com>
-Message-ID: <20190521175456.zlkiiov5hry2l4q2@csclub.uwaterloo.ca>
+ <20190521175456.zlkiiov5hry2l4q2@csclub.uwaterloo.ca>
+Message-ID: <CAKgT0UcR3q1maBmJz7xj_i+_oux_6FQxua9DOjXQSZzyq6FhkQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, May 21, 2019 at 09:51:33AM -0700, Alexander Duyck wrote:
-> I think we need to narrow this down a bit more. Let's try forcing the
-> lookup table all to one value and see if traffic is still going to
-> queue 0.
-> 
-> Specifically what we need to is run the following command to try and
-> force all RSS traffic to queue 8, you can verify the result with
-> "ethtool -x":
-> ethtool -X <iface> weight 0 0 0 0 0 0 0 0 1
-> 
-> If that works and the IPSec traffic goes to queue 8 then we are likely
-> looking at some sort of input issue, either in the parsing or the
-> population of things like the input mask that we can then debug
-> further.
-> 
-> If traffic still goes to queue 0 then that tells us the output of the
-> RSS hash and lookup table are being ignored, this would imply either
-> some other filter is rerouting the traffic or is directing us to limit
-> the queue index to 0 bits.
+On Tue, May 21, 2019 at 10:55 AM Lennart Sorensen
+<lsorense@csclub.uwaterloo.ca> wrote:
+>
+> On Tue, May 21, 2019 at 09:51:33AM -0700, Alexander Duyck wrote:
+> > I think we need to narrow this down a bit more. Let's try forcing the
+> > lookup table all to one value and see if traffic is still going to
+> > queue 0.
+> >
+> > Specifically what we need to is run the following command to try and
+> > force all RSS traffic to queue 8, you can verify the result with
+> > "ethtool -x":
+> > ethtool -X <iface> weight 0 0 0 0 0 0 0 0 1
+> >
+> > If that works and the IPSec traffic goes to queue 8 then we are likely
+> > looking at some sort of input issue, either in the parsing or the
+> > population of things like the input mask that we can then debug
+> > further.
+> >
+> > If traffic still goes to queue 0 then that tells us the output of the
+> > RSS hash and lookup table are being ignored, this would imply either
+> > some other filter is rerouting the traffic or is directing us to limit
+> > the queue index to 0 bits.
+>
+> # ethtool -x eth2
+> RX flow hash indirection table for eth2 with 12 RX ring(s):
+>     0:      7     7     7     7     7     7     7     7
+>     8:      7     7     7     7     7     7     7     7
+>    16:      7     7     7     7     7     7     7     7
+>    24:      7     7     7     7     7     7     7     7
+>    32:      7     7     7     7     7     7     7     7
+> ...
+>   472:      7     7     7     7     7     7     7     7
+>   480:      7     7     7     7     7     7     7     7
+>   488:      7     7     7     7     7     7     7     7
+>   496:      7     7     7     7     7     7     7     7
+>   504:      7     7     7     7     7     7     7     7
+> RSS hash key:
+> 0b:1f:ae:ed:60:04:7d:e5:8a:2b:43:3f:1d:ee:6c:99:89:29:94:b0:25:db:c7:4b:fa:da:4d:3f:e8:cc:bc:00:ad:32:01:d6:1c:30:3f:f8:79:3e:f4:48:04:1f:51:d2:5a:39:f0:90
+> root at ECA:~# ethtool --show-priv-flags eth2
+> Private flags for eth2:
+> MFP              : off
+> LinkPolling      : off
+> flow-director-atr: off
+> veb-stats        : off
+> hw-atr-eviction  : on
+> legacy-rx        : off
+>
+> All ipsec packets are still hitting queue 0.
+>
+> Seems it is completely ignoring RSS for these packets.  That is
+> impressively weird.
+>
+> --
+> Len Sorensen
 
-# ethtool -x eth2
-RX flow hash indirection table for eth2 with 12 RX ring(s):
-    0:      7     7     7     7     7     7     7     7
-    8:      7     7     7     7     7     7     7     7
-   16:      7     7     7     7     7     7     7     7
-   24:      7     7     7     7     7     7     7     7
-   32:      7     7     7     7     7     7     7     7
-...
-  472:      7     7     7     7     7     7     7     7
-  480:      7     7     7     7     7     7     7     7
-  488:      7     7     7     7     7     7     7     7
-  496:      7     7     7     7     7     7     7     7
-  504:      7     7     7     7     7     7     7     7
-RSS hash key:
-0b:1f:ae:ed:60:04:7d:e5:8a:2b:43:3f:1d:ee:6c:99:89:29:94:b0:25:db:c7:4b:fa:da:4d:3f:e8:cc:bc:00:ad:32:01:d6:1c:30:3f:f8:79:3e:f4:48:04:1f:51:d2:5a:39:f0:90
-root at ECA:~# ethtool --show-priv-flags eth2
-Private flags for eth2:
-MFP              : off
-LinkPolling      : off
-flow-director-atr: off
-veb-stats        : off
-hw-atr-eviction  : on
-legacy-rx        : off
+So we are either using 0 bits of the LUT or we are just not performing
+hashing because this is somehow being parsed into a type that doesn't
+support it.
 
-All ipsec packets are still hitting queue 0.
+I have attached 2 more patches we can test. The first enables hashing
+on what are called "OAM" packets, The thing is we shouldn't be
+identifying these packets as "OAM", Operations Administration &
+Management, as normally it would have to be recognized as a tunnel
+first and then have a specific flag set in either the GENEVE or
+VXLAN-GPE header. The second patch will dump the contents of the
+HREGION registers. They should all be 0, however I thought it best to
+dump the contents and verify that since I know that these registers
+can be used to change the traffic class of a given packet type and if
+we are encountering that it might be moving it to an uninitialized TC
+which would be using queue offset 0 with 0 bits of the LUT.
 
-Seems it is completely ignoring RSS for these packets.  That is
-impressively weird.
+These last 2 patches would pretty much eliminate the entire RSS
+subsystem. If we don't see HREGION values set and the OAM flags have
+no effect I can only assume there is something going on with the
+parser in the NIC since it isn't recognizing the packet type.
 
--- 
-Len Sorensen
+Thanks.
+
+- Alex
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: i40e-enable-oam-flag-tunnel.patch
+Type: text/x-patch
+Size: 1199 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190521/21dbc743/attachment.bin>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: i40e-dump-extra-hregion.patch
+Type: text/x-patch
+Size: 933 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190521/21dbc743/attachment-0001.bin>
