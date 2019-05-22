@@ -1,176 +1,49 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 23 May 2019 04:34:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- c58cc593ecc58cc5d0c822921315161f7e14fa7a
-Message-ID: <5ce5b264.HMb7bCl6B0Qpu/3E%lkp@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 22 May 2019 22:14:26 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e/i40evf: cleanup
+ i40e_update_nvm_checksum()
+In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DB7A7@ORSMSX104.amr.corp.intel.com>
+References: <20190509101051.GB7024@mwanda>
+ <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DB7A7@ORSMSX104.amr.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DCB1E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: c58cc593ecc58cc5d0c822921315161f7e14fa7a  iavf: allow null RX descriptors
+> -----Original Message-----
+> From: Bowers, AndrewX
+> Sent: Friday, May 17, 2019 3:34 PM
+> To: kernel-janitors at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: RE: [Intel-wired-lan] [PATCH] i40e/i40evf: cleanup
+> i40e_update_nvm_checksum()
+> 
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> > Behalf Of Dan Carpenter
+> > Sent: Thursday, May 9, 2019 3:11 AM
+> > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> > Cc: kernel-janitors at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> > Subject: [Intel-wired-lan] [PATCH] i40e/i40evf: cleanup
+> > i40e_update_nvm_checksum()
+> >
+> > Smatch complains that we use 'checksum' when it's uninitialized.
+> >
+> >     drivers/net/ethernet/intel/i40e/i40e_nvm.c:581
+> > i40e_update_nvm_checksum()
+> >     error: uninitialized symbol 'checksum'.
+> >
+> > This is true, but it harmless because we don't use it again.
+> >
+> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> > ---
+> >  drivers/net/ethernet/intel/i40e/i40e_nvm.c | 9 ++++-----
+> >  1 file changed, 4 insertions(+), 5 deletions(-)
+> 
+> kernel-janitors at vger.kernel.org; intel-wired-lan at lists.osuosl.org
 
-elapsed time: 121m
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-configs tested: 151
+Helps to paste in my "Tested by" and not the addresses I'm sending it to... 
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-i386                     randconfig-k2-201920
-i386                     randconfig-k3-201920
-x86_64                   randconfig-k2-201920
-x86_64                   randconfig-k0-201920
-x86_64                   randconfig-k1-201920
-i386                     randconfig-k0-201920
-i386                     randconfig-k1-201920
-x86_64                   randconfig-k3-201920
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-i386                     randconfig-m3-201920
-x86_64                   randconfig-m3-201920
-x86_64                   randconfig-m2-201920
-x86_64                   randconfig-m1-201920
-x86_64                   randconfig-m0-201920
-i386                     randconfig-m0-201920
-i386                     randconfig-m1-201920
-i386                     randconfig-m2-201920
-riscv                             allnoconfig
-riscv                               defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-i386                   randconfig-x009-201920
-i386                   randconfig-x008-201920
-i386                   randconfig-x006-201920
-i386                   randconfig-x004-201920
-i386                   randconfig-x005-201920
-i386                   randconfig-x001-201920
-i386                   randconfig-x000-201920
-i386                   randconfig-x007-201920
-i386                   randconfig-x003-201920
-i386                   randconfig-x002-201920
-x86_64                 randconfig-x019-201920
-x86_64                 randconfig-x015-201920
-x86_64                 randconfig-x010-201920
-x86_64                 randconfig-x012-201920
-x86_64                 randconfig-x014-201920
-x86_64                 randconfig-x017-201920
-x86_64                 randconfig-x016-201920
-x86_64                 randconfig-x018-201920
-x86_64                 randconfig-x011-201920
-x86_64                 randconfig-x013-201920
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-a3-05222102
-i386                   randconfig-a2-05222102
-i386                   randconfig-a0-05222102
-i386                   randconfig-a1-05222102
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x011-201920
-i386                   randconfig-x013-201920
-i386                   randconfig-x018-201920
-i386                   randconfig-x012-201920
-i386                   randconfig-x016-201920
-i386                   randconfig-x017-201920
-i386                   randconfig-x010-201920
-i386                   randconfig-x014-201920
-i386                   randconfig-x015-201920
-i386                   randconfig-x019-201920
-x86_64                 randconfig-x006-201920
-x86_64                 randconfig-x003-201920
-x86_64                 randconfig-x001-201920
-x86_64                 randconfig-x007-201920
-x86_64                 randconfig-x004-201920
-x86_64                 randconfig-x005-201920
-x86_64                 randconfig-x009-201920
-x86_64                 randconfig-x002-201920
-x86_64                 randconfig-x008-201920
-x86_64                 randconfig-x000-201920
-i386                     randconfig-i0-201920
-i386                     randconfig-i2-201920
-i386                     randconfig-i1-201920
-i386                     randconfig-i3-201920
-x86_64                                  kexec
-x86_64                              fedora-25
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-i386                   randconfig-x073-201920
-i386                   randconfig-x071-201920
-i386                   randconfig-x070-201920
-i386                   randconfig-x074-201920
-i386                   randconfig-x078-201920
-i386                   randconfig-x075-201920
-i386                   randconfig-x072-201920
-i386                   randconfig-x076-201920
-i386                   randconfig-x077-201920
-i386                   randconfig-x079-201920
-i386                              allnoconfig
-i386                                defconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
