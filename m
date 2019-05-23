@@ -1,36 +1,45 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 23 May 2019 14:20:17 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Check DDM existence in
- transceiver before access
-In-Reply-To: <20190523191112.14572-1-maurosr@linux.vnet.ibm.com>
-References: <20190523191112.14572-1-maurosr@linux.vnet.ibm.com>
-Message-ID: <20190523142017.00005c59@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 23 May 2019 15:55:15 -0700
+Subject: [Intel-wired-lan] [RESEND PATCH] intel-ethernet: warn when
+ fatal read failure happens
+In-Reply-To: <20190523032233.29277-1-feng.tang@intel.com>
+References: <20190523032233.29277-1-feng.tang@intel.com>
+Message-ID: <f8d774415fcb66c46ebc08a9b66f32d825c004ac.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 23 May 2019 16:11:12 -0300 Mauro wrote:
-> Some transceivers may comply with SFF-8472 but not implement the Digital
-> Diagnostic Monitoring (DDM) interface described in it. The existence of
-> such area is specified by bit 6 of byte 92, set to 1 if implemented.
+On Thu, 2019-05-23 at 11:22 +0800, Feng Tang wrote:
+> Failed in reading the HW register is very serious for igb/igc driver,
+> as its hw_addr will be set to NULL and cause the adapter be seen as
+> "REMOVED".
 > 
-> Currently, due to not checking this bit ixgbe fails trying to read sfp
-> module's eeprom with the follow message:
+> We saw the error only a few times in the MTBF test for
+> suspend/resume,
+> but can hardly get any useful info to debug.
 > 
-> ethtool -m enP51p1s0f0
-> Cannot get Module EEPROM data: Input/output error
+> Adding WARN() so that we can get the necessary information about
+> where and how it happens, and use it for root causing and fixing
+> this "PCIe link lost issue"
 > 
-> Because it fails to read the additional 256 bytes in which it was assumed
-> to exist the DDM data.
+> This affects igb, igc.
 > 
-> This issue was noticed using a Mellanox Passive DAC PN 01FT738. The eeprom
-> data was confirmed by Mellanox as correct and present in other Passive
-> DACs in from other manufacturers.
-> 
-> Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+> Signed-off-by: Feng Tang <feng.tang@intel.com>
+> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+> Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 1 +
+>  drivers/net/ethernet/intel/igc/igc_main.c | 1 +
+>  2 files changed, 2 insertions(+)
 
-Looks reasonable, thanks for the patch!
-
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+This patch is already in my next series of 1GbE patches to push to
+Dave, so you can expect this to be pushed upstream before the weekend.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190523/c6977fef/attachment.asc>
