@@ -1,45 +1,42 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 23 May 2019 15:55:15 -0700
-Subject: [Intel-wired-lan] [RESEND PATCH] intel-ethernet: warn when
- fatal read failure happens
-In-Reply-To: <20190523032233.29277-1-feng.tang@intel.com>
-References: <20190523032233.29277-1-feng.tang@intel.com>
-Message-ID: <f8d774415fcb66c46ebc08a9b66f32d825c004ac.camel@intel.com>
+From: Lihong Yang <lihong.yang@intel.com>
+Date: Thu, 23 May 2019 16:45:33 -0700
+Subject: [Intel-wired-lan] [PATCH] i40e: Do not check VF state in
+ i40e_ndo_get_vf_config
+Message-ID: <20190523234533.48418-1-lihong.yang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2019-05-23 at 11:22 +0800, Feng Tang wrote:
-> Failed in reading the HW register is very serious for igb/igc driver,
-> as its hw_addr will be set to NULL and cause the adapter be seen as
-> "REMOVED".
-> 
-> We saw the error only a few times in the MTBF test for
-> suspend/resume,
-> but can hardly get any useful info to debug.
-> 
-> Adding WARN() so that we can get the necessary information about
-> where and how it happens, and use it for root causing and fixing
-> this "PCIe link lost issue"
-> 
-> This affects igb, igc.
-> 
-> Signed-off-by: Feng Tang <feng.tang@intel.com>
-> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-> Acked-by: Sasha Neftin <sasha.neftin@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 1 +
->  drivers/net/ethernet/intel/igc/igc_main.c | 1 +
->  2 files changed, 2 insertions(+)
+The VF configuration returned in i40e_ndo_get_vf_config is
+already stored by the PF. There is no dependency on any
+specific state of the VF to return the configuration.
+Drop the check against I40E_VF_STATE_INIT since it is not
+needed.
 
-This patch is already in my next series of 1GbE patches to push to
-Dave, so you can expect this to be pushed upstream before the weekend.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190523/c6977fef/attachment.asc>
+Signed-off-by: Lihong Yang <lihong.yang@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 4f4521d39725..38484ed6880d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -4299,10 +4299,8 @@ int i40e_ndo_get_vf_config(struct net_device *netdev,
+ 	vf = &pf->vf[vf_id];
+ 	/* first vsi is always the LAN vsi */
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+-	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
+-		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
+-			vf_id);
+-		ret = -EAGAIN;
++	if (!vsi) {
++		ret = -ENOENT;
+ 		goto error_param;
+ 	}
+ 
+-- 
+2.20.1
+
