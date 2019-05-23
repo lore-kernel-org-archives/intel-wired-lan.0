@@ -1,59 +1,63 @@
-From: Feng Tang <feng.tang@intel.com>
-Date: Thu, 23 May 2019 11:22:33 +0800
-Subject: [Intel-wired-lan] [RESEND PATCH] intel-ethernet: warn when fatal
- read failure happens
-Message-ID: <20190523032233.29277-1-feng.tang@intel.com>
+From: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+Date: Thu, 23 May 2019 16:11:12 -0300
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Check DDM existence in transceiver
+ before access
+Message-ID: <20190523191112.14572-1-maurosr@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Failed in reading the HW register is very serious for igb/igc driver,
-as its hw_addr will be set to NULL and cause the adapter be seen as
-"REMOVED".
+Some transceivers may comply with SFF-8472 but not implement the Digital
+Diagnostic Monitoring (DDM) interface described in it. The existence of
+such area is specified by bit 6 of byte 92, set to 1 if implemented.
 
-We saw the error only a few times in the MTBF test for suspend/resume,
-but can hardly get any useful info to debug.
+Currently, due to not checking this bit ixgbe fails trying to read sfp
+module's eeprom with the follow message:
 
-Adding WARN() so that we can get the necessary information about
-where and how it happens, and use it for root causing and fixing
-this "PCIe link lost issue"
+ethtool -m enP51p1s0f0
+Cannot get Module EEPROM data: Input/output error
 
-This affects igb, igc.
+Because it fails to read the additional 256 bytes in which it was assumed
+to exist the DDM data.
 
-Signed-off-by: Feng Tang <feng.tang@intel.com>
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+This issue was noticed using a Mellanox Passive DAC PN 01FT738. The eeprom
+data was confirmed by Mellanox as correct and present in other Passive
+DACs in from other manufacturers.
+
+Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 1 +
- drivers/net/ethernet/intel/igc/igc_main.c | 1 +
- 2 files changed, 2 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 3 ++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 39f33afc479c..e5b7e638df28 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -753,6 +753,7 @@ u32 igb_rd32(struct e1000_hw *hw, u32 reg)
- 		struct net_device *netdev = igb->netdev;
- 		hw->hw_addr = NULL;
- 		netdev_err(netdev, "PCIe link lost\n");
-+		WARN(1, "igb: Failed to read reg 0x%x!\n", reg);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index acba067cc15a..7c52ae8ac005 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -3226,7 +3226,8 @@ static int ixgbe_get_module_info(struct net_device *dev,
+ 		page_swap = true;
  	}
  
- 	return value;
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 34fa0e60a780..28072b9aa932 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3934,6 +3934,7 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
- 		hw->hw_addr = NULL;
- 		netif_device_detach(netdev);
- 		netdev_err(netdev, "PCIe link lost, device now detached\n");
-+		WARN(1, "igc: Failed to read reg 0x%x!\n", reg);
- 	}
- 
- 	return value;
+-	if (sff8472_rev == IXGBE_SFF_SFF_8472_UNSUP || page_swap) {
++	if (sff8472_rev == IXGBE_SFF_SFF_8472_UNSUP || page_swap ||
++	    !(addr_mode & IXGBE_SFF_DDM_IMPLEMENTED)) {
+ 		/* We have a SFP, but it does not support SFF-8472 */
+ 		modinfo->type = ETH_MODULE_SFF_8079;
+ 		modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
+index 214b01085718..693c615017cc 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
+@@ -45,6 +45,7 @@
+ #define IXGBE_SFF_SOFT_RS_SELECT_10G		0x8
+ #define IXGBE_SFF_SOFT_RS_SELECT_1G		0x0
+ #define IXGBE_SFF_ADDRESSING_MODE		0x4
++#define IXGBE_SFF_DDM_IMPLEMENTED              0x40
+ #define IXGBE_SFF_QSFP_DA_ACTIVE_CABLE		0x1
+ #define IXGBE_SFF_QSFP_DA_PASSIVE_CABLE		0x8
+ #define IXGBE_SFF_QSFP_CONNECTOR_NOT_SEPARABLE	0x23
 -- 
-2.14.1
+2.21.0
 
