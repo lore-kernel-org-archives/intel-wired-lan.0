@@ -1,190 +1,46 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 24 May 2019 12:08:17 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
- feee3cb3064ac1a67349a524a5d541cc73b4fe32
-Message-ID: <5ce76e31.pp5y2rqpqGYmaWk4%lkp@intel.com>
+From: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Date: Fri, 24 May 2019 08:40:05 -0500
+Subject: [Intel-wired-lan] [PATCH 1/6] igb: mark expected switch
+ fall-through
+In-Reply-To: <4fd1c087e5a19eea44521abc6b8d1213bca3ec22.camel@intel.com>
+References: <20190329233850.29630-1-jeffrey.t.kirsher@intel.com>
+ <b5f1f0c0-e27b-f861-c36e-35e493f45dff@embeddedor.com>
+ <dd2974a0-b559-cfd1-c3d8-0839594ef03c@embeddedor.com>
+ <4fd1c087e5a19eea44521abc6b8d1213bca3ec22.camel@intel.com>
+Message-ID: <0485c47e-b444-27e2-5634-77d1a0db65ca@embeddedor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-branch HEAD: feee3cb3064ac1a67349a524a5d541cc73b4fe32  ice: Silence semantic parser warnings
+Jeff,
 
-elapsed time: 333m
+On 5/16/19 2:17 PM, Jeff Kirsher wrote:
+> On Wed, 2019-05-08 at 12:59 -0500, Gustavo A. R. Silva wrote:
+>> Hi Jeff,
+>>
+>> I wonder if there is any chance for this series to be queued up for
+>> 5.2-rc1.
+> 
+> Possibly, but since the nature of your patch is to just modify a code
+> comment because the tools used to check are not sophisticated enough to
+> realize the code comment already clearly states "Fall through ...", I
+> do not feel this is *really* necessary to get into 'net'.  If I have
+> other 'fixes' in my queue that need to get pushed, I may add this
+> change to the series.  I have not decided yet whether it warrants being
+> in 'net' or could wait till 'net-next'.
+> 
 
-configs tested: 165
+I get it, net-next is fine. However, I noticed this series is still in
+net-next/dev-queue.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+There are only 6 of these fall-through warnings left in linux-next. Half
+of them are fixed by this series. We want to add -Wimplicit-fallthrough
+to the Makefile and start testing it in linux-next. And it'd be of great
+help if you can move this series to your net-next/master, so it can be
+merged into linux-next and be part of the test. :)
 
-arm                              allmodconfig
-arm64                            allmodconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-i386                   randconfig-k1-05231733
-x86_64                 randconfig-k3-05231733
-x86_64                 randconfig-k2-05231733
-x86_64                 randconfig-k1-05231733
-i386                   randconfig-k2-05231733
-i386                   randconfig-k3-05231733
-i386                   randconfig-k0-05231733
-x86_64                 randconfig-k0-05231733
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-i386                   randconfig-m2-05231733
-x86_64                 randconfig-m1-05231733
-x86_64                 randconfig-m0-05231733
-x86_64                 randconfig-m3-05231733
-i386                   randconfig-m3-05231733
-i386                   randconfig-m0-05231733
-x86_64                 randconfig-m2-05231733
-i386                   randconfig-m1-05231733
-riscv                             allnoconfig
-riscv                               defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-l2-05231733
-i386                   randconfig-l1-05231733
-x86_64                 randconfig-l1-05231733
-i386                   randconfig-l0-05231733
-i386                   randconfig-l3-05231733
-x86_64                 randconfig-l2-05231733
-x86_64                 randconfig-l3-05231733
-x86_64                 randconfig-l0-05231733
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-s390                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x011-201920
-i386                   randconfig-x013-201920
-i386                   randconfig-x018-201920
-i386                   randconfig-x012-201920
-i386                   randconfig-x016-201920
-i386                   randconfig-x017-201920
-i386                   randconfig-x010-201920
-i386                   randconfig-x014-201920
-i386                   randconfig-x015-201920
-i386                   randconfig-x019-201920
-x86_64                           allyesconfig
-i386                             allmodconfig
-i386                   randconfig-x009-201920
-i386                   randconfig-x008-201920
-i386                   randconfig-x006-201920
-i386                   randconfig-x004-201920
-i386                   randconfig-x005-201920
-i386                   randconfig-x001-201920
-i386                   randconfig-x000-201920
-i386                   randconfig-x007-201920
-i386                   randconfig-x003-201920
-i386                   randconfig-x002-201920
-x86_64               randconfig-x011-05232035
-x86_64               randconfig-x013-05232035
-x86_64               randconfig-x012-05232035
-x86_64               randconfig-x015-05232035
-x86_64               randconfig-x010-05232035
-x86_64               randconfig-x018-05232035
-x86_64               randconfig-x014-05232035
-x86_64               randconfig-x016-05232035
-x86_64               randconfig-x019-05232035
-x86_64               randconfig-x017-05232035
-i386                   randconfig-a3-05232035
-i386                   randconfig-a1-05232035
-i386                   randconfig-a0-05232035
-i386                   randconfig-a2-05232035
-riscv                              tinyconfig
-i386                               tinyconfig
-i386                   randconfig-n1-05232030
-i386                   randconfig-n3-05232030
-i386                   randconfig-n2-05232030
-i386                   randconfig-n0-05232030
-x86_64               randconfig-x001-05232029
-x86_64               randconfig-x008-05232029
-x86_64               randconfig-x004-05232029
-x86_64               randconfig-x003-05232029
-x86_64               randconfig-x009-05232029
-x86_64               randconfig-x007-05232029
-x86_64               randconfig-x006-05232029
-x86_64               randconfig-x002-05232029
-x86_64               randconfig-x000-05232029
-x86_64               randconfig-x005-05232029
-s390                          debug_defconfig
-i386                   randconfig-i1-05232029
-i386                   randconfig-i0-05232029
-i386                   randconfig-i2-05232029
-i386                   randconfig-i3-05232029
-i386                   randconfig-x073-201920
-i386                   randconfig-x071-201920
-i386                   randconfig-x070-201920
-i386                   randconfig-x074-201920
-i386                   randconfig-x078-201920
-i386                   randconfig-x075-201920
-i386                   randconfig-x072-201920
-i386                   randconfig-x076-201920
-i386                   randconfig-x077-201920
-i386                   randconfig-x079-201920
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Thanks!
+--
+Gustavo
