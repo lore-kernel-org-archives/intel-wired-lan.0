@@ -1,156 +1,192 @@
-From: L Ait <lhoussain.aitassou@gmail.com>
-Date: Fri, 24 May 2019 17:04:29 +0200
-Subject: [Intel-wired-lan] Kernel Linux and i*gb* drivers
-In-Reply-To: <CAJdzkC3p0QEVxHikmGzq8d85bryrJ+iqWPnC2qYCn_=U0DDv5Q@mail.gmail.com>
-References: <CAJdzkC0Ji0ZnCPhCDdhN_PUr5-qNs_OM5cvn=r+t8wYhJR3R0g@mail.gmail.com>
- <7fa75c5fd75b326e7825524481aca1365dfdaa9a.camel@intel.com>
- <CAJdzkC3p0QEVxHikmGzq8d85bryrJ+iqWPnC2qYCn_=U0DDv5Q@mail.gmail.com>
-Message-ID: <CAJdzkC1uEYD77gcfiXTUWf-DSKAaYvNZXVeaDpJcb6m8qYYhyw@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 25 May 2019 10:54:17 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ c60f8c790e68f19e2ee2d65e8961eeb1f0818c70
+Message-ID: <5ce8ae59.JGvmg9ZvCb0s6kHE%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
-To continue on debugging the out of order of udp datagrams arrival.
-I upgraded to recent kernel version 4.14.110 and tested with recent [igb
-,and ixgbe] drivers but i have got same errors.
-One question what it the effect of having transceir internal instead of
-external here :
-ethtool eth0 :
-Transceiver: internal
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: c60f8c790e68f19e2ee2d65e8961eeb1f0818c70  i40e: Do not check VF state in i40e_ndo_get_vf_config
 
-Because I can't change any parameter with ethtool : ethtool -s eth0 xcvr
-external returns [operation not supported]
+elapsed time: 113m
 
-Thank you
+configs tested: 167
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+arm                              allmodconfig
+arm64                            allmodconfig
+x86_64                 randconfig-k0-05231733
+x86_64                 randconfig-k1-05231733
+x86_64                 randconfig-k2-05231733
+x86_64                 randconfig-k3-05231733
+i386                   randconfig-k0-05231733
+i386                   randconfig-k1-05231733
+i386                   randconfig-k2-05231733
+i386                   randconfig-k3-05231733
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                          debug_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-m0-05231733
+x86_64                 randconfig-m1-05231733
+x86_64                 randconfig-m2-05231733
+x86_64                 randconfig-m3-05231733
+i386                   randconfig-m0-05231733
+i386                   randconfig-m1-05231733
+i386                   randconfig-m2-05231733
+i386                   randconfig-m3-05231733
+riscv                             allnoconfig
+riscv                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-l0-05241656
+x86_64                 randconfig-l1-05241656
+x86_64                 randconfig-l2-05241656
+x86_64                 randconfig-l3-05241656
+i386                   randconfig-l0-05241656
+i386                   randconfig-l1-05241656
+i386                   randconfig-l2-05241656
+i386                   randconfig-l3-05241656
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+sh                               allyesconfig
+i386                             allmodconfig
+i386                                defconfig
+x86_64                 randconfig-h0-05250801
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-g0-05231808
+x86_64                 randconfig-g1-05231808
+x86_64                 randconfig-g2-05231808
+x86_64                 randconfig-g3-05231808
+i386                              allnoconfig
+i386                             alldefconfig
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+i386                   randconfig-x009-201920
+i386                   randconfig-x008-201920
+i386                   randconfig-x006-201920
+i386                   randconfig-x004-201920
+i386                   randconfig-x005-201920
+i386                   randconfig-x001-201920
+i386                   randconfig-x000-201920
+i386                   randconfig-x007-201920
+i386                   randconfig-x003-201920
+i386                   randconfig-x002-201920
+x86_64                 randconfig-x019-201920
+x86_64                 randconfig-x015-201920
+x86_64                 randconfig-x010-201920
+x86_64                 randconfig-x012-201920
+x86_64                 randconfig-x014-201920
+x86_64                 randconfig-x017-201920
+x86_64                 randconfig-x016-201920
+x86_64                 randconfig-x018-201920
+x86_64                 randconfig-x011-201920
+x86_64                 randconfig-x013-201920
+riscv                              tinyconfig
+i386                               tinyconfig
+riscv                            allmodconfig
+i386                   randconfig-x011-201920
+i386                   randconfig-x013-201920
+i386                   randconfig-x018-201920
+i386                   randconfig-x012-201920
+i386                   randconfig-x016-201920
+i386                   randconfig-x017-201920
+i386                   randconfig-x010-201920
+i386                   randconfig-x014-201920
+i386                   randconfig-x015-201920
+i386                   randconfig-x019-201920
+x86_64                              fedora-25
+x86_64                                  kexec
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-05232030
+i386                   randconfig-n1-05232030
+i386                   randconfig-n2-05232030
+i386                   randconfig-n3-05232030
+x86_64                 randconfig-x006-201920
+x86_64                 randconfig-x003-201920
+x86_64                 randconfig-x001-201920
+x86_64                 randconfig-x007-201920
+x86_64                 randconfig-x004-201920
+x86_64                 randconfig-x005-201920
+x86_64                 randconfig-x009-201920
+x86_64                 randconfig-x002-201920
+x86_64                 randconfig-x008-201920
+x86_64                 randconfig-x000-201920
+i386                   randconfig-i0-05232029
+i386                   randconfig-i1-05232029
+i386                   randconfig-i2-05232029
+i386                   randconfig-i3-05232029
+i386                   randconfig-x073-201920
+i386                   randconfig-x071-201920
+i386                   randconfig-x070-201920
+i386                   randconfig-x074-201920
+i386                   randconfig-x078-201920
+i386                   randconfig-x075-201920
+i386                   randconfig-x072-201920
+i386                   randconfig-x076-201920
+i386                   randconfig-x077-201920
+i386                   randconfig-x079-201920
 
-Le mar. 9 avr. 2019 ? 10:52, L Ait <lhoussain.aitassou@gmail.com> a ?crit :
-
-> Hi,
->
-> Please find in attached file the details of hardware ( lspci -vvv) command.
-> I have noticed one difference between kernel versions 4.4.27 and 4.14.20:
-> For  4.14.20, I get with ethtool eth1 :
-> Settings for eth1:
->     Supported ports: [ FIBRE ]
->     Supported link modes:   Not reported
->     Supported pause frame use: Symmetric
->     Supports auto-negotiation: Yes
->     Advertised link modes:  Not reported
->     Advertised pause frame use: Symmetric
->     Advertised auto-negotiation: Yes
->     Speed: 1000Mb/s
->     Duplex: Full
->     Port: FIBRE
->     PHYAD: 0
->     Transceiver: internal
->     Auto-negotiation: on
->     Supports Wake-on: pumbg
->     Wake-on: g
->     Current message level: 0x00000007 (7)
->                    drv probe link
->     Link detected: yes
->
->
-> But for 4.4.27:
-> Settings for eth1:
->     Supported ports: [ FIBRE ]
->     Supported link modes:   1000baseT/Full
->     Supported pause frame use: No
->     Supports auto-negotiation: Yes
->     Advertised link modes:  1000baseT/Full
->     Advertised pause frame use: No
->     Advertised auto-negotiation: Yes
->     Speed: 1000Mb/s
->     Duplex: Full
->     Port: Other
->     PHYAD: 0
->     Transceiver: external
->     Auto-negotiation: on
->     Supports Wake-on: umbg
->     Wake-on: g
->     Current message level: 0x00000007 (7)
->                    drv probe link
->
-> I think the problem is related to transceiver type and I can't change this
-> conf for 4.14.20 kernel.
-> For information I could upgrade kernel but I would know which version and
-> measure the gap
->
-> Thank you in advance
->
->
-> Le lun. 8 avr. 2019 ? 16:57, Jeff Kirsher <jeffrey.t.kirsher@intel.com> a
-> ?crit :
->
->> On Mon, 2019-04-08 at 13:15 +0200, L Ait wrote:
->> > Hi ,
->> >
->> > I have a linux applidation that uses udp for data transferer between
->> > processes (on the same machine or same vlan). This application runs
->> > fine on linux 4.4.27. But when upgrading to linux 4.14.20 kernel I
->> > was facing out of order udp packets. This espcially happens when
->> > small datagramms occurs as they arrive before big ones.
->> > I know that udp packets aren't guaranteed to arrive in order but I
->> > would know what kernel changes affects this udp behavior.
->> > After troublshooting the application I didn't find waht could cause
->> > the problem. Here some parameters I changed either wtih ethtool or
->> > sysctl: -RX fifo length -irq interrupts vs cpus - RSS mode activation
->> > /deactivation
->> > for ibg and ixgbe drivers here are the versions I used in both cases
->> > :
->> > Kernel 4.4.27
->> > modinfo igb :
->> > filename:       /lib/modules/4.4.27-
->> > HRN06/kernel/drivers/net/ethernet/intel/igb/igb.ko
->> > version:        5.3.0-k
->> > license:        GPL
->> > description:    Intel(R) Gigabit Ethernet Network Driver
->> > modinfo ixgbe:
->> > filename:       /lib/modules/4.4.27-
->> > HRN06/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
->> > version:        4.2.1-k
->> > license:        GPL
->> > description:    Intel(R) 10 Gigabit PCI Express Network Driver
->> >
->> > Kernel 4.14.20
->> > modinfo igb:
->> > filename:       /lib/modules/4.14.20-
->> > HRN09/kernel/drivers/net/ethernet/intel/igb/igb.ko
->> > version:        5.4.0-k
->> > license:        GPL
->> > description:    Intel(R) Gigabit Ethernet Network Driver
->> > author:         Intel Corporation, <e1000-devel@lists.sourceforge.net
->> > >
->> > modinfo ixgbe
->> > filename:       /lib/modules/4.14.20-
->> > HRN09/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
->> > version:        5.1.0-k
->> > license:        GPL
->> > description:    Intel(R) 10 Gigabit PCI Express Network Driver
->> > author:         Intel Corporation, <linux.nics@intel.com>
->> >
->> > I also modified RX buffers but no good results
->> >
->>
->> First thing, please send requests like this to our public mailing list
->> so that all of the Intel Ethernet developers can review and help
->> respond to your questions.  I have gone ahead and added our public
->> mailing list.
->>
->> The kernel versions you are using are older and do not contain all the
->> bug fixes and changes.  Is there any chance that you can use the latest
->> kernel from David Miller or Linus kernel git tree?
->>
->> Also can you provide the hardware you are using for both the igb and
->> ixgbe drivers?  Specifically the NICs you are using.  This can be
->> obtained by running lspci -vvv.
->>
->>
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190524/d44e2495/attachment.html>
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
