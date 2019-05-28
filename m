@@ -1,114 +1,62 @@
-From: Vedang Patel <vedang.patel@intel.com>
-Date: Tue, 28 May 2019 10:46:47 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 6/7] taprio: make clock
- reference conversions easier
-In-Reply-To: <1559065608-27888-1-git-send-email-vedang.patel@intel.com>
-References: <1559065608-27888-1-git-send-email-vedang.patel@intel.com>
-Message-ID: <1559065608-27888-7-git-send-email-vedang.patel@intel.com>
+From: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
+Date: Tue, 28 May 2019 19:42:10 +0000
+Subject: [Intel-wired-lan] [next PATCH S6 4/7] i40e: Add log entry while
+ creating or deleting TC0
+In-Reply-To: <20190528175921.30534-4-alice.michael@intel.com>
+References: <20190528175921.30534-1-alice.michael@intel.com>
+ <20190528175921.30534-4-alice.michael@intel.com>
+Message-ID: <D4D6338F2E4CB34CB91C5312C72AAC81088F73@IRSMSX104.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Later in this series we will need to transform from
-CLOCK_MONOTONIC (used in TCP) to the clock reference used in TAPRIO.
+ACK
 
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+-----Original Message-----
+From: Michael, Alice 
+Sent: Tuesday, May 28, 2019 7:59 PM
+To: alice.micheal@intel.com; intel-wired-lan at lists.osuosl.org
+Cc: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
+Subject: [next PATCH S6 4/7] i40e: Add log entry while creating or deleting TC0
+
+From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+
+Generate log entry when TC0 is created or deleted.
+Log entry is generated during main VSI setup.
+Before there was no log info about adding or deleting TC0.
+
+Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 ---
- net/sched/sch_taprio.c | 30 ++++++++++++++++++++++--------
- 1 file changed, 22 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
-index 1cd19eabc53b..b892fa32ea2b 100644
---- a/net/sched/sch_taprio.c
-+++ b/net/sched/sch_taprio.c
-@@ -63,6 +63,7 @@ struct taprio_sched {
- 	struct Qdisc **qdiscs;
- 	struct Qdisc *root;
- 	u32 offload_flags;
-+	enum tk_offsets tk_offset;
- 	int clockid;
- 	atomic64_t picos_per_byte; /* Using picoseconds because for 10Gbps+
- 				    * speeds it's sub-nanoseconds per byte
-@@ -73,7 +74,6 @@ struct taprio_sched {
- 	struct sched_entry __rcu *current_entry;
- 	struct sched_gate_list __rcu *oper_sched;
- 	struct sched_gate_list __rcu *admin_sched;
--	ktime_t (*get_time)(void);
- 	struct sk_buff *(*dequeue)(struct Qdisc *sch);
- 	struct sk_buff *(*peek)(struct Qdisc *sch);
- 	struct hrtimer advance_timer;
-@@ -89,6 +89,20 @@ static ktime_t sched_base_time(const struct sched_gate_list *sched)
- 	return ns_to_ktime(sched->base_time);
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 931862c0f39d..7c93f28b7b1d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -7432,6 +7432,10 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
+ 			    vsi->seid);
+ 		need_reset = true;
+ 		goto exit;
++	} else {
++		dev_info(&vsi->back->pdev->dev,
++			 "Setup channel (id:%u) utilizing num_queues %d\n",
++			 vsi->seid, vsi->tc_config.tc_info[0].qcount);
+ 	}
  
-+static inline ktime_t taprio_get_time(struct taprio_sched *q)
-+{
-+	ktime_t mono = ktime_get();
-+
-+	switch (q->tk_offset) {
-+	case TK_OFFS_MAX:
-+		return mono;
-+	default:
-+		return ktime_mono_to_any(mono, q->tk_offset);
-+	}
-+
-+	return KTIME_MAX;
-+}
-+
- static void taprio_free_sched_cb(struct rcu_head *head)
- {
- 	struct sched_gate_list *sched = container_of(head, struct sched_gate_list, rcu);
-@@ -290,7 +304,7 @@ static long get_packet_txtime(struct sk_buff *skb, struct Qdisc *sch)
- 	struct sched_gate_list *sched, *admin;
- 	struct sched_entry *entry;
- 
--	now = q->get_time();
-+	now = taprio_get_time(q);
- 	minimum_time = ktime_add_ns(now, q->txtime_delay);
- 
- 	rcu_read_lock();
-@@ -501,7 +515,7 @@ static struct sk_buff *taprio_dequeue_soft(struct Qdisc *sch)
- 			continue;
- 
- 		len = qdisc_pkt_len(skb);
--		guard = ktime_add_ns(q->get_time(),
-+		guard = ktime_add_ns(taprio_get_time(q),
- 				     length_to_duration(q, len));
- 
- 		/* In the case that there's no gate entry, there's no
-@@ -903,7 +917,7 @@ static int taprio_get_start_time(struct Qdisc *sch,
- 	s64 n;
- 
- 	base = sched_base_time(sched);
--	now = q->get_time();
-+	now = taprio_get_time(q);
- 
- 	if (ktime_after(base, now)) {
- 		*start = base;
-@@ -1200,16 +1214,16 @@ static int taprio_change(struct Qdisc *sch, struct nlattr *opt,
- 
- 	switch (q->clockid) {
- 	case CLOCK_REALTIME:
--		q->get_time = ktime_get_real;
-+		q->tk_offset = TK_OFFS_REAL;
- 		break;
- 	case CLOCK_MONOTONIC:
--		q->get_time = ktime_get;
-+		q->tk_offset = TK_OFFS_MAX;
- 		break;
- 	case CLOCK_BOOTTIME:
--		q->get_time = ktime_get_boottime;
-+		q->tk_offset = TK_OFFS_BOOT;
- 		break;
- 	case CLOCK_TAI:
--		q->get_time = ktime_get_clocktai;
-+		q->tk_offset = TK_OFFS_TAI;
- 		break;
- 	default:
- 		NL_SET_ERR_MSG(extack, "Invalid 'clockid'");
+ 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
 -- 
-2.17.0
+2.19.2
+
+--------------------------------------------------------------------
+
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
 
