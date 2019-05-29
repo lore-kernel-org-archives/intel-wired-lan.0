@@ -1,86 +1,153 @@
-From: Lifshits, Vitaly <vitaly.lifshits@intel.com>
-Date: Wed, 29 May 2019 14:33:13 +0300
-Subject: [Intel-wired-lan] Driver has suspect GRO implementation,
- TCP performance may be compromised.
-In-Reply-To: <8627ea1e-8e51-c425-97f6-aeb57176e11a@gmail.com>
-References: <e070e241-fb65-a5b0-3155-7380a9203bcf@molgen.mpg.de>
- <8627ea1e-8e51-c425-97f6-aeb57176e11a@gmail.com>
-Message-ID: <aa7c6d4c-e93b-4ec2-c5d1-0f781ae6d8da@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 29 May 2019 21:36:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ e89e899f3e3213a98ccf60d832f37ecef7000a5b
+Message-ID: <5cee8af5.cT4hszbW3/9csbbh%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 5/28/2019 20:18, Eric Dumazet wrote:
->
-> On 5/28/19 8:42 AM, Paul Menzel wrote:
->> Dear Linux folks,
->>
->>
->> Occasionally, Linux outputs the message below on the workstation Dell
->> OptiPlex 5040 MT.
->>
->>      TCP: net00: Driver has suspect GRO implementation, TCP performance may be compromised.
->>
->> Linux 4.14.55 and Linux 5.2-rc2 show the message, and the WWW also
->> gives some hits [1][2].
->>
->> ```
->> $ sudo ethtool -i net00
->> driver: e1000e
->> version: 3.2.6-k
->> firmware-version: 0.8-4
->> expansion-rom-version:
->> bus-info: 0000:00:1f.6
->> supports-statistics: yes
->> supports-test: yes
->> supports-eeprom-access: yes
->> supports-register-dump: yes
->> supports-priv-flags: no
->> ```
->>
->> Can the driver e1000e be improved?
->>
->> Any idea, what triggers this, as I do not see it every boot? Download
->> of big files?
->>
-> Maybe the driver/NIC can receive frames bigger than MTU, although this would be strange.
->
-> diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-> index c61edd023b352123e2a77465782e0d32689e96b0..cb0194f66125bcba427e6e7e3cacf0c93040ef61 100644
-> --- a/net/ipv4/tcp_input.c
-> +++ b/net/ipv4/tcp_input.c
-> @@ -150,8 +150,10 @@ static void tcp_gro_dev_warn(struct sock *sk, const struct sk_buff *skb,
->                  rcu_read_lock();
->                  dev = dev_get_by_index_rcu(sock_net(sk), skb->skb_iif);
->                  if (!dev || len >= dev->mtu)
-> -                       pr_warn("%s: Driver has suspect GRO implementation, TCP performance may be compromised.\n",
-> -                               dev ? dev->name : "Unknown driver");
-> +                       pr_warn("%s: Driver has suspect GRO implementation, TCP performance may be compromised."
-> +                               " len %u mtu %u\n",
-> +                               dev ? dev->name : "Unknown driver",
-> +                               len, dev ? dev->mtu : 0);
->                  rcu_read_unlock();
->          }
->   }
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: e89e899f3e3213a98ccf60d832f37ecef7000a5b  ice: Add a helper to trigger software interrupt
 
-On some devices due to hardware limitation there's a drop in TCP 
-performance.
+elapsed time: 213m
 
-This is described in this data sheet:
+configs tested: 128
 
-https://www.intel.com/content/dam/www/public/us/en/documents/specification-updates/i218-i219-ethernet-connection-spec-update.pdf?asset=9561
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-And in this commit:
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                          debug_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+riscv                            allmodconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+x86_64                           allmodconfig
+i386                             alldefconfig
+s390                             allyesconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+m68k                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-x011-201921
+i386                   randconfig-x018-201921
+i386                   randconfig-x013-201921
+i386                   randconfig-x012-201921
+i386                   randconfig-x016-201921
+i386                   randconfig-x017-201921
+i386                   randconfig-x010-201921
+i386                   randconfig-x014-201921
+i386                   randconfig-x015-201921
+i386                   randconfig-x019-201921
+x86_64                 randconfig-x000-201921
+x86_64                 randconfig-x001-201921
+x86_64                 randconfig-x002-201921
+x86_64                 randconfig-x003-201921
+x86_64                 randconfig-x004-201921
+x86_64                 randconfig-x005-201921
+x86_64                 randconfig-x006-201921
+x86_64                 randconfig-x007-201921
+x86_64                 randconfig-x008-201921
+x86_64                 randconfig-x009-201921
+x86_64                 randconfig-x019-201921
+x86_64                 randconfig-x015-201921
+x86_64                 randconfig-x010-201921
+x86_64                 randconfig-x012-201921
+x86_64                 randconfig-x014-201921
+x86_64                 randconfig-x017-201921
+x86_64                 randconfig-x016-201921
+x86_64                 randconfig-x018-201921
+x86_64                 randconfig-x011-201921
+x86_64                 randconfig-x013-201921
+i386                   randconfig-x009-201921
+i386                   randconfig-x008-201921
+i386                   randconfig-x006-201921
+i386                   randconfig-x004-201921
+i386                   randconfig-x005-201921
+i386                   randconfig-x001-201921
+i386                   randconfig-x000-201921
+i386                   randconfig-x007-201921
+i386                   randconfig-x003-201921
+i386                   randconfig-x002-201921
+i386                   randconfig-x073-201921
+i386                   randconfig-x071-201921
+i386                   randconfig-x070-201921
+i386                   randconfig-x074-201921
+i386                   randconfig-x078-201921
+i386                   randconfig-x075-201921
+i386                   randconfig-x072-201921
+i386                   randconfig-x076-201921
+i386                   randconfig-x077-201921
+i386                   randconfig-x079-201921
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/commit/drivers/net/ethernet/intel/e1000e?id=b10effb92e272051dd1ec0d7be56bf9ca85ab927
-
-
-Disabling TSO fixes the performance drop.
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
