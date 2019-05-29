@@ -1,167 +1,66 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 30 May 2019 03:27:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 75c3e68d0cf59a9c64b1a852dc4c7e4d296a35b0
-Message-ID: <5ceedd3e.mVvRRhIIhqgLV5ZN%lkp@intel.com>
+From: Patel, Vedang <vedang.patel@intel.com>
+Date: Wed, 29 May 2019 19:49:34 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 3/7] taprio: Add the
+ skeleton to enable hardware offloading
+In-Reply-To: <20190529121440.46c40967@cakuba.netronome.com>
+References: <1559065608-27888-1-git-send-email-vedang.patel@intel.com>
+ <1559065608-27888-4-git-send-email-vedang.patel@intel.com>
+ <20190528154510.41b50723@cakuba.netronome.com>
+ <62E2DD49-AC21-46DE-8E5B-EBC67230FA7D@intel.com>
+ <20190529121440.46c40967@cakuba.netronome.com>
+Message-ID: <F7B1E3E2-645C-419C-B265-7AC5F822630D@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 75c3e68d0cf59a9c64b1a852dc4c7e4d296a35b0  i40e: update copyright string
 
-elapsed time: 563m
 
-configs tested: 142
+On May 29, 2019, at 12:14 PM, Jakub Kicinski <jakub.kicinski at netronome.com<mailto:jakub.kicinski@netronome.com>> wrote:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+On Wed, 29 May 2019 17:06:49 +0000, Patel, Vedang wrote:
+On May 28, 2019, at 3:45 PM, Jakub Kicinski <jakub.kicinski at netronome.com<mailto:jakub.kicinski@netronome.com>> wrote:
+On Tue, 28 May 2019 10:46:44 -0700, Vedang Patel wrote:
+From: Vinicius Costa Gomes <vinicius.gomes at intel.com<mailto:vinicius.gomes@intel.com>>
 
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-arm                              allmodconfig
-arm64                            allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                          debug_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-riscv                            allmodconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-sparc                            allyesconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-s390                             allyesconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x070-201921
-i386                   randconfig-x071-201921
-i386                   randconfig-x072-201921
-i386                   randconfig-x073-201921
-i386                   randconfig-x074-201921
-i386                   randconfig-x075-201921
-i386                   randconfig-x076-201921
-i386                   randconfig-x077-201921
-i386                   randconfig-x078-201921
-i386                   randconfig-x079-201921
-i386                   randconfig-x011-201921
-i386                   randconfig-x018-201921
-i386                   randconfig-x013-201921
-i386                   randconfig-x012-201921
-i386                   randconfig-x016-201921
-i386                   randconfig-x017-201921
-i386                   randconfig-x010-201921
-i386                   randconfig-x014-201921
-i386                   randconfig-x015-201921
-i386                   randconfig-x019-201921
-x86_64                 randconfig-x006-201921
-x86_64                 randconfig-x003-201921
-x86_64                 randconfig-x001-201921
-x86_64                 randconfig-x007-201921
-x86_64                 randconfig-x004-201921
-x86_64                 randconfig-x005-201921
-x86_64                 randconfig-x002-201921
-x86_64                 randconfig-x009-201921
-x86_64                 randconfig-x008-201921
-x86_64                 randconfig-x000-201921
-x86_64                              fedora-25
-x86_64                                  kexec
-i386                   randconfig-x009-201921
-i386                   randconfig-x008-201921
-i386                   randconfig-x006-201921
-i386                   randconfig-x004-201921
-i386                   randconfig-x005-201921
-i386                   randconfig-x001-201921
-i386                   randconfig-x000-201921
-i386                   randconfig-x007-201921
-i386                   randconfig-x003-201921
-i386                   randconfig-x002-201921
-x86_64                 randconfig-x019-201921
-x86_64                 randconfig-x015-201921
-x86_64                 randconfig-x010-201921
-x86_64                 randconfig-x012-201921
-x86_64                 randconfig-x014-201921
-x86_64                 randconfig-x017-201921
-x86_64                 randconfig-x016-201921
-x86_64                 randconfig-x018-201921
-x86_64                 randconfig-x011-201921
-x86_64                 randconfig-x013-201921
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                  randconfig-x000201921
-x86_64                  randconfig-x001201921
-x86_64                  randconfig-x002201921
-x86_64                  randconfig-x003201921
-x86_64                  randconfig-x004201921
-x86_64                  randconfig-x005201921
-x86_64                  randconfig-x006201921
-x86_64                  randconfig-x007201921
-x86_64                  randconfig-x008201921
-x86_64                  randconfig-x009201921
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
+This adds the UAPI and the core bits necessary for userspace to
+request hardware offloading to be enabled.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+The future commits will enable hybrid or full offloading for taprio. This
+commit sets up the infrastructure to enable it via the netlink interface.
+
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes at intel.com<mailto:vinicius.gomes@intel.com>>
+Signed-off-by: Vedang Patel <vedang.patel at intel.com<mailto:vedang.patel@intel.com>>
+
+Other qdiscs offload by default, this offload-level selection here is a
+little bit inconsistent with that :(
+
+There are 2 different offload modes introduced in this patch.
+
+1. Txtime offload mode: This mode depends on skip_sock_check flag being set in the etf qdisc. Also, it requires some manual configuration which might be specific to the network adapter card. For example, for the i210 card, the user will have to route all the traffic to the highest priority queue and install etf qdisc with offload enabled on that queue. So, I don?t think this mode should be enabled by default.
+
+Excellent, it looks like there will be driver patches necessary for
+this offload to function, also it seems your offload enable function
+still contains this after the series:
+
+/* FIXME: enable offloading */
+
+Please only post offload infrastructure when fully fleshed out and with
+driver patches making use of it.
+
+The above comment refers to the full offload mode described below. It is not needed for txtime offload mode. Txtime offload mode is essentially setting the transmit time for each packet  depending on what interval it is going to be transmitted instead of relying on the hrtimers to open gates and send packets. More details about why exactly this is done is mentioned in patch #5[1] of this series.
+
+What we can do is just add the txtime offload related flag and add the full offload flag whenever the driver bits are ready. Does that address your concern?
+
+Thanks,
+Vedang
+
+[1] - https://lore.kernel.org/netdev/1559065608-27888-1-git-send-email-vedang.patel at intel.com/T/#mcbcd70a02eb3aea0622bf2a41e492398353b6923
+2. Full offload mode: This mode is currently not supported by any network driver. The support for this will be coming soon. But, we can enable this mode by default.
+
+Also, from what Vinicius tells me, offload modes for cbs, etf and mqprio are also disabled by default. So, it will make more sense to keep it disabled to be consistent with other qdiscs similar to this one.
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190529/fde057db/attachment-0001.html>
