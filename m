@@ -1,62 +1,86 @@
-From: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
-Date: Tue, 28 May 2019 19:42:10 +0000
-Subject: [Intel-wired-lan] [next PATCH S6 4/7] i40e: Add log entry while
- creating or deleting TC0
-In-Reply-To: <20190528175921.30534-4-alice.michael@intel.com>
-References: <20190528175921.30534-1-alice.michael@intel.com>
- <20190528175921.30534-4-alice.michael@intel.com>
-Message-ID: <D4D6338F2E4CB34CB91C5312C72AAC81088F73@IRSMSX104.ger.corp.intel.com>
+From: Lifshits, Vitaly <vitaly.lifshits@intel.com>
+Date: Wed, 29 May 2019 14:33:13 +0300
+Subject: [Intel-wired-lan] Driver has suspect GRO implementation,
+ TCP performance may be compromised.
+In-Reply-To: <8627ea1e-8e51-c425-97f6-aeb57176e11a@gmail.com>
+References: <e070e241-fb65-a5b0-3155-7380a9203bcf@molgen.mpg.de>
+ <8627ea1e-8e51-c425-97f6-aeb57176e11a@gmail.com>
+Message-ID: <aa7c6d4c-e93b-4ec2-c5d1-0f781ae6d8da@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+On 5/28/2019 20:18, Eric Dumazet wrote:
+>
+> On 5/28/19 8:42 AM, Paul Menzel wrote:
+>> Dear Linux folks,
+>>
+>>
+>> Occasionally, Linux outputs the message below on the workstation Dell
+>> OptiPlex 5040 MT.
+>>
+>>      TCP: net00: Driver has suspect GRO implementation, TCP performance may be compromised.
+>>
+>> Linux 4.14.55 and Linux 5.2-rc2 show the message, and the WWW also
+>> gives some hits [1][2].
+>>
+>> ```
+>> $ sudo ethtool -i net00
+>> driver: e1000e
+>> version: 3.2.6-k
+>> firmware-version: 0.8-4
+>> expansion-rom-version:
+>> bus-info: 0000:00:1f.6
+>> supports-statistics: yes
+>> supports-test: yes
+>> supports-eeprom-access: yes
+>> supports-register-dump: yes
+>> supports-priv-flags: no
+>> ```
+>>
+>> Can the driver e1000e be improved?
+>>
+>> Any idea, what triggers this, as I do not see it every boot? Download
+>> of big files?
+>>
+> Maybe the driver/NIC can receive frames bigger than MTU, although this would be strange.
+>
+> diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+> index c61edd023b352123e2a77465782e0d32689e96b0..cb0194f66125bcba427e6e7e3cacf0c93040ef61 100644
+> --- a/net/ipv4/tcp_input.c
+> +++ b/net/ipv4/tcp_input.c
+> @@ -150,8 +150,10 @@ static void tcp_gro_dev_warn(struct sock *sk, const struct sk_buff *skb,
+>                  rcu_read_lock();
+>                  dev = dev_get_by_index_rcu(sock_net(sk), skb->skb_iif);
+>                  if (!dev || len >= dev->mtu)
+> -                       pr_warn("%s: Driver has suspect GRO implementation, TCP performance may be compromised.\n",
+> -                               dev ? dev->name : "Unknown driver");
+> +                       pr_warn("%s: Driver has suspect GRO implementation, TCP performance may be compromised."
+> +                               " len %u mtu %u\n",
+> +                               dev ? dev->name : "Unknown driver",
+> +                               len, dev ? dev->mtu : 0);
+>                  rcu_read_unlock();
+>          }
+>   }
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
------Original Message-----
-From: Michael, Alice 
-Sent: Tuesday, May 28, 2019 7:59 PM
-To: alice.micheal@intel.com; intel-wired-lan at lists.osuosl.org
-Cc: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
-Subject: [next PATCH S6 4/7] i40e: Add log entry while creating or deleting TC0
+On some devices due to hardware limitation there's a drop in TCP 
+performance.
 
-From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+This is described in this data sheet:
 
-Generate log entry when TC0 is created or deleted.
-Log entry is generated during main VSI setup.
-Before there was no log info about adding or deleting TC0.
+https://www.intel.com/content/dam/www/public/us/en/documents/specification-updates/i218-i219-ethernet-connection-spec-update.pdf?asset=9561
 
-Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++++
- 1 file changed, 4 insertions(+)
+And in this commit:
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 931862c0f39d..7c93f28b7b1d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7432,6 +7432,10 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
- 			    vsi->seid);
- 		need_reset = true;
- 		goto exit;
-+	} else {
-+		dev_info(&vsi->back->pdev->dev,
-+			 "Setup channel (id:%u) utilizing num_queues %d\n",
-+			 vsi->seid, vsi->tc_config.tc_info[0].qcount);
- 	}
- 
- 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
--- 
-2.19.2
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/commit/drivers/net/ethernet/intel/e1000e?id=b10effb92e272051dd1ec0d7be56bf9ca85ab927
 
---------------------------------------------------------------------
 
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
+Disabling TSO fixes the performance drop.
 
