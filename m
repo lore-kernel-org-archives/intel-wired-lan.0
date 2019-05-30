@@ -1,90 +1,125 @@
-From: Jakub Kicinski <jakub.kicinski@netronome.com>
-Date: Thu, 30 May 2019 13:41:15 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 3/7] taprio: Add the
- skeleton to enable hardware offloading
-In-Reply-To: <861F87D1-6A0B-438D-BBD5-6A15BDA398F7@intel.com>
-References: <1559065608-27888-1-git-send-email-vedang.patel@intel.com>
- <1559065608-27888-4-git-send-email-vedang.patel@intel.com>
- <20190528154510.41b50723@cakuba.netronome.com>
- <62E2DD49-AC21-46DE-8E5B-EBC67230FA7D@intel.com>
- <20190529121440.46c40967@cakuba.netronome.com>
- <A9D05E0B-FC24-4904-B3E5-1E069C92A3DA@intel.com>
- <20190529140620.68fa8e64@cakuba.netronome.com>
- <861F87D1-6A0B-438D-BBD5-6A15BDA398F7@intel.com>
-Message-ID: <20190530134115.36f13bb5@cakuba.netronome.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 30 May 2019 15:52:40 -0700
+Subject: [Intel-wired-lan] Driver has suspect GRO implementation,
+ TCP performance may be compromised.
+In-Reply-To: <20190529093548.3df7ee73@hermes.lan>
+References: <e070e241-fb65-a5b0-3155-7380a9203bcf@molgen.mpg.de>
+ <8627ea1e-8e51-c425-97f6-aeb57176e11a@gmail.com>
+ <eb730f01-0c6d-0589-36cc-7193d64c1ee8@molgen.mpg.de>
+ <CANn89i+VvwMaHy2Br-0CcC3gPQ+PmG3Urpn4KpqL0P7XBykmcw@mail.gmail.com>
+ <20190529093548.3df7ee73@hermes.lan>
+Message-ID: <CAKgT0UdWmu3GjeMd9jmA=5FGQ=5cLnFb51arf+zkX7omc-G1fg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 30 May 2019 00:21:39 +0000, Patel, Vedang wrote:
-> > On May 29, 2019, at 2:06 PM, Jakub Kicinski <jakub.kicinski@netronome.com> wrote:
-> > On Wed, 29 May 2019 20:05:16 +0000, Patel, Vedang wrote:  
-> >> [Sending the email again since the last one was rejected by netdev because it was html.]
-> >>   
-> >>> On May 29, 2019, at 12:14 PM, Jakub Kicinski <jakub.kicinski@netronome.com> wrote:
-> >>> 
-> >>> On Wed, 29 May 2019 17:06:49 +0000, Patel, Vedang wrote:    
-> >>>>> On May 28, 2019, at 3:45 PM, Jakub Kicinski <jakub.kicinski@netronome.com> wrote:
-> >>>>> On Tue, 28 May 2019 10:46:44 -0700, Vedang Patel wrote:      
-> >>>>>> From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> >>>>>> 
-> >>>>>> This adds the UAPI and the core bits necessary for userspace to
-> >>>>>> request hardware offloading to be enabled.
-> >>>>>> 
-> >>>>>> The future commits will enable hybrid or full offloading for taprio. This
-> >>>>>> commit sets up the infrastructure to enable it via the netlink interface.
-> >>>>>> 
-> >>>>>> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> >>>>>> Signed-off-by: Vedang Patel <vedang.patel@intel.com>      
-> >>>>> 
-> >>>>> Other qdiscs offload by default, this offload-level selection here is a
-> >>>>> little bit inconsistent with that :(
-> >>>>>   
-> >>>> There are 2 different offload modes introduced in this patch.
-> >>>> 
-> >>>> 1. Txtime offload mode: This mode depends on skip_sock_check flag being set in the etf qdisc. Also, it requires some manual configuration which might be specific to the network adapter card. For example, for the i210 card, the user will have to route all the traffic to the highest priority queue and install etf qdisc with offload enabled on that queue. So, I don?t think this mode should be enabled by default.    
-> >>> 
-> >>> Excellent, it looks like there will be driver patches necessary for
-> >>> this offload to function, also it seems your offload enable function
-> >>> still contains this after the series:
-> >>> 
-> >>> 	/* FIXME: enable offloading */
-> >>> 
-> >>> Please only post offload infrastructure when fully fleshed out and with
-> >>> driver patches making use of it.  
-> >> 
-> >> The above comment refers to the full offload mode described below. It
-> >> is not needed for txtime offload mode. Txtime offload mode is
-> >> essentially setting the transmit time for each packet  depending on
-> >> what interval it is going to be transmitted instead of relying on the
-> >> hrtimers to open gates and send packets. More details about why
-> >> exactly this is done is mentioned in patch #5[1] of this series.  
-> > 
-> > From looking at this set it looks like I can add that qdisc to any
-> > netdev now *with* offload, and as long as the driver has _any_
-> > ndo_setup_tc implementation taprio will not return an error. 
-> > 
-> > Perhaps this mode of operation should not be called offload?  Can't 
-> > the ETF qdisc underneath run in software mode?
-> >   
-> Yeah, it doesn?t make much sense to run ETF in software mode but it
-> can be done. What about naming it txtime-assist instead?
+On Wed, May 29, 2019 at 9:38 AM Stephen Hemminger
+<stephen@networkplumber.org> wrote:
+>
+> On Wed, 29 May 2019 09:00:54 -0700
+> Eric Dumazet <edumazet@google.com> wrote:
+>
+> > On Wed, May 29, 2019 at 7:49 AM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
+> > >
+> > > Dear Eric,
+> > >
+> > >
+> > > Thank you for the quick reply.
+> > >
+> > > On 05/28/19 19:18, Eric Dumazet wrote:
+> > > > On 5/28/19 8:42 AM, Paul Menzel wrote:
+> > >
+> > > >> Occasionally, Linux outputs the message below on the workstation Dell
+> > > >> OptiPlex 5040 MT.
+> > > >>
+> > > >>     TCP: net00: Driver has suspect GRO implementation, TCP performance may be compromised.
+> > > >>
+> > > >> Linux 4.14.55 and Linux 5.2-rc2 show the message, and the WWW also
+> > > >> gives some hits [1][2].
+> > > >>
+> > > >> ```
+> > > >> $ sudo ethtool -i net00
+> > > >> driver: e1000e
+> > > >> version: 3.2.6-k
+> > > >> firmware-version: 0.8-4
+> > > >> expansion-rom-version:
+> > > >> bus-info: 0000:00:1f.6
+> > > >> supports-statistics: yes
+> > > >> supports-test: yes
+> > > >> supports-eeprom-access: yes
+> > > >> supports-register-dump: yes
+> > > >> supports-priv-flags: no
+> > > >> ```
+> > > >>
+> > > >> Can the driver e1000e be improved?
+> > > >>
+> > > >> Any idea, what triggers this, as I do not see it every boot? Download
+> > > >> of big files?
+> > > >>
+> > > > Maybe the driver/NIC can receive frames bigger than MTU, although this would be strange.
+> > > >
+> > > > diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+> > > > index c61edd023b352123e2a77465782e0d32689e96b0..cb0194f66125bcba427e6e7e3cacf0c93040ef61 100644
+> > > > --- a/net/ipv4/tcp_input.c
+> > > > +++ b/net/ipv4/tcp_input.c
+> > > > @@ -150,8 +150,10 @@ static void tcp_gro_dev_warn(struct sock *sk, const struct sk_buff *skb,
+> > > >                 rcu_read_lock();
+> > > >                 dev = dev_get_by_index_rcu(sock_net(sk), skb->skb_iif);
+> > > >                 if (!dev || len >= dev->mtu)
+> > > > -                       pr_warn("%s: Driver has suspect GRO implementation, TCP performance may be compromised.\n",
+> > > > -                               dev ? dev->name : "Unknown driver");
+> > > > +                       pr_warn("%s: Driver has suspect GRO implementation, TCP performance may be compromised."
+> > > > +                               " len %u mtu %u\n",
+> > > > +                               dev ? dev->name : "Unknown driver",
+> > > > +                               len, dev ? dev->mtu : 0);
+> > > >                 rcu_read_unlock();
+> > > >         }
+> > > >  }
+> > >
+> > > I applied your patch on commit 9fb67d643 (Merge tag 'pinctrl-v5.2-2' of
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-pinctrl):
+> > >
+> > >      [ 5507.291769] TCP: net00: Driver has suspect GRO implementation, TCP performance may be compromised. len 1856 mtu 1500
+> >
+> >
+> > The 'GRO' in the warning can be probably ignored, since this NIC does
+> > not implement its own GRO.
+> >
+> > You can confirm this with this debug patch:
+> >
+> > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > index 0e09bede42a2bd2c912366a68863a52a22def8ee..014a43ce77e09664bda0568dd118064b006acd67
+> > 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > @@ -561,6 +561,9 @@ static void e1000_receive_skb(struct e1000_adapter *adapter,
+> >         if (staterr & E1000_RXD_STAT_VP)
+> >                 __vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), tag);
+> >
+> > +       if (skb->len > netdev->mtu)
+> > +               pr_err_ratelimited("received packet bigger (%u) than
+> > MTU (%u)\n",
+> > +                                  skb->len, netdev->mtu);
+> >         napi_gro_receive(&adapter->napi, skb);
+> >  }
+>
+> I think e1000 is one of those devices that only has receive limit as power of 2.
+> Therefore frames up to 2K can be received.
+>
+> There always some confusion in Linux about whether MTU is transmit only or devices
+> have to enforce it on receive.
 
-Sounds good!  txtime.* works for me.
+Actually I think there are some parts that don't have any receive
+limits that are supported by the e1000 part. What ends up happening is
+that we only drop the packet if it spans more than one buffer if I
+recall correctly, and buffer size is determined by MTU.
 
-> >> What we can do is just add the txtime offload related flag and add
-> >> the full offload flag whenever the driver bits are ready. Does that
-> >> address your concern?  
-> > 
-> > That would be a step in the right direction.  And please remove all the
-> > other unused code from the series.  AFAICT this is what the enable
-> > offload function looks like after your set - what's the point of the
-> > 'err' variable?
-> >   
-> Yes. This patch seems to have a few really silly mistakes. I
-> apologize for that. I willl clean it up and send another version of
-> the series. There is no unused code anywhere else in the series.
-
-Thanks!
+I always thought MTU only applied to transmit since it is kind of in
+the name. As a result I am pretty sure igb and ixgbe will be able to
+trigger this warning under certain circumstances as well. Also what
+about the case where someone sets the MTU to less than 1500? I think
+most NICs probably don't update their limits in such a case and
+wouldn't it also trigger a similar error?
