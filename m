@@ -1,53 +1,118 @@
-From: Lihong Yang <lihong.yang@intel.com>
-Date: Wed, 29 May 2019 16:06:42 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: Check and set the PF driver state
- first in i40e_ndo_set_vf_mac
-Message-ID: <20190529230642.87106-1-lihong.yang@intel.com>
+From: Patel, Vedang <vedang.patel@intel.com>
+Date: Thu, 30 May 2019 00:21:39 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 3/7] taprio: Add the
+ skeleton to enable hardware offloading
+In-Reply-To: <20190529140620.68fa8e64@cakuba.netronome.com>
+References: <1559065608-27888-1-git-send-email-vedang.patel@intel.com>
+ <1559065608-27888-4-git-send-email-vedang.patel@intel.com>
+ <20190528154510.41b50723@cakuba.netronome.com>
+ <62E2DD49-AC21-46DE-8E5B-EBC67230FA7D@intel.com>
+ <20190529121440.46c40967@cakuba.netronome.com>
+ <A9D05E0B-FC24-4904-B3E5-1E069C92A3DA@intel.com>
+ <20190529140620.68fa8e64@cakuba.netronome.com>
+Message-ID: <861F87D1-6A0B-438D-BBD5-6A15BDA398F7@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The PF driver state flag __I40E_VIRTCHNL_OP_PENDING needs to be
-checked and set at the beginning of i40e_ndo_set_vf_mac. Otherwise,
-if there are error conditions before it, the flag will be cleared
-unexpectedly by this function to cause potential race conditions.
-Hence move the check to the top of this function.
 
-Signed-off-by: Lihong Yang <lihong.yang@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 38484ed6880d..ac3a130ee7d4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -3940,6 +3940,11 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 	int bkt;
- 	u8 i;
- 
-+	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
-+		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
-+		return -EAGAIN;
-+	}
-+
- 	/* validate the request */
- 	ret = i40e_validate_vf(pf, vf_id);
- 	if (ret)
-@@ -3964,11 +3969,6 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 		goto error_param;
- 	}
- 
--	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
--		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
--		return -EAGAIN;
--	}
--
- 	if (is_multicast_ether_addr(mac)) {
- 		dev_err(&pf->pdev->dev,
- 			"Invalid Ethernet address %pM for VF %d\n", mac, vf_id);
--- 
-2.20.1
+> On May 29, 2019, at 2:06 PM, Jakub Kicinski <jakub.kicinski@netronome.com> wrote:
+> 
+> On Wed, 29 May 2019 20:05:16 +0000, Patel, Vedang wrote:
+>> [Sending the email again since the last one was rejected by netdev because it was html.]
+>> 
+>>> On May 29, 2019, at 12:14 PM, Jakub Kicinski <jakub.kicinski@netronome.com> wrote:
+>>> 
+>>> On Wed, 29 May 2019 17:06:49 +0000, Patel, Vedang wrote:  
+>>>>> On May 28, 2019, at 3:45 PM, Jakub Kicinski <jakub.kicinski@netronome.com> wrote:
+>>>>> On Tue, 28 May 2019 10:46:44 -0700, Vedang Patel wrote:    
+>>>>>> From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>>>>>> 
+>>>>>> This adds the UAPI and the core bits necessary for userspace to
+>>>>>> request hardware offloading to be enabled.
+>>>>>> 
+>>>>>> The future commits will enable hybrid or full offloading for taprio. This
+>>>>>> commit sets up the infrastructure to enable it via the netlink interface.
+>>>>>> 
+>>>>>> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>>>>>> Signed-off-by: Vedang Patel <vedang.patel@intel.com>    
+>>>>> 
+>>>>> Other qdiscs offload by default, this offload-level selection here is a
+>>>>> little bit inconsistent with that :(
+>>>>> 
+>>>> There are 2 different offload modes introduced in this patch.
+>>>> 
+>>>> 1. Txtime offload mode: This mode depends on skip_sock_check flag being set in the etf qdisc. Also, it requires some manual configuration which might be specific to the network adapter card. For example, for the i210 card, the user will have to route all the traffic to the highest priority queue and install etf qdisc with offload enabled on that queue. So, I don?t think this mode should be enabled by default.  
+>>> 
+>>> Excellent, it looks like there will be driver patches necessary for
+>>> this offload to function, also it seems your offload enable function
+>>> still contains this after the series:
+>>> 
+>>> 	/* FIXME: enable offloading */
+>>> 
+>>> Please only post offload infrastructure when fully fleshed out and with
+>>> driver patches making use of it.
+>> 
+>> The above comment refers to the full offload mode described below. It
+>> is not needed for txtime offload mode. Txtime offload mode is
+>> essentially setting the transmit time for each packet  depending on
+>> what interval it is going to be transmitted instead of relying on the
+>> hrtimers to open gates and send packets. More details about why
+>> exactly this is done is mentioned in patch #5[1] of this series.
+> 
+> From looking at this set it looks like I can add that qdisc to any
+> netdev now *with* offload, and as long as the driver has _any_
+> ndo_setup_tc implementation taprio will not return an error. 
+> 
+> Perhaps this mode of operation should not be called offload?  Can't 
+> the ETF qdisc underneath run in software mode?
+> 
+Yeah, it doesn?t make much sense to run ETF in software mode but it can be done. What about naming it txtime-assist instead?
+>> What we can do is just add the txtime offload related flag and add
+>> the full offload flag whenever the driver bits are ready. Does that
+>> address your concern?
+> 
+> That would be a step in the right direction.  And please remove all the
+> other unused code from the series.  AFAICT this is what the enable
+> offload function looks like after your set - what's the point of the
+> 'err' variable?
+> 
+Yes. This patch seems to have a few really silly mistakes. I apologize for that. I willl clean it up and send another version of the series. There is no unused code anywhere else in the series.
+> +static int taprio_enable_offload(struct net_device *dev,
+> +				 struct tc_mqprio_qopt *mqprio,
+> +				 struct taprio_sched *q,
+> +				 struct sched_gate_list *sched,
+> +				 struct netlink_ext_ack *extack,
+> +				 u32 offload_flags)
+> +{
+> +	const struct net_device_ops *ops = dev->netdev_ops;
+> +	int err = 0;
+> +
+> +	if (TXTIME_OFFLOAD_IS_ON(offload_flags))
+> +		goto done;
+> +
+> +	if (!FULL_OFFLOAD_IS_ON(offload_flags)) {
+> +		NL_SET_ERR_MSG(extack, "Offload mode is not supported");
+> +		return -EOPNOTSUPP;
+> +	}
+> +
+> +	if (!ops->ndo_setup_tc) {
+> +		NL_SET_ERR_MSG(extack, "Specified device does not support taprio offload");
+> +		return -EOPNOTSUPP;
+> +	}
+> +
+> +	/* FIXME: enable offloading */
+> +
+> +done:
+> +	if (err == 0) {
+> +		q->dequeue = taprio_dequeue_offload;
+> +		q->peek = taprio_peek_offload;
+> + 		q->offload_flags = offload_flags;
+> +	}
+> +
+> +	return err;
+> +}
 
