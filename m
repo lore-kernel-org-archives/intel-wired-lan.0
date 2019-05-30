@@ -1,246 +1,121 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 30 May 2019 23:30:54 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- 6dce892a0c2d7a20114421a807544cdc458161f2
-Message-ID: <5ceff72e.U0SRcGWDhe0V6KdA%lkp@intel.com>
+From: Patel, Vedang <vedang.patel@intel.com>
+Date: Thu, 30 May 2019 00:15:48 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 3/7] taprio: Add the
+ skeleton to enable hardware offloading
+In-Reply-To: <20190529140620.68fa8e64@cakuba.netronome.com>
+References: <1559065608-27888-1-git-send-email-vedang.patel@intel.com>
+ <1559065608-27888-4-git-send-email-vedang.patel@intel.com>
+ <20190528154510.41b50723@cakuba.netronome.com>
+ <62E2DD49-AC21-46DE-8E5B-EBC67230FA7D@intel.com>
+ <20190529121440.46c40967@cakuba.netronome.com>
+ <A9D05E0B-FC24-4904-B3E5-1E069C92A3DA@intel.com>
+ <20190529140620.68fa8e64@cakuba.netronome.com>
+Message-ID: <6A7007D1-3557-4865-89E3-7CC4C4217574@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 6dce892a0c2d7a20114421a807544cdc458161f2  i40e: update copyright string
-
-TIMEOUT after 520m
 
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+On May 29, 2019, at 2:06 PM, Jakub Kicinski <jakub.kicinski at netronome.com<mailto:jakub.kicinski@netronome.com>> wrote:
 
-configs timed out: 202
+On Wed, 29 May 2019 20:05:16 +0000, Patel, Vedang wrote:
+[Sending the email again since the last one was rejected by netdev because it was html.]
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-alpha                               defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                          randconfig-n001
-i386                          randconfig-n002
-i386                          randconfig-n003
-i386                          randconfig-n004
-i386                          randconfig-n005
-i386                          randconfig-n006
-i386                          randconfig-n007
-i386                          randconfig-n008
-i386                          randconfig-n009
-i386                          randconfig-n010
-i386                          randconfig-n011
-i386                          randconfig-n012
-i386                          randconfig-n013
-i386                          randconfig-n014
-i386                          randconfig-n015
-i386                          randconfig-n016
-i386                          randconfig-n017
-i386                          randconfig-n018
-i386                          randconfig-n019
-i386                          randconfig-n020
-i386                          randconfig-n021
-i386                          randconfig-n022
-i386                          randconfig-n023
-i386                          randconfig-n024
-i386                          randconfig-n025
-i386                          randconfig-n026
-i386                          randconfig-n027
-i386                          randconfig-n028
-i386                          randconfig-n029
-i386                          randconfig-n030
-i386                          randconfig-n031
-i386                          randconfig-n032
-i386                          randconfig-x000
-i386                          randconfig-x001
-i386                          randconfig-x002
-i386                          randconfig-x003
-i386                          randconfig-x004
-i386                          randconfig-x005
-i386                          randconfig-x006
-i386                          randconfig-x007
-i386                          randconfig-x008
-i386                          randconfig-x009
-i386                          randconfig-x010
-i386                          randconfig-x011
-i386                          randconfig-x012
-i386                          randconfig-x013
-i386                          randconfig-x014
-i386                          randconfig-x015
-i386                          randconfig-x016
-i386                          randconfig-x017
-i386                          randconfig-x018
-i386                          randconfig-x019
-i386                          randconfig-x070
-i386                          randconfig-x071
-i386                          randconfig-x072
-i386                          randconfig-x073
-i386                          randconfig-x074
-i386                          randconfig-x075
-i386                          randconfig-x076
-i386                          randconfig-x077
-i386                          randconfig-x078
-i386                          randconfig-x079
-i386                               tinyconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-ia64                                defconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-mips                             allyesconfig
-nds32                            allmodconfig
-nds32                             allnoconfig
-nds32                            allyesconfig
-nds32                               defconfig
-nios2                         10m50_defconfig
-openrisc                    or1ksim_defconfig
-parisc                           allmodconfig
-parisc                            allnoconfig
-parisc                           allyesconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                          allyesconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-riscv                            allmodconfig
-riscv                             allnoconfig
-riscv                            allyesconfig
-riscv                               defconfig
-riscv                              tinyconfig
-s390                             allmodconfig
-s390                             allyesconfig
-s390                          debug_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                               allyesconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                             defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allmodconfig
-x86_64                           allyesconfig
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                        randconfig-n001
-x86_64                        randconfig-n002
-x86_64                        randconfig-n003
-x86_64                        randconfig-n004
-x86_64                        randconfig-n005
-x86_64                        randconfig-n006
-x86_64                        randconfig-n007
-x86_64                        randconfig-n008
-x86_64                        randconfig-n009
-x86_64                        randconfig-n010
-x86_64                        randconfig-n011
-x86_64                        randconfig-n012
-x86_64                        randconfig-n013
-x86_64                        randconfig-n014
-x86_64                        randconfig-n015
-x86_64                        randconfig-n016
-x86_64                        randconfig-n017
-x86_64                        randconfig-n018
-x86_64                        randconfig-n019
-x86_64                        randconfig-n020
-x86_64                        randconfig-n021
-x86_64                        randconfig-n022
-x86_64                        randconfig-n023
-x86_64                        randconfig-n024
-x86_64                        randconfig-n025
-x86_64                        randconfig-n026
-x86_64                        randconfig-n027
-x86_64                        randconfig-n028
-x86_64                        randconfig-n029
-x86_64                        randconfig-n030
-x86_64                        randconfig-n031
-x86_64                        randconfig-n032
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-x86_64                        randconfig-x010
-x86_64                        randconfig-x011
-x86_64                        randconfig-x012
-x86_64                        randconfig-x013
-x86_64                        randconfig-x014
-x86_64                        randconfig-x015
-x86_64                        randconfig-x016
-x86_64                        randconfig-x017
-x86_64                        randconfig-x018
-x86_64                        randconfig-x019
-x86_64                                   rhel
-x86_64                               rhel-7.6
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
+On May 29, 2019, at 12:14 PM, Jakub Kicinski <jakub.kicinski at netronome.com<mailto:jakub.kicinski@netronome.com>> wrote:
 
-configs tested: 11
+On Wed, 29 May 2019 17:06:49 +0000, Patel, Vedang wrote:
+On May 28, 2019, at 3:45 PM, Jakub Kicinski <jakub.kicinski at netronome.com<mailto:jakub.kicinski@netronome.com>> wrote:
+On Tue, 28 May 2019 10:46:44 -0700, Vedang Patel wrote:
+From: Vinicius Costa Gomes <vinicius.gomes at intel.com<mailto:vinicius.gomes@intel.com>>
 
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
+This adds the UAPI and the core bits necessary for userspace to
+request hardware offloading to be enabled.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+The future commits will enable hybrid or full offloading for taprio. This
+commit sets up the infrastructure to enable it via the netlink interface.
+
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes at intel.com<mailto:vinicius.gomes@intel.com>>
+Signed-off-by: Vedang Patel <vedang.patel at intel.com<mailto:vedang.patel@intel.com>>
+
+Other qdiscs offload by default, this offload-level selection here is a
+little bit inconsistent with that :(
+
+There are 2 different offload modes introduced in this patch.
+
+1. Txtime offload mode: This mode depends on skip_sock_check flag being set in the etf qdisc. Also, it requires some manual configuration which might be specific to the network adapter card. For example, for the i210 card, the user will have to route all the traffic to the highest priority queue and install etf qdisc with offload enabled on that queue. So, I don?t think this mode should be enabled by default.
+
+Excellent, it looks like there will be driver patches necessary for
+this offload to function, also it seems your offload enable function
+still contains this after the series:
+
+/* FIXME: enable offloading */
+
+Please only post offload infrastructure when fully fleshed out and with
+driver patches making use of it.
+
+The above comment refers to the full offload mode described below. It
+is not needed for txtime offload mode. Txtime offload mode is
+essentially setting the transmit time for each packet  depending on
+what interval it is going to be transmitted instead of relying on the
+hrtimers to open gates and send packets. More details about why
+exactly this is done is mentioned in patch #5[1] of this series.
+
+From looking at this set it looks like I can add that qdisc to any
+netdev now *with* offload, and as long as the driver has _any_
+ndo_setup_tc implementation taprio will not return an error.
+
+Perhaps this mode of operation should not be called offload?  Can't
+the ETF qdisc underneath run in software mode?
+
+Yeah, it doesn?t make much sense to run ETF in software mode but it can be done. What about naming it txtime-assist instead?
+What we can do is just add the txtime offload related flag and add
+the full offload flag whenever the driver bits are ready. Does that
+address your concern?
+
+That would be a step in the right direction.  And please remove all the
+other unused code from the series.  AFAICT this is what the enable
+offload function looks like after your set - what's the point of the
+'err' variable?
+
+Yes. This patch seems to have a few really silly mistakes. I apologize for that. I willl clean it up and send another version of the series. There is no unused code anywhere else in the series.
++static int taprio_enable_offload(struct net_device *dev,
++  struct tc_mqprio_qopt *mqprio,
++  struct taprio_sched *q,
++  struct sched_gate_list *sched,
++  struct netlink_ext_ack *extack,
++  u32 offload_flags)
++{
++ const struct net_device_ops *ops = dev->netdev_ops;
++ int err = 0;
++
++ if (TXTIME_OFFLOAD_IS_ON(offload_flags))
++ goto done;
++
++ if (!FULL_OFFLOAD_IS_ON(offload_flags)) {
++ NL_SET_ERR_MSG(extack, "Offload mode is not supported");
++ return -EOPNOTSUPP;
++ }
++
++ if (!ops->ndo_setup_tc) {
++ NL_SET_ERR_MSG(extack, "Specified device does not support taprio offload");
++ return -EOPNOTSUPP;
++ }
++
++ /* FIXME: enable offloading */
++
++done:
++ if (err == 0) {
++ q->dequeue = taprio_dequeue_offload;
++ q->peek = taprio_peek_offload;
++  q->offload_flags = offload_flags;
++ }
++
++ return err;
++}
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190530/d12ab5f9/attachment-0001.html>
