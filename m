@@ -1,50 +1,100 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Thu, 30 May 2019 16:56:15 -0700
-Subject: [Intel-wired-lan] Driver has suspect GRO implementation,
- TCP performance may be compromised.
-In-Reply-To: <CAKgT0UdWmu3GjeMd9jmA=5FGQ=5cLnFb51arf+zkX7omc-G1fg@mail.gmail.com>
-References: <e070e241-fb65-a5b0-3155-7380a9203bcf@molgen.mpg.de>
- <8627ea1e-8e51-c425-97f6-aeb57176e11a@gmail.com>
- <eb730f01-0c6d-0589-36cc-7193d64c1ee8@molgen.mpg.de>
- <CANn89i+VvwMaHy2Br-0CcC3gPQ+PmG3Urpn4KpqL0P7XBykmcw@mail.gmail.com>
- <20190529093548.3df7ee73@hermes.lan>
- <CAKgT0UdWmu3GjeMd9jmA=5FGQ=5cLnFb51arf+zkX7omc-G1fg@mail.gmail.com>
-Message-ID: <50261bc0-2732-5adb-1ff6-a4ac040e39b1@gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 31 May 2019 11:44:03 +0800
+Subject: [Intel-wired-lan] include/linux/netfilter_ipv6.h:110:9: error:
+ implicit declaration of function 'nf_ct_frag6_gather';
+ did you mean 'nf_ct_attach'?
+Message-ID: <201905311102.PBHsIGJX%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   8b2d002239e0655548bd7a8542d3191346e2abf0
+commit: 764dd163ac922f8683b5bcd3007251ce7b26cd33 netfilter: nf_conntrack_bridge: add support for IPv6
+date:   6 hours ago
+config: x86_64-fedora-25 (attached as .config)
+compiler: gcc-7 (Debian 7.3.0-1) 7.3.0
+reproduce:
+        git checkout 764dd163ac922f8683b5bcd3007251ce7b26cd33
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
 
-On 5/30/19 3:52 PM, Alexander Duyck wrote:
+All errors (new ones prefixed by >>):
 
-> Actually I think there are some parts that don't have any receive
-> limits that are supported by the e1000 part. What ends up happening is
-> that we only drop the packet if it spans more than one buffer if I
-> recall correctly, and buffer size is determined by MTU.
-> 
-> I always thought MTU only applied to transmit since it is kind of in
-> the name. As a result I am pretty sure igb and ixgbe will be able to
-> trigger this warning under certain circumstances as well. Also what
-> about the case where someone sets the MTU to less than 1500? I think
-> most NICs probably don't update their limits in such a case and
-> wouldn't it also trigger a similar error?
-> 
+   In file included from include/uapi/linux/netfilter_ipv6/ip6_tables.h:22:0,
+                    from include/linux/netfilter_ipv6/ip6_tables.h:24,
+                    from net/netfilter/ipset/ip_set_getport.c:15:
+   include/linux/netfilter_ipv6.h: In function 'nf_ipv6_br_defrag':
+>> include/linux/netfilter_ipv6.h:110:9: error: implicit declaration of function 'nf_ct_frag6_gather'; did you mean 'nf_ct_attach'? [-Werror=implicit-function-declaration]
+     return nf_ct_frag6_gather(net, skb, user);
+            ^~~~~~~~~~~~~~~~~~
+            nf_ct_attach
+   cc1: some warnings being treated as errors
+--
+   In file included from include/uapi/linux/netfilter_ipv6/ip6_tables.h:22:0,
+                    from include/linux/netfilter_ipv6/ip6_tables.h:24,
+                    from include/net/ip_vs.h:28,
+                    from net/netfilter/ipvs/ip_vs_ftp.c:46:
+   include/linux/netfilter_ipv6.h: In function 'nf_ipv6_br_defrag':
+>> include/linux/netfilter_ipv6.h:110:9: error: implicit declaration of function 'nf_ct_frag6_gather'; did you mean 'nf_ct_netns_get'? [-Werror=implicit-function-declaration]
+     return nf_ct_frag6_gather(net, skb, user);
+            ^~~~~~~~~~~~~~~~~~
+            nf_ct_netns_get
+   cc1: some warnings being treated as errors
+--
+   In file included from net//netfilter/nf_conntrack_proto.c:29:0:
+   include/linux/netfilter_ipv6.h: In function 'nf_ipv6_br_defrag':
+>> include/linux/netfilter_ipv6.h:110:9: error: implicit declaration of function 'nf_ct_frag6_gather'; did you mean 'nf_ct_bridge_register'? [-Werror=implicit-function-declaration]
+     return nf_ct_frag6_gather(net, skb, user);
+            ^~~~~~~~~~~~~~~~~~
+            nf_ct_bridge_register
+   cc1: some warnings being treated as errors
+--
+   In file included from security//selinux/hooks.c:54:0:
+   include/linux/netfilter_ipv6.h: In function 'nf_ipv6_br_defrag':
+>> include/linux/netfilter_ipv6.h:110:9: error: implicit declaration of function 'nf_ct_frag6_gather'; did you mean 'nf_ct_attach'? [-Werror=implicit-function-declaration]
+     return nf_ct_frag6_gather(net, skb, user);
+            ^~~~~~~~~~~~~~~~~~
+            nf_ct_attach
+   In file included from security//selinux/hooks.c:96:0:
+   security/selinux/include/avc.h: At top level:
+   security/selinux/include/avc.h:19:10: fatal error: flask.h: No such file or directory
+    #include "flask.h"
+             ^~~~~~~~~
+   cc1: some warnings being treated as errors
+   compilation terminated.
 
+vim +110 include/linux/netfilter_ipv6.h
 
-Linux does not have a notion of MRU, mtu is used for both tx and rx.
+    98	
+    99	static inline int nf_ipv6_br_defrag(struct net *net, struct sk_buff *skb,
+   100					    u32 user)
+   101	{
+   102	#if IS_MODULE(CONFIG_IPV6)
+   103		const struct nf_ipv6_ops *v6_ops = nf_get_ipv6_ops();
+   104	
+   105		if (!v6_ops)
+   106			return 1;
+   107	
+   108		return v6_ops->br_defrag(net, skb, user);
+   109	#else
+ > 110		return nf_ct_frag6_gather(net, skb, user);
+   111	#endif
+   112	}
+   113	
 
-Most NIC drivers allocate skb of the maximal size (derived from netdev->mtu)
-and program the NIC to drop packets bigger than X bytes  (X also derived from netdev->mtu)
-
-Another interesting point is that Paul host is receiving big packets,
-that means that one host in his local network is overriding the 1500 MTU :)
-
-Eventually we could add a netdev->mru and allow few drivers to set
-their maximal mru, if bigger than netdev->mtu.
-
-e1000e would probably set netdev->mru to 2048 - sizeof(ethernet headers), if
-the driver is operating at MTU = 1500
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 50146 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190531/de8c8b24/attachment-0001.bin>
