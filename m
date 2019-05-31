@@ -1,100 +1,246 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Fri, 31 May 2019 11:44:03 +0800
-Subject: [Intel-wired-lan] include/linux/netfilter_ipv6.h:110:9: error:
- implicit declaration of function 'nf_ct_frag6_gather';
- did you mean 'nf_ct_attach'?
-Message-ID: <201905311102.PBHsIGJX%lkp@intel.com>
+Date: Fri, 31 May 2019 12:23:28 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD INCOMPLETE
+ 2f2da36ebf42ef73a4591870b805f5ad0fbc10d5
+Message-ID: <5cf0ac40.CMT+lJmsfnzq6got%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   8b2d002239e0655548bd7a8542d3191346e2abf0
-commit: 764dd163ac922f8683b5bcd3007251ce7b26cd33 netfilter: nf_conntrack_bridge: add support for IPv6
-date:   6 hours ago
-config: x86_64-fedora-25 (attached as .config)
-compiler: gcc-7 (Debian 7.3.0-1) 7.3.0
-reproduce:
-        git checkout 764dd163ac922f8683b5bcd3007251ce7b26cd33
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: 2f2da36ebf42ef73a4591870b805f5ad0fbc10d5  ice: Trivial cosmetic changes
 
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
+TIMEOUT after 605m
 
-All errors (new ones prefixed by >>):
 
-   In file included from include/uapi/linux/netfilter_ipv6/ip6_tables.h:22:0,
-                    from include/linux/netfilter_ipv6/ip6_tables.h:24,
-                    from net/netfilter/ipset/ip_set_getport.c:15:
-   include/linux/netfilter_ipv6.h: In function 'nf_ipv6_br_defrag':
->> include/linux/netfilter_ipv6.h:110:9: error: implicit declaration of function 'nf_ct_frag6_gather'; did you mean 'nf_ct_attach'? [-Werror=implicit-function-declaration]
-     return nf_ct_frag6_gather(net, skb, user);
-            ^~~~~~~~~~~~~~~~~~
-            nf_ct_attach
-   cc1: some warnings being treated as errors
---
-   In file included from include/uapi/linux/netfilter_ipv6/ip6_tables.h:22:0,
-                    from include/linux/netfilter_ipv6/ip6_tables.h:24,
-                    from include/net/ip_vs.h:28,
-                    from net/netfilter/ipvs/ip_vs_ftp.c:46:
-   include/linux/netfilter_ipv6.h: In function 'nf_ipv6_br_defrag':
->> include/linux/netfilter_ipv6.h:110:9: error: implicit declaration of function 'nf_ct_frag6_gather'; did you mean 'nf_ct_netns_get'? [-Werror=implicit-function-declaration]
-     return nf_ct_frag6_gather(net, skb, user);
-            ^~~~~~~~~~~~~~~~~~
-            nf_ct_netns_get
-   cc1: some warnings being treated as errors
---
-   In file included from net//netfilter/nf_conntrack_proto.c:29:0:
-   include/linux/netfilter_ipv6.h: In function 'nf_ipv6_br_defrag':
->> include/linux/netfilter_ipv6.h:110:9: error: implicit declaration of function 'nf_ct_frag6_gather'; did you mean 'nf_ct_bridge_register'? [-Werror=implicit-function-declaration]
-     return nf_ct_frag6_gather(net, skb, user);
-            ^~~~~~~~~~~~~~~~~~
-            nf_ct_bridge_register
-   cc1: some warnings being treated as errors
---
-   In file included from security//selinux/hooks.c:54:0:
-   include/linux/netfilter_ipv6.h: In function 'nf_ipv6_br_defrag':
->> include/linux/netfilter_ipv6.h:110:9: error: implicit declaration of function 'nf_ct_frag6_gather'; did you mean 'nf_ct_attach'? [-Werror=implicit-function-declaration]
-     return nf_ct_frag6_gather(net, skb, user);
-            ^~~~~~~~~~~~~~~~~~
-            nf_ct_attach
-   In file included from security//selinux/hooks.c:96:0:
-   security/selinux/include/avc.h: At top level:
-   security/selinux/include/avc.h:19:10: fatal error: flask.h: No such file or directory
-    #include "flask.h"
-             ^~~~~~~~~
-   cc1: some warnings being treated as errors
-   compilation terminated.
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
 
-vim +110 include/linux/netfilter_ipv6.h
+configs timed out: 86
 
-    98	
-    99	static inline int nf_ipv6_br_defrag(struct net *net, struct sk_buff *skb,
-   100					    u32 user)
-   101	{
-   102	#if IS_MODULE(CONFIG_IPV6)
-   103		const struct nf_ipv6_ops *v6_ops = nf_get_ipv6_ops();
-   104	
-   105		if (!v6_ops)
-   106			return 1;
-   107	
-   108		return v6_ops->br_defrag(net, skb, user);
-   109	#else
- > 110		return nf_ct_frag6_gather(net, skb, user);
-   111	#endif
-   112	}
-   113	
+alpha                            allmodconfig
+i386                          randconfig-n001
+i386                          randconfig-n002
+i386                          randconfig-n003
+i386                          randconfig-n004
+i386                          randconfig-n005
+i386                          randconfig-n006
+i386                          randconfig-n007
+i386                          randconfig-n008
+i386                          randconfig-n009
+i386                          randconfig-n010
+i386                          randconfig-n011
+i386                          randconfig-n012
+i386                          randconfig-n013
+i386                          randconfig-n014
+i386                          randconfig-n015
+i386                          randconfig-n016
+i386                          randconfig-n017
+i386                          randconfig-n018
+i386                          randconfig-n019
+i386                          randconfig-n020
+i386                          randconfig-n021
+i386                          randconfig-n022
+i386                          randconfig-n023
+i386                          randconfig-n024
+i386                          randconfig-n025
+i386                          randconfig-n026
+i386                          randconfig-n027
+i386                          randconfig-n028
+i386                          randconfig-n029
+i386                          randconfig-n030
+i386                          randconfig-n031
+i386                          randconfig-n032
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+ia64                                defconfig
+m68k                             allyesconfig
+mips                             allyesconfig
+nds32                            allmodconfig
+nds32                            allyesconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allyesconfig
+riscv                            allyesconfig
+s390                             allmodconfig
+s390                             allyesconfig
+sh                               allyesconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+sparc64                          allyesconfig
+x86_64                        randconfig-n001
+x86_64                        randconfig-n002
+x86_64                        randconfig-n003
+x86_64                        randconfig-n004
+x86_64                        randconfig-n005
+x86_64                        randconfig-n006
+x86_64                        randconfig-n007
+x86_64                        randconfig-n008
+x86_64                        randconfig-n009
+x86_64                        randconfig-n010
+x86_64                        randconfig-n011
+x86_64                        randconfig-n012
+x86_64                        randconfig-n013
+x86_64                        randconfig-n014
+x86_64                        randconfig-n015
+x86_64                        randconfig-n016
+x86_64                        randconfig-n017
+x86_64                        randconfig-n018
+x86_64                        randconfig-n019
+x86_64                        randconfig-n020
+x86_64                        randconfig-n021
+x86_64                        randconfig-n022
+x86_64                        randconfig-n023
+x86_64                        randconfig-n024
+x86_64                        randconfig-n025
+x86_64                        randconfig-n026
+x86_64                        randconfig-n027
+x86_64                        randconfig-n028
+x86_64                        randconfig-n029
+x86_64                        randconfig-n030
+x86_64                        randconfig-n031
+x86_64                        randconfig-n032
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+
+configs tested: 127
+
+arm                              allmodconfig
+arm64                            allmodconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                          debug_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+i386                             alldefconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+alpha                            allyesconfig
+m68k                       m5475evb_defconfig
+riscv                            allmodconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+m68k                             allmodconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                              allnoconfig
+i386                                defconfig
+powerpc                          allmodconfig
+i386                   randconfig-x011-201921
+i386                   randconfig-x018-201921
+i386                   randconfig-x013-201921
+i386                   randconfig-x012-201921
+i386                   randconfig-x016-201921
+i386                   randconfig-x017-201921
+i386                   randconfig-x010-201921
+i386                   randconfig-x014-201921
+i386                   randconfig-x015-201921
+i386                   randconfig-x019-201921
+x86_64                 randconfig-x000-201921
+x86_64                 randconfig-x001-201921
+x86_64                 randconfig-x002-201921
+x86_64                 randconfig-x003-201921
+x86_64                 randconfig-x004-201921
+x86_64                 randconfig-x005-201921
+x86_64                 randconfig-x006-201921
+x86_64                 randconfig-x007-201921
+x86_64                 randconfig-x008-201921
+x86_64                 randconfig-x009-201921
+x86_64                 randconfig-x019-201921
+x86_64                 randconfig-x015-201921
+x86_64                 randconfig-x010-201921
+x86_64                 randconfig-x012-201921
+x86_64                 randconfig-x014-201921
+x86_64                 randconfig-x017-201921
+x86_64                 randconfig-x016-201921
+x86_64                 randconfig-x018-201921
+x86_64                 randconfig-x011-201921
+x86_64                 randconfig-x013-201921
+i386                   randconfig-x009-201921
+i386                   randconfig-x008-201921
+i386                   randconfig-x006-201921
+i386                   randconfig-x004-201921
+i386                   randconfig-x005-201921
+i386                   randconfig-x001-201921
+i386                   randconfig-x000-201921
+i386                   randconfig-x007-201921
+i386                   randconfig-x003-201921
+i386                   randconfig-x002-201921
+riscv                              tinyconfig
+i386                               tinyconfig
+i386                   randconfig-x073-201921
+i386                   randconfig-x071-201921
+i386                   randconfig-x070-201921
+i386                   randconfig-x074-201921
+i386                   randconfig-x078-201921
+i386                   randconfig-x075-201921
+i386                   randconfig-x072-201921
+i386                   randconfig-x076-201921
+i386                   randconfig-x077-201921
+i386                   randconfig-x079-201921
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 50146 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190531/de8c8b24/attachment-0001.bin>
