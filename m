@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 31 May 2019 17:58:16 +0000
-Subject: [Intel-wired-lan] [next PATCH S6 1/7] i40e: fix 'Unknown bps'
- in dmesg for 2.5Gb/5Gb speeds
-In-Reply-To: <20190528175921.30534-1-alice.michael@intel.com>
+Date: Fri, 31 May 2019 17:58:44 +0000
+Subject: [Intel-wired-lan] [next PATCH S6 2/7] i40e: Fix for missing
+ "link modes" info in ethtool
+In-Reply-To: <20190528175921.30534-2-alice.michael@intel.com>
 References: <20190528175921.30534-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DD58F@ORSMSX104.amr.corp.intel.com>
+ <20190528175921.30534-2-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3DD59F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,22 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Alice Michael
 > Sent: Tuesday, May 28, 2019 10:59 AM
 > To: alice.micheal at intel.com; intel-wired-lan at lists.osuosl.org
-> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S6 1/7] i40e: fix 'Unknown bps' in
-> dmesg for 2.5Gb/5Gb speeds
+> Cc: Szapar, Martyna <martyna.szapar@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S6 2/7] i40e: Fix for missing "link
+> modes" info in ethtool
 > 
-> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> From: Martyna Szapar <martyna.szapar@intel.com>
 > 
-> This patch fixes 'NIC Link is Up, Unknown bps' message in dmesg for
-> 2.5Gb/5Gb speeds. This problem is fixed by adding constants for
-> VIRTCHNL_LINK_SPEED_2_5GB and VIRTCHNL_LINK_SPEED_5GB cases in the
-> i40e_virtchnl_link_speed() function.
+> Fix for missing "Supported link modes" and "Advertised link modes"
+> info in ethtool after changed speed on X722 devices with BASE-T PHY with
+> FW API version >= 1.7.
+> The same FW API version on X710 and X722 does not mean the same feature
+> set so the change was needed as mac type of the device should also be
+> checked instead of FW API version only.
 > 
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Signed-off-by: Martyna Szapar <martyna.szapar@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h | 4 ++++
->  include/linux/avf/virtchnl.h                     | 4 ++++
->  2 files changed, 8 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
