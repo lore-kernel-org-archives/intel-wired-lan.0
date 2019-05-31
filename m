@@ -1,143 +1,76 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 31 May 2019 20:26:09 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- fdad1d54d2c8ca784f8f9d04340ea942b92aaa85
-Message-ID: <5cf11d61.KMLnRsL3HNnPi+4N%lkp@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Fri, 31 May 2019 15:19:20 +0200
+Subject: [Intel-wired-lan] Decreasing time to get link up to below 3 s
+Message-ID: <87cb341b-1c32-04be-9309-489354ef8065@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: fdad1d54d2c8ca784f8f9d04340ea942b92aaa85  iavf: update comments and file checks to match iavf
+Dear Linux folks,
 
-elapsed time: 259m
 
-configs tested: 118
+On several systems with different network devices and drivers (e1000e, r8169, tg3)
+it looks like getting the link up takes over three seconds.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+### e1000e ###
 
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                          debug_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-riscv                             allnoconfig
-riscv                               defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-ia64                                defconfig
-ia64                             allmodconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                                defconfig
-i386                              allnoconfig
-x86_64                 randconfig-x000-201921
-x86_64                 randconfig-x001-201921
-x86_64                 randconfig-x002-201921
-x86_64                 randconfig-x003-201921
-x86_64                 randconfig-x004-201921
-x86_64                 randconfig-x005-201921
-x86_64                 randconfig-x006-201921
-x86_64                 randconfig-x007-201921
-x86_64                 randconfig-x008-201921
-x86_64                 randconfig-x009-201921
-i386                   randconfig-x009-201921
-i386                   randconfig-x008-201921
-i386                   randconfig-x006-201921
-i386                   randconfig-x004-201921
-i386                   randconfig-x005-201921
-i386                   randconfig-x001-201921
-i386                   randconfig-x000-201921
-i386                   randconfig-x007-201921
-i386                   randconfig-x003-201921
-i386                   randconfig-x002-201921
-x86_64                 randconfig-x019-201921
-x86_64                 randconfig-x015-201921
-x86_64                 randconfig-x010-201921
-x86_64                 randconfig-x012-201921
-x86_64                 randconfig-x014-201921
-x86_64                 randconfig-x017-201921
-x86_64                 randconfig-x016-201921
-x86_64                 randconfig-x018-201921
-x86_64                 randconfig-x011-201921
-x86_64                 randconfig-x013-201921
-ia64                             alldefconfig
-ia64                              allnoconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-i386                   randconfig-x073-201921
-i386                   randconfig-x071-201921
-i386                   randconfig-x070-201921
-i386                   randconfig-x074-201921
-i386                   randconfig-x078-201921
-i386                   randconfig-x075-201921
-i386                   randconfig-x072-201921
-i386                   randconfig-x076-201921
-i386                   randconfig-x077-201921
-i386                   randconfig-x079-201921
+[    1.999678] e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
+[    2.000374] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    2.001206] e1000e 0000:00:1f.6: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
+[    2.412096] e1000e 0000:00:1f.6 0000:00:1f.6 (uninitialized): registered PHC clock
+[    2.495295] e1000e 0000:00:1f.6 eth0: (PCI Express:2.5GT/s:Width x1) 64:00:6a:2c:10:c1
+[    2.496204] e1000e 0000:00:1f.6 eth0: Intel(R) PRO/1000 Network Connection
+[    2.497024] e1000e 0000:00:1f.6 eth0: MAC: 12, PHY: 12, PBA No: FFFFFF-0FF
+[   15.614031] e1000e 0000:00:1f.6 net00: renamed from eth0
+[   18.679325] e1000e: net00 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+### r8169 ###
+
+[   33.433103] r8169 0000:18:00.0: enabling device (0000 -> 0003)
+[   33.453834] libphy: r8169: probed
+[   33.456629] r8169 0000:18:00.0 eth0: RTL8168h/8111h, 30:9c:23:04:d6:98, XID 541, IRQ 52
+[   33.456631] r8169 0000:18:00.0 eth0: jumbo features [frames: 9200 bytes, tx checksumming: ko]
+[   33.607384] r8169 0000:18:00.0 enp24s0: renamed from eth0
+[   34.134035] Generic Realtek PHY r8169-1800:00: attached PHY driver [Generic Realtek PHY] (mii_bus:phy_addr=r8169-1800:00, irq=IGNORE)
+[   34.215244] r8169 0000:18:00.0 enp24s0: Link is Down
+[   37.822536] r8169 0000:18:00.0 enp24s0: Link is Up - 1Gbps/Full - flow control rx/tx
+
+### tg3 ###
+
+[    2.015604] tg3.c:v3.137 (May 11, 2014)
+[    2.025613] tg3 0000:04:00.0 eth0: Tigon3 [partno(BCM95762) rev 5762100] (PCI Express) MAC address 54:bf:64:70:a5:f9
+[    2.026955] tg3 0000:04:00.0 eth0: attached PHY is 5762C (10/100/1000Base-T Ethernet) (WireSpeed[1], EEE[1])
+[    2.028252] tg3 0000:04:00.0 eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[1] TSOcap[1]
+[    2.029462] tg3 0000:04:00.0 eth0: dma_rwctrl[00000001] dma_mask[64-bit]
+[    6.376904] tg3 0000:04:00.0 net00: renamed from eth0
+[   10.240411] tg3 0000:04:00.0 net00: Link is up at 1000 Mbps, full duplex
+[   10.240412] tg3 0000:04:00.0 net00: Flow control is on for TX and on for RX
+[   10.240413] tg3 0000:04:00.0 net00: EEE is disabled
+
+
+Can you verify, that it takes that long on your systems too?
+
+Can this be improved? According to the thread *Ethernet auto-negotiate time* [1]
+it should take not more that half a second.
+
+If the time cannot be decreased, are there alternative strategies to get a link
+up as fast as possible? For fast boot systems, it?d be interesting if first
+a slower speed could be negotiated and later it would be changed.
+
+
+Kind regards,
+
+Paul
+
+
+[1]: https://forums.tomshardware.com/threads/ethernet-auto-negotiate-time.954333/
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 5174 bytes
+Desc: S/MIME Cryptographic Signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190531/79d2ad7f/attachment.p7s>
