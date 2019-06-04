@@ -1,246 +1,152 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 04 Jun 2019 16:03:53 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- 6868fae5870a44ff52ec7f254fef1c8d3905cf35
-Message-ID: <5cf625e9./5UZ9CgHWPuNo29i%lkp@intel.com>
+From: Patel, Vedang <vedang.patel@intel.com>
+Date: Tue, 4 Jun 2019 19:47:54 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/7] net/sched: Add txtime
+ assist support for taprio
+In-Reply-To: <007b6a78-48e7-e667-d84b-dec745f84603@ti.com>
+References: <1559065608-27888-1-git-send-email-vedang.patel@intel.com>
+ <007b6a78-48e7-e667-d84b-dec745f84603@ti.com>
+Message-ID: <BE9C38F5-42FB-4EFA-ADFB-3D13E6ABC1EE@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 6868fae5870a44ff52ec7f254fef1c8d3905cf35  i40e: Check and set the PF driver state first in i40e_ndo_set_vf_mac
+Hi Murali,
 
-TIMEOUT after 604m
+> On Jun 3, 2019, at 6:50 AM, Murali Karicheri <m-karicheri2@ti.com> wrote:
+> 
+> Hi Vedang,
+> 
+> On 05/28/2019 01:46 PM, Vedang Patel wrote:
+>> Currently, we are seeing packets being transmitted outside their timeslices. We
+>> can confirm that the packets are being dequeued at the right time. So, the
+>> delay is induced after the packet is dequeued, because taprio, without any
+>> offloading, has no control of when a packet is actually transmitted.
+>> In order to solve this, we are making use of the txtime feature provided by ETF
+>> qdisc. Hardware offloading needs to be supported by the ETF qdisc in order to
+>> take advantage of this feature. The taprio qdisc will assign txtime (in
+>> skb->tstamp) for all the packets which do not have the txtime allocated via the
+>> SO_TXTIME socket option. For the packets which already have SO_TXTIME set,
+>> taprio will validate whether the packet will be transmitted in the correct
+>> interval.
+>> In order to support this, the following parameters have been added:
+>> - offload (taprio): This is added in order to support different offloading
+>>   modes which will be added in the future.
+>> - txtime-delay (taprio): this is the time the packet takes to traverse through
+>>   the kernel to adapter card.
+> 
+> I am very new to this TC and QoS handling of Linux kernel and TSN. So sorry some of the  questions below are very basic in nature. I would soon would be working to add this support in our platform based on this.
+> So please answer.
+No problems. This is my first contribution to networking subsystem as well. :)
+> 
+> Is txtime-delay from the instance qdisc de-queue the packet to the time
+> packets get onto the wire? I am wondering if this time is deterministic
+> or we have some way to ensure this can be tuned to meet a max value?
+> Also how would one calculate this value or have to measure it?
+> 
+So, consider a scenario where we just received a packet to send and the gate corresponding to that packet is open. But, we are not sure whether we can transmit the packet fully before the gate closes. Txtime-delay will be useful parameter in such situations. So, it is basically the time between start of taprio_enqueue() and packet hitting the wire.
 
+It?s probably going to be a little tricky to measure because the packet changes hands. But, you could get reasonable accuracy  if you print out the CLOCK_REALTIME at the beginning of the packet and substrat it from the Hardware transmit timestamp of the packet. You will have to run phc2sys at least to ensure that the PTP clock in network card and CLOCK_REALTIME are synchronized. 
+>> - skip_sock_check (etf): etf qdisc currently drops any packet which does not
+>>   have the SO_TXTIME socket option set. This check can be skipped by specifying
+>>   this option.
+>> Following is an example configuration:
+>> $ tc qdisc replace dev $IFACE parent root handle 100 taprio \\
+>>       num_tc 3 \\
+>>       map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 \\
+>>       queues 1 at 0 1 at 0 1 at 0 \\
+>>       base-time $BASE_TIME \\
+>>       sched-entry S 01 300000 \\
+>>       sched-entry S 02 300000 \\
+>>       sched-entry S 04 400000 \\
+>>       offload 2 \\
+>>       txtime-delay 40000 \\
+>>       clockid CLOCK_TAI
+> 
+> Could you tell me what is CLOCK_TAI?? I see below in the source code for
+> the definition in include/uapi/linux/time.h
+It is International atomic time. It is currently exactly 37 seconds ahead of UTC (or CLOCK_REALTIME). 
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+More info: https://en.wikipedia.org/wiki/International_Atomic_Time
+> 
+> /*
+> * The driver implementing this got removed. The clock ID is kept as a
+> * place holder. Do not reuse!
+> */
+> #define CLOCK_SGI_CYCLE			10
+> #define CLOCK_TAI			11
+> 
+> So why do I see such defines being used in the example that is being
+> removed?
+> 
+I believe the comment is just referring to CLOCK_SGI_CYCLE. CLOCK_TAI is still being supported.
+> AFAIK, From the usage point of view, TSN requires the network being
+> synchronized through linux PTP. For synchronization phc2sys is used to
+> synchronize system time to the PHC. So why don't one use system time for
+> this?
+> 
+> So application will use clock_gettime() to know current time and
+> schedule the packet for transmission as well as user would use scripts
+> or such to check current system time and issue tc command above. So the
+> command should use CLOCK_REALTIME in that case. So all h/w and software
+> are aligned to the same time source. Or Have I understood it wrong? I am
+> assuming that for the offloaded case, h/w schedule Gate open, send
+> packet etc are synchronized to the PHC or use a translated time w.r.t the common time (network time. Assuming PHC tracks this).
+> 
+CLOCK_REALTIME is also supported by the driver. So, you can definitely use that. CLOCK_TAI is basically CLOCK_REALTIME + UTC_Offset. So, you can use either.
+> Thanks in advance for clarifying this.
+> 
+>> $ tc qdisc replace dev $IFACE parent 100:1 etf \\
+>>       offload delta 200000 clockid CLOCK_TAI skip_sock_check
+>> Here, the "offload" parameter is indicating that the TXTIME_OFFLOAD mode is
+>> enabled. Also, that all the traffic classes have been assigned the same queue.
+>> This is to prevent the traffic classes in the lower priority queues from
+>> getting starved. Note that this configuration is specific to the i210 ethernet
+>> card. Other network cards where the hardware queues are given the same
+>> priority, might be able to utilize more than one queue.
+>> Following are some of the other highlights of the series:
+>> - Fix a bug where hardware timestamping and SO_TXTIME options cannot be used
+>>   together. (Patch 1)
+>> - Introduce hardware offloading. This patch introduces offload parameter which
+>>   can be used to enable the txtime offload mode. It will also support enabling
+>>   full offload when the support is available in drivers. (Patch 3)
+>> - Make TxTime assist mode work with TCP packets. (Patch 6 & 7)
+>> The following changes are recommended to be done in order to get the best
+>> performance from taprio in this mode:
+>> # ip link set dev enp1s0 mtu 1514
+> 
+> May I know why MTU is changed to 1514 to include the Ethernet header?
+> 
+For TSN, in general, Jumbo frames are not allowed. Which is why this setting is used.
+>> # ethtool -K eth0 gso off
+>> # ethtool -K eth0 tso off
+Let?s consider a scenario where an application is trying to send a lot of small packets. By default, these packets will be combined into a single packet and this packet will be segmented in the hardware. But, we are not sure whether these packets can be transmitted before the gate for this application closes. So, these options are used to prevent this from happening. 
+>> # ethtool --set-eee eth0 eee off
+> 
+This option just disables energy efficient ethernet so that we do not suffer from latency spikes due to the NIC trying to wake up when the packet is supposed to be sent.
 
-configs timed out: 136
+Thanks,
+Vedang
+> Could you please explain why these are needed?
+> 
+> Thanks
+> 
+> Murali
+>> Thanks,
+>> Vedang Patel
+>> Vedang Patel (6):
+>>   igb: clear out tstamp after sending the packet.
+>>   etf: Add skip_sock_check
+>>   taprio: calculate cycle_time when schedule is installed
+>>   taprio: Add support for txtime offload mode.
+>>   taprio: make clock reference conversions easier
+>>   taprio: Adjust timestamps for TCP packets.
+>> Vinicius Costa Gomes (1):
+>>   taprio: Add the skeleton to enable hardware offloading
+>>  drivers/net/ethernet/intel/igb/igb_main.c |   1 +
+>>  include/uapi/linux/pkt_sched.h            |   6 +
+>>  net/sched/sch_etf.c                       |  10 +
+>>  net/sched/sch_taprio.c                    | 548 ++++++++++++++++++++--
+>>  4 files changed, 532 insertions(+), 33 deletions(-)
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-i386                             allmodconfig
-i386                          randconfig-n001
-i386                          randconfig-n002
-i386                          randconfig-n003
-i386                          randconfig-n004
-i386                          randconfig-n005
-i386                          randconfig-n006
-i386                          randconfig-n007
-i386                          randconfig-n008
-i386                          randconfig-n009
-i386                          randconfig-n010
-i386                          randconfig-n011
-i386                          randconfig-n012
-i386                          randconfig-n013
-i386                          randconfig-n014
-i386                          randconfig-n015
-i386                          randconfig-n016
-i386                          randconfig-n017
-i386                          randconfig-n018
-i386                          randconfig-n019
-i386                          randconfig-n020
-i386                          randconfig-n021
-i386                          randconfig-n022
-i386                          randconfig-n023
-i386                          randconfig-n024
-i386                          randconfig-n025
-i386                          randconfig-n026
-i386                          randconfig-n027
-i386                          randconfig-n028
-i386                          randconfig-n029
-i386                          randconfig-n030
-i386                          randconfig-n031
-i386                          randconfig-n032
-i386                          randconfig-x000
-i386                          randconfig-x001
-i386                          randconfig-x002
-i386                          randconfig-x003
-i386                          randconfig-x004
-i386                          randconfig-x005
-i386                          randconfig-x006
-i386                          randconfig-x007
-i386                          randconfig-x008
-i386                          randconfig-x009
-i386                          randconfig-x010
-i386                          randconfig-x011
-i386                          randconfig-x012
-i386                          randconfig-x013
-i386                          randconfig-x014
-i386                          randconfig-x015
-i386                          randconfig-x016
-i386                          randconfig-x017
-i386                          randconfig-x018
-i386                          randconfig-x019
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                             allyesconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-nds32                            allmodconfig
-nds32                            allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-riscv                            allmodconfig
-riscv                             allnoconfig
-riscv                            allyesconfig
-riscv                               defconfig
-s390                             allmodconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-sparc64                          allyesconfig
-x86_64                             acpi-redef
-x86_64                           allyesconfig
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                nfsroot
-x86_64                        randconfig-n001
-x86_64                        randconfig-n002
-x86_64                        randconfig-n003
-x86_64                        randconfig-n004
-x86_64                        randconfig-n005
-x86_64                        randconfig-n006
-x86_64                        randconfig-n007
-x86_64                        randconfig-n008
-x86_64                        randconfig-n009
-x86_64                        randconfig-n010
-x86_64                        randconfig-n011
-x86_64                        randconfig-n012
-x86_64                        randconfig-n013
-x86_64                        randconfig-n014
-x86_64                        randconfig-n015
-x86_64                        randconfig-n016
-x86_64                        randconfig-n017
-x86_64                        randconfig-n018
-x86_64                        randconfig-n019
-x86_64                        randconfig-n020
-x86_64                        randconfig-n021
-x86_64                        randconfig-n022
-x86_64                        randconfig-n023
-x86_64                        randconfig-n024
-x86_64                        randconfig-n025
-x86_64                        randconfig-n026
-x86_64                        randconfig-n027
-x86_64                        randconfig-n028
-x86_64                        randconfig-n029
-x86_64                        randconfig-n030
-x86_64                        randconfig-n031
-x86_64                        randconfig-n032
-x86_64                        randconfig-x010
-x86_64                        randconfig-x011
-x86_64                        randconfig-x012
-x86_64                        randconfig-x013
-x86_64                        randconfig-x014
-x86_64                        randconfig-x015
-x86_64                        randconfig-x016
-x86_64                        randconfig-x017
-x86_64                        randconfig-x018
-x86_64                        randconfig-x019
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-
-configs tested: 77
-
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-h8300                    h8300h-sim_defconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-s390                          debug_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-riscv                              tinyconfig
-i386                               tinyconfig
-arm                              allmodconfig
-arm64                            allyesconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allmodconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x073-201922
-i386                   randconfig-x070-201922
-i386                   randconfig-x071-201922
-i386                   randconfig-x074-201922
-i386                   randconfig-x078-201922
-i386                   randconfig-x075-201922
-i386                   randconfig-x072-201922
-i386                   randconfig-x076-201922
-i386                   randconfig-x077-201922
-i386                   randconfig-x079-201922
-x86_64                 randconfig-x003-201922
-x86_64                 randconfig-x006-201922
-x86_64                 randconfig-x007-201922
-x86_64                 randconfig-x001-201922
-x86_64                 randconfig-x004-201922
-x86_64                 randconfig-x005-201922
-x86_64                 randconfig-x008-201922
-x86_64                 randconfig-x009-201922
-x86_64                 randconfig-x002-201922
-x86_64                 randconfig-x000-201922
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-parisc                        c3000_defconfig
-um                                  defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
