@@ -1,95 +1,194 @@
-From: dann frazier <dann.frazier@canonical.com>
-Date: Thu, 6 Jun 2019 16:51:14 -0600
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Avoid NULL pointer dereference
- with VF on non-IPsec hw
-In-Reply-To: <20190522232258.10353-1-dann.frazier@canonical.com>
-References: <20190522232258.10353-1-dann.frazier@canonical.com>
-Message-ID: <20190606225114.GA31678@xps13.dannf>
+From: Jakub Kicinski <jakub.kicinski@netronome.com>
+Date: Thu, 6 Jun 2019 16:21:32 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 4/6] taprio: Add support
+ for txtime-assist mode.
+In-Reply-To: <1559843458-12517-5-git-send-email-vedang.patel@intel.com>
+References: <1559843458-12517-1-git-send-email-vedang.patel@intel.com>
+ <1559843458-12517-5-git-send-email-vedang.patel@intel.com>
+Message-ID: <20190606162132.0591cc37@cakuba.netronome.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-hey David, Jeff - is it possible to get this queued up as a fix for 5.2?
-
- -dann
- 
-On Wed, May 22, 2019 at 05:22:58PM -0600, dann frazier wrote:
-> An ipsec structure will not be allocated if the hardware does not support
-> offload. Fixes the following Oops:
+On Thu,  6 Jun 2019 10:50:56 -0700, Vedang Patel wrote:
+> Currently, we are seeing non-critical packets being transmitted outside of
+> their timeslice. We can confirm that the packets are being dequeued at the
+> right time. So, the delay is induced in the hardware side.  The most likely
+> reason is the hardware queues are starving the lower priority queues.
 > 
-> [  191.045452] Unable to handle kernel NULL pointer dereference at virtual address 0000000000000000
-> [  191.054232] Mem abort info:
-> [  191.057014]   ESR = 0x96000004
-> [  191.060057]   Exception class = DABT (current EL), IL = 32 bits
-> [  191.065963]   SET = 0, FnV = 0
-> [  191.069004]   EA = 0, S1PTW = 0
-> [  191.072132] Data abort info:
-> [  191.074999]   ISV = 0, ISS = 0x00000004
-> [  191.078822]   CM = 0, WnR = 0
-> [  191.081780] user pgtable: 4k pages, 48-bit VAs, pgdp = 0000000043d9e467
-> [  191.088382] [0000000000000000] pgd=0000000000000000
-> [  191.093252] Internal error: Oops: 96000004 [#1] SMP
-> [  191.098119] Modules linked in: vhost_net vhost tap vfio_pci vfio_virqfd vfio_iommu_type1 vfio xt_CHECKSUM iptable_mangle ipt_MASQUERADE iptable_nat nf_nat_ipv4 nf_nat xt_conntrack nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 ipt_REJECT nf_reject_ipv4 xt_tcpudp bridge stp llc ebtable_filter devlink ebtables ip6table_filter ip6_tables iptable_filter bpfilter ipmi_ssif nls_iso8859_1 input_leds joydev ipmi_si hns_roce_hw_v2 ipmi_devintf hns_roce ipmi_msghandler cppc_cpufreq sch_fq_codel ib_iser rdma_cm iw_cm ib_cm ib_core iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi ip_tables x_tables autofs4 ses enclosure btrfs zstd_compress raid10 raid456 async_raid6_recov async_memcpy async_pq async_xor async_tx xor hid_generic usbhid hid raid6_pq libcrc32c raid1 raid0 multipath linear ixgbevf hibmc_drm ttm
-> [  191.168607]  drm_kms_helper aes_ce_blk aes_ce_cipher syscopyarea crct10dif_ce sysfillrect ghash_ce qla2xxx sysimgblt sha2_ce sha256_arm64 hisi_sas_v3_hw fb_sys_fops sha1_ce uas nvme_fc mpt3sas ixgbe drm hisi_sas_main nvme_fabrics usb_storage hclge scsi_transport_fc ahci libsas hnae3 raid_class libahci xfrm_algo scsi_transport_sas mdio aes_neon_bs aes_neon_blk crypto_simd cryptd aes_arm64
-> [  191.202952] CPU: 94 PID: 0 Comm: swapper/94 Not tainted 4.19.0-rc1+ #11
-> [  191.209553] Hardware name: Huawei D06 /D06, BIOS Hisilicon D06 UEFI RC0 - V1.20.01 04/26/2019
-> [  191.218064] pstate: 20400089 (nzCv daIf +PAN -UAO)
-> [  191.222873] pc : ixgbe_ipsec_vf_clear+0x60/0xd0 [ixgbe]
-> [  191.228093] lr : ixgbe_msg_task+0x2d0/0x1088 [ixgbe]
-> [  191.233044] sp : ffff000009b3bcd0
-> [  191.236346] x29: ffff000009b3bcd0 x28: 0000000000000000
-> [  191.241647] x27: ffff000009628000 x26: 0000000000000000
-> [  191.246946] x25: ffff803f652d7600 x24: 0000000000000004
-> [  191.252246] x23: ffff803f6a718900 x22: 0000000000000000
-> [  191.257546] x21: 0000000000000000 x20: 0000000000000000
-> [  191.262845] x19: 0000000000000000 x18: 0000000000000000
-> [  191.268144] x17: 0000000000000000 x16: 0000000000000000
-> [  191.273443] x15: 0000000000000000 x14: 0000000100000026
-> [  191.278742] x13: 0000000100000025 x12: ffff8a5f7fbe0df0
-> [  191.284042] x11: 000000010000000b x10: 0000000000000040
-> [  191.289341] x9 : 0000000000001100 x8 : ffff803f6a824fd8
-> [  191.294640] x7 : ffff803f6a825098 x6 : 0000000000000001
-> [  191.299939] x5 : ffff000000f0ffc0 x4 : 0000000000000000
-> [  191.305238] x3 : ffff000028c00000 x2 : ffff803f652d7600
-> [  191.310538] x1 : 0000000000000000 x0 : ffff000000f205f0
-> [  191.315838] Process swapper/94 (pid: 0, stack limit = 0x00000000addfed5a)
-> [  191.322613] Call trace:
-> [  191.325055]  ixgbe_ipsec_vf_clear+0x60/0xd0 [ixgbe]
-> [  191.329927]  ixgbe_msg_task+0x2d0/0x1088 [ixgbe]
-> [  191.334536]  ixgbe_msix_other+0x274/0x330 [ixgbe]
-> [  191.339233]  __handle_irq_event_percpu+0x78/0x270
-> [  191.343924]  handle_irq_event_percpu+0x40/0x98
-> [  191.348355]  handle_irq_event+0x50/0xa8
-> [  191.352180]  handle_fasteoi_irq+0xbc/0x148
-> [  191.356263]  generic_handle_irq+0x34/0x50
-> [  191.360259]  __handle_domain_irq+0x68/0xc0
-> [  191.364343]  gic_handle_irq+0x84/0x180
-> [  191.368079]  el1_irq+0xe8/0x180
-> [  191.371208]  arch_cpu_idle+0x30/0x1a8
-> [  191.374860]  do_idle+0x1dc/0x2a0
-> [  191.378077]  cpu_startup_entry+0x2c/0x30
-> [  191.381988]  secondary_start_kernel+0x150/0x1e0
-> [  191.386506] Code: 6b15003f 54000320 f1404a9f 54000060 (79400260)
+> In order to improve the performance of taprio, we will be making use of the
+> txtime feature provided by the ETF qdisc. For all the packets which do not
+> have the SO_TXTIME option set, taprio will set the transmit timestamp (set
+> in skb->tstamp) in this mode. TAPrio Qdisc will ensure that the transmit
+> time for the packet is set to when the gate is open. If SO_TXTIME is set,
+> the TAPrio qdisc will validate whether the timestamp (in skb->tstamp)
+> occurs when the gate corresponding to skb's traffic class is open.
 > 
-> Fixes: eda0333ac2930 ("ixgbe: add VF IPsec management")
-> Signed-off-by: dann frazier <dann.frazier@canonical.com>
+> Following two parameters added to support this mode:
+> - flags: used to enable txtime-assist mode. Will also be used to enable
+>   other modes (like hardware offloading) later.
+> - txtime-delay: This indicates the minimum time it will take for the packet
+>   to hit the wire after it reaches taprio_enqueue(). This is useful in
+>   determining whether we can transmit the packet in the remaining time if
+>   the gate corresponding to the packet is currently open.
+> 
+> An example configuration for enabling txtime-assist:
+> 
+> tc qdisc replace dev eth0 parent root handle 100 taprio \\
+>       num_tc 3 \\
+>       map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 \\
+>       queues 1 at 0 1 at 0 1 at 0 \\
+>       base-time 1558653424279842568 \\
+>       sched-entry S 01 300000 \\
+>       sched-entry S 02 300000 \\
+>       sched-entry S 04 400000 \\
+>       flags 0x1 \\
+>       txtime-delay 40000 \\
+>       clockid CLOCK_TAI
+> 
+> tc qdisc replace dev $IFACE parent 100:1 etf skip_sock_check \\
+>       offload delta 200000 clockid CLOCK_TAI
+> 
+> Note that all the traffic classes are mapped to the same queue.  This is
+> only possible in taprio when txtime-assist is enabled. Also, note that the
+> ETF Qdisc is enabled with offload mode set.
+> 
+> In this mode, if the packet's traffic class is open and the complete packet
+> can be transmitted, taprio will try to transmit the packet immediately.
+> This will be done by setting skb->tstamp to current_time + the time delta
+> indicated in the txtime-delay parameter. This parameter indicates the time
+> taken (in software) for packet to reach the network adapter.
+> 
+> If the packet cannot be transmitted in the current interval or if the
+> packet's traffic is not currently transmitting, the skb->tstamp is set to
+> the next available timestamp value. This is tracked in the next_launchtime
+> parameter in the struct sched_entry.
+> 
+> The behaviour w.r.t admin and oper schedules is not changed from what is
+> present in software mode.
+> 
+> The transmit time is already known in advance. So, we do not need the HR
+> timers to advance the schedule and wakeup the dequeue side of taprio.  So,
+> HR timer won't be run when this mode is enabled.
+> 
+> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 3 +++
->  1 file changed, 3 insertions(+)
+>  include/uapi/linux/pkt_sched.h |   4 +
+>  net/sched/sch_taprio.c         | 344 +++++++++++++++++++++++++++++++++++++++--
+>  2 files changed, 331 insertions(+), 17 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> index ff85ce5791a36..31629fc7e820f 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> @@ -842,6 +842,9 @@ void ixgbe_ipsec_vf_clear(struct ixgbe_adapter *adapter, u32 vf)
->  	struct ixgbe_ipsec *ipsec = adapter->ipsec;
->  	int i;
+> diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
+> index 69fc52e4d6bd..c085860ff637 100644
+> --- a/include/uapi/linux/pkt_sched.h
+> +++ b/include/uapi/linux/pkt_sched.h
+> @@ -1159,6 +1159,8 @@ enum {
+>   *       [TCA_TAPRIO_ATTR_SCHED_ENTRY_INTERVAL]
+>   */
 >  
-> +	if (!ipsec)
-> +		return;
+> +#define TCA_TAPRIO_ATTR_FLAG_TXTIME_ASSIST 0x1
 > +
->  	/* search rx sa table */
->  	for (i = 0; i < IXGBE_IPSEC_MAX_SA_COUNT && ipsec->num_rx_sa; i++) {
->  		if (!ipsec->rx_tbl[i].used)
+>  enum {
+>  	TCA_TAPRIO_ATTR_UNSPEC,
+>  	TCA_TAPRIO_ATTR_PRIOMAP, /* struct tc_mqprio_qopt */
+> @@ -1170,6 +1172,8 @@ enum {
+>  	TCA_TAPRIO_ATTR_ADMIN_SCHED, /* The admin sched, only used in dump */
+>  	TCA_TAPRIO_ATTR_SCHED_CYCLE_TIME, /* s64 */
+>  	TCA_TAPRIO_ATTR_SCHED_CYCLE_TIME_EXTENSION, /* s64 */
+> +	TCA_TAPRIO_ATTR_FLAGS, /* u32 */
+> +	TCA_TAPRIO_ATTR_TXTIME_DELAY, /* s32 */
+>  	__TCA_TAPRIO_ATTR_MAX,
+>  };
+>  
+> diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
+> index a41d7d4434ee..a5676fb2b2dd 100644
+> --- a/net/sched/sch_taprio.c
+> +++ b/net/sched/sch_taprio.c
+> @@ -21,12 +21,17 @@
+>  #include <net/pkt_sched.h>
+>  #include <net/pkt_cls.h>
+>  #include <net/sch_generic.h>
+> +#include <net/sock.h>
+>  
+>  static LIST_HEAD(taprio_list);
+>  static DEFINE_SPINLOCK(taprio_list_lock);
+>  
+>  #define TAPRIO_ALL_GATES_OPEN -1
+>  
+> +#define FLAGS_VALID(flags) (!((flags) & ~TCA_TAPRIO_ATTR_FLAG_TXTIME_ASSIST))
+> +#define TXTIME_ASSIST_IS_ENABLED(flags) (FLAGS_VALID((flags)) && \
+> +				 ((flags) & TCA_TAPRIO_ATTR_FLAG_TXTIME_ASSIST))
+
+Thanks for the changes, since you now validate no unknown flags are
+passed, perhaps there is no need to check if flags are == ~0?
+
+IS_ENABLED() could just do: (flags) & TCA_TAPRIO_ATTR_FLAG_TXTIME_ASSIST
+No?
+
+> @@ -708,6 +978,7 @@ static int taprio_change(struct Qdisc *sch, struct nlattr *opt,
+>  	struct taprio_sched *q = qdisc_priv(sch);
+>  	struct net_device *dev = qdisc_dev(sch);
+>  	struct tc_mqprio_qopt *mqprio = NULL;
+> +	u32 taprio_flags = U32_MAX;
+
+Then this should default to 0, i.e. no flag set..
+
+>  	int i, err, clockid;
+>  	unsigned long flags;
+>  	ktime_t start;
+> @@ -720,7 +991,21 @@ static int taprio_change(struct Qdisc *sch, struct nlattr *opt,
+>  	if (tb[TCA_TAPRIO_ATTR_PRIOMAP])
+>  		mqprio = nla_data(tb[TCA_TAPRIO_ATTR_PRIOMAP]);
+>  
+> -	err = taprio_parse_mqprio_opt(dev, mqprio, extack);
+> +	if (tb[TCA_TAPRIO_ATTR_FLAGS]) {
+> +		taprio_flags = nla_get_u32(tb[TCA_TAPRIO_ATTR_FLAGS]);
+> +
+> +		if (q->flags != 0) {
+> +			NL_SET_ERR_MSG(extack, "Changing 'flags' of a running schedule is not supported");
+
+So the parameter must not be passed at all?  Perhaps it's fine if:
+
+	q->flags == taprio_flags
+
+?
+
+also: NL_SET_ERR_MSG_MOD() is better here
+
+> +			return -ENOTSUPP;
+
+Probably EINVAL or EOPNOTSUPP, ENOTSUPP is a high error code which libc
+doesn't understand, it's best avoided.
+
+> +		} else if (!FLAGS_VALID(taprio_flags)) {
+> +			NL_SET_ERR_MSG(extack, "Specified 'flags' are not valid.");
+
+nit: you didn't have a period at the end of the previous extack
+
+> +			return -ENOTSUPP;
+> +		}
+> +
+> +		q->flags = taprio_flags;
+> +	}
+> +
+> +	err = taprio_parse_mqprio_opt(dev, mqprio, extack, taprio_flags);
+>  	if (err < 0)
+>  		return err;
+>  
+> @@ -779,7 +1064,11 @@ static int taprio_change(struct Qdisc *sch, struct nlattr *opt,
+>  	/* Protects against enqueue()/dequeue() */
+>  	spin_lock_bh(qdisc_lock(sch));
+>  
+> -	if (!hrtimer_active(&q->advance_timer)) {
+> +	if (tb[TCA_TAPRIO_ATTR_TXTIME_DELAY])
+> +		q->txtime_delay = nla_get_s32(tb[TCA_TAPRIO_ATTR_TXTIME_DELAY]);
+
+Perhaps this attribute should only be allowed if flags enabled
+txtime-assist?
+
+> +	if (!TXTIME_ASSIST_IS_ENABLED(taprio_flags) &&
+> +	    !hrtimer_active(&q->advance_timer)) {
+>  		hrtimer_init(&q->advance_timer, q->clockid, HRTIMER_MODE_ABS);
+>  		q->advance_timer.function = advance_sched;
+>  	}
