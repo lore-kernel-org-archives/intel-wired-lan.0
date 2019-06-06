@@ -1,104 +1,75 @@
-From: Vedang Patel <vedang.patel@intel.com>
-Date: Thu,  6 Jun 2019 10:50:58 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 6/6] taprio: Adjust timestamps
- for TCP packets.
-In-Reply-To: <1559843458-12517-1-git-send-email-vedang.patel@intel.com>
-References: <1559843458-12517-1-git-send-email-vedang.patel@intel.com>
-Message-ID: <1559843458-12517-7-git-send-email-vedang.patel@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 6 Jun 2019 20:33:26 +0000
+Subject: [Intel-wired-lan] [PATCH][next] ixgbe: fix potential u32
+ overflow on shift
+In-Reply-To: <20190606131053.25103-1-colin.king@canonical.com>
+References: <20190606131053.25103-1-colin.king@canonical.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5896745DEE@ORSMSX121.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When the taprio qdisc is running in "txtime offload" mode, it will
-set the launchtime value (in skb->tstamp) for all the packets which do
-not have the SO_TXTIME socket option. But, the TCP packets already have
-this value set and it indicates the earliest departure time represented
-in CLOCK_MONOTONIC clock.
+> -----Original Message-----
+> From: Colin King [mailto:colin.king at canonical.com]
+> Sent: Thursday, June 06, 2019 6:11 AM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; David S . Miller <davem@davemloft.net>; intel-wired-
+> lan at lists.osuosl.org; netdev at vger.kernel.org
+> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [PATCH][next] ixgbe: fix potential u32 overflow on shift
+> 
+> From: Colin Ian King <colin.king@canonical.com>
+> 
+> The u32 variable rem is being shifted using u32 arithmetic however
+> it is being passed to div_u64 that expects the expression to be a u64.
+> The 32 bit shift may potentially overflow, so cast rem to a u64 before
+> shifting to avoid this.
+> 
 
-We need to respect the timestamp set by the TCP subsystem. So, convert
-this time to the clock which taprio is using and ensure that the packet
-is not transmitted before the deadline set by TCP.
+Ah, yep. Thanks for the fix!
 
-Signed-off-by: Vedang Patel <vedang.patel@intel.com>
----
- net/sched/sch_taprio.c | 41 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 40 insertions(+), 1 deletion(-)
+> Addresses-Coverity: ("Unintentional integer overflow")
+> Fixes: cd4583206990 ("ixgbe: implement support for SDP/PPS output on X550
+> hardware")
+> Fixes: 68d9676fc04e ("ixgbe: fix PTP SDP pin setup on X540 hardware")
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+> index 2c4d327fcc2e..ff229d0e9146 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+> @@ -209,7 +209,7 @@ static void ixgbe_ptp_setup_sdp_X540(struct ixgbe_adapter
+> *adapter)
+>  	 * assumes that the cycle counter shift is small enough to avoid
+>  	 * overflowing when shifting the remainder.
+>  	 */
+> -	clock_edge += div_u64((rem << cc->shift), cc->mult);
+> +	clock_edge += div_u64(((u64)rem << cc->shift), cc->mult);
+>  	trgttiml = (u32)clock_edge;
+>  	trgttimh = (u32)(clock_edge >> 32);
+> 
 
-diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
-index 9f621e6c2503..5dba9e0bac1a 100644
---- a/net/sched/sch_taprio.c
-+++ b/net/sched/sch_taprio.c
-@@ -22,6 +22,7 @@
- #include <net/pkt_cls.h>
- #include <net/sch_generic.h>
- #include <net/sock.h>
-+#include <net/tcp.h>
- 
- static LIST_HEAD(taprio_list);
- static DEFINE_SPINLOCK(taprio_list_lock);
-@@ -278,6 +279,41 @@ static inline ktime_t get_cycle_start(struct sched_gate_list *sched,
- 	return ktime_sub(time, cycle_elapsed);
- }
- 
-+/* This returns the tstamp value set by TCP in terms of the set clock. */
-+static ktime_t get_tcp_tstamp(struct taprio_sched *q, struct sk_buff *skb)
-+{
-+	unsigned int offset = skb_network_offset(skb);
-+	const struct ipv6hdr *ipv6h;
-+	const struct iphdr *iph;
-+	struct ipv6hdr _ipv6h;
-+
-+	ipv6h = skb_header_pointer(skb, offset, sizeof(_ipv6h), &_ipv6h);
-+	if (!ipv6h)
-+		return 0;
-+
-+	if (ipv6h->version == 4) {
-+		iph = (struct iphdr *)ipv6h;
-+		offset += iph->ihl * 4;
-+
-+		/* special-case 6in4 tunnelling, as that is a common way to get
-+		 * v6 connectivity in the home
-+		 */
-+		if (iph->protocol == IPPROTO_IPV6) {
-+			ipv6h = skb_header_pointer(skb, offset,
-+						   sizeof(_ipv6h), &_ipv6h);
-+
-+			if (!ipv6h || ipv6h->nexthdr != IPPROTO_TCP)
-+				return 0;
-+		} else if (iph->protocol != IPPROTO_TCP) {
-+			return 0;
-+		}
-+	} else if (ipv6h->version == 6 && ipv6h->nexthdr != IPPROTO_TCP) {
-+		return 0;
-+	}
-+
-+	return ktime_mono_to_any(skb->skb_mstamp_ns, q->tk_offset);
-+}
-+
- /* There are a few scenarios where we will have to modify the txtime from
-  * what is read from next_txtime in sched_entry. They are:
-  * 1. If txtime is in the past,
-@@ -295,7 +331,7 @@ static inline ktime_t get_cycle_start(struct sched_gate_list *sched,
-  */
- static long get_packet_txtime(struct sk_buff *skb, struct Qdisc *sch)
- {
--	ktime_t transmit_end_time, interval_end, interval_start;
-+	ktime_t transmit_end_time, interval_end, interval_start, tcp_tstamp;
- 	struct taprio_sched *q = qdisc_priv(sch);
- 	struct sched_gate_list *sched, *admin;
- 	ktime_t minimum_time, now, txtime;
-@@ -306,6 +342,9 @@ static long get_packet_txtime(struct sk_buff *skb, struct Qdisc *sch)
- 	now = taprio_get_time(q);
- 	minimum_time = ktime_add_ns(now, q->txtime_delay);
- 
-+	tcp_tstamp = get_tcp_tstamp(q, skb);
-+	minimum_time = max_t(ktime_t, minimum_time, tcp_tstamp);
-+
- 	rcu_read_lock();
- 	admin = rcu_dereference(q->admin_sched);
- 	sched = rcu_dereference(q->oper_sched);
--- 
-2.7.3
+This makes sense to me.
+
+Regards,
+Jake
+
+> @@ -295,7 +295,7 @@ static void ixgbe_ptp_setup_sdp_X550(struct ixgbe_adapter
+> *adapter)
+>  	 * assumes that the cycle counter shift is small enough to avoid
+>  	 * overflowing when shifting the remainder.
+>  	 */
+> -	clock_edge += div_u64((rem << cc->shift), cc->mult);
+> +	clock_edge += div_u64(((u64)rem << cc->shift), cc->mult);
+> 
+>  	/* X550 hardware stores the time in 32bits of 'billions of cycles' and
+>  	 * 32bits of 'cycles'. There's no guarantee that cycles represents
+> --
+> 2.20.1
 
