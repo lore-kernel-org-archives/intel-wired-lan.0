@@ -1,44 +1,42 @@
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Thu, 13 Jun 2019 21:07:26 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 2/6] xsk: add support for
- need_wakeup flag in AF_XDP rings
-In-Reply-To: <20190613120411.35ef3c52@cakuba.netronome.com>
-References: <1560411450-29121-1-git-send-email-magnus.karlsson@intel.com>
- <1560411450-29121-3-git-send-email-magnus.karlsson@intel.com>
- <20190613120411.35ef3c52@cakuba.netronome.com>
-Message-ID: <CAJ8uoz0jXyVt8OPOq+B8L7gEm8bbd8cE5vdf3-KAhaVK871k8w@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 13 Jun 2019 21:17:55 +0000
+Subject: [Intel-wired-lan] [PATCH][next] ixgbe: fix potential u32
+ overflow on shift
+In-Reply-To: <20190606131053.25103-1-colin.king@canonical.com>
+References: <20190606131053.25103-1-colin.king@canonical.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3ED66D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Jun 13, 2019 at 9:05 PM Jakub Kicinski
-<jakub.kicinski@netronome.com> wrote:
->
-> On Thu, 13 Jun 2019 09:37:26 +0200, Magnus Karlsson wrote:
-> >
-> > -     if (!dev->netdev_ops->ndo_bpf ||
-> > -         !dev->netdev_ops->ndo_xsk_async_xmit) {
-> > +     if (!dev->netdev_ops->ndo_bpf || !dev->netdev_ops->ndo_xsk_wakeup) {
-> >               err = -EOPNOTSUPP;
-> >               goto err_unreg_umem;
-> >       }
->
-> > @@ -198,7 +258,8 @@ static int xsk_zc_xmit(struct sock *sk)
-> >       struct xdp_sock *xs = xdp_sk(sk);
-> >       struct net_device *dev = xs->dev;
-> >
-> > -     return dev->netdev_ops->ndo_xsk_async_xmit(dev, xs->queue_id);
-> > +     return dev->netdev_ops->ndo_xsk_wakeup(dev, xs->queue_id,
-> > +                                            XDP_WAKEUP_TX);
-> >  }
-> >
-> >  static void xsk_destruct_skb(struct sk_buff *skb)
->
-> Those two look like they should be in the previous patch?  Won't it
-> break build?
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Colin King
+> Sent: Thursday, June 6, 2019 6:11 AM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; David S . Miller <davem@davemloft.net>;
+> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org
+> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH][next] ixgbe: fix potential u32 overflow on
+> shift
+> 
+> From: Colin Ian King <colin.king@canonical.com>
+> 
+> The u32 variable rem is being shifted using u32 arithmetic however it is being
+> passed to div_u64 that expects the expression to be a u64.
+> The 32 bit shift may potentially overflow, so cast rem to a u64 before shifting
+> to avoid this.
+> 
+> Addresses-Coverity: ("Unintentional integer overflow")
+> Fixes: cd4583206990 ("ixgbe: implement support for SDP/PPS output on X550
+> hardware")
+> Fixes: 68d9676fc04e ("ixgbe: fix PTP SDP pin setup on X540 hardware")
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-You are correct. That should have been in patch 1. Will fix that in the v2.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Thanks: Magnus
