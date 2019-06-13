@@ -1,246 +1,86 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 13 Jun 2019 15:51:54 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- fe5c2bd0c612682c5d8619ee45d48dd2520b75d7
-Message-ID: <5d02009a.kglitl+FmS1gc9Fx%lkp@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Thu, 13 Jun 2019 11:47:10 +0300
+Subject: [Intel-wired-lan] [PATCH v2] e1000e: PCIm function state support
+In-Reply-To: <20190613050649.41402-1-vitaly.lifshits@intel.com>
+References: <20190613050649.41402-1-vitaly.lifshits@intel.com>
+Message-ID: <18f26ebc-b86f-45c9-ba4a-ce323d356f51@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: fe5c2bd0c612682c5d8619ee45d48dd2520b75d7  e1000: Use dma_wmb() instead of wmb() before doorbell writes
-
-TIMEOUT after 607m
-
-
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
-
-configs timed out: 179
-
-alpha                            allmodconfig
-alpha                            allyesconfig
-alpha                               defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                          randconfig-n001
-i386                          randconfig-n002
-i386                          randconfig-n003
-i386                          randconfig-n004
-i386                          randconfig-n005
-i386                          randconfig-n006
-i386                          randconfig-n007
-i386                          randconfig-n008
-i386                          randconfig-n009
-i386                          randconfig-n010
-i386                          randconfig-n011
-i386                          randconfig-n012
-i386                          randconfig-n013
-i386                          randconfig-n014
-i386                          randconfig-n015
-i386                          randconfig-n016
-i386                          randconfig-n017
-i386                          randconfig-n018
-i386                          randconfig-n019
-i386                          randconfig-n020
-i386                          randconfig-n021
-i386                          randconfig-n022
-i386                          randconfig-n023
-i386                          randconfig-n024
-i386                          randconfig-n025
-i386                          randconfig-n026
-i386                          randconfig-n027
-i386                          randconfig-n028
-i386                          randconfig-n029
-i386                          randconfig-n030
-i386                          randconfig-n031
-i386                          randconfig-n032
-i386                          randconfig-x000
-i386                          randconfig-x001
-i386                          randconfig-x002
-i386                          randconfig-x003
-i386                          randconfig-x004
-i386                          randconfig-x005
-i386                          randconfig-x006
-i386                          randconfig-x007
-i386                          randconfig-x008
-i386                          randconfig-x009
-i386                          randconfig-x010
-i386                          randconfig-x011
-i386                          randconfig-x012
-i386                          randconfig-x013
-i386                          randconfig-x014
-i386                          randconfig-x015
-i386                          randconfig-x016
-i386                          randconfig-x017
-i386                          randconfig-x018
-i386                          randconfig-x019
-i386                               tinyconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-ia64                                defconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                             allyesconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-nds32                            allmodconfig
-nds32                            allyesconfig
-parisc                           allmodconfig
-parisc                            allnoconfig
-parisc                           allyesconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                          allyesconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-riscv                            allmodconfig
-riscv                             allnoconfig
-riscv                            allyesconfig
-riscv                               defconfig
-riscv                              tinyconfig
-s390                             allmodconfig
-s390                             allyesconfig
-s390                          debug_defconfig
-sh                               allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-sparc64                          allyesconfig
-um                                  defconfig
-x86_64                             acpi-redef
-x86_64                           allmodconfig
-x86_64                           allyesconfig
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                        randconfig-n001
-x86_64                        randconfig-n002
-x86_64                        randconfig-n003
-x86_64                        randconfig-n004
-x86_64                        randconfig-n005
-x86_64                        randconfig-n006
-x86_64                        randconfig-n007
-x86_64                        randconfig-n008
-x86_64                        randconfig-n009
-x86_64                        randconfig-n010
-x86_64                        randconfig-n011
-x86_64                        randconfig-n012
-x86_64                        randconfig-n013
-x86_64                        randconfig-n014
-x86_64                        randconfig-n015
-x86_64                        randconfig-n016
-x86_64                        randconfig-n017
-x86_64                        randconfig-n018
-x86_64                        randconfig-n019
-x86_64                        randconfig-n020
-x86_64                        randconfig-n021
-x86_64                        randconfig-n022
-x86_64                        randconfig-n023
-x86_64                        randconfig-n024
-x86_64                        randconfig-n025
-x86_64                        randconfig-n026
-x86_64                        randconfig-n027
-x86_64                        randconfig-n028
-x86_64                        randconfig-n029
-x86_64                        randconfig-n030
-x86_64                        randconfig-n031
-x86_64                        randconfig-n032
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-x86_64                        randconfig-x010
-x86_64                        randconfig-x011
-x86_64                        randconfig-x012
-x86_64                        randconfig-x013
-x86_64                        randconfig-x014
-x86_64                        randconfig-x015
-x86_64                        randconfig-x016
-x86_64                        randconfig-x017
-x86_64                        randconfig-x018
-x86_64                        randconfig-x019
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-
-configs tested: 34
-
-sh                               allmodconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-x073-201923
-i386                   randconfig-x070-201923
-i386                   randconfig-x071-201923
-i386                   randconfig-x074-201923
-i386                   randconfig-x078-201923
-i386                   randconfig-x075-201923
-i386                   randconfig-x072-201923
-i386                   randconfig-x076-201923
-i386                   randconfig-x077-201923
-i386                   randconfig-x079-201923
-x86_64                                  kexec
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+On 6/13/2019 08:06, Vitaly Lifshits wrote:
+> Due to commit: 5d8682588605 ("[misc] mei: me: allow runtime
+> 			pm for platform with D0i3")
+> When disconnecting the cable and reconnecting it the NIC
+> enters DMoff state. This caused wrong link indication
+> and duplex mismatch. This bug is described in:
+> https://bugzilla.redhat.com/show_bug.cgi?id=1689436
+> 
+> Checking PCIm function state and performing PHY reset after a
+> timeout in watchdog task solves this issue.
+> 
+> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+> ---
+> 
+> V2: Fixed typos in commit massage
+> ---
+>   drivers/net/ethernet/intel/e1000e/defines.h |  3 +++
+>   drivers/net/ethernet/intel/e1000e/netdev.c  | 18 +++++++++++++++++-
+>   2 files changed, 20 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
+> index fd550dee4982..13877fe300f1 100644
+> --- a/drivers/net/ethernet/intel/e1000e/defines.h
+> +++ b/drivers/net/ethernet/intel/e1000e/defines.h
+> @@ -222,6 +222,9 @@
+>   #define E1000_STATUS_PHYRA      0x00000400      /* PHY Reset Asserted */
+>   #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master Req status */
+>   
+> +/* PCIm function state */
+> +#define E1000_STATUS_PCIM_STATE         0x40000000
+> +
+>   #define HALF_DUPLEX 1
+>   #define FULL_DUPLEX 2
+>   
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index b081a1ef6859..c6a10fd30e4e 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -5173,8 +5173,9 @@ static void e1000_watchdog_task(struct work_struct *work)
+>   	struct e1000_mac_info *mac = &adapter->hw.mac;
+>   	struct e1000_phy_info *phy = &adapter->hw.phy;
+>   	struct e1000_ring *tx_ring = adapter->tx_ring;
+> +	u32 dmoff_exit_timeout = 100, tries = 0;
+>   	struct e1000_hw *hw = &adapter->hw;
+> -	u32 link, tctl;
+> +	u32 link, tctl, pcim_state;
+>   
+>   	if (test_bit(__E1000_DOWN, &adapter->state))
+>   		return;
+> @@ -5199,6 +5200,21 @@ static void e1000_watchdog_task(struct work_struct *work)
+>   			/* Cancel scheduled suspend requests. */
+>   			pm_runtime_resume(netdev->dev.parent);
+>   
+> +			/* Checking if MAC is in DMoff state*/
+> +			pcim_state = er32(STATUS);
+> +			while (pcim_state & E1000_STATUS_PCIM_STATE) {
+> +				if (tries++ == dmoff_exit_timeout) {
+> +					e_dbg("Error in exiting dmoff\n");
+> +					break;
+> +				}
+> +				usleep_range(10000, 20000);
+> +				pcim_state = er32(STATUS);
+> +
+> +				/* Checking if MAC exited DMoff state */
+> +				if (!(pcim_state & E1000_STATUS_PCIM_STATE))
+> +					e1000_phy_hw_reset(&adapter->hw);
+> +			}
+> +
+>   			/* update snapshot of PHY registers on LSC */
+>   			e1000_phy_read_status(adapter);
+>   			mac->ops.get_link_up_info(&adapter->hw,
+> 
+Thanks Vitalik
+Acked-by: Sasha Neftin <sasha.neftin@intel.com>
