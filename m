@@ -1,69 +1,83 @@
-From: Stephen Douthit <stephend@silicom-usa.com>
-Date: Wed, 12 Jun 2019 21:03:20 +0000
-Subject: [Intel-wired-lan] i350 software defined pins sysfs access
-In-Reply-To: <C0C7FF38-286F-46CA-909D-1A02EFDBBF0C@flussonic.com>
-References: <C0C7FF38-286F-46CA-909D-1A02EFDBBF0C@flussonic.com>
-Message-ID: <3827f4b8-506d-f55a-3279-f8a17699ee5e@silicom-usa.com>
+From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Date: Thu, 13 Jun 2019 08:06:49 +0300
+Subject: [Intel-wired-lan] [PATCH v2] e1000e: PCIm function state support
+Message-ID: <20190613050649.41402-1-vitaly.lifshits@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 6/11/19 5:01 PM, Max Lapshin wrote:
-> Hi.
-> 
-> Intel i350 nic has software defined pins. ?I have a custom hardware where these pins are connected to
-> some peripheral and I need to enable/disable them.
-> 
-> Here is patch that enables access to them. I can turn off peripheral device by:
-> 
-> echo 0 > /sys/class/net/eth1/device/pin2
-> 
-> and turn on by:
-> 
-> echo 1 > /sys/class/net/eth1/device/pin2
-> 
-> Please, give any corrections and advices if this patch requires any changes.
-> It is made again git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git? dev-queue
+Due to commit: 5d8682588605 ("[misc] mei: me: allow runtime
+			pm for platform with D0i3")
+When disconnecting the cable and reconnecting it the NIC
+enters DMoff state. This caused wrong link indication
+and duplex mismatch. This bug is described in:
+https://bugzilla.redhat.com/show_bug.cgi?id=1689436
 
-The igb driver already uses these pins for PTP if that's configured and
-the 82575 uses SDP3 as a power enable for SFP cages, sgmii PHYs, etc.
-You'll need to avoid letting userspace poke at SDPs that the driver is
-already using.
+Checking PCIm function state and performing PHY reset after a
+timeout in watchdog task solves this issue.
 
-Assuming this can coexist with the existing usage, why not register this
-as a gpio_chip with the gpiolib framework?
+Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+---
 
-> Subject: [PATCH] i350: Add support for Intel i350 software defined pins
-> 
-> NIC i350 with igb driver has software defined pins.
-> Allow to access them via sysfs files.
-> ---
->  ?drivers/net/ethernet/intel/igb/igb.h ? ? ?| ?28 +++++
->  ?drivers/net/ethernet/intel/igb/igb_main.c | 127 +++++++++++++++++++++-
->  ?2 files changed, 154 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-> index ca54e268d157..2453674464fa 100644
-> --- a/drivers/net/ethernet/intel/igb/igb.h
-> +++ b/drivers/net/ethernet/intel/igb/igb.h
-> @@ -79,6 +79,20 @@ struct igb_adapter;
->  ?#define IGB_I210_RX_LATENCY_1002213
->  ?#define IGB_I210_RX_LATENCY_1000448
-> +
-> +/* Software defined pins 0-1 */
-> +#define IGB_CTRL_SDP0_DATA 0x00040000 /* Value of SW Defineable Pin 0 */
-> +#define IGB_CTRL_SDP1_DATA 0x00080000 /* Value of SW Defineable Pin 1 */
-> +#define IGB_CTRL_SDP0_DIR ?0x00400000 /* SDP0 Data direction */
-> +#define IGB_CTRL_SDP1_DIR ?0x00800000 /* SDP1 Data direction */
-> +
-> +/* Software defined pins 2-3 */
-> +#define IGB_CTRL_EXT_SDP2_DATA E1000_CTRL_EXT_SDP2_DATA /* Value of SW Defineable Pin 2 */
-> +#define IGB_CTRL_EXT_SDP3_DATA E1000_CTRL_EXT_SDP3_DATA /* Value of SW Defineable Pin 3 */
-> +#define IGB_CTRL_EXT_SDP2_DIR ?E1000_CTRL_EXT_SDP2_DIR ?/* SDP2 Data direction */
-> +#define IGB_CTRL_EXT_SDP3_DIR ?E1000_CTRL_EXT_SDP3_DIR ?/* SDP3 Data direction */
+V2: Fixed typos in commit massage
+---
+ drivers/net/ethernet/intel/e1000e/defines.h |  3 +++
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 18 +++++++++++++++++-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
 
-Looks like e1000_defines.h already has this info.
+diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
+index fd550dee4982..13877fe300f1 100644
+--- a/drivers/net/ethernet/intel/e1000e/defines.h
++++ b/drivers/net/ethernet/intel/e1000e/defines.h
+@@ -222,6 +222,9 @@
+ #define E1000_STATUS_PHYRA      0x00000400      /* PHY Reset Asserted */
+ #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master Req status */
+ 
++/* PCIm function state */
++#define E1000_STATUS_PCIM_STATE         0x40000000
++
+ #define HALF_DUPLEX 1
+ #define FULL_DUPLEX 2
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index b081a1ef6859..c6a10fd30e4e 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5173,8 +5173,9 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 	struct e1000_mac_info *mac = &adapter->hw.mac;
+ 	struct e1000_phy_info *phy = &adapter->hw.phy;
+ 	struct e1000_ring *tx_ring = adapter->tx_ring;
++	u32 dmoff_exit_timeout = 100, tries = 0;
+ 	struct e1000_hw *hw = &adapter->hw;
+-	u32 link, tctl;
++	u32 link, tctl, pcim_state;
+ 
+ 	if (test_bit(__E1000_DOWN, &adapter->state))
+ 		return;
+@@ -5199,6 +5200,21 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 			/* Cancel scheduled suspend requests. */
+ 			pm_runtime_resume(netdev->dev.parent);
+ 
++			/* Checking if MAC is in DMoff state*/
++			pcim_state = er32(STATUS);
++			while (pcim_state & E1000_STATUS_PCIM_STATE) {
++				if (tries++ == dmoff_exit_timeout) {
++					e_dbg("Error in exiting dmoff\n");
++					break;
++				}
++				usleep_range(10000, 20000);
++				pcim_state = er32(STATUS);
++
++				/* Checking if MAC exited DMoff state */
++				if (!(pcim_state & E1000_STATUS_PCIM_STATE))
++					e1000_phy_hw_reset(&adapter->hw);
++			}
++
+ 			/* update snapshot of PHY registers on LSC */
+ 			e1000_phy_read_status(adapter);
+ 			mac->ops.get_link_up_info(&adapter->hw,
+-- 
+2.11.0
 
--Steve
