@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 13 Jun 2019 21:27:07 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Check DDM existence in
- transceiver before access
-In-Reply-To: <20190523191112.14572-1-maurosr@linux.vnet.ibm.com>
-References: <20190523191112.14572-1-maurosr@linux.vnet.ibm.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3ED67D@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 13 Jun 2019 21:30:37 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix possible divide by zero
+ in ixgbevf_update_itr
+In-Reply-To: <1559044682-23446-1-git-send-email-92siuyang@gmail.com>
+References: <1559044682-23446-1-git-send-email-92siuyang@gmail.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3ED68F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,36 +13,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Mauro S. M. Rodrigues
-> Sent: Thursday, May 23, 2019 12:11 PM
-> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Cc: gromero at linux.vnet.ibm.com
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Check DDM existence in transceiver
-> before access
+> Behalf Of Young Xiao
+> Sent: Tuesday, May 28, 2019 4:58 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net;
+> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
+> kernel at vger.kernel.org
+> Cc: Young Xiao <92siuyang@gmail.com>
+> Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix possible divide by zero in
+> ixgbevf_update_itr
 > 
-> Some transceivers may comply with SFF-8472 but not implement the Digital
-> Diagnostic Monitoring (DDM) interface described in it. The existence of such
-> area is specified by bit 6 of byte 92, set to 1 if implemented.
+> The next call to ixgbevf_update_itr will continue to dynamically update ITR.
 > 
-> Currently, due to not checking this bit ixgbe fails trying to read sfp module's
-> eeprom with the follow message:
+> Copy from commit bdbeefe8ea8c ("ixgbe: fix possible divide by zero in
+> ixgbe_update_itr")
 > 
-> ethtool -m enP51p1s0f0
-> Cannot get Module EEPROM data: Input/output error
-> 
-> Because it fails to read the additional 256 bytes in which it was assumed to
-> exist the DDM data.
-> 
-> This issue was noticed using a Mellanox Passive DAC PN 01FT738. The
-> eeprom data was confirmed by Mellanox as correct and present in other
-> Passive DACs in from other manufacturers.
-> 
-> Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+> Signed-off-by: Young Xiao <92siuyang@gmail.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 3 ++-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     | 1 +
->  2 files changed, 3 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
