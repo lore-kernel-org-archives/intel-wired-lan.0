@@ -1,86 +1,114 @@
 From: Vedang Patel <vedang.patel@intel.com>
-Date: Mon, 17 Jun 2019 12:31:07 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v3 3/6] taprio: calculate
- cycle_time when schedule is installed
+Date: Mon, 17 Jun 2019 12:31:09 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v3 5/6] taprio: make clock
+ reference conversions easier
 In-Reply-To: <1560799870-18956-1-git-send-email-vedang.patel@intel.com>
 References: <1560799870-18956-1-git-send-email-vedang.patel@intel.com>
-Message-ID: <1560799870-18956-4-git-send-email-vedang.patel@intel.com>
+Message-ID: <1560799870-18956-6-git-send-email-vedang.patel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-cycle time for a particular schedule is calculated only when it is first
-installed. So, it makes sense to just calculate it once right after the
-'cycle_time' parameter has been parsed and store it in cycle_time.
+Later in this series we will need to transform from
+CLOCK_MONOTONIC (used in TCP) to the clock reference used in TAPRIO.
 
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 Signed-off-by: Vedang Patel <vedang.patel@intel.com>
 ---
- net/sched/sch_taprio.c | 29 +++++++++++------------------
- 1 file changed, 11 insertions(+), 18 deletions(-)
+ net/sched/sch_taprio.c | 30 ++++++++++++++++++++++--------
+ 1 file changed, 22 insertions(+), 8 deletions(-)
 
 diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
-index 9ecfb8f5902a..a41d7d4434ee 100644
+index ab6080013666..f63cc3a9e69a 100644
 --- a/net/sched/sch_taprio.c
 +++ b/net/sched/sch_taprio.c
-@@ -108,22 +108,6 @@ static void switch_schedules(struct taprio_sched *q,
- 	*admin = NULL;
+@@ -61,6 +61,7 @@ struct taprio_sched {
+ 	struct Qdisc **qdiscs;
+ 	struct Qdisc *root;
+ 	u32 flags;
++	enum tk_offsets tk_offset;
+ 	int clockid;
+ 	atomic64_t picos_per_byte; /* Using picoseconds because for 10Gbps+
+ 				    * speeds it's sub-nanoseconds per byte
+@@ -71,7 +72,6 @@ struct taprio_sched {
+ 	struct sched_entry __rcu *current_entry;
+ 	struct sched_gate_list __rcu *oper_sched;
+ 	struct sched_gate_list __rcu *admin_sched;
+-	ktime_t (*get_time)(void);
+ 	struct hrtimer advance_timer;
+ 	struct list_head taprio_list;
+ 	int txtime_delay;
+@@ -85,6 +85,20 @@ static ktime_t sched_base_time(const struct sched_gate_list *sched)
+ 	return ns_to_ktime(sched->base_time);
  }
  
--static ktime_t get_cycle_time(struct sched_gate_list *sched)
--{
--	struct sched_entry *entry;
--	ktime_t cycle = 0;
--
--	if (sched->cycle_time != 0)
--		return sched->cycle_time;
--
--	list_for_each_entry(entry, &sched->entries, list)
--		cycle = ktime_add_ns(cycle, entry->interval);
--
--	sched->cycle_time = cycle;
--
--	return cycle;
--}
--
- static int taprio_enqueue(struct sk_buff *skb, struct Qdisc *sch,
- 			  struct sk_buff **to_free)
- {
-@@ -524,6 +508,15 @@ static int parse_taprio_schedule(struct nlattr **tb,
- 	if (err < 0)
- 		return err;
- 
-+	if (!new->cycle_time) {
-+		struct sched_entry *entry;
-+		ktime_t cycle = 0;
++static inline ktime_t taprio_get_time(struct taprio_sched *q)
++{
++	ktime_t mono = ktime_get();
 +
-+		list_for_each_entry(entry, &new->entries, list)
-+			cycle = ktime_add_ns(cycle, entry->interval);
-+		new->cycle_time = cycle;
++	switch (q->tk_offset) {
++	case TK_OFFS_MAX:
++		return mono;
++	default:
++		return ktime_mono_to_any(mono, q->tk_offset);
 +	}
 +
- 	return 0;
- }
++	return KTIME_MAX;
++}
++
+ static void taprio_free_sched_cb(struct rcu_head *head)
+ {
+ 	struct sched_gate_list *sched = container_of(head, struct sched_gate_list, rcu);
+@@ -288,7 +302,7 @@ static long get_packet_txtime(struct sk_buff *skb, struct Qdisc *sch)
+ 	struct sched_entry *entry;
+ 	bool sched_changed;
  
-@@ -605,7 +598,7 @@ static int taprio_get_start_time(struct Qdisc *sch,
- 		return 0;
- 	}
+-	now = q->get_time();
++	now = taprio_get_time(q);
+ 	minimum_time = ktime_add_ns(now, q->txtime_delay);
  
--	cycle = get_cycle_time(sched);
-+	cycle = sched->cycle_time;
+ 	rcu_read_lock();
+@@ -479,7 +493,7 @@ static struct sk_buff *taprio_dequeue(struct Qdisc *sch)
+ 			continue;
  
- 	/* The qdisc is expected to have at least one sched_entry.  Moreover,
- 	 * any entry must have 'interval' > 0. Thus if the cycle time is zero,
-@@ -632,7 +625,7 @@ static void setup_first_close_time(struct taprio_sched *q,
- 	first = list_first_entry(&sched->entries,
- 				 struct sched_entry, list);
+ 		len = qdisc_pkt_len(skb);
+-		guard = ktime_add_ns(q->get_time(),
++		guard = ktime_add_ns(taprio_get_time(q),
+ 				     length_to_duration(q, len));
  
--	cycle = get_cycle_time(sched);
-+	cycle = sched->cycle_time;
+ 		/* In the case that there's no gate entry, there's no
+@@ -848,7 +862,7 @@ static int taprio_get_start_time(struct Qdisc *sch,
+ 	s64 n;
  
- 	/* FIXME: find a better place to do this */
- 	sched->cycle_close_time = ktime_add_ns(base, cycle);
+ 	base = sched_base_time(sched);
+-	now = q->get_time();
++	now = taprio_get_time(q);
+ 
+ 	if (ktime_after(base, now)) {
+ 		*start = base;
+@@ -1094,16 +1108,16 @@ static int taprio_change(struct Qdisc *sch, struct nlattr *opt,
+ 
+ 	switch (q->clockid) {
+ 	case CLOCK_REALTIME:
+-		q->get_time = ktime_get_real;
++		q->tk_offset = TK_OFFS_REAL;
+ 		break;
+ 	case CLOCK_MONOTONIC:
+-		q->get_time = ktime_get;
++		q->tk_offset = TK_OFFS_MAX;
+ 		break;
+ 	case CLOCK_BOOTTIME:
+-		q->get_time = ktime_get_boottime;
++		q->tk_offset = TK_OFFS_BOOT;
+ 		break;
+ 	case CLOCK_TAI:
+-		q->get_time = ktime_get_clocktai;
++		q->tk_offset = TK_OFFS_TAI;
+ 		break;
+ 	default:
+ 		NL_SET_ERR_MSG(extack, "Invalid 'clockid'");
 -- 
 2.7.3
 
