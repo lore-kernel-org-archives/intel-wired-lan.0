@@ -1,199 +1,39 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sun, 05 May 2019 23:01:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- a63db74f5076f5241b2d130132a3c861ab32da57
-Message-ID: <5ccefad3.nqnJzNGCYK08lbH0%lkp@intel.com>
+Date: Mon, 17 Jun 2019 23:25:23 +0800
+Subject: [Intel-wired-lan] [PATCH] e1000e: Make watchdog use delayed work
+In-Reply-To: <20190616145445.9637-1-detlev.casanova@gmail.com>
+References: <20190616145445.9637-1-detlev.casanova@gmail.com>
+Message-ID: <201906172310.xCz4u1rq%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: a63db74f5076f5241b2d130132a3c861ab32da57  i40e: Missing response checks in driver when starting/stopping FW LLDP
+Hi Detlev,
 
-Regressions in current branch:
+Thank you for the patch! Perhaps something to improve:
 
-drivers/net/ethernet/aquantia/atlantic/aq_main.c:26:12: sparse: sparse: symbol 'aq_ndev_driver_name' was not declared. Should it be static?
+[auto build test WARNING on jkirsher-next-queue/dev-queue]
+[also build test WARNING on v5.2-rc5 next-20190617]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-Error ids grouped by kconfigs:
+url:    https://github.com/0day-ci/linux/commits/Detlev-Casanova/e1000e-Make-watchdog-use-delayed-work/20190617-154840
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+reproduce:
+        # apt-get install sparse
+        # sparse version: v0.6.1-rc1-7-g2b96cd8-dirty
+        make ARCH=x86_64 allmodconfig
+        make C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__'
 
-recent_errors
-??? x86_64-allmodconfig
-    ??? drivers-net-ethernet-aquantia-atlantic-aq_main.c:sparse:sparse:symbol-aq_ndev_driver_name-was-not-declared.-Should-it-be-static
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
 
-elapsed time: 183m
 
-configs tested: 168
+sparse warnings: (new ones prefixed by >>)
 
-i386                     randconfig-k2-201918
-x86_64                   randconfig-k2-201918
-x86_64                   randconfig-k1-201918
-i386                     randconfig-k0-201918
-i386                     randconfig-k3-201918
-x86_64                   randconfig-k3-201918
-x86_64                   randconfig-k0-201918
-i386                     randconfig-k1-201918
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-i386                     randconfig-m3-201918
-i386                     randconfig-m0-201918
-x86_64                   randconfig-m2-201918
-x86_64                   randconfig-m1-201918
-i386                     randconfig-m2-201918
-i386                     randconfig-m1-201918
-x86_64                   randconfig-m3-201918
-x86_64                   randconfig-m0-201918
-riscv                             allnoconfig
-riscv                               defconfig
-i386                     randconfig-l1-201918
-x86_64                   randconfig-l1-201918
-x86_64                   randconfig-l2-201918
-i386                     randconfig-l3-201918
-i386                     randconfig-l0-201918
-x86_64                   randconfig-l0-201918
-x86_64                   randconfig-l3-201918
-i386                     randconfig-l2-201918
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-x86_64                 randconfig-g0-05052056
-x86_64                 randconfig-g3-05052056
-x86_64                 randconfig-g1-05052056
-x86_64                 randconfig-g2-05052056
-i386                              allnoconfig
-i386                                defconfig
-x86_64               randconfig-x011-05052015
-x86_64               randconfig-x012-05052015
-x86_64               randconfig-x018-05052015
-x86_64               randconfig-x017-05052015
-x86_64               randconfig-x013-05052015
-x86_64               randconfig-x015-05052015
-x86_64               randconfig-x010-05052015
-x86_64               randconfig-x019-05052015
-x86_64               randconfig-x016-05052015
-x86_64               randconfig-x014-05052015
-i386                   randconfig-a2-05052015
-i386                   randconfig-a0-05052015
-i386                   randconfig-a1-05052015
-i386                   randconfig-a3-05052015
-riscv                              tinyconfig
-i386                               tinyconfig
-i386                   randconfig-x018-201918
-i386                   randconfig-x010-201918
-i386                   randconfig-x013-201918
-i386                   randconfig-x017-201918
-i386                   randconfig-x014-201918
-i386                   randconfig-x011-201918
-i386                   randconfig-x012-201918
-i386                   randconfig-x016-201918
-i386                   randconfig-x015-201918
-i386                   randconfig-x019-201918
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201918
-i386                     randconfig-n1-201918
-i386                     randconfig-n2-201918
-i386                     randconfig-n3-201918
-x86_64               randconfig-x004-05051950
-x86_64               randconfig-x005-05051950
-x86_64               randconfig-x001-05051950
-x86_64               randconfig-x007-05051950
-x86_64               randconfig-x008-05051950
-x86_64               randconfig-x006-05051950
-x86_64               randconfig-x002-05051950
-x86_64               randconfig-x000-05051950
-x86_64               randconfig-x003-05051950
-x86_64               randconfig-x009-05051950
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-i1-201918
-i386                     randconfig-i0-201918
-i386                     randconfig-i2-201918
-i386                     randconfig-i3-201918
-i386                   randconfig-x070-201918
-i386                   randconfig-x074-201918
-i386                   randconfig-x077-201918
-i386                   randconfig-x072-201918
-i386                   randconfig-x071-201918
-i386                   randconfig-x075-201918
-i386                   randconfig-x076-201918
-i386                   randconfig-x073-201918
-i386                   randconfig-x078-201918
-i386                   randconfig-x079-201918
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                   randconfig-x005-201918
-i386                   randconfig-x001-201918
-i386                   randconfig-x002-201918
-i386                   randconfig-x007-201918
-i386                   randconfig-x008-201918
-i386                   randconfig-x004-201918
-i386                   randconfig-x000-201918
-i386                   randconfig-x003-201918
-i386                   randconfig-x006-201918
-i386                   randconfig-x009-201918
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
+
+Please review and possibly fold the followup patch.
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
