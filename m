@@ -1,46 +1,42 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 17 Jun 2019 16:10:58 -0700
-Subject: [Intel-wired-lan] [net-next ] iavf: Fix up debug print macro
-Message-ID: <20190617231058.15343-1-jeffrey.t.kirsher@intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Mon, 17 Jun 2019 16:22:45 -0700 (PDT)
+Subject: [Intel-wired-lan] [PATCH net-next v3 4/6] taprio: Add support
+ for txtime-assist mode.
+In-Reply-To: <1560799870-18956-5-git-send-email-vedang.patel@intel.com>
+References: <1560799870-18956-1-git-send-email-vedang.patel@intel.com>
+ <1560799870-18956-5-git-send-email-vedang.patel@intel.com>
+Message-ID: <20190617.162245.717911211395007022.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This aligns the iavf_debug() macro with the other Intel drivers.
+From: Vedang Patel <vedang.patel@intel.com>
+Date: Mon, 17 Jun 2019 12:31:08 -0700
 
-Add the bus number, bus_id field to i40e_bus_info so output shows
-each physical port(i.e func) in following format:
-  [[[[<domain>]:]<bus>]:][<slot>][.[<func>]]
-domains are numbered from 0 to ffff), bus (0-ff), slot (0-1f) and
-function (0-7).
+> diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
+> index a41d7d4434ee..ab6080013666 100644
+> --- a/net/sched/sch_taprio.c
+> +++ b/net/sched/sch_taprio.c
+ ...
+> +/* Get how much time has been already elapsed in the current cycle. */
+> +static inline s32 get_cycle_time_elapsed(struct sched_gate_list *sched, ktime_t time)
+> +{
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf_osdep.h | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+Please do not use the inline directive in foo.c files, let the compiler decide.
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_osdep.h b/drivers/net/ethernet/intel/iavf/iavf_osdep.h
-index d39684558597..a452ce90679a 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_osdep.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_osdep.h
-@@ -44,8 +44,12 @@ struct iavf_virt_mem {
- #define iavf_allocate_virt_mem(h, m, s) iavf_allocate_virt_mem_d(h, m, s)
- #define iavf_free_virt_mem(h, m) iavf_free_virt_mem_d(h, m)
- 
--#define iavf_debug(h, m, s, ...)  iavf_debug_d(h, m, s, ##__VA_ARGS__)
--extern void iavf_debug_d(void *hw, u32 mask, char *fmt_str, ...)
--	__printf(3, 4);
-+#define iavf_debug(h, m, s, ...)				\
-+do {								\
-+	if (((m) & (h)->debug_mask))				\
-+		pr_info("iavf %02x:%02x.%x " s,			\
-+			(h)->bus.bus_id, (h)->bus.device,	\
-+			(h)->bus.func, ##__VA_ARGS__);		\
-+} while (0)
- 
- #endif /* _IAVF_OSDEP_H_ */
--- 
-2.21.0
+ ...
+> +static inline int length_to_duration(struct taprio_sched *q, int len)
+> +{
+> +	return (len * atomic64_read(&q->picos_per_byte)) / 1000;
+> +}
 
+Likewise.
+
+ ...
+> +static inline ktime_t get_cycle_start(struct sched_gate_list *sched,
+> +				      ktime_t time)
+> +{
+
+Likewise.
