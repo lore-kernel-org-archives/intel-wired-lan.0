@@ -1,40 +1,96 @@
 From: Vedang Patel <vedang.patel@intel.com>
-Date: Mon, 17 Jun 2019 12:31:05 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v3 1/6] igb: clear out tstamp
- after sending the packet.
+Date: Mon, 17 Jun 2019 12:31:06 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v3 2/6] etf: Add skip_sock_check
 In-Reply-To: <1560799870-18956-1-git-send-email-vedang.patel@intel.com>
 References: <1560799870-18956-1-git-send-email-vedang.patel@intel.com>
-Message-ID: <1560799870-18956-2-git-send-email-vedang.patel@intel.com>
+Message-ID: <1560799870-18956-3-git-send-email-vedang.patel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-skb->tstamp is being used at multiple places. On the transmit side, it
-is used to determine the launchtime of the packet. It is also used to
-determine the software timestamp after the packet has been transmitted.
+Currently, etf expects a socket with SO_TXTIME option set for each packet
+it encounters. So, it will drop all other packets. But, in the future
+commits we are planning to add functionality which where tstamp value will
+be set by another qdisc. Also, some packets which are generated from within
+the kernel (e.g. ICMP packets) do not have any socket associated with them.
 
-So, clear out the tstamp value after it has been read so that we do not
-report false software timestamp on the receive side.
+So, this commit adds support for skip_sock_check. When this option is set,
+etf will skip checking for a socket and other associated options for all
+skbs.
 
 Signed-off-by: Vedang Patel <vedang.patel@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 1 +
- 1 file changed, 1 insertion(+)
+ include/uapi/linux/pkt_sched.h |  1 +
+ net/sched/sch_etf.c            | 10 ++++++++++
+ 2 files changed, 11 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index fc925adbd9fa..f66dae72fe37 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -5688,6 +5688,7 @@ static void igb_tx_ctxtdesc(struct igb_ring *tx_ring,
- 	 */
- 	if (tx_ring->launchtime_enable) {
- 		ts = ns_to_timespec64(first->skb->tstamp);
-+		first->skb->tstamp = 0;
- 		context_desc->seqnum_seed = cpu_to_le32(ts.tv_nsec / 32);
- 	} else {
- 		context_desc->seqnum_seed = 0;
+diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
+index 8b2f993cbb77..69fc52e4d6bd 100644
+--- a/include/uapi/linux/pkt_sched.h
++++ b/include/uapi/linux/pkt_sched.h
+@@ -990,6 +990,7 @@ struct tc_etf_qopt {
+ 	__u32 flags;
+ #define TC_ETF_DEADLINE_MODE_ON	BIT(0)
+ #define TC_ETF_OFFLOAD_ON	BIT(1)
++#define TC_ETF_SKIP_SOCK_CHECK  BIT(2)
+ };
+ 
+ enum {
+diff --git a/net/sched/sch_etf.c b/net/sched/sch_etf.c
+index db0c2ba1d156..cebfb65d8556 100644
+--- a/net/sched/sch_etf.c
++++ b/net/sched/sch_etf.c
+@@ -22,10 +22,12 @@
+ 
+ #define DEADLINE_MODE_IS_ON(x) ((x)->flags & TC_ETF_DEADLINE_MODE_ON)
+ #define OFFLOAD_IS_ON(x) ((x)->flags & TC_ETF_OFFLOAD_ON)
++#define SKIP_SOCK_CHECK_IS_SET(x) ((x)->flags & TC_ETF_SKIP_SOCK_CHECK)
+ 
+ struct etf_sched_data {
+ 	bool offload;
+ 	bool deadline_mode;
++	bool skip_sock_check;
+ 	int clockid;
+ 	int queue;
+ 	s32 delta; /* in ns */
+@@ -77,6 +79,9 @@ static bool is_packet_valid(struct Qdisc *sch, struct sk_buff *nskb)
+ 	struct sock *sk = nskb->sk;
+ 	ktime_t now;
+ 
++	if (q->skip_sock_check)
++		goto skip;
++
+ 	if (!sk)
+ 		return false;
+ 
+@@ -92,6 +97,7 @@ static bool is_packet_valid(struct Qdisc *sch, struct sk_buff *nskb)
+ 	if (sk->sk_txtime_deadline_mode != q->deadline_mode)
+ 		return false;
+ 
++skip:
+ 	now = q->get_time();
+ 	if (ktime_before(txtime, now) || ktime_before(txtime, q->last))
+ 		return false;
+@@ -385,6 +391,7 @@ static int etf_init(struct Qdisc *sch, struct nlattr *opt,
+ 	q->clockid = qopt->clockid;
+ 	q->offload = OFFLOAD_IS_ON(qopt);
+ 	q->deadline_mode = DEADLINE_MODE_IS_ON(qopt);
++	q->skip_sock_check = SKIP_SOCK_CHECK_IS_SET(qopt);
+ 
+ 	switch (q->clockid) {
+ 	case CLOCK_REALTIME:
+@@ -473,6 +480,9 @@ static int etf_dump(struct Qdisc *sch, struct sk_buff *skb)
+ 	if (q->deadline_mode)
+ 		opt.flags |= TC_ETF_DEADLINE_MODE_ON;
+ 
++	if (q->skip_sock_check)
++		opt.flags |= TC_ETF_SKIP_SOCK_CHECK;
++
+ 	if (nla_put(skb, TCA_ETF_PARMS, sizeof(opt), &opt))
+ 		goto nla_put_failure;
+ 
 -- 
 2.7.3
 
