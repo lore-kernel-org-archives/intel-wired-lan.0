@@ -1,10 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 19 Jun 2019 23:13:15 +0000
-Subject: [Intel-wired-lan] [PATCH][next][V2] ixgbe: fix potential u32
- overflow on shift
-In-Reply-To: <20190607181920.23339-1-colin.king@canonical.com>
-References: <20190607181920.23339-1-colin.king@canonical.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3F8D26@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 19 Jun 2019 23:14:38 +0000
+Subject: [Intel-wired-lan] [next v2] iavf: use struct_size() helper
+In-Reply-To: <20190614232320.9752-1-jeffrey.t.kirsher@intel.com>
+References: <20190614232320.9752-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3F8D43@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,34 +12,36 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Colin King
-> Sent: Friday, June 7, 2019 11:19 AM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; David S . Miller <davem@davemloft.net>;
-> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org
-> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH][next][V2] ixgbe: fix potential u32
-> overflow on shift
+> Behalf Of Jeff Kirsher
+> Sent: Friday, June 14, 2019 4:23 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next v2] iavf: use struct_size() helper
 > 
-> From: Colin Ian King <colin.king@canonical.com>
+> From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 > 
-> The u32 variable rem is being shifted using u32 arithmetic however it is being
-> passed to div_u64 that expects the expression to be a u64.
-> The 32 bit shift may potentially overflow, so cast rem to a u64 before shifting
-> to avoid this.  Also remove comment about overflow.
+> Make use of the struct_size() helper instead of an open-coded version in
+> order to avoid any potential type mistakes, in particular in the context in
+> which this code is being used.
 > 
-> Addresses-Coverity: ("Unintentional integer overflow")
-> Fixes: cd4583206990 ("ixgbe: implement support for SDP/PPS output on X550
-> hardware")
-> Fixes: 68d9676fc04e ("ixgbe: fix PTP SDP pin setup on X540 hardware")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> So, replace code of the following form:
+> 
+> sizeof(struct virtchnl_ether_addr_list) + (count * sizeof(struct
+> virtchnl_ether_addr))
+> 
+> with:
+> 
+> struct_size(veal, list, count)
+> 
+> and so on...
+> 
+> This code was detected with the help of Coccinelle.
+> 
+> Signed-off-by: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 > ---
+> v2: Fixed up patch to apply cleanly to the current iavf driver
 > 
-> V2: update comment
-> 
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 14 ++++----------
->  1 file changed, 4 insertions(+), 10 deletions(-)
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 37 ++++++++-----------
+>  1 file changed, 16 insertions(+), 21 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
