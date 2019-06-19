@@ -1,55 +1,52 @@
-From: Patel, Vedang <vedang.patel@intel.com>
-Date: Wed, 19 Jun 2019 16:55:47 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 2/6] etf: Add
- skip_sock_check
-In-Reply-To: <3b9b74f4-526e-143e-21a9-ffd841b26bcb@cogentembedded.com>
-References: <1560799870-18956-1-git-send-email-vedang.patel@intel.com>
- <1560799870-18956-3-git-send-email-vedang.patel@intel.com>
- <3b9b74f4-526e-143e-21a9-ffd841b26bcb@cogentembedded.com>
-Message-ID: <6AA5A401-97AE-47D6-BD0D-2746C4FE3DAE@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 19 Jun 2019 09:58:53 -0700
+Subject: [Intel-wired-lan] [net] ixgbevf: Use cached link state instead of
+ re-reading the value for ethtool
+Message-ID: <20190619165853.28234-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks Sergei for the input.
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 
-> On Jun 18, 2019, at 2:28 AM, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com> wrote:
-> 
-> Hello!
-> 
-> On 17.06.2019 22:31, Vedang Patel wrote:
-> 
->> Currently, etf expects a socket with SO_TXTIME option set for each packet
->> it encounters. So, it will drop all other packets. But, in the future
->> commits we are planning to add functionality which where tstamp value will
->> be set by another qdisc. Also, some packets which are generated from within
->> the kernel (e.g. ICMP packets) do not have any socket associated with them.
->> So, this commit adds support for skip_sock_check. When this option is set,
->> etf will skip checking for a socket and other associated options for all
->> skbs.
->> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
->> ---
->>  include/uapi/linux/pkt_sched.h |  1 +
->>  net/sched/sch_etf.c            | 10 ++++++++++
->>  2 files changed, 11 insertions(+)
->> diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
->> index 8b2f993cbb77..69fc52e4d6bd 100644
->> --- a/include/uapi/linux/pkt_sched.h
->> +++ b/include/uapi/linux/pkt_sched.h
->> @@ -990,6 +990,7 @@ struct tc_etf_qopt {
->>  	__u32 flags;
->>  #define TC_ETF_DEADLINE_MODE_ON	BIT(0)
->>  #define TC_ETF_OFFLOAD_ON	BIT(1)
->> +#define TC_ETF_SKIP_SOCK_CHECK  BIT(2)
-> 
->  Please indent with a tab like above, not 2 spaces.
-> 
-I will include this in the next version.
+Change the ethtool link settings call to just read the cached state out of
+the adapter structure instead of trying to recheck the value from the PF.
+Doing this should prevent excessive reading of the mailbox.
 
--Vedang
-> [...]
-> 
-> MBR, Sergei
+Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Reviewed-by: Guilherme Piccoli <gpiccoli@canonical.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c |   10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+index 5399787e07af..54459b69c948 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+@@ -85,22 +85,16 @@ static int ixgbevf_get_link_ksettings(struct net_device *netdev,
+ 				      struct ethtool_link_ksettings *cmd)
+ {
+ 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+-	struct ixgbe_hw *hw = &adapter->hw;
+-	u32 link_speed = 0;
+-	bool link_up;
+ 
+ 	ethtool_link_ksettings_zero_link_mode(cmd, supported);
+ 	ethtool_link_ksettings_add_link_mode(cmd, supported, 10000baseT_Full);
+ 	cmd->base.autoneg = AUTONEG_DISABLE;
+ 	cmd->base.port = -1;
+ 
+-	hw->mac.get_link_status = 1;
+-	hw->mac.ops.check_link(hw, &link_speed, &link_up, false);
+-
+-	if (link_up) {
++	if (adapter->link_up) {
+ 		__u32 speed = SPEED_10000;
+ 
+-		switch (link_speed) {
++		switch (adapter->link_speed) {
+ 		case IXGBE_LINK_SPEED_10GB_FULL:
+ 			speed = SPEED_10000;
+ 			break;
