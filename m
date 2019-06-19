@@ -1,66 +1,52 @@
-From: Colin King <colin.king@canonical.com>
-Date: Wed, 19 Jun 2019 15:30:44 +0100
-Subject: [Intel-wired-lan] [PATCH][net-next] iavf: fix dereference of null
- rx_buffer pointer
-Message-ID: <20190619143044.10259-1-colin.king@canonical.com>
+From: Patel, Vedang <vedang.patel@intel.com>
+Date: Wed, 19 Jun 2019 16:54:32 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 4/6] taprio: Add support
+ for txtime-assist mode.
+In-Reply-To: <20190617.162245.717911211395007022.davem@davemloft.net>
+References: <1560799870-18956-1-git-send-email-vedang.patel@intel.com>
+ <1560799870-18956-5-git-send-email-vedang.patel@intel.com>
+ <20190617.162245.717911211395007022.davem@davemloft.net>
+Message-ID: <0EE3B2CB-5EEA-47B5-B90D-A74177A04570@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+Thanks for the input David. 
 
-A recent commit efa14c3985828d ("iavf: allow null RX descriptors") added
-a null pointer sanity check on rx_buffer, however, rx_buffer is being
-dereferenced before that check, which implies a null pointer dereference
-bug can potentially occur.  Fix this by only dereferencing rx_buffer
-until after the null pointer check.
 
-Addresses-Coverity: ("Dereference before null check")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/net/ethernet/intel/iavf/iavf_txrx.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+> On Jun 17, 2019, at 4:22 PM, David Miller <davem@davemloft.net> wrote:
+> 
+> From: Vedang Patel <vedang.patel@intel.com>
+> Date: Mon, 17 Jun 2019 12:31:08 -0700
+> 
+>> diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
+>> index a41d7d4434ee..ab6080013666 100644
+>> --- a/net/sched/sch_taprio.c
+>> +++ b/net/sched/sch_taprio.c
+> ...
+>> +/* Get how much time has been already elapsed in the current cycle. */
+>> +static inline s32 get_cycle_time_elapsed(struct sched_gate_list *sched, ktime_t time)
+>> +{
+> 
+> Please do not use the inline directive in foo.c files, let the compiler decide.
+> 
+Okay, I will remove inline directive from all C files and send a new version.
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 1cde1601bc32..0cca1b589b56 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -1296,7 +1296,7 @@ static struct sk_buff *iavf_construct_skb(struct iavf_ring *rx_ring,
- 					  struct iavf_rx_buffer *rx_buffer,
- 					  unsigned int size)
- {
--	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+	void *va;
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = iavf_rx_pg_size(rx_ring) / 2;
- #else
-@@ -1308,6 +1308,7 @@ static struct sk_buff *iavf_construct_skb(struct iavf_ring *rx_ring,
- 	if (!rx_buffer)
- 		return NULL;
- 	/* prefetch first cache line of first page */
-+	va = page_address(rx_buffer->page) + rx_buffer->page_offset;
- 	prefetch(va);
- #if L1_CACHE_BYTES < 128
- 	prefetch(va + L1_CACHE_BYTES);
-@@ -1362,7 +1363,7 @@ static struct sk_buff *iavf_build_skb(struct iavf_ring *rx_ring,
- 				      struct iavf_rx_buffer *rx_buffer,
- 				      unsigned int size)
- {
--	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+	void *va;
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = iavf_rx_pg_size(rx_ring) / 2;
- #else
-@@ -1374,6 +1375,7 @@ static struct sk_buff *iavf_build_skb(struct iavf_ring *rx_ring,
- 	if (!rx_buffer)
- 		return NULL;
- 	/* prefetch first cache line of first page */
-+	va = page_address(rx_buffer->page) + rx_buffer->page_offset;
- 	prefetch(va);
- #if L1_CACHE_BYTES < 128
- 	prefetch(va + L1_CACHE_BYTES);
--- 
-2.20.1
+-Vedang
+> ...
+>> +static inline int length_to_duration(struct taprio_sched *q, int len)
+>> +{
+>> +	return (len * atomic64_read(&q->picos_per_byte)) / 1000;
+>> +}
+> 
+> Likewise.
+> 
+> ...
+>> +static inline ktime_t get_cycle_start(struct sched_gate_list *sched,
+>> +				      ktime_t time)
+>> +{
+> 
+> Likewise.
 
