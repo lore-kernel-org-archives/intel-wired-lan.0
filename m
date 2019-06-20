@@ -1,55 +1,33 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Thu, 20 Jun 2019 10:45:16 +0300
-Subject: [Intel-wired-lan] [bug report] iavf: allow null RX descriptors
-Message-ID: <20190620074516.GA12233@mwanda>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Date: Thu, 20 Jun 2019 11:16:43 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v4 2/7] etf: Add
+ skip_sock_check
+In-Reply-To: <1560966016-28254-3-git-send-email-vedang.patel@intel.com>
+References: <1560966016-28254-1-git-send-email-vedang.patel@intel.com>
+ <1560966016-28254-3-git-send-email-vedang.patel@intel.com>
+Message-ID: <c304970a-1973-cdce-17b5-682f28856306@cogentembedded.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Mitch Williams,
+On 19.06.2019 20:40, Vedang Patel wrote:
 
-This is a semi-automatic email about new static checker warnings.
+> Currently, etf expects a socket with SO_TXTIME option set for each packet
+> it encounters. So, it will drop all other packets. But, in the future
+> commits we are planning to add functionality which where tstamp value will
 
-The patch efa14c398582: "iavf: allow null RX descriptors" from May
-14, 2019, leads to the following Smatch complaint:
+    One of "which" and "where", not both. :-)
 
-    drivers/net/ethernet/intel/iavf/iavf_txrx.c:1533 iavf_clean_rx_irq()
-    warn: variable dereferenced before check 'rx_buffer' (see line 1526)
+> be set by another qdisc. Also, some packets which are generated from within
+> the kernel (e.g. ICMP packets) do not have any socket associated with them.
+> 
+> So, this commit adds support for skip_sock_check. When this option is set,
+> etf will skip checking for a socket and other associated options for all
+> skbs.
+> 
+> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+[...]
 
-drivers/net/ethernet/intel/iavf/iavf_txrx.c
-  1515  
-  1516                  size = (qword & IAVF_RXD_QW1_LENGTH_PBUF_MASK) >>
-  1517                         IAVF_RXD_QW1_LENGTH_PBUF_SHIFT;
-  1518  
-  1519                  iavf_trace(clean_rx_irq, rx_ring, rx_desc, skb);
-  1520                  rx_buffer = iavf_get_rx_buffer(rx_ring, size);
-  1521  
-  1522                  /* retrieve a buffer from the ring */
-  1523                  if (skb)
-
-skb is non-NULL so ignore this path.
-
-  1524                          iavf_add_rx_frag(rx_ring, rx_buffer, skb, size);
-  1525			else if (ring_uses_build_skb(rx_ring))
-  1526				skb = iavf_build_skb(rx_ring, rx_buffer, size);
-                                                              ^^^^^^^^^
-  1527			else
-  1528				skb = iavf_construct_skb(rx_ring, rx_buffer, size);
-                                                                  ^^^^^^^^^
-These functions both dereference "rx_buffer" and might set skb to NULL.
-
-  1529	
-  1530			/* exit if we failed to retrieve a buffer */
-  1531			if (!skb) {
-  1532				rx_ring->rx_stats.alloc_buff_failed++;
-  1533				if (rx_buffer)
-                                ^^^^^^^^^^^^^
-If "rx_buffer" is NULL then we would already have crashed.
-
-  1534					rx_buffer->pagecnt_bias++;
-  1535				break;
-
-regards,
-dan carpenter
+MBR, Sergei
