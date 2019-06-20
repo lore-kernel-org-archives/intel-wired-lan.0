@@ -1,50 +1,117 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Thu, 20 Jun 2019 17:56:28 -0400
-Subject: [Intel-wired-lan] [PATCH net-next v4 1/7] igb: clear out tstamp
- after sending the packet
-In-Reply-To: <D1A9515C-D317-40F3-81A2-451F7228A853@intel.com>
-References: <1560966016-28254-1-git-send-email-vedang.patel@intel.com>
- <1560966016-28254-2-git-send-email-vedang.patel@intel.com>
- <d6655497-5246-c24e-de35-fc6acdad0bf1@gmail.com>
- <A1A5CF42-A7D4-4DC4-9D57-ED0340B04A6F@intel.com>
- <99e834ed-1c78-d35c-84dc-511d377284a1@gmail.com>
- <D1A9515C-D317-40F3-81A2-451F7228A853@intel.com>
-Message-ID: <799b2d75-a60d-4d93-b8d7-c29442b73dce@gmail.com>
+From: Kevin Laatz <kevin.laatz@intel.com>
+Date: Thu, 20 Jun 2019 08:39:13 +0000
+Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
+ support
+Message-ID: <20190620083924.1996-1-kevin.laatz@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+This patchset adds the ability to use unaligned chunks in the XDP umem.
+
+Currently, all chunk addresses passed to the umem are masked to be chunk
+size aligned (default is 2k, max is PAGE_SIZE). This limits where we can
+place chunks within the umem as well as limiting the packet sizes that are
+supported.
+
+The changes in this patchset removes these restrictions, allowing XDP to be
+more flexible in where it can place a chunk within a umem. By relaxing where
+the chunks can be placed, it allows us to use an arbitrary buffer size and
+place that wherever we have a free address in the umem. These changes add the
+ability to support jumboframes and make it easy to integrate with other
+existing frameworks that have their own memory management systems, such as
+DPDK.
+
+Structure of the patchset:
+Patch 1:
+  - Remove unnecessary masking and headroom addition during zero-copy Rx
+    buffer recycling in i40e. This change is required in order for the
+    buffer recycling to work in the unaligned chunk mode.
+
+Patch 2:
+  - Remove unnecessary masking and headroom addition during
+    zero-copy Rx buffer recycling in ixgbe. This change is required in
+    order for the  buffer recycling to work in the unaligned chunk mode.
+
+Patch 3:
+  - Adds an offset parameter to zero_copy_allocator. This change will
+    enable us to calculate the original handle in zca_free. This will be
+    required for unaligned chunk mode since we can't easily mask back to
+    the original handle.
+
+Patch 4:
+  - Adds the offset parameter to i40e_zca_free. This change is needed for
+    calculating the handle since we can't easily mask back to the original
+    handle like we can in the aligned case.
+
+Patch 5:
+  - Adds the offset parameter to ixgbe_zca_free. This change is needed for
+    calculating the handle since we can't easily mask back to the original
+    handle like we can in the aligned case.
 
 
-On 6/20/19 1:32 PM, Patel, Vedang wrote:
-> 
+Patch 6:
+  - Add infrastructure for unaligned chunks. Since we are dealing
+    with unaligned chunks that could potentially cross a physical page
+    boundary, we add checks to keep track of that information. We can
+    later use this information to correctly handle buffers that are
+    placed at an address where they cross a page boundary.
 
-> Ahh.. that?s clearly a false statement. Skb->tstamp is cleared so
-> that it is not interpreted as a software timestamp when trying to
-> send the Hardware TX timestamp to the userspace. I will rephrase the
-> commit message in the next version.
-> 
-> Some more details: The problem occurs when using the txtime-assist
-> mode of taprio with packets which also request the hardware transmit
-> timestamp (e.g. PTP packets). Whenever txtime-assist mode is set,
-> taprio will assign a hardware transmit timestamp to all the packets
-> (in skb->tstamp). PTP packets will also request the hardware transmit
-> timestamp be sent to the userspace after packet is transmitted.
-> 
-> Whenever a new timestamp is detected by the driver (this work is done
-> in igb_ptp_tx_work() which calls igb_ptp_tx_hwtstamps() in
-> igb_ptp.c[1]), it will queue the timestamp in the ERR_QUEUE for the
-> userspace to read. When the userspace is ready, it will issue a
-> recvmsg() call to collect this timestamp. The problem is in this
-> recvmsg() call. If the skb->tstamp is not cleared out, it will be
-> interpreted as a software timestamp and the hardware tx timestamp
-> will not be successfully sent to the userspace. Look at
-> skb_is_swtx_tstamp() and the callee function __sock_recv_timestamp()
-> in net/socket.c for more details.
+Patch 7:
+  - Add flags for umem configuration to libbpf
 
+Patch 8:
+  - Modify xdpsock application to add a command line option for
+    unaligned chunks
 
-That amount of details in the changelog would be really nice ;)
+Patch 9:
+  - Addition of command line argument to pass in a desired buffer size
+    and buffer recycling for unaligned mode. Passing in a buffer size will
+    allow the application to use unaligned chunks with the unaligned chunk
+    mode. Since we are now using unaligned chunks, we need to recycle our
+    buffers in a slightly different way.
 
+Patch 10:
+  - Adds hugepage support to the xdpsock application
+
+Patch 11:
+  - Documentation update to include the unaligned chunk scenario. We need
+    to explicitly state that the incoming addresses are only masked in the
+    aligned chunk mode and not the unaligned chunk mode.
+
+Kevin Laatz (11):
+  i40e: simplify Rx buffer recycle
+  ixgbe: simplify Rx buffer recycle
+  xdp: add offset param to zero_copy_allocator
+  i40e: add offset to zca_free
+  ixgbe: add offset to zca_free
+  xsk: add support to allow unaligned chunk placement
+  libbpf: add flags to umem config
+  samples/bpf: add unaligned chunks mode support to xdpsock
+  samples/bpf: add buffer recycling for unaligned chunks to xdpsock
+  samples/bpf: use hugepages in xdpsock app
+  doc/af_xdp: include unaligned chunk case
+
+ Documentation/networking/af_xdp.rst           | 10 +-
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 21 ++--
+ drivers/net/ethernet/intel/i40e/i40e_xsk.h    |  3 +-
+ .../ethernet/intel/ixgbe/ixgbe_txrx_common.h  |  3 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 21 ++--
+ include/net/xdp.h                             |  3 +-
+ include/net/xdp_sock.h                        |  2 +
+ include/uapi/linux/if_xdp.h                   |  4 +
+ net/core/xdp.c                                | 11 ++-
+ net/xdp/xdp_umem.c                            | 17 ++--
+ net/xdp/xsk.c                                 | 60 +++++++++--
+ net/xdp/xsk_queue.h                           | 60 +++++++++--
+ samples/bpf/xdpsock_user.c                    | 99 ++++++++++++++-----
+ tools/include/uapi/linux/if_xdp.h             |  4 +
+ tools/lib/bpf/xsk.c                           |  7 ++
+ tools/lib/bpf/xsk.h                           |  2 +
+ 16 files changed, 241 insertions(+), 86 deletions(-)
+
+-- 
+2.17.1
 
