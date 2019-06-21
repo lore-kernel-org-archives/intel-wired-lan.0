@@ -1,29 +1,31 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 21 Jun 2019 01:50:42 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 1/6] igb: clear out tstamp
- after sending the packet.
-In-Reply-To: <1560799870-18956-2-git-send-email-vedang.patel@intel.com>
-References: <1560799870-18956-1-git-send-email-vedang.patel@intel.com>
- <1560799870-18956-2-git-send-email-vedang.patel@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B970B1283@ORSMSX103.amr.corp.intel.com>
+Date: Fri, 21 Jun 2019 01:55:06 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: Increase pause and refresh
+ time
+In-Reply-To: <d185164e-d09f-39ab-74f0-0c483ab52e67@molgen.mpg.de>
+References: <d185164e-d09f-39ab-74f0-0c483ab52e67@molgen.mpg.de>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B970B1294@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2019-06-17 at 12:31 -0700, Vedang Patel wrote:
-> skb->tstamp is being used at multiple places. On the transmit side, it
-> is used to determine the launchtime of the packet. It is also used to
-> determine the software timestamp after the packet has been transmitted.
+On Fri, 2019-05-17 at 17:01 +0200, Paul Menzel wrote:
+> From: Miguel Bernal Marin <miguel.bernal.marin@linux.intel.com>
+> Date: Mon, 27 Mar 2017 16:01:56 -0600
 > 
-> So, clear out the tstamp value after it has been read so that we do not
-> report false software timestamp on the receive side.
-> 
-> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+> Suggested-by: Tim Pepper <timothy.c.pepper@linux.intel.com>
+> Signed-off-by: Miguel Bernal Marin <miguel.bernal.marin@linux.intel.com>
+> Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 1 +
->  1 file changed, 1 insertion(+)
+> Miguel, it?d be great, if you could write a commit message stating the 
+> motivation for that change, that means, why is it preferable to increase 
+> these values, and set the pause time unconditionally.
+> 
+>   drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
 > 
 
+Yes, a commit message explaining ramifiations of the change would be great. But from a functional perspective across my regression systems:
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
