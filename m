@@ -1,76 +1,239 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 22 Jun 2019 08:34:26 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 29/30]
- drivers/net/ethernet/intel/ice/ice_xsk.c:487:18: warning: cast to pointer
- from integer of different size
-Message-ID: <201906220824.NcnMMBDe%lkp@intel.com>
+Date: Sat, 22 Jun 2019 12:28:57 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ ded437072d67251cc469cb21d62d61dab54504d3
+Message-ID: <5d0dae89.+79agmFgXLcNn7OR%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   ded437072d67251cc469cb21d62d61dab54504d3
-commit: 8aef1aba7a02a296d39caf5b2cc161ce2d958c91 [29/30] ice: Add support for AF_XDP
-config: xtensa-allyesconfig (attached as .config)
-compiler: xtensa-linux-gcc (GCC) 7.4.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 8aef1aba7a02a296d39caf5b2cc161ce2d958c91
-        # save the attached .config to linux build tree
-        GCC_VERSION=7.4.0 make.cross ARCH=xtensa 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: ded437072d67251cc469cb21d62d61dab54504d3  iavf: fix dereference of null rx_buffer pointer
 
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
+Regressions in current branch:
 
-All warnings (new ones prefixed by >>):
+drivers/net/ethernet/intel/iavf/iavf_main.c:151:6: sparse: sparse: symbol 'iavf_debug_d' was not declared. Should it be static?
+drivers/net/ethernet/intel/ice/ice_xsk.c:487:18: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
 
-   drivers/net/ethernet/intel/ice/ice_xsk.c: In function 'ice_reuse_rx_buf_zc':
->> drivers/net/ethernet/intel/ice/ice_xsk.c:487:18: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-     new_buf->addr = (void *)(((unsigned long)old_buf->addr & mask) + hr);
-                     ^
+Error ids grouped by kconfigs:
 
-vim +487 drivers/net/ethernet/intel/ice/ice_xsk.c
+recent_errors
+??? arm-allmodconfig
+??? ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? i386-randconfig-x017-201924
+??? ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? mips-allmodconfig
+??? ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? parisc-allmodconfig
+??? ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-intel-iavf-iavf_main.c:sparse:sparse:symbol-iavf_debug_d-was-not-declared.-Should-it-be-static
+??? xtensa-allmodconfig
+??? ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? xtensa-allyesconfig
+    ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
 
-   465	
-   466	/**
-   467	 * ice_reuse_rx_buf_zc - reuse an Rx buffer
-   468	 * @rx_ring: Rx ring
-   469	 * @old_buf: The buffer to recycle
-   470	 *
-   471	 * This function recycles a finished Rx buffer, and places it on the recycle
-   472	 * queue (next_to_alloc).
-   473	 */
-   474	static void
-   475	ice_reuse_rx_buf_zc(struct ice_ring *rx_ring, struct ice_rx_buf *old_buf)
-   476	{
-   477		unsigned long mask = (unsigned long)rx_ring->xsk_umem->chunk_mask;
-   478		u64 hr = rx_ring->xsk_umem->headroom + XDP_PACKET_HEADROOM;
-   479		u16 nta = rx_ring->next_to_alloc;
-   480		struct ice_rx_buf *new_buf;
-   481	
-   482		new_buf = &rx_ring->rx_buf[rx_ring->next_to_alloc];
-   483		nta++;
-   484		rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
-   485	
-   486		new_buf->dma = (old_buf->dma & mask) + hr;
- > 487		new_buf->addr = (void *)(((unsigned long)old_buf->addr & mask) + hr);
-   488		new_buf->handle = (old_buf->handle & mask);
-   489		new_buf->handle += rx_ring->xsk_umem->headroom;
-   490	
-   491		old_buf->addr = NULL;
-   492	}
-   493	
+elapsed time: 275m
+
+configs tested: 192
+
+i386                   randconfig-x073-201924
+i386                   randconfig-x074-201924
+i386                   randconfig-x075-201924
+i386                   randconfig-x076-201924
+i386                   randconfig-x079-201924
+i386                   randconfig-x071-201924
+i386                   randconfig-x070-201924
+i386                   randconfig-x078-201924
+i386                   randconfig-x072-201924
+i386                   randconfig-x077-201924
+i386                   randconfig-x009-201924
+i386                   randconfig-x008-201924
+i386                   randconfig-x006-201924
+i386                   randconfig-x001-201924
+i386                   randconfig-x000-201924
+i386                   randconfig-x003-201924
+i386                   randconfig-x004-201924
+i386                   randconfig-x005-201924
+i386                   randconfig-x007-201924
+i386                   randconfig-x002-201924
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                          debug_defconfig
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+i386                             alldefconfig
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+nds32                             allnoconfig
+nds32                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-n001-201924
+x86_64                 randconfig-n002-201924
+x86_64                 randconfig-n003-201924
+x86_64                 randconfig-n004-201924
+x86_64                 randconfig-n005-201924
+x86_64                 randconfig-n006-201924
+x86_64                 randconfig-n007-201924
+x86_64                 randconfig-n008-201924
+x86_64                 randconfig-n009-201924
+x86_64                 randconfig-n010-201924
+x86_64                 randconfig-n011-201924
+x86_64                 randconfig-n012-201924
+x86_64                 randconfig-n013-201924
+x86_64                 randconfig-n014-201924
+x86_64                 randconfig-n015-201924
+x86_64                 randconfig-n016-201924
+x86_64                 randconfig-n017-201924
+x86_64                 randconfig-n018-201924
+x86_64                 randconfig-n019-201924
+x86_64                 randconfig-n020-201924
+x86_64                 randconfig-n021-201924
+x86_64                 randconfig-n022-201924
+x86_64                 randconfig-n023-201924
+x86_64                 randconfig-n024-201924
+x86_64                 randconfig-n025-201924
+x86_64                 randconfig-n026-201924
+x86_64                 randconfig-n027-201924
+x86_64                 randconfig-n028-201924
+x86_64                 randconfig-n029-201924
+x86_64                 randconfig-n030-201924
+x86_64                 randconfig-n031-201924
+x86_64                 randconfig-n032-201924
+i386                   randconfig-n001-201924
+i386                   randconfig-n002-201924
+i386                   randconfig-n003-201924
+i386                   randconfig-n004-201924
+i386                   randconfig-n005-201924
+i386                   randconfig-n006-201924
+i386                   randconfig-n007-201924
+i386                   randconfig-n008-201924
+i386                   randconfig-n009-201924
+i386                   randconfig-n010-201924
+i386                   randconfig-n011-201924
+i386                   randconfig-n012-201924
+i386                   randconfig-n013-201924
+i386                   randconfig-n014-201924
+i386                   randconfig-n015-201924
+i386                   randconfig-n016-201924
+i386                   randconfig-n017-201924
+i386                   randconfig-n018-201924
+i386                   randconfig-n019-201924
+i386                   randconfig-n020-201924
+i386                   randconfig-n021-201924
+i386                   randconfig-n022-201924
+i386                   randconfig-n023-201924
+i386                   randconfig-n024-201924
+i386                   randconfig-n025-201924
+i386                   randconfig-n026-201924
+i386                   randconfig-n027-201924
+i386                   randconfig-n028-201924
+i386                   randconfig-n029-201924
+i386                   randconfig-n030-201924
+i386                   randconfig-n031-201924
+i386                   randconfig-n032-201924
+riscv                             allnoconfig
+riscv                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+x86_64                 randconfig-x019-201924
+x86_64                 randconfig-x012-201924
+x86_64                 randconfig-x014-201924
+x86_64                 randconfig-x015-201924
+x86_64                 randconfig-x010-201924
+x86_64                 randconfig-x017-201924
+x86_64                 randconfig-x011-201924
+x86_64                 randconfig-x016-201924
+x86_64                 randconfig-x018-201924
+x86_64                 randconfig-x013-201924
+i386                              allnoconfig
+i386                                defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-x013-201924
+i386                   randconfig-x018-201924
+i386                   randconfig-x012-201924
+i386                   randconfig-x011-201924
+i386                   randconfig-x016-201924
+i386                   randconfig-x010-201924
+i386                   randconfig-x017-201924
+i386                   randconfig-x015-201924
+i386                   randconfig-x014-201924
+i386                   randconfig-x019-201924
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-x001-201924
+x86_64                 randconfig-x007-201924
+x86_64                 randconfig-x006-201924
+x86_64                 randconfig-x003-201924
+x86_64                 randconfig-x004-201924
+x86_64                 randconfig-x009-201924
+x86_64                 randconfig-x002-201924
+x86_64                 randconfig-x008-201924
+x86_64                 randconfig-x005-201924
+x86_64                 randconfig-x000-201924
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 58346 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190622/bf158bda/attachment-0001.bin>
