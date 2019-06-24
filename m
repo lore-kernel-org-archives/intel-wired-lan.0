@@ -1,11 +1,11 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Mon, 24 Jun 2019 17:31:19 +0200
-Subject: [Intel-wired-lan] [PATCH 08/11] samples/bpf: add unaligned
- chunks mode support to xdpsock
-In-Reply-To: <20190620090958.2135-9-kevin.laatz@intel.com>
+Date: Mon, 24 Jun 2019 17:34:15 +0200
+Subject: [Intel-wired-lan] [PATCH 11/11] doc/af_xdp: include unaligned
+ chunk case
+In-Reply-To: <20190620090958.2135-12-kevin.laatz@intel.com>
 References: <20190620090958.2135-1-kevin.laatz@intel.com>
- <20190620090958.2135-9-kevin.laatz@intel.com>
-Message-ID: <CAJ+HfNi=QtGEGq=4PaxEMUrBxsSg8JsJcQHik_8WGVdAawJHKA@mail.gmail.com>
+ <20190620090958.2135-12-kevin.laatz@intel.com>
+Message-ID: <CAJ+HfNiSs1jGzqg0E4f8=8EMCTMpAWs6-33m7o9Gw_8L-5v-TQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,98 +14,41 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Thu, 20 Jun 2019 at 19:25, Kevin Laatz <kevin.laatz@intel.com> wrote:
 >
-> This patch adds support for the unaligned chunks mode. The addition of the
-> unaligned chunks option will allow users to run the application with more
-> relaxed chunk placement in the XDP umem.
->
-> Unaligned chunks mode can be used with the '-u' or '--unaligned' command
-> line options.
+> The addition of unaligned chunks mode, the documentation needs to be
+> updated to indicate that the incoming addr to the fill ring will only be
+> masked if the user application is run in the aligned chunk mode. This patch
+> also adds a line to explicitly indicate that the incoming addr will not be
+> masked if running the user application in the unaligned chunk mode.
 >
 > Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
-> Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
 
 Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
 
 > ---
->  samples/bpf/xdpsock_user.c | 20 ++++++++++++++++++--
->  1 file changed, 18 insertions(+), 2 deletions(-)
+>  Documentation/networking/af_xdp.rst | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
 >
-> diff --git a/samples/bpf/xdpsock_user.c b/samples/bpf/xdpsock_user.c
-> index d08ee1ab7bb4..e26f43382d01 100644
-> --- a/samples/bpf/xdpsock_user.c
-> +++ b/samples/bpf/xdpsock_user.c
-> @@ -67,6 +67,8 @@ static int opt_ifindex;
->  static int opt_queue;
->  static int opt_poll;
->  static int opt_interval = 1;
-> +static u32 opt_umem_flags;
-> +static int opt_unaligned_chunks;
->  static u32 opt_xdp_bind_flags;
->  static __u32 prog_id;
+> diff --git a/Documentation/networking/af_xdp.rst b/Documentation/networking/af_xdp.rst
+> index e14d7d40fc75..16fbc68cac50 100644
+> --- a/Documentation/networking/af_xdp.rst
+> +++ b/Documentation/networking/af_xdp.rst
+> @@ -153,10 +153,12 @@ an example, if the UMEM is 64k and each chunk is 4k, then the UMEM has
 >
-> @@ -276,14 +278,21 @@ static size_t gen_eth_frame(struct xsk_umem_info *umem, u64 addr)
->  static struct xsk_umem_info *xsk_configure_umem(void *buffer, u64 size)
->  {
->         struct xsk_umem_info *umem;
-> +       struct xsk_umem_config umem_cfg;
->         int ret;
+>  Frames passed to the kernel are used for the ingress path (RX rings).
 >
->         umem = calloc(1, sizeof(*umem));
->         if (!umem)
->                 exit_with_error(errno);
+> -The user application produces UMEM addrs to this ring. Note that the
+> -kernel will mask the incoming addr. E.g. for a chunk size of 2k, the
+> -log2(2048) LSB of the addr will be masked off, meaning that 2048, 2050
+> -and 3000 refers to the same chunk.
+> +The user application produces UMEM addrs to this ring. Note that, if
+> +running the application with aligned chunk mode, the kernel will mask
+> +the incoming addr.  E.g. for a chunk size of 2k, the log2(2048) LSB of
+> +the addr will be masked off, meaning that 2048, 2050 and 3000 refers
+> +to the same chunk. If the user application is run in the unaligned
+> +chunks mode, then the incoming addr will be left untouched.
 >
-> +       umem_cfg.fill_size = XSK_RING_PROD__DEFAULT_NUM_DESCS;
-> +       umem_cfg.comp_size = XSK_RING_CONS__DEFAULT_NUM_DESCS;
-> +       umem_cfg.frame_size = XSK_UMEM__DEFAULT_FRAME_SIZE;
-> +       umem_cfg.frame_headroom = XSK_UMEM__DEFAULT_FRAME_HEADROOM;
-> +       umem_cfg.flags = opt_umem_flags;
-> +
->         ret = xsk_umem__create(&umem->umem, buffer, size, &umem->fq, &umem->cq,
-> -                              NULL);
-> +                              &umem_cfg);
->         if (ret)
->                 exit_with_error(-ret);
 >
-> @@ -346,6 +355,7 @@ static struct option long_options[] = {
->         {"interval", required_argument, 0, 'n'},
->         {"zero-copy", no_argument, 0, 'z'},
->         {"copy", no_argument, 0, 'c'},
-> +       {"unaligned", no_argument, 0, 'u'},
->         {0, 0, 0, 0}
->  };
->
-> @@ -365,6 +375,7 @@ static void usage(const char *prog)
->                 "  -n, --interval=n     Specify statistics update interval (default 1 sec).\n"
->                 "  -z, --zero-copy      Force zero-copy mode.\n"
->                 "  -c, --copy           Force copy mode.\n"
-> +               "  -u, --unaligned      Enable unaligned chunk placement\n"
->                 "\n";
->         fprintf(stderr, str, prog);
->         exit(EXIT_FAILURE);
-> @@ -377,7 +388,7 @@ static void parse_command_line(int argc, char **argv)
->         opterr = 0;
->
->         for (;;) {
-> -               c = getopt_long(argc, argv, "Frtli:q:psSNn:cz", long_options,
-> +               c = getopt_long(argc, argv, "Frtli:q:psSNn:czu", long_options,
->                                 &option_index);
->                 if (c == -1)
->                         break;
-> @@ -417,9 +428,14 @@ static void parse_command_line(int argc, char **argv)
->                 case 'c':
->                         opt_xdp_bind_flags |= XDP_COPY;
->                         break;
-> +               case 'u':
-> +                       opt_umem_flags |= XDP_UMEM_UNALIGNED_CHUNKS;
-> +                       opt_unaligned_chunks = 1;
-> +                       break;
->                 case 'F':
->                         opt_xdp_flags &= ~XDP_FLAGS_UPDATE_IF_NOEXIST;
->                         break;
-> +
->                 default:
->                         usage(basename(argv[0]));
->                 }
+>  UMEM Completion Ring
 > --
 > 2.17.1
 >
