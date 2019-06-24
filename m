@@ -1,80 +1,82 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Mon, 24 Jun 2019 16:32:59 +0200
-Subject: [Intel-wired-lan] [PATCH 05/11] ixgbe: add offset to zca_free
-In-Reply-To: <20190620090958.2135-6-kevin.laatz@intel.com>
-References: <20190620090958.2135-1-kevin.laatz@intel.com>
- <20190620090958.2135-6-kevin.laatz@intel.com>
-Message-ID: <CAJ+HfNg9chx674Sc=Ht-UJ_iYoau=X6LJYn5w05rUQ85b9oyDg@mail.gmail.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Mon, 24 Jun 2019 23:06:44 +0800
+Subject: [Intel-wired-lan] Opportunistic S0ix blocked by e1000e when
+ ethernet is in use
+In-Reply-To: <95f88f45-fd6c-52e4-de8c-2db1b4c6c04e@intel.com>
+References: <074E1145-A512-4835-9A6D-8FB6634DBD3C@canonical.com>
+ <E2D5225B-D683-4895-AC4F-EE01C339262B@canonical.com>
+ <95f88f45-fd6c-52e4-de8c-2db1b4c6c04e@intel.com>
+Message-ID: <E8C45269-819C-41E0-A3D3-AA98710DBA4C@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 20 Jun 2019 at 19:25, Kevin Laatz <kevin.laatz@intel.com> wrote:
->
-> This patch adds the offset param to for zero_copy_allocator to
-> ixgbe_zca_free. This change is required to calculate the handle, otherwise,
-> this function will not work in unaligned chunk mode since we can't easily mask
-> back to the original handle in unaligned chunk mode.
->
-> Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
+at 19:56, Neftin, Sasha <sasha.neftin@intel.com> wrote:
 
-Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
+> On 6/24/2019 10:03, Kai-Heng Feng wrote:
+>> Hi Jeffrey,
+>> at 19:08, Kai-Heng Feng <kai.heng.feng@canonical.com> wrote:
+>>> Hi Jeffrey,
+>>>
+>>> There are several platforms that uses e1000e can?t enter Opportunistic  
+>>> S0ix (PC10) when the ethernet has a link partner.
+>>>
+>>> This behavior also exits in out-of-tree e1000e driver 3.4.2.1, but  
+>>> seems like 3.4.2.3 fixes the issue.
+>>>
+>>> A quick diff between the two versions shows that this code section may  
+>>> be our solution:
+>>>
+>>>         /* Read from EXTCNF_CTRL in e1000_acquire_swflag_ich8lan function
+>>>          * may occur during global reset and cause system hang.
+>>>          * Configuration space access creates the needed delay.
+>>>          * Write to E1000_STRAP RO register E1000_PCI_VENDOR_ID_REGISTER value
+>>>          * insures configuration space read is done before global reset.
+>>>          */
+>>>         pci_read_config_word(hw->adapter->pdev, E1000_PCI_VENDOR_ID_REGISTER,
+>>>                              &pci_cfg);
+>>>         ew32(STRAP, pci_cfg);
+>>>         e_dbg("Issuing a global reset to ich8lan\n");
+>>>         ew32(CTRL, (ctrl | E1000_CTRL_RST));
+>>>         /* cannot issue a flush here because it hangs the hardware */
+>>>         msleep(20);
+>>>
+>>>         /* Configuration space access improve HW level time sync mechanism.
+>>>          * Write to E1000_STRAP RO register E1000_PCI_VENDOR_ID_REGISTER
+>>>          * value to insure configuration space read is done
+>>>          * before any access to mac register.
+>>>          */
+>>>         pci_read_config_word(hw->adapter->pdev, E1000_PCI_VENDOR_ID_REGISTER,
+>>>                              &pci_cfg);
+>>>         ew32(STRAP, pci_cfg);
+>> Turns out the "extra sauce? is not this part, it?s called ?Dynamic LTR  
+>> support?.
+>> >>
+>>> Is there any plan to support this in the upstream kernel?
+>> Is there any plan to support Dynamic LTR in upstream e1000e?
+> Dynamic LTR is not stable solution. So, we can not put this solution to  
+> upstream. I hope we will be able to fix this in HW for a future projects.
+
+Does this mean current generation hardware won?t get the fix?
+
+> S0ix support is under discussion with our architecture. We will try  
+> enable S0ix in our e1000e OOT driver as first step.
+
+Is it possible to add Dynamic LTR as an option so users and downstream  
+distros can still benefit from it?
+
+Kai-Heng
+
+>> Kai-Heng
+>>> Kai-Heng
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at osuosl.org
+>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>
+> Thanks
+> Sasha
 
 
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h | 3 ++-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c         | 8 ++++----
->  2 files changed, 6 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-> index d93a690aff74..49702e2a4360 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-> @@ -33,7 +33,8 @@ struct xdp_umem *ixgbe_xsk_umem(struct ixgbe_adapter *adapter,
->  int ixgbe_xsk_umem_setup(struct ixgbe_adapter *adapter, struct xdp_umem *umem,
->                          u16 qid);
->
-> -void ixgbe_zca_free(struct zero_copy_allocator *alloc, unsigned long handle);
-> +void ixgbe_zca_free(struct zero_copy_allocator *alloc, unsigned long handle,
-> +               off_t off);
->
->  void ixgbe_alloc_rx_buffers_zc(struct ixgbe_ring *rx_ring, u16 cleaned_count);
->  int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> index 49536adafe8e..1ec02077ccb2 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> @@ -268,16 +268,16 @@ static void ixgbe_reuse_rx_buffer_zc(struct ixgbe_ring *rx_ring,
->         obi->skb = NULL;
->  }
->
-> -void ixgbe_zca_free(struct zero_copy_allocator *alloc, unsigned long handle)
-> +void ixgbe_zca_free(struct zero_copy_allocator *alloc, unsigned long handle,
-> +               off_t off)
->  {
->         struct ixgbe_rx_buffer *bi;
->         struct ixgbe_ring *rx_ring;
-> -       u64 hr, mask;
-> +       u64 hr;
->         u16 nta;
->
->         rx_ring = container_of(alloc, struct ixgbe_ring, zca);
->         hr = rx_ring->xsk_umem->headroom + XDP_PACKET_HEADROOM;
-> -       mask = rx_ring->xsk_umem->chunk_mask;
->
->         nta = rx_ring->next_to_alloc;
->         bi = rx_ring->rx_buffer_info;
-> @@ -285,7 +285,7 @@ void ixgbe_zca_free(struct zero_copy_allocator *alloc, unsigned long handle)
->         nta++;
->         rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
->
-> -       handle &= mask;
-> +       handle -= off;
->
->         bi->dma = xdp_umem_get_dma(rx_ring->xsk_umem, handle);
->         bi->dma += hr;
-> --
-> 2.17.1
->
