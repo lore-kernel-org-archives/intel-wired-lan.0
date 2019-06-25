@@ -1,11 +1,12 @@
 From: Laatz, Kevin <kevin.laatz@intel.com>
-Date: Tue, 25 Jun 2019 14:12:24 +0100
-Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
- support
-In-Reply-To: <CAJ+HfNijp8BgMgiOuohiuqDPz+spAutdG34gUqKzepYo2noE-w@mail.gmail.com>
-References: <20190620083924.1996-1-kevin.laatz@intel.com>
- <CAJ+HfNijp8BgMgiOuohiuqDPz+spAutdG34gUqKzepYo2noE-w@mail.gmail.com>
-Message-ID: <e90c81b0-a419-49b0-4e2a-3d20956feb6e@intel.com>
+Date: Tue, 25 Jun 2019 14:14:59 +0100
+Subject: [Intel-wired-lan] [PATCH 03/11] xdp: add offset param to
+ zero_copy_allocator
+In-Reply-To: <20190624122342.26c6a9b4@cakuba.netronome.com>
+References: <20190620090958.2135-1-kevin.laatz@intel.com>
+ <20190620090958.2135-4-kevin.laatz@intel.com>
+ <20190624122342.26c6a9b4@cakuba.netronome.com>
+Message-ID: <bf3e67de-b23a-fa69-4cbc-c53e9cc5e055@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,146 +14,29 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
-On 24/06/2019 16:38, Bj?rn T?pel wrote:
-> On Thu, 20 Jun 2019 at 18:55, Kevin Laatz <kevin.laatz@intel.com> wrote:
+On 24/06/2019 20:23, Jakub Kicinski wrote:
+> On Thu, 20 Jun 2019 09:09:50 +0000, Kevin Laatz wrote:
+>> diff --git a/include/net/xdp.h b/include/net/xdp.h
+>> index 0f25b3675c5c..ea801fd2bf98 100644
+>> --- a/include/net/xdp.h
+>> +++ b/include/net/xdp.h
+>> @@ -53,7 +53,8 @@ struct xdp_mem_info {
+>> ?struct page_pool;
 >>
->> This patchset adds the ability to use unaligned chunks in the XDP umem.
->>
->> Currently, all chunk addresses passed to the umem are masked to be chunk
->> size aligned (default is 2k, max is PAGE_SIZE). This limits where we can
->> place chunks within the umem as well as limiting the packet sizes 
->> that are
->> supported.
->>
->> The changes in this patchset removes these restrictions, allowing XDP 
->> to be
->> more flexible in where it can place a chunk within a umem. By 
->> relaxing where
->> the chunks can be placed, it allows us to use an arbitrary buffer 
->> size and
->> place that wherever we have a free address in the umem. These changes 
->> add the
->> ability to support jumboframes and make it easy to integrate with other
->> existing frameworks that have their own memory management systems, 
->> such as
->> DPDK.
->>
+>> ?struct zero_copy_allocator {
+>> -??? void (*free)(struct zero_copy_allocator *zca, unsigned long 
+>> handle);
+>> +??? void (*free)(struct zero_copy_allocator *zca, unsigned long handle,
+>> +??????????? off_t off);
+>> ?};
 >
-> Thanks for working on this, Kevin and Ciara!
+> Please run checkpatch --strict on all your changes.? The code
+> formatting is incorrect in many ways in this series.
 >
-> I have some minor comments on the series, but in general I think it's
-> in good shape!
->
-> For some reason the series was submitted twice (at least on my side)?
-Apologies for the confusion... The first set had a typo in the bpf 
-mailing list address (.com vs .org). Will fix for the v2.
->
->
-> Thanks,
-> Bj?rn
+Thanks, will fix in the v2.
 
 
-Thanks for reviewing. Will address your comments in the v2.
-
+> Please include performance measurements proving the slow down
+> is negligible in the cover letter.
 >
->> Structure of the patchset:
->> Patch 1:
->> ? - Remove unnecessary masking and headroom addition during zero-copy Rx
->> ??? buffer recycling in i40e. This change is required in order for the
->> ??? buffer recycling to work in the unaligned chunk mode.
->>
->> Patch 2:
->> ? - Remove unnecessary masking and headroom addition during
->> ??? zero-copy Rx buffer recycling in ixgbe. This change is required in
->> ??? order for the? buffer recycling to work in the unaligned chunk mode.
->>
->> Patch 3:
->> ? - Adds an offset parameter to zero_copy_allocator. This change will
->> ??? enable us to calculate the original handle in zca_free. This will be
->> ??? required for unaligned chunk mode since we can't easily mask back to
->> ??? the original handle.
->>
->> Patch 4:
->> ? - Adds the offset parameter to i40e_zca_free. This change is needed 
->> for
->> ??? calculating the handle since we can't easily mask back to the 
->> original
->> ??? handle like we can in the aligned case.
->>
->> Patch 5:
->> ? - Adds the offset parameter to ixgbe_zca_free. This change is 
->> needed for
->> ??? calculating the handle since we can't easily mask back to the 
->> original
->> ??? handle like we can in the aligned case.
->>
->>
->> Patch 6:
->> ? - Add infrastructure for unaligned chunks. Since we are dealing
->> ??? with unaligned chunks that could potentially cross a physical page
->> ??? boundary, we add checks to keep track of that information. We can
->> ??? later use this information to correctly handle buffers that are
->> ??? placed at an address where they cross a page boundary.
->>
->> Patch 7:
->> ? - Add flags for umem configuration to libbpf
->>
->> Patch 8:
->> ? - Modify xdpsock application to add a command line option for
->> ??? unaligned chunks
->>
->> Patch 9:
->> ? - Addition of command line argument to pass in a desired buffer size
->> ??? and buffer recycling for unaligned mode. Passing in a buffer size 
->> will
->> ??? allow the application to use unaligned chunks with the unaligned 
->> chunk
->> ??? mode. Since we are now using unaligned chunks, we need to recycle 
->> our
->> ??? buffers in a slightly different way.
->>
->> Patch 10:
->> ? - Adds hugepage support to the xdpsock application
->>
->> Patch 11:
->> ? - Documentation update to include the unaligned chunk scenario. We 
->> need
->> ??? to explicitly state that the incoming addresses are only masked 
->> in the
->> ??? aligned chunk mode and not the unaligned chunk mode.
->>
->> Kevin Laatz (11):
->> ? i40e: simplify Rx buffer recycle
->> ? ixgbe: simplify Rx buffer recycle
->> ? xdp: add offset param to zero_copy_allocator
->> ? i40e: add offset to zca_free
->> ? ixgbe: add offset to zca_free
->> ? xsk: add support to allow unaligned chunk placement
->> ? libbpf: add flags to umem config
->> ? samples/bpf: add unaligned chunks mode support to xdpsock
->> ? samples/bpf: add buffer recycling for unaligned chunks to xdpsock
->> ? samples/bpf: use hugepages in xdpsock app
->> ? doc/af_xdp: include unaligned chunk case
->>
->> ?Documentation/networking/af_xdp.rst?????????? | 10 +-
->> ?drivers/net/ethernet/intel/i40e/i40e_xsk.c??? | 21 ++--
->> ?drivers/net/ethernet/intel/i40e/i40e_xsk.h??? |? 3 +-
->> ?.../ethernet/intel/ixgbe/ixgbe_txrx_common.h? |? 3 +-
->> ?drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c? | 21 ++--
->> ?include/net/xdp.h???????????????????????????? |? 3 +-
->> ?include/net/xdp_sock.h??????????????????????? |? 2 +
->> ?include/uapi/linux/if_xdp.h?????????????????? |? 4 +
->> ?net/core/xdp.c??????????????????????????????? | 11 ++-
->> ?net/xdp/xdp_umem.c??????????????????????????? | 17 ++--
->> ?net/xdp/xsk.c???????????????????????????????? | 60 +++++++++--
->> ?net/xdp/xsk_queue.h?????????????????????????? | 60 +++++++++--
->> ?samples/bpf/xdpsock_user.c??????????????????? | 99 ++++++++++++++-----
->> ?tools/include/uapi/linux/if_xdp.h???????????? |? 4 +
->> ?tools/lib/bpf/xsk.c?????????????????????????? |? 7 ++
->> ?tools/lib/bpf/xsk.h?????????????????????????? |? 2 +
->> ?16 files changed, 241 insertions(+), 86 deletions(-)
->>
->> -- 
->> 2.17.1
->>
->
+Good suggestion. Will add to the cover letter in the v2!
