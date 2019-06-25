@@ -1,96 +1,84 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 25 Jun 2019 13:25:00 +0300
-Subject: [Intel-wired-lan] Opportunistic S0ix blocked by e1000e when
- ethernet is in use
-In-Reply-To: <E8C45269-819C-41E0-A3D3-AA98710DBA4C@canonical.com>
-References: <074E1145-A512-4835-9A6D-8FB6634DBD3C@canonical.com>
- <E2D5225B-D683-4895-AC4F-EE01C339262B@canonical.com>
- <95f88f45-fd6c-52e4-de8c-2db1b4c6c04e@intel.com>
- <E8C45269-819C-41E0-A3D3-AA98710DBA4C@canonical.com>
-Message-ID: <dfd57ef4-08bd-53cf-1f0a-86edc5bc0a67@intel.com>
+From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Date: Tue, 25 Jun 2019 17:39:11 +0300
+Subject: [Intel-wired-lan] [PATCH v3] e1000e: PCIm function state support
+Message-ID: <20190625143911.37284-1-vitaly.lifshits@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 6/24/2019 18:06, Kai-Heng Feng wrote:
-> at 19:56, Neftin, Sasha <sasha.neftin@intel.com> wrote:
-> 
->> On 6/24/2019 10:03, Kai-Heng Feng wrote:
->>> Hi Jeffrey,
->>> at 19:08, Kai-Heng Feng <kai.heng.feng@canonical.com> wrote:
->>>> Hi Jeffrey,
->>>>
->>>> There are several platforms that uses e1000e can?t enter 
->>>> Opportunistic S0ix (PC10) when the ethernet has a link partner.
->>>>
->>>> This behavior also exits in out-of-tree e1000e driver 3.4.2.1, but 
->>>> seems like 3.4.2.3 fixes the issue.
->>>>
->>>> A quick diff between the two versions shows that this code section 
->>>> may be our solution:
->>>>
->>>> ??????? /* Read from EXTCNF_CTRL in e1000_acquire_swflag_ich8lan 
->>>> function
->>>> ???????? * may occur during global reset and cause system hang.
->>>> ???????? * Configuration space access creates the needed delay.
->>>> ???????? * Write to E1000_STRAP RO register 
->>>> E1000_PCI_VENDOR_ID_REGISTER value
->>>> ???????? * insures configuration space read is done before global 
->>>> reset.
->>>> ???????? */
->>>> ??????? pci_read_config_word(hw->adapter->pdev, 
->>>> E1000_PCI_VENDOR_ID_REGISTER,
->>>> ???????????????????????????? &pci_cfg);
->>>> ??????? ew32(STRAP, pci_cfg);
->>>> ??????? e_dbg("Issuing a global reset to ich8lan\n");
->>>> ??????? ew32(CTRL, (ctrl | E1000_CTRL_RST));
->>>> ??????? /* cannot issue a flush here because it hangs the hardware */
->>>> ??????? msleep(20);
->>>>
->>>> ??????? /* Configuration space access improve HW level time sync 
->>>> mechanism.
->>>> ???????? * Write to E1000_STRAP RO register 
->>>> E1000_PCI_VENDOR_ID_REGISTER
->>>> ???????? * value to insure configuration space read is done
->>>> ???????? * before any access to mac register.
->>>> ???????? */
->>>> ??????? pci_read_config_word(hw->adapter->pdev, 
->>>> E1000_PCI_VENDOR_ID_REGISTER,
->>>> ???????????????????????????? &pci_cfg);
->>>> ??????? ew32(STRAP, pci_cfg);
->>> Turns out the "extra sauce? is not this part, it?s called ?Dynamic 
->>> LTR support?.
->>> >>
->>>> Is there any plan to support this in the upstream kernel?
->>> Is there any plan to support Dynamic LTR in upstream e1000e?
->> Dynamic LTR is not stable solution. So, we can not put this solution 
->> to upstream. I hope we will be able to fix this in HW for a future 
->> projects.
-> 
-> Does this mean current generation hardware won?t get the fix?
-Current HW have a limitation. Please, try follow workaround on your 
-platform: echo 3 > /sys/kernel/debug/pmc_core/ltr_ignore
-> >> S0ix support is under discussion with our architecture. We will try
->> enable S0ix in our e1000e OOT driver as first step.
-> 
-> Is it possible to add Dynamic LTR as an option so users and downstream 
-> distros can still benefit from it?
-As I said before, this is not a stable solution. No guarantee that HW 
-will work as properly.
-> 
-> Kai-Heng
-> 
->>> Kai-Heng
->>>> Kai-Heng
->>> _______________________________________________
->>> Intel-wired-lan mailing list
->>> Intel-wired-lan at osuosl.org
->>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->>
->> Thanks
->> Sasha
-> 
-> 
+Due to commit: 5d8682588605 ("[misc] mei: me: allow runtime
+			pm for platform with D0i3")
+When disconnecting the cable and reconnecting it the NIC
+enters DMoff state. This caused wrong link indication
+and duplex mismatch. This bug is described in:
+https://bugzilla.redhat.com/show_bug.cgi?id=1689436
+
+Checking PCIm function state and performing PHY reset after a
+timeout in watchdog task solves this issue.
+
+Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+---
+
+V2: Fixed typos in commit massage
+V3: Fixed minor typo
+---
+ drivers/net/ethernet/intel/e1000e/defines.h |  3 +++
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 18 +++++++++++++++++-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
+index fd550dee4982..13877fe300f1 100644
+--- a/drivers/net/ethernet/intel/e1000e/defines.h
++++ b/drivers/net/ethernet/intel/e1000e/defines.h
+@@ -222,6 +222,9 @@
+ #define E1000_STATUS_PHYRA      0x00000400      /* PHY Reset Asserted */
+ #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master Req status */
+ 
++/* PCIm function state */
++#define E1000_STATUS_PCIM_STATE         0x40000000
++
+ #define HALF_DUPLEX 1
+ #define FULL_DUPLEX 2
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index b081a1ef6859..c6a10fd30e4e 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5173,8 +5173,9 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 	struct e1000_mac_info *mac = &adapter->hw.mac;
+ 	struct e1000_phy_info *phy = &adapter->hw.phy;
+ 	struct e1000_ring *tx_ring = adapter->tx_ring;
++	u32 dmoff_exit_timeout = 100, tries = 0;
+ 	struct e1000_hw *hw = &adapter->hw;
+-	u32 link, tctl;
++	u32 link, tctl, pcim_state;
+ 
+ 	if (test_bit(__E1000_DOWN, &adapter->state))
+ 		return;
+@@ -5199,6 +5200,21 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 			/* Cancel scheduled suspend requests. */
+ 			pm_runtime_resume(netdev->dev.parent);
+ 
++			/* Checking if MAC is in DMoff state*/
++			pcim_state = er32(STATUS);
++			while (pcim_state & E1000_STATUS_PCIM_STATE) {
++				if (tries++ == dmoff_exit_timeout) {
++					e_dbg("Error in exiting dmoff\n");
++					break;
++				}
++				usleep_range(10000, 20000);
++				pcim_state = er32(STATUS);
++
++				/* Checking if MAC exited DMoff state */
++				if (!(pcim_state & E1000_STATUS_PCIM_STATE))
++					e1000_phy_hw_reset(&adapter->hw);
++			}
++
+ 			/* update snapshot of PHY registers on LSC */
+ 			e1000_phy_read_status(adapter);
+ 			mac->ops.get_link_up_info(&adapter->hw,
+-- 
+2.11.0
 
