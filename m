@@ -1,87 +1,158 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 25 Jun 2019 18:15:08 +0300
-Subject: [Intel-wired-lan] [PATCH v3] e1000e: PCIm function state support
-In-Reply-To: <20190625143911.37284-1-vitaly.lifshits@intel.com>
-References: <20190625143911.37284-1-vitaly.lifshits@intel.com>
-Message-ID: <e54d6835-84bc-17bb-de59-d87c53bd5bb4@intel.com>
+From: Laatz, Kevin <kevin.laatz@intel.com>
+Date: Tue, 25 Jun 2019 14:12:24 +0100
+Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
+ support
+In-Reply-To: <CAJ+HfNijp8BgMgiOuohiuqDPz+spAutdG34gUqKzepYo2noE-w@mail.gmail.com>
+References: <20190620083924.1996-1-kevin.laatz@intel.com>
+ <CAJ+HfNijp8BgMgiOuohiuqDPz+spAutdG34gUqKzepYo2noE-w@mail.gmail.com>
+Message-ID: <e90c81b0-a419-49b0-4e2a-3d20956feb6e@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 6/25/2019 17:39, Vitaly Lifshits wrote:
-> Due to commit: 5d8682588605 ("[misc] mei: me: allow runtime
-> 			pm for platform with D0i3")
-> When disconnecting the cable and reconnecting it the NIC
-> enters DMoff state. This caused wrong link indication
-> and duplex mismatch. This bug is described in:
-> https://bugzilla.redhat.com/show_bug.cgi?id=1689436
-> 
-> Checking PCIm function state and performing PHY reset after a
-> timeout in watchdog task solves this issue.
-> 
-> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> ---
-> 
-> V2: Fixed typos in commit massage
-> V3: Fixed minor typo
-> ---
->   drivers/net/ethernet/intel/e1000e/defines.h |  3 +++
->   drivers/net/ethernet/intel/e1000e/netdev.c  | 18 +++++++++++++++++-
->   2 files changed, 20 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
-> index fd550dee4982..13877fe300f1 100644
-> --- a/drivers/net/ethernet/intel/e1000e/defines.h
-> +++ b/drivers/net/ethernet/intel/e1000e/defines.h
-> @@ -222,6 +222,9 @@
->   #define E1000_STATUS_PHYRA      0x00000400      /* PHY Reset Asserted */
->   #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master Req status */
->   
-> +/* PCIm function state */
-> +#define E1000_STATUS_PCIM_STATE         0x40000000
-> +
->   #define HALF_DUPLEX 1
->   #define FULL_DUPLEX 2
->   
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index b081a1ef6859..c6a10fd30e4e 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -5173,8 +5173,9 @@ static void e1000_watchdog_task(struct work_struct *work)
->   	struct e1000_mac_info *mac = &adapter->hw.mac;
->   	struct e1000_phy_info *phy = &adapter->hw.phy;
->   	struct e1000_ring *tx_ring = adapter->tx_ring;
-> +	u32 dmoff_exit_timeout = 100, tries = 0;
->   	struct e1000_hw *hw = &adapter->hw;
-> -	u32 link, tctl;
-> +	u32 link, tctl, pcim_state;
->   
->   	if (test_bit(__E1000_DOWN, &adapter->state))
->   		return;
-> @@ -5199,6 +5200,21 @@ static void e1000_watchdog_task(struct work_struct *work)
->   			/* Cancel scheduled suspend requests. */
->   			pm_runtime_resume(netdev->dev.parent);
->   
-> +			/* Checking if MAC is in DMoff state*/
-> +			pcim_state = er32(STATUS);
-> +			while (pcim_state & E1000_STATUS_PCIM_STATE) {
-> +				if (tries++ == dmoff_exit_timeout) {
-> +					e_dbg("Error in exiting dmoff\n");
-> +					break;
-> +				}
-> +				usleep_range(10000, 20000);
-> +				pcim_state = er32(STATUS);
-> +
-> +				/* Checking if MAC exited DMoff state */
-> +				if (!(pcim_state & E1000_STATUS_PCIM_STATE))
-> +					e1000_phy_hw_reset(&adapter->hw);
-> +			}
-> +
->   			/* update snapshot of PHY registers on LSC */
->   			e1000_phy_read_status(adapter);
->   			mac->ops.get_link_up_info(&adapter->hw,
-> 
-Thanks Vitalik
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+
+On 24/06/2019 16:38, Bj?rn T?pel wrote:
+> On Thu, 20 Jun 2019 at 18:55, Kevin Laatz <kevin.laatz@intel.com> wrote:
+>>
+>> This patchset adds the ability to use unaligned chunks in the XDP umem.
+>>
+>> Currently, all chunk addresses passed to the umem are masked to be chunk
+>> size aligned (default is 2k, max is PAGE_SIZE). This limits where we can
+>> place chunks within the umem as well as limiting the packet sizes 
+>> that are
+>> supported.
+>>
+>> The changes in this patchset removes these restrictions, allowing XDP 
+>> to be
+>> more flexible in where it can place a chunk within a umem. By 
+>> relaxing where
+>> the chunks can be placed, it allows us to use an arbitrary buffer 
+>> size and
+>> place that wherever we have a free address in the umem. These changes 
+>> add the
+>> ability to support jumboframes and make it easy to integrate with other
+>> existing frameworks that have their own memory management systems, 
+>> such as
+>> DPDK.
+>>
+>
+> Thanks for working on this, Kevin and Ciara!
+>
+> I have some minor comments on the series, but in general I think it's
+> in good shape!
+>
+> For some reason the series was submitted twice (at least on my side)?
+Apologies for the confusion... The first set had a typo in the bpf 
+mailing list address (.com vs .org). Will fix for the v2.
+>
+>
+> Thanks,
+> Bj?rn
+
+
+Thanks for reviewing. Will address your comments in the v2.
+
+>
+>> Structure of the patchset:
+>> Patch 1:
+>> ? - Remove unnecessary masking and headroom addition during zero-copy Rx
+>> ??? buffer recycling in i40e. This change is required in order for the
+>> ??? buffer recycling to work in the unaligned chunk mode.
+>>
+>> Patch 2:
+>> ? - Remove unnecessary masking and headroom addition during
+>> ??? zero-copy Rx buffer recycling in ixgbe. This change is required in
+>> ??? order for the? buffer recycling to work in the unaligned chunk mode.
+>>
+>> Patch 3:
+>> ? - Adds an offset parameter to zero_copy_allocator. This change will
+>> ??? enable us to calculate the original handle in zca_free. This will be
+>> ??? required for unaligned chunk mode since we can't easily mask back to
+>> ??? the original handle.
+>>
+>> Patch 4:
+>> ? - Adds the offset parameter to i40e_zca_free. This change is needed 
+>> for
+>> ??? calculating the handle since we can't easily mask back to the 
+>> original
+>> ??? handle like we can in the aligned case.
+>>
+>> Patch 5:
+>> ? - Adds the offset parameter to ixgbe_zca_free. This change is 
+>> needed for
+>> ??? calculating the handle since we can't easily mask back to the 
+>> original
+>> ??? handle like we can in the aligned case.
+>>
+>>
+>> Patch 6:
+>> ? - Add infrastructure for unaligned chunks. Since we are dealing
+>> ??? with unaligned chunks that could potentially cross a physical page
+>> ??? boundary, we add checks to keep track of that information. We can
+>> ??? later use this information to correctly handle buffers that are
+>> ??? placed at an address where they cross a page boundary.
+>>
+>> Patch 7:
+>> ? - Add flags for umem configuration to libbpf
+>>
+>> Patch 8:
+>> ? - Modify xdpsock application to add a command line option for
+>> ??? unaligned chunks
+>>
+>> Patch 9:
+>> ? - Addition of command line argument to pass in a desired buffer size
+>> ??? and buffer recycling for unaligned mode. Passing in a buffer size 
+>> will
+>> ??? allow the application to use unaligned chunks with the unaligned 
+>> chunk
+>> ??? mode. Since we are now using unaligned chunks, we need to recycle 
+>> our
+>> ??? buffers in a slightly different way.
+>>
+>> Patch 10:
+>> ? - Adds hugepage support to the xdpsock application
+>>
+>> Patch 11:
+>> ? - Documentation update to include the unaligned chunk scenario. We 
+>> need
+>> ??? to explicitly state that the incoming addresses are only masked 
+>> in the
+>> ??? aligned chunk mode and not the unaligned chunk mode.
+>>
+>> Kevin Laatz (11):
+>> ? i40e: simplify Rx buffer recycle
+>> ? ixgbe: simplify Rx buffer recycle
+>> ? xdp: add offset param to zero_copy_allocator
+>> ? i40e: add offset to zca_free
+>> ? ixgbe: add offset to zca_free
+>> ? xsk: add support to allow unaligned chunk placement
+>> ? libbpf: add flags to umem config
+>> ? samples/bpf: add unaligned chunks mode support to xdpsock
+>> ? samples/bpf: add buffer recycling for unaligned chunks to xdpsock
+>> ? samples/bpf: use hugepages in xdpsock app
+>> ? doc/af_xdp: include unaligned chunk case
+>>
+>> ?Documentation/networking/af_xdp.rst?????????? | 10 +-
+>> ?drivers/net/ethernet/intel/i40e/i40e_xsk.c??? | 21 ++--
+>> ?drivers/net/ethernet/intel/i40e/i40e_xsk.h??? |? 3 +-
+>> ?.../ethernet/intel/ixgbe/ixgbe_txrx_common.h? |? 3 +-
+>> ?drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c? | 21 ++--
+>> ?include/net/xdp.h???????????????????????????? |? 3 +-
+>> ?include/net/xdp_sock.h??????????????????????? |? 2 +
+>> ?include/uapi/linux/if_xdp.h?????????????????? |? 4 +
+>> ?net/core/xdp.c??????????????????????????????? | 11 ++-
+>> ?net/xdp/xdp_umem.c??????????????????????????? | 17 ++--
+>> ?net/xdp/xsk.c???????????????????????????????? | 60 +++++++++--
+>> ?net/xdp/xsk_queue.h?????????????????????????? | 60 +++++++++--
+>> ?samples/bpf/xdpsock_user.c??????????????????? | 99 ++++++++++++++-----
+>> ?tools/include/uapi/linux/if_xdp.h???????????? |? 4 +
+>> ?tools/lib/bpf/xsk.c?????????????????????????? |? 7 ++
+>> ?tools/lib/bpf/xsk.h?????????????????????????? |? 2 +
+>> ?16 files changed, 241 insertions(+), 86 deletions(-)
+>>
+>> -- 
+>> 2.17.1
+>>
+>
