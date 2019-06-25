@@ -1,104 +1,225 @@
-From: Vedang Patel <vedang.patel@intel.com>
-Date: Tue, 25 Jun 2019 15:07:19 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v6 8/8] taprio: Adjust timestamps
- for TCP packets
-In-Reply-To: <1561500439-30276-1-git-send-email-vedang.patel@intel.com>
-References: <1561500439-30276-1-git-send-email-vedang.patel@intel.com>
-Message-ID: <1561500439-30276-9-git-send-email-vedang.patel@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 26 Jun 2019 06:53:29 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ a399182229401e8cf5607d788ede40988428384c
+Message-ID: <5d12a5e9.em/q+b+EbzwxI1Vc%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When the taprio qdisc is running in "txtime offload" mode, it will
-set the launchtime value (in skb->tstamp) for all the packets which do
-not have the SO_TXTIME socket option. But, the TCP packets already have
-this value set and it indicates the earliest departure time represented
-in CLOCK_MONOTONIC clock.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: a399182229401e8cf5607d788ede40988428384c  e1000e: PCIm function state support
 
-We need to respect the timestamp set by the TCP subsystem. So, convert
-this time to the clock which taprio is using and ensure that the packet
-is not transmitted before the deadline set by TCP.
+Regressions in current branch:
 
-Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+drivers/net/ethernet/intel/iavf/iavf_main.c:151:6: sparse: sparse: symbol 'iavf_debug_d' was not declared. Should it be static?
+drivers/net/ethernet/intel/ice/ice_xsk.c:487:18: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+
+Error ids grouped by kconfigs:
+
+recent_errors
+??? i386-randconfig-x073-201925
+??? ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? mips-allyesconfig
+??? ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-intel-iavf-iavf_main.c:sparse:sparse:symbol-iavf_debug_d-was-not-declared.-Should-it-be-static
+??? x86_64-allyesconfig
+??? ??? drivers-net-ethernet-intel-iavf-iavf_main.c:sparse:sparse:symbol-iavf_debug_d-was-not-declared.-Should-it-be-static
+??? xtensa-allyesconfig
+    ??? drivers-net-ethernet-intel-ice-ice_xsk.c:warning:cast-to-pointer-from-integer-of-different-size
+
+elapsed time: 198m
+
+configs tested: 182
+
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+nds32                             allnoconfig
+nds32                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                          debug_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                               rhel-7.6
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+i386                   randconfig-n004-201925
+x86_64                 randconfig-n023-201925
+i386                   randconfig-n005-201925
+x86_64                 randconfig-n022-201925
+i386                   randconfig-n025-201925
+x86_64                 randconfig-n006-201925
+x86_64                 randconfig-n014-201925
+x86_64                 randconfig-n012-201925
+x86_64                 randconfig-n013-201925
+x86_64                 randconfig-n032-201925
+i386                   randconfig-n008-201925
+x86_64                 randconfig-n016-201925
+i386                   randconfig-n023-201925
+i386                   randconfig-n028-201925
+i386                   randconfig-n011-201925
+i386                   randconfig-n029-201925
+i386                   randconfig-n010-201925
+i386                   randconfig-n031-201925
+x86_64                 randconfig-n030-201925
+i386                   randconfig-n030-201925
+x86_64                 randconfig-n031-201925
+i386                   randconfig-n024-201925
+x86_64                 randconfig-n007-201925
+x86_64                 randconfig-n028-201925
+x86_64                 randconfig-n011-201925
+i386                   randconfig-n013-201925
+x86_64                 randconfig-n009-201925
+i386                   randconfig-n021-201925
+i386                   randconfig-n018-201925
+x86_64                 randconfig-n002-201925
+i386                   randconfig-n014-201925
+i386                   randconfig-n009-201925
+x86_64                 randconfig-n017-201925
+i386                   randconfig-n002-201925
+x86_64                 randconfig-n025-201925
+i386                   randconfig-n003-201925
+x86_64                 randconfig-n024-201925
+x86_64                 randconfig-n029-201925
+x86_64                 randconfig-n010-201925
+x86_64                 randconfig-n027-201925
+i386                   randconfig-n012-201925
+x86_64                 randconfig-n008-201925
+x86_64                 randconfig-n015-201925
+i386                   randconfig-n015-201925
+i386                   randconfig-n007-201925
+x86_64                 randconfig-n020-201925
+x86_64                 randconfig-n019-201925
+i386                   randconfig-n017-201925
+i386                   randconfig-n016-201925
+i386                   randconfig-n001-201925
+x86_64                 randconfig-n026-201925
+i386                   randconfig-n020-201925
+i386                   randconfig-n019-201925
+x86_64                 randconfig-n003-201925
+i386                   randconfig-n026-201925
+x86_64                 randconfig-n005-201925
+i386                   randconfig-n027-201925
+x86_64                 randconfig-n004-201925
+i386                   randconfig-n006-201925
+x86_64                 randconfig-n021-201925
+x86_64                 randconfig-n018-201925
+i386                   randconfig-n032-201925
+i386                   randconfig-n022-201925
+x86_64                 randconfig-n001-201925
+riscv                             allnoconfig
+riscv                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                           allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                 randconfig-x019-201925
+x86_64                 randconfig-x012-201925
+x86_64                 randconfig-x014-201925
+x86_64                 randconfig-x015-201925
+x86_64                 randconfig-x010-201925
+x86_64                 randconfig-x017-201925
+x86_64                 randconfig-x011-201925
+x86_64                 randconfig-x016-201925
+x86_64                 randconfig-x018-201925
+x86_64                 randconfig-x013-201925
+i386                   randconfig-x071-201925
+i386                   randconfig-x070-201925
+i386                   randconfig-x073-201925
+i386                   randconfig-x078-201925
+i386                   randconfig-x074-201925
+i386                   randconfig-x072-201925
+i386                   randconfig-x075-201925
+i386                   randconfig-x077-201925
+i386                   randconfig-x076-201925
+i386                   randconfig-x079-201925
+i386                   randconfig-x018-201925
+i386                   randconfig-x013-201925
+i386                   randconfig-x012-201925
+i386                   randconfig-x011-201925
+i386                   randconfig-x016-201925
+i386                   randconfig-x010-201925
+i386                   randconfig-x017-201925
+i386                   randconfig-x015-201925
+i386                   randconfig-x014-201925
+i386                   randconfig-x019-201925
+i386                   randconfig-x009-201925
+i386                   randconfig-x004-201925
+i386                   randconfig-x005-201925
+i386                   randconfig-x008-201925
+i386                   randconfig-x006-201925
+i386                   randconfig-x001-201925
+i386                   randconfig-x007-201925
+i386                   randconfig-x000-201925
+i386                   randconfig-x002-201925
+i386                   randconfig-x003-201925
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+
 ---
- net/sched/sch_taprio.c | 41 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 40 insertions(+), 1 deletion(-)
-
-diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
-index 5c5e7db520dc..388750ddc57a 100644
---- a/net/sched/sch_taprio.c
-+++ b/net/sched/sch_taprio.c
-@@ -22,6 +22,7 @@
- #include <net/pkt_cls.h>
- #include <net/sch_generic.h>
- #include <net/sock.h>
-+#include <net/tcp.h>
- 
- static LIST_HEAD(taprio_list);
- static DEFINE_SPINLOCK(taprio_list_lock);
-@@ -267,6 +268,41 @@ static bool is_valid_interval(struct sk_buff *skb, struct Qdisc *sch)
- 	return entry;
- }
- 
-+/* This returns the tstamp value set by TCP in terms of the set clock. */
-+static ktime_t get_tcp_tstamp(struct taprio_sched *q, struct sk_buff *skb)
-+{
-+	unsigned int offset = skb_network_offset(skb);
-+	const struct ipv6hdr *ipv6h;
-+	const struct iphdr *iph;
-+	struct ipv6hdr _ipv6h;
-+
-+	ipv6h = skb_header_pointer(skb, offset, sizeof(_ipv6h), &_ipv6h);
-+	if (!ipv6h)
-+		return 0;
-+
-+	if (ipv6h->version == 4) {
-+		iph = (struct iphdr *)ipv6h;
-+		offset += iph->ihl * 4;
-+
-+		/* special-case 6in4 tunnelling, as that is a common way to get
-+		 * v6 connectivity in the home
-+		 */
-+		if (iph->protocol == IPPROTO_IPV6) {
-+			ipv6h = skb_header_pointer(skb, offset,
-+						   sizeof(_ipv6h), &_ipv6h);
-+
-+			if (!ipv6h || ipv6h->nexthdr != IPPROTO_TCP)
-+				return 0;
-+		} else if (iph->protocol != IPPROTO_TCP) {
-+			return 0;
-+		}
-+	} else if (ipv6h->version == 6 && ipv6h->nexthdr != IPPROTO_TCP) {
-+		return 0;
-+	}
-+
-+	return ktime_mono_to_any(skb->skb_mstamp_ns, q->tk_offset);
-+}
-+
- /* There are a few scenarios where we will have to modify the txtime from
-  * what is read from next_txtime in sched_entry. They are:
-  * 1. If txtime is in the past,
-@@ -284,7 +320,7 @@ static bool is_valid_interval(struct sk_buff *skb, struct Qdisc *sch)
-  */
- static long get_packet_txtime(struct sk_buff *skb, struct Qdisc *sch)
- {
--	ktime_t transmit_end_time, interval_end, interval_start;
-+	ktime_t transmit_end_time, interval_end, interval_start, tcp_tstamp;
- 	struct taprio_sched *q = qdisc_priv(sch);
- 	struct sched_gate_list *sched, *admin;
- 	ktime_t minimum_time, now, txtime;
-@@ -295,6 +331,9 @@ static long get_packet_txtime(struct sk_buff *skb, struct Qdisc *sch)
- 	now = taprio_get_time(q);
- 	minimum_time = ktime_add_ns(now, q->txtime_delay);
- 
-+	tcp_tstamp = get_tcp_tstamp(q, skb);
-+	minimum_time = max_t(ktime_t, minimum_time, tcp_tstamp);
-+
- 	rcu_read_lock();
- 	admin = rcu_dereference(q->admin_sched);
- 	sched = rcu_dereference(q->oper_sched);
--- 
-2.7.3
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
