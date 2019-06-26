@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 26 Jun 2019 02:20:20 -0700
-Subject: [Intel-wired-lan] [PATCH S22 09/16] ice: Set up Tx scheduling tree
- based on alloc VSI Tx queues
+Date: Wed, 26 Jun 2019 02:20:18 -0700
+Subject: [Intel-wired-lan] [PATCH S22 07/16] ice: Disable VFs until reset is
+ completed
 In-Reply-To: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
 References: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190626092027.52845-9-anthony.l.nguyen@intel.com>
+Message-ID: <20190626092027.52845-7-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,49 +13,40 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-This patch uses allocated number of Tx queues per VSI to set up its
-scheduling tree instead of using total number of available Tx queues.
-Only PF VSIs have total number of allocated Tx queues equal to number
-of available Tx queues, other VSIs have different number of queues
-configured.
+This patch adds code to clear VFs enable status until reset is completed,
+and Tx/Rx rings are setup. Without this patch, the code flow request Tx
+queues to be disabled after reset, especially PFR - where VF VSI Tx rings
+have already been wiped off in the NVM and result to adminq error based on
+the call to disable Tx lan queue in ice_reset_all_vfs function call.
 
 Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 9aa1f285b17f..85fb1e4640ca 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2605,7 +2605,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 4e5a92dbbf32..8d6c4f64cdb9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -488,6 +488,7 @@ static void
+ ice_prepare_for_reset(struct ice_pf *pf)
+ {
+ 	struct ice_hw *hw = &pf->hw;
++	u8 i;
  
- 	/* configure VSI nodes based on number of queues and TC's */
- 	for (i = 0; i < vsi->tc_cfg.numtc; i++)
--		max_txqs[i] = pf->num_lan_tx;
-+		max_txqs[i] = vsi->alloc_txq;
+ 	/* already prepared for reset */
+ 	if (test_bit(__ICE_PREPARED_FOR_RESET, pf->state))
+@@ -497,6 +498,10 @@ ice_prepare_for_reset(struct ice_pf *pf)
+ 	if (ice_check_sq_alive(hw, &hw->mailboxq))
+ 		ice_vc_notify_reset(pf);
  
- 	status = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
- 				 max_txqs);
-@@ -3131,7 +3131,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi)
++	/* Disable VFs until reset is completed */
++	for (i = 0; i < pf->num_alloc_vfs; i++)
++		clear_bit(ICE_VF_STATE_ENA, pf->vf[i].vf_states);
++
+ 	/* disable the VSIs and their queues that are not already DOWN */
+ 	ice_pf_dis_all_vsi(pf, false);
  
- 	/* configure VSI nodes based on number of queues and TC's */
- 	for (i = 0; i < vsi->tc_cfg.numtc; i++) {
--		max_txqs[i] = pf->num_lan_tx;
-+		max_txqs[i] = vsi->alloc_txq;
- 
- 		if (ice_is_xdp_ena_vsi(vsi))
- 			max_txqs[i] += vsi->num_xdp_txq;
-@@ -3252,7 +3252,7 @@ int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc)
- 		if (ena_tc & BIT(i))
- 			num_tc++;
- 		/* populate max_txqs per TC */
--		max_txqs[i] = pf->num_lan_tx;
-+		max_txqs[i] = vsi->alloc_txq;
- 	}
- 
- 	vsi->tc_cfg.ena_tc = ena_tc;
 -- 
 2.20.1
 
