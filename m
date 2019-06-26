@@ -1,76 +1,42 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 26 Jun 2019 02:20:15 -0700
-Subject: [Intel-wired-lan] [PATCH S22 04/16] ice: Always set prefena when
- configuring an Rx queue
+Date: Wed, 26 Jun 2019 02:20:24 -0700
+Subject: [Intel-wired-lan] [PATCH S22 13/16] ice: Don't return error for
+ disabling LAN Tx queue that does exist
 In-Reply-To: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
 References: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190626092027.52845-4-anthony.l.nguyen@intel.com>
+Message-ID: <20190626092027.52845-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-Currently we are always setting prefena to 0. This is causing the
-hardware to only fetch descriptors when there are none free in the cache
-for a received packet instead of prefetching when it has used the last
-descriptor regardless of incoming packets. Fix this by allowing the
-hardware to prefetch Rx descriptors.
+Since Tx rings are being managed by FW/NVM, Tx rings might have not been
+set up or driver had already wiped them off - In that case, call to
+disable LAN Tx queue is being returned as not in existence. This patch
+makes sure we don't return unnecessary error for such scenario.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c    | 9 ++++++++-
- drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 1 +
- 2 files changed, 9 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 4be3559de207..01e5ecaaa322 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1078,6 +1078,7 @@ static const struct ice_ctx_ele ice_rlan_ctx_info[] = {
- 	ICE_CTX_STORE(ice_rlan_ctx, tphdata_ena,	1,	195),
- 	ICE_CTX_STORE(ice_rlan_ctx, tphhead_ena,	1,	196),
- 	ICE_CTX_STORE(ice_rlan_ctx, lrxqthresh,		3,	198),
-+	ICE_CTX_STORE(ice_rlan_ctx, prefena,		1,	201),
- 	{ 0 }
- };
- 
-@@ -1088,7 +1089,8 @@ static const struct ice_ctx_ele ice_rlan_ctx_info[] = {
-  * @rxq_index: the index of the Rx queue
-  *
-  * Converts rxq context from sparse to dense structure and then writes
-- * it to HW register space
-+ * it to HW register space and enables the hardware to prefetch descriptors
-+ * instead of only fetching them on demand
-  */
- enum ice_status
- ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
-@@ -1096,6 +1098,11 @@ ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
- {
- 	u8 ctx_buf[ICE_RXQ_CTX_SZ] = { 0 };
- 
-+	if (!rlan_ctx)
-+		return ICE_ERR_BAD_PTR;
-+
-+	rlan_ctx->prefena = 1;
-+
- 	ice_set_ctx((u8 *)rlan_ctx, ctx_buf, ice_rlan_ctx_info);
- 	return ice_copy_rxq_ctx_to_hw(hw, ctx_buf, rxq_index);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-index 510a8c900e61..57ea6811fe2c 100644
---- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-@@ -290,6 +290,7 @@ struct ice_rlan_ctx {
- 	u8 tphdata_ena;
- 	u8 tphhead_ena;
- 	u16 lrxqthresh; /* bigger than needed, see above for reason */
-+	u8 prefena;	/* NOTE: normally must be set to 1 at init */
- };
- 
- struct ice_ctx_ele {
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 85fb1e4640ca..8a40de59f94d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2232,6 +2232,9 @@ ice_vsi_stop_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
+ 		if (status == ICE_ERR_RESET_ONGOING) {
+ 			dev_dbg(&pf->pdev->dev,
+ 				"Reset in progress. LAN Tx queues already disabled\n");
++		} else if (status == ICE_ERR_DOES_NOT_EXIST) {
++			dev_dbg(&pf->pdev->dev,
++				"LAN Tx queues does not exist, nothing to disabled\n");
+ 		} else if (status) {
+ 			dev_err(&pf->pdev->dev,
+ 				"Failed to disable LAN Tx queues, error: %d\n",
 -- 
 2.20.1
 
