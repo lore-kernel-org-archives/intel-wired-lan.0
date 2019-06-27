@@ -1,27 +1,67 @@
-From: Jakub Kicinski <jakub.kicinski@netronome.com>
-Date: Thu, 27 Jun 2019 14:25:34 -0700
-Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
- support
-In-Reply-To: <ef7e9469-e7be-647b-8bb1-da29bc01fa2e@intel.com>
-References: <20190620083924.1996-1-kevin.laatz@intel.com>
- <FA8389B9-F89C-4BFF-95EE-56F702BBCC6D@gmail.com>
- <ef7e9469-e7be-647b-8bb1-da29bc01fa2e@intel.com>
-Message-ID: <20190627142534.4f4b8995@cakuba.netronome.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Thu, 27 Jun 2019 07:40:49 -0700
+Subject: [Intel-wired-lan] [PATCH S23 03/15] ice: Assume that more than one
+ Rx queue is rare in ice_napi_poll
+In-Reply-To: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
+References: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
+Message-ID: <20190627144101.24280-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 27 Jun 2019 12:14:50 +0100, Laatz, Kevin wrote:
-> On the application side (xdpsock), we don't have to worry about the user 
-> defined headroom, since it is 0, so we only need to account for the 
-> XDP_PACKET_HEADROOM when computing the original address (in the default 
-> scenario).
+From: Brett Creeley <brett.creeley@intel.com>
 
-That assumes specific layout for the data inside the buffer.  Some NICs
-will prepend information like timestamp to the packet, meaning the
-packet would start at offset XDP_PACKET_HEADROOM + metadata len..
+Currently we divide budget by the number of Rx queues per Rx ring
+container in ice_napi_poll even if there is only 1. This is an
+unnecessary divide for the normal case of 1 Rx ring per Rx ring
+container. Fix this by using an unlikely() call in the case where we
+actually need to divide.
 
-I think that's very limiting.  What is the challenge in providing
-aligned addresses, exactly?
+Also, we will always set budget_per_ring even if there are no Rx rings
+in the Rx ring container so we don't need to initialize it to 0.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index f625d9887f88..7229dea0b83f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1717,8 +1717,8 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
+ 				container_of(napi, struct ice_q_vector, napi);
+ 	struct ice_vsi *vsi = q_vector->vsi;
+ 	bool clean_complete = true;
+-	int budget_per_ring = 0;
+ 	struct ice_ring *ring;
++	int budget_per_ring;
+ 	int work_done = 0;
+ 
+ 	/* Since the actual Tx work is minimal, we can give the Tx a larger
+@@ -1737,11 +1737,16 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
+ 	if (budget <= 0)
+ 		return budget;
+ 
+-	/* We attempt to distribute budget to each Rx queue fairly, but don't
+-	 * allow the budget to go below 1 because that would exit polling early.
+-	 */
+-	if (q_vector->num_ring_rx)
++	/* normally we have 1 Rx ring per q_vector */
++	if (unlikely(q_vector->num_ring_rx > 1))
++		/* We attempt to distribute budget to each Rx queue fairly, but
++		 * don't allow the budget to go below 1 because that would exit
++		 * polling early.
++		 */
+ 		budget_per_ring = max(budget / q_vector->num_ring_rx, 1);
++	else
++		/* Max of 1 Rx ring in this q_vector so give it the budget */
++		budget_per_ring = budget;
+ 
+ 	ice_for_each_ring(ring, q_vector->rx) {
+ 		int cleaned;
+-- 
+2.20.1
+
