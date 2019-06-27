@@ -1,76 +1,97 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 27 Jun 2019 09:02:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 28/29]
- drivers/net//ethernet/intel/ice/ice_xsk.c:487:18: warning: cast to pointer
- from integer of different size
-Message-ID: <201906270938.Srmfi6Uw%lkp@intel.com>
+From: Laatz, Kevin <kevin.laatz@intel.com>
+Date: Thu, 27 Jun 2019 12:14:50 +0100
+Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
+ support
+In-Reply-To: <FA8389B9-F89C-4BFF-95EE-56F702BBCC6D@gmail.com>
+References: <20190620083924.1996-1-kevin.laatz@intel.com>
+ <FA8389B9-F89C-4BFF-95EE-56F702BBCC6D@gmail.com>
+Message-ID: <ef7e9469-e7be-647b-8bb1-da29bc01fa2e@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   ea7a085c3fea4c5148137baec495e9fdb338956a
-commit: 6e8caf6b69ca1fe58b6a8e415d82c4c192759dc3 [28/29] ice: Add support for AF_XDP
-config: parisc-allmodconfig (attached as .config)
-compiler: hppa-linux-gcc (GCC) 7.4.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 6e8caf6b69ca1fe58b6a8e415d82c4c192759dc3
-        # save the attached .config to linux build tree
-        GCC_VERSION=7.4.0 make.cross ARCH=parisc 
 
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
+On 25/06/2019 19:44, Jonathan Lemon wrote:
+> On 20 Jun 2019, at 1:39, Kevin Laatz wrote:
+>
+>> This patchset adds the ability to use unaligned chunks in the XDP umem.
+>>
+>> Currently, all chunk addresses passed to the umem are masked to be chunk
+>> size aligned (default is 2k, max is PAGE_SIZE). This limits where we can
+>> place chunks within the umem as well as limiting the packet sizes 
+>> that are
+>> supported.
+>>
+>> The changes in this patchset removes these restrictions, allowing XDP 
+>> to be
+>> more flexible in where it can place a chunk within a umem. By 
+>> relaxing where
+>> the chunks can be placed, it allows us to use an arbitrary buffer 
+>> size and
+>> place that wherever we have a free address in the umem. These changes 
+>> add the
+>> ability to support jumboframes and make it easy to integrate with other
+>> existing frameworks that have their own memory management systems, 
+>> such as
+>> DPDK.
+>
+> I'm a little unclear on how this should work, and have a few issues here:
+>
+> ?1) There isn't any support for the user defined umem->headroom
+>
 
-All warnings (new ones prefixed by >>):
+For the unaligned chunks case, it does not make sense to to support a 
+user defined headroom since the user can point directly to where they 
+want the data to start via the buffer address. Therefore, for unaligned 
+chunks, the user defined headroom should always be 0 (aka the user did 
+not define a headroom and the default value of 0 is used). Any other 
+value will be caught and we return an invalid argument error.
 
-   drivers/net//ethernet/intel/ice/ice_xsk.c: In function 'ice_reuse_rx_buf_zc':
->> drivers/net//ethernet/intel/ice/ice_xsk.c:487:18: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-     new_buf->addr = (void *)(((unsigned long)old_buf->addr & mask) + hr);
-                     ^
 
-vim +487 drivers/net//ethernet/intel/ice/ice_xsk.c
+> ?2) When queuing RX buffers, the handle (aka umem offset) is used, which
+> ??? points to the start of the buffer area.? When the buffer appears in
+> ??? the completion queue, handle points to the start of the received 
+> data,
+> ??? which might be different from the buffer start address.
+>
+> ??? Normally, this RX address is just put back in the fill queue, and the
+> ??? mask is used to find the buffer start address again.? This no longer
+> ??? works, so my question is, how is the buffer start address recomputed
+> ??? from the actual data payload address?
+>
+> ??? Same with TX - if the TX payload isn't aligned in with the start of
+> ??? the buffer, what happens?
 
-   465	
-   466	/**
-   467	 * ice_reuse_rx_buf_zc - reuse an Rx buffer
-   468	 * @rx_ring: Rx ring
-   469	 * @old_buf: The buffer to recycle
-   470	 *
-   471	 * This function recycles a finished Rx buffer, and places it on the recycle
-   472	 * queue (next_to_alloc).
-   473	 */
-   474	static void
-   475	ice_reuse_rx_buf_zc(struct ice_ring *rx_ring, struct ice_rx_buf *old_buf)
-   476	{
-   477		unsigned long mask = (unsigned long)rx_ring->xsk_umem->chunk_mask;
-   478		u64 hr = rx_ring->xsk_umem->headroom + XDP_PACKET_HEADROOM;
-   479		u16 nta = rx_ring->next_to_alloc;
-   480		struct ice_rx_buf *new_buf;
-   481	
-   482		new_buf = &rx_ring->rx_buf[rx_ring->next_to_alloc];
-   483		nta++;
-   484		rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
-   485	
-   486		new_buf->dma = (old_buf->dma & mask) + hr;
- > 487		new_buf->addr = (void *)(((unsigned long)old_buf->addr & mask) + hr);
-   488		new_buf->handle = (old_buf->handle & mask);
-   489		new_buf->handle += rx_ring->xsk_umem->headroom;
-   490	
-   491		old_buf->addr = NULL;
-   492	}
-   493	
+On the application side (xdpsock), we don't have to worry about the user 
+defined headroom, since it is 0, so we only need to account for the 
+XDP_PACKET_HEADROOM when computing the original address (in the default 
+scenario). This was missing from the v1, will add this in the v2, to 
+have xdpsock use the default value from libbpf! If the user is using 
+another BPF program that uses a different offset, then the computation 
+will need to be adjusted for that accordingly. In v2 we'll add support 
+for this via command-line parameter.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 57337 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190627/caf3b028/attachment-0001.bin>
+However, we are also working on an "in-order" patchset, hopefully to be 
+published soon, to guarantee the buffers returned to the application are 
+in the same order as those provided to the kernel. Longer term, this is 
+the best solution here as it allows the application to track itself, via 
+a "shadow ring" or otherwise, the buffers sent to the kernel and any 
+metadata associated with them, such as the start of buffer address.
+
+>
+> ?3) This appears limited to crossing a single page boundary, but there
+> ??? is no constraint check on chunk_size.
+
+There is an existing check for chunk_size during xdp_umem_reg (in 
+xdp_umem.c) The check makes sure that chunk size is at least 
+XDP_UMEM_MIN_CHUNK_SIZE and at most PAGE_SIZE. Since the max is page 
+size, we only need to check the immediate next page for contiguity.
+While this patchset allows a max of 4k sized buffers, it is still an 
+improvement from the current state. Future enhancements could look into 
+extending the 4k limit but for now it is a good first step towards 
+supporting hugepages efficiently.
+
+Best regards,
+Kevin
