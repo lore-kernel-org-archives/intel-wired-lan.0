@@ -1,60 +1,74 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 27 Jun 2019 07:41:00 -0700
-Subject: [Intel-wired-lan] [PATCH S23 14/15] ice: Use smaller sized integer
- types
+Date: Thu, 27 Jun 2019 07:40:59 -0700
+Subject: [Intel-wired-lan] [PATCH S23 13/15] ice: Move VF resources
+ definition to SR-IOV specific file
 In-Reply-To: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
 References: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190627144101.24280-14-anthony.l.nguyen@intel.com>
+Message-ID: <20190627144101.24280-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Pawel Kaminski <pawel.kaminski@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-The max number queues supported by the device is 768; we only need
-a u16 to represent this.
+In order to use some of the VF resources definition in the SR-IOV specific
+virtchnl header file, this patch moves applicable code to
+ice_virtchnl_pf.h file accordingly... and they should have been defined in
+the destination file originally.
 
-Signed-off-by: Pawel Kaminski <pawel.kaminski@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h             | 10 ----------
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h | 13 +++++++++++++
+ 2 files changed, 13 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index f2ebbe83ae4c..72a9e79dd76d 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -2339,11 +2339,11 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
- 	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
- 	struct virtchnl_vf_res_request *vfres =
- 		(struct virtchnl_vf_res_request *)msg;
--	int req_queues = vfres->num_queue_pairs;
-+	u16 req_queues = vfres->num_queue_pairs;
- 	struct ice_pf *pf = vf->pf;
--	int max_allowed_vf_queues;
--	int tx_rx_queue_left;
--	int cur_queues;
-+	u16 max_allowed_vf_queues;
-+	u16 tx_rx_queue_left;
-+	u16 cur_queues;
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 261714ff2553..eb0efcaf7807 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -92,16 +92,6 @@ extern const char ice_drv_ver[];
+ #define ICE_RES_MISC_VEC_ID	(ICE_RES_VALID_BIT - 1)
+ #define ICE_INVAL_Q_INDEX	0xffff
+ #define ICE_INVAL_VFID		256
+-#define ICE_MAX_VF_COUNT	256
+-#define ICE_MAX_QS_PER_VF		256
+-#define ICE_MIN_QS_PER_VF		1
+-#define ICE_DFLT_QS_PER_VF		4
+-#define ICE_NONQ_VECS_VF		1
+-#define ICE_MAX_SCATTER_QS_PER_VF	16
+-#define ICE_MAX_BASE_QS_PER_VF		16
+-#define ICE_MAX_INTR_PER_VF		65
+-#define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
+-#define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
  
- 	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
- 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-@@ -2353,10 +2353,10 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
- 	cur_queues = vf->num_vf_qs;
- 	tx_rx_queue_left = min_t(int, pf->q_left_tx, pf->q_left_rx);
- 	max_allowed_vf_queues = tx_rx_queue_left + cur_queues;
--	if (req_queues <= 0) {
-+	if (!req_queues) {
- 		dev_err(&pf->pdev->dev,
--			"VF %d tried to request %d queues. Ignoring.\n",
--			vf->vf_id, req_queues);
-+			"VF %d tried to request 0 queues. Ignoring.\n",
-+			vf->vf_id);
- 	} else if (req_queues > ICE_MAX_BASE_QS_PER_VF) {
- 		dev_err(&pf->pdev->dev,
- 			"VF %d tried to request more than %d queues.\n",
+ #define ICE_MAX_RESET_WAIT		20
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 79bb47f73879..4d94853f119a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -26,6 +26,19 @@
+ #define ICE_PCI_CIAD_WAIT_COUNT		100
+ #define ICE_PCI_CIAD_WAIT_DELAY_US	1
+ 
++/* VF resources default values and limitation */
++#define ICE_MAX_VF_COUNT		256
++#define ICE_MAX_QS_PER_VF		256
++#define ICE_MIN_QS_PER_VF		1
++#define ICE_DFLT_QS_PER_VF		4
++#define ICE_NONQ_VECS_VF		1
++#define ICE_MAX_SCATTER_QS_PER_VF	16
++#define ICE_MAX_BASE_QS_PER_VF		16
++#define ICE_MAX_INTR_PER_VF		65
++#define ICE_MAX_POLICY_INTR_PER_VF	33
++#define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
++#define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
++
+ /* Specific VF states */
+ enum ice_vf_states {
+ 	ICE_VF_STATE_INIT = 0,
 -- 
 2.20.1
 
