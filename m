@@ -1,161 +1,237 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 27 Jun 2019 07:40:50 -0700
-Subject: [Intel-wired-lan] [PATCH S23 04/15] ice: Restructure VFs
- initialization flows
+Date: Thu, 27 Jun 2019 07:40:53 -0700
+Subject: [Intel-wired-lan] [PATCH S23 07/15] ice: Fix kernel hang with DCB
+ reset in CEE mode
 In-Reply-To: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
 References: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190627144101.24280-4-anthony.l.nguyen@intel.com>
+Message-ID: <20190627144101.24280-7-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Usha Ketineni <usha.k.ketineni@intel.com>
 
-This patch restructures how VFs are configured, and resources allocated.
-Instead of freeing resources that were never allocated, and resetting
-empty VFs that have never been created - the new flow will just allocate
-resources for number of requested VFs based on the availability.
+This patch fixes the set local MIB AQ call failures in the DCB rebuild path
+by setting the defaults for the ETS recommended DCB configuration. Also,
+willing bits for the DCB configuration needs to be set correctly. Resets
+works fine in IEEE mode as the ETS recommended DCB configuration is
+populated but not in CEE mode.
+Without this patch, PFR causes the kernel hang in CEE mode.
 
-During VFs initialization process, global interrupt is disabled, and
-rearmed after getting MSIX vectors for VFs. This allows immediate mailbox
-communications, instead of delaying it till later and VFs.
-PF communications resulted to using polling instead of actual interrupt.
-The issue manifested when creating higher number of VFs (128 VFs) per PF.
-
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h          |  1 +
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 70 +++++++++++++------
- 2 files changed, 49 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 149 +++++++++++--------
+ 1 file changed, 88 insertions(+), 61 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 72b5d641e9b8..1a438245f4bf 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -225,6 +225,7 @@ enum ice_state {
- 	__ICE_CFG_BUSY,
- 	__ICE_SERVICE_SCHED,
- 	__ICE_SERVICE_DIS,
-+	__ICE_OICR_INTR_DIS,		/* Global OICR interrupt disabled */
- 	__ICE_STATE_NBITS		/* must be last */
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index a3849ed283eb..553c4c4f6dd0 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -974,6 +974,48 @@ ice_vf_set_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m,
- 	return status;
- }
- 
-+/**
-+ * ice_config_res_vfs - Finalize allocation of VFs resources in one go
-+ * @pf: pointer to the PF structure
-+ *
-+ * This function is being called as last part of resetting all VFs, or when
-+ * configuring VFs for the first time, where there is no resource to be freed
-+ * Returns true if resources were properly allocated for all VFs, and false
-+ * otherwise.
-+ */
-+static bool ice_config_res_vfs(struct ice_pf *pf)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+	struct ice_vf *vf;
-+	int v;
-+
-+	if (ice_check_avail_res(pf)) {
-+		dev_err(&pf->pdev->dev,
-+			"Cannot allocate VF resources, try with fewer number of VFs\n");
-+		return false;
-+	}
-+
-+	/* rearm global interrupts */
-+	if (test_and_clear_bit(__ICE_OICR_INTR_DIS, pf->state))
-+		ice_irq_dynamic_ena(hw, NULL, NULL);
-+
-+	/* Finish resetting each VF and allocate resources */
-+	for (v = 0; v < pf->num_alloc_vfs; v++) {
-+		vf = &pf->vf[v];
-+
-+		vf->num_vf_qs = pf->num_vf_qps;
-+		dev_dbg(&pf->pdev->dev,
-+			"VF-id %d has %d queues configured\n",
-+			vf->vf_id, vf->num_vf_qs);
-+		ice_cleanup_and_realloc_vf(vf);
-+	}
-+
-+	ice_flush(hw);
-+	clear_bit(__ICE_VF_DIS, pf->state);
-+
-+	return true;
-+}
-+
- /**
-  * ice_reset_all_vfs - reset all allocated VFs in one go
-  * @pf: pointer to the PF structure
-@@ -1066,25 +1108,8 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 		dev_err(&pf->pdev->dev,
- 			"Failed to free MSIX resources used by SR-IOV\n");
- 
--	if (ice_check_avail_res(pf)) {
--		dev_err(&pf->pdev->dev,
--			"Cannot allocate VF resources, try with fewer number of VFs\n");
-+	if (!ice_config_res_vfs(pf))
- 		return false;
--	}
--
--	/* Finish the reset on each VF */
--	for (v = 0; v < pf->num_alloc_vfs; v++) {
--		vf = &pf->vf[v];
--
--		vf->num_vf_qs = pf->num_vf_qps;
--		dev_dbg(&pf->pdev->dev,
--			"VF-id %d has %d queues configured\n",
--			vf->vf_id, vf->num_vf_qs);
--		ice_cleanup_and_realloc_vf(vf);
--	}
--
--	ice_flush(hw);
--	clear_bit(__ICE_VF_DIS, pf->state);
- 
- 	return true;
- }
-@@ -1249,7 +1274,7 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- 	/* Disable global interrupt 0 so we don't try to handle the VFLR. */
- 	wr32(hw, GLINT_DYN_CTL(pf->oicr_idx),
- 	     ICE_ITR_NONE << GLINT_DYN_CTL_ITR_INDX_S);
--
-+	set_bit(__ICE_OICR_INTR_DIS, pf->state);
- 	ice_flush(hw);
- 
- 	ret = pci_enable_sriov(pf->pdev, num_alloc_vfs);
-@@ -1278,13 +1303,13 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- 	}
- 	pf->num_alloc_vfs = num_alloc_vfs;
- 
--	/* VF resources get allocated during reset */
--	if (!ice_reset_all_vfs(pf, true)) {
-+	/* VF resources get allocated with initialization */
-+	if (!ice_config_res_vfs(pf)) {
- 		ret = -EIO;
- 		goto err_unroll_sriov;
- 	}
- 
--	goto err_unroll_intr;
-+	return ret;
- 
- err_unroll_sriov:
- 	pf->vf = NULL;
-@@ -1296,6 +1321,7 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- err_unroll_intr:
- 	/* rearm interrupts here */
- 	ice_irq_dynamic_ena(hw, NULL, NULL);
-+	clear_bit(__ICE_OICR_INTR_DIS, pf->state);
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index f80628a13f2a..d285aba3fea7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -208,16 +208,87 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
  	return ret;
  }
  
++/**
++ * ice_cfg_etsrec_defaults - Set default ETS recommended DCB config
++ * @pi: port information structure
++ */
++static void ice_cfg_etsrec_defaults(struct ice_port_info *pi)
++{
++	struct ice_dcbx_cfg *dcbcfg = &pi->local_dcbx_cfg;
++	u8 i;
++
++	/* Ensure ETS recommended DCB configuration is not already set */
++	if (dcbcfg->etsrec.maxtcs)
++		return;
++
++	/* In CEE mode, set the default to 1 TC */
++	dcbcfg->etsrec.maxtcs = 1;
++	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
++		dcbcfg->etsrec.tcbwtable[i] = i ? 0 : 100;
++		dcbcfg->etsrec.tsatable[i] = i ? ICE_IEEE_TSA_STRICT :
++						 ICE_IEEE_TSA_ETS;
++	}
++}
++
++/**
++ * ice_dcb_need_recfg - Check if DCB needs reconfig
++ * @pf: board private structure
++ * @old_cfg: current DCB config
++ * @new_cfg: new DCB config
++ */
++static bool
++ice_dcb_need_recfg(struct ice_pf *pf, struct ice_dcbx_cfg *old_cfg,
++		   struct ice_dcbx_cfg *new_cfg)
++{
++	bool need_reconfig = false;
++
++	/* Check if ETS configuration has changed */
++	if (memcmp(&new_cfg->etscfg, &old_cfg->etscfg,
++		   sizeof(new_cfg->etscfg))) {
++		/* If Priority Table has changed reconfig is needed */
++		if (memcmp(&new_cfg->etscfg.prio_table,
++			   &old_cfg->etscfg.prio_table,
++			   sizeof(new_cfg->etscfg.prio_table))) {
++			need_reconfig = true;
++			dev_dbg(&pf->pdev->dev, "ETS UP2TC changed.\n");
++		}
++
++		if (memcmp(&new_cfg->etscfg.tcbwtable,
++			   &old_cfg->etscfg.tcbwtable,
++			   sizeof(new_cfg->etscfg.tcbwtable)))
++			dev_dbg(&pf->pdev->dev, "ETS TC BW Table changed.\n");
++
++		if (memcmp(&new_cfg->etscfg.tsatable,
++			   &old_cfg->etscfg.tsatable,
++			   sizeof(new_cfg->etscfg.tsatable)))
++			dev_dbg(&pf->pdev->dev, "ETS TSA Table changed.\n");
++	}
++
++	/* Check if PFC configuration has changed */
++	if (memcmp(&new_cfg->pfc, &old_cfg->pfc, sizeof(new_cfg->pfc))) {
++		need_reconfig = true;
++		dev_dbg(&pf->pdev->dev, "PFC config change detected.\n");
++	}
++
++	/* Check if APP Table has changed */
++	if (memcmp(&new_cfg->app, &old_cfg->app, sizeof(new_cfg->app))) {
++		need_reconfig = true;
++		dev_dbg(&pf->pdev->dev, "APP Table change detected.\n");
++	}
++
++	dev_dbg(&pf->pdev->dev, "dcb need_reconfig=%d\n", need_reconfig);
++	return need_reconfig;
++}
++
+ /**
+  * ice_dcb_rebuild - rebuild DCB post reset
+  * @pf: physical function instance
+  */
+ void ice_dcb_rebuild(struct ice_pf *pf)
+ {
++	struct ice_dcbx_cfg *local_dcbx_cfg, *desired_dcbx_cfg, *prev_cfg;
+ 	struct ice_aqc_port_ets_elem buf = { 0 };
+-	struct ice_dcbx_cfg *prev_cfg;
+ 	enum ice_status ret;
+-	u8 willing;
+ 
+ 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
+ 	if (ret) {
+@@ -229,9 +300,15 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+ 	if (!test_bit(ICE_FLAG_DCB_ENA, pf->flags))
+ 		return;
+ 
++	local_dcbx_cfg = &pf->hw.port_info->local_dcbx_cfg;
++	desired_dcbx_cfg = &pf->hw.port_info->desired_dcbx_cfg;
++
+ 	/* Save current willing state and force FW to unwilling */
+-	willing = pf->hw.port_info->local_dcbx_cfg.etscfg.willing;
+-	pf->hw.port_info->local_dcbx_cfg.etscfg.willing = 0x0;
++	local_dcbx_cfg->etscfg.willing = 0x0;
++	local_dcbx_cfg->pfc.willing = 0x0;
++	local_dcbx_cfg->app_mode = ICE_DCBX_APPS_NON_WILLING;
++
++	ice_cfg_etsrec_defaults(pf->hw.port_info);
+ 	ret = ice_set_dcb_cfg(pf->hw.port_info);
+ 	if (ret) {
+ 		dev_err(&pf->pdev->dev, "Failed to set DCB to unwilling\n");
+@@ -239,8 +316,7 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+ 	}
+ 
+ 	/* Retrieve DCB config and ensure same as current in SW */
+-	prev_cfg = devm_kmemdup(&pf->pdev->dev,
+-				&pf->hw.port_info->local_dcbx_cfg,
++	prev_cfg = devm_kmemdup(&pf->pdev->dev, local_dcbx_cfg,
+ 				sizeof(*prev_cfg), GFP_KERNEL);
+ 	if (!prev_cfg) {
+ 		dev_err(&pf->pdev->dev, "Failed to alloc space for DCB cfg\n");
+@@ -248,22 +324,22 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+ 	}
+ 
+ 	ice_init_dcb(&pf->hw);
+-	if (memcmp(prev_cfg, &pf->hw.port_info->local_dcbx_cfg,
+-		   sizeof(*prev_cfg))) {
++	if (ice_dcb_need_recfg(pf, prev_cfg, local_dcbx_cfg)) {
+ 		/* difference in cfg detected - disable DCB till next MIB */
+ 		dev_err(&pf->pdev->dev, "Set local MIB not accurate\n");
+-		devm_kfree(&pf->pdev->dev, prev_cfg);
+ 		goto dcb_error;
+ 	}
+ 
+ 	/* fetched config congruent to previous configuration */
+ 	devm_kfree(&pf->pdev->dev, prev_cfg);
+ 
+-	/* Configuration replayed - reset willing state to previous */
+-	pf->hw.port_info->local_dcbx_cfg.etscfg.willing = willing;
++	/* Set the local desired config */
++	memset(&pf->hw.port_info->local_dcbx_cfg, 0, sizeof(*local_dcbx_cfg));
++	memcpy(local_dcbx_cfg, desired_dcbx_cfg, sizeof(*local_dcbx_cfg));
++	ice_cfg_etsrec_defaults(pf->hw.port_info);
+ 	ret = ice_set_dcb_cfg(pf->hw.port_info);
+ 	if (ret) {
+-		dev_err(&pf->pdev->dev, "Fail restoring prev willing state\n");
++		dev_err(&pf->pdev->dev, "Failed to set desired config\n");
+ 		goto dcb_error;
+ 	}
+ 	dev_info(&pf->pdev->dev, "DCB restored after reset\n");
+@@ -506,55 +582,6 @@ ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
+ 	return 0;
+ }
+ 
+-/**
+- * ice_dcb_need_recfg - Check if DCB needs reconfig
+- * @pf: board private structure
+- * @old_cfg: current DCB config
+- * @new_cfg: new DCB config
+- */
+-static bool ice_dcb_need_recfg(struct ice_pf *pf, struct ice_dcbx_cfg *old_cfg,
+-			       struct ice_dcbx_cfg *new_cfg)
+-{
+-	bool need_reconfig = false;
+-
+-	/* Check if ETS configuration has changed */
+-	if (memcmp(&new_cfg->etscfg, &old_cfg->etscfg,
+-		   sizeof(new_cfg->etscfg))) {
+-		/* If Priority Table has changed reconfig is needed */
+-		if (memcmp(&new_cfg->etscfg.prio_table,
+-			   &old_cfg->etscfg.prio_table,
+-			   sizeof(new_cfg->etscfg.prio_table))) {
+-			need_reconfig = true;
+-			dev_dbg(&pf->pdev->dev, "ETS UP2TC changed.\n");
+-		}
+-
+-		if (memcmp(&new_cfg->etscfg.tcbwtable,
+-			   &old_cfg->etscfg.tcbwtable,
+-			   sizeof(new_cfg->etscfg.tcbwtable)))
+-			dev_dbg(&pf->pdev->dev, "ETS TC BW Table changed.\n");
+-
+-		if (memcmp(&new_cfg->etscfg.tsatable,
+-			   &old_cfg->etscfg.tsatable,
+-			   sizeof(new_cfg->etscfg.tsatable)))
+-			dev_dbg(&pf->pdev->dev, "ETS TSA Table changed.\n");
+-	}
+-
+-	/* Check if PFC configuration has changed */
+-	if (memcmp(&new_cfg->pfc, &old_cfg->pfc, sizeof(new_cfg->pfc))) {
+-		need_reconfig = true;
+-		dev_dbg(&pf->pdev->dev, "PFC config change detected.\n");
+-	}
+-
+-	/* Check if APP Table has changed */
+-	if (memcmp(&new_cfg->app, &old_cfg->app, sizeof(new_cfg->app))) {
+-		need_reconfig = true;
+-		dev_dbg(&pf->pdev->dev, "APP Table change detected.\n");
+-	}
+-
+-	dev_dbg(&pf->pdev->dev, "dcb need_reconfig=%d\n", need_reconfig);
+-	return need_reconfig;
+-}
+-
+ /**
+  * ice_dcb_process_lldp_set_mib_change - Process MIB change
+  * @pf: ptr to ice_pf
 -- 
 2.20.1
 
