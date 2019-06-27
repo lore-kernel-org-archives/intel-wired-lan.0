@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 27 Jun 2019 07:40:48 -0700
-Subject: [Intel-wired-lan] [PATCH S23 02/15] ice: Use the software based
- tail when checking for hung Tx ring
+Date: Thu, 27 Jun 2019 07:40:57 -0700
+Subject: [Intel-wired-lan] [PATCH S23 11/15] ice: Reduce wait times during
+ VF bringup/reset
 In-Reply-To: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
 References: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190627144101.24280-2-anthony.l.nguyen@intel.com>
+Message-ID: <20190627144101.24280-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,37 +13,113 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Currently in ice_get_tx_pending we try to read a Tx ring's tail. This is
-then compared with the software based head (next_to_clean) to determine
-if we have pending work. This will never work because reading of the Tx
-ring's tail is no longer supported. Fix this by using the software based
-tail (next_to_use) to determine if there is pending work.
+Currently there are a couple places where the VF is waiting too long when
+checking the status of registers. This is causing the AVF driver to
+spin for longer than necessary in the __IAVF_STARTUP state. Sometimes
+it causes the AVF to go into the __IAVF_COMM_FAILED, which may retrigger
+the __IAVF_STARTUP state. Try to reduce the chance of this happening by
+removing unnecessary wait times in VF bringup/resets.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 26 +++++++++++--------
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  4 +++
+ 2 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index cbcbd00cb21b..e6f092ae119e 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -41,12 +41,12 @@ static void ice_update_pf_stats(struct ice_pf *pf);
-  * ice_get_tx_pending - returns number of Tx descriptors not processed
-  * @ring: the ring of descriptors
-  */
--static u32 ice_get_tx_pending(struct ice_ring *ring)
-+static u16 ice_get_tx_pending(struct ice_ring *ring)
- {
--	u32 head, tail;
-+	u16 head, tail;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index b1972c39c232..f2ebbe83ae4c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -382,12 +382,15 @@ static void ice_trigger_vf_reset(struct ice_vf *vf, bool is_vflr)
  
- 	head = ring->next_to_clean;
--	tail = readl(ring->tail);
-+	tail = ring->next_to_use;
+ 	wr32(hw, PF_PCI_CIAA,
+ 	     VF_DEVICE_STATUS | (vf_abs_id << PF_PCI_CIAA_VF_NUM_S));
+-	for (i = 0; i < 100; i++) {
++	for (i = 0; i < ICE_PCI_CIAD_WAIT_COUNT; i++) {
+ 		reg = rd32(hw, PF_PCI_CIAD);
+-		if ((reg & VF_TRANS_PENDING_M) != 0)
+-			dev_err(&pf->pdev->dev,
+-				"VF %d PCI transactions stuck\n", vf->vf_id);
+-		udelay(1);
++		/* no transactions pending so stop polling */
++		if ((reg & VF_TRANS_PENDING_M) == 0)
++			break;
++
++		dev_err(&pf->pdev->dev,
++			"VF %d PCI transactions stuck\n", vf->vf_id);
++		udelay(ICE_PCI_CIAD_WAIT_DELAY_US);
+ 	}
+ }
  
- 	if (head != tail)
- 		return (head < tail) ?
+@@ -1069,7 +1072,6 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	 * finished resetting.
+ 	 */
+ 	for (i = 0, v = 0; i < 10 && v < pf->num_alloc_vfs; i++) {
+-		usleep_range(10000, 20000);
+ 
+ 		/* Check each VF in sequence */
+ 		while (v < pf->num_alloc_vfs) {
+@@ -1077,8 +1079,11 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 
+ 			vf = &pf->vf[v];
+ 			reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
+-			if (!(reg & VPGEN_VFRSTAT_VFRD_M))
++			if (!(reg & VPGEN_VFRSTAT_VFRD_M)) {
++				/* only delay if the check failed */
++				usleep_range(10, 20);
+ 				break;
++			}
+ 
+ 			/* If the current VF has finished resetting, move on
+ 			 * to the next VF in sequence.
+@@ -1092,7 +1097,6 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	 */
+ 	if (v < pf->num_alloc_vfs)
+ 		dev_warn(&pf->pdev->dev, "VF reset check timeout\n");
+-	usleep_range(10000, 20000);
+ 
+ 	/* free VF resources to begin resetting the VSI state */
+ 	for (v = 0; v < pf->num_alloc_vfs; v++) {
+@@ -1166,12 +1170,14 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 		 * poll the status register to make sure that the reset
+ 		 * completed successfully.
+ 		 */
+-		usleep_range(10000, 20000);
+ 		reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
+ 		if (reg & VPGEN_VFRSTAT_VFRD_M) {
+ 			rsd = true;
+ 			break;
+ 		}
++
++		/* only sleep if the reset is not done */
++		usleep_range(10, 20);
+ 	}
+ 
+ 	/* Display a warning if VF didn't manage to reset in time, but need to
+@@ -1181,8 +1187,6 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 		dev_warn(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
+ 			 vf->vf_id);
+ 
+-	usleep_range(10000, 20000);
+-
+ 	/* disable promiscuous modes in case they were enabled
+ 	 * ignore any error if disabling process failed
+ 	 */
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 424bc0538956..79bb47f73879 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -22,6 +22,10 @@
+ #define VF_DEVICE_STATUS		0xAA
+ #define VF_TRANS_PENDING_M		0x20
+ 
++/* wait defines for polling PF_PCI_CIAD register status */
++#define ICE_PCI_CIAD_WAIT_COUNT		100
++#define ICE_PCI_CIAD_WAIT_DELAY_US	1
++
+ /* Specific VF states */
+ enum ice_vf_states {
+ 	ICE_VF_STATE_INIT = 0,
 -- 
 2.20.1
 
