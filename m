@@ -1,125 +1,61 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 28 Jun 2019 08:03:29 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v2 11/15] ice: Reduce wait times
- during VF bringup/reset
-In-Reply-To: <20190628150332.59155-1-anthony.l.nguyen@intel.com>
-References: <20190628150332.59155-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190628150332.59155-11-anthony.l.nguyen@intel.com>
+Date: Fri, 28 Jun 2019 08:03:48 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v2 14/15] ice: Change type for queue
+ counts
+Message-ID: <20190628150348.59202-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Pawel Kaminski <pawel.kaminski@intel.com>
 
-Currently there are a couple places where the VF is waiting too long when
-checking the status of registers. This is causing the AVF driver to
-spin for longer than necessary in the __IAVF_STARTUP state. Sometimes
-it causes the AVF to go into the __IAVF_COMM_FAILED, which may retrigger
-the __IAVF_STARTUP state. Try to reduce the chance of this happening by
-removing unnecessary wait times in VF bringup/resets.
+A negative queue count should never exist, change the type to unsigned
+to convey that.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Pawel Kaminski <pawel.kaminski@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 26 +++++++++++--------
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  4 +++
- 2 files changed, 19 insertions(+), 11 deletions(-)
+v2: Change type from u16 to unsigned int
+    Reword commit message
+
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index b1972c39c232..f2ebbe83ae4c 100644
+index f2ebbe83ae4c..b8fc08c1d365 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -382,12 +382,15 @@ static void ice_trigger_vf_reset(struct ice_vf *vf, bool is_vflr)
+@@ -2339,11 +2339,11 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
+ 	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+ 	struct virtchnl_vf_res_request *vfres =
+ 		(struct virtchnl_vf_res_request *)msg;
+-	int req_queues = vfres->num_queue_pairs;
++	unsigned int req_queues = vfres->num_queue_pairs;
++	unsigned int max_allowed_vf_queues;
++	unsigned int tx_rx_queue_left;
+ 	struct ice_pf *pf = vf->pf;
+-	int max_allowed_vf_queues;
+-	int tx_rx_queue_left;
+-	int cur_queues;
++	unsigned int cur_queues;
  
- 	wr32(hw, PF_PCI_CIAA,
- 	     VF_DEVICE_STATUS | (vf_abs_id << PF_PCI_CIAA_VF_NUM_S));
--	for (i = 0; i < 100; i++) {
-+	for (i = 0; i < ICE_PCI_CIAD_WAIT_COUNT; i++) {
- 		reg = rd32(hw, PF_PCI_CIAD);
--		if ((reg & VF_TRANS_PENDING_M) != 0)
--			dev_err(&pf->pdev->dev,
--				"VF %d PCI transactions stuck\n", vf->vf_id);
--		udelay(1);
-+		/* no transactions pending so stop polling */
-+		if ((reg & VF_TRANS_PENDING_M) == 0)
-+			break;
-+
-+		dev_err(&pf->pdev->dev,
-+			"VF %d PCI transactions stuck\n", vf->vf_id);
-+		udelay(ICE_PCI_CIAD_WAIT_DELAY_US);
- 	}
- }
- 
-@@ -1069,7 +1072,6 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	 * finished resetting.
- 	 */
- 	for (i = 0, v = 0; i < 10 && v < pf->num_alloc_vfs; i++) {
--		usleep_range(10000, 20000);
- 
- 		/* Check each VF in sequence */
- 		while (v < pf->num_alloc_vfs) {
-@@ -1077,8 +1079,11 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 
- 			vf = &pf->vf[v];
- 			reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
--			if (!(reg & VPGEN_VFRSTAT_VFRD_M))
-+			if (!(reg & VPGEN_VFRSTAT_VFRD_M)) {
-+				/* only delay if the check failed */
-+				usleep_range(10, 20);
- 				break;
-+			}
- 
- 			/* If the current VF has finished resetting, move on
- 			 * to the next VF in sequence.
-@@ -1092,7 +1097,6 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	 */
- 	if (v < pf->num_alloc_vfs)
- 		dev_warn(&pf->pdev->dev, "VF reset check timeout\n");
--	usleep_range(10000, 20000);
- 
- 	/* free VF resources to begin resetting the VSI state */
- 	for (v = 0; v < pf->num_alloc_vfs; v++) {
-@@ -1166,12 +1170,14 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 		 * poll the status register to make sure that the reset
- 		 * completed successfully.
- 		 */
--		usleep_range(10000, 20000);
- 		reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
- 		if (reg & VPGEN_VFRSTAT_VFRD_M) {
- 			rsd = true;
- 			break;
- 		}
-+
-+		/* only sleep if the reset is not done */
-+		usleep_range(10, 20);
- 	}
- 
- 	/* Display a warning if VF didn't manage to reset in time, but need to
-@@ -1181,8 +1187,6 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 		dev_warn(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
- 			 vf->vf_id);
- 
--	usleep_range(10000, 20000);
--
- 	/* disable promiscuous modes in case they were enabled
- 	 * ignore any error if disabling process failed
- 	 */
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 424bc0538956..79bb47f73879 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -22,6 +22,10 @@
- #define VF_DEVICE_STATUS		0xAA
- #define VF_TRANS_PENDING_M		0x20
- 
-+/* wait defines for polling PF_PCI_CIAD register status */
-+#define ICE_PCI_CIAD_WAIT_COUNT		100
-+#define ICE_PCI_CIAD_WAIT_DELAY_US	1
-+
- /* Specific VF states */
- enum ice_vf_states {
- 	ICE_VF_STATE_INIT = 0,
+ 	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+@@ -2353,10 +2353,10 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
+ 	cur_queues = vf->num_vf_qs;
+ 	tx_rx_queue_left = min_t(int, pf->q_left_tx, pf->q_left_rx);
+ 	max_allowed_vf_queues = tx_rx_queue_left + cur_queues;
+-	if (req_queues <= 0) {
++	if (!req_queues) {
+ 		dev_err(&pf->pdev->dev,
+-			"VF %d tried to request %d queues. Ignoring.\n",
+-			vf->vf_id, req_queues);
++			"VF %d tried to request 0 queues. Ignoring.\n",
++			vf->vf_id);
+ 	} else if (req_queues > ICE_MAX_BASE_QS_PER_VF) {
+ 		dev_err(&pf->pdev->dev,
+ 			"VF %d tried to request more than %d queues.\n",
 -- 
 2.20.1
 
