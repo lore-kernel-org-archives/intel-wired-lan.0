@@ -1,65 +1,73 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Fri, 28 Jun 2019 20:14:22 +0000
-Subject: [Intel-wired-lan] [PATCH S23 01/15] ice: Implement ethtool ops
- for channels
-In-Reply-To: <6f9c96b00f2d3bdfe49deb18492fb2c5478293ed.camel@intel.com>
-References: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
- <CAP-MU4NnHyFNfV08MpZkO200sYekvrNRhcENh-oB3e7DvKTSrg@mail.gmail.com>
- <6f9c96b00f2d3bdfe49deb18492fb2c5478293ed.camel@intel.com>
-Message-ID: <01f9f276ede9ffba8afed4f5c692192fc4f7793d.camel@intel.com>
+From: Jakub Kicinski <jakub.kicinski@netronome.com>
+Date: Fri, 28 Jun 2019 13:25:16 -0700
+Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
+ support
+In-Reply-To: <f0ca817a-02b4-df22-d01b-7bc07171a4dc@intel.com>
+References: <20190620083924.1996-1-kevin.laatz@intel.com>
+ <FA8389B9-F89C-4BFF-95EE-56F702BBCC6D@gmail.com>
+ <ef7e9469-e7be-647b-8bb1-da29bc01fa2e@intel.com>
+ <20190627142534.4f4b8995@cakuba.netronome.com>
+ <f0ca817a-02b4-df22-d01b-7bc07171a4dc@intel.com>
+Message-ID: <20190628132516.723ef517@cakuba.netronome.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2019-06-28 at 17:17 +0000, Nguyen, Anthony L wrote:
-> On Fri, 2019-06-28 at 08:38 -0700, Shannon Nelson wrote:
-> > On Thu, Jun 27, 2019 at 4:08 PM Tony Nguyen <
-> > anthony.l.nguyen at intel.com> wrote:
-> > > 
-> > > +static int ice_set_channels(struct net_device *dev, struct
-> > > ethtool_channels *ch)
-> > > +{
-> > > +       struct ice_netdev_priv *np = netdev_priv(dev);
-> > > +       struct ice_vsi *vsi = np->vsi;
-> > > +       struct ice_pf *pf = vsi->back;
-> > > +       int new_rx = 0, new_tx = 0;
-> > > +
-> > > +       /* do not support changing other_count */
-> > > +       if (ch->other_count)
-> > > +               return -EINVAL;
-> > > +
-> > > +       /* verify request for a valid number of channels */
-> > > +       if (ch->rx_count > ice_get_max_rxq(pf) ||
-> > > +           ch->tx_count > ice_get_max_txq(pf))
-> > > +               return -EINVAL;
-> > 
-> > It was recently pointed out to me that these are checked by ethtool
-> > before calling into here, so this is unnecessary code.
-> > 
+On Fri, 28 Jun 2019 17:19:09 +0100, Laatz, Kevin wrote:
+> On 27/06/2019 22:25, Jakub Kicinski wrote:
+> > On Thu, 27 Jun 2019 12:14:50 +0100, Laatz, Kevin wrote:  
+> >> On the application side (xdpsock), we don't have to worry about the user
+> >> defined headroom, since it is 0, so we only need to account for the
+> >> XDP_PACKET_HEADROOM when computing the original address (in the default
+> >> scenario).  
+> > That assumes specific layout for the data inside the buffer.  Some NICs
+> > will prepend information like timestamp to the packet, meaning the
+> > packet would start at offset XDP_PACKET_HEADROOM + metadata len..  
 > 
-> Thanks for the feedback.  I will remove this and submit a v2.
+> Yes, if NICs prepend extra data to the packet that would be a problem for
+> using this feature in isolation. However, if we also add in support for 
+> in-order RX and TX rings, that would no longer be an issue.
+
+Can you shed more light on in-order rings?  Do you mean that RX frames
+come in order buffers were placed in the fill queue?  That wouldn't
+make practical sense, no?  Even if the application does no
+reordering there is also XDP_DROP and XDP_TX.  Please explain :)
+
+> However, even for NICs which do prepend data, this patchset should
+> not break anything that is currently working.
+
+My understanding from the beginnings of AF_XDP was that we were
+searching for a format flexible enough to support most if not all NICs.
+Creating an ABI which will preclude vendors from supporting DPDK via
+AF_XDP would seriously undermine the neutrality aspect.
+
+> > I think that's very limiting.  What is the challenge in providing
+> > aligned addresses, exactly?  
+> The challenges are two-fold:
+> 1) it prevents using arbitrary buffer sizes, which will be an issue 
+> supporting e.g. jumbo frames in future.
+
+Presumably support for jumbos would require a multi-buffer setup, and
+therefore extensions to the ring format. Should we perhaps look into
+implementing unaligned chunks by extending ring format as well?
+
+> 2) higher level user-space frameworks which may want to use AF_XDP, such 
+> as DPDK, do not currently support having buffers with 'fixed' alignment.
+>  ??? The reason that DPDK uses arbitrary placement is that:
+>  ??? ??? - it would stop things working on certain NICs which need the 
+> actual writable space specified in units of 1k - therefore we need 2k + 
+> metadata space.
+>  ??? ??? - we place padding between buffers to avoid constantly hitting 
+> the same memory channels when accessing memory.
+>  ??? ??? - it allows the application to choose the actual buffer size it 
+> wants to use.
+>  ??? We make use of the above to allow us to speed up processing 
+> significantly and also reduce the packet buffer memory size.
 > 
-
-Hi Shannon,
-
-It was brought to my attention that ethtool in not necessarily the only
-tool that can call into the ioctls so we still need to perform these
-checks to ensure we're in bounds.
-
-Thanks,
-Tony
-
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/x-pkcs7-signature
-Size: 3277 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190628/eb7a0b74/attachment.bin>
+>  ??? Not having arbitrary buffer alignment also means an AF_XDP driver 
+> for DPDK cannot be a drop-in replacement for existing drivers in those 
+> frameworks. Even with a new capability to allow an arbitrary buffer 
+> alignment, existing apps will need to be modified to use that new 
+> capability.
