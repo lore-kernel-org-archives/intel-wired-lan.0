@@ -1,134 +1,75 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Fri, 28 Jun 2019 10:57:51 +0200
-Subject: [Intel-wired-lan] [PATCH v3] e1000e: PCIm function state support
-In-Reply-To: <20190625143911.37284-1-vitaly.lifshits@intel.com>
-References: <20190625143911.37284-1-vitaly.lifshits@intel.com>
-Message-ID: <9e661c44-4547-58a1-fc90-64132eda2e80@molgen.mpg.de>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Fri, 28 Jun 2019 18:49:22 +0800
+Subject: [Intel-wired-lan] RX CRC errors on I219-V (6) 8086:15be
+In-Reply-To: <ed4eca8e-d393-91d7-5d2f-97d42e0b75cb@intel.com>
+References: <C4036C54-EEEB-47F3-9200-4DD1B22B4280@canonical.com>
+ <3975473C-B117-4DC6-809A-6623A5A478BF@canonical.com>
+ <ed4eca8e-d393-91d7-5d2f-97d42e0b75cb@intel.com>
+Message-ID: <1804A45E-71B5-4C41-839C-AF0CFAD0D785@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Vitaly,
+at 14:26, Neftin, Sasha <sasha.neftin@intel.com> wrote:
+
+> On 6/26/2019 09:14, Kai Heng Feng wrote:
+>> Hi Sasha
+>> at 5:09 PM, Kai-Heng Feng <kai.heng.feng@canonical.com> wrote:
+>>> Hi Jeffrey,
+>>>
+>>> We?ve encountered another issue, which causes multiple CRC errors and  
+>>> renders ethernet completely useless, here?s the network stats:
+>> I also tried ignore_ltr for this issue, seems like it alleviates the  
+>> symptom a bit for a while, then the network still becomes useless after  
+>> some usage.
+>> And yes, it?s also a Whiskey Lake platform. What?s the next step to  
+>> debug this problem?
+>> Kai-Heng
+> CRC errors not related to the LTR. Please, try to disable the ME on your  
+> platform. Hope you have this option in BIOS. Another way is to contact  
+> your PC vendor and ask to provide NVM without ME. Let's start debugging  
+> with these steps.
+
+According to ODM, the ME can be physically disabled by a jumper.
+But after disabling the ME the same issue can still be observed.
+
+Kai-Heng
+
+>>> /sys/class/net/eno1/statistics$ grep . *
+>>> collisions:0
+>>> multicast:95
+>>> rx_bytes:1499851
+>>> rx_compressed:0
+>>> rx_crc_errors:1165
+>>> rx_dropped:0
+>>> rx_errors:2330
+>>> rx_fifo_errors:0
+>>> rx_frame_errors:0
+>>> rx_length_errors:0
+>>> rx_missed_errors:0
+>>> rx_nohandler:0
+>>> rx_over_errors:0
+>>> rx_packets:4789
+>>> tx_aborted_errors:0
+>>> tx_bytes:864312
+>>> tx_carrier_errors:0
+>>> tx_compressed:0
+>>> tx_dropped:0
+>>> tx_errors:0
+>>> tx_fifo_errors:0
+>>> tx_heartbeat_errors:0
+>>> tx_packets:7370
+>>> tx_window_errors:0
+>>>
+>>> Same behavior can be observed on both mainline kernel and on your  
+>>> dev-queue branch.
+>>> OTOH, the same issue can?t be observed on out-of-tree e1000e.
+>>>
+>>> Is there any plan to close the gap between upstream and out-of-tree  
+>>> version?
+>>>
+>>> Kai-Heng
 
 
-Thank you for the patch. Some suggestions below.
-
-On 06/25/19 16:39, Vitaly Lifshits wrote:
-> Due to commit: 5d8682588605 ("[misc] mei: me: allow runtime
-> 			pm for platform with D0i3")
-
-Do not indent it but integrate it into the line.
-
-> When disconnecting the cable and reconnecting it the NIC
-
-s/When/when/
-
-> enters DMoff state. This caused wrong link indication
-> and duplex mismatch. This bug is described in:
-> https://bugzilla.redhat.com/show_bug.cgi?id=1689436
-
-Isn?t there a tag Link: or Bugzilla: to mention these URLs?
-Maybe add it below? (See `git log --grep bugzilla` for how this
-is used.)
-
-> Checking PCIm function state and performing PHY reset after a
-> timeout in watchdog task solves this issue.
-
-In what data sheet is the function state described?
-
-> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> ---
-> 
-> V2: Fixed typos in commit massage
-> V3: Fixed minor typo
-> ---
->  drivers/net/ethernet/intel/e1000e/defines.h |  3 +++
->  drivers/net/ethernet/intel/e1000e/netdev.c  | 18 +++++++++++++++++-
->  2 files changed, 20 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
-> index fd550dee4982..13877fe300f1 100644
-> --- a/drivers/net/ethernet/intel/e1000e/defines.h
-> +++ b/drivers/net/ethernet/intel/e1000e/defines.h
-> @@ -222,6 +222,9 @@
->  #define E1000_STATUS_PHYRA      0x00000400      /* PHY Reset Asserted */
->  #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master Req status */
->  
-> +/* PCIm function state */
-> +#define E1000_STATUS_PCIM_STATE         0x40000000
-
-Shouldn?t the name be something E1000_STATUS_PCIM_STATE_DMOFF?
-
-> +
->  #define HALF_DUPLEX 1
->  #define FULL_DUPLEX 2
->  
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index b081a1ef6859..c6a10fd30e4e 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -5173,8 +5173,9 @@ static void e1000_watchdog_task(struct work_struct *work)
->  	struct e1000_mac_info *mac = &adapter->hw.mac;
->  	struct e1000_phy_info *phy = &adapter->hw.phy;
->  	struct e1000_ring *tx_ring = adapter->tx_ring;
-> +	u32 dmoff_exit_timeout = 100, tries = 0;
-
-Shouldn?t a macro be used for the time-out value?
-
->  	struct e1000_hw *hw = &adapter->hw;
-> -	u32 link, tctl;
-> +	u32 link, tctl, pcim_state;
->  
->  	if (test_bit(__E1000_DOWN, &adapter->state))
->  		return;
-> @@ -5199,6 +5200,21 @@ static void e1000_watchdog_task(struct work_struct *work)
->  			/* Cancel scheduled suspend requests. */
->  			pm_runtime_resume(netdev->dev.parent);
->  
-> +			/* Checking if MAC is in DMoff state*/
-> +			pcim_state = er32(STATUS);
-> +			while (pcim_state & E1000_STATUS_PCIM_STATE) {
-> +				if (tries++ == dmoff_exit_timeout) {
-> +					e_dbg("Error in exiting dmoff\n");
-
-Shouldn?t this be a user visible error message? If so, please elaborate and
-mention the time-out.
-
-> Couldn?t exit DMoff after %i s. Your card might not work correctly,
-> TIMEOUTMACRONAME
-
-> +					break;
-> +				}
-> +				usleep_range(10000, 20000);
-> +				pcim_state = er32(STATUS);
-> +
-> +				/* Checking if MAC exited DMoff state */
-> +				if (!(pcim_state & E1000_STATUS_PCIM_STATE))
-
-If the macro name is more specific, the comment could be removed. If not,
-the comment should use imperative mood (as below): Check if ?.
-
-Also can the while loop and if condition be refactored, as the condition
-check if the same?
-
-> +					e1000_phy_hw_reset(&adapter->hw);
-> +			}
-> +
->  			/* update snapshot of PHY registers on LSC */
->  			e1000_phy_read_status(adapter);
->  			mac->ops.get_link_up_info(&adapter->hw,
-
-
-Kind regards,
-
-Paul
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 5174 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190628/bf6c1331/attachment.p7s>
