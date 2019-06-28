@@ -1,74 +1,50 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 27 Jun 2019 07:40:59 -0700
-Subject: [Intel-wired-lan] [PATCH S23 13/15] ice: Move VF resources
- definition to SR-IOV specific file
-In-Reply-To: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
-References: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190627144101.24280-13-anthony.l.nguyen@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 28 Jun 2019 03:01:26 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v6 1/8] igb: clear out
+ skb->tstamp after reading the txtime
+In-Reply-To: <1561500439-30276-2-git-send-email-vedang.patel@intel.com>
+References: <1561500439-30276-1-git-send-email-vedang.patel@intel.com>
+ <1561500439-30276-2-git-send-email-vedang.patel@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B970B546C@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-
-In order to use some of the VF resources definition in the SR-IOV specific
-virtchnl header file, this patch moves applicable code to
-ice_virtchnl_pf.h file accordingly... and they should have been defined in
-the destination file originally.
-
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h             | 10 ----------
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h | 13 +++++++++++++
- 2 files changed, 13 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 261714ff2553..eb0efcaf7807 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -92,16 +92,6 @@ extern const char ice_drv_ver[];
- #define ICE_RES_MISC_VEC_ID	(ICE_RES_VALID_BIT - 1)
- #define ICE_INVAL_Q_INDEX	0xffff
- #define ICE_INVAL_VFID		256
--#define ICE_MAX_VF_COUNT	256
--#define ICE_MAX_QS_PER_VF		256
--#define ICE_MIN_QS_PER_VF		1
--#define ICE_DFLT_QS_PER_VF		4
--#define ICE_NONQ_VECS_VF		1
--#define ICE_MAX_SCATTER_QS_PER_VF	16
--#define ICE_MAX_BASE_QS_PER_VF		16
--#define ICE_MAX_INTR_PER_VF		65
--#define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
--#define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
- 
- #define ICE_MAX_RESET_WAIT		20
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 79bb47f73879..4d94853f119a 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -26,6 +26,19 @@
- #define ICE_PCI_CIAD_WAIT_COUNT		100
- #define ICE_PCI_CIAD_WAIT_DELAY_US	1
- 
-+/* VF resources default values and limitation */
-+#define ICE_MAX_VF_COUNT		256
-+#define ICE_MAX_QS_PER_VF		256
-+#define ICE_MIN_QS_PER_VF		1
-+#define ICE_DFLT_QS_PER_VF		4
-+#define ICE_NONQ_VECS_VF		1
-+#define ICE_MAX_SCATTER_QS_PER_VF	16
-+#define ICE_MAX_BASE_QS_PER_VF		16
-+#define ICE_MAX_INTR_PER_VF		65
-+#define ICE_MAX_POLICY_INTR_PER_VF	33
-+#define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
-+#define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
-+
- /* Specific VF states */
- enum ice_vf_states {
- 	ICE_VF_STATE_INIT = 0,
--- 
-2.20.1
+> From: Patel, Vedang
+> Sent: Tuesday, June 25, 2019 3:07 PM
+> To: netdev at vger.kernel.org
+> Cc: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net;
+> jhs at mojatatu.com; xiyou.wangcong at gmail.com; jiri at resnulli.us; intel-wired-
+> lan at lists.osuosl.org; Gomes, Vinicius <vinicius.gomes@intel.com>;
+> l at dorileo.org; jakub.kicinski at netronome.com; m-karicheri2 at ti.com;
+> sergei.shtylyov at cogentembedded.com; eric.dumazet at gmail.com; Brown,
+> Aaron F <aaron.f.brown@intel.com>; Patel, Vedang <vedang.patel@intel.com>
+> Subject: [PATCH net-next v6 1/8] igb: clear out skb->tstamp after reading the
+> txtime
+> 
+> If a packet which is utilizing the launchtime feature (via SO_TXTIME socket
+> option) also requests the hardware transmit timestamp, the hardware
+> timestamp is not delivered to the userspace. This is because the value in
+> skb->tstamp is mistaken as the software timestamp.
+> 
+> Applications, like ptp4l, request a hardware timestamp by setting the
+> SOF_TIMESTAMPING_TX_HARDWARE socket option. Whenever a new
+> timestamp is
+> detected by the driver (this work is done in igb_ptp_tx_work() which calls
+> igb_ptp_tx_hwtstamps() in igb_ptp.c[1]), it will queue the timestamp in the
+> ERR_QUEUE for the userspace to read. When the userspace is ready, it will
+> issue a recvmsg() call to collect this timestamp.  The problem is in this
+> recvmsg() call. If the skb->tstamp is not cleared out, it will be
+> interpreted as a software timestamp and the hardware tx timestamp will not
+> be successfully sent to the userspace. Look at skb_is_swtx_tstamp() and the
+> callee function __sock_recv_timestamp() in net/socket.c for more details.
+> 
+> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
