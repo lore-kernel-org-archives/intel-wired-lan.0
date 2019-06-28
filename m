@@ -1,99 +1,61 @@
-From: Kaminski, Pawel <pawel.kaminski@intel.com>
-Date: Fri, 28 Jun 2019 16:41:31 +0000
-Subject: [Intel-wired-lan] [PATCH S23 14/15] ice: Use smaller sized
- integer types
-In-Reply-To: <9105c11f-3101-8651-c07c-9fefbf87a841@molgen.mpg.de>
-References: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
- <20190627144101.24280-14-anthony.l.nguyen@intel.com>
- <9105c11f-3101-8651-c07c-9fefbf87a841@molgen.mpg.de>
-Message-ID: <A9D51AEF55B75947B26EB5F21577182C99863193@ORSMSX116.amr.corp.intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
+Date: Fri, 28 Jun 2019 18:51:37 +0200
+Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
+ support
+In-Reply-To: <f0ca817a-02b4-df22-d01b-7bc07171a4dc@intel.com>
+References: <20190620083924.1996-1-kevin.laatz@intel.com>
+ <FA8389B9-F89C-4BFF-95EE-56F702BBCC6D@gmail.com>
+ <ef7e9469-e7be-647b-8bb1-da29bc01fa2e@intel.com>
+ <20190627142534.4f4b8995@cakuba.netronome.com>
+ <f0ca817a-02b4-df22-d01b-7bc07171a4dc@intel.com>
+Message-ID: <f6fb0870-b5b4-9aba-bfb5-b4248a95da79@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Paul,
-
-thank you for your comment.
-
-Indeed part of the intention was to denote that those are/should be unsigned values.
-Another thing was to keep up with the types of variables those values come from.
-
-I have to agree with you comment assuming this may use more memory than standard unsigned int.
-
-To be perfectly honest I did not know that u16 will result in worse memory usage than uint.
-
-Regards,
-PK
-
------Original Message-----
-From: Paul Menzel [mailto:pmenzel at molgen.mpg.de] 
-Sent: Friday, June 28, 2019 8:49 AM
-To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Kaminski, Pawel <pawel.kaminski@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] [PATCH S23 14/15] ice: Use smaller sized integer types
-
-Dear Tony, dear Pawel,
-
-
-On 6/27/19 4:41 PM, Tony Nguyen wrote:
-> From: Pawel Kaminski <pawel.kaminski@intel.com>
+On 2019-06-28 18:19, Laatz, Kevin wrote:
+> On 27/06/2019 22:25, Jakub Kicinski wrote:
+>> On Thu, 27 Jun 2019 12:14:50 +0100, Laatz, Kevin wrote:
+>>> On the application side (xdpsock), we don't have to worry about the user
+>>> defined headroom, since it is 0, so we only need to account for the
+>>> XDP_PACKET_HEADROOM when computing the original address (in the default
+>>> scenario).
+>> That assumes specific layout for the data inside the buffer.? Some NICs
+>> will prepend information like timestamp to the packet, meaning the
+>> packet would start at offset XDP_PACKET_HEADROOM + metadata len..
 > 
-> The max number queues supported by the device is 768; we only need
-> a u16 to represent this.
+> Yes, if NICs prepend extra data to the packet that would be a problem for
+> using this feature in isolation. However, if we also add in support for 
+> in-order
+> RX and TX rings, that would no longer be an issue. However, even for NICs
+> which do prepend data, this patchset should not break anything that is 
+> currently
+> working.
 
-What is the benefit of this? It won?t make any difference in the
-generated code to my knowledge [1].
+(Late on the ball. I'm in vacation mode.)
 
-Maybe just use unsigned int, if you want to denote that negative
-numbers are not allowed?
+In your example Jakub, how would this look in XDP? Wouldn't the
+timestamp be part of the metadata (xdp_md.data_meta)? Isn't
+data-data_meta (if valid) <= XDP_PACKET_HEADROOM? That was my assumption.
 
-> Signed-off-by: Pawel Kaminski <pawel.kaminski@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> index f2ebbe83ae4c..72a9e79dd76d 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> @@ -2339,11 +2339,11 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
->  	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
->  	struct virtchnl_vf_res_request *vfres =
->  		(struct virtchnl_vf_res_request *)msg;
-> -	int req_queues = vfres->num_queue_pairs;
-> +	u16 req_queues = vfres->num_queue_pairs;
->  	struct ice_pf *pf = vf->pf;
-> -	int max_allowed_vf_queues;
-> -	int tx_rx_queue_left;
-> -	int cur_queues;
-> +	u16 max_allowed_vf_queues;
-> +	u16 tx_rx_queue_left;
-> +	u16 cur_queues;
->  
->  	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
->  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> @@ -2353,10 +2353,10 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
->  	cur_queues = vf->num_vf_qs;
->  	tx_rx_queue_left = min_t(int, pf->q_left_tx, pf->q_left_rx);
->  	max_allowed_vf_queues = tx_rx_queue_left + cur_queues;
-> -	if (req_queues <= 0) {
-> +	if (!req_queues) {
->  		dev_err(&pf->pdev->dev,
-> -			"VF %d tried to request %d queues. Ignoring.\n",
-> -			vf->vf_id, req_queues);
-> +			"VF %d tried to request 0 queues. Ignoring.\n",
-> +			vf->vf_id);
->  	} else if (req_queues > ICE_MAX_BASE_QS_PER_VF) {
->  		dev_err(&pf->pdev->dev,
->  			"VF %d tried to request more than %d queues.\n",
+There were some discussion on having meta data length in the struct
+xdp_desc, before AF_XDP was merged, but the conclusion was that this was
+*not* needed, because AF_XDP and the XDP program had an implicit
+contract. If you're running AF_XDP, you also have an XDP program running
+and you can determine the meta data length (and also getting back the
+original buffer).
+
+So, today in AF_XDP if XDP metadata is added, the userland application
+can look it up before the xdp_desc.addr (just like regular XDP), and how
+the XDP/AF_XDP application determines length/layout of the metadata i
+out-of-band/not specified.
+
+This is a bit messy/handwavy TBH, so maybe adding the length to the
+descriptor *is* a good idea (extending the options part of the
+xdp_desc)? Less clean though. OTOH the layout of the meta data still
+need to be determined.
 
 
-Kind regards,
-
-Paul
-
-
-[1]: http://notabs.org/coding/smallIntsBigPenalty.htm
-
+Bj?rn
