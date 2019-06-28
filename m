@@ -1,67 +1,83 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 28 Jun 2019 08:03:21 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v2 03/15] ice: Assume that more than
- one Rx queue is rare in ice_napi_poll
+Date: Fri, 28 Jun 2019 08:03:23 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v2 05/15] ice: fix set pause param
+ autoneg check
 In-Reply-To: <20190628150332.59155-1-anthony.l.nguyen@intel.com>
 References: <20190628150332.59155-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190628150332.59155-3-anthony.l.nguyen@intel.com>
+Message-ID: <20190628150332.59155-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Paul Greenwalt <paul.greenwalt@intel.com>
 
-Currently we divide budget by the number of Rx queues per Rx ring
-container in ice_napi_poll even if there is only 1. This is an
-unnecessary divide for the normal case of 1 Rx ring per Rx ring
-container. Fix this by using an unlikely() call in the case where we
-actually need to divide.
+When ETHTOOL_GLINKSETTINGS is defined get pause param pause->autoneg
+reports SW configured setting, however when not defined get pause param
+pause->autoneg reports the link status. Set pause param needs to compare
+pause->autoneg with the same source as get pause param to block the user
+from changing autoneg with the set pause param option, or the user
+may be incorrectly blocked from changing Rx|Tx pause settings.
 
-Also, we will always set budget_per_ring even if there are no Rx rings
-in the Rx ring container so we don't need to initialize it to 0.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 28 +++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index f625d9887f88..7229dea0b83f 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1717,8 +1717,8 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
- 				container_of(napi, struct ice_q_vector, napi);
- 	struct ice_vsi *vsi = q_vector->vsi;
- 	bool clean_complete = true;
--	int budget_per_ring = 0;
- 	struct ice_ring *ring;
-+	int budget_per_ring;
- 	int work_done = 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 5d540609390b..50f2e0d8dd32 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -2910,6 +2910,7 @@ static int
+ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_aqc_get_phy_caps_data *pcaps;
+ 	struct ice_link_status *hw_link_info;
+ 	struct ice_pf *pf = np->vsi->back;
+ 	struct ice_dcbx_cfg *dcbx_cfg;
+@@ -2920,6 +2921,7 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
+ 	u8 aq_failures;
+ 	bool link_up;
+ 	int err = 0;
++	u32 is_an;
  
- 	/* Since the actual Tx work is minimal, we can give the Tx a larger
-@@ -1737,11 +1737,16 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
- 	if (budget <= 0)
- 		return budget;
+ 	pi = vsi->port_info;
+ 	hw_link_info = &pi->phy.link_info;
+@@ -2934,7 +2936,31 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
+ 		return -EOPNOTSUPP;
+ 	}
  
--	/* We attempt to distribute budget to each Rx queue fairly, but don't
--	 * allow the budget to go below 1 because that would exit polling early.
--	 */
--	if (q_vector->num_ring_rx)
-+	/* normally we have 1 Rx ring per q_vector */
-+	if (unlikely(q_vector->num_ring_rx > 1))
-+		/* We attempt to distribute budget to each Rx queue fairly, but
-+		 * don't allow the budget to go below 1 because that would exit
-+		 * polling early.
-+		 */
- 		budget_per_ring = max(budget / q_vector->num_ring_rx, 1);
-+	else
-+		/* Max of 1 Rx ring in this q_vector so give it the budget */
-+		budget_per_ring = budget;
- 
- 	ice_for_each_ring(ring, q_vector->rx) {
- 		int cleaned;
+-	if (pause->autoneg != (hw_link_info->an_info & ICE_AQ_AN_COMPLETED)) {
++	/* Get pause param reports configured and negotiated flow control pause
++	 * when ETHTOOL_GLINKSETTINGS is defined. Since ETHTOOL_GLINKSETTINGS is
++	 * defined get pause param pause->autoneg reports SW configured setting,
++	 * so compare pause->autoneg with SW configured to prevent the user from
++	 * using set pause param to chance autoneg.
++	 */
++	pcaps = devm_kzalloc(&vsi->back->pdev->dev, sizeof(*pcaps),
++			     GFP_KERNEL);
++	if (!pcaps)
++		return -ENOMEM;
++
++	/* Get current PHY config */
++	status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_SW_CFG, pcaps,
++				     NULL);
++	if (status) {
++		devm_kfree(&vsi->back->pdev->dev, pcaps);
++		return -EIO;
++	}
++
++	is_an = ((pcaps->caps & ICE_AQC_PHY_AN_MODE) ?
++			AUTONEG_ENABLE : AUTONEG_DISABLE);
++
++	devm_kfree(&vsi->back->pdev->dev, pcaps);
++
++	if (pause->autoneg != is_an) {
+ 		netdev_info(netdev, "To change autoneg please use: ethtool -s <dev> autoneg <on|off>\n");
+ 		return -EOPNOTSUPP;
+ 	}
 -- 
 2.20.1
 
