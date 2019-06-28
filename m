@@ -1,58 +1,65 @@
-From: Jakub Kicinski <jakub.kicinski@netronome.com>
-Date: Fri, 28 Jun 2019 13:08:02 -0700
-Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
- support
-In-Reply-To: <f6fb0870-b5b4-9aba-bfb5-b4248a95da79@intel.com>
-References: <20190620083924.1996-1-kevin.laatz@intel.com>
- <FA8389B9-F89C-4BFF-95EE-56F702BBCC6D@gmail.com>
- <ef7e9469-e7be-647b-8bb1-da29bc01fa2e@intel.com>
- <20190627142534.4f4b8995@cakuba.netronome.com>
- <f0ca817a-02b4-df22-d01b-7bc07171a4dc@intel.com>
- <f6fb0870-b5b4-9aba-bfb5-b4248a95da79@intel.com>
-Message-ID: <20190628130802.24a6f22b@cakuba.netronome.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Fri, 28 Jun 2019 20:14:22 +0000
+Subject: [Intel-wired-lan] [PATCH S23 01/15] ice: Implement ethtool ops
+ for channels
+In-Reply-To: <6f9c96b00f2d3bdfe49deb18492fb2c5478293ed.camel@intel.com>
+References: <20190627144101.24280-1-anthony.l.nguyen@intel.com>
+ <CAP-MU4NnHyFNfV08MpZkO200sYekvrNRhcENh-oB3e7DvKTSrg@mail.gmail.com>
+ <6f9c96b00f2d3bdfe49deb18492fb2c5478293ed.camel@intel.com>
+Message-ID: <01f9f276ede9ffba8afed4f5c692192fc4f7793d.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 28 Jun 2019 18:51:37 +0200, Bj?rn T?pel wrote:
-> In your example Jakub, how would this look in XDP? Wouldn't the
-> timestamp be part of the metadata (xdp_md.data_meta)? Isn't
-> data-data_meta (if valid) <= XDP_PACKET_HEADROOM? That was my assumption.
-
-The driver parses the metadata and copies it outside of the prepend
-before XDP runs.  Then XDP runs unaware of the prepend contents.  
-That's the current situation.
-
-XDP_PACKET_HEADROOM is before the entire frame.  Like this:
-
-    buffer start
-  /               DMA addr given to the device
- /              /
-v              v
-| XDP_HEADROOM | meta data | packet data |
-
-Length of meta data comes in the standard fixed size descriptor.
-
-The metadata prepend is in TV form ("TLV with no length field", length's
-implied by type).
-
-> There were some discussion on having meta data length in the struct
-> xdp_desc, before AF_XDP was merged, but the conclusion was that this was
-> *not* needed, because AF_XDP and the XDP program had an implicit
-> contract. If you're running AF_XDP, you also have an XDP program running
-> and you can determine the meta data length (and also getting back the
-> original buffer).
+On Fri, 2019-06-28 at 17:17 +0000, Nguyen, Anthony L wrote:
+> On Fri, 2019-06-28 at 08:38 -0700, Shannon Nelson wrote:
+> > On Thu, Jun 27, 2019 at 4:08 PM Tony Nguyen <
+> > anthony.l.nguyen at intel.com> wrote:
+> > > 
+> > > +static int ice_set_channels(struct net_device *dev, struct
+> > > ethtool_channels *ch)
+> > > +{
+> > > +       struct ice_netdev_priv *np = netdev_priv(dev);
+> > > +       struct ice_vsi *vsi = np->vsi;
+> > > +       struct ice_pf *pf = vsi->back;
+> > > +       int new_rx = 0, new_tx = 0;
+> > > +
+> > > +       /* do not support changing other_count */
+> > > +       if (ch->other_count)
+> > > +               return -EINVAL;
+> > > +
+> > > +       /* verify request for a valid number of channels */
+> > > +       if (ch->rx_count > ice_get_max_rxq(pf) ||
+> > > +           ch->tx_count > ice_get_max_txq(pf))
+> > > +               return -EINVAL;
+> > 
+> > It was recently pointed out to me that these are checked by ethtool
+> > before calling into here, so this is unnecessary code.
+> > 
 > 
-> So, today in AF_XDP if XDP metadata is added, the userland application
-> can look it up before the xdp_desc.addr (just like regular XDP), and how
-> the XDP/AF_XDP application determines length/layout of the metadata i
-> out-of-band/not specified.
+> Thanks for the feedback.  I will remove this and submit a v2.
 > 
-> This is a bit messy/handwavy TBH, so maybe adding the length to the
-> descriptor *is* a good idea (extending the options part of the
-> xdp_desc)? Less clean though. OTOH the layout of the meta data still
-> need to be determined.
 
-Right, the device prepend is not exposed as metadata to XDP.
+Hi Shannon,
+
+It was brought to my attention that ethtool in not necessarily the only
+tool that can call into the ioctls so we still need to perform these
+checks to ensure we're in bounds.
+
+Thanks,
+Tony
+
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 3277 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190628/eb7a0b74/attachment.bin>
