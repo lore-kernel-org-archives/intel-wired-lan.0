@@ -1,41 +1,45 @@
 From: Shiraz Saleem <shiraz.saleem@intel.com>
-Date: Sat, 29 Jun 2019 13:54:05 -0500
-Subject: [Intel-wired-lan] [PATCH rdma-next 17/17] RDMA/i40iw: Mark i40iw as
- deprecated
+Date: Sat, 29 Jun 2019 13:54:03 -0500
+Subject: [Intel-wired-lan] [PATCH rdma-next 15/17] RDMA/irdma: Update
+ MAINTAINERS file
 In-Reply-To: <20190629185405.1601-1-shiraz.saleem@intel.com>
 References: <20190629185405.1601-1-shiraz.saleem@intel.com>
-Message-ID: <20190629185405.1601-18-shiraz.saleem@intel.com>
+Message-ID: <20190629185405.1601-16-shiraz.saleem@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Mark i40iw as deprecated/obsolete.
+Add maintainer entry for irdma driver.
 
-irdma is the replacement driver that supports X722.
-
+Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
 Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 ---
- drivers/infiniband/hw/i40iw/Kconfig | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ MAINTAINERS | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/infiniband/hw/i40iw/Kconfig b/drivers/infiniband/hw/i40iw/Kconfig
-index d867ef1..7454b84 100644
---- a/drivers/infiniband/hw/i40iw/Kconfig
-+++ b/drivers/infiniband/hw/i40iw/Kconfig
-@@ -1,8 +1,10 @@
- config INFINIBAND_I40IW
--	tristate "Intel(R) Ethernet X722 iWARP Driver"
-+	tristate "Intel(R) Ethernet X722 iWARP Driver (DEPRECATED)"
- 	depends on INET && I40E
- 	depends on IPV6 || !IPV6
- 	depends on PCI
-+	depends on !(INFINBAND_IRDMA=y || INFINIBAND_IRDMA=m)
- 	select GENERIC_ALLOCATOR
- 	---help---
- 	Intel(R) Ethernet X722 iWARP Driver
-+	This driver is being replaced by irdma.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 9ac03f3..b552bf5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8093,7 +8093,15 @@ L:	linux-pm at vger.kernel.org
+ S:	Supported
+ F:	drivers/cpufreq/intel_pstate.c
+ 
+-INTEL RDMA RNIC DRIVER
++INTEL ETHERNET RDMA DRIVER
++M:	Mustafa Ismail <mustafa.ismail@intel.com>
++M:	Shiraz Saleem <shiraz.saleem@intel.com>
++L:	linux-rdma at vger.kernel.org
++S:	Supported
++F:	drivers/infiniband/hw/irdma/
++F:	include/uapi/rdma/irdma-abi.h
++
++INTEL X722 RDMA RNIC DRIVER
+ M:	Faisal Latif <faisal.latif@intel.com>
+ M:	Shiraz Saleem <shiraz.saleem@intel.com>
+ L:	linux-rdma at vger.kernel.org
 -- 
 1.8.3.1
 
