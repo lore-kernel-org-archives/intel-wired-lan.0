@@ -1,5 +1,5 @@
 From: Laatz, Kevin <kevin.laatz@intel.com>
-Date: Mon, 1 Jul 2019 15:44:29 +0100
+Date: Mon, 1 Jul 2019 15:58:05 +0100
 Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
  support
 In-Reply-To: <BAE24CBF-416D-4665-B2C9-CE1F5EAE28FF@gmail.com>
@@ -9,7 +9,7 @@ References: <20190620083924.1996-1-kevin.laatz@intel.com>
  <20190627142534.4f4b8995@cakuba.netronome.com>
  <f0ca817a-02b4-df22-d01b-7bc07171a4dc@intel.com>
  <BAE24CBF-416D-4665-B2C9-CE1F5EAE28FF@gmail.com>
-Message-ID: <07e404eb-f712-b15a-4884-315aff3f7c7d@intel.com>
+Message-ID: <c6c48475-c4c8-599f-8217-4bc0f4d26a90@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -50,24 +50,22 @@ On 28/06/2019 21:29, Jonathan Lemon wrote:
 > this is
 > more expensive than just a mask operation.
 
+
 Yes, we can do this.
 
 Another option we have is to add a socket option for querying the 
 metadata length from the driver (assuming it doesn't vary per packet). 
-We can use that information to get back to the original address using 
+We can use that information to get back the original address using 
 subtraction.
 
 Alternatively, we can change the Rx descriptor format to include the 
 metadata length. We could do this in a couple of ways, for example, 
-rather than returning the address as the start of the packet, instead 
+rather than returning the address at the start of the packet, instead 
 return the buffer address that was passed in, and adding another 16-bit 
-field to specify the start of packet offset with that buffer. If using 
-another 16-bits of the descriptor space is not desirable, an alternative 
-could be to limit umem sizes to e.g. 2^48 bits (256 terabytes should be 
+field to specify the start of the packet offset with that buffer. Id 
+using 16-bits of descriptor space is not desirable, an alternative could 
+be to limit umem sizes to e.g. 2^48 bits (256 terabytes should be 
 enough, right :-) ) and use the remaining 16 bits of the address as a 
-packet offset. Other variations on these approach are obviously possible 
-too.
+packet offset. Other variations on these approaches are obviously 
+possible too.
 
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190701/5a471c67/attachment.html>
