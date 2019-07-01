@@ -1,296 +1,79 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Mon,  1 Jul 2019 03:16:13 -0400
-Subject: [Intel-wired-lan] [next PATCH] i40e: Register RDMA client devices
- to the virtual platform bus
-Message-ID: <20190701071613.2315-1-alice.michael@intel.com>
+From: Jakub Kicinski <jakub.kicinski@netronome.com>
+Date: Mon, 1 Jul 2019 14:20:02 -0700
+Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
+ support
+In-Reply-To: <07e404eb-f712-b15a-4884-315aff3f7c7d@intel.com>
+References: <20190620083924.1996-1-kevin.laatz@intel.com>
+ <FA8389B9-F89C-4BFF-95EE-56F702BBCC6D@gmail.com>
+ <ef7e9469-e7be-647b-8bb1-da29bc01fa2e@intel.com>
+ <20190627142534.4f4b8995@cakuba.netronome.com>
+ <f0ca817a-02b4-df22-d01b-7bc07171a4dc@intel.com>
+ <BAE24CBF-416D-4665-B2C9-CE1F5EAE28FF@gmail.com>
+ <07e404eb-f712-b15a-4884-315aff3f7c7d@intel.com>
+Message-ID: <20190701142002.1b17cc0b@cakuba.netronome.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shiraz Saleem <shiraz.saleem@intel.com>
+On Mon, 1 Jul 2019 15:44:29 +0100, Laatz, Kevin wrote:
+> On 28/06/2019 21:29, Jonathan Lemon wrote:
+> > On 28 Jun 2019, at 9:19, Laatz, Kevin wrote:  
+> >> On 27/06/2019 22:25, Jakub Kicinski wrote:  
+> >>> I think that's very limiting.? What is the challenge in providing
+> >>> aligned addresses, exactly?  
+> >> The challenges are two-fold:
+> >> 1) it prevents using arbitrary buffer sizes, which will be an issue 
+> >> supporting e.g. jumbo frames in future.
+> >> 2) higher level user-space frameworks which may want to use AF_XDP, 
+> >> such as DPDK, do not currently support having buffers with 'fixed' 
+> >> alignment.
+> >> ??? The reason that DPDK uses arbitrary placement is that:
+> >> ??? ??? - it would stop things working on certain NICs which need the 
+> >> actual writable space specified in units of 1k - therefore we need 2k 
+> >> + metadata space.
+> >> ??? ??? - we place padding between buffers to avoid constantly 
+> >> hitting the same memory channels when accessing memory.
+> >> ??? ??? - it allows the application to choose the actual buffer size 
+> >> it wants to use.
+> >> ??? We make use of the above to allow us to speed up processing 
+> >> significantly and also reduce the packet buffer memory size.
+> >>
+> >> ??? Not having arbitrary buffer alignment also means an AF_XDP driver 
+> >> for DPDK cannot be a drop-in replacement for existing drivers in 
+> >> those frameworks. Even with a new capability to allow an arbitrary 
+> >> buffer alignment, existing apps will need to be modified to use that 
+> >> new capability.  
+> >
+> > Since all buffers in the umem are the same chunk size, the original 
+> > buffer
+> > address can be recalculated with some multiply/shift math. However, 
+> > this is
+> > more expensive than just a mask operation.  
+> 
+> Yes, we can do this.
 
-Register RDMA client devices to the virtual platform bus. The
-unified RDMA driver 'irdma' registers as a platform driver and
-will bind to these devices. This model is inspired by the discussion
-in [1]. It realizes a single RDMA driver capable of working with
-multiple LAN drivers over multi-generation Intel HW supporting RDMA.
-There is also no load ordering dependencies between i40e and irdma.
+That'd be best, can DPDK reasonably guarantee the slicing is uniform?
+E.g. it's not desperate buffer pools with different bases?
 
-Summary of changes:
-* Register a platform client device per PF and unregister the platform
-  device when PF goes away.
-* Add 2 new client ops.
-	* i40e_client_device_register() which is called during RDMA
-	  probe() per PF. Validate client drv OPs and schedule service
-	  task to call open()
-	* i40e_client_device_unregister() called during RDMA remove()
-	  per PF. Call client close() and release_qvlist.
-* The global register/unregister calls exported for i40iw are retained until i40iw is
-   removed from the kernel.
+> Another option we have is to add a socket option for querying the 
+> metadata length from the driver (assuming it doesn't vary per packet). 
+> We can use that information to get back to the original address using 
+> subtraction.
 
-[1] https://patchwork.kernel.org/patch/10815567/
+Unfortunately the metadata depends on the packet and how much info 
+the device was able to extract.  So it's variable length.
 
-Signed-off-by: Saleem, Shiraz <shiraz.saleem@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_client.c | 116 ++++++++++++++----
- drivers/net/ethernet/intel/i40e/i40e_client.h |   8 ++
- 2 files changed, 102 insertions(+), 22 deletions(-)
+> Alternatively, we can change the Rx descriptor format to include the 
+> metadata length. We could do this in a couple of ways, for example, 
+> rather than returning the address as the start of the packet, instead 
+> return the buffer address that was passed in, and adding another 16-bit 
+> field to specify the start of packet offset with that buffer. If using 
+> another 16-bits of the descriptor space is not desirable, an alternative 
+> could be to limit umem sizes to e.g. 2^48 bits (256 terabytes should be 
+> enough, right :-) ) and use the remaining 16 bits of the address as a 
+> packet offset. Other variations on these approach are obviously possible 
+> too.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index e81530ca08d0..133950d190a6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -30,11 +30,17 @@ static int i40e_client_update_vsi_ctxt(struct i40e_info *ldev,
- 				       bool is_vf, u32 vf_id,
- 				       u32 flag, u32 valid_flag);
- 
-+static int i40e_client_device_register(struct i40e_info *ldev);
-+
-+static void i40e_client_device_unregister(struct i40e_info *ldev);
-+
- static struct i40e_ops i40e_lan_ops = {
- 	.virtchnl_send = i40e_client_virtchnl_send,
- 	.setup_qvlist = i40e_client_setup_qvlist,
- 	.request_reset = i40e_client_request_reset,
- 	.update_vsi_ctxt = i40e_client_update_vsi_ctxt,
-+	.client_device_register = i40e_client_device_register,
-+	.client_device_unregister = i40e_client_device_unregister,
- };
- 
- /**
-@@ -71,6 +77,10 @@ int i40e_client_get_params(struct i40e_vsi *vsi, struct i40e_params *params)
- 	return 0;
- }
- 
-+static void i40e_client_device_release(struct device *dev)
-+{
-+}
-+
- /**
-  * i40e_notify_client_of_vf_msg - call the client vf message callback
-  * @vsi: the VSI with the message
-@@ -287,9 +297,7 @@ static void i40e_client_add_instance(struct i40e_pf *pf)
- 	struct i40e_client_instance *cdev = NULL;
- 	struct netdev_hw_addr *mac = NULL;
- 	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
--
--	if (!registered_client || pf->cinst)
--		return;
-+	struct platform_device *platform_dev;
- 
- 	cdev = kzalloc(sizeof(*cdev), GFP_KERNEL);
- 	if (!cdev)
-@@ -308,6 +316,12 @@ static void i40e_client_add_instance(struct i40e_pf *pf)
- 	cdev->lan_info.fw_maj_ver = pf->hw.aq.fw_maj_ver;
- 	cdev->lan_info.fw_min_ver = pf->hw.aq.fw_min_ver;
- 	cdev->lan_info.fw_build = pf->hw.aq.fw_build;
-+	platform_dev = &cdev->lan_info.platform_dev;
-+	platform_dev->name = "i40e_rdma";
-+	platform_dev->id = PLATFORM_DEVID_AUTO;
-+	platform_dev->id_auto = true;
-+	platform_dev->dev.release = i40e_client_device_release;
-+	platform_dev->dev.parent = &pf->pdev->dev;
- 	set_bit(__I40E_CLIENT_INSTANCE_NONE, &cdev->state);
- 
- 	if (i40e_client_get_params(vsi, &cdev->lan_info.params)) {
-@@ -323,10 +337,12 @@ static void i40e_client_add_instance(struct i40e_pf *pf)
- 	else
- 		dev_err(&pf->pdev->dev, "MAC address list is empty!\n");
- 
--	cdev->client = registered_client;
-+	cdev->client = NULL;
- 	pf->cinst = cdev;
- 
--	i40e_client_update_msix_info(pf);
-+	cdev->lan_info.msix_count = pf->num_iwarp_msix;
-+	cdev->lan_info.msix_entries = &pf->msix_entries[pf->iwarp_base_vector];
-+	platform_device_register(platform_dev);
- }
- 
- /**
-@@ -347,7 +363,7 @@ void i40e_client_del_instance(struct i40e_pf *pf)
-  **/
- void i40e_client_subtask(struct i40e_pf *pf)
- {
--	struct i40e_client *client = registered_client;
-+	struct i40e_client *client;
- 	struct i40e_client_instance *cdev;
- 	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
- 	int ret = 0;
-@@ -361,9 +377,11 @@ void i40e_client_subtask(struct i40e_pf *pf)
- 	    test_bit(__I40E_CONFIG_BUSY, pf->state))
- 		return;
- 
--	if (!client || !cdev)
-+	if (!cdev || !cdev->client)
- 		return;
- 
-+	client = cdev->client;
-+
- 	/* Here we handle client opens. If the client is down, and
- 	 * the netdev is registered, then open the client.
- 	 */
-@@ -424,16 +442,7 @@ int i40e_lan_add_device(struct i40e_pf *pf)
- 		 pf->hw.pf_id, pf->hw.bus.bus_id,
- 		 pf->hw.bus.device, pf->hw.bus.func);
- 
--	/* If a client has already been registered, we need to add an instance
--	 * of it to our new LAN device.
--	 */
--	if (registered_client)
--		i40e_client_add_instance(pf);
--
--	/* Since in some cases register may have happened before a device gets
--	 * added, we can schedule a subtask to go initiate the clients if
--	 * they can be launched at probe time.
--	 */
-+	i40e_client_add_instance(pf);
- 	set_bit(__I40E_CLIENT_SERVICE_REQUESTED, pf->state);
- 	i40e_service_event_schedule(pf);
- 
-@@ -453,6 +462,8 @@ int i40e_lan_del_device(struct i40e_pf *pf)
- 	struct i40e_device *ldev, *tmp;
- 	int ret = -ENODEV;
- 
-+	platform_device_unregister(&pf->cinst->lan_info.platform_dev);
-+
- 	/* First, remove any client instance. */
- 	i40e_client_del_instance(pf);
- 
-@@ -505,10 +516,7 @@ static void i40e_client_release(struct i40e_client *client)
- 				 "Client %s instance for PF id %d closed\n",
- 				 client->name, pf->hw.pf_id);
- 		}
--		/* delete the client instance */
--		i40e_client_del_instance(pf);
--		dev_info(&pf->pdev->dev, "Deleted client instance of Client %s\n",
--			 client->name);
-+		cdev->client = NULL;
- 		clear_bit(__I40E_SERVICE_SCHED, pf->state);
- 	}
- 	mutex_unlock(&i40e_device_mutex);
-@@ -527,7 +535,7 @@ static void i40e_client_prepare(struct i40e_client *client)
- 	mutex_lock(&i40e_device_mutex);
- 	list_for_each_entry(ldev, &i40e_devices, list) {
- 		pf = ldev->pf;
--		i40e_client_add_instance(pf);
-+		pf->cinst->client = registered_client;
- 		/* Start the client subtask */
- 		set_bit(__I40E_CLIENT_SERVICE_REQUESTED, pf->state);
- 		i40e_service_event_schedule(pf);
-@@ -733,6 +741,70 @@ static int i40e_client_update_vsi_ctxt(struct i40e_info *ldev,
- 	return err;
- }
- 
-+static int i40e_client_device_register(struct i40e_info *ldev)
-+{
-+	struct i40e_client *client;
-+	struct i40e_pf *pf;
-+
-+	if (!ldev) {
-+		pr_err("Failed to reg client dev: ldev ptr NULL\n");
-+		return -EINVAL;
-+	}
-+
-+	client = ldev->client;
-+	pf = ldev->pf;
-+	if (!client) {
-+		pr_err("Failed to reg client dev: client ptr NULL\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!ldev->ops || !client->ops) {
-+		pr_err("Failed to reg client dev: client dev peer_ops/ops NULL\n");
-+		return -EINVAL;
-+	}
-+
-+	if (client->version.major != I40E_CLIENT_VERSION_MAJOR ||
-+	    client->version.minor != I40E_CLIENT_VERSION_MINOR) {
-+		pr_err("i40e: Failed to register client %s due to mismatched client interface version\n",
-+		       client->name);
-+		pr_err("Client is using version: %02d.%02d.%02d while LAN driver supports %s\n",
-+		       client->version.major, client->version.minor,
-+		       client->version.build,
-+		       i40e_client_interface_version_str);
-+		return -EINVAL;
-+	}
-+
-+	pf->cinst->client = ldev->client;
-+	set_bit(__I40E_CLIENT_SERVICE_REQUESTED, pf->state);
-+	i40e_service_event_schedule(pf);
-+
-+	return 0;
-+}
-+
-+static void i40e_client_device_unregister(struct i40e_info *ldev)
-+{
-+	struct i40e_pf *pf = ldev->pf;
-+	struct i40e_client_instance *cdev = pf->cinst;
-+
-+	while (test_and_set_bit(__I40E_SERVICE_SCHED, pf->state))
-+		usleep_range(500, 1000);
-+
-+	if (!cdev || !cdev->client || !cdev->client->ops ||
-+	    !cdev->client->ops->close) {
-+		dev_err(&pf->pdev->dev, "Cannot close client device\n");
-+		return;
-+	}
-+	cdev->client->ops->close(&cdev->lan_info, cdev->client, false);
-+	clear_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state);
-+	i40e_client_release_qvlist(&cdev->lan_info);
-+	pf->cinst->client = NULL;
-+	clear_bit(__I40E_SERVICE_SCHED, pf->state);
-+}
-+
-+/* Retain legacy global registration/unregistration calls till i40iw is
-+ * deprecated from the kernel. The irdma unified driver does not use these
-+ * exported symbols.
-+ */
- /**
-  * i40e_register_client - Register a i40e client driver with the L2 driver
-  * @client: pointer to the i40e_client struct
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.h b/drivers/net/ethernet/intel/i40e/i40e_client.h
-index 72994baf4941..0cfdb35e93d6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.h
-@@ -4,6 +4,8 @@
- #ifndef _I40E_CLIENT_H_
- #define _I40E_CLIENT_H_
- 
-+#include <linux/platform_device.h>
-+
- #define I40E_CLIENT_STR_LENGTH 10
- 
- /* Client interface version should be updated anytime there is a change in the
-@@ -80,6 +82,7 @@ struct i40e_params {
- 
- /* Structure to hold Lan device info for a client device */
- struct i40e_info {
-+	struct platform_device platform_dev;
- 	struct i40e_client_version version;
- 	u8 lanmac[6];
- 	struct net_device *netdev;
-@@ -97,6 +100,7 @@ struct i40e_info {
- 	struct i40e_qvlist_info *qvlist_info;
- 	struct i40e_params params;
- 	struct i40e_ops *ops;
-+	struct i40e_client *client;
- 
- 	u16 msix_count;	 /* number of msix vectors*/
- 	/* Array down below will be dynamically allocated based on msix_count */
-@@ -132,6 +136,10 @@ struct i40e_ops {
- 			       struct i40e_client *client,
- 			       bool is_vf, u32 vf_id,
- 			       u32 flag, u32 valid_flag);
-+
-+	int (*client_device_register)(struct i40e_info *ldev);
-+
-+	void (*client_device_unregister)(struct i40e_info *ldev);
- };
- 
- struct i40e_client_ops {
--- 
-2.21.0
-
+Seems reasonable to me..
