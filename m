@@ -1,145 +1,73 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sun, 02 Jun 2019 04:10:53 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 64931d9702ee8ca57ada00d95ec1153e08b2614b
-Message-ID: <5cf2dbcd.58TyKAdmX2/xAr77%lkp@intel.com>
+From: Laatz, Kevin <kevin.laatz@intel.com>
+Date: Mon, 1 Jul 2019 15:44:29 +0100
+Subject: [Intel-wired-lan] [PATCH 00/11] XDP unaligned chunk placement
+ support
+In-Reply-To: <BAE24CBF-416D-4665-B2C9-CE1F5EAE28FF@gmail.com>
+References: <20190620083924.1996-1-kevin.laatz@intel.com>
+ <FA8389B9-F89C-4BFF-95EE-56F702BBCC6D@gmail.com>
+ <ef7e9469-e7be-647b-8bb1-da29bc01fa2e@intel.com>
+ <20190627142534.4f4b8995@cakuba.netronome.com>
+ <f0ca817a-02b4-df22-d01b-7bc07171a4dc@intel.com>
+ <BAE24CBF-416D-4665-B2C9-CE1F5EAE28FF@gmail.com>
+Message-ID: <07e404eb-f712-b15a-4884-315aff3f7c7d@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 64931d9702ee8ca57ada00d95ec1153e08b2614b  i40e: update copyright string
+On 28/06/2019 21:29, Jonathan Lemon wrote:
+> On 28 Jun 2019, at 9:19, Laatz, Kevin wrote:
+>> On 27/06/2019 22:25, Jakub Kicinski wrote:
+>>> I think that's very limiting.? What is the challenge in providing
+>>> aligned addresses, exactly?
+>> The challenges are two-fold:
+>> 1) it prevents using arbitrary buffer sizes, which will be an issue 
+>> supporting e.g. jumbo frames in future.
+>> 2) higher level user-space frameworks which may want to use AF_XDP, 
+>> such as DPDK, do not currently support having buffers with 'fixed' 
+>> alignment.
+>> ??? The reason that DPDK uses arbitrary placement is that:
+>> ??? ??? - it would stop things working on certain NICs which need the 
+>> actual writable space specified in units of 1k - therefore we need 2k 
+>> + metadata space.
+>> ??? ??? - we place padding between buffers to avoid constantly 
+>> hitting the same memory channels when accessing memory.
+>> ??? ??? - it allows the application to choose the actual buffer size 
+>> it wants to use.
+>> ??? We make use of the above to allow us to speed up processing 
+>> significantly and also reduce the packet buffer memory size.
+>>
+>> ??? Not having arbitrary buffer alignment also means an AF_XDP driver 
+>> for DPDK cannot be a drop-in replacement for existing drivers in 
+>> those frameworks. Even with a new capability to allow an arbitrary 
+>> buffer alignment, existing apps will need to be modified to use that 
+>> new capability.
+>
+> Since all buffers in the umem are the same chunk size, the original 
+> buffer
+> address can be recalculated with some multiply/shift math. However, 
+> this is
+> more expensive than just a mask operation.
 
-elapsed time: 288m
+Yes, we can do this.
 
-configs tested: 120
+Another option we have is to add a socket option for querying the 
+metadata length from the driver (assuming it doesn't vary per packet). 
+We can use that information to get back to the original address using 
+subtraction.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Alternatively, we can change the Rx descriptor format to include the 
+metadata length. We could do this in a couple of ways, for example, 
+rather than returning the address as the start of the packet, instead 
+return the buffer address that was passed in, and adding another 16-bit 
+field to specify the start of packet offset with that buffer. If using 
+another 16-bits of the descriptor space is not desirable, an alternative 
+could be to limit umem sizes to e.g. 2^48 bits (256 terabytes should be 
+enough, right :-) ) and use the remaining 16 bits of the address as a 
+packet offset. Other variations on these approach are obviously possible 
+too.
 
-arm                              allmodconfig
-arm64                            allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                          debug_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                         10m50_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-um                                  defconfig
-m68k                           sun3_defconfig
-mips                             allmodconfig
-parisc                         b180_defconfig
-mips                      malta_kvm_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                           allyesconfig
-i386                   randconfig-x073-201921
-i386                   randconfig-x071-201921
-i386                   randconfig-x070-201921
-i386                   randconfig-x074-201921
-i386                   randconfig-x078-201921
-i386                   randconfig-x075-201921
-i386                   randconfig-x072-201921
-i386                   randconfig-x076-201921
-i386                   randconfig-x077-201921
-i386                   randconfig-x079-201921
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-x010-201922
-i386                   randconfig-x011-201922
-i386                   randconfig-x012-201922
-i386                   randconfig-x013-201922
-i386                   randconfig-x014-201922
-i386                   randconfig-x015-201922
-i386                   randconfig-x016-201922
-i386                   randconfig-x017-201922
-i386                   randconfig-x018-201922
-i386                   randconfig-x019-201922
-x86_64                 randconfig-x006-201921
-x86_64                 randconfig-x003-201921
-x86_64                 randconfig-x001-201921
-x86_64                 randconfig-x007-201921
-x86_64                 randconfig-x004-201921
-x86_64                 randconfig-x005-201921
-x86_64                 randconfig-x002-201921
-x86_64                 randconfig-x009-201921
-x86_64                 randconfig-x008-201921
-x86_64                 randconfig-x000-201921
-x86_64                                  kexec
-x86_64                              fedora-25
-i386                             allmodconfig
-x86_64                 randconfig-x019-201922
-x86_64                 randconfig-x010-201922
-x86_64                 randconfig-x015-201922
-x86_64                 randconfig-x014-201922
-x86_64                 randconfig-x012-201922
-x86_64                 randconfig-x017-201922
-x86_64                 randconfig-x018-201922
-x86_64                 randconfig-x016-201922
-x86_64                 randconfig-x011-201922
-x86_64                 randconfig-x013-201922
-i386                   randconfig-x009-201921
-i386                   randconfig-x008-201921
-i386                   randconfig-x006-201921
-i386                   randconfig-x004-201921
-i386                   randconfig-x005-201921
-i386                   randconfig-x001-201921
-i386                   randconfig-x000-201921
-i386                   randconfig-x007-201921
-i386                   randconfig-x003-201921
-i386                   randconfig-x002-201921
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190701/5a471c67/attachment.html>
