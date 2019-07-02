@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 2 Jul 2019 22:59:54 +0000
-Subject: [Intel-wired-lan] [PATCH S22 15/16] ice: Remove flag to track
- VF interrupt status
-In-Reply-To: <20190626092027.52845-15-anthony.l.nguyen@intel.com>
+Date: Tue, 2 Jul 2019 23:00:21 +0000
+Subject: [Intel-wired-lan] [PATCH S22 16/16] ice: Bump version number
+In-Reply-To: <20190626092027.52845-16-anthony.l.nguyen@intel.com>
 References: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
- <20190626092027.52845-15-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FBE93@ORSMSX104.amr.corp.intel.com>
+ <20190626092027.52845-16-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FBEA8@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +16,14 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, June 26, 2019 2:20 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Abodunrin, Akeem G <akeem.g.abodunrin@intel.com>
-> Subject: [Intel-wired-lan] [PATCH S22 15/16] ice: Remove flag to track VF
-> interrupt status
+> Subject: [Intel-wired-lan] [PATCH S22 16/16] ice: Bump version number
 > 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Update driver version to 0.7.5
 > 
-> As a result of refactoring of VF VSIs interrupts code, there is no need to track
-> its configuration status again with ICE_VF_STATE_CFG_INTR flag - In fact, it is
-> not being checked anywhere in the code right now, so this patch removes
-> the dead code as applicable to the flag.
-> 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 11 -----------
-> drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  5 -----
->  2 files changed, 16 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
