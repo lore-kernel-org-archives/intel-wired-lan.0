@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 2 Jul 2019 22:46:55 +0000
-Subject: [Intel-wired-lan] [PATCH S22 02/16] ice: track hardware stat
- registers past rollover
-In-Reply-To: <20190626092027.52845-2-anthony.l.nguyen@intel.com>
+Date: Tue, 2 Jul 2019 22:49:08 +0000
+Subject: [Intel-wired-lan] [PATCH S22 03/16] ice: Move vector base setup
+ to PF VSI
+In-Reply-To: <20190626092027.52845-3-anthony.l.nguyen@intel.com>
 References: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
- <20190626092027.52845-2-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FBDC0@ORSMSX104.amr.corp.intel.com>
+ <20190626092027.52845-3-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FBDD2@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,45 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, June 26, 2019 2:20 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S22 02/16] ice: track hardware stat registers
-> past rollover
+> Subject: [Intel-wired-lan] [PATCH S22 03/16] ice: Move vector base setup to
+> PF VSI
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> When interrupt tracking was refactored, during rebuild, the call to
+> ice_vsi_setup_vector_base() was inadvertently removed from the PF VSI
+> instead of being removed from the VF VSI. During reset, the failure to
+> properly setup the vector base generates a call trace. Correct this so that
+> resets/rebuilds properly complete.
 > 
-> Currently, ice_stat_update32 and ice_stat_update40 will limit the value of
-> the software statistic to 32 or 40 bits wide, depending on which register is
-> being read.
-> 
-> This means that if a driver is running for a long time, the displayed software
-> register values will roll over to zero at 40 bits or 32 bits.
-> 
-> This occurs because the functions directly assign the difference between the
-> previous value and current value of the hardware statistic.
-> 
-> Instead, add this value to the current software statistic, and then update the
-> previous value.
-> 
-> In this way, each time ice_stat_update40 or ice_stat_update32 are called,
-> they will increment the software tracking value by the difference of the
-> hardware register from its last read. The software tracking value will correctly
-> count up until it overflows a u64.
-> 
-> The only requirement is that the ice_stat_update functions be called at least
-> once each time the hardware register overflows.
-> 
-> While we're fixing ice_stat_update40, modify it to use rd64 instead of two
-> calls to rd32. Additionally, drop the now unnecessary hireg function
-> parameter.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Fixes: cbe66bfee6a0 ("ice: Refactor interrupt tracking")
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c   | 57 +++++++-----
->  drivers/net/ethernet/intel/ice/ice_common.h   |  4 +-
->  .../net/ethernet/intel/ice/ice_hw_autogen.h   | 30 -------
->  drivers/net/ethernet/intel/ice/ice_lib.c      | 40 ++++-----
->  drivers/net/ethernet/intel/ice/ice_main.c     | 90 ++++++++-----------
->  5 files changed, 91 insertions(+), 130 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
