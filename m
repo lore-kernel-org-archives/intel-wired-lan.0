@@ -1,137 +1,81 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue,  2 Jul 2019 08:22:56 -0400
-Subject: [Intel-wired-lan] [next PATCH S7 6/9] i40e: Update visual effect
- for advertised FEC mode.
-In-Reply-To: <20190702122259.79070-1-alice.michael@intel.com>
-References: <20190702122259.79070-1-alice.michael@intel.com>
-Message-ID: <20190702122259.79070-6-alice.michael@intel.com>
+Date: Tue,  2 Jul 2019 08:22:51 -0400
+Subject: [Intel-wired-lan] [next PATCH S7 1/9] i40e: fix incorrect ethtool
+ statistics veb and veb.tc_
+Message-ID: <20190702122259.79070-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Czeslaw Zagorski <czeslawx.zagorski@intel.com>
+From: Dmitrii Golovanov <dmitrii.golovanov@intel.com>
 
-Updates visual effect for advertised mode after setting desired mode.
-The mode appears in advertised FEC mode correctly, when ethtool
-interface command is called. Without this commit advertised FEC
-is displayed regardless of the settings as "None BaseR RS".
+This patch fixes missing call of i40e_update_veb_stats() in function
+i40e_get_ethtool_stats() to update stats data of VEB and VEB TC
+counters before they are written into ethtool buffer.
+Before the patch ethtool counters may fell behind interface counters.
 
-Signed-off-by: Czeslaw Zagorski <czeslawx.zagorski@intel.com>
+Signed-off-by: Dmitrii Golovanov <dmitrii.golovanov@intel.com>
 ---
- .../net/ethernet/intel/i40e/i40e_ethtool.c    | 63 ++++++++++---------
- 1 file changed, 35 insertions(+), 28 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h         | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 8 +++++++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 2 +-
+ 3 files changed, 9 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 84bd06901014..3e535d3263b3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -1021,6 +1021,7 @@ i40e_find_vsi_by_type(struct i40e_pf *pf, u16 type)
+ 	return NULL;
+ }
+ void i40e_update_stats(struct i40e_vsi *vsi);
++void i40e_update_veb_stats(struct i40e_veb *veb);
+ void i40e_update_eth_stats(struct i40e_vsi *vsi);
+ struct rtnl_link_stats64 *i40e_get_vsi_stats_struct(struct i40e_vsi *vsi);
+ int i40e_fetch_switch_configuration(struct i40e_pf *pf,
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 65e016f54f58..663de4fd7bbe 100644
+index 527eb52c5401..65e016f54f58 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -710,6 +710,35 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf,
- 	}
- }
+@@ -2250,7 +2250,7 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+-	struct i40e_veb *veb = pf->veb[pf->lan_veb];
++	struct i40e_veb *veb = NULL;
+ 	unsigned int i;
+ 	bool veb_stats;
+ 	u64 *p = data;
+@@ -2273,8 +2273,14 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
+ 		goto check_data_pointer;
  
-+/**
-+ * i40e_get_settings_link_up_fec - Get the FEC mode encoding from mask
-+ * @req_fec_info: mask request fec info
-+ * @ks: ethtool ksettings to fill in
-+ **/
-+static void i40e_get_settings_link_up_fec(u8 req_fec_info,
-+					  struct ethtool_link_ksettings *ks)
-+{
-+	ethtool_link_ksettings_add_link_mode(ks, supported, FEC_NONE);
-+	ethtool_link_ksettings_add_link_mode(ks, supported, FEC_RS);
-+	ethtool_link_ksettings_add_link_mode(ks, supported, FEC_BASER);
-+
-+	if (I40E_AQ_SET_FEC_REQUEST_RS & req_fec_info) {
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_RS);
-+	} else if (I40E_AQ_SET_FEC_REQUEST_KR & req_fec_info) {
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     FEC_BASER);
-+	} else {
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     FEC_NONE);
-+		if (I40E_AQ_SET_FEC_AUTO & req_fec_info) {
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     FEC_RS);
-+			ethtool_link_ksettings_add_link_mode(ks, advertising,
-+							     FEC_BASER);
-+		}
+ 	veb_stats = ((pf->lan_veb != I40E_NO_VEB) &&
++		     (pf->lan_veb < I40E_MAX_VEB) &&
+ 		     (pf->flags & I40E_FLAG_VEB_STATS_ENABLED));
+ 
++	if (veb_stats) {
++		veb = pf->veb[pf->lan_veb];
++		i40e_update_veb_stats(veb);
 +	}
-+}
 +
- /**
-  * i40e_get_settings_link_up - Get the Link settings for when link is up
-  * @hw: hw structure
-@@ -769,13 +798,7 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 						     25000baseSR_Full);
- 		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     25000baseSR_Full);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_NONE);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_RS);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_BASER);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_NONE);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_RS);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     FEC_BASER);
-+		i40e_get_settings_link_up_fec(hw_link_info->req_fec_info, ks);
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     10000baseSR_Full);
- 		ethtool_link_ksettings_add_link_mode(ks, advertising,
-@@ -892,9 +915,6 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 						     40000baseKR4_Full);
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     25000baseKR_Full);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_NONE);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_RS);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_BASER);
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     20000baseKR2_Full);
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
-@@ -908,10 +928,7 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 						     40000baseKR4_Full);
- 		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     25000baseKR_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_NONE);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_RS);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     FEC_BASER);
-+		i40e_get_settings_link_up_fec(hw_link_info->req_fec_info, ks);
- 		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     20000baseKR2_Full);
- 		ethtool_link_ksettings_add_link_mode(ks, advertising,
-@@ -929,13 +946,8 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 						     25000baseCR_Full);
- 		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     25000baseCR_Full);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_NONE);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_RS);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_BASER);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_NONE);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_RS);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     FEC_BASER);
-+		i40e_get_settings_link_up_fec(hw_link_info->req_fec_info, ks);
-+
- 		break;
- 	case I40E_PHY_TYPE_25GBASE_AOC:
- 	case I40E_PHY_TYPE_25GBASE_ACC:
-@@ -945,13 +957,8 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 						     25000baseCR_Full);
- 		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     25000baseCR_Full);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_NONE);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_RS);
--		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_BASER);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_NONE);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_RS);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     FEC_BASER);
-+		i40e_get_settings_link_up_fec(hw_link_info->req_fec_info, ks);
-+
- 		ethtool_link_ksettings_add_link_mode(ks, supported,
- 						     10000baseCR_Full);
- 		ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 	/* If veb stats aren't enabled, pass NULL instead of the veb so that
+ 	 * we initialize stats to zero and update the data pointer
+ 	 * intelligently
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 5361c08328f7..8dac7a87834d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -677,7 +677,7 @@ void i40e_update_eth_stats(struct i40e_vsi *vsi)
+  * i40e_update_veb_stats - Update Switch component statistics
+  * @veb: the VEB being updated
+  **/
+-static void i40e_update_veb_stats(struct i40e_veb *veb)
++void i40e_update_veb_stats(struct i40e_veb *veb)
+ {
+ 	struct i40e_pf *pf = veb->pf;
+ 	struct i40e_hw *hw = &pf->hw;
 -- 
 2.21.0
 
