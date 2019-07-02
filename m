@@ -1,48 +1,75 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Tue,  2 Jul 2019 08:22:58 -0400
-Subject: [Intel-wired-lan] [next PATCH S7 8/9] i40e: verify string count
- matches even on early return
-In-Reply-To: <20190702122259.79070-1-alice.michael@intel.com>
-References: <20190702122259.79070-1-alice.michael@intel.com>
-Message-ID: <20190702122259.79070-8-alice.michael@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 2 Jul 2019 22:45:49 +0000
+Subject: [Intel-wired-lan] [PATCH S22 01/16] ice: add lp_advertising
+ flow control support
+In-Reply-To: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
+References: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FBDAB@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Wednesday, June 26, 2019 2:20 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S22 01/16] ice: add lp_advertising flow
+> control support
+> 
+> From: Paul Greenwalt <paul.greenwalt@intel.com>
+> 
+> Add support for reporting link partner advertising when
+> ETHTOOL_GLINKSETTINGS defined. Get pause param reports the Tx/Rx
+> pause configured, and then ethtool issues ETHTOOL_GSET ioctl and
+> ice_get_settings_link_up reports the negotiated Tx/Rx pause. Negotiated
+> pause frame report per IEEE 802.3-2005 table 288-3.
+> 
+> $ ethtool --show-pause ens6f0
+> Pause parameters for ens6f0:
+> Autonegotiate:  on
+> RX:             on
+> TX:             on
+> RX negotiated:  on
+> TX negotiated:  on
+> 
+> $ ethtool ens6f0
+> Settings for ens6f0:
+>         Supported ports: [ FIBRE ]
+>         Supported link modes:   25000baseCR/Full
+>         Supported pause frame use: Symmetric
+>         Supports auto-negotiation: Yes
+>         Supported FEC modes: None BaseR RS
+>         Advertised link modes:  25000baseCR/Full
+>         Advertised pause frame use: Symmetric Receive-only
+>         Advertised auto-negotiation: Yes
+>         Advertised FEC modes: None BaseR RS
+>         Link partner advertised link modes:  Not reported
+>         Link partner advertised pause frame use: Symmetric
+>         Link partner advertised auto-negotiation: Yes
+>         Link partner advertised FEC modes: Not reported
+>         Speed: 25000Mb/s
+>         Duplex: Full
+>         Port: Direct Attach Copper
+>         PHYAD: 0
+>         Transceiver: internal
+>         Auto-negotiation: on
+>         Supports Wake-on: g
+>         Wake-on: g
+>         Current message level: 0x00000007 (7)
+>                                drv probe link
+>         Link detected: yes
+> 
+> When ETHTOOL_GLINKSETTINGS is not defined, get pause param reports the
+> negotiated Tx/Rx pause.
+> 
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 104 +++++++++++++------
+>  1 file changed, 72 insertions(+), 32 deletions(-)
 
-Similar to i40e_get_ethtool_stats, add a goto to verify that the data
-pointer for the strings lines up with the expected stats count. This
-helps ensure that bugs are not introduced when adding stats.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 663de4fd7bbe..5c45ef3390c9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2342,7 +2342,7 @@ static void i40e_get_stat_strings(struct net_device *netdev, u8 *data)
- 	}
- 
- 	if (vsi != pf->vsi[pf->lan_vsi] || pf->hw.partition_id != 1)
--		return;
-+		goto check_data_pointer;
- 
- 	i40e_add_stat_strings(&data, i40e_gstrings_veb_stats);
- 
-@@ -2354,6 +2354,7 @@ static void i40e_get_stat_strings(struct net_device *netdev, u8 *data)
- 	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++)
- 		i40e_add_stat_strings(&data, i40e_gstrings_pfc_stats, i);
- 
-+check_data_pointer:
- 	WARN_ONCE(data - p != i40e_get_stats_count(netdev) * ETH_GSTRING_LEN,
- 		  "stat strings count mismatch!");
- }
--- 
-2.21.0
 
