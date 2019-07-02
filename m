@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 2 Jul 2019 22:45:49 +0000
-Subject: [Intel-wired-lan] [PATCH S22 01/16] ice: add lp_advertising
- flow control support
-In-Reply-To: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
+Date: Tue, 2 Jul 2019 22:46:55 +0000
+Subject: [Intel-wired-lan] [PATCH S22 02/16] ice: track hardware stat
+ registers past rollover
+In-Reply-To: <20190626092027.52845-2-anthony.l.nguyen@intel.com>
 References: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FBDAB@ORSMSX104.amr.corp.intel.com>
+ <20190626092027.52845-2-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FBDC0@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,59 +17,45 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, June 26, 2019 2:20 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S22 01/16] ice: add lp_advertising flow
-> control support
+> Subject: [Intel-wired-lan] [PATCH S22 02/16] ice: track hardware stat registers
+> past rollover
 > 
-> From: Paul Greenwalt <paul.greenwalt@intel.com>
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Add support for reporting link partner advertising when
-> ETHTOOL_GLINKSETTINGS defined. Get pause param reports the Tx/Rx
-> pause configured, and then ethtool issues ETHTOOL_GSET ioctl and
-> ice_get_settings_link_up reports the negotiated Tx/Rx pause. Negotiated
-> pause frame report per IEEE 802.3-2005 table 288-3.
+> Currently, ice_stat_update32 and ice_stat_update40 will limit the value of
+> the software statistic to 32 or 40 bits wide, depending on which register is
+> being read.
 > 
-> $ ethtool --show-pause ens6f0
-> Pause parameters for ens6f0:
-> Autonegotiate:  on
-> RX:             on
-> TX:             on
-> RX negotiated:  on
-> TX negotiated:  on
+> This means that if a driver is running for a long time, the displayed software
+> register values will roll over to zero at 40 bits or 32 bits.
 > 
-> $ ethtool ens6f0
-> Settings for ens6f0:
->         Supported ports: [ FIBRE ]
->         Supported link modes:   25000baseCR/Full
->         Supported pause frame use: Symmetric
->         Supports auto-negotiation: Yes
->         Supported FEC modes: None BaseR RS
->         Advertised link modes:  25000baseCR/Full
->         Advertised pause frame use: Symmetric Receive-only
->         Advertised auto-negotiation: Yes
->         Advertised FEC modes: None BaseR RS
->         Link partner advertised link modes:  Not reported
->         Link partner advertised pause frame use: Symmetric
->         Link partner advertised auto-negotiation: Yes
->         Link partner advertised FEC modes: Not reported
->         Speed: 25000Mb/s
->         Duplex: Full
->         Port: Direct Attach Copper
->         PHYAD: 0
->         Transceiver: internal
->         Auto-negotiation: on
->         Supports Wake-on: g
->         Wake-on: g
->         Current message level: 0x00000007 (7)
->                                drv probe link
->         Link detected: yes
+> This occurs because the functions directly assign the difference between the
+> previous value and current value of the hardware statistic.
 > 
-> When ETHTOOL_GLINKSETTINGS is not defined, get pause param reports the
-> negotiated Tx/Rx pause.
+> Instead, add this value to the current software statistic, and then update the
+> previous value.
 > 
-> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+> In this way, each time ice_stat_update40 or ice_stat_update32 are called,
+> they will increment the software tracking value by the difference of the
+> hardware register from its last read. The software tracking value will correctly
+> count up until it overflows a u64.
+> 
+> The only requirement is that the ice_stat_update functions be called at least
+> once each time the hardware register overflows.
+> 
+> While we're fixing ice_stat_update40, modify it to use rd64 instead of two
+> calls to rd32. Additionally, drop the now unnecessary hireg function
+> parameter.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 104 +++++++++++++------
->  1 file changed, 72 insertions(+), 32 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c   | 57 +++++++-----
+>  drivers/net/ethernet/intel/ice/ice_common.h   |  4 +-
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   | 30 -------
+>  drivers/net/ethernet/intel/ice/ice_lib.c      | 40 ++++-----
+>  drivers/net/ethernet/intel/ice/ice_main.c     | 90 ++++++++-----------
+>  5 files changed, 91 insertions(+), 130 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
