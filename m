@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 2 Jul 2019 22:56:41 +0000
-Subject: [Intel-wired-lan] [PATCH S22 11/16] ice: Add stats for Rx drops
- at the port level
-In-Reply-To: <20190626092027.52845-11-anthony.l.nguyen@intel.com>
+Date: Tue, 2 Jul 2019 22:58:27 +0000
+Subject: [Intel-wired-lan] [PATCH S22 12/16] ice: Remove duplicate code
+ in ice_alloc_rx_bufs
+In-Reply-To: <20190626092027.52845-12-anthony.l.nguyen@intel.com>
 References: <20190626092027.52845-1-anthony.l.nguyen@intel.com>
- <20190626092027.52845-11-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FBE58@ORSMSX104.amr.corp.intel.com>
+ <20190626092027.52845-12-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FBE68@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,27 +18,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, June 26, 2019 2:20 AM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Creeley, Brett <brett.creeley@intel.com>
-> Subject: [Intel-wired-lan] [PATCH S22 11/16] ice: Add stats for Rx drops at the
-> port level
+> Subject: [Intel-wired-lan] [PATCH S22 12/16] ice: Remove duplicate code in
+> ice_alloc_rx_bufs
 > 
 > From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Currently we are not reporting dropped counts at the port level to ethtool or
-> netlink. This was found when debugging Rx dropped issues and the total
-> packets sent did not equal the total packets received minus the rx_dropped,
-> which was very confusing. To determine dropped counts at the port level we
-> need to read the PRTRPB_RDPC register.
-> To fix reporting we will store the dropped counts in the PF's rx_discards. This
-> will be reported to netlink by storing it in the PF VSI's rx_missed_errors
-> signaling that the receiver missed the packet. Also, we will report this to
-> ethtool in the rx_dropped.nic field.
+> Currently if the call to ice_alloc_mapped_page() fails we jump to the no_buf
+> label, possibly call ice_release_rx_desc(), and return true indicating that
+> there is more work to do. In the success case we just fall out of the while
+> loop, possibly call ice_alloc_mapped_page(), and return false saying we
+> exhausted cleaned_count. This flow can be improved by breaking if
+> ice_alloc_mapped_page() fails and then the flow outside of the while loop is
+> the same for the failure and success case.
 > 
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 1 +
->  drivers/net/ethernet/intel/ice/ice_main.c       | 6 ++++++
->  2 files changed, 7 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_txrx.c | 14 +++-----------
+>  1 file changed, 3 insertions(+), 11 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
