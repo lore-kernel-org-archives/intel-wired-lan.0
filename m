@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 3 Jul 2019 21:42:45 +0000
-Subject: [Intel-wired-lan] [next PATCH S7 8/9] i40e: verify string count
- matches even on early return
-In-Reply-To: <20190702122259.79070-8-alice.michael@intel.com>
+Date: Wed, 3 Jul 2019 21:43:15 +0000
+Subject: [Intel-wired-lan] [next PATCH S7 9/9] i40e: Remove unicast log
+ when VF is leaving multicast mode.
+In-Reply-To: <20190702122259.79070-9-alice.michael@intel.com>
 References: <20190702122259.79070-1-alice.michael@intel.com>
- <20190702122259.79070-8-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FD290@ORSMSX104.amr.corp.intel.com>
+ <20190702122259.79070-9-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FD2A2@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,19 +18,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, July 2, 2019 5:23 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S7 8/9] i40e: verify string count
-> matches even on early return
+> Cc: Zagorski, CzeslawX <czeslawx.zagorski@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S7 9/9] i40e: Remove unicast log when
+> VF is leaving multicast mode.
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Czeslaw Zagorski <czeslawx.zagorski@intel.com>
 > 
-> Similar to i40e_get_ethtool_stats, add a goto to verify that the data pointer
-> for the strings lines up with the expected stats count. This helps ensure that
-> bugs are not introduced when adding stats.
+> This patch removes unicast log when VF is leaving multicast mode.
+> Added check of vf->vf_states &
+> I40E_VF_STATE_MC_PROMISC/I40E_VF_STATE_UC_PROMISC.
+> Without this commit, leaving multicast mode logs "unset unicast"
+> in dmsg.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Czeslaw Zagorski <czeslawx.zagorski@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 39 ++++++++++---------
+>  1 file changed, 21 insertions(+), 18 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
