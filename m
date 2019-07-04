@@ -1,10 +1,10 @@
 From: Magnus Karlsson <magnus.karlsson@intel.com>
-Date: Thu,  4 Jul 2019 14:42:11 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next v3 3/6] i40e: add support for
+Date: Thu,  4 Jul 2019 14:42:12 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next v3 4/6] ixgbe: add support for
  AF_XDP need_wakup feature
 In-Reply-To: <1562244134-19069-1-git-send-email-magnus.karlsson@intel.com>
 References: <1562244134-19069-1-git-send-email-magnus.karlsson@intel.com>
-Message-ID: <1562244134-19069-4-git-send-email-magnus.karlsson@intel.com>
+Message-ID: <1562244134-19069-5-git-send-email-magnus.karlsson@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,18 +20,17 @@ interrupts and return to the application.
 
 Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 16 ++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 16 ++++++++++++++++
  1 file changed, 16 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index d0ff5d8..18de7b6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -626,6 +626,15 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+index e598af9..3fbc4e4 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+@@ -547,6 +547,14 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
+ 	q_vector->rx.total_packets += total_rx_packets;
+ 	q_vector->rx.total_bytes += total_rx_bytes;
  
- 	i40e_finalize_xdp_rx(rx_ring, xdp_xmit);
- 	i40e_update_rx_stats(rx_ring, total_rx_bytes, total_rx_packets);
-+
 +	if (xsk_umem_uses_might_sleep(rx_ring->xsk_umem)) {
 +		if (failure || rx_ring->next_to_clean == rx_ring->next_to_use)
 +			xsk_set_rx_need_wakeup(rx_ring->xsk_umem);
@@ -43,10 +42,11 @@ index d0ff5d8..18de7b6 100644
  	return failure ? budget : (int)total_rx_packets;
  }
  
-@@ -761,6 +770,13 @@ bool i40e_clean_xdp_tx_irq(struct i40e_vsi *vsi,
- out_xmit:
- 	xmit_done = i40e_xmit_zc(tx_ring, budget);
+@@ -689,6 +697,14 @@ bool ixgbe_clean_xdp_tx_irq(struct ixgbe_q_vector *q_vector,
+ 		xsk_umem_complete_tx(umem, xsk_frames);
  
+ 	xmit_done = ixgbe_xmit_zc(tx_ring, q_vector->tx.work_limit);
++
 +	if (xsk_umem_uses_might_sleep(tx_ring->xsk_umem)) {
 +		if (tx_ring->next_to_clean == tx_ring->next_to_use)
 +			xsk_set_tx_need_wakeup(tx_ring->xsk_umem);
@@ -54,7 +54,7 @@ index d0ff5d8..18de7b6 100644
 +			xsk_clear_tx_need_wakeup(tx_ring->xsk_umem);
 +	}
 +
- 	return work_done && xmit_done;
+ 	return budget > 0 && xmit_done;
  }
  
 -- 
