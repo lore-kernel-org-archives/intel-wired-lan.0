@@ -1,36 +1,61 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 3 Jul 2019 21:44:55 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] iavf: remove unused debug
- function iavf_debug_d
-In-Reply-To: <20190702062021.41524-1-yuehaibing@huawei.com>
-References: <20190702062021.41524-1-yuehaibing@huawei.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D3FD2B4@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 04 Jul 2019 14:53:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ c434a599d0c7b1fc7e49f6a6ac2348cf8ed8d8e7
+Message-ID: <5d1da254.b8LNG1tYz+J0LQIR%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of YueHaibing
-> Sent: Monday, July 1, 2019 11:20 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net;
-> intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; YueHaibing <yuehaibing@huawei.com>; linux-
-> kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH net-next] iavf: remove unused debug
-> function iavf_debug_d
-> 
-> There is no caller of function iavf_debug_d() in tree since commit
-> 75051ce4c5d8 ("iavf: Fix up debug print macro"), so it can be removed.
-> 
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 22 ----------------------
->  1 file changed, 22 deletions(-)
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: c434a599d0c7b1fc7e49f6a6ac2348cf8ed8d8e7  i40e: Register RDMA client devices to the virtual platform bus
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 462m
 
+configs tested: 36
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+sh                               allmodconfig
+nds32                               defconfig
+nds32                             allnoconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+openrisc                    or1ksim_defconfig
+h8300                    h8300h-sim_defconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                           sun3_defconfig
+m68k                             allmodconfig
+alpha                               defconfig
+um                                  defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                              allmodconfig
+arm64                            allmodconfig
+riscv                             allnoconfig
+riscv                               defconfig
+alpha                            allyesconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
