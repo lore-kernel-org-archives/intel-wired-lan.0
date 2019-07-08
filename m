@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 8 Jul 2019 17:46:14 +0000
-Subject: [Intel-wired-lan] [PATCH rdma-next 03/17] RDMA/irdma: Implement
- HW Admin Queue OPs
-In-Reply-To: <20190629185405.1601-4-shiraz.saleem@intel.com>
+Date: Mon, 8 Jul 2019 17:46:40 +0000
+Subject: [Intel-wired-lan] [PATCH rdma-next 04/17] RDMA/irdma: Add HMC
+ backing store setup functions
+In-Reply-To: <20190629185405.1601-5-shiraz.saleem@intel.com>
 References: <20190629185405.1601-1-shiraz.saleem@intel.com>
- <20190629185405.1601-4-shiraz.saleem@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D405642@ORSMSX104.amr.corp.intel.com>
+ <20190629185405.1601-5-shiraz.saleem@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D405652@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,30 +19,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Ismail, Mustafa <mustafa.ismail@intel.com>; Saleem, Shiraz
 > <shiraz.saleem@intel.com>
-> Subject: [Intel-wired-lan] [PATCH rdma-next 03/17] RDMA/irdma:
-> Implement HW Admin Queue OPs
+> Subject: [Intel-wired-lan] [PATCH rdma-next 04/17] RDMA/irdma: Add HMC
+> backing store setup functions
 > 
 > From: Mustafa Ismail <mustafa.ismail@intel.com>
 > 
-> The driver posts privileged commands to the HW
-> Admin Queue (Control QP or CQP) to request administrative
-> actions from the HW. Implement create/destroy of CQP
-> and the supporting functions, data structures and headers
-> to handle the different CQP commands
+> HW uses host memory as a backing store for a number of protocol context
+> objects and queue state tracking.
+> The Host Memory Cache (HMC) is a component responsible for managing
+> these objects stored in host memory.
+> 
+> Add the functions and data structures to manage the allocation of backing
+> pages used by the HMC for the various objects
 > 
 > Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
 > Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 > ---
->  drivers/infiniband/hw/irdma/ctrl.c  | 5958
-> +++++++++++++++++++++++++++++++++++
->  drivers/infiniband/hw/irdma/defs.h  | 2126 +++++++++++++
->  drivers/infiniband/hw/irdma/irdma.h |  191 ++
->  drivers/infiniband/hw/irdma/type.h  | 1701 ++++++++++
->  4 files changed, 9976 insertions(+)
->  create mode 100644 drivers/infiniband/hw/irdma/ctrl.c
->  create mode 100644 drivers/infiniband/hw/irdma/defs.h
->  create mode 100644 drivers/infiniband/hw/irdma/irdma.h
->  create mode 100644 drivers/infiniband/hw/irdma/type.h
+>  drivers/infiniband/hw/irdma/hmc.c | 706
+> ++++++++++++++++++++++++++++++++++++++
+>  drivers/infiniband/hw/irdma/hmc.h | 219 ++++++++++++
+>  2 files changed, 925 insertions(+)
+>  create mode 100644 drivers/infiniband/hw/irdma/hmc.c  create mode
+> 100644 drivers/infiniband/hw/irdma/hmc.h
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
