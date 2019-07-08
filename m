@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 8 Jul 2019 17:45:14 +0000
-Subject: [Intel-wired-lan] [PATCH rdma-next 01/17] RDMA/irdma: Add
- driver framework definitions
-In-Reply-To: <20190629185405.1601-2-shiraz.saleem@intel.com>
+Date: Mon, 8 Jul 2019 17:45:34 +0000
+Subject: [Intel-wired-lan] [PATCH rdma-next 02/17] RDMA/irdma: Implement
+ device initialization definitions
+In-Reply-To: <20190629185405.1601-3-shiraz.saleem@intel.com>
 References: <20190629185405.1601-1-shiraz.saleem@intel.com>
- <20190629185405.1601-2-shiraz.saleem@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D404623@ORSMSX104.amr.corp.intel.com>
+ <20190629185405.1601-3-shiraz.saleem@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D405631@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,29 +19,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Ismail, Mustafa <mustafa.ismail@intel.com>; Saleem, Shiraz
 > <shiraz.saleem@intel.com>
-> Subject: [Intel-wired-lan] [PATCH rdma-next 01/17] RDMA/irdma: Add driver
-> framework definitions
+> Subject: [Intel-wired-lan] [PATCH rdma-next 02/17] RDMA/irdma:
+> Implement device initialization definitions
 > 
 > From: Mustafa Ismail <mustafa.ismail@intel.com>
 > 
-> Register irdma as a platform driver capable of supporting platform
-> devices from multi-generation RDMA capable Intel HW. Establish the
-> interface with all supported netdev peer devices and initialize HW.
+> Implement device initialization routines, interrupt set-up,
+> and allocate object bit-map tracking structures.
+> Also, add device specific attributes and register definitions.
 > 
 > Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
 > Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 > ---
->  drivers/infiniband/hw/irdma/i40iw_if.c | 256 +++++++++++++
->  drivers/infiniband/hw/irdma/irdma_if.c | 426 ++++++++++++++++++++++
->  drivers/infiniband/hw/irdma/main.c     | 531
-> +++++++++++++++++++++++++++
->  drivers/infiniband/hw/irdma/main.h     | 639
-> +++++++++++++++++++++++++++++++++
->  4 files changed, 1852 insertions(+)
->  create mode 100644 drivers/infiniband/hw/irdma/i40iw_if.c
->  create mode 100644 drivers/infiniband/hw/irdma/irdma_if.c
->  create mode 100644 drivers/infiniband/hw/irdma/main.c
->  create mode 100644 drivers/infiniband/hw/irdma/main.h
+>  drivers/infiniband/hw/irdma/hw.c        | 2563
+> +++++++++++++++++++++++++++++++
+>  drivers/infiniband/hw/irdma/i40iw_hw.c  |  210 +++
+>  drivers/infiniband/hw/irdma/i40iw_hw.h  |  163 ++
+>  drivers/infiniband/hw/irdma/icrdma_hw.c |   75 +
+>  drivers/infiniband/hw/irdma/icrdma_hw.h |   63 +
+>  5 files changed, 3074 insertions(+)
+>  create mode 100644 drivers/infiniband/hw/irdma/hw.c
+>  create mode 100644 drivers/infiniband/hw/irdma/i40iw_hw.c
+>  create mode 100644 drivers/infiniband/hw/irdma/i40iw_hw.h
+>  create mode 100644 drivers/infiniband/hw/irdma/icrdma_hw.c
+>  create mode 100644 drivers/infiniband/hw/irdma/icrdma_hw.h
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
