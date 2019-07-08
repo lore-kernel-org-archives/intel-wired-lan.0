@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 8 Jul 2019 17:49:14 +0000
-Subject: [Intel-wired-lan] [PATCH rdma-next 11/17] RDMA/irdma: Add
- user/kernel shared libraries
-In-Reply-To: <20190629185405.1601-12-shiraz.saleem@intel.com>
+Date: Mon, 8 Jul 2019 17:49:35 +0000
+Subject: [Intel-wired-lan] [PATCH rdma-next 12/17] RDMA/irdma: Add
+ miscellaneous utility definitions
+In-Reply-To: <20190629185405.1601-13-shiraz.saleem@intel.com>
 References: <20190629185405.1601-1-shiraz.saleem@intel.com>
- <20190629185405.1601-12-shiraz.saleem@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D4056B2@ORSMSX104.amr.corp.intel.com>
+ <20190629185405.1601-13-shiraz.saleem@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D4056C0@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,25 +19,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Ismail, Mustafa <mustafa.ismail@intel.com>; Saleem, Shiraz
 > <shiraz.saleem@intel.com>
-> Subject: [Intel-wired-lan] [PATCH rdma-next 11/17] RDMA/irdma: Add
-> user/kernel shared libraries
+> Subject: [Intel-wired-lan] [PATCH rdma-next 12/17] RDMA/irdma: Add
+> miscellaneous utility definitions
 > 
 > From: Mustafa Ismail <mustafa.ismail@intel.com>
 > 
-> Building the WQE descriptors for different verb
-> operations are similar in kernel and user-space.
-> Add these shared libraries.
+> Add miscellaneous utility functions and headers.
 > 
 > Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
 > Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 > ---
->  drivers/infiniband/hw/irdma/uk.c   | 1739
-> ++++++++++++++++++++++++++++++++++++
->  drivers/infiniband/hw/irdma/user.h |  451 ++++++++++
->  2 files changed, 2190 insertions(+)
->  create mode 100644 drivers/infiniband/hw/irdma/uk.c
->  create mode 100644 drivers/infiniband/hw/irdma/user.h
+>  drivers/infiniband/hw/irdma/osdep.h  |  108 ++
+>  drivers/infiniband/hw/irdma/protos.h |   96 ++
+>  drivers/infiniband/hw/irdma/status.h |   70 +
+>  drivers/infiniband/hw/irdma/utils.c  | 2333
+> ++++++++++++++++++++++++++++++++++
+>  4 files changed, 2607 insertions(+)
+>  create mode 100644 drivers/infiniband/hw/irdma/osdep.h
+>  create mode 100644 drivers/infiniband/hw/irdma/protos.h
+>  create mode 100644 drivers/infiniband/hw/irdma/status.h
+>  create mode 100644 drivers/infiniband/hw/irdma/utils.c
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
