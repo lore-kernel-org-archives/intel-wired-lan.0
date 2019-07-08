@@ -1,206 +1,101 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 9 Jul 2019 00:23:24 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 26/51]
- drivers/net//ethernet/intel/ice/ice_lib.c:3165:11: error: implicit
- declaration of function 'ice_schedule_reset';
- did you mean 'ice_check_reset'?
-Message-ID: <201907090023.WeyYjytL%lkp@intel.com>
+From: syzbot <syzbot+f21251a7468cd46efc60@syzkaller.appspotmail.com>
+Date: Mon, 08 Jul 2019 09:07:06 -0700
+Subject: [Intel-wired-lan] WARNING in mark_chain_precision
+Message-ID: <000000000000b13e1d058d2da276@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   46065ef1595f1bba9b1c9ed45cb501b95ea23259
-commit: 84af3c2be0fede32af62516ffb6100145cffabab [26/51] ice: Implement ethtool ops for channels
-config: arm-allmodconfig (attached as .config)
-compiler: arm-linux-gnueabi-gcc (GCC) 7.4.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 84af3c2be0fede32af62516ffb6100145cffabab
-        # save the attached .config to linux build tree
-        GCC_VERSION=7.4.0 make.cross ARCH=arm 
+Hello,
 
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
+syzbot found the following crash on:
 
-All errors (new ones prefixed by >>):
+HEAD commit:    a51df9f8 gve: fix -ENOMEM null check on a page allocation
+git tree:       net-next
+console output: https://syzkaller.appspot.com/x/log.txt?x=17e64325a00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=6bb3e6e7997c14f9
+dashboard link: https://syzkaller.appspot.com/bug?extid=f21251a7468cd46efc60
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=114f842da00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1630a5aba00000
 
-   drivers/net//ethernet/intel/ice/ice_lib.c: In function 'ice_vsi_rebuild':
->> drivers/net//ethernet/intel/ice/ice_lib.c:3165:11: error: implicit declaration of function 'ice_schedule_reset'; did you mean 'ice_check_reset'? [-Werror=implicit-function-declaration]
-       return ice_schedule_reset(pf, ICE_RESET_PFR);
-              ^~~~~~~~~~~~~~~~~~
-              ice_check_reset
-   cc1: some warnings being treated as errors
+The bug was bisected to:
 
-vim +3165 drivers/net//ethernet/intel/ice/ice_lib.c
+commit 55fdbeaa2db8b271db767240fba24a60bd232528
+Author: Sasha Neftin <sasha.neftin@intel.com>
+Date:   Mon Jan 7 14:40:17 2019 +0000
 
-  3029	
-  3030	/**
-  3031	 * ice_vsi_rebuild - Rebuild VSI after reset
-  3032	 * @vsi: VSI to be rebuild
-  3033	 * @init_vsi: is this an initialization or a reconfigure of the VSI
-  3034	 *
-  3035	 * Returns 0 on success and negative value on failure
-  3036	 */
-  3037	int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
-  3038	{
-  3039		u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
-  3040		struct ice_vf *vf = NULL;
-  3041		enum ice_status status;
-  3042		struct ice_pf *pf;
-  3043		int ret, i;
-  3044	
-  3045		if (!vsi)
-  3046			return -EINVAL;
-  3047	
-  3048		pf = vsi->back;
-  3049		if (vsi->type == ICE_VSI_VF)
-  3050			vf = &pf->vf[vsi->vf_id];
-  3051	
-  3052		ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
-  3053		ice_vsi_free_q_vectors(vsi);
-  3054	
-  3055		/* SR-IOV determines needed MSIX resources all at once instead of per
-  3056		 * VSI since when VFs are spawned we know how many VFs there are and how
-  3057		 * many interrupts each VF needs. SR-IOV MSIX resources are also
-  3058		 * cleared in the same manner.
-  3059		 */
-  3060		if (vsi->type != ICE_VSI_VF) {
-  3061			/* reclaim SW interrupts back to the common pool */
-  3062			ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
-  3063			pf->num_avail_sw_msix += vsi->num_q_vectors;
-  3064			vsi->base_vector = 0;
-  3065		}
-  3066	
-  3067		if (ice_is_xdp_ena_vsi(vsi))
-  3068			/* return value check can be skipped here, it always returns
-  3069			 * 0 if reset is in progress
-  3070			 */
-  3071			ice_destroy_xdp_rings(vsi);
-  3072		ice_vsi_clear_rings(vsi);
-  3073		ice_vsi_free_arrays(vsi);
-  3074		ice_dev_onetime_setup(&pf->hw);
-  3075		if (vsi->req_txq || vsi->req_rxq)
-  3076			ice_vsi_put_qs(vsi);
-  3077		if (vsi->type == ICE_VSI_VF)
-  3078			ice_vsi_set_num_qs(vsi, vf->vf_id);
-  3079		else
-  3080			ice_vsi_set_num_qs(vsi, ICE_INVAL_VFID);
-  3081		if (vsi->req_txq || vsi->req_rxq)
-  3082			ice_vsi_get_qs(vsi);
-  3083		ice_vsi_set_tc_cfg(vsi);
-  3084	
-  3085		/* Initialize VSI struct elements and create VSI in FW */
-  3086		ret = ice_vsi_init(vsi, init_vsi);
-  3087		if (ret < 0)
-  3088			goto err_vsi;
-  3089	
-  3090		ret = ice_vsi_alloc_arrays(vsi);
-  3091		if (ret < 0)
-  3092			goto err_vsi;
-  3093	
-  3094		switch (vsi->type) {
-  3095		case ICE_VSI_PF:
-  3096			ret = ice_vsi_alloc_q_vectors(vsi);
-  3097			if (ret)
-  3098				goto err_rings;
-  3099	
-  3100			ret = ice_vsi_setup_vector_base(vsi);
-  3101			if (ret)
-  3102				goto err_vectors;
-  3103	
-  3104			ret = ice_vsi_set_q_vectors_reg_idx(vsi);
-  3105			if (ret)
-  3106				goto err_vectors;
-  3107	
-  3108			ret = ice_vsi_alloc_rings(vsi);
-  3109			if (ret)
-  3110				goto err_vectors;
-  3111	
-  3112			ice_vsi_map_rings_to_vectors(vsi);
-  3113			if (ice_is_xdp_ena_vsi(vsi)) {
-  3114				vsi->num_xdp_txq = vsi->alloc_txq;
-  3115				vsi->xdp_mapping_mode = ICE_VSI_MAP_CONTIG;
-  3116				ret = ice_prepare_xdp_rings(vsi);
-  3117				if (ret)
-  3118					goto err_vectors;
-  3119			}
-  3120			/* Do not exit if configuring RSS had an issue, at least
-  3121			 * receive traffic on first queue. Hence no need to capture
-  3122			 * return value
-  3123			 */
-  3124			if (test_bit(ICE_FLAG_RSS_ENA, pf->flags))
-  3125				ice_vsi_cfg_rss_lut_key(vsi);
-  3126			break;
-  3127		case ICE_VSI_VF:
-  3128			ret = ice_vsi_alloc_q_vectors(vsi);
-  3129			if (ret)
-  3130				goto err_rings;
-  3131	
-  3132			ret = ice_vsi_set_q_vectors_reg_idx(vsi);
-  3133			if (ret)
-  3134				goto err_vectors;
-  3135	
-  3136			ret = ice_vsi_alloc_rings(vsi);
-  3137			if (ret)
-  3138				goto err_vectors;
-  3139	
-  3140			pf->q_left_tx -= vsi->alloc_txq;
-  3141			pf->q_left_rx -= vsi->alloc_rxq;
-  3142			break;
-  3143		default:
-  3144			break;
-  3145		}
-  3146	
-  3147		/* configure VSI nodes based on number of queues and TC's */
-  3148		for (i = 0; i < vsi->tc_cfg.numtc; i++) {
-  3149			max_txqs[i] = vsi->alloc_txq;
-  3150	
-  3151			if (ice_is_xdp_ena_vsi(vsi))
-  3152				max_txqs[i] += vsi->num_xdp_txq;
-  3153		}
-  3154	
-  3155		status = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
-  3156					 max_txqs);
-  3157		if (status) {
-  3158			dev_err(&pf->pdev->dev,
-  3159				"VSI %d failed lan queue config, error %d\n",
-  3160				vsi->vsi_num, status);
-  3161			if (init_vsi) {
-  3162				ret = -EIO;
-  3163				goto err_vectors;
-  3164			} else {
-> 3165				return ice_schedule_reset(pf, ICE_RESET_PFR);
-  3166			}
-  3167		}
-  3168		return 0;
-  3169	
-  3170	err_vectors:
-  3171		ice_vsi_free_q_vectors(vsi);
-  3172	err_rings:
-  3173		if (vsi->netdev) {
-  3174			vsi->current_netdev_flags = 0;
-  3175			unregister_netdev(vsi->netdev);
-  3176			free_netdev(vsi->netdev);
-  3177			vsi->netdev = NULL;
-  3178		}
-  3179	err_vsi:
-  3180		ice_vsi_clear(vsi);
-  3181		set_bit(__ICE_RESET_FAILED, pf->state);
-  3182		return ret;
-  3183	}
-  3184	
+     igc: Remove unused code
+
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=15c205b9a00000
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=17c205b9a00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=13c205b9a00000
+
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+f21251a7468cd46efc60 at syzkaller.appspotmail.com
+Fixes: 55fdbeaa2db8 ("igc: Remove unused code")
+
+------------[ cut here ]------------
+verifier backtracking bug
+WARNING: CPU: 0 PID: 8846 at kernel/bpf/verifier.c:1755  
+mark_chain_precision+0x15c2/0x18e0 kernel/bpf/verifier.c:1755
+Kernel panic - not syncing: panic_on_warn set ...
+CPU: 0 PID: 8846 Comm: syz-executor835 Not tainted 5.2.0-rc6+ #56
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
+Google 01/01/2011
+Call Trace:
+  __dump_stack lib/dump_stack.c:77 [inline]
+  dump_stack+0x172/0x1f0 lib/dump_stack.c:113
+  panic+0x2cb/0x744 kernel/panic.c:219
+  __warn.cold+0x20/0x4d kernel/panic.c:576
+  report_bug+0x263/0x2b0 lib/bug.c:186
+  fixup_bug arch/x86/kernel/traps.c:179 [inline]
+  fixup_bug arch/x86/kernel/traps.c:174 [inline]
+  do_error_trap+0x11b/0x200 arch/x86/kernel/traps.c:272
+  do_invalid_op+0x37/0x50 arch/x86/kernel/traps.c:291
+  invalid_op+0x14/0x20 arch/x86/entry/entry_64.S:986
+RIP: 0010:mark_chain_precision+0x15c2/0x18e0 kernel/bpf/verifier.c:1755
+Code: e9 55 f2 ff ff 48 89 df e8 4b 0a 2c 00 e9 3a f3 ff ff e8 61 cb f2 ff  
+48 c7 c7 e0 43 91 87 c6 05 40 2b 1f 08 01 e8 1c 03 c5 ff <0f> 0b 41 be f2  
+ff ff ff e9 eb f7 ff ff e8 3c cb f2 ff 45 31 f6 e9
+RSP: 0018:ffff8880a01ef378 EFLAGS: 00010282
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: ffffffff815adb06 RDI: ffffed101403de61
+RBP: ffff8880a01ef4d0 R08: ffff88808e26c400 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+R13: ffff8880a14e8440 R14: 0000000000000001 R15: dffffc0000000000
+  check_cond_jmp_op+0xcce/0x3c20 kernel/bpf/verifier.c:5793
+  do_check+0x61cf/0x8930 kernel/bpf/verifier.c:7684
+  bpf_check+0x6f99/0x9950 kernel/bpf/verifier.c:9195
+  bpf_prog_load+0xec8/0x1670 kernel/bpf/syscall.c:1690
+  __do_sys_bpf+0xa20/0x42c0 kernel/bpf/syscall.c:2830
+  __se_sys_bpf kernel/bpf/syscall.c:2789 [inline]
+  __x64_sys_bpf+0x73/0xb0 kernel/bpf/syscall.c:2789
+  do_syscall_64+0xfd/0x680 arch/x86/entry/common.c:301
+  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+RIP: 0033:0x440369
+Code: 18 89 d0 c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 48 89 f8 48 89 f7  
+48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  
+ff 0f 83 fb 13 fc ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007ffccb952af8 EFLAGS: 00000246 ORIG_RAX: 0000000000000141
+RAX: ffffffffffffffda RBX: 00000000004002c8 RCX: 0000000000440369
+RDX: 0000000000000048 RSI: 0000000020000200 RDI: 0000000000000005
+RBP: 00000000006ca018 R08: 0000000000000000 R09: 0000000000000000
+R10: 00000000ffffffff R11: 0000000000000246 R12: 0000000000401bf0
+R13: 0000000000401c80 R14: 0000000000000000 R15: 0000000000000000
+Kernel Offset: disabled
+Rebooting in 86400 seconds..
+
 
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 70678 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190709/656249b9/attachment-0001.bin>
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller at googlegroups.com.
+
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+syzbot can test patches for this bug, for details see:
+https://goo.gl/tpsmEJ#testing-patches
