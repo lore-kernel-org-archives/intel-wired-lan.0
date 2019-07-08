@@ -1,68 +1,58 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon,  8 Jul 2019 16:12:26 -0700
-Subject: [Intel-wired-lan] [PATCH 09/19] fm10k: reduce the scope of the
- local msg variable
+Date: Mon,  8 Jul 2019 16:12:19 -0700
+Subject: [Intel-wired-lan] [PATCH 02/19] fm10k: reduce scope of *p local
+ variable
 In-Reply-To: <20190708231236.20516-1-jacob.e.keller@intel.com>
 References: <20190708231236.20516-1-jacob.e.keller@intel.com>
-Message-ID: <20190708231236.20516-10-jacob.e.keller@intel.com>
+Message-ID: <20190708231236.20516-3-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The msg variable in the fm10k_mbx_validate_msg_size and
-fm10k_sm_mbx_transmit functions is only used within the do {} loop
-scope. Reduce its scope only to where it is used.
+Reduce the scope of the char *p local variable to only the block where
+it is used.
 
-This was detected by cppcheck, and resolves the following warnings
+This was detected by cppcheck and resolves the following style warning
 produced by that tool:
 
-[fm10k_mbx.c:299]: (style) The scope of the variable 'msg' can be reduced.
-[fm10k_mbx.c:2004]: (style) The scope of the variable 'msg' can be reduced.
+[fm10k_ethtool.c:229]: (style) The scope of the variable 'p' can be
+reduced.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-index 21021fe4f1c3..aece335b41f8 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-@@ -297,13 +297,14 @@ static u16 fm10k_mbx_validate_msg_size(struct fm10k_mbx_info *mbx, u16 len)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 4895dd83dd08..7b9440c0aee1 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 2013 - 2018 Intel Corporation. */
++/* Copyright(c) 2013 - 2019 Intel Corporation. */
+ 
+ #include <linux/vmalloc.h>
+ 
+@@ -222,7 +222,6 @@ static void __fm10k_add_ethtool_stats(u64 **data, void *pointer,
+ 				      const unsigned int size)
  {
- 	struct fm10k_mbx_fifo *fifo = &mbx->rx;
- 	u16 total_len = 0, msg_len;
--	u32 *msg;
+ 	unsigned int i;
+-	char *p;
  
- 	/* length should include previous amounts pushed */
- 	len += mbx->pushed;
+ 	if (!pointer) {
+ 		/* memory is not zero allocated so we have to clear it */
+@@ -232,7 +231,7 @@ static void __fm10k_add_ethtool_stats(u64 **data, void *pointer,
+ 	}
  
- 	/* offset in message is based off of current message size */
- 	do {
-+		u32 *msg;
-+
- 		msg = fifo->buffer + fm10k_fifo_tail_offset(fifo, total_len);
- 		msg_len = FM10K_TLV_DWORD_LEN(*msg);
- 		total_len += msg_len;
-@@ -1920,7 +1921,6 @@ static void fm10k_sm_mbx_transmit(struct fm10k_hw *hw,
- 	/* reduce length by 1 to convert to a mask */
- 	u16 mbmem_len = mbx->mbmem_len - 1;
- 	u16 tail_len, len = 0;
--	u32 *msg;
+ 	for (i = 0; i < size; i++) {
+-		p = (char *)pointer + stats[i].stat_offset;
++		char *p = (char *)pointer + stats[i].stat_offset;
  
- 	/* push head behind tail */
- 	if (mbx->tail < head)
-@@ -1930,6 +1930,8 @@ static void fm10k_sm_mbx_transmit(struct fm10k_hw *hw,
- 
- 	/* determine msg aligned offset for end of buffer */
- 	do {
-+		u32 *msg;
-+
- 		msg = fifo->buffer + fm10k_fifo_head_offset(fifo, len);
- 		tail_len = len;
- 		len += FM10K_TLV_DWORD_LEN(*msg);
+ 		switch (stats[i].sizeof_stat) {
+ 		case sizeof(u64):
 -- 
 2.22.0.214.g8dca754b1e87
 
