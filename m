@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 8 Jul 2019 17:47:52 +0000
-Subject: [Intel-wired-lan] [PATCH rdma-next 07/17] RDMA/irdma: Add
- connection manager
-In-Reply-To: <20190629185405.1601-8-shiraz.saleem@intel.com>
+Date: Mon, 8 Jul 2019 17:48:13 +0000
+Subject: [Intel-wired-lan] [PATCH rdma-next 08/17] RDMA/irdma: Add PBLE
+ resource manager
+In-Reply-To: <20190629185405.1601-9-shiraz.saleem@intel.com>
 References: <20190629185405.1601-1-shiraz.saleem@intel.com>
- <20190629185405.1601-8-shiraz.saleem@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40567A@ORSMSX104.amr.corp.intel.com>
+ <20190629185405.1601-9-shiraz.saleem@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40568B@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,24 +19,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Ismail, Mustafa <mustafa.ismail@intel.com>; Saleem, Shiraz
 > <shiraz.saleem@intel.com>
-> Subject: [Intel-wired-lan] [PATCH rdma-next 07/17] RDMA/irdma: Add
-> connection manager
+> Subject: [Intel-wired-lan] [PATCH rdma-next 08/17] RDMA/irdma: Add PBLE
+> resource manager
 > 
 > From: Mustafa Ismail <mustafa.ismail@intel.com>
 > 
-> Add connection management (CM) implementation for
-> iWARP including accept, reject, connect, create_listen,
-> destroy_listen and CM utility functions
+> Implement a Physical Buffer List Entry (PBLE) resource manager to manage a
+> pool of PBLE HMC resource objects.
 > 
 > Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
 > Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 > ---
->  drivers/infiniband/hw/irdma/cm.c | 4514
-> ++++++++++++++++++++++++++++++++++++++
->  drivers/infiniband/hw/irdma/cm.h |  415 ++++
->  2 files changed, 4929 insertions(+)
->  create mode 100644 drivers/infiniband/hw/irdma/cm.c
->  create mode 100644 drivers/infiniband/hw/irdma/cm.h
+>  drivers/infiniband/hw/irdma/pble.c | 511
+> +++++++++++++++++++++++++++++++++++++
+>  drivers/infiniband/hw/irdma/pble.h | 136 ++++++++++
+>  2 files changed, 647 insertions(+)
+>  create mode 100644 drivers/infiniband/hw/irdma/pble.c
+>  create mode 100644 drivers/infiniband/hw/irdma/pble.h
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
