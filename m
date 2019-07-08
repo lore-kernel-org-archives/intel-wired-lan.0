@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 8 Jul 2019 17:46:40 +0000
-Subject: [Intel-wired-lan] [PATCH rdma-next 04/17] RDMA/irdma: Add HMC
- backing store setup functions
-In-Reply-To: <20190629185405.1601-5-shiraz.saleem@intel.com>
+Date: Mon, 8 Jul 2019 17:47:28 +0000
+Subject: [Intel-wired-lan] [PATCH rdma-next 06/17] RDMA/irdma: Add QoS
+ definitions
+In-Reply-To: <20190629185405.1601-7-shiraz.saleem@intel.com>
 References: <20190629185405.1601-1-shiraz.saleem@intel.com>
- <20190629185405.1601-5-shiraz.saleem@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D405652@ORSMSX104.amr.corp.intel.com>
+ <20190629185405.1601-7-shiraz.saleem@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40566E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,28 +19,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Ismail, Mustafa <mustafa.ismail@intel.com>; Saleem, Shiraz
 > <shiraz.saleem@intel.com>
-> Subject: [Intel-wired-lan] [PATCH rdma-next 04/17] RDMA/irdma: Add HMC
-> backing store setup functions
+> Subject: [Intel-wired-lan] [PATCH rdma-next 06/17] RDMA/irdma: Add QoS
+> definitions
 > 
 > From: Mustafa Ismail <mustafa.ismail@intel.com>
 > 
-> HW uses host memory as a backing store for a number of protocol context
-> objects and queue state tracking.
-> The Host Memory Cache (HMC) is a component responsible for managing
-> these objects stored in host memory.
+> Add definitions for managing the RDMA HW work scheduler (WS) tree.
 > 
-> Add the functions and data structures to manage the allocation of backing
-> pages used by the HMC for the various objects
+> A WS node is created via a control QP operation with the bandwidth
+> allocation, arbitration scheme, and traffic class of the QP specified.
+> The Qset handle returned associates the QoS parameters for the QP.
+> The Qset is registered with the LAN and a equivalent node is created in the
+> LAN packet scheduler tree.
 > 
 > Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
 > Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 > ---
->  drivers/infiniband/hw/irdma/hmc.c | 706
-> ++++++++++++++++++++++++++++++++++++++
->  drivers/infiniband/hw/irdma/hmc.h | 219 ++++++++++++
->  2 files changed, 925 insertions(+)
->  create mode 100644 drivers/infiniband/hw/irdma/hmc.c  create mode
-> 100644 drivers/infiniband/hw/irdma/hmc.h
+>  drivers/infiniband/hw/irdma/ws.c | 396
+> +++++++++++++++++++++++++++++++++++++++
+>  drivers/infiniband/hw/irdma/ws.h |  40 ++++
+>  2 files changed, 436 insertions(+)
+>  create mode 100644 drivers/infiniband/hw/irdma/ws.c  create mode 100644
+> drivers/infiniband/hw/irdma/ws.h
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
