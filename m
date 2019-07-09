@@ -1,18 +1,24 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 09 Jul 2019 11:16:49 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
- ea145ef9cb0324e3642e73bb82ec64ddb34a6c84
-Message-ID: <5d240721.IOJDBHuHa1GgZrsd%lkp@intel.com>
+Date: Tue, 09 Jul 2019 11:26:50 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ 46065ef1595f1bba9b1c9ed45cb501b95ea23259
+Message-ID: <5d24097a.w8iRnsbNNTW8ZbmY%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: ea145ef9cb0324e3642e73bb82ec64ddb34a6c84  ixgbevf: Use cached link state instead of re-reading the value for ethtool
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 46065ef1595f1bba9b1c9ed45cb501b95ea23259  i40e: Remove unicast log when VF is leaving multicast mode
 
-TIMEOUT after 723m
+Regressions in current branch:
+
+drivers/net//ethernet/intel/ice/ice_lib.c:3165:11: error: implicit declaration of function 'ice_schedule_reset'; did you mean 'ice_check_reset'? [-Werror=implicit-function-declaration]
+
+Error ids grouped by kconfigs:
+
+TIMEOUT after 720m
 
 
 Sorry we cannot finish the testset for your branch within a reasonable time.
