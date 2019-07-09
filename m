@@ -1,57 +1,42 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon,  8 Jul 2019 16:12:24 -0700
-Subject: [Intel-wired-lan] [PATCH 07/19] fm10k: reduce the scope of the err
- variable
-In-Reply-To: <20190708231236.20516-1-jacob.e.keller@intel.com>
-References: <20190708231236.20516-1-jacob.e.keller@intel.com>
-Message-ID: <20190708231236.20516-8-jacob.e.keller@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 09 Jul 2019 11:16:48 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD INCOMPLETE
+ 36c4357c63f382becfe1d9775ea0872135c8a8ab
+Message-ID: <5d240720.LFD0crW/54KYXOMk%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Reduce the scope of the local variable err in the fm10k_detach_subtask
-function.
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: 36c4357c63f382becfe1d9775ea0872135c8a8ab  net: bpfilter: print umh messages to /dev/kmsg
 
-This was detected by cppcheck and resolves the following warning
-produced by that tool:
+TIMEOUT after 1278m
 
-[fm10k_pci.c:403]: (style) The scope of the variable 'err' can be reduced.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs tested: 12
+
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index e49fb51d3613..8cdfb24125bf 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright(c) 2013 - 2018 Intel Corporation. */
-+/* Copyright(c) 2013 - 2019 Intel Corporation. */
- 
- #include <linux/module.h>
- #include <linux/interrupt.h>
-@@ -344,7 +344,6 @@ static void fm10k_detach_subtask(struct fm10k_intfc *interface)
- 	struct net_device *netdev = interface->netdev;
- 	u32 __iomem *hw_addr;
- 	u32 value;
--	int err;
- 
- 	/* do nothing if netdev is still present or hw_addr is set */
- 	if (netif_device_present(netdev) || interface->hw.hw_addr)
-@@ -362,6 +361,8 @@ static void fm10k_detach_subtask(struct fm10k_intfc *interface)
- 	hw_addr = READ_ONCE(interface->uc_addr);
- 	value = readl(hw_addr);
- 	if (~value) {
-+		int err;
-+
- 		/* Make sure the reset was initiated because we detached,
- 		 * otherwise we might race with a different reset flow.
- 		 */
--- 
-2.22.0.214.g8dca754b1e87
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
