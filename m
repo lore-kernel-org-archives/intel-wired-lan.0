@@ -1,254 +1,79 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 11 Jul 2019 11:20:15 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD INCOMPLETE
- e858faf556d4e14c750ba1e8852783c6f9520a0e
-Message-ID: <5d26aaef.FRSjpvvuihmwzcK5%lkp@intel.com>
+From: Gavin Lambert <intel@mirality.co.nz>
+Date: Thu, 11 Jul 2019 18:50:54 +1200
+Subject: [Intel-wired-lan] [e1000e] Linux 4.9: unable to send packets after
+ link recovery with patched driver
+Message-ID: <3acf459ddbbd30687cda0a79523afe04@mirality.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: e858faf556d4e14c750ba1e8852783c6f9520a0e  tcp: Reset bytes_acked and bytes_received when disconnecting
+This might be a bit of a tricky question, but I'm not really sure where 
+else to ask.  Please cc me on any replies or I might overlook them.
 
-TIMEOUT after 2890m
+I'm using a system with an e1000e network driver which has been patched 
+to bypass the regular Linux network stack (because it can get called 
+from a Xenomai RT context, among other reasons -- although in my case 
+I'm not doing that).  The complete source for the patched version of the 
+code can be found here:
+     
+https://github.com/ribalda/ethercat/blob/master/devices/e1000e/netdev-4.9-ethercat.c
+(There are some minor changes to other files, but the majority of 
+changes are only to this file.  You can see just the changes at 
+https://gist.github.com/uecasm/5e36a15bda6ffd53079344fc443dcc5f/revisions 
+.)
 
+It was originally based on the in-kernel e1000e driver as of Linux 
+4.9.65.  (I'm not the person who originally made the patches, but I am 
+the person who rebased them to kernel 4.9 and I'm the one trying to 
+maintain them for newer kernel versions.  Though I'm also not the person 
+who made that github repo.)
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+On a Debian system with kernel linux-image-4.9.0-4-rt-amd64 (4.9.65) 
+installed, this works perfectly.  It also works perfectly with 
+linux-image-4.9.0-8-rt-amd64 (4.9.110).
 
-configs timed out: 94
+However, with kernel linux-image-4.9.0-9-rt-amd64 (4.9.168) installed 
+(and no other changes to the system other than building the patched 
+e1000e module against this kernel's headers), something weird happens 
+when the driver is running in its alternate "ecdev" mode.
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-i386                          randconfig-a001
-i386                          randconfig-a002
-i386                          randconfig-a003
-i386                          randconfig-a004
-i386                          randconfig-b001
-i386                          randconfig-b002
-i386                          randconfig-b003
-i386                          randconfig-b004
-i386                          randconfig-c001
-i386                          randconfig-c002
-i386                          randconfig-c003
-i386                          randconfig-c004
-i386                          randconfig-d001
-i386                          randconfig-d002
-i386                          randconfig-d003
-i386                          randconfig-d004
-i386                          randconfig-e001
-i386                          randconfig-e002
-i386                          randconfig-e003
-i386                          randconfig-e004
-i386                          randconfig-f001
-i386                          randconfig-f002
-i386                          randconfig-f003
-i386                          randconfig-f004
-i386                          randconfig-g001
-i386                          randconfig-g002
-i386                          randconfig-g003
-i386                          randconfig-g004
-i386                          randconfig-h001
-i386                          randconfig-h002
-i386                          randconfig-h003
-i386                          randconfig-h004
-ia64                             allyesconfig
-m68k                             allyesconfig
-mips                             allyesconfig
-nds32                            allmodconfig
-nds32                            allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc                            allmodconfig
-sparc64                          allyesconfig
-x86_64                        randconfig-a001
-x86_64                        randconfig-a002
-x86_64                        randconfig-a003
-x86_64                        randconfig-a004
-x86_64                        randconfig-b001
-x86_64                        randconfig-b002
-x86_64                        randconfig-b003
-x86_64                        randconfig-b004
-x86_64                        randconfig-c001
-x86_64                        randconfig-c002
-x86_64                        randconfig-c003
-x86_64                        randconfig-c004
-x86_64                        randconfig-d001
-x86_64                        randconfig-d002
-x86_64                        randconfig-d003
-x86_64                        randconfig-d004
-x86_64                        randconfig-e001
-x86_64                        randconfig-e002
-x86_64                        randconfig-e003
-x86_64                        randconfig-e004
-x86_64                        randconfig-f001
-x86_64                        randconfig-f002
-x86_64                        randconfig-f003
-x86_64                        randconfig-f004
-x86_64                        randconfig-g001
-x86_64                        randconfig-g002
-x86_64                        randconfig-g003
-x86_64                        randconfig-g004
-x86_64                        randconfig-h001
-x86_64                        randconfig-h002
-x86_64                        randconfig-h003
-x86_64                        randconfig-h004
-xtensa                           allmodconfig
-xtensa                           allyesconfig
+Specifically, when the module is initially loaded, it works as expected 
+and can send/receive without problems.  When link is removed (by 
+disconnecting the Ethernet cable), it detects this as expected.  When 
+link is restored, it detects this and reports it but is then unable to 
+actually send any packets.  (Note: to send packets the external code 
+calls the "ndo_start_xmit" operation directly, and to receive packets it 
+calls "ec_poll".  Also note that it won't receive a packet unless it 
+sends one first, due to the way that the network it's connected to 
+works, so I can't tell if receives work or not when sends don't work.)  
+Unloading and reloading the module fixes this, even if the link is 
+initially down and then reconnected after the module is reloaded.  (So 
+perhaps the problem is something it does at the link-loss event?)
 
-configs tested: 127
+Occasionally, it does manage to survive one or two replugs before 
+getting into the problem state.  But once there, no amount of replugging 
+appears to recover it; only reloading the module.
 
-microblaze                    nommu_defconfig
-microblaze                      mmu_defconfig
-arc                              allyesconfig
-arc                                 defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-i386                   randconfig-x000-201927
-i386                   randconfig-x001-201927
-i386                   randconfig-x002-201927
-i386                   randconfig-x003-201927
-i386                   randconfig-x004-201927
-i386                   randconfig-x005-201927
-i386                   randconfig-x006-201927
-i386                   randconfig-x007-201927
-i386                   randconfig-x008-201927
-i386                   randconfig-x009-201927
-riscv                             allnoconfig
-riscv                               defconfig
-openrisc                    or1ksim_defconfig
-nios2                         3c120_defconfig
-nios2                         10m50_defconfig
-openrisc                 simple_smp_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                           allmodconfig
-x86_64                           allyesconfig
-i386                             alldefconfig
-i386                   randconfig-x070-201927
-i386                   randconfig-x071-201927
-i386                   randconfig-x072-201927
-i386                   randconfig-x073-201927
-i386                   randconfig-x074-201927
-i386                   randconfig-x075-201927
-i386                   randconfig-x076-201927
-i386                   randconfig-x077-201927
-i386                   randconfig-x078-201927
-i386                   randconfig-x079-201927
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-i386                   randconfig-x010-201927
-i386                   randconfig-x011-201927
-i386                   randconfig-x012-201927
-i386                   randconfig-x013-201927
-i386                   randconfig-x014-201927
-i386                   randconfig-x015-201927
-i386                   randconfig-x016-201927
-i386                   randconfig-x017-201927
-i386                   randconfig-x018-201927
-i386                   randconfig-x019-201927
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                          debug_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-parisc                            allnoconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-s390                              allnoconfig
-s390                             allmodconfig
-alpha                               defconfig
-x86_64                 randconfig-x000-201927
-x86_64                 randconfig-x001-201927
-x86_64                 randconfig-x002-201927
-x86_64                 randconfig-x003-201927
-x86_64                 randconfig-x004-201927
-x86_64                 randconfig-x005-201927
-x86_64                 randconfig-x006-201927
-x86_64                 randconfig-x007-201927
-x86_64                 randconfig-x008-201927
-x86_64                 randconfig-x009-201927
-i386                             allmodconfig
-s390                                defconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                 randconfig-x010-201927
-x86_64                 randconfig-x011-201927
-x86_64                 randconfig-x012-201927
-x86_64                 randconfig-x013-201927
-x86_64                 randconfig-x014-201927
-x86_64                 randconfig-x015-201927
-x86_64                 randconfig-x016-201927
-x86_64                 randconfig-x017-201927
-x86_64                 randconfig-x018-201927
-x86_64                 randconfig-x019-201927
-arm                              allmodconfig
-arm64                            allmodconfig
+I do know that when it's in the failure state (not actually sending 
+packets), e1000_xmit_frame continues to get all the way to the bottom 
+and return NETDEV_TX_OK.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Note that the e1000e code being used is still the code as shown in the 
+link above, not the code as exists in Linux 4.9.168.  I did try rebasing 
+the ethercat patches onto the new driver version, but this didn?t seem 
+to change the behavior.
+
+Also note that the bad behavior was observed on an I219-V and an 
+I219-LM, but does not appear to happen with an 82571EB (these are the 
+only devices I have handy at the moment).  The problem also doesn't 
+occur when using the unpatched driver from 4.9.168 as a standard Linux 
+network driver.
+
+Obviously, something the patches are doing is causing problems, but it 
+seems odd that the issue only occurs with certain hardware and with 
+certain kernel versions.  Any ideas on what could be the cause and 
+solution (or how to narrow it down further)?  I can easily make changes 
+to the driver code; it's a lot harder to try kernel versions between the 
+two above, however, but I might be able to do that too.
