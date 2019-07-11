@@ -1,16 +1,16 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Thu, 11 Jul 2019 11:20:18 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- ec1171cc944efe0e3fa3df43962f325997f7635b
-Message-ID: <5d26aaf2.BQ6osUqi3Z796lg/%lkp@intel.com>
+Date: Thu, 11 Jul 2019 11:20:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
+ 11dc74e8cba982973448a7ea0ad1e0b491d7c9af
+Message-ID: <5d26aaf3.qb1GVMw5fOYmINn3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: ec1171cc944efe0e3fa3df43962f325997f7635b  fm10k: fix fm10k_get_fault_pf to read correct address
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 11dc74e8cba982973448a7ea0ad1e0b491d7c9af  ixgbevf: Use cached link state instead of re-reading the value for ethtool
 
 TIMEOUT after 725m
 
