@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 12 Jul 2019 18:07:01 +0000
-Subject: [Intel-wired-lan] [PATCH 16/19] fm10k: cast page_addr to u8 *
- when incrementing it
-In-Reply-To: <20190708231236.20516-17-jacob.e.keller@intel.com>
+Date: Fri, 12 Jul 2019 18:07:27 +0000
+Subject: [Intel-wired-lan] [PATCH 17/19] fm10k: mark unused parameters
+ with __always_unused
+In-Reply-To: <20190708231236.20516-18-jacob.e.keller@intel.com>
 References: <20190708231236.20516-1-jacob.e.keller@intel.com>
- <20190708231236.20516-17-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40AC7B@ORSMSX104.amr.corp.intel.com>
+ <20190708231236.20516-18-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40AC8B@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jacob Keller
 > Sent: Monday, July 8, 2019 4:13 PM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH 16/19] fm10k: cast page_addr to u8 * when
-> incrementing it
+> Subject: [Intel-wired-lan] [PATCH 17/19] fm10k: mark unused parameters
+> with __always_unused
 > 
-> The page_addr variable is a void pointer. Incrementing it before calling
-> prefetch is technically undefined. Fix this by casting it to a u8* pointer before
-> incrementing it. This ensures that we increment the pointer value in byte
-> units, instead of relying on this undefined behavior.
-> 
-> This was detected by cppcheck, and resolves the following warning produced
-> by that tool:
-> 
-> [fm10k_main.c:328]: (portability) 'page_addr' is of type 'void *'. When using
-> void pointers in calculations, the behaviour is undefined.
+> Several functions in the fm10k driver have specific function templates, as
+> they are used as function pointers. The parameters in these functions are
+> not always used. Explicitly mark unused parameters with the
+> __always_unused macro, so that the compiler will not warn about them
+> when building with the -Wunused-parameter warning enabled.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/fm10k/fm10k_mbx.c  |  5 ++--
+>  drivers/net/ethernet/intel/fm10k/fm10k_pf.c   | 10 ++++----
+>  drivers/net/ethernet/intel/fm10k/fm10k_tlv.c  |  7 +++---
+> drivers/net/ethernet/intel/fm10k/fm10k_type.h |  2 +-
+>  drivers/net/ethernet/intel/fm10k/fm10k_vf.c   | 25 +++++++++++--------
+>  5 files changed, 28 insertions(+), 21 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
