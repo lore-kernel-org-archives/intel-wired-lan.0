@@ -1,70 +1,70 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 12 Jul 2019 18:08:01 +0000
-Subject: [Intel-wired-lan] [PATCH 18/19] fm10k: convert
- NON_Q_VECTORS(hw) into NON_Q_VECTORS
-In-Reply-To: <20190708231236.20516-19-jacob.e.keller@intel.com>
-References: <20190708231236.20516-1-jacob.e.keller@intel.com>
- <20190708231236.20516-19-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40AC9B@ORSMSX104.amr.corp.intel.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Mon, 15 Jul 2019 16:43:55 +0800
+Subject: [Intel-wired-lan] [PATCH] e1000e: Make speed detection on
+ hotplugging cable more reliable
+Message-ID: <20190715084355.9962-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Monday, July 8, 2019 4:13 PM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH 18/19] fm10k: convert
-> NON_Q_VECTORS(hw) into NON_Q_VECTORS
-> 
-> The driver currently uses a macro to decide whether we should use
-> NON_Q_VECTORS_PF or NON_Q_VECTORS_VF.
-> 
-> However, we also define NON_Q_VECTORS_VF to the same value as
-> NON_Q_VECTORS_PF. This means that the macro NON_Q_VECTORS(hw) will
-> always return the same value.
-> 
-> Let's just remove this macro, and replace it directly with an enum value on
-> the enum non_q_vectors.
-> 
-> This was detected by cppcheck and fixes the following warnings when
-> building with BUILD=KERNEL
-> 
-> [fm10k_ethtool.c:1123]: (style) Same value in both branches of ternary
-> operator.
-> 
-> [fm10k_ethtool.c:1142]: (style) Same value in both branches of ternary
-> operator.
-> 
-> [fm10k_main.c:1826]: (style) Same value in both branches of ternary
-> operator.
-> 
-> [fm10k_main.c:1849]: (style) Same value in both branches of ternary
-> operator.
-> 
-> [fm10k_main.c:1858]: (style) Same value in both branches of ternary
-> operator.
-> 
-> [fm10k_pci.c:901]: (style) Same value in both branches of ternary operator.
-> 
-> [fm10k_pci.c:1040]: (style) Same value in both branches of ternary operator.
-> 
-> [fm10k_pci.c:1726]: (style) Same value in both branches of ternary operator.
-> 
-> [fm10k_pci.c:1763]: (style) Same value in both branches of ternary operator.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/fm10k/fm10k.h         | 10 +++-------
->  drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |  6 ++----
->  drivers/net/ethernet/intel/fm10k/fm10k_main.c    |  4 ++--
->  drivers/net/ethernet/intel/fm10k/fm10k_pci.c     |  9 ++++-----
->  4 files changed, 11 insertions(+), 18 deletions(-)
+After hotplugging an 1Gbps ethernet cable with 1Gbps link partner, the
+MII_BMSR may reports 10Mbps, renders the network rather slow.
 
+The issue has much lower fail rate after commit 59653e6497d1 ("e1000e:
+Make watchdog use delayed work"), which esssentially introduces some
+delay before running the watchdog task.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+But there's still a chance that the hotplugging event and the queued
+watchdog task gets run at the same time, then the original issue can be
+observed once again.
 
+So let's use mod_delayed_work() to add a deterministic 1 second delay
+before running watchdog task, after an interrupt.
+
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index e4baa13b3cda..c83bf5349d53 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -1780,8 +1780,8 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
+ 		}
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__E1000_DOWN, &adapter->state))
+-			queue_delayed_work(adapter->e1000_workqueue,
+-					   &adapter->watchdog_task, 1);
++			mod_delayed_work(adapter->e1000_workqueue,
++					 &adapter->watchdog_task, HZ);
+ 	}
+ 
+ 	/* Reset on uncorrectable ECC error */
+@@ -1861,8 +1861,8 @@ static irqreturn_t e1000_intr(int __always_unused irq, void *data)
+ 		}
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__E1000_DOWN, &adapter->state))
+-			queue_delayed_work(adapter->e1000_workqueue,
+-					   &adapter->watchdog_task, 1);
++			mod_delayed_work(adapter->e1000_workqueue,
++					 &adapter->watchdog_task, HZ);
+ 	}
+ 
+ 	/* Reset on uncorrectable ECC error */
+@@ -1907,8 +1907,8 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+ 		hw->mac.get_link_status = true;
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__E1000_DOWN, &adapter->state))
+-			queue_delayed_work(adapter->e1000_workqueue,
+-					   &adapter->watchdog_task, 1);
++			mod_delayed_work(adapter->e1000_workqueue,
++					 &adapter->watchdog_task, HZ);
+ 	}
+ 
+ 	if (!test_bit(__E1000_DOWN, &adapter->state))
+-- 
+2.17.1
 
