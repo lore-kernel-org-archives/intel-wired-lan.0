@@ -1,83 +1,72 @@
-From: Kai Heng Feng <kai.heng.feng@canonical.com>
-Date: Mon, 15 Jul 2019 17:21:04 +0800
-Subject: [Intel-wired-lan] [PATCH] e1000e: Make speed detection on
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Mon, 15 Jul 2019 20:25:55 +0800
+Subject: [Intel-wired-lan] [PATCH v2] e1000e: Make speed detection on
  hotplugging cable more reliable
-In-Reply-To: <37a1e2af-64c6-4515-5dcc-6051e1192636@molgen.mpg.de>
+In-Reply-To: <20190715084355.9962-1-kai.heng.feng@canonical.com>
 References: <20190715084355.9962-1-kai.heng.feng@canonical.com>
- <017771d5-f168-493a-46a1-88e513941ba1@molgen.mpg.de>
- <F9859C57-4F6D-4685-B4B6-D1D7DCB50D27@canonical.com>
- <37a1e2af-64c6-4515-5dcc-6051e1192636@molgen.mpg.de>
-Message-ID: <1BD6D413-E22A-40A3-B8E8-B9B56B9B5232@canonical.com>
+Message-ID: <20190715122555.11922-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-at 5:06 PM, Paul Menzel <pmenzel@molgen.mpg.de> wrote:
+After hotplugging an 1Gbps ethernet cable with 1Gbps link partner, the
+MII_BMSR may report 10Mbps, renders the network rather slow.
 
-> Dear Kai Heng,
->
->
-> (with or without hyphen?)
->
-> On 7/15/19 11:00 AM, Kai Heng Feng wrote:
->> at 4:52 PM, Paul Menzel <pmenzel@molgen.mpg.de> wrote:
->
->>> On 7/15/19 10:43 AM, Kai-Heng Feng wrote:
->>>> After hotplugging an 1Gbps ethernet cable with 1Gbps link partner, the
->>>> MII_BMSR may reports 10Mbps, renders the network rather slow.
->>>
->>> s/may reports/may report/
->>> s/renders/rendering/
->>
->> Apparently English isn?t my mother tongue ;)
->
-> No problem. Mine neither.
->
->>>> The issue has much lower fail rate after commit 59653e6497d1 ("e1000e:
->>>> Make watchdog use delayed work"), which esssentially introduces some
->>>
->>> essentially
->>
->> Ok.
->>
->>>> delay before running the watchdog task.
->>>>
->>>> But there's still a chance that the hotplugging event and the queued
->>>> watchdog task gets run at the same time, then the original issue can be
->>>> observed once again.
->>>>
->>>> So let's use mod_delayed_work() to add a deterministic 1 second delay
->>>> before running watchdog task, after an interrupt.
->>>
->>> I am not clear about the effects for the user. Could you elaborate
->>> please? Does the link now come up up to one second later?
->>
->> Yes, the link will be up on a fixed one second later.
->>
->> The delay varies between 0 to 2 seconds without this patch.
->
-> Is there no other fix? Regarding booting a system fast (less than six
-> seconds), a fixed one second delay is quite a regression on systems where
-> it worked before.
+The issue has much lower fail rate after commit 59653e6497d1 ("e1000e:
+Make watchdog use delayed work"), which essentially introduces some
+delay before running the watchdog task.
 
-This only affects when ethernet cable is hot plugged.
+But there's still a chance that the hotplugging event and the queued
+watchdog task gets run at the same time, then the original issue can be
+observed once again.
 
-Kai-Heng
+So let's use mod_delayed_work() to add a deterministic 1 second delay
+before running watchdog task, after an interrupt.
 
->
->>>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
->>>
->>> Any bug URL?
->>
->> If maintainers think it?s necessary then I?ll file one.
->
-> Not necessary, if there is none. I thought you had one in Launchpad or so.
->
->
-> Kind regards,
->
-> Paul
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index e4baa13b3cda..c83bf5349d53 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -1780,8 +1780,8 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
+ 		}
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__E1000_DOWN, &adapter->state))
+-			queue_delayed_work(adapter->e1000_workqueue,
+-					   &adapter->watchdog_task, 1);
++			mod_delayed_work(adapter->e1000_workqueue,
++					 &adapter->watchdog_task, HZ);
+ 	}
+ 
+ 	/* Reset on uncorrectable ECC error */
+@@ -1861,8 +1861,8 @@ static irqreturn_t e1000_intr(int __always_unused irq, void *data)
+ 		}
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__E1000_DOWN, &adapter->state))
+-			queue_delayed_work(adapter->e1000_workqueue,
+-					   &adapter->watchdog_task, 1);
++			mod_delayed_work(adapter->e1000_workqueue,
++					 &adapter->watchdog_task, HZ);
+ 	}
+ 
+ 	/* Reset on uncorrectable ECC error */
+@@ -1907,8 +1907,8 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+ 		hw->mac.get_link_status = true;
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__E1000_DOWN, &adapter->state))
+-			queue_delayed_work(adapter->e1000_workqueue,
+-					   &adapter->watchdog_task, 1);
++			mod_delayed_work(adapter->e1000_workqueue,
++					 &adapter->watchdog_task, HZ);
+ 	}
+ 
+ 	if (!test_bit(__E1000_DOWN, &adapter->state))
+-- 
+2.17.1
 
