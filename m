@@ -1,70 +1,62 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Mon, 15 Jul 2019 16:43:55 +0800
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Mon, 15 Jul 2019 10:52:19 +0200
 Subject: [Intel-wired-lan] [PATCH] e1000e: Make speed detection on
  hotplugging cable more reliable
-Message-ID: <20190715084355.9962-1-kai.heng.feng@canonical.com>
+In-Reply-To: <20190715084355.9962-1-kai.heng.feng@canonical.com>
+References: <20190715084355.9962-1-kai.heng.feng@canonical.com>
+Message-ID: <017771d5-f168-493a-46a1-88e513941ba1@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-After hotplugging an 1Gbps ethernet cable with 1Gbps link partner, the
-MII_BMSR may reports 10Mbps, renders the network rather slow.
+Dear Kai-Heng,
 
-The issue has much lower fail rate after commit 59653e6497d1 ("e1000e:
-Make watchdog use delayed work"), which esssentially introduces some
-delay before running the watchdog task.
 
-But there's still a chance that the hotplugging event and the queued
-watchdog task gets run at the same time, then the original issue can be
-observed once again.
+Thank you for the patch.
 
-So let's use mod_delayed_work() to add a deterministic 1 second delay
-before running watchdog task, after an interrupt.
+On 7/15/19 10:43 AM, Kai-Heng Feng wrote:
+> After hotplugging an 1Gbps ethernet cable with 1Gbps link partner, the
+> MII_BMSR may reports 10Mbps, renders the network rather slow.
 
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+s/may reports/may report/
+s/renders/rendering/
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index e4baa13b3cda..c83bf5349d53 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1780,8 +1780,8 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
- 		}
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->state))
--			queue_delayed_work(adapter->e1000_workqueue,
--					   &adapter->watchdog_task, 1);
-+			mod_delayed_work(adapter->e1000_workqueue,
-+					 &adapter->watchdog_task, HZ);
- 	}
- 
- 	/* Reset on uncorrectable ECC error */
-@@ -1861,8 +1861,8 @@ static irqreturn_t e1000_intr(int __always_unused irq, void *data)
- 		}
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->state))
--			queue_delayed_work(adapter->e1000_workqueue,
--					   &adapter->watchdog_task, 1);
-+			mod_delayed_work(adapter->e1000_workqueue,
-+					 &adapter->watchdog_task, HZ);
- 	}
- 
- 	/* Reset on uncorrectable ECC error */
-@@ -1907,8 +1907,8 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
- 		hw->mac.get_link_status = true;
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->state))
--			queue_delayed_work(adapter->e1000_workqueue,
--					   &adapter->watchdog_task, 1);
-+			mod_delayed_work(adapter->e1000_workqueue,
-+					 &adapter->watchdog_task, HZ);
- 	}
- 
- 	if (!test_bit(__E1000_DOWN, &adapter->state))
--- 
-2.17.1
+> The issue has much lower fail rate after commit 59653e6497d1 ("e1000e:
+> Make watchdog use delayed work"), which esssentially introduces some
 
+essentially
+
+> delay before running the watchdog task.
+> 
+> But there's still a chance that the hotplugging event and the queued
+> watchdog task gets run at the same time, then the original issue can be
+> observed once again.
+> 
+> So let's use mod_delayed_work() to add a deterministic 1 second delay
+> before running watchdog task, after an interrupt.
+
+I am not clear about the effects for the user. Could you elaborate
+please? Does the link now come up up to one second later?
+
+> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+
+Any bug URL?
+
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+
+
+Kind regards,
+
+Paul
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 5174 bytes
+Desc: S/MIME Cryptographic Signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190715/187ece0b/attachment.p7s>
