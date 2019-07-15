@@ -1,72 +1,164 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Mon, 15 Jul 2019 20:25:55 +0800
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: Make speed detection on
- hotplugging cable more reliable
-In-Reply-To: <20190715084355.9962-1-kai.heng.feng@canonical.com>
-References: <20190715084355.9962-1-kai.heng.feng@canonical.com>
-Message-ID: <20190715122555.11922-1-kai.heng.feng@canonical.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 15 Jul 2019 14:35:07 +0200
+Subject: [Intel-wired-lan] [PATCH] i40e: reduce stack usage in i40e_set_fc
+Message-ID: <20190715123518.3510791-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-After hotplugging an 1Gbps ethernet cable with 1Gbps link partner, the
-MII_BMSR may report 10Mbps, renders the network rather slow.
+The functions i40e_aq_get_phy_abilities_resp() and i40e_set_fc() both
+have giant structure on the stack, which makes each one use stack frames
+larger than 500 bytes.
 
-The issue has much lower fail rate after commit 59653e6497d1 ("e1000e:
-Make watchdog use delayed work"), which essentially introduces some
-delay before running the watchdog task.
+As clang decides one function into the other, we get a warning for
+exceeding the frame size limit on 32-bit architectures:
 
-But there's still a chance that the hotplugging event and the queued
-watchdog task gets run at the same time, then the original issue can be
-observed once again.
+drivers/net/ethernet/intel/i40e/i40e_common.c:1654:23: error: stack frame size of 1116 bytes in function 'i40e_set_fc' [-Werror,-Wframe-larger-than=]
 
-So let's use mod_delayed_work() to add a deterministic 1 second delay
-before running watchdog task, after an interrupt.
+When building with gcc, the inlining does not happen, but i40e_set_fc()
+calls i40e_aq_get_phy_abilities_resp() anyway, so they add up on the
+kernel stack just as much.
 
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+The parts that actually use large stacks don't overlap, so make sure
+each one is a separate function, and mark them as noinline_for_stack to
+prevent the compilers from combining them again.
+
+Fixes: 0a862b43acc6 ("i40e/i40evf: Add module_types and update_link_info")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 91 +++++++++++--------
+ 1 file changed, 51 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index e4baa13b3cda..c83bf5349d53 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1780,8 +1780,8 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
- 		}
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->state))
--			queue_delayed_work(adapter->e1000_workqueue,
--					   &adapter->watchdog_task, 1);
-+			mod_delayed_work(adapter->e1000_workqueue,
-+					 &adapter->watchdog_task, HZ);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 906cf68d3453..7af1b7477140 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1643,25 +1643,15 @@ enum i40e_status_code i40e_aq_set_phy_config(struct i40e_hw *hw,
+ 	return status;
+ }
+ 
+-/**
+- * i40e_set_fc
+- * @hw: pointer to the hw struct
+- * @aq_failures: buffer to return AdminQ failure information
+- * @atomic_restart: whether to enable atomic link restart
+- *
+- * Set the requested flow control mode using set_phy_config.
+- **/
+-enum i40e_status_code i40e_set_fc(struct i40e_hw *hw, u8 *aq_failures,
+-				  bool atomic_restart)
++static noinline_for_stack enum i40e_status_code
++i40e_set_fc_status(struct i40e_hw *hw,
++		   struct i40e_aq_get_phy_abilities_resp *abilities,
++		   bool atomic_restart)
+ {
+-	enum i40e_fc_mode fc_mode = hw->fc.requested_mode;
+-	struct i40e_aq_get_phy_abilities_resp abilities;
+ 	struct i40e_aq_set_phy_config config;
+-	enum i40e_status_code status;
++	enum i40e_fc_mode fc_mode = hw->fc.requested_mode;
+ 	u8 pause_mask = 0x0;
+ 
+-	*aq_failures = 0x0;
+-
+ 	switch (fc_mode) {
+ 	case I40E_FC_FULL:
+ 		pause_mask |= I40E_AQ_PHY_FLAG_PAUSE_TX;
+@@ -1677,6 +1667,48 @@ enum i40e_status_code i40e_set_fc(struct i40e_hw *hw, u8 *aq_failures,
+ 		break;
  	}
  
- 	/* Reset on uncorrectable ECC error */
-@@ -1861,8 +1861,8 @@ static irqreturn_t e1000_intr(int __always_unused irq, void *data)
- 		}
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->state))
--			queue_delayed_work(adapter->e1000_workqueue,
--					   &adapter->watchdog_task, 1);
-+			mod_delayed_work(adapter->e1000_workqueue,
-+					 &adapter->watchdog_task, HZ);
++	memset(&config, 0, sizeof(struct i40e_aq_set_phy_config));
++	/* clear the old pause settings */
++	config.abilities = abilities->abilities & ~(I40E_AQ_PHY_FLAG_PAUSE_TX) &
++			   ~(I40E_AQ_PHY_FLAG_PAUSE_RX);
++	/* set the new abilities */
++	config.abilities |= pause_mask;
++	/* If the abilities have changed, then set the new config */
++	if (config.abilities == abilities->abilities)
++		return 0;
++
++	/* Auto restart link so settings take effect */
++	if (atomic_restart)
++		config.abilities |= I40E_AQ_PHY_ENABLE_ATOMIC_LINK;
++	/* Copy over all the old settings */
++	config.phy_type = abilities->phy_type;
++	config.phy_type_ext = abilities->phy_type_ext;
++	config.link_speed = abilities->link_speed;
++	config.eee_capability = abilities->eee_capability;
++	config.eeer = abilities->eeer_val;
++	config.low_power_ctrl = abilities->d3_lpan;
++	config.fec_config = abilities->fec_cfg_curr_mod_ext_info &
++			    I40E_AQ_PHY_FEC_CONFIG_MASK;
++
++	return i40e_aq_set_phy_config(hw, &config, NULL);
++}
++
++/**
++ * i40e_set_fc
++ * @hw: pointer to the hw struct
++ * @aq_failures: buffer to return AdminQ failure information
++ * @atomic_restart: whether to enable atomic link restart
++ *
++ * Set the requested flow control mode using set_phy_config.
++ **/
++enum i40e_status_code i40e_set_fc(struct i40e_hw *hw, u8 *aq_failures,
++				  bool atomic_restart)
++{
++	struct i40e_aq_get_phy_abilities_resp abilities;
++	enum i40e_status_code status;
++
++	*aq_failures = 0x0;
++
+ 	/* Get the current phy config */
+ 	status = i40e_aq_get_phy_capabilities(hw, false, false, &abilities,
+ 					      NULL);
+@@ -1685,31 +1717,10 @@ enum i40e_status_code i40e_set_fc(struct i40e_hw *hw, u8 *aq_failures,
+ 		return status;
  	}
  
- 	/* Reset on uncorrectable ECC error */
-@@ -1907,8 +1907,8 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
- 		hw->mac.get_link_status = true;
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->state))
--			queue_delayed_work(adapter->e1000_workqueue,
--					   &adapter->watchdog_task, 1);
-+			mod_delayed_work(adapter->e1000_workqueue,
-+					 &adapter->watchdog_task, HZ);
- 	}
+-	memset(&config, 0, sizeof(struct i40e_aq_set_phy_config));
+-	/* clear the old pause settings */
+-	config.abilities = abilities.abilities & ~(I40E_AQ_PHY_FLAG_PAUSE_TX) &
+-			   ~(I40E_AQ_PHY_FLAG_PAUSE_RX);
+-	/* set the new abilities */
+-	config.abilities |= pause_mask;
+-	/* If the abilities have changed, then set the new config */
+-	if (config.abilities != abilities.abilities) {
+-		/* Auto restart link so settings take effect */
+-		if (atomic_restart)
+-			config.abilities |= I40E_AQ_PHY_ENABLE_ATOMIC_LINK;
+-		/* Copy over all the old settings */
+-		config.phy_type = abilities.phy_type;
+-		config.phy_type_ext = abilities.phy_type_ext;
+-		config.link_speed = abilities.link_speed;
+-		config.eee_capability = abilities.eee_capability;
+-		config.eeer = abilities.eeer_val;
+-		config.low_power_ctrl = abilities.d3_lpan;
+-		config.fec_config = abilities.fec_cfg_curr_mod_ext_info &
+-				    I40E_AQ_PHY_FEC_CONFIG_MASK;
+-		status = i40e_aq_set_phy_config(hw, &config, NULL);
++	status = i40e_set_fc_status(hw, &abilities, atomic_restart);
++	if (status)
++		*aq_failures |= I40E_SET_FC_AQ_FAIL_SET;
  
- 	if (!test_bit(__E1000_DOWN, &adapter->state))
+-		if (status)
+-			*aq_failures |= I40E_SET_FC_AQ_FAIL_SET;
+-	}
+ 	/* Update the link info */
+ 	status = i40e_update_link_info(hw);
+ 	if (status) {
+@@ -2537,7 +2548,7 @@ i40e_status i40e_get_link_status(struct i40e_hw *hw, bool *link_up)
+  * i40e_updatelink_status - update status of the HW network link
+  * @hw: pointer to the hw struct
+  **/
+-i40e_status i40e_update_link_info(struct i40e_hw *hw)
++noinline_for_stack i40e_status i40e_update_link_info(struct i40e_hw *hw)
+ {
+ 	struct i40e_aq_get_phy_abilities_resp abilities;
+ 	i40e_status status = 0;
 -- 
-2.17.1
+2.20.0
 
