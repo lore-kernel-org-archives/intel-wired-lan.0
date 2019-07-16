@@ -1,18 +1,18 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 16 Jul 2019 14:30:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD INCOMPLETE
- 071c37983d99da07797294ea78e9da1a6e287144
-Message-ID: <5d2d6ee8.uC0ew+zLOIyHr7ka%lkp@intel.com>
+Date: Tue, 16 Jul 2019 14:30:06 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
+ aa5bb866e707b059b3b13f363cfdf52250882bc8
+Message-ID: <5d2d6eee.NQO09EtQ/go7X7UL%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: 071c37983d99da07797294ea78e9da1a6e287144  net: neigh: fix multiple neigh timer scheduling
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: aa5bb866e707b059b3b13f363cfdf52250882bc8  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-TIMEOUT after 738m
+TIMEOUT after 720m
 
 
 Sorry we cannot finish the testset for your branch within a reasonable time.
