@@ -1,131 +1,40 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 17 Jul 2019 07:20:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 0d3a06bec497368a555e8907db0349d4e6d3fa02
-Message-ID: <5d2e5bda.zBKYSLrKiW75MtxZ%lkp@intel.com>
+From: Patel, Vedang <vedang.patel@intel.com>
+Date: Wed, 17 Jul 2019 17:32:10 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] fix: taprio: Change type
+ of txtime-delay parameter to u32
+In-Reply-To: <20190716.141904.308520366333461345.davem@davemloft.net>
+References: <1563306738-2779-1-git-send-email-vedang.patel@intel.com>
+ <20190716.141904.308520366333461345.davem@davemloft.net>
+Message-ID: <D18998A5-4B08-4F27-897F-A34B7C15684F@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 0d3a06bec497368a555e8907db0349d4e6d3fa02  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-elapsed time: 337m
 
-configs tested: 106
+> On Jul 16, 2019, at 2:19 PM, David Miller <davem@davemloft.net> wrote:
+> 
+> From: Vedang Patel <vedang.patel@intel.com>
+> Date: Tue, 16 Jul 2019 12:52:18 -0700
+> 
+>> During the review of the iproute2 patches for txtime-assist mode, it was
+>> pointed out that it does not make sense for the txtime-delay parameter to
+>> be negative. So, change the type of the parameter from s32 to u32.
+>> 
+>> Fixes: 4cfd5779bd6e ("taprio: Add support for txtime-assist mode")
+>> Reported-by: Stephen Hemminger <stephen@networkplumber.org>
+>> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+> 
+> You should have targetted this at 'net' as that's the only tree open
+> right now.
+> 
+> I'll apply this.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Sorry about that.
 
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-g001-201928
-x86_64                 randconfig-g002-201928
-x86_64                 randconfig-g003-201928
-x86_64                 randconfig-g004-201928
-i386                   randconfig-g001-201928
-i386                   randconfig-g002-201928
-i386                   randconfig-g003-201928
-i386                   randconfig-g004-201928
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                           allmodconfig
-x86_64                           allyesconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-h001-201928
-x86_64                 randconfig-h002-201928
-x86_64                 randconfig-h003-201928
-x86_64                 randconfig-h004-201928
-i386                   randconfig-h001-201928
-i386                   randconfig-h002-201928
-i386                   randconfig-h003-201928
-i386                   randconfig-h004-201928
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-a001-201928
-x86_64                 randconfig-a002-201928
-x86_64                 randconfig-a003-201928
-x86_64                 randconfig-a004-201928
-i386                   randconfig-a001-201928
-i386                   randconfig-a002-201928
-i386                   randconfig-a003-201928
-i386                   randconfig-a004-201928
-riscv                              tinyconfig
-i386                               tinyconfig
-nds32                            allmodconfig
-riscv                            allmodconfig
+I will keep this in mind from next time. 
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Thanks,
+Vedang
