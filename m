@@ -1,107 +1,64 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 18 Jul 2019 11:24:24 +0300
-Subject: [Intel-wired-lan] [e1000e] Linux 4.9: unable to send packets
- after link recovery with patched driver
-In-Reply-To: <000661bda5687541e895a949c76712fb@mirality.co.nz>
-References: <3acf459ddbbd30687cda0a79523afe04@mirality.co.nz>
- <bec9f546d5a5a46586af0ac93d36f84f@mirality.co.nz>
- <000661bda5687541e895a949c76712fb@mirality.co.nz>
-Message-ID: <d3118220-e599-44cd-5ed6-43259c5fc2c2@intel.com>
+From: Frederick Lawler <fred@fredlawl.com>
+Date: Wed, 17 Jul 2019 21:07:39 -0500
+Subject: [Intel-wired-lan] [PATCH] igc: Prefer pcie_capability_read_word()
+In-Reply-To: <20190718020745.8867-1-fred@fredlawl.com>
+References: <20190718020745.8867-1-fred@fredlawl.com>
+Message-ID: <20190718020745.8867-4-fred@fredlawl.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/18/2019 11:06, Gavin Lambert wrote:
-> On 2019-07-12 15:23, I wrote:
->> On 2019-07-11 18:50, I wrote:
->>> On a Debian system with kernel linux-image-4.9.0-4-rt-amd64 (4.9.65)
->>> installed, this works perfectly.? It also works perfectly with
->>> linux-image-4.9.0-8-rt-amd64 (4.9.110).
->>>
->>> However, with kernel linux-image-4.9.0-9-rt-amd64 (4.9.168) installed
->>> (and no other changes to the system other than building the patched
->>> e1000e module against this kernel's headers), something weird happens
->>> when the driver is running in its alternate "ecdev" mode.
-> [...]
->> Since this was mostly just a rebase error (you can see a similar
->> change in the old location of this code), I'm not sure if this helps
->> narrow down the source of the problem between 4.9.110 and 4.9.168 or
->> not.? I'm still looking for ideas for that.
-> 
-> Using this kernel tree:
-> https://git.kernel.org/pub/scm/linux/kernel/git/rt/linux-stable-rt.git/log/?h=v4.9-rt&ofs=3120 
-> 
-> 
-> I've identified that the code at tag v4.9.126 is "good" and the code at 
-> tag v4.9.127 is "bad".
-> 
-> I've done a bisect (twice, from different starting points) and both 
-> times settled on this commit as the one which introduced the problem I'm 
-> experiencing:
-> 
-> commit c0b809985a7a418fcc3361c239ae79250245282d (refs/bisect/bad)
-> Author: Tomas Winkler <tomas.winkler@intel.com>
-> Date:?? Tue Jan 2 12:01:41 2018 +0200
-> 
->  ??? mei: me: allow runtime pm for platform with D0i3
-> 
->  ??? commit cc365dcf0e56271bedf3de95f88922abe248e951 upstream.
-> 
->  ??? >From the pci power documentation:
->  ??? "The driver itself should not call pm_runtime_allow(), though. 
-> Instead,
->  ??? it should let user space or some platform-specific code do that 
-> (user space
->  ??? can do it via sysfs as stated above)..."
-> 
->  ??? However, the S0ix residency cannot be reached without MEI device 
-> getting
->  ??? into low power state. Hence, for mei devices that support D0i3, 
-> it's better
->  ??? to make runtime power management mandatory and not rely on the system
->  ??? integration such as udev rules.
->  ??? This policy cannot be applied globally as some older platforms
->  ??? were found to have broken power management.
-> 
->  ??? Cc: <stable@vger.kernel.org> v4.13+
->  ??? Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->  ??? Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
->  ??? Reviewed-by: Alexander Usyskin <alexander.usyskin@intel.com>
->  ??? Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> 
-> It is reproducible every time; if I build at the parent commit 
-> (3d3432580911) then the driver works, and if I add the commit above then 
-> it fails.
-> 
-> However it's unclear to me how this is affecting my modified e1000e 
-> driver in this way, except that it is perhaps power management related?
-> 
-> Since it appears to be a pm_runtime-related thing, just as an experiment 
-> I did try commenting out every single call to pm_runtime* functions in 
-> netdev.c, but this did not resolve the problem.? Ditto for anything with 
-> the word "suspend" in it.? I also tried adding e_info() logging calls to 
-> most places that used pm_ calls other than pm_runtime_get/put (and in 
-> particular, in all of the pm_ops callbacks), and none of them were hit 
-> during the problem events.
-> 
-> And even when it's not working, if I `cat` various things in 
-> `/sys/bus/pci/.../power/` on the adapter device, it appears to all be 
-> non-suspended, which makes me doubt that it really is a PM issue, unless 
-> I'm just looking in the wrong places.
-> 
-> Any ideas?
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-Please, refer to the commit def4ec6dce393e2136b62a05712f35a7fa5f5e56
-on the Jeff Kirsher's next-queue: 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/commit/drivers/net/ethernet/intel/e1000e?id=def4ec6dce393e2136b62a05712f35a7fa5f5e56
+Commit 8c0d3a02c130 ("PCI: Add accessors for PCI Express Capability")
+added accessors for the PCI Express Capability so that drivers didn't
+need to be aware of differences between v1 and v2 of the PCI
+Express Capability.
 
-We are working to push this patch to upstream.
-Thanks,
-Sasha
+Replace pci_read_config_word() and pci_write_config_word() calls with
+pcie_capability_read_word() and pcie_capability_write_word().
 
+Signed-off-by: Frederick Lawler <fred@fredlawl.com>
+---
+ drivers/net/ethernet/intel/igc/igc_main.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 34fa0e60a780..8e8ad07a5776 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -3891,13 +3891,11 @@ void igc_write_pci_cfg(struct igc_hw *hw, u32 reg, u16 *value)
+ s32 igc_read_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value)
+ {
+ 	struct igc_adapter *adapter = hw->back;
+-	u16 cap_offset;
+ 
+-	cap_offset = pci_find_capability(adapter->pdev, PCI_CAP_ID_EXP);
+-	if (!cap_offset)
++	if (!pci_is_pcie(adapter->pdev))
+ 		return -IGC_ERR_CONFIG;
+ 
+-	pci_read_config_word(adapter->pdev, cap_offset + reg, value);
++	pcie_capability_read_word(adapter->pdev, reg, value);
+ 
+ 	return IGC_SUCCESS;
+ }
+@@ -3905,13 +3903,11 @@ s32 igc_read_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value)
+ s32 igc_write_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value)
+ {
+ 	struct igc_adapter *adapter = hw->back;
+-	u16 cap_offset;
+ 
+-	cap_offset = pci_find_capability(adapter->pdev, PCI_CAP_ID_EXP);
+-	if (!cap_offset)
++	if (!pci_is_pcie(adapter->pdev))
+ 		return -IGC_ERR_CONFIG;
+ 
+-	pci_write_config_word(adapter->pdev, cap_offset + reg, *value);
++	pcie_capability_write_word(adapter->pdev, reg, *value);
+ 
+ 	return IGC_SUCCESS;
+ }
+-- 
+2.17.1
 
