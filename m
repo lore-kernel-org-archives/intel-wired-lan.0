@@ -1,26 +1,19 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 18 Jul 2019 10:22:04 +0200
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Thu, 18 Jul 2019 11:24:24 +0300
 Subject: [Intel-wired-lan] [e1000e] Linux 4.9: unable to send packets
  after link recovery with patched driver
 In-Reply-To: <000661bda5687541e895a949c76712fb@mirality.co.nz>
 References: <3acf459ddbbd30687cda0a79523afe04@mirality.co.nz>
  <bec9f546d5a5a46586af0ac93d36f84f@mirality.co.nz>
  <000661bda5687541e895a949c76712fb@mirality.co.nz>
-Message-ID: <9ce1ba83-6603-6278-4658-52b941aa85ba@molgen.mpg.de>
+Message-ID: <d3118220-e599-44cd-5ed6-43259c5fc2c2@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-[private answer]
-
-Dear Gavin,
-
-
-Your messages were delivered to the list subscribers.
-
-On 18.07.19 10:06, Gavin Lambert wrote:
+On 7/18/2019 11:06, Gavin Lambert wrote:
 > On 2019-07-12 15:23, I wrote:
 >> On 2019-07-11 18:50, I wrote:
 >>> On a Debian system with kernel linux-image-4.9.0-4-rt-amd64 (4.9.65)
@@ -39,6 +32,7 @@ On 18.07.19 10:06, Gavin Lambert wrote:
 > 
 > Using this kernel tree:
 > https://git.kernel.org/pub/scm/linux/kernel/git/rt/linux-stable-rt.git/log/?h=v4.9-rt&ofs=3120 
+> 
 > 
 > I've identified that the code at tag v4.9.126 is "good" and the code at 
 > tag v4.9.127 is "bad".
@@ -76,9 +70,7 @@ On 18.07.19 10:06, Gavin Lambert wrote:
 >  ??? Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
 >  ??? Reviewed-by: Alexander Usyskin <alexander.usyskin@intel.com>
 >  ??? Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
-This commit was added in v4.16-rc1.
-
+> 
 > It is reproducible every time; if I build at the parent commit 
 > (3d3432580911) then the driver works, and if I add the commit above then 
 > it fails.
@@ -98,14 +90,18 @@ This commit was added in v4.16-rc1.
 > `/sys/bus/pci/.../power/` on the adapter device, it appears to all be 
 > non-suspended, which makes me doubt that it really is a PM issue, unless 
 > I'm just looking in the wrong places.
+> 
+> Any ideas?
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Please, refer to the commit def4ec6dce393e2136b62a05712f35a7fa5f5e56
+on the Jeff Kirsher's next-queue: 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/commit/drivers/net/ethernet/intel/e1000e?id=def4ec6dce393e2136b62a05712f35a7fa5f5e56
 
-If you found a faulty commit, please CC the commit authors, reviewers, 
-and subsystem maintainers and maybe even the regression address.
-
-If you have time, please check with Linux master tree to see if a commit 
-fixing this has been added or you still need to revert it.
+We are working to push this patch to upstream.
+Thanks,
+Sasha
 
 
-Kind regards,
-
-Paul
