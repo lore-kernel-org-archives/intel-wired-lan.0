@@ -1,50 +1,37 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 18 Jul 2019 21:38:45 +0200
-Subject: [Intel-wired-lan] How to update firmware?
-Message-ID: <f16c92b9-61bf-6ea8-afc9-28e778c2b625@molgen.mpg.de>
+From: Gavin Lambert <intel@mirality.co.nz>
+Date: Fri, 19 Jul 2019 12:40:10 +1200
+Subject: [Intel-wired-lan] [e1000e] Linux 4.9: unable to send packets
+ after link recovery with patched driver
+In-Reply-To: <d3118220-e599-44cd-5ed6-43259c5fc2c2@intel.com>
+References: <3acf459ddbbd30687cda0a79523afe04@mirality.co.nz>
+ <bec9f546d5a5a46586af0ac93d36f84f@mirality.co.nz>
+ <000661bda5687541e895a949c76712fb@mirality.co.nz>
+ <d3118220-e599-44cd-5ed6-43259c5fc2c2@intel.com>
+Message-ID: <3a63201c552a9cb6a9737fec92bc1264@mirality.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Linux folks,
+On 2019-07-18 20:24, Neftin, Sasha wrote:
+> Please, refer to the commit def4ec6dce393e2136b62a05712f35a7fa5f5e56
+> on the Jeff Kirsher's next-queue:
+> https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/commit/drivers/net/ethernet/intel/e1000e?id=def4ec6dce393e2136b62a05712f35a7fa5f5e56
+> 
+> We are working to push this patch to upstream.
+
+Thanks, that does sound identical to my symptoms.
+
+However I tried applying this patch to my driver in 4.9 and it does not 
+resolve the problem.
+
+Are some additional patches required as well?
 
 
-How can I update the firmware of Intel network cards with free software 
-utilities? Dell provides a binary to update the firmware, and it worked, 
-but I?d like to have the sources. In this case, it was about the device 
-below.
-
-```
-$ dmesg | grep igb
-[?]
-[   18.439815] igb: Intel(R) Gigabit Ethernet Network Driver - version 
-5.4.0-k
-[   18.466882] igb: Copyright (c) 2007-2014 Intel Corporation.
-[   18.530769] igb 0000:04:00.0: added PHC on eth0
-[   18.530772] igb 0000:04:00.0: Intel(R) Gigabit Ethernet Network 
-Connection
-[   18.530773] igb 0000:04:00.0: eth0: (PCIe:5.0Gb/s:Width x2) 
-e4:43:4b:13:51:f4
-[   18.531091] igb 0000:04:00.0: eth0: PBA No: G61346-018
-[   18.531092] igb 0000:04:00.0: Using MSI-X interrupts. 8 rx queue(s), 
-8 tx queue(s)
-[?]
-$ ethtool -i etrh0
-driver: ixgbe
-version: 5.1.0-k
-firmware-version: 0x8000095c, 18.8.9
-expansion-rom-version:
-bus-info: 0000:01:00.0
-supports-statistics: yes
-supports-test: yes
-supports-eeprom-access: yes
-supports-register-dump: yes
-supports-priv-flags: yes
-```
-
-
-Kind regards,
-
-Paul
+FWIW, I added some extra logging around the new code.  I can confirm 
+that it does execute on link regain but doesn't actually enter the loop 
+in my problem case.  The pcim_state is 0x00080083 at the time.  So the 
+e1000_phy_hw_reset is never actually called.  If I try changing it to 
+call that unconditionally, then it can't successfully establish a link 
+in the first place.
