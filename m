@@ -1,12 +1,12 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 19 Jul 2019 17:22:01 +0000
-Subject: [Intel-wired-lan] [PATCH v2 04/10] i40e: modify driver for
+Date: Fri, 19 Jul 2019 17:22:48 +0000
+Subject: [Intel-wired-lan] [PATCH v2 05/10] ixgbe: modify driver for
  handling offsets
-In-Reply-To: <20190716030637.5634-5-kevin.laatz@intel.com>
+In-Reply-To: <20190716030637.5634-6-kevin.laatz@intel.com>
 References: <20190620090958.2135-1-kevin.laatz@intel.com>
  <20190716030637.5634-1-kevin.laatz@intel.com>
- <20190716030637.5634-5-kevin.laatz@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40C32D@ORSMSX104.amr.corp.intel.com>
+ <20190716030637.5634-6-kevin.laatz@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40C33D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,7 +24,7 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Richardson, Bruce <bruce.richardson@intel.com>; Loftus, Ciara
 > <ciara.loftus@intel.com>; intel-wired-lan at lists.osuosl.org;
 > bpf at vger.kernel.org; Laatz, Kevin <kevin.laatz@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v2 04/10] i40e: modify driver for handling
+> Subject: [Intel-wired-lan] [PATCH v2 05/10] ixgbe: modify driver for handling
 > offsets
 > 
 > With the addition of the unaligned chunks option, we need to make sure we
@@ -32,10 +32,9 @@ List-ID: <intel-wired-lan.osuosl.org>
 > in. This patch modifies the driver to appropriately mask the address for each
 > case.
 > 
-> Signed-off-by: Bruce Richardson <bruce.richardson@intel.com>
 > Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 26 +++++++++++++++++-----
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 26 ++++++++++++++++----
 >  1 file changed, 21 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
