@@ -1,8 +1,8 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 19 Jul 2019 11:33:14 -0700
-Subject: [Intel-wired-lan] [PATCH] Documentation: iavf: Update the Intel LAN
- driver doc for iavf
-Message-ID: <20190719183314.31728-1-jeffrey.t.kirsher@intel.com>
+Date: Fri, 19 Jul 2019 13:07:23 -0700
+Subject: [Intel-wired-lan] [PATCH v2] Documentation: iavf: Update the Intel
+ LAN driver doc for iavf
+Message-ID: <20190719200723.27851-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,13 +12,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 Update the LAN driver documentation to include the latest feature
 implementation and driver capabilities.
 
-Singed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
+v2: fixed SOB and cleaned up the trailing whitespace
+
  .../networking/device_drivers/intel/iavf.rst  | 331 ++++++++++++++++--
  1 file changed, 298 insertions(+), 33 deletions(-)
 
 diff --git a/Documentation/networking/device_drivers/intel/iavf.rst b/Documentation/networking/device_drivers/intel/iavf.rst
-index 2d0c3baa1752..c587a3609c1c 100644
+index 2d0c3baa1752..fd3d045ca6d1 100644
 --- a/Documentation/networking/device_drivers/intel/iavf.rst
 +++ b/Documentation/networking/device_drivers/intel/iavf.rst
 @@ -10,11 +10,15 @@ Copyright(c) 2013-2018 Intel Corporation.
@@ -226,7 +228,7 @@ index 2d0c3baa1752..c587a3609c1c 100644
 +
 +trunk
 +    Supports two operations: add and rem
-+   
++
 +    - add: adds one or more VLAN id into VF VLAN filtering.
 +    - rem: removes VLAN ids from the VF VLAN filtering list.
 +
