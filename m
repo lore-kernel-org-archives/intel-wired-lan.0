@@ -1,70 +1,45 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Sat, 20 Jul 2019 16:11:10 +0000
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Sun, 21 Jul 2019 01:11:19 +0200
 Subject: [Intel-wired-lan] How to update firmware?
-In-Reply-To: <f16c92b9-61bf-6ea8-afc9-28e778c2b625@molgen.mpg.de>
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69AFF0A1B@ORSMSX115.amr.corp.intel.com>
 References: <f16c92b9-61bf-6ea8-afc9-28e778c2b625@molgen.mpg.de>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD69AFF0A1B@ORSMSX115.amr.corp.intel.com>
+ <9B4A1B1917080E46B64F07F2989DADD69AFF0A1B@ORSMSX115.amr.corp.intel.com>
+Message-ID: <14c67f8e-b345-4aae-169f-4b7c9eba5d89@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-What part? The 1G parts didn't have much firmware (only one had a little) and some of the 10G parts didn't, either.
-
-We don't release the source to the firmware updater and there might not be an update for you anyway.
-
-Todd Fujinaka
-Software Application Engineer
-Datacenter Engineering Group
-Intel Corporation
-todd.fujinaka at intel.com
+Dear Todd,
 
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Paul Menzel
-Sent: Thursday, July 18, 2019 12:39 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] How to update firmware?
-
-Dear Linux folks,
+Thank you for your answer. Please find my answers below (interleaved style).
 
 
-How can I update the firmware of Intel network cards with free software utilities? Dell provides a binary to update the firmware, and it worked, but I?d like to have the sources. In this case, it was about the device below.
+On 20.07.19 18:11, Fujinaka, Todd wrote:
+> What part? The 1G parts didn't have much firmware (only one had a
+> little) and some of the 10G parts didn't, either.
 
-```
-$ dmesg | grep igb
-[?]
-[   18.439815] igb: Intel(R) Gigabit Ethernet Network Driver - version 
-5.4.0-k
-[   18.466882] igb: Copyright (c) 2007-2014 Intel Corporation.
-[   18.530769] igb 0000:04:00.0: added PHC on eth0
-[   18.530772] igb 0000:04:00.0: Intel(R) Gigabit Ethernet Network 
-Connection
-[   18.530773] igb 0000:04:00.0: eth0: (PCIe:5.0Gb/s:Width x2) 
-e4:43:4b:13:51:f4
-[   18.531091] igb 0000:04:00.0: eth0: PBA No: G61346-018
-[   18.531092] igb 0000:04:00.0: Using MSI-X interrupts. 8 rx queue(s), 
-8 tx queue(s)
-[?]
-$ ethtool -i etrh0
-driver: ixgbe
-version: 5.1.0-k
-firmware-version: 0x8000095c, 18.8.9
-expansion-rom-version:
-bus-info: 0000:01:00.0
-supports-statistics: yes
-supports-test: yes
-supports-eeprom-access: yes
-supports-register-dump: yes
-supports-priv-flags: yes
-```
+Sorry, I do not understand. There is a firmware line in the output of
+`ethtool` and it was indeed updated to 18.8.9 by runnig the
+(proprietary) Dell update pragram.
+
+> We don't release the source to the firmware updater and there might
+> not be an update for you anyway.
+
+As written, Dell offers an update.
+
+So, why don?t you release the source for the firmware updater under a 
+free licence? We really like to audit all the programs, we run, and 
+review (by ourselves or others) them.
+
+So main goal would be to have just one update interface, for example 
+`fwupdmgr`, to only deal with one tool. And Intel would have one place 
+to upload the firmware update files to (with security issues addressed 
+like signatures, and good release practices like release notes and so on).
 
 
 Kind regards,
 
 Paul
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
