@@ -1,259 +1,140 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 19 Jul 2019 14:47:01 -0700
-Subject: [Intel-wired-lan] [PATCH v3] Documentation: iavf: Update the Intel
- LAN driver doc for iavf
-Message-ID: <20190719214701.17722-1-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 20 Jul 2019 17:14:28 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
+ 2d45053949f3ee7389b54fb7e6ae3050b27bf0df
+Message-ID: <5d32db74.VZydHrfFPpkSXY5A%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Update the LAN driver documentation to include the latest feature
-implementation and driver capabilities.
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 2d45053949f3ee7389b54fb7e6ae3050b27bf0df  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+TIMEOUT after 720m
+
+
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 37
+
+alpha                            allmodconfig
+alpha                            allyesconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                             allyesconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+nds32                            allmodconfig
+nds32                            allyesconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+s390                             allyesconfig
+sh                               allyesconfig
+sparc                            allmodconfig
+sparc64                          allyesconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+
+configs tested: 70
+
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                           sun3_defconfig
+m68k                             allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                             allmodconfig
+s390                                defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+arc                              allyesconfig
+microblaze                    nommu_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+i386                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+i386                              allnoconfig
+i386                                defconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+parisc                            allnoconfig
+powerpc                           allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+
 ---
-v2: fixed SOB and cleaned up the trailing whitespace
-v3: drop the SR-IOV Hypervisor Management Interface since it was for OOT
-    only
-
- .../networking/device_drivers/intel/iavf.rst  | 115 +++++++++++++-----
- 1 file changed, 82 insertions(+), 33 deletions(-)
-
-diff --git a/Documentation/networking/device_drivers/intel/iavf.rst b/Documentation/networking/device_drivers/intel/iavf.rst
-index 2d0c3baa1752..cfc08842e32c 100644
---- a/Documentation/networking/device_drivers/intel/iavf.rst
-+++ b/Documentation/networking/device_drivers/intel/iavf.rst
-@@ -10,11 +10,15 @@ Copyright(c) 2013-2018 Intel Corporation.
- Contents
- ========
- 
-+- Overview
- - Identifying Your Adapter
- - Additional Configurations
- - Known Issues/Troubleshooting
- - Support
- 
-+Overview
-+========
-+
- This file describes the iavf Linux* Base Driver. This driver was formerly
- called i40evf.
- 
-@@ -27,6 +31,7 @@ The guest OS loading the iavf driver must support MSI-X interrupts.
- 
- Identifying Your Adapter
- ========================
-+
- The driver in this kernel is compatible with devices based on the following:
-  * Intel(R) XL710 X710 Virtual Function
-  * Intel(R) X722 Virtual Function
-@@ -50,9 +55,10 @@ Link messages will not be displayed to the console if the distribution is
- restricting system messages. In order to see network driver link messages on
- your console, set dmesg to eight by entering the following::
- 
--  dmesg -n 8
-+    # dmesg -n 8
- 
--NOTE: This setting is not saved across reboots.
-+NOTE:
-+  This setting is not saved across reboots.
- 
- ethtool
- -------
-@@ -72,11 +78,11 @@ then requests from that VF to set VLAN tag stripping will be ignored.
- To enable/disable VLAN tag stripping for a VF, issue the following command
- from inside the VM in which you are running the VF::
- 
--  ethtool -K <if_name> rxvlan on/off
-+    # ethtool -K <if_name> rxvlan on/off
- 
- or alternatively::
- 
--  ethtool --offload <if_name> rxvlan on/off
-+    # ethtool --offload <if_name> rxvlan on/off
- 
- Adaptive Virtual Function
- -------------------------
-@@ -91,21 +97,21 @@ additional features depending on what features are available in the PF with
- which the AVF is associated. The following are base mode features:
- 
- - 4 Queue Pairs (QP) and associated Configuration Status Registers (CSRs)
--  for Tx/Rx.
--- i40e descriptors and ring format.
--- Descriptor write-back completion.
--- 1 control queue, with i40e descriptors, CSRs and ring format.
--- 5 MSI-X interrupt vectors and corresponding i40e CSRs.
--- 1 Interrupt Throttle Rate (ITR) index.
--- 1 Virtual Station Interface (VSI) per VF.
-+  for Tx/Rx
-+- i40e descriptors and ring format
-+- Descriptor write-back completion
-+- 1 control queue, with i40e descriptors, CSRs and ring format
-+- 5 MSI-X interrupt vectors and corresponding i40e CSRs
-+- 1 Interrupt Throttle Rate (ITR) index
-+- 1 Virtual Station Interface (VSI) per VF
- - 1 Traffic Class (TC), TC0
- - Receive Side Scaling (RSS) with 64 entry indirection table and key,
--  configured through the PF.
--- 1 unicast MAC address reserved per VF.
--- 16 MAC address filters for each VF.
--- Stateless offloads - non-tunneled checksums.
--- AVF device ID.
--- HW mailbox is used for VF to PF communications (including on Windows).
-+  configured through the PF
-+- 1 unicast MAC address reserved per VF
-+- 16 MAC address filters for each VF
-+- Stateless offloads - non-tunneled checksums
-+- AVF device ID
-+- HW mailbox is used for VF to PF communications (including on Windows)
- 
- IEEE 802.1ad (QinQ)?Support
- ---------------------------
-@@ -117,8 +123,8 @@ VLAN ID, among other uses.
- 
- The following are examples of how to configure 802.1ad (QinQ)::
- 
--  ip link add link eth0 eth0.24 type vlan proto 802.1ad id 24
--  ip link add link eth0.24 eth0.24.371 type vlan proto 802.1Q id 371
-+    # ip link add link eth0 eth0.24 type vlan proto 802.1ad id 24
-+    # ip link add link eth0.24 eth0.24.371 type vlan proto 802.1Q id 371
- 
- Where "24" and "371" are example VLAN IDs.
- 
-@@ -133,6 +139,19 @@ specific application. This can reduce latency for the specified application,
- and allow Tx traffic to be rate limited per application. Follow the steps below
- to set ADq.
- 
-+Requirements:
-+
-+- The sch_mqprio, act_mirred and cls_flower modules must be loaded
-+- The latest version of iproute2
-+- If another driver (for example, DPDK) has set cloud filters, you cannot
-+  enable ADQ
-+- Depending on the underlying PF device, ADQ cannot be enabled when the
-+  following features are enabled:
-+
-+  + Data Center Bridging (DCB)
-+  + Multiple Functions per Port (MFP)
-+  + Sideband Filters
-+
- 1. Create traffic classes (TCs). Maximum of 8 TCs can be created per interface.
- The shaper bw_rlimit parameter is optional.
- 
-@@ -141,9 +160,9 @@ to 1Gbit for tc0 and 3Gbit for tc1.
- 
- ::
- 
--  # tc qdisc add dev <interface> root mqprio num_tc 2 map 0 0 0 0 1 1 1 1
--  queues 16 at 0 16 at 16 hw 1 mode channel shaper bw_rlimit min_rate 1Gbit 2Gbit
--  max_rate 1Gbit 3Gbit
-+    tc qdisc add dev <interface> root mqprio num_tc 2 map 0 0 0 0 1 1 1 1
-+    queues 16 at 0 16 at 16 hw 1 mode channel shaper bw_rlimit min_rate 1Gbit 2Gbit
-+    max_rate 1Gbit 3Gbit
- 
- map: priority mapping for up to 16 priorities to tcs (e.g. map 0 0 0 0 1 1 1 1
- sets priorities 0-3 to use tc0 and 4-7 to use tc1)
-@@ -162,6 +181,10 @@ Totals must be equal or less than port speed.
- For example: min_rate 1Gbit 3Gbit: Verify bandwidth limit using network
- monitoring tools such as ifstat or sar ?n DEV [interval] [number of samples]
- 
-+NOTE:
-+  Setting up channels via ethtool (ethtool -L) is not supported when the
-+  TCs are configured using mqprio.
-+
- 2. Enable HW TC offload on interface::
- 
-     # ethtool -K <interface> hw-tc-offload on
-@@ -171,16 +194,16 @@ monitoring tools such as ifstat or sar ?n DEV [interval] [number of samples]
-     # tc qdisc add dev <interface> ingress
- 
- NOTES:
-- - Run all tc commands from the iproute2 <pathtoiproute2>/tc/ directory.
-- - ADq is not compatible with cloud filters.
-+ - Run all tc commands from the iproute2 <pathtoiproute2>/tc/ directory
-+ - ADq is not compatible with cloud filters
-  - Setting up channels via ethtool (ethtool -L) is not supported when the TCs
--   are configured using mqprio.
-+   are configured using mqprio
-  - You must have iproute2 latest version
-- - NVM version 6.01 or later is required.
-+ - NVM version 6.01 or later is required
-  - ADq cannot be enabled when any the following features are enabled: Data
--   Center Bridging (DCB), Multiple Functions per Port (MFP), or Sideband Filters.
-+   Center Bridging (DCB), Multiple Functions per Port (MFP), or Sideband Filters
-  - If another driver (for example, DPDK) has set cloud filters, you cannot
--   enable ADq.
-+   enable ADq
-  - Tunnel filters are not supported in ADq. If encapsulated packets do arrive
-    in non-tunnel mode, filtering will be done on the inner headers.  For example,
-    for VXLAN traffic in non-tunnel mode, PCTYPE is identified as a VXLAN
-@@ -198,6 +221,16 @@ NOTES:
- Known Issues/Troubleshooting
- ============================
- 
-+Bonding fails with VFs bound to an Intel(R) Ethernet Controller 700 series device
-+---------------------------------------------------------------------------------
-+If you bind Virtual Functions (VFs) to an Intel(R) Ethernet Controller 700
-+series based device, the VF slaves may fail when they become the active slave.
-+If the MAC address of the VF is set by the PF (Physical Function) of the
-+device, when you add a slave, or change the active-backup slave, Linux bonding
-+tries to sync the backup slave's MAC address to the same MAC address as the
-+active slave. Linux bonding will fail at this point. This issue will not occur
-+if the VF's MAC address is not set by the PF.
-+
- Traffic Is Not Being Passed Between VM and Client
- -------------------------------------------------
- You may not be able to pass traffic between a client system and a
-@@ -215,13 +248,28 @@ Do not unload a port's driver if a Virtual Function (VF) with an active Virtual
- Machine (VM) is bound to it. Doing so will cause the port to appear to hang.
- Once the VM shuts down, or otherwise releases the VF, the command will complete.
- 
-+Using four traffic classes fails
-+--------------------------------
-+Do not try to reserve more than three traffic classes in the iavf driver. Doing
-+so will fail to set any traffic classes and will cause the driver to write
-+errors to stdout. Use a maximum of three queues to avoid this issue.
-+
-+Multiple log error messages on iavf driver removal
-+--------------------------------------------------
-+If you have several VFs and you remove the iavf driver, several instances of
-+the following log errors are written to the log::
-+
-+    Unable to send opcode 2 to PF, err I40E_ERR_QUEUE_EMPTY, aq_err ok
-+    Unable to send the message to VF 2 aq_err 12
-+    ARQ Overflow Error detected
-+
- Virtual machine does not get link
- ---------------------------------
- If the virtual machine has more than one virtual port assigned to it, and those
- virtual ports are bound to different physical ports, you may not get link on
- all of the virtual ports. The following command may work around the issue::
- 
--  ethtool -r <PF>
-+    # ethtool -r <PF>
- 
- Where <PF> is the PF interface in the host, for example: p5p1. You may need to
- run the command more than once to get link on all virtual ports.
-@@ -251,12 +299,13 @@ traffic.
- If you have multiple interfaces in a server, either turn on ARP filtering by
- entering::
- 
--  echo 1 > /proc/sys/net/ipv4/conf/all/arp_filter
-+    # echo 1 > /proc/sys/net/ipv4/conf/all/arp_filter
- 
--NOTE: This setting is not saved across reboots. The configuration change can be
--made permanent by adding the following line to the file /etc/sysctl.conf::
-+NOTE:
-+  This setting is not saved across reboots. The configuration change can be
-+  made permanent by adding the following line to the file /etc/sysctl.conf::
- 
--  net.ipv4.conf.all.arp_filter = 1
-+    net.ipv4.conf.all.arp_filter = 1
- 
- Another alternative is to install the interfaces in separate broadcast domains
- (either in different switches or in a switch partitioned to VLANs).
--- 
-2.21.0
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
