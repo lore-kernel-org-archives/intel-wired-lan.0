@@ -1,140 +1,70 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 20 Jul 2019 18:35:19 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- 96e3bdee54023fba5541bc7d5f50378b0373534b
-Message-ID: <5d32ee67.tYdNpRRezh3+Zw53%lkp@intel.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Sat, 20 Jul 2019 16:11:10 +0000
+Subject: [Intel-wired-lan] How to update firmware?
+In-Reply-To: <f16c92b9-61bf-6ea8-afc9-28e778c2b625@molgen.mpg.de>
+References: <f16c92b9-61bf-6ea8-afc9-28e778c2b625@molgen.mpg.de>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD69AFF0A1B@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 96e3bdee54023fba5541bc7d5f50378b0373534b  Documentation: iavf: Update the Intel LAN driver doc for iavf
+What part? The 1G parts didn't have much firmware (only one had a little) and some of the 10G parts didn't, either.
 
-TIMEOUT after 722m
+We don't release the source to the firmware updater and there might not be an update for you anyway.
+
+Todd Fujinaka
+Software Application Engineer
+Datacenter Engineering Group
+Intel Corporation
+todd.fujinaka at intel.com
 
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Paul Menzel
+Sent: Thursday, July 18, 2019 12:39 PM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] How to update firmware?
 
-configs timed out: 55
+Dear Linux folks,
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-alpha                               defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-i386                             alldefconfig
-i386                                defconfig
-i386                               tinyconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allyesconfig
-mips                                   jz4740
-mips                                     txx9
-nds32                            allmodconfig
-nds32                             allnoconfig
-nds32                            allyesconfig
-nds32                               defconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-riscv                               defconfig
-riscv                              tinyconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc                            allmodconfig
-sparc64                          allyesconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
 
-configs tested: 52
+How can I update the firmware of Intel network cards with free software utilities? Dell provides a binary to update the firmware, and it worked, but I?d like to have the sources. In this case, it was about the device below.
 
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                           sun3_defconfig
-m68k                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                             allmodconfig
-s390                                defconfig
-arc                              allyesconfig
-microblaze                    nommu_defconfig
-microblaze                      mmu_defconfig
-arc                                 defconfig
-x86_64                                    lkp
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-riscv                             allnoconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-parisc                            allnoconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-i386                              allnoconfig
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-openrisc                    or1ksim_defconfig
-nios2                         3c120_defconfig
-c6x                        evmc6678_defconfig
-c6x                              allyesconfig
-nios2                         10m50_defconfig
-openrisc                 simple_smp_defconfig
-arm64                            allmodconfig
+```
+$ dmesg | grep igb
+[?]
+[   18.439815] igb: Intel(R) Gigabit Ethernet Network Driver - version 
+5.4.0-k
+[   18.466882] igb: Copyright (c) 2007-2014 Intel Corporation.
+[   18.530769] igb 0000:04:00.0: added PHC on eth0
+[   18.530772] igb 0000:04:00.0: Intel(R) Gigabit Ethernet Network 
+Connection
+[   18.530773] igb 0000:04:00.0: eth0: (PCIe:5.0Gb/s:Width x2) 
+e4:43:4b:13:51:f4
+[   18.531091] igb 0000:04:00.0: eth0: PBA No: G61346-018
+[   18.531092] igb 0000:04:00.0: Using MSI-X interrupts. 8 rx queue(s), 
+8 tx queue(s)
+[?]
+$ ethtool -i etrh0
+driver: ixgbe
+version: 5.1.0-k
+firmware-version: 0x8000095c, 18.8.9
+expansion-rom-version:
+bus-info: 0000:01:00.0
+supports-statistics: yes
+supports-test: yes
+supports-eeprom-access: yes
+supports-register-dump: yes
+supports-priv-flags: yes
+```
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+
+Kind regards,
+
+Paul
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
