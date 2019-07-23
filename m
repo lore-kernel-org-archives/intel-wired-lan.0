@@ -1,223 +1,39 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 23 Jul 2019 06:01:43 -0400
-Subject: [Intel-wired-lan] [next PATCH S8 11/12] i40e: Persistent lldp
- support
+Date: Tue, 23 Jul 2019 06:01:36 -0400
+Subject: [Intel-wired-lan] [next PATCH S8 04/12] i40e: Update FVL FW API
+ version to 1.9
 In-Reply-To: <20190723100144.57435-1-alice.michael@intel.com>
 References: <20190723100144.57435-1-alice.michael@intel.com>
-Message-ID: <20190723100144.57435-11-alice.michael@intel.com>
+Message-ID: <20190723100144.57435-4-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sylwia Wnuczko <sylwia.wnuczko@intel.com>
+From: Piotr Azarewicz <piotr.azarewicz@intel.com>
 
-This patch adds a function to read nvm module data and uses it to
-read current lldp agent configuration from nvm api version 1.8.
+Upcoming FVL FW increment API version to 1.9 due to Extend PHY access AQ
+command support. SW is ready for that support as well.
 
-Title: i40e-shared: Persistent lldp support
-Change-type: FeatureImplementation
-
-Signed-off-by: Sylwia Wnuczko <sylwia.wnuczko@intel.com>
+Signed-off-by: Piotr Azarewicz <piotr.azarewicz@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_dcb.c    |  18 +++-
- drivers/net/ethernet/intel/i40e/i40e_dcb.h    |   2 +
- drivers/net/ethernet/intel/i40e/i40e_nvm.c    | 101 ++++++++++++++++++
- .../net/ethernet/intel/i40e/i40e_prototype.h  |   6 ++
- drivers/net/ethernet/intel/i40e/i40e_type.h   |   1 +
- 5 files changed, 127 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-index 292eeb3def10..200a1cb3b536 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-@@ -877,7 +877,23 @@ i40e_status i40e_init_dcb(struct i40e_hw *hw, bool enable_mib_change)
- 		return I40E_NOT_SUPPORTED;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 4d966d80305f..360f0cb83b2d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -12,7 +12,7 @@
  
- 	/* Read LLDP NVM area */
--	ret = i40e_read_lldp_cfg(hw, &lldp_cfg);
-+	if (hw->flags & I40E_HW_FLAG_FW_LLDP_PERSISTENT) {
-+		u8 offset = 0;
-+
-+		if (hw->mac.type == I40E_MAC_XL710)
-+			offset = I40E_LLDP_CURRENT_STATUS_XL710_OFFSET;
-+		else if (hw->mac.type == I40E_MAC_X722)
-+			offset = I40E_LLDP_CURRENT_STATUS_X722_OFFSET;
-+		else
-+			return I40E_NOT_SUPPORTED;
-+
-+		ret = i40e_read_nvm_module_data(hw,
-+						I40E_SR_EMP_SR_SETTINGS_PTR,
-+						offset, 1,
-+						&lldp_cfg.adminstatus);
-+	} else {
-+		ret = i40e_read_lldp_cfg(hw, &lldp_cfg);
-+	}
- 	if (ret)
- 		return I40E_ERR_NOT_READY;
+ #define I40E_FW_API_VERSION_MAJOR	0x0001
+ #define I40E_FW_API_VERSION_MINOR_X722	0x0008
+-#define I40E_FW_API_VERSION_MINOR_X710	0x0008
++#define I40E_FW_API_VERSION_MINOR_X710	0x0009
  
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.h b/drivers/net/ethernet/intel/i40e/i40e_dcb.h
-index ddb48ae7cce4..2a80c5daa376 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_dcb.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.h
-@@ -30,6 +30,8 @@
- #define I40E_CEE_SUBTYPE_APP_PRI	4
- 
- #define I40E_CEE_MAX_FEAT_TYPE		3
-+#define I40E_LLDP_CURRENT_STATUS_XL710_OFFSET	0x2B
-+#define I40E_LLDP_CURRENT_STATUS_X722_OFFSET	0x31
- /* Defines for LLDP TLV header */
- #define I40E_LLDP_TLV_LEN_SHIFT		0
- #define I40E_LLDP_TLV_LEN_MASK		(0x01FF << I40E_LLDP_TLV_LEN_SHIFT)
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index a60ab9d48065..28ea53d910ad 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -321,6 +321,77 @@ i40e_status i40e_read_nvm_word(struct i40e_hw *hw, u16 offset,
- 	return ret_code;
- }
- 
-+/**
-+ * i40e_read_nvm_module_data - Reads NVM Buffer to specified memory location
-+ * @hw: pointer to the HW structure
-+ * @module_ptr: Pointer to module in words with respect to NVM beginning
-+ * @offset: offset in words from module start
-+ * @words_data_size: Words to read from NVM
-+ * @data_ptr: Pointer to memory location where resulting buffer will be stored
-+ **/
-+i40e_status i40e_read_nvm_module_data(struct i40e_hw *hw,
-+						u8 module_ptr, u16 offset,
-+						u16 words_data_size,
-+						u16 *data_ptr)
-+{
-+	i40e_status status;
-+	u16 ptr_value = 0;
-+	u32 flat_offset;
-+
-+	if (module_ptr != 0) {
-+		status = i40e_read_nvm_word(hw, module_ptr, &ptr_value);
-+		if (status) {
-+			i40e_debug(hw, I40E_DEBUG_ALL,
-+				   "Reading nvm word failed.Error code: %d.\n",
-+				   status);
-+			return I40E_ERR_NVM;
-+		}
-+	}
-+#define I40E_NVM_INVALID_PTR_VAL 0x7FFF
-+#define I40E_NVM_INVALID_VAL 0xFFFF
-+
-+	/* Pointer not initialized */
-+	if (ptr_value == I40E_NVM_INVALID_PTR_VAL ||
-+	    ptr_value == I40E_NVM_INVALID_VAL)
-+		return I40E_ERR_BAD_PTR;
-+
-+	/* Check whether the module is in SR mapped area or outside */
-+	if (ptr_value & I40E_PTR_TYPE) {
-+		/* Pointer points outside of the Shared RAM mapped area */
-+		ptr_value &= ~I40E_PTR_TYPE;
-+
-+		/* PtrValue in 4kB units, need to convert to words */
-+		ptr_value /= 2;
-+		flat_offset = ((u32)ptr_value * 0x1000) + (u32)offset;
-+		status = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
-+		if (!status) {
-+			status = i40e_aq_read_nvm(hw, 0, 2 * flat_offset,
-+						  2 * words_data_size,
-+						  data_ptr, true, NULL);
-+			i40e_release_nvm(hw);
-+			if (status) {
-+				i40e_debug(hw, I40E_DEBUG_ALL,
-+					   "Reading nvm aq failed.Error code: %d.\n",
-+					   status);
-+				return I40E_ERR_NVM;
-+			}
-+		} else {
-+			return I40E_ERR_NVM;
-+		}
-+	} else {
-+		/* Read from the Shadow RAM */
-+		status = i40e_read_nvm_buffer(hw, ptr_value + offset,
-+					      &words_data_size, data_ptr);
-+		if (status) {
-+			i40e_debug(hw, I40E_DEBUG_ALL,
-+				   "Reading nvm buffer failed.Error code: %d.\n",
-+				   status);
-+		}
-+	}
-+
-+	return status;
-+}
-+
- /**
-  * i40e_read_nvm_buffer_srctl - Reads Shadow RAM buffer via SRCTL register
-  * @hw: pointer to the HW structure
-@@ -429,6 +500,36 @@ static i40e_status __i40e_read_nvm_buffer(struct i40e_hw *hw,
- 	return i40e_read_nvm_buffer_srctl(hw, offset, words, data);
- }
- 
-+/**
-+ * i40e_read_nvm_buffer - Reads Shadow RAM buffer and acquire lock if necessary
-+ * @hw: pointer to the HW structure
-+ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF).
-+ * @words: (in) number of words to read; (out) number of words actually read
-+ * @data: words read from the Shadow RAM
-+ *
-+ * Reads 16 bit words (data buffer) from the SR using the i40e_read_nvm_srrd()
-+ * method. The buffer read is preceded by the NVM ownership take
-+ * and followed by the release.
-+ **/
-+i40e_status i40e_read_nvm_buffer(struct i40e_hw *hw, u16 offset,
-+					   u16 *words, u16 *data)
-+{
-+	i40e_status ret_code = 0;
-+
-+	if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE) {
-+		ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
-+		if (!ret_code) {
-+			ret_code = i40e_read_nvm_buffer_aq(hw, offset, words,
-+							 data);
-+			i40e_release_nvm(hw);
-+		}
-+	} else {
-+		ret_code = i40e_read_nvm_buffer_srctl(hw, offset, words, data);
-+	}
-+
-+	return ret_code;
-+}
-+
- /**
-  * i40e_write_nvm_aq - Writes Shadow RAM.
-  * @hw: pointer to the HW structure.
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index 9c810d54df1c..33945fb2dd2d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -315,6 +315,12 @@ i40e_status i40e_acquire_nvm(struct i40e_hw *hw,
- void i40e_release_nvm(struct i40e_hw *hw);
- i40e_status i40e_read_nvm_word(struct i40e_hw *hw, u16 offset,
- 					 u16 *data);
-+i40e_status i40e_read_nvm_module_data(struct i40e_hw *hw,
-+						u8 module_ptr, u16 offset,
-+						u16 words_data_size,
-+						u16 *data_ptr);
-+i40e_status i40e_read_nvm_buffer(struct i40e_hw *hw, u16 offset,
-+					   u16 *words, u16 *data);
- i40e_status i40e_update_nvm_checksum(struct i40e_hw *hw);
- i40e_status i40e_validate_nvm_checksum(struct i40e_hw *hw,
- 						 u16 *checksum);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 06e2499de363..0f4994bd089a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -1318,6 +1318,7 @@ struct i40e_hw_port_stats {
- #define I40E_SR_VPD_PTR				0x2F
- #define I40E_SR_PCIE_ALT_AUTO_LOAD_PTR		0x3E
- #define I40E_SR_SW_CHECKSUM_WORD		0x3F
-+#define I40E_SR_EMP_SR_SETTINGS_PTR		0x48
- 
- /* Auxiliary field, mask and shift definition for Shadow RAM and NVM Flash */
- #define I40E_SR_VPD_MODULE_MAX_SIZE		1024
+ #define I40E_FW_MINOR_VERSION(_h) ((_h)->mac.type == I40E_MAC_XL710 ? \
+ 					I40E_FW_API_VERSION_MINOR_X710 : \
 -- 
 2.21.0
 
