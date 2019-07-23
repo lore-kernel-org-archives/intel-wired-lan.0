@@ -1,237 +1,125 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:24:47 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v3 07/15] ice: Fix kernel hang with
- DCB reset in CEE mode
+Date: Tue, 23 Jul 2019 02:24:51 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v3 11/15] ice: Reduce wait times
+ during VF bringup/reset
 In-Reply-To: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
 References: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092454.3508-7-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092454.3508-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Usha Ketineni <usha.k.ketineni@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-This patch fixes the set local MIB AQ call failures in the DCB rebuild path
-by setting the defaults for the ETS recommended DCB configuration. Also,
-willing bits for the DCB configuration needs to be set correctly. Resets
-works fine in IEEE mode as the ETS recommended DCB configuration is
-populated but not in CEE mode.
-Without this patch, PFR causes the kernel hang in CEE mode.
+Currently there are a couple places where the VF is waiting too long when
+checking the status of registers. This is causing the AVF driver to
+spin for longer than necessary in the __IAVF_STARTUP state. Sometimes
+it causes the AVF to go into the __IAVF_COMM_FAILED, which may retrigger
+the __IAVF_STARTUP state. Try to reduce the chance of this happening by
+removing unnecessary wait times in VF bringup/resets.
 
-Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 149 +++++++++++--------
- 1 file changed, 88 insertions(+), 61 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 26 +++++++++++--------
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  4 +++
+ 2 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index f80628a13f2a..d285aba3fea7 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -208,16 +208,87 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
- 	return ret;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 69d45376be80..829102ee6e0c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -382,12 +382,15 @@ static void ice_trigger_vf_reset(struct ice_vf *vf, bool is_vflr)
+ 
+ 	wr32(hw, PF_PCI_CIAA,
+ 	     VF_DEVICE_STATUS | (vf_abs_id << PF_PCI_CIAA_VF_NUM_S));
+-	for (i = 0; i < 100; i++) {
++	for (i = 0; i < ICE_PCI_CIAD_WAIT_COUNT; i++) {
+ 		reg = rd32(hw, PF_PCI_CIAD);
+-		if ((reg & VF_TRANS_PENDING_M) != 0)
+-			dev_err(&pf->pdev->dev,
+-				"VF %d PCI transactions stuck\n", vf->vf_id);
+-		udelay(1);
++		/* no transactions pending so stop polling */
++		if ((reg & VF_TRANS_PENDING_M) == 0)
++			break;
++
++		dev_err(&pf->pdev->dev,
++			"VF %d PCI transactions stuck\n", vf->vf_id);
++		udelay(ICE_PCI_CIAD_WAIT_DELAY_US);
+ 	}
  }
  
-+/**
-+ * ice_cfg_etsrec_defaults - Set default ETS recommended DCB config
-+ * @pi: port information structure
-+ */
-+static void ice_cfg_etsrec_defaults(struct ice_port_info *pi)
-+{
-+	struct ice_dcbx_cfg *dcbcfg = &pi->local_dcbx_cfg;
-+	u8 i;
-+
-+	/* Ensure ETS recommended DCB configuration is not already set */
-+	if (dcbcfg->etsrec.maxtcs)
-+		return;
-+
-+	/* In CEE mode, set the default to 1 TC */
-+	dcbcfg->etsrec.maxtcs = 1;
-+	for (i = 0; i < ICE_MAX_TRAFFIC_CLASS; i++) {
-+		dcbcfg->etsrec.tcbwtable[i] = i ? 0 : 100;
-+		dcbcfg->etsrec.tsatable[i] = i ? ICE_IEEE_TSA_STRICT :
-+						 ICE_IEEE_TSA_ETS;
-+	}
-+}
-+
-+/**
-+ * ice_dcb_need_recfg - Check if DCB needs reconfig
-+ * @pf: board private structure
-+ * @old_cfg: current DCB config
-+ * @new_cfg: new DCB config
-+ */
-+static bool
-+ice_dcb_need_recfg(struct ice_pf *pf, struct ice_dcbx_cfg *old_cfg,
-+		   struct ice_dcbx_cfg *new_cfg)
-+{
-+	bool need_reconfig = false;
-+
-+	/* Check if ETS configuration has changed */
-+	if (memcmp(&new_cfg->etscfg, &old_cfg->etscfg,
-+		   sizeof(new_cfg->etscfg))) {
-+		/* If Priority Table has changed reconfig is needed */
-+		if (memcmp(&new_cfg->etscfg.prio_table,
-+			   &old_cfg->etscfg.prio_table,
-+			   sizeof(new_cfg->etscfg.prio_table))) {
-+			need_reconfig = true;
-+			dev_dbg(&pf->pdev->dev, "ETS UP2TC changed.\n");
-+		}
-+
-+		if (memcmp(&new_cfg->etscfg.tcbwtable,
-+			   &old_cfg->etscfg.tcbwtable,
-+			   sizeof(new_cfg->etscfg.tcbwtable)))
-+			dev_dbg(&pf->pdev->dev, "ETS TC BW Table changed.\n");
-+
-+		if (memcmp(&new_cfg->etscfg.tsatable,
-+			   &old_cfg->etscfg.tsatable,
-+			   sizeof(new_cfg->etscfg.tsatable)))
-+			dev_dbg(&pf->pdev->dev, "ETS TSA Table changed.\n");
-+	}
-+
-+	/* Check if PFC configuration has changed */
-+	if (memcmp(&new_cfg->pfc, &old_cfg->pfc, sizeof(new_cfg->pfc))) {
-+		need_reconfig = true;
-+		dev_dbg(&pf->pdev->dev, "PFC config change detected.\n");
-+	}
-+
-+	/* Check if APP Table has changed */
-+	if (memcmp(&new_cfg->app, &old_cfg->app, sizeof(new_cfg->app))) {
-+		need_reconfig = true;
-+		dev_dbg(&pf->pdev->dev, "APP Table change detected.\n");
-+	}
-+
-+	dev_dbg(&pf->pdev->dev, "dcb need_reconfig=%d\n", need_reconfig);
-+	return need_reconfig;
-+}
-+
- /**
-  * ice_dcb_rebuild - rebuild DCB post reset
-  * @pf: physical function instance
-  */
- void ice_dcb_rebuild(struct ice_pf *pf)
- {
-+	struct ice_dcbx_cfg *local_dcbx_cfg, *desired_dcbx_cfg, *prev_cfg;
- 	struct ice_aqc_port_ets_elem buf = { 0 };
--	struct ice_dcbx_cfg *prev_cfg;
- 	enum ice_status ret;
--	u8 willing;
+@@ -1069,7 +1072,6 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	 * finished resetting.
+ 	 */
+ 	for (i = 0, v = 0; i < 10 && v < pf->num_alloc_vfs; i++) {
+-		usleep_range(10000, 20000);
  
- 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
- 	if (ret) {
-@@ -229,9 +300,15 @@ void ice_dcb_rebuild(struct ice_pf *pf)
- 	if (!test_bit(ICE_FLAG_DCB_ENA, pf->flags))
- 		return;
+ 		/* Check each VF in sequence */
+ 		while (v < pf->num_alloc_vfs) {
+@@ -1077,8 +1079,11 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
  
-+	local_dcbx_cfg = &pf->hw.port_info->local_dcbx_cfg;
-+	desired_dcbx_cfg = &pf->hw.port_info->desired_dcbx_cfg;
+ 			vf = &pf->vf[v];
+ 			reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
+-			if (!(reg & VPGEN_VFRSTAT_VFRD_M))
++			if (!(reg & VPGEN_VFRSTAT_VFRD_M)) {
++				/* only delay if the check failed */
++				usleep_range(10, 20);
+ 				break;
++			}
+ 
+ 			/* If the current VF has finished resetting, move on
+ 			 * to the next VF in sequence.
+@@ -1092,7 +1097,6 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	 */
+ 	if (v < pf->num_alloc_vfs)
+ 		dev_warn(&pf->pdev->dev, "VF reset check timeout\n");
+-	usleep_range(10000, 20000);
+ 
+ 	/* free VF resources to begin resetting the VSI state */
+ 	for (v = 0; v < pf->num_alloc_vfs; v++) {
+@@ -1166,12 +1170,14 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 		 * poll the status register to make sure that the reset
+ 		 * completed successfully.
+ 		 */
+-		usleep_range(10000, 20000);
+ 		reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
+ 		if (reg & VPGEN_VFRSTAT_VFRD_M) {
+ 			rsd = true;
+ 			break;
+ 		}
 +
- 	/* Save current willing state and force FW to unwilling */
--	willing = pf->hw.port_info->local_dcbx_cfg.etscfg.willing;
--	pf->hw.port_info->local_dcbx_cfg.etscfg.willing = 0x0;
-+	local_dcbx_cfg->etscfg.willing = 0x0;
-+	local_dcbx_cfg->pfc.willing = 0x0;
-+	local_dcbx_cfg->app_mode = ICE_DCBX_APPS_NON_WILLING;
-+
-+	ice_cfg_etsrec_defaults(pf->hw.port_info);
- 	ret = ice_set_dcb_cfg(pf->hw.port_info);
- 	if (ret) {
- 		dev_err(&pf->pdev->dev, "Failed to set DCB to unwilling\n");
-@@ -239,8 +316,7 @@ void ice_dcb_rebuild(struct ice_pf *pf)
++		/* only sleep if the reset is not done */
++		usleep_range(10, 20);
  	}
  
- 	/* Retrieve DCB config and ensure same as current in SW */
--	prev_cfg = devm_kmemdup(&pf->pdev->dev,
--				&pf->hw.port_info->local_dcbx_cfg,
-+	prev_cfg = devm_kmemdup(&pf->pdev->dev, local_dcbx_cfg,
- 				sizeof(*prev_cfg), GFP_KERNEL);
- 	if (!prev_cfg) {
- 		dev_err(&pf->pdev->dev, "Failed to alloc space for DCB cfg\n");
-@@ -248,22 +324,22 @@ void ice_dcb_rebuild(struct ice_pf *pf)
- 	}
+ 	/* Display a warning if VF didn't manage to reset in time, but need to
+@@ -1181,8 +1187,6 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 		dev_warn(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
+ 			 vf->vf_id);
  
- 	ice_init_dcb(&pf->hw);
--	if (memcmp(prev_cfg, &pf->hw.port_info->local_dcbx_cfg,
--		   sizeof(*prev_cfg))) {
-+	if (ice_dcb_need_recfg(pf, prev_cfg, local_dcbx_cfg)) {
- 		/* difference in cfg detected - disable DCB till next MIB */
- 		dev_err(&pf->pdev->dev, "Set local MIB not accurate\n");
--		devm_kfree(&pf->pdev->dev, prev_cfg);
- 		goto dcb_error;
- 	}
+-	usleep_range(10000, 20000);
+-
+ 	/* disable promiscuous modes in case they were enabled
+ 	 * ignore any error if disabling process failed
+ 	 */
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 424bc0538956..79bb47f73879 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -22,6 +22,10 @@
+ #define VF_DEVICE_STATUS		0xAA
+ #define VF_TRANS_PENDING_M		0x20
  
- 	/* fetched config congruent to previous configuration */
- 	devm_kfree(&pf->pdev->dev, prev_cfg);
- 
--	/* Configuration replayed - reset willing state to previous */
--	pf->hw.port_info->local_dcbx_cfg.etscfg.willing = willing;
-+	/* Set the local desired config */
-+	memset(&pf->hw.port_info->local_dcbx_cfg, 0, sizeof(*local_dcbx_cfg));
-+	memcpy(local_dcbx_cfg, desired_dcbx_cfg, sizeof(*local_dcbx_cfg));
-+	ice_cfg_etsrec_defaults(pf->hw.port_info);
- 	ret = ice_set_dcb_cfg(pf->hw.port_info);
- 	if (ret) {
--		dev_err(&pf->pdev->dev, "Fail restoring prev willing state\n");
-+		dev_err(&pf->pdev->dev, "Failed to set desired config\n");
- 		goto dcb_error;
- 	}
- 	dev_info(&pf->pdev->dev, "DCB restored after reset\n");
-@@ -506,55 +582,6 @@ ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
- 	return 0;
- }
- 
--/**
-- * ice_dcb_need_recfg - Check if DCB needs reconfig
-- * @pf: board private structure
-- * @old_cfg: current DCB config
-- * @new_cfg: new DCB config
-- */
--static bool ice_dcb_need_recfg(struct ice_pf *pf, struct ice_dcbx_cfg *old_cfg,
--			       struct ice_dcbx_cfg *new_cfg)
--{
--	bool need_reconfig = false;
--
--	/* Check if ETS configuration has changed */
--	if (memcmp(&new_cfg->etscfg, &old_cfg->etscfg,
--		   sizeof(new_cfg->etscfg))) {
--		/* If Priority Table has changed reconfig is needed */
--		if (memcmp(&new_cfg->etscfg.prio_table,
--			   &old_cfg->etscfg.prio_table,
--			   sizeof(new_cfg->etscfg.prio_table))) {
--			need_reconfig = true;
--			dev_dbg(&pf->pdev->dev, "ETS UP2TC changed.\n");
--		}
--
--		if (memcmp(&new_cfg->etscfg.tcbwtable,
--			   &old_cfg->etscfg.tcbwtable,
--			   sizeof(new_cfg->etscfg.tcbwtable)))
--			dev_dbg(&pf->pdev->dev, "ETS TC BW Table changed.\n");
--
--		if (memcmp(&new_cfg->etscfg.tsatable,
--			   &old_cfg->etscfg.tsatable,
--			   sizeof(new_cfg->etscfg.tsatable)))
--			dev_dbg(&pf->pdev->dev, "ETS TSA Table changed.\n");
--	}
--
--	/* Check if PFC configuration has changed */
--	if (memcmp(&new_cfg->pfc, &old_cfg->pfc, sizeof(new_cfg->pfc))) {
--		need_reconfig = true;
--		dev_dbg(&pf->pdev->dev, "PFC config change detected.\n");
--	}
--
--	/* Check if APP Table has changed */
--	if (memcmp(&new_cfg->app, &old_cfg->app, sizeof(new_cfg->app))) {
--		need_reconfig = true;
--		dev_dbg(&pf->pdev->dev, "APP Table change detected.\n");
--	}
--
--	dev_dbg(&pf->pdev->dev, "dcb need_reconfig=%d\n", need_reconfig);
--	return need_reconfig;
--}
--
- /**
-  * ice_dcb_process_lldp_set_mib_change - Process MIB change
-  * @pf: ptr to ice_pf
++/* wait defines for polling PF_PCI_CIAD register status */
++#define ICE_PCI_CIAD_WAIT_COUNT		100
++#define ICE_PCI_CIAD_WAIT_DELAY_US	1
++
+ /* Specific VF states */
+ enum ice_vf_states {
+ 	ICE_VF_STATE_INIT = 0,
 -- 
 2.20.1
 
