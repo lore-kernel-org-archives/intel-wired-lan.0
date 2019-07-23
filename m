@@ -1,91 +1,135 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 23 Jul 2019 06:03:41 -0400
-Subject: [Intel-wired-lan] [next PATCH S8 08/12] i40e: Remove function
- i40e_update_dcb_config()
-In-Reply-To: <20190723100345.57522-1-alice.michael@intel.com>
-References: <20190723100345.57522-1-alice.michael@intel.com>
-Message-ID: <20190723100345.57522-8-alice.michael@intel.com>
+Date: Tue, 23 Jul 2019 06:03:34 -0400
+Subject: [Intel-wired-lan] [next PATCH S8 01/12] i40e: fix shifts of signed
+ values
+Message-ID: <20190723100345.57522-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Grzegorz Siwik <grzegorz.siwik@intel.com>
+From: Beilei Xing <beilei.xing@intel.com>
 
-This patch removes function i40e_update_dcb_config(). Instead of
-i40e_update_dcb_config() we use i40e_init_dcb(), which implements the
-correct nvm read.
+This patch fixes following error reported by cppcheck:
+(error) Shifting signed 32-bit value by 31 bits is undefined behaviour
 
-Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
+Signed-off-by: Ferruh Yigit <ferruh.yigit@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 46 +--------------------
- 1 file changed, 1 insertion(+), 45 deletions(-)
+ .../net/ethernet/intel/i40e/i40e_register.h   | 24 +++++++++----------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5c280c025085..8d6b9515b595 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6419,50 +6419,6 @@ static int i40e_resume_port_tx(struct i40e_pf *pf)
- 	return ret;
- }
- 
--/**
-- * i40e_update_dcb_config
-- * @hw: pointer to the HW struct
-- * @enable_mib_change: enable MIB change event
-- *
-- * Update DCB configuration from the firmware
-- **/
--static enum i40e_status_code
--i40e_update_dcb_config(struct i40e_hw *hw, bool enable_mib_change)
--{
--	struct i40e_lldp_variables lldp_cfg;
--	i40e_status ret;
--
--	if (!hw->func_caps.dcb)
--		return I40E_NOT_SUPPORTED;
--
--	/* Read LLDP NVM area */
--	ret = i40e_read_lldp_cfg(hw, &lldp_cfg);
--	if (ret)
--		return I40E_ERR_NOT_READY;
--
--	/* Get DCBX status */
--	ret = i40e_get_dcbx_status(hw, &hw->dcbx_status);
--	if (ret)
--		return ret;
--
--	/* Check the DCBX Status */
--	if (hw->dcbx_status == I40E_DCBX_STATUS_DONE ||
--	    hw->dcbx_status == I40E_DCBX_STATUS_IN_PROGRESS) {
--		/* Get current DCBX configuration */
--		ret = i40e_get_dcb_config(hw);
--		if (ret)
--			return ret;
--	} else if (hw->dcbx_status == I40E_DCBX_STATUS_DISABLED) {
--		return I40E_ERR_NOT_READY;
--	}
--
--	/* Configure the LLDP MIB change event */
--	if (enable_mib_change)
--		ret = i40e_aq_cfg_lldp_mib_change_event(hw, true, NULL);
--
--	return ret;
--}
--
- /**
-  * i40e_init_pf_dcb - Initialize DCB configuration
-  * @pf: PF being configured
-@@ -6485,7 +6441,7 @@ static int i40e_init_pf_dcb(struct i40e_pf *pf)
- 		goto out;
- 	}
- 
--	err = i40e_update_dcb_config(hw, true);
-+	err = i40e_init_dcb(hw, true);
- 	if (!err) {
- 		/* Device/Function is not DCBX capable */
- 		if ((!hw->func_caps.dcb) ||
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_register.h b/drivers/net/ethernet/intel/i40e/i40e_register.h
+index 52e3680c57f8..330ac19a5dae 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_register.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_register.h
+@@ -58,7 +58,7 @@
+ #define I40E_PF_ARQLEN_ARQCRIT_SHIFT 30
+ #define I40E_PF_ARQLEN_ARQCRIT_MASK I40E_MASK(0x1, I40E_PF_ARQLEN_ARQCRIT_SHIFT)
+ #define I40E_PF_ARQLEN_ARQENABLE_SHIFT 31
+-#define I40E_PF_ARQLEN_ARQENABLE_MASK I40E_MASK(0x1, I40E_PF_ARQLEN_ARQENABLE_SHIFT)
++#define I40E_PF_ARQLEN_ARQENABLE_MASK I40E_MASK(0x1u, I40E_PF_ARQLEN_ARQENABLE_SHIFT)
+ #define I40E_PF_ARQT 0x00080480 /* Reset: EMPR */
+ #define I40E_PF_ARQT_ARQT_SHIFT 0
+ #define I40E_PF_ARQT_ARQT_MASK I40E_MASK(0x3FF, I40E_PF_ARQT_ARQT_SHIFT)
+@@ -81,7 +81,7 @@
+ #define I40E_PF_ATQLEN_ATQCRIT_SHIFT 30
+ #define I40E_PF_ATQLEN_ATQCRIT_MASK I40E_MASK(0x1, I40E_PF_ATQLEN_ATQCRIT_SHIFT)
+ #define I40E_PF_ATQLEN_ATQENABLE_SHIFT 31
+-#define I40E_PF_ATQLEN_ATQENABLE_MASK I40E_MASK(0x1, I40E_PF_ATQLEN_ATQENABLE_SHIFT)
++#define I40E_PF_ATQLEN_ATQENABLE_MASK I40E_MASK(0x1u, I40E_PF_ATQLEN_ATQENABLE_SHIFT)
+ #define I40E_PF_ATQT 0x00080400 /* Reset: EMPR */
+ #define I40E_PF_ATQT_ATQT_SHIFT 0
+ #define I40E_PF_ATQT_ATQT_MASK I40E_MASK(0x3FF, I40E_PF_ATQT_ATQT_SHIFT)
+@@ -108,7 +108,7 @@
+ #define I40E_VF_ARQLEN_ARQCRIT_SHIFT 30
+ #define I40E_VF_ARQLEN_ARQCRIT_MASK I40E_MASK(0x1, I40E_VF_ARQLEN_ARQCRIT_SHIFT)
+ #define I40E_VF_ARQLEN_ARQENABLE_SHIFT 31
+-#define I40E_VF_ARQLEN_ARQENABLE_MASK I40E_MASK(0x1, I40E_VF_ARQLEN_ARQENABLE_SHIFT)
++#define I40E_VF_ARQLEN_ARQENABLE_MASK I40E_MASK(0x1u, I40E_VF_ARQLEN_ARQENABLE_SHIFT)
+ #define I40E_VF_ARQT(_VF) (0x00082C00 + ((_VF) * 4)) /* _i=0...127 */ /* Reset: EMPR */
+ #define I40E_VF_ARQT_MAX_INDEX 127
+ #define I40E_VF_ARQT_ARQT_SHIFT 0
+@@ -136,7 +136,7 @@
+ #define I40E_VF_ATQLEN_ATQCRIT_SHIFT 30
+ #define I40E_VF_ATQLEN_ATQCRIT_MASK I40E_MASK(0x1, I40E_VF_ATQLEN_ATQCRIT_SHIFT)
+ #define I40E_VF_ATQLEN_ATQENABLE_SHIFT 31
+-#define I40E_VF_ATQLEN_ATQENABLE_MASK I40E_MASK(0x1, I40E_VF_ATQLEN_ATQENABLE_SHIFT)
++#define I40E_VF_ATQLEN_ATQENABLE_MASK I40E_MASK(0x1u, I40E_VF_ATQLEN_ATQENABLE_SHIFT)
+ #define I40E_VF_ATQT(_VF) (0x00082800 + ((_VF) * 4)) /* _i=0...127 */ /* Reset: EMPR */
+ #define I40E_VF_ATQT_MAX_INDEX 127
+ #define I40E_VF_ATQT_ATQT_SHIFT 0
+@@ -259,7 +259,7 @@
+ #define I40E_PRTDCB_RETSTCC_UPINTC_MODE_SHIFT 30
+ #define I40E_PRTDCB_RETSTCC_UPINTC_MODE_MASK I40E_MASK(0x1, I40E_PRTDCB_RETSTCC_UPINTC_MODE_SHIFT)
+ #define I40E_PRTDCB_RETSTCC_ETSTC_SHIFT 31
+-#define I40E_PRTDCB_RETSTCC_ETSTC_MASK I40E_MASK(0x1, I40E_PRTDCB_RETSTCC_ETSTC_SHIFT)
++#define I40E_PRTDCB_RETSTCC_ETSTC_MASK I40E_MASK(0x1u, I40E_PRTDCB_RETSTCC_ETSTC_SHIFT)
+ #define I40E_PRTDCB_RPPMC 0x001223A0 /* Reset: CORER */
+ #define I40E_PRTDCB_RPPMC_LANRPPM_SHIFT 0
+ #define I40E_PRTDCB_RPPMC_LANRPPM_MASK I40E_MASK(0xFF, I40E_PRTDCB_RPPMC_LANRPPM_SHIFT)
+@@ -503,7 +503,7 @@
+ #define I40E_GLGEN_MSCA_MDICMD_SHIFT 30
+ #define I40E_GLGEN_MSCA_MDICMD_MASK I40E_MASK(0x1, I40E_GLGEN_MSCA_MDICMD_SHIFT)
+ #define I40E_GLGEN_MSCA_MDIINPROGEN_SHIFT 31
+-#define I40E_GLGEN_MSCA_MDIINPROGEN_MASK I40E_MASK(0x1, I40E_GLGEN_MSCA_MDIINPROGEN_SHIFT)
++#define I40E_GLGEN_MSCA_MDIINPROGEN_MASK I40E_MASK(0x1u, I40E_GLGEN_MSCA_MDIINPROGEN_SHIFT)
+ #define I40E_GLGEN_MSRWD(_i) (0x0008819C + ((_i) * 4)) /* _i=0...3 */ /* Reset: POR */
+ #define I40E_GLGEN_MSRWD_MAX_INDEX 3
+ #define I40E_GLGEN_MSRWD_MDIWRDATA_SHIFT 0
+@@ -1242,14 +1242,14 @@
+ #define I40E_GLLAN_TXPRE_QDIS_SET_QDIS_SHIFT 30
+ #define I40E_GLLAN_TXPRE_QDIS_SET_QDIS_MASK I40E_MASK(0x1, I40E_GLLAN_TXPRE_QDIS_SET_QDIS_SHIFT)
+ #define I40E_GLLAN_TXPRE_QDIS_CLEAR_QDIS_SHIFT 31
+-#define I40E_GLLAN_TXPRE_QDIS_CLEAR_QDIS_MASK I40E_MASK(0x1, I40E_GLLAN_TXPRE_QDIS_CLEAR_QDIS_SHIFT)
++#define I40E_GLLAN_TXPRE_QDIS_CLEAR_QDIS_MASK I40E_MASK(0x1u, I40E_GLLAN_TXPRE_QDIS_CLEAR_QDIS_SHIFT)
+ #define I40E_PFLAN_QALLOC 0x001C0400 /* Reset: CORER */
+ #define I40E_PFLAN_QALLOC_FIRSTQ_SHIFT 0
+ #define I40E_PFLAN_QALLOC_FIRSTQ_MASK I40E_MASK(0x7FF, I40E_PFLAN_QALLOC_FIRSTQ_SHIFT)
+ #define I40E_PFLAN_QALLOC_LASTQ_SHIFT 16
+ #define I40E_PFLAN_QALLOC_LASTQ_MASK I40E_MASK(0x7FF, I40E_PFLAN_QALLOC_LASTQ_SHIFT)
+ #define I40E_PFLAN_QALLOC_VALID_SHIFT 31
+-#define I40E_PFLAN_QALLOC_VALID_MASK I40E_MASK(0x1, I40E_PFLAN_QALLOC_VALID_SHIFT)
++#define I40E_PFLAN_QALLOC_VALID_MASK I40E_MASK(0x1u, I40E_PFLAN_QALLOC_VALID_SHIFT)
+ #define I40E_QRX_ENA(_Q) (0x00120000 + ((_Q) * 4)) /* _i=0...1535 */ /* Reset: PFR */
+ #define I40E_QRX_ENA_MAX_INDEX 1535
+ #define I40E_QRX_ENA_QENA_REQ_SHIFT 0
+@@ -1658,7 +1658,7 @@
+ #define I40E_GLNVM_SRCTL_START_SHIFT 30
+ #define I40E_GLNVM_SRCTL_START_MASK I40E_MASK(0x1, I40E_GLNVM_SRCTL_START_SHIFT)
+ #define I40E_GLNVM_SRCTL_DONE_SHIFT 31
+-#define I40E_GLNVM_SRCTL_DONE_MASK I40E_MASK(0x1, I40E_GLNVM_SRCTL_DONE_SHIFT)
++#define I40E_GLNVM_SRCTL_DONE_MASK I40E_MASK(0x1u, I40E_GLNVM_SRCTL_DONE_SHIFT)
+ #define I40E_GLNVM_SRDATA 0x000B6114 /* Reset: POR */
+ #define I40E_GLNVM_SRDATA_WRDATA_SHIFT 0
+ #define I40E_GLNVM_SRDATA_WRDATA_MASK I40E_MASK(0xFFFF, I40E_GLNVM_SRDATA_WRDATA_SHIFT)
+@@ -3025,7 +3025,7 @@
+ #define I40E_PF_VT_PFALLOC_LASTVF_SHIFT 8
+ #define I40E_PF_VT_PFALLOC_LASTVF_MASK I40E_MASK(0xFF, I40E_PF_VT_PFALLOC_LASTVF_SHIFT)
+ #define I40E_PF_VT_PFALLOC_VALID_SHIFT 31
+-#define I40E_PF_VT_PFALLOC_VALID_MASK I40E_MASK(0x1, I40E_PF_VT_PFALLOC_VALID_SHIFT)
++#define I40E_PF_VT_PFALLOC_VALID_MASK I40E_MASK(0x1u, I40E_PF_VT_PFALLOC_VALID_SHIFT)
+ #define I40E_VP_MDET_RX(_VF) (0x0012A000 + ((_VF) * 4)) /* _i=0...127 */ /* Reset: CORER */
+ #define I40E_VP_MDET_RX_MAX_INDEX 127
+ #define I40E_VP_MDET_RX_VALID_SHIFT 0
+@@ -3161,7 +3161,7 @@
+ #define I40E_VF_ARQLEN1_ARQCRIT_SHIFT 30
+ #define I40E_VF_ARQLEN1_ARQCRIT_MASK I40E_MASK(0x1, I40E_VF_ARQLEN1_ARQCRIT_SHIFT)
+ #define I40E_VF_ARQLEN1_ARQENABLE_SHIFT 31
+-#define I40E_VF_ARQLEN1_ARQENABLE_MASK I40E_MASK(0x1, I40E_VF_ARQLEN1_ARQENABLE_SHIFT)
++#define I40E_VF_ARQLEN1_ARQENABLE_MASK I40E_MASK(0x1u, I40E_VF_ARQLEN1_ARQENABLE_SHIFT)
+ #define I40E_VF_ARQT1 0x00007000 /* Reset: EMPR */
+ #define I40E_VF_ARQT1_ARQT_SHIFT 0
+ #define I40E_VF_ARQT1_ARQT_MASK I40E_MASK(0x3FF, I40E_VF_ARQT1_ARQT_SHIFT)
+@@ -3184,7 +3184,7 @@
+ #define I40E_VF_ATQLEN1_ATQCRIT_SHIFT 30
+ #define I40E_VF_ATQLEN1_ATQCRIT_MASK I40E_MASK(0x1, I40E_VF_ATQLEN1_ATQCRIT_SHIFT)
+ #define I40E_VF_ATQLEN1_ATQENABLE_SHIFT 31
+-#define I40E_VF_ATQLEN1_ATQENABLE_MASK I40E_MASK(0x1, I40E_VF_ATQLEN1_ATQENABLE_SHIFT)
++#define I40E_VF_ATQLEN1_ATQENABLE_MASK I40E_MASK(0x1u, I40E_VF_ATQLEN1_ATQENABLE_SHIFT)
+ #define I40E_VF_ATQT1 0x00008400 /* Reset: EMPR */
+ #define I40E_VF_ATQT1_ATQT_SHIFT 0
+ #define I40E_VF_ATQT1_ATQT_MASK I40E_MASK(0x3FF, I40E_VF_ATQT1_ATQT_SHIFT)
 -- 
 2.21.0
 
