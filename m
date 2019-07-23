@@ -1,47 +1,107 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 23 Jul 2019 09:08:48 -0700
-Subject: [Intel-wired-lan] [PATCH] fm10k: use a local variable for the frag
- pointer
-Message-ID: <20190723160848.1006-1-jacob.e.keller@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Tue, 23 Jul 2019 02:24:50 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v3 10/15] ice: update GLINT_DYN_CTL
+ and GLINT_VECT2FUNC register access
+In-Reply-To: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
+References: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092454.3508-10-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In the function fm10k_xmit_frame_ring, we recently switched to using
-the skb_frag_size accessor instead of directly using the size member of
-the skb fragment.
+From: Paul Greenwalt <paul.greenwalt@intel.com>
 
-This made the for loop slightly harder to read because it created a very
-long line that is difficult to split up. Avoid this by using a local
-variable in the for loop, so that we do not have to break the line on an
-open parenthesis.
+Register access for GLINT_DYN_CTL and GLINT_VECT2FUNC should be within
+the PF space and not the absolute device space.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 24 +++++++++++--------
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  3 ++-
+ 2 files changed, 16 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index e0a2be534b20..2be9222510e7 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1073,9 +1073,11 @@ netdev_tx_t fm10k_xmit_frame_ring(struct sk_buff *skb,
- 	 *       + 2 desc gap to keep tail from touching head
- 	 * otherwise try next time
- 	 */
--	for (f = 0; f < skb_shinfo(skb)->nr_frags; f++)
--		count += TXD_USE_COUNT(skb_frag_size(
--						&skb_shinfo(skb)->frags[f]));
-+	for (f = 0; f < skb_shinfo(skb)->nr_frags; f++) {
-+		skb_frag_t *frag = &skb_shinfo(skb)->frags[f];
-+
-+		count += TXD_USE_COUNT(skb_frag_size(frag));
-+	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 4d41877fa06e..69d45376be80 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -474,19 +474,20 @@ ice_vf_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi, u16 vf_id)
+ }
  
- 	if (fm10k_maybe_stop_tx(tx_ring, count + 3)) {
- 		tx_ring->tx_stats.tx_busy++;
+ /**
+- * ice_calc_vf_first_vector_idx - Calculate absolute MSIX vector index in HW
++ * ice_calc_vf_first_vector_idx - Calculate MSIX vector index in the PF space
+  * @pf: pointer to PF structure
+  * @vf: pointer to VF that the first MSIX vector index is being calculated for
+  *
+- * This returns the first MSIX vector index in HW that is used by this VF and
+- * this will always be the OICR index in the AVF driver so any functionality
++ * This returns the first MSIX vector index in PF space that is used by this VF.
++ * This index is used when accessing PF relative registers such as
++ * GLINT_VECT2FUNC and GLINT_DYN_CTL.
++ * This will always be the OICR index in the AVF driver so any functionality
+  * using vf->first_vector_idx for queue configuration will have to increment by
+  * 1 to avoid meddling with the OICR index.
+  */
+ static int ice_calc_vf_first_vector_idx(struct ice_pf *pf, struct ice_vf *vf)
+ {
+-	return pf->hw.func_caps.common_cap.msix_vector_first_id +
+-		pf->sriov_base_vector + vf->vf_id * pf->num_vf_msix;
++	return pf->sriov_base_vector + vf->vf_id * pf->num_vf_msix;
+ }
+ 
+ /**
+@@ -597,27 +598,30 @@ static int ice_alloc_vf_res(struct ice_vf *vf)
+  */
+ static void ice_ena_vf_mappings(struct ice_vf *vf)
+ {
++	int abs_vf_id, abs_first, abs_last;
+ 	struct ice_pf *pf = vf->pf;
+ 	struct ice_vsi *vsi;
+ 	int first, last, v;
+ 	struct ice_hw *hw;
+-	int abs_vf_id;
+ 	u32 reg;
+ 
+ 	hw = &pf->hw;
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	first = vf->first_vector_idx;
+ 	last = (first + pf->num_vf_msix) - 1;
++	abs_first = first + pf->hw.func_caps.common_cap.msix_vector_first_id;
++	abs_last = (abs_first + pf->num_vf_msix) - 1;
+ 	abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
+ 
+ 	/* VF Vector allocation */
+-	reg = (((first << VPINT_ALLOC_FIRST_S) & VPINT_ALLOC_FIRST_M) |
+-	       ((last << VPINT_ALLOC_LAST_S) & VPINT_ALLOC_LAST_M) |
++	reg = (((abs_first << VPINT_ALLOC_FIRST_S) & VPINT_ALLOC_FIRST_M) |
++	       ((abs_last << VPINT_ALLOC_LAST_S) & VPINT_ALLOC_LAST_M) |
+ 	       VPINT_ALLOC_VALID_M);
+ 	wr32(hw, VPINT_ALLOC(vf->vf_id), reg);
+ 
+-	reg = (((first << VPINT_ALLOC_PCI_FIRST_S) & VPINT_ALLOC_PCI_FIRST_M) |
+-	       ((last << VPINT_ALLOC_PCI_LAST_S) & VPINT_ALLOC_PCI_LAST_M) |
++	reg = (((abs_first << VPINT_ALLOC_PCI_FIRST_S)
++		 & VPINT_ALLOC_PCI_FIRST_M) |
++	       ((abs_last << VPINT_ALLOC_PCI_LAST_S) & VPINT_ALLOC_PCI_LAST_M) |
+ 	       VPINT_ALLOC_PCI_VALID_M);
+ 	wr32(hw, VPINT_ALLOC_PCI(vf->vf_id), reg);
+ 	/* map the interrupts to its functions */
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index ada69120ff38..424bc0538956 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -45,7 +45,8 @@ struct ice_vf {
+ 
+ 	s16 vf_id;			/* VF ID in the PF space */
+ 	u16 lan_vsi_idx;		/* index into PF struct */
+-	int first_vector_idx;		/* first vector index of this VF */
++	/* first vector index of this VF in the PF space */
++	int first_vector_idx;
+ 	struct ice_sw *vf_sw_id;	/* switch ID the VF VSIs connect to */
+ 	struct virtchnl_version_info vf_ver;
+ 	u32 driver_caps;		/* reported by VF driver */
 -- 
-2.22.0.214.g8dca754b1e87
+2.20.1
 
