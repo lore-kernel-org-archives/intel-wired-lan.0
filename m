@@ -1,118 +1,99 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:27:52 -0700
-Subject: [Intel-wired-lan] [PATCH S24 05/12] ice: Fix RSS LUT table when
- setting Rx channels
+Date: Tue, 23 Jul 2019 02:27:49 -0700
+Subject: [Intel-wired-lan] [PATCH S24 02/12] ice: Account for all states of
+ FW DCBx and LLDP
 In-Reply-To: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
 References: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092759.3614-5-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092759.3614-2-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Dave Ertman <david.m.ertman@intel.com>
 
-Currently there are multiple problems involved with setting Rx channels
-in regards to the RSS LUT. First, if the user set the indirection table
-manually through ethtool, changing the Rx channels will blindly use the
-user set value. Second when increasing the number of Rx channels the RSS
-table size is doing of minimum of the last RSS table width and the newly
-requested one, this is causing the previously set RSS table width to be
-used.
+Currently, only the DCBx status is taken into account to
+determine if FW LLDP is possible.  But there are NVM version
+coming out with DCBx enabled, and FW LLDP disabled.  This
+is causing errors where the driver sees that DCBx is not
+disabled, and then tries to register for LLDP MIB change
+events, and fails.
 
-Fix these issues by adding the function ice_pf_set_dflt_rss_lut() that
-is called when changing the number of Rx channels. This function updates
-the RSS LUT to the default configuration for the PF any time the user
-has changed the number of Rx channels.
+Change the logic to detect both DCBx and LLDP states in the
+FW engine.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 64 ++++++++++++++++++++
- 1 file changed, 64 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 34 +++++++-------------
+ 1 file changed, 12 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index ba29aede99ad..35aa4a3f59df 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3154,6 +3154,67 @@ ice_get_channels(struct net_device *dev, struct ethtool_channels *ch)
- 	ch->tx_count = vsi->num_txq;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index d285aba3fea7..9ab9ec1ce19e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -324,6 +324,11 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+ 	}
  
-+/**
-+ * ice_pf_set_dflt_rss_lut - set default RSS LUT with requested RSS size
-+ * @pf: PF to reconfigure RSS LUT on
-+ * @req_rss_size: requested range of queue numbers for hashing
-+ *
-+ * Set the PF's RSS parameters, configure the RSS LUT based on these, and then
-+ * clear the previous vsi->rss_lut_user because it is assumed to be invalid at
-+ * this point.
-+ */
-+static int ice_pf_set_dflt_rss_lut(struct ice_pf *pf, int req_rss_size)
-+{
-+	struct device *dev = &pf->pdev->dev;
-+	struct ice_hw *hw = &pf->hw;
-+	enum ice_status status;
-+	struct ice_vsi *vsi;
-+	int err = 0;
-+	u8 *lut;
+ 	ice_init_dcb(&pf->hw);
++	if (pf->hw.port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
++		pf->hw.port_info->is_sw_lldp = true;
++	else
++		pf->hw.port_info->is_sw_lldp = false;
 +
-+	if (!req_rss_size)
-+		return -EINVAL;
-+
-+	vsi = ice_find_vsi_by_type(pf, ICE_VSI_PF);
-+	if (!vsi)
-+		return -EINVAL;
-+
-+	lut = devm_kzalloc(dev, vsi->rss_table_size, GFP_KERNEL);
-+	if (!lut)
-+		return -ENOMEM;
-+
-+	/* set RSS LUT parameters */
-+	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
-+		vsi->rss_size = 1;
-+	} else {
-+		struct ice_hw_common_caps *caps = &hw->func_caps.common_cap;
-+
-+		vsi->rss_size = min_t(int, req_rss_size,
-+				      BIT(caps->rss_table_entry_width));
-+	}
-+
-+	/* create/set RSS LUT */
-+	ice_fill_rss_lut(lut, vsi->rss_table_size, vsi->rss_size);
-+	status = ice_aq_set_rss_lut(hw, vsi->idx, vsi->rss_lut_type, lut,
-+				    vsi->rss_table_size);
-+	if (status) {
-+		dev_err(dev, "Cannot set RSS lut, err %d aq_err %d\n",
-+			status, hw->adminq.sq_last_status);
-+		err = -EIO;
-+	}
-+
-+	/* get rid of invalid user configuration */
-+	if (vsi->rss_lut_user) {
-+		netdev_info(vsi->netdev,
-+			    "Rx queue count changed, clearing user modified RSS LUT, re-run ethtool [-x|-X] to [check|set] settings if needed\n");
-+		devm_kfree(dev, vsi->rss_lut_user);
-+		vsi->rss_lut_user = NULL;
-+	}
-+
-+	devm_kfree(dev, lut);
-+	return err;
-+}
-+
- /**
-  * ice_set_channels - set the number channels
-  * @dev: network interface device structure
-@@ -3189,6 +3250,9 @@ static int ice_set_channels(struct net_device *dev, struct ethtool_channels *ch)
+ 	if (ice_dcb_need_recfg(pf, prev_cfg, local_dcbx_cfg)) {
+ 		/* difference in cfg detected - disable DCB till next MIB */
+ 		dev_err(&pf->pdev->dev, "Set local MIB not accurate\n");
+@@ -445,35 +450,17 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 	struct device *dev = &pf->pdev->dev;
+ 	struct ice_port_info *port_info;
+ 	struct ice_hw *hw = &pf->hw;
+-	int sw_default = 0;
+ 	int err;
  
- 	ice_vsi_recfg_qs(vsi, new_rx, new_tx);
+ 	port_info = hw->port_info;
  
-+	if (new_rx)
-+		return ice_pf_set_dflt_rss_lut(pf, new_rx);
+ 	err = ice_init_dcb(hw);
+ 	if (err) {
+-		/* FW LLDP is not active, default to SW DCBX/LLDP */
+-		dev_info(&pf->pdev->dev, "FW LLDP is not active\n");
+-		hw->port_info->dcbx_status = ICE_DCBX_STATUS_NOT_STARTED;
+-		hw->port_info->is_sw_lldp = true;
+-	}
+-
+-	if (port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
+-		dev_info(&pf->pdev->dev, "DCBX disabled\n");
+-
+-	/* LLDP disabled in FW */
+-	if (port_info->is_sw_lldp) {
+-		sw_default = 1;
+-		dev_info(&pf->pdev->dev, "DCBx/LLDP in SW mode.\n");
++		/* FW LLDP is disabled, activate SW DCBX/LLDP mode */
++		dev_info(&pf->pdev->dev,
++			 "FW LLDP is disabled, DCBx/LLDP in SW mode.\n");
++		port_info->is_sw_lldp = true;
+ 		clear_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
+-	} else {
+-		set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
+-	}
+-
+-	if (port_info->dcbx_status == ICE_DCBX_STATUS_NOT_STARTED)
+-		dev_info(&pf->pdev->dev, "DCBX not started\n");
+-
+-	if (sw_default) {
+ 		err = ice_dcb_sw_dflt_cfg(pf, locked);
+ 		if (err) {
+ 			dev_err(&pf->pdev->dev,
+@@ -488,6 +475,9 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 		return 0;
+ 	}
+ 
++	port_info->is_sw_lldp = false;
++	set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
 +
- 	return 0;
- }
+ 	/* DCBX in FW and LLDP enabled in FW */
+ 	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
  
 -- 
 2.20.1
