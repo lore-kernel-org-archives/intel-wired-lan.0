@@ -1,60 +1,22 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 23 Jul 2019 06:03:45 -0400
-Subject: [Intel-wired-lan] [next PATCH S8 12/12] i40e: fix retrying in
- i40e_aq_get_phy_capabilities
-In-Reply-To: <20190723100345.57522-1-alice.michael@intel.com>
-References: <20190723100345.57522-1-alice.michael@intel.com>
-Message-ID: <20190723100345.57522-12-alice.michael@intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Tue, 23 Jul 2019 13:03:15 -0700 (PDT)
+Subject: [Intel-wired-lan] [PATCH] e1000e: Use dev_get_drvdata where
+ possible
+In-Reply-To: <20190723141513.5749-1-hslester96@gmail.com>
+References: <20190723141513.5749-1-hslester96@gmail.com>
+Message-ID: <20190723.130315.953291216424012550.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Marcin Formela <marcin.formela@intel.com>
+From: Chuhong Yuan <hslester96@gmail.com>
+Date: Tue, 23 Jul 2019 22:15:13 +0800
 
-Fixed a bug where driver was breaking out of the loop and
-reporting an error without retrying first.
+> Instead of using to_pci_dev + pci_get_drvdata,
+> use dev_get_drvdata to make code simpler.
+> 
+> Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
 
-Signed-off-by: Marcin Formela <marcin.formela@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_common.c | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index de996a80013e..46e649c09f72 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1577,19 +1577,22 @@ i40e_status i40e_aq_get_phy_capabilities(struct i40e_hw *hw,
- 		status = i40e_asq_send_command(hw, &desc, abilities,
- 					       abilities_size, cmd_details);
- 
--		if (status)
--			break;
--
--		if (hw->aq.asq_last_status == I40E_AQ_RC_EIO) {
-+		switch (hw->aq.asq_last_status) {
-+		case I40E_AQ_RC_EIO:
- 			status = I40E_ERR_UNKNOWN_PHY;
- 			break;
--		} else if (hw->aq.asq_last_status == I40E_AQ_RC_EAGAIN) {
-+		case I40E_AQ_RC_EAGAIN:
- 			usleep_range(1000, 2000);
- 			total_delay++;
- 			status = I40E_ERR_TIMEOUT;
-+			break;
-+		/* also covers I40E_AQ_RC_OK */
-+		default:
-+			break;
- 		}
--	} while ((hw->aq.asq_last_status != I40E_AQ_RC_OK) &&
--		 (total_delay < max_delay));
-+
-+	} while ((hw->aq.asq_last_status == I40E_AQ_RC_EAGAIN) &&
-+		(total_delay < max_delay));
- 
- 	if (status)
- 		return status;
--- 
-2.21.0
-
+Applied.
