@@ -1,44 +1,41 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:27:51 -0700
-Subject: [Intel-wired-lan] [PATCH S24 04/12] ice: Treat DCBx state
- NOT_STARTED as valid
+Date: Tue, 23 Jul 2019 02:27:50 -0700
+Subject: [Intel-wired-lan] [PATCH S24 03/12] ice: Don't call
+ synchronize_irq() for VF's from the host
 In-Reply-To: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
 References: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092759.3614-4-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092759.3614-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-When a port is not cabled, but DCBx is enabled in the
-firmware, the status of DCBx will be NOT_STARTED.  This
-is a valid state for FW enabled and should not be
-treated as a is_fw_lldp true automatically.
+Currently we will call synchronize_irq() from the host for VF's. This is
+not correct, so don't allow it.
 
-Add the code to treat NOT_STARTED as another valid state.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index c2002ded65f6..d60c942249e8 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -954,7 +954,8 @@ enum ice_status ice_init_dcb(struct ice_hw *hw)
- 	pi->dcbx_status = ice_get_dcbx_status(hw);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 6b5882c49004..42645c074691 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2837,6 +2837,10 @@ void ice_vsi_dis_irq(struct ice_vsi *vsi)
  
- 	if (pi->dcbx_status == ICE_DCBX_STATUS_DONE ||
--	    pi->dcbx_status == ICE_DCBX_STATUS_IN_PROGRESS) {
-+	    pi->dcbx_status == ICE_DCBX_STATUS_IN_PROGRESS ||
-+	    pi->dcbx_status == ICE_DCBX_STATUS_NOT_STARTED) {
- 		/* Get current DCBX configuration */
- 		ret = ice_get_dcb_cfg(pi);
- 		pi->is_sw_lldp = (hw->adminq.sq_last_status == ICE_AQ_RC_EPERM);
+ 	ice_flush(hw);
+ 
++	/* don't call synchronize_irq() for VF's from the host */
++	if (vsi->type == ICE_VSI_VF)
++		return;
++
+ 	ice_for_each_q_vector(vsi, i)
+ 		synchronize_irq(pf->msix_entries[i + base].vector);
+ }
 -- 
 2.20.1
 
