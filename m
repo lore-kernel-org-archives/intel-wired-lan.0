@@ -1,83 +1,42 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:24:45 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v3 05/15] ice: fix set pause param
- autoneg check
+Date: Tue, 23 Jul 2019 02:24:54 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v3 15/15] ice: improve print for VF's
+ when adding/deleting MAC filters
 In-Reply-To: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
 References: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092454.3508-5-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092454.3508-14-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paul Greenwalt <paul.greenwalt@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-When ETHTOOL_GLINKSETTINGS is defined get pause param pause->autoneg
-reports SW configured setting, however when not defined get pause param
-pause->autoneg reports the link status. Set pause param needs to compare
-pause->autoneg with the same source as get pause param to block the user
-from changing autoneg with the set pause param option, or the user
-may be incorrectly blocked from changing Rx|Tx pause settings.
+When we fail to add/delete MAC filters in the VF, the print doesn't
+distinguish between the two. Fix that by printing whether or not we
+failed to add/delete the MAC filter respectively.
 
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 28 +++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 1fe048cfb737..ba29aede99ad 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -2856,6 +2856,7 @@ static int
- ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_aqc_get_phy_caps_data *pcaps;
- 	struct ice_link_status *hw_link_info;
- 	struct ice_pf *pf = np->vsi->back;
- 	struct ice_dcbx_cfg *dcbx_cfg;
-@@ -2866,6 +2867,7 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
- 	u8 aq_failures;
- 	bool link_up;
- 	int err = 0;
-+	u32 is_an;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 0254b945d576..d2a6736441c3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2284,8 +2284,8 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
  
- 	pi = vsi->port_info;
- 	hw_link_info = &pi->phy.link_info;
-@@ -2880,7 +2882,31 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
- 		return -EOPNOTSUPP;
- 	}
- 
--	if (pause->autoneg != (hw_link_info->an_info & ICE_AQ_AN_COMPLETED)) {
-+	/* Get pause param reports configured and negotiated flow control pause
-+	 * when ETHTOOL_GLINKSETTINGS is defined. Since ETHTOOL_GLINKSETTINGS is
-+	 * defined get pause param pause->autoneg reports SW configured setting,
-+	 * so compare pause->autoneg with SW configured to prevent the user from
-+	 * using set pause param to chance autoneg.
-+	 */
-+	pcaps = devm_kzalloc(&vsi->back->pdev->dev, sizeof(*pcaps),
-+			     GFP_KERNEL);
-+	if (!pcaps)
-+		return -ENOMEM;
-+
-+	/* Get current PHY config */
-+	status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_SW_CFG, pcaps,
-+				     NULL);
-+	if (status) {
-+		devm_kfree(&vsi->back->pdev->dev, pcaps);
-+		return -EIO;
-+	}
-+
-+	is_an = ((pcaps->caps & ICE_AQC_PHY_AN_MODE) ?
-+			AUTONEG_ENABLE : AUTONEG_DISABLE);
-+
-+	devm_kfree(&vsi->back->pdev->dev, pcaps);
-+
-+	if (pause->autoneg != is_an) {
- 		netdev_info(netdev, "To change autoneg please use: ethtool -s <dev> autoneg <on|off>\n");
- 		return -EOPNOTSUPP;
- 	}
+ 	if (v_ret) {
+ 		dev_err(&pf->pdev->dev,
+-			"can't update MAC filters for VF %d, error %d\n",
+-			vf->vf_id, v_ret);
++			"can't %s MAC filters for VF %d, error %d\n",
++			set ? "add" : "remove", vf->vf_id, v_ret);
+ 	} else {
+ 		if (set)
+ 			vf->num_mac += mac_count;
 -- 
 2.20.1
 
