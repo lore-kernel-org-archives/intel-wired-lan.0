@@ -1,112 +1,40 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:27:55 -0700
-Subject: [Intel-wired-lan] [PATCH S24 08/12] ice: Rename ethtool private
- flag for lldp
-In-Reply-To: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
-References: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092759.3614-8-anthony.l.nguyen@intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Tue, 23 Jul 2019 06:01:38 -0400
+Subject: [Intel-wired-lan] [next PATCH S8 06/12] i40e: Update FPK FW API
+ version to 1.9
+In-Reply-To: <20190723100144.57435-1-alice.michael@intel.com>
+References: <20190723100144.57435-1-alice.michael@intel.com>
+Message-ID: <20190723100144.57435-6-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Piotr Azarewicz <piotr.azarewicz@intel.com>
 
-The current flag name of "enable-fw-lldp" is a bit cumbersome.
+Upcoming FPK FW increment API version to 1.9, so we must bump up version
+number as well.
+FPK will support PHY access AQ command as FVL does.
 
-Change priv-flag name to "fw-lldp-agent" with a value of on or
-off.  This is more straight-forward in meaning.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Piotr Azarewicz <piotr.azarewicz@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         | 2 +-
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 4 ++--
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 6 +++---
- drivers/net/ethernet/intel/ice/ice_lib.c     | 4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 8398dd45a8a2..0e233b7c40bc 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -331,7 +331,7 @@ enum ice_pf_flags {
- 	ICE_FLAG_DCB_ENA,
- 	ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA,
- 	ICE_FLAG_NO_MEDIA,
--	ICE_FLAG_ENABLE_FW_LLDP,
-+	ICE_FLAG_FW_LLDP_AGENT,
- 	ICE_FLAG_ETHTOOL_CTXT,		/* set when ethtool holds RTNL lock */
- 	ICE_PF_FLAGS_NBITS		/* must be last */
- };
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 2a868eea2a37..21405958aa63 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -462,7 +462,7 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 		dev_info(&pf->pdev->dev,
- 			 "FW LLDP is disabled, DCBx/LLDP in SW mode.\n");
- 		port_info->is_sw_lldp = true;
--		clear_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
-+		clear_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags);
- 		err = ice_dcb_sw_dflt_cfg(pf, locked);
- 		if (err) {
- 			dev_err(&pf->pdev->dev,
-@@ -478,7 +478,7 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 360f0cb83b2d..21cccec328e3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -11,7 +11,7 @@
+  */
  
- 	port_info->is_sw_lldp = false;
--	set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
-+	set_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags);
+ #define I40E_FW_API_VERSION_MAJOR	0x0001
+-#define I40E_FW_API_VERSION_MINOR_X722	0x0008
++#define I40E_FW_API_VERSION_MINOR_X722	0x0009
+ #define I40E_FW_API_VERSION_MINOR_X710	0x0009
  
- 	/* DCBX in FW and LLDP enabled in FW */
- 	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 35aa4a3f59df..b60bcbcf9bf2 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -155,7 +155,7 @@ struct ice_priv_flag {
- 
- static const struct ice_priv_flag ice_gstrings_priv_flags[] = {
- 	ICE_PRIV_FLAG("link-down-on-close", ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA),
--	ICE_PRIV_FLAG("enable-fw-lldp", ICE_FLAG_ENABLE_FW_LLDP),
-+	ICE_PRIV_FLAG("fw-lldp-agent", ICE_FLAG_FW_LLDP_AGENT),
- };
- 
- #define ICE_PRIV_FLAG_ARRAY_SIZE	ARRAY_SIZE(ice_gstrings_priv_flags)
-@@ -1201,8 +1201,8 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 
- 	bitmap_xor(change_flags, pf->flags, orig_flags, ICE_PF_FLAGS_NBITS);
- 
--	if (test_bit(ICE_FLAG_ENABLE_FW_LLDP, change_flags)) {
--		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags)) {
-+	if (test_bit(ICE_FLAG_FW_LLDP_AGENT, change_flags)) {
-+		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags)) {
- 			enum ice_status status;
- 
- 			/* Disable FW LLDP engine */
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 42645c074691..aff65333c302 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2561,7 +2561,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 		ice_cfg_sw_lldp(vsi, true, true);
- 
- 		/* Rx LLDP packets */
--		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags))
-+		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
- 			ice_cfg_sw_lldp(vsi, false, true);
- 	}
- 
-@@ -2908,7 +2908,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 		/* The Rx rule will only exist to remove if the LLDP FW
- 		 * engine is currently stopped
- 		 */
--		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags))
-+		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
- 			ice_cfg_sw_lldp(vsi, false, false);
- 	}
- 
+ #define I40E_FW_MINOR_VERSION(_h) ((_h)->mac.type == I40E_MAC_XL710 ? \
 -- 
-2.20.1
+2.21.0
 
