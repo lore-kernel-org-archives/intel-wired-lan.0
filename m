@@ -1,60 +1,112 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:27:58 -0700
-Subject: [Intel-wired-lan] [PATCH S24 11/12] ice: Don't clear auto_fec bit
- in ice_cfg_phy_fec()
+Date: Tue, 23 Jul 2019 02:27:55 -0700
+Subject: [Intel-wired-lan] [PATCH S24 08/12] ice: Rename ethtool private
+ flag for lldp
 In-Reply-To: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
 References: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092759.3614-11-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092759.3614-8-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Chinh T Cao <chinh.t.cao@intel.com>
+From: Dave Ertman <david.m.ertman@intel.com>
 
-The driver should never clear the auto_fec_enable bit.
+The current flag name of "enable-fw-lldp" is a bit cumbersome.
 
-Signed-off-by: Chinh T Cao <chinh.t.cao@intel.com>
+Change priv-flag name to "fw-lldp-agent" with a value of on or
+off.  This is more straight-forward in meaning.
+
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h         | 2 +-
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 6 +++---
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 15648d4a8bab..4b43e6de847b 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -2181,27 +2181,24 @@ ice_cfg_phy_fec(struct ice_aqc_set_phy_cfg_data *cfg, enum ice_fec_mode fec)
- {
- 	switch (fec) {
- 	case ICE_FEC_BASER:
--		/* Clear auto FEC and RS bits, and AND BASE-R ability
-+		/* Clear RS bits, and AND BASE-R ability
- 		 * bits and OR request bits.
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 8398dd45a8a2..0e233b7c40bc 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -331,7 +331,7 @@ enum ice_pf_flags {
+ 	ICE_FLAG_DCB_ENA,
+ 	ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA,
+ 	ICE_FLAG_NO_MEDIA,
+-	ICE_FLAG_ENABLE_FW_LLDP,
++	ICE_FLAG_FW_LLDP_AGENT,
+ 	ICE_FLAG_ETHTOOL_CTXT,		/* set when ethtool holds RTNL lock */
+ 	ICE_PF_FLAGS_NBITS		/* must be last */
+ };
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 2a868eea2a37..21405958aa63 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -462,7 +462,7 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 		dev_info(&pf->pdev->dev,
+ 			 "FW LLDP is disabled, DCBx/LLDP in SW mode.\n");
+ 		port_info->is_sw_lldp = true;
+-		clear_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
++		clear_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags);
+ 		err = ice_dcb_sw_dflt_cfg(pf, locked);
+ 		if (err) {
+ 			dev_err(&pf->pdev->dev,
+@@ -478,7 +478,7 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 	}
+ 
+ 	port_info->is_sw_lldp = false;
+-	set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
++	set_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags);
+ 
+ 	/* DCBX in FW and LLDP enabled in FW */
+ 	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 35aa4a3f59df..b60bcbcf9bf2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -155,7 +155,7 @@ struct ice_priv_flag {
+ 
+ static const struct ice_priv_flag ice_gstrings_priv_flags[] = {
+ 	ICE_PRIV_FLAG("link-down-on-close", ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA),
+-	ICE_PRIV_FLAG("enable-fw-lldp", ICE_FLAG_ENABLE_FW_LLDP),
++	ICE_PRIV_FLAG("fw-lldp-agent", ICE_FLAG_FW_LLDP_AGENT),
+ };
+ 
+ #define ICE_PRIV_FLAG_ARRAY_SIZE	ARRAY_SIZE(ice_gstrings_priv_flags)
+@@ -1201,8 +1201,8 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
+ 
+ 	bitmap_xor(change_flags, pf->flags, orig_flags, ICE_PF_FLAGS_NBITS);
+ 
+-	if (test_bit(ICE_FLAG_ENABLE_FW_LLDP, change_flags)) {
+-		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags)) {
++	if (test_bit(ICE_FLAG_FW_LLDP_AGENT, change_flags)) {
++		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags)) {
+ 			enum ice_status status;
+ 
+ 			/* Disable FW LLDP engine */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 42645c074691..aff65333c302 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2561,7 +2561,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 		ice_cfg_sw_lldp(vsi, true, true);
+ 
+ 		/* Rx LLDP packets */
+-		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags))
++		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
+ 			ice_cfg_sw_lldp(vsi, false, true);
+ 	}
+ 
+@@ -2908,7 +2908,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 		/* The Rx rule will only exist to remove if the LLDP FW
+ 		 * engine is currently stopped
  		 */
--		cfg->caps &= ~ICE_AQC_PHY_EN_AUTO_FEC;
- 		cfg->link_fec_opt &= ICE_AQC_PHY_FEC_10G_KR_40G_KR4_EN |
- 				     ICE_AQC_PHY_FEC_25G_KR_CLAUSE74_EN;
- 		cfg->link_fec_opt |= ICE_AQC_PHY_FEC_10G_KR_40G_KR4_REQ |
- 				     ICE_AQC_PHY_FEC_25G_KR_REQ;
- 		break;
- 	case ICE_FEC_RS:
--		/* Clear auto FEC and BASE-R bits, and AND RS ability
-+		/* Clear BASE-R bits, and AND RS ability
- 		 * bits and OR request bits.
- 		 */
--		cfg->caps &= ~ICE_AQC_PHY_EN_AUTO_FEC;
- 		cfg->link_fec_opt &= ICE_AQC_PHY_FEC_25G_RS_CLAUSE91_EN;
- 		cfg->link_fec_opt |= ICE_AQC_PHY_FEC_25G_RS_528_REQ |
- 				     ICE_AQC_PHY_FEC_25G_RS_544_REQ;
- 		break;
- 	case ICE_FEC_NONE:
--		/* Clear auto FEC and all FEC option bits. */
--		cfg->caps &= ~ICE_AQC_PHY_EN_AUTO_FEC;
-+		/* Clear all FEC option bits. */
- 		cfg->link_fec_opt &= ~ICE_AQC_PHY_FEC_MASK;
- 		break;
- 	case ICE_FEC_AUTO:
+-		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags))
++		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
+ 			ice_cfg_sw_lldp(vsi, false, false);
+ 	}
+ 
 -- 
 2.20.1
 
