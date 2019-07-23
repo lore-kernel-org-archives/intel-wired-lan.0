@@ -1,135 +1,60 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 23 Jul 2019 06:01:33 -0400
-Subject: [Intel-wired-lan] [next PATCH S8 01/12] i40e: fix shifts of signed
- values
-Message-ID: <20190723100144.57435-1-alice.michael@intel.com>
+Date: Tue, 23 Jul 2019 06:01:44 -0400
+Subject: [Intel-wired-lan] [next PATCH S8 12/12] i40e: fix retrying in
+ i40e_aq_get_phy_capabilities
+In-Reply-To: <20190723100144.57435-1-alice.michael@intel.com>
+References: <20190723100144.57435-1-alice.michael@intel.com>
+Message-ID: <20190723100144.57435-12-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Beilei Xing <beilei.xing@intel.com>
+From: Marcin Formela <marcin.formela@intel.com>
 
-This patch fixes following error reported by cppcheck:
-(error) Shifting signed 32-bit value by 31 bits is undefined behaviour
+Fixed a bug where driver was breaking out of the loop and
+reporting an error without retrying first.
 
-Signed-off-by: Ferruh Yigit <ferruh.yigit@intel.com>
+Signed-off-by: Marcin Formela <marcin.formela@intel.com>
 ---
- .../net/ethernet/intel/i40e/i40e_register.h   | 24 +++++++++----------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_register.h b/drivers/net/ethernet/intel/i40e/i40e_register.h
-index 52e3680c57f8..330ac19a5dae 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_register.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_register.h
-@@ -58,7 +58,7 @@
- #define I40E_PF_ARQLEN_ARQCRIT_SHIFT 30
- #define I40E_PF_ARQLEN_ARQCRIT_MASK I40E_MASK(0x1, I40E_PF_ARQLEN_ARQCRIT_SHIFT)
- #define I40E_PF_ARQLEN_ARQENABLE_SHIFT 31
--#define I40E_PF_ARQLEN_ARQENABLE_MASK I40E_MASK(0x1, I40E_PF_ARQLEN_ARQENABLE_SHIFT)
-+#define I40E_PF_ARQLEN_ARQENABLE_MASK I40E_MASK(0x1u, I40E_PF_ARQLEN_ARQENABLE_SHIFT)
- #define I40E_PF_ARQT 0x00080480 /* Reset: EMPR */
- #define I40E_PF_ARQT_ARQT_SHIFT 0
- #define I40E_PF_ARQT_ARQT_MASK I40E_MASK(0x3FF, I40E_PF_ARQT_ARQT_SHIFT)
-@@ -81,7 +81,7 @@
- #define I40E_PF_ATQLEN_ATQCRIT_SHIFT 30
- #define I40E_PF_ATQLEN_ATQCRIT_MASK I40E_MASK(0x1, I40E_PF_ATQLEN_ATQCRIT_SHIFT)
- #define I40E_PF_ATQLEN_ATQENABLE_SHIFT 31
--#define I40E_PF_ATQLEN_ATQENABLE_MASK I40E_MASK(0x1, I40E_PF_ATQLEN_ATQENABLE_SHIFT)
-+#define I40E_PF_ATQLEN_ATQENABLE_MASK I40E_MASK(0x1u, I40E_PF_ATQLEN_ATQENABLE_SHIFT)
- #define I40E_PF_ATQT 0x00080400 /* Reset: EMPR */
- #define I40E_PF_ATQT_ATQT_SHIFT 0
- #define I40E_PF_ATQT_ATQT_MASK I40E_MASK(0x3FF, I40E_PF_ATQT_ATQT_SHIFT)
-@@ -108,7 +108,7 @@
- #define I40E_VF_ARQLEN_ARQCRIT_SHIFT 30
- #define I40E_VF_ARQLEN_ARQCRIT_MASK I40E_MASK(0x1, I40E_VF_ARQLEN_ARQCRIT_SHIFT)
- #define I40E_VF_ARQLEN_ARQENABLE_SHIFT 31
--#define I40E_VF_ARQLEN_ARQENABLE_MASK I40E_MASK(0x1, I40E_VF_ARQLEN_ARQENABLE_SHIFT)
-+#define I40E_VF_ARQLEN_ARQENABLE_MASK I40E_MASK(0x1u, I40E_VF_ARQLEN_ARQENABLE_SHIFT)
- #define I40E_VF_ARQT(_VF) (0x00082C00 + ((_VF) * 4)) /* _i=0...127 */ /* Reset: EMPR */
- #define I40E_VF_ARQT_MAX_INDEX 127
- #define I40E_VF_ARQT_ARQT_SHIFT 0
-@@ -136,7 +136,7 @@
- #define I40E_VF_ATQLEN_ATQCRIT_SHIFT 30
- #define I40E_VF_ATQLEN_ATQCRIT_MASK I40E_MASK(0x1, I40E_VF_ATQLEN_ATQCRIT_SHIFT)
- #define I40E_VF_ATQLEN_ATQENABLE_SHIFT 31
--#define I40E_VF_ATQLEN_ATQENABLE_MASK I40E_MASK(0x1, I40E_VF_ATQLEN_ATQENABLE_SHIFT)
-+#define I40E_VF_ATQLEN_ATQENABLE_MASK I40E_MASK(0x1u, I40E_VF_ATQLEN_ATQENABLE_SHIFT)
- #define I40E_VF_ATQT(_VF) (0x00082800 + ((_VF) * 4)) /* _i=0...127 */ /* Reset: EMPR */
- #define I40E_VF_ATQT_MAX_INDEX 127
- #define I40E_VF_ATQT_ATQT_SHIFT 0
-@@ -259,7 +259,7 @@
- #define I40E_PRTDCB_RETSTCC_UPINTC_MODE_SHIFT 30
- #define I40E_PRTDCB_RETSTCC_UPINTC_MODE_MASK I40E_MASK(0x1, I40E_PRTDCB_RETSTCC_UPINTC_MODE_SHIFT)
- #define I40E_PRTDCB_RETSTCC_ETSTC_SHIFT 31
--#define I40E_PRTDCB_RETSTCC_ETSTC_MASK I40E_MASK(0x1, I40E_PRTDCB_RETSTCC_ETSTC_SHIFT)
-+#define I40E_PRTDCB_RETSTCC_ETSTC_MASK I40E_MASK(0x1u, I40E_PRTDCB_RETSTCC_ETSTC_SHIFT)
- #define I40E_PRTDCB_RPPMC 0x001223A0 /* Reset: CORER */
- #define I40E_PRTDCB_RPPMC_LANRPPM_SHIFT 0
- #define I40E_PRTDCB_RPPMC_LANRPPM_MASK I40E_MASK(0xFF, I40E_PRTDCB_RPPMC_LANRPPM_SHIFT)
-@@ -503,7 +503,7 @@
- #define I40E_GLGEN_MSCA_MDICMD_SHIFT 30
- #define I40E_GLGEN_MSCA_MDICMD_MASK I40E_MASK(0x1, I40E_GLGEN_MSCA_MDICMD_SHIFT)
- #define I40E_GLGEN_MSCA_MDIINPROGEN_SHIFT 31
--#define I40E_GLGEN_MSCA_MDIINPROGEN_MASK I40E_MASK(0x1, I40E_GLGEN_MSCA_MDIINPROGEN_SHIFT)
-+#define I40E_GLGEN_MSCA_MDIINPROGEN_MASK I40E_MASK(0x1u, I40E_GLGEN_MSCA_MDIINPROGEN_SHIFT)
- #define I40E_GLGEN_MSRWD(_i) (0x0008819C + ((_i) * 4)) /* _i=0...3 */ /* Reset: POR */
- #define I40E_GLGEN_MSRWD_MAX_INDEX 3
- #define I40E_GLGEN_MSRWD_MDIWRDATA_SHIFT 0
-@@ -1242,14 +1242,14 @@
- #define I40E_GLLAN_TXPRE_QDIS_SET_QDIS_SHIFT 30
- #define I40E_GLLAN_TXPRE_QDIS_SET_QDIS_MASK I40E_MASK(0x1, I40E_GLLAN_TXPRE_QDIS_SET_QDIS_SHIFT)
- #define I40E_GLLAN_TXPRE_QDIS_CLEAR_QDIS_SHIFT 31
--#define I40E_GLLAN_TXPRE_QDIS_CLEAR_QDIS_MASK I40E_MASK(0x1, I40E_GLLAN_TXPRE_QDIS_CLEAR_QDIS_SHIFT)
-+#define I40E_GLLAN_TXPRE_QDIS_CLEAR_QDIS_MASK I40E_MASK(0x1u, I40E_GLLAN_TXPRE_QDIS_CLEAR_QDIS_SHIFT)
- #define I40E_PFLAN_QALLOC 0x001C0400 /* Reset: CORER */
- #define I40E_PFLAN_QALLOC_FIRSTQ_SHIFT 0
- #define I40E_PFLAN_QALLOC_FIRSTQ_MASK I40E_MASK(0x7FF, I40E_PFLAN_QALLOC_FIRSTQ_SHIFT)
- #define I40E_PFLAN_QALLOC_LASTQ_SHIFT 16
- #define I40E_PFLAN_QALLOC_LASTQ_MASK I40E_MASK(0x7FF, I40E_PFLAN_QALLOC_LASTQ_SHIFT)
- #define I40E_PFLAN_QALLOC_VALID_SHIFT 31
--#define I40E_PFLAN_QALLOC_VALID_MASK I40E_MASK(0x1, I40E_PFLAN_QALLOC_VALID_SHIFT)
-+#define I40E_PFLAN_QALLOC_VALID_MASK I40E_MASK(0x1u, I40E_PFLAN_QALLOC_VALID_SHIFT)
- #define I40E_QRX_ENA(_Q) (0x00120000 + ((_Q) * 4)) /* _i=0...1535 */ /* Reset: PFR */
- #define I40E_QRX_ENA_MAX_INDEX 1535
- #define I40E_QRX_ENA_QENA_REQ_SHIFT 0
-@@ -1658,7 +1658,7 @@
- #define I40E_GLNVM_SRCTL_START_SHIFT 30
- #define I40E_GLNVM_SRCTL_START_MASK I40E_MASK(0x1, I40E_GLNVM_SRCTL_START_SHIFT)
- #define I40E_GLNVM_SRCTL_DONE_SHIFT 31
--#define I40E_GLNVM_SRCTL_DONE_MASK I40E_MASK(0x1, I40E_GLNVM_SRCTL_DONE_SHIFT)
-+#define I40E_GLNVM_SRCTL_DONE_MASK I40E_MASK(0x1u, I40E_GLNVM_SRCTL_DONE_SHIFT)
- #define I40E_GLNVM_SRDATA 0x000B6114 /* Reset: POR */
- #define I40E_GLNVM_SRDATA_WRDATA_SHIFT 0
- #define I40E_GLNVM_SRDATA_WRDATA_MASK I40E_MASK(0xFFFF, I40E_GLNVM_SRDATA_WRDATA_SHIFT)
-@@ -3025,7 +3025,7 @@
- #define I40E_PF_VT_PFALLOC_LASTVF_SHIFT 8
- #define I40E_PF_VT_PFALLOC_LASTVF_MASK I40E_MASK(0xFF, I40E_PF_VT_PFALLOC_LASTVF_SHIFT)
- #define I40E_PF_VT_PFALLOC_VALID_SHIFT 31
--#define I40E_PF_VT_PFALLOC_VALID_MASK I40E_MASK(0x1, I40E_PF_VT_PFALLOC_VALID_SHIFT)
-+#define I40E_PF_VT_PFALLOC_VALID_MASK I40E_MASK(0x1u, I40E_PF_VT_PFALLOC_VALID_SHIFT)
- #define I40E_VP_MDET_RX(_VF) (0x0012A000 + ((_VF) * 4)) /* _i=0...127 */ /* Reset: CORER */
- #define I40E_VP_MDET_RX_MAX_INDEX 127
- #define I40E_VP_MDET_RX_VALID_SHIFT 0
-@@ -3161,7 +3161,7 @@
- #define I40E_VF_ARQLEN1_ARQCRIT_SHIFT 30
- #define I40E_VF_ARQLEN1_ARQCRIT_MASK I40E_MASK(0x1, I40E_VF_ARQLEN1_ARQCRIT_SHIFT)
- #define I40E_VF_ARQLEN1_ARQENABLE_SHIFT 31
--#define I40E_VF_ARQLEN1_ARQENABLE_MASK I40E_MASK(0x1, I40E_VF_ARQLEN1_ARQENABLE_SHIFT)
-+#define I40E_VF_ARQLEN1_ARQENABLE_MASK I40E_MASK(0x1u, I40E_VF_ARQLEN1_ARQENABLE_SHIFT)
- #define I40E_VF_ARQT1 0x00007000 /* Reset: EMPR */
- #define I40E_VF_ARQT1_ARQT_SHIFT 0
- #define I40E_VF_ARQT1_ARQT_MASK I40E_MASK(0x3FF, I40E_VF_ARQT1_ARQT_SHIFT)
-@@ -3184,7 +3184,7 @@
- #define I40E_VF_ATQLEN1_ATQCRIT_SHIFT 30
- #define I40E_VF_ATQLEN1_ATQCRIT_MASK I40E_MASK(0x1, I40E_VF_ATQLEN1_ATQCRIT_SHIFT)
- #define I40E_VF_ATQLEN1_ATQENABLE_SHIFT 31
--#define I40E_VF_ATQLEN1_ATQENABLE_MASK I40E_MASK(0x1, I40E_VF_ATQLEN1_ATQENABLE_SHIFT)
-+#define I40E_VF_ATQLEN1_ATQENABLE_MASK I40E_MASK(0x1u, I40E_VF_ATQLEN1_ATQENABLE_SHIFT)
- #define I40E_VF_ATQT1 0x00008400 /* Reset: EMPR */
- #define I40E_VF_ATQT1_ATQT_SHIFT 0
- #define I40E_VF_ATQT1_ATQT_MASK I40E_MASK(0x3FF, I40E_VF_ATQT1_ATQT_SHIFT)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index de996a80013e..46e649c09f72 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1577,19 +1577,22 @@ i40e_status i40e_aq_get_phy_capabilities(struct i40e_hw *hw,
+ 		status = i40e_asq_send_command(hw, &desc, abilities,
+ 					       abilities_size, cmd_details);
+ 
+-		if (status)
+-			break;
+-
+-		if (hw->aq.asq_last_status == I40E_AQ_RC_EIO) {
++		switch (hw->aq.asq_last_status) {
++		case I40E_AQ_RC_EIO:
+ 			status = I40E_ERR_UNKNOWN_PHY;
+ 			break;
+-		} else if (hw->aq.asq_last_status == I40E_AQ_RC_EAGAIN) {
++		case I40E_AQ_RC_EAGAIN:
+ 			usleep_range(1000, 2000);
+ 			total_delay++;
+ 			status = I40E_ERR_TIMEOUT;
++			break;
++		/* also covers I40E_AQ_RC_OK */
++		default:
++			break;
+ 		}
+-	} while ((hw->aq.asq_last_status != I40E_AQ_RC_OK) &&
+-		 (total_delay < max_delay));
++
++	} while ((hw->aq.asq_last_status == I40E_AQ_RC_EAGAIN) &&
++		(total_delay < max_delay));
+ 
+ 	if (status)
+ 		return status;
 -- 
 2.21.0
 
