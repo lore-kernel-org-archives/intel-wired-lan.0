@@ -1,67 +1,87 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:24:43 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v3 03/15] ice: Assume that more than
- one Rx queue is rare in ice_napi_poll
+Date: Tue, 23 Jul 2019 02:24:48 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v3 08/15] ice: allow empty rx
+ descriptors
 In-Reply-To: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
 References: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092454.3508-3-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092454.3508-8-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Currently we divide budget by the number of Rx queues per Rx ring
-container in ice_napi_poll even if there is only 1. This is an
-unnecessary divide for the normal case of 1 Rx ring per Rx ring
-container. Fix this by using an unlikely() call in the case where we
-actually need to divide.
+In some circumstances, the hardware will hand us a receive descriptor
+which has no data attached, but is otherwise valid. The receive code was
+improperly ignoring these descriptors, which result in an infinite loop.
 
-Also, we will always set budget_per_ring even if there are no Rx rings
-in the Rx ring container so we don't need to initialize it to 0.
+To fix this, change the receive code to process all descriptors,
+regardless of the size of the associated data. Add checks to the
+memory-handling functions to allow for zero size.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 005aca60f9ca..b87ce95b8360 100644
+index a78c68fe190a..f612f1f53c67 100644
 --- a/drivers/net/ethernet/intel/ice/ice_txrx.c
 +++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1415,8 +1415,8 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
- 				container_of(napi, struct ice_q_vector, napi);
- 	struct ice_vsi *vsi = q_vector->vsi;
- 	bool clean_complete = true;
--	int budget_per_ring = 0;
- 	struct ice_ring *ring;
-+	int budget_per_ring;
- 	int work_done = 0;
+@@ -607,6 +607,8 @@ ice_add_rx_frag(struct ice_rx_buf *rx_buf, struct sk_buff *skb,
+ 	unsigned int truesize = ICE_RXBUF_2048;
+ #endif
  
- 	/* Since the actual Tx work is minimal, we can give the Tx a larger
-@@ -1430,11 +1430,16 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
- 	if (budget <= 0)
- 		return budget;
++	if (!size)
++		return;
+ 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buf->page,
+ 			rx_buf->page_offset, size, truesize);
  
--	/* We attempt to distribute budget to each Rx queue fairly, but don't
--	 * allow the budget to go below 1 because that would exit polling early.
--	 */
--	if (q_vector->num_ring_rx)
-+	/* normally we have 1 Rx ring per q_vector */
-+	if (unlikely(q_vector->num_ring_rx > 1))
-+		/* We attempt to distribute budget to each Rx queue fairly, but
-+		 * don't allow the budget to go below 1 because that would exit
-+		 * polling early.
-+		 */
- 		budget_per_ring = max(budget / q_vector->num_ring_rx, 1);
-+	else
-+		/* Max of 1 Rx ring in this q_vector so give it the budget */
-+		budget_per_ring = budget;
+@@ -662,6 +664,8 @@ ice_get_rx_buf(struct ice_ring *rx_ring, struct sk_buff **skb,
+ 	prefetchw(rx_buf->page);
+ 	*skb = rx_buf->skb;
  
- 	ice_for_each_ring(ring, q_vector->rx) {
- 		int cleaned;
++	if (!size)
++		return rx_buf;
+ 	/* we are reusing so sync this buffer for CPU use */
+ 	dma_sync_single_range_for_cpu(rx_ring->dev, rx_buf->dma,
+ 				      rx_buf->page_offset, size,
+@@ -745,8 +749,11 @@ ice_construct_skb(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf,
+  */
+ static void ice_put_rx_buf(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf)
+ {
+-		/* hand second half of page back to the ring */
++	if (!rx_buf)
++		return;
++
+ 	if (ice_can_reuse_rx_page(rx_buf)) {
++		/* hand second half of page back to the ring */
+ 		ice_reuse_rx_page(rx_ring, rx_buf);
+ 		rx_ring->rx_stats.page_reuse_count++;
+ 	} else {
+@@ -1032,8 +1039,9 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 		size = le16_to_cpu(rx_desc->wb.pkt_len) &
+ 			ICE_RX_FLX_DESC_PKT_LEN_M;
+ 
++		/* retrieve a buffer from the ring */
+ 		rx_buf = ice_get_rx_buf(rx_ring, &skb, size);
+-		/* allocate (if needed) and populate skb */
++
+ 		if (skb)
+ 			ice_add_rx_frag(rx_buf, skb, size);
+ 		else
+@@ -1042,7 +1050,8 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 		/* exit if we failed to retrieve a buffer */
+ 		if (!skb) {
+ 			rx_ring->rx_stats.alloc_buf_failed++;
+-			rx_buf->pagecnt_bias++;
++			if (rx_buf)
++				rx_buf->pagecnt_bias++;
+ 			break;
+ 		}
+ 
 -- 
 2.20.1
 
