@@ -1,91 +1,77 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 23 Jul 2019 06:01:40 -0400
-Subject: [Intel-wired-lan] [next PATCH S8 08/12] i40e: Remove function
- i40e_update_dcb_config()
+Date: Tue, 23 Jul 2019 06:01:35 -0400
+Subject: [Intel-wired-lan] [next PATCH S8 03/12] i40e: check_recovery_mode
+ had wrong if statement
 In-Reply-To: <20190723100144.57435-1-alice.michael@intel.com>
 References: <20190723100144.57435-1-alice.michael@intel.com>
-Message-ID: <20190723100144.57435-8-alice.michael@intel.com>
+Message-ID: <20190723100144.57435-3-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Grzegorz Siwik <grzegorz.siwik@intel.com>
+From: Adrian Podlawski <adrian.podlawski@intel.com>
 
-This patch removes function i40e_update_dcb_config(). Instead of
-i40e_update_dcb_config() we use i40e_init_dcb(), which implements the
-correct nvm read.
+Function check_recovery_mode had wrong if statement.
+Now we check proper FWS1B register values, which are responsible for
+the recovery mode. Recovery mode has 4 values for FVL and 2 for FPK.
+That's why we need 6 different flags which are defined in shared code.
+Now in if statement we recognize type of mac address
+and register value.
+Without those changes driver could show wrong state.
 
-Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
+Signed-off-by: Adrian Podlawski <adrian.podlawski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 46 +--------------------
- 1 file changed, 1 insertion(+), 45 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 17 ++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_register.h |  6 ++++++
+ 2 files changed, 20 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5c280c025085..8d6b9515b595 100644
+index b807dd6b1417..4551d97771c9 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6419,50 +6419,6 @@ static int i40e_resume_port_tx(struct i40e_pf *pf)
- 	return ret;
- }
- 
--/**
-- * i40e_update_dcb_config
-- * @hw: pointer to the HW struct
-- * @enable_mib_change: enable MIB change event
-- *
-- * Update DCB configuration from the firmware
-- **/
--static enum i40e_status_code
--i40e_update_dcb_config(struct i40e_hw *hw, bool enable_mib_change)
--{
--	struct i40e_lldp_variables lldp_cfg;
--	i40e_status ret;
+@@ -14578,9 +14578,20 @@ void i40e_set_fec_in_flags(u8 fec_cfg, u32 *flags)
+  **/
+ static bool i40e_check_recovery_mode(struct i40e_pf *pf)
+ {
+-	u32 val = rd32(&pf->hw, I40E_GL_FWSTS);
 -
--	if (!hw->func_caps.dcb)
--		return I40E_NOT_SUPPORTED;
--
--	/* Read LLDP NVM area */
--	ret = i40e_read_lldp_cfg(hw, &lldp_cfg);
--	if (ret)
--		return I40E_ERR_NOT_READY;
--
--	/* Get DCBX status */
--	ret = i40e_get_dcbx_status(hw, &hw->dcbx_status);
--	if (ret)
--		return ret;
--
--	/* Check the DCBX Status */
--	if (hw->dcbx_status == I40E_DCBX_STATUS_DONE ||
--	    hw->dcbx_status == I40E_DCBX_STATUS_IN_PROGRESS) {
--		/* Get current DCBX configuration */
--		ret = i40e_get_dcb_config(hw);
--		if (ret)
--			return ret;
--	} else if (hw->dcbx_status == I40E_DCBX_STATUS_DISABLED) {
--		return I40E_ERR_NOT_READY;
--	}
--
--	/* Configure the LLDP MIB change event */
--	if (enable_mib_change)
--		ret = i40e_aq_cfg_lldp_mib_change_event(hw, true, NULL);
--
--	return ret;
--}
--
- /**
-  * i40e_init_pf_dcb - Initialize DCB configuration
-  * @pf: PF being configured
-@@ -6485,7 +6441,7 @@ static int i40e_init_pf_dcb(struct i40e_pf *pf)
- 		goto out;
- 	}
- 
--	err = i40e_update_dcb_config(hw, true);
-+	err = i40e_init_dcb(hw, true);
- 	if (!err) {
- 		/* Device/Function is not DCBX capable */
- 		if ((!hw->func_caps.dcb) ||
+-	if (val & I40E_GL_FWSTS_FWS1B_MASK) {
++	u32 val = rd32(&pf->hw, I40E_GL_FWSTS) & I40E_GL_FWSTS_FWS1B_MASK;
++	bool is_recovery_mode = false;
++
++	if (pf->hw.mac.type == I40E_MAC_XL710)
++		is_recovery_mode =
++		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_CORER_MASK ||
++		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_GLOBR_MASK ||
++		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_TRANSITION_MASK ||
++		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_NVM_MASK;
++	if (pf->hw.mac.type == I40E_MAC_X722)
++		is_recovery_mode =
++		val == I40E_X722_GL_FWSTS_FWS1B_REC_MOD_CORER_MASK ||
++		val == I40E_X722_GL_FWSTS_FWS1B_REC_MOD_GLOBR_MASK;
++	if (is_recovery_mode) {
+ 		dev_notice(&pf->pdev->dev, "Firmware recovery mode detected. Limiting functionality.\n");
+ 		dev_notice(&pf->pdev->dev, "Refer to the Intel(R) Ethernet Adapters and Devices User Guide for details on firmware recovery mode.\n");
+ 		set_bit(__I40E_RECOVERY_MODE, pf->state);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_register.h b/drivers/net/ethernet/intel/i40e/i40e_register.h
+index 330ac19a5dae..d35d690ca10f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_register.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_register.h
+@@ -363,6 +363,12 @@
+ #define I40E_GL_FWSTS_FWRI_MASK I40E_MASK(0x1, I40E_GL_FWSTS_FWRI_SHIFT)
+ #define I40E_GL_FWSTS_FWS1B_SHIFT 16
+ #define I40E_GL_FWSTS_FWS1B_MASK I40E_MASK(0xFF, I40E_GL_FWSTS_FWS1B_SHIFT)
++#define I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_CORER_MASK I40E_MASK(0x30, I40E_GL_FWSTS_FWS1B_SHIFT)
++#define I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_GLOBR_MASK I40E_MASK(0x31, I40E_GL_FWSTS_FWS1B_SHIFT)
++#define I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_TRANSITION_MASK I40E_MASK(0x32, I40E_GL_FWSTS_FWS1B_SHIFT)
++#define I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_NVM_MASK I40E_MASK(0x33, I40E_GL_FWSTS_FWS1B_SHIFT)
++#define I40E_X722_GL_FWSTS_FWS1B_REC_MOD_CORER_MASK I40E_MASK(0xB, I40E_GL_FWSTS_FWS1B_SHIFT)
++#define I40E_X722_GL_FWSTS_FWS1B_REC_MOD_GLOBR_MASK I40E_MASK(0xC, I40E_GL_FWSTS_FWS1B_SHIFT)
+ #define I40E_GLGEN_CLKSTAT 0x000B8184 /* Reset: POR */
+ #define I40E_GLGEN_CLKSTAT_CLKMODE_SHIFT 0
+ #define I40E_GLGEN_CLKSTAT_CLKMODE_MASK I40E_MASK(0x1, I40E_GLGEN_CLKSTAT_CLKMODE_SHIFT)
 -- 
 2.21.0
 
