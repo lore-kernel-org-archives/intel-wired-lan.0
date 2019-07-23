@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:24:50 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v3 10/15] ice: update GLINT_DYN_CTL
- and GLINT_VECT2FUNC register access
+Date: Tue, 23 Jul 2019 02:24:45 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v3 05/15] ice: fix set pause param
+ autoneg check
 In-Reply-To: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
 References: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092454.3508-10-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092454.3508-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,95 +13,71 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Paul Greenwalt <paul.greenwalt@intel.com>
 
-Register access for GLINT_DYN_CTL and GLINT_VECT2FUNC should be within
-the PF space and not the absolute device space.
+When ETHTOOL_GLINKSETTINGS is defined get pause param pause->autoneg
+reports SW configured setting, however when not defined get pause param
+pause->autoneg reports the link status. Set pause param needs to compare
+pause->autoneg with the same source as get pause param to block the user
+from changing autoneg with the set pause param option, or the user
+may be incorrectly blocked from changing Rx|Tx pause settings.
 
 Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 24 +++++++++++--------
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  3 ++-
- 2 files changed, 16 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 28 +++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 4d41877fa06e..69d45376be80 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -474,19 +474,20 @@ ice_vf_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi, u16 vf_id)
- }
- 
- /**
-- * ice_calc_vf_first_vector_idx - Calculate absolute MSIX vector index in HW
-+ * ice_calc_vf_first_vector_idx - Calculate MSIX vector index in the PF space
-  * @pf: pointer to PF structure
-  * @vf: pointer to VF that the first MSIX vector index is being calculated for
-  *
-- * This returns the first MSIX vector index in HW that is used by this VF and
-- * this will always be the OICR index in the AVF driver so any functionality
-+ * This returns the first MSIX vector index in PF space that is used by this VF.
-+ * This index is used when accessing PF relative registers such as
-+ * GLINT_VECT2FUNC and GLINT_DYN_CTL.
-+ * This will always be the OICR index in the AVF driver so any functionality
-  * using vf->first_vector_idx for queue configuration will have to increment by
-  * 1 to avoid meddling with the OICR index.
-  */
- static int ice_calc_vf_first_vector_idx(struct ice_pf *pf, struct ice_vf *vf)
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 1fe048cfb737..ba29aede99ad 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -2856,6 +2856,7 @@ static int
+ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
  {
--	return pf->hw.func_caps.common_cap.msix_vector_first_id +
--		pf->sriov_base_vector + vf->vf_id * pf->num_vf_msix;
-+	return pf->sriov_base_vector + vf->vf_id * pf->num_vf_msix;
- }
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_aqc_get_phy_caps_data *pcaps;
+ 	struct ice_link_status *hw_link_info;
+ 	struct ice_pf *pf = np->vsi->back;
+ 	struct ice_dcbx_cfg *dcbx_cfg;
+@@ -2866,6 +2867,7 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
+ 	u8 aq_failures;
+ 	bool link_up;
+ 	int err = 0;
++	u32 is_an;
  
- /**
-@@ -597,27 +598,30 @@ static int ice_alloc_vf_res(struct ice_vf *vf)
-  */
- static void ice_ena_vf_mappings(struct ice_vf *vf)
- {
-+	int abs_vf_id, abs_first, abs_last;
- 	struct ice_pf *pf = vf->pf;
- 	struct ice_vsi *vsi;
- 	int first, last, v;
- 	struct ice_hw *hw;
--	int abs_vf_id;
- 	u32 reg;
+ 	pi = vsi->port_info;
+ 	hw_link_info = &pi->phy.link_info;
+@@ -2880,7 +2882,31 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
+ 		return -EOPNOTSUPP;
+ 	}
  
- 	hw = &pf->hw;
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	first = vf->first_vector_idx;
- 	last = (first + pf->num_vf_msix) - 1;
-+	abs_first = first + pf->hw.func_caps.common_cap.msix_vector_first_id;
-+	abs_last = (abs_first + pf->num_vf_msix) - 1;
- 	abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
- 
- 	/* VF Vector allocation */
--	reg = (((first << VPINT_ALLOC_FIRST_S) & VPINT_ALLOC_FIRST_M) |
--	       ((last << VPINT_ALLOC_LAST_S) & VPINT_ALLOC_LAST_M) |
-+	reg = (((abs_first << VPINT_ALLOC_FIRST_S) & VPINT_ALLOC_FIRST_M) |
-+	       ((abs_last << VPINT_ALLOC_LAST_S) & VPINT_ALLOC_LAST_M) |
- 	       VPINT_ALLOC_VALID_M);
- 	wr32(hw, VPINT_ALLOC(vf->vf_id), reg);
- 
--	reg = (((first << VPINT_ALLOC_PCI_FIRST_S) & VPINT_ALLOC_PCI_FIRST_M) |
--	       ((last << VPINT_ALLOC_PCI_LAST_S) & VPINT_ALLOC_PCI_LAST_M) |
-+	reg = (((abs_first << VPINT_ALLOC_PCI_FIRST_S)
-+		 & VPINT_ALLOC_PCI_FIRST_M) |
-+	       ((abs_last << VPINT_ALLOC_PCI_LAST_S) & VPINT_ALLOC_PCI_LAST_M) |
- 	       VPINT_ALLOC_PCI_VALID_M);
- 	wr32(hw, VPINT_ALLOC_PCI(vf->vf_id), reg);
- 	/* map the interrupts to its functions */
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index ada69120ff38..424bc0538956 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -45,7 +45,8 @@ struct ice_vf {
- 
- 	s16 vf_id;			/* VF ID in the PF space */
- 	u16 lan_vsi_idx;		/* index into PF struct */
--	int first_vector_idx;		/* first vector index of this VF */
-+	/* first vector index of this VF in the PF space */
-+	int first_vector_idx;
- 	struct ice_sw *vf_sw_id;	/* switch ID the VF VSIs connect to */
- 	struct virtchnl_version_info vf_ver;
- 	u32 driver_caps;		/* reported by VF driver */
+-	if (pause->autoneg != (hw_link_info->an_info & ICE_AQ_AN_COMPLETED)) {
++	/* Get pause param reports configured and negotiated flow control pause
++	 * when ETHTOOL_GLINKSETTINGS is defined. Since ETHTOOL_GLINKSETTINGS is
++	 * defined get pause param pause->autoneg reports SW configured setting,
++	 * so compare pause->autoneg with SW configured to prevent the user from
++	 * using set pause param to chance autoneg.
++	 */
++	pcaps = devm_kzalloc(&vsi->back->pdev->dev, sizeof(*pcaps),
++			     GFP_KERNEL);
++	if (!pcaps)
++		return -ENOMEM;
++
++	/* Get current PHY config */
++	status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_SW_CFG, pcaps,
++				     NULL);
++	if (status) {
++		devm_kfree(&vsi->back->pdev->dev, pcaps);
++		return -EIO;
++	}
++
++	is_an = ((pcaps->caps & ICE_AQC_PHY_AN_MODE) ?
++			AUTONEG_ENABLE : AUTONEG_DISABLE);
++
++	devm_kfree(&vsi->back->pdev->dev, pcaps);
++
++	if (pause->autoneg != is_an) {
+ 		netdev_info(netdev, "To change autoneg please use: ethtool -s <dev> autoneg <on|off>\n");
+ 		return -EOPNOTSUPP;
+ 	}
 -- 
 2.20.1
 
