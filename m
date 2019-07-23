@@ -1,87 +1,49 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:24:48 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v3 08/15] ice: allow empty rx
- descriptors
+Date: Tue, 23 Jul 2019 02:24:42 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v3 02/15] ice: Use the software based
+ tail when checking for hung Tx ring
 In-Reply-To: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
 References: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092454.3508-8-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092454.3508-2-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-In some circumstances, the hardware will hand us a receive descriptor
-which has no data attached, but is otherwise valid. The receive code was
-improperly ignoring these descriptors, which result in an infinite loop.
+Currently in ice_get_tx_pending we try to read a Tx ring's tail. This is
+then compared with the software based head (next_to_clean) to determine
+if we have pending work. This will never work because reading of the Tx
+ring's tail is no longer supported. Fix this by using the software based
+tail (next_to_use) to determine if there is pending work.
 
-To fix this, change the receive code to process all descriptors,
-regardless of the size of the associated data. Add checks to the
-memory-handling functions to allow for zero size.
-
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index a78c68fe190a..f612f1f53c67 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -607,6 +607,8 @@ ice_add_rx_frag(struct ice_rx_buf *rx_buf, struct sk_buff *skb,
- 	unsigned int truesize = ICE_RXBUF_2048;
- #endif
- 
-+	if (!size)
-+		return;
- 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buf->page,
- 			rx_buf->page_offset, size, truesize);
- 
-@@ -662,6 +664,8 @@ ice_get_rx_buf(struct ice_ring *rx_ring, struct sk_buff **skb,
- 	prefetchw(rx_buf->page);
- 	*skb = rx_buf->skb;
- 
-+	if (!size)
-+		return rx_buf;
- 	/* we are reusing so sync this buffer for CPU use */
- 	dma_sync_single_range_for_cpu(rx_ring->dev, rx_buf->dma,
- 				      rx_buf->page_offset, size,
-@@ -745,8 +749,11 @@ ice_construct_skb(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf,
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 81c6db461df6..d75bfa832332 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -41,12 +41,12 @@ static void ice_update_pf_stats(struct ice_pf *pf);
+  * ice_get_tx_pending - returns number of Tx descriptors not processed
+  * @ring: the ring of descriptors
   */
- static void ice_put_rx_buf(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf)
+-static u32 ice_get_tx_pending(struct ice_ring *ring)
++static u16 ice_get_tx_pending(struct ice_ring *ring)
  {
--		/* hand second half of page back to the ring */
-+	if (!rx_buf)
-+		return;
-+
- 	if (ice_can_reuse_rx_page(rx_buf)) {
-+		/* hand second half of page back to the ring */
- 		ice_reuse_rx_page(rx_ring, rx_buf);
- 		rx_ring->rx_stats.page_reuse_count++;
- 	} else {
-@@ -1032,8 +1039,9 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
- 		size = le16_to_cpu(rx_desc->wb.pkt_len) &
- 			ICE_RX_FLX_DESC_PKT_LEN_M;
+-	u32 head, tail;
++	u16 head, tail;
  
-+		/* retrieve a buffer from the ring */
- 		rx_buf = ice_get_rx_buf(rx_ring, &skb, size);
--		/* allocate (if needed) and populate skb */
-+
- 		if (skb)
- 			ice_add_rx_frag(rx_buf, skb, size);
- 		else
-@@ -1042,7 +1050,8 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
- 		/* exit if we failed to retrieve a buffer */
- 		if (!skb) {
- 			rx_ring->rx_stats.alloc_buf_failed++;
--			rx_buf->pagecnt_bias++;
-+			if (rx_buf)
-+				rx_buf->pagecnt_bias++;
- 			break;
- 		}
+ 	head = ring->next_to_clean;
+-	tail = readl(ring->tail);
++	tail = ring->next_to_use;
  
+ 	if (head != tail)
+ 		return (head < tail) ?
 -- 
 2.20.1
 
