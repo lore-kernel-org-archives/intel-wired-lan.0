@@ -1,99 +1,59 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:27:49 -0700
-Subject: [Intel-wired-lan] [PATCH S24 02/12] ice: Account for all states of
- FW DCBx and LLDP
+Date: Tue, 23 Jul 2019 02:27:56 -0700
+Subject: [Intel-wired-lan] [PATCH S24 09/12] ice: silence some bogus error
+ messages
 In-Reply-To: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
 References: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092759.3614-2-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092759.3614-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Currently, only the DCBx status is taken into account to
-determine if FW LLDP is possible.  But there are NVM version
-coming out with DCBx enabled, and FW LLDP disabled.  This
-is causing errors where the driver sees that DCBx is not
-disabled, and then tries to register for LLDP MIB change
-events, and fails.
+In some circumstances, VF devices can be deactivated while a message is
+in-flight. In that case, a series of  scary error message will be
+printed in the log. Since these are actually harmless, check for this
+case and suppress them. No harm, no foul.
 
-Change the logic to detect both DCBx and LLDP states in the
-FW engine.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 34 +++++++-------------
- 1 file changed, 12 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  | 1 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 6 +++---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index d285aba3fea7..9ab9ec1ce19e 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -324,6 +324,11 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 765e3c2ed045..01ef2f290c5e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1610,6 +1610,7 @@ enum ice_aq_err {
+ 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
+ 	ICE_AQ_RC_EEXIST	= 13, /* Object already exists */
+ 	ICE_AQ_RC_ENOSPC	= 16, /* No space left or allocation failure */
++	ICE_AQ_RC_ENOSYS        = 17, /* Function not implemented */
+ };
+ 
+ /* Admin Queue command opcodes */
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 6bcb16bd5c7b..20def6d0f087 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1513,10 +1513,10 @@ ice_vc_send_msg_to_vf(struct ice_vf *vf, u32 v_opcode,
+ 
+ 	aq_ret = ice_aq_send_msg_to_vf(&pf->hw, vf->vf_id, v_opcode, v_retval,
+ 				       msg, msglen, NULL);
+-	if (aq_ret) {
++	if (aq_ret && pf->hw.mailboxq.sq_last_status != ICE_AQ_RC_ENOSYS) {
+ 		dev_info(&pf->pdev->dev,
+-			 "Unable to send the message to VF %d aq_err %d\n",
+-			 vf->vf_id, pf->hw.mailboxq.sq_last_status);
++			 "Unable to send the message to VF %d ret %d aq_err %d\n",
++			 vf->vf_id, aq_ret, pf->hw.mailboxq.sq_last_status);
+ 		return -EIO;
  	}
- 
- 	ice_init_dcb(&pf->hw);
-+	if (pf->hw.port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
-+		pf->hw.port_info->is_sw_lldp = true;
-+	else
-+		pf->hw.port_info->is_sw_lldp = false;
-+
- 	if (ice_dcb_need_recfg(pf, prev_cfg, local_dcbx_cfg)) {
- 		/* difference in cfg detected - disable DCB till next MIB */
- 		dev_err(&pf->pdev->dev, "Set local MIB not accurate\n");
-@@ -445,35 +450,17 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 	struct device *dev = &pf->pdev->dev;
- 	struct ice_port_info *port_info;
- 	struct ice_hw *hw = &pf->hw;
--	int sw_default = 0;
- 	int err;
- 
- 	port_info = hw->port_info;
- 
- 	err = ice_init_dcb(hw);
- 	if (err) {
--		/* FW LLDP is not active, default to SW DCBX/LLDP */
--		dev_info(&pf->pdev->dev, "FW LLDP is not active\n");
--		hw->port_info->dcbx_status = ICE_DCBX_STATUS_NOT_STARTED;
--		hw->port_info->is_sw_lldp = true;
--	}
--
--	if (port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
--		dev_info(&pf->pdev->dev, "DCBX disabled\n");
--
--	/* LLDP disabled in FW */
--	if (port_info->is_sw_lldp) {
--		sw_default = 1;
--		dev_info(&pf->pdev->dev, "DCBx/LLDP in SW mode.\n");
-+		/* FW LLDP is disabled, activate SW DCBX/LLDP mode */
-+		dev_info(&pf->pdev->dev,
-+			 "FW LLDP is disabled, DCBx/LLDP in SW mode.\n");
-+		port_info->is_sw_lldp = true;
- 		clear_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
--	} else {
--		set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
--	}
--
--	if (port_info->dcbx_status == ICE_DCBX_STATUS_NOT_STARTED)
--		dev_info(&pf->pdev->dev, "DCBX not started\n");
--
--	if (sw_default) {
- 		err = ice_dcb_sw_dflt_cfg(pf, locked);
- 		if (err) {
- 			dev_err(&pf->pdev->dev,
-@@ -488,6 +475,9 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 		return 0;
- 	}
- 
-+	port_info->is_sw_lldp = false;
-+	set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
-+
- 	/* DCBX in FW and LLDP enabled in FW */
- 	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
  
 -- 
 2.20.1
