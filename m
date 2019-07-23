@@ -1,49 +1,74 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 23 Jul 2019 02:24:42 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v3 02/15] ice: Use the software based
- tail when checking for hung Tx ring
+Date: Tue, 23 Jul 2019 02:24:53 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v3 13/15] ice: Move VF resources
+ definition to SR-IOV specific file
 In-Reply-To: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
 References: <20190723092454.3508-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190723092454.3508-2-anthony.l.nguyen@intel.com>
+Message-ID: <20190723092454.3508-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-Currently in ice_get_tx_pending we try to read a Tx ring's tail. This is
-then compared with the software based head (next_to_clean) to determine
-if we have pending work. This will never work because reading of the Tx
-ring's tail is no longer supported. Fix this by using the software based
-tail (next_to_use) to determine if there is pending work.
+In order to use some of the VF resources definition in the SR-IOV specific
+virtchnl header file, this patch moves applicable code to
+ice_virtchnl_pf.h file accordingly... and they should have been defined in
+the destination file originally.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h             | 10 ----------
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h | 13 +++++++++++++
+ 2 files changed, 13 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 81c6db461df6..d75bfa832332 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -41,12 +41,12 @@ static void ice_update_pf_stats(struct ice_pf *pf);
-  * ice_get_tx_pending - returns number of Tx descriptors not processed
-  * @ring: the ring of descriptors
-  */
--static u32 ice_get_tx_pending(struct ice_ring *ring)
-+static u16 ice_get_tx_pending(struct ice_ring *ring)
- {
--	u32 head, tail;
-+	u16 head, tail;
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 36a8ee873ae1..8398dd45a8a2 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -87,16 +87,6 @@ extern const char ice_drv_ver[];
+ #define ICE_RES_MISC_VEC_ID	(ICE_RES_VALID_BIT - 1)
+ #define ICE_INVAL_Q_INDEX	0xffff
+ #define ICE_INVAL_VFID		256
+-#define ICE_MAX_VF_COUNT	256
+-#define ICE_MAX_QS_PER_VF		256
+-#define ICE_MIN_QS_PER_VF		1
+-#define ICE_DFLT_QS_PER_VF		4
+-#define ICE_NONQ_VECS_VF		1
+-#define ICE_MAX_SCATTER_QS_PER_VF	16
+-#define ICE_MAX_BASE_QS_PER_VF		16
+-#define ICE_MAX_INTR_PER_VF		65
+-#define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
+-#define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
  
- 	head = ring->next_to_clean;
--	tail = readl(ring->tail);
-+	tail = ring->next_to_use;
+ #define ICE_MAX_RESET_WAIT		20
  
- 	if (head != tail)
- 		return (head < tail) ?
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 79bb47f73879..4d94853f119a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -26,6 +26,19 @@
+ #define ICE_PCI_CIAD_WAIT_COUNT		100
+ #define ICE_PCI_CIAD_WAIT_DELAY_US	1
+ 
++/* VF resources default values and limitation */
++#define ICE_MAX_VF_COUNT		256
++#define ICE_MAX_QS_PER_VF		256
++#define ICE_MIN_QS_PER_VF		1
++#define ICE_DFLT_QS_PER_VF		4
++#define ICE_NONQ_VECS_VF		1
++#define ICE_MAX_SCATTER_QS_PER_VF	16
++#define ICE_MAX_BASE_QS_PER_VF		16
++#define ICE_MAX_INTR_PER_VF		65
++#define ICE_MAX_POLICY_INTR_PER_VF	33
++#define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
++#define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
++
+ /* Specific VF states */
+ enum ice_vf_states {
+ 	ICE_VF_STATE_INIT = 0,
 -- 
 2.20.1
 
