@@ -1,33 +1,154 @@
-From: David Miller <davem@davemloft.net>
-Date: Wed, 24 Jul 2019 11:14:35 -0700 (PDT)
-Subject: [Intel-wired-lan] [PATCH net-next v2 0/8] Use dev_get_drvdata
- where possible
-In-Reply-To: <20190724060512.23899-1-hslester96@gmail.com>
-References: <20190724060512.23899-1-hslester96@gmail.com>
-Message-ID: <20190724.111435.1790922345411569346.davem@davemloft.net>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 25 Jul 2019 04:24:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 14f5f463ce3e2c680e3774189b5e6d2c9cccfe83
+Message-ID: <5d38be8f.U/oI42ywVo3O/xaN%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Chuhong Yuan <hslester96@gmail.com>
-Date: Wed, 24 Jul 2019 14:05:12 +0800
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 14f5f463ce3e2c680e3774189b5e6d2c9cccfe83  ixgbevf: fix a compilation error of skb_frag_t
 
-> These patches use dev_get_drvdata instead of
-> using to_pci_dev + pci_get_drvdata to make
-> code simpler where possible.
-> 
-> Changelog:
-> 
-> v1 -> v2:
-> - Change pci_set_drvdata to dev_set_drvdata
->   to keep consistency.
+elapsed time: 201m
 
-Some of these patches were applied yesterday, weren't they?
+configs tested: 129
 
-Please take that into consideration when you repost, especially
-when the maintainer(s) explicitly reply to your patches saying
-"Applied." or similar like I always do.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Thanks.
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-d001-201929
+x86_64                 randconfig-d002-201929
+x86_64                 randconfig-d003-201929
+x86_64                 randconfig-d004-201929
+i386                   randconfig-d001-201929
+i386                   randconfig-d002-201929
+i386                   randconfig-d003-201929
+i386                   randconfig-d004-201929
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-a001-201929
+x86_64                 randconfig-a002-201929
+x86_64                 randconfig-a003-201929
+x86_64                 randconfig-a004-201929
+i386                   randconfig-a001-201929
+i386                   randconfig-a002-201929
+i386                   randconfig-a003-201929
+i386                   randconfig-a004-201929
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-f001-201929
+x86_64                 randconfig-f002-201929
+x86_64                 randconfig-f003-201929
+x86_64                 randconfig-f004-201929
+i386                   randconfig-f001-201929
+i386                   randconfig-f002-201929
+i386                   randconfig-f003-201929
+i386                   randconfig-f004-201929
+x86_64                 randconfig-e001-201929
+x86_64                 randconfig-e002-201929
+x86_64                 randconfig-e003-201929
+x86_64                 randconfig-e004-201929
+i386                   randconfig-e001-201929
+i386                   randconfig-e002-201929
+i386                   randconfig-e003-201929
+i386                   randconfig-e004-201929
+x86_64                 randconfig-b001-201929
+x86_64                 randconfig-b002-201929
+x86_64                 randconfig-b003-201929
+x86_64                 randconfig-b004-201929
+i386                   randconfig-b001-201929
+i386                   randconfig-b002-201929
+i386                   randconfig-b003-201929
+i386                   randconfig-b004-201929
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-c001-201929
+x86_64                 randconfig-c002-201929
+x86_64                 randconfig-c003-201929
+x86_64                 randconfig-c004-201929
+i386                   randconfig-c001-201929
+i386                   randconfig-c002-201929
+i386                   randconfig-c003-201929
+i386                   randconfig-c004-201929
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                             allyesconfig
+nds32                            allyesconfig
+ia64                             allyesconfig
+riscv                            allmodconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
