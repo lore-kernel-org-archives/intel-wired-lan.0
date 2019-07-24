@@ -1,81 +1,69 @@
-From: Formela, Marcin <marcin.formela@intel.com>
-Date: Wed, 24 Jul 2019 06:16:07 +0000
-Subject: [Intel-wired-lan] [next PATCH S8 12/12] i40e: fix retrying in
- i40e_aq_get_phy_capabilities
-In-Reply-To: <20190723100345.57522-12-alice.michael@intel.com>
-References: <20190723100345.57522-1-alice.michael@intel.com>
- <20190723100345.57522-12-alice.michael@intel.com>
-Message-ID: <5820F02C2ABDA54685910F8970C642582A39EEB5@IRSMSX106.ger.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 24 Jul 2019 09:50:08 -0700
+Subject: [Intel-wired-lan] [PATCH -next v2] ixgbevf: fix a compilation error
+ of skb_frag_t
+Message-ID: <20190724165008.12142-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Ack. Thx Alice.
+From: Qian Cai <cai@lca.pw>
 
---Marcin
+The linux-next commit "net: Rename skb_frag_t size to bv_len" [1]
+introduced a compilation error on powerpc as it forgot to deal with the
+renaming from "size" to "bv_len" for ixgbevf.
 
------Original Message-----
-From: Michael, Alice 
-Sent: Tuesday, July 23, 2019 12:04 PM
-To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: Formela, Marcin <marcin.formela@intel.com>
-Subject: [next PATCH S8 12/12] i40e: fix retrying in i40e_aq_get_phy_capabilities
+[1] https://lore.kernel.org/netdev/20190723030831.11879-1-willy at infradead.org/T/#md052f1c7de965ccd1bdcb6f92e1990a52298eac5
 
-From: Marcin Formela <marcin.formela@intel.com>
+In file included from ./include/linux/cache.h:5,
+                 from ./include/linux/printk.h:9,
+                 from ./include/linux/kernel.h:15,
+                 from ./include/linux/list.h:9,
+                 from ./include/linux/module.h:9,
+                 from
+drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:12:
+drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c: In function
+'ixgbevf_xmit_frame_ring':
+drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:4138:51: error:
+'skb_frag_t' {aka 'struct bio_vec'} has no member named 'size'
+   count += TXD_USE_COUNT(skb_shinfo(skb)->frags[f].size);
+                                                   ^
+./include/uapi/linux/kernel.h:13:40: note: in definition of macro
+'__KERNEL_DIV_ROUND_UP'
+ #define __KERNEL_DIV_ROUND_UP(n, d) (((n) + (d) - 1) / (d))
+                                        ^
+drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:4138:12: note: in
+expansion of macro 'TXD_USE_COUNT'
+   count += TXD_USE_COUNT(skb_shinfo(skb)->frags[f].size);
 
-Fixed a bug where driver was breaking out of the loop and reporting an error without retrying first.
-
-Signed-off-by: Marcin Formela <marcin.formela@intel.com>
+Signed-off-by: Qian Cai <cai@lca.pw>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index de996a80013e..46e649c09f72 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1577,19 +1577,22 @@ i40e_status i40e_aq_get_phy_capabilities(struct i40e_hw *hw,
- 		status = i40e_asq_send_command(hw, &desc, abilities,
- 					       abilities_size, cmd_details);
- 
--		if (status)
--			break;
--
--		if (hw->aq.asq_last_status == I40E_AQ_RC_EIO) {
-+		switch (hw->aq.asq_last_status) {
-+		case I40E_AQ_RC_EIO:
- 			status = I40E_ERR_UNKNOWN_PHY;
- 			break;
--		} else if (hw->aq.asq_last_status == I40E_AQ_RC_EAGAIN) {
-+		case I40E_AQ_RC_EAGAIN:
- 			usleep_range(1000, 2000);
- 			total_delay++;
- 			status = I40E_ERR_TIMEOUT;
-+			break;
-+		/* also covers I40E_AQ_RC_OK */
-+		default:
-+			break;
- 		}
--	} while ((hw->aq.asq_last_status != I40E_AQ_RC_OK) &&
--		 (total_delay < max_delay));
+v2: Use the fine accessor per Matthew.
+
+Sent to intel-wired-lan at lists.osuosl.org, since it was left off in the original
+submission.
+
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index bdfccaf38edd..8c011d4ce7a9 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -4134,8 +4134,11 @@ static int ixgbevf_xmit_frame_ring(struct sk_buff *skb,
+ 	 * otherwise try next time
+ 	 */
+ #if PAGE_SIZE > IXGBE_MAX_DATA_PER_TXD
+-	for (f = 0; f < skb_shinfo(skb)->nr_frags; f++)
+-		count += TXD_USE_COUNT(skb_shinfo(skb)->frags[f].size);
++	for (f = 0; f < skb_shinfo(skb)->nr_frags; f++) {
++		skb_frag_t *frag = &skb_shinfo(skb)->frags[f];
 +
-+	} while ((hw->aq.asq_last_status == I40E_AQ_RC_EAGAIN) &&
-+		(total_delay < max_delay));
- 
- 	if (status)
- 		return status;
---
-2.21.0
-
---------------------------------------------------------------------
-
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
-
++		count += TXD_USE_COUNT(skb_frag_size(frag));
++	}
+ #else
+ 	count += skb_shinfo(skb)->nr_frags;
+ #endif
