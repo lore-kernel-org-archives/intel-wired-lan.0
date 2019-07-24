@@ -1,173 +1,74 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 24 Jul 2019 16:09:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 09fa75bee73107b57bfc290a4b8d5289544ccfb3
-Message-ID: <5d381253.l+vzVEmVYmLSc9eo%lkp@intel.com>
+From: Chuhong Yuan <hslester96@gmail.com>
+Date: Wed, 24 Jul 2019 16:13:03 +0800
+Subject: [Intel-wired-lan] [PATCH net-next v2 0/8] Use dev_get_drvdata
+ where possible
+In-Reply-To: <20190724060512.23899-1-hslester96@gmail.com>
+References: <20190724060512.23899-1-hslester96@gmail.com>
+Message-ID: <CANhBUQ0gYF+cF1EjfSA-WVvAKipQHWgkasXN91mphHYsZV+uMQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 09fa75bee73107b57bfc290a4b8d5289544ccfb3  ice: Add input handlers for virtual channel handlers
+On Wed, Jul 24, 2019 at 2:05 PM Chuhong Yuan <hslester96@gmail.com> wrote:
+>
+> These patches use dev_get_drvdata instead of
+> using to_pci_dev + pci_get_drvdata to make
+> code simpler where possible.
+>
+> Changelog:
+>
+> v1 -> v2:
+> - Change pci_set_drvdata to dev_set_drvdata
+>   to keep consistency.
+>
 
-Regressions in current branch:
+Hi all,
+I checked the cases which mentioned the consistency
+of get/set_drvdata usages.
+The cases' commit IDs are
+488d040e3a3452a0dceef5d3ec4f61942262f57f
+b77c98780e682fe780d899b91543769d4cf94585
 
-drivers/net/ethernet/aeroflex/greth.c:113:36: error: 'skb_frag_t {aka struct bio_vec}' has no member named 'size'
+After checking, I think that the consistency problem
+refers to inconsistency between probe and remove.
+But the changes of these patches are not related
+to probe and remove.
 
-Error ids grouped by kconfigs:
+So I think the previously sent and applied v1 patches
+which do not change pci_set_drvdata to dev_set_drvdata
+are okay.
+Therefore there may be no need to use these v2 patches.
 
-recent_errors
-`-- sparc64-allmodconfig
-    `-- drivers-net-ethernet-aeroflex-greth.c:error:skb_frag_t-aka-struct-bio_vec-has-no-member-named-size
+Regards,
+Chuhong
 
-elapsed time: 287m
 
-configs tested: 141
-
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-a001-201929
-x86_64                 randconfig-a002-201929
-x86_64                 randconfig-a003-201929
-x86_64                 randconfig-a004-201929
-i386                   randconfig-a001-201929
-i386                   randconfig-a002-201929
-i386                   randconfig-a003-201929
-i386                   randconfig-a004-201929
-riscv                             allnoconfig
-riscv                               defconfig
-nds32                               defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-x86_64                 randconfig-e001-201929
-x86_64                 randconfig-e002-201929
-x86_64                 randconfig-e003-201929
-x86_64                 randconfig-e004-201929
-i386                   randconfig-e001-201929
-i386                   randconfig-e002-201929
-i386                   randconfig-e003-201929
-i386                   randconfig-e004-201929
-x86_64                           allmodconfig
-x86_64                           allyesconfig
-i386                             alldefconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                              allnoconfig
-i386                                defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-x86_64                 randconfig-d001-201929
-x86_64                 randconfig-d002-201929
-x86_64                 randconfig-d003-201929
-x86_64                 randconfig-d004-201929
-i386                   randconfig-d001-201929
-i386                   randconfig-d002-201929
-i386                   randconfig-d003-201929
-i386                   randconfig-d004-201929
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-h001-201929
-x86_64                 randconfig-h002-201929
-x86_64                 randconfig-h003-201929
-x86_64                 randconfig-h004-201929
-i386                   randconfig-h001-201929
-i386                   randconfig-h002-201929
-i386                   randconfig-h003-201929
-i386                   randconfig-h004-201929
-x86_64                 randconfig-b001-201929
-x86_64                 randconfig-b002-201929
-x86_64                 randconfig-b003-201929
-x86_64                 randconfig-b004-201929
-i386                   randconfig-b001-201929
-i386                   randconfig-b002-201929
-i386                   randconfig-b003-201929
-i386                   randconfig-b004-201929
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-i386                             allmodconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-f001-201929
-x86_64                 randconfig-f002-201929
-x86_64                 randconfig-f003-201929
-x86_64                 randconfig-f004-201929
-i386                   randconfig-f001-201929
-i386                   randconfig-f002-201929
-i386                   randconfig-f003-201929
-i386                   randconfig-f004-201929
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-c001-201929
-x86_64                 randconfig-c002-201929
-x86_64                 randconfig-c003-201929
-x86_64                 randconfig-c004-201929
-i386                   randconfig-c001-201929
-i386                   randconfig-c002-201929
-i386                   randconfig-c003-201929
-i386                   randconfig-c004-201929
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                                   jz4740
-mips                                     txx9
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> Chuhong Yuan (8):
+>   net: 3com: 3c59x: Use dev_get_drvdata
+>   net: atheros: Use dev_get_drvdata
+>   net: broadcom: Use dev_get_drvdata
+>   e1000e: Use dev_get_drvdata where possible
+>   fm10k: Use dev_get_drvdata
+>   i40e: Use dev_get_drvdata
+>   igb: Use dev_get_drvdata where possible
+>   net: jme: Use dev_get_drvdata
+>
+>  drivers/net/ethernet/3com/3c59x.c               |  8 +++-----
+>  drivers/net/ethernet/atheros/alx/main.c         |  8 +++-----
+>  drivers/net/ethernet/atheros/atl1c/atl1c_main.c | 10 ++++------
+>  drivers/net/ethernet/atheros/atlx/atl1.c        |  8 +++-----
+>  drivers/net/ethernet/broadcom/bnx2.c            |  8 +++-----
+>  drivers/net/ethernet/broadcom/bnxt/bnxt.c       |  8 +++-----
+>  drivers/net/ethernet/broadcom/tg3.c             |  8 +++-----
+>  drivers/net/ethernet/intel/e1000e/netdev.c      |  9 ++++-----
+>  drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |  6 +++---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c     | 10 ++++------
+>  drivers/net/ethernet/intel/igb/igb_main.c       |  5 ++---
+>  drivers/net/ethernet/jme.c                      |  8 +++-----
+>  12 files changed, 38 insertions(+), 58 deletions(-)
+>
+> --
+> 2.20.1
+>
