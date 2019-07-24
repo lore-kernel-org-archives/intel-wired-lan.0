@@ -1,7 +1,7 @@
 From: Chuhong Yuan <hslester96@gmail.com>
-Date: Wed, 24 Jul 2019 14:06:17 +0800
-Subject: [Intel-wired-lan] [PATCH net-next v2 5/8] fm10k: Use dev_get_drvdata
-Message-ID: <20190724060617.24170-1-hslester96@gmail.com>
+Date: Wed, 24 Jul 2019 14:06:26 +0800
+Subject: [Intel-wired-lan] [PATCH net-next v2 6/8] i40e: Use dev_get_drvdata
+Message-ID: <20190724060626.24226-1-hslester96@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,40 +17,51 @@ Changes in v2:
   - Change pci_set_drvdata to dev_set_drvdata
     to keep consistency.
 
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index e49fb51d3613..b4aa49b53c61 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -2144,7 +2144,7 @@ static int fm10k_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	SET_NETDEV_DEV(netdev, &pdev->dev);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 9ebbe3da61bb..a83198a0ba51 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -14938,7 +14938,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (is_valid_ether_addr(hw->mac.port_addr))
+ 		pf->hw_features |= I40E_HW_PORT_ID_VALID;
  
- 	interface = netdev_priv(netdev);
--	pci_set_drvdata(pdev, interface);
-+	dev_set_drvdata(&pdev->dev, interface);
+-	pci_set_drvdata(pdev, pf);
++	dev_set_drvdata(&pdev->dev, pf);
+ 	pci_save_state(pdev);
  
- 	interface->netdev = netdev;
- 	interface->pdev = pdev;
-@@ -2352,7 +2352,7 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
+ 	dev_info(&pdev->dev,
+@@ -15605,8 +15605,7 @@ static void i40e_shutdown(struct pci_dev *pdev)
   **/
- static int __maybe_unused fm10k_resume(struct device *dev)
+ static int __maybe_unused i40e_suspend(struct device *dev)
  {
--	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
-+	struct fm10k_intfc *interface = dev_get_drvdata(dev);
- 	struct net_device *netdev = interface->netdev;
- 	struct fm10k_hw *hw = &interface->hw;
+-	struct pci_dev *pdev = to_pci_dev(dev);
+-	struct i40e_pf *pf = pci_get_drvdata(pdev);
++	struct i40e_pf *pf = dev_get_drvdata(dev);
+ 	struct i40e_hw *hw = &pf->hw;
+ 
+ 	/* If we're already suspended, then there is nothing to do */
+@@ -15656,8 +15655,7 @@ static int __maybe_unused i40e_suspend(struct device *dev)
+  **/
+ static int __maybe_unused i40e_resume(struct device *dev)
+ {
+-	struct pci_dev *pdev = to_pci_dev(dev);
+-	struct i40e_pf *pf = pci_get_drvdata(pdev);
++	struct i40e_pf *pf = dev_get_drvdata(dev);
  	int err;
-@@ -2379,7 +2379,7 @@ static int __maybe_unused fm10k_resume(struct device *dev)
-  **/
- static int __maybe_unused fm10k_suspend(struct device *dev)
- {
--	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
-+	struct fm10k_intfc *interface = dev_get_drvdata(dev);
- 	struct net_device *netdev = interface->netdev;
  
- 	netif_device_detach(netdev);
+ 	/* If we're not suspended, then there is nothing to do */
+@@ -15674,7 +15672,7 @@ static int __maybe_unused i40e_resume(struct device *dev)
+ 	 */
+ 	err = i40e_restore_interrupt_scheme(pf);
+ 	if (err) {
+-		dev_err(&pdev->dev, "Cannot restore interrupt scheme: %d\n",
++		dev_err(dev, "Cannot restore interrupt scheme: %d\n",
+ 			err);
+ 	}
+ 
 -- 
 2.20.1
 
