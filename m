@@ -1,154 +1,35 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 25 Jul 2019 04:24:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 14f5f463ce3e2c680e3774189b5e6d2c9cccfe83
-Message-ID: <5d38be8f.U/oI42ywVo3O/xaN%lkp@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 24 Jul 2019 22:52:38 +0000
+Subject: [Intel-wired-lan] [PATCH v2] e1000e: Make speed detection on
+ hotplugging cable more reliable
+In-Reply-To: <20190715122555.11922-1-kai.heng.feng@canonical.com>
+References: <20190715084355.9962-1-kai.heng.feng@canonical.com>
+ <20190715122555.11922-1-kai.heng.feng@canonical.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B970D75A2@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 14f5f463ce3e2c680e3774189b5e6d2c9cccfe83  ixgbevf: fix a compilation error of skb_frag_t
+On Mon, 2019-07-15 at 20:25 +0800, Kai-Heng Feng wrote:
+> After hotplugging an 1Gbps ethernet cable with 1Gbps link partner, the
+> MII_BMSR may report 10Mbps, renders the network rather slow.
+> 
+> The issue has much lower fail rate after commit 59653e6497d1 ("e1000e:
+> Make watchdog use delayed work"), which essentially introduces some
+> delay before running the watchdog task.
+> 
+> But there's still a chance that the hotplugging event and the queued
+> watchdog task gets run at the same time, then the original issue can be
+> observed once again.
+> 
+> So let's use mod_delayed_work() to add a deterministic 1 second delay
+> before running watchdog task, after an interrupt.
+> 
+> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
 
-elapsed time: 201m
-
-configs tested: 129
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-d001-201929
-x86_64                 randconfig-d002-201929
-x86_64                 randconfig-d003-201929
-x86_64                 randconfig-d004-201929
-i386                   randconfig-d001-201929
-i386                   randconfig-d002-201929
-i386                   randconfig-d003-201929
-i386                   randconfig-d004-201929
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-a001-201929
-x86_64                 randconfig-a002-201929
-x86_64                 randconfig-a003-201929
-x86_64                 randconfig-a004-201929
-i386                   randconfig-a001-201929
-i386                   randconfig-a002-201929
-i386                   randconfig-a003-201929
-i386                   randconfig-a004-201929
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-f001-201929
-x86_64                 randconfig-f002-201929
-x86_64                 randconfig-f003-201929
-x86_64                 randconfig-f004-201929
-i386                   randconfig-f001-201929
-i386                   randconfig-f002-201929
-i386                   randconfig-f003-201929
-i386                   randconfig-f004-201929
-x86_64                 randconfig-e001-201929
-x86_64                 randconfig-e002-201929
-x86_64                 randconfig-e003-201929
-x86_64                 randconfig-e004-201929
-i386                   randconfig-e001-201929
-i386                   randconfig-e002-201929
-i386                   randconfig-e003-201929
-i386                   randconfig-e004-201929
-x86_64                 randconfig-b001-201929
-x86_64                 randconfig-b002-201929
-x86_64                 randconfig-b003-201929
-x86_64                 randconfig-b004-201929
-i386                   randconfig-b001-201929
-i386                   randconfig-b002-201929
-i386                   randconfig-b003-201929
-i386                   randconfig-b004-201929
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-c001-201929
-x86_64                 randconfig-c002-201929
-x86_64                 randconfig-c003-201929
-x86_64                 randconfig-c004-201929
-i386                   randconfig-c001-201929
-i386                   randconfig-c002-201929
-i386                   randconfig-c003-201929
-i386                   randconfig-c004-201929
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                             allyesconfig
-nds32                            allyesconfig
-ia64                             allyesconfig
-riscv                            allmodconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
