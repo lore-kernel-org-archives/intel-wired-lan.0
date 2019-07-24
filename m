@@ -1,8 +1,7 @@
 From: Chuhong Yuan <hslester96@gmail.com>
-Date: Wed, 24 Jul 2019 14:06:09 +0800
-Subject: [Intel-wired-lan] [PATCH net-next v2 4/8] e1000e: Use
- dev_get_drvdata where possible
-Message-ID: <20190724060609.24116-1-hslester96@gmail.com>
+Date: Wed, 24 Jul 2019 14:06:17 +0800
+Subject: [Intel-wired-lan] [PATCH net-next v2 5/8] fm10k: Use dev_get_drvdata
+Message-ID: <20190724060617.24170-1-hslester96@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,50 +17,40 @@ Changes in v2:
   - Change pci_set_drvdata to dev_set_drvdata
     to keep consistency.
 
- drivers/net/ethernet/intel/e1000e/netdev.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index e4baa13b3cda..ad203a2a64c4 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -6297,7 +6297,7 @@ static void e1000e_flush_lpic(struct pci_dev *pdev)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index e49fb51d3613..b4aa49b53c61 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -2144,7 +2144,7 @@ static int fm10k_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	SET_NETDEV_DEV(netdev, &pdev->dev);
  
- static int e1000e_pm_freeze(struct device *dev)
+ 	interface = netdev_priv(netdev);
+-	pci_set_drvdata(pdev, interface);
++	dev_set_drvdata(&pdev->dev, interface);
+ 
+ 	interface->netdev = netdev;
+ 	interface->pdev = pdev;
+@@ -2352,7 +2352,7 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
+  **/
+ static int __maybe_unused fm10k_resume(struct device *dev)
  {
--	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
-+	struct net_device *netdev = dev_get_drvdata(dev);
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
+-	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
++	struct fm10k_intfc *interface = dev_get_drvdata(dev);
+ 	struct net_device *netdev = interface->netdev;
+ 	struct fm10k_hw *hw = &interface->hw;
+ 	int err;
+@@ -2379,7 +2379,7 @@ static int __maybe_unused fm10k_resume(struct device *dev)
+  **/
+ static int __maybe_unused fm10k_suspend(struct device *dev)
+ {
+-	struct fm10k_intfc *interface = pci_get_drvdata(to_pci_dev(dev));
++	struct fm10k_intfc *interface = dev_get_drvdata(dev);
+ 	struct net_device *netdev = interface->netdev;
  
  	netif_device_detach(netdev);
-@@ -6630,7 +6630,7 @@ static int __e1000_resume(struct pci_dev *pdev)
- #ifdef CONFIG_PM_SLEEP
- static int e1000e_pm_thaw(struct device *dev)
- {
--	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
-+	struct net_device *netdev = dev_get_drvdata(dev);
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
- 
- 	e1000e_set_interrupt_capability(adapter);
-@@ -6679,8 +6679,7 @@ static int e1000e_pm_resume(struct device *dev)
- 
- static int e1000e_pm_runtime_idle(struct device *dev)
- {
--	struct pci_dev *pdev = to_pci_dev(dev);
--	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct net_device *netdev = dev_get_drvdata(dev);
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
- 	u16 eee_lp;
- 
-@@ -7105,7 +7104,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	netdev->irq = pdev->irq;
- 
--	pci_set_drvdata(pdev, netdev);
-+	dev_set_drvdata(&pdev->dev, netdev);
- 	adapter = netdev_priv(netdev);
- 	hw = &adapter->hw;
- 	adapter->netdev = netdev;
 -- 
 2.20.1
 
