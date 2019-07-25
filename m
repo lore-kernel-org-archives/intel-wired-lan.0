@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Jul 2019 01:55:39 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v4 13/15] ice: Move VF resources
- definition to SR-IOV specific file
+Date: Thu, 25 Jul 2019 01:55:30 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v4 04/15] ice: Restructure VFs
+ initialization flows
 In-Reply-To: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
 References: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190725085541.55104-13-anthony.l.nguyen@intel.com>
+Message-ID: <20190725085541.55104-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,62 +13,150 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-In order to use some of the VF resources definition in the SR-IOV specific
-virtchnl header file, this patch moves applicable code to
-ice_virtchnl_pf.h file accordingly... and they should have been defined in
-the destination file originally.
+This patch restructures how VFs are configured, and resources allocated.
+Instead of freeing resources that were never allocated, and resetting
+empty VFs that have never been created - the new flow will just allocate
+resources for number of requested VFs based on the availability.
+
+During VFs initialization process, global interrupt is disabled, and
+rearmed after getting MSIX vectors for VFs. This allows immediate mailbox
+communications, instead of delaying it till later and VFs.
+PF communications resulted to using polling instead of actual interrupt.
+The issue manifested when creating higher number of VFs (128 VFs) per PF.
 
 Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h             | 10 ----------
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h | 13 +++++++++++++
- 2 files changed, 13 insertions(+), 10 deletions(-)
+v4: Reduce scope of vf in ice_config_res_vfs()
+---
+ drivers/net/ethernet/intel/ice/ice.h          |  1 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 69 +++++++++++++------
+ 2 files changed, 48 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 36a8ee873ae1..8398dd45a8a2 100644
+index 07950ac4869f..112bdb662ea2 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -87,16 +87,6 @@ extern const char ice_drv_ver[];
- #define ICE_RES_MISC_VEC_ID	(ICE_RES_VALID_BIT - 1)
- #define ICE_INVAL_Q_INDEX	0xffff
- #define ICE_INVAL_VFID		256
--#define ICE_MAX_VF_COUNT	256
--#define ICE_MAX_QS_PER_VF		256
--#define ICE_MIN_QS_PER_VF		1
--#define ICE_DFLT_QS_PER_VF		4
--#define ICE_NONQ_VECS_VF		1
--#define ICE_MAX_SCATTER_QS_PER_VF	16
--#define ICE_MAX_BASE_QS_PER_VF		16
--#define ICE_MAX_INTR_PER_VF		65
--#define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
--#define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
+@@ -220,6 +220,7 @@ enum ice_state {
+ 	__ICE_CFG_BUSY,
+ 	__ICE_SERVICE_SCHED,
+ 	__ICE_SERVICE_DIS,
++	__ICE_OICR_INTR_DIS,		/* Global OICR interrupt disabled */
+ 	__ICE_STATE_NBITS		/* must be last */
+ };
  
- #define ICE_MAX_RESET_WAIT		20
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index ce01cbe70ea4..93b835a24bb1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -974,6 +974,47 @@ ice_vf_set_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m,
+ 	return status;
+ }
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 79bb47f73879..4d94853f119a 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -26,6 +26,19 @@
- #define ICE_PCI_CIAD_WAIT_COUNT		100
- #define ICE_PCI_CIAD_WAIT_DELAY_US	1
- 
-+/* VF resources default values and limitation */
-+#define ICE_MAX_VF_COUNT		256
-+#define ICE_MAX_QS_PER_VF		256
-+#define ICE_MIN_QS_PER_VF		1
-+#define ICE_DFLT_QS_PER_VF		4
-+#define ICE_NONQ_VECS_VF		1
-+#define ICE_MAX_SCATTER_QS_PER_VF	16
-+#define ICE_MAX_BASE_QS_PER_VF		16
-+#define ICE_MAX_INTR_PER_VF		65
-+#define ICE_MAX_POLICY_INTR_PER_VF	33
-+#define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
-+#define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
++/**
++ * ice_config_res_vfs - Finalize allocation of VFs resources in one go
++ * @pf: pointer to the PF structure
++ *
++ * This function is being called as last part of resetting all VFs, or when
++ * configuring VFs for the first time, where there is no resource to be freed
++ * Returns true if resources were properly allocated for all VFs, and false
++ * otherwise.
++ */
++static bool ice_config_res_vfs(struct ice_pf *pf)
++{
++	struct ice_hw *hw = &pf->hw;
++	int v;
 +
- /* Specific VF states */
- enum ice_vf_states {
- 	ICE_VF_STATE_INIT = 0,
++	if (ice_check_avail_res(pf)) {
++		dev_err(&pf->pdev->dev,
++			"Cannot allocate VF resources, try with fewer number of VFs\n");
++		return false;
++	}
++
++	/* rearm global interrupts */
++	if (test_and_clear_bit(__ICE_OICR_INTR_DIS, pf->state))
++		ice_irq_dynamic_ena(hw, NULL, NULL);
++
++	/* Finish resetting each VF and allocate resources */
++	for (v = 0; v < pf->num_alloc_vfs; v++) {
++		struct ice_vf *vf = &pf->vf[v];
++
++		vf->num_vf_qs = pf->num_vf_qps;
++		dev_dbg(&pf->pdev->dev,
++			"VF-id %d has %d queues configured\n",
++			vf->vf_id, vf->num_vf_qs);
++		ice_cleanup_and_realloc_vf(vf);
++	}
++
++	ice_flush(hw);
++	clear_bit(__ICE_VF_DIS, pf->state);
++
++	return true;
++}
++
+ /**
+  * ice_reset_all_vfs - reset all allocated VFs in one go
+  * @pf: pointer to the PF structure
+@@ -1066,25 +1107,8 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 		dev_err(&pf->pdev->dev,
+ 			"Failed to free MSIX resources used by SR-IOV\n");
+ 
+-	if (ice_check_avail_res(pf)) {
+-		dev_err(&pf->pdev->dev,
+-			"Cannot allocate VF resources, try with fewer number of VFs\n");
++	if (!ice_config_res_vfs(pf))
+ 		return false;
+-	}
+-
+-	/* Finish the reset on each VF */
+-	for (v = 0; v < pf->num_alloc_vfs; v++) {
+-		vf = &pf->vf[v];
+-
+-		vf->num_vf_qs = pf->num_vf_qps;
+-		dev_dbg(&pf->pdev->dev,
+-			"VF-id %d has %d queues configured\n",
+-			vf->vf_id, vf->num_vf_qs);
+-		ice_cleanup_and_realloc_vf(vf);
+-	}
+-
+-	ice_flush(hw);
+-	clear_bit(__ICE_VF_DIS, pf->state);
+ 
+ 	return true;
+ }
+@@ -1249,7 +1273,7 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
+ 	/* Disable global interrupt 0 so we don't try to handle the VFLR. */
+ 	wr32(hw, GLINT_DYN_CTL(pf->oicr_idx),
+ 	     ICE_ITR_NONE << GLINT_DYN_CTL_ITR_INDX_S);
+-
++	set_bit(__ICE_OICR_INTR_DIS, pf->state);
+ 	ice_flush(hw);
+ 
+ 	ret = pci_enable_sriov(pf->pdev, num_alloc_vfs);
+@@ -1278,13 +1302,13 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
+ 	}
+ 	pf->num_alloc_vfs = num_alloc_vfs;
+ 
+-	/* VF resources get allocated during reset */
+-	if (!ice_reset_all_vfs(pf, true)) {
++	/* VF resources get allocated with initialization */
++	if (!ice_config_res_vfs(pf)) {
+ 		ret = -EIO;
+ 		goto err_unroll_sriov;
+ 	}
+ 
+-	goto err_unroll_intr;
++	return ret;
+ 
+ err_unroll_sriov:
+ 	pf->vf = NULL;
+@@ -1296,6 +1320,7 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
+ err_unroll_intr:
+ 	/* rearm interrupts here */
+ 	ice_irq_dynamic_ena(hw, NULL, NULL);
++	clear_bit(__ICE_OICR_INTR_DIS, pf->state);
+ 	return ret;
+ }
+ 
 -- 
 2.20.1
 
