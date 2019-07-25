@@ -1,12 +1,12 @@
 From: Maxim Mikityanskiy <maximmi@mellanox.com>
-Date: Thu, 25 Jul 2019 10:08:25 +0000
-Subject: [Intel-wired-lan] [PATCH bpf-next v3 03/11] xsk: add support to
- allow unaligned chunk placement
-In-Reply-To: <20190724051043.14348-4-kevin.laatz@intel.com>
+Date: Thu, 25 Jul 2019 10:15:55 +0000
+Subject: [Intel-wired-lan] [PATCH bpf-next v3 06/11] mlx5e: modify
+ driver for handling offsets
+In-Reply-To: <20190724051043.14348-7-kevin.laatz@intel.com>
 References: <20190716030637.5634-1-kevin.laatz@intel.com>
  <20190724051043.14348-1-kevin.laatz@intel.com>
- <20190724051043.14348-4-kevin.laatz@intel.com>
-Message-ID: <c3159739-2483-b2d8-541f-6f6611a782e1@mellanox.com>
+ <20190724051043.14348-7-kevin.laatz@intel.com>
+Message-ID: <c5704b74-8efe-af2a-68e6-716fa89a5665@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,57 +14,89 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 2019-07-24 08:10, Kevin Laatz wrote:
-> Currently, addresses are chunk size aligned. This means, we are very
-> restricted in terms of where we can place chunk within the umem. For
-> example, if we have a chunk size of 2k, then our chunks can only be placed
-> at 0,2k,4k,6k,8k... and so on (ie. every 2k starting from 0).
-> 
-> This patch introduces the ability to use unaligned chunks. With these
-> changes, we are no longer bound to having to place chunks at a 2k (or
-> whatever your chunk size is) interval. Since we are no longer dealing with
-> aligned chunks, they can now cross page boundaries. Checks for page
-> contiguity have been added in order to keep track of which pages are
-> followed by a physically contiguous page.
+> With the addition of the unaligned chunks option, we need to make sure we
+> handle the offsets accordingly based on the mode we are currently running
+> in. This patch modifies the driver to appropriately mask the address for
+> each case.
 > 
 > Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
-> Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
-> Signed-off-by: Bruce Richardson <bruce.richardson@intel.com>
 > 
 > ---
-> v2:
->    - Add checks for the flags coming from userspace
->    - Fix how we get chunk_size in xsk_diag.c
->    - Add defines for masking the new descriptor format
->    - Modified the rx functions to use new descriptor format
->    - Modified the tx functions to use new descriptor format
-> 
 > v3:
->    - Add helper function to do address/offset masking/addition
+>    - Use new helper function to handle offset
 > ---
->   include/net/xdp_sock.h      | 17 ++++++++
->   include/uapi/linux/if_xdp.h |  9 ++++
->   net/xdp/xdp_umem.c          | 18 +++++---
->   net/xdp/xsk.c               | 86 ++++++++++++++++++++++++++++++-------
->   net/xdp/xsk_diag.c          |  2 +-
->   net/xdp/xsk_queue.h         | 68 +++++++++++++++++++++++++----
->   6 files changed, 170 insertions(+), 30 deletions(-)
-
-<...>
-
+>   drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c    | 8 ++++++--
+>   drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c | 9 +++++++--
+>   2 files changed, 13 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
+> index b0b982cf69bb..d5245893d2c8 100644
+> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
+> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
+> @@ -122,6 +122,7 @@ bool mlx5e_xdp_handle(struct mlx5e_rq *rq, struct mlx5e_dma_info *di,
+>   		      void *va, u16 *rx_headroom, u32 *len, bool xsk)
+>   {
+>   	struct bpf_prog *prog = READ_ONCE(rq->xdp_prog);
+> +	struct xdp_umem *umem = rq->umem;
+>   	struct xdp_buff xdp;
+>   	u32 act;
+>   	int err;
+> @@ -138,8 +139,11 @@ bool mlx5e_xdp_handle(struct mlx5e_rq *rq, struct mlx5e_dma_info *di,
+>   	xdp.rxq = &rq->xdp_rxq;
+>   
+>   	act = bpf_prog_run_xdp(prog, &xdp);
+> -	if (xsk)
+> -		xdp.handle += xdp.data - xdp.data_hard_start;
+> +	if (xsk) {
+> +		u64 off = xdp.data - xdp.data_hard_start;
 > +
-> +static inline u64 xsk_umem_handle_offset(struct xdp_umem *umem, u64 handle,
-> +					 u64 offset)
-> +{
-> +	if (umem->flags & XDP_UMEM_UNALIGNED_CHUNKS)
-> +		return handle |= (offset << XSK_UNALIGNED_BUF_OFFSET_SHIFT);
-> +	else
-> +		return handle += offset;
-> +}
+> +		xdp.handle = xsk_umem_handle_offset(umem, xdp.handle, off);
+> +	}
 
-|= and += are not necessary here, | and + are enough.
+What's missed is that umem_headroom is added to handle directly in 
+mlx5e_xsk_page_alloc_umem. In my understanding umem_headroom should go 
+to the offset part (high 16 bits) of the handle, to 
+xsk_umem_handle_offset has to support increasing the offset.
 
-In the unaligned mode, it's not supported to run xsk_umem_handle_offset 
-multiple times, and it's assumed that offset is zero. I'll explain the 
-need in my following comment to patch 6.
+>   	switch (act) {
+>   	case XDP_PASS:
+>   		*rx_headroom = xdp.data - xdp.data_hard_start;
+> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
+> index 35e188cf4ea4..f596e63cba00 100644
+> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
+> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
+> @@ -61,6 +61,7 @@ bool mlx5e_xsk_tx(struct mlx5e_xdpsq *sq, unsigned int budget)
+>   	struct mlx5e_xdp_xmit_data xdptxd;
+>   	bool work_done = true;
+>   	bool flush = false;
+> +	u64 addr, offset;
+>   
+>   	xdpi.mode = MLX5E_XDP_XMIT_MODE_XSK;
+>   
+> @@ -82,8 +83,12 @@ bool mlx5e_xsk_tx(struct mlx5e_xdpsq *sq, unsigned int budget)
+>   			break;
+>   		}
+>   
+> -		xdptxd.dma_addr = xdp_umem_get_dma(umem, desc.addr);
+> -		xdptxd.data = xdp_umem_get_data(umem, desc.addr);
+> +		/* for unaligned chunks need to take offset from upper bits */
+> +		offset = (desc.addr >> XSK_UNALIGNED_BUF_OFFSET_SHIFT);
+> +		addr = (desc.addr & XSK_UNALIGNED_BUF_ADDR_MASK);
+> +
+> +		xdptxd.dma_addr = xdp_umem_get_dma(umem, addr + offset);
+> +		xdptxd.data = xdp_umem_get_data(umem, addr + offset);
 
-<...>
+Why can't these calculations be encapsulated into 
+xdp_umem_get_{dma,data}? I think they are common for all drivers, aren't 
+they?
+
+Even if there is some reason not to put this bitshifting stuff into 
+xdp_umem_get_* functions, I suggest to encapsulate it into a function 
+anyway, because it's a good idea to keep those calculations in a single 
+place.
+
+>   		xdptxd.len = desc.len;
+>   
+>   		dma_sync_single_for_device(sq->pdev, xdptxd.dma_addr,
+> 
+
