@@ -1,162 +1,111 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Jul 2019 01:55:30 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v4 04/15] ice: Restructure VFs
- initialization flows
-In-Reply-To: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
-References: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190725085541.55104-4-anthony.l.nguyen@intel.com>
+From: Jonathan Lemon <jonathan.lemon@gmail.com>
+Date: Thu, 25 Jul 2019 10:30:51 -0700
+Subject: [Intel-wired-lan] [PATCH bpf-next v3 00/11] XDP unaligned chunk
+ placement support
+In-Reply-To: <59AF69C657FD0841A61C55336867B5B07EDB5C3F@IRSMSX103.ger.corp.intel.com>
+References: <20190716030637.5634-1-kevin.laatz@intel.com>
+ <20190724051043.14348-1-kevin.laatz@intel.com>
+ <94EAD717-F632-499F-8BBD-FFF5A5333CBF@gmail.com>
+ <59AF69C657FD0841A61C55336867B5B07EDB5C3F@IRSMSX103.ger.corp.intel.com>
+Message-ID: <8189384E-6050-4389-AA6A-09CD86FE8829@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-This patch restructures how VFs are configured, and resources allocated.
-Instead of freeing resources that were never allocated, and resetting
-empty VFs that have never been created - the new flow will just allocate
-resources for number of requested VFs based on the availability.
 
-During VFs initialization process, global interrupt is disabled, and
-rearmed after getting MSIX vectors for VFs. This allows immediate mailbox
-communications, instead of delaying it till later and VFs.
-PF communications resulted to using polling instead of actual interrupt.
-The issue manifested when creating higher number of VFs (128 VFs) per PF.
+On 25 Jul 2019, at 8:56, Richardson, Bruce wrote:
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
----
-v4: Reduce scope of vf in ice_config_res_vfs()
----
- drivers/net/ethernet/intel/ice/ice.h          |  1 +
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 69 +++++++++++++------
- 2 files changed, 48 insertions(+), 22 deletions(-)
+>> -----Original Message-----
+>> From: Jonathan Lemon [mailto:jonathan.lemon at gmail.com]
+>> Sent: Thursday, July 25, 2019 4:39 PM
+>> To: Laatz, Kevin <kevin.laatz@intel.com>
+>> Cc: netdev at vger.kernel.org; ast at kernel.org; daniel at iogearbox.net; Topel,
+>> Bjorn <bjorn.topel@intel.com>; Karlsson, Magnus
+>> <magnus.karlsson@intel.com>; jakub.kicinski at netronome.com;
+>> saeedm at mellanox.com; maximmi at mellanox.com; stephen at networkplumber.org;
+>> Richardson, Bruce <bruce.richardson@intel.com>; Loftus, Ciara
+>> <ciara.loftus@intel.com>; bpf at vger.kernel.org; intel-wired-
+>> lan at lists.osuosl.org
+>> Subject: Re: [PATCH bpf-next v3 00/11] XDP unaligned chunk placement
+>> support
+>>
+>>
+>>
+>> On 23 Jul 2019, at 22:10, Kevin Laatz wrote:
+>>
+>>> This patch set adds the ability to use unaligned chunks in the XDP umem.
+>>>
+>>> Currently, all chunk addresses passed to the umem are masked to be
+>>> chunk size aligned (max is PAGE_SIZE). This limits where we can place
+>>> chunks within the umem as well as limiting the packet sizes that are
+>> supported.
+>>>
+>>> The changes in this patch set removes these restrictions, allowing XDP
+>>> to be more flexible in where it can place a chunk within a umem. By
+>>> relaxing where the chunks can be placed, it allows us to use an
+>>> arbitrary buffer size and place that wherever we have a free address
+>>> in the umem. These changes add the ability to support arbitrary frame
+>>> sizes up to 4k
+>>> (PAGE_SIZE) and make it easy to integrate with other existing
+>>> frameworks that have their own memory management systems, such as DPDK.
+>>> In DPDK, for example, there is already support for AF_XDP with zero-
+>> copy.
+>>> However, with this patch set the integration will be much more seamless.
+>>> You can find the DPDK AF_XDP driver at:
+>>> https://git.dpdk.org/dpdk/tree/drivers/net/af_xdp
+>>>
+>>> Since we are now dealing with arbitrary frame sizes, we need also need
+>>> to update how we pass around addresses. Currently, the addresses can
+>>> simply be masked to 2k to get back to the original address. This
+>>> becomes less trivial when using frame sizes that are not a 'power of
+>>> 2' size. This patch set modifies the Rx/Tx descriptor format to use
+>>> the upper 16-bits of the addr field for an offset value, leaving the
+>>> lower 48-bits for the address (this leaves us with 256 Terabytes,
+>>> which should be enough!). We only need to use the upper 16-bits to store
+>> the offset when running in unaligned mode.
+>>> Rather than adding the offset (headroom etc) to the address, we will
+>>> store it in the upper 16-bits of the address field. This way, we can
+>>> easily add the offset to the address where we need it, using some bit
+>>> manipulation and addition, and we can also easily get the original
+>>> address wherever we need it (for example in i40e_zca_fr-- ee) by
+>>> simply masking to get the lower 48-bits of the address field.
+>>
+>> I wonder if it would be better to break backwards compatibility here and
+>> say that a handle is going to change from [addr] to [base | offset], or
+>> even [index | offset], where address = (index * chunk size) + offset, and
+>> then use accessor macros to manipulate the queue entries.
+>>
+>> This way, the XDP hotpath can adjust the handle with simple arithmetic,
+>> bypassing the "if (unaligned)", check, as it changes the offset directly.
+>>
+>> Using a chunk index instead of a base address is safer, otherwise it is
+>> too easy to corrupt things.
+>> --
+>
+> The trouble with using a chunk index is that it assumes that all chunks are
+> contiguous, which is not always going to be the case. For example, for
+> userspace apps the easiest way to get memory that is IOVA/physically
+> contiguous is to use hugepages, but even then we still need to skip space
+> when crossing a 2MB barrier.
+>
+> Specifically in this example case, with a 3k buffer size and 2MB hugepages,
+> we'd get 666 buffers on a single page, but then waste a few KB before
+> starting the 667th buffer at byte 0 on the second 2MB page.
+> This is the setup used in DPDK, for instance, when we allocate memory for
+> use in buffer pools.
+>
+> Therefore, I think it's better to just have the kernel sanity checking the
+> request for safety and leave userspace the freedom to decide where in its
+> memory area it wants to place the buffers.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 07950ac4869f..112bdb662ea2 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -220,6 +220,7 @@ enum ice_state {
- 	__ICE_CFG_BUSY,
- 	__ICE_SERVICE_SCHED,
- 	__ICE_SERVICE_DIS,
-+	__ICE_OICR_INTR_DIS,		/* Global OICR interrupt disabled */
- 	__ICE_STATE_NBITS		/* must be last */
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index ce01cbe70ea4..93b835a24bb1 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -974,6 +974,47 @@ ice_vf_set_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m,
- 	return status;
- }
- 
-+/**
-+ * ice_config_res_vfs - Finalize allocation of VFs resources in one go
-+ * @pf: pointer to the PF structure
-+ *
-+ * This function is being called as last part of resetting all VFs, or when
-+ * configuring VFs for the first time, where there is no resource to be freed
-+ * Returns true if resources were properly allocated for all VFs, and false
-+ * otherwise.
-+ */
-+static bool ice_config_res_vfs(struct ice_pf *pf)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+	int v;
-+
-+	if (ice_check_avail_res(pf)) {
-+		dev_err(&pf->pdev->dev,
-+			"Cannot allocate VF resources, try with fewer number of VFs\n");
-+		return false;
-+	}
-+
-+	/* rearm global interrupts */
-+	if (test_and_clear_bit(__ICE_OICR_INTR_DIS, pf->state))
-+		ice_irq_dynamic_ena(hw, NULL, NULL);
-+
-+	/* Finish resetting each VF and allocate resources */
-+	for (v = 0; v < pf->num_alloc_vfs; v++) {
-+		struct ice_vf *vf = &pf->vf[v];
-+
-+		vf->num_vf_qs = pf->num_vf_qps;
-+		dev_dbg(&pf->pdev->dev,
-+			"VF-id %d has %d queues configured\n",
-+			vf->vf_id, vf->num_vf_qs);
-+		ice_cleanup_and_realloc_vf(vf);
-+	}
-+
-+	ice_flush(hw);
-+	clear_bit(__ICE_VF_DIS, pf->state);
-+
-+	return true;
-+}
-+
- /**
-  * ice_reset_all_vfs - reset all allocated VFs in one go
-  * @pf: pointer to the PF structure
-@@ -1066,25 +1107,8 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 		dev_err(&pf->pdev->dev,
- 			"Failed to free MSIX resources used by SR-IOV\n");
- 
--	if (ice_check_avail_res(pf)) {
--		dev_err(&pf->pdev->dev,
--			"Cannot allocate VF resources, try with fewer number of VFs\n");
-+	if (!ice_config_res_vfs(pf))
- 		return false;
--	}
--
--	/* Finish the reset on each VF */
--	for (v = 0; v < pf->num_alloc_vfs; v++) {
--		vf = &pf->vf[v];
--
--		vf->num_vf_qs = pf->num_vf_qps;
--		dev_dbg(&pf->pdev->dev,
--			"VF-id %d has %d queues configured\n",
--			vf->vf_id, vf->num_vf_qs);
--		ice_cleanup_and_realloc_vf(vf);
--	}
--
--	ice_flush(hw);
--	clear_bit(__ICE_VF_DIS, pf->state);
- 
- 	return true;
- }
-@@ -1249,7 +1273,7 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- 	/* Disable global interrupt 0 so we don't try to handle the VFLR. */
- 	wr32(hw, GLINT_DYN_CTL(pf->oicr_idx),
- 	     ICE_ITR_NONE << GLINT_DYN_CTL_ITR_INDX_S);
--
-+	set_bit(__ICE_OICR_INTR_DIS, pf->state);
- 	ice_flush(hw);
- 
- 	ret = pci_enable_sriov(pf->pdev, num_alloc_vfs);
-@@ -1278,13 +1302,13 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- 	}
- 	pf->num_alloc_vfs = num_alloc_vfs;
- 
--	/* VF resources get allocated during reset */
--	if (!ice_reset_all_vfs(pf, true)) {
-+	/* VF resources get allocated with initialization */
-+	if (!ice_config_res_vfs(pf)) {
- 		ret = -EIO;
- 		goto err_unroll_sriov;
- 	}
- 
--	goto err_unroll_intr;
-+	return ret;
- 
- err_unroll_sriov:
- 	pf->vf = NULL;
-@@ -1296,6 +1320,7 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- err_unroll_intr:
- 	/* rearm interrupts here */
- 	ice_irq_dynamic_ena(hw, NULL, NULL);
-+	clear_bit(__ICE_OICR_INTR_DIS, pf->state);
- 	return ret;
- }
- 
+That makes sense, thanks.  My concern is that this makes it difficult for
+the kernel to validate the buffer start address, but perhaps that isn't a
+concern.
+
+I still believe it would simplify things if the format was [base | offset],
+any opinion on that?
 -- 
-2.20.1
-
+Jonathan
