@@ -1,12 +1,12 @@
 From: Maxim Mikityanskiy <maximmi@mellanox.com>
-Date: Thu, 25 Jul 2019 09:27:04 +0000
+Date: Thu, 25 Jul 2019 10:08:25 +0000
 Subject: [Intel-wired-lan] [PATCH bpf-next v3 03/11] xsk: add support to
  allow unaligned chunk placement
 In-Reply-To: <20190724051043.14348-4-kevin.laatz@intel.com>
 References: <20190716030637.5634-1-kevin.laatz@intel.com>
  <20190724051043.14348-1-kevin.laatz@intel.com>
  <20190724051043.14348-4-kevin.laatz@intel.com>
-Message-ID: <3af74e26-8899-cf1e-6fd4-5ea0bd349fc3@mellanox.com>
+Message-ID: <c3159739-2483-b2d8-541f-6f6611a782e1@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -48,66 +48,23 @@ On 2019-07-24 08:10, Kevin Laatz wrote:
 >   net/xdp/xsk_diag.c          |  2 +-
 >   net/xdp/xsk_queue.h         | 68 +++++++++++++++++++++++++----
 >   6 files changed, 170 insertions(+), 30 deletions(-)
-> 
 
 <...>
 
-> +/* If a buffer crosses a page boundary, we need to do 2 memcpy's, one for
-> + * each page. This is only required in copy mode.
-> + */
-> +static void __xsk_rcv_memcpy(struct xdp_umem *umem, u64 addr, void *from_buf,
-> +			     u32 len, u32 metalen)
+> +
+> +static inline u64 xsk_umem_handle_offset(struct xdp_umem *umem, u64 handle,
+> +					 u64 offset)
 > +{
-> +	void *to_buf = xdp_umem_get_data(umem, addr);
-> +
-> +	if (xskq_crosses_non_contig_pg(umem, addr, len + metalen)) {
-> +		void *next_pg_addr = umem->pages[(addr >> PAGE_SHIFT) + 1].addr;
-> +		u64 page_start = addr & (PAGE_SIZE - 1);
-> +		u64 first_len = PAGE_SIZE - (addr - page_start);
-
-Let addr = 0x12345, PAGE_SIZE = 0x1000, len = 0x1000. Your calculations 
-lead to page_start = 0x345, first_len = 0x1000 - 0x12000, which is 
-negative. I think page_start is calculated incorrectly (is ~ missing?).
-
-> +
-> +		memcpy(to_buf, from_buf, first_len + metalen);
-> +		memcpy(next_pg_addr, from_buf + first_len, len - first_len);
-> +
-> +		return;
-> +	}
-> +
-> +	memcpy(to_buf, from_buf, len + metalen);
-> +}
-> +
-
-<...>
-
-> +static inline bool xskq_is_valid_addr_unaligned(struct xsk_queue *q, u64 addr,
-> +						u64 length,
-> +						struct xdp_umem *umem)
-> +{
-> +	addr += addr >> XSK_UNALIGNED_BUF_OFFSET_SHIFT;
-> +	addr &= XSK_UNALIGNED_BUF_ADDR_MASK;
-> +	if (addr >= q->size ||
-
-Addresses like 0x00aaffffffffffff will pass the validation (0xaa + 
-0xffffffffffff will overflow mod 2^48 and become a small number), 
-whereas such addresses don't look valid for me.
-
-> +	    xskq_crosses_non_contig_pg(umem, addr, length)) {
-
-If the region is not contiguous, we cant RX into it - that's clear. 
-However, how can the userspace determine whether these two pages of UMEM 
-are mapped contiguously in the DMA space? Are we going to silently drop 
-descriptors to non-contiguous frames and leak them? Please explain how 
-to use it correctly from the application side.
-
-> +		q->invalid_descs++;
-> +		return false;
-> +	}
-> +
-> +	return true;
+> +	if (umem->flags & XDP_UMEM_UNALIGNED_CHUNKS)
+> +		return handle |= (offset << XSK_UNALIGNED_BUF_OFFSET_SHIFT);
+> +	else
+> +		return handle += offset;
 > +}
 
-<...>
+|= and += are not necessary here, | and + are enough.
 
+In the unaligned mode, it's not supported to run xsk_umem_handle_offset 
+multiple times, and it's assumed that offset is zero. I'll explain the 
+need in my following comment to patch 6.
+
+<...>
