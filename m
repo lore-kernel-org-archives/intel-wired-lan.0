@@ -1,102 +1,306 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Jul 2019 02:53:59 -0700
-Subject: [Intel-wired-lan] [PATCH S25 10/12] ice: add validation in
- OP_CONFIG_VSI_QUEUES VF message
+Date: Thu, 25 Jul 2019 02:53:51 -0700
+Subject: [Intel-wired-lan] [PATCH S25 02/12] ice: Fix issues updating VSI
+ MAC filters
 In-Reply-To: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
 References: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190725095401.24590-10-anthony.l.nguyen@intel.com>
+Message-ID: <20190725095401.24590-2-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-Check num_queue_pairs to avoid access to unallocated field of
-vsi->tx_rings/vsi->rx_rings. Without this validation we can set
-vsi->alloc_txq/vsi->alloc_rxq to value smaller than ICE_MAX_BASE_QS_PER_VF
-and send this command with num_queue_pairs greater than
-vsi->alloc_txq/vsi->alloc_rxq. This lead to access to unallocated memory.
+VSI, especially VF could request to add or remove filter for another VSI,
+driver should really guide such request and disallow it.
+However, instead of returning error for such malicious request, driver
+can simply return success.
 
-In VF vsi alloc_txq and alloc_rxq should be the same. Get minimum
-because looks more readable.
+In addition, we are not tracking number of MAC filters configured per
+VF correctly - and this leads to issue updating VF MAC filters whenever
+they were removed and re-configured via bringing VF interface down and
+up. Also, since VF could send request to update multiple MAC filters at
+once, driver should program those filters individually in the switch, in
+order to determine which action resulted to error, and communicate
+accordingly to the VF.
 
-Also add validation for ring_len param. It should be greater than 32 and
-be multiple of 32. Incorrect value leads to hang traffic on PF.
+So, with this changes, we now track number of filters added right from
+when VF resources allocation is done, and could properly add filters for
+both trusted and non_trusted VFs, without MAC filters mis-match issue in
+the switch...
 
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Also refactor code, so that driver can use new function to add or remove
+MAC filters.
+
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 31 ++++++++++++++-----
- 1 file changed, 24 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c      | 30 +++++++++
+ drivers/net/ethernet/intel/ice/ice_lib.h      |  4 ++
+ drivers/net/ethernet/intel/ice/ice_main.c     | 64 +++++--------------
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 42 ++++++------
+ 4 files changed, 73 insertions(+), 67 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 377e6d495c14..cd8662ac133d 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1713,6 +1713,19 @@ static bool ice_vc_isvalid_q_id(struct ice_vf *vf, u16 vsi_id, u8 qid)
- 	return (vsi && (qid < vsi->alloc_txq));
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index aff65333c302..df28597f2e52 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -3211,3 +3211,33 @@ int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc)
+ 	return ret;
+ }
+ #endif /* CONFIG_DCB */
++
++/**
++ * ice_vsi_cfg_mac_fltr - Add or remove a MAC address filter for a VSI
++ * @vsi: the VSI being configured MAC filter
++ * @macaddr: the MAC address to be added.
++ * @set: Add or delete a MAC filter
++ *
++ * Adds or removes MAC address filter entry for VF VSI
++ */
++enum ice_status
++ice_vsi_cfg_mac_fltr(struct ice_vsi *vsi, const u8 *macaddr, bool set)
++{
++	LIST_HEAD(tmp_add_list);
++	enum ice_status status;
++
++	 /* Update MAC filter list to be added or removed for a VSI */
++	if (ice_add_mac_to_list(vsi, &tmp_add_list, macaddr)) {
++		status = ICE_ERR_NO_MEMORY;
++		goto cfg_mac_fltr_exit;
++	}
++
++	if (set)
++		status = ice_add_mac(&vsi->back->hw, &tmp_add_list);
++	else
++		status = ice_remove_mac(&vsi->back->hw, &tmp_add_list);
++
++cfg_mac_fltr_exit:
++	ice_free_fltr_list(&vsi->back->pdev->dev, &tmp_add_list);
++	return status;
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 7409a69f631d..0ed111edb7bb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -95,4 +95,8 @@ void ice_vsi_free_tx_rings(struct ice_vsi *vsi);
+ int ice_vsi_manage_rss_lut(struct ice_vsi *vsi, bool ena);
+ 
+ u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran);
++
++enum ice_status
++ice_vsi_cfg_mac_fltr(struct ice_vsi *vsi, const u8 *macaddr, bool set);
++
+ #endif /* !_ICE_LIB_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 17358a10866d..072771543582 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -116,10 +116,9 @@ static void ice_check_for_hang_subtask(struct ice_pf *pf)
+  */
+ static int ice_init_mac_fltr(struct ice_pf *pf)
+ {
+-	LIST_HEAD(tmp_add_list);
++	enum ice_status status;
+ 	u8 broadcast[ETH_ALEN];
+ 	struct ice_vsi *vsi;
+-	int status;
+ 
+ 	vsi = ice_find_vsi_by_type(pf, ICE_VSI_PF);
+ 	if (!vsi)
+@@ -130,8 +129,7 @@ static int ice_init_mac_fltr(struct ice_pf *pf)
+ 	 */
+ 
+ 	 /* Add a unicast MAC filter so the VSI can get its packets */
+-	status = ice_add_mac_to_list(vsi, &tmp_add_list,
+-				     vsi->port_info->mac.perm_addr);
++	status = ice_vsi_cfg_mac_fltr(vsi, vsi->port_info->mac.perm_addr, true);
+ 	if (status)
+ 		goto unregister;
+ 
+@@ -139,18 +137,11 @@ static int ice_init_mac_fltr(struct ice_pf *pf)
+ 	 * MAC address to the list as well.
+ 	 */
+ 	eth_broadcast_addr(broadcast);
+-	status = ice_add_mac_to_list(vsi, &tmp_add_list, broadcast);
+-	if (status)
+-		goto free_mac_list;
+-
+-	/* Program MAC filters for entries in tmp_add_list */
+-	status = ice_add_mac(&pf->hw, &tmp_add_list);
++	status = ice_vsi_cfg_mac_fltr(vsi, broadcast, true);
+ 	if (status)
+-		status = -ENOMEM;
+-
+-free_mac_list:
+-	ice_free_fltr_list(&pf->pdev->dev, &tmp_add_list);
++		goto unregister;
+ 
++	return 0;
+ unregister:
+ 	/* We aren't useful with no MAC filters, so unregister if we
+ 	 * had an error
+@@ -164,7 +155,7 @@ static int ice_init_mac_fltr(struct ice_pf *pf)
+ 		vsi->netdev = NULL;
+ 	}
+ 
+-	return status;
++	return -EIO;
  }
  
-+/**
-+ * ice_vc_isvalid_ring_len
-+ * @ring_len: length of ring
-+ *
-+ * check for the valid ring count, should be multiple of ICE_REQ_DESC_MULTIPLE
-+ */
-+static bool ice_vc_isvalid_ring_len(u16 ring_len)
-+{
-+	return (ring_len >= ICE_MIN_NUM_DESC &&
-+		ring_len <= ICE_MAX_NUM_DESC &&
-+		!(ring_len % ICE_REQ_DESC_MULTIPLE));
-+}
-+
  /**
-  * ice_vc_config_rss_key
-  * @vf: pointer to the VF info
-@@ -2108,16 +2121,17 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
+@@ -2870,10 +2861,8 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
+ 	struct ice_hw *hw = &pf->hw;
+ 	struct sockaddr *addr = pi;
+ 	enum ice_status status;
+-	LIST_HEAD(a_mac_list);
+-	LIST_HEAD(r_mac_list);
+ 	u8 flags = 0;
+-	int err;
++	int err = 0;
+ 	u8 *mac;
+ 
+ 	mac = (u8 *)addr->sa_data;
+@@ -2896,42 +2885,23 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
+ 	/* When we change the MAC address we also have to change the MAC address
+ 	 * based filter rules that were created previously for the old MAC
+ 	 * address. So first, we remove the old filter rule using ice_remove_mac
+-	 * and then create a new filter rule using ice_add_mac. Note that for
+-	 * both these operations, we first need to form a "list" of MAC
+-	 * addresses (even though in this case, we have only 1 MAC address to be
+-	 * added/removed) and this done using ice_add_mac_to_list. Depending on
+-	 * the ensuing operation this "list" of MAC addresses is either to be
+-	 * added or removed from the filter.
++	 * and then create a new filter rule using ice_add_mac via
++	 * ice_vsi_cfg_mac_fltr function call for both add and/or remove
++	 * filters.
+ 	 */
+-	err = ice_add_mac_to_list(vsi, &r_mac_list, netdev->dev_addr);
+-	if (err) {
+-		err = -EADDRNOTAVAIL;
+-		goto free_lists;
+-	}
+-
+-	status = ice_remove_mac(hw, &r_mac_list);
++	status = ice_vsi_cfg_mac_fltr(vsi, netdev->dev_addr, false);
+ 	if (status) {
+ 		err = -EADDRNOTAVAIL;
+-		goto free_lists;
+-	}
+-
+-	err = ice_add_mac_to_list(vsi, &a_mac_list, mac);
+-	if (err) {
+-		err = -EADDRNOTAVAIL;
+-		goto free_lists;
++		goto err_update_filters;
  	}
  
--	if (qci->num_queue_pairs > ICE_MAX_BASE_QS_PER_VF) {
--		dev_err(&pf->pdev->dev,
--			"VF-%d requesting more than supported number of queues: %d\n",
--			vf->vf_id, qci->num_queue_pairs);
-+	vsi = pf->vsi[vf->lan_vsi_idx];
-+	if (!vsi) {
- 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 		goto error_param;
+-	status = ice_add_mac(hw, &a_mac_list);
++	status = ice_vsi_cfg_mac_fltr(vsi, mac, true);
+ 	if (status) {
+ 		err = -EADDRNOTAVAIL;
+-		goto free_lists;
++		goto err_update_filters;
  	}
  
--	vsi = pf->vsi[vf->lan_vsi_idx];
--	if (!vsi) {
-+	if (qci->num_queue_pairs > ICE_MAX_BASE_QS_PER_VF ||
-+	    qci->num_queue_pairs > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
+-free_lists:
+-	/* free list entries */
+-	ice_free_fltr_list(&pf->pdev->dev, &r_mac_list);
+-	ice_free_fltr_list(&pf->pdev->dev, &a_mac_list);
+-
++err_update_filters:
+ 	if (err) {
+ 		netdev_err(netdev, "can't set MAC %pM. filter update failed\n",
+ 			   mac);
+@@ -2947,8 +2917,8 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
+ 	flags = ICE_AQC_MAN_MAC_UPDATE_LAA_WOL;
+ 	status = ice_aq_manage_mac_write(hw, mac, flags, NULL);
+ 	if (status) {
+-		netdev_err(netdev, "can't set MAC %pM. write to firmware failed.\n",
+-			   mac);
++		netdev_err(netdev, "can't set MAC %pM. write to firmware failed error %d\n",
++			   mac, status);
+ 	}
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index f86c26d0e426..377e6d495c14 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -540,7 +540,10 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
+ 
+ 	status = ice_add_mac(&pf->hw, &tmp_add_list);
+ 	if (status)
+-		dev_err(&pf->pdev->dev, "could not add mac filters\n");
 +		dev_err(&pf->pdev->dev,
-+			"VF-%d requesting more than supported number of queues: %d\n",
-+			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
- 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 		goto error_param;
- 	}
-@@ -2128,6 +2142,8 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 		    qpi->rxq.vsi_id != qci->vsi_id ||
- 		    qpi->rxq.queue_id != qpi->txq.queue_id ||
- 		    qpi->txq.headwb_enabled ||
-+		    !ice_vc_isvalid_ring_len(qpi->txq.ring_len) ||
-+		    !ice_vc_isvalid_ring_len(qpi->rxq.ring_len) ||
- 		    !ice_vc_isvalid_q_id(vf, qci->vsi_id, qpi->txq.queue_id)) {
- 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 			goto error_param;
-@@ -2138,7 +2154,8 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 		/* copy Rx queue info from VF into VSI */
- 		vsi->rx_rings[i]->dma = qpi->rxq.dma_ring_addr;
- 		vsi->rx_rings[i]->count = qpi->rxq.ring_len;
--		if (qpi->rxq.databuffer_size > ((16 * 1024) - 128)) {
-+		if (qpi->rxq.databuffer_size > ((16 * 1024) - 128) ||
-+		    qpi->rxq.databuffer_size < 1024) {
- 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 			goto error_param;
++			"could not add mac filters error %d\n", status);
++	else
++		vf->num_mac = 1;
+ 
+ 	/* Clear this bit after VF initialization since we shouldn't reclaim
+ 	 * and reassign interrupts for synchronous or asynchronous VFR events.
+@@ -2209,7 +2212,7 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
+ 	    (struct virtchnl_ether_addr_list *)msg;
+ 	struct ice_pf *pf = vf->pf;
+ 	enum virtchnl_ops vc_op;
+-	LIST_HEAD(mac_list);
++	enum ice_status status;
+ 	struct ice_vsi *vsi;
+ 	int mac_count = 0;
+ 	int i;
+@@ -2283,33 +2286,32 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
+ 			goto handle_mac_exit;
  		}
+ 
+-		/* get here if maddr is multicast or if VF can change MAC */
+-		if (ice_add_mac_to_list(vsi, &mac_list, al->list[i].addr)) {
+-			v_ret = VIRTCHNL_STATUS_ERR_NO_MEMORY;
++		/* program the updated filter list */
++		status = ice_vsi_cfg_mac_fltr(vsi, maddr, set);
++		if (status == ICE_ERR_DOES_NOT_EXIST ||
++		    status == ICE_ERR_ALREADY_EXISTS) {
++			dev_info(&pf->pdev->dev,
++				 "can't %s MAC filters %pM for VF %d, error %d\n",
++				 set ? "add" : "remove", maddr, vf->vf_id,
++				 status);
++		} else if (status) {
++			dev_err(&pf->pdev->dev,
++				"can't %s MAC filters for VF %d, error %d\n",
++				set ? "add" : "remove", vf->vf_id, status);
++			v_ret = ice_err_to_virt_err(status);
+ 			goto handle_mac_exit;
+ 		}
++
+ 		mac_count++;
+ 	}
+ 
+-	/* program the updated filter list */
++	/* Track number of MAC filters programmed for the VF VSI */
+ 	if (set)
+-		v_ret = ice_err_to_virt_err(ice_add_mac(&pf->hw, &mac_list));
++		vf->num_mac += mac_count;
+ 	else
+-		v_ret = ice_err_to_virt_err(ice_remove_mac(&pf->hw, &mac_list));
+-
+-	if (v_ret) {
+-		dev_err(&pf->pdev->dev,
+-			"can't %s MAC filters for VF %d, error %d\n",
+-			set ? "add" : "remove", vf->vf_id, v_ret);
+-	} else {
+-		if (set)
+-			vf->num_mac += mac_count;
+-		else
+-			vf->num_mac -= mac_count;
+-	}
++		vf->num_mac -= mac_count;
+ 
+ handle_mac_exit:
+-	ice_free_fltr_list(&pf->pdev->dev, &mac_list);
+ 	/* send the response to the VF */
+ 	return ice_vc_send_msg_to_vf(vf, vc_op, v_ret, NULL, 0);
+ }
 -- 
 2.20.1
 
