@@ -1,107 +1,87 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Jul 2019 01:55:36 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v4 10/15] ice: update GLINT_DYN_CTL
- and GLINT_VECT2FUNC register access
+Date: Thu, 25 Jul 2019 01:55:34 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v4 08/15] ice: allow empty rx
+ descriptors
 In-Reply-To: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
 References: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190725085541.55104-10-anthony.l.nguyen@intel.com>
+Message-ID: <20190725085541.55104-8-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paul Greenwalt <paul.greenwalt@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Register access for GLINT_DYN_CTL and GLINT_VECT2FUNC should be within
-the PF space and not the absolute device space.
+In some circumstances, the hardware will hand us a receive descriptor
+which has no data attached, but is otherwise valid. The receive code was
+improperly ignoring these descriptors, which result in an infinite loop.
 
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+To fix this, change the receive code to process all descriptors,
+regardless of the size of the associated data. Add checks to the
+memory-handling functions to allow for zero size.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 24 +++++++++++--------
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  3 ++-
- 2 files changed, 16 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 93b835a24bb1..54b0e88af4ca 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -474,19 +474,20 @@ ice_vf_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi, u16 vf_id)
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 9a54406922f0..75b0afe02015 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -607,6 +607,8 @@ ice_add_rx_frag(struct ice_rx_buf *rx_buf, struct sk_buff *skb,
+ 	unsigned int truesize = ICE_RXBUF_2048;
+ #endif
  
- /**
-- * ice_calc_vf_first_vector_idx - Calculate absolute MSIX vector index in HW
-+ * ice_calc_vf_first_vector_idx - Calculate MSIX vector index in the PF space
-  * @pf: pointer to PF structure
-  * @vf: pointer to VF that the first MSIX vector index is being calculated for
-  *
-- * This returns the first MSIX vector index in HW that is used by this VF and
-- * this will always be the OICR index in the AVF driver so any functionality
-+ * This returns the first MSIX vector index in PF space that is used by this VF.
-+ * This index is used when accessing PF relative registers such as
-+ * GLINT_VECT2FUNC and GLINT_DYN_CTL.
-+ * This will always be the OICR index in the AVF driver so any functionality
-  * using vf->first_vector_idx for queue configuration will have to increment by
-  * 1 to avoid meddling with the OICR index.
++	if (!size)
++		return;
+ 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buf->page,
+ 			rx_buf->page_offset, size, truesize);
+ 
+@@ -662,6 +664,8 @@ ice_get_rx_buf(struct ice_ring *rx_ring, struct sk_buff **skb,
+ 	prefetchw(rx_buf->page);
+ 	*skb = rx_buf->skb;
+ 
++	if (!size)
++		return rx_buf;
+ 	/* we are reusing so sync this buffer for CPU use */
+ 	dma_sync_single_range_for_cpu(rx_ring->dev, rx_buf->dma,
+ 				      rx_buf->page_offset, size,
+@@ -745,8 +749,11 @@ ice_construct_skb(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf,
   */
- static int ice_calc_vf_first_vector_idx(struct ice_pf *pf, struct ice_vf *vf)
+ static void ice_put_rx_buf(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf)
  {
--	return pf->hw.func_caps.common_cap.msix_vector_first_id +
--		pf->sriov_base_vector + vf->vf_id * pf->num_vf_msix;
-+	return pf->sriov_base_vector + vf->vf_id * pf->num_vf_msix;
- }
+-		/* hand second half of page back to the ring */
++	if (!rx_buf)
++		return;
++
+ 	if (ice_can_reuse_rx_page(rx_buf)) {
++		/* hand second half of page back to the ring */
+ 		ice_reuse_rx_page(rx_ring, rx_buf);
+ 		rx_ring->rx_stats.page_reuse_count++;
+ 	} else {
+@@ -1032,8 +1039,9 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 		size = le16_to_cpu(rx_desc->wb.pkt_len) &
+ 			ICE_RX_FLX_DESC_PKT_LEN_M;
  
- /**
-@@ -597,27 +598,30 @@ static int ice_alloc_vf_res(struct ice_vf *vf)
-  */
- static void ice_ena_vf_mappings(struct ice_vf *vf)
- {
-+	int abs_vf_id, abs_first, abs_last;
- 	struct ice_pf *pf = vf->pf;
- 	struct ice_vsi *vsi;
- 	int first, last, v;
- 	struct ice_hw *hw;
--	int abs_vf_id;
- 	u32 reg;
++		/* retrieve a buffer from the ring */
+ 		rx_buf = ice_get_rx_buf(rx_ring, &skb, size);
+-		/* allocate (if needed) and populate skb */
++
+ 		if (skb)
+ 			ice_add_rx_frag(rx_buf, skb, size);
+ 		else
+@@ -1042,7 +1050,8 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 		/* exit if we failed to retrieve a buffer */
+ 		if (!skb) {
+ 			rx_ring->rx_stats.alloc_buf_failed++;
+-			rx_buf->pagecnt_bias++;
++			if (rx_buf)
++				rx_buf->pagecnt_bias++;
+ 			break;
+ 		}
  
- 	hw = &pf->hw;
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	first = vf->first_vector_idx;
- 	last = (first + pf->num_vf_msix) - 1;
-+	abs_first = first + pf->hw.func_caps.common_cap.msix_vector_first_id;
-+	abs_last = (abs_first + pf->num_vf_msix) - 1;
- 	abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
- 
- 	/* VF Vector allocation */
--	reg = (((first << VPINT_ALLOC_FIRST_S) & VPINT_ALLOC_FIRST_M) |
--	       ((last << VPINT_ALLOC_LAST_S) & VPINT_ALLOC_LAST_M) |
-+	reg = (((abs_first << VPINT_ALLOC_FIRST_S) & VPINT_ALLOC_FIRST_M) |
-+	       ((abs_last << VPINT_ALLOC_LAST_S) & VPINT_ALLOC_LAST_M) |
- 	       VPINT_ALLOC_VALID_M);
- 	wr32(hw, VPINT_ALLOC(vf->vf_id), reg);
- 
--	reg = (((first << VPINT_ALLOC_PCI_FIRST_S) & VPINT_ALLOC_PCI_FIRST_M) |
--	       ((last << VPINT_ALLOC_PCI_LAST_S) & VPINT_ALLOC_PCI_LAST_M) |
-+	reg = (((abs_first << VPINT_ALLOC_PCI_FIRST_S)
-+		 & VPINT_ALLOC_PCI_FIRST_M) |
-+	       ((abs_last << VPINT_ALLOC_PCI_LAST_S) & VPINT_ALLOC_PCI_LAST_M) |
- 	       VPINT_ALLOC_PCI_VALID_M);
- 	wr32(hw, VPINT_ALLOC_PCI(vf->vf_id), reg);
- 	/* map the interrupts to its functions */
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index ada69120ff38..424bc0538956 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -45,7 +45,8 @@ struct ice_vf {
- 
- 	s16 vf_id;			/* VF ID in the PF space */
- 	u16 lan_vsi_idx;		/* index into PF struct */
--	int first_vector_idx;		/* first vector index of this VF */
-+	/* first vector index of this VF in the PF space */
-+	int first_vector_idx;
- 	struct ice_sw *vf_sw_id;	/* switch ID the VF VSIs connect to */
- 	struct virtchnl_version_info vf_ver;
- 	u32 driver_caps;		/* reported by VF driver */
 -- 
 2.20.1
 
