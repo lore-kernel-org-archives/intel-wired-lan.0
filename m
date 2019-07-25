@@ -1,110 +1,251 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Jul 2019 02:53:52 -0700
-Subject: [Intel-wired-lan] [PATCH S25 03/12] ice: Don't allow VSI to remove
- unassociated ucast filter
+Date: Thu, 25 Jul 2019 02:53:53 -0700
+Subject: [Intel-wired-lan] [PATCH S25 04/12] ice: Fix ethtool port and PFC
+ stats for 4x25G cards
 In-Reply-To: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
 References: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190725095401.24590-3-anthony.l.nguyen@intel.com>
+Message-ID: <20190725095401.24590-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Usha Ketineni <usha.k.ketineni@intel.com>
 
-If a VSI is not using a unicast filter or did not configure that
-particular unicast filter, driver should not allow it to be removed
-by the rogue VSI.
+This patch fixes the issue where port and PFC statistics counters are
+incrementing at the wrong port with 4x25G cards.
+Read the GLPRT port registers using lport parameter instead of pf_id to
+update the statistics otherwise the pf_ids are flipped for ports 2 and 3
+when read from the HW register PF_FUNC_RID and this is expected as per
+hardware specification.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 56 +++++++++++++++++++++
- 1 file changed, 56 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 13 ++--
+ drivers/net/ethernet/intel/ice/ice_main.c    | 76 ++++++++++----------
+ 2 files changed, 45 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 6b68ff8dae18..2e6ea062fa2a 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -2136,6 +2136,38 @@ ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_handle, bool set, u8 direction)
- 	return status;
- }
- 
-+/**
-+ * ice_find_ucast_rule_entry - Search for a unicast MAC filter rule entry
-+ * @hw: pointer to the hardware structure
-+ * @recp_id: lookup type for which the specified rule needs to be searched
-+ * @f_info: rule information
-+ *
-+ * Helper function to search for a unicast rule entry - this is to be used
-+ * to remove unicast MAC filter that is not shared with other VSIs on the
-+ * PF switch.
-+ *
-+ * Returns pointer to entry storing the rule if found
-+ */
-+static struct ice_fltr_mgmt_list_entry *
-+ice_find_ucast_rule_entry(struct ice_hw *hw, u8 recp_id,
-+			  struct ice_fltr_info *f_info)
-+{
-+	struct ice_switch_info *sw = hw->switch_info;
-+	struct ice_fltr_mgmt_list_entry *list_itr;
-+	struct list_head *list_head;
-+
-+	list_head = &sw->recp_list[recp_id].filt_rules;
-+	list_for_each_entry(list_itr, list_head, list_entry) {
-+		if (!memcmp(&f_info->l_data, &list_itr->fltr_info.l_data,
-+			    sizeof(f_info->l_data)) &&
-+		    f_info->fwd_id.hw_vsi_id ==
-+		    list_itr->fltr_info.fwd_id.hw_vsi_id &&
-+		    f_info->flag == list_itr->fltr_info.flag)
-+			return list_itr;
-+	}
-+	return NULL;
-+}
-+
- /**
-  * ice_remove_mac - remove a MAC address based filter rule
-  * @hw: pointer to the hardware structure
-@@ -2153,15 +2185,39 @@ enum ice_status
- ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 21405958aa63..34c9d1e01529 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -505,30 +505,31 @@ void ice_update_dcb_stats(struct ice_pf *pf)
  {
- 	struct ice_fltr_list_entry *list_itr, *tmp;
-+	struct mutex *rule_lock; /* Lock to protect filter rule list */
+ 	struct ice_hw_port_stats *prev_ps, *cur_ps;
+ 	struct ice_hw *hw = &pf->hw;
+-	u8 pf_id = hw->pf_id;
++	u8 port;
+ 	int i;
  
- 	if (!m_list)
- 		return ICE_ERR_PARAM;
++	port = hw->port_info->lport;
+ 	prev_ps = &pf->stats_prev;
+ 	cur_ps = &pf->stats;
  
-+	rule_lock = &hw->switch_info->recp_list[ICE_SW_LKUP_MAC].filt_rule_lock;
- 	list_for_each_entry_safe(list_itr, tmp, m_list, list_entry) {
- 		enum ice_sw_lkup_type l_type = list_itr->fltr_info.lkup_type;
-+		u8 *add = &list_itr->fltr_info.l_data.mac.mac_addr[0];
-+		u16 vsi_handle;
+ 	for (i = 0; i < 8; i++) {
+-		ice_stat_update32(hw, GLPRT_PXOFFRXC(pf_id, i),
++		ice_stat_update32(hw, GLPRT_PXOFFRXC(port, i),
+ 				  pf->stat_prev_loaded,
+ 				  &prev_ps->priority_xoff_rx[i],
+ 				  &cur_ps->priority_xoff_rx[i]);
+-		ice_stat_update32(hw, GLPRT_PXONRXC(pf_id, i),
++		ice_stat_update32(hw, GLPRT_PXONRXC(port, i),
+ 				  pf->stat_prev_loaded,
+ 				  &prev_ps->priority_xon_rx[i],
+ 				  &cur_ps->priority_xon_rx[i]);
+-		ice_stat_update32(hw, GLPRT_PXONTXC(pf_id, i),
++		ice_stat_update32(hw, GLPRT_PXONTXC(port, i),
+ 				  pf->stat_prev_loaded,
+ 				  &prev_ps->priority_xon_tx[i],
+ 				  &cur_ps->priority_xon_tx[i]);
+-		ice_stat_update32(hw, GLPRT_PXOFFTXC(pf_id, i),
++		ice_stat_update32(hw, GLPRT_PXOFFTXC(port, i),
+ 				  pf->stat_prev_loaded,
+ 				  &prev_ps->priority_xoff_tx[i],
+ 				  &cur_ps->priority_xoff_tx[i]);
+-		ice_stat_update32(hw, GLPRT_RXON2OFFCNT(pf_id, i),
++		ice_stat_update32(hw, GLPRT_RXON2OFFCNT(port, i),
+ 				  pf->stat_prev_loaded,
+ 				  &prev_ps->priority_xon_2_xoff[i],
+ 				  &cur_ps->priority_xon_2_xoff[i]);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 072771543582..920122443c0f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3298,25 +3298,25 @@ void ice_update_pf_stats(struct ice_pf *pf)
+ {
+ 	struct ice_hw_port_stats *prev_ps, *cur_ps;
+ 	struct ice_hw *hw = &pf->hw;
+-	u8 pf_id;
++	u8 port;
  
- 		if (l_type != ICE_SW_LKUP_MAC)
- 			return ICE_ERR_PARAM;
-+
-+		vsi_handle = list_itr->fltr_info.vsi_handle;
-+		if (!ice_is_vsi_valid(hw, vsi_handle))
-+			return ICE_ERR_PARAM;
-+
-+		list_itr->fltr_info.fwd_id.hw_vsi_id =
-+					ice_get_hw_vsi_num(hw, vsi_handle);
-+		if (is_unicast_ether_addr(add) && !hw->ucast_shared) {
-+			/* Don't remove the unicast address that belongs to
-+			 * another VSI on the switch, since it is not being
-+			 * shared...
-+			 */
-+			mutex_lock(rule_lock);
-+			if (!ice_find_ucast_rule_entry(hw, ICE_SW_LKUP_MAC,
-+						       &list_itr->fltr_info)) {
-+				mutex_unlock(rule_lock);
-+				return ICE_ERR_DOES_NOT_EXIST;
-+			}
-+			mutex_unlock(rule_lock);
-+		}
- 		list_itr->status = ice_remove_rule_internal(hw,
- 							    ICE_SW_LKUP_MAC,
- 							    list_itr);
++	port = hw->port_info->lport;
+ 	prev_ps = &pf->stats_prev;
+ 	cur_ps = &pf->stats;
+-	pf_id = hw->pf_id;
+ 
+-	ice_stat_update40(hw, GLPRT_GORCL(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_GORCL(port), pf->stat_prev_loaded,
+ 			  &prev_ps->eth.rx_bytes,
+ 			  &cur_ps->eth.rx_bytes);
+ 
+-	ice_stat_update40(hw, GLPRT_UPRCL(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_UPRCL(port), pf->stat_prev_loaded,
+ 			  &prev_ps->eth.rx_unicast,
+ 			  &cur_ps->eth.rx_unicast);
+ 
+-	ice_stat_update40(hw, GLPRT_MPRCL(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_MPRCL(port), pf->stat_prev_loaded,
+ 			  &prev_ps->eth.rx_multicast,
+ 			  &cur_ps->eth.rx_multicast);
+ 
+-	ice_stat_update40(hw, GLPRT_BPRCL(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_BPRCL(port), pf->stat_prev_loaded,
+ 			  &prev_ps->eth.rx_broadcast,
+ 			  &cur_ps->eth.rx_broadcast);
+ 
+@@ -3324,109 +3324,109 @@ void ice_update_pf_stats(struct ice_pf *pf)
+ 			  &prev_ps->eth.rx_discards,
+ 			  &cur_ps->eth.rx_discards);
+ 
+-	ice_stat_update40(hw, GLPRT_GOTCL(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_GOTCL(port), pf->stat_prev_loaded,
+ 			  &prev_ps->eth.tx_bytes,
+ 			  &cur_ps->eth.tx_bytes);
+ 
+-	ice_stat_update40(hw, GLPRT_UPTCL(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_UPTCL(port), pf->stat_prev_loaded,
+ 			  &prev_ps->eth.tx_unicast,
+ 			  &cur_ps->eth.tx_unicast);
+ 
+-	ice_stat_update40(hw, GLPRT_MPTCL(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_MPTCL(port), pf->stat_prev_loaded,
+ 			  &prev_ps->eth.tx_multicast,
+ 			  &cur_ps->eth.tx_multicast);
+ 
+-	ice_stat_update40(hw, GLPRT_BPTCL(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_BPTCL(port), pf->stat_prev_loaded,
+ 			  &prev_ps->eth.tx_broadcast,
+ 			  &cur_ps->eth.tx_broadcast);
+ 
+-	ice_stat_update32(hw, GLPRT_TDOLD(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_TDOLD(port), pf->stat_prev_loaded,
+ 			  &prev_ps->tx_dropped_link_down,
+ 			  &cur_ps->tx_dropped_link_down);
+ 
+-	ice_stat_update40(hw, GLPRT_PRC64L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PRC64L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_size_64, &cur_ps->rx_size_64);
+ 
+-	ice_stat_update40(hw, GLPRT_PRC127L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PRC127L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_size_127, &cur_ps->rx_size_127);
+ 
+-	ice_stat_update40(hw, GLPRT_PRC255L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PRC255L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_size_255, &cur_ps->rx_size_255);
+ 
+-	ice_stat_update40(hw, GLPRT_PRC511L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PRC511L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_size_511, &cur_ps->rx_size_511);
+ 
+-	ice_stat_update40(hw, GLPRT_PRC1023L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PRC1023L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_size_1023, &cur_ps->rx_size_1023);
+ 
+-	ice_stat_update40(hw, GLPRT_PRC1522L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PRC1522L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_size_1522, &cur_ps->rx_size_1522);
+ 
+-	ice_stat_update40(hw, GLPRT_PRC9522L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PRC9522L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_size_big, &cur_ps->rx_size_big);
+ 
+-	ice_stat_update40(hw, GLPRT_PTC64L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PTC64L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->tx_size_64, &cur_ps->tx_size_64);
+ 
+-	ice_stat_update40(hw, GLPRT_PTC127L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PTC127L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->tx_size_127, &cur_ps->tx_size_127);
+ 
+-	ice_stat_update40(hw, GLPRT_PTC255L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PTC255L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->tx_size_255, &cur_ps->tx_size_255);
+ 
+-	ice_stat_update40(hw, GLPRT_PTC511L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PTC511L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->tx_size_511, &cur_ps->tx_size_511);
+ 
+-	ice_stat_update40(hw, GLPRT_PTC1023L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PTC1023L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->tx_size_1023, &cur_ps->tx_size_1023);
+ 
+-	ice_stat_update40(hw, GLPRT_PTC1522L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PTC1522L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->tx_size_1522, &cur_ps->tx_size_1522);
+ 
+-	ice_stat_update40(hw, GLPRT_PTC9522L(pf_id), pf->stat_prev_loaded,
++	ice_stat_update40(hw, GLPRT_PTC9522L(port), pf->stat_prev_loaded,
+ 			  &prev_ps->tx_size_big, &cur_ps->tx_size_big);
+ 
+-	ice_stat_update32(hw, GLPRT_LXONRXC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_LXONRXC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->link_xon_rx, &cur_ps->link_xon_rx);
+ 
+-	ice_stat_update32(hw, GLPRT_LXOFFRXC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_LXOFFRXC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->link_xoff_rx, &cur_ps->link_xoff_rx);
+ 
+-	ice_stat_update32(hw, GLPRT_LXONTXC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_LXONTXC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->link_xon_tx, &cur_ps->link_xon_tx);
+ 
+-	ice_stat_update32(hw, GLPRT_LXOFFTXC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_LXOFFTXC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->link_xoff_tx, &cur_ps->link_xoff_tx);
+ 
+ 	ice_update_dcb_stats(pf);
+ 
+-	ice_stat_update32(hw, GLPRT_CRCERRS(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_CRCERRS(port), pf->stat_prev_loaded,
+ 			  &prev_ps->crc_errors, &cur_ps->crc_errors);
+ 
+-	ice_stat_update32(hw, GLPRT_ILLERRC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_ILLERRC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->illegal_bytes, &cur_ps->illegal_bytes);
+ 
+-	ice_stat_update32(hw, GLPRT_MLFC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_MLFC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->mac_local_faults,
+ 			  &cur_ps->mac_local_faults);
+ 
+-	ice_stat_update32(hw, GLPRT_MRFC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_MRFC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->mac_remote_faults,
+ 			  &cur_ps->mac_remote_faults);
+ 
+-	ice_stat_update32(hw, GLPRT_RLEC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_RLEC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_len_errors, &cur_ps->rx_len_errors);
+ 
+-	ice_stat_update32(hw, GLPRT_RUC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_RUC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_undersize, &cur_ps->rx_undersize);
+ 
+-	ice_stat_update32(hw, GLPRT_RFC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_RFC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_fragments, &cur_ps->rx_fragments);
+ 
+-	ice_stat_update32(hw, GLPRT_ROC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_ROC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_oversize, &cur_ps->rx_oversize);
+ 
+-	ice_stat_update32(hw, GLPRT_RJC(pf_id), pf->stat_prev_loaded,
++	ice_stat_update32(hw, GLPRT_RJC(port), pf->stat_prev_loaded,
+ 			  &prev_ps->rx_jabber, &cur_ps->rx_jabber);
+ 
+ 	pf->stat_prev_loaded = true;
 -- 
 2.20.1
 
