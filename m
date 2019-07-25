@@ -1,89 +1,124 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Jul 2019 02:54:00 -0700
-Subject: [Intel-wired-lan] [PATCH S25 11/12] ice: Remove
- ice_dev_onetime_setup()
-In-Reply-To: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
-References: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190725095401.24590-11-anthony.l.nguyen@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 26 Jul 2019 04:33:12 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 1df7edc99a12ec77a63d84144a68e266d7a31088
+Message-ID: <5d3a1208.2QDDwuVDJime4bop%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 1df7edc99a12ec77a63d84144a68e266d7a31088  igc: Add NVM checksum validation
 
-ice_dev_onetime_setup contains driver workarounds needed for
-firmware limitations. These issues have now been resolved in newer
-NVMs so remove the function.
+elapsed time: 279m
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+configs tested: 99
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                 randconfig-d001-201929
+x86_64                 randconfig-d002-201929
+x86_64                 randconfig-d003-201929
+x86_64                 randconfig-d004-201929
+i386                   randconfig-d001-201929
+i386                   randconfig-d002-201929
+i386                   randconfig-d003-201929
+i386                   randconfig-d004-201929
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-c001-201929
+x86_64                 randconfig-c002-201929
+x86_64                 randconfig-c003-201929
+x86_64                 randconfig-c004-201929
+i386                   randconfig-c001-201929
+i386                   randconfig-c002-201929
+i386                   randconfig-c003-201929
+i386                   randconfig-c004-201929
+x86_64                           allyesconfig
+i386                             allmodconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-a001-201929
+x86_64                 randconfig-a002-201929
+x86_64                 randconfig-a003-201929
+x86_64                 randconfig-a004-201929
+i386                   randconfig-a001-201929
+i386                   randconfig-a002-201929
+i386                   randconfig-a003-201929
+i386                   randconfig-a004-201929
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+x86_64                 randconfig-g001-201929
+x86_64                 randconfig-g002-201929
+x86_64                 randconfig-g003-201929
+x86_64                 randconfig-g004-201929
+i386                   randconfig-g001-201929
+i386                   randconfig-g002-201929
+i386                   randconfig-g003-201929
+i386                   randconfig-g004-201929
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+s390                             allyesconfig
+alpha                            allyesconfig
+riscv                             allnoconfig
+
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 16 ----------------
- drivers/net/ethernet/intel/ice/ice_common.h |  2 --
- drivers/net/ethernet/intel/ice/ice_lib.c    |  1 -
- 3 files changed, 19 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 302ad981129c..847ddd9a7449 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -42,20 +42,6 @@ static enum ice_status ice_set_mac_type(struct ice_hw *hw)
- 	return 0;
- }
- 
--/**
-- * ice_dev_onetime_setup - Temporary HW/FW workarounds
-- * @hw: pointer to the HW structure
-- *
-- * This function provides temporary workarounds for certain issues
-- * that are expected to be fixed in the HW/FW.
-- */
--void ice_dev_onetime_setup(struct ice_hw *hw)
--{
--#define MBX_PF_VT_PFALLOC	0x00231E80
--	/* set VFs per PF */
--	wr32(hw, MBX_PF_VT_PFALLOC, rd32(hw, PF_VT_PFALLOC_HIF));
--}
--
- /**
-  * ice_clear_pf_cfg - Clear PF configuration
-  * @hw: pointer to the hardware structure
-@@ -837,8 +823,6 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
- 	if (status)
- 		goto err_unroll_sched;
- 
--	ice_dev_onetime_setup(hw);
--
- 	/* Get MAC information */
- 	/* A single port can report up to two (LAN and WoL) addresses */
- 	mac_buf = devm_kcalloc(ice_hw_to_dev(hw), 2,
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index e376d1eadba4..89b5125ad64c 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -41,8 +41,6 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
- void ice_clear_pxe_mode(struct ice_hw *hw);
- enum ice_status ice_get_caps(struct ice_hw *hw);
- 
--void ice_dev_onetime_setup(struct ice_hw *hw);
--
- enum ice_status
- ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
- 		  u32 rxq_index);
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index df28597f2e52..751f9f1f6367 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2978,7 +2978,6 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 
- 	ice_vsi_clear_rings(vsi);
- 	ice_vsi_free_arrays(vsi);
--	ice_dev_onetime_setup(&pf->hw);
- 	if (vsi->req_txq || vsi->req_rxq)
- 		ice_vsi_put_qs(vsi);
- 	if (vsi->type == ICE_VSI_VF)
--- 
-2.20.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
