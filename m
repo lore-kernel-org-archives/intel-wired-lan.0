@@ -1,12 +1,13 @@
-From: Richardson, Bruce <bruce.richardson@intel.com>
-Date: Thu, 25 Jul 2019 15:56:15 +0000
-Subject: [Intel-wired-lan] [PATCH bpf-next v3 00/11] XDP unaligned chunk
- placement support
-In-Reply-To: <94EAD717-F632-499F-8BBD-FFF5A5333CBF@gmail.com>
+From: Laatz, Kevin <kevin.laatz@intel.com>
+Date: Thu, 25 Jul 2019 18:00:14 +0100
+Subject: [Intel-wired-lan] [PATCH bpf-next v3 03/11] xsk: add support to
+ allow unaligned chunk placement
+In-Reply-To: <3af74e26-8899-cf1e-6fd4-5ea0bd349fc3@mellanox.com>
 References: <20190716030637.5634-1-kevin.laatz@intel.com>
  <20190724051043.14348-1-kevin.laatz@intel.com>
- <94EAD717-F632-499F-8BBD-FFF5A5333CBF@gmail.com>
-Message-ID: <59AF69C657FD0841A61C55336867B5B07EDB5C3F@IRSMSX103.ger.corp.intel.com>
+ <20190724051043.14348-4-kevin.laatz@intel.com>
+ <3af74e26-8899-cf1e-6fd4-5ea0bd349fc3@mellanox.com>
+Message-ID: <02909a39-efd8-052e-8128-4a6e5a142f99@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,89 +15,107 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
+On 25/07/2019 10:27, Maxim Mikityanskiy wrote:
+> On 2019-07-24 08:10, Kevin Laatz wrote:
+>> Currently, addresses are chunk size aligned. This means, we are very
+>> restricted in terms of where we can place chunk within the umem. For
+>> example, if we have a chunk size of 2k, then our chunks can only be placed
+>> at 0,2k,4k,6k,8k... and so on (ie. every 2k starting from 0).
+>>
+>> This patch introduces the ability to use unaligned chunks. With these
+>> changes, we are no longer bound to having to place chunks at a 2k (or
+>> whatever your chunk size is) interval. Since we are no longer dealing with
+>> aligned chunks, they can now cross page boundaries. Checks for page
+>> contiguity have been added in order to keep track of which pages are
+>> followed by a physically contiguous page.
+>>
+>> Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
+>> Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
+>> Signed-off-by: Bruce Richardson <bruce.richardson@intel.com>
+>>
+>> ---
+>> v2:
+>>     - Add checks for the flags coming from userspace
+>>     - Fix how we get chunk_size in xsk_diag.c
+>>     - Add defines for masking the new descriptor format
+>>     - Modified the rx functions to use new descriptor format
+>>     - Modified the tx functions to use new descriptor format
+>>
+>> v3:
+>>     - Add helper function to do address/offset masking/addition
+>> ---
+>>    include/net/xdp_sock.h      | 17 ++++++++
+>>    include/uapi/linux/if_xdp.h |  9 ++++
+>>    net/xdp/xdp_umem.c          | 18 +++++---
+>>    net/xdp/xsk.c               | 86 ++++++++++++++++++++++++++++++-------
+>>    net/xdp/xsk_diag.c          |  2 +-
+>>    net/xdp/xsk_queue.h         | 68 +++++++++++++++++++++++++----
+>>    6 files changed, 170 insertions(+), 30 deletions(-)
+>>
+> <...>
+>
+>> +/* If a buffer crosses a page boundary, we need to do 2 memcpy's, one for
+>> + * each page. This is only required in copy mode.
+>> + */
+>> +static void __xsk_rcv_memcpy(struct xdp_umem *umem, u64 addr, void *from_buf,
+>> +			     u32 len, u32 metalen)
+>> +{
+>> +	void *to_buf = xdp_umem_get_data(umem, addr);
+>> +
+>> +	if (xskq_crosses_non_contig_pg(umem, addr, len + metalen)) {
+>> +		void *next_pg_addr = umem->pages[(addr >> PAGE_SHIFT) + 1].addr;
+>> +		u64 page_start = addr & (PAGE_SIZE - 1);
+>> +		u64 first_len = PAGE_SIZE - (addr - page_start);
+> Let addr = 0x12345, PAGE_SIZE = 0x1000, len = 0x1000. Your calculations
+> lead to page_start = 0x345, first_len = 0x1000 - 0x12000, which is
+> negative. I think page_start is calculated incorrectly (is ~ missing?).
 
-> -----Original Message-----
-> From: Jonathan Lemon [mailto:jonathan.lemon at gmail.com]
-> Sent: Thursday, July 25, 2019 4:39 PM
-> To: Laatz, Kevin <kevin.laatz@intel.com>
-> Cc: netdev at vger.kernel.org; ast at kernel.org; daniel at iogearbox.net; Topel,
-> Bjorn <bjorn.topel@intel.com>; Karlsson, Magnus
-> <magnus.karlsson@intel.com>; jakub.kicinski at netronome.com;
-> saeedm at mellanox.com; maximmi at mellanox.com; stephen at networkplumber.org;
-> Richardson, Bruce <bruce.richardson@intel.com>; Loftus, Ciara
-> <ciara.loftus@intel.com>; bpf at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org
-> Subject: Re: [PATCH bpf-next v3 00/11] XDP unaligned chunk placement
-> support
-> 
-> 
-> 
-> On 23 Jul 2019, at 22:10, Kevin Laatz wrote:
-> 
-> > This patch set adds the ability to use unaligned chunks in the XDP umem.
-> >
-> > Currently, all chunk addresses passed to the umem are masked to be
-> > chunk size aligned (max is PAGE_SIZE). This limits where we can place
-> > chunks within the umem as well as limiting the packet sizes that are
-> supported.
-> >
-> > The changes in this patch set removes these restrictions, allowing XDP
-> > to be more flexible in where it can place a chunk within a umem. By
-> > relaxing where the chunks can be placed, it allows us to use an
-> > arbitrary buffer size and place that wherever we have a free address
-> > in the umem. These changes add the ability to support arbitrary frame
-> > sizes up to 4k
-> > (PAGE_SIZE) and make it easy to integrate with other existing
-> > frameworks that have their own memory management systems, such as DPDK.
-> > In DPDK, for example, there is already support for AF_XDP with zero-
-> copy.
-> > However, with this patch set the integration will be much more seamless.
-> > You can find the DPDK AF_XDP driver at:
-> > https://git.dpdk.org/dpdk/tree/drivers/net/af_xdp
-> >
-> > Since we are now dealing with arbitrary frame sizes, we need also need
-> > to update how we pass around addresses. Currently, the addresses can
-> > simply be masked to 2k to get back to the original address. This
-> > becomes less trivial when using frame sizes that are not a 'power of
-> > 2' size. This patch set modifies the Rx/Tx descriptor format to use
-> > the upper 16-bits of the addr field for an offset value, leaving the
-> > lower 48-bits for the address (this leaves us with 256 Terabytes,
-> > which should be enough!). We only need to use the upper 16-bits to store
-> the offset when running in unaligned mode.
-> > Rather than adding the offset (headroom etc) to the address, we will
-> > store it in the upper 16-bits of the address field. This way, we can
-> > easily add the offset to the address where we need it, using some bit
-> > manipulation and addition, and we can also easily get the original
-> > address wherever we need it (for example in i40e_zca_fr-- ee) by
-> > simply masking to get the lower 48-bits of the address field.
-> 
-> I wonder if it would be better to break backwards compatibility here and
-> say that a handle is going to change from [addr] to [base | offset], or
-> even [index | offset], where address = (index * chunk size) + offset, and
-> then use accessor macros to manipulate the queue entries.
-> 
-> This way, the XDP hotpath can adjust the handle with simple arithmetic,
-> bypassing the "if (unaligned)", check, as it changes the offset directly.
-> 
-> Using a chunk index instead of a base address is safer, otherwise it is
-> too easy to corrupt things.
-> --
+Correct, the ~ is missing in the page_start calculation. Nice spot, thanks!
 
-The trouble with using a chunk index is that it assumes that all chunks are
-contiguous, which is not always going to be the case. For example, for
-userspace apps the easiest way to get memory that is IOVA/physically 
-contiguous is to use hugepages, but even then we still need to skip space
-when crossing a 2MB barrier.
+>
+>> +
+>> +		memcpy(to_buf, from_buf, first_len + metalen);
+>> +		memcpy(next_pg_addr, from_buf + first_len, len - first_len);
+>> +
+>> +		return;
+>> +	}
+>> +
+>> +	memcpy(to_buf, from_buf, len + metalen);
+>> +}
+>> +
+> <...>
+>
+>> +static inline bool xskq_is_valid_addr_unaligned(struct xsk_queue *q, u64 addr,
+>> +						u64 length,
+>> +						struct xdp_umem *umem)
+>> +{
+>> +	addr += addr >> XSK_UNALIGNED_BUF_OFFSET_SHIFT;
+>> +	addr &= XSK_UNALIGNED_BUF_ADDR_MASK;
+>> +	if (addr >= q->size ||
+> Addresses like 0x00aaffffffffffff will pass the validation (0xaa +
+> 0xffffffffffff will overflow mod 2^48 and become a small number),
+> whereas such addresses don't look valid for me.
 
-Specifically in this example case, with a 3k buffer size and 2MB hugepages,
-we'd get 666 buffers on a single page, but then waste a few KB before
-starting the 667th buffer at byte 0 on the second 2MB page.
-This is the setup used in DPDK, for instance, when we allocate memory for
-use in buffer pools. 
+If you are referring to the addr >= q->size check... that check was 
+already in xskq_is_valid_addr (which I based this function on). If this 
+doesn't make sense, then it should be removed/fixed for both.
 
-Therefore, I think it's better to just have the kernel sanity checking the
-request for safety and leave userspace the freedom to decide where in its
-memory area it wants to place the buffers.
+>
+>> +	    xskq_crosses_non_contig_pg(umem, addr, length)) {
+> If the region is not contiguous, we cant RX into it - that's clear.
+> However, how can the userspace determine whether these two pages of UMEM
+> are mapped contiguously in the DMA space? Are we going to silently drop
+> descriptors to non-contiguous frames and leak them? Please explain how
+> to use it correctly from the application side.
 
-Regards,
-/Bruce
+Correct, if it is not contiguous then we cannot Rx into it.
+
+Userspace apps should be aware of the page contiguity when using 
+zero-copy and if not, then should not be using the unaligned mode. 
+Existing frameworks that have their own memory management subsystem, 
+such as DPDK, are aware of page contiguity and manage this themselves 
+while simpler apps that don't have this kind of visibility can use 
+hugepages, as is shown in the xdpsock sample changes in this set.
+
+
+
