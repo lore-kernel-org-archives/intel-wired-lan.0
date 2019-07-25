@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Jul 2019 01:55:32 -0700
-Subject: [Intel-wired-lan] [PATCH S23 v4 06/15] ice: Set WB_ON_ITR when we
- don't re-enable interrupts
+Date: Thu, 25 Jul 2019 01:55:37 -0700
+Subject: [Intel-wired-lan] [PATCH S23 v4 11/15] ice: Reduce wait times
+ during VF bringup/reset
 In-Reply-To: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
 References: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190725085541.55104-6-anthony.l.nguyen@intel.com>
+Message-ID: <20190725085541.55104-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,143 +13,113 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Currently when busy polling is enabled we aren't setting/enabling
-WB_ON_ITR in the driver. This doesn't break the driver, but it does
-cause issues. If we don't enable WB_ON_ITR mode we will still get
-write-backs from hardware during polling when a cache line has been
-filled, but if a cache line is not filled we will not get the
-write-back because WB_ON_ITR is not set. Fix this by enabling
-WB_ON_ITR in the driver when interrupts are disabled.
+Currently there are a couple places where the VF is waiting too long when
+checking the status of registers. This is causing the AVF driver to
+spin for longer than necessary in the __IAVF_STARTUP state. Sometimes
+it causes the AVF to go into the __IAVF_COMM_FAILED, which may retrigger
+the __IAVF_STARTUP state. Try to reduce the chance of this happening by
+removing unnecessary wait times in VF bringup/resets.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
-v3: Moved defines to group with similar registers
----
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |  3 ++
- drivers/net/ethernet/intel/ice/ice_txrx.c     | 54 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_txrx.h     | 13 +++++
- 3 files changed, 70 insertions(+)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 26 +++++++++++--------
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  4 +++
+ 2 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 87652d722a30..6f78ff5534af 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -127,8 +127,11 @@
- #define GLINT_DYN_CTL_CLEARPBA_M		BIT(1)
- #define GLINT_DYN_CTL_SWINT_TRIG_M		BIT(2)
- #define GLINT_DYN_CTL_ITR_INDX_S		3
-+#define GLINT_DYN_CTL_ITR_INDX_M		ICE_M(0x3, 3)
- #define GLINT_DYN_CTL_INTERVAL_S		5
-+#define GLINT_DYN_CTL_INTERVAL_M		ICE_M(0xFFF, 5)
- #define GLINT_DYN_CTL_SW_ITR_INDX_M		ICE_M(0x3, 25)
-+#define GLINT_DYN_CTL_WB_ON_ITR_M		BIT(30)
- #define GLINT_DYN_CTL_INTENA_MSK_M		BIT(31)
- #define GLINT_ITR(_i, _INT)			(0x00154000 + ((_i) * 8192 + (_INT) * 4))
- #define GLINT_RATE(_INT)			(0x0015A000 + ((_INT) * 4))
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 5d2689956ade..9a54406922f0 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1356,6 +1356,23 @@ ice_update_ena_itr(struct ice_vsi *vsi, struct ice_q_vector *q_vector)
- 	struct ice_ring_container *rx = &q_vector->rx;
- 	u32 itr_val;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 54b0e88af4ca..8a5bf9730fdf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -382,12 +382,15 @@ static void ice_trigger_vf_reset(struct ice_vf *vf, bool is_vflr)
  
-+	/* when exiting WB_ON_ITR lets set a low ITR value and trigger
-+	 * interrupts to expire right away in case we have more work ready to go
-+	 * already
-+	 */
-+	if (q_vector->itr_countdown == ICE_IN_WB_ON_ITR_MODE) {
-+		itr_val = ice_buildreg_itr(rx->itr_idx, ICE_WB_ON_ITR_USECS);
-+		wr32(&vsi->back->hw, GLINT_DYN_CTL(q_vector->reg_idx), itr_val);
-+		/* set target back to last user set value */
-+		rx->target_itr = rx->itr_setting;
-+		/* set current to what we just wrote and dynamic if needed */
-+		rx->current_itr = ICE_WB_ON_ITR_USECS |
-+			(rx->itr_setting & ICE_ITR_DYNAMIC);
-+		/* allow normal interrupt flow to start */
-+		q_vector->itr_countdown = 0;
-+		return;
-+	}
+ 	wr32(hw, PF_PCI_CIAA,
+ 	     VF_DEVICE_STATUS | (vf_abs_id << PF_PCI_CIAA_VF_NUM_S));
+-	for (i = 0; i < 100; i++) {
++	for (i = 0; i < ICE_PCI_CIAD_WAIT_COUNT; i++) {
+ 		reg = rd32(hw, PF_PCI_CIAD);
+-		if ((reg & VF_TRANS_PENDING_M) != 0)
+-			dev_err(&pf->pdev->dev,
+-				"VF %d PCI transactions stuck\n", vf->vf_id);
+-		udelay(1);
++		/* no transactions pending so stop polling */
++		if ((reg & VF_TRANS_PENDING_M) == 0)
++			break;
 +
- 	/* This will do nothing if dynamic updates are not enabled */
- 	ice_update_itr(q_vector, tx);
- 	ice_update_itr(q_vector, rx);
-@@ -1400,6 +1417,41 @@ ice_update_ena_itr(struct ice_vsi *vsi, struct ice_q_vector *q_vector)
- 		     itr_val);
++		dev_err(&pf->pdev->dev,
++			"VF %d PCI transactions stuck\n", vf->vf_id);
++		udelay(ICE_PCI_CIAD_WAIT_DELAY_US);
+ 	}
  }
  
-+/**
-+ * ice_set_wb_on_itr - set WB_ON_ITR for this q_vector
-+ * @vsi: pointer to the VSI structure
-+ * @q_vector: q_vector to set WB_ON_ITR on
-+ *
-+ * We need to tell hardware to write-back completed descriptors even when
-+ * interrupts are disabled. Descriptors will be written back on cache line
-+ * boundaries without WB_ON_ITR enabled, but if we don't enable WB_ON_ITR
-+ * descriptors may not be written back if they don't fill a cache line until the
-+ * next interrupt.
-+ *
-+ * This sets the write-back frequency to 2 microseconds as that is the minimum
-+ * value that's not 0 due to ITR granularity. Also, set the INTENA_MSK bit to
-+ * make sure hardware knows we aren't meddling with the INTENA_M bit.
-+ */
-+static void
-+ice_set_wb_on_itr(struct ice_vsi *vsi, struct ice_q_vector *q_vector)
-+{
-+	/* already in WB_ON_ITR mode no need to change it */
-+	if (q_vector->itr_countdown == ICE_IN_WB_ON_ITR_MODE)
-+		return;
-+
-+	if (q_vector->num_ring_rx)
-+		wr32(&vsi->back->hw, GLINT_DYN_CTL(q_vector->reg_idx),
-+		     ICE_GLINT_DYN_CTL_WB_ON_ITR(ICE_WB_ON_ITR_USECS,
-+						 ICE_RX_ITR));
-+
-+	if (q_vector->num_ring_tx)
-+		wr32(&vsi->back->hw, GLINT_DYN_CTL(q_vector->reg_idx),
-+		     ICE_GLINT_DYN_CTL_WB_ON_ITR(ICE_WB_ON_ITR_USECS,
-+						 ICE_TX_ITR));
-+
-+	q_vector->itr_countdown = ICE_IN_WB_ON_ITR_MODE;
-+}
-+
- /**
-  * ice_napi_poll - NAPI polling Rx/Tx cleanup routine
-  * @napi: napi struct with our devices info in it
-@@ -1460,6 +1512,8 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
+@@ -1068,7 +1071,6 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	 * finished resetting.
  	 */
- 	if (likely(napi_complete_done(napi, work_done)))
- 		ice_update_ena_itr(vsi, q_vector);
-+	else
-+		ice_set_wb_on_itr(vsi, q_vector);
+ 	for (i = 0, v = 0; i < 10 && v < pf->num_alloc_vfs; i++) {
+-		usleep_range(10000, 20000);
  
- 	return min_t(int, work_done, budget - 1);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index ec76aba347b9..94a9280193e2 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -144,6 +144,19 @@ enum ice_rx_dtype {
- #define ICE_DFLT_INTRL	0
- #define ICE_MAX_INTRL	236
+ 		/* Check each VF in sequence */
+ 		while (v < pf->num_alloc_vfs) {
+@@ -1076,8 +1078,11 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
  
-+#define ICE_WB_ON_ITR_USECS	2
-+#define ICE_IN_WB_ON_ITR_MODE	255
-+/* Sets WB_ON_ITR and assumes INTENA bit is already cleared, which allows
-+ * setting the MSK_M bit to tell hardware to ignore the INTENA_M bit. Also,
-+ * set the write-back latency to the usecs passed in.
-+ */
-+#define ICE_GLINT_DYN_CTL_WB_ON_ITR(usecs, itr_idx)	\
-+	((((usecs) << (GLINT_DYN_CTL_INTERVAL_S - ICE_ITR_GRAN_S)) & \
-+	  GLINT_DYN_CTL_INTERVAL_M) | \
-+	 (((itr_idx) << GLINT_DYN_CTL_ITR_INDX_S) & \
-+	  GLINT_DYN_CTL_ITR_INDX_M) | GLINT_DYN_CTL_INTENA_MSK_M | \
-+	 GLINT_DYN_CTL_WB_ON_ITR_M)
+ 			vf = &pf->vf[v];
+ 			reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
+-			if (!(reg & VPGEN_VFRSTAT_VFRD_M))
++			if (!(reg & VPGEN_VFRSTAT_VFRD_M)) {
++				/* only delay if the check failed */
++				usleep_range(10, 20);
+ 				break;
++			}
+ 
+ 			/* If the current VF has finished resetting, move on
+ 			 * to the next VF in sequence.
+@@ -1091,7 +1096,6 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	 */
+ 	if (v < pf->num_alloc_vfs)
+ 		dev_warn(&pf->pdev->dev, "VF reset check timeout\n");
+-	usleep_range(10000, 20000);
+ 
+ 	/* free VF resources to begin resetting the VSI state */
+ 	for (v = 0; v < pf->num_alloc_vfs; v++) {
+@@ -1165,12 +1169,14 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 		 * poll the status register to make sure that the reset
+ 		 * completed successfully.
+ 		 */
+-		usleep_range(10000, 20000);
+ 		reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
+ 		if (reg & VPGEN_VFRSTAT_VFRD_M) {
+ 			rsd = true;
+ 			break;
+ 		}
 +
- /* Legacy or Advanced Mode Queue */
- #define ICE_TX_ADVANCED	0
- #define ICE_TX_LEGACY	1
++		/* only sleep if the reset is not done */
++		usleep_range(10, 20);
+ 	}
+ 
+ 	/* Display a warning if VF didn't manage to reset in time, but need to
+@@ -1180,8 +1186,6 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 		dev_warn(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
+ 			 vf->vf_id);
+ 
+-	usleep_range(10000, 20000);
+-
+ 	/* disable promiscuous modes in case they were enabled
+ 	 * ignore any error if disabling process failed
+ 	 */
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 424bc0538956..79bb47f73879 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -22,6 +22,10 @@
+ #define VF_DEVICE_STATUS		0xAA
+ #define VF_TRANS_PENDING_M		0x20
+ 
++/* wait defines for polling PF_PCI_CIAD register status */
++#define ICE_PCI_CIAD_WAIT_COUNT		100
++#define ICE_PCI_CIAD_WAIT_DELAY_US	1
++
+ /* Specific VF states */
+ enum ice_vf_states {
+ 	ICE_VF_STATE_INIT = 0,
 -- 
 2.20.1
 
