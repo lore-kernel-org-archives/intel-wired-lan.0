@@ -1,100 +1,110 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Jul 2019 02:53:50 -0700
-Subject: [Intel-wired-lan] [PATCH S25 01/12] ice: update ethtool stats
- on-demand
-Message-ID: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
+Date: Thu, 25 Jul 2019 02:53:52 -0700
+Subject: [Intel-wired-lan] [PATCH S25 03/12] ice: Don't allow VSI to remove
+ unassociated ucast filter
+In-Reply-To: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
+References: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
+Message-ID: <20190725095401.24590-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-Users expect ethtool statistics to be updated on-demand when invoking
-'ethtool -S <iface>' instead of providing a snapshot of statistics taken
-once a second (the frequency of the watchdog task where stats are currently
-updated).  Update stats every time 'ethtool -S <iface>' is run.
+If a VSI is not using a unicast filter or did not configure that
+particular unicast filter, driver should not allow it to be removed
+by the rogue VSI.
 
-Also, fix an indentation style issue and an unnecessary local variable
-initialization in ice_get_ethtool_stats() discovered while investigating
-the subject issue.
-
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         | 2 ++
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 7 +++++--
- drivers/net/ethernet/intel/ice/ice_main.c    | 6 ++----
- 3 files changed, 9 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 56 +++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 0e233b7c40bc..2165366e9250 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -450,6 +450,8 @@ int ice_vsi_setup_tx_rings(struct ice_vsi *vsi);
- int ice_vsi_setup_rx_rings(struct ice_vsi *vsi);
- void ice_set_ethtool_ops(struct net_device *netdev);
- int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx);
-+void ice_update_vsi_stats(struct ice_vsi *vsi);
-+void ice_update_pf_stats(struct ice_pf *pf);
- int ice_up(struct ice_vsi *vsi);
- int ice_down(struct ice_vsi *vsi);
- int ice_vsi_cfg(struct ice_vsi *vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index b60bcbcf9bf2..4b2494e7fa78 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1319,14 +1319,17 @@ ice_get_ethtool_stats(struct net_device *netdev,
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
- 	struct ice_ring *ring;
--	unsigned int j = 0;
-+	unsigned int j;
- 	int i = 0;
- 	char *p;
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 6b68ff8dae18..2e6ea062fa2a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -2136,6 +2136,38 @@ ice_cfg_dflt_vsi(struct ice_hw *hw, u16 vsi_handle, bool set, u8 direction)
+ 	return status;
+ }
  
-+	ice_update_pf_stats(pf);
-+	ice_update_vsi_stats(vsi);
++/**
++ * ice_find_ucast_rule_entry - Search for a unicast MAC filter rule entry
++ * @hw: pointer to the hardware structure
++ * @recp_id: lookup type for which the specified rule needs to be searched
++ * @f_info: rule information
++ *
++ * Helper function to search for a unicast rule entry - this is to be used
++ * to remove unicast MAC filter that is not shared with other VSIs on the
++ * PF switch.
++ *
++ * Returns pointer to entry storing the rule if found
++ */
++static struct ice_fltr_mgmt_list_entry *
++ice_find_ucast_rule_entry(struct ice_hw *hw, u8 recp_id,
++			  struct ice_fltr_info *f_info)
++{
++	struct ice_switch_info *sw = hw->switch_info;
++	struct ice_fltr_mgmt_list_entry *list_itr;
++	struct list_head *list_head;
 +
- 	for (j = 0; j < ICE_VSI_STATS_LEN; j++) {
- 		p = (char *)vsi + ice_gstrings_vsi_stats[j].stat_offset;
- 		data[i++] = (ice_gstrings_vsi_stats[j].sizeof_stat ==
--			    sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
-+			     sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
- 	}
- 
- 	/* populate per queue stats */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 833f0efc93f9..17358a10866d 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -34,8 +34,6 @@ static const struct net_device_ops ice_netdev_ops;
- static void ice_rebuild(struct ice_pf *pf);
- 
- static void ice_vsi_release_all(struct ice_pf *pf);
--static void ice_update_vsi_stats(struct ice_vsi *vsi);
--static void ice_update_pf_stats(struct ice_pf *pf);
- 
++	list_head = &sw->recp_list[recp_id].filt_rules;
++	list_for_each_entry(list_itr, list_head, list_entry) {
++		if (!memcmp(&f_info->l_data, &list_itr->fltr_info.l_data,
++			    sizeof(f_info->l_data)) &&
++		    f_info->fwd_id.hw_vsi_id ==
++		    list_itr->fltr_info.fwd_id.hw_vsi_id &&
++		    f_info->flag == list_itr->fltr_info.flag)
++			return list_itr;
++	}
++	return NULL;
++}
++
  /**
-  * ice_get_tx_pending - returns number of Tx descriptors not processed
-@@ -3290,7 +3288,7 @@ static void ice_update_vsi_ring_stats(struct ice_vsi *vsi)
-  * ice_update_vsi_stats - Update VSI stats counters
-  * @vsi: the VSI to be updated
-  */
--static void ice_update_vsi_stats(struct ice_vsi *vsi)
-+void ice_update_vsi_stats(struct ice_vsi *vsi)
+  * ice_remove_mac - remove a MAC address based filter rule
+  * @hw: pointer to the hardware structure
+@@ -2153,15 +2185,39 @@ enum ice_status
+ ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
  {
- 	struct rtnl_link_stats64 *cur_ns = &vsi->net_stats;
- 	struct ice_eth_stats *cur_es = &vsi->eth_stats;
-@@ -3326,7 +3324,7 @@ static void ice_update_vsi_stats(struct ice_vsi *vsi)
-  * ice_update_pf_stats - Update PF port stats counters
-  * @pf: PF whose stats needs to be updated
-  */
--static void ice_update_pf_stats(struct ice_pf *pf)
-+void ice_update_pf_stats(struct ice_pf *pf)
- {
- 	struct ice_hw_port_stats *prev_ps, *cur_ps;
- 	struct ice_hw *hw = &pf->hw;
+ 	struct ice_fltr_list_entry *list_itr, *tmp;
++	struct mutex *rule_lock; /* Lock to protect filter rule list */
+ 
+ 	if (!m_list)
+ 		return ICE_ERR_PARAM;
+ 
++	rule_lock = &hw->switch_info->recp_list[ICE_SW_LKUP_MAC].filt_rule_lock;
+ 	list_for_each_entry_safe(list_itr, tmp, m_list, list_entry) {
+ 		enum ice_sw_lkup_type l_type = list_itr->fltr_info.lkup_type;
++		u8 *add = &list_itr->fltr_info.l_data.mac.mac_addr[0];
++		u16 vsi_handle;
+ 
+ 		if (l_type != ICE_SW_LKUP_MAC)
+ 			return ICE_ERR_PARAM;
++
++		vsi_handle = list_itr->fltr_info.vsi_handle;
++		if (!ice_is_vsi_valid(hw, vsi_handle))
++			return ICE_ERR_PARAM;
++
++		list_itr->fltr_info.fwd_id.hw_vsi_id =
++					ice_get_hw_vsi_num(hw, vsi_handle);
++		if (is_unicast_ether_addr(add) && !hw->ucast_shared) {
++			/* Don't remove the unicast address that belongs to
++			 * another VSI on the switch, since it is not being
++			 * shared...
++			 */
++			mutex_lock(rule_lock);
++			if (!ice_find_ucast_rule_entry(hw, ICE_SW_LKUP_MAC,
++						       &list_itr->fltr_info)) {
++				mutex_unlock(rule_lock);
++				return ICE_ERR_DOES_NOT_EXIST;
++			}
++			mutex_unlock(rule_lock);
++		}
+ 		list_itr->status = ice_remove_rule_internal(hw,
+ 							    ICE_SW_LKUP_MAC,
+ 							    list_itr);
 -- 
 2.20.1
 
