@@ -1,18 +1,18 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Thu, 25 Jul 2019 15:40:21 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- d92c1d8568eee2b34a3ec7f1d1b9cb6ff7bea58d
-Message-ID: <5d395ce5.Zw0vJlICCgtGhzMd%lkp@intel.com>
+Date: Thu, 25 Jul 2019 17:40:34 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD INCOMPLETE
+ e5e9a2ecfe780975820e157b922edee715710b66
+Message-ID: <5d397912.fYBE9UpHbyNtIfrt%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: d92c1d8568eee2b34a3ec7f1d1b9cb6ff7bea58d  ixgbevf: fix a compilation error of skb_frag_t
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+branch HEAD: e5e9a2ecfe780975820e157b922edee715710b66  e1000e: add workaround for possible stalled packet
 
-TIMEOUT after 725m
+TIMEOUT after 729m
 
 
 Sorry we cannot finish the testset for your branch within a reasonable time.
@@ -22,7 +22,7 @@ possible error reports when our build infrastructure is restored or catches up.
 There will be no more build success notification for this branch head, but you
 can expect reasonably good test coverage after waiting for 1 day.
 
-configs timed out: 68
+configs timed out: 71
 
 alpha                            allmodconfig
 alpha                            allyesconfig
@@ -87,50 +87,50 @@ sparc64                          allmodconfig
 sparc64                           allnoconfig
 sparc64                          allyesconfig
 sparc64                             defconfig
+x86_64                             acpi-redef
 x86_64                           allmodconfig
+x86_64                           allyesdebian
+x86_64                                nfsroot
 xtensa                           allmodconfig
 xtensa                           allyesconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
 
-configs tested: 38
+configs tested: 35
 
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 powerpc                           allnoconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
 parisc                        c3000_defconfig
+parisc                         b180_defconfig
 parisc                              defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
+parisc                            allnoconfig
 x86_64                                    lkp
-x86_64                                nfsroot
 x86_64                                   rhel
 x86_64                               rhel-7.6
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
 arc                              allyesconfig
 microblaze                    nommu_defconfig
 microblaze                      mmu_defconfig
 arc                                 defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
 riscv                             allnoconfig
 riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
 arm                              allmodconfig
 arm64                            allmodconfig
 
