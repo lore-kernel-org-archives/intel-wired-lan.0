@@ -1,11 +1,11 @@
 From: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
-Date: Fri, 26 Jul 2019 06:41:55 +0000
-Subject: [Intel-wired-lan] [next PATCH S8 10/12] i40e: allow reset in
- recovery mode
-In-Reply-To: <20190723100345.57522-10-alice.michael@intel.com>
+Date: Fri, 26 Jul 2019 06:42:22 +0000
+Subject: [Intel-wired-lan] [next PATCH S8 09/12] i40e: make
+ i40e_set_mac_type() public
+In-Reply-To: <20190723100345.57522-9-alice.michael@intel.com>
 References: <20190723100345.57522-1-alice.michael@intel.com>
- <20190723100345.57522-10-alice.michael@intel.com>
-Message-ID: <D4D6338F2E4CB34CB91C5312C72AAC810D6EA0@IRSMSX104.ger.corp.intel.com>
+ <20190723100345.57522-9-alice.michael@intel.com>
+Message-ID: <D4D6338F2E4CB34CB91C5312C72AAC810D6EB1@IRSMSX104.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,103 +19,42 @@ From: Michael, Alice
 Sent: Tuesday, July 23, 2019 12:04 PM
 To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
 Cc: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
-Subject: [next PATCH S8 10/12] i40e: allow reset in recovery mode
+Subject: [next PATCH S8 09/12] i40e: make i40e_set_mac_type() public
 
 From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 
-Driver waits after issuing a reset. When a reset takes too long a driver gives up. Implemented by invoking PF reset in a loop. After defined number of unsuccessful PF reset trials it returns error.
-Without this patch PF reset fails when NIC is in recovery mode.
+Make i40e_set_mac_type() public. i40e driver requires i40e_set_mac_type() to be public. It is required for recovery mode handling. Without this patch recovery mode could not be detected in i40e_probe().
 
 Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 67 ++++++++++++++++++---
- 1 file changed, 60 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c    | 2 +-
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 8d6b9515b595..fdf43d87e983 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -14564,6 +14564,51 @@ static bool i40e_check_recovery_mode(struct i40e_pf *pf)
- 	return false;
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 7af1b7477140..de996a80013e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -13,7 +13,7 @@
+  * This function sets the mac type of the adapter based on the
+  * vendor ID and device ID stored in the hw structure.
+  **/
+-static i40e_status i40e_set_mac_type(struct i40e_hw *hw)
++i40e_status i40e_set_mac_type(struct i40e_hw *hw)
+ {
+ 	i40e_status status = 0;
  
-+/**
-+ * i40e_pf_loop_reset - perform reset in a loop.
-+ * @pf: board private structure
-+ *
-+ * This function is useful when a NIC is about to enter recovery mode.
-+ * When a NIC's internal data structures are corrupted the NIC's
-+ * firmware is going to enter recovery mode.
-+ * Right after a POR it takes about 7 minutes for firmware to enter
-+ * recovery mode. Until that time a NIC is in some kind of intermediate
-+ * state. After that time period the NIC almost surely enters
-+ * recovery mode. The only way for a driver to detect intermediate
-+ * state is to issue a series of pf-resets and check a return value.
-+ * If a PF reset returns success then the firmware could be in recovery
-+ * mode so the caller of this code needs to check for recovery mode
-+ * if this function returns success. There is a little chance that
-+ * firmware will hang in intermediate state forever.
-+ * Since waiting 7 minutes is quite a lot of time this function waits
-+ * 10 seconds and then gives up by returning an error.
-+ *
-+ * Return 0 on success, negative on failure.
-+ **/
-+static i40e_status i40e_pf_loop_reset(struct i40e_pf *pf) {
-+	const unsigned short MAX_CNT = 1000;
-+	const unsigned short MSECS = 10;
-+	struct i40e_hw *hw = &pf->hw;
-+	i40e_status ret;
-+	int cnt;
-+
-+	for (cnt = 0; cnt < MAX_CNT; ++cnt) {
-+		ret = i40e_pf_reset(hw);
-+		if (!ret)
-+			break;
-+		msleep(MSECS);
-+	}
-+
-+	if (cnt == MAX_CNT) {
-+		dev_info(&pf->pdev->dev, "PF reset failed: %d\n", ret);
-+		return ret;
-+	}
-+
-+	pf->pfr_count++;
-+	return ret;
-+}
-+
- /**
-  * i40e_init_recovery_mode - initialize subsystems needed in recovery mode
-  * @pf: board private structure
-@@ -14792,14 +14837,22 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index eac88bcc6c06..9c810d54df1c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -326,6 +326,8 @@ void i40e_nvmupd_check_wait_event(struct i40e_hw *hw, u16 opcode,  void i40e_nvmupd_clear_wait_state(struct i40e_hw *hw);  void i40e_set_pci_config_data(struct i40e_hw *hw, u16 link_status);
  
- 	/* Reset here to make sure all is clean and to define PF 'n' */
- 	i40e_clear_hw(hw);
--	if (!i40e_check_recovery_mode(pf)) {
--		err = i40e_pf_reset(hw);
--		if (err) {
--			dev_info(&pdev->dev, "Initial pf_reset failed: %d\n", err);
--			goto err_pf_reset;
--		}
--		pf->pfr_count++;
++i40e_status i40e_set_mac_type(struct i40e_hw *hw);
 +
-+	err = i40e_set_mac_type(hw);
-+	if (err) {
-+		dev_warn(&pdev->dev, "unidentified MAC or BLANK NVM: %d\n",
-+			 err);
-+		goto err_pf_reset;
- 	}
-+
-+	err = i40e_pf_loop_reset(pf);
-+	if (err) {
-+		dev_info(&pdev->dev, "Initial pf_reset failed: %d\n", err);
-+		goto err_pf_reset;
-+	}
-+
-+	i40e_check_recovery_mode(pf);
-+
- 	hw->aq.num_arq_entries = I40E_AQ_LEN;
- 	hw->aq.num_asq_entries = I40E_AQ_LEN;
- 	hw->aq.arq_buf_size = I40E_MAX_AQ_BUF_SIZE;
+ extern struct i40e_rx_ptype_decoded i40e_ptype_lookup[];
+ 
+ static inline struct i40e_rx_ptype_decoded decode_rx_desc_ptype(u8 ptype)
 --
 2.21.0
 
