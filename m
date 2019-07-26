@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 26 Jul 2019 18:15:41 +0000
-Subject: [Intel-wired-lan] [PATCH S24 02/12] ice: Account for all states
- of FW DCBx and LLDP
-In-Reply-To: <20190723092759.3614-2-anthony.l.nguyen@intel.com>
+Date: Fri, 26 Jul 2019 18:16:14 +0000
+Subject: [Intel-wired-lan] [PATCH S24 03/12] ice: Don't call
+ synchronize_irq() for VF's from the host
+In-Reply-To: <20190723092759.3614-3-anthony.l.nguyen@intel.com>
 References: <20190723092759.3614-1-anthony.l.nguyen@intel.com>
- <20190723092759.3614-2-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40CD80@ORSMSX104.amr.corp.intel.com>
+ <20190723092759.3614-3-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40CD93@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,23 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Tuesday, July 23, 2019 2:28 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S24 02/12] ice: Account for all states of FW
-> DCBx and LLDP
+> Subject: [Intel-wired-lan] [PATCH S24 03/12] ice: Don't call synchronize_irq()
+> for VF's from the host
 > 
-> From: Dave Ertman <david.m.ertman@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Currently, only the DCBx status is taken into account to determine if FW LLDP
-> is possible.  But there are NVM version coming out with DCBx enabled, and
-> FW LLDP disabled.  This is causing errors where the driver sees that DCBx is
-> not disabled, and then tries to register for LLDP MIB change events, and fails.
+> Currently we will call synchronize_irq() from the host for VF's. This is not
+> correct, so don't allow it.
 > 
-> Change the logic to detect both DCBx and LLDP states in the FW engine.
-> 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 34 +++++++-------------
->  1 file changed, 12 insertions(+), 22 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
