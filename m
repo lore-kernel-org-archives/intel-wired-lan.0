@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 26 Jul 2019 21:47:17 +0000
-Subject: [Intel-wired-lan] [next PATCH S8 07/12] i40e: Fix crash caused
- by stress setting of VF MAC addresses
-In-Reply-To: <20190723100144.57435-7-alice.michael@intel.com>
+Date: Fri, 26 Jul 2019 21:47:48 +0000
+Subject: [Intel-wired-lan] [next PATCH S8 08/12] i40e: Remove function
+ i40e_update_dcb_config()
+In-Reply-To: <20190723100144.57435-8-alice.michael@intel.com>
 References: <20190723100144.57435-1-alice.michael@intel.com>
- <20190723100144.57435-7-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40CEB8@ORSMSX104.amr.corp.intel.com>
+ <20190723100144.57435-8-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40CEC9@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,27 +18,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, July 23, 2019 3:02 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: Laba, SlawomirX <slawomirx.laba@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S8 07/12] i40e: Fix crash caused by
-> stress setting of VF MAC addresses
+> Cc: Siwik, Grzegorz <grzegorz.siwik@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S8 08/12] i40e: Remove function
+> i40e_update_dcb_config()
 > 
-> From: Slawomir Laba <slawomirx.laba@intel.com>
+> From: Grzegorz Siwik <grzegorz.siwik@intel.com>
 > 
-> Add update to the vsi pointer passed to the i40e_set_vf_mac function.
-> If VF is in reset state the driver waits in i40e_set_vf_mac function for the
-> reset to be complete, yet after reset the vsi pointer that was passed into this
-> function is no longer valid.
+> This patch removes function i40e_update_dcb_config(). Instead of
+> i40e_update_dcb_config() we use i40e_init_dcb(), which implements the
+> correct nvm read.
 > 
-> The patch updates local vsi pointer directly from pf->vsi array, by using the id
-> stored in vf pointer (lan_vsi_idx).
-> 
-> Without this commit the driver might occasionally invoke general protection
-> fault in kernel and disable the OS entirely.
-> 
-> Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
+> Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 46 +--------------------
+>  1 file changed, 1 insertion(+), 45 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
