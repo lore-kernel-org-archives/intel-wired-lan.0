@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 26 Jul 2019 21:53:53 +0000
-Subject: [Intel-wired-lan] [next PATCH S8 11/12] i40e: Persistent lldp
- support
-In-Reply-To: <20190723100144.57435-11-alice.michael@intel.com>
+Date: Fri, 26 Jul 2019 21:54:41 +0000
+Subject: [Intel-wired-lan] [next PATCH S8 12/12] i40e: fix retrying in
+ i40e_aq_get_phy_capabilities
+In-Reply-To: <20190723100144.57435-12-alice.michael@intel.com>
 References: <20190723100144.57435-1-alice.michael@intel.com>
- <20190723100144.57435-11-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40CEF8@ORSMSX104.amr.corp.intel.com>
+ <20190723100144.57435-12-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40CF0A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,25 +18,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, July 23, 2019 3:02 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: Wnuczko, Sylwia <sylwia.wnuczko@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S8 11/12] i40e: Persistent lldp support
+> Cc: Formela, Marcin <marcin.formela@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S8 12/12] i40e: fix retrying in
+> i40e_aq_get_phy_capabilities
 > 
-> From: Sylwia Wnuczko <sylwia.wnuczko@intel.com>
+> From: Marcin Formela <marcin.formela@intel.com>
 > 
-> This patch adds a function to read nvm module data and uses it to read
-> current lldp agent configuration from nvm api version 1.8.
+> Fixed a bug where driver was breaking out of the loop and reporting an error
+> without retrying first.
 > 
-> Title: i40e-shared: Persistent lldp support
-> Change-type: FeatureImplementation
-> 
-> Signed-off-by: Sylwia Wnuczko <sylwia.wnuczko@intel.com>
+> Signed-off-by: Marcin Formela <marcin.formela@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_dcb.c    |  18 +++-
->  drivers/net/ethernet/intel/i40e/i40e_dcb.h    |   2 +
->  drivers/net/ethernet/intel/i40e/i40e_nvm.c    | 101 ++++++++++++++++++
->  .../net/ethernet/intel/i40e/i40e_prototype.h  |   6 ++
->  drivers/net/ethernet/intel/i40e/i40e_type.h   |   1 +
->  5 files changed, 127 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 17 ++++++++++-------
+>  1 file changed, 10 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
