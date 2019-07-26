@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 26 Jul 2019 21:44:20 +0000
-Subject: [Intel-wired-lan] [next PATCH S8 01/12] i40e: fix shifts of
- signed values
-In-Reply-To: <20190723100345.57522-1-alice.michael@intel.com>
-References: <20190723100345.57522-1-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40CE58@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 26 Jul 2019 21:44:50 +0000
+Subject: [Intel-wired-lan] [next PATCH S8 02/12] i40e: Add drop mode
+ parameter to set mac config
+In-Reply-To: <20190723100144.57435-2-alice.michael@intel.com>
+References: <20190723100144.57435-1-alice.michael@intel.com>
+ <20190723100144.57435-2-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40CE68@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,23 +15,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Alice Michael
-> Sent: Tuesday, July 23, 2019 3:04 AM
+> Sent: Tuesday, July 23, 2019 3:02 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: Xing, Beilei <beilei.xing@intel.com>; Yigit, Ferruh
-> <ferruh.yigit@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S8 01/12] i40e: fix shifts of signed
-> values
+> Cc: Wnuczko, Sylwia <sylwia.wnuczko@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S8 02/12] i40e: Add drop mode
+> parameter to set mac config
 > 
-> From: Beilei Xing <beilei.xing@intel.com>
+> From: Sylwia Wnuczko <sylwia.wnuczko@intel.com>
 > 
-> This patch fixes following error reported by cppcheck:
-> (error) Shifting signed 32-bit value by 31 bits is undefined behaviour
+> This patch adds "drop mode" parameter to set mac config AQ command.
+> This bit controls the behavior when a no-drop packet is blocking a TC queue.
+> 0 ? The PF driver is notified.
+> 1 ? The blocking packet is dropped and then the PF driver is notified.
 > 
-> Signed-off-by: Ferruh Yigit <ferruh.yigit@intel.com>
+> Signed-off-by: Sylwia Wnuczko <sylwia.wnuczko@intel.com>
 > ---
->  .../net/ethernet/intel/i40e/i40e_register.h   | 24 +++++++++----------
->  1 file changed, 12 insertions(+), 12 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c |  4 ++-
+> .../net/ethernet/intel/i40e/i40e_adminq_cmd.h | 29 ++++++++++---------
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 +
+>  3 files changed, 19 insertions(+), 15 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
