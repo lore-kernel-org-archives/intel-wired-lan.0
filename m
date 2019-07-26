@@ -1,70 +1,123 @@
-From: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
-Date: Fri, 26 Jul 2019 06:41:02 +0000
-Subject: [Intel-wired-lan] [next PATCH S8 09/12] i40e: make
- i40e_set_mac_type() public
-In-Reply-To: <20190723100144.57435-9-alice.michael@intel.com>
-References: <20190723100144.57435-1-alice.michael@intel.com>
- <20190723100144.57435-9-alice.michael@intel.com>
-Message-ID: <D4D6338F2E4CB34CB91C5312C72AAC810D6E86@IRSMSX104.ger.corp.intel.com>
+From: Bruce Richardson <bruce.richardson@intel.com>
+Date: Fri, 26 Jul 2019 09:41:47 +0100
+Subject: [Intel-wired-lan] [PATCH bpf-next v3 00/11] XDP unaligned chunk
+ placement support
+In-Reply-To: <8189384E-6050-4389-AA6A-09CD86FE8829@gmail.com>
+References: <20190716030637.5634-1-kevin.laatz@intel.com>
+ <20190724051043.14348-1-kevin.laatz@intel.com>
+ <94EAD717-F632-499F-8BBD-FFF5A5333CBF@gmail.com>
+ <59AF69C657FD0841A61C55336867B5B07EDB5C3F@IRSMSX103.ger.corp.intel.com>
+ <8189384E-6050-4389-AA6A-09CD86FE8829@gmail.com>
+Message-ID: <20190726084147.GA1624@bricha3-MOBL.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+On Thu, Jul 25, 2019 at 10:30:51AM -0700, Jonathan Lemon wrote:
+> 
+> 
+> On 25 Jul 2019, at 8:56, Richardson, Bruce wrote:
+> 
+> >> -----Original Message-----
+> >> From: Jonathan Lemon [mailto:jonathan.lemon at gmail.com]
+> >> Sent: Thursday, July 25, 2019 4:39 PM
+> >> To: Laatz, Kevin <kevin.laatz@intel.com>
+> >> Cc: netdev at vger.kernel.org; ast at kernel.org; daniel at iogearbox.net; Topel,
+> >> Bjorn <bjorn.topel@intel.com>; Karlsson, Magnus
+> >> <magnus.karlsson@intel.com>; jakub.kicinski at netronome.com;
+> >> saeedm at mellanox.com; maximmi at mellanox.com; stephen at networkplumber.org;
+> >> Richardson, Bruce <bruce.richardson@intel.com>; Loftus, Ciara
+> >> <ciara.loftus@intel.com>; bpf at vger.kernel.org; intel-wired-
+> >> lan at lists.osuosl.org
+> >> Subject: Re: [PATCH bpf-next v3 00/11] XDP unaligned chunk placement
+> >> support
+> >>
+> >>
+> >>
+> >> On 23 Jul 2019, at 22:10, Kevin Laatz wrote:
+> >>
+> >>> This patch set adds the ability to use unaligned chunks in the XDP umem.
+> >>>
+> >>> Currently, all chunk addresses passed to the umem are masked to be
+> >>> chunk size aligned (max is PAGE_SIZE). This limits where we can place
+> >>> chunks within the umem as well as limiting the packet sizes that are
+> >> supported.
+> >>>
+> >>> The changes in this patch set removes these restrictions, allowing XDP
+> >>> to be more flexible in where it can place a chunk within a umem. By
+> >>> relaxing where the chunks can be placed, it allows us to use an
+> >>> arbitrary buffer size and place that wherever we have a free address
+> >>> in the umem. These changes add the ability to support arbitrary frame
+> >>> sizes up to 4k
+> >>> (PAGE_SIZE) and make it easy to integrate with other existing
+> >>> frameworks that have their own memory management systems, such as DPDK.
+> >>> In DPDK, for example, there is already support for AF_XDP with zero-
+> >> copy.
+> >>> However, with this patch set the integration will be much more seamless.
+> >>> You can find the DPDK AF_XDP driver at:
+> >>> https://git.dpdk.org/dpdk/tree/drivers/net/af_xdp
+> >>>
+> >>> Since we are now dealing with arbitrary frame sizes, we need also need
+> >>> to update how we pass around addresses. Currently, the addresses can
+> >>> simply be masked to 2k to get back to the original address. This
+> >>> becomes less trivial when using frame sizes that are not a 'power of
+> >>> 2' size. This patch set modifies the Rx/Tx descriptor format to use
+> >>> the upper 16-bits of the addr field for an offset value, leaving the
+> >>> lower 48-bits for the address (this leaves us with 256 Terabytes,
+> >>> which should be enough!). We only need to use the upper 16-bits to store
+> >> the offset when running in unaligned mode.
+> >>> Rather than adding the offset (headroom etc) to the address, we will
+> >>> store it in the upper 16-bits of the address field. This way, we can
+> >>> easily add the offset to the address where we need it, using some bit
+> >>> manipulation and addition, and we can also easily get the original
+> >>> address wherever we need it (for example in i40e_zca_fr-- ee) by
+> >>> simply masking to get the lower 48-bits of the address field.
+> >>
+> >> I wonder if it would be better to break backwards compatibility here and
+> >> say that a handle is going to change from [addr] to [base | offset], or
+> >> even [index | offset], where address = (index * chunk size) + offset, and
+> >> then use accessor macros to manipulate the queue entries.
+> >>
+> >> This way, the XDP hotpath can adjust the handle with simple arithmetic,
+> >> bypassing the "if (unaligned)", check, as it changes the offset directly.
+> >>
+> >> Using a chunk index instead of a base address is safer, otherwise it is
+> >> too easy to corrupt things.
+> >> --
+> >
+> > The trouble with using a chunk index is that it assumes that all chunks are
+> > contiguous, which is not always going to be the case. For example, for
+> > userspace apps the easiest way to get memory that is IOVA/physically
+> > contiguous is to use hugepages, but even then we still need to skip space
+> > when crossing a 2MB barrier.
+> >
+> > Specifically in this example case, with a 3k buffer size and 2MB hugepages,
+> > we'd get 666 buffers on a single page, but then waste a few KB before
+> > starting the 667th buffer at byte 0 on the second 2MB page.
+> > This is the setup used in DPDK, for instance, when we allocate memory for
+> > use in buffer pools.
+> >
+> > Therefore, I think it's better to just have the kernel sanity checking the
+> > request for safety and leave userspace the freedom to decide where in its
+> > memory area it wants to place the buffers.
+> 
+> That makes sense, thanks.  My concern is that this makes it difficult for
+> the kernel to validate the buffer start address, but perhaps that isn't a
+> concern.
+> 
+I don't think that's a problem right now, since the start address is still
+an offset into the umem, and so must be between 0 and size (or size -
+chunk_size, more specifically). Are there other checks that should be
+performed on it, do you think?
 
------Original Message-----
-From: Michael, Alice 
-Sent: Tuesday, July 23, 2019 12:02 PM
-To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
-Subject: [next PATCH S8 09/12] i40e: make i40e_set_mac_type() public
+> I still believe it would simplify things if the format was [base | offset],
+> any opinion on that?
 
-From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+Can you perhaps clarify what you mean here. Are you suggesting globally
+changing the address format to always use this, irrespective of chunk
+alignment, or something else?
 
-Make i40e_set_mac_type() public. i40e driver requires i40e_set_mac_type() to be public. It is required for recovery mode handling. Without this patch recovery mode could not be detected in i40e_probe().
-
-Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_common.c    | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_prototype.h | 2 ++
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 7af1b7477140..de996a80013e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -13,7 +13,7 @@
-  * This function sets the mac type of the adapter based on the
-  * vendor ID and device ID stored in the hw structure.
-  **/
--static i40e_status i40e_set_mac_type(struct i40e_hw *hw)
-+i40e_status i40e_set_mac_type(struct i40e_hw *hw)
- {
- 	i40e_status status = 0;
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index eac88bcc6c06..9c810d54df1c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -326,6 +326,8 @@ void i40e_nvmupd_check_wait_event(struct i40e_hw *hw, u16 opcode,  void i40e_nvmupd_clear_wait_state(struct i40e_hw *hw);  void i40e_set_pci_config_data(struct i40e_hw *hw, u16 link_status);
- 
-+i40e_status i40e_set_mac_type(struct i40e_hw *hw);
-+
- extern struct i40e_rx_ptype_decoded i40e_ptype_lookup[];
- 
- static inline struct i40e_rx_ptype_decoded decode_rx_desc_ptype(u8 ptype)
---
-2.21.0
-
---------------------------------------------------------------------
-
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
-
+Regards,
+/Bruce
