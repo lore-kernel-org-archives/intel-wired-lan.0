@@ -1,11 +1,11 @@
 From: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
-Date: Fri, 26 Jul 2019 06:41:40 +0000
+Date: Fri, 26 Jul 2019 06:41:55 +0000
 Subject: [Intel-wired-lan] [next PATCH S8 10/12] i40e: allow reset in
  recovery mode
-In-Reply-To: <20190723100144.57435-10-alice.michael@intel.com>
-References: <20190723100144.57435-1-alice.michael@intel.com>
- <20190723100144.57435-10-alice.michael@intel.com>
-Message-ID: <D4D6338F2E4CB34CB91C5312C72AAC810D6E99@IRSMSX104.ger.corp.intel.com>
+In-Reply-To: <20190723100345.57522-10-alice.michael@intel.com>
+References: <20190723100345.57522-1-alice.michael@intel.com>
+ <20190723100345.57522-10-alice.michael@intel.com>
+Message-ID: <D4D6338F2E4CB34CB91C5312C72AAC810D6EA0@IRSMSX104.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,7 +16,7 @@ ACK
 
 -----Original Message-----
 From: Michael, Alice 
-Sent: Tuesday, July 23, 2019 12:02 PM
+Sent: Tuesday, July 23, 2019 12:04 PM
 To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
 Cc: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
 Subject: [next PATCH S8 10/12] i40e: allow reset in recovery mode
