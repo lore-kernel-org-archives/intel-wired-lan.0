@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 26 Jul 2019 21:47:48 +0000
-Subject: [Intel-wired-lan] [next PATCH S8 08/12] i40e: Remove function
- i40e_update_dcb_config()
-In-Reply-To: <20190723100144.57435-8-alice.michael@intel.com>
+Date: Fri, 26 Jul 2019 21:53:00 +0000
+Subject: [Intel-wired-lan] [next PATCH S8 09/12] i40e: make
+ i40e_set_mac_type() public
+In-Reply-To: <20190723100144.57435-9-alice.michael@intel.com>
 References: <20190723100144.57435-1-alice.michael@intel.com>
- <20190723100144.57435-8-alice.michael@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40CEC9@ORSMSX104.amr.corp.intel.com>
+ <20190723100144.57435-9-alice.michael@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40CED8@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,20 +18,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, July 23, 2019 3:02 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: Siwik, Grzegorz <grzegorz.siwik@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S8 08/12] i40e: Remove function
-> i40e_update_dcb_config()
+> Cc: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S8 09/12] i40e: make
+> i40e_set_mac_type() public
 > 
-> From: Grzegorz Siwik <grzegorz.siwik@intel.com>
+> From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 > 
-> This patch removes function i40e_update_dcb_config(). Instead of
-> i40e_update_dcb_config() we use i40e_init_dcb(), which implements the
-> correct nvm read.
+> Make i40e_set_mac_type() public. i40e driver requires i40e_set_mac_type()
+> to be public. It is required for recovery mode handling. Without this patch
+> recovery mode could not be detected in i40e_probe().
 > 
-> Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
+> Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 46 +--------------------
->  1 file changed, 1 insertion(+), 45 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c    | 2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h | 2 ++
+>  2 files changed, 3 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
