@@ -1,28 +1,79 @@
-From: David Miller <davem@davemloft.net>
-Date: Sun, 21 Jul 2019 13:30:10 -0700 (PDT)
-Subject: [Intel-wired-lan] [PATCH] igc: Prefer
- pcie_capability_read_word()
-In-Reply-To: <20190718020745.8867-4-fred@fredlawl.com>
-References: <20190718020745.8867-1-fred@fredlawl.com>
- <20190718020745.8867-4-fred@fredlawl.com>
-Message-ID: <20190721.133010.561994148836125357.davem@davemloft.net>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Mon, 29 Jul 2019 02:04:43 -0700
+Subject: [Intel-wired-lan] [PATCH S24 v2 01/12] ice: Allow egress control
+ packets from PF_VSI
+Message-ID: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Frederick Lawler <fred@fredlawl.com>
-Date: Wed, 17 Jul 2019 21:07:39 -0500
+From: Dave Ertman <david.m.ertman@intel.com>
 
-> Commit 8c0d3a02c130 ("PCI: Add accessors for PCI Express Capability")
-> added accessors for the PCI Express Capability so that drivers didn't
-> need to be aware of differences between v1 and v2 of the PCI
-> Express Capability.
-> 
-> Replace pci_read_config_word() and pci_write_config_word() calls with
-> pcie_capability_read_word() and pcie_capability_write_word().
-> 
-> Signed-off-by: Frederick Lawler <fred@fredlawl.com>
+For control packets (i.e. LLDP packets) to be able to egress
+from the main VSI, a bit has to be set in the TX_descriptor.
+This should only be done for the main VSI and only if the
+FW LLDP agent is disabled.  A bit to allow this also has to
+be set in the VSI context.
 
-Applied.
+Add the logic to add the necessary bits in the VSI context
+for the PF_VSI and the TX_descriptors for control packets
+egressing the PF_VSI.
+
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c  |  7 +++++++
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 11 ++++++++++-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index a62496a74a69..6b5882c49004 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1021,6 +1021,13 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
+ 			ICE_AQ_VSI_SEC_FLAG_ENA_MAC_ANTI_SPOOF;
+ 	}
+ 
++	/* Allow control frames out of main VSI */
++	if (vsi->type == ICE_VSI_PF) {
++		ctxt->info.sec_flags |= ICE_AQ_VSI_SEC_FLAG_ALLOW_DEST_OVRD;
++		ctxt->info.valid_sections |=
++			cpu_to_le16(ICE_AQ_VSI_PROP_SECURITY_VALID);
++	}
++
+ 	if (init_vsi) {
+ 		ret = ice_add_vsi(hw, vsi->idx, ctxt, NULL);
+ 		if (ret) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 75b0afe02015..190871b59c54 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -2107,6 +2107,7 @@ static netdev_tx_t
+ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_ring *tx_ring)
+ {
+ 	struct ice_tx_offload_params offload = { 0 };
++	struct ice_vsi *vsi = tx_ring->vsi;
+ 	struct ice_tx_buf *first;
+ 	unsigned int count;
+ 	int tso, csum;
+@@ -2154,7 +2155,15 @@ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_ring *tx_ring)
+ 	if (csum < 0)
+ 		goto out_drop;
+ 
+-	if (tso || offload.cd_tunnel_params) {
++	/* allow CONTROL frames egress from main VSI if FW LLDP disabled */
++	if (unlikely(skb->priority == TC_PRIO_CONTROL &&
++		     vsi->type == ICE_VSI_PF &&
++		     vsi->port_info->is_sw_lldp))
++		offload.cd_qw1 |= (u64)(ICE_TX_DESC_DTYPE_CTX |
++					ICE_TX_CTX_DESC_SWTCH_UPLINK <<
++					ICE_TXD_CTX_QW1_CMD_S);
++
++	if (offload.cd_qw1 & ICE_TX_DESC_DTYPE_CTX) {
+ 		struct ice_tx_ctx_desc *cdesc;
+ 		int i = tx_ring->next_to_use;
+ 
+-- 
+2.20.1
+
