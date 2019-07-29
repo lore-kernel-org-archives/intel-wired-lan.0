@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 29 Jul 2019 02:04:47 -0700
-Subject: [Intel-wired-lan] [PATCH S24 v2 05/12] ice: Fix RSS LUT table when
- setting Rx channels
+Date: Mon, 29 Jul 2019 02:04:45 -0700
+Subject: [Intel-wired-lan] [PATCH S24 v2 03/12] ice: Don't call
+ synchronize_irq() for VF's from the host
 In-Reply-To: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
 References: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190729090454.5501-5-anthony.l.nguyen@intel.com>
+Message-ID: <20190729090454.5501-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,108 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Currently there are multiple problems involved with setting Rx channels
-in regards to the RSS LUT. First, if the user set the indirection table
-manually through ethtool, changing the Rx channels will blindly use the
-user set value. Second when increasing the number of Rx channels the RSS
-table size is doing of minimum of the last RSS table width and the newly
-requested one, this is causing the previously set RSS table width to be
-used.
-
-Fix these issues by adding the function ice_pf_set_dflt_rss_lut() that
-is called when changing the number of Rx channels. This function updates
-the RSS LUT to the default configuration for the PF any time the user
-has changed the number of Rx channels.
+Currently we will call synchronize_irq() from the host for VF's. This is
+not correct, so don't allow it.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
-v2: Change function to take VSI instead of PF
----
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 63 ++++++++++++++++++++
- 1 file changed, 63 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index ba29aede99ad..2d37dd4ba677 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3154,6 +3154,66 @@ ice_get_channels(struct net_device *dev, struct ethtool_channels *ch)
- 	ch->tx_count = vsi->num_txq;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 6b5882c49004..42645c074691 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2837,6 +2837,10 @@ void ice_vsi_dis_irq(struct ice_vsi *vsi)
+ 
+ 	ice_flush(hw);
+ 
++	/* don't call synchronize_irq() for VF's from the host */
++	if (vsi->type == ICE_VSI_VF)
++		return;
++
+ 	ice_for_each_q_vector(vsi, i)
+ 		synchronize_irq(pf->msix_entries[i + base].vector);
  }
- 
-+/**
-+ * ice_vsi_set_dflt_rss_lut - set default RSS LUT with requested RSS size
-+ * @vsi: VSI to reconfigure RSS LUT on
-+ * @req_rss_size: requested range of queue numbers for hashing
-+ *
-+ * Set the VSI's RSS parameters, configure the RSS LUT based on these, and then
-+ * clear the previous vsi->rss_lut_user because it is assumed to be invalid at
-+ * this point.
-+ */
-+static int ice_vsi_set_dflt_rss_lut(struct ice_vsi *vsi, int req_rss_size)
-+{
-+	struct ice_pf *pf = vsi->back;
-+	enum ice_status status;
-+	struct device *dev;
-+	struct ice_hw *hw;
-+	int err = 0;
-+	u8 *lut;
-+
-+	dev = &pf->pdev->dev;
-+	hw = &pf->hw;
-+
-+	if (!req_rss_size)
-+		return -EINVAL;
-+
-+	lut = devm_kzalloc(dev, vsi->rss_table_size, GFP_KERNEL);
-+	if (!lut)
-+		return -ENOMEM;
-+
-+	/* set RSS LUT parameters */
-+	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
-+		vsi->rss_size = 1;
-+	} else {
-+		struct ice_hw_common_caps *caps = &hw->func_caps.common_cap;
-+
-+		vsi->rss_size = min_t(int, req_rss_size,
-+				      BIT(caps->rss_table_entry_width));
-+	}
-+
-+	/* create/set RSS LUT */
-+	ice_fill_rss_lut(lut, vsi->rss_table_size, vsi->rss_size);
-+	status = ice_aq_set_rss_lut(hw, vsi->idx, vsi->rss_lut_type, lut,
-+				    vsi->rss_table_size);
-+	if (status) {
-+		dev_err(dev, "Cannot set RSS lut, err %d aq_err %d\n",
-+			status, hw->adminq.sq_last_status);
-+		err = -EIO;
-+	}
-+
-+	/* get rid of invalid user configuration */
-+	if (vsi->rss_lut_user) {
-+		netdev_info(vsi->netdev,
-+			    "Rx queue count changed, clearing user modified RSS LUT, re-run ethtool [-x|-X] to [check|set] settings if needed\n");
-+		devm_kfree(dev, vsi->rss_lut_user);
-+		vsi->rss_lut_user = NULL;
-+	}
-+
-+	devm_kfree(dev, lut);
-+	return err;
-+}
-+
- /**
-  * ice_set_channels - set the number channels
-  * @dev: network interface device structure
-@@ -3189,6 +3249,9 @@ static int ice_set_channels(struct net_device *dev, struct ethtool_channels *ch)
- 
- 	ice_vsi_recfg_qs(vsi, new_rx, new_tx);
- 
-+	if (new_rx)
-+		return ice_vsi_set_dflt_rss_lut(vsi, new_rx);
-+
- 	return 0;
- }
- 
 -- 
 2.20.1
 
