@@ -1,52 +1,60 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 29 Jul 2019 02:04:49 -0700
-Subject: [Intel-wired-lan] [PATCH S24 v2 07/12] ice: reject VF attempts to
- enable head writeback
+Date: Mon, 29 Jul 2019 02:04:51 -0700
+Subject: [Intel-wired-lan] [PATCH S24 v2 09/12] ice: silence some bogus
+ error messages
 In-Reply-To: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
 References: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190729090454.5501-7-anthony.l.nguyen@intel.com>
+Message-ID: <20190729090454.5501-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-The virtchnl interface provides a mechanism for a VF driver to request
-head writeback support. This feature is deprecated as of AVF 1.0, but
-older versions of a VF driver may still attempt to request the mode.
+In some circumstances, VF devices can be deactivated while a message is
+in-flight. In that case, a series of  scary error message will be
+printed in the log. Since these are actually harmless, check for this
+case and suppress them. No harm, no foul.
 
-Since the ice hardware does not support head writeback, we should not
-accept Tx queue configuration which attempts to enable it.
-
-Currently, the driver simply assumes that the headwb_enabled bit will
-never be set.
-
-If a VF driver does request head writeback, the configuration will
-return successfully, even though head writeback is not enabled. This
-leaves the VF driver in a non functional state since it is assuming to
-be operating in head writeback mode.
-
-Fix the PF driver to reject any attempt to setup headwb_enabled.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  | 1 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 6 +++---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 765e3c2ed045..01ef2f290c5e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1610,6 +1610,7 @@ enum ice_aq_err {
+ 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
+ 	ICE_AQ_RC_EEXIST	= 13, /* Object already exists */
+ 	ICE_AQ_RC_ENOSPC	= 16, /* No space left or allocation failure */
++	ICE_AQ_RC_ENOSYS        = 17, /* Function not implemented */
+ };
+ 
+ /* Admin Queue command opcodes */
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 1b1d1ea0c8f9..73ab6222d29b 100644
+index 73ab6222d29b..83e58e71081e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -2109,6 +2109,7 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 		if (qpi->txq.vsi_id != qci->vsi_id ||
- 		    qpi->rxq.vsi_id != qci->vsi_id ||
- 		    qpi->rxq.queue_id != qpi->txq.queue_id ||
-+		    qpi->txq.headwb_enabled ||
- 		    !ice_vc_isvalid_q_id(vf, qci->vsi_id, qpi->txq.queue_id)) {
- 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 			goto error_param;
+@@ -1512,10 +1512,10 @@ ice_vc_send_msg_to_vf(struct ice_vf *vf, u32 v_opcode,
+ 
+ 	aq_ret = ice_aq_send_msg_to_vf(&pf->hw, vf->vf_id, v_opcode, v_retval,
+ 				       msg, msglen, NULL);
+-	if (aq_ret) {
++	if (aq_ret && pf->hw.mailboxq.sq_last_status != ICE_AQ_RC_ENOSYS) {
+ 		dev_info(&pf->pdev->dev,
+-			 "Unable to send the message to VF %d aq_err %d\n",
+-			 vf->vf_id, pf->hw.mailboxq.sq_last_status);
++			 "Unable to send the message to VF %d ret %d aq_err %d\n",
++			 vf->vf_id, aq_ret, pf->hw.mailboxq.sq_last_status);
+ 		return -EIO;
+ 	}
+ 
 -- 
 2.20.1
 
