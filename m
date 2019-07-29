@@ -1,112 +1,180 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 29 Jul 2019 02:04:50 -0700
-Subject: [Intel-wired-lan] [PATCH S24 v2 08/12] ice: Rename ethtool private
- flag for lldp
+Date: Mon, 29 Jul 2019 02:04:54 -0700
+Subject: [Intel-wired-lan] [PATCH S24 v2 12/12] ice: Add input handlers for
+ virtual channel handlers
 In-Reply-To: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
 References: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190729090454.5501-8-anthony.l.nguyen@intel.com>
+Message-ID: <20190729090454.5501-12-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: "Amruth G.P" <amruth.gouda.parameshwarappa@intel.com>
 
-The current flag name of "enable-fw-lldp" is a bit cumbersome.
+Move the assignment to local variables after validation.
 
-Change priv-flag name to "fw-lldp-agent" with a value of on or
-off.  This is more straight-forward in meaning.
+Remove unnecessary checks in ice_vc_process_vf_msg() as the respective
+functions are now performing the checks.
 
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Amruth G.P <amruth.gouda.parameshwarappa@intel.com>
+Signed-off-by: Nitesh B Venkatesh <nitesh.b.venkatesh@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         | 2 +-
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 4 ++--
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 6 +++---
- drivers/net/ethernet/intel/ice/ice_lib.c     | 4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
+v2: Move Tx|Rx queue check from ice_vc_get_stats_msg() to
+ice_vc_ena_qs_msg()
+---
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 64 +++++++++----------
+ 1 file changed, 32 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 8398dd45a8a2..0e233b7c40bc 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -331,7 +331,7 @@ enum ice_pf_flags {
- 	ICE_FLAG_DCB_ENA,
- 	ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA,
- 	ICE_FLAG_NO_MEDIA,
--	ICE_FLAG_ENABLE_FW_LLDP,
-+	ICE_FLAG_FW_LLDP_AGENT,
- 	ICE_FLAG_ETHTOOL_CTXT,		/* set when ethtool holds RTNL lock */
- 	ICE_PF_FLAGS_NBITS		/* must be last */
- };
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 2a868eea2a37..21405958aa63 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -462,7 +462,7 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 		dev_info(&pf->pdev->dev,
- 			 "FW LLDP is disabled, DCBx/LLDP in SW mode.\n");
- 		port_info->is_sw_lldp = true;
--		clear_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
-+		clear_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags);
- 		err = ice_dcb_sw_dflt_cfg(pf, locked);
- 		if (err) {
- 			dev_err(&pf->pdev->dev,
-@@ -478,7 +478,7 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 83e58e71081e..de0a1ef54e83 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1734,18 +1734,18 @@ static int ice_vc_config_rss_key(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
  	}
  
- 	port_info->is_sw_lldp = false;
--	set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
-+	set_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags);
- 
- 	/* DCBX in FW and LLDP enabled in FW */
- 	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 2d37dd4ba677..36ba667d0b57 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -155,7 +155,7 @@ struct ice_priv_flag {
- 
- static const struct ice_priv_flag ice_gstrings_priv_flags[] = {
- 	ICE_PRIV_FLAG("link-down-on-close", ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA),
--	ICE_PRIV_FLAG("enable-fw-lldp", ICE_FLAG_ENABLE_FW_LLDP),
-+	ICE_PRIV_FLAG("fw-lldp-agent", ICE_FLAG_FW_LLDP_AGENT),
- };
- 
- #define ICE_PRIV_FLAG_ARRAY_SIZE	ARRAY_SIZE(ice_gstrings_priv_flags)
-@@ -1201,8 +1201,8 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 
- 	bitmap_xor(change_flags, pf->flags, orig_flags, ICE_PF_FLAGS_NBITS);
- 
--	if (test_bit(ICE_FLAG_ENABLE_FW_LLDP, change_flags)) {
--		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags)) {
-+	if (test_bit(ICE_FLAG_FW_LLDP_AGENT, change_flags)) {
-+		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags)) {
- 			enum ice_status status;
- 
- 			/* Disable FW LLDP engine */
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 42645c074691..aff65333c302 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2561,7 +2561,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 		ice_cfg_sw_lldp(vsi, true, true);
- 
- 		/* Rx LLDP packets */
--		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags))
-+		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
- 			ice_cfg_sw_lldp(vsi, false, true);
+-	vsi = pf->vsi[vf->lan_vsi_idx];
+-	if (!vsi) {
++	if (vrk->key_len != ICE_VSIQF_HKEY_ARRAY_SIZE) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		goto error_param;
  	}
  
-@@ -2908,7 +2908,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 		/* The Rx rule will only exist to remove if the LLDP FW
- 		 * engine is currently stopped
- 		 */
--		if (!test_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags))
-+		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
- 			ice_cfg_sw_lldp(vsi, false, false);
+-	if (vrk->key_len != ICE_VSIQF_HKEY_ARRAY_SIZE) {
++	if (!test_bit(ICE_FLAG_RSS_ENA, vf->pf->flags)) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		goto error_param;
  	}
  
+-	if (!test_bit(ICE_FLAG_RSS_ENA, vf->pf->flags)) {
++	vsi = pf->vsi[vf->lan_vsi_idx];
++	if (!vsi) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		goto error_param;
+ 	}
+@@ -1781,18 +1781,18 @@ static int ice_vc_config_rss_lut(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
+-	vsi = pf->vsi[vf->lan_vsi_idx];
+-	if (!vsi) {
++	if (vrl->lut_entries != ICE_VSIQF_HLUT_ARRAY_SIZE) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		goto error_param;
+ 	}
+ 
+-	if (vrl->lut_entries != ICE_VSIQF_HLUT_ARRAY_SIZE) {
++	if (!test_bit(ICE_FLAG_RSS_ENA, vf->pf->flags)) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		goto error_param;
+ 	}
+ 
+-	if (!test_bit(ICE_FLAG_RSS_ENA, vf->pf->flags)) {
++	vsi = pf->vsi[vf->lan_vsi_idx];
++	if (!vsi) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		goto error_param;
+ 	}
+@@ -1877,6 +1877,12 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
++	if (vqs->rx_queues > ICE_MAX_BASE_QS_PER_VF ||
++	    vqs->tx_queues > ICE_MAX_BASE_QS_PER_VF) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		goto error_param;
++	}
++
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	if (!vsi) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+@@ -1932,6 +1938,12 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
++	if (vqs->rx_queues > ICE_MAX_BASE_QS_PER_VF ||
++	    vqs->tx_queues > ICE_MAX_BASE_QS_PER_VF) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		goto error_param;
++	}
++
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	if (!vsi) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+@@ -1984,12 +1996,6 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf *vf, u8 *msg)
+ 	irqmap_info = (struct virtchnl_irq_map_info *)msg;
+ 	num_q_vectors_mapped = irqmap_info->num_vectors;
+ 
+-	vsi = pf->vsi[vf->lan_vsi_idx];
+-	if (!vsi) {
+-		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+-		goto error_param;
+-	}
+-
+ 	/* Check to make sure number of VF vectors mapped is not greater than
+ 	 * number of VF vectors originally allocated, and check that
+ 	 * there is actually at least a single VF queue vector mapped
+@@ -2001,6 +2007,12 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
++	vsi = pf->vsi[vf->lan_vsi_idx];
++	if (!vsi) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		goto error_param;
++	}
++
+ 	for (i = 0; i < num_q_vectors_mapped; i++) {
+ 		struct ice_q_vector *q_vector;
+ 
+@@ -2092,10 +2104,6 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
+-	vsi = pf->vsi[vf->lan_vsi_idx];
+-	if (!vsi)
+-		goto error_param;
+-
+ 	if (qci->num_queue_pairs > ICE_MAX_BASE_QS_PER_VF) {
+ 		dev_err(&pf->pdev->dev,
+ 			"VF-%d requesting more than supported number of queues: %d\n",
+@@ -2104,6 +2112,12 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
++	vsi = pf->vsi[vf->lan_vsi_idx];
++	if (!vsi) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		goto error_param;
++	}
++
+ 	for (i = 0; i < qci->num_queue_pairs; i++) {
+ 		qpi = &qci->qpair[i];
+ 		if (qpi->txq.vsi_id != qci->vsi_id ||
+@@ -2755,20 +2769,6 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 			err = -EPERM;
+ 		else
+ 			err = -EINVAL;
+-		goto error_handler;
+-	}
+-
+-	/* Perform additional checks specific to RSS and Virtchnl */
+-	if (v_opcode == VIRTCHNL_OP_CONFIG_RSS_KEY) {
+-		struct virtchnl_rss_key *vrk = (struct virtchnl_rss_key *)msg;
+-
+-		if (vrk->key_len != ICE_VSIQF_HKEY_ARRAY_SIZE)
+-			err = -EINVAL;
+-	} else if (v_opcode == VIRTCHNL_OP_CONFIG_RSS_LUT) {
+-		struct virtchnl_rss_lut *vrl = (struct virtchnl_rss_lut *)msg;
+-
+-		if (vrl->lut_entries != ICE_VSIQF_HLUT_ARRAY_SIZE)
+-			err = -EINVAL;
+ 	}
+ 
+ error_handler:
 -- 
 2.20.1
 
