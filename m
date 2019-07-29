@@ -1,100 +1,60 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 29 Jul 2019 02:04:44 -0700
-Subject: [Intel-wired-lan] [PATCH S24 v2 02/12] ice: Account for all states
- of FW DCBx and LLDP
+Date: Mon, 29 Jul 2019 02:04:53 -0700
+Subject: [Intel-wired-lan] [PATCH S24 v2 11/12] ice: Don't clear auto_fec
+ bit in ice_cfg_phy_fec()
 In-Reply-To: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
 References: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190729090454.5501-2-anthony.l.nguyen@intel.com>
+Message-ID: <20190729090454.5501-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Chinh T Cao <chinh.t.cao@intel.com>
 
-Currently, only the DCBx status is taken into account to
-determine if FW LLDP is possible.  But there are NVM version
-coming out with DCBx enabled, and FW LLDP disabled.  This
-is causing errors where the driver sees that DCBx is not
-disabled, and then tries to register for LLDP MIB change
-events, and fails.
+The driver should never clear the auto_fec_enable bit.
 
-Change the logic to detect both DCBx and LLDP states in the
-FW engine.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Chinh T Cao <chinh.t.cao@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 34 +++++++-------------
- 1 file changed, 12 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index d285aba3fea7..9ab9ec1ce19e 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -324,6 +324,11 @@ void ice_dcb_rebuild(struct ice_pf *pf)
- 	}
- 
- 	ice_init_dcb(&pf->hw);
-+	if (pf->hw.port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
-+		pf->hw.port_info->is_sw_lldp = true;
-+	else
-+		pf->hw.port_info->is_sw_lldp = false;
-+
- 	if (ice_dcb_need_recfg(pf, prev_cfg, local_dcbx_cfg)) {
- 		/* difference in cfg detected - disable DCB till next MIB */
- 		dev_err(&pf->pdev->dev, "Set local MIB not accurate\n");
-@@ -445,35 +450,17 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 	struct device *dev = &pf->pdev->dev;
- 	struct ice_port_info *port_info;
- 	struct ice_hw *hw = &pf->hw;
--	int sw_default = 0;
- 	int err;
- 
- 	port_info = hw->port_info;
- 
- 	err = ice_init_dcb(hw);
- 	if (err) {
--		/* FW LLDP is not active, default to SW DCBX/LLDP */
--		dev_info(&pf->pdev->dev, "FW LLDP is not active\n");
--		hw->port_info->dcbx_status = ICE_DCBX_STATUS_NOT_STARTED;
--		hw->port_info->is_sw_lldp = true;
--	}
--
--	if (port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
--		dev_info(&pf->pdev->dev, "DCBX disabled\n");
--
--	/* LLDP disabled in FW */
--	if (port_info->is_sw_lldp) {
--		sw_default = 1;
--		dev_info(&pf->pdev->dev, "DCBx/LLDP in SW mode.\n");
-+		/* FW LLDP is disabled, activate SW DCBX/LLDP mode */
-+		dev_info(&pf->pdev->dev,
-+			 "FW LLDP is disabled, DCBx/LLDP in SW mode.\n");
-+		port_info->is_sw_lldp = true;
- 		clear_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
--	} else {
--		set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
--	}
--
--	if (port_info->dcbx_status == ICE_DCBX_STATUS_NOT_STARTED)
--		dev_info(&pf->pdev->dev, "DCBX not started\n");
--
--	if (sw_default) {
- 		err = ice_dcb_sw_dflt_cfg(pf, locked);
- 		if (err) {
- 			dev_err(&pf->pdev->dev,
-@@ -488,6 +475,9 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 		return 0;
- 	}
- 
-+	port_info->is_sw_lldp = false;
-+	set_bit(ICE_FLAG_ENABLE_FW_LLDP, pf->flags);
-+
- 	/* DCBX in FW and LLDP enabled in FW */
- 	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
- 
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 15648d4a8bab..4b43e6de847b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -2181,27 +2181,24 @@ ice_cfg_phy_fec(struct ice_aqc_set_phy_cfg_data *cfg, enum ice_fec_mode fec)
+ {
+ 	switch (fec) {
+ 	case ICE_FEC_BASER:
+-		/* Clear auto FEC and RS bits, and AND BASE-R ability
++		/* Clear RS bits, and AND BASE-R ability
+ 		 * bits and OR request bits.
+ 		 */
+-		cfg->caps &= ~ICE_AQC_PHY_EN_AUTO_FEC;
+ 		cfg->link_fec_opt &= ICE_AQC_PHY_FEC_10G_KR_40G_KR4_EN |
+ 				     ICE_AQC_PHY_FEC_25G_KR_CLAUSE74_EN;
+ 		cfg->link_fec_opt |= ICE_AQC_PHY_FEC_10G_KR_40G_KR4_REQ |
+ 				     ICE_AQC_PHY_FEC_25G_KR_REQ;
+ 		break;
+ 	case ICE_FEC_RS:
+-		/* Clear auto FEC and BASE-R bits, and AND RS ability
++		/* Clear BASE-R bits, and AND RS ability
+ 		 * bits and OR request bits.
+ 		 */
+-		cfg->caps &= ~ICE_AQC_PHY_EN_AUTO_FEC;
+ 		cfg->link_fec_opt &= ICE_AQC_PHY_FEC_25G_RS_CLAUSE91_EN;
+ 		cfg->link_fec_opt |= ICE_AQC_PHY_FEC_25G_RS_528_REQ |
+ 				     ICE_AQC_PHY_FEC_25G_RS_544_REQ;
+ 		break;
+ 	case ICE_FEC_NONE:
+-		/* Clear auto FEC and all FEC option bits. */
+-		cfg->caps &= ~ICE_AQC_PHY_EN_AUTO_FEC;
++		/* Clear all FEC option bits. */
+ 		cfg->link_fec_opt &= ~ICE_AQC_PHY_FEC_MASK;
+ 		break;
+ 	case ICE_FEC_AUTO:
 -- 
 2.20.1
 
