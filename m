@@ -1,11 +1,11 @@
 From: Kevin Laatz <kevin.laatz@intel.com>
-Date: Tue, 30 Jul 2019 08:53:55 +0000
-Subject: [Intel-wired-lan] [PATCH bpf-next v4 06/11] ixgbe: modify driver
+Date: Tue, 30 Jul 2019 08:53:56 +0000
+Subject: [Intel-wired-lan] [PATCH bpf-next v4 07/11] mlx5e: modify driver
  for handling offsets
 In-Reply-To: <20190730085400.10376-1-kevin.laatz@intel.com>
 References: <20190724051043.14348-1-kevin.laatz@intel.com>
  <20190730085400.10376-1-kevin.laatz@intel.com>
-Message-ID: <20190730085400.10376-7-kevin.laatz@intel.com>
+Message-ID: <20190730085400.10376-8-kevin.laatz@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,63 +22,55 @@ Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
 ---
 v3:
   - Use new helper function to handle offset
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-index bc86057628c8..11c400f8a6df 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-@@ -143,7 +143,9 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
- 			    struct ixgbe_ring *rx_ring,
- 			    struct xdp_buff *xdp)
+v4:
+  - fixed headroom addition to handle. Using xsk_umem_adjust_headroom()
+    now.
+---
+ drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c    | 8 ++++++--
+ drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c | 3 ++-
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
+index b0b982cf69bb..d5245893d2c8 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
+@@ -122,6 +122,7 @@ bool mlx5e_xdp_handle(struct mlx5e_rq *rq, struct mlx5e_dma_info *di,
+ 		      void *va, u16 *rx_headroom, u32 *len, bool xsk)
  {
-+	struct xdp_umem *umem = rx_ring->xsk_umem;
- 	int err, result = IXGBE_XDP_PASS;
-+	u64 offset = umem->headroom;
- 	struct bpf_prog *xdp_prog;
- 	struct xdp_frame *xdpf;
+ 	struct bpf_prog *prog = READ_ONCE(rq->xdp_prog);
++	struct xdp_umem *umem = rq->umem;
+ 	struct xdp_buff xdp;
  	u32 act;
-@@ -151,7 +153,10 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
- 	rcu_read_lock();
- 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
- 	act = bpf_prog_run_xdp(xdp_prog, xdp);
--	xdp->handle += xdp->data - xdp->data_hard_start;
-+	offset += xdp->data - xdp->data_hard_start;
+ 	int err;
+@@ -138,8 +139,11 @@ bool mlx5e_xdp_handle(struct mlx5e_rq *rq, struct mlx5e_dma_info *di,
+ 	xdp.rxq = &rq->xdp_rxq;
+ 
+ 	act = bpf_prog_run_xdp(prog, &xdp);
+-	if (xsk)
+-		xdp.handle += xdp.data - xdp.data_hard_start;
++	if (xsk) {
++		u64 off = xdp.data - xdp.data_hard_start;
 +
-+	xdp->handle = xsk_umem_adjust_offset(umem, xdp->handle, offset);
-+
++		xdp.handle = xsk_umem_handle_offset(umem, xdp.handle, off);
++	}
  	switch (act) {
  	case XDP_PASS:
- 		break;
-@@ -243,7 +248,7 @@ void ixgbe_zca_free(struct zero_copy_allocator *alloc, unsigned long handle)
- 	bi->addr = xdp_umem_get_data(rx_ring->xsk_umem, handle);
- 	bi->addr += hr;
+ 		*rx_headroom = xdp.data - xdp.data_hard_start;
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c
+index 6a55573ec8f2..7c49a66d28c9 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c
+@@ -24,7 +24,8 @@ int mlx5e_xsk_page_alloc_umem(struct mlx5e_rq *rq,
+ 	if (!xsk_umem_peek_addr_rq(umem, &handle))
+ 		return -ENOMEM;
  
--	bi->handle = (u64)handle + rx_ring->xsk_umem->headroom;
-+	bi->handle = (u64)handle;
- }
+-	dma_info->xsk.handle = handle + rq->buff.umem_headroom;
++	dma_info->xsk.handle = xsk_umem_adjust_offset(umem, handle,
++						      rq->buff.umem_headroom);
+ 	dma_info->xsk.data = xdp_umem_get_data(umem, dma_info->xsk.handle);
  
- static bool ixgbe_alloc_buffer_zc(struct ixgbe_ring *rx_ring,
-@@ -269,7 +274,7 @@ static bool ixgbe_alloc_buffer_zc(struct ixgbe_ring *rx_ring,
- 	bi->addr = xdp_umem_get_data(umem, handle);
- 	bi->addr += hr;
- 
--	bi->handle = handle + umem->headroom;
-+	bi->handle = handle;
- 
- 	xsk_umem_discard_addr(umem);
- 	return true;
-@@ -296,7 +301,7 @@ static bool ixgbe_alloc_buffer_slow_zc(struct ixgbe_ring *rx_ring,
- 	bi->addr = xdp_umem_get_data(umem, handle);
- 	bi->addr += hr;
- 
--	bi->handle = handle + umem->headroom;
-+	bi->handle = handle;
- 
- 	xsk_umem_discard_addr_rq(umem);
- 	return true;
+ 	/* No need to add headroom to the DMA address. In striding RQ case, we
 -- 
 2.17.1
 
