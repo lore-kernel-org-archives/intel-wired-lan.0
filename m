@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 31 Jul 2019 17:37:48 +0000
-Subject: [Intel-wired-lan] [PATCH S23 v4 10/15] ice: update
- GLINT_DYN_CTL and GLINT_VECT2FUNC register access
-In-Reply-To: <20190725085541.55104-10-anthony.l.nguyen@intel.com>
+Date: Wed, 31 Jul 2019 17:38:22 +0000
+Subject: [Intel-wired-lan] [PATCH S23 v4 11/15] ice: Reduce wait times
+ during VF bringup/reset
+In-Reply-To: <20190725085541.55104-11-anthony.l.nguyen@intel.com>
 References: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
- <20190725085541.55104-10-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40E99E@ORSMSX104.amr.corp.intel.com>
+ <20190725085541.55104-11-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40E9AF@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, July 25, 2019 1:56 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S23 v4 10/15] ice: update GLINT_DYN_CTL
-> and GLINT_VECT2FUNC register access
+> Subject: [Intel-wired-lan] [PATCH S23 v4 11/15] ice: Reduce wait times during
+> VF bringup/reset
 > 
-> From: Paul Greenwalt <paul.greenwalt@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Register access for GLINT_DYN_CTL and GLINT_VECT2FUNC should be within
-> the PF space and not the absolute device space.
+> Currently there are a couple places where the VF is waiting too long when
+> checking the status of registers. This is causing the AVF driver to spin for
+> longer than necessary in the __IAVF_STARTUP state. Sometimes it causes
+> the AVF to go into the __IAVF_COMM_FAILED, which may retrigger the
+> __IAVF_STARTUP state. Try to reduce the chance of this happening by
+> removing unnecessary wait times in VF bringup/resets.
 > 
-> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 24 +++++++++++--------
-> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  3 ++-
->  2 files changed, 16 insertions(+), 11 deletions(-)
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 26 +++++++++++--------
+> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  4 +++
+>  2 files changed, 19 insertions(+), 11 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
