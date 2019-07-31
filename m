@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 31 Jul 2019 18:14:07 +0000
-Subject: [Intel-wired-lan] [PATCH S25 10/12] ice: add validation in
- OP_CONFIG_VSI_QUEUES VF message
-In-Reply-To: <20190725095401.24590-10-anthony.l.nguyen@intel.com>
+Date: Wed, 31 Jul 2019 18:14:33 +0000
+Subject: [Intel-wired-lan] [PATCH S25 11/12] ice: Remove
+ ice_dev_onetime_setup()
+In-Reply-To: <20190725095401.24590-11-anthony.l.nguyen@intel.com>
 References: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
- <20190725095401.24590-10-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40EAEC@ORSMSX104.amr.corp.intel.com>
+ <20190725095401.24590-11-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40EAFE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,28 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, July 25, 2019 2:54 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S25 10/12] ice: add validation in
-> OP_CONFIG_VSI_QUEUES VF message
+> Subject: [Intel-wired-lan] [PATCH S25 11/12] ice: Remove
+> ice_dev_onetime_setup()
 > 
-> From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Check num_queue_pairs to avoid access to unallocated field of
-> vsi->tx_rings/vsi->rx_rings. Without this validation we can set
-> vsi->alloc_txq/vsi->alloc_rxq to value smaller than
-> vsi->ICE_MAX_BASE_QS_PER_VF
-> and send this command with num_queue_pairs greater than
-> vsi->alloc_txq/vsi->alloc_rxq. This lead to access to unallocated memory.
+> ice_dev_onetime_setup contains driver workarounds needed for firmware
+> limitations. These issues have now been resolved in newer NVMs so remove
+> the function.
 > 
-> In VF vsi alloc_txq and alloc_rxq should be the same. Get minimum because
-> looks more readable.
-> 
-> Also add validation for ring_len param. It should be greater than 32 and be
-> multiple of 32. Incorrect value leads to hang traffic on PF.
-> 
-> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 31 ++++++++++++++-----
->  1 file changed, 24 insertions(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c | 16 ----------------
+> drivers/net/ethernet/intel/ice/ice_common.h |  2 --
+>  drivers/net/ethernet/intel/ice/ice_lib.c    |  1 -
+>  3 files changed, 19 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
