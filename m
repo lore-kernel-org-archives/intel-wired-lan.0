@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 31 Jul 2019 18:12:44 +0000
-Subject: [Intel-wired-lan] [PATCH S25 07/12] ice: shorten local and add
- debug prints
-In-Reply-To: <20190725095401.24590-7-anthony.l.nguyen@intel.com>
+Date: Wed, 31 Jul 2019 18:13:09 +0000
+Subject: [Intel-wired-lan] [PATCH S25 08/12] ice: Introduce a local
+ variable for a VSI in the rebuild path
+In-Reply-To: <20190725095401.24590-8-anthony.l.nguyen@intel.com>
 References: <20190725095401.24590-1-anthony.l.nguyen@intel.com>
- <20190725095401.24590-7-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40EABD@ORSMSX104.amr.corp.intel.com>
+ <20190725095401.24590-8-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40EACC@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, July 25, 2019 2:54 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S25 07/12] ice: shorten local and add debug
-> prints
+> Subject: [Intel-wired-lan] [PATCH S25 08/12] ice: Introduce a local variable for
+> a VSI in the rebuild path
 > 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 > 
-> Add some verbose debugging for dyndbg to help us when we are having
-> issues with link and/or PHY.
+> When a VSI is accessed inside the ice_for_each_vsi macro in the rebuild path
+> (ice_vsi_rebuild_all() and ice_vsi_replay_all()), it is referred to as pf->vsi[i].
+> Introduce local variables to improve readability.
 > 
-> While there, shorten some strings used by locals that were causing long line
-> wrapping.
-> 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c | 63 ++++++++++++++-------
->  1 file changed, 44 insertions(+), 19 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 21 ++++++++++++---------
+>  1 file changed, 12 insertions(+), 9 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
