@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 31 Jul 2019 17:35:49 +0000
-Subject: [Intel-wired-lan] [PATCH S23 v4 06/15] ice: Set WB_ON_ITR when
- we don't re-enable interrupts
-In-Reply-To: <20190725085541.55104-6-anthony.l.nguyen@intel.com>
+Date: Wed, 31 Jul 2019 17:36:21 +0000
+Subject: [Intel-wired-lan] [PATCH S23 v4 07/15] ice: Fix kernel hang
+ with DCB reset in CEE mode
+In-Reply-To: <20190725085541.55104-7-anthony.l.nguyen@intel.com>
 References: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
- <20190725085541.55104-6-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40E960@ORSMSX104.amr.corp.intel.com>
+ <20190725085541.55104-7-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40E96F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, July 25, 2019 1:56 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S23 v4 06/15] ice: Set WB_ON_ITR when
-> we don't re-enable interrupts
+> Subject: [Intel-wired-lan] [PATCH S23 v4 07/15] ice: Fix kernel hang with DCB
+> reset in CEE mode
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Usha Ketineni <usha.k.ketineni@intel.com>
 > 
-> Currently when busy polling is enabled we aren't setting/enabling
-> WB_ON_ITR in the driver. This doesn't break the driver, but it does cause
-> issues. If we don't enable WB_ON_ITR mode we will still get write-backs
-> from hardware during polling when a cache line has been filled, but if a cache
-> line is not filled we will not get the write-back because WB_ON_ITR is not set.
-> Fix this by enabling WB_ON_ITR in the driver when interrupts are disabled.
+> This patch fixes the set local MIB AQ call failures in the DCB rebuild path by
+> setting the defaults for the ETS recommended DCB configuration. Also,
+> willing bits for the DCB configuration needs to be set correctly. Resets works
+> fine in IEEE mode as the ETS recommended DCB configuration is populated
+> but not in CEE mode.
+> Without this patch, PFR causes the kernel hang in CEE mode.
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
 > ---
-> v3: Moved defines to group with similar registers
-> ---
->  .../net/ethernet/intel/ice/ice_hw_autogen.h   |  3 ++
->  drivers/net/ethernet/intel/ice/ice_txrx.c     | 54 +++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_txrx.h     | 13 +++++
->  3 files changed, 70 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 149 +++++++++++--------
+>  1 file changed, 88 insertions(+), 61 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
