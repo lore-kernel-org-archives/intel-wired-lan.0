@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 31 Jul 2019 17:37:19 +0000
-Subject: [Intel-wired-lan] [PATCH S23 v4 09/15] ice: Do not always bring
- up PF VSI in ice_ena_vsi()
-In-Reply-To: <20190725085541.55104-9-anthony.l.nguyen@intel.com>
+Date: Wed, 31 Jul 2019 17:37:48 +0000
+Subject: [Intel-wired-lan] [PATCH S23 v4 10/15] ice: update
+ GLINT_DYN_CTL and GLINT_VECT2FUNC register access
+In-Reply-To: <20190725085541.55104-10-anthony.l.nguyen@intel.com>
 References: <20190725085541.55104-1-anthony.l.nguyen@intel.com>
- <20190725085541.55104-9-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40E98B@ORSMSX104.amr.corp.intel.com>
+ <20190725085541.55104-10-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40E99E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, July 25, 2019 1:56 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S23 v4 09/15] ice: Do not always bring up PF
-> VSI in ice_ena_vsi()
+> Subject: [Intel-wired-lan] [PATCH S23 v4 10/15] ice: update GLINT_DYN_CTL
+> and GLINT_VECT2FUNC register access
 > 
-> During rebuild ice_ena_vsi() is called to recover the VSI state.
-> This function assumes the PF VSI is always to be enabled, however, it's
-> possible that during reset/rebuild the interface can be brought down.  If this
-> occurs, we can attempt to bring up the PF VSI on a downed interface which
-> can lead to various crashes. If the interface is not running, do not bring up the
-> associated VSI.
+> From: Paul Greenwalt <paul.greenwalt@intel.com>
 > 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Register access for GLINT_DYN_CTL and GLINT_VECT2FUNC should be within
+> the PF space and not the absolute device space.
+> 
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 2 --
->  1 file changed, 2 deletions(-)
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 24 +++++++++++--------
+> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  3 ++-
+>  2 files changed, 16 insertions(+), 11 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
