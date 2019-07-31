@@ -1,12 +1,12 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Wed, 31 Jul 2019 14:45:52 +0200
+Date: Wed, 31 Jul 2019 16:25:30 +0200
 Subject: [Intel-wired-lan] [PATCH bpf-next v4 03/11] libbpf: add flags
  to umem config
 In-Reply-To: <20190730085400.10376-4-kevin.laatz@intel.com>
 References: <20190724051043.14348-1-kevin.laatz@intel.com>
  <20190730085400.10376-1-kevin.laatz@intel.com>
  <20190730085400.10376-4-kevin.laatz@intel.com>
-Message-ID: <CAJ+HfNgqZFnikLMNYo7wE3fqyyZzgsQXuix905SQ+iRo8FfqpA@mail.gmail.com>
+Message-ID: <CAJ+HfNifxfgycmZFz8eBZq=FZXAgNQezNqUiy3Q1z4JBrUEkew@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -61,17 +61,6 @@ On Tue, 30 Jul 2019 at 19:43, Kevin Laatz <kevin.laatz@intel.com> wrote:
 > +       __u64 addr;     /* Start of packet data area */
 > +       __u64 len:48;   /* Length of packet data area */
 > +       __u64 flags:16; /* Flags for umem */
-
-So, the flags member moved from struct sockaddr_xdp to struct
-xdp_umem_reg. Makes sense. However, I'm not a fan of the bitfield. Why
-not just add the flags member after the last member (headroom) and
-deal with it in xsk.c/xsk_setsockopt and libbpf? The bitfield
-preserves the size, but makes it hard to read/error prone IMO.
-
-
-Bj?rn
-
-
 >         __u32 chunk_size;
 >         __u32 headroom;
 >  };
@@ -119,6 +108,13 @@ Bj?rn
 >         __u32 frame_size;
 >         __u32 frame_headroom;
 > +       __u32 flags;
+
+And the flags addition here, unfortunately, requires symbol versioning
+of xsk_umem__create(). That'll be the first in libbpf! :-)
+
+
+Bj?rn
+
 >  };
 >
 >  /* Flags for the libbpf_flags field. */
