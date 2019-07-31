@@ -1,95 +1,40 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 31 Jul 2019 18:10:10 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 6ad2ae2fd9a101c9c51f04cc02fce84e20536676
-Message-ID: <5d416902.PGNg67qGuoaSCwcE%lkp@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 31 Jul 2019 17:07:47 +0000
+Subject: [Intel-wired-lan] [PATCH S24 v2 01/12] ice: Allow egress
+ control packets from PF_VSI
+In-Reply-To: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
+References: <20190729090454.5501-1-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40E84B@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 6ad2ae2fd9a101c9c51f04cc02fce84e20536676  checkpatch.pl: seed camelcase from the provided kernel tree root
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Monday, July 29, 2019 2:05 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S24 v2 01/12] ice: Allow egress control
+> packets from PF_VSI
+> 
+> From: Dave Ertman <david.m.ertman@intel.com>
+> 
+> For control packets (i.e. LLDP packets) to be able to egress from the main VSI,
+> a bit has to be set in the TX_descriptor.
+> This should only be done for the main VSI and only if the FW LLDP agent is
+> disabled.  A bit to allow this also has to be set in the VSI context.
+> 
+> Add the logic to add the necessary bits in the VSI context for the PF_VSI and
+> the TX_descriptors for control packets egressing the PF_VSI.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_lib.c  |  7 +++++++
+> drivers/net/ethernet/intel/ice/ice_txrx.c | 11 ++++++++++-
+>  2 files changed, 17 insertions(+), 1 deletion(-)
 
-elapsed time: 1057m
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-configs tested: 70
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                              allmodconfig
-arm64                            allmodconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-ia64                                defconfig
-powerpc                             defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                       ppc64_defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
