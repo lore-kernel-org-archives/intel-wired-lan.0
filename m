@@ -1,211 +1,88 @@
-From: Daniel Borkmann <daniel@iogearbox.net>
-Date: Sat, 31 Aug 2019 01:29:37 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next v6 00/12] XDP unaligned chunk
- placement support
-In-Reply-To: <20190827022531.15060-1-kevin.laatz@intel.com>
-References: <20190822014427.49800-1-kevin.laatz@intel.com>
- <20190827022531.15060-1-kevin.laatz@intel.com>
-Message-ID: <4b3f1e4c-7db6-d658-aba1-40237b9aa053@iogearbox.net>
+From: Maxim Mikityanskiy <maximmi@mellanox.com>
+Date: Thu, 1 Aug 2019 10:05:26 +0000
+Subject: [Intel-wired-lan] [PATCH bpf-next v4 07/11] mlx5e: modify
+ driver for handling offsets
+In-Reply-To: <20190730085400.10376-8-kevin.laatz@intel.com>
+References: <20190724051043.14348-1-kevin.laatz@intel.com>
+ <20190730085400.10376-1-kevin.laatz@intel.com>
+ <20190730085400.10376-8-kevin.laatz@intel.com>
+Message-ID: <bc0c966f-4cda-4d48-566f-f5bff376210a@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/27/19 4:25 AM, Kevin Laatz wrote:
-> This patch set adds the ability to use unaligned chunks in the XDP umem.
+On 2019-07-30 11:53, Kevin Laatz wrote:
+> With the addition of the unaligned chunks option, we need to make sure we
+> handle the offsets accordingly based on the mode we are currently running
+> in. This patch modifies the driver to appropriately mask the address for
+> each case.
 > 
-> Currently, all chunk addresses passed to the umem are masked to be chunk
-> size aligned (max is PAGE_SIZE). This limits where we can place chunks
-> within the umem as well as limiting the packet sizes that are supported.
-> 
-> The changes in this patch set removes these restrictions, allowing XDP to
-> be more flexible in where it can place a chunk within a umem. By relaxing
-> where the chunks can be placed, it allows us to use an arbitrary buffer
-> size and place that wherever we have a free address in the umem. These
-> changes add the ability to support arbitrary frame sizes up to 4k
-> (PAGE_SIZE) and make it easy to integrate with other existing frameworks
-> that have their own memory management systems, such as DPDK.
-> In DPDK, for example, there is already support for AF_XDP with zero-copy.
-> However, with this patch set the integration will be much more seamless.
-> You can find the DPDK AF_XDP driver at:
-> https://git.dpdk.org/dpdk/tree/drivers/net/af_xdp
-> 
-> Since we are now dealing with arbitrary frame sizes, we need also need to
-> update how we pass around addresses. Currently, the addresses can simply be
-> masked to 2k to get back to the original address. This becomes less trivial
-> when using frame sizes that are not a 'power of 2' size. This patch set
-> modifies the Rx/Tx descriptor format to use the upper 16-bits of the addr
-> field for an offset value, leaving the lower 48-bits for the address (this
-> leaves us with 256 Terabytes, which should be enough!). We only need to use
-> the upper 16-bits to store the offset when running in unaligned mode.
-> Rather than adding the offset (headroom etc) to the address, we will store
-> it in the upper 16-bits of the address field. This way, we can easily add
-> the offset to the address where we need it, using some bit manipulation and
-> addition, and we can also easily get the original address wherever we need
-> it (for example in i40e_zca_free) by simply masking to get the lower
-> 48-bits of the address field.
-> 
-> The patch set was tested with the following set up:
->    - Intel(R) Xeon(R) Gold 6140 CPU @ 2.30GHz
->    - Intel Corporation Ethernet Controller XXV710 for 25GbE SFP28 (rev 02)
->    - Driver: i40e
->    - Application: xdpsock with l2fwd (single interface)
->    - Turbo disabled in BIOS
-> 
-> There are no changes to performance before and after these patches for SKB
-> mode and Copy mode. Zero-copy mode saw a performance degradation of ~1.5%.
-> 
-> This patch set has been applied against
-> commit 0bb52b0dfc88 ("tools: bpftool: add 'bpftool map freeze' subcommand")
-> 
-> Structure of the patch set:
-> Patch 1:
->    - Remove unnecessary masking and headroom addition during zero-copy Rx
->      buffer recycling in i40e. This change is required in order for the
->      buffer recycling to work in the unaligned chunk mode.
-> 
-> Patch 2:
->    - Remove unnecessary masking and headroom addition during
->      zero-copy Rx buffer recycling in ixgbe. This change is required in
->      order for the  buffer recycling to work in the unaligned chunk mode.
-> 
-> Patch 3:
->    - Add infrastructure for unaligned chunks. Since we are dealing with
->      unaligned chunks that could potentially cross a physical page boundary,
->      we add checks to keep track of that information. We can later use this
->      information to correctly handle buffers that are placed at an address
->      where they cross a page boundary.  This patch also modifies the
->      existing Rx and Tx functions to use the new descriptor format. To
->      handle addresses correctly, we need to mask appropriately based on
->      whether we are in aligned or unaligned mode.
-> 
-> Patch 4:
->    - This patch updates the i40e driver to make use of the new descriptor
->      format.
-> 
-> Patch 5:
->    - This patch updates the ixgbe driver to make use of the new descriptor
->      format.
-> 
-> Patch 6:
->    - This patch updates the mlx5e driver to make use of the new descriptor
->      format. These changes are required to handle the new descriptor format
->      and for unaligned chunks support.
-> 
-> Patch 7:
->    - This patch allows XSK frames smaller than page size in the mlx5e
->      driver. Relax the requirements to the XSK frame size to allow it to be
->      smaller than a page and even not a power of two. The current
->      implementation can work in this mode, both with Striding RQ and without
->      it.
-> 
-> Patch 8:
->    - Add flags for umem configuration to libbpf. Since we increase the size
->      of the struct by adding flags, we also need to add the ABI versioning
->      in this patch.
-> 
-> Patch 9:
->    - Modify xdpsock application to add a command line option for
->      unaligned chunks
-> 
-> Patch 10:
->    - Since we can now run the application in unaligned chunk mode, we need
->      to make sure we recycle the buffers appropriately.
-> 
-> Patch 11:
->    - Adds hugepage support to the xdpsock application
-> 
-> Patch 12:
->    - Documentation update to include the unaligned chunk scenario. We need
->      to explicitly state that the incoming addresses are only masked in the
->      aligned chunk mode and not the unaligned chunk mode.
-> 
+> Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
+
+Please note that this patch doesn't actually add the support for the new 
+feature, because the validation checks in mlx5e_rx_get_linear_frag_sz 
+and mlx5e_validate_xsk_param need to be relaxed. Currently the frame 
+size of PAGE_SIZE is forced, and the fragment size is increased to 
+PAGE_SIZE in case of XDP (including XSK).
+
+After making the changes required to permit frame sizes smaller than 
+PAGE_SIZE, our Striding RQ feature will be used in a way we haven't used 
+it before, so we need to verify with the hardware team that this usage 
+is legitimate.
+
 > ---
-> v2:
->    - fixed checkpatch issues
->    - fixed Rx buffer recycling for unaligned chunks in xdpsock
->    - removed unused defines
->    - fixed how chunk_size is calculated in xsk_diag.c
->    - added some performance numbers to cover letter
->    - modified descriptor format to make it easier to retrieve original
->      address
->    - removed patch adding off_t off to the zero copy allocator. This is no
->      longer needed with the new descriptor format.
-> 
 > v3:
->    - added patch for mlx5 driver changes needed for unaligned chunks
->    - moved offset handling to new helper function
->    - changed value used for the umem chunk_mask. Now using the new
->      descriptor format to save us doing the calculations in a number of
->      places meaning more of the code is left unchanged while adding
->      unaligned chunk support.
+>    - Use new helper function to handle offset
 > 
 > v4:
->    - reworked the next_pg_contig field in the xdp_umem_page struct. We now
->      use the low 12 bits of the addr for flags rather than adding an extra
->      field in the struct.
->    - modified unaligned chunks flag define
->    - fixed page_start calculation in __xsk_rcv_memcpy().
->    - move offset handling to the xdp_umem_get_* functions
->    - modified the len field in xdp_umem_reg struct. We now use 16 bits from
->      this for the flags field.
->    - fixed headroom addition to handle in the mlx5e driver
->    - other minor changes based on review comments
+>    - fixed headroom addition to handle. Using xsk_umem_adjust_headroom()
+>      now.
+> ---
+>   drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c    | 8 ++++++--
+>   drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c | 3 ++-
+>   2 files changed, 8 insertions(+), 3 deletions(-)
 > 
-> v5:
->    - Added ABI versioning in the libbpf patch
->    - Removed bitfields in the xdp_umem_reg struct. Adding new flags field.
->    - Added accessors for getting addr and offset.
->    - Added helper function for adding the offset to the addr.
->    - Fixed conflicts with 'bpf-af-xdp-wakeup' which was merged recently.
->    - Fixed typo in mlx driver patch.
->    - Moved libbpf patch to later in the set (7/11, just before the sample
->      app changes)
-> 
-> v6:
->    - Added support for XSK frames smaller than page in mlx5e driver (Maxim
->      Mikityanskiy <maximmi@mellanox.com).
->    - Fixed offset handling in xsk_generic_rcv.
->    - Added check for base address in xskq_is_valid_addr_unaligned.
-> 
-> Kevin Laatz (11):
->    i40e: simplify Rx buffer recycle
->    ixgbe: simplify Rx buffer recycle
->    xsk: add support to allow unaligned chunk placement
->    i40e: modify driver for handling offsets
->    ixgbe: modify driver for handling offsets
->    mlx5e: modify driver for handling offsets
->    libbpf: add flags to umem config
->    samples/bpf: add unaligned chunks mode support to xdpsock
->    samples/bpf: add buffer recycling for unaligned chunks to xdpsock
->    samples/bpf: use hugepages in xdpsock app
->    doc/af_xdp: include unaligned chunk case
-> 
-> Maxim Mikityanskiy (1):
->    net/mlx5e: Allow XSK frames smaller than a page
-> 
->   Documentation/networking/af_xdp.rst           | 10 +-
->   drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 26 +++--
->   drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 26 +++--
->   .../ethernet/mellanox/mlx5/core/en/params.c   | 23 ++++-
->   .../ethernet/mellanox/mlx5/core/en/params.h   |  2 +
->   .../net/ethernet/mellanox/mlx5/core/en/xdp.c  |  8 +-
->   .../ethernet/mellanox/mlx5/core/en/xsk/rx.c   |  5 +-
->   .../mellanox/mlx5/core/en/xsk/setup.c         | 15 ++-
->   include/net/xdp_sock.h                        | 75 ++++++++++++++-
->   include/uapi/linux/if_xdp.h                   |  9 ++
->   net/xdp/xdp_umem.c                            | 19 +++-
->   net/xdp/xsk.c                                 | 94 +++++++++++++++----
->   net/xdp/xsk_diag.c                            |  2 +-
->   net/xdp/xsk_queue.h                           | 70 ++++++++++++--
->   samples/bpf/xdpsock_user.c                    | 61 ++++++++----
->   tools/include/uapi/linux/if_xdp.h             |  9 ++
->   tools/lib/bpf/Makefile                        |  5 +-
->   tools/lib/bpf/libbpf.map                      |  1 +
->   tools/lib/bpf/xsk.c                           | 33 ++++++-
->   tools/lib/bpf/xsk.h                           | 27 ++++++
->   20 files changed, 417 insertions(+), 103 deletions(-)
+> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
+> index b0b982cf69bb..d5245893d2c8 100644
+> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
+> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
+> @@ -122,6 +122,7 @@ bool mlx5e_xdp_handle(struct mlx5e_rq *rq, struct mlx5e_dma_info *di,
+>   		      void *va, u16 *rx_headroom, u32 *len, bool xsk)
+>   {
+>   	struct bpf_prog *prog = READ_ONCE(rq->xdp_prog);
+> +	struct xdp_umem *umem = rq->umem;
+>   	struct xdp_buff xdp;
+>   	u32 act;
+>   	int err;
+> @@ -138,8 +139,11 @@ bool mlx5e_xdp_handle(struct mlx5e_rq *rq, struct mlx5e_dma_info *di,
+>   	xdp.rxq = &rq->xdp_rxq;
+>   
+>   	act = bpf_prog_run_xdp(prog, &xdp);
+> -	if (xsk)
+> -		xdp.handle += xdp.data - xdp.data_hard_start;
+> +	if (xsk) {
+> +		u64 off = xdp.data - xdp.data_hard_start;
+> +
+> +		xdp.handle = xsk_umem_handle_offset(umem, xdp.handle, off);
+> +	}
+>   	switch (act) {
+>   	case XDP_PASS:
+>   		*rx_headroom = xdp.data - xdp.data_hard_start;
+> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c
+> index 6a55573ec8f2..7c49a66d28c9 100644
+> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c
+> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c
+> @@ -24,7 +24,8 @@ int mlx5e_xsk_page_alloc_umem(struct mlx5e_rq *rq,
+>   	if (!xsk_umem_peek_addr_rq(umem, &handle))
+>   		return -ENOMEM;
+>   
+> -	dma_info->xsk.handle = handle + rq->buff.umem_headroom;
+> +	dma_info->xsk.handle = xsk_umem_adjust_offset(umem, handle,
+> +						      rq->buff.umem_headroom);
+>   	dma_info->xsk.data = xdp_umem_get_data(umem, dma_info->xsk.handle);
+>   
+>   	/* No need to add headroom to the DMA address. In striding RQ case, we
 > 
 
-Applied, thanks!
