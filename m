@@ -1,127 +1,77 @@
-From: Jonathan Lemon <jonathan.lemon@gmail.com>
-Date: Wed, 31 Jul 2019 11:26:39 -0700
-Subject: [Intel-wired-lan] [PATCH bpf-next v4 09/11] samples/bpf: add
- buffer recycling for unaligned chunks to xdpsock
-In-Reply-To: <20190730085400.10376-10-kevin.laatz@intel.com>
+From: Andrii Nakryiko <andrii.nakryiko@gmail.com>
+Date: Wed, 31 Jul 2019 23:59:23 -0700
+Subject: [Intel-wired-lan] [PATCH bpf-next v4 03/11] libbpf: add flags
+ to umem config
+In-Reply-To: <CAJ+HfNifxfgycmZFz8eBZq=FZXAgNQezNqUiy3Q1z4JBrUEkew@mail.gmail.com>
 References: <20190724051043.14348-1-kevin.laatz@intel.com>
  <20190730085400.10376-1-kevin.laatz@intel.com>
- <20190730085400.10376-10-kevin.laatz@intel.com>
-Message-ID: <AB07E875-FFAE-4F5F-8A8C-EA38CE9D4580@gmail.com>
+ <20190730085400.10376-4-kevin.laatz@intel.com>
+ <CAJ+HfNifxfgycmZFz8eBZq=FZXAgNQezNqUiy3Q1z4JBrUEkew@mail.gmail.com>
+Message-ID: <CAEf4BzbTbX-Teth+4-yiorO-oHp+JhGfW2e08iBoCsBA4JCbMQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On 30 Jul 2019, at 1:53, Kevin Laatz wrote:
-
-> This patch adds buffer recycling support for unaligned buffers. Since 
-> we
-> don't mask the addr to 2k at umem_reg in unaligned mode, we need to 
-> make
-> sure we give back the correct (original) addr to the fill queue. We 
-> achieve
-> this using the new descriptor format and associated masks. The new 
-> format
-> uses the upper 16-bits for the offset and the lower 48-bits for the 
-> addr.
-> Since we have a field for the offset, we no longer need to modify the
-> actual address. As such, all we have to do to get back the original 
-> address
-> is mask for the lower 48 bits (i.e. strip the offset and we get the 
-> address
-> on it's own).
+On Wed, Jul 31, 2019 at 8:21 AM Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
 >
-> Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
-> Signed-off-by: Bruce Richardson <bruce.richardson@intel.com>
->
-> ---
-> v2:
->   - Removed unused defines
->   - Fix buffer recycling for unaligned case
->   - Remove --buf-size (--frame-size merged before this)
->   - Modifications to use the new descriptor format for buffer 
-> recycling
-> ---
->  samples/bpf/xdpsock_user.c | 24 +++++++++++++++---------
->  1 file changed, 15 insertions(+), 9 deletions(-)
->
-> diff --git a/samples/bpf/xdpsock_user.c b/samples/bpf/xdpsock_user.c
-> index 756b00eb1afe..62b2059cd0e3 100644
-> --- a/samples/bpf/xdpsock_user.c
-> +++ b/samples/bpf/xdpsock_user.c
-> @@ -475,6 +475,7 @@ static void kick_tx(struct xsk_socket_info *xsk)
->
->  static inline void complete_tx_l2fwd(struct xsk_socket_info *xsk)
->  {
-> +	struct xsk_umem_info *umem = xsk->umem;
->  	u32 idx_cq = 0, idx_fq = 0;
->  	unsigned int rcvd;
->  	size_t ndescs;
-> @@ -487,22 +488,21 @@ static inline void complete_tx_l2fwd(struct 
-> xsk_socket_info *xsk)
->  		xsk->outstanding_tx;
->
->  	/* re-add completed Tx buffers */
-> -	rcvd = xsk_ring_cons__peek(&xsk->umem->cq, ndescs, &idx_cq);
-> +	rcvd = xsk_ring_cons__peek(&umem->cq, ndescs, &idx_cq);
->  	if (rcvd > 0) {
->  		unsigned int i;
->  		int ret;
->
-> -		ret = xsk_ring_prod__reserve(&xsk->umem->fq, rcvd, &idx_fq);
-> +		ret = xsk_ring_prod__reserve(&umem->fq, rcvd, &idx_fq);
->  		while (ret != rcvd) {
->  			if (ret < 0)
->  				exit_with_error(-ret);
-> -			ret = xsk_ring_prod__reserve(&xsk->umem->fq, rcvd,
-> -						     &idx_fq);
-> +			ret = xsk_ring_prod__reserve(&umem->fq, rcvd, &idx_fq);
->  		}
-> +
->  		for (i = 0; i < rcvd; i++)
-> -			*xsk_ring_prod__fill_addr(&xsk->umem->fq, idx_fq++) =
-> -				*xsk_ring_cons__comp_addr(&xsk->umem->cq,
-> -							  idx_cq++);
-> +			*xsk_ring_prod__fill_addr(&umem->fq, idx_fq++) =
-> +				*xsk_ring_cons__comp_addr(&umem->cq, idx_cq++);
->
->  		xsk_ring_prod__submit(&xsk->umem->fq, rcvd);
->  		xsk_ring_cons__release(&xsk->umem->cq, rcvd);
-> @@ -549,7 +549,11 @@ static void rx_drop(struct xsk_socket_info *xsk)
->  	for (i = 0; i < rcvd; i++) {
->  		u64 addr = xsk_ring_cons__rx_desc(&xsk->rx, idx_rx)->addr;
->  		u32 len = xsk_ring_cons__rx_desc(&xsk->rx, idx_rx++)->len;
-> -		char *pkt = xsk_umem__get_data(xsk->umem->buffer, addr);
-> +		u64 offset = addr >> XSK_UNALIGNED_BUF_OFFSET_SHIFT;
-> +
-> +		addr &= XSK_UNALIGNED_BUF_ADDR_MASK;
-> +		char *pkt = xsk_umem__get_data(xsk->umem->buffer,
-> +				addr + offset);
+> On Tue, 30 Jul 2019 at 19:43, Kevin Laatz <kevin.laatz@intel.com> wrote:
+> >
+> > This patch adds a 'flags' field to the umem_config and umem_reg structs.
+> > This will allow for more options to be added for configuring umems.
+> >
+> > The first use for the flags field is to add a flag for unaligned chunks
+> > mode. These flags can either be user-provided or filled with a default.
+> >
+> > Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
+> > Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
+> >
+> > ---
+> > v2:
+> >   - Removed the headroom check from this patch. It has moved to the
+> >     previous patch.
+> >
+> > v4:
+> >   - modified chunk flag define
+> > ---
 
-The mask constants should not be part of the api - this should be
-hidden behind an accessor.
+[...]
 
-Something like:
-   u64 addr = xsk_umem__get_addr(xsk->umem, handle);
-
-
-
-
->  		hex_dump(pkt, len, addr);
->  		*xsk_ring_prod__fill_addr(&xsk->umem->fq, idx_fq++) = addr;
-> @@ -655,7 +659,9 @@ static void l2fwd(struct xsk_socket_info *xsk)
->  							  idx_rx)->addr;
->  			u32 len = xsk_ring_cons__rx_desc(&xsk->rx,
->  							 idx_rx++)->len;
-> -			char *pkt = xsk_umem__get_data(xsk->umem->buffer, addr);
-> +			u64 offset = addr >> XSK_UNALIGNED_BUF_OFFSET_SHIFT;
-> +			char *pkt = xsk_umem__get_data(xsk->umem->buffer,
-> +				(addr & XSK_UNALIGNED_BUF_ADDR_MASK) + offset);
+> > diff --git a/tools/lib/bpf/xsk.h b/tools/lib/bpf/xsk.h
+> > index 833a6e60d065..44a03d8c34b9 100644
+> > --- a/tools/lib/bpf/xsk.h
+> > +++ b/tools/lib/bpf/xsk.h
+> > @@ -170,12 +170,14 @@ LIBBPF_API int xsk_socket__fd(const struct xsk_socket *xsk);
+> >  #define XSK_UMEM__DEFAULT_FRAME_SHIFT    12 /* 4096 bytes */
+> >  #define XSK_UMEM__DEFAULT_FRAME_SIZE     (1 << XSK_UMEM__DEFAULT_FRAME_SHIFT)
+> >  #define XSK_UMEM__DEFAULT_FRAME_HEADROOM 0
+> > +#define XSK_UMEM__DEFAULT_FLAGS 0
+> >
+> >  struct xsk_umem_config {
+> >         __u32 fill_size;
+> >         __u32 comp_size;
+> >         __u32 frame_size;
+> >         __u32 frame_headroom;
+> > +       __u32 flags;
 >
->  			swap_mac_addresses(pkt);
+> And the flags addition here, unfortunately, requires symbol versioning
+> of xsk_umem__create(). That'll be the first in libbpf! :-)
+
+xsk_umem_config is passed by pointer to xsk_umem__create(), so this
+doesn't break ABI, does it?
+
 >
-> -- 
-> 2.17.1
+>
+> Bj?rn
+>
+> >  };
+> >
+> >  /* Flags for the libbpf_flags field. */
+> > --
+> > 2.17.1
+> >
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at osuosl.org
+> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
