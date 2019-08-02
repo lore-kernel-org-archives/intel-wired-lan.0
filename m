@@ -1,42 +1,47 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  2 Aug 2019 01:25:29 -0700
-Subject: [Intel-wired-lan] [PATCH S26 11/15] ice: add needed PFR during
- driver unload
+Date: Fri,  2 Aug 2019 01:25:28 -0700
+Subject: [Intel-wired-lan] [PATCH S26 10/15] ice: Deduce TSA value from the
+ priority value in the CEE mode
 In-Reply-To: <20190802082533.23083-1-anthony.l.nguyen@intel.com>
 References: <20190802082533.23083-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190802082533.23083-11-anthony.l.nguyen@intel.com>
+Message-ID: <20190802082533.23083-10-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Chinh T Cao <chinh.t.cao@intel.com>
 
-According to the specification, a PF Reset must be done as part of the
-driver unload flow.
+In CEE mode, the TSA information can be derived from the reported
+priority value.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Chinh T Cao <chinh.t.cao@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_dcb.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 805a6379c605..6b8055ab566f 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2674,6 +2674,11 @@ static void ice_remove(struct pci_dev *pdev)
- 	ice_deinit_pf(pf);
- 	ice_deinit_hw(&pf->hw);
- 	ice_clear_interrupt_scheme(pf);
-+	/* Issue a PFR as part of the prescribed driver unload flow.  Do not
-+	 * do it via ice_schedule_reset() since there is no need to rebuild
-+	 * and the service task is already stopped.
-+	 */
-+	ice_reset(&pf->hw, ICE_RESET_PFR);
- 	pci_disable_pcie_error_reporting(pdev);
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
+index d60c942249e8..c5ee8d930611 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
+@@ -444,9 +444,15 @@ ice_parse_cee_pgcfg_tlv(struct ice_cee_feat_tlv *tlv,
+ 	 *        |pg0|pg1|pg2|pg3|pg4|pg5|pg6|pg7|
+ 	 *        ---------------------------------
+ 	 */
+-	ice_for_each_traffic_class(i)
++	ice_for_each_traffic_class(i) {
+ 		etscfg->tcbwtable[i] = buf[offset++];
  
++		if (etscfg->prio_table[i] == ICE_CEE_PGID_STRICT)
++			dcbcfg->etscfg.tsatable[i] = ICE_IEEE_TSA_STRICT;
++		else
++			dcbcfg->etscfg.tsatable[i] = ICE_IEEE_TSA_ETS;
++	}
++
+ 	/* Number of TCs supported (1 octet) */
+ 	etscfg->maxtcs = buf[offset];
+ }
 -- 
 2.20.1
 
