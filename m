@@ -1,40 +1,42 @@
-From: Colin King <colin.king@canonical.com>
-Date: Fri,  2 Aug 2019 16:52:17 +0100
-Subject: [Intel-wired-lan] [PATCH][net-next] ice: fix potential infinite loop
-Message-ID: <20190802155217.16996-1-colin.king@canonical.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Fri,  2 Aug 2019 01:25:29 -0700
+Subject: [Intel-wired-lan] [PATCH S26 11/15] ice: add needed PFR during
+ driver unload
+In-Reply-To: <20190802082533.23083-1-anthony.l.nguyen@intel.com>
+References: <20190802082533.23083-1-anthony.l.nguyen@intel.com>
+Message-ID: <20190802082533.23083-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-The loop counter of a for-loop is a u8 however this is being compared
-to an int upper bound and this can lead to an infinite loop if the
-upper bound is greater than 255 since the loop counter will wrap back
-to zero. Fix this potential issue by making the loop counter an int.
+According to the specification, a PF Reset must be done as part of the
+driver unload flow.
 
-Addresses-Coverity: ("Infinite loop")
-Fixes: c7aeb4d1b9bf ("ice: Disable VFs until reset is completed")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index c26e6a102dac..088543d50095 100644
+index 805a6379c605..6b8055ab566f 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -488,7 +488,7 @@ static void
- ice_prepare_for_reset(struct ice_pf *pf)
- {
- 	struct ice_hw *hw = &pf->hw;
--	u8 i;
-+	int i;
+@@ -2674,6 +2674,11 @@ static void ice_remove(struct pci_dev *pdev)
+ 	ice_deinit_pf(pf);
+ 	ice_deinit_hw(&pf->hw);
+ 	ice_clear_interrupt_scheme(pf);
++	/* Issue a PFR as part of the prescribed driver unload flow.  Do not
++	 * do it via ice_schedule_reset() since there is no need to rebuild
++	 * and the service task is already stopped.
++	 */
++	ice_reset(&pf->hw, ICE_RESET_PFR);
+ 	pci_disable_pcie_error_reporting(pdev);
+ }
  
- 	/* already prepared for reset */
- 	if (test_bit(__ICE_PREPARED_FOR_RESET, pf->state))
 -- 
 2.20.1
 
