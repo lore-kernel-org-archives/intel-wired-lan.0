@@ -1,40 +1,148 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 2 Aug 2019 09:26:55 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next v4 03/11] libbpf: add flags
- to umem config
-In-Reply-To: <CAEf4Bzar-KgCjUEfKVeWzcB77xvXDagZFRQKDvWo1o9-JzCirw@mail.gmail.com>
-References: <20190724051043.14348-1-kevin.laatz@intel.com>
- <20190730085400.10376-1-kevin.laatz@intel.com>
- <20190730085400.10376-4-kevin.laatz@intel.com>
- <CAJ+HfNifxfgycmZFz8eBZq=FZXAgNQezNqUiy3Q1z4JBrUEkew@mail.gmail.com>
- <CAEf4BzbTbX-Teth+4-yiorO-oHp+JhGfW2e08iBoCsBA4JCbMQ@mail.gmail.com>
- <CAJ+HfNhYe_FgV0tGTLzaFGVSiimVnthgESN8Psdtpxw696w0OQ@mail.gmail.com>
- <CAEf4Bzar-KgCjUEfKVeWzcB77xvXDagZFRQKDvWo1o9-JzCirw@mail.gmail.com>
-Message-ID: <CAJ+HfNhQFs4jgJORmdPh6zeJXXMd-9j3YgdSUac3PxRQrGzNDw@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 03 Aug 2019 05:34:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD INCOMPLETE
+ 4cb29e6c06725a749b8e0a1938d20bac5c12f34b
+Message-ID: <5d44ac51.BHwdGcXBzH5VB3La%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2 Aug 2019 at 09:19, Andrii Nakryiko <andrii.nakryiko@gmail.com> wrote:
->
-> On Thu, Aug 1, 2019 at 12:34 AM Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
-> >
-[...]
-> >
-> > Old application, dynamically linked to new libbpf.so will crash,
-> > right? Old application passes old version of xsk_umem_config, and new
-> > library accesses (non-existing) flag struct member.
->
-> I think we have similar problems for all the _xattr type of commands
-> (as well some of btf stuff accepting extra opts structs). How is this
-> problem solved in general? Do we version same function multiple times,
-> one for each added field? It feels like there should be some better
-> way to handle this...
->
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+branch HEAD: 4cb29e6c06725a749b8e0a1938d20bac5c12f34b  i40e: Remove unicast log when VF is leaving multicast mode.
 
-If the size of the struct was passed as an argument (and extra care is
-taken when adding members to the struct), it could be handled w/o
-versioning... but that's not the case here. :-( Versioning is a mess
-to deal with, so I'd be happy if it could be avoided...
+TIMEOUT after 1441m
+
+
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 28
+
+alpha                            allmodconfig
+alpha                            allyesconfig
+i386                               tinyconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allyesconfig
+mips                                   jz4740
+mips                                     txx9
+nds32                            allmodconfig
+nds32                            allyesconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+riscv                              tinyconfig
+s390                             allyesconfig
+sh                               allyesconfig
+sparc                            allmodconfig
+sparc64                          allyesconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+
+configs tested: 87
+
+x86_64                           allmodconfig
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+arc                              allyesconfig
+powerpc                             defconfig
+microblaze                    nommu_defconfig
+powerpc                       ppc64_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+powerpc                           allnoconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                             allmodconfig
+s390                                defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+arm                              allmodconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                           allyesconfig
+i386                             allmodconfig
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+parisc                            allnoconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+x86_64                 randconfig-h002-201930
+x86_64                 randconfig-h003-201930
+i386                   randconfig-h001-201930
+i386                   randconfig-h002-201930
+x86_64                 randconfig-h004-201930
+i386                   randconfig-h004-201930
+i386                   randconfig-h003-201930
+x86_64                 randconfig-h001-201930
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
