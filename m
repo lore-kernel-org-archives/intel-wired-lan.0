@@ -1,168 +1,57 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  2 Aug 2019 01:25:27 -0700
-Subject: [Intel-wired-lan] [PATCH S26 09/15] ice: Report what the user set
- for coalesce [tx|rx]-usecs
+Date: Fri,  2 Aug 2019 01:25:22 -0700
+Subject: [Intel-wired-lan] [PATCH S26 04/15] ice: Fix VF configuration
+ issues due to reset
 In-Reply-To: <20190802082533.23083-1-anthony.l.nguyen@intel.com>
 References: <20190802082533.23083-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190802082533.23083-9-anthony.l.nguyen@intel.com>
+Message-ID: <20190802082533.23083-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-Currently if the user sets an odd value for [tx|rx]-usecs we align the
-value because the hardware only understands ITR values in multiples of
-2. This seems misleading because we are essentially telling the user
-that the ITR value is odd, when in fact we have changed it internally.
-Fix this by reporting that setting odd ITR values is not allowed.
+This patch fixes a critical reset issue that resulting to the server
+reboot when an Admin changes VF configuration on the host, for example
+changing VF to Trusted/non_Trusted mode, the PF driver send reset
+notification to AVF driver while also continue with reset flow. However,
+AVF driver schedule another reset due to notification, which causes two
+concurrent reset going on, and trigger lock up in the FW, with AQ call to
+delete VSI.
 
-Also, while making changes to ice_set_rc_coalesce() I noticed a bit of
-code/error duplication. Make the necessary changes to remove the
-duplication.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 88 ++++++++++----------
- 1 file changed, 44 insertions(+), 44 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 48d4ceac288a..dadcf4324f56 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3400,25 +3400,25 @@ static int
- ice_set_rc_coalesce(enum ice_container_type c_type, struct ethtool_coalesce *ec,
- 		    struct ice_ring_container *rc, struct ice_vsi *vsi)
- {
-+	const char *c_type_str = (c_type == ICE_RX_CONTAINER) ? "rx" : "tx";
-+	u32 use_adaptive_coalesce, coalesce_usecs;
- 	struct ice_pf *pf = vsi->back;
- 	u16 itr_setting;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 78fd3fa8ac8b..b93324e9f4bc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1152,12 +1152,19 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 	u32 reg;
+ 	int i;
  
- 	if (!rc->ring)
- 		return -EINVAL;
+-	/* If the VFs have been disabled, this means something else is
+-	 * resetting the VF, so we shouldn't continue.
++	/* If the PF has been disabled, there is no need resetting VF until
++	 * PF is active again.
+ 	 */
+ 	if (test_bit(__ICE_VF_DIS, pf->state))
+ 		return false;
  
--	itr_setting = rc->itr_setting & ~ICE_ITR_DYNAMIC;
--
- 	switch (c_type) {
- 	case ICE_RX_CONTAINER:
- 		if (ec->rx_coalesce_usecs_high > ICE_MAX_INTRL ||
- 		    (ec->rx_coalesce_usecs_high &&
- 		     ec->rx_coalesce_usecs_high < pf->hw.intrl_gran)) {
- 			netdev_info(vsi->netdev,
--				    "Invalid value, rx-usecs-high valid values are 0 (disabled), %d-%d\n",
--				    pf->hw.intrl_gran, ICE_MAX_INTRL);
-+				    "Invalid value, %s-usecs-high valid values are 0 (disabled), %d-%d\n",
-+				    c_type_str, pf->hw.intrl_gran,
-+				    ICE_MAX_INTRL);
- 			return -EINVAL;
- 		}
--
- 		if (ec->rx_coalesce_usecs_high != rc->ring->q_vector->intrl) {
- 			rc->ring->q_vector->intrl = ec->rx_coalesce_usecs_high;
- 			wr32(&pf->hw, GLINT_RATE(rc->ring->q_vector->reg_idx),
-@@ -3426,60 +3426,60 @@ ice_set_rc_coalesce(enum ice_container_type c_type, struct ethtool_coalesce *ec,
- 						   pf->hw.intrl_gran));
- 		}
- 
--		if (ec->rx_coalesce_usecs != itr_setting &&
--		    ec->use_adaptive_rx_coalesce) {
--			netdev_info(vsi->netdev,
--				    "Rx interrupt throttling cannot be changed if adaptive-rx is enabled\n");
--			return -EINVAL;
--		}
--
--		if (ec->rx_coalesce_usecs > ICE_ITR_MAX) {
--			netdev_info(vsi->netdev,
--				    "Invalid value, rx-usecs range is 0-%d\n",
--				   ICE_ITR_MAX);
--			return -EINVAL;
--		}
-+		use_adaptive_coalesce = ec->use_adaptive_rx_coalesce;
-+		coalesce_usecs = ec->rx_coalesce_usecs;
- 
--		if (ec->use_adaptive_rx_coalesce) {
--			rc->itr_setting |= ICE_ITR_DYNAMIC;
--		} else {
--			rc->itr_setting = ITR_REG_ALIGN(ec->rx_coalesce_usecs);
--			rc->target_itr = ITR_TO_REG(rc->itr_setting);
--		}
- 		break;
- 	case ICE_TX_CONTAINER:
- 		if (ec->tx_coalesce_usecs_high) {
- 			netdev_info(vsi->netdev,
--				    "setting tx-usecs-high is not supported\n");
-+				    "setting %s-usecs-high is not supported\n",
-+				    c_type_str);
- 			return -EINVAL;
- 		}
- 
--		if (ec->tx_coalesce_usecs != itr_setting &&
--		    ec->use_adaptive_tx_coalesce) {
--			netdev_info(vsi->netdev,
--				    "Tx interrupt throttling cannot be changed if adaptive-tx is enabled\n");
--			return -EINVAL;
--		}
--
--		if (ec->tx_coalesce_usecs > ICE_ITR_MAX) {
--			netdev_info(vsi->netdev,
--				    "Invalid value, tx-usecs range is 0-%d\n",
--				   ICE_ITR_MAX);
--			return -EINVAL;
--		}
-+		use_adaptive_coalesce = ec->use_adaptive_tx_coalesce;
-+		coalesce_usecs = ec->tx_coalesce_usecs;
- 
--		if (ec->use_adaptive_tx_coalesce) {
--			rc->itr_setting |= ICE_ITR_DYNAMIC;
--		} else {
--			rc->itr_setting = ITR_REG_ALIGN(ec->tx_coalesce_usecs);
--			rc->target_itr = ITR_TO_REG(rc->itr_setting);
--		}
- 		break;
- 	default:
- 		dev_dbg(&pf->pdev->dev, "Invalid container type %d\n", c_type);
- 		return -EINVAL;
- 	}
- 
-+	itr_setting = rc->itr_setting & ~ICE_ITR_DYNAMIC;
-+	if (coalesce_usecs != itr_setting && use_adaptive_coalesce) {
-+		netdev_info(vsi->netdev,
-+			    "%s interrupt throttling cannot be changed if adaptive-%s is enabled\n",
-+			    c_type_str, c_type_str);
-+		return -EINVAL;
-+	}
++	/* If the VF has been disabled, this means something else is
++	 * resetting the VF, so we shouldn't continue. Otherwise, set
++	 * disable VF state bit for actual reset, and continue.
++	 */
++	if (test_and_set_bit(ICE_VF_STATE_DIS, vf->vf_states))
++		return false;
 +
-+	if (coalesce_usecs > ICE_ITR_MAX) {
-+		netdev_info(vsi->netdev,
-+			    "Invalid value, %s-usecs range is 0-%d\n",
-+			    c_type_str, ICE_ITR_MAX);
-+		return -EINVAL;
-+	}
-+
-+	/* hardware only supports an ITR granularity of 2us */
-+	if (coalesce_usecs % 2 != 0) {
-+		netdev_info(vsi->netdev,
-+			    "Invalid value, %s-usecs must be even\n",
-+			    c_type_str);
-+		return -EINVAL;
-+	}
-+
-+	if (use_adaptive_coalesce) {
-+		rc->itr_setting |= ICE_ITR_DYNAMIC;
-+	} else {
-+		/* store user facing value how it was set */
-+		rc->itr_setting = coalesce_usecs;
-+		/* set to static and convert to value HW understands */
-+		rc->target_itr =
-+			ITR_TO_REG(ITR_REG_ALIGN(rc->itr_setting));
-+	}
-+
- 	return 0;
- }
+ 	ice_trigger_vf_reset(vf, is_vflr);
  
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
 -- 
 2.20.1
 
