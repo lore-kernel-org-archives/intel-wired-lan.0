@@ -1,50 +1,63 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  2 Aug 2019 01:25:33 -0700
-Subject: [Intel-wired-lan] [PATCH S26 15/15] ice: Cleanup defines in
- ice_type.h
+Date: Fri,  2 Aug 2019 01:25:31 -0700
+Subject: [Intel-wired-lan] [PATCH S26 13/15] ice: add print of autoneg state
+ to link message
 In-Reply-To: <20190802082533.23083-1-anthony.l.nguyen@intel.com>
 References: <20190802082533.23083-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190802082533.23083-15-anthony.l.nguyen@intel.com>
+Message-ID: <20190802082533.23083-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Conventionally, if the #defines/other are not needed by other header
-files being included, #includes are done first followed by #defines
-and other stuff. Move the #defines before the #includes to follow this
-convention.
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Suggested by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Print the state of autonegotiation when printing the Link
+up message.  Adds new text to the "NIC Link is up" line like
+Autoneg: <True | False>
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_type.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index b538d0b9eb80..40b028e73234 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -4,15 +4,15 @@
- #ifndef _ICE_TYPE_H_
- #define _ICE_TYPE_H_
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 6b8055ab566f..fb05871dc271 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -626,6 +626,7 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
+ 	const char *speed;
+ 	const char *fec;
+ 	const char *fc;
++	const char *an;
  
-+#define ICE_BYTES_PER_WORD	2
-+#define ICE_BYTES_PER_DWORD	4
+ 	if (!vsi)
+ 		return;
+@@ -709,6 +710,12 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
+ 		break;
+ 	}
+ 
++	/* check if autoneg completed, might be false due to not supported */
++	if (vsi->port_info->phy.link_info.an_info & ICE_AQ_AN_COMPLETED)
++		an = "True";
++	else
++		an = "False";
 +
- #include "ice_status.h"
- #include "ice_hw_autogen.h"
- #include "ice_osdep.h"
- #include "ice_controlq.h"
- #include "ice_lan_tx_rx.h"
+ 	/* Get FEC mode requested based on PHY caps last SW configuration */
+ 	caps = devm_kzalloc(&vsi->back->pdev->dev, sizeof(*caps), GFP_KERNEL);
+ 	if (!caps) {
+@@ -733,8 +740,8 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
+ 	devm_kfree(&vsi->back->pdev->dev, caps);
  
--#define ICE_BYTES_PER_WORD	2
--#define ICE_BYTES_PER_DWORD	4
--
- static inline bool ice_is_tc_ena(unsigned long bitmap, u8 tc)
- {
- 	return test_bit(tc, &bitmap);
+ done:
+-	netdev_info(vsi->netdev, "NIC Link is up %sbps, Requested FEC: %s, FEC: %s, Flow Control: %s\n",
+-		    speed, fec_req, fec, fc);
++	netdev_info(vsi->netdev, "NIC Link is up %sbps, Requested FEC: %s, FEC: %s, Autoneg: %s, Flow Control: %s\n",
++		    speed, fec_req, fec, an, fc);
+ }
+ 
+ /**
 -- 
 2.20.1
 
