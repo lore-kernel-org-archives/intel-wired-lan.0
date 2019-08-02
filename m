@@ -1,72 +1,99 @@
-From: Colin Ian King <colin.king@canonical.com>
-Date: Fri, 2 Aug 2019 18:12:17 +0100
-Subject: [Intel-wired-lan] [PATCH][net-next] ice: fix potential infinite
- loop
-In-Reply-To: <804857E1F29AAC47BF68C404FC60A18401096DB0DF@ORSMSX122.amr.corp.intel.com>
-References: <20190802155217.16996-1-colin.king@canonical.com>
- <804857E1F29AAC47BF68C404FC60A18401096DB0DF@ORSMSX122.amr.corp.intel.com>
-Message-ID: <3360b179-aaf6-d126-dd40-e1f7e81ac27d@canonical.com>
+From: Andrii Nakryiko <andrii.nakryiko@gmail.com>
+Date: Fri, 2 Aug 2019 00:19:29 -0700
+Subject: [Intel-wired-lan] [PATCH bpf-next v4 03/11] libbpf: add flags
+ to umem config
+In-Reply-To: <CAJ+HfNhYe_FgV0tGTLzaFGVSiimVnthgESN8Psdtpxw696w0OQ@mail.gmail.com>
+References: <20190724051043.14348-1-kevin.laatz@intel.com>
+ <20190730085400.10376-1-kevin.laatz@intel.com>
+ <20190730085400.10376-4-kevin.laatz@intel.com>
+ <CAJ+HfNifxfgycmZFz8eBZq=FZXAgNQezNqUiy3Q1z4JBrUEkew@mail.gmail.com>
+ <CAEf4BzbTbX-Teth+4-yiorO-oHp+JhGfW2e08iBoCsBA4JCbMQ@mail.gmail.com>
+ <CAJ+HfNhYe_FgV0tGTLzaFGVSiimVnthgESN8Psdtpxw696w0OQ@mail.gmail.com>
+Message-ID: <CAEf4Bzar-KgCjUEfKVeWzcB77xvXDagZFRQKDvWo1o9-JzCirw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 02/08/2019 18:07, Allan, Bruce W wrote:
->> -----Original Message-----
->> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf
->> Of Colin King
->> Sent: Friday, August 02, 2019 8:52 AM
->> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David S . Miller
->> <davem@davemloft.net>; intel-wired-lan at lists.osuosl.org;
->> netdev at vger.kernel.org
->> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
->> Subject: [Intel-wired-lan] [PATCH][net-next] ice: fix potential infinite loop
->>
->> From: Colin Ian King <colin.king@canonical.com>
->>
->> The loop counter of a for-loop is a u8 however this is being compared
->> to an int upper bound and this can lead to an infinite loop if the
->> upper bound is greater than 255 since the loop counter will wrap back
->> to zero. Fix this potential issue by making the loop counter an int.
->>
->> Addresses-Coverity: ("Infinite loop")
-> 
-> Actually, num_alloc_vfs should probably be a u16 instead of an int since num_alloc_vfs cannot exceed 256.
-> 
-> Which Coverity scan reported this and what options are used in the analysis?
+On Thu, Aug 1, 2019 at 12:34 AM Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
+>
+> On Thu, 1 Aug 2019 at 08:59, Andrii Nakryiko <andrii.nakryiko@gmail.com> wrote:
+> >
+> > On Wed, Jul 31, 2019 at 8:21 AM Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
+> > >
+> > > On Tue, 30 Jul 2019 at 19:43, Kevin Laatz <kevin.laatz@intel.com> wrote:
+> > > >
+> > > > This patch adds a 'flags' field to the umem_config and umem_reg structs.
+> > > > This will allow for more options to be added for configuring umems.
+> > > >
+> > > > The first use for the flags field is to add a flag for unaligned chunks
+> > > > mode. These flags can either be user-provided or filled with a default.
+> > > >
+> > > > Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
+> > > > Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
+> > > >
+> > > > ---
+> > > > v2:
+> > > >   - Removed the headroom check from this patch. It has moved to the
+> > > >     previous patch.
+> > > >
+> > > > v4:
+> > > >   - modified chunk flag define
+> > > > ---
+> >
+> > [...]
+> >
+> > > > diff --git a/tools/lib/bpf/xsk.h b/tools/lib/bpf/xsk.h
+> > > > index 833a6e60d065..44a03d8c34b9 100644
+> > > > --- a/tools/lib/bpf/xsk.h
+> > > > +++ b/tools/lib/bpf/xsk.h
+> > > > @@ -170,12 +170,14 @@ LIBBPF_API int xsk_socket__fd(const struct xsk_socket *xsk);
+> > > >  #define XSK_UMEM__DEFAULT_FRAME_SHIFT    12 /* 4096 bytes */
+> > > >  #define XSK_UMEM__DEFAULT_FRAME_SIZE     (1 << XSK_UMEM__DEFAULT_FRAME_SHIFT)
+> > > >  #define XSK_UMEM__DEFAULT_FRAME_HEADROOM 0
+> > > > +#define XSK_UMEM__DEFAULT_FLAGS 0
+> > > >
+> > > >  struct xsk_umem_config {
+> > > >         __u32 fill_size;
+> > > >         __u32 comp_size;
+> > > >         __u32 frame_size;
+> > > >         __u32 frame_headroom;
+> > > > +       __u32 flags;
+> > >
+> > > And the flags addition here, unfortunately, requires symbol versioning
+> > > of xsk_umem__create(). That'll be the first in libbpf! :-)
+> >
+> > xsk_umem_config is passed by pointer to xsk_umem__create(), so this
+> > doesn't break ABI, does it?
+> >
+>
+> Old application, dynamically linked to new libbpf.so will crash,
+> right? Old application passes old version of xsk_umem_config, and new
+> library accesses (non-existing) flag struct member.
 
-One that I run in a private coverity scan with scan analysis cranked up
-high on linux-next, so the report is not public.
+I think we have similar problems for all the _xattr type of commands
+(as well some of btf stuff accepting extra opts structs). How is this
+problem solved in general? Do we version same function multiple times,
+one for each added field? It feels like there should be some better
+way to handle this...
 
-Colin
-
-> 
->> Fixes: c7aeb4d1b9bf ("ice: Disable VFs until reset is completed")
->> Signed-off-by: Colin Ian King <colin.king@canonical.com>
->> ---
->>  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
->> b/drivers/net/ethernet/intel/ice/ice_main.c
->> index c26e6a102dac..088543d50095 100644
->> --- a/drivers/net/ethernet/intel/ice/ice_main.c
->> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
->> @@ -488,7 +488,7 @@ static void
->>  ice_prepare_for_reset(struct ice_pf *pf)
->>  {
->>  	struct ice_hw *hw = &pf->hw;
->> -	u8 i;
->> +	int i;
->>
->>  	/* already prepared for reset */
->>  	if (test_bit(__ICE_PREPARED_FOR_RESET, pf->state))
->> --
->> 2.20.1
->>
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
+>
+>
+> Bj?rn
+>
+>
+> > >
+> > >
+> > > Bj?rn
+> > >
+> > > >  };
+> > > >
+> > > >  /* Flags for the libbpf_flags field. */
+> > > > --
+> > > > 2.17.1
+> > > >
+> > > > _______________________________________________
+> > > > Intel-wired-lan mailing list
+> > > > Intel-wired-lan at osuosl.org
+> > > > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
