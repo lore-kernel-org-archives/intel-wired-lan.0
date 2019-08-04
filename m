@@ -1,22 +1,29 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Sun, 4 Aug 2019 13:44:49 +0300
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Sun, 4 Aug 2019 15:44:53 +0200
 Subject: [Intel-wired-lan] [PATCH v4] e1000e: PCIm function state support
 In-Reply-To: <20190804074026.25198-1-vitaly.lifshits@intel.com>
 References: <20190804074026.25198-1-vitaly.lifshits@intel.com>
-Message-ID: <70c9f990-3dd8-6db9-acf9-c7215d151ff1@intel.com>
+Message-ID: <8829b684-518d-2233-d618-4f1367c2dbbd@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/4/2019 10:40, Vitaly Lifshits wrote:
+Dear Vitaly,
+
+
+Thank you for the updated version.
+
+On 04.08.19 09:40, Vitaly Lifshits wrote:
 > Due to commit: 5d8682588605 ("[misc] mei: me: allow runtime
 > pm for platform with D0i3")
 > when disconnecting the cable and reconnecting it the NIC
 > enters DMoff state. This caused wrong link indication
 > and duplex mismatch.
-> 
+
+*and* should fit on the line above.
+
 > Checking PCIm function state and performing PHY reset after
 > exiting DMoff state in watchdog task, solves this issue.
 > 
@@ -43,6 +50,9 @@ On 8/4/2019 10:40, Vitaly Lifshits wrote:
 > +/* PCIm function state */
 > +#define E1000_STATUS_PCIM_STATE	0x40000000
 > +#define PCIM_DMOFF_EXIT_TIMEOUT 100
+
+Align the values?
+
 > +
 >   #define HALF_DUPLEX 1
 >   #define FULL_DUPLEX 2
@@ -65,6 +75,9 @@ On 8/4/2019 10:40, Vitaly Lifshits wrote:
 >   			pm_runtime_resume(netdev->dev.parent);
 >   
 > +			/* Checking if MAC is in DMoff state*/
+
+s/Checking/Check/
+
 > +			pcim_state = er32(STATUS);
 > +			while (pcim_state & E1000_STATUS_PCIM_STATE) {
 > +				if (tries++ == PCIM_DMOFF_EXIT_TIMEOUT) {
@@ -80,10 +93,16 @@ On 8/4/2019 10:40, Vitaly Lifshits wrote:
 > +				 */
 > +				if (!(pcim_state & E1000_STATUS_PCIM_STATE))
 > +					e1000_phy_hw_reset(&adapter->hw);
+
+I still believe, the if statement should be moved *outside* the loop.
+
 > +			}
 > +
 >   			/* update snapshot of PHY registers on LSC */
 >   			e1000_phy_read_status(adapter);
 >   			mac->ops.get_link_up_info(&adapter->hw,
-> 
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+
+
+Kind regards,
+
+Paul
