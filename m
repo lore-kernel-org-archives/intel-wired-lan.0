@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 5 Aug 2019 21:40:12 +0000
-Subject: [Intel-wired-lan] [PATCH S26 12/15] ice: update driver
- unloading field for Queue Shutdown AQ command
-In-Reply-To: <20190802082533.23083-12-anthony.l.nguyen@intel.com>
+Date: Mon, 5 Aug 2019 21:40:37 +0000
+Subject: [Intel-wired-lan] [PATCH S26 13/15] ice: add print of autoneg
+ state to link message
+In-Reply-To: <20190802082533.23083-13-anthony.l.nguyen@intel.com>
 References: <20190802082533.23083-1-anthony.l.nguyen@intel.com>
- <20190802082533.23083-12-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40F116@ORSMSX104.amr.corp.intel.com>
+ <20190802082533.23083-13-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40F125@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Friday, August 2, 2019 1:26 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S26 12/15] ice: update driver unloading
-> field for Queue Shutdown AQ command
+> Subject: [Intel-wired-lan] [PATCH S26 13/15] ice: add print of autoneg state
+> to link message
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> According to recent specification versions, the field in the Queue Shutdown
-> AdminQ command consisting of the "driver unloading" indication is not a 4
-> byte field (it is byte.bit 16.0).  Change it to a byte and remove the
-> unnecessary endian conversion.
+> Print the state of autonegotiation when printing the Link up message.  Adds
+> new text to the "NIC Link is up" line like
+> Autoneg: <True | False>
 > 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 4 ++--
->  drivers/net/ethernet/intel/ice/ice_common.c     | 2 +-
->  2 files changed, 3 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
