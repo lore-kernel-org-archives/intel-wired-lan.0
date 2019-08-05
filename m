@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 5 Aug 2019 21:33:28 +0000
-Subject: [Intel-wired-lan] [PATCH S26 02/15] ice: add support for
- virtchnl_queue_select.[tx|rx]_queues bitmap
-In-Reply-To: <20190802082533.23083-2-anthony.l.nguyen@intel.com>
+Date: Mon, 5 Aug 2019 21:34:03 +0000
+Subject: [Intel-wired-lan] [PATCH S26 03/15] ice: Alloc queue management
+ bitmaps and arrays dynamically
+In-Reply-To: <20190802082533.23083-3-anthony.l.nguyen@intel.com>
 References: <20190802082533.23083-1-anthony.l.nguyen@intel.com>
- <20190802082533.23083-2-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40F077@ORSMSX104.amr.corp.intel.com>
+ <20190802082533.23083-3-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40F087@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,29 +17,42 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Friday, August 2, 2019 1:25 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S26 02/15] ice: add support for
-> virtchnl_queue_select.[tx|rx]_queues bitmap
+> Subject: [Intel-wired-lan] [PATCH S26 03/15] ice: Alloc queue management
+> bitmaps and arrays dynamically
 > 
-> From: Paul Greenwalt <paul.greenwalt@intel.com>
+> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 > 
-> The VF driver can call VIRTCHNL_OP_[ENABLE|DISABLE]_QUEUES separately
-> for each queue. Add support for virtchnl_queue_select.[tx|rx]_queues
-> bitmap which is used to indicate which queues to enable and disable.
+> The total number of queues available on the device is divided between
+> multiple physical functions (PF) in the firmware and provided to the driver
+> when it gets function capabilities from the firmware. Thus each PF knows
+> how many Tx/Rx queues it has. These queues are then doled out to different
+> VSIs (for LAN traffic, SR-IOV VF traffic, etc.)
 > 
-> Add tracing of VF Tx/Rx per queue enable state to avoid enabling enabled
-> queues and disabling disabled queues. Add total queues enabled count and
-> clear ICE_VF_STATE_QS_ENA when count is zero.
+> To track usage of these queues at the PF level, the driver uses two bitmaps
+> avail_txqs and avail_rxqs. At the VSI level (i.e. struct ice_vsi
+> instances) the driver uses two arrays txq_map and rxq_map, to track
+> ownership of VSIs' queues in avail_txqs and avail_rxqs respectively.
 > 
-> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
-> Signed-off-by: Peng Huang <peng.huang@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> The aforementioned bitmaps and arrays should be allocated dynamically,
+> because the number of queues supported by a PF is only available once
+> function capabilities have been queried. The current static allocation
+> consumes way more memory than required.
+> 
+> This patch removes the DECLARE_BITMAP for avail_txqs and avail_rxqs and
+> instead uses bitmap_zalloc to allocate the bitmaps during init.
+> Similarly txq_map and rxq_map are now allocated in ice_vsi_alloc_arrays.
+> As a result ICE_MAX_TXQS and ICE_MAX_RXQS defines are no longer
+> needed.
+> Also as txq_map and rxq_map are now allocated and freed, some code
+> reordering was required in ice_vsi_rebuild for correct functioning.
+> 
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c      |  15 +-
->  drivers/net/ethernet/intel/ice/ice_lib.h      |  10 +
->  drivers/net/ethernet/intel/ice/ice_main.c     |   2 +-
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 243 +++++++++++++-----
-> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  12 +-
->  5 files changed, 207 insertions(+), 75 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h      | 12 +++---
+>  drivers/net/ethernet/intel/ice/ice_lib.c  | 49 +++++++++++++++++------
+> drivers/net/ethernet/intel/ice/ice_main.c | 40 ++++++++++++++----
+>  3 files changed, 74 insertions(+), 27 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
