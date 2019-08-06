@@ -1,59 +1,42 @@
-From: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
-Date: Tue,  6 Aug 2019 10:38:26 -0300
-Subject: [Intel-wired-lan] [PATCH] i40e: Remove EMPR traces from debugfs
- facility
-Message-ID: <20190806133826.18480-1-maurosr@linux.vnet.ibm.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Tue,  6 Aug 2019 18:11:25 +0200
+Subject: [Intel-wired-lan] [PATCH 14/17] fm10k: no need to check return
+ value of debugfs_create functions
+In-Reply-To: <20190806161128.31232-1-gregkh@linuxfoundation.org>
+References: <20190806161128.31232-1-gregkh@linuxfoundation.org>
+Message-ID: <20190806161128.31232-15-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Since commit
-'5098850c9b9b ("i40e/i40evf: i40e_register.h updates")'
-it is no longer possible to trigger an EMP Reset from debugfs, but it's
-possible to request it either way, to end up with a bad reset request:
+When calling debugfs functions, there is no need to ever check the
+return value.  The function can work or not, but the code logic should
+never do something different based on this.
 
-echo empr > /sys/kernel/debug/i40e/0002\:01\:00.1/command
-i40e 0002:01:00.1: debugfs: forcing EMPR
-i40e 0002:01:00.1: bad reset request 0x00010000
-
-So let's remove this piece of code and show the available valid commands
-as it is when any invalid command is issued.
-
-Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: intel-wired-lan at lists.osuosl.org
+Cc: netdev at vger.kernel.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h         | 1 -
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 4 ----
- 2 files changed, 5 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 84bd06901014..6ec0e1bc05e6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -131,7 +131,6 @@ enum i40e_state_t {
- 	__I40E_PF_RESET_REQUESTED,
- 	__I40E_CORE_RESET_REQUESTED,
- 	__I40E_GLOBAL_RESET_REQUESTED,
--	__I40E_EMP_RESET_REQUESTED,
- 	__I40E_EMP_RESET_INTR_RECEIVED,
- 	__I40E_SUSPENDED,
- 	__I40E_PTP_TX_IN_PROGRESS,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 55d20acfcf70..48fdf16c6019 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -1125,10 +1125,6 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 		dev_info(&pf->pdev->dev, "debugfs: forcing GlobR\n");
- 		i40e_do_reset_safe(pf, BIT(__I40E_GLOBAL_RESET_REQUESTED));
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+index dca104121c05..1d27b2fb23af 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+@@ -160,8 +160,6 @@ void fm10k_dbg_q_vector_init(struct fm10k_q_vector *q_vector)
+ 	snprintf(name, sizeof(name), "q_vector.%03d", q_vector->v_idx);
  
--	} else if (strncmp(cmd_buf, "empr", 4) == 0) {
--		dev_info(&pf->pdev->dev, "debugfs: forcing EMPR\n");
--		i40e_do_reset_safe(pf, BIT(__I40E_EMP_RESET_REQUESTED));
--
- 	} else if (strncmp(cmd_buf, "read", 4) == 0) {
- 		u32 address;
- 		u32 value;
+ 	q_vector->dbg_q_vector = debugfs_create_dir(name, interface->dbg_intfc);
+-	if (!q_vector->dbg_q_vector)
+-		return;
+ 
+ 	/* Generate a file for each rx ring in the q_vector */
+ 	for (i = 0; i < q_vector->tx.count; i++) {
 -- 
-2.21.0
+2.22.0
 
