@@ -1,128 +1,110 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 8 Aug 2019 11:03:06 +0200
-Subject: [Intel-wired-lan] [PATCH v4] e1000e: PCIm function state support
-In-Reply-To: <a5a0b21c-5df3-809b-fc7a-022f2432676c@molgen.mpg.de>
-References: <20190804074026.25198-1-vitaly.lifshits@intel.com>
- <8829b684-518d-2233-d618-4f1367c2dbbd@molgen.mpg.de>
- <bc5fbdcb-6afe-dac0-b498-c5e26d539d6d@intel.com>
- <a5a0b21c-5df3-809b-fc7a-022f2432676c@molgen.mpg.de>
-Message-ID: <32148441-7876-903c-c43a-d1783e4bf7ae@molgen.mpg.de>
+From: kernelci.org bot <bot@kernelci.org>
+Date: Wed, 07 Aug 2019 00:34:32 -0700 (PDT)
+Subject: [Intel-wired-lan] net-next/master boot bisection:
+ v5.3-rc1-460-g05bb520376af on meson-gxm-khadas-vim2
+Message-ID: <5d4a7f08.1c69fb81.5cc82.1018@mx.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Vitaly,
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* This automated bisection report was sent to you on the basis  *
+* that you may be involved with the breaking commit it has      *
+* found.  No manual investigation has been done to verify it,   *
+* and the root cause of the problem may be somewhere else.      *
+*                                                               *
+* If you do send a fix, please include this trailer:            *
+*   Reported-by: "kernelci.org bot" <bot@kernelci.org>          *
+*                                                               *
+* Hope this helps!                                              *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+net-next/master boot bisection: v5.3-rc1-460-g05bb520376af on meson-gxm-khadas-vim2
+
+Summary:
+  Start:      05bb520376af Merge branch '40GbE' of git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue
+  Details:    https://kernelci.org/boot/id/5d4a3a6759b51422d431b28d
+  Plain log:  https://storage.kernelci.org//net-next/master/v5.3-rc1-460-g05bb520376af/arm64/defconfig/gcc-8/lab-baylibre/boot-meson-gxm-khadas-vim2.txt
+  HTML log:   https://storage.kernelci.org//net-next/master/v5.3-rc1-460-g05bb520376af/arm64/defconfig/gcc-8/lab-baylibre/boot-meson-gxm-khadas-vim2.html
+  Result:     b27223591606 i40e: verify string count matches even on early return
+
+Checks:
+  revert:     PASS
+  verify:     PASS
+
+Parameters:
+  Tree:       net-next
+  URL:        git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git
+  Branch:     master
+  Target:     meson-gxm-khadas-vim2
+  CPU arch:   arm64
+  Lab:        lab-baylibre
+  Compiler:   gcc-8
+  Config:     defconfig
+  Test suite: boot
+
+Breaking commit found:
+
+-------------------------------------------------------------------------------
+commit b27223591606f59c1f7c042b8e3dc74affadf492
+Author: Jacob Keller <jacob.e.keller@intel.com>
+Date:   Tue Jul 2 08:22:58 2019 -0400
+
+    i40e: verify string count matches even on early return
+    
+    Similar to i40e_get_ethtool_stats, add a goto to verify that the data
+    pointer for the strings lines up with the expected stats count. This
+    helps ensure that bugs are not introduced when adding stats.
+    
+    Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+    Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+    Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index ceca57a261dc..01e4615b1b4b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2342,7 +2342,7 @@ static void i40e_get_stat_strings(struct net_device *netdev, u8 *data)
+ 	}
+ 
+ 	if (vsi != pf->vsi[pf->lan_vsi] || pf->hw.partition_id != 1)
+-		return;
++		goto check_data_pointer;
+ 
+ 	i40e_add_stat_strings(&data, i40e_gstrings_veb_stats);
+ 
+@@ -2354,6 +2354,7 @@ static void i40e_get_stat_strings(struct net_device *netdev, u8 *data)
+ 	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++)
+ 		i40e_add_stat_strings(&data, i40e_gstrings_pfc_stats, i);
+ 
++check_data_pointer:
+ 	WARN_ONCE(data - p != i40e_get_stats_count(netdev) * ETH_GSTRING_LEN,
+ 		  "stat strings count mismatch!");
+ }
+-------------------------------------------------------------------------------
 
 
-On 07.08.19 16:51, Paul Menzel wrote:
+Git bisection log:
 
-> On 07.08.19 09:47, Lifshits, Vitaly wrote:
-
->> On 8/4/2019 16:44, Paul Menzel wrote:
-> 
->>> On 04.08.19 09:40, Vitaly Lifshits wrote:
-> 
-> [?]
-> 
->>>> +??????????? pcim_state = er32(STATUS);
->>>> +??????????? while (pcim_state & E1000_STATUS_PCIM_STATE) {
->>>> +??????????????? if (tries++ == PCIM_DMOFF_EXIT_TIMEOUT) {
-> 
-> By the way, can?t there be the unit appended to the macro name
-> `PCIM_DMOFF_EXIT_TIMEOUT`?
-> 
->>>> +??????????????????? e_dbg("Error in exiting dmoff\n");
->>>> +??????????????????? e_err("PCIm DMoff timeout expired\n");
-> 
-> It?s not a hold-up, but why do you print two messages? I?d just print the
-> error message.
-> 
->     e_err("Failed to exit PCIm DMoff: Time-out (%i iterations) expired", PCIM_DMOFF_EXIT_TIMEOUT);
-> 
-> Or: e_err("Exiting PCIm DMoff timed out after %i iterations.", PCIM_DMOFF_EXIT_TIMEOUT);
-> 
->>>> +??????????????????? break;
->>>> +??????????????? }
->>>> +??????????????? usleep_range(10000, 20000);
->>>> +??????????????? pcim_state = er32(STATUS);
->>>> +
->>>> +??????????????? /* If MAC entered DMoff state, PHY reset is
->>>> +???????????????? * needed after exiting it
->>>> +???????????????? */
->>>> +??????????????? if (!(pcim_state & E1000_STATUS_PCIM_STATE))
->>>> +??????????????????? e1000_phy_hw_reset(&adapter->hw);
->>>
->>> I still believe, the if statement should be moved *outside* the loop.
->>
->> The if statement has to stay in the loop since the PHY reset is
->> needed only if the MAC entered DMoff state.
-> 
-> Thank you. Now I finally saw it. It?s about, when the loop is never
-> entered. I associated a while loop in my head normally with the assumption,
-> that the condition is true in the beginning.
-> 
-> For the record, the code below is more intuitive for me.
-> 
-> ```
-> if (pcim_state & E1000_STATUS_PCIM_STATE) {
-> /* MAC in DMoff state */
-> 	do {
-> 		if (tries++ == PCIM_DMOFF_EXIT_TIMEOUT) {
-> 			e_dbg("Error in exiting dmoff\n");
-> 			e_err("PCIm DMoff timeout expired\n");
-> 			break;
-> 		}
-> 		usleep_range(10000, 20000);
-> 		pcim_state = er32(STATUS);
-> 	} while (pcim_state & E1000_STATUS_PCIM_STATE);
-> 
-> 	e1000_phy_hw_reset(&adapter->hw);
-> }
-> ```
-
-Sleeping a night over this, this is still not equivalent to your code, as
-this would reset after timing out, which your code does not. So, the if
-condition has to be added for that call.
-
-
-```
-[?]
-unsigned int tries = 0; /* u32 not needed */
-[?]
-
-if (pcim_state & E1000_STATUS_PCIM_STATE) {
-/* MAC in DMoff state */
-	do {
-		usleep_range(10000, 20000);
-		pcim_state = er32(STATUS);
-	} while ((pcim_state & E1000_STATUS_PCIM_STATE) && (++tries < PCIM_DMOFF_EXIT_TIMEOUT));
-
-	if (tries == PCIM_DMOFF_EXIT_TIMEOUT)
-		e_err("Exiting PCIm DMoff timed out after %i iterations.", PCIM_DMOFF_EXIT_TIMEOUT);
-	else
-		e1000_phy_hw_reset(&adapter->hw);
-}
-```
-
->>>> +??????????? }
->>>> +
->>>> ????????????? /* update snapshot of PHY registers on LSC */
->>>> ????????????? e1000_phy_read_status(adapter);
->>>> ????????????? mac->ops.get_link_up_info(&adapter->hw,
-> 
-> Anyway, I do not want to hold up anything.
-
-
-Kind regards,
-
-Paul
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 5174 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190808/4e617491/attachment.p7s>
+-------------------------------------------------------------------------------
+git bisect start
+# good: [9e8fb25254f76cb483303d8e9a97ed80a65418fe] Merge branch 'net-l3-l4-functional-tests'
+git bisect good 9e8fb25254f76cb483303d8e9a97ed80a65418fe
+# bad: [05bb520376af2c5146d3c44832c22ec3bb54d778] Merge branch '40GbE' of git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue
+git bisect bad 05bb520376af2c5146d3c44832c22ec3bb54d778
+# good: [c4ed52538cd012bd9dfe97beda6802454d367e70] Merge branch 'drop_monitor-Various-improvements-and-cleanups'
+git bisect good c4ed52538cd012bd9dfe97beda6802454d367e70
+# good: [fb1b775a247ee8d846152841f780eba6cb71bcfc] net: sched: add skbedit of ptype action to hardware IR
+git bisect good fb1b775a247ee8d846152841f780eba6cb71bcfc
+# good: [ef68de56c7ad6f708bee8db5e08b83013083e757] Merge branch 'Support-tunnels-over-VLAN-in-NFP'
+git bisect good ef68de56c7ad6f708bee8db5e08b83013083e757
+# good: [0969402fd5dd57268bb7547d7e5ece8fcd81157d] i40e: Update visual effect for advertised FEC mode.
+git bisect good 0969402fd5dd57268bb7547d7e5ece8fcd81157d
+# bad: [b27223591606f59c1f7c042b8e3dc74affadf492] i40e: verify string count matches even on early return
+git bisect bad b27223591606f59c1f7c042b8e3dc74affadf492
+# good: [b603f9dc20afed5e4666642c8713cafb94a23058] i40e: Log info when PF is entering and leaving Allmulti mode.
+git bisect good b603f9dc20afed5e4666642c8713cafb94a23058
+# first bad commit: [b27223591606f59c1f7c042b8e3dc74affadf492] i40e: verify string count matches even on early return
+-------------------------------------------------------------------------------
