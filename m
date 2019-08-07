@@ -1,175 +1,106 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 07 Aug 2019 22:44:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 6c8073237349b14a847529b1c11c769ed0d33031
-Message-ID: <5d4ae3e8.NILVJi2uUAR8zn4d%lkp@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Wed, 7 Aug 2019 16:51:52 +0200
+Subject: [Intel-wired-lan] [PATCH v4] e1000e: PCIm function state support
+In-Reply-To: <bc5fbdcb-6afe-dac0-b498-c5e26d539d6d@intel.com>
+References: <20190804074026.25198-1-vitaly.lifshits@intel.com>
+ <8829b684-518d-2233-d618-4f1367c2dbbd@molgen.mpg.de>
+ <bc5fbdcb-6afe-dac0-b498-c5e26d539d6d@intel.com>
+Message-ID: <a5a0b21c-5df3-809b-fc7a-022f2432676c@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 6c8073237349b14a847529b1c11c769ed0d33031  ice: fix potential infinite loop
+Dear Vitaly,
 
-elapsed time: 908m
 
-configs tested: 150
+On 07.08.19 09:47, Lifshits, Vitaly wrote:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> Thank you again for your comments.
+> I sent a new version for my patch (V5).
 
-x86_64                 randconfig-f001-201931
-x86_64                 randconfig-f002-201931
-x86_64                 randconfig-f003-201931
-x86_64                 randconfig-f004-201931
-i386                   randconfig-f001-201931
-i386                   randconfig-f002-201931
-i386                   randconfig-f003-201931
-i386                   randconfig-f004-201931
-arm                              allmodconfig
-arm64                            allmodconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                 randconfig-d001-201931
-x86_64                 randconfig-d002-201931
-x86_64                 randconfig-d003-201931
-x86_64                 randconfig-d004-201931
-i386                   randconfig-d001-201931
-i386                   randconfig-d002-201931
-i386                   randconfig-d003-201931
-i386                   randconfig-d004-201931
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-x86_64                 randconfig-a001-201931
-x86_64                 randconfig-a002-201931
-x86_64                 randconfig-a003-201931
-x86_64                 randconfig-a004-201931
-i386                   randconfig-a001-201931
-i386                   randconfig-a002-201931
-i386                   randconfig-a003-201931
-i386                   randconfig-a004-201931
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-x86_64                 randconfig-g001-201931
-x86_64                 randconfig-g002-201931
-x86_64                 randconfig-g003-201931
-x86_64                 randconfig-g004-201931
-i386                   randconfig-g001-201931
-i386                   randconfig-g002-201931
-i386                   randconfig-g003-201931
-i386                   randconfig-g004-201931
-x86_64                 randconfig-c001-201931
-x86_64                 randconfig-c002-201931
-x86_64                 randconfig-c003-201931
-x86_64                 randconfig-c004-201931
-i386                   randconfig-c001-201931
-i386                   randconfig-c002-201931
-i386                   randconfig-c003-201931
-i386                   randconfig-c004-201931
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-e001-201931
-x86_64                 randconfig-e002-201931
-x86_64                 randconfig-e003-201931
-x86_64                 randconfig-e004-201931
-i386                   randconfig-e001-201931
-i386                   randconfig-e002-201931
-i386                   randconfig-e003-201931
-i386                   randconfig-e004-201931
-x86_64                           allmodconfig
-x86_64                 randconfig-b001-201931
-x86_64                 randconfig-b002-201931
-x86_64                 randconfig-b003-201931
-x86_64                 randconfig-b004-201931
-i386                   randconfig-b001-201931
-i386                   randconfig-b002-201931
-i386                   randconfig-b003-201931
-i386                   randconfig-b004-201931
-x86_64                 randconfig-h001-201931
-x86_64                 randconfig-h002-201931
-x86_64                 randconfig-h003-201931
-x86_64                 randconfig-h004-201931
-i386                   randconfig-h001-201931
-i386                   randconfig-h002-201931
-i386                   randconfig-h003-201931
-i386                   randconfig-h004-201931
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
+Thank you very much for incorporating them.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> On 8/4/2019 16:44, Paul Menzel wrote:
+
+>> On 04.08.19 09:40, Vitaly Lifshits wrote:
+
+[?]
+
+>>> +??????????? pcim_state = er32(STATUS);
+>>> +??????????? while (pcim_state & E1000_STATUS_PCIM_STATE) {
+>>> +??????????????? if (tries++ == PCIM_DMOFF_EXIT_TIMEOUT) {
+
+By the way, can?t there be the unit appended to the macro name
+`PCIM_DMOFF_EXIT_TIMEOUT`?
+
+>>> +??????????????????? e_dbg("Error in exiting dmoff\n");
+>>> +??????????????????? e_err("PCIm DMoff timeout expired\n");
+
+It?s not a hold-up, but why do you print two messages? I?d just print the
+error message.
+
+    e_err("Failed to exit PCIm DMoff: Time-out (%i iterations) expired", PCIM_DMOFF_EXIT_TIMEOUT);
+
+Or: e_err("Exiting PCIm DMoff timed out after %i iterations.", PCIM_DMOFF_EXIT_TIMEOUT);
+
+>>> +??????????????????? break;
+>>> +??????????????? }
+>>> +??????????????? usleep_range(10000, 20000);
+>>> +??????????????? pcim_state = er32(STATUS);
+>>> +
+>>> +??????????????? /* If MAC entered DMoff state, PHY reset is
+>>> +???????????????? * needed after exiting it
+>>> +???????????????? */
+>>> +??????????????? if (!(pcim_state & E1000_STATUS_PCIM_STATE))
+>>> +??????????????????? e1000_phy_hw_reset(&adapter->hw);
+>>
+>> I still believe, the if statement should be moved *outside* the loop.
+> 
+> The if statement has to stay in the loop since the PHY reset is
+> needed only if the MAC entered DMoff state.
+
+Thank you. Now I finally saw it. It?s about, when the loop is never
+entered. I associated a while loop in my head normally with the assumption,
+that the condition is true in the beginning.
+
+For the record, the code below is more intuitive for me.
+
+```
+if (pcim_state & E1000_STATUS_PCIM_STATE) {
+/* MAC in DMoff state */
+	do {
+		if (tries++ == PCIM_DMOFF_EXIT_TIMEOUT) {
+			e_dbg("Error in exiting dmoff\n");
+			e_err("PCIm DMoff timeout expired\n");
+			break;
+		}
+		usleep_range(10000, 20000);
+		pcim_state = er32(STATUS);
+	} while (pcim_state & E1000_STATUS_PCIM_STATE);
+
+	e1000_phy_hw_reset(&adapter->hw);
+}
+```
+
+>>> +??????????? }
+>>> +
+>>> ????????????? /* update snapshot of PHY registers on LSC */
+>>> ????????????? e1000_phy_read_status(adapter);
+>>> ????????????? mac->ops.get_link_up_info(&adapter->hw,
+
+Anyway, I do not want to hold up anything.
+
+
+Kind regards,
+
+Paul
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 5174 bytes
+Desc: S/MIME Cryptographic Signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190807/6dc6dc31/attachment-0001.p7s>
