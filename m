@@ -1,90 +1,105 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Wed, 7 Aug 2019 11:16:05 +0300
-Subject: [Intel-wired-lan] [PATCH v5] e1000e: PCIm function state support
-In-Reply-To: <20190807073611.21733-1-vitaly.lifshits@intel.com>
-References: <20190807073611.21733-1-vitaly.lifshits@intel.com>
-Message-ID: <75aae517-972f-0636-6d53-52d12400a1a9@intel.com>
+From: Firo Yang <firo.yang@suse.com>
+Date: Wed, 7 Aug 2019 08:38:43 +0000
+Subject: [Intel-wired-lan] [PATCH v2 1/1] ixgbe: sync the first fragment
+ unconditionally
+In-Reply-To: <85aaefdf-d454-1823-5840-d9e2f71ffb19@oracle.com>
+References: <20190807024917.27682-1-firo.yang@suse.com>
+ <85aaefdf-d454-1823-5840-d9e2f71ffb19@oracle.com>
+Message-ID: <20190807083831.GA6811@linux-6qg8>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/7/2019 10:36, Vitaly Lifshits wrote:
-> Due to commit: 5d8682588605 ("[misc] mei: me: allow runtime pm for
-> platform with D0i3"), when the cable is disconnect and reconnected,
-> the NIC can enter a DMoff state.  The DMoff state will cause incorrect
-> link indication and duplex setting mismatch.
+The 08/07/2019 15:56, Jacob Wen wrote:
+> I think the description is not correct. Consider using something like below.
+Thank you for comments. 
+
 > 
-> To resolve this, we need to check the PCIm function state and perform
-> a PHY reset after exiting the DMoff state in our watchdog service task.
+> In Xen environment, due to memory fragmentation ixgbe may allocate a 'DMA'
+> buffer with pages that are not physically contiguous.
+Actually, I didn't look into the reason why ixgbe got a DMA buffer which
+was mapped to Xen-swiotlb area.
+
+But I don't think this issue relates to phsical memory contiguity because, in
+our case, one ixgbe_rx_buffer only associates at most one page.
+
+If you take a look at the related code, you will find there are several reasons
+for mapping a DMA buffer to Xen-swiotlb area:
+static dma_addr_t xen_swiotlb_map_page(struct device *dev, struct page *page,
+         */
+        if (dma_capable(dev, dev_addr, size) &&
+            !range_straddles_page_boundary(phys, size) &&
+                !xen_arch_need_swiotlb(dev, phys, dev_addr) &&
+                swiotlb_force != SWIOTLB_FORCE)
+                goto done;
+
+// Firo
 > 
-> Fixes: 5d8682588605 ("[misc] mei: me: allow runtime pm for platform with D0i3")
-> Link: https://bugzilla.redhat.com/show_bug.cgi?id=1689436
-> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> ---
+> A NIC doesn't support directly write such buffer. So xen-swiotlb would use
+> the pages, which are physically contiguous, from the swiotlb buffer for the
+> NIC.
 > 
-> V2: Fix typos in commit message
-> V3: Fix minor typo
-> V4: Address community comments
-> V5: Address community comments
-> ---
->   drivers/net/ethernet/intel/e1000e/defines.h |  4 ++++
->   drivers/net/ethernet/intel/e1000e/netdev.c  | 20 +++++++++++++++++++-
->   2 files changed, 23 insertions(+), 1 deletion(-)
+> The unmap operation is used to copy the swiotlb buffer to the pages that are
+> allocated by ixgbe.
 > 
-> diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
-> index fd550dee4982..11452eaac233 100644
-> --- a/drivers/net/ethernet/intel/e1000e/defines.h
-> +++ b/drivers/net/ethernet/intel/e1000e/defines.h
-> @@ -222,6 +222,10 @@
->   #define E1000_STATUS_PHYRA      0x00000400      /* PHY Reset Asserted */
->   #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master Req status */
->   
-> +/* PCIm function state */
-> +#define E1000_STATUS_PCIM_STATE	0x40000000
-> +#define PCIM_DMOFF_EXIT_TIMEOUT	100
-> +
->   #define HALF_DUPLEX 1
->   #define FULL_DUPLEX 2
->   
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index b5fed6177ad6..639266485c15 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -5162,7 +5162,7 @@ static void e1000_watchdog_task(struct work_struct *work)
->   	struct e1000_phy_info *phy = &adapter->hw.phy;
->   	struct e1000_ring *tx_ring = adapter->tx_ring;
->   	struct e1000_hw *hw = &adapter->hw;
-> -	u32 link, tctl;
-> +	u32 link, tctl, pcim_state, tries = 0;
->   
->   	if (test_bit(__E1000_DOWN, &adapter->state))
->   		return;
-> @@ -5187,6 +5187,24 @@ static void e1000_watchdog_task(struct work_struct *work)
->   			/* Cancel scheduled suspend requests. */
->   			pm_runtime_resume(netdev->dev.parent);
->   
-> +			/* Check if MAC is in DMoff state */
-> +			pcim_state = er32(STATUS);
-> +			while (pcim_state & E1000_STATUS_PCIM_STATE) {
-> +				if (tries++ == PCIM_DMOFF_EXIT_TIMEOUT) {
-> +					e_dbg("Error in exiting dmoff\n");
-> +					e_err("PCIm DMoff timeout expired\n");
-> +					break;
-> +				}
-> +				usleep_range(10000, 20000);
-> +				pcim_state = er32(STATUS);
-> +
-> +				/* If MAC entered DMoff state, PHY reset is
-> +				 * needed after exiting it
-> +				 */
-> +				if (!(pcim_state & E1000_STATUS_PCIM_STATE))
-> +					e1000_phy_hw_reset(&adapter->hw);
-> +			}
-> +
->   			/* update snapshot of PHY registers on LSC */
->   			e1000_phy_read_status(adapter);
->   			mac->ops.get_link_up_info(&adapter->hw,
+> On 8/7/19 10:49 AM, Firo Yang wrote:
+> > In Xen environment, if Xen-swiotlb is enabled, ixgbe driver
+> > could possibly allocate a page, DMA memory buffer, for the first
+> > fragment which is not suitable for Xen-swiotlb to do DMA operations.
+> > Xen-swiotlb have to internally allocate another page for doing DMA
+> > operations. It requires syncing between those two pages. However,
+> > since commit f3213d932173 ("ixgbe: Update driver to make use of DMA
+> > attributes in Rx path"), the unmap operation is performed with
+> > DMA_ATTR_SKIP_CPU_SYNC. As a result, the sync is not performed.
+> > 
+> > To fix this problem, always sync before possibly performing a page
+> > unmap operation.
+> > 
+> > Fixes: f3213d932173 ("ixgbe: Update driver to make use of DMA
+> > attributes in Rx path")
+> > Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> > Signed-off-by: Firo Yang <firo.yang@suse.com>
+> > ---
+> > 
+> > Changes from v1:
+> >   * Imporved the patch description.
+> >   * Added Reviewed-by: and Fixes: as suggested by Alexander Duyck
+> > 
+> >   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 16 +++++++++-------
+> >   1 file changed, 9 insertions(+), 7 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > index cbaf712d6529..200de9838096 100644
+> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > @@ -1825,13 +1825,7 @@ static void ixgbe_pull_tail(struct ixgbe_ring *rx_ring,
+> >   static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
+> >   				struct sk_buff *skb)
+> >   {
+> > -	/* if the page was released unmap it, else just sync our portion */
+> > -	if (unlikely(IXGBE_CB(skb)->page_released)) {
+> > -		dma_unmap_page_attrs(rx_ring->dev, IXGBE_CB(skb)->dma,
+> > -				     ixgbe_rx_pg_size(rx_ring),
+> > -				     DMA_FROM_DEVICE,
+> > -				     IXGBE_RX_DMA_ATTR);
+> > -	} else if (ring_uses_build_skb(rx_ring)) {
+> > +	if (ring_uses_build_skb(rx_ring)) {
+> >   		unsigned long offset = (unsigned long)(skb->data) & ~PAGE_MASK;
+> >   		dma_sync_single_range_for_cpu(rx_ring->dev,
+> > @@ -1848,6 +1842,14 @@ static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
+> >   					      skb_frag_size(frag),
+> >   					      DMA_FROM_DEVICE);
+> >   	}
+> > +
+> > +	/* If the page was released, just unmap it. */
+> > +	if (unlikely(IXGBE_CB(skb)->page_released)) {
+> > +		dma_unmap_page_attrs(rx_ring->dev, IXGBE_CB(skb)->dma,
+> > +				     ixgbe_rx_pg_size(rx_ring),
+> > +				     DMA_FROM_DEVICE,
+> > +				     IXGBE_RX_DMA_ATTR);
+> > +	}
+> >   }
+> >   /**
 > 
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
