@@ -1,73 +1,91 @@
-From: Firo Yang <firo.yang@suse.com>
-Date: Wed, 7 Aug 2019 02:49:45 +0000
-Subject: [Intel-wired-lan] [PATCH v2 1/1] ixgbe: sync the first fragment
- unconditionally
-Message-ID: <20190807024917.27682-1-firo.yang@suse.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Wed, 7 Aug 2019 10:23:59 +0300
+Subject: [Intel-wired-lan] MDI errors during resume from ACPI S3
+ (suspend to ram)
+In-Reply-To: <2277f25bc44c4aebaac59942de2e24bb@AUSX13MPC105.AMER.DELL.COM>
+References: <81004059-6d91-d8be-c80e-70c52359350d@molgen.mpg.de>
+ <2277f25bc44c4aebaac59942de2e24bb@AUSX13MPC105.AMER.DELL.COM>
+Message-ID: <d0aaa0f8-b94c-be65-7a4e-f5592aa65647@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In Xen environment, if Xen-swiotlb is enabled, ixgbe driver
-could possibly allocate a page, DMA memory buffer, for the first
-fragment which is not suitable for Xen-swiotlb to do DMA operations.
-Xen-swiotlb have to internally allocate another page for doing DMA
-operations. It requires syncing between those two pages. However,
-since commit f3213d932173 ("ixgbe: Update driver to make use of DMA
-attributes in Rx path"), the unmap operation is performed with
-DMA_ATTR_SKIP_CPU_SYNC. As a result, the sync is not performed.
-
-To fix this problem, always sync before possibly performing a page
-unmap operation.
-
-Fixes: f3213d932173 ("ixgbe: Update driver to make use of DMA
-attributes in Rx path")
-Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Signed-off-by: Firo Yang <firo.yang@suse.com>
----
-
-Changes from v1:
- * Imporved the patch description.
- * Added Reviewed-by: and Fixes: as suggested by Alexander Duyck
-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index cbaf712d6529..200de9838096 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1825,13 +1825,7 @@ static void ixgbe_pull_tail(struct ixgbe_ring *rx_ring,
- static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
- 				struct sk_buff *skb)
- {
--	/* if the page was released unmap it, else just sync our portion */
--	if (unlikely(IXGBE_CB(skb)->page_released)) {
--		dma_unmap_page_attrs(rx_ring->dev, IXGBE_CB(skb)->dma,
--				     ixgbe_rx_pg_size(rx_ring),
--				     DMA_FROM_DEVICE,
--				     IXGBE_RX_DMA_ATTR);
--	} else if (ring_uses_build_skb(rx_ring)) {
-+	if (ring_uses_build_skb(rx_ring)) {
- 		unsigned long offset = (unsigned long)(skb->data) & ~PAGE_MASK;
- 
- 		dma_sync_single_range_for_cpu(rx_ring->dev,
-@@ -1848,6 +1842,14 @@ static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
- 					      skb_frag_size(frag),
- 					      DMA_FROM_DEVICE);
- 	}
-+
-+	/* If the page was released, just unmap it. */
-+	if (unlikely(IXGBE_CB(skb)->page_released)) {
-+		dma_unmap_page_attrs(rx_ring->dev, IXGBE_CB(skb)->dma,
-+				     ixgbe_rx_pg_size(rx_ring),
-+				     DMA_FROM_DEVICE,
-+				     IXGBE_RX_DMA_ATTR);
-+	}
- }
- 
- /**
--- 
-2.16.4
-
+On 8/6/2019 18:53, Mario.Limonciello at dell.com wrote:
+>> -----Original Message-----
+>> From: Paul Menzel <pmenzel@molgen.mpg.de>
+>> Sent: Tuesday, August 6, 2019 10:36 AM
+>> To: Jeff Kirsher
+>> Cc: intel-wired-lan at lists.osuosl.org; Linux Kernel Mailing List; Limonciello, Mario
+>> Subject: MDI errors during resume from ACPI S3 (suspend to ram)
+>>
+>> Dear Linux folks,
+>>
+>>
+>> Trying to decrease the resume time of Linux 5.3-rc3 on the Dell OptiPlex
+>> 5040 with the device below
+>>
+>>      $ lspci -nn -s 00:1f.6
+>>      00:1f.6 Ethernet controller [0200]: Intel Corporation Ethernet Connection (2)
+>> I219-V [8086:15b8] (rev 31)
+>>
+>> pm-graph?s script `sleepgraph.py` shows, that the driver *e1000e* takes
+>> around 400 ms, which is quite a lot. The call graph trace shows that
+>> `e1000e_read_phy_reg_mdic()` is responsible for a lot of those. From
+>> `drivers/net/ethernet/intel/e1000e/phy.c` [1]:
+>>
+>>          for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
+>>                  udelay(50);
+>>                  mdic = er32(MDIC);
+>>                  if (mdic & E1000_MDIC_READY)
+>>                          break;
+>>          }
+>>          if (!(mdic & E1000_MDIC_READY)) {
+>>                  e_dbg("MDI Read did not complete\n");
+>>                  return -E1000_ERR_PHY;
+>>          }
+>>          if (mdic & E1000_MDIC_ERROR) {
+>>                  e_dbg("MDI Error\n");
+>>                  return -E1000_ERR_PHY;
+>>          }
+>>
+>> Unfortunately, errors are not logged if dynamic debug is disabled,
+>> so rebuilding the Linux kernel with `CONFIG_DYNAMIC_DEBUG`, and
+>>
+>>      echo "file drivers/net/ethernet/* +p" | sudo tee
+>> /sys/kernel/debug/dynamic_debug/control
+>>
+>> I got the messages below.
+>>
+>>      [ 4159.204192] e1000e 0000:00:1f.6 net00: MDI Error
+>>      [ 4160.267950] e1000e 0000:00:1f.6 net00: MDI Write did not complete
+>>      [ 4160.359855] e1000e 0000:00:1f.6 net00: MDI Error
+>>
+>> Can you please shed a little more light into these errors? Please
+>> find the full log attached.
+>>
+>>
+>> Kind regards,
+>>
+>> Paul
+>>
+>>
+>> [1]:
+>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/n
+>> et/ethernet/intel/e1000e/phy.c#n206
+> 
+> Strictly as a reference point you may consider trying the out-of-tree driver to see if these
+> behaviors persist.
+> 
+> https://sourceforge.net/projects/e1000/
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
+We are using external PHY. Required ~200 ms to complete MDIC transaction 
+(depended on the project). You need to take to consider this time before 
+access to the PHY. I do not recommend decrease timer in a 
+'e1000e_read_phy_reg_mdic()' method. We could hit on wrong MDI access.
