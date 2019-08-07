@@ -1,106 +1,67 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 7 Aug 2019 16:55:47 +0200
-Subject: [Intel-wired-lan] MDI errors during resume from ACPI S3
- (suspend to ram)
-In-Reply-To: <d0aaa0f8-b94c-be65-7a4e-f5592aa65647@intel.com>
-References: <81004059-6d91-d8be-c80e-70c52359350d@molgen.mpg.de>
- <2277f25bc44c4aebaac59942de2e24bb@AUSX13MPC105.AMER.DELL.COM>
- <d0aaa0f8-b94c-be65-7a4e-f5592aa65647@intel.com>
-Message-ID: <47977dc7-d53a-427c-bbaa-9c665287cb47@molgen.mpg.de>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 7 Aug 2019 09:06:12 -0700
+Subject: [Intel-wired-lan] [PATCH v2 1/1] ixgbe: sync the first fragment
+ unconditionally
+In-Reply-To: <20190807160853.00001d71@gmail.com>
+References: <20190807024917.27682-1-firo.yang@suse.com>
+ <85aaefdf-d454-1823-5840-d9e2f71ffb19@oracle.com>
+ <20190807083831.GA6811@linux-6qg8> <20190807160853.00001d71@gmail.com>
+Message-ID: <CAKgT0UfEh8cvTht3yceyXqwReJOQkcpJV8j0vHSJwookTWhn_Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Wed, Aug 7, 2019 at 7:09 AM Maciej Fijalkowski
+<maciejromanfijalkowski@gmail.com> wrote:
+>
+> On Wed, 7 Aug 2019 08:38:43 +0000
+> Firo Yang <firo.yang@suse.com> wrote:
+>
+> > The 08/07/2019 15:56, Jacob Wen wrote:
+> > > I think the description is not correct. Consider using something like below.
+> > Thank you for comments.
+> >
+> > >
+> > > In Xen environment, due to memory fragmentation ixgbe may allocate a 'DMA'
+> > > buffer with pages that are not physically contiguous.
+> > Actually, I didn't look into the reason why ixgbe got a DMA buffer which
+> > was mapped to Xen-swiotlb area.
+>
+> I think that neither of these descriptions are telling us what was truly
+> broken. They lack what Alexander wrote on v1 thread of this patch.
+>
+> ixgbe_dma_sync_frag is called only on case when the current descriptor has EOP
+> bit set, skb was already allocated and you'll be adding a current buffer as a
+> frag. DMA unmapping for the first frag was intentionally skipped and we will be
+> unmapping it here, in ixgbe_dma_sync_frag. As Alex said, we're using the
+> DMA_ATTR_SKIP_CPU_SYNC attribute which obliges us to perform a sync manually
+> and it was missing.
+>
+> So IMHO the commit description should include descriptions from both xen and
+> ixgbe worlds, the v2 lacks info about ixgbe case.
+>
+> BTW Alex, what was the initial reason for holding off with unmapping the first
+> buffer? Asking because IIRC the i40e and ice behave a bit different here. We
+> don't look there for EOP at all when building/constructing skb and not delaying
+> the unmap of non-eop buffers.
+>
+> Thanks,
+> Maciej
 
-Dear Sasha,
+The reason why we have to hold off on unmapping the first buffer is
+because in the case of Receive Side Coalescing (RSC), also known as Large
+Receive Offload (LRO), the header of the packet is updated for each
+additional frame that is added. As such you can end up with the device
+writing data, header, data, header, data, header where each data write
+would update a new descriptor, but the header will only ever update the
+first descriptor in the chain. As such if we unmapped it earlier it would
+result in an IOMMU fault because the device would be rewriting the header
+after it had been unmapped.
 
+The devices supported by the ixgbe driver are the only ones that have
+RSC/LRO support. As such this behavior is present for ixgbe, but not for
+other Intel NIC drivers including igb, igbvf, ixgbevf, i40e, etc.
 
-On 07.08.19 09:23, Neftin, Sasha wrote:
-> On 8/6/2019 18:53, Mario.Limonciello at dell.com wrote:
->>> -----Original Message-----
->>> From: Paul Menzel <pmenzel@molgen.mpg.de>
->>> Sent: Tuesday, August 6, 2019 10:36 AM
->>> To: Jeff Kirsher
->>> Cc: intel-wired-lan at lists.osuosl.org; Linux Kernel Mailing List; Limonciello, Mario
->>> Subject: MDI errors during resume from ACPI S3 (suspend to ram)
->>>
->>> Dear Linux folks,
->>>
->>>
->>> Trying to decrease the resume time of Linux 5.3-rc3 on the Dell OptiPlex
->>> 5040 with the device below
->>>
->>> ???? $ lspci -nn -s 00:1f.6
->>> ???? 00:1f.6 Ethernet controller [0200]: Intel Corporation Ethernet Connection (2)
->>> I219-V [8086:15b8] (rev 31)
->>>
->>> pm-graph?s script `sleepgraph.py` shows, that the driver *e1000e* takes
->>> around 400 ms, which is quite a lot. The call graph trace shows that
->>> `e1000e_read_phy_reg_mdic()` is responsible for a lot of those. From
->>> `drivers/net/ethernet/intel/e1000e/phy.c` [1]:
->>>
->>> ???????? for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
->>> ???????????????? udelay(50);
->>> ???????????????? mdic = er32(MDIC);
->>> ???????????????? if (mdic & E1000_MDIC_READY)
->>> ???????????????????????? break;
->>> ???????? }
->>> ???????? if (!(mdic & E1000_MDIC_READY)) {
->>> ???????????????? e_dbg("MDI Read did not complete\n");
->>> ???????????????? return -E1000_ERR_PHY;
->>> ???????? }
->>> ???????? if (mdic & E1000_MDIC_ERROR) {
->>> ???????????????? e_dbg("MDI Error\n");
->>> ???????????????? return -E1000_ERR_PHY;
->>> ???????? }
->>>
->>> Unfortunately, errors are not logged if dynamic debug is disabled,
->>> so rebuilding the Linux kernel with `CONFIG_DYNAMIC_DEBUG`, and
->>>
->>> ???? echo "file drivers/net/ethernet/* +p" | sudo tee
->>> /sys/kernel/debug/dynamic_debug/control
->>>
->>> I got the messages below.
->>>
->>> ???? [ 4159.204192] e1000e 0000:00:1f.6 net00: MDI Error
->>> ???? [ 4160.267950] e1000e 0000:00:1f.6 net00: MDI Write did not complete
->>> ???? [ 4160.359855] e1000e 0000:00:1f.6 net00: MDI Error
->>>
->>> Can you please shed a little more light into these errors? Please
->>> find the full log attached.
-
->>> [1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/net/ethernet/intel/e1000e/phy.c#n206
->>
->> Strictly as a reference point you may consider trying the out-of-tree driver to see if these
->> behaviors persist.
->>
->> https://sourceforge.net/projects/e1000/
-
-I can try that in the next days.
-
-> We are using external PHY. Required ~200 ms to complete MDIC
-> transaction (depended on the project).
-
-Are you referring to the out-of-tree driver?
-
-> You need to take to consider this time before access to the PHY. I do
-> not recommend decrease timer in a 'e1000e_read_phy_reg_mdic()'
-> method. We could hit on wrong MDI access.
-My point was more, if you know that more time is needed, before the MDI
-setting(?) will succeed, why try it anyway and go into the error paths?
-Isn?t there some polling possible to find out, when MDI can be set up?
-
-
-Kind regards,
-
-Paul
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 5174 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190807/829375bd/attachment.p7s>
+- Alex
