@@ -1,91 +1,88 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Wed, 7 Aug 2019 10:23:59 +0300
-Subject: [Intel-wired-lan] MDI errors during resume from ACPI S3
- (suspend to ram)
-In-Reply-To: <2277f25bc44c4aebaac59942de2e24bb@AUSX13MPC105.AMER.DELL.COM>
-References: <81004059-6d91-d8be-c80e-70c52359350d@molgen.mpg.de>
- <2277f25bc44c4aebaac59942de2e24bb@AUSX13MPC105.AMER.DELL.COM>
-Message-ID: <d0aaa0f8-b94c-be65-7a4e-f5592aa65647@intel.com>
+From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Date: Wed,  7 Aug 2019 10:36:11 +0300
+Subject: [Intel-wired-lan] [PATCH v5] e1000e: PCIm function state support
+Message-ID: <20190807073611.21733-1-vitaly.lifshits@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/6/2019 18:53, Mario.Limonciello at dell.com wrote:
->> -----Original Message-----
->> From: Paul Menzel <pmenzel@molgen.mpg.de>
->> Sent: Tuesday, August 6, 2019 10:36 AM
->> To: Jeff Kirsher
->> Cc: intel-wired-lan at lists.osuosl.org; Linux Kernel Mailing List; Limonciello, Mario
->> Subject: MDI errors during resume from ACPI S3 (suspend to ram)
->>
->> Dear Linux folks,
->>
->>
->> Trying to decrease the resume time of Linux 5.3-rc3 on the Dell OptiPlex
->> 5040 with the device below
->>
->>      $ lspci -nn -s 00:1f.6
->>      00:1f.6 Ethernet controller [0200]: Intel Corporation Ethernet Connection (2)
->> I219-V [8086:15b8] (rev 31)
->>
->> pm-graph?s script `sleepgraph.py` shows, that the driver *e1000e* takes
->> around 400 ms, which is quite a lot. The call graph trace shows that
->> `e1000e_read_phy_reg_mdic()` is responsible for a lot of those. From
->> `drivers/net/ethernet/intel/e1000e/phy.c` [1]:
->>
->>          for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
->>                  udelay(50);
->>                  mdic = er32(MDIC);
->>                  if (mdic & E1000_MDIC_READY)
->>                          break;
->>          }
->>          if (!(mdic & E1000_MDIC_READY)) {
->>                  e_dbg("MDI Read did not complete\n");
->>                  return -E1000_ERR_PHY;
->>          }
->>          if (mdic & E1000_MDIC_ERROR) {
->>                  e_dbg("MDI Error\n");
->>                  return -E1000_ERR_PHY;
->>          }
->>
->> Unfortunately, errors are not logged if dynamic debug is disabled,
->> so rebuilding the Linux kernel with `CONFIG_DYNAMIC_DEBUG`, and
->>
->>      echo "file drivers/net/ethernet/* +p" | sudo tee
->> /sys/kernel/debug/dynamic_debug/control
->>
->> I got the messages below.
->>
->>      [ 4159.204192] e1000e 0000:00:1f.6 net00: MDI Error
->>      [ 4160.267950] e1000e 0000:00:1f.6 net00: MDI Write did not complete
->>      [ 4160.359855] e1000e 0000:00:1f.6 net00: MDI Error
->>
->> Can you please shed a little more light into these errors? Please
->> find the full log attached.
->>
->>
->> Kind regards,
->>
->> Paul
->>
->>
->> [1]:
->> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/n
->> et/ethernet/intel/e1000e/phy.c#n206
-> 
-> Strictly as a reference point you may consider trying the out-of-tree driver to see if these
-> behaviors persist.
-> 
-> https://sourceforge.net/projects/e1000/
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
-We are using external PHY. Required ~200 ms to complete MDIC transaction 
-(depended on the project). You need to take to consider this time before 
-access to the PHY. I do not recommend decrease timer in a 
-'e1000e_read_phy_reg_mdic()' method. We could hit on wrong MDI access.
+Due to commit: 5d8682588605 ("[misc] mei: me: allow runtime pm for
+platform with D0i3"), when the cable is disconnect and reconnected,
+the NIC can enter a DMoff state.  The DMoff state will cause incorrect
+link indication and duplex setting mismatch.
+
+To resolve this, we need to check the PCIm function state and perform
+a PHY reset after exiting the DMoff state in our watchdog service task.
+
+Fixes: 5d8682588605 ("[misc] mei: me: allow runtime pm for platform with D0i3")
+Link: https://bugzilla.redhat.com/show_bug.cgi?id=1689436
+Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+---
+
+V2: Fix typos in commit message
+V3: Fix minor typo
+V4: Address community comments
+V5: Address community comments 
+---
+ drivers/net/ethernet/intel/e1000e/defines.h |  4 ++++
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 20 +++++++++++++++++++-
+ 2 files changed, 23 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
+index fd550dee4982..11452eaac233 100644
+--- a/drivers/net/ethernet/intel/e1000e/defines.h
++++ b/drivers/net/ethernet/intel/e1000e/defines.h
+@@ -222,6 +222,10 @@
+ #define E1000_STATUS_PHYRA      0x00000400      /* PHY Reset Asserted */
+ #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master Req status */
+ 
++/* PCIm function state */
++#define E1000_STATUS_PCIM_STATE	0x40000000
++#define PCIM_DMOFF_EXIT_TIMEOUT	100
++
+ #define HALF_DUPLEX 1
+ #define FULL_DUPLEX 2
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index b5fed6177ad6..639266485c15 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5162,7 +5162,7 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 	struct e1000_phy_info *phy = &adapter->hw.phy;
+ 	struct e1000_ring *tx_ring = adapter->tx_ring;
+ 	struct e1000_hw *hw = &adapter->hw;
+-	u32 link, tctl;
++	u32 link, tctl, pcim_state, tries = 0;
+ 
+ 	if (test_bit(__E1000_DOWN, &adapter->state))
+ 		return;
+@@ -5187,6 +5187,24 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 			/* Cancel scheduled suspend requests. */
+ 			pm_runtime_resume(netdev->dev.parent);
+ 
++			/* Check if MAC is in DMoff state */
++			pcim_state = er32(STATUS);
++			while (pcim_state & E1000_STATUS_PCIM_STATE) {
++				if (tries++ == PCIM_DMOFF_EXIT_TIMEOUT) {
++					e_dbg("Error in exiting dmoff\n");
++					e_err("PCIm DMoff timeout expired\n");
++					break;
++				}
++				usleep_range(10000, 20000);
++				pcim_state = er32(STATUS);
++
++				/* If MAC entered DMoff state, PHY reset is
++				 * needed after exiting it
++				 */
++				if (!(pcim_state & E1000_STATUS_PCIM_STATE))
++					e1000_phy_hw_reset(&adapter->hw);
++			}
++
+ 			/* update snapshot of PHY registers on LSC */
+ 			e1000_phy_read_status(adapter);
+ 			mac->ops.get_link_up_info(&adapter->hw,
+-- 
+2.11.0
+
