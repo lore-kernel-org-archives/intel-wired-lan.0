@@ -1,96 +1,96 @@
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 7 Aug 2019 16:51:52 +0200
-Subject: [Intel-wired-lan] [PATCH v4] e1000e: PCIm function state support
-In-Reply-To: <bc5fbdcb-6afe-dac0-b498-c5e26d539d6d@intel.com>
-References: <20190804074026.25198-1-vitaly.lifshits@intel.com>
- <8829b684-518d-2233-d618-4f1367c2dbbd@molgen.mpg.de>
- <bc5fbdcb-6afe-dac0-b498-c5e26d539d6d@intel.com>
-Message-ID: <a5a0b21c-5df3-809b-fc7a-022f2432676c@molgen.mpg.de>
+Date: Wed, 7 Aug 2019 16:55:47 +0200
+Subject: [Intel-wired-lan] MDI errors during resume from ACPI S3
+ (suspend to ram)
+In-Reply-To: <d0aaa0f8-b94c-be65-7a4e-f5592aa65647@intel.com>
+References: <81004059-6d91-d8be-c80e-70c52359350d@molgen.mpg.de>
+ <2277f25bc44c4aebaac59942de2e24bb@AUSX13MPC105.AMER.DELL.COM>
+ <d0aaa0f8-b94c-be65-7a4e-f5592aa65647@intel.com>
+Message-ID: <47977dc7-d53a-427c-bbaa-9c665287cb47@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Vitaly,
+
+Dear Sasha,
 
 
-On 07.08.19 09:47, Lifshits, Vitaly wrote:
+On 07.08.19 09:23, Neftin, Sasha wrote:
+> On 8/6/2019 18:53, Mario.Limonciello at dell.com wrote:
+>>> -----Original Message-----
+>>> From: Paul Menzel <pmenzel@molgen.mpg.de>
+>>> Sent: Tuesday, August 6, 2019 10:36 AM
+>>> To: Jeff Kirsher
+>>> Cc: intel-wired-lan at lists.osuosl.org; Linux Kernel Mailing List; Limonciello, Mario
+>>> Subject: MDI errors during resume from ACPI S3 (suspend to ram)
+>>>
+>>> Dear Linux folks,
+>>>
+>>>
+>>> Trying to decrease the resume time of Linux 5.3-rc3 on the Dell OptiPlex
+>>> 5040 with the device below
+>>>
+>>> ???? $ lspci -nn -s 00:1f.6
+>>> ???? 00:1f.6 Ethernet controller [0200]: Intel Corporation Ethernet Connection (2)
+>>> I219-V [8086:15b8] (rev 31)
+>>>
+>>> pm-graph?s script `sleepgraph.py` shows, that the driver *e1000e* takes
+>>> around 400 ms, which is quite a lot. The call graph trace shows that
+>>> `e1000e_read_phy_reg_mdic()` is responsible for a lot of those. From
+>>> `drivers/net/ethernet/intel/e1000e/phy.c` [1]:
+>>>
+>>> ???????? for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
+>>> ???????????????? udelay(50);
+>>> ???????????????? mdic = er32(MDIC);
+>>> ???????????????? if (mdic & E1000_MDIC_READY)
+>>> ???????????????????????? break;
+>>> ???????? }
+>>> ???????? if (!(mdic & E1000_MDIC_READY)) {
+>>> ???????????????? e_dbg("MDI Read did not complete\n");
+>>> ???????????????? return -E1000_ERR_PHY;
+>>> ???????? }
+>>> ???????? if (mdic & E1000_MDIC_ERROR) {
+>>> ???????????????? e_dbg("MDI Error\n");
+>>> ???????????????? return -E1000_ERR_PHY;
+>>> ???????? }
+>>>
+>>> Unfortunately, errors are not logged if dynamic debug is disabled,
+>>> so rebuilding the Linux kernel with `CONFIG_DYNAMIC_DEBUG`, and
+>>>
+>>> ???? echo "file drivers/net/ethernet/* +p" | sudo tee
+>>> /sys/kernel/debug/dynamic_debug/control
+>>>
+>>> I got the messages below.
+>>>
+>>> ???? [ 4159.204192] e1000e 0000:00:1f.6 net00: MDI Error
+>>> ???? [ 4160.267950] e1000e 0000:00:1f.6 net00: MDI Write did not complete
+>>> ???? [ 4160.359855] e1000e 0000:00:1f.6 net00: MDI Error
+>>>
+>>> Can you please shed a little more light into these errors? Please
+>>> find the full log attached.
 
-> Thank you again for your comments.
-> I sent a new version for my patch (V5).
-
-Thank you very much for incorporating them.
-
-> On 8/4/2019 16:44, Paul Menzel wrote:
-
->> On 04.08.19 09:40, Vitaly Lifshits wrote:
-
-[?]
-
->>> +??????????? pcim_state = er32(STATUS);
->>> +??????????? while (pcim_state & E1000_STATUS_PCIM_STATE) {
->>> +??????????????? if (tries++ == PCIM_DMOFF_EXIT_TIMEOUT) {
-
-By the way, can?t there be the unit appended to the macro name
-`PCIM_DMOFF_EXIT_TIMEOUT`?
-
->>> +??????????????????? e_dbg("Error in exiting dmoff\n");
->>> +??????????????????? e_err("PCIm DMoff timeout expired\n");
-
-It?s not a hold-up, but why do you print two messages? I?d just print the
-error message.
-
-    e_err("Failed to exit PCIm DMoff: Time-out (%i iterations) expired", PCIM_DMOFF_EXIT_TIMEOUT);
-
-Or: e_err("Exiting PCIm DMoff timed out after %i iterations.", PCIM_DMOFF_EXIT_TIMEOUT);
-
->>> +??????????????????? break;
->>> +??????????????? }
->>> +??????????????? usleep_range(10000, 20000);
->>> +??????????????? pcim_state = er32(STATUS);
->>> +
->>> +??????????????? /* If MAC entered DMoff state, PHY reset is
->>> +???????????????? * needed after exiting it
->>> +???????????????? */
->>> +??????????????? if (!(pcim_state & E1000_STATUS_PCIM_STATE))
->>> +??????????????????? e1000_phy_hw_reset(&adapter->hw);
+>>> [1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/net/ethernet/intel/e1000e/phy.c#n206
 >>
->> I still believe, the if statement should be moved *outside* the loop.
-> 
-> The if statement has to stay in the loop since the PHY reset is
-> needed only if the MAC entered DMoff state.
+>> Strictly as a reference point you may consider trying the out-of-tree driver to see if these
+>> behaviors persist.
+>>
+>> https://sourceforge.net/projects/e1000/
 
-Thank you. Now I finally saw it. It?s about, when the loop is never
-entered. I associated a while loop in my head normally with the assumption,
-that the condition is true in the beginning.
+I can try that in the next days.
 
-For the record, the code below is more intuitive for me.
+> We are using external PHY. Required ~200 ms to complete MDIC
+> transaction (depended on the project).
 
-```
-if (pcim_state & E1000_STATUS_PCIM_STATE) {
-/* MAC in DMoff state */
-	do {
-		if (tries++ == PCIM_DMOFF_EXIT_TIMEOUT) {
-			e_dbg("Error in exiting dmoff\n");
-			e_err("PCIm DMoff timeout expired\n");
-			break;
-		}
-		usleep_range(10000, 20000);
-		pcim_state = er32(STATUS);
-	} while (pcim_state & E1000_STATUS_PCIM_STATE);
+Are you referring to the out-of-tree driver?
 
-	e1000_phy_hw_reset(&adapter->hw);
-}
-```
-
->>> +??????????? }
->>> +
->>> ????????????? /* update snapshot of PHY registers on LSC */
->>> ????????????? e1000_phy_read_status(adapter);
->>> ????????????? mac->ops.get_link_up_info(&adapter->hw,
-
-Anyway, I do not want to hold up anything.
+> You need to take to consider this time before access to the PHY. I do
+> not recommend decrease timer in a 'e1000e_read_phy_reg_mdic()'
+> method. We could hit on wrong MDI access.
+My point was more, if you know that more time is needed, before the MDI
+setting(?) will succeed, why try it anyway and go into the error paths?
+Isn?t there some polling possible to find out, when MDI can be set up?
 
 
 Kind regards,
@@ -103,4 +103,4 @@ Name: smime.p7s
 Type: application/pkcs7-signature
 Size: 5174 bytes
 Desc: S/MIME Cryptographic Signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190807/6dc6dc31/attachment-0001.p7s>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190807/829375bd/attachment.p7s>
