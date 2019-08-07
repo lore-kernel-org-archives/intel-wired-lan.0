@@ -1,132 +1,175 @@
-From: Maciej Fijalkowski <maciejromanfijalkowski@gmail.com>
-Date: Wed, 7 Aug 2019 16:08:53 +0200
-Subject: [Intel-wired-lan] [PATCH v2 1/1] ixgbe: sync the first fragment
- unconditionally
-In-Reply-To: <20190807083831.GA6811@linux-6qg8>
-References: <20190807024917.27682-1-firo.yang@suse.com>
- <85aaefdf-d454-1823-5840-d9e2f71ffb19@oracle.com>
- <20190807083831.GA6811@linux-6qg8>
-Message-ID: <20190807160853.00001d71@gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 07 Aug 2019 22:44:56 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 6c8073237349b14a847529b1c11c769ed0d33031
+Message-ID: <5d4ae3e8.NILVJi2uUAR8zn4d%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 7 Aug 2019 08:38:43 +0000
-Firo Yang <firo.yang@suse.com> wrote:
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 6c8073237349b14a847529b1c11c769ed0d33031  ice: fix potential infinite loop
 
-> The 08/07/2019 15:56, Jacob Wen wrote:
-> > I think the description is not correct. Consider using something like below.  
-> Thank you for comments. 
-> 
-> > 
-> > In Xen environment, due to memory fragmentation ixgbe may allocate a 'DMA'
-> > buffer with pages that are not physically contiguous.  
-> Actually, I didn't look into the reason why ixgbe got a DMA buffer which
-> was mapped to Xen-swiotlb area.
+elapsed time: 908m
 
-I think that neither of these descriptions are telling us what was truly
-broken. They lack what Alexander wrote on v1 thread of this patch.
+configs tested: 150
 
-ixgbe_dma_sync_frag is called only on case when the current descriptor has EOP
-bit set, skb was already allocated and you'll be adding a current buffer as a
-frag. DMA unmapping for the first frag was intentionally skipped and we will be
-unmapping it here, in ixgbe_dma_sync_frag. As Alex said, we're using the
-DMA_ATTR_SKIP_CPU_SYNC attribute which obliges us to perform a sync manually
-and it was missing.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-So IMHO the commit description should include descriptions from both xen and
-ixgbe worlds, the v2 lacks info about ixgbe case.
+x86_64                 randconfig-f001-201931
+x86_64                 randconfig-f002-201931
+x86_64                 randconfig-f003-201931
+x86_64                 randconfig-f004-201931
+i386                   randconfig-f001-201931
+i386                   randconfig-f002-201931
+i386                   randconfig-f003-201931
+i386                   randconfig-f004-201931
+arm                              allmodconfig
+arm64                            allmodconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                 randconfig-d001-201931
+x86_64                 randconfig-d002-201931
+x86_64                 randconfig-d003-201931
+x86_64                 randconfig-d004-201931
+i386                   randconfig-d001-201931
+i386                   randconfig-d002-201931
+i386                   randconfig-d003-201931
+i386                   randconfig-d004-201931
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                 randconfig-a001-201931
+x86_64                 randconfig-a002-201931
+x86_64                 randconfig-a003-201931
+x86_64                 randconfig-a004-201931
+i386                   randconfig-a001-201931
+i386                   randconfig-a002-201931
+i386                   randconfig-a003-201931
+i386                   randconfig-a004-201931
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+x86_64                 randconfig-g001-201931
+x86_64                 randconfig-g002-201931
+x86_64                 randconfig-g003-201931
+x86_64                 randconfig-g004-201931
+i386                   randconfig-g001-201931
+i386                   randconfig-g002-201931
+i386                   randconfig-g003-201931
+i386                   randconfig-g004-201931
+x86_64                 randconfig-c001-201931
+x86_64                 randconfig-c002-201931
+x86_64                 randconfig-c003-201931
+x86_64                 randconfig-c004-201931
+i386                   randconfig-c001-201931
+i386                   randconfig-c002-201931
+i386                   randconfig-c003-201931
+i386                   randconfig-c004-201931
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-e001-201931
+x86_64                 randconfig-e002-201931
+x86_64                 randconfig-e003-201931
+x86_64                 randconfig-e004-201931
+i386                   randconfig-e001-201931
+i386                   randconfig-e002-201931
+i386                   randconfig-e003-201931
+i386                   randconfig-e004-201931
+x86_64                           allmodconfig
+x86_64                 randconfig-b001-201931
+x86_64                 randconfig-b002-201931
+x86_64                 randconfig-b003-201931
+x86_64                 randconfig-b004-201931
+i386                   randconfig-b001-201931
+i386                   randconfig-b002-201931
+i386                   randconfig-b003-201931
+i386                   randconfig-b004-201931
+x86_64                 randconfig-h001-201931
+x86_64                 randconfig-h002-201931
+x86_64                 randconfig-h003-201931
+x86_64                 randconfig-h004-201931
+i386                   randconfig-h001-201931
+i386                   randconfig-h002-201931
+i386                   randconfig-h003-201931
+i386                   randconfig-h004-201931
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
 
-BTW Alex, what was the initial reason for holding off with unmapping the first
-buffer? Asking because IIRC the i40e and ice behave a bit different here. We
-don't look there for EOP at all when building/constructing skb and not delaying
-the unmap of non-eop buffers.
-
-Thanks,
-Maciej
-
-> 
-> But I don't think this issue relates to phsical memory contiguity because, in
-> our case, one ixgbe_rx_buffer only associates at most one page.
-> 
-> If you take a look at the related code, you will find there are several reasons
-> for mapping a DMA buffer to Xen-swiotlb area:
-> static dma_addr_t xen_swiotlb_map_page(struct device *dev, struct page *page,
->          */
->         if (dma_capable(dev, dev_addr, size) &&
->             !range_straddles_page_boundary(phys, size) &&
->                 !xen_arch_need_swiotlb(dev, phys, dev_addr) &&
->                 swiotlb_force != SWIOTLB_FORCE)
->                 goto done;
-> 
-> // Firo
-> > 
-> > A NIC doesn't support directly write such buffer. So xen-swiotlb would use
-> > the pages, which are physically contiguous, from the swiotlb buffer for the
-> > NIC.
-> > 
-> > The unmap operation is used to copy the swiotlb buffer to the pages that are
-> > allocated by ixgbe.
-> > 
-> > On 8/7/19 10:49 AM, Firo Yang wrote:  
-> > > In Xen environment, if Xen-swiotlb is enabled, ixgbe driver
-> > > could possibly allocate a page, DMA memory buffer, for the first
-> > > fragment which is not suitable for Xen-swiotlb to do DMA operations.
-> > > Xen-swiotlb have to internally allocate another page for doing DMA
-> > > operations. It requires syncing between those two pages. However,
-> > > since commit f3213d932173 ("ixgbe: Update driver to make use of DMA
-> > > attributes in Rx path"), the unmap operation is performed with
-> > > DMA_ATTR_SKIP_CPU_SYNC. As a result, the sync is not performed.
-> > > 
-> > > To fix this problem, always sync before possibly performing a page
-> > > unmap operation.
-> > > 
-> > > Fixes: f3213d932173 ("ixgbe: Update driver to make use of DMA
-> > > attributes in Rx path")
-> > > Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> > > Signed-off-by: Firo Yang <firo.yang@suse.com>
-> > > ---
-> > > 
-> > > Changes from v1:
-> > >   * Imporved the patch description.
-> > >   * Added Reviewed-by: and Fixes: as suggested by Alexander Duyck
-> > > 
-> > >   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 16 +++++++++-------
-> > >   1 file changed, 9 insertions(+), 7 deletions(-)
-> > > 
-> > > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > > index cbaf712d6529..200de9838096 100644
-> > > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > > @@ -1825,13 +1825,7 @@ static void ixgbe_pull_tail(struct ixgbe_ring *rx_ring,
-> > >   static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
-> > >   				struct sk_buff *skb)
-> > >   {
-> > > -	/* if the page was released unmap it, else just sync our portion */
-> > > -	if (unlikely(IXGBE_CB(skb)->page_released)) {
-> > > -		dma_unmap_page_attrs(rx_ring->dev, IXGBE_CB(skb)->dma,
-> > > -				     ixgbe_rx_pg_size(rx_ring),
-> > > -				     DMA_FROM_DEVICE,
-> > > -				     IXGBE_RX_DMA_ATTR);
-> > > -	} else if (ring_uses_build_skb(rx_ring)) {
-> > > +	if (ring_uses_build_skb(rx_ring)) {
-> > >   		unsigned long offset = (unsigned long)(skb->data) & ~PAGE_MASK;
-> > >   		dma_sync_single_range_for_cpu(rx_ring->dev,
-> > > @@ -1848,6 +1842,14 @@ static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
-> > >   					      skb_frag_size(frag),
-> > >   					      DMA_FROM_DEVICE);
-> > >   	}
-> > > +
-> > > +	/* If the page was released, just unmap it. */
-> > > +	if (unlikely(IXGBE_CB(skb)->page_released)) {
-> > > +		dma_unmap_page_attrs(rx_ring->dev, IXGBE_CB(skb)->dma,
-> > > +				     ixgbe_rx_pg_size(rx_ring),
-> > > +				     DMA_FROM_DEVICE,
-> > > +				     IXGBE_RX_DMA_ATTR);
-> > > +	}
-> > >   }
-> > >   /**  
-> >   
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
