@@ -1,95 +1,53 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  8 Aug 2019 07:39:33 -0700
-Subject: [Intel-wired-lan] [PATCH S27 10/15] ice: Add ice_get_main_vsi to
- get PF/main VSI
+Date: Thu,  8 Aug 2019 07:39:36 -0700
+Subject: [Intel-wired-lan] [PATCH S27 13/15] ice: move code closer together
 In-Reply-To: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
 References: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190808143938.4968-10-anthony.l.nguyen@intel.com>
+Message-ID: <20190808143938.4968-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-There are multiple places where we currently use ice_find_vsi_by_type
-to get the PF (a.k.a. main) VSI. The PF VSI by definition is always
-the first element in the pf->vsi array (i.e. pf->vsi[0]). So instead
-add and use a new helper function ice_get_main_vsi, which just returns
-pf->vsi[0].
+This is a simple patch to move the assignment to a local variable
+closer to the site where the local variable is used.  This
+can help readability and also maybe performance, although the
+performance enhancement is really dependent upon the compiler.
 
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+No functional change.
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h      | 20 +++++++-------------
- drivers/net/ethernet/intel/ice/ice_main.c |  6 +++---
- 2 files changed, 10 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index dae79bb635f7..681224c1de0e 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -425,21 +425,15 @@ ice_irq_dynamic_ena(struct ice_hw *hw, struct ice_vsi *vsi,
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 4fe1b332e67e..ec581b1f0fcb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1068,9 +1068,6 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 			continue;
+ 		}
  
- /**
-- * ice_find_vsi_by_type - Find and return VSI of a given type
-- * @pf: PF to search for VSI
-- * @type: Value indicating type of VSI we are looking for
-+ * ice_get_main_vsi - Get the PF VSI
-+ * @pf: PF instance
-+ *
-+ * returns pf->vsi[0], which by definition is the PF VSI
-  */
--static inline struct ice_vsi *
--ice_find_vsi_by_type(struct ice_pf *pf, enum ice_vsi_type type)
-+static inline struct ice_vsi *ice_get_main_vsi(struct ice_pf *pf)
- {
--	int i;
+-		rx_ptype = le16_to_cpu(rx_desc->wb.ptype_flex_flags0) &
+-			ICE_RX_FLEX_DESC_PTYPE_M;
 -
--	for (i = 0; i < pf->num_alloc_vsi; i++) {
--		struct ice_vsi *vsi = pf->vsi[i];
--
--		if (vsi && vsi->type == type)
--			return vsi;
--	}
-+	if (pf->vsi)
-+		return pf->vsi[0];
+ 		stat_err_bits = BIT(ICE_RX_FLEX_DESC_STATUS0_L2TAG1P_S);
+ 		if (ice_test_staterr(rx_desc, stat_err_bits))
+ 			vlan_tag = le16_to_cpu(rx_desc->wb.l2tag1);
+@@ -1087,6 +1084,9 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 		total_rx_bytes += skb->len;
  
- 	return NULL;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index cfa06a69f029..2850f8e41408 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -120,7 +120,7 @@ static int ice_init_mac_fltr(struct ice_pf *pf)
- 	u8 broadcast[ETH_ALEN];
- 	struct ice_vsi *vsi;
+ 		/* populate checksum, VLAN, and protocol */
++		rx_ptype = le16_to_cpu(rx_desc->wb.ptype_flex_flags0) &
++			ICE_RX_FLEX_DESC_PTYPE_M;
++
+ 		ice_process_skb_fields(rx_ring, rx_desc, skb, rx_ptype);
  
--	vsi = ice_find_vsi_by_type(pf, ICE_VSI_PF);
-+	vsi = ice_get_main_vsi(pf);
- 	if (!vsi)
- 		return -EINVAL;
- 
-@@ -826,7 +826,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
- 	if (link_up == old_link && link_speed == old_link_speed)
- 		return result;
- 
--	vsi = ice_find_vsi_by_type(pf, ICE_VSI_PF);
-+	vsi = ice_get_main_vsi(pf);
- 	if (!vsi || !vsi->port_info)
- 		return -EINVAL;
- 
-@@ -1439,7 +1439,7 @@ static void ice_check_media_subtask(struct ice_pf *pf)
- 	struct ice_vsi *vsi;
- 	int err;
- 
--	vsi = ice_find_vsi_by_type(pf, ICE_VSI_PF);
-+	vsi = ice_get_main_vsi(pf);
- 	if (!vsi)
- 		return;
- 
+ 		/* send completed skb up the stack */
 -- 
 2.20.1
 
