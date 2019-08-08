@@ -1,51 +1,120 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  8 Aug 2019 07:39:37 -0700
-Subject: [Intel-wired-lan] [PATCH S27 14/15] ice: small efficiency fixes
-In-Reply-To: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
-References: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190808143938.4968-14-anthony.l.nguyen@intel.com>
+Date: Thu,  8 Aug 2019 07:39:24 -0700
+Subject: [Intel-wired-lan] [PATCH S27 01/15] ice: Limit Max TCs on devices
+ with more than 4 ports
+Message-ID: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Usha Ketineni <usha.k.ketineni@intel.com>
 
-Add a small bit of efficiency to the code by adding a
-prefetch of the port_info structure in order to help
-avoid a cache miss a little later on in execution.
+This patch limits the max TCs set by the driver to the value provided by
+the firmware as per the capabilities of the device. Otherwise, hardcoding
+to 8 TC max would fail the device configurations with more than 4 ports.
 
-Also add an unlikely statement to a branch which
-generally will never happen in normal operation.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  1 +
+ drivers/net/ethernet/intel/ice/ice_common.c     | 12 ++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c    | 10 ++++++++--
+ drivers/net/ethernet/intel/ice/ice_type.h       |  3 +++
+ 4 files changed, 24 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index ec581b1f0fcb..33dd103035dc 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1226,6 +1226,8 @@ ice_update_itr(struct ice_q_vector *q_vector, struct ice_ring_container *rc)
- 	if (time_after(next_update, rc->next_update))
- 		goto clear_counts;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 8ebc695171b6..4da0cde9695b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -91,6 +91,7 @@ struct ice_aqc_list_caps_elem {
+ #define ICE_AQC_CAPS_SRIOV				0x0012
+ #define ICE_AQC_CAPS_VF					0x0013
+ #define ICE_AQC_CAPS_VSI				0x0017
++#define ICE_AQC_CAPS_DCB				0x0018
+ #define ICE_AQC_CAPS_RSS				0x0040
+ #define ICE_AQC_CAPS_RXQS				0x0041
+ #define ICE_AQC_CAPS_TXQS				0x0042
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 0471698d9499..0d191716f97d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1578,6 +1578,18 @@ ice_parse_caps(struct ice_hw *hw, void *buf, u32 cap_count,
+ 					  prefix, func_p->guar_num_vsi);
+ 			}
+ 			break;
++		case ICE_AQC_CAPS_DCB:
++			caps->dcb = (number == 1);
++			caps->active_tc_bitmap = logical_id;
++			caps->maxtc = phys_id;
++			ice_debug(hw, ICE_DBG_INIT,
++				  "%s: DCB = %d\n", prefix, caps->dcb);
++			ice_debug(hw, ICE_DBG_INIT,
++				  "%s: active TC bitmap = %d\n", prefix,
++				  caps->active_tc_bitmap);
++			ice_debug(hw, ICE_DBG_INIT,
++				  "%s: TC max = %d\n", prefix, caps->maxtc);
++			break;
+ 		case ICE_AQC_CAPS_RSS:
+ 			caps->rss_table_size = number;
+ 			caps->rss_table_entry_width = logical_id;
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 34c9d1e01529..e65b87f26828 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -418,7 +418,7 @@ static int ice_dcb_sw_dflt_cfg(struct ice_pf *pf, bool locked)
+ 	memset(&pi->local_dcbx_cfg, 0, sizeof(*dcbcfg));
  
-+	prefetch(q_vector->vsi->port_info);
-+
- 	packets = rc->total_pkts;
- 	bytes = rc->total_bytes;
+ 	dcbcfg->etscfg.willing = 1;
+-	dcbcfg->etscfg.maxtcs = 8;
++	dcbcfg->etscfg.maxtcs = hw->func_caps.common_cap.maxtc;
+ 	dcbcfg->etscfg.tcbwtable[0] = 100;
+ 	dcbcfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
  
-@@ -1486,7 +1488,7 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
- 			clean_complete = false;
+@@ -427,7 +427,7 @@ static int ice_dcb_sw_dflt_cfg(struct ice_pf *pf, bool locked)
+ 	dcbcfg->etsrec.willing = 0;
  
- 	/* Handle case where we are called by netpoll with a budget of 0 */
--	if (budget <= 0)
-+	if (unlikely(budget <= 0))
- 		return budget;
+ 	dcbcfg->pfc.willing = 1;
+-	dcbcfg->pfc.pfccap = IEEE_8021QAZ_MAX_TCS;
++	dcbcfg->pfc.pfccap = hw->func_caps.common_cap.maxtc;
  
- 	/* normally we have 1 Rx ring per q_vector */
+ 	dcbcfg->numapps = 1;
+ 	dcbcfg->app[0].selector = ICE_APP_SEL_ETHTYPE;
+@@ -459,6 +459,9 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 	err = ice_init_dcb(hw);
+ 	if (err) {
+ 		/* FW LLDP is disabled, activate SW DCBX/LLDP mode */
++		dev_info(&pf->pdev->dev,
++			 "DCB is enabled in the hardware, max number of TCs supported on this port are %d\n",
++			 pf->hw.func_caps.common_cap.maxtc);
+ 		dev_info(&pf->pdev->dev,
+ 			 "FW LLDP is disabled, DCBx/LLDP in SW mode.\n");
+ 		port_info->is_sw_lldp = true;
+@@ -489,6 +492,9 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 	if (err)
+ 		goto dcb_init_err;
+ 
++	dev_info(&pf->pdev->dev,
++		 "DCB is enabled in the hardware, max number of TCs supported on this port are %d\n",
++		 pf->hw.func_caps.common_cap.maxtc);
+ 	dev_info(&pf->pdev->dev, "DCBX offload supported\n");
+ 	return err;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 40b028e73234..4501d50a7dcc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -139,6 +139,9 @@ struct ice_phy_info {
+ /* Common HW capabilities for SW use */
+ struct ice_hw_common_caps {
+ 	u32 valid_functions;
++	/* DCB capabilities */
++	u32 active_tc_bitmap;
++	u32 maxtc;
+ 
+ 	/* Tx/Rx queues */
+ 	u16 num_rxq;		/* Number/Total Rx queues */
 -- 
 2.20.1
 
