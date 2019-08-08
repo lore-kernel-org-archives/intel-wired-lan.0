@@ -1,44 +1,74 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  8 Aug 2019 07:39:30 -0700
-Subject: [Intel-wired-lan] [PATCH S27 07/15] ice: Only disable VLAN pruning
- for the VF when all VLANs are removed
+Date: Thu,  8 Aug 2019 07:39:26 -0700
+Subject: [Intel-wired-lan] [PATCH S27 03/15] ice: Always notify FW of VF
+ reset
 In-Reply-To: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
 References: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190808143938.4968-7-anthony.l.nguyen@intel.com>
+Message-ID: <20190808143938.4968-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Currently if the VF adds a VLAN, VLAN pruning will be enabled for that VSI.
-Also, when a VLAN gets deleted it will disable VLAN pruning even if other
-VLAN(s) exists for the VF. Fix this by only disabling VLAN pruning on the
-VF VSI when removing the last VF (i.e. vf->num_vlan == 0).
+The call to ice_dis_vsi_txq() acts as the notification to the firmware
+that the VF is being reset. Because of this, we need to make this call
+every time we reset, regardless of whatever else we do to stop the tx
+queues.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Without this change, VF resets would fail to complete on interfaces that
+were up and running.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 25 ++++++++++++-------
+ 1 file changed, 16 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index c58e3e3212df..c38939b1d496 100644
+index b93324e9f4bc..c58e3e3212df 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -2767,8 +2767,9 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
- 			}
+@@ -1074,9 +1074,16 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	for (v = 0; v < pf->num_alloc_vfs; v++)
+ 		ice_trigger_vf_reset(&pf->vf[v], is_vflr);
  
- 			vf->num_vlan--;
--			/* Disable VLAN pruning when removing VLAN */
--			ice_cfg_vlan_pruning(vsi, false, false);
-+			/* Disable VLAN pruning when the last VLAN is removed */
-+			if (!vf->num_vlan)
-+				ice_cfg_vlan_pruning(vsi, false, false);
+-	for (v = 0; v < pf->num_alloc_vfs; v++)
+-		if (test_bit(ICE_VF_STATE_QS_ENA, pf->vf[v].vf_states))
+-			ice_dis_vf_qs(&pf->vf[v]);
++	for (v = 0; v < pf->num_alloc_vfs; v++) {
++		struct ice_vsi *vsi;
++
++		vf = &pf->vf[v];
++		vsi = pf->vsi[vf->lan_vsi_idx];
++		if (test_bit(ICE_VF_STATE_QS_ENA, vf->vf_states))
++			ice_dis_vf_qs(vf);
++		ice_dis_vsi_txq(vsi->port_info, vsi->idx, 0, 0, NULL, NULL,
++				NULL, ICE_VF_RESET, vf->vf_id, NULL);
++	}
  
- 			/* Disable Unicast/Multicast VLAN promiscuous mode */
- 			if (vlan_promisc) {
+ 	/* HW requires some time to make sure it can flush the FIFO for a VF
+ 	 * when it resets it. Poll the VPGEN_VFRSTAT register for each VF in
+@@ -1171,12 +1178,12 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 
+ 	if (test_bit(ICE_VF_STATE_QS_ENA, vf->vf_states))
+ 		ice_dis_vf_qs(vf);
+-	else
+-		/* Call Disable LAN Tx queue AQ call even when queues are not
+-		 * enabled. This is needed for successful completion of VFR
+-		 */
+-		ice_dis_vsi_txq(vsi->port_info, vsi->idx, 0, 0, NULL, NULL,
+-				NULL, ICE_VF_RESET, vf->vf_id, NULL);
++
++	/* Call Disable LAN Tx queue AQ whether or not queues are
++	 * enabled. This is needed for successful completion of VFR.
++	 */
++	ice_dis_vsi_txq(vsi->port_info, vsi->idx, 0, 0, NULL, NULL,
++			NULL, ICE_VF_RESET, vf->vf_id, NULL);
+ 
+ 	hw = &pf->hw;
+ 	/* poll VPGEN_VFRSTAT reg to make sure
 -- 
 2.20.1
 
