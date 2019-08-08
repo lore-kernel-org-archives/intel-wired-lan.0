@@ -1,74 +1,104 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  8 Aug 2019 07:39:26 -0700
-Subject: [Intel-wired-lan] [PATCH S27 03/15] ice: Always notify FW of VF
- reset
+Date: Thu,  8 Aug 2019 07:39:38 -0700
+Subject: [Intel-wired-lan] [PATCH S27 15/15] ice: change work limit to a
+ constant
 In-Reply-To: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
 References: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190808143938.4968-3-anthony.l.nguyen@intel.com>
+Message-ID: <20190808143938.4968-15-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-The call to ice_dis_vsi_txq() acts as the notification to the firmware
-that the VF is being reset. Because of this, we need to make this call
-every time we reset, regardless of whatever else we do to stop the tx
-queues.
+The driver has supported a transmit work limit
+that was configurable from ethtool for a long time, but
+there are no good use cases for having it be a variable
+that can be changed at run time.  In addition, this
+variable was noted to be causing performance overhead
+due to cache misses.
 
-Without this change, VF resets would fail to complete on interfaces that
-were up and running.
+Just remove the variable and let the code use a constant
+so that the functionality is maintained (a limit on the
+number of transmits that will be cleaned in any one call
+to the clean routines) without the cache miss.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Removes code, removes a variable, removes testing surface. Yay.
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 25 ++++++++++++-------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h         |  3 ---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 14 ++------------
+ drivers/net/ethernet/intel/ice/ice_lib.c     |  2 +-
+ 3 files changed, 3 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index b93324e9f4bc..c58e3e3212df 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1074,9 +1074,16 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	for (v = 0; v < pf->num_alloc_vfs; v++)
- 		ice_trigger_vf_reset(&pf->vf[v], is_vflr);
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 681224c1de0e..f05e43693c95 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -247,9 +247,6 @@ struct ice_vsi {
+ 	u16 vsi_num;			/* HW (absolute) index of this VSI */
+ 	u16 idx;			/* software index in pf->vsi[] */
  
--	for (v = 0; v < pf->num_alloc_vfs; v++)
--		if (test_bit(ICE_VF_STATE_QS_ENA, pf->vf[v].vf_states))
--			ice_dis_vf_qs(&pf->vf[v]);
-+	for (v = 0; v < pf->num_alloc_vfs; v++) {
-+		struct ice_vsi *vsi;
+-	/* Interrupt thresholds */
+-	u16 work_lmt;
+-
+ 	s16 vf_id;			/* VF ID for SR-IOV VSIs */
+ 
+ 	u16 ethtype;			/* Ethernet protocol for pause frame */
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index dadcf4324f56..68dd5ec392ce 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3361,12 +3361,6 @@ __ice_get_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
+ 	if (ice_get_q_coalesce(vsi, ec, q_num))
+ 		return -EINVAL;
+ 
+-	if (q_num < vsi->num_txq)
+-		ec->tx_max_coalesced_frames_irq = vsi->work_lmt;
+-
+-	if (q_num < vsi->num_rxq)
+-		ec->rx_max_coalesced_frames_irq = vsi->work_lmt;
+-
+ 	return 0;
+ }
+ 
+@@ -3546,17 +3540,13 @@ __ice_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
+ 			if (ice_set_q_coalesce(vsi, ec, i))
+ 				return -EINVAL;
+ 		}
+-		goto set_work_lmt;
++		goto set_complete;
+ 	}
+ 
+ 	if (ice_set_q_coalesce(vsi, ec, q_num))
+ 		return -EINVAL;
+ 
+-set_work_lmt:
+-
+-	if (ec->tx_max_coalesced_frames_irq || ec->rx_max_coalesced_frames_irq)
+-		vsi->work_lmt = max(ec->tx_max_coalesced_frames_irq,
+-				    ec->rx_max_coalesced_frames_irq);
++set_complete:
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 46cca842eea9..541c480d27e4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -574,8 +574,8 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type type, u16 vf_id)
+ 	vsi->type = type;
+ 	vsi->back = pf;
+ 	set_bit(__ICE_DOWN, vsi->state);
 +
-+		vf = &pf->vf[v];
-+		vsi = pf->vsi[vf->lan_vsi_idx];
-+		if (test_bit(ICE_VF_STATE_QS_ENA, vf->vf_states))
-+			ice_dis_vf_qs(vf);
-+		ice_dis_vsi_txq(vsi->port_info, vsi->idx, 0, 0, NULL, NULL,
-+				NULL, ICE_VF_RESET, vf->vf_id, NULL);
-+	}
+ 	vsi->idx = pf->next_vsi;
+-	vsi->work_lmt = ICE_DFLT_IRQ_WORK;
  
- 	/* HW requires some time to make sure it can flush the FIFO for a VF
- 	 * when it resets it. Poll the VPGEN_VFRSTAT register for each VF in
-@@ -1171,12 +1178,12 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 
- 	if (test_bit(ICE_VF_STATE_QS_ENA, vf->vf_states))
- 		ice_dis_vf_qs(vf);
--	else
--		/* Call Disable LAN Tx queue AQ call even when queues are not
--		 * enabled. This is needed for successful completion of VFR
--		 */
--		ice_dis_vsi_txq(vsi->port_info, vsi->idx, 0, 0, NULL, NULL,
--				NULL, ICE_VF_RESET, vf->vf_id, NULL);
-+
-+	/* Call Disable LAN Tx queue AQ whether or not queues are
-+	 * enabled. This is needed for successful completion of VFR.
-+	 */
-+	ice_dis_vsi_txq(vsi->port_info, vsi->idx, 0, 0, NULL, NULL,
-+			NULL, ICE_VF_RESET, vf->vf_id, NULL);
- 
- 	hw = &pf->hw;
- 	/* poll VPGEN_VFRSTAT reg to make sure
+ 	if (type == ICE_VSI_VF)
+ 		ice_vsi_set_num_qs(vsi, vf_id);
 -- 
 2.20.1
 
