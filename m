@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 8 Aug 2019 18:10:05 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] i40e: Implement debug macro
- hw_dbg using pr_debug
-In-Reply-To: <20190806133348.17924-2-maurosr@linux.vnet.ibm.com>
-References: <20190806133348.17924-1-maurosr@linux.vnet.ibm.com>
- <20190806133348.17924-2-maurosr@linux.vnet.ibm.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40F4BD@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 8 Aug 2019 18:42:55 +0000
+Subject: [Intel-wired-lan] [PATCH v3 1/1] ixgbe: sync the first fragment
+ unconditionally
+In-Reply-To: <20190808040312.21719-1-firo.yang@suse.com>
+References: <20190808040312.21719-1-firo.yang@suse.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D40F4D7@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,28 +13,53 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Mauro S. M. Rodrigues
-> Sent: Tuesday, August 6, 2019 6:34 AM
-> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [PATCH 2/2] i40e: Implement debug macro hw_dbg
-> using pr_debug
+> Behalf Of Firo Yang
+> Sent: Wednesday, August 7, 2019 9:04 PM
+> To: netdev at vger.kernel.org
+> Cc: maciejromanfijalkowski at gmail.com; Firo Yang <firo.yang@suse.com>;
+> linux-kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
+> jian.w.wen at oracle.com; alexander.h.duyck at linux.intel.com;
+> davem at davemloft.net
+> Subject: [Intel-wired-lan] [PATCH v3 1/1] ixgbe: sync the first fragment
+> unconditionally
 > 
-> There are several uses of hw_dbg in the code, producing no output. This
-> patch implments it using pr_debug.
+> In Xen environment, if Xen-swiotlb is enabled, ixgbe driver could possibly
+> allocate a page, DMA memory buffer, for the first fragment which is not
+> suitable for Xen-swiotlb to do DMA operations.
+> Xen-swiotlb have to internally allocate another page for doing DMA
+> operations. This mechanism requires syncing the data from the internal page
+> to the page which ixgbe sends to upper network stack. However, since
+> commit f3213d932173 ("ixgbe: Update driver to make use of DMA attributes
+> in Rx path"), the unmap operation is performed with
+> DMA_ATTR_SKIP_CPU_SYNC. As a result, the sync is not performed.
+> Since the sync isn't performed, the upper network stack could receive a
+> incomplete network packet. By incomplete, it means the linear data on the
+> first fragment(between skb->head and skb->end) is invalid. So we have to
+> copy the data from the internal xen-swiotlb page to the page which ixgbe
+> sends to upper network stack through the sync operation.
 > 
-> Initially the intention was to implement it using netdev_dbg, analogously to
-> what is done in ixgbe for instance. That approach was avoided due to some
-> early usages of hw_dbg, like i40e_pf_reset, before the vsi structure
-> initialization causing NULL pointer dereference during the driver probe if the
-> dbg messages were turned on as soon as the module is probed.
+> More details from Alexander Duyck:
+> Specifically since we are mapping the frame with
+> DMA_ATTR_SKIP_CPU_SYNC we have to unmap with that as well. As a result
+> a sync is not performed on an unmap and must be done manually as we
+> skipped it for the first frag. As such we need to always sync before possibly
+> performing a page unmap operation.
 > 
-> Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+> Fixes: f3213d932173 ("ixgbe: Update driver to make use of DMA attributes in
+> Rx path")
+> Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> Signed-off-by: Firo Yang <firo.yang@suse.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 1 +
->  drivers/net/ethernet/intel/i40e/i40e_hmc.c    | 1 +
->  drivers/net/ethernet/intel/i40e/i40e_osdep.h  | 7 ++++++-
->  3 files changed, 8 insertions(+), 1 deletion(-)
+> Changes from v2:
+>  * Added details on the problem caused by skipping the sync.
+>  * Added more explanation from Alexander Duyck.
+> 
+> Changes from v1:
+>  * Imporved the patch description.
+>  * Added Reviewed-by: and Fixes: as suggested by Alexander Duyck.
+> 
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 16 +++++++++-------
+>  1 file changed, 9 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
