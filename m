@@ -1,104 +1,95 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  8 Aug 2019 07:39:38 -0700
-Subject: [Intel-wired-lan] [PATCH S27 15/15] ice: change work limit to a
- constant
+Date: Thu,  8 Aug 2019 07:39:33 -0700
+Subject: [Intel-wired-lan] [PATCH S27 10/15] ice: Add ice_get_main_vsi to
+ get PF/main VSI
 In-Reply-To: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
 References: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190808143938.4968-15-anthony.l.nguyen@intel.com>
+Message-ID: <20190808143938.4968-10-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-The driver has supported a transmit work limit
-that was configurable from ethtool for a long time, but
-there are no good use cases for having it be a variable
-that can be changed at run time.  In addition, this
-variable was noted to be causing performance overhead
-due to cache misses.
+There are multiple places where we currently use ice_find_vsi_by_type
+to get the PF (a.k.a. main) VSI. The PF VSI by definition is always
+the first element in the pf->vsi array (i.e. pf->vsi[0]). So instead
+add and use a new helper function ice_get_main_vsi, which just returns
+pf->vsi[0].
 
-Just remove the variable and let the code use a constant
-so that the functionality is maintained (a limit on the
-number of transmits that will be cleaned in any one call
-to the clean routines) without the cache miss.
-
-Removes code, removes a variable, removes testing surface. Yay.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         |  3 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 14 ++------------
- drivers/net/ethernet/intel/ice/ice_lib.c     |  2 +-
- 3 files changed, 3 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h      | 20 +++++++-------------
+ drivers/net/ethernet/intel/ice/ice_main.c |  6 +++---
+ 2 files changed, 10 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 681224c1de0e..f05e43693c95 100644
+index dae79bb635f7..681224c1de0e 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -247,9 +247,6 @@ struct ice_vsi {
- 	u16 vsi_num;			/* HW (absolute) index of this VSI */
- 	u16 idx;			/* software index in pf->vsi[] */
- 
--	/* Interrupt thresholds */
--	u16 work_lmt;
--
- 	s16 vf_id;			/* VF ID for SR-IOV VSIs */
- 
- 	u16 ethtype;			/* Ethernet protocol for pause frame */
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index dadcf4324f56..68dd5ec392ce 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3361,12 +3361,6 @@ __ice_get_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
- 	if (ice_get_q_coalesce(vsi, ec, q_num))
- 		return -EINVAL;
- 
--	if (q_num < vsi->num_txq)
--		ec->tx_max_coalesced_frames_irq = vsi->work_lmt;
--
--	if (q_num < vsi->num_rxq)
--		ec->rx_max_coalesced_frames_irq = vsi->work_lmt;
--
- 	return 0;
+@@ -425,21 +425,15 @@ ice_irq_dynamic_ena(struct ice_hw *hw, struct ice_vsi *vsi,
  }
  
-@@ -3546,17 +3540,13 @@ __ice_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
- 			if (ice_set_q_coalesce(vsi, ec, i))
- 				return -EINVAL;
- 		}
--		goto set_work_lmt;
-+		goto set_complete;
- 	}
+ /**
+- * ice_find_vsi_by_type - Find and return VSI of a given type
+- * @pf: PF to search for VSI
+- * @type: Value indicating type of VSI we are looking for
++ * ice_get_main_vsi - Get the PF VSI
++ * @pf: PF instance
++ *
++ * returns pf->vsi[0], which by definition is the PF VSI
+  */
+-static inline struct ice_vsi *
+-ice_find_vsi_by_type(struct ice_pf *pf, enum ice_vsi_type type)
++static inline struct ice_vsi *ice_get_main_vsi(struct ice_pf *pf)
+ {
+-	int i;
+-
+-	for (i = 0; i < pf->num_alloc_vsi; i++) {
+-		struct ice_vsi *vsi = pf->vsi[i];
+-
+-		if (vsi && vsi->type == type)
+-			return vsi;
+-	}
++	if (pf->vsi)
++		return pf->vsi[0];
  
- 	if (ice_set_q_coalesce(vsi, ec, q_num))
+ 	return NULL;
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index cfa06a69f029..2850f8e41408 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -120,7 +120,7 @@ static int ice_init_mac_fltr(struct ice_pf *pf)
+ 	u8 broadcast[ETH_ALEN];
+ 	struct ice_vsi *vsi;
+ 
+-	vsi = ice_find_vsi_by_type(pf, ICE_VSI_PF);
++	vsi = ice_get_main_vsi(pf);
+ 	if (!vsi)
  		return -EINVAL;
  
--set_work_lmt:
--
--	if (ec->tx_max_coalesced_frames_irq || ec->rx_max_coalesced_frames_irq)
--		vsi->work_lmt = max(ec->tx_max_coalesced_frames_irq,
--				    ec->rx_max_coalesced_frames_irq);
-+set_complete:
+@@ -826,7 +826,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
+ 	if (link_up == old_link && link_speed == old_link_speed)
+ 		return result;
  
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 46cca842eea9..541c480d27e4 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -574,8 +574,8 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type type, u16 vf_id)
- 	vsi->type = type;
- 	vsi->back = pf;
- 	set_bit(__ICE_DOWN, vsi->state);
-+
- 	vsi->idx = pf->next_vsi;
--	vsi->work_lmt = ICE_DFLT_IRQ_WORK;
+-	vsi = ice_find_vsi_by_type(pf, ICE_VSI_PF);
++	vsi = ice_get_main_vsi(pf);
+ 	if (!vsi || !vsi->port_info)
+ 		return -EINVAL;
  
- 	if (type == ICE_VSI_VF)
- 		ice_vsi_set_num_qs(vsi, vf_id);
+@@ -1439,7 +1439,7 @@ static void ice_check_media_subtask(struct ice_pf *pf)
+ 	struct ice_vsi *vsi;
+ 	int err;
+ 
+-	vsi = ice_find_vsi_by_type(pf, ICE_VSI_PF);
++	vsi = ice_get_main_vsi(pf);
+ 	if (!vsi)
+ 		return;
+ 
 -- 
 2.20.1
 
