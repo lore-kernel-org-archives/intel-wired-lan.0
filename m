@@ -1,70 +1,156 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri,  9 Aug 2019 14:31:07 +0200
-Subject: [Intel-wired-lan] [PATCH v2 16/17] ixgbe: no need to check return
- value of debugfs_create functions
-In-Reply-To: <20190809123108.27065-1-gregkh@linuxfoundation.org>
-References: <20190809123108.27065-1-gregkh@linuxfoundation.org>
-Message-ID: <20190809123108.27065-17-gregkh@linuxfoundation.org>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 09 Aug 2019 23:26:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
+ fe9c9130bd52d1ea1dbffe533fec324751ec6f04
+Message-ID: <5d4d90a8.m9oMxHKuxOTtRYMa%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When calling debugfs functions, there is no need to ever check the
-return value.  The function can work or not, but the code logic should
-never do something different based on this.
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: fe9c9130bd52d1ea1dbffe533fec324751ec6f04  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: intel-wired-lan at lists.osuosl.org
-Cc: netdev at vger.kernel.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+TIMEOUT after 1445m
+
+
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 27
+
+alpha                            allmodconfig
+alpha                            allyesconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allyesconfig
+mips                                   jz4740
+mips                                     txx9
+nds32                            allmodconfig
+nds32                            allyesconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+s390                             allyesconfig
+sh                               allyesconfig
+sparc                            allmodconfig
+sparc64                          allyesconfig
+x86_64                             acpi-redef
+x86_64                           allmodconfig
+x86_64                           allyesdebian
+x86_64                                nfsroot
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+
+configs tested: 96
+
+riscv                              tinyconfig
+i386                               tinyconfig
+i386                   randconfig-d002-201931
+i386                   randconfig-d004-201931
+x86_64                 randconfig-d004-201931
+x86_64                 randconfig-d001-201931
+x86_64                 randconfig-d002-201931
+x86_64                 randconfig-d003-201931
+i386                   randconfig-d001-201931
+i386                   randconfig-d003-201931
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+powerpc                             defconfig
+ia64                                defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                             allmodconfig
+s390                                defconfig
+arm                              allmodconfig
+arm64                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+x86_64                 randconfig-g003-201931
+i386                   randconfig-g004-201931
+x86_64                 randconfig-g002-201931
+x86_64                 randconfig-g001-201931
+i386                   randconfig-g001-201931
+x86_64                 randconfig-g004-201931
+i386                   randconfig-g002-201931
+i386                   randconfig-g003-201931
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             alldefconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+arc                              allyesconfig
+microblaze                    nommu_defconfig
+powerpc                       ppc64_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+powerpc                           allnoconfig
+
 ---
- .../net/ethernet/intel/ixgbe/ixgbe_debugfs.c  | 22 +++++--------------
- 1 file changed, 5 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
-index 50dfb02fa34c..171cdc552961 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
-@@ -190,22 +190,12 @@ static const struct file_operations ixgbe_dbg_netdev_ops_fops = {
- void ixgbe_dbg_adapter_init(struct ixgbe_adapter *adapter)
- {
- 	const char *name = pci_name(adapter->pdev);
--	struct dentry *pfile;
-+
- 	adapter->ixgbe_dbg_adapter = debugfs_create_dir(name, ixgbe_dbg_root);
--	if (adapter->ixgbe_dbg_adapter) {
--		pfile = debugfs_create_file("reg_ops", 0600,
--					    adapter->ixgbe_dbg_adapter, adapter,
--					    &ixgbe_dbg_reg_ops_fops);
--		if (!pfile)
--			e_dev_err("debugfs reg_ops for %s failed\n", name);
--		pfile = debugfs_create_file("netdev_ops", 0600,
--					    adapter->ixgbe_dbg_adapter, adapter,
--					    &ixgbe_dbg_netdev_ops_fops);
--		if (!pfile)
--			e_dev_err("debugfs netdev_ops for %s failed\n", name);
--	} else {
--		e_dev_err("debugfs entry for %s failed\n", name);
--	}
-+	debugfs_create_file("reg_ops", 0600, adapter->ixgbe_dbg_adapter,
-+			    adapter, &ixgbe_dbg_reg_ops_fops);
-+	debugfs_create_file("netdev_ops", 0600, adapter->ixgbe_dbg_adapter,
-+			    adapter, &ixgbe_dbg_netdev_ops_fops);
- }
- 
- /**
-@@ -224,8 +214,6 @@ void ixgbe_dbg_adapter_exit(struct ixgbe_adapter *adapter)
- void ixgbe_dbg_init(void)
- {
- 	ixgbe_dbg_root = debugfs_create_dir(ixgbe_driver_name, NULL);
--	if (ixgbe_dbg_root == NULL)
--		pr_err("init of debugfs failed\n");
- }
- 
- /**
--- 
-2.22.0
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
