@@ -1,39 +1,42 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  8 Aug 2019 07:39:34 -0700
-Subject: [Intel-wired-lan] [PATCH S27 11/15] ice: Check root pointer for
- validity
-In-Reply-To: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
-References: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190808143938.4968-11-anthony.l.nguyen@intel.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Fri,  9 Aug 2019 14:31:05 +0200
+Subject: [Intel-wired-lan] [PATCH v2 14/17] fm10k: no need to check return
+ value of debugfs_create functions
+In-Reply-To: <20190809123108.27065-1-gregkh@linuxfoundation.org>
+References: <20190809123108.27065-1-gregkh@linuxfoundation.org>
+Message-ID: <20190809123108.27065-15-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+When calling debugfs functions, there is no need to ever check the
+return value.  The function can work or not, but the code logic should
+never do something different based on this.
 
-ice_sched_get_tc_node uses pi->root without checking for NULL. Add a
-check to prevent NULL pointer dereference.
-
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: intel-wired-lan at lists.osuosl.org
+Cc: netdev at vger.kernel.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/net/ethernet/intel/ice/ice_sched.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 79d64f9ed609..fc624b73d05d 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -284,7 +284,7 @@ struct ice_sched_node *ice_sched_get_tc_node(struct ice_port_info *pi, u8 tc)
- {
- 	u8 i;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+index dca104121c05..1d27b2fb23af 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+@@ -160,8 +160,6 @@ void fm10k_dbg_q_vector_init(struct fm10k_q_vector *q_vector)
+ 	snprintf(name, sizeof(name), "q_vector.%03d", q_vector->v_idx);
  
--	if (!pi)
-+	if (!pi || !pi->root)
- 		return NULL;
- 	for (i = 0; i < pi->root->num_children; i++)
- 		if (pi->root->children[i]->tc_num == tc)
+ 	q_vector->dbg_q_vector = debugfs_create_dir(name, interface->dbg_intfc);
+-	if (!q_vector->dbg_q_vector)
+-		return;
+ 
+ 	/* Generate a file for each rx ring in the q_vector */
+ 	for (i = 0; i < q_vector->tx.count; i++) {
 -- 
-2.20.1
+2.22.0
 
