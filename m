@@ -1,10 +1,10 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri,  9 Aug 2019 14:31:05 +0200
-Subject: [Intel-wired-lan] [PATCH v2 14/17] fm10k: no need to check return
+Date: Fri,  9 Aug 2019 14:31:06 +0200
+Subject: [Intel-wired-lan] [PATCH v2 15/17] i40e: no need to check return
  value of debugfs_create functions
 In-Reply-To: <20190809123108.27065-1-gregkh@linuxfoundation.org>
 References: <20190809123108.27065-1-gregkh@linuxfoundation.org>
-Message-ID: <20190809123108.27065-15-gregkh@linuxfoundation.org>
+Message-ID: <20190809123108.27065-16-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,22 +21,47 @@ Cc: intel-wired-lan at lists.osuosl.org
 Cc: netdev at vger.kernel.org
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c | 2 --
- 1 file changed, 2 deletions(-)
+ .../net/ethernet/intel/i40e/i40e_debugfs.c    | 22 ++++---------------
+ 1 file changed, 4 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-index dca104121c05..1d27b2fb23af 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-@@ -160,8 +160,6 @@ void fm10k_dbg_q_vector_init(struct fm10k_q_vector *q_vector)
- 	snprintf(name, sizeof(name), "q_vector.%03d", q_vector->v_idx);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index 55d20acfcf70..41232898d8ae 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -1732,29 +1732,15 @@ static const struct file_operations i40e_dbg_netdev_ops_fops = {
+  **/
+ void i40e_dbg_pf_init(struct i40e_pf *pf)
+ {
+-	struct dentry *pfile;
+ 	const char *name = pci_name(pf->pdev);
+-	const struct device *dev = &pf->pdev->dev;
  
- 	q_vector->dbg_q_vector = debugfs_create_dir(name, interface->dbg_intfc);
--	if (!q_vector->dbg_q_vector)
+ 	pf->i40e_dbg_pf = debugfs_create_dir(name, i40e_dbg_root);
+-	if (!pf->i40e_dbg_pf)
 -		return;
+-
+-	pfile = debugfs_create_file("command", 0600, pf->i40e_dbg_pf, pf,
+-				    &i40e_dbg_command_fops);
+-	if (!pfile)
+-		goto create_failed;
  
- 	/* Generate a file for each rx ring in the q_vector */
- 	for (i = 0; i < q_vector->tx.count; i++) {
+-	pfile = debugfs_create_file("netdev_ops", 0600, pf->i40e_dbg_pf, pf,
+-				    &i40e_dbg_netdev_ops_fops);
+-	if (!pfile)
+-		goto create_failed;
++	debugfs_create_file("command", 0600, pf->i40e_dbg_pf, pf,
++			    &i40e_dbg_command_fops);
+ 
+-	return;
+-
+-create_failed:
+-	dev_info(dev, "debugfs dir/file for %s failed\n", name);
+-	debugfs_remove_recursive(pf->i40e_dbg_pf);
++	debugfs_create_file("netdev_ops", 0600, pf->i40e_dbg_pf, pf,
++			    &i40e_dbg_netdev_ops_fops);
+ }
+ 
+ /**
 -- 
 2.22.0
 
