@@ -1,10 +1,10 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sat, 10 Aug 2019 12:17:30 +0200
-Subject: [Intel-wired-lan] [PATCH v3 15/17] i40e: no need to check return
+Date: Sat, 10 Aug 2019 12:17:31 +0200
+Subject: [Intel-wired-lan] [PATCH v3 16/17] ixgbe: no need to check return
  value of debugfs_create functions
 In-Reply-To: <20190810101732.26612-1-gregkh@linuxfoundation.org>
 References: <20190810101732.26612-1-gregkh@linuxfoundation.org>
-Message-ID: <20190810101732.26612-16-gregkh@linuxfoundation.org>
+Message-ID: <20190810101732.26612-17-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,44 +21,47 @@ Cc: intel-wired-lan at lists.osuosl.org
 Cc: netdev at vger.kernel.org
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- .../net/ethernet/intel/i40e/i40e_debugfs.c    | 22 ++++---------------
- 1 file changed, 4 insertions(+), 18 deletions(-)
+ .../net/ethernet/intel/ixgbe/ixgbe_debugfs.c  | 22 +++++--------------
+ 1 file changed, 5 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 55d20acfcf70..41232898d8ae 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -1732,29 +1732,15 @@ static const struct file_operations i40e_dbg_netdev_ops_fops = {
-  **/
- void i40e_dbg_pf_init(struct i40e_pf *pf)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
+index 50dfb02fa34c..171cdc552961 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c
+@@ -190,22 +190,12 @@ static const struct file_operations ixgbe_dbg_netdev_ops_fops = {
+ void ixgbe_dbg_adapter_init(struct ixgbe_adapter *adapter)
  {
+ 	const char *name = pci_name(adapter->pdev);
 -	struct dentry *pfile;
- 	const char *name = pci_name(pf->pdev);
--	const struct device *dev = &pf->pdev->dev;
++
+ 	adapter->ixgbe_dbg_adapter = debugfs_create_dir(name, ixgbe_dbg_root);
+-	if (adapter->ixgbe_dbg_adapter) {
+-		pfile = debugfs_create_file("reg_ops", 0600,
+-					    adapter->ixgbe_dbg_adapter, adapter,
+-					    &ixgbe_dbg_reg_ops_fops);
+-		if (!pfile)
+-			e_dev_err("debugfs reg_ops for %s failed\n", name);
+-		pfile = debugfs_create_file("netdev_ops", 0600,
+-					    adapter->ixgbe_dbg_adapter, adapter,
+-					    &ixgbe_dbg_netdev_ops_fops);
+-		if (!pfile)
+-			e_dev_err("debugfs netdev_ops for %s failed\n", name);
+-	} else {
+-		e_dev_err("debugfs entry for %s failed\n", name);
+-	}
++	debugfs_create_file("reg_ops", 0600, adapter->ixgbe_dbg_adapter,
++			    adapter, &ixgbe_dbg_reg_ops_fops);
++	debugfs_create_file("netdev_ops", 0600, adapter->ixgbe_dbg_adapter,
++			    adapter, &ixgbe_dbg_netdev_ops_fops);
+ }
  
- 	pf->i40e_dbg_pf = debugfs_create_dir(name, i40e_dbg_root);
--	if (!pf->i40e_dbg_pf)
--		return;
--
--	pfile = debugfs_create_file("command", 0600, pf->i40e_dbg_pf, pf,
--				    &i40e_dbg_command_fops);
--	if (!pfile)
--		goto create_failed;
- 
--	pfile = debugfs_create_file("netdev_ops", 0600, pf->i40e_dbg_pf, pf,
--				    &i40e_dbg_netdev_ops_fops);
--	if (!pfile)
--		goto create_failed;
-+	debugfs_create_file("command", 0600, pf->i40e_dbg_pf, pf,
-+			    &i40e_dbg_command_fops);
- 
--	return;
--
--create_failed:
--	dev_info(dev, "debugfs dir/file for %s failed\n", name);
--	debugfs_remove_recursive(pf->i40e_dbg_pf);
-+	debugfs_create_file("netdev_ops", 0600, pf->i40e_dbg_pf, pf,
-+			    &i40e_dbg_netdev_ops_fops);
+ /**
+@@ -224,8 +214,6 @@ void ixgbe_dbg_adapter_exit(struct ixgbe_adapter *adapter)
+ void ixgbe_dbg_init(void)
+ {
+ 	ixgbe_dbg_root = debugfs_create_dir(ixgbe_driver_name, NULL);
+-	if (ixgbe_dbg_root == NULL)
+-		pr_err("init of debugfs failed\n");
  }
  
  /**
