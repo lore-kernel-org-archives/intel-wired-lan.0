@@ -1,14 +1,30 @@
 From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Mon, 12 Aug 2019 21:38:13 +0000
+Date: Mon, 12 Aug 2019 21:47:56 +0000
 Subject: [Intel-wired-lan] CMA alloc failed with 6 4-port X710 QAD4 NICs
-In-Reply-To: <9e598973-0bca-eda1-c5df-9f3ef16bf700@candelatech.com>
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69AFF99F3@ORSMSX115.amr.corp.intel.com>
 References: <9e598973-0bca-eda1-c5df-9f3ef16bf700@candelatech.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD69AFF99F3@ORSMSX115.amr.corp.intel.com>
+ <9B4A1B1917080E46B64F07F2989DADD69AFF99F3@ORSMSX115.amr.corp.intel.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD69AFF9A2A@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+Oh, and someone gave me the standard "check the bios settings" answer too, and enable memory over 8GB. Probably more of a desktop setting than a server setting, but I don't know what system you're running.
+
+Todd Fujinaka
+Software Application Engineer
+Datacenter Engineering Group
+Intel Corporation
+todd.fujinaka at intel.com
+
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Fujinaka, Todd
+Sent: Monday, August 12, 2019 2:38 PM
+To: Ben Greear <greearb@candelatech.com>; intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+Subject: Re: [Intel-wired-lan] CMA alloc failed with 6 4-port X710 QAD4 NICs
 
 We probably need a lot of continguous memory. Offhand, I don't know, but with >1500 queue pairs, we need a lot of memory in general.
 
@@ -47,6 +63,10 @@ Ben
 Ben Greear <greearb@candelatech.com>
 Candela Technologies Inc  http://www.candelatech.com
 
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan at osuosl.org
