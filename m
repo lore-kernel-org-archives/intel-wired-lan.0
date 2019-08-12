@@ -1,108 +1,59 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Sun, 4 Aug 2019 15:44:53 +0200
-Subject: [Intel-wired-lan] [PATCH v4] e1000e: PCIm function state support
-In-Reply-To: <20190804074026.25198-1-vitaly.lifshits@intel.com>
-References: <20190804074026.25198-1-vitaly.lifshits@intel.com>
-Message-ID: <8829b684-518d-2233-d618-4f1367c2dbbd@molgen.mpg.de>
+From: Wenwen Wang <wenwen@cs.uga.edu>
+Date: Mon, 12 Aug 2019 00:59:21 -0500
+Subject: [Intel-wired-lan] [PATCH] e1000: fix memory leaks
+Message-ID: <1565589561-5910-1-git-send-email-wenwen@cs.uga.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Vitaly,
+In e1000_set_ringparam(), 'tx_old' and 'rx_old' are not deallocated if
+e1000_up() fails, leading to memory leaks. Refactor the code to fix this
+issue.
 
+Signed-off-by: Wenwen Wang <wenwen@cs.uga.edu>
+---
+ drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-Thank you for the updated version.
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+index a410085..2e07ffa 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+@@ -607,6 +607,7 @@ static int e1000_set_ringparam(struct net_device *netdev,
+ 	for (i = 0; i < adapter->num_rx_queues; i++)
+ 		rxdr[i].count = rxdr->count;
+ 
++	err = 0;
+ 	if (netif_running(adapter->netdev)) {
+ 		/* Try to get new resources before deleting old */
+ 		err = e1000_setup_all_rx_resources(adapter);
+@@ -627,14 +628,13 @@ static int e1000_set_ringparam(struct net_device *netdev,
+ 		adapter->rx_ring = rxdr;
+ 		adapter->tx_ring = txdr;
+ 		err = e1000_up(adapter);
+-		if (err)
+-			goto err_setup;
+ 	}
+ 	kfree(tx_old);
+ 	kfree(rx_old);
+ 
+ 	clear_bit(__E1000_RESETTING, &adapter->flags);
+-	return 0;
++	return err;
++
+ err_setup_tx:
+ 	e1000_free_all_rx_resources(adapter);
+ err_setup_rx:
+@@ -646,7 +646,6 @@ static int e1000_set_ringparam(struct net_device *netdev,
+ err_alloc_tx:
+ 	if (netif_running(adapter->netdev))
+ 		e1000_up(adapter);
+-err_setup:
+ 	clear_bit(__E1000_RESETTING, &adapter->flags);
+ 	return err;
+ }
+-- 
+2.7.4
 
-On 04.08.19 09:40, Vitaly Lifshits wrote:
-> Due to commit: 5d8682588605 ("[misc] mei: me: allow runtime
-> pm for platform with D0i3")
-> when disconnecting the cable and reconnecting it the NIC
-> enters DMoff state. This caused wrong link indication
-> and duplex mismatch.
-
-*and* should fit on the line above.
-
-> Checking PCIm function state and performing PHY reset after
-> exiting DMoff state in watchdog task, solves this issue.
-> 
-> Link: https://bugzilla.redhat.com/show_bug.cgi?id=1689436
-> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> ---
-> 
-> V2: Fix typos in commit message
-> V3: Fix minor typo
-> V4: Address community comments
-> ---
->   drivers/net/ethernet/intel/e1000e/defines.h |  4 ++++
->   drivers/net/ethernet/intel/e1000e/netdev.c  | 20 +++++++++++++++++++-
->   2 files changed, 23 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
-> index fd550dee4982..4cff73cbd032 100644
-> --- a/drivers/net/ethernet/intel/e1000e/defines.h
-> +++ b/drivers/net/ethernet/intel/e1000e/defines.h
-> @@ -222,6 +222,10 @@
->   #define E1000_STATUS_PHYRA      0x00000400      /* PHY Reset Asserted */
->   #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master Req status */
->   
-> +/* PCIm function state */
-> +#define E1000_STATUS_PCIM_STATE	0x40000000
-> +#define PCIM_DMOFF_EXIT_TIMEOUT 100
-
-Align the values?
-
-> +
->   #define HALF_DUPLEX 1
->   #define FULL_DUPLEX 2
->   
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index b5fed6177ad6..2d29c0d0be1b 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -5162,7 +5162,7 @@ static void e1000_watchdog_task(struct work_struct *work)
->   	struct e1000_phy_info *phy = &adapter->hw.phy;
->   	struct e1000_ring *tx_ring = adapter->tx_ring;
->   	struct e1000_hw *hw = &adapter->hw;
-> -	u32 link, tctl;
-> +	u32 link, tctl, pcim_state, tries = 0;
->   
->   	if (test_bit(__E1000_DOWN, &adapter->state))
->   		return;
-> @@ -5187,6 +5187,24 @@ static void e1000_watchdog_task(struct work_struct *work)
->   			/* Cancel scheduled suspend requests. */
->   			pm_runtime_resume(netdev->dev.parent);
->   
-> +			/* Checking if MAC is in DMoff state*/
-
-s/Checking/Check/
-
-> +			pcim_state = er32(STATUS);
-> +			while (pcim_state & E1000_STATUS_PCIM_STATE) {
-> +				if (tries++ == PCIM_DMOFF_EXIT_TIMEOUT) {
-> +					e_dbg("Error in exiting dmoff\n");
-> +					e_err("PCIm DMoff timeout expired\n");
-> +					break;
-> +				}
-> +				usleep_range(10000, 20000);
-> +				pcim_state = er32(STATUS);
-> +
-> +				/* If MAC entered DMoff state, PHY reset is
-> +				 * needed after exiting it
-> +				 */
-> +				if (!(pcim_state & E1000_STATUS_PCIM_STATE))
-> +					e1000_phy_hw_reset(&adapter->hw);
-
-I still believe, the if statement should be moved *outside* the loop.
-
-> +			}
-> +
->   			/* update snapshot of PHY registers on LSC */
->   			e1000_phy_read_status(adapter);
->   			mac->ops.get_link_up_info(&adapter->hw,
-
-
-Kind regards,
-
-Paul
