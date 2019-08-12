@@ -1,59 +1,39 @@
-From: Wenwen Wang <wenwen@cs.uga.edu>
-Date: Mon, 12 Aug 2019 00:59:21 -0500
-Subject: [Intel-wired-lan] [PATCH] e1000: fix memory leaks
-Message-ID: <1565589561-5910-1-git-send-email-wenwen@cs.uga.edu>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 12 Aug 2019 08:46:55 -0700
+Subject: [Intel-wired-lan] [PATCH v3 14/17] fm10k: no need to check
+ return value of debugfs_create functions
+In-Reply-To: <20190810101732.26612-15-gregkh@linuxfoundation.org>
+References: <20190810101732.26612-1-gregkh@linuxfoundation.org>
+ <20190810101732.26612-15-gregkh@linuxfoundation.org>
+Message-ID: <96c726571a7372a763db5ac7a6aa447911cb894b.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In e1000_set_ringparam(), 'tx_old' and 'rx_old' are not deallocated if
-e1000_up() fails, leading to memory leaks. Refactor the code to fix this
-issue.
+On Sat, 2019-08-10 at 12:17 +0200, Greg Kroah-Hartman wrote:
+> When calling debugfs functions, there is no need to ever check the
+> return value.  The function can work or not, but the code logic
+> should
+> never do something different based on this.
+> 
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Signed-off-by: Wenwen Wang <wenwen@cs.uga.edu>
----
- drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
-index a410085..2e07ffa 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
-@@ -607,6 +607,7 @@ static int e1000_set_ringparam(struct net_device *netdev,
- 	for (i = 0; i < adapter->num_rx_queues; i++)
- 		rxdr[i].count = rxdr->count;
- 
-+	err = 0;
- 	if (netif_running(adapter->netdev)) {
- 		/* Try to get new resources before deleting old */
- 		err = e1000_setup_all_rx_resources(adapter);
-@@ -627,14 +628,13 @@ static int e1000_set_ringparam(struct net_device *netdev,
- 		adapter->rx_ring = rxdr;
- 		adapter->tx_ring = txdr;
- 		err = e1000_up(adapter);
--		if (err)
--			goto err_setup;
- 	}
- 	kfree(tx_old);
- 	kfree(rx_old);
- 
- 	clear_bit(__E1000_RESETTING, &adapter->flags);
--	return 0;
-+	return err;
-+
- err_setup_tx:
- 	e1000_free_all_rx_resources(adapter);
- err_setup_rx:
-@@ -646,7 +646,6 @@ static int e1000_set_ringparam(struct net_device *netdev,
- err_alloc_tx:
- 	if (netif_running(adapter->netdev))
- 		e1000_up(adapter);
--err_setup:
- 	clear_bit(__E1000_RESETTING, &adapter->flags);
- 	return err;
- }
--- 
-2.7.4
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c | 2 --
+>  1 file changed, 2 deletions(-)
 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190812/e8bd66a4/attachment.asc>
