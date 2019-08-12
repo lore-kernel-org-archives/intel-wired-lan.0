@@ -1,11 +1,11 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 12 Aug 2019 08:48:53 -0700
-Subject: [Intel-wired-lan] [PATCH v3 15/17] i40e: no need to check
+Date: Mon, 12 Aug 2019 08:49:35 -0700
+Subject: [Intel-wired-lan] [PATCH v3 16/17] ixgbe: no need to check
  return value of debugfs_create functions
-In-Reply-To: <20190810101732.26612-16-gregkh@linuxfoundation.org>
+In-Reply-To: <20190810101732.26612-17-gregkh@linuxfoundation.org>
 References: <20190810101732.26612-1-gregkh@linuxfoundation.org>
- <20190810101732.26612-16-gregkh@linuxfoundation.org>
-Message-ID: <016fd56f6128723b6112f1dfe938c9c641e422dc.camel@intel.com>
+ <20190810101732.26612-17-gregkh@linuxfoundation.org>
+Message-ID: <1ddf059408158e6a1819f222127b353476110ba4.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -27,9 +27,9 @@ On Sat, 2019-08-10 at 12:17 +0200, Greg Kroah-Hartman wrote:
 Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
 > ---
->  .../net/ethernet/intel/i40e/i40e_debugfs.c    | 22 ++++-------------
-> --
->  1 file changed, 4 insertions(+), 18 deletions(-)
+>  .../net/ethernet/intel/ixgbe/ixgbe_debugfs.c  | 22 +++++----------
+> ----
+>  1 file changed, 5 insertions(+), 17 deletions(-)
 
 -------------- next part --------------
 A non-text attachment was scrubbed...
@@ -37,4 +37,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190812/68f7c23f/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190812/1c48e716/attachment.asc>
