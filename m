@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 13 Aug 2019 17:12:50 +0000
-Subject: [Intel-wired-lan] [PATCH S27 10/15] ice: Add ice_get_main_vsi
- to get PF/main VSI
-In-Reply-To: <20190808143938.4968-10-anthony.l.nguyen@intel.com>
+Date: Tue, 13 Aug 2019 17:24:52 +0000
+Subject: [Intel-wired-lan] [PATCH S27 11/15] ice: Check root pointer for
+ validity
+In-Reply-To: <20190808143938.4968-11-anthony.l.nguyen@intel.com>
 References: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
- <20190808143938.4968-10-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D411679@ORSMSX104.amr.corp.intel.com>
+ <20190808143938.4968-11-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D41168B@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, August 8, 2019 7:40 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S27 10/15] ice: Add ice_get_main_vsi to get
-> PF/main VSI
+> Subject: [Intel-wired-lan] [PATCH S27 11/15] ice: Check root pointer for
+> validity
 > 
 > From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 > 
-> There are multiple places where we currently use ice_find_vsi_by_type to
-> get the PF (a.k.a. main) VSI. The PF VSI by definition is always the first
-> element in the pf->vsi array (i.e. pf->vsi[0]). So instead add and use a new
-> helper function ice_get_main_vsi, which just returns
-> pf->vsi[0].
+> ice_sched_get_tc_node uses pi->root without checking for NULL. Add a
+> check to prevent NULL pointer dereference.
 > 
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h      | 20 +++++++-------------
->  drivers/net/ethernet/intel/ice/ice_main.c |  6 +++---
->  2 files changed, 10 insertions(+), 16 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_sched.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
