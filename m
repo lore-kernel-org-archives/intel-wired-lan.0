@@ -1,530 +1,644 @@
 From: Tom Herbert <tom@herbertland.com>
-Date: Mon, 12 Aug 2019 17:47:36 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 2/7] ipeh: Move generic EH
- functions to exthdrs_common.c
+Date: Mon, 12 Aug 2019 17:47:41 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 7/7] ip6tlvs: Validation of TX
+ Destination and Hop-by-Hop options
 In-Reply-To: <1565657261-15979-1-git-send-email-tom@quantonium.net>
 References: <1565657261-15979-1-git-send-email-tom@quantonium.net>
-Message-ID: <1565657261-15979-3-git-send-email-tom@quantonium.net>
+Message-ID: <1565657261-15979-8-git-send-email-tom@quantonium.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Move generic functions in exthdrs.c to new exthdrs_common.c so that
-exthdrs.c only contains functions that are specific to IPv6 processing,
-and exthdrs_common.c contains functions that are generic. These
-functions include those that will be used with IPv4 extension headers.
-Generic extension header related functions are prefixed by ipeh_.
+Validate Destination and Hop-by-Hop options. This uses the information
+in the TLV parameters table to validate various aspects of both
+individual TLVs as well as a list of TLVs in an extension header.
+
+There are two levels of validation that can be performed: simple checks
+and deep checks. Simple checks validate only the most basic properties
+such as that the TLV list fits into the EH. Deep checks do a fine
+grained validation that includes perferred ordering, length limits,
+and length alignment.
+
+With proper permissions set in the TLV parameter table, this patch
+allows non-privileged users to send TLVs. Given that TLVs are open
+ended and potentially a source of DOS attack, deep checks are
+performed to limit the format that a non-privileged user can send.
+If deep checks are enabled, a canonical format for sending TLVs is
+enforced (in adherence with the robustness principle). A TLV must
+be well ordered with respect to the preferred order for the TLV.
+Each TLV must be aligned as described in the parameter table. Minimal
+padding (one padding TLV) is used to align TLVs. The length of the
+extension header as well as the count of non-padding TLVs is checked
+against max_*_opts_len and max_*_opts_cnt. For individual TLVs, length
+limits and length alignment is checked.
 
 Signed-off-by: Tom Herbert <tom@quantonium.net>
 ---
- include/net/ipeh.h        |   9 +++
- include/net/ipv6.h        |   9 ---
- net/dccp/ipv6.c           |   2 +-
- net/ipv6/Kconfig          |   4 ++
- net/ipv6/Makefile         |   1 +
- net/ipv6/calipso.c        |   6 +-
- net/ipv6/exthdrs.c        | 138 --------------------------------------------
- net/ipv6/exthdrs_common.c | 144 ++++++++++++++++++++++++++++++++++++++++++++++
- net/ipv6/ipv6_sockglue.c  |   2 +-
- net/ipv6/raw.c            |   2 +-
- net/ipv6/tcp_ipv6.c       |   2 +-
- net/ipv6/udp.c            |   2 +-
- net/l2tp/l2tp_ip6.c       |   2 +-
- net/sctp/ipv6.c           |   2 +-
- 14 files changed, 168 insertions(+), 157 deletions(-)
- create mode 100644 net/ipv6/exthdrs_common.c
+ include/net/ipeh.h        |  22 +++
+ net/ipv6/datagram.c       |  51 +++++--
+ net/ipv6/exthdrs_common.c | 382 ++++++++++++++++++++++++++++++++++++++++++++++
+ net/ipv6/ipv6_sockglue.c  |  39 ++---
+ 4 files changed, 455 insertions(+), 39 deletions(-)
 
 diff --git a/include/net/ipeh.h b/include/net/ipeh.h
-index 0e775e1..c367ce6 100644
+index cee76fe..67e5bb9 100644
 --- a/include/net/ipeh.h
 +++ b/include/net/ipeh.h
-@@ -17,4 +17,13 @@ struct tlvtype_proc {
- extern const struct tlvtype_proc tlvprocdestopt_lst[];
- extern const struct tlvtype_proc tlvprochopopt_lst[];
+@@ -151,6 +151,28 @@ struct ipv6_txoptions *ipeh_renew_options(struct sock *sk,
+ struct ipv6_txoptions *ipeh_fixup_options(struct ipv6_txoptions *opt_space,
+ 					  struct ipv6_txoptions *opt);
  
-+struct ipv6_txoptions *ipeh_dup_options(struct sock *sk,
-+					struct ipv6_txoptions *opt);
-+struct ipv6_txoptions *ipeh_renew_options(struct sock *sk,
-+					  struct ipv6_txoptions *opt,
-+					  int newtype,
-+					  struct ipv6_opt_hdr *newopt);
-+struct ipv6_txoptions *ipeh_fixup_options(struct ipv6_txoptions *opt_space,
-+					  struct ipv6_txoptions *opt);
++int ipeh_opt_validate_tlvs(struct net *net,
++			   struct tlv_param_table *tlv_param_table,
++			   struct ipv6_opt_hdr *opt,
++			   unsigned int optname, bool admin,
++			   unsigned int max_len, unsigned int max_cnt);
++int ipeh_opt_validate_single_tlv(struct net *net,
++				 struct tlv_param_table *tlv_param_table,
++				 unsigned int optname, const __u8 *tlv,
++				 size_t len, bool deleting, bool admin);
++int ipeh_opt_check_perm(struct net *net,
++			struct tlv_param_table *tlv_param_table,
++			struct ipv6_txoptions *txopt, int optname, bool admin);
 +
- #endif /* _NET_IPEH_H */
-diff --git a/include/net/ipv6.h b/include/net/ipv6.h
-index ec10fca..1c6878b 100644
---- a/include/net/ipv6.h
-+++ b/include/net/ipv6.h
-@@ -429,15 +429,6 @@ int ip6_ra_control(struct sock *sk, int sel);
- 
- int ipv6_parse_hopopts(struct sk_buff *skb);
- 
--struct ipv6_txoptions *ipv6_dup_options(struct sock *sk,
--					struct ipv6_txoptions *opt);
--struct ipv6_txoptions *ipv6_renew_options(struct sock *sk,
--					  struct ipv6_txoptions *opt,
--					  int newtype,
--					  struct ipv6_opt_hdr *newopt);
--struct ipv6_txoptions *ipv6_fixup_options(struct ipv6_txoptions *opt_space,
--					  struct ipv6_txoptions *opt);
--
- bool ipv6_opt_accepted(const struct sock *sk, const struct sk_buff *skb,
- 		       const struct inet6_skb_parm *opt);
- struct ipv6_txoptions *ipv6_update_options(struct sock *sk,
-diff --git a/net/dccp/ipv6.c b/net/dccp/ipv6.c
-index 1b7381f..0b83a04 100644
---- a/net/dccp/ipv6.c
-+++ b/net/dccp/ipv6.c
-@@ -514,7 +514,7 @@ static struct sock *dccp_v6_request_recv_sock(const struct sock *sk,
- 	if (!opt)
- 		opt = rcu_dereference(np->opt);
- 	if (opt) {
--		opt = ipv6_dup_options(newsk, opt);
-+		opt = ipeh_dup_options(newsk, opt);
- 		RCU_INIT_POINTER(newnp->opt, opt);
- 	}
- 	inet_csk(newsk)->icsk_ext_hdr_len = 0;
-diff --git a/net/ipv6/Kconfig b/net/ipv6/Kconfig
-index ae1344e..700fcea 100644
---- a/net/ipv6/Kconfig
-+++ b/net/ipv6/Kconfig
-@@ -3,9 +3,13 @@
- # IPv6 configuration
- #
- 
-+config EXTHDRS
-+	bool
++struct ipv6_txoptions *ipeh_txopt_from_opt(struct sock *sk,
++					   struct tlv_param_table
++						*tlv_param_table,
++					   struct ipv6_txoptions *opt,
++					   int optname, char __user *optval,
++					   unsigned int optlen,
++					   unsigned int max_len,
++					   unsigned int max_cnt);
 +
- #   IPv6 as module will cause a CRASH if you try to unload it
- menuconfig IPV6
- 	tristate "The IPv6 protocol"
-+	select EXTHDRS
- 	default y
- 	---help---
- 	  Support for IP version 6 (IPv6).
-diff --git a/net/ipv6/Makefile b/net/ipv6/Makefile
-index df3919b..0bcab81 100644
---- a/net/ipv6/Makefile
-+++ b/net/ipv6/Makefile
-@@ -44,6 +44,7 @@ obj-$(CONFIG_IPV6_SIT) += sit.o
- obj-$(CONFIG_IPV6_TUNNEL) += ip6_tunnel.o
- obj-$(CONFIG_IPV6_GRE) += ip6_gre.o
- obj-$(CONFIG_IPV6_FOU) += fou6.o
-+obj-$(CONFIG_EXTHDRS) += exthdrs_common.o
+ /* Generic extension header TLV parser */
  
- obj-y += addrconf_core.o exthdrs_core.o ip6_checksum.o ip6_icmp.o
- obj-$(CONFIG_INET) += output_core.o protocol.o $(ipv6-offload)
-diff --git a/net/ipv6/calipso.c b/net/ipv6/calipso.c
-index 221c81f..9c84848 100644
---- a/net/ipv6/calipso.c
-+++ b/net/ipv6/calipso.c
-@@ -785,7 +785,7 @@ static int calipso_opt_update(struct sock *sk, struct ipv6_opt_hdr *hop)
- {
- 	struct ipv6_txoptions *old = txopt_get(inet6_sk(sk)), *txopts;
+ enum ipeh_parse_errors {
+diff --git a/net/ipv6/datagram.c b/net/ipv6/datagram.c
+index 9ab897d..4b87773 100644
+--- a/net/ipv6/datagram.c
++++ b/net/ipv6/datagram.c
+@@ -837,7 +837,10 @@ int ip6_datagram_send_ctl(struct net *net, struct sock *sk,
+ 			break;
  
--	txopts = ipv6_renew_options(sk, old, IPV6_HOPOPTS, hop);
-+	txopts = ipeh_renew_options(sk, old, IPV6_HOPOPTS, hop);
- 	txopt_put(old);
- 	if (IS_ERR(txopts))
- 		return PTR_ERR(txopts);
-@@ -1207,7 +1207,7 @@ static int calipso_req_setattr(struct request_sock *req,
- 	if (IS_ERR(new))
- 		return PTR_ERR(new);
+ 		case IPV6_2292HOPOPTS:
+-		case IPV6_HOPOPTS:
++		case IPV6_HOPOPTS: {
++			int max_len = net->ipv6.sysctl.max_hbh_opts_len;
++			int max_cnt = net->ipv6.sysctl.max_hbh_opts_cnt;
++
+ 			if (opt->hopopt || cmsg->cmsg_len < CMSG_LEN(sizeof(struct ipv6_opt_hdr))) {
+ 				err = -EINVAL;
+ 				goto exit_f;
+@@ -849,15 +852,24 @@ int ip6_datagram_send_ctl(struct net *net, struct sock *sk,
+ 				err = -EINVAL;
+ 				goto exit_f;
+ 			}
+-			if (!ns_capable(net->user_ns, CAP_NET_RAW)) {
+-				err = -EPERM;
++
++			err = ipeh_opt_validate_tlvs(net, &ipv6_tlv_param_table,
++						     hdr, IPV6_HOPOPTS,
++						     ns_capable(net->user_ns,
++								CAP_NET_RAW),
++						     max_len, max_cnt);
++			if (err < 0)
+ 				goto exit_f;
+-			}
++
+ 			opt->opt_nflen += len;
+ 			opt->hopopt = hdr;
+ 			break;
++		}
++
++		case IPV6_2292DSTOPTS: {
++			int max_len = net->ipv6.sysctl.max_dst_opts_len;
++			int max_cnt = net->ipv6.sysctl.max_dst_opts_cnt;
  
--	txopts = ipv6_renew_options(sk, req_inet->ipv6_opt, IPV6_HOPOPTS, new);
-+	txopts = ipeh_renew_options(sk, req_inet->ipv6_opt, IPV6_HOPOPTS, new);
+-		case IPV6_2292DSTOPTS:
+ 			if (cmsg->cmsg_len < CMSG_LEN(sizeof(struct ipv6_opt_hdr))) {
+ 				err = -EINVAL;
+ 				goto exit_f;
+@@ -869,10 +881,14 @@ int ip6_datagram_send_ctl(struct net *net, struct sock *sk,
+ 				err = -EINVAL;
+ 				goto exit_f;
+ 			}
+-			if (!ns_capable(net->user_ns, CAP_NET_RAW)) {
+-				err = -EPERM;
++			err = ipeh_opt_validate_tlvs(net, &ipv6_tlv_param_table,
++						     hdr, IPV6_DSTOPTS,
++						     ns_capable(net->user_ns,
++								CAP_NET_RAW),
++						     max_len, max_cnt);
++			if (err < 0)
+ 				goto exit_f;
+-			}
++
+ 			if (opt->dst1opt) {
+ 				err = -EINVAL;
+ 				goto exit_f;
+@@ -880,9 +896,13 @@ int ip6_datagram_send_ctl(struct net *net, struct sock *sk,
+ 			opt->opt_flen += len;
+ 			opt->dst1opt = hdr;
+ 			break;
++		}
  
- 	kfree(new);
- 
-@@ -1244,7 +1244,7 @@ static void calipso_req_delattr(struct request_sock *req)
- 	if (calipso_opt_del(req_inet->ipv6_opt->hopopt, &new))
- 		return; /* Nothing to do */
- 
--	txopts = ipv6_renew_options(sk, req_inet->ipv6_opt, IPV6_HOPOPTS, new);
-+	txopts = ipeh_renew_options(sk, req_inet->ipv6_opt, IPV6_HOPOPTS, new);
- 
- 	if (!IS_ERR(txopts)) {
- 		txopts = xchg(&req_inet->ipv6_opt, txopts);
-diff --git a/net/ipv6/exthdrs.c b/net/ipv6/exthdrs.c
-index 664491e..e12d3a5 100644
---- a/net/ipv6/exthdrs.c
-+++ b/net/ipv6/exthdrs.c
-@@ -784,144 +784,6 @@ void ipv6_push_frag_opts(struct sk_buff *skb, struct ipv6_txoptions *opt, u8 *pr
- }
- EXPORT_SYMBOL(ipv6_push_frag_opts);
- 
--struct ipv6_txoptions *
--ipv6_dup_options(struct sock *sk, struct ipv6_txoptions *opt)
--{
--	struct ipv6_txoptions *opt2;
+ 		case IPV6_DSTOPTS:
+-		case IPV6_RTHDRDSTOPTS:
++		case IPV6_RTHDRDSTOPTS: {
++			int max_len = net->ipv6.sysctl.max_dst_opts_len;
++			int max_cnt = net->ipv6.sysctl.max_dst_opts_cnt;
++
+ 			if (cmsg->cmsg_len < CMSG_LEN(sizeof(struct ipv6_opt_hdr))) {
+ 				err = -EINVAL;
+ 				goto exit_f;
+@@ -894,10 +914,15 @@ int ip6_datagram_send_ctl(struct net *net, struct sock *sk,
+ 				err = -EINVAL;
+ 				goto exit_f;
+ 			}
+-			if (!ns_capable(net->user_ns, CAP_NET_RAW)) {
+-				err = -EPERM;
++
++			err = ipeh_opt_validate_tlvs(net, &ipv6_tlv_param_table,
++						     hdr, IPV6_DSTOPTS,
++						     ns_capable(net->user_ns,
++								CAP_NET_RAW),
++						     max_len, max_cnt);
++			if (err < 0)
+ 				goto exit_f;
+-			}
++
+ 			if (cmsg->cmsg_type == IPV6_DSTOPTS) {
+ 				opt->opt_flen += len;
+ 				opt->dst1opt = hdr;
+@@ -906,7 +931,7 @@ int ip6_datagram_send_ctl(struct net *net, struct sock *sk,
+ 				opt->dst0opt = hdr;
+ 			}
+ 			break;
 -
--	opt2 = sock_kmalloc(sk, opt->tot_len, GFP_ATOMIC);
--	if (opt2) {
--		long dif = (char *)opt2 - (char *)opt;
--		memcpy(opt2, opt, opt->tot_len);
--		if (opt2->hopopt)
--			*((char **)&opt2->hopopt) += dif;
--		if (opt2->dst0opt)
--			*((char **)&opt2->dst0opt) += dif;
--		if (opt2->dst1opt)
--			*((char **)&opt2->dst1opt) += dif;
--		if (opt2->srcrt)
--			*((char **)&opt2->srcrt) += dif;
--		refcount_set(&opt2->refcnt, 1);
--	}
--	return opt2;
--}
--EXPORT_SYMBOL_GPL(ipv6_dup_options);
--
--static void ipv6_renew_option(int renewtype,
--			      struct ipv6_opt_hdr **dest,
--			      struct ipv6_opt_hdr *old,
--			      struct ipv6_opt_hdr *new,
--			      int newtype, char **p)
--{
--	struct ipv6_opt_hdr *src;
--
--	src = (renewtype == newtype ? new : old);
--	if (!src)
--		return;
--
--	memcpy(*p, src, ipv6_optlen(src));
--	*dest = (struct ipv6_opt_hdr *)*p;
--	*p += CMSG_ALIGN(ipv6_optlen(*dest));
--}
--
--/**
-- * ipv6_renew_options - replace a specific ext hdr with a new one.
-- *
-- * @sk: sock from which to allocate memory
-- * @opt: original options
-- * @newtype: option type to replace in @opt
-- * @newopt: new option of type @newtype to replace (user-mem)
-- * @newoptlen: length of @newopt
-- *
-- * Returns a new set of options which is a copy of @opt with the
-- * option type @newtype replaced with @newopt.
-- *
-- * @opt may be NULL, in which case a new set of options is returned
-- * containing just @newopt.
-- *
-- * @newopt may be NULL, in which case the specified option type is
-- * not copied into the new set of options.
-- *
-- * The new set of options is allocated from the socket option memory
-- * buffer of @sk.
-- */
--struct ipv6_txoptions *
--ipv6_renew_options(struct sock *sk, struct ipv6_txoptions *opt,
--		   int newtype, struct ipv6_opt_hdr *newopt)
--{
--	int tot_len = 0;
--	char *p;
--	struct ipv6_txoptions *opt2;
--
--	if (opt) {
--		if (newtype != IPV6_HOPOPTS && opt->hopopt)
--			tot_len += CMSG_ALIGN(ipv6_optlen(opt->hopopt));
--		if (newtype != IPV6_RTHDRDSTOPTS && opt->dst0opt)
--			tot_len += CMSG_ALIGN(ipv6_optlen(opt->dst0opt));
--		if (newtype != IPV6_RTHDR && opt->srcrt)
--			tot_len += CMSG_ALIGN(ipv6_optlen(opt->srcrt));
--		if (newtype != IPV6_DSTOPTS && opt->dst1opt)
--			tot_len += CMSG_ALIGN(ipv6_optlen(opt->dst1opt));
--	}
--
--	if (newopt)
--		tot_len += CMSG_ALIGN(ipv6_optlen(newopt));
--
--	if (!tot_len)
--		return NULL;
--
--	tot_len += sizeof(*opt2);
--	opt2 = sock_kmalloc(sk, tot_len, GFP_ATOMIC);
--	if (!opt2)
--		return ERR_PTR(-ENOBUFS);
--
--	memset(opt2, 0, tot_len);
--	refcount_set(&opt2->refcnt, 1);
--	opt2->tot_len = tot_len;
--	p = (char *)(opt2 + 1);
--
--	ipv6_renew_option(IPV6_HOPOPTS, &opt2->hopopt,
--			  (opt ? opt->hopopt : NULL),
--			  newopt, newtype, &p);
--	ipv6_renew_option(IPV6_RTHDRDSTOPTS, &opt2->dst0opt,
--			  (opt ? opt->dst0opt : NULL),
--			  newopt, newtype, &p);
--	ipv6_renew_option(IPV6_RTHDR,
--			  (struct ipv6_opt_hdr **)&opt2->srcrt,
--			  (opt ? (struct ipv6_opt_hdr *)opt->srcrt : NULL),
--			  newopt, newtype, &p);
--	ipv6_renew_option(IPV6_DSTOPTS, &opt2->dst1opt,
--			  (opt ? opt->dst1opt : NULL),
--			  newopt, newtype, &p);
--
--	opt2->opt_nflen = (opt2->hopopt ? ipv6_optlen(opt2->hopopt) : 0) +
--			  (opt2->dst0opt ? ipv6_optlen(opt2->dst0opt) : 0) +
--			  (opt2->srcrt ? ipv6_optlen(opt2->srcrt) : 0);
--	opt2->opt_flen = (opt2->dst1opt ? ipv6_optlen(opt2->dst1opt) : 0);
--
--	return opt2;
--}
--
--struct ipv6_txoptions *ipv6_fixup_options(struct ipv6_txoptions *opt_space,
--					  struct ipv6_txoptions *opt)
--{
--	/*
--	 * ignore the dest before srcrt unless srcrt is being included.
--	 * --yoshfuji
--	 */
--	if (opt && opt->dst0opt && !opt->srcrt) {
--		if (opt_space != opt) {
--			memcpy(opt_space, opt, sizeof(*opt_space));
--			opt = opt_space;
--		}
--		opt->opt_nflen -= ipv6_optlen(opt->dst0opt);
--		opt->dst0opt = NULL;
--	}
--
--	return opt;
--}
--EXPORT_SYMBOL_GPL(ipv6_fixup_options);
--
- /**
-  * fl6_update_dst - update flowi destination address with info given
-  *                  by srcrt option, if any.
++		}
+ 		case IPV6_2292RTHDR:
+ 		case IPV6_RTHDR:
+ 			if (cmsg->cmsg_len < CMSG_LEN(sizeof(struct ipv6_rt_hdr))) {
 diff --git a/net/ipv6/exthdrs_common.c b/net/ipv6/exthdrs_common.c
-new file mode 100644
-index 0000000..2c68184
---- /dev/null
+index b44c6fd..5df55bd 100644
+--- a/net/ipv6/exthdrs_common.c
 +++ b/net/ipv6/exthdrs_common.c
-@@ -0,0 +1,144 @@
-+// SPDX-License-Identifier: GPL-2.0
+@@ -262,6 +262,318 @@ bool ipeh_parse_tlv(unsigned int class,
+ }
+ EXPORT_SYMBOL(ipeh_parse_tlv);
+ 
++/* TLV validation functions */
 +
-+/* Extension header and TLV library code that is not specific to IPv6. */
-+#include <linux/export.h>
-+#include <net/ipv6.h>
-+
-+struct ipv6_txoptions *
-+ipeh_dup_options(struct sock *sk, struct ipv6_txoptions *opt)
++/* Validate a single non-padding TLV */
++static int __ipeh_opt_validate_single_tlv(struct net *net, const __u8 *tlv,
++					  struct tlv_proc *tproc,
++					  unsigned int class, bool *deep_check,
++					  bool deleting, bool admin)
 +{
-+	struct ipv6_txoptions *opt2;
++	struct tlv_tx_params *tptx = &tproc->params.t;
 +
-+	opt2 = sock_kmalloc(sk, opt->tot_len, GFP_ATOMIC);
-+	if (opt2) {
-+		long dif = (char *)opt2 - (char *)opt;
++	if (tlv[0] < 2) /* Must be non-padding */
++		return -EINVAL;
 +
-+		memcpy(opt2, opt, opt->tot_len);
-+		if (opt2->hopopt)
-+			*((char **)&opt2->hopopt) += dif;
-+		if (opt2->dst0opt)
-+			*((char **)&opt2->dst0opt) += dif;
-+		if (opt2->dst1opt)
-+			*((char **)&opt2->dst1opt) += dif;
-+		if (opt2->srcrt)
-+			*((char **)&opt2->srcrt) += dif;
-+		refcount_set(&opt2->refcnt, 1);
++	/* Check permissions */
++	switch (admin ? tptx->admin_perm : tptx->user_perm) {
++	case IPEH_TLV_PERM_NO_CHECK:
++		/* Allowed with no deep checks */
++		*deep_check = false;
++		return 0;
++	case IPEH_TLV_PERM_WITH_CHECK:
++		/* Allowed with deep checks */
++		*deep_check = true;
++		break;
++	default:
++		/* No permission */
++		return -EPERM;
 +	}
-+	return opt2;
++
++	/* Perform deep checks on the TLV */
++
++	/* Check class */
++	if ((tptx->class & class) != class)
++		return -EINVAL;
++
++	/* Don't bother checking lengths when deleting, the TLV is only
++	 * needed here for lookup
++	 */
++	if (deleting) {
++		/* Don't bother with deep checks when deleting */
++		*deep_check = false;
++	} else {
++		/* Check length */
++		if (tlv[1] < tptx->min_data_len || tlv[1] > tptx->max_data_len)
++			return -EINVAL;
++
++		/* Check length alignment */
++		if ((tlv[1] % (tptx->data_len_mult + 1)) != tptx->data_len_off)
++			return -EINVAL;
++	}
++
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(ipeh_dup_options);
 +
-+static void ipeh_renew_option(int renewtype,
-+			      struct ipv6_opt_hdr **dest,
-+			      struct ipv6_opt_hdr *old,
-+			      struct ipv6_opt_hdr *new,
-+			      int newtype, char **p)
++static unsigned int optname_to_tlv_class(int optname)
 +{
-+	struct ipv6_opt_hdr *src;
++	switch (optname) {
++	case IPV6_HOPOPTS:
++		return IPEH_TLV_CLASS_FLAG_HOPOPT;
++	case IPV6_RTHDRDSTOPTS:
++		return IPEH_TLV_CLASS_FLAG_RTRDSTOPT;
++	case IPV6_DSTOPTS:
++		return IPEH_TLV_CLASS_FLAG_DSTOPT;
++	default:
++		return -1U;
++	}
++}
 +
-+	src = (renewtype == newtype ? new : old);
-+	if (!src)
-+		return;
++static int __ipeh_opt_validate_tlvs(struct net *net,
++				    struct tlv_param_table *tlv_param_table,
++				    struct ipv6_opt_hdr *opt,
++				    unsigned int optname, bool deleting,
++				    bool admin, unsigned int max_len,
++				    unsigned int max_cnt)
++{
++	bool deep_check = !admin, did_deep_check = false;
++	unsigned int opt_len, tlv_len, offset;
++	unsigned int padding = 0, numpad = 0;
++	unsigned short prev_tlv_order = 0;
++	unsigned int class, cnt = 0;
++	struct tlv_tx_params *tptx;
++	int retc, ret = -EINVAL;
++	__u8 *tlv = (__u8 *)opt;
++	struct tlv_proc *tproc;
 +
-+	memcpy(*p, src, ipv6_optlen(src));
-+	*dest = (struct ipv6_opt_hdr *)*p;
-+	*p += CMSG_ALIGN(ipv6_optlen(*dest));
++	opt_len = ipv6_optlen(opt);
++	offset = sizeof(*opt);
++
++	class = optname_to_tlv_class(optname);
++
++	rcu_read_lock();
++
++	while (offset < opt_len) {
++		switch (tlv[offset]) {
++		case IPV6_TLV_PAD1:
++			tlv_len = 1;
++			padding++;
++			numpad++;
++			break;
++		case IPV6_TLV_PADN:
++			if (offset + 1 >= opt_len)
++				goto out;
++
++			tlv_len = tlv[offset + 1] + 2;
++
++			if (offset + tlv_len > opt_len)
++				goto out;
++
++			padding += tlv_len;
++			numpad++;
++			break;
++		default:
++			if (offset + 1 >= opt_len)
++				goto out;
++
++			tlv_len = tlv[offset + 1] + 2;
++
++			if (offset + tlv_len > opt_len)
++				goto out;
++
++			tproc = ipeh_tlv_get_proc(tlv_param_table,
++						  &tlv[offset]);
++			tptx = &tproc->params.t;
++
++			retc = __ipeh_opt_validate_single_tlv(net, &tlv[offset],
++							      tproc, class,
++							      &deep_check,
++							      deleting, admin);
++			if (retc < 0) {
++				ret = retc;
++				goto out;
++			}
++
++			if (deep_check) {
++				/* Check for too many options */
++				if (++cnt > max_cnt) {
++					ret = -E2BIG;
++					goto out;
++				}
++
++				/* Check order */
++				if (tptx->preferred_order < prev_tlv_order)
++					goto out;
++
++				/* Check alignment */
++				if ((offset % (tptx->align_mult + 1)) !=
++				    tptx->align_off)
++					goto out;
++
++				/* Check for right amount of padding */
++				if (numpad > 1 || padding > tptx->align_mult)
++					goto out;
++
++				prev_tlv_order = tptx->preferred_order;
++
++				did_deep_check = true;
++			}
++			padding = 0;
++			numpad = 0;
++		}
++		offset += tlv_len;
++	}
++
++	/* Check trailing padding. Note this covers the case option list
++	 * only contains padding.
++	 */
++	if (deep_check && (numpad > 1 || padding > 7))
++		goto out;
++
++	/* If we did at least one deep check apply length limit */
++	if (did_deep_check && opt_len > max_len) {
++		ret = -EMSGSIZE;
++		goto out;
++	}
++
++	/* All good */
++	ret = 0;
++out:
++	rcu_read_unlock();
++
++	return ret;
 +}
 +
 +/**
-+ * ipeh_renew_options - replace a specific ext hdr with a new one.
++ * ipeh_opt_validate_tlvs - Validate TLVs.
++ * @net: Current net
++ * @tlv_param_table: TLV parameter table
++ * @opt: The option header
++ * @optname: IPV6_HOPOPTS, IPV6_RTHDRDSTOPTS, or IPV6_DSTOPTS
++ * @admin: Set for privileged user
++ * @max_len: Maximum length for TLV
++ * @max_cnt: Maximum number of non-padding TLVs
 + *
-+ * @sk: sock from which to allocate memory
-+ * @opt: original options
-+ * @newtype: option type to replace in @opt
-+ * @newopt: new option of type @newtype to replace (user-mem)
-+ * @newoptlen: length of @newopt
-+ *
-+ * Returns a new set of options which is a copy of @opt with the
-+ * option type @newtype replaced with @newopt.
-+ *
-+ * @opt may be NULL, in which case a new set of options is returned
-+ * containing just @newopt.
-+ *
-+ * @newopt may be NULL, in which case the specified option type is
-+ * not copied into the new set of options.
-+ *
-+ * The new set of options is allocated from the socket option memory
-+ * buffer of @sk.
++ * Description:
++ * Walks the TLVs in a list to verify that the TLV lengths and other
++ * parameters are in bounds for a Destination or Hop-by-Hop option.
++ * Return -EINVAL is there is a problem, zero otherwise.
 + */
-+struct ipv6_txoptions *
-+ipeh_renew_options(struct sock *sk, struct ipv6_txoptions *opt,
-+		   int newtype, struct ipv6_opt_hdr *newopt)
++int ipeh_opt_validate_tlvs(struct net *net,
++			   struct tlv_param_table *tlv_param_table,
++			   struct ipv6_opt_hdr *opt, unsigned int optname,
++			   bool admin, unsigned int max_len,
++			   unsigned int max_cnt)
 +{
-+	int tot_len = 0;
-+	char *p;
-+	struct ipv6_txoptions *opt2;
-+
-+	if (opt) {
-+		if (newtype != IPV6_HOPOPTS && opt->hopopt)
-+			tot_len += CMSG_ALIGN(ipv6_optlen(opt->hopopt));
-+		if (newtype != IPV6_RTHDRDSTOPTS && opt->dst0opt)
-+			tot_len += CMSG_ALIGN(ipv6_optlen(opt->dst0opt));
-+		if (newtype != IPV6_RTHDR && opt->srcrt)
-+			tot_len += CMSG_ALIGN(ipv6_optlen(opt->srcrt));
-+		if (newtype != IPV6_DSTOPTS && opt->dst1opt)
-+			tot_len += CMSG_ALIGN(ipv6_optlen(opt->dst1opt));
-+	}
-+
-+	if (newopt)
-+		tot_len += CMSG_ALIGN(ipv6_optlen(newopt));
-+
-+	if (!tot_len)
-+		return NULL;
-+
-+	tot_len += sizeof(*opt2);
-+	opt2 = sock_kmalloc(sk, tot_len, GFP_ATOMIC);
-+	if (!opt2)
-+		return ERR_PTR(-ENOBUFS);
-+
-+	memset(opt2, 0, tot_len);
-+	refcount_set(&opt2->refcnt, 1);
-+	opt2->tot_len = tot_len;
-+	p = (char *)(opt2 + 1);
-+
-+	ipeh_renew_option(IPV6_HOPOPTS, &opt2->hopopt,
-+			  (opt ? opt->hopopt : NULL),
-+			  newopt, newtype, &p);
-+	ipeh_renew_option(IPV6_RTHDRDSTOPTS, &opt2->dst0opt,
-+			  (opt ? opt->dst0opt : NULL),
-+			  newopt, newtype, &p);
-+	ipeh_renew_option(IPV6_RTHDR,
-+			  (struct ipv6_opt_hdr **)&opt2->srcrt,
-+			  (opt ? (struct ipv6_opt_hdr *)opt->srcrt : NULL),
-+			  newopt, newtype, &p);
-+	ipeh_renew_option(IPV6_DSTOPTS, &opt2->dst1opt,
-+			  (opt ? opt->dst1opt : NULL),
-+			  newopt, newtype, &p);
-+
-+	opt2->opt_nflen = (opt2->hopopt ? ipv6_optlen(opt2->hopopt) : 0) +
-+			  (opt2->dst0opt ? ipv6_optlen(opt2->dst0opt) : 0) +
-+			  (opt2->srcrt ? ipv6_optlen(opt2->srcrt) : 0);
-+	opt2->opt_flen = (opt2->dst1opt ? ipv6_optlen(opt2->dst1opt) : 0);
-+
-+	return opt2;
++	return __ipeh_opt_validate_tlvs(net, tlv_param_table, opt, optname,
++					false, admin, max_len, max_cnt);
 +}
-+EXPORT_SYMBOL(ipeh_renew_options);
++EXPORT_SYMBOL(ipeh_opt_validate_tlvs);
 +
-+struct ipv6_txoptions *ipeh_fixup_options(struct ipv6_txoptions *opt_space,
-+					  struct ipv6_txoptions *opt)
++/**
++ * ipeh_opt_validate_single_tlv - Check that a single TLV is valid.
++ * @net: Current net
++ * @tlv_param_table: TLV parameter table
++ * @optname: IPV6_HOPOPTS, IPV6_RTHDRDSTOPTS, or IPV6_DSTOPTS
++ * @tlv: The TLV as array of bytes
++ * @len: Length of buffer holding TLV
++ * @deleting: TLV is being deleted
++ * @admin: Set for privileged user
++ *
++ * Description:
++ * Validates a single TLV. The TLV must be non-padding type. The length
++ * of the TLV (as determined by the second byte that gives length of the
++ * option data) must match @len.
++ */
++int ipeh_opt_validate_single_tlv(struct net *net,
++				 struct tlv_param_table *tlv_param_table,
++				 unsigned int optname, const __u8 *tlv,
++				 size_t len, bool deleting, bool admin)
 +{
-+	/* ignore the dest before srcrt unless srcrt is being included.
-+	 * --yoshfuji
-+	 */
-+	if (opt && opt->dst0opt && !opt->srcrt) {
-+		if (opt_space != opt) {
-+			memcpy(opt_space, opt, sizeof(*opt_space));
-+			opt = opt_space;
-+		}
-+		opt->opt_nflen -= ipv6_optlen(opt->dst0opt);
-+		opt->dst0opt = NULL;
++	struct tlv_proc *tproc;
++	unsigned int class;
++	bool deep_check;
++	int ret = 0;
++
++	class = optname_to_tlv_class(optname);
++
++	if (tlv[0] < 2)
++		return -EINVAL;
++
++	if (len < 2)
++		return -EINVAL;
++
++	if (tlv[1] + 2 != len)
++		return -EINVAL;
++
++	rcu_read_lock();
++
++	tproc = ipeh_tlv_get_proc(tlv_param_table, tlv);
++
++	ret = __ipeh_opt_validate_single_tlv(net, tlv, tproc, class,
++					     &deep_check, deleting, admin);
++
++	rcu_read_unlock();
++
++	return ret;
++}
++EXPORT_SYMBOL(ipeh_opt_validate_single_tlv);
++
++/**
++ * ipeh_opt_check_perm - Check that current capabilities allows modifying
++ * txopts.
++ * @net: Current net
++ * @tlv_param_table: TLV parameter table
++ * @txopts: TX options from the socket
++ * @optname: IPV6_HOPOPTS, IPV6_RTHDRDSTOPTS, or IPV6_DSTOPTS
++ * @admin: Set for privileged user
++ *
++ * Description:
++ *
++ * Checks whether the permissions of TLV that are set on a socket permit
++ * modificationr.
++ *
++ */
++int ipeh_opt_check_perm(struct net *net,
++			struct tlv_param_table *tlv_param_table,
++			struct ipv6_txoptions *txopt, int optname, bool admin)
++{
++	struct ipv6_opt_hdr *opt;
++	int retv = -EPERM;
++
++	if (!txopt)
++		return 0;
++
++	switch (optname) {
++	case IPV6_HOPOPTS:
++		opt = txopt->hopopt;
++		break;
++	case IPV6_RTHDRDSTOPTS:
++		opt = txopt->dst0opt;
++		break;
++	case IPV6_DSTOPTS:
++		opt = txopt->dst1opt;
++		break;
++	default:
++		goto out;
 +	}
++
++	if (!opt) {
++		retv = 0;
++		goto out;
++	}
++
++	/* Just call the validate function on the options as being
++	 * deleted.
++	 */
++	retv = __ipeh_opt_validate_tlvs(net, tlv_param_table, opt, optname,
++					true, admin, -1U, -1U);
++
++out:
++	return retv;
++}
++EXPORT_SYMBOL(ipeh_opt_check_perm);
++
+ /* TLV parameter table functions and structures */
+ 
+ /* Default (unset) values for TLV parameters */
+@@ -454,6 +766,76 @@ int __ipeh_tlv_unset(struct tlv_param_table *tlv_param_table,
+ }
+ EXPORT_SYMBOL(__ipeh_tlv_unset);
+ 
++/* Utility function tp create TX options from a setsockopt that is setting
++ * options on a socket.
++ */
++struct ipv6_txoptions *ipeh_txopt_from_opt(struct sock *sk,
++					   struct tlv_param_table
++							*tlv_param_table,
++					   struct ipv6_txoptions *opt,
++					   int optname, char __user *optval,
++					   unsigned int optlen,
++					   unsigned int max_len,
++					   unsigned int max_cnt)
++{
++	struct ipv6_opt_hdr *new = NULL;
++	struct net *net = sock_net(sk);
++	int retv;
++
++	/* remove any sticky options header with a zero option
++	 * length, per RFC3542.
++	 */
++	if (optlen == 0) {
++		optval = NULL;
++	} else if (!optval) {
++		return ERR_PTR(-EINVAL);
++	} else if (optlen < sizeof(struct ipv6_opt_hdr) ||
++		 optlen & 0x7 || optlen > 8 * 255) {
++		return ERR_PTR(-EINVAL);
++	} else {
++		new = memdup_user(optval, optlen);
++		if (IS_ERR(new))
++			return (struct ipv6_txoptions *)new;
++		if (unlikely(ipv6_optlen(new) > optlen)) {
++			kfree(new);
++			return ERR_PTR(-EINVAL);
++		}
++	}
++
++	if (optname != IPV6_RTHDR) {
++		bool cap = ns_capable(net->user_ns, CAP_NET_RAW);
++
++		/* First check if we have permission to delete
++		 * the existing options on the socket.
++		 */
++		retv = ipeh_opt_check_perm(net, tlv_param_table,
++					   opt, optname, cap);
++		if (retv < 0) {
++			kfree(new);
++			return ERR_PTR(retv);
++		}
++
++		/* Check permissions and other validations on new
++		 * TLVs
++		 */
++		if (new) {
++			retv = ipeh_opt_validate_tlvs(net, tlv_param_table,
++						      new, optname, cap,
++						      max_len, max_cnt);
++			if (retv < 0) {
++				kfree(new);
++				return ERR_PTR(retv);
++			}
++		}
++	}
++
++	opt = ipeh_renew_options(sk, opt, optname, new);
++	kfree(new);
 +
 +	return opt;
 +}
-+EXPORT_SYMBOL_GPL(ipeh_fixup_options);
++EXPORT_SYMBOL(ipeh_txopt_from_opt);
++
+ const struct nla_policy ipeh_tlv_nl_policy[IPEH_TLV_ATTR_MAX + 1] = {
+ 	[IPEH_TLV_ATTR_TYPE] =		{ .type = NLA_U8, },
+ 	[IPEH_TLV_ATTR_ORDER] =		{ .type = NLA_U16, },
 diff --git a/net/ipv6/ipv6_sockglue.c b/net/ipv6/ipv6_sockglue.c
-index 264c292..8755ecc 100644
+index 8755ecc..b8e007ca 100644
 --- a/net/ipv6/ipv6_sockglue.c
 +++ b/net/ipv6/ipv6_sockglue.c
-@@ -427,7 +427,7 @@ static int do_ipv6_setsockopt(struct sock *sk, int level, int optname,
+@@ -395,40 +395,27 @@ static int do_ipv6_setsockopt(struct sock *sk, int level, int optname,
+ 	case IPV6_RTHDR:
+ 	case IPV6_DSTOPTS:
+ 	{
++		unsigned int max_len = -1U, max_cnt = -1U;
+ 		struct ipv6_txoptions *opt;
+-		struct ipv6_opt_hdr *new = NULL;
+ 
+-		/* hop-by-hop / destination options are privileged option */
+-		retv = -EPERM;
+-		if (optname != IPV6_RTHDR && !ns_capable(net->user_ns, CAP_NET_RAW))
++		switch (optname) {
++		case IPV6_HOPOPTS:
++			max_len = net->ipv6.sysctl.max_hbh_opts_len;
++			max_cnt = net->ipv6.sysctl.max_hbh_opts_cnt;
+ 			break;
+-
+-		/* remove any sticky options header with a zero option
+-		 * length, per RFC3542.
+-		 */
+-		if (optlen == 0)
+-			optval = NULL;
+-		else if (!optval)
+-			goto e_inval;
+-		else if (optlen < sizeof(struct ipv6_opt_hdr) ||
+-			 optlen & 0x7 || optlen > 8 * 255)
+-			goto e_inval;
+-		else {
+-			new = memdup_user(optval, optlen);
+-			if (IS_ERR(new)) {
+-				retv = PTR_ERR(new);
++		case IPV6_RTHDRDSTOPTS:
++		case IPV6_DSTOPTS:
++			max_len = net->ipv6.sysctl.max_dst_opts_len;
++			max_cnt = net->ipv6.sysctl.max_dst_opts_cnt;
+ 				break;
+-			}
+-			if (unlikely(ipv6_optlen(new) > optlen)) {
+-				kfree(new);
+-				goto e_inval;
+-			}
+ 		}
  
  		opt = rcu_dereference_protected(np->opt,
  						lockdep_sock_is_held(sk));
--		opt = ipv6_renew_options(sk, opt, optname, new);
-+		opt = ipeh_renew_options(sk, opt, optname, new);
- 		kfree(new);
+-		opt = ipeh_renew_options(sk, opt, optname, new);
+-		kfree(new);
++		opt = ipeh_txopt_from_opt(sk, &ipv6_tlv_param_table, opt,
++					  optname, optval, optlen, max_len,
++					  max_cnt);
++
  		if (IS_ERR(opt)) {
  			retv = PTR_ERR(opt);
-diff --git a/net/ipv6/raw.c b/net/ipv6/raw.c
-index 8a61319..5834ca4 100644
---- a/net/ipv6/raw.c
-+++ b/net/ipv6/raw.c
-@@ -888,7 +888,7 @@ static int rawv6_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
- 	}
- 	if (flowlabel)
- 		opt = fl6_merge_options(&opt_space, flowlabel, opt);
--	opt = ipv6_fixup_options(&opt_space, opt);
-+	opt = ipeh_fixup_options(&opt_space, opt);
- 
- 	fl6.flowi6_proto = proto;
- 
-diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
-index 5da069e..009b0ec 100644
---- a/net/ipv6/tcp_ipv6.c
-+++ b/net/ipv6/tcp_ipv6.c
-@@ -1228,7 +1228,7 @@ static struct sock *tcp_v6_syn_recv_sock(const struct sock *sk, struct sk_buff *
- 	if (!opt)
- 		opt = rcu_dereference(np->opt);
- 	if (opt) {
--		opt = ipv6_dup_options(newsk, opt);
-+		opt = ipeh_dup_options(newsk, opt);
- 		RCU_INIT_POINTER(newnp->opt, opt);
- 	}
- 	inet_csk(newsk)->icsk_ext_hdr_len = 0;
-diff --git a/net/ipv6/udp.c b/net/ipv6/udp.c
-index 827fe73..02ab20e 100644
---- a/net/ipv6/udp.c
-+++ b/net/ipv6/udp.c
-@@ -1384,7 +1384,7 @@ int udpv6_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
- 	}
- 	if (flowlabel)
- 		opt = fl6_merge_options(&opt_space, flowlabel, opt);
--	opt = ipv6_fixup_options(&opt_space, opt);
-+	opt = ipeh_fixup_options(&opt_space, opt);
- 	ipc6.opt = opt;
- 
- 	fl6.flowi6_proto = sk->sk_protocol;
-diff --git a/net/l2tp/l2tp_ip6.c b/net/l2tp/l2tp_ip6.c
-index 687e23a..bc4925c 100644
---- a/net/l2tp/l2tp_ip6.c
-+++ b/net/l2tp/l2tp_ip6.c
-@@ -590,7 +590,7 @@ static int l2tp_ip6_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
- 	}
- 	if (flowlabel)
- 		opt = fl6_merge_options(&opt_space, flowlabel, opt);
--	opt = ipv6_fixup_options(&opt_space, opt);
-+	opt = ipeh_fixup_options(&opt_space, opt);
- 	ipc6.opt = opt;
- 
- 	fl6.flowi6_proto = sk->sk_protocol;
-diff --git a/net/sctp/ipv6.c b/net/sctp/ipv6.c
-index e5f2fc7..b5b1349 100644
---- a/net/sctp/ipv6.c
-+++ b/net/sctp/ipv6.c
-@@ -441,7 +441,7 @@ static void sctp_v6_copy_ip_options(struct sock *sk, struct sock *newsk)
- 	rcu_read_lock();
- 	opt = rcu_dereference(np->opt);
- 	if (opt) {
--		opt = ipv6_dup_options(newsk, opt);
-+		opt = ipeh_dup_options(newsk, opt);
- 		if (!opt)
- 			pr_err("%s: Failed to copy ip options\n", __func__);
- 	}
+ 			break;
 -- 
 2.7.4
 
