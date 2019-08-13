@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 13 Aug 2019 17:09:12 +0000
-Subject: [Intel-wired-lan] [PATCH S27 06/15] ice: Remove enable DCB when
- SW LLDP is activated
-In-Reply-To: <20190808143938.4968-6-anthony.l.nguyen@intel.com>
+Date: Tue, 13 Aug 2019 17:11:25 +0000
+Subject: [Intel-wired-lan] [PATCH S27 07/15] ice: Only disable VLAN
+ pruning for the VF when all VLANs are removed
+In-Reply-To: <20190808143938.4968-7-anthony.l.nguyen@intel.com>
 References: <20190808143938.4968-1-anthony.l.nguyen@intel.com>
- <20190808143938.4968-6-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D411631@ORSMSX104.amr.corp.intel.com>
+ <20190808143938.4968-7-anthony.l.nguyen@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A1D41164A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,26 +15,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Tony Nguyen
-> Sent: Thursday, August 8, 2019 7:39 AM
+> Sent: Thursday, August 8, 2019 7:40 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S27 06/15] ice: Remove enable DCB when
-> SW LLDP is activated
+> Subject: [Intel-wired-lan] [PATCH S27 07/15] ice: Only disable VLAN pruning
+> for the VF when all VLANs are removed
 > 
-> From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Remove code that enables DCB in initialization when SW LLDP is activated.
-> DCB flag is set or reset before in ice_init_pf_dcb based on number of TCs. So
-> there is not need to overwrite it.
+> Currently if the VF adds a VLAN, VLAN pruning will be enabled for that VSI.
+> Also, when a VLAN gets deleted it will disable VLAN pruning even if other
+> VLAN(s) exists for the VF. Fix this by only disabling VLAN pruning on the VF
+> VSI when removing the last VF (i.e. vf->num_vlan == 0).
 > 
-> Setting DCB without checking number of TCs can cause communication
-> problems with other cards. Host card sends packet with VLAN priority tag,
-> but client card doesn't strip this tag and ping doesn't work.
-> 
-> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 1 -
->  1 file changed, 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
