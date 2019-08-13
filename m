@@ -1,257 +1,379 @@
 From: Tom Herbert <tom@herbertland.com>
-Date: Mon, 12 Aug 2019 17:47:39 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 5/7] ip6tlvs: Add TX parameters
+Date: Mon, 12 Aug 2019 17:47:37 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 3/7] ipeh: Generic TLV parser
 In-Reply-To: <1565657261-15979-1-git-send-email-tom@quantonium.net>
 References: <1565657261-15979-1-git-send-email-tom@quantonium.net>
-Message-ID: <1565657261-15979-6-git-send-email-tom@quantonium.net>
+Message-ID: <1565657261-15979-4-git-send-email-tom@quantonium.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Define a number of transmit parameters for TLV Parameter table
-definitions. These will be used for validating TLVs that are set
-on a socket.
+Create a generic TLV parser. This will be used with various
+extension headers that carry options including Destination,
+Hop-by-Hop, Segment Routing TLVs, and other cases of simple
+stateless parsing.
 
 Signed-off-by: Tom Herbert <tom@quantonium.net>
 ---
- include/net/ipeh.h         | 18 ++++++++++++++++
- include/uapi/linux/ipeh.h  |  8 +++++++
- net/ipv6/exthdrs_common.c  | 53 +++++++++++++++++++++++++++++++++++++++++++++-
- net/ipv6/exthdrs_options.c | 45 +++++++++++++++++++++++++++++++++++++++
- 4 files changed, 123 insertions(+), 1 deletion(-)
+ include/net/ipeh.h        |  25 ++++++++
+ net/ipv6/exthdrs.c        | 159 +++++++++++-----------------------------------
+ net/ipv6/exthdrs_common.c | 114 +++++++++++++++++++++++++++++++++
+ 3 files changed, 177 insertions(+), 121 deletions(-)
 
 diff --git a/include/net/ipeh.h b/include/net/ipeh.h
-index 816fe36..7d91558 100644
+index c367ce6..8f97b4d 100644
 --- a/include/net/ipeh.h
 +++ b/include/net/ipeh.h
-@@ -18,6 +18,17 @@ struct tlv_rx_params {
- };
+@@ -26,4 +26,29 @@ struct ipv6_txoptions *ipeh_renew_options(struct sock *sk,
+ struct ipv6_txoptions *ipeh_fixup_options(struct ipv6_txoptions *opt_space,
+ 					  struct ipv6_txoptions *opt);
  
- struct tlv_tx_params {
-+	unsigned char admin_perm : 2;
-+	unsigned char user_perm : 2;
-+	unsigned char class : 3;
-+	unsigned char rsvd : 1;
-+	unsigned char align_mult : 4;
-+	unsigned char align_off : 4;
-+	unsigned char data_len_mult : 4;
-+	unsigned char data_len_off : 4;
-+	unsigned char min_data_len;
-+	unsigned char max_data_len;
-+	unsigned short preferred_order;
- };
- 
- struct tlv_params {
-@@ -52,6 +63,13 @@ struct tlv_param_table {
- 
- extern struct tlv_param_table ipv6_tlv_param_table;
- 
-+/* Preferred TLV ordering for HBH and Dest options (placed by increasing order)
-+ */
-+#define IPEH_TLV_PREF_ORDER_HAO			10
-+#define IPEH_TLV_PREF_ORDER_ROUTERALERT		20
-+#define IPEH_TLV_PREF_ORDER_JUMBO		30
-+#define IPEH_TLV_PREF_ORDER_CALIPSO		40
++/* Generic extension header TLV parser */
 +
- int __ipeh_tlv_set(struct tlv_param_table *tlv_param_table,
- 		   unsigned char type, const struct tlv_params *params,
- 		   const struct tlv_ops *ops);
-diff --git a/include/uapi/linux/ipeh.h b/include/uapi/linux/ipeh.h
-index c4302b7..dbf0728 100644
---- a/include/uapi/linux/ipeh.h
-+++ b/include/uapi/linux/ipeh.h
-@@ -13,4 +13,12 @@
- 				  IPEH_TLV_CLASS_FLAG_RTRDSTOPT |	\
- 				  IPEH_TLV_CLASS_FLAG_DSTOPT)
- 
-+/* TLV permissions values */
-+enum {
-+	IPEH_TLV_PERM_NONE,
-+	IPEH_TLV_PERM_WITH_CHECK,
-+	IPEH_TLV_PERM_NO_CHECK,
-+	IPEH_TLV_PERM_MAX = IPEH_TLV_PERM_NO_CHECK
++enum ipeh_parse_errors {
++	IPEH_PARSE_ERR_PAD1,		/* Excessive PAD1 */
++	IPEH_PARSE_ERR_PADN,		/* Excessive PADN */
++	IPEH_PARSE_ERR_PADNZ,		/* Non-zero padding data */
++	IPEH_PARSE_ERR_EH_TOOBIG,	/* Length of EH exceeds limit */
++	IPEH_PARSE_ERR_OPT_TOOBIG,	/* Option size exceeds limit */
++	IPEH_PARSE_ERR_OPT_TOOMANY,	/* Option count exceeds limit */
++	IPEH_PARSE_ERR_OPT_UNK_DISALW,	/* Unknown option disallowed */
++	IPEH_PARSE_ERR_OPT_UNK,		/* Unknown option */
 +};
 +
- #endif /* _UAPI_LINUX_IPEH_H */
-diff --git a/net/ipv6/exthdrs_common.c b/net/ipv6/exthdrs_common.c
-index cc8db9e..791f6e4 100644
---- a/net/ipv6/exthdrs_common.c
-+++ b/net/ipv6/exthdrs_common.c
-@@ -3,6 +3,7 @@
- /* Extension header and TLV library code that is not specific to IPv6. */
- #include <linux/export.h>
- #include <net/ipv6.h>
-+#include <uapi/linux/ipeh.h>
++/* The generic TLV parser assumes that the type value of PAD1 is 0, and PADN
++ * is 1. This is true for Destination, Hop-by-Hop and current definition
++ * of Segment Routing TLVs.
++ */
++#define IPEH_TLV_PAD1	0
++#define IPEH_TLV_PADN	1
++
++bool ipeh_parse_tlv(const struct tlvtype_proc *procs, struct sk_buff *skb,
++		    int max_count, int off, int len,
++		    bool (*parse_error)(struct sk_buff *skb,
++					int off, enum ipeh_parse_errors error));
++
+ #endif /* _NET_IPEH_H */
+diff --git a/net/ipv6/exthdrs.c b/net/ipv6/exthdrs.c
+index e12d3a5..939d27c 100644
+--- a/net/ipv6/exthdrs.c
++++ b/net/ipv6/exthdrs.c
+@@ -54,135 +54,50 @@
+   Generic functions
+  *********************/
  
- struct ipv6_txoptions *
- ipeh_dup_options(struct sock *sk, struct ipv6_txoptions *opt)
-@@ -265,6 +266,13 @@ EXPORT_SYMBOL(ipeh_parse_tlv);
+-/* An unknown option is detected, decide what to do */
+-
+-static bool ip6_tlvopt_unknown(struct sk_buff *skb, int optoff,
+-			       bool disallow_unknowns)
++/* Handle parse errors from ipeh generic TLV parser */
++static bool ipv6_parse_error(struct sk_buff *skb, int off,
++			     enum ipeh_parse_errors error)
+ {
+-	if (disallow_unknowns) {
+-		/* If unknown TLVs are disallowed by configuration
+-		 * then always silently drop packet. Note this also
+-		 * means no ICMP parameter problem is sent which
+-		 * could be a good property to mitigate a reflection DOS
+-		 * attack.
+-		 */
+-
+-		goto drop;
+-	}
+-
+-	switch ((skb_network_header(skb)[optoff] & 0xC0) >> 6) {
+-	case 0: /* ignore */
+-		return true;
+-
+-	case 1: /* drop packet */
+-		break;
+-
+-	case 3: /* Send ICMP if not a multicast address and drop packet */
+-		/* Actually, it is redundant check. icmp_send
+-		   will recheck in any case.
+-		 */
+-		if (ipv6_addr_is_multicast(&ipv6_hdr(skb)->daddr))
++	switch (error) {
++	case IPEH_PARSE_ERR_OPT_UNK_DISALW:
++		/* Disallow unknown skip */
++		if (((skb_network_header(skb)[off] & 0xC0) >> 6) == 0) {
++			/* Silent drop */
+ 			break;
++		}
+ 		/* fall through */
+-	case 2: /* send ICMP PARM PROB regardless and drop packet */
+-		icmpv6_param_prob(skb, ICMPV6_UNK_OPTION, optoff);
+-		return false;
+-	}
+-
+-drop:
+-	kfree_skb(skb);
+-	return false;
+-}
++	case IPEH_PARSE_ERR_OPT_UNK:
++		switch ((skb_network_header(skb)[off] & 0xC0) >> 6) {
++		case 0: /* ignore */
++			return true;
  
- /* Default (unset) values for TLV parameters */
- static const struct tlv_proc tlv_default_proc = {
-+	.params.t = {
-+		.admin_perm = IPEH_TLV_PERM_NO_CHECK,
-+		.user_perm = IPEH_TLV_PERM_NONE,
-+		.align_mult = (4 - 1), /* Default alignment: 4n + 2 */
-+		.align_off = 2,
-+		.max_data_len = 255,
-+	},
- };
+-/* Parse tlv encoded option header (hop-by-hop or destination) */
+-
+-static bool ip6_parse_tlv(const struct tlvtype_proc *procs,
+-			  struct sk_buff *skb,
+-			  int max_count)
+-{
+-	int len = (skb_transport_header(skb)[1] + 1) << 3;
+-	const unsigned char *nh = skb_network_header(skb);
+-	int off = skb_network_header_len(skb);
+-	const struct tlvtype_proc *curr;
+-	bool disallow_unknowns = false;
+-	int tlv_count = 0;
+-	int padlen = 0;
+-
+-	if (unlikely(max_count < 0)) {
+-		disallow_unknowns = true;
+-		max_count = -max_count;
+-	}
+-
+-	if (skb_transport_offset(skb) + len > skb_headlen(skb))
+-		goto bad;
+-
+-	off += 2;
+-	len -= 2;
+-
+-	while (len > 0) {
+-		int optlen = nh[off + 1] + 2;
+-		int i;
+-
+-		switch (nh[off]) {
+-		case IPV6_TLV_PAD1:
+-			optlen = 1;
+-			padlen++;
+-			if (padlen > 7)
+-				goto bad;
++		case 1: /* drop packet */
+ 			break;
  
- static DEFINE_MUTEX(tlv_mutex);
-@@ -284,16 +292,45 @@ static void tlv_param_table_release(struct rcu_head *rcu)
+-		case IPV6_TLV_PADN:
+-			/* RFC 2460 states that the purpose of PadN is
+-			 * to align the containing header to multiples
+-			 * of 8. 7 is therefore the highest valid value.
+-			 * See also RFC 4942, Section 2.1.9.5.
+-			 */
+-			padlen += optlen;
+-			if (padlen > 7)
+-				goto bad;
+-			/* RFC 4942 recommends receiving hosts to
+-			 * actively check PadN payload to contain
+-			 * only zeroes.
++		case 3: /* Send ICMP if not a multicast address and drop packet
++			 *
++			 * Actually, it is redundant check. icmp_send
++			 * will recheck in any case.
+ 			 */
+-			for (i = 2; i < optlen; i++) {
+-				if (nh[off + i] != 0)
+-					goto bad;
+-			}
+-			break;
++			if (ipv6_addr_is_multicast(&ipv6_hdr(skb)->daddr))
++				break;
+ 
+-		default: /* Other TLV code so scan list */
+-			if (optlen > len)
+-				goto bad;
+-
+-			tlv_count++;
+-			if (tlv_count > max_count)
+-				goto bad;
+-
+-			for (curr = procs; curr->type >= 0; curr++) {
+-				if (curr->type == nh[off]) {
+-					/* type specific length/alignment
+-					   checks will be performed in the
+-					   func(). */
+-					if (curr->func(skb, off) == false)
+-						return false;
+-					break;
+-				}
+-			}
+-			if (curr->type < 0 &&
+-			    !ip6_tlvopt_unknown(skb, off, disallow_unknowns))
+-				return false;
+-
+-			padlen = 0;
++			/* fall through */
++		case 2: /* send ICMP PARM PROB regardless and drop packet */
++			icmpv6_send(skb, ICMPV6_PARAMPROB,
++				    ICMPV6_UNK_OPTION, off);
+ 			break;
+ 		}
+-		off += optlen;
+-		len -= optlen;
++		break;
++	default:
++		break;
+ 	}
+ 
+-	if (len == 0)
+-		return true;
+-bad:
+-	kfree_skb(skb);
++	/* Will be dropping packet */
++
++	__IP6_INC_STATS(dev_net(skb->dev), __in6_dev_get(skb->dev),
++			IPSTATS_MIB_INHDRERRORS);
++
+ 	return false;
  }
  
- /* mutex held */
-+static int check_order(struct tlv_param_table_data *tpt, unsigned char type,
-+		       unsigned short order)
+@@ -216,8 +131,9 @@ static int ipv6_destopt_rcv(struct sk_buff *skb)
+ 	dstbuf = opt->dst1;
+ #endif
+ 
+-	if (ip6_parse_tlv(tlvprocdestopt_lst, skb,
+-			  init_net.ipv6.sysctl.max_dst_opts_cnt)) {
++	if (ipeh_parse_tlv(tlvprocdestopt_lst, skb,
++			   init_net.ipv6.sysctl.max_dst_opts_cnt,
++			   2, extlen - 2, ipv6_parse_error)) {
+ 		skb->transport_header += extlen;
+ 		opt = IP6CB(skb);
+ #if IS_ENABLED(CONFIG_IPV6_MIP6)
+@@ -639,8 +555,9 @@ int ipv6_parse_hopopts(struct sk_buff *skb)
+ 		goto fail_and_free;
+ 
+ 	opt->flags |= IP6SKB_HOPBYHOP;
+-	if (ip6_parse_tlv(tlvprochopopt_lst, skb,
+-			  init_net.ipv6.sysctl.max_hbh_opts_cnt)) {
++	if (ipeh_parse_tlv(tlvprochopopt_lst, skb,
++			   init_net.ipv6.sysctl.max_hbh_opts_cnt,
++			   2, extlen - 2, ipv6_parse_error)) {
+ 		skb->transport_header += extlen;
+ 		opt = IP6CB(skb);
+ 		opt->nhoff = sizeof(struct ipv6hdr);
+diff --git a/net/ipv6/exthdrs_common.c b/net/ipv6/exthdrs_common.c
+index 2c68184..99a0911 100644
+--- a/net/ipv6/exthdrs_common.c
++++ b/net/ipv6/exthdrs_common.c
+@@ -142,3 +142,117 @@ struct ipv6_txoptions *ipeh_fixup_options(struct ipv6_txoptions *opt_space,
+ 	return opt;
+ }
+ EXPORT_SYMBOL_GPL(ipeh_fixup_options);
++
++/* Generic extension header TLV parser
++ *
++ * Arguments:
++ *   - skb_transport_header points to the extension header containing options
++ *   - off is offset from skb_transport_header where first TLV is
++ *   - len is length of TLV block
++ */
++bool ipeh_parse_tlv(const struct tlvtype_proc *procs, struct sk_buff *skb,
++		    int max_count, int off, int len,
++		    bool (*parse_error)(struct sk_buff *skb,
++					int off, enum ipeh_parse_errors error))
 +{
-+	int i;
++	const unsigned char *nh = skb_network_header(skb);
++	const struct tlvtype_proc *curr;
++	bool disallow_unknowns = false;
++	int tlv_count = 0;
++	int padlen = 0;
 +
-+	if (!order)
-+		return -EINVAL;
-+
-+	for (i = 2; i < 256; i++) {
-+		struct tlv_type *ttype = &tpt->types[tpt->entries[i]];
-+
-+		if (!tpt->entries[i])
-+			continue;
-+
-+		if (order == ttype->proc.params.t.preferred_order &&
-+		    i != type)
-+			return -EALREADY;
++	if (unlikely(max_count < 0)) {
++		disallow_unknowns = true;
++		max_count = -max_count;
 +	}
 +
-+	return 0;
-+}
++	if (skb_transport_offset(skb) + off + len > skb_headlen(skb)) {
++		if (!parse_error(skb, skb_transport_offset(skb),
++				 IPEH_PARSE_ERR_EH_TOOBIG))
++			goto bad;
 +
-+/* mutex held */
- static int __tlv_set_one(struct tlv_param_table *tlv_param_table,
- 			 unsigned char type, const struct tlv_params *params,
- 			 const struct tlv_ops *ops)
- {
- 	struct tlv_param_table_data *tpt, *told;
- 	struct tlv_type *ttype;
-+	int retv;
- 
- 	told = rcu_dereference_protected(tlv_param_table->data,
- 					 lockdep_is_held(&tlv_mutex));
- 
-+	/* Check preferred order */
-+	retv = check_order(told, type, params->t.preferred_order);
-+	if (retv)
-+		return retv;
++		len = skb_headlen(skb) - skb_transport_offset(skb) - off;
++	}
 +
- 	/* Create new TLV table. If there is no exsiting entry then we are
- 	 * adding a new one to the table, else we're modifying an entry.
- 	 */
-@@ -422,7 +459,7 @@ int ipeh_exthdrs_init(struct tlv_param_table *tlv_param_table,
- 		      int num_init_params)
- {
- 	struct tlv_param_table_data *tpt;
--	int pos = 0, i;
-+	int pos = 0, i, j;
- 	size_t tsize;
- 
- 	tsize = tlv_param_table_size(num_init_params + 1);
-@@ -448,6 +485,20 @@ int ipeh_exthdrs_init(struct tlv_param_table *tlv_param_table,
- 			goto err_inval;
- 		}
- 
-+		if (WARN_ON(!tpi->proc.params.t.preferred_order)) {
-+			/* Preferred order must be non-zero */
-+			goto err_inval;
-+		}
++	/* ops function based offset on network header */
++	off += skb_network_header_len(skb);
 +
-+		for (j = 0; j < i; j++) {
-+			const struct tlv_proc_init *tpix = &tlv_init_params[j];
++	while (len > 0) {
++		int optlen = nh[off + 1] + 2;
++		int i;
 +
-+			if (WARN_ON(tpi->proc.params.t.preferred_order ==
-+				    tpix->proc.params.t.preferred_order)) {
-+				/* Preferred order must be unique */
-+				goto err_inval;
++		switch (nh[off]) {
++		case IPEH_TLV_PAD1:
++			optlen = 1;
++			padlen++;
++			if (padlen > 7 &&
++			    !parse_error(skb, off, IPEH_PARSE_ERR_PAD1))
++				goto bad;
++
++			break;
++
++		case IPEH_TLV_PADN:
++			/* RFC 2460 states that the purpose of PadN is
++			 * to align the containing header to multiples
++			 * of 8. 7 is therefore the highest valid value.
++			 * See also RFC 4942, Section 2.1.9.5.
++			 */
++			padlen += optlen;
++			if (padlen > 7 &&
++			    !parse_error(skb, off, IPEH_PARSE_ERR_PADN))
++				goto bad;
++
++			/* RFC 4942 recommends receiving hosts to
++			 * actively check PadN payload to contain
++			 * only zeroes.
++			 */
++			for (i = 2; i < optlen; i++) {
++				if (nh[off + i] != 0 &&
++				    !parse_error(skb, off + i,
++						 IPEH_PARSE_ERR_PADNZ))
++					goto bad;
 +			}
++			break;
++
++		default: /* Other TLV code so scan list */
++			if (optlen > len &&
++			    !parse_error(skb, off, IPEH_PARSE_ERR_OPT_TOOBIG))
++				goto bad;
++
++			tlv_count++;
++			if (tlv_count > max_count &&
++			    parse_error(skb, off, IPEH_PARSE_ERR_OPT_TOOMANY))
++				goto bad;
++
++			for (curr = procs; curr->type >= 0; curr++) {
++				if (curr->type == nh[off]) {
++					/* type specific length/alignment
++					 * checks will be performed in the
++					 * func().
++					 */
++					if (curr->func(skb, off) == false)
++						return false;
++					break;
++				}
++			}
++			if (curr->type < 0 &&
++			    !parse_error(skb, off,
++					 disallow_unknowns ?
++						IPEH_PARSE_ERR_OPT_UNK_DISALW :
++						IPEH_PARSE_ERR_OPT_UNK))
++				goto bad;
++
++			padlen = 0;
++			break;
 +		}
- 		tpt->types[pos].proc = tpi->proc;
- 		tpt->entries[tpi->type] = pos;
- 	}
-diff --git a/net/ipv6/exthdrs_options.c b/net/ipv6/exthdrs_options.c
-index d4b373e..3b50b58 100644
---- a/net/ipv6/exthdrs_options.c
-+++ b/net/ipv6/exthdrs_options.c
-@@ -183,6 +183,17 @@ static const struct tlv_proc_init tlv_ipv6_init_params[] __initconst = {
- 
- 		.proc.ops.func = ipv6_dest_hao,
- 		.proc.params.r.class = IPEH_TLV_CLASS_FLAG_DSTOPT,
++		off += optlen;
++		len -= optlen;
++	}
 +
-+		.proc.params.t = {
-+			.preferred_order = IPEH_TLV_PREF_ORDER_HAO,
-+			.admin_perm = IPEH_TLV_PERM_NO_CHECK,
-+			.user_perm = IPEH_TLV_PERM_NONE,
-+			.class = IPEH_TLV_CLASS_FLAG_DSTOPT,
-+			.align_mult = (8 - 1), /* Align to 8n + 6 */
-+			.align_off = 6,
-+			.min_data_len = 16,
-+			.max_data_len = 16,
-+		},
- 	},
- #endif
- 	{
-@@ -190,18 +201,52 @@ static const struct tlv_proc_init tlv_ipv6_init_params[] __initconst = {
- 
- 		.proc.ops.func = ipv6_hop_ra,
- 		.proc.params.r.class = IPEH_TLV_CLASS_FLAG_HOPOPT,
-+
-+		.proc.params.t = {
-+			.preferred_order = IPEH_TLV_PREF_ORDER_ROUTERALERT,
-+			.admin_perm = IPEH_TLV_PERM_NO_CHECK,
-+			.user_perm = IPEH_TLV_PERM_NONE,
-+			.class = IPEH_TLV_CLASS_FLAG_HOPOPT,
-+			.align_mult = (2 - 1), /* Align to 2n */
-+			.min_data_len = 2,
-+			.max_data_len = 2,
-+		},
- 	},
- 	{
- 		.type = IPV6_TLV_JUMBO,
- 
- 		.proc.ops.func	= ipv6_hop_jumbo,
- 		.proc.params.r.class = IPEH_TLV_CLASS_FLAG_HOPOPT,
-+
-+		.proc.params.t = {
-+			.preferred_order = IPEH_TLV_PREF_ORDER_JUMBO,
-+			.admin_perm = IPEH_TLV_PERM_NO_CHECK,
-+			.user_perm = IPEH_TLV_PERM_NONE,
-+			.class = IPEH_TLV_CLASS_FLAG_HOPOPT,
-+			.align_mult = (4 - 1), /* Align to 4n + 2 */
-+			.align_off = 2,
-+			.min_data_len = 4,
-+			.max_data_len = 4,
-+		},
- 	},
- 	{
- 		.type = IPV6_TLV_CALIPSO,
- 
- 		.proc.ops.func = ipv6_hop_calipso,
- 		.proc.params.r.class = IPEH_TLV_CLASS_FLAG_HOPOPT,
-+
-+		.proc.params.t = {
-+			.preferred_order = IPEH_TLV_PREF_ORDER_CALIPSO,
-+			.admin_perm = IPEH_TLV_PERM_NO_CHECK,
-+			.user_perm = IPEH_TLV_PERM_NONE,
-+			.class = IPEH_TLV_CLASS_FLAG_HOPOPT,
-+			.align_mult = (4 - 1), /* Align to 4n + 2 */
-+			.align_off = 2,
-+			.min_data_len = 8,
-+			.max_data_len = 252,
-+			.data_len_mult = (4 - 1),
-+					/* Length is multiple of 4 */
-+		},
- 	},
- };
- 
++	if (len == 0)
++		return true;
++bad:
++	kfree_skb(skb);
++	return false;
++}
++EXPORT_SYMBOL(ipeh_parse_tlv);
 -- 
 2.7.4
 
