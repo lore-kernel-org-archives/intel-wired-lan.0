@@ -1,168 +1,41 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 14 Aug 2019 20:53:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 7476d99ac87adc06b9f9137e209ab3a49c713225
-Message-ID: <5d540433.yyCczACE1fiWJ89p%lkp@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 14 Aug 2019 10:54:56 -0700
+Subject: [Intel-wired-lan] CMA alloc failed with 6 4-port X710 QAD4 NICs
+In-Reply-To: <9e598973-0bca-eda1-c5df-9f3ef16bf700@candelatech.com>
+References: <9e598973-0bca-eda1-c5df-9f3ef16bf700@candelatech.com>
+Message-ID: <CAKgT0UfyuDAnY5oHNAtFuBQkqn7NQiCxF9eSD+m+1EkrUOaaHA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 7476d99ac87adc06b9f9137e209ab3a49c713225  ice: change work limit to a constant
+On Mon, Aug 12, 2019 at 2:19 PM Ben Greear <greearb@candelatech.com> wrote:
+>
+> Hello,
+>
+> I have a user trying to boot up our 4.20+ kernel with 6 4-port 10G NICs in it.
+>
+> dmesg is full of cma_alloc errors.  I increased CMA space to 32MB, but still no luck.
+>
+> Any idea how much CMA memory is needed for this config?
+>
+> Thanks,
+> Ben
 
-elapsed time: 799m
+You are going to need to go much bigger since you have 24 ports. Each
+port can consume several MB of contiguous space due to all the
+dma_alloc_coherent calls. It also depends on the number of queues you
+have enabled on the system as each queue pair will consume 24K of
+contiguous space as well.
 
-configs tested: 143
+My advise would be to look at increasing it to somewhere in the range
+of 64MB to 128MB.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Another alternative, assuming that the drivers are still working after
+making a fall-back allocation out of non-CMA space would be to just
+add __GFP_NOWARN to the flags passed to dma_alloc_coherent. That
+should mute the warnings on allocation failures and just fall back to
+the warning provided by the caller.
 
-x86_64                 randconfig-h001-201932
-x86_64                 randconfig-h002-201932
-x86_64                 randconfig-h003-201932
-x86_64                 randconfig-h004-201932
-i386                   randconfig-h001-201932
-i386                   randconfig-h002-201932
-i386                   randconfig-h003-201932
-i386                   randconfig-h004-201932
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-x86_64                 randconfig-f001-201932
-x86_64                 randconfig-f002-201932
-x86_64                 randconfig-f003-201932
-x86_64                 randconfig-f004-201932
-i386                   randconfig-f001-201932
-i386                   randconfig-f002-201932
-i386                   randconfig-f003-201932
-i386                   randconfig-f004-201932
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                 randconfig-c001-201932
-x86_64                 randconfig-c002-201932
-x86_64                 randconfig-c003-201932
-x86_64                 randconfig-c004-201932
-i386                   randconfig-c001-201932
-i386                   randconfig-c002-201932
-i386                   randconfig-c003-201932
-i386                   randconfig-c004-201932
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-g001-201932
-x86_64                 randconfig-g002-201932
-x86_64                 randconfig-g003-201932
-x86_64                 randconfig-g004-201932
-i386                   randconfig-g001-201932
-i386                   randconfig-g002-201932
-i386                   randconfig-g003-201932
-i386                   randconfig-g004-201932
-x86_64                           allmodconfig
-i386                             alldefconfig
-x86_64                 randconfig-a001-201932
-x86_64                 randconfig-a002-201932
-x86_64                 randconfig-a003-201932
-x86_64                 randconfig-a004-201932
-i386                   randconfig-a001-201932
-i386                   randconfig-a002-201932
-i386                   randconfig-a003-201932
-i386                   randconfig-a004-201932
-x86_64                 randconfig-b001-201932
-x86_64                 randconfig-b002-201932
-x86_64                 randconfig-b003-201932
-x86_64                 randconfig-b004-201932
-i386                   randconfig-b001-201932
-i386                   randconfig-b002-201932
-i386                   randconfig-b003-201932
-i386                   randconfig-b004-201932
-x86_64                 randconfig-d001-201932
-x86_64                 randconfig-d002-201932
-x86_64                 randconfig-d003-201932
-x86_64                 randconfig-d004-201932
-i386                   randconfig-d001-201932
-i386                   randconfig-d002-201932
-i386                   randconfig-d003-201932
-i386                   randconfig-d004-201932
-x86_64                 randconfig-e001-201932
-x86_64                 randconfig-e002-201932
-x86_64                 randconfig-e003-201932
-x86_64                 randconfig-e004-201932
-i386                   randconfig-e001-201932
-i386                   randconfig-e002-201932
-i386                   randconfig-e003-201932
-i386                   randconfig-e004-201932
-i386                              allnoconfig
-i386                                defconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+- Alex
