@@ -1,116 +1,178 @@
 From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Wed, 14 Aug 2019 20:46:21 -0700
-Subject: [Intel-wired-lan] [PATCH bpf-next 3/5] i40e: Enable XDP_SKIP_BPF
- option for AF_XDP sockets
+Date: Wed, 14 Aug 2019 20:46:19 -0700
+Subject: [Intel-wired-lan] [PATCH bpf-next 1/5] xsk: Convert bool 'zc' field
+ in struct xdp_umem to a u32 bitmap
 In-Reply-To: <1565840783-8269-1-git-send-email-sridhar.samudrala@intel.com>
 References: <1565840783-8269-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <1565840783-8269-4-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <1565840783-8269-2-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch skips calling BPF program in the receive path if
-the queue is associated with UMEM that is not shared and
-bound to an AF_XDP socket that has enabled skip bpf during
-bind() call.
+The bool 'zc' field in struct xdp_uem is replaced with a u32 flags
+field and a bit within flags is used to indicate zerocopy. This flags
+field will be used in later patches for other bit fields.
 
-Here are some performance numbers collected on 
-  - 2 socket 28 core Intel(R) Xeon(R) Platinum 8180 CPU @ 2.50GHz
-  - Intel 40Gb Ethernet NIC (i40e)
-
-All tests use 2 cores and the results are in Mpps.
-
-turbo on (default)
----------------------------------------------	
-                      no-skip-bpf    skip-bpf
----------------------------------------------	
-rxdrop zerocopy           21.9         38.5 
-l2fwd  zerocopy           17.0         20.5
-rxdrop copy               11.1         13.3
-l2fwd  copy                1.9          2.0
-
-no turbo :  echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo
----------------------------------------------	
-                      no-skip-bpf    skip-bpf
----------------------------------------------	
-rxdrop zerocopy           15.4         29.0
-l2fwd  zerocopy           11.8         18.2
-rxdrop copy                8.2         10.5
-l2fwd  copy                1.7          1.7
----------------------------------------------	
+Also, removed the bool 'zc' field from struct xdp_sock as it can be
+accessed via flags in xs->umem.
 
 Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 22 +++++++++++++++++++--
- drivers/net/ethernet/intel/i40e/i40e_xsk.c  |  6 ++++++
- 2 files changed, 26 insertions(+), 2 deletions(-)
+ include/net/xdp_sock.h | 12 ++++++++++--
+ net/xdp/xdp_umem.c     |  6 +++---
+ net/xdp/xsk.c          | 12 +++++++++---
+ net/xdp/xsk_diag.c     |  3 ++-
+ 4 files changed, 24 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index e3f29dc8b290..5e63e3644e87 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2199,6 +2199,7 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
- 	int err, result = I40E_XDP_PASS;
- 	struct i40e_ring *xdp_ring;
- 	struct bpf_prog *xdp_prog;
-+	struct xdp_umem *umem;
- 	u32 act;
+diff --git a/include/net/xdp_sock.h b/include/net/xdp_sock.h
+index 69796d264f06..b6716dbdce1a 100644
+--- a/include/net/xdp_sock.h
++++ b/include/net/xdp_sock.h
+@@ -27,6 +27,9 @@ struct xdp_umem_fq_reuse {
+ 	u64 handles[];
+ };
  
- 	rcu_read_lock();
-@@ -2209,6 +2210,13 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
- 
- 	prefetchw(xdp->data_hard_start); /* xdp_frame write */
- 
-+	umem = xdp_get_umem_from_qid(rx_ring->netdev, rx_ring->queue_index);
-+	if (xsk_umem_skip_bpf(umem)) {
-+		err = xsk_umem_rcv(umem, xdp);
-+		result = !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
-+		goto xdp_out;
-+	}
++/* Bits for the umem flags field. */
++#define XDP_UMEM_F_ZEROCOPY	(1 << 0)
 +
- 	act = bpf_prog_run_xdp(xdp_prog, xdp);
- 	switch (act) {
- 	case XDP_PASS:
-@@ -2303,8 +2311,18 @@ void i40e_update_rx_stats(struct i40e_ring *rx_ring,
-  **/
- void i40e_finalize_xdp_rx(struct i40e_ring *rx_ring, unsigned int xdp_res)
+ struct xdp_umem {
+ 	struct xsk_queue *fq;
+ 	struct xsk_queue *cq;
+@@ -45,7 +48,7 @@ struct xdp_umem {
+ 	struct net_device *dev;
+ 	struct xdp_umem_fq_reuse *fq_reuse;
+ 	u16 queue_id;
+-	bool zc;
++	u32 flags;
+ 	spinlock_t xsk_list_lock;
+ 	struct list_head xsk_list;
+ };
+@@ -58,7 +61,6 @@ struct xdp_sock {
+ 	struct xdp_umem *umem;
+ 	struct list_head flush_node;
+ 	u16 queue_id;
+-	bool zc;
+ 	enum {
+ 		XSK_READY = 0,
+ 		XSK_BOUND,
+@@ -95,6 +97,7 @@ struct xdp_umem_fq_reuse *xsk_reuseq_swap(struct xdp_umem *umem,
+ 					  struct xdp_umem_fq_reuse *newq);
+ void xsk_reuseq_free(struct xdp_umem_fq_reuse *rq);
+ struct xdp_umem *xdp_get_umem_from_qid(struct net_device *dev, u16 queue_id);
++bool xsk_umem_zerocopy(struct xdp_umem *umem);
+ 
+ static inline char *xdp_umem_get_data(struct xdp_umem *umem, u64 addr)
  {
--	if (xdp_res & I40E_XDP_REDIR)
--		xdp_do_flush_map();
-+	if (xdp_res & I40E_XDP_REDIR) {
-+		struct xdp_umem *umem;
-+
-+		umem = rx_ring->xsk_umem;
-+		if (!umem)
-+			umem = xdp_get_umem_from_qid(rx_ring->netdev,
-+						     rx_ring->queue_index);
-+		if (xsk_umem_skip_bpf(umem))
-+			xsk_umem_flush(umem);
-+		else
-+			xdp_do_flush_map();
-+	}
+@@ -213,6 +216,11 @@ static inline struct xdp_umem *xdp_get_umem_from_qid(struct net_device *dev,
+ 	return NULL;
+ }
  
- 	if (xdp_res & I40E_XDP_TX) {
- 		struct i40e_ring *xdp_ring =
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 32bad014d76c..cc538479c95d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -195,6 +195,12 @@ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
- 	struct bpf_prog *xdp_prog;
- 	u32 act;
- 
-+	if (xsk_umem_skip_bpf(rx_ring->xsk_umem)) {
-+		err = xsk_umem_rcv(rx_ring->xsk_umem, xdp);
-+		result = !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
-+		return result;
-+	}
++static inline bool xsk_umem_zerocopy(struct xdp_umem *umem)
++{
++	return false;
++}
 +
- 	rcu_read_lock();
- 	/* NB! xdp_prog will always be !NULL, due to the fact that
- 	 * this path is enabled by setting an XDP program.
+ static inline char *xdp_umem_get_data(struct xdp_umem *umem, u64 addr)
+ {
+ 	return NULL;
+diff --git a/net/xdp/xdp_umem.c b/net/xdp/xdp_umem.c
+index a0607969f8c0..411b3e3498c4 100644
+--- a/net/xdp/xdp_umem.c
++++ b/net/xdp/xdp_umem.c
+@@ -126,7 +126,7 @@ int xdp_umem_assign_dev(struct xdp_umem *umem, struct net_device *dev,
+ 	if (err)
+ 		goto err_unreg_umem;
+ 
+-	umem->zc = true;
++	umem->flags |= XDP_UMEM_F_ZEROCOPY;
+ 	return 0;
+ 
+ err_unreg_umem:
+@@ -147,7 +147,7 @@ void xdp_umem_clear_dev(struct xdp_umem *umem)
+ 	if (!umem->dev)
+ 		return;
+ 
+-	if (umem->zc) {
++	if (xsk_umem_zerocopy(umem)) {
+ 		bpf.command = XDP_SETUP_XSK_UMEM;
+ 		bpf.xsk.umem = NULL;
+ 		bpf.xsk.queue_id = umem->queue_id;
+@@ -162,7 +162,7 @@ void xdp_umem_clear_dev(struct xdp_umem *umem)
+ 
+ 	dev_put(umem->dev);
+ 	umem->dev = NULL;
+-	umem->zc = false;
++	umem->flags &= ~XDP_UMEM_F_ZEROCOPY;
+ }
+ 
+ static void xdp_umem_unmap_pages(struct xdp_umem *umem)
+diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
+index 59b57d708697..ca95676ef75d 100644
+--- a/net/xdp/xsk.c
++++ b/net/xdp/xsk.c
+@@ -295,6 +295,12 @@ static int xsk_generic_xmit(struct sock *sk, struct msghdr *m,
+ 	return err;
+ }
+ 
++bool xsk_umem_zerocopy(struct xdp_umem *umem)
++{
++	return (umem && (umem->flags & XDP_UMEM_F_ZEROCOPY));
++}
++EXPORT_SYMBOL(xsk_umem_zerocopy);
++
+ static int xsk_sendmsg(struct socket *sock, struct msghdr *m, size_t total_len)
+ {
+ 	bool need_wait = !(m->msg_flags & MSG_DONTWAIT);
+@@ -310,7 +316,8 @@ static int xsk_sendmsg(struct socket *sock, struct msghdr *m, size_t total_len)
+ 	if (need_wait)
+ 		return -EOPNOTSUPP;
+ 
+-	return (xs->zc) ? xsk_zc_xmit(sk) : xsk_generic_xmit(sk, m, total_len);
++	return xsk_umem_zerocopy(xs->umem) ? xsk_zc_xmit(sk) :
++					     xsk_generic_xmit(sk, m, total_len);
+ }
+ 
+ static unsigned int xsk_poll(struct file *file, struct socket *sock,
+@@ -503,7 +510,6 @@ static int xsk_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
+ 	}
+ 
+ 	xs->dev = dev;
+-	xs->zc = xs->umem->zc;
+ 	xs->queue_id = qid;
+ 	xskq_set_umem(xs->rx, xs->umem->size, xs->umem->chunk_mask);
+ 	xskq_set_umem(xs->tx, xs->umem->size, xs->umem->chunk_mask);
+@@ -683,7 +689,7 @@ static int xsk_getsockopt(struct socket *sock, int level, int optname,
+ 			return -EINVAL;
+ 
+ 		mutex_lock(&xs->mutex);
+-		if (xs->zc)
++		if (xsk_umem_zerocopy(xs->umem))
+ 			opts.flags |= XDP_OPTIONS_ZEROCOPY;
+ 		mutex_unlock(&xs->mutex);
+ 
+diff --git a/net/xdp/xsk_diag.c b/net/xdp/xsk_diag.c
+index d5e06c8e0cbf..8a19b7e87cfb 100644
+--- a/net/xdp/xsk_diag.c
++++ b/net/xdp/xsk_diag.c
+@@ -10,6 +10,7 @@
+ #include <net/xdp_sock.h>
+ #include <linux/xdp_diag.h>
+ #include <linux/sock_diag.h>
++#include <net/xdp_sock.h>
+ 
+ #include "xsk_queue.h"
+ #include "xsk.h"
+@@ -61,7 +62,7 @@ static int xsk_diag_put_umem(const struct xdp_sock *xs, struct sk_buff *nlskb)
+ 	du.ifindex = umem->dev ? umem->dev->ifindex : 0;
+ 	du.queue_id = umem->queue_id;
+ 	du.flags = 0;
+-	if (umem->zc)
++	if (xsk_umem_zerocopy(umem))
+ 		du.flags |= XDP_DU_F_ZEROCOPY;
+ 	du.refs = refcount_read(&umem->users);
+ 
 -- 
 2.20.1
 
