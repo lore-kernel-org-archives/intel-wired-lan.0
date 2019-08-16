@@ -1,144 +1,146 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 16 Aug 2019 15:32:35 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 0/5] Add support for SKIP_BPF
- flag for AF_XDP sockets
-In-Reply-To: <cc3a09eb-bcb8-a6e1-7175-77bddaf10c11@intel.com>
-References: <1565840783-8269-1-git-send-email-sridhar.samudrala@intel.com>
- <bebfb097-5357-91d8-ebc7-2f8ede392ad7@intel.com>
- <cc3a09eb-bcb8-a6e1-7175-77bddaf10c11@intel.com>
-Message-ID: <CAJ+HfNj=devuEky3VwbibA-j+o=bKi4Gg=MeHsuuDGAKc9p2Vw@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 17 Aug 2019 05:37:48 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 1b9d4cf8c3ed6f97c110d11b61861a75be6abd90
+Message-ID: <5d57222c.v+9KD03DC6cronqi%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 15 Aug 2019 at 18:46, Samudrala, Sridhar
-<sridhar.samudrala@intel.com> wrote:
->
-> On 8/15/2019 5:51 AM, Bj?rn T?pel wrote:
-> > On 2019-08-15 05:46, Sridhar Samudrala wrote:
-> >> This patch series introduces XDP_SKIP_BPF flag that can be specified
-> >> during the bind() call of an AF_XDP socket to skip calling the BPF
-> >> program in the receive path and pass the buffer directly to the socket.
-> >>
-> >> When a single AF_XDP socket is associated with a queue and a HW
-> >> filter is used to redirect the packets and the app is interested in
-> >> receiving all the packets on that queue, we don't need an additional
-> >> BPF program to do further filtering or lookup/redirect to a socket.
-> >>
-> >> Here are some performance numbers collected on
-> >>    - 2 socket 28 core Intel(R) Xeon(R) Platinum 8180 CPU @ 2.50GHz
-> >>    - Intel 40Gb Ethernet NIC (i40e)
-> >>
-> >> All tests use 2 cores and the results are in Mpps.
-> >>
-> >> turbo on (default)
-> >> ---------------------------------------------
-> >>                        no-skip-bpf    skip-bpf
-> >> ---------------------------------------------
-> >> rxdrop zerocopy           21.9         38.5
-> >> l2fwd  zerocopy           17.0         20.5
-> >> rxdrop copy               11.1         13.3
-> >> l2fwd  copy                1.9          2.0
-> >>
-> >> no turbo :  echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo
-> >> ---------------------------------------------
-> >>                        no-skip-bpf    skip-bpf
-> >> ---------------------------------------------
-> >> rxdrop zerocopy           15.4         29.0
-> >> l2fwd  zerocopy           11.8         18.2
-> >> rxdrop copy                8.2         10.5
-> >> l2fwd  copy                1.7          1.7
-> >> ---------------------------------------------
-> >>
-> >
-> > This work is somewhat similar to the XDP_ATTACH work [1]. Avoiding the
-> > retpoline in the XDP program call is a nice performance boost! I like
-> > the numbers! :-) I also like the idea of adding a flag that just does
-> > what most AF_XDP Rx users want -- just getting all packets of a
-> > certain queue into the XDP sockets.
-> >
-> > In addition to Toke's mail, I have some more concerns with the series:
-> >
-> > * AFAIU the SKIP_BPF only works for zero-copy enabled sockets. IMO, it
-> >    should work for all modes (including XDP_SKB).
->
-> This patch enables SKIP_BPF for AF_XDP sockets where an XDP program is
-> attached at driver level (both zerocopy and copy modes)
-> I tried a quick hack to see the perf benefit with generic XDP mode, but
-> i didn't see any significant improvement in performance in that
-> scenario. so i didn't include that mode.
->
-> >
-> > * In order to work, a user still needs an XDP program running. That's
-> >    clunky. I'd like the behavior that if no XDP program is attached,
-> >    and the option is set, the packets for a that queue end up in the
-> >    socket. If there's an XDP program attached, the program has
-> >    precedence.
->
-> I think this would require more changes in the drivers to take XDP
-> datapath even when there is no XDP program loaded.
->
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 1b9d4cf8c3ed6f97c110d11b61861a75be6abd90  igb: Fix constant media auto sense switching when no cable is connected
 
-Today, from a driver perspective, to enable XDP you pass a struct
-bpf_prog pointer via the ndo_bpf. The program get executed in
-BPF_PROG_RUN (via bpf_prog_run_xdp) from include/linux/filter.h.
+elapsed time: 273m
 
-I think it's possible to achieve what you're doing w/o *any* driver
-modification. Pass a special, invalid, pointer to the driver (say
-(void *)0x1 or smth more elegant), which has a special handling in
-BPF_RUN_PROG e.g. setting a per-cpu state and return XDP_REDIRECT. The
-per-cpu state is picked up in xdp_do_redirect and xdp_flush.
+configs tested: 121
 
-An approach like this would be general, and apply to all modes
-automatically.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Thoughts?
+x86_64                           allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                             allmodconfig
+s390                                defconfig
+x86_64                 randconfig-g003-201932
+i386                   randconfig-g004-201932
+x86_64                 randconfig-g001-201932
+x86_64                 randconfig-g002-201932
+i386                   randconfig-g001-201932
+x86_64                 randconfig-g004-201932
+i386                   randconfig-g002-201932
+i386                   randconfig-g003-201932
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             alldefconfig
+arc                              allyesconfig
+powerpc                             defconfig
+microblaze                    nommu_defconfig
+powerpc                       ppc64_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+powerpc                           allnoconfig
+x86_64                 randconfig-h002-201932
+x86_64                 randconfig-h003-201932
+i386                   randconfig-h001-201932
+i386                   randconfig-h002-201932
+x86_64                 randconfig-h004-201932
+i386                   randconfig-h004-201932
+i386                   randconfig-h003-201932
+x86_64                 randconfig-h001-201932
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+ia64                                defconfig
+x86_64                 randconfig-c003-201932
+x86_64                 randconfig-c002-201932
+i386                   randconfig-c004-201932
+x86_64                 randconfig-c004-201932
+i386                   randconfig-c003-201932
+i386                   randconfig-c001-201932
+i386                   randconfig-c002-201932
+x86_64                 randconfig-c001-201932
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+arm                              allmodconfig
+arm64                            allmodconfig
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+i386                   randconfig-d002-201932
+i386                   randconfig-d004-201932
+x86_64                 randconfig-d004-201932
+x86_64                 randconfig-d001-201932
+x86_64                 randconfig-d002-201932
+x86_64                 randconfig-d003-201932
+i386                   randconfig-d001-201932
+i386                   randconfig-d003-201932
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+parisc                            allnoconfig
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+x86_64                 randconfig-e004-201932
+i386                   randconfig-e004-201932
+x86_64                 randconfig-e002-201932
+i386                   randconfig-e003-201932
+x86_64                 randconfig-e003-201932
+x86_64                 randconfig-e001-201932
+i386                   randconfig-e002-201932
+i386                   randconfig-e001-201932
 
-
-> >
-> > * It requires changes in all drivers. Not nice, and scales badly. Try
-> >    making it generic (xdp_do_redirect/xdp_flush), so it Just Works for
-> >    all XDP capable drivers.
->
-> I tried to make this as generic as possible and make the changes to the
-> driver very minimal, but could not find a way to avoid any changes at
-> all to the driver. xdp_do_direct() gets called based after the call to
-> bpf_prog_run_xdp() in the drivers.
->
-> >
-> > Thanks for working on this!
-> >
-> >
-> > Bj?rn
-> >
-> > [1]
-> > https://lore.kernel.org/netdev/20181207114431.18038-1-bjorn.topel at gmail.com/
-> >
-> >
-> >
-> >> Sridhar Samudrala (5):
-> >>    xsk: Convert bool 'zc' field in struct xdp_umem to a u32 bitmap
-> >>    xsk: Introduce XDP_SKIP_BPF bind option
-> >>    i40e: Enable XDP_SKIP_BPF option for AF_XDP sockets
-> >>    ixgbe: Enable XDP_SKIP_BPF option for AF_XDP sockets
-> >>    xdpsock_user: Add skip_bpf option
-> >>
-> >>   drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 22 +++++++++-
-> >>   drivers/net/ethernet/intel/i40e/i40e_xsk.c    |  6 +++
-> >>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 ++++++++-
-> >>   drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 16 ++++++-
-> >>   include/net/xdp_sock.h                        | 21 ++++++++-
-> >>   include/uapi/linux/if_xdp.h                   |  1 +
-> >>   include/uapi/linux/xdp_diag.h                 |  1 +
-> >>   net/xdp/xdp_umem.c                            |  9 ++--
-> >>   net/xdp/xsk.c                                 | 43 ++++++++++++++++---
-> >>   net/xdp/xsk_diag.c                            |  5 ++-
-> >>   samples/bpf/xdpsock_user.c                    |  8 ++++
-> >>   11 files changed, 135 insertions(+), 17 deletions(-)
-> >>
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
