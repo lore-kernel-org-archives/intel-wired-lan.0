@@ -1,99 +1,162 @@
-From: Shannon Nelson <shannon.lee.nelson@gmail.com>
-Date: Thu, 15 Aug 2019 19:19:16 -0700
-Subject: [Intel-wired-lan] x
-In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69AFFB063@ORSMSX115.amr.corp.intel.com>
-References: <CAP-MU4MAwQd5bOGpJ=tu4iVB4j4FO6UWbkXg6ox34i7pb5DjQA@mail.gmail.com>
- <9B4A1B1917080E46B64F07F2989DADD69AFFB063@ORSMSX115.amr.corp.intel.com>
-Message-ID: <CAP-MU4PKYRP0SpxDC7SgRGCjWAyyu0vHh5W5YAsjf=JseRkAqg@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 16 Aug 2019 10:32:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 954f72f4dc205b05fc0b1747348ecf8fa4f8ef54
+Message-ID: <5d5615bf.vO3GUHJUHtzqXA7K%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Aug 15, 2019 at 6:46 PM Fujinaka, Todd <todd.fujinaka@intel.com> wrote:
->
-> x722? x550? Or is it a different part?
->
-> I've seen something like this lately, but I'll need to know which Ethernet controller it is before I can narrow it down.
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 954f72f4dc205b05fc0b1747348ecf8fa4f8ef54  igb: Fix constant media auto sense switching when no cable is connected
 
-Sorry about that short Subject text and lack of info... someone was
-passing this info to me in the midst of two or three other things
-going on and I hit <send> before I finished the text.
+elapsed time: 173m
 
-Since that's ixgbe printing the complaints, I'm pretty sure it isn't
-anything x722-ish.  I don't have access to the actual machine, but it
-is the same as this one:
+configs tested: 137
 
-65:00.0 Ethernet controller: Intel Corporation Ethernet Controller 10G
-X550T (rev 01)
-Subsystem: Cisco Systems Inc Device 01a3
-Capabilities: [e0] Vital Product Data
-Product Name: Cisco  X550-TX 10 Gig
-Read-only fields:
-[PN] Part number: X550-TX
-[V0] Vendor specific: MAP 1.86 V0.02 PHY 2.B.B MAC 3.15
-[MN] Manufacture ID: 11 37
-[RV] Reserved: checksum good, 0 byte(s) reserved
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-# ethtool -i eno1
-driver: ixgbe
-version: 5.1.0-k
-firmware-version: 0x80000af9, 0.385.33
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                             allmodconfig
+s390                                defconfig
+x86_64                 randconfig-h002-201932
+x86_64                 randconfig-h003-201932
+i386                   randconfig-h001-201932
+i386                   randconfig-h002-201932
+x86_64                 randconfig-h004-201932
+i386                   randconfig-h004-201932
+i386                   randconfig-h003-201932
+x86_64                 randconfig-h001-201932
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                 randconfig-g003-201932
+i386                   randconfig-g004-201932
+x86_64                 randconfig-g001-201932
+x86_64                 randconfig-g002-201932
+i386                   randconfig-g001-201932
+x86_64                 randconfig-g004-201932
+i386                   randconfig-g002-201932
+i386                   randconfig-g003-201932
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-f004-201932
+x86_64                 randconfig-f004-201932
+i386                   randconfig-f001-201932
+x86_64                 randconfig-f002-201932
+i386                   randconfig-f002-201932
+i386                   randconfig-f003-201932
+x86_64                 randconfig-f003-201932
+x86_64                 randconfig-f001-201932
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+x86_64                 randconfig-e004-201932
+i386                   randconfig-e004-201932
+x86_64                 randconfig-e002-201932
+i386                   randconfig-e003-201932
+x86_64                 randconfig-e003-201932
+x86_64                 randconfig-e001-201932
+i386                   randconfig-e002-201932
+i386                   randconfig-e001-201932
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+x86_64                 randconfig-b002-201932
+i386                   randconfig-b003-201932
+i386                   randconfig-b004-201932
+i386                   randconfig-b002-201932
+x86_64                 randconfig-b001-201932
+i386                   randconfig-b001-201932
+x86_64                 randconfig-b004-201932
+x86_64                 randconfig-b003-201932
+x86_64                           allmodconfig
+i386                   randconfig-d002-201932
+i386                   randconfig-d004-201932
+x86_64                 randconfig-d004-201932
+x86_64                 randconfig-d001-201932
+x86_64                 randconfig-d002-201932
+x86_64                 randconfig-d003-201932
+i386                   randconfig-d001-201932
+i386                   randconfig-d003-201932
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+riscv                              tinyconfig
+i386                               tinyconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-c003-201932
+x86_64                 randconfig-c002-201932
+i386                   randconfig-c004-201932
+x86_64                 randconfig-c004-201932
+i386                   randconfig-c003-201932
+i386                   randconfig-c001-201932
+i386                   randconfig-c002-201932
+x86_64                 randconfig-c001-201932
 
-We have a bunch of these machines, and I'm told we're seeing this off
-and on in several of them.
-
-sln
-
-
->
-> Todd Fujinaka
-> Software Application Engineer
-> Datacenter Engineering Group
-> Intel Corporation
-> todd.fujinaka at intel.com
->
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of Shannon Nelson
-> Sent: Thursday, August 15, 2019 2:35 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] x
->
-> We've been occasionally seeing some of these messages recently on some of our machines after reboots.  Usually a powercycle clears it up.
-> Any hints as to what might be going on?
->
-> [    2.570012] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver -
-> version 5.1.0-k-rh7.5
-> [    2.570016] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
-> [    4.883541] ixgbe 0000:65:00.0 (unregistered net_device): eeprom
-> read at offset 40 failed
-> [    7.112885] ixgbe 0000:65:00.0 (unregistered net_device): eeprom
-> read at offset 39 failed
-> [   11.571710] ixgbe 0000:65:00.0: The EEPROM Checksum Is Not Valid
-> [   11.571916] ixgbe: probe of 0000:65:00.0 failed with error -5
-> [   13.922688] ixgbe 0000:65:00.1 (unregistered net_device): eeprom
-> read at offset 40 failed
-> [   16.152080] ixgbe 0000:65:00.1 (unregistered net_device): eeprom
-> read at offset 39 failed
-> [   20.617460] ixgbe 0000:65:00.1: The EEPROM Checksum Is Not Valid
-> [   20.617639] ixgbe: probe of 0000:65:00.1 failed with error -5
->
->
-> Thanks,
-> sln
->
->
-> --
-> ==============================================
-> Mr. Shannon Nelson         Parents can't afford to be squeamish.
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
-
-
--- 
-==============================================
-Mr. Shannon Nelson         Parents can't afford to be squeamish.
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
