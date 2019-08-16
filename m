@@ -1,485 +1,174 @@
-From: Tom Herbert <tom@herbertland.com>
-Date: Fri, 16 Aug 2019 14:53:43 -0700
-Subject: [Intel-wired-lan] [PATCH v2 net-next 6/7] ip6tlvs: Add netlink
- interface
-In-Reply-To: <1565992424-22379-1-git-send-email-tom@herbertland.com>
-References: <1565992424-22379-1-git-send-email-tom@herbertland.com>
-Message-ID: <1565992424-22379-7-git-send-email-tom@herbertland.com>
+From: Jonathan Lemon <jonathan.lemon@gmail.com>
+Date: Fri, 16 Aug 2019 15:08:34 -0700
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/5] Add support for SKIP_BPF
+ flag for AF_XDP sockets
+In-Reply-To: <CAJ+HfNj=devuEky3VwbibA-j+o=bKi4Gg=MeHsuuDGAKc9p2Vw@mail.gmail.com>
+References: <1565840783-8269-1-git-send-email-sridhar.samudrala@intel.com>
+ <bebfb097-5357-91d8-ebc7-2f8ede392ad7@intel.com>
+ <cc3a09eb-bcb8-a6e1-7175-77bddaf10c11@intel.com>
+ <CAJ+HfNj=devuEky3VwbibA-j+o=bKi4Gg=MeHsuuDGAKc9p2Vw@mail.gmail.com>
+Message-ID: <331CAEDB-776A-4928-93EF-F45F1339848F@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tom Herbert <tom@quantonium.net>
 
-Add a netlink interface to manage the TX TLV parameters. Managed
-parameters include those for validating and sending TLVs being sent
-such as alignment, TLV ordering, length limits, etc.
 
-Signed-off-by: Tom Herbert <tom@quantonium.net>
-Signed-off-by: Tom Herbert <tom@herbertland.com>
----
- include/net/ipeh.h         |  16 +++
- include/net/ipv6.h         |   1 +
- include/uapi/linux/in6.h   |   6 ++
- include/uapi/linux/ipeh.h  |  29 ++++++
- net/ipv6/exthdrs_common.c  | 238 +++++++++++++++++++++++++++++++++++++++++++++
- net/ipv6/exthdrs_options.c |  81 ++++++++++++++-
- 6 files changed, 369 insertions(+), 2 deletions(-)
+On 16 Aug 2019, at 6:32, Bj?rn T?pel wrote:
 
-diff --git a/include/net/ipeh.h b/include/net/ipeh.h
-index 2fc0882..7358ed9 100644
---- a/include/net/ipeh.h
-+++ b/include/net/ipeh.h
-@@ -3,6 +3,7 @@
- #define _NET_IPEH_H
- 
- #include <linux/skbuff.h>
-+#include <net/genetlink.h>
- 
- /*
-  *     Parsing tlv encoded headers.
-@@ -106,6 +107,21 @@ static inline int ipeh_tlv_unset_proc(struct tlv_param_table *tlv_param_table,
- 	return __ipeh_tlv_unset(tlv_param_table, type, false);
- }
- 
-+extern const struct nla_policy ipeh_tlv_nl_policy[];
-+
-+int ipeh_tlv_nl_cmd_set(struct tlv_param_table *tlv_param_table,
-+			struct genl_family *tlv_nl_family,
-+			struct sk_buff *skb, struct genl_info *info);
-+int ipeh_tlv_nl_cmd_unset(struct tlv_param_table *tlv_param_table,
-+			  struct genl_family *tlv_nl_family,
-+			  struct sk_buff *skb, struct genl_info *info);
-+int ipeh_tlv_nl_cmd_get(struct tlv_param_table *tlv_param_table,
-+			struct genl_family *tlv_nl_family,
-+			struct sk_buff *skb, struct genl_info *info);
-+int ipeh_tlv_nl_dump(struct tlv_param_table *tlv_param_table,
-+		     struct genl_family *tlv_nl_family,
-+		     struct sk_buff *skb, struct netlink_callback *cb);
-+
- /* ipeh_tlv_get_proc_by_type assumes rcu_read_lock is held */
- static inline struct tlv_proc *ipeh_tlv_get_proc_by_type(
- 		struct tlv_param_table *tlv_param_table, unsigned char type)
-diff --git a/include/net/ipv6.h b/include/net/ipv6.h
-index 07bafad..51517a1 100644
---- a/include/net/ipv6.h
-+++ b/include/net/ipv6.h
-@@ -14,6 +14,7 @@
- #include <linux/jhash.h>
- #include <linux/refcount.h>
- #include <linux/jump_label_ratelimit.h>
-+#include <net/genetlink.h>
- #include <net/if_inet6.h>
- #include <net/ndisc.h>
- #include <net/flow.h>
-diff --git a/include/uapi/linux/in6.h b/include/uapi/linux/in6.h
-index 9f2273a..d5fe3d9 100644
---- a/include/uapi/linux/in6.h
-+++ b/include/uapi/linux/in6.h
-@@ -297,4 +297,10 @@ struct in6_flowlabel_req {
-  * ...
-  * MRT6_MAX
-  */
-+
-+ /* NETLINK_GENERIC related info for IPv6 TLVs */
-+
-+#define IPV6_TLV_GENL_NAME		"ipv6-tlv"
-+#define IPV6_TLV_GENL_VERSION		0x1
-+
- #endif /* _UAPI_LINUX_IN6_H */
-diff --git a/include/uapi/linux/ipeh.h b/include/uapi/linux/ipeh.h
-index dbf0728..bac36a7 100644
---- a/include/uapi/linux/ipeh.h
-+++ b/include/uapi/linux/ipeh.h
-@@ -21,4 +21,33 @@ enum {
- 	IPEH_TLV_PERM_MAX = IPEH_TLV_PERM_NO_CHECK
- };
- 
-+/* NETLINK_GENERIC related info for IP TLVs */
-+
-+enum {
-+	IPEH_TLV_ATTR_UNSPEC,
-+	IPEH_TLV_ATTR_TYPE,			/* u8, > 1 */
-+	IPEH_TLV_ATTR_ORDER,			/* u16 */
-+	IPEH_TLV_ATTR_ADMIN_PERM,		/* u8, perm value */
-+	IPEH_TLV_ATTR_USER_PERM,		/* u8, perm value */
-+	IPEH_TLV_ATTR_CLASS,			/* u8, 3 bit flags */
-+	IPEH_TLV_ATTR_ALIGN_MULT,		/* u8, 1 to 16 */
-+	IPEH_TLV_ATTR_ALIGN_OFF,		/* u8, 0 to 15 */
-+	IPEH_TLV_ATTR_MIN_DATA_LEN,		/* u8 (option data length) */
-+	IPEH_TLV_ATTR_MAX_DATA_LEN,		/* u8 (option data length) */
-+	IPEH_TLV_ATTR_DATA_LEN_MULT,		/* u8, 1 to 16 */
-+	IPEH_TLV_ATTR_DATA_LEN_OFF,		/* u8, 0 to 15 */
-+
-+	__IPEH_TLV_ATTR_MAX,
-+};
-+
-+#define IPEH_TLV_ATTR_MAX              (__IPEH_TLV_ATTR_MAX - 1)
-+
-+enum {
-+	IPEH_TLV_CMD_SET,
-+	IPEH_TLV_CMD_UNSET,
-+	IPEH_TLV_CMD_GET,
-+
-+	__IPEH_TLV_CMD_MAX,
-+};
-+
- #endif /* _UAPI_LINUX_IPEH_H */
-diff --git a/net/ipv6/exthdrs_common.c b/net/ipv6/exthdrs_common.c
-index 791f6e4..b44c6fd 100644
---- a/net/ipv6/exthdrs_common.c
-+++ b/net/ipv6/exthdrs_common.c
-@@ -454,6 +454,244 @@ int __ipeh_tlv_unset(struct tlv_param_table *tlv_param_table,
- }
- EXPORT_SYMBOL(__ipeh_tlv_unset);
- 
-+const struct nla_policy ipeh_tlv_nl_policy[IPEH_TLV_ATTR_MAX + 1] = {
-+	[IPEH_TLV_ATTR_TYPE] =		{ .type = NLA_U8, },
-+	[IPEH_TLV_ATTR_ORDER] =		{ .type = NLA_U16, },
-+	[IPEH_TLV_ATTR_ADMIN_PERM] =	{ .type = NLA_U8, },
-+	[IPEH_TLV_ATTR_USER_PERM] =	{ .type = NLA_U8, },
-+	[IPEH_TLV_ATTR_CLASS] =		{ .type = NLA_U8, },
-+	[IPEH_TLV_ATTR_ALIGN_MULT] =	{ .type = NLA_U8, },
-+	[IPEH_TLV_ATTR_ALIGN_OFF] =	{ .type = NLA_U8, },
-+	[IPEH_TLV_ATTR_MIN_DATA_LEN] =	{ .type = NLA_U8, },
-+	[IPEH_TLV_ATTR_MAX_DATA_LEN] =	{ .type = NLA_U8, },
-+	[IPEH_TLV_ATTR_DATA_LEN_OFF] =	{ .type = NLA_U8, },
-+	[IPEH_TLV_ATTR_DATA_LEN_MULT] =	{ .type = NLA_U8, },
-+};
-+EXPORT_SYMBOL(ipeh_tlv_nl_policy);
-+
-+int ipeh_tlv_nl_cmd_set(struct tlv_param_table *tlv_param_table,
-+			struct genl_family *tlv_nl_family,
-+			struct sk_buff *skb, struct genl_info *info)
-+{
-+	struct tlv_params new_params;
-+	struct tlv_proc *tproc;
-+	unsigned char type;
-+	unsigned int v;
-+	int retv = -EINVAL;
-+
-+	if (!info->attrs[IPEH_TLV_ATTR_TYPE])
-+		return -EINVAL;
-+
-+	type = nla_get_u8(info->attrs[IPEH_TLV_ATTR_TYPE]);
-+	if (type < 2)
-+		return -EINVAL;
-+
-+	rcu_read_lock();
-+
-+	/* Base new parameters on existing ones */
-+	tproc = ipeh_tlv_get_proc_by_type(tlv_param_table, type);
-+	new_params = tproc->params;
-+
-+	if (info->attrs[IPEH_TLV_ATTR_ORDER]) {
-+		v = nla_get_u16(info->attrs[IPEH_TLV_ATTR_ORDER]);
-+		new_params.t.preferred_order = v;
-+	}
-+
-+	if (info->attrs[IPEH_TLV_ATTR_ADMIN_PERM]) {
-+		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_ADMIN_PERM]);
-+		if (v > IPEH_TLV_PERM_MAX)
-+			goto out;
-+		new_params.t.admin_perm = v;
-+	}
-+
-+	if (info->attrs[IPEH_TLV_ATTR_USER_PERM]) {
-+		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_USER_PERM]);
-+		if (v > IPEH_TLV_PERM_MAX)
-+			goto out;
-+		new_params.t.user_perm = v;
-+	}
-+
-+	if (info->attrs[IPEH_TLV_ATTR_CLASS]) {
-+		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_CLASS]);
-+		if (!v || (v & ~IPEH_TLV_CLASS_FLAG_MASK))
-+			goto out;
-+		new_params.t.class = v;
-+	}
-+
-+	if (info->attrs[IPEH_TLV_ATTR_ALIGN_MULT]) {
-+		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_ALIGN_MULT]);
-+		if (v > 16 || v < 1)
-+			goto out;
-+		new_params.t.align_mult = v - 1;
-+	}
-+
-+	if (info->attrs[IPEH_TLV_ATTR_ALIGN_OFF]) {
-+		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_ALIGN_OFF]);
-+		if (v > 15)
-+			goto out;
-+		new_params.t.align_off = v;
-+	}
-+
-+	if (info->attrs[IPEH_TLV_ATTR_MAX_DATA_LEN])
-+		new_params.t.max_data_len =
-+		    nla_get_u8(info->attrs[IPEH_TLV_ATTR_MAX_DATA_LEN]);
-+
-+	if (info->attrs[IPEH_TLV_ATTR_MIN_DATA_LEN])
-+		new_params.t.min_data_len =
-+		    nla_get_u8(info->attrs[IPEH_TLV_ATTR_MIN_DATA_LEN]);
-+
-+	if (info->attrs[IPEH_TLV_ATTR_DATA_LEN_MULT]) {
-+		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_DATA_LEN_MULT]);
-+		if (v > 16 || v < 1)
-+			goto out;
-+		new_params.t.data_len_mult = v - 1;
-+	}
-+
-+	if (info->attrs[IPEH_TLV_ATTR_DATA_LEN_OFF]) {
-+		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_DATA_LEN_OFF]);
-+		if (v > 15)
-+			goto out;
-+		new_params.t.data_len_off = v;
-+	}
-+
-+	retv = ipeh_tlv_set_params(tlv_param_table, type, &new_params);
-+
-+out:
-+	rcu_read_unlock();
-+	return retv;
-+}
-+EXPORT_SYMBOL(ipeh_tlv_nl_cmd_set);
-+
-+int ipeh_tlv_nl_cmd_unset(struct tlv_param_table *tlv_param_table,
-+			  struct genl_family *tlv_nl_family,
-+			  struct sk_buff *skb, struct genl_info *info)
-+{
-+	unsigned char type;
-+
-+	if (!info->attrs[IPEH_TLV_ATTR_TYPE])
-+		return -EINVAL;
-+
-+	type = nla_get_u8(info->attrs[IPEH_TLV_ATTR_TYPE]);
-+	if (type < 2)
-+		return -EINVAL;
-+
-+	return ipeh_tlv_unset_params(tlv_param_table, type);
-+}
-+EXPORT_SYMBOL(ipeh_tlv_nl_cmd_unset);
-+
-+static int tlv_fill_info(struct tlv_proc *tproc, unsigned char type,
-+			 struct sk_buff *msg, bool admin)
-+{
-+	struct tlv_params *tp = &tproc->params;
-+	int ret = 0;
-+
-+	if (nla_put_u8(msg, IPEH_TLV_ATTR_TYPE, type) ||
-+	    nla_put_u16(msg, IPEH_TLV_ATTR_ORDER, tp->t.preferred_order) ||
-+	    nla_put_u8(msg, IPEH_TLV_ATTR_USER_PERM, tp->t.user_perm) ||
-+	    (admin && nla_put_u8(msg, IPEH_TLV_ATTR_ADMIN_PERM,
-+				 tp->t.admin_perm)) ||
-+	    nla_put_u8(msg, IPEH_TLV_ATTR_CLASS, tp->t.class) ||
-+	    nla_put_u8(msg, IPEH_TLV_ATTR_ALIGN_MULT, tp->t.align_mult + 1) ||
-+	    nla_put_u8(msg, IPEH_TLV_ATTR_ALIGN_OFF, tp->t.align_off) ||
-+	    nla_put_u8(msg, IPEH_TLV_ATTR_MIN_DATA_LEN, tp->t.min_data_len) ||
-+	    nla_put_u8(msg, IPEH_TLV_ATTR_MAX_DATA_LEN, tp->t.max_data_len) ||
-+	    nla_put_u8(msg, IPEH_TLV_ATTR_DATA_LEN_MULT,
-+		       tp->t.data_len_mult + 1) ||
-+	    nla_put_u8(msg, IPEH_TLV_ATTR_DATA_LEN_OFF, tp->t.data_len_off))
-+		ret = -1;
-+
-+	return ret;
-+}
-+
-+static int tlv_dump_info(struct tlv_proc *tproc, unsigned char type,
-+			 struct genl_family *tlv_nl_family, u32 portid,
-+			 u32 seq, u32 flags, struct sk_buff *skb, u8 cmd,
-+			 bool admin)
-+{
-+	void *hdr;
-+
-+	hdr = genlmsg_put(skb, portid, seq, tlv_nl_family, flags, cmd);
-+	if (!hdr)
-+		return -ENOMEM;
-+
-+	if (tlv_fill_info(tproc, type, skb, admin) < 0) {
-+		genlmsg_cancel(skb, hdr);
-+		return -EMSGSIZE;
-+	}
-+
-+	genlmsg_end(skb, hdr);
-+
-+	return 0;
-+}
-+
-+int ipeh_tlv_nl_cmd_get(struct tlv_param_table *tlv_param_table,
-+			struct genl_family *tlv_nl_family,
-+			struct sk_buff *skb, struct genl_info *info)
-+{
-+	struct tlv_proc *tproc;
-+	struct sk_buff *msg;
-+	unsigned char type;
-+	int ret;
-+
-+	if (!info->attrs[IPEH_TLV_ATTR_TYPE])
-+		return -EINVAL;
-+
-+	type = nla_get_u8(info->attrs[IPEH_TLV_ATTR_TYPE]);
-+	if (type < 2)
-+		return -EINVAL;
-+
-+	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
-+	if (!msg)
-+		return -ENOMEM;
-+
-+	rcu_read_lock();
-+
-+	tproc = ipeh_tlv_get_proc_by_type(tlv_param_table, type);
-+	ret = tlv_dump_info(tproc, type, tlv_nl_family, info->snd_portid,
-+			    info->snd_seq, 0, msg, info->genlhdr->cmd,
-+			    netlink_capable(skb, CAP_NET_ADMIN));
-+
-+	rcu_read_unlock();
-+
-+	if (ret < 0) {
-+		nlmsg_free(msg);
-+		return ret;
-+	}
-+
-+	return genlmsg_reply(msg, info);
-+}
-+EXPORT_SYMBOL(ipeh_tlv_nl_cmd_get);
-+
-+int ipeh_tlv_nl_dump(struct tlv_param_table *tlv_param_table,
-+		     struct genl_family *tlv_nl_family,
-+		     struct sk_buff *skb, struct netlink_callback *cb)
-+{
-+	struct tlv_proc *tproc;
-+	int idx = 0, ret, i;
-+
-+	rcu_read_lock();
-+
-+	for (i = 2; i < 256; i++) {
-+		if (idx++ < cb->args[0])
-+			continue;
-+
-+		tproc = ipeh_tlv_get_proc_by_type(tlv_param_table, i);
-+		ret = tlv_dump_info(tproc, i, tlv_nl_family,
-+				    NETLINK_CB(cb->skb).portid,
-+				    cb->nlh->nlmsg_seq, NLM_F_MULTI,
-+				    skb, IPEH_TLV_CMD_GET,
-+				    netlink_capable(cb->skb, CAP_NET_ADMIN));
-+		if (ret)
-+			break;
-+	}
-+
-+	rcu_read_unlock();
-+
-+	cb->args[0] = idx;
-+	return skb->len;
-+}
-+EXPORT_SYMBOL(ipeh_tlv_nl_dump);
-+
- int ipeh_exthdrs_init(struct tlv_param_table *tlv_param_table,
- 		      const struct tlv_proc_init *tlv_init_params,
- 		      int num_init_params)
-diff --git a/net/ipv6/exthdrs_options.c b/net/ipv6/exthdrs_options.c
-index 3b50b58..c1889f6 100644
---- a/net/ipv6/exthdrs_options.c
-+++ b/net/ipv6/exthdrs_options.c
-@@ -6,6 +6,7 @@
- #include <linux/socket.h>
- #include <linux/types.h>
- #include <net/calipso.h>
-+#include <net/genetlink.h>
- #include <net/ipv6.h>
- #include <net/ip6_route.h>
- #if IS_ENABLED(CONFIG_IPV6_MIP6)
-@@ -253,13 +254,89 @@ static const struct tlv_proc_init tlv_ipv6_init_params[] __initconst = {
- struct tlv_param_table __rcu ipv6_tlv_param_table;
- EXPORT_SYMBOL(ipv6_tlv_param_table);
- 
-+static int ipv6_tlv_nl_cmd_set(struct sk_buff *skb, struct genl_info *info);
-+static int ipv6_tlv_nl_cmd_unset(struct sk_buff *skb, struct genl_info *info);
-+static int ipv6_tlv_nl_cmd_get(struct sk_buff *skb, struct genl_info *info);
-+static int ipv6_tlv_nl_dump(struct sk_buff *skb, struct netlink_callback *cb);
-+
-+static const struct genl_ops ipv6_tlv_nl_ops[] = {
-+{
-+	.cmd = IPEH_TLV_CMD_SET,
-+	.doit = ipv6_tlv_nl_cmd_set,
-+	.flags = GENL_ADMIN_PERM,
-+},
-+{
-+	.cmd = IPEH_TLV_CMD_UNSET,
-+	.doit = ipv6_tlv_nl_cmd_unset,
-+	.flags = GENL_ADMIN_PERM,
-+},
-+{
-+	.cmd = IPEH_TLV_CMD_GET,
-+	.doit = ipv6_tlv_nl_cmd_get,
-+	.dumpit = ipv6_tlv_nl_dump,
-+},
-+};
-+
-+struct genl_family ipv6_tlv_nl_family __ro_after_init = {
-+	.hdrsize	= 0,
-+	.name		= IPV6_TLV_GENL_NAME,
-+	.version	= IPV6_TLV_GENL_VERSION,
-+	.maxattr	= IPEH_TLV_ATTR_MAX,
-+	.policy		= ipeh_tlv_nl_policy,
-+	.netnsok	= true,
-+	.parallel_ops	= true,
-+	.ops		= ipv6_tlv_nl_ops,
-+	.n_ops		= ARRAY_SIZE(ipv6_tlv_nl_ops),
-+	.module		= THIS_MODULE,
-+};
-+
-+static int ipv6_tlv_nl_cmd_set(struct sk_buff *skb, struct genl_info *info)
-+{
-+	return ipeh_tlv_nl_cmd_set(&ipv6_tlv_param_table, &ipv6_tlv_nl_family,
-+				   skb, info);
-+}
-+
-+static int ipv6_tlv_nl_cmd_unset(struct sk_buff *skb, struct genl_info *info)
-+{
-+	return ipeh_tlv_nl_cmd_unset(&ipv6_tlv_param_table, &ipv6_tlv_nl_family,
-+				     skb, info);
-+}
-+
-+static int ipv6_tlv_nl_cmd_get(struct sk_buff *skb, struct genl_info *info)
-+{
-+	return ipeh_tlv_nl_cmd_get(&ipv6_tlv_param_table, &ipv6_tlv_nl_family,
-+				   skb, info);
-+}
-+
-+static int ipv6_tlv_nl_dump(struct sk_buff *skb, struct netlink_callback *cb)
-+{
-+	return ipeh_tlv_nl_dump(&ipv6_tlv_param_table, &ipv6_tlv_nl_family,
-+				skb, cb);
-+}
-+
- int __init ipv6_exthdrs_options_init(void)
- {
--	return ipeh_exthdrs_init(&ipv6_tlv_param_table, tlv_ipv6_init_params,
--				 ARRAY_SIZE(tlv_ipv6_init_params));
-+	int err;
-+
-+	err = genl_register_family(&ipv6_tlv_nl_family);
-+	if (err)
-+		goto genl_fail;
-+
-+	ipeh_exthdrs_init(&ipv6_tlv_param_table, tlv_ipv6_init_params,
-+			  ARRAY_SIZE(tlv_ipv6_init_params));
-+	if (err)
-+		goto ipv6_fail;
-+
-+	return 0;
-+
-+ipv6_fail:
-+	genl_unregister_family(&ipv6_tlv_nl_family);
-+genl_fail:
-+	return err;
- }
- 
- void ipv6_exthdrs_options_exit(void)
- {
- 	ipeh_exthdrs_fini(&ipv6_tlv_param_table);
-+	genl_unregister_family(&ipv6_tlv_nl_family);
- }
+> On Thu, 15 Aug 2019 at 18:46, Samudrala, Sridhar
+> <sridhar.samudrala@intel.com> wrote:
+>>
+>> On 8/15/2019 5:51 AM, Bj?rn T?pel wrote:
+>>> On 2019-08-15 05:46, Sridhar Samudrala wrote:
+>>>> This patch series introduces XDP_SKIP_BPF flag that can be 
+>>>> specified
+>>>> during the bind() call of an AF_XDP socket to skip calling the BPF
+>>>> program in the receive path and pass the buffer directly to the 
+>>>> socket.
+>>>>
+>>>> When a single AF_XDP socket is associated with a queue and a HW
+>>>> filter is used to redirect the packets and the app is interested in
+>>>> receiving all the packets on that queue, we don't need an 
+>>>> additional
+>>>> BPF program to do further filtering or lookup/redirect to a socket.
+>>>>
+>>>> Here are some performance numbers collected on
+>>>>    - 2 socket 28 core Intel(R) Xeon(R) Platinum 8180 CPU @ 2.50GHz
+>>>>    - Intel 40Gb Ethernet NIC (i40e)
+>>>>
+>>>> All tests use 2 cores and the results are in Mpps.
+>>>>
+>>>> turbo on (default)
+>>>> ---------------------------------------------
+>>>>                        no-skip-bpf    skip-bpf
+>>>> ---------------------------------------------
+>>>> rxdrop zerocopy           21.9         38.5
+>>>> l2fwd  zerocopy           17.0         20.5
+>>>> rxdrop copy               11.1         13.3
+>>>> l2fwd  copy                1.9          2.0
+>>>>
+>>>> no turbo :  echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo
+>>>> ---------------------------------------------
+>>>>                        no-skip-bpf    skip-bpf
+>>>> ---------------------------------------------
+>>>> rxdrop zerocopy           15.4         29.0
+>>>> l2fwd  zerocopy           11.8         18.2
+>>>> rxdrop copy                8.2         10.5
+>>>> l2fwd  copy                1.7          1.7
+>>>> ---------------------------------------------
+>>>>
+>>>
+>>> This work is somewhat similar to the XDP_ATTACH work [1]. Avoiding 
+>>> the
+>>> retpoline in the XDP program call is a nice performance boost! I 
+>>> like
+>>> the numbers! :-) I also like the idea of adding a flag that just 
+>>> does
+>>> what most AF_XDP Rx users want -- just getting all packets of a
+>>> certain queue into the XDP sockets.
+>>>
+>>> In addition to Toke's mail, I have some more concerns with the 
+>>> series:
+>>>
+>>> * AFAIU the SKIP_BPF only works for zero-copy enabled sockets. IMO, 
+>>> it
+>>>    should work for all modes (including XDP_SKB).
+>>
+>> This patch enables SKIP_BPF for AF_XDP sockets where an XDP program 
+>> is
+>> attached at driver level (both zerocopy and copy modes)
+>> I tried a quick hack to see the perf benefit with generic XDP mode, 
+>> but
+>> i didn't see any significant improvement in performance in that
+>> scenario. so i didn't include that mode.
+>>
+>>>
+>>> * In order to work, a user still needs an XDP program running. 
+>>> That's
+>>>    clunky. I'd like the behavior that if no XDP program is attached,
+>>>    and the option is set, the packets for a that queue end up in the
+>>>    socket. If there's an XDP program attached, the program has
+>>>    precedence.
+>>
+>> I think this would require more changes in the drivers to take XDP
+>> datapath even when there is no XDP program loaded.
+>>
+>
+> Today, from a driver perspective, to enable XDP you pass a struct
+> bpf_prog pointer via the ndo_bpf. The program get executed in
+> BPF_PROG_RUN (via bpf_prog_run_xdp) from include/linux/filter.h.
+>
+> I think it's possible to achieve what you're doing w/o *any* driver
+> modification. Pass a special, invalid, pointer to the driver (say
+> (void *)0x1 or smth more elegant), which has a special handling in
+> BPF_RUN_PROG e.g. setting a per-cpu state and return XDP_REDIRECT. The
+> per-cpu state is picked up in xdp_do_redirect and xdp_flush.
+>
+> An approach like this would be general, and apply to all modes
+> automatically.
+>
+> Thoughts?
+
+All the default program does is check that the map entry contains a xsk,
+and call bpf_redirect_map().  So this is pretty much the same as above,
+without any special case handling.
+
+Why would this be so expensive?  Is the JIT compilation time being 
+counted?
 -- 
-2.7.4
+Jonathan
 
+>
+>>>
+>>> * It requires changes in all drivers. Not nice, and scales badly. 
+>>> Try
+>>>    making it generic (xdp_do_redirect/xdp_flush), so it Just Works 
+>>> for
+>>>    all XDP capable drivers.
+>>
+>> I tried to make this as generic as possible and make the changes to 
+>> the
+>> driver very minimal, but could not find a way to avoid any changes at
+>> all to the driver. xdp_do_direct() gets called based after the call 
+>> to
+>> bpf_prog_run_xdp() in the drivers.
+>>
+>>>
+>>> Thanks for working on this!
+>>>
+>>>
+>>> Bj?rn
+>>>
+>>> [1]
+>>> https://lore.kernel.org/netdev/20181207114431.18038-1-bjorn.topel at gmail.com/
+>>>
+>>>
+>>>
+>>>> Sridhar Samudrala (5):
+>>>>    xsk: Convert bool 'zc' field in struct xdp_umem to a u32 bitmap
+>>>>    xsk: Introduce XDP_SKIP_BPF bind option
+>>>>    i40e: Enable XDP_SKIP_BPF option for AF_XDP sockets
+>>>>    ixgbe: Enable XDP_SKIP_BPF option for AF_XDP sockets
+>>>>    xdpsock_user: Add skip_bpf option
+>>>>
+>>>>   drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 22 +++++++++-
+>>>>   drivers/net/ethernet/intel/i40e/i40e_xsk.c    |  6 +++
+>>>>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 ++++++++-
+>>>>   drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 16 ++++++-
+>>>>   include/net/xdp_sock.h                        | 21 ++++++++-
+>>>>   include/uapi/linux/if_xdp.h                   |  1 +
+>>>>   include/uapi/linux/xdp_diag.h                 |  1 +
+>>>>   net/xdp/xdp_umem.c                            |  9 ++--
+>>>>   net/xdp/xsk.c                                 | 43 
+>>>> ++++++++++++++++---
+>>>>   net/xdp/xsk_diag.c                            |  5 ++-
+>>>>   samples/bpf/xdpsock_user.c                    |  8 ++++
+>>>>   11 files changed, 135 insertions(+), 17 deletions(-)
+>>>>
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at osuosl.org
+>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
