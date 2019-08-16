@@ -1,162 +1,72 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 16 Aug 2019 10:32:31 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 954f72f4dc205b05fc0b1747348ecf8fa4f8ef54
-Message-ID: <5d5615bf.vO3GUHJUHtzqXA7K%lkp@intel.com>
+From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
+Date: Thu, 15 Aug 2019 23:12:36 -0700
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/5] Add support for SKIP_BPF
+ flag for AF_XDP sockets
+In-Reply-To: <87ftm2wdzk.fsf@toke.dk>
+References: <1565840783-8269-1-git-send-email-sridhar.samudrala@intel.com>
+ <87ftm2adi2.fsf@toke.dk> <b9423054-247e-8b57-ea59-42368f60ea1e@intel.com>
+ <87ftm2wdzk.fsf@toke.dk>
+Message-ID: <3b85138e-97a7-e59c-194d-54301b482689@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 954f72f4dc205b05fc0b1747348ecf8fa4f8ef54  igb: Fix constant media auto sense switching when no cable is connected
 
-elapsed time: 173m
 
-configs tested: 137
+On 8/15/2019 10:11 AM, Toke H?iland-J?rgensen wrote:
+> "Samudrala, Sridhar" <sridhar.samudrala@intel.com> writes:
+> 
+>> On 8/15/2019 4:12 AM, Toke H?iland-J?rgensen wrote:
+>>> Sridhar Samudrala <sridhar.samudrala@intel.com> writes:
+>>>
+>>>> This patch series introduces XDP_SKIP_BPF flag that can be specified
+>>>> during the bind() call of an AF_XDP socket to skip calling the BPF
+>>>> program in the receive path and pass the buffer directly to the socket.
+>>>>
+>>>> When a single AF_XDP socket is associated with a queue and a HW
+>>>> filter is used to redirect the packets and the app is interested in
+>>>> receiving all the packets on that queue, we don't need an additional
+>>>> BPF program to do further filtering or lookup/redirect to a socket.
+>>>>
+>>>> Here are some performance numbers collected on
+>>>>     - 2 socket 28 core Intel(R) Xeon(R) Platinum 8180 CPU @ 2.50GHz
+>>>>     - Intel 40Gb Ethernet NIC (i40e)
+>>>>
+>>>> All tests use 2 cores and the results are in Mpps.
+>>>>
+>>>> turbo on (default)
+>>>> ---------------------------------------------	
+>>>>                         no-skip-bpf    skip-bpf
+>>>> ---------------------------------------------	
+>>>> rxdrop zerocopy           21.9         38.5
+>>>> l2fwd  zerocopy           17.0         20.5
+>>>> rxdrop copy               11.1         13.3
+>>>> l2fwd  copy                1.9          2.0
+>>>>
+>>>> no turbo :  echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo
+>>>> ---------------------------------------------	
+>>>>                         no-skip-bpf    skip-bpf
+>>>> ---------------------------------------------	
+>>>> rxdrop zerocopy           15.4         29.0
+>>>> l2fwd  zerocopy           11.8         18.2
+>>>> rxdrop copy                8.2         10.5
+>>>> l2fwd  copy                1.7          1.7
+>>>> ---------------------------------------------
+>>>
+>>> You're getting this performance boost by adding more code in the fast
+>>> path for every XDP program; so what's the performance impact of that for
+>>> cases where we do run an eBPF program?
+>>
+>> The no-skip-bpf results are pretty close to what i see before the
+>> patches are applied. As umem is cached in rx_ring for zerocopy the
+>> overhead is much smaller compared to the copy scenario where i am
+>> currently calling xdp_get_umem_from_qid().
+> 
+> I meant more for other XDP programs; what is the performance impact of
+> XDP_DROP, for instance?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Will run xdp1 with and without the patches and include that data with 
+the next revision.
 
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                             allmodconfig
-s390                                defconfig
-x86_64                 randconfig-h002-201932
-x86_64                 randconfig-h003-201932
-i386                   randconfig-h001-201932
-i386                   randconfig-h002-201932
-x86_64                 randconfig-h004-201932
-i386                   randconfig-h004-201932
-i386                   randconfig-h003-201932
-x86_64                 randconfig-h001-201932
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                 randconfig-g003-201932
-i386                   randconfig-g004-201932
-x86_64                 randconfig-g001-201932
-x86_64                 randconfig-g002-201932
-i386                   randconfig-g001-201932
-x86_64                 randconfig-g004-201932
-i386                   randconfig-g002-201932
-i386                   randconfig-g003-201932
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-f004-201932
-x86_64                 randconfig-f004-201932
-i386                   randconfig-f001-201932
-x86_64                 randconfig-f002-201932
-i386                   randconfig-f002-201932
-i386                   randconfig-f003-201932
-x86_64                 randconfig-f003-201932
-x86_64                 randconfig-f001-201932
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-x86_64                 randconfig-e004-201932
-i386                   randconfig-e004-201932
-x86_64                 randconfig-e002-201932
-i386                   randconfig-e003-201932
-x86_64                 randconfig-e003-201932
-x86_64                 randconfig-e001-201932
-i386                   randconfig-e002-201932
-i386                   randconfig-e001-201932
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-arm                              allmodconfig
-arm                         at91_dt_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm64                            allyesconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allmodconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-x86_64                 randconfig-b002-201932
-i386                   randconfig-b003-201932
-i386                   randconfig-b004-201932
-i386                   randconfig-b002-201932
-x86_64                 randconfig-b001-201932
-i386                   randconfig-b001-201932
-x86_64                 randconfig-b004-201932
-x86_64                 randconfig-b003-201932
-x86_64                           allmodconfig
-i386                   randconfig-d002-201932
-i386                   randconfig-d004-201932
-x86_64                 randconfig-d004-201932
-x86_64                 randconfig-d001-201932
-x86_64                 randconfig-d002-201932
-x86_64                 randconfig-d003-201932
-i386                   randconfig-d001-201932
-i386                   randconfig-d003-201932
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-riscv                              tinyconfig
-i386                               tinyconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-c003-201932
-x86_64                 randconfig-c002-201932
-i386                   randconfig-c004-201932
-x86_64                 randconfig-c004-201932
-i386                   randconfig-c003-201932
-i386                   randconfig-c001-201932
-i386                   randconfig-c002-201932
-x86_64                 randconfig-c001-201932
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
