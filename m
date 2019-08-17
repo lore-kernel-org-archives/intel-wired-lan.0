@@ -1,111 +1,189 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Sun, 18 Aug 2019 20:36:33 +0000
-Subject: [Intel-wired-lan] x
-In-Reply-To: <CAP-MU4PKYRP0SpxDC7SgRGCjWAyyu0vHh5W5YAsjf=JseRkAqg@mail.gmail.com>
-References: <CAP-MU4MAwQd5bOGpJ=tu4iVB4j4FO6UWbkXg6ox34i7pb5DjQA@mail.gmail.com>
- <9B4A1B1917080E46B64F07F2989DADD69AFFB063@ORSMSX115.amr.corp.intel.com>
- <CAP-MU4PKYRP0SpxDC7SgRGCjWAyyu0vHh5W5YAsjf=JseRkAqg@mail.gmail.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD69AFFBD76@ORSMSX115.amr.corp.intel.com>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Date: Sat, 17 Aug 2019 23:29:14 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next v4 0/8] add need_wakeup flag
+ to the AF_XDP rings
+In-Reply-To: <1565767643-4908-1-git-send-email-magnus.karlsson@intel.com>
+References: <1565767643-4908-1-git-send-email-magnus.karlsson@intel.com>
+Message-ID: <aca27354-0418-7add-57af-cb0d411e537a@iogearbox.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The problem should be fixed with an NVM update but I'm unsure if your NVM already has the fix. Let me make sure with the Product AE.
-
-However, you're going to have to go directly to Cisco for the NVM updates since the cards look like they're from Cisco.
-
-Todd Fujinaka
-Software Application Engineer
-Datacenter Engineering Group
-Intel Corporation
-todd.fujinaka at intel.com
-
-
------Original Message-----
-From: Shannon Nelson [mailto:shannon.lee.nelson at gmail.com] 
-Sent: Thursday, August 15, 2019 7:19 PM
-To: Fujinaka, Todd <todd.fujinaka@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] x
-
-On Thu, Aug 15, 2019 at 6:46 PM Fujinaka, Todd <todd.fujinaka@intel.com> wrote:
->
-> x722? x550? Or is it a different part?
->
-> I've seen something like this lately, but I'll need to know which Ethernet controller it is before I can narrow it down.
-
-Sorry about that short Subject text and lack of info... someone was passing this info to me in the midst of two or three other things going on and I hit <send> before I finished the text.
-
-Since that's ixgbe printing the complaints, I'm pretty sure it isn't anything x722-ish.  I don't have access to the actual machine, but it is the same as this one:
-
-65:00.0 Ethernet controller: Intel Corporation Ethernet Controller 10G X550T (rev 01)
-Subsystem: Cisco Systems Inc Device 01a3
-Capabilities: [e0] Vital Product Data
-Product Name: Cisco  X550-TX 10 Gig
-Read-only fields:
-[PN] Part number: X550-TX
-[V0] Vendor specific: MAP 1.86 V0.02 PHY 2.B.B MAC 3.15 [MN] Manufacture ID: 11 37 [RV] Reserved: checksum good, 0 byte(s) reserved
-
-# ethtool -i eno1
-driver: ixgbe
-version: 5.1.0-k
-firmware-version: 0x80000af9, 0.385.33
-
-We have a bunch of these machines, and I'm told we're seeing this off and on in several of them.
-
-sln
-
-
->
-> Todd Fujinaka
-> Software Application Engineer
-> Datacenter Engineering Group
-> Intel Corporation
-> todd.fujinaka at intel.com
->
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On 
-> Behalf Of Shannon Nelson
-> Sent: Thursday, August 15, 2019 2:35 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] x
->
-> We've been occasionally seeing some of these messages recently on some of our machines after reboots.  Usually a powercycle clears it up.
-> Any hints as to what might be going on?
->
-> [    2.570012] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver -
-> version 5.1.0-k-rh7.5
-> [    2.570016] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
-> [    4.883541] ixgbe 0000:65:00.0 (unregistered net_device): eeprom
-> read at offset 40 failed
-> [    7.112885] ixgbe 0000:65:00.0 (unregistered net_device): eeprom
-> read at offset 39 failed
-> [   11.571710] ixgbe 0000:65:00.0: The EEPROM Checksum Is Not Valid
-> [   11.571916] ixgbe: probe of 0000:65:00.0 failed with error -5
-> [   13.922688] ixgbe 0000:65:00.1 (unregistered net_device): eeprom
-> read at offset 40 failed
-> [   16.152080] ixgbe 0000:65:00.1 (unregistered net_device): eeprom
-> read at offset 39 failed
-> [   20.617460] ixgbe 0000:65:00.1: The EEPROM Checksum Is Not Valid
-> [   20.617639] ixgbe: probe of 0000:65:00.1 failed with error -5
->
->
-> Thanks,
-> sln
->
->
+On 8/14/19 9:27 AM, Magnus Karlsson wrote:
+> This patch set adds support for a new flag called need_wakeup in the
+> AF_XDP Tx and fill rings. When this flag is set by the driver, it
+> means that the application has to explicitly wake up the kernel Rx
+> (for the bit in the fill ring) or kernel Tx (for bit in the Tx ring)
+> processing by issuing a syscall. Poll() can wake up both and sendto()
+> will wake up Tx processing only.
+> 
+> The main reason for introducing this new flag is to be able to
+> efficiently support the case when application and driver is executing
+> on the same core. Previously, the driver was just busy-spinning on the
+> fill ring if it ran out of buffers in the HW and there were none to
+> get from the fill ring. This approach works when the application and
+> driver is running on different cores as the application can replenish
+> the fill ring while the driver is busy-spinning. Though, this is a
+> lousy approach if both of them are running on the same core as the
+> probability of the fill ring getting more entries when the driver is
+> busy-spinning is zero. With this new feature the driver now sets the
+> need_wakeup flag and returns to the application. The application can
+> then replenish the fill queue and then explicitly wake up the Rx
+> processing in the kernel using the syscall poll(). For Tx, the flag is
+> only set to one if the driver has no outstanding Tx completion
+> interrupts. If it has some, the flag is zero as it will be woken up by
+> a completion interrupt anyway. This flag can also be used in other
+> situations where the driver needs to be woken up explicitly.
+> 
+> As a nice side effect, this new flag also improves the Tx performance
+> of the case where application and driver are running on two different
+> cores as it reduces the number of syscalls to the kernel. The kernel
+> tells user space if it needs to be woken up by a syscall, and this
+> eliminates many of the syscalls. The Rx performance of the 2-core case
+> is on the other hand slightly worse, since there is a need to use a
+> syscall now to wake up the driver, instead of the driver
+> busy-spinning. It does waste less CPU cycles though, which might lead
+> to better overall system performance.
+> 
+> This new flag needs some simple driver support. If the driver does not
+> support it, the Rx flag is always zero and the Tx flag is always
+> one. This makes any application relying on this feature default to the
+> old behavior of not requiring any syscalls in the Rx path and always
+> having to call sendto() in the Tx path.
+> 
+> For backwards compatibility reasons, this feature has to be explicitly
+> turned on using a new bind flag (XDP_USE_NEED_WAKEUP). I recommend
+> that you always turn it on as it has a large positive performance
+> impact for the one core case and does not degrade 2 core performance
+> and actually improves it for Tx heavy workloads.
+> 
+> Here are some performance numbers measured on my local,
+> non-performance optimized development system. That is why you are
+> seeing numbers lower than the ones from Bj?rn and Jesper. 64 byte
+> packets at 40Gbit/s line rate. All results in Mpps. Cores == 1 means
+> that both application and driver is executing on the same core. Cores
+> == 2 that they are on different cores.
+> 
+>                                Applications
+> need_wakeup  cores    txpush    rxdrop      l2fwd
+> ---------------------------------------------------------------
+>       n         1       0.07      0.06        0.03
+>       y         1       21.6      8.2         6.5
+>       n         2       32.3      11.7        8.7
+>       y         2       33.1      11.7        8.7
+> 
+> Overall, the need_wakeup flag provides the same or better performance
+> in all the micro-benchmarks. The reduction of sendto() calls in txpush
+> is large. Only a few per second is needed. For l2fwd, the drop is 50%
+> for the 1 core case and more than 99.9% for the 2 core case. Do not
+> know why I am not seeing the same drop for the 1 core case yet.
+> 
+> The name and inspiration of the flag has been taken from io_uring by
+> Jens Axboe. Details about this feature in io_uring can be found in
+> http://kernel.dk/io_uring.pdf, section 8.3. It also addresses most of
+> the denial of service and sendto() concerns raised by Maxim
+> Mikityanskiy in https://www.spinics.net/lists/netdev/msg554657.html.
+> 
+> The typical Tx part of an application will have to change from:
+> 
+> ret = sendto(fd,....)
+> 
+> to:
+> 
+> if (xsk_ring_prod__needs_wakeup(&xsk->tx))
+>         ret = sendto(fd,....)
+> 
+> and th Rx part from:
+> 
+> rcvd = xsk_ring_cons__peek(&xsk->rx, BATCH_SIZE, &idx_rx);
+> if (!rcvd)
+>         return;
+> 
+> to:
+> 
+> rcvd = xsk_ring_cons__peek(&xsk->rx, BATCH_SIZE, &idx_rx);
+> if (!rcvd) {
+>         if (xsk_ring_prod__needs_wakeup(&xsk->umem->fq))
+>                ret = poll(fd,.....);
+>         return;
+> }
+> 
+> v3 -> v4:
+> * Maxim found a possible race in the Tx part of the driver. The
+>    setting of the flag needs to happen before the sending, otherwise it
+>    might trigger this race. Fixed in ixgbe and i40e driver.
+> * Mellanox support contributed by Maxim
+> * Removed the XSK_DRV_CAN_SLEEP flag as it was not used
+>    anymore. Thanks to Sridhar for discovering this.
+> * For consistency the feature is now always called need_wakeup. There
+>    were some places where it was referred to as might_sleep, but they
+>    have been removed. Thanks to Sridhar for spotting.
+> * Fixed some typos in the commit messages
+> 
+> v2 -> v3:
+> * Converted the Mellanox driver to the new ndo in patch 1 as pointed out
+>    by Maxim
+> * Fixed the compatibility code of XDP_MMAP_OFFSETS so it now works.
+> 
+> v1 -> v2:
+> * Fixed bisectability problem pointed out by Jakub
+> * Added missing initiliztion of the Tx need_wakeup flag to 1
+> 
+> This patch has been applied against commit b753c5a7f99f ("Merge branch 'r8152-RX-improve'")
+> 
+> Structure of the patch set:
+> 
+> Patch 1: Replaces the ndo_xsk_async_xmit with ndo_xsk_wakeup to
+>           support waking up both Rx and Tx processing
+> Patch 2: Implements the need_wakeup functionality in common code
+> Patch 3-4: Add need_wakeup support to the i40e and ixgbe drivers
+> Patch 5: Add need_wakeup support to libbpf
+> Patch 6: Add need_wakeup support to the xdpsock sample application
+> Patch 7-8: Add need_wakeup support to the Mellanox mlx5 driver
+> 
+> Thanks: Magnus
+> 
+> Magnus Karlsson (6):
+>    xsk: replace ndo_xsk_async_xmit with ndo_xsk_wakeup
+>    xsk: add support for need_wakeup flag in AF_XDP rings
+>    i40e: add support for AF_XDP need_wakeup feature
+>    ixgbe: add support for AF_XDP need_wakeup feature
+>    libbpf: add support for need_wakeup flag in AF_XDP part
+>    samples/bpf: add use of need_wakeup flag in xdpsock
+> 
+> Maxim Mikityanskiy (2):
+>    net/mlx5e: Move the SW XSK code from NAPI poll to a separate function
+>    net/mlx5e: Add AF_XDP need_wakeup support
+> 
+>   drivers/net/ethernet/intel/i40e/i40e_main.c        |   5 +-
+>   drivers/net/ethernet/intel/i40e/i40e_xsk.c         |  25 ++-
+>   drivers/net/ethernet/intel/i40e/i40e_xsk.h         |   2 +-
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      |   5 +-
+>   .../net/ethernet/intel/ixgbe/ixgbe_txrx_common.h   |   2 +-
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c       |  22 ++-
+>   .../net/ethernet/mellanox/mlx5/core/en/xsk/rx.h    |  14 ++
+>   .../net/ethernet/mellanox/mlx5/core/en/xsk/tx.c    |   2 +-
+>   .../net/ethernet/mellanox/mlx5/core/en/xsk/tx.h    |  14 +-
+>   drivers/net/ethernet/mellanox/mlx5/core/en_main.c  |   2 +-
+>   drivers/net/ethernet/mellanox/mlx5/core/en_rx.c    |   7 +-
+>   drivers/net/ethernet/mellanox/mlx5/core/en_txrx.c  |  27 ++-
+>   include/linux/netdevice.h                          |  14 +-
+>   include/net/xdp_sock.h                             |  33 +++-
+>   include/uapi/linux/if_xdp.h                        |  13 ++
+>   net/xdp/xdp_umem.c                                 |  12 +-
+>   net/xdp/xsk.c                                      | 149 +++++++++++++---
+>   net/xdp/xsk.h                                      |  13 ++
+>   net/xdp/xsk_queue.h                                |   1 +
+>   samples/bpf/xdpsock_user.c                         | 192 +++++++++++++--------
+>   tools/include/uapi/linux/if_xdp.h                  |  13 ++
+>   tools/lib/bpf/xsk.c                                |   4 +
+>   tools/lib/bpf/xsk.h                                |   6 +
+>   23 files changed, 462 insertions(+), 115 deletions(-)
+> 
 > --
-> ==============================================
-> Mr. Shannon Nelson         Parents can't afford to be squeamish.
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 2.7.4
+> 
 
-
-
---
-==============================================
-Mr. Shannon Nelson         Parents can't afford to be squeamish.
+Series applied, thanks everyone!
