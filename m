@@ -1,204 +1,111 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sun, 18 Aug 2019 06:22:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- ad67e9a3882a272c4b5cc4c3b945fafb62d09fff
-Message-ID: <5d587e0d.RvhNUjdcGo7Fu9LY%lkp@intel.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Sun, 18 Aug 2019 20:36:33 +0000
+Subject: [Intel-wired-lan] x
+In-Reply-To: <CAP-MU4PKYRP0SpxDC7SgRGCjWAyyu0vHh5W5YAsjf=JseRkAqg@mail.gmail.com>
+References: <CAP-MU4MAwQd5bOGpJ=tu4iVB4j4FO6UWbkXg6ox34i7pb5DjQA@mail.gmail.com>
+ <9B4A1B1917080E46B64F07F2989DADD69AFFB063@ORSMSX115.amr.corp.intel.com>
+ <CAP-MU4PKYRP0SpxDC7SgRGCjWAyyu0vHh5W5YAsjf=JseRkAqg@mail.gmail.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD69AFFBD76@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: ad67e9a3882a272c4b5cc4c3b945fafb62d09fff  ice: shorten local and add debug prints
+The problem should be fixed with an NVM update but I'm unsure if your NVM already has the fix. Let me make sure with the Product AE.
 
-TIMEOUT after 1446m
+However, you're going to have to go directly to Cisco for the NVM updates since the cards look like they're from Cisco.
+
+Todd Fujinaka
+Software Application Engineer
+Datacenter Engineering Group
+Intel Corporation
+todd.fujinaka at intel.com
 
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+-----Original Message-----
+From: Shannon Nelson [mailto:shannon.lee.nelson at gmail.com] 
+Sent: Thursday, August 15, 2019 7:19 PM
+To: Fujinaka, Todd <todd.fujinaka@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] x
 
-configs timed out: 28
+On Thu, Aug 15, 2019 at 6:46 PM Fujinaka, Todd <todd.fujinaka@intel.com> wrote:
+>
+> x722? x550? Or is it a different part?
+>
+> I've seen something like this lately, but I'll need to know which Ethernet controller it is before I can narrow it down.
 
-alpha                            allmodconfig
-alpha                            allyesconfig
-i386                               tinyconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allyesconfig
-mips                                   jz4740
-mips                                     txx9
-nds32                            allmodconfig
-nds32                            allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-riscv                              tinyconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc                            allmodconfig
-sparc64                          allyesconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-xtensa                           allmodconfig
-xtensa                           allyesconfig
+Sorry about that short Subject text and lack of info... someone was passing this info to me in the midst of two or three other things going on and I hit <send> before I finished the text.
 
-configs tested: 143
+Since that's ixgbe printing the complaints, I'm pretty sure it isn't anything x722-ish.  I don't have access to the actual machine, but it is the same as this one:
 
-arm                         at91_dt_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm64                            allyesconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                 randconfig-h002-201932
-x86_64                 randconfig-h003-201932
-i386                   randconfig-h001-201932
-i386                   randconfig-h002-201932
-x86_64                 randconfig-h004-201932
-i386                   randconfig-h004-201932
-i386                   randconfig-h003-201932
-x86_64                 randconfig-h001-201932
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-i386                   randconfig-f004-201932
-x86_64                 randconfig-f004-201932
-i386                   randconfig-f001-201932
-x86_64                 randconfig-f002-201932
-i386                   randconfig-f002-201932
-i386                   randconfig-f003-201932
-x86_64                 randconfig-f003-201932
-x86_64                 randconfig-f001-201932
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                             allmodconfig
-s390                                defconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                             alldefconfig
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-powerpc                             defconfig
-ia64                                defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-parisc                            allnoconfig
-x86_64                 randconfig-a004-201932
-i386                   randconfig-a003-201932
-x86_64                 randconfig-a002-201932
-i386                   randconfig-a004-201932
-i386                   randconfig-a002-201932
-x86_64                 randconfig-a001-201932
-i386                   randconfig-a001-201932
-x86_64                 randconfig-a003-201932
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-x86_64                 randconfig-c003-201932
-x86_64                 randconfig-c002-201932
-i386                   randconfig-c004-201932
-x86_64                 randconfig-c004-201932
-i386                   randconfig-c003-201932
-i386                   randconfig-c001-201932
-i386                   randconfig-c002-201932
-x86_64                 randconfig-c001-201932
-x86_64                 randconfig-e004-201932
-i386                   randconfig-e004-201932
-x86_64                 randconfig-e002-201932
-i386                   randconfig-e003-201932
-x86_64                 randconfig-e003-201932
-x86_64                 randconfig-e001-201932
-i386                   randconfig-e002-201932
-i386                   randconfig-e001-201932
-xtensa                       common_defconfig
-openrisc                    or1ksim_defconfig
-nios2                         3c120_defconfig
-xtensa                          iss_defconfig
-c6x                        evmc6678_defconfig
-c6x                              allyesconfig
-nios2                         10m50_defconfig
-openrisc                 simple_smp_defconfig
-x86_64                           allmodconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                     edosk2674_defconfig
-m68k                           sun3_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-i386                   randconfig-d002-201932
-i386                   randconfig-d004-201932
-x86_64                 randconfig-d004-201932
-x86_64                 randconfig-d001-201932
-x86_64                 randconfig-d002-201932
-x86_64                 randconfig-d003-201932
-i386                   randconfig-d001-201932
-i386                   randconfig-d003-201932
-arm                              allmodconfig
-arm64                            allmodconfig
-x86_64                 randconfig-b002-201932
-i386                   randconfig-b003-201932
-i386                   randconfig-b004-201932
-i386                   randconfig-b002-201932
-x86_64                 randconfig-b001-201932
-i386                   randconfig-b001-201932
-x86_64                 randconfig-b004-201932
-x86_64                 randconfig-b003-201932
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-nds32                               defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arc                              allyesconfig
-microblaze                    nommu_defconfig
-powerpc                       ppc64_defconfig
-microblaze                      mmu_defconfig
-arc                                 defconfig
-powerpc                           allnoconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-x86_64                 randconfig-g003-201932
-i386                   randconfig-g004-201932
-x86_64                 randconfig-g001-201932
-x86_64                 randconfig-g002-201932
-i386                   randconfig-g001-201932
-x86_64                 randconfig-g004-201932
-i386                   randconfig-g002-201932
-i386                   randconfig-g003-201932
+65:00.0 Ethernet controller: Intel Corporation Ethernet Controller 10G X550T (rev 01)
+Subsystem: Cisco Systems Inc Device 01a3
+Capabilities: [e0] Vital Product Data
+Product Name: Cisco  X550-TX 10 Gig
+Read-only fields:
+[PN] Part number: X550-TX
+[V0] Vendor specific: MAP 1.86 V0.02 PHY 2.B.B MAC 3.15 [MN] Manufacture ID: 11 37 [RV] Reserved: checksum good, 0 byte(s) reserved
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+# ethtool -i eno1
+driver: ixgbe
+version: 5.1.0-k
+firmware-version: 0x80000af9, 0.385.33
+
+We have a bunch of these machines, and I'm told we're seeing this off and on in several of them.
+
+sln
+
+
+>
+> Todd Fujinaka
+> Software Application Engineer
+> Datacenter Engineering Group
+> Intel Corporation
+> todd.fujinaka at intel.com
+>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On 
+> Behalf Of Shannon Nelson
+> Sent: Thursday, August 15, 2019 2:35 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] x
+>
+> We've been occasionally seeing some of these messages recently on some of our machines after reboots.  Usually a powercycle clears it up.
+> Any hints as to what might be going on?
+>
+> [    2.570012] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver -
+> version 5.1.0-k-rh7.5
+> [    2.570016] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
+> [    4.883541] ixgbe 0000:65:00.0 (unregistered net_device): eeprom
+> read at offset 40 failed
+> [    7.112885] ixgbe 0000:65:00.0 (unregistered net_device): eeprom
+> read at offset 39 failed
+> [   11.571710] ixgbe 0000:65:00.0: The EEPROM Checksum Is Not Valid
+> [   11.571916] ixgbe: probe of 0000:65:00.0 failed with error -5
+> [   13.922688] ixgbe 0000:65:00.1 (unregistered net_device): eeprom
+> read at offset 40 failed
+> [   16.152080] ixgbe 0000:65:00.1 (unregistered net_device): eeprom
+> read at offset 39 failed
+> [   20.617460] ixgbe 0000:65:00.1: The EEPROM Checksum Is Not Valid
+> [   20.617639] ixgbe: probe of 0000:65:00.1 failed with error -5
+>
+>
+> Thanks,
+> sln
+>
+>
+> --
+> ==============================================
+> Mr. Shannon Nelson         Parents can't afford to be squeamish.
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+
+
+--
+==============================================
+Mr. Shannon Nelson         Parents can't afford to be squeamish.
