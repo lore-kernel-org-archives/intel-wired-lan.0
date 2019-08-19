@@ -1,40 +1,52 @@
-From: Wenwen Wang <wenwen@cs.uga.edu>
-Date: Sun, 11 Aug 2019 15:07:47 -0500
-Subject: [Intel-wired-lan] [PATCH] net: ixgbe: fix memory leaks
-Message-ID: <1565554067-4994-1-git-send-email-wenwen@cs.uga.edu>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Mon, 19 Aug 2019 09:39:28 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/5] Add support for SKIP_BPF
+ flag for AF_XDP sockets
+In-Reply-To: <331CAEDB-776A-4928-93EF-F45F1339848F@gmail.com>
+References: <1565840783-8269-1-git-send-email-sridhar.samudrala@intel.com>
+ <bebfb097-5357-91d8-ebc7-2f8ede392ad7@intel.com>
+ <cc3a09eb-bcb8-a6e1-7175-77bddaf10c11@intel.com>
+ <CAJ+HfNj=devuEky3VwbibA-j+o=bKi4Gg=MeHsuuDGAKc9p2Vw@mail.gmail.com>
+ <331CAEDB-776A-4928-93EF-F45F1339848F@gmail.com>
+Message-ID: <CAJ+HfNgeSYRuQ8+80zepsAj8f+gdXEqsnbebuvmJggYOBUsj9w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In ixgbe_configure_clsu32(), 'jump', 'input', and 'mask' are allocated
-through kzalloc() respectively in a for loop body. Then,
-ixgbe_clsu32_build_input() is invoked to build the input. If this process
-fails, next iteration of the for loop will be executed. However, the
-allocated 'jump', 'input', and 'mask' are not deallocated on this execution
-path, leading to memory leaks.
+On Sat, 17 Aug 2019 at 00:08, Jonathan Lemon <jonathan.lemon@gmail.com> wrote:
+> On 16 Aug 2019, at 6:32, Bj?rn T?pel wrote:
+[...]
+> >
+> > Today, from a driver perspective, to enable XDP you pass a struct
+> > bpf_prog pointer via the ndo_bpf. The program get executed in
+> > BPF_PROG_RUN (via bpf_prog_run_xdp) from include/linux/filter.h.
+> >
+> > I think it's possible to achieve what you're doing w/o *any* driver
+> > modification. Pass a special, invalid, pointer to the driver (say
+> > (void *)0x1 or smth more elegant), which has a special handling in
+> > BPF_RUN_PROG e.g. setting a per-cpu state and return XDP_REDIRECT. The
+> > per-cpu state is picked up in xdp_do_redirect and xdp_flush.
+> >
+> > An approach like this would be general, and apply to all modes
+> > automatically.
+> >
+> > Thoughts?
+>
+> All the default program does is check that the map entry contains a xsk,
+> and call bpf_redirect_map().  So this is pretty much the same as above,
+> without any special case handling.
+>
+> Why would this be so expensive?  Is the JIT compilation time being
+> counted?
 
-Signed-off-by: Wenwen Wang <wenwen@cs.uga.edu>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 4 ++++
- 1 file changed, 4 insertions(+)
+No, not the JIT compilation time, only the fast-path. The gain is from
+removing the indirect call (hitting a retpoline) when calling the XDP
+program, and reducing code from xdp_do_redirect/xdp_flush.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index cbaf712..6b7ea87 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -9490,6 +9490,10 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 				jump->mat = nexthdr[i].jump;
- 				adapter->jump_tables[link_uhtid] = jump;
- 				break;
-+			} else {
-+				kfree(mask);
-+				kfree(input);
-+				kfree(jump);
- 			}
- 		}
- 		return 0;
--- 
-2.7.4
+But, as Jakub pointed out, the XDP batching work by Maciej, might
+reduce the retpoline impact quite a bit.
 
+
+Bj?rn
