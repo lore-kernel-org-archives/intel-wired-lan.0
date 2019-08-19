@@ -1,10 +1,10 @@
 From: Tom Herbert <tom@herbertland.com>
-Date: Mon, 19 Aug 2019 15:44:22 -0700
-Subject: [Intel-wired-lan] [PATCH v3 net-next 4/7] ip6tlvs: Registration of
- TLV handlers and parameters
+Date: Mon, 19 Aug 2019 15:44:24 -0700
+Subject: [Intel-wired-lan] [PATCH v3 net-next 6/7] ip6tlvs: Add netlink
+ interface
 In-Reply-To: <1566254665-5200-1-git-send-email-tom@herbertland.com>
 References: <1566254665-5200-1-git-send-email-tom@herbertland.com>
-Message-ID: <1566254665-5200-5-git-send-email-tom@herbertland.com>
+Message-ID: <1566254665-5200-7-git-send-email-tom@herbertland.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,696 +13,472 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Tom Herbert <tom@quantonium.net>
 
-Create a single TLV parameter table that holds meta information for IPv6
-Hop-by-Hop and Destination TLVs. The data structure is composed of a 256
-element array of u8's (one entry for each TLV type to allow O(1)
-lookup). Each entry provides an offset into an array of TLV proc data
-structures which follows the array of u8s. The TLV proc data structure
-contains parameters and handler functions for receiving and transmitting
-TLVs. The zeroth element in the TLV proc array provides default
-parameters for TLVs.
-
-A class attribute indicates the type of extension header in which the
-TLV may be used (e.g. Hop-by-Hop options, Destination options, or
-Destination options before the routing header).
-
-Functions are defined to manipulate entries in the TLV parameter table.
-
-* tlv_{set|unset}_proc set a TLV proc entry (ops and parameters)
-* tlv_{set|unset}_params set parameters only
-
-Receive TLV lookup and processing is modified to be a lookup in the TLV
-parameter table. An init table containing parameters for TLVs supported
-by the kernel is used to initialize the TLV table.
+Add a netlink interface to manage the TX TLV parameters. Managed
+parameters include those for validating and sending TLVs being sent
+such as alignment, TLV ordering, length limits, etc.
 
 Signed-off-by: Tom Herbert <tom@herbertland.com>
 ---
- include/net/ipeh.h         | 107 ++++++++++++++++--
- include/net/ipv6.h         |   3 +
- include/uapi/linux/ipeh.h  |  16 +++
- net/ipv6/exthdrs.c         |  14 ++-
- net/ipv6/exthdrs_common.c  | 271 +++++++++++++++++++++++++++++++++++++++++----
- net/ipv6/exthdrs_options.c |  63 +++++++----
- 6 files changed, 421 insertions(+), 53 deletions(-)
- create mode 100644 include/uapi/linux/ipeh.h
+ include/net/ipeh.h         |  16 +++
+ include/net/ipv6.h         |   1 +
+ include/uapi/linux/in6.h   |   6 ++
+ include/uapi/linux/ipeh.h  |  29 ++++++
+ net/ipv6/exthdrs_common.c  | 238 +++++++++++++++++++++++++++++++++++++++++++++
+ net/ipv6/exthdrs_options.c |  81 ++++++++++++++-
+ 6 files changed, 369 insertions(+), 2 deletions(-)
 
 diff --git a/include/net/ipeh.h b/include/net/ipeh.h
-index c1aa7b6..aaa2910 100644
+index de6d9d0..8474a43 100644
 --- a/include/net/ipeh.h
 +++ b/include/net/ipeh.h
-@@ -11,13 +11,105 @@
-  *     and false, if it failed.
-  *     It MUST NOT touch skb->h.
-  */
--struct tlvtype_proc {
--	int	type;
--	bool	(*func)(struct sk_buff *skb, int offset);
-+struct tlv_ops {
-+	bool	(*func)(unsigned int class, struct sk_buff *skb, int offset);
- };
+@@ -3,6 +3,7 @@
+ #define _NET_IPEH_H
  
--extern const struct tlvtype_proc tlvprocdestopt_lst[];
--extern const struct tlvtype_proc tlvprochopopt_lst[];
-+struct tlv_rx_params {
-+	unsigned char class : 4;
-+};
-+
-+struct tlv_tx_params {
-+};
-+
-+struct tlv_params {
-+	struct tlv_rx_params r;
-+	struct tlv_tx_params t;
-+};
-+
-+struct tlv_proc {
-+	struct tlv_ops ops;
-+	struct tlv_params params;
-+};
-+
-+struct tlv_type {
-+	struct tlv_proc proc;
-+};
-+
-+struct tlv_proc_init {
-+	int type;
-+	struct tlv_proc proc;
-+};
-+
-+struct tlv_param_table_data {
-+	unsigned char entries[256];
-+	unsigned char count;
-+	struct rcu_head rcu;
-+	struct tlv_type types[0];
-+};
-+
-+struct tlv_param_table {
-+	struct tlv_param_table_data __rcu *data;
-+};
-+
-+extern struct tlv_param_table ipv6_tlv_param_table;
-+
-+int __ipeh_tlv_set(struct tlv_param_table *tlv_param_table,
-+		   unsigned char type, const struct tlv_params *params,
-+		   const struct tlv_ops *ops);
-+
-+static inline int ipeh_tlv_set_params(struct tlv_param_table *tlv_param_table,
-+				      unsigned char type,
-+				      const struct tlv_params *params)
-+{
-+	return __ipeh_tlv_set(tlv_param_table, type, params, NULL);
-+}
-+
-+static inline int ipeh_tlv_set_proc(struct tlv_param_table *tlv_param_table,
-+			       unsigned char type,
-+			       const struct tlv_proc *proc)
-+{
-+	return __ipeh_tlv_set(tlv_param_table, type,
-+			      &proc->params, &proc->ops);
-+}
-+
-+int __ipeh_tlv_unset(struct tlv_param_table *tlv_param_table,
-+		     unsigned char type, bool params_only);
-+
-+static inline int ipeh_tlv_unset_params(struct tlv_param_table *tlv_param_table,
-+					unsigned char type)
-+{
-+	return __ipeh_tlv_unset(tlv_param_table, type, true);
-+}
-+
-+static inline int ipeh_tlv_unset_proc(struct tlv_param_table *tlv_param_table,
-+				      unsigned char type)
-+{
-+	return __ipeh_tlv_unset(tlv_param_table, type, false);
-+}
-+
-+/* ipeh_tlv_get_proc_by_type assumes rcu_read_lock is held */
-+static inline struct tlv_proc *ipeh_tlv_get_proc_by_type(
-+		struct tlv_param_table *tlv_param_table, unsigned char type)
-+{
-+	struct tlv_param_table_data *tpt =
-+				rcu_dereference(tlv_param_table->data);
-+
-+	return &tpt->types[tpt->entries[type]].proc;
-+}
-+
-+/* ipeh_tlv_get_proc assumes rcu_read_lock is held */
-+static inline struct tlv_proc *ipeh_tlv_get_proc(
-+		struct tlv_param_table *tlv_param_table,
-+		const __u8 *tlv)
-+{
-+	return ipeh_tlv_get_proc_by_type(tlv_param_table, tlv[0]);
-+}
-+
-+int ipeh_exthdrs_init(struct tlv_param_table *tlv_param_table,
-+		      const struct tlv_proc_init *init_params,
-+		      int num_init_params);
-+void ipeh_exthdrs_fini(struct tlv_param_table *tlv_param_table);
+ #include <linux/skbuff.h>
++#include <net/genetlink.h>
  
- struct ipv6_txoptions;
- struct ipv6_opt_hdr;
-@@ -51,8 +143,9 @@ enum ipeh_parse_errors {
- #define IPEH_TLV_PAD1	0
- #define IPEH_TLV_PADN	1
+ /*
+  *     Parsing tlv encoded headers.
+@@ -106,6 +107,21 @@ static inline int ipeh_tlv_unset_proc(struct tlv_param_table *tlv_param_table,
+ 	return __ipeh_tlv_unset(tlv_param_table, type, false);
+ }
  
--bool ipeh_parse_tlv(const struct tlvtype_proc *procs, struct sk_buff *skb,
--		    int max_count, int off, int len,
-+bool ipeh_parse_tlv(unsigned int class,
-+		    struct tlv_param_table *tlv_param_table,
-+		    struct sk_buff *skb, int max_count, int off, int len,
- 		    bool (*parse_error)(struct sk_buff *skb,
- 					int off, enum ipeh_parse_errors error));
- 
++extern const struct nla_policy ipeh_tlv_nl_policy[];
++
++int ipeh_tlv_nl_cmd_set(struct tlv_param_table *tlv_param_table,
++			struct genl_family *tlv_nl_family,
++			struct sk_buff *skb, struct genl_info *info);
++int ipeh_tlv_nl_cmd_unset(struct tlv_param_table *tlv_param_table,
++			  struct genl_family *tlv_nl_family,
++			  struct sk_buff *skb, struct genl_info *info);
++int ipeh_tlv_nl_cmd_get(struct tlv_param_table *tlv_param_table,
++			struct genl_family *tlv_nl_family,
++			struct sk_buff *skb, struct genl_info *info);
++int ipeh_tlv_nl_dump(struct tlv_param_table *tlv_param_table,
++		     struct genl_family *tlv_nl_family,
++		     struct sk_buff *skb, struct netlink_callback *cb);
++
+ /* ipeh_tlv_get_proc_by_type assumes rcu_read_lock is held */
+ static inline struct tlv_proc *ipeh_tlv_get_proc_by_type(
+ 		struct tlv_param_table *tlv_param_table, unsigned char type)
 diff --git a/include/net/ipv6.h b/include/net/ipv6.h
-index 1c6878b..07bafad 100644
+index 07bafad..51517a1 100644
 --- a/include/net/ipv6.h
 +++ b/include/net/ipv6.h
-@@ -429,6 +429,9 @@ int ip6_ra_control(struct sock *sk, int sel);
- 
- int ipv6_parse_hopopts(struct sk_buff *skb);
- 
-+int ipv6_exthdrs_options_init(void);
-+void ipv6_exthdrs_options_exit(void);
-+
- bool ipv6_opt_accepted(const struct sock *sk, const struct sk_buff *skb,
- 		       const struct inet6_skb_parm *opt);
- struct ipv6_txoptions *ipv6_update_options(struct sock *sk,
-diff --git a/include/uapi/linux/ipeh.h b/include/uapi/linux/ipeh.h
-new file mode 100644
-index 0000000..c4302b7
---- /dev/null
-+++ b/include/uapi/linux/ipeh.h
-@@ -0,0 +1,16 @@
-+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-+/* ipeh.h - IP extension header TLV management */
-+
-+#ifndef _UAPI_LINUX_IPEH_H
-+#define _UAPI_LINUX_IPEH_H
-+
-+/* Flags for EH type that can use a TLV option */
-+#define IPEH_TLV_CLASS_FLAG_HOPOPT	BIT(0)
-+#define IPEH_TLV_CLASS_FLAG_RTRDSTOPT	BIT(1)
-+#define IPEH_TLV_CLASS_FLAG_DSTOPT	BIT(2)
-+
-+#define IPEH_TLV_CLASS_FLAG_MASK (IPEH_TLV_CLASS_FLAG_HOPOPT |		\
-+				  IPEH_TLV_CLASS_FLAG_RTRDSTOPT |	\
-+				  IPEH_TLV_CLASS_FLAG_DSTOPT)
-+
-+#endif /* _UAPI_LINUX_IPEH_H */
-diff --git a/net/ipv6/exthdrs.c b/net/ipv6/exthdrs.c
-index 939d27c..0847d49 100644
---- a/net/ipv6/exthdrs.c
-+++ b/net/ipv6/exthdrs.c
-@@ -47,6 +47,7 @@
- #ifdef CONFIG_IPV6_SEG6_HMAC
- #include <net/seg6_hmac.h>
- #endif
-+#include <uapi/linux/ipeh.h>
- 
- #include <linux/uaccess.h>
- 
-@@ -131,7 +132,8 @@ static int ipv6_destopt_rcv(struct sk_buff *skb)
- 	dstbuf = opt->dst1;
- #endif
- 
--	if (ipeh_parse_tlv(tlvprocdestopt_lst, skb,
-+	if (ipeh_parse_tlv(IPEH_TLV_CLASS_FLAG_DSTOPT,
-+			   &ipv6_tlv_param_table, skb,
- 			   init_net.ipv6.sysctl.max_dst_opts_cnt,
- 			   2, extlen - 2, ipv6_parse_error)) {
- 		skb->transport_header += extlen;
-@@ -514,8 +516,13 @@ int __init ipv6_exthdrs_init(void)
- 	if (ret)
- 		goto out_destopt;
- 
-+	ret = ipv6_exthdrs_options_init();
-+	if (ret)
-+		goto out_nodata;
- out:
- 	return ret;
-+out_nodata:
-+	inet6_del_protocol(&nodata_protocol, IPPROTO_NONE);
- out_destopt:
- 	inet6_del_protocol(&destopt_protocol, IPPROTO_DSTOPTS);
- out_rthdr:
-@@ -525,6 +532,7 @@ int __init ipv6_exthdrs_init(void)
- 
- void ipv6_exthdrs_exit(void)
- {
-+	ipv6_exthdrs_options_exit();
- 	inet6_del_protocol(&nodata_protocol, IPPROTO_NONE);
- 	inet6_del_protocol(&destopt_protocol, IPPROTO_DSTOPTS);
- 	inet6_del_protocol(&rthdr_protocol, IPPROTO_ROUTING);
-@@ -555,8 +563,8 @@ int ipv6_parse_hopopts(struct sk_buff *skb)
- 		goto fail_and_free;
- 
- 	opt->flags |= IP6SKB_HOPBYHOP;
--	if (ipeh_parse_tlv(tlvprochopopt_lst, skb,
--			   init_net.ipv6.sysctl.max_hbh_opts_cnt,
-+	if (ipeh_parse_tlv(IPEH_TLV_CLASS_FLAG_HOPOPT, &ipv6_tlv_param_table,
-+			   skb, init_net.ipv6.sysctl.max_hbh_opts_cnt,
- 			   2, extlen - 2, ipv6_parse_error)) {
- 		skb->transport_header += extlen;
- 		opt = IP6CB(skb);
-diff --git a/net/ipv6/exthdrs_common.c b/net/ipv6/exthdrs_common.c
-index 99a0911..cc8db9e 100644
---- a/net/ipv6/exthdrs_common.c
-+++ b/net/ipv6/exthdrs_common.c
-@@ -150,13 +150,14 @@ EXPORT_SYMBOL_GPL(ipeh_fixup_options);
-  *   - off is offset from skb_transport_header where first TLV is
-  *   - len is length of TLV block
+@@ -14,6 +14,7 @@
+ #include <linux/jhash.h>
+ #include <linux/refcount.h>
+ #include <linux/jump_label_ratelimit.h>
++#include <net/genetlink.h>
+ #include <net/if_inet6.h>
+ #include <net/ndisc.h>
+ #include <net/flow.h>
+diff --git a/include/uapi/linux/in6.h b/include/uapi/linux/in6.h
+index 9f2273a..d5fe3d9 100644
+--- a/include/uapi/linux/in6.h
++++ b/include/uapi/linux/in6.h
+@@ -297,4 +297,10 @@ struct in6_flowlabel_req {
+  * ...
+  * MRT6_MAX
   */
--bool ipeh_parse_tlv(const struct tlvtype_proc *procs, struct sk_buff *skb,
--		    int max_count, int off, int len,
-+bool ipeh_parse_tlv(unsigned int class,
-+		    struct tlv_param_table *tlv_param_table,
-+		    struct sk_buff *skb, int max_count, int off, int len,
- 		    bool (*parse_error)(struct sk_buff *skb,
- 					int off, enum ipeh_parse_errors error))
- {
- 	const unsigned char *nh = skb_network_header(skb);
--	const struct tlvtype_proc *curr;
-+	const struct tlv_proc *curr;
- 	bool disallow_unknowns = false;
- 	int tlv_count = 0;
- 	int padlen = 0;
-@@ -168,8 +169,10 @@ bool ipeh_parse_tlv(const struct tlvtype_proc *procs, struct sk_buff *skb,
- 
- 	if (skb_transport_offset(skb) + off + len > skb_headlen(skb)) {
- 		if (!parse_error(skb, skb_transport_offset(skb),
--				 IPEH_PARSE_ERR_EH_TOOBIG))
--			goto bad;
-+				 IPEH_PARSE_ERR_EH_TOOBIG)) {
-+			kfree_skb(skb);
-+			return false;
-+		}
- 
- 		len = skb_headlen(skb) - skb_transport_offset(skb) - off;
- 	}
-@@ -177,6 +180,8 @@ bool ipeh_parse_tlv(const struct tlvtype_proc *procs, struct sk_buff *skb,
- 	/* ops function based offset on network header */
- 	off += skb_network_header_len(skb);
- 
-+	rcu_read_lock();
 +
- 	while (len > 0) {
- 		int optlen = nh[off + 1] + 2;
- 		int i;
-@@ -221,26 +226,22 @@ bool ipeh_parse_tlv(const struct tlvtype_proc *procs, struct sk_buff *skb,
- 
- 			tlv_count++;
- 			if (tlv_count > max_count &&
--			    parse_error(skb, off, IPEH_PARSE_ERR_OPT_TOOMANY))
-+			    !parse_error(skb, off, IPEH_PARSE_ERR_OPT_TOOMANY))
- 				goto bad;
- 
--			for (curr = procs; curr->type >= 0; curr++) {
--				if (curr->type == nh[off]) {
--					/* type specific length/alignment
--					 * checks will be performed in the
--					 * func().
--					 */
--					if (curr->func(skb, off) == false)
--						return false;
--					break;
--				}
--			}
--			if (curr->type < 0 &&
--			    !parse_error(skb, off,
-+			curr = ipeh_tlv_get_proc(tlv_param_table, &nh[off]);
-+			if ((curr->params.r.class & class) && curr->ops.func) {
-+				/* Handler will apply additional checks to
-+				 * the TLV
-+				 */
-+				if (!curr->ops.func(class, skb, off))
-+					return false;
-+			} else if (!parse_error(skb, off,
- 					 disallow_unknowns ?
- 						IPEH_PARSE_ERR_OPT_UNK_DISALW :
--						IPEH_PARSE_ERR_OPT_UNK))
-+						IPEH_PARSE_ERR_OPT_UNK)) {
- 				goto bad;
-+			}
- 
- 			padlen = 0;
- 			break;
-@@ -249,10 +250,238 @@ bool ipeh_parse_tlv(const struct tlvtype_proc *procs, struct sk_buff *skb,
- 		len -= optlen;
- 	}
- 
--	if (len == 0)
-+	if (len == 0) {
-+		rcu_read_unlock();
- 		return true;
-+	}
- bad:
-+	rcu_read_unlock();
- 	kfree_skb(skb);
- 	return false;
- }
- EXPORT_SYMBOL(ipeh_parse_tlv);
++ /* NETLINK_GENERIC related info for IPv6 TLVs */
 +
-+/* TLV parameter table functions and structures */
++#define IPV6_TLV_GENL_NAME		"ipv6-tlv"
++#define IPV6_TLV_GENL_VERSION		0x1
 +
-+/* Default (unset) values for TLV parameters */
-+static const struct tlv_proc tlv_default_proc = {
+ #endif /* _UAPI_LINUX_IN6_H */
+diff --git a/include/uapi/linux/ipeh.h b/include/uapi/linux/ipeh.h
+index dbf0728..bac36a7 100644
+--- a/include/uapi/linux/ipeh.h
++++ b/include/uapi/linux/ipeh.h
+@@ -21,4 +21,33 @@ enum {
+ 	IPEH_TLV_PERM_MAX = IPEH_TLV_PERM_NO_CHECK
+ };
+ 
++/* NETLINK_GENERIC related info for IP TLVs */
++
++enum {
++	IPEH_TLV_ATTR_UNSPEC,
++	IPEH_TLV_ATTR_TYPE,			/* u8, > 1 */
++	IPEH_TLV_ATTR_ORDER,			/* u16 */
++	IPEH_TLV_ATTR_ADMIN_PERM,		/* u8, perm value */
++	IPEH_TLV_ATTR_USER_PERM,		/* u8, perm value */
++	IPEH_TLV_ATTR_CLASS,			/* u8, 3 bit flags */
++	IPEH_TLV_ATTR_ALIGN_MULT,		/* u8, 1 to 16 */
++	IPEH_TLV_ATTR_ALIGN_OFF,		/* u8, 0 to 15 */
++	IPEH_TLV_ATTR_MIN_DATA_LEN,		/* u8 (option data length) */
++	IPEH_TLV_ATTR_MAX_DATA_LEN,		/* u8 (option data length) */
++	IPEH_TLV_ATTR_DATA_LEN_MULT,		/* u8, 1 to 16 */
++	IPEH_TLV_ATTR_DATA_LEN_OFF,		/* u8, 0 to 15 */
++
++	__IPEH_TLV_ATTR_MAX,
 +};
 +
-+static DEFINE_MUTEX(tlv_mutex);
++#define IPEH_TLV_ATTR_MAX              (__IPEH_TLV_ATTR_MAX - 1)
 +
-+static size_t tlv_param_table_size(unsigned char count)
++enum {
++	IPEH_TLV_CMD_SET,
++	IPEH_TLV_CMD_UNSET,
++	IPEH_TLV_CMD_GET,
++
++	__IPEH_TLV_CMD_MAX,
++};
++
+ #endif /* _UAPI_LINUX_IPEH_H */
+diff --git a/net/ipv6/exthdrs_common.c b/net/ipv6/exthdrs_common.c
+index 791f6e4..b44c6fd 100644
+--- a/net/ipv6/exthdrs_common.c
++++ b/net/ipv6/exthdrs_common.c
+@@ -454,6 +454,244 @@ int __ipeh_tlv_unset(struct tlv_param_table *tlv_param_table,
+ }
+ EXPORT_SYMBOL(__ipeh_tlv_unset);
+ 
++const struct nla_policy ipeh_tlv_nl_policy[IPEH_TLV_ATTR_MAX + 1] = {
++	[IPEH_TLV_ATTR_TYPE] =		{ .type = NLA_U8, },
++	[IPEH_TLV_ATTR_ORDER] =		{ .type = NLA_U16, },
++	[IPEH_TLV_ATTR_ADMIN_PERM] =	{ .type = NLA_U8, },
++	[IPEH_TLV_ATTR_USER_PERM] =	{ .type = NLA_U8, },
++	[IPEH_TLV_ATTR_CLASS] =		{ .type = NLA_U8, },
++	[IPEH_TLV_ATTR_ALIGN_MULT] =	{ .type = NLA_U8, },
++	[IPEH_TLV_ATTR_ALIGN_OFF] =	{ .type = NLA_U8, },
++	[IPEH_TLV_ATTR_MIN_DATA_LEN] =	{ .type = NLA_U8, },
++	[IPEH_TLV_ATTR_MAX_DATA_LEN] =	{ .type = NLA_U8, },
++	[IPEH_TLV_ATTR_DATA_LEN_OFF] =	{ .type = NLA_U8, },
++	[IPEH_TLV_ATTR_DATA_LEN_MULT] =	{ .type = NLA_U8, },
++};
++EXPORT_SYMBOL(ipeh_tlv_nl_policy);
++
++int ipeh_tlv_nl_cmd_set(struct tlv_param_table *tlv_param_table,
++			struct genl_family *tlv_nl_family,
++			struct sk_buff *skb, struct genl_info *info)
 +{
-+	return sizeof(struct tlv_param_table_data) +
-+	    (count * sizeof(struct tlv_type));
-+}
++	struct tlv_params new_params;
++	struct tlv_proc *tproc;
++	unsigned char type;
++	unsigned int v;
++	int retv = -EINVAL;
 +
-+static void tlv_param_table_release(struct rcu_head *rcu)
-+{
-+	struct tlv_param_table_data *tpt =
-+	    container_of(rcu, struct tlv_param_table_data, rcu);
++	if (!info->attrs[IPEH_TLV_ATTR_TYPE])
++		return -EINVAL;
 +
-+	kvfree(tpt);
-+}
-+
-+/* mutex held */
-+static int __tlv_set_one(struct tlv_param_table *tlv_param_table,
-+			 unsigned char type, const struct tlv_params *params,
-+			 const struct tlv_ops *ops)
-+{
-+	struct tlv_param_table_data *tpt, *told;
-+	struct tlv_type *ttype;
-+
-+	told = rcu_dereference_protected(tlv_param_table->data,
-+					 lockdep_is_held(&tlv_mutex));
-+
-+	/* Create new TLV table. If there is no exsiting entry then we are
-+	 * adding a new one to the table, else we're modifying an entry.
-+	 */
-+	tpt = kvmalloc(tlv_param_table_size(told->count + !told->entries[type]),
-+		       GFP_KERNEL);
-+	if (!tpt)
-+		return -ENOMEM;
-+
-+	memcpy(tpt, told, tlv_param_table_size(told->count));
-+
-+	if (!told->entries[type]) {
-+		memset(&tpt->types[told->count], 0, sizeof(struct tlv_type));
-+		tpt->entries[type] = told->count;
-+		tpt->count = told->count + 1;
-+	}
-+
-+	ttype = &tpt->types[tpt->entries[type]];
-+
-+	ttype->proc.params = *params;
-+	ttype->proc.ops = ops ? *ops : tlv_default_proc.ops;
-+
-+	rcu_assign_pointer(tlv_param_table->data, tpt);
-+	call_rcu(&told->rcu, tlv_param_table_release);
-+
-+	return 0;
-+}
-+
-+int __ipeh_tlv_set(struct tlv_param_table *tlv_param_table, unsigned char type,
-+		   const struct tlv_params *params, const struct tlv_ops *ops)
-+{
-+	int retv;
-+
++	type = nla_get_u8(info->attrs[IPEH_TLV_ATTR_TYPE]);
 +	if (type < 2)
 +		return -EINVAL;
 +
-+	mutex_lock(&tlv_mutex);
-+	retv = __tlv_set_one(tlv_param_table, type, params, ops);
-+	mutex_unlock(&tlv_mutex);
++	rcu_read_lock();
 +
-+	return retv;
-+}
-+EXPORT_SYMBOL(__ipeh_tlv_set);
++	/* Base new parameters on existing ones */
++	tproc = ipeh_tlv_get_proc_by_type(tlv_param_table, type);
++	new_params = tproc->params;
 +
-+/* mutex held */
-+static int __tlv_unset_one(struct tlv_param_table *tlv_param_table,
-+			   unsigned char type)
-+{
-+	struct tlv_param_table_data *tpt, *told;
-+	unsigned int i, pos;
-+
-+	told = rcu_dereference_protected(tlv_param_table->data,
-+					 lockdep_is_held(&tlv_mutex));
-+
-+	if (!told->entries[type])
-+		return 0;
-+
-+	tpt = kvmalloc(tlv_param_table_size(told->count - 1),
-+		       GFP_KERNEL);
-+	if (!tpt)
-+		return -ENOMEM;
-+
-+	pos = told->entries[type];
-+
-+	memcpy(tpt->types, told->types, pos * sizeof(struct tlv_type));
-+	memcpy(&tpt->types[pos], &told->types[pos + 1],
-+	       (told->count - pos - 1) * sizeof(struct tlv_type));
-+
-+	for (i = 0; i < 256; i++) {
-+		if (told->entries[i] > pos)
-+			tpt->entries[i] = told->entries[i] - 1;
-+		else
-+			tpt->entries[i] = told->entries[i];
++	if (info->attrs[IPEH_TLV_ATTR_ORDER]) {
++		v = nla_get_u16(info->attrs[IPEH_TLV_ATTR_ORDER]);
++		new_params.t.preferred_order = v;
 +	}
 +
-+	/* Clear entry for type being unset (point to default params) */
-+	tpt->entries[type] = 0;
++	if (info->attrs[IPEH_TLV_ATTR_ADMIN_PERM]) {
++		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_ADMIN_PERM]);
++		if (v > IPEH_TLV_PERM_MAX)
++			goto out;
++		new_params.t.admin_perm = v;
++	}
 +
-+	tpt->count = told->count - 1;
++	if (info->attrs[IPEH_TLV_ATTR_USER_PERM]) {
++		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_USER_PERM]);
++		if (v > IPEH_TLV_PERM_MAX)
++			goto out;
++		new_params.t.user_perm = v;
++	}
 +
-+	rcu_assign_pointer(tlv_param_table->data, tpt);
-+	call_rcu(&told->rcu, tlv_param_table_release);
++	if (info->attrs[IPEH_TLV_ATTR_CLASS]) {
++		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_CLASS]);
++		if (!v || (v & ~IPEH_TLV_CLASS_FLAG_MASK))
++			goto out;
++		new_params.t.class = v;
++	}
++
++	if (info->attrs[IPEH_TLV_ATTR_ALIGN_MULT]) {
++		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_ALIGN_MULT]);
++		if (v > 16 || v < 1)
++			goto out;
++		new_params.t.align_mult = v - 1;
++	}
++
++	if (info->attrs[IPEH_TLV_ATTR_ALIGN_OFF]) {
++		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_ALIGN_OFF]);
++		if (v > 15)
++			goto out;
++		new_params.t.align_off = v;
++	}
++
++	if (info->attrs[IPEH_TLV_ATTR_MAX_DATA_LEN])
++		new_params.t.max_data_len =
++		    nla_get_u8(info->attrs[IPEH_TLV_ATTR_MAX_DATA_LEN]);
++
++	if (info->attrs[IPEH_TLV_ATTR_MIN_DATA_LEN])
++		new_params.t.min_data_len =
++		    nla_get_u8(info->attrs[IPEH_TLV_ATTR_MIN_DATA_LEN]);
++
++	if (info->attrs[IPEH_TLV_ATTR_DATA_LEN_MULT]) {
++		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_DATA_LEN_MULT]);
++		if (v > 16 || v < 1)
++			goto out;
++		new_params.t.data_len_mult = v - 1;
++	}
++
++	if (info->attrs[IPEH_TLV_ATTR_DATA_LEN_OFF]) {
++		v = nla_get_u8(info->attrs[IPEH_TLV_ATTR_DATA_LEN_OFF]);
++		if (v > 15)
++			goto out;
++		new_params.t.data_len_off = v;
++	}
++
++	retv = ipeh_tlv_set_params(tlv_param_table, type, &new_params);
++
++out:
++	rcu_read_unlock();
++	return retv;
++}
++EXPORT_SYMBOL(ipeh_tlv_nl_cmd_set);
++
++int ipeh_tlv_nl_cmd_unset(struct tlv_param_table *tlv_param_table,
++			  struct genl_family *tlv_nl_family,
++			  struct sk_buff *skb, struct genl_info *info)
++{
++	unsigned char type;
++
++	if (!info->attrs[IPEH_TLV_ATTR_TYPE])
++		return -EINVAL;
++
++	type = nla_get_u8(info->attrs[IPEH_TLV_ATTR_TYPE]);
++	if (type < 2)
++		return -EINVAL;
++
++	return ipeh_tlv_unset_params(tlv_param_table, type);
++}
++EXPORT_SYMBOL(ipeh_tlv_nl_cmd_unset);
++
++static int tlv_fill_info(struct tlv_proc *tproc, unsigned char type,
++			 struct sk_buff *msg, bool admin)
++{
++	struct tlv_params *tp = &tproc->params;
++	int ret = 0;
++
++	if (nla_put_u8(msg, IPEH_TLV_ATTR_TYPE, type) ||
++	    nla_put_u16(msg, IPEH_TLV_ATTR_ORDER, tp->t.preferred_order) ||
++	    nla_put_u8(msg, IPEH_TLV_ATTR_USER_PERM, tp->t.user_perm) ||
++	    (admin && nla_put_u8(msg, IPEH_TLV_ATTR_ADMIN_PERM,
++				 tp->t.admin_perm)) ||
++	    nla_put_u8(msg, IPEH_TLV_ATTR_CLASS, tp->t.class) ||
++	    nla_put_u8(msg, IPEH_TLV_ATTR_ALIGN_MULT, tp->t.align_mult + 1) ||
++	    nla_put_u8(msg, IPEH_TLV_ATTR_ALIGN_OFF, tp->t.align_off) ||
++	    nla_put_u8(msg, IPEH_TLV_ATTR_MIN_DATA_LEN, tp->t.min_data_len) ||
++	    nla_put_u8(msg, IPEH_TLV_ATTR_MAX_DATA_LEN, tp->t.max_data_len) ||
++	    nla_put_u8(msg, IPEH_TLV_ATTR_DATA_LEN_MULT,
++		       tp->t.data_len_mult + 1) ||
++	    nla_put_u8(msg, IPEH_TLV_ATTR_DATA_LEN_OFF, tp->t.data_len_off))
++		ret = -1;
++
++	return ret;
++}
++
++static int tlv_dump_info(struct tlv_proc *tproc, unsigned char type,
++			 struct genl_family *tlv_nl_family, u32 portid,
++			 u32 seq, u32 flags, struct sk_buff *skb, u8 cmd,
++			 bool admin)
++{
++	void *hdr;
++
++	hdr = genlmsg_put(skb, portid, seq, tlv_nl_family, flags, cmd);
++	if (!hdr)
++		return -ENOMEM;
++
++	if (tlv_fill_info(tproc, type, skb, admin) < 0) {
++		genlmsg_cancel(skb, hdr);
++		return -EMSGSIZE;
++	}
++
++	genlmsg_end(skb, hdr);
 +
 +	return 0;
 +}
 +
-+/* tlv_internal_proc_type is used to check it the TLV proc was set
-+ * internally. This is deduced by checking if any operations are defined.
-+ */
-+static bool tlv_internal_proc_type(struct tlv_proc *proc)
-+{
-+	return !!proc->ops.func;
-+}
-+
-+int __ipeh_tlv_unset(struct tlv_param_table *tlv_param_table,
-+		     unsigned char type, bool params_only)
++int ipeh_tlv_nl_cmd_get(struct tlv_param_table *tlv_param_table,
++			struct genl_family *tlv_nl_family,
++			struct sk_buff *skb, struct genl_info *info)
 +{
 +	struct tlv_proc *tproc;
-+	int retv;
++	struct sk_buff *msg;
++	unsigned char type;
++	int ret;
 +
++	if (!info->attrs[IPEH_TLV_ATTR_TYPE])
++		return -EINVAL;
++
++	type = nla_get_u8(info->attrs[IPEH_TLV_ATTR_TYPE]);
 +	if (type < 2)
 +		return -EINVAL;
 +
-+	mutex_lock(&tlv_mutex);
-+
-+	tproc = ipeh_tlv_get_proc_by_type(tlv_param_table, type);
-+
-+	if (params_only && tlv_internal_proc_type(tproc)) {
-+		/* TLV was set by internal source, so maintain the
-+		 * non-parameter fields (i.e. the operations).
-+		 */
-+		retv = __tlv_set_one(tlv_param_table, type,
-+				     &tlv_default_proc.params,
-+				     &tproc->ops);
-+	} else {
-+		retv = __tlv_unset_one(tlv_param_table, type);
-+	}
-+
-+	mutex_unlock(&tlv_mutex);
-+
-+	return retv;
-+}
-+EXPORT_SYMBOL(__ipeh_tlv_unset);
-+
-+int ipeh_exthdrs_init(struct tlv_param_table *tlv_param_table,
-+		      const struct tlv_proc_init *tlv_init_params,
-+		      int num_init_params)
-+{
-+	struct tlv_param_table_data *tpt;
-+	int pos = 0, i;
-+	size_t tsize;
-+
-+	tsize = tlv_param_table_size(num_init_params + 1);
-+
-+	tpt = kvmalloc(tsize, GFP_KERNEL);
-+	if (!tpt)
++	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
++	if (!msg)
 +		return -ENOMEM;
 +
-+	memset(tpt, 0, tsize);
++	rcu_read_lock();
 +
-+	/* Zeroth TLV proc entry is default */
-+	tpt->types[pos++].proc = tlv_default_proc;
++	tproc = ipeh_tlv_get_proc_by_type(tlv_param_table, type);
++	ret = tlv_dump_info(tproc, type, tlv_nl_family, info->snd_portid,
++			    info->snd_seq, 0, msg, info->genlhdr->cmd,
++			    netlink_capable(skb, CAP_NET_ADMIN));
 +
-+	for (i = 0; i < num_init_params; i++, pos++) {
-+		const struct tlv_proc_init *tpi = &tlv_init_params[i];
++	rcu_read_unlock();
 +
-+		if (WARN_ON(tpi->type < 2)) {
-+			 /* Padding TLV initialized? */
-+			goto err_inval;
-+		}
-+		if (WARN_ON(tpt->entries[tpi->type])) {
-+			/* TLV type already set */
-+			goto err_inval;
-+		}
-+
-+		tpt->types[pos].proc = tpi->proc;
-+		tpt->entries[tpi->type] = pos;
++	if (ret < 0) {
++		nlmsg_free(msg);
++		return ret;
 +	}
 +
-+	tpt->count = pos;
++	return genlmsg_reply(msg, info);
++}
++EXPORT_SYMBOL(ipeh_tlv_nl_cmd_get);
 +
-+	RCU_INIT_POINTER(tlv_param_table->data, tpt);
++int ipeh_tlv_nl_dump(struct tlv_param_table *tlv_param_table,
++		     struct genl_family *tlv_nl_family,
++		     struct sk_buff *skb, struct netlink_callback *cb)
++{
++	struct tlv_proc *tproc;
++	int idx = 0, ret, i;
++
++	rcu_read_lock();
++
++	for (i = 2; i < 256; i++) {
++		if (idx++ < cb->args[0])
++			continue;
++
++		tproc = ipeh_tlv_get_proc_by_type(tlv_param_table, i);
++		ret = tlv_dump_info(tproc, i, tlv_nl_family,
++				    NETLINK_CB(cb->skb).portid,
++				    cb->nlh->nlmsg_seq, NLM_F_MULTI,
++				    skb, IPEH_TLV_CMD_GET,
++				    netlink_capable(cb->skb, CAP_NET_ADMIN));
++		if (ret)
++			break;
++	}
++
++	rcu_read_unlock();
++
++	cb->args[0] = idx;
++	return skb->len;
++}
++EXPORT_SYMBOL(ipeh_tlv_nl_dump);
++
+ int ipeh_exthdrs_init(struct tlv_param_table *tlv_param_table,
+ 		      const struct tlv_proc_init *tlv_init_params,
+ 		      int num_init_params)
+diff --git a/net/ipv6/exthdrs_options.c b/net/ipv6/exthdrs_options.c
+index 3b50b58..c1889f6 100644
+--- a/net/ipv6/exthdrs_options.c
++++ b/net/ipv6/exthdrs_options.c
+@@ -6,6 +6,7 @@
+ #include <linux/socket.h>
+ #include <linux/types.h>
+ #include <net/calipso.h>
++#include <net/genetlink.h>
+ #include <net/ipv6.h>
+ #include <net/ip6_route.h>
+ #if IS_ENABLED(CONFIG_IPV6_MIP6)
+@@ -253,13 +254,89 @@ static const struct tlv_proc_init tlv_ipv6_init_params[] __initconst = {
+ struct tlv_param_table __rcu ipv6_tlv_param_table;
+ EXPORT_SYMBOL(ipv6_tlv_param_table);
+ 
++static int ipv6_tlv_nl_cmd_set(struct sk_buff *skb, struct genl_info *info);
++static int ipv6_tlv_nl_cmd_unset(struct sk_buff *skb, struct genl_info *info);
++static int ipv6_tlv_nl_cmd_get(struct sk_buff *skb, struct genl_info *info);
++static int ipv6_tlv_nl_dump(struct sk_buff *skb, struct netlink_callback *cb);
++
++static const struct genl_ops ipv6_tlv_nl_ops[] = {
++{
++	.cmd = IPEH_TLV_CMD_SET,
++	.doit = ipv6_tlv_nl_cmd_set,
++	.flags = GENL_ADMIN_PERM,
++},
++{
++	.cmd = IPEH_TLV_CMD_UNSET,
++	.doit = ipv6_tlv_nl_cmd_unset,
++	.flags = GENL_ADMIN_PERM,
++},
++{
++	.cmd = IPEH_TLV_CMD_GET,
++	.doit = ipv6_tlv_nl_cmd_get,
++	.dumpit = ipv6_tlv_nl_dump,
++},
++};
++
++struct genl_family ipv6_tlv_nl_family __ro_after_init = {
++	.hdrsize	= 0,
++	.name		= IPV6_TLV_GENL_NAME,
++	.version	= IPV6_TLV_GENL_VERSION,
++	.maxattr	= IPEH_TLV_ATTR_MAX,
++	.policy		= ipeh_tlv_nl_policy,
++	.netnsok	= true,
++	.parallel_ops	= true,
++	.ops		= ipv6_tlv_nl_ops,
++	.n_ops		= ARRAY_SIZE(ipv6_tlv_nl_ops),
++	.module		= THIS_MODULE,
++};
++
++static int ipv6_tlv_nl_cmd_set(struct sk_buff *skb, struct genl_info *info)
++{
++	return ipeh_tlv_nl_cmd_set(&ipv6_tlv_param_table, &ipv6_tlv_nl_family,
++				   skb, info);
++}
++
++static int ipv6_tlv_nl_cmd_unset(struct sk_buff *skb, struct genl_info *info)
++{
++	return ipeh_tlv_nl_cmd_unset(&ipv6_tlv_param_table, &ipv6_tlv_nl_family,
++				     skb, info);
++}
++
++static int ipv6_tlv_nl_cmd_get(struct sk_buff *skb, struct genl_info *info)
++{
++	return ipeh_tlv_nl_cmd_get(&ipv6_tlv_param_table, &ipv6_tlv_nl_family,
++				   skb, info);
++}
++
++static int ipv6_tlv_nl_dump(struct sk_buff *skb, struct netlink_callback *cb)
++{
++	return ipeh_tlv_nl_dump(&ipv6_tlv_param_table, &ipv6_tlv_nl_family,
++				skb, cb);
++}
++
+ int __init ipv6_exthdrs_options_init(void)
+ {
+-	return ipeh_exthdrs_init(&ipv6_tlv_param_table, tlv_ipv6_init_params,
+-				 ARRAY_SIZE(tlv_ipv6_init_params));
++	int err;
++
++	err = genl_register_family(&ipv6_tlv_nl_family);
++	if (err)
++		goto genl_fail;
++
++	ipeh_exthdrs_init(&ipv6_tlv_param_table, tlv_ipv6_init_params,
++			  ARRAY_SIZE(tlv_ipv6_init_params));
++	if (err)
++		goto ipv6_fail;
 +
 +	return 0;
 +
-+err_inval:
-+	kvfree(tpt);
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL(ipeh_exthdrs_init);
-+
-+static void tlv_destroy_param_table(struct tlv_param_table *tlv_param_table)
-+{
-+	struct tlv_param_table_data *tpt;
-+
-+	mutex_lock(&tlv_mutex);
-+
-+	tpt = rcu_dereference_protected(tlv_param_table->data,
-+					lockdep_is_held(&tlv_mutex));
-+	if (tpt) {
-+		rcu_assign_pointer(tlv_param_table->data, NULL);
-+		call_rcu(&tpt->rcu, tlv_param_table_release);
-+	}
-+
-+	mutex_unlock(&tlv_mutex);
-+}
-+
-+void ipeh_exthdrs_fini(struct tlv_param_table *tlv_param_table)
-+{
-+	tlv_destroy_param_table(tlv_param_table);
-+}
-+EXPORT_SYMBOL(ipeh_exthdrs_fini);
-diff --git a/net/ipv6/exthdrs_options.c b/net/ipv6/exthdrs_options.c
-index 032e072..d4b373e 100644
---- a/net/ipv6/exthdrs_options.c
-+++ b/net/ipv6/exthdrs_options.c
-@@ -11,11 +11,12 @@
- #if IS_ENABLED(CONFIG_IPV6_MIP6)
- #include <net/xfrm.h>
- #endif
-+#include <uapi/linux/ipeh.h>
- 
- /* Destination options header */
- 
- #if IS_ENABLED(CONFIG_IPV6_MIP6)
--static bool ipv6_dest_hao(struct sk_buff *skb, int optoff)
-+static bool ipv6_dest_hao(unsigned int class, struct sk_buff *skb, int optoff)
- {
- 	struct ipv6_destopt_hao *hao;
- 	struct inet6_skb_parm *opt = IP6CB(skb);
-@@ -74,16 +75,6 @@ static bool ipv6_dest_hao(struct sk_buff *skb, int optoff)
- }
- #endif
- 
--const struct tlvtype_proc tlvprocdestopt_lst[] = {
--#if IS_ENABLED(CONFIG_IPV6_MIP6)
--	{
--		.type	= IPV6_TLV_HAO,
--		.func	= ipv6_dest_hao,
--	},
--#endif
--	{-1,			NULL}
--};
--
- /* Hop-by-hop options */
- 
- /* Note: we cannot rely on skb_dst(skb) before we assign it in
-@@ -102,7 +93,7 @@ static inline struct net *ipv6_skb_net(struct sk_buff *skb)
- 
- /* Router Alert as of RFC 2711 */
- 
--static bool ipv6_hop_ra(struct sk_buff *skb, int optoff)
-+static bool ipv6_hop_ra(unsigned int class, struct sk_buff *skb, int optoff)
- {
- 	const unsigned char *nh = skb_network_header(skb);
- 
-@@ -120,7 +111,7 @@ static bool ipv6_hop_ra(struct sk_buff *skb, int optoff)
- 
- /* Jumbo payload */
- 
--static bool ipv6_hop_jumbo(struct sk_buff *skb, int optoff)
-+static bool ipv6_hop_jumbo(unsigned int class, struct sk_buff *skb, int optoff)
- {
- 	const unsigned char *nh = skb_network_header(skb);
- 	struct inet6_dev *idev = __in6_dev_get_safely(skb->dev);
-@@ -164,7 +155,8 @@ static bool ipv6_hop_jumbo(struct sk_buff *skb, int optoff)
- 
- /* CALIPSO RFC 5570 */
- 
--static bool ipv6_hop_calipso(struct sk_buff *skb, int optoff)
-+static bool ipv6_hop_calipso(unsigned int class, struct sk_buff *skb,
-+			     int optoff)
- {
- 	const unsigned char *nh = skb_network_header(skb);
- 
-@@ -184,18 +176,45 @@ static bool ipv6_hop_calipso(struct sk_buff *skb, int optoff)
- 	return false;
++ipv6_fail:
++	genl_unregister_family(&ipv6_tlv_nl_family);
++genl_fail:
++	return err;
  }
  
--const struct tlvtype_proc tlvprochopopt_lst[] = {
-+static const struct tlv_proc_init tlv_ipv6_init_params[] __initconst = {
-+#if IS_ENABLED(CONFIG_IPV6_MIP6)
- 	{
--		.type	= IPV6_TLV_ROUTERALERT,
--		.func	= ipv6_hop_ra,
-+		.type = IPV6_TLV_HAO,
-+
-+		.proc.ops.func = ipv6_dest_hao,
-+		.proc.params.r.class = IPEH_TLV_CLASS_FLAG_DSTOPT,
- 	},
-+#endif
- 	{
--		.type	= IPV6_TLV_JUMBO,
--		.func	= ipv6_hop_jumbo,
-+		.type = IPV6_TLV_ROUTERALERT,
-+
-+		.proc.ops.func = ipv6_hop_ra,
-+		.proc.params.r.class = IPEH_TLV_CLASS_FLAG_HOPOPT,
- 	},
- 	{
--		.type	= IPV6_TLV_CALIPSO,
--		.func	= ipv6_hop_calipso,
-+		.type = IPV6_TLV_JUMBO,
-+
-+		.proc.ops.func	= ipv6_hop_jumbo,
-+		.proc.params.r.class = IPEH_TLV_CLASS_FLAG_HOPOPT,
-+	},
-+	{
-+		.type = IPV6_TLV_CALIPSO,
-+
-+		.proc.ops.func = ipv6_hop_calipso,
-+		.proc.params.r.class = IPEH_TLV_CLASS_FLAG_HOPOPT,
- 	},
--	{ -1, }
- };
-+
-+struct tlv_param_table __rcu ipv6_tlv_param_table;
-+EXPORT_SYMBOL(ipv6_tlv_param_table);
-+
-+int __init ipv6_exthdrs_options_init(void)
-+{
-+	return ipeh_exthdrs_init(&ipv6_tlv_param_table, tlv_ipv6_init_params,
-+				 ARRAY_SIZE(tlv_ipv6_init_params));
-+}
-+
-+void ipv6_exthdrs_options_exit(void)
-+{
-+	ipeh_exthdrs_fini(&ipv6_tlv_param_table);
-+}
+ void ipv6_exthdrs_options_exit(void)
+ {
+ 	ipeh_exthdrs_fini(&ipv6_tlv_param_table);
++	genl_unregister_family(&ipv6_tlv_nl_family);
+ }
 -- 
 2.7.4
 
