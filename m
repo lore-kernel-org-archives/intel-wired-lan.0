@@ -1,104 +1,124 @@
-From: Maxim Mikityanskiy <maximmi@mellanox.com>
-Date: Mon, 19 Aug 2019 14:36:01 +0000
-Subject: [Intel-wired-lan] [PATCH bpf-next v4 07/11] mlx5e: modify
- driver for handling offsets
-In-Reply-To: <bc0c966f-4cda-4d48-566f-f5bff376210a@mellanox.com>
-References: <20190724051043.14348-1-kevin.laatz@intel.com>
- <20190730085400.10376-1-kevin.laatz@intel.com>
- <20190730085400.10376-8-kevin.laatz@intel.com>
- <bc0c966f-4cda-4d48-566f-f5bff376210a@mellanox.com>
-Message-ID: <390f80fc-3f8a-a9ed-6ac7-8a1a41621559@mellanox.com>
+From: Shannon Nelson <shannon.lee.nelson@gmail.com>
+Date: Mon, 19 Aug 2019 14:22:52 -0700
+Subject: [Intel-wired-lan] x
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69AFFBD76@ORSMSX115.amr.corp.intel.com>
+References: <CAP-MU4MAwQd5bOGpJ=tu4iVB4j4FO6UWbkXg6ox34i7pb5DjQA@mail.gmail.com>
+ <9B4A1B1917080E46B64F07F2989DADD69AFFB063@ORSMSX115.amr.corp.intel.com>
+ <CAP-MU4PKYRP0SpxDC7SgRGCjWAyyu0vHh5W5YAsjf=JseRkAqg@mail.gmail.com>
+ <9B4A1B1917080E46B64F07F2989DADD69AFFBD76@ORSMSX115.amr.corp.intel.com>
+Message-ID: <CAP-MU4OSMbB7sbYtN3Cr5S5fTZG1DzQW3c_gUXETw23iOPr6fw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2019-08-01 13:05, Maxim Mikityanskiy wrote:
-> On 2019-07-30 11:53, Kevin Laatz wrote:
->> With the addition of the unaligned chunks option, we need to make sure we
->> handle the offsets accordingly based on the mode we are currently running
->> in. This patch modifies the driver to appropriately mask the address for
->> each case.
->>
->> Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
-> 
-> Please note that this patch doesn't actually add the support for the new 
-> feature, because the validation checks in mlx5e_rx_get_linear_frag_sz 
-> and mlx5e_validate_xsk_param need to be relaxed. Currently the frame 
-> size of PAGE_SIZE is forced, and the fragment size is increased to 
-> PAGE_SIZE in case of XDP (including XSK).
-> 
-> After making the changes required to permit frame sizes smaller than 
-> PAGE_SIZE, our Striding RQ feature will be used in a way we haven't used 
-> it before, so we need to verify with the hardware team that this usage 
-> is legitimate.
+Thanks, Todd, I'll let my internal folks know.
+Cheers,
+sln
 
-After discussing it internally, we found a way to support unaligned XSK 
-with Striding RQ, and the hardware is compatible with this way. I have 
-performed some testing, and it looks working.
+On Sun, Aug 18, 2019 at 1:36 PM Fujinaka, Todd <todd.fujinaka@intel.com> wrote:
+>
+> The problem should be fixed with an NVM update but I'm unsure if your NVM already has the fix. Let me make sure with the Product AE.
+>
+> However, you're going to have to go directly to Cisco for the NVM updates since the cards look like they're from Cisco.
+>
+> Todd Fujinaka
+> Software Application Engineer
+> Datacenter Engineering Group
+> Intel Corporation
+> todd.fujinaka at intel.com
+>
+>
+> -----Original Message-----
+> From: Shannon Nelson [mailto:shannon.lee.nelson at gmail.com]
+> Sent: Thursday, August 15, 2019 7:19 PM
+> To: Fujinaka, Todd <todd.fujinaka@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] x
+>
+> On Thu, Aug 15, 2019 at 6:46 PM Fujinaka, Todd <todd.fujinaka@intel.com> wrote:
+> >
+> > x722? x550? Or is it a different part?
+> >
+> > I've seen something like this lately, but I'll need to know which Ethernet controller it is before I can narrow it down.
+>
+> Sorry about that short Subject text and lack of info... someone was passing this info to me in the midst of two or three other things going on and I hit <send> before I finished the text.
+>
+> Since that's ixgbe printing the complaints, I'm pretty sure it isn't anything x722-ish.  I don't have access to the actual machine, but it is the same as this one:
+>
+> 65:00.0 Ethernet controller: Intel Corporation Ethernet Controller 10G X550T (rev 01)
+> Subsystem: Cisco Systems Inc Device 01a3
+> Capabilities: [e0] Vital Product Data
+> Product Name: Cisco  X550-TX 10 Gig
+> Read-only fields:
+> [PN] Part number: X550-TX
+> [V0] Vendor specific: MAP 1.86 V0.02 PHY 2.B.B MAC 3.15 [MN] Manufacture ID: 11 37 [RV] Reserved: checksum good, 0 byte(s) reserved
+>
+> # ethtool -i eno1
+> driver: ixgbe
+> version: 5.1.0-k
+> firmware-version: 0x80000af9, 0.385.33
+>
+> We have a bunch of these machines, and I'm told we're seeing this off and on in several of them.
+>
+> sln
+>
+>
+> >
+> > Todd Fujinaka
+> > Software Application Engineer
+> > Datacenter Engineering Group
+> > Intel Corporation
+> > todd.fujinaka at intel.com
+> >
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> > Behalf Of Shannon Nelson
+> > Sent: Thursday, August 15, 2019 2:35 PM
+> > To: intel-wired-lan at lists.osuosl.org
+> > Subject: [Intel-wired-lan] x
+> >
+> > We've been occasionally seeing some of these messages recently on some of our machines after reboots.  Usually a powercycle clears it up.
+> > Any hints as to what might be going on?
+> >
+> > [    2.570012] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver -
+> > version 5.1.0-k-rh7.5
+> > [    2.570016] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
+> > [    4.883541] ixgbe 0000:65:00.0 (unregistered net_device): eeprom
+> > read at offset 40 failed
+> > [    7.112885] ixgbe 0000:65:00.0 (unregistered net_device): eeprom
+> > read at offset 39 failed
+> > [   11.571710] ixgbe 0000:65:00.0: The EEPROM Checksum Is Not Valid
+> > [   11.571916] ixgbe: probe of 0000:65:00.0 failed with error -5
+> > [   13.922688] ixgbe 0000:65:00.1 (unregistered net_device): eeprom
+> > read at offset 40 failed
+> > [   16.152080] ixgbe 0000:65:00.1 (unregistered net_device): eeprom
+> > read at offset 39 failed
+> > [   20.617460] ixgbe 0000:65:00.1: The EEPROM Checksum Is Not Valid
+> > [   20.617639] ixgbe: probe of 0000:65:00.1 failed with error -5
+> >
+> >
+> > Thanks,
+> > sln
+> >
+> >
+> > --
+> > ==============================================
+> > Mr. Shannon Nelson         Parents can't afford to be squeamish.
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at osuosl.org
+> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>
+>
+>
+> --
+> ==============================================
+> Mr. Shannon Nelson         Parents can't afford to be squeamish.
 
-Your patch only adds support for the new handle format to our driver, 
-and I've made another patch that actually enables the new feature (makes 
-mlx5e accept frame sizes different from PAGE_SIZE). It's currently on 
-internal review.
 
-Please also don't forget to fix the s/_handle_/_adjust_/ typo.
 
->> ---
->> v3:
->> ?? - Use new helper function to handle offset
->>
->> v4:
->> ?? - fixed headroom addition to handle. Using xsk_umem_adjust_headroom()
->> ???? now.
->> ---
->> ? drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c??? | 8 ++++++--
->> ? drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c | 3 ++-
->> ? 2 files changed, 8 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c 
->> b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
->> index b0b982cf69bb..d5245893d2c8 100644
->> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
->> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
->> @@ -122,6 +122,7 @@ bool mlx5e_xdp_handle(struct mlx5e_rq *rq, struct 
->> mlx5e_dma_info *di,
->> ??????????????? void *va, u16 *rx_headroom, u32 *len, bool xsk)
->> ? {
->> ????? struct bpf_prog *prog = READ_ONCE(rq->xdp_prog);
->> +??? struct xdp_umem *umem = rq->umem;
->> ????? struct xdp_buff xdp;
->> ????? u32 act;
->> ????? int err;
->> @@ -138,8 +139,11 @@ bool mlx5e_xdp_handle(struct mlx5e_rq *rq, struct 
->> mlx5e_dma_info *di,
->> ????? xdp.rxq = &rq->xdp_rxq;
->> ????? act = bpf_prog_run_xdp(prog, &xdp);
->> -??? if (xsk)
->> -??????? xdp.handle += xdp.data - xdp.data_hard_start;
->> +??? if (xsk) {
->> +??????? u64 off = xdp.data - xdp.data_hard_start;
->> +
->> +??????? xdp.handle = xsk_umem_handle_offset(umem, xdp.handle, off);
->> +??? }
->> ????? switch (act) {
->> ????? case XDP_PASS:
->> ????????? *rx_headroom = xdp.data - xdp.data_hard_start;
->> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c 
->> b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c
->> index 6a55573ec8f2..7c49a66d28c9 100644
->> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c
->> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/rx.c
->> @@ -24,7 +24,8 @@ int mlx5e_xsk_page_alloc_umem(struct mlx5e_rq *rq,
->> ????? if (!xsk_umem_peek_addr_rq(umem, &handle))
->> ????????? return -ENOMEM;
->> -??? dma_info->xsk.handle = handle + rq->buff.umem_headroom;
->> +??? dma_info->xsk.handle = xsk_umem_adjust_offset(umem, handle,
->> +????????????????????????????? rq->buff.umem_headroom);
->> ????? dma_info->xsk.data = xdp_umem_get_data(umem, dma_info->xsk.handle);
->> ????? /* No need to add headroom to the DMA address. In striding RQ 
->> case, we
->>
-> 
-
+-- 
+==============================================
+Mr. Shannon Nelson         Parents can't afford to be squeamish.
