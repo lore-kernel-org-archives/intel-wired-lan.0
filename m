@@ -1,114 +1,175 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 21 Aug 2019 09:57:14 -0700
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix double clean of tx
- descriptors with xdp
-In-Reply-To: <f7d0f7a5-e664-8b72-99c7-63275aff4c18@samsung.com>
-References: <CGME20190820151644eucas1p179d6d1da42bb6be0aad8f58ac46624ce@eucas1p1.samsung.com>
- <20190820151611.10727-1-i.maximets@samsung.com>
- <CAKgT0Udn0D0_f=SOH2wpBRWV_u4rb1Qe2h7gguXnRNzJ_VkRzg@mail.gmail.com>
- <625791af-c656-1e42-b60e-b3a5cedcb4c4@samsung.com>
- <CAKgT0Uc27+ucd=a_sgTmv5g7_+ZTg1zK4isYJ0H7YWQj3d=Ejg@mail.gmail.com>
- <f7d0f7a5-e664-8b72-99c7-63275aff4c18@samsung.com>
-Message-ID: <CAKgT0UcCKiM1Ys=vWxctprN7fzWcBCk-PCuKB-8=RThM=CqLSQ@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 22 Aug 2019 01:35:59 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ be6f7ef69cf0d8cfeb6af5ad62c558fe35e13cce
+Message-ID: <5d5d80ff.cg5y6BLrPz6LQrwB%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Aug 21, 2019 at 9:22 AM Ilya Maximets <i.maximets@samsung.com> wrote:
->
-> On 21.08.2019 4:17, Alexander Duyck wrote:
-> > On Tue, Aug 20, 2019 at 8:58 AM Ilya Maximets <i.maximets@samsung.com> wrote:
-> >>
-> >> On 20.08.2019 18:35, Alexander Duyck wrote:
-> >>> On Tue, Aug 20, 2019 at 8:18 AM Ilya Maximets <i.maximets@samsung.com> wrote:
-> >>>>
-> >>>> Tx code doesn't clear the descriptor status after cleaning.
-> >>>> So, if the budget is larger than number of used elems in a ring, some
-> >>>> descriptors will be accounted twice and xsk_umem_complete_tx will move
-> >>>> prod_tail far beyond the prod_head breaking the comletion queue ring.
-> >>>>
-> >>>> Fix that by limiting the number of descriptors to clean by the number
-> >>>> of used descriptors in the tx ring.
-> >>>>
-> >>>> Fixes: 8221c5eba8c1 ("ixgbe: add AF_XDP zero-copy Tx support")
-> >>>> Signed-off-by: Ilya Maximets <i.maximets@samsung.com>
-> >>>
-> >>> I'm not sure this is the best way to go. My preference would be to
-> >>> have something in the ring that would prevent us from racing which I
-> >>> don't think this really addresses. I am pretty sure this code is safe
-> >>> on x86 but I would be worried about weak ordered systems such as
-> >>> PowerPC.
-> >>>
-> >>> It might make sense to look at adding the eop_desc logic like we have
-> >>> in the regular path with a proper barrier before we write it and after
-> >>> we read it. So for example we could hold of on writing the bytecount
-> >>> value until the end of an iteration and call smp_wmb before we write
-> >>> it. Then on the cleanup we could read it and if it is non-zero we take
-> >>> an smp_rmb before proceeding further to process the Tx descriptor and
-> >>> clearing the value. Otherwise this code is going to just keep popping
-> >>> up with issues.
-> >>
-> >> But, unlike regular case, xdp zero-copy xmit and clean for particular
-> >> tx ring always happens in the same NAPI context and even on the same
-> >> CPU core.
-> >>
-> >> I saw the 'eop_desc' manipulations in regular case and yes, we could
-> >> use 'next_to_watch' field just as a flag of descriptor existence,
-> >> but it seems unnecessarily complicated. Am I missing something?
-> >>
-> >
-> > So is it always in the same NAPI context?. I forgot, I was thinking
-> > that somehow the socket could possibly make use of XDP for transmit.
->
-> AF_XDP socket only triggers tx interrupt on ndo_xsk_async_xmit() which
-> is used in zero-copy mode. Real xmit happens inside
-> ixgbe_poll()
->  -> ixgbe_clean_xdp_tx_irq()
->     -> ixgbe_xmit_zc()
->
-> This should be not possible to bound another XDP socket to the same netdev
-> queue.
->
-> It also possible to xmit frames in xdp_ring while performing XDP_TX/REDIRECT
-> actions. REDIRECT could happen from different netdev with different NAPI
-> context, but this operation is bound to specific CPU core and each core has
-> its own xdp_ring.
->
-> However, I'm not an expert here.
-> Bj?rn, maybe you could comment on this?
->
-> >
-> > As far as the logic to use I would be good with just using a value you
-> > are already setting such as the bytecount value. All that would need
-> > to happen is to guarantee that the value is cleared in the Tx path. So
-> > if you clear the bytecount in ixgbe_clean_xdp_tx_irq you could
-> > theoretically just use that as well to flag that a descriptor has been
-> > populated and is ready to be cleaned. Assuming the logic about this
-> > all being in the same NAPI context anyway you wouldn't need to mess
-> > with the barrier stuff I mentioned before.
->
-> Checking the number of used descs, i.e. next_to_use - next_to_clean,
-> makes iteration in this function logically equal to the iteration inside
-> 'ixgbe_xsk_clean_tx_ring()'. Do you think we need to change the later
-> function too to follow same 'bytecount' approach? I don't like having
-> two different ways to determine number of used descriptors in the same file.
->
-> Best regards, Ilya Maximets.
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: be6f7ef69cf0d8cfeb6af5ad62c558fe35e13cce  ice: improve print for VF's when adding/deleting MAC filters
 
-As far as ixgbe_clean_xdp_tx_irq() vs ixgbe_xsk_clean_tx_ring(), I
-would say that if you got rid of budget and framed things more like
-how ixgbe_xsk_clean_tx_ring was framed with the ntc != ntu being
-obvious I would prefer to see us go that route.
+elapsed time: 1157m
 
-Really there is no need for budget in ixgbe_clean_xdp_tx_irq() if you
-are going to be working with a static ntu value since you will only
-ever process one iteration through the ring anyway. It might make more
-sense if you just went through and got rid of budget and i, and
-instead used ntc and ntu like what was done in
-ixgbe_xsk_clean_tx_ring().
+configs tested: 150
 
-Thanks.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-- Alex
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             alldefconfig
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+i386                             alldefconfig
+i386                             allmodconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                 randconfig-e001-201933
+x86_64                 randconfig-e002-201933
+x86_64                 randconfig-e003-201933
+x86_64                 randconfig-e004-201933
+i386                   randconfig-e001-201933
+i386                   randconfig-e002-201933
+i386                   randconfig-e003-201933
+i386                   randconfig-e004-201933
+ia64                                defconfig
+powerpc                             defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                       ppc64_defconfig
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-b001-201933
+x86_64                 randconfig-b002-201933
+x86_64                 randconfig-b003-201933
+x86_64                 randconfig-b004-201933
+i386                   randconfig-b001-201933
+i386                   randconfig-b002-201933
+i386                   randconfig-b003-201933
+i386                   randconfig-b004-201933
+i386                              allnoconfig
+i386                                defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+arm                              allmodconfig
+arm64                            allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-c001-201933
+x86_64                 randconfig-c002-201933
+x86_64                 randconfig-c003-201933
+x86_64                 randconfig-c004-201933
+i386                   randconfig-c001-201933
+i386                   randconfig-c002-201933
+i386                   randconfig-c003-201933
+i386                   randconfig-c004-201933
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                   randconfig-d002-201933
+i386                   randconfig-d004-201933
+x86_64                 randconfig-d004-201933
+x86_64                 randconfig-d001-201933
+x86_64                 randconfig-d002-201933
+x86_64                 randconfig-d003-201933
+i386                   randconfig-d001-201933
+i386                   randconfig-d003-201933
+x86_64                 randconfig-a004-201933
+i386                   randconfig-a003-201933
+x86_64                 randconfig-a002-201933
+i386                   randconfig-a004-201933
+i386                   randconfig-a002-201933
+x86_64                 randconfig-a001-201933
+i386                   randconfig-a001-201933
+x86_64                 randconfig-a003-201933
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-g001-201933
+x86_64                 randconfig-g002-201933
+x86_64                 randconfig-g003-201933
+x86_64                 randconfig-g004-201933
+i386                   randconfig-g001-201933
+i386                   randconfig-g002-201933
+i386                   randconfig-g003-201933
+i386                   randconfig-g004-201933
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-f004-201933
+x86_64                 randconfig-f004-201933
+i386                   randconfig-f001-201933
+x86_64                 randconfig-f002-201933
+i386                   randconfig-f002-201933
+i386                   randconfig-f003-201933
+x86_64                 randconfig-f003-201933
+x86_64                 randconfig-f001-201933
+x86_64                 randconfig-h001-201933
+x86_64                 randconfig-h002-201933
+x86_64                 randconfig-h003-201933
+x86_64                 randconfig-h004-201933
+i386                   randconfig-h001-201933
+i386                   randconfig-h002-201933
+i386                   randconfig-h003-201933
+i386                   randconfig-h004-201933
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
