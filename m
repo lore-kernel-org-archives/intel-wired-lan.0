@@ -1,76 +1,95 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Wed, 21 Aug 2019 16:09:29 +0200
-Subject: [Intel-wired-lan] [PATCH] i40e: check __I40E_VF_DISABLE bit in
- i40e_sync_filters_subtask
-Message-ID: <20190821140929.26985-1-sassmann@kpanic.de>
+From: Ilya Maximets <i.maximets@samsung.com>
+Date: Wed, 21 Aug 2019 19:21:51 +0300
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix double clean of tx
+ descriptors with xdp
+In-Reply-To: <CAKgT0Uc27+ucd=a_sgTmv5g7_+ZTg1zK4isYJ0H7YWQj3d=Ejg@mail.gmail.com>
+References: <CGME20190820151644eucas1p179d6d1da42bb6be0aad8f58ac46624ce@eucas1p1.samsung.com>
+ <20190820151611.10727-1-i.maximets@samsung.com>
+ <CAKgT0Udn0D0_f=SOH2wpBRWV_u4rb1Qe2h7gguXnRNzJ_VkRzg@mail.gmail.com>
+ <625791af-c656-1e42-b60e-b3a5cedcb4c4@samsung.com>
+ <CAKgT0Uc27+ucd=a_sgTmv5g7_+ZTg1zK4isYJ0H7YWQj3d=Ejg@mail.gmail.com>
+Message-ID: <f7d0f7a5-e664-8b72-99c7-63275aff4c18@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-While testing VF spawn/destroy the following panic occured.
+On 21.08.2019 4:17, Alexander Duyck wrote:
+> On Tue, Aug 20, 2019 at 8:58 AM Ilya Maximets <i.maximets@samsung.com> wrote:
+>>
+>> On 20.08.2019 18:35, Alexander Duyck wrote:
+>>> On Tue, Aug 20, 2019 at 8:18 AM Ilya Maximets <i.maximets@samsung.com> wrote:
+>>>>
+>>>> Tx code doesn't clear the descriptor status after cleaning.
+>>>> So, if the budget is larger than number of used elems in a ring, some
+>>>> descriptors will be accounted twice and xsk_umem_complete_tx will move
+>>>> prod_tail far beyond the prod_head breaking the comletion queue ring.
+>>>>
+>>>> Fix that by limiting the number of descriptors to clean by the number
+>>>> of used descriptors in the tx ring.
+>>>>
+>>>> Fixes: 8221c5eba8c1 ("ixgbe: add AF_XDP zero-copy Tx support")
+>>>> Signed-off-by: Ilya Maximets <i.maximets@samsung.com>
+>>>
+>>> I'm not sure this is the best way to go. My preference would be to
+>>> have something in the ring that would prevent us from racing which I
+>>> don't think this really addresses. I am pretty sure this code is safe
+>>> on x86 but I would be worried about weak ordered systems such as
+>>> PowerPC.
+>>>
+>>> It might make sense to look at adding the eop_desc logic like we have
+>>> in the regular path with a proper barrier before we write it and after
+>>> we read it. So for example we could hold of on writing the bytecount
+>>> value until the end of an iteration and call smp_wmb before we write
+>>> it. Then on the cleanup we could read it and if it is non-zero we take
+>>> an smp_rmb before proceeding further to process the Tx descriptor and
+>>> clearing the value. Otherwise this code is going to just keep popping
+>>> up with issues.
+>>
+>> But, unlike regular case, xdp zero-copy xmit and clean for particular
+>> tx ring always happens in the same NAPI context and even on the same
+>> CPU core.
+>>
+>> I saw the 'eop_desc' manipulations in regular case and yes, we could
+>> use 'next_to_watch' field just as a flag of descriptor existence,
+>> but it seems unnecessarily complicated. Am I missing something?
+>>
+> 
+> So is it always in the same NAPI context?. I forgot, I was thinking
+> that somehow the socket could possibly make use of XDP for transmit.
 
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000029
-[...]
-Workqueue: i40e i40e_service_task [i40e]
-RIP: 0010:i40e_sync_vsi_filters+0x6fd/0xc60 [i40e]
-[...]
-Call Trace:
- ? __switch_to_asm+0x35/0x70
- ? __switch_to_asm+0x41/0x70
- ? __switch_to_asm+0x35/0x70
- ? _cond_resched+0x15/0x30
- i40e_sync_filters_subtask+0x56/0x70 [i40e]
- i40e_service_task+0x382/0x11b0 [i40e]
- ? __switch_to_asm+0x41/0x70
- ? __switch_to_asm+0x41/0x70
- process_one_work+0x1a7/0x3b0
- worker_thread+0x30/0x390
- ? create_worker+0x1a0/0x1a0
- kthread+0x112/0x130
- ? kthread_bind+0x30/0x30
- ret_from_fork+0x35/0x40
+AF_XDP socket only triggers tx interrupt on ndo_xsk_async_xmit() which
+is used in zero-copy mode. Real xmit happens inside
+ixgbe_poll()
+ -> ixgbe_clean_xdp_tx_irq()
+    -> ixgbe_xmit_zc()
 
-Investigation revealed a race where pf->vf[vsi->vf_id].trusted may get
-accessed by the watchdog via i40e_sync_filters_subtask() although
-i40e_free_vfs() already free'd pf->vf.
-To avoid this the call to i40e_sync_vsi_filters() in
-i40e_sync_filters_subtask() needs to be guarded by __I40E_VF_DISABLE,
-which is also used by i40e_free_vfs().
+This should be not possible to bound another XDP socket to the same netdev
+queue.
 
-Note: put the __I40E_VF_DISABLE check after the
-__I40E_MACVLAN_SYNC_PENDING check as the latter is more likely to
-trigger.
+It also possible to xmit frames in xdp_ring while performing XDP_TX/REDIRECT
+actions. REDIRECT could happen from different netdev with different NAPI
+context, but this operation is bound to specific CPU core and each core has
+its own xdp_ring.
 
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
- 1 file changed, 5 insertions(+)
+However, I'm not an expert here.
+Bj?rn, maybe you could comment on this?
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 6d456e579314..f25c7da59b2b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2587,6 +2587,10 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
- 		return;
- 	if (!test_and_clear_bit(__I40E_MACVLAN_SYNC_PENDING, pf->state))
- 		return;
-+	if (test_and_set_bit(__I40E_VF_DISABLE, pf->state)) {
-+		set_bit(__I40E_MACVLAN_SYNC_PENDING, pf->state);
-+		return;
-+	}
- 
- 	for (v = 0; v < pf->num_alloc_vsi; v++) {
- 		if (pf->vsi[v] &&
-@@ -2601,6 +2605,7 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
- 			}
- 		}
- 	}
-+	clear_bit(__I40E_VF_DISABLE, pf->state);
- }
- 
- /**
--- 
-2.21.0
+> 
+> As far as the logic to use I would be good with just using a value you
+> are already setting such as the bytecount value. All that would need
+> to happen is to guarantee that the value is cleared in the Tx path. So
+> if you clear the bytecount in ixgbe_clean_xdp_tx_irq you could
+> theoretically just use that as well to flag that a descriptor has been
+> populated and is ready to be cleaned. Assuming the logic about this
+> all being in the same NAPI context anyway you wouldn't need to mess
+> with the barrier stuff I mentioned before.
 
+Checking the number of used descs, i.e. next_to_use - next_to_clean,
+makes iteration in this function logically equal to the iteration inside
+'ixgbe_xsk_clean_tx_ring()'. Do you think we need to change the later
+function too to follow same 'bytecount' approach? I don't like having
+two different ways to determine number of used descriptors in the same file.
+
+Best regards, Ilya Maximets.
