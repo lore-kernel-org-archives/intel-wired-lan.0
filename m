@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 22 Aug 2019 17:13:20 +0000
-Subject: [Intel-wired-lan] [PATCH v3 net-next 1/7] ipeh: Create
- exthdrs_options.c and ipeh.h
-In-Reply-To: <1566254665-5200-2-git-send-email-tom@herbertland.com>
+Date: Thu, 22 Aug 2019 17:18:44 +0000
+Subject: [Intel-wired-lan] [PATCH v3 net-next 6/7] ip6tlvs: Add netlink
+ interface
+In-Reply-To: <1566254665-5200-7-git-send-email-tom@herbertland.com>
 References: <1566254665-5200-1-git-send-email-tom@herbertland.com>
- <1566254665-5200-2-git-send-email-tom@herbertland.com>
-Message-ID: <f13f3b65b0a54aa2bc32b8b1164f6e88@intel.com>
+ <1566254665-5200-7-git-send-email-tom@herbertland.com>
+Message-ID: <ebcf2bbc00174f4689833278ee1da61c@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,28 +19,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: Intel-wired-lan at lists.osuosl.org
 > Cc: Tom Herbert <tom@herbertland.com>; Tom Herbert
 > <tom@quantonium.net>
-> Subject: [Intel-wired-lan] [PATCH v3 net-next 1/7] ipeh: Create
-> exthdrs_options.c and ipeh.h
+> Subject: [Intel-wired-lan] [PATCH v3 net-next 6/7] ip6tlvs: Add netlink
+> interface
 > 
 > From: Tom Herbert <tom@quantonium.net>
 > 
-> Create exthdrs_options.c to hold code related to specific Hop-by-Hop and
-> Destination extension header options. Move related functions in exthdrs.c to
-> the new file.
-> 
-> Create include net/ipeh.h to contain common definitions for IP extension
-> headers.
+> Add a netlink interface to manage the TX TLV parameters. Managed
+> parameters include those for validating and sending TLVs being sent such as
+> alignment, TLV ordering, length limits, etc.
 > 
 > Signed-off-by: Tom Herbert <tom@herbertland.com>
 > ---
->  include/net/ipeh.h         |  22 +++++
+>  include/net/ipeh.h         |  16 +++
 >  include/net/ipv6.h         |   1 +
->  net/ipv6/Makefile          |   2 +-
->  net/ipv6/exthdrs.c         | 204 ---------------------------------------------
->  net/ipv6/exthdrs_options.c | 201
-> ++++++++++++++++++++++++++++++++++++++++++++
->  5 files changed, 225 insertions(+), 205 deletions(-)  create mode 100644
-> include/net/ipeh.h  create mode 100644 net/ipv6/exthdrs_options.c
+>  include/uapi/linux/in6.h   |   6 ++
+>  include/uapi/linux/ipeh.h  |  29 ++++++  net/ipv6/exthdrs_common.c  | 238
+> +++++++++++++++++++++++++++++++++++++++++++++
+>  net/ipv6/exthdrs_options.c |  81 ++++++++++++++-
+>  6 files changed, 369 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
