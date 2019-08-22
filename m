@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 22 Aug 2019 17:13:54 +0000
-Subject: [Intel-wired-lan] [PATCH v3 net-next 2/7] ipeh: Move generic EH
- functions to exthdrs_common.c
-In-Reply-To: <1566254665-5200-3-git-send-email-tom@herbertland.com>
+Date: Thu, 22 Aug 2019 17:17:45 +0000
+Subject: [Intel-wired-lan] [PATCH v3 net-next 4/7] ip6tlvs: Registration
+ of TLV handlers and parameters
+In-Reply-To: <1566254665-5200-5-git-send-email-tom@herbertland.com>
 References: <1566254665-5200-1-git-send-email-tom@herbertland.com>
- <1566254665-5200-3-git-send-email-tom@herbertland.com>
-Message-ID: <faa4b599286e4a76898078e59fa42af5@intel.com>
+ <1566254665-5200-5-git-send-email-tom@herbertland.com>
+Message-ID: <6fc3872624214c46811a27a81c13a8c7@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,39 +19,43 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: Intel-wired-lan at lists.osuosl.org
 > Cc: Tom Herbert <tom@herbertland.com>; Tom Herbert
 > <tom@quantonium.net>
-> Subject: [Intel-wired-lan] [PATCH v3 net-next 2/7] ipeh: Move generic EH
-> functions to exthdrs_common.c
+> Subject: [Intel-wired-lan] [PATCH v3 net-next 4/7] ip6tlvs: Registration of TLV
+> handlers and parameters
 > 
 > From: Tom Herbert <tom@quantonium.net>
 > 
-> Move generic functions in exthdrs.c to new exthdrs_common.c so that
-> exthdrs.c only contains functions that are specific to IPv6 processing, and
-> exthdrs_common.c contains functions that are generic. These functions
-> include those that will be used with IPv4 extension headers.
-> Generic extension header related functions are prefixed by ipeh_.
+> Create a single TLV parameter table that holds meta information for IPv6
+> Hop-by-Hop and Destination TLVs. The data structure is composed of a 256
+> element array of u8's (one entry for each TLV type to allow O(1) lookup).
+> Each entry provides an offset into an array of TLV proc data structures which
+> follows the array of u8s. The TLV proc data structure contains parameters and
+> handler functions for receiving and transmitting TLVs. The zeroth element in
+> the TLV proc array provides default parameters for TLVs.
 > 
-> Fix kbuild issue.
+> A class attribute indicates the type of extension header in which the TLV may
+> be used (e.g. Hop-by-Hop options, Destination options, or Destination
+> options before the routing header).
 > 
-> Reported-by: kbuild test robot <lkp@intel.com>
+> Functions are defined to manipulate entries in the TLV parameter table.
+> 
+> * tlv_{set|unset}_proc set a TLV proc entry (ops and parameters)
+> * tlv_{set|unset}_params set parameters only
+> 
+> Receive TLV lookup and processing is modified to be a lookup in the TLV
+> parameter table. An init table containing parameters for TLVs supported by
+> the kernel is used to initialize the TLV table.
+> 
 > Signed-off-by: Tom Herbert <tom@herbertland.com>
 > ---
->  include/net/ipeh.h        |  12 ++++
->  include/net/ipv6.h        |   9 ---
->  net/dccp/ipv6.c           |   2 +-
->  net/ipv6/Kconfig          |   4 ++
->  net/ipv6/Makefile         |   1 +
->  net/ipv6/calipso.c        |   6 +-
->  net/ipv6/exthdrs.c        | 138 --------------------------------------------
->  net/ipv6/exthdrs_common.c | 144
-> ++++++++++++++++++++++++++++++++++++++++++++++
->  net/ipv6/ipv6_sockglue.c  |   2 +-
->  net/ipv6/raw.c            |   2 +-
->  net/ipv6/tcp_ipv6.c       |   2 +-
->  net/ipv6/udp.c            |   2 +-
->  net/l2tp/l2tp_ip6.c       |   2 +-
->  net/sctp/ipv6.c           |   2 +-
->  14 files changed, 171 insertions(+), 157 deletions(-)  create mode 100644
-> net/ipv6/exthdrs_common.c
+>  include/net/ipeh.h         | 107 ++++++++++++++++--
+>  include/net/ipv6.h         |   3 +
+>  include/uapi/linux/ipeh.h  |  16 +++
+>  net/ipv6/exthdrs.c         |  14 ++-
+>  net/ipv6/exthdrs_common.c  | 271
+> +++++++++++++++++++++++++++++++++++++++++----
+>  net/ipv6/exthdrs_options.c |  63 +++++++----
+>  6 files changed, 421 insertions(+), 53 deletions(-)  create mode 100644
+> include/uapi/linux/ipeh.h
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
