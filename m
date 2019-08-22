@@ -1,134 +1,206 @@
-From: William Tu <u9012063@gmail.com>
-Date: Wed, 21 Aug 2019 14:38:28 -0700
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix double clean of tx
- descriptors with xdp
-In-Reply-To: <CAKgT0UcCKiM1Ys=vWxctprN7fzWcBCk-PCuKB-8=RThM=CqLSQ@mail.gmail.com>
-References: <CGME20190820151644eucas1p179d6d1da42bb6be0aad8f58ac46624ce@eucas1p1.samsung.com>
- <20190820151611.10727-1-i.maximets@samsung.com>
- <CAKgT0Udn0D0_f=SOH2wpBRWV_u4rb1Qe2h7gguXnRNzJ_VkRzg@mail.gmail.com>
- <625791af-c656-1e42-b60e-b3a5cedcb4c4@samsung.com>
- <CAKgT0Uc27+ucd=a_sgTmv5g7_+ZTg1zK4isYJ0H7YWQj3d=Ejg@mail.gmail.com>
- <f7d0f7a5-e664-8b72-99c7-63275aff4c18@samsung.com>
- <CAKgT0UcCKiM1Ys=vWxctprN7fzWcBCk-PCuKB-8=RThM=CqLSQ@mail.gmail.com>
-Message-ID: <CALDO+SZCbxEEwCS6MyHk-Cp_LJ33N=QFqwZ8uRm0e-PBRgxRYw@mail.gmail.com>
+From: Kevin Laatz <kevin.laatz@intel.com>
+Date: Thu, 22 Aug 2019 01:44:16 +0000
+Subject: [Intel-wired-lan] [PATCH bpf-next v5 00/11] XDP unaligned chunk
+ placement support
+In-Reply-To: <20190730085400.10376-1-kevin.laatz@intel.com>
+References: <20190730085400.10376-1-kevin.laatz@intel.com>
+Message-ID: <20190822014427.49800-1-kevin.laatz@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Aug 21, 2019 at 9:57 AM Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
->
-> On Wed, Aug 21, 2019 at 9:22 AM Ilya Maximets <i.maximets@samsung.com> wrote:
-> >
-> > On 21.08.2019 4:17, Alexander Duyck wrote:
-> > > On Tue, Aug 20, 2019 at 8:58 AM Ilya Maximets <i.maximets@samsung.com> wrote:
-> > >>
-> > >> On 20.08.2019 18:35, Alexander Duyck wrote:
-> > >>> On Tue, Aug 20, 2019 at 8:18 AM Ilya Maximets <i.maximets@samsung.com> wrote:
-> > >>>>
-> > >>>> Tx code doesn't clear the descriptor status after cleaning.
-> > >>>> So, if the budget is larger than number of used elems in a ring, some
-> > >>>> descriptors will be accounted twice and xsk_umem_complete_tx will move
-> > >>>> prod_tail far beyond the prod_head breaking the comletion queue ring.
-> > >>>>
-> > >>>> Fix that by limiting the number of descriptors to clean by the number
-> > >>>> of used descriptors in the tx ring.
-> > >>>>
-> > >>>> Fixes: 8221c5eba8c1 ("ixgbe: add AF_XDP zero-copy Tx support")
-> > >>>> Signed-off-by: Ilya Maximets <i.maximets@samsung.com>
-> > >>>
-> > >>> I'm not sure this is the best way to go. My preference would be to
-> > >>> have something in the ring that would prevent us from racing which I
-> > >>> don't think this really addresses. I am pretty sure this code is safe
-> > >>> on x86 but I would be worried about weak ordered systems such as
-> > >>> PowerPC.
-> > >>>
-> > >>> It might make sense to look at adding the eop_desc logic like we have
-> > >>> in the regular path with a proper barrier before we write it and after
-> > >>> we read it. So for example we could hold of on writing the bytecount
-> > >>> value until the end of an iteration and call smp_wmb before we write
-> > >>> it. Then on the cleanup we could read it and if it is non-zero we take
-> > >>> an smp_rmb before proceeding further to process the Tx descriptor and
-> > >>> clearing the value. Otherwise this code is going to just keep popping
-> > >>> up with issues.
-> > >>
-> > >> But, unlike regular case, xdp zero-copy xmit and clean for particular
-> > >> tx ring always happens in the same NAPI context and even on the same
-> > >> CPU core.
-> > >>
-> > >> I saw the 'eop_desc' manipulations in regular case and yes, we could
-> > >> use 'next_to_watch' field just as a flag of descriptor existence,
-> > >> but it seems unnecessarily complicated. Am I missing something?
-> > >>
-> > >
-> > > So is it always in the same NAPI context?. I forgot, I was thinking
-> > > that somehow the socket could possibly make use of XDP for transmit.
-> >
-> > AF_XDP socket only triggers tx interrupt on ndo_xsk_async_xmit() which
-> > is used in zero-copy mode. Real xmit happens inside
-> > ixgbe_poll()
-> >  -> ixgbe_clean_xdp_tx_irq()
-> >     -> ixgbe_xmit_zc()
-> >
-> > This should be not possible to bound another XDP socket to the same netdev
-> > queue.
-> >
-> > It also possible to xmit frames in xdp_ring while performing XDP_TX/REDIRECT
-> > actions. REDIRECT could happen from different netdev with different NAPI
-> > context, but this operation is bound to specific CPU core and each core has
-> > its own xdp_ring.
-> >
-> > However, I'm not an expert here.
-> > Bj?rn, maybe you could comment on this?
-> >
-> > >
-> > > As far as the logic to use I would be good with just using a value you
-> > > are already setting such as the bytecount value. All that would need
-> > > to happen is to guarantee that the value is cleared in the Tx path. So
-> > > if you clear the bytecount in ixgbe_clean_xdp_tx_irq you could
-> > > theoretically just use that as well to flag that a descriptor has been
-> > > populated and is ready to be cleaned. Assuming the logic about this
-> > > all being in the same NAPI context anyway you wouldn't need to mess
-> > > with the barrier stuff I mentioned before.
-> >
-> > Checking the number of used descs, i.e. next_to_use - next_to_clean,
-> > makes iteration in this function logically equal to the iteration inside
-> > 'ixgbe_xsk_clean_tx_ring()'. Do you think we need to change the later
-> > function too to follow same 'bytecount' approach? I don't like having
-> > two different ways to determine number of used descriptors in the same file.
-> >
-> > Best regards, Ilya Maximets.
->
-> As far as ixgbe_clean_xdp_tx_irq() vs ixgbe_xsk_clean_tx_ring(), I
-> would say that if you got rid of budget and framed things more like
-> how ixgbe_xsk_clean_tx_ring was framed with the ntc != ntu being
-> obvious I would prefer to see us go that route.
->
-> Really there is no need for budget in ixgbe_clean_xdp_tx_irq() if you
-> are going to be working with a static ntu value since you will only
-> ever process one iteration through the ring anyway. It might make more
-> sense if you just went through and got rid of budget and i, and
-> instead used ntc and ntu like what was done in
-> ixgbe_xsk_clean_tx_ring().
->
-> Thanks.
->
-> - Alex
+This patch set adds the ability to use unaligned chunks in the XDP umem.
 
-Not familiar with the driver details.
-I tested this patch and the issue mentioned in OVS mailing list.
-https://www.mail-archive.com/ovs-dev at openvswitch.org/msg35362.html
-and indeed the problem goes away. But I saw a huge performance drop,
-my AF_XDP tx performance drops from >9Mpps to <5Mpps.
+Currently, all chunk addresses passed to the umem are masked to be chunk
+size aligned (max is PAGE_SIZE). This limits where we can place chunks
+within the umem as well as limiting the packet sizes that are supported.
 
-Tested using kernel 5.3.0-rc3+
-03:00.0 Ethernet controller: Intel Corporation Ethernet Controller
-10-Gigabit X540-AT2 (rev 01)
-Subsystem: Intel Corporation Ethernet 10G 2P X540-t Adapter
-Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx+
+The changes in this patch set removes these restrictions, allowing XDP to
+be more flexible in where it can place a chunk within a umem. By relaxing
+where the chunks can be placed, it allows us to use an arbitrary buffer
+size and place that wherever we have a free address in the umem. These
+changes add the ability to support arbitrary frame sizes up to 4k
+(PAGE_SIZE) and make it easy to integrate with other existing frameworks
+that have their own memory management systems, such as DPDK.
+In DPDK, for example, there is already support for AF_XDP with zero-copy.
+However, with this patch set the integration will be much more seamless.
+You can find the DPDK AF_XDP driver at:
+https://git.dpdk.org/dpdk/tree/drivers/net/af_xdp
 
-Regards,
-William
+Since we are now dealing with arbitrary frame sizes, we need also need to
+update how we pass around addresses. Currently, the addresses can simply be
+masked to 2k to get back to the original address. This becomes less trivial
+when using frame sizes that are not a 'power of 2' size. This patch set
+modifies the Rx/Tx descriptor format to use the upper 16-bits of the addr
+field for an offset value, leaving the lower 48-bits for the address (this
+leaves us with 256 Terabytes, which should be enough!). We only need to use
+the upper 16-bits to store the offset when running in unaligned mode.
+Rather than adding the offset (headroom etc) to the address, we will store
+it in the upper 16-bits of the address field. This way, we can easily add
+the offset to the address where we need it, using some bit manipulation and
+addition, and we can also easily get the original address wherever we need
+it (for example in i40e_zca_free) by simply masking to get the lower
+48-bits of the address field.
+
+Note: The mlx5e patch only adds support for the new offset handling. Maxim
+Mikityanski <maximmi@mellanox.com> is working on an additional patch that
+enables the unaligned chunks feature (makes mlx5e accept arbitrary frame
+sizes) which will be added later and applies on top of this patch.
+
+The numbers below were recorded with the following set up:
+  - Intel(R) Xeon(R) Gold 6140 CPU @ 2.30GHz
+  - Intel Corporation Ethernet Controller XXV710 for 25GbE SFP28 (rev 02)
+  - Driver: i40e
+  - Application: xdpsock with l2fwd (single interface)
+  - Turbo disabled in BIOS
+
+These are solely for comparing performance with and without the patches.
+The largest drop was ~1.5% (in zero-copy mode).
+
++-------------------------+-------------+-----------------+-------------+
+| Buffer size: 2048       | SKB mode    | Zero-copy       | Copy        |
++-------------------------+-------------+-----------------+-------------+
+| Aligned (baseline)      | 1.25 Mpps   | 10.0 Mpps       | 1.66 Mpps   |
++-------------------------+-------------+-----------------+-------------+
+| Aligned (with patches)  | 1.25 Mpps   | 9.85 Mpps       | 1.66 Mpps   |
++-------------------------+-------------+-----------------+-------------+
+| Unaligned               | 1.25 Mpps   | 9.65 Mpps       | 1.66 Mpps   |
++-------------------------+-------------+-----------------+-------------+
+
+This patch set has been applied against
+commit 0bb52b0dfc88 ("tools: bpftool: add 'bpftool map freeze' subcommand")
+
+Structure of the patch set:
+Patch 1:
+  - Remove unnecessary masking and headroom addition during zero-copy Rx
+    buffer recycling in i40e. This change is required in order for the
+    buffer recycling to work in the unaligned chunk mode.
+
+Patch 2:
+  - Remove unnecessary masking and headroom addition during
+    zero-copy Rx buffer recycling in ixgbe. This change is required in
+    order for the  buffer recycling to work in the unaligned chunk mode.
+
+Patch 3:
+  - Add infrastructure for unaligned chunks. Since we are dealing with
+    unaligned chunks that could potentially cross a physical page boundary,
+    we add checks to keep track of that information. We can later use this
+    information to correctly handle buffers that are placed at an address
+    where they cross a page boundary.  This patch also modifies the
+    existing Rx and Tx functions to use the new descriptor format. To
+    handle addresses correctly, we need to mask appropriately based on
+    whether we are in aligned or unaligned mode.
+
+Patch 4:
+  - This patch updates the i40e driver to make use of the new descriptor
+    format.
+
+Patch 5:
+  - This patch updates the ixgbe driver to make use of the new descriptor
+    format.
+
+Patch 6:
+  - This patch updates the mlx5e driver to make use of the new descriptor
+    format. These changes are required to handle the new descriptor format
+    and for unaligned chunks support.
+
+Patch 7:
+  - Add flags for umem configuration to libbpf. Since we increase the size
+    of the struct by adding flags, we also need to add the ABI versioning
+    in this patch.
+
+Patch 8:
+  - Modify xdpsock application to add a command line option for
+    unaligned chunks
+
+Patch 9:
+  - Since we can now run the application in unaligned chunk mode, we need
+    to make sure we recycle the buffers appropriately.
+
+Patch 10:
+  - Adds hugepage support to the xdpsock application
+
+Patch 11:
+  - Documentation update to include the unaligned chunk scenario. We need
+    to explicitly state that the incoming addresses are only masked in the
+    aligned chunk mode and not the unaligned chunk mode.
+
+---
+v2:
+  - fixed checkpatch issues
+  - fixed Rx buffer recycling for unaligned chunks in xdpsock
+  - removed unused defines
+  - fixed how chunk_size is calculated in xsk_diag.c
+  - added some performance numbers to cover letter
+  - modified descriptor format to make it easier to retrieve original
+    address
+  - removed patch adding off_t off to the zero copy allocator. This is no
+    longer needed with the new descriptor format.
+
+v3:
+  - added patch for mlx5 driver changes needed for unaligned chunks
+  - moved offset handling to new helper function
+  - changed value used for the umem chunk_mask. Now using the new
+    descriptor format to save us doing the calculations in a number of
+    places meaning more of the code is left unchanged while adding
+    unaligned chunk support.
+
+v4:
+  - reworked the next_pg_contig field in the xdp_umem_page struct. We now
+    use the low 12 bits of the addr for flags rather than adding an extra
+    field in the struct.
+  - modified unaligned chunks flag define
+  - fixed page_start calculation in __xsk_rcv_memcpy().
+  - move offset handling to the xdp_umem_get_* functions
+  - modified the len field in xdp_umem_reg struct. We now use 16 bits from
+    this for the flags field.
+  - fixed headroom addition to handle in the mlx5e driver
+  - other minor changes based on review comments
+
+v5:
+  - Added ABI versioning in the libbpf patch
+  - Removed bitfields in the xdp_umem_reg struct. Adding new flags field.
+  - Added accessors for getting addr and offset.
+  - Added helper function for adding the offset to the addr.
+  - Fixed conflicts with 'bpf-af-xdp-wakeup' which was merged recently.
+  - Fixed typo in mlx driver patch.
+  - Moved libbpf patch to later in the set (7/11, just before the sample
+    app changes)
+
+Kevin Laatz (11):
+  i40e: simplify Rx buffer recycle
+  ixgbe: simplify Rx buffer recycle
+  xsk: add support to allow unaligned chunk placement
+  i40e: modify driver for handling offsets
+  ixgbe: modify driver for handling offsets
+  mlx5e: modify driver for handling offsets
+  libbpf: add flags to umem config
+  samples/bpf: add unaligned chunks mode support to xdpsock
+  samples/bpf: add buffer recycling for unaligned chunks to xdpsock
+  samples/bpf: use hugepages in xdpsock app
+  doc/af_xdp: include unaligned chunk case
+
+ Documentation/networking/af_xdp.rst           | 10 +-
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 26 +++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 26 +++--
+ .../net/ethernet/mellanox/mlx5/core/en/xdp.c  |  8 +-
+ .../ethernet/mellanox/mlx5/core/en/xsk/rx.c   |  3 +-
+ include/net/xdp_sock.h                        | 75 ++++++++++++++-
+ include/uapi/linux/if_xdp.h                   |  9 ++
+ net/xdp/xdp_umem.c                            | 19 +++-
+ net/xdp/xsk.c                                 | 96 +++++++++++++++----
+ net/xdp/xsk_diag.c                            |  2 +-
+ net/xdp/xsk_queue.h                           | 68 +++++++++++--
+ samples/bpf/xdpsock_user.c                    | 61 ++++++++----
+ tools/include/uapi/linux/if_xdp.h             |  9 ++
+ tools/lib/bpf/Makefile                        |  5 +-
+ tools/lib/bpf/libbpf.map                      |  1 +
+ tools/lib/bpf/xsk.c                           | 33 ++++++-
+ tools/lib/bpf/xsk.h                           | 27 ++++++
+ 17 files changed, 384 insertions(+), 94 deletions(-)
+
+-- 
+2.17.1
+
