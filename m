@@ -1,65 +1,58 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
-Date: Fri, 23 Aug 2019 08:10:25 +0200
-Subject: [Intel-wired-lan] [PATCH net v3] ixgbe: fix double clean of tx
- descriptors with xdp
-In-Reply-To: <CALDO+SYhU4krmBO8d4hsDGm+BuUAR4qMv=WzVa=jAx27+g9KnA@mail.gmail.com>
-References: <CGME20190822171243eucas1p12213f2239d6c36be515dade41ed7470b@eucas1p1.samsung.com>
- <20190822171237.20798-1-i.maximets@samsung.com>
- <CAKgT0UepBGqx=FiqrdC-r3kvkMxVAHonkfc6rDt_HVQuzahZPQ@mail.gmail.com>
- <CALDO+SYhU4krmBO8d4hsDGm+BuUAR4qMv=WzVa=jAx27+g9KnA@mail.gmail.com>
-Message-ID: <217e90f5-206a-bb80-6699-f6dd750b57d9@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 22 Aug 2019 17:13:54 +0000
+Subject: [Intel-wired-lan] [PATCH v3 net-next 2/7] ipeh: Move generic EH
+ functions to exthdrs_common.c
+In-Reply-To: <1566254665-5200-3-git-send-email-tom@herbertland.com>
+References: <1566254665-5200-1-git-send-email-tom@herbertland.com>
+ <1566254665-5200-3-git-send-email-tom@herbertland.com>
+Message-ID: <faa4b599286e4a76898078e59fa42af5@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2019-08-22 19:32, William Tu wrote:
-> On Thu, Aug 22, 2019 at 10:21 AM Alexander Duyck
-> <alexander.duyck@gmail.com> wrote:
->>
->> On Thu, Aug 22, 2019 at 10:12 AM Ilya Maximets <i.maximets@samsung.com> wrote:
->>>
->>> Tx code doesn't clear the descriptors' status after cleaning.
->>> So, if the budget is larger than number of used elems in a ring, some
->>> descriptors will be accounted twice and xsk_umem_complete_tx will move
->>> prod_tail far beyond the prod_head breaking the completion queue ring.
->>>
->>> Fix that by limiting the number of descriptors to clean by the number
->>> of used descriptors in the tx ring.
->>>
->>> 'ixgbe_clean_xdp_tx_irq()' function refactored to look more like
->>> 'ixgbe_xsk_clean_tx_ring()' since we're allowed to directly use
->>> 'next_to_clean' and 'next_to_use' indexes.
->>>
->>> Fixes: 8221c5eba8c1 ("ixgbe: add AF_XDP zero-copy Tx support")
->>> Signed-off-by: Ilya Maximets <i.maximets@samsung.com>
->>> ---
->>>
->>> Version 3:
->>>    * Reverted some refactoring made for v2.
->>>    * Eliminated 'budget' for tx clean.
->>>    * prefetch returned.
->>>
->>> Version 2:
->>>    * 'ixgbe_clean_xdp_tx_irq()' refactored to look more like
->>>      'ixgbe_xsk_clean_tx_ring()'.
->>>
->>>   drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 29 ++++++++------------
->>>   1 file changed, 11 insertions(+), 18 deletions(-)
->>
->> Thanks for addressing my concerns.
->>
->> Acked-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tom Herbert
+> Sent: Monday, August 19, 2019 3:44 PM
+> To: Intel-wired-lan at lists.osuosl.org
+> Cc: Tom Herbert <tom@herbertland.com>; Tom Herbert
+> <tom@quantonium.net>
+> Subject: [Intel-wired-lan] [PATCH v3 net-next 2/7] ipeh: Move generic EH
+> functions to exthdrs_common.c
 > 
-> Thanks.
+> From: Tom Herbert <tom@quantonium.net>
 > 
-> Tested-by: William Tu <u9012063@gmail.com>
+> Move generic functions in exthdrs.c to new exthdrs_common.c so that
+> exthdrs.c only contains functions that are specific to IPv6 processing, and
+> exthdrs_common.c contains functions that are generic. These functions
+> include those that will be used with IPv4 extension headers.
+> Generic extension header related functions are prefixed by ipeh_.
 > 
+> Fix kbuild issue.
+> 
+> Reported-by: kbuild test robot <lkp@intel.com>
+> Signed-off-by: Tom Herbert <tom@herbertland.com>
+> ---
+>  include/net/ipeh.h        |  12 ++++
+>  include/net/ipv6.h        |   9 ---
+>  net/dccp/ipv6.c           |   2 +-
+>  net/ipv6/Kconfig          |   4 ++
+>  net/ipv6/Makefile         |   1 +
+>  net/ipv6/calipso.c        |   6 +-
+>  net/ipv6/exthdrs.c        | 138 --------------------------------------------
+>  net/ipv6/exthdrs_common.c | 144
+> ++++++++++++++++++++++++++++++++++++++++++++++
+>  net/ipv6/ipv6_sockglue.c  |   2 +-
+>  net/ipv6/raw.c            |   2 +-
+>  net/ipv6/tcp_ipv6.c       |   2 +-
+>  net/ipv6/udp.c            |   2 +-
+>  net/l2tp/l2tp_ip6.c       |   2 +-
+>  net/sctp/ipv6.c           |   2 +-
+>  14 files changed, 171 insertions(+), 157 deletions(-)  create mode 100644
+> net/ipv6/exthdrs_common.c
 
-Will, thanks for testing! For this patch, did you notice any performance
-degradation?
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
-Cheers,
-Bj?rn
