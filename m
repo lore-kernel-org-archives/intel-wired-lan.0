@@ -1,8 +1,8 @@
 From: Ilya Maximets <i.maximets@samsung.com>
-Date: Thu, 22 Aug 2019 11:05:52 +0300
+Date: Thu, 22 Aug 2019 11:17:18 +0300
 Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix double clean of tx
  descriptors with xdp
-In-Reply-To: <CAJ+HfNjo0tpk2v_+85SuX7Jw797QwRA7uJBggPHtY=JznLC9Zg@mail.gmail.com>
+In-Reply-To: <CALDO+SZCbxEEwCS6MyHk-Cp_LJ33N=QFqwZ8uRm0e-PBRgxRYw@mail.gmail.com>
 References: <CGME20190820151644eucas1p179d6d1da42bb6be0aad8f58ac46624ce@eucas1p1.samsung.com>
  <20190820151611.10727-1-i.maximets@samsung.com>
  <CAKgT0Udn0D0_f=SOH2wpBRWV_u4rb1Qe2h7gguXnRNzJ_VkRzg@mail.gmail.com>
@@ -10,16 +10,17 @@ References: <CGME20190820151644eucas1p179d6d1da42bb6be0aad8f58ac46624ce@eucas1p1
  <CAKgT0Uc27+ucd=a_sgTmv5g7_+ZTg1zK4isYJ0H7YWQj3d=Ejg@mail.gmail.com>
  <f7d0f7a5-e664-8b72-99c7-63275aff4c18@samsung.com>
  <CAKgT0UcCKiM1Ys=vWxctprN7fzWcBCk-PCuKB-8=RThM=CqLSQ@mail.gmail.com>
- <CAJ+HfNjo0tpk2v_+85SuX7Jw797QwRA7uJBggPHtY=JznLC9Zg@mail.gmail.com>
-Message-ID: <54faa2f1-345d-b5b2-7e48-963876b62813@samsung.com>
+ <CALDO+SZCbxEEwCS6MyHk-Cp_LJ33N=QFqwZ8uRm0e-PBRgxRYw@mail.gmail.com>
+Message-ID: <cbf7c51b-9ce7-6ef6-32c4-981258d4af4c@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 22.08.2019 10:12, Bj?rn T?pel wrote:
-> On Wed, 21 Aug 2019 at 18:57, Alexander Duyck <alexander.duyck@gmail.com> wrote:
+On 22.08.2019 0:38, William Tu wrote:
+> On Wed, Aug 21, 2019 at 9:57 AM Alexander Duyck
+> <alexander.duyck@gmail.com> wrote:
 >>
 >> On Wed, Aug 21, 2019 at 9:22 AM Ilya Maximets <i.maximets@samsung.com> wrote:
 >>>
@@ -114,27 +115,37 @@ On 22.08.2019 10:12, Bj?rn T?pel wrote:
 >> instead used ntc and ntu like what was done in
 >> ixgbe_xsk_clean_tx_ring().
 >>
-> 
-> +1. I'd prefer this as well!
-
-Sounds good. I'll look in this direction.
-But I'm not completely sure about 'budget' elimination. Wouldn't it cause
-issues if we'll clean the whole ring at once? I mean maybe it'll be too long
-to hold the CPU core for this amount of work.
-We could re-work the code keeping the loop break on budget exhaustion.
-What do you think?
-
-> 
-> 
-> Cheers,
-> Bj?rn
-> 
 >> Thanks.
 >>
 >> - Alex
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 > 
+> Not familiar with the driver details.
+> I tested this patch and the issue mentioned in OVS mailing list.
+> https://www.mail-archive.com/ovs-dev at openvswitch.org/msg35362.html
+> and indeed the problem goes away.
+
+Good. Thanks for testing!
+
+> But I saw a huge performance drop,
+> my AF_XDP tx performance drops from >9Mpps to <5Mpps.
+
+I didn't expect so big performance difference with this change.
+What is your test scenario? Is it possible that you're accounting same
+packet several times due to broken completion queue?
+
+Looking@samples/bpf/xdpsock_user.c:complete_tx_only(), it accounts
+sent packets (tx_npkts) by accumulating results of xsk_ring_cons__peek()
+for completion queue, so it's not a trusted source of pps information.
+
+Best regards, Ilya Maximets.
+
 > 
+> Tested using kernel 5.3.0-rc3+
+> 03:00.0 Ethernet controller: Intel Corporation Ethernet Controller
+> 10-Gigabit X540-AT2 (rev 01)
+> Subsystem: Intel Corporation Ethernet 10G 2P X540-t Adapter
+> Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx+
+> 
+> Regards,
+> William
