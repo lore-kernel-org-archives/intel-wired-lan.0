@@ -1,11 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 22 Aug 2019 17:17:45 +0000
-Subject: [Intel-wired-lan] [PATCH v3 net-next 4/7] ip6tlvs: Registration
- of TLV handlers and parameters
-In-Reply-To: <1566254665-5200-5-git-send-email-tom@herbertland.com>
-References: <1566254665-5200-1-git-send-email-tom@herbertland.com>
- <1566254665-5200-5-git-send-email-tom@herbertland.com>
-Message-ID: <6fc3872624214c46811a27a81c13a8c7@intel.com>
+Date: Thu, 22 Aug 2019 17:20:20 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Add support for X710 device
+In-Reply-To: <20190813112553.80166-1-alice.michael@intel.com>
+References: <20190813112553.80166-1-alice.michael@intel.com>
+Message-ID: <215c63db035841e5a84209303741c581@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,48 +12,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Tom Herbert
-> Sent: Monday, August 19, 2019 3:44 PM
-> To: Intel-wired-lan at lists.osuosl.org
-> Cc: Tom Herbert <tom@herbertland.com>; Tom Herbert
-> <tom@quantonium.net>
-> Subject: [Intel-wired-lan] [PATCH v3 net-next 4/7] ip6tlvs: Registration of TLV
-> handlers and parameters
+> Behalf Of Alice Michael
+> Sent: Tuesday, August 13, 2019 4:26 AM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] i40e: Add support for X710 device
 > 
-> From: Tom Herbert <tom@quantonium.net>
+> From: Mariusz Stachura <mariusz.stachura@intel.com>
 > 
-> Create a single TLV parameter table that holds meta information for IPv6
-> Hop-by-Hop and Destination TLVs. The data structure is composed of a 256
-> element array of u8's (one entry for each TLV type to allow O(1) lookup).
-> Each entry provides an offset into an array of TLV proc data structures which
-> follows the array of u8s. The TLV proc data structure contains parameters and
-> handler functions for receiving and transmitting TLVs. The zeroth element in
-> the TLV proc array provides default parameters for TLVs.
+> Add I40E_DEV_ID_10G_BASE_T_BC to i40e_pci_tbl
 > 
-> A class attribute indicates the type of extension header in which the TLV may
-> be used (e.g. Hop-by-Hop options, Destination options, or Destination
-> options before the routing header).
-> 
-> Functions are defined to manipulate entries in the TLV parameter table.
-> 
-> * tlv_{set|unset}_proc set a TLV proc entry (ops and parameters)
-> * tlv_{set|unset}_params set parameters only
-> 
-> Receive TLV lookup and processing is modified to be a lookup in the TLV
-> parameter table. An init table containing parameters for TLVs supported by
-> the kernel is used to initialize the TLV table.
-> 
-> Signed-off-by: Tom Herbert <tom@herbertland.com>
+> Signed-off-by: Mariusz Stachura <mariusz.stachura@intel.com>
 > ---
->  include/net/ipeh.h         | 107 ++++++++++++++++--
->  include/net/ipv6.h         |   3 +
->  include/uapi/linux/ipeh.h  |  16 +++
->  net/ipv6/exthdrs.c         |  14 ++-
->  net/ipv6/exthdrs_common.c  | 271
-> +++++++++++++++++++++++++++++++++++++++++----
->  net/ipv6/exthdrs_options.c |  63 +++++++----
->  6 files changed, 421 insertions(+), 53 deletions(-)  create mode 100644
-> include/uapi/linux/ipeh.h
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
+>  1 file changed, 1 insertion(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
