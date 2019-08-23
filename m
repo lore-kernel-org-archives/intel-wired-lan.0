@@ -1,16 +1,16 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 24 Aug 2019 05:08:13 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD INCOMPLETE
- 1b5f5d388b2b4fcb3324914bc90b3956e50ac2b0
-Message-ID: <5d6055bd.n8aSHfg+tPaZNYWI%lkp@intel.com>
+Date: Sat, 24 Aug 2019 07:08:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD INCOMPLETE
+ 88213a172114ad563d60bc4effd41850ef252135
+Message-ID: <5d6071ff.hK14yEH5JJRqlCpW%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 1b5f5d388b2b4fcb3324914bc90b3956e50ac2b0  i40e: fix retrying in i40e_aq_get_phy_capabilities
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+branch HEAD: 88213a172114ad563d60bc4effd41850ef252135  ip6tlvs: Validation of TX Destination and Hop-by-Hop options
 
 TIMEOUT after 1448m
 
@@ -113,6 +113,8 @@ s390                             allmodconfig
 s390                              allnoconfig
 s390                          debug_defconfig
 s390                                defconfig
+i386                              allnoconfig
+i386                                defconfig
 x86_64                 randconfig-b001-201933
 x86_64                 randconfig-b002-201933
 x86_64                 randconfig-b003-201933
@@ -145,8 +147,6 @@ x86_64                                nfsroot
 x86_64                                   rhel
 x86_64                               rhel-7.6
 i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
 ia64                             alldefconfig
 ia64                             allmodconfig
 ia64                              allnoconfig
