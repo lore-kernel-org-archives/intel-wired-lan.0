@@ -1,29 +1,65 @@
-From: David Miller <davem@davemloft.net>
-Date: Thu, 22 Aug 2019 16:23:39 -0700 (PDT)
-Subject: [Intel-wired-lan] 
- =?iso-2022-jp?b?W1BBVENIXSBldGhlcm5ldDogRGVs?=
- =?iso-2022-jp?b?ZXRlIHVubmVjZXNzYXJ5IGNoZWNrcyBiZWZvcmUgdGhlIG1hY3JvIGNh?=
- =?iso-2022-jp?b?bGwgGyRCIUgbKEJkZXZfa2ZyZWVfc2tiGyRCIUkbKEI=?=
-In-Reply-To: <af1ae1cf-4a01-5e3a-edc2-058668487137@web.de>
-References: <af1ae1cf-4a01-5e3a-edc2-058668487137@web.de>
-Message-ID: <20190822.162339.831735149510227752.davem@davemloft.net>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
+Date: Fri, 23 Aug 2019 08:10:25 +0200
+Subject: [Intel-wired-lan] [PATCH net v3] ixgbe: fix double clean of tx
+ descriptors with xdp
+In-Reply-To: <CALDO+SYhU4krmBO8d4hsDGm+BuUAR4qMv=WzVa=jAx27+g9KnA@mail.gmail.com>
+References: <CGME20190822171243eucas1p12213f2239d6c36be515dade41ed7470b@eucas1p1.samsung.com>
+ <20190822171237.20798-1-i.maximets@samsung.com>
+ <CAKgT0UepBGqx=FiqrdC-r3kvkMxVAHonkfc6rDt_HVQuzahZPQ@mail.gmail.com>
+ <CALDO+SYhU4krmBO8d4hsDGm+BuUAR4qMv=WzVa=jAx27+g9KnA@mail.gmail.com>
+Message-ID: <217e90f5-206a-bb80-6699-f6dd750b57d9@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Markus Elfring <Markus.Elfring@web.de>
-Date: Thu, 22 Aug 2019 20:30:15 +0200
+On 2019-08-22 19:32, William Tu wrote:
+> On Thu, Aug 22, 2019 at 10:21 AM Alexander Duyck
+> <alexander.duyck@gmail.com> wrote:
+>>
+>> On Thu, Aug 22, 2019 at 10:12 AM Ilya Maximets <i.maximets@samsung.com> wrote:
+>>>
+>>> Tx code doesn't clear the descriptors' status after cleaning.
+>>> So, if the budget is larger than number of used elems in a ring, some
+>>> descriptors will be accounted twice and xsk_umem_complete_tx will move
+>>> prod_tail far beyond the prod_head breaking the completion queue ring.
+>>>
+>>> Fix that by limiting the number of descriptors to clean by the number
+>>> of used descriptors in the tx ring.
+>>>
+>>> 'ixgbe_clean_xdp_tx_irq()' function refactored to look more like
+>>> 'ixgbe_xsk_clean_tx_ring()' since we're allowed to directly use
+>>> 'next_to_clean' and 'next_to_use' indexes.
+>>>
+>>> Fixes: 8221c5eba8c1 ("ixgbe: add AF_XDP zero-copy Tx support")
+>>> Signed-off-by: Ilya Maximets <i.maximets@samsung.com>
+>>> ---
+>>>
+>>> Version 3:
+>>>    * Reverted some refactoring made for v2.
+>>>    * Eliminated 'budget' for tx clean.
+>>>    * prefetch returned.
+>>>
+>>> Version 2:
+>>>    * 'ixgbe_clean_xdp_tx_irq()' refactored to look more like
+>>>      'ixgbe_xsk_clean_tx_ring()'.
+>>>
+>>>   drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 29 ++++++++------------
+>>>   1 file changed, 11 insertions(+), 18 deletions(-)
+>>
+>> Thanks for addressing my concerns.
+>>
+>> Acked-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> 
+> Thanks.
+> 
+> Tested-by: William Tu <u9012063@gmail.com>
+> 
 
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Thu, 22 Aug 2019 20:02:56 +0200
-> 
-> The dev_kfree_skb() function performs also input parameter validation.
-> Thus the test around the shown calls is not needed.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Will, thanks for testing! For this patch, did you notice any performance
+degradation?
 
-Applied.
+
+Cheers,
+Bj?rn
