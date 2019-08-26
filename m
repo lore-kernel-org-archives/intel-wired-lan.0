@@ -1,151 +1,167 @@
-From: Forrest Fleming <ffleming@gmail.com>
-Date: Fri, 23 Aug 2019 19:14:21 +0000
-Subject: [Intel-wired-lan] [PATCH] net: intel: Cleanup e1000 - add space
- between }}
-Message-ID: <20190823191421.3318-1-ffleming@gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Mon, 26 Aug 2019 08:43:38 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 360b438bdf889d148ed7d99a37b37c611406ee53
+Message-ID: <5d632b3a.sAqQzAH5ukF4H3iq%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-suggested by checkpatch
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 360b438bdf889d148ed7d99a37b37c611406ee53  fm10k: add support for ndo_get_vf_stats operation
 
-Signed-off-by: Forrest Fleming <ffleming@gmail.com>
+elapsed time: 74m
+
+configs tested: 142
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                 randconfig-a001-201934
+x86_64                 randconfig-a002-201934
+x86_64                 randconfig-a003-201934
+x86_64                 randconfig-a004-201934
+i386                   randconfig-a001-201934
+i386                   randconfig-a002-201934
+i386                   randconfig-a003-201934
+i386                   randconfig-a004-201934
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                           allmodconfig
+x86_64                           allyesconfig
+i386                             alldefconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-g001-201934
+x86_64                 randconfig-g002-201934
+x86_64                 randconfig-g003-201934
+x86_64                 randconfig-g004-201934
+i386                   randconfig-g001-201934
+i386                   randconfig-g002-201934
+i386                   randconfig-g003-201934
+i386                   randconfig-g004-201934
+x86_64                 randconfig-c001-201934
+x86_64                 randconfig-c002-201934
+x86_64                 randconfig-c003-201934
+x86_64                 randconfig-c004-201934
+i386                   randconfig-c001-201934
+i386                   randconfig-c002-201934
+i386                   randconfig-c003-201934
+i386                   randconfig-c004-201934
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                              allmodconfig
+arm64                            allmodconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
+i386                              allnoconfig
+i386                                defconfig
+x86_64                 randconfig-f001-201934
+x86_64                 randconfig-f002-201934
+x86_64                 randconfig-f003-201934
+x86_64                 randconfig-f004-201934
+i386                   randconfig-f001-201934
+i386                   randconfig-f002-201934
+i386                   randconfig-f003-201934
+i386                   randconfig-f004-201934
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-h001-201934
+x86_64                 randconfig-h002-201934
+x86_64                 randconfig-h003-201934
+x86_64                 randconfig-h004-201934
+i386                   randconfig-h001-201934
+i386                   randconfig-h002-201934
+i386                   randconfig-h003-201934
+i386                   randconfig-h004-201934
+i386                             allmodconfig
+x86_64                 randconfig-b001-201934
+x86_64                 randconfig-b002-201934
+x86_64                 randconfig-b003-201934
+x86_64                 randconfig-b004-201934
+i386                   randconfig-b001-201934
+i386                   randconfig-b002-201934
+i386                   randconfig-b003-201934
+i386                   randconfig-b004-201934
+x86_64                 randconfig-d001-201934
+x86_64                 randconfig-d002-201934
+x86_64                 randconfig-d003-201934
+x86_64                 randconfig-d004-201934
+i386                   randconfig-d001-201934
+i386                   randconfig-d002-201934
+i386                   randconfig-d003-201934
+i386                   randconfig-d004-201934
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+
 ---
- .../net/ethernet/intel/e1000/e1000_param.c    | 28 +++++++++----------
- 1 file changed, 14 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_param.c b/drivers/net/ethernet/intel/e1000/e1000_param.c
-index d3f29ffe1e47..1a1f2f0237f9 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_param.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_param.c
-@@ -266,7 +266,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.arg  = { .r = {
- 				.min = E1000_MIN_TXD,
- 				.max = mac_type < e1000_82544 ? E1000_MAX_TXD : E1000_MAX_82544_TXD
--				}}
-+				} }
- 		};
- 
- 		if (num_TxDescriptors > bd) {
-@@ -295,7 +295,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 				.min = E1000_MIN_RXD,
- 				.max = mac_type < e1000_82544 ? E1000_MAX_RXD :
- 				       E1000_MAX_82544_RXD
--			}}
-+			} }
- 		};
- 
- 		if (num_RxDescriptors > bd) {
-@@ -341,7 +341,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "reading default settings from EEPROM",
- 			.def  = E1000_FC_DEFAULT,
- 			.arg  = { .l = { .nr = ARRAY_SIZE(fc_list),
--					 .p = fc_list }}
-+					 .p = fc_list } }
- 		};
- 
- 		if (num_FlowControl > bd) {
-@@ -359,7 +359,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_TIDV),
- 			.def  = DEFAULT_TIDV,
- 			.arg  = { .r = { .min = MIN_TXDELAY,
--					 .max = MAX_TXDELAY }}
-+					 .max = MAX_TXDELAY } }
- 		};
- 
- 		if (num_TxIntDelay > bd) {
-@@ -377,7 +377,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_TADV),
- 			.def  = DEFAULT_TADV,
- 			.arg  = { .r = { .min = MIN_TXABSDELAY,
--					 .max = MAX_TXABSDELAY }}
-+					 .max = MAX_TXABSDELAY } }
- 		};
- 
- 		if (num_TxAbsIntDelay > bd) {
-@@ -395,7 +395,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_RDTR),
- 			.def  = DEFAULT_RDTR,
- 			.arg  = { .r = { .min = MIN_RXDELAY,
--					 .max = MAX_RXDELAY }}
-+					 .max = MAX_RXDELAY } }
- 		};
- 
- 		if (num_RxIntDelay > bd) {
-@@ -413,7 +413,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_RADV),
- 			.def  = DEFAULT_RADV,
- 			.arg  = { .r = { .min = MIN_RXABSDELAY,
--					 .max = MAX_RXABSDELAY }}
-+					 .max = MAX_RXABSDELAY } }
- 		};
- 
- 		if (num_RxAbsIntDelay > bd) {
-@@ -431,7 +431,7 @@ void e1000_check_options(struct e1000_adapter *adapter)
- 			.err  = "using default of " __MODULE_STRING(DEFAULT_ITR),
- 			.def  = DEFAULT_ITR,
- 			.arg  = { .r = { .min = MIN_ITR,
--					 .max = MAX_ITR }}
-+					 .max = MAX_ITR } }
- 		};
- 
- 		if (num_InterruptThrottleRate > bd) {
-@@ -545,7 +545,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 			{          0, "" },
- 			{   SPEED_10, "" },
- 			{  SPEED_100, "" },
--			{ SPEED_1000, "" }};
-+			{ SPEED_1000, "" } };
- 
- 		opt = (struct e1000_option) {
- 			.type = list_option,
-@@ -553,7 +553,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 			.err  = "parameter ignored",
- 			.def  = 0,
- 			.arg  = { .l = { .nr = ARRAY_SIZE(speed_list),
--					 .p = speed_list }}
-+					 .p = speed_list } }
- 		};
- 
- 		if (num_Speed > bd) {
-@@ -567,7 +567,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 		static const struct e1000_opt_list dplx_list[] = {
- 			{           0, "" },
- 			{ HALF_DUPLEX, "" },
--			{ FULL_DUPLEX, "" }};
-+			{ FULL_DUPLEX, "" } };
- 
- 		opt = (struct e1000_option) {
- 			.type = list_option,
-@@ -575,7 +575,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 			.err  = "parameter ignored",
- 			.def  = 0,
- 			.arg  = { .l = { .nr = ARRAY_SIZE(dplx_list),
--					 .p = dplx_list }}
-+					 .p = dplx_list } }
- 		};
- 
- 		if (num_Duplex > bd) {
-@@ -623,7 +623,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 			 { 0x2c, AA "1000/FD, 100/FD, 100/HD" },
- 			 { 0x2d, AA "1000/FD, 100/FD, 100/HD, 10/HD" },
- 			 { 0x2e, AA "1000/FD, 100/FD, 100/HD, 10/FD" },
--			 { 0x2f, AA "1000/FD, 100/FD, 100/HD, 10/FD, 10/HD" }};
-+			 { 0x2f, AA "1000/FD, 100/FD, 100/HD, 10/FD, 10/HD" } };
- 
- 		opt = (struct e1000_option) {
- 			.type = list_option,
-@@ -631,7 +631,7 @@ static void e1000_check_copper_options(struct e1000_adapter *adapter)
- 			.err  = "parameter ignored",
- 			.def  = AUTONEG_ADV_DEFAULT,
- 			.arg  = { .l = { .nr = ARRAY_SIZE(an_list),
--					 .p = an_list }}
-+					 .p = an_list } }
- 		};
- 
- 		if (num_AutoNeg > bd) {
--- 
-2.17.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
