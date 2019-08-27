@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 27 Aug 2019 06:13:48 -0700
-Subject: [Intel-wired-lan] [PATCH S28 3/9] ice: Check for DCB capability
- before initializing DCB
+Date: Tue, 27 Aug 2019 06:13:54 -0700
+Subject: [Intel-wired-lan] [PATCH S28 9/9] ice: Rework around
+ device/function capabilities
 In-Reply-To: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
 References: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190827131354.12703-3-anthony.l.nguyen@intel.com>
+Message-ID: <20190827131354.12703-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,68 +13,147 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-Check the ICE_FLAG_DCB_CAPABLE before calling ice_init_pf_dcb.
+ice_parse_caps is printing capabilities in a different way when
+compared to the variable names. This makes it difficult to search for
+the right strings in the debug logs. So this patch updates the
+print strings to be exactly the same as the fields' name in the
+structure.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  3 ---
- drivers/net/ethernet/intel/ice/ice_main.c    | 15 ++++++++-------
- 2 files changed, 8 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 40 ++++++++++-----------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index e922adf1fa15..20f440a64650 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -474,7 +474,6 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 		}
- 
- 		pf->dcbx_cap = DCB_CAP_DCBX_HOST | DCB_CAP_DCBX_VER_IEEE;
--		set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
- 		return 0;
- 	}
- 
-@@ -483,8 +482,6 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 	/* DCBX in FW and LLDP enabled in FW */
- 	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
- 
--	set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
--
- 	err = ice_dcb_init_cfg(pf, locked);
- 	if (err)
- 		goto dcb_init_err;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 703fc7bf2b31..8bb3b81876a9 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2252,6 +2252,8 @@ static void ice_deinit_pf(struct ice_pf *pf)
- static int ice_init_pf(struct ice_pf *pf)
- {
- 	bitmap_zero(pf->flags, ICE_PF_FLAGS_NBITS);
-+	if (pf->hw.func_caps.common_cap.dcb)
-+		set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
- #ifdef CONFIG_PCI_IOV
- 	if (pf->hw.func_caps.common_cap.sr_iov_1_1) {
- 		struct ice_hw *hw = &pf->hw;
-@@ -2529,13 +2531,12 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		goto err_init_pf_unroll;
- 	}
- 
--	err = ice_init_pf_dcb(pf, false);
--	if (err) {
--		clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
--		clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
--
--		/* do not fail overall init if DCB init fails */
--		err = 0;
-+	if (test_bit(ICE_FLAG_DCB_CAPABLE, pf->flags)) {
-+		/* Note: DCB init failure is non-fatal to load */
-+		if (ice_init_pf_dcb(pf, false)) {
-+			clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
-+			clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
-+		}
- 	}
- 
- 	ice_determine_q_usage(pf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index e8397e5b6267..8b2c46615834 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1551,29 +1551,29 @@ ice_parse_caps(struct ice_hw *hw, void *buf, u32 cap_count,
+ 		case ICE_AQC_CAPS_VALID_FUNCTIONS:
+ 			caps->valid_functions = number;
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: valid functions = %d\n", prefix,
++				  "%s: valid_functions (bitmap) = %d\n", prefix,
+ 				  caps->valid_functions);
+ 			break;
+ 		case ICE_AQC_CAPS_SRIOV:
+ 			caps->sr_iov_1_1 = (number == 1);
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: SR-IOV = %d\n", prefix,
++				  "%s: sr_iov_1_1 = %d\n", prefix,
+ 				  caps->sr_iov_1_1);
+ 			break;
+ 		case ICE_AQC_CAPS_VF:
+ 			if (dev_p) {
+ 				dev_p->num_vfs_exposed = number;
+ 				ice_debug(hw, ICE_DBG_INIT,
+-					  "%s: VFs exposed = %d\n", prefix,
++					  "%s: num_vfs_exposed = %d\n", prefix,
+ 					  dev_p->num_vfs_exposed);
+ 			} else if (func_p) {
+ 				func_p->num_allocd_vfs = number;
+ 				func_p->vf_base_id = logical_id;
+ 				ice_debug(hw, ICE_DBG_INIT,
+-					  "%s: VFs allocated = %d\n", prefix,
++					  "%s: num_allocd_vfs = %d\n", prefix,
+ 					  func_p->num_allocd_vfs);
+ 				ice_debug(hw, ICE_DBG_INIT,
+-					  "%s: VF base_id = %d\n", prefix,
++					  "%s: vf_base_id = %d\n", prefix,
+ 					  func_p->vf_base_id);
+ 			}
+ 			break;
+@@ -1581,17 +1581,17 @@ ice_parse_caps(struct ice_hw *hw, void *buf, u32 cap_count,
+ 			if (dev_p) {
+ 				dev_p->num_vsi_allocd_to_host = number;
+ 				ice_debug(hw, ICE_DBG_INIT,
+-					  "%s: num VSI alloc to host = %d\n",
++					  "%s: num_vsi_allocd_to_host = %d\n",
+ 					  prefix,
+ 					  dev_p->num_vsi_allocd_to_host);
+ 			} else if (func_p) {
+ 				func_p->guar_num_vsi =
+ 					ice_get_num_per_func(hw, ICE_MAX_VSI);
+ 				ice_debug(hw, ICE_DBG_INIT,
+-					  "%s: num guaranteed VSI (fw) = %d\n",
++					  "%s: guar_num_vsi (fw) = %d\n",
+ 					  prefix, number);
+ 				ice_debug(hw, ICE_DBG_INIT,
+-					  "%s: num guaranteed VSI = %d\n",
++					  "%s: guar_num_vsi = %d\n",
+ 					  prefix, func_p->guar_num_vsi);
+ 			}
+ 			break;
+@@ -1600,56 +1600,56 @@ ice_parse_caps(struct ice_hw *hw, void *buf, u32 cap_count,
+ 			caps->active_tc_bitmap = logical_id;
+ 			caps->maxtc = phys_id;
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: DCB = %d\n", prefix, caps->dcb);
++				  "%s: dcb = %d\n", prefix, caps->dcb);
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: active TC bitmap = %d\n", prefix,
++				  "%s: active_tc_bitmap = %d\n", prefix,
+ 				  caps->active_tc_bitmap);
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: TC max = %d\n", prefix, caps->maxtc);
++				  "%s: maxtc = %d\n", prefix, caps->maxtc);
+ 			break;
+ 		case ICE_AQC_CAPS_RSS:
+ 			caps->rss_table_size = number;
+ 			caps->rss_table_entry_width = logical_id;
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: RSS table size = %d\n", prefix,
++				  "%s: rss_table_size = %d\n", prefix,
+ 				  caps->rss_table_size);
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: RSS table width = %d\n", prefix,
++				  "%s: rss_table_entry_width = %d\n", prefix,
+ 				  caps->rss_table_entry_width);
+ 			break;
+ 		case ICE_AQC_CAPS_RXQS:
+ 			caps->num_rxq = number;
+ 			caps->rxq_first_id = phys_id;
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: num Rx queues = %d\n", prefix,
++				  "%s: num_rxq = %d\n", prefix,
+ 				  caps->num_rxq);
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: Rx first queue ID = %d\n", prefix,
++				  "%s: rxq_first_id = %d\n", prefix,
+ 				  caps->rxq_first_id);
+ 			break;
+ 		case ICE_AQC_CAPS_TXQS:
+ 			caps->num_txq = number;
+ 			caps->txq_first_id = phys_id;
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: num Tx queues = %d\n", prefix,
++				  "%s: num_txq = %d\n", prefix,
+ 				  caps->num_txq);
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: Tx first queue ID = %d\n", prefix,
++				  "%s: txq_first_id = %d\n", prefix,
+ 				  caps->txq_first_id);
+ 			break;
+ 		case ICE_AQC_CAPS_MSIX:
+ 			caps->num_msix_vectors = number;
+ 			caps->msix_vector_first_id = phys_id;
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: MSIX vector count = %d\n", prefix,
++				  "%s: num_msix_vectors = %d\n", prefix,
+ 				  caps->num_msix_vectors);
+ 			ice_debug(hw, ICE_DBG_INIT,
+-				  "%s: MSIX first vector index = %d\n", prefix,
++				  "%s: msix_vector_first_id = %d\n", prefix,
+ 				  caps->msix_vector_first_id);
+ 			break;
+ 		case ICE_AQC_CAPS_MAX_MTU:
+ 			caps->max_mtu = number;
+-			ice_debug(hw, ICE_DBG_INIT, "%s: max MTU = %d\n",
++			ice_debug(hw, ICE_DBG_INIT, "%s: max_mtu = %d\n",
+ 				  prefix, caps->max_mtu);
+ 			break;
+ 		default:
 -- 
 2.20.1
 
