@@ -1,204 +1,88 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 27 Aug 2019 06:13:51 -0700
-Subject: [Intel-wired-lan] [PATCH S28 6/9] ice: Allow for delayed LLDP MIB
- change registration
-In-Reply-To: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
-References: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190827131354.12703-6-anthony.l.nguyen@intel.com>
+Date: Tue, 27 Aug 2019 06:13:46 -0700
+Subject: [Intel-wired-lan] [PATCH S28 1/9] ice: Reliably reset VFs
+Message-ID: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Add an additional boolean parameter to the ice_init_dcb
-function.  This boolean controls if the LLDP MIB change
-events are registered for.  Also, add a new function
-defined ice_cfg_lldp_mib_change.  The additional function
-is necessary to be able to register for LLDP MIB change
-events after calling ice_init_dcb.  The net effect of these
-two changes is to allow a delayed registration for MIB change
-events so that the driver is not accepting events before it
-is ready for them.
+When a PFR (or bigger reset) occurs, the device clears the VF_MBX_ARQLEN
+register for all VFs. But if a VFR is triggered by a VF, the device does
+NOT clear this register, and the VF driver will never see the reset.
 
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+When this happens, the VF driver will eventually timeout and attempt
+recovery, and usually it will be successful. But this makes resets take
+a long time and there are occasional failures.
+
+We cannot just blithely clear this register on every reset; this has
+been shown to cause synchronization problems when a PFR is triggered
+with a large number of VFs.
+
+Fix this by clearing VF_MBX_ARQLEN when the reset source is not PFR.
+GlobR will trigger PFR, so this test catches that occurrence as well.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb.c     | 39 ++++++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_dcb.h     | 11 ++----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  4 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 10 ++++-
- drivers/net/ethernet/intel/ice/ice_main.c    |  2 +
- 5 files changed, 51 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index c5ee8d930611..dd7efff121bd 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -60,7 +60,7 @@ ice_aq_get_lldp_mib(struct ice_hw *hw, u8 bridge_type, u8 mib_type, void *buf,
-  * Enable or Disable posting of an event on ARQ when LLDP MIB
-  * associated with the interface changes (0x0A01)
-  */
--enum ice_status
-+static enum ice_status
- ice_aq_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_update,
- 			   struct ice_sq_cd *cd)
- {
-@@ -943,10 +943,11 @@ enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi)
- /**
-  * ice_init_dcb
-  * @hw: pointer to the HW struct
-+ * @enable_mib_change: enable MIB change event
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index c38939b1d496..3ba6613048ef 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -353,12 +353,13 @@ void ice_free_vfs(struct ice_pf *pf)
+  * ice_trigger_vf_reset - Reset a VF on HW
+  * @vf: pointer to the VF structure
+  * @is_vflr: true if VFLR was issued, false if not
++ * @is_pfr: true if the reset was triggered due to a previous PFR
   *
-  * Update DCB configuration from the Firmware
+  * Trigger hardware to start a reset for a particular VF. Expects the caller
+  * to wait the proper amount of time to allow hardware to reset the VF before
+  * it cleans up and restores VF functionality.
   */
--enum ice_status ice_init_dcb(struct ice_hw *hw)
-+enum ice_status ice_init_dcb(struct ice_hw *hw, bool enable_mib_change)
+-static void ice_trigger_vf_reset(struct ice_vf *vf, bool is_vflr)
++static void ice_trigger_vf_reset(struct ice_vf *vf, bool is_vflr, bool is_pfr)
  {
- 	struct ice_port_info *pi = hw->port_info;
- 	enum ice_status ret = 0;
-@@ -972,9 +973,39 @@ enum ice_status ice_init_dcb(struct ice_hw *hw)
- 	}
+ 	struct ice_pf *pf = vf->pf;
+ 	u32 reg, reg_idx, bit_idx;
+@@ -379,10 +380,13 @@ static void ice_trigger_vf_reset(struct ice_vf *vf, bool is_vflr)
+ 	 */
+ 	clear_bit(ICE_VF_STATE_INIT, vf->vf_states);
  
- 	/* Configure the LLDP MIB change event */
--	ret = ice_aq_cfg_lldp_mib_change(hw, true, NULL);
-+	if (enable_mib_change) {
-+		ret = ice_aq_cfg_lldp_mib_change(hw, true, NULL);
-+		if (!ret)
-+			pi->is_sw_lldp = false;
-+	}
-+
-+	return ret;
-+}
-+
-+/**
-+ * ice_cfg_lldp_mib_change
-+ * @hw: pointer to the HW struct
-+ * @ena_mib: enable/disable MIB change event
-+ *
-+ * Configure (disable/enable) MIB
-+ */
-+enum ice_status ice_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_mib)
-+{
-+	struct ice_port_info *pi = hw->port_info;
-+	enum ice_status ret;
-+
-+	if (!hw->func_caps.common_cap.dcb)
-+		return ICE_ERR_NOT_SUPPORTED;
-+
-+	/* Get DCBX status */
-+	pi->dcbx_status = ice_get_dcbx_status(hw);
-+
-+	if (pi->dcbx_status == ICE_DCBX_STATUS_DIS)
-+		return ICE_ERR_NOT_READY;
-+
-+	ret = ice_aq_cfg_lldp_mib_change(hw, ena_mib, NULL);
- 	if (!ret)
--		pi->is_sw_lldp = false;
-+		pi->is_sw_lldp = !ena_mib;
+-	/* Clear the VF's ARQLEN register. This is how the VF detects reset,
+-	 * since the VFGEN_RSTAT register doesn't stick at 0 after reset.
++	/* VF_MBX_ARQLEN is cleared by PFR, so the driver needs to clear it
++	 * in the case of VFR. If this is done for PFR, it can mess up VF
++	 * resets because the VF driver may already have started cleanup
++	 * by the time we get here.
+ 	 */
+-	wr32(hw, VF_MBX_ARQLEN(vf_abs_id), 0);
++	if (!is_pfr)
++		wr32(hw, VF_MBX_ARQLEN(vf_abs_id), 0);
  
- 	return ret;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.h b/drivers/net/ethernet/intel/ice/ice_dcb.h
-index 522e1452abe2..ee138f9bdc7c 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.h
-@@ -125,7 +125,7 @@ ice_aq_get_dcb_cfg(struct ice_hw *hw, u8 mib_type, u8 bridgetype,
- 		   struct ice_dcbx_cfg *dcbcfg);
- enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi);
- enum ice_status ice_set_dcb_cfg(struct ice_port_info *pi);
--enum ice_status ice_init_dcb(struct ice_hw *hw);
-+enum ice_status ice_init_dcb(struct ice_hw *hw, bool enable_mib_change);
- enum ice_status
- ice_query_port_ets(struct ice_port_info *pi,
- 		   struct ice_aqc_port_ets_elem *buf, u16 buf_size,
-@@ -139,9 +139,7 @@ ice_aq_start_lldp(struct ice_hw *hw, bool persist, struct ice_sq_cd *cd);
- enum ice_status
- ice_aq_start_stop_dcbx(struct ice_hw *hw, bool start_dcbx_agent,
- 		       bool *dcbx_agent_status, struct ice_sq_cd *cd);
--enum ice_status
--ice_aq_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_update,
--			   struct ice_sq_cd *cd);
-+enum ice_status ice_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_mib);
- #else /* CONFIG_DCB */
- static inline enum ice_status
- ice_aq_stop_lldp(struct ice_hw __always_unused *hw,
-@@ -172,9 +170,8 @@ ice_aq_start_stop_dcbx(struct ice_hw __always_unused *hw,
- }
+ 	/* In the case of a VFLR, the HW has already reset the VF and we
+ 	 * just need to clean up, so don't hit the VFRTRIG register.
+@@ -1072,7 +1076,7 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
  
- static inline enum ice_status
--ice_aq_cfg_lldp_mib_change(struct ice_hw __always_unused *hw,
--			   bool __always_unused ena_update,
--			   struct ice_sq_cd __always_unused *cd)
-+ice_cfg_lldp_mib_change(struct ice_hw __always_unused *hw,
-+			bool __always_unused ena_mib)
- {
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 20f440a64650..97c22d4aae1d 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -318,7 +318,7 @@ void ice_dcb_rebuild(struct ice_pf *pf)
- 		goto dcb_error;
- 	}
+ 	/* Begin reset on all VFs at once */
+ 	for (v = 0; v < pf->num_alloc_vfs; v++)
+-		ice_trigger_vf_reset(&pf->vf[v], is_vflr);
++		ice_trigger_vf_reset(&pf->vf[v], is_vflr, true);
  
--	ice_init_dcb(&pf->hw);
-+	ice_init_dcb(&pf->hw, true);
- 	if (pf->hw.port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
- 		pf->hw.port_info->is_sw_lldp = true;
- 	else
-@@ -451,7 +451,7 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 	for (v = 0; v < pf->num_alloc_vfs; v++) {
+ 		struct ice_vsi *vsi;
+@@ -1172,7 +1176,7 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 	if (test_and_set_bit(ICE_VF_STATE_DIS, vf->vf_states))
+ 		return false;
  
- 	port_info = hw->port_info;
+-	ice_trigger_vf_reset(vf, is_vflr);
++	ice_trigger_vf_reset(vf, is_vflr, false);
  
--	err = ice_init_dcb(hw);
-+	err = ice_init_dcb(hw, false);
- 	if (err && !port_info->is_sw_lldp) {
- 		dev_err(&pf->pdev->dev, "Error initializing DCB %d\n", err);
- 		goto dcb_init_err;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index ae9921b7de7b..d5db1426d484 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1206,8 +1206,8 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			enum ice_status status;
- 
- 			/* Disable FW LLDP engine */
--			status = ice_aq_cfg_lldp_mib_change(&pf->hw, false,
--							    NULL);
-+			status = ice_cfg_lldp_mib_change(&pf->hw, false);
-+
- 			/* If unregistering for LLDP events fails, this is
- 			 * not an error state, as there shouldn't be any
- 			 * events to respond to.
-@@ -1273,6 +1273,12 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			 * The FW LLDP engine will now be consuming them.
- 			 */
- 			ice_cfg_sw_lldp(vsi, false, false);
-+
-+			/* Register for MIB change events */
-+			status = ice_cfg_lldp_mib_change(&pf->hw, true);
-+			if (status)
-+				dev_dbg(&pf->pdev->dev,
-+					"Fail to enable MIB change events\n");
- 		}
- 	}
- 	clear_bit(ICE_FLAG_ETHTOOL_CTXT, pf->flags);
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 8bb3b81876a9..2d92d8591a8a 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2536,6 +2536,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		if (ice_init_pf_dcb(pf, false)) {
- 			clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
- 			clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
-+		} else {
-+			ice_cfg_lldp_mib_change(&pf->hw, true);
- 		}
- 	}
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
  
 -- 
 2.20.1
