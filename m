@@ -1,167 +1,67 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 28 Aug 2019 02:03:02 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
- ae2bdbb45d38ee2ec67a958bf221138b58817c82
-Message-ID: <5d657056.e0aQqKTAwzdZ+iI7%lkp@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Tue, 27 Aug 2019 11:58:28 -0700
+Subject: [Intel-wired-lan] [next PATCH S9 1/7] i40e: Allow updating OROM
+ when a NIC is in recovery mode
+In-Reply-To: <20190826181655.15106-1-alice.michael@intel.com>
+References: <20190826181655.15106-1-alice.michael@intel.com>
+Message-ID: <92972e00895820ebefa9c2b1b582db0adaf801db.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-branch HEAD: ae2bdbb45d38ee2ec67a958bf221138b58817c82  ice: fix adminq calls during remove
+On Mon, 2019-08-26 at 11:16 -0700, Alice Michael wrote:
+> From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+> 
+> Allow OROM update with nvmupdate tool when a NIC is in recovery mode.
+> Implemented by not exiting a recovery mode after firmware EMP reset
+> and before actual OROM update.
+> Previously it was not possible to do the OROM update with nvmupdate
+> tool.
 
-elapsed time: 125m
+Should we be referencing our nvmupdate tool?  Is there a plan to
+integrate this functionality into the existing ethtool interface to
+update EEPROM's?
 
-configs tested: 142
+> 
+> Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index a71369546c23..ed8e62cb5417 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -14559,8 +14559,8 @@ static bool i40e_check_recovery_mode(struct
+> i40e_pf *pf)
+>  
+>  		return true;
+>  	}
+> -	if (test_and_clear_bit(__I40E_RECOVERY_MODE, pf->state))
+> -		dev_info(&pf->pdev->dev, "Reinitializing in normal mode
+> with full functionality.\n");
+> +	if (test_bit(__I40E_RECOVERY_MODE, pf->state))
+> +		dev_info(&pf->pdev->dev, "Please do POR to initialize
+> adapter in normal mode with full functionality.\n");
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+POR?  What does that stand for?  Is there is a reason we are using a
+cryptic acronym in what is supposed to be a useful debug message to the
+end-user?
 
-i386                   randconfig-f004-201934
-x86_64                 randconfig-f004-201934
-x86_64                 randconfig-f002-201934
-i386                   randconfig-f001-201934
-i386                   randconfig-f003-201934
-i386                   randconfig-f002-201934
-x86_64                 randconfig-f001-201934
-x86_64                 randconfig-f003-201934
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                           allmodconfig
-x86_64                           allyesconfig
-i386                             alldefconfig
-x86_64                 randconfig-b002-201934
-i386                   randconfig-b003-201934
-i386                   randconfig-b004-201934
-i386                   randconfig-b001-201934
-x86_64                 randconfig-b001-201934
-i386                   randconfig-b002-201934
-x86_64                 randconfig-b004-201934
-x86_64                 randconfig-b003-201934
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-i386                             allmodconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-e004-201934
-i386                   randconfig-e004-201934
-x86_64                 randconfig-e002-201934
-x86_64                 randconfig-e003-201934
-i386                   randconfig-e003-201934
-x86_64                 randconfig-e001-201934
-i386                   randconfig-e002-201934
-i386                   randconfig-e001-201934
-x86_64                 randconfig-c003-201934
-x86_64                 randconfig-c002-201934
-i386                   randconfig-c004-201934
-x86_64                 randconfig-c004-201934
-i386                   randconfig-c003-201934
-x86_64                 randconfig-c001-201934
-i386                   randconfig-c002-201934
-i386                   randconfig-c001-201934
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-x86_64                 randconfig-g003-201934
-i386                   randconfig-g004-201934
-x86_64                 randconfig-g001-201934
-x86_64                 randconfig-g002-201934
-i386                   randconfig-g001-201934
-x86_64                 randconfig-g004-201934
-i386                   randconfig-g002-201934
-i386                   randconfig-g003-201934
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                 randconfig-h002-201934
-x86_64                 randconfig-h003-201934
-i386                   randconfig-h001-201934
-i386                   randconfig-h002-201934
-i386                   randconfig-h004-201934
-x86_64                 randconfig-h004-201934
-i386                   randconfig-h003-201934
-x86_64                 randconfig-h001-201934
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-d002-201934
-i386                   randconfig-d004-201934
-x86_64                 randconfig-d004-201934
-x86_64                 randconfig-d002-201934
-x86_64                 randconfig-d001-201934
-x86_64                 randconfig-d003-201934
-i386                   randconfig-d001-201934
-i386                   randconfig-d003-201934
+FYI, common definitions for POR are "Plan of Record" or "Provided on
+Request", but neither of those make much sense in this debug message.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+>  
+>  	return false;
+>  }
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190827/0e1a733d/attachment.asc>
