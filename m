@@ -1,62 +1,62 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 27 Aug 2019 11:58:28 -0700
-Subject: [Intel-wired-lan] [next PATCH S9 1/7] i40e: Allow updating OROM
- when a NIC is in recovery mode
-In-Reply-To: <20190826181655.15106-1-alice.michael@intel.com>
-References: <20190826181655.15106-1-alice.michael@intel.com>
-Message-ID: <92972e00895820ebefa9c2b1b582db0adaf801db.camel@intel.com>
+Date: Tue, 27 Aug 2019 12:02:23 -0700
+Subject: [Intel-wired-lan] [PATCH] net: intel: Cleanup e1000 - add space
+ between }}
+In-Reply-To: <877726fc009ee5ffde50e589d332db90c9695f06.camel@perches.com>
+References: <20190823191421.3318-1-ffleming@gmail.com>
+ <c2279a78904b581924894b712403299903eacbfc.camel@intel.com>
+ <877726fc009ee5ffde50e589d332db90c9695f06.camel@perches.com>
+Message-ID: <c40b4043424055fc4dae97771bb46c8ab15c6230.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2019-08-26 at 11:16 -0700, Alice Michael wrote:
-> From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+On Mon, 2019-08-26 at 20:41 -0700, Joe Perches wrote:
+> On Mon, 2019-08-26 at 01:03 -0700, Jeff Kirsher wrote:
+> > On Fri, 2019-08-23 at 19:14 +0000, Forrest Fleming wrote:
+> > > suggested by checkpatch
+> > > 
+> > > Signed-off-by: Forrest Fleming <ffleming@gmail.com>
+> > > ---
+> > >  .../net/ethernet/intel/e1000/e1000_param.c    | 28 +++++++++--
+> > > --------
+> > >  1 file changed, 14 insertions(+), 14 deletions(-)
+> > 
+> > While I do not see an issue with this change, I wonder how
+> > important it is
+> > to make such a change.  Especially since most of the hardware
+> > supported by
+> > this driver is not available for testing.  In addition, this is one
+> > suggested change by checkpatch.pl that I personally do not agree
+> > with.
 > 
-> Allow OROM update with nvmupdate tool when a NIC is in recovery mode.
-> Implemented by not exiting a recovery mode after firmware EMP reset
-> and before actual OROM update.
-> Previously it was not possible to do the OROM update with nvmupdate
-> tool.
+> I think checkpatch should allow consecutive }}.
 
-Should we be referencing our nvmupdate tool?  Is there a plan to
-integrate this functionality into the existing ethtool interface to
-update EEPROM's?
+Agreed, have you already submitted a formal patch Joe with the
+suggested change below?  If so, I will ACK it.
 
 > 
-> Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+> Maybe:
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> index 287fe73688f0..ac5e0f06e1af 100755
+> --- a/scripts/checkpatch.pl
+> +++ b/scripts/checkpatch.pl
+> @@ -4687,7 +4687,7 @@ sub process {
+>  
+>  # closing brace should have a space following it when it has
+> anything
+>  # on the line
+> -		if ($line =~ /}(?!(?:,|;|\)))\S/) {
+> +		if ($line =~ /}(?!(?:,|;|\)|\}))\S/) {
+>  			if (ERROR("SPACING",
+>  				  "space required after that close
+> brace '}'\n" . $herecurr) &&
+>  			    $fix) {
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index a71369546c23..ed8e62cb5417 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -14559,8 +14559,8 @@ static bool i40e_check_recovery_mode(struct
-> i40e_pf *pf)
->  
->  		return true;
->  	}
-> -	if (test_and_clear_bit(__I40E_RECOVERY_MODE, pf->state))
-> -		dev_info(&pf->pdev->dev, "Reinitializing in normal mode
-> with full functionality.\n");
-> +	if (test_bit(__I40E_RECOVERY_MODE, pf->state))
-> +		dev_info(&pf->pdev->dev, "Please do POR to initialize
-> adapter in normal mode with full functionality.\n");
-
-POR?  What does that stand for?  Is there is a reason we are using a
-cryptic acronym in what is supposed to be a useful debug message to the
-end-user?
-
-FYI, common definitions for POR are "Plan of Record" or "Provided on
-Request", but neither of those make much sense in this debug message.
-
->  
->  	return false;
->  }
+> 
 
 -------------- next part --------------
 A non-text attachment was scrubbed...
@@ -64,4 +64,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190827/0e1a733d/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190827/cf798b22/attachment.asc>
