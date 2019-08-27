@@ -1,53 +1,59 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 27 Aug 2019 06:13:47 -0700
-Subject: [Intel-wired-lan] [PATCH S28 2/9] ice: report link down for VF when
- PF's queues are not enabled
+Date: Tue, 27 Aug 2019 06:13:50 -0700
+Subject: [Intel-wired-lan] [PATCH S28 5/9] ice: update tx context struct
 In-Reply-To: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
 References: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190827131354.12703-2-anthony.l.nguyen@intel.com>
+Message-ID: <20190827131354.12703-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Lukasz Czapnik <lukasz.czapnik@intel.com>
+From: Ashish Shah <ashish.n.shah@intel.com>
 
-This is port of a fix from i40e commit 2ad1274fa35a ("i40e: don't
-report link up for a VF who hasn't enabled queues")
+add internal usage flag, bit 91 as described in spec.
+update width of internal queue state to 122 also as described in spec.
 
-Older VF drivers do not respond well to receiving a link
-up notification before queues are enabled. This can cause their state
-machine to think that it is safe to send traffic. This results in a Tx
-hang on the VF.
-
-Record whether the PF has actually enabled queues for the VF. When
-reporting link status, always report link down if the queues aren't
-enabled. In this way, the VF driver will never receive a link up
-notification until after its queues are enabled.
-
-Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Ashish Shah <ashish.n.shah@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_common.c    | 3 ++-
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 3ba6613048ef..1ec2a037a369 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -129,7 +129,10 @@ static void ice_vc_notify_vf_link_state(struct ice_vf *vf)
- 	pfe.event = VIRTCHNL_EVENT_LINK_CHANGE;
- 	pfe.severity = PF_EVENT_SEVERITY_INFO;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 9492cd34b09d..e8397e5b6267 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1132,6 +1132,7 @@ const struct ice_ctx_ele ice_tlan_ctx_info[] = {
+ 	ICE_CTX_STORE(ice_tlan_ctx, vmvf_type,			2,	78),
+ 	ICE_CTX_STORE(ice_tlan_ctx, src_vsi,			10,	80),
+ 	ICE_CTX_STORE(ice_tlan_ctx, tsyn_ena,			1,	90),
++	ICE_CTX_STORE(ice_tlan_ctx, internal_usage_flag,	1,	91),
+ 	ICE_CTX_STORE(ice_tlan_ctx, alt_vlan,			1,	92),
+ 	ICE_CTX_STORE(ice_tlan_ctx, cpuid,			8,	93),
+ 	ICE_CTX_STORE(ice_tlan_ctx, wb_mode,			1,	101),
+@@ -1150,7 +1151,7 @@ const struct ice_ctx_ele ice_tlan_ctx_info[] = {
+ 	ICE_CTX_STORE(ice_tlan_ctx, drop_ena,			1,	165),
+ 	ICE_CTX_STORE(ice_tlan_ctx, cache_prof_idx,		2,	166),
+ 	ICE_CTX_STORE(ice_tlan_ctx, pkt_shaper_prof_idx,	3,	168),
+-	ICE_CTX_STORE(ice_tlan_ctx, int_q_state,		110,	171),
++	ICE_CTX_STORE(ice_tlan_ctx, int_q_state,		122,	171),
+ 	{ 0 }
+ };
  
--	if (vf->link_forced)
-+	/* Always report link is down if the VF queues aren't enabled */
-+	if (!vf->num_qs_ena)
-+		ice_set_pfe_link(vf, &pfe, ICE_AQ_LINK_SPEED_UNKNOWN, false);
-+	else if (vf->link_forced)
- 		ice_set_pfe_link_forced(vf, &pfe, vf->link_up);
- 	else
- 		ice_set_pfe_link(vf, &pfe, ls->link_speed, ls->link_info &
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index 57ea6811fe2c..2aac8f13daeb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -428,6 +428,7 @@ struct ice_tlan_ctx {
+ #define ICE_TLAN_CTX_VMVF_TYPE_PF	2
+ 	u16 src_vsi;
+ 	u8 tsyn_ena;
++	u8 internal_usage_flag;
+ 	u8 alt_vlan;
+ 	u16 cpuid;		/* bigger than needed, see above for reason */
+ 	u8 wb_mode;
 -- 
 2.20.1
 
