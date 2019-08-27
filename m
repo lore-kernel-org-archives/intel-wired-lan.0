@@ -1,80 +1,159 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 27 Aug 2019 13:27:56 -0700
-Subject: [Intel-wired-lan] [PATCH] net: intel: Cleanup e1000 - add space
- between }}
-In-Reply-To: <CAE7kSDuHi3e_b0qyvXqocSVaNJrj3X7PPiawBWa68ZyrLSAZyA@mail.gmail.com>
-References: <20190823191421.3318-1-ffleming@gmail.com>
- <c2279a78904b581924894b712403299903eacbfc.camel@intel.com>
- <877726fc009ee5ffde50e589d332db90c9695f06.camel@perches.com>
- <c40b4043424055fc4dae97771bb46c8ab15c6230.camel@intel.com>
- <b1ea77866e8736fa691cf4658a87ca2c1bf642d6.camel@perches.com>
- <CAE7kSDuHi3e_b0qyvXqocSVaNJrj3X7PPiawBWa68ZyrLSAZyA@mail.gmail.com>
-Message-ID: <3713e82a6f329df4674b279fdbeb49feb7e6a7ef.camel@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 28 Aug 2019 04:32:02 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ aa1951335c6f39b7aa9ffdb576f372413a4b342d
+Message-ID: <5d659342.On3hu7rKXBJNqjHy%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2019-08-27 at 12:45 -0700, Forrest Fleming wrote:
-> On Tue, Aug 27, 2019 at 12:07 PM Joe Perches <joe@perches.com> wrote:
-> > On Tue, 2019-08-27 at 12:02 -0700, Jeff Kirsher wrote:
-> > > On Mon, 2019-08-26 at 20:41 -0700, Joe Perches wrote:
-> > > > On Mon, 2019-08-26 at 01:03 -0700, Jeff Kirsher wrote:
-> > > > > On Fri, 2019-08-23 at 19:14 +0000, Forrest Fleming wrote:
-> > > > > > suggested by checkpatch
-> > > > > > 
-> > > > > > Signed-off-by: Forrest Fleming <ffleming@gmail.com>
-> > > > > > ---
-> > > > > >  .../net/ethernet/intel/e1000/e1000_param.c    | 28
-> > > > > > +++++++++--
-> > > > > > --------
-> > > > > >  1 file changed, 14 insertions(+), 14 deletions(-)
-> > > > > 
-> > > > > While I do not see an issue with this change, I wonder how
-> > > > > important it is
-> > > > > to make such a change.  Especially since most of the hardware
-> > > > > supported by
-> > > > > this driver is not available for testing.  In addition, this
-> > > > > is one
-> > > > > suggested change by checkpatch.pl that I personally do not
-> > > > > agree
-> > > > > with.
-> > > > 
-> > > > I think checkpatch should allow consecutive }}.
-> > > 
-> > > Agreed, have you already submitted a formal patch Joe with the
-> > > suggested change below?
-> > 
-> > No.
-> > 
-> > >   If so, I will ACK it.
-> > 
-> > Of course you can add an Acked-by:
-> > 
-> 
-> Totally fair - I don't have strong feelings regarding the particular
-> rule. I do
-> feel strongly that we should avoid violating our rules as encoded by
-> checkpatch,
-> but I'm perfectly happy for the change to take the form of modifying
-> checkpatch
-> to allow a perfectly sensible (and readable) construct.
-> 
-> I'm happy to withdraw this patch from consideration; I couldn't find
-> anything
-> about there being a formal procedure for so doing, so please let me
-> know if
-> there's anything more I need to do (or point me to the relevant
-> docs).
-> 
-> Thanks to everyone!
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: aa1951335c6f39b7aa9ffdb576f372413a4b342d  ixgbe: fix double clean of Tx descriptors with XDP
 
-Nothing for you to do, I will drop the patch.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190827/afb18505/attachment-0001.asc>
+elapsed time: 101m
+
+configs tested: 134
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-e001-201934
+x86_64                 randconfig-e002-201934
+x86_64                 randconfig-e003-201934
+x86_64                 randconfig-e004-201934
+i386                   randconfig-e001-201934
+i386                   randconfig-e002-201934
+i386                   randconfig-e003-201934
+i386                   randconfig-e004-201934
+x86_64                 randconfig-b002-201934
+i386                   randconfig-b003-201934
+i386                   randconfig-b004-201934
+i386                   randconfig-b001-201934
+x86_64                 randconfig-b001-201934
+i386                   randconfig-b002-201934
+x86_64                 randconfig-b004-201934
+x86_64                 randconfig-b003-201934
+x86_64                           allyesconfig
+i386                             allmodconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
+i386                   randconfig-f004-201934
+x86_64                 randconfig-f004-201934
+x86_64                 randconfig-f002-201934
+i386                   randconfig-f001-201934
+i386                   randconfig-f003-201934
+i386                   randconfig-f002-201934
+x86_64                 randconfig-f001-201934
+x86_64                 randconfig-f003-201934
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                           allmodconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-c003-201934
+x86_64                 randconfig-c002-201934
+i386                   randconfig-c004-201934
+x86_64                 randconfig-c004-201934
+i386                   randconfig-c003-201934
+x86_64                 randconfig-c001-201934
+i386                   randconfig-c002-201934
+i386                   randconfig-c001-201934
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-g003-201934
+i386                   randconfig-g004-201934
+x86_64                 randconfig-g001-201934
+x86_64                 randconfig-g002-201934
+i386                   randconfig-g001-201934
+x86_64                 randconfig-g004-201934
+i386                   randconfig-g002-201934
+i386                   randconfig-g003-201934
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                 randconfig-a004-201934
+i386                   randconfig-a003-201934
+x86_64                 randconfig-a002-201934
+i386                   randconfig-a004-201934
+i386                   randconfig-a002-201934
+i386                   randconfig-a001-201934
+x86_64                 randconfig-a001-201934
+x86_64                 randconfig-a003-201934
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
