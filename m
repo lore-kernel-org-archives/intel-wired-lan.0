@@ -1,159 +1,47 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 28 Aug 2019 04:32:02 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- aa1951335c6f39b7aa9ffdb576f372413a4b342d
-Message-ID: <5d659342.On3hu7rKXBJNqjHy%lkp@intel.com>
+From: Joe Perches <joe@perches.com>
+Date: Mon, 26 Aug 2019 20:41:00 -0700
+Subject: [Intel-wired-lan] [PATCH] net: intel: Cleanup e1000 - add space
+ between }}
+In-Reply-To: <c2279a78904b581924894b712403299903eacbfc.camel@intel.com>
+References: <20190823191421.3318-1-ffleming@gmail.com>
+ <c2279a78904b581924894b712403299903eacbfc.camel@intel.com>
+Message-ID: <877726fc009ee5ffde50e589d332db90c9695f06.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: aa1951335c6f39b7aa9ffdb576f372413a4b342d  ixgbe: fix double clean of Tx descriptors with XDP
+On Mon, 2019-08-26 at 01:03 -0700, Jeff Kirsher wrote:
+> On Fri, 2019-08-23 at 19:14 +0000, Forrest Fleming wrote:
+> > suggested by checkpatch
+> > 
+> > Signed-off-by: Forrest Fleming <ffleming@gmail.com>
+> > ---
+> >  .../net/ethernet/intel/e1000/e1000_param.c    | 28 +++++++++----------
+> >  1 file changed, 14 insertions(+), 14 deletions(-)
+> 
+> While I do not see an issue with this change, I wonder how important it is
+> to make such a change.  Especially since most of the hardware supported by
+> this driver is not available for testing.  In addition, this is one
+> suggested change by checkpatch.pl that I personally do not agree with.
 
-elapsed time: 101m
+I think checkpatch should allow consecutive }}.
 
-configs tested: 134
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-e001-201934
-x86_64                 randconfig-e002-201934
-x86_64                 randconfig-e003-201934
-x86_64                 randconfig-e004-201934
-i386                   randconfig-e001-201934
-i386                   randconfig-e002-201934
-i386                   randconfig-e003-201934
-i386                   randconfig-e004-201934
-x86_64                 randconfig-b002-201934
-i386                   randconfig-b003-201934
-i386                   randconfig-b004-201934
-i386                   randconfig-b001-201934
-x86_64                 randconfig-b001-201934
-i386                   randconfig-b002-201934
-x86_64                 randconfig-b004-201934
-x86_64                 randconfig-b003-201934
-x86_64                           allyesconfig
-i386                             allmodconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-i386                   randconfig-f004-201934
-x86_64                 randconfig-f004-201934
-x86_64                 randconfig-f002-201934
-i386                   randconfig-f001-201934
-i386                   randconfig-f003-201934
-i386                   randconfig-f002-201934
-x86_64                 randconfig-f001-201934
-x86_64                 randconfig-f003-201934
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-c003-201934
-x86_64                 randconfig-c002-201934
-i386                   randconfig-c004-201934
-x86_64                 randconfig-c004-201934
-i386                   randconfig-c003-201934
-x86_64                 randconfig-c001-201934
-i386                   randconfig-c002-201934
-i386                   randconfig-c001-201934
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-g003-201934
-i386                   randconfig-g004-201934
-x86_64                 randconfig-g001-201934
-x86_64                 randconfig-g002-201934
-i386                   randconfig-g001-201934
-x86_64                 randconfig-g004-201934
-i386                   randconfig-g002-201934
-i386                   randconfig-g003-201934
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                 randconfig-a004-201934
-i386                   randconfig-a003-201934
-x86_64                 randconfig-a002-201934
-i386                   randconfig-a004-201934
-i386                   randconfig-a002-201934
-i386                   randconfig-a001-201934
-x86_64                 randconfig-a001-201934
-x86_64                 randconfig-a003-201934
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-
+Maybe:
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 287fe73688f0..ac5e0f06e1af 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -4687,7 +4687,7 @@ sub process {
+ 
+ # closing brace should have a space following it when it has anything
+ # on the line
+-		if ($line =~ /}(?!(?:,|;|\)))\S/) {
++		if ($line =~ /}(?!(?:,|;|\)|\}))\S/) {
+ 			if (ERROR("SPACING",
+ 				  "space required after that close brace '}'\n" . $herecurr) &&
+ 			    $fix) {
+
+
