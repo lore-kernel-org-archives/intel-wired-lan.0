@@ -1,11 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 28 Aug 2019 16:29:26 +0000
-Subject: [Intel-wired-lan] [next PATCH S9 7/7] i40e: use BIT macro to
- specify the cloud filter field flags
-In-Reply-To: <20190826181655.15106-7-alice.michael@intel.com>
-References: <20190826181655.15106-1-alice.michael@intel.com>
- <20190826181655.15106-7-alice.michael@intel.com>
-Message-ID: <ab7bbdfce25d4060aeeddd4aa7ea5a53@intel.com>
+Date: Wed, 28 Aug 2019 17:02:22 +0000
+Subject: [Intel-wired-lan] [PATCH S28 1/9] ice: Reliably reset VFs
+In-Reply-To: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
+References: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
+Message-ID: <1cc800af8c8148fa8dedd14ec72eda75@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,23 +12,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Monday, August 26, 2019 11:17 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S9 7/7] i40e: use BIT macro to specify
-> the cloud filter field flags
+> Behalf Of Tony Nguyen
+> Sent: Tuesday, August 27, 2019 6:14 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S28 1/9] ice: Reliably reset VFs
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> The macros used to specify the cloud filter fields are intended to be
-> individual bits. Declare them using the BIT() macro to make their intention a
-> little more clear.
+> When a PFR (or bigger reset) occurs, the device clears the VF_MBX_ARQLEN
+> register for all VFs. But if a VFR is triggered by a VF, the device does NOT clear
+> this register, and the VF driver will never see the reset.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> When this happens, the VF driver will eventually timeout and attempt
+> recovery, and usually it will be successful. But this makes resets take a long
+> time and there are occasional failures.
+> 
+> We cannot just blithely clear this register on every reset; this has been
+> shown to cause synchronization problems when a PFR is triggered with a
+> large number of VFs.
+> 
+> Fix this by clearing VF_MBX_ARQLEN when the reset source is not PFR.
+> GlobR will trigger PFR, so this test catches that occurrence as well.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 16 ++++++++++------
+>  1 file changed, 10 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
