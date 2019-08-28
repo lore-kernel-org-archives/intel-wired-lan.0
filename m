@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 28 Aug 2019 17:04:11 +0000
-Subject: [Intel-wired-lan] [PATCH S28 5/9] ice: update tx context struct
-In-Reply-To: <20190827131354.12703-5-anthony.l.nguyen@intel.com>
+Date: Wed, 28 Aug 2019 17:04:41 +0000
+Subject: [Intel-wired-lan] [PATCH S28 6/9] ice: Allow for delayed LLDP
+ MIB change registration
+In-Reply-To: <20190827131354.12703-6-anthony.l.nguyen@intel.com>
 References: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
- <20190827131354.12703-5-anthony.l.nguyen@intel.com>
-Message-ID: <3c03e5b9e30940cda48b9bbe1585d942@intel.com>
+ <20190827131354.12703-6-anthony.l.nguyen@intel.com>
+Message-ID: <86740ecf583b4e029f3b2c8369e5ffa4@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,18 +17,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Tuesday, August 27, 2019 6:14 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S28 5/9] ice: update tx context struct
+> Subject: [Intel-wired-lan] [PATCH S28 6/9] ice: Allow for delayed LLDP MIB
+> change registration
 > 
-> From: Ashish Shah <ashish.n.shah@intel.com>
+> From: Dave Ertman <david.m.ertman@intel.com>
 > 
-> add internal usage flag, bit 91 as described in spec.
-> update width of internal queue state to 122 also as described in spec.
+> Add an additional boolean parameter to the ice_init_dcb function.  This
+> boolean controls if the LLDP MIB change events are registered for.  Also, add
+> a new function defined ice_cfg_lldp_mib_change.  The additional function is
+> necessary to be able to register for LLDP MIB change events after calling
+> ice_init_dcb.  The net effect of these two changes is to allow a delayed
+> registration for MIB change events so that the driver is not accepting events
+> before it is ready for them.
 > 
-> Signed-off-by: Ashish Shah <ashish.n.shah@intel.com>
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c    | 3 ++-
->  drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 1 +
->  2 files changed, 3 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_dcb.c     | 39 ++++++++++++++++++--
+>  drivers/net/ethernet/intel/ice/ice_dcb.h     | 11 ++----
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  4 +-
+> drivers/net/ethernet/intel/ice/ice_ethtool.c | 10 ++++-
+>  drivers/net/ethernet/intel/ice/ice_main.c    |  2 +
+>  5 files changed, 51 insertions(+), 15 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
