@@ -1,9 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 28 Aug 2019 17:02:22 +0000
-Subject: [Intel-wired-lan] [PATCH S28 1/9] ice: Reliably reset VFs
-In-Reply-To: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
+Date: Wed, 28 Aug 2019 17:02:49 +0000
+Subject: [Intel-wired-lan] [PATCH S28 2/9] ice: report link down for VF
+ when PF's queues are not enabled
+In-Reply-To: <20190827131354.12703-2-anthony.l.nguyen@intel.com>
 References: <20190827131354.12703-1-anthony.l.nguyen@intel.com>
-Message-ID: <1cc800af8c8148fa8dedd14ec72eda75@intel.com>
+ <20190827131354.12703-2-anthony.l.nguyen@intel.com>
+Message-ID: <242c7eba0503430d88e011436e14393d@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,29 +17,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Tuesday, August 27, 2019 6:14 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S28 1/9] ice: Reliably reset VFs
+> Subject: [Intel-wired-lan] [PATCH S28 2/9] ice: report link down for VF when
+> PF's queues are not enabled
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Lukasz Czapnik <lukasz.czapnik@intel.com>
 > 
-> When a PFR (or bigger reset) occurs, the device clears the VF_MBX_ARQLEN
-> register for all VFs. But if a VFR is triggered by a VF, the device does NOT clear
-> this register, and the VF driver will never see the reset.
+> This is port of a fix from i40e commit 2ad1274fa35a ("i40e: don't report link up
+> for a VF who hasn't enabled queues")
 > 
-> When this happens, the VF driver will eventually timeout and attempt
-> recovery, and usually it will be successful. But this makes resets take a long
-> time and there are occasional failures.
+> Older VF drivers do not respond well to receiving a link up notification before
+> queues are enabled. This can cause their state machine to think that it is safe
+> to send traffic. This results in a Tx hang on the VF.
 > 
-> We cannot just blithely clear this register on every reset; this has been
-> shown to cause synchronization problems when a PFR is triggered with a
-> large number of VFs.
+> Record whether the PF has actually enabled queues for the VF. When
+> reporting link status, always report link down if the queues aren't enabled. In
+> this way, the VF driver will never receive a link up notification until after its
+> queues are enabled.
 > 
-> Fix this by clearing VF_MBX_ARQLEN when the reset source is not PFR.
-> GlobR will trigger PFR, so this test catches that occurrence as well.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 16 ++++++++++------
->  1 file changed, 10 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
