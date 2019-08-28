@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 28 Aug 2019 16:29:03 +0000
-Subject: [Intel-wired-lan] [next PATCH S9 6/7] i40e: Fix message for
- other card without FEC.
-In-Reply-To: <20190826181655.15106-6-alice.michael@intel.com>
+Date: Wed, 28 Aug 2019 16:29:26 +0000
+Subject: [Intel-wired-lan] [next PATCH S9 7/7] i40e: use BIT macro to
+ specify the cloud filter field flags
+In-Reply-To: <20190826181655.15106-7-alice.michael@intel.com>
 References: <20190826181655.15106-1-alice.michael@intel.com>
- <20190826181655.15106-6-alice.michael@intel.com>
-Message-ID: <8dd0a8d99bd04090b97cc3bd8191d460@intel.com>
+ <20190826181655.15106-7-alice.michael@intel.com>
+Message-ID: <ab7bbdfce25d4060aeeddd4aa7ea5a53@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,20 +18,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, August 26, 2019 11:17 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: Zagorski, CzeslawX <czeslawx.zagorski@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S9 6/7] i40e: Fix message for other
-> card without FEC.
+> Subject: [Intel-wired-lan] [next PATCH S9 7/7] i40e: use BIT macro to specify
+> the cloud filter field flags
 > 
-> From: Czeslaw Zagorski <czeslawx.zagorski@intel.com>
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> When variable "req_fec, fec, an" are empty, dmesg shows log with
-> "Requested FEC: , Negotiated FEC: , Autoneg:".
-> Add link dmesg log for cards without FEC.
+> The macros used to specify the cloud filter fields are intended to be
+> individual bits. Declare them using the BIT() macro to make their intention a
+> little more clear.
 > 
-> Signed-off-by: Czeslaw Zagorski <czeslawx.zagorski@intel.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
