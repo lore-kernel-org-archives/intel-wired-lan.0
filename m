@@ -1,146 +1,77 @@
-From: Robert Beckett <bob.beckett@collabora.com>
-Date: Wed, 28 Aug 2019 18:38:54 +0100
-Subject: [Intel-wired-lan] [PATCH] igb: add rx drop enable attribute
-Message-ID: <20190828173912.29293-1-bob.beckett@collabora.com>
+From: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
+Date: Thu, 29 Aug 2019 13:49:39 +0000
+Subject: [Intel-wired-lan] [next PATCH S9 1/7] i40e: Allow updating OROM
+ when a NIC is in recovery mode
+In-Reply-To: <92972e00895820ebefa9c2b1b582db0adaf801db.camel@intel.com>
+References: <20190826181655.15106-1-alice.michael@intel.com>
+ <92972e00895820ebefa9c2b1b582db0adaf801db.camel@intel.com>
+Message-ID: <D4D6338F2E4CB34CB91C5312C72AAC810F0C9A@IRSMSX104.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-To allow userland to enable or disable dropping packets when descriptor
-ring is exhausted, add an adapter rx_drop_en attribute.
 
-This can be used in conjunction with flow control to mitigate packet storms
-(e.g. due to network loop or DoS) by forcing the network adapter to send
-pause frames whenever the ring is close to exhaustion.
+-----Original Message-----
+> From: Kirsher, Jeffrey T 
+> Sent: Tuesday, August 27, 2019 8:58 PM
+> To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
+> Cc: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
+> Subject: Re: [Intel-wired-lan] [next PATCH S9 1/7] i40e: Allow updating OROM when a NIC is in recovery mode
+>
+> On Mon, 2019-08-26 at 11:16 -0700, Alice Michael wrote:
+> > From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+> > 
+> > Allow OROM update with nvmupdate tool when a NIC is in recovery mode.
+> > Implemented by not exiting a recovery mode after firmware EMP reset 
+> > and before actual OROM update.
+> > Previously it was not possible to do the OROM update with nvmupdate 
+> > tool.
+>
+> Should we be referencing our nvmupdate tool?  Is there a plan to integrate this functionality into the existing ethtool interface to update EEPROM's?
 
-By default this will maintain previous behaviour of enabling dropping of
-packets during ring buffer exhaustion.
-Some use cases prefer to not drop packets upon exhaustion, but instead
-use flow control to limit ingress rates and ensure no dropped packets.
-This is useful when the host CPU cannot keep up with packet delivery,
-but data delivery is more important than throughput via multiple queues.
+Right, we should not reference it and there is no integration plan. I'll change it.
 
-Userland can write 0 to rx_drop_en to disable packet dropping via udev.
+> > 
+> > Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+> > ---
+> >  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > index a71369546c23..ed8e62cb5417 100644
+> > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > @@ -14559,8 +14559,8 @@ static bool i40e_check_recovery_mode(struct 
+> > i40e_pf *pf)
+> >  
+> >  		return true;
+> >  	}
+> > -	if (test_and_clear_bit(__I40E_RECOVERY_MODE, pf->state))
+> > -		dev_info(&pf->pdev->dev, "Reinitializing in normal mode
+> > with full functionality.\n");
+> > +	if (test_bit(__I40E_RECOVERY_MODE, pf->state))
+> > +		dev_info(&pf->pdev->dev, "Please do POR to initialize
+> > adapter in normal mode with full functionality.\n");
+>
+> POR?  What does that stand for?  Is there is a reason we are using a cryptic acronym in what is supposed to be a useful debug message to the end-user?
+>
+> FYI, common definitions for POR are "Plan of Record" or "Provided on Request", but neither of those make much sense in this debug message.
 
-Signed-off-by: Robert Beckett <bob.beckett@collabora.com>
----
- drivers/net/ethernet/intel/igb/igb.h      |  1 +
- drivers/net/ethernet/intel/igb/igb_main.c | 60 ++++++++++++++++++++++-
- 2 files changed, 60 insertions(+), 1 deletion(-)
+I'll also fix this message.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index ca54e268d157..efada57a05e1 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -594,6 +594,7 @@ struct igb_adapter {
- 	struct igb_mac_addr *mac_table;
- 	struct vf_mac_filter vf_macs;
- 	struct vf_mac_filter *vf_mac_list;
-+	bool rx_drop_enable; /* drop packets when descriptor ring exhausted */
- };
- 
- /* flags controlling PTP/1588 function */
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 105b0624081a..5b499130c3f5 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2982,6 +2982,54 @@ static s32 igb_init_i2c(struct igb_adapter *adapter)
- 	return status;
- }
- 
-+static ssize_t rx_drop_en_show(struct device *dev,
-+			       struct device_attribute *attr,
-+			       char *buf)
-+
-+{
-+	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
-+	struct igb_adapter *adapter = netdev_priv(netdev);
-+
-+	if (adapter->rx_drop_enable)
-+		return sprintf(buf, "1\n");
-+	else
-+		return sprintf(buf, "0\n");
-+}
-+
-+static ssize_t rx_drop_en_store(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
-+	struct igb_adapter *adapter = netdev_priv(netdev);
-+	struct e1000_hw *hw = &adapter->hw;
-+	int queue_idx, reg_idx;
-+	bool val;
-+	u32 srrctl;
-+	int ret;
-+
-+	ret = kstrtobool(buf, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	adapter->rx_drop_enable = val;
-+
-+	/* set for each currently active ring */
-+	for (queue_idx = 0; queue_idx < adapter->num_rx_queues; queue_idx++) {
-+		reg_idx = adapter->rx_ring[queue_idx]->reg_idx;
-+		srrctl = rd32(E1000_SRRCTL(reg_idx));
-+		if (val == 0)
-+			srrctl &= ~E1000_SRRCTL_DROP_EN;
-+		else
-+			srrctl |= E1000_SRRCTL_DROP_EN;
-+		wr32(E1000_SRRCTL(reg_idx), srrctl);
-+	}
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR_RW(rx_drop_en);
-+
- /**
-  *  igb_probe - Device Initialization Routine
-  *  @pdev: PCI device information struct
-@@ -3329,6 +3377,9 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		goto err_eeprom;
- 	}
- 
-+	/* Add adapter attributes */
-+	device_create_file(&pdev->dev, &dev_attr_rx_drop_en);
-+
- 	/* let the f/w know that the h/w is now under the control of the
- 	 * driver.
- 	 */
-@@ -3655,6 +3706,9 @@ static void igb_remove(struct pci_dev *pdev)
- 	 */
- 	igb_release_hw_control(adapter);
- 
-+	/* Remove addapter attributes */
-+	device_remove_file(&pdev->dev, &dev_attr_rx_drop_en);
-+
- #ifdef CONFIG_PCI_IOV
- 	igb_disable_sriov(pdev);
- #endif
-@@ -3753,6 +3807,9 @@ static void igb_init_queue_configuration(struct igb_adapter *adapter)
- 	max_rss_queues = igb_get_max_rss_queues(adapter);
- 	adapter->rss_queues = min_t(u32, max_rss_queues, num_online_cpus());
- 
-+	if (adapter->vfs_allocated_count || adapter->rss_queues > 1)
-+		adapter->rx_drop_enable = true;
-+
- 	igb_set_flag_queue_pairs(adapter, max_rss_queues);
- }
- 
-@@ -4504,7 +4561,8 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
- 	if (hw->mac.type >= e1000_82580)
- 		srrctl |= E1000_SRRCTL_TIMESTAMP;
- 	/* Only set Drop Enable if we are supporting multiple queues */
--	if (adapter->vfs_allocated_count || adapter->num_rx_queues > 1)
-+	if (adapter->rx_drop_enable &&
-+		(adapter->vfs_allocated_count || adapter->num_rx_queues > 1))
- 		srrctl |= E1000_SRRCTL_DROP_EN;
- 
- 	wr32(E1000_SRRCTL(reg_idx), srrctl);
--- 
-2.18.0
+> >  
+> >  	return false;
+> >  }
 
+--------------------------------------------------------------------
+
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
