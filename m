@@ -1,12 +1,12 @@
 From: Jonathan Lemon <jonathan.lemon@gmail.com>
-Date: Fri, 30 Aug 2019 08:45:35 -0700
-Subject: [Intel-wired-lan] [PATCH bpf-next v6 07/12] net/mlx5e: Allow
- XSK frames smaller than a page
-In-Reply-To: <20190827022531.15060-8-kevin.laatz@intel.com>
+Date: Fri, 30 Aug 2019 08:46:26 -0700
+Subject: [Intel-wired-lan] [PATCH bpf-next v6 08/12] libbpf: add flags
+ to umem config
+In-Reply-To: <20190827022531.15060-9-kevin.laatz@intel.com>
 References: <20190822014427.49800-1-kevin.laatz@intel.com>
  <20190827022531.15060-1-kevin.laatz@intel.com>
- <20190827022531.15060-8-kevin.laatz@intel.com>
-Message-ID: <C5FEBF55-CC52-4489-955E-1202BB4FF193@gmail.com>
+ <20190827022531.15060-9-kevin.laatz@intel.com>
+Message-ID: <97813612-8FA6-4A33-B4FA-CF7A99FFC012@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On 26 Aug 2019, at 19:25, Kevin Laatz wrote:
 
-> From: Maxim Mikityanskiy <maximmi@mellanox.com>
+> This patch adds a 'flags' field to the umem_config and umem_reg structs.
+> This will allow for more options to be added for configuring umems.
 >
-> Relax the requirements to the XSK frame size to allow it to be smaller
-> than a page and even not a power of two. The current implementation can
-> work in this mode, both with Striding RQ and without it.
+> The first use for the flags field is to add a flag for unaligned chunks
+> mode. These flags can either be user-provided or filled with a default.
 >
-> The code that checks `mtu + headroom <= XSK frame size` is modified
-> accordingly. Any frame size between 2048 and PAGE_SIZE is accepted.
+> Since we change the size of the xsk_umem_config struct, we need to version
+> the ABI. This patch includes the ABI versioning for xsk_umem__create. The
+> Makefile was also updated to handle multiple function versions in
+> check-abi.
 >
-> Functions that worked with pages only now work with XSK frames, even if
-> their size is different from PAGE_SIZE.
->
-> With XSK queues, regardless of the frame size, Striding RQ uses the
-> stride size of PAGE_SIZE, and UMR MTTs are posted using starting
-> addresses of frames, but PAGE_SIZE as page size. MTU guarantees that no
-> packet data will overlap with other frames. UMR MTT size is made equal
-> to the stride size of the RQ, because UMEM frames may come in random
-> order, and we need to handle them one by one. PAGE_SIZE is just a power
-> of two that is bigger than any allowed XSK frame size, and also it
-> doesn't require making additional changes to the code.
->
-> Signed-off-by: Maxim Mikityanskiy <maximmi@mellanox.com>
-> Reviewed-by: Saeed Mahameed <saeedm@mellanox.com>
+> Signed-off-by: Kevin Laatz <kevin.laatz@intel.com>
+> Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
 Acked-by: Jonathan Lemon <jonathan.lemon@gmail.com>
