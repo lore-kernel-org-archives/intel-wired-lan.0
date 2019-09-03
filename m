@@ -1,205 +1,80 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue,  3 Sep 2019 01:31:05 -0700
-Subject: [Intel-wired-lan] [PATCH S28 v2 6/9] ice: Allow for delayed LLDP
- MIB change registration
+Date: Tue,  3 Sep 2019 01:31:02 -0700
+Subject: [Intel-wired-lan] [PATCH S28 v2 3/9] ice: Check for DCB capability
+ before initializing DCB
 In-Reply-To: <20190903083108.19593-1-anthony.l.nguyen@intel.com>
 References: <20190903083108.19593-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190903083108.19593-6-anthony.l.nguyen@intel.com>
+Message-ID: <20190903083108.19593-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-Add an additional boolean parameter to the ice_init_dcb
-function.  This boolean controls if the LLDP MIB change
-events are registered for.  Also, add a new function
-defined ice_cfg_lldp_mib_change.  The additional function
-is necessary to be able to register for LLDP MIB change
-events after calling ice_init_dcb.  The net effect of these
-two changes is to allow a delayed registration for MIB change
-events so that the driver is not accepting events before it
-is ready for them.
+Check the ICE_FLAG_DCB_CAPABLE before calling ice_init_pf_dcb.
 
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb.c     | 39 ++++++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_dcb.h     | 11 ++----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  4 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 10 ++++-
- drivers/net/ethernet/intel/ice/ice_main.c    |  2 +
- 5 files changed, 51 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  3 ---
+ drivers/net/ethernet/intel/ice/ice_main.c    | 15 ++++++++-------
+ 2 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index c5ee8d930611..dd7efff121bd 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -60,7 +60,7 @@ ice_aq_get_lldp_mib(struct ice_hw *hw, u8 bridge_type, u8 mib_type, void *buf,
-  * Enable or Disable posting of an event on ARQ when LLDP MIB
-  * associated with the interface changes (0x0A01)
-  */
--enum ice_status
-+static enum ice_status
- ice_aq_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_update,
- 			   struct ice_sq_cd *cd)
- {
-@@ -943,10 +943,11 @@ enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi)
- /**
-  * ice_init_dcb
-  * @hw: pointer to the HW struct
-+ * @enable_mib_change: enable MIB change event
-  *
-  * Update DCB configuration from the Firmware
-  */
--enum ice_status ice_init_dcb(struct ice_hw *hw)
-+enum ice_status ice_init_dcb(struct ice_hw *hw, bool enable_mib_change)
- {
- 	struct ice_port_info *pi = hw->port_info;
- 	enum ice_status ret = 0;
-@@ -972,9 +973,39 @@ enum ice_status ice_init_dcb(struct ice_hw *hw)
- 	}
- 
- 	/* Configure the LLDP MIB change event */
--	ret = ice_aq_cfg_lldp_mib_change(hw, true, NULL);
-+	if (enable_mib_change) {
-+		ret = ice_aq_cfg_lldp_mib_change(hw, true, NULL);
-+		if (!ret)
-+			pi->is_sw_lldp = false;
-+	}
-+
-+	return ret;
-+}
-+
-+/**
-+ * ice_cfg_lldp_mib_change
-+ * @hw: pointer to the HW struct
-+ * @ena_mib: enable/disable MIB change event
-+ *
-+ * Configure (disable/enable) MIB
-+ */
-+enum ice_status ice_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_mib)
-+{
-+	struct ice_port_info *pi = hw->port_info;
-+	enum ice_status ret;
-+
-+	if (!hw->func_caps.common_cap.dcb)
-+		return ICE_ERR_NOT_SUPPORTED;
-+
-+	/* Get DCBX status */
-+	pi->dcbx_status = ice_get_dcbx_status(hw);
-+
-+	if (pi->dcbx_status == ICE_DCBX_STATUS_DIS)
-+		return ICE_ERR_NOT_READY;
-+
-+	ret = ice_aq_cfg_lldp_mib_change(hw, ena_mib, NULL);
- 	if (!ret)
--		pi->is_sw_lldp = false;
-+		pi->is_sw_lldp = !ena_mib;
- 
- 	return ret;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.h b/drivers/net/ethernet/intel/ice/ice_dcb.h
-index 522e1452abe2..ee138f9bdc7c 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.h
-@@ -125,7 +125,7 @@ ice_aq_get_dcb_cfg(struct ice_hw *hw, u8 mib_type, u8 bridgetype,
- 		   struct ice_dcbx_cfg *dcbcfg);
- enum ice_status ice_get_dcb_cfg(struct ice_port_info *pi);
- enum ice_status ice_set_dcb_cfg(struct ice_port_info *pi);
--enum ice_status ice_init_dcb(struct ice_hw *hw);
-+enum ice_status ice_init_dcb(struct ice_hw *hw, bool enable_mib_change);
- enum ice_status
- ice_query_port_ets(struct ice_port_info *pi,
- 		   struct ice_aqc_port_ets_elem *buf, u16 buf_size,
-@@ -139,9 +139,7 @@ ice_aq_start_lldp(struct ice_hw *hw, bool persist, struct ice_sq_cd *cd);
- enum ice_status
- ice_aq_start_stop_dcbx(struct ice_hw *hw, bool start_dcbx_agent,
- 		       bool *dcbx_agent_status, struct ice_sq_cd *cd);
--enum ice_status
--ice_aq_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_update,
--			   struct ice_sq_cd *cd);
-+enum ice_status ice_cfg_lldp_mib_change(struct ice_hw *hw, bool ena_mib);
- #else /* CONFIG_DCB */
- static inline enum ice_status
- ice_aq_stop_lldp(struct ice_hw __always_unused *hw,
-@@ -172,9 +170,8 @@ ice_aq_start_stop_dcbx(struct ice_hw __always_unused *hw,
- }
- 
- static inline enum ice_status
--ice_aq_cfg_lldp_mib_change(struct ice_hw __always_unused *hw,
--			   bool __always_unused ena_update,
--			   struct ice_sq_cd __always_unused *cd)
-+ice_cfg_lldp_mib_change(struct ice_hw __always_unused *hw,
-+			bool __always_unused ena_mib)
- {
- 	return 0;
- }
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 20f440a64650..97c22d4aae1d 100644
+index e922adf1fa15..20f440a64650 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -318,7 +318,7 @@ void ice_dcb_rebuild(struct ice_pf *pf)
- 		goto dcb_error;
- 	}
- 
--	ice_init_dcb(&pf->hw);
-+	ice_init_dcb(&pf->hw, true);
- 	if (pf->hw.port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
- 		pf->hw.port_info->is_sw_lldp = true;
- 	else
-@@ -451,7 +451,7 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
- 
- 	port_info = hw->port_info;
- 
--	err = ice_init_dcb(hw);
-+	err = ice_init_dcb(hw, false);
- 	if (err && !port_info->is_sw_lldp) {
- 		dev_err(&pf->pdev->dev, "Error initializing DCB %d\n", err);
- 		goto dcb_init_err;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index ae9921b7de7b..d5db1426d484 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1206,8 +1206,8 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			enum ice_status status;
- 
- 			/* Disable FW LLDP engine */
--			status = ice_aq_cfg_lldp_mib_change(&pf->hw, false,
--							    NULL);
-+			status = ice_cfg_lldp_mib_change(&pf->hw, false);
-+
- 			/* If unregistering for LLDP events fails, this is
- 			 * not an error state, as there shouldn't be any
- 			 * events to respond to.
-@@ -1273,6 +1273,12 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			 * The FW LLDP engine will now be consuming them.
- 			 */
- 			ice_cfg_sw_lldp(vsi, false, false);
-+
-+			/* Register for MIB change events */
-+			status = ice_cfg_lldp_mib_change(&pf->hw, true);
-+			if (status)
-+				dev_dbg(&pf->pdev->dev,
-+					"Fail to enable MIB change events\n");
+@@ -474,7 +474,6 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
  		}
+ 
+ 		pf->dcbx_cap = DCB_CAP_DCBX_HOST | DCB_CAP_DCBX_VER_IEEE;
+-		set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+ 		return 0;
  	}
- 	clear_bit(ICE_FLAG_ETHTOOL_CTXT, pf->flags);
+ 
+@@ -483,8 +482,6 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 	/* DCBX in FW and LLDP enabled in FW */
+ 	pf->dcbx_cap = DCB_CAP_DCBX_LLD_MANAGED | DCB_CAP_DCBX_VER_IEEE;
+ 
+-	set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+-
+ 	err = ice_dcb_init_cfg(pf, locked);
+ 	if (err)
+ 		goto dcb_init_err;
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 8bb3b81876a9..2d92d8591a8a 100644
+index 703fc7bf2b31..8bb3b81876a9 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2536,6 +2536,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		if (ice_init_pf_dcb(pf, false)) {
- 			clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
- 			clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
-+		} else {
-+			ice_cfg_lldp_mib_change(&pf->hw, true);
- 		}
+@@ -2252,6 +2252,8 @@ static void ice_deinit_pf(struct ice_pf *pf)
+ static int ice_init_pf(struct ice_pf *pf)
+ {
+ 	bitmap_zero(pf->flags, ICE_PF_FLAGS_NBITS);
++	if (pf->hw.func_caps.common_cap.dcb)
++		set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+ #ifdef CONFIG_PCI_IOV
+ 	if (pf->hw.func_caps.common_cap.sr_iov_1_1) {
+ 		struct ice_hw *hw = &pf->hw;
+@@ -2529,13 +2531,12 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		goto err_init_pf_unroll;
  	}
  
+-	err = ice_init_pf_dcb(pf, false);
+-	if (err) {
+-		clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+-		clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
+-
+-		/* do not fail overall init if DCB init fails */
+-		err = 0;
++	if (test_bit(ICE_FLAG_DCB_CAPABLE, pf->flags)) {
++		/* Note: DCB init failure is non-fatal to load */
++		if (ice_init_pf_dcb(pf, false)) {
++			clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
++			clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
++		}
+ 	}
+ 
+ 	ice_determine_q_usage(pf);
 -- 
 2.20.1
 
