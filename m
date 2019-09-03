@@ -1,31 +1,53 @@
 From: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
-Date: Tue,  3 Sep 2019 16:20:20 -0300
-Subject: [Intel-wired-lan] [PATCH v2 net-next 1/2] i40e: fix hw_dbg usage in
- i40e_hmc_get_object_va
-Message-ID: <20190903192021.25789-1-maurosr@linux.vnet.ibm.com>
+Date: Tue,  3 Sep 2019 16:20:21 -0300
+Subject: [Intel-wired-lan] [PATCH v2 net-next 2/2] i40e: Implement debug
+ macro hw_dbg using dev_dbg
+In-Reply-To: <20190903192021.25789-1-maurosr@linux.vnet.ibm.com>
+References: <20190903192021.25789-1-maurosr@linux.vnet.ibm.com>
+Message-ID: <20190903192021.25789-2-maurosr@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The mentioned function references a i40e_hw attribute, as parameter for
-hw_dbg, but it doesn't exist in the function scope.
-Fixes it by changing  parameters from i40e_hmc_info to i40e_hw which can
-retrieve the necessary i40e_hmc_info.
+There are several uses of hw_dbg in the code, producing no output. This
+patch implments it using dev_debug.
+
+Initially the intention was to implement it using netdev_dbg, analogously
+to what is done in ixgbe for instance. That approach was avoided due to
+some early usages of hw_dbg, like i40e_pf_reset, before the vsi structure
+initialization causing NULL pointer dereference during the driver probe if
+the dbg messages were turned on as soon as the module is probed.
 
 v2:
- - Fixed reverse xmas tree code style issue as suggested by Jakub Kicinski
+ - Use dev_dbg instead of pr_debug, and take advantage of dev_name
+instead of crafting pretty much the same device name locally as suggested
+by Jakub Kicinski.
 
 Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_hmc.c    | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_osdep.h  | 5 ++++-
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
-index 994011c38fb4..fd987f7ae6e5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 906cf68d3453..a51678166ff9 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright(c) 2013 - 2018 Intel Corporation. */
+ 
++#include "i40e.h"
+ #include "i40e_type.h"
+ #include "i40e_adminq.h"
+ #include "i40e_prototype.h"
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
+index 19ce93d7fd0a..163ee8c6311c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
 @@ -1,6 +1,7 @@
  // SPDX-License-Identifier: GPL-2.0
  /* Copyright(c) 2013 - 2018 Intel Corporation. */
@@ -33,72 +55,23 @@ index 994011c38fb4..fd987f7ae6e5 100644
 +#include "i40e.h"
  #include "i40e_osdep.h"
  #include "i40e_register.h"
- #include "i40e_type.h"
-@@ -963,7 +964,7 @@ static i40e_status i40e_set_hmc_context(u8 *context_bytes,
+ #include "i40e_status.h"
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_osdep.h b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
+index a07574bff550..c302ef2524f8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_osdep.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
+@@ -18,7 +18,10 @@
+  * actual OS primitives
+  */
  
- /**
-  * i40e_hmc_get_object_va - retrieves an object's virtual address
-- * @hmc_info: pointer to i40e_hmc_info struct
-+ * @hw: the hardware struct, from which we obtain the i40e_hmc_info pointer
-  * @object_base: pointer to u64 to get the va
-  * @rsrc_type: the hmc resource type
-  * @obj_idx: hmc object index
-@@ -972,16 +973,17 @@ static i40e_status i40e_set_hmc_context(u8 *context_bytes,
-  * base pointer.  This function is used for LAN Queue contexts.
-  **/
- static
--i40e_status i40e_hmc_get_object_va(struct i40e_hmc_info *hmc_info,
-+i40e_status i40e_hmc_get_object_va(struct i40e_hw *hw,
- 					u8 **object_base,
- 					enum i40e_hmc_lan_rsrc_type rsrc_type,
- 					u32 obj_idx)
- {
-+	struct i40e_hmc_info *hmc_info = &hw->hmc;
- 	u32 obj_offset_in_sd, obj_offset_in_pd;
--	i40e_status ret_code = 0;
- 	struct i40e_hmc_sd_entry *sd_entry;
- 	struct i40e_hmc_pd_entry *pd_entry;
- 	u32 pd_idx, pd_lmt, rel_pd_idx;
-+	i40e_status ret_code = 0;
- 	u64 obj_offset_in_fpm;
- 	u32 sd_idx, sd_lmt;
+-#define hw_dbg(hw, S, A...)	do {} while (0)
++#define hw_dbg(hw, S, A...)							\
++do {										\
++	dev_dbg(&((struct i40e_pf *)hw->back)->pdev->dev, S, ##A);		\
++} while (0)
  
-@@ -1047,7 +1049,7 @@ i40e_status i40e_clear_lan_tx_queue_context(struct i40e_hw *hw,
- 	i40e_status err;
- 	u8 *context_bytes;
- 
--	err = i40e_hmc_get_object_va(&hw->hmc, &context_bytes,
-+	err = i40e_hmc_get_object_va(hw, &context_bytes,
- 				     I40E_HMC_LAN_TX, queue);
- 	if (err < 0)
- 		return err;
-@@ -1068,7 +1070,7 @@ i40e_status i40e_set_lan_tx_queue_context(struct i40e_hw *hw,
- 	i40e_status err;
- 	u8 *context_bytes;
- 
--	err = i40e_hmc_get_object_va(&hw->hmc, &context_bytes,
-+	err = i40e_hmc_get_object_va(hw, &context_bytes,
- 				     I40E_HMC_LAN_TX, queue);
- 	if (err < 0)
- 		return err;
-@@ -1088,7 +1090,7 @@ i40e_status i40e_clear_lan_rx_queue_context(struct i40e_hw *hw,
- 	i40e_status err;
- 	u8 *context_bytes;
- 
--	err = i40e_hmc_get_object_va(&hw->hmc, &context_bytes,
-+	err = i40e_hmc_get_object_va(hw, &context_bytes,
- 				     I40E_HMC_LAN_RX, queue);
- 	if (err < 0)
- 		return err;
-@@ -1109,7 +1111,7 @@ i40e_status i40e_set_lan_rx_queue_context(struct i40e_hw *hw,
- 	i40e_status err;
- 	u8 *context_bytes;
- 
--	err = i40e_hmc_get_object_va(&hw->hmc, &context_bytes,
-+	err = i40e_hmc_get_object_va(hw, &context_bytes,
- 				     I40E_HMC_LAN_RX, queue);
- 	if (err < 0)
- 		return err;
+ #define wr32(a, reg, value)	writel((value), ((a)->hw_addr + (reg)))
+ #define rd32(a, reg)		readl((a)->hw_addr + (reg))
 -- 
 2.21.0
 
