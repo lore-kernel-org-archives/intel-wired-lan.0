@@ -1,77 +1,125 @@
-From: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
-Date: Tue,  3 Sep 2019 16:20:21 -0300
-Subject: [Intel-wired-lan] [PATCH v2 net-next 2/2] i40e: Implement debug
- macro hw_dbg using dev_dbg
-In-Reply-To: <20190903192021.25789-1-maurosr@linux.vnet.ibm.com>
-References: <20190903192021.25789-1-maurosr@linux.vnet.ibm.com>
-Message-ID: <20190903192021.25789-2-maurosr@linux.vnet.ibm.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 04 Sep 2019 03:24:30 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 00b91cc78adc4bd9504d2e2065ac6bd96a10cc27
+Message-ID: <5d6ebdee.ABKhiBHd+B0bieCP%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There are several uses of hw_dbg in the code, producing no output. This
-patch implments it using dev_debug.
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 00b91cc78adc4bd9504d2e2065ac6bd96a10cc27  ice: Reliably reset VFs
 
-Initially the intention was to implement it using netdev_dbg, analogously
-to what is done in ixgbe for instance. That approach was avoided due to
-some early usages of hw_dbg, like i40e_pf_reset, before the vsi structure
-initialization causing NULL pointer dereference during the driver probe if
-the dbg messages were turned on as soon as the module is probed.
+elapsed time: 94m
 
-v2:
- - Use dev_dbg instead of pr_debug, and take advantage of dev_name
-instead of crafting pretty much the same device name locally as suggested
-by Jakub Kicinski.
+configs tested: 100
 
-Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-e001-201935
+x86_64                 randconfig-e002-201935
+x86_64                 randconfig-e003-201935
+x86_64                 randconfig-e004-201935
+i386                   randconfig-e001-201935
+i386                   randconfig-e002-201935
+i386                   randconfig-e003-201935
+i386                   randconfig-e004-201935
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-d002-201935
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+x86_64                           allmodconfig
+i386                   randconfig-f004-201935
+x86_64                 randconfig-f004-201935
+x86_64                 randconfig-f002-201935
+i386                   randconfig-f001-201935
+i386                   randconfig-f003-201935
+i386                   randconfig-f002-201935
+x86_64                 randconfig-f001-201935
+x86_64                 randconfig-f003-201935
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 1 +
- drivers/net/ethernet/intel/i40e/i40e_hmc.c    | 1 +
- drivers/net/ethernet/intel/i40e/i40e_osdep.h  | 5 ++++-
- 3 files changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 906cf68d3453..a51678166ff9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
- 
-+#include "i40e.h"
- #include "i40e_type.h"
- #include "i40e_adminq.h"
- #include "i40e_prototype.h"
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-index 19ce93d7fd0a..163ee8c6311c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
- 
-+#include "i40e.h"
- #include "i40e_osdep.h"
- #include "i40e_register.h"
- #include "i40e_status.h"
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_osdep.h b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
-index a07574bff550..c302ef2524f8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_osdep.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
-@@ -18,7 +18,10 @@
-  * actual OS primitives
-  */
- 
--#define hw_dbg(hw, S, A...)	do {} while (0)
-+#define hw_dbg(hw, S, A...)							\
-+do {										\
-+	dev_dbg(&((struct i40e_pf *)hw->back)->pdev->dev, S, ##A);		\
-+} while (0)
- 
- #define wr32(a, reg, value)	writel((value), ((a)->hw_addr + (reg)))
- #define rd32(a, reg)		readl((a)->hw_addr + (reg))
--- 
-2.21.0
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
