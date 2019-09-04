@@ -1,49 +1,143 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 04 Sep 2019 08:07:11 -0700
-Subject: [Intel-wired-lan] [net-queue PATCH] ixgbe: Prevent u8 wrapping of
- ITR value to something less than 10us
-Message-ID: <20190904150703.13516.21103.stgit@localhost.localdomain>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 05 Sep 2019 01:18:13 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ c2e5037831683f16838a1cedc494576e9ae72b3e
+Message-ID: <5d6ff1d5.a4IirB0LLBpAt5Nz%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: c2e5037831683f16838a1cedc494576e9ae72b3e  ice: Rework around device/function capabilities
 
-There were a couple cases where the ITR value generated via the adaptive
-ITR scheme could exceed 126. This resulted in the value becoming either 0
-or something less than 10. Switching back and forth between a value less
-than 10 and a value greater than 10 can cause issues as certain hardware
-features such as RSC to not function well when the ITR value has dropped
-that low.
+elapsed time: 156m
 
-Reported-by: Gregg Leventhal <gleventhal@janestreet.com>
-Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+configs tested: 118
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                   randconfig-f004-201935
+x86_64                 randconfig-f004-201935
+x86_64                 randconfig-f002-201935
+i386                   randconfig-f001-201935
+i386                   randconfig-f003-201935
+i386                   randconfig-f002-201935
+x86_64                 randconfig-f001-201935
+x86_64                 randconfig-f003-201935
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-g003-201935
+i386                   randconfig-g004-201935
+x86_64                 randconfig-g002-201935
+x86_64                 randconfig-g001-201935
+i386                   randconfig-g001-201935
+x86_64                 randconfig-g004-201935
+i386                   randconfig-g002-201935
+i386                   randconfig-g003-201935
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+x86_64                 randconfig-e004-201935
+i386                   randconfig-e004-201935
+x86_64                 randconfig-e002-201935
+x86_64                 randconfig-e003-201935
+i386                   randconfig-e003-201935
+x86_64                 randconfig-e001-201935
+i386                   randconfig-e001-201935
+i386                   randconfig-e002-201935
+x86_64                           allyesconfig
+i386                             allmodconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-c003-201935
+x86_64                 randconfig-c002-201935
+i386                   randconfig-c004-201935
+x86_64                 randconfig-c004-201935
+i386                   randconfig-c003-201935
+x86_64                 randconfig-c001-201935
+i386                   randconfig-c002-201935
+i386                   randconfig-c001-201935
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 5fa585dfddf6..097e6dfbf65a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2621,7 +2621,7 @@ static void ixgbe_update_itr(struct ixgbe_q_vector *q_vector,
- 		/* 16K ints/sec to 9.2K ints/sec */
- 		avg_wire_size *= 15;
- 		avg_wire_size += 11452;
--	} else if (avg_wire_size <= 1980) {
-+	} else if (avg_wire_size < 1968) {
- 		/* 9.2K ints/sec to 8K ints/sec */
- 		avg_wire_size *= 5;
- 		avg_wire_size += 22420;
-@@ -2654,6 +2654,8 @@ static void ixgbe_update_itr(struct ixgbe_q_vector *q_vector,
- 	case IXGBE_LINK_SPEED_2_5GB_FULL:
- 	case IXGBE_LINK_SPEED_1GB_FULL:
- 	case IXGBE_LINK_SPEED_10_FULL:
-+		if (avg_wire_size > 8064)
-+			avg_wire_size = 8064;
- 		itr += DIV_ROUND_UP(avg_wire_size,
- 				    IXGBE_ITR_ADAPTIVE_MIN_INC * 64) *
- 		       IXGBE_ITR_ADAPTIVE_MIN_INC;
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
