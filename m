@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 4 Sep 2019 22:27:46 +0000
-Subject: [Intel-wired-lan] [PATCH S28 v2 8/9] ice: change default number
- of receive descriptors
-In-Reply-To: <20190903083108.19593-8-anthony.l.nguyen@intel.com>
+Date: Wed, 4 Sep 2019 22:28:04 +0000
+Subject: [Intel-wired-lan] [PATCH S28 v2 9/9] ice: Rework around
+ device/function capabilities
+In-Reply-To: <20190903083108.19593-9-anthony.l.nguyen@intel.com>
 References: <20190903083108.19593-1-anthony.l.nguyen@intel.com>
- <20190903083108.19593-8-anthony.l.nguyen@intel.com>
-Message-ID: <2932e13a713f4f4db4524049ac118033@intel.com>
+ <20190903083108.19593-9-anthony.l.nguyen@intel.com>
+Message-ID: <708e0136b88a41d387996683540bae72@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,23 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Tuesday, September 3, 2019 1:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S28 v2 8/9] ice: change default number of
-> receive descriptors
+> Subject: [Intel-wired-lan] [PATCH S28 v2 9/9] ice: Rework around
+> device/function capabilities
 > 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 > 
-> The driver should start out with a reasonable number of descriptors that can
-> prevent drops due to a CPU being in a power management state.
-> Change the default number of descriptors to 2048.
-> The user can always change the value at runtime.  Transmit descriptor counts
-> are not modified because they don't need to change due to the speed of the
-> interface, or for power managed CPUs, but the code is simplified to a fixed
-> value for the transmit default.
+> ice_parse_caps is printing capabilities in a different way when compared to
+> the variable names. This makes it difficult to search for the right strings in the
+> debug logs. So this patch updates the print strings to be exactly the same as
+> the fields' name in the structure.
 > 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h | 19 ++-----------------
->  1 file changed, 2 insertions(+), 17 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c | 40 ++++++++++-----------
+>  1 file changed, 20 insertions(+), 20 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
