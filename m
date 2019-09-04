@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 4 Sep 2019 22:26:33 +0000
-Subject: [Intel-wired-lan] [PATCH S28 v2 4/9] ice: Report VF link status
- with opcode to get resources
-In-Reply-To: <20190903083108.19593-4-anthony.l.nguyen@intel.com>
+Date: Wed, 4 Sep 2019 22:26:49 +0000
+Subject: [Intel-wired-lan] [PATCH S28 v2 5/9] ice: update Tx context
+ struct
+In-Reply-To: <20190903083108.19593-5-anthony.l.nguyen@intel.com>
 References: <20190903083108.19593-1-anthony.l.nguyen@intel.com>
- <20190903083108.19593-4-anthony.l.nguyen@intel.com>
-Message-ID: <d79309f8f9de45b1affbf1351455d1fa@intel.com>
+ <20190903083108.19593-5-anthony.l.nguyen@intel.com>
+Message-ID: <3a807e4312664090bb18deb1946a85fb@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,23 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Tuesday, September 3, 2019 1:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S28 v2 4/9] ice: Report VF link status with
-> opcode to get resources
+> Subject: [Intel-wired-lan] [PATCH S28 v2 5/9] ice: update Tx context struct
 > 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> From: Ashish Shah <ashish.n.shah@intel.com>
 > 
-> This patch changes how and when the driver report link status, instead of
-> waiting till the call to enable queues for VF, we should report link status
-> earlier with opcode to get VF resources - So as to avoid reporting erroneous
-> information, especially when queues have not been configured.
-> In addition, we can also make a call to get and report link status change after
-> when queue is enabled, at least to report netdev or PHY link status.
-> This is in accordance to how link speed is being reported for PF...
+> Add internal usage flag, bit 91 as described in spec.
+> Update width of internal queue state to 122 also as described in spec.
 > 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Signed-off-by: Ashish Shah <ashish.n.shah@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/ice/ice_common.c    | 3 ++-
+>  drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 1 +
+>  2 files changed, 3 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
