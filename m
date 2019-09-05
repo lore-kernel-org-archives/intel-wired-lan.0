@@ -1,69 +1,143 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Thu,  5 Sep 2019 08:34:22 +0200
-Subject: [Intel-wired-lan] [PATCH] iavf: fix MAC address setting for VFs
- when filter is rejected
-Message-ID: <20190905063422.28743-1-sassmann@kpanic.de>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 05 Sep 2019 15:02:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ 71d65aeb17dc7062783792ed9db974a5b81a2923
+Message-ID: <5d70b300.VruBamCcBSg3Cj2M%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently iavf unconditionally applies MAC address change requests. This
-brings the VF in a state where it is no longer able to pass traffic if
-the PF rejects a MAC filter change for the VF.
-A typical scenario for a rejected MAC filter is for an untrusted VF to
-request to change the MAC address when an administratively set MAC is
-present.
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 71d65aeb17dc7062783792ed9db974a5b81a2923  i40e: Implement debug macro hw_dbg using dev_dbg
 
-To keep iavf working in this scenario the MAC filter handling in iavf
-needs to act on the PF reply regarding the MAC filter change. In the
-case of an ack the new MAC address gets set, whereas in the case of a
-nack the previous MAC address needs to stay in place.
+TIMEOUT after 1441m
 
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 4
+
+x86_64                             acpi-redef
+x86_64                           allmodconfig
+x86_64                           allyesdebian
+x86_64                                nfsroot
+
+configs tested: 106
+
+x86_64                 randconfig-g003-201935
+i386                   randconfig-g004-201935
+x86_64                 randconfig-g002-201935
+x86_64                 randconfig-g001-201935
+i386                   randconfig-g001-201935
+x86_64                 randconfig-g004-201935
+i386                   randconfig-g002-201935
+i386                   randconfig-g003-201935
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+i386                   randconfig-d002-201935
+i386                   randconfig-d004-201935
+x86_64                 randconfig-d004-201935
+x86_64                 randconfig-d002-201935
+x86_64                 randconfig-d001-201935
+x86_64                 randconfig-d003-201935
+i386                   randconfig-d001-201935
+i386                   randconfig-d003-201935
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                           allyesconfig
+i386                             allmodconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                 randconfig-c003-201935
+x86_64                 randconfig-c002-201935
+i386                   randconfig-c004-201935
+x86_64                 randconfig-c004-201935
+i386                   randconfig-c003-201935
+x86_64                 randconfig-c001-201935
+i386                   randconfig-c002-201935
+i386                   randconfig-c001-201935
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c     | 1 -
- drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 7 +++++++
- 2 files changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 39cc67cde89e..9e571a657fe7 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -826,7 +826,6 @@ static int iavf_set_mac(struct net_device *netdev, void *p)
- 
- 	if (f) {
- 		ether_addr_copy(hw->mac.addr, addr->sa_data);
--		ether_addr_copy(netdev->dev_addr, adapter->hw.mac.addr);
- 	}
- 
- 	return (f == NULL) ? -ENOMEM : 0;
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index d49d58a6de80..c46770eba320 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -1252,6 +1252,8 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 		case VIRTCHNL_OP_ADD_ETH_ADDR:
- 			dev_err(&adapter->pdev->dev, "Failed to add MAC filter, error %s\n",
- 				iavf_stat_str(&adapter->hw, v_retval));
-+			/* restore administratively set MAC address */
-+			ether_addr_copy(adapter->hw.mac.addr, netdev->dev_addr);
- 			break;
- 		case VIRTCHNL_OP_DEL_VLAN:
- 			dev_err(&adapter->pdev->dev, "Failed to delete VLAN filter, error %s\n",
-@@ -1319,6 +1321,11 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 		}
- 	}
- 	switch (v_opcode) {
-+	case VIRTCHNL_OP_ADD_ETH_ADDR: {
-+		if (!ether_addr_equal(netdev->dev_addr, adapter->hw.mac.addr))
-+			ether_addr_copy(netdev->dev_addr, adapter->hw.mac.addr);
-+		}
-+		break;
- 	case VIRTCHNL_OP_GET_STATS: {
- 		struct iavf_eth_stats *stats =
- 			(struct iavf_eth_stats *)msg;
--- 
-2.21.0
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
