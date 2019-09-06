@@ -1,1316 +1,1360 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  6 Sep 2019 06:46:23 -0700
-Subject: [Intel-wired-lan] [PATCH S29 v2 3/6] ice: Implement Dynamic Device
- Personalization (DDP) download
+Date: Fri,  6 Sep 2019 06:46:25 -0700
+Subject: [Intel-wired-lan] [PATCH S29 v2 5/6] ice: Enable DDP package
+ download
 In-Reply-To: <20190906134626.37344-1-anthony.l.nguyen@intel.com>
 References: <20190906134626.37344-1-anthony.l.nguyen@intel.com>
-Message-ID: <20190906134626.37344-3-anthony.l.nguyen@intel.com>
+Message-ID: <20190906134626.37344-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add the required defines, structures, and functions to enable downloading
-a DDP package.  Before download, checks are performed to ensure the package
-is valid and compatible.
+Attempt to request an optional device-specific DDP package file
+(one with the PCIe Device Serial Number in its name so that different DDP
+package files can be used on different devices). If the optional package
+file exists, download it to the device. If not, download the default
+package file.
 
-Note that package download is not yet requested by the driver as further
-initialization is required to utilize the package.
+Log an appropriate message based on whether or not a DDP package
+file exists and the return code from the attempt to download it to the
+device.  If the download fails and there is not already a package file on
+the device, go into "Safe Mode" where some features are not supported.
 
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile       |   1 +
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  60 ++
- drivers/net/ethernet/intel/ice/ice_common.c   |  40 +-
- drivers/net/ethernet/intel/ice/ice_common.h   |   4 +
- .../net/ethernet/intel/ice/ice_flex_pipe.c    | 607 ++++++++++++++++++
- .../net/ethernet/intel/ice/ice_flex_pipe.h    |  25 +
- .../net/ethernet/intel/ice/ice_flex_type.h    | 372 +++++++++++
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   2 +
- drivers/net/ethernet/intel/ice/ice_type.h     |  26 +
- 9 files changed, 1136 insertions(+), 1 deletion(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_flex_pipe.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_flex_pipe.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_flex_type.h
+ drivers/net/ethernet/intel/ice/ice.h          |  14 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |  69 ++
+ drivers/net/ethernet/intel/ice/ice_common.h   |   2 +
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |  42 ++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |   2 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  27 +
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |   4 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.h    |   1 +
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  92 +--
+ drivers/net/ethernet/intel/ice/ice_lib.h      |   1 +
+ drivers/net/ethernet/intel/ice/ice_main.c     | 614 ++++++++++++++----
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   6 +
+ 12 files changed, 679 insertions(+), 195 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 2d140ba83781..9edde960b4f2 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -15,6 +15,7 @@ ice-y := ice_main.o	\
- 	 ice_sched.o	\
- 	 ice_lib.o	\
- 	 ice_txrx.o	\
-+	 ice_flex_pipe.o	\
- 	 ice_ethtool.o
- ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o
- ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_lib.o
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 9c9791788610..023e3d2fee5f 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1530,6 +1530,56 @@ struct ice_aqc_get_clear_fw_log {
- 	__le32 addr_low;
- };
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 3a3e69a2bc5a..45e100666049 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -8,6 +8,7 @@
+ #include <linux/errno.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/firmware.h>
+ #include <linux/netdevice.h>
+ #include <linux/compiler.h>
+ #include <linux/etherdevice.h>
+@@ -307,6 +308,7 @@ enum ice_pf_flags {
+ 	ICE_FLAG_SRIOV_CAPABLE,
+ 	ICE_FLAG_DCB_CAPABLE,
+ 	ICE_FLAG_DCB_ENA,
++	ICE_FLAG_ADV_FEATURES,
+ 	ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA,
+ 	ICE_FLAG_NO_MEDIA,
+ 	ICE_FLAG_FW_LLDP_AGENT,
+@@ -404,6 +406,17 @@ ice_irq_dynamic_ena(struct ice_hw *hw, struct ice_vsi *vsi,
+ 	wr32(hw, GLINT_DYN_CTL(vector), val);
+ }
  
-+/* Download Package (indirect 0x0C40) */
-+/* Also used for Update Package (indirect 0x0C42) */
-+struct ice_aqc_download_pkg {
-+	u8 flags;
-+#define ICE_AQC_DOWNLOAD_PKG_LAST_BUF	0x01
-+	u8 reserved[3];
-+	__le32 reserved1;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
++/**
++ * ice_netdev_to_pf - Retrieve the PF struct associated with a netdev
++ * @netdev: pointer to the netdev struct
++ */
++static inline struct ice_pf *ice_netdev_to_pf(struct net_device *netdev)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
 +
-+struct ice_aqc_download_pkg_resp {
-+	__le32 error_offset;
-+	__le32 error_info;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
++	return np->vsi->back;
++}
 +
-+/* Get Package Info List (indirect 0x0C43) */
-+struct ice_aqc_get_pkg_info_list {
-+	__le32 reserved1;
-+	__le32 reserved2;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+/* Version format for packages */
-+struct ice_pkg_ver {
-+	u8 major;
-+	u8 minor;
-+	u8 update;
-+	u8 draft;
-+};
-+
-+#define ICE_PKG_NAME_SIZE	32
-+
-+struct ice_aqc_get_pkg_info {
-+	struct ice_pkg_ver ver;
-+	char name[ICE_PKG_NAME_SIZE];
-+	u8 is_in_nvm;
-+	u8 is_active;
-+	u8 is_active_at_boot;
-+	u8 is_modified;
-+};
-+
-+/* Get Package Info List response buffer format (0x0C43) */
-+struct ice_aqc_get_pkg_info_resp {
-+	__le32 count;
-+	struct ice_aqc_get_pkg_info pkg_info[1];
-+};
  /**
-  * struct ice_aq_desc - Admin Queue (AQ) descriptor
-  * @flags: ICE_AQ_FLAG_* flags
-@@ -1592,6 +1642,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_add_update_free_vsi_resp add_update_free_vsi_res;
- 		struct ice_aqc_fw_logging fw_logging;
- 		struct ice_aqc_get_clear_fw_log get_clear_fw_log;
-+		struct ice_aqc_download_pkg download_pkg;
- 		struct ice_aqc_set_mac_lb set_mac_lb;
- 		struct ice_aqc_alloc_free_res_cmd sw_res_ctrl;
- 		struct ice_aqc_set_event_mask set_event_mask;
-@@ -1624,6 +1675,11 @@ enum ice_aq_err {
- 	ICE_AQ_RC_EEXIST	= 13, /* Object already exists */
- 	ICE_AQ_RC_ENOSPC	= 16, /* No space left or allocation failure */
- 	ICE_AQ_RC_ENOSYS	= 17, /* Function not implemented */
-+	ICE_AQ_RC_ENOSEC	= 24, /* Missing security manifest */
-+	ICE_AQ_RC_EBADSIG	= 25, /* Bad RSA signature */
-+	ICE_AQ_RC_ESVN		= 26, /* SVN number prohibits this package */
-+	ICE_AQ_RC_EBADMAN	= 27, /* Manifest hash mismatch */
-+	ICE_AQ_RC_EBADBUF	= 28, /* Buffer hash mismatches manifest */
- };
- 
- /* Admin Queue command opcodes */
-@@ -1712,6 +1768,10 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_add_txqs				= 0x0C30,
- 	ice_aqc_opc_dis_txqs				= 0x0C31,
- 
-+	/* package commands */
-+	ice_aqc_opc_download_pkg			= 0x0C40,
-+	ice_aqc_opc_get_pkg_info_list			= 0x0C43,
-+
- 	/* debug commands */
- 	ice_aqc_opc_fw_logging				= 0xFF09,
- 	ice_aqc_opc_fw_logging_info			= 0xFF10,
+  * ice_get_main_vsi - Get the PF VSI
+  * @pf: PF instance
+@@ -421,6 +434,7 @@ static inline struct ice_vsi *ice_get_main_vsi(struct ice_pf *pf)
+ int ice_vsi_setup_tx_rings(struct ice_vsi *vsi);
+ int ice_vsi_setup_rx_rings(struct ice_vsi *vsi);
+ void ice_set_ethtool_ops(struct net_device *netdev);
++void ice_set_ethtool_safe_mode_ops(struct net_device *netdev);
+ u16 ice_get_avail_txq_count(struct ice_pf *pf);
+ u16 ice_get_avail_rxq_count(struct ice_pf *pf);
+ void ice_update_vsi_stats(struct ice_vsi *vsi);
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 22d2a11ef41f..20956643036c 100644
+index 91472e049231..3a6b3950eb0e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.c
 +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -910,6 +910,7 @@ void ice_deinit_hw(struct ice_hw *hw)
+@@ -1846,6 +1846,75 @@ ice_discover_caps(struct ice_hw *hw, enum ice_adminq_opc opc)
+ 	return status;
+ }
  
- 	ice_sched_cleanup_all(hw);
- 	ice_sched_clear_agg(hw);
-+	ice_free_seg(hw);
- 
- 	if (hw->port_info) {
- 		devm_kfree(ice_hw_to_dev(hw), hw->port_info);
-@@ -1230,6 +1231,12 @@ ice_debug_cq(struct ice_hw *hw, u32 __maybe_unused mask, void *desc, void *buf,
- 
- /* FW Admin Queue command wrappers */
- 
-+/* Software lock/mutex that is meant to be held while the Global Config Lock
-+ * in firmware is acquired by the software to prevent most (but not all) types
-+ * of AQ commands from being sent to FW
++/**
++ * ice_set_safe_mode_caps - Override dev/func capabilities when in safe mode
++ * @hw: pointer to the hardware structure
 + */
-+DEFINE_MUTEX(ice_global_cfg_lock_sw);
++void ice_set_safe_mode_caps(struct ice_hw *hw)
++{
++	struct ice_hw_func_caps *func_caps = &hw->func_caps;
++	struct ice_hw_dev_caps *dev_caps = &hw->dev_caps;
++	u32 valid_func, rxq_first_id, txq_first_id;
++	u32 msix_vector_first_id, max_mtu;
++	u32 num_func = 0;
++	u8 i;
++
++	/* cache some func_caps values that should be restored after memset */
++	valid_func = func_caps->common_cap.valid_functions;
++	txq_first_id = func_caps->common_cap.txq_first_id;
++	rxq_first_id = func_caps->common_cap.rxq_first_id;
++	msix_vector_first_id = func_caps->common_cap.msix_vector_first_id;
++	max_mtu = func_caps->common_cap.max_mtu;
++
++	/* unset func capabilities */
++	memset(func_caps, 0, sizeof(*func_caps));
++
++	/* restore cached values */
++	func_caps->common_cap.valid_functions = valid_func;
++	func_caps->common_cap.txq_first_id = txq_first_id;
++	func_caps->common_cap.rxq_first_id = rxq_first_id;
++	func_caps->common_cap.msix_vector_first_id = msix_vector_first_id;
++	func_caps->common_cap.max_mtu = max_mtu;
++
++	/* one Tx and one Rx queue in safe mode */
++	func_caps->common_cap.num_rxq = 1;
++	func_caps->common_cap.num_txq = 1;
++
++	/* two MSIX vectors, one for traffic and one for misc causes */
++	func_caps->common_cap.num_msix_vectors = 2;
++	func_caps->guar_num_vsi = 1;
++
++	/* cache some dev_caps values that should be restored after memset */
++	valid_func = dev_caps->common_cap.valid_functions;
++	txq_first_id = dev_caps->common_cap.txq_first_id;
++	rxq_first_id = dev_caps->common_cap.rxq_first_id;
++	msix_vector_first_id = dev_caps->common_cap.msix_vector_first_id;
++	max_mtu = dev_caps->common_cap.max_mtu;
++
++	/* unset dev capabilities */
++	memset(dev_caps, 0, sizeof(*dev_caps));
++
++	/* restore cached values */
++	dev_caps->common_cap.valid_functions = valid_func;
++	dev_caps->common_cap.txq_first_id = txq_first_id;
++	dev_caps->common_cap.rxq_first_id = rxq_first_id;
++	dev_caps->common_cap.msix_vector_first_id = msix_vector_first_id;
++	dev_caps->common_cap.max_mtu = max_mtu;
++
++	/* valid_func is a bitmap. get number of functions */
++#define ICE_MAX_FUNCS 8
++	for (i = 0; i < ICE_MAX_FUNCS; i++)
++		if (valid_func & BIT(i))
++			num_func++;
++
++	/* one Tx and one Rx queue per function in safe mode */
++	dev_caps->common_cap.num_rxq = num_func;
++	dev_caps->common_cap.num_txq = num_func;
++
++	/* two MSIX vectors per function */
++	dev_caps->common_cap.num_msix_vectors = 2 * num_func;
++}
 +
  /**
-  * ice_aq_send_cmd - send FW Admin Queue command to FW Admin Queue
-  * @hw: pointer to the HW struct
-@@ -1244,7 +1251,38 @@ enum ice_status
- ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf,
- 		u16 buf_size, struct ice_sq_cd *cd)
- {
--	return ice_sq_send_cmd(hw, &hw->adminq, desc, buf, buf_size, cd);
-+	struct ice_aqc_req_res *cmd = &desc->params.res_owner;
-+	bool lock_acquired = false;
-+	enum ice_status status;
+  * ice_get_caps - get info about the HW
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index ce55f8ae6b52..c3df92f57777 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -42,6 +42,8 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+ void ice_clear_pxe_mode(struct ice_hw *hw);
+ enum ice_status ice_get_caps(struct ice_hw *hw);
+ 
++void ice_set_safe_mode_caps(struct ice_hw *hw);
 +
-+	/* When a package download is in process (i.e. when the firmware's
-+	 * Global Configuration Lock resource is held), only the Download
-+	 * Package, Get Version, Get Package Info List and Release Resource
-+	 * (with resource ID set to Global Config Lock) AdminQ commands are
-+	 * allowed; all others must block until the package download completes
-+	 * and the Global Config Lock is released.  See also
-+	 * ice_acquire_global_cfg_lock().
-+	 */
-+	switch (le16_to_cpu(desc->opcode)) {
-+	case ice_aqc_opc_download_pkg:
-+	case ice_aqc_opc_get_pkg_info_list:
-+	case ice_aqc_opc_get_ver:
-+		break;
-+	case ice_aqc_opc_release_res:
-+		if (le16_to_cpu(cmd->res_id) == ICE_AQC_RES_ID_GLBL_LOCK)
-+			break;
-+		/* fall-through */
-+	default:
-+		mutex_lock(&ice_global_cfg_lock_sw);
-+		lock_acquired = true;
-+		break;
+ void ice_dev_onetime_setup(struct ice_hw *hw);
+ 
+ enum ice_status
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 97c22d4aae1d..dd47869c4ad4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -3,6 +3,48 @@
+ 
+ #include "ice_dcb_lib.h"
+ 
++/**
++ * ice_vsi_cfg_netdev_tc - Setup the netdev TC configuration
++ * @vsi: the VSI being configured
++ * @ena_tc: TC map to be enabled
++ */
++void ice_vsi_cfg_netdev_tc(struct ice_vsi *vsi, u8 ena_tc)
++{
++	struct net_device *netdev = vsi->netdev;
++	struct ice_pf *pf = vsi->back;
++	struct ice_dcbx_cfg *dcbcfg;
++	u8 netdev_tc;
++	int i;
++
++	if (!netdev)
++		return;
++
++	if (!ena_tc) {
++		netdev_reset_tc(netdev);
++		return;
 +	}
 +
-+	status = ice_sq_send_cmd(hw, &hw->adminq, desc, buf, buf_size, cd);
-+	if (lock_acquired)
-+		mutex_unlock(&ice_global_cfg_lock_sw);
++	if (netdev_set_num_tc(netdev, vsi->tc_cfg.numtc))
++		return;
 +
-+	return status;
++	dcbcfg = &pf->hw.port_info->local_dcbx_cfg;
++
++	ice_for_each_traffic_class(i)
++		if (vsi->tc_cfg.ena_tc & BIT(i))
++			netdev_set_tc_queue(netdev,
++					    vsi->tc_cfg.tc_info[i].netdev_tc,
++					    vsi->tc_cfg.tc_info[i].qcount_tx,
++					    vsi->tc_cfg.tc_info[i].qoffset);
++
++	for (i = 0; i < ICE_MAX_USER_PRIORITY; i++) {
++		u8 ets_tc = dcbcfg->etscfg.prio_table[i];
++
++		/* Get the mapped netdev TC# for the UP */
++		netdev_tc = vsi->tc_cfg.tc_info[ets_tc].netdev_tc;
++		netdev_set_prio_tc_map(netdev, i, netdev_tc);
++	}
++}
++
+ /**
+  * ice_dcb_get_ena_tc - return bitmap of enabled TCs
+  * @dcbcfg: DCB config to evaluate for enabled TCs
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+index 819081053ff5..661a6f7bca64 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+@@ -22,6 +22,7 @@ ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
+ void
+ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 				    struct ice_rq_event_info *event);
++void ice_vsi_cfg_netdev_tc(struct ice_vsi *vsi, u8 ena_tc);
+ static inline void
+ ice_set_cgd_num(struct ice_tlan_ctx *tlan_ctx, struct ice_ring *ring)
+ {
+@@ -58,5 +59,6 @@ ice_tx_prepare_vlan_flags_dcb(struct ice_ring __always_unused *tx_ring,
+ #define ice_vsi_cfg_dcb_rings(vsi) do {} while (0)
+ #define ice_dcb_process_lldp_set_mib_change(pf, event) do {} while (0)
+ #define ice_set_cgd_num(tlan_ctx, ring) do {} while (0)
++#define ice_vsi_cfg_netdev_tc(vsi, ena_tc) do {} while (0)
+ #endif /* CONFIG_DCB */
+ #endif /* _ICE_DCB_LIB_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index a16b461b46bb..7f1234df7ab1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3435,6 +3435,33 @@ static const struct ethtool_ops ice_ethtool_ops = {
+ 	.set_fecparam		= ice_set_fecparam,
+ };
+ 
++static const struct ethtool_ops ice_ethtool_safe_mode_ops = {
++	.get_link_ksettings	= ice_get_link_ksettings,
++	.set_link_ksettings	= ice_set_link_ksettings,
++	.get_drvinfo		= ice_get_drvinfo,
++	.get_regs_len		= ice_get_regs_len,
++	.get_regs		= ice_get_regs,
++	.get_msglevel		= ice_get_msglevel,
++	.set_msglevel		= ice_set_msglevel,
++	.get_eeprom_len		= ice_get_eeprom_len,
++	.get_eeprom		= ice_get_eeprom,
++	.get_strings		= ice_get_strings,
++	.get_ethtool_stats      = ice_get_ethtool_stats,
++	.get_sset_count		= ice_get_sset_count,
++	.get_ringparam		= ice_get_ringparam,
++	.set_ringparam		= ice_set_ringparam,
++	.nway_reset		= ice_nway_reset,
++};
++
++/**
++ * ice_set_ethtool_safe_mode_ops - setup safe mode ethtool ops
++ * @netdev: network interface device structure
++ */
++void ice_set_ethtool_safe_mode_ops(struct net_device *netdev)
++{
++	netdev->ethtool_ops = &ice_ethtool_safe_mode_ops;
++}
++
+ /**
+  * ice_set_ethtool_ops - setup netdev ethtool ops
+  * @netdev: network interface device structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+index 4333a57cf7ee..01b68c83c38d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -4,8 +4,6 @@
+ #include "ice_common.h"
+ #include "ice_flex_pipe.h"
+ 
+-static void ice_fill_blk_tbls(struct ice_hw *hw);
+-
+ /**
+  * ice_pkg_val_buf
+  * @buf: pointer to the ice buffer
+@@ -1357,7 +1355,7 @@ static void ice_fill_tbl(struct ice_hw *hw, enum ice_block block_id, u32 sid)
+  * database with the data iteratively for all advanced feature
+  * blocks. Assume that the HW tables have been allocated.
+  */
+-static void ice_fill_blk_tbls(struct ice_hw *hw)
++void ice_fill_blk_tbls(struct ice_hw *hw)
+ {
+ 	u8 i;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
+index 9edf1e7589c7..37eb282742d1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
+@@ -23,6 +23,7 @@ enum ice_status
+ ice_copy_and_init_pkg(struct ice_hw *hw, const u8 *buf, u32 len);
+ enum ice_status ice_init_hw_tbls(struct ice_hw *hw);
+ void ice_free_seg(struct ice_hw *hw);
++void ice_fill_blk_tbls(struct ice_hw *hw);
+ void ice_clear_hw_tbls(struct ice_hw *hw);
+ void ice_free_hw_tbls(struct ice_hw *hw);
+ #endif /* _ICE_FLEX_PIPE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 9680692bf27c..cc755382df25 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -752,6 +752,17 @@ void ice_vsi_put_qs(struct ice_vsi *vsi)
+ 	mutex_unlock(&pf->avail_q_mutex);
+ }
+ 
++/**
++ * ice_is_safe_mode
++ * @pf: pointer to the PF struct
++ *
++ * returns true if driver is in safe mode, false otherwise
++ */
++bool ice_is_safe_mode(struct ice_pf *pf)
++{
++	return !test_bit(ICE_FLAG_ADV_FEATURES, pf->flags);
++}
++
+ /**
+  * ice_rss_clean - Delete RSS related VSI structures that hold user inputs
+  * @vsi: the VSI being removed
+@@ -2629,15 +2640,17 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 	 * DCB settings in the HW.  Also, if the FW DCBX engine is not running
+ 	 * then Rx LLDP packets need to be redirected up the stack.
+ 	 */
+-	if (vsi->type == ICE_VSI_PF) {
+-		ice_vsi_add_rem_eth_mac(vsi, true);
++	if (!ice_is_safe_mode(pf)) {
++		if (vsi->type == ICE_VSI_PF) {
++			ice_vsi_add_rem_eth_mac(vsi, true);
+ 
+-		/* Tx LLDP packets */
+-		ice_cfg_sw_lldp(vsi, true, true);
++			/* Tx LLDP packets */
++			ice_cfg_sw_lldp(vsi, true, true);
+ 
+-		/* Rx LLDP packets */
+-		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
+-			ice_cfg_sw_lldp(vsi, false, true);
++			/* Rx LLDP packets */
++			if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
++				ice_cfg_sw_lldp(vsi, false, true);
++		}
+ 	}
+ 
+ 	return vsi;
+@@ -2905,8 +2918,11 @@ void ice_vsi_dis_irq(struct ice_vsi *vsi)
+ 	}
+ 
+ 	/* disable each interrupt */
+-	ice_for_each_q_vector(vsi, i)
++	ice_for_each_q_vector(vsi, i) {
++		if (!vsi->q_vectors[i])
++			continue;
+ 		wr32(hw, GLINT_DYN_CTL(vsi->q_vectors[i]->reg_idx), 0);
++	}
+ 
+ 	ice_flush(hw);
+ 
+@@ -2975,14 +2991,16 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 		pf->num_avail_sw_msix += vsi->num_q_vectors;
+ 	}
+ 
+-	if (vsi->type == ICE_VSI_PF) {
+-		ice_vsi_add_rem_eth_mac(vsi, false);
+-		ice_cfg_sw_lldp(vsi, true, false);
+-		/* The Rx rule will only exist to remove if the LLDP FW
+-		 * engine is currently stopped
+-		 */
+-		if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
+-			ice_cfg_sw_lldp(vsi, false, false);
++	if (!ice_is_safe_mode(pf)) {
++		if (vsi->type == ICE_VSI_PF) {
++			ice_vsi_add_rem_eth_mac(vsi, false);
++			ice_cfg_sw_lldp(vsi, true, false);
++			/* The Rx rule will only exist to remove if the LLDP FW
++			 * engine is currently stopped
++			 */
++			if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
++				ice_cfg_sw_lldp(vsi, false, false);
++		}
+ 	}
+ 
+ 	ice_remove_vsi_fltr(&pf->hw, vsi->idx);
+@@ -3168,48 +3186,6 @@ static void ice_vsi_update_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctx)
+ 	       sizeof(vsi->info.tc_mapping));
+ }
+ 
+-/**
+- * ice_vsi_cfg_netdev_tc - Setup the netdev TC configuration
+- * @vsi: the VSI being configured
+- * @ena_tc: TC map to be enabled
+- */
+-static void ice_vsi_cfg_netdev_tc(struct ice_vsi *vsi, u8 ena_tc)
+-{
+-	struct net_device *netdev = vsi->netdev;
+-	struct ice_pf *pf = vsi->back;
+-	struct ice_dcbx_cfg *dcbcfg;
+-	u8 netdev_tc;
+-	int i;
+-
+-	if (!netdev)
+-		return;
+-
+-	if (!ena_tc) {
+-		netdev_reset_tc(netdev);
+-		return;
+-	}
+-
+-	if (netdev_set_num_tc(netdev, vsi->tc_cfg.numtc))
+-		return;
+-
+-	dcbcfg = &pf->hw.port_info->local_dcbx_cfg;
+-
+-	ice_for_each_traffic_class(i)
+-		if (vsi->tc_cfg.ena_tc & BIT(i))
+-			netdev_set_tc_queue(netdev,
+-					    vsi->tc_cfg.tc_info[i].netdev_tc,
+-					    vsi->tc_cfg.tc_info[i].qcount_tx,
+-					    vsi->tc_cfg.tc_info[i].qoffset);
+-
+-	for (i = 0; i < ICE_MAX_USER_PRIORITY; i++) {
+-		u8 ets_tc = dcbcfg->etscfg.prio_table[i];
+-
+-		/* Get the mapped netdev TC# for the UP */
+-		netdev_tc = vsi->tc_cfg.tc_info[ets_tc].netdev_tc;
+-		netdev_set_prio_tc_map(netdev, i, netdev_tc);
+-	}
+-}
+-
+ /**
+  * ice_vsi_cfg_tc - Configure VSI Tx Sched for given TC map
+  * @vsi: VSI to be configured
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 87f7f5422b46..47bc033fff20 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -125,4 +125,5 @@ char *ice_nvm_version_str(struct ice_hw *hw);
+ enum ice_status
+ ice_vsi_cfg_mac_fltr(struct ice_vsi *vsi, const u8 *macaddr, bool set);
+ 
++bool ice_is_safe_mode(struct ice_pf *pf);
+ #endif /* !_ICE_LIB_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index ff295cb54cfd..99d7292c9ad7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -21,10 +21,15 @@ const char ice_drv_ver[] = DRV_VERSION;
+ static const char ice_driver_string[] = DRV_SUMMARY;
+ static const char ice_copyright[] = "Copyright (c) 2018, Intel Corporation.";
+ 
++/* DDP Package file located in firmware search paths (e.g. /lib/firmware/) */
++#define ICE_DDP_PKG_PATH	"intel/ice/ddp/"
++#define ICE_DDP_PKG_FILE	ICE_DDP_PKG_PATH "ice.pkg"
++
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION(DRV_SUMMARY);
+ MODULE_LICENSE("GPL v2");
+ MODULE_VERSION(DRV_VERSION);
++MODULE_FIRMWARE(ICE_DDP_PKG_FILE);
+ 
+ static int debug = -1;
+ module_param(debug, int, 0644);
+@@ -35,9 +40,10 @@ MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all)");
+ #endif /* !CONFIG_DYNAMIC_DEBUG */
+ 
+ static struct workqueue_struct *ice_wq;
++static const struct net_device_ops ice_netdev_safe_mode_ops;
+ static const struct net_device_ops ice_netdev_ops;
+ 
+-static void ice_rebuild(struct ice_pf *pf);
++static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type);
+ 
+ static void ice_vsi_release_all(struct ice_pf *pf);
+ 
+@@ -497,6 +503,8 @@ ice_prepare_for_reset(struct ice_pf *pf)
+ 	for (i = 0; i < pf->num_alloc_vfs; i++)
+ 		ice_set_vf_state_qs_dis(&pf->vf[i]);
+ 
++	/* clear SW filtering DB */
++	ice_clear_hw_tbls(hw);
+ 	/* disable the VSIs and their queues that are not already DOWN */
+ 	ice_pf_dis_all_vsi(pf, false);
+ 
+@@ -542,7 +550,7 @@ static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	 */
+ 	if (reset_type == ICE_RESET_PFR) {
+ 		pf->pfr_count++;
+-		ice_rebuild(pf);
++		ice_rebuild(pf, reset_type);
+ 		clear_bit(__ICE_PREPARED_FOR_RESET, pf->state);
+ 		clear_bit(__ICE_PFR_REQ, pf->state);
+ 		ice_reset_all_vfs(pf, true);
+@@ -586,7 +594,7 @@ static void ice_reset_subtask(struct ice_pf *pf)
+ 		} else {
+ 			/* done with reset. start rebuild */
+ 			pf->hw.reset_ongoing = false;
+-			ice_rebuild(pf);
++			ice_rebuild(pf, reset_type);
+ 			/* clear bit to resume normal operations, but
+ 			 * ICE_NEEDS_RESTART bit is set in case rebuild failed
+ 			 */
+@@ -1496,13 +1504,19 @@ static void ice_service_task(struct work_struct *work)
+ 		return;
+ 	}
+ 
++	ice_clean_adminq_subtask(pf);
+ 	ice_check_media_subtask(pf);
+ 	ice_check_for_hang_subtask(pf);
+ 	ice_sync_fltr_subtask(pf);
+ 	ice_handle_mdd_event(pf);
+-	ice_process_vflr_event(pf);
+ 	ice_watchdog_subtask(pf);
+-	ice_clean_adminq_subtask(pf);
++
++	if (ice_is_safe_mode(pf)) {
++		ice_service_task_complete(pf);
++		return;
++	}
++
++	ice_process_vflr_event(pf);
+ 	ice_clean_mailboxq_subtask(pf);
+ 
+ 	/* Clear __ICE_SERVICE_SCHED flag to allow scheduling next event */
+@@ -1937,30 +1951,41 @@ static void ice_napi_add(struct ice_vsi *vsi)
  }
  
  /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 0525a051e05b..ce55f8ae6b52 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -6,6 +6,7 @@
- 
- #include "ice.h"
- #include "ice_type.h"
-+#include "ice_flex_pipe.h"
- #include "ice_switch.h"
- #include <linux/avf/virtchnl.h>
- 
-@@ -66,6 +67,9 @@ void ice_fill_dflt_direct_cmd_desc(struct ice_aq_desc *desc, u16 opcode);
- extern const struct ice_ctx_ele ice_tlan_ctx_info[];
- enum ice_status
- ice_set_ctx(u8 *src_ctx, u8 *dest_ctx, const struct ice_ctx_ele *ce_info);
+- * ice_cfg_netdev - Allocate, configure and register a netdev
+- * @vsi: the VSI associated with the new netdev
+- *
+- * Returns 0 on success, negative value on failure
++ * ice_set_ops - set netdev and ethtools ops for the given netdev
++ * @netdev: netdev instance
+  */
+-static int ice_cfg_netdev(struct ice_vsi *vsi)
++static void ice_set_ops(struct net_device *netdev)
+ {
++	struct ice_pf *pf = ice_netdev_to_pf(netdev);
 +
-+extern struct mutex ice_global_cfg_lock_sw;
-+
- enum ice_status
- ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc,
- 		void *buf, u16 buf_size, struct ice_sq_cd *cd);
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-new file mode 100644
-index 000000000000..c2a7614471ce
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -0,0 +1,607 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2019, Intel Corporation. */
-+
-+#include "ice_common.h"
-+#include "ice_flex_pipe.h"
-+
-+/**
-+ * ice_find_buf_table
-+ * @ice_seg: pointer to the ice segment
-+ *
-+ * Returns the address of the buffer table within the ice segment.
-+ */
-+static struct ice_buf_table *ice_find_buf_table(struct ice_seg *ice_seg)
-+{
-+	struct ice_nvm_table *nvms;
-+
-+	nvms = (struct ice_nvm_table *)(ice_seg->device_table +
-+	       le32_to_cpu(ice_seg->device_table_count));
-+
-+	return (__force struct ice_buf_table *)
-+	       (nvms->vers + le32_to_cpu(nvms->table_count));
-+}
-+
-+/**
-+ * ice_acquire_global_cfg_lock
-+ * @hw: pointer to the HW structure
-+ * @access: access type (read or write)
-+ *
-+ * This function will request ownership of the global config lock for reading
-+ * or writing of the package. When attempting to obtain write access, the
-+ * caller must check for the following two return values:
-+ *
-+ * ICE_SUCCESS        - Means the caller has acquired the global config lock
-+ *                      and can perform writing of the package.
-+ * ICE_ERR_AQ_NO_WORK - Indicates another driver has already written the
-+ *                      package or has found that no update was necessary; in
-+ *                      this case, the caller can just skip performing any
-+ *                      update of the package.
-+ */
-+static enum ice_status
-+ice_acquire_global_cfg_lock(struct ice_hw *hw,
-+			    enum ice_aq_res_access_type access)
-+{
-+	enum ice_status status;
-+
-+	status = ice_acquire_res(hw, ICE_GLOBAL_CFG_LOCK_RES_ID, access,
-+				 ICE_GLOBAL_CFG_LOCK_TIMEOUT);
-+
-+	if (!status)
-+		mutex_lock(&ice_global_cfg_lock_sw);
-+	else if (status == ICE_ERR_AQ_NO_WORK)
-+		ice_debug(hw, ICE_DBG_PKG,
-+			  "Global config lock: No work to do\n");
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_release_global_cfg_lock
-+ * @hw: pointer to the HW structure
-+ *
-+ * This function will release the global config lock.
-+ */
-+static void ice_release_global_cfg_lock(struct ice_hw *hw)
-+{
-+	mutex_unlock(&ice_global_cfg_lock_sw);
-+	ice_release_res(hw, ICE_GLOBAL_CFG_LOCK_RES_ID);
-+}
-+
-+/**
-+ * ice_aq_download_pkg
-+ * @hw: pointer to the hardware structure
-+ * @pkg_buf: the package buffer to transfer
-+ * @buf_size: the size of the package buffer
-+ * @last_buf: last buffer indicator
-+ * @error_offset: returns error offset
-+ * @error_info: returns error information
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Download Package (0x0C40)
-+ */
-+static enum ice_status
-+ice_aq_download_pkg(struct ice_hw *hw, struct ice_buf_hdr *pkg_buf,
-+		    u16 buf_size, bool last_buf, u32 *error_offset,
-+		    u32 *error_info, struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_download_pkg *cmd;
-+	struct ice_aq_desc desc;
-+	enum ice_status status;
-+
-+	if (error_offset)
-+		*error_offset = 0;
-+	if (error_info)
-+		*error_info = 0;
-+
-+	cmd = &desc.params.download_pkg;
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_download_pkg);
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+
-+	if (last_buf)
-+		cmd->flags |= ICE_AQC_DOWNLOAD_PKG_LAST_BUF;
-+
-+	status = ice_aq_send_cmd(hw, &desc, pkg_buf, buf_size, cd);
-+	if (status == ICE_ERR_AQ_ERROR) {
-+		/* Read error from buffer only when the FW returned an error */
-+		struct ice_aqc_download_pkg_resp *resp;
-+
-+		resp = (struct ice_aqc_download_pkg_resp *)pkg_buf;
-+		if (error_offset)
-+			*error_offset = le32_to_cpu(resp->error_offset);
-+		if (error_info)
-+			*error_info = le32_to_cpu(resp->error_info);
++	if (ice_is_safe_mode(pf)) {
++		netdev->netdev_ops = &ice_netdev_safe_mode_ops;
++		ice_set_ethtool_safe_mode_ops(netdev);
++		return;
 +	}
 +
-+	return status;
++	netdev->netdev_ops = &ice_netdev_ops;
++	ice_set_ethtool_ops(netdev);
 +}
 +
 +/**
-+ * ice_find_seg_in_pkg
-+ * @hw: pointer to the hardware structure
-+ * @seg_type: the segment type to search for (i.e., SEGMENT_TYPE_CPK)
-+ * @pkg_hdr: pointer to the package header to be searched
-+ *
-+ * This function searches a package file for a particular segment type. On
-+ * success it returns a pointer to the segment header, otherwise it will
-+ * return NULL.
++ * ice_set_netdev_features - set features for the given netdev
++ * @netdev: netdev instance
 + */
-+static struct ice_generic_seg_hdr *
-+ice_find_seg_in_pkg(struct ice_hw *hw, u32 seg_type,
-+		    struct ice_pkg_hdr *pkg_hdr)
++static void ice_set_netdev_features(struct net_device *netdev)
 +{
-+	u32 i;
++	struct ice_pf *pf = ice_netdev_to_pf(netdev);
+ 	netdev_features_t csumo_features;
+ 	netdev_features_t vlano_features;
+ 	netdev_features_t dflt_features;
+ 	netdev_features_t tso_features;
+-	struct ice_netdev_priv *np;
+-	struct net_device *netdev;
+-	u8 mac_addr[ETH_ALEN];
+-	int err;
+-
+-	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
+-				    vsi->alloc_rxq);
+-	if (!netdev)
+-		return -ENOMEM;
+ 
+-	vsi->netdev = netdev;
+-	np = netdev_priv(netdev);
+-	np->vsi = vsi;
++	if (ice_is_safe_mode(pf)) {
++		/* safe mode */
++		netdev->features = NETIF_F_SG | NETIF_F_HIGHDMA;
++		netdev->hw_features = netdev->features;
++		return;
++	}
+ 
+ 	dflt_features = NETIF_F_SG	|
+ 			NETIF_F_HIGHDMA	|
+@@ -1988,25 +2013,50 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
+ 				   tso_features;
+ 	netdev->vlan_features |= dflt_features | csumo_features |
+ 				 tso_features;
++}
 +
-+	ice_debug(hw, ICE_DBG_PKG, "Package format version: %d.%d.%d.%d\n",
-+		  pkg_hdr->format_ver.major, pkg_hdr->format_ver.minor,
-+		  pkg_hdr->format_ver.update, pkg_hdr->format_ver.draft);
++/**
++ * ice_cfg_netdev - Allocate, configure and register a netdev
++ * @vsi: the VSI associated with the new netdev
++ *
++ * Returns 0 on success, negative value on failure
++ */
++static int ice_cfg_netdev(struct ice_vsi *vsi)
++{
++	struct ice_pf *pf = vsi->back;
++	struct ice_netdev_priv *np;
++	struct net_device *netdev;
++	u8 mac_addr[ETH_ALEN];
++	int err;
 +
-+	/* Search all package segments for the requested segment type */
-+	for (i = 0; i < le32_to_cpu(pkg_hdr->seg_count); i++) {
-+		struct ice_generic_seg_hdr *seg;
++	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
++				    vsi->alloc_rxq);
++	if (!netdev)
++		return -ENOMEM;
 +
-+		seg = (struct ice_generic_seg_hdr *)
-+			((u8 *)pkg_hdr + le32_to_cpu(pkg_hdr->seg_offset[i]));
++	vsi->netdev = netdev;
++	np = netdev_priv(netdev);
++	np->vsi = vsi;
 +
-+		if (le32_to_cpu(seg->seg_type) == seg_type)
-+			return seg;
++	ice_set_netdev_features(netdev);
++
++	ice_set_ops(netdev);
+ 
+ 	if (vsi->type == ICE_VSI_PF) {
+-		SET_NETDEV_DEV(netdev, &vsi->back->pdev->dev);
++		SET_NETDEV_DEV(netdev, &pf->pdev->dev);
+ 		ether_addr_copy(mac_addr, vsi->port_info->mac.perm_addr);
+-
+ 		ether_addr_copy(netdev->dev_addr, mac_addr);
+ 		ether_addr_copy(netdev->perm_addr, mac_addr);
+ 	}
+ 
+ 	netdev->priv_flags |= IFF_UNICAST_FLT;
+ 
+-	/* assign netdev_ops */
+-	netdev->netdev_ops = &ice_netdev_ops;
++	/* Setup netdev TC information */
++	ice_vsi_cfg_netdev_tc(vsi, vsi->tc_cfg.ena_tc);
+ 
+ 	/* setup watchdog timeout value to be 5 second */
+ 	netdev->watchdog_timeo = 5 * HZ;
+ 
+-	ice_set_ethtool_ops(netdev);
+-
+ 	netdev->min_mtu = ETH_MIN_MTU;
+ 	netdev->max_mtu = ICE_MAX_MTU;
+ 
+@@ -2264,29 +2314,41 @@ static void ice_deinit_pf(struct ice_pf *pf)
+ }
+ 
+ /**
+- * ice_init_pf - Initialize general software structures (struct ice_pf)
+- * @pf: board private structure to initialize
++ * ice_set_pf_caps - set PFs capability flags
++ * @pf: pointer to the PF instance
+  */
+-static int ice_init_pf(struct ice_pf *pf)
++static void ice_set_pf_caps(struct ice_pf *pf)
+ {
+-	bitmap_zero(pf->flags, ICE_PF_FLAGS_NBITS);
+-	if (pf->hw.func_caps.common_cap.dcb)
++	struct ice_hw_func_caps *func_caps = &pf->hw.func_caps;
++
++	clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
++	if (func_caps->common_cap.dcb)
+ 		set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+ #ifdef CONFIG_PCI_IOV
+-	if (pf->hw.func_caps.common_cap.sr_iov_1_1) {
+-		struct ice_hw *hw = &pf->hw;
+-
++	clear_bit(ICE_FLAG_SRIOV_CAPABLE, pf->flags);
++	if (func_caps->common_cap.sr_iov_1_1) {
+ 		set_bit(ICE_FLAG_SRIOV_CAPABLE, pf->flags);
+-		pf->num_vfs_supported = min_t(int, hw->func_caps.num_allocd_vfs,
++		pf->num_vfs_supported = min_t(int, func_caps->num_allocd_vfs,
+ 					      ICE_MAX_VF_COUNT);
+ 	}
+ #endif /* CONFIG_PCI_IOV */
++	clear_bit(ICE_FLAG_RSS_ENA, pf->flags);
++	if (func_caps->common_cap.rss_table_size)
++		set_bit(ICE_FLAG_RSS_ENA, pf->flags);
+ 
+-	mutex_init(&pf->sw_mutex);
+-	mutex_init(&pf->avail_q_mutex);
++	pf->max_pf_txqs = func_caps->common_cap.num_txq;
++	pf->max_pf_rxqs = func_caps->common_cap.num_rxq;
++}
+ 
+-	if (pf->hw.func_caps.common_cap.rss_table_size)
+-		set_bit(ICE_FLAG_RSS_ENA, pf->flags);
++/**
++ * ice_init_pf - Initialize general software structures (struct ice_pf)
++ * @pf: board private structure to initialize
++ */
++static int ice_init_pf(struct ice_pf *pf)
++{
++	ice_set_pf_caps(pf);
++
++	mutex_init(&pf->sw_mutex);
+ 
+ 	/* setup service timer and periodic service task */
+ 	timer_setup(&pf->serv_tmr, ice_service_timer, 0);
+@@ -2294,9 +2356,7 @@ static int ice_init_pf(struct ice_pf *pf)
+ 	INIT_WORK(&pf->serv_task, ice_service_task);
+ 	clear_bit(__ICE_SERVICE_SCHED, pf->state);
+ 
+-	pf->max_pf_txqs = pf->hw.func_caps.common_cap.num_txq;
+-	pf->max_pf_rxqs = pf->hw.func_caps.common_cap.num_rxq;
+-
++	mutex_init(&pf->avail_q_mutex);
+ 	pf->avail_txqs = bitmap_zalloc(pf->max_pf_txqs, GFP_KERNEL);
+ 	if (!pf->avail_txqs)
+ 		return -ENOMEM;
+@@ -2449,6 +2509,163 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
+ 	return 0;
+ }
+ 
++/**
++ * ice_log_pkg_init - log result of DDP package load
++ * @hw: pointer to hardware info
++ * @status: status of package load
++ */
++static void
++ice_log_pkg_init(struct ice_hw *hw, enum ice_status *status)
++{
++	struct ice_pf *pf = (struct ice_pf *)hw->back;
++	struct device *dev = &pf->pdev->dev;
++
++	switch (*status) {
++	case ICE_SUCCESS:
++		/* The package download AdminQ command returned success because
++		 * this download succeeded or ICE_ERR_AQ_NO_WORK since there is
++		 * already a package loaded on the device.
++		 */
++		if (hw->pkg_ver.major == hw->active_pkg_ver.major &&
++		    hw->pkg_ver.minor == hw->active_pkg_ver.minor &&
++		    hw->pkg_ver.update == hw->active_pkg_ver.update &&
++		    hw->pkg_ver.draft == hw->active_pkg_ver.draft &&
++		    !memcmp(hw->pkg_name, hw->active_pkg_name,
++			    sizeof(hw->pkg_name))) {
++			if (hw->pkg_dwnld_status == ICE_AQ_RC_EEXIST)
++				dev_info(dev,
++					 "DDP package already present on device: %s version %d.%d.%d.%d\n",
++					 hw->active_pkg_name,
++					 hw->active_pkg_ver.major,
++					 hw->active_pkg_ver.minor,
++					 hw->active_pkg_ver.update,
++					 hw->active_pkg_ver.draft);
++			else
++				dev_info(dev,
++					 "The DDP package was successfully loaded: %s version %d.%d.%d.%d\n",
++					 hw->active_pkg_name,
++					 hw->active_pkg_ver.major,
++					 hw->active_pkg_ver.minor,
++					 hw->active_pkg_ver.update,
++					 hw->active_pkg_ver.draft);
++		} else if (hw->active_pkg_ver.major != ICE_PKG_SUPP_VER_MAJ ||
++			   hw->active_pkg_ver.minor != ICE_PKG_SUPP_VER_MNR) {
++			dev_err(dev,
++				"The device has a DDP package that is not supported by the driver.  The device has package '%s' version %d.%d.x.x.  The driver requires version %d.%d.x.x.  Entering Safe Mode.\n",
++				hw->active_pkg_name,
++				hw->active_pkg_ver.major,
++				hw->active_pkg_ver.minor,
++				ICE_PKG_SUPP_VER_MAJ, ICE_PKG_SUPP_VER_MNR);
++			*status = ICE_ERR_NOT_SUPPORTED;
++		} else if (hw->active_pkg_ver.major == ICE_PKG_SUPP_VER_MAJ &&
++			   hw->active_pkg_ver.minor == ICE_PKG_SUPP_VER_MNR) {
++			dev_info(dev,
++				 "The driver could not load the DDP package file because a compatible DDP package is already present on the device.  The device has package '%s' version %d.%d.%d.%d.  The package file found by the driver: '%s' version %d.%d.%d.%d.\n",
++				 hw->active_pkg_name,
++				 hw->active_pkg_ver.major,
++				 hw->active_pkg_ver.minor,
++				 hw->active_pkg_ver.update,
++				 hw->active_pkg_ver.draft,
++				 hw->pkg_name,
++				 hw->pkg_ver.major,
++				 hw->pkg_ver.minor,
++				 hw->pkg_ver.update,
++				 hw->pkg_ver.draft);
++		} else {
++			dev_err(dev,
++				"An unknown error occurred when loading the DDP package, please reboot the system.  If the problem persists, update the NVM.  Entering Safe Mode.\n");
++			*status = ICE_ERR_NOT_SUPPORTED;
++		}
++		break;
++	case ICE_ERR_BUF_TOO_SHORT:
++		/* fall-through */
++	case ICE_ERR_CFG:
++		dev_err(dev,
++			"The DDP package file is invalid. Entering Safe Mode.\n");
++		break;
++	case ICE_ERR_NOT_SUPPORTED:
++		/* Package File version not supported */
++		if (hw->pkg_ver.major > ICE_PKG_SUPP_VER_MAJ ||
++		    (hw->pkg_ver.major == ICE_PKG_SUPP_VER_MAJ &&
++		     hw->pkg_ver.minor > ICE_PKG_SUPP_VER_MNR))
++			dev_err(dev,
++				"The DDP package file version is higher than the driver supports.  Please use an updated driver.  Entering Safe Mode.\n");
++		else if (hw->pkg_ver.major < ICE_PKG_SUPP_VER_MAJ ||
++			 (hw->pkg_ver.major == ICE_PKG_SUPP_VER_MAJ &&
++			  hw->pkg_ver.minor < ICE_PKG_SUPP_VER_MNR))
++			dev_err(dev,
++				"The DDP package file version is lower than the driver supports.  The drivers requires version %d.%d.x.x.  Please use an updated DDP Package file.  Entering Safe Mode.\n",
++				ICE_PKG_SUPP_VER_MAJ, ICE_PKG_SUPP_VER_MNR);
++		break;
++	case ICE_ERR_AQ_ERROR:
++		switch (hw->adminq.sq_last_status) {
++		case ICE_AQ_RC_ENOSEC:
++		case ICE_AQ_RC_EBADSIG:
++			dev_err(dev,
++				"The DDP package could not be loaded because its signature is not valid.  Please use a valid DDP Package.  Entering Safe Mode.\n");
++			return;
++		case ICE_AQ_RC_ESVN:
++			dev_err(dev,
++				"The DDP Package could not be loaded because its security revision is too low.  Please use an updated DDP Package.  Entering Safe Mode.\n");
++			return;
++		case ICE_AQ_RC_EBADMAN:
++		case ICE_AQ_RC_EBADBUF:
++			dev_err(dev,
++				"An error occurred on the device while loading the DDP package.  The device will be reset.\n");
++			return;
++		default:
++			break;
++		}
++		/* fall-through */
++	default:
++		dev_err(dev,
++			"An unknown error (%d) occurred when loading the DDP package.  Entering Safe Mode.\n",
++			*status);
++		break;
++	}
++}
++
++/**
++ * ice_load_pkg - load/reload the DDP Package file
++ * @firmware: firmware structure when firmware requested or NULL for reload
++ * @pf: pointer to the PF instance
++ *
++ * Called on probe and post CORER/GLOBR rebuild to load DDP Package and
++ * initialize HW tables.
++ */
++static void
++ice_load_pkg(const struct firmware *firmware, struct ice_pf *pf)
++{
++	enum ice_status status = ICE_ERR_PARAM;
++	struct device *dev = &pf->pdev->dev;
++	struct ice_hw *hw = &pf->hw;
++
++	/* Load DDP Package */
++	if (firmware && !hw->pkg_copy) {
++		status = ice_copy_and_init_pkg(hw, firmware->data,
++					       firmware->size);
++		ice_log_pkg_init(hw, &status);
++	} else if (!firmware && hw->pkg_copy) {
++		/* Reload package during rebuild after CORER/GLOBR reset */
++		status = ice_init_pkg(hw, hw->pkg_copy, hw->pkg_size);
++		ice_log_pkg_init(hw, &status);
++	} else {
++		dev_err(dev,
++			"The DDP package file failed to load. Entering Safe Mode.\n");
 +	}
 +
-+	return NULL;
-+}
++	if (status) {
++		/* Safe Mode */
++		clear_bit(ICE_FLAG_ADV_FEATURES, pf->flags);
++		return;
++	}
 +
-+/**
-+ * ice_dwnld_cfg_bufs
-+ * @hw: pointer to the hardware structure
-+ * @bufs: pointer to an array of buffers
-+ * @count: the number of buffers in the array
-+ *
-+ * Obtains global config lock and downloads the package configuration buffers
-+ * to the firmware. Metadata buffers are skipped, and the first metadata buffer
-+ * found indicates that the rest of the buffers are all metadata buffers.
-+ */
-+static enum ice_status
-+ice_dwnld_cfg_bufs(struct ice_hw *hw, struct ice_buf *bufs, u32 count)
-+{
-+	enum ice_status status;
-+	struct ice_buf_hdr *bh;
-+	u32 offset, info, i;
-+
-+	if (!bufs || !count)
-+		return ICE_ERR_PARAM;
-+
-+	/* If the first buffer's first section has its metadata bit set
-+	 * then there are no buffers to be downloaded, and the operation is
-+	 * considered a success.
++	/* Successful download package is the precondition for advanced
++	 * features, hence setting the ICE_FLAG_ADV_FEATURES flag
 +	 */
-+	bh = (struct ice_buf_hdr *)bufs;
-+	if (le32_to_cpu(bh->section_entry[0].type) & ICE_METADATA_BUF)
++	set_bit(ICE_FLAG_ADV_FEATURES, pf->flags);
++}
++
+ /**
+  * ice_verify_cacheline_size - verify driver's assumption of 64 Byte cache lines
+  * @pf: pointer to the PF structure
+@@ -2484,6 +2701,86 @@ static enum ice_status ice_send_version(struct ice_pf *pf)
+ 	return ice_aq_send_driver_ver(&pf->hw, &dv, NULL);
+ }
+ 
++/**
++ * ice_get_opt_fw_name - return optional firmware file name or NULL
++ * @pf: pointer to the PF instance
++ */
++static char *ice_get_opt_fw_name(struct ice_pf *pf)
++{
++	/* Optional firmware name same as default with additional dash
++	 * followed by a EUI-64 identifier (PCIe Device Serial Number)
++	 */
++	struct pci_dev *pdev = pf->pdev;
++	char *opt_fw_filename = NULL;
++	u32 dword;
++	u8 dsn[8];
++	int pos;
++
++	/* Determine the name of the optional file using the DSN (two
++	 * dwords following the start of the DSN Capability).
++	 */
++	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_DSN);
++	if (pos) {
++		opt_fw_filename = kzalloc(NAME_MAX, GFP_KERNEL);
++		if (!opt_fw_filename)
++			return NULL;
++
++		pci_read_config_dword(pdev, pos + 4, &dword);
++		put_unaligned_le32(dword, &dsn[0]);
++		pci_read_config_dword(pdev, pos + 8, &dword);
++		put_unaligned_le32(dword, &dsn[4]);
++		snprintf(opt_fw_filename, NAME_MAX,
++			 "%sice-%02x%02x%02x%02x%02x%02x%02x%02x.pkg",
++			 ICE_DDP_PKG_PATH,
++			 dsn[7], dsn[6], dsn[5], dsn[4],
++			 dsn[3], dsn[2], dsn[1], dsn[0]);
++	}
++
++	return opt_fw_filename;
++}
++
++/**
++ * ice_request_fw - Device initialization routine
++ * @pf: pointer to the PF instance
++ */
++static void ice_request_fw(struct ice_pf *pf)
++{
++	char *opt_fw_filename = ice_get_opt_fw_name(pf);
++	const struct firmware *firmware = NULL;
++	struct device *dev = &pf->pdev->dev;
++	int err = 0;
++
++	/* optional device-specific DDP (if present) overrides the default DDP
++	 * package file. kernel logs a debug message if the file doesn't exist,
++	 * and warning messages for other errors.
++	 */
++	if (opt_fw_filename) {
++		err = firmware_request_nowarn(&firmware, opt_fw_filename, dev);
++		if (err) {
++			kfree(opt_fw_filename);
++			goto dflt_pkg_load;
++		}
++
++		/* request for firmware was successful. Download to device */
++		ice_load_pkg(firmware, pf);
++		kfree(opt_fw_filename);
++		release_firmware(firmware);
++		return;
++	}
++
++dflt_pkg_load:
++	err = request_firmware(&firmware, ICE_DDP_PKG_FILE, dev);
++	if (err) {
++		dev_err(dev,
++			"The DDP package file was not found or could not be read. Entering Safe Mode\n");
++		return;
++	}
++
++	/* request for firmware was successful. Download to device */
++	ice_load_pkg(firmware, pf);
++	release_firmware(firmware);
++}
++
+ /**
+  * ice_probe - Device initialization routine
+  * @pdev: PCI device information struct
+@@ -2563,22 +2860,29 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		 hw->api_maj_ver, hw->api_min_ver, hw->api_patch,
+ 		 ice_nvm_version_str(hw), hw->fw_build);
+ 
++	ice_request_fw(pf);
++
++	/* if ice_request_fw fails, ICE_FLAG_ADV_FEATURES bit won't be
++	 * set in pf->state, which will cause ice_is_safe_mode to return
++	 * true
++	 */
++	if (ice_is_safe_mode(pf)) {
++		dev_err(dev,
++			"Package download failed. Advanced features disabled - Device now in Safe Mode\n");
++		/* we already got function/device capabilities but these don't
++		 * reflect what the driver needs to do in safe mode. Instead of
++		 * adding conditional logic everywhere to ignore these
++		 * device/function capabilities, override them.
++		 */
++		ice_set_safe_mode_caps(hw);
++	}
++
+ 	err = ice_init_pf(pf);
+ 	if (err) {
+ 		dev_err(dev, "ice_init_pf failed: %d\n", err);
+ 		goto err_init_pf_unroll;
+ 	}
+ 
+-	if (test_bit(ICE_FLAG_DCB_CAPABLE, pf->flags)) {
+-		/* Note: DCB init failure is non-fatal to load */
+-		if (ice_init_pf_dcb(pf, false)) {
+-			clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+-			clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
+-		} else {
+-			ice_cfg_lldp_mib_change(&pf->hw, true);
+-		}
+-	}
+-
+ 	pf->num_alloc_vsi = hw->func_caps.guar_num_vsi;
+ 	if (!pf->num_alloc_vsi) {
+ 		err = -EIO;
+@@ -2658,6 +2962,20 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 
+ 	ice_verify_cacheline_size(pf);
+ 
++	/* If no DDP driven features have to be setup, return here */
++	if (ice_is_safe_mode(pf))
 +		return 0;
 +
-+	/* reset pkg_dwnld_status in case this function is called in the
-+	 * reset/rebuild flow
-+	 */
-+	hw->pkg_dwnld_status = ICE_AQ_RC_OK;
++	/* initialize DDP driven features */
 +
-+	status = ice_acquire_global_cfg_lock(hw, ICE_RES_WRITE);
-+	if (status) {
-+		if (status == ICE_ERR_AQ_NO_WORK)
-+			hw->pkg_dwnld_status = ICE_AQ_RC_EEXIST;
-+		else
-+			hw->pkg_dwnld_status = hw->adminq.sq_last_status;
-+		return status;
-+	}
-+
-+	for (i = 0; i < count; i++) {
-+		bool last = ((i + 1) == count);
-+
-+		if (!last) {
-+			/* check next buffer for metadata flag */
-+			bh = (struct ice_buf_hdr *)(bufs + i + 1);
-+
-+			/* A set metadata flag in the next buffer will signal
-+			 * that the current buffer will be the last buffer
-+			 * downloaded
-+			 */
-+			if (le16_to_cpu(bh->section_count))
-+				if (le32_to_cpu(bh->section_entry[0].type) &
-+				    ICE_METADATA_BUF)
-+					last = true;
-+		}
-+
-+		bh = (struct ice_buf_hdr *)(bufs + i);
-+
-+		status = ice_aq_download_pkg(hw, bh, ICE_PKG_BUF_SIZE, last,
-+					     &offset, &info, NULL);
-+
-+		/* Save AQ status from download package */
-+		hw->pkg_dwnld_status = hw->adminq.sq_last_status;
-+		if (status) {
-+			ice_debug(hw, ICE_DBG_PKG,
-+				  "Pkg download failed: err %d off %d inf %d\n",
-+				  status, offset, info);
-+
-+			break;
-+		}
-+
-+		if (last)
-+			break;
-+	}
-+
-+	ice_release_global_cfg_lock(hw);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_aq_get_pkg_info_list
-+ * @hw: pointer to the hardware structure
-+ * @pkg_info: the buffer which will receive the information list
-+ * @buf_size: the size of the pkg_info information buffer
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Get Package Info List (0x0C43)
-+ */
-+static enum ice_status
-+ice_aq_get_pkg_info_list(struct ice_hw *hw,
-+			 struct ice_aqc_get_pkg_info_resp *pkg_info,
-+			 u16 buf_size, struct ice_sq_cd *cd)
-+{
-+	struct ice_aq_desc desc;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_pkg_info_list);
-+
-+	return ice_aq_send_cmd(hw, &desc, pkg_info, buf_size, cd);
-+}
-+
-+/**
-+ * ice_download_pkg
-+ * @hw: pointer to the hardware structure
-+ * @ice_seg: pointer to the segment of the package to be downloaded
-+ *
-+ * Handles the download of a complete package.
-+ */
-+static enum ice_status
-+ice_download_pkg(struct ice_hw *hw, struct ice_seg *ice_seg)
-+{
-+	struct ice_buf_table *ice_buf_tbl;
-+
-+	ice_debug(hw, ICE_DBG_PKG, "Segment version: %d.%d.%d.%d\n",
-+		  ice_seg->hdr.seg_ver.major, ice_seg->hdr.seg_ver.minor,
-+		  ice_seg->hdr.seg_ver.update, ice_seg->hdr.seg_ver.draft);
-+
-+	ice_debug(hw, ICE_DBG_PKG, "Seg: type 0x%X, size %d, name %s\n",
-+		  le32_to_cpu(ice_seg->hdr.seg_type),
-+		  le32_to_cpu(ice_seg->hdr.seg_size), ice_seg->hdr.seg_name);
-+
-+	ice_buf_tbl = ice_find_buf_table(ice_seg);
-+
-+	ice_debug(hw, ICE_DBG_PKG, "Seg buf count: %d\n",
-+		  le32_to_cpu(ice_buf_tbl->buf_count));
-+
-+	return ice_dwnld_cfg_bufs(hw, ice_buf_tbl->buf_array,
-+				  le32_to_cpu(ice_buf_tbl->buf_count));
-+}
-+
-+/**
-+ * ice_init_pkg_info
-+ * @hw: pointer to the hardware structure
-+ * @pkg_hdr: pointer to the driver's package hdr
-+ *
-+ * Saves off the package details into the HW structure.
-+ */
-+static enum ice_status
-+ice_init_pkg_info(struct ice_hw *hw, struct ice_pkg_hdr *pkg_hdr)
-+{
-+	struct ice_global_metadata_seg *meta_seg;
-+	struct ice_generic_seg_hdr *seg_hdr;
-+
-+	if (!pkg_hdr)
-+		return ICE_ERR_PARAM;
-+
-+	meta_seg = (struct ice_global_metadata_seg *)
-+		   ice_find_seg_in_pkg(hw, SEGMENT_TYPE_METADATA, pkg_hdr);
-+	if (meta_seg) {
-+		hw->pkg_ver = meta_seg->pkg_ver;
-+		memcpy(hw->pkg_name, meta_seg->pkg_name, sizeof(hw->pkg_name));
-+
-+		ice_debug(hw, ICE_DBG_PKG, "Pkg: %d.%d.%d.%d, %s\n",
-+			  meta_seg->pkg_ver.major, meta_seg->pkg_ver.minor,
-+			  meta_seg->pkg_ver.update, meta_seg->pkg_ver.draft,
-+			  meta_seg->pkg_name);
++	/* Note: DCB init failure is non-fatal to load */
++	if (ice_init_pf_dcb(pf, false)) {
++		clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
++		clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
 +	} else {
-+		ice_debug(hw, ICE_DBG_INIT,
-+			  "Did not find metadata segment in driver package\n");
-+		return ICE_ERR_CFG;
++		ice_cfg_lldp_mib_change(&pf->hw, true);
 +	}
 +
-+	seg_hdr = ice_find_seg_in_pkg(hw, SEGMENT_TYPE_ICE, pkg_hdr);
-+	if (seg_hdr) {
-+		hw->ice_pkg_ver = seg_hdr->seg_ver;
-+		memcpy(hw->ice_pkg_name, seg_hdr->seg_name,
-+		       sizeof(hw->ice_pkg_name));
-+
-+		ice_debug(hw, ICE_DBG_PKG, "Ice Pkg: %d.%d.%d.%d, %s\n",
-+			  seg_hdr->seg_ver.major, seg_hdr->seg_ver.minor,
-+			  seg_hdr->seg_ver.update, seg_hdr->seg_ver.draft,
-+			  seg_hdr->seg_name);
-+	} else {
-+		ice_debug(hw, ICE_DBG_INIT,
-+			  "Did not find ice segment in driver package\n");
-+		return ICE_ERR_CFG;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_get_pkg_info
-+ * @hw: pointer to the hardware structure
-+ *
-+ * Store details of the package currently loaded in HW into the HW structure.
-+ */
-+static enum ice_status ice_get_pkg_info(struct ice_hw *hw)
-+{
-+	struct ice_aqc_get_pkg_info_resp *pkg_info;
-+	enum ice_status status;
-+	u16 size;
-+	u32 i;
-+
-+	size = sizeof(*pkg_info) + (sizeof(pkg_info->pkg_info[0]) *
-+				    (ICE_PKG_CNT - 1));
-+	pkg_info = kzalloc(size, GFP_KERNEL);
-+	if (!pkg_info)
-+		return ICE_ERR_NO_MEMORY;
-+
-+	status = ice_aq_get_pkg_info_list(hw, pkg_info, size, NULL);
-+	if (status)
-+		goto init_pkg_free_alloc;
-+
-+	for (i = 0; i < le32_to_cpu(pkg_info->count); i++) {
-+#define ICE_PKG_FLAG_COUNT	4
-+		char flags[ICE_PKG_FLAG_COUNT + 1] = { 0 };
-+		u8 place = 0;
-+
-+		if (pkg_info->pkg_info[i].is_active) {
-+			flags[place++] = 'A';
-+			hw->active_pkg_ver = pkg_info->pkg_info[i].ver;
-+			memcpy(hw->active_pkg_name,
-+			       pkg_info->pkg_info[i].name,
-+			       sizeof(hw->active_pkg_name));
-+			hw->active_pkg_in_nvm = pkg_info->pkg_info[i].is_in_nvm;
-+		}
-+		if (pkg_info->pkg_info[i].is_active_at_boot)
-+			flags[place++] = 'B';
-+		if (pkg_info->pkg_info[i].is_modified)
-+			flags[place++] = 'M';
-+		if (pkg_info->pkg_info[i].is_in_nvm)
-+			flags[place++] = 'N';
-+
-+		ice_debug(hw, ICE_DBG_PKG, "Pkg[%d]: %d.%d.%d.%d,%s,%s\n",
-+			  i, pkg_info->pkg_info[i].ver.major,
-+			  pkg_info->pkg_info[i].ver.minor,
-+			  pkg_info->pkg_info[i].ver.update,
-+			  pkg_info->pkg_info[i].ver.draft,
-+			  pkg_info->pkg_info[i].name, flags);
-+	}
-+
-+init_pkg_free_alloc:
-+	kfree(pkg_info);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_verify_pkg - verify package
-+ * @pkg: pointer to the package buffer
-+ * @len: size of the package buffer
-+ *
-+ * Verifies various attributes of the package file, including length, format
-+ * version, and the requirement of at least one segment.
-+ */
-+static enum ice_status ice_verify_pkg(struct ice_pkg_hdr *pkg, u32 len)
-+{
-+	u32 seg_count;
-+	u32 i;
-+
-+	if (len < sizeof(*pkg))
-+		return ICE_ERR_BUF_TOO_SHORT;
-+
-+	if (pkg->format_ver.major != ICE_PKG_FMT_VER_MAJ ||
-+	    pkg->format_ver.minor != ICE_PKG_FMT_VER_MNR ||
-+	    pkg->format_ver.update != ICE_PKG_FMT_VER_UPD ||
-+	    pkg->format_ver.draft != ICE_PKG_FMT_VER_DFT)
-+		return ICE_ERR_CFG;
-+
-+	/* pkg must have at least one segment */
-+	seg_count = le32_to_cpu(pkg->seg_count);
-+	if (seg_count < 1)
-+		return ICE_ERR_CFG;
-+
-+	/* make sure segment array fits in package length */
-+	if (len < sizeof(*pkg) + ((seg_count - 1) * sizeof(pkg->seg_offset)))
-+		return ICE_ERR_BUF_TOO_SHORT;
-+
-+	/* all segments must fit within length */
-+	for (i = 0; i < seg_count; i++) {
-+		u32 off = le32_to_cpu(pkg->seg_offset[i]);
-+		struct ice_generic_seg_hdr *seg;
-+
-+		/* segment header must fit */
-+		if (len < off + sizeof(*seg))
-+			return ICE_ERR_BUF_TOO_SHORT;
-+
-+		seg = (struct ice_generic_seg_hdr *)((u8 *)pkg + off);
-+
-+		/* segment body must fit */
-+		if (len < off + le32_to_cpu(seg->seg_size))
-+			return ICE_ERR_BUF_TOO_SHORT;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_free_seg - free package segment pointer
-+ * @hw: pointer to the hardware structure
-+ *
-+ * Frees the package segment pointer in the proper manner, depending on if the
-+ * segment was allocated or just the passed in pointer was stored.
-+ */
-+void ice_free_seg(struct ice_hw *hw)
-+{
-+	if (hw->pkg_copy) {
-+		devm_kfree(ice_hw_to_dev(hw), hw->pkg_copy);
-+		hw->pkg_copy = NULL;
-+		hw->pkg_size = 0;
-+	}
-+	hw->seg = NULL;
-+}
-+
-+/**
-+ * ice_chk_pkg_version - check package version for compatibility with driver
-+ * @pkg_ver: pointer to a version structure to check
-+ *
-+ * Check to make sure that the package about to be downloaded is compatible with
-+ * the driver. To be compatible, the major and minor components of the package
-+ * version must match our ICE_PKG_SUPP_VER_MAJ and ICE_PKG_SUPP_VER_MNR
-+ * definitions.
-+ */
-+static enum ice_status ice_chk_pkg_version(struct ice_pkg_ver *pkg_ver)
-+{
-+	if (pkg_ver->major != ICE_PKG_SUPP_VER_MAJ ||
-+	    pkg_ver->minor != ICE_PKG_SUPP_VER_MNR)
-+		return ICE_ERR_NOT_SUPPORTED;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_init_pkg - initialize/download package
-+ * @hw: pointer to the hardware structure
-+ * @buf: pointer to the package buffer
-+ * @len: size of the package buffer
-+ *
-+ * This function initializes a package. The package contains HW tables
-+ * required to do packet processing. First, the function extracts package
-+ * information such as version. Then it finds the ice configuration segment
-+ * within the package; this function then saves a copy of the segment pointer
-+ * within the supplied package buffer. Next, the function will cache any hints
-+ * from the package, followed by downloading the package itself. Note, that if
-+ * a previous PF driver has already downloaded the package successfully, then
-+ * the current driver will not have to download the package again.
-+ *
-+ * The local package contents will be used to query default behavior and to
-+ * update specific sections of the HW's version of the package (e.g. to update
-+ * the parse graph to understand new protocols).
-+ *
-+ * This function stores a pointer to the package buffer memory, and it is
-+ * expected that the supplied buffer will not be freed immediately. If the
-+ * package buffer needs to be freed, such as when read from a file, use
-+ * ice_copy_and_init_pkg() instead of directly calling ice_init_pkg() in this
-+ * case.
-+ */
-+enum ice_status ice_init_pkg(struct ice_hw *hw, u8 *buf, u32 len)
-+{
-+	struct ice_pkg_hdr *pkg;
-+	enum ice_status status;
-+	struct ice_seg *seg;
-+
-+	if (!buf || !len)
-+		return ICE_ERR_PARAM;
-+
-+	pkg = (struct ice_pkg_hdr *)buf;
-+	status = ice_verify_pkg(pkg, len);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "failed to verify pkg (err: %d)\n",
-+			  status);
-+		return status;
-+	}
-+
-+	/* initialize package info */
-+	status = ice_init_pkg_info(hw, pkg);
-+	if (status)
-+		return status;
-+
-+	/* before downloading the package, check package version for
-+	 * compatibility with driver
-+	 */
-+	status = ice_chk_pkg_version(&hw->pkg_ver);
-+	if (status)
-+		return status;
-+
-+	/* find segment in given package */
-+	seg = (struct ice_seg *)ice_find_seg_in_pkg(hw, SEGMENT_TYPE_ICE, pkg);
-+	if (!seg) {
-+		ice_debug(hw, ICE_DBG_INIT, "no ice segment in package.\n");
-+		return ICE_ERR_CFG;
-+	}
-+
-+	/* download package */
-+	status = ice_download_pkg(hw, seg);
-+	if (status == ICE_ERR_AQ_NO_WORK) {
-+		ice_debug(hw, ICE_DBG_INIT,
-+			  "package previously loaded - no work.\n");
-+		status = 0;
-+	}
-+
-+	/* Get information on the package currently loaded in HW, then make sure
-+	 * the driver is compatible with this version.
-+	 */
-+	if (!status) {
-+		status = ice_get_pkg_info(hw);
-+		if (!status)
-+			status = ice_chk_pkg_version(&hw->active_pkg_ver);
-+	}
-+
-+	if (status)
-+		ice_debug(hw, ICE_DBG_INIT, "package load failed, %d\n",
-+			  status);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_copy_and_init_pkg - initialize/download a copy of the package
-+ * @hw: pointer to the hardware structure
-+ * @buf: pointer to the package buffer
-+ * @len: size of the package buffer
-+ *
-+ * This function copies the package buffer, and then calls ice_init_pkg() to
-+ * initialize the copied package contents.
-+ *
-+ * The copying is necessary if the package buffer supplied is constant, or if
-+ * the memory may disappear shortly after calling this function.
-+ *
-+ * If the package buffer resides in the data segment and can be modified, the
-+ * caller is free to use ice_init_pkg() instead of ice_copy_and_init_pkg().
-+ *
-+ * However, if the package buffer needs to be copied first, such as when being
-+ * read from a file, the caller should use ice_copy_and_init_pkg().
-+ *
-+ * This function will first copy the package buffer, before calling
-+ * ice_init_pkg(). The caller is free to immediately destroy the original
-+ * package buffer, as the new copy will be managed by this function and
-+ * related routines.
-+ */
-+enum ice_status ice_copy_and_init_pkg(struct ice_hw *hw, const u8 *buf, u32 len)
-+{
-+	enum ice_status status;
-+	u8 *buf_copy;
-+
-+	if (!buf || !len)
-+		return ICE_ERR_PARAM;
-+
-+	buf_copy = devm_kmemdup(ice_hw_to_dev(hw), buf, len, GFP_KERNEL);
-+
-+	status = ice_init_pkg(hw, buf_copy, len);
-+	if (status) {
-+		/* Free the copy, since we failed to initialize the package */
-+		devm_kfree(ice_hw_to_dev(hw), buf_copy);
-+	} else {
-+		/* Track the copied pkg so we can free it later */
-+		hw->pkg_copy = buf_copy;
-+		hw->pkg_size = len;
-+	}
-+
-+	return status;
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-new file mode 100644
-index 000000000000..3843c462bc42
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-@@ -0,0 +1,25 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2019, Intel Corporation. */
-+
-+#ifndef _ICE_FLEX_PIPE_H_
-+#define _ICE_FLEX_PIPE_H_
-+
-+#include "ice_type.h"
-+
-+/* Package minimal version supported */
-+#define ICE_PKG_SUPP_VER_MAJ	1
-+#define ICE_PKG_SUPP_VER_MNR	3
-+
-+/* Package format version */
-+#define ICE_PKG_FMT_VER_MAJ	1
-+#define ICE_PKG_FMT_VER_MNR	0
-+#define ICE_PKG_FMT_VER_UPD	0
-+#define ICE_PKG_FMT_VER_DFT	0
-+
-+#define ICE_PKG_CNT 4
-+
-+enum ice_status ice_init_pkg(struct ice_hw *hw, u8 *buff, u32 len);
-+enum ice_status
-+ice_copy_and_init_pkg(struct ice_hw *hw, const u8 *buf, u32 len);
-+void ice_free_seg(struct ice_hw *hw);
-+#endif /* _ICE_FLEX_PIPE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-new file mode 100644
-index 000000000000..b7fb90594faf
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-@@ -0,0 +1,372 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2019, Intel Corporation. */
-+
-+#ifndef _ICE_FLEX_TYPE_H_
-+#define _ICE_FLEX_TYPE_H_
-+/* Extraction Sequence (Field Vector) Table */
-+struct ice_fv_word {
-+	u8 prot_id;
-+	u16 off;		/* Offset within the protocol header */
-+	u8 resvrd;
-+} __packed;
-+
-+#define ICE_MAX_FV_WORDS 48
-+struct ice_fv {
-+	struct ice_fv_word ew[ICE_MAX_FV_WORDS];
-+};
-+
-+/* Package and segment headers and tables */
-+struct ice_pkg_hdr {
-+	struct ice_pkg_ver format_ver;
-+	__le32 seg_count;
-+	__le32 seg_offset[1];
-+};
-+
-+/* generic segment */
-+struct ice_generic_seg_hdr {
-+#define SEGMENT_TYPE_METADATA	0x00000001
-+#define SEGMENT_TYPE_ICE	0x00000010
-+	__le32 seg_type;
-+	struct ice_pkg_ver seg_ver;
-+	__le32 seg_size;
-+	char seg_name[ICE_PKG_NAME_SIZE];
-+};
-+
-+/* ice specific segment */
-+
-+union ice_device_id {
-+	struct {
-+		__le16 device_id;
-+		__le16 vendor_id;
-+	} dev_vend_id;
-+	__le32 id;
-+};
-+
-+struct ice_device_id_entry {
-+	union ice_device_id device;
-+	union ice_device_id sub_device;
-+};
-+
-+struct ice_seg {
-+	struct ice_generic_seg_hdr hdr;
-+	__le32 device_table_count;
-+	struct ice_device_id_entry device_table[1];
-+};
-+
-+struct ice_nvm_table {
-+	__le32 table_count;
-+	__le32 vers[1];
-+};
-+
-+struct ice_buf {
-+#define ICE_PKG_BUF_SIZE	4096
-+	u8 buf[ICE_PKG_BUF_SIZE];
-+};
-+
-+struct ice_buf_table {
-+	__le32 buf_count;
-+	struct ice_buf buf_array[1];
-+};
-+
-+/* global metadata specific segment */
-+struct ice_global_metadata_seg {
-+	struct ice_generic_seg_hdr hdr;
-+	struct ice_pkg_ver pkg_ver;
-+	__le32 track_id;
-+	char pkg_name[ICE_PKG_NAME_SIZE];
-+};
-+
-+#define ICE_MIN_S_OFF		12
-+#define ICE_MAX_S_OFF		4095
-+#define ICE_MIN_S_SZ		1
-+#define ICE_MAX_S_SZ		4084
-+
-+/* section information */
-+struct ice_section_entry {
-+	__le32 type;
-+	__le16 offset;
-+	__le16 size;
-+};
-+
-+#define ICE_MIN_S_COUNT		1
-+#define ICE_MAX_S_COUNT		511
-+#define ICE_MIN_S_DATA_END	12
-+#define ICE_MAX_S_DATA_END	4096
-+
-+#define ICE_METADATA_BUF	0x80000000
-+
-+struct ice_buf_hdr {
-+	__le16 section_count;
-+	__le16 data_end;
-+	struct ice_section_entry section_entry[1];
-+};
-+
-+#define ICE_MAX_ENTRIES_IN_BUF(hd_sz, ent_sz) ((ICE_PKG_BUF_SIZE - \
-+	sizeof(struct ice_buf_hdr) - (hd_sz)) / (ent_sz))
-+
-+/* ice package section IDs */
-+#define ICE_SID_XLT1_SW			12
-+#define ICE_SID_XLT2_SW			13
-+#define ICE_SID_PROFID_TCAM_SW		14
-+#define ICE_SID_PROFID_REDIR_SW		15
-+#define ICE_SID_FLD_VEC_SW		16
-+
-+#define ICE_SID_XLT1_ACL		22
-+#define ICE_SID_XLT2_ACL		23
-+#define ICE_SID_PROFID_TCAM_ACL		24
-+#define ICE_SID_PROFID_REDIR_ACL	25
-+#define ICE_SID_FLD_VEC_ACL		26
-+
-+#define ICE_SID_XLT1_FD			32
-+#define ICE_SID_XLT2_FD			33
-+#define ICE_SID_PROFID_TCAM_FD		34
-+#define ICE_SID_PROFID_REDIR_FD		35
-+#define ICE_SID_FLD_VEC_FD		36
-+
-+#define ICE_SID_XLT1_RSS		42
-+#define ICE_SID_XLT2_RSS		43
-+#define ICE_SID_PROFID_TCAM_RSS		44
-+#define ICE_SID_PROFID_REDIR_RSS	45
-+#define ICE_SID_FLD_VEC_RSS		46
-+
-+#define ICE_SID_RXPARSER_BOOST_TCAM	56
-+
-+#define ICE_SID_XLT1_PE			82
-+#define ICE_SID_XLT2_PE			83
-+#define ICE_SID_PROFID_TCAM_PE		84
-+#define ICE_SID_PROFID_REDIR_PE		85
-+#define ICE_SID_FLD_VEC_PE		86
-+
-+/* Label Metadata section IDs */
-+#define ICE_SID_LBL_FIRST		0x80000010
-+#define ICE_SID_LBL_RXPARSER_TMEM	0x80000018
-+/* The following define MUST be updated to reflect the last label section ID */
-+#define ICE_SID_LBL_LAST		0x80000038
-+
-+enum ice_block {
-+	ICE_BLK_SW = 0,
-+	ICE_BLK_ACL,
-+	ICE_BLK_FD,
-+	ICE_BLK_RSS,
-+	ICE_BLK_PE,
-+	ICE_BLK_COUNT
-+};
-+
-+/* package labels */
-+struct ice_label {
-+	__le16 value;
-+#define ICE_PKG_LABEL_SIZE	64
-+	char name[ICE_PKG_LABEL_SIZE];
-+};
-+
-+struct ice_label_section {
-+	__le16 count;
-+	struct ice_label label[1];
-+};
-+
-+#define ICE_MAX_LABELS_IN_BUF ICE_MAX_ENTRIES_IN_BUF( \
-+	sizeof(struct ice_label_section) - sizeof(struct ice_label), \
-+	sizeof(struct ice_label))
-+
-+struct ice_sw_fv_section {
-+	__le16 count;
-+	__le16 base_offset;
-+	struct ice_fv fv[1];
-+};
-+
-+/* The BOOST TCAM stores the match packet header in reverse order, meaning
-+ * the fields are reversed; in addition, this means that the normally big endian
-+ * fields of the packet are now little endian.
-+ */
-+struct ice_boost_key_value {
-+#define ICE_BOOST_REMAINING_HV_KEY	15
-+	u8 remaining_hv_key[ICE_BOOST_REMAINING_HV_KEY];
-+	__le16 hv_dst_port_key;
-+	__le16 hv_src_port_key;
-+	u8 tcam_search_key;
-+} __packed;
-+
-+struct ice_boost_key {
-+	struct ice_boost_key_value key;
-+	struct ice_boost_key_value key2;
-+};
-+
-+/* package Boost TCAM entry */
-+struct ice_boost_tcam_entry {
-+	__le16 addr;
-+	__le16 reserved;
-+	/* break up the 40 bytes of key into different fields */
-+	struct ice_boost_key key;
-+	u8 boost_hit_index_group;
-+	/* The following contains bitfields which are not on byte boundaries.
-+	 * These fields are currently unused by driver software.
-+	 */
-+#define ICE_BOOST_BIT_FIELDS		43
-+	u8 bit_fields[ICE_BOOST_BIT_FIELDS];
-+};
-+
-+struct ice_boost_tcam_section {
-+	__le16 count;
-+	__le16 reserved;
-+	struct ice_boost_tcam_entry tcam[1];
-+};
-+
-+#define ICE_MAX_BST_TCAMS_IN_BUF ICE_MAX_ENTRIES_IN_BUF( \
-+	sizeof(struct ice_boost_tcam_section) - \
-+	sizeof(struct ice_boost_tcam_entry), \
-+	sizeof(struct ice_boost_tcam_entry))
-+
-+struct ice_xlt1_section {
-+	__le16 count;
-+	__le16 offset;
-+	u8 value[1];
-+} __packed;
-+
-+struct ice_xlt2_section {
-+	__le16 count;
-+	__le16 offset;
-+	__le16 value[1];
-+};
-+
-+struct ice_prof_redir_section {
-+	__le16 count;
-+	__le16 offset;
-+	u8 redir_value[1];
-+};
-+
-+struct ice_pkg_enum {
-+	struct ice_buf_table *buf_table;
-+	u32 buf_idx;
-+
-+	u32 type;
-+	struct ice_buf_hdr *buf;
-+	u32 sect_idx;
-+	void *sect;
-+	u32 sect_type;
-+
-+	u32 entry_idx;
-+	void *(*handler)(u32 sect_type, void *section, u32 index, u32 *offset);
-+};
-+
-+struct ice_es {
-+	u32 sid;
-+	u16 count;
-+	u16 fvw;
-+	u16 *ref_count;
-+	struct list_head prof_map;
-+	struct ice_fv_word *t;
-+	struct mutex prof_map_lock;	/* protect access to profiles list */
-+	u8 *written;
-+	u8 reverse; /* set to true to reverse FV order */
-+};
-+
-+/* PTYPE Group management */
-+
-+/* Note: XLT1 table takes 13-bit as input, and results in an 8-bit packet type
-+ * group (PTG) ID as output.
-+ *
-+ * Note: PTG 0 is the default packet type group and it is assumed that all PTYPE
-+ * are a part of this group until moved to a new PTG.
-+ */
-+#define ICE_DEFAULT_PTG	0
-+
-+struct ice_ptg_entry {
-+	struct ice_ptg_ptype *first_ptype;
-+	u8 in_use;
-+};
-+
-+struct ice_ptg_ptype {
-+	struct ice_ptg_ptype *next_ptype;
-+	u8 ptg;
-+};
-+
-+struct ice_vsig_entry {
-+	struct list_head prop_lst;
-+	struct ice_vsig_vsi *first_vsi;
-+	u8 in_use;
-+};
-+
-+struct ice_vsig_vsi {
-+	struct ice_vsig_vsi *next_vsi;
-+	u32 prop_mask;
-+	u16 changed;
-+	u16 vsig;
-+};
-+
-+#define ICE_XLT1_CNT	1024
-+
-+/* XLT1 Table */
-+struct ice_xlt1 {
-+	struct ice_ptg_entry *ptg_tbl;
-+	struct ice_ptg_ptype *ptypes;
-+	u8 *t;
-+	u32 sid;
-+	u16 count;
-+};
-+
-+#define ICE_MAX_VSIGS	768
-+
-+/* VSIG bit layout:
-+ * [0:12]: incremental VSIG index 1 to ICE_MAX_VSIGS
-+ * [13:15]: PF number of device
-+ */
-+#define ICE_VSIG_IDX_M	(0x1FFF)
-+#define ICE_PF_NUM_S	13
-+#define ICE_PF_NUM_M	(0x07 << ICE_PF_NUM_S)
-+#define ICE_VSIG_VALUE(vsig, pf_id) \
-+	(u16)((((u16)(vsig)) & ICE_VSIG_IDX_M) | \
-+	      (((u16)(pf_id) << ICE_PF_NUM_S) & ICE_PF_NUM_M))
-+#define ICE_DEFAULT_VSIG	0
-+
-+/* XLT2 Table */
-+struct ice_xlt2 {
-+	struct ice_vsig_entry *vsig_tbl;
-+	struct ice_vsig_vsi *vsis;
-+	u16 *t;
-+	u32 sid;
-+	u16 count;
-+};
-+
-+/* Keys are made up of two values, each one-half the size of the key.
-+ * For TCAM, the entire key is 80 bits wide (or 2, 40-bit wide values)
-+ */
-+#define ICE_TCAM_KEY_VAL_SZ	5
-+#define ICE_TCAM_KEY_SZ		(2 * ICE_TCAM_KEY_VAL_SZ)
-+
-+struct ice_prof_tcam_entry {
-+	__le16 addr;
-+	u8 key[ICE_TCAM_KEY_SZ];
-+	u8 prof_id;
-+} __packed;
-+
-+struct ice_prof_id_section {
-+	__le16 count;
-+	struct ice_prof_tcam_entry entry[1];
-+} __packed;
-+
-+struct ice_prof_tcam {
-+	u32 sid;
-+	u16 count;
-+	u16 max_prof_id;
-+	struct ice_prof_tcam_entry *t;
-+	u8 cdid_bits; /* # CDID bits to use in key, 0, 2, 4, or 8 */
-+};
-+
-+struct ice_prof_redir {
-+	u8 *t;
-+	u32 sid;
-+	u16 count;
-+};
-+
-+/* Tables per block */
-+struct ice_blk_info {
-+	struct ice_xlt1 xlt1;
-+	struct ice_xlt2 xlt2;
-+	struct ice_prof_tcam prof;
-+	struct ice_prof_redir prof_redir;
-+	struct ice_es es;
-+	u8 overwrite; /* set to true to allow overwrite of table entries */
-+	u8 is_list_init;
-+};
-+
-+#endif /* _ICE_FLEX_TYPE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 6f78ff5534af..152fbd556e9b 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -55,6 +55,8 @@
- #define PRTDCB_GENS				0x00083020
- #define PRTDCB_GENS_DCBX_STATUS_S		0
- #define PRTDCB_GENS_DCBX_STATUS_M		ICE_M(0x7, 0)
-+#define GL_PREEXT_L2_PMASK0(_i)			(0x0020F0FC + ((_i) * 4))
-+#define GL_PREEXT_L2_PMASK1(_i)			(0x0020F108 + ((_i) * 4))
- #define GLFLXP_RXDID_FLAGS(_i, _j)		(0x0045D000 + ((_i) * 4 + (_j) * 256))
- #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S	0
- #define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, 0)
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 7ec8a529b5cf..6667d17a4206 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -12,6 +12,7 @@
- #include "ice_osdep.h"
- #include "ice_controlq.h"
- #include "ice_lan_tx_rx.h"
-+#include "ice_flex_type.h"
+ 	return 0;
  
- static inline bool ice_is_tc_ena(unsigned long bitmap, u8 tc)
+ err_alloc_sw_unroll:
+@@ -3110,6 +3428,13 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
+ 	struct ice_vsi *vsi = np->vsi;
+ 	int ret = 0;
+ 
++	/* Don't set any netdev advanced features with device in Safe Mode */
++	if (ice_is_safe_mode(vsi->back)) {
++		dev_err(&vsi->back->pdev->dev,
++			"Device is in Safe Mode - not enabling advanced netdev features\n");
++		return ret;
++	}
++
+ 	/* Multiple features can be changed in one call so keep features in
+ 	 * separate if/else statements to guarantee each feature is checked
+ 	 */
+@@ -3799,9 +4124,6 @@ static int ice_ena_vsi(struct ice_vsi *vsi, bool locked)
+  */
+ #ifdef CONFIG_DCB
+ int ice_pf_ena_all_vsi(struct ice_pf *pf, bool locked)
+-#else
+-static int ice_pf_ena_all_vsi(struct ice_pf *pf, bool locked)
+-#endif /* CONFIG_DCB */
  {
-@@ -31,6 +32,7 @@ static inline bool ice_is_tc_ena(unsigned long bitmap, u8 tc)
- #define ICE_DBG_LAN		BIT_ULL(8)
- #define ICE_DBG_SW		BIT_ULL(13)
- #define ICE_DBG_SCHED		BIT_ULL(14)
-+#define ICE_DBG_PKG		BIT_ULL(16)
- #define ICE_DBG_RES		BIT_ULL(17)
- #define ICE_DBG_AQ_MSG		BIT_ULL(24)
- #define ICE_DBG_AQ_CMD		BIT_ULL(27)
-@@ -469,6 +471,30 @@ struct ice_hw {
+ 	int v;
  
- 	u8 ucast_shared;	/* true if VSIs can share unicast addr */
+@@ -3812,94 +4134,107 @@ static int ice_pf_ena_all_vsi(struct ice_pf *pf, bool locked)
  
-+	/* Active package version (currently active) */
-+	struct ice_pkg_ver active_pkg_ver;
-+	u8 active_pkg_name[ICE_PKG_NAME_SIZE];
-+	u8 active_pkg_in_nvm;
-+
-+	enum ice_aq_err pkg_dwnld_status;
-+
-+	/* Driver's package ver - (from the Metadata seg) */
-+	struct ice_pkg_ver pkg_ver;
-+	u8 pkg_name[ICE_PKG_NAME_SIZE];
-+
-+	/* Driver's Ice package version (from the Ice seg) */
-+	struct ice_pkg_ver ice_pkg_ver;
-+	u8 ice_pkg_name[ICE_PKG_NAME_SIZE];
-+
-+	/* Pointer to the ice segment */
-+	struct ice_seg *seg;
-+
-+	/* Pointer to allocated copy of pkg memory */
-+	u8 *pkg_copy;
-+	u32 pkg_size;
-+
-+	/* HW block tables */
-+	struct ice_blk_info blk[ICE_BLK_COUNT];
- };
+ 	return 0;
+ }
++#endif /* CONFIG_DCB */
  
- /* Statistics collected by each port, VSI, VEB, and S-channel */
+ /**
+- * ice_vsi_rebuild_all - rebuild all VSIs in PF
+- * @pf: the PF
++ * ice_vsi_rebuild_by_type - Rebuild VSI of a given type
++ * @pf: pointer to the PF instance
++ * @type: VSI type to rebuild
++ *
++ * Iterates through the pf->vsi array and rebuilds VSIs of the requested type
+  */
+-static int ice_vsi_rebuild_all(struct ice_pf *pf)
++static int ice_vsi_rebuild_by_type(struct ice_pf *pf, enum ice_vsi_type type)
+ {
+-	int i;
++	enum ice_status status;
++	int i, err;
+ 
+-	/* loop through pf->vsi array and reinit the VSI if found */
+ 	ice_for_each_vsi(pf, i) {
+ 		struct ice_vsi *vsi = pf->vsi[i];
+-		int err;
+ 
+-		if (!vsi)
++		if (!vsi || vsi->type != type)
+ 			continue;
+ 
++		/* rebuild the VSI */
+ 		err = ice_vsi_rebuild(vsi);
+ 		if (err) {
+ 			dev_err(&pf->pdev->dev,
+-				"VSI at index %d rebuild failed\n",
+-				vsi->idx);
++				"rebuild VSI failed, err %d, VSI index %d, type %d\n",
++				err, vsi->idx, type);
+ 			return err;
+ 		}
+ 
+-		dev_info(&pf->pdev->dev,
+-			 "VSI at index %d rebuilt. vsi_num = 0x%x\n",
+-			 vsi->idx, vsi->vsi_num);
++		/* replay filters for the VSI */
++		status = ice_replay_vsi(&pf->hw, vsi->idx);
++		if (status) {
++			dev_err(&pf->pdev->dev,
++				"replay VSI failed, status %d, VSI index %d, type %d\n",
++				status, vsi->idx, type);
++			return -EIO;
++		}
++
++		/* Re-map HW VSI number, using VSI handle that has been
++		 * previously validated in ice_replay_vsi() call above
++		 */
++		vsi->vsi_num = ice_get_hw_vsi_num(&pf->hw, vsi->idx);
++
++		/* enable the VSI */
++		err = ice_ena_vsi(vsi, false);
++		if (err) {
++			dev_err(&pf->pdev->dev,
++				"enable VSI failed, err %d, VSI index %d, type %d\n",
++				err, vsi->idx, type);
++			return err;
++		}
++
++		dev_info(&pf->pdev->dev, "VSI rebuilt. VSI index %d, type %d\n",
++			 vsi->idx, type);
+ 	}
+ 
+ 	return 0;
+ }
+ 
+ /**
+- * ice_vsi_replay_all - replay all VSIs configuration in the PF
+- * @pf: the PF
++ * ice_update_pf_netdev_link - Update PF netdev link status
++ * @pf: pointer to the PF instance
+  */
+-static int ice_vsi_replay_all(struct ice_pf *pf)
++static void ice_update_pf_netdev_link(struct ice_pf *pf)
+ {
+-	struct ice_hw *hw = &pf->hw;
+-	enum ice_status ret;
++	bool link_up;
+ 	int i;
+ 
+-	/* loop through pf->vsi array and replay the VSI if found */
+ 	ice_for_each_vsi(pf, i) {
+ 		struct ice_vsi *vsi = pf->vsi[i];
+ 
+-		if (!vsi)
+-			continue;
++		if (!vsi || vsi->type != ICE_VSI_PF)
++			return;
+ 
+-		ret = ice_replay_vsi(hw, vsi->idx);
+-		if (ret) {
+-			dev_err(&pf->pdev->dev,
+-				"VSI at index %d replay failed %d\n",
+-				vsi->idx, ret);
+-			return -EIO;
++		ice_get_link_status(pf->vsi[i]->port_info, &link_up);
++		if (link_up) {
++			netif_carrier_on(pf->vsi[i]->netdev);
++			netif_tx_wake_all_queues(pf->vsi[i]->netdev);
++		} else {
++			netif_carrier_off(pf->vsi[i]->netdev);
++			netif_tx_stop_all_queues(pf->vsi[i]->netdev);
+ 		}
+-
+-		/* Re-map HW VSI number, using VSI handle that has been
+-		 * previously validated in ice_replay_vsi() call above
+-		 */
+-		vsi->vsi_num = ice_get_hw_vsi_num(hw, vsi->idx);
+-
+-		dev_info(&pf->pdev->dev,
+-			 "VSI at index %d filter replayed successfully - vsi_num %i\n",
+-			 vsi->idx, vsi->vsi_num);
+ 	}
+-
+-	/* Clean up replay filter after successful re-configuration */
+-	ice_replay_post(hw);
+-	return 0;
+ }
+ 
+ /**
+  * ice_rebuild - rebuild after reset
+  * @pf: PF to rebuild
++ * @reset_type: type of reset
+  */
+-static void ice_rebuild(struct ice_pf *pf)
++static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+ {
+ 	struct device *dev = &pf->pdev->dev;
+ 	struct ice_hw *hw = &pf->hw;
+ 	enum ice_status ret;
+-	int err, i;
++	int err;
+ 
+ 	if (test_bit(__ICE_DOWN, pf->state))
+ 		goto clear_recovery;
+ 
+-	dev_dbg(dev, "rebuilding PF\n");
++	dev_dbg(dev, "rebuilding PF after reset_type=%d\n", reset_type);
+ 
+ 	ret = ice_init_all_ctrlq(hw);
+ 	if (ret) {
+@@ -3907,6 +4242,16 @@ static void ice_rebuild(struct ice_pf *pf)
+ 		goto err_init_ctrlq;
+ 	}
+ 
++	/* if DDP was previously loaded successfully */
++	if (!ice_is_safe_mode(pf)) {
++		/* reload the SW DB of filter tables */
++		if (reset_type == ICE_RESET_PFR)
++			ice_fill_blk_tbls(hw);
++		else
++			/* Reload DDP Package after CORER/GLOBR reset */
++			ice_load_pkg(NULL, pf);
++	}
++
+ 	ret = ice_clear_pf_cfg(hw);
+ 	if (ret) {
+ 		dev_err(dev, "clear PF configuration failed %d\n", ret);
+@@ -3925,63 +4270,53 @@ static void ice_rebuild(struct ice_pf *pf)
+ 	if (err)
+ 		goto err_sched_init_port;
+ 
+-	ice_dcb_rebuild(pf);
+-
+-	err = ice_vsi_rebuild_all(pf);
+-	if (err) {
+-		dev_err(dev, "ice_vsi_rebuild_all failed\n");
+-		goto err_vsi_rebuild;
+-	}
+-
+ 	err = ice_update_link_info(hw->port_info);
+ 	if (err)
+ 		dev_err(&pf->pdev->dev, "Get link status error %d\n", err);
+ 
+-	/* Replay all VSIs Configuration, including filters after reset */
+-	if (ice_vsi_replay_all(pf)) {
+-		dev_err(&pf->pdev->dev,
+-			"error replaying VSI configurations with switch filter rules\n");
+-		goto err_vsi_rebuild;
+-	}
+-
+ 	/* start misc vector */
+ 	err = ice_req_irq_msix_misc(pf);
+ 	if (err) {
+ 		dev_err(dev, "misc vector setup failed: %d\n", err);
+-		goto err_vsi_rebuild;
++		goto err_sched_init_port;
+ 	}
+ 
+-	/* restart the VSIs that were rebuilt and running before the reset */
+-	err = ice_pf_ena_all_vsi(pf, false);
++	if (test_bit(ICE_FLAG_DCB_ENA, pf->flags))
++		ice_dcb_rebuild(pf);
++
++	/* rebuild PF VSI */
++	err = ice_vsi_rebuild_by_type(pf, ICE_VSI_PF);
+ 	if (err) {
+-		dev_err(&pf->pdev->dev, "error enabling VSIs\n");
+-		/* no need to disable VSIs in tear down path in ice_rebuild()
+-		 * since its already taken care in ice_vsi_open()
+-		 */
++		dev_err(dev, "PF VSI rebuild failed: %d\n", err);
+ 		goto err_vsi_rebuild;
+ 	}
+ 
+-	ice_for_each_vsi(pf, i) {
+-		bool link_up;
+-
+-		if (!pf->vsi[i] || pf->vsi[i]->type != ICE_VSI_PF)
+-			continue;
+-		ice_get_link_status(pf->vsi[i]->port_info, &link_up);
+-		if (link_up) {
+-			netif_carrier_on(pf->vsi[i]->netdev);
+-			netif_tx_wake_all_queues(pf->vsi[i]->netdev);
+-		} else {
+-			netif_carrier_off(pf->vsi[i]->netdev);
+-			netif_tx_stop_all_queues(pf->vsi[i]->netdev);
++	if (test_bit(ICE_FLAG_SRIOV_ENA, pf->flags)) {
++		err = ice_vsi_rebuild_by_type(pf, ICE_VSI_VF);
++		if (err) {
++			dev_err(dev, "VF VSI rebuild failed: %d\n", err);
++			goto err_vsi_rebuild;
+ 		}
+ 	}
+ 
++	ice_update_pf_netdev_link(pf);
++
++	/* tell the firmware we are up */
++	ret = ice_send_version(pf);
++	if (ret) {
++		dev_err(dev,
++			"Rebuild failed due to error sending driver version: %d\n",
++			ret);
++		goto err_vsi_rebuild;
++	}
++
++	ice_replay_post(hw);
++
+ 	/* if we get here, reset flow is successful */
+ 	clear_bit(__ICE_RESET_FAILED, pf->state);
+ 	return;
+ 
+ err_vsi_rebuild:
+-	ice_vsi_release_all(pf);
+ err_sched_init_port:
+ 	ice_sched_cleanup_all(hw);
+ err_init_ctrlq:
+@@ -4508,6 +4843,17 @@ ice_features_check(struct sk_buff *skb,
+ 	return features & ~(NETIF_F_CSUM_MASK | NETIF_F_GSO_MASK);
+ }
+ 
++static const struct net_device_ops ice_netdev_safe_mode_ops = {
++	.ndo_open = ice_open,
++	.ndo_stop = ice_stop,
++	.ndo_start_xmit = ice_start_xmit,
++	.ndo_set_mac_address = ice_set_mac_address,
++	.ndo_validate_addr = eth_validate_addr,
++	.ndo_change_mtu = ice_change_mtu,
++	.ndo_get_stats64 = ice_get_stats64,
++	.ndo_tx_timeout = ice_tx_timeout,
++};
++
+ static const struct net_device_ops ice_netdev_ops = {
+ 	.ndo_open = ice_open,
+ 	.ndo_stop = ice_stop,
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 64de05ccbc47..b45797f39b2f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1443,6 +1443,12 @@ int ice_sriov_configure(struct pci_dev *pdev, int num_vfs)
+ {
+ 	struct ice_pf *pf = pci_get_drvdata(pdev);
+ 
++	if (ice_is_safe_mode(pf)) {
++		dev_err(&pf->pdev->dev,
++			"SR-IOV cannot be configured - Device is in Safe Mode\n");
++		return -EOPNOTSUPP;
++	}
++
+ 	if (num_vfs)
+ 		return ice_pci_sriov_ena(pf, num_vfs);
+ 
 -- 
 2.20.1
 
