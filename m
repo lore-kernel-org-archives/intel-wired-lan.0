@@ -1,91 +1,309 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 7 Sep 2019 04:18:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 1/59]
- drivers/net/ethernet/intel/i40e/i40e_xsk.c:162:9: error: implicit
- declaration of function 'i40e_xsk_async_xmit'; did you mean 'i40e_xdp_xmit'?
-Message-ID: <201909070429.jJfLFta2%lkp@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 06 Sep 2019 13:34:53 -0700
+Subject: [Intel-wired-lan] [PATCH S29 1/6] ice: send driver version to
+ firmware
+In-Reply-To: <b0857265-206a-c563-4b4a-d16a2c12e058@molgen.mpg.de>
+References: <20190905153956.53086-1-anthony.l.nguyen@intel.com>
+ <b0857265-206a-c563-4b4a-d16a2c12e058@molgen.mpg.de>
+Message-ID: <0643563d15597e884da8d287c932abda6e27e70f.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   c5bdb6a05e9839b64e8e0db33644df1338ae856c
-commit: 25f7137ac8e6238b0d70dfca86fd568492234f51 [1/59] i40e: fix potential RX buffer starvation for AF_XDP
-config: x86_64-allyesconfig (attached as .config)
-compiler: gcc-7 (Debian 7.4.0-11) 7.4.0
-reproduce:
-        git checkout 25f7137ac8e6238b0d70dfca86fd568492234f51
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+On Fri, 2019-09-06 at 09:09 +0200, Paul Menzel wrote:
+> Dear Tony, dear Paul,
+> 
+> 
+> On 05.09.19 17:39, Tony Nguyen wrote:
+> > From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> > 
+> > The driver is required to send a version to the firmware
+> > to indicate that the driver is up. If the driver doesn't
+> > do this the firmware doesn't behave properly.
+> 
+> In what datasheet is that documented?
 
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
+It is documented in the datasheet, but the datasheet has not been made
+available yet because the device(s) have not been released yet.  Once
+the device(s) get released, a datasheet should be made available
+shortly thereafter.
 
-All errors (new ones prefixed by >>):
+> 
+> What does ?doesn?t behave properly? mean exactly?
 
-   drivers/net/ethernet/intel/i40e/i40e_xsk.c: In function 'i40e_xsk_umem_disable':
->> drivers/net/ethernet/intel/i40e/i40e_xsk.c:162:9: error: implicit declaration of function 'i40e_xsk_async_xmit'; did you mean 'i40e_xdp_xmit'? [-Werror=implicit-function-declaration]
-      err = i40e_xsk_async_xmit(vsi->netdev, qid);
-            ^~~~~~~~~~~~~~~~~~~
-            i40e_xdp_xmit
-   cc1: some warnings being treated as errors
+What Paul and Tony were getting at that if the DDP pacakge is not
+loaded onto the NIC, not all the features that the NIC is capable of
+will be made available.  The sending of a version to the firmware is
+just one step that needs to occur to enable the loading of a DDP
+package.
 
-vim +162 drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> 
+> > Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> > ---
+> >   drivers/net/ethernet/intel/ice/ice.h          |  1 +
+> >   .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 13 +++++++
+> >   drivers/net/ethernet/intel/ice/ice_common.c   | 37
+> > +++++++++++++++++++
+> >   drivers/net/ethernet/intel/ice/ice_common.h   |  3 ++
+> >   drivers/net/ethernet/intel/ice/ice_main.c     | 36
+> > +++++++++++++++++-
+> >   drivers/net/ethernet/intel/ice/ice_type.h     |  8 ++++
+> >   6 files changed, 97 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/ice/ice.h
+> > b/drivers/net/ethernet/intel/ice/ice.h
+> > index b36e1cf0e461..4cdedcebb163 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice.h
+> > +++ b/drivers/net/ethernet/intel/ice/ice.h
+> > @@ -29,6 +29,7 @@
+> >   #include <linux/sctp.h>
+> >   #include <linux/ipv6.h>
+> >   #include <linux/if_bridge.h>
+> > +#include <linux/ctype.h>
+> 
+> Is the alignment correct? (Or just my mailer messing up?)
 
-   126	
-   127	/**
-   128	 * i40e_xsk_umem_disable - Disassociate a UMEM from a certain ring/qid
-   129	 * @vsi: Current VSI
-   130	 * @qid: Rx ring to associate UMEM to
-   131	 *
-   132	 * Returns 0 on success, <0 on failure
-   133	 **/
-   134	static int i40e_xsk_umem_disable(struct i40e_vsi *vsi, u16 qid)
-   135	{
-   136		struct net_device *netdev = vsi->netdev;
-   137		struct xdp_umem *umem;
-   138		bool if_running;
-   139		int err;
-   140	
-   141		umem = xdp_get_umem_from_qid(netdev, qid);
-   142		if (!umem)
-   143			return -EINVAL;
-   144	
-   145		if_running = netif_running(vsi->netdev) && i40e_enabled_xdp_vsi(vsi);
-   146	
-   147		if (if_running) {
-   148			err = i40e_queue_pair_disable(vsi, qid);
-   149			if (err)
-   150				return err;
-   151		}
-   152	
-   153		clear_bit(qid, vsi->af_xdp_zc_qps);
-   154		i40e_xsk_umem_dma_unmap(vsi, umem);
-   155	
-   156		if (if_running) {
-   157			err = i40e_queue_pair_enable(vsi, qid);
-   158			if (err)
-   159				return err;
-   160	
-   161			/* Kick start the NAPI context so that receiving will start */
- > 162			err = i40e_xsk_async_xmit(vsi->netdev, qid);
-   163			if (err)
-   164				return err;
-   165		}
-   166	
-   167		return 0;
-   168	}
-   169	
+Yep, just your mailer screwed it up.  The code is aligned correctly in
+my tree.
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> 
+> >   #include <linux/avf/virtchnl.h>
+> >   #include <net/ipv6.h>
+> >   #include "ice_devids.h"
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> > b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> > index 4da0cde9695b..9c9791788610 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> > +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> > @@ -33,6 +33,17 @@ struct ice_aqc_get_ver {
+> >   	u8 api_patch;
+> >   };
+> >   
+> > +/* Send driver version (indirect 0x0002) */
+> > +struct ice_aqc_driver_ver {
+> > +	u8 major_ver;
+> > +	u8 minor_ver;
+> > +	u8 build_ver;
+> > +	u8 subbuild_ver;
+> > +	u8 reserved[4];
+> > +	__le32 addr_high;
+> > +	__le32 addr_low;
+> > +};
+> > +
+> >   /* Queue Shutdown (direct 0x0003) */
+> >   struct ice_aqc_q_shutdown {
+> >   	u8 driver_unloading;
+> > @@ -1547,6 +1558,7 @@ struct ice_aq_desc {
+> >   		u8 raw[16];
+> >   		struct ice_aqc_generic generic;
+> >   		struct ice_aqc_get_ver get_ver;
+> > +		struct ice_aqc_driver_ver driver_ver;
+> >   		struct ice_aqc_q_shutdown q_shutdown;
+> >   		struct ice_aqc_req_res res_owner;
+> >   		struct ice_aqc_manage_mac_read mac_read;
+> > @@ -1618,6 +1630,7 @@ enum ice_aq_err {
+> >   enum ice_adminq_opc {
+> >   	/* AQ commands */
+> >   	ice_aqc_opc_get_ver				= 0x0001,
+> > +	ice_aqc_opc_driver_ver				= 0x0002,
+> >   	ice_aqc_opc_q_shutdown				= 0x0003,
+> >   
+> >   	/* resource ownership */
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_common.c
+> > b/drivers/net/ethernet/intel/ice/ice_common.c
+> > index 8b2c46615834..db62cc748544 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_common.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_common.c
+> > @@ -1258,6 +1258,43 @@ enum ice_status ice_aq_get_fw_ver(struct
+> > ice_hw *hw, struct ice_sq_cd *cd)
+> >   	return status;
+> >   }
+> >   
+> > +/**
+> > + * ice_aq_send_driver_ver
+> > + * @hw: pointer to the HW struct
+> > + * @dv: driver's major, minor version
+> > + * @cd: pointer to command details structure or NULL
+> > + *
+> > + * Send the driver version (0x0002) to the firmware
+> > + */
+> > +enum ice_status
+> > +ice_aq_send_driver_ver(struct ice_hw *hw, struct ice_driver_ver
+> > *dv,
+> > +		       struct ice_sq_cd *cd)
+> > +{
+> > +	struct ice_aqc_driver_ver *cmd;
+> > +	struct ice_aq_desc desc;
+> > +	u16 len;
+> 
+> Just `unsigned int` or `size_t`?
+
+This change will be based on the current kernel interface that can get
+the length of ASCII chars, so yes, Tony will fix this up as well.
+
+> 
+> > +
+> > +	cmd = &desc.params.driver_ver;
+> > +
+> > +	if (!dv)
+> > +		return ICE_ERR_PARAM;
+> > +
+> > +	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_driver_ver);
+> > +
+> > +	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
+> > +	cmd->major_ver = dv->major_ver;
+> > +	cmd->minor_ver = dv->minor_ver;
+> > +	cmd->build_ver = dv->build_ver;
+> > +	cmd->subbuild_ver = dv->subbuild_ver;
+> > +
+> > +	len = 0;
+> > +	while (len < sizeof(dv->driver_string) &&
+> > +	       isascii(dv->driver_string[len]) && dv-
+> > >driver_string[len])
+> > +		len++;
+> 
+> Is there such a function for finding the length of ASCII characters 
+> already somewhere in Linux?
+
+Tony will look into this and use the kernel interface if there is.
+
+> 
+> > +
+> > +	return ice_aq_send_cmd(hw, &desc, dv->driver_string, len, cd);
+> > +}
+> > +
+> >   /**
+> >    * ice_aq_q_shutdown
+> >    * @hw: pointer to the HW struct
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_common.h
+> > b/drivers/net/ethernet/intel/ice/ice_common.h
+> > index e376d1eadba4..e9d77370a17c 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_common.h
+> > +++ b/drivers/net/ethernet/intel/ice/ice_common.h
+> > @@ -71,6 +71,9 @@ ice_aq_send_cmd(struct ice_hw *hw, struct
+> > ice_aq_desc *desc,
+> >   		void *buf, u16 buf_size, struct ice_sq_cd *cd);
+> >   enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct
+> > ice_sq_cd *cd);
+> >   
+> > +enum ice_status
+> > +ice_aq_send_driver_ver(struct ice_hw *hw, struct ice_driver_ver
+> > *dv,
+> > +		       struct ice_sq_cd *cd);
+> >   enum ice_status
+> >   ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8
+> > report_mode,
+> >   		    struct ice_aqc_get_phy_caps_data *caps,
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
+> > b/drivers/net/ethernet/intel/ice/ice_main.c
+> > index f8be9ada2447..ea55ec598dac 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> > @@ -9,7 +9,13 @@
+> >   #include "ice_lib.h"
+> >   #include "ice_dcb_lib.h"
+> >   
+> > -#define DRV_VERSION	"0.7.5-k"
+> > +#define DRV_VERSION_MAJOR 0
+> > +#define DRV_VERSION_MINOR 7
+> > +#define DRV_VERSION_BUILD 5
+> > +
+> > +#define DRV_VERSION	__stringify(DRV_VERSION_MAJOR) "." \
+> > +			__stringify(DRV_VERSION_MINOR) "." \
+> > +			__stringify(DRV_VERSION_BUILD) "-k"
+> >   #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800
+> > Series Linux Driver"
+> >   const char ice_drv_ver[] = DRV_VERSION;
+> >   static const char ice_driver_string[] = DRV_SUMMARY;
+> > @@ -2459,6 +2465,25 @@ static void ice_verify_cacheline_size(struct
+> > ice_pf *pf)
+> >   			 ICE_CACHE_LINE_BYTES);
+> >   }
+> >   
+> > +/**
+> > + * ice_send_version - update firmware with driver version
+> > + * @pf: PF struct
+> > + *
+> > + * Returns ICE_SUCCESS on success, else error code
+> > + */
+> > +static enum ice_status ice_send_version(struct ice_pf *pf)
+> > +{
+> > +	struct ice_driver_ver dv;
+> > +
+> > +	dv.major_ver = DRV_VERSION_MAJOR;
+> > +	dv.minor_ver = DRV_VERSION_MINOR;
+> > +	dv.build_ver = DRV_VERSION_BUILD;
+> > +	dv.subbuild_ver = 0;
+> > +	strscpy((char *)dv.driver_string, DRV_VERSION,
+> > +		sizeof(dv.driver_string));
+> > +	return ice_aq_send_driver_ver(&pf->hw, &dv, NULL);
+> > +}
+> > +
+> >   /**
+> >    * ice_probe - Device initialization routine
+> >    * @pdev: PCI device information struct
+> > @@ -2612,6 +2637,15 @@ ice_probe(struct pci_dev *pdev, const struct
+> > pci_device_id __always_unused *ent)
+> >   
+> >   	clear_bit(__ICE_SERVICE_DIS, pf->state);
+> >   
+> > +	/* tell the firmware we are up */
+> > +	err = ice_send_version(pf);
+> > +	if (err) {
+> > +		dev_err(dev,
+> > +			"probe failed due to error sending driver
+> > version:%d\n",
+> 
+> Space after colon? Maybe also add the driver version in the string?
+
+Tony will fix this up.
+
+> 
+> > +			err);
+> > +		goto err_alloc_sw_unroll;
+> > +	}
+> > +
+> >   	/* since everything is good, start the service timer */
+> >   	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf-
+> > >serv_tmr_period));
+> >   
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_type.h
+> > b/drivers/net/ethernet/intel/ice/ice_type.h
+> > index 4501d50a7dcc..a2676003275a 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_type.h
+> > +++ b/drivers/net/ethernet/intel/ice/ice_type.h
+> > @@ -53,6 +53,14 @@ enum ice_aq_res_access_type {
+> >   	ICE_RES_WRITE
+> >   };
+> >   
+> > +struct ice_driver_ver {
+> > +	u8 major_ver;
+> > +	u8 minor_ver;
+> > +	u8 build_ver;
+> > +	u8 subbuild_ver;
+> > +	u8 driver_string[32];
+> > +};
+> > +
+> >   enum ice_fc_mode {
+> >   	ICE_FC_NONE = 0,
+> >   	ICE_FC_RX_PAUSE,
+> > 
+> 
+> Kind regards,
+> 
+> Paul
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
 -------------- next part --------------
 A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 69573 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190907/8326842d/attachment-0001.bin>
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190906/6b062726/attachment.asc>
