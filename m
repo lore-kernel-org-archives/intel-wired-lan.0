@@ -1,142 +1,91 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 07 Sep 2019 04:20:08 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 7e6c9b4197609015b48161f9651b0d4212e9f8cf
-Message-ID: <5d72bf78.scUcXWUpZ3NuD2Zl%lkp@intel.com>
+Date: Sat, 7 Sep 2019 04:18:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 1/59]
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c:162:9: error: implicit
+ declaration of function 'i40e_xsk_async_xmit'; did you mean 'i40e_xdp_xmit'?
+Message-ID: <201909070429.jJfLFta2%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 7e6c9b4197609015b48161f9651b0d4212e9f8cf  ice: Bump version
+tree:   https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   c5bdb6a05e9839b64e8e0db33644df1338ae856c
+commit: 25f7137ac8e6238b0d70dfca86fd568492234f51 [1/59] i40e: fix potential RX buffer starvation for AF_XDP
+config: x86_64-allyesconfig (attached as .config)
+compiler: gcc-7 (Debian 7.4.0-11) 7.4.0
+reproduce:
+        git checkout 25f7137ac8e6238b0d70dfca86fd568492234f51
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
-Regressions in current branch:
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
 
-drivers/net/ethernet/intel/i40e/i40e_xsk.c:162:9: error: implicit declaration of function 'i40e_xsk_async_xmit'; did you mean 'i40e_xdp_xmit'? [-Werror=implicit-function-declaration]
+All errors (new ones prefixed by >>):
 
-Error ids grouped by kconfigs:
+   drivers/net/ethernet/intel/i40e/i40e_xsk.c: In function 'i40e_xsk_umem_disable':
+>> drivers/net/ethernet/intel/i40e/i40e_xsk.c:162:9: error: implicit declaration of function 'i40e_xsk_async_xmit'; did you mean 'i40e_xdp_xmit'? [-Werror=implicit-function-declaration]
+      err = i40e_xsk_async_xmit(vsi->netdev, qid);
+            ^~~~~~~~~~~~~~~~~~~
+            i40e_xdp_xmit
+   cc1: some warnings being treated as errors
 
-recent_errors
-`-- i386-allmodconfig
-    `-- drivers-net-ethernet-intel-i40e-i40e_xsk.c:error:implicit-declaration-of-function-i40e_xsk_async_xmit-did-you-mean-i40e_xdp_xmit
+vim +162 drivers/net/ethernet/intel/i40e/i40e_xsk.c
 
-elapsed time: 188m
-
-configs tested: 110
-
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                nfsroot
-x86_64                                   rhel
-x86_64                               rhel-7.6
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-c001-201935
-x86_64                 randconfig-c002-201935
-x86_64                 randconfig-c003-201935
-x86_64                 randconfig-c004-201935
-i386                   randconfig-c001-201935
-i386                   randconfig-c002-201935
-i386                   randconfig-c003-201935
-i386                   randconfig-c004-201935
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-b001-201935
-x86_64                 randconfig-b002-201935
-x86_64                 randconfig-b003-201935
-x86_64                 randconfig-b004-201935
-i386                   randconfig-b001-201935
-i386                   randconfig-b002-201935
-i386                   randconfig-b003-201935
-i386                   randconfig-b004-201935
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allyesconfig
-x86_64                           allmodconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                 randconfig-e001-201935
-x86_64                 randconfig-e002-201935
-x86_64                 randconfig-e003-201935
-x86_64                 randconfig-e004-201935
-i386                   randconfig-e001-201935
-i386                   randconfig-e002-201935
-i386                   randconfig-e003-201935
-i386                   randconfig-e004-201935
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
+   126	
+   127	/**
+   128	 * i40e_xsk_umem_disable - Disassociate a UMEM from a certain ring/qid
+   129	 * @vsi: Current VSI
+   130	 * @qid: Rx ring to associate UMEM to
+   131	 *
+   132	 * Returns 0 on success, <0 on failure
+   133	 **/
+   134	static int i40e_xsk_umem_disable(struct i40e_vsi *vsi, u16 qid)
+   135	{
+   136		struct net_device *netdev = vsi->netdev;
+   137		struct xdp_umem *umem;
+   138		bool if_running;
+   139		int err;
+   140	
+   141		umem = xdp_get_umem_from_qid(netdev, qid);
+   142		if (!umem)
+   143			return -EINVAL;
+   144	
+   145		if_running = netif_running(vsi->netdev) && i40e_enabled_xdp_vsi(vsi);
+   146	
+   147		if (if_running) {
+   148			err = i40e_queue_pair_disable(vsi, qid);
+   149			if (err)
+   150				return err;
+   151		}
+   152	
+   153		clear_bit(qid, vsi->af_xdp_zc_qps);
+   154		i40e_xsk_umem_dma_unmap(vsi, umem);
+   155	
+   156		if (if_running) {
+   157			err = i40e_queue_pair_enable(vsi, qid);
+   158			if (err)
+   159				return err;
+   160	
+   161			/* Kick start the NAPI context so that receiving will start */
+ > 162			err = i40e_xsk_async_xmit(vsi->netdev, qid);
+   163			if (err)
+   164				return err;
+   165		}
+   166	
+   167		return 0;
+   168	}
+   169	
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 69573 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190907/8326842d/attachment-0001.bin>
