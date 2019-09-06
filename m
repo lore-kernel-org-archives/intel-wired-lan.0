@@ -1,172 +1,249 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 06 Sep 2019 13:26:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 8de5f3ecc94c978abc495f1ac8623d4587aa0ead
-Message-ID: <5d71ee1f.h42ITx6NwmaDTL+I%lkp@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Fri, 6 Sep 2019 09:09:07 +0200
+Subject: [Intel-wired-lan] [PATCH S29 1/6] ice: send driver version to
+ firmware
+In-Reply-To: <20190905153956.53086-1-anthony.l.nguyen@intel.com>
+References: <20190905153956.53086-1-anthony.l.nguyen@intel.com>
+Message-ID: <b0857265-206a-c563-4b4a-d16a2c12e058@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 8de5f3ecc94c978abc495f1ac8623d4587aa0ead  i40e: Implement debug macro hw_dbg using dev_dbg
+Dear Tony, dear Paul,
 
-elapsed time: 850m
 
-configs tested: 147
+On 05.09.19 17:39, Tony Nguyen wrote:
+> From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> 
+> The driver is required to send a version to the firmware
+> to indicate that the driver is up. If the driver doesn't
+> do this the firmware doesn't behave properly.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+In what datasheet is that documented?
 
-x86_64                 randconfig-e004-201935
-i386                   randconfig-e004-201935
-x86_64                 randconfig-e002-201935
-x86_64                 randconfig-e003-201935
-i386                   randconfig-e003-201935
-x86_64                 randconfig-e001-201935
-i386                   randconfig-e001-201935
-i386                   randconfig-e002-201935
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                 randconfig-c001-201935
-x86_64                 randconfig-c002-201935
-x86_64                 randconfig-c003-201935
-x86_64                 randconfig-c004-201935
-i386                   randconfig-c001-201935
-i386                   randconfig-c002-201935
-i386                   randconfig-c003-201935
-i386                   randconfig-c004-201935
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-b002-201935
-i386                   randconfig-b003-201935
-i386                   randconfig-b004-201935
-i386                   randconfig-b001-201935
-x86_64                 randconfig-b001-201935
-i386                   randconfig-b002-201935
-x86_64                 randconfig-b004-201935
-x86_64                 randconfig-b003-201935
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                 randconfig-g003-201935
-i386                   randconfig-g004-201935
-x86_64                 randconfig-g002-201935
-x86_64                 randconfig-g001-201935
-i386                   randconfig-g001-201935
-x86_64                 randconfig-g004-201935
-i386                   randconfig-g002-201935
-i386                   randconfig-g003-201935
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-x86_64                 randconfig-h001-201935
-x86_64                 randconfig-h002-201935
-x86_64                 randconfig-h003-201935
-x86_64                 randconfig-h004-201935
-i386                   randconfig-h001-201935
-i386                   randconfig-h002-201935
-i386                   randconfig-h003-201935
-i386                   randconfig-h004-201935
-x86_64                 randconfig-f001-201935
-x86_64                 randconfig-f002-201935
-x86_64                 randconfig-f003-201935
-x86_64                 randconfig-f004-201935
-i386                   randconfig-f001-201935
-i386                   randconfig-f002-201935
-i386                   randconfig-f003-201935
-i386                   randconfig-f004-201935
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allmodconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-x86_64                 randconfig-a004-201935
-i386                   randconfig-a003-201935
-x86_64                 randconfig-a002-201935
-i386                   randconfig-a004-201935
-i386                   randconfig-a002-201935
-i386                   randconfig-a001-201935
-x86_64                 randconfig-a001-201935
-x86_64                 randconfig-a003-201935
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                 randconfig-d001-201935
-x86_64                 randconfig-d002-201935
-x86_64                 randconfig-d003-201935
-x86_64                 randconfig-d004-201935
-i386                   randconfig-d001-201935
-i386                   randconfig-d002-201935
-i386                   randconfig-d003-201935
-i386                   randconfig-d004-201935
+What does ?doesn?t behave properly? mean exactly?
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>   drivers/net/ethernet/intel/ice/ice.h          |  1 +
+>   .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 13 +++++++
+>   drivers/net/ethernet/intel/ice/ice_common.c   | 37 +++++++++++++++++++
+>   drivers/net/ethernet/intel/ice/ice_common.h   |  3 ++
+>   drivers/net/ethernet/intel/ice/ice_main.c     | 36 +++++++++++++++++-
+>   drivers/net/ethernet/intel/ice/ice_type.h     |  8 ++++
+>   6 files changed, 97 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+> index b36e1cf0e461..4cdedcebb163 100644
+> --- a/drivers/net/ethernet/intel/ice/ice.h
+> +++ b/drivers/net/ethernet/intel/ice/ice.h
+> @@ -29,6 +29,7 @@
+>   #include <linux/sctp.h>
+>   #include <linux/ipv6.h>
+>   #include <linux/if_bridge.h>
+> +#include <linux/ctype.h>
+
+Is the alignment correct? (Or just my mailer messing up?)
+
+>   #include <linux/avf/virtchnl.h>
+>   #include <net/ipv6.h>
+>   #include "ice_devids.h"
+> diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> index 4da0cde9695b..9c9791788610 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> @@ -33,6 +33,17 @@ struct ice_aqc_get_ver {
+>   	u8 api_patch;
+>   };
+>   
+> +/* Send driver version (indirect 0x0002) */
+> +struct ice_aqc_driver_ver {
+> +	u8 major_ver;
+> +	u8 minor_ver;
+> +	u8 build_ver;
+> +	u8 subbuild_ver;
+> +	u8 reserved[4];
+> +	__le32 addr_high;
+> +	__le32 addr_low;
+> +};
+> +
+>   /* Queue Shutdown (direct 0x0003) */
+>   struct ice_aqc_q_shutdown {
+>   	u8 driver_unloading;
+> @@ -1547,6 +1558,7 @@ struct ice_aq_desc {
+>   		u8 raw[16];
+>   		struct ice_aqc_generic generic;
+>   		struct ice_aqc_get_ver get_ver;
+> +		struct ice_aqc_driver_ver driver_ver;
+>   		struct ice_aqc_q_shutdown q_shutdown;
+>   		struct ice_aqc_req_res res_owner;
+>   		struct ice_aqc_manage_mac_read mac_read;
+> @@ -1618,6 +1630,7 @@ enum ice_aq_err {
+>   enum ice_adminq_opc {
+>   	/* AQ commands */
+>   	ice_aqc_opc_get_ver				= 0x0001,
+> +	ice_aqc_opc_driver_ver				= 0x0002,
+>   	ice_aqc_opc_q_shutdown				= 0x0003,
+>   
+>   	/* resource ownership */
+> diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+> index 8b2c46615834..db62cc748544 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_common.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_common.c
+> @@ -1258,6 +1258,43 @@ enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd)
+>   	return status;
+>   }
+>   
+> +/**
+> + * ice_aq_send_driver_ver
+> + * @hw: pointer to the HW struct
+> + * @dv: driver's major, minor version
+> + * @cd: pointer to command details structure or NULL
+> + *
+> + * Send the driver version (0x0002) to the firmware
+> + */
+> +enum ice_status
+> +ice_aq_send_driver_ver(struct ice_hw *hw, struct ice_driver_ver *dv,
+> +		       struct ice_sq_cd *cd)
+> +{
+> +	struct ice_aqc_driver_ver *cmd;
+> +	struct ice_aq_desc desc;
+> +	u16 len;
+
+Just `unsigned int` or `size_t`?
+
+> +
+> +	cmd = &desc.params.driver_ver;
+> +
+> +	if (!dv)
+> +		return ICE_ERR_PARAM;
+> +
+> +	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_driver_ver);
+> +
+> +	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
+> +	cmd->major_ver = dv->major_ver;
+> +	cmd->minor_ver = dv->minor_ver;
+> +	cmd->build_ver = dv->build_ver;
+> +	cmd->subbuild_ver = dv->subbuild_ver;
+> +
+> +	len = 0;
+> +	while (len < sizeof(dv->driver_string) &&
+> +	       isascii(dv->driver_string[len]) && dv->driver_string[len])
+> +		len++;
+
+Is there such a function for finding the length of ASCII characters 
+already somewhere in Linux?
+
+> +
+> +	return ice_aq_send_cmd(hw, &desc, dv->driver_string, len, cd);
+> +}
+> +
+>   /**
+>    * ice_aq_q_shutdown
+>    * @hw: pointer to the HW struct
+> diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+> index e376d1eadba4..e9d77370a17c 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_common.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_common.h
+> @@ -71,6 +71,9 @@ ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc,
+>   		void *buf, u16 buf_size, struct ice_sq_cd *cd);
+>   enum ice_status ice_aq_get_fw_ver(struct ice_hw *hw, struct ice_sq_cd *cd);
+>   
+> +enum ice_status
+> +ice_aq_send_driver_ver(struct ice_hw *hw, struct ice_driver_ver *dv,
+> +		       struct ice_sq_cd *cd);
+>   enum ice_status
+>   ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8 report_mode,
+>   		    struct ice_aqc_get_phy_caps_data *caps,
+> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+> index f8be9ada2447..ea55ec598dac 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -9,7 +9,13 @@
+>   #include "ice_lib.h"
+>   #include "ice_dcb_lib.h"
+>   
+> -#define DRV_VERSION	"0.7.5-k"
+> +#define DRV_VERSION_MAJOR 0
+> +#define DRV_VERSION_MINOR 7
+> +#define DRV_VERSION_BUILD 5
+> +
+> +#define DRV_VERSION	__stringify(DRV_VERSION_MAJOR) "." \
+> +			__stringify(DRV_VERSION_MINOR) "." \
+> +			__stringify(DRV_VERSION_BUILD) "-k"
+>   #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
+>   const char ice_drv_ver[] = DRV_VERSION;
+>   static const char ice_driver_string[] = DRV_SUMMARY;
+> @@ -2459,6 +2465,25 @@ static void ice_verify_cacheline_size(struct ice_pf *pf)
+>   			 ICE_CACHE_LINE_BYTES);
+>   }
+>   
+> +/**
+> + * ice_send_version - update firmware with driver version
+> + * @pf: PF struct
+> + *
+> + * Returns ICE_SUCCESS on success, else error code
+> + */
+> +static enum ice_status ice_send_version(struct ice_pf *pf)
+> +{
+> +	struct ice_driver_ver dv;
+> +
+> +	dv.major_ver = DRV_VERSION_MAJOR;
+> +	dv.minor_ver = DRV_VERSION_MINOR;
+> +	dv.build_ver = DRV_VERSION_BUILD;
+> +	dv.subbuild_ver = 0;
+> +	strscpy((char *)dv.driver_string, DRV_VERSION,
+> +		sizeof(dv.driver_string));
+> +	return ice_aq_send_driver_ver(&pf->hw, &dv, NULL);
+> +}
+> +
+>   /**
+>    * ice_probe - Device initialization routine
+>    * @pdev: PCI device information struct
+> @@ -2612,6 +2637,15 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+>   
+>   	clear_bit(__ICE_SERVICE_DIS, pf->state);
+>   
+> +	/* tell the firmware we are up */
+> +	err = ice_send_version(pf);
+> +	if (err) {
+> +		dev_err(dev,
+> +			"probe failed due to error sending driver version:%d\n",
+
+Space after colon? Maybe also add the driver version in the string?
+
+> +			err);
+> +		goto err_alloc_sw_unroll;
+> +	}
+> +
+>   	/* since everything is good, start the service timer */
+>   	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
+>   
+> diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+> index 4501d50a7dcc..a2676003275a 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_type.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_type.h
+> @@ -53,6 +53,14 @@ enum ice_aq_res_access_type {
+>   	ICE_RES_WRITE
+>   };
+>   
+> +struct ice_driver_ver {
+> +	u8 major_ver;
+> +	u8 minor_ver;
+> +	u8 build_ver;
+> +	u8 subbuild_ver;
+> +	u8 driver_string[32];
+> +};
+> +
+>   enum ice_fc_mode {
+>   	ICE_FC_NONE = 0,
+>   	ICE_FC_RX_PAUSE,
+> 
+
+
+Kind regards,
+
+Paul
