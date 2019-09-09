@@ -1,170 +1,114 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 21 Sep 2019 09:17:51 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 9d4c039100f63c29c4370f2f8ae2679dcdca57d9
-Message-ID: <5d857a3f.SSN47X7Xrrsnquwq%lkp@intel.com>
+From: Robert Beckett <bob.beckett@collabora.com>
+Date: Mon,  9 Sep 2019 15:21:01 +0100
+Subject: [Intel-wired-lan] [PATCH v2] igb: add rx drop enable attribute
+Message-ID: <20190909142117.20186-1-bob.beckett@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 9d4c039100f63c29c4370f2f8ae2679dcdca57d9  i40e: Refactoring VF MAC filters counting to make more reliable
+To allow userland to enable or disable dropping packets when descriptor
+ring is exhausted, add RX_DROP_EN private flag.
 
-elapsed time: 240m
+This can be used in conjunction with flow control to mitigate packet storms
+(e.g. due to network loop or DoS) by forcing the network adapter to send
+pause frames whenever the ring is close to exhaustion.
 
-configs tested: 145
+By default this will maintain previous behaviour of enabling dropping of
+packets during ring buffer exhaustion.
+Some use cases prefer to not drop packets upon exhaustion, but instead
+use flow control to limit ingress rates and ensure no dropped packets.
+This is useful when the host CPU cannot keep up with packet delivery,
+but data delivery is more important than throughput via multiple queues.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Userland can set this flag to 0 via ethtool to disable packet dropping.
 
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                              allmodconfig
-arm64                            allmodconfig
-x86_64                 randconfig-b002-201937
-i386                   randconfig-b003-201937
-i386                   randconfig-b004-201937
-i386                   randconfig-b001-201937
-i386                   randconfig-b002-201937
-x86_64                 randconfig-b001-201937
-x86_64                 randconfig-b004-201937
-x86_64                 randconfig-b003-201937
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-x86_64                 randconfig-f001-201937
-x86_64                 randconfig-f002-201937
-x86_64                 randconfig-f003-201937
-x86_64                 randconfig-f004-201937
-i386                   randconfig-f001-201937
-i386                   randconfig-f002-201937
-i386                   randconfig-f003-201937
-i386                   randconfig-f004-201937
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-x86_64                 randconfig-a001-201937
-x86_64                 randconfig-a002-201937
-x86_64                 randconfig-a003-201937
-x86_64                 randconfig-a004-201937
-i386                   randconfig-a001-201937
-i386                   randconfig-a002-201937
-i386                   randconfig-a003-201937
-i386                   randconfig-a004-201937
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                 randconfig-d001-201937
-x86_64                 randconfig-d002-201937
-x86_64                 randconfig-d003-201937
-x86_64                 randconfig-d004-201937
-i386                   randconfig-d001-201937
-i386                   randconfig-d002-201937
-i386                   randconfig-d003-201937
-i386                   randconfig-d004-201937
-x86_64                 randconfig-h002-201937
-x86_64                 randconfig-h003-201937
-i386                   randconfig-h002-201937
-i386                   randconfig-h001-201937
-i386                   randconfig-h004-201937
-x86_64                 randconfig-h004-201937
-x86_64                 randconfig-h001-201937
-i386                   randconfig-h003-201937
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allyesconfig
-x86_64                           allmodconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-g003-201937
-i386                   randconfig-g004-201937
-x86_64                 randconfig-g002-201937
-x86_64                 randconfig-g001-201937
-i386                   randconfig-g001-201937
-x86_64                 randconfig-g004-201937
-i386                   randconfig-g002-201937
-i386                   randconfig-g003-201937
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-c003-201937
-x86_64                 randconfig-c002-201937
-i386                   randconfig-c004-201937
-x86_64                 randconfig-c004-201937
-i386                   randconfig-c003-201937
-i386                   randconfig-c002-201937
-x86_64                 randconfig-c001-201937
-i386                   randconfig-c001-201937
-x86_64                 randconfig-e001-201937
-x86_64                 randconfig-e002-201937
-x86_64                 randconfig-e003-201937
-x86_64                 randconfig-e004-201937
-i386                   randconfig-e001-201937
-i386                   randconfig-e002-201937
-i386                   randconfig-e003-201937
-i386                   randconfig-e004-201937
-
+Signed-off-by: Robert Beckett <bob.beckett@collabora.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+
+Notes:
+    Changes since v1: re-written to use ethtool priv flags instead of sysfs attribute
+
+ drivers/net/ethernet/intel/igb/igb.h         |  1 +
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |  8 ++++++++
+ drivers/net/ethernet/intel/igb/igb_main.c    | 11 +++++++++--
+ 3 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index ca54e268d157..ff4a61218e3e 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -617,6 +617,7 @@ struct igb_adapter {
+ #define IGB_FLAG_VLAN_PROMISC		BIT(15)
+ #define IGB_FLAG_RX_LEGACY		BIT(16)
+ #define IGB_FLAG_FQTSS			BIT(17)
++#define IGB_FLAG_RX_DROP_EN		BIT(18)
+ 
+ /* Media Auto Sense */
+ #define IGB_MAS_ENABLE_0		0X0001
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 3182b059bf55..b584fa1f0e14 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -128,6 +128,8 @@ static const char igb_gstrings_test[][ETH_GSTRING_LEN] = {
+ static const char igb_priv_flags_strings[][ETH_GSTRING_LEN] = {
+ #define IGB_PRIV_FLAGS_LEGACY_RX	BIT(0)
+ 	"legacy-rx",
++#define IGB_PRIV_FLAGS_RX_DROP_EN	BIT(1)
++	"rx-drop-en",
+ };
+ 
+ #define IGB_PRIV_FLAGS_STR_LEN ARRAY_SIZE(igb_priv_flags_strings)
+@@ -3444,6 +3446,8 @@ static u32 igb_get_priv_flags(struct net_device *netdev)
+ 
+ 	if (adapter->flags & IGB_FLAG_RX_LEGACY)
+ 		priv_flags |= IGB_PRIV_FLAGS_LEGACY_RX;
++	if (adapter->flags & IGB_FLAG_RX_DROP_EN)
++		priv_flags |= IGB_PRIV_FLAGS_RX_DROP_EN;
+ 
+ 	return priv_flags;
+ }
+@@ -3457,6 +3461,10 @@ static int igb_set_priv_flags(struct net_device *netdev, u32 priv_flags)
+ 	if (priv_flags & IGB_PRIV_FLAGS_LEGACY_RX)
+ 		flags |= IGB_FLAG_RX_LEGACY;
+ 
++	flags &= ~IGB_FLAG_RX_DROP_EN;
++	if (priv_flags & IGB_PRIV_FLAGS_RX_DROP_EN)
++		flags |= IGB_FLAG_RX_DROP_EN;
++
+ 	if (flags != adapter->flags) {
+ 		adapter->flags = flags;
+ 
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 105b0624081a..51a8010dbe59 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3236,6 +3236,9 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	igb_validate_mdi_setting(hw);
+ 
++	/* By default, support dropping packets due to ring exhaustion */
++	adapter->flags |= IGB_FLAG_RX_DROP_EN;
++
+ 	/* By default, support wake on port A */
+ 	if (hw->bus.func == 0)
+ 		adapter->flags |= IGB_FLAG_WOL_SUPPORTED;
+@@ -4503,8 +4506,12 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 	srrctl |= E1000_SRRCTL_DESCTYPE_ADV_ONEBUF;
+ 	if (hw->mac.type >= e1000_82580)
+ 		srrctl |= E1000_SRRCTL_TIMESTAMP;
+-	/* Only set Drop Enable if we are supporting multiple queues */
+-	if (adapter->vfs_allocated_count || adapter->num_rx_queues > 1)
++	/*
++	 * Only set Drop Enable if we are supporting multiple queues and
++	 * allowed by flags
++	 */
++	if ((adapter->flags & IGB_FLAG_RX_DROP_EN) &&
++		(adapter->vfs_allocated_count || adapter->num_rx_queues > 1))
+ 		srrctl |= E1000_SRRCTL_DROP_EN;
+ 
+ 	wr32(E1000_SRRCTL(reg_idx), srrctl);
+-- 
+2.18.0
+
