@@ -1,54 +1,136 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon,  9 Sep 2019 09:55:38 -0700
-Subject: [Intel-wired-lan] [PATCH v2] i40e: fix potential RX buffer
- starvation for AF_XDP
-Message-ID: <20190909165538.8125-1-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 10 Sep 2019 02:32:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 3e78f673f3dc18374ce18b0440185e91a5b6d0a1
+Message-ID: <5d769aaa.6uK9DX2X7iCTkV6p%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Magnus Karlsson <magnus.karlsson@intel.com>
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 3e78f673f3dc18374ce18b0440185e91a5b6d0a1  i40e: fix potential RX buffer starvation for AF_XDP
 
-When the RX rings are created they are also populated with buffers
-so that packets can be received. Usually these are kernel buffers,
-but for AF_XDP in zero-copy mode, these are user-space buffers and
-in this case the application might not have sent down any buffers
-to the driver at this point. And if no buffers are allocated at ring
-creation time, no packets can be received and no interrupts will be
-generated so the NAPI poll function that allocates buffers to the
-rings will never get executed.
+elapsed time: 57m
 
-To rectify this, we kick the NAPI context of any queue with an
-attached AF_XDP zero-copy socket in two places in the code. Once
-after an XDP program has loaded and once after the umem is registered.
-This take care of both cases: XDP program gets loaded first then AF_XDP
-socket is created, and the reverse, AF_XDP socket is created first,
-then XDP program is loaded.
+configs tested: 111
 
-Fixes: 0a714186d3c0 ("i40e: add AF_XDP zero-copy Rx support")
-Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                           allyesconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                 randconfig-b002-201936
+i386                   randconfig-b003-201936
+i386                   randconfig-b004-201936
+i386                   randconfig-b001-201936
+i386                   randconfig-b002-201936
+x86_64                 randconfig-b001-201936
+x86_64                 randconfig-b004-201936
+x86_64                 randconfig-b003-201936
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-c003-201936
+x86_64                 randconfig-c002-201936
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                             allmodconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-a004-201936
+i386                   randconfig-a003-201936
+x86_64                 randconfig-a002-201936
+i386                   randconfig-a004-201936
+i386                   randconfig-a002-201936
+i386                   randconfig-a001-201936
+x86_64                 randconfig-a001-201936
+x86_64                 randconfig-a003-201936
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-e004-201936
+i386                   randconfig-e004-201936
+x86_64                 randconfig-e002-201936
+i386                   randconfig-e003-201936
+x86_64                 randconfig-e003-201936
+x86_64                 randconfig-e001-201936
+i386                   randconfig-e002-201936
+i386                   randconfig-e001-201936
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 0373bc6c7e61..feb5bd54d840 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -157,6 +157,11 @@ static int i40e_xsk_umem_disable(struct i40e_vsi *vsi, u16 qid)
- 		err = i40e_queue_pair_enable(vsi, qid);
- 		if (err)
- 			return err;
-+
-+		/* Kick start the NAPI context so that receiving will start */
-+		err = i40e_xsk_wakeup(vsi->netdev, qid, XDP_WAKEUP_RX);
-+		if (err)
-+			return err;
- 	}
- 
- 	return 0;
--- 
-2.21.0
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
