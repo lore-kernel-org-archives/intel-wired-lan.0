@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 9 Sep 2019 21:00:10 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: clear
- __I40E_VIRTCHNL_OP_PENDING on invalid min tx rate
-In-Reply-To: <20190903060810.30775-1-sassmann@kpanic.de>
-References: <20190903060810.30775-1-sassmann@kpanic.de>
-Message-ID: <4bbcbce0cd2f419682fc390af5cd35e5@intel.com>
+Date: Mon, 9 Sep 2019 21:01:39 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: use
+ skb_get_queue_mapping in tx path
+In-Reply-To: <1566471406-102583-1-git-send-email-xiangxia.m.yue@gmail.com>
+References: <1566471406-102583-1-git-send-email-xiangxia.m.yue@gmail.com>
+Message-ID: <61d3cd52c23746fa9d18495feef21e87@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,21 +13,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Stefan Assmann
-> Sent: Monday, September 2, 2019 11:08 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; davem at davemloft.net; sassmann at kpanic.de
-> Subject: [Intel-wired-lan] [PATCH] i40e: clear
-> __I40E_VIRTCHNL_OP_PENDING on invalid min tx rate
+> Behalf Of xiangxia.m.yue at gmail.com
+> Sent: Thursday, August 22, 2019 3:57 AM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: use
+> skb_get_queue_mapping in tx path
 > 
-> In the case of an invalid min tx rate being requested
-> i40e_ndo_set_vf_bw() immediately returns -EINVAL instead of releasing
-> __I40E_VIRTCHNL_OP_PENDING first.
+> From: Tonghao Zhang <xiangxia.m.yue@gmail.com>
 > 
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+> Use the common api, and don't access queue_mapping directly.
+> 
+> Signed-off-by: Tonghao Zhang <xiangxia.m.yue@gmail.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
