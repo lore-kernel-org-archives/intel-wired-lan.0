@@ -1,51 +1,39 @@
 From: Ciara Loftus <ciara.loftus@intel.com>
-Date: Wed, 11 Sep 2019 17:24:34 +0000
-Subject: [Intel-wired-lan] [PATCH bpf-next 2/3] ixgbe: fix xdp handle
- calculations
+Date: Wed, 11 Sep 2019 17:24:35 +0000
+Subject: [Intel-wired-lan] [PATCH bpf-next 3/3] samples/bpf: fix xdpsock
+ l2fwd tx for unaligned mode
 In-Reply-To: <20190911172435.21042-1-ciara.loftus@intel.com>
 References: <20190911172435.21042-1-ciara.loftus@intel.com>
-Message-ID: <20190911172435.21042-2-ciara.loftus@intel.com>
+Message-ID: <20190911172435.21042-3-ciara.loftus@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit 7cbbf9f1fa23 ("ixgbe: fix xdp handle calculations") reintroduced
-the addition of the umem headroom to the xdp handle in the ixgbe_zca_free,
-ixgbe_alloc_buffer_slow_zc and ixgbe_alloc_buffer_zc functions. However,
-the headroom is already added to the handle in the function
-ixgbe_run_xdp_zc. This commit removes the latter addition and fixes the
-case where the headroom is non-zero.
+Preserve the offset of the address of the received descriptor, and include
+it in the address set for the tx descriptor, so the kernel can correctly
+locate the start of the packet data.
 
-Fixes: 7cbbf9f1fa23 ("ixgbe: fix xdp handle calculations")
+Fixes: 03895e63ff97 ("samples/bpf: add buffer recycling for unaligned chunks to xdpsock")
 Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ samples/bpf/xdpsock_user.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-index ad802a8909e0..5ed8b5a257cf 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-@@ -145,7 +145,7 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
- {
- 	struct xdp_umem *umem = rx_ring->xsk_umem;
- 	int err, result = IXGBE_XDP_PASS;
--	u64 offset = umem->headroom;
-+	u64 offset;
- 	struct bpf_prog *xdp_prog;
- 	struct xdp_frame *xdpf;
- 	u32 act;
-@@ -153,7 +153,7 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
- 	rcu_read_lock();
- 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
- 	act = bpf_prog_run_xdp(xdp_prog, xdp);
--	offset += xdp->data - xdp->data_hard_start;
-+	offset = xdp->data - xdp->data_hard_start;
+diff --git a/samples/bpf/xdpsock_user.c b/samples/bpf/xdpsock_user.c
+index 102eace22956..df011ac33402 100644
+--- a/samples/bpf/xdpsock_user.c
++++ b/samples/bpf/xdpsock_user.c
+@@ -685,7 +685,7 @@ static void l2fwd(struct xsk_socket_info *xsk, struct pollfd *fds)
+ 	for (i = 0; i < rcvd; i++) {
+ 		u64 addr = xsk_ring_cons__rx_desc(&xsk->rx, idx_rx)->addr;
+ 		u32 len = xsk_ring_cons__rx_desc(&xsk->rx, idx_rx++)->len;
+-		u64 orig = xsk_umem__extract_addr(addr);
++		u64 orig = addr;
  
- 	xdp->handle = xsk_umem_adjust_offset(umem, xdp->handle, offset);
- 
+ 		addr = xsk_umem__add_offset_to_addr(addr);
+ 		char *pkt = xsk_umem__get_data(xsk->umem->buffer, addr);
 -- 
 2.17.1
 
