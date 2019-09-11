@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 11 Sep 2019 18:57:51 +0000
-Subject: [Intel-wired-lan] [PATCH S29 v3 1/6] ice: send driver version
- to firmware
-In-Reply-To: <20190909134747.10415-1-anthony.l.nguyen@intel.com>
+Date: Wed, 11 Sep 2019 18:58:14 +0000
+Subject: [Intel-wired-lan] [PATCH S29 v3 2/6] ice: Fix FW version
+ formatting in dmesg
+In-Reply-To: <20190909134747.10415-2-anthony.l.nguyen@intel.com>
 References: <20190909134747.10415-1-anthony.l.nguyen@intel.com>
-Message-ID: <ee4a1d8fe3364fc1908a65cf3f7835d9@intel.com>
+ <20190909134747.10415-2-anthony.l.nguyen@intel.com>
+Message-ID: <0b32e0b3e7d84791849634086c1901e2@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,29 +17,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Monday, September 9, 2019 6:48 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S29 v3 1/6] ice: send driver version to
-> firmware
+> Subject: [Intel-wired-lan] [PATCH S29 v3 2/6] ice: Fix FW version formatting in
+> dmesg
 > 
-> From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> From: Lukasz Czapnik <lukasz.czapnik@intel.com>
 > 
-> The driver is required to send a version to the firmware to indicate that the
-> driver is up. If the driver doesn't do this the firmware doesn't behave
-> properly.
+> The FW build id is currently being displayed as an int which doesn't make
+> sense. Instead display FW build id as a hex value. Also add other useful
+> information to the output such as NVM version, api patch info, and FW build
+> hash.
 > 
-> Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
-> v2:
-> - Modified error message when ice_send_version() fails
-> ---
->  drivers/net/ethernet/intel/ice/ice.h          |  1 +
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 13 +++++++
->  drivers/net/ethernet/intel/ice/ice_common.c   | 37
-> +++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_common.h   |  3 ++
->  drivers/net/ethernet/intel/ice/ice_main.c     | 36 +++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_type.h     |  8 ++++
->  6 files changed, 97 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice.h         |  1 -
+>  drivers/net/ethernet/intel/ice/ice_common.c  | 23 ++++++++++++++++++
+> drivers/net/ethernet/intel/ice/ice_common.h  |  3 +++
+> drivers/net/ethernet/intel/ice/ice_ethtool.c | 25 --------------------
+>  drivers/net/ethernet/intel/ice/ice_lib.c     | 19 +++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_lib.h     |  2 ++
+>  drivers/net/ethernet/intel/ice/ice_main.c    |  7 +++---
+>  drivers/net/ethernet/intel/ice/ice_type.h    |  2 ++
+>  8 files changed, 53 insertions(+), 29 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
