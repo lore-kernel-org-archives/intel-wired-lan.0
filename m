@@ -1,39 +1,45 @@
-From: Ciara Loftus <ciara.loftus@intel.com>
-Date: Wed, 11 Sep 2019 17:24:35 +0000
-Subject: [Intel-wired-lan] [PATCH bpf-next 3/3] samples/bpf: fix xdpsock
- l2fwd tx for unaligned mode
-In-Reply-To: <20190911172435.21042-1-ciara.loftus@intel.com>
-References: <20190911172435.21042-1-ciara.loftus@intel.com>
-Message-ID: <20190911172435.21042-3-ciara.loftus@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 11 Sep 2019 18:57:51 +0000
+Subject: [Intel-wired-lan] [PATCH S29 v3 1/6] ice: send driver version
+ to firmware
+In-Reply-To: <20190909134747.10415-1-anthony.l.nguyen@intel.com>
+References: <20190909134747.10415-1-anthony.l.nguyen@intel.com>
+Message-ID: <ee4a1d8fe3364fc1908a65cf3f7835d9@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Preserve the offset of the address of the received descriptor, and include
-it in the address set for the tx descriptor, so the kernel can correctly
-locate the start of the packet data.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Monday, September 9, 2019 6:48 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S29 v3 1/6] ice: send driver version to
+> firmware
+> 
+> From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> 
+> The driver is required to send a version to the firmware to indicate that the
+> driver is up. If the driver doesn't do this the firmware doesn't behave
+> properly.
+> 
+> Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+> v2:
+> - Modified error message when ice_send_version() fails
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h          |  1 +
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 13 +++++++
+>  drivers/net/ethernet/intel/ice/ice_common.c   | 37
+> +++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_common.h   |  3 ++
+>  drivers/net/ethernet/intel/ice/ice_main.c     | 36 +++++++++++++++++-
+>  drivers/net/ethernet/intel/ice/ice_type.h     |  8 ++++
+>  6 files changed, 97 insertions(+), 1 deletion(-)
 
-Fixes: 03895e63ff97 ("samples/bpf: add buffer recycling for unaligned chunks to xdpsock")
-Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
----
- samples/bpf/xdpsock_user.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-diff --git a/samples/bpf/xdpsock_user.c b/samples/bpf/xdpsock_user.c
-index 102eace22956..df011ac33402 100644
---- a/samples/bpf/xdpsock_user.c
-+++ b/samples/bpf/xdpsock_user.c
-@@ -685,7 +685,7 @@ static void l2fwd(struct xsk_socket_info *xsk, struct pollfd *fds)
- 	for (i = 0; i < rcvd; i++) {
- 		u64 addr = xsk_ring_cons__rx_desc(&xsk->rx, idx_rx)->addr;
- 		u32 len = xsk_ring_cons__rx_desc(&xsk->rx, idx_rx++)->len;
--		u64 orig = xsk_umem__extract_addr(addr);
-+		u64 orig = addr;
- 
- 		addr = xsk_umem__add_offset_to_addr(addr);
- 		char *pkt = xsk_umem__get_data(xsk->umem->buffer, addr);
--- 
-2.17.1
 
