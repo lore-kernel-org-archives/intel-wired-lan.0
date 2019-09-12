@@ -1,36 +1,120 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 12 Sep 2019 11:47:46 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix secpath usage for IPsec TX
- offload.
-In-Reply-To: <9d94bd04-c6fa-d275-97bc-5d589304f038@reliablehosting.com>
-References: <20190912110144.GS2879@gauss3.secunet.de>
- <9d94bd04-c6fa-d275-97bc-5d589304f038@reliablehosting.com>
-Message-ID: <1d831c0ee1800a972c177cc15720f43ed1a6703d.camel@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 13 Sep 2019 04:20:43 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ b456d72412ca8797234449c25815e82f4e1426c0
+Message-ID: <5d7aa89b.uSGKHzTGJo5ub3Bg%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2019-09-12 at 11:33 -0500, Jonathan Tooker wrote:
-> On 9/12/2019 6:01 AM, Steffen Klassert wrote:
-> > The ixgbe driver currently does IPsec TX offloading
-> > based on an existing secpath. However, the secpath
-> > can also come from the RX side, in this case it is
-> > misinterpreted for TX offload and the packets are
-> > dropped with a "bad sa_idx" error. Fix this by using
-> > the xfrm_offload() function to test for TX offload.
-> > 
-> Does this patch also need to be ported to the ixgbevf driver? I can 
-> replicate the bad sa_idx error using a VM that's using a VF & the 
-> ixgebvf  driver.
-> 
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: b456d72412ca8797234449c25815e82f4e1426c0  sctp: Fix the link time qualifier of 'sctp_ctrlsock_exit()'
 
-I am putting together a patch for ixgbevf right now.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190912/ebfd966e/attachment.asc>
+elapsed time: 490m
+
+configs tested: 95
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                           allyesconfig
+i386                             allmodconfig
+x86_64                 randconfig-b002-201936
+i386                   randconfig-b003-201936
+i386                   randconfig-b004-201936
+i386                   randconfig-b001-201936
+i386                   randconfig-b002-201936
+x86_64                 randconfig-b001-201936
+x86_64                 randconfig-b004-201936
+x86_64                 randconfig-b003-201936
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+x86_64                 randconfig-h002-201936
+x86_64                 randconfig-h003-201936
+i386                   randconfig-h001-201936
+i386                   randconfig-h002-201936
+i386                   randconfig-h004-201936
+x86_64                 randconfig-h004-201936
+i386                   randconfig-h003-201936
+x86_64                 randconfig-h001-201936
+i386                   randconfig-f004-201936
+x86_64                 randconfig-f004-201936
+x86_64                 randconfig-f002-201936
+i386                   randconfig-f001-201936
+i386                   randconfig-f002-201936
+i386                   randconfig-f003-201936
+x86_64                 randconfig-f003-201936
+x86_64                 randconfig-f001-201936
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+x86_64                 randconfig-e004-201936
+i386                   randconfig-e004-201936
+x86_64                 randconfig-e002-201936
+i386                   randconfig-e003-201936
+x86_64                 randconfig-e003-201936
+x86_64                 randconfig-e001-201936
+i386                   randconfig-e002-201936
+i386                   randconfig-e001-201936
+x86_64                           allmodconfig
+i386                   randconfig-g004-201936
+arc                              allyesconfig
+powerpc                             defconfig
+microblaze                    nommu_defconfig
+powerpc                       ppc64_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+powerpc                           allnoconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
