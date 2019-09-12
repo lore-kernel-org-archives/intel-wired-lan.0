@@ -1,73 +1,53 @@
-From: Jakub Jankowski <shasta@toxcorp.com>
-Date: Thu, 12 Sep 2019 12:09:09 +0200
-Subject: [Intel-wired-lan] [E1000-devel] i40e X722 RSS problem with
- NAT-Traversal IPsec packets
-In-Reply-To: <20190610190141.77k6gbrefm2mr6lb@csclub.uwaterloo.ca>
-Message-ID: <77e940d7-552b-7724-0971-828bdb28add7@toxcorp.com>
+From: Shannon Nelson <snelson@pensando.io>
+Date: Thu, 12 Sep 2019 18:48:25 +0100
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix secpath usage for IPsec TX
+ offload.
+In-Reply-To: <20190912110144.GS2879@gauss3.secunet.de>
+References: <20190912110144.GS2879@gauss3.secunet.de>
+Message-ID: <72fa19de-0a53-bb95-5f63-1990221c6190@pensando.io>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+On 9/12/19 12:01 PM, Steffen Klassert wrote:
+> The ixgbe driver currently does IPsec TX offloading
+> based on an existing secpath. However, the secpath
+> can also come from the RX side, in this case it is
+> misinterpreted for TX offload and the packets are
+> dropped with a "bad sa_idx" error. Fix this by using
+> the xfrm_offload() function to test for TX offload.
 
-[I'm replying to an old thread, hoping my email client won't screw up 
-references too much - sorry in advance if it does]
+Acked-by: Shannon Nelson <snelson@pensando.io>
 
- >On Mon, 10 Jun 2019, Lennart Sorensen wrote:
- >>On Fri, Jun 07, 2019 at 10:08:31PM +0000, Fujinaka, Todd wrote:
- >> Just a quick update with the response I got and I'll make sure this 
-is in our internal bug database.
- >>
- >> Here's what I got back, and it looks like you guys have tried this 
-already:
- >>
- >> Have they tried these steps to configure RSS:
-[...]
- > With potentially 10000 ipsec connections, we don't even want to look at
- > creating manual flow entries.? There isn't enough room for that.? We just
- > wanted RSS to do its job the way it does on every other NIC in the past.
- > After years of using mostly intel NICs that just worked, this one has
- > been quite the surprise.
- >
-[...]
- > Already tried with 4.19 kernel which is essentially identical to the
- > latest out of tree driver (I diffed them and found no functional
- > differences at all) and it didn't help.? Well it was essentially 
-identical
- > to the latest out of tree a few weeks ago.? It seems there is now a
- > newer one with some changes although nothing in the list of changes
- > sound relevant.
- >
- > We do not want to use the out of tree driver and even trying it out is
- > a lot of work.? We used to use it in the past for some NIC types but
- > stopped due to the hassle of maintaining the integration.? If any 
-problems
- > exist in the in kernel driver we will patch it, but so far that does not
- > appear to be the problem.? The tests we did so far indicate the firmware
- > isn't applying an RSS value to certain packet types.? Even mapping every
- > RSS value to queue 7 still saw these packets arrive on queue 0 which
- > should of course be impossible if the firmware was working. Now if
- > there is anything in the out of tree driver that you think can explain
- > this problem, I will look at it and consider trying it, but so far I
- > see nothing that makes that worth the effort.? It just doesn't look like
- > a driver problem.? If someone has access to a S2600WFT board (or some
- > other C612 based board) it should be simple enough to try replaying
- > the captured packet and see what RSS queue it hits (with ATR disabled
- > of course).
-
-Was there any progress here?
-
-As X722 is getting more and more ubiquitous, it's getting harder and 
-harder to avoid it. Problems like this, SFP EEPROM readout I reported 
-[1], or the recently announced NetCAT issue [2] (X722 seems to support 
-iWARP/RDMA) make it really hard to recommend X722 for production use.
-
-[1] 
-https://www.mail-archive.com/e1000-devel at lists.sourceforge.net/msg12550.html
-[2] https://www.vusec.net/projects/netcat/
-
-Regards,
- ?Jakub.
+>
+> Fixes: 592594704761 ("ixgbe: process the Tx ipsec offload")
+> Reported-by: Michael Marley <michael@michaelmarley.com>
+> Signed-off-by: Steffen Klassert <steffen.klassert@secunet.com>
+> ---
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index 9bcae44e9883..ae31bd57127c 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -36,6 +36,7 @@
+>   #include <net/vxlan.h>
+>   #include <net/mpls.h>
+>   #include <net/xdp_sock.h>
+> +#include <net/xfrm.h>
+>   
+>   #include "ixgbe.h"
+>   #include "ixgbe_common.h"
+> @@ -8696,7 +8697,7 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+>   #endif /* IXGBE_FCOE */
+>   
+>   #ifdef CONFIG_IXGBE_IPSEC
+> -	if (secpath_exists(skb) &&
+> +	if (xfrm_offload(skb) &&
+>   	    !ixgbe_ipsec_tx(tx_ring, first, &ipsec_tx))
+>   		goto out_drop;
+>   #endif
 
