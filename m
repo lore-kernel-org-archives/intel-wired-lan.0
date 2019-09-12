@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 12 Sep 2019 16:27:08 +0000
-Subject: [Intel-wired-lan] [PATCH bpf-next 1/3] i40e: fix xdp handle
+Date: Thu, 12 Sep 2019 16:28:08 +0000
+Subject: [Intel-wired-lan] [PATCH bpf-next 2/3] ixgbe: fix xdp handle
  calculations
-In-Reply-To: <20190911172435.21042-1-ciara.loftus@intel.com>
+In-Reply-To: <20190911172435.21042-2-ciara.loftus@intel.com>
 References: <20190911172435.21042-1-ciara.loftus@intel.com>
-Message-ID: <0c1b13d4fba947a1a99dac9ebef2635d@intel.com>
+ <20190911172435.21042-2-ciara.loftus@intel.com>
+Message-ID: <5bda2f9461624c7a8a82e8eea25b7de5@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,20 +22,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Richardson, Bruce <bruce.richardson@intel.com>; bpf at vger.kernel.org;
 > intel-wired-lan at lists.osuosl.org; Loftus, Ciara <ciara.loftus@intel.com>;
 > Laatz, Kevin <kevin.laatz@intel.com>
-> Subject: [Intel-wired-lan] [PATCH bpf-next 1/3] i40e: fix xdp handle
+> Subject: [Intel-wired-lan] [PATCH bpf-next 2/3] ixgbe: fix xdp handle
 > calculations
 > 
-> Commit 4c5d9a7fa149 ("i40e: fix xdp handle calculations") reintroduced the
-> addition of the umem headroom to the xdp handle in the i40e_zca_free,
-> i40e_alloc_buffer_slow_zc and i40e_alloc_buffer_zc functions. However, the
-> headroom is already added to the handle in the function i40_run_xdp_zc.
-> This commit removes the latter addition and fixes the case where the
-> headroom is non-zero.
+> Commit 7cbbf9f1fa23 ("ixgbe: fix xdp handle calculations") reintroduced the
+> addition of the umem headroom to the xdp handle in the ixgbe_zca_free,
+> ixgbe_alloc_buffer_slow_zc and ixgbe_alloc_buffer_zc functions. However,
+> the headroom is already added to the handle in the function
+> ixgbe_run_xdp_zc. This commit removes the latter addition and fixes the
+> case where the headroom is non-zero.
 > 
-> Fixes: 4c5d9a7fa149 ("i40e: fix xdp handle calculations")
+> Fixes: 7cbbf9f1fa23 ("ixgbe: fix xdp handle calculations")
 > Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 4 ++--
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 4 ++--
 >  1 file changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
