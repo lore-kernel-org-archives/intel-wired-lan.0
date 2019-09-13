@@ -1,51 +1,118 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
-Date: Fri, 13 Sep 2019 13:16:37 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next v2 0/3] AF_XDP fixes for i40e,
- ixgbe and xdpsock
-In-Reply-To: <20190913103948.32053-1-ciara.loftus@intel.com>
-References: <20190913103948.32053-1-ciara.loftus@intel.com>
-Message-ID: <03e25d27-fe42-306d-880f-31b3d995afd3@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 14 Sep 2019 01:12:40 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 8f6617badcc96a582678ea36ea96490c5ff26eb4
+Message-ID: <5d7bce08.JMR9rgNCA+LoBWjn%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2019-09-13 12:39, Ciara Loftus wrote:
-> This patch set contains some fixes for AF_XDP zero copy in the i40e and
-> ixgbe drivers as well as a fix for the 'xdpsock' sample application when
-> running in unaligned mode.
-> 
-> Patches 1 and 2 fix a regression for the i40e and ixgbe drivers which
-> caused the umem headroom to be added to the xdp handle twice, resulting in
-> an incorrect value being received by the user for the case where the umem
-> headroom is non-zero.
-> 
-> Patch 3 fixes an issue with the xdpsock sample application whereby the
-> start of the tx packet data (offset) was not being set correctly when the
-> application was being run in unaligned mode.
-> 
-> This patch set has been applied against commit a2c11b034142 ("kcm: use
-> BPF_PROG_RUN")
-> 
-> ---
-> v2:
-> - Rearranged local variable order in i40e_run_xdp_zc and ixgbe_run_xdp_zc
-> to comply with coding standards.
->
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: 8f6617badcc96a582678ea36ea96490c5ff26eb4  ixgbevf: Fix secpath usage for IPsec Tx offload
 
-Thanks Ciara!
+elapsed time: 192m
 
-Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
+configs tested: 93
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> Ciara Loftus (3):
->    i40e: fix xdp handle calculations
->    ixgbe: fix xdp handle calculations
->    samples/bpf: fix xdpsock l2fwd tx for unaligned mode
-> 
->   drivers/net/ethernet/intel/i40e/i40e_xsk.c   | 4 ++--
->   drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 4 ++--
->   samples/bpf/xdpsock_user.c                   | 2 +-
->   3 files changed, 5 insertions(+), 5 deletions(-)
-> 
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+parisc                            allnoconfig
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+x86_64                                   rhel
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                   randconfig-f004-201936
+x86_64                 randconfig-f004-201936
+x86_64                 randconfig-f002-201936
+i386                   randconfig-f001-201936
+i386                   randconfig-f002-201936
+i386                   randconfig-f003-201936
+x86_64                 randconfig-f003-201936
+x86_64                 randconfig-f001-201936
+x86_64                 randconfig-b002-201936
+i386                   randconfig-b003-201936
+i386                   randconfig-b004-201936
+i386                   randconfig-b001-201936
+i386                   randconfig-b002-201936
+x86_64                 randconfig-b001-201936
+x86_64                 randconfig-b004-201936
+x86_64                 randconfig-b003-201936
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+arc                              allyesconfig
+powerpc                             defconfig
+microblaze                    nommu_defconfig
+powerpc                       ppc64_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+powerpc                           allnoconfig
+x86_64                 randconfig-e004-201936
+i386                   randconfig-e004-201936
+x86_64                 randconfig-e002-201936
+i386                   randconfig-e003-201936
+x86_64                 randconfig-e003-201936
+x86_64                 randconfig-e001-201936
+i386                   randconfig-e002-201936
+i386                   randconfig-e001-201936
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                             allmodconfig
+s390                                defconfig
+x86_64                 randconfig-g003-201936
+i386                   randconfig-g004-201936
+x86_64                 randconfig-g001-201936
+x86_64                 randconfig-g002-201936
+i386                   randconfig-g001-201936
+x86_64                 randconfig-g004-201936
+i386                   randconfig-g002-201936
+i386                   randconfig-g003-201936
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
