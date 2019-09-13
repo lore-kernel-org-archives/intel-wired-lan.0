@@ -1,61 +1,45 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 13 Sep 2019 06:33:01 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 2/3] ixgbe: fix xdp handle
- calculations
-In-Reply-To: <20190911172435.21042-2-ciara.loftus@intel.com>
-References: <20190911172435.21042-1-ciara.loftus@intel.com>
- <20190911172435.21042-2-ciara.loftus@intel.com>
-Message-ID: <CAJ+HfNhuhyjRXoTXLhR3CbzhvYZZNZXYcbPxYAokL7HuDT6nAw@mail.gmail.com>
+From: Ciara Loftus <ciara.loftus@intel.com>
+Date: Fri, 13 Sep 2019 10:39:45 +0000
+Subject: [Intel-wired-lan] [PATCH bpf-next v2 0/3] AF_XDP fixes for i40e,
+ ixgbe and xdpsock
+Message-ID: <20190913103948.32053-1-ciara.loftus@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 11 Sep 2019 at 19:27, Ciara Loftus <ciara.loftus@intel.com> wrote:
->
-> Commit 7cbbf9f1fa23 ("ixgbe: fix xdp handle calculations") reintroduced
-> the addition of the umem headroom to the xdp handle in the ixgbe_zca_free,
-> ixgbe_alloc_buffer_slow_zc and ixgbe_alloc_buffer_zc functions. However,
-> the headroom is already added to the handle in the function
-> ixgbe_run_xdp_zc. This commit removes the latter addition and fixes the
-> case where the headroom is non-zero.
->
-> Fixes: 7cbbf9f1fa23 ("ixgbe: fix xdp handle calculations")
-> Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> index ad802a8909e0..5ed8b5a257cf 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> @@ -145,7 +145,7 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
->  {
->         struct xdp_umem *umem = rx_ring->xsk_umem;
->         int err, result = IXGBE_XDP_PASS;
-> -       u64 offset = umem->headroom;
-> +       u64 offset;
+This patch set contains some fixes for AF_XDP zero copy in the i40e and
+ixgbe drivers as well as a fix for the 'xdpsock' sample application when
+running in unaligned mode.
 
-...and same comment as from the i40e patch: Reverse xmas tree, please.
+Patches 1 and 2 fix a regression for the i40e and ixgbe drivers which
+caused the umem headroom to be added to the xdp handle twice, resulting in
+an incorrect value being received by the user for the case where the umem
+headroom is non-zero.
 
+Patch 3 fixes an issue with the xdpsock sample application whereby the
+start of the tx packet data (offset) was not being set correctly when the
+application was being run in unaligned mode.
 
-Cheers,
-Bj?rn
+This patch set has been applied against commit a2c11b034142 ("kcm: use
+BPF_PROG_RUN")
 
->         struct bpf_prog *xdp_prog;
->         struct xdp_frame *xdpf;
->         u32 act;
-> @@ -153,7 +153,7 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
->         rcu_read_lock();
->         xdp_prog = READ_ONCE(rx_ring->xdp_prog);
->         act = bpf_prog_run_xdp(xdp_prog, xdp);
-> -       offset += xdp->data - xdp->data_hard_start;
-> +       offset = xdp->data - xdp->data_hard_start;
->
->         xdp->handle = xsk_umem_adjust_offset(umem, xdp->handle, offset);
->
-> --
-> 2.17.1
->
+---
+v2:
+- Rearranged local variable order in i40e_run_xdp_zc and ixgbe_run_xdp_zc
+to comply with coding standards.
+
+Ciara Loftus (3):
+  i40e: fix xdp handle calculations
+  ixgbe: fix xdp handle calculations
+  samples/bpf: fix xdpsock l2fwd tx for unaligned mode
+
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c   | 4 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 4 ++--
+ samples/bpf/xdpsock_user.c                   | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+-- 
+2.17.1
+
