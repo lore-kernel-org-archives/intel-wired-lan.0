@@ -1,152 +1,41 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 14 Sep 2019 06:10:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 1aeefc1852ec47f5be0a3ed9f03a50bc62ea9808
-Message-ID: <5d7c13f2.V6KCtiV7c3baJkVa%lkp@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Sat, 14 Sep 2019 00:38:26 +0000
+Subject: [Intel-wired-lan] [PATCH v2] igb: add rx drop enable attribute
+In-Reply-To: <20190909142117.20186-1-bob.beckett@collabora.com>
+References: <20190909142117.20186-1-bob.beckett@collabora.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B971184AF@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 1aeefc1852ec47f5be0a3ed9f03a50bc62ea9808  ixgbe: fix xdp handle calculations
+On Mon, 2019-09-09 at 15:21 +0100, Robert Beckett wrote:
+> To allow userland to enable or disable dropping packets when descriptor
+> ring is exhausted, add RX_DROP_EN private flag.
+> 
+> This can be used in conjunction with flow control to mitigate packet storms
+> (e.g. due to network loop or DoS) by forcing the network adapter to send
+> pause frames whenever the ring is close to exhaustion.
+> 
+> By default this will maintain previous behaviour of enabling dropping of
+> packets during ring buffer exhaustion.
+> Some use cases prefer to not drop packets upon exhaustion, but instead
+> use flow control to limit ingress rates and ensure no dropped packets.
+> This is useful when the host CPU cannot keep up with packet delivery,
+> but data delivery is more important than throughput via multiple queues.
+> 
+> Userland can set this flag to 0 via ethtool to disable packet dropping.
+> 
+> Signed-off-by: Robert Beckett <bob.beckett@collabora.com>
+> ---
+> 
+> Notes:
+>     Changes since v1: re-written to use ethtool priv flags instead of sysfs attribute
+> 
+>  drivers/net/ethernet/intel/igb/igb.h         |  1 +
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c |  8 ++++++++
+>  drivers/net/ethernet/intel/igb/igb_main.c    | 11 +++++++++--
+>  3 files changed, 18 insertions(+), 2 deletions(-)
 
-elapsed time: 382m
-
-configs tested: 127
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-i386                             allmodconfig
-x86_64                 randconfig-h002-201936
-x86_64                 randconfig-h003-201936
-i386                   randconfig-h001-201936
-i386                   randconfig-h002-201936
-i386                   randconfig-h004-201936
-x86_64                 randconfig-h004-201936
-i386                   randconfig-h003-201936
-x86_64                 randconfig-h001-201936
-x86_64                 randconfig-b002-201936
-i386                   randconfig-b003-201936
-i386                   randconfig-b004-201936
-i386                   randconfig-b001-201936
-i386                   randconfig-b002-201936
-x86_64                 randconfig-b001-201936
-x86_64                 randconfig-b004-201936
-x86_64                 randconfig-b003-201936
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                             allmodconfig
-s390                                defconfig
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-x86_64                 randconfig-c003-201936
-x86_64                 randconfig-c002-201936
-i386                   randconfig-c004-201936
-x86_64                 randconfig-c004-201936
-i386                   randconfig-c003-201936
-i386                   randconfig-c002-201936
-x86_64                 randconfig-c001-201936
-i386                   randconfig-c001-201936
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                     edosk2674_defconfig
-m68k                           sun3_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                              allmodconfig
-arm64                            allmodconfig
-i386                   randconfig-f004-201936
-x86_64                 randconfig-f004-201936
-x86_64                 randconfig-f002-201936
-i386                   randconfig-f001-201936
-i386                   randconfig-f002-201936
-i386                   randconfig-f003-201936
-x86_64                 randconfig-f003-201936
-x86_64                 randconfig-f001-201936
-arm                         at91_dt_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm64                            allyesconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-parisc                            allnoconfig
-x86_64                 randconfig-e004-201936
-i386                   randconfig-e004-201936
-x86_64                 randconfig-e002-201936
-i386                   randconfig-e003-201936
-x86_64                 randconfig-e003-201936
-x86_64                 randconfig-e001-201936
-i386                   randconfig-e002-201936
-i386                   randconfig-e001-201936
-x86_64                           allyesconfig
-x86_64                           allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-arc                              allyesconfig
-powerpc                             defconfig
-microblaze                    nommu_defconfig
-powerpc                       ppc64_defconfig
-microblaze                      mmu_defconfig
-arc                                 defconfig
-powerpc                           allnoconfig
-xtensa                       common_defconfig
-openrisc                    or1ksim_defconfig
-nios2                         3c120_defconfig
-xtensa                          iss_defconfig
-c6x                        evmc6678_defconfig
-c6x                              allyesconfig
-nios2                         10m50_defconfig
-openrisc                 simple_smp_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-nds32                               defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-x86_64                 randconfig-g003-201936
-i386                   randconfig-g004-201936
-x86_64                 randconfig-g001-201936
-x86_64                 randconfig-g002-201936
-i386                   randconfig-g001-201936
-x86_64                 randconfig-g004-201936
-i386                   randconfig-g002-201936
-i386                   randconfig-g003-201936
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
