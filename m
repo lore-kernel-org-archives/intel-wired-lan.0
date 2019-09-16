@@ -1,189 +1,268 @@
-From: Daniel Borkmann <daniel@iogearbox.net>
-Date: Sat, 17 Aug 2019 23:29:14 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next v4 0/8] add need_wakeup flag
- to the AF_XDP rings
-In-Reply-To: <1565767643-4908-1-git-send-email-magnus.karlsson@intel.com>
-References: <1565767643-4908-1-git-send-email-magnus.karlsson@intel.com>
-Message-ID: <aca27354-0418-7add-57af-cb0d411e537a@iogearbox.net>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Mon, 16 Sep 2019 09:52:40 +0300
+Subject: [Intel-wired-lan] [PATCH v1] e1000e: Add support for S0ix
+Message-ID: <20190916065240.41486-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 8/14/19 9:27 AM, Magnus Karlsson wrote:
-> This patch set adds support for a new flag called need_wakeup in the
-> AF_XDP Tx and fill rings. When this flag is set by the driver, it
-> means that the application has to explicitly wake up the kernel Rx
-> (for the bit in the fill ring) or kernel Tx (for bit in the Tx ring)
-> processing by issuing a syscall. Poll() can wake up both and sendto()
-> will wake up Tx processing only.
-> 
-> The main reason for introducing this new flag is to be able to
-> efficiently support the case when application and driver is executing
-> on the same core. Previously, the driver was just busy-spinning on the
-> fill ring if it ran out of buffers in the HW and there were none to
-> get from the fill ring. This approach works when the application and
-> driver is running on different cores as the application can replenish
-> the fill ring while the driver is busy-spinning. Though, this is a
-> lousy approach if both of them are running on the same core as the
-> probability of the fill ring getting more entries when the driver is
-> busy-spinning is zero. With this new feature the driver now sets the
-> need_wakeup flag and returns to the application. The application can
-> then replenish the fill queue and then explicitly wake up the Rx
-> processing in the kernel using the syscall poll(). For Tx, the flag is
-> only set to one if the driver has no outstanding Tx completion
-> interrupts. If it has some, the flag is zero as it will be woken up by
-> a completion interrupt anyway. This flag can also be used in other
-> situations where the driver needs to be woken up explicitly.
-> 
-> As a nice side effect, this new flag also improves the Tx performance
-> of the case where application and driver are running on two different
-> cores as it reduces the number of syscalls to the kernel. The kernel
-> tells user space if it needs to be woken up by a syscall, and this
-> eliminates many of the syscalls. The Rx performance of the 2-core case
-> is on the other hand slightly worse, since there is a need to use a
-> syscall now to wake up the driver, instead of the driver
-> busy-spinning. It does waste less CPU cycles though, which might lead
-> to better overall system performance.
-> 
-> This new flag needs some simple driver support. If the driver does not
-> support it, the Rx flag is always zero and the Tx flag is always
-> one. This makes any application relying on this feature default to the
-> old behavior of not requiring any syscalls in the Rx path and always
-> having to call sendto() in the Tx path.
-> 
-> For backwards compatibility reasons, this feature has to be explicitly
-> turned on using a new bind flag (XDP_USE_NEED_WAKEUP). I recommend
-> that you always turn it on as it has a large positive performance
-> impact for the one core case and does not degrade 2 core performance
-> and actually improves it for Tx heavy workloads.
-> 
-> Here are some performance numbers measured on my local,
-> non-performance optimized development system. That is why you are
-> seeing numbers lower than the ones from Bj?rn and Jesper. 64 byte
-> packets at 40Gbit/s line rate. All results in Mpps. Cores == 1 means
-> that both application and driver is executing on the same core. Cores
-> == 2 that they are on different cores.
-> 
->                                Applications
-> need_wakeup  cores    txpush    rxdrop      l2fwd
-> ---------------------------------------------------------------
->       n         1       0.07      0.06        0.03
->       y         1       21.6      8.2         6.5
->       n         2       32.3      11.7        8.7
->       y         2       33.1      11.7        8.7
-> 
-> Overall, the need_wakeup flag provides the same or better performance
-> in all the micro-benchmarks. The reduction of sendto() calls in txpush
-> is large. Only a few per second is needed. For l2fwd, the drop is 50%
-> for the 1 core case and more than 99.9% for the 2 core case. Do not
-> know why I am not seeing the same drop for the 1 core case yet.
-> 
-> The name and inspiration of the flag has been taken from io_uring by
-> Jens Axboe. Details about this feature in io_uring can be found in
-> http://kernel.dk/io_uring.pdf, section 8.3. It also addresses most of
-> the denial of service and sendto() concerns raised by Maxim
-> Mikityanskiy in https://www.spinics.net/lists/netdev/msg554657.html.
-> 
-> The typical Tx part of an application will have to change from:
-> 
-> ret = sendto(fd,....)
-> 
-> to:
-> 
-> if (xsk_ring_prod__needs_wakeup(&xsk->tx))
->         ret = sendto(fd,....)
-> 
-> and th Rx part from:
-> 
-> rcvd = xsk_ring_cons__peek(&xsk->rx, BATCH_SIZE, &idx_rx);
-> if (!rcvd)
->         return;
-> 
-> to:
-> 
-> rcvd = xsk_ring_cons__peek(&xsk->rx, BATCH_SIZE, &idx_rx);
-> if (!rcvd) {
->         if (xsk_ring_prod__needs_wakeup(&xsk->umem->fq))
->                ret = poll(fd,.....);
->         return;
-> }
-> 
-> v3 -> v4:
-> * Maxim found a possible race in the Tx part of the driver. The
->    setting of the flag needs to happen before the sending, otherwise it
->    might trigger this race. Fixed in ixgbe and i40e driver.
-> * Mellanox support contributed by Maxim
-> * Removed the XSK_DRV_CAN_SLEEP flag as it was not used
->    anymore. Thanks to Sridhar for discovering this.
-> * For consistency the feature is now always called need_wakeup. There
->    were some places where it was referred to as might_sleep, but they
->    have been removed. Thanks to Sridhar for spotting.
-> * Fixed some typos in the commit messages
-> 
-> v2 -> v3:
-> * Converted the Mellanox driver to the new ndo in patch 1 as pointed out
->    by Maxim
-> * Fixed the compatibility code of XDP_MMAP_OFFSETS so it now works.
-> 
-> v1 -> v2:
-> * Fixed bisectability problem pointed out by Jakub
-> * Added missing initiliztion of the Tx need_wakeup flag to 1
-> 
-> This patch has been applied against commit b753c5a7f99f ("Merge branch 'r8152-RX-improve'")
-> 
-> Structure of the patch set:
-> 
-> Patch 1: Replaces the ndo_xsk_async_xmit with ndo_xsk_wakeup to
->           support waking up both Rx and Tx processing
-> Patch 2: Implements the need_wakeup functionality in common code
-> Patch 3-4: Add need_wakeup support to the i40e and ixgbe drivers
-> Patch 5: Add need_wakeup support to libbpf
-> Patch 6: Add need_wakeup support to the xdpsock sample application
-> Patch 7-8: Add need_wakeup support to the Mellanox mlx5 driver
-> 
-> Thanks: Magnus
-> 
-> Magnus Karlsson (6):
->    xsk: replace ndo_xsk_async_xmit with ndo_xsk_wakeup
->    xsk: add support for need_wakeup flag in AF_XDP rings
->    i40e: add support for AF_XDP need_wakeup feature
->    ixgbe: add support for AF_XDP need_wakeup feature
->    libbpf: add support for need_wakeup flag in AF_XDP part
->    samples/bpf: add use of need_wakeup flag in xdpsock
-> 
-> Maxim Mikityanskiy (2):
->    net/mlx5e: Move the SW XSK code from NAPI poll to a separate function
->    net/mlx5e: Add AF_XDP need_wakeup support
-> 
->   drivers/net/ethernet/intel/i40e/i40e_main.c        |   5 +-
->   drivers/net/ethernet/intel/i40e/i40e_xsk.c         |  25 ++-
->   drivers/net/ethernet/intel/i40e/i40e_xsk.h         |   2 +-
->   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      |   5 +-
->   .../net/ethernet/intel/ixgbe/ixgbe_txrx_common.h   |   2 +-
->   drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c       |  22 ++-
->   .../net/ethernet/mellanox/mlx5/core/en/xsk/rx.h    |  14 ++
->   .../net/ethernet/mellanox/mlx5/core/en/xsk/tx.c    |   2 +-
->   .../net/ethernet/mellanox/mlx5/core/en/xsk/tx.h    |  14 +-
->   drivers/net/ethernet/mellanox/mlx5/core/en_main.c  |   2 +-
->   drivers/net/ethernet/mellanox/mlx5/core/en_rx.c    |   7 +-
->   drivers/net/ethernet/mellanox/mlx5/core/en_txrx.c  |  27 ++-
->   include/linux/netdevice.h                          |  14 +-
->   include/net/xdp_sock.h                             |  33 +++-
->   include/uapi/linux/if_xdp.h                        |  13 ++
->   net/xdp/xdp_umem.c                                 |  12 +-
->   net/xdp/xsk.c                                      | 149 +++++++++++++---
->   net/xdp/xsk.h                                      |  13 ++
->   net/xdp/xsk_queue.h                                |   1 +
->   samples/bpf/xdpsock_user.c                         | 192 +++++++++++++--------
->   tools/include/uapi/linux/if_xdp.h                  |  13 ++
->   tools/lib/bpf/xsk.c                                |   4 +
->   tools/lib/bpf/xsk.h                                |   6 +
->   23 files changed, 462 insertions(+), 115 deletions(-)
-> 
-> --
-> 2.7.4
-> 
+Implement flow for S0ix support. Modern SoCs support S0ix low power
+states during idle periods, which are sub-states of ACPI S0 that increase
+power saving while supporting an instant-on experience for providing
+lower latency that ACPI S0. The S0ix states shut off parts of the SoC
+when they are not in use, while still maintaning optimal performance.
+This patch add support for S0ix started from an Ice Lake platform.
 
-Series applied, thanks everyone!
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Signed-off-by: Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 186 +++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/e1000e/regs.h   |   4 +
+ 2 files changed, 190 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index d7d56e42a6aa..cc4363e67072 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6294,6 +6294,178 @@ static void e1000e_flush_lpic(struct pci_dev *pdev)
+ 	pm_runtime_put_sync(netdev->dev.parent);
+ }
+ 
++/* S0ix implementation */
++static int e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	u32 mac_data;
++	u16 phy_data;
++
++	/* Disable the periodic inband message,
++	 * don't request PCIe clock in K1 page770_17[10:9] = 10b
++	 */
++	e1e_rphy(hw, HV_PM_CTRL, &phy_data);
++	phy_data &= ~HV_PM_CTRL_K1_CLK_REQ;
++	phy_data |= BIT(10);
++	e1e_wphy(hw, HV_PM_CTRL, phy_data);
++
++	/* Make sure we don't exit K1 every time a new packet arrives
++	 * 772_29[5] = 1 CS_Mode_Stay_In_K1
++	 */
++	e1e_rphy(hw, I217_CGFREG, &phy_data);
++	phy_data |= BIT(5);
++	e1e_wphy(hw, I217_CGFREG, phy_data);
++
++	/* Change the MAC/PHY interface to SMBus
++	 * Force the SMBus in PHY page769_23[0] = 1
++	 * Force the SMBus in MAC CTRL_EXT[11] = 1
++	 */
++	e1e_rphy(hw, CV_SMB_CTRL, &phy_data);
++	phy_data |= CV_SMB_CTRL_FORCE_SMBUS;
++	e1e_wphy(hw, CV_SMB_CTRL, phy_data);
++	mac_data = er32(CTRL_EXT);
++	mac_data |= E1000_CTRL_EXT_FORCE_SMBUS;
++	ew32(CTRL_EXT, mac_data);
++
++	/* DFT control: PHY bit: page769_20[0] = 1
++	 * Gate PPW via EXTCNF_CTRL - set 0x0F00[7] = 1
++	 */
++	e1e_rphy(hw, I82579_DFT_CTRL, &phy_data);
++	phy_data |= BIT(0);
++	e1e_wphy(hw, I82579_DFT_CTRL, phy_data);
++
++	mac_data = er32(EXTCNF_CTRL);
++	mac_data |= E1000_EXTCNF_CTRL_GATE_PHY_CFG;
++	ew32(EXTCNF_CTRL, mac_data);
++
++	/* Check MAC Tx/Rx packet buffer pointers.
++	 * Reset MAC Tx/Rx packet buffer pointers to suppress any
++	 * pending traffic indication that would prevent power gating.
++	 */
++	mac_data = er32(TDFH);
++	if (mac_data)
++		ew32(TDFH, 0);
++	mac_data = er32(TDFT);
++	if (mac_data)
++		ew32(TDFT, 0);
++	mac_data = er32(TDFHS);
++	if (mac_data)
++		ew32(TDFHS, 0);
++	mac_data = er32(TDFTS);
++	if (mac_data)
++		ew32(TDFTS, 0);
++	mac_data = er32(TDFPC);
++	if (mac_data)
++		ew32(TDFPC, 0);
++	mac_data = er32(RDFH);
++	if (mac_data)
++		ew32(RDFH, 0);
++	mac_data = er32(RDFT);
++	if (mac_data)
++		ew32(RDFT, 0);
++	mac_data = er32(RDFHS);
++	if (mac_data)
++		ew32(RDFHS, 0);
++	mac_data = er32(RDFTS);
++	if (mac_data)
++		ew32(RDFTS, 0);
++	mac_data = er32(RDFPC);
++	if (mac_data)
++		ew32(RDFPC, 0);
++
++	/* Enable the Dynamic Power Gating in the MAC */
++	mac_data = er32(FEXTNVM7);
++	mac_data |= BIT(22);
++	ew32(FEXTNVM7, mac_data);
++
++	/* Disable the time synchronization clock */
++	mac_data = er32(FEXTNVM7);
++	mac_data |= BIT(31);
++	mac_data &= ~BIT(0);
++	ew32(FEXTNVM7, mac_data);
++
++	/* Dynamic Power Gating Enable */
++	mac_data = er32(CTRL_EXT);
++	mac_data |= BIT(3);
++	ew32(CTRL_EXT, mac_data);
++
++	/* Enable the Dynamic Clock Gating in the DMA and MAC */
++	mac_data = er32(CTRL_EXT);
++	mac_data |= E1000_CTRL_EXT_DMA_DYN_CLK_EN;
++	ew32(CTRL_EXT, mac_data);
++
++	/* No MAC DPG gating SLP_S0 in modern standby
++	 * Switch the logic of the lanphypc to use PMC counter
++	 */
++	mac_data = er32(FEXTNVM5);
++	mac_data |= BIT(7);
++	ew32(FEXTNVM5, mac_data);
++
++	return 0;
++}
++
++static int e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	u32 mac_data;
++	u16 phy_data;
++
++	/* Disable the Dynamic Power Gating in the MAC */
++	mac_data = er32(FEXTNVM7);
++	mac_data &= 0xFFBFFFFF;
++	ew32(FEXTNVM7, mac_data);
++
++	/* Enable the time synchronization clock */
++	mac_data = er32(FEXTNVM7);
++	mac_data |= BIT(0);
++	ew32(FEXTNVM7, mac_data);
++
++	/* Disable Dynamic Power Gating */
++	mac_data = er32(CTRL_EXT);
++	mac_data &= 0xFFFFFFF7;
++	ew32(CTRL_EXT, mac_data);
++
++	/* Disable the Dynamic Clock Gating in the DMA and MAC */
++	mac_data = er32(CTRL_EXT);
++	mac_data &= 0xFFF7FFFF;
++	ew32(CTRL_EXT, mac_data);
++
++	/* Revert the lanphypc logic to use the internal Gbe counter
++	 * and not the PMC counter
++	 */
++	mac_data = er32(FEXTNVM5);
++	mac_data &= 0xFFFFFF7F;
++	ew32(FEXTNVM5, mac_data);
++
++	/* Enable the periodic inband message,
++	 * Request PCIe clock in K1 page770_17[10:9] =01b
++	 */
++	e1e_rphy(hw, HV_PM_CTRL, &phy_data);
++	phy_data &= 0xFBFF;
++	phy_data |= HV_PM_CTRL_K1_CLK_REQ;
++	e1e_wphy(hw, HV_PM_CTRL, phy_data);
++
++	/* Return back configuration
++	 * 772_29[5] = 0 CS_Mode_Stay_In_K1
++	 */
++	e1e_rphy(hw, I217_CGFREG, &phy_data);
++	phy_data &= 0xFFDF;
++	e1e_wphy(hw, I217_CGFREG, phy_data);
++
++	/* Change the MAC/PHY interface to Kumeran
++	 * Unforce the SMBus in PHY page769_23[0] = 0
++	 * Unforce the SMBus in MAC CTRL_EXT[11] = 0
++	 */
++	e1e_rphy(hw, CV_SMB_CTRL, &phy_data);
++	phy_data &= ~CV_SMB_CTRL_FORCE_SMBUS;
++	e1e_wphy(hw, CV_SMB_CTRL, phy_data);
++	mac_data = er32(CTRL_EXT);
++	mac_data &= ~E1000_CTRL_EXT_FORCE_SMBUS;
++	ew32(CTRL_EXT, mac_data);
++
++	return 0;
++}
++
+ static int e1000e_pm_freeze(struct device *dev)
+ {
+ 	struct net_device *netdev = dev_get_drvdata(dev);
+@@ -6650,6 +6822,9 @@ static int e1000e_pm_thaw(struct device *dev)
+ static int e1000e_pm_suspend(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
++	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	struct e1000_hw *hw = &adapter->hw;
+ 	int rc;
+ 
+ 	e1000e_flush_lpic(pdev);
+@@ -6660,14 +6835,25 @@ static int e1000e_pm_suspend(struct device *dev)
+ 	if (rc)
+ 		e1000e_pm_thaw(dev);
+ 
++	/* Introduce S0ix implementation */
++	if (hw->mac.type >= e1000_pch_cnp)
++		e1000e_s0ix_entry_flow(adapter);
++
+ 	return rc;
+ }
+ 
+ static int e1000e_pm_resume(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
++	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	struct e1000_hw *hw = &adapter->hw;
+ 	int rc;
+ 
++	/* Introduce S0ix implementation */
++	if (hw->mac.type >= e1000_pch_cnp)
++		e1000e_s0ix_exit_flow(adapter);
++
+ 	rc = __e1000_resume(pdev);
+ 	if (rc)
+ 		return rc;
+diff --git a/drivers/net/ethernet/intel/e1000e/regs.h b/drivers/net/ethernet/intel/e1000e/regs.h
+index 47f5ca793970..df59fd1d660c 100644
+--- a/drivers/net/ethernet/intel/e1000e/regs.h
++++ b/drivers/net/ethernet/intel/e1000e/regs.h
+@@ -18,6 +18,7 @@
+ #define E1000_FEXTNVM	0x00028	/* Future Extended NVM - RW */
+ #define E1000_FEXTNVM3	0x0003C	/* Future Extended NVM 3 - RW */
+ #define E1000_FEXTNVM4	0x00024	/* Future Extended NVM 4 - RW */
++#define E1000_FEXTNVM5	0x00014	/* Future Extended NVM 5 - RW */
+ #define E1000_FEXTNVM6	0x00010	/* Future Extended NVM 6 - RW */
+ #define E1000_FEXTNVM7	0x000E4	/* Future Extended NVM 7 - RW */
+ #define E1000_FEXTNVM9	0x5BB4	/* Future Extended NVM 9 - RW */
+@@ -234,4 +235,7 @@
+ #define E1000_RXMTRL	0x0B634	/* Time sync Rx EtherType and Msg Type - RW */
+ #define E1000_RXUDP	0x0B638	/* Time Sync Rx UDP Port - RW */
+ 
++/* PHY registers */
++#define I82579_DFT_CTRL	PHY_REG(769, 20)
++
+ #endif
+-- 
+2.11.0
+
