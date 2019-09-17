@@ -1,36 +1,174 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Tue, 17 Sep 2019 14:38:16 -0400
-Subject: [Intel-wired-lan] [E1000-devel] i40e X722 RSS problem with
- NAT-Traversal IPsec packets
-In-Reply-To: <77e940d7-552b-7724-0971-828bdb28add7@toxcorp.com>
-References: <20190610190141.77k6gbrefm2mr6lb@csclub.uwaterloo.ca>
- <77e940d7-552b-7724-0971-828bdb28add7@toxcorp.com>
-Message-ID: <20190917183815.7xhzmwaw4hy63pmp@csclub.uwaterloo.ca>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 18 Sep 2019 04:23:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ b962717d6b2572ce17346b77ac1a6b08a49f2551
+Message-ID: <5d8140be.FM/gKWtPMeXES95z%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Sep 12, 2019 at 12:09:09PM +0200, Jakub Jankowski wrote:
-> Was there any progress here?
-> 
-> As X722 is getting more and more ubiquitous, it's getting harder and harder
-> to avoid it. Problems like this, SFP EEPROM readout I reported [1], or the
-> recently announced NetCAT issue [2] (X722 seems to support iWARP/RDMA) make
-> it really hard to recommend X722 for production use.
-> 
-> [1]
-> https://www.mail-archive.com/e1000-devel at lists.sourceforge.net/msg12550.html
-> [2] https://www.vusec.net/projects/netcat/
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: b962717d6b2572ce17346b77ac1a6b08a49f2551  igb: Fix constant media auto sense switching when no cable is connected
 
-I haven't seen any update on it.  Still waiting.  I tried to install a
-new firmware version, but it claims there is no update to install (same
-thing happened with a prior firmware where the new version had the same
-version ID as the previous version so the update tool thought there was
-nothing to do, and I have a suspicion the same thing happened again).
-Not that the firmware updates ever include release notes on what fixes
-are included in the update of course, so no idea if it would help.
+elapsed time: 152m
 
--- 
-Len Sorensen
+configs tested: 149
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-d002-201937
+x86_64                 randconfig-d003-201937
+x86_64                 randconfig-d004-201937
+i386                   randconfig-d001-201937
+i386                   randconfig-d002-201937
+i386                   randconfig-d003-201937
+i386                   randconfig-d004-201937
+x86_64                 randconfig-d001-201937
+x86_64                 randconfig-e001-201937
+x86_64                 randconfig-e003-201937
+x86_64                 randconfig-e004-201937
+i386                   randconfig-e001-201937
+i386                   randconfig-e002-201937
+i386                   randconfig-e003-201937
+i386                   randconfig-e004-201937
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                   randconfig-f004-201937
+x86_64                 randconfig-f004-201937
+x86_64                 randconfig-f002-201937
+i386                   randconfig-f001-201937
+i386                   randconfig-f002-201937
+i386                   randconfig-f003-201937
+x86_64                 randconfig-f003-201937
+x86_64                 randconfig-f001-201937
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-b002-201937
+x86_64                 randconfig-b003-201937
+x86_64                 randconfig-b004-201937
+i386                   randconfig-b001-201937
+i386                   randconfig-b002-201937
+i386                   randconfig-b003-201937
+i386                   randconfig-b004-201937
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                                     txx9
+nios2                         3c120_defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-g002-201937
+x86_64                 randconfig-g003-201937
+x86_64                 randconfig-g004-201937
+i386                   randconfig-g001-201937
+i386                   randconfig-g002-201937
+i386                   randconfig-g003-201937
+i386                   randconfig-g004-201937
+x86_64                 randconfig-a004-201937
+i386                   randconfig-a003-201937
+x86_64                 randconfig-a002-201937
+i386                   randconfig-a004-201937
+i386                   randconfig-a002-201937
+i386                   randconfig-a001-201937
+x86_64                 randconfig-a001-201937
+x86_64                 randconfig-a003-201937
+x86_64                 randconfig-b001-201937
+x86_64                 randconfig-g001-201937
+x86_64                           allyesconfig
+i386                             allmodconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                 randconfig-h002-201937
+x86_64                 randconfig-h003-201937
+i386                   randconfig-h002-201937
+i386                   randconfig-h001-201937
+i386                   randconfig-h004-201937
+x86_64                 randconfig-h004-201937
+x86_64                 randconfig-h001-201937
+i386                   randconfig-h003-201937
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-e002-201937
+x86_64                 randconfig-c001-201937
+x86_64                 randconfig-c002-201937
+x86_64                 randconfig-c004-201937
+i386                   randconfig-c001-201937
+i386                   randconfig-c002-201937
+i386                   randconfig-c003-201937
+i386                   randconfig-c004-201937
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
