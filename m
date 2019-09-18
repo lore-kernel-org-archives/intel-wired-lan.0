@@ -1,160 +1,101 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Wed, 18 Sep 2019 07:13:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 6eef68214bd32674b098d152a4cf7de64a07fe72
-Message-ID: <5d8168a6.aRwRFWsdueED9Hqg%lkp@intel.com>
+Date: Wed, 18 Sep 2019 09:23:39 +0800
+Subject: [Intel-wired-lan] [PATCH] ethernet/intel: release the local
+ packet buffer
+In-Reply-To: <20190918000013.32083-1-navid.emamdoost@gmail.com>
+References: <20190918000013.32083-1-navid.emamdoost@gmail.com>
+Message-ID: <201909180905.RsHmoV4Y%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 6eef68214bd32674b098d152a4cf7de64a07fe72  e1000e: Add support for S0ix
+Hi Navid,
 
-elapsed time: 144m
+Thank you for the patch! Perhaps something to improve:
 
-configs tested: 135
+[auto build test WARNING on linus/master]
+[cannot apply to v5.3 next-20190917]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+url:    https://github.com/0day-ci/linux/commits/Navid-Emamdoost/ethernet-intel-release-the-local-packet-buffer/20190918-080148
+config: sparc64-allmodconfig (attached as .config)
+compiler: sparc64-linux-gcc (GCC) 7.4.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        GCC_VERSION=7.4.0 make.cross ARCH=sparc64 
 
-i386                   randconfig-f004-201937
-x86_64                 randconfig-f004-201937
-x86_64                 randconfig-f002-201937
-i386                   randconfig-f001-201937
-i386                   randconfig-f002-201937
-i386                   randconfig-f003-201937
-x86_64                 randconfig-f003-201937
-x86_64                 randconfig-f001-201937
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-parisc                            allnoconfig
-arc                              allyesconfig
-powerpc                             defconfig
-microblaze                    nommu_defconfig
-powerpc                       ppc64_defconfig
-microblaze                      mmu_defconfig
-arc                                 defconfig
-powerpc                           allnoconfig
-arm                              allmodconfig
-arm                         at91_dt_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm64                            allyesconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-i386                   randconfig-d002-201937
-i386                   randconfig-d004-201937
-x86_64                 randconfig-d004-201937
-x86_64                 randconfig-d002-201937
-x86_64                 randconfig-d001-201937
-x86_64                 randconfig-d003-201937
-i386                   randconfig-d001-201937
-i386                   randconfig-d003-201937
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-e004-201937
-i386                   randconfig-e004-201937
-x86_64                 randconfig-e002-201937
-i386                   randconfig-e003-201937
-x86_64                 randconfig-e003-201937
-x86_64                 randconfig-e001-201937
-i386                   randconfig-e001-201937
-i386                   randconfig-e002-201937
-mips                             allmodconfig
-mips                      malta_kvm_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-arm64                            allmodconfig
-riscv                             allnoconfig
-riscv                               defconfig
-nds32                               defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-xtensa                       common_defconfig
-openrisc                    or1ksim_defconfig
-nios2                         3c120_defconfig
-xtensa                          iss_defconfig
-c6x                        evmc6678_defconfig
-c6x                              allyesconfig
-nios2                         10m50_defconfig
-openrisc                 simple_smp_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-a004-201937
-i386                   randconfig-a003-201937
-x86_64                 randconfig-a002-201937
-i386                   randconfig-a004-201937
-i386                   randconfig-a002-201937
-i386                   randconfig-a001-201937
-x86_64                 randconfig-a001-201937
-x86_64                 randconfig-a003-201937
-x86_64                 randconfig-b002-201937
-i386                   randconfig-b003-201937
-i386                   randconfig-b004-201937
-i386                   randconfig-b001-201937
-i386                   randconfig-b002-201937
-x86_64                 randconfig-b001-201937
-x86_64                 randconfig-b004-201937
-x86_64                 randconfig-b003-201937
-x86_64                 randconfig-g003-201937
-i386                   randconfig-g004-201937
-x86_64                 randconfig-g002-201937
-x86_64                 randconfig-g001-201937
-i386                   randconfig-g001-201937
-x86_64                 randconfig-g004-201937
-i386                   randconfig-g002-201937
-i386                   randconfig-g003-201937
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                             allmodconfig
-s390                                defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                     edosk2674_defconfig
-m68k                           sun3_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-x86_64                 randconfig-h002-201937
-x86_64                 randconfig-h003-201937
-i386                   randconfig-h002-201937
-i386                   randconfig-h001-201937
-i386                   randconfig-h004-201937
-x86_64                 randconfig-h004-201937
-x86_64                 randconfig-h001-201937
-i386                   randconfig-h003-201937
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
+
+Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
+http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
+
+All warnings (new ones prefixed by >>):
+
+   In file included from include/linux/if_ether.h:19:0,
+                    from include/uapi/linux/ethtool.h:19,
+                    from include/linux/ethtool.h:18,
+                    from include/linux/netdevice.h:37,
+                    from drivers/net/ethernet/intel/e100.c:140:
+   drivers/net/ethernet/intel/e100.c: In function 'e100_loopback_test':
+>> include/linux/skbuff.h:1149:26: warning: 'skb' may be used uninitialized in this function [-Wmaybe-uninitialized]
+    #define dev_kfree_skb(a) consume_skb(a)
+                             ^~~~~~~~~~~
+   drivers/net/ethernet/intel/e100.c:2347:18: note: 'skb' was declared here
+     struct sk_buff *skb;
+                     ^~~
+--
+   In file included from include/linux/if_ether.h:19:0,
+                    from include/uapi/linux/ethtool.h:19,
+                    from include/linux/ethtool.h:18,
+                    from include/linux/netdevice.h:37,
+                    from drivers/net//ethernet/intel/e100.c:140:
+   drivers/net//ethernet/intel/e100.c: In function 'e100_loopback_test':
+>> include/linux/skbuff.h:1149:26: warning: 'skb' may be used uninitialized in this function [-Wmaybe-uninitialized]
+    #define dev_kfree_skb(a) consume_skb(a)
+                             ^~~~~~~~~~~
+   drivers/net//ethernet/intel/e100.c:2347:18: note: 'skb' was declared here
+     struct sk_buff *skb;
+                     ^~~
+
+vim +/skb +1149 include/linux/skbuff.h
+
+cd0a137acbb662 Florian Fainelli 2017-08-22  1133  
+cd0a137acbb662 Florian Fainelli 2017-08-22  1134  /**
+cd0a137acbb662 Florian Fainelli 2017-08-22  1135   *	skb_pad			-	zero pad the tail of an skb
+cd0a137acbb662 Florian Fainelli 2017-08-22  1136   *	@skb: buffer to pad
+cd0a137acbb662 Florian Fainelli 2017-08-22  1137   *	@pad: space to pad
+cd0a137acbb662 Florian Fainelli 2017-08-22  1138   *
+cd0a137acbb662 Florian Fainelli 2017-08-22  1139   *	Ensure that a buffer is followed by a padding area that is zero
+cd0a137acbb662 Florian Fainelli 2017-08-22  1140   *	filled. Used by network drivers which may DMA or transfer data
+cd0a137acbb662 Florian Fainelli 2017-08-22  1141   *	beyond the buffer end onto the wire.
+cd0a137acbb662 Florian Fainelli 2017-08-22  1142   *
+cd0a137acbb662 Florian Fainelli 2017-08-22  1143   *	May return error in out of memory cases. The skb is freed on error.
+cd0a137acbb662 Florian Fainelli 2017-08-22  1144   */
+cd0a137acbb662 Florian Fainelli 2017-08-22  1145  static inline int skb_pad(struct sk_buff *skb, int pad)
+cd0a137acbb662 Florian Fainelli 2017-08-22  1146  {
+cd0a137acbb662 Florian Fainelli 2017-08-22  1147  	return __skb_pad(skb, pad, true);
+cd0a137acbb662 Florian Fainelli 2017-08-22  1148  }
+ead2ceb0ec9f85 Neil Horman      2009-03-11 @1149  #define dev_kfree_skb(a)	consume_skb(a)
+^1da177e4c3f41 Linus Torvalds   2005-04-16  1150  
+
+:::::: The code at line 1149 was first introduced by commit
+:::::: ead2ceb0ec9f85cff19c43b5cdb2f8a054484431 Network Drop Monitor: Adding kfree_skb_clean for non-drops and modifying end-of-line points for skbs
+
+:::::: TO: Neil Horman <nhorman@tuxdriver.com>
+:::::: CC: David S. Miller <davem@davemloft.net>
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 58748 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20190918/1bb11564/attachment-0001.bin>
