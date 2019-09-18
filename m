@@ -1,34 +1,152 @@
-From: Navid Emamdoost <navid.emamdoost@gmail.com>
-Date: Tue, 17 Sep 2019 19:00:12 -0500
-Subject: [Intel-wired-lan] [PATCH] ethernet/intel: release the local packet
- buffer
-Message-ID: <20190918000013.32083-1-navid.emamdoost@gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 19 Sep 2019 02:33:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 33a7e1d91e3ac6d4efba611518789e9d5d2497b2
+Message-ID: <5d827870.F0Zg6E+2nTfxkN8G%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In e100_loopback_test the buffer allocated for the local packet needs to
-be released.
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 33a7e1d91e3ac6d4efba611518789e9d5d2497b2  e1000e: Add support for S0ix
 
-Signed-off-by: Navid Emamdoost <navid.emamdoost@gmail.com>
+elapsed time: 171m
+
+configs tested: 127
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                 randconfig-g003-201937
+i386                   randconfig-g004-201937
+x86_64                 randconfig-g002-201937
+x86_64                 randconfig-g001-201937
+i386                   randconfig-g001-201937
+x86_64                 randconfig-g004-201937
+i386                   randconfig-g002-201937
+i386                   randconfig-g003-201937
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                 randconfig-b002-201937
+i386                   randconfig-b003-201937
+i386                   randconfig-b004-201937
+i386                   randconfig-b001-201937
+i386                   randconfig-b002-201937
+x86_64                 randconfig-b001-201937
+x86_64                 randconfig-b004-201937
+x86_64                 randconfig-b003-201937
+x86_64                           allyesconfig
+i386                             allmodconfig
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                 randconfig-e004-201937
+i386                   randconfig-e004-201937
+x86_64                 randconfig-e002-201937
+i386                   randconfig-e003-201937
+x86_64                 randconfig-e003-201937
+x86_64                 randconfig-e001-201937
+i386                   randconfig-e001-201937
+i386                   randconfig-e002-201937
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+parisc                            allnoconfig
+mips                             allmodconfig
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+i386                   randconfig-d002-201937
+i386                   randconfig-d004-201937
+x86_64                 randconfig-d004-201937
+x86_64                 randconfig-d002-201937
+x86_64                 randconfig-d001-201937
+x86_64                 randconfig-d003-201937
+i386                   randconfig-d001-201937
+i386                   randconfig-d003-201937
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                             allmodconfig
+s390                                defconfig
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arc                              allyesconfig
+powerpc                             defconfig
+microblaze                    nommu_defconfig
+powerpc                       ppc64_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+powerpc                           allnoconfig
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+i386                   randconfig-f004-201937
+x86_64                 randconfig-f004-201937
+x86_64                 randconfig-f002-201937
+i386                   randconfig-f001-201937
+i386                   randconfig-f002-201937
+i386                   randconfig-f003-201937
+x86_64                 randconfig-f003-201937
+x86_64                 randconfig-f001-201937
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+x86_64                 randconfig-h002-201937
+x86_64                 randconfig-h003-201937
+i386                   randconfig-h002-201937
+i386                   randconfig-h001-201937
+i386                   randconfig-h004-201937
+x86_64                 randconfig-h004-201937
+x86_64                 randconfig-h001-201937
+i386                   randconfig-h003-201937
+x86_64                           allmodconfig
+
 ---
- drivers/net/ethernet/intel/e100.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index a65d5a9ba7db..4de7dca341fc 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -2394,6 +2394,7 @@ static int e100_loopback_test(struct nic *nic, enum loopback loopback_mode)
- 	e100_hw_reset(nic);
- err_clean_rx:
- 	e100_rx_clean_list(nic);
-+	dev_kfree_skb(skb);
- 	return err;
- }
- 
--- 
-2.17.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
