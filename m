@@ -1,144 +1,56 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 20 Sep 2019 02:17:18 -0700
-Subject: [Intel-wired-lan] [next PATCH S10 04/10] i40e: Extract detection of
- HW flags into a function
-In-Reply-To: <20190920091724.51767-1-alice.michael@intel.com>
+From: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
+Date: Fri, 20 Sep 2019 19:04:56 +0000
+Subject: [Intel-wired-lan] [next PATCH S10 08/10] i40e: allow ethtool to
+ report SW and FW versions in recovery mode
+In-Reply-To: <20190920091724.51767-8-alice.michael@intel.com>
 References: <20190920091724.51767-1-alice.michael@intel.com>
-Message-ID: <20190920091724.51767-4-alice.michael@intel.com>
+ <20190920091724.51767-8-alice.michael@intel.com>
+Message-ID: <D4D6338F2E4CB34CB91C5312C72AAC81107033@IRSMSX104.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Piotr Azarewicz <piotr.azarewicz@intel.com>
+ACK
 
-Move code detecting HW flags based on device type and FW API version
-into a single function.
+-----Original Message-----
+From: Michael, Alice 
+Sent: Friday, September 20, 2019 11:17 AM
+To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
+Cc: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
+Subject: [next PATCH S10 08/10] i40e: allow ethtool to report SW and FW versions in recovery mode
 
-Signed-off-by: Piotr Azarewicz <piotr.azarewicz@intel.com>
+From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+
+Let ethtool print driver and firmware versions when NIC is in recovery mode.  Assign i40e_get_drvinfo() operation to ethtool recovery mode operations.  Previously ethtool did not report driver and firmware versions when NIC was in recovery mode.
+
+Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c | 71 +++++++++++++++----
- drivers/net/ethernet/intel/i40e/i40e_common.c |  4 --
- 2 files changed, 58 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index 72c04881d290..9f0a4e92a231 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -507,6 +507,59 @@ static i40e_status i40e_shutdown_arq(struct i40e_hw *hw)
- 	return ret_code;
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 883b43ac9816..001a2fad297d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -5375,6 +5375,7 @@ static int i40e_set_eee(struct net_device *netdev, struct ethtool_eee *edata)  }
  
-+/**
-+ *  i40e_set_hw_flags - set HW flags
-+ *  @hw: pointer to the hardware structure
-+ **/
-+static void i40e_set_hw_flags(struct i40e_hw *hw)
-+{
-+	struct i40e_adminq_info *aq = &hw->aq;
-+
-+	hw->flags = 0;
-+
-+	switch (hw->mac.type) {
-+	case I40E_MAC_XL710:
-+		if (aq->api_maj_ver > 1 ||
-+		    (aq->api_maj_ver == 1 &&
-+		     aq->api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710)) {
-+			hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
-+			hw->flags |= I40E_HW_FLAG_FW_LLDP_STOPPABLE;
-+			/* The ability to RX (not drop) 802.1ad frames */
-+			hw->flags |= I40E_HW_FLAG_802_1AD_CAPABLE;
-+		}
-+		break;
-+	case I40E_MAC_X722:
-+		hw->flags |= I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE |
-+			     I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK;
-+
-+		if (aq->api_maj_ver > 1 ||
-+		    (aq->api_maj_ver == 1 &&
-+		     aq->api_min_ver >= I40E_MINOR_VER_FW_LLDP_STOPPABLE_X722))
-+			hw->flags |= I40E_HW_FLAG_FW_LLDP_STOPPABLE;
-+		/* fall through */
-+	default:
-+		break;
-+	}
-+
-+	/* Newer versions of firmware require lock when reading the NVM */
-+	if (aq->api_maj_ver > 1 ||
-+	    (aq->api_maj_ver == 1 &&
-+	     aq->api_min_ver >= 5))
-+		hw->flags |= I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK;
-+
-+	if (aq->api_maj_ver > 1 ||
-+	    (aq->api_maj_ver == 1 &&
-+	     aq->api_min_ver >= 8)) {
-+		hw->flags |= I40E_HW_FLAG_FW_LLDP_PERSISTENT;
-+		hw->flags |= I40E_HW_FLAG_DROP_MODE;
-+	}
-+
-+	if (aq->api_maj_ver > 1 ||
-+	    (aq->api_maj_ver == 1 &&
-+	     aq->api_min_ver >= 9))
-+		hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_EXTENDED;
-+}
-+
- /**
-  *  i40e_init_adminq - main initialization routine for Admin Queue
-  *  @hw: pointer to the hardware structure
-@@ -571,6 +624,11 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
- 	if (ret_code != I40E_SUCCESS)
- 		goto init_adminq_free_arq;
- 
-+	/* Some features were introduced in different FW API version
-+	 * for different MAC type.
-+	 */
-+	i40e_set_hw_flags(hw);
-+
- 	/* get the NVM version info */
- 	i40e_read_nvm_word(hw, I40E_SR_NVM_DEV_STARTER_VERSION,
- 			   &hw->nvm.version);
-@@ -596,25 +654,12 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
- 		hw->flags |= I40E_HW_FLAG_FW_LLDP_STOPPABLE;
- 	}
- 
--	/* Newer versions of firmware require lock when reading the NVM */
--	if (hw->aq.api_maj_ver > 1 ||
--	    (hw->aq.api_maj_ver == 1 &&
--	     hw->aq.api_min_ver >= 5))
--		hw->flags |= I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK;
--
- 	/* The ability to RX (not drop) 802.1ad frames was added in API 1.7 */
- 	if (hw->aq.api_maj_ver > 1 ||
- 	    (hw->aq.api_maj_ver == 1 &&
- 	     hw->aq.api_min_ver >= 7))
- 		hw->flags |= I40E_HW_FLAG_802_1AD_CAPABLE;
- 
--	if (hw->aq.api_maj_ver > 1 ||
--	    (hw->aq.api_maj_ver == 1 &&
--	     hw->aq.api_min_ver >= 8)) {
--		hw->flags |= I40E_HW_FLAG_FW_LLDP_PERSISTENT;
--		hw->flags |= I40E_HW_FLAG_DROP_MODE;
--	}
--
- 	if (hw->aq.api_maj_ver > I40E_FW_API_VERSION_MAJOR) {
- 		ret_code = I40E_ERR_FIRMWARE_API_VERSION;
- 		goto init_adminq_free_arq;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index f1d67267c983..fe553bb23d7a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -933,10 +933,6 @@ i40e_status i40e_init_shared_code(struct i40e_hw *hw)
- 	else
- 		hw->pf_id = (u8)(func_rid & 0x7);
- 
--	if (hw->mac.type == I40E_MAC_X722)
--		hw->flags |= I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE |
--			     I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK;
--
- 	status = i40e_init_nvm(hw);
- 	return status;
- }
--- 
+ static const struct ethtool_ops i40e_ethtool_recovery_mode_ops = {
++	.get_drvinfo		= i40e_get_drvinfo,
+ 	.set_eeprom		= i40e_set_eeprom,
+ 	.get_eeprom_len		= i40e_get_eeprom_len,
+ 	.get_eeprom		= i40e_get_eeprom,
+--
 2.21.0
+
+--------------------------------------------------------------------
+
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
 
