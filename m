@@ -1,236 +1,282 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 20 Sep 2019 02:17:16 -0700
-Subject: [Intel-wired-lan] [next PATCH S10 02/10] i40e: Add ability to
- display VF stats along with PF core stats
+Date: Fri, 20 Sep 2019 02:17:19 -0700
+Subject: [Intel-wired-lan] [next PATCH S10 05/10] i40e: Extend PHY access
+ with page change flag
 In-Reply-To: <20190920091724.51767-1-alice.michael@intel.com>
 References: <20190920091724.51767-1-alice.michael@intel.com>
-Message-ID: <20190920091724.51767-2-alice.michael@intel.com>
+Message-ID: <20190920091724.51767-5-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Arkadiusz Grubba <arkadiusz.grubba@intel.com>
+From: Piotr Azarewicz <piotr.azarewicz@intel.com>
 
-This change introduces the ability to display extended (enhanced)
-statistics for PF interfaces (in accordance to the new build flags
-also introduced here).
+Currently FW use MDIO I/F number corresponded with current PF for PHY
+access. This code allow to specify used MDIO I/F number.
 
-The patch introduces new arrays and preprocessor symbols defined for these
-extra stats (in i40e_ethtool.c file) and enhances/extends ethtool ops
-functions intended for dealing with PF stats (i.e.: i40e_get_stats_count(),
-i40e_get_ethtool_stats(), i40e_get_stat_strings() ).
+Add new field - command flags with only one flag for now. Added flag
+tells FW that it shouldn't change page while accessing QSFP module, as
+it was set manually.
 
-There have also been introduced the new build flag named
-"I40E_PF_EXTRA_STATS_OFF" to exclude from the driver code all code snippets
-associated with these extra stats.
-
-Signed-off-by: Arkadiusz Grubba <arkadiusz.grubba@intel.com>
+Signed-off-by: Piotr Azarewicz <piotr.azarewicz@intel.com>
 ---
- .../net/ethernet/intel/i40e/i40e_ethtool.c    | 149 ++++++++++++++++++
- 1 file changed, 149 insertions(+)
+ .../net/ethernet/intel/i40e/i40e_adminq_cmd.h |  8 ++-
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 70 +++++++++++++++----
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |  8 +--
+ .../net/ethernet/intel/i40e/i40e_prototype.h  | 26 ++++---
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 +
+ 5 files changed, 87 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 41e1240acaea..c814c756b4bb 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -389,6 +389,7 @@ static const struct i40e_stats i40e_gstrings_pfc_stats[] = {
- 
- #define I40E_GLOBAL_STATS_LEN	ARRAY_SIZE(i40e_gstrings_stats)
- 
-+/* Length (number) of PF core stats only (i.e. without queues / extra stats): */
- #define I40E_PF_STATS_LEN	(I40E_GLOBAL_STATS_LEN + \
- 				 I40E_PFC_STATS_LEN + \
- 				 I40E_VEB_STATS_LEN + \
-@@ -397,6 +398,44 @@ static const struct i40e_stats i40e_gstrings_pfc_stats[] = {
- /* Length of stats for a single queue */
- #define I40E_QUEUE_STATS_LEN	ARRAY_SIZE(i40e_gstrings_queue_stats)
- 
-+#define I40E_STATS_NAME_VFID_EXTRA "vf___."
-+#define I40E_STATS_NAME_VFID_EXTRA_LEN (sizeof(I40E_STATS_NAME_VFID_EXTRA) - 1)
-+
-+static struct i40e_stats i40e_gstrings_eth_stats_extra[] = {
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "rx_bytes", eth_stats.rx_bytes),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "rx_unicast", eth_stats.rx_unicast),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "rx_multicast", eth_stats.rx_multicast),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "rx_broadcast", eth_stats.rx_broadcast),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "rx_discards", eth_stats.rx_discards),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "rx_unknown_protocol", eth_stats.rx_unknown_protocol),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "tx_bytes", eth_stats.tx_bytes),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "tx_unicast", eth_stats.tx_unicast),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "tx_multicast", eth_stats.tx_multicast),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "tx_broadcast", eth_stats.tx_broadcast),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "tx_discards", eth_stats.tx_discards),
-+	I40E_VSI_STAT(I40E_STATS_NAME_VFID_EXTRA
-+		      "tx_errors", eth_stats.tx_errors),
-+};
-+
-+#define I40E_STATS_EXTRA_COUNT	128  /* as for now only I40E_MAX_VF_COUNT */
-+/* Following length value does not include the length values for queues stats */
-+#define I40E_STATS_EXTRA_LEN	ARRAY_SIZE(i40e_gstrings_eth_stats_extra)
-+/* Length (number) of PF extra stats only (i.e. without core stats / queues): */
-+#define I40E_PF_STATS_EXTRA_LEN (I40E_STATS_EXTRA_COUNT * I40E_STATS_EXTRA_LEN)
-+/* Length (number) of enhanced/all PF stats (i.e. core with extra stats): */
-+#define I40E_PF_STATS_ENHANCE_LEN (I40E_PF_STATS_LEN + I40E_PF_STATS_EXTRA_LEN)
-+
- enum i40e_ethtool_test_id {
- 	I40E_ETH_TEST_REG = 0,
- 	I40E_ETH_TEST_EEPROM,
-@@ -2190,6 +2229,9 @@ static int i40e_get_stats_count(struct net_device *netdev)
- 	 */
- 	stats_len += I40E_QUEUE_STATS_LEN * 2 * netdev->num_tx_queues;
- 
-+	if (vsi == pf->vsi[pf->lan_vsi] && pf->hw.partition_id == 1)
-+		stats_len += I40E_PF_STATS_EXTRA_LEN;
-+
- 	return stats_len;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 530613f31527..a23f89fb33ee 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -2249,7 +2249,13 @@ struct i40e_aqc_phy_register_access {
+ #define I40E_AQ_PHY_REG_ACCESS_EXTERNAL	1
+ #define I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE	2
+ 	u8	dev_address;
+-	u8	reserved1[2];
++	u8	cmd_flags;
++#define I40E_AQ_PHY_REG_ACCESS_DONT_CHANGE_QSFP_PAGE	0x01
++#define I40E_AQ_PHY_REG_ACCESS_SET_MDIO_IF_NUMBER	0x02
++#define I40E_AQ_PHY_REG_ACCESS_MDIO_IF_NUMBER_SHIFT	2
++#define I40E_AQ_PHY_REG_ACCESS_MDIO_IF_NUMBER_MASK	(0x3 << \
++		I40E_AQ_PHY_REG_ACCESS_MDIO_IF_NUMBER_SHIFT)
++	u8	reserved1;
+ 	__le32	reg_address;
+ 	__le32	reg_value;
+ 	u8	reserved2[4];
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index fe553bb23d7a..ed8608b874f4 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -5046,7 +5046,7 @@ static enum i40e_status_code i40e_led_get_reg(struct i40e_hw *hw, u16 led_addr,
+ 		status =
+ 		       i40e_aq_get_phy_register(hw,
+ 						I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
+-						I40E_PHY_COM_REG_PAGE,
++						I40E_PHY_COM_REG_PAGE, true,
+ 						I40E_PHY_LED_PROV_REG_1,
+ 						reg_val, NULL);
+ 	} else {
+@@ -5079,7 +5079,7 @@ static enum i40e_status_code i40e_led_set_reg(struct i40e_hw *hw, u16 led_addr,
+ 		status =
+ 		       i40e_aq_set_phy_register(hw,
+ 						I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
+-						I40E_PHY_COM_REG_PAGE,
++						I40E_PHY_COM_REG_PAGE, true,
+ 						I40E_PHY_LED_PROV_REG_1,
+ 						reg_val, NULL);
+ 	} else {
+@@ -5118,7 +5118,7 @@ i40e_status i40e_led_get_phy(struct i40e_hw *hw, u16 *led_addr,
+ 		status =
+ 		      i40e_aq_get_phy_register(hw,
+ 					       I40E_AQ_PHY_REG_ACCESS_EXTERNAL,
+-					       I40E_PHY_COM_REG_PAGE,
++					       I40E_PHY_COM_REG_PAGE, true,
+ 					       I40E_PHY_LED_PROV_REG_1,
+ 					       &reg_val_aq, NULL);
+ 		if (status == I40E_SUCCESS)
+@@ -5323,20 +5323,49 @@ void i40e_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val)
  }
  
-@@ -2258,6 +2300,10 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
- 	struct i40e_veb *veb = NULL;
-+	unsigned int vsi_idx;
-+	unsigned int vf_idx;
-+	unsigned int vf_id;
-+	bool is_vf_valid;
- 	unsigned int i;
- 	bool veb_stats;
- 	u64 *p = data;
-@@ -2307,11 +2353,109 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
- 		i40e_add_ethtool_stats(&data, &pfc, i40e_gstrings_pfc_stats);
- 	}
- 
-+	/* As for now, we only process the SRIOV type VSIs (as extra stats to
-+	 * PF core stats) which are correlated with VF LAN VSI (hence below,
-+	 * in this for-loop instruction block, only VF's LAN VSIs are currently
-+	 * processed).
-+	 */
-+	for (vf_id = 0; vf_id < pf->num_alloc_vfs; vf_id++) {
-+		is_vf_valid = true;
-+		for (vf_idx = 0; vf_idx < pf->num_alloc_vfs; vf_idx++)
-+			if (pf->vf[vf_idx].vf_id == vf_id)
-+				break;
-+		if (vf_idx >= pf->num_alloc_vfs) {
-+			dev_info(&pf->pdev->dev,
-+				 "In the PF's array, there is no VF instance with VF_ID identifier %d or it is not set/initialized correctly yet\n",
-+				 vf_id);
-+			is_vf_valid = false;
-+			goto check_vf;
-+		}
-+		vsi_idx = pf->vf[vf_idx].lan_vsi_idx;
-+
-+		vsi = pf->vsi[vsi_idx];
-+		if (!vsi) {
-+			/* It means empty field in the PF VSI array... */
-+			dev_info(&pf->pdev->dev,
-+				 "No LAN VSI instance referenced by VF %d or it is not set/initialized correctly yet\n",
-+				 vf_id);
-+			is_vf_valid = false;
-+			goto check_vf;
-+		}
-+		if (vsi->vf_id != vf_id) {
-+			dev_info(&pf->pdev->dev,
-+				 "In the PF's array, there is incorrectly set/initialized LAN VSI or reference to it from VF %d is not set/initialized correctly yet\n",
-+				 vf_id);
-+			is_vf_valid = false;
-+			goto check_vf;
-+		}
-+		if (vsi->vf_id != pf->vf[vf_idx].vf_id ||
-+		    !i40e_find_vsi_from_id(pf, pf->vf[vsi->vf_id].lan_vsi_id)) {
-+			/* Disjointed identifiers or broken references VF-VSI */
-+			dev_warn(&pf->pdev->dev,
-+				 "SRIOV LAN VSI (index %d in PF VSI array) with invalid VF Identifier %d (referenced by VF %d, ordered as %d in VF array)\n",
-+				 vsi_idx, pf->vsi[vsi_idx]->vf_id,
-+				 pf->vf[vf_idx].vf_id, vf_idx);
-+			is_vf_valid = false;
-+		}
-+check_vf:
-+		if (!is_vf_valid) {
-+			i40e_add_ethtool_stats(&data, NULL,
-+					       i40e_gstrings_eth_stats_extra);
-+		} else {
-+			i40e_update_eth_stats(vsi);
-+			i40e_add_ethtool_stats(&data, vsi,
-+					       i40e_gstrings_eth_stats_extra);
-+		}
-+	}
-+	for (; vf_id < I40E_STATS_EXTRA_COUNT; vf_id++)
-+		i40e_add_ethtool_stats(&data, NULL,
-+				       i40e_gstrings_eth_stats_extra);
-+
- check_data_pointer:
- 	WARN_ONCE(data - p != i40e_get_stats_count(netdev),
- 		  "ethtool stats count mismatch!");
- }
- 
-+/**
-+ * __i40e_update_vfid_in_stats_strings - print VF num to stats names
-+ * @stats_extra: array of stats structs with stats name strings
-+ * @strings_num: number of stats name strings in array above (length)
-+ * @vf_id: VF number to update stats name strings with
-+ *
-+ * Helper function to i40e_get_stat_strings() in case of extra stats.
+ /**
+- * i40e_aq_set_phy_register
++ * i40e_mdio_if_number_selection - MDIO I/F number selection
++ * @hw: pointer to the hw struct
++ * @set_mdio: use MDIO I/F number specified by mdio_num
++ * @mdio_num: MDIO I/F number
++ * @cmd: pointer to PHY Register command structure
 + **/
-+static inline void
-+__i40e_update_vfid_in_stats_strings(struct i40e_stats stats_extra[],
-+				    int strings_num, int vf_id)
++static void i40e_mdio_if_number_selection(struct i40e_hw *hw, bool set_mdio,
++					  u8 mdio_num,
++					  struct i40e_aqc_phy_register_access *cmd)
 +{
-+	int i;
-+
-+	for (i = 0; i < strings_num; i++) {
-+		snprintf(stats_extra[i].stat_string,
-+			 I40E_STATS_NAME_VFID_EXTRA_LEN, "vf%03d", vf_id);
-+		stats_extra[i].stat_string[I40E_STATS_NAME_VFID_EXTRA_LEN -
-+								       1] = '.';
++	if (set_mdio && cmd->phy_interface == I40E_AQ_PHY_REG_ACCESS_EXTERNAL) {
++		if (hw->flags & I40E_HW_FLAG_AQ_PHY_ACCESS_EXTENDED)
++			cmd->cmd_flags |=
++				I40E_AQ_PHY_REG_ACCESS_SET_MDIO_IF_NUMBER |
++				((mdio_num <<
++				I40E_AQ_PHY_REG_ACCESS_MDIO_IF_NUMBER_SHIFT) &
++				I40E_AQ_PHY_REG_ACCESS_MDIO_IF_NUMBER_MASK);
++		else
++			i40e_debug(hw, I40E_DEBUG_PHY,
++				   "MDIO I/F number selection not supported by current FW version.\n");
 +	}
 +}
 +
 +/**
-+ * i40e_update_vfid_in_stats - print VF num to stat names
-+ * @stats_extra: array of stats structs with stats name strings
-+ * @vf_id: VF number to update stats name strings with
-+ *
-+ * Helper macro to i40e_get_stat_strings() to ease use of
-+ * __i40e_update_vfid_in_stats_strings() function due to extra stats.
-+ *
-+ * Macro to ease the use of __i40e_update_vfid_in_stats_strings by taking
-+ * a static constant stats array and passing the ARRAY_SIZE(). This avoids typos
-+ * by ensuring that we pass the size associated with the given stats array.
-+ *
-+ * The parameter @stats_extra is evaluated twice, so parameters with side
-+ * effects should be avoided.
-+ **/
-+#define i40e_update_vfid_in_stats(stats_extra, vf_id) \
-+__i40e_update_vfid_in_stats_strings(stats_extra, ARRAY_SIZE(stats_extra), vf_id)
-+
- /**
-  * i40e_get_stat_strings - copy stat strings into supplied buffer
-  * @netdev: the netdev to collect strings for
-@@ -2354,6 +2498,11 @@ static void i40e_get_stat_strings(struct net_device *netdev, u8 *data)
- 	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++)
- 		i40e_add_stat_strings(&data, i40e_gstrings_pfc_stats, i);
++ * i40e_aq_set_phy_register_ext
+  * @hw: pointer to the hw struct
+  * @phy_select: select which phy should be accessed
+  * @dev_addr: PHY device address
++ * @set_mdio: use MDIO I/F number specified by mdio_num
++ * @mdio_num: MDIO I/F number
+  * @reg_addr: PHY register address
+  * @reg_val: new register value
+  * @cmd_details: pointer to command details structure or NULL
+  *
+  * Write the external PHY register.
++ * NOTE: In common cases MDIO I/F number should not be changed, thats why you
++ * may use simple wrapper i40e_aq_set_phy_register.
+  **/
+-i40e_status i40e_aq_set_phy_register(struct i40e_hw *hw,
+-				     u8 phy_select, u8 dev_addr,
+-				     u32 reg_addr, u32 reg_val,
+-				     struct i40e_asq_cmd_details *cmd_details)
++enum i40e_status_code i40e_aq_set_phy_register_ext(struct i40e_hw *hw,
++			     u8 phy_select, u8 dev_addr, bool page_change,
++			     bool set_mdio, u8 mdio_num,
++			     u32 reg_addr, u32 reg_val,
++			     struct i40e_asq_cmd_details *cmd_details)
+ {
+ 	struct i40e_aq_desc desc;
+ 	struct i40e_aqc_phy_register_access *cmd =
+@@ -5351,26 +5380,36 @@ i40e_status i40e_aq_set_phy_register(struct i40e_hw *hw,
+ 	cmd->reg_address = cpu_to_le32(reg_addr);
+ 	cmd->reg_value = cpu_to_le32(reg_val);
  
-+	for (i = 0; i < I40E_STATS_EXTRA_COUNT; i++) {
-+		i40e_update_vfid_in_stats(i40e_gstrings_eth_stats_extra, i);
-+		i40e_add_stat_strings(&data, i40e_gstrings_eth_stats_extra);
-+	}
++	i40e_mdio_if_number_selection(hw, set_mdio, mdio_num, cmd);
 +
- check_data_pointer:
- 	WARN_ONCE(data - p != i40e_get_stats_count(netdev) * ETH_GSTRING_LEN,
- 		  "stat strings count mismatch!");
++	if (!page_change)
++		cmd->cmd_flags = I40E_AQ_PHY_REG_ACCESS_DONT_CHANGE_QSFP_PAGE;
++
+ 	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
+ 
+ 	return status;
+ }
+ 
+ /**
+- * i40e_aq_get_phy_register
++ * i40e_aq_get_phy_register_ext
+  * @hw: pointer to the hw struct
+  * @phy_select: select which phy should be accessed
+  * @dev_addr: PHY device address
++ * @set_mdio: use MDIO I/F number specified by mdio_num
++ * @mdio_num: MDIO I/F number
+  * @reg_addr: PHY register address
+  * @reg_val: read register value
+  * @cmd_details: pointer to command details structure or NULL
+  *
+  * Read the external PHY register.
++ * NOTE: In common cases MDIO I/F number should not be changed, thats why you
++ * may use simple wrapper i40e_aq_get_phy_register.
+  **/
+-i40e_status i40e_aq_get_phy_register(struct i40e_hw *hw,
+-				     u8 phy_select, u8 dev_addr,
+-				     u32 reg_addr, u32 *reg_val,
+-				     struct i40e_asq_cmd_details *cmd_details)
++enum i40e_status_code i40e_aq_get_phy_register_ext(struct i40e_hw *hw,
++			     u8 phy_select, u8 dev_addr, bool page_change,
++			     bool set_mdio, u8 mdio_num,
++			     u32 reg_addr, u32 *reg_val,
++			     struct i40e_asq_cmd_details *cmd_details)
+ {
+ 	struct i40e_aq_desc desc;
+ 	struct i40e_aqc_phy_register_access *cmd =
+@@ -5384,6 +5423,11 @@ i40e_status i40e_aq_get_phy_register(struct i40e_hw *hw,
+ 	cmd->dev_address = dev_addr;
+ 	cmd->reg_address = cpu_to_le32(reg_addr);
+ 
++	i40e_mdio_if_number_selection(hw, set_mdio, mdio_num, cmd);
++
++	if (!page_change)
++		cmd->cmd_flags = I40E_AQ_PHY_REG_ACCESS_DONT_CHANGE_QSFP_PAGE;
++
+ 	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
+ 	if (!status)
+ 		*reg_val = le32_to_cpu(cmd->reg_value);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 765bc5174ead..67a6bd52eb95 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -5261,7 +5261,7 @@ static int i40e_get_module_info(struct net_device *netdev,
+ 	case I40E_MODULE_TYPE_SFP:
+ 		status = i40e_aq_get_phy_register(hw,
+ 				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+-				I40E_I2C_EEPROM_DEV_ADDR,
++				I40E_I2C_EEPROM_DEV_ADDR, true,
+ 				I40E_MODULE_SFF_8472_COMP,
+ 				&sff8472_comp, NULL);
+ 		if (status)
+@@ -5269,7 +5269,7 @@ static int i40e_get_module_info(struct net_device *netdev,
+ 
+ 		status = i40e_aq_get_phy_register(hw,
+ 				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+-				I40E_I2C_EEPROM_DEV_ADDR,
++				I40E_I2C_EEPROM_DEV_ADDR, true,
+ 				I40E_MODULE_SFF_8472_SWAP,
+ 				&sff8472_swap, NULL);
+ 		if (status)
+@@ -5301,7 +5301,7 @@ static int i40e_get_module_info(struct net_device *netdev,
+ 		/* Read from memory page 0. */
+ 		status = i40e_aq_get_phy_register(hw,
+ 				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+-				0,
++				0, true,
+ 				I40E_MODULE_REVISION_ADDR,
+ 				&sff8636_rev, NULL);
+ 		if (status)
+@@ -5372,7 +5372,7 @@ static int i40e_get_module_eeprom(struct net_device *netdev,
+ 
+ 		status = i40e_aq_get_phy_register(hw,
+ 				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+-				addr, offset, &value, NULL);
++				true, addr, offset, &value, NULL);
+ 		if (status)
+ 			return -EIO;
+ 		data[i] = value;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index 7effe5010e32..bbb478f09093 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -411,14 +411,24 @@ i40e_status i40e_aq_rx_ctl_write_register(struct i40e_hw *hw,
+ 				u32 reg_addr, u32 reg_val,
+ 				struct i40e_asq_cmd_details *cmd_details);
+ void i40e_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val);
+-i40e_status i40e_aq_set_phy_register(struct i40e_hw *hw,
+-				     u8 phy_select, u8 dev_addr,
+-				     u32 reg_addr, u32 reg_val,
+-				     struct i40e_asq_cmd_details *cmd_details);
+-i40e_status i40e_aq_get_phy_register(struct i40e_hw *hw,
+-				     u8 phy_select, u8 dev_addr,
+-				     u32 reg_addr, u32 *reg_val,
+-				     struct i40e_asq_cmd_details *cmd_details);
++enum i40e_status_code
++i40e_aq_set_phy_register_ext(struct i40e_hw *hw,
++			     u8 phy_select, u8 dev_addr, bool page_change,
++			     bool set_mdio, u8 mdio_num,
++			     u32 reg_addr, u32 reg_val,
++			     struct i40e_asq_cmd_details *cmd_details);
++enum i40e_status_code
++i40e_aq_get_phy_register_ext(struct i40e_hw *hw,
++			     u8 phy_select, u8 dev_addr, bool page_change,
++			     bool set_mdio, u8 mdio_num,
++			     u32 reg_addr, u32 *reg_val,
++			     struct i40e_asq_cmd_details *cmd_details);
++
++/* Convenience wrappers for most common use case */
++#define i40e_aq_set_phy_register(hw, ps, da, pc, ra, rv, cd)		\
++	i40e_aq_set_phy_register_ext(hw, ps, da, pc, false, 0, ra, rv, cd)
++#define i40e_aq_get_phy_register(hw, ps, da, pc, ra, rv, cd)		\
++	i40e_aq_get_phy_register_ext(hw, ps, da, pc, false, 0, ra, rv, cd)
+ 
+ i40e_status i40e_read_phy_register_clause22(struct i40e_hw *hw,
+ 					    u16 reg, u8 phy_addr, u16 *value);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index b43ec94a0f29..6ea2867ff60f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -624,6 +624,7 @@ struct i40e_hw {
+ #define I40E_HW_FLAG_NVM_READ_REQUIRES_LOCK BIT_ULL(3)
+ #define I40E_HW_FLAG_FW_LLDP_STOPPABLE      BIT_ULL(4)
+ #define I40E_HW_FLAG_FW_LLDP_PERSISTENT     BIT_ULL(5)
++#define I40E_HW_FLAG_AQ_PHY_ACCESS_EXTENDED BIT_ULL(6)
+ #define I40E_HW_FLAG_DROP_MODE              BIT_ULL(7)
+ 	u64 flags;
+ 
 -- 
 2.21.0
 
