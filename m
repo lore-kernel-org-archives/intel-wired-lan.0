@@ -1,56 +1,173 @@
-From: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
-Date: Fri, 20 Sep 2019 19:04:56 +0000
-Subject: [Intel-wired-lan] [next PATCH S10 08/10] i40e: allow ethtool to
- report SW and FW versions in recovery mode
-In-Reply-To: <20190920091724.51767-8-alice.michael@intel.com>
-References: <20190920091724.51767-1-alice.michael@intel.com>
- <20190920091724.51767-8-alice.michael@intel.com>
-Message-ID: <D4D6338F2E4CB34CB91C5312C72AAC81107033@IRSMSX104.ger.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 21 Sep 2019 03:49:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ e8f91508485c9cafa9422099d391a5e693a553b1
+Message-ID: <5d852d66.NiXQxerP+WcaljJz%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: e8f91508485c9cafa9422099d391a5e693a553b1  e1000e: Add support for S0ix
 
------Original Message-----
-From: Michael, Alice 
-Sent: Friday, September 20, 2019 11:17 AM
-To: Michael, Alice <alice.michael@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
-Subject: [next PATCH S10 08/10] i40e: allow ethtool to report SW and FW versions in recovery mode
+elapsed time: 158m
 
-From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+configs tested: 148
 
-Let ethtool print driver and firmware versions when NIC is in recovery mode.  Assign i40e_get_drvinfo() operation to ethtool recovery mode operations.  Previously ethtool did not report driver and firmware versions when NIC was in recovery mode.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-a001-201937
+x86_64                 randconfig-a002-201937
+x86_64                 randconfig-a003-201937
+x86_64                 randconfig-a004-201937
+i386                   randconfig-a001-201937
+i386                   randconfig-a002-201937
+i386                   randconfig-a003-201937
+i386                   randconfig-a004-201937
+x86_64                 randconfig-b002-201937
+i386                   randconfig-b003-201937
+i386                   randconfig-b004-201937
+i386                   randconfig-b001-201937
+i386                   randconfig-b002-201937
+x86_64                 randconfig-b001-201937
+x86_64                 randconfig-b004-201937
+x86_64                 randconfig-b003-201937
+x86_64                 randconfig-f001-201937
+x86_64                 randconfig-f002-201937
+x86_64                 randconfig-f003-201937
+x86_64                 randconfig-f004-201937
+i386                   randconfig-f001-201937
+i386                   randconfig-f002-201937
+i386                   randconfig-f003-201937
+i386                   randconfig-f004-201937
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                nfsroot
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                 randconfig-e004-201937
+i386                   randconfig-e004-201937
+x86_64                 randconfig-e002-201937
+i386                   randconfig-e003-201937
+x86_64                 randconfig-e003-201937
+x86_64                 randconfig-e001-201937
+i386                   randconfig-e001-201937
+i386                   randconfig-e002-201937
+arm                              allmodconfig
+arm64                            allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+x86_64                 randconfig-c003-201937
+x86_64                 randconfig-c002-201937
+i386                   randconfig-c004-201937
+x86_64                 randconfig-c004-201937
+i386                   randconfig-c003-201937
+i386                   randconfig-c002-201937
+x86_64                 randconfig-c001-201937
+i386                   randconfig-c001-201937
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h002-201937
+x86_64                 randconfig-h003-201937
+i386                   randconfig-h002-201937
+i386                   randconfig-h001-201937
+i386                   randconfig-h004-201937
+x86_64                 randconfig-h004-201937
+x86_64                 randconfig-h001-201937
+i386                   randconfig-h003-201937
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-g003-201937
+i386                   randconfig-g004-201937
+x86_64                 randconfig-g002-201937
+x86_64                 randconfig-g001-201937
+i386                   randconfig-g001-201937
+x86_64                 randconfig-g004-201937
+i386                   randconfig-g002-201937
+i386                   randconfig-g003-201937
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                           allyesconfig
+x86_64                           allmodconfig
+i386                             allmodconfig
+x86_64                 randconfig-d001-201937
+x86_64                 randconfig-d002-201937
+x86_64                 randconfig-d003-201937
+x86_64                 randconfig-d004-201937
+i386                   randconfig-d001-201937
+i386                   randconfig-d002-201937
+i386                   randconfig-d003-201937
+i386                   randconfig-d004-201937
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 883b43ac9816..001a2fad297d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -5375,6 +5375,7 @@ static int i40e_set_eee(struct net_device *netdev, struct ethtool_eee *edata)  }
- 
- static const struct ethtool_ops i40e_ethtool_recovery_mode_ops = {
-+	.get_drvinfo		= i40e_get_drvinfo,
- 	.set_eeprom		= i40e_set_eeprom,
- 	.get_eeprom_len		= i40e_get_eeprom_len,
- 	.get_eeprom		= i40e_get_eeprom,
---
-2.21.0
-
---------------------------------------------------------------------
-
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
-przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
-others is strictly prohibited.
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
