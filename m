@@ -1,65 +1,170 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 20 Sep 2019 17:18:50 -0700
-Subject: [Intel-wired-lan] [next PATCH] ixgbe: Make use of
- cpumask_local_spread to improve RSS locality
-Message-ID: <20190921001818.3431.45376.stgit@localhost.localdomain>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 21 Sep 2019 09:17:51 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 9d4c039100f63c29c4370f2f8ae2679dcdca57d9
+Message-ID: <5d857a3f.SSN47X7Xrrsnquwq%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 9d4c039100f63c29c4370f2f8ae2679dcdca57d9  i40e: Refactoring VF MAC filters counting to make more reliable
 
-This patch is meant to address locality issues present in the ixgbe driver
-when it is loaded on a system supporting multiple NUMA nodes and more CPUs
-then the device can map in a 1:1 fashion. Instead of just arbitrarily
-mapping itself to CPUs 0-62 it would make much more sense to map itself to
-the local CPUs first, and then map itself to any remaining CPUs that might
-be used.
+elapsed time: 240m
 
-The first effect of this is that queue 0 should always be allocated on the
-local CPU/NUMA node. This is important as it is the default destination if
-a packet doesn't match any existing flow director filter or RSS rule and as
-such having it local should help to reduce QPI cross-talk in the event of
-an unrecognized traffic type.
+configs tested: 145
 
-In addition this should increase the likelihood of the RSS queues being
-allocated and used on CPUs local to the device while the ATR/Flow Director
-queues would be able to route traffic directly to the CPU that is likely to
-be processing it.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                              allmodconfig
+arm64                            allmodconfig
+x86_64                 randconfig-b002-201937
+i386                   randconfig-b003-201937
+i386                   randconfig-b004-201937
+i386                   randconfig-b001-201937
+i386                   randconfig-b002-201937
+x86_64                 randconfig-b001-201937
+x86_64                 randconfig-b004-201937
+x86_64                 randconfig-b003-201937
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+x86_64                 randconfig-f001-201937
+x86_64                 randconfig-f002-201937
+x86_64                 randconfig-f003-201937
+x86_64                 randconfig-f004-201937
+i386                   randconfig-f001-201937
+i386                   randconfig-f002-201937
+i386                   randconfig-f003-201937
+i386                   randconfig-f004-201937
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+x86_64                 randconfig-a001-201937
+x86_64                 randconfig-a002-201937
+x86_64                 randconfig-a003-201937
+x86_64                 randconfig-a004-201937
+i386                   randconfig-a001-201937
+i386                   randconfig-a002-201937
+i386                   randconfig-a003-201937
+i386                   randconfig-a004-201937
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                 randconfig-d001-201937
+x86_64                 randconfig-d002-201937
+x86_64                 randconfig-d003-201937
+x86_64                 randconfig-d004-201937
+i386                   randconfig-d001-201937
+i386                   randconfig-d002-201937
+i386                   randconfig-d003-201937
+i386                   randconfig-d004-201937
+x86_64                 randconfig-h002-201937
+x86_64                 randconfig-h003-201937
+i386                   randconfig-h002-201937
+i386                   randconfig-h001-201937
+i386                   randconfig-h004-201937
+x86_64                 randconfig-h004-201937
+x86_64                 randconfig-h001-201937
+i386                   randconfig-h003-201937
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allyesconfig
+x86_64                           allmodconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-g003-201937
+i386                   randconfig-g004-201937
+x86_64                 randconfig-g002-201937
+x86_64                 randconfig-g001-201937
+i386                   randconfig-g001-201937
+x86_64                 randconfig-g004-201937
+i386                   randconfig-g002-201937
+i386                   randconfig-g003-201937
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-c003-201937
+x86_64                 randconfig-c002-201937
+i386                   randconfig-c004-201937
+x86_64                 randconfig-c004-201937
+i386                   randconfig-c003-201937
+i386                   randconfig-c002-201937
+x86_64                 randconfig-c001-201937
+i386                   randconfig-c001-201937
+x86_64                 randconfig-e001-201937
+x86_64                 randconfig-e002-201937
+x86_64                 randconfig-e003-201937
+x86_64                 randconfig-e004-201937
+i386                   randconfig-e001-201937
+i386                   randconfig-e002-201937
+i386                   randconfig-e003-201937
+i386                   randconfig-e004-201937
+
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index cc3196ae5aea..fd9f5d41b594 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -832,9 +832,9 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 				int xdp_count, int xdp_idx,
- 				int rxr_count, int rxr_idx)
- {
-+	int node = dev_to_node(&adapter->pdev->dev);
- 	struct ixgbe_q_vector *q_vector;
- 	struct ixgbe_ring *ring;
--	int node = NUMA_NO_NODE;
- 	int cpu = -1;
- 	int ring_count;
- 	u8 tcs = adapter->hw_tcs;
-@@ -845,10 +845,8 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 	if ((tcs <= 1) && !(adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)) {
- 		u16 rss_i = adapter->ring_feature[RING_F_RSS].indices;
- 		if (rss_i > 1 && adapter->atr_sample_rate) {
--			if (cpu_online(v_idx)) {
--				cpu = v_idx;
--				node = cpu_to_node(cpu);
--			}
-+			cpu = cpumask_local_spread(v_idx, node);
-+			node = cpu_to_node(cpu);
- 		}
- 	}
- 
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
