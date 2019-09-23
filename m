@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 23 Sep 2019 18:11:36 +0000
-Subject: [Intel-wired-lan] [next PATCH S10 05/10] i40e: Extend PHY
- access with page change flag
-In-Reply-To: <20190920091724.51767-5-alice.michael@intel.com>
+Date: Mon, 23 Sep 2019 18:12:09 +0000
+Subject: [Intel-wired-lan] [next PATCH S10 06/10] i40e: remove the macro
+ with it's argument reuse
+In-Reply-To: <20190920091724.51767-6-alice.michael@intel.com>
 References: <20190920091724.51767-1-alice.michael@intel.com>
- <20190920091724.51767-5-alice.michael@intel.com>
-Message-ID: <fd0a09c561f14195ba76a200df4b8882@intel.com>
+ <20190920091724.51767-6-alice.michael@intel.com>
+Message-ID: <dc5a32c1a739447588a0208fdb45ab83@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,31 +18,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Friday, September 20, 2019 2:17 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Cc: Azarewicz, Piotr <piotr.azarewicz@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S10 05/10] i40e: Extend PHY access
-> with page change flag
+> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S10 06/10] i40e: remove the macro
+> with it's argument reuse
 > 
-> From: Piotr Azarewicz <piotr.azarewicz@intel.com>
+> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > 
-> Currently FW use MDIO I/F number corresponded with current PF for PHY
-> access. This code allow to specify used MDIO I/F number.
+> Remove macro and call i40e_update_vfid_in_stats() function directly to
+> avoid checkpatch.pl complains about macro argument reuse and possible
+> side effects.
 > 
-> Add new field - command flags with only one flag for now. Added flag tells
-> FW that it shouldn't change page while accessing QSFP module, as it was set
-> manually.
-> 
-> Signed-off-by: Piotr Azarewicz <piotr.azarewicz@intel.com>
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > ---
->  .../net/ethernet/intel/i40e/i40e_adminq_cmd.h |  8 ++-
-> drivers/net/ethernet/intel/i40e/i40e_common.c | 70 +++++++++++++++----
->  .../net/ethernet/intel/i40e/i40e_ethtool.c    |  8 +--
->  .../net/ethernet/intel/i40e/i40e_prototype.h  | 26 ++++---
->  drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 +
->  5 files changed, 87 insertions(+), 26 deletions(-)
+>  .../net/ethernet/intel/i40e/i40e_ethtool.c    | 28 ++++---------------
+>  1 file changed, 6 insertions(+), 22 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
-
 
 
