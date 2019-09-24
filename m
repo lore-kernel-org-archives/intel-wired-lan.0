@@ -1,170 +1,94 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 24 Sep 2019 05:31:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- f0859544b158c4abc6b15cd81d3e2bf45d71a31d
-Message-ID: <5d8939c4.JAl+JeClCMFsnYLh%lkp@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Tue, 24 Sep 2019 13:25:29 +0300
+Subject: [Intel-wired-lan] [PATCH v1] igc: Add set_rx_mode support
+In-Reply-To: <bedf2d12-9a0e-2633-2d02-27c35d03fc35@intel.com>
+References: <20190910070512.31391-1-sasha.neftin@intel.com>
+ <d0ecf9ed-f12f-f204-5223-6f845150a56d@redhat.com>
+ <CAKgT0Ue2rti-T1F9N02ejv2qgQuu7pM6aFCh7QJSys-B2MiNBw@mail.gmail.com>
+ <6c527dc7-e4f4-0cee-657e-e35af31c91fd@intel.com>
+ <c83ff718-22e6-996f-7dea-b16317e1a969@redhat.com>
+ <bedf2d12-9a0e-2633-2d02-27c35d03fc35@intel.com>
+Message-ID: <b97617d2-d279-954e-231c-5ed7665b84a5@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: f0859544b158c4abc6b15cd81d3e2bf45d71a31d  igb: Fix constant media auto sense switching when no cable is connected
+On 9/19/2019 15:56, Neftin, Sasha wrote:
+> On 9/19/2019 14:49, David Arcari wrote:
+>> On 09/19/2019 01:48 AM, Neftin, Sasha wrote:
+>>> On 9/18/2019 23:29, Alexander Duyck wrote:
+>>>> On Wed, Sep 18, 2019 at 12:29 PM David Arcari <darcari@redhat.com> 
+>>>> wrote:
+>>>>>
+>>>>> Hi,
+>>>>>
+>>>>> On 09/10/2019 03:05 AM, Sasha Neftin wrote:
+>>>>>> Add multicast addresses list to the MTA table.
+>>>>>> Implement promiscious mode and add basic rx mode support.
+>>>>>> Add option for ipv6 address settings.
+>>>>>>
+>>>>>> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+>>>>>
+>>>>> This seems to break ipv4 communication over vlans:
+>>>>
+>>> Please, use follow commands for ipv6:
+>>> ip -6 addr add <ipv6address>/<prefixlength> dev <interface>
+>>>
+>>> Example:
+>>> sudo ip -6 addr add fe80::2a0:c9ff:fe00:2/64 dev enp5s0
+>>>
+>>> Remove ipv6 address:
+>>> sudo ip -6 addr del fe80::2a0:c9ff:fe00:2/64 dev enp5s0
+>>>
+>>> ping -6 -I <interface> <address>
+>>> Example:
+>>> ping -6 -I enp4s0 fe80::2a0:c9ff:fe00:1
+>>> I've checked it on my side and looks ipv4 and ipv6 works.
+>>
+>> I'm no longer having connectivity issue with ipv6 with this commit 
+>> applied.
+>>
+> Thanks to confirming that.
+>>> Let me not agree with you in regards to break ipv4 communication over
+>>> vlan. Since vlan not supported yet it can not be broken.
+>>
+>> Well - interestingly enough vlan connectivity was working for ipv4 
+>> before this
+>> commit.? I guess it was just good fortune.
+>>
+>> -DA
+I've looked into and rechecked. VLAN connectivity indeed works before my 
+patch. I will ask Jeff to recall this patch.I will rework and resubmit 
+another patch.
+Sorry for the inconvenience.
+Sasha
+>>
+> Interesting. Okay, anyway, I plan add vlan support in future and will 
+> share with you.
+> Sasha
+>>
+>>> I am working to add VLAN support in my next patches.
+>>>
+>>>> Why is this code messing with the VLANs? The patch description says it
+>>>> is enabling multicast and the MTA but it is messing with the VFTA
+>>>> table as well. That is probably what broke the VLANs.
+>>>>
+>>>> I don't see the bits to support ndo_vlan_rx_[add|kill]_vid and without
+>>>> that it will break VLANs since the driver is filtering them unless
+>>>> promiscuous filtering is enabled. The VLAN changes should be moved
+>>>> into a separate patch.
+>>>>
+>>> You are right. Few lines related to VFTA present here. Sorry about that.
+>>> I did not mention add support for VLAN tagged frames in this patch. I
+>>> plan to add VLAN support in my next patches.
+>>> Sasha
+>>>
+>>
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
-elapsed time: 328m
-
-configs tested: 145
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                 randconfig-c001-201938
-x86_64                 randconfig-c002-201938
-x86_64                 randconfig-c003-201938
-x86_64                 randconfig-c004-201938
-i386                   randconfig-c001-201938
-i386                   randconfig-c002-201938
-i386                   randconfig-c003-201938
-i386                   randconfig-c004-201938
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-g001-201938
-x86_64                 randconfig-g002-201938
-x86_64                 randconfig-g003-201938
-x86_64                 randconfig-g004-201938
-i386                   randconfig-g001-201938
-i386                   randconfig-g002-201938
-i386                   randconfig-g003-201938
-i386                   randconfig-g004-201938
-x86_64                 randconfig-f001-201938
-x86_64                 randconfig-f002-201938
-x86_64                 randconfig-f003-201938
-x86_64                 randconfig-f004-201938
-i386                   randconfig-f001-201938
-i386                   randconfig-f002-201938
-i386                   randconfig-f003-201938
-i386                   randconfig-f004-201938
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                              allmodconfig
-arm64                            allmodconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                 randconfig-a001-201938
-x86_64                 randconfig-a002-201938
-x86_64                 randconfig-a003-201938
-x86_64                 randconfig-a004-201938
-i386                   randconfig-a001-201938
-i386                   randconfig-a002-201938
-i386                   randconfig-a003-201938
-i386                   randconfig-a004-201938
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                 randconfig-b001-201938
-x86_64                 randconfig-b002-201938
-x86_64                 randconfig-b003-201938
-x86_64                 randconfig-b004-201938
-i386                   randconfig-b001-201938
-i386                   randconfig-b002-201938
-i386                   randconfig-b003-201938
-i386                   randconfig-b004-201938
-x86_64                 randconfig-h001-201938
-x86_64                 randconfig-h002-201938
-x86_64                 randconfig-h003-201938
-x86_64                 randconfig-h004-201938
-i386                   randconfig-h001-201938
-i386                   randconfig-h002-201938
-i386                   randconfig-h003-201938
-i386                   randconfig-h004-201938
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-x86_64                           allmodconfig
-x86_64                           allyesconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-x86_64                 randconfig-d001-201938
-x86_64                 randconfig-d002-201938
-x86_64                 randconfig-d003-201938
-x86_64                 randconfig-d004-201938
-i386                   randconfig-d001-201938
-i386                   randconfig-d002-201938
-i386                   randconfig-d003-201938
-i386                   randconfig-d004-201938
-i386                             allmodconfig
-i386                   randconfig-e004-201938
-x86_64                 randconfig-e004-201938
-x86_64                 randconfig-e002-201938
-x86_64                 randconfig-e003-201938
-i386                   randconfig-e003-201938
-x86_64                 randconfig-e001-201938
-i386                   randconfig-e002-201938
-i386                   randconfig-e001-201938
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
