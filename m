@@ -1,47 +1,36 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 26 Sep 2019 11:11:09 -0700
-Subject: [Intel-wired-lan] [net-next v3 7/7] renesas: reject unsupported
- external timestamp flags
-In-Reply-To: <20190926181109.4871-1-jacob.e.keller@intel.com>
-References: <20190926181109.4871-1-jacob.e.keller@intel.com>
-Message-ID: <20190926181109.4871-8-jacob.e.keller@intel.com>
+Date: Thu, 26 Sep 2019 14:29:04 -0700
+Subject: [Intel-wired-lan] [PATCH] fm10k: update driver version to match
+ out-of-tree
+Message-ID: <20190926212904.27184-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix the renesas PTP support to explicitly reject any future flags that
-get added to the external timestamp request ioctl.
+An upcoming out-of-tree release will be occurring which will include the
+recent functionality to support virtual function statistics. Update the
+kernel driver version to match this.
 
-In order to maintain currently functioning code, this patch accepts all
-three current flags. This is because the PTP_RISING_EDGE and
-PTP_FALLING_EDGE flags have unclear semantics and each driver seems to
-have interpreted them slightly differently.
-
-Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/renesas/ravb_ptp.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/renesas/ravb_ptp.c b/drivers/net/ethernet/renesas/ravb_ptp.c
-index 638f1fc2166f..666dbee48097 100644
---- a/drivers/net/ethernet/renesas/ravb_ptp.c
-+++ b/drivers/net/ethernet/renesas/ravb_ptp.c
-@@ -182,6 +182,12 @@ static int ravb_ptp_extts(struct ptp_clock_info *ptp,
- 	struct net_device *ndev = priv->ndev;
- 	unsigned long flags;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 2be9222510e7..17738b0a9873 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -11,7 +11,7 @@
  
-+	/* Reject requests with unsupported flags */
-+	if (req->flags & ~(PTP_ENABLE_FEATURE |
-+			   PTP_RISING_EDGE |
-+			   PTP_FALLING_EDGE))
-+		return -EOPNOTSUPP;
-+
- 	if (req->index)
- 		return -EINVAL;
+ #include "fm10k.h"
  
+-#define DRV_VERSION	"0.26.1-k"
++#define DRV_VERSION	"0.27.1-k"
+ #define DRV_SUMMARY	"Intel(R) Ethernet Switch Host Interface Driver"
+ const char fm10k_driver_version[] = DRV_VERSION;
+ char fm10k_driver_name[] = "fm10k";
 -- 
 2.23.0.245.gf157bbb9169d
 
