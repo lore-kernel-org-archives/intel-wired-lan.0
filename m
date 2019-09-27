@@ -1,33 +1,32 @@
-From: Markus Elfring <Markus.Elfring@web.de>
-Date: Fri, 27 Sep 2019 17:04:45 +0200
-Subject: [Intel-wired-lan] [PATCH] i40e: prevent memory leak in
- i40e_setup_macvlans
-In-Reply-To: <20190925154831.19044-1-navid.emamdoost@gmail.com>
-References: <20190925154831.19044-1-navid.emamdoost@gmail.com>
-Message-ID: <8d7d8cf4-c016-d22c-c2cc-dc71ea407cb4@web.de>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Date: Fri, 27 Sep 2019 19:22:52 +0300
+Subject: [Intel-wired-lan] [net-next v3 7/7] renesas: reject unsupported
+ external timestamp flags
+In-Reply-To: <20190926181109.4871-8-jacob.e.keller@intel.com>
+References: <20190926181109.4871-1-jacob.e.keller@intel.com>
+ <20190926181109.4871-8-jacob.e.keller@intel.com>
+Message-ID: <a08e6e28-bc98-a103-0577-a0bb45f950d5@cogentembedded.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> In i40e_setup_macvlans if i40e_setup_channel fails the allocated memory
-> for ch should be released.
+On 09/26/2019 09:11 PM, Jacob Keller wrote:
 
-I suggest to improve also this change description.
+> Fix the renesas PTP support to explicitly reject any future flags that
+> get added to the external timestamp request ioctl.
+> 
+> In order to maintain currently functioning code, this patch accepts all
+> three current flags. This is because the PTP_RISING_EDGE and
+> PTP_FALLING_EDGE flags have unclear semantics and each driver seems to
+> have interpreted them slightly differently.
+> 
+> Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 
+Reviewed-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -7168,6 +7168,7 @@ static int i40e_setup_macvlans(struct i40e_vsi *vsi, u16 macvlan_cnt, u16 qcnt,
->  		ch->num_queue_pairs = qcnt;
->  		if (!i40e_setup_channel(pf, vsi, ch)) {
->  			ret = -EINVAL;
-> +			kfree(ch);
->  			goto err_free;
->  		}
->  		ch->parent_vsi = vsi;
+[...]
 
-Can it matter to perform the added function call before the error code assignment?
-
-Regards,
-Markus
+MBR, Sergei
