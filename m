@@ -1,10 +1,11 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 27 Sep 2019 22:16:41 +0000
-Subject: [Intel-wired-lan] [net-next v3 0/7] new PTP ioctl fixes
-In-Reply-To: <20190927.202949.1014916876082211694.davem@davemloft.net>
-References: <20190926181109.4871-1-jacob.e.keller@intel.com>
- <20190927.202949.1014916876082211694.davem@davemloft.net>
-Message-ID: <02874ECE860811409154E81DA85FBB58968DBB73@ORSMSX121.amr.corp.intel.com>
+Date: Fri, 27 Sep 2019 23:23:56 +0000
+Subject: [Intel-wired-lan] [PATCH] namespace: fix namespace.pl script to
+ support relative paths
+In-Reply-To: <7b26e6cc-10ce-5df2-6375-1f95bc4da04e@infradead.org>
+References: <20190129204319.15238-1-jacob.e.keller@intel.com>
+ <7b26e6cc-10ce-5df2-6375-1f95bc4da04e@infradead.org>
+Message-ID: <02874ECE860811409154E81DA85FBB58968DBE40@ORSMSX121.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,20 +13,39 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: David Miller [mailto:davem at davemloft.net]
-> Sent: Friday, September 27, 2019 11:30 AM
+> From: Randy Dunlap [mailto:rdunlap at infradead.org]
+> Sent: Friday, September 27, 2019 4:12 PM
 > To: Keller, Jacob E <jacob.e.keller@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Subject: Re: [net-next v3 0/7] new PTP ioctl fixes
+> Cc: intel-wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org; linux-kbuild <linux-
+> kbuild at vger.kernel.org>; Masahiro Yamada <yamada.masahiro@socionext.com>
+> Subject: Re: [PATCH] namespace: fix namespace.pl script to support relative paths
 > 
 > 
-> Bug fixes should target 'net' not 'net-next'
+> re: https://lore.kernel.org/lkml/20190129204319.15238-1-jacob.e.keller at intel.com/
+> 
+> Did anything happen with this patch?
+> 
 
-Right, that was my mistake. I think I saw the ioctl change only on the net-next tree so I built the whole series on net-next. Come to think of it, I didn't check the net tree at all. I'll aim to do that better going forward.
+I haven't heard anything or seen it get applied.
 
-Thanks Dave.
+> Please send it to linux-kbuild at vger.kernel.org and
+> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+> 
 
-Regards,
-Jake
- 
+Sure, I can forward it.
+
+> You can also add:
+> Acked-by: Randy Dunlap <rdunlap@infradead.org>
+> Tested-by: Randy Dunlap <rdunlap@infradead.org>
+> 
+> 
+> I was just about to fix this script but I decided to first see if anyone else
+> had already done so.  Thanks.
+> 
+
+Thanks for the review/notice here.
+
+> --
+> ~Randy
+
+-Jake
