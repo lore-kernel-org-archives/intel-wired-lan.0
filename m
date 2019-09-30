@@ -1,20 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 01 Oct 2019 06:39:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:rdma] BUILD SUCCESS
- 6f6d670ffddf42674716867aa7b49aa7ea1af2d9
-Message-ID: <5d928424.uaYU3/ElHkq/U9pP%lkp@intel.com>
+Date: Tue, 01 Oct 2019 06:39:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ b15350aed43e8a92d4ea6eeab5d35b4ae86a8e5e
+Message-ID: <5d92842b.2iaiqRrnxYd96dsg%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  rdma
-branch HEAD: 6f6d670ffddf42674716867aa7b49aa7ea1af2d9  RDMA/i40iw: Mark i40iw as deprecated
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: b15350aed43e8a92d4ea6eeab5d35b4ae86a8e5e  mlx5: reject unsupported external timestamp flags
 
-elapsed time: 151m
+elapsed time: 153m
 
-configs tested: 68
+configs tested: 73
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -77,6 +77,11 @@ microblaze                    nommu_defconfig
 powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
 s390                             allmodconfig
 s390                              allnoconfig
 s390                          debug_defconfig
