@@ -1,172 +1,70 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sun, 08 Sep 2019 09:52:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- d81f91ec2da96681505f244f38ea27fc265c8c5e
-Message-ID: <5d745ef7.9EP0vMurxnLU66qr%lkp@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Mon, 30 Sep 2019 19:46:52 +0000
+Subject: [Intel-wired-lan] [PATCH] namespace: fix namespace.pl script to
+ support relative paths
+In-Reply-To: <CAK7LNARyUEakeG_N9TWcO2cjFSzbgY__k_QJm6C+oOz+fW0aeg@mail.gmail.com>
+References: <20190129204319.15238-1-jacob.e.keller@intel.com>
+ <7b26e6cc-10ce-5df2-6375-1f95bc4da04e@infradead.org>
+ <02874ECE860811409154E81DA85FBB58968DBE54@ORSMSX121.amr.corp.intel.com>
+ <CAK7LNARyUEakeG_N9TWcO2cjFSzbgY__k_QJm6C+oOz+fW0aeg@mail.gmail.com>
+Message-ID: <02874ECE860811409154E81DA85FBB58968E1402@ORSMSX121.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://kernel.googlesource.com/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: d81f91ec2da96681505f244f38ea27fc265c8c5e  ice: Bump version
+> -----Original Message-----
+> From: Masahiro Yamada [mailto:yamada.masahiro at socionext.com]
+> Sent: Saturday, September 28, 2019 5:21 PM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> Cc: Randy Dunlap <rdunlap@infradead.org>; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org; linux-kbuild <linux-kbuild@vger.kernel.org>
+> Subject: Re: [PATCH] namespace: fix namespace.pl script to support relative paths
+> 
+> On Sat, Sep 28, 2019 at 8:30 AM Keller, Jacob E
+> <jacob.e.keller@intel.com> wrote:
+> >
+> > > -----Original Message-----
+> > > From: Randy Dunlap [mailto:rdunlap at infradead.org]
+> > > Sent: Friday, September 27, 2019 4:12 PM
+> > > To: Keller, Jacob E <jacob.e.keller@intel.com>
+> > > Cc: intel-wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org; linux-kbuild
+> <linux-
+> > > kbuild at vger.kernel.org>; Masahiro Yamada <yamada.masahiro@socionext.com>
+> > > Subject: Re: [PATCH] namespace: fix namespace.pl script to support relative paths
+> > >
+> > >
+> > > re: https://lore.kernel.org/lkml/20190129204319.15238-1-
+> jacob.e.keller at intel.com/
+> > >
+> > > Did anything happen with this patch?
+> > >
+> > > Please send it to linux-kbuild at vger.kernel.org and
+> > > Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+> > >
+> > > You can also add:
+> > > Acked-by: Randy Dunlap <rdunlap@infradead.org>
+> > > Tested-by: Randy Dunlap <rdunlap@infradead.org>
+> > >
+> > >
+> > > I was just about to fix this script but I decided to first see if anyone else
+> > > had already done so.  Thanks.
+> > >
+> > > --
+> > > ~Randy
+> >
+> > Done, thanks.
+> >
+> > Regards,
+> > Jake
+> 
+> 
+> Applied to linux/kbuild. Thanks.
+> 
 
-elapsed time: 333m
+Great, thanks!
 
-configs tested: 147
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                           allmodconfig
-x86_64                           allyesconfig
-i386                             alldefconfig
-x86_64                 randconfig-b002-201936
-i386                   randconfig-b003-201936
-i386                   randconfig-b004-201936
-i386                   randconfig-b001-201936
-i386                   randconfig-b002-201936
-x86_64                 randconfig-b001-201936
-x86_64                 randconfig-b004-201936
-x86_64                 randconfig-b003-201936
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                      malta_kvm_defconfig
-mips                                     txx9
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-g003-201936
-i386                   randconfig-g004-201936
-x86_64                 randconfig-g001-201936
-x86_64                 randconfig-g002-201936
-i386                   randconfig-g001-201936
-x86_64                 randconfig-g004-201936
-i386                   randconfig-g002-201936
-i386                   randconfig-g003-201936
-i386                   randconfig-d002-201936
-i386                   randconfig-d004-201936
-x86_64                 randconfig-d004-201936
-x86_64                 randconfig-d002-201936
-x86_64                 randconfig-d001-201936
-x86_64                 randconfig-d003-201936
-i386                   randconfig-d001-201936
-i386                   randconfig-d003-201936
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-e004-201936
-i386                   randconfig-e004-201936
-x86_64                 randconfig-e002-201936
-i386                   randconfig-e003-201936
-x86_64                 randconfig-e003-201936
-x86_64                 randconfig-e001-201936
-i386                   randconfig-e002-201936
-i386                   randconfig-e001-201936
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                 randconfig-h002-201936
-x86_64                 randconfig-h003-201936
-i386                   randconfig-h001-201936
-i386                   randconfig-h002-201936
-i386                   randconfig-h004-201936
-x86_64                 randconfig-h004-201936
-i386                   randconfig-h003-201936
-x86_64                 randconfig-h001-201936
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                 randconfig-c003-201936
-x86_64                 randconfig-c002-201936
-i386                   randconfig-c004-201936
-x86_64                 randconfig-c004-201936
-i386                   randconfig-c003-201936
-i386                   randconfig-c002-201936
-x86_64                 randconfig-c001-201936
-i386                   randconfig-c001-201936
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-a004-201936
-i386                   randconfig-a003-201936
-x86_64                 randconfig-a002-201936
-i386                   randconfig-a004-201936
-i386                   randconfig-a002-201936
-i386                   randconfig-a001-201936
-x86_64                 randconfig-a001-201936
-x86_64                 randconfig-a003-201936
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-i386                   randconfig-f004-201936
-x86_64                 randconfig-f004-201936
-x86_64                 randconfig-f002-201936
-i386                   randconfig-f001-201936
-i386                   randconfig-f002-201936
-i386                   randconfig-f003-201936
-x86_64                 randconfig-f003-201936
-x86_64                 randconfig-f001-201936
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> --
+> Best Regards
+> Masahiro Yamada
