@@ -1,24 +1,44 @@
-From: Shannon Nelson <snelson@pensando.io>
-Date: Wed, 2 Oct 2019 09:14:31 -0700
+From: David Miller <davem@davemloft.net>
+Date: Wed, 02 Oct 2019 17:25:26 -0700 (PDT)
 Subject: [Intel-wired-lan] [PATCH] Documentation: networking: device
  drivers: Remove stray asterisks
 In-Reply-To: <20191002150956.16234-1-j.neuschaefer@gmx.net>
 References: <20191002150956.16234-1-j.neuschaefer@gmx.net>
-Message-ID: <1fd5d5df-30ea-2545-daf6-575473879cd6@pensando.io>
+Message-ID: <20191002.172526.1832563406015085740.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/2/19 8:09 AM, Jonathan Neusch?fer wrote:
+From: Jonathan Neusch?fer <j.neuschaefer@gmx.net>
+Date: Wed,  2 Oct 2019 17:09:55 +0200
+
 > These asterisks were once references to a line that said:
->    "* Other names and brands may be claimed as the property of others."
+>   "* Other names and brands may be claimed as the property of others."
 > But now, they serve no purpose; they can only irritate the reader.
->
-[...]
+> 
+> Fixes: de3edab4276c ("e1000: update README for e1000")
+> Fixes: a3fb65680f65 ("e100.txt: Cleanup license info in kernel doc")
+> Fixes: da8c01c4502a ("e1000e.txt: Add e1000e documentation")
+> Fixes: f12a84a9f650 ("Documentation: fm10k: Add kernel documentation")
+> Fixes: b55c52b1938c ("igb.txt: Add igb documentation")
+> Fixes: c4e9b56e2442 ("igbvf.txt: Add igbvf Documentation")
+> Fixes: d7064f4c192c ("Documentation/networking/: Update Intel wired LAN driver documentation")
+> Fixes: c4b8c01112a1 ("ixgbevf.txt: Update ixgbevf documentation")
+> Fixes: 1e06edcc2f22 ("Documentation: i40e: Prepare documentation for RST conversion")
+> Fixes: 105bf2fe6b32 ("i40evf: add driver to kernel build system")
+> Fixes: 1fae869bcf3d ("Documentation: ice: Prepare documentation for RST conversion")
 > Fixes: df69ba43217d ("ionic: Add basic framework for IONIC Network device driver")
+> Signed-off-by: Jonathan Neusch?fer <j.neuschaefer@gmx.net>
 
-Acked-by: Shannon Nelson <snelson@pensando.io>
+Jon, how do you want to handle changes like this?
 
+I mean, there are unlikely to be conflicts from something like this so it
+could simply go via the documentation tree.
 
+Acked-by: David S. Miller <davem@davemloft.net>
+
+I could also take it via net-next, either way is fine with me.
+
+Just let me know.
