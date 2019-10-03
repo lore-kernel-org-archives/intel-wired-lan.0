@@ -1,31 +1,41 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Date: Thu, 3 Oct 2019 08:29:53 -0600
+Date: Thu, 3 Oct 2019 10:47:37 -0600
 Subject: [Intel-wired-lan] [PATCH] Documentation: networking: device
  drivers: Remove stray asterisks
-In-Reply-To: <20191002.172526.1832563406015085740.davem@davemloft.net>
+In-Reply-To: <20191002150956.16234-1-j.neuschaefer@gmx.net>
 References: <20191002150956.16234-1-j.neuschaefer@gmx.net>
- <20191002.172526.1832563406015085740.davem@davemloft.net>
-Message-ID: <20191003082953.396ebc1a@lwn.net>
+Message-ID: <20191003104737.3774a00f@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 02 Oct 2019 17:25:26 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+On Wed,  2 Oct 2019 17:09:55 +0200
+Jonathan Neusch?fer <j.neuschaefer@gmx.net> wrote:
 
-> Jon, how do you want to handle changes like this?
-
-In whatever way works best.  Documentation should make our lives easier,
-not get in the way :)
-
-> I mean, there are unlikely to be conflicts from something like this so it
-> could simply go via the documentation tree.
+> These asterisks were once references to a line that said:
+>   "* Other names and brands may be claimed as the property of others."
+> But now, they serve no purpose; they can only irritate the reader.
 > 
-> Acked-by: David S. Miller <davem@davemloft.net>
+> Fixes: de3edab4276c ("e1000: update README for e1000")
+> Fixes: a3fb65680f65 ("e100.txt: Cleanup license info in kernel doc")
+> Fixes: da8c01c4502a ("e1000e.txt: Add e1000e documentation")
+> Fixes: f12a84a9f650 ("Documentation: fm10k: Add kernel documentation")
+> Fixes: b55c52b1938c ("igb.txt: Add igb documentation")
+> Fixes: c4e9b56e2442 ("igbvf.txt: Add igbvf Documentation")
+> Fixes: d7064f4c192c ("Documentation/networking/: Update Intel wired LAN driver documentation")
+> Fixes: c4b8c01112a1 ("ixgbevf.txt: Update ixgbevf documentation")
+> Fixes: 1e06edcc2f22 ("Documentation: i40e: Prepare documentation for RST conversion")
+> Fixes: 105bf2fe6b32 ("i40evf: add driver to kernel build system")
+> Fixes: 1fae869bcf3d ("Documentation: ice: Prepare documentation for RST conversion")
+> Fixes: df69ba43217d ("ionic: Add basic framework for IONIC Network device driver")
+> Signed-off-by: Jonathan Neusch?fer <j.neuschaefer@gmx.net>
 
-OK, I'll go ahead and apply it, then.
+So just FYI: as I applied this, I removed most of the "Fixes" tags.  The
+cited commits were adding documentation as plain-text files, so the extra
+asterisk was *not* an error to be fixed at that point.  The RST-conversion
+patches, instead, should have caught that...
 
 Thanks,
 
