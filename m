@@ -1,44 +1,34 @@
-From: David Miller <davem@davemloft.net>
-Date: Wed, 02 Oct 2019 17:25:26 -0700 (PDT)
-Subject: [Intel-wired-lan] [PATCH] Documentation: networking: device
- drivers: Remove stray asterisks
-In-Reply-To: <20191002150956.16234-1-j.neuschaefer@gmx.net>
-References: <20191002150956.16234-1-j.neuschaefer@gmx.net>
-Message-ID: <20191002.172526.1832563406015085740.davem@davemloft.net>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 3 Oct 2019 02:46:13 +0000
+Subject: [Intel-wired-lan] [PATCH v2] igc: Add set_rx_mode support
+In-Reply-To: <20190925085853.1080-1-sasha.neftin@intel.com>
+References: <20190925085853.1080-1-sasha.neftin@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9713443A@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jonathan Neusch?fer <j.neuschaefer@gmx.net>
-Date: Wed,  2 Oct 2019 17:09:55 +0200
-
-> These asterisks were once references to a line that said:
->   "* Other names and brands may be claimed as the property of others."
-> But now, they serve no purpose; they can only irritate the reader.
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
+> Sasha Neftin
+> Sent: Wednesday, September 25, 2019 1:59 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v2] igc: Add set_rx_mode support
 > 
-> Fixes: de3edab4276c ("e1000: update README for e1000")
-> Fixes: a3fb65680f65 ("e100.txt: Cleanup license info in kernel doc")
-> Fixes: da8c01c4502a ("e1000e.txt: Add e1000e documentation")
-> Fixes: f12a84a9f650 ("Documentation: fm10k: Add kernel documentation")
-> Fixes: b55c52b1938c ("igb.txt: Add igb documentation")
-> Fixes: c4e9b56e2442 ("igbvf.txt: Add igbvf Documentation")
-> Fixes: d7064f4c192c ("Documentation/networking/: Update Intel wired LAN driver documentation")
-> Fixes: c4b8c01112a1 ("ixgbevf.txt: Update ixgbevf documentation")
-> Fixes: 1e06edcc2f22 ("Documentation: i40e: Prepare documentation for RST conversion")
-> Fixes: 105bf2fe6b32 ("i40evf: add driver to kernel build system")
-> Fixes: 1fae869bcf3d ("Documentation: ice: Prepare documentation for RST conversion")
-> Fixes: df69ba43217d ("ionic: Add basic framework for IONIC Network device driver")
-> Signed-off-by: Jonathan Neusch?fer <j.neuschaefer@gmx.net>
+> Add multicast addresses list to the MTA table.
+> Implement basic rx mode support.
+> Add option for ipv6 address settings.
+> 
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igc/igc_defines.h |   3 +
+>  drivers/net/ethernet/intel/igc/igc_hw.h      |   1 +
+>  drivers/net/ethernet/intel/igc/igc_mac.c     | 104 +++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_mac.h     |   2 +
+>  drivers/net/ethernet/intel/igc/igc_main.c    | 181
+> +++++++++++++++++++++++++++
+>  5 files changed, 291 insertions(+)
+> 
 
-Jon, how do you want to handle changes like this?
-
-I mean, there are unlikely to be conflicts from something like this so it
-could simply go via the documentation tree.
-
-Acked-by: David S. Miller <davem@davemloft.net>
-
-I could also take it via net-next, either way is fine with me.
-
-Just let me know.
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
