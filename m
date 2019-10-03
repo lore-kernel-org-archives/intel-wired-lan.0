@@ -1,47 +1,32 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu,  3 Oct 2019 14:47:01 +0300
-Subject: [Intel-wired-lan] [PATCH v1] igc: Clean up unused shadow_vfta
- pointer
-Message-ID: <20191003114701.33966-1-sasha.neftin@intel.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Thu, 3 Oct 2019 08:29:53 -0600
+Subject: [Intel-wired-lan] [PATCH] Documentation: networking: device
+ drivers: Remove stray asterisks
+In-Reply-To: <20191002.172526.1832563406015085740.davem@davemloft.net>
+References: <20191002150956.16234-1-j.neuschaefer@gmx.net>
+ <20191002.172526.1832563406015085740.davem@davemloft.net>
+Message-ID: <20191003082953.396ebc1a@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-VLAN filter table array not implemented yet and shadow_vfta pointer
-not used. Clean up the code and remove the unused shadow_vfta pointer.
+On Wed, 02 Oct 2019 17:25:26 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc.h      | 1 -
- drivers/net/ethernet/intel/igc/igc_main.c | 1 -
- 2 files changed, 2 deletions(-)
+> Jon, how do you want to handle changes like this?
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 7e16345d836e..0868677d43ed 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -411,7 +411,6 @@ struct igc_adapter {
- 	u32 tx_hwtstamp_timeouts;
- 	u32 tx_hwtstamp_skipped;
- 	u32 rx_hwtstamp_cleared;
--	u32 *shadow_vfta;
- 
- 	u32 rss_queues;
- 	u32 rss_indir_tbl_init;
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 52521a0bbf48..0a4bcd2d3b85 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -4574,7 +4574,6 @@ static void igc_remove(struct pci_dev *pdev)
- 	pci_release_mem_regions(pdev);
- 
- 	kfree(adapter->mac_table);
--	kfree(adapter->shadow_vfta);
- 	free_netdev(netdev);
- 
- 	pci_disable_pcie_error_reporting(pdev);
--- 
-2.11.0
+In whatever way works best.  Documentation should make our lives easier,
+not get in the way :)
 
+> I mean, there are unlikely to be conflicts from something like this so it
+> could simply go via the documentation tree.
+> 
+> Acked-by: David S. Miller <davem@davemloft.net>
+
+OK, I'll go ahead and apply it, then.
+
+Thanks,
+
+jon
