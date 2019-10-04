@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 4 Oct 2019 19:06:46 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove duplicate clear_bit()
- call
-In-Reply-To: <20191004065357.19138-1-igor.pylypiv@gmail.com>
-References: <20191004065357.19138-1-igor.pylypiv@gmail.com>
-Message-ID: <0c4651b2f0824c4386f4b8e4c3ec5580@intel.com>
+Date: Fri, 4 Oct 2019 19:03:01 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: update driver version to match
+ out-of-tree
+In-Reply-To: <20190926212904.27184-1-jacob.e.keller@intel.com>
+References: <20190926212904.27184-1-jacob.e.keller@intel.com>
+Message-ID: <8d756d359c82435cb19aa2e8fb3a5bb3@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,20 +13,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Igor Pylypiv
-> Sent: Thursday, October 3, 2019 11:54 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David S . Miller
-> <davem@davemloft.net>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Igor Pylypiv
-> <igor.pylypiv@gmail.com>
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove duplicate clear_bit() call
+> Behalf Of Jacob Keller
+> Sent: Thursday, September 26, 2019 2:29 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] fm10k: update driver version to match
+> out-of-tree
 > 
-> __IXGBE_RX_BUILD_SKB_ENABLED bit is already cleared.
+> An upcoming out-of-tree release will be occurring which will include the
+> recent functionality to support virtual function statistics. Update the kernel
+> driver version to match this.
 > 
-> Signed-off-by: Igor Pylypiv <igor.pylypiv@gmail.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 1 -
->  1 file changed, 1 deletion(-)
+>  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
