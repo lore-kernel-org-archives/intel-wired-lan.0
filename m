@@ -1,57 +1,170 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 4 Oct 2019 19:05:24 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] ice: Initialize and register
- multi-function device to provide RDMA
-In-Reply-To: <20191003141739.56446-1-anthony.l.nguyen@intel.com>
-References: <20191003141739.56446-1-anthony.l.nguyen@intel.com>
-Message-ID: <4103d8c13ede4eaf8ec004332bbce82b@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 05 Oct 2019 03:15:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 0ba46794b7da93856333e4124cf6eb95c1c002e9
+Message-ID: <5d979a48.dx7hhdLAgd033Fkj%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Thursday, October 3, 2019 7:18 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 1/2] ice: Initialize and register multi-
-> function device to provide RDMA
-> 
-> The RDMA block does not have its own PCI function, instead it must utilize
-> the ice driver to gain access to the PCI device. Create an MFD device for the
-> RDMA driver to bind to the device data. The device data contains all of the
-> relevant information that the IRDMA peer will need to access this PF's IIDC
-> API callbacks.
-> 
-> Note the header file iidc.h is located under include/linux/net/intel as this is a
-> unified header file to be used by all consumers of the IIDC interface.
-> 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  MAINTAINERS                                   |   1 +
->  drivers/net/ethernet/intel/Kconfig            |   1 +
->  drivers/net/ethernet/intel/ice/Makefile       |   1 +
->  drivers/net/ethernet/intel/ice/ice.h          |  16 +
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   1 +
->  drivers/net/ethernet/intel/ice/ice_common.c   |   5 +
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |  31 ++
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |   3 +
->  .../net/ethernet/intel/ice/ice_hw_autogen.h   |   1 +
->  drivers/net/ethernet/intel/ice/ice_idc.c      | 442 ++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_idc_int.h  |  81 ++++
->  drivers/net/ethernet/intel/ice/ice_lib.c      |  11 +
->  drivers/net/ethernet/intel/ice/ice_lib.h      |   2 +-
->  drivers/net/ethernet/intel/ice/ice_main.c     |  70 ++-
->  drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
->  include/linux/net/intel/iidc.h                | 355 ++++++++++++++
->  16 files changed, 1019 insertions(+), 3 deletions(-)  create mode 100644
-> drivers/net/ethernet/intel/ice/ice_idc.c
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_idc_int.h
->  create mode 100644 include/linux/net/intel/iidc.h
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 0ba46794b7da93856333e4124cf6eb95c1c002e9  mlx5: reject unsupported external timestamp flags
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 215m
 
+configs tested: 145
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+arm                              allmodconfig
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-c003-201939
+i386                   randconfig-c004-201939
+x86_64                 randconfig-c002-201939
+x86_64                 randconfig-c004-201939
+i386                   randconfig-c003-201939
+i386                   randconfig-c001-201939
+x86_64                 randconfig-c001-201939
+i386                   randconfig-c002-201939
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+parisc                            allnoconfig
+x86_64                 randconfig-b002-201939
+i386                   randconfig-b003-201939
+i386                   randconfig-b004-201939
+x86_64                 randconfig-b001-201939
+i386                   randconfig-b002-201939
+i386                   randconfig-b001-201939
+x86_64                 randconfig-b004-201939
+x86_64                 randconfig-b003-201939
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                             allmodconfig
+s390                                defconfig
+i386                   randconfig-g004-201939
+x86_64                 randconfig-g003-201939
+x86_64                 randconfig-g002-201939
+x86_64                 randconfig-g001-201939
+x86_64                 randconfig-g004-201939
+i386                   randconfig-g001-201939
+i386                   randconfig-g002-201939
+i386                   randconfig-g003-201939
+arc                              allyesconfig
+powerpc                             defconfig
+microblaze                    nommu_defconfig
+powerpc                       ppc64_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+powerpc                           allnoconfig
+mips                             allmodconfig
+mips                           32r2_defconfig
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+x86_64                 randconfig-f004-201939
+i386                   randconfig-f004-201939
+i386                   randconfig-f003-201939
+i386                   randconfig-f002-201939
+i386                   randconfig-f001-201939
+x86_64                 randconfig-f002-201939
+x86_64                 randconfig-f001-201939
+x86_64                 randconfig-f003-201939
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                 randconfig-a004-201939
+x86_64                 randconfig-a002-201939
+i386                   randconfig-a003-201939
+i386                   randconfig-a004-201939
+i386                   randconfig-a002-201939
+x86_64                 randconfig-a003-201939
+x86_64                 randconfig-a001-201939
+i386                   randconfig-a001-201939
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+i386                   randconfig-e004-201939
+x86_64                 randconfig-e004-201939
+x86_64                 randconfig-e002-201939
+x86_64                 randconfig-e003-201939
+i386                   randconfig-e003-201939
+x86_64                 randconfig-e001-201939
+i386                   randconfig-e001-201939
+i386                   randconfig-e002-201939
+i386                   randconfig-d002-201939
+i386                   randconfig-d004-201939
+x86_64                 randconfig-d004-201939
+x86_64                 randconfig-d001-201939
+x86_64                 randconfig-d002-201939
+x86_64                 randconfig-d003-201939
+i386                   randconfig-d001-201939
+i386                   randconfig-d003-201939
+i386                             allmodconfig
+x86_64                 randconfig-h003-201939
+x86_64                 randconfig-h002-201939
+i386                   randconfig-h002-201939
+i386                   randconfig-h001-201939
+x86_64                 randconfig-h004-201939
+i386                   randconfig-h004-201939
+x86_64                 randconfig-h001-201939
+i386                   randconfig-h003-201939
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+x86_64                           allyesconfig
+x86_64                           allmodconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
