@@ -1,56 +1,47 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Sat, 5 Oct 2019 01:36:09 +0800
-Subject: [Intel-wired-lan] e1000e regression - 5.4rc1
-In-Reply-To: <171f0c61-73a2-81c2-5c8a-7c140f548803@mni.thm.de>
-References: <171f0c61-73a2-81c2-5c8a-7c140f548803@mni.thm.de>
-Message-ID: <56242322-D549-4E23-97AB-153CC392B107@canonical.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 4 Oct 2019 19:05:50 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2] ice: Implement peer communications
+In-Reply-To: <20191003141739.56446-2-anthony.l.nguyen@intel.com>
+References: <20191003141739.56446-1-anthony.l.nguyen@intel.com>
+ <20191003141739.56446-2-anthony.l.nguyen@intel.com>
+Message-ID: <0762892933e247458639ee9772c6f73b@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Tobias
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Thursday, October 3, 2019 7:18 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH 2/2] ice: Implement peer communications
+> 
+> Set and implement operations for the peer device and peer driver to
+> communicate with each other, via ice_ops and ice_peer_ops, to request
+> resources and manage event notification.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h          |   2 +
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  32 +
+>  drivers/net/ethernet/intel/ice/ice_common.c   | 188 ++++
+>  drivers/net/ethernet/intel/ice/ice_common.h   |   9 +
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |  34 +
+>  drivers/net/ethernet/intel/ice/ice_idc.c      | 884 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_idc_int.h  |  38 +
+>  drivers/net/ethernet/intel/ice/ice_lib.c      |  34 +-
+>  drivers/net/ethernet/intel/ice/ice_lib.h      |   2 +
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  63 +-
+>  drivers/net/ethernet/intel/ice/ice_sched.c    |  69 +-
+>  drivers/net/ethernet/intel/ice/ice_switch.c   |  27 +
+>  drivers/net/ethernet/intel/ice/ice_switch.h   |   4 +
+>  drivers/net/ethernet/intel/ice/ice_type.h     |   3 +
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  25 -
+>  15 files changed, 1381 insertions(+), 33 deletions(-)
 
-> On Oct 4, 2019, at 18:34, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
-> 
-> Hello all,
-> 
-> While testing the 5.4rc1 release, i noticed my Ethernet never coming fully up, seemingly having a timeout problem. While bisecting this i landed at the commit dee23594d587386e9fda76732aa5f5a487709510 ("e1000e: Make speed detection on hotplugging cable more reliable") as the first bad commit. And indeed just reverting the commit on top of 5.4rc1 resolves the problem. Let me know if you have further questions, or patches to test!
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Is runtime PM enabled (i.e. "power/control" = auto)?
-Also please attach full dmesg, thanks!
-
-Kai-Heng 
-
-> 
-> Greetings,
-> 
-> Tobias
-> 
-> 
-> lspci:
-> 
-> 00:19.0 Ethernet controller: Intel Corporation 82579V Gigabit Network Connection (rev 06)
->         DeviceName:  Onboard LAN
->         Subsystem: ASUSTeK Computer Inc. P8P67 Deluxe Motherboard
->         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
->         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->         Latency: 0
->         Interrupt: pin A routed to IRQ 56
->         Region 0: Memory at fbf00000 (32-bit, non-prefetchable) [size=128K]
->         Region 1: Memory at fbf28000 (32-bit, non-prefetchable) [size=4K]
->         Region 2: I/O ports at f040 [size=32]
->         Capabilities: [c8] Power Management version 2
->                 Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
->                 Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=1 PME-
->         Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
->                 Address: 00000000fee00698  Data: 0000
->         Capabilities: [e0] PCI Advanced Features
->                 AFCap: TP+ FLR+
->                 AFCtrl: FLR-
->                 AFStatus: TP-
->         Kernel driver in use: e1000e
->         Kernel modules: e1000e
-> 
 
