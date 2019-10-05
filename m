@@ -1,54 +1,45 @@
-From: Joe Perches <joe@perches.com>
-Date: Sun, 06 Oct 2019 10:19:10 -0700
-Subject: [Intel-wired-lan] i40e_pto.c: Odd use of strlcpy converted from
- strncpy
-Message-ID: <edf91d8284a2a19d956eb8b7e8b6c4984ceaa1ab.camel@perches.com>
+From: Manjunath Patil <manjunath.b.patil@oracle.com>
+Date: Sat,  5 Oct 2019 08:20:03 -0700
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: protect TX timestamping from
+ API misuse
+Message-ID: <1570288803-14880-1-git-send-email-manjunath.b.patil@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This got converted from strncpy to strlcpy but it's
-now not necessary to use one character less than the
-actual size.
+HW timestamping can only be requested for a packet if the NIC is first
+setup via ioctl(SIOCSHWTSTAMP). If this step was skipped, then the ixgbe
+driver still allowed TX packets to request HW timestamping. In this
+situation, we see 'clearing Tx Timestamp hang' noise in the log.
 
-Perhaps the sizeof() - 1 is now not correct and it
-should use strscpy and a normal sizeof.
+Fix this by checking that the NIC is configured for HW TX timestamping
+before accepting a HW TX timestamping request.
 
-from:
+similar-to:
+	(26bd4e2 igb: protect TX timestamping from API misuse)
+	(0a6f2f0 igb: Fix a test with HWTSTAMP_TX_ON)
 
-commit 7eb74ff891b4e94b8bac48f648a21e4b94ddee64
-Author: Mitch Williams <mitch.a.williams@intel.com>
-Date:   Mon Aug 20 08:12:30 2018 -0700
-
-    i40e: use correct length for strncpy
-
-and
-
-commit 4ff2d8540321324e04c1306f85d4fe68a0c2d0ae
-Author: Patryk Ma?ek <patryk.malek@intel.com>
-Date:   Tue Oct 30 10:50:44 2018 -0700
-
-    i40e: Replace strncpy with strlcpy to ensure null termination
+Signed-off-by: Manjunath Patil <manjunath.b.patil@oracle.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_ptp.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index 9bf1ad4319f5..627b1c02bb4b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -700,8 +700,8 @@ static long i40e_ptp_create_clock(struct i40e_pf *pf)
- 	if (!IS_ERR_OR_NULL(pf->ptp_clock))
- 		return 0;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 1ce2397..dd24aeb 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8640,7 +8640,8 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
  
--	strlcpy(pf->ptp_caps.name, i40e_driver_name,
--		sizeof(pf->ptp_caps.name) - 1);
-+	strscpy(pf->ptp_caps.name, i40e_driver_name, sizeof(pf->ptp_caps.name));
-+
- 	pf->ptp_caps.owner = THIS_MODULE;
- 	pf->ptp_caps.max_adj = 999999999;
- 	pf->ptp_caps.n_ext_ts = 0;
-
+ 	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) &&
+ 	    adapter->ptp_clock) {
+-		if (!test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
++		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
++		    !test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
+ 					   &adapter->state)) {
+ 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+ 			tx_flags |= IXGBE_TX_FLAGS_TSTAMP;
+-- 
+1.7.1
 
