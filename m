@@ -1,116 +1,186 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Sat, 5 Oct 2019 10:22:55 -0700
-Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Use rtnl_lock to prevent
- race conditions between net and pci/pm
-In-Reply-To: <1570241926.10511.7.camel@oc5348122405>
-References: <1570208647.1250.55.camel@oc5348122405>
- <20191004233052.28865.1609.stgit@localhost.localdomain>
- <1570241926.10511.7.camel@oc5348122405>
-Message-ID: <CAKgT0Ud7SupVd3RQmTEJ8e0fixiptS-1wFg+8V4EqpHEuAC3wQ@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sun, 06 Oct 2019 01:41:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ af5c436931c6ef1789949d6b510c5ca0429a5823
+Message-ID: <5d98d5e6.2GM0s0xvLEdwabQQ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Oct 4, 2019 at 7:18 PM David Z. Dai <zdai@linux.vnet.ibm.com> wrote:
->
-> On Fri, 2019-10-04 at 16:36 -0700, Alexander Duyck wrote:
-> > From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> >
-> > This patch is meant to address possible race conditions that can exist
-> > between network configuration and power management. A similar issue was
-> > fixed for igb in commit 9474933caf21 ("igb: close/suspend race in
-> > netif_device_detach").
-> >
-> > In addition it consolidates the code so that the PCI error handling code
-> > will essentially perform the power management freeze on the device prior to
-> > attempting a reset, and will thaw the device afterwards if that is what it
-> > is planning to do. Otherwise when we call close on the interface it should
-> > see it is detached and not attempt to call the logic to down the interface
-> > and free the IRQs again.
-> >
-> > >From what I can tell the check that was adding the check for __E1000_DOWN
-> > in e1000e_close was added when runtime power management was added. However
-> > it should not be relevant for us as we perform a call to
-> > pm_runtime_get_sync before we call e1000_down/free_irq so it should always
-> > be back up before we call into this anyway.
-> >
-> > Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> > ---
-> >
-> > I'm putting this out as an RFC for now. I haven't had a chance to do much
-> > testing yet, but I have verified no build issues, and the driver appears
-> > to load, link, and pass traffic without problems.
-> >
-> > This should address issues seen with either double freeing or never freeing
-> > IRQs that have been seen on this and similar drivers in the past.
-> >
-> > I'll submit this formally after testing it over the weekend assuming there
-> > are no issues.
-> >
-> >  drivers/net/ethernet/intel/e1000e/netdev.c |   33 ++++++++++++++--------------
-> >  1 file changed, 17 insertions(+), 16 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> > index d7d56e42a6aa..182a2c8f12d8 100644
-> > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: af5c436931c6ef1789949d6b510c5ca0429a5823  ixgbe: Remove duplicate clear_bit() call
 
-<snip>
+elapsed time: 1286m
 
-> >
-> > -#ifdef CONFIG_PM_SLEEP
-> >  static int e1000e_pm_thaw(struct device *dev)
-> >  {
-> >       struct net_device *netdev = dev_get_drvdata(dev);
-> >       struct e1000_adapter *adapter = netdev_priv(netdev);
-> > +     int rc = 0;
-> >
-> >       e1000e_set_interrupt_capability(adapter);
-> > -     if (netif_running(netdev)) {
-> > -             u32 err = e1000_request_irq(adapter);
-> >
-> > -             if (err)
-> > -                     return err;
-> > +     rtnl_lock();
-> > +     if (netif_running(netdev)) {
-> > +             rc = e1000_request_irq(adapter);
-> > +             if (rc)
-> > +                     goto err_irq;
-> >
-> >               e1000e_up(adapter);
-> >       }
-> >
-> >       netif_device_attach(netdev);
-> > -
-> > -     return 0;
-> > +     rtnl_unlock();
-> > +err_irq:
-> > +     return rc;
-> >  }
-> >
-> In e1000e_pm_thaw(), these 2 lines need to switch order to avoid
-> deadlock.
-> from:
-> +       rtnl_unlock();
-> +err_irq:
->
-> to:
-> +err_irq:
-> +       rtnl_unlock();
->
-> I will find hardware to test this patch next week. Will update the test
-> result later.
->
-> Thanks! - David
+configs tested: 161
 
-Thanks for spotting that. I will update my copy of the patch for when
-I submit the final revision.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-I'll probably wait to submit it for acceptance until you have had a
-chance to verify that it resolves the issue you were seeing.
+x86_64                 randconfig-a004-201939
+x86_64                 randconfig-a002-201939
+i386                   randconfig-a003-201939
+i386                   randconfig-a004-201939
+i386                   randconfig-a002-201939
+x86_64                 randconfig-a003-201939
+x86_64                 randconfig-a001-201939
+i386                   randconfig-a001-201939
+x86_64                           allyesconfig
+x86_64                           allmodconfig
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+i386                             allmodconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-c003-201939
+i386                   randconfig-c004-201939
+x86_64                 randconfig-c002-201939
+x86_64                 randconfig-c004-201939
+i386                   randconfig-c003-201939
+i386                   randconfig-c001-201939
+x86_64                 randconfig-c001-201939
+i386                   randconfig-c002-201939
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                   randconfig-g004-201939
+x86_64                 randconfig-g003-201939
+x86_64                 randconfig-g002-201939
+x86_64                 randconfig-g001-201939
+x86_64                 randconfig-g004-201939
+i386                   randconfig-g001-201939
+i386                   randconfig-g002-201939
+i386                   randconfig-g003-201939
+i386                   randconfig-d002-201939
+i386                   randconfig-d004-201939
+x86_64                 randconfig-d004-201939
+x86_64                 randconfig-d001-201939
+x86_64                 randconfig-d002-201939
+x86_64                 randconfig-d003-201939
+i386                   randconfig-d001-201939
+i386                   randconfig-d003-201939
+x86_64                 randconfig-h003-201939
+x86_64                 randconfig-h002-201939
+i386                   randconfig-h002-201939
+i386                   randconfig-h001-201939
+x86_64                 randconfig-h004-201939
+i386                   randconfig-h004-201939
+x86_64                 randconfig-h001-201939
+i386                   randconfig-h003-201939
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-f001-201940
+x86_64                 randconfig-f002-201940
+x86_64                 randconfig-f003-201940
+x86_64                 randconfig-f004-201940
+i386                   randconfig-f001-201940
+i386                   randconfig-f002-201940
+i386                   randconfig-f003-201940
+i386                   randconfig-f004-201940
+x86_64                 randconfig-g001-201940
+x86_64                 randconfig-g002-201940
+x86_64                 randconfig-g003-201940
+x86_64                 randconfig-g004-201940
+i386                   randconfig-g001-201940
+i386                   randconfig-g002-201940
+i386                   randconfig-g003-201940
+i386                   randconfig-g004-201940
+x86_64                 randconfig-f004-201939
+i386                   randconfig-f004-201939
+i386                   randconfig-f003-201939
+i386                   randconfig-f002-201939
+i386                   randconfig-f001-201939
+x86_64                 randconfig-f002-201939
+x86_64                 randconfig-f001-201939
+x86_64                 randconfig-f003-201939
+i386                   randconfig-e004-201939
+x86_64                 randconfig-e004-201939
+x86_64                 randconfig-e002-201939
+x86_64                 randconfig-e003-201939
+i386                   randconfig-e003-201939
+x86_64                 randconfig-e001-201939
+i386                   randconfig-e001-201939
+i386                   randconfig-e002-201939
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-b002-201939
+i386                   randconfig-b003-201939
+i386                   randconfig-b004-201939
+x86_64                 randconfig-b001-201939
+i386                   randconfig-b002-201939
+i386                   randconfig-b001-201939
+x86_64                 randconfig-b004-201939
+x86_64                 randconfig-b003-201939
 
-Thanks.
-
-- Alex
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
