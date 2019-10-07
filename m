@@ -1,156 +1,74 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 07 Oct 2019 10:27:55 -0700
-Subject: [Intel-wired-lan] [RFC PATCH v2] e1000e: Use rtnl_lock to prevent
- race conditions between net and pci/pm
-In-Reply-To: <CAKgT0UdwqGGKvaSJ+3vd-_d-6t9MB=No+7SpkbOT2PnynRK+2w@mail.gmail.com>
-References: <CAKgT0UdwqGGKvaSJ+3vd-_d-6t9MB=No+7SpkbOT2PnynRK+2w@mail.gmail.com>
-Message-ID: <20191007172559.11166.29328.stgit@localhost.localdomain>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 07 Oct 2019 13:44:11 -0700
+Subject: [Intel-wired-lan] i40e_pto.c: Odd use of strlcpy converted from
+ strncpy
+In-Reply-To: <edf91d8284a2a19d956eb8b7e8b6c4984ceaa1ab.camel@perches.com>
+References: <edf91d8284a2a19d956eb8b7e8b6c4984ceaa1ab.camel@perches.com>
+Message-ID: <a00c9af7d24ac0dd6af8698c9e545591392720fe.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+On Sun, 2019-10-06 at 10:19 -0700, Joe Perches wrote:
+> This got converted from strncpy to strlcpy but it's
+> now not necessary to use one character less than the
+> actual size.
+> 
+> Perhaps the sizeof() - 1 is now not correct and it
+> should use strscpy and a normal sizeof.
+> 
+> from:
+> 
+> commit 7eb74ff891b4e94b8bac48f648a21e4b94ddee64
+> Author: Mitch Williams <mitch.a.williams@intel.com>
+> Date:   Mon Aug 20 08:12:30 2018 -0700
+> 
+>     i40e: use correct length for strncpy
+> 
+> and
+> 
+> commit 4ff2d8540321324e04c1306f85d4fe68a0c2d0ae
+> Author: Patryk Ma?ek <patryk.malek@intel.com>
+> Date:   Tue Oct 30 10:50:44 2018 -0700
+> 
+>     i40e: Replace strncpy with strlcpy to ensure null termination
 
-This patch is meant to address possible race conditions that can exist
-between network configuration and power management. A similar issue was
-fixed for igb in commit 9474933caf21 ("igb: close/suspend race in
-netif_device_detach").
+Looks like you have a typo in the subject, s/i40e_pto.c/i40e_ptp.c/.
 
-In addition it consolidates the code so that the PCI error handling code
-will essentially perform the power management freeze on the device prior to
-attempting a reset, and will thaw the device afterwards if that is what it
-is planning to do. Otherwise when we call close on the interface it should
-see it is detached and not attempt to call the logic to down the interface
-and free the IRQs again.
+You are also missing you signed-off-by: and Fixes:, I can get your
+change under test in the meantime to confirm your fix.
 
-From what I can tell the check that was adding the check for __E1000_DOWN
-in e1000e_close was added when runtime power management was added. However
-it should not be relevant for us as we perform a call to
-pm_runtime_get_sync before we call e1000_down/free_irq so it should always
-be back up before we call into this anyway.
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> index 9bf1ad4319f5..627b1c02bb4b 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> @@ -700,8 +700,8 @@ static long i40e_ptp_create_clock(struct i40e_pf
+> *pf)
+>  	if (!IS_ERR_OR_NULL(pf->ptp_clock))
+>  		return 0;
+>  
+> -	strlcpy(pf->ptp_caps.name, i40e_driver_name,
+> -		sizeof(pf->ptp_caps.name) - 1);
+> +	strscpy(pf->ptp_caps.name, i40e_driver_name, sizeof(pf-
+> >ptp_caps.name));
+> +
+>  	pf->ptp_caps.owner = THIS_MODULE;
+>  	pf->ptp_caps.max_adj = 999999999;
+>  	pf->ptp_caps.n_ext_ts = 0;
+> 
+> 
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
----
-
-RFC v2: Dropped some unused variables
-	Added logic to check for device present before removing to pm_freeze
-	Fixed misplaced err_irq to before rtnl_unlock()
-
- drivers/net/ethernet/intel/e1000e/netdev.c |   40 +++++++++++++++-------------
- 1 file changed, 21 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index d7d56e42a6aa..8b4e589aca36 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -4715,12 +4715,12 @@ int e1000e_close(struct net_device *netdev)
- 
- 	pm_runtime_get_sync(&pdev->dev);
- 
--	if (!test_bit(__E1000_DOWN, &adapter->state)) {
-+	if (netif_device_present(netdev)) {
- 		e1000e_down(adapter, true);
- 		e1000_free_irq(adapter);
- 
- 		/* Link status message must follow this format */
--		pr_info("%s NIC Link is Down\n", adapter->netdev->name);
-+		pr_info("%s NIC Link is Down\n", netdev->name);
- 	}
- 
- 	napi_disable(&adapter->napi);
-@@ -6298,10 +6298,14 @@ static int e1000e_pm_freeze(struct device *dev)
- {
- 	struct net_device *netdev = dev_get_drvdata(dev);
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	bool present;
- 
-+	rtnl_lock();
-+
-+	present = netif_device_present(netdev);
- 	netif_device_detach(netdev);
- 
--	if (netif_running(netdev)) {
-+	if (present && netif_running(netdev)) {
- 		int count = E1000_CHECK_RESET_COUNT;
- 
- 		while (test_bit(__E1000_RESETTING, &adapter->state) && count--)
-@@ -6313,6 +6317,8 @@ static int e1000e_pm_freeze(struct device *dev)
- 		e1000e_down(adapter, false);
- 		e1000_free_irq(adapter);
- 	}
-+	rtnl_unlock();
-+
- 	e1000e_reset_interrupt_capability(adapter);
- 
- 	/* Allow time for pending master requests to run */
-@@ -6626,27 +6632,31 @@ static int __e1000_resume(struct pci_dev *pdev)
- 	return 0;
- }
- 
--#ifdef CONFIG_PM_SLEEP
- static int e1000e_pm_thaw(struct device *dev)
- {
- 	struct net_device *netdev = dev_get_drvdata(dev);
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	int rc = 0;
- 
- 	e1000e_set_interrupt_capability(adapter);
--	if (netif_running(netdev)) {
--		u32 err = e1000_request_irq(adapter);
- 
--		if (err)
--			return err;
-+	rtnl_lock();
-+	if (netif_running(netdev)) {
-+		rc = e1000_request_irq(adapter);
-+		if (rc)
-+			goto err_irq;
- 
- 		e1000e_up(adapter);
- 	}
- 
- 	netif_device_attach(netdev);
-+err_irq:
-+	rtnl_unlock();
- 
--	return 0;
-+	return rc;
- }
- 
-+#ifdef CONFIG_PM_SLEEP
- static int e1000e_pm_suspend(struct device *dev)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
-@@ -6818,16 +6828,11 @@ static void e1000_netpoll(struct net_device *netdev)
- static pci_ers_result_t e1000_io_error_detected(struct pci_dev *pdev,
- 						pci_channel_state_t state)
- {
--	struct net_device *netdev = pci_get_drvdata(pdev);
--	struct e1000_adapter *adapter = netdev_priv(netdev);
--
--	netif_device_detach(netdev);
-+	e1000e_pm_freeze(&pdev->dev);
- 
- 	if (state == pci_channel_io_perm_failure)
- 		return PCI_ERS_RESULT_DISCONNECT;
- 
--	if (netif_running(netdev))
--		e1000e_down(adapter, true);
- 	pci_disable_device(pdev);
- 
- 	/* Request a slot slot reset. */
-@@ -6893,10 +6898,7 @@ static void e1000_io_resume(struct pci_dev *pdev)
- 
- 	e1000_init_manageability_pt(adapter);
- 
--	if (netif_running(netdev))
--		e1000e_up(adapter);
--
--	netif_device_attach(netdev);
-+	e1000e_pm_thaw(&pdev->dev);
- 
- 	/* If the controller has AMT, do not set DRV_LOAD until the interface
- 	 * is up.  For all other cases, let the f/w know that the h/w is now
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20191007/ab27f888/attachment.asc>
