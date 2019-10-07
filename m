@@ -1,154 +1,153 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Sun, 20 Oct 2019 19:12:01 +0200
-Subject: [Intel-wired-lan] FW: [PATCH bpf-next 2/4] xsk: allow AF_XDP
- sockets to receive packets directly from a queue
-In-Reply-To: <877e4zd8py.fsf@toke.dk>
-References: <1570515415-45593-3-git-send-email-sridhar.samudrala@intel.com>
- <CAADnVQ+XxmvY0cs8MYriMMd7=2TSEm4zCtB+fs2vkwdUY6UgAQ@mail.gmail.com>
- <3ED8E928C4210A4289A677D2FEB48235140134CE@fmsmsx111.amr.corp.intel.com>
- <2bc26acd-170d-634e-c066-71557b2b3e4f@intel.com>
- <CAADnVQ+qq6RLMjh5bB1ugXP5p7vYM2F1fLGFQ2pL=2vhCLiBdA@mail.gmail.com>
- <2032d58c-916f-d26a-db14-bd5ba6ad92b9@intel.com>
- <CAADnVQ+CH1YM52+LfybLS+NK16414Exrvk1QpYOF=HaT4KRaxg@mail.gmail.com>
- <acf69635-5868-f876-f7da-08954d1f690e@intel.com>
- <20191019001449.fk3gnhih4nx724pm@ast-mbp>
- <6f281517-3785-ce46-65de-e2f78576783b@intel.com>
- <20191019022525.w5xbwkav2cpqkfwi@ast-mbp> <877e4zd8py.fsf@toke.dk>
-Message-ID: <CAJ+HfNj07FwmU2GGpUYw56PRwu4pHyHNSkbCOogbMB5zB2QqWA@mail.gmail.com>
+From: David Z. Dai <zdai@linux.vnet.ibm.com>
+Date: Mon, 07 Oct 2019 10:50:59 -0500
+Subject: [Intel-wired-lan] [RFC PATCH] e1000e: Use rtnl_lock to prevent
+ race conditions between net and pci/pm
+In-Reply-To: <CAKgT0Ud7SupVd3RQmTEJ8e0fixiptS-1wFg+8V4EqpHEuAC3wQ@mail.gmail.com>
+References: <1570208647.1250.55.camel@oc5348122405>
+ <20191004233052.28865.1609.stgit@localhost.localdomain>
+ <1570241926.10511.7.camel@oc5348122405>
+ <CAKgT0Ud7SupVd3RQmTEJ8e0fixiptS-1wFg+8V4EqpHEuAC3wQ@mail.gmail.com>
+Message-ID: <1570463459.1510.5.camel@oc5348122405>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, 20 Oct 2019 at 12:15, Toke H?iland-J?rgensen <toke@redhat.com> wrote:
->
-> Alexei Starovoitov <alexei.starovoitov@gmail.com> writes:
->
-> > On Fri, Oct 18, 2019 at 05:45:26PM -0700, Samudrala, Sridhar wrote:
-> >> On 10/18/2019 5:14 PM, Alexei Starovoitov wrote:
-> >> > On Fri, Oct 18, 2019 at 11:40:07AM -0700, Samudrala, Sridhar wrote:
-> >> > >
-> >> > > Perf report for "AF_XDP default rxdrop" with patched kernel - mitigations ON
-> >> > > ==========================================================================
-> >> > > Samples: 44K of event 'cycles', Event count (approx.): 38532389541
-> >> > > Overhead  Command          Shared Object              Symbol
-> >> > >    15.31%  ksoftirqd/28     [i40e]                     [k] i40e_clean_rx_irq_zc
-> >> > >    10.50%  ksoftirqd/28     bpf_prog_80b55d8a76303785  [k] bpf_prog_80b55d8a76303785
-> >> > >     9.48%  xdpsock          [i40e]                     [k] i40e_clean_rx_irq_zc
-> >> > >     8.62%  xdpsock          xdpsock                    [.] main
-> >> > >     7.11%  ksoftirqd/28     [kernel.vmlinux]           [k] xsk_rcv
-> >> > >     5.81%  ksoftirqd/28     [kernel.vmlinux]           [k] xdp_do_redirect
-> >> > >     4.46%  xdpsock          bpf_prog_80b55d8a76303785  [k] bpf_prog_80b55d8a76303785
-> >> > >     3.83%  xdpsock          [kernel.vmlinux]           [k] xsk_rcv
-> >> >
-> >> > why everything is duplicated?
-> >> > Same code runs in different tasks ?
-> >>
-> >> Yes. looks like these functions run from both the app(xdpsock) context and ksoftirqd context.
-> >>
-> >> >
-> >> > >     2.81%  ksoftirqd/28     [kernel.vmlinux]           [k] bpf_xdp_redirect_map
-> >> > >     2.78%  ksoftirqd/28     [kernel.vmlinux]           [k] xsk_map_lookup_elem
-> >> > >     2.44%  xdpsock          [kernel.vmlinux]           [k] xdp_do_redirect
-> >> > >     2.19%  ksoftirqd/28     [kernel.vmlinux]           [k] __xsk_map_redirect
-> >> > >     1.62%  ksoftirqd/28     [kernel.vmlinux]           [k] xsk_umem_peek_addr
-> >> > >     1.57%  xdpsock          [kernel.vmlinux]           [k] xsk_umem_peek_addr
-> >> > >     1.32%  ksoftirqd/28     [kernel.vmlinux]           [k] dma_direct_sync_single_for_cpu
-> >> > >     1.28%  xdpsock          [kernel.vmlinux]           [k] bpf_xdp_redirect_map
-> >> > >     1.15%  xdpsock          [kernel.vmlinux]           [k] dma_direct_sync_single_for_device
-> >> > >     1.12%  xdpsock          [kernel.vmlinux]           [k] xsk_map_lookup_elem
-> >> > >     1.06%  xdpsock          [kernel.vmlinux]           [k] __xsk_map_redirect
-> >> > >     0.94%  ksoftirqd/28     [kernel.vmlinux]           [k] dma_direct_sync_single_for_device
-> >> > >     0.75%  ksoftirqd/28     [kernel.vmlinux]           [k] __x86_indirect_thunk_rax
-> >> > >     0.66%  ksoftirqd/28     [i40e]                     [k] i40e_clean_programming_status
-> >> > >     0.64%  ksoftirqd/28     [kernel.vmlinux]           [k] net_rx_action
-> >> > >     0.64%  swapper          [kernel.vmlinux]           [k] intel_idle
-> >> > >     0.62%  ksoftirqd/28     [i40e]                     [k] i40e_napi_poll
-> >> > >     0.57%  xdpsock          [kernel.vmlinux]           [k] dma_direct_sync_single_for_cpu
-> >> > >
-> >> > > Perf report for "AF_XDP direct rxdrop" with patched kernel - mitigations ON
-> >> > > ==========================================================================
-> >> > > Samples: 46K of event 'cycles', Event count (approx.): 38387018585
-> >> > > Overhead  Command          Shared Object             Symbol
-> >> > >    21.94%  ksoftirqd/28     [i40e]                    [k] i40e_clean_rx_irq_zc
-> >> > >    14.36%  xdpsock          xdpsock                   [.] main
-> >> > >    11.53%  ksoftirqd/28     [kernel.vmlinux]          [k] xsk_rcv
-> >> > >    11.32%  xdpsock          [i40e]                    [k] i40e_clean_rx_irq_zc
-> >> > >     4.02%  xdpsock          [kernel.vmlinux]          [k] xsk_rcv
-> >> > >     2.91%  ksoftirqd/28     [kernel.vmlinux]          [k] xdp_do_redirect
-> >> > >     2.45%  ksoftirqd/28     [kernel.vmlinux]          [k] xsk_umem_peek_addr
-> >> > >     2.19%  xdpsock          [kernel.vmlinux]          [k] xsk_umem_peek_addr
-> >> > >     2.08%  ksoftirqd/28     [kernel.vmlinux]          [k] bpf_direct_xsk
-> >> > >     2.07%  ksoftirqd/28     [kernel.vmlinux]          [k] dma_direct_sync_single_for_cpu
-> >> > >     1.53%  ksoftirqd/28     [kernel.vmlinux]          [k] dma_direct_sync_single_for_device
-> >> > >     1.39%  xdpsock          [kernel.vmlinux]          [k] dma_direct_sync_single_for_device
-> >> > >     1.22%  ksoftirqd/28     [kernel.vmlinux]          [k] xdp_get_xsk_from_qid
-> >> > >     1.12%  ksoftirqd/28     [i40e]                    [k] i40e_clean_programming_status
-> >> > >     0.96%  ksoftirqd/28     [i40e]                    [k] i40e_napi_poll
-> >> > >     0.95%  ksoftirqd/28     [kernel.vmlinux]          [k] net_rx_action
-> >> > >     0.89%  xdpsock          [kernel.vmlinux]          [k] xdp_do_redirect
-> >> > >     0.83%  swapper          [i40e]                    [k] i40e_clean_rx_irq_zc
-> >> > >     0.70%  swapper          [kernel.vmlinux]          [k] intel_idle
-> >> > >     0.66%  xdpsock          [kernel.vmlinux]          [k] dma_direct_sync_single_for_cpu
-> >> > >     0.60%  xdpsock          [kernel.vmlinux]          [k] bpf_direct_xsk
-> >> > >     0.50%  ksoftirqd/28     [kernel.vmlinux]          [k] xsk_umem_discard_addr
-> >> > >
-> >> > > Based on the perf reports comparing AF_XDP default and direct rxdrop, we can say that
-> >> > > AF_XDP direct rxdrop codepath is avoiding the overhead of going through these functions
-> >> > >  bpf_prog_xxx
-> >> > >          bpf_xdp_redirect_map
-> >> > >  xsk_map_lookup_elem
-> >> > >          __xsk_map_redirect
-> >> > > With AF_XDP direct, xsk_rcv() is directly called via bpf_direct_xsk() in xdp_do_redirect()
-> >> >
-> >> > I don't think you're identifying the overhead correctly.
-> >> > xsk_map_lookup_elem is 1%
-> >> > but bpf_xdp_redirect_map() suppose to call __xsk_map_lookup_elem()
-> >> > which is a different function:
-> >> > ffffffff81493fe0 T __xsk_map_lookup_elem
-> >> > ffffffff81492e80 t xsk_map_lookup_elem
-> >> >
-> >> > 10% for bpf_prog_80b55d8a76303785 is huge.
-> >> > It's the actual code of the program _without_ any helpers.
-> >> > How does the program actually look?
-> >>
-> >> It is the xdp program that is loaded via xsk_load_xdp_prog() in tools/lib/bpf/xsk.c
-> >> https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next.git/tree/tools/lib/bpf/xsk.c#n268
+On Sat, 2019-10-05 at 10:22 -0700, Alexander Duyck wrote:
+> On Fri, Oct 4, 2019 at 7:18 PM David Z. Dai <zdai@linux.vnet.ibm.com> wrote:
 > >
-> > I see. Looks like map_gen_lookup was never implemented for xskmap.
-> > How about adding it first the way array_map_gen_lookup() is implemented?
-> > This will easily give 2x perf gain.
->
-> I guess we should implement this for devmaps as well now that we allow
-> lookups into those.
->
-> However, in this particular example, the lookup from BPF is not actually
-> needed, since bpf_redirect_map() will return a configurable error value
-> when the map lookup fails (for exactly this use case).
->
-> So replacing:
->
-> if (bpf_map_lookup_elem(&xsks_map, &index))
->     return bpf_redirect_map(&xsks_map, index, 0);
->
-> with simply
->
-> return bpf_redirect_map(&xsks_map, index, XDP_PASS);
->
-> would save the call to xsk_map_lookup_elem().
->
+> > On Fri, 2019-10-04 at 16:36 -0700, Alexander Duyck wrote:
+> > > From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> > >
+> > > This patch is meant to address possible race conditions that can exist
+> > > between network configuration and power management. A similar issue was
+> > > fixed for igb in commit 9474933caf21 ("igb: close/suspend race in
+> > > netif_device_detach").
+> > >
+> > > In addition it consolidates the code so that the PCI error handling code
+> > > will essentially perform the power management freeze on the device prior to
+> > > attempting a reset, and will thaw the device afterwards if that is what it
+> > > is planning to do. Otherwise when we call close on the interface it should
+> > > see it is detached and not attempt to call the logic to down the interface
+> > > and free the IRQs again.
+> > >
+> > > >From what I can tell the check that was adding the check for __E1000_DOWN
+> > > in e1000e_close was added when runtime power management was added. However
+> > > it should not be relevant for us as we perform a call to
+> > > pm_runtime_get_sync before we call e1000_down/free_irq so it should always
+> > > be back up before we call into this anyway.
+> > >
+> > > Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> > > ---
+> > >
+> > > I'm putting this out as an RFC for now. I haven't had a chance to do much
+> > > testing yet, but I have verified no build issues, and the driver appears
+> > > to load, link, and pass traffic without problems.
+> > >
+> > > This should address issues seen with either double freeing or never freeing
+> > > IRQs that have been seen on this and similar drivers in the past.
+> > >
+> > > I'll submit this formally after testing it over the weekend assuming there
+> > > are no issues.
+> > >
+> > >  drivers/net/ethernet/intel/e1000e/netdev.c |   33 ++++++++++++++--------------
+> > >  1 file changed, 17 insertions(+), 16 deletions(-)
+> > >
+> > > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > > index d7d56e42a6aa..182a2c8f12d8 100644
+> > > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> 
+> <snip>
+> 
+> > >
+> > > -#ifdef CONFIG_PM_SLEEP
+> > >  static int e1000e_pm_thaw(struct device *dev)
+> > >  {
+> > >       struct net_device *netdev = dev_get_drvdata(dev);
+> > >       struct e1000_adapter *adapter = netdev_priv(netdev);
+> > > +     int rc = 0;
+> > >
+> > >       e1000e_set_interrupt_capability(adapter);
+> > > -     if (netif_running(netdev)) {
+> > > -             u32 err = e1000_request_irq(adapter);
+> > >
+> > > -             if (err)
+> > > -                     return err;
+> > > +     rtnl_lock();
+> > > +     if (netif_running(netdev)) {
+> > > +             rc = e1000_request_irq(adapter);
+> > > +             if (rc)
+> > > +                     goto err_irq;
+> > >
+> > >               e1000e_up(adapter);
+> > >       }
+> > >
+> > >       netif_device_attach(netdev);
+> > > -
+> > > -     return 0;
+> > > +     rtnl_unlock();
+> > > +err_irq:
+> > > +     return rc;
+> > >  }
+> > >
+> > In e1000e_pm_thaw(), these 2 lines need to switch order to avoid
+> > deadlock.
+> > from:
+> > +       rtnl_unlock();
+> > +err_irq:
+> >
+> > to:
+> > +err_irq:
+> > +       rtnl_unlock();
+> >
+> > I will find hardware to test this patch next week. Will update the test
+> > result later.
+> >
+> > Thanks! - David
+> 
+> Thanks for spotting that. I will update my copy of the patch for when
+> I submit the final revision.
+> 
+> I'll probably wait to submit it for acceptance until you have had a
+> chance to verify that it resolves the issue you were seeing.
+> 
+> Thanks.
+> 
+> - Alex
+We have tested on one of the test box.
+With this patch, it doesn't crash kernel anymore, which is good!
 
-Thanks for the reminder! I just submitted a patch. Still, doing the
-map_gen_lookup()  for xsk/devmaps still makes sense!
+However we see this warning message from the log file for irq number 0:
+[10206.317270] Trying to free already-free IRQ 0
 
+With this stack:
+[10206.317344] NIP [c00000000018cbf8] __free_irq+0x308/0x370
+[10206.317346] LR [c00000000018cbf4] __free_irq+0x304/0x370
+[10206.317347] Call Trace:
+[10206.317348] [c00000008b92b970] [c00000000018cbf4] __free_irq
++0x304/0x370 (unreliable)
+[10206.317351] [c00000008b92ba00] [c00000000018cd84] free_irq+0x84/0xf0
+[10206.317358] [c00000008b92ba30] [d000000007449e60] e1000_free_irq
++0x98/0xc0 [e1000e]
+[10206.317365] [c00000008b92ba60] [d000000007458a70] e1000e_pm_freeze
++0xb8/0x100 [e1000e]
+[10206.317372] [c00000008b92baa0] [d000000007458b6c]
+e1000_io_error_detected+0x34/0x70 [e1000e]
+[10206.317375] [c00000008b92bad0] [c000000000040358] eeh_report_failure
++0xc8/0x190
+[10206.317377] [c00000008b92bb20] [c00000000003eb2c] eeh_pe_dev_traverse
++0x9c/0x170
+[10206.317379] [c00000008b92bbb0] [c000000000040d84]
+eeh_handle_normal_event+0xe4/0x580
+[10206.317382] [c00000008b92bc60] [c000000000041330] eeh_handle_event
++0x30/0x340
+[10206.317384] [c00000008b92bd10] [c000000000041780] eeh_event_handler
++0x140/0x200
+[10206.317386] [c00000008b92bdc0] [c0000000001397c8] kthread+0x1a8/0x1b0
+[10206.317389] [c00000008b92be30] [c00000000000b560]
+ret_from_kernel_thread+0x5c/0x7c
 
-Bj?rn
+Thanks! - David
 
-
-> -Toke
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
