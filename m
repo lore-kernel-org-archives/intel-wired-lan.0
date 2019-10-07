@@ -1,40 +1,42 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 07 Oct 2019 14:48:28 -0700
-Subject: [Intel-wired-lan] i40e_pto.c: Odd use of strlcpy converted from
- strncpy
-In-Reply-To: <02fe65d8989ef1d030cf31c7134c574a242afc17.camel@perches.com>
-References: <edf91d8284a2a19d956eb8b7e8b6c4984ceaa1ab.camel@perches.com>
- <a00c9af7d24ac0dd6af8698c9e545591392720fe.camel@intel.com>
- <02fe65d8989ef1d030cf31c7134c574a242afc17.camel@perches.com>
-Message-ID: <c1d8f90b8a8bf97554f40aba85154088e5c1181c.camel@intel.com>
+Date: Mon,  7 Oct 2019 15:07:24 -0700
+Subject: [Intel-wired-lan] [net] i40e: Fix receive buffer starvation for
+ AF_XDP
+Message-ID: <20191007220724.16279-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2019-10-07 at 13:48 -0700, Joe Perches wrote:
-> On Mon, 2019-10-07 at 13:44 -0700, Jeff Kirsher wrote:
-> > On Sun, 2019-10-06 at 10:19 -0700, Joe Perches wrote:
-> > > This got converted from strncpy to strlcpy but it's
-> > > now not necessary to use one character less than the
-> > > actual size.
-> > > 
-> > > Perhaps the sizeof() - 1 is now not correct and it
-> > > should use strscpy and a normal sizeof.
-> []
-> > You are also missing you signed-off-by: and Fixes:, I can get your
-> > change under test in the meantime to confirm your fix.
-> 
-> I didn't sign off as all I intended was to bring it
-> to your attention.  The diff is just the simplest way.
-> It's trivial if it's a defect.
+Magnus's fix to resolve a potential receive buffer starvation for AF_XDP
+got applied to both the i40e_xsk_umem_enable/disable() functions, when it
+should have only been applied to the "enable".  So clean up the undesired
+code in the disable function.
 
-Ah, thanks for bringing it to our attention.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20191007/f37d0888/attachment.asc>
+CC: Magnus Karlsson <magnus.karlsson@intel.com>
+Fixes: 1f459bdc2007 ("i40e: fix potential RX buffer starvation for AF_XDP")
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index b1c3227ae4ab..a05dfecdd9b4 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -157,11 +157,6 @@ static int i40e_xsk_umem_disable(struct i40e_vsi *vsi, u16 qid)
+ 		err = i40e_queue_pair_enable(vsi, qid);
+ 		if (err)
+ 			return err;
+-
+-		/* Kick start the NAPI context so that receiving will start */
+-		err = i40e_xsk_wakeup(vsi->netdev, qid, XDP_WAKEUP_RX);
+-		if (err)
+-			return err;
+ 	}
+ 
+ 	return 0;
+-- 
+2.21.0
+
