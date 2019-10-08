@@ -1,11 +1,11 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
-Date: Tue, 8 Oct 2019 10:05:48 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 3/4] libbpf: handle AF_XDP
- sockets created with XDP_DIRECT bind flag.
-In-Reply-To: <1570515415-45593-4-git-send-email-sridhar.samudrala@intel.com>
+Date: Tue, 8 Oct 2019 10:05:57 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 4/4] xdpsock: add an option
+ to create AF_XDP sockets in XDP_DIRECT mode
+In-Reply-To: <1570515415-45593-5-git-send-email-sridhar.samudrala@intel.com>
 References: <1570515415-45593-1-git-send-email-sridhar.samudrala@intel.com>
- <1570515415-45593-4-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <8a71dd88-43d0-e1fd-3a08-ecf431e36954@intel.com>
+ <1570515415-45593-5-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <645534a7-9606-88e0-a4f9-05ad04c7fb4e@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,44 +13,86 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 2019-10-08 08:16, Sridhar Samudrala wrote:
-> Don't allow an AF_XDP socket trying to bind with XDP_DIRECT bind
-> flag when a normal XDP program is already attached to the device,
+> This option enables an AF_XDP socket to bind with a XDP_DIRECT flag
+> that allows packets received on the associated queue to be received
+> directly when an XDP program is not attached.
 > 
-> Don't attach the default XDP program when AF_XDP socket is created
-> with XDP_DIRECT bind flag.
->
-
-I'd like this to be default for xsk.c, and if not supported fall back to 
-old code.
-
-
 > Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+
+Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
+
 > ---
->   tools/lib/bpf/xsk.c | 6 ++++++
->   1 file changed, 6 insertions(+)
+>   samples/bpf/xdpsock_user.c | 17 +++++++++++++----
+>   1 file changed, 13 insertions(+), 4 deletions(-)
 > 
-> diff --git a/tools/lib/bpf/xsk.c b/tools/lib/bpf/xsk.c
-> index d5f4900e5c54..953b479040cd 100644
-> --- a/tools/lib/bpf/xsk.c
-> +++ b/tools/lib/bpf/xsk.c
-> @@ -454,6 +454,9 @@ static int xsk_setup_xdp_prog(struct xsk_socket *xsk)
->   		return err;
+> diff --git a/samples/bpf/xdpsock_user.c b/samples/bpf/xdpsock_user.c
+> index 405c4e091f8b..6f4633769968 100644
+> --- a/samples/bpf/xdpsock_user.c
+> +++ b/samples/bpf/xdpsock_user.c
+> @@ -129,6 +129,9 @@ static void print_benchmark(bool running)
+>   	if (opt_poll)
+>   		printf("poll() ");
 >   
->   	if (!prog_id) {
-> +		if (xsk->config.bind_flags & XDP_DIRECT)
-> +			return 0;
+> +	if (opt_xdp_bind_flags & XDP_DIRECT)
+> +		printf("direct-xsk ");
 > +
->   		err = xsk_create_bpf_maps(xsk);
->   		if (err)
->   			return err;
-> @@ -464,6 +467,9 @@ static int xsk_setup_xdp_prog(struct xsk_socket *xsk)
->   			return err;
+>   	if (running) {
+>   		printf("running...");
+>   		fflush(stdout);
+> @@ -202,7 +205,8 @@ static void int_exit(int sig)
+>   	dump_stats();
+>   	xsk_socket__delete(xsks[0]->xsk);
+>   	(void)xsk_umem__delete(umem);
+> -	remove_xdp_program();
+> +	if (!(opt_xdp_bind_flags & XDP_DIRECT))
+> +		remove_xdp_program();
+>   
+>   	exit(EXIT_SUCCESS);
+>   }
+> @@ -213,7 +217,8 @@ static void __exit_with_error(int error, const char *file, const char *func,
+>   	fprintf(stderr, "%s:%s:%i: errno: %d/\"%s\"\n", file, func,
+>   		line, error, strerror(error));
+>   	dump_stats();
+> -	remove_xdp_program();
+> +	if (!(opt_xdp_bind_flags & XDP_DIRECT))
+> +		remove_xdp_program();
+>   	exit(EXIT_FAILURE);
+>   }
+>   
+> @@ -363,6 +368,7 @@ static struct option long_options[] = {
+>   	{"frame-size", required_argument, 0, 'f'},
+>   	{"no-need-wakeup", no_argument, 0, 'm'},
+>   	{"unaligned", no_argument, 0, 'u'},
+> +	{"direct-xsk", no_argument, 0, 'd'},
+>   	{0, 0, 0, 0}
+>   };
+>   
+> @@ -386,6 +392,7 @@ static void usage(const char *prog)
+>   		"  -m, --no-need-wakeup Turn off use of driver need wakeup flag.\n"
+>   		"  -f, --frame-size=n   Set the frame size (must be a power of two in aligned mode, default is %d).\n"
+>   		"  -u, --unaligned	Enable unaligned chunk placement\n"
+> +		"  -d, --direct-xsk	Direct packets to XDP socket.\n"
+>   		"\n";
+>   	fprintf(stderr, str, prog, XSK_UMEM__DEFAULT_FRAME_SIZE);
+>   	exit(EXIT_FAILURE);
+> @@ -398,7 +405,7 @@ static void parse_command_line(int argc, char **argv)
+>   	opterr = 0;
+>   
+>   	for (;;) {
+> -		c = getopt_long(argc, argv, "Frtli:q:psSNn:czf:mu",
+> +		c = getopt_long(argc, argv, "Frtli:q:psSNn:czf:mud",
+>   				long_options, &option_index);
+>   		if (c == -1)
+>   			break;
+> @@ -452,7 +459,9 @@ static void parse_command_line(int argc, char **argv)
+>   			opt_need_wakeup = false;
+>   			opt_xdp_bind_flags &= ~XDP_USE_NEED_WAKEUP;
+>   			break;
+> -
+> +		case 'd':
+> +			opt_xdp_bind_flags |= XDP_DIRECT;
+> +			break;
+>   		default:
+>   			usage(basename(argv[0]));
 >   		}
->   	} else {
-> +		if (xsk->config.bind_flags & XDP_DIRECT)
-> +			return -EEXIST;
-> +
->   		xsk->prog_fd = bpf_prog_get_fd_by_id(prog_id);
->   		err = xsk_lookup_bpf_maps(xsk);
->   		if (err) {
 > 
