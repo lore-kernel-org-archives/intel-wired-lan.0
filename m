@@ -1,81 +1,134 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Tue, 8 Oct 2019 15:46:10 +0800
-Subject: [Intel-wired-lan] e1000e regression - 5.4rc1
-In-Reply-To: <76fc2204-0786-03b3-773d-110912d48168@mni.thm.de>
-References: <171f0c61-73a2-81c2-5c8a-7c140f548803@mni.thm.de>
- <56242322-D549-4E23-97AB-153CC392B107@canonical.com>
- <76fc2204-0786-03b3-773d-110912d48168@mni.thm.de>
-Message-ID: <2994F2A2-D844-40B0-9971-C002E5EC49CD@canonical.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
+Date: Tue, 8 Oct 2019 10:05:20 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/4] Enable direct receive on
+ AF_XDP sockets
+In-Reply-To: <1570515415-45593-1-git-send-email-sridhar.samudrala@intel.com>
+References: <1570515415-45593-1-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <4c316f09-0691-4a1b-f798-73299e978946@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Tobias,
+On 2019-10-08 08:16, Sridhar Samudrala wrote:
+> This is a rework of the following patch series
+> https://lore.kernel.org/netdev/1565840783-8269-1-git-send-email-sridhar.samudrala at intel.com/#r
+> that tried to enable direct receive by bypassing XDP program attached
+> to the device.
+> 
+> Based on the community feedback and some suggestions from Bjorn, changed
+> the semantics of the implementation to enable direct receive on AF_XDP
+> sockets that are bound to a queue only when there is no normal XDP program
+> attached to the device.
+> 
+> This is accomplished by introducing a special BPF prog pointer (DIRECT_XSK)
+> that is attached at the time of binding an AF_XDP socket to a queue of a
+> device. This is done only if there is no other XDP program attached to
+> the device. The normal XDP program has precedence and will replace the
+> DIRECT_XSK prog if it is attached later. The main reason to introduce a
+> special BPF prog pointer is to minimize the driver changes. The only change
+> is to use the bpf_get_prog_id() helper when QUERYING the prog id.
+> 
+> Any attach of a normal XDP program will take precedence and the direct xsk
+> program will be removed. The direct XSK program will be attached
+> automatically when the normal XDP program is removed when there are any
+> AF_XDP direct sockets associated with that device.
+> 
+> A static key is used to control this feature in order to avoid any overhead
+> for normal XDP datapath when there are no AF_XDP sockets in direct-xsk mode.
+> 
+> Here is some performance data i collected on my Intel Ivybridge based
+> development system (Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz)
+> NIC: Intel 40Gb ethernet (i40e)
+> 
+> xdpsock rxdrop 1 core (both app and queue's irq pinned to the same core)
+>     default : taskset -c 1 ./xdpsock -i enp66s0f0 -r -q 1
+>     direct-xsk :taskset -c 1 ./xdpsock -i enp66s0f0 -r -q 1
+> 6.1x improvement in drop rate
+> 
+> xdpsock rxdrop 2 core (app and queue's irq pinned to different cores)
+>     default : taskset -c 3 ./xdpsock -i enp66s0f0 -r -q 1
+>     direct-xsk :taskset -c 3 ./xdpsock -i enp66s0f0 -r -d -q 1
+> 6x improvement in drop rate
+> 
+> xdpsock l2fwd 1 core (both app and queue's irq pinned to the same core)
+>     default : taskset -c 1 ./xdpsock -i enp66s0f0 -l -q 1
+>     direct-xsk :taskset -c 1 ./xdpsock -i enp66s0f0 -l -d -q 1
+> 3.5x improvement in l2fwd rate
+> 
+> xdpsock rxdrop 2 core (app and queue'sirq pinned to different cores)
+>     default : taskset -c 3 ./xdpsock -i enp66s0f0 -l -q 1
+>     direct-xsk :taskset -c 3 ./xdpsock -i enp66s0f0 -l -d -q 1
+> 4.5x improvement in l2fwd rate
+> 
+> dpdk-pktgen is used to send 64byte UDP packets from a link partner and
+> ethtool ntuple flow rule is used to redirect packets to queue 1 on the
+> system under test.
+>
 
-> On Oct 5, 2019, at 03:52, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
-> 
-> Hello,
-> 
-> On 04.10.19 19:36, Kai-Heng Feng wrote:
->> Hi Tobias
->> 
->>> On Oct 4, 2019, at 18:34, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
->>> 
->>> Hello all,
->>> 
->>> While testing the 5.4rc1 release, i noticed my Ethernet never coming fully up, seemingly having a timeout problem. While bisecting this i landed at the commit dee23594d587386e9fda76732aa5f5a487709510 ("e1000e: Make speed detection on hotplugging cable more reliable") as the first bad commit. And indeed just reverting the commit on top of 5.4rc1 resolves the problem. Let me know if you have further questions, or patches to test!
->> Is runtime PM enabled (i.e. "power/control" = auto)?
-> 
-> 
-> Yes it is set to auto.
+Thanks for working on this Sridhar! I like this approach! Except from
+the bpf_get_prog_id() changes, no driver changes are needed.
 
-Is something like TLP or `powertop --auto-tune` is in use?
+It's also a cleaner (IMO) approach than my previous attempts [1,2,3]
 
-Do you still see the issue when "power/control" keeps at "on"?
+Would be interesting to see NFP support AF_XDP offloading with this
+option. (nudge, nudge).
 
-Kai-Heng
+A thought: From userland, a direct AF_XDP socket will not appear as an
+XDP program is attached to the device (id == 0). Maybe show in ss(8)
+(via xsk_diag.c) that the socket is direct?
 
-> 
-> 
->> Also please attach full dmesg, thanks!
-> 
-> Attached,
-> 
-> Tobias
-> 
->> 
->> Kai-Heng
->> 
->>> Greetings,
->>> 
->>> Tobias
->>> 
->>> 
->>> lspci:
->>> 
->>> 00:19.0 Ethernet controller: Intel Corporation 82579V Gigabit Network Connection (rev 06)
->>>         DeviceName:  Onboard LAN
->>>         Subsystem: ASUSTeK Computer Inc. P8P67 Deluxe Motherboard
->>>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
->>>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->>>         Latency: 0
->>>         Interrupt: pin A routed to IRQ 56
->>>         Region 0: Memory at fbf00000 (32-bit, non-prefetchable) [size=128K]
->>>         Region 1: Memory at fbf28000 (32-bit, non-prefetchable) [size=4K]
->>>         Region 2: I/O ports at f040 [size=32]
->>>         Capabilities: [c8] Power Management version 2
->>>                 Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
->>>                 Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=1 PME-
->>>         Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
->>>                 Address: 00000000fee00698  Data: 0000
->>>         Capabilities: [e0] PCI Advanced Features
->>>                 AFCap: TP+ FLR+
->>>                 AFCtrl: FLR-
->>>                 AFStatus: TP-
->>>         Kernel driver in use: e1000e
->>>         Kernel modules: e1000e
->>> 
-> <dmesg.txt>
+[1] 
+https://lore.kernel.org/netdev/CAJ+HfNj63QcLY8=y1fF93PZd3XcfiGSrbbWdiGByjTzZQydSSg at mail.gmail.com/
+[2] 
+https://lore.kernel.org/netdev/cd952f99-6bad-e0c8-5bcd-f0010218238c at intel.com/
+[3] 
+https://lore.kernel.org/netdev/20181207114431.18038-1-bjorn.topel at gmail.com/
 
+> Sridhar Samudrala (4):
+>    bpf: introduce bpf_get_prog_id and bpf_set_prog_id helper functions.
+>    xsk: allow AF_XDP sockets to receive packets directly from a queue
+>    libbpf: handle AF_XDP sockets created with XDP_DIRECT bind flag.
+>    xdpsock: add an option to create AF_XDP sockets in XDP_DIRECT mode
+> 
+>   drivers/net/ethernet/broadcom/bnxt/bnxt_xdp.c     |  2 +-
+>   drivers/net/ethernet/cavium/thunder/nicvf_main.c  |  2 +-
+>   drivers/net/ethernet/freescale/dpaa2/dpaa2-eth.c  |  2 +-
+>   drivers/net/ethernet/intel/i40e/i40e_main.c       |  2 +-
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  3 +-
+>   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  3 +-
+>   drivers/net/ethernet/mellanox/mlx4/en_netdev.c    |  3 +-
+>   drivers/net/ethernet/mellanox/mlx5/core/en_main.c |  3 +-
+>   drivers/net/ethernet/qlogic/qede/qede_filter.c    |  2 +-
+>   drivers/net/ethernet/socionext/netsec.c           |  2 +-
+>   drivers/net/netdevsim/bpf.c                       |  6 ++-
+>   drivers/net/tun.c                                 |  4 +-
+>   drivers/net/veth.c                                |  4 +-
+>   drivers/net/virtio_net.c                          |  3 +-
+>   include/linux/bpf.h                               |  3 ++
+>   include/linux/filter.h                            | 18 +++++++
+>   include/linux/netdevice.h                         | 10 ++++
+>   include/net/xdp_sock.h                            |  5 ++
+>   include/trace/events/xdp.h                        |  4 +-
+>   include/uapi/linux/if_xdp.h                       |  5 ++
+>   kernel/bpf/arraymap.c                             |  2 +-
+>   kernel/bpf/cgroup.c                               |  2 +-
+>   kernel/bpf/core.c                                 |  2 +-
+>   kernel/bpf/syscall.c                              | 33 +++++++++----
+>   kernel/events/core.c                              |  2 +-
+>   kernel/trace/bpf_trace.c                          |  2 +-
+>   net/core/dev.c                                    | 54 ++++++++++++++++++++-
+>   net/core/filter.c                                 | 58 +++++++++++++++++++++++
+>   net/core/flow_dissector.c                         |  2 +-
+>   net/core/rtnetlink.c                              |  2 +-
+>   net/core/xdp.c                                    |  2 +-
+>   net/ipv6/seg6_local.c                             |  2 +-
+>   net/sched/act_bpf.c                               |  2 +-
+>   net/sched/cls_bpf.c                               |  2 +-
+>   net/xdp/xsk.c                                     | 51 +++++++++++++++++++-
+>   samples/bpf/xdpsock_user.c                        | 17 +++++--
+>   tools/include/uapi/linux/if_xdp.h                 |  5 ++
+>   tools/lib/bpf/xsk.c                               |  6 +++
+>   38 files changed, 279 insertions(+), 53 deletions(-)
+> 
