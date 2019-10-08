@@ -1,47 +1,45 @@
-From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
-Date: Tue, 08 Oct 2019 11:04:00 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 2/4] xsk: allow AF_XDP
- sockets to receive packets directly from a queue
-In-Reply-To: <CAJ+HfNhcvRP34L3px6ipAsCiZdvLXG02brecwB=T-sXMaT5yRw@mail.gmail.com>
-References: <1570515415-45593-1-git-send-email-sridhar.samudrala@intel.com>
- <1570515415-45593-3-git-send-email-sridhar.samudrala@intel.com>
- <875zkzn2pj.fsf@toke.dk>
- <CAJ+HfNhcvRP34L3px6ipAsCiZdvLXG02brecwB=T-sXMaT5yRw@mail.gmail.com>
-Message-ID: <878spvlibj.fsf@toke.dk>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 8 Oct 2019 16:54:04 +0000
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: protect TX timestamping
+ from API misuse
+In-Reply-To: <1570288803-14880-1-git-send-email-manjunath.b.patil@oracle.com>
+References: <1570288803-14880-1-git-send-email-manjunath.b.patil@oracle.com>
+Message-ID: <a53362a9afee4995919c117016209701@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Bj?rn T?pel <bjorn.topel@gmail.com> writes:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Manjunath Patil
+> Sent: Saturday, October 5, 2019 8:20 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net;
+> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
+> kernel at vger.kernel.org
+> Cc: manjunath.b.patil at oracle.com; christophe.jaillet at wanadoo.fr;
+> cspradlin at google.com
+> Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: protect TX timestamping from
+> API misuse
+> 
+> HW timestamping can only be requested for a packet if the NIC is first setup
+> via ioctl(SIOCSHWTSTAMP). If this step was skipped, then the ixgbe driver
+> still allowed TX packets to request HW timestamping. In this situation, we see
+> 'clearing Tx Timestamp hang' noise in the log.
+> 
+> Fix this by checking that the NIC is configured for HW TX timestamping before
+> accepting a HW TX timestamping request.
+> 
+> similar-to:
+> 	(26bd4e2 igb: protect TX timestamping from API misuse)
+> 	(0a6f2f0 igb: Fix a test with HWTSTAMP_TX_ON)
+> 
+> Signed-off-by: Manjunath Patil <manjunath.b.patil@oracle.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
 
-> On Tue, 8 Oct 2019 at 08:59, Toke H?iland-J?rgensen <toke@redhat.com> wrote:
->>
->> Sridhar Samudrala <sridhar.samudrala@intel.com> writes:
->>
->> >  int xdp_do_redirect(struct net_device *dev, struct xdp_buff *xdp,
->> >                   struct bpf_prog *xdp_prog)
->> >  {
->> >       struct bpf_redirect_info *ri = this_cpu_ptr(&bpf_redirect_info);
->> >       struct bpf_map *map = READ_ONCE(ri->map);
->> > +     struct xdp_sock *xsk;
->> > +
->> > +     xsk = xdp_get_direct_xsk(ri);
->> > +     if (xsk)
->> > +             return xsk_rcv(xsk, xdp);
->>
->> This is a new branch and a read barrier in the XDP_REDIRECT fast path.
->> What's the performance impact of that for non-XSK redirect?
->>
->
-> The dependent-read-barrier in READ_ONCE? Another branch -- leave that
-> to the branch-predictor already! ;-) No, you're right, performance
-> impact here is interesting. I guess the same static_branch could be
-> used here as well...
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-In any case, some measurements to see the impact (or lack thereof) would
-be useful :)
-
--Toke
 
