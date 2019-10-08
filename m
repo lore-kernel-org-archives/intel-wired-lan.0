@@ -1,20 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 08 Oct 2019 08:15:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- c2c78e2a1a4fc839cb36cf45101361d0ffcd0428
-Message-ID: <5d9bd531.Y7ufKjM0m+lbZ4Mg%lkp@intel.com>
+Date: Tue, 08 Oct 2019 08:15:48 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 503c9addef613c872679e24fc8a78f3febeb5a08
+Message-ID: <5d9bd534.KwfuGPXqRMt8P+P3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: c2c78e2a1a4fc839cb36cf45101361d0ffcd0428  i40e: Fix receive buffer starvation for AF_XDP
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: 503c9addef613c872679e24fc8a78f3febeb5a08  ptp: fix typo of "mechanism" in Kconfig help text
 
 elapsed time: 96m
 
-configs tested: 88
+configs tested: 80
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -40,12 +40,7 @@ sparc64                          allmodconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
 i386                   randconfig-b001-201940
-x86_64                 randconfig-b002-201940
-x86_64                 randconfig-b003-201940
 i386                   randconfig-b003-201940
-i386                   randconfig-b004-201940
-x86_64                 randconfig-b004-201940
-x86_64                 randconfig-b001-201940
 i386                   randconfig-b002-201940
 arc                              allyesconfig
 arc                                 defconfig
@@ -86,18 +81,15 @@ s390                             allmodconfig
 s390                              allnoconfig
 s390                          debug_defconfig
 s390                                defconfig
-x86_64                 randconfig-h002-201940
-x86_64                 randconfig-h001-201940
-i386                   randconfig-h004-201940
-i386                   randconfig-h003-201940
-x86_64                 randconfig-h003-201940
-i386                   randconfig-h002-201940
-i386                   randconfig-h001-201940
-x86_64                 randconfig-h004-201940
 parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
+x86_64                 randconfig-b001-201940
+x86_64                 randconfig-b002-201940
+x86_64                 randconfig-b003-201940
+x86_64                 randconfig-b004-201940
+i386                   randconfig-b004-201940
 x86_64                 randconfig-e001-201940
 x86_64                 randconfig-e002-201940
 x86_64                 randconfig-e003-201940
