@@ -1,178 +1,74 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 09 Oct 2019 08:43:06 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- 323a1df83ad321a97f14766b1c918564b7b81d33
-Message-ID: <5d9d2d1a.az9TxGoozTDxMahE%lkp@intel.com>
+From: Jakub Kicinski <jakub.kicinski@netronome.com>
+Date: Tue, 8 Oct 2019 17:49:19 -0700
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/4] Enable direct receive on
+ AF_XDP sockets
+In-Reply-To: <1570515415-45593-1-git-send-email-sridhar.samudrala@intel.com>
+References: <1570515415-45593-1-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <20191008174919.2160737a@cakuba.netronome.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 323a1df83ad321a97f14766b1c918564b7b81d33  i40e: Fix receive buffer starvation for AF_XDP
+On Mon,  7 Oct 2019 23:16:51 -0700, Sridhar Samudrala wrote:
+> This is a rework of the following patch series 
+> https://lore.kernel.org/netdev/1565840783-8269-1-git-send-email-sridhar.samudrala at intel.com/#r
+> that tried to enable direct receive by bypassing XDP program attached
+> to the device.
+> 
+> Based on the community feedback and some suggestions from Bjorn, changed
+> the semantics of the implementation to enable direct receive on AF_XDP
+> sockets that are bound to a queue only when there is no normal XDP program
+> attached to the device.
+> 
+> This is accomplished by introducing a special BPF prog pointer (DIRECT_XSK)
+> that is attached at the time of binding an AF_XDP socket to a queue of a
+> device. This is done only if there is no other XDP program attached to
+> the device. The normal XDP program has precedence and will replace the
+> DIRECT_XSK prog if it is attached later. The main reason to introduce a
+> special BPF prog pointer is to minimize the driver changes. The only change
+> is to use the bpf_get_prog_id() helper when QUERYING the prog id.
+> 
+> Any attach of a normal XDP program will take precedence and the direct xsk
+> program will be removed. The direct XSK program will be attached
+> automatically when the normal XDP program is removed when there are any
+> AF_XDP direct sockets associated with that device.
+> 
+> A static key is used to control this feature in order to avoid any overhead
+> for normal XDP datapath when there are no AF_XDP sockets in direct-xsk mode.
 
-TIMEOUT after 1448m
+Don't say that static branches have no overhead. That's dishonest.
 
+> Here is some performance data i collected on my Intel Ivybridge based
+> development system (Intel(R) Xeon(R) CPU E5-2697 v2 @ 2.70GHz)
+> NIC: Intel 40Gb ethernet (i40e)
+> 
+> xdpsock rxdrop 1 core (both app and queue's irq pinned to the same core)
+>    default : taskset -c 1 ./xdpsock -i enp66s0f0 -r -q 1
+>    direct-xsk :taskset -c 1 ./xdpsock -i enp66s0f0 -r -q 1
+> 6.1x improvement in drop rate
+> 
+> xdpsock rxdrop 2 core (app and queue's irq pinned to different cores)
+>    default : taskset -c 3 ./xdpsock -i enp66s0f0 -r -q 1
+>    direct-xsk :taskset -c 3 ./xdpsock -i enp66s0f0 -r -d -q 1
+> 6x improvement in drop rate
+> 
+> xdpsock l2fwd 1 core (both app and queue's irq pinned to the same core)
+>    default : taskset -c 1 ./xdpsock -i enp66s0f0 -l -q 1
+>    direct-xsk :taskset -c 1 ./xdpsock -i enp66s0f0 -l -d -q 1
+> 3.5x improvement in l2fwd rate
+> 
+> xdpsock rxdrop 2 core (app and queue'sirq pinned to different cores)
+>    default : taskset -c 3 ./xdpsock -i enp66s0f0 -l -q 1
+>    direct-xsk :taskset -c 3 ./xdpsock -i enp66s0f0 -l -d -q 1
+> 4.5x improvement in l2fwd rate
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+I asked you to add numbers for handling those use cases in the kernel
+directly.
 
-configs timed out: 12
+> dpdk-pktgen is used to send 64byte UDP packets from a link partner and 
+> ethtool ntuple flow rule is used to redirect packets to queue 1 on the 
+> system under test.
 
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-x86_64                           allmodconfig
-
-configs tested: 133
-
-x86_64                 randconfig-g001-201940
-x86_64                 randconfig-g002-201940
-x86_64                 randconfig-g003-201940
-x86_64                 randconfig-g004-201940
-i386                   randconfig-g001-201940
-i386                   randconfig-g002-201940
-i386                   randconfig-g003-201940
-i386                   randconfig-g004-201940
-i386                   randconfig-f002-201940
-i386                   randconfig-f001-201940
-x86_64                 randconfig-f003-201940
-x86_64                 randconfig-f004-201940
-x86_64                 randconfig-f002-201940
-i386                   randconfig-f003-201940
-x86_64                 randconfig-f001-201940
-i386                   randconfig-f004-201940
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                 randconfig-d001-201940
-x86_64                 randconfig-d002-201940
-x86_64                 randconfig-d003-201940
-x86_64                 randconfig-d004-201940
-i386                   randconfig-d001-201940
-i386                   randconfig-d002-201940
-i386                   randconfig-d003-201940
-i386                   randconfig-d004-201940
-arm                              allmodconfig
-arm64                            allmodconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-b001-201940
-x86_64                 randconfig-b002-201940
-x86_64                 randconfig-b003-201940
-i386                   randconfig-b003-201940
-i386                   randconfig-b004-201940
-x86_64                 randconfig-b004-201940
-x86_64                 randconfig-b001-201940
-i386                   randconfig-b002-201940
-x86_64                 randconfig-h002-201940
-x86_64                 randconfig-h001-201940
-i386                   randconfig-h004-201940
-i386                   randconfig-h003-201940
-x86_64                 randconfig-h003-201940
-i386                   randconfig-h002-201940
-i386                   randconfig-h001-201940
-x86_64                 randconfig-h004-201940
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-x86_64                 randconfig-e004-201940
-x86_64                 randconfig-e001-201940
-x86_64                 randconfig-e003-201940
-x86_64                 randconfig-e002-201940
-i386                   randconfig-e003-201940
-i386                   randconfig-e004-201940
-i386                   randconfig-e001-201940
-i386                   randconfig-e002-201940
-x86_64                 randconfig-c001-201940
-x86_64                 randconfig-c002-201940
-i386                   randconfig-c001-201940
-i386                   randconfig-c004-201940
-i386                   randconfig-c003-201940
-x86_64                 randconfig-c004-201940
-i386                   randconfig-c002-201940
-x86_64                 randconfig-c003-201940
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-a004-201940
-x86_64                 randconfig-a001-201940
-i386                   randconfig-a002-201940
-x86_64                 randconfig-a002-201940
-i386                   randconfig-a001-201940
-i386                   randconfig-a003-201940
-i386                   randconfig-a004-201940
-x86_64                 randconfig-a003-201940
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Obviously still nack from me.
