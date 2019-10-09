@@ -1,30 +1,178 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 8 Oct 2019 23:18:05 +0000
-Subject: [Intel-wired-lan] [PATCH v1] igc: Clean up unused shadow_vfta
- pointer
-In-Reply-To: <20191003114701.33966-1-sasha.neftin@intel.com>
-References: <20191003114701.33966-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9714938E@ORSMSX103.amr.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 09 Oct 2019 08:43:06 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ 323a1df83ad321a97f14766b1c918564b7b81d33
+Message-ID: <5d9d2d1a.az9TxGoozTDxMahE%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On Behalf Of
-> Sasha Neftin
-> Sent: Thursday, October 3, 2019 4:47 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v1] igc: Clean up unused shadow_vfta pointer
-> 
-> VLAN filter table array not implemented yet and shadow_vfta pointer
-> not used. Clean up the code and remove the unused shadow_vfta pointer.
-> 
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc.h      | 1 -
->  drivers/net/ethernet/intel/igc/igc_main.c | 1 -
->  2 files changed, 2 deletions(-)
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 323a1df83ad321a97f14766b1c918564b7b81d33  i40e: Fix receive buffer starvation for AF_XDP
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+TIMEOUT after 1448m
+
+
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 12
+
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+x86_64                           allmodconfig
+
+configs tested: 133
+
+x86_64                 randconfig-g001-201940
+x86_64                 randconfig-g002-201940
+x86_64                 randconfig-g003-201940
+x86_64                 randconfig-g004-201940
+i386                   randconfig-g001-201940
+i386                   randconfig-g002-201940
+i386                   randconfig-g003-201940
+i386                   randconfig-g004-201940
+i386                   randconfig-f002-201940
+i386                   randconfig-f001-201940
+x86_64                 randconfig-f003-201940
+x86_64                 randconfig-f004-201940
+x86_64                 randconfig-f002-201940
+i386                   randconfig-f003-201940
+x86_64                 randconfig-f001-201940
+i386                   randconfig-f004-201940
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                 randconfig-d001-201940
+x86_64                 randconfig-d002-201940
+x86_64                 randconfig-d003-201940
+x86_64                 randconfig-d004-201940
+i386                   randconfig-d001-201940
+i386                   randconfig-d002-201940
+i386                   randconfig-d003-201940
+i386                   randconfig-d004-201940
+arm                              allmodconfig
+arm64                            allmodconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-b001-201940
+x86_64                 randconfig-b002-201940
+x86_64                 randconfig-b003-201940
+i386                   randconfig-b003-201940
+i386                   randconfig-b004-201940
+x86_64                 randconfig-b004-201940
+x86_64                 randconfig-b001-201940
+i386                   randconfig-b002-201940
+x86_64                 randconfig-h002-201940
+x86_64                 randconfig-h001-201940
+i386                   randconfig-h004-201940
+i386                   randconfig-h003-201940
+x86_64                 randconfig-h003-201940
+i386                   randconfig-h002-201940
+i386                   randconfig-h001-201940
+x86_64                 randconfig-h004-201940
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+x86_64                 randconfig-e004-201940
+x86_64                 randconfig-e001-201940
+x86_64                 randconfig-e003-201940
+x86_64                 randconfig-e002-201940
+i386                   randconfig-e003-201940
+i386                   randconfig-e004-201940
+i386                   randconfig-e001-201940
+i386                   randconfig-e002-201940
+x86_64                 randconfig-c001-201940
+x86_64                 randconfig-c002-201940
+i386                   randconfig-c001-201940
+i386                   randconfig-c004-201940
+i386                   randconfig-c003-201940
+x86_64                 randconfig-c004-201940
+i386                   randconfig-c002-201940
+x86_64                 randconfig-c003-201940
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-a004-201940
+x86_64                 randconfig-a001-201940
+i386                   randconfig-a002-201940
+x86_64                 randconfig-a002-201940
+i386                   randconfig-a001-201940
+i386                   randconfig-a003-201940
+i386                   randconfig-a004-201940
+x86_64                 randconfig-a003-201940
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
