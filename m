@@ -1,144 +1,70 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 10 Oct 2019 08:15:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master] BUILD SUCCESS
- 75792624783659b6712b8cacb01fc0f04150eebb
-Message-ID: <5d9e7824.dMkeLeZ8NkXXnb3V%lkp@intel.com>
+From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
+Date: Wed, 9 Oct 2019 17:39:19 -0700
+Subject: [Intel-wired-lan] [PATCH 3/3] i40e: Add UDP segmentation
+ offload support
+In-Reply-To: <1570658777-13459-4-git-send-email-johunt@akamai.com>
+References: <1570658777-13459-1-git-send-email-johunt@akamai.com>
+ <1570658777-13459-4-git-send-email-johunt@akamai.com>
+Message-ID: <5f4af1c5-c2d1-d643-3fb2-fe4bd0e7e8cf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-branch HEAD: 75792624783659b6712b8cacb01fc0f04150eebb  net: stmmac: add flexible PPS to dwmac 4.10a
 
-elapsed time: 83m
 
-configs tested: 119
+On 10/9/2019 3:06 PM, Josh Hunt wrote:
+> Based on a series from Alexander Duyck this change adds UDP segmentation
+> offload support to the i40e driver.
+> 
+> CC: Alexander Duyck <alexander.h.duyck@intel.com>
+> CC: Willem de Bruijn <willemb@google.com>
+> Signed-off-by: Josh Hunt <johunt@akamai.com>
+> ---
+>   drivers/net/ethernet/intel/i40e/i40e_main.c |  1 +
+>   drivers/net/ethernet/intel/i40e/i40e_txrx.c | 12 +++++++++---
+>   2 files changed, 10 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 6031223eafab..56f8c52cbba1 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -12911,6 +12911,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+>   			  NETIF_F_GSO_IPXIP6		|
+>   			  NETIF_F_GSO_UDP_TUNNEL	|
+>   			  NETIF_F_GSO_UDP_TUNNEL_CSUM	|
+> +			  NETIF_F_GSO_UDP_L4		|
+>   			  NETIF_F_SCTP_CRC		|
+>   			  NETIF_F_RXHASH		|
+>   			  NETIF_F_RXCSUM		|
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> index e3f29dc8b290..0b32f04a6255 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> @@ -2960,10 +2960,16 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
+>   
+>   	/* remove payload length from inner checksum */
+>   	paylen = skb->len - l4_offset;
+> -	csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
+>   
+> -	/* compute length of segmentation header */
+> -	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
+> +	if (skb->csum_offset == offsetof(struct tcphdr, check)) {
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Isn't it more relevant to check for gso_type rather than base this on 
+the csum_offset?
 
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-g001-201940
-x86_64                 randconfig-g002-201940
-x86_64                 randconfig-g003-201940
-x86_64                 randconfig-g004-201940
-i386                   randconfig-g001-201940
-i386                   randconfig-g002-201940
-i386                   randconfig-g003-201940
-i386                   randconfig-g004-201940
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-i386                   randconfig-f002-201940
-i386                   randconfig-f001-201940
-x86_64                 randconfig-f004-201940
-i386                   randconfig-f003-201940
-x86_64                           allyesconfig
-i386                             allmodconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-i386                   randconfig-b001-201940
-x86_64                 randconfig-b004-201940
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                              allmodconfig
-arm64                            allmodconfig
-i386                   randconfig-h002-201940
-i386                   randconfig-h001-201940
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-e001-201940
-x86_64                 randconfig-e002-201940
-x86_64                 randconfig-e003-201940
-x86_64                 randconfig-e004-201940
-i386                   randconfig-e001-201940
-i386                   randconfig-e002-201940
-i386                   randconfig-e003-201940
-i386                   randconfig-e004-201940
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-i386                              allnoconfig
-i386                                defconfig
-sparc                               defconfig
-arm                          exynos_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-x86_64                 randconfig-h001-201940
-x86_64                 randconfig-h002-201940
-x86_64                 randconfig-h003-201940
-x86_64                 randconfig-h004-201940
-i386                   randconfig-h003-201940
-i386                   randconfig-h004-201940
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-d002-201940
-x86_64                 randconfig-d002-201940
-x86_64                 randconfig-d004-201940
-i386                   randconfig-d004-201940
-x86_64                 randconfig-d003-201940
-i386                   randconfig-d003-201940
-x86_64                 randconfig-d001-201940
-i386                   randconfig-d001-201940
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> +		csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
+> +		/* compute length of segmentation header */
+> +		*hdr_len = (l4.tcp->doff * 4) + l4_offset;
+> +	} else {
+> +		csum_replace_by_diff(&l4.udp->check, (__force __wsum)htonl(paylen));
+> +		/* compute length of segmentation header */
+> +		*hdr_len = sizeof(*l4.udp) + l4_offset;
+> +	}
+>   
+>   	/* pull values out of skb_shinfo */
+>   	gso_size = skb_shinfo(skb)->gso_size;
+> 
