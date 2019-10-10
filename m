@@ -1,50 +1,52 @@
-From: Josh Hunt <johunt@akamai.com>
-Date: Wed, 9 Oct 2019 18:06:45 -0700
-Subject: [Intel-wired-lan] [PATCH 2/3] ixgbe: Add UDP segmentation
- offload support
-In-Reply-To: <1570658777-13459-3-git-send-email-johunt@akamai.com>
-References: <1570658777-13459-1-git-send-email-johunt@akamai.com>
- <1570658777-13459-3-git-send-email-johunt@akamai.com>
-Message-ID: <22506786-c429-df87-54cb-c1c83b1b445b@akamai.com>
+From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+Date: Wed, 9 Oct 2019 18:06:53 -0700
+Subject: [Intel-wired-lan] FW: [PATCH bpf-next 2/4] xsk: allow AF_XDP
+ sockets to receive packets directly from a queue
+In-Reply-To: <2032d58c-916f-d26a-db14-bd5ba6ad92b9@intel.com>
+References: <1570515415-45593-1-git-send-email-sridhar.samudrala@intel.com>
+ <1570515415-45593-3-git-send-email-sridhar.samudrala@intel.com>
+ <CAADnVQ+XxmvY0cs8MYriMMd7=2TSEm4zCtB+fs2vkwdUY6UgAQ@mail.gmail.com>
+ <3ED8E928C4210A4289A677D2FEB48235140134CE@fmsmsx111.amr.corp.intel.com>
+ <2bc26acd-170d-634e-c066-71557b2b3e4f@intel.com>
+ <CAADnVQ+qq6RLMjh5bB1ugXP5p7vYM2F1fLGFQ2pL=2vhCLiBdA@mail.gmail.com>
+ <2032d58c-916f-d26a-db14-bd5ba6ad92b9@intel.com>
+Message-ID: <CAADnVQ+CH1YM52+LfybLS+NK16414Exrvk1QpYOF=HaT4KRaxg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/9/19 3:06 PM, Josh Hunt wrote:
-> Repost from a series by Alexander Duyck to add UDP segmentation offload
-> support to the igb driver:
-> https://lore.kernel.org/netdev/20180504003916.4769.66271.stgit at localhost.localdomain/
-> 
-> CC: Alexander Duyck <alexander.h.duyck@intel.com>
-> CC: Willem de Bruijn <willemb@google.com>
-> Signed-off-by: Josh Hunt <johunt@akamai.com>
-> ---
->   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 24 +++++++++++++++++++-----
->   1 file changed, 19 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 1ce2397306b9..2b01d264e5ce 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -7946,6 +7946,7 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
->   	} ip;
->   	union {
->   		struct tcphdr *tcp;
-> +		struct udphdr *udp;
->   		unsigned char *hdr;
->   	} l4;
->   	u32 paylen, l4_offset;
-> @@ -7969,6 +7970,9 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
->   	l4.hdr = skb_checksum_start(skb);
->   
->   	/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
-> +	type_tucmd = (skb->csum_offset == offsetof(struct tcphdr, check)) ?
-> +		      IXGBE_ADVTXD_TUCMD_L4T_TCP : IXGBE_ADVTXD_TUCMD_L4T_UDP;
-> +
->   	type_tucmd = IXGBE_ADVTXD_TUCMD_L4T_TCP;
+On Wed, Oct 9, 2019 at 12:12 PM Samudrala, Sridhar
+<sridhar.samudrala@intel.com> wrote:
+> >>     34.57%  xdpsock          xdpsock           [.] main
+> >>     17.19%  ksoftirqd/1      [kernel.vmlinux]  [k] ___bpf_prog_run
+> >>     13.12%  xdpsock          [kernel.vmlinux]  [k] ___bpf_prog_run
+> >
+> > That must be a bad joke.
+> > The whole patch set is based on comparing native code to interpreter?!
+> > It's pretty awesome that interpreter is only 1.5x slower than native x86.
+> > Just turn the JIT on.
+>
+> Thanks Alexei for pointing out that i didn't have JIT on.
+> When i turn it on, the performance improvement is a more modest 1.5x
+> with rxdrop and 1.2x with l2fwd.
 
-Copy/paste bug ^^. Will fix in v2.
+I want to see perf reports back to back with proper performance analysis.
 
-Josh
+> >
+> > Obvious Nack to the patch set.
+> >
+>
+> Will update the patchset with the right performance data and address
+> feedback from Bjorn.
+> Hope you are not totally against direct XDP approach as it does provide
+> value when an AF_XDP socket is bound to a queue and a HW filter can
+> direct packets targeted for that queue.
+
+I used to be in favor of providing "prog bypass" for af_xdp,
+because of anecdotal evidence that it will make af_xdp faster.
+Now seeing the numbers and the way they were collected
+I'm against such bypass.
+I want to see hard proof that trivial bpf prog is actually slowing things down
+before reviewing any new patch sets.
