@@ -1,57 +1,32 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu, 10 Oct 2019 13:15:39 +0300
-Subject: [Intel-wired-lan] [PATCH v1] e1000e: Add support for Comet Lake
-Message-ID: <20191010101539.37043-1-sasha.neftin@intel.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Thu, 10 Oct 2019 06:55:38 -0600
+Subject: [Intel-wired-lan] [PATCH] Documentation: networking: device
+ drivers: Remove stray asterisks
+In-Reply-To: <20191009154803.34e21bae@cakuba.netronome.com>
+References: <20191002150956.16234-1-j.neuschaefer@gmx.net>
+ <20191002.172526.1832563406015085740.davem@davemloft.net>
+ <20191003082953.396ebc1a@lwn.net>
+ <20191009154803.34e21bae@cakuba.netronome.com>
+Message-ID: <20191010065538.62c14aed@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add devices ID's for the next LOM generations that will be
-available on the next Intel Client platform (Comet Lake)
-This patch provides the initial support for these devices
+On Wed, 9 Oct 2019 15:48:03 -0700
+Jakub Kicinski <jakub.kicinski@netronome.com> wrote:
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/e1000e/hw.h     | 6 ++++++
- drivers/net/ethernet/intel/e1000e/netdev.c | 6 ++++++
- 2 files changed, 12 insertions(+)
+> Hi Jon, I think Dave intended a few more patches to go via the doc
+> tree, in particular:
+> 
+>  docs: networking: devlink-trap: Fix reference to other document
+>  docs: networking: phy: Improve phrasing
+> 
+> Looks like those went missing. Would you mind taking those, or
+> would you prefer for them to land in the networking trees?
 
-diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
-index eff75bd8a8f0..11fdc27faa82 100644
---- a/drivers/net/ethernet/intel/e1000e/hw.h
-+++ b/drivers/net/ethernet/intel/e1000e/hw.h
-@@ -86,6 +86,12 @@ struct e1000_hw;
- #define E1000_DEV_ID_PCH_ICP_I219_V8		0x15E0
- #define E1000_DEV_ID_PCH_ICP_I219_LM9		0x15E1
- #define E1000_DEV_ID_PCH_ICP_I219_V9		0x15E2
-+#define E1000_DEV_ID_PCH_CMP_I219_LM10		0x0D4E
-+#define E1000_DEV_ID_PCH_CMP_I219_V10		0x0D4F
-+#define E1000_DEV_ID_PCH_CMP_I219_LM11		0x0D4C
-+#define E1000_DEV_ID_PCH_CMP_I219_V11		0x0D4D
-+#define E1000_DEV_ID_PCH_CMP_I219_LM12		0x0D53
-+#define E1000_DEV_ID_PCH_CMP_I219_V12		0x0D55
- 
- #define E1000_REVISION_4	4
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index cc4363e67072..2dedeed74cd4 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7753,6 +7753,12 @@ static const struct pci_device_id e1000_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V8), board_pch_cnp },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_LM9), board_pch_cnp },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V9), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM10), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V10), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM11), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V11), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM12), board_pch_spt },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V12), board_pch_spt },
- 
- 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
- };
--- 
-2.11.0
+Not missing, just sitting in a folder waiting for me to get back to
+dealing with the queue.  I'll get caught up soon.
 
+jon
