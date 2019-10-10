@@ -1,110 +1,122 @@
-From: Josh Hunt <johunt@akamai.com>
-Date: Wed,  9 Oct 2019 18:06:15 -0400
-Subject: [Intel-wired-lan] [PATCH 1/3] igb: Add UDP segmentation offload
- support
-In-Reply-To: <1570658777-13459-1-git-send-email-johunt@akamai.com>
-References: <1570658777-13459-1-git-send-email-johunt@akamai.com>
-Message-ID: <1570658777-13459-2-git-send-email-johunt@akamai.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 10 Oct 2019 08:09:48 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 23396b00ad1e0c2af316d6831c437d54e71d0abf
+Message-ID: <5d9e76cc.ILS18j6jqdp7rj6J%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Based on a series from Alexander Duyck this change adds UDP segmentation
-offload support to the igb driver.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 23396b00ad1e0c2af316d6831c437d54e71d0abf  i40e: Fix receive buffer starvation for AF_XDP
 
-CC: Alexander Duyck <alexander.h.duyck@intel.com>
-CC: Willem de Bruijn <willemb@google.com>
-Signed-off-by: Josh Hunt <johunt@akamai.com>
+elapsed time: 77m
+
+configs tested: 97
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-g001-201940
+x86_64                 randconfig-g002-201940
+x86_64                 randconfig-g003-201940
+x86_64                 randconfig-g004-201940
+i386                   randconfig-g001-201940
+i386                   randconfig-g002-201940
+i386                   randconfig-g003-201940
+i386                   randconfig-g004-201940
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                           allmodconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+arm                              allmodconfig
+arm64                            allmodconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-e001-201940
+x86_64                 randconfig-e002-201940
+x86_64                 randconfig-e003-201940
+x86_64                 randconfig-e004-201940
+i386                   randconfig-e001-201940
+i386                   randconfig-e002-201940
+i386                   randconfig-e003-201940
+i386                   randconfig-e004-201940
+sparc                               defconfig
+arm                          exynos_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+
 ---
- drivers/net/ethernet/intel/igb/e1000_82575.h |  1 +
- drivers/net/ethernet/intel/igb/igb_main.c    | 23 +++++++++++++++++------
- 2 files changed, 18 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.h b/drivers/net/ethernet/intel/igb/e1000_82575.h
-index 6ad775b1a4c5..63ec253ac788 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.h
-@@ -127,6 +127,7 @@ struct e1000_adv_tx_context_desc {
- };
- 
- #define E1000_ADVTXD_MACLEN_SHIFT    9  /* Adv ctxt desc mac len shift */
-+#define E1000_ADVTXD_TUCMD_L4T_UDP 0x00000000  /* L4 Packet TYPE of UDP */
- #define E1000_ADVTXD_TUCMD_IPV4    0x00000400  /* IP Packet Type: 1=IPv4 */
- #define E1000_ADVTXD_TUCMD_L4T_TCP 0x00000800  /* L4 Packet TYPE of TCP */
- #define E1000_ADVTXD_TUCMD_L4T_SCTP 0x00001000 /* L4 packet TYPE of SCTP */
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 105b0624081a..5eabfac5a18d 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2516,6 +2516,7 @@ igb_features_check(struct sk_buff *skb, struct net_device *dev,
- 	if (unlikely(mac_hdr_len > IGB_MAX_MAC_HDR_LEN))
- 		return features & ~(NETIF_F_HW_CSUM |
- 				    NETIF_F_SCTP_CRC |
-+				    NETIF_F_GSO_UDP_L4 |
- 				    NETIF_F_HW_VLAN_CTAG_TX |
- 				    NETIF_F_TSO |
- 				    NETIF_F_TSO6);
-@@ -2524,6 +2525,7 @@ igb_features_check(struct sk_buff *skb, struct net_device *dev,
- 	if (unlikely(network_hdr_len >  IGB_MAX_NETWORK_HDR_LEN))
- 		return features & ~(NETIF_F_HW_CSUM |
- 				    NETIF_F_SCTP_CRC |
-+				    NETIF_F_GSO_UDP_L4 |
- 				    NETIF_F_TSO |
- 				    NETIF_F_TSO6);
- 
-@@ -3120,7 +3122,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 			    NETIF_F_HW_CSUM;
- 
- 	if (hw->mac.type >= e1000_82576)
--		netdev->features |= NETIF_F_SCTP_CRC;
-+		netdev->features |= NETIF_F_SCTP_CRC | NETIF_F_GSO_UDP_L4;
- 
- 	if (hw->mac.type >= e1000_i350)
- 		netdev->features |= NETIF_F_HW_TC;
-@@ -5694,6 +5696,7 @@ static int igb_tso(struct igb_ring *tx_ring,
- 	} ip;
- 	union {
- 		struct tcphdr *tcp;
-+		struct udphdr *udp;
- 		unsigned char *hdr;
- 	} l4;
- 	u32 paylen, l4_offset;
-@@ -5713,7 +5716,8 @@ static int igb_tso(struct igb_ring *tx_ring,
- 	l4.hdr = skb_checksum_start(skb);
- 
- 	/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
--	type_tucmd = E1000_ADVTXD_TUCMD_L4T_TCP;
-+	type_tucmd = (skb->csum_offset == offsetof(struct tcphdr, check)) ?
-+		      E1000_ADVTXD_TUCMD_L4T_TCP : E1000_ADVTXD_TUCMD_L4T_UDP;
- 
- 	/* initialize outer IP header fields */
- 	if (ip.v4->version == 4) {
-@@ -5741,12 +5745,19 @@ static int igb_tso(struct igb_ring *tx_ring,
- 	/* determine offset of inner transport header */
- 	l4_offset = l4.hdr - skb->data;
- 
--	/* compute length of segmentation header */
--	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
--
- 	/* remove payload length from inner checksum */
- 	paylen = skb->len - l4_offset;
--	csum_replace_by_diff(&l4.tcp->check, htonl(paylen));
-+	if (type_tucmd & E1000_ADVTXD_TUCMD_L4T_TCP) {
-+		/* compute length of segmentation header */
-+		*hdr_len = (l4.tcp->doff * 4) + l4_offset;
-+		csum_replace_by_diff(&l4.tcp->check,
-+			(__force __wsum)htonl(paylen));
-+	} else {
-+		/* compute length of segmentation header */
-+		*hdr_len = sizeof(*l4.udp) + l4_offset;
-+		csum_replace_by_diff(&l4.udp->check,
-+				     (__force __wsum)htonl(paylen));
-+	}
- 
- 	/* update gso size and bytecount with header size */
- 	first->gso_segs = skb_shinfo(skb)->gso_segs;
--- 
-2.7.4
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
