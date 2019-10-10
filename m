@@ -1,52 +1,57 @@
-From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Date: Wed, 9 Oct 2019 18:06:53 -0700
-Subject: [Intel-wired-lan] FW: [PATCH bpf-next 2/4] xsk: allow AF_XDP
- sockets to receive packets directly from a queue
-In-Reply-To: <2032d58c-916f-d26a-db14-bd5ba6ad92b9@intel.com>
-References: <1570515415-45593-1-git-send-email-sridhar.samudrala@intel.com>
- <1570515415-45593-3-git-send-email-sridhar.samudrala@intel.com>
- <CAADnVQ+XxmvY0cs8MYriMMd7=2TSEm4zCtB+fs2vkwdUY6UgAQ@mail.gmail.com>
- <3ED8E928C4210A4289A677D2FEB48235140134CE@fmsmsx111.amr.corp.intel.com>
- <2bc26acd-170d-634e-c066-71557b2b3e4f@intel.com>
- <CAADnVQ+qq6RLMjh5bB1ugXP5p7vYM2F1fLGFQ2pL=2vhCLiBdA@mail.gmail.com>
- <2032d58c-916f-d26a-db14-bd5ba6ad92b9@intel.com>
-Message-ID: <CAADnVQ+CH1YM52+LfybLS+NK16414Exrvk1QpYOF=HaT4KRaxg@mail.gmail.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu, 10 Oct 2019 13:15:39 +0300
+Subject: [Intel-wired-lan] [PATCH v1] e1000e: Add support for Comet Lake
+Message-ID: <20191010101539.37043-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Oct 9, 2019 at 12:12 PM Samudrala, Sridhar
-<sridhar.samudrala@intel.com> wrote:
-> >>     34.57%  xdpsock          xdpsock           [.] main
-> >>     17.19%  ksoftirqd/1      [kernel.vmlinux]  [k] ___bpf_prog_run
-> >>     13.12%  xdpsock          [kernel.vmlinux]  [k] ___bpf_prog_run
-> >
-> > That must be a bad joke.
-> > The whole patch set is based on comparing native code to interpreter?!
-> > It's pretty awesome that interpreter is only 1.5x slower than native x86.
-> > Just turn the JIT on.
->
-> Thanks Alexei for pointing out that i didn't have JIT on.
-> When i turn it on, the performance improvement is a more modest 1.5x
-> with rxdrop and 1.2x with l2fwd.
+Add devices ID's for the next LOM generations that will be
+available on the next Intel Client platform (Comet Lake)
+This patch provides the initial support for these devices
 
-I want to see perf reports back to back with proper performance analysis.
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/hw.h     | 6 ++++++
+ drivers/net/ethernet/intel/e1000e/netdev.c | 6 ++++++
+ 2 files changed, 12 insertions(+)
 
-> >
-> > Obvious Nack to the patch set.
-> >
->
-> Will update the patchset with the right performance data and address
-> feedback from Bjorn.
-> Hope you are not totally against direct XDP approach as it does provide
-> value when an AF_XDP socket is bound to a queue and a HW filter can
-> direct packets targeted for that queue.
+diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
+index eff75bd8a8f0..11fdc27faa82 100644
+--- a/drivers/net/ethernet/intel/e1000e/hw.h
++++ b/drivers/net/ethernet/intel/e1000e/hw.h
+@@ -86,6 +86,12 @@ struct e1000_hw;
+ #define E1000_DEV_ID_PCH_ICP_I219_V8		0x15E0
+ #define E1000_DEV_ID_PCH_ICP_I219_LM9		0x15E1
+ #define E1000_DEV_ID_PCH_ICP_I219_V9		0x15E2
++#define E1000_DEV_ID_PCH_CMP_I219_LM10		0x0D4E
++#define E1000_DEV_ID_PCH_CMP_I219_V10		0x0D4F
++#define E1000_DEV_ID_PCH_CMP_I219_LM11		0x0D4C
++#define E1000_DEV_ID_PCH_CMP_I219_V11		0x0D4D
++#define E1000_DEV_ID_PCH_CMP_I219_LM12		0x0D53
++#define E1000_DEV_ID_PCH_CMP_I219_V12		0x0D55
+ 
+ #define E1000_REVISION_4	4
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index cc4363e67072..2dedeed74cd4 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -7753,6 +7753,12 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V8), board_pch_cnp },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_LM9), board_pch_cnp },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V9), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM10), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V10), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM11), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V11), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM12), board_pch_spt },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V12), board_pch_spt },
+ 
+ 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
+ };
+-- 
+2.11.0
 
-I used to be in favor of providing "prog bypass" for af_xdp,
-because of anecdotal evidence that it will make af_xdp faster.
-Now seeing the numbers and the way they were collected
-I'm against such bypass.
-I want to see hard proof that trivial bpf prog is actually slowing things down
-before reviewing any new patch sets.
