@@ -1,82 +1,118 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 11 Oct 2019 11:50:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 41/42]
- drivers/net/ethernet/intel/e1000e/netdev.c:7087:2: error: implicit
- declaration of function 'e1000e_pm_thaw'; did you mean 'e1000e_pm_freeze'?
-Message-ID: <201910111125.ocuCRCAm%lkp@intel.com>
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Date: Fri, 11 Oct 2019 08:29:54 -0700
+Subject: [Intel-wired-lan] [PATCH v2 1/3] igb: Add UDP segmentation
+ offload support
+In-Reply-To: <1570753502-6014-2-git-send-email-johunt@akamai.com>
+References: <1570753502-6014-1-git-send-email-johunt@akamai.com>
+ <1570753502-6014-2-git-send-email-johunt@akamai.com>
+Message-ID: <aa9462d4a48a47250d150e0f743bf08635ee9b72.camel@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   a66faf201b1e169f5c2cd8660f8a9923ce697b5e
-commit: e39f323ba1731ebb9c0a53b70829f01f77cd486b [41/42] e1000e: Use rtnl_lock to prevent race conditions between net and pci/pm
-config: sparc64-defconfig (attached as .config)
-compiler: sparc64-linux-gcc (GCC) 7.4.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout e39f323ba1731ebb9c0a53b70829f01f77cd486b
-        # save the attached .config to linux build tree
-        GCC_VERSION=7.4.0 make.cross ARCH=sparc64 
+On Thu, 2019-10-10 at 20:25 -0400, Josh Hunt wrote:
+> Based on a series from Alexander Duyck this change adds UDP segmentation
+> offload support to the igb driver.
+> 
+> CC: Alexander Duyck <alexander.h.duyck@intel.com>
+> CC: Willem de Bruijn <willemb@google.com>
+> Signed-off-by: Josh Hunt <johunt@akamai.com>
+> ---
+>  drivers/net/ethernet/intel/igb/e1000_82575.h |  1 +
+>  drivers/net/ethernet/intel/igb/igb_main.c    | 23 +++++++++++++++++------
+>  2 files changed, 18 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.h b/drivers/net/ethernet/intel/igb/e1000_82575.h
+> index 6ad775b1a4c5..63ec253ac788 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_82575.h
+> +++ b/drivers/net/ethernet/intel/igb/e1000_82575.h
+> @@ -127,6 +127,7 @@ struct e1000_adv_tx_context_desc {
+>  };
+>  
+>  #define E1000_ADVTXD_MACLEN_SHIFT    9  /* Adv ctxt desc mac len shift */
+> +#define E1000_ADVTXD_TUCMD_L4T_UDP 0x00000000  /* L4 Packet TYPE of UDP */
+>  #define E1000_ADVTXD_TUCMD_IPV4    0x00000400  /* IP Packet Type: 1=IPv4 */
+>  #define E1000_ADVTXD_TUCMD_L4T_TCP 0x00000800  /* L4 Packet TYPE of TCP */
+>  #define E1000_ADVTXD_TUCMD_L4T_SCTP 0x00001000 /* L4 packet TYPE of SCTP */
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 105b0624081a..4131bc8b079e 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -2516,6 +2516,7 @@ igb_features_check(struct sk_buff *skb, struct net_device *dev,
+>  	if (unlikely(mac_hdr_len > IGB_MAX_MAC_HDR_LEN))
+>  		return features & ~(NETIF_F_HW_CSUM |
+>  				    NETIF_F_SCTP_CRC |
+> +				    NETIF_F_GSO_UDP_L4 |
+>  				    NETIF_F_HW_VLAN_CTAG_TX |
+>  				    NETIF_F_TSO |
+>  				    NETIF_F_TSO6);
+> @@ -2524,6 +2525,7 @@ igb_features_check(struct sk_buff *skb, struct net_device *dev,
+>  	if (unlikely(network_hdr_len >  IGB_MAX_NETWORK_HDR_LEN))
+>  		return features & ~(NETIF_F_HW_CSUM |
+>  				    NETIF_F_SCTP_CRC |
+> +				    NETIF_F_GSO_UDP_L4 |
+>  				    NETIF_F_TSO |
+>  				    NETIF_F_TSO6);
+>  
+> @@ -3120,7 +3122,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  			    NETIF_F_HW_CSUM;
+>  
+>  	if (hw->mac.type >= e1000_82576)
+> -		netdev->features |= NETIF_F_SCTP_CRC;
+> +		netdev->features |= NETIF_F_SCTP_CRC | NETIF_F_GSO_UDP_L4;
+>  
+>  	if (hw->mac.type >= e1000_i350)
+>  		netdev->features |= NETIF_F_HW_TC;
+> @@ -5694,6 +5696,7 @@ static int igb_tso(struct igb_ring *tx_ring,
+>  	} ip;
+>  	union {
+>  		struct tcphdr *tcp;
+> +		struct udphdr *udp;
+>  		unsigned char *hdr;
+>  	} l4;
+>  	u32 paylen, l4_offset;
+> @@ -5713,7 +5716,8 @@ static int igb_tso(struct igb_ring *tx_ring,
+>  	l4.hdr = skb_checksum_start(skb);
+>  
+>  	/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
+> -	type_tucmd = E1000_ADVTXD_TUCMD_L4T_TCP;
+> +	type_tucmd = (!(skb_shinfo(skb)->gso_type & SKB_GSO_UDP_L4)) ?
+> +		      E1000_ADVTXD_TUCMD_L4T_TCP : E1000_ADVTXD_TUCMD_L4T_UDP;
 
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
+The logic here seems a bit convoluted. Instead of testing for
+'!SKB_GSO_UDP_L4' why not just make L4T_UDP the first option and drop the
+'!'? That will make the TCP offload the default case rather than the UDP
+offload.
 
-All errors (new ones prefixed by >>):
+The same applies to the other 2 patches.
 
-   drivers/net/ethernet/intel/e1000e/netdev.c: In function 'e1000_io_resume':
->> drivers/net/ethernet/intel/e1000e/netdev.c:7087:2: error: implicit declaration of function 'e1000e_pm_thaw'; did you mean 'e1000e_pm_freeze'? [-Werror=implicit-function-declaration]
-     e1000e_pm_thaw(&pdev->dev);
-     ^~~~~~~~~~~~~~
-     e1000e_pm_freeze
-   At top level:
-   drivers/net/ethernet/intel/e1000e/netdev.c:6407:12: warning: 'e1000e_s0ix_exit_flow' defined but not used [-Wunused-function]
-    static int e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
-               ^~~~~~~~~~~~~~~~~~~~~
-   drivers/net/ethernet/intel/e1000e/netdev.c:6298:12: warning: 'e1000e_s0ix_entry_flow' defined but not used [-Wunused-function]
-    static int e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
-               ^~~~~~~~~~~~~~~~~~~~~~
-   cc1: some warnings being treated as errors
+>  	/* initialize outer IP header fields */
+>  	if (ip.v4->version == 4) {
+> @@ -5741,12 +5745,19 @@ static int igb_tso(struct igb_ring *tx_ring,
+>  	/* determine offset of inner transport header */
+>  	l4_offset = l4.hdr - skb->data;
+>  
+> -	/* compute length of segmentation header */
+> -	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
+> -
+>  	/* remove payload length from inner checksum */
+>  	paylen = skb->len - l4_offset;
+> -	csum_replace_by_diff(&l4.tcp->check, htonl(paylen));
+> +	if (type_tucmd & E1000_ADVTXD_TUCMD_L4T_TCP) {
+> +		/* compute length of segmentation header */
+> +		*hdr_len = (l4.tcp->doff * 4) + l4_offset;
+> +		csum_replace_by_diff(&l4.tcp->check,
+> +			(__force __wsum)htonl(paylen));
+> +	} else {
+> +		/* compute length of segmentation header */
+> +		*hdr_len = sizeof(*l4.udp) + l4_offset;
+> +		csum_replace_by_diff(&l4.udp->check,
+> +				     (__force __wsum)htonl(paylen));
+> +	}
+>  
+>  	/* update gso size and bytecount with header size */
+>  	first->gso_segs = skb_shinfo(skb)->gso_segs;
 
-vim +7087 drivers/net/ethernet/intel/e1000e/netdev.c
 
-  7071	
-  7072	/**
-  7073	 * e1000_io_resume - called when traffic can start flowing again.
-  7074	 * @pdev: Pointer to PCI device
-  7075	 *
-  7076	 * This callback is called when the error recovery driver tells us that
-  7077	 * its OK to resume normal operation. Implementation resembles the
-  7078	 * second-half of the e1000e_pm_resume routine.
-  7079	 */
-  7080	static void e1000_io_resume(struct pci_dev *pdev)
-  7081	{
-  7082		struct net_device *netdev = pci_get_drvdata(pdev);
-  7083		struct e1000_adapter *adapter = netdev_priv(netdev);
-  7084	
-  7085		e1000_init_manageability_pt(adapter);
-  7086	
-> 7087		e1000e_pm_thaw(&pdev->dev);
-  7088	
-  7089		/* If the controller has AMT, do not set DRV_LOAD until the interface
-  7090		 * is up.  For all other cases, let the f/w know that the h/w is now
-  7091		 * under the control of the driver.
-  7092		 */
-  7093		if (!(adapter->flags & FLAG_HAS_AMT))
-  7094			e1000e_get_hw_control(adapter);
-  7095	}
-  7096	
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 18919 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20191011/7a1b45a0/attachment-0001.bin>
