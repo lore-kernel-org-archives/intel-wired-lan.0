@@ -1,63 +1,35 @@
 From: Josh Hunt <johunt@akamai.com>
-Date: Thu, 10 Oct 2019 20:25:02 -0400
-Subject: [Intel-wired-lan] [PATCH v2 3/3] i40e: Add UDP segmentation offload
- support
-In-Reply-To: <1570753502-6014-1-git-send-email-johunt@akamai.com>
-References: <1570753502-6014-1-git-send-email-johunt@akamai.com>
-Message-ID: <1570753502-6014-4-git-send-email-johunt@akamai.com>
+Date: Thu, 10 Oct 2019 17:27:43 -0700
+Subject: [Intel-wired-lan] [PATCH 0/3] igb, ixgbe,
+ i40e UDP segmentation offload support
+In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B9714C727@ORSMSX103.amr.corp.intel.com>
+References: <1570658777-13459-1-git-send-email-johunt@akamai.com>
+ <CAKgT0UdBPYRnwAuOGhCBAJSRhdHcnw28Tznr0GPAtqe-JWFjTQ@mail.gmail.com>
+ <cd8ac880-61fe-b064-6271-993e8c6eee65@akamai.com>
+ <CAKgT0UfXgzur2TGv1dNw0PQXAP0C=bNoJY6gnthASeQrHr66AA@mail.gmail.com>
+ <0e0e706c-4ce9-c27a-af55-339b4eb6d524@akamai.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B9714C727@ORSMSX103.amr.corp.intel.com>
+Message-ID: <71a74c86-18b6-5c6a-8663-e558c43af682@akamai.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Based on a series from Alexander Duyck this change adds UDP segmentation
-offload support to the i40e driver.
+On 10/10/19 5:21 PM, Brown, Aaron F wrote:
+> Adding Andrew as he is most likely going to be testing this patch.
+> 
+> Unfortunately my mail server flags attached scripts as potential threats and strips them out.  Can you resent it as an tar file?  I don't believe it's smart enough to open up tar and flag it as a script.
+> 
 
-CC: Alexander Duyck <alexander.h.duyck@intel.com>
-CC: Willem de Bruijn <willemb@google.com>
-Signed-off-by: Josh Hunt <johunt@akamai.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c |  1 +
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 12 +++++++++---
- 2 files changed, 10 insertions(+), 3 deletions(-)
+Hi Aaron
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 6031223eafab..56f8c52cbba1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -12911,6 +12911,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 			  NETIF_F_GSO_IPXIP6		|
- 			  NETIF_F_GSO_UDP_TUNNEL	|
- 			  NETIF_F_GSO_UDP_TUNNEL_CSUM	|
-+			  NETIF_F_GSO_UDP_L4		|
- 			  NETIF_F_SCTP_CRC		|
- 			  NETIF_F_RXHASH		|
- 			  NETIF_F_RXCSUM		|
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index e3f29dc8b290..2250284e27fd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2960,10 +2960,16 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
- 
- 	/* remove payload length from inner checksum */
- 	paylen = skb->len - l4_offset;
--	csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
- 
--	/* compute length of segmentation header */
--	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
-+	if (!(skb_shinfo(skb)->gso_type & SKB_GSO_UDP_L4)) {
-+		csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
-+		/* compute length of segmentation header */
-+		*hdr_len = (l4.tcp->doff * 4) + l4_offset;
-+	} else {
-+		csum_replace_by_diff(&l4.udp->check, (__force __wsum)htonl(paylen));
-+		/* compute length of segmentation header */
-+		*hdr_len = sizeof(*l4.udp) + l4_offset;
-+	}
- 
- 	/* pull values out of skb_shinfo */
- 	gso_size = skb_shinfo(skb)->gso_size;
--- 
-2.7.4
+It looks like the netdev archive has the file. Can you try grabbing it 
+from here?
 
+https://lore.kernel.org/netdev/0e0e706c-4ce9-c27a-af55-339b4eb6d524 at akamai.com/2-udpgso_bench.sh
+
+If that doesn't work I can try your tar workaround.
+
+Thanks
+Josh
