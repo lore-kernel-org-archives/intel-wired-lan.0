@@ -1,11 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 11 Oct 2019 01:05:36 +0000
-Subject: [Intel-wired-lan] [net-next v3 2/7] net: reject PTP periodic
- output requests with unsupported flags
-In-Reply-To: <20190926181109.4871-3-jacob.e.keller@intel.com>
-References: <20190926181109.4871-1-jacob.e.keller@intel.com>
- <20190926181109.4871-3-jacob.e.keller@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9714C866@ORSMSX103.amr.corp.intel.com>
+Date: Fri, 11 Oct 2019 01:23:25 +0000
+Subject: [Intel-wired-lan] [PATCH] Documentation: networking: device
+ drivers: Remove stray asterisks
+In-Reply-To: <20191002150956.16234-1-j.neuschaefer@gmx.net>
+References: <20191002150956.16234-1-j.neuschaefer@gmx.net>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9714C898@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,46 +12,53 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org]
-> On Behalf Of Jacob Keller
-> Sent: Thursday, September 26, 2019 11:11 AM
-> To: netdev at vger.kernel.org
-> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; Keller, Jacob E <jacob.e.keller@intel.com>;
-> Richard Cochran <richardcochran@gmail.com>; Felipe Balbi
-> <felipe.balbi@linux.intel.com>; David S . Miller <davem@davemloft.net>; Hall,
-> Christopher S <christopher.s.hall@intel.com>
-> Subject: [net-next v3 2/7] net: reject PTP periodic output requests with
-> unsupported flags
+> On Behalf Of Jonathan Neusch?fer
+> Sent: Wednesday, October 2, 2019 8:10 AM
+> To: linux-doc at vger.kernel.org
+> Cc: Jonathan Neusch?fer <j.neuschaefer@gmx.net>; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; David S. Miller <davem@davemloft.net>;
+> Jonathan Corbet <corbet@lwn.net>; Shannon Nelson <snelson@pensando.io>;
+> Pensando Drivers <drivers@pensando.io>; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [PATCH] Documentation: networking: device drivers: Remove stray
+> asterisks
 > 
-> Commit 823eb2a3c4c7 ("PTP: add support for one-shot output") introduced
-> a new flag for the PTP periodic output request ioctl. This flag is not
-> currently supported by any driver.
+> These asterisks were once references to a line that said:
+>   "* Other names and brands may be claimed as the property of others."
+> But now, they serve no purpose; they can only irritate the reader.
 > 
-> Fix all drivers which implement the periodic output request ioctl to
-> explicitly reject any request with flags they do not understand. This
-> ensures that the driver does not accidentally misinterpret the
-> PTP_PEROUT_ONE_SHOT flag, or any new flag introduced in the future.
-> 
-> This is important for forward compatibility: if a new flag is
-> introduced, the driver should reject requests to enable the flag until
-> the driver has actually been modified to support the flag in question.
-> 
-> Cc: Richard Cochran <richardcochran@gmail.com>
-> Cc: Felipe Balbi <felipe.balbi@linux.intel.com>
-> Cc: David S. Miller <davem@davemloft.net>
-> Cc: Christopher Hall <christopher.s.hall@intel.com>
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Fixes: de3edab4276c ("e1000: update README for e1000")
+> Fixes: a3fb65680f65 ("e100.txt: Cleanup license info in kernel doc")
+> Fixes: da8c01c4502a ("e1000e.txt: Add e1000e documentation")
+> Fixes: f12a84a9f650 ("Documentation: fm10k: Add kernel documentation")
+> Fixes: b55c52b1938c ("igb.txt: Add igb documentation")
+> Fixes: c4e9b56e2442 ("igbvf.txt: Add igbvf Documentation")
+> Fixes: d7064f4c192c ("Documentation/networking/: Update Intel wired LAN
+> driver documentation")
+> Fixes: c4b8c01112a1 ("ixgbevf.txt: Update ixgbevf documentation")
+> Fixes: 1e06edcc2f22 ("Documentation: i40e: Prepare documentation for RST
+> conversion")
+> Fixes: 105bf2fe6b32 ("i40evf: add driver to kernel build system")
+> Fixes: 1fae869bcf3d ("Documentation: ice: Prepare documentation for RST
+> conversion")
+> Fixes: df69ba43217d ("ionic: Add basic framework for IONIC Network device
+> driver")
+> Signed-off-by: Jonathan Neusch?fer <j.neuschaefer@gmx.net>
 > ---
->  drivers/net/ethernet/broadcom/tg3.c                 | 4 ++++
->  drivers/net/ethernet/intel/igb/igb_ptp.c            | 4 ++++
->  drivers/net/ethernet/mellanox/mlx5/core/lib/clock.c | 4 ++++
->  drivers/net/ethernet/microchip/lan743x_ptp.c        | 4 ++++
->  drivers/net/ethernet/renesas/ravb_ptp.c             | 4 ++++
->  drivers/net/ethernet/stmicro/stmmac/stmmac_ptp.c    | 4 ++++
->  drivers/net/phy/dp83640.c                           | 3 +++
->  7 files changed, 27 insertions(+)
+>  .../networking/device_drivers/intel/e100.rst       | 14 +++++++-------
+>  .../networking/device_drivers/intel/e1000.rst      | 12 ++++++------
+>  .../networking/device_drivers/intel/e1000e.rst     | 14 +++++++-------
+>  .../networking/device_drivers/intel/fm10k.rst      | 10 +++++-----
+>  .../networking/device_drivers/intel/i40e.rst       |  8 ++++----
+>  .../networking/device_drivers/intel/iavf.rst       |  8 ++++----
+>  .../networking/device_drivers/intel/ice.rst        |  6 +++---
+>  .../networking/device_drivers/intel/igb.rst        | 12 ++++++------
+>  .../networking/device_drivers/intel/igbvf.rst      |  6 +++---
+>  .../networking/device_drivers/intel/ixgbe.rst      | 10 +++++-----
+>  .../networking/device_drivers/intel/ixgbevf.rst    |  6 +++---
+>  .../networking/device_drivers/pensando/ionic.rst   |  6 +++---
+>  12 files changed, 56 insertions(+), 56 deletions(-)
 > 
 
-For the igb sections...
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
