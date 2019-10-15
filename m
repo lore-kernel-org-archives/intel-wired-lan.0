@@ -1,9 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 15 Oct 2019 23:13:20 +0000
-Subject: [Intel-wired-lan] [PATCH S30 1/9] ice: Introduce ice_base.c
-In-Reply-To: <20191009140925.13997-1-anthony.l.nguyen@intel.com>
+Date: Tue, 15 Oct 2019 23:13:51 +0000
+Subject: [Intel-wired-lan] [PATCH S30 2/9] ice: get rid of per-tc flow
+ in Tx queue configuration routines
+In-Reply-To: <20191009140925.13997-2-anthony.l.nguyen@intel.com>
 References: <20191009140925.13997-1-anthony.l.nguyen@intel.com>
-Message-ID: <e308d8b7a26b46e1a8f2c8400623a6d9@intel.com>
+ <20191009140925.13997-2-anthony.l.nguyen@intel.com>
+Message-ID: <e0e13d50986140a0a4a5993a2b3c3d6c@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,32 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, October 9, 2019 7:09 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S30 1/9] ice: Introduce ice_base.c
+> Subject: [Intel-wired-lan] [PATCH S30 2/9] ice: get rid of per-tc flow in Tx
+> queue configuration routines
 > 
-> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > 
-> Remove a few uses of kernel configuration flags from ice_lib.c by
-> introducing a new source file ice_base.c. Also move corresponding
-> function prototypes from ice_lib.h to ice_base.h and include ice_base.h
-> where required.
+> There's no reason for treating DCB as first class citizen when configuring the
+> Tx queues and going through TCs. Reverse the logic and base the
+> configuration logic on rings, which is the object of interest anyway.
 > 
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
+> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/Makefile       |   1 +
->  drivers/net/ethernet/intel/ice/ice.h          |   8 +
->  drivers/net/ethernet/intel/ice/ice_base.c     | 767 +++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_base.h     |  31 +
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |   1 +
->  drivers/net/ethernet/intel/ice/ice_lib.c      | 787 +-----------------
->  drivers/net/ethernet/intel/ice/ice_lib.h      |  39 -
->  drivers/net/ethernet/intel/ice/ice_main.c     |   1 +
->  drivers/net/ethernet/intel/ice/ice_txrx.h     |   2 -
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   1 +
->  10 files changed, 811 insertions(+), 827 deletions(-)
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_base.c
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_base.h
+>  drivers/net/ethernet/intel/ice/ice_base.c | 29 +++++++++--
+> drivers/net/ethernet/intel/ice/ice_base.h |  4 +-
+> drivers/net/ethernet/intel/ice/ice_lib.c  | 63 ++++++++---------------
+>  3 files changed, 47 insertions(+), 49 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
