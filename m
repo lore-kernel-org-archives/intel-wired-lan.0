@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 16 Oct 2019 16:43:40 +0000
-Subject: [Intel-wired-lan] [PATCH v3 2/3] ixgbe: Add UDP segmentation
+Date: Wed, 16 Oct 2019 16:44:14 +0000
+Subject: [Intel-wired-lan] [PATCH v3 3/3] i40e: Add UDP segmentation
  offload support
-In-Reply-To: <1570812820-20052-3-git-send-email-johunt@akamai.com>
+In-Reply-To: <1570812820-20052-4-git-send-email-johunt@akamai.com>
 References: <1570812820-20052-1-git-send-email-johunt@akamai.com>
- <1570812820-20052-3-git-send-email-johunt@akamai.com>
-Message-ID: <a99acf6128404c54ba837e2b0afe1d98@intel.com>
+ <1570812820-20052-4-git-send-email-johunt@akamai.com>
+Message-ID: <5a780256fa3047c88f2ea9cb7c14c3eb@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,22 +21,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Duyck, Alexander H <alexander.h.duyck@intel.com>;
 > willemb at google.com; Josh Hunt <johunt@akamai.com>;
 > alexander.h.duyck at linux.intel.com
-> Subject: [Intel-wired-lan] [PATCH v3 2/3] ixgbe: Add UDP segmentation
+> Subject: [Intel-wired-lan] [PATCH v3 3/3] i40e: Add UDP segmentation
 > offload support
 > 
-> Repost from a series by Alexander Duyck to add UDP segmentation offload
-> support to the igb driver:
-> https://lore.kernel.org/netdev/20180504003916.4769.66271.stgit at localhost.l
-> ocaldomain/
+> Based on a series from Alexander Duyck this change adds UDP segmentation
+> offload support to the i40e driver.
 > 
 > CC: Alexander Duyck <alexander.h.duyck@intel.com>
 > CC: Willem de Bruijn <willemb@google.com>
-> Suggested-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > Signed-off-by: Josh Hunt <johunt@akamai.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 24
-> ++++++++++++++++++------
->  1 file changed, 18 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |  1 +
+> drivers/net/ethernet/intel/i40e/i40e_txrx.c | 12 +++++++++---
+>  2 files changed, 10 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
