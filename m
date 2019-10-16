@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 16 Oct 2019 16:22:48 +0000
-Subject: [Intel-wired-lan] [PATCH S31 10/15] ice: write register with
- correct offset
-In-Reply-To: <20191009140953.14087-10-anthony.l.nguyen@intel.com>
+Date: Wed, 16 Oct 2019 16:23:18 +0000
+Subject: [Intel-wired-lan] [PATCH S31 11/15] ice: print unsupported
+ module message
+In-Reply-To: <20191009140953.14087-11-anthony.l.nguyen@intel.com>
 References: <20191009140953.14087-1-anthony.l.nguyen@intel.com>
- <20191009140953.14087-10-anthony.l.nguyen@intel.com>
-Message-ID: <608b8ba2540c4e42a56489db457b79bf@intel.com>
+ <20191009140953.14087-11-anthony.l.nguyen@intel.com>
+Message-ID: <b926d31d82a144e1adfa63216179b8d0@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, October 9, 2019 7:10 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S31 10/15] ice: write register with correct
-> offset
+> Subject: [Intel-wired-lan] [PATCH S31 11/15] ice: print unsupported module
+> message
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Paul Greenwalt <paul.greenwalt@intel.com>
 > 
-> The VF_MBX_ARQLEN register array is per-PF, not global, so we should not
-> use the absolute VF ID as an index. Instead, use the per-PF VF ID.
+> Print message to inform user if unsupported module is inserted, and extend
+> the topology / configuration detection.
 > 
-> This fixes an issue with VFs on PFs other than 0 not seeing reset.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 4 ++++
+>  drivers/net/ethernet/intel/ice/ice_main.c       | 6 ++++++
+>  2 files changed, 10 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
