@@ -1,157 +1,223 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 17 Oct 2019 03:12:30 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 3544d0c4acbcbc985a7c8946d5f795cce35b55ac
-Message-ID: <5da76b9e.a2Hsv0+IYyW7Ebvp%lkp@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed, 16 Oct 2019 08:01:54 -0700
+Subject: [Intel-wired-lan] [PATCH S30 v2 2/9] ice: get rid of per-tc flow in
+ Tx queue configuration routines
+In-Reply-To: <20191016150201.41597-1-anthony.l.nguyen@intel.com>
+References: <20191016150201.41597-1-anthony.l.nguyen@intel.com>
+Message-ID: <20191016150201.41597-2-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 3544d0c4acbcbc985a7c8946d5f795cce35b55ac  ice: Fix return value when SR-IOV is not supported
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 
-elapsed time: 160m
+There's no reason for treating DCB as first class citizen when configuring
+the Tx queues and going through TCs. Reverse the logic and base the
+configuration logic on rings, which is the object of interest anyway.
 
-configs tested: 132
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                 randconfig-f001-201941
-x86_64                 randconfig-f002-201941
-x86_64                 randconfig-f003-201941
-x86_64                 randconfig-f004-201941
-i386                   randconfig-f001-201941
-i386                   randconfig-f002-201941
-i386                   randconfig-f003-201941
-i386                   randconfig-f004-201941
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-x86_64                 randconfig-h002-201941
-x86_64                 randconfig-h001-201941
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                   randconfig-d002-201941
-x86_64                 randconfig-d002-201941
-x86_64                 randconfig-d004-201941
-i386                   randconfig-d004-201941
-x86_64                 randconfig-d003-201941
-i386                   randconfig-d003-201941
-x86_64                 randconfig-d001-201941
-i386                   randconfig-d001-201941
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                 randconfig-e004-201941
-x86_64                 randconfig-e001-201941
-x86_64                 randconfig-e003-201941
-x86_64                 randconfig-e002-201941
-i386                   randconfig-e003-201941
-i386                   randconfig-e004-201941
-i386                   randconfig-e001-201941
-i386                   randconfig-e002-201941
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                 randconfig-c001-201941
-x86_64                 randconfig-c002-201941
-i386                   randconfig-c001-201941
-i386                   randconfig-c004-201941
-i386                   randconfig-c003-201941
-x86_64                 randconfig-c004-201941
-i386                   randconfig-c002-201941
-x86_64                 randconfig-c003-201941
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64          lkp-CONFIG_DEBUG_INFO_REDUCED
-x86_64                                   rhel
-x86_64                               rhel-7.6
-i386                   randconfig-b001-201941
-x86_64                 randconfig-b002-201941
-x86_64                 randconfig-b003-201941
-i386                   randconfig-b003-201941
-i386                   randconfig-b004-201941
-x86_64                 randconfig-b004-201941
-x86_64                 randconfig-b001-201941
-i386                   randconfig-b002-201941
-x86_64                           allmodconfig
-x86_64                 randconfig-g002-201941
-i386                   randconfig-g004-201941
-x86_64                 randconfig-g001-201941
-i386                   randconfig-g002-201941
-x86_64                 randconfig-g004-201941
-x86_64                 randconfig-g003-201941
-i386                   randconfig-g003-201941
-i386                   randconfig-g001-201941
-
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/ice/ice_base.c | 29 +++++++++--
+ drivers/net/ethernet/intel/ice/ice_base.h |  4 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c  | 63 ++++++++---------------
+ 3 files changed, 47 insertions(+), 49 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index 735922a4d632..1dd9c18ecd8c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -190,6 +190,21 @@ static void ice_cfg_itr_gran(struct ice_hw *hw)
+ 	wr32(hw, GLINT_CTL, regval);
+ }
+ 
++/**
++ * ice_calc_q_handle - calculate the queue handle
++ * @vsi: VSI that ring belongs to
++ * @ring: ring to get the absolute queue index
++ * @tc: traffic class number
++ */
++static u16 ice_calc_q_handle(struct ice_vsi *vsi, struct ice_ring *ring, u8 tc)
++{
++	/* idea here for calculation is that we subtract the number of queue
++	 * count from TC that ring belongs to from it's absolute queue index
++	 * and as a result we get the queue's index within TC.
++	 */
++	return ring->q_index - vsi->tc_cfg.tc_info[tc].qoffset;
++}
++
+ /**
+  * ice_setup_tx_ctx - setup a struct ice_tlan_ctx instance
+  * @ring: The Tx ring to configure
+@@ -522,13 +537,11 @@ void ice_vsi_free_q_vectors(struct ice_vsi *vsi)
+  * ice_vsi_cfg_txq - Configure single Tx queue
+  * @vsi: the VSI that queue belongs to
+  * @ring: Tx ring to be configured
+- * @tc_q_idx: queue index within given TC
+  * @qg_buf: queue group buffer
+- * @tc: TC that Tx ring belongs to
+  */
+ int
+-ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring, u16 tc_q_idx,
+-		struct ice_aqc_add_tx_qgrp *qg_buf, u8 tc)
++ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring,
++		struct ice_aqc_add_tx_qgrp *qg_buf)
+ {
+ 	struct ice_tlan_ctx tlan_ctx = { 0 };
+ 	struct ice_aqc_add_txqs_perq *txq;
+@@ -536,6 +549,7 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring, u16 tc_q_idx,
+ 	u8 buf_len = sizeof(*qg_buf);
+ 	enum ice_status status;
+ 	u16 pf_q;
++	u8 tc;
+ 
+ 	pf_q = ring->reg_idx;
+ 	ice_setup_tx_ctx(ring, &tlan_ctx, pf_q);
+@@ -549,10 +563,15 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring, u16 tc_q_idx,
+ 	 */
+ 	ring->tail = pf->hw.hw_addr + QTX_COMM_DBELL(pf_q);
+ 
++	if (IS_ENABLED(CONFIG_DCB))
++		tc = ring->dcb_tc;
++	else
++		tc = 0;
++
+ 	/* Add unique software queue handle of the Tx queue per
+ 	 * TC into the VSI Tx ring
+ 	 */
+-	ring->q_handle = tc_q_idx;
++	ring->q_handle = ice_calc_q_handle(vsi, ring, tc);
+ 
+ 	status = ice_ena_vsi_txq(vsi->port_info, vsi->idx, tc, ring->q_handle,
+ 				 1, qg_buf, buf_len, NULL);
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.h b/drivers/net/ethernet/intel/ice/ice_base.h
+index db456862b35b..407995e8e944 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.h
++++ b/drivers/net/ethernet/intel/ice/ice_base.h
+@@ -13,8 +13,8 @@ int ice_vsi_alloc_q_vectors(struct ice_vsi *vsi);
+ void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi);
+ void ice_vsi_free_q_vectors(struct ice_vsi *vsi);
+ int
+-ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring, u16 tc_q_idx,
+-		struct ice_aqc_add_tx_qgrp *qg_buf, u8 tc);
++ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring,
++		struct ice_aqc_add_tx_qgrp *qg_buf);
+ void ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector);
+ void
+ ice_cfg_txq_interrupt(struct ice_vsi *vsi, u16 txq, u16 msix_idx, u16 itr_idx);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index fe7f43d2e734..74c3bd191671 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1260,42 +1260,31 @@ int ice_vsi_cfg_rxqs(struct ice_vsi *vsi)
+  * ice_vsi_cfg_txqs - Configure the VSI for Tx
+  * @vsi: the VSI being configured
+  * @rings: Tx ring array to be configured
+- * @offset: offset within vsi->txq_map
+  *
+  * Return 0 on success and a negative value on error
+  * Configure the Tx VSI for operation.
+  */
+ static int
+-ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_ring **rings, int offset)
++ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_ring **rings)
+ {
+ 	struct ice_aqc_add_tx_qgrp *qg_buf;
+-	struct ice_pf *pf = vsi->back;
+-	u16 q_idx = 0, i;
++	u16 q_idx = 0;
+ 	int err = 0;
+-	u8 tc;
+ 
+-	qg_buf = devm_kzalloc(&pf->pdev->dev, sizeof(*qg_buf), GFP_KERNEL);
++	qg_buf = kzalloc(sizeof(*qg_buf), GFP_KERNEL);
+ 	if (!qg_buf)
+ 		return -ENOMEM;
+ 
+ 	qg_buf->num_txqs = 1;
+ 
+-	/* set up and configure the Tx queues for each enabled TC */
+-	ice_for_each_traffic_class(tc) {
+-		if (!(vsi->tc_cfg.ena_tc & BIT(tc)))
+-			break;
+-
+-		for (i = 0; i < vsi->tc_cfg.tc_info[tc].qcount_tx; i++) {
+-			err = ice_vsi_cfg_txq(vsi, rings[q_idx], i + offset,
+-					      qg_buf, tc);
+-			if (err)
+-				goto err_cfg_txqs;
+-
+-			q_idx++;
+-		}
++	for (q_idx = 0; q_idx < vsi->num_txq; q_idx++) {
++		err = ice_vsi_cfg_txq(vsi, rings[q_idx], qg_buf);
++		if (err)
++			goto err_cfg_txqs;
+ 	}
++
+ err_cfg_txqs:
+-	devm_kfree(&pf->pdev->dev, qg_buf);
++	kfree(qg_buf);
+ 	return err;
+ }
+ 
+@@ -1308,7 +1297,7 @@ ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_ring **rings, int offset)
+  */
+ int ice_vsi_cfg_lan_txqs(struct ice_vsi *vsi)
+ {
+-	return ice_vsi_cfg_txqs(vsi, vsi->tx_rings, 0);
++	return ice_vsi_cfg_txqs(vsi, vsi->tx_rings);
+ }
+ 
+ /**
+@@ -1498,34 +1487,24 @@ static int
+ ice_vsi_stop_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
+ 		      u16 rel_vmvf_num, struct ice_ring **rings)
+ {
+-	u16 i, q_idx = 0;
+-	int status;
+-	u8 tc;
++	u16 q_idx;
+ 
+ 	if (vsi->num_txq > ICE_LAN_TXQ_MAX_QDIS)
+ 		return -EINVAL;
+ 
+-	/* set up the Tx queue list to be disabled for each enabled TC */
+-	ice_for_each_traffic_class(tc) {
+-		if (!(vsi->tc_cfg.ena_tc & BIT(tc)))
+-			break;
+-
+-		for (i = 0; i < vsi->tc_cfg.tc_info[tc].qcount_tx; i++) {
+-			struct ice_txq_meta txq_meta = { };
++	for (q_idx = 0; q_idx < vsi->num_txq; q_idx++) {
++		struct ice_txq_meta txq_meta = { };
++		int status;
+ 
+-			if (!rings || !rings[q_idx])
+-				return -EINVAL;
++		if (!rings || !rings[q_idx])
++			return -EINVAL;
+ 
+-			ice_fill_txq_meta(vsi, rings[q_idx], &txq_meta);
+-			status = ice_vsi_stop_tx_ring(vsi, rst_src,
+-						      rel_vmvf_num,
+-						      rings[q_idx], &txq_meta);
++		ice_fill_txq_meta(vsi, rings[q_idx], &txq_meta);
++		status = ice_vsi_stop_tx_ring(vsi, rst_src, rel_vmvf_num,
++					      rings[q_idx], &txq_meta);
+ 
+-			if (status)
+-				return status;
+-
+-			q_idx++;
+-		}
++		if (status)
++			return status;
+ 	}
+ 
+ 	return 0;
+-- 
+2.20.1
+
