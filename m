@@ -1,23 +1,201 @@
-From: JD <jdtxs00@gmail.com>
-Date: Thu, 17 Oct 2019 13:06:20 -0500
-Subject: [Intel-wired-lan] VF/SRIOV question
-Message-ID: <CAMnf+Phw525rfCHVDXz1uWZw4Y=HuyBjnhpqYzjx2dmgpsHMsA@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 18 Oct 2019 02:06:44 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ e31c32a05a0f894228f28db77880c62be4453fff
+Message-ID: <5da8adb4.iSV1Ns6oZDrgCOgd%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: e31c32a05a0f894228f28db77880c62be4453fff  ice: Fix return value when SR-IOV is not supported
 
-I couldn't find anything in the spec/doc for the Intel 82599 series
-NIC's regarding performance penalties with a higher number of VF's.
+Regressions in current branch:
 
-Currently I'm using 16 VF's with SR-IOV/QEMU, but the 82599 NIC
-supports up to 63 VF's. From a driver/NIC perspective, are there any
-performance considerations or penalties of enabling/using all of the
-available VF's on a NIC?
+drivers/net/ethernet/intel/ice/ice_txrx.c:1667:5: error: implicit declaration of function 'ice_build_ctob'; did you mean 'ice_build_skb'? [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/ice/ice_txrx_lib.c:218:33: error: implicit declaration of function 'ice_build_ctob'; did you mean '__build_skb'? [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/ice/ice_xsk.c:980:4: error: implicit declaration of function 'ice_build_ctob'; did you mean 'ice_bump_ntc'? [-Werror=implicit-function-declaration]
 
-If there isn't, is this the same case for other models (besides 82599) as well?
+Error ids grouped by kconfigs:
 
-Thank you!
+recent_errors
+|-- alpha-allmodconfig
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_build_skb
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx_lib.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-__build_skb
+|   `-- drivers-net-ethernet-intel-ice-ice_xsk.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_bump_ntc
+|-- alpha-allyesconfig
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_build_skb
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx_lib.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-__build_skb
+|   `-- drivers-net-ethernet-intel-ice-ice_xsk.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_bump_ntc
+|-- ia64-allmodconfig
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_build_skb
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx_lib.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-__build_skb
+|   `-- drivers-net-ethernet-intel-ice-ice_xsk.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_bump_ntc
+|-- ia64-allyesconfig
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_build_skb
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx_lib.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-__build_skb
+|   `-- drivers-net-ethernet-intel-ice-ice_xsk.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_bump_ntc
+|-- sparc-allmodconfig
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_build_skb
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx_lib.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-__build_skb
+|   `-- drivers-net-ethernet-intel-ice-ice_xsk.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_bump_ntc
+|-- sparc-allyesconfig
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_build_skb
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx_lib.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-__build_skb
+|   `-- drivers-net-ethernet-intel-ice-ice_xsk.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_bump_ntc
+|-- sparc64-allmodconfig
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_build_skb
+|   |-- drivers-net-ethernet-intel-ice-ice_txrx_lib.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-__build_skb
+|   `-- drivers-net-ethernet-intel-ice-ice_xsk.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_bump_ntc
+`-- sparc64-allyesconfig
+    |-- drivers-net-ethernet-intel-ice-ice_txrx.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_build_skb
+    |-- drivers-net-ethernet-intel-ice-ice_txrx_lib.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-__build_skb
+    `-- drivers-net-ethernet-intel-ice-ice_xsk.c:error:implicit-declaration-of-function-ice_build_ctob-did-you-mean-ice_bump_ntc
+
+elapsed time: 157m
+
+configs tested: 137
+
+x86_64                 randconfig-f001-201941
+x86_64                 randconfig-f002-201941
+x86_64                 randconfig-f003-201941
+x86_64                 randconfig-f004-201941
+i386                   randconfig-f001-201941
+i386                   randconfig-f002-201941
+i386                   randconfig-f003-201941
+i386                   randconfig-f004-201941
+x86_64                           allyesconfig
+x86_64                           allmodconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-b001-201941
+x86_64                 randconfig-b002-201941
+x86_64                 randconfig-b003-201941
+x86_64                 randconfig-b004-201941
+i386                   randconfig-b001-201941
+i386                   randconfig-b002-201941
+i386                   randconfig-b003-201941
+i386                   randconfig-b004-201941
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-d001-201941
+x86_64                 randconfig-d002-201941
+x86_64                 randconfig-d003-201941
+x86_64                 randconfig-d004-201941
+i386                   randconfig-d001-201941
+i386                   randconfig-d002-201941
+i386                   randconfig-d003-201941
+i386                   randconfig-d004-201941
+x86_64                 randconfig-c001-201941
+x86_64                 randconfig-c002-201941
+i386                   randconfig-c001-201941
+i386                   randconfig-c004-201941
+i386                   randconfig-c003-201941
+x86_64                 randconfig-c004-201941
+i386                   randconfig-c002-201941
+x86_64                 randconfig-c003-201941
+i386                             allmodconfig
+x86_64                 randconfig-h002-201941
+x86_64                 randconfig-h001-201941
+i386                   randconfig-h004-201941
+i386                   randconfig-h003-201941
+x86_64                 randconfig-h003-201941
+i386                   randconfig-h002-201941
+i386                   randconfig-h001-201941
+x86_64                 randconfig-h004-201941
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-g002-201941
+i386                   randconfig-g004-201941
+x86_64                 randconfig-g001-201941
+i386                   randconfig-g002-201941
+x86_64                 randconfig-g004-201941
+x86_64                 randconfig-g003-201941
+i386                   randconfig-g003-201941
+i386                   randconfig-g001-201941
+x86_64                 randconfig-e004-201941
+x86_64                 randconfig-e001-201941
+x86_64                 randconfig-e003-201941
+x86_64                 randconfig-e002-201941
+i386                   randconfig-e003-201941
+i386                   randconfig-e004-201941
+i386                   randconfig-e001-201941
+i386                   randconfig-e002-201941
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
