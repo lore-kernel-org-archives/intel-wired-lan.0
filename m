@@ -1,125 +1,52 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 18 Oct 2019 08:37:27 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 7e277bcf9f3f1becd45053775fd1f70e9c6194d2
-Message-ID: <5da90947.sTmygsBSxeziM6U4%lkp@intel.com>
+From: Josh Hunt <joshhunt00@gmail.com>
+Date: Fri, 18 Oct 2019 11:04:06 -0700
+Subject: [Intel-wired-lan] [PATCH v3 2/3] ixgbe: Add UDP segmentation
+ offload support
+In-Reply-To: <a99acf6128404c54ba837e2b0afe1d98@intel.com>
+References: <1570812820-20052-1-git-send-email-johunt@akamai.com>
+ <1570812820-20052-3-git-send-email-johunt@akamai.com>
+ <a99acf6128404c54ba837e2b0afe1d98@intel.com>
+Message-ID: <CAKA=qzZcO9vuJeuBhXd+25WHuMVHz1LbyCBngqhd0mQ3a0LF0g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 7e277bcf9f3f1becd45053775fd1f70e9c6194d2  e1000e: Add support for Tiger Lake
+On Thu, Oct 17, 2019 at 5:33 AM Bowers, AndrewX
+<andrewx.bowers@intel.com> wrote:
+>
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> > Behalf Of Josh Hunt
+> > Sent: Friday, October 11, 2019 9:54 AM
+> > To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher,
+> > Jeffrey T <jeffrey.t.kirsher@intel.com>
+> > Cc: Duyck, Alexander H <alexander.h.duyck@intel.com>;
+> > willemb at google.com; Josh Hunt <johunt@akamai.com>;
+> > alexander.h.duyck at linux.intel.com
+> > Subject: [Intel-wired-lan] [PATCH v3 2/3] ixgbe: Add UDP segmentation
+> > offload support
+> >
+> > Repost from a series by Alexander Duyck to add UDP segmentation offload
+> > support to the igb driver:
+> > https://lore.kernel.org/netdev/20180504003916.4769.66271.stgit at localhost.l
+> > ocaldomain/
+> >
+> > CC: Alexander Duyck <alexander.h.duyck@intel.com>
+> > CC: Willem de Bruijn <willemb@google.com>
+> > Suggested-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> > Signed-off-by: Josh Hunt <johunt@akamai.com>
+> > ---
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 24
+> > ++++++++++++++++++------
+> >  1 file changed, 18 insertions(+), 6 deletions(-)
+>
+> Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+>
+>
+Andrew, thanks for testing. Were you able to validate the igb driver?
 
-elapsed time: 223m
-
-configs tested: 100
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-i386                   randconfig-f002-201941
-i386                   randconfig-f001-201941
-x86_64                 randconfig-f003-201941
-x86_64                 randconfig-f004-201941
-x86_64                 randconfig-f002-201941
-i386                   randconfig-f003-201941
-x86_64                 randconfig-f001-201941
-i386                   randconfig-f004-201941
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                              allmodconfig
-arm64                            allmodconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-c001-201941
-x86_64                 randconfig-c002-201941
-i386                   randconfig-c001-201941
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-i386                   randconfig-d002-201941
-x86_64                 randconfig-d002-201941
-x86_64                 randconfig-d004-201941
-i386                   randconfig-d004-201941
-x86_64                 randconfig-d003-201941
-i386                   randconfig-d003-201941
-x86_64                 randconfig-d001-201941
-i386                   randconfig-d001-201941
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                             allmodconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                           allyesconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Thanks
+-- 
+Josh
