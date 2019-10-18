@@ -1,55 +1,47 @@
-From: JD <jdtxs00@gmail.com>
-Date: Thu, 17 Oct 2019 17:02:59 -0500
-Subject: [Intel-wired-lan] VF/SRIOV question
-In-Reply-To: <CAKgT0UeDcXSjcXs+V9z+aAkg079Ltt1rEHXxr4Ug-E-GB92=OQ@mail.gmail.com>
-References: <CAMnf+Phw525rfCHVDXz1uWZw4Y=HuyBjnhpqYzjx2dmgpsHMsA@mail.gmail.com>
- <CAKgT0UeDcXSjcXs+V9z+aAkg079Ltt1rEHXxr4Ug-E-GB92=OQ@mail.gmail.com>
-Message-ID: <CAMnf+PjUjCbhh82QJ=y=pN7jDOYwXnr8oAi7wBUoHBHPR7OO=Q@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 18 Oct 2019 00:15:26 +0000
+Subject: [Intel-wired-lan] [PATCH S30 v2 1/9] ice: Introduce ice_base.c
+In-Reply-To: <20191016150201.41597-1-anthony.l.nguyen@intel.com>
+References: <20191016150201.41597-1-anthony.l.nguyen@intel.com>
+Message-ID: <dee07f41b2894c30bed07cad6205ce83@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Alex,
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Wednesday, October 16, 2019 8:02 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S30 v2 1/9] ice: Introduce ice_base.c
+> 
+> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> 
+> Remove a few uses of kernel configuration flags from ice_lib.c by
+> introducing a new source file ice_base.c. Also move corresponding
+> function prototypes from ice_lib.h to ice_base.h and include ice_base.h
+> where required.
+> 
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/Makefile       |   1 +
+>  drivers/net/ethernet/intel/ice/ice.h          |   8 +
+>  drivers/net/ethernet/intel/ice/ice_base.c     | 767 +++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_base.h     |  31 +
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |   1 +
+>  drivers/net/ethernet/intel/ice/ice_lib.c      | 787 +-----------------
+>  drivers/net/ethernet/intel/ice/ice_lib.h      |  39 -
+>  drivers/net/ethernet/intel/ice/ice_main.c     |   1 +
+>  drivers/net/ethernet/intel/ice/ice_txrx.h     |   2 -
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   1 +
+>  10 files changed, 811 insertions(+), 827 deletions(-)
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_base.c
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_base.h
 
-That clears things up. Thank you very much for your reply and insight!
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-On Thu, Oct 17, 2019 at 3:47 PM Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
->
-> On Thu, Oct 17, 2019 at 11:06 AM JD <jdtxs00@gmail.com> wrote:
-> >
-> > Hello,
-> >
-> > I couldn't find anything in the spec/doc for the Intel 82599 series
-> > NIC's regarding performance penalties with a higher number of VF's.
-> >
-> > Currently I'm using 16 VF's with SR-IOV/QEMU, but the 82599 NIC
-> > supports up to 63 VF's. From a driver/NIC perspective, are there any
-> > performance considerations or penalties of enabling/using all of the
-> > available VF's on a NIC?
-> >
-> > If there isn't, is this the same case for other models (besides 82599) as well?
-> >
-> > Thank you!
->
-> One hardware limitation I am aware of is that as you spread the work
-> over more queues, or in this case more VFs you may not be able to
-> achieve 64B line rate with small packets. The issue is as you add more
-> queues the descriptor fetching becomes more interleaved between the
-> queues which will reduce the performance. So instead of being able to
-> hit 14.88Mpps you may only see about 10 or 11Mpps. If you are working
-> with packets larger than 128B or larger you should see little to no
-> impact.
->
-> Another limitation I can think of is the number of queues per PF/VF.
-> The hardware only has a certain number of queues. For 82599 that
-> number is 128. So when you have 31 or fewer VFs you get 4 queues for
-> the PF, when you have 32 or more the PF has to drop to 2 queues.
-> Depending on your workload this may mean more stress on the CPUs
-> handling PF traffic as the number of queues is reduced.
->
-> Hope that helps.
->
-> - Alex
+
