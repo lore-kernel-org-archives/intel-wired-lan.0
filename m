@@ -1,49 +1,149 @@
-From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
-Date: Fri, 18 Oct 2019 21:22:52 +0200
-Subject: [Intel-wired-lan] FW: [PATCH bpf-next 2/4] xsk: allow AF_XDP
- sockets to receive packets directly from a queue
-In-Reply-To: <acf69635-5868-f876-f7da-08954d1f690e@intel.com>
-References: <1570515415-45593-1-git-send-email-sridhar.samudrala@intel.com>
- <1570515415-45593-3-git-send-email-sridhar.samudrala@intel.com>
- <CAADnVQ+XxmvY0cs8MYriMMd7=2TSEm4zCtB+fs2vkwdUY6UgAQ@mail.gmail.com>
- <3ED8E928C4210A4289A677D2FEB48235140134CE@fmsmsx111.amr.corp.intel.com>
- <2bc26acd-170d-634e-c066-71557b2b3e4f@intel.com>
- <CAADnVQ+qq6RLMjh5bB1ugXP5p7vYM2F1fLGFQ2pL=2vhCLiBdA@mail.gmail.com>
- <2032d58c-916f-d26a-db14-bd5ba6ad92b9@intel.com>
- <CAADnVQ+CH1YM52+LfybLS+NK16414Exrvk1QpYOF=HaT4KRaxg@mail.gmail.com>
- <acf69635-5868-f876-f7da-08954d1f690e@intel.com>
-Message-ID: <87wod1dfjn.fsf@toke.dk>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 19 Oct 2019 04:02:07 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 38b4fe320119859c11b1dc06f6b4987a16344fa1
+Message-ID: <5daa1a3f.pzuOMw7J1HhMX1yj%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-"Samudrala, Sridhar" <sridhar.samudrala@intel.com> writes:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: 38b4fe320119859c11b1dc06f6b4987a16344fa1  net: usb: lan78xx: Connect PHY before registering MAC
 
-> Performance Results
-> ===================
-> Only 1 core is used in all these testcases as the app and the queue irq are pinned to the same core.
->
-> ----------------------------------------------------------------------------------
->                                 mitigations ON                mitigations OFF
->    Testcase              ----------------------------------------------------------
->                          no patches    with patches       no patches   with patches
-> ----------------------------------------------------------------------------------
-> AF_XDP default rxdrop        X             X                   Y            Y
+elapsed time: 154m
 
-Is this really exactly the same with and without patches? You're adding
-an extra check to xdp_do_redirect(); are you really saying that the
-impact of that is zero?
+configs tested: 124
 
-> AF_XDP direct rxdrop        N/A          X+46%                N/A         Y+25%
-> Kernel rxdrop              X+61%         X+61%               Y+53%        Y+53%
-> ----------------------------------------------------------------------------------
->
-> Here Y is pps with CPU security mitigations turned OFF and it is 26%
-> better than X.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Any particular reason you're not sharing the values of X and Y?
+x86_64                 randconfig-f001-201941
+x86_64                 randconfig-f002-201941
+x86_64                 randconfig-f003-201941
+x86_64                 randconfig-f004-201941
+i386                   randconfig-f001-201941
+i386                   randconfig-f002-201941
+i386                   randconfig-f003-201941
+i386                   randconfig-f004-201941
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-b001-201941
+x86_64                 randconfig-b004-201941
+i386                   randconfig-b002-201941
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                   randconfig-c001-201941
+x86_64                 randconfig-c004-201941
+i386                   randconfig-c002-201941
+x86_64                 randconfig-d001-201941
+x86_64                 randconfig-d002-201941
+x86_64                 randconfig-d003-201941
+x86_64                 randconfig-d004-201941
+i386                   randconfig-d001-201941
+i386                   randconfig-d002-201941
+i386                   randconfig-d003-201941
+i386                   randconfig-d004-201941
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                 randconfig-e004-201941
+x86_64                 randconfig-e003-201941
+i386                   randconfig-e003-201941
+i386                   randconfig-e004-201941
+i386                   randconfig-e002-201941
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                           allyesconfig
+x86_64                           allmodconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+i386                   randconfig-h002-201941
+i386                   randconfig-h001-201941
+x86_64                 randconfig-h004-201941
+x86_64                 randconfig-h001-201941
+x86_64                 randconfig-h002-201941
+x86_64                 randconfig-h003-201941
+i386                   randconfig-h003-201941
+i386                   randconfig-h004-201941
+i386                             allmodconfig
+x86_64                 randconfig-g001-201941
+x86_64                 randconfig-g002-201941
+x86_64                 randconfig-g003-201941
+x86_64                 randconfig-g004-201941
+i386                   randconfig-g001-201941
+i386                   randconfig-g002-201941
+i386                   randconfig-g003-201941
+i386                   randconfig-g004-201941
 
--Toke
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
