@@ -1,35 +1,125 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 18 Oct 2019 00:18:56 +0000
-Subject: [Intel-wired-lan] [PATCH S30 v2 9/9] ice: allow 3k MTU for XDP
-In-Reply-To: <20191016150201.41597-9-anthony.l.nguyen@intel.com>
-References: <20191016150201.41597-1-anthony.l.nguyen@intel.com>
- <20191016150201.41597-9-anthony.l.nguyen@intel.com>
-Message-ID: <9a5cc66391f446f18bb51091ebd31240@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 18 Oct 2019 08:37:27 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 7e277bcf9f3f1becd45053775fd1f70e9c6194d2
+Message-ID: <5da90947.sTmygsBSxeziM6U4%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Wednesday, October 16, 2019 8:02 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S30 v2 9/9] ice: allow 3k MTU for XDP
-> 
-> From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> 
-> At this point ice driver is able to work on order 1 pages that are split onto two
-> 3k buffers. Let's reflect that when user is setting new mtu size and XDP is
-> present on interface.
-> 
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 16 ++++++++++++++--
->  1 file changed, 14 insertions(+), 2 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 7e277bcf9f3f1becd45053775fd1f70e9c6194d2  e1000e: Add support for Tiger Lake
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 223m
 
+configs tested: 100
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                   randconfig-f002-201941
+i386                   randconfig-f001-201941
+x86_64                 randconfig-f003-201941
+x86_64                 randconfig-f004-201941
+x86_64                 randconfig-f002-201941
+i386                   randconfig-f003-201941
+x86_64                 randconfig-f001-201941
+i386                   randconfig-f004-201941
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                              allmodconfig
+arm64                            allmodconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-c001-201941
+x86_64                 randconfig-c002-201941
+i386                   randconfig-c001-201941
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                   randconfig-d002-201941
+x86_64                 randconfig-d002-201941
+x86_64                 randconfig-d004-201941
+i386                   randconfig-d004-201941
+x86_64                 randconfig-d003-201941
+i386                   randconfig-d003-201941
+x86_64                 randconfig-d001-201941
+i386                   randconfig-d001-201941
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                             allmodconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                           allyesconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
