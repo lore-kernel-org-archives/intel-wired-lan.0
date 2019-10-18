@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 18 Oct 2019 00:18:33 +0000
-Subject: [Intel-wired-lan] [PATCH S30 v2 8/9] ice: add build_skb()
- support
-In-Reply-To: <20191016150201.41597-8-anthony.l.nguyen@intel.com>
+Date: Fri, 18 Oct 2019 00:18:56 +0000
+Subject: [Intel-wired-lan] [PATCH S30 v2 9/9] ice: allow 3k MTU for XDP
+In-Reply-To: <20191016150201.41597-9-anthony.l.nguyen@intel.com>
 References: <20191016150201.41597-1-anthony.l.nguyen@intel.com>
- <20191016150201.41597-8-anthony.l.nguyen@intel.com>
-Message-ID: <20f540280ee944ecad0f9ddf379ff26b@intel.com>
+ <20191016150201.41597-9-anthony.l.nguyen@intel.com>
+Message-ID: <9a5cc66391f446f18bb51091ebd31240@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,23 +16,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, October 16, 2019 8:02 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S30 v2 8/9] ice: add build_skb() support
+> Subject: [Intel-wired-lan] [PATCH S30 v2 9/9] ice: allow 3k MTU for XDP
 > 
 > From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > 
-> Driver is now prepared for building the skb around the existing Rx buffer, so
-> introduce the ice_build_skb responsible for it. Make use of XDP's data_meta
-> as well.
-> 
-> I've observed around 30% less CPU consumption with build_skb Rx path, in
-> comparison to legacy Rx. What stands behind such result is the avoidance of
-> flow_dissector (which we were diving into via eth_get_headlen) and no
-> memcpy calls.
+> At this point ice driver is able to work on order 1 pages that are split onto two
+> 3k buffers. Let's reflect that when user is setting new mtu size and XDP is
+> present on interface.
 > 
 > Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_txrx.c | 60 ++++++++++++++++++++++-
->  1 file changed, 59 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 16 ++++++++++++++--
+>  1 file changed, 14 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
 
