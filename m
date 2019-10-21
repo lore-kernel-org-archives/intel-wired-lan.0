@@ -1,45 +1,137 @@
-From: Manjunath Patil <manjunath.b.patil@oracle.com>
-Date: Sat,  5 Oct 2019 08:20:03 -0700
-Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: protect TX timestamping from
- API misuse
-Message-ID: <1570288803-14880-1-git-send-email-manjunath.b.patil@oracle.com>
+From: Robert Beckett <bob.beckett@collabora.com>
+Date: Mon, 21 Oct 2019 17:39:36 +0100
+Subject: [Intel-wired-lan] [PATCH] igb: dont drop packets if rx flow control
+ is enabled
+Message-ID: <20191021163959.17511-1-bob.beckett@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-HW timestamping can only be requested for a packet if the NIC is first
-setup via ioctl(SIOCSHWTSTAMP). If this step was skipped, then the ixgbe
-driver still allowed TX packets to request HW timestamping. In this
-situation, we see 'clearing Tx Timestamp hang' noise in the log.
+If rx flow control has been enabled (via autoneg or forced), packets
+should not be dropped due to rx descriptor ring exhaustion. Instead
+pause frames should be used to apply back pressure.
 
-Fix this by checking that the NIC is configured for HW TX timestamping
-before accepting a HW TX timestamping request.
+Move SRRCTL setup to its own function for easy reuse and only set drop
+enable bit if rx flow control is not enabled.
 
-similar-to:
-	(26bd4e2 igb: protect TX timestamping from API misuse)
-	(0a6f2f0 igb: Fix a test with HWTSTAMP_TX_ON)
-
-Signed-off-by: Manjunath Patil <manjunath.b.patil@oracle.com>
+Signed-off-by: Robert Beckett <bob.beckett@collabora.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/net/ethernet/intel/igb/igb.h         |  1 +
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |  8 ++++
+ drivers/net/ethernet/intel/igb/igb_main.c    | 46 ++++++++++++++------
+ 3 files changed, 41 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 1ce2397..dd24aeb 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8640,7 +8640,8 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index ca54e268d157..49b5fa9d4783 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -661,6 +661,7 @@ void igb_configure_tx_ring(struct igb_adapter *, struct igb_ring *);
+ void igb_configure_rx_ring(struct igb_adapter *, struct igb_ring *);
+ void igb_setup_tctl(struct igb_adapter *);
+ void igb_setup_rctl(struct igb_adapter *);
++void igb_setup_srrctl(struct igb_adapter *, struct igb_ring *);
+ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *, struct igb_ring *);
+ void igb_alloc_rx_buffers(struct igb_ring *, u16);
+ void igb_update_stats(struct igb_adapter *);
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 5acf3b743876..3c951f363d0e 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -396,6 +396,7 @@ static int igb_set_pauseparam(struct net_device *netdev,
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	int retval = 0;
++	int i;
  
- 	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) &&
- 	    adapter->ptp_clock) {
--		if (!test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
-+		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
-+		    !test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
- 					   &adapter->state)) {
- 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
- 			tx_flags |= IXGBE_TX_FLAGS_TSTAMP;
+ 	/* 100basefx does not support setting link flow control */
+ 	if (hw->dev_spec._82575.eth_flags.e100_base_fx)
+@@ -428,6 +429,13 @@ static int igb_set_pauseparam(struct net_device *netdev,
+ 
+ 		retval = ((hw->phy.media_type == e1000_media_type_copper) ?
+ 			  igb_force_mac_fc(hw) : igb_setup_link(hw));
++
++		/* Make sure SRRCTL considers new fc settings for each ring */
++		for (i = 0; i < adapter->num_rx_queues; i++) {
++			struct igb_ring *ring = adapter->rx_ring[i];
++
++			igb_setup_srrctl(adapter, ring);
++		}
+ 	}
+ 
+ 	clear_bit(__IGB_RESETTING, &adapter->state);
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index ffaa6e031632..6b04c961c6e4 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -4488,6 +4488,36 @@ static inline void igb_set_vmolr(struct igb_adapter *adapter,
+ 	wr32(E1000_VMOLR(vfn), vmolr);
+ }
+ 
++/**
++ *  igb_setup_srrctl - configure the split and replication receive control
++ *  		       registers
++ *  @adapter: Board private structure
++ *  @ring: receive ring to be configured
++ **/
++void igb_setup_srrctl(struct igb_adapter *adapter, struct igb_ring *ring)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	int reg_idx = ring->reg_idx;
++	u32 srrctl;
++
++	srrctl = IGB_RX_HDR_LEN << E1000_SRRCTL_BSIZEHDRSIZE_SHIFT;
++	if (ring_uses_large_buffer(ring))
++		srrctl |= IGB_RXBUFFER_3072 >> E1000_SRRCTL_BSIZEPKT_SHIFT;
++	else
++		srrctl |= IGB_RXBUFFER_2048 >> E1000_SRRCTL_BSIZEPKT_SHIFT;
++	srrctl |= E1000_SRRCTL_DESCTYPE_ADV_ONEBUF;
++	if (hw->mac.type >= e1000_82580)
++		srrctl |= E1000_SRRCTL_TIMESTAMP;
++	/* Only set Drop Enable if we are supporting multiple queues
++	 * and rx flow control is disabled
++	 */
++	if (!(hw->fc.current_mode & e1000_fc_rx_pause) &&
++	    (adapter->vfs_allocated_count || adapter->num_rx_queues > 1))
++		srrctl |= E1000_SRRCTL_DROP_EN;
++
++	wr32(E1000_SRRCTL(reg_idx), srrctl);
++}
++
+ /**
+  *  igb_configure_rx_ring - Configure a receive ring after Reset
+  *  @adapter: board private structure
+@@ -4502,7 +4532,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 	union e1000_adv_rx_desc *rx_desc;
+ 	u64 rdba = ring->dma;
+ 	int reg_idx = ring->reg_idx;
+-	u32 srrctl = 0, rxdctl = 0;
++	u32 rxdctl = 0;
+ 
+ 	/* disable the queue */
+ 	wr32(E1000_RXDCTL(reg_idx), 0);
+@@ -4520,19 +4550,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 	writel(0, ring->tail);
+ 
+ 	/* set descriptor configuration */
+-	srrctl = IGB_RX_HDR_LEN << E1000_SRRCTL_BSIZEHDRSIZE_SHIFT;
+-	if (ring_uses_large_buffer(ring))
+-		srrctl |= IGB_RXBUFFER_3072 >> E1000_SRRCTL_BSIZEPKT_SHIFT;
+-	else
+-		srrctl |= IGB_RXBUFFER_2048 >> E1000_SRRCTL_BSIZEPKT_SHIFT;
+-	srrctl |= E1000_SRRCTL_DESCTYPE_ADV_ONEBUF;
+-	if (hw->mac.type >= e1000_82580)
+-		srrctl |= E1000_SRRCTL_TIMESTAMP;
+-	/* Only set Drop Enable if we are supporting multiple queues */
+-	if (adapter->vfs_allocated_count || adapter->num_rx_queues > 1)
+-		srrctl |= E1000_SRRCTL_DROP_EN;
+-
+-	wr32(E1000_SRRCTL(reg_idx), srrctl);
++	igb_setup_srrctl(adapter, ring);
+ 
+ 	/* set filtering for VMDQ pools */
+ 	igb_set_vmolr(adapter, reg_idx & 0x7, true);
 -- 
-1.7.1
+2.20.1
 
