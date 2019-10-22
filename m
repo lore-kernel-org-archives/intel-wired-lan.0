@@ -1,116 +1,90 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 22 Oct 2019 09:58:03 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 53ad0b769cff36a27995c1520495554594dba7be
-Message-ID: <5dae622b.XC5gIZDGHYFvLshP%lkp@intel.com>
+Date: Tue, 22 Oct 2019 10:01:16 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ b3060531979422d5bb18d80226f978910284dc70
+Message-ID: <5dae62ec.9RJeg3JHmknz3XG3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 53ad0b769cff36a27995c1520495554594dba7be  i40e: Fix receive buffer starvation for AF_XDP
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: b3060531979422d5bb18d80226f978910284dc70  r8152: add device id for Lenovo ThinkPad USB-C Dock Gen 2
 
-elapsed time: 192m
+elapsed time: 408m
 
-configs tested: 97
+configs tested: 71
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+arm                         at91_dt_defconfig
+arm                        multi_v5_defconfig
+arm                           efm32_defconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
 parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
-x86_64                           allmodconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                              allnoconfig
+i386                                defconfig
 i386                             alldefconfig
+arc                              allyesconfig
+powerpc                             defconfig
+microblaze                    nommu_defconfig
+powerpc                       ppc64_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+powerpc                           allnoconfig
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                             allmodconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                      malta_kvm_defconfig
-arm                              allmodconfig
-arm                         at91_dt_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm64                            allyesconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allmodconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-f002-201942
-i386                   randconfig-f001-201942
-x86_64                 randconfig-f003-201942
-x86_64                 randconfig-f004-201942
-x86_64                 randconfig-f002-201942
-i386                   randconfig-f003-201942
-x86_64                 randconfig-f001-201942
-i386                   randconfig-f004-201942
-i386                   randconfig-b001-201942
-x86_64                 randconfig-b002-201942
-x86_64                 randconfig-b003-201942
-i386                   randconfig-b003-201942
-i386                   randconfig-b004-201942
-x86_64                 randconfig-b004-201942
-x86_64                 randconfig-b001-201942
-i386                   randconfig-b002-201942
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
 xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
 xtensa                          iss_defconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-s390                             allmodconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
 s390                              allnoconfig
 s390                          debug_defconfig
+s390                             allmodconfig
 s390                                defconfig
+i386                   randconfig-f004-201942
+x86_64                 randconfig-b003-201942
+x86_64                 randconfig-b004-201942
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
 x86_64                              fedora-25
 x86_64                                  kexec
 x86_64                                    lkp
