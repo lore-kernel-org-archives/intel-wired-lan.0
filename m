@@ -1,141 +1,178 @@
-From: Robert Beckett <bob.beckett@collabora.com>
-Date: Tue, 22 Oct 2019 16:31:41 +0100
-Subject: [Intel-wired-lan] [PATCH v2] igb: dont drop packets if rx flow
- control is enabled
-Message-ID: <20191022153155.9008-1-bob.beckett@collabora.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 23 Oct 2019 00:59:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ 92d44e8c738bac39315dc0e3109660915b9452fb
+Message-ID: <5daf356b.u7pY9yV+fokneigz%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If rx flow control has been enabled (via autoneg or forced), packets
-should not be dropped due to rx descriptor ring exhaustion. Instead
-pause frames should be used to apply back pressure. This only applies
-if VFs are not in use.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 92d44e8c738bac39315dc0e3109660915b9452fb  e1000e: Add support for Tiger Lake
 
-Move SRRCTL setup to its own function for easy reuse and only set drop
-enable bit if rx flow control is not enabled.
+TIMEOUT after 1445m
 
-Since v1: always enable dropping of packets if VFs in use.
 
-Signed-off-by: Robert Beckett <bob.beckett@collabora.com>
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 5
+
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+
+configs tested: 140
+
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
+i386                   randconfig-d002-201942
+x86_64                 randconfig-d002-201942
+i386                   randconfig-d004-201942
+x86_64                 randconfig-d004-201942
+x86_64                 randconfig-d003-201942
+i386                   randconfig-d003-201942
+x86_64                 randconfig-d001-201942
+i386                   randconfig-d001-201942
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+x86_64                 randconfig-h002-201942
+x86_64                 randconfig-h001-201942
+i386                   randconfig-h004-201942
+i386                   randconfig-h003-201942
+x86_64                 randconfig-h003-201942
+i386                   randconfig-h002-201942
+i386                   randconfig-h001-201942
+x86_64                 randconfig-h004-201942
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+x86_64                 randconfig-c001-201942
+i386                   randconfig-c001-201942
+x86_64                 randconfig-c002-201942
+i386                   randconfig-c004-201942
+i386                   randconfig-c003-201942
+x86_64                 randconfig-c004-201942
+i386                   randconfig-c002-201942
+x86_64                 randconfig-c003-201942
+arc                              allyesconfig
+powerpc                             defconfig
+microblaze                    nommu_defconfig
+powerpc                       ppc64_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+powerpc                           allnoconfig
+x86_64                           allmodconfig
+mips                             allmodconfig
+mips                           32r2_defconfig
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                             allmodconfig
+s390                                defconfig
+x86_64                 randconfig-g002-201942
+i386                   randconfig-g004-201942
+x86_64                 randconfig-g001-201942
+i386                   randconfig-g002-201942
+x86_64                 randconfig-g004-201942
+x86_64                 randconfig-g003-201942
+i386                   randconfig-g003-201942
+i386                   randconfig-g001-201942
+i386                   randconfig-b001-201942
+x86_64                 randconfig-b002-201942
+x86_64                 randconfig-b003-201942
+i386                   randconfig-b003-201942
+i386                   randconfig-b004-201942
+x86_64                 randconfig-b004-201942
+x86_64                 randconfig-b001-201942
+i386                   randconfig-b002-201942
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+parisc                            allnoconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+i386                   randconfig-f002-201942
+i386                   randconfig-f001-201942
+x86_64                 randconfig-f003-201942
+x86_64                 randconfig-f004-201942
+x86_64                 randconfig-f002-201942
+i386                   randconfig-f003-201942
+x86_64                 randconfig-f001-201942
+i386                   randconfig-f004-201942
+x86_64                 randconfig-a004-201942
+x86_64                 randconfig-a001-201942
+i386                   randconfig-a002-201942
+x86_64                 randconfig-a002-201942
+i386                   randconfig-a001-201942
+i386                   randconfig-a003-201942
+i386                   randconfig-a004-201942
+x86_64                 randconfig-a003-201942
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+x86_64                 randconfig-e004-201942
+x86_64                 randconfig-e001-201942
+x86_64                 randconfig-e003-201942
+x86_64                 randconfig-e002-201942
+i386                   randconfig-e003-201942
+i386                   randconfig-e004-201942
+i386                   randconfig-e001-201942
+i386                   randconfig-e002-201942
+
 ---
- drivers/net/ethernet/intel/igb/igb.h         |  1 +
- drivers/net/ethernet/intel/igb/igb_ethtool.c |  8 ++++
- drivers/net/ethernet/intel/igb/igb_main.c    | 47 ++++++++++++++------
- 3 files changed, 42 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index ca54e268d157..49b5fa9d4783 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -661,6 +661,7 @@ void igb_configure_tx_ring(struct igb_adapter *, struct igb_ring *);
- void igb_configure_rx_ring(struct igb_adapter *, struct igb_ring *);
- void igb_setup_tctl(struct igb_adapter *);
- void igb_setup_rctl(struct igb_adapter *);
-+void igb_setup_srrctl(struct igb_adapter *, struct igb_ring *);
- netdev_tx_t igb_xmit_frame_ring(struct sk_buff *, struct igb_ring *);
- void igb_alloc_rx_buffers(struct igb_ring *, u16);
- void igb_update_stats(struct igb_adapter *);
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 3182b059bf55..1107a1921b43 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -396,6 +396,7 @@ static int igb_set_pauseparam(struct net_device *netdev,
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
- 	int retval = 0;
-+	int i;
- 
- 	/* 100basefx does not support setting link flow control */
- 	if (hw->dev_spec._82575.eth_flags.e100_base_fx)
-@@ -428,6 +429,13 @@ static int igb_set_pauseparam(struct net_device *netdev,
- 
- 		retval = ((hw->phy.media_type == e1000_media_type_copper) ?
- 			  igb_force_mac_fc(hw) : igb_setup_link(hw));
-+
-+		/* Make sure SRRCTL considers new fc settings for each ring */
-+		for (i = 0; i < adapter->num_rx_queues; i++) {
-+			struct igb_ring *ring = adapter->rx_ring[i];
-+
-+			igb_setup_srrctl(adapter, ring);
-+		}
- 	}
- 
- 	clear_bit(__IGB_RESETTING, &adapter->state);
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 105b0624081a..92c30aac0c28 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -4463,6 +4463,37 @@ static inline void igb_set_vmolr(struct igb_adapter *adapter,
- 	wr32(E1000_VMOLR(vfn), vmolr);
- }
- 
-+/**
-+ *  igb_setup_srrctl - configure the split and replication receive control
-+ *  		       registers
-+ *  @adapter: Board private structure
-+ *  @ring: receive ring to be configured
-+ **/
-+void igb_setup_srrctl(struct igb_adapter *adapter, struct igb_ring *ring)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	int reg_idx = ring->reg_idx;
-+	u32 srrctl = 0;
-+
-+	srrctl = IGB_RX_HDR_LEN << E1000_SRRCTL_BSIZEHDRSIZE_SHIFT;
-+	if (ring_uses_large_buffer(ring))
-+		srrctl |= IGB_RXBUFFER_3072 >> E1000_SRRCTL_BSIZEPKT_SHIFT;
-+	else
-+		srrctl |= IGB_RXBUFFER_2048 >> E1000_SRRCTL_BSIZEPKT_SHIFT;
-+	srrctl |= E1000_SRRCTL_DESCTYPE_ADV_ONEBUF;
-+	if (hw->mac.type >= e1000_82580)
-+		srrctl |= E1000_SRRCTL_TIMESTAMP;
-+	/* Only set Drop Enable if VFs allocated, or we are supporting multiple
-+	 * queues and rx flow control is disabled
-+	 */
-+	if (adapter->vfs_allocated_count ||
-+	    (!(hw->fc.current_mode & e1000_fc_rx_pause) &&
-+	     adapter->num_rx_queues > 1))
-+		srrctl |= E1000_SRRCTL_DROP_EN;
-+
-+	wr32(E1000_SRRCTL(reg_idx), srrctl);
-+}
-+
- /**
-  *  igb_configure_rx_ring - Configure a receive ring after Reset
-  *  @adapter: board private structure
-@@ -4477,7 +4508,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
- 	union e1000_adv_rx_desc *rx_desc;
- 	u64 rdba = ring->dma;
- 	int reg_idx = ring->reg_idx;
--	u32 srrctl = 0, rxdctl = 0;
-+	u32 rxdctl = 0;
- 
- 	/* disable the queue */
- 	wr32(E1000_RXDCTL(reg_idx), 0);
-@@ -4495,19 +4526,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
- 	writel(0, ring->tail);
- 
- 	/* set descriptor configuration */
--	srrctl = IGB_RX_HDR_LEN << E1000_SRRCTL_BSIZEHDRSIZE_SHIFT;
--	if (ring_uses_large_buffer(ring))
--		srrctl |= IGB_RXBUFFER_3072 >> E1000_SRRCTL_BSIZEPKT_SHIFT;
--	else
--		srrctl |= IGB_RXBUFFER_2048 >> E1000_SRRCTL_BSIZEPKT_SHIFT;
--	srrctl |= E1000_SRRCTL_DESCTYPE_ADV_ONEBUF;
--	if (hw->mac.type >= e1000_82580)
--		srrctl |= E1000_SRRCTL_TIMESTAMP;
--	/* Only set Drop Enable if we are supporting multiple queues */
--	if (adapter->vfs_allocated_count || adapter->num_rx_queues > 1)
--		srrctl |= E1000_SRRCTL_DROP_EN;
--
--	wr32(E1000_SRRCTL(reg_idx), srrctl);
-+	igb_setup_srrctl(adapter, ring);
- 
- 	/* set filtering for VMDQ pools */
- 	igb_set_vmolr(adapter, reg_idx & 0x7, true);
--- 
-2.20.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
