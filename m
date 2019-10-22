@@ -1,193 +1,154 @@
-From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Date: Mon, 21 Oct 2019 15:34:18 -0700
-Subject: [Intel-wired-lan] FW: [PATCH bpf-next 2/4] xsk: allow AF_XDP
- sockets to receive packets directly from a queue
-In-Reply-To: <7642a460-9ba3-d9f7-6cf8-aac45c7eef0d@intel.com>
-References: <1570515415-45593-3-git-send-email-sridhar.samudrala@intel.com>
- <CAADnVQ+XxmvY0cs8MYriMMd7=2TSEm4zCtB+fs2vkwdUY6UgAQ@mail.gmail.com>
- <3ED8E928C4210A4289A677D2FEB48235140134CE@fmsmsx111.amr.corp.intel.com>
- <2bc26acd-170d-634e-c066-71557b2b3e4f@intel.com>
- <CAADnVQ+qq6RLMjh5bB1ugXP5p7vYM2F1fLGFQ2pL=2vhCLiBdA@mail.gmail.com>
- <2032d58c-916f-d26a-db14-bd5ba6ad92b9@intel.com>
- <CAADnVQ+CH1YM52+LfybLS+NK16414Exrvk1QpYOF=HaT4KRaxg@mail.gmail.com>
- <acf69635-5868-f876-f7da-08954d1f690e@intel.com>
- <20191019001449.fk3gnhih4nx724pm@ast-mbp>
- <6f281517-3785-ce46-65de-e2f78576783b@intel.com>
- <20191019022525.w5xbwkav2cpqkfwi@ast-mbp> <877e4zd8py.fsf@toke.dk>
- <CAJ+HfNj07FwmU2GGpUYw56PRwu4pHyHNSkbCOogbMB5zB2QqWA@mail.gmail.com>
- <7642a460-9ba3-d9f7-6cf8-aac45c7eef0d@intel.com>
-Message-ID: <CAADnVQ+jiEO+jnFR-G=xG=zz7UOSBieZbc1NN=sSnAwvPaJjUQ@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 22 Oct 2019 08:31:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
+ 70332577e4d9ee343a7d57a7721c858172e5925c
+Message-ID: <5dae4dd7.Yy91zEBi31cnd5Oq%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 21, 2019 at 1:10 PM Samudrala, Sridhar
-<sridhar.samudrala@intel.com> wrote:
->
-> On 10/20/2019 10:12 AM, Bj?rn T?pel wrote:
-> > On Sun, 20 Oct 2019 at 12:15, Toke H?iland-J?rgensen <toke@redhat.com> wrote:
-> >>
-> >> Alexei Starovoitov <alexei.starovoitov@gmail.com> writes:
-> >>
-> >>> On Fri, Oct 18, 2019 at 05:45:26PM -0700, Samudrala, Sridhar wrote:
-> >>>> On 10/18/2019 5:14 PM, Alexei Starovoitov wrote:
-> >>>>> On Fri, Oct 18, 2019 at 11:40:07AM -0700, Samudrala, Sridhar wrote:
-> >>>>>>
-> >>>>>> Perf report for "AF_XDP default rxdrop" with patched kernel - mitigations ON
-> >>>>>> ==========================================================================
-> >>>>>> Samples: 44K of event 'cycles', Event count (approx.): 38532389541
-> >>>>>> Overhead  Command          Shared Object              Symbol
-> >>>>>>     15.31%  ksoftirqd/28     [i40e]                     [k] i40e_clean_rx_irq_zc
-> >>>>>>     10.50%  ksoftirqd/28     bpf_prog_80b55d8a76303785  [k] bpf_prog_80b55d8a76303785
-> >>>>>>      9.48%  xdpsock          [i40e]                     [k] i40e_clean_rx_irq_zc
-> >>>>>>      8.62%  xdpsock          xdpsock                    [.] main
-> >>>>>>      7.11%  ksoftirqd/28     [kernel.vmlinux]           [k] xsk_rcv
-> >>>>>>      5.81%  ksoftirqd/28     [kernel.vmlinux]           [k] xdp_do_redirect
-> >>>>>>      4.46%  xdpsock          bpf_prog_80b55d8a76303785  [k] bpf_prog_80b55d8a76303785
-> >>>>>>      3.83%  xdpsock          [kernel.vmlinux]           [k] xsk_rcv
-> >>>>>
-> >>>>> why everything is duplicated?
-> >>>>> Same code runs in different tasks ?
-> >>>>
-> >>>> Yes. looks like these functions run from both the app(xdpsock) context and ksoftirqd context.
-> >>>>
-> >>>>>
-> >>>>>>      2.81%  ksoftirqd/28     [kernel.vmlinux]           [k] bpf_xdp_redirect_map
-> >>>>>>      2.78%  ksoftirqd/28     [kernel.vmlinux]           [k] xsk_map_lookup_elem
-> >>>>>>      2.44%  xdpsock          [kernel.vmlinux]           [k] xdp_do_redirect
-> >>>>>>      2.19%  ksoftirqd/28     [kernel.vmlinux]           [k] __xsk_map_redirect
-> >>>>>>      1.62%  ksoftirqd/28     [kernel.vmlinux]           [k] xsk_umem_peek_addr
-> >>>>>>      1.57%  xdpsock          [kernel.vmlinux]           [k] xsk_umem_peek_addr
-> >>>>>>      1.32%  ksoftirqd/28     [kernel.vmlinux]           [k] dma_direct_sync_single_for_cpu
-> >>>>>>      1.28%  xdpsock          [kernel.vmlinux]           [k] bpf_xdp_redirect_map
-> >>>>>>      1.15%  xdpsock          [kernel.vmlinux]           [k] dma_direct_sync_single_for_device
-> >>>>>>      1.12%  xdpsock          [kernel.vmlinux]           [k] xsk_map_lookup_elem
-> >>>>>>      1.06%  xdpsock          [kernel.vmlinux]           [k] __xsk_map_redirect
-> >>>>>>      0.94%  ksoftirqd/28     [kernel.vmlinux]           [k] dma_direct_sync_single_for_device
-> >>>>>>      0.75%  ksoftirqd/28     [kernel.vmlinux]           [k] __x86_indirect_thunk_rax
-> >>>>>>      0.66%  ksoftirqd/28     [i40e]                     [k] i40e_clean_programming_status
-> >>>>>>      0.64%  ksoftirqd/28     [kernel.vmlinux]           [k] net_rx_action
-> >>>>>>      0.64%  swapper          [kernel.vmlinux]           [k] intel_idle
-> >>>>>>      0.62%  ksoftirqd/28     [i40e]                     [k] i40e_napi_poll
-> >>>>>>      0.57%  xdpsock          [kernel.vmlinux]           [k] dma_direct_sync_single_for_cpu
-> >>>>>>
-> >>>>>> Perf report for "AF_XDP direct rxdrop" with patched kernel - mitigations ON
-> >>>>>> ==========================================================================
-> >>>>>> Samples: 46K of event 'cycles', Event count (approx.): 38387018585
-> >>>>>> Overhead  Command          Shared Object             Symbol
-> >>>>>>     21.94%  ksoftirqd/28     [i40e]                    [k] i40e_clean_rx_irq_zc
-> >>>>>>     14.36%  xdpsock          xdpsock                   [.] main
-> >>>>>>     11.53%  ksoftirqd/28     [kernel.vmlinux]          [k] xsk_rcv
-> >>>>>>     11.32%  xdpsock          [i40e]                    [k] i40e_clean_rx_irq_zc
-> >>>>>>      4.02%  xdpsock          [kernel.vmlinux]          [k] xsk_rcv
-> >>>>>>      2.91%  ksoftirqd/28     [kernel.vmlinux]          [k] xdp_do_redirect
-> >>>>>>      2.45%  ksoftirqd/28     [kernel.vmlinux]          [k] xsk_umem_peek_addr
-> >>>>>>      2.19%  xdpsock          [kernel.vmlinux]          [k] xsk_umem_peek_addr
-> >>>>>>      2.08%  ksoftirqd/28     [kernel.vmlinux]          [k] bpf_direct_xsk
-> >>>>>>      2.07%  ksoftirqd/28     [kernel.vmlinux]          [k] dma_direct_sync_single_for_cpu
-> >>>>>>      1.53%  ksoftirqd/28     [kernel.vmlinux]          [k] dma_direct_sync_single_for_device
-> >>>>>>      1.39%  xdpsock          [kernel.vmlinux]          [k] dma_direct_sync_single_for_device
-> >>>>>>      1.22%  ksoftirqd/28     [kernel.vmlinux]          [k] xdp_get_xsk_from_qid
-> >>>>>>      1.12%  ksoftirqd/28     [i40e]                    [k] i40e_clean_programming_status
-> >>>>>>      0.96%  ksoftirqd/28     [i40e]                    [k] i40e_napi_poll
-> >>>>>>      0.95%  ksoftirqd/28     [kernel.vmlinux]          [k] net_rx_action
-> >>>>>>      0.89%  xdpsock          [kernel.vmlinux]          [k] xdp_do_redirect
-> >>>>>>      0.83%  swapper          [i40e]                    [k] i40e_clean_rx_irq_zc
-> >>>>>>      0.70%  swapper          [kernel.vmlinux]          [k] intel_idle
-> >>>>>>      0.66%  xdpsock          [kernel.vmlinux]          [k] dma_direct_sync_single_for_cpu
-> >>>>>>      0.60%  xdpsock          [kernel.vmlinux]          [k] bpf_direct_xsk
-> >>>>>>      0.50%  ksoftirqd/28     [kernel.vmlinux]          [k] xsk_umem_discard_addr
-> >>>>>>
-> >>>>>> Based on the perf reports comparing AF_XDP default and direct rxdrop, we can say that
-> >>>>>> AF_XDP direct rxdrop codepath is avoiding the overhead of going through these functions
-> >>>>>>   bpf_prog_xxx
-> >>>>>>           bpf_xdp_redirect_map
-> >>>>>>   xsk_map_lookup_elem
-> >>>>>>           __xsk_map_redirect
-> >>>>>> With AF_XDP direct, xsk_rcv() is directly called via bpf_direct_xsk() in xdp_do_redirect()
-> >>>>>
-> >>>>> I don't think you're identifying the overhead correctly.
-> >>>>> xsk_map_lookup_elem is 1%
-> >>>>> but bpf_xdp_redirect_map() suppose to call __xsk_map_lookup_elem()
-> >>>>> which is a different function:
-> >>>>> ffffffff81493fe0 T __xsk_map_lookup_elem
-> >>>>> ffffffff81492e80 t xsk_map_lookup_elem
-> >>>>>
-> >>>>> 10% for bpf_prog_80b55d8a76303785 is huge.
-> >>>>> It's the actual code of the program _without_ any helpers.
-> >>>>> How does the program actually look?
-> >>>>
-> >>>> It is the xdp program that is loaded via xsk_load_xdp_prog() in tools/lib/bpf/xsk.c
-> >>>> https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next.git/tree/tools/lib/bpf/xsk.c#n268
-> >>>
-> >>> I see. Looks like map_gen_lookup was never implemented for xskmap.
-> >>> How about adding it first the way array_map_gen_lookup() is implemented?
-> >>> This will easily give 2x perf gain.
-> >>
-> >> I guess we should implement this for devmaps as well now that we allow
-> >> lookups into those.
-> >>
-> >> However, in this particular example, the lookup from BPF is not actually
-> >> needed, since bpf_redirect_map() will return a configurable error value
-> >> when the map lookup fails (for exactly this use case).
-> >>
-> >> So replacing:
-> >>
-> >> if (bpf_map_lookup_elem(&xsks_map, &index))
-> >>      return bpf_redirect_map(&xsks_map, index, 0);
-> >>
-> >> with simply
-> >>
-> >> return bpf_redirect_map(&xsks_map, index, XDP_PASS);
-> >>
-> >> would save the call to xsk_map_lookup_elem().
-> >>
-> >
-> > Thanks for the reminder! I just submitted a patch. Still, doing the
-> > map_gen_lookup()  for xsk/devmaps still makes sense!
-> >
->
-> I tried Bjorn's patch that avoids the lookups in the BPF prog.
-> https://lore.kernel.org/netdev/20191021105938.11820-1-bjorn.topel at gmail.com/
->
-> With this patch I am also seeing around 3-4% increase in xdpsock rxdrop performance and
-> the perf report looks like this.
->
-> Samples: 44K of event 'cycles', Event count (approx.): 38749965204
-> Overhead  Command          Shared Object              Symbol
->    16.06%  ksoftirqd/28     [i40e]                     [k] i40e_clean_rx_irq_zc
->    10.18%  ksoftirqd/28     bpf_prog_3c8251c7e0fef8db  [k] bpf_prog_3c8251c7e0fef8db
->    10.15%  xdpsock          [i40e]                     [k] i40e_clean_rx_irq_zc
->    10.06%  ksoftirqd/28     [kernel.vmlinux]           [k] xsk_rcv
->     7.45%  xdpsock          xdpsock                    [.] main
->     5.76%  ksoftirqd/28     [kernel.vmlinux]           [k] xdp_do_redirect
->     4.51%  xdpsock          bpf_prog_3c8251c7e0fef8db  [k] bpf_prog_3c8251c7e0fef8db
->     3.67%  xdpsock          [kernel.vmlinux]           [k] xsk_rcv
->     3.06%  ksoftirqd/28     [kernel.vmlinux]           [k] bpf_xdp_redirect_map
->     2.34%  ksoftirqd/28     [kernel.vmlinux]           [k] __xsk_map_redirect
->     2.33%  xdpsock          [kernel.vmlinux]           [k] xdp_do_redirect
->     1.69%  ksoftirqd/28     [kernel.vmlinux]           [k] xsk_umem_peek_addr
->     1.69%  xdpsock          [kernel.vmlinux]           [k] xsk_umem_peek_addr
->     1.42%  ksoftirqd/28     [kernel.vmlinux]           [k] dma_direct_sync_single_for_cpu
->     1.19%  xdpsock          [kernel.vmlinux]           [k] bpf_xdp_redirect_map
->     1.13%  xdpsock          [kernel.vmlinux]           [k] dma_direct_sync_single_for_device
->     0.95%  ksoftirqd/28     [kernel.vmlinux]           [k] dma_direct_sync_single_for_device
->     0.92%  swapper          [kernel.vmlinux]           [k] intel_idle
->     0.92%  xdpsock          [kernel.vmlinux]           [k] __xsk_map_redirect
->     0.80%  ksoftirqd/28     [kernel.vmlinux]           [k] __x86_indirect_thunk_rax
->     0.73%  ksoftirqd/28     [i40e]                     [k] i40e_clean_programming_status
->     0.71%  ksoftirqd/28     [kernel.vmlinux]           [k] __xsk_map_lookup_elem
->     0.63%  ksoftirqd/28     [kernel.vmlinux]           [k] net_rx_action
->     0.62%  ksoftirqd/28     [i40e]                     [k] i40e_napi_poll
->     0.58%  xdpsock          [kernel.vmlinux]           [k] dma_direct_sync_single_for_cpu
->
-> So with this patch applied, direct receive performance improvement comes down from 46% to 42%.
-> I think it is still substantial enough to provide an option to allow direct receive for
-> certain use cases. If it is OK, i can re-spin and submit the patches on top of the latest bpf-next
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+branch HEAD: 70332577e4d9ee343a7d57a7721c858172e5925c  igc: Clean up unused shadow_vfta pointer
 
-I think it's too early to consider such drastic approach.
-The run-time performance of XDP program should be the same as C code.
-Something fishy in these numbers, since spending 10% cpu in few loads
-and single call to bpf_xdp_redirect_map() just not right.
+elapsed time: 387m
+
+configs tested: 129
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+x86_64                 randconfig-a004-201942
+x86_64                 randconfig-a001-201942
+i386                   randconfig-a002-201942
+x86_64                 randconfig-a002-201942
+i386                   randconfig-a001-201942
+i386                   randconfig-a003-201942
+i386                   randconfig-a004-201942
+x86_64                 randconfig-a003-201942
+i386                   randconfig-d002-201942
+x86_64                 randconfig-d002-201942
+i386                   randconfig-d004-201942
+x86_64                 randconfig-d004-201942
+x86_64                 randconfig-d003-201942
+i386                   randconfig-d003-201942
+x86_64                 randconfig-d001-201942
+i386                   randconfig-d001-201942
+i386                   randconfig-b001-201942
+x86_64                 randconfig-b002-201942
+x86_64                 randconfig-b003-201942
+i386                   randconfig-b003-201942
+i386                   randconfig-b004-201942
+x86_64                 randconfig-b004-201942
+x86_64                 randconfig-b001-201942
+i386                   randconfig-b002-201942
+x86_64                 randconfig-h002-201942
+x86_64                 randconfig-h001-201942
+i386                   randconfig-h004-201942
+i386                   randconfig-h003-201942
+x86_64                 randconfig-h003-201942
+i386                   randconfig-h002-201942
+i386                   randconfig-h001-201942
+x86_64                 randconfig-h004-201942
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-g002-201942
+i386                   randconfig-g004-201942
+x86_64                 randconfig-g001-201942
+i386                   randconfig-g002-201942
+x86_64                 randconfig-g004-201942
+x86_64                 randconfig-g003-201942
+i386                   randconfig-g003-201942
+i386                   randconfig-g001-201942
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+i386                   randconfig-f002-201942
+i386                   randconfig-f001-201942
+x86_64                 randconfig-f003-201942
+x86_64                 randconfig-f004-201942
+x86_64                 randconfig-f002-201942
+i386                   randconfig-f003-201942
+x86_64                 randconfig-f001-201942
+i386                   randconfig-f004-201942
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+x86_64                           allmodconfig
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
