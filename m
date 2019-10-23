@@ -1,42 +1,43 @@
-From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 23 Oct 2019 03:19:57 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: enable X710 support
-Message-ID: <20191023101957.19272-1-alice.michael@intel.com>
+From: Shiraz Saleem <shiraz.saleem@intel.com>
+Date: Wed, 23 Oct 2019 13:22:52 -0500
+Subject: [Intel-wired-lan] [PATCH rdma-nxt 16/16] RDMA/irdma: Update
+ MAINTAINERS file
+In-Reply-To: <20191023182253.1115-1-shiraz.saleem@intel.com>
+References: <20191023182253.1115-1-shiraz.saleem@intel.com>
+Message-ID: <20191023182253.1115-17-shiraz.saleem@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The I40E_DEV_ID_10G_BASE_T_BC device id was added previously,
-but was not enabled in all the appropriate places.  Adding it
-to enable it's use.
+Add maintainer entry for irdma driver.
 
-Signed-off-by: Alice Michael <alice.michael@intel.com>
+Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
+Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 2 ++
- 1 file changed, 2 insertions(+)
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 8b25a6d9c81d..a0791447849a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -29,6 +29,7 @@ i40e_status i40e_set_mac_type(struct i40e_hw *hw)
- 		case I40E_DEV_ID_QSFP_C:
- 		case I40E_DEV_ID_10G_BASE_T:
- 		case I40E_DEV_ID_10G_BASE_T4:
-+		case I40E_DEV_ID_10G_BASE_T_BC:
- 		case I40E_DEV_ID_10G_B:
- 		case I40E_DEV_ID_10G_SFP:
- 		case I40E_DEV_ID_20G_KR2:
-@@ -4910,6 +4911,7 @@ i40e_status i40e_write_phy_register(struct i40e_hw *hw,
- 		break;
- 	case I40E_DEV_ID_10G_BASE_T:
- 	case I40E_DEV_ID_10G_BASE_T4:
-+	case I40E_DEV_ID_10G_BASE_T_BC:
- 	case I40E_DEV_ID_10G_BASE_T_X722:
- 	case I40E_DEV_ID_25G_B:
- 	case I40E_DEV_ID_25G_SFP28:
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 21961b1..e57d7c1 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8416,6 +8416,14 @@ L:	linux-pm at vger.kernel.org
+ S:	Supported
+ F:	drivers/cpufreq/intel_pstate.c
+ 
++INTEL ETHERNET RDMA DRIVER
++M:	Mustafa Ismail <mustafa.ismail@intel.com>
++M:	Shiraz Saleem <shiraz.saleem@intel.com>
++L:	linux-rdma at vger.kernel.org
++S:	Supported
++F:	drivers/infiniband/hw/irdma/
++F:	include/uapi/rdma/irdma-abi.h
++
+ INTEL SPEED SELECT TECHNOLOGY
+ M:	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+ L:	platform-driver-x86 at vger.kernel.org
 -- 
-2.21.0
+1.8.3.1
 
