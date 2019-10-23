@@ -1,112 +1,56 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 23 Oct 2019 09:37:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master] BUILD SUCCESS
- 685df9c39f70964482a1a5d1742b8cecb2606bb7
-Message-ID: <5dafaef4.cZYQ+cbAAoRx+EuX%lkp@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 23 Oct 2019 02:09:41 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v2 1/2] e1000e: Use
+ rtnl_lock to prevent race conditions between net and pci/pm
+In-Reply-To: <20191011153452.22313.70522.stgit@localhost.localdomain>
+References: <20191011153219.22313.60179.stgit@localhost.localdomain>
+ <20191011153452.22313.70522.stgit@localhost.localdomain>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B97154DF9@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-branch HEAD: 685df9c39f70964482a1a5d1742b8cecb2606bb7  Merge branch 'net-dsa-turn-arrays-of-ports-into-a-list'
+> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org>
+> On Behalf Of Alexander Duyck
+> Sent: Friday, October 11, 2019 8:35 AM
+> To: alexander.h.duyck at linux.intel.com; intel-wired-lan at lists.osuosl.org;
+> Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; zdai at us.ibm.com; zdai at linux.vnet.ibm.com
+> Subject: [next-queue PATCH v2 1/2] e1000e: Use rtnl_lock to prevent race
+> conditions between net and pci/pm
+> 
+> From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> 
+> This patch is meant to address possible race conditions that can exist
+> between network configuration and power management. A similar issue was
+> fixed for igb in commit 9474933caf21 ("igb: close/suspend race in
+> netif_device_detach").
+> 
+> In addition it consolidates the code so that the PCI error handling code
+> will essentially perform the power management freeze on the device prior to
+> attempting a reset, and will thaw the device afterwards if that is what it
+> is planning to do. Otherwise when we call close on the interface it should
+> see it is detached and not attempt to call the logic to down the interface
+> and free the IRQs again.
+> 
+> >From what I can tell the check that was adding the check for
+> __E1000_DOWN
+> in e1000e_close was added when runtime power management was added.
+> However
+> it should not be relevant for us as we perform a call to
+> pm_runtime_get_sync before we call e1000_down/free_irq so it should
+> always
+> be back up before we call into this anyway.
+> 
+> Reported-by: Morumuri Srivalli <smorumu1@in.ibm.com>
+> Tested-by: David Dai <zdai@linux.vnet.ibm.com>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c |   68 ++++++++++++++---------
+> -----
+>  1 file changed, 35 insertions(+), 33 deletions(-)
 
-elapsed time: 326m
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-configs tested: 87
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-riscv                             allnoconfig
-riscv                               defconfig
-nds32                               defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-i386                   randconfig-d002-201942
-x86_64                 randconfig-d002-201942
-x86_64                 randconfig-d004-201942
-x86_64                 randconfig-d003-201942
-i386                   randconfig-d003-201942
-x86_64                 randconfig-d001-201942
-i386                   randconfig-d001-201942
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-b001-201942
-x86_64                 randconfig-b004-201942
-i386                   randconfig-b002-201942
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                         rhel-7.2-clear
-i386                   randconfig-f002-201942
-i386                   randconfig-f001-201942
-x86_64                 randconfig-f003-201942
-x86_64                 randconfig-f004-201942
-xtensa                       common_defconfig
-openrisc                    or1ksim_defconfig
-nios2                         3c120_defconfig
-xtensa                          iss_defconfig
-c6x                        evmc6678_defconfig
-c6x                              allyesconfig
-nios2                         10m50_defconfig
-openrisc                 simple_smp_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-parisc                            allnoconfig
-mips                             allmodconfig
-mips                           32r2_defconfig
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                             allmodconfig
-s390                                defconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                     edosk2674_defconfig
-m68k                           sun3_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-arc                              allyesconfig
-powerpc                             defconfig
-microblaze                    nommu_defconfig
-powerpc                       ppc64_defconfig
-microblaze                      mmu_defconfig
-arc                                 defconfig
-powerpc                           allnoconfig
-arm                              allmodconfig
-arm                         at91_dt_defconfig
-arm64                            allyesconfig
-arm                               allnoconfig
-arm64                             allnoconfig
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
