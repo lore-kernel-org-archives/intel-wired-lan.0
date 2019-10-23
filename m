@@ -1,36 +1,50 @@
-From: Joerg.Hunsche@elektrobit.com <Joerg.Hunsche@elektrobit.com>
-Date: Wed, 23 Oct 2019 13:50:02 +0000
-Subject: [Intel-wired-lan] [i40e][PLP reording frame]
-Message-ID: <e16b63bb-72d5-4f8c-b066-00f8611392ae@denue6es010.ebgroup.elektrobit.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed, 23 Oct 2019 18:09:17 +0300
+Subject: [Intel-wired-lan] [PATCH v1] e1000e: Fix compiler warning when
+ CONFIG_PM_SLEEP is not set
+Message-ID: <20191023150917.26271-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
-we use INTEL X710-DA2 with i40e-2.10.19.30.
-Configured socket flags SOCK_RAW and socket option PACKET_QDISC_BYPASS to bypass queuing, sending single-threaded.
+When CONFIG_PM_SLEEP is not defined compiler complain as follow:
+CC [M]  drivers/net/ethernet/intel/e1000e/netdev.o
+drivers/net/ethernet/intel/e1000e/netdev.c:6302:12: warning: ?e1000e_s0ix_entry_flow? defined but not used [-Wunused-function]
+static void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
+drivers/net/ethernet/intel/e1000e/netdev.c:6411:12: warning: ?e1000e_s0ix_exit_flow? defined but not used [-Wunused-function]
+static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+LD [M]  drivers/net/ethernet/intel/e1000e/e1000e.o
 
-When sending PLP-Ethernet-frames we observe a problem, that after ~2h a PLP-Ethernet-frame is send about 250frames later than it should be.
-Our assumption is, that somehow more than one TX-queue is used, what we have to avoid.
+Add wrap to fix these warnings.
 
-Is there any configuration of the driver possible configuring a single Tx-queue?
-Is there any means to get the driver to a state that only a single Tx-queue is used?
+Reported-by: kbuild test robot <lpk@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Thank you for your support.
-J?rg Hunsche
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 20965b5d9780..032b88619054 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6297,6 +6297,7 @@ static void e1000e_flush_lpic(struct pci_dev *pdev)
+ 	pm_runtime_put_sync(netdev->dev.parent);
+ }
+ 
++#ifdef CONFIG_PM_SLEEP
+ /* S0ix implementation */
+ static void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
+ {
+@@ -6464,6 +6465,7 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+ 	mac_data &= ~E1000_CTRL_EXT_FORCE_SMBUS;
+ 	ew32(CTRL_EXT, mac_data);
+ }
++#endif /* CONFIG_PM_SLEEP */
+ 
+ static int e1000e_pm_freeze(struct device *dev)
+ {
+-- 
+2.11.0
 
-EB Driving the Future of Software
-Wolfgang-Paul Str. 4, 89081 Ulm
-Phone: +49913177017653
-Joerg.Hunsche at elektrobit.com<mailto:Joerg.Hunsche@elektrobit.com>
-http://automotive.elektrobit.com<http://automotive.elektrobit.com/>
-
-Elektrobit Automotive GmbH, Am Wolfsmantel 46, 91058 Erlangen, Germany
-Managing Directors Alexander Kocher, Gregor Zink
-Register Court F?rth HRB 4886
-
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20191023/6d51d534/attachment.html>
