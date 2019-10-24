@@ -1,31 +1,102 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 23 Oct 2019 23:13:01 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: enable X710 support
-In-Reply-To: <20191023101957.19272-1-alice.michael@intel.com>
-References: <20191023101957.19272-1-alice.michael@intel.com>
-Message-ID: <276b229f7a4c44c0bfa0465350bdcc05@intel.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Thu, 24 Oct 2019 10:21:57 +0900
+Subject: [Intel-wired-lan] [PATCH] namespace: fix namespace.pl script to
+ support relative paths
+In-Reply-To: <02874ECE860811409154E81DA85FBB589693A38A@ORSMSX121.amr.corp.intel.com>
+References: <20190129204319.15238-1-jacob.e.keller@intel.com>
+ <7b26e6cc-10ce-5df2-6375-1f95bc4da04e@infradead.org>
+ <02874ECE860811409154E81DA85FBB58968DBE54@ORSMSX121.amr.corp.intel.com>
+ <CAK7LNARyUEakeG_N9TWcO2cjFSzbgY__k_QJm6C+oOz+fW0aeg@mail.gmail.com>
+ <02874ECE860811409154E81DA85FBB58968E1402@ORSMSX121.amr.corp.intel.com>
+ <CAK7LNARAhZtzdnS9+mgtamj=pLdV81dudnYVDa8NRxcQPpF0bw@mail.gmail.com>
+ <02874ECE860811409154E81DA85FBB589693A38A@ORSMSX121.amr.corp.intel.com>
+Message-ID: <CAK7LNAQow8N9a5e_=pu7qDiuvETy1x1P5fxp20zYOZgQhXPJhg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Alice Michael
-> Sent: Wednesday, October 23, 2019 3:20 AM
-> To: Michael, Alice <alice.michael@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: enable X710 support
-> 
-> The I40E_DEV_ID_10G_BASE_T_BC device id was added previously, but was
-> not enabled in all the appropriate places.  Adding it to enable it's use.
-> 
-> Signed-off-by: Alice Michael <alice.michael@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 2 ++
->  1 file changed, 2 insertions(+)
+On Thu, Oct 24, 2019 at 6:34 AM Keller, Jacob E
+<jacob.e.keller@intel.com> wrote:
+>
+> > -----Original Message-----
+> > From: Masahiro Yamada <yamada.masahiro@socionext.com>
+> > Sent: Tuesday, October 22, 2019 10:22 PM
+> > To: Keller, Jacob E <jacob.e.keller@intel.com>; Randy Dunlap
+> > <rdunlap@infradead.org>
+> > Cc: intel-wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org; linux-kbuild
+> > <linux-kbuild@vger.kernel.org>
+> > Subject: Re: [PATCH] namespace: fix namespace.pl script to support relative
+> > paths
+> >
+> > This scripts has been 5-year broken,
+> > and I did not see any complaint except from you.
+> > So, I wonder how many people are using this.
+> >
+> > Nor, do I understand how to use it.
+> >
+> > Could you teach me a bit more about this script?
+> >
+> >
+> >
+> > Something might be missing in my mind, but
+> > I do not know how to use this script in a useful way.
+> >
+> >
+> >
+> > It provides three checks.
+> >
+> > [1] list_multiply_defined()
+> >
+> > This warns multiple definition of functions.
+> >
+> > The compiler would fail if it saw any multiple definition,
+> > so the reports from this check are all false-positive.
+> >
+> >
+> > [2] resolve_external_references()
+> >
+> > This warns unresolved symbols.
+> >
+> > The compiler would fail if it saw any unresolved symbol,
+> > so the reports from this check are all false-positive, too.
+> >
+> >
+>
+> The compiler won't necessarily fail when building modules, because the symbol might be in another loadable module.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Right, but this is already checked by modpost, isn't it?
 
 
+
+> >
+> >
+> > [3] list_extra_externals
+> >
+> > This warns symbols with no reference.
+> >
+> > This potentially contains lots of false-positives.
+> > For example, the core framework provides APIs, but if all drivers
+> > are disabled, there is no user of those APIs.
+> >
+>
+> We use this to help verify that driver modules do not expose symbols.
+
+Ah, the output is quite large, so
+you search for only modules in your interest. Right?
+
+
+If you want to detect missing 'static',
+have you tried 'sparse'?
+
+
+
+> Thanks,
+> Jake
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
