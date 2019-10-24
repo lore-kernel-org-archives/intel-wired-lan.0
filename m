@@ -1,162 +1,64 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 24 Oct 2019 17:52:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 4004b18737b18b501297d6131a90248a147d96c1
-Message-ID: <5db1746f.aK3jW4mVqORysjUh%lkp@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Thu, 24 Oct 2019 01:11:25 -0700
+Subject: [Intel-wired-lan] [PATCH S30 v3 9/9] ice: allow 3k MTU for XDP
+In-Reply-To: <20191024081125.6711-1-anthony.l.nguyen@intel.com>
+References: <20191024081125.6711-1-anthony.l.nguyen@intel.com>
+Message-ID: <20191024081125.6711-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 4004b18737b18b501297d6131a90248a147d96c1  i40e: enable X710 support
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 
-elapsed time: 788m
+At this point ice driver is able to work on order 1 pages that are split
+onto two 3k buffers. Let's reflect that when user is setting new mtu
+size and XDP is present on interface.
 
-configs tested: 137
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-x86_64                           allmodconfig
-i386                             alldefconfig
-i386                   randconfig-d002-201942
-x86_64                 randconfig-d002-201942
-i386                   randconfig-d004-201942
-x86_64                 randconfig-d004-201942
-x86_64                 randconfig-d003-201942
-i386                   randconfig-d003-201942
-x86_64                 randconfig-d001-201942
-i386                   randconfig-d001-201942
-x86_64                 randconfig-h002-201942
-x86_64                 randconfig-h001-201942
-i386                   randconfig-h004-201942
-i386                   randconfig-h003-201942
-x86_64                 randconfig-h003-201942
-i386                   randconfig-h002-201942
-i386                   randconfig-h001-201942
-x86_64                 randconfig-h004-201942
-x86_64                 randconfig-g002-201942
-i386                   randconfig-g004-201942
-x86_64                 randconfig-g001-201942
-i386                   randconfig-g002-201942
-x86_64                 randconfig-g004-201942
-x86_64                 randconfig-g003-201942
-i386                   randconfig-g003-201942
-i386                   randconfig-g001-201942
-x86_64                           allyesconfig
-i386                             allmodconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                   randconfig-b001-201942
-x86_64                 randconfig-b002-201942
-x86_64                 randconfig-b003-201942
-i386                   randconfig-b003-201942
-i386                   randconfig-b004-201942
-x86_64                 randconfig-b004-201942
-x86_64                 randconfig-b001-201942
-i386                   randconfig-b002-201942
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                              allnoconfig
-i386                                defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-f002-201942
-i386                   randconfig-f001-201942
-x86_64                 randconfig-f003-201942
-x86_64                 randconfig-f004-201942
-x86_64                 randconfig-f002-201942
-i386                   randconfig-f003-201942
-x86_64                 randconfig-f001-201942
-i386                   randconfig-f004-201942
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-e004-201942
-x86_64                 randconfig-e001-201942
-x86_64                 randconfig-e003-201942
-x86_64                 randconfig-e002-201942
-i386                   randconfig-e003-201942
-i386                   randconfig-e004-201942
-i386                   randconfig-e001-201942
-i386                   randconfig-e002-201942
-x86_64                 randconfig-c001-201942
-i386                   randconfig-c001-201942
-x86_64                 randconfig-c002-201942
-i386                   randconfig-c004-201942
-i386                   randconfig-c003-201942
-x86_64                 randconfig-c004-201942
-i386                   randconfig-c002-201942
-x86_64                 randconfig-c003-201942
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-arm                              allmodconfig
-arm                         at91_dt_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm64                            allyesconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allmodconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/net/ethernet/intel/ice/ice_main.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index d5f292b17739..5fe0f94eb7f3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4765,6 +4765,18 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	dev_err(dev, "Rebuild failed, unload and reload driver\n");
+ }
+ 
++/**
++ * ice_max_xdp_frame_size - returns the maximum allowed frame size for XDP
++ * @vsi: Pointer to VSI structure
++ */
++static int ice_max_xdp_frame_size(struct ice_vsi *vsi)
++{
++	if (PAGE_SIZE >= 8192 || test_bit(ICE_FLAG_LEGACY_RX, vsi->back->flags))
++		return ICE_RXBUF_2048 - XDP_PACKET_HEADROOM;
++	else
++		return ICE_RXBUF_3072;
++}
++
+ /**
+  * ice_change_mtu - NDO callback to change the MTU
+  * @netdev: network interface device structure
+@@ -4786,11 +4798,11 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
+ 	}
+ 
+ 	if (ice_is_xdp_ena_vsi(vsi)) {
+-		int frame_size = ICE_RXBUF_2048 - XDP_PACKET_HEADROOM;
++		int frame_size = ice_max_xdp_frame_size(vsi);
+ 
+ 		if (new_mtu + ICE_ETH_PKT_HDR_PAD > frame_size) {
+ 			netdev_err(netdev, "max MTU for XDP usage is %d\n",
+-				   frame_size);
++				   frame_size - ICE_ETH_PKT_HDR_PAD);
+ 			return -EINVAL;
+ 		}
+ 	}
+-- 
+2.20.1
+
