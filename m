@@ -1,223 +1,766 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 24 Oct 2019 01:11:18 -0700
-Subject: [Intel-wired-lan] [PATCH S30 v3 2/9] ice: get rid of per-tc flow in
- Tx queue configuration routines
+Date: Thu, 24 Oct 2019 01:11:20 -0700
+Subject: [Intel-wired-lan] [PATCH S30 v3 4/9] ice: Move common functions to
+ ice_txrx_lib.c
 In-Reply-To: <20191024081125.6711-1-anthony.l.nguyen@intel.com>
 References: <20191024081125.6711-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191024081125.6711-2-anthony.l.nguyen@intel.com>
+Message-ID: <20191024081125.6711-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 
-There's no reason for treating DCB as first class citizen when configuring
-the Tx queues and going through TCs. Reverse the logic and base the
-configuration logic on rings, which is the object of interest anyway.
+In preparation of AF XDP, move functions that will be used both by skb and
+zero-copy paths to a new file called ice_txrx_lib.c.  This allows us to
+avoid using ifdefs to control the staticness of said functions.
 
-Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Move other functions (ice_rx_csum, ice_rx_hash and ice_ptype_to_htype)
+called only by the moved ones to the new file as well.
+
+Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_base.c | 29 +++++++++--
- drivers/net/ethernet/intel/ice/ice_base.h |  4 +-
- drivers/net/ethernet/intel/ice/ice_lib.c  | 63 ++++++++---------------
- 3 files changed, 47 insertions(+), 49 deletions(-)
+v2:
+- Move ice_build_ctob() to ice_txrx_lib.h
+---
+ drivers/net/ethernet/intel/ice/Makefile       |   1 +
+ drivers/net/ethernet/intel/ice/ice_txrx.c     | 303 +-----------------
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |  10 -
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 273 ++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  59 ++++
+ 5 files changed, 334 insertions(+), 312 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_txrx_lib.h
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 735922a4d632..1dd9c18ecd8c 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -190,6 +190,21 @@ static void ice_cfg_itr_gran(struct ice_hw *hw)
- 	wr32(hw, GLINT_CTL, regval);
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index ff737f880c12..94fe430fdfdd 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -15,6 +15,7 @@ ice-y := ice_main.o	\
+ 	 ice_sched.o	\
+ 	 ice_base.o	\
+ 	 ice_lib.o	\
++	 ice_txrx_lib.o	\
+ 	 ice_txrx.o	\
+ 	 ice_flex_pipe.o	\
+ 	 ice_idc.o	\
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 69181b01df91..f8a9eafc945a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -7,6 +7,7 @@
+ #include <linux/mm.h>
+ #include <linux/bpf_trace.h>
+ #include <net/xdp.h>
++#include "ice_txrx_lib.h"
+ #include "ice_lib.h"
+ #include "ice.h"
+ #include "ice_dcb_lib.h"
+@@ -396,37 +397,6 @@ int ice_setup_rx_ring(struct ice_ring *rx_ring)
+ 	return -ENOMEM;
  }
  
+-/**
+- * ice_release_rx_desc - Store the new tail and head values
+- * @rx_ring: ring to bump
+- * @val: new head index
+- */
+-static void ice_release_rx_desc(struct ice_ring *rx_ring, u32 val)
+-{
+-	u16 prev_ntu = rx_ring->next_to_use;
+-
+-	rx_ring->next_to_use = val;
+-
+-	/* update next to alloc since we have filled the ring */
+-	rx_ring->next_to_alloc = val;
+-
+-	/* QRX_TAIL will be updated with any tail value, but hardware ignores
+-	 * the lower 3 bits. This makes it so we only bump tail on meaningful
+-	 * boundaries. Also, this allows us to bump tail on intervals of 8 up to
+-	 * the budget depending on the current traffic load.
+-	 */
+-	val &= ~0x7;
+-	if (prev_ntu != val) {
+-		/* Force memory writes to complete before letting h/w
+-		 * know there are new descriptors to fetch. (Only
+-		 * applicable for weak-ordered memory model archs,
+-		 * such as IA-64).
+-		 */
+-		wmb();
+-		writel(val, rx_ring->tail);
+-	}
+-}
+-
+ /**
+  * ice_rx_offset - Return expected offset into page to access data
+  * @rx_ring: Ring we are requesting offset of
+@@ -438,89 +408,6 @@ static unsigned int ice_rx_offset(struct ice_ring *rx_ring)
+ 	return ice_is_xdp_ena_vsi(rx_ring->vsi) ? XDP_PACKET_HEADROOM : 0;
+ }
+ 
+-/**
+- * ice_xdp_ring_update_tail - Updates the XDP Tx ring tail register
+- * @xdp_ring: XDP Tx ring
+- *
+- * This function updates the XDP Tx ring tail register.
+- */
+-static void ice_xdp_ring_update_tail(struct ice_ring *xdp_ring)
+-{
+-	/* Force memory writes to complete before letting h/w
+-	 * know there are new descriptors to fetch.
+-	 */
+-	wmb();
+-	writel_relaxed(xdp_ring->next_to_use, xdp_ring->tail);
+-}
+-
+-/**
+- * ice_xmit_xdp_ring - submit single packet to XDP ring for transmission
+- * @data: packet data pointer
+- * @size: packet data size
+- * @xdp_ring: XDP ring for transmission
+- */
+-static int ice_xmit_xdp_ring(void *data, u16 size, struct ice_ring *xdp_ring)
+-{
+-	u16 i = xdp_ring->next_to_use;
+-	struct ice_tx_desc *tx_desc;
+-	struct ice_tx_buf *tx_buf;
+-	dma_addr_t dma;
+-
+-	if (!unlikely(ICE_DESC_UNUSED(xdp_ring))) {
+-		xdp_ring->tx_stats.tx_busy++;
+-		return ICE_XDP_CONSUMED;
+-	}
+-
+-	dma = dma_map_single(xdp_ring->dev, data, size, DMA_TO_DEVICE);
+-	if (dma_mapping_error(xdp_ring->dev, dma))
+-		return ICE_XDP_CONSUMED;
+-
+-	tx_buf = &xdp_ring->tx_buf[i];
+-	tx_buf->bytecount = size;
+-	tx_buf->gso_segs = 1;
+-	tx_buf->raw_buf = data;
+-
+-	/* record length, and DMA address */
+-	dma_unmap_len_set(tx_buf, len, size);
+-	dma_unmap_addr_set(tx_buf, dma, dma);
+-
+-	tx_desc = ICE_TX_DESC(xdp_ring, i);
+-	tx_desc->buf_addr = cpu_to_le64(dma);
+-	tx_desc->cmd_type_offset_bsz = ice_build_ctob(ICE_TXD_LAST_DESC_CMD, 0,
+-						      size, 0);
+-
+-	/* Make certain all of the status bits have been updated
+-	 * before next_to_watch is written.
+-	 */
+-	smp_wmb();
+-
+-	i++;
+-	if (i == xdp_ring->count)
+-		i = 0;
+-
+-	tx_buf->next_to_watch = tx_desc;
+-	xdp_ring->next_to_use = i;
+-
+-	return ICE_XDP_TX;
+-}
+-
+-/**
+- * ice_xmit_xdp_buff - convert an XDP buffer to an XDP frame and send it
+- * @xdp: XDP buffer
+- * @xdp_ring: XDP Tx ring
+- *
+- * Returns negative on failure, 0 on success.
+- */
+-static int ice_xmit_xdp_buff(struct xdp_buff *xdp, struct ice_ring *xdp_ring)
+-{
+-	struct xdp_frame *xdpf = convert_to_xdp_frame(xdp);
+-
+-	if (unlikely(!xdpf))
+-		return ICE_XDP_CONSUMED;
+-
+-	return ice_xmit_xdp_ring(xdpf->data, xdpf->len, xdp_ring);
+-}
+-
+ /**
+  * ice_run_xdp - Executes an XDP program on initialized xdp_buff
+  * @rx_ring: Rx ring
+@@ -612,29 +499,6 @@ ice_xdp_xmit(struct net_device *dev, int n, struct xdp_frame **frames,
+ 	return n - drops;
+ }
+ 
+-/**
+- * ice_finalize_xdp_rx - Bump XDP Tx tail and/or flush redirect map
+- * @rx_ring: Rx ring
+- * @xdp_res: Result of the receive batch
+- *
+- * This function bumps XDP Tx tail and/or flush redirect map, and
+- * should be called when a batch of packets has been processed in the
+- * napi loop.
+- */
+-static void
+-ice_finalize_xdp_rx(struct ice_ring *rx_ring, unsigned int xdp_res)
+-{
+-	if (xdp_res & ICE_XDP_REDIR)
+-		xdp_do_flush_map();
+-
+-	if (xdp_res & ICE_XDP_TX) {
+-		struct ice_ring *xdp_ring =
+-			rx_ring->vsi->xdp_rings[rx_ring->q_index];
+-
+-		ice_xdp_ring_update_tail(xdp_ring);
+-	}
+-}
+-
+ /**
+  * ice_alloc_mapped_page - recycle or make a new page
+  * @rx_ring: ring to use
+@@ -1031,23 +895,6 @@ static bool ice_cleanup_headers(struct sk_buff *skb)
+ 	return false;
+ }
+ 
+-/**
+- * ice_test_staterr - tests bits in Rx descriptor status and error fields
+- * @rx_desc: pointer to receive descriptor (in le64 format)
+- * @stat_err_bits: value to mask
+- *
+- * This function does some fast chicanery in order to return the
+- * value of the mask which is really only used for boolean tests.
+- * The status_error_len doesn't need to be shifted because it begins
+- * at offset zero.
+- */
+-static bool
+-ice_test_staterr(union ice_32b_rx_flex_desc *rx_desc, const u16 stat_err_bits)
+-{
+-	return !!(rx_desc->wb.status_error0 &
+-		  cpu_to_le16(stat_err_bits));
+-}
+-
+ /**
+  * ice_is_non_eop - process handling of non-EOP buffers
+  * @rx_ring: Rx ring being processed
+@@ -1073,154 +920,6 @@ ice_is_non_eop(struct ice_ring *rx_ring, union ice_32b_rx_flex_desc *rx_desc,
+ 	return true;
+ }
+ 
+-/**
+- * ice_ptype_to_htype - get a hash type
+- * @ptype: the ptype value from the descriptor
+- *
+- * Returns a hash type to be used by skb_set_hash
+- */
+-static enum pkt_hash_types ice_ptype_to_htype(u8 __always_unused ptype)
+-{
+-	return PKT_HASH_TYPE_NONE;
+-}
+-
+-/**
+- * ice_rx_hash - set the hash value in the skb
+- * @rx_ring: descriptor ring
+- * @rx_desc: specific descriptor
+- * @skb: pointer to current skb
+- * @rx_ptype: the ptype value from the descriptor
+- */
+-static void
+-ice_rx_hash(struct ice_ring *rx_ring, union ice_32b_rx_flex_desc *rx_desc,
+-	    struct sk_buff *skb, u8 rx_ptype)
+-{
+-	struct ice_32b_rx_flex_desc_nic *nic_mdid;
+-	u32 hash;
+-
+-	if (!(rx_ring->netdev->features & NETIF_F_RXHASH))
+-		return;
+-
+-	if (rx_desc->wb.rxdid != ICE_RXDID_FLEX_NIC)
+-		return;
+-
+-	nic_mdid = (struct ice_32b_rx_flex_desc_nic *)rx_desc;
+-	hash = le32_to_cpu(nic_mdid->rss_hash);
+-	skb_set_hash(skb, hash, ice_ptype_to_htype(rx_ptype));
+-}
+-
+-/**
+- * ice_rx_csum - Indicate in skb if checksum is good
+- * @ring: the ring we care about
+- * @skb: skb currently being received and modified
+- * @rx_desc: the receive descriptor
+- * @ptype: the packet type decoded by hardware
+- *
+- * skb->protocol must be set before this function is called
+- */
+-static void
+-ice_rx_csum(struct ice_ring *ring, struct sk_buff *skb,
+-	    union ice_32b_rx_flex_desc *rx_desc, u8 ptype)
+-{
+-	struct ice_rx_ptype_decoded decoded;
+-	u32 rx_error, rx_status;
+-	bool ipv4, ipv6;
+-
+-	rx_status = le16_to_cpu(rx_desc->wb.status_error0);
+-	rx_error = rx_status;
+-
+-	decoded = ice_decode_rx_desc_ptype(ptype);
+-
+-	/* Start with CHECKSUM_NONE and by default csum_level = 0 */
+-	skb->ip_summed = CHECKSUM_NONE;
+-	skb_checksum_none_assert(skb);
+-
+-	/* check if Rx checksum is enabled */
+-	if (!(ring->netdev->features & NETIF_F_RXCSUM))
+-		return;
+-
+-	/* check if HW has decoded the packet and checksum */
+-	if (!(rx_status & BIT(ICE_RX_FLEX_DESC_STATUS0_L3L4P_S)))
+-		return;
+-
+-	if (!(decoded.known && decoded.outer_ip))
+-		return;
+-
+-	ipv4 = (decoded.outer_ip == ICE_RX_PTYPE_OUTER_IP) &&
+-	       (decoded.outer_ip_ver == ICE_RX_PTYPE_OUTER_IPV4);
+-	ipv6 = (decoded.outer_ip == ICE_RX_PTYPE_OUTER_IP) &&
+-	       (decoded.outer_ip_ver == ICE_RX_PTYPE_OUTER_IPV6);
+-
+-	if (ipv4 && (rx_error & (BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_IPE_S) |
+-				 BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_EIPE_S))))
+-		goto checksum_fail;
+-	else if (ipv6 && (rx_status &
+-		 (BIT(ICE_RX_FLEX_DESC_STATUS0_IPV6EXADD_S))))
+-		goto checksum_fail;
+-
+-	/* check for L4 errors and handle packets that were not able to be
+-	 * checksummed due to arrival speed
+-	 */
+-	if (rx_error & BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_L4E_S))
+-		goto checksum_fail;
+-
+-	/* Only report checksum unnecessary for TCP, UDP, or SCTP */
+-	switch (decoded.inner_prot) {
+-	case ICE_RX_PTYPE_INNER_PROT_TCP:
+-	case ICE_RX_PTYPE_INNER_PROT_UDP:
+-	case ICE_RX_PTYPE_INNER_PROT_SCTP:
+-		skb->ip_summed = CHECKSUM_UNNECESSARY;
+-	default:
+-		break;
+-	}
+-	return;
+-
+-checksum_fail:
+-	ring->vsi->back->hw_csum_rx_error++;
+-}
+-
+-/**
+- * ice_process_skb_fields - Populate skb header fields from Rx descriptor
+- * @rx_ring: Rx descriptor ring packet is being transacted on
+- * @rx_desc: pointer to the EOP Rx descriptor
+- * @skb: pointer to current skb being populated
+- * @ptype: the packet type decoded by hardware
+- *
+- * This function checks the ring, descriptor, and packet information in
+- * order to populate the hash, checksum, VLAN, protocol, and
+- * other fields within the skb.
+- */
+-static void
+-ice_process_skb_fields(struct ice_ring *rx_ring,
+-		       union ice_32b_rx_flex_desc *rx_desc,
+-		       struct sk_buff *skb, u8 ptype)
+-{
+-	ice_rx_hash(rx_ring, rx_desc, skb, ptype);
+-
+-	/* modifies the skb - consumes the enet header */
+-	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
+-
+-	ice_rx_csum(rx_ring, skb, rx_desc, ptype);
+-}
+-
+-/**
+- * ice_receive_skb - Send a completed packet up the stack
+- * @rx_ring: Rx ring in play
+- * @skb: packet to send up
+- * @vlan_tag: VLAN tag for packet
+- *
+- * This function sends the completed packet (via. skb) up the stack using
+- * gro receive functions (with/without VLAN tag)
+- */
+-static void
+-ice_receive_skb(struct ice_ring *rx_ring, struct sk_buff *skb, u16 vlan_tag)
+-{
+-	if ((rx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_RX) &&
+-	    (vlan_tag & VLAN_VID_MASK))
+-		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan_tag);
+-	napi_gro_receive(&rx_ring->q_vector->napi, skb);
+-}
+-
+ /**
+  * ice_clean_rx_irq - Clean completed descriptors from Rx ring - bounce buf
+  * @rx_ring: Rx descriptor ring to transact packets on
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index f74ec83faa55..a07101b13226 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -22,16 +22,6 @@
+ #define ICE_RX_BUF_WRITE	16	/* Must be power of 2 */
+ #define ICE_MAX_TXQ_PER_TXQG	128
+ 
+-static inline __le64
+-ice_build_ctob(u64 td_cmd, u64 td_offset, unsigned int size, u64 td_tag)
+-{
+-	return cpu_to_le64(ICE_TX_DESC_DTYPE_DATA |
+-			   (td_cmd    << ICE_TXD_QW1_CMD_S) |
+-			   (td_offset << ICE_TXD_QW1_OFFSET_S) |
+-			   ((u64)size << ICE_TXD_QW1_TX_BUF_SZ_S) |
+-			   (td_tag    << ICE_TXD_QW1_L2TAG1_S));
+-}
+-
+ /* We are assuming that the cache line is always 64 Bytes here for ice.
+  * In order to make sure that is a correct assumption there is a check in probe
+  * to print a warning if the read from GLPCI_CNF2 tells us that the cache line
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+new file mode 100644
+index 000000000000..cff02fa76c02
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+@@ -0,0 +1,273 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (c) 2019, Intel Corporation. */
++
++#include "ice_txrx_lib.h"
++
 +/**
-+ * ice_calc_q_handle - calculate the queue handle
-+ * @vsi: VSI that ring belongs to
-+ * @ring: ring to get the absolute queue index
-+ * @tc: traffic class number
++ * ice_release_rx_desc - Store the new tail and head values
++ * @rx_ring: ring to bump
++ * @val: new head index
 + */
-+static u16 ice_calc_q_handle(struct ice_vsi *vsi, struct ice_ring *ring, u8 tc)
++void ice_release_rx_desc(struct ice_ring *rx_ring, u32 val)
 +{
-+	/* idea here for calculation is that we subtract the number of queue
-+	 * count from TC that ring belongs to from it's absolute queue index
-+	 * and as a result we get the queue's index within TC.
++	u16 prev_ntu = rx_ring->next_to_use;
++
++	rx_ring->next_to_use = val;
++
++	/* update next to alloc since we have filled the ring */
++	rx_ring->next_to_alloc = val;
++
++	/* QRX_TAIL will be updated with any tail value, but hardware ignores
++	 * the lower 3 bits. This makes it so we only bump tail on meaningful
++	 * boundaries. Also, this allows us to bump tail on intervals of 8 up to
++	 * the budget depending on the current traffic load.
 +	 */
-+	return ring->q_index - vsi->tc_cfg.tc_info[tc].qoffset;
++	val &= ~0x7;
++	if (prev_ntu != val) {
++		/* Force memory writes to complete before letting h/w
++		 * know there are new descriptors to fetch. (Only
++		 * applicable for weak-ordered memory model archs,
++		 * such as IA-64).
++		 */
++		wmb();
++		writel(val, rx_ring->tail);
++	}
 +}
 +
- /**
-  * ice_setup_tx_ctx - setup a struct ice_tlan_ctx instance
-  * @ring: The Tx ring to configure
-@@ -522,13 +537,11 @@ void ice_vsi_free_q_vectors(struct ice_vsi *vsi)
-  * ice_vsi_cfg_txq - Configure single Tx queue
-  * @vsi: the VSI that queue belongs to
-  * @ring: Tx ring to be configured
-- * @tc_q_idx: queue index within given TC
-  * @qg_buf: queue group buffer
-- * @tc: TC that Tx ring belongs to
-  */
- int
--ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring, u16 tc_q_idx,
--		struct ice_aqc_add_tx_qgrp *qg_buf, u8 tc)
-+ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring,
-+		struct ice_aqc_add_tx_qgrp *qg_buf)
- {
- 	struct ice_tlan_ctx tlan_ctx = { 0 };
- 	struct ice_aqc_add_txqs_perq *txq;
-@@ -536,6 +549,7 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring, u16 tc_q_idx,
- 	u8 buf_len = sizeof(*qg_buf);
- 	enum ice_status status;
- 	u16 pf_q;
-+	u8 tc;
- 
- 	pf_q = ring->reg_idx;
- 	ice_setup_tx_ctx(ring, &tlan_ctx, pf_q);
-@@ -549,10 +563,15 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring, u16 tc_q_idx,
- 	 */
- 	ring->tail = pf->hw.hw_addr + QTX_COMM_DBELL(pf_q);
- 
-+	if (IS_ENABLED(CONFIG_DCB))
-+		tc = ring->dcb_tc;
-+	else
-+		tc = 0;
++/**
++ * ice_ptype_to_htype - get a hash type
++ * @ptype: the ptype value from the descriptor
++ *
++ * Returns a hash type to be used by skb_set_hash
++ */
++static enum pkt_hash_types ice_ptype_to_htype(u8 __always_unused ptype)
++{
++	return PKT_HASH_TYPE_NONE;
++}
 +
- 	/* Add unique software queue handle of the Tx queue per
- 	 * TC into the VSI Tx ring
- 	 */
--	ring->q_handle = tc_q_idx;
-+	ring->q_handle = ice_calc_q_handle(vsi, ring, tc);
- 
- 	status = ice_ena_vsi_txq(vsi->port_info, vsi->idx, tc, ring->q_handle,
- 				 1, qg_buf, buf_len, NULL);
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.h b/drivers/net/ethernet/intel/ice/ice_base.h
-index db456862b35b..407995e8e944 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.h
-+++ b/drivers/net/ethernet/intel/ice/ice_base.h
-@@ -13,8 +13,8 @@ int ice_vsi_alloc_q_vectors(struct ice_vsi *vsi);
- void ice_vsi_map_rings_to_vectors(struct ice_vsi *vsi);
- void ice_vsi_free_q_vectors(struct ice_vsi *vsi);
- int
--ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring, u16 tc_q_idx,
--		struct ice_aqc_add_tx_qgrp *qg_buf, u8 tc);
-+ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring,
-+		struct ice_aqc_add_tx_qgrp *qg_buf);
- void ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector);
- void
- ice_cfg_txq_interrupt(struct ice_vsi *vsi, u16 txq, u16 msix_idx, u16 itr_idx);
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index fe7f43d2e734..74c3bd191671 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1260,42 +1260,31 @@ int ice_vsi_cfg_rxqs(struct ice_vsi *vsi)
-  * ice_vsi_cfg_txqs - Configure the VSI for Tx
-  * @vsi: the VSI being configured
-  * @rings: Tx ring array to be configured
-- * @offset: offset within vsi->txq_map
-  *
-  * Return 0 on success and a negative value on error
-  * Configure the Tx VSI for operation.
-  */
- static int
--ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_ring **rings, int offset)
-+ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_ring **rings)
- {
- 	struct ice_aqc_add_tx_qgrp *qg_buf;
--	struct ice_pf *pf = vsi->back;
--	u16 q_idx = 0, i;
-+	u16 q_idx = 0;
- 	int err = 0;
--	u8 tc;
- 
--	qg_buf = devm_kzalloc(&pf->pdev->dev, sizeof(*qg_buf), GFP_KERNEL);
-+	qg_buf = kzalloc(sizeof(*qg_buf), GFP_KERNEL);
- 	if (!qg_buf)
- 		return -ENOMEM;
- 
- 	qg_buf->num_txqs = 1;
- 
--	/* set up and configure the Tx queues for each enabled TC */
--	ice_for_each_traffic_class(tc) {
--		if (!(vsi->tc_cfg.ena_tc & BIT(tc)))
--			break;
--
--		for (i = 0; i < vsi->tc_cfg.tc_info[tc].qcount_tx; i++) {
--			err = ice_vsi_cfg_txq(vsi, rings[q_idx], i + offset,
--					      qg_buf, tc);
--			if (err)
--				goto err_cfg_txqs;
--
--			q_idx++;
--		}
-+	for (q_idx = 0; q_idx < vsi->num_txq; q_idx++) {
-+		err = ice_vsi_cfg_txq(vsi, rings[q_idx], qg_buf);
-+		if (err)
-+			goto err_cfg_txqs;
- 	}
++/**
++ * ice_rx_hash - set the hash value in the skb
++ * @rx_ring: descriptor ring
++ * @rx_desc: specific descriptor
++ * @skb: pointer to current skb
++ * @rx_ptype: the ptype value from the descriptor
++ */
++static void
++ice_rx_hash(struct ice_ring *rx_ring, union ice_32b_rx_flex_desc *rx_desc,
++	    struct sk_buff *skb, u8 rx_ptype)
++{
++	struct ice_32b_rx_flex_desc_nic *nic_mdid;
++	u32 hash;
 +
- err_cfg_txqs:
--	devm_kfree(&pf->pdev->dev, qg_buf);
-+	kfree(qg_buf);
- 	return err;
- }
- 
-@@ -1308,7 +1297,7 @@ ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_ring **rings, int offset)
-  */
- int ice_vsi_cfg_lan_txqs(struct ice_vsi *vsi)
- {
--	return ice_vsi_cfg_txqs(vsi, vsi->tx_rings, 0);
-+	return ice_vsi_cfg_txqs(vsi, vsi->tx_rings);
- }
- 
- /**
-@@ -1498,34 +1487,24 @@ static int
- ice_vsi_stop_tx_rings(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
- 		      u16 rel_vmvf_num, struct ice_ring **rings)
- {
--	u16 i, q_idx = 0;
--	int status;
--	u8 tc;
-+	u16 q_idx;
- 
- 	if (vsi->num_txq > ICE_LAN_TXQ_MAX_QDIS)
- 		return -EINVAL;
- 
--	/* set up the Tx queue list to be disabled for each enabled TC */
--	ice_for_each_traffic_class(tc) {
--		if (!(vsi->tc_cfg.ena_tc & BIT(tc)))
--			break;
--
--		for (i = 0; i < vsi->tc_cfg.tc_info[tc].qcount_tx; i++) {
--			struct ice_txq_meta txq_meta = { };
-+	for (q_idx = 0; q_idx < vsi->num_txq; q_idx++) {
-+		struct ice_txq_meta txq_meta = { };
-+		int status;
- 
--			if (!rings || !rings[q_idx])
--				return -EINVAL;
-+		if (!rings || !rings[q_idx])
-+			return -EINVAL;
- 
--			ice_fill_txq_meta(vsi, rings[q_idx], &txq_meta);
--			status = ice_vsi_stop_tx_ring(vsi, rst_src,
--						      rel_vmvf_num,
--						      rings[q_idx], &txq_meta);
-+		ice_fill_txq_meta(vsi, rings[q_idx], &txq_meta);
-+		status = ice_vsi_stop_tx_ring(vsi, rst_src, rel_vmvf_num,
-+					      rings[q_idx], &txq_meta);
- 
--			if (status)
--				return status;
--
--			q_idx++;
--		}
-+		if (status)
-+			return status;
- 	}
- 
- 	return 0;
++	if (!(rx_ring->netdev->features & NETIF_F_RXHASH))
++		return;
++
++	if (rx_desc->wb.rxdid != ICE_RXDID_FLEX_NIC)
++		return;
++
++	nic_mdid = (struct ice_32b_rx_flex_desc_nic *)rx_desc;
++	hash = le32_to_cpu(nic_mdid->rss_hash);
++	skb_set_hash(skb, hash, ice_ptype_to_htype(rx_ptype));
++}
++
++/**
++ * ice_rx_csum - Indicate in skb if checksum is good
++ * @ring: the ring we care about
++ * @skb: skb currently being received and modified
++ * @rx_desc: the receive descriptor
++ * @ptype: the packet type decoded by hardware
++ *
++ * skb->protocol must be set before this function is called
++ */
++static void
++ice_rx_csum(struct ice_ring *ring, struct sk_buff *skb,
++	    union ice_32b_rx_flex_desc *rx_desc, u8 ptype)
++{
++	struct ice_rx_ptype_decoded decoded;
++	u32 rx_error, rx_status;
++	bool ipv4, ipv6;
++
++	rx_status = le16_to_cpu(rx_desc->wb.status_error0);
++	rx_error = rx_status;
++
++	decoded = ice_decode_rx_desc_ptype(ptype);
++
++	/* Start with CHECKSUM_NONE and by default csum_level = 0 */
++	skb->ip_summed = CHECKSUM_NONE;
++	skb_checksum_none_assert(skb);
++
++	/* check if Rx checksum is enabled */
++	if (!(ring->netdev->features & NETIF_F_RXCSUM))
++		return;
++
++	/* check if HW has decoded the packet and checksum */
++	if (!(rx_status & BIT(ICE_RX_FLEX_DESC_STATUS0_L3L4P_S)))
++		return;
++
++	if (!(decoded.known && decoded.outer_ip))
++		return;
++
++	ipv4 = (decoded.outer_ip == ICE_RX_PTYPE_OUTER_IP) &&
++	       (decoded.outer_ip_ver == ICE_RX_PTYPE_OUTER_IPV4);
++	ipv6 = (decoded.outer_ip == ICE_RX_PTYPE_OUTER_IP) &&
++	       (decoded.outer_ip_ver == ICE_RX_PTYPE_OUTER_IPV6);
++
++	if (ipv4 && (rx_error & (BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_IPE_S) |
++				 BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_EIPE_S))))
++		goto checksum_fail;
++	else if (ipv6 && (rx_status &
++		 (BIT(ICE_RX_FLEX_DESC_STATUS0_IPV6EXADD_S))))
++		goto checksum_fail;
++
++	/* check for L4 errors and handle packets that were not able to be
++	 * checksummed due to arrival speed
++	 */
++	if (rx_error & BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_L4E_S))
++		goto checksum_fail;
++
++	/* Only report checksum unnecessary for TCP, UDP, or SCTP */
++	switch (decoded.inner_prot) {
++	case ICE_RX_PTYPE_INNER_PROT_TCP:
++	case ICE_RX_PTYPE_INNER_PROT_UDP:
++	case ICE_RX_PTYPE_INNER_PROT_SCTP:
++		skb->ip_summed = CHECKSUM_UNNECESSARY;
++	default:
++		break;
++	}
++	return;
++
++checksum_fail:
++	ring->vsi->back->hw_csum_rx_error++;
++}
++
++/**
++ * ice_process_skb_fields - Populate skb header fields from Rx descriptor
++ * @rx_ring: Rx descriptor ring packet is being transacted on
++ * @rx_desc: pointer to the EOP Rx descriptor
++ * @skb: pointer to current skb being populated
++ * @ptype: the packet type decoded by hardware
++ *
++ * This function checks the ring, descriptor, and packet information in
++ * order to populate the hash, checksum, VLAN, protocol, and
++ * other fields within the skb.
++ */
++void
++ice_process_skb_fields(struct ice_ring *rx_ring,
++		       union ice_32b_rx_flex_desc *rx_desc,
++		       struct sk_buff *skb, u8 ptype)
++{
++	ice_rx_hash(rx_ring, rx_desc, skb, ptype);
++
++	/* modifies the skb - consumes the enet header */
++	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
++
++	ice_rx_csum(rx_ring, skb, rx_desc, ptype);
++}
++
++/**
++ * ice_receive_skb - Send a completed packet up the stack
++ * @rx_ring: Rx ring in play
++ * @skb: packet to send up
++ * @vlan_tag: VLAN tag for packet
++ *
++ * This function sends the completed packet (via. skb) up the stack using
++ * gro receive functions (with/without VLAN tag)
++ */
++void
++ice_receive_skb(struct ice_ring *rx_ring, struct sk_buff *skb, u16 vlan_tag)
++{
++	if ((rx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_RX) &&
++	    (vlan_tag & VLAN_VID_MASK))
++		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan_tag);
++	napi_gro_receive(&rx_ring->q_vector->napi, skb);
++}
++
++/**
++ * ice_xmit_xdp_ring - submit single packet to XDP ring for transmission
++ * @data: packet data pointer
++ * @size: packet data size
++ * @xdp_ring: XDP ring for transmission
++ */
++int ice_xmit_xdp_ring(void *data, u16 size, struct ice_ring *xdp_ring)
++{
++	u16 i = xdp_ring->next_to_use;
++	struct ice_tx_desc *tx_desc;
++	struct ice_tx_buf *tx_buf;
++	dma_addr_t dma;
++
++	if (!unlikely(ICE_DESC_UNUSED(xdp_ring))) {
++		xdp_ring->tx_stats.tx_busy++;
++		return ICE_XDP_CONSUMED;
++	}
++
++	dma = dma_map_single(xdp_ring->dev, data, size, DMA_TO_DEVICE);
++	if (dma_mapping_error(xdp_ring->dev, dma))
++		return ICE_XDP_CONSUMED;
++
++	tx_buf = &xdp_ring->tx_buf[i];
++	tx_buf->bytecount = size;
++	tx_buf->gso_segs = 1;
++	tx_buf->raw_buf = data;
++
++	/* record length, and DMA address */
++	dma_unmap_len_set(tx_buf, len, size);
++	dma_unmap_addr_set(tx_buf, dma, dma);
++
++	tx_desc = ICE_TX_DESC(xdp_ring, i);
++	tx_desc->buf_addr = cpu_to_le64(dma);
++	tx_desc->cmd_type_offset_bsz = ice_build_ctob(ICE_TXD_LAST_DESC_CMD, 0,
++						      size, 0);
++
++	/* Make certain all of the status bits have been updated
++	 * before next_to_watch is written.
++	 */
++	smp_wmb();
++
++	i++;
++	if (i == xdp_ring->count)
++		i = 0;
++
++	tx_buf->next_to_watch = tx_desc;
++	xdp_ring->next_to_use = i;
++
++	return ICE_XDP_TX;
++}
++
++/**
++ * ice_xmit_xdp_buff - convert an XDP buffer to an XDP frame and send it
++ * @xdp: XDP buffer
++ * @xdp_ring: XDP Tx ring
++ *
++ * Returns negative on failure, 0 on success.
++ */
++int ice_xmit_xdp_buff(struct xdp_buff *xdp, struct ice_ring *xdp_ring)
++{
++	struct xdp_frame *xdpf = convert_to_xdp_frame(xdp);
++
++	if (unlikely(!xdpf))
++		return ICE_XDP_CONSUMED;
++
++	return ice_xmit_xdp_ring(xdpf->data, xdpf->len, xdp_ring);
++}
++
++/**
++ * ice_finalize_xdp_rx - Bump XDP Tx tail and/or flush redirect map
++ * @rx_ring: Rx ring
++ * @xdp_res: Result of the receive batch
++ *
++ * This function bumps XDP Tx tail and/or flush redirect map, and
++ * should be called when a batch of packets has been processed in the
++ * napi loop.
++ */
++void ice_finalize_xdp_rx(struct ice_ring *rx_ring, unsigned int xdp_res)
++{
++	if (xdp_res & ICE_XDP_REDIR)
++		xdp_do_flush_map();
++
++	if (xdp_res & ICE_XDP_TX) {
++		struct ice_ring *xdp_ring =
++			rx_ring->vsi->xdp_rings[rx_ring->q_index];
++
++		ice_xdp_ring_update_tail(xdp_ring);
++	}
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.h b/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
+new file mode 100644
+index 000000000000..266619936ab5
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
+@@ -0,0 +1,59 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c) 2019, Intel Corporation. */
++
++#ifndef _ICE_TXRX_LIB_H_
++#define _ICE_TXRX_LIB_H_
++#include "ice.h"
++
++/**
++ * ice_test_staterr - tests bits in Rx descriptor status and error fields
++ * @rx_desc: pointer to receive descriptor (in le64 format)
++ * @stat_err_bits: value to mask
++ *
++ * This function does some fast chicanery in order to return the
++ * value of the mask which is really only used for boolean tests.
++ * The status_error_len doesn't need to be shifted because it begins
++ * at offset zero.
++ */
++static inline bool
++ice_test_staterr(union ice_32b_rx_flex_desc *rx_desc, const u16 stat_err_bits)
++{
++	return !!(rx_desc->wb.status_error0 & cpu_to_le16(stat_err_bits));
++}
++
++static inline __le64
++ice_build_ctob(u64 td_cmd, u64 td_offset, unsigned int size, u64 td_tag)
++{
++	return cpu_to_le64(ICE_TX_DESC_DTYPE_DATA |
++			   (td_cmd    << ICE_TXD_QW1_CMD_S) |
++			   (td_offset << ICE_TXD_QW1_OFFSET_S) |
++			   ((u64)size << ICE_TXD_QW1_TX_BUF_SZ_S) |
++			   (td_tag    << ICE_TXD_QW1_L2TAG1_S));
++}
++
++/**
++ * ice_xdp_ring_update_tail - Updates the XDP Tx ring tail register
++ * @xdp_ring: XDP Tx ring
++ *
++ * This function updates the XDP Tx ring tail register.
++ */
++static inline void ice_xdp_ring_update_tail(struct ice_ring *xdp_ring)
++{
++	/* Force memory writes to complete before letting h/w
++	 * know there are new descriptors to fetch.
++	 */
++	wmb();
++	writel_relaxed(xdp_ring->next_to_use, xdp_ring->tail);
++}
++
++void ice_finalize_xdp_rx(struct ice_ring *rx_ring, unsigned int xdp_res);
++int ice_xmit_xdp_buff(struct xdp_buff *xdp, struct ice_ring *xdp_ring);
++int ice_xmit_xdp_ring(void *data, u16 size, struct ice_ring *xdp_ring);
++void ice_release_rx_desc(struct ice_ring *rx_ring, u32 val);
++void
++ice_process_skb_fields(struct ice_ring *rx_ring,
++		       union ice_32b_rx_flex_desc *rx_desc,
++		       struct sk_buff *skb, u8 ptype);
++void
++ice_receive_skb(struct ice_ring *rx_ring, struct sk_buff *skb, u16 vlan_tag);
++#endif /* !_ICE_TXRX_LIB_H_ */
 -- 
 2.20.1
 
