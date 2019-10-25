@@ -1,42 +1,125 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 25 Oct 2019 07:34:35 -0700
-Subject: [Intel-wired-lan] [PATCH S32 09/15] ice: use pkg_dwnld_status
- instead of sq_last_status
+Date: Fri, 25 Oct 2019 07:34:39 -0700
+Subject: [Intel-wired-lan] [PATCH S32 13/15] ice: Introduce and use
+ ice_vsi_type_str
 In-Reply-To: <20191025143441.50151-1-anthony.l.nguyen@intel.com>
 References: <20191025143441.50151-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191025143441.50151-9-anthony.l.nguyen@intel.com>
+Message-ID: <20191025143441.50151-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-Since the return value from the Download Package AQ command is stored in
-hw->pkg_dwnld_status, use that instead of sq_last_status since that may
-have the return value from some other AQ command leading to unexpected
-results.
+ice_vsi_type_str converts an ice_vsi_type enum value to its string
+equivalent. This is expected to help easily identify VSI types from
+module print statements.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c  | 21 ++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_lib.h  |  2 ++
+ drivers/net/ethernet/intel/ice/ice_main.c | 16 ++++++++--------
+ 3 files changed, 30 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index c9e0b533da47..af7574b0624b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -6,6 +6,24 @@
+ #include "ice_lib.h"
+ #include "ice_dcb_lib.h"
+ 
++/**
++ * ice_vsi_type_str - maps VSI type enum to string equivalents
++ * @type: VSI type enum
++ */
++const char *ice_vsi_type_str(enum ice_vsi_type type)
++{
++	switch (type) {
++	case ICE_VSI_PF:
++		return "ICE_VSI_PF";
++	case ICE_VSI_VF:
++		return "ICE_VSI_VF";
++	case ICE_VSI_LB:
++		return "ICE_VSI_LB";
++	default:
++		return "unknown";
++	}
++}
++
+ /**
+  * ice_vsi_ctrl_rx_rings - Start or stop a VSI's Rx rings
+  * @vsi: the VSI being configured
+@@ -700,7 +718,8 @@ static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
+ 		hash_type = ICE_AQ_VSI_Q_OPT_RSS_TPLZ;
+ 		break;
+ 	case ICE_VSI_LB:
+-		dev_dbg(&pf->pdev->dev, "Unsupported VSI type %d\n", vsi->type);
++		dev_dbg(&pf->pdev->dev, "Unsupported VSI type %s\n",
++			ice_vsi_type_str(vsi->type));
+ 		return;
+ 	default:
+ 		dev_warn(&pf->pdev->dev, "Unknown VSI type %d\n", vsi->type);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 1ec2ad98ac46..364588dfc646 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -6,6 +6,8 @@
+ 
+ #include "ice.h"
+ 
++const char *ice_vsi_type_str(enum ice_vsi_type type);
++
+ int
+ ice_add_mac_to_list(struct ice_vsi *vsi, struct list_head *add_list,
+ 		    const u8 *macaddr);
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 94354b307a4e..aaa398759548 100644
+index aaa398759548..ba9a0b74ef0d 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3025,7 +3025,7 @@ ice_log_pkg_init(struct ice_hw *hw, enum ice_status *status)
- 				ICE_PKG_SUPP_VER_MAJ, ICE_PKG_SUPP_VER_MNR);
- 		break;
- 	case ICE_ERR_AQ_ERROR:
--		switch (hw->adminq.sq_last_status) {
-+		switch (hw->pkg_dwnld_status) {
- 		case ICE_AQ_RC_ENOSEC:
- 		case ICE_AQ_RC_EBADSIG:
- 			dev_err(dev,
+@@ -4635,8 +4635,8 @@ static int ice_vsi_rebuild_by_type(struct ice_pf *pf, enum ice_vsi_type type)
+ 		err = ice_vsi_rebuild(vsi);
+ 		if (err) {
+ 			dev_err(&pf->pdev->dev,
+-				"rebuild VSI failed, err %d, VSI index %d, type %d\n",
+-				err, vsi->idx, type);
++				"rebuild VSI failed, err %d, VSI index %d, type %s\n",
++				err, vsi->idx, ice_vsi_type_str(type));
+ 			return err;
+ 		}
+ 
+@@ -4644,8 +4644,8 @@ static int ice_vsi_rebuild_by_type(struct ice_pf *pf, enum ice_vsi_type type)
+ 		status = ice_replay_vsi(&pf->hw, vsi->idx);
+ 		if (status) {
+ 			dev_err(&pf->pdev->dev,
+-				"replay VSI failed, status %d, VSI index %d, type %d\n",
+-				status, vsi->idx, type);
++				"replay VSI failed, status %d, VSI index %d, type %s\n",
++				status, vsi->idx, ice_vsi_type_str(type));
+ 			return -EIO;
+ 		}
+ 
+@@ -4658,13 +4658,13 @@ static int ice_vsi_rebuild_by_type(struct ice_pf *pf, enum ice_vsi_type type)
+ 		err = ice_ena_vsi(vsi, false);
+ 		if (err) {
+ 			dev_err(&pf->pdev->dev,
+-				"enable VSI failed, err %d, VSI index %d, type %d\n",
+-				err, vsi->idx, type);
++				"enable VSI failed, err %d, VSI index %d, type %s\n",
++				err, vsi->idx, ice_vsi_type_str(type));
+ 			return err;
+ 		}
+ 
+-		dev_info(&pf->pdev->dev, "VSI rebuilt. VSI index %d, type %d\n",
+-			 vsi->idx, type);
++		dev_info(&pf->pdev->dev, "VSI rebuilt. VSI index %d, type %s\n",
++			 vsi->idx, ice_vsi_type_str(type));
+ 	}
+ 
+ 	return 0;
 -- 
 2.20.1
 
