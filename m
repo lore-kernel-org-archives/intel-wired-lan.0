@@ -1,99 +1,158 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 25 Oct 2019 07:34:31 -0700
-Subject: [Intel-wired-lan] [PATCH S32 05/15] ice: Fix to change Rx/Tx ring
- descriptor size via ethtool with DCBx
+Date: Fri, 25 Oct 2019 07:34:33 -0700
+Subject: [Intel-wired-lan] [PATCH S32 07/15] ice: Check if VF is disabled
+ for Opcode and other operations
 In-Reply-To: <20191025143441.50151-1-anthony.l.nguyen@intel.com>
 References: <20191025143441.50151-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191025143441.50151-5-anthony.l.nguyen@intel.com>
+Message-ID: <20191025143441.50151-7-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Usha Ketineni <usha.k.ketineni@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-This patch fixes the call trace caused by the kernel when the Rx/Tx
-descriptor size change request is initiated via ethtool when DCB is
-configured. ice_set_ringparam() should use vsi->num_txq instead of
-vsi->alloc_txq as it represents the queues that are enabled in the
-driver when DCB is enabled/disabled. Otherwise, queue index being
-used can go out of range.
+This patch adds code to check if PF or VF is disabled before honoring
+mailbox message to configure VF - If it is disabled, and opcode is for
+resetting VF, the PF driver simply tell VF that all is set. In addition,
+if reset is ongoing, and Admin intend to configure VF on the host, we can
+poll the VF enabling bit to make sure it is ready before continue - If
+after ~250 milliseconds, VF is not in active state, we can bail out with
+invalid error.
 
-For example, when vsi->alloc_txq has 104 queues and with 3 TCS enabled
-via DCB, each TC gets 34 queues, vsi->num_txq will be 102 and only 102
-queues will be enabled.
-
-Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 74 ++++++++++++++++---
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  1 +
+ 2 files changed, 63 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 67d884e27ea4..3b9d33ad23d8 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -2743,14 +2743,14 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 	netdev_info(netdev, "Changing Tx descriptor count from %d to %d\n",
- 		    vsi->tx_rings[0]->count, new_tx_cnt);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 4a1cb51b50c7..537377448bef 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1151,6 +1151,25 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	return true;
+ }
  
--	tx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_txq,
-+	tx_rings = devm_kcalloc(&pf->pdev->dev, vsi->num_txq,
- 				sizeof(*tx_rings), GFP_KERNEL);
- 	if (!tx_rings) {
- 		err = -ENOMEM;
- 		goto done;
++/**
++ * ice_is_vf_disabled
++ * @vf: pointer to the VF info
++ *
++ * Returns true if the PF or VF is disabled, false otherwise.
++ */
++static bool ice_is_vf_disabled(struct ice_vf *vf)
++{
++	struct ice_pf *pf = vf->pf;
++
++	/* If the PF has been disabled, there is no need resetting VF until
++	 * PF is active again. Similarly, if the VF has been disabled, this
++	 * means something else is resetting the VF, so we shouldn't continue.
++	 * Otherwise, set disable VF state bit for actual reset, and continue.
++	 */
++	return (test_bit(__ICE_VF_DIS, pf->state) ||
++		test_bit(ICE_VF_STATE_DIS, vf->vf_states));
++}
++
+ /**
+  * ice_reset_vf - Reset a particular VF
+  * @vf: pointer to the VF structure
+@@ -1168,19 +1187,15 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 	u32 reg;
+ 	int i;
+ 
+-	/* If the PF has been disabled, there is no need resetting VF until
+-	 * PF is active again.
+-	 */
+-	if (test_bit(__ICE_VF_DIS, pf->state))
+-		return false;
+-
+-	/* If the VF has been disabled, this means something else is
+-	 * resetting the VF, so we shouldn't continue. Otherwise, set
+-	 * disable VF state bit for actual reset, and continue.
+-	 */
+-	if (test_and_set_bit(ICE_VF_STATE_DIS, vf->vf_states))
+-		return false;
++	if (ice_is_vf_disabled(vf)) {
++		dev_dbg(&pf->pdev->dev,
++			"VF is already disabled, there is no need for resetting it, telling VM, all is fine %d\n",
++			 vf->vf_id);
++		return true;
++	}
+ 
++	/* Set VF disable bit state here, before triggering reset */
++	set_bit(ICE_VF_STATE_DIS, vf->vf_states);
+ 	ice_trigger_vf_reset(vf, is_vflr, false);
+ 
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+@@ -3128,6 +3143,23 @@ int ice_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool ena)
+ 	return ret;
+ }
+ 
++/**
++ * ice_wait_on_vf_reset
++ * @vf: The VF being resseting
++ *
++ * Poll to make sure a given VF is ready after reset
++ */
++static void ice_wait_on_vf_reset(struct ice_vf *vf)
++{
++	int i;
++
++	for (i = 0; i < ICE_MAX_VF_RESET_WAIT; i++) {
++		if (test_bit(ICE_VF_STATE_INIT, vf->vf_states))
++			break;
++		msleep(20);
++	}
++}
++
+ /**
+  * ice_set_vf_mac
+  * @netdev: network interface device structure
+@@ -3151,6 +3183,15 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
  	}
  
--	for (i = 0; i < vsi->alloc_txq; i++) {
-+	ice_for_each_txq(vsi, i) {
- 		/* clone ring and setup updated count */
- 		tx_rings[i] = *vsi->tx_rings[i];
- 		tx_rings[i].count = new_tx_cnt;
-@@ -2803,14 +2803,14 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 	netdev_info(netdev, "Changing Rx descriptor count from %d to %d\n",
- 		    vsi->rx_rings[0]->count, new_rx_cnt);
- 
--	rx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_rxq,
-+	rx_rings = devm_kcalloc(&pf->pdev->dev, vsi->num_rxq,
- 				sizeof(*rx_rings), GFP_KERNEL);
- 	if (!rx_rings) {
- 		err = -ENOMEM;
- 		goto done;
+ 	vf = &pf->vf[vf_id];
++	/* Don't set MAC on disabled VF */
++	if (ice_is_vf_disabled(vf))
++		return -EINVAL;
++
++	/* In case VF is in reset mode, wait until it is completed. Depending
++	 * on factors like queue disabling routine, this could take ~250ms
++	 */
++	ice_wait_on_vf_reset(vf);
++
+ 	if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states)) {
+ 		netdev_err(netdev, "VF %d in reset. Try again.\n", vf_id);
+ 		return -EBUSY;
+@@ -3198,6 +3239,15 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
  	}
  
--	for (i = 0; i < vsi->alloc_rxq; i++) {
-+	ice_for_each_rxq(vsi, i) {
- 		/* clone ring and setup updated count */
- 		rx_rings[i] = *vsi->rx_rings[i];
- 		rx_rings[i].count = new_rx_cnt;
-@@ -2848,7 +2848,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 		ice_down(vsi);
+ 	vf = &pf->vf[vf_id];
++	/* Don't set Trusted Mode on disabled VF */
++	if (ice_is_vf_disabled(vf))
++		return -EINVAL;
++
++	/* In case VF is in reset mode, wait until it is completed. Depending
++	 * on factors like queue disabling routine, this could take ~250ms
++	 */
++	ice_wait_on_vf_reset(vf);
++
+ 	if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states)) {
+ 		dev_err(&pf->pdev->dev, "VF %d in reset. Try again.\n", vf_id);
+ 		return -EBUSY;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 0d9880c8bba3..2e867ad2e81d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -38,6 +38,7 @@
+ #define ICE_MAX_POLICY_INTR_PER_VF	33
+ #define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
+ #define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
++#define ICE_MAX_VF_RESET_WAIT		15
  
- 		if (tx_rings) {
--			for (i = 0; i < vsi->alloc_txq; i++) {
-+			ice_for_each_txq(vsi, i) {
- 				ice_free_tx_ring(vsi->tx_rings[i]);
- 				*vsi->tx_rings[i] = tx_rings[i];
- 			}
-@@ -2856,7 +2856,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 		}
- 
- 		if (rx_rings) {
--			for (i = 0; i < vsi->alloc_rxq; i++) {
-+			ice_for_each_rxq(vsi, i) {
- 				ice_free_rx_ring(vsi->rx_rings[i]);
- 				/* copy the real tail offset */
- 				rx_rings[i].tail = vsi->rx_rings[i]->tail;
-@@ -2890,7 +2890,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- free_tx:
- 	/* error cleanup if the Rx allocations failed after getting Tx */
- 	if (tx_rings) {
--		for (i = 0; i < vsi->alloc_txq; i++)
-+		ice_for_each_txq(vsi, i)
- 			ice_free_tx_ring(&tx_rings[i]);
- 		devm_kfree(&pf->pdev->dev, tx_rings);
- 	}
+ /* Specific VF states */
+ enum ice_vf_states {
 -- 
 2.20.1
 
