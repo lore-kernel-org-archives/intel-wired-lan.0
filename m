@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 25 Oct 2019 23:36:15 +0000
-Subject: [Intel-wired-lan] [PATCH S30 v3 2/9] ice: get rid of per-tc
- flow in Tx queue configuration routines
-In-Reply-To: <20191024081125.6711-2-anthony.l.nguyen@intel.com>
+Date: Fri, 25 Oct 2019 23:36:33 +0000
+Subject: [Intel-wired-lan] [PATCH S30 v3 3/9] ice: Add support for XDP
+In-Reply-To: <20191024081125.6711-3-anthony.l.nguyen@intel.com>
 References: <20191024081125.6711-1-anthony.l.nguyen@intel.com>
- <20191024081125.6711-2-anthony.l.nguyen@intel.com>
-Message-ID: <a73f4baad81349b881b7525d60c73f27@intel.com>
+ <20191024081125.6711-3-anthony.l.nguyen@intel.com>
+Message-ID: <074fae0773ed4e0eacbe927bb5e4530c@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +16,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, October 24, 2019 1:11 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S30 v3 2/9] ice: get rid of per-tc flow in Tx
-> queue configuration routines
+> Subject: [Intel-wired-lan] [PATCH S30 v3 3/9] ice: Add support for XDP
 > 
 > From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > 
-> There's no reason for treating DCB as first class citizen when configuring the
-> Tx queues and going through TCs. Reverse the logic and base the
-> configuration logic on rings, which is the object of interest anyway.
+> Add support for XDP. Implement ndo_bpf and ndo_xdp_xmit.  Upon load of
+> an XDP program, allocate additional Tx rings for dedicated XDP use.
+> The following actions are supported: XDP_TX, XDP_DROP, XDP_REDIRECT,
+> XDP_PASS, and XDP_ABORTED.
 > 
 > Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_base.c | 29 +++++++++--
-> drivers/net/ethernet/intel/ice/ice_base.h |  4 +-
-> drivers/net/ethernet/intel/ice/ice_lib.c  | 63 ++++++++---------------
->  3 files changed, 47 insertions(+), 49 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h         |  24 +-
+>  drivers/net/ethernet/intel/ice/ice_base.c    |  28 +-
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c |  50 ++-
+>  drivers/net/ethernet/intel/ice/ice_lib.c     |  69 +++-
+>  drivers/net/ethernet/intel/ice/ice_lib.h     |   6 +
+>  drivers/net/ethernet/intel/ice/ice_main.c    | 319 +++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_txrx.c    | 351 ++++++++++++++++---
+>  drivers/net/ethernet/intel/ice/ice_txrx.h    |  34 +-
+>  8 files changed, 822 insertions(+), 59 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
