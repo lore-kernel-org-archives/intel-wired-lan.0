@@ -1,69 +1,112 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 25 Oct 2019 20:20:51 +0000
-Subject: [Intel-wired-lan] [PATCH] namespace: fix namespace.pl script to
- support relative paths
-In-Reply-To: <6127ec91-ad81-f0d7-576e-22e06e677442@infradead.org>
-References: <20190129204319.15238-1-jacob.e.keller@intel.com>
- <7b26e6cc-10ce-5df2-6375-1f95bc4da04e@infradead.org>
- <02874ECE860811409154E81DA85FBB58968DBE54@ORSMSX121.amr.corp.intel.com>
- <CAK7LNARyUEakeG_N9TWcO2cjFSzbgY__k_QJm6C+oOz+fW0aeg@mail.gmail.com>
- <02874ECE860811409154E81DA85FBB58968E1402@ORSMSX121.amr.corp.intel.com>
- <CAK7LNARAhZtzdnS9+mgtamj=pLdV81dudnYVDa8NRxcQPpF0bw@mail.gmail.com>
- <02874ECE860811409154E81DA85FBB589693A38A@ORSMSX121.amr.corp.intel.com>
- <CAK7LNAQow8N9a5e_=pu7qDiuvETy1x1P5fxp20zYOZgQhXPJhg@mail.gmail.com>
- <02874ECE860811409154E81DA85FBB589693D053@ORSMSX121.amr.corp.intel.com>
- <6127ec91-ad81-f0d7-576e-22e06e677442@infradead.org>
-Message-ID: <02874ECE860811409154E81DA85FBB589693DABC@ORSMSX121.amr.corp.intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Fri, 25 Oct 2019 07:34:32 -0700
+Subject: [Intel-wired-lan] [PATCH S32 06/15] ice: configure software LLDP in
+ ice_init_pf_dcb
+In-Reply-To: <20191025143441.50151-1-anthony.l.nguyen@intel.com>
+References: <20191025143441.50151-1-anthony.l.nguyen@intel.com>
+Message-ID: <20191025143441.50151-6-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Randy Dunlap <rdunlap@infradead.org>
-> Sent: Friday, October 25, 2019 12:30 PM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>; Masahiro Yamada
-> <yamada.masahiro@socionext.com>
-> Cc: intel-wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org; linux-kbuild
-> <linux-kbuild@vger.kernel.org>
-> Subject: Re: [PATCH] namespace: fix namespace.pl script to support relative
-> paths
-> 
-> On 10/25/19 10:45 AM, Keller, Jacob E wrote:
-> >
-> >> -----Original Message-----
-> >> From: Masahiro Yamada <yamada.masahiro@socionext.com>
-> >> Sent: Wednesday, October 23, 2019 6:22 PM
-> >> To: Keller, Jacob E <jacob.e.keller@intel.com>
-> >> Cc: Randy Dunlap <rdunlap@infradead.org>; intel-wired-lan at lists.osuosl.org;
-> >> linux-kernel at vger.kernel.org; linux-kbuild <linux-kbuild@vger.kernel.org>
-> >> Subject: Re: [PATCH] namespace: fix namespace.pl script to support relative
-> >> paths
-> >>
-> >> If you want to detect missing 'static',
-> >> have you tried 'sparse'?
-> >>
-> >
-> > We've used that as well.
-> >
-> > To be fair, I agree that it covers similar functionality as other tools. I haven't
-> looked directly at namespace.pl output in a while, and the fix here is multiple
-> years old that took a long time to get picked up.
-> >
-> > If it's agreed that the tool has no value, and especially if it results in false
-> indications of a problem, then maybe removing it to prevent someone from mis-
-> reading its output makes sense?
-> 
-> If there is a satisfactory alternative, I expect that namespace.pl is old,
-> unmaintained, and unneeded, and should go away.
-> 
-> --
-> ~Randy
+From: Paul Greenwalt <paul.greenwalt@intel.com>
 
-Given Yamada's comments and my experience, modpost and sparse are both good at detecting the issues that namespace.pl handles.
+Move software LLDP configuration when FW DCBX is disabled to
+ice_init_pf_dcb, since that is where the FW DCBX state is determined.
+Remove this software LLDP configuration from ice_vsi_setup and
+ice_set_priv_flags. Software configuration includes redirecting Rx LLDP
+packets up the stack, when FW DCBX is not running.
 
-I am not sure if there's any other output that would be valuable from namespace.pl, but if not.. I don't see a reason to keep it compared to the other tools.
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 15 +++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_ethtool.c |  5 -----
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 14 ++++----------
+ 3 files changed, 19 insertions(+), 15 deletions(-)
 
-Thanks,
-Jake
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 737c85349503..70640874701f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -593,6 +593,8 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 		 "DCB is enabled in the hardware, max number of TCs supported on this port are %d\n",
+ 		 pf->hw.func_caps.common_cap.maxtc);
+ 	if (err) {
++		struct ice_vsi *pf_vsi;
++
+ 		/* FW LLDP is disabled, activate SW DCBX/LLDP mode */
+ 		dev_info(&pf->pdev->dev,
+ 			 "FW LLDP is disabled, DCBx/LLDP in SW mode.\n");
+@@ -605,6 +607,19 @@ int ice_init_pf_dcb(struct ice_pf *pf, bool locked)
+ 			goto dcb_init_err;
+ 		}
+ 
++		/* If the FW DCBX engine is not running then Rx LLDP packets
++		 * need to be redirected up the stack.
++		 */
++		pf_vsi = ice_get_main_vsi(pf);
++		if (!pf_vsi) {
++			dev_err(&pf->pdev->dev,
++				"Failed to set local DCB config\n");
++			err = -EIO;
++			goto dcb_init_err;
++		}
++
++		ice_cfg_sw_lldp(pf_vsi, false, true);
++
+ 		pf->dcbx_cap = DCB_CAP_DCBX_HOST | DCB_CAP_DCBX_VER_IEEE;
+ 		return 0;
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 3b9d33ad23d8..9c2045056d59 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -1295,11 +1295,6 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
+ 			status = ice_init_pf_dcb(pf, true);
+ 			if (status)
+ 				dev_warn(&pf->pdev->dev, "Fail to init DCB\n");
+-
+-			/* Forward LLDP packets to default VSI so that they
+-			 * are passed up the stack
+-			 */
+-			ice_cfg_sw_lldp(vsi, false, true);
+ 		} else {
+ 			enum ice_status status;
+ 			bool dcbx_agent_status;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index d4e3df6544f5..c9e0b533da47 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1881,23 +1881,17 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 	 * out PAUSE or PFC frames. If enabled, FW can still send FC frames.
+ 	 * The rule is added once for PF VSI in order to create appropriate
+ 	 * recipe, since VSI/VSI list is ignored with drop action...
+-	 * Also add rules to handle LLDP Tx and Rx packets.  Tx LLDP packets
+-	 * need to be dropped so that VFs cannot send LLDP packets to reconfig
+-	 * DCB settings in the HW.  Also, if the FW DCBX engine is not running
+-	 * then Rx LLDP packets need to be redirected up the stack.
++	 * Also add rules to handle LLDP Tx packets.  Tx LLDP packets need to
++	 * be dropped so that VFs cannot send LLDP packets to reconfig DCB
++	 * settings in the HW.
+ 	 */
+-	if (!ice_is_safe_mode(pf)) {
++	if (!ice_is_safe_mode(pf))
+ 		if (vsi->type == ICE_VSI_PF) {
+ 			ice_vsi_add_rem_eth_mac(vsi, true);
+ 
+ 			/* Tx LLDP packets */
+ 			ice_cfg_sw_lldp(vsi, true, true);
+-
+-			/* Rx LLDP packets */
+-			if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
+-				ice_cfg_sw_lldp(vsi, false, true);
+ 		}
+-	}
+ 
+ 	return vsi;
+ 
+-- 
+2.20.1
+
