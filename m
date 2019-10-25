@@ -1,114 +1,170 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 25 Oct 2019 11:07:29 +0200
-Subject: [Intel-wired-lan] FW: [PATCH bpf-next 2/4] xsk: allow AF_XDP
- sockets to receive packets directly from a queue
-In-Reply-To: <CAADnVQKwnMChzeGaC66A99cHn5szB4hPZaGXq8JAhd8sjrdGeA@mail.gmail.com>
-References: <1570515415-45593-3-git-send-email-sridhar.samudrala@intel.com>
- <CAADnVQ+XxmvY0cs8MYriMMd7=2TSEm4zCtB+fs2vkwdUY6UgAQ@mail.gmail.com>
- <3ED8E928C4210A4289A677D2FEB48235140134CE@fmsmsx111.amr.corp.intel.com>
- <2bc26acd-170d-634e-c066-71557b2b3e4f@intel.com>
- <CAADnVQ+qq6RLMjh5bB1ugXP5p7vYM2F1fLGFQ2pL=2vhCLiBdA@mail.gmail.com>
- <2032d58c-916f-d26a-db14-bd5ba6ad92b9@intel.com>
- <CAADnVQ+CH1YM52+LfybLS+NK16414Exrvk1QpYOF=HaT4KRaxg@mail.gmail.com>
- <acf69635-5868-f876-f7da-08954d1f690e@intel.com>
- <20191019001449.fk3gnhih4nx724pm@ast-mbp>
- <6f281517-3785-ce46-65de-e2f78576783b@intel.com>
- <20191019022525.w5xbwkav2cpqkfwi@ast-mbp> <877e4zd8py.fsf@toke.dk>
- <CAJ+HfNj07FwmU2GGpUYw56PRwu4pHyHNSkbCOogbMB5zB2QqWA@mail.gmail.com>
- <7642a460-9ba3-d9f7-6cf8-aac45c7eef0d@intel.com>
- <CAADnVQ+jiEO+jnFR-G=xG=zz7UOSBieZbc1NN=sSnAwvPaJjUQ@mail.gmail.com>
- <8956a643-0163-5345-34fa-3566762a2b7d@intel.com>
- <CAADnVQKwnMChzeGaC66A99cHn5szB4hPZaGXq8JAhd8sjrdGeA@mail.gmail.com>
-Message-ID: <CAJ+HfNg8NMS7k+f4K3PH-cjA9XFbBbEetfZT55J0ntZejxV-PQ@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 25 Oct 2019 21:38:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ e7d25497f176aa3e963f7e03456ced929700aeef
+Message-ID: <5db2fad8.33xmrcITrN0KE/R/%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 23 Oct 2019 at 19:42, Alexei Starovoitov
-<alexei.starovoitov@gmail.com> wrote:
->
-> On Tue, Oct 22, 2019 at 12:06 PM Samudrala, Sridhar
-> <sridhar.samudrala@intel.com> wrote:
-> >
-> > OK. Here is another data point that shows the perf report with the same test but CPU mitigations
-> > turned OFF. Here bpf_prog overhead goes down from almost (10.18 + 4.51)% to (3.23 + 1.44%).
-> >
-> >    21.40%  ksoftirqd/28     [i40e]                     [k] i40e_clean_rx_irq_zc
-> >    14.13%  xdpsock          [i40e]                     [k] i40e_clean_rx_irq_zc
-> >     8.33%  ksoftirqd/28     [kernel.vmlinux]           [k] xsk_rcv
-> >     6.09%  ksoftirqd/28     [kernel.vmlinux]           [k] xdp_do_redirect
-> >     5.19%  xdpsock          xdpsock                    [.] main
-> >     3.48%  ksoftirqd/28     [kernel.vmlinux]           [k] bpf_xdp_redirect_map
-> >     3.23%  ksoftirqd/28     bpf_prog_3c8251c7e0fef8db  [k] bpf_prog_3c8251c7e0fef8db
-> >
-> > So a major component of the bpf_prog overhead seems to be due to the CPU vulnerability mitigations.
->
-> I feel that it's an incorrect conclusion because JIT is not doing
-> any retpolines (because there are no indirect calls in bpf).
-> There should be no difference in bpf_prog runtime with or without mitigations.
-> Also you're running root, so no spectre mitigations either.
->
-> This 3% seems like a lot for a function that does few loads that should
-> hit d-cache and one direct call.
-> Please investigate why you're seeing this 10% cpu cost when mitigations are on.
-> perf report/annotate is the best.
-> Also please double check that you're using the latest perf.
-> Since bpf performance analysis was greatly improved several versions ago.
-> I don't think old perf will be showing bogus numbers, but better to
-> run the latest.
->
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: e7d25497f176aa3e963f7e03456ced929700aeef  i40e: enable X710 support
 
-For comparison, on my Skylake 3GHz with mitigations off. (I have one
-internal patch that inlines xsk_rcv() into __xsk_map_redirect, so
-that's why it's not showing xsk_rcv(). I'll upstream that...)
+elapsed time: 888m
 
-  41.79%  [kernel]                   [k] i40e_clean_rx_irq_zc
-  15.55%  [kernel]                   [k] __xsk_map_redirect
-   9.87%  [kernel]                   [k] xdp_do_redirect
-   6.89%  [kernel]                   [k] xsk_umem_peek_addr
-   6.37%  [kernel]                   [k] bpf_xdp_redirect_map
-   5.02%  bpf_prog_992d9ddc835e5629  [k] bpf_prog_992d9ddc835e5629
+configs tested: 145
 
-Again, it might look weird that simple functions like
-bpf_xdp_redirect_map and the XDP program is 6% and 5%.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Let's dig into that. I let the xdpsock program (rxdrop) run on one
-core 22, and the ksoftirqd on core 20. Core 20 is only processing
-packets, plus the regular kernel householding. I did a processor trace
-for core 20 for 207 936 packets.
+i386                   randconfig-d002-201942
+x86_64                 randconfig-d002-201942
+i386                   randconfig-d004-201942
+x86_64                 randconfig-d004-201942
+x86_64                 randconfig-d003-201942
+i386                   randconfig-d003-201942
+x86_64                 randconfig-d001-201942
+i386                   randconfig-d001-201942
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-g002-201942
+i386                   randconfig-g004-201942
+x86_64                 randconfig-g001-201942
+i386                   randconfig-g002-201942
+x86_64                 randconfig-g004-201942
+x86_64                 randconfig-g003-201942
+i386                   randconfig-g003-201942
+i386                   randconfig-g001-201942
+x86_64                           allyesconfig
+i386                             allmodconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                 randconfig-h002-201942
+x86_64                 randconfig-h001-201942
+i386                   randconfig-h004-201942
+i386                   randconfig-h003-201942
+x86_64                 randconfig-h003-201942
+i386                   randconfig-h002-201942
+i386                   randconfig-h001-201942
+x86_64                 randconfig-h004-201942
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                 randconfig-c001-201942
+i386                   randconfig-c001-201942
+x86_64                 randconfig-c002-201942
+i386                   randconfig-c004-201942
+i386                   randconfig-c003-201942
+x86_64                 randconfig-c004-201942
+i386                   randconfig-c002-201942
+x86_64                 randconfig-c003-201942
+i386                   randconfig-f002-201942
+i386                   randconfig-f001-201942
+x86_64                 randconfig-f003-201942
+x86_64                 randconfig-f004-201942
+x86_64                 randconfig-f002-201942
+i386                   randconfig-f003-201942
+x86_64                 randconfig-f001-201942
+i386                   randconfig-f004-201942
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-b001-201942
+x86_64                 randconfig-b002-201942
+x86_64                 randconfig-b003-201942
+i386                   randconfig-b003-201942
+i386                   randconfig-b004-201942
+x86_64                 randconfig-b004-201942
+x86_64                 randconfig-b001-201942
+i386                   randconfig-b002-201942
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-a004-201942
+x86_64                 randconfig-a001-201942
+i386                   randconfig-a002-201942
+x86_64                 randconfig-a002-201942
+i386                   randconfig-a001-201942
+i386                   randconfig-a003-201942
+i386                   randconfig-a004-201942
+x86_64                 randconfig-a003-201942
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+x86_64                 randconfig-e004-201942
+x86_64                 randconfig-e001-201942
+x86_64                 randconfig-e003-201942
+x86_64                 randconfig-e002-201942
+i386                   randconfig-e003-201942
+i386                   randconfig-e004-201942
+i386                   randconfig-e001-201942
+i386                   randconfig-e002-201942
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                           allmodconfig
 
-In total it's 84,407,427 instructions, and bpf_xdp_redirect_map() is
-8,109,504 instructions, which is 9.6%. bpf_xdp_redirect_map() executes
-39 instructions for AF_XDP. As perf is reporting less than 9.6% means
-that the IPC count of that function is more than the average which
-perf-stat reports as IPC of 2.88.
-
-The BPF program executes fewer instructions than
-bpf_xdp_redirect_map(), so given that perf shows 5%, means that the
-IPC count is better than average here as well.
-
-So, it's roughly 405 instructions per packet, and with an IPC of 2.88
-that'll give ~140 cycles per packet, which on this machine
-(3,000,000,000/140) is ~21.4 Mpps. The xdpsock application reports
-21. This is sane.
-
-The TL;DR version is: 6% and 5% for bpf_xdp_redirect_map and
-bpf_prog_992d9ddc835e5629 might seem high, but it's just that the
-total number of instruction executing is fairly low. So, even though
-the functions are small in size, it will show up as non-negligible
-percentage in perf.
-
-At these speeds, really small things have an impact on
-performance. DPDK has ~50 cycles per packet.
-
-
-Bj?rn
-
-
-
-> > The other component is the bpf_xdp_redirect_map() codepath.
-> >
-> > Let me know if it helps to collect any other data that should further help with the perf analysis.
-> >
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
