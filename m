@@ -1,106 +1,101 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 26 Oct 2019 09:41:37 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 27d461333459d282ffa4a2bdb6b215a59d493a8f
-Message-ID: <5db3a451.mefUbXlZpML0JqfK%lkp@intel.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Mon, 28 Oct 2019 15:07:04 +0800
+Subject: [Intel-wired-lan] e1000e regression - 5.4rc1
+In-Reply-To: <940da657-a8af-ccde-34ca-7a93fad94567@mni.thm.de>
+References: <171f0c61-73a2-81c2-5c8a-7c140f548803@mni.thm.de>
+ <56242322-D549-4E23-97AB-153CC392B107@canonical.com>
+ <76fc2204-0786-03b3-773d-110912d48168@mni.thm.de>
+ <2994F2A2-D844-40B0-9971-C002E5EC49CD@canonical.com>
+ <940da657-a8af-ccde-34ca-7a93fad94567@mni.thm.de>
+Message-ID: <ADFA5FA0-ED36-4313-9CDD-602946FEBA67@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 27d461333459d282ffa4a2bdb6b215a59d493a8f  i40e: prevent memory leak in i40e_setup_macvlans
+Hi Tobias,
 
-elapsed time: 294m
+> On Oct 9, 2019, at 02:28, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
+> 
+> Hi,
+> 
+> On 08.10.19 09:46, Kai-Heng Feng wrote:
+>> Hi Tobias,
+>> 
+>>> On Oct 5, 2019, at 03:52, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
+>>> 
+>>> Hello,
+>>> 
+>>> On 04.10.19 19:36, Kai-Heng Feng wrote:
+>>>> Hi Tobias
+>>>> 
+>>>>> On Oct 4, 2019, at 18:34, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
+>>>>> 
+>>>>> Hello all,
+>>>>> 
+>>>>> While testing the 5.4rc1 release, i noticed my Ethernet never coming fully up, seemingly having a timeout problem. While bisecting this i landed at the commit dee23594d587386e9fda76732aa5f5a487709510 ("e1000e: Make speed detection on hotplugging cable more reliable") as the first bad commit. And indeed just reverting the commit on top of 5.4rc1 resolves the problem. Let me know if you have further questions, or patches to test!
+>>>> Is runtime PM enabled (i.e. "power/control" = auto)?
+>>> 
+>>> Yes it is set to auto.
+>> Is something like TLP or `powertop --auto-tune` is in use?
+>> 
+>> Do you still see the issue when "power/control" keeps at "on"?
+> 
+> 
+> With "power/control" set to "on" it does still cycle between up and down. But yes i have upower and powerdevil running. After killing them the connection comes up with "power/control" set to "on", yet not with "auto".
 
-configs tested: 81
+Can you please give this branch a try:
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/log/?h=dev-queue
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Kai-Heng
 
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                           allmodconfig
+> 
+> 
+> Greetings,
+> 
+> Tobias
+> 
+> 
+>> 
+>> Kai-Heng
+>> 
+>>> 
+>>>> Also please attach full dmesg, thanks!
+>>> Attached,
+>>> 
+>>> Tobias
+>>> 
+>>>> Kai-Heng
+>>>> 
+>>>>> Greetings,
+>>>>> 
+>>>>> Tobias
+>>>>> 
+>>>>> 
+>>>>> lspci:
+>>>>> 
+>>>>> 00:19.0 Ethernet controller: Intel Corporation 82579V Gigabit Network Connection (rev 06)
+>>>>>         DeviceName:  Onboard LAN
+>>>>>         Subsystem: ASUSTeK Computer Inc. P8P67 Deluxe Motherboard
+>>>>>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+>>>>>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>>>>>         Latency: 0
+>>>>>         Interrupt: pin A routed to IRQ 56
+>>>>>         Region 0: Memory at fbf00000 (32-bit, non-prefetchable) [size=128K]
+>>>>>         Region 1: Memory at fbf28000 (32-bit, non-prefetchable) [size=4K]
+>>>>>         Region 2: I/O ports at f040 [size=32]
+>>>>>         Capabilities: [c8] Power Management version 2
+>>>>>                 Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+>>>>>                 Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=1 PME-
+>>>>>         Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
+>>>>>                 Address: 00000000fee00698  Data: 0000
+>>>>>         Capabilities: [e0] PCI Advanced Features
+>>>>>                 AFCap: TP+ FLR+
+>>>>>                 AFCtrl: FLR-
+>>>>>                 AFStatus: TP-
+>>>>>         Kernel driver in use: e1000e
+>>>>>         Kernel modules: e1000e
+>>>>> 
+>>> <dmesg.txt>
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
