@@ -1,101 +1,108 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Mon, 28 Oct 2019 15:07:04 +0800
-Subject: [Intel-wired-lan] e1000e regression - 5.4rc1
-In-Reply-To: <940da657-a8af-ccde-34ca-7a93fad94567@mni.thm.de>
-References: <171f0c61-73a2-81c2-5c8a-7c140f548803@mni.thm.de>
- <56242322-D549-4E23-97AB-153CC392B107@canonical.com>
- <76fc2204-0786-03b3-773d-110912d48168@mni.thm.de>
- <2994F2A2-D844-40B0-9971-C002E5EC49CD@canonical.com>
- <940da657-a8af-ccde-34ca-7a93fad94567@mni.thm.de>
-Message-ID: <ADFA5FA0-ED36-4313-9CDD-602946FEBA67@canonical.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Mon, 28 Oct 2019 11:37:14 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: implement VF stats NDO
+Message-ID: <20191028183714.50528-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Tobias,
+Implement the VF stats gathering via the kernel via ndo_get_vf_stats().
+The driver will show per-VF stats in the output of the
+ip -s link show dev <PF>
+command.
 
-> On Oct 9, 2019, at 02:28, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
-> 
-> Hi,
-> 
-> On 08.10.19 09:46, Kai-Heng Feng wrote:
->> Hi Tobias,
->> 
->>> On Oct 5, 2019, at 03:52, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
->>> 
->>> Hello,
->>> 
->>> On 04.10.19 19:36, Kai-Heng Feng wrote:
->>>> Hi Tobias
->>>> 
->>>>> On Oct 4, 2019, at 18:34, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
->>>>> 
->>>>> Hello all,
->>>>> 
->>>>> While testing the 5.4rc1 release, i noticed my Ethernet never coming fully up, seemingly having a timeout problem. While bisecting this i landed at the commit dee23594d587386e9fda76732aa5f5a487709510 ("e1000e: Make speed detection on hotplugging cable more reliable") as the first bad commit. And indeed just reverting the commit on top of 5.4rc1 resolves the problem. Let me know if you have further questions, or patches to test!
->>>> Is runtime PM enabled (i.e. "power/control" = auto)?
->>> 
->>> Yes it is set to auto.
->> Is something like TLP or `powertop --auto-tune` is in use?
->> 
->> Do you still see the issue when "power/control" keeps at "on"?
-> 
-> 
-> With "power/control" set to "on" it does still cycle between up and down. But yes i have upower and powerdevil running. After killing them the connection comes up with "power/control" set to "on", yet not with "auto".
+Testing Hints (Required if no HSD): ip -s link show dev eth0,
+will return non-zero VF stats.
 
-Can you please give this branch a try:
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/log/?h=dev-queue
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  1 +
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 48 +++++++++++++++++++
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  2 +
+ 3 files changed, 51 insertions(+)
 
-Kai-Heng
-
-> 
-> 
-> Greetings,
-> 
-> Tobias
-> 
-> 
->> 
->> Kai-Heng
->> 
->>> 
->>>> Also please attach full dmesg, thanks!
->>> Attached,
->>> 
->>> Tobias
->>> 
->>>> Kai-Heng
->>>> 
->>>>> Greetings,
->>>>> 
->>>>> Tobias
->>>>> 
->>>>> 
->>>>> lspci:
->>>>> 
->>>>> 00:19.0 Ethernet controller: Intel Corporation 82579V Gigabit Network Connection (rev 06)
->>>>>         DeviceName:  Onboard LAN
->>>>>         Subsystem: ASUSTeK Computer Inc. P8P67 Deluxe Motherboard
->>>>>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
->>>>>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->>>>>         Latency: 0
->>>>>         Interrupt: pin A routed to IRQ 56
->>>>>         Region 0: Memory at fbf00000 (32-bit, non-prefetchable) [size=128K]
->>>>>         Region 1: Memory at fbf28000 (32-bit, non-prefetchable) [size=4K]
->>>>>         Region 2: I/O ports at f040 [size=32]
->>>>>         Capabilities: [c8] Power Management version 2
->>>>>                 Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
->>>>>                 Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=1 PME-
->>>>>         Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
->>>>>                 Address: 00000000fee00698  Data: 0000
->>>>>         Capabilities: [e0] PCI Advanced Features
->>>>>                 AFCap: TP+ FLR+
->>>>>                 AFCtrl: FLR-
->>>>>                 AFStatus: TP-
->>>>>         Kernel driver in use: e1000e
->>>>>         Kernel modules: e1000e
->>>>> 
->>> <dmesg.txt>
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index a6f60e8a6026..56cf7bc8add3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -12870,6 +12870,7 @@ static const struct net_device_ops i40e_netdev_ops = {
+ 	.ndo_set_features	= i40e_set_features,
+ 	.ndo_set_vf_mac		= i40e_ndo_set_vf_mac,
+ 	.ndo_set_vf_vlan	= i40e_ndo_set_vf_port_vlan,
++	.ndo_get_vf_stats	= i40e_get_vf_stats,
+ 	.ndo_set_vf_rate	= i40e_ndo_set_vf_bw,
+ 	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
+ 	.ndo_set_vf_link_state	= i40e_ndo_set_vf_link_state,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 7787766d0eb8..84cf851cbbb7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -4527,3 +4527,51 @@ int i40e_ndo_set_vf_trust(struct net_device *netdev, int vf_id, bool setting)
+ 	clear_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state);
+ 	return ret;
+ }
++
++/**
++ * i40e_get_vf_stats - populate some stats for the VF
++ * @netdev: the netdev of the PF
++ * @vf_id: the host OS identifier (0-127)
++ * @vf_stats: pointer to the OS memory to be initialized
++ */
++int i40e_get_vf_stats(struct net_device *netdev, int vf_id,
++		      struct ifla_vf_stats *vf_stats)
++{
++	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	struct i40e_pf *pf = np->vsi->back;
++	struct i40e_eth_stats *stats;
++	struct i40e_vsi *vsi;
++	struct i40e_vf *vf;
++
++	/* validate the request */
++	if (i40e_validate_vf(pf, vf_id))
++		return -EINVAL;
++
++	vf = &pf->vf[vf_id];
++	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
++		dev_err(&pf->pdev->dev, "VF %d in reset. Try again.\n", vf_id);
++		return -EBUSY;
++	}
++
++	vsi = pf->vsi[vf->lan_vsi_idx];
++	if (!vsi)
++		return -EINVAL;
++
++	i40e_update_eth_stats(vsi);
++	stats = &vsi->eth_stats;
++
++	memset(vf_stats, 0, sizeof(*vf_stats));
++
++	vf_stats->rx_packets = stats->rx_unicast + stats->rx_broadcast +
++		stats->rx_multicast;
++	vf_stats->tx_packets = stats->tx_unicast + stats->tx_broadcast +
++		stats->tx_multicast;
++	vf_stats->rx_bytes   = stats->rx_bytes;
++	vf_stats->tx_bytes   = stats->tx_bytes;
++	vf_stats->broadcast  = stats->rx_broadcast + stats->tx_broadcast;
++	vf_stats->multicast  = stats->rx_multicast + stats->tx_multicast;
++	vf_stats->rx_dropped = stats->rx_discards;
++	vf_stats->tx_dropped = stats->tx_discards;
++
++	return 0;
++}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+index 1ce06240a702..631248c0981a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+@@ -138,5 +138,7 @@ int i40e_ndo_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool enable);
+ 
+ void i40e_vc_notify_link_state(struct i40e_pf *pf);
+ void i40e_vc_notify_reset(struct i40e_pf *pf);
++int i40e_get_vf_stats(struct net_device *netdev, int vf_id,
++		      struct ifla_vf_stats *vf_stats);
+ 
+ #endif /* _I40E_VIRTCHNL_PF_H_ */
+-- 
+2.17.2
 
