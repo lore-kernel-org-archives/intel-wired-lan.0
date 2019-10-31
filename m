@@ -1,170 +1,109 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 31 Oct 2019 14:06:50 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:1GbE] BUILD INCOMPLETE
- 0e9d5ea8357ca5399f09caff8a15ae06eeaa6898
-Message-ID: <5dba79fa.1JELpF7SKdbGTpr6%lkp@intel.com>
+From: Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de>
+Date: Thu, 31 Oct 2019 16:13:44 +0100
+Subject: [Intel-wired-lan] e1000e regression - 5.4rc1
+In-Reply-To: <ADFA5FA0-ED36-4313-9CDD-602946FEBA67@canonical.com>
+References: <171f0c61-73a2-81c2-5c8a-7c140f548803@mni.thm.de>
+ <56242322-D549-4E23-97AB-153CC392B107@canonical.com>
+ <76fc2204-0786-03b3-773d-110912d48168@mni.thm.de>
+ <2994F2A2-D844-40B0-9971-C002E5EC49CD@canonical.com>
+ <940da657-a8af-ccde-34ca-7a93fad94567@mni.thm.de>
+ <ADFA5FA0-ED36-4313-9CDD-602946FEBA67@canonical.com>
+Message-ID: <2906026b-15e5-fd34-0311-da28164f1196@mni.thm.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  1GbE
-branch HEAD: 0e9d5ea8357ca5399f09caff8a15ae06eeaa6898  ixgbe: Remove duplicate clear_bit() call
-
-TIMEOUT after 1446m
+Hi,
 
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+On 28.10.19 08:07, Kai-Heng Feng wrote:
+> Hi Tobias,
+>
+>> On Oct 9, 2019, at 02:28, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
+>>
+>> Hi,
+>>
+>> On 08.10.19 09:46, Kai-Heng Feng wrote:
+>>> Hi Tobias,
+>>>
+>>>> On Oct 5, 2019, at 03:52, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
+>>>>
+>>>> Hello,
+>>>>
+>>>> On 04.10.19 19:36, Kai-Heng Feng wrote:
+>>>>> Hi Tobias
+>>>>>
+>>>>>> On Oct 4, 2019, at 18:34, Tobias Klausmann <tobias.johannes.klausmann@mni.thm.de> wrote:
+>>>>>>
+>>>>>> Hello all,
+>>>>>>
+>>>>>> While testing the 5.4rc1 release, i noticed my Ethernet never coming fully up, seemingly having a timeout problem. While bisecting this i landed at the commit dee23594d587386e9fda76732aa5f5a487709510 ("e1000e: Make speed detection on hotplugging cable more reliable") as the first bad commit. And indeed just reverting the commit on top of 5.4rc1 resolves the problem. Let me know if you have further questions, or patches to test!
+>>>>> Is runtime PM enabled (i.e. "power/control" = auto)?
+>>>> Yes it is set to auto.
+>>> Is something like TLP or `powertop --auto-tune` is in use?
+>>>
+>>> Do you still see the issue when "power/control" keeps at "on"?
+>>
+>> With "power/control" set to "on" it does still cycle between up and down. But yes i have upower and powerdevil running. After killing them the connection comes up with "power/control" set to "on", yet not with "auto".
+> Can you please give this branch a try:
+> https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/log/?h=dev-queue
 
-configs timed out: 16
 
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
+Compiled and tested as is (not having set /power/control) the up and 
+down cycle is still persistent.
 
-configs tested: 121
+Greetings,
 
-i386                   randconfig-f002-201943
-i386                   randconfig-f001-201943
-x86_64                 randconfig-f003-201943
-x86_64                 randconfig-f004-201943
-x86_64                 randconfig-f002-201943
-i386                   randconfig-f003-201943
-x86_64                 randconfig-f001-201943
-i386                   randconfig-f004-201943
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-xtensa                       common_defconfig
-openrisc                    or1ksim_defconfig
-nios2                         3c120_defconfig
-xtensa                          iss_defconfig
-c6x                        evmc6678_defconfig
-c6x                              allyesconfig
-nios2                         10m50_defconfig
-openrisc                 simple_smp_defconfig
-x86_64                 randconfig-e004-201943
-x86_64                 randconfig-e001-201943
-x86_64                 randconfig-e003-201943
-x86_64                 randconfig-e002-201943
-i386                   randconfig-e003-201943
-i386                   randconfig-e004-201943
-i386                   randconfig-e001-201943
-i386                   randconfig-e002-201943
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                             allmodconfig
-s390                                defconfig
-x86_64                 randconfig-g002-201943
-i386                   randconfig-g004-201943
-x86_64                 randconfig-g001-201943
-i386                   randconfig-g002-201943
-x86_64                 randconfig-g004-201943
-x86_64                 randconfig-g003-201943
-i386                   randconfig-g003-201943
-i386                   randconfig-g001-201943
-i386                   randconfig-b001-201943
-x86_64                 randconfig-b002-201943
-x86_64                 randconfig-b003-201943
-i386                   randconfig-b003-201943
-i386                   randconfig-b004-201943
-x86_64                 randconfig-b004-201943
-x86_64                 randconfig-b001-201943
-i386                   randconfig-b002-201943
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-parisc                            allnoconfig
-arm                              allmodconfig
-arm64                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                     edosk2674_defconfig
-m68k                           sun3_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-nds32                               defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-x86_64                 randconfig-c001-201943
-i386                   randconfig-c001-201943
-x86_64                 randconfig-c002-201943
-i386                   randconfig-c004-201943
-i386                   randconfig-c003-201943
-x86_64                 randconfig-c004-201943
-i386                   randconfig-c002-201943
-x86_64                 randconfig-c003-201943
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-d002-201943
-x86_64                 randconfig-d002-201943
-i386                   randconfig-d004-201943
-x86_64                 randconfig-d004-201943
-x86_64                 randconfig-d003-201943
-i386                   randconfig-d003-201943
-x86_64                 randconfig-d001-201943
-i386                   randconfig-d001-201943
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-mips                             allmodconfig
-mips                           32r2_defconfig
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-x86_64                 randconfig-a004-201943
-x86_64                 randconfig-a001-201943
-i386                   randconfig-a002-201943
-x86_64                 randconfig-a002-201943
-i386                   randconfig-a001-201943
-i386                   randconfig-a003-201943
-i386                   randconfig-a004-201943
-x86_64                 randconfig-a003-201943
-arc                              allyesconfig
-powerpc                             defconfig
-microblaze                    nommu_defconfig
-powerpc                       ppc64_defconfig
-microblaze                      mmu_defconfig
-arc                                 defconfig
-powerpc                           allnoconfig
-x86_64                           allmodconfig
+Tobias
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+
+>
+> Kai-Heng
+>
+>>
+>> Greetings,
+>>
+>> Tobias
+>>
+>>
+>>> Kai-Heng
+>>>
+>>>>> Also please attach full dmesg, thanks!
+>>>> Attached,
+>>>>
+>>>> Tobias
+>>>>
+>>>>> Kai-Heng
+>>>>>
+>>>>>> Greetings,
+>>>>>>
+>>>>>> Tobias
+>>>>>>
+>>>>>>
+>>>>>> lspci:
+>>>>>>
+>>>>>> 00:19.0 Ethernet controller: Intel Corporation 82579V Gigabit Network Connection (rev 06)
+>>>>>>          DeviceName:  Onboard LAN
+>>>>>>          Subsystem: ASUSTeK Computer Inc. P8P67 Deluxe Motherboard
+>>>>>>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+>>>>>>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>>>>>>          Latency: 0
+>>>>>>          Interrupt: pin A routed to IRQ 56
+>>>>>>          Region 0: Memory at fbf00000 (32-bit, non-prefetchable) [size=128K]
+>>>>>>          Region 1: Memory at fbf28000 (32-bit, non-prefetchable) [size=4K]
+>>>>>>          Region 2: I/O ports at f040 [size=32]
+>>>>>>          Capabilities: [c8] Power Management version 2
+>>>>>>                  Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+>>>>>>                  Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=1 PME-
+>>>>>>          Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
+>>>>>>                  Address: 00000000fee00698  Data: 0000
+>>>>>>          Capabilities: [e0] PCI Advanced Features
+>>>>>>                  AFCap: TP+ FLR+
+>>>>>>                  AFCtrl: FLR-
+>>>>>>                  AFStatus: TP-
+>>>>>>          Kernel driver in use: e1000e
+>>>>>>          Kernel modules: e1000e
+>>>>>>
+>>>> <dmesg.txt>
