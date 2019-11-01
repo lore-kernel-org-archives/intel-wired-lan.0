@@ -1,40 +1,42 @@
-From: Jan Janssen <medhefgo@web.de>
-Date: Sat, 16 Nov 2019 12:50:38 +0100
-Subject: [Intel-wired-lan] Regression: e1000e link not coming up
-Message-ID: <3945198.J3aOToa6sv@minako>
+From: Colin King <colin.king@canonical.com>
+Date: Fri,  1 Nov 2019 14:00:17 +0000
+Subject: [Intel-wired-lan] [PATCH] ice: fix potential infinite loop because
+ loop counter being too small
+Message-ID: <20191101140017.16646-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+From: Colin Ian King <colin.king@canonical.com>
 
-since 5.3 my I219-V network interface sometimes doesn't come up when booting
-or resuming from suspend. This either forces me to use "ip link down/up" or
-reloading the module to get working internet.
+Currently the for-loop counter i is a u8 however it is being checked
+against a maximum value hw->num_tx_sched_layers which is a u16. Hence
+there is a potential wrap-around of counter i back to zero if
+hw->num_tx_sched_layers is greater than 255.  Fix this by making i
+a u16.
 
-I reported this issue previously to netdev at vger.kernel.org where I initially
-bisected to a wrong commit. After finding the right one nobody reacted to it,
-so now I am trying this again here.
+Addresses-Coverity: ("Infinite loop")
+Fixes: b36c598c999c ("ice: Updates to Tx scheduler code")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/intel/ice/ice_sched.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-There is also a bugzilla entry for this, but it seems to be ignored by
-maintainers too: https://bugzilla.kernel.org/show_bug.cgi?id=205067
-For me, this happens with systemd-networkd, but the people in the bugzilla
-report are observing this with NetworkManager.
-
-The commit introducing the bug is 59653e6497d16f7ac1d9db088f3959f57ee8c3db
-(e1000e: Make watchdog use delayed work) and reverting it did make this bug go
-away. Though, it cannot be reverted automatically on the latest git tree from
-Torvalds anymore.
-
-I've also tried the master branch on jkirsher/net-queue.git  and
-jkirsher/next-queue.git, but the bug is still present there too.
-
-This bug is really annoying and inconvenient, so I would really appreciate if
-somebody could fix this bug or at least have the offending commit reverted.
-
-Regards,
-Jan
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index fc624b73d05d..2fde9653a608 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1036,7 +1036,7 @@ enum ice_status ice_sched_query_res_alloc(struct ice_hw *hw)
+ 	struct ice_aqc_query_txsched_res_resp *buf;
+ 	enum ice_status status = 0;
+ 	__le16 max_sibl;
+-	u8 i;
++	u16 i;
+ 
+ 	if (hw->layer_info)
+ 		return status;
+-- 
+2.20.1
 
