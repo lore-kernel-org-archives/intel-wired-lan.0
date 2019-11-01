@@ -1,49 +1,52 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 1 Nov 2019 16:50:56 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2] i40e: implement VF stats
- NDO
-In-Reply-To: <20191029003707.45245-1-jesse.brandeburg@intel.com>
-References: <20191029003707.45245-1-jesse.brandeburg@intel.com>
-Message-ID: <a99f8f7254764ad9836aa8df76930669@intel.com>
+From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
+Date: Fri, 1 Nov 2019 11:31:11 -0700
+Subject: [Intel-wired-lan] FW: [PATCH bpf-next 2/4] xsk: allow AF_XDP
+ sockets to receive packets directly from a queue
+In-Reply-To: <20191031172148.0290b11f@cakuba.netronome.com>
+References: <CAJ+HfNigHWVk2b+UJPhdCWCTcW=Eh=yfRNHg4=Fr1mv98Pq=cA@mail.gmail.com>
+ <2e27b8d9-4615-cd8d-93de-2adb75d8effa@intel.com>
+ <20191031172148.0290b11f@cakuba.netronome.com>
+Message-ID: <8481fe0a-fa7b-c689-1e51-1a3253176509@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jesse Brandeburg
-> Sent: Monday, October 28, 2019 5:37 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v2] i40e: implement VF stats NDO
+On 10/31/2019 5:21 PM, Jakub Kicinski wrote:
+> On Thu, 31 Oct 2019 15:38:42 -0700, Samudrala, Sridhar wrote:
+>> Do you think it will be possible to avoid this overhead when mitigations are turned ON?
+>> The other part of the overhead is going through the redirect path.
 > 
-> Implement the VF stats gathering via the kernel via ndo_get_vf_stats().
-> The driver will show per-VF stats in the output of the command:
-> ip -s link show dev <PF>
+> Yes, you should help Maciej with the XDP bulking.
 > 
-> Testing Hints:
-> ip -s link show dev eth0
-> will return non-zero VF stats.
-> ...
->    vf 0 MAC 00:55:aa:00:55:aa, spoof checking on, link-state enable, trust off
->    RX: bytes  packets  mcast   bcast
->    128000     1000     104     104
->    TX: bytes  packets
->    128000     1000
+>> Can i assume that your silence as an indication that you are now okay with optional bypass
+>> flag as long as it doesn't effect the normal XDP datapath. If so, i will respin and submit
+>> the patches against the latest bpf-next
 > 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> 
-> ---
-> 
-> v2: remove transmit stats from multicast and broadcast based on feedback,
-> add a little to commit message.
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c   |  1 +
->  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 48 +++++++++++++++++++
->  .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  2 +
->  3 files changed, 51 insertions(+)
+> This logic baffles me. I absolutely hate when people repost patches
+> after I nack them without even as much as mentioning my objections in
+> the cover letter.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Sorry if you got the impression that i didn't take your feedback. I CCed you
+and also included the kernel rxdrop data that you requested in the original
+series.
 
+> 
+> My concern was that we want the applications to encode fast path logic
+> in BPF and load that into the kernel. So your patch works fundamentally
+> against that goal:
 
+So looks like you are saying that the fundamental requirement is that all AF_XDP
+packets need to go via a BPF program.
+
+The reason i proposed direct receive is because of the overhead we are seeing
+with going via BPF program for apps that want to receive all the packets on a
+specific queue.
+
+I agree that there is work going on to reduce this overhead with bulking and avoiding
+the retpoline.
+We can revisit after these optimizations get in and then see if it is still useful
+to provide a direct receive option.
+
+-Sridhar
