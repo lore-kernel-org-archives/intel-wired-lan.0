@@ -1,32 +1,32 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Fri, 01 Nov 2019 23:29:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
- 6d6f0383b697f004c65823c2b64240912f18515d
-Message-ID: <5dbc4f73.axlQgIP38fbMq8dm%lkp@intel.com>
+Date: Fri, 01 Nov 2019 23:29:30 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 86fb81646d3760cd1694f3da130f79288f658475
+Message-ID: <5dbc4f5a.MsmlMq2dH9WUvKCB%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: 6d6f0383b697f004c65823c2b64240912f18515d  netdevsim: Fix use-after-free during device dismantle
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 86fb81646d3760cd1694f3da130f79288f658475  igb: Fix constant media auto sense switching when no cable is connected
 
-elapsed time: 1191m
+elapsed time: 1104m
 
-configs tested: 132
+configs tested: 145
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
-x86_64                 randconfig-a004-201943
 x86_64                 randconfig-a001-201943
-i386                   randconfig-a002-201943
 x86_64                 randconfig-a002-201943
+x86_64                 randconfig-a003-201943
+x86_64                 randconfig-a004-201943
 i386                   randconfig-a001-201943
+i386                   randconfig-a002-201943
 i386                   randconfig-a003-201943
 i386                   randconfig-a004-201943
-x86_64                 randconfig-a003-201943
 x86_64                              fedora-25
 x86_64                                  kexec
 x86_64                                    lkp
@@ -61,13 +61,6 @@ i386                   randconfig-f001-201943
 i386                   randconfig-f002-201943
 i386                   randconfig-f003-201943
 i386                   randconfig-f004-201943
-arc                              allyesconfig
-powerpc                             defconfig
-microblaze                    nommu_defconfig
-powerpc                       ppc64_defconfig
-microblaze                      mmu_defconfig
-arc                                 defconfig
-powerpc                           allnoconfig
 x86_64                 randconfig-c001-201943
 x86_64                 randconfig-c002-201943
 x86_64                 randconfig-c003-201943
@@ -76,72 +69,84 @@ i386                   randconfig-c001-201943
 i386                   randconfig-c002-201943
 i386                   randconfig-c003-201943
 i386                   randconfig-c004-201943
-riscv                             allnoconfig
-riscv                               defconfig
-nds32                               defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
 s390                             allmodconfig
 s390                              allnoconfig
 s390                          debug_defconfig
 s390                                defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
 parisc                              defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                             allmodconfig
-mips                           32r2_defconfig
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
+x86_64                 randconfig-h002-201943
+x86_64                 randconfig-h001-201943
+i386                   randconfig-h004-201943
+i386                   randconfig-h003-201943
+x86_64                 randconfig-h003-201943
+i386                   randconfig-h002-201943
+i386                   randconfig-h001-201943
+x86_64                 randconfig-h004-201943
 sparc                               defconfig
 sparc64                          allmodconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                 randconfig-h001-201943
-x86_64                 randconfig-h002-201943
-x86_64                 randconfig-h003-201943
-x86_64                 randconfig-h004-201943
-i386                   randconfig-h001-201943
-i386                   randconfig-h002-201943
-i386                   randconfig-h003-201943
-i386                   randconfig-h004-201943
-i386                   randconfig-b001-201943
-x86_64                 randconfig-b002-201943
-x86_64                 randconfig-b003-201943
-i386                   randconfig-b003-201943
-i386                   randconfig-b004-201943
-x86_64                 randconfig-b004-201943
-x86_64                 randconfig-b001-201943
-i386                   randconfig-b002-201943
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+i386                   randconfig-d002-201943
+x86_64                 randconfig-d002-201943
+i386                   randconfig-d004-201943
+x86_64                 randconfig-d004-201943
+x86_64                 randconfig-d003-201943
+i386                   randconfig-d003-201943
+x86_64                 randconfig-d001-201943
+i386                   randconfig-d001-201943
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
 x86_64                           allyesconfig
 i386                             allmodconfig
 parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
-i386                   randconfig-d002-201943
-i386                   randconfig-d004-201943
-i386                   randconfig-d003-201943
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-h8300                    h8300h-sim_defconfig
+x86_64                 randconfig-e004-201943
+x86_64                 randconfig-e001-201943
+x86_64                 randconfig-e003-201943
+x86_64                 randconfig-e002-201943
+i386                   randconfig-e003-201943
+i386                   randconfig-e004-201943
+i386                   randconfig-e001-201943
+i386                   randconfig-e002-201943
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
 h8300                     edosk2674_defconfig
-m68k                           sun3_defconfig
+h8300                    h8300h-sim_defconfig
 h8300                       h8s-sim_defconfig
 m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
 x86_64                 randconfig-g001-201943
 x86_64                 randconfig-g002-201943
 x86_64                 randconfig-g003-201943
@@ -151,6 +156,14 @@ i386                   randconfig-g002-201943
 i386                   randconfig-g003-201943
 i386                   randconfig-g004-201943
 x86_64                           allmodconfig
+i386                   randconfig-b001-201943
+x86_64                 randconfig-b002-201943
+x86_64                 randconfig-b003-201943
+i386                   randconfig-b003-201943
+i386                   randconfig-b004-201943
+x86_64                 randconfig-b004-201943
+x86_64                 randconfig-b001-201943
+i386                   randconfig-b002-201943
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
