@@ -1,10 +1,10 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 4 Nov 2019 20:19:58 +0000
-Subject: [Intel-wired-lan] [PATCH] ice: fix potential infinite loop
- because loop counter being too small
-In-Reply-To: <20191101140017.16646-1-colin.king@canonical.com>
-References: <20191101140017.16646-1-colin.king@canonical.com>
-Message-ID: <19998571b6704752955e3c951b50eb92@intel.com>
+From: Creeley, Brett <brett.creeley@intel.com>
+Date: Mon, 4 Nov 2019 23:43:59 +0000
+Subject: [Intel-wired-lan] [PATCH net] i40e/iavf: Fix msg interface
+ between VF and PF
+In-Reply-To: <1572845537.13810.225.camel@harmonicinc.com>
+References: <1572845537.13810.225.camel@harmonicinc.com>
+Message-ID: <3508A0C5D531054DBDD98909F6FA64FA11B3936D@ORSMSX113.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,32 +12,141 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Colin King
-> Sent: Friday, November 1, 2019 7:00 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David S . Miller
-> <davem@davemloft.net>; Venkataramanan, Anirudh
-> <anirudh.venkataramanan@intel.com>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org
-> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] ice: fix potential infinite loop because loop
-> counter being too small
+> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org> On Behalf Of Arkady Gilinsky
+> Sent: Sunday, November 3, 2019 9:32 PM
+> To: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: Arkady Gilinsky <arcadyg@gmail.com>
+> Subject: [PATCH net] i40e/iavf: Fix msg interface between VF and PF
 > 
-> From: Colin Ian King <colin.king@canonical.com>
+> From af5ab2aaa51882bb7111b026882fe217ed81c15b Mon Sep 17 00:00:00 2001
+> From: Arkady Gilinsky <arkady.gilinsky@harmonicinc
+> .com>
+> Date: Sun, 3 Nov 2019 20:37:21 +0200
+> Subject: [PATCH net] i40e/iavf: Fix msg interface between VF and PF
 > 
-> Currently the for-loop counter i is a u8 however it is being checked against a
-> maximum value hw->num_tx_sched_layers which is a u16. Hence there is a
-> potential wrap-around of counter i back to zero if
-> hw->num_tx_sched_layers is greater than 255.  Fix this by making i
-> a u16.
+> ?* The original issue was that iavf driver passing TX/RX queues
+> ???as bitmap in iavf_disable_queues and the i40e driver
+> ???interprets this message as an absolute number in
+> ???i40e_vc_disable_queues_msg, so the validation in the
+> ???latter function always fail.
+
+The VIRTCHNL interface expects the tx_queues and rx_queues to be sent as
+a bitmap so this should/can not be changed.
+
+I think something like the following would be better becase the change is
+completely contained inside the i40e driver and it should completely
+address the issue you are seeing. Of course, this would have to be
+in both the enable and disable queue flow. Also, with this change it might
+be best to check and make sure the sizeof(vqs->[r|t]x_queues) equal
+sizeof(u32) in case those members ever change from u32 to u64, which
+will cause this check to always fail.
+
+static bool i40e_vc_verify_vqs_bitmaps(struct virtchnl_queue_select *vqs)
+{
+	/* this will catch any changes made to the virtchnl_queue_select bitmap */
+	if (sizeof(vqs->rx_queues) != sizeof(u32) ||
+	     sizeof(vqs->tx_queues) != sizeof(u32))
+		return false;
+
+	if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
+	      hweight32(vqs->rx_queues) > I40E_MAX_VF_QUEUES ||
+	      hweight32(vqs->tx_queues) > I40E_MAX_VF_QUEUES)
+		return false;
+
+	return true;
+}
+
+if (i40e_vc_verify_vqs_bitmaps(vqs)) {
+	aq_ret  = I40E_ERR_PARAM;
+	goto error_param;
+}
+
+> ???This commit reorganize the msg interface between i40e and iavf
+> ???between the iavf_disable_queues and i40e_vc_disable_queues_msg
+> ???functions (also for iavf_enable_queues and i40e_vc_enable_queues_msg).
+> ???Now both drivers operate with number of queues instead of
+> ???bitmap. Also the commit introduces range check in
+> ???i40e_vc_enable_queues_msg function.
 > 
-> Addresses-Coverity: ("Infinite loop")
-> Fixes: b36c598c999c ("ice: Updates to Tx scheduler code")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Signed-off-by: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_sched.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-
-
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+> ?drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 23 ++++++++++++++++------
+> ?drivers/net/ethernet/intel/iavf/iavf_virtchnl.c????|??6 ++++--
+> ?2 files changed, 21 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index 3d2440838822..c650eb91982a 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -2352,13 +2352,22 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg)
+> ?		goto error_param;
+> ?	}
+> 
+> -	/* Use the queue bit map sent by the VF */
+> -	if (i40e_ctrl_vf_rx_rings(pf->vsi[vf->lan_vsi_idx], vqs->rx_queues,
+> +	if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
+> +	????vqs->rx_queues > I40E_MAX_VF_QUEUES ||
+> +	????vqs->tx_queues > I40E_MAX_VF_QUEUES) {
+> +		aq_ret = I40E_ERR_PARAM;
+> +		goto error_param;
+> +	}
+> +
+> +	/* Build the queue bit map from value sent by the VF */
+> +	if (i40e_ctrl_vf_rx_rings(pf->vsi[vf->lan_vsi_idx],
+> +				??BIT(vqs->rx_queues) - 1,
+> ?				??true)) {
+> ?		aq_ret = I40E_ERR_TIMEOUT;
+> ?		goto error_param;
+> ?	}
+> -	if (i40e_ctrl_vf_tx_rings(pf->vsi[vf->lan_vsi_idx], vqs->tx_queues,
+> +	if (i40e_ctrl_vf_tx_rings(pf->vsi[vf->lan_vsi_idx],
+> +				??BIT(vqs->tx_queues) - 1,
+> ?				??true)) {
+> ?		aq_ret = I40E_ERR_TIMEOUT;
+> ?		goto error_param;
+> @@ -2416,13 +2425,15 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg)
+> ?		goto error_param;
+> ?	}
+> 
+> -	/* Use the queue bit map sent by the VF */
+> -	if (i40e_ctrl_vf_tx_rings(pf->vsi[vf->lan_vsi_idx], vqs->tx_queues,
+> +	/* Build the queue bit map from value sent by the VF */
+> +	if (i40e_ctrl_vf_tx_rings(pf->vsi[vf->lan_vsi_idx],
+> +				??BIT(vqs->tx_queues) - 1,
+> ?				??false)) {
+> ?		aq_ret = I40E_ERR_TIMEOUT;
+> ?		goto error_param;
+> ?	}
+> -	if (i40e_ctrl_vf_rx_rings(pf->vsi[vf->lan_vsi_idx], vqs->rx_queues,
+> +	if (i40e_ctrl_vf_rx_rings(pf->vsi[vf->lan_vsi_idx],
+> +				??BIT(vqs->rx_queues) - 1,
+> ?				??false)) {
+> ?		aq_ret = I40E_ERR_TIMEOUT;
+> ?		goto error_param;
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> index c46770eba320..271f144bf05b 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> @@ -308,7 +308,8 @@ void iavf_enable_queues(struct iavf_adapter *adapter)
+> ?	}
+> ?	adapter->current_op = VIRTCHNL_OP_ENABLE_QUEUES;
+> ?	vqs.vsi_id = adapter->vsi_res->vsi_id;
+> -	vqs.tx_queues = BIT(adapter->num_active_queues) - 1;
+> +	/* Send the queues number to PF */
+> +	vqs.tx_queues = adapter->num_active_queues;
+> ?	vqs.rx_queues = vqs.tx_queues;
+> ?	adapter->aq_required &= ~IAVF_FLAG_AQ_ENABLE_QUEUES;
+> ?	iavf_send_pf_msg(adapter, VIRTCHNL_OP_ENABLE_QUEUES,
+> @@ -333,7 +334,8 @@ void iavf_disable_queues(struct iavf_adapter *adapter)
+> ?	}
+> ?	adapter->current_op = VIRTCHNL_OP_DISABLE_QUEUES;
+> ?	vqs.vsi_id = adapter->vsi_res->vsi_id;
+> -	vqs.tx_queues = BIT(adapter->num_active_queues) - 1;
+> +	/* Send the queues number to PF */
+> +	vqs.tx_queues = adapter->num_active_queues;
+> ?	vqs.rx_queues = vqs.tx_queues;
+> ?	adapter->aq_required &= ~IAVF_FLAG_AQ_DISABLE_QUEUES;
+> ?	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_QUEUES,
+> --
+> 2.11.0
 
