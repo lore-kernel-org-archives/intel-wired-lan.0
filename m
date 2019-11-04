@@ -1,214 +1,158 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon,  4 Nov 2019 01:31:07 -0800
-Subject: [Intel-wired-lan] [PATCH S32 v2 14/15] ice: use more accurate
- ICE_DBG mask types
+Date: Mon,  4 Nov 2019 01:31:00 -0800
+Subject: [Intel-wired-lan] [PATCH S32 v2 07/15] ice: Check if VF is disabled
+ for Opcode and other operations
 In-Reply-To: <20191104093108.21542-1-anthony.l.nguyen@intel.com>
 References: <20191104093108.21542-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191104093108.21542-14-anthony.l.nguyen@intel.com>
+Message-ID: <20191104093108.21542-7-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-ice_debug_cq is passed a mask which is always ICE_DBG_AQ_CMD. Modify this
-function, removing the mask parameter entirely, and directly use the more
-appropriate ICE_DBG_AQ_DESC and ICE_DBG_AQ_DESC_BUF.
+This patch adds code to check if PF or VF is disabled before honoring
+mailbox message to configure VF - If it is disabled, and opcode is for
+resetting VF, the PF driver simply tell VF that all is set. In addition,
+if reset is ongoing, and Admin intend to configure VF on the host, we can
+poll the VF enabling bit to make sure it is ready before continue - If
+after ~250 milliseconds, VF is not in active state, we can bail out with
+invalid error.
 
-The function is only called from ice_controlq.c, and has no
-other callers outside of that file. Move it and mark it static to avoid
-namespace pollution.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c   | 50 ----------------
- drivers/net/ethernet/intel/ice/ice_common.h   |  2 -
- drivers/net/ethernet/intel/ice/ice_controlq.c | 57 +++++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_type.h     |  2 +
- 4 files changed, 53 insertions(+), 58 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 74 ++++++++++++++++---
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  1 +
+ 2 files changed, 63 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index eb01c218c596..2c0dd2e2c232 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1273,56 +1273,6 @@ const struct ice_ctx_ele ice_tlan_ctx_info[] = {
- 	{ 0 }
- };
- 
--/**
-- * ice_debug_cq
-- * @hw: pointer to the hardware structure
-- * @mask: debug mask
-- * @desc: pointer to control queue descriptor
-- * @buf: pointer to command buffer
-- * @buf_len: max length of buf
-- *
-- * Dumps debug log about control command with descriptor contents.
-- */
--void
--ice_debug_cq(struct ice_hw *hw, u32 __maybe_unused mask, void *desc, void *buf,
--	     u16 buf_len)
--{
--	struct ice_aq_desc *cq_desc = (struct ice_aq_desc *)desc;
--	u16 len;
--
--#ifndef CONFIG_DYNAMIC_DEBUG
--	if (!(mask & hw->debug_mask))
--		return;
--#endif
--
--	if (!desc)
--		return;
--
--	len = le16_to_cpu(cq_desc->datalen);
--
--	ice_debug(hw, mask,
--		  "CQ CMD: opcode 0x%04X, flags 0x%04X, datalen 0x%04X, retval 0x%04X\n",
--		  le16_to_cpu(cq_desc->opcode),
--		  le16_to_cpu(cq_desc->flags),
--		  le16_to_cpu(cq_desc->datalen), le16_to_cpu(cq_desc->retval));
--	ice_debug(hw, mask, "\tcookie (h,l) 0x%08X 0x%08X\n",
--		  le32_to_cpu(cq_desc->cookie_high),
--		  le32_to_cpu(cq_desc->cookie_low));
--	ice_debug(hw, mask, "\tparam (0,1)  0x%08X 0x%08X\n",
--		  le32_to_cpu(cq_desc->params.generic.param0),
--		  le32_to_cpu(cq_desc->params.generic.param1));
--	ice_debug(hw, mask, "\taddr (h,l)   0x%08X 0x%08X\n",
--		  le32_to_cpu(cq_desc->params.generic.addr_high),
--		  le32_to_cpu(cq_desc->params.generic.addr_low));
--	if (buf && cq_desc->datalen != 0) {
--		ice_debug(hw, mask, "Buffer:\n");
--		if (buf_len < len)
--			len = buf_len;
--
--		ice_debug_array(hw, mask, 16, 1, (u8 *)buf, len);
--	}
--}
--
- /* FW Admin Queue command wrappers */
- 
- /* Software lock/mutex that is meant to be held while the Global Config Lock
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index c17c5724d33b..63d7963221a0 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -20,8 +20,6 @@ enum ice_fw_modes {
- 
- enum ice_status ice_nvm_validate_checksum(struct ice_hw *hw);
- 
--void
--ice_debug_cq(struct ice_hw *hw, u32 mask, void *desc, void *buf, u16 buf_len);
- enum ice_status ice_init_hw(struct ice_hw *hw);
- void ice_deinit_hw(struct ice_hw *hw);
- enum ice_status
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index c68709c7ef81..947728aada46 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -809,6 +809,52 @@ static u16 ice_clean_sq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
- 	return ICE_CTL_Q_DESC_UNUSED(sq);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 4a1cb51b50c7..537377448bef 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1151,6 +1151,25 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	return true;
  }
  
 +/**
-+ * ice_debug_cq
-+ * @hw: pointer to the hardware structure
-+ * @desc: pointer to control queue descriptor
-+ * @buf: pointer to command buffer
-+ * @buf_len: max length of buf
++ * ice_is_vf_disabled
++ * @vf: pointer to the VF info
 + *
-+ * Dumps debug log about control command with descriptor contents.
++ * Returns true if the PF or VF is disabled, false otherwise.
 + */
-+static void ice_debug_cq(struct ice_hw *hw, void *desc, void *buf, u16 buf_len)
++static bool ice_is_vf_disabled(struct ice_vf *vf)
 +{
-+	struct ice_aq_desc *cq_desc = (struct ice_aq_desc *)desc;
-+	u16 len;
++	struct ice_pf *pf = vf->pf;
 +
-+	if (!IS_ENABLED(CONFIG_DYNAMIC_DEBUG) &&
-+	    !((ICE_DBG_AQ_DESC | ICE_DBG_AQ_DESC_BUF) & hw->debug_mask))
-+		return;
++	/* If the PF has been disabled, there is no need resetting VF until
++	 * PF is active again. Similarly, if the VF has been disabled, this
++	 * means something else is resetting the VF, so we shouldn't continue.
++	 * Otherwise, set disable VF state bit for actual reset, and continue.
++	 */
++	return (test_bit(__ICE_VF_DIS, pf->state) ||
++		test_bit(ICE_VF_STATE_DIS, vf->vf_states));
++}
 +
-+	if (!desc)
-+		return;
+ /**
+  * ice_reset_vf - Reset a particular VF
+  * @vf: pointer to the VF structure
+@@ -1168,19 +1187,15 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 	u32 reg;
+ 	int i;
+ 
+-	/* If the PF has been disabled, there is no need resetting VF until
+-	 * PF is active again.
+-	 */
+-	if (test_bit(__ICE_VF_DIS, pf->state))
+-		return false;
+-
+-	/* If the VF has been disabled, this means something else is
+-	 * resetting the VF, so we shouldn't continue. Otherwise, set
+-	 * disable VF state bit for actual reset, and continue.
+-	 */
+-	if (test_and_set_bit(ICE_VF_STATE_DIS, vf->vf_states))
+-		return false;
++	if (ice_is_vf_disabled(vf)) {
++		dev_dbg(&pf->pdev->dev,
++			"VF is already disabled, there is no need for resetting it, telling VM, all is fine %d\n",
++			 vf->vf_id);
++		return true;
++	}
+ 
++	/* Set VF disable bit state here, before triggering reset */
++	set_bit(ICE_VF_STATE_DIS, vf->vf_states);
+ 	ice_trigger_vf_reset(vf, is_vflr, false);
+ 
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+@@ -3128,6 +3143,23 @@ int ice_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool ena)
+ 	return ret;
+ }
+ 
++/**
++ * ice_wait_on_vf_reset
++ * @vf: The VF being resseting
++ *
++ * Poll to make sure a given VF is ready after reset
++ */
++static void ice_wait_on_vf_reset(struct ice_vf *vf)
++{
++	int i;
 +
-+	len = le16_to_cpu(cq_desc->datalen);
-+
-+	ice_debug(hw, ICE_DBG_AQ_DESC,
-+		  "CQ CMD: opcode 0x%04X, flags 0x%04X, datalen 0x%04X, retval 0x%04X\n",
-+		  le16_to_cpu(cq_desc->opcode),
-+		  le16_to_cpu(cq_desc->flags),
-+		  le16_to_cpu(cq_desc->datalen), le16_to_cpu(cq_desc->retval));
-+	ice_debug(hw, ICE_DBG_AQ_DESC, "\tcookie (h,l) 0x%08X 0x%08X\n",
-+		  le32_to_cpu(cq_desc->cookie_high),
-+		  le32_to_cpu(cq_desc->cookie_low));
-+	ice_debug(hw, ICE_DBG_AQ_DESC, "\tparam (0,1)  0x%08X 0x%08X\n",
-+		  le32_to_cpu(cq_desc->params.generic.param0),
-+		  le32_to_cpu(cq_desc->params.generic.param1));
-+	ice_debug(hw, ICE_DBG_AQ_DESC, "\taddr (h,l)   0x%08X 0x%08X\n",
-+		  le32_to_cpu(cq_desc->params.generic.addr_high),
-+		  le32_to_cpu(cq_desc->params.generic.addr_low));
-+	if (buf && cq_desc->datalen != 0) {
-+		ice_debug(hw, ICE_DBG_AQ_DESC_BUF, "Buffer:\n");
-+		if (buf_len < len)
-+			len = buf_len;
-+
-+		ice_debug_array(hw, ICE_DBG_AQ_DESC_BUF, 16, 1, (u8 *)buf, len);
++	for (i = 0; i < ICE_MAX_VF_RESET_WAIT; i++) {
++		if (test_bit(ICE_VF_STATE_INIT, vf->vf_states))
++			break;
++		msleep(20);
 +	}
 +}
 +
  /**
-  * ice_sq_done - check if FW has processed the Admin Send Queue (ATQ)
-  * @hw: pointer to the HW struct
-@@ -934,10 +980,10 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+  * ice_set_vf_mac
+  * @netdev: network interface device structure
+@@ -3151,6 +3183,15 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
  	}
  
- 	/* Debug desc and buffer */
--	ice_debug(hw, ICE_DBG_AQ_MSG,
-+	ice_debug(hw, ICE_DBG_AQ_DESC,
- 		  "ATQ: Control Send queue desc and buffer:\n");
+ 	vf = &pf->vf[vf_id];
++	/* Don't set MAC on disabled VF */
++	if (ice_is_vf_disabled(vf))
++		return -EINVAL;
++
++	/* In case VF is in reset mode, wait until it is completed. Depending
++	 * on factors like queue disabling routine, this could take ~250ms
++	 */
++	ice_wait_on_vf_reset(vf);
++
+ 	if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states)) {
+ 		netdev_err(netdev, "VF %d in reset. Try again.\n", vf_id);
+ 		return -EBUSY;
+@@ -3198,6 +3239,15 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
+ 	}
  
--	ice_debug_cq(hw, ICE_DBG_AQ_CMD, (void *)desc_on_ring, buf, buf_size);
-+	ice_debug_cq(hw, (void *)desc_on_ring, buf, buf_size);
+ 	vf = &pf->vf[vf_id];
++	/* Don't set Trusted Mode on disabled VF */
++	if (ice_is_vf_disabled(vf))
++		return -EINVAL;
++
++	/* In case VF is in reset mode, wait until it is completed. Depending
++	 * on factors like queue disabling routine, this could take ~250ms
++	 */
++	ice_wait_on_vf_reset(vf);
++
+ 	if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states)) {
+ 		dev_err(&pf->pdev->dev, "VF %d in reset. Try again.\n", vf_id);
+ 		return -EBUSY;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 0d9880c8bba3..2e867ad2e81d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -38,6 +38,7 @@
+ #define ICE_MAX_POLICY_INTR_PER_VF	33
+ #define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
+ #define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
++#define ICE_MAX_VF_RESET_WAIT		15
  
- 	(cq->sq.next_to_use)++;
- 	if (cq->sq.next_to_use == cq->sq.count)
-@@ -986,7 +1032,7 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
- 	ice_debug(hw, ICE_DBG_AQ_MSG,
- 		  "ATQ: desc and buffer writeback:\n");
- 
--	ice_debug_cq(hw, ICE_DBG_AQ_CMD, (void *)desc, buf, buf_size);
-+	ice_debug_cq(hw, (void *)desc, buf, buf_size);
- 
- 	/* save writeback AQ if requested */
- 	if (details->wb_desc)
-@@ -1084,10 +1130,9 @@ ice_clean_rq_elem(struct ice_hw *hw, struct ice_ctl_q_info *cq,
- 	if (e->msg_buf && e->msg_len)
- 		memcpy(e->msg_buf, cq->rq.r.rq_bi[desc_idx].va, e->msg_len);
- 
--	ice_debug(hw, ICE_DBG_AQ_MSG, "ARQ: desc and buffer:\n");
-+	ice_debug(hw, ICE_DBG_AQ_DESC, "ARQ: desc and buffer:\n");
- 
--	ice_debug_cq(hw, ICE_DBG_AQ_CMD, (void *)desc, e->msg_buf,
--		     cq->rq_buf_size);
-+	ice_debug_cq(hw, (void *)desc, e->msg_buf, cq->rq_buf_size);
- 
- 	/* Restore the original datalen and buffer address in the desc,
- 	 * FW updates datalen to indicate the event message size
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index d3d7049c97f0..eba8b04b8cbd 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -46,6 +46,8 @@ static inline u32 ice_round_to_num(u32 N, u32 R)
- #define ICE_DBG_PKG		BIT_ULL(16)
- #define ICE_DBG_RES		BIT_ULL(17)
- #define ICE_DBG_AQ_MSG		BIT_ULL(24)
-+#define ICE_DBG_AQ_DESC		BIT_ULL(25)
-+#define ICE_DBG_AQ_DESC_BUF	BIT_ULL(26)
- #define ICE_DBG_AQ_CMD		BIT_ULL(27)
- #define ICE_DBG_USER		BIT_ULL(31)
- 
+ /* Specific VF states */
+ enum ice_vf_states {
 -- 
 2.20.1
 
