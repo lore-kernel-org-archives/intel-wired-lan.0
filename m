@@ -1,158 +1,42 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon,  4 Nov 2019 01:31:00 -0800
-Subject: [Intel-wired-lan] [PATCH S32 v2 07/15] ice: Check if VF is disabled
- for Opcode and other operations
+Date: Mon,  4 Nov 2019 01:31:02 -0800
+Subject: [Intel-wired-lan] [PATCH S32 v2 09/15] ice: use pkg_dwnld_status
+ instead of sq_last_status
 In-Reply-To: <20191104093108.21542-1-anthony.l.nguyen@intel.com>
 References: <20191104093108.21542-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191104093108.21542-7-anthony.l.nguyen@intel.com>
+Message-ID: <20191104093108.21542-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-This patch adds code to check if PF or VF is disabled before honoring
-mailbox message to configure VF - If it is disabled, and opcode is for
-resetting VF, the PF driver simply tell VF that all is set. In addition,
-if reset is ongoing, and Admin intend to configure VF on the host, we can
-poll the VF enabling bit to make sure it is ready before continue - If
-after ~250 milliseconds, VF is not in active state, we can bail out with
-invalid error.
+Since the return value from the Download Package AQ command is stored in
+hw->pkg_dwnld_status, use that instead of sq_last_status since that may
+have the return value from some other AQ command leading to unexpected
+results.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 74 ++++++++++++++++---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  1 +
- 2 files changed, 63 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 4a1cb51b50c7..537377448bef 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1151,6 +1151,25 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	return true;
- }
- 
-+/**
-+ * ice_is_vf_disabled
-+ * @vf: pointer to the VF info
-+ *
-+ * Returns true if the PF or VF is disabled, false otherwise.
-+ */
-+static bool ice_is_vf_disabled(struct ice_vf *vf)
-+{
-+	struct ice_pf *pf = vf->pf;
-+
-+	/* If the PF has been disabled, there is no need resetting VF until
-+	 * PF is active again. Similarly, if the VF has been disabled, this
-+	 * means something else is resetting the VF, so we shouldn't continue.
-+	 * Otherwise, set disable VF state bit for actual reset, and continue.
-+	 */
-+	return (test_bit(__ICE_VF_DIS, pf->state) ||
-+		test_bit(ICE_VF_STATE_DIS, vf->vf_states));
-+}
-+
- /**
-  * ice_reset_vf - Reset a particular VF
-  * @vf: pointer to the VF structure
-@@ -1168,19 +1187,15 @@ static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 	u32 reg;
- 	int i;
- 
--	/* If the PF has been disabled, there is no need resetting VF until
--	 * PF is active again.
--	 */
--	if (test_bit(__ICE_VF_DIS, pf->state))
--		return false;
--
--	/* If the VF has been disabled, this means something else is
--	 * resetting the VF, so we shouldn't continue. Otherwise, set
--	 * disable VF state bit for actual reset, and continue.
--	 */
--	if (test_and_set_bit(ICE_VF_STATE_DIS, vf->vf_states))
--		return false;
-+	if (ice_is_vf_disabled(vf)) {
-+		dev_dbg(&pf->pdev->dev,
-+			"VF is already disabled, there is no need for resetting it, telling VM, all is fine %d\n",
-+			 vf->vf_id);
-+		return true;
-+	}
- 
-+	/* Set VF disable bit state here, before triggering reset */
-+	set_bit(ICE_VF_STATE_DIS, vf->vf_states);
- 	ice_trigger_vf_reset(vf, is_vflr, false);
- 
- 	vsi = pf->vsi[vf->lan_vsi_idx];
-@@ -3128,6 +3143,23 @@ int ice_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool ena)
- 	return ret;
- }
- 
-+/**
-+ * ice_wait_on_vf_reset
-+ * @vf: The VF being resseting
-+ *
-+ * Poll to make sure a given VF is ready after reset
-+ */
-+static void ice_wait_on_vf_reset(struct ice_vf *vf)
-+{
-+	int i;
-+
-+	for (i = 0; i < ICE_MAX_VF_RESET_WAIT; i++) {
-+		if (test_bit(ICE_VF_STATE_INIT, vf->vf_states))
-+			break;
-+		msleep(20);
-+	}
-+}
-+
- /**
-  * ice_set_vf_mac
-  * @netdev: network interface device structure
-@@ -3151,6 +3183,15 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 	}
- 
- 	vf = &pf->vf[vf_id];
-+	/* Don't set MAC on disabled VF */
-+	if (ice_is_vf_disabled(vf))
-+		return -EINVAL;
-+
-+	/* In case VF is in reset mode, wait until it is completed. Depending
-+	 * on factors like queue disabling routine, this could take ~250ms
-+	 */
-+	ice_wait_on_vf_reset(vf);
-+
- 	if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states)) {
- 		netdev_err(netdev, "VF %d in reset. Try again.\n", vf_id);
- 		return -EBUSY;
-@@ -3198,6 +3239,15 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
- 	}
- 
- 	vf = &pf->vf[vf_id];
-+	/* Don't set Trusted Mode on disabled VF */
-+	if (ice_is_vf_disabled(vf))
-+		return -EINVAL;
-+
-+	/* In case VF is in reset mode, wait until it is completed. Depending
-+	 * on factors like queue disabling routine, this could take ~250ms
-+	 */
-+	ice_wait_on_vf_reset(vf);
-+
- 	if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states)) {
- 		dev_err(&pf->pdev->dev, "VF %d in reset. Try again.\n", vf_id);
- 		return -EBUSY;
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 0d9880c8bba3..2e867ad2e81d 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -38,6 +38,7 @@
- #define ICE_MAX_POLICY_INTR_PER_VF	33
- #define ICE_MIN_INTR_PER_VF		(ICE_MIN_QS_PER_VF + 1)
- #define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
-+#define ICE_MAX_VF_RESET_WAIT		15
- 
- /* Specific VF states */
- enum ice_vf_states {
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 94354b307a4e..aaa398759548 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3025,7 +3025,7 @@ ice_log_pkg_init(struct ice_hw *hw, enum ice_status *status)
+ 				ICE_PKG_SUPP_VER_MAJ, ICE_PKG_SUPP_VER_MNR);
+ 		break;
+ 	case ICE_ERR_AQ_ERROR:
+-		switch (hw->adminq.sq_last_status) {
++		switch (hw->pkg_dwnld_status) {
+ 		case ICE_AQ_RC_ENOSEC:
+ 		case ICE_AQ_RC_EBADSIG:
+ 			dev_err(dev,
 -- 
 2.20.1
 
