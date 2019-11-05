@@ -1,67 +1,56 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue,  5 Nov 2019 11:44:13 +0200
-Subject: [Intel-wired-lan] [PATCH v1] igc: Improve the DMA mapping flow
-Message-ID: <20191105094413.1405-1-sasha.neftin@intel.com>
+From: Creeley, Brett <brett.creeley@intel.com>
+Date: Tue, 5 Nov 2019 16:55:32 +0000
+Subject: [Intel-wired-lan] [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg
+ interface between VF and PF
+In-Reply-To: <1572931430.13810.227.camel@harmonicinc.com>
+References: <1572845537.13810.225.camel@harmonicinc.com>
+ <3508A0C5D531054DBDD98909F6FA64FA11B3936D@ORSMSX113.amr.corp.intel.com>
+ <1572931430.13810.227.camel@harmonicinc.com>
+Message-ID: <3508A0C5D531054DBDD98909F6FA64FA11B39863@ORSMSX113.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Improve the probe flow and set both the DMA mask and the coherent
-to the same thing. Make the flow optimized and cleared.
+> -----Original Message-----
+> From: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
+> Sent: Monday, November 4, 2019 9:24 PM
+> To: Creeley, Brett <brett.creeley@intel.com>; intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Cc: Arkady Gilinsky <arcadyg@gmail.com>
+> Subject: Re: [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg interface between VF and PF
+> > static bool i40e_vc_verify_vqs_bitmaps(struct virtchnl_queue_select *vqs)
+> > {
+> > 	/* this will catch any changes made to the virtchnl_queue_select bitmap */
+> > 	if (sizeof(vqs->rx_queues) != sizeof(u32) ||
+> > 	?????sizeof(vqs->tx_queues) != sizeof(u32))
+> > 		return false;
+> If so, then is it better to check the type of the fields in compile-time rather than in runtime ?
+> Something like this:
+> BUILD_BUG_ON(sizeof(vqs->rx_queues) != sizeof(u32));
+> BUILD_BUG_ON(sizeof(vqs->tx_queues) != sizeof(u32));
+> This is not required comparison each time when function is called and made code more optimized.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_main.c | 24 +++++++++---------------
- 1 file changed, 9 insertions(+), 15 deletions(-)
+I don't think this is required with the change you suggested below.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index c3266645c95e..648aee679cb6 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -4346,32 +4346,26 @@ static int igc_probe(struct pci_dev *pdev,
- 	struct net_device *netdev;
- 	struct igc_hw *hw;
- 	const struct igc_info *ei = igc_info_tbl[ent->driver_data];
--	int err;
-+	int err, pci_using_dac;
- 
- 	err = pci_enable_device_mem(pdev);
- 	if (err)
- 		return err;
- 
--	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
-+	pci_using_dac = 0;
-+	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
- 	if (!err) {
--		err = dma_set_coherent_mask(&pdev->dev,
--					    DMA_BIT_MASK(64));
-+		pci_using_dac = 1;
- 	} else {
--		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
-+		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 		if (err) {
--			err = dma_set_coherent_mask(&pdev->dev,
--						    DMA_BIT_MASK(32));
--			if (err) {
--				dev_err(&pdev->dev, "igc: Wrong DMA config\n");
--				goto err_dma;
--			}
-+			dev_err(&pdev->dev,
-+				"No usable DMA configuration, aborting\n");
-+			goto err_dma;
- 		}
- 	}
- 
--	err = pci_request_selected_regions(pdev,
--					   pci_select_bars(pdev,
--							   IORESOURCE_MEM),
--					   igc_driver_name);
-+	err = pci_request_mem_regions(pdev, igc_driver_name);
- 	if (err)
- 		goto err_pci_reg;
- 
--- 
-2.11.0
+> >
+> > 	if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
+> > 	??????hweight32(vqs->rx_queues) > I40E_MAX_VF_QUEUES ||
+> > 	??????hweight32(vqs->tx_queues) > I40E_MAX_VF_QUEUES)
+> > 		return false;
+> Again, from optimization POV it is better to have constant changed than variable,
+> since it is compile time and not run time action:
+> 	if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
+> 	??????vqs->rx_queues >= (BIT(I40E_MAX_VF_QUEUES)) ||
+> 
+> ??????vqs->tx_queues >= (BIT(I40E_MAX_VF_QUEUES)))
+> 		return false;
+
+This seems much better than my solution. It fixes the original issue, handles if the
+vqs->[r|t]x_queues variables have changed in size, and the queue bitmap comparison
+uses a constant. Thanks!
+
+> > 	return true;
+> > }
 
