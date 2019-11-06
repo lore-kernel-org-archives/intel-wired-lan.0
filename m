@@ -1,54 +1,55 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed,  6 Nov 2019 02:05:30 -0800
-Subject: [Intel-wired-lan] [PATCH S32 v3 04/15] ice: avoid setting features
- during reset
-In-Reply-To: <20191106100541.48639-1-anthony.l.nguyen@intel.com>
-References: <20191106100541.48639-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191106100541.48639-4-anthony.l.nguyen@intel.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Wed,  6 Nov 2019 06:23:56 -0800
+Subject: [Intel-wired-lan] [PATCH] i40e: Set PHY Access flag on X722
+Message-ID: <20191106142356.48768-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Henry Tieman <henry.w.tieman@intel.com>
+From: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
 
-Certain subsystems behave very badly when called during reset (core
-dump). This patch returns -EBUSY when reconfiguring some subsystems
-during reset. With this patch some ethtool functions will not core
-dump during reset.
+The X722 FW API version 1.9 adds support for accessing PHY
+registers with Admin Queue Command. This enables reading
+EEPROM data from (Q)SFP+ transceivers, what was previously
+possible only on X710 devices.
 
-Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+Signed-off-by: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c     | 5 +++++
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 2 ++
+ 2 files changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index a0a04114d991..94354b307a4e 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3924,6 +3924,7 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
-+	struct ice_pf *pf = vsi->back;
- 	int ret = 0;
- 
- 	/* Don't set any netdev advanced features with device in Safe Mode */
-@@ -3933,6 +3934,13 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
- 		return ret;
- 	}
- 
-+	/* Do not change setting during reset */
-+	if (ice_is_reset_in_progress(pf->state)) {
-+		dev_err(&vsi->back->pdev->dev,
-+			"Device is resetting, changing advanced netdev features temporarily unavailable.\n");
-+		return -EBUSY;
-+	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index 9f0a4e92a231..37514a75f928 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -536,6 +536,11 @@ static void i40e_set_hw_flags(struct i40e_hw *hw)
+ 		    (aq->api_maj_ver == 1 &&
+ 		     aq->api_min_ver >= I40E_MINOR_VER_FW_LLDP_STOPPABLE_X722))
+ 			hw->flags |= I40E_HW_FLAG_FW_LLDP_STOPPABLE;
 +
- 	/* Multiple features can be changed in one call so keep features in
- 	 * separate if/else statements to guarantee each feature is checked
- 	 */
++		if (aq->api_maj_ver > 1 ||
++		    (aq->api_maj_ver == 1 &&
++		     aq->api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_X722))
++			hw->flags |= I40E_HW_FLAG_AQ_PHY_ACCESS_CAPABLE;
+ 		/* fall through */
+ 	default:
+ 		break;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index a23f89fb33ee..aa5f1c0aa721 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -20,6 +20,8 @@
+ 
+ /* API version 1.7 implements additional link and PHY-specific APIs  */
+ #define I40E_MINOR_VER_GET_LINK_INFO_XL710 0x0007
++/* API version 1.9 for X722 implements additional link and PHY-specific APIs */
++#define I40E_MINOR_VER_GET_LINK_INFO_X722 0x0009
+ /* API version 1.6 for X722 devices adds ability to stop FW LLDP agent */
+ #define I40E_MINOR_VER_FW_LLDP_STOPPABLE_X722 0x0006
+ 
 -- 
-2.20.1
+2.21.0
 
