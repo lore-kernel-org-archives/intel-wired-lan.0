@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Nov 2019 18:36:24 +0000
-Subject: [Intel-wired-lan] [PATCH S32 v3 05/15] ice: Fix to change Rx/Tx
- ring descriptor size via ethtool with DCBx
-In-Reply-To: <20191106100541.48639-5-anthony.l.nguyen@intel.com>
+Date: Thu, 7 Nov 2019 18:37:23 +0000
+Subject: [Intel-wired-lan] [PATCH S32 v3 06/15] ice: configure software
+ LLDP in ice_init_pf_dcb
+In-Reply-To: <20191106100541.48639-6-anthony.l.nguyen@intel.com>
 References: <20191106100541.48639-1-anthony.l.nguyen@intel.com>
- <20191106100541.48639-5-anthony.l.nguyen@intel.com>
-Message-ID: <44619aba328342e7bc6fffba9bceebf0@intel.com>
+ <20191106100541.48639-6-anthony.l.nguyen@intel.com>
+Message-ID: <9b564e74c77446c7b06e035731a2905d@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, November 6, 2019 2:06 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S32 v3 05/15] ice: Fix to change Rx/Tx ring
-> descriptor size via ethtool with DCBx
+> Subject: [Intel-wired-lan] [PATCH S32 v3 06/15] ice: configure software LLDP
+> in ice_init_pf_dcb
 > 
-> From: Usha Ketineni <usha.k.ketineni@intel.com>
+> From: Paul Greenwalt <paul.greenwalt@intel.com>
 > 
-> This patch fixes the call trace caused by the kernel when the Rx/Tx descriptor
-> size change request is initiated via ethtool when DCB is configured.
-> ice_set_ringparam() should use vsi->num_txq instead of
-> vsi->alloc_txq as it represents the queues that are enabled in the
-> driver when DCB is enabled/disabled. Otherwise, queue index being used
-> can go out of range.
+> Move software LLDP configuration when FW DCBX is disabled to
+> ice_init_pf_dcb, since that is where the FW DCBX state is determined.
+> Remove this software LLDP configuration from ice_vsi_setup and
+> ice_set_priv_flags. Software configuration includes redirecting Rx LLDP
+> packets up the stack, when FW DCBX is not running.
 > 
-> For example, when vsi->alloc_txq has 104 queues and with 3 TCS enabled via
-> DCB, each TC gets 34 queues, vsi->num_txq will be 102 and only 102 queues
-> will be enabled.
-> 
-> Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 15 +++++++++++++++
+> drivers/net/ethernet/intel/ice/ice_ethtool.c |  5 -----
+>  drivers/net/ethernet/intel/ice/ice_lib.c     | 14 ++++----------
+>  3 files changed, 19 insertions(+), 15 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
