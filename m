@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Nov 2019 18:34:54 +0000
-Subject: [Intel-wired-lan] [PATCH S32 v3 02/15] ice: Add NDO callback to
- set the maximum per-queue bitrate
-In-Reply-To: <20191106100541.48639-2-anthony.l.nguyen@intel.com>
+Date: Thu, 7 Nov 2019 18:35:23 +0000
+Subject: [Intel-wired-lan] [PATCH S32 v3 03/15] ice: Implement DCBNL
+ support
+In-Reply-To: <20191106100541.48639-3-anthony.l.nguyen@intel.com>
 References: <20191106100541.48639-1-anthony.l.nguyen@intel.com>
- <20191106100541.48639-2-anthony.l.nguyen@intel.com>
-Message-ID: <c80c6df822474a16a388e15e0193d684@intel.com>
+ <20191106100541.48639-3-anthony.l.nguyen@intel.com>
+Message-ID: <e47f71c2ffa74829ab7b95d67a776a7b@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,37 +17,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, November 6, 2019 2:05 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S32 v3 02/15] ice: Add NDO callback to set
-> the maximum per-queue bitrate
+> Subject: [Intel-wired-lan] [PATCH S32 v3 03/15] ice: Implement DCBNL
+> support
 > 
-> From: Usha Ketineni <usha.k.ketineni@intel.com>
+> From: Dave Ertman <david.m.ertman@intel.com>
 > 
-> Allow for rate limiting Tx queues. Bitrate is set in
-> Mbps(megabits per second).
+> Implement interface layer for the DCBNL subsystem. These are the functions
+> to support the callbacks defined in the dcbnl_rtnl_ops struct. These callbacks
+> are going to be used to interface with the DCB settings of the device.
+> Implementation of dcb_nl set functions and supporting SW DCB functions.
 > 
-> Mbps max-rate is set for the queue via sysfs:
-> /sys/class/net/<iface>/queues/tx-<queue>/tx_maxrate
-> ex: echo 100 >/sys/class/net/ens7/queues/tx-0/tx_maxrate
->     echo 200 >/sys/class/net/ens7/queues/tx-1/tx_maxrate
-> Note: A value of zero for tx_maxrate means disabled,
-> default is disabled.
-> 
-> Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
-> Co-developed-by: Tarun Singh <tarun.k.singh@intel.com>
-> Signed-off-by: Tarun Singh <tarun.k.singh@intel.com>
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   46 +
->  drivers/net/ethernet/intel/ice/ice_common.c   |   10 +-
->  drivers/net/ethernet/intel/ice/ice_common.h   |    2 +
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |   10 +
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |    8 +
->  drivers/net/ethernet/intel/ice/ice_main.c     |   43 +
->  drivers/net/ethernet/intel/ice/ice_sched.c    | 1264 ++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_sched.h    |   39 +
->  drivers/net/ethernet/intel/ice/ice_switch.h   |    5 -
->  drivers/net/ethernet/intel/ice/ice_type.h     |   63 +-
->  10 files changed, 1480 insertions(+), 10 deletions(-)
+>  drivers/net/ethernet/intel/ice/Makefile       |   2 +-
+>  drivers/net/ethernet/intel/ice/ice.h          |   2 +
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |  15 +-
+> drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |  15 +-
+>  drivers/net/ethernet/intel/ice/ice_dcb_nl.c   | 933 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_dcb_nl.h   |  19 +
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   |   3 +
+>  drivers/net/ethernet/intel/ice/ice_lib.c      |   1 +
+>  drivers/net/ethernet/intel/ice/ice_main.c     |   6 +
+>  9 files changed, 991 insertions(+), 5 deletions(-)  create mode 100644
+> drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_dcb_nl.h
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
