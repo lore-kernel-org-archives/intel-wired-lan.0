@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Nov 2019 18:38:23 +0000
-Subject: [Intel-wired-lan] [PATCH S32 v3 08/15] ice: Change max MSI-x
- vector_id check in cfg_irq_map
-In-Reply-To: <20191106100541.48639-8-anthony.l.nguyen@intel.com>
+Date: Thu, 7 Nov 2019 18:38:49 +0000
+Subject: [Intel-wired-lan] [PATCH S32 v3 09/15] ice: use
+ pkg_dwnld_status instead of sq_last_status
+In-Reply-To: <20191106100541.48639-9-anthony.l.nguyen@intel.com>
 References: <20191106100541.48639-1-anthony.l.nguyen@intel.com>
- <20191106100541.48639-8-anthony.l.nguyen@intel.com>
-Message-ID: <1998cf8653124e3a984a761edb115e2d@intel.com>
+ <20191106100541.48639-9-anthony.l.nguyen@intel.com>
+Message-ID: <d9448bba693242078af0a3406e859b85@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, November 6, 2019 2:06 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S32 v3 08/15] ice: Change max MSI-x
-> vector_id check in cfg_irq_map
+> Subject: [Intel-wired-lan] [PATCH S32 v3 09/15] ice: use pkg_dwnld_status
+> instead of sq_last_status
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> Currently we check to make sure the vector_id passed down from iavf is less
-> than or equal to pf->hw.func_caps.common_caps.num_msix_vectors.
-> This is incorrect because the vector_id is always 0-based and never greater
-> than or equal to the ICE_MAX_INTR_PER_VF. Fix this by checking to make
-> sure the vector_id is less than the max allowed interrupts per VF
-> (ICE_MAX_INTR_PER_VF).
+> Since the return value from the Download Package AQ command is stored in
+> hw->pkg_dwnld_status, use that instead of sq_last_status since that may
+> have the return value from some other AQ command leading to unexpected
+> results.
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
