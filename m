@@ -1,10 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Nov 2019 18:48:35 +0000
-Subject: [Intel-wired-lan] [PATCH] iavf: initialize ITRN registers with
- correct values
-In-Reply-To: <20191105122214.50556-1-alice.michael@intel.com>
-References: <20191105122214.50556-1-alice.michael@intel.com>
-Message-ID: <8163697827d8482986fab8950222ea07@intel.com>
+Date: Thu, 7 Nov 2019 18:49:17 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Set PHY Access flag on X722
+In-Reply-To: <20191106142356.48768-1-alice.michael@intel.com>
+References: <20191106142356.48768-1-alice.michael@intel.com>
+Message-ID: <b20627593e0c4d70b06afd76a1565e1f@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,36 +13,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Alice Michael
-> Sent: Tuesday, November 5, 2019 4:22 AM
+> Sent: Wednesday, November 6, 2019 6:24 AM
 > To: Michael, Alice <alice.michael@intel.com>; intel-wired-
 > lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] iavf: initialize ITRN registers with correct
-> values
+> Cc: Ludkiewicz, Adam <adam.ludkiewicz@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] i40e: Set PHY Access flag on X722
 > 
-> From: Nicholas Nunley <nicholas.d.nunley@intel.com>
+> From: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
 > 
-> Since commit 92418fb14750 ("i40e/i40evf: Use usec value instead of reg value
-> for ITR defines") the driver tracks the interrupt throttling intervals in single
-> usec units, although the actual ITRN registers are programmed in 2 usec
-> units. Most register programming flows in the driver correctly handle the
-> conversion, although it is currently not applied when the registers are
-> initialized to their default values. Most of the time this doesn't present a
-> problem since the default values are usually immediately overwritten
-> through the standard adaptive throttling mechanism, or updated manually by
-> the user, but if adaptive throttling is disabled and the interval values are left
-> alone then the incorrect value will persist.
+> The X722 FW API version 1.9 adds support for accessing PHY registers with
+> Admin Queue Command. This enables reading EEPROM data from (Q)SFP+
+> transceivers, what was previously possible only on X710 devices.
 > 
-> Since the intended default interval of 50 usecs (vs. 100 usecs as
-> programmed) performs better for most traffic workloads, this can lead to
-> performance regressions.
-> 
-> This patch adds the correct conversion when writing the initial values to the
-> ITRN registers.
-> 
-> Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
+> Signed-off-by: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c     | 5 +++++
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 2 ++
+>  2 files changed, 7 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
