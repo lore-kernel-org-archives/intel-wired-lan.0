@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Nov 2019 18:39:48 +0000
-Subject: [Intel-wired-lan] [PATCH S32 v3 11/15] ice: Update enum
- ice_flg64_bits to current specification
-In-Reply-To: <20191106100541.48639-11-anthony.l.nguyen@intel.com>
+Date: Thu, 7 Nov 2019 18:40:18 +0000
+Subject: [Intel-wired-lan] [PATCH S32 v3 12/15] ice: remove unnecessary
+ conditional check
+In-Reply-To: <20191106100541.48639-12-anthony.l.nguyen@intel.com>
 References: <20191106100541.48639-1-anthony.l.nguyen@intel.com>
- <20191106100541.48639-11-anthony.l.nguyen@intel.com>
-Message-ID: <a80ac62baf9f419ea74211cb3a73d3b3@intel.com>
+ <20191106100541.48639-12-anthony.l.nguyen@intel.com>
+Message-ID: <dc47b3057704414580fb8df693f061c1@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, November 6, 2019 2:06 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S32 v3 11/15] ice: Update enum
-> ice_flg64_bits to current specification
+> Subject: [Intel-wired-lan] [PATCH S32 v3 12/15] ice: remove unnecessary
+> conditional check
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> Currently the VLAN ice_flg64_bits are off by 1. Fix this by setting the
-> ICE_FLG_EVLAN_x8100 flag to 14, which also updates
-> ICE_FLG_EVLAN_x9100 to 15 and ICE_FLG_VLAN_x8100 to 16.
+> There is no reason to do this conditional check before the assignment so
+> simply remove it.
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_switch.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
