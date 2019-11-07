@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Nov 2019 18:39:20 +0000
-Subject: [Intel-wired-lan] [PATCH S32 v3 10/15] ice: delay less
-In-Reply-To: <20191106100541.48639-10-anthony.l.nguyen@intel.com>
+Date: Thu, 7 Nov 2019 18:39:48 +0000
+Subject: [Intel-wired-lan] [PATCH S32 v3 11/15] ice: Update enum
+ ice_flg64_bits to current specification
+In-Reply-To: <20191106100541.48639-11-anthony.l.nguyen@intel.com>
 References: <20191106100541.48639-1-anthony.l.nguyen@intel.com>
- <20191106100541.48639-10-anthony.l.nguyen@intel.com>
-Message-ID: <60107ba102974e368af99235f8bf4808@intel.com>
+ <20191106100541.48639-11-anthony.l.nguyen@intel.com>
+Message-ID: <a80ac62baf9f419ea74211cb3a73d3b3@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,25 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, November 6, 2019 2:06 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S32 v3 10/15] ice: delay less
+> Subject: [Intel-wired-lan] [PATCH S32 v3 11/15] ice: Update enum
+> ice_flg64_bits to current specification
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Shorten the delay for SQ responses, but increase the number of loops.
-> Max delay time is unchanged, but some operations complete much more
-> quickly.
+> Currently the VLAN ice_flg64_bits are off by 1. Fix this by setting the
+> ICE_FLG_EVLAN_x8100 flag to 14, which also updates
+> ICE_FLG_EVLAN_x9100 to 15 and ICE_FLG_VLAN_x8100 to 16.
 > 
-> In the process, add a new define to make the delay count and delay time
-> more explicit. Add comments to make things more explicit.
-> 
-> This fixes a problem with VF resets failing on with many VFs.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_controlq.c | 2 +-
-> drivers/net/ethernet/intel/ice/ice_controlq.h | 5 +++--
->  2 files changed, 4 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
