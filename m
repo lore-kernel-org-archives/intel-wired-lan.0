@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Nov 2019 18:38:49 +0000
-Subject: [Intel-wired-lan] [PATCH S32 v3 09/15] ice: use
- pkg_dwnld_status instead of sq_last_status
-In-Reply-To: <20191106100541.48639-9-anthony.l.nguyen@intel.com>
+Date: Thu, 7 Nov 2019 18:39:20 +0000
+Subject: [Intel-wired-lan] [PATCH S32 v3 10/15] ice: delay less
+In-Reply-To: <20191106100541.48639-10-anthony.l.nguyen@intel.com>
 References: <20191106100541.48639-1-anthony.l.nguyen@intel.com>
- <20191106100541.48639-9-anthony.l.nguyen@intel.com>
-Message-ID: <d9448bba693242078af0a3406e859b85@intel.com>
+ <20191106100541.48639-10-anthony.l.nguyen@intel.com>
+Message-ID: <60107ba102974e368af99235f8bf4808@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +16,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, November 6, 2019 2:06 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S32 v3 09/15] ice: use pkg_dwnld_status
-> instead of sq_last_status
+> Subject: [Intel-wired-lan] [PATCH S32 v3 10/15] ice: delay less
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> Since the return value from the Download Package AQ command is stored in
-> hw->pkg_dwnld_status, use that instead of sq_last_status since that may
-> have the return value from some other AQ command leading to unexpected
-> results.
+> Shorten the delay for SQ responses, but increase the number of loops.
+> Max delay time is unchanged, but some operations complete much more
+> quickly.
 > 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> In the process, add a new define to make the delay count and delay time
+> more explicit. Add comments to make things more explicit.
+> 
+> This fixes a problem with VF resets failing on with many VFs.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_controlq.c | 2 +-
+> drivers/net/ethernet/intel/ice/ice_controlq.h | 5 +++--
+>  2 files changed, 4 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
