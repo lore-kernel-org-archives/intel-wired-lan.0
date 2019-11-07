@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Nov 2019 18:37:56 +0000
-Subject: [Intel-wired-lan] [PATCH S32 v3 07/15] ice: Check if VF is
- disabled for Opcode and other operations
-In-Reply-To: <20191106100541.48639-7-anthony.l.nguyen@intel.com>
+Date: Thu, 7 Nov 2019 18:38:23 +0000
+Subject: [Intel-wired-lan] [PATCH S32 v3 08/15] ice: Change max MSI-x
+ vector_id check in cfg_irq_map
+In-Reply-To: <20191106100541.48639-8-anthony.l.nguyen@intel.com>
 References: <20191106100541.48639-1-anthony.l.nguyen@intel.com>
- <20191106100541.48639-7-anthony.l.nguyen@intel.com>
-Message-ID: <6148192f979446ad8733c5ba0dd92025@intel.com>
+ <20191106100541.48639-8-anthony.l.nguyen@intel.com>
+Message-ID: <1998cf8653124e3a984a761edb115e2d@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,23 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, November 6, 2019 2:06 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S32 v3 07/15] ice: Check if VF is disabled for
-> Opcode and other operations
+> Subject: [Intel-wired-lan] [PATCH S32 v3 08/15] ice: Change max MSI-x
+> vector_id check in cfg_irq_map
 > 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> This patch adds code to check if PF or VF is disabled before honoring mailbox
-> message to configure VF - If it is disabled, and opcode is for resetting VF, the
-> PF driver simply tell VF that all is set. In addition, if reset is ongoing, and
-> Admin intend to configure VF on the host, we can poll the VF enabling bit to
-> make sure it is ready before continue - If after ~250 milliseconds, VF is not in
-> active state, we can bail out with invalid error.
+> Currently we check to make sure the vector_id passed down from iavf is less
+> than or equal to pf->hw.func_caps.common_caps.num_msix_vectors.
+> This is incorrect because the vector_id is always 0-based and never greater
+> than or equal to the ICE_MAX_INTR_PER_VF. Fix this by checking to make
+> sure the vector_id is less than the max allowed interrupts per VF
+> (ICE_MAX_INTR_PER_VF).
 > 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 74 ++++++++++++++++---
-> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  1 +
->  2 files changed, 63 insertions(+), 12 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
