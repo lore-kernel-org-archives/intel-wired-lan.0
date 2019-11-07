@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Nov 2019 18:40:18 +0000
-Subject: [Intel-wired-lan] [PATCH S32 v3 12/15] ice: remove unnecessary
- conditional check
-In-Reply-To: <20191106100541.48639-12-anthony.l.nguyen@intel.com>
+Date: Thu, 7 Nov 2019 18:40:48 +0000
+Subject: [Intel-wired-lan] [PATCH S32 v3 13/15] ice: Introduce and use
+ ice_vsi_type_str
+In-Reply-To: <20191106100541.48639-13-anthony.l.nguyen@intel.com>
 References: <20191106100541.48639-1-anthony.l.nguyen@intel.com>
- <20191106100541.48639-12-anthony.l.nguyen@intel.com>
-Message-ID: <dc47b3057704414580fb8df693f061c1@intel.com>
+ <20191106100541.48639-13-anthony.l.nguyen@intel.com>
+Message-ID: <85340c0a02d14e60b07aae95aa4540cc@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,18 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, November 6, 2019 2:06 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S32 v3 12/15] ice: remove unnecessary
-> conditional check
+> Subject: [Intel-wired-lan] [PATCH S32 v3 13/15] ice: Introduce and use
+> ice_vsi_type_str
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 > 
-> There is no reason to do this conditional check before the assignment so
-> simply remove it.
+> ice_vsi_type_str converts an ice_vsi_type enum value to its string
+> equivalent. This is expected to help easily identify VSI types from module
+> print statements.
 > 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_switch.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c  | 21 ++++++++++++++++++++-
+> drivers/net/ethernet/intel/ice/ice_lib.h  |  2 ++
+> drivers/net/ethernet/intel/ice/ice_main.c | 16 ++++++++--------
+>  3 files changed, 30 insertions(+), 9 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
