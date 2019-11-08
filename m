@@ -1,44 +1,122 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  8 Nov 2019 06:23:30 -0800
-Subject: [Intel-wired-lan] [PATCH S33 14/15] ice: remove pointless NULL
- check of port_info
+Date: Fri,  8 Nov 2019 06:23:28 -0800
+Subject: [Intel-wired-lan] [PATCH S33 12/15] ice: implement VF stats NDO
 In-Reply-To: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
 References: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191108142331.10221-14-anthony.l.nguyen@intel.com>
+Message-ID: <20191108142331.10221-12-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-The code in ice_sched_cleanup_all checks whether the port info is NULL
-prior to calling ice_sched_clear_port. However, ice_sched_clear_port
-already checks whether port info is non-NULL.
+Implement the VF stats gathering via the kernel via ndo_get_vf_stats().
+The driver will show per-VF stats in the output of the
+ip -s link show dev <PF> command.
 
-More importantly, it also checks whether the port structure has been
-initialized by checking its port_state field as well.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sched.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c     |  1 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 45 +++++++++++++++++++
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  | 11 +++++
+ 3 files changed, 57 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index b1bdb40a1bee..9c64b5cd0c91 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -798,8 +798,7 @@ void ice_sched_cleanup_all(struct ice_hw *hw)
- 		hw->layer_info = NULL;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index ea577588b274..d282eb05c2e0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5219,6 +5219,7 @@ static const struct net_device_ops ice_netdev_ops = {
+ 	.ndo_set_vf_trust = ice_set_vf_trust,
+ 	.ndo_set_vf_vlan = ice_set_vf_port_vlan,
+ 	.ndo_set_vf_link_state = ice_set_vf_link_state,
++	.ndo_get_vf_stats = ice_get_vf_stats,
+ 	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
+ 	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
+ 	.ndo_set_features = ice_set_features,
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index aa99d7cb7d8e..edb374296d1f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -3391,3 +3391,48 @@ int ice_set_vf_link_state(struct net_device *netdev, int vf_id, int link_state)
  
--	if (hw->port_info)
--		ice_sched_clear_port(hw->port_info);
-+	ice_sched_clear_port(hw->port_info);
+ 	return 0;
+ }
++
++/**
++ * ice_get_vf_stats - populate some stats for the VF
++ * @netdev: the netdev of the PF
++ * @vf_id: the host OS identifier (0-255)
++ * @vf_stats: pointer to the OS memory to be initialized
++ */
++int ice_get_vf_stats(struct net_device *netdev, int vf_id,
++		     struct ifla_vf_stats *vf_stats)
++{
++	struct ice_pf *pf = ice_netdev_to_pf(netdev);
++	struct ice_eth_stats *stats;
++	struct ice_vsi *vsi;
++	struct ice_vf *vf;
++
++	if (ice_validate_vf_id(pf, vf_id))
++		return -EINVAL;
++
++	vf = &pf->vf[vf_id];
++
++	if (ice_check_vf_init(pf, vf))
++		return -EBUSY;
++
++	vsi = pf->vsi[vf->lan_vsi_idx];
++	if (!vsi)
++		return -EINVAL;
++
++	ice_update_eth_stats(vsi);
++	stats = &vsi->eth_stats;
++
++	memset(vf_stats, 0, sizeof(*vf_stats));
++
++	vf_stats->rx_packets = stats->rx_unicast + stats->rx_broadcast +
++		stats->rx_multicast;
++	vf_stats->tx_packets = stats->tx_unicast + stats->tx_broadcast +
++		stats->tx_multicast;
++	vf_stats->rx_bytes   = stats->rx_bytes;
++	vf_stats->tx_bytes   = stats->tx_bytes;
++	vf_stats->broadcast  = stats->rx_broadcast;
++	vf_stats->multicast  = stats->rx_multicast;
++	vf_stats->rx_dropped = stats->rx_discards;
++	vf_stats->tx_dropped = stats->tx_discards;
++
++	return 0;
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 2e867ad2e81d..88aa65d5cb31 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -122,6 +122,9 @@ int ice_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool ena);
+ int ice_calc_vf_reg_idx(struct ice_vf *vf, struct ice_q_vector *q_vector);
  
- 	hw->num_tx_sched_layers = 0;
- 	hw->num_tx_sched_phys_layers = 0;
+ void ice_set_vf_state_qs_dis(struct ice_vf *vf);
++int
++ice_get_vf_stats(struct net_device *netdev, int vf_id,
++		 struct ifla_vf_stats *vf_stats);
+ #else /* CONFIG_PCI_IOV */
+ #define ice_process_vflr_event(pf) do {} while (0)
+ #define ice_free_vfs(pf) do {} while (0)
+@@ -194,5 +197,13 @@ ice_calc_vf_reg_idx(struct ice_vf __always_unused *vf,
+ {
+ 	return 0;
+ }
++
++static inline int
++ice_get_vf_stats(struct net_device __always_unused *netdev,
++		 int __always_unused vf_id,
++		 struct ifla_vf_stats __always_unused *vf_stats)
++{
++	return -EOPNOTSUPP;
++}
+ #endif /* CONFIG_PCI_IOV */
+ #endif /* _ICE_VIRTCHNL_PF_H_ */
 -- 
 2.20.1
 
