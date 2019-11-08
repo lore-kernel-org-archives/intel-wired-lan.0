@@ -1,29 +1,29 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Fri, 08 Nov 2019 16:06:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
- e497df686e8fed8c1dd69179010656362858edb3
-Message-ID: <5dc52208.fSIdowMiUiBNvl7M%lkp@intel.com>
+Date: Fri, 08 Nov 2019 16:06:16 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 96b1113b50116d6837e9fec89ce2ae626a797ccb
+Message-ID: <5dc521f8.W5UjWoKUDxjmQEr9%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: e497df686e8fed8c1dd69179010656362858edb3  net: usb: qmi_wwan: add support for DW5821e with eSIM support
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 96b1113b50116d6837e9fec89ce2ae626a797ccb  i40e: Fix for ethtool -m issue on X722 NIC
 
-elapsed time: 493m
+elapsed time: 485m
 
 configs tested: 146
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
-alpha                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
 riscv                             allnoconfig
 riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+nds32                             allnoconfig
 x86_64                 randconfig-b001-201944
 x86_64                 randconfig-b002-201944
 x86_64                 randconfig-b003-201944
@@ -32,9 +32,11 @@ i386                   randconfig-b001-201944
 i386                   randconfig-b002-201944
 i386                   randconfig-b003-201944
 i386                   randconfig-b004-201944
-um                                  defconfig
-um                             i386_defconfig
+x86_64                           allmodconfig
+i386                             alldefconfig
 um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
 arc                              allyesconfig
 arc                                 defconfig
 microblaze                      mmu_defconfig
@@ -52,12 +54,12 @@ sparc                               defconfig
 sparc64                          allmodconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
 mips                             allmodconfig
+mips                           32r2_defconfig
+mips                      malta_kvm_defconfig
+mips                         64r6el_defconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
 x86_64                 randconfig-g001-201944
 x86_64                 randconfig-g002-201944
 x86_64                 randconfig-g003-201944
@@ -72,22 +74,15 @@ parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                     edosk2674_defconfig
-m68k                           sun3_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
 sh                          rsk7269_defconfig
-x86_64                 randconfig-f001-201944
-x86_64                 randconfig-f002-201944
+i386                   randconfig-f002-201944
+i386                   randconfig-f001-201944
 x86_64                 randconfig-f003-201944
 x86_64                 randconfig-f004-201944
-i386                   randconfig-f001-201944
-i386                   randconfig-f002-201944
+x86_64                 randconfig-f002-201944
 i386                   randconfig-f003-201944
 i386                   randconfig-f004-201944
+x86_64                 randconfig-f001-201944
 arm                              allmodconfig
 arm64                            allmodconfig
 x86_64                 randconfig-d001-201944
@@ -102,7 +97,13 @@ sh                               allmodconfig
 sh                                allnoconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
-i386                             alldefconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
 i386                              allnoconfig
 i386                                defconfig
 x86_64                 randconfig-c001-201944
@@ -113,7 +114,6 @@ i386                   randconfig-c001-201944
 i386                   randconfig-c002-201944
 i386                   randconfig-c003-201944
 i386                   randconfig-c004-201944
-x86_64                           allmodconfig
 s390                             allmodconfig
 s390                              allnoconfig
 s390                          debug_defconfig
