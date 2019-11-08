@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  8 Nov 2019 06:23:20 -0800
-Subject: [Intel-wired-lan] [PATCH S33 04/15] ice: Don't modify stripping for
- add/del VLANs on VF
+Date: Fri,  8 Nov 2019 06:23:23 -0800
+Subject: [Intel-wired-lan] [PATCH S33 07/15] ice: Fix setting coalesce to
+ handle DCB configuration
 In-Reply-To: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
 References: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191108142331.10221-4-anthony.l.nguyen@intel.com>
+Message-ID: <20191108142331.10221-7-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,91 +13,42 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Currently when adding/deleting vlans in ice_vc_process_vlan_msg()
-we are calling ice_vsi_manage_vlan_stripping() to enable/disable
-when adding and deleting a VLAN respectively. This is wrong
-because adding/deleting VLANs has nothing to do with configuring
-VLAN stripping. VLAN stripping is configured through the
-following VIRTCHNL operations:
-	VIRTCHNL_OP_ENABLE_VLAN_STRIPPING
-	VIRTCHNL_OP_DISABLE_VLAN_STRIPPING
-
-Unfortunately we can't just remove this because then stripping
-will never be configured on VF initialization. Fix this by
-adding a new function that initializes (disables/enables) VLAN
-stripping for the VF based on the device supported capabilities.
-This allows us to remove the call to
-ice_vsi_manage_vlan_stripping() in ice_vc_process_vlan_msg().
+Currently there can be a case where a DCB map is applied and there are
+more interrupt vectors (vsi->num_q_vectors) than Rx queues (vsi->num_rxq)
+and Tx queues (vsi->num_txq). If we try to set coalesce settings in this
+case it will report a false failure. Fix this by checking if vector index
+is valid with respect to the number of Tx and Rx queues configured.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 39 +++++++++++++++----
- 1 file changed, 31 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 3cb394bdfe51..fd419230a6c0 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -2735,14 +2735,6 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
- 		goto error_param;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 1f00091f7906..6c796c5c8edf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3420,10 +3420,17 @@ __ice_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
+ 	struct ice_vsi *vsi = np->vsi;
  
--	if (ice_vsi_manage_vlan_stripping(vsi, add_v)) {
--		dev_err(&pf->pdev->dev,
--			"%sable VLAN stripping failed for VSI %i\n",
--			 add_v ? "en" : "dis", vsi->vsi_num);
--		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
--		goto error_param;
--	}
--
- 	if (test_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states) ||
- 	    test_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states))
- 		vlan_promisc = true;
-@@ -2933,6 +2925,33 @@ static int ice_vc_dis_vlan_stripping(struct ice_vf *vf)
- 				     v_ret, NULL, 0);
- }
+ 	if (q_num < 0) {
+-		int i;
++		int v_idx;
++
++		ice_for_each_q_vector(vsi, v_idx) {
++			/* In some cases if DCB is configured the num_[rx|tx]q
++			 * can be less than vsi->num_q_vectors. This check
++			 * accounts for that so we don't report a false failure
++			 */
++			if (v_idx >= vsi->num_rxq && v_idx >= vsi->num_txq)
++				goto set_complete;
  
-+/**
-+ * ice_vf_init_vlan_stripping - enable/disable VLAN stripping on initialization
-+ * @vf: VF to enable/disable VLAN stripping for on initialization
-+ *
-+ * If the VIRTCHNL_VF_OFFLOAD_VLAN flag is set enable VLAN stripping, else if
-+ * the flag is cleared then we want to disable stripping. For example, the flag
-+ * will be cleared when port VLANs are configured by the administrator before
-+ * passing the VF to the guest or if the AVF driver doesn't support VLAN
-+ * offloads.
-+ */
-+static int ice_vf_init_vlan_stripping(struct ice_vf *vf)
-+{
-+	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
-+
-+	if (!vsi)
-+		return -EINVAL;
-+
-+	/* don't modify stripping if port VLAN is configured */
-+	if (vsi->info.pvid)
-+		return 0;
-+
-+	if (ice_vf_vlan_offload_ena(vf->driver_caps))
-+		return ice_vsi_manage_vlan_stripping(vsi, true);
-+	else
-+		return ice_vsi_manage_vlan_stripping(vsi, false);
-+}
-+
- /**
-  * ice_vc_process_vf_msg - Process request from VF
-  * @pf: pointer to the PF structure
-@@ -2987,6 +3006,10 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 		break;
- 	case VIRTCHNL_OP_GET_VF_RESOURCES:
- 		err = ice_vc_get_vf_res_msg(vf, msg);
-+		if (ice_vf_init_vlan_stripping(vf))
-+			dev_err(&pf->pdev->dev,
-+				"Failed to initialize VLAN stripping for VF %d\n",
-+				vf->vf_id);
- 		ice_vc_notify_vf_link_state(vf);
- 		break;
- 	case VIRTCHNL_OP_RESET_VF:
+-		ice_for_each_q_vector(vsi, i) {
+-			if (ice_set_q_coalesce(vsi, ec, i))
++			if (ice_set_q_coalesce(vsi, ec, v_idx))
+ 				return -EINVAL;
+ 		}
+ 		goto set_complete;
 -- 
 2.20.1
 
