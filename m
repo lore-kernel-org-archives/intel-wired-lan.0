@@ -1,93 +1,22 @@
-From: Creeley, Brett <brett.creeley@intel.com>
-Date: Fri, 8 Nov 2019 16:43:36 +0000
-Subject: [Intel-wired-lan] [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg
- interface between VF and PF
-In-Reply-To: <d078d3efc784805a67ba1a1c6e94fb4ec1c0aec6.camel@intel.com>
-References: <1572845537.13810.225.camel@harmonicinc.com>
- <3508A0C5D531054DBDD98909F6FA64FA11B3936D@ORSMSX113.amr.corp.intel.com>
- <1572931430.13810.227.camel@harmonicinc.com>
- <3508A0C5D531054DBDD98909F6FA64FA11B39863@ORSMSX113.amr.corp.intel.com>
- <1573018214.10368.1.camel@harmonicinc.com>
- <d078d3efc784805a67ba1a1c6e94fb4ec1c0aec6.camel@intel.com>
-Message-ID: <3508A0C5D531054DBDD98909F6FA64FA11B3EB75@ORSMSX113.amr.corp.intel.com>
+From: Timur Tabi <timur@kernel.org>
+Date: Thu, 7 Nov 2019 20:57:33 -0600
+Subject: [Intel-wired-lan] [PATCH net-next 2/2] net: qcom/emac: Demote
+ MTU change print to debug
+In-Reply-To: <20191107223537.23440-3-f.fainelli@gmail.com>
+References: <20191107223537.23440-1-f.fainelli@gmail.com>
+ <20191107223537.23440-3-f.fainelli@gmail.com>
+Message-ID: <dfd60aa0-59e1-5b68-d8ea-61dc3a29ff8e@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Sent: Thursday, November 7, 2019 11:39 AM
-> To: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>; Creeley, Brett <brett.creeley@intel.com>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org
-> Cc: Arkady Gilinsky <arcadyg@gmail.com>
-> Subject: Re: [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg interface between VF and PF
+On 11/7/19 4:35 PM, Florian Fainelli wrote:
+> Changing the MTU can be a frequent operation and it is already clear
+> when (or not) a MTU change is successful, demote prints to debug prints.
 > 
-> On Wed, 2019-11-06 at 05:30 +0000, Arkady Gilinsky wrote:
-> > On Tue, 2019-11-05 at 16:55 +0000, Creeley, Brett wrote:
-> > > > -----Original Message-----
-> > > > From: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
-> > > > Sent: Monday, November 4, 2019 9:24 PM
-> > > > To: Creeley, Brett <brett.creeley@intel.com>;
-> > > > intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; Kirsher,
-> > > > Jeffrey T
-> > > > <jeffrey.t.kirsher@intel.com>
-> > > > Cc: Arkady Gilinsky <arcadyg@gmail.com>
-> > > > Subject: Re: [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg interface
-> > > > between VF and PF
-> > > > > static bool i40e_vc_verify_vqs_bitmaps(struct virtchnl_queue_select
-> > > > > *vqs)
-> > > > > {
-> > > > >    /* this will catch any changes made to the virtchnl_queue_select
-> > > > > bitmap */
-> > > > >    if (sizeof(vqs->rx_queues) != sizeof(u32) ||
-> > > > >         sizeof(vqs->tx_queues) != sizeof(u32))
-> > > > >            return false;
-> > > >
-> > > > If so, then is it better to check the type of the fields in compile-
-> > > > time rather than in runtime ?
-> > > > Something like this:
-> > > > BUILD_BUG_ON(sizeof(vqs->rx_queues) != sizeof(u32));
-> > > > BUILD_BUG_ON(sizeof(vqs->tx_queues) != sizeof(u32));
-> > > > This is not required comparison each time when function is called and
-> > > > made code more optimized.
-> > >
-> > > I don't think this is required with the change you suggested below.
-> > Agree.
-> > If other code in driver not need to be adjusted/verified, then this check
-> > is not needed.
-> > > > >    if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
-> > > > >          hweight32(vqs->rx_queues) > I40E_MAX_VF_QUEUES ||
-> > > > >          hweight32(vqs->tx_queues) > I40E_MAX_VF_QUEUES)
-> > > > >            return false;
-> > > >
-> > > > Again, from optimization POV it is better to have constant changed
-> > > > than variable,
-> > > > since it is compile time and not run time action:
-> > > >      if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
-> > > >            vqs->rx_queues >= (BIT(I40E_MAX_VF_QUEUES)) ||
-> > > >
-> > > >       vqs->tx_queues >= (BIT(I40E_MAX_VF_QUEUES)))
-> > > >              return false;
-> > >
-> > > This seems much better than my solution. It fixes the original issue,
-> > > handles if the
-> > > vqs->[r|t]x_queues variables have changed in size, and the queue bitmap
-> > > comparison
-> > > uses a constant. Thanks!
-> > Thanks to you for feedback.
-> > I am trying to understand if this patch will enter into official kernel
-> > tree
-> > and, not less important from my POV, to official Intel drivers.
-> > Brett/Jeffrey, could you, please, assist to make sure that this fix, or
-> > fix suggested by Brett,
-> > will be integrated into Intel i40e/iavf drivers ?
-> > Or may be I should write mail straight to Intel support ?
-> 
-> As Brett pointed out, there are issues with this patch. Please make the
-> suggested changes and re-submit the patch to
-> intel-wired-lan at lists.osuosl.org
+> Signed-off-by: Florian Fainelli<f.fainelli@gmail.com>
 
-Jeff/Arkady: I have already submitted patches for this internally for
-official Intel drivers. Apologies for the delayed response.
+Acked-by: Timur Tabi <timur@kernel.org>
+
