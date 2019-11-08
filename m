@@ -1,22 +1,75 @@
-From: Timur Tabi <timur@kernel.org>
-Date: Thu, 7 Nov 2019 20:57:33 -0600
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] net: qcom/emac: Demote
- MTU change print to debug
-In-Reply-To: <20191107223537.23440-3-f.fainelli@gmail.com>
-References: <20191107223537.23440-1-f.fainelli@gmail.com>
- <20191107223537.23440-3-f.fainelli@gmail.com>
-Message-ID: <dfd60aa0-59e1-5b68-d8ea-61dc3a29ff8e@kernel.org>
+From: Magnus Karlsson <magnus.karlsson@intel.com>
+Date: Fri,  8 Nov 2019 20:58:09 +0100
+Subject: [Intel-wired-lan] [PATCH net 1/2] i40e: need_wakeup flag might not
+ be set for Tx
+Message-ID: <1573243090-2721-1-git-send-email-magnus.karlsson@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 11/7/19 4:35 PM, Florian Fainelli wrote:
-> Changing the MTU can be a frequent operation and it is already clear
-> when (or not) a MTU change is successful, demote prints to debug prints.
-> 
-> Signed-off-by: Florian Fainelli<f.fainelli@gmail.com>
+The need_wakeup flag for Tx might not be set for AF_XDP sockets that
+are only used to send packets. This happens if there is at least one
+outstanding packet that has not been completed by the hardware and we
+get that corresponding completion (which will not generate an
+interrupt since interrupts are disabled in the napi poll loop) between
+the time we stopped processing the Tx completions and interrupts are
+enabled again. In this case, the need_wakeup flag will have been
+cleared at the end of the Tx completion processing as we believe we
+will get an interrupt from the outstanding completion at a later point
+in time. But if this completion interrupt occurs before interrupts
+are enable, we lose it and should at that point really have set the
+need_wakeup flag since there are no more outstanding completions that
+can generate an interrupt to continue the processing. When this
+happens, user space will see a Tx queue need_wakeup of 0 and skip
+issuing a syscall, which means will never get into the Tx processing
+again and we have a deadlock.
 
-Acked-by: Timur Tabi <timur@kernel.org>
+This patch introduces a quick fix for this issue by just setting the
+need_wakeup flag for Tx to 1 all the time. I am working on a proper
+fix for this that will toggle the flag appropriately, but it is more
+challenging than I anticipated and I am afraid that this patch will
+not be completed before the merge window closes, therefore this easier
+fix for now. This fix has a negative performance impact in the range
+of 0% to 4%. Towards the higher end of the scale if you have driver
+and application on the same core and issue a lot of packets, and
+towards no negative impact if you use two cores, lower transmission
+speeds and/or a workload that also receives packets.
+
+Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index a05dfec..d07e1a8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -689,8 +689,6 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
+ 		i40e_xdp_ring_update_tail(xdp_ring);
+ 
+ 		xsk_umem_consume_tx_done(xdp_ring->xsk_umem);
+-		if (xsk_umem_uses_need_wakeup(xdp_ring->xsk_umem))
+-			xsk_clear_tx_need_wakeup(xdp_ring->xsk_umem);
+ 	}
+ 
+ 	return !!budget && work_done;
+@@ -769,12 +767,8 @@ bool i40e_clean_xdp_tx_irq(struct i40e_vsi *vsi,
+ 	i40e_update_tx_stats(tx_ring, completed_frames, total_bytes);
+ 
+ out_xmit:
+-	if (xsk_umem_uses_need_wakeup(tx_ring->xsk_umem)) {
+-		if (tx_ring->next_to_clean == tx_ring->next_to_use)
+-			xsk_set_tx_need_wakeup(tx_ring->xsk_umem);
+-		else
+-			xsk_clear_tx_need_wakeup(tx_ring->xsk_umem);
+-	}
++	if (xsk_umem_uses_need_wakeup(tx_ring->xsk_umem))
++		xsk_set_tx_need_wakeup(tx_ring->xsk_umem);
+ 
+ 	xmit_done = i40e_xmit_zc(tx_ring, budget);
+ 
+-- 
+2.7.4
 
