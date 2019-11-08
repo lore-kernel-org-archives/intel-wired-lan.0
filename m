@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  8 Nov 2019 06:23:19 -0800
-Subject: [Intel-wired-lan] [PATCH S33 03/15] ice: Disallow VF VLAN opcodes
- if VLAN offloads disabled
+Date: Fri,  8 Nov 2019 06:23:24 -0800
+Subject: [Intel-wired-lan] [PATCH S33 08/15] ice: Refactor removal of VLAN
+ promiscuous rules
 In-Reply-To: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
 References: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191108142331.10221-3-anthony.l.nguyen@intel.com>
+Message-ID: <20191108142331.10221-8-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,91 +13,62 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Currently if the host disables VLAN offloads on the VF by
-not setting the VIRTCHNL_VF_OFFLOAD_VLAN capability bit
-we will still honor VF VLAN configuration messages over
-VIRTCHNL. These messages (i.e. enable/disable VLAN stripping
-and VLAN filtering) should be blocked when the feature
-is not supported. Fix that by adding a helper function to
-determine if the VF is allowed to do VLAN operations based
-on the host's VF configuration.
-
-Also, mirror the VF communicated capabilities in the host's
-VF configuration.
+Currently ice_clear_vsi_promisc() detects if the VLAN ID sent is not 0
+and sets the recipe_id to ICE_SW_LKUP_PROMISC_VLAN in that case and
+ICE_SW_LKUP_PROMISC if the VLAN_ID is 0. However this doesn't allow VLAN
+0 promiscuous rules to be removed, but they can be added. Fix this by
+checking if the promisc_mask contains ICE_PROMISC_VLAN_RX or
+ICE_PROMISC_VLAN_TX. This change was made to match what is being done
+for ice_set_vsi_promisc().
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 29 +++++++++++++++++++
- 1 file changed, 29 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 2ac83ad3d1a6..3cb394bdfe51 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1686,6 +1686,9 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
- 	ether_addr_copy(vfres->vsi_res[0].default_mac_addr,
- 			vf->dflt_lan_addr.addr);
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 77d211ea3aae..b5a53f862a83 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -2428,7 +2428,7 @@ ice_clear_vsi_promisc(struct ice_hw *hw, u16 vsi_handle, u8 promisc_mask,
+ 	if (!ice_is_vsi_valid(hw, vsi_handle))
+ 		return ICE_ERR_PARAM;
  
-+	/* match guest capabilities */
-+	vf->driver_caps = vfres->vf_cap_flags;
+-	if (vid)
++	if (promisc_mask & (ICE_PROMISC_VLAN_RX | ICE_PROMISC_VLAN_TX))
+ 		recipe_id = ICE_SW_LKUP_PROMISC_VLAN;
+ 	else
+ 		recipe_id = ICE_SW_LKUP_PROMISC;
+@@ -2440,13 +2440,18 @@ ice_clear_vsi_promisc(struct ice_hw *hw, u16 vsi_handle, u8 promisc_mask,
+ 
+ 	mutex_lock(rule_lock);
+ 	list_for_each_entry(itr, rule_head, list_entry) {
++		struct ice_fltr_info *fltr_info;
+ 		u8 fltr_promisc_mask = 0;
+ 
+ 		if (!ice_vsi_uses_fltr(itr, vsi_handle))
+ 			continue;
++		fltr_info = &itr->fltr_info;
 +
- 	set_bit(ICE_VF_STATE_ACTIVE, vf->vf_states);
++		if (recipe_id == ICE_SW_LKUP_PROMISC_VLAN &&
++		    vid != fltr_info->l_data.mac_vlan.vlan_id)
++			continue;
  
- err:
-@@ -2653,6 +2656,17 @@ ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
- 	return ret;
- }
+-		fltr_promisc_mask |=
+-			ice_determine_promisc_mask(&itr->fltr_info);
++		fltr_promisc_mask |= ice_determine_promisc_mask(fltr_info);
  
-+/**
-+ * ice_vf_vlan_offload_ena - determine if capabilities support VLAN offloads
-+ * @caps: VF driver negotiated capabilities
-+ *
-+ * Return true if VIRTCHNL_VF_OFFLOAD_VLAN capability is set, else return false
-+ */
-+static bool ice_vf_vlan_offload_ena(u32 caps)
-+{
-+	return !!(caps & VIRTCHNL_VF_OFFLOAD_VLAN);
-+}
-+
- /**
-  * ice_vc_process_vlan_msg
-  * @vf: pointer to the VF info
-@@ -2679,6 +2693,11 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
- 		goto error_param;
- 	}
+ 		/* Skip if filter is not completely specified by given mask */
+ 		if (fltr_promisc_mask & ~promisc_mask)
+@@ -2454,7 +2459,7 @@ ice_clear_vsi_promisc(struct ice_hw *hw, u16 vsi_handle, u8 promisc_mask,
  
-+	if (!ice_vf_vlan_offload_ena(vf->driver_caps)) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto error_param;
-+	}
-+
- 	if (!ice_vc_isvalid_vsi_id(vf, vfl->vsi_id)) {
- 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 		goto error_param;
-@@ -2864,6 +2883,11 @@ static int ice_vc_ena_vlan_stripping(struct ice_vf *vf)
- 		goto error_param;
- 	}
- 
-+	if (!ice_vf_vlan_offload_ena(vf->driver_caps)) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto error_param;
-+	}
-+
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (ice_vsi_manage_vlan_stripping(vsi, true))
- 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-@@ -2890,6 +2914,11 @@ static int ice_vc_dis_vlan_stripping(struct ice_vf *vf)
- 		goto error_param;
- 	}
- 
-+	if (!ice_vf_vlan_offload_ena(vf->driver_caps)) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto error_param;
-+	}
-+
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!vsi) {
- 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		status = ice_add_entry_to_vsi_fltr_list(hw, vsi_handle,
+ 							&remove_list_head,
+-							&itr->fltr_info);
++							fltr_info);
+ 		if (status) {
+ 			mutex_unlock(rule_lock);
+ 			goto free_fltr_list;
 -- 
 2.20.1
 
