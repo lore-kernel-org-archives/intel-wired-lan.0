@@ -1,8 +1,10 @@
 From: Magnus Karlsson <magnus.karlsson@intel.com>
-Date: Fri,  8 Nov 2019 20:58:09 +0100
-Subject: [Intel-wired-lan] [PATCH net 1/2] i40e: need_wakeup flag might not
+Date: Fri,  8 Nov 2019 20:58:10 +0100
+Subject: [Intel-wired-lan] [PATCH net 2/2] ixgbe: need_wakeup flag might not
  be set for Tx
-Message-ID: <1573243090-2721-1-git-send-email-magnus.karlsson@intel.com>
+In-Reply-To: <1573243090-2721-1-git-send-email-magnus.karlsson@intel.com>
+References: <1573243090-2721-1-git-send-email-magnus.karlsson@intel.com>
+Message-ID: <1573243090-2721-2-git-send-email-magnus.karlsson@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -39,26 +41,26 @@ speeds and/or a workload that also receives packets.
 
 Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 10 ++--------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 10 ++--------
  1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index a05dfec..d07e1a8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -689,8 +689,6 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
- 		i40e_xdp_ring_update_tail(xdp_ring);
- 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+index 100ac89..d6feaac 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+@@ -622,8 +622,6 @@ static bool ixgbe_xmit_zc(struct ixgbe_ring *xdp_ring, unsigned int budget)
+ 	if (tx_desc) {
+ 		ixgbe_xdp_ring_update_tail(xdp_ring);
  		xsk_umem_consume_tx_done(xdp_ring->xsk_umem);
 -		if (xsk_umem_uses_need_wakeup(xdp_ring->xsk_umem))
 -			xsk_clear_tx_need_wakeup(xdp_ring->xsk_umem);
  	}
  
  	return !!budget && work_done;
-@@ -769,12 +767,8 @@ bool i40e_clean_xdp_tx_irq(struct i40e_vsi *vsi,
- 	i40e_update_tx_stats(tx_ring, completed_frames, total_bytes);
+@@ -691,12 +689,8 @@ bool ixgbe_clean_xdp_tx_irq(struct ixgbe_q_vector *q_vector,
+ 	if (xsk_frames)
+ 		xsk_umem_complete_tx(umem, xsk_frames);
  
- out_xmit:
 -	if (xsk_umem_uses_need_wakeup(tx_ring->xsk_umem)) {
 -		if (tx_ring->next_to_clean == tx_ring->next_to_use)
 -			xsk_set_tx_need_wakeup(tx_ring->xsk_umem);
@@ -68,8 +70,8 @@ index a05dfec..d07e1a8 100644
 +	if (xsk_umem_uses_need_wakeup(tx_ring->xsk_umem))
 +		xsk_set_tx_need_wakeup(tx_ring->xsk_umem);
  
- 	xmit_done = i40e_xmit_zc(tx_ring, budget);
- 
+ 	return ixgbe_xmit_zc(tx_ring, q_vector->tx.work_limit);
+ }
 -- 
 2.7.4
 
