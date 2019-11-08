@@ -1,58 +1,93 @@
-From: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
-Date: Fri, 8 Nov 2019 11:57:36 +0000
-Subject: [Intel-wired-lan] [v2 PATCH net] i40e/iavf: Fix msg interface
- between VF and PF
-Message-ID: <1573214249.10368.25.camel@harmonicinc.com>
+From: Creeley, Brett <brett.creeley@intel.com>
+Date: Fri, 8 Nov 2019 16:43:36 +0000
+Subject: [Intel-wired-lan] [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg
+ interface between VF and PF
+In-Reply-To: <d078d3efc784805a67ba1a1c6e94fb4ec1c0aec6.camel@intel.com>
+References: <1572845537.13810.225.camel@harmonicinc.com>
+ <3508A0C5D531054DBDD98909F6FA64FA11B3936D@ORSMSX113.amr.corp.intel.com>
+ <1572931430.13810.227.camel@harmonicinc.com>
+ <3508A0C5D531054DBDD98909F6FA64FA11B39863@ORSMSX113.amr.corp.intel.com>
+ <1573018214.10368.1.camel@harmonicinc.com>
+ <d078d3efc784805a67ba1a1c6e94fb4ec1c0aec6.camel@intel.com>
+Message-ID: <3508A0C5D531054DBDD98909F6FA64FA11B3EB75@ORSMSX113.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From af0e91423ea6ea37b48ee8b555314fd01964335d Mon Sep 17 00:00:00 2001
-From: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
-Date: Fri, 8 Nov 2019 13:48:03 +0200
-Subject: [[v2] PATCH net] i40e/iavf: Fix msg interface between VF and PF
+> -----Original Message-----
+> From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Sent: Thursday, November 7, 2019 11:39 AM
+> To: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>; Creeley, Brett <brett.creeley@intel.com>; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org
+> Cc: Arkady Gilinsky <arcadyg@gmail.com>
+> Subject: Re: [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg interface between VF and PF
+> 
+> On Wed, 2019-11-06 at 05:30 +0000, Arkady Gilinsky wrote:
+> > On Tue, 2019-11-05 at 16:55 +0000, Creeley, Brett wrote:
+> > > > -----Original Message-----
+> > > > From: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
+> > > > Sent: Monday, November 4, 2019 9:24 PM
+> > > > To: Creeley, Brett <brett.creeley@intel.com>;
+> > > > intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; Kirsher,
+> > > > Jeffrey T
+> > > > <jeffrey.t.kirsher@intel.com>
+> > > > Cc: Arkady Gilinsky <arcadyg@gmail.com>
+> > > > Subject: Re: [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg interface
+> > > > between VF and PF
+> > > > > static bool i40e_vc_verify_vqs_bitmaps(struct virtchnl_queue_select
+> > > > > *vqs)
+> > > > > {
+> > > > >    /* this will catch any changes made to the virtchnl_queue_select
+> > > > > bitmap */
+> > > > >    if (sizeof(vqs->rx_queues) != sizeof(u32) ||
+> > > > >         sizeof(vqs->tx_queues) != sizeof(u32))
+> > > > >            return false;
+> > > >
+> > > > If so, then is it better to check the type of the fields in compile-
+> > > > time rather than in runtime ?
+> > > > Something like this:
+> > > > BUILD_BUG_ON(sizeof(vqs->rx_queues) != sizeof(u32));
+> > > > BUILD_BUG_ON(sizeof(vqs->tx_queues) != sizeof(u32));
+> > > > This is not required comparison each time when function is called and
+> > > > made code more optimized.
+> > >
+> > > I don't think this is required with the change you suggested below.
+> > Agree.
+> > If other code in driver not need to be adjusted/verified, then this check
+> > is not needed.
+> > > > >    if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
+> > > > >          hweight32(vqs->rx_queues) > I40E_MAX_VF_QUEUES ||
+> > > > >          hweight32(vqs->tx_queues) > I40E_MAX_VF_QUEUES)
+> > > > >            return false;
+> > > >
+> > > > Again, from optimization POV it is better to have constant changed
+> > > > than variable,
+> > > > since it is compile time and not run time action:
+> > > >      if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
+> > > >            vqs->rx_queues >= (BIT(I40E_MAX_VF_QUEUES)) ||
+> > > >
+> > > >       vqs->tx_queues >= (BIT(I40E_MAX_VF_QUEUES)))
+> > > >              return false;
+> > >
+> > > This seems much better than my solution. It fixes the original issue,
+> > > handles if the
+> > > vqs->[r|t]x_queues variables have changed in size, and the queue bitmap
+> > > comparison
+> > > uses a constant. Thanks!
+> > Thanks to you for feedback.
+> > I am trying to understand if this patch will enter into official kernel
+> > tree
+> > and, not less important from my POV, to official Intel drivers.
+> > Brett/Jeffrey, could you, please, assist to make sure that this fix, or
+> > fix suggested by Brett,
+> > will be integrated into Intel i40e/iavf drivers ?
+> > Or may be I should write mail straight to Intel support ?
+> 
+> As Brett pointed out, there are issues with this patch. Please make the
+> suggested changes and re-submit the patch to
+> intel-wired-lan at lists.osuosl.org
 
-?* The original issue was that iavf driver passing TX/RX queues
-???as bitmap in iavf_disable_queues and the i40e driver
-???interprets this message as an absolute number in
-???i40e_vc_disable_queues_msg, so the validation in the
-???latter function always fail.
-???The commit fixes the issue and adds validation of the
-???queue bitmap to the i40e_vc_enable_queues_msg function.
-
-Signed-off-by: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
----
-?drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 8 +++++---
-?1 file changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 3d2440838822..573252e9fb78 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2347,7 +2347,9 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg)
-?		goto error_param;
-?	}
-?
--	if ((0 == vqs->rx_queues) && (0 == vqs->tx_queues)) {
-+	if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
-+	????vqs->rx_queues >= BIT(I40E_MAX_VF_QUEUES) ||
-+	????vqs->tx_queues >= BIT(I40E_MAX_VF_QUEUES)) {
-?		aq_ret = I40E_ERR_PARAM;
-?		goto error_param;
-?	}
-@@ -2410,8 +2412,8 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg)
-?	}
-?
-?	if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
--	????vqs->rx_queues > I40E_MAX_VF_QUEUES ||
--	????vqs->tx_queues > I40E_MAX_VF_QUEUES) {
-+	????vqs->rx_queues >= BIT(I40E_MAX_VF_QUEUES) ||
-+	????vqs->tx_queues >= BIT(I40E_MAX_VF_QUEUES)) {
-?		aq_ret = I40E_ERR_PARAM;
-?		goto error_param;
-?	}
---?
-2.11.0
-
+Jeff/Arkady: I have already submitted patches for this internally for
+official Intel drivers. Apologies for the delayed response.
