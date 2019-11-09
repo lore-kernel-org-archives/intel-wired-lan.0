@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Sat, 9 Nov 2019 00:01:29 +0000
-Subject: [Intel-wired-lan] [PATCH net 1/2] i40e: need_wakeup flag might
+Date: Sat, 9 Nov 2019 00:02:04 +0000
+Subject: [Intel-wired-lan] [PATCH net 2/2] ixgbe: need_wakeup flag might
  not be set for Tx
-In-Reply-To: <1573243090-2721-1-git-send-email-magnus.karlsson@intel.com>
+In-Reply-To: <1573243090-2721-2-git-send-email-magnus.karlsson@intel.com>
 References: <1573243090-2721-1-git-send-email-magnus.karlsson@intel.com>
-Message-ID: <b168cadcfda241fdad05b6919b075333@intel.com>
+ <1573243090-2721-2-git-send-email-magnus.karlsson@intel.com>
+Message-ID: <290022e664f04723bdcada76e1c1bd7a@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,8 +20,8 @@ List-ID: <intel-wired-lan.osuosl.org>
 > <bjorn.topel@intel.com>; intel-wired-lan at lists.osuosl.org
 > Cc: maciejromanfijalkowski at gmail.com; Fijalkowski, Maciej
 > <maciej.fijalkowski@intel.com>; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH net 1/2] i40e: need_wakeup flag might not
-> be set for Tx
+> Subject: [Intel-wired-lan] [PATCH net 2/2] ixgbe: need_wakeup flag might
+> not be set for Tx
 > 
 > The need_wakeup flag for Tx might not be set for AF_XDP sockets that are
 > only used to send packets. This happens if there is at least one outstanding
@@ -50,7 +51,7 @@ List-ID: <intel-wired-lan.osuosl.org>
 > 
 > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 10 ++--------
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 10 ++--------
 >  1 file changed, 2 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
