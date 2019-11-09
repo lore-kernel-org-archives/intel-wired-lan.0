@@ -1,59 +1,170 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Sat, 9 Nov 2019 00:02:04 +0000
-Subject: [Intel-wired-lan] [PATCH net 2/2] ixgbe: need_wakeup flag might
- not be set for Tx
-In-Reply-To: <1573243090-2721-2-git-send-email-magnus.karlsson@intel.com>
-References: <1573243090-2721-1-git-send-email-magnus.karlsson@intel.com>
- <1573243090-2721-2-git-send-email-magnus.karlsson@intel.com>
-Message-ID: <290022e664f04723bdcada76e1c1bd7a@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 09 Nov 2019 08:17:00 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 074f2496ec0f7fb857c6183f00d889c24f9a6ac9
+Message-ID: <5dc6057c.qMWSm4FeL/q8c31A%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Magnus Karlsson
-> Sent: Friday, November 8, 2019 11:58 AM
-> To: Karlsson, Magnus <magnus.karlsson@intel.com>; Topel, Bjorn
-> <bjorn.topel@intel.com>; intel-wired-lan at lists.osuosl.org
-> Cc: maciejromanfijalkowski at gmail.com; Fijalkowski, Maciej
-> <maciej.fijalkowski@intel.com>; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH net 2/2] ixgbe: need_wakeup flag might
-> not be set for Tx
-> 
-> The need_wakeup flag for Tx might not be set for AF_XDP sockets that are
-> only used to send packets. This happens if there is at least one outstanding
-> packet that has not been completed by the hardware and we get that
-> corresponding completion (which will not generate an interrupt since
-> interrupts are disabled in the napi poll loop) between the time we stopped
-> processing the Tx completions and interrupts are enabled again. In this case,
-> the need_wakeup flag will have been cleared at the end of the Tx
-> completion processing as we believe we will get an interrupt from the
-> outstanding completion at a later point in time. But if this completion
-> interrupt occurs before interrupts are enable, we lose it and should at that
-> point really have set the need_wakeup flag since there are no more
-> outstanding completions that can generate an interrupt to continue the
-> processing. When this happens, user space will see a Tx queue
-> need_wakeup of 0 and skip issuing a syscall, which means will never get into
-> the Tx processing again and we have a deadlock.
-> 
-> This patch introduces a quick fix for this issue by just setting the
-> need_wakeup flag for Tx to 1 all the time. I am working on a proper fix for
-> this that will toggle the flag appropriately, but it is more challenging than I
-> anticipated and I am afraid that this patch will not be completed before the
-> merge window closes, therefore this easier fix for now. This fix has a
-> negative performance impact in the range of 0% to 4%. Towards the higher
-> end of the scale if you have driver and application on the same core and issue
-> a lot of packets, and towards no negative impact if you use two cores, lower
-> transmission speeds and/or a workload that also receives packets.
-> 
-> Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 10 ++--------
->  1 file changed, 2 insertions(+), 8 deletions(-)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 074f2496ec0f7fb857c6183f00d889c24f9a6ac9  i40e: Fix for ethtool -m issue on X722 NIC
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 256m
 
+configs tested: 145
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allyesconfig
+i386                             allmodconfig
+x86_64                 randconfig-e004-201944
+x86_64                 randconfig-e001-201944
+x86_64                 randconfig-e003-201944
+x86_64                 randconfig-e002-201944
+i386                   randconfig-e003-201944
+i386                   randconfig-e001-201944
+i386                   randconfig-e004-201944
+i386                   randconfig-e002-201944
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                 randconfig-a001-201944
+x86_64                 randconfig-a002-201944
+x86_64                 randconfig-a003-201944
+x86_64                 randconfig-a004-201944
+i386                   randconfig-a001-201944
+i386                   randconfig-a002-201944
+i386                   randconfig-a003-201944
+i386                   randconfig-a004-201944
+x86_64                 randconfig-c001-201944
+x86_64                 randconfig-c002-201944
+x86_64                 randconfig-c003-201944
+x86_64                 randconfig-c004-201944
+i386                   randconfig-c001-201944
+i386                   randconfig-c002-201944
+i386                   randconfig-c003-201944
+i386                   randconfig-c004-201944
+x86_64                 randconfig-g001-201944
+x86_64                 randconfig-g002-201944
+x86_64                 randconfig-g003-201944
+x86_64                 randconfig-g004-201944
+i386                   randconfig-g001-201944
+i386                   randconfig-g002-201944
+i386                   randconfig-g003-201944
+i386                   randconfig-g004-201944
+x86_64                           allmodconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-d001-201944
+x86_64                 randconfig-d002-201944
+x86_64                 randconfig-d003-201944
+x86_64                 randconfig-d004-201944
+i386                   randconfig-d001-201944
+i386                   randconfig-d002-201944
+i386                   randconfig-d003-201944
+i386                   randconfig-d004-201944
+alpha                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                   randconfig-f002-201944
+i386                   randconfig-f001-201944
+x86_64                 randconfig-f003-201944
+x86_64                 randconfig-f004-201944
+x86_64                 randconfig-f002-201944
+i386                   randconfig-f003-201944
+i386                   randconfig-f004-201944
+x86_64                 randconfig-f001-201944
+x86_64                 randconfig-h001-201944
+x86_64                 randconfig-h002-201944
+x86_64                 randconfig-h003-201944
+x86_64                 randconfig-h004-201944
+i386                   randconfig-h001-201944
+i386                   randconfig-h002-201944
+i386                   randconfig-h003-201944
+i386                   randconfig-h004-201944
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-b001-201944
+x86_64                 randconfig-b002-201944
+x86_64                 randconfig-b003-201944
+x86_64                 randconfig-b004-201944
+i386                   randconfig-b001-201944
+i386                   randconfig-b002-201944
+i386                   randconfig-b003-201944
+i386                   randconfig-b004-201944
+
+---
+0-DAY kernel test infrastructure                 Open Source Technology Center
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
