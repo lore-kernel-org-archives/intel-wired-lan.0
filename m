@@ -1,20 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 09 Nov 2019 13:05:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 234e6127d68430f06c856ca72edfeb8a510889d1
-Message-ID: <5dc6492c.EJ80hlUOJV9eAqSW%lkp@intel.com>
+Date: Sat, 09 Nov 2019 13:06:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ a2582cdc32f071422e0197a6c59bd1235b426ce2
+Message-ID: <5dc6493d.ItxP0RfjG8qsLxEp%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 234e6127d68430f06c856ca72edfeb8a510889d1  checkpatch.pl: seed camelcase from the provided kernel tree root
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git  master
+branch HEAD: a2582cdc32f071422e0197a6c59bd1235b426ce2  Merge branch '40GbE' of git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue
 
-elapsed time: 178m
+elapsed time: 250m
 
-configs tested: 137
+configs tested: 121
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -23,14 +23,9 @@ s390                             allmodconfig
 s390                              allnoconfig
 s390                          debug_defconfig
 s390                                defconfig
-i386                   randconfig-b001-201944
-x86_64                 randconfig-b002-201944
-i386                   randconfig-b003-201944
-x86_64                 randconfig-b003-201944
-i386                   randconfig-b004-201944
-x86_64                 randconfig-b001-201944
-x86_64                 randconfig-b004-201944
-i386                   randconfig-b002-201944
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
 arm                              allmodconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
@@ -48,6 +43,12 @@ sparc                               defconfig
 sparc64                          allmodconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
 x86_64                           allyesconfig
 i386                             allmodconfig
 c6x                              allyesconfig
@@ -58,9 +59,6 @@ openrisc                    or1ksim_defconfig
 openrisc                 simple_smp_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
 alpha                               defconfig
 nds32                             allnoconfig
 nds32                               defconfig
@@ -93,14 +91,11 @@ x86_64                           allmodconfig
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
-x86_64                 randconfig-c001-201944
-x86_64                 randconfig-c002-201944
-i386                   randconfig-c001-201944
-i386                   randconfig-c004-201944
-i386                   randconfig-c003-201944
-i386                   randconfig-c002-201944
-x86_64                 randconfig-c004-201944
-x86_64                 randconfig-c003-201944
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
 sh                               allmodconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
@@ -126,25 +121,14 @@ ia64                             alldefconfig
 ia64                             allmodconfig
 ia64                              allnoconfig
 ia64                                defconfig
-x86_64                 randconfig-a004-201944
 x86_64                 randconfig-a001-201944
 x86_64                 randconfig-a002-201944
-i386                   randconfig-a002-201944
+x86_64                 randconfig-a003-201944
+x86_64                 randconfig-a004-201944
 i386                   randconfig-a001-201944
+i386                   randconfig-a002-201944
 i386                   randconfig-a003-201944
 i386                   randconfig-a004-201944
-x86_64                 randconfig-a003-201944
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
 x86_64                 randconfig-e001-201944
 x86_64                 randconfig-e002-201944
 x86_64                 randconfig-e003-201944
