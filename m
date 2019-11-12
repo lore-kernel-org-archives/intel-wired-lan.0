@@ -1,109 +1,77 @@
-From: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
-Date: Tue, 12 Nov 2019 07:33:30 +0000
-Subject: [Intel-wired-lan] [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg
- interface between VF and PF
-In-Reply-To: <3508A0C5D531054DBDD98909F6FA64FA11B3EB75@ORSMSX113.amr.corp.intel.com>
-References: <1572845537.13810.225.camel@harmonicinc.com>
- <3508A0C5D531054DBDD98909F6FA64FA11B3936D@ORSMSX113.amr.corp.intel.com>
- <1572931430.13810.227.camel@harmonicinc.com>
- <3508A0C5D531054DBDD98909F6FA64FA11B39863@ORSMSX113.amr.corp.intel.com>
- <1573018214.10368.1.camel@harmonicinc.com>
- <d078d3efc784805a67ba1a1c6e94fb4ec1c0aec6.camel@intel.com>
- <3508A0C5D531054DBDD98909F6FA64FA11B3EB75@ORSMSX113.amr.corp.intel.com>
-Message-ID: <1573544002.10368.34.camel@harmonicinc.com>
+From: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
+Date: Tue, 12 Nov 2019 13:03:40 +0000
+Subject: [Intel-wired-lan] [e1000-patches] [PATCH] igb: read flash with
+ iomem=strict
+Message-ID: <0EF347314CF65544BA015993979A29CDB4ED9024@IRSMSX102.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi All,
+When Secure Boot is enabled access to the /dev/mem is forbidden for user-space applications and clients are reporting inability to use tools in Secure Boot Mode. The way to perform NVM update is to use igb driver.
+Currently 1G Linux Base Driver has API which allows only EEPROM access.
+There is a need to extend IOCTL API to allow NVM and registers access.
+These defines are necessary for NVM access functions.
 
-Jeffrey/Brett: I did re-submit the patch as "[v2,net] i40e/iavf: Fix msg interface between VF and PF"
-Please review.
+Signed-off-by: Adam Ludkiewicz <adam.ludkiewicz@intel.com>
+---
 
-On Fri, 2019-11-08 at 16:43 +0000, Creeley, Brett wrote:
-> > -----Original Message-----
-> > From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> > Sent: Thursday, November 7, 2019 11:39 AM
-> > To: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>; Creeley, Brett <brett.creeley@intel.com>; intel-wired-lan at lis
-> > ts.osuosl.org;
-> > netdev at vger.kernel.org
-> > Cc: Arkady Gilinsky <arcadyg@gmail.com>
-> > Subject: Re: [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg interface between VF and PF
-> > 
-> > On Wed, 2019-11-06 at 05:30 +0000, Arkady Gilinsky wrote:
-> > > On Tue, 2019-11-05 at 16:55 +0000, Creeley, Brett wrote:
-> > > > > -----Original Message-----
-> > > > > From: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
-> > > > > Sent: Monday, November 4, 2019 9:24 PM
-> > > > > To: Creeley, Brett <brett.creeley@intel.com>;
-> > > > > intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; Kirsher,
-> > > > > Jeffrey T
-> > > > > <jeffrey.t.kirsher@intel.com>
-> > > > > Cc: Arkady Gilinsky <arcadyg@gmail.com>
-> > > > > Subject: Re: [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg interface
-> > > > > between VF and PF
-> > > > > > static bool i40e_vc_verify_vqs_bitmaps(struct virtchnl_queue_select
-> > > > > > *vqs)
-> > > > > > {
-> > > > > > ???/* this will catch any changes made to the virtchnl_queue_select
-> > > > > > bitmap */
-> > > > > > ???if (sizeof(vqs->rx_queues) != sizeof(u32) ||
-> > > > > > ????????sizeof(vqs->tx_queues) != sizeof(u32))
-> > > > > > ???????????return false;
-> > > > > 
-> > > > > If so, then is it better to check the type of the fields in compile-
-> > > > > time rather than in runtime ?
-> > > > > Something like this:
-> > > > > BUILD_BUG_ON(sizeof(vqs->rx_queues) != sizeof(u32));
-> > > > > BUILD_BUG_ON(sizeof(vqs->tx_queues) != sizeof(u32));
-> > > > > This is not required comparison each time when function is called and
-> > > > > made code more optimized.
-> > > > 
-> > > > I don't think this is required with the change you suggested below.
-> > > 
-> > > Agree.
-> > > If other code in driver not need to be adjusted/verified, then this check
-> > > is not needed.
-> > > > > > ???if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
-> > > > > > ?????????hweight32(vqs->rx_queues) > I40E_MAX_VF_QUEUES ||
-> > > > > > ?????????hweight32(vqs->tx_queues) > I40E_MAX_VF_QUEUES)
-> > > > > > ???????????return false;
-> > > > > 
-> > > > > Again, from optimization POV it is better to have constant changed
-> > > > > than variable,
-> > > > > since it is compile time and not run time action:
-> > > > > ?????if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
-> > > > > ???????????vqs->rx_queues >= (BIT(I40E_MAX_VF_QUEUES)) ||
-> > > > > 
-> > > > > ??????vqs->tx_queues >= (BIT(I40E_MAX_VF_QUEUES)))
-> > > > > ?????????????return false;
-> > > > 
-> > > > This seems much better than my solution. It fixes the original issue,
-> > > > handles if the
-> > > > vqs->[r|t]x_queues variables have changed in size, and the queue bitmap
-> > > > comparison
-> > > > uses a constant. Thanks!
-> > > 
-> > > Thanks to you for feedback.
-> > > I am trying to understand if this patch will enter into official kernel
-> > > tree
-> > > and, not less important from my POV, to official Intel drivers.
-> > > Brett/Jeffrey, could you, please, assist to make sure that this fix, or
-> > > fix suggested by Brett,
-> > > will be integrated into Intel i40e/iavf drivers ?
-> > > Or may be I should write mail straight to Intel support ?
-> > 
-> > As Brett pointed out, there are issues with this patch. Please make the
-> > suggested changes and re-submit the patch to
-> > intel-wired-lan at lists.osuosl.org
-> 
-> Jeff/Arkady: I have already submitted patches for this internally for
-> official Intel drivers. Apologies for the delayed response.
--- 
-Best regards,
-Arkady Gilinsky
+diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+index d2e2c50..68dee6a 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -481,6 +481,7 @@
+ #define E1000_RAH_POOL_1 0x00040000
+ 
+ /* Error Codes */
++#define E1000_SUCCESS      0
+ #define E1000_ERR_NVM      1
+ #define E1000_ERR_PHY      2
+ #define E1000_ERR_CONFIG   3
+@@ -800,6 +801,37 @@
+ #define NVM_ETS_DATA_INDEX_SHIFT	8
+ #define NVM_ETS_DATA_HTHRESH_MASK	0x00FF
+ 
++#define E1000_REGISTER_SET_SIZE		0x20000 /* CSR Size */
++#define E1000_FLA	0x0001C  /* Flash Access - RW */
++#define E1000_FLOP	0x0103C  /* FLASH Opcode Register */
++#define E1000_I350_BARCTRL		0x5BFC /* BAR ctrl reg */
++#define E1000_I350_DTXMXPKTSZ		0x355C /* Maximum sent packet size reg*/
++
++#define E1000_SRWR		0x12018
++#define E1000_EEC_REG		0x12010
++
++#define E1000_SHADOWINF		0x12068
++#define E1000_FLFWUPDATE	0x12108
++
++/* os dep */
++#define E1000_READ_FLASH_REG(a, reg) (readl((a)->flash_address + 
++(reg)))
++
++#define E1000_READ_FLASH_REG8(a, reg) ( \
++	readb(READ_ONCE((a)->flash_address) + (reg)))
++
++#define E1000_WRITE_FLASH_REG(a, reg, value) ( \
++	writel((value), ((a)->flash_address + (reg))))
++
++#define E1000_READ_REG(x, y) igb_rd32(x, y) #define E1000_READ_REG8(h, 
++r) readb(READ_ONCE((h)->hw_addr) + (r))
++
++#define E1000_WRITE_REG(hw, reg, val) \ do { \
++	u8 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
++	if (!E1000_REMOVED(hw_addr)) \
++		writel((val), &hw_addr[(reg)]); \
++} while (0)
++
+ #define E1000_NVM_CFG_DONE_PORT_0  0x040000 /* MNG config cycle done */  #define E1000_NVM_CFG_DONE_PORT_1  0x080000 /* ...for second port */  #define E1000_NVM_CFG_DONE_PORT_2  0x100000 /* ...for third port */
+--------------------------------------------------------------------
 
-------------------------------------------
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
 
