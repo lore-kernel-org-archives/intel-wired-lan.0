@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 12 Nov 2019 19:35:58 +0000
-Subject: [Intel-wired-lan] [PATCH S33 12/15] ice: implement VF stats NDO
-In-Reply-To: <20191108142331.10221-12-anthony.l.nguyen@intel.com>
+Date: Tue, 12 Nov 2019 19:36:30 +0000
+Subject: [Intel-wired-lan] [PATCH S33 13/15] ice: Implement ethtool ops
+ for channels
+In-Reply-To: <20191108142331.10221-13-anthony.l.nguyen@intel.com>
 References: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
- <20191108142331.10221-12-anthony.l.nguyen@intel.com>
-Message-ID: <ca477e33a101448190bd2b5469272f8f@intel.com>
+ <20191108142331.10221-13-anthony.l.nguyen@intel.com>
+Message-ID: <0b6331348a80494691d1a6eb78ad4f9f@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,21 +17,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Friday, November 8, 2019 6:23 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S33 12/15] ice: implement VF stats NDO
+> Subject: [Intel-wired-lan] [PATCH S33 13/15] ice: Implement ethtool ops for
+> channels
 > 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> From: Henry Tieman <henry.w.tieman@intel.com>
 > 
-> Implement the VF stats gathering via the kernel via ndo_get_vf_stats().
-> The driver will show per-VF stats in the output of the ip -s link show dev <PF>
-> command.
+> Add code to query and set the number of channels on the primary VSI for a
+> PF. This is accessed from the 'ethtool -l' and 'ethtool -L' commands,
+> respectively.  Though the ice driver supports asymmetric queues report an
+> IRQ vector that has both Rx and Tx queues attached and is counted as a
+> 'combined' channel.
 > 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+> Co-developed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c     |  1 +
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 45 +++++++++++++++++++
-> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  | 11 +++++
->  3 files changed, 57 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice.h         |   4 +
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c |   4 +-
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.h |   2 +
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 194 +++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_lib.c     |  70 +++++--
+>  drivers/net/ethernet/intel/ice/ice_lib.h     |   2 +-
+>  drivers/net/ethernet/intel/ice/ice_main.c    |  87 ++++++++-
+>  7 files changed, 344 insertions(+), 19 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
