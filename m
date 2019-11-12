@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 12 Nov 2019 19:32:00 +0000
-Subject: [Intel-wired-lan] [PATCH S33 04/15] ice: Don't modify stripping
- for add/del VLANs on VF
-In-Reply-To: <20191108142331.10221-4-anthony.l.nguyen@intel.com>
+Date: Tue, 12 Nov 2019 19:32:34 +0000
+Subject: [Intel-wired-lan] [PATCH S33 05/15] ice: fix stack leakage
+In-Reply-To: <20191108142331.10221-5-anthony.l.nguyen@intel.com>
 References: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
- <20191108142331.10221-4-anthony.l.nguyen@intel.com>
-Message-ID: <fee1b3338e5d4628bd2896eff82d2d4c@intel.com>
+ <20191108142331.10221-5-anthony.l.nguyen@intel.com>
+Message-ID: <6489ebacf7bb4f4592f51b4a653d13f1@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,30 +16,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Friday, November 8, 2019 6:23 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S33 04/15] ice: Don't modify stripping for
-> add/del VLANs on VF
+> Subject: [Intel-wired-lan] [PATCH S33 05/15] ice: fix stack leakage
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> Currently when adding/deleting vlans in ice_vc_process_vlan_msg() we are
-> calling ice_vsi_manage_vlan_stripping() to enable/disable when adding and
-> deleting a VLAN respectively. This is wrong because adding/deleting VLANs
-> has nothing to do with configuring VLAN stripping. VLAN stripping is
-> configured through the following VIRTCHNL operations:
-> 	VIRTCHNL_OP_ENABLE_VLAN_STRIPPING
-> 	VIRTCHNL_OP_DISABLE_VLAN_STRIPPING
+> In the case of an invalid virtchannel request the driver would return
+> uninitialized data to the VF from the PF stack which is a bug.  Fix by initializing
+> the stack variable earlier in the function before any return paths can be
+> taken.
 > 
-> Unfortunately we can't just remove this because then stripping will never be
-> configured on VF initialization. Fix this by adding a new function that initializes
-> (disables/enables) VLAN stripping for the VF based on the device supported
-> capabilities.
-> This allows us to remove the call to
-> ice_vsi_manage_vlan_stripping() in ice_vc_process_vlan_msg().
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 39 +++++++++++++++----
->  1 file changed, 31 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
