@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 12 Nov 2019 19:30:24 +0000
-Subject: [Intel-wired-lan] [PATCH S33 01/15] ice: Store number of
- functions for the device
-In-Reply-To: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
+Date: Tue, 12 Nov 2019 19:30:55 +0000
+Subject: [Intel-wired-lan] [PATCH S33 02/15] ice: Correct capabilities
+ reporting of max TCs
+In-Reply-To: <20191108142331.10221-2-anthony.l.nguyen@intel.com>
 References: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
-Message-ID: <cf5d62db50994f23bb19997a797def93@intel.com>
+ <20191108142331.10221-2-anthony.l.nguyen@intel.com>
+Message-ID: <d2966547500b4fd480be2f89075500c5@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,22 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Friday, November 8, 2019 6:23 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S33 01/15] ice: Store number of functions
-> for the device
+> Subject: [Intel-wired-lan] [PATCH S33 02/15] ice: Correct capabilities
+> reporting of max TCs
 > 
 > From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> Store the number of functions the device has and use this number when
-> setting safe mode capabilities instead of calculating it.
+> Firmware always returns 8 as the max number of supported TCs. However on
+> devices with more than 4 ports, the maximum number of TCs per port is
+> limited to 4. Check and, if necessary, correct the reporting of capabilities for
+> devices with more than 4 ports.
 > 
 > Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-> Co-developed-by: Kevin Scott <kevin.c.scott@intel.com>
-> Signed-off-by: Kevin Scott <kevin.c.scott@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c | 21 ++++++++++-----------
->  drivers/net/ethernet/intel/ice/ice_type.h   |  1 +
->  2 files changed, 11 insertions(+), 11 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
