@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 12 Nov 2019 19:31:24 +0000
-Subject: [Intel-wired-lan] [PATCH S33 03/15] ice: Disallow VF VLAN
- opcodes if VLAN offloads disabled
-In-Reply-To: <20191108142331.10221-3-anthony.l.nguyen@intel.com>
+Date: Tue, 12 Nov 2019 19:32:00 +0000
+Subject: [Intel-wired-lan] [PATCH S33 04/15] ice: Don't modify stripping
+ for add/del VLANs on VF
+In-Reply-To: <20191108142331.10221-4-anthony.l.nguyen@intel.com>
 References: <20191108142331.10221-1-anthony.l.nguyen@intel.com>
- <20191108142331.10221-3-anthony.l.nguyen@intel.com>
-Message-ID: <b115815464814638954b2356983dd029@intel.com>
+ <20191108142331.10221-4-anthony.l.nguyen@intel.com>
+Message-ID: <fee1b3338e5d4628bd2896eff82d2d4c@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Friday, November 8, 2019 6:23 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S33 03/15] ice: Disallow VF VLAN opcodes if
-> VLAN offloads disabled
+> Subject: [Intel-wired-lan] [PATCH S33 04/15] ice: Don't modify stripping for
+> add/del VLANs on VF
 > 
 > From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Currently if the host disables VLAN offloads on the VF by not setting the
-> VIRTCHNL_VF_OFFLOAD_VLAN capability bit we will still honor VF VLAN
-> configuration messages over VIRTCHNL. These messages (i.e. enable/disable
-> VLAN stripping and VLAN filtering) should be blocked when the feature is not
-> supported. Fix that by adding a helper function to determine if the VF is
-> allowed to do VLAN operations based on the host's VF configuration.
+> Currently when adding/deleting vlans in ice_vc_process_vlan_msg() we are
+> calling ice_vsi_manage_vlan_stripping() to enable/disable when adding and
+> deleting a VLAN respectively. This is wrong because adding/deleting VLANs
+> has nothing to do with configuring VLAN stripping. VLAN stripping is
+> configured through the following VIRTCHNL operations:
+> 	VIRTCHNL_OP_ENABLE_VLAN_STRIPPING
+> 	VIRTCHNL_OP_DISABLE_VLAN_STRIPPING
 > 
-> Also, mirror the VF communicated capabilities in the host's VF configuration.
+> Unfortunately we can't just remove this because then stripping will never be
+> configured on VF initialization. Fix this by adding a new function that initializes
+> (disables/enables) VLAN stripping for the VF based on the device supported
+> capabilities.
+> This allows us to remove the call to
+> ice_vsi_manage_vlan_stripping() in ice_vc_process_vlan_msg().
 > 
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 29 +++++++++++++++++++
->  1 file changed, 29 insertions(+)
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 39 +++++++++++++++----
+>  1 file changed, 31 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
