@@ -1,134 +1,81 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 13 Nov 2019 10:47:38 -0800
-Subject: [Intel-wired-lan] [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg
- interface between VF and PF
-In-Reply-To: <1573544002.10368.34.camel@harmonicinc.com>
-References: <1572845537.13810.225.camel@harmonicinc.com>
- <3508A0C5D531054DBDD98909F6FA64FA11B3936D@ORSMSX113.amr.corp.intel.com>
- <1572931430.13810.227.camel@harmonicinc.com>
- <3508A0C5D531054DBDD98909F6FA64FA11B39863@ORSMSX113.amr.corp.intel.com>
- <1573018214.10368.1.camel@harmonicinc.com>
- <d078d3efc784805a67ba1a1c6e94fb4ec1c0aec6.camel@intel.com>
- <3508A0C5D531054DBDD98909F6FA64FA11B3EB75@ORSMSX113.amr.corp.intel.com>
- <1573544002.10368.34.camel@harmonicinc.com>
-Message-ID: <ab2d5acc31f94ecc97e412d286c375cee9640722.camel@intel.com>
+Date: Wed, 13 Nov 2019 11:28:17 -0800
+Subject: [Intel-wired-lan] [PATCH] i40e: Fix virtchnl_queue_select bitmap
+ validation
+Message-ID: <20191113192817.531297-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2019-11-12 at 07:33 +0000, Arkady Gilinsky wrote:
-> Hi All,
-> 
-> Jeffrey/Brett: I did re-submit the patch as "[v2,net] i40e/iavf: Fix msg
-> interface between VF and PF"
-> Please review.
+From: Brett Creeley <brett.creeley@intel.com>
 
-Sorry, Brett is on vacation for a couple of weeks.  Before he left, he
-provided an alternative patch, which I will be submitting later today.
+Currently in i40e_vc_disable_queues_msg() we are incorrectly
+validating the virtchnl queue select bitmaps. The
+virtchnl_queue_select rx_queues and tx_queue bitmap is being
+compared against ICE_MAX_VF_QUEUES, but the problem is that
+these bitmaps can have a value greater than I40E_MAX_VF_QUEUES.
+Fix this by comparing the bitmaps against BIT(I40E_MAX_VF_QUEUES).
 
-> 
-> On Fri, 2019-11-08 at 16:43 +0000, Creeley, Brett wrote:
-> > > -----Original Message-----
-> > > From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> > > Sent: Thursday, November 7, 2019 11:39 AM
-> > > To: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>; Creeley, Brett
-> > > <brett.creeley@intel.com>; intel-wired-lan at lis
-> > > ts.osuosl.org;
-> > > netdev at vger.kernel.org
-> > > Cc: Arkady Gilinsky <arcadyg@gmail.com>
-> > > Subject: Re: [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg interface
-> > > between VF and PF
-> > > 
-> > > On Wed, 2019-11-06 at 05:30 +0000, Arkady Gilinsky wrote:
-> > > > On Tue, 2019-11-05 at 16:55 +0000, Creeley, Brett wrote:
-> > > > > > -----Original Message-----
-> > > > > > From: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
-> > > > > > Sent: Monday, November 4, 2019 9:24 PM
-> > > > > > To: Creeley, Brett <brett.creeley@intel.com>;
-> > > > > > intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org;
-> > > > > > Kirsher,
-> > > > > > Jeffrey T
-> > > > > > <jeffrey.t.kirsher@intel.com>
-> > > > > > Cc: Arkady Gilinsky <arcadyg@gmail.com>
-> > > > > > Subject: Re: [EXTERNAL] RE: [PATCH net] i40e/iavf: Fix msg
-> > > > > > interface
-> > > > > > between VF and PF
-> > > > > > > static bool i40e_vc_verify_vqs_bitmaps(struct
-> > > > > > > virtchnl_queue_select
-> > > > > > > *vqs)
-> > > > > > > {
-> > > > > > >    /* this will catch any changes made to the
-> > > > > > > virtchnl_queue_select
-> > > > > > > bitmap */
-> > > > > > >    if (sizeof(vqs->rx_queues) != sizeof(u32) ||
-> > > > > > >         sizeof(vqs->tx_queues) != sizeof(u32))
-> > > > > > >            return false;
-> > > > > > 
-> > > > > > If so, then is it better to check the type of the fields in
-> > > > > > compile-
-> > > > > > time rather than in runtime ?
-> > > > > > Something like this:
-> > > > > > BUILD_BUG_ON(sizeof(vqs->rx_queues) != sizeof(u32));
-> > > > > > BUILD_BUG_ON(sizeof(vqs->tx_queues) != sizeof(u32));
-> > > > > > This is not required comparison each time when function is
-> > > > > > called and
-> > > > > > made code more optimized.
-> > > > > 
-> > > > > I don't think this is required with the change you suggested
-> > > > > below.
-> > > > 
-> > > > Agree.
-> > > > If other code in driver not need to be adjusted/verified, then this
-> > > > check
-> > > > is not needed.
-> > > > > > >    if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
-> > > > > > >          hweight32(vqs->rx_queues) > I40E_MAX_VF_QUEUES ||
-> > > > > > >          hweight32(vqs->tx_queues) > I40E_MAX_VF_QUEUES)
-> > > > > > >            return false;
-> > > > > > 
-> > > > > > Again, from optimization POV it is better to have constant
-> > > > > > changed
-> > > > > > than variable,
-> > > > > > since it is compile time and not run time action:
-> > > > > >      if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
-> > > > > >            vqs->rx_queues >= (BIT(I40E_MAX_VF_QUEUES)) ||
-> > > > > > 
-> > > > > >       vqs->tx_queues >= (BIT(I40E_MAX_VF_QUEUES)))
-> > > > > >              return false;
-> > > > > 
-> > > > > This seems much better than my solution. It fixes the original
-> > > > > issue,
-> > > > > handles if the
-> > > > > vqs->[r|t]x_queues variables have changed in size, and the queue
-> > > > > bitmap
-> > > > > comparison
-> > > > > uses a constant. Thanks!
-> > > > 
-> > > > Thanks to you for feedback.
-> > > > I am trying to understand if this patch will enter into official
-> > > > kernel
-> > > > tree
-> > > > and, not less important from my POV, to official Intel drivers.
-> > > > Brett/Jeffrey, could you, please, assist to make sure that this
-> > > > fix, or
-> > > > fix suggested by Brett,
-> > > > will be integrated into Intel i40e/iavf drivers ?
-> > > > Or may be I should write mail straight to Intel support ?
-> > > 
-> > > As Brett pointed out, there are issues with this patch. Please make
-> > > the
-> > > suggested changes and re-submit the patch to
-> > > intel-wired-lan at lists.osuosl.org
-> > 
-> > Jeff/Arkady: I have already submitted patches for this internally for
-> > official Intel drivers. Apologies for the delayed response.
+Also, add the function i40e_vc_validate_vqs_bitmaps() that checks to see
+if both virtchnl_queue_select bitmaps are empty along with checking that
+the bitmaps only have valid bits set. This function can then be used in
+both the queue enable and disable flows.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20191113/01797f4a/attachment.asc>
+Suggested-by: Arkady Gilinksky <arkady.gilinsky@harmonicinc.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+---
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 22 +++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 6d75a35acb67..275702d8cf7a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2321,6 +2321,22 @@ static int i40e_ctrl_vf_rx_rings(struct i40e_vsi *vsi, unsigned long q_map,
+ 	return ret;
+ }
+ 
++/**
++ * i40e_vc_validate_vqs_bitmaps - validate Rx/Tx queue bitmaps from VIRTHCHNL
++ * @vqs: virtchnl_queue_select structure containing bitmaps to validate
++ *
++ * Returns true if validation was successful, else false.
++ */
++static bool i40e_vc_validate_vqs_bitmaps(struct virtchnl_queue_select *vqs)
++{
++	if ((!vqs->rx_queues && !vqs->tx_queues) ||
++	    vqs->rx_queue >= BIT(I40E_MAX_VF_QUEUES) ||
++	    vqs->tx_queue >= BIT(I40E_MAX_VF_QUEUES))
++	       return false;
++
++	return true;
++}
++
+ /**
+  * i40e_vc_enable_queues_msg
+  * @vf: pointer to the VF info
+@@ -2346,7 +2362,7 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
+-	if ((0 == vqs->rx_queues) && (0 == vqs->tx_queues)) {
++	if (i40e_vc_validate_vqs_bitmaps(vqs)) {
+ 		aq_ret = I40E_ERR_PARAM;
+ 		goto error_param;
+ 	}
+@@ -2408,9 +2424,7 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
+-	if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
+-	    vqs->rx_queues > I40E_MAX_VF_QUEUES ||
+-	    vqs->tx_queues > I40E_MAX_VF_QUEUES) {
++	if (i40e_vc_validate_vqs_bitmaps(vqs)) {
+ 		aq_ret = I40E_ERR_PARAM;
+ 		goto error_param;
+ 	}
+-- 
+2.23.0
+
