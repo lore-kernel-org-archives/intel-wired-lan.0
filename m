@@ -1,8 +1,8 @@
 From: Richard Cochran <richardcochran@gmail.com>
-Date: Thu, 14 Nov 2019 10:45:03 -0800
-Subject: [Intel-wired-lan] [PATCH net 09/13] mv88e6xxx: Reject requests to
+Date: Thu, 14 Nov 2019 10:45:04 -0800
+Subject: [Intel-wired-lan] [PATCH net 10/13] dp83640: Reject requests to
  enable time stamping on both edges.
-Message-ID: <20191114184507.18937-10-richardcochran@gmail.com>
+Message-ID: <20191114184507.18937-11-richardcochran@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,26 +15,27 @@ edges.
 
 Signed-off-by: Richard Cochran <richardcochran@gmail.com>
 ---
- drivers/net/dsa/mv88e6xxx/ptp.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/net/phy/dp83640.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/net/dsa/mv88e6xxx/ptp.c b/drivers/net/dsa/mv88e6xxx/ptp.c
-index 3b1985902f95..d838c174dc0d 100644
---- a/drivers/net/dsa/mv88e6xxx/ptp.c
-+++ b/drivers/net/dsa/mv88e6xxx/ptp.c
-@@ -280,6 +280,12 @@ static int mv88e6352_ptp_enable_extts(struct mv88e6xxx_chip *chip,
- 				PTP_STRICT_FLAGS))
- 		return -EOPNOTSUPP;
- 
-+	/* Reject requests to enable time stamping on both edges. */
-+	if ((rq->extts.flags & PTP_STRICT_FLAGS) &&
-+	    (rq->extts.flags & PTP_ENABLE_FEATURE) &&
-+	    (rq->extts.flags & PTP_EXTTS_EDGES) == PTP_EXTTS_EDGES)
-+		return -EOPNOTSUPP;
+diff --git a/drivers/net/phy/dp83640.c b/drivers/net/phy/dp83640.c
+index 3bba2bea3a88..8f241b57fcf6 100644
+--- a/drivers/net/phy/dp83640.c
++++ b/drivers/net/phy/dp83640.c
+@@ -475,6 +475,13 @@ static int ptp_dp83640_enable(struct ptp_clock_info *ptp,
+ 					PTP_FALLING_EDGE |
+ 					PTP_STRICT_FLAGS))
+ 			return -EOPNOTSUPP;
 +
- 	pin = ptp_find_pin(chip->ptp_clock, PTP_PF_EXTTS, rq->extts.index);
- 
- 	if (pin < 0)
++		/* Reject requests to enable time stamping on both edges. */
++		if ((rq->extts.flags & PTP_STRICT_FLAGS) &&
++		    (rq->extts.flags & PTP_ENABLE_FEATURE) &&
++		    (rq->extts.flags & PTP_EXTTS_EDGES) == PTP_EXTTS_EDGES)
++			return -EOPNOTSUPP;
++
+ 		index = rq->extts.index;
+ 		if (index >= N_EXT_TS)
+ 			return -EINVAL;
 -- 
 2.20.1
 
