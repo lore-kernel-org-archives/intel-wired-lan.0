@@ -1,122 +1,72 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Thu, 14 Nov 2019 10:45:07 -0800
-Subject: [Intel-wired-lan] [PATCH net 13/13] ptp: Extend the test program to
- check the external time stamp flags.
-Message-ID: <20191114184507.18937-14-richardcochran@gmail.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 14 Nov 2019 19:06:58 +0000
+Subject: [Intel-wired-lan] [PATCH net 01/13] ptp: Validate requests to
+ enable time stamping of external signals.
+In-Reply-To: <20191114184507.18937-2-richardcochran@gmail.com>
+References: <20191114184507.18937-2-richardcochran@gmail.com>
+Message-ID: <02874ECE860811409154E81DA85FBB589698F67E@ORSMSX121.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Because each driver and hardware has different capabilities, the test
-cannot provide a simple pass/fail result, but it can at least show what
-combinations of flags are supported.
+> -----Original Message-----
+> From: Richard Cochran <richardcochran@gmail.com>
+> Sent: Thursday, November 14, 2019 10:45 AM
+> To: netdev at vger.kernel.org
+> Cc: intel-wired-lan at lists.osuosl.org; David Miller <davem@davemloft.net>;
+> Brandon Streiff <brandon.streiff@ni.com>; Hall, Christopher S
+> <christopher.s.hall@intel.com>; Eugenia Emantayev <eugenia@mellanox.com>;
+> Felipe Balbi <felipe.balbi@linux.intel.com>; Feras Daoud
+> <ferasda@mellanox.com>; Keller, Jacob E <jacob.e.keller@intel.com>; Kirsher,
+> Jeffrey T <jeffrey.t.kirsher@intel.com>; Sergei Shtylyov
+> <sergei.shtylyov@cogentembedded.com>; Stefan Sorensen
+> <stefan.sorensen@spectralink.com>
+> Subject: [PATCH net 01/13] ptp: Validate requests to enable time stamping of
+> external signals.
+> 
+> Commit 415606588c61 ("PTP: introduce new versions of IOCTLs")
+> introduced a new external time stamp ioctl that validates the flags.
+> This patch extends the validation to ensure that at least one rising
+> or falling edge flag is set when enabling external time stamps.
+> 
+> Signed-off-by: Richard Cochran <richardcochran@gmail.com>
+> ---
+>  drivers/ptp/ptp_chardev.c      | 18 +++++++++++++-----
+>  include/uapi/linux/ptp_clock.h |  1 +
+>  2 files changed, 14 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/ptp/ptp_chardev.c b/drivers/ptp/ptp_chardev.c
+> index 67d0199840fd..cbbe1237ff8d 100644
+> --- a/drivers/ptp/ptp_chardev.c
+> +++ b/drivers/ptp/ptp_chardev.c
+> @@ -149,11 +149,19 @@ long ptp_ioctl(struct posix_clock *pc, unsigned int cmd,
+> unsigned long arg)
+>  			err = -EFAULT;
+>  			break;
+>  		}
+> -		if (((req.extts.flags & ~PTP_EXTTS_VALID_FLAGS) ||
+> -			req.extts.rsv[0] || req.extts.rsv[1]) &&
+> -			cmd == PTP_EXTTS_REQUEST2) {
+> -			err = -EINVAL;
+> -			break;
+> +		if (cmd == PTP_EXTTS_REQUEST2) {
+> +			/* Make sure no reserved bit is set. */
+> +			if ((req.extts.flags & ~PTP_EXTTS_VALID_FLAGS) ||
+> +			    req.extts.rsv[0] || req.extts.rsv[1]) {
+> +				err = -EINVAL;
+> +				break;
+> +			}
+> +			/* Ensure one of the rising/falling edge bits is set. */
+> +			if ((req.extts.flags & PTP_ENABLE_FEATURE) &&
+> +			    (req.extts.flags & PTP_EXTTS_EDGES) == 0) {
+> +				err = -EINVAL;
+> +				break;
+> +			}
 
-Signed-off-by: Richard Cochran <richardcochran@gmail.com>
----
- tools/testing/selftests/ptp/testptp.c | 53 ++++++++++++++++++++++++++-
- 1 file changed, 51 insertions(+), 2 deletions(-)
+Just to confirm, these new ioctls haven't been around long enough to be concerned about this change?
 
-diff --git a/tools/testing/selftests/ptp/testptp.c b/tools/testing/selftests/ptp/testptp.c
-index bd4a7247b44f..c0dd10257df5 100644
---- a/tools/testing/selftests/ptp/testptp.c
-+++ b/tools/testing/selftests/ptp/testptp.c
-@@ -44,6 +44,46 @@ static int clock_adjtime(clockid_t id, struct timex *tx)
- }
- #endif
- 
-+static void show_flag_test(int rq_index, unsigned int flags, int err)
-+{
-+	printf("PTP_EXTTS_REQUEST%c flags 0x%08x : (%d) %s\n",
-+	       rq_index ? '1' + rq_index : ' ',
-+	       flags, err, strerror(errno));
-+	/* sigh, uClibc ... */
-+	errno = 0;
-+}
-+
-+static void do_flag_test(int fd, unsigned int index)
-+{
-+	struct ptp_extts_request extts_request;
-+	unsigned long request[2] = {
-+		PTP_EXTTS_REQUEST,
-+		PTP_EXTTS_REQUEST2,
-+	};
-+	unsigned int enable_flags[5] = {
-+		PTP_ENABLE_FEATURE,
-+		PTP_ENABLE_FEATURE | PTP_RISING_EDGE,
-+		PTP_ENABLE_FEATURE | PTP_FALLING_EDGE,
-+		PTP_ENABLE_FEATURE | PTP_RISING_EDGE | PTP_FALLING_EDGE,
-+		PTP_ENABLE_FEATURE | (PTP_EXTTS_VALID_FLAGS + 1),
-+	};
-+	int err, i, j;
-+
-+	memset(&extts_request, 0, sizeof(extts_request));
-+	extts_request.index = index;
-+
-+	for (i = 0; i < 2; i++) {
-+		for (j = 0; j < 5; j++) {
-+			extts_request.flags = enable_flags[j];
-+			err = ioctl(fd, request[i], &extts_request);
-+			show_flag_test(i, extts_request.flags, err);
-+
-+			extts_request.flags = 0;
-+			err = ioctl(fd, request[i], &extts_request);
-+		}
-+	}
-+}
-+
- static clockid_t get_clockid(int fd)
- {
- #define CLOCKFD 3
-@@ -96,7 +136,8 @@ static void usage(char *progname)
- 		" -s         set the ptp clock time from the system time\n"
- 		" -S         set the system time from the ptp clock time\n"
- 		" -t val     shift the ptp clock time by 'val' seconds\n"
--		" -T val     set the ptp clock time to 'val' seconds\n",
-+		" -T val     set the ptp clock time to 'val' seconds\n"
-+		" -z         test combinations of rising/falling external time stamp flags\n",
- 		progname);
- }
- 
-@@ -122,6 +163,7 @@ int main(int argc, char *argv[])
- 	int adjtime = 0;
- 	int capabilities = 0;
- 	int extts = 0;
-+	int flagtest = 0;
- 	int gettime = 0;
- 	int index = 0;
- 	int list_pins = 0;
-@@ -138,7 +180,7 @@ int main(int argc, char *argv[])
- 
- 	progname = strrchr(argv[0], '/');
- 	progname = progname ? 1+progname : argv[0];
--	while (EOF != (c = getopt(argc, argv, "cd:e:f:ghi:k:lL:p:P:sSt:T:v"))) {
-+	while (EOF != (c = getopt(argc, argv, "cd:e:f:ghi:k:lL:p:P:sSt:T:z"))) {
- 		switch (c) {
- 		case 'c':
- 			capabilities = 1;
-@@ -191,6 +233,9 @@ int main(int argc, char *argv[])
- 			settime = 3;
- 			seconds = atoi(optarg);
- 			break;
-+		case 'z':
-+			flagtest = 1;
-+			break;
- 		case 'h':
- 			usage(progname);
- 			return 0;
-@@ -322,6 +367,10 @@ int main(int argc, char *argv[])
- 		}
- 	}
- 
-+	if (flagtest) {
-+		do_flag_test(fd, index);
-+	}
-+
- 	if (list_pins) {
- 		int n_pins = 0;
- 		if (ioctl(fd, PTP_CLOCK_GETCAPS, &caps)) {
--- 
-2.20.1
+Thanks,
+Jake
 
