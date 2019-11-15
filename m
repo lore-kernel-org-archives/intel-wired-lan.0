@@ -1,12 +1,11 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 14 Nov 2019 21:29:14 +0000
-Subject: [Intel-wired-lan] [PATCH net 08/13] ptp: Introduce strict
- checking of external time stamp options.
-In-Reply-To: <20191114194410.GB19147@localhost>
-References: <20191114184507.18937-9-richardcochran@gmail.com>
- <02874ECE860811409154E81DA85FBB589698F6E0@ORSMSX121.amr.corp.intel.com>
- <20191114194410.GB19147@localhost>
-Message-ID: <02874ECE860811409154E81DA85FBB589698FABB@ORSMSX121.amr.corp.intel.com>
+Date: Fri, 15 Nov 2019 01:14:15 +0000
+Subject: [Intel-wired-lan] [PATCH net 02/13] net: reject PTP periodic
+ output requests with unsupported flags
+In-Reply-To: <7275436b02f9551807f68784d4f4ebaf0adbc35e.camel@mellanox.com>
+References: <20191114184507.18937-3-richardcochran@gmail.com>
+ <7275436b02f9551807f68784d4f4ebaf0adbc35e.camel@mellanox.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5896990A94@ORSMSX121.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,44 +13,40 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Richard Cochran <richardcochran@gmail.com>
-> Sent: Thursday, November 14, 2019 11:44 AM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; David Miller
-> <davem@davemloft.net>; Brandon Streiff <brandon.streiff@ni.com>; Hall,
-> Christopher S <christopher.s.hall@intel.com>; Eugenia Emantayev
-> <eugenia@mellanox.com>; Felipe Balbi <felipe.balbi@linux.intel.com>; Feras
-> Daoud <ferasda@mellanox.com>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; Sergei Shtylyov
-> <sergei.shtylyov@cogentembedded.com>; Stefan Sorensen
-> <stefan.sorensen@spectralink.com>
-> Subject: Re: [PATCH net 08/13] ptp: Introduce strict checking of external time
-> stamp options.
+> From: Saeed Mahameed <saeedm@mellanox.com>
+> Sent: Thursday, November 14, 2019 3:58 PM
+> To: richardcochran at gmail.com; netdev at vger.kernel.org
+> Cc: Hall, Christopher S <christopher.s.hall@intel.com>; Eugenia Emantayev
+> <eugenia@mellanox.com>; davem at davemloft.net;
+> sergei.shtylyov at cogentembedded.com; Feras Daoud <ferasda@mellanox.com>;
+> stefan.sorensen at spectralink.com; Brown, Aaron F <aaron.f.brown@intel.com>;
+> brandon.streiff at ni.com; Keller, Jacob E <jacob.e.keller@intel.com>; Kirsher,
+> Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-lan at lists.osuosl.org;
+> felipe.balbi at linux.intel.com
+> Subject: Re: [PATCH net 02/13] net: reject PTP periodic output requests with
+> unsupported flags
 > 
-> On Thu, Nov 14, 2019 at 07:12:38PM +0000, Keller, Jacob E wrote:
-> > So, this patch adds the flag *and* modifies the drivers to accept it, but not
-> actually enable strict checking?
+> On Thu, 2019-11-14 at 10:44 -0800, Richard Cochran wrote:
+> > From: Jacob Keller <jacob.e.keller@intel.com>
 > >
-> > I'd prefer if this flag got added, and the drivers were modified in separate
-> patches to both allow the flag and to perform the strict check.. that feels like a
-> cleaner patch boundary.
-> >
-> > That would ofcourse break the drivers that reject the strict command until
-> they're fixed in follow-on commands.. hmm
+> LGTM, just there might be a problem with old tools that didn't clear
+> the flags upon request and expected PTP periodic .. they will stop to
+> work with new kernel, am i am not sure if such tools do exist.
 > 
-> You are right, but if anything I'd squash the following four driver
-> patches into this one.  I left the series in little steps just to make
-> review easier.  Strictly speaking, if you were to do a git bisect from
-> the introduction of the "2" ioctls until here, you would find drivers'
-> acceptance of the new flags changing.  But it is too late to fix that,
-> and I doubt anyone will care.
-> 
-> IMHO it *is* important to have v5.4 with strict checking.
-> 
-> Thanks,
-> Richard
 
-Yes I agree. I think the series is good as is, and having this fixed before the ioctls have been in a full release makes sense.
+Not quite. This is why there is a V2 ioctl now. The V1 ioctl now explicitly disables any bits set beyond the originally defined ones, so that callers of v1 will continue to work, even if they send junk data.
+
+Thus, old tools should continue working with the old interface, while tools that want new functionality must be upgraded to use the v2 ioctls.
 
 Thanks,
 Jake
+
+> But the fact now that we have PTP_PEROUT_ONE_SHOT, we need to trust
+> both driver and tools to do the right thing.
+> 
+> What are the tools to test PTP_PEROUT_ONE_SHOT ? to support this in
+> mlx5 it is just a matter of a flipping a bit.
+> 
+> Reviewed-by: Saeed Mahameed <saeedm@mellanox.com>
+> 
+
