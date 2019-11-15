@@ -1,64 +1,107 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 15 Nov 2019 01:15:27 +0000
-Subject: [Intel-wired-lan] [PATCH net 06/13] mlx5: reject unsupported
- external timestamp flags
-In-Reply-To: <c90050bd6a63ef3a6f0c7ea999f44ec51c07e917.camel@mellanox.com>
-References: <20191114184507.18937-7-richardcochran@gmail.com>
- <c90050bd6a63ef3a6f0c7ea999f44ec51c07e917.camel@mellanox.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5896990AC2@ORSMSX121.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 15 Nov 2019 01:17:12 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Fix virtchnl_queue_select
+ bitmap validation
+In-Reply-To: <20191113192817.531297-1-jeffrey.t.kirsher@intel.com>
+References: <20191113192817.531297-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <d05e40a7ad5246cdba8f63a6825ce9d9@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Comments inline
+
 > -----Original Message-----
-> From: Saeed Mahameed <saeedm@mellanox.com>
-> Sent: Thursday, November 14, 2019 4:03 PM
-> To: Ariel Levkovich <lariel@mellanox.com>; richardcochran at gmail.com;
-> netdev at vger.kernel.org
-> Cc: Hall, Christopher S <christopher.s.hall@intel.com>; Eugenia Emantayev
-> <eugenia@mellanox.com>; davem at davemloft.net;
-> sergei.shtylyov at cogentembedded.com; Feras Daoud <ferasda@mellanox.com>;
-> stefan.sorensen at spectralink.com; brandon.streiff at ni.com; Keller, Jacob E
-> <jacob.e.keller@intel.com>; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
-> intel-wired-lan at lists.osuosl.org; felipe.balbi at linux.intel.com
-> Subject: Re: [PATCH net 06/13] mlx5: reject unsupported external timestamp
-> flags
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Wednesday, November 13, 2019 11:28 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Creeley, Brett <brett.creeley@intel.com>; Arkady Gilinksky
+> <arkady.gilinsky@harmonicinc.com>
+> Subject: [Intel-wired-lan] [PATCH] i40e: Fix virtchnl_queue_select bitmap
+> validation
 > 
-> On Thu, 2019-11-14 at 10:45 -0800, Richard Cochran wrote:
-> > From: Jacob Keller <jacob.e.keller@intel.com>
-> >
-> > Fix the mlx5 core PTP support to explicitly reject any future flags
-> > that
-> > get added to the external timestamp request ioctl.
-> >
-> > In order to maintain currently functioning code, this patch accepts
-> > all
-> > three current flags. This is because the PTP_RISING_EDGE and
-> > PTP_FALLING_EDGE flags have unclear semantics and each driver seems
-> > to
-> > have interpreted them slightly differently.
-> >
-> > [ RC: I'm not 100% sure what this driver does, but if I'm not wrong
-> > it
-> >       follows the dp83640:
-> >
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> The driver will check if the PTP_FALLING_EDGE flag was set then it will
-> set it in HW, if not then it is going to default to PTP_RISING_EDGE, so
-> LGTM.
+> Currently in i40e_vc_disable_queues_msg() we are incorrectly validating the
+> virtchnl queue select bitmaps. The virtchnl_queue_select rx_queues and
+> tx_queue bitmap is being compared against ICE_MAX_VF_QUEUES, but the
+> problem is that these bitmaps can have a value greater than
+> I40E_MAX_VF_QUEUES.
+> Fix this by comparing the bitmaps against BIT(I40E_MAX_VF_QUEUES).
 > 
-> Reviewed-by: Saeed Mahameed <saeedm@mellanox.com>
+> Also, add the function i40e_vc_validate_vqs_bitmaps() that checks to see if
+> both virtchnl_queue_select bitmaps are empty along with checking that the
+> bitmaps only have valid bits set. This function can then be used in both the
+> queue enable and disable flows.
 > 
-> But same story here, old tools that lazily set 0xffff or 0x0000 and
-> expected every thing to work.. again not sure if they do exist.
+> Suggested-by: Arkady Gilinksky <arkady.gilinsky@harmonicinc.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> ---
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 22 +++++++++++++++----
+>  1 file changed, 18 insertions(+), 4 deletions(-)
 > 
-> Ariel please have a look at this patch.
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index 6d75a35acb67..275702d8cf7a 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -2321,6 +2321,22 @@ static int i40e_ctrl_vf_rx_rings(struct i40e_vsi *vsi,
+> unsigned long q_map,
+>  	return ret;
+>  }
 > 
+> +/**
+> + * i40e_vc_validate_vqs_bitmaps - validate Rx/Tx queue bitmaps from
+> +VIRTHCHNL
+> + * @vqs: virtchnl_queue_select structure containing bitmaps to validate
+> + *
+> + * Returns true if validation was successful, else false.
+> + */
+> +static bool i40e_vc_validate_vqs_bitmaps(struct virtchnl_queue_select
+> +*vqs) {
+> +	if ((!vqs->rx_queues && !vqs->tx_queues) ||
+> +	    vqs->rx_queue >= BIT(I40E_MAX_VF_QUEUES) ||
+> +	    vqs->tx_queue >= BIT(I40E_MAX_VF_QUEUES))
 
-As long as they stick to the original ioctls this won't be a problem, because the v1 ioctl now explicitly clears unsupported bits before calling driver, so this check will pass. Obviously, this change should not be backported to earlier than 5.4 without also backporting that masking in the original ioctl functions.
+Should these not be "rx_queues" and "tx_queues"? 
 
-Thanks,
-Jake
-
+> +	       return false;
+> +
+> +	return true;
+> +}
+> +
+>  /**
+>   * i40e_vc_enable_queues_msg
+>   * @vf: pointer to the VF info
+> @@ -2346,7 +2362,7 @@ static int i40e_vc_enable_queues_msg(struct
+> i40e_vf *vf, u8 *msg)
+>  		goto error_param;
+>  	}
+> 
+> -	if ((0 == vqs->rx_queues) && (0 == vqs->tx_queues)) {
+> +	if (i40e_vc_validate_vqs_bitmaps(vqs)) {
+>  		aq_ret = I40E_ERR_PARAM;
+>  		goto error_param;
+>  	}
+> @@ -2408,9 +2424,7 @@ static int i40e_vc_disable_queues_msg(struct
+> i40e_vf *vf, u8 *msg)
+>  		goto error_param;
+>  	}
+> 
+> -	if ((vqs->rx_queues == 0 && vqs->tx_queues == 0) ||
+> -	    vqs->rx_queues > I40E_MAX_VF_QUEUES ||
+> -	    vqs->tx_queues > I40E_MAX_VF_QUEUES) {
+> +	if (i40e_vc_validate_vqs_bitmaps(vqs)) {
+>  		aq_ret = I40E_ERR_PARAM;
+>  		goto error_param;
+>  	}
+> --
+> 2.23.0
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
