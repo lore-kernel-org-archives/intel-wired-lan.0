@@ -1,182 +1,71 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sun, 03 Nov 2019 06:18:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
- 36b26e7ba89316141f4bfc5e5b02e693ab54cd31
-Message-ID: <5dbe00cf.rIiBZ/d9FnfiT5tJ%lkp@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 18 Nov 2019 10:29:20 -0800
+Subject: [Intel-wired-lan] Regression: e1000e link not coming up
+In-Reply-To: <3945198.J3aOToa6sv@minako>
+References: <3945198.J3aOToa6sv@minako>
+Message-ID: <92b94935dea3b8c7e7236d6f4e1ac148e6cd2ffd.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 36b26e7ba89316141f4bfc5e5b02e693ab54cd31  ice: fix potential infinite loop because loop counter being too small
+On Sat, 2019-11-16 at 12:50 +0100, Jan Janssen wrote:
+> Hi,
+> 
+> since 5.3 my I219-V network interface sometimes doesn't come up when
+> booting
+> or resuming from suspend. This either forces me to use "ip link
+> down/up" or
+> reloading the module to get working internet.
+> 
+> I reported this issue previously to netdev at vger.kernel.org where I
+> initially
+> bisected to a wrong commit. After finding the right one nobody
+> reacted to it,
+> so now I am trying this again here.
 
-Regressions in current branch:
-
-drivers/net/ethernet/intel/ice/ice_dcb_lib.c:188:1-8: alloc with no test, possible model on line 191
-
-Error ids grouped by kconfigs:
-
-recent_errors
-|-- i386-allmodconfig
-|   `-- drivers-net-ethernet-intel-ice-ice_dcb_lib.c:alloc-with-no-test-possible-model-on-line
-`-- x86_64-allyesconfig
-    `-- drivers-net-ethernet-intel-ice-ice_dcb_lib.c:alloc-with-no-test-possible-model-on-line
-
-TIMEOUT after 1444m
+I apologize, this is the correct mailing list for issues with the Intel
+wired LAN.
 
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+> There is also a bugzilla entry for this, but it seems to be ignored
+> by
+> maintainers too: https://bugzilla.kernel.org/show_bug.cgi?id=205067
+> For me, this happens with systemd-networkd, but the people in the
+> bugzilla
+> report are observing this with NetworkManager.
+> 
+> The commit introducing the bug is
+> 59653e6497d16f7ac1d9db088f3959f57ee8c3db
+> (e1000e: Make watchdog use delayed work) and reverting it did make
+> this bug go
+> away. Though, it cannot be reverted automatically on the latest git
+> tree from
+> Torvalds anymore.
 
-configs timed out: 1
+I will work with the e1000e driver lead (Sasha Neftin) to work up a
+patch that will apply to David Miller's net tree.  I will make sure you
+are CC'd on the patch, so you will know when it makes it into the
+upstream kernel.
 
-x86_64                           allmodconfig
+> I've also tried the master branch on jkirsher/net-queue.git  and
+> jkirsher/next-queue.git, but the bug is still present there too.
+> 
+> This bug is really annoying and inconvenient, so I would really
+> appreciate if
+> somebody could fix this bug or at least have the offending commit
+> reverted.
+> 
+> Regards,
+> Jan
+> 
+> 
 
-configs tested: 136
-
-i386                   randconfig-b001-201943
-x86_64                 randconfig-b002-201943
-x86_64                 randconfig-b003-201943
-i386                   randconfig-b003-201943
-i386                   randconfig-b004-201943
-x86_64                 randconfig-b004-201943
-x86_64                 randconfig-b001-201943
-i386                   randconfig-b002-201943
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                     edosk2674_defconfig
-m68k                           sun3_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-arc                              allyesconfig
-powerpc                             defconfig
-microblaze                    nommu_defconfig
-powerpc                       ppc64_defconfig
-microblaze                      mmu_defconfig
-arc                                 defconfig
-powerpc                           allnoconfig
-x86_64                 randconfig-c001-201943
-i386                   randconfig-c001-201943
-x86_64                 randconfig-c002-201943
-i386                   randconfig-c004-201943
-i386                   randconfig-c003-201943
-x86_64                 randconfig-c004-201943
-i386                   randconfig-c002-201943
-x86_64                 randconfig-c003-201943
-riscv                             allnoconfig
-riscv                               defconfig
-nds32                               defconfig
-alpha                               defconfig
-nds32                             allnoconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-arm                              allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-mips                             allmodconfig
-mips                           32r2_defconfig
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-parisc                            allnoconfig
-x86_64                 randconfig-a004-201943
-x86_64                 randconfig-a001-201943
-i386                   randconfig-a002-201943
-x86_64                 randconfig-a002-201943
-i386                   randconfig-a001-201943
-i386                   randconfig-a003-201943
-i386                   randconfig-a004-201943
-x86_64                 randconfig-a003-201943
-xtensa                       common_defconfig
-openrisc                    or1ksim_defconfig
-nios2                         3c120_defconfig
-xtensa                          iss_defconfig
-c6x                        evmc6678_defconfig
-c6x                              allyesconfig
-nios2                         10m50_defconfig
-openrisc                 simple_smp_defconfig
-x86_64                 randconfig-e004-201943
-x86_64                 randconfig-e001-201943
-x86_64                 randconfig-e003-201943
-x86_64                 randconfig-e002-201943
-i386                   randconfig-e003-201943
-i386                   randconfig-e004-201943
-i386                   randconfig-e001-201943
-i386                   randconfig-e002-201943
-arm                         at91_dt_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm64                            allyesconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allmodconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                             allmodconfig
-s390                                defconfig
-i386                   randconfig-d002-201943
-x86_64                 randconfig-d002-201943
-i386                   randconfig-d004-201943
-x86_64                 randconfig-d004-201943
-x86_64                 randconfig-d003-201943
-i386                   randconfig-d003-201943
-x86_64                 randconfig-d001-201943
-i386                   randconfig-d001-201943
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-x86_64                           allyesconfig
-i386                             allmodconfig
-i386                   randconfig-f002-201943
-i386                   randconfig-f001-201943
-x86_64                 randconfig-f003-201943
-x86_64                 randconfig-f004-201943
-x86_64                 randconfig-f002-201943
-i386                   randconfig-f003-201943
-x86_64                 randconfig-f001-201943
-i386                   randconfig-f004-201943
-sparc64                          allmodconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-g002-201943
-i386                   randconfig-g004-201943
-x86_64                 randconfig-g001-201943
-i386                   randconfig-g002-201943
-x86_64                 randconfig-g004-201943
-x86_64                 randconfig-g003-201943
-i386                   randconfig-g003-201943
-i386                   randconfig-g001-201943
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20191118/2c55ed22/attachment.asc>
