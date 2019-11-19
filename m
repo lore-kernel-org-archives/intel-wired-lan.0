@@ -1,8 +1,8 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue, 19 Nov 2019 13:44:01 +0200
-Subject: [Intel-wired-lan] [PATCH v1 04/15] igc: Remove no need declaration
- of the igc_configure
-Message-ID: <20191119114401.41842-1-sasha.neftin@intel.com>
+Date: Tue, 19 Nov 2019 13:44:11 +0200
+Subject: [Intel-wired-lan] [PATCH v1 05/15] igc: Remove no need declaration
+ of the igc_alloc_mapped_page
+Message-ID: <20191119114411.41911-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,136 +10,132 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 We want to avoid forward-declarations of function if possible.
-Rearrange the igc_configure function implementation.
+Rearrange the igc_alloc_mapped_page function implementation.
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 91 +++++++++++++++----------------
- 1 file changed, 45 insertions(+), 46 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 94 +++++++++++++++----------------
+ 1 file changed, 46 insertions(+), 48 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 4484e7ab0a53..8a2baf8ad956 100644
+index 8a2baf8ad956..d26875592937 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -53,7 +53,6 @@ MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+@@ -63,8 +63,6 @@ static void igc_free_q_vectors(struct igc_adapter *adapter);
+ static void igc_irq_disable(struct igc_adapter *adapter);
+ static void igc_irq_enable(struct igc_adapter *adapter);
+ static void igc_configure_msix(struct igc_adapter *adapter);
+-static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
+-				  struct igc_rx_buffer *bi);
  
- /* forward declaration */
- static int igc_sw_init(struct igc_adapter *);
--static void igc_configure(struct igc_adapter *adapter);
- static void igc_set_rx_mode(struct net_device *netdev);
- static void igc_write_itr(struct igc_q_vector *q_vector);
- static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector);
-@@ -1985,6 +1984,51 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
- 	return !!budget;
+ enum latency_range {
+ 	lowest_latency = 0,
+@@ -1606,6 +1604,52 @@ static void igc_put_rx_buffer(struct igc_ring *rx_ring,
+ 	rx_buffer->page = NULL;
  }
  
-+static void igc_nfc_filter_restore(struct igc_adapter *adapter)
++static inline unsigned int igc_rx_offset(struct igc_ring *rx_ring)
 +{
-+	struct igc_nfc_filter *rule;
-+
-+	spin_lock(&adapter->nfc_lock);
-+
-+	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node)
-+		igc_add_filter(adapter, rule);
-+
-+	spin_unlock(&adapter->nfc_lock);
++	return ring_uses_build_skb(rx_ring) ? IGC_SKB_PAD : 0;
 +}
 +
-+/**
-+ * igc_configure - configure the hardware for RX and TX
-+ * @adapter: private board structure
-+ */
-+static void igc_configure(struct igc_adapter *adapter)
++static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
++				  struct igc_rx_buffer *bi)
 +{
-+	struct net_device *netdev = adapter->netdev;
-+	int i = 0;
++	struct page *page = bi->page;
++	dma_addr_t dma;
 +
-+	igc_get_hw_control(adapter);
-+	igc_set_rx_mode(netdev);
++	/* since we are recycling buffers we should seldom need to alloc */
++	if (likely(page))
++		return true;
 +
-+	igc_setup_tctl(adapter);
-+	igc_setup_mrqc(adapter);
-+	igc_setup_rctl(adapter);
-+
-+	igc_nfc_filter_restore(adapter);
-+	igc_configure_tx(adapter);
-+	igc_configure_rx(adapter);
-+
-+	igc_rx_fifo_flush_base(&adapter->hw);
-+
-+	/* call igc_desc_unused which always leaves
-+	 * at least 1 descriptor unused to make sure
-+	 * next_to_use != next_to_clean
-+	 */
-+	for (i = 0; i < adapter->num_rx_queues; i++) {
-+		struct igc_ring *ring = adapter->rx_ring[i];
-+
-+		igc_alloc_rx_buffers(ring, igc_desc_unused(ring));
++	/* alloc new page for storage */
++	page = dev_alloc_pages(igc_rx_pg_order(rx_ring));
++	if (unlikely(!page)) {
++		rx_ring->rx_stats.alloc_failed++;
++		return false;
 +	}
++
++	/* map page for use */
++	dma = dma_map_page_attrs(rx_ring->dev, page, 0,
++				 igc_rx_pg_size(rx_ring),
++				 DMA_FROM_DEVICE,
++				 IGC_RX_DMA_ATTR);
++
++	/* if mapping failed free memory back to system since
++	 * there isn't much point in holding memory we can't use
++	 */
++	if (dma_mapping_error(rx_ring->dev, dma)) {
++		__free_page(page);
++
++		rx_ring->rx_stats.alloc_failed++;
++		return false;
++	}
++
++	bi->dma = dma;
++	bi->page = page;
++	bi->page_offset = igc_rx_offset(rx_ring);
++	bi->pagecnt_bias = 1;
++
++	return true;
 +}
 +
  /**
-  * igc_up - Open the interface and prepare it to handle traffic
-  * @adapter: board private structure
-@@ -2206,18 +2250,6 @@ static void igc_nfc_filter_exit(struct igc_adapter *adapter)
- 	spin_unlock(&adapter->nfc_lock);
+  * igc_alloc_rx_buffers - Replace used receive buffers; packet split
+  * @rx_ring: rx descriptor ring
+@@ -1767,52 +1811,6 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 	return total_packets;
  }
  
--static void igc_nfc_filter_restore(struct igc_adapter *adapter)
+-static inline unsigned int igc_rx_offset(struct igc_ring *rx_ring)
 -{
--	struct igc_nfc_filter *rule;
+-	return ring_uses_build_skb(rx_ring) ? IGC_SKB_PAD : 0;
+-}
 -
--	spin_lock(&adapter->nfc_lock);
+-static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
+-				  struct igc_rx_buffer *bi)
+-{
+-	struct page *page = bi->page;
+-	dma_addr_t dma;
 -
--	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node)
--		igc_add_filter(adapter, rule);
+-	/* since we are recycling buffers we should seldom need to alloc */
+-	if (likely(page))
+-		return true;
 -
--	spin_unlock(&adapter->nfc_lock);
+-	/* alloc new page for storage */
+-	page = dev_alloc_pages(igc_rx_pg_order(rx_ring));
+-	if (unlikely(!page)) {
+-		rx_ring->rx_stats.alloc_failed++;
+-		return false;
+-	}
+-
+-	/* map page for use */
+-	dma = dma_map_page_attrs(rx_ring->dev, page, 0,
+-				 igc_rx_pg_size(rx_ring),
+-				 DMA_FROM_DEVICE,
+-				 IGC_RX_DMA_ATTR);
+-
+-	/* if mapping failed free memory back to system since
+-	 * there isn't much point in holding memory we can't use
+-	 */
+-	if (dma_mapping_error(rx_ring->dev, dma)) {
+-		__free_page(page);
+-
+-		rx_ring->rx_stats.alloc_failed++;
+-		return false;
+-	}
+-
+-	bi->dma = dma;
+-	bi->page = page;
+-	bi->page_offset = igc_rx_offset(rx_ring);
+-	bi->pagecnt_bias = 1;
+-
+-	return true;
 -}
 -
  /**
-  * igc_down - Close the interface
-  * @adapter: board private structure
-@@ -2441,39 +2473,6 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
- 	return features;
- }
- 
--/**
-- * igc_configure - configure the hardware for RX and TX
-- * @adapter: private board structure
-- */
--static void igc_configure(struct igc_adapter *adapter)
--{
--	struct net_device *netdev = adapter->netdev;
--	int i = 0;
--
--	igc_get_hw_control(adapter);
--	igc_set_rx_mode(netdev);
--
--	igc_setup_tctl(adapter);
--	igc_setup_mrqc(adapter);
--	igc_setup_rctl(adapter);
--
--	igc_nfc_filter_restore(adapter);
--	igc_configure_tx(adapter);
--	igc_configure_rx(adapter);
--
--	igc_rx_fifo_flush_base(&adapter->hw);
--
--	/* call igc_desc_unused which always leaves
--	 * at least 1 descriptor unused to make sure
--	 * next_to_use != next_to_clean
--	 */
--	for (i = 0; i < adapter->num_rx_queues; i++) {
--		struct igc_ring *ring = adapter->rx_ring[i];
--
--		igc_alloc_rx_buffers(ring, igc_desc_unused(ring));
--	}
--}
--
- /* If the filter to be added and an already existing filter express
-  * the same address and address type, it should be possible to only
-  * override the other configurations, for example the queue to steer
+  * igc_clean_tx_irq - Reclaim resources after transmit completes
+  * @q_vector: pointer to q_vector containing needed info
 -- 
 2.11.0
 
