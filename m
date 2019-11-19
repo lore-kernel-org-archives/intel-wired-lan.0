@@ -1,8 +1,8 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue, 19 Nov 2019 13:44:19 +0200
-Subject: [Intel-wired-lan] [PATCH v1 06/15] igc: Remove no need declaration
- of the igc_set_interrupt_capability
-Message-ID: <20191119114419.42064-1-sasha.neftin@intel.com>
+Date: Tue, 19 Nov 2019 13:44:29 +0200
+Subject: [Intel-wired-lan] [PATCH v1 07/15] igc: Remove no need declaration
+ of the igc_set_rx_mode
+Message-ID: <20191119114429.42117-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,180 +10,398 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 We want to avoid forward-declarations of function if possible.
-Rearrange the igc_set_interrupt_capability function implementation.
+Rearrange the igc_set_rx_mode function implementation.
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 142 +++++++++++++++---------------
- 1 file changed, 70 insertions(+), 72 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 353 +++++++++++++++---------------
+ 1 file changed, 176 insertions(+), 177 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index d26875592937..a1746be345b9 100644
+index a1746be345b9..7118a5605229 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -57,8 +57,6 @@ static void igc_set_rx_mode(struct net_device *netdev);
+@@ -53,7 +53,6 @@ MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+ 
+ /* forward declaration */
+ static int igc_sw_init(struct igc_adapter *);
+-static void igc_set_rx_mode(struct net_device *netdev);
  static void igc_write_itr(struct igc_q_vector *q_vector);
  static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector);
  static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx);
--static void igc_set_interrupt_capability(struct igc_adapter *adapter,
--					 bool msix);
- static void igc_free_q_vectors(struct igc_adapter *adapter);
- static void igc_irq_disable(struct igc_adapter *adapter);
- static void igc_irq_enable(struct igc_adapter *adapter);
-@@ -2999,6 +2997,76 @@ static void igc_reset_interrupt_capability(struct igc_adapter *adapter)
+@@ -1992,6 +1991,182 @@ static void igc_nfc_filter_restore(struct igc_adapter *adapter)
+ 	spin_unlock(&adapter->nfc_lock);
  }
  
- /**
-+ * igc_set_interrupt_capability - set MSI or MSI-X if supported
-+ * @adapter: Pointer to adapter structure
-+ * @msix: boolean value for MSI-X capability
-+ *
-+ * Attempt to configure interrupts using the best available
-+ * capabilities of the hardware and kernel.
++/* If the filter to be added and an already existing filter express
++ * the same address and address type, it should be possible to only
++ * override the other configurations, for example the queue to steer
++ * traffic.
 + */
-+static void igc_set_interrupt_capability(struct igc_adapter *adapter,
-+					 bool msix)
++static bool igc_mac_entry_can_be_used(const struct igc_mac_addr *entry,
++				      const u8 *addr, const u8 flags)
 +{
-+	int numvecs, i;
-+	int err;
++	if (!(entry->state & IGC_MAC_STATE_IN_USE))
++		return true;
 +
-+	if (!msix)
-+		goto msi_only;
-+	adapter->flags |= IGC_FLAG_HAS_MSIX;
++	if ((entry->state & IGC_MAC_STATE_SRC_ADDR) !=
++	    (flags & IGC_MAC_STATE_SRC_ADDR))
++		return false;
 +
-+	/* Number of supported queues. */
-+	adapter->num_rx_queues = adapter->rss_queues;
++	if (!ether_addr_equal(addr, entry->addr))
++		return false;
 +
-+	adapter->num_tx_queues = adapter->rss_queues;
++	return true;
++}
 +
-+	/* start with one vector for every Rx queue */
-+	numvecs = adapter->num_rx_queues;
++/* Add a MAC filter for 'addr' directing matching traffic to 'queue',
++ * 'flags' is used to indicate what kind of match is made, match is by
++ * default for the destination address, if matching by source address
++ * is desired the flag IGC_MAC_STATE_SRC_ADDR can be used.
++ */
++static int igc_add_mac_filter(struct igc_adapter *adapter,
++			      const u8 *addr, const u8 queue)
++{
++	struct igc_hw *hw = &adapter->hw;
++	int rar_entries = hw->mac.rar_entry_count;
++	int i;
 +
-+	/* if Tx handler is separate add 1 for every Tx queue */
-+	if (!(adapter->flags & IGC_FLAG_QUEUE_PAIRS))
-+		numvecs += adapter->num_tx_queues;
++	if (is_zero_ether_addr(addr))
++		return -EINVAL;
 +
-+	/* store the number of vectors reserved for queues */
-+	adapter->num_q_vectors = numvecs;
++	/* Search for the first empty entry in the MAC table.
++	 * Do not touch entries at the end of the table reserved for the VF MAC
++	 * addresses.
++	 */
++	for (i = 0; i < rar_entries; i++) {
++		if (!igc_mac_entry_can_be_used(&adapter->mac_table[i],
++					       addr, 0))
++			continue;
 +
-+	/* add 1 vector for link status interrupts */
-+	numvecs++;
++		ether_addr_copy(adapter->mac_table[i].addr, addr);
++		adapter->mac_table[i].queue = queue;
++		adapter->mac_table[i].state |= IGC_MAC_STATE_IN_USE;
 +
-+	adapter->msix_entries = kcalloc(numvecs, sizeof(struct msix_entry),
-+					GFP_KERNEL);
++		igc_rar_set_index(adapter, i);
++		return i;
++	}
 +
-+	if (!adapter->msix_entries)
-+		return;
++	return -ENOSPC;
++}
 +
-+	/* populate entry values */
-+	for (i = 0; i < numvecs; i++)
-+		adapter->msix_entries[i].entry = i;
++/* Remove a MAC filter for 'addr' directing matching traffic to
++ * 'queue', 'flags' is used to indicate what kind of match need to be
++ * removed, match is by default for the destination address, if
++ * matching by source address is to be removed the flag
++ * IGC_MAC_STATE_SRC_ADDR can be used.
++ */
++static int igc_del_mac_filter(struct igc_adapter *adapter,
++			      const u8 *addr, const u8 queue)
++{
++	struct igc_hw *hw = &adapter->hw;
++	int rar_entries = hw->mac.rar_entry_count;
++	int i;
 +
-+	err = pci_enable_msix_range(adapter->pdev,
-+				    adapter->msix_entries,
-+				    numvecs,
-+				    numvecs);
-+	if (err > 0)
-+		return;
++	if (is_zero_ether_addr(addr))
++		return -EINVAL;
 +
-+	kfree(adapter->msix_entries);
-+	adapter->msix_entries = NULL;
++	/* Search for matching entry in the MAC table based on given address
++	 * and queue. Do not touch entries at the end of the table reserved
++	 * for the VF MAC addresses.
++	 */
++	for (i = 0; i < rar_entries; i++) {
++		if (!(adapter->mac_table[i].state & IGC_MAC_STATE_IN_USE))
++			continue;
++		if (adapter->mac_table[i].state != 0)
++			continue;
++		if (adapter->mac_table[i].queue != queue)
++			continue;
++		if (!ether_addr_equal(adapter->mac_table[i].addr, addr))
++			continue;
 +
-+	igc_reset_interrupt_capability(adapter);
++		/* When a filter for the default address is "deleted",
++		 * we return it to its initial configuration
++		 */
++		if (adapter->mac_table[i].state & IGC_MAC_STATE_DEFAULT) {
++			adapter->mac_table[i].state =
++				IGC_MAC_STATE_DEFAULT | IGC_MAC_STATE_IN_USE;
++			adapter->mac_table[i].queue = 0;
++		} else {
++			adapter->mac_table[i].state = 0;
++			adapter->mac_table[i].queue = 0;
++			memset(adapter->mac_table[i].addr, 0, ETH_ALEN);
++		}
 +
-+msi_only:
-+	adapter->flags &= ~IGC_FLAG_HAS_MSIX;
++		igc_rar_set_index(adapter, i);
++		return 0;
++	}
 +
-+	adapter->rss_queues = 1;
-+	adapter->flags |= IGC_FLAG_QUEUE_PAIRS;
-+	adapter->num_rx_queues = 1;
-+	adapter->num_tx_queues = 1;
-+	adapter->num_q_vectors = 1;
-+	if (!pci_enable_msi(adapter->pdev))
-+		adapter->flags |= IGC_FLAG_HAS_MSI;
++	return -ENOENT;
++}
++
++static int igc_uc_sync(struct net_device *netdev, const unsigned char *addr)
++{
++	struct igc_adapter *adapter = netdev_priv(netdev);
++	int ret;
++
++	ret = igc_add_mac_filter(adapter, addr, adapter->num_rx_queues);
++
++	return min_t(int, ret, 0);
++}
++
++static int igc_uc_unsync(struct net_device *netdev, const unsigned char *addr)
++{
++	struct igc_adapter *adapter = netdev_priv(netdev);
++
++	igc_del_mac_filter(adapter, addr, adapter->num_rx_queues);
++
++	return 0;
 +}
 +
 +/**
-  * igc_clear_interrupt_scheme - reset the device to a state of no interrupts
-  * @adapter: Pointer to adapter structure
-  *
-@@ -3630,76 +3698,6 @@ static int igc_poll(struct napi_struct *napi, int budget)
- 	return min(work_done, budget - 1);
++ * igc_set_rx_mode - Secondary Unicast, Multicast and Promiscuous mode set
++ * @netdev: network interface device structure
++ *
++ * The set_rx_mode entry point is called whenever the unicast or multicast
++ * address lists or the network interface flags are updated.  This routine is
++ * responsible for configuring the hardware for proper unicast, multicast,
++ * promiscuous mode, and all-multi behavior.
++ */
++static void igc_set_rx_mode(struct net_device *netdev)
++{
++	struct igc_adapter *adapter = netdev_priv(netdev);
++	struct igc_hw *hw = &adapter->hw;
++	u32 rctl = 0, rlpml = MAX_JUMBO_FRAME_SIZE;
++	int count;
++
++	/* Check for Promiscuous and All Multicast modes */
++	if (netdev->flags & IFF_PROMISC) {
++		rctl |= IGC_RCTL_UPE | IGC_RCTL_MPE;
++	} else {
++		if (netdev->flags & IFF_ALLMULTI) {
++			rctl |= IGC_RCTL_MPE;
++		} else {
++			/* Write addresses to the MTA, if the attempt fails
++			 * then we should just turn on promiscuous mode so
++			 * that we can at least receive multicast traffic
++			 */
++			count = igc_write_mc_addr_list(netdev);
++			if (count < 0)
++				rctl |= IGC_RCTL_MPE;
++		}
++	}
++
++	/* Write addresses to available RAR registers, if there is not
++	 * sufficient space to store all the addresses then enable
++	 * unicast promiscuous mode
++	 */
++	if (__dev_uc_sync(netdev, igc_uc_sync, igc_uc_unsync))
++		rctl |= IGC_RCTL_UPE;
++
++	/* update state of unicast and multicast */
++	rctl |= rd32(IGC_RCTL) & ~(IGC_RCTL_UPE | IGC_RCTL_MPE);
++	wr32(IGC_RCTL, rctl);
++
++#if (PAGE_SIZE < 8192)
++	if (adapter->max_frame_size <= IGC_MAX_FRAME_BUILD_SKB)
++		rlpml = IGC_MAX_FRAME_BUILD_SKB;
++#endif
++	wr32(IGC_RLPML, rlpml);
++}
++
+ /**
+  * igc_configure - configure the hardware for RX and TX
+  * @adapter: private board structure
+@@ -2469,27 +2644,6 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
+ 	return features;
  }
  
--/**
-- * igc_set_interrupt_capability - set MSI or MSI-X if supported
-- * @adapter: Pointer to adapter structure
-- * @msix: boolean value for MSI-X capability
-- *
-- * Attempt to configure interrupts using the best available
-- * capabilities of the hardware and kernel.
+-/* If the filter to be added and an already existing filter express
+- * the same address and address type, it should be possible to only
+- * override the other configurations, for example the queue to steer
+- * traffic.
 - */
--static void igc_set_interrupt_capability(struct igc_adapter *adapter,
--					 bool msix)
+-static bool igc_mac_entry_can_be_used(const struct igc_mac_addr *entry,
+-				      const u8 *addr, const u8 flags)
 -{
--	int numvecs, i;
--	int err;
+-	if (!(entry->state & IGC_MAC_STATE_IN_USE))
+-		return true;
 -
--	if (!msix)
--		goto msi_only;
--	adapter->flags |= IGC_FLAG_HAS_MSIX;
+-	if ((entry->state & IGC_MAC_STATE_SRC_ADDR) !=
+-	    (flags & IGC_MAC_STATE_SRC_ADDR))
+-		return false;
 -
--	/* Number of supported queues. */
--	adapter->num_rx_queues = adapter->rss_queues;
+-	if (!ether_addr_equal(addr, entry->addr))
+-		return false;
 -
--	adapter->num_tx_queues = adapter->rss_queues;
--
--	/* start with one vector for every Rx queue */
--	numvecs = adapter->num_rx_queues;
--
--	/* if Tx handler is separate add 1 for every Tx queue */
--	if (!(adapter->flags & IGC_FLAG_QUEUE_PAIRS))
--		numvecs += adapter->num_tx_queues;
--
--	/* store the number of vectors reserved for queues */
--	adapter->num_q_vectors = numvecs;
--
--	/* add 1 vector for link status interrupts */
--	numvecs++;
--
--	adapter->msix_entries = kcalloc(numvecs, sizeof(struct msix_entry),
--					GFP_KERNEL);
--
--	if (!adapter->msix_entries)
--		return;
--
--	/* populate entry values */
--	for (i = 0; i < numvecs; i++)
--		adapter->msix_entries[i].entry = i;
--
--	err = pci_enable_msix_range(adapter->pdev,
--				    adapter->msix_entries,
--				    numvecs,
--				    numvecs);
--	if (err > 0)
--		return;
--
--	kfree(adapter->msix_entries);
--	adapter->msix_entries = NULL;
--
--	igc_reset_interrupt_capability(adapter);
--
--msi_only:
--	adapter->flags &= ~IGC_FLAG_HAS_MSIX;
--
--	adapter->rss_queues = 1;
--	adapter->flags |= IGC_FLAG_QUEUE_PAIRS;
--	adapter->num_rx_queues = 1;
--	adapter->num_tx_queues = 1;
--	adapter->num_q_vectors = 1;
--	if (!pci_enable_msi(adapter->pdev))
--		adapter->flags |= IGC_FLAG_HAS_MSI;
+-	return true;
 -}
 -
- static void igc_add_ring(struct igc_ring *ring,
- 			 struct igc_ring_container *head)
- {
+ /* Add a MAC filter for 'addr' directing matching traffic to 'queue',
+  * 'flags' is used to indicate what kind of match is made, match is by
+  * default for the destination address, if matching by source address
+@@ -2590,161 +2744,6 @@ int igc_del_mac_steering_filter(struct igc_adapter *adapter,
+ 					IGC_MAC_STATE_QUEUE_STEERING | flags);
+ }
+ 
+-/* Add a MAC filter for 'addr' directing matching traffic to 'queue',
+- * 'flags' is used to indicate what kind of match is made, match is by
+- * default for the destination address, if matching by source address
+- * is desired the flag IGC_MAC_STATE_SRC_ADDR can be used.
+- */
+-static int igc_add_mac_filter(struct igc_adapter *adapter,
+-			      const u8 *addr, const u8 queue)
+-{
+-	struct igc_hw *hw = &adapter->hw;
+-	int rar_entries = hw->mac.rar_entry_count;
+-	int i;
+-
+-	if (is_zero_ether_addr(addr))
+-		return -EINVAL;
+-
+-	/* Search for the first empty entry in the MAC table.
+-	 * Do not touch entries at the end of the table reserved for the VF MAC
+-	 * addresses.
+-	 */
+-	for (i = 0; i < rar_entries; i++) {
+-		if (!igc_mac_entry_can_be_used(&adapter->mac_table[i],
+-					       addr, 0))
+-			continue;
+-
+-		ether_addr_copy(adapter->mac_table[i].addr, addr);
+-		adapter->mac_table[i].queue = queue;
+-		adapter->mac_table[i].state |= IGC_MAC_STATE_IN_USE;
+-
+-		igc_rar_set_index(adapter, i);
+-		return i;
+-	}
+-
+-	return -ENOSPC;
+-}
+-
+-/* Remove a MAC filter for 'addr' directing matching traffic to
+- * 'queue', 'flags' is used to indicate what kind of match need to be
+- * removed, match is by default for the destination address, if
+- * matching by source address is to be removed the flag
+- * IGC_MAC_STATE_SRC_ADDR can be used.
+- */
+-static int igc_del_mac_filter(struct igc_adapter *adapter,
+-			      const u8 *addr, const u8 queue)
+-{
+-	struct igc_hw *hw = &adapter->hw;
+-	int rar_entries = hw->mac.rar_entry_count;
+-	int i;
+-
+-	if (is_zero_ether_addr(addr))
+-		return -EINVAL;
+-
+-	/* Search for matching entry in the MAC table based on given address
+-	 * and queue. Do not touch entries at the end of the table reserved
+-	 * for the VF MAC addresses.
+-	 */
+-	for (i = 0; i < rar_entries; i++) {
+-		if (!(adapter->mac_table[i].state & IGC_MAC_STATE_IN_USE))
+-			continue;
+-		if (adapter->mac_table[i].state != 0)
+-			continue;
+-		if (adapter->mac_table[i].queue != queue)
+-			continue;
+-		if (!ether_addr_equal(adapter->mac_table[i].addr, addr))
+-			continue;
+-
+-		/* When a filter for the default address is "deleted",
+-		 * we return it to its initial configuration
+-		 */
+-		if (adapter->mac_table[i].state & IGC_MAC_STATE_DEFAULT) {
+-			adapter->mac_table[i].state =
+-				IGC_MAC_STATE_DEFAULT | IGC_MAC_STATE_IN_USE;
+-			adapter->mac_table[i].queue = 0;
+-		} else {
+-			adapter->mac_table[i].state = 0;
+-			adapter->mac_table[i].queue = 0;
+-			memset(adapter->mac_table[i].addr, 0, ETH_ALEN);
+-		}
+-
+-		igc_rar_set_index(adapter, i);
+-		return 0;
+-	}
+-
+-	return -ENOENT;
+-}
+-
+-static int igc_uc_sync(struct net_device *netdev, const unsigned char *addr)
+-{
+-	struct igc_adapter *adapter = netdev_priv(netdev);
+-	int ret;
+-
+-	ret = igc_add_mac_filter(adapter, addr, adapter->num_rx_queues);
+-
+-	return min_t(int, ret, 0);
+-}
+-
+-static int igc_uc_unsync(struct net_device *netdev, const unsigned char *addr)
+-{
+-	struct igc_adapter *adapter = netdev_priv(netdev);
+-
+-	igc_del_mac_filter(adapter, addr, adapter->num_rx_queues);
+-
+-	return 0;
+-}
+-
+-/**
+- * igc_set_rx_mode - Secondary Unicast, Multicast and Promiscuous mode set
+- * @netdev: network interface device structure
+- *
+- * The set_rx_mode entry point is called whenever the unicast or multicast
+- * address lists or the network interface flags are updated.  This routine is
+- * responsible for configuring the hardware for proper unicast, multicast,
+- * promiscuous mode, and all-multi behavior.
+- */
+-static void igc_set_rx_mode(struct net_device *netdev)
+-{
+-	struct igc_adapter *adapter = netdev_priv(netdev);
+-	struct igc_hw *hw = &adapter->hw;
+-	u32 rctl = 0, rlpml = MAX_JUMBO_FRAME_SIZE;
+-	int count;
+-
+-	/* Check for Promiscuous and All Multicast modes */
+-	if (netdev->flags & IFF_PROMISC) {
+-		rctl |= IGC_RCTL_UPE | IGC_RCTL_MPE;
+-	} else {
+-		if (netdev->flags & IFF_ALLMULTI) {
+-			rctl |= IGC_RCTL_MPE;
+-		} else {
+-			/* Write addresses to the MTA, if the attempt fails
+-			 * then we should just turn on promiscuous mode so
+-			 * that we can at least receive multicast traffic
+-			 */
+-			count = igc_write_mc_addr_list(netdev);
+-			if (count < 0)
+-				rctl |= IGC_RCTL_MPE;
+-		}
+-	}
+-
+-	/* Write addresses to available RAR registers, if there is not
+-	 * sufficient space to store all the addresses then enable
+-	 * unicast promiscuous mode
+-	 */
+-	if (__dev_uc_sync(netdev, igc_uc_sync, igc_uc_unsync))
+-		rctl |= IGC_RCTL_UPE;
+-
+-	/* update state of unicast and multicast */
+-	rctl |= rd32(IGC_RCTL) & ~(IGC_RCTL_UPE | IGC_RCTL_MPE);
+-	wr32(IGC_RCTL, rctl);
+-
+-#if (PAGE_SIZE < 8192)
+-	if (adapter->max_frame_size <= IGC_MAX_FRAME_BUILD_SKB)
+-		rlpml = IGC_MAX_FRAME_BUILD_SKB;
+-#endif
+-	wr32(IGC_RLPML, rlpml);
+-}
+-
+ /**
+  * igc_msix_other - msix other interrupt handler
+  * @irq: interrupt number
 -- 
 2.11.0
 
