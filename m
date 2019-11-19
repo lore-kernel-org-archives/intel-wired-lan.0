@@ -1,8 +1,8 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue, 19 Nov 2019 13:45:16 +0200
-Subject: [Intel-wired-lan] [PATCH v1 12/15] igc: Remove no need declaration
- of the igc_free_q_vector
-Message-ID: <20191119114516.42434-1-sasha.neftin@intel.com>
+Date: Tue, 19 Nov 2019 13:45:32 +0200
+Subject: [Intel-wired-lan] [PATCH v1 14/15] igc: Remove no need declaration
+ of the igc_write_itr
+Message-ID: <20191119114532.42554-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,79 +10,71 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 We want to avoid forward-declarations of function if possible.
-Rearrange the igc_free_q_vector function implementation.
+Rearrange the igc_write_itr function implementation.
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 41 +++++++++++++++----------------
- 1 file changed, 20 insertions(+), 21 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 33 +++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index be611f5fc87e..66a83c9509a5 100644
+index bce18aee8d8f..309e9694633a 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -55,7 +55,6 @@ MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+@@ -53,7 +53,6 @@ MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+ 
+ /* forward declaration */
  static int igc_sw_init(struct igc_adapter *);
- static void igc_write_itr(struct igc_q_vector *q_vector);
- static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector);
--static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx);
+-static void igc_write_itr(struct igc_q_vector *q_vector);
  
  enum latency_range {
  	lowest_latency = 0,
-@@ -3118,6 +3117,26 @@ static void igc_set_interrupt_capability(struct igc_adapter *adapter,
+@@ -2931,6 +2930,22 @@ static irqreturn_t igc_msix_other(int irq, void *data)
+ 	return IRQ_HANDLED;
  }
  
- /**
-+ * igc_free_q_vector - Free memory allocated for specific interrupt vector
-+ * @adapter: board private structure to initialize
-+ * @v_idx: Index of vector to be freed
-+ *
-+ * This function frees the memory allocated to the q_vector.
-+ */
-+static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx)
++static void igc_write_itr(struct igc_q_vector *q_vector)
 +{
-+	struct igc_q_vector *q_vector = adapter->q_vector[v_idx];
++	u32 itr_val = q_vector->itr_val & IGC_QVECTOR_MASK;
 +
-+	adapter->q_vector[v_idx] = NULL;
++	if (!q_vector->set_itr)
++		return;
 +
-+	/* igc_get_stats64() might access the rings on this vector,
-+	 * we must wait a grace period before freeing it.
-+	 */
-+	if (q_vector)
-+		kfree_rcu(q_vector, rcu);
++	if (!itr_val)
++		itr_val = IGC_ITR_VAL_MASK;
++
++	itr_val |= IGC_EITR_CNT_IGNR;
++
++	writel(itr_val, q_vector->itr_register);
++	q_vector->set_itr = 0;
 +}
 +
-+/**
-  * igc_free_q_vectors - Free memory allocated for interrupt vectors
-  * @adapter: board private structure to initialize
-  *
-@@ -3152,26 +3171,6 @@ static void igc_clear_interrupt_scheme(struct igc_adapter *adapter)
- 	igc_reset_interrupt_capability(adapter);
+ static irqreturn_t igc_msix_ring(int irq, void *data)
+ {
+ 	struct igc_q_vector *q_vector = data;
+@@ -4044,22 +4059,6 @@ static int igc_request_irq(struct igc_adapter *adapter)
+ 	return err;
  }
  
--/**
-- * igc_free_q_vector - Free memory allocated for specific interrupt vector
-- * @adapter: board private structure to initialize
-- * @v_idx: Index of vector to be freed
-- *
-- * This function frees the memory allocated to the q_vector.
-- */
--static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx)
+-static void igc_write_itr(struct igc_q_vector *q_vector)
 -{
--	struct igc_q_vector *q_vector = adapter->q_vector[v_idx];
+-	u32 itr_val = q_vector->itr_val & IGC_QVECTOR_MASK;
 -
--	adapter->q_vector[v_idx] = NULL;
+-	if (!q_vector->set_itr)
+-		return;
 -
--	/* igc_get_stats64() might access the rings on this vector,
--	 * we must wait a grace period before freeing it.
--	 */
--	if (q_vector)
--		kfree_rcu(q_vector, rcu);
+-	if (!itr_val)
+-		itr_val = IGC_ITR_VAL_MASK;
+-
+-	itr_val |= IGC_EITR_CNT_IGNR;
+-
+-	writel(itr_val, q_vector->itr_register);
+-	q_vector->set_itr = 0;
 -}
 -
- /* Need to wait a few seconds after link up to get diagnostic information from
-  * the phy
-  */
+ /**
+  * __igc_open - Called when a network interface is made active
+  * @netdev: network interface device structure
 -- 
 2.11.0
 
