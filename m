@@ -1,8 +1,8 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue, 19 Nov 2019 13:44:58 +0200
-Subject: [Intel-wired-lan] [PATCH v1 10/15] igc: Remove no need declaration
- of the igc_irq_disable
-Message-ID: <20191119114458.42307-1-sasha.neftin@intel.com>
+Date: Tue, 19 Nov 2019 13:45:16 +0200
+Subject: [Intel-wired-lan] [PATCH v1 12/15] igc: Remove no need declaration
+ of the igc_free_q_vector
+Message-ID: <20191119114516.42434-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,105 +10,79 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 We want to avoid forward-declarations of function if possible.
-Rearrange the igc_irq_disable function implementation.
+Rearrange the igc_free_q_vector function implementation.
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 67 +++++++++++++++----------------
- 1 file changed, 33 insertions(+), 34 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 41 +++++++++++++++----------------
+ 1 file changed, 20 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 4877161f2ea5..f451c90581e5 100644
+index be611f5fc87e..66a83c9509a5 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -57,7 +57,6 @@ static void igc_write_itr(struct igc_q_vector *q_vector);
+@@ -55,7 +55,6 @@ MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+ static int igc_sw_init(struct igc_adapter *);
+ static void igc_write_itr(struct igc_q_vector *q_vector);
  static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector);
- static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx);
- static void igc_free_q_vectors(struct igc_adapter *adapter);
--static void igc_irq_disable(struct igc_adapter *adapter);
+-static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx);
  
  enum latency_range {
  	lowest_latency = 0,
-@@ -2266,6 +2265,39 @@ static void igc_irq_enable(struct igc_adapter *adapter)
+@@ -3118,6 +3117,26 @@ static void igc_set_interrupt_capability(struct igc_adapter *adapter,
  }
  
  /**
-+ * igc_irq_disable - Mask off interrupt generation on the NIC
-+ * @adapter: board private structure
++ * igc_free_q_vector - Free memory allocated for specific interrupt vector
++ * @adapter: board private structure to initialize
++ * @v_idx: Index of vector to be freed
++ *
++ * This function frees the memory allocated to the q_vector.
 + */
-+static void igc_irq_disable(struct igc_adapter *adapter)
++static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx)
 +{
-+	struct igc_hw *hw = &adapter->hw;
++	struct igc_q_vector *q_vector = adapter->q_vector[v_idx];
 +
-+	if (adapter->msix_entries) {
-+		u32 regval = rd32(IGC_EIAM);
++	adapter->q_vector[v_idx] = NULL;
 +
-+		wr32(IGC_EIAM, regval & ~adapter->eims_enable_mask);
-+		wr32(IGC_EIMC, adapter->eims_enable_mask);
-+		regval = rd32(IGC_EIAC);
-+		wr32(IGC_EIAC, regval & ~adapter->eims_enable_mask);
-+	}
-+
-+	wr32(IGC_IAM, 0);
-+	wr32(IGC_IMC, ~0);
-+	wrfl();
-+
-+	if (adapter->msix_entries) {
-+		int vector = 0, i;
-+
-+		synchronize_irq(adapter->msix_entries[vector++].vector);
-+
-+		for (i = 0; i < adapter->num_q_vectors; i++)
-+			synchronize_irq(adapter->msix_entries[vector++].vector);
-+	} else {
-+		synchronize_irq(adapter->pdev->irq);
-+	}
++	/* igc_get_stats64() might access the rings on this vector,
++	 * we must wait a grace period before freeing it.
++	 */
++	if (q_vector)
++		kfree_rcu(q_vector, rcu);
 +}
 +
 +/**
-  * igc_up - Open the interface and prepare it to handle traffic
-  * @adapter: board private structure
-  */
-@@ -3962,39 +3994,6 @@ static void igc_free_irq(struct igc_adapter *adapter)
+  * igc_free_q_vectors - Free memory allocated for interrupt vectors
+  * @adapter: board private structure to initialize
+  *
+@@ -3152,26 +3171,6 @@ static void igc_clear_interrupt_scheme(struct igc_adapter *adapter)
+ 	igc_reset_interrupt_capability(adapter);
  }
  
- /**
-- * igc_irq_disable - Mask off interrupt generation on the NIC
-- * @adapter: board private structure
+-/**
+- * igc_free_q_vector - Free memory allocated for specific interrupt vector
+- * @adapter: board private structure to initialize
+- * @v_idx: Index of vector to be freed
+- *
+- * This function frees the memory allocated to the q_vector.
 - */
--static void igc_irq_disable(struct igc_adapter *adapter)
+-static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx)
 -{
--	struct igc_hw *hw = &adapter->hw;
+-	struct igc_q_vector *q_vector = adapter->q_vector[v_idx];
 -
--	if (adapter->msix_entries) {
--		u32 regval = rd32(IGC_EIAM);
+-	adapter->q_vector[v_idx] = NULL;
 -
--		wr32(IGC_EIAM, regval & ~adapter->eims_enable_mask);
--		wr32(IGC_EIMC, adapter->eims_enable_mask);
--		regval = rd32(IGC_EIAC);
--		wr32(IGC_EIAC, regval & ~adapter->eims_enable_mask);
--	}
--
--	wr32(IGC_IAM, 0);
--	wr32(IGC_IMC, ~0);
--	wrfl();
--
--	if (adapter->msix_entries) {
--		int vector = 0, i;
--
--		synchronize_irq(adapter->msix_entries[vector++].vector);
--
--		for (i = 0; i < adapter->num_q_vectors; i++)
--			synchronize_irq(adapter->msix_entries[vector++].vector);
--	} else {
--		synchronize_irq(adapter->pdev->irq);
--	}
+-	/* igc_get_stats64() might access the rings on this vector,
+-	 * we must wait a grace period before freeing it.
+-	 */
+-	if (q_vector)
+-		kfree_rcu(q_vector, rcu);
 -}
 -
--/**
-  * igc_request_irq - initialize interrupts
-  * @adapter: Pointer to adapter structure
-  *
+ /* Need to wait a few seconds after link up to get diagnostic information from
+  * the phy
+  */
 -- 
 2.11.0
 
