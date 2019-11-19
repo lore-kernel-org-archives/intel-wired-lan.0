@@ -1,8 +1,8 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue, 19 Nov 2019 13:45:23 +0200
-Subject: [Intel-wired-lan] [PATCH v1 13/15] igc: Remove no need declaration
- of the igc_assign_vector
-Message-ID: <20191119114523.42490-1-sasha.neftin@intel.com>
+Date: Tue, 19 Nov 2019 13:45:07 +0200
+Subject: [Intel-wired-lan] [PATCH v1 11/15] igc: Remove no need declaration
+ of the igc_free_q_vectors
+Message-ID: <20191119114507.42377-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,161 +10,65 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 We want to avoid forward-declarations of function if possible.
-Rearrange the igc_assign_vector function implementation.
+Rearrange the igc_free_q_vectors function implementation.
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 123 +++++++++++++++---------------
- 1 file changed, 61 insertions(+), 62 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 27 +++++++++++++--------------
+ 1 file changed, 13 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 66a83c9509a5..bce18aee8d8f 100644
+index f451c90581e5..be611f5fc87e 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -54,7 +54,6 @@ MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
- /* forward declaration */
- static int igc_sw_init(struct igc_adapter *);
+@@ -56,7 +56,6 @@ static int igc_sw_init(struct igc_adapter *);
  static void igc_write_itr(struct igc_q_vector *q_vector);
--static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector);
+ static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector);
+ static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx);
+-static void igc_free_q_vectors(struct igc_adapter *adapter);
  
  enum latency_range {
  	lowest_latency = 0,
-@@ -2196,6 +2195,67 @@ static void igc_configure(struct igc_adapter *adapter)
+@@ -3119,19 +3118,6 @@ static void igc_set_interrupt_capability(struct igc_adapter *adapter,
  }
  
  /**
-+ * igc_write_ivar - configure ivar for given MSI-X vector
-+ * @hw: pointer to the HW structure
-+ * @msix_vector: vector number we are allocating to a given ring
-+ * @index: row index of IVAR register to write within IVAR table
-+ * @offset: column offset of in IVAR, should be multiple of 8
+- * igc_clear_interrupt_scheme - reset the device to a state of no interrupts
+- * @adapter: Pointer to adapter structure
+- *
+- * This function resets the device so that it has 0 rx queues, tx queues, and
+- * MSI-X interrupts allocated.
+- */
+-static void igc_clear_interrupt_scheme(struct igc_adapter *adapter)
+-{
+-	igc_free_q_vectors(adapter);
+-	igc_reset_interrupt_capability(adapter);
+-}
+-
+-/**
+  * igc_free_q_vectors - Free memory allocated for interrupt vectors
+  * @adapter: board private structure to initialize
+  *
+@@ -3154,6 +3140,19 @@ static void igc_free_q_vectors(struct igc_adapter *adapter)
+ }
+ 
+ /**
++ * igc_clear_interrupt_scheme - reset the device to a state of no interrupts
++ * @adapter: Pointer to adapter structure
 + *
-+ * The IVAR table consists of 2 columns,
-+ * each containing an cause allocation for an Rx and Tx ring, and a
-+ * variable number of rows depending on the number of queues supported.
++ * This function resets the device so that it has 0 rx queues, tx queues, and
++ * MSI-X interrupts allocated.
 + */
-+static void igc_write_ivar(struct igc_hw *hw, int msix_vector,
-+			   int index, int offset)
++static void igc_clear_interrupt_scheme(struct igc_adapter *adapter)
 +{
-+	u32 ivar = array_rd32(IGC_IVAR0, index);
-+
-+	/* clear any bits that are currently set */
-+	ivar &= ~((u32)0xFF << offset);
-+
-+	/* write vector and valid bit */
-+	ivar |= (msix_vector | IGC_IVAR_VALID) << offset;
-+
-+	array_wr32(IGC_IVAR0, index, ivar);
-+}
-+
-+static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector)
-+{
-+	struct igc_adapter *adapter = q_vector->adapter;
-+	struct igc_hw *hw = &adapter->hw;
-+	int rx_queue = IGC_N0_QUEUE;
-+	int tx_queue = IGC_N0_QUEUE;
-+
-+	if (q_vector->rx.ring)
-+		rx_queue = q_vector->rx.ring->reg_idx;
-+	if (q_vector->tx.ring)
-+		tx_queue = q_vector->tx.ring->reg_idx;
-+
-+	switch (hw->mac.type) {
-+	case igc_i225:
-+		if (rx_queue > IGC_N0_QUEUE)
-+			igc_write_ivar(hw, msix_vector,
-+				       rx_queue >> 1,
-+				       (rx_queue & 0x1) << 4);
-+		if (tx_queue > IGC_N0_QUEUE)
-+			igc_write_ivar(hw, msix_vector,
-+				       tx_queue >> 1,
-+				       ((tx_queue & 0x1) << 4) + 8);
-+		q_vector->eims_value = BIT(msix_vector);
-+		break;
-+	default:
-+		WARN_ONCE(hw->mac.type != igc_i225, "Wrong MAC type\n");
-+		break;
-+	}
-+
-+	/* add q_vector eims value to global eims_enable_mask */
-+	adapter->eims_enable_mask |= q_vector->eims_value;
-+
-+	/* configure q_vector to set itr on first interrupt */
-+	q_vector->set_itr = 1;
++	igc_free_q_vectors(adapter);
++	igc_reset_interrupt_capability(adapter);
 +}
 +
 +/**
-  * igc_configure_msix - Configure MSI-X hardware
-  * @adapter: Pointer to adapter structure
-  *
-@@ -2871,67 +2931,6 @@ static irqreturn_t igc_msix_other(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--/**
-- * igc_write_ivar - configure ivar for given MSI-X vector
-- * @hw: pointer to the HW structure
-- * @msix_vector: vector number we are allocating to a given ring
-- * @index: row index of IVAR register to write within IVAR table
-- * @offset: column offset of in IVAR, should be multiple of 8
-- *
-- * The IVAR table consists of 2 columns,
-- * each containing an cause allocation for an Rx and Tx ring, and a
-- * variable number of rows depending on the number of queues supported.
-- */
--static void igc_write_ivar(struct igc_hw *hw, int msix_vector,
--			   int index, int offset)
--{
--	u32 ivar = array_rd32(IGC_IVAR0, index);
--
--	/* clear any bits that are currently set */
--	ivar &= ~((u32)0xFF << offset);
--
--	/* write vector and valid bit */
--	ivar |= (msix_vector | IGC_IVAR_VALID) << offset;
--
--	array_wr32(IGC_IVAR0, index, ivar);
--}
--
--static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector)
--{
--	struct igc_adapter *adapter = q_vector->adapter;
--	struct igc_hw *hw = &adapter->hw;
--	int rx_queue = IGC_N0_QUEUE;
--	int tx_queue = IGC_N0_QUEUE;
--
--	if (q_vector->rx.ring)
--		rx_queue = q_vector->rx.ring->reg_idx;
--	if (q_vector->tx.ring)
--		tx_queue = q_vector->tx.ring->reg_idx;
--
--	switch (hw->mac.type) {
--	case igc_i225:
--		if (rx_queue > IGC_N0_QUEUE)
--			igc_write_ivar(hw, msix_vector,
--				       rx_queue >> 1,
--				       (rx_queue & 0x1) << 4);
--		if (tx_queue > IGC_N0_QUEUE)
--			igc_write_ivar(hw, msix_vector,
--				       tx_queue >> 1,
--				       ((tx_queue & 0x1) << 4) + 8);
--		q_vector->eims_value = BIT(msix_vector);
--		break;
--	default:
--		WARN_ONCE(hw->mac.type != igc_i225, "Wrong MAC type\n");
--		break;
--	}
--
--	/* add q_vector eims value to global eims_enable_mask */
--	adapter->eims_enable_mask |= q_vector->eims_value;
--
--	/* configure q_vector to set itr on first interrupt */
--	q_vector->set_itr = 1;
--}
--
- static irqreturn_t igc_msix_ring(int irq, void *data)
- {
- 	struct igc_q_vector *q_vector = data;
+  * igc_free_q_vector - Free memory allocated for specific interrupt vector
+  * @adapter: board private structure to initialize
+  * @v_idx: Index of vector to be freed
 -- 
 2.11.0
 
