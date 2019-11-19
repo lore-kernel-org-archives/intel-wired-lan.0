@@ -1,8 +1,8 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue, 19 Nov 2019 13:43:51 +0200
-Subject: [Intel-wired-lan] [PATCH v1 03/15] igc: Remove no need declaration
- of the igc_set_default_mac_filter
-Message-ID: <20191119114351.41780-1-sasha.neftin@intel.com>
+Date: Tue, 19 Nov 2019 13:44:01 +0200
+Subject: [Intel-wired-lan] [PATCH v1 04/15] igc: Remove no need declaration
+ of the igc_configure
+Message-ID: <20191119114401.41842-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,7 +10,7 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 We want to avoid forward-declarations of function if possible.
-Rearrange the igc_set_default_mac_filter function implementation.
+Rearrange the igc_configure function implementation.
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
@@ -18,116 +18,123 @@ Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
  1 file changed, 45 insertions(+), 46 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 87823a04427e..4484e7ab0a53 100644
+index 4484e7ab0a53..8a2baf8ad956 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -54,7 +54,6 @@ MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+@@ -53,7 +53,6 @@ MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
+ 
  /* forward declaration */
  static int igc_sw_init(struct igc_adapter *);
- static void igc_configure(struct igc_adapter *adapter);
--static void igc_set_default_mac_filter(struct igc_adapter *adapter);
+-static void igc_configure(struct igc_adapter *adapter);
  static void igc_set_rx_mode(struct net_device *netdev);
  static void igc_write_itr(struct igc_q_vector *q_vector);
  static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector);
-@@ -770,6 +769,51 @@ static void igc_setup_tctl(struct igc_adapter *adapter)
+@@ -1985,6 +1984,51 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 	return !!budget;
  }
  
- /**
-+ * igc_rar_set_index - Sync RAL[index] and RAH[index] registers with MAC table
-+ * @adapter: address of board private structure
-+ * @index: Index of the RAR entry which need to be synced with MAC table
-+ */
-+static void igc_rar_set_index(struct igc_adapter *adapter, u32 index)
++static void igc_nfc_filter_restore(struct igc_adapter *adapter)
 +{
-+	u8 *addr = adapter->mac_table[index].addr;
-+	struct igc_hw *hw = &adapter->hw;
-+	u32 rar_low, rar_high;
++	struct igc_nfc_filter *rule;
 +
-+	/* HW expects these to be in network order when they are plugged
-+	 * into the registers which are little endian.  In order to guarantee
-+	 * that ordering we need to do an leXX_to_cpup here in order to be
-+	 * ready for the byteswap that occurs with writel
-+	 */
-+	rar_low = le32_to_cpup((__le32 *)(addr));
-+	rar_high = le16_to_cpup((__le16 *)(addr + 4));
++	spin_lock(&adapter->nfc_lock);
 +
-+	/* Indicate to hardware the Address is Valid. */
-+	if (adapter->mac_table[index].state & IGC_MAC_STATE_IN_USE) {
-+		if (is_valid_ether_addr(addr))
-+			rar_high |= IGC_RAH_AV;
++	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node)
++		igc_add_filter(adapter, rule);
 +
-+		rar_high |= IGC_RAH_POOL_1 <<
-+			adapter->mac_table[index].queue;
-+	}
-+
-+	wr32(IGC_RAL(index), rar_low);
-+	wrfl();
-+	wr32(IGC_RAH(index), rar_high);
-+	wrfl();
-+}
-+
-+/* Set default MAC address for the PF in the first RAR entry */
-+static void igc_set_default_mac_filter(struct igc_adapter *adapter)
-+{
-+	struct igc_mac_addr *mac_table = &adapter->mac_table[0];
-+
-+	ether_addr_copy(mac_table->addr, adapter->hw.mac.addr);
-+	mac_table->state = IGC_MAC_STATE_DEFAULT | IGC_MAC_STATE_IN_USE;
-+
-+	igc_rar_set_index(adapter, 0);
++	spin_unlock(&adapter->nfc_lock);
 +}
 +
 +/**
-  * igc_set_mac - Change the Ethernet Address of the NIC
-  * @netdev: network interface device structure
-  * @p: pointer to an address structure
-@@ -2430,51 +2474,6 @@ static void igc_configure(struct igc_adapter *adapter)
- 	}
++ * igc_configure - configure the hardware for RX and TX
++ * @adapter: private board structure
++ */
++static void igc_configure(struct igc_adapter *adapter)
++{
++	struct net_device *netdev = adapter->netdev;
++	int i = 0;
++
++	igc_get_hw_control(adapter);
++	igc_set_rx_mode(netdev);
++
++	igc_setup_tctl(adapter);
++	igc_setup_mrqc(adapter);
++	igc_setup_rctl(adapter);
++
++	igc_nfc_filter_restore(adapter);
++	igc_configure_tx(adapter);
++	igc_configure_rx(adapter);
++
++	igc_rx_fifo_flush_base(&adapter->hw);
++
++	/* call igc_desc_unused which always leaves
++	 * at least 1 descriptor unused to make sure
++	 * next_to_use != next_to_clean
++	 */
++	for (i = 0; i < adapter->num_rx_queues; i++) {
++		struct igc_ring *ring = adapter->rx_ring[i];
++
++		igc_alloc_rx_buffers(ring, igc_desc_unused(ring));
++	}
++}
++
+ /**
+  * igc_up - Open the interface and prepare it to handle traffic
+  * @adapter: board private structure
+@@ -2206,18 +2250,6 @@ static void igc_nfc_filter_exit(struct igc_adapter *adapter)
+ 	spin_unlock(&adapter->nfc_lock);
+ }
+ 
+-static void igc_nfc_filter_restore(struct igc_adapter *adapter)
+-{
+-	struct igc_nfc_filter *rule;
+-
+-	spin_lock(&adapter->nfc_lock);
+-
+-	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node)
+-		igc_add_filter(adapter, rule);
+-
+-	spin_unlock(&adapter->nfc_lock);
+-}
+-
+ /**
+  * igc_down - Close the interface
+  * @adapter: board private structure
+@@ -2441,39 +2473,6 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
+ 	return features;
  }
  
 -/**
-- * igc_rar_set_index - Sync RAL[index] and RAH[index] registers with MAC table
-- * @adapter: address of board private structure
-- * @index: Index of the RAR entry which need to be synced with MAC table
+- * igc_configure - configure the hardware for RX and TX
+- * @adapter: private board structure
 - */
--static void igc_rar_set_index(struct igc_adapter *adapter, u32 index)
+-static void igc_configure(struct igc_adapter *adapter)
 -{
--	u8 *addr = adapter->mac_table[index].addr;
--	struct igc_hw *hw = &adapter->hw;
--	u32 rar_low, rar_high;
+-	struct net_device *netdev = adapter->netdev;
+-	int i = 0;
 -
--	/* HW expects these to be in network order when they are plugged
--	 * into the registers which are little endian.  In order to guarantee
--	 * that ordering we need to do an leXX_to_cpup here in order to be
--	 * ready for the byteswap that occurs with writel
+-	igc_get_hw_control(adapter);
+-	igc_set_rx_mode(netdev);
+-
+-	igc_setup_tctl(adapter);
+-	igc_setup_mrqc(adapter);
+-	igc_setup_rctl(adapter);
+-
+-	igc_nfc_filter_restore(adapter);
+-	igc_configure_tx(adapter);
+-	igc_configure_rx(adapter);
+-
+-	igc_rx_fifo_flush_base(&adapter->hw);
+-
+-	/* call igc_desc_unused which always leaves
+-	 * at least 1 descriptor unused to make sure
+-	 * next_to_use != next_to_clean
 -	 */
--	rar_low = le32_to_cpup((__le32 *)(addr));
--	rar_high = le16_to_cpup((__le16 *)(addr + 4));
+-	for (i = 0; i < adapter->num_rx_queues; i++) {
+-		struct igc_ring *ring = adapter->rx_ring[i];
 -
--	/* Indicate to hardware the Address is Valid. */
--	if (adapter->mac_table[index].state & IGC_MAC_STATE_IN_USE) {
--		if (is_valid_ether_addr(addr))
--			rar_high |= IGC_RAH_AV;
--
--		rar_high |= IGC_RAH_POOL_1 <<
--			adapter->mac_table[index].queue;
+-		igc_alloc_rx_buffers(ring, igc_desc_unused(ring));
 -	}
--
--	wr32(IGC_RAL(index), rar_low);
--	wrfl();
--	wr32(IGC_RAH(index), rar_high);
--	wrfl();
--}
--
--/* Set default MAC address for the PF in the first RAR entry */
--static void igc_set_default_mac_filter(struct igc_adapter *adapter)
--{
--	struct igc_mac_addr *mac_table = &adapter->mac_table[0];
--
--	ether_addr_copy(mac_table->addr, adapter->hw.mac.addr);
--	mac_table->state = IGC_MAC_STATE_DEFAULT | IGC_MAC_STATE_IN_USE;
--
--	igc_rar_set_index(adapter, 0);
 -}
 -
  /* If the filter to be added and an already existing filter express
