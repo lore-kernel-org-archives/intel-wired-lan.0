@@ -1,8 +1,8 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue, 19 Nov 2019 13:44:38 +0200
-Subject: [Intel-wired-lan] [PATCH v1 08/15] igc: Remove no need declaration
- of the igc_configure_msix
-Message-ID: <20191119114438.42172-1-sasha.neftin@intel.com>
+Date: Tue, 19 Nov 2019 13:44:47 +0200
+Subject: [Intel-wired-lan] [PATCH v1 09/15] igc: Remove no need declaration
+ of the igc_irq_enable
+Message-ID: <20191119114447.42241-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,127 +10,85 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 We want to avoid forward-declarations of function if possible.
-Rearrange the igc_configure_msix function implementation.
+Rearrange the igc_irq_enable function implementation.
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 89 +++++++++++++++----------------
- 1 file changed, 44 insertions(+), 45 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 47 +++++++++++++++----------------
+ 1 file changed, 23 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 7118a5605229..7be1e500bed5 100644
+index 7be1e500bed5..4877161f2ea5 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -59,7 +59,6 @@ static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx);
+@@ -58,7 +58,6 @@ static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector);
+ static void igc_free_q_vector(struct igc_adapter *adapter, int v_idx);
  static void igc_free_q_vectors(struct igc_adapter *adapter);
  static void igc_irq_disable(struct igc_adapter *adapter);
- static void igc_irq_enable(struct igc_adapter *adapter);
--static void igc_configure_msix(struct igc_adapter *adapter);
+-static void igc_irq_enable(struct igc_adapter *adapter);
  
  enum latency_range {
  	lowest_latency = 0,
-@@ -2201,6 +2200,50 @@ static void igc_configure(struct igc_adapter *adapter)
+@@ -2244,6 +2243,29 @@ static void igc_configure_msix(struct igc_adapter *adapter)
  }
  
  /**
-+ * igc_configure_msix - Configure MSI-X hardware
-+ * @adapter: Pointer to adapter structure
-+ *
-+ * igc_configure_msix sets up the hardware to properly
-+ * generate MSI-X interrupts.
++ * igc_irq_enable - Enable default interrupt generation settings
++ * @adapter: board private structure
 + */
-+static void igc_configure_msix(struct igc_adapter *adapter)
++static void igc_irq_enable(struct igc_adapter *adapter)
 +{
 +	struct igc_hw *hw = &adapter->hw;
-+	int i, vector = 0;
-+	u32 tmp;
 +
-+	adapter->eims_enable_mask = 0;
++	if (adapter->msix_entries) {
++		u32 ims = IGC_IMS_LSC | IGC_IMS_DOUTSYNC | IGC_IMS_DRSTA;
++		u32 regval = rd32(IGC_EIAC);
 +
-+	/* set vector for other causes, i.e. link changes */
-+	switch (hw->mac.type) {
-+	case igc_i225:
-+		/* Turn on MSI-X capability first, or our settings
-+		 * won't stick.  And it will take days to debug.
-+		 */
-+		wr32(IGC_GPIE, IGC_GPIE_MSIX_MODE |
-+		     IGC_GPIE_PBA | IGC_GPIE_EIAME |
-+		     IGC_GPIE_NSICR);
-+
-+		/* enable msix_other interrupt */
-+		adapter->eims_other = BIT(vector);
-+		tmp = (vector++ | IGC_IVAR_VALID) << 8;
-+
-+		wr32(IGC_IVAR_MISC, tmp);
-+		break;
-+	default:
-+		/* do nothing, since nothing else supports MSI-X */
-+		break;
-+	} /* switch (hw->mac.type) */
-+
-+	adapter->eims_enable_mask |= adapter->eims_other;
-+
-+	for (i = 0; i < adapter->num_q_vectors; i++)
-+		igc_assign_vector(adapter->q_vector[i], vector++);
-+
-+	wrfl();
++		wr32(IGC_EIAC, regval | adapter->eims_enable_mask);
++		regval = rd32(IGC_EIAM);
++		wr32(IGC_EIAM, regval | adapter->eims_enable_mask);
++		wr32(IGC_EIMS, adapter->eims_enable_mask);
++		wr32(IGC_IMS, ims);
++	} else {
++		wr32(IGC_IMS, IMS_ENABLE_MASK | IGC_IMS_DRSTA);
++		wr32(IGC_IAM, IMS_ENABLE_MASK | IGC_IMS_DRSTA);
++	}
 +}
 +
 +/**
   * igc_up - Open the interface and prepare it to handle traffic
   * @adapter: board private structure
   */
-@@ -2837,50 +2880,6 @@ static void igc_assign_vector(struct igc_q_vector *q_vector, int msix_vector)
- 	q_vector->set_itr = 1;
+@@ -3973,29 +3995,6 @@ static void igc_irq_disable(struct igc_adapter *adapter)
  }
  
--/**
-- * igc_configure_msix - Configure MSI-X hardware
-- * @adapter: Pointer to adapter structure
-- *
-- * igc_configure_msix sets up the hardware to properly
-- * generate MSI-X interrupts.
+ /**
+- * igc_irq_enable - Enable default interrupt generation settings
+- * @adapter: board private structure
 - */
--static void igc_configure_msix(struct igc_adapter *adapter)
+-static void igc_irq_enable(struct igc_adapter *adapter)
 -{
 -	struct igc_hw *hw = &adapter->hw;
--	int i, vector = 0;
--	u32 tmp;
 -
--	adapter->eims_enable_mask = 0;
+-	if (adapter->msix_entries) {
+-		u32 ims = IGC_IMS_LSC | IGC_IMS_DOUTSYNC | IGC_IMS_DRSTA;
+-		u32 regval = rd32(IGC_EIAC);
 -
--	/* set vector for other causes, i.e. link changes */
--	switch (hw->mac.type) {
--	case igc_i225:
--		/* Turn on MSI-X capability first, or our settings
--		 * won't stick.  And it will take days to debug.
--		 */
--		wr32(IGC_GPIE, IGC_GPIE_MSIX_MODE |
--		     IGC_GPIE_PBA | IGC_GPIE_EIAME |
--		     IGC_GPIE_NSICR);
--
--		/* enable msix_other interrupt */
--		adapter->eims_other = BIT(vector);
--		tmp = (vector++ | IGC_IVAR_VALID) << 8;
--
--		wr32(IGC_IVAR_MISC, tmp);
--		break;
--	default:
--		/* do nothing, since nothing else supports MSI-X */
--		break;
--	} /* switch (hw->mac.type) */
--
--	adapter->eims_enable_mask |= adapter->eims_other;
--
--	for (i = 0; i < adapter->num_q_vectors; i++)
--		igc_assign_vector(adapter->q_vector[i], vector++);
--
--	wrfl();
+-		wr32(IGC_EIAC, regval | adapter->eims_enable_mask);
+-		regval = rd32(IGC_EIAM);
+-		wr32(IGC_EIAM, regval | adapter->eims_enable_mask);
+-		wr32(IGC_EIMS, adapter->eims_enable_mask);
+-		wr32(IGC_IMS, ims);
+-	} else {
+-		wr32(IGC_IMS, IMS_ENABLE_MASK | IGC_IMS_DRSTA);
+-		wr32(IGC_IAM, IMS_ENABLE_MASK | IGC_IMS_DRSTA);
+-	}
 -}
 -
- static irqreturn_t igc_msix_ring(int irq, void *data)
- {
- 	struct igc_q_vector *q_vector = data;
+-/**
+  * igc_request_irq - initialize interrupts
+  * @adapter: Pointer to adapter structure
+  *
 -- 
 2.11.0
 
