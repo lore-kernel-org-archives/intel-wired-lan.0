@@ -1,46 +1,43 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 19 Nov 2019 19:27:25 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix virtchnl_queue_select
- bitmap validation
-In-Reply-To: <20191113192817.531297-1-jeffrey.t.kirsher@intel.com>
-References: <20191113192817.531297-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <ab226666b7e74c7fa7ca5cd6ade44bc1@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 20 Nov 2019 02:49:50 +0000
+Subject: [Intel-wired-lan] [PATCH v2] igb: dont drop packets if rx flow
+ control is enabled
+In-Reply-To: <20191022153155.9008-1-bob.beckett@collabora.com>
+References: <20191022153155.9008-1-bob.beckett@collabora.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B97179755@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+
+
 > -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Wednesday, November 13, 2019 11:28 AM
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Robert Beckett
+> Sent: Tuesday, October 22, 2019 8:32 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Creeley, Brett <brett.creeley@intel.com>; Arkady Gilinksky
-> <arkady.gilinsky@harmonicinc.com>
-> Subject: [Intel-wired-lan] [PATCH] i40e: Fix virtchnl_queue_select bitmap
-> validation
+> Cc: Robert Beckett <bob.beckett@collabora.com>; netdev at vger.kernel.org;
+> David S. Miller <davem@davemloft.net>
+> Subject: [Intel-wired-lan] [PATCH v2] igb: dont drop packets if rx flow control
+> is enabled
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> If rx flow control has been enabled (via autoneg or forced), packets
+> should not be dropped due to rx descriptor ring exhaustion. Instead
+> pause frames should be used to apply back pressure. This only applies
+> if VFs are not in use.
 > 
-> Currently in i40e_vc_disable_queues_msg() we are incorrectly validating the
-> virtchnl queue select bitmaps. The virtchnl_queue_select rx_queues and
-> tx_queue bitmap is being compared against ICE_MAX_VF_QUEUES, but the
-> problem is that these bitmaps can have a value greater than
-> I40E_MAX_VF_QUEUES.
-> Fix this by comparing the bitmaps against BIT(I40E_MAX_VF_QUEUES).
+> Move SRRCTL setup to its own function for easy reuse and only set drop
+> enable bit if rx flow control is not enabled.
 > 
-> Also, add the function i40e_vc_validate_vqs_bitmaps() that checks to see if
-> both virtchnl_queue_select bitmaps are empty along with checking that the
-> bitmaps only have valid bits set. This function can then be used in both the
-> queue enable and disable flows.
+> Since v1: always enable dropping of packets if VFs in use.
 > 
-> Suggested-by: Arkady Gilinksky <arkady.gilinsky@harmonicinc.com>
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Robert Beckett <bob.beckett@collabora.com>
 > ---
->  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 22 +++++++++++++++----
->  1 file changed, 18 insertions(+), 4 deletions(-)
-
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+>  drivers/net/ethernet/intel/igb/igb.h         |  1 +
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c |  8 ++++
+>  drivers/net/ethernet/intel/igb/igb_main.c    | 47 ++++++++++++++------
+>  3 files changed, 42 insertions(+), 14 deletions(-)
+> 
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
