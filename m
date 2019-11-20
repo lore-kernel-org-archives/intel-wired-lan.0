@@ -1,54 +1,79 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 20 Nov 2019 02:55:20 +0000
-Subject: [Intel-wired-lan] [next-queue/net-next PATCH] e1000e: Use
- netdev_info instead of pr_info for link messages
-In-Reply-To: <20191031165537.24154.48242.stgit@localhost.localdomain>
-References: <cf197ef61703cbaa64ac522cf5d191b4b74f64d6.camel@linux.intel.com>
- <20191031165537.24154.48242.stgit@localhost.localdomain>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B97179772@ORSMSX103.amr.corp.intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Wed, 20 Nov 2019 10:34:31 +0200
+Subject: [Intel-wired-lan] Regression: e1000e link not coming up
+In-Reply-To: <96bdb43e-2a7b-028c-c9ed-98e4477f6b7d@intel.com>
+References: <3945198.J3aOToa6sv@minako>
+ <92b94935dea3b8c7e7236d6f4e1ac148e6cd2ffd.camel@intel.com>
+ <96bdb43e-2a7b-028c-c9ed-98e4477f6b7d@intel.com>
+Message-ID: <e68c0b03-e05b-735d-1bce-8f12aaa073aa@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Alexander Duyck <alexander.duyck@gmail.com>
-> Sent: Thursday, October 31, 2019 9:59 AM
-> To: joe at perches.com; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
-> davem at davemloft.net
-> Cc: zdai at linux.vnet.ibm.com; nhorman at redhat.com;
-> netdev at vger.kernel.org; smorumu1 at in.ibm.com; intel-wired-
-> lan at lists.osuosl.org; Brown, Aaron F <aaron.f.brown@intel.com>;
-> sassmann at redhat.com
-> Subject: [next-queue/net-next PATCH] e1000e: Use netdev_info instead of
-> pr_info for link messages
-> 
-> From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> 
-> Replace the pr_info calls with netdev_info in all cases related to the
-> netdevice link state.
-> 
-> As a result of this patch the link messages will change as shown below.
-> Before:
-> e1000e: ens3 NIC Link is Down
-> e1000e: ens3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: Rx/Tx
-> 
-> After:
-> e1000e 0000:00:03.0 ens3: NIC Link is Down
-> e1000e 0000:00:03.0 ens3: NIC Link is Up 1000 Mbps Full Duplex, Flow Control:
-> Rx/Tx
-> 
-> Suggested-by: Joe Perches <joe@perches.com>
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> ---
-> 
-> Since Joe hasn't gotten back to me on if he wanted to do the patch or if
-> he wanted me to do it I just went ahead and did it. This should address the
-> concerns he had about the message formatting in "e1000e: Use rtnl_lock to
-> prevent race".
-> 
->  drivers/net/ethernet/intel/e1000e/netdev.c |    9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
-> 
+On 11/19/2019 08:12, Neftin, Sasha wrote:
+> On 11/18/2019 20:29, Jeff Kirsher wrote:
+>> On Sat, 2019-11-16 at 12:50 +0100, Jan Janssen wrote:
+>>> Hi,
+>>>
+>>> since 5.3 my I219-V network interface sometimes doesn't come up when
+>>> booting
+>>> or resuming from suspend. This either forces me to use "ip link
+>>> down/up" or
+>>> reloading the module to get working internet.
+>>>
+>>> I reported this issue previously to netdev at vger.kernel.org where I
+>>> initially
+>>> bisected to a wrong commit. After finding the right one nobody
+>>> reacted to it,
+>>> so now I am trying this again here.
+>>
+>> I apologize, this is the correct mailing list for issues with the Intel
+>> wired LAN.
+>>
+>>
+>>> There is also a bugzilla entry for this, but it seems to be ignored
+>>> by
+>>> maintainers too: https://bugzilla.kernel.org/show_bug.cgi?id=205067
+>>> For me, this happens with systemd-networkd, but the people in the
+>>> bugzilla
+>>> report are observing this with NetworkManager.
+>>>
+>>> The commit introducing the bug is
+>>> 59653e6497d16f7ac1d9db088f3959f57ee8c3db
+>>> (e1000e: Make watchdog use delayed work) and reverting it did make
+>>> this bug go
+>>> away. Though, it cannot be reverted automatically on the latest git
+>>> tree from
+>>> Torvalds anymore.
+>>
+>> I will work with the e1000e driver lead (Sasha Neftin) to work up a
+>> patch that will apply to David Miller's net tree.? I will make sure you
+>> are CC'd on the patch, so you will know when it makes it into the
+>> upstream kernel.
+>>
+> I heard a lot of peoples complain about a problem with using 
+> delayed_work struct in e1000e. I would suggest reverting this patch.
+Looks reverting of this patch solved also the 
+https://bugzilla.kernel.org/show_bug.cgi?id=205047
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+>>> I've also tried the master branch on jkirsher/net-queue.git? and
+>>> jkirsher/next-queue.git, but the bug is still present there too.
+>>>
+>>> This bug is really annoying and inconvenient, so I would really
+>>> appreciate if
+>>> somebody could fix this bug or at least have the offending commit
+>>> reverted.
+>>>
+>>> Regards,
+>>> Jan
+>>>
+>>>
+>>
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
