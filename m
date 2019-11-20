@@ -1,43 +1,54 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 20 Nov 2019 02:49:50 +0000
-Subject: [Intel-wired-lan] [PATCH v2] igb: dont drop packets if rx flow
- control is enabled
-In-Reply-To: <20191022153155.9008-1-bob.beckett@collabora.com>
-References: <20191022153155.9008-1-bob.beckett@collabora.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B97179755@ORSMSX103.amr.corp.intel.com>
+Date: Wed, 20 Nov 2019 02:55:20 +0000
+Subject: [Intel-wired-lan] [next-queue/net-next PATCH] e1000e: Use
+ netdev_info instead of pr_info for link messages
+In-Reply-To: <20191031165537.24154.48242.stgit@localhost.localdomain>
+References: <cf197ef61703cbaa64ac522cf5d191b4b74f64d6.camel@linux.intel.com>
+ <20191031165537.24154.48242.stgit@localhost.localdomain>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B97179772@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Robert Beckett
-> Sent: Tuesday, October 22, 2019 8:32 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Robert Beckett <bob.beckett@collabora.com>; netdev at vger.kernel.org;
-> David S. Miller <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH v2] igb: dont drop packets if rx flow control
-> is enabled
+> From: Alexander Duyck <alexander.duyck@gmail.com>
+> Sent: Thursday, October 31, 2019 9:59 AM
+> To: joe at perches.com; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
+> davem at davemloft.net
+> Cc: zdai at linux.vnet.ibm.com; nhorman at redhat.com;
+> netdev at vger.kernel.org; smorumu1 at in.ibm.com; intel-wired-
+> lan at lists.osuosl.org; Brown, Aaron F <aaron.f.brown@intel.com>;
+> sassmann at redhat.com
+> Subject: [next-queue/net-next PATCH] e1000e: Use netdev_info instead of
+> pr_info for link messages
 > 
-> If rx flow control has been enabled (via autoneg or forced), packets
-> should not be dropped due to rx descriptor ring exhaustion. Instead
-> pause frames should be used to apply back pressure. This only applies
-> if VFs are not in use.
+> From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 > 
-> Move SRRCTL setup to its own function for easy reuse and only set drop
-> enable bit if rx flow control is not enabled.
+> Replace the pr_info calls with netdev_info in all cases related to the
+> netdevice link state.
 > 
-> Since v1: always enable dropping of packets if VFs in use.
+> As a result of this patch the link messages will change as shown below.
+> Before:
+> e1000e: ens3 NIC Link is Down
+> e1000e: ens3 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: Rx/Tx
 > 
-> Signed-off-by: Robert Beckett <bob.beckett@collabora.com>
+> After:
+> e1000e 0000:00:03.0 ens3: NIC Link is Down
+> e1000e 0000:00:03.0 ens3: NIC Link is Up 1000 Mbps Full Duplex, Flow Control:
+> Rx/Tx
+> 
+> Suggested-by: Joe Perches <joe@perches.com>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb.h         |  1 +
->  drivers/net/ethernet/intel/igb/igb_ethtool.c |  8 ++++
->  drivers/net/ethernet/intel/igb/igb_main.c    | 47 ++++++++++++++------
->  3 files changed, 42 insertions(+), 14 deletions(-)
 > 
+> Since Joe hasn't gotten back to me on if he wanted to do the patch or if
+> he wanted me to do it I just went ahead and did it. This should address the
+> concerns he had about the message formatting in "e1000e: Use rtnl_lock to
+> prevent race".
+> 
+>  drivers/net/ethernet/intel/e1000e/netdev.c |    9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
