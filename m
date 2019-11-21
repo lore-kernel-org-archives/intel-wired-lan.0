@@ -1,10 +1,9 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 21 Nov 2019 02:22:55 +0000
-Subject: [Intel-wired-lan] [PATCH v1] igc: Fix parameter descriptions
- for a several functions
-In-Reply-To: <20191112151332.5893-1-sasha.neftin@intel.com>
-References: <20191112151332.5893-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9717A72D@ORSMSX103.amr.corp.intel.com>
+Date: Thu, 21 Nov 2019 02:23:11 +0000
+Subject: [Intel-wired-lan] [PATCH v1] igc: Add 64 bit DMA access support
+In-Reply-To: <20191113092729.42829-1-sasha.neftin@intel.com>
+References: <20191113092729.42829-1-sasha.neftin@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9717A74B@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,18 +12,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Sasha Neftin
-> Sent: Tuesday, November 12, 2019 7:14 AM
+> Sent: Wednesday, November 13, 2019 1:27 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v1] igc: Fix parameter descriptions for a
-> several functions
+> Subject: [Intel-wired-lan] [PATCH v1] igc: Add 64 bit DMA access support
 > 
-> igc_watchdog, igc_set_interrupt_capability, igc_init_interrupt_scheme,
-> __igc_open and __igc_close parameter desriptions has not reflected
-> functions meaning. Add meaningful description.
+> On relevant platforms ndo_start_xmit can handle socket buffer
+> fragments in high memory
 > 
 > Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_main.c | 3 +++
+>  1 file changed, 3 insertions(+)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
