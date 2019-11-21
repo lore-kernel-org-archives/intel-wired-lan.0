@@ -1,9 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 21 Nov 2019 02:19:15 +0000
-Subject: [Intel-wired-lan] [PATCH v1] igc: Improve the DMA mapping flow
-In-Reply-To: <20191105094413.1405-1-sasha.neftin@intel.com>
-References: <20191105094413.1405-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9717A6E9@ORSMSX103.amr.corp.intel.com>
+Date: Thu, 21 Nov 2019 02:20:22 +0000
+Subject: [Intel-wired-lan] [PATCH v1] igc: Prefer to use the
+ pci_release_mem_regions method
+In-Reply-To: <20191110140520.26531-1-sasha.neftin@intel.com>
+References: <20191110140520.26531-1-sasha.neftin@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9717A6FD@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,16 +13,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Sasha Neftin
-> Sent: Tuesday, November 5, 2019 1:44 AM
+> Sent: Sunday, November 10, 2019 6:05 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v1] igc: Improve the DMA mapping flow
+> Subject: [Intel-wired-lan] [PATCH v1] igc: Prefer to use the
+> pci_release_mem_regions method
 > 
-> Improve the probe flow and set both the DMA mask and the coherent
-> to the same thing. Make the flow optimized and cleared.
+> Use the pci_release_mem_regions method istead of the
+> pci_release_selected_regions method
 > 
 > Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 24 +++++++++---------------
->  1 file changed, 9 insertions(+), 15 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_main.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
