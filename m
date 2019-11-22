@@ -1,77 +1,301 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Thu, 21 Nov 2019 18:02:24 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v1 4/4] igc: Add support for
- ethtool GET_TS_INFO command
+Date: Thu, 21 Nov 2019 18:02:23 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v1 3/4] igc: Add support for TX
+ timestamping
 In-Reply-To: <20191122020224.1102649-1-vinicius.gomes@intel.com>
 References: <20191122020224.1102649-1-vinicius.gomes@intel.com>
-Message-ID: <20191122020224.1102649-5-vinicius.gomes@intel.com>
+Message-ID: <20191122020224.1102649-4-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This command allows igc to report what types of timestamping are
-supported. ptp4l uses this to detect if the hardware supports
-timestamping.
+This adds support for timestamping packets being transmitted.
+
+Based on the code from i210. The basic differences is that i225 has 4
+registers to store the transmit timestamps (i210 has one). Right now,
+we only support retrieving from one register, support for using the
+other registers will be added later.
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 34 ++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ drivers/net/ethernet/intel/igc/igc.h         |  2 +
+ drivers/net/ethernet/intel/igc/igc_defines.h | 14 +++
+ drivers/net/ethernet/intel/igc/igc_main.c    | 49 +++++++++++
+ drivers/net/ethernet/intel/igc/igc_ptp.c     | 92 ++++++++++++++++++++
+ 4 files changed, 157 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index ac98f1d96892..8f8a702b3dd4 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1600,6 +1600,39 @@ static int igc_set_channels(struct net_device *netdev,
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 686fe6d9dae6..228a9179fd06 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -556,6 +556,8 @@ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
+ 			 struct sk_buff *skb);
+ int igc_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
++void igc_ptp_tx_hang(struct igc_adapter *adapter);
++
+ #define igc_rx_pg_size(_ring) (PAGE_SIZE << igc_rx_pg_order(_ring))
+ 
+ #define IGC_TXD_DCMD	(IGC_ADVTXD_DCMD_EOP | IGC_ADVTXD_DCMD_RS)
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index a5b7e5e05a89..09ce7dc40553 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -370,10 +370,24 @@
+ #define IGC_TSYNCRXCFG_PTP_V1_SYNC_MESSAGE	0x00
+ #define IGC_TSYNCRXCFG_PTP_V1_DELAY_REQ_MESSAGE	0x01
+ 
++/* Immediate Interrupt Receive */
++#define IGC_IMIR_CLEAR_MASK	0xF001FFFF /* IMIR Reg Clear Mask */
++#define IGC_IMIR_PORT_BYPASS	0x20000 /* IMIR Port Bypass Bit */
++#define IGC_IMIR_PRIORITY_SHIFT	29 /* IMIR Priority Shift */
++#define IGC_IMIREXT_CLEAR_MASK	0x7FFFF /* IMIREXT Reg Clear Mask */
++
+ /* Immediate Interrupt Receive Extended */
+ #define IGC_IMIREXT_CTRL_BP	0x00080000  /* Bypass check of ctrl bits */
+ #define IGC_IMIREXT_SIZE_BP	0x00001000  /* Packet size bypass */
+ 
++/* Time Sync Transmit Control bit definitions */
++#define IGC_TSYNCTXCTL_VALID			0x00000001  /* Tx timestamp valid */
++#define IGC_TSYNCTXCTL_ENABLED			0x00000010  /* enable Tx timestamping */
++#define IGC_TSYNCTXCTL_MAX_ALLOWED_DLY_MASK	0x0000F000  /* max delay */
++#define IGC_TSYNCTXCTL_SYNC_COMP_ERR		0x20000000  /* sync err */
++#define IGC_TSYNCTXCTL_SYNC_COMP		0x40000000  /* sync complete */
++#define IGC_TSYNCTXCTL_START_SYNC		0x80000000  /* initiate sync */
++
+ /* Receive Checksum Control */
+ #define IGC_RXCSUM_CRCOFL	0x00000800   /* CRC32 offload enable */
+ #define IGC_RXCSUM_PCSD		0x00002000   /* packet checksum disabled */
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index f6319cb6b5ca..26ca3cfd5af2 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -960,6 +960,11 @@ static inline int igc_maybe_stop_tx(struct igc_ring *tx_ring, const u16 size)
+ 	return __igc_maybe_stop_tx(tx_ring, size);
  }
  
-+static int igc_get_ts_info(struct net_device *dev,
-+			   struct ethtool_ts_info *info)
-+{
-+	struct igc_adapter *adapter = netdev_priv(dev);
++#define IGC_SET_FLAG(_input, _flag, _result) \
++	(((_flag) <= (_result)) ?				\
++	 ((u32)((_input) & (_flag)) * ((_result) / (_flag))) :	\
++	 ((u32)((_input) & (_flag)) / ((_flag) / (_result))))
 +
-+	if (adapter->ptp_clock)
-+		info->phc_index = ptp_clock_index(adapter->ptp_clock);
-+	else
-+		info->phc_index = -1;
+ static u32 igc_tx_cmd_type(struct sk_buff *skb, u32 tx_flags)
+ {
+ 	/* set type for advanced descriptor with frame checksum insertion */
+@@ -967,6 +972,10 @@ static u32 igc_tx_cmd_type(struct sk_buff *skb, u32 tx_flags)
+ 		       IGC_ADVTXD_DCMD_DEXT |
+ 		       IGC_ADVTXD_DCMD_IFCS;
+ 
++	/* set timestamp bit if present */
++	cmd_type |= IGC_SET_FLAG(tx_flags, IGC_TX_FLAGS_TSTAMP,
++				 (IGC_ADVTXD_MAC_TSTAMP));
 +
-+	switch (adapter->hw.mac.type) {
-+	case igc_i225:
-+		info->so_timestamping =
-+			SOF_TIMESTAMPING_TX_SOFTWARE |
-+			SOF_TIMESTAMPING_RX_SOFTWARE |
-+			SOF_TIMESTAMPING_SOFTWARE |
-+			SOF_TIMESTAMPING_TX_HARDWARE |
-+			SOF_TIMESTAMPING_RX_HARDWARE |
-+			SOF_TIMESTAMPING_RAW_HARDWARE;
+ 	return cmd_type;
+ }
+ 
+@@ -1165,6 +1174,26 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+ 	first->bytecount = skb->len;
+ 	first->gso_segs = 1;
+ 
++	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP)) {
++		struct igc_adapter *adapter = netdev_priv(tx_ring->netdev);
 +
-+		info->tx_types =
-+			BIT(HWTSTAMP_TX_OFF) |
-+			BIT(HWTSTAMP_TX_ON);
++		/* FIXME: add support for retrieving timestamps from
++		 * the other timer registers before skipping the
++		 * timestamping request.
++		 */
++		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
++		    !test_and_set_bit_lock(__IGC_PTP_TX_IN_PROGRESS,
++					   &adapter->state)) {
++			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
++			tx_flags |= IGC_TX_FLAGS_TSTAMP;
 +
-+		info->rx_filters = BIT(HWTSTAMP_FILTER_NONE);
-+		info->rx_filters |= BIT(HWTSTAMP_FILTER_ALL);
-+
-+		return 0;
-+	default:
-+		return -EOPNOTSUPP;
++			adapter->ptp_tx_skb = skb_get(skb);
++			adapter->ptp_tx_start = jiffies;
++		} else {
++			adapter->tx_hwtstamp_skipped++;
++		}
 +	}
++
+ 	/* record initial flags and protocol */
+ 	first->tx_flags = tx_flags;
+ 	first->protocol = protocol;
+@@ -2765,6 +2794,21 @@ static void igc_set_rx_mode(struct net_device *netdev)
+ 	wr32(IGC_RLPML, rlpml);
+ }
+ 
++static void igc_tsync_interrupt(struct igc_adapter *adapter)
++{
++	struct igc_hw *hw = &adapter->hw;
++	u32 ack = 0, tsicr = rd32(IGC_TSICR);
++
++	if (tsicr & IGC_TSICR_TXTS) {
++		/* retrieve hardware timestamp */
++		schedule_work(&adapter->ptp_tx_work);
++		ack |= IGC_TSICR_TXTS;
++	}
++
++	/* acknowledge the interrupts */
++	wr32(IGC_TSICR, ack);
 +}
 +
- static u32 igc_get_priv_flags(struct net_device *netdev)
+ /**
+  * igc_msix_other - msix other interrupt handler
+  * @irq: interrupt number
+@@ -2792,6 +2836,9 @@ static irqreturn_t igc_msix_other(int irq, void *data)
+ 			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+ 	}
+ 
++	if (icr & IGC_ICR_TS)
++		igc_tsync_interrupt(adapter);
++
+ 	wr32(IGC_EIMS, adapter->eims_other);
+ 
+ 	return IRQ_HANDLED;
+@@ -3295,6 +3342,8 @@ static void igc_watchdog_task(struct work_struct *work)
+ 		wr32(IGC_ICS, IGC_ICS_RXDMT0);
+ 	}
+ 
++	igc_ptp_tx_hang(adapter);
++
+ 	/* Reset the timer */
+ 	if (!test_bit(__IGC_DOWN, &adapter->state)) {
+ 		if (adapter->flags & IGC_FLAG_NEED_LINK_UPDATE)
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index b39d14d40ec9..b63a03157ec1 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -284,6 +284,12 @@ static void igc_ptp_enable_tstamp_all_rxqueues(struct igc_adapter *adapter,
+  * @adapter: networking device structure
+  * @config: hwtstamp configuration
+  *
++ * Outgoing time stamping can be enabled and disabled. Play nice and
++ * disable it when requested, although it shouldn't case any overhead
++ * when no packet needs it. At most one packet in the queue may be
++ * marked for time stamping, otherwise it would be impossible to tell
++ * for sure to which packet the hardware time stamp belongs.
++ *
+  * Incoming time stamping has to be configured via the hardware
+  * filters. Not all combinations are supported, in particular event
+  * type has to be specified. Matching the kind of event packet is
+@@ -295,6 +301,7 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
+ 				      struct hwtstamp_config *config)
  {
- 	struct igc_adapter *adapter = netdev_priv(netdev);
-@@ -1847,6 +1880,7 @@ static const struct ethtool_ops igc_ethtool_ops = {
- 	.get_rxfh_indir_size	= igc_get_rxfh_indir_size,
- 	.get_rxfh		= igc_get_rxfh,
- 	.set_rxfh		= igc_set_rxfh,
-+	.get_ts_info            = igc_get_ts_info,
- 	.get_channels		= igc_get_channels,
- 	.set_channels		= igc_set_channels,
- 	.get_priv_flags		= igc_get_priv_flags,
+ 	struct igc_hw *hw = &adapter->hw;
++	u32 tsync_tx_ctl = IGC_TSYNCTXCTL_ENABLED;
+ 	u32 tsync_rx_ctl = IGC_TSYNCRXCTL_ENABLED;
+ 	u32 tsync_rx_cfg = 0;
+ 	bool is_l4 = false;
+@@ -305,6 +312,15 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
+ 	if (config->flags)
+ 		return -EINVAL;
+ 
++	switch (config->tx_type) {
++	case HWTSTAMP_TX_OFF:
++		tsync_tx_ctl = 0;
++	case HWTSTAMP_TX_ON:
++		break;
++	default:
++		return -ERANGE;
++	}
++
+ 	switch (config->rx_filter) {
+ 	case HWTSTAMP_FILTER_NONE:
+ 		tsync_rx_ctl = 0;
+@@ -368,6 +384,15 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
+ 		}
+ 	}
+ 
++	if (tsync_tx_ctl)
++		tsync_tx_ctl = IGC_TSYNCTXCTL_ENABLED;
++
++	/* enable/disable TX */
++	regval = rd32(IGC_TSYNCTXCTL);
++	regval &= ~IGC_TSYNCTXCTL_ENABLED;
++	regval |= tsync_tx_ctl;
++	wr32(IGC_TSYNCTXCTL, regval);
++
+ 	/* enable/disable RX */
+ 	regval = rd32(IGC_TSYNCRXCTL);
+ 	regval &= ~(IGC_TSYNCRXCTL_ENABLED | IGC_TSYNCRXCTL_TYPE_MASK);
+@@ -442,8 +467,75 @@ void igc_ptp_tx_hang(struct igc_adapter *adapter)
+ 	}
+ }
+ 
++/**
++ * igc_ptp_tx_hwtstamp - utility function which checks for TX time stamp
++ * @adapter: Board private structure.
++ *
++ * If we were asked to do hardware stamping and such a time stamp is
++ * available, then it must have been for this skb here because we only
++ * allow only one such packet into the queue.
++ */
++static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
++{
++	struct sk_buff *skb = adapter->ptp_tx_skb;
++	struct skb_shared_hwtstamps shhwtstamps;
++	struct igc_hw *hw = &adapter->hw;
++	u64 regval;
++
++	regval = rd32(IGC_TXSTMPL);
++	regval |= (u64)rd32(IGC_TXSTMPH) << 32;
++	igc_ptp_systim_to_hwtstamp(adapter, &shhwtstamps, regval);
++
++	/* Clear the lock early before calling skb_tstamp_tx so that
++	 * applications are not woken up before the lock bit is clear. We use
++	 * a copy of the skb pointer to ensure other threads can't change it
++	 * while we're notifying the stack.
++	 */
++	adapter->ptp_tx_skb = NULL;
++	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
++
++	/* Notify the stack and free the skb after we've unlocked */
++	skb_tstamp_tx(skb, &shhwtstamps);
++	dev_kfree_skb_any(skb);
++}
++
++/**
++ * igc_ptp_tx_work
++ * @work: pointer to work struct
++ *
++ * This work function polls the TSYNCTXCTL valid bit to determine when a
++ * timestamp has been taken for the current stored skb.
++ */
+ void igc_ptp_tx_work(struct work_struct *work)
+ {
++	struct igc_adapter *adapter = container_of(work, struct igc_adapter,
++						   ptp_tx_work);
++	struct igc_hw *hw = &adapter->hw;
++	u32 tsynctxctl;
++
++	if (!adapter->ptp_tx_skb)
++		return;
++
++	if (time_is_before_jiffies(adapter->ptp_tx_start +
++				   IGC_PTP_TX_TIMEOUT)) {
++		dev_kfree_skb_any(adapter->ptp_tx_skb);
++		adapter->ptp_tx_skb = NULL;
++		clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
++		adapter->tx_hwtstamp_timeouts++;
++		/* Clear the tx valid bit in TSYNCTXCTL register to enable
++		 * interrupt
++		 */
++		rd32(IGC_TXSTMPH);
++		dev_warn(&adapter->pdev->dev, "clearing Tx timestamp hang\n");
++		return;
++	}
++
++	tsynctxctl = rd32(IGC_TSYNCTXCTL);
++	if (tsynctxctl & IGC_TSYNCTXCTL_VALID)
++		igc_ptp_tx_hwtstamp(adapter);
++	else
++		/* reschedule to check later */
++		schedule_work(&adapter->ptp_tx_work);
+ }
+ 
+ /**
 -- 
 2.24.0
 
