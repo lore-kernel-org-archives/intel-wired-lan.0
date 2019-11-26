@@ -1,49 +1,59 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 26 Nov 2019 11:20:16 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v1 2/4] igc: Add support
- for RX timestamping
-In-Reply-To: <20191122020224.1102649-3-vinicius.gomes@intel.com>
-References: <20191122020224.1102649-1-vinicius.gomes@intel.com>
- <20191122020224.1102649-3-vinicius.gomes@intel.com>
-Message-ID: <877e3mcumn.fsf@linux.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 26 Nov 2019 19:41:45 +0000
+Subject: [Intel-wired-lan] [PATCH S34 v2 1/2] ice: Initialize and
+ register a virtual bus to provide RDMA
+In-Reply-To: <20191120095417.15124-1-anthony.l.nguyen@intel.com>
+References: <20191120095417.15124-1-anthony.l.nguyen@intel.com>
+Message-ID: <c5320e0bdf794167a99abfbf9c4f2d34@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Vinicius Costa Gomes <vinicius.gomes@intel.com> writes:
-
-> This adds support for timestamping received packets.
->
-> It is based on the i210, as many features of i225 work the same way.
-> The main difference from i210 is that i225 has support for choosing
-> the timer register to use when timestamping packets. Right now, we
-> only support using timer 0. The other difference is that i225 stores
-> two timestamps in the receive descriptor, right now, we only retrieve
-> one.
->
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Wednesday, November 20, 2019 1:54 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S34 v2 1/2] ice: Initialize and register a
+> virtual bus to provide RDMA
+> 
+> From: Dave Ertman <david.m.ertman@intel.com>
+> 
+> The RDMA block does not have its own PCI function, instead it must utilize
+> the ice driver to gain access to the PCI device. Create a virtual bus for the
+> RDMA driver to bind to the device data. The device data contains all of the
+> relevant information that the IRDMA peer will need to access this PF's IIDC
+> API callbacks.
+> 
+> Note the header file iidc.h is located under include/linux/net/intel as this is a
+> unified header file to be used by all consumers of the IIDC interface.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
+> v2:
+> - Change usage from MFD to virtual bus
+> ---
+>  MAINTAINERS                                   |   1 +
+>  drivers/net/ethernet/intel/Kconfig            |   1 +
+>  drivers/net/ethernet/intel/ice/Makefile       |   1 +
+>  drivers/net/ethernet/intel/ice/ice.h          |  14 +
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   1 +
+>  drivers/net/ethernet/intel/ice/ice_common.c   |  15 +
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |  31 ++
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |   3 +
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   |   1 +
+>  drivers/net/ethernet/intel/ice/ice_idc.c      | 410 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_idc_int.h  |  79 ++++
+>  drivers/net/ethernet/intel/ice/ice_lib.c      |  11 +
+>  drivers/net/ethernet/intel/ice/ice_lib.h      |   1 +
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  65 ++-
+>  drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+>  include/linux/net/intel/iidc.h                | 336 ++++++++++++++
+>  16 files changed, 969 insertions(+), 2 deletions(-)  create mode 100644
 
-[...]
-
-> diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-> index fa345adad5c9..a5b7e5e05a89 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_defines.h
-> +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-> @@ -283,12 +283,21 @@
->  #define IGC_RCTL_RDMTS_HALF	0x00000000 /* Rx desc min thresh size */
->  #define IGC_RCTL_BAM		0x00008000 /* broadcast enable */
->  
-> +/* Split Replication Receive Control */
-> +#define IGC_SRRCTL_TIMESTAMP		0x04000
-
-I made a mistake here, it should read "0x40000000" or BIT(30). It's
-causing timestamps to only be accessed via the registers, instead of via
-the descriptors. Will send a v2 soon.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
-Cheers,
---
-Vinicius
