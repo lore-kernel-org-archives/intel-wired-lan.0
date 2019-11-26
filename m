@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 26 Nov 2019 19:42:14 +0000
-Subject: [Intel-wired-lan] [PATCH S34 v2 2/2] ice: Implement peer
- communications
-In-Reply-To: <20191120095417.15124-2-anthony.l.nguyen@intel.com>
-References: <20191120095417.15124-1-anthony.l.nguyen@intel.com>
- <20191120095417.15124-2-anthony.l.nguyen@intel.com>
-Message-ID: <853b870bbb2f404fb576c77581d8a327@intel.com>
+Date: Tue, 26 Nov 2019 19:43:21 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Register a virtbus device to
+ provide RDMA
+In-Reply-To: <20191120170150.36240-1-mustafa.ismail@intel.com>
+References: <20191120170150.36240-1-mustafa.ismail@intel.com>
+Message-ID: <ce6645da6a1f4608ad95ab824edc71bd@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,41 +13,44 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Wednesday, November 20, 2019 1:54 AM
+> Behalf Of Mustafa Ismail
+> Sent: Wednesday, November 20, 2019 9:02 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S34 v2 2/2] ice: Implement peer
-> communications
+> Cc: Ismail, Mustafa <mustafa.ismail@intel.com>; Devale, Sindhu
+> <sindhu.devale@intel.com>; Saleem, Shiraz <shiraz.saleem@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] i40e: Register a virtbus device to provide
+> RDMA
 > 
-> From: Dave Ertman <david.m.ertman@intel.com>
+> From: "Shiraz Saleem" <shiraz.saleem@intel.com>
 > 
-> Set and implement operations for the peer device and peer driver to
-> communicate with each other, via iidc_ops and iidc_peer_ops, to request
-> resources and manage event notification.
+> Register client virtbus device on the virtbus for the RDMA virtbus driver
+> (irdma) to bind to. It allows to realize a single RDMA driver capable of working
+> with multiple netdev drivers over multi-generation Intel HW supporting
+> RDMA.
+> There is also no load ordering dependencies between i40e and irdma.
 > 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Summary of changes:
+> * Support to add/remove virtbus devices
+> * Add 2 new client ops.
+> 	* i40e_client_device_register() which is called during RDMA
+> 	  probe() per PF. Validate client drv OPs and schedule service
+> 	  task to call open()
+> 	* i40e_client_device_unregister() called during RDMA remove()
+> 	  per PF. Call client close() and release_qvlist.
+> * The global register/unregister calls exported for i40iw are retained
+>   until i40iw is removed from the kernel.
+> 
+> Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
+> Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 > ---
-> v2:
-> - Change usage from MFD to virtual bus
-> ---
->  drivers/net/ethernet/intel/ice/ice.h          |   1 +
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  32 +
->  drivers/net/ethernet/intel/ice/ice_common.c   | 188 ++++
->  drivers/net/ethernet/intel/ice/ice_common.h   |   9 +
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |  34 +
->  drivers/net/ethernet/intel/ice/ice_idc.c      | 879 ++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_idc_int.h  |  45 +
->  drivers/net/ethernet/intel/ice/ice_lib.c      |  39 +
->  drivers/net/ethernet/intel/ice/ice_lib.h      |   2 +
->  drivers/net/ethernet/intel/ice/ice_main.c     |  45 +-
->  drivers/net/ethernet/intel/ice/ice_sched.c    |  69 +-
->  drivers/net/ethernet/intel/ice/ice_switch.c   |  27 +
->  drivers/net/ethernet/intel/ice/ice_switch.h   |   4 +
->  drivers/net/ethernet/intel/ice/ice_type.h     |   3 +
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  25 -
->  15 files changed, 1364 insertions(+), 38 deletions(-)
+>  drivers/infiniband/hw/i40iw/Makefile          |   1 -
+>  drivers/infiniband/hw/i40iw/i40iw.h           |   2 +-
+>  drivers/net/ethernet/intel/Kconfig            |   1 +
+>  drivers/net/ethernet/intel/i40e/i40e.h        |   3 +-
+>  drivers/net/ethernet/intel/i40e/i40e_client.c | 109 +++++++++++--
+> drivers/net/ethernet/intel/i40e/i40e_client.h | 203 ------------------------
+>  include/linux/net/intel/i40e_client.h         | 213
+> ++++++++++++++++++++++++++
+>  7 files changed, 310 insertions(+), 222 deletions(-)  delete mode 100644
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
