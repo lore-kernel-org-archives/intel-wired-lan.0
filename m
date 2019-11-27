@@ -1,60 +1,69 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 26 Nov 2019 19:44:29 +0000
-Subject: [Intel-wired-lan] virtual-bus[v4]: Implementation of Virtual Bus
-In-Reply-To: <2B0E3F215D1AB84DA946C8BEE234CCC97B3014A3@ORSMSX101.amr.corp.intel.com>
-References: <2B0E3F215D1AB84DA946C8BEE234CCC97B3014A3@ORSMSX101.amr.corp.intel.com>
-Message-ID: <0362d5f99b4948409239baf1571b2655@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Tue, 26 Nov 2019 17:04:30 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v2 0/5] igc: Add basic support
+ for Timestamping/PTP
+Message-ID: <20191127010435.1733698-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Ertman, David M
-> Sent: Monday, November 18, 2019 8:07 PM
-> To: 'intel-wired-lan at lists.osuosl.org' <intel-wired-lan@lists.osuosl.org>;
-> Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Patil, Kiran
-> <kiran.patil@intel.com>
-> Subject: [Intel-wired-lan] virtual-bus[v4]: Implementation of Virtual Bus
-> 
-> virtual-bus[v4]: Implementation of Virtual Bus
-> 
-> From: Dave Ertman <david.m.ertman@intel.com>
-> 
-> This is the initial implementation of the virtual bus, virtbus_device and
-> virtbus_driver.  The virtual bus is a software based bus intended to support
-> registering virtbus_devices and virtbus_drivers and provide matching
-> between them and probing of the registered drivers.
-> 
-> The primary purpose of the virtual bus is to provide matching services to
-> allow the use of a container_of to get access to a piece of desired data.  This
-> will allow two separate kernel objects to match up and start communication.
-> 
-> The bus will support probe/remove shutdown and suspend/resume
-> callbacks.
-> 
-> Kconfig and Makefile alterations are included
-> 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> ---
->  .../selftests/virtual_bus/virtual_bus_dev/Makefile |    7 +
->  .../virtual_bus/virtual_bus_dev/virtual_bus_dev.c  |   60 ++++++++++
->  .../selftests/virtual_bus/virtual_bus_drv/Makefile |    7 +
->  .../virtual_bus/virtual_bus_drv/virtual_bus_drv.c  |  115
-> ++++++++++++++++++++
->  4 files changed, 189 insertions(+)
->  create mode 100644
-> tools/testing/selftests/virtual_bus/virtual_bus_dev/Makefile
->  create mode 100644
-> tools/testing/selftests/virtual_bus/virtual_bus_dev/virtual_bus_dev.c
->  create mode 100644
-> tools/testing/selftests/virtual_bus/virtual_bus_drv/Makefile
->  create mode 100644
-> tools/testing/selftests/virtual_bus/virtual_bus_drv/virtual_bus_drv.c
+Hi,
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Changes from v1:
+  - Fixed wrong value for IGC_SRRCTL_TIMESTAMP;
+  - Added support for retrieving timestamps from PHY (patch 5/5);
 
+Original cover letter (lightly edited):
+
+This adds basic support for Timestamping and enables ptp4l/phc2sys to
+work using i225.
+
+To get ptp4l/phc2sys to work we need 2 basic feature sets:
+ (1) reading/adjusting the PHC clock;
+ (2) enabling/retrieving HW timestamps;
+
+Patch 1/5 adds support for (1), patch 2/5 and 3/5 adds support for (2)
+and patch 4/5 implements the ethtool ioctl that ptp4l uses to check
+what timestamping methods are supported.
+
+As most of the functionality is similar to i210, this code uses that
+as a base. To keep this short, only the features necessary to make
+time synchronization using linuxptp are added.
+
+The most important differences from i210 is that there's now support
+for multiple PTP domains, with multiple timestamping registers.
+
+Still aiming to keep this series short, only support for one PTP
+domain is added, and also only one of the timestamping registers is
+used.
+
+Missing from this series is also support configuring/using the
+programmable pins.
+
+
+Cheers,
+--
+Vinicius
+
+Vinicius Costa Gomes (5):
+  igc: Add basic skeleton for PTP
+  igc: Add support for RX timestamping
+  igc: Add support for TX timestamping
+  igc: Add support for ethtool GET_TS_INFO command
+  igc: Use Start of Packet signal from PHY for timestamping
+
+ drivers/net/ethernet/intel/igc/Makefile      |   2 +-
+ drivers/net/ethernet/intel/igc/igc.h         |  45 ++
+ drivers/net/ethernet/intel/igc/igc_defines.h |  66 ++
+ drivers/net/ethernet/intel/igc/igc_ethtool.c |  34 +
+ drivers/net/ethernet/intel/igc/igc_main.c    |  86 +++
+ drivers/net/ethernet/intel/igc/igc_ptp.c     | 716 +++++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_regs.h    |  27 +
+ 7 files changed, 975 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_ptp.c
+
+-- 
+2.24.0
 
