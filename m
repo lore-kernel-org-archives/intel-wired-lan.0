@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 4 Dec 2019 18:25:53 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix calculation of queue with
- VFs and flow director on interface flap
-In-Reply-To: <20191127090355.27708-1-cambda@linux.alibaba.com>
-References: <20191127090355.27708-1-cambda@linux.alibaba.com>
-Message-ID: <da48f1f5ff794532b951591f5406ca21@intel.com>
+Date: Wed, 4 Dec 2019 18:53:58 +0000
+Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: Remove limit of 10
+ entries for unicast filter list
+In-Reply-To: <20191125142452.21819-1-radoslawx.tyl@intel.com>
+References: <20191125142452.21819-1-radoslawx.tyl@intel.com>
+Message-ID: <57803068b5944aac9606418c4cb110a1@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,28 +13,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Cambda Zhu
-> Sent: Wednesday, November 27, 2019 1:04 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: Cambda Zhu <cambda@linux.alibaba.com>; Tyl, RadoslawX
-> <radoslawx.tyl@intel.com>; netdev at vger.kernel.org; Joseph Qi
-> <joseph.qi@linux.alibaba.com>; intel-wired-lan at lists.osuosl.org; David S.
-> Miller <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix calculation of queue with VFs
-> and flow director on interface flap
+> Behalf Of Radoslaw Tyl
+> Sent: Monday, November 25, 2019 6:25 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: pmenzel at molgen.mpg.de; Gangadhar, Mukesh
+> <mukesh.gangadhar@intel.com>
+> Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: Remove limit of 10 entries for
+> unicast filter list
 > 
-> This patch fixes the calculation of queue when we restore flow director filters
-> after resetting adapter. In ixgbe_fdir_filter_restore(), filter's vf may be zero
-> which makes the queue outside of the rx_ring array.
+> Currently, though the FDB entry is added to VF, it does not appear in RAR
+> filters. VF driver only allows to add 10 entries. Attempting to add another
+> causes an error. This patch removes limitation and allows use of all free RAR
+> entries for the FDB if needed.
 > 
-> The calculation is changed to the same as ixgbe_add_ethtool_fdir_entry().
+> Fixes: 46ec20ff7d ("ixgbevf: Add macvlan support in the set rx mode op")
 > 
-> Signed-off-by: Cambda Zhu <cambda@linux.alibaba.com>
+> Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 37
-> +++++++++++++++++++--------
->  1 file changed, 27 insertions(+), 10 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 5 -----
+>  1 file changed, 5 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Exceeding the filter limits causes a call trace on reboot and locks the system up until you do a hard power cycle.
 
 
