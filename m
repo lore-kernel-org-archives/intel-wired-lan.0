@@ -1,76 +1,178 @@
 From: Maxim Mikityanskiy <maximmi@mellanox.com>
-Date: Thu, 5 Dec 2019 15:51:17 +0000
-Subject: [Intel-wired-lan] [PATCH bpf 4/4] net/ixgbe: Fix concurrency issues
+Date: Thu, 5 Dec 2019 15:51:13 +0000
+Subject: [Intel-wired-lan] [PATCH bpf 2/4] net/mlx5e: Fix concurrency issues
  between config flow and XSK
 In-Reply-To: <20191205155028.28854-1-maximmi@mellanox.com>
 References: <20191205155028.28854-1-maximmi@mellanox.com>
-Message-ID: <20191205155028.28854-5-maximmi@mellanox.com>
+Message-ID: <20191205155028.28854-3-maximmi@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use synchronize_rcu to wait until the XSK wakeup function finishes
-before destroying the resources it uses:
+After disabling resources necessary for XSK (the XDP program, channels,
+XSK queues), use synchronize_rcu to wait until the XSK wakeup function
+finishes, before freeing the resources.
 
-1. ixgbe_down already calls synchronize_rcu after setting __IXGBE_DOWN.
-
-2. After switching the XDP program, call synchronize_rcu to let
-ixgbe_xsk_async_xmit exit before the XDP program is freed.
-
-3. Changing the number of channels brings the interface down.
-
-4. Disabling UMEM sets __IXGBE_TX_DISABLED before closing hardware
-resources and resetting xsk_umem. Check that bit in ixgbe_xsk_async_xmit
-to avoid using the XDP ring when it's already destroyed. synchronize_rcu
-is called from ixgbe_txrx_ring_disable.
+Suspend XSK wakeups during switching channels. If the XDP program is
+being removed, synchronize_rcu before closing the old channels to allow
+XSK wakeup to complete.
 
 Signed-off-by: Maxim Mikityanskiy <maximmi@mellanox.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 6 +++++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 8 ++++++--
- 2 files changed, 11 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/mellanox/mlx5/core/en.h  |  2 +-
+ .../net/ethernet/mellanox/mlx5/core/en/xdp.h  | 22 ++++++++-----------
+ .../mellanox/mlx5/core/en/xsk/setup.c         |  1 +
+ .../ethernet/mellanox/mlx5/core/en/xsk/tx.c   |  2 +-
+ .../net/ethernet/mellanox/mlx5/core/en_main.c | 19 +---------------
+ 5 files changed, 13 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 25c097cd8100..60503318c7e5 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -10273,8 +10273,12 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
- 			    adapter->xdp_prog);
- 	}
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en.h b/drivers/net/ethernet/mellanox/mlx5/core/en.h
+index f1a7bc46f1c0..61084c3744ba 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en.h
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en.h
+@@ -760,7 +760,7 @@ enum {
+ 	MLX5E_STATE_OPENED,
+ 	MLX5E_STATE_DESTROYING,
+ 	MLX5E_STATE_XDP_TX_ENABLED,
+-	MLX5E_STATE_XDP_OPEN,
++	MLX5E_STATE_XDP_ACTIVE,
+ };
  
--	if (old_prog)
-+	if (old_prog) {
-+		/* Wait until ndo_xsk_async_xmit completes. */
-+		synchronize_rcu();
+ struct mlx5e_rqt {
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.h b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.h
+index 36ac1e3816b9..d7587f40ecae 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.h
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.h
+@@ -75,12 +75,18 @@ int mlx5e_xdp_xmit(struct net_device *dev, int n, struct xdp_frame **frames,
+ static inline void mlx5e_xdp_tx_enable(struct mlx5e_priv *priv)
+ {
+ 	set_bit(MLX5E_STATE_XDP_TX_ENABLED, &priv->state);
 +
- 		bpf_prog_put(old_prog);
-+	}
++	if (priv->channels.params.xdp_prog)
++		set_bit(MLX5E_STATE_XDP_ACTIVE, &priv->state);
+ }
  
- 	/* Kick start the NAPI context if there is an AF_XDP socket open
- 	 * on that queue id. This so that receiving will start.
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-index d6feaacfbf89..b43be9f14105 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-@@ -709,10 +709,14 @@ int ixgbe_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags)
- 	if (qid >= adapter->num_xdp_queues)
- 		return -ENXIO;
- 
--	if (!adapter->xdp_ring[qid]->xsk_umem)
-+	ring = adapter->xdp_ring[qid];
+ static inline void mlx5e_xdp_tx_disable(struct mlx5e_priv *priv)
+ {
++	if (priv->channels.params.xdp_prog)
++		clear_bit(MLX5E_STATE_XDP_ACTIVE, &priv->state);
 +
-+	if (test_bit(__IXGBE_TX_DISABLED, &ring->state))
-+		return -ENETDOWN;
-+
-+	if (!ring->xsk_umem)
- 		return -ENXIO;
+ 	clear_bit(MLX5E_STATE_XDP_TX_ENABLED, &priv->state);
+-	/* let other device's napi(s) see our new state */
++	/* Let other device's napi(s) and XSK wakeups see our new state. */
+ 	synchronize_rcu();
+ }
  
--	ring = adapter->xdp_ring[qid];
- 	if (!napi_if_scheduled_mark_missed(&ring->q_vector->napi)) {
- 		u64 eics = BIT_ULL(ring->q_vector->v_idx);
+@@ -89,19 +95,9 @@ static inline bool mlx5e_xdp_tx_is_enabled(struct mlx5e_priv *priv)
+ 	return test_bit(MLX5E_STATE_XDP_TX_ENABLED, &priv->state);
+ }
  
+-static inline void mlx5e_xdp_set_open(struct mlx5e_priv *priv)
+-{
+-	set_bit(MLX5E_STATE_XDP_OPEN, &priv->state);
+-}
+-
+-static inline void mlx5e_xdp_set_closed(struct mlx5e_priv *priv)
+-{
+-	clear_bit(MLX5E_STATE_XDP_OPEN, &priv->state);
+-}
+-
+-static inline bool mlx5e_xdp_is_open(struct mlx5e_priv *priv)
++static inline bool mlx5e_xdp_is_active(struct mlx5e_priv *priv)
+ {
+-	return test_bit(MLX5E_STATE_XDP_OPEN, &priv->state);
++	return test_bit(MLX5E_STATE_XDP_ACTIVE, &priv->state);
+ }
+ 
+ static inline void mlx5e_xmit_xdp_doorbell(struct mlx5e_xdpsq *sq)
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/setup.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/setup.c
+index 631af8dee517..c28cbae42331 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/setup.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/setup.c
+@@ -144,6 +144,7 @@ void mlx5e_close_xsk(struct mlx5e_channel *c)
+ {
+ 	clear_bit(MLX5E_CHANNEL_STATE_XSK, c->state);
+ 	napi_synchronize(&c->napi);
++	synchronize_rcu(); /* Sync with the XSK wakeup. */
+ 
+ 	mlx5e_close_rq(&c->xskrq);
+ 	mlx5e_close_cq(&c->xskrq.cq);
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
+index 87827477d38c..fe2d596cb361 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
+@@ -14,7 +14,7 @@ int mlx5e_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags)
+ 	struct mlx5e_channel *c;
+ 	u16 ix;
+ 
+-	if (unlikely(!mlx5e_xdp_is_open(priv)))
++	if (unlikely(!mlx5e_xdp_is_active(priv)))
+ 		return -ENETDOWN;
+ 
+ 	if (unlikely(!mlx5e_qid_get_ch_if_in_group(params, qid, MLX5E_RQ_GROUP_XSK, &ix)))
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+index 09ed7f5f688b..fe1a42fa214b 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+@@ -3006,12 +3006,9 @@ void mlx5e_timestamp_init(struct mlx5e_priv *priv)
+ int mlx5e_open_locked(struct net_device *netdev)
+ {
+ 	struct mlx5e_priv *priv = netdev_priv(netdev);
+-	bool is_xdp = priv->channels.params.xdp_prog;
+ 	int err;
+ 
+ 	set_bit(MLX5E_STATE_OPENED, &priv->state);
+-	if (is_xdp)
+-		mlx5e_xdp_set_open(priv);
+ 
+ 	err = mlx5e_open_channels(priv, &priv->channels);
+ 	if (err)
+@@ -3026,8 +3023,6 @@ int mlx5e_open_locked(struct net_device *netdev)
+ 	return 0;
+ 
+ err_clear_state_opened_flag:
+-	if (is_xdp)
+-		mlx5e_xdp_set_closed(priv);
+ 	clear_bit(MLX5E_STATE_OPENED, &priv->state);
+ 	return err;
+ }
+@@ -3059,8 +3054,6 @@ int mlx5e_close_locked(struct net_device *netdev)
+ 	if (!test_bit(MLX5E_STATE_OPENED, &priv->state))
+ 		return 0;
+ 
+-	if (priv->channels.params.xdp_prog)
+-		mlx5e_xdp_set_closed(priv);
+ 	clear_bit(MLX5E_STATE_OPENED, &priv->state);
+ 
+ 	netif_carrier_off(priv->netdev);
+@@ -4377,16 +4370,6 @@ static int mlx5e_xdp_allowed(struct mlx5e_priv *priv, struct bpf_prog *prog)
+ 	return 0;
+ }
+ 
+-static int mlx5e_xdp_update_state(struct mlx5e_priv *priv)
+-{
+-	if (priv->channels.params.xdp_prog)
+-		mlx5e_xdp_set_open(priv);
+-	else
+-		mlx5e_xdp_set_closed(priv);
+-
+-	return 0;
+-}
+-
+ static int mlx5e_xdp_set(struct net_device *netdev, struct bpf_prog *prog)
+ {
+ 	struct mlx5e_priv *priv = netdev_priv(netdev);
+@@ -4421,7 +4404,7 @@ static int mlx5e_xdp_set(struct net_device *netdev, struct bpf_prog *prog)
+ 		mlx5e_set_rq_type(priv->mdev, &new_channels.params);
+ 		old_prog = priv->channels.params.xdp_prog;
+ 
+-		err = mlx5e_safe_switch_channels(priv, &new_channels, mlx5e_xdp_update_state);
++		err = mlx5e_safe_switch_channels(priv, &new_channels, NULL);
+ 		if (err)
+ 			goto unlock;
+ 	} else {
 -- 
 2.20.1
 
