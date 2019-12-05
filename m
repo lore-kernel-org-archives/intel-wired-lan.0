@@ -1,79 +1,157 @@
-From: Maxim Mikityanskiy <maximmi@mellanox.com>
-Date: Thu, 5 Dec 2019 15:51:15 +0000
-Subject: [Intel-wired-lan] [PATCH bpf 3/4] net/i40e: Fix concurrency issues
- between config flow and XSK
-In-Reply-To: <20191205155028.28854-1-maximmi@mellanox.com>
-References: <20191205155028.28854-1-maximmi@mellanox.com>
-Message-ID: <20191205155028.28854-4-maximmi@mellanox.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 06 Dec 2019 07:43:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD INCOMPLETE
+ ca8e48eb5f3baa989219ee984366404a8859f45a
+Message-ID: <5de9961e.+2eXdMEAYe1AK9yh%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use synchronize_rcu to wait until the XSK wakeup function finishes
-before destroying the resources it uses:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: ca8e48eb5f3baa989219ee984366404a8859f45a  igc: Use Start of Packet signal from PHY for timestamping
 
-1. i40e_down already calls synchronize_rcu. On i40e_down either
-__I40E_VSI_DOWN or __I40E_CONFIG_BUSY is set. Check the latter in
-i40e_xsk_async_xmit (the former is already checked there).
+TIMEOUT after 2888m
 
-2. After switching the XDP program, call synchronize_rcu to let
-i40e_xsk_async_xmit exit before the XDP program is freed.
 
-3. Changing the number of channels brings the interface down (see
-i40e_prep_for_reset and i40e_pf_quiesce_all_vsi).
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
 
-4. Disabling UMEM sets __I40E_CONFIG_BUSY, too.
+configs timed out: 19
 
-Signed-off-by: Maxim Mikityanskiy <maximmi@mellanox.com>
+i386                             allyesconfig
+ia64                             alldefconfig
+ia64                                defconfig
+mips                         64r6el_defconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                          rhel-kconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+
+configs tested: 105
+
+x86_64               randconfig-b001-20191204
+i386                 randconfig-b001-20191204
+i386                 randconfig-b002-20191204
+x86_64               randconfig-b003-20191204
+x86_64               randconfig-b002-20191204
+i386                 randconfig-b003-20191204
+x86_64               randconfig-c001-20191204
+i386                 randconfig-c003-20191204
+i386                 randconfig-c002-20191204
+x86_64               randconfig-c002-20191204
+i386                 randconfig-c001-20191204
+x86_64               randconfig-c003-20191204
+sparc64                          allmodconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64               randconfig-e003-20191204
+i386                 randconfig-e003-20191204
+x86_64               randconfig-e001-20191204
+i386                 randconfig-e001-20191204
+i386                 randconfig-e002-20191204
+x86_64               randconfig-e002-20191204
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                              fedora-25
+x86_64                                  kexec
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+mips                             allmodconfig
+mips                           32r2_defconfig
+mips                              allnoconfig
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+x86_64               randconfig-h001-20191204
+i386                 randconfig-h001-20191204
+i386                 randconfig-h003-20191204
+x86_64               randconfig-h003-20191204
+x86_64               randconfig-h002-20191204
+i386                 randconfig-h002-20191204
+i386                 randconfig-g003-20191204
+x86_64               randconfig-g003-20191204
+i386                 randconfig-g002-20191204
+i386                 randconfig-g001-20191204
+x86_64               randconfig-g001-20191204
+x86_64               randconfig-g002-20191204
+arc                              allyesconfig
+microblaze                    nommu_defconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                             allmodconfig
+s390                                defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+nds32                               defconfig
+alpha                               defconfig
+csky                                defconfig
+nds32                             allnoconfig
+ia64                 randconfig-a001-20191204
+arm64                randconfig-a001-20191204
+powerpc              randconfig-a001-20191204
+sparc                randconfig-a001-20191204
+arm                  randconfig-a001-20191204
+arc                 randconfig-a0031-20191204
+x86_64               randconfig-f001-20191204
+x86_64               randconfig-f003-20191204
+i386                 randconfig-f003-20191204
+i386                 randconfig-f001-20191204
+i386                 randconfig-f002-20191204
+x86_64               randconfig-f002-20191204
+i386                 randconfig-a001-20191204
+ia64                             allmodconfig
+ia64                              allnoconfig
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 7 +++++--
- drivers/net/ethernet/intel/i40e/i40e_xsk.c  | 4 ++++
- 2 files changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1ccabeafa44c..afa3a99e68e1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6823,8 +6823,8 @@ void i40e_down(struct i40e_vsi *vsi)
- 	for (i = 0; i < vsi->num_queue_pairs; i++) {
- 		i40e_clean_tx_ring(vsi->tx_rings[i]);
- 		if (i40e_enabled_xdp_vsi(vsi)) {
--			/* Make sure that in-progress ndo_xdp_xmit
--			 * calls are completed.
-+			/* Make sure that in-progress ndo_xdp_xmit and
-+			 * ndo_xsk_async_xmit calls are completed.
- 			 */
- 			synchronize_rcu();
- 			i40e_clean_tx_ring(vsi->xdp_rings[i]);
-@@ -12545,6 +12545,9 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
- 		i40e_prep_for_reset(pf, true);
- 
- 	old_prog = xchg(&vsi->xdp_prog, prog);
-+	if (old_prog)
-+		/* Wait until ndo_xsk_async_xmit completes. */
-+		synchronize_rcu();
- 
- 	if (need_reset)
- 		i40e_reset_and_rebuild(pf, true, true);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index d07e1a890428..f73cd917c44f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -787,8 +787,12 @@ int i40e_xsk_wakeup(struct net_device *dev, u32 queue_id, u32 flags)
- {
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	struct i40e_vsi *vsi = np->vsi;
-+	struct i40e_pf *pf = vsi->back;
- 	struct i40e_ring *ring;
- 
-+	if (test_bit(__I40E_CONFIG_BUSY, pf->state))
-+		return -ENETDOWN;
-+
- 	if (test_bit(__I40E_VSI_DOWN, vsi->state))
- 		return -ENETDOWN;
- 
--- 
-2.20.1
-
+0-DAY kernel test infrastructure                 Open Source Technology Center
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
