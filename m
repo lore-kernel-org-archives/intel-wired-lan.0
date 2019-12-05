@@ -1,72 +1,39 @@
-From: Manfred Rudigier <manfred.rudigier@omicronenergy.com>
-Date: Wed, 4 Dec 2019 11:40:26 +0100
-Subject: [Intel-wired-lan] [PATCH] igb: Fix SGMII SFP module discovery for
- 100FX/LX.
-Message-ID: <ef7b98c8-0ce4-4f84-989d-28b5a29d4831@EXC04-ATKLA.omicron.at>
+From: Maxim Mikityanskiy <maximmi@mellanox.com>
+Date: Thu, 5 Dec 2019 15:51:11 +0000
+Subject: [Intel-wired-lan] [PATCH bpf 0/4] Fix concurrency issues between
+ XSK wakeup and control path using RCU
+Message-ID: <20191205155028.28854-1-maximmi@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Changing the link mode should also be done for 100BaseFX SGMII modules,
-otherwise they just don't work when the default link mode in CTRL_EXT
-coming from the EEPROM is SERDES.
+This series addresses the issue described in the commit message of the
+first patch: lack of synchronization between XSK wakeup and destroying
+the resources used by XSK wakeup. The idea is similar to
+napi_synchronize. The series contains fixes for the drivers that
+implement XSK. I haven't tested the changes to Intel's drivers, so,
+Intel guys, please review them.
 
-Additionally 100Base-LX SGMII SFP modules are also supported now, which
-was not the case before.
+Maxim Mikityanskiy (4):
+  xsk: Add rcu_read_lock around the XSK wakeup
+  net/mlx5e: Fix concurrency issues between config flow and XSK
+  net/i40e: Fix concurrency issues between config flow and XSK
+  net/ixgbe: Fix concurrency issues between config flow and XSK
 
-Tested with an i210 using Flexoptix S.1303.2M.G 100FX and
-S.1303.10.G 100LX SGMII SFP modules.
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  7 ++++--
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    |  4 ++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  6 ++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  |  8 +++++--
+ drivers/net/ethernet/mellanox/mlx5/core/en.h  |  2 +-
+ .../net/ethernet/mellanox/mlx5/core/en/xdp.h  | 22 ++++++++-----------
+ .../mellanox/mlx5/core/en/xsk/setup.c         |  1 +
+ .../ethernet/mellanox/mlx5/core/en/xsk/tx.c   |  2 +-
+ .../net/ethernet/mellanox/mlx5/core/en_main.c | 19 +---------------
+ net/xdp/xsk.c                                 |  8 +++++--
+ 10 files changed, 39 insertions(+), 40 deletions(-)
 
-Signed-off-by: Manfred Rudigier <manfred.rudigier@omicronenergy.com>
----
- drivers/net/ethernet/intel/igb/e1000_82575.c | 8 ++------
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 2 +-
- 2 files changed, 3 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index 614130a6ba1f..30e77f5406cf 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -530,7 +530,7 @@ static s32 igb_set_sfp_media_type_82575(struct e1000_hw *hw)
- 		dev_spec->module_plugged = true;
- 		if (eth_flags->e1000_base_lx || eth_flags->e1000_base_sx) {
- 			hw->phy.media_type = e1000_media_type_internal_serdes;
--		} else if (eth_flags->e100_base_fx) {
-+		} else if (eth_flags->e100_base_fx || eth_flags->e100_base_lx) {
- 			dev_spec->sgmii_active = true;
- 			hw->phy.media_type = e1000_media_type_internal_serdes;
- 		} else if (eth_flags->e1000_base_t) {
-@@ -657,14 +657,10 @@ static s32 igb_get_invariants_82575(struct e1000_hw *hw)
- 			break;
- 		}
- 
--		/* do not change link mode for 100BaseFX */
--		if (dev_spec->eth_flags.e100_base_fx)
--			break;
--
- 		/* change current link mode setting */
- 		ctrl_ext &= ~E1000_CTRL_EXT_LINK_MODE_MASK;
- 
--		if (hw->phy.media_type == e1000_media_type_copper)
-+		if (dev_spec->sgmii_active)
- 			ctrl_ext |= E1000_CTRL_EXT_LINK_MODE_SGMII;
- 		else
- 			ctrl_ext |= E1000_CTRL_EXT_LINK_MODE_PCIE_SERDES;
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 5acf3b743876..50954e444985 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -181,7 +181,7 @@ static int igb_get_link_ksettings(struct net_device *netdev,
- 				advertising &= ~ADVERTISED_1000baseKX_Full;
- 			}
- 		}
--		if (eth_flags->e100_base_fx) {
-+		if (eth_flags->e100_base_fx || eth_flags->e100_base_lx) {
- 			supported |= SUPPORTED_100baseT_Full;
- 			advertising |= ADVERTISED_100baseT_Full;
- 		}
 -- 
-2.24.0
+2.20.1
 
