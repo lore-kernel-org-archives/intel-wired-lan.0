@@ -1,49 +1,76 @@
 From: Maxim Mikityanskiy <maximmi@mellanox.com>
-Date: Thu, 5 Dec 2019 15:51:12 +0000
-Subject: [Intel-wired-lan] [PATCH bpf 1/4] xsk: Add rcu_read_lock around the
- XSK wakeup
+Date: Thu, 5 Dec 2019 15:51:17 +0000
+Subject: [Intel-wired-lan] [PATCH bpf 4/4] net/ixgbe: Fix concurrency issues
+ between config flow and XSK
 In-Reply-To: <20191205155028.28854-1-maximmi@mellanox.com>
 References: <20191205155028.28854-1-maximmi@mellanox.com>
-Message-ID: <20191205155028.28854-2-maximmi@mellanox.com>
+Message-ID: <20191205155028.28854-5-maximmi@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The XSK wakeup callback in drivers makes some sanity checks before
-triggering NAPI. However, some configuration changes may occur during
-this function that affect the result of those checks. For example, the
-interface can go down, and all the resources will be destroyed after the
-checks in the wakeup function, but before it attempts to use these
-resources. Wrap this callback in rcu_read_lock to allow driver to
-synchronize_rcu before actually destroying the resources.
+Use synchronize_rcu to wait until the XSK wakeup function finishes
+before destroying the resources it uses:
+
+1. ixgbe_down already calls synchronize_rcu after setting __IXGBE_DOWN.
+
+2. After switching the XDP program, call synchronize_rcu to let
+ixgbe_xsk_async_xmit exit before the XDP program is freed.
+
+3. Changing the number of channels brings the interface down.
+
+4. Disabling UMEM sets __IXGBE_TX_DISABLED before closing hardware
+resources and resetting xsk_umem. Check that bit in ixgbe_xsk_async_xmit
+to avoid using the XDP ring when it's already destroyed. synchronize_rcu
+is called from ixgbe_txrx_ring_disable.
 
 Signed-off-by: Maxim Mikityanskiy <maximmi@mellanox.com>
 ---
- net/xdp/xsk.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 6 +++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 8 ++++++--
+ 2 files changed, 11 insertions(+), 3 deletions(-)
 
-diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
-index 956793893c9d..d2261c90f03a 100644
---- a/net/xdp/xsk.c
-+++ b/net/xdp/xsk.c
-@@ -337,9 +337,13 @@ EXPORT_SYMBOL(xsk_umem_consume_tx);
- static int xsk_zc_xmit(struct xdp_sock *xs)
- {
- 	struct net_device *dev = xs->dev;
-+	int err;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 25c097cd8100..60503318c7e5 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -10273,8 +10273,12 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+ 			    adapter->xdp_prog);
+ 	}
  
--	return dev->netdev_ops->ndo_xsk_wakeup(dev, xs->queue_id,
--					       XDP_WAKEUP_TX);
-+	rcu_read_lock();
-+	err = dev->netdev_ops->ndo_xsk_wakeup(dev, xs->queue_id, XDP_WAKEUP_TX);
-+	rcu_read_unlock();
+-	if (old_prog)
++	if (old_prog) {
++		/* Wait until ndo_xsk_async_xmit completes. */
++		synchronize_rcu();
 +
-+	return err;
- }
+ 		bpf_prog_put(old_prog);
++	}
  
- static void xsk_destruct_skb(struct sk_buff *skb)
+ 	/* Kick start the NAPI context if there is an AF_XDP socket open
+ 	 * on that queue id. This so that receiving will start.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+index d6feaacfbf89..b43be9f14105 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+@@ -709,10 +709,14 @@ int ixgbe_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags)
+ 	if (qid >= adapter->num_xdp_queues)
+ 		return -ENXIO;
+ 
+-	if (!adapter->xdp_ring[qid]->xsk_umem)
++	ring = adapter->xdp_ring[qid];
++
++	if (test_bit(__IXGBE_TX_DISABLED, &ring->state))
++		return -ENETDOWN;
++
++	if (!ring->xsk_umem)
+ 		return -ENXIO;
+ 
+-	ring = adapter->xdp_ring[qid];
+ 	if (!napi_if_scheduled_mark_missed(&ring->q_vector->napi)) {
+ 		u64 eics = BIT_ULL(ring->q_vector->v_idx);
+ 
 -- 
 2.20.1
 
