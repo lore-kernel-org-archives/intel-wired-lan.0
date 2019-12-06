@@ -1,11 +1,11 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 6 Dec 2019 10:03:02 +0100
-Subject: [Intel-wired-lan] [PATCH bpf 2/4] net/mlx5e: Fix concurrency
+Date: Fri, 6 Dec 2019 10:03:06 +0100
+Subject: [Intel-wired-lan] [PATCH bpf 3/4] net/i40e: Fix concurrency
  issues between config flow and XSK
-In-Reply-To: <20191205155028.28854-3-maximmi@mellanox.com>
+In-Reply-To: <20191205155028.28854-4-maximmi@mellanox.com>
 References: <20191205155028.28854-1-maximmi@mellanox.com>
- <20191205155028.28854-3-maximmi@mellanox.com>
-Message-ID: <CAJ+HfNhnDr7CA4b-y_9dQXjhraRY9hWuN_mGdfnHQ752EzHAmQ@mail.gmail.com>
+ <20191205155028.28854-4-maximmi@mellanox.com>
+Message-ID: <CAJ+HfNiXPo_Qkja=tCakX6a=swVY_KRMXmT79wQuQa_+kORQ=g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,172 +14,84 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Thu, 5 Dec 2019 at 16:52, Maxim Mikityanskiy <maximmi@mellanox.com> wrote:
 >
-> After disabling resources necessary for XSK (the XDP program, channels,
-> XSK queues), use synchronize_rcu to wait until the XSK wakeup function
-> finishes, before freeing the resources.
+> Use synchronize_rcu to wait until the XSK wakeup function finishes
+> before destroying the resources it uses:
 >
-> Suspend XSK wakeups during switching channels. If the XDP program is
-> being removed, synchronize_rcu before closing the old channels to allow
-> XSK wakeup to complete.
+> 1. i40e_down already calls synchronize_rcu. On i40e_down either
+> __I40E_VSI_DOWN or __I40E_CONFIG_BUSY is set. Check the latter in
+> i40e_xsk_async_xmit (the former is already checked there).
+>
+> 2. After switching the XDP program, call synchronize_rcu to let
+> i40e_xsk_async_xmit exit before the XDP program is freed.
+>
+> 3. Changing the number of channels brings the interface down (see
+> i40e_prep_for_reset and i40e_pf_quiesce_all_vsi).
+>
+> 4. Disabling UMEM sets __I40E_CONFIG_BUSY, too.
 >
 > Signed-off-by: Maxim Mikityanskiy <maximmi@mellanox.com>
 > ---
->  drivers/net/ethernet/mellanox/mlx5/core/en.h  |  2 +-
->  .../net/ethernet/mellanox/mlx5/core/en/xdp.h  | 22 ++++++++-----------
->  .../mellanox/mlx5/core/en/xsk/setup.c         |  1 +
->  .../ethernet/mellanox/mlx5/core/en/xsk/tx.c   |  2 +-
->  .../net/ethernet/mellanox/mlx5/core/en_main.c | 19 +---------------
->  5 files changed, 13 insertions(+), 33 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 7 +++++--
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c  | 4 ++++
+>  2 files changed, 9 insertions(+), 2 deletions(-)
 >
-> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en.h b/drivers/net/ethernet/mellanox/mlx5/core/en.h
-> index f1a7bc46f1c0..61084c3744ba 100644
-> --- a/drivers/net/ethernet/mellanox/mlx5/core/en.h
-> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en.h
-> @@ -760,7 +760,7 @@ enum {
->         MLX5E_STATE_OPENED,
->         MLX5E_STATE_DESTROYING,
->         MLX5E_STATE_XDP_TX_ENABLED,
-> -       MLX5E_STATE_XDP_OPEN,
-> +       MLX5E_STATE_XDP_ACTIVE,
->  };
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 1ccabeafa44c..afa3a99e68e1 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -6823,8 +6823,8 @@ void i40e_down(struct i40e_vsi *vsi)
+>         for (i = 0; i < vsi->num_queue_pairs; i++) {
+>                 i40e_clean_tx_ring(vsi->tx_rings[i]);
+>                 if (i40e_enabled_xdp_vsi(vsi)) {
+> -                       /* Make sure that in-progress ndo_xdp_xmit
+> -                        * calls are completed.
+> +                       /* Make sure that in-progress ndo_xdp_xmit and
+> +                        * ndo_xsk_async_xmit calls are completed.
+>                          */
+>                         synchronize_rcu();
+>                         i40e_clean_tx_ring(vsi->xdp_rings[i]);
+> @@ -12545,6 +12545,9 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
+>                 i40e_prep_for_reset(pf, true);
 >
->  struct mlx5e_rqt {
-> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.h b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.h
-> index 36ac1e3816b9..d7587f40ecae 100644
-> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.h
-> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.h
-> @@ -75,12 +75,18 @@ int mlx5e_xdp_xmit(struct net_device *dev, int n, struct xdp_frame **frames,
->  static inline void mlx5e_xdp_tx_enable(struct mlx5e_priv *priv)
->  {
->         set_bit(MLX5E_STATE_XDP_TX_ENABLED, &priv->state);
-> +
-> +       if (priv->channels.params.xdp_prog)
-> +               set_bit(MLX5E_STATE_XDP_ACTIVE, &priv->state);
->  }
->
->  static inline void mlx5e_xdp_tx_disable(struct mlx5e_priv *priv)
->  {
-> +       if (priv->channels.params.xdp_prog)
-> +               clear_bit(MLX5E_STATE_XDP_ACTIVE, &priv->state);
-> +
->         clear_bit(MLX5E_STATE_XDP_TX_ENABLED, &priv->state);
-> -       /* let other device's napi(s) see our new state */
-> +       /* Let other device's napi(s) and XSK wakeups see our new state. */
->         synchronize_rcu();
->  }
->
-> @@ -89,19 +95,9 @@ static inline bool mlx5e_xdp_tx_is_enabled(struct mlx5e_priv *priv)
->         return test_bit(MLX5E_STATE_XDP_TX_ENABLED, &priv->state);
->  }
->
-> -static inline void mlx5e_xdp_set_open(struct mlx5e_priv *priv)
-> -{
-> -       set_bit(MLX5E_STATE_XDP_OPEN, &priv->state);
-> -}
-> -
-> -static inline void mlx5e_xdp_set_closed(struct mlx5e_priv *priv)
-> -{
-> -       clear_bit(MLX5E_STATE_XDP_OPEN, &priv->state);
-> -}
-> -
-> -static inline bool mlx5e_xdp_is_open(struct mlx5e_priv *priv)
-> +static inline bool mlx5e_xdp_is_active(struct mlx5e_priv *priv)
->  {
-> -       return test_bit(MLX5E_STATE_XDP_OPEN, &priv->state);
-> +       return test_bit(MLX5E_STATE_XDP_ACTIVE, &priv->state);
->  }
->
->  static inline void mlx5e_xmit_xdp_doorbell(struct mlx5e_xdpsq *sq)
-> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/setup.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/setup.c
-> index 631af8dee517..c28cbae42331 100644
-> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/setup.c
-> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/setup.c
-> @@ -144,6 +144,7 @@ void mlx5e_close_xsk(struct mlx5e_channel *c)
->  {
->         clear_bit(MLX5E_CHANNEL_STATE_XSK, c->state);
->         napi_synchronize(&c->napi);
-> +       synchronize_rcu(); /* Sync with the XSK wakeup. */
+>         old_prog = xchg(&vsi->xdp_prog, prog);
+> +       if (old_prog)
+> +               /* Wait until ndo_xsk_async_xmit completes. */
+> +               synchronize_rcu();
 
-Again, so my idea was that the read-lock can be done here, instead of
-the generic AF_XDP code, since it's driver specific. Agree?
+This is not needed -- please correct me if I'm missing something! If
+we're disabling XDP, the need_reset-clause will take care or the
+proper synchronization. And we don't need to worry about old_prog for
+the swap-XDP case, because bpf_prog_put() does cleanup with
+call_rcu().
+
 
 >
->         mlx5e_close_rq(&c->xskrq);
->         mlx5e_close_cq(&c->xskrq.cq);
-> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
-> index 87827477d38c..fe2d596cb361 100644
-> --- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
-> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c
-> @@ -14,7 +14,7 @@ int mlx5e_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags)
->         struct mlx5e_channel *c;
->         u16 ix;
+>         if (need_reset)
+>                 i40e_reset_and_rebuild(pf, true, true);
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> index d07e1a890428..f73cd917c44f 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> @@ -787,8 +787,12 @@ int i40e_xsk_wakeup(struct net_device *dev, u32 queue_id, u32 flags)
+>  {
+>         struct i40e_netdev_priv *np = netdev_priv(dev);
+>         struct i40e_vsi *vsi = np->vsi;
+> +       struct i40e_pf *pf = vsi->back;
+>         struct i40e_ring *ring;
 >
-> -       if (unlikely(!mlx5e_xdp_is_open(priv)))
-> +       if (unlikely(!mlx5e_xdp_is_active(priv)))
+> +       if (test_bit(__I40E_CONFIG_BUSY, pf->state))
+> +               return -ENETDOWN;
+> +
+
+You right that we need to check for BUSY, since the XDP ring might be
+stale! Thanks for catching this! Can you respin this patch, with just
+this hunk? (Unless I'm wrong! :-))
+
+
+
+>         if (test_bit(__I40E_VSI_DOWN, vsi->state))
 >                 return -ENETDOWN;
 >
->         if (unlikely(!mlx5e_qid_get_ch_if_in_group(params, qid, MLX5E_RQ_GROUP_XSK, &ix)))
-> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-> index 09ed7f5f688b..fe1a42fa214b 100644
-> --- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-> @@ -3006,12 +3006,9 @@ void mlx5e_timestamp_init(struct mlx5e_priv *priv)
->  int mlx5e_open_locked(struct net_device *netdev)
->  {
->         struct mlx5e_priv *priv = netdev_priv(netdev);
-> -       bool is_xdp = priv->channels.params.xdp_prog;
->         int err;
->
->         set_bit(MLX5E_STATE_OPENED, &priv->state);
-> -       if (is_xdp)
-> -               mlx5e_xdp_set_open(priv);
->
->         err = mlx5e_open_channels(priv, &priv->channels);
->         if (err)
-> @@ -3026,8 +3023,6 @@ int mlx5e_open_locked(struct net_device *netdev)
->         return 0;
->
->  err_clear_state_opened_flag:
-> -       if (is_xdp)
-> -               mlx5e_xdp_set_closed(priv);
->         clear_bit(MLX5E_STATE_OPENED, &priv->state);
->         return err;
->  }
-> @@ -3059,8 +3054,6 @@ int mlx5e_close_locked(struct net_device *netdev)
->         if (!test_bit(MLX5E_STATE_OPENED, &priv->state))
->                 return 0;
->
-> -       if (priv->channels.params.xdp_prog)
-> -               mlx5e_xdp_set_closed(priv);
->         clear_bit(MLX5E_STATE_OPENED, &priv->state);
->
->         netif_carrier_off(priv->netdev);
-> @@ -4377,16 +4370,6 @@ static int mlx5e_xdp_allowed(struct mlx5e_priv *priv, struct bpf_prog *prog)
->         return 0;
->  }
->
-> -static int mlx5e_xdp_update_state(struct mlx5e_priv *priv)
-> -{
-> -       if (priv->channels.params.xdp_prog)
-> -               mlx5e_xdp_set_open(priv);
-> -       else
-> -               mlx5e_xdp_set_closed(priv);
-> -
-> -       return 0;
-> -}
-> -
->  static int mlx5e_xdp_set(struct net_device *netdev, struct bpf_prog *prog)
->  {
->         struct mlx5e_priv *priv = netdev_priv(netdev);
-> @@ -4421,7 +4404,7 @@ static int mlx5e_xdp_set(struct net_device *netdev, struct bpf_prog *prog)
->                 mlx5e_set_rq_type(priv->mdev, &new_channels.params);
->                 old_prog = priv->channels.params.xdp_prog;
->
-> -               err = mlx5e_safe_switch_channels(priv, &new_channels, mlx5e_xdp_update_state);
-> +               err = mlx5e_safe_switch_channels(priv, &new_channels, NULL);
->                 if (err)
->                         goto unlock;
->         } else {
 > --
 > 2.20.1
 >
