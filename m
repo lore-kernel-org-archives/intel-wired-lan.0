@@ -1,11 +1,11 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 6 Dec 2019 10:03:06 +0100
-Subject: [Intel-wired-lan] [PATCH bpf 3/4] net/i40e: Fix concurrency
+Date: Fri, 6 Dec 2019 10:03:09 +0100
+Subject: [Intel-wired-lan] [PATCH bpf 4/4] net/ixgbe: Fix concurrency
  issues between config flow and XSK
-In-Reply-To: <20191205155028.28854-4-maximmi@mellanox.com>
+In-Reply-To: <20191205155028.28854-5-maximmi@mellanox.com>
 References: <20191205155028.28854-1-maximmi@mellanox.com>
- <20191205155028.28854-4-maximmi@mellanox.com>
-Message-ID: <CAJ+HfNiXPo_Qkja=tCakX6a=swVY_KRMXmT79wQuQa_+kORQ=g@mail.gmail.com>
+ <20191205155028.28854-5-maximmi@mellanox.com>
+Message-ID: <CAJ+HfNhQ7iEoJ2QTAcqJ+z7QK850f4X+59Mj5U62LB9=RgWsmg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,80 +17,66 @@ On Thu, 5 Dec 2019 at 16:52, Maxim Mikityanskiy <maximmi@mellanox.com> wrote:
 > Use synchronize_rcu to wait until the XSK wakeup function finishes
 > before destroying the resources it uses:
 >
-> 1. i40e_down already calls synchronize_rcu. On i40e_down either
-> __I40E_VSI_DOWN or __I40E_CONFIG_BUSY is set. Check the latter in
-> i40e_xsk_async_xmit (the former is already checked there).
+> 1. ixgbe_down already calls synchronize_rcu after setting __IXGBE_DOWN.
 >
 > 2. After switching the XDP program, call synchronize_rcu to let
-> i40e_xsk_async_xmit exit before the XDP program is freed.
+> ixgbe_xsk_async_xmit exit before the XDP program is freed.
 >
-> 3. Changing the number of channels brings the interface down (see
-> i40e_prep_for_reset and i40e_pf_quiesce_all_vsi).
+> 3. Changing the number of channels brings the interface down.
 >
-> 4. Disabling UMEM sets __I40E_CONFIG_BUSY, too.
+> 4. Disabling UMEM sets __IXGBE_TX_DISABLED before closing hardware
+> resources and resetting xsk_umem. Check that bit in ixgbe_xsk_async_xmit
+> to avoid using the XDP ring when it's already destroyed. synchronize_rcu
+> is called from ixgbe_txrx_ring_disable.
 >
 > Signed-off-by: Maxim Mikityanskiy <maximmi@mellanox.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 7 +++++--
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c  | 4 ++++
->  2 files changed, 9 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 6 +++++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 8 ++++++--
+>  2 files changed, 11 insertions(+), 3 deletions(-)
 >
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 1ccabeafa44c..afa3a99e68e1 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -6823,8 +6823,8 @@ void i40e_down(struct i40e_vsi *vsi)
->         for (i = 0; i < vsi->num_queue_pairs; i++) {
->                 i40e_clean_tx_ring(vsi->tx_rings[i]);
->                 if (i40e_enabled_xdp_vsi(vsi)) {
-> -                       /* Make sure that in-progress ndo_xdp_xmit
-> -                        * calls are completed.
-> +                       /* Make sure that in-progress ndo_xdp_xmit and
-> +                        * ndo_xsk_async_xmit calls are completed.
->                          */
->                         synchronize_rcu();
->                         i40e_clean_tx_ring(vsi->xdp_rings[i]);
-> @@ -12545,6 +12545,9 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
->                 i40e_prep_for_reset(pf, true);
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index 25c097cd8100..60503318c7e5 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -10273,8 +10273,12 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+>                             adapter->xdp_prog);
+>         }
 >
->         old_prog = xchg(&vsi->xdp_prog, prog);
-> +       if (old_prog)
+> -       if (old_prog)
+> +       if (old_prog) {
 > +               /* Wait until ndo_xsk_async_xmit completes. */
 > +               synchronize_rcu();
-
-This is not needed -- please correct me if I'm missing something! If
-we're disabling XDP, the need_reset-clause will take care or the
-proper synchronization. And we don't need to worry about old_prog for
-the swap-XDP case, because bpf_prog_put() does cleanup with
-call_rcu().
-
-
+> +
+>                 bpf_prog_put(old_prog);
+> +       }
 >
->         if (need_reset)
->                 i40e_reset_and_rebuild(pf, true, true);
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> index d07e1a890428..f73cd917c44f 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> @@ -787,8 +787,12 @@ int i40e_xsk_wakeup(struct net_device *dev, u32 queue_id, u32 flags)
->  {
->         struct i40e_netdev_priv *np = netdev_priv(dev);
->         struct i40e_vsi *vsi = np->vsi;
-> +       struct i40e_pf *pf = vsi->back;
->         struct i40e_ring *ring;
+>         /* Kick start the NAPI context if there is an AF_XDP socket open
+>          * on that queue id. This so that receiving will start.
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+> index d6feaacfbf89..b43be9f14105 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+> @@ -709,10 +709,14 @@ int ixgbe_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags)
+>         if (qid >= adapter->num_xdp_queues)
+>                 return -ENXIO;
 >
-> +       if (test_bit(__I40E_CONFIG_BUSY, pf->state))
+> -       if (!adapter->xdp_ring[qid]->xsk_umem)
+> +       ring = adapter->xdp_ring[qid];
+> +
+> +       if (test_bit(__IXGBE_TX_DISABLED, &ring->state))
 > +               return -ENETDOWN;
 > +
+> +       if (!ring->xsk_umem)
 
-You right that we need to check for BUSY, since the XDP ring might be
-stale! Thanks for catching this! Can you respin this patch, with just
-this hunk? (Unless I'm wrong! :-))
+Pretty much same comment as in i40e. The synchronize_rcu() is not
+needed, but the additional test is!
 
-
-
->         if (test_bit(__I40E_VSI_DOWN, vsi->state))
->                 return -ENETDOWN;
+>                 return -ENXIO;
+>
+> -       ring = adapter->xdp_ring[qid];
+>         if (!napi_if_scheduled_mark_missed(&ring->q_vector->napi)) {
+>                 u64 eics = BIT_ULL(ring->q_vector->v_idx);
 >
 > --
 > 2.20.1
