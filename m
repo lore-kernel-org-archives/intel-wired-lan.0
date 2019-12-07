@@ -1,83 +1,134 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 6 Dec 2019 10:03:09 +0100
-Subject: [Intel-wired-lan] [PATCH bpf 4/4] net/ixgbe: Fix concurrency
- issues between config flow and XSK
-In-Reply-To: <20191205155028.28854-5-maximmi@mellanox.com>
-References: <20191205155028.28854-1-maximmi@mellanox.com>
- <20191205155028.28854-5-maximmi@mellanox.com>
-Message-ID: <CAJ+HfNhQ7iEoJ2QTAcqJ+z7QK850f4X+59Mj5U62LB9=RgWsmg@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 07 Dec 2019 13:50:25 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 9f104c7736904ac72385bbb48669e0c923ca879b
+Message-ID: <5deb3da1.uTpsaxkN5fXRV+B9%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 5 Dec 2019 at 16:52, Maxim Mikityanskiy <maximmi@mellanox.com> wrote:
->
-> Use synchronize_rcu to wait until the XSK wakeup function finishes
-> before destroying the resources it uses:
->
-> 1. ixgbe_down already calls synchronize_rcu after setting __IXGBE_DOWN.
->
-> 2. After switching the XDP program, call synchronize_rcu to let
-> ixgbe_xsk_async_xmit exit before the XDP program is freed.
->
-> 3. Changing the number of channels brings the interface down.
->
-> 4. Disabling UMEM sets __IXGBE_TX_DISABLED before closing hardware
-> resources and resetting xsk_umem. Check that bit in ixgbe_xsk_async_xmit
-> to avoid using the XDP ring when it's already destroyed. synchronize_rcu
-> is called from ixgbe_txrx_ring_disable.
->
-> Signed-off-by: Maxim Mikityanskiy <maximmi@mellanox.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 6 +++++-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 8 ++++++--
->  2 files changed, 11 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 25c097cd8100..60503318c7e5 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -10273,8 +10273,12 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
->                             adapter->xdp_prog);
->         }
->
-> -       if (old_prog)
-> +       if (old_prog) {
-> +               /* Wait until ndo_xsk_async_xmit completes. */
-> +               synchronize_rcu();
-> +
->                 bpf_prog_put(old_prog);
-> +       }
->
->         /* Kick start the NAPI context if there is an AF_XDP socket open
->          * on that queue id. This so that receiving will start.
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> index d6feaacfbf89..b43be9f14105 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-> @@ -709,10 +709,14 @@ int ixgbe_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags)
->         if (qid >= adapter->num_xdp_queues)
->                 return -ENXIO;
->
-> -       if (!adapter->xdp_ring[qid]->xsk_umem)
-> +       ring = adapter->xdp_ring[qid];
-> +
-> +       if (test_bit(__IXGBE_TX_DISABLED, &ring->state))
-> +               return -ENETDOWN;
-> +
-> +       if (!ring->xsk_umem)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: 9f104c7736904ac72385bbb48669e0c923ca879b  mqprio: Fix out-of-bounds access in mqprio_dump
 
-Pretty much same comment as in i40e. The synchronize_rcu() is not
-needed, but the additional test is!
+elapsed time: 413m
 
->                 return -ENXIO;
->
-> -       ring = adapter->xdp_ring[qid];
->         if (!napi_if_scheduled_mark_missed(&ring->q_vector->napi)) {
->                 u64 eics = BIT_ULL(ring->q_vector->v_idx);
->
-> --
-> 2.20.1
->
+configs tested: 109
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+s390                             allmodconfig
+s390                              allnoconfig
+s390                          debug_defconfig
+s390                                defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                 randconfig-g003-20191207
+x86_64               randconfig-g003-20191207
+i386                 randconfig-g002-20191207
+i386                 randconfig-g001-20191207
+x86_64               randconfig-g001-20191207
+x86_64               randconfig-g002-20191207
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+x86_64               randconfig-e001-20191206
+x86_64               randconfig-e002-20191206
+x86_64               randconfig-e003-20191206
+i386                 randconfig-e001-20191206
+i386                 randconfig-e002-20191206
+i386                 randconfig-e003-20191206
+ia64                                defconfig
+nds32                             allnoconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+alpha                               defconfig
+csky                                defconfig
+nds32                               defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                          rhel-kconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64               randconfig-b001-20191206
+i386                 randconfig-b001-20191206
+i386                 randconfig-b002-20191206
+x86_64               randconfig-b003-20191206
+x86_64               randconfig-b002-20191206
+i386                 randconfig-b003-20191206
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+ia64                 randconfig-a001-20191206
+arm64                randconfig-a001-20191206
+sparc                randconfig-a001-20191206
+arm                  randconfig-a001-20191206
+arc                 randconfig-a0031-20191206
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+x86_64               randconfig-g001-20191206
+x86_64               randconfig-g002-20191206
+x86_64               randconfig-g003-20191206
+i386                 randconfig-g001-20191206
+i386                 randconfig-g002-20191206
+i386                 randconfig-g003-20191206
+
+---
+0-DAY kernel test infrastructure                 Open Source Technology Center
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
