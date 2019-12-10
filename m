@@ -1,59 +1,90 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 16:07:24 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 339/350] ice: Fix setting
- coalesce to handle DCB configuration
-In-Reply-To: <20191210210735.9077-1-sashal@kernel.org>
-References: <20191210210735.9077-1-sashal@kernel.org>
-Message-ID: <20191210210735.9077-300-sashal@kernel.org>
+Date: Tue, 10 Dec 2019 16:30:41 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 077/177] i40e: initialize
+ ITRN registers with correct values
+In-Reply-To: <20191210213221.11921-1-sashal@kernel.org>
+References: <20191210213221.11921-1-sashal@kernel.org>
+Message-ID: <20191210213221.11921-77-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Nicholas Nunley <nicholas.d.nunley@intel.com>
 
-[ Upstream commit e25f9152bc07de534b2b590ce6c052ea25dd8900 ]
+[ Upstream commit 998e5166e604fd37afe94352f7b8c2d816b11049 ]
 
-Currently there can be a case where a DCB map is applied and there are
-more interrupt vectors (vsi->num_q_vectors) than Rx queues (vsi->num_rxq)
-and Tx queues (vsi->num_txq). If we try to set coalesce settings in this
-case it will report a false failure. Fix this by checking if vector index
-is valid with respect to the number of Tx and Rx queues configured.
+Since commit 92418fb14750 ("i40e/i40evf: Use usec value instead of reg
+value for ITR defines") the driver tracks the interrupt throttling
+intervals in single usec units, although the actual ITRN/ITR0 registers are
+programmed in 2 usec units. Most register programming flows in the driver
+correctly handle the conversion, although it is currently not applied when
+the registers are initialized to their default values. Most of the time
+this doesn't present a problem since the default values are usually
+immediately overwritten through the standard adaptive throttling mechanism,
+or updated manually by the user, but if adaptive throttling is disabled and
+the interval values are left alone then the incorrect value will persist.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Since the intended default interval of 50 usecs (vs. 100 usecs as
+programmed) performs better for most traffic workloads, this can lead to
+performance regressions.
+
+This patch adds the correct conversion when writing the initial values to
+the ITRN registers.
+
+Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 7e23034df955c..1fe9f6050635d 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3368,10 +3368,17 @@ __ice_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
- 	struct ice_vsi *vsi = np->vsi;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 1a66373184d62..23b31b2ff5ccd 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -3441,14 +3441,14 @@ static void i40e_vsi_configure_msix(struct i40e_vsi *vsi)
+ 		q_vector->rx.target_itr =
+ 			ITR_TO_REG(vsi->rx_rings[i]->itr_setting);
+ 		wr32(hw, I40E_PFINT_ITRN(I40E_RX_ITR, vector - 1),
+-		     q_vector->rx.target_itr);
++		     q_vector->rx.target_itr >> 1);
+ 		q_vector->rx.current_itr = q_vector->rx.target_itr;
  
- 	if (q_num < 0) {
--		int i;
-+		int v_idx;
-+
-+		ice_for_each_q_vector(vsi, v_idx) {
-+			/* In some cases if DCB is configured the num_[rx|tx]q
-+			 * can be less than vsi->num_q_vectors. This check
-+			 * accounts for that so we don't report a false failure
-+			 */
-+			if (v_idx >= vsi->num_rxq && v_idx >= vsi->num_txq)
-+				goto set_complete;
+ 		q_vector->tx.next_update = jiffies + 1;
+ 		q_vector->tx.target_itr =
+ 			ITR_TO_REG(vsi->tx_rings[i]->itr_setting);
+ 		wr32(hw, I40E_PFINT_ITRN(I40E_TX_ITR, vector - 1),
+-		     q_vector->tx.target_itr);
++		     q_vector->tx.target_itr >> 1);
+ 		q_vector->tx.current_itr = q_vector->tx.target_itr;
  
--		ice_for_each_q_vector(vsi, i) {
--			if (ice_set_q_coalesce(vsi, ec, i))
-+			if (ice_set_q_coalesce(vsi, ec, v_idx))
- 				return -EINVAL;
- 		}
- 		goto set_complete;
+ 		wr32(hw, I40E_PFINT_RATEN(vector - 1),
+@@ -3553,11 +3553,11 @@ static void i40e_configure_msi_and_legacy(struct i40e_vsi *vsi)
+ 	/* set the ITR configuration */
+ 	q_vector->rx.next_update = jiffies + 1;
+ 	q_vector->rx.target_itr = ITR_TO_REG(vsi->rx_rings[0]->itr_setting);
+-	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), q_vector->rx.target_itr);
++	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), q_vector->rx.target_itr >> 1);
+ 	q_vector->rx.current_itr = q_vector->rx.target_itr;
+ 	q_vector->tx.next_update = jiffies + 1;
+ 	q_vector->tx.target_itr = ITR_TO_REG(vsi->tx_rings[0]->itr_setting);
+-	wr32(hw, I40E_PFINT_ITR0(I40E_TX_ITR), q_vector->tx.target_itr);
++	wr32(hw, I40E_PFINT_ITR0(I40E_TX_ITR), q_vector->tx.target_itr >> 1);
+ 	q_vector->tx.current_itr = q_vector->tx.target_itr;
+ 
+ 	i40e_enable_misc_int_causes(pf);
+@@ -10735,7 +10735,7 @@ static int i40e_setup_misc_vector(struct i40e_pf *pf)
+ 
+ 	/* associate no queues to the misc vector */
+ 	wr32(hw, I40E_PFINT_LNKLST0, I40E_QUEUE_END_OF_LIST);
+-	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), I40E_ITR_8K);
++	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), I40E_ITR_8K >> 1);
+ 
+ 	i40e_flush(hw);
+ 
 -- 
 2.20.1
 
