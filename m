@@ -1,90 +1,54 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 16:30:41 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 077/177] i40e: initialize
- ITRN registers with correct values
+Date: Tue, 10 Dec 2019 16:31:03 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 099/177] ixgbe: protect TX
+ timestamping from API misuse
 In-Reply-To: <20191210213221.11921-1-sashal@kernel.org>
 References: <20191210213221.11921-1-sashal@kernel.org>
-Message-ID: <20191210213221.11921-77-sashal@kernel.org>
+Message-ID: <20191210213221.11921-99-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Nicholas Nunley <nicholas.d.nunley@intel.com>
+From: Manjunath Patil <manjunath.b.patil@oracle.com>
 
-[ Upstream commit 998e5166e604fd37afe94352f7b8c2d816b11049 ]
+[ Upstream commit 07066d9dc3d2326fbad8f7b0cb0120cff7b7dedb ]
 
-Since commit 92418fb14750 ("i40e/i40evf: Use usec value instead of reg
-value for ITR defines") the driver tracks the interrupt throttling
-intervals in single usec units, although the actual ITRN/ITR0 registers are
-programmed in 2 usec units. Most register programming flows in the driver
-correctly handle the conversion, although it is currently not applied when
-the registers are initialized to their default values. Most of the time
-this doesn't present a problem since the default values are usually
-immediately overwritten through the standard adaptive throttling mechanism,
-or updated manually by the user, but if adaptive throttling is disabled and
-the interval values are left alone then the incorrect value will persist.
+HW timestamping can only be requested for a packet if the NIC is first
+setup via ioctl(SIOCSHWTSTAMP). If this step was skipped, then the ixgbe
+driver still allowed TX packets to request HW timestamping. In this
+situation, we see 'clearing Tx Timestamp hang' noise in the log.
 
-Since the intended default interval of 50 usecs (vs. 100 usecs as
-programmed) performs better for most traffic workloads, this can lead to
-performance regressions.
+Fix this by checking that the NIC is configured for HW TX timestamping
+before accepting a HW TX timestamping request.
 
-This patch adds the correct conversion when writing the initial values to
-the ITRN registers.
+Similar-to:
+   commit 26bd4e2db06b ("igb: protect TX timestamping from API misuse")
+   commit 0a6f2f05a2f5 ("igb: Fix a test with HWTSTAMP_TX_ON")
 
-Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
+Signed-off-by: Manjunath Patil <manjunath.b.patil@oracle.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1a66373184d62..23b31b2ff5ccd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3441,14 +3441,14 @@ static void i40e_vsi_configure_msix(struct i40e_vsi *vsi)
- 		q_vector->rx.target_itr =
- 			ITR_TO_REG(vsi->rx_rings[i]->itr_setting);
- 		wr32(hw, I40E_PFINT_ITRN(I40E_RX_ITR, vector - 1),
--		     q_vector->rx.target_itr);
-+		     q_vector->rx.target_itr >> 1);
- 		q_vector->rx.current_itr = q_vector->rx.target_itr;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index b45a6e2ed8d15..de65ca1e65580 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8551,7 +8551,8 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
  
- 		q_vector->tx.next_update = jiffies + 1;
- 		q_vector->tx.target_itr =
- 			ITR_TO_REG(vsi->tx_rings[i]->itr_setting);
- 		wr32(hw, I40E_PFINT_ITRN(I40E_TX_ITR, vector - 1),
--		     q_vector->tx.target_itr);
-+		     q_vector->tx.target_itr >> 1);
- 		q_vector->tx.current_itr = q_vector->tx.target_itr;
- 
- 		wr32(hw, I40E_PFINT_RATEN(vector - 1),
-@@ -3553,11 +3553,11 @@ static void i40e_configure_msi_and_legacy(struct i40e_vsi *vsi)
- 	/* set the ITR configuration */
- 	q_vector->rx.next_update = jiffies + 1;
- 	q_vector->rx.target_itr = ITR_TO_REG(vsi->rx_rings[0]->itr_setting);
--	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), q_vector->rx.target_itr);
-+	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), q_vector->rx.target_itr >> 1);
- 	q_vector->rx.current_itr = q_vector->rx.target_itr;
- 	q_vector->tx.next_update = jiffies + 1;
- 	q_vector->tx.target_itr = ITR_TO_REG(vsi->tx_rings[0]->itr_setting);
--	wr32(hw, I40E_PFINT_ITR0(I40E_TX_ITR), q_vector->tx.target_itr);
-+	wr32(hw, I40E_PFINT_ITR0(I40E_TX_ITR), q_vector->tx.target_itr >> 1);
- 	q_vector->tx.current_itr = q_vector->tx.target_itr;
- 
- 	i40e_enable_misc_int_causes(pf);
-@@ -10735,7 +10735,7 @@ static int i40e_setup_misc_vector(struct i40e_pf *pf)
- 
- 	/* associate no queues to the misc vector */
- 	wr32(hw, I40E_PFINT_LNKLST0, I40E_QUEUE_END_OF_LIST);
--	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), I40E_ITR_8K);
-+	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), I40E_ITR_8K >> 1);
- 
- 	i40e_flush(hw);
- 
+ 	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) &&
+ 	    adapter->ptp_clock) {
+-		if (!test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
++		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
++		    !test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
+ 					   &adapter->state)) {
+ 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+ 			tx_flags |= IXGBE_TX_FLAGS_TSTAMP;
 -- 
 2.20.1
 
