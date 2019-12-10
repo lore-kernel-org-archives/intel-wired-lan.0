@@ -1,67 +1,67 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 16:06:00 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 255/350] ice: delay less
+Date: Tue, 10 Dec 2019 16:07:23 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 338/350] ice: Only disable VF
+ state when freeing each VF resources
 In-Reply-To: <20191210210735.9077-1-sashal@kernel.org>
 References: <20191210210735.9077-1-sashal@kernel.org>
-Message-ID: <20191210210735.9077-216-sashal@kernel.org>
+Message-ID: <20191210210735.9077-299-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-[ Upstream commit 88bb432a55de8ae62106305083a8bfbb23b01ad2 ]
+[ Upstream commit 1f9639d2fb9188a59acafae9dea626391c442a8d ]
 
-Shorten the delay for SQ responses, but increase the number of loops.
-Max delay time is unchanged, but some operations complete much more
-quickly.
+It is wrong to set PF disable state flag for all VFs when freeing VF
+resources - Instead, we should set VF disable state flag for each VF with
+its resources being returned to the device. Right now, all VF opcodes,
+mailbox communication to clear its resources as well fails - since we
+already indicate that PF is in disable state, with all VFs not active. In
+addition, we don't need to notify VF that PF is intending to reset it, if
+it is already in disabled state.
 
-In the process, add a new define to make the delay count and delay time
-more explicit. Add comments to make things more explicit.
-
-This fixes a problem with VF resets failing on with many VFs.
-
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_controlq.c | 2 +-
- drivers/net/ethernet/intel/ice/ice_controlq.h | 5 +++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index 2353166c654ea..c68709c7ef81d 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -948,7 +948,7 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
- 		if (ice_sq_done(hw, cq))
- 			break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index b45797f39b2fc..c0637a0cbfe82 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -317,8 +317,9 @@ void ice_free_vfs(struct ice_pf *pf)
+ 	pf->num_alloc_vfs = 0;
+ 	for (i = 0; i < tmp; i++) {
+ 		if (test_bit(ICE_VF_STATE_INIT, pf->vf[i].vf_states)) {
+-			/* disable VF qp mappings */
++			/* disable VF qp mappings and set VF disable state */
+ 			ice_dis_vf_mappings(&pf->vf[i]);
++			set_bit(ICE_VF_STATE_DIS, pf->vf[i].vf_states);
+ 			ice_free_vf_res(&pf->vf[i]);
+ 		}
+ 	}
+@@ -1287,9 +1288,12 @@ static void ice_vc_notify_vf_reset(struct ice_vf *vf)
+ 	if (!vf || vf->vf_id >= vf->pf->num_alloc_vfs)
+ 		return;
  
--		mdelay(1);
-+		udelay(ICE_CTL_Q_SQ_CMD_USEC);
- 		total_delay++;
- 	} while (total_delay < cq->sq_cmd_timeout);
+-	/* verify if the VF is in either init or active before proceeding */
+-	if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states) &&
+-	    !test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
++	/* Bail out if VF is in disabled state, neither initialized, nor active
++	 * state - otherwise proceed with notifications
++	 */
++	if ((!test_bit(ICE_VF_STATE_INIT, vf->vf_states) &&
++	     !test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) ||
++	    test_bit(ICE_VF_STATE_DIS, vf->vf_states))
+ 		return;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.h b/drivers/net/ethernet/intel/ice/ice_controlq.h
-index 44945c2165d80..4df9da3591359 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.h
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.h
-@@ -31,8 +31,9 @@ enum ice_ctl_q {
- 	ICE_CTL_Q_MAILBOX,
- };
- 
--/* Control Queue default settings */
--#define ICE_CTL_Q_SQ_CMD_TIMEOUT	250  /* msecs */
-+/* Control Queue timeout settings - max delay 250ms */
-+#define ICE_CTL_Q_SQ_CMD_TIMEOUT	2500  /* Count 2500 times */
-+#define ICE_CTL_Q_SQ_CMD_USEC		100   /* Check every 100usec */
- 
- struct ice_ctl_q_ring {
- 	void *dma_head;			/* Virtual address to DMA head */
+ 	pfe.event = VIRTCHNL_EVENT_RESET_IMPENDING;
 -- 
 2.20.1
 
