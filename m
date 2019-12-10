@@ -1,90 +1,126 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 16:04:26 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 161/350] i40e: initialize ITRN
- registers with correct values
+Date: Tue, 10 Dec 2019 16:04:28 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 163/350] i40e: Wrong
+ 'Advertised FEC modes' after set FEC to AUTO
 In-Reply-To: <20191210210735.9077-1-sashal@kernel.org>
 References: <20191210210735.9077-1-sashal@kernel.org>
-Message-ID: <20191210210735.9077-122-sashal@kernel.org>
+Message-ID: <20191210210735.9077-124-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Nicholas Nunley <nicholas.d.nunley@intel.com>
+From: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
 
-[ Upstream commit 998e5166e604fd37afe94352f7b8c2d816b11049 ]
+[ Upstream commit e42b7e9cefca9dd008cbafffca97285cf264f72d ]
 
-Since commit 92418fb14750 ("i40e/i40evf: Use usec value instead of reg
-value for ITR defines") the driver tracks the interrupt throttling
-intervals in single usec units, although the actual ITRN/ITR0 registers are
-programmed in 2 usec units. Most register programming flows in the driver
-correctly handle the conversion, although it is currently not applied when
-the registers are initialized to their default values. Most of the time
-this doesn't present a problem since the default values are usually
-immediately overwritten through the standard adaptive throttling mechanism,
-or updated manually by the user, but if adaptive throttling is disabled and
-the interval values are left alone then the incorrect value will persist.
+Fix display of parameters "Configured FEC encodings:" and "Advertised
+FEC modes:" in ethtool.  Implemented by setting proper FEC bits in
+?advertising? bitmask of link_modes struct and ?fec? bitmask in
+ethtool_fecparam struct. Without this patch wrong FEC settings
+can be shown.
 
-Since the intended default interval of 50 usecs (vs. 100 usecs as
-programmed) performs better for most traffic workloads, this can lead to
-performance regressions.
-
-This patch adds the correct conversion when writing the initial values to
-the ITRN registers.
-
-Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
+Signed-off-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 13 ++++++--
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    | 32 +++++++++----------
+ 2 files changed, 26 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 6031223eafab8..339925af02062 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3534,14 +3534,14 @@ static void i40e_vsi_configure_msix(struct i40e_vsi *vsi)
- 		q_vector->rx.target_itr =
- 			ITR_TO_REG(vsi->rx_rings[i]->itr_setting);
- 		wr32(hw, I40E_PFINT_ITRN(I40E_RX_ITR, vector - 1),
--		     q_vector->rx.target_itr);
-+		     q_vector->rx.target_itr >> 1);
- 		q_vector->rx.current_itr = q_vector->rx.target_itr;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 7560f06768e06..3160b5bbe6728 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -2571,9 +2571,16 @@ noinline_for_stack i40e_status i40e_update_link_info(struct i40e_hw *hw)
+ 		if (status)
+ 			return status;
  
- 		q_vector->tx.next_update = jiffies + 1;
- 		q_vector->tx.target_itr =
- 			ITR_TO_REG(vsi->tx_rings[i]->itr_setting);
- 		wr32(hw, I40E_PFINT_ITRN(I40E_TX_ITR, vector - 1),
--		     q_vector->tx.target_itr);
-+		     q_vector->tx.target_itr >> 1);
- 		q_vector->tx.current_itr = q_vector->tx.target_itr;
+-		hw->phy.link_info.req_fec_info =
+-			abilities.fec_cfg_curr_mod_ext_info &
+-			(I40E_AQ_REQUEST_FEC_KR | I40E_AQ_REQUEST_FEC_RS);
++		if (abilities.fec_cfg_curr_mod_ext_info &
++		    I40E_AQ_ENABLE_FEC_AUTO)
++			hw->phy.link_info.req_fec_info =
++				(I40E_AQ_REQUEST_FEC_KR |
++				 I40E_AQ_REQUEST_FEC_RS);
++		else
++			hw->phy.link_info.req_fec_info =
++				abilities.fec_cfg_curr_mod_ext_info &
++				(I40E_AQ_REQUEST_FEC_KR |
++				 I40E_AQ_REQUEST_FEC_RS);
  
- 		wr32(hw, I40E_PFINT_RATEN(vector - 1),
-@@ -3646,11 +3646,11 @@ static void i40e_configure_msi_and_legacy(struct i40e_vsi *vsi)
- 	/* set the ITR configuration */
- 	q_vector->rx.next_update = jiffies + 1;
- 	q_vector->rx.target_itr = ITR_TO_REG(vsi->rx_rings[0]->itr_setting);
--	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), q_vector->rx.target_itr);
-+	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), q_vector->rx.target_itr >> 1);
- 	q_vector->rx.current_itr = q_vector->rx.target_itr;
- 	q_vector->tx.next_update = jiffies + 1;
- 	q_vector->tx.target_itr = ITR_TO_REG(vsi->tx_rings[0]->itr_setting);
--	wr32(hw, I40E_PFINT_ITR0(I40E_TX_ITR), q_vector->tx.target_itr);
-+	wr32(hw, I40E_PFINT_ITR0(I40E_TX_ITR), q_vector->tx.target_itr >> 1);
- 	q_vector->tx.current_itr = q_vector->tx.target_itr;
+ 		memcpy(hw->phy.link_info.module_type, &abilities.module_type,
+ 		       sizeof(hw->phy.link_info.module_type));
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 41e1240acaea5..b577e6adf3bff 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -722,7 +722,14 @@ static void i40e_get_settings_link_up_fec(u8 req_fec_info,
+ 	ethtool_link_ksettings_add_link_mode(ks, supported, FEC_RS);
+ 	ethtool_link_ksettings_add_link_mode(ks, supported, FEC_BASER);
  
- 	i40e_enable_misc_int_causes(pf);
-@@ -11396,7 +11396,7 @@ static int i40e_setup_misc_vector(struct i40e_pf *pf)
+-	if (I40E_AQ_SET_FEC_REQUEST_RS & req_fec_info) {
++	if ((I40E_AQ_SET_FEC_REQUEST_RS & req_fec_info) &&
++	    (I40E_AQ_SET_FEC_REQUEST_KR & req_fec_info)) {
++		ethtool_link_ksettings_add_link_mode(ks, advertising,
++						     FEC_NONE);
++		ethtool_link_ksettings_add_link_mode(ks, advertising,
++						     FEC_BASER);
++		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_RS);
++	} else if (I40E_AQ_SET_FEC_REQUEST_RS & req_fec_info) {
+ 		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_RS);
+ 	} else if (I40E_AQ_SET_FEC_REQUEST_KR & req_fec_info) {
+ 		ethtool_link_ksettings_add_link_mode(ks, advertising,
+@@ -730,12 +737,6 @@ static void i40e_get_settings_link_up_fec(u8 req_fec_info,
+ 	} else {
+ 		ethtool_link_ksettings_add_link_mode(ks, advertising,
+ 						     FEC_NONE);
+-		if (I40E_AQ_SET_FEC_AUTO & req_fec_info) {
+-			ethtool_link_ksettings_add_link_mode(ks, advertising,
+-							     FEC_RS);
+-			ethtool_link_ksettings_add_link_mode(ks, advertising,
+-							     FEC_BASER);
+-		}
+ 	}
+ }
  
- 	/* associate no queues to the misc vector */
- 	wr32(hw, I40E_PFINT_LNKLST0, I40E_QUEUE_END_OF_LIST);
--	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), I40E_ITR_8K);
-+	wr32(hw, I40E_PFINT_ITR0(I40E_RX_ITR), I40E_ITR_8K >> 1);
+@@ -1437,6 +1438,7 @@ static int i40e_get_fec_param(struct net_device *netdev,
+ 	struct i40e_hw *hw = &pf->hw;
+ 	i40e_status status = 0;
+ 	int err = 0;
++	u8 fec_cfg;
  
- 	i40e_flush(hw);
+ 	/* Get the current phy config */
+ 	memset(&abilities, 0, sizeof(abilities));
+@@ -1448,18 +1450,16 @@ static int i40e_get_fec_param(struct net_device *netdev,
+ 	}
  
+ 	fecparam->fec = 0;
+-	if (abilities.fec_cfg_curr_mod_ext_info & I40E_AQ_SET_FEC_AUTO)
++	fec_cfg = abilities.fec_cfg_curr_mod_ext_info;
++	if (fec_cfg & I40E_AQ_SET_FEC_AUTO)
+ 		fecparam->fec |= ETHTOOL_FEC_AUTO;
+-	if ((abilities.fec_cfg_curr_mod_ext_info &
+-	     I40E_AQ_SET_FEC_REQUEST_RS) ||
+-	    (abilities.fec_cfg_curr_mod_ext_info &
+-	     I40E_AQ_SET_FEC_ABILITY_RS))
++	else if (fec_cfg & (I40E_AQ_SET_FEC_REQUEST_RS |
++		 I40E_AQ_SET_FEC_ABILITY_RS))
+ 		fecparam->fec |= ETHTOOL_FEC_RS;
+-	if ((abilities.fec_cfg_curr_mod_ext_info &
+-	     I40E_AQ_SET_FEC_REQUEST_KR) ||
+-	    (abilities.fec_cfg_curr_mod_ext_info & I40E_AQ_SET_FEC_ABILITY_KR))
++	else if (fec_cfg & (I40E_AQ_SET_FEC_REQUEST_KR |
++		 I40E_AQ_SET_FEC_ABILITY_KR))
+ 		fecparam->fec |= ETHTOOL_FEC_BASER;
+-	if (abilities.fec_cfg_curr_mod_ext_info == 0)
++	if (fec_cfg == 0)
+ 		fecparam->fec |= ETHTOOL_FEC_OFF;
+ 
+ 	if (hw->phy.link_info.fec_info & I40E_AQ_CONFIG_FEC_KR_ENA)
 -- 
 2.20.1
 
