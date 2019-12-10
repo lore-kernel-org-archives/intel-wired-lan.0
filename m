@@ -1,67 +1,59 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 16:07:23 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 338/350] ice: Only disable VF
- state when freeing each VF resources
+Date: Tue, 10 Dec 2019 16:07:24 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 339/350] ice: Fix setting
+ coalesce to handle DCB configuration
 In-Reply-To: <20191210210735.9077-1-sashal@kernel.org>
 References: <20191210210735.9077-1-sashal@kernel.org>
-Message-ID: <20191210210735.9077-299-sashal@kernel.org>
+Message-ID: <20191210210735.9077-300-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-[ Upstream commit 1f9639d2fb9188a59acafae9dea626391c442a8d ]
+[ Upstream commit e25f9152bc07de534b2b590ce6c052ea25dd8900 ]
 
-It is wrong to set PF disable state flag for all VFs when freeing VF
-resources - Instead, we should set VF disable state flag for each VF with
-its resources being returned to the device. Right now, all VF opcodes,
-mailbox communication to clear its resources as well fails - since we
-already indicate that PF is in disable state, with all VFs not active. In
-addition, we don't need to notify VF that PF is intending to reset it, if
-it is already in disabled state.
+Currently there can be a case where a DCB map is applied and there are
+more interrupt vectors (vsi->num_q_vectors) than Rx queues (vsi->num_rxq)
+and Tx queues (vsi->num_txq). If we try to set coalesce settings in this
+case it will report a false failure. Fix this by checking if vector index
+is valid with respect to the number of Tx and Rx queues configured.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index b45797f39b2fc..c0637a0cbfe82 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -317,8 +317,9 @@ void ice_free_vfs(struct ice_pf *pf)
- 	pf->num_alloc_vfs = 0;
- 	for (i = 0; i < tmp; i++) {
- 		if (test_bit(ICE_VF_STATE_INIT, pf->vf[i].vf_states)) {
--			/* disable VF qp mappings */
-+			/* disable VF qp mappings and set VF disable state */
- 			ice_dis_vf_mappings(&pf->vf[i]);
-+			set_bit(ICE_VF_STATE_DIS, pf->vf[i].vf_states);
- 			ice_free_vf_res(&pf->vf[i]);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 7e23034df955c..1fe9f6050635d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3368,10 +3368,17 @@ __ice_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
+ 	struct ice_vsi *vsi = np->vsi;
+ 
+ 	if (q_num < 0) {
+-		int i;
++		int v_idx;
++
++		ice_for_each_q_vector(vsi, v_idx) {
++			/* In some cases if DCB is configured the num_[rx|tx]q
++			 * can be less than vsi->num_q_vectors. This check
++			 * accounts for that so we don't report a false failure
++			 */
++			if (v_idx >= vsi->num_rxq && v_idx >= vsi->num_txq)
++				goto set_complete;
+ 
+-		ice_for_each_q_vector(vsi, i) {
+-			if (ice_set_q_coalesce(vsi, ec, i))
++			if (ice_set_q_coalesce(vsi, ec, v_idx))
+ 				return -EINVAL;
  		}
- 	}
-@@ -1287,9 +1288,12 @@ static void ice_vc_notify_vf_reset(struct ice_vf *vf)
- 	if (!vf || vf->vf_id >= vf->pf->num_alloc_vfs)
- 		return;
- 
--	/* verify if the VF is in either init or active before proceeding */
--	if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states) &&
--	    !test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
-+	/* Bail out if VF is in disabled state, neither initialized, nor active
-+	 * state - otherwise proceed with notifications
-+	 */
-+	if ((!test_bit(ICE_VF_STATE_INIT, vf->vf_states) &&
-+	     !test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) ||
-+	    test_bit(ICE_VF_STATE_DIS, vf->vf_states))
- 		return;
- 
- 	pfe.event = VIRTCHNL_EVENT_RESET_IMPENDING;
+ 		goto set_complete;
 -- 
 2.20.1
 
