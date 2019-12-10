@@ -1,126 +1,54 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 16:04:28 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 163/350] i40e: Wrong
- 'Advertised FEC modes' after set FEC to AUTO
+Date: Tue, 10 Dec 2019 16:05:05 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 200/350] ixgbe: protect TX
+ timestamping from API misuse
 In-Reply-To: <20191210210735.9077-1-sashal@kernel.org>
 References: <20191210210735.9077-1-sashal@kernel.org>
-Message-ID: <20191210210735.9077-124-sashal@kernel.org>
+Message-ID: <20191210210735.9077-161-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
+From: Manjunath Patil <manjunath.b.patil@oracle.com>
 
-[ Upstream commit e42b7e9cefca9dd008cbafffca97285cf264f72d ]
+[ Upstream commit 07066d9dc3d2326fbad8f7b0cb0120cff7b7dedb ]
 
-Fix display of parameters "Configured FEC encodings:" and "Advertised
-FEC modes:" in ethtool.  Implemented by setting proper FEC bits in
-?advertising? bitmask of link_modes struct and ?fec? bitmask in
-ethtool_fecparam struct. Without this patch wrong FEC settings
-can be shown.
+HW timestamping can only be requested for a packet if the NIC is first
+setup via ioctl(SIOCSHWTSTAMP). If this step was skipped, then the ixgbe
+driver still allowed TX packets to request HW timestamping. In this
+situation, we see 'clearing Tx Timestamp hang' noise in the log.
 
-Signed-off-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
+Fix this by checking that the NIC is configured for HW TX timestamping
+before accepting a HW TX timestamping request.
+
+Similar-to:
+   commit 26bd4e2db06b ("igb: protect TX timestamping from API misuse")
+   commit 0a6f2f05a2f5 ("igb: Fix a test with HWTSTAMP_TX_ON")
+
+Signed-off-by: Manjunath Patil <manjunath.b.patil@oracle.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 13 ++++++--
- .../net/ethernet/intel/i40e/i40e_ethtool.c    | 32 +++++++++----------
- 2 files changed, 26 insertions(+), 19 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 7560f06768e06..3160b5bbe6728 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -2571,9 +2571,16 @@ noinline_for_stack i40e_status i40e_update_link_info(struct i40e_hw *hw)
- 		if (status)
- 			return status;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 91b3780ddb040..1a7203fede12c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8639,7 +8639,8 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
  
--		hw->phy.link_info.req_fec_info =
--			abilities.fec_cfg_curr_mod_ext_info &
--			(I40E_AQ_REQUEST_FEC_KR | I40E_AQ_REQUEST_FEC_RS);
-+		if (abilities.fec_cfg_curr_mod_ext_info &
-+		    I40E_AQ_ENABLE_FEC_AUTO)
-+			hw->phy.link_info.req_fec_info =
-+				(I40E_AQ_REQUEST_FEC_KR |
-+				 I40E_AQ_REQUEST_FEC_RS);
-+		else
-+			hw->phy.link_info.req_fec_info =
-+				abilities.fec_cfg_curr_mod_ext_info &
-+				(I40E_AQ_REQUEST_FEC_KR |
-+				 I40E_AQ_REQUEST_FEC_RS);
- 
- 		memcpy(hw->phy.link_info.module_type, &abilities.module_type,
- 		       sizeof(hw->phy.link_info.module_type));
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 41e1240acaea5..b577e6adf3bff 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -722,7 +722,14 @@ static void i40e_get_settings_link_up_fec(u8 req_fec_info,
- 	ethtool_link_ksettings_add_link_mode(ks, supported, FEC_RS);
- 	ethtool_link_ksettings_add_link_mode(ks, supported, FEC_BASER);
- 
--	if (I40E_AQ_SET_FEC_REQUEST_RS & req_fec_info) {
-+	if ((I40E_AQ_SET_FEC_REQUEST_RS & req_fec_info) &&
-+	    (I40E_AQ_SET_FEC_REQUEST_KR & req_fec_info)) {
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     FEC_NONE);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising,
-+						     FEC_BASER);
-+		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_RS);
-+	} else if (I40E_AQ_SET_FEC_REQUEST_RS & req_fec_info) {
- 		ethtool_link_ksettings_add_link_mode(ks, advertising, FEC_RS);
- 	} else if (I40E_AQ_SET_FEC_REQUEST_KR & req_fec_info) {
- 		ethtool_link_ksettings_add_link_mode(ks, advertising,
-@@ -730,12 +737,6 @@ static void i40e_get_settings_link_up_fec(u8 req_fec_info,
- 	} else {
- 		ethtool_link_ksettings_add_link_mode(ks, advertising,
- 						     FEC_NONE);
--		if (I40E_AQ_SET_FEC_AUTO & req_fec_info) {
--			ethtool_link_ksettings_add_link_mode(ks, advertising,
--							     FEC_RS);
--			ethtool_link_ksettings_add_link_mode(ks, advertising,
--							     FEC_BASER);
--		}
- 	}
- }
- 
-@@ -1437,6 +1438,7 @@ static int i40e_get_fec_param(struct net_device *netdev,
- 	struct i40e_hw *hw = &pf->hw;
- 	i40e_status status = 0;
- 	int err = 0;
-+	u8 fec_cfg;
- 
- 	/* Get the current phy config */
- 	memset(&abilities, 0, sizeof(abilities));
-@@ -1448,18 +1450,16 @@ static int i40e_get_fec_param(struct net_device *netdev,
- 	}
- 
- 	fecparam->fec = 0;
--	if (abilities.fec_cfg_curr_mod_ext_info & I40E_AQ_SET_FEC_AUTO)
-+	fec_cfg = abilities.fec_cfg_curr_mod_ext_info;
-+	if (fec_cfg & I40E_AQ_SET_FEC_AUTO)
- 		fecparam->fec |= ETHTOOL_FEC_AUTO;
--	if ((abilities.fec_cfg_curr_mod_ext_info &
--	     I40E_AQ_SET_FEC_REQUEST_RS) ||
--	    (abilities.fec_cfg_curr_mod_ext_info &
--	     I40E_AQ_SET_FEC_ABILITY_RS))
-+	else if (fec_cfg & (I40E_AQ_SET_FEC_REQUEST_RS |
-+		 I40E_AQ_SET_FEC_ABILITY_RS))
- 		fecparam->fec |= ETHTOOL_FEC_RS;
--	if ((abilities.fec_cfg_curr_mod_ext_info &
--	     I40E_AQ_SET_FEC_REQUEST_KR) ||
--	    (abilities.fec_cfg_curr_mod_ext_info & I40E_AQ_SET_FEC_ABILITY_KR))
-+	else if (fec_cfg & (I40E_AQ_SET_FEC_REQUEST_KR |
-+		 I40E_AQ_SET_FEC_ABILITY_KR))
- 		fecparam->fec |= ETHTOOL_FEC_BASER;
--	if (abilities.fec_cfg_curr_mod_ext_info == 0)
-+	if (fec_cfg == 0)
- 		fecparam->fec |= ETHTOOL_FEC_OFF;
- 
- 	if (hw->phy.link_info.fec_info & I40E_AQ_CONFIG_FEC_KR_ENA)
+ 	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) &&
+ 	    adapter->ptp_clock) {
+-		if (!test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
++		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
++		    !test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
+ 					   &adapter->state)) {
+ 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+ 			tx_flags |= IXGBE_TX_FLAGS_TSTAMP;
 -- 
 2.20.1
 
