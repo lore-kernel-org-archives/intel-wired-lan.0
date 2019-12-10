@@ -1,54 +1,66 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 16:05:05 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 200/350] ixgbe: protect TX
- timestamping from API misuse
+Date: Tue, 10 Dec 2019 16:05:38 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 233/350] ice: Check for null
+ pointer dereference when setting rings
 In-Reply-To: <20191210210735.9077-1-sashal@kernel.org>
 References: <20191210210735.9077-1-sashal@kernel.org>
-Message-ID: <20191210210735.9077-161-sashal@kernel.org>
+Message-ID: <20191210210735.9077-194-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Manjunath Patil <manjunath.b.patil@oracle.com>
+From: Michal Swiatkowski <michal.swiatkowski@intel.com>
 
-[ Upstream commit 07066d9dc3d2326fbad8f7b0cb0120cff7b7dedb ]
+[ Upstream commit eb0ee8abfeb9ff4b98e8e40217b8667bfb08587a ]
 
-HW timestamping can only be requested for a packet if the NIC is first
-setup via ioctl(SIOCSHWTSTAMP). If this step was skipped, then the ixgbe
-driver still allowed TX packets to request HW timestamping. In this
-situation, we see 'clearing Tx Timestamp hang' noise in the log.
+Without this check rebuild vsi can lead to kernel panic.
 
-Fix this by checking that the NIC is configured for HW TX timestamping
-before accepting a HW TX timestamping request.
-
-Similar-to:
-   commit 26bd4e2db06b ("igb: protect TX timestamping from API misuse")
-   commit 0a6f2f05a2f5 ("igb: Fix a test with HWTSTAMP_TX_ON")
-
-Signed-off-by: Manjunath Patil <manjunath.b.patil@oracle.com>
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 91b3780ddb040..1a7203fede12c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8639,7 +8639,8 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 214cd6eca405d..2408f0de95fc2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3970,8 +3970,13 @@ int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
+ 	}
  
- 	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) &&
- 	    adapter->ptp_clock) {
--		if (!test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
-+		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
-+		    !test_and_set_bit_lock(__IXGBE_PTP_TX_IN_PROGRESS,
- 					   &adapter->state)) {
- 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
- 			tx_flags |= IXGBE_TX_FLAGS_TSTAMP;
+ 	ice_for_each_txq(vsi, i) {
+-		vsi->tx_rings[i]->netdev = vsi->netdev;
+-		err = ice_setup_tx_ring(vsi->tx_rings[i]);
++		struct ice_ring *ring = vsi->tx_rings[i];
++
++		if (!ring)
++			return -EINVAL;
++
++		ring->netdev = vsi->netdev;
++		err = ice_setup_tx_ring(ring);
+ 		if (err)
+ 			break;
+ 	}
+@@ -3996,8 +4001,13 @@ int ice_vsi_setup_rx_rings(struct ice_vsi *vsi)
+ 	}
+ 
+ 	ice_for_each_rxq(vsi, i) {
+-		vsi->rx_rings[i]->netdev = vsi->netdev;
+-		err = ice_setup_rx_ring(vsi->rx_rings[i]);
++		struct ice_ring *ring = vsi->rx_rings[i];
++
++		if (!ring)
++			return -EINVAL;
++
++		ring->netdev = vsi->netdev;
++		err = ice_setup_rx_ring(ring);
+ 		if (err)
+ 			break;
+ 	}
 -- 
 2.20.1
 
