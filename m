@@ -1,177 +1,191 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 12 Dec 2019 03:13:00 -0800
-Subject: [Intel-wired-lan] [PATCH S35 08/15] ice: Remove Rx flex descriptor
- programming
+Date: Thu, 12 Dec 2019 03:12:56 -0800
+Subject: [Intel-wired-lan] [PATCH S35 04/15] ice: Add ice_for_each_vf() macro
 In-Reply-To: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
 References: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191212111307.33566-8-anthony.l.nguyen@intel.com>
+Message-ID: <20191212111307.33566-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Vignesh Sridhar <vignesh.sridhar@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Remove Rx flex descriptor metadata and flag programming; per specification
-these registers cannot be written to as they are read only.
+Currently we do "for (i = 0; i < pf->num_alloc_vfs; i++)" all over the
+place. Many other places use macros to contain this repeated for loop,
+So create the macro ice_for_each_vf(pf, i) that does the same thing.
 
-Signed-off-by: Vignesh Sridhar <vignesh.sridhar@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+There were a couple places we were using one loop variable and a VF
+iterator, which were changed to using a local variable within the
+ice_for_each_vf() macro.
+
+Also in ice_alloc_vfs() we were setting pf->num_alloc_vfs after doing
+"for (i = 0; i < num_alloc_vfs; i++)". Instead assign pf->num_alloc_vfs
+right after allocating memory for the pf->vf array.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c   | 104 ------------------
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   9 --
- 2 files changed, 113 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  7 ++++--
+ drivers/net/ethernet/intel/ice/ice_main.c     |  4 ++--
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 23 ++++++++++---------
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  3 +++
+ 4 files changed, 22 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 28958c0a762a..86bf8b2ec51d 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -7,25 +7,6 @@
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index aec3c6c379df..a421c616604c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -283,12 +283,15 @@ ice_get_eeprom(struct net_device *netdev, struct ethtool_eeprom *eeprom,
+  */
+ static bool ice_active_vfs(struct ice_pf *pf)
+ {
+-	struct ice_vf *vf = pf->vf;
+ 	int i;
  
- #define ICE_PF_RESET_WAIT_COUNT	200
- 
--#define ICE_PROG_FLEX_ENTRY(hw, rxdid, mdid, idx) \
--	wr32((hw), GLFLXP_RXDID_FLX_WRD_##idx(rxdid), \
--	     ((ICE_RX_OPC_MDID << \
--	       GLFLXP_RXDID_FLX_WRD_##idx##_RXDID_OPCODE_S) & \
--	      GLFLXP_RXDID_FLX_WRD_##idx##_RXDID_OPCODE_M) | \
--	     (((mdid) << GLFLXP_RXDID_FLX_WRD_##idx##_PROT_MDID_S) & \
--	      GLFLXP_RXDID_FLX_WRD_##idx##_PROT_MDID_M))
--
--#define ICE_PROG_FLG_ENTRY(hw, rxdid, flg_0, flg_1, flg_2, flg_3, idx) \
--	wr32((hw), GLFLXP_RXDID_FLAGS(rxdid, idx), \
--	     (((flg_0) << GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S) & \
--	      GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M) | \
--	     (((flg_1) << GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S) & \
--	      GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_M) | \
--	     (((flg_2) << GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_S) & \
--	      GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_M) | \
--	     (((flg_3) << GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_S) & \
--	      GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_M))
--
- /**
-  * ice_set_mac_type - Sets MAC type
-  * @hw: pointer to the HW structure
-@@ -347,88 +328,6 @@ ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
- 	return 0;
+-	for (i = 0; i < pf->num_alloc_vfs; i++, vf++)
++	ice_for_each_vf(pf, i) {
++		struct ice_vf *vf = &pf->vf[i];
++
+ 		if (test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
+ 			return true;
++	}
++
+ 	return false;
  }
  
--/**
-- * ice_init_flex_flags
-- * @hw: pointer to the hardware structure
-- * @prof_id: Rx Descriptor Builder profile ID
-- *
-- * Function to initialize Rx flex flags
-- */
--static void ice_init_flex_flags(struct ice_hw *hw, enum ice_rxdid prof_id)
--{
--	u8 idx = 0;
--
--	/* Flex-flag fields (0-2) are programmed with FLG64 bits with layout:
--	 * flexiflags0[5:0] - TCP flags, is_packet_fragmented, is_packet_UDP_GRE
--	 * flexiflags1[3:0] - Not used for flag programming
--	 * flexiflags2[7:0] - Tunnel and VLAN types
--	 * 2 invalid fields in last index
--	 */
--	switch (prof_id) {
--	/* Rx flex flags are currently programmed for the NIC profiles only.
--	 * Different flag bit programming configurations can be added per
--	 * profile as needed.
--	 */
--	case ICE_RXDID_FLEX_NIC:
--	case ICE_RXDID_FLEX_NIC_2:
--		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_PKT_FRG,
--				   ICE_FLG_UDP_GRE, ICE_FLG_PKT_DSI,
--				   ICE_FLG_FIN, idx++);
--		/* flex flag 1 is not used for flexi-flag programming, skipping
--		 * these four FLG64 bits.
--		 */
--		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_SYN, ICE_FLG_RST,
--				   ICE_FLG_PKT_DSI, ICE_FLG_PKT_DSI, idx++);
--		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_PKT_DSI,
--				   ICE_FLG_PKT_DSI, ICE_FLG_EVLAN_x8100,
--				   ICE_FLG_EVLAN_x9100, idx++);
--		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_VLAN_x8100,
--				   ICE_FLG_TNL_VLAN, ICE_FLG_TNL_MAC,
--				   ICE_FLG_TNL0, idx++);
--		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_TNL1, ICE_FLG_TNL2,
--				   ICE_FLG_PKT_DSI, ICE_FLG_PKT_DSI, idx);
--		break;
--
--	default:
--		ice_debug(hw, ICE_DBG_INIT,
--			  "Flag programming for profile ID %d not supported\n",
--			  prof_id);
--	}
--}
--
--/**
-- * ice_init_flex_flds
-- * @hw: pointer to the hardware structure
-- * @prof_id: Rx Descriptor Builder profile ID
-- *
-- * Function to initialize flex descriptors
-- */
--static void ice_init_flex_flds(struct ice_hw *hw, enum ice_rxdid prof_id)
--{
--	enum ice_flex_rx_mdid mdid;
--
--	switch (prof_id) {
--	case ICE_RXDID_FLEX_NIC:
--	case ICE_RXDID_FLEX_NIC_2:
--		ICE_PROG_FLEX_ENTRY(hw, prof_id, ICE_RX_MDID_HASH_LOW, 0);
--		ICE_PROG_FLEX_ENTRY(hw, prof_id, ICE_RX_MDID_HASH_HIGH, 1);
--		ICE_PROG_FLEX_ENTRY(hw, prof_id, ICE_RX_MDID_FLOW_ID_LOWER, 2);
--
--		mdid = (prof_id == ICE_RXDID_FLEX_NIC_2) ?
--			ICE_RX_MDID_SRC_VSI : ICE_RX_MDID_FLOW_ID_HIGH;
--
--		ICE_PROG_FLEX_ENTRY(hw, prof_id, mdid, 3);
--
--		ice_init_flex_flags(hw, prof_id);
--		break;
--
--	default:
--		ice_debug(hw, ICE_DBG_INIT,
--			  "Field init for profile ID %d not supported\n",
--			  prof_id);
--	}
--}
--
- /**
-  * ice_init_fltr_mgmt_struct - initializes filter management list and locks
-  * @hw: pointer to the HW struct
-@@ -882,9 +781,6 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index ca6a0880e7aa..9378a278206d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -476,7 +476,7 @@ ice_prepare_for_reset(struct ice_pf *pf)
+ 		ice_vc_notify_reset(pf);
  
- 	if (status)
- 		goto err_unroll_fltr_mgmt_struct;
--
--	ice_init_flex_flds(hw, ICE_RXDID_FLEX_NIC);
--	ice_init_flex_flds(hw, ICE_RXDID_FLEX_NIC_2);
- 	status = ice_init_hw_tbls(hw);
- 	if (status)
- 		goto err_unroll_fltr_mgmt_struct;
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index bf9743c970fe..b2502c7fd6ed 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -61,15 +61,6 @@
- #define PRTDCB_TUP2TC				0x001D26C0
- #define GL_PREEXT_L2_PMASK0(_i)			(0x0020F0FC + ((_i) * 4))
- #define GL_PREEXT_L2_PMASK1(_i)			(0x0020F108 + ((_i) * 4))
--#define GLFLXP_RXDID_FLAGS(_i, _j)		(0x0045D000 + ((_i) * 4 + (_j) * 256))
--#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S	0
--#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, 0)
--#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S	8
--#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_M	ICE_M(0x3F, 8)
--#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_S	16
--#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_M	ICE_M(0x3F, 16)
--#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_S	24
--#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_M	ICE_M(0x3F, 24)
- #define GLFLXP_RXDID_FLX_WRD_0(_i)		(0x0045c800 + ((_i) * 4))
- #define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_S	0
- #define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_M	ICE_M(0xFF, 0)
+ 	/* Disable VFs until reset is completed */
+-	for (i = 0; i < pf->num_alloc_vfs; i++)
++	ice_for_each_vf(pf, i)
+ 		ice_set_vf_state_qs_dis(&pf->vf[i]);
+ 
+ 	/* clear SW filtering DB */
+@@ -1298,7 +1298,7 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 	}
+ 
+ 	/* check to see if one of the VFs caused the MDD */
+-	for (i = 0; i < pf->num_alloc_vfs; i++) {
++	ice_for_each_vf(pf, i) {
+ 		struct ice_vf *vf = &pf->vf[i];
+ 
+ 		bool vf_mdd_detected = false;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index cc663fea8627..54c576bb62ad 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -78,10 +78,11 @@ ice_vc_vf_broadcast(struct ice_pf *pf, enum virtchnl_ops v_opcode,
+ 		    enum virtchnl_status_code v_retval, u8 *msg, u16 msglen)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+-	struct ice_vf *vf = pf->vf;
+ 	int i;
+ 
+-	for (i = 0; i < pf->num_alloc_vfs; i++, vf++) {
++	ice_for_each_vf(pf, i) {
++		struct ice_vf *vf = &pf->vf[i];
++
+ 		/* Not all vfs are enabled so skip the ones that are not */
+ 		if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states) &&
+ 		    !test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
+@@ -331,7 +332,7 @@ void ice_free_vfs(struct ice_pf *pf)
+ 		usleep_range(1000, 2000);
+ 
+ 	/* Avoid wait time by stopping all VFs at the same time */
+-	for (i = 0; i < pf->num_alloc_vfs; i++)
++	ice_for_each_vf(pf, i)
+ 		if (test_bit(ICE_VF_STATE_QS_ENA, pf->vf[i].vf_states))
+ 			ice_dis_vf_qs(&pf->vf[i]);
+ 
+@@ -1077,7 +1078,7 @@ static bool ice_config_res_vfs(struct ice_pf *pf)
+ 		ice_irq_dynamic_ena(hw, NULL, NULL);
+ 
+ 	/* Finish resetting each VF and allocate resources */
+-	for (v = 0; v < pf->num_alloc_vfs; v++) {
++	ice_for_each_vf(pf, v) {
+ 		struct ice_vf *vf = &pf->vf[v];
+ 
+ 		vf->num_vf_qs = pf->num_vf_qps;
+@@ -1120,10 +1121,10 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 		return false;
+ 
+ 	/* Begin reset on all VFs at once */
+-	for (v = 0; v < pf->num_alloc_vfs; v++)
++	ice_for_each_vf(pf, v)
+ 		ice_trigger_vf_reset(&pf->vf[v], is_vflr, true);
+ 
+-	for (v = 0; v < pf->num_alloc_vfs; v++) {
++	ice_for_each_vf(pf, v) {
+ 		struct ice_vsi *vsi;
+ 
+ 		vf = &pf->vf[v];
+@@ -1168,7 +1169,7 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 		dev_warn(dev, "VF reset check timeout\n");
+ 
+ 	/* free VF resources to begin resetting the VSI state */
+-	for (v = 0; v < pf->num_alloc_vfs; v++) {
++	ice_for_each_vf(pf, v) {
+ 		vf = &pf->vf[v];
+ 
+ 		ice_free_vf_res(vf);
+@@ -1308,7 +1309,7 @@ void ice_vc_notify_link_state(struct ice_pf *pf)
+ {
+ 	int i;
+ 
+-	for (i = 0; i < pf->num_alloc_vfs; i++)
++	ice_for_each_vf(pf, i)
+ 		ice_vc_notify_vf_link_state(&pf->vf[i]);
+ }
+ 
+@@ -1392,9 +1393,10 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
+ 		goto err_pci_disable_sriov;
+ 	}
+ 	pf->vf = vfs;
++	pf->num_alloc_vfs = num_alloc_vfs;
+ 
+ 	/* apply default profile */
+-	for (i = 0; i < num_alloc_vfs; i++) {
++	ice_for_each_vf(pf, i) {
+ 		vfs[i].pf = pf;
+ 		vfs[i].vf_sw_id = pf->first_sw;
+ 		vfs[i].vf_id = i;
+@@ -1403,7 +1405,6 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
+ 		set_bit(ICE_VIRTCHNL_VF_CAP_L2, &vfs[i].vf_caps);
+ 		vfs[i].spoofchk = true;
+ 	}
+-	pf->num_alloc_vfs = num_alloc_vfs;
+ 
+ 	/* VF resources get allocated with initialization */
+ 	if (!ice_config_res_vfs(pf)) {
+@@ -1517,7 +1518,7 @@ void ice_process_vflr_event(struct ice_pf *pf)
+ 	    !pf->num_alloc_vfs)
+ 		return;
+ 
+-	for (vf_id = 0; vf_id < pf->num_alloc_vfs; vf_id++) {
++	ice_for_each_vf(pf, vf_id) {
+ 		struct ice_vf *vf = &pf->vf[vf_id];
+ 		u32 reg_idx, bit_idx;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 611f45100438..4647d636ed36 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -40,6 +40,9 @@
+ #define ICE_DFLT_INTR_PER_VF		(ICE_DFLT_QS_PER_VF + 1)
+ #define ICE_MAX_VF_RESET_WAIT		15
+ 
++#define ice_for_each_vf(pf, i) \
++	for ((i) = 0; (i) < (pf)->num_alloc_vfs; (i)++)
++
+ /* Specific VF states */
+ enum ice_vf_states {
+ 	ICE_VF_STATE_INIT = 0,		/* PF is initializing VF */
 -- 
 2.20.1
 
