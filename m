@@ -1,148 +1,84 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 12 Dec 2019 03:13:01 -0800
-Subject: [Intel-wired-lan] [PATCH S35 09/15] ice: Fix VF link state when
- it's IFLA_VF_LINK_STATE_AUTO
+Date: Thu, 12 Dec 2019 03:13:06 -0800
+Subject: [Intel-wired-lan] [PATCH S35 14/15] ice: Add a boundary check in
+ ice_xsk_umem()
 In-Reply-To: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
 References: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191212111307.33566-9-anthony.l.nguyen@intel.com>
+Message-ID: <20191212111307.33566-14-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 
-Currently the flow for ice_set_vf_link_state() is not configuring link
-the same as all other VF link configuration flows. Fix this by only
-setting the necessary VF members in ice_set_vf_link_state() and then
-call ice_vc_notify_link_state() to actually configure link for the
-VF. This made ice_set_pfe_link_forced() unnecessary, so it was
-deleted. Also, this commonizes the link flows for the VF to all call
-ice_vc_notify_link_state().
+In ice_xsk_umem(), variable qid which is later used as an array index,
+is not validated for a possible boundary exceedance. Because of that,
+a calling function might receive an invalid address, which causes
+general protection fault when dereferenced.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+To address this, add a boundary check to see if qid is greater than the
+size of a UMEM array. Also, don't let user change vsi->num_xsk_umems
+just by trying to setup a second UMEM if its value is already set up
+(i.e. UMEM region has already been allocated for this VSI).
+
+While at it, make sure that ring->zca.free pointer is always zeroed out
+if there is no UMEM on a specified ring.
+
+Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c     |  3 +-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 56 ++++---------------
- 2 files changed, 12 insertions(+), 47 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h      | 5 +++--
+ drivers/net/ethernet/intel/ice/ice_base.c | 1 +
+ drivers/net/ethernet/intel/ice/ice_xsk.c  | 3 ++-
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 9378a278206d..c2811b56f569 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -847,8 +847,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
- 	ice_vsi_link_event(vsi, link_up);
- 	ice_print_link_msg(vsi, link_up);
- 
--	if (pf->num_alloc_vfs)
--		ice_vc_notify_link_state(pf);
-+	ice_vc_notify_link_state(pf);
- 
- 	return result;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 54c576bb62ad..c1708eb7ee75 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -121,26 +121,6 @@ ice_set_pfe_link(struct ice_vf *vf, struct virtchnl_pf_event *pfe,
- 	}
- }
- 
--/**
-- * ice_set_pfe_link_forced - Force the virtchnl_pf_event link speed/status
-- * @vf: pointer to the VF structure
-- * @pfe: pointer to the virtchnl_pf_event to set link speed/status for
-- * @link_up: whether or not to set the link up/down
-- */
--static void
--ice_set_pfe_link_forced(struct ice_vf *vf, struct virtchnl_pf_event *pfe,
--			bool link_up)
--{
--	u16 link_speed;
--
--	if (link_up)
--		link_speed = ICE_AQ_LINK_SPEED_100GB;
--	else
--		link_speed = ICE_AQ_LINK_SPEED_UNKNOWN;
--
--	ice_set_pfe_link(vf, pfe, link_speed, link_up);
--}
--
- /**
-  * ice_vc_notify_vf_link_state - Inform a VF of link status
-  * @vf: pointer to the VF structure
-@@ -161,13 +141,17 @@ static void ice_vc_notify_vf_link_state(struct ice_vf *vf)
- 	pfe.severity = PF_EVENT_SEVERITY_INFO;
- 
- 	/* Always report link is down if the VF queues aren't enabled */
--	if (!vf->num_qs_ena)
-+	if (!vf->num_qs_ena) {
- 		ice_set_pfe_link(vf, &pfe, ICE_AQ_LINK_SPEED_UNKNOWN, false);
--	else if (vf->link_forced)
--		ice_set_pfe_link_forced(vf, &pfe, vf->link_up);
--	else
--		ice_set_pfe_link(vf, &pfe, ls->link_speed, ls->link_info &
--				 ICE_AQ_LINK_UP);
-+	} else if (vf->link_forced) {
-+		u16 link_speed = vf->link_up ?
-+			ls->link_speed : ICE_AQ_LINK_SPEED_UNKNOWN;
-+
-+		ice_set_pfe_link(vf, &pfe, link_speed, vf->link_up);
-+	} else {
-+		ice_set_pfe_link(vf, &pfe, ls->link_speed,
-+				 ls->link_info & ICE_AQ_LINK_UP);
-+	}
- 
- 	ice_aq_send_msg_to_vf(hw, vf->vf_id, VIRTCHNL_OP_EVENT,
- 			      VIRTCHNL_STATUS_SUCCESS, (u8 *)&pfe,
-@@ -3367,28 +3351,18 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
- int ice_set_vf_link_state(struct net_device *netdev, int vf_id, int link_state)
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index b2b1f7b1d932..3dc523fff034 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -476,12 +476,13 @@ static inline void ice_set_ring_xdp(struct ice_ring *ring)
+ static inline struct xdp_umem *ice_xsk_umem(struct ice_ring *ring)
  {
- 	struct ice_pf *pf = ice_netdev_to_pf(netdev);
--	struct virtchnl_pf_event pfe = { 0 };
--	struct ice_link_status *ls;
- 	struct ice_vf *vf;
--	struct ice_hw *hw;
+ 	struct xdp_umem **umems = ring->vsi->xsk_umems;
+-	int qid = ring->q_index;
++	u16 qid = ring->q_index;
  
- 	if (ice_validate_vf_id(pf, vf_id))
+ 	if (ice_ring_is_xdp(ring))
+ 		qid -= ring->vsi->num_xdp_txq;
+ 
+-	if (!umems || !umems[qid] || !ice_is_xdp_ena_vsi(ring->vsi))
++	if (qid >= ring->vsi->num_xsk_umems || !umems || !umems[qid] ||
++	    !ice_is_xdp_ena_vsi(ring->vsi))
+ 		return NULL;
+ 
+ 	return umems[qid];
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index d4559d45288f..25f2e0fb3833 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -326,6 +326,7 @@ int ice_setup_rx_ctx(struct ice_ring *ring)
+ 			dev_info(&vsi->back->pdev->dev, "Registered XDP mem model MEM_TYPE_ZERO_COPY on Rx ring %d\n",
+ 				 ring->q_index);
+ 		} else {
++			ring->zca.free = NULL;
+ 			if (!xdp_rxq_info_is_reg(&ring->xdp_rxq))
+ 				xdp_rxq_info_reg(&ring->xdp_rxq,
+ 						 ring->netdev,
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index cf9b8b22d24f..be787efaa9d5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -414,7 +414,8 @@ ice_xsk_umem_enable(struct ice_vsi *vsi, struct xdp_umem *umem, u16 qid)
+ 	if (vsi->type != ICE_VSI_PF)
  		return -EINVAL;
  
- 	vf = &pf->vf[vf_id];
--	hw = &pf->hw;
--	ls = &pf->hw.port_info->phy.link_info;
--
- 	if (ice_check_vf_init(pf, vf))
- 		return -EBUSY;
- 
--	pfe.event = VIRTCHNL_EVENT_LINK_CHANGE;
--	pfe.severity = PF_EVENT_SEVERITY_INFO;
--
- 	switch (link_state) {
- 	case IFLA_VF_LINK_STATE_AUTO:
- 		vf->link_forced = false;
--		vf->link_up = ls->link_info & ICE_AQ_LINK_UP;
- 		break;
- 	case IFLA_VF_LINK_STATE_ENABLE:
- 		vf->link_forced = true;
-@@ -3402,15 +3376,7 @@ int ice_set_vf_link_state(struct net_device *netdev, int vf_id, int link_state)
+-	vsi->num_xsk_umems = min_t(u16, vsi->num_rxq, vsi->num_txq);
++	if (!vsi->num_xsk_umems)
++		vsi->num_xsk_umems = min_t(u16, vsi->num_rxq, vsi->num_txq);
+ 	if (qid >= vsi->num_xsk_umems)
  		return -EINVAL;
- 	}
  
--	if (vf->link_forced)
--		ice_set_pfe_link_forced(vf, &pfe, vf->link_up);
--	else
--		ice_set_pfe_link(vf, &pfe, ls->link_speed, vf->link_up);
--
--	/* Notify the VF of its new link state */
--	ice_aq_send_msg_to_vf(hw, vf->vf_id, VIRTCHNL_OP_EVENT,
--			      VIRTCHNL_STATUS_SUCCESS, (u8 *)&pfe,
--			      sizeof(pfe), NULL);
-+	ice_vc_notify_vf_link_state(vf);
- 
- 	return 0;
- }
 -- 
 2.20.1
 
