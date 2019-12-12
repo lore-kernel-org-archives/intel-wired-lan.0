@@ -1,271 +1,219 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
-Date: Wed, 11 Dec 2019 11:08:51 +0100
-Subject: [Intel-wired-lan] [PATCH bpf 3/4] net/i40e: Fix concurrency
- issues between config flow and XSK
-In-Reply-To: <121c3135-3b52-1d64-c1e0-26de38687b4f@mellanox.com>
-References: <20191205155028.28854-1-maximmi@mellanox.com>
- <20191205155028.28854-4-maximmi@mellanox.com>
- <CAJ+HfNiXPo_Qkja=tCakX6a=swVY_KRMXmT79wQuQa_+kORQ=g@mail.gmail.com>
- <121c3135-3b52-1d64-c1e0-26de38687b4f@mellanox.com>
-Message-ID: <8e8a8cc2-9347-df33-0e98-1594b6d0171d@intel.com>
+From: Vasyl Gomonovych <gomonovych@gmail.com>
+Date: Thu, 12 Dec 2019 11:58:47 +0100
+Subject: [Intel-wired-lan] [PATCH] igb: index regs_buff array via index
+ variable
+Message-ID: <20191212105847.16488-1-gomonovych@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2019-12-10 15:26, Maxim Mikityanskiy wrote:
-> On 2019-12-06 11:03, Bj?rn T?pel wrote:
->> On Thu, 5 Dec 2019 at 16:52, Maxim Mikityanskiy <maximmi@mellanox.com> wrote:
->>>
->>> Use synchronize_rcu to wait until the XSK wakeup function finishes
->>> before destroying the resources it uses:
->>>
->>> 1. i40e_down already calls synchronize_rcu. On i40e_down either
->>> __I40E_VSI_DOWN or __I40E_CONFIG_BUSY is set. Check the latter in
->>> i40e_xsk_async_xmit (the former is already checked there).
->>>
->>> 2. After switching the XDP program, call synchronize_rcu to let
->>> i40e_xsk_async_xmit exit before the XDP program is freed.
->>>
->>> 3. Changing the number of channels brings the interface down (see
->>> i40e_prep_for_reset and i40e_pf_quiesce_all_vsi).
->>>
->>> 4. Disabling UMEM sets __I40E_CONFIG_BUSY, too.
->>>
->>> Signed-off-by: Maxim Mikityanskiy <maximmi@mellanox.com>
->>> ---
->>>    drivers/net/ethernet/intel/i40e/i40e_main.c | 7 +++++--
->>>    drivers/net/ethernet/intel/i40e/i40e_xsk.c  | 4 ++++
->>>    2 files changed, 9 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
->>> index 1ccabeafa44c..afa3a99e68e1 100644
->>> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
->>> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
->>> @@ -6823,8 +6823,8 @@ void i40e_down(struct i40e_vsi *vsi)
->>>           for (i = 0; i < vsi->num_queue_pairs; i++) {
->>>                   i40e_clean_tx_ring(vsi->tx_rings[i]);
->>>                   if (i40e_enabled_xdp_vsi(vsi)) {
->>> -                       /* Make sure that in-progress ndo_xdp_xmit
->>> -                        * calls are completed.
->>> +                       /* Make sure that in-progress ndo_xdp_xmit and
->>> +                        * ndo_xsk_async_xmit calls are completed.
-> 
-> Ooops, I see now some changes were lost during rebasing. I had a version
-> of this series with ndo_xsk_async_xmit -> ndo_xsk_wakeup fixed.
-> 
->>>                            */
->>>                           synchronize_rcu();
->>>                           i40e_clean_tx_ring(vsi->xdp_rings[i]);
->>> @@ -12545,6 +12545,9 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
->>>                   i40e_prep_for_reset(pf, true);
->>>
->>>           old_prog = xchg(&vsi->xdp_prog, prog);
->>> +       if (old_prog)
->>> +               /* Wait until ndo_xsk_async_xmit completes. */
->>> +               synchronize_rcu();
->>
->> This is not needed -- please correct me if I'm missing something! If
->> we're disabling XDP, the need_reset-clause will take care or the
->> proper synchronization.
-> 
-> Yes, it was added to cover the case of disabling XDP. I'm not sure how
-> i40e_reset_and_rebuild will help here. What I wanted to achieve is to
-> wait until all i40e_xsk_wakeups finish after setting vsi->xdp_prog =
-> NULL and before doing anything else. I don't see how
-> i40e_reset_and_rebuild helps here, but I'm not very familiar with i40e
-> code. Could you guide me through the code of i40e_reset_and_rebuild and
-> show how it takes care of the synchronization?
-> 
->> And we don't need to worry about old_prog for
->> the swap-XDP case,
-> 
-> Right.
-> 
->> because bpf_prog_put() does cleanup with
->> call_rcu().
-> 
-> But if i40e_xsk_wakeup is not wrapped with rcu_read_lock, it won't sync
-> with it.
-> 
->>
->>>
->>>           if (need_reset)
->>>                   i40e_reset_and_rebuild(pf, true, true);
->>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
->>> index d07e1a890428..f73cd917c44f 100644
->>> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
->>> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
->>> @@ -787,8 +787,12 @@ int i40e_xsk_wakeup(struct net_device *dev, u32 queue_id, u32 flags)
->>>    {
->>>           struct i40e_netdev_priv *np = netdev_priv(dev);
->>>           struct i40e_vsi *vsi = np->vsi;
->>> +       struct i40e_pf *pf = vsi->back;
->>>           struct i40e_ring *ring;
->>>
->>> +       if (test_bit(__I40E_CONFIG_BUSY, pf->state))
->>> +               return -ENETDOWN;
->>> +
->>
->> You right that we need to check for BUSY, since the XDP ring might be
->> stale! Thanks for catching this! Can you respin this patch, with just
->> this hunk? (Unless I'm wrong! :-))
-> 
-> This check itself will not be enough, unless you wrap i40e_xsk_wakeup
-> with rcu_read_lock.
-> 
-> i40e_xsk_wakeup does some checks in the beginning, then the main part of
-> the code goes. My assumption is that if the checks don't pass, the main
-> part will fail in some way (e.g., NULL or dangling pointer when
-> accessing the ring), otherwise you wouldn't need those checks at all.
-> Without RCU, even if you do these checks, it may still fail in the
-> following scenario:
-> 
-> 1. i40e_xsk_wakeup starts running, checks the flag, the flag is set, the
-> function goes on.
-> 
-> 2. The flag gets cleared.
-> 
-> 3. The resources are destroyed.
-> 
-> 4. i40e_xsk_wakeup tries to access the resources that were destroyed.
-> 
-> I don't see anything in i40e and ixgbe that currently protects from such
-> a race condition. If I'm missing anything, please point me to it,
-> otherwise i40e_xsk_wakeup really needs to be wrapped into rcu_read_lock.
-> I would prefer to have rcu_read_lock in the kernel, so that all drivers
-> could benefit from it, because I think it's the same issue in all
-> drivers, but I'm fine with moving it to the drivers if there is a reason
-> why some drivers may not need it.
-> 
-> Thanks for taking a look. Let's settle the case with Intel's drivers, so
-> that I will know what fixes to include into the respin.
->
+This patch is just a preparation for additional register dump in regs_buff.
+To make new register insertion in the middle of regs_buff array easier
+change array indexing to use local counter reg_ix.
 
-Max, you're right. It's not correct without RCU locking. Thanks for the
-patience.
+---
 
-For the Intel ndo_xsk_wakeup implementation we need to make sure that 
-the 1. umem(socket) exists, and that the 2. XDP rings exists for the 
-duration of the call.
+Basically this path is just a subject to ask
+How to add a new register to dump from dataseet
+Because it is logically better to add an additional register
+in the middle of an array but that will break ABI.
+To not have the ABI problem we should just add it at the
+end of the array and increase the array size.
 
-1. In xsk_unbind_dev() the state is changed to UNBOUND and then
-    followed by synchronize_net(). It would be, as you wrote, incorrect
-    without RCU locking the ndo_xsk_wakeup() region.
+---
 
-2. To ensure that the XDP rings are intact for the duration of the
-    ndo_xsk_wakeup(), a synchronize_rcu() is required when the XDP
-    program is swapped out (prog->NULL).
+Signed-off-by: Vasyl Gomonovych <gomonovych@gmail.com>
+---
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 110 ++++++++++---------
+ 1 file changed, 57 insertions(+), 53 deletions(-)
 
-Again, both 1 and 2 requires RCU locking.
-
-What do you think about the this patch for xsk.c (and the Intel 
-drivers)? It moves all ndo_xsk_wakeup calls do one place.
-
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h 
-b/drivers/net/ethernet/intel/i40e/i40e.h
-index cb6367334ca7..4833187bd259 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -1152,7 +1152,7 @@ void i40e_set_fec_in_flags(u8 fec_cfg, u32 *flags);
-
-  static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
-  {
--	return !!vsi->xdp_prog;
-+	return !!READ_ONCE(vsi->xdp_prog);
-  }
-
-  int i40e_create_queue_channel(struct i40e_vsi *vsi, struct 
-i40e_channel *ch);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c 
-b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1ccabeafa44c..fd084f03f00d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -12546,8 +12546,11 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
-
-  	old_prog = xchg(&vsi->xdp_prog, prog);
-
--	if (need_reset)
-+	if (need_reset) {
-+		if (!prog)
-+			synchronize_rcu();
-  		i40e_reset_and_rebuild(pf, true, true);
-+	}
-
-  	for (i = 0; i < vsi->num_queue_pairs; i++)
-  		WRITE_ONCE(vsi->rx_rings[i]->xdp_prog, vsi->xdp_prog);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c 
-b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 25c097cd8100..adff2cbcde1a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -10261,7 +10261,11 @@ static int ixgbe_xdp_setup(struct net_device 
-*dev, struct bpf_prog *prog)
-
-  	/* If transitioning XDP modes reconfigure rings */
-  	if (need_reset) {
--		int err = ixgbe_setup_tc(dev, adapter->hw_tcs);
-+		int err;
-+
-+		if (!prog)
-+			synchronize_rcu();
-+		err = ixgbe_setup_tc(dev, adapter->hw_tcs);
-
-  		if (err) {
-  			rcu_assign_pointer(adapter->xdp_prog, old_prog);
-diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
-index 956793893c9d..dbf06c3b7061 100644
---- a/net/xdp/xsk.c
-+++ b/net/xdp/xsk.c
-@@ -334,12 +334,20 @@ bool xsk_umem_consume_tx(struct xdp_umem *umem, 
-struct xdp_desc *desc)
-  }
-  EXPORT_SYMBOL(xsk_umem_consume_tx);
-
--static int xsk_zc_xmit(struct xdp_sock *xs)
-+static int xsk_wakeup(struct xdp_sock *xs, u8 flags)
-  {
-  	struct net_device *dev = xs->dev;
-+	int err;
-
--	return dev->netdev_ops->ndo_xsk_wakeup(dev, xs->queue_id,
--					       XDP_WAKEUP_TX);
-+	rcu_read_lock();
-+	err = dev->netdev_ops->ndo_xsk_wakeup(dev, xs->queue_id, flags);
-+	rcu_read_unlock();
-+	return err;
-+}
-+
-+static int xsk_zc_xmit(struct xdp_sock *xs)
-+{
-+	return xsk_wakeup(xs, XDP_WAKEUP_TX);
-  }
-
-  static void xsk_destruct_skb(struct sk_buff *skb)
-@@ -453,19 +461,16 @@ static __poll_t xsk_poll(struct file *file, struct 
-socket *sock,
-  	__poll_t mask = datagram_poll(file, sock, wait);
-  	struct sock *sk = sock->sk;
-  	struct xdp_sock *xs = xdp_sk(sk);
--	struct net_device *dev;
-  	struct xdp_umem *umem;
-
-  	if (unlikely(!xsk_is_bound(xs)))
-  		return mask;
-
--	dev = xs->dev;
-  	umem = xs->umem;
-
-  	if (umem->need_wakeup) {
--		if (dev->netdev_ops->ndo_xsk_wakeup)
--			dev->netdev_ops->ndo_xsk_wakeup(dev, xs->queue_id,
--							umem->need_wakeup);
-+		if (xs->zc)
-+			xsk_wakeup(umem->need_wakeup);
-  		else
-  			/* Poll needs to drive Tx also in copy mode */
-  			__xsk_sendmsg(sk);
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 3182b059bf55..4531f7ea9d99 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -459,6 +459,7 @@ static void igb_get_regs(struct net_device *netdev,
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 *regs_buff = p;
+ 	u8 i;
++	int reg_ix = 0;
+ 
+ 	memset(p, 0, IGB_REGS_LEN * sizeof(u32));
+ 
+@@ -603,116 +604,119 @@ static void igb_get_regs(struct net_device *netdev,
+ 	regs_buff[119] = adapter->stats.scvpc;
+ 	regs_buff[120] = adapter->stats.hrmpc;
+ 
++	reg_ix = 121;
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[121 + i] = rd32(E1000_SRRCTL(i));
++		regs_buff[reg_ix++] = rd32(E1000_SRRCTL(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[125 + i] = rd32(E1000_PSRTYPE(i));
++		regs_buff[reg_ix++] = rd32(E1000_PSRTYPE(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[129 + i] = rd32(E1000_RDBAL(i));
++		regs_buff[reg_ix++] = rd32(E1000_RDBAL(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[133 + i] = rd32(E1000_RDBAH(i));
++		regs_buff[reg_ix++] = rd32(E1000_RDBAH(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[137 + i] = rd32(E1000_RDLEN(i));
++		regs_buff[reg_ix++] = rd32(E1000_RDLEN(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[141 + i] = rd32(E1000_RDH(i));
++		regs_buff[reg_ix++] = rd32(E1000_RDH(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[145 + i] = rd32(E1000_RDT(i));
++		regs_buff[reg_ix++] = rd32(E1000_RDT(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[149 + i] = rd32(E1000_RXDCTL(i));
++		regs_buff[reg_ix++] = rd32(E1000_RXDCTL(i));
+ 
+ 	for (i = 0; i < 10; i++)
+-		regs_buff[153 + i] = rd32(E1000_EITR(i));
++		regs_buff[reg_ix++] = rd32(E1000_EITR(i));
+ 	for (i = 0; i < 8; i++)
+-		regs_buff[163 + i] = rd32(E1000_IMIR(i));
++		regs_buff[reg_ix++] = rd32(E1000_IMIR(i));
+ 	for (i = 0; i < 8; i++)
+-		regs_buff[171 + i] = rd32(E1000_IMIREXT(i));
++		regs_buff[reg_ix++] = rd32(E1000_IMIREXT(i));
+ 	for (i = 0; i < 16; i++)
+-		regs_buff[179 + i] = rd32(E1000_RAL(i));
++		regs_buff[reg_ix++] = rd32(E1000_RAL(i));
+ 	for (i = 0; i < 16; i++)
+-		regs_buff[195 + i] = rd32(E1000_RAH(i));
++		regs_buff[reg_ix++] = rd32(E1000_RAH(i));
+ 
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[211 + i] = rd32(E1000_TDBAL(i));
++		regs_buff[reg_ix++] = rd32(E1000_TDBAL(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[215 + i] = rd32(E1000_TDBAH(i));
++		regs_buff[reg_ix++] = rd32(E1000_TDBAH(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[219 + i] = rd32(E1000_TDLEN(i));
++		regs_buff[reg_ix++] = rd32(E1000_TDLEN(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[223 + i] = rd32(E1000_TDH(i));
++		regs_buff[reg_ix++] = rd32(E1000_TDH(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[227 + i] = rd32(E1000_TDT(i));
++		regs_buff[reg_ix++] = rd32(E1000_TDT(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[231 + i] = rd32(E1000_TXDCTL(i));
++		regs_buff[reg_ix++] = rd32(E1000_TXDCTL(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[235 + i] = rd32(E1000_TDWBAL(i));
++		regs_buff[reg_ix++] = rd32(E1000_TDWBAL(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[239 + i] = rd32(E1000_TDWBAH(i));
++		regs_buff[reg_ix++] = rd32(E1000_TDWBAH(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[243 + i] = rd32(E1000_DCA_TXCTRL(i));
++		regs_buff[reg_ix++] = rd32(E1000_DCA_TXCTRL(i));
+ 
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[247 + i] = rd32(E1000_IP4AT_REG(i));
++		regs_buff[reg_ix++] = rd32(E1000_IP4AT_REG(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[251 + i] = rd32(E1000_IP6AT_REG(i));
++		regs_buff[reg_ix++] = rd32(E1000_IP6AT_REG(i));
+ 	for (i = 0; i < 32; i++)
+-		regs_buff[255 + i] = rd32(E1000_WUPM_REG(i));
++		regs_buff[reg_ix++] = rd32(E1000_WUPM_REG(i));
+ 	for (i = 0; i < 128; i++)
+-		regs_buff[287 + i] = rd32(E1000_FFMT_REG(i));
++		regs_buff[reg_ix++] = rd32(E1000_FFMT_REG(i));
+ 	for (i = 0; i < 128; i++)
+-		regs_buff[415 + i] = rd32(E1000_FFVT_REG(i));
++		regs_buff[reg_ix++] = rd32(E1000_FFVT_REG(i));
+ 	for (i = 0; i < 4; i++)
+-		regs_buff[543 + i] = rd32(E1000_FFLT_REG(i));
++		regs_buff[reg_ix++] = rd32(E1000_FFLT_REG(i));
+ 
+-	regs_buff[547] = rd32(E1000_TDFH);
+-	regs_buff[548] = rd32(E1000_TDFT);
+-	regs_buff[549] = rd32(E1000_TDFHS);
+-	regs_buff[550] = rd32(E1000_TDFPC);
++	regs_buff[reg_ix++] = rd32(E1000_TDFH);
++	regs_buff[reg_ix++] = rd32(E1000_TDFT);
++	regs_buff[reg_ix++] = rd32(E1000_TDFHS);
++	regs_buff[reg_ix++] = rd32(E1000_TDFPC);
+ 
+ 	if (hw->mac.type > e1000_82580) {
+-		regs_buff[551] = adapter->stats.o2bgptc;
+-		regs_buff[552] = adapter->stats.b2ospc;
+-		regs_buff[553] = adapter->stats.o2bspc;
+-		regs_buff[554] = adapter->stats.b2ogprc;
++		regs_buff[reg_ix++] = adapter->stats.o2bgptc;
++		regs_buff[reg_ix++] = adapter->stats.b2ospc;
++		regs_buff[reg_ix++] = adapter->stats.o2bspc;
++		regs_buff[reg_ix++] = adapter->stats.b2ogprc;
+ 	}
+ 
++	reg_ix = 555;
+ 	if (hw->mac.type == e1000_82576) {
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[555 + i] = rd32(E1000_SRRCTL(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_SRRCTL(i + 4));
+ 		for (i = 0; i < 4; i++)
+-			regs_buff[567 + i] = rd32(E1000_PSRTYPE(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_PSRTYPE(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[571 + i] = rd32(E1000_RDBAL(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_RDBAL(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[583 + i] = rd32(E1000_RDBAH(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_RDBAH(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[595 + i] = rd32(E1000_RDLEN(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_RDLEN(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[607 + i] = rd32(E1000_RDH(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_RDH(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[619 + i] = rd32(E1000_RDT(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_RDT(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[631 + i] = rd32(E1000_RXDCTL(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_RXDCTL(i + 4));
+ 
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[643 + i] = rd32(E1000_TDBAL(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_TDBAL(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[655 + i] = rd32(E1000_TDBAH(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_TDBAH(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[667 + i] = rd32(E1000_TDLEN(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_TDLEN(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[679 + i] = rd32(E1000_TDH(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_TDH(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[691 + i] = rd32(E1000_TDT(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_TDT(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[703 + i] = rd32(E1000_TXDCTL(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_TXDCTL(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[715 + i] = rd32(E1000_TDWBAL(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_TDWBAL(i + 4));
+ 		for (i = 0; i < 12; i++)
+-			regs_buff[727 + i] = rd32(E1000_TDWBAH(i + 4));
++			regs_buff[reg_ix++] = rd32(E1000_TDWBAH(i + 4));
+ 	}
+ 
++	reg_ix = 739;
+ 	if (hw->mac.type == e1000_i210 || hw->mac.type == e1000_i211)
+-		regs_buff[739] = rd32(E1000_I210_RR2DCDELAY);
++		regs_buff[reg_ix] = rd32(E1000_I210_RR2DCDELAY);
+ }
+ 
+ static int igb_get_eeprom_len(struct net_device *netdev)
+-- 
+2.17.1
 
