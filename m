@@ -1,8 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 12 Dec 2019 03:12:53 -0800
-Subject: [Intel-wired-lan] [PATCH S35 01/15] ice: Support UDP segmentation
- offload
-Message-ID: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
+Date: Thu, 12 Dec 2019 03:13:01 -0800
+Subject: [Intel-wired-lan] [PATCH S35 09/15] ice: Fix VF link state when
+ it's IFLA_VF_LINK_STATE_AUTO
+In-Reply-To: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
+References: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
+Message-ID: <20191212111307.33566-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,64 +13,136 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Based on the work done by Alex Duyck on other Intel drivers, add code to
-support UDP segmentation offload (USO) for the ice driver.
+Currently the flow for ice_set_vf_link_state() is not configuring link
+the same as all other VF link configuration flows. Fix this by only
+setting the necessary VF members in ice_set_vf_link_state() and then
+call ice_vc_notify_link_state() to actually configure link for the
+VF. This made ice_set_pfe_link_forced() unnecessary, so it was
+deleted. Also, this commonizes the link flows for the VF to all call
+ice_vc_notify_link_state().
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c |  3 ++-
- drivers/net/ethernet/intel/ice/ice_txrx.c | 15 ++++++++++++---
- 2 files changed, 14 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c     |  3 +-
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 56 ++++---------------
+ 2 files changed, 12 insertions(+), 47 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index d8809a5c07d6..31cd816e7cfb 100644
+index 9378a278206d..c2811b56f569 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2336,7 +2336,8 @@ static void ice_set_netdev_features(struct net_device *netdev)
- 			 NETIF_F_HW_VLAN_CTAG_TX     |
- 			 NETIF_F_HW_VLAN_CTAG_RX;
+@@ -847,8 +847,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
+ 	ice_vsi_link_event(vsi, link_up);
+ 	ice_print_link_msg(vsi, link_up);
  
--	tso_features = NETIF_F_TSO;
-+	tso_features = NETIF_F_TSO		|
-+		       NETIF_F_GSO_UDP_L4;
+-	if (pf->num_alloc_vfs)
+-		ice_vc_notify_link_state(pf);
++	ice_vc_notify_link_state(pf);
  
- 	/* set features that user can change */
- 	netdev->hw_features = dflt_features | csumo_features |
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 2c212f64d99f..b77514bbd7ba 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1925,6 +1925,7 @@ int ice_tso(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
- 	} ip;
- 	union {
- 		struct tcphdr *tcp;
-+		struct udphdr *udp;
- 		unsigned char *hdr;
- 	} l4;
- 	u64 cd_mss, cd_tso_len;
-@@ -1958,10 +1959,18 @@ int ice_tso(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+ 	return result;
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 54c576bb62ad..c1708eb7ee75 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -121,26 +121,6 @@ ice_set_pfe_link(struct ice_vf *vf, struct virtchnl_pf_event *pfe,
+ 	}
+ }
  
- 	/* remove payload length from checksum */
- 	paylen = skb->len - l4_start;
--	csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
+-/**
+- * ice_set_pfe_link_forced - Force the virtchnl_pf_event link speed/status
+- * @vf: pointer to the VF structure
+- * @pfe: pointer to the virtchnl_pf_event to set link speed/status for
+- * @link_up: whether or not to set the link up/down
+- */
+-static void
+-ice_set_pfe_link_forced(struct ice_vf *vf, struct virtchnl_pf_event *pfe,
+-			bool link_up)
+-{
+-	u16 link_speed;
+-
+-	if (link_up)
+-		link_speed = ICE_AQ_LINK_SPEED_100GB;
+-	else
+-		link_speed = ICE_AQ_LINK_SPEED_UNKNOWN;
+-
+-	ice_set_pfe_link(vf, pfe, link_speed, link_up);
+-}
+-
+ /**
+  * ice_vc_notify_vf_link_state - Inform a VF of link status
+  * @vf: pointer to the VF structure
+@@ -161,13 +141,17 @@ static void ice_vc_notify_vf_link_state(struct ice_vf *vf)
+ 	pfe.severity = PF_EVENT_SEVERITY_INFO;
  
--	/* compute length of segmentation header */
--	off->header_len = (l4.tcp->doff * 4) + l4_start;
-+	if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_L4) {
-+		csum_replace_by_diff(&l4.udp->check,
-+				     (__force __wsum)htonl(paylen));
-+		/* compute length of UDP segmentation header */
-+		off->header_len = sizeof(l4.udp) + l4_start;
+ 	/* Always report link is down if the VF queues aren't enabled */
+-	if (!vf->num_qs_ena)
++	if (!vf->num_qs_ena) {
+ 		ice_set_pfe_link(vf, &pfe, ICE_AQ_LINK_SPEED_UNKNOWN, false);
+-	else if (vf->link_forced)
+-		ice_set_pfe_link_forced(vf, &pfe, vf->link_up);
+-	else
+-		ice_set_pfe_link(vf, &pfe, ls->link_speed, ls->link_info &
+-				 ICE_AQ_LINK_UP);
++	} else if (vf->link_forced) {
++		u16 link_speed = vf->link_up ?
++			ls->link_speed : ICE_AQ_LINK_SPEED_UNKNOWN;
++
++		ice_set_pfe_link(vf, &pfe, link_speed, vf->link_up);
 +	} else {
-+		csum_replace_by_diff(&l4.tcp->check,
-+				     (__force __wsum)htonl(paylen));
-+		/* compute length of TCP segmentation header */
-+		off->header_len = (l4.tcp->doff * 4) + l4_start;
++		ice_set_pfe_link(vf, &pfe, ls->link_speed,
++				 ls->link_info & ICE_AQ_LINK_UP);
 +	}
  
- 	/* update gso_segs and bytecount */
- 	first->gso_segs = skb_shinfo(skb)->gso_segs;
+ 	ice_aq_send_msg_to_vf(hw, vf->vf_id, VIRTCHNL_OP_EVENT,
+ 			      VIRTCHNL_STATUS_SUCCESS, (u8 *)&pfe,
+@@ -3367,28 +3351,18 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
+ int ice_set_vf_link_state(struct net_device *netdev, int vf_id, int link_state)
+ {
+ 	struct ice_pf *pf = ice_netdev_to_pf(netdev);
+-	struct virtchnl_pf_event pfe = { 0 };
+-	struct ice_link_status *ls;
+ 	struct ice_vf *vf;
+-	struct ice_hw *hw;
+ 
+ 	if (ice_validate_vf_id(pf, vf_id))
+ 		return -EINVAL;
+ 
+ 	vf = &pf->vf[vf_id];
+-	hw = &pf->hw;
+-	ls = &pf->hw.port_info->phy.link_info;
+-
+ 	if (ice_check_vf_init(pf, vf))
+ 		return -EBUSY;
+ 
+-	pfe.event = VIRTCHNL_EVENT_LINK_CHANGE;
+-	pfe.severity = PF_EVENT_SEVERITY_INFO;
+-
+ 	switch (link_state) {
+ 	case IFLA_VF_LINK_STATE_AUTO:
+ 		vf->link_forced = false;
+-		vf->link_up = ls->link_info & ICE_AQ_LINK_UP;
+ 		break;
+ 	case IFLA_VF_LINK_STATE_ENABLE:
+ 		vf->link_forced = true;
+@@ -3402,15 +3376,7 @@ int ice_set_vf_link_state(struct net_device *netdev, int vf_id, int link_state)
+ 		return -EINVAL;
+ 	}
+ 
+-	if (vf->link_forced)
+-		ice_set_pfe_link_forced(vf, &pfe, vf->link_up);
+-	else
+-		ice_set_pfe_link(vf, &pfe, ls->link_speed, vf->link_up);
+-
+-	/* Notify the VF of its new link state */
+-	ice_aq_send_msg_to_vf(hw, vf->vf_id, VIRTCHNL_OP_EVENT,
+-			      VIRTCHNL_STATUS_SUCCESS, (u8 *)&pfe,
+-			      sizeof(pfe), NULL);
++	ice_vc_notify_vf_link_state(vf);
+ 
+ 	return 0;
+ }
 -- 
 2.20.1
 
