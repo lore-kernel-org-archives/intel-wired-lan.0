@@ -1,190 +1,37 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 12 Dec 2019 03:12:58 -0800
-Subject: [Intel-wired-lan] [PATCH S35 06/15] ice: Restore interrupt throttle
- settings after VSI rebuild
+Date: Thu, 12 Dec 2019 03:13:03 -0800
+Subject: [Intel-wired-lan] [PATCH S35 11/15] ice: Demote MTU change print to
+ debug
 In-Reply-To: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
 References: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191212111307.33566-6-anthony.l.nguyen@intel.com>
+Message-ID: <20191212111307.33566-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Following the changes of commit 12299132b3d3 ("net: ethernet: intel: Demote
+MTU change prints to debug"), change the MTU change message to netdev_dbg()
 
-After each rebuild driver deallocates q_vectors, so the interrupt
-throttle rate (ITR) settings get lost.
-
-Create a function to save and restore ITR for each queue. If a user
-increases the number of queues, restore all the previous queue
-settings for each existing queue, and the additional queues will
-get the default setting.
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c  | 102 ++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_txrx.h |   6 ++
- 2 files changed, 108 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 0581df95f3a1..1f47c39f4e86 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2453,6 +2453,97 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index c2811b56f569..0c10fc4c2797 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4924,7 +4924,7 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
+ 	ice_for_each_peer(pf, event, ice_peer_check_for_reg);
  
-+/**
-+ * ice_vsi_rebuild_update_coalesce - set coalesce for a q_vector
-+ * @q_vector: pointer to q_vector which is being updated
-+ * @coalesce: pointer to array of struct with stored coalesce
-+ *
-+ * Set coalesce param in q_vector and update these parameters in HW.
-+ */
-+static void
-+ice_vsi_rebuild_update_coalesce(struct ice_q_vector *q_vector,
-+				struct ice_coalesce_stored *coalesce)
-+{
-+	struct ice_ring_container *rx_rc = &q_vector->rx;
-+	struct ice_ring_container *tx_rc = &q_vector->tx;
-+	struct ice_hw *hw = &q_vector->vsi->back->hw;
-+
-+	tx_rc->itr_setting = coalesce->itr_tx;
-+	rx_rc->itr_setting = coalesce->itr_rx;
-+
-+	/* dynamic ITR values will be updated during Tx/Rx */
-+	if (!ITR_IS_DYNAMIC(tx_rc->itr_setting))
-+		wr32(hw, GLINT_ITR(tx_rc->itr_idx, q_vector->reg_idx),
-+		     ITR_REG_ALIGN(tx_rc->itr_setting) >>
-+		     ICE_ITR_GRAN_S);
-+	if (!ITR_IS_DYNAMIC(rx_rc->itr_setting))
-+		wr32(hw, GLINT_ITR(rx_rc->itr_idx, q_vector->reg_idx),
-+		     ITR_REG_ALIGN(rx_rc->itr_setting) >>
-+		     ICE_ITR_GRAN_S);
-+
-+	q_vector->intrl = coalesce->intrl;
-+	wr32(hw, GLINT_RATE(q_vector->reg_idx),
-+	     ice_intrl_usec_to_reg(q_vector->intrl, hw->intrl_gran));
-+}
-+
-+/**
-+ * ice_vsi_rebuild_get_coalesce - get coalesce from all q_vectors
-+ * @vsi: VSI connected with q_vectors
-+ * @coalesce: array of struct with stored coalesce
-+ *
-+ * Returns array size.
-+ */
-+static int
-+ice_vsi_rebuild_get_coalesce(struct ice_vsi *vsi,
-+			     struct ice_coalesce_stored *coalesce)
-+{
-+	int i;
-+
-+	ice_for_each_q_vector(vsi, i) {
-+		struct ice_q_vector *q_vector = vsi->q_vectors[i];
-+
-+		coalesce[i].itr_tx = q_vector->tx.itr_setting;
-+		coalesce[i].itr_rx = q_vector->rx.itr_setting;
-+		coalesce[i].intrl = q_vector->intrl;
-+	}
-+
-+	return vsi->num_q_vectors;
-+}
-+
-+/**
-+ * ice_vsi_rebuild_set_coalesce - set coalesce from earlier saved arrays
-+ * @vsi: VSI connected with q_vectors
-+ * @coalesce: pointer to array of struct with stored coalesce
-+ * @size: size of coalesce array
-+ *
-+ * Before this function, ice_vsi_rebuild_get_coalesce should be called to save
-+ * ITR params in arrays. If size is 0 or coalesce wasn't stored set coalesce
-+ * to default value.
-+ */
-+static void
-+ice_vsi_rebuild_set_coalesce(struct ice_vsi *vsi,
-+			     struct ice_coalesce_stored *coalesce, int size)
-+{
-+	int i;
-+
-+	if ((size && !coalesce) || !vsi)
-+		return;
-+
-+	for (i = 0; i < size && i < vsi->num_q_vectors; i++)
-+		ice_vsi_rebuild_update_coalesce(vsi->q_vectors[i],
-+						&coalesce[i]);
-+
-+	for (; i < vsi->num_q_vectors; i++) {
-+		struct ice_coalesce_stored coalesce_dflt = {
-+			.itr_tx = ICE_DFLT_TX_ITR,
-+			.itr_rx = ICE_DFLT_RX_ITR,
-+			.intrl = 0
-+		};
-+		ice_vsi_rebuild_update_coalesce(vsi->q_vectors[i],
-+						&coalesce_dflt);
-+	}
-+}
-+
- /**
-  * ice_vsi_rebuild - Rebuild VSI after reset
-  * @vsi: VSI to be rebuild
-@@ -2463,6 +2554,8 @@ int ice_vsi_release(struct ice_vsi *vsi)
- int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- {
- 	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
-+	struct ice_coalesce_stored *coalesce;
-+	int prev_num_q_vectors = 0;
- 	struct ice_vf *vf = NULL;
- 	enum ice_status status;
- 	struct ice_pf *pf;
-@@ -2475,6 +2568,11 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 	if (vsi->type == ICE_VSI_VF)
- 		vf = &pf->vf[vsi->vf_id];
- 
-+	coalesce = kcalloc(vsi->num_q_vectors,
-+			   sizeof(struct ice_coalesce_stored), GFP_KERNEL);
-+	if (coalesce)
-+		prev_num_q_vectors = ice_vsi_rebuild_get_coalesce(vsi,
-+								  coalesce);
- 	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
- 	ice_vsi_free_q_vectors(vsi);
- 
-@@ -2587,6 +2685,9 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 			return ice_schedule_reset(pf, ICE_RESET_PFR);
- 		}
- 	}
-+	ice_vsi_rebuild_set_coalesce(vsi, coalesce, prev_num_q_vectors);
-+	kfree(coalesce);
-+
- 	return 0;
- 
- err_vectors:
-@@ -2601,6 +2702,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- err_vsi:
- 	ice_vsi_clear(vsi);
- 	set_bit(__ICE_RESET_FAILED, pf->state);
-+	kfree(coalesce);
- 	return ret;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index a84cc0e6dd27..a86270696df1 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -341,6 +341,12 @@ struct ice_ring_container {
- 	u16 itr_setting;
- };
- 
-+struct ice_coalesce_stored {
-+	u16 itr_tx;
-+	u16 itr_rx;
-+	u8 intrl;
-+};
-+
- /* iterator for handling rings in ring container */
- #define ice_for_each_ring(pos, head) \
- 	for (pos = (head).ring; pos; pos = pos->next)
+ out:
+-	netdev_info(netdev, "changed MTU to %d\n", new_mtu);
++	netdev_dbg(netdev, "changed MTU to %d\n", new_mtu);
+ free_event:
+ 	kfree(event);
+ 	return err;
 -- 
 2.20.1
 
