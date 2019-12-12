@@ -1,84 +1,177 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 12 Dec 2019 03:13:06 -0800
-Subject: [Intel-wired-lan] [PATCH S35 14/15] ice: Add a boundary check in
- ice_xsk_umem()
+Date: Thu, 12 Dec 2019 03:13:00 -0800
+Subject: [Intel-wired-lan] [PATCH S35 08/15] ice: Remove Rx flex descriptor
+ programming
 In-Reply-To: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
 References: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
-Message-ID: <20191212111307.33566-14-anthony.l.nguyen@intel.com>
+Message-ID: <20191212111307.33566-8-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+From: Vignesh Sridhar <vignesh.sridhar@intel.com>
 
-In ice_xsk_umem(), variable qid which is later used as an array index,
-is not validated for a possible boundary exceedance. Because of that,
-a calling function might receive an invalid address, which causes
-general protection fault when dereferenced.
+Remove Rx flex descriptor metadata and flag programming; per specification
+these registers cannot be written to as they are read only.
 
-To address this, add a boundary check to see if qid is greater than the
-size of a UMEM array. Also, don't let user change vsi->num_xsk_umems
-just by trying to setup a second UMEM if its value is already set up
-(i.e. UMEM region has already been allocated for this VSI).
-
-While at it, make sure that ring->zca.free pointer is always zeroed out
-if there is no UMEM on a specified ring.
-
-Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+Signed-off-by: Vignesh Sridhar <vignesh.sridhar@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h      | 5 +++--
- drivers/net/ethernet/intel/ice/ice_base.c | 1 +
- drivers/net/ethernet/intel/ice/ice_xsk.c  | 3 ++-
- 3 files changed, 6 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c   | 104 ------------------
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |   9 --
+ 2 files changed, 113 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index b2b1f7b1d932..3dc523fff034 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -476,12 +476,13 @@ static inline void ice_set_ring_xdp(struct ice_ring *ring)
- static inline struct xdp_umem *ice_xsk_umem(struct ice_ring *ring)
- {
- 	struct xdp_umem **umems = ring->vsi->xsk_umems;
--	int qid = ring->q_index;
-+	u16 qid = ring->q_index;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 28958c0a762a..86bf8b2ec51d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -7,25 +7,6 @@
  
- 	if (ice_ring_is_xdp(ring))
- 		qid -= ring->vsi->num_xdp_txq;
+ #define ICE_PF_RESET_WAIT_COUNT	200
  
--	if (!umems || !umems[qid] || !ice_is_xdp_ena_vsi(ring->vsi))
-+	if (qid >= ring->vsi->num_xsk_umems || !umems || !umems[qid] ||
-+	    !ice_is_xdp_ena_vsi(ring->vsi))
- 		return NULL;
+-#define ICE_PROG_FLEX_ENTRY(hw, rxdid, mdid, idx) \
+-	wr32((hw), GLFLXP_RXDID_FLX_WRD_##idx(rxdid), \
+-	     ((ICE_RX_OPC_MDID << \
+-	       GLFLXP_RXDID_FLX_WRD_##idx##_RXDID_OPCODE_S) & \
+-	      GLFLXP_RXDID_FLX_WRD_##idx##_RXDID_OPCODE_M) | \
+-	     (((mdid) << GLFLXP_RXDID_FLX_WRD_##idx##_PROT_MDID_S) & \
+-	      GLFLXP_RXDID_FLX_WRD_##idx##_PROT_MDID_M))
+-
+-#define ICE_PROG_FLG_ENTRY(hw, rxdid, flg_0, flg_1, flg_2, flg_3, idx) \
+-	wr32((hw), GLFLXP_RXDID_FLAGS(rxdid, idx), \
+-	     (((flg_0) << GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S) & \
+-	      GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M) | \
+-	     (((flg_1) << GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S) & \
+-	      GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_M) | \
+-	     (((flg_2) << GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_S) & \
+-	      GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_M) | \
+-	     (((flg_3) << GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_S) & \
+-	      GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_M))
+-
+ /**
+  * ice_set_mac_type - Sets MAC type
+  * @hw: pointer to the HW structure
+@@ -347,88 +328,6 @@ ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
+ 	return 0;
+ }
  
- 	return umems[qid];
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index d4559d45288f..25f2e0fb3833 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -326,6 +326,7 @@ int ice_setup_rx_ctx(struct ice_ring *ring)
- 			dev_info(&vsi->back->pdev->dev, "Registered XDP mem model MEM_TYPE_ZERO_COPY on Rx ring %d\n",
- 				 ring->q_index);
- 		} else {
-+			ring->zca.free = NULL;
- 			if (!xdp_rxq_info_is_reg(&ring->xdp_rxq))
- 				xdp_rxq_info_reg(&ring->xdp_rxq,
- 						 ring->netdev,
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index cf9b8b22d24f..be787efaa9d5 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -414,7 +414,8 @@ ice_xsk_umem_enable(struct ice_vsi *vsi, struct xdp_umem *umem, u16 qid)
- 	if (vsi->type != ICE_VSI_PF)
- 		return -EINVAL;
+-/**
+- * ice_init_flex_flags
+- * @hw: pointer to the hardware structure
+- * @prof_id: Rx Descriptor Builder profile ID
+- *
+- * Function to initialize Rx flex flags
+- */
+-static void ice_init_flex_flags(struct ice_hw *hw, enum ice_rxdid prof_id)
+-{
+-	u8 idx = 0;
+-
+-	/* Flex-flag fields (0-2) are programmed with FLG64 bits with layout:
+-	 * flexiflags0[5:0] - TCP flags, is_packet_fragmented, is_packet_UDP_GRE
+-	 * flexiflags1[3:0] - Not used for flag programming
+-	 * flexiflags2[7:0] - Tunnel and VLAN types
+-	 * 2 invalid fields in last index
+-	 */
+-	switch (prof_id) {
+-	/* Rx flex flags are currently programmed for the NIC profiles only.
+-	 * Different flag bit programming configurations can be added per
+-	 * profile as needed.
+-	 */
+-	case ICE_RXDID_FLEX_NIC:
+-	case ICE_RXDID_FLEX_NIC_2:
+-		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_PKT_FRG,
+-				   ICE_FLG_UDP_GRE, ICE_FLG_PKT_DSI,
+-				   ICE_FLG_FIN, idx++);
+-		/* flex flag 1 is not used for flexi-flag programming, skipping
+-		 * these four FLG64 bits.
+-		 */
+-		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_SYN, ICE_FLG_RST,
+-				   ICE_FLG_PKT_DSI, ICE_FLG_PKT_DSI, idx++);
+-		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_PKT_DSI,
+-				   ICE_FLG_PKT_DSI, ICE_FLG_EVLAN_x8100,
+-				   ICE_FLG_EVLAN_x9100, idx++);
+-		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_VLAN_x8100,
+-				   ICE_FLG_TNL_VLAN, ICE_FLG_TNL_MAC,
+-				   ICE_FLG_TNL0, idx++);
+-		ICE_PROG_FLG_ENTRY(hw, prof_id, ICE_FLG_TNL1, ICE_FLG_TNL2,
+-				   ICE_FLG_PKT_DSI, ICE_FLG_PKT_DSI, idx);
+-		break;
+-
+-	default:
+-		ice_debug(hw, ICE_DBG_INIT,
+-			  "Flag programming for profile ID %d not supported\n",
+-			  prof_id);
+-	}
+-}
+-
+-/**
+- * ice_init_flex_flds
+- * @hw: pointer to the hardware structure
+- * @prof_id: Rx Descriptor Builder profile ID
+- *
+- * Function to initialize flex descriptors
+- */
+-static void ice_init_flex_flds(struct ice_hw *hw, enum ice_rxdid prof_id)
+-{
+-	enum ice_flex_rx_mdid mdid;
+-
+-	switch (prof_id) {
+-	case ICE_RXDID_FLEX_NIC:
+-	case ICE_RXDID_FLEX_NIC_2:
+-		ICE_PROG_FLEX_ENTRY(hw, prof_id, ICE_RX_MDID_HASH_LOW, 0);
+-		ICE_PROG_FLEX_ENTRY(hw, prof_id, ICE_RX_MDID_HASH_HIGH, 1);
+-		ICE_PROG_FLEX_ENTRY(hw, prof_id, ICE_RX_MDID_FLOW_ID_LOWER, 2);
+-
+-		mdid = (prof_id == ICE_RXDID_FLEX_NIC_2) ?
+-			ICE_RX_MDID_SRC_VSI : ICE_RX_MDID_FLOW_ID_HIGH;
+-
+-		ICE_PROG_FLEX_ENTRY(hw, prof_id, mdid, 3);
+-
+-		ice_init_flex_flags(hw, prof_id);
+-		break;
+-
+-	default:
+-		ice_debug(hw, ICE_DBG_INIT,
+-			  "Field init for profile ID %d not supported\n",
+-			  prof_id);
+-	}
+-}
+-
+ /**
+  * ice_init_fltr_mgmt_struct - initializes filter management list and locks
+  * @hw: pointer to the HW struct
+@@ -882,9 +781,6 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
  
--	vsi->num_xsk_umems = min_t(u16, vsi->num_rxq, vsi->num_txq);
-+	if (!vsi->num_xsk_umems)
-+		vsi->num_xsk_umems = min_t(u16, vsi->num_rxq, vsi->num_txq);
- 	if (qid >= vsi->num_xsk_umems)
- 		return -EINVAL;
- 
+ 	if (status)
+ 		goto err_unroll_fltr_mgmt_struct;
+-
+-	ice_init_flex_flds(hw, ICE_RXDID_FLEX_NIC);
+-	ice_init_flex_flds(hw, ICE_RXDID_FLEX_NIC_2);
+ 	status = ice_init_hw_tbls(hw);
+ 	if (status)
+ 		goto err_unroll_fltr_mgmt_struct;
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index bf9743c970fe..b2502c7fd6ed 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -61,15 +61,6 @@
+ #define PRTDCB_TUP2TC				0x001D26C0
+ #define GL_PREEXT_L2_PMASK0(_i)			(0x0020F0FC + ((_i) * 4))
+ #define GL_PREEXT_L2_PMASK1(_i)			(0x0020F108 + ((_i) * 4))
+-#define GLFLXP_RXDID_FLAGS(_i, _j)		(0x0045D000 + ((_i) * 4 + (_j) * 256))
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S	0
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M	ICE_M(0x3F, 0)
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_S	8
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_1_M	ICE_M(0x3F, 8)
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_S	16
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_2_M	ICE_M(0x3F, 16)
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_S	24
+-#define GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_3_M	ICE_M(0x3F, 24)
+ #define GLFLXP_RXDID_FLX_WRD_0(_i)		(0x0045c800 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_S	0
+ #define GLFLXP_RXDID_FLX_WRD_0_PROT_MDID_M	ICE_M(0xFF, 0)
 -- 
 2.20.1
 
