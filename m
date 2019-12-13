@@ -1,123 +1,35 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 12 Dec 2019 22:50:57 +0100
-Subject: [Intel-wired-lan] [PATCH v1] igc: Add PHY power management
- control
-In-Reply-To: <5825cb7b-04f1-0fea-6de4-feb6239f70d0@intel.com>
-References: <20191212112941.10923-1-sasha.neftin@intel.com>
- <e2b09135-7910-2290-297f-f8e690caa214@molgen.mpg.de>
- <5825cb7b-04f1-0fea-6de4-feb6239f70d0@intel.com>
-Message-ID: <f2eeeaec-3b0d-9a0f-3ddc-408ce85bb874@molgen.mpg.de>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 12 Dec 2019 16:48:49 -0800
+Subject: [Intel-wired-lan] [PATCH] igb: index regs_buff array via index
+ variable
+In-Reply-To: <20191212105847.16488-1-gomonovych@gmail.com>
+References: <20191212105847.16488-1-gomonovych@gmail.com>
+Message-ID: <CAKgT0UeTgGmQGEaJ3ePmCoEW5r5KDMmE0c0jrBGGeb-uzbq=3A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Sasha,
+On Thu, Dec 12, 2019 at 2:58 AM Vasyl Gomonovych <gomonovych@gmail.com> wrote:
+>
+> This patch is just a preparation for additional register dump in regs_buff.
+> To make new register insertion in the middle of regs_buff array easier
+> change array indexing to use local counter reg_ix.
+>
+> ---
+>
+> Basically this path is just a subject to ask
+> How to add a new register to dump from dataseet
+> Because it is logically better to add an additional register
+> in the middle of an array but that will break ABI.
+> To not have the ABI problem we should just add it at the
+> end of the array and increase the array size.
 
+So I am pretty sure the patch probably breaks ABI. The reasons for the
+fixed offsets is because this driver supports multiple parts that have
+different register sets so we cannot have them overlapping.
 
-Am 12.12.19 um 13:08 schrieb Neftin, Sasha:
-> On 12/12/2019 13:33, Paul Menzel wrote:
-
->> On 2019-12-12 12:29, Sasha Neftin wrote:
->>> PHY power management control should provide a reliable and accurate
->>> indication of PHY reset completion and decrease the delay time
->>> after a PHY reset
->>>
->>> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
->>> ---
->>> ? drivers/net/ethernet/intel/igc/igc_defines.h | 1 +
->>> ? drivers/net/ethernet/intel/igc/igc_phy.c???? | 9 +++++++++
->>> ? drivers/net/ethernet/intel/igc/igc_regs.h??? | 1 +
->>> ? 3 files changed, 11 insertions(+)
->>>
->>> diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h 
->>> b/drivers/net/ethernet/intel/igc/igc_defines.h
->>> index 2121fc34e300..71a4b0281c03 100644
->>> --- a/drivers/net/ethernet/intel/igc/igc_defines.h
->>> +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
->>> @@ -460,6 +460,7 @@
->>> ? /* PHY Status Register */
->>> ? #define MII_SR_LINK_STATUS??? 0x0004 /* Link Status 1 = link */
->>> ? #define MII_SR_AUTONEG_COMPLETE??? 0x0020 /* Auto Neg Complete */
->>> +#define IGC_PHY_RST_COMP??? 0x0100 /* Internal PHY reset completion */
->>> ? /* PHY 1000 MII Register/Bit Definitions */
->>> ? /* PHY Registers defined by IEEE */
->>> diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c 
->>> b/drivers/net/ethernet/intel/igc/igc_phy.c
->>> index f4b05af0dd2f..e19e861df719 100644
->>> --- a/drivers/net/ethernet/intel/igc/igc_phy.c
->>> +++ b/drivers/net/ethernet/intel/igc/igc_phy.c
->>> @@ -173,6 +173,7 @@ s32 igc_check_downshift(struct igc_hw *hw)
->>> ? s32 igc_phy_hw_reset(struct igc_hw *hw)
->>> ? {
->>> ????? struct igc_phy_info *phy = &hw->phy;
->>> +??? u32 phpm = 0, timeout = 10000;
->>
->> Just use `unsigned int` for `timeout`?
->>
-> u32 is unsigned int.
-
-Yeah, but you constrain the size. Why not use the native type for the 
-given architecture? It won?t be noticeable in size and speed, but it?s 
-more cleaner.
-
->> phpm does not need to be initialized to 0?
-> RST_COMP indication in the PHPM register is clear on reading. I once 
-> 'read' the PHPM before polling and make sure zero value.
-
-Sorry, I do not understand. I suggest to just declare the variable.
-
-     u32 phpm;
-
->>> ????? s32? ret_val;
->>> ????? u32 ctrl;
->>> @@ -186,6 +187,8 @@ s32 igc_phy_hw_reset(struct igc_hw *hw)
->>> ????? if (ret_val)
->>> ????????? goto out;
->>> +??? phpm = rd32(IGC_I225_PHPM);
-
-Here you are making sure, that it?s set.
-
->>> +
->>> ????? ctrl = rd32(IGC_CTRL);
->>> ????? wr32(IGC_CTRL, ctrl | IGC_CTRL_PHY_RST);
->>> ????? wrfl();
->>> @@ -195,6 +198,12 @@ s32 igc_phy_hw_reset(struct igc_hw *hw)
->>> ????? wr32(IGC_CTRL, ctrl);
->>> ????? wrfl();
->>> +??? do {
->>> +??????? phpm = rd32(IGC_I225_PHPM);
->>> +??????? timeout--;
->>> +??????? udelay(1);
->>> +??? } while (!(phpm & IGC_PHY_RST_COMP) && timeout);
->>
->> Print an error, when the timeout is reached?
-> Good idea. I will add hw_dbg in v2. Thanks.
->>
->>> +
->>> ????? usleep_range(1500, 2000);
->>> ????? phy->ops.release(hw);
->>> diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h 
->>> b/drivers/net/ethernet/intel/igc/igc_regs.h
->>> index c82111051898..164c42b39dfa 100644
->>> --- a/drivers/net/ethernet/intel/igc/igc_regs.h
->>> +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
->>> @@ -12,6 +12,7 @@
->>> ? #define IGC_MDIC??????? 0x00020? /* MDI Control - RW */
->>> ? #define IGC_MDICNFG??????? 0x00E04? /* MDC/MDIO Configuration - RW */
->>> ? #define IGC_CONNSW??????? 0x00034? /* Copper/Fiber switch control - 
->>> RW */
->>> +#define IGC_I225_PHPM??????? 0x00E14???? /* I225 PHY Power 
->>> Management */
->>> ? /* Internal Packet Buffer Size Registers */
->>> ? #define IGC_RXPBS??????? 0x02404? /* Rx Packet Buffer Size - RW */
-
-> Thank you very much for your comments.
-
-No problem. Thank you for the commits.
-
-
-Kind regards,
-
-Paul
+We cannot change the register locations because it will break the
+interface with ethtool. If you need to add additional registers you
+will need to add them to the end of the array.
