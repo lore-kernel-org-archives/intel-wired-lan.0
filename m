@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 14 Dec 2019 01:25:17 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH v3 1/5] igc: Add basic
- skeleton for PTP
-In-Reply-To: <20191202231953.2203397-2-vinicius.gomes@intel.com>
+Date: Sat, 14 Dec 2019 01:25:52 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v3 2/5] igc: Add support
+ for RX timestamping
+In-Reply-To: <20191202231953.2203397-3-vinicius.gomes@intel.com>
 References: <20191202231953.2203397-1-vinicius.gomes@intel.com>
- <20191202231953.2203397-2-vinicius.gomes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9719B433@ORSMSX103.amr.corp.intel.com>
+ <20191202231953.2203397-3-vinicius.gomes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9719B446@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,21 +16,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Vinicius Costa Gomes
 > Sent: Monday, December 2, 2019 3:20 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next-queue PATCH v3 1/5] igc: Add basic skeleton
-> for PTP
+> Subject: [Intel-wired-lan] [next-queue PATCH v3 2/5] igc: Add support for RX
+> timestamping
 > 
-> This allows the creation of the /dev/ptpX device for i225, and reading
-> and writing the time.
+> This adds support for timestamping received packets.
+> 
+> It is based on the i210, as many features of i225 work the same way.
+> The main difference from i210 is that i225 has support for choosing
+> the timer register to use when timestamping packets. Right now, we
+> only support using timer 0. The other difference is that i225 stores
+> two timestamps in the receive descriptor, right now, we only retrieve
+> one.
 > 
 > Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/Makefile      |   2 +-
->  drivers/net/ethernet/intel/igc/igc.h         |  26 ++
->  drivers/net/ethernet/intel/igc/igc_defines.h |  12 +
->  drivers/net/ethernet/intel/igc/igc_main.c    |  27 ++
->  drivers/net/ethernet/intel/igc/igc_ptp.c     | 349 +++++++++++++++++++
->  drivers/net/ethernet/intel/igc/igc_regs.h    |  24 ++
->  6 files changed, 439 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/net/ethernet/intel/igc/igc_ptp.c
-> 
+>  drivers/net/ethernet/intel/igc/igc.h         |  17 ++
+>  drivers/net/ethernet/intel/igc/igc_defines.h |  38 +++
+>  drivers/net/ethernet/intel/igc/igc_main.c    |  10 +
+>  drivers/net/ethernet/intel/igc/igc_ptp.c     | 272 +++++++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_regs.h    |   3 +
+>  5 files changed, 340 insertions(+)
+
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
