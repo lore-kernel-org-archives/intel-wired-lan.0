@@ -1,98 +1,97 @@
-From: Maxim Mikityanskiy <maximmi@mellanox.com>
-Date: Tue, 17 Dec 2019 16:20:45 +0000
-Subject: [Intel-wired-lan] [PATCH bpf v2 3/4] net/i40e: Fix concurrency
- issues between config flow and XSK
-In-Reply-To: <20191217162023.16011-1-maximmi@mellanox.com>
-References: <20191217162023.16011-1-maximmi@mellanox.com>
-Message-ID: <20191217162023.16011-4-maximmi@mellanox.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Tue, 17 Dec 2019 02:55:43 -0800
+Subject: [Intel-wired-lan] [PATCH] ice: Add device ids for E822 devices
+Message-ID: <20191217105543.40373-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use synchronize_rcu to wait until the XSK wakeup function finishes
-before destroying the resources it uses:
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-1. i40e_down already calls synchronize_rcu. On i40e_down either
-__I40E_VSI_DOWN or __I40E_CONFIG_BUSY is set. Check the latter in
-i40e_xsk_wakeup (the former is already checked there).
+Add support for E822 devices
 
-2. After switching the XDP program, call synchronize_rcu to let
-i40e_xsk_wakeup exit before the XDP program is freed.
-
-3. Changing the number of channels brings the interface down (see
-i40e_prep_for_reset and i40e_pf_quiesce_all_vsi).
-
-4. Disabling UMEM sets __I40E_CONFIG_BUSY, too.
-
-Signed-off-by: Maxim Mikityanskiy <maximmi@mellanox.com>
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++++---
- drivers/net/ethernet/intel/i40e/i40e_xsk.c  |  4 ++++
- 3 files changed, 12 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_devids.h | 18 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_main.c   |  9 +++++++++
+ drivers/net/ethernet/intel/ice/ice_nvm.c    | 12 ++++++++++++
+ 3 files changed, 39 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index cb6367334ca7..4833187bd259 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -1152,7 +1152,7 @@ void i40e_set_fec_in_flags(u8 fec_cfg, u32 *flags);
+diff --git a/drivers/net/ethernet/intel/ice/ice_devids.h b/drivers/net/ethernet/intel/ice/ice_devids.h
+index f8d5c661d0ba..ce63017c56c7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devids.h
++++ b/drivers/net/ethernet/intel/ice/ice_devids.h
+@@ -11,5 +11,23 @@
+ #define ICE_DEV_ID_E810C_QSFP		0x1592
+ /* Intel(R) Ethernet Controller E810-C for SFP */
+ #define ICE_DEV_ID_E810C_SFP		0x1593
++/* Intel(R) Ethernet Connection E822-C for backplane */
++#define ICE_DEV_ID_E822C_BACKPLANE	0x1890
++/* Intel(R) Ethernet Connection E822-C for QSFP */
++#define ICE_DEV_ID_E822C_QSFP		0x1891
++/* Intel(R) Ethernet Connection E822-C for SFP */
++#define ICE_DEV_ID_E822C_SFP		0x1892
++/* Intel(R) Ethernet Connection E822-C/X557-AT 10GBASE-T */
++#define ICE_DEV_ID_E822C_10G_BASE_T	0x1893
++/* Intel(R) Ethernet Connection E822-C 1GbE */
++#define ICE_DEV_ID_E822C_SGMII		0x1894
++/* Intel(R) Ethernet Connection E822-X for backplane */
++#define ICE_DEV_ID_E822X_BACKPLANE	0x1897
++/* Intel(R) Ethernet Connection E822-L for SFP */
++#define ICE_DEV_ID_E822L_SFP		0x1898
++/* Intel(R) Ethernet Connection E822-L/X557-AT 10GBASE-T */
++#define ICE_DEV_ID_E822L_10G_BASE_T	0x1899
++/* Intel(R) Ethernet Connection E822-L 1GbE */
++#define ICE_DEV_ID_E822L_SGMII		0x189A
  
- static inline bool i40e_enabled_xdp_vsi(struct i40e_vsi *vsi)
- {
--	return !!vsi->xdp_prog;
-+	return !!READ_ONCE(vsi->xdp_prog);
- }
+ #endif /* _ICE_DEVIDS_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 59c2df765d6d..019ecb229440 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3637,6 +3637,15 @@ static const struct pci_device_id ice_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_BACKPLANE), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_QSFP), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_SFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_BACKPLANE), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_QSFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_SFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_10G_BASE_T), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_SGMII), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822X_BACKPLANE), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_SFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_10G_BASE_T), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_SGMII), 0 },
+ 	/* required last entry */
+ 	{ 0, }
+ };
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index 57c73f613f32..7525ac50742e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -289,6 +289,18 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
  
- int i40e_create_queue_channel(struct i40e_vsi *vsi, struct i40e_channel *ch);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1ccabeafa44c..2c5af6d4a6b1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6823,8 +6823,8 @@ void i40e_down(struct i40e_vsi *vsi)
- 	for (i = 0; i < vsi->num_queue_pairs; i++) {
- 		i40e_clean_tx_ring(vsi->tx_rings[i]);
- 		if (i40e_enabled_xdp_vsi(vsi)) {
--			/* Make sure that in-progress ndo_xdp_xmit
--			 * calls are completed.
-+			/* Make sure that in-progress ndo_xdp_xmit and
-+			 * ndo_xsk_wakeup calls are completed.
- 			 */
- 			synchronize_rcu();
- 			i40e_clean_tx_ring(vsi->xdp_rings[i]);
-@@ -12546,8 +12546,12 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
+ 	nvm->eetrack = (eetrack_hi << 16) | eetrack_lo;
  
- 	old_prog = xchg(&vsi->xdp_prog, prog);
- 
--	if (need_reset)
-+	if (need_reset) {
-+		if (!prog)
-+			/* Wait until ndo_xsk_wakeup completes. */
-+			synchronize_rcu();
- 		i40e_reset_and_rebuild(pf, true, true);
-+	}
- 
- 	for (i = 0; i < vsi->num_queue_pairs; i++)
- 		WRITE_ONCE(vsi->rx_rings[i]->xdp_prog, vsi->xdp_prog);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index d07e1a890428..f73cd917c44f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -787,8 +787,12 @@ int i40e_xsk_wakeup(struct net_device *dev, u32 queue_id, u32 flags)
- {
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	struct i40e_vsi *vsi = np->vsi;
-+	struct i40e_pf *pf = vsi->back;
- 	struct i40e_ring *ring;
- 
-+	if (test_bit(__I40E_CONFIG_BUSY, pf->state))
-+		return -ENETDOWN;
++	/* the following devices do not have boot_cfg_tlv yet */
++	if (hw->device_id == ICE_DEV_ID_E822C_BACKPLANE ||
++	    hw->device_id == ICE_DEV_ID_E822C_QSFP ||
++	    hw->device_id == ICE_DEV_ID_E822C_10G_BASE_T ||
++	    hw->device_id == ICE_DEV_ID_E822C_SGMII ||
++	    hw->device_id == ICE_DEV_ID_E822C_SFP ||
++	    hw->device_id == ICE_DEV_ID_E822X_BACKPLANE ||
++	    hw->device_id == ICE_DEV_ID_E822L_SFP ||
++	    hw->device_id == ICE_DEV_ID_E822L_10G_BASE_T ||
++	    hw->device_id == ICE_DEV_ID_E822L_SGMII)
++		return status;
 +
- 	if (test_bit(__I40E_VSI_DOWN, vsi->state))
- 		return -ENETDOWN;
- 
+ 	status = ice_get_pfa_module_tlv(hw, &boot_cfg_tlv, &boot_cfg_tlv_len,
+ 					ICE_SR_BOOT_CFG_PTR);
+ 	if (status) {
 -- 
 2.20.1
 
