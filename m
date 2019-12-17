@@ -1,51 +1,90 @@
 From: Maxim Mikityanskiy <maximmi@mellanox.com>
-Date: Tue, 17 Dec 2019 16:20:41 +0000
-Subject: [Intel-wired-lan] [PATCH bpf v2 0/4] Fix concurrency issues between
- XSK wakeup and control path using RCU
-Message-ID: <20191217162023.16011-1-maximmi@mellanox.com>
+Date: Tue, 17 Dec 2019 16:20:42 +0000
+Subject: [Intel-wired-lan] [PATCH bpf v2 1/4] xsk: Add rcu_read_lock around
+ the XSK wakeup
+In-Reply-To: <20191217162023.16011-1-maximmi@mellanox.com>
+References: <20191217162023.16011-1-maximmi@mellanox.com>
+Message-ID: <20191217162023.16011-2-maximmi@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This series addresses the issue described in the commit message of the
-first patch: lack of synchronization between XSK wakeup and destroying
-the resources used by XSK wakeup. The idea is similar to
-napi_synchronize. The series contains fixes for the drivers that
-implement XSK. I haven't tested the changes to Intel's drivers, so,
-Intel guys, please review them.
+The XSK wakeup callback in drivers makes some sanity checks before
+triggering NAPI. However, some configuration changes may occur during
+this function that affect the result of those checks. For example, the
+interface can go down, and all the resources will be destroyed after the
+checks in the wakeup function, but before it attempts to use these
+resources. Wrap this callback in rcu_read_lock to allow driver to
+synchronize_rcu before actually destroying the resources.
 
-v2 changes:
+xsk_wakeup is a new function that encapsulates calling ndo_xsk_wakeup
+wrapped into the RCU lock. After this commit, xsk_poll starts using
+xsk_wakeup and checks xs->zc instead of ndo_xsk_wakeup != NULL to decide
+ndo_xsk_wakeup should be called. It also fixes a bug introduced with the
+need_wakeup feature: a non-zero-copy socket may be used with a driver
+supporting zero-copy, and in this case ndo_xsk_wakeup should not be
+called, so the xs->zc check is the correct one.
 
-Incorporated changes suggested by Bj?rn:
+Fixes: 77cd0d7b3f25 ("xsk: add support for need_wakeup flag in AF_XDP rings")
+Signed-off-by: Maxim Mikityanskiy <maximmi@mellanox.com>
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+---
+ net/xdp/xsk.c | 22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
 
-1. Call synchronize_rcu in Intel drivers only if the XDP program is
-being unloaded.
-
-2. Don't forget rcu_read_lock when wakeup is called from xsk_poll.
-
-3. Use xs->zc as the condition to call ndo_xsk_wakeup.
-
-Maxim Mikityanskiy (4):
-  xsk: Add rcu_read_lock around the XSK wakeup
-  net/mlx5e: Fix concurrency issues between config flow and XSK
-  net/i40e: Fix concurrency issues between config flow and XSK
-  net/ixgbe: Fix concurrency issues between config flow and XSK
-
- drivers/net/ethernet/intel/i40e/i40e.h        |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c   | 10 ++++++---
- drivers/net/ethernet/intel/i40e/i40e_xsk.c    |  4 ++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  7 +++++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  |  8 +++++--
- drivers/net/ethernet/mellanox/mlx5/core/en.h  |  2 +-
- .../net/ethernet/mellanox/mlx5/core/en/xdp.h  | 22 ++++++++-----------
- .../mellanox/mlx5/core/en/xsk/setup.c         |  1 +
- .../ethernet/mellanox/mlx5/core/en/xsk/tx.c   |  2 +-
- .../net/ethernet/mellanox/mlx5/core/en_main.c | 19 +---------------
- net/xdp/xsk.c                                 | 22 ++++++++++++-------
- 11 files changed, 51 insertions(+), 48 deletions(-)
-
+diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
+index 956793893c9d..328f661b83b2 100644
+--- a/net/xdp/xsk.c
++++ b/net/xdp/xsk.c
+@@ -334,12 +334,21 @@ bool xsk_umem_consume_tx(struct xdp_umem *umem, struct xdp_desc *desc)
+ }
+ EXPORT_SYMBOL(xsk_umem_consume_tx);
+ 
+-static int xsk_zc_xmit(struct xdp_sock *xs)
++static int xsk_wakeup(struct xdp_sock *xs, u8 flags)
+ {
+ 	struct net_device *dev = xs->dev;
++	int err;
++
++	rcu_read_lock();
++	err = dev->netdev_ops->ndo_xsk_wakeup(dev, xs->queue_id, flags);
++	rcu_read_unlock();
++
++	return err;
++}
+ 
+-	return dev->netdev_ops->ndo_xsk_wakeup(dev, xs->queue_id,
+-					       XDP_WAKEUP_TX);
++static int xsk_zc_xmit(struct xdp_sock *xs)
++{
++	return xsk_wakeup(xs, XDP_WAKEUP_TX);
+ }
+ 
+ static void xsk_destruct_skb(struct sk_buff *skb)
+@@ -453,19 +462,16 @@ static __poll_t xsk_poll(struct file *file, struct socket *sock,
+ 	__poll_t mask = datagram_poll(file, sock, wait);
+ 	struct sock *sk = sock->sk;
+ 	struct xdp_sock *xs = xdp_sk(sk);
+-	struct net_device *dev;
+ 	struct xdp_umem *umem;
+ 
+ 	if (unlikely(!xsk_is_bound(xs)))
+ 		return mask;
+ 
+-	dev = xs->dev;
+ 	umem = xs->umem;
+ 
+ 	if (umem->need_wakeup) {
+-		if (dev->netdev_ops->ndo_xsk_wakeup)
+-			dev->netdev_ops->ndo_xsk_wakeup(dev, xs->queue_id,
+-							umem->need_wakeup);
++		if (xs->zc)
++			xsk_wakeup(xs, umem->need_wakeup);
+ 		else
+ 			/* Poll needs to drive Tx also in copy mode */
+ 			__xsk_sendmsg(sk);
 -- 
 2.20.1
 
