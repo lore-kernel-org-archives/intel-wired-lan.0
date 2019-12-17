@@ -1,57 +1,51 @@
-From: Yunfeng Ye <yeyunfeng@huawei.com>
-Date: Tue, 17 Dec 2019 20:26:34 +0800
-Subject: [Intel-wired-lan] [PATCH] e100: remove unused varibale err in
- e100_diag_test()
-Message-ID: <b0cf9969-bb56-2ccb-cf16-025eb700a24e@huawei.com>
+From: Maxim Mikityanskiy <maximmi@mellanox.com>
+Date: Tue, 17 Dec 2019 16:20:41 +0000
+Subject: [Intel-wired-lan] [PATCH bpf v2 0/4] Fix concurrency issues between
+ XSK wakeup and control path using RCU
+Message-ID: <20191217162023.16011-1-maximmi@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fix following warning:
-drivers/net/ethernet/intel/e100.c: In function ?e100_diag_test?:
-drivers/net/ethernet/intel/e100.c:2600:9: warning: variable ?err? set
-but not used [-Wunused-but-set-variable]
-  int i, err;
-         ^~~
+This series addresses the issue described in the commit message of the
+first patch: lack of synchronization between XSK wakeup and destroying
+the resources used by XSK wakeup. The idea is similar to
+napi_synchronize. The series contains fixes for the drivers that
+implement XSK. I haven't tested the changes to Intel's drivers, so,
+Intel guys, please review them.
 
-Signed-off-by: Yunfeng Ye <yeyunfeng@huawei.com>
----
- drivers/net/ethernet/intel/e100.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+v2 changes:
 
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index a65d5a9ba7db..f1cb493a811f 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -2597,7 +2597,7 @@ static void e100_diag_test(struct net_device *netdev,
- {
- 	struct ethtool_cmd cmd;
- 	struct nic *nic = netdev_priv(netdev);
--	int i, err;
-+	int i;
+Incorporated changes suggested by Bj?rn:
 
- 	memset(data, 0, E100_TEST_LEN * sizeof(u64));
- 	data[0] = !mii_link_ok(&nic->mii);
-@@ -2605,7 +2605,7 @@ static void e100_diag_test(struct net_device *netdev,
- 	if (test->flags & ETH_TEST_FL_OFFLINE) {
+1. Call synchronize_rcu in Intel drivers only if the XDP program is
+being unloaded.
 
- 		/* save speed, duplex & autoneg settings */
--		err = mii_ethtool_gset(&nic->mii, &cmd);
-+		mii_ethtool_gset(&nic->mii, &cmd);
+2. Don't forget rcu_read_lock when wakeup is called from xsk_poll.
 
- 		if (netif_running(netdev))
- 			e100_down(nic);
-@@ -2614,7 +2614,7 @@ static void e100_diag_test(struct net_device *netdev,
- 		data[4] = e100_loopback_test(nic, lb_phy);
+3. Use xs->zc as the condition to call ndo_xsk_wakeup.
 
- 		/* restore speed, duplex & autoneg settings */
--		err = mii_ethtool_sset(&nic->mii, &cmd);
-+		mii_ethtool_sset(&nic->mii, &cmd);
+Maxim Mikityanskiy (4):
+  xsk: Add rcu_read_lock around the XSK wakeup
+  net/mlx5e: Fix concurrency issues between config flow and XSK
+  net/i40e: Fix concurrency issues between config flow and XSK
+  net/ixgbe: Fix concurrency issues between config flow and XSK
 
- 		if (netif_running(netdev))
- 			e100_up(nic);
+ drivers/net/ethernet/intel/i40e/i40e.h        |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 10 ++++++---
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    |  4 ++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  7 +++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  |  8 +++++--
+ drivers/net/ethernet/mellanox/mlx5/core/en.h  |  2 +-
+ .../net/ethernet/mellanox/mlx5/core/en/xdp.h  | 22 ++++++++-----------
+ .../mellanox/mlx5/core/en/xsk/setup.c         |  1 +
+ .../ethernet/mellanox/mlx5/core/en/xsk/tx.c   |  2 +-
+ .../net/ethernet/mellanox/mlx5/core/en_main.c | 19 +---------------
+ net/xdp/xsk.c                                 | 22 ++++++++++++-------
+ 11 files changed, 51 insertions(+), 48 deletions(-)
+
 -- 
-2.7.4
+2.20.1
 
