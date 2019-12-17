@@ -1,97 +1,183 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 17 Dec 2019 02:55:43 -0800
-Subject: [Intel-wired-lan] [PATCH] ice: Add device ids for E822 devices
-Message-ID: <20191217105543.40373-1-anthony.l.nguyen@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Tue, 17 Dec 2019 13:20:45 -0800
+Subject: [Intel-wired-lan] [net] e1000e: Revert "e1000e: Make watchdog use
+ delayed work"
+Message-ID: <20191217212045.638958-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+This reverts commit 59653e6497d16f7ac1d9db088f3959f57ee8c3db.
 
-Add support for E822 devices
+This is due to this commit causing driver crashes and connections to
+reset unexpectedly.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_devids.h | 18 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_main.c   |  9 +++++++++
- drivers/net/ethernet/intel/ice/ice_nvm.c    | 12 ++++++++++++
- 3 files changed, 39 insertions(+)
+ drivers/net/ethernet/intel/e1000e/e1000.h  |  5 +-
+ drivers/net/ethernet/intel/e1000e/netdev.c | 57 ++++++++++------------
+ 2 files changed, 29 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_devids.h b/drivers/net/ethernet/intel/ice/ice_devids.h
-index f8d5c661d0ba..ce63017c56c7 100644
---- a/drivers/net/ethernet/intel/ice/ice_devids.h
-+++ b/drivers/net/ethernet/intel/ice/ice_devids.h
-@@ -11,5 +11,23 @@
- #define ICE_DEV_ID_E810C_QSFP		0x1592
- /* Intel(R) Ethernet Controller E810-C for SFP */
- #define ICE_DEV_ID_E810C_SFP		0x1593
-+/* Intel(R) Ethernet Connection E822-C for backplane */
-+#define ICE_DEV_ID_E822C_BACKPLANE	0x1890
-+/* Intel(R) Ethernet Connection E822-C for QSFP */
-+#define ICE_DEV_ID_E822C_QSFP		0x1891
-+/* Intel(R) Ethernet Connection E822-C for SFP */
-+#define ICE_DEV_ID_E822C_SFP		0x1892
-+/* Intel(R) Ethernet Connection E822-C/X557-AT 10GBASE-T */
-+#define ICE_DEV_ID_E822C_10G_BASE_T	0x1893
-+/* Intel(R) Ethernet Connection E822-C 1GbE */
-+#define ICE_DEV_ID_E822C_SGMII		0x1894
-+/* Intel(R) Ethernet Connection E822-X for backplane */
-+#define ICE_DEV_ID_E822X_BACKPLANE	0x1897
-+/* Intel(R) Ethernet Connection E822-L for SFP */
-+#define ICE_DEV_ID_E822L_SFP		0x1898
-+/* Intel(R) Ethernet Connection E822-L/X557-AT 10GBASE-T */
-+#define ICE_DEV_ID_E822L_10G_BASE_T	0x1899
-+/* Intel(R) Ethernet Connection E822-L 1GbE */
-+#define ICE_DEV_ID_E822L_SGMII		0x189A
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index 6c51b1bad8c4..37a2314d3e6b 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -185,13 +185,12 @@ struct e1000_phy_regs {
  
- #endif /* _ICE_DEVIDS_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 59c2df765d6d..019ecb229440 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3637,6 +3637,15 @@ static const struct pci_device_id ice_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_BACKPLANE), 0 },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_QSFP), 0 },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_SFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_BACKPLANE), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_QSFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_SFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_10G_BASE_T), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_SGMII), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822X_BACKPLANE), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_SFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_10G_BASE_T), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_SGMII), 0 },
- 	/* required last entry */
- 	{ 0, }
- };
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index 57c73f613f32..7525ac50742e 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -289,6 +289,18 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
+ /* board specific private data structure */
+ struct e1000_adapter {
++	struct timer_list watchdog_timer;
+ 	struct timer_list phy_info_timer;
+ 	struct timer_list blink_timer;
  
- 	nvm->eetrack = (eetrack_hi << 16) | eetrack_lo;
+ 	struct work_struct reset_task;
+-	struct delayed_work watchdog_task;
+-
+-	struct workqueue_struct *e1000_workqueue;
++	struct work_struct watchdog_task;
  
-+	/* the following devices do not have boot_cfg_tlv yet */
-+	if (hw->device_id == ICE_DEV_ID_E822C_BACKPLANE ||
-+	    hw->device_id == ICE_DEV_ID_E822C_QSFP ||
-+	    hw->device_id == ICE_DEV_ID_E822C_10G_BASE_T ||
-+	    hw->device_id == ICE_DEV_ID_E822C_SGMII ||
-+	    hw->device_id == ICE_DEV_ID_E822C_SFP ||
-+	    hw->device_id == ICE_DEV_ID_E822X_BACKPLANE ||
-+	    hw->device_id == ICE_DEV_ID_E822L_SFP ||
-+	    hw->device_id == ICE_DEV_ID_E822L_10G_BASE_T ||
-+	    hw->device_id == ICE_DEV_ID_E822L_SGMII)
-+		return status;
+ 	const struct e1000_info *ei;
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 7e882c03216d..fc7be9fa0c17 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -1780,8 +1780,7 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
+ 		}
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__E1000_DOWN, &adapter->state))
+-			mod_delayed_work(adapter->e1000_workqueue,
+-					 &adapter->watchdog_task, HZ);
++			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+ 	}
+ 
+ 	/* Reset on uncorrectable ECC error */
+@@ -1861,8 +1860,7 @@ static irqreturn_t e1000_intr(int __always_unused irq, void *data)
+ 		}
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__E1000_DOWN, &adapter->state))
+-			mod_delayed_work(adapter->e1000_workqueue,
+-					 &adapter->watchdog_task, HZ);
++			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+ 	}
+ 
+ 	/* Reset on uncorrectable ECC error */
+@@ -1907,8 +1905,7 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
+ 		hw->mac.get_link_status = true;
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__E1000_DOWN, &adapter->state))
+-			mod_delayed_work(adapter->e1000_workqueue,
+-					 &adapter->watchdog_task, HZ);
++			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+ 	}
+ 
+ 	if (!test_bit(__E1000_DOWN, &adapter->state))
+@@ -4284,6 +4281,7 @@ void e1000e_down(struct e1000_adapter *adapter, bool reset)
+ 
+ 	napi_synchronize(&adapter->napi);
+ 
++	del_timer_sync(&adapter->watchdog_timer);
+ 	del_timer_sync(&adapter->phy_info_timer);
+ 
+ 	spin_lock(&adapter->stats64_lock);
+@@ -5156,11 +5154,25 @@ static void e1000e_check_82574_phy_workaround(struct e1000_adapter *adapter)
+ 	}
+ }
+ 
++/**
++ * e1000_watchdog - Timer Call-back
++ * @data: pointer to adapter cast into an unsigned long
++ **/
++static void e1000_watchdog(struct timer_list *t)
++{
++	struct e1000_adapter *adapter = from_timer(adapter, t, watchdog_timer);
 +
- 	status = ice_get_pfa_module_tlv(hw, &boot_cfg_tlv, &boot_cfg_tlv_len,
- 					ICE_SR_BOOT_CFG_PTR);
- 	if (status) {
++	/* Do the rest outside of interrupt context */
++	schedule_work(&adapter->watchdog_task);
++
++	/* TODO: make this use queue_delayed_work() */
++}
++
+ static void e1000_watchdog_task(struct work_struct *work)
+ {
+ 	struct e1000_adapter *adapter = container_of(work,
+ 						     struct e1000_adapter,
+-						     watchdog_task.work);
++						     watchdog_task);
+ 	struct net_device *netdev = adapter->netdev;
+ 	struct e1000_mac_info *mac = &adapter->hw.mac;
+ 	struct e1000_phy_info *phy = &adapter->hw.phy;
+@@ -5408,9 +5420,8 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 
+ 	/* Reset the timer */
+ 	if (!test_bit(__E1000_DOWN, &adapter->state))
+-		queue_delayed_work(adapter->e1000_workqueue,
+-				   &adapter->watchdog_task,
+-				   round_jiffies(2 * HZ));
++		mod_timer(&adapter->watchdog_timer,
++			  round_jiffies(jiffies + 2 * HZ));
+ }
+ 
+ #define E1000_TX_FLAGS_CSUM		0x00000001
+@@ -7450,21 +7461,11 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto err_eeprom;
+ 	}
+ 
+-	adapter->e1000_workqueue = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0,
+-						   e1000e_driver_name);
+-
+-	if (!adapter->e1000_workqueue) {
+-		err = -ENOMEM;
+-		goto err_workqueue;
+-	}
+-
+-	INIT_DELAYED_WORK(&adapter->watchdog_task, e1000_watchdog_task);
+-	queue_delayed_work(adapter->e1000_workqueue, &adapter->watchdog_task,
+-			   0);
+-
++	timer_setup(&adapter->watchdog_timer, e1000_watchdog, 0);
+ 	timer_setup(&adapter->phy_info_timer, e1000_update_phy_info, 0);
+ 
+ 	INIT_WORK(&adapter->reset_task, e1000_reset_task);
++	INIT_WORK(&adapter->watchdog_task, e1000_watchdog_task);
+ 	INIT_WORK(&adapter->downshift_task, e1000e_downshift_workaround);
+ 	INIT_WORK(&adapter->update_phy_task, e1000e_update_phy_task);
+ 	INIT_WORK(&adapter->print_hang_task, e1000_print_hw_hang);
+@@ -7558,9 +7559,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	return 0;
+ 
+ err_register:
+-	flush_workqueue(adapter->e1000_workqueue);
+-	destroy_workqueue(adapter->e1000_workqueue);
+-err_workqueue:
+ 	if (!(adapter->flags & FLAG_HAS_AMT))
+ 		e1000e_release_hw_control(adapter);
+ err_eeprom:
+@@ -7604,18 +7602,17 @@ static void e1000_remove(struct pci_dev *pdev)
+ 	/* The timers may be rescheduled, so explicitly disable them
+ 	 * from being rescheduled.
+ 	 */
+-	set_bit(__E1000_DOWN, &adapter->state);
++	if (!down)
++		set_bit(__E1000_DOWN, &adapter->state);
++	del_timer_sync(&adapter->watchdog_timer);
+ 	del_timer_sync(&adapter->phy_info_timer);
+ 
+ 	cancel_work_sync(&adapter->reset_task);
++	cancel_work_sync(&adapter->watchdog_task);
+ 	cancel_work_sync(&adapter->downshift_task);
+ 	cancel_work_sync(&adapter->update_phy_task);
+ 	cancel_work_sync(&adapter->print_hang_task);
+ 
+-	cancel_delayed_work(&adapter->watchdog_task);
+-	flush_workqueue(adapter->e1000_workqueue);
+-	destroy_workqueue(adapter->e1000_workqueue);
+-
+ 	if (adapter->flags & FLAG_HAS_HW_TIMESTAMP) {
+ 		cancel_work_sync(&adapter->tx_hwtstamp_work);
+ 		if (adapter->tx_hwtstamp_skb) {
 -- 
-2.20.1
+2.23.0
 
