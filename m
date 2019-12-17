@@ -1,134 +1,121 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 07 Dec 2019 13:50:25 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
- 9f104c7736904ac72385bbb48669e0c923ca879b
-Message-ID: <5deb3da1.uTpsaxkN5fXRV+B9%lkp@intel.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Tue, 17 Dec 2019 11:29:23 +0100
+Subject: [Intel-wired-lan] [PATCH] iavf: remove current MAC address filter
+ on VF reset
+Message-ID: <20191217102923.3274961-1-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-branch HEAD: 9f104c7736904ac72385bbb48669e0c923ca879b  mqprio: Fix out-of-bounds access in mqprio_dump
+Currently MAC filters are not altered during a VF reset event. This may
+lead to a stale filter when an administratively set MAC is forced by the
+PF.
 
-elapsed time: 413m
+For an administratively set MAC the PF driver deletes the VFs filters,
+overwrites the VFs MAC address and triggers a VF reset. However
+the VF driver itself is not aware of the filter removal, which is what
+the VF reset is for.
+The VF reset queues all filters present in the VF driver to be re-added
+to the PF filter list (including the filter for the now stale VF MAC
+address) and triggers a VIRTCHNL_OP_GET_VF_RESOURCES event, which
+provides the new MAC address to the VF.
 
-configs tested: 109
+When this happens i40e will complain and reject the stale MAC filter,
+at least in the untrusted VF case.
+i40e 0000:08:00.0: Setting MAC 3c:fa:fa:fa:fa:01 on VF 0
+iavf 0000:08:02.0: Reset warning received from the PF
+iavf 0000:08:02.0: Scheduling reset task
+i40e 0000:08:00.0: Bring down and up the VF interface to make this change effective.
+i40e 0000:08:00.0: VF attempting to override administratively set MAC address, bring down and up the VF interface to resume normal operation
+i40e 0000:08:00.0: VF 0 failed opcode 10, retval: -1
+iavf 0000:08:02.0: Failed to add MAC filter, error IAVF_ERR_NVM
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+To avoid re-adding the stale MAC filter it needs to be removed from the
+VF driver's filter list before queuing the existing filters. Then during
+the VIRTCHNL_OP_GET_VF_RESOURCES event the correct filter needs to be
+added again, at which point the MAC address has been updated.
 
-s390                             allmodconfig
-s390                              allnoconfig
-s390                          debug_defconfig
-s390                                defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                 randconfig-g003-20191207
-x86_64               randconfig-g003-20191207
-i386                 randconfig-g002-20191207
-i386                 randconfig-g001-20191207
-x86_64               randconfig-g001-20191207
-x86_64               randconfig-g002-20191207
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                     edosk2674_defconfig
-x86_64               randconfig-e001-20191206
-x86_64               randconfig-e002-20191206
-x86_64               randconfig-e003-20191206
-i386                 randconfig-e001-20191206
-i386                 randconfig-e002-20191206
-i386                 randconfig-e003-20191206
-ia64                                defconfig
-nds32                             allnoconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-alpha                               defconfig
-csky                                defconfig
-nds32                               defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-xtensa                       common_defconfig
-openrisc                    or1ksim_defconfig
-nios2                         3c120_defconfig
-xtensa                          iss_defconfig
-c6x                        evmc6678_defconfig
-c6x                              allyesconfig
-nios2                         10m50_defconfig
-openrisc                 simple_smp_defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                          rhel-kconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64               randconfig-b001-20191206
-i386                 randconfig-b001-20191206
-i386                 randconfig-b002-20191206
-x86_64               randconfig-b003-20191206
-x86_64               randconfig-b002-20191206
-i386                 randconfig-b003-20191206
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-ia64                 randconfig-a001-20191206
-arm64                randconfig-a001-20191206
-sparc                randconfig-a001-20191206
-arm                  randconfig-a001-20191206
-arc                 randconfig-a0031-20191206
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-x86_64               randconfig-g001-20191206
-x86_64               randconfig-g002-20191206
-x86_64               randconfig-g003-20191206
-i386                 randconfig-g001-20191206
-i386                 randconfig-g002-20191206
-i386                 randconfig-g003-20191206
+As a bonus this change makes bringing the VF down and up again
+superfluous for the administratively set MAC case.
 
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 ---
-0-DAY kernel test infrastructure                 Open Source Technology Center
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
+ drivers/net/ethernet/intel/iavf/iavf.h          |  2 ++
+ drivers/net/ethernet/intel/iavf/iavf_main.c     | 17 +++++++++++++----
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c |  3 +++
+ 3 files changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index 29de3ae96ef2..bd1b1ed323f4 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -415,4 +415,6 @@ void iavf_enable_channels(struct iavf_adapter *adapter);
+ void iavf_disable_channels(struct iavf_adapter *adapter);
+ void iavf_add_cloud_filter(struct iavf_adapter *adapter);
+ void iavf_del_cloud_filter(struct iavf_adapter *adapter);
++struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
++					const u8 *macaddr);
+ #endif /* _IAVF_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 0a8824871618..62fe56ddcb6e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -743,9 +743,8 @@ iavf_mac_filter *iavf_find_filter(struct iavf_adapter *adapter,
+  *
+  * Returns ptr to the filter object or NULL when no memory available.
+  **/
+-static struct
+-iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
+-				 const u8 *macaddr)
++struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
++					const u8 *macaddr)
+ {
+ 	struct iavf_mac_filter *f;
+ 
+@@ -2065,9 +2064,9 @@ static void iavf_reset_task(struct work_struct *work)
+ 	struct virtchnl_vf_resource *vfres = adapter->vf_res;
+ 	struct net_device *netdev = adapter->netdev;
+ 	struct iavf_hw *hw = &adapter->hw;
++	struct iavf_mac_filter *f, *ftmp;
+ 	struct iavf_vlan_filter *vlf;
+ 	struct iavf_cloud_filter *cf;
+-	struct iavf_mac_filter *f;
+ 	u32 reg_val;
+ 	int i = 0, err;
+ 	bool running;
+@@ -2181,6 +2180,16 @@ static void iavf_reset_task(struct work_struct *work)
+ 
+ 	spin_lock_bh(&adapter->mac_vlan_list_lock);
+ 
++	/* Delete filter for the current MAC address, it could have
++	 * been changed by the PF via administratively set MAC.
++	 * Will be re-added via VIRTCHNL_OP_GET_VF_RESOURCES.
++	 */
++	list_for_each_entry_safe(f, ftmp, &adapter->mac_filter_list, list) {
++		if (ether_addr_equal(f->macaddr, adapter->hw.mac.addr)) {
++			list_del(&f->list);
++			kfree(f);
++		}
++	}
+ 	/* re-add all MAC filters */
+ 	list_for_each_entry(f, &adapter->mac_filter_list, list) {
+ 		f->add = true;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index c46770eba320..1ab9cb339acb 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1359,6 +1359,9 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 			ether_addr_copy(netdev->perm_addr,
+ 					adapter->hw.mac.addr);
+ 		}
++		spin_lock_bh(&adapter->mac_vlan_list_lock);
++		iavf_add_filter(adapter, adapter->hw.mac.addr);
++		spin_unlock_bh(&adapter->mac_vlan_list_lock);
+ 		iavf_process_config(adapter);
+ 		}
+ 		break;
+-- 
+2.23.0
+
