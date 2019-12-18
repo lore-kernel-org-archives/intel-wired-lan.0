@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 18 Dec 2019 22:32:55 +0000
-Subject: [Intel-wired-lan] [PATCH S35 13/15] ice: add extra check for
- null rx descriptor
-In-Reply-To: <20191212111307.33566-13-anthony.l.nguyen@intel.com>
+Date: Wed, 18 Dec 2019 22:34:06 +0000
+Subject: [Intel-wired-lan] [PATCH S35 14/15] ice: Add a boundary check
+ in ice_xsk_umem()
+In-Reply-To: <20191212111307.33566-14-anthony.l.nguyen@intel.com>
 References: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
- <20191212111307.33566-13-anthony.l.nguyen@intel.com>
-Message-ID: <6e71d54ba14d4f7898136b3346119b51@intel.com>
+ <20191212111307.33566-14-anthony.l.nguyen@intel.com>
+Message-ID: <124876f72eca48a185bade7ab789c239@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, December 12, 2019 3:13 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S35 13/15] ice: add extra check for null rx
-> descriptor
+> Subject: [Intel-wired-lan] [PATCH S35 14/15] ice: Add a boundary check in
+> ice_xsk_umem()
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 > 
-> In the case where the hardware gives us a null rx descriptor, it is theoretically
-> possible that we could call one of our skb-construction functions with no data
-> pointer, which would cause a panic.
+> In ice_xsk_umem(), variable qid which is later used as an array index, is not
+> validated for a possible boundary exceedance. Because of that, a calling
+> function might receive an invalid address, which causes general protection
+> fault when dereferenced.
 > 
-> In real life, this will never happen - we only get null RX descriptors as the final
-> descriptor in a chain of otherwise-valid descriptors. When this happens, the
-> skb will be extant and we'll just call ice_add_rx_frag(), which can deal with
-> empty data buffers.
+> To address this, add a boundary check to see if qid is greater than the size of
+> a UMEM array. Also, don't let user change vsi->num_xsk_umems just by
+> trying to setup a second UMEM if its value is already set up (i.e. UMEM
+> region has already been allocated for this VSI).
 > 
-> Unfortunately, Coverity does not have intimate knowledge of our hardware,
-> so we must add a check here.
+> While at it, make sure that ring->zca.free pointer is always zeroed out if there
+> is no UMEM on a specified ring.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_txrx.c | 13 ++++++++-----
->  1 file changed, 8 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h      | 5 +++--
+>  drivers/net/ethernet/intel/ice/ice_base.c | 1 +
+> drivers/net/ethernet/intel/ice/ice_xsk.c  | 3 ++-
+>  3 files changed, 6 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
