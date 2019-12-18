@@ -1,183 +1,112 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 17 Dec 2019 13:20:45 -0800
-Subject: [Intel-wired-lan] [net] e1000e: Revert "e1000e: Make watchdog use
- delayed work"
-Message-ID: <20191217212045.638958-1-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 18 Dec 2019 09:09:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue 5/5]
+ drivers/net/ethernet/intel/e1000e/netdev.c:7604:6: warning: the address of
+ 'down' will always evaluate as 'true'
+Message-ID: <201912180948.QjH8kkJA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This reverts commit 59653e6497d16f7ac1d9db088f3959f57ee8c3db.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git dev-queue
+head:   831655569c70675c1622f8c52ed271dc7fdce42f
+commit: 831655569c70675c1622f8c52ed271dc7fdce42f [5/5] e1000e: Revert "e1000e: Make watchdog use delayed work"
+config: x86_64-defconfig (attached as .config)
+compiler: gcc-7 (Debian 7.5.0-1) 7.5.0
+reproduce:
+        git checkout 831655569c70675c1622f8c52ed271dc7fdce42f
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
-This is due to this commit causing driver crashes and connections to
-reset unexpectedly.
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+All warnings (new ones prefixed by >>):
+
+   drivers/net/ethernet/intel/e1000e/netdev.c: In function 'e1000_remove':
+>> drivers/net/ethernet/intel/e1000e/netdev.c:7604:6: warning: the address of 'down' will always evaluate as 'true' [-Waddress]
+     if (!down)
+         ^
+
+vim +7604 drivers/net/ethernet/intel/e1000e/netdev.c
+
+  7584	
+  7585	/**
+  7586	 * e1000_remove - Device Removal Routine
+  7587	 * @pdev: PCI device information struct
+  7588	 *
+  7589	 * e1000_remove is called by the PCI subsystem to alert the driver
+  7590	 * that it should release a PCI device.  The could be caused by a
+  7591	 * Hot-Plug event, or because the driver is going to be removed from
+  7592	 * memory.
+  7593	 **/
+  7594	static void e1000_remove(struct pci_dev *pdev)
+  7595	{
+  7596		struct net_device *netdev = pci_get_drvdata(pdev);
+  7597		struct e1000_adapter *adapter = netdev_priv(netdev);
+  7598	
+  7599		e1000e_ptp_remove(adapter);
+  7600	
+  7601		/* The timers may be rescheduled, so explicitly disable them
+  7602		 * from being rescheduled.
+  7603		 */
+> 7604		if (!down)
+  7605			set_bit(__E1000_DOWN, &adapter->state);
+  7606		del_timer_sync(&adapter->watchdog_timer);
+  7607		del_timer_sync(&adapter->phy_info_timer);
+  7608	
+  7609		cancel_work_sync(&adapter->reset_task);
+  7610		cancel_work_sync(&adapter->watchdog_task);
+  7611		cancel_work_sync(&adapter->downshift_task);
+  7612		cancel_work_sync(&adapter->update_phy_task);
+  7613		cancel_work_sync(&adapter->print_hang_task);
+  7614	
+  7615		if (adapter->flags & FLAG_HAS_HW_TIMESTAMP) {
+  7616			cancel_work_sync(&adapter->tx_hwtstamp_work);
+  7617			if (adapter->tx_hwtstamp_skb) {
+  7618				dev_consume_skb_any(adapter->tx_hwtstamp_skb);
+  7619				adapter->tx_hwtstamp_skb = NULL;
+  7620			}
+  7621		}
+  7622	
+  7623		unregister_netdev(netdev);
+  7624	
+  7625		if (pci_dev_run_wake(pdev))
+  7626			pm_runtime_get_noresume(&pdev->dev);
+  7627	
+  7628		/* Release control of h/w to f/w.  If f/w is AMT enabled, this
+  7629		 * would have already happened in close and is redundant.
+  7630		 */
+  7631		e1000e_release_hw_control(adapter);
+  7632	
+  7633		e1000e_reset_interrupt_capability(adapter);
+  7634		kfree(adapter->tx_ring);
+  7635		kfree(adapter->rx_ring);
+  7636	
+  7637		iounmap(adapter->hw.hw_addr);
+  7638		if ((adapter->hw.flash_address) &&
+  7639		    (adapter->hw.mac.type < e1000_pch_spt))
+  7640			iounmap(adapter->hw.flash_address);
+  7641		pci_release_mem_regions(pdev);
+  7642	
+  7643		free_netdev(netdev);
+  7644	
+  7645		/* AER disable */
+  7646		pci_disable_pcie_error_reporting(pdev);
+  7647	
+  7648		pci_disable_device(pdev);
+  7649	}
+  7650	
+
 ---
- drivers/net/ethernet/intel/e1000e/e1000.h  |  5 +-
- drivers/net/ethernet/intel/e1000e/netdev.c | 57 ++++++++++------------
- 2 files changed, 29 insertions(+), 33 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
-index 6c51b1bad8c4..37a2314d3e6b 100644
---- a/drivers/net/ethernet/intel/e1000e/e1000.h
-+++ b/drivers/net/ethernet/intel/e1000e/e1000.h
-@@ -185,13 +185,12 @@ struct e1000_phy_regs {
- 
- /* board specific private data structure */
- struct e1000_adapter {
-+	struct timer_list watchdog_timer;
- 	struct timer_list phy_info_timer;
- 	struct timer_list blink_timer;
- 
- 	struct work_struct reset_task;
--	struct delayed_work watchdog_task;
--
--	struct workqueue_struct *e1000_workqueue;
-+	struct work_struct watchdog_task;
- 
- 	const struct e1000_info *ei;
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 7e882c03216d..fc7be9fa0c17 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1780,8 +1780,7 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
- 		}
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->state))
--			mod_delayed_work(adapter->e1000_workqueue,
--					 &adapter->watchdog_task, HZ);
-+			mod_timer(&adapter->watchdog_timer, jiffies + 1);
- 	}
- 
- 	/* Reset on uncorrectable ECC error */
-@@ -1861,8 +1860,7 @@ static irqreturn_t e1000_intr(int __always_unused irq, void *data)
- 		}
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->state))
--			mod_delayed_work(adapter->e1000_workqueue,
--					 &adapter->watchdog_task, HZ);
-+			mod_timer(&adapter->watchdog_timer, jiffies + 1);
- 	}
- 
- 	/* Reset on uncorrectable ECC error */
-@@ -1907,8 +1905,7 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
- 		hw->mac.get_link_status = true;
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->state))
--			mod_delayed_work(adapter->e1000_workqueue,
--					 &adapter->watchdog_task, HZ);
-+			mod_timer(&adapter->watchdog_timer, jiffies + 1);
- 	}
- 
- 	if (!test_bit(__E1000_DOWN, &adapter->state))
-@@ -4284,6 +4281,7 @@ void e1000e_down(struct e1000_adapter *adapter, bool reset)
- 
- 	napi_synchronize(&adapter->napi);
- 
-+	del_timer_sync(&adapter->watchdog_timer);
- 	del_timer_sync(&adapter->phy_info_timer);
- 
- 	spin_lock(&adapter->stats64_lock);
-@@ -5156,11 +5154,25 @@ static void e1000e_check_82574_phy_workaround(struct e1000_adapter *adapter)
- 	}
- }
- 
-+/**
-+ * e1000_watchdog - Timer Call-back
-+ * @data: pointer to adapter cast into an unsigned long
-+ **/
-+static void e1000_watchdog(struct timer_list *t)
-+{
-+	struct e1000_adapter *adapter = from_timer(adapter, t, watchdog_timer);
-+
-+	/* Do the rest outside of interrupt context */
-+	schedule_work(&adapter->watchdog_task);
-+
-+	/* TODO: make this use queue_delayed_work() */
-+}
-+
- static void e1000_watchdog_task(struct work_struct *work)
- {
- 	struct e1000_adapter *adapter = container_of(work,
- 						     struct e1000_adapter,
--						     watchdog_task.work);
-+						     watchdog_task);
- 	struct net_device *netdev = adapter->netdev;
- 	struct e1000_mac_info *mac = &adapter->hw.mac;
- 	struct e1000_phy_info *phy = &adapter->hw.phy;
-@@ -5408,9 +5420,8 @@ static void e1000_watchdog_task(struct work_struct *work)
- 
- 	/* Reset the timer */
- 	if (!test_bit(__E1000_DOWN, &adapter->state))
--		queue_delayed_work(adapter->e1000_workqueue,
--				   &adapter->watchdog_task,
--				   round_jiffies(2 * HZ));
-+		mod_timer(&adapter->watchdog_timer,
-+			  round_jiffies(jiffies + 2 * HZ));
- }
- 
- #define E1000_TX_FLAGS_CSUM		0x00000001
-@@ -7450,21 +7461,11 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		goto err_eeprom;
- 	}
- 
--	adapter->e1000_workqueue = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0,
--						   e1000e_driver_name);
--
--	if (!adapter->e1000_workqueue) {
--		err = -ENOMEM;
--		goto err_workqueue;
--	}
--
--	INIT_DELAYED_WORK(&adapter->watchdog_task, e1000_watchdog_task);
--	queue_delayed_work(adapter->e1000_workqueue, &adapter->watchdog_task,
--			   0);
--
-+	timer_setup(&adapter->watchdog_timer, e1000_watchdog, 0);
- 	timer_setup(&adapter->phy_info_timer, e1000_update_phy_info, 0);
- 
- 	INIT_WORK(&adapter->reset_task, e1000_reset_task);
-+	INIT_WORK(&adapter->watchdog_task, e1000_watchdog_task);
- 	INIT_WORK(&adapter->downshift_task, e1000e_downshift_workaround);
- 	INIT_WORK(&adapter->update_phy_task, e1000e_update_phy_task);
- 	INIT_WORK(&adapter->print_hang_task, e1000_print_hw_hang);
-@@ -7558,9 +7559,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	return 0;
- 
- err_register:
--	flush_workqueue(adapter->e1000_workqueue);
--	destroy_workqueue(adapter->e1000_workqueue);
--err_workqueue:
- 	if (!(adapter->flags & FLAG_HAS_AMT))
- 		e1000e_release_hw_control(adapter);
- err_eeprom:
-@@ -7604,18 +7602,17 @@ static void e1000_remove(struct pci_dev *pdev)
- 	/* The timers may be rescheduled, so explicitly disable them
- 	 * from being rescheduled.
- 	 */
--	set_bit(__E1000_DOWN, &adapter->state);
-+	if (!down)
-+		set_bit(__E1000_DOWN, &adapter->state);
-+	del_timer_sync(&adapter->watchdog_timer);
- 	del_timer_sync(&adapter->phy_info_timer);
- 
- 	cancel_work_sync(&adapter->reset_task);
-+	cancel_work_sync(&adapter->watchdog_task);
- 	cancel_work_sync(&adapter->downshift_task);
- 	cancel_work_sync(&adapter->update_phy_task);
- 	cancel_work_sync(&adapter->print_hang_task);
- 
--	cancel_delayed_work(&adapter->watchdog_task);
--	flush_workqueue(adapter->e1000_workqueue);
--	destroy_workqueue(adapter->e1000_workqueue);
--
- 	if (adapter->flags & FLAG_HAS_HW_TIMESTAMP) {
- 		cancel_work_sync(&adapter->tx_hwtstamp_work);
- 		if (adapter->tx_hwtstamp_skb) {
--- 
-2.23.0
-
+0-DAY kernel test infrastructure                 Open Source Technology Center
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 28860 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20191218/026eee93/attachment-0001.bin>
