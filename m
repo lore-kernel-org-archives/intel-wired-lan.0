@@ -1,10 +1,10 @@
 From: Julio Faracco <jcfaracco@gmail.com>
-Date: Wed, 18 Dec 2019 15:38:44 -0300
-Subject: [Intel-wired-lan] [PATCH net-next 1/2] drivers: net: i40e: Removing
+Date: Wed, 18 Dec 2019 15:38:45 -0300
+Subject: [Intel-wired-lan] [PATCH net-next 2/2] drivers: net: ice: Removing
  hung_queue variable to use txqueue function parameter
 In-Reply-To: <20191218183845.20038-1-jcfaracco@gmail.com>
 References: <20191218183845.20038-1-jcfaracco@gmail.com>
-Message-ID: <20191218183845.20038-2-jcfaracco@gmail.com>
+Message-ID: <20191218183845.20038-3-jcfaracco@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,72 +17,76 @@ queue when a TX timeout event occurs. See commit 0290bd291cc0
 details. Now, drivers don't need to identify which queue is stopped.
 Drivers can simply use the queue index provided bt dev_watchdog and
 execute all actions needed to restore network traffic. This commit do
-some cleanups into Intel i40e driver to remove a redundant loop to find
+some cleanups into Intel ice driver to remove a redundant loop to find
 stopped queue.
 
 Signed-off-by: Julio Faracco <jcfaracco@gmail.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 41 ++++++---------------
+ drivers/net/ethernet/intel/ice/ice_main.c | 41 ++++++-----------------
  1 file changed, 11 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4c9ac6c80eb8..71fedee21488 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -307,37 +307,18 @@ static void i40e_tx_timeout(struct net_device *netdev, unsigned int txqueue)
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
- 	struct i40e_ring *tx_ring = NULL;
--	unsigned int i, hung_queue = 0;
-+	unsigned int i;
- 	u32 head, val;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 4d5220c9c721..2d7ecdc157be 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5066,36 +5066,17 @@ static void ice_tx_timeout(struct net_device *netdev, unsigned int txqueue)
+ 	struct ice_ring *tx_ring = NULL;
+ 	struct ice_vsi *vsi = np->vsi;
+ 	struct ice_pf *pf = vsi->back;
+-	int hung_queue = -1;
+ 	u32 i;
  
  	pf->tx_timeout_count++;
  
--	/* find the stopped queue the same way the stack does */
+-	/* find the stopped queue the same way dev_watchdog() does */
 -	for (i = 0; i < netdev->num_tx_queues; i++) {
--		struct netdev_queue *q;
 -		unsigned long trans_start;
+-		struct netdev_queue *q;
 -
 -		q = netdev_get_tx_queue(netdev, i);
 -		trans_start = q->trans_start;
 -		if (netif_xmit_stopped(q) &&
 -		    time_after(jiffies,
--			       (trans_start + netdev->watchdog_timeo))) {
+-			       trans_start + netdev->watchdog_timeo)) {
 -			hung_queue = i;
 -			break;
 -		}
 -	}
 -
--	if (i == netdev->num_tx_queues) {
+-	if (i == netdev->num_tx_queues)
 -		netdev_info(netdev, "tx_timeout: no netdev hung queue found\n");
--	} else {
+-	else
 -		/* now that we have an index, find the tx_ring struct */
--		for (i = 0; i < vsi->num_queue_pairs; i++) {
--			if (vsi->tx_rings[i] && vsi->tx_rings[i]->desc) {
--				if (hung_queue ==
--				    vsi->tx_rings[i]->queue_index) {
+-		for (i = 0; i < vsi->num_txq; i++)
+-			if (vsi->tx_rings[i] && vsi->tx_rings[i]->desc)
+-				if (hung_queue == vsi->tx_rings[i]->q_index) {
 -					tx_ring = vsi->tx_rings[i];
 -					break;
 -				}
-+	/* with txqueue index, find the tx_ring struct */
-+	for (i = 0; i < vsi->num_queue_pairs; i++) {
-+		if (vsi->tx_rings[i] && vsi->tx_rings[i]->desc) {
-+			if (txqueue ==
-+			    vsi->tx_rings[i]->queue_index) {
++	/* now that we have an index, find the tx_ring struct */
++	for (i = 0; i < vsi->num_txq; i++)
++		if (vsi->tx_rings[i] && vsi->tx_rings[i]->desc)
++			if (txqueue == vsi->tx_rings[i]->q_index) {
 +				tx_ring = vsi->tx_rings[i];
 +				break;
- 			}
- 		}
- 	}
-@@ -363,14 +344,14 @@ static void i40e_tx_timeout(struct net_device *netdev, unsigned int txqueue)
- 			val = rd32(&pf->hw, I40E_PFINT_DYN_CTL0);
++			}
  
- 		netdev_info(netdev, "tx_timeout: VSI_seid: %d, Q %d, NTC: 0x%x, HWB: 0x%x, NTU: 0x%x, TAIL: 0x%x, INT: 0x%x\n",
--			    vsi->seid, hung_queue, tx_ring->next_to_clean,
-+			    vsi->seid, txqueue, tx_ring->next_to_clean,
- 			    head, tx_ring->next_to_use,
- 			    readl(tx_ring->tail), val);
+ 	/* Reset recovery level if enough time has elapsed after last timeout.
+ 	 * Also ensure no new reset action happens before next timeout period.
+@@ -5110,19 +5091,19 @@ static void ice_tx_timeout(struct net_device *netdev, unsigned int txqueue)
+ 		struct ice_hw *hw = &pf->hw;
+ 		u32 head, val = 0;
+ 
+-		head = (rd32(hw, QTX_COMM_HEAD(vsi->txq_map[hung_queue])) &
++		head = (rd32(hw, QTX_COMM_HEAD(vsi->txq_map[txqueue])) &
+ 			QTX_COMM_HEAD_HEAD_M) >> QTX_COMM_HEAD_HEAD_S;
+ 		/* Read interrupt register */
+ 		val = rd32(hw, GLINT_DYN_CTL(tx_ring->q_vector->reg_idx));
+ 
+ 		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %d, NTC: 0x%x, HW_HEAD: 0x%x, NTU: 0x%x, INT: 0x%x\n",
+-			    vsi->vsi_num, hung_queue, tx_ring->next_to_clean,
++			    vsi->vsi_num, txqueue, tx_ring->next_to_clean,
+ 			    head, tx_ring->next_to_use, val);
  	}
  
  	pf->tx_timeout_last_recovery = jiffies;
