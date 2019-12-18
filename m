@@ -1,102 +1,23 @@
-From: Julio Faracco <jcfaracco@gmail.com>
-Date: Wed, 18 Dec 2019 15:38:45 -0300
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] drivers: net: ice: Removing
- hung_queue variable to use txqueue function parameter
-In-Reply-To: <20191218183845.20038-1-jcfaracco@gmail.com>
-References: <20191218183845.20038-1-jcfaracco@gmail.com>
-Message-ID: <20191218183845.20038-3-jcfaracco@gmail.com>
+From: Paul Stewart <pstew@google.com>
+Date: Wed, 18 Dec 2019 14:54:26 -0800
+Subject: [Intel-wired-lan] Setting PHY modes in ixgbe
+Message-ID: <CAMcMvsiZ72fGryE=Hrh0jg0Fdm35dcuwi--KW2-gRW6zX9-0NA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The scope of function .ndo_tx_timeout was changed to include the hang
-queue when a TX timeout event occurs. See commit 0290bd291cc0
-("netdev: pass the stuck queue to the timeout handler") for more
-details. Now, drivers don't need to identify which queue is stopped.
-Drivers can simply use the queue index provided bt dev_watchdog and
-execute all actions needed to restore network traffic. This commit do
-some cleanups into Intel ice driver to remove a redundant loop to find
-stopped queue.
+We're creating a device that uses SGMII for communication.  The
+C3000-based SOM we're using defaults to KX.   Intel's documentation
+and drivers offers almost all we need.  The C3000 document refers to
+the mode being configurable via the "the 2-bit Link Mode field (bits
+[5:4]) of the Initialization Control 3 word, located at 16-bit word
+offset 0x24 of the particular LAN-port base
+address of the shared SPI Flash."  It then has a table with 11 entries
+in it that show the various modes (VF, KR, KX, SFI, SGMII, etc) that
+it can enter.  I have a couple questions though:
 
-Signed-off-by: Julio Faracco <jcfaracco@gmail.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 41 ++++++-----------------
- 1 file changed, 11 insertions(+), 30 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 4d5220c9c721..2d7ecdc157be 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5066,36 +5066,17 @@ static void ice_tx_timeout(struct net_device *netdev, unsigned int txqueue)
- 	struct ice_ring *tx_ring = NULL;
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
--	int hung_queue = -1;
- 	u32 i;
- 
- 	pf->tx_timeout_count++;
- 
--	/* find the stopped queue the same way dev_watchdog() does */
--	for (i = 0; i < netdev->num_tx_queues; i++) {
--		unsigned long trans_start;
--		struct netdev_queue *q;
--
--		q = netdev_get_tx_queue(netdev, i);
--		trans_start = q->trans_start;
--		if (netif_xmit_stopped(q) &&
--		    time_after(jiffies,
--			       trans_start + netdev->watchdog_timeo)) {
--			hung_queue = i;
--			break;
--		}
--	}
--
--	if (i == netdev->num_tx_queues)
--		netdev_info(netdev, "tx_timeout: no netdev hung queue found\n");
--	else
--		/* now that we have an index, find the tx_ring struct */
--		for (i = 0; i < vsi->num_txq; i++)
--			if (vsi->tx_rings[i] && vsi->tx_rings[i]->desc)
--				if (hung_queue == vsi->tx_rings[i]->q_index) {
--					tx_ring = vsi->tx_rings[i];
--					break;
--				}
-+	/* now that we have an index, find the tx_ring struct */
-+	for (i = 0; i < vsi->num_txq; i++)
-+		if (vsi->tx_rings[i] && vsi->tx_rings[i]->desc)
-+			if (txqueue == vsi->tx_rings[i]->q_index) {
-+				tx_ring = vsi->tx_rings[i];
-+				break;
-+			}
- 
- 	/* Reset recovery level if enough time has elapsed after last timeout.
- 	 * Also ensure no new reset action happens before next timeout period.
-@@ -5110,19 +5091,19 @@ static void ice_tx_timeout(struct net_device *netdev, unsigned int txqueue)
- 		struct ice_hw *hw = &pf->hw;
- 		u32 head, val = 0;
- 
--		head = (rd32(hw, QTX_COMM_HEAD(vsi->txq_map[hung_queue])) &
-+		head = (rd32(hw, QTX_COMM_HEAD(vsi->txq_map[txqueue])) &
- 			QTX_COMM_HEAD_HEAD_M) >> QTX_COMM_HEAD_HEAD_S;
- 		/* Read interrupt register */
- 		val = rd32(hw, GLINT_DYN_CTL(tx_ring->q_vector->reg_idx));
- 
- 		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %d, NTC: 0x%x, HW_HEAD: 0x%x, NTU: 0x%x, INT: 0x%x\n",
--			    vsi->vsi_num, hung_queue, tx_ring->next_to_clean,
-+			    vsi->vsi_num, txqueue, tx_ring->next_to_clean,
- 			    head, tx_ring->next_to_use, val);
- 	}
- 
- 	pf->tx_timeout_last_recovery = jiffies;
--	netdev_info(netdev, "tx_timeout recovery level %d, hung_queue %d\n",
--		    pf->tx_timeout_recovery_level, hung_queue);
-+	netdev_info(netdev, "tx_timeout recovery level %d, txqueue %d\n",
-+		    pf->tx_timeout_recovery_level, txqueue);
- 
- 	switch (pf->tx_timeout_recovery_level) {
- 	case 1:
--- 
-2.17.1
-
+ - How does one map this "particular LAN-port base address" to an
+actual byte offset in the EEPROM?
+ - How do those two bits map to the 11 different options shown?
