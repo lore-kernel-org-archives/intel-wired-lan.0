@@ -1,9 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 18 Dec 2019 21:58:57 +0000
-Subject: [Intel-wired-lan] [PATCH] ice: Add device ids for E822 devices
-In-Reply-To: <20191217105543.40373-1-anthony.l.nguyen@intel.com>
-References: <20191217105543.40373-1-anthony.l.nguyen@intel.com>
-Message-ID: <76786608a040445ca1a995d3d49c7d35@intel.com>
+Date: Wed, 18 Dec 2019 22:11:06 +0000
+Subject: [Intel-wired-lan] [PATCH S35 01/15] ice: Support UDP
+ segmentation offload
+In-Reply-To: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
+References: <20191212111307.33566-1-anthony.l.nguyen@intel.com>
+Message-ID: <92ca5af5361141229c7ca2f6bed1d8f1@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,22 +14,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Tony Nguyen
-> Sent: Tuesday, December 17, 2019 2:56 AM
+> Sent: Thursday, December 12, 2019 3:13 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ice: Add device ids for E822 devices
+> Subject: [Intel-wired-lan] [PATCH S35 01/15] ice: Support UDP segmentation
+> offload
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Add support for E822 devices
+> Based on the work done by Alex Duyck on other Intel drivers, add code to
+> support UDP segmentation offload (USO) for the ice driver.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_devids.h | 18 ++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_main.c   |  9 +++++++++
->  drivers/net/ethernet/intel/ice/ice_nvm.c    | 12 ++++++++++++
->  3 files changed, 39 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_main.c |  3 ++-
+> drivers/net/ethernet/intel/ice/ice_txrx.c | 15 ++++++++++++---
+>  2 files changed, 14 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
