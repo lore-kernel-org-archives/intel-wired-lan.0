@@ -1,134 +1,80 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 18 Dec 2019 12:00:22 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- f1fc14dbbb89af70f520e1e4e3ee0659f5bbc354
-Message-ID: <5df9a456.WkZ4cUdCKP68V1C/%lkp@intel.com>
+From: Jia-Ju Bai <baijiaju1990@gmail.com>
+Date: Wed, 18 Dec 2019 22:16:56 +0800
+Subject: [Intel-wired-lan] [PATCH] net: intel: e1000e: fix possible
+ sleep-in-atomic-context bugs in e1000e_get_hw_semaphore()
+Message-ID: <20191218141656.12416-1-baijiaju1990@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: f1fc14dbbb89af70f520e1e4e3ee0659f5bbc354  iavf: remove current MAC address filter on VF reset
+The driver may sleep while holding a spinlock.
+The function call path (from bottom to top) in Linux 4.19 is:
 
-elapsed time: 687m
+drivers/net/ethernet/intel/e1000e/mac.c, 1366: 
+	usleep_range in e1000e_get_hw_semaphore
+drivers/net/ethernet/intel/e1000e/80003es2lan.c, 322:
+	e1000e_get_hw_semaphore in e1000_release_swfw_sync_80003es2lan
+drivers/net/ethernet/intel/e1000e/80003es2lan.c, 197:
+	e1000_release_swfw_sync_80003es2lan in e1000_release_phy_80003es2lan
+drivers/net/ethernet/intel/e1000e/netdev.c, 4883: 
+	(FUNC_PTR) e1000_release_phy_80003es2lan in e1000e_update_phy_stats
+drivers/net/ethernet/intel/e1000e/netdev.c, 4917:
+	e1000e_update_phy_stats in e1000e_update_stats
+drivers/net/ethernet/intel/e1000e/netdev.c, 5945: 
+	e1000e_update_stats in e1000e_get_stats64
+drivers/net/ethernet/intel/e1000e/netdev.c, 5944: 
+	spin_lock in e1000e_get_stats64
 
-configs tested: 109
+drivers/net/ethernet/intel/e1000e/mac.c, 1384: 
+	usleep_range in e1000e_get_hw_semaphore
+drivers/net/ethernet/intel/e1000e/80003es2lan.c, 322:
+	e1000e_get_hw_semaphore in e1000_release_swfw_sync_80003es2lan
+drivers/net/ethernet/intel/e1000e/80003es2lan.c, 197:
+	e1000_release_swfw_sync_80003es2lan in e1000_release_phy_80003es2lan
+drivers/net/ethernet/intel/e1000e/netdev.c, 4883: 
+	(FUNC_PTR) e1000_release_phy_80003es2lan in e1000e_update_phy_stats
+drivers/net/ethernet/intel/e1000e/netdev.c, 4917:
+	e1000e_update_phy_stats in e1000e_update_stats
+drivers/net/ethernet/intel/e1000e/netdev.c, 5945: 
+	e1000e_update_stats in e1000e_get_stats64
+drivers/net/ethernet/intel/e1000e/netdev.c, 5944: 
+	spin_lock in e1000e_get_stats64
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+(FUNC_PTR) means a function pointer is called.
 
-s390                             alldefconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                             allyesconfig
-s390                          debug_defconfig
-s390                                defconfig
-s390                       zfcpdump_defconfig
-parisc                            allnoconfig
-parisc                            allyesonfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                             allyesconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-csky                 randconfig-a001-20191217
-openrisc             randconfig-a001-20191217
-s390                 randconfig-a001-20191217
-sh                   randconfig-a001-20191217
-xtensa               randconfig-a001-20191217
-i386                             alldefconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                              allyesconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                             defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-c6x                  randconfig-a001-20191217
-h8300                randconfig-a001-20191217
-microblaze           randconfig-a001-20191217
-nios2                randconfig-a001-20191217
-sparc64              randconfig-a001-20191217
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-alpha                randconfig-a001-20191217
-mips                 randconfig-a001-20191217
-nds32                randconfig-a001-20191217
-parisc               randconfig-a001-20191217
-riscv                randconfig-a001-20191217
-alpha                               defconfig
-csky                                defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-ia64                                defconfig
-riscv                            allmodconfig
-riscv                             allnoconfig
-riscv                            allyesconfig
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                          rhel-kconfig
+To fix these bugs, usleep_range() is replaced with udelay().
 
+These bugs are found by a static analysis tool STCheck written by myself.
+
+Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
 ---
-0-DAY kernel test infrastructure                 Open Source Technology Center
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
+ drivers/net/ethernet/intel/e1000e/mac.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
+index e531976f8a67..51512a73fdd0 100644
+--- a/drivers/net/ethernet/intel/e1000e/mac.c
++++ b/drivers/net/ethernet/intel/e1000e/mac.c
+@@ -1363,7 +1363,7 @@ s32 e1000e_get_hw_semaphore(struct e1000_hw *hw)
+ 		if (!(swsm & E1000_SWSM_SMBI))
+ 			break;
+ 
+-		usleep_range(50, 100);
++		udelay(100);
+ 		i++;
+ 	}
+ 
+@@ -1381,7 +1381,7 @@ s32 e1000e_get_hw_semaphore(struct e1000_hw *hw)
+ 		if (er32(SWSM) & E1000_SWSM_SWESMBI)
+ 			break;
+ 
+-		usleep_range(50, 100);
++		udelay(100);
+ 	}
+ 
+ 	if (i == timeout) {
+-- 
+2.17.1
+
