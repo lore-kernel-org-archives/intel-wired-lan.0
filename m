@@ -1,26 +1,63 @@
-From: Daniel Borkmann <daniel@iogearbox.net>
-Date: Thu, 19 Dec 2019 16:59:53 +0100
-Subject: [Intel-wired-lan] [PATCH bpf v2 0/4] Fix concurrency issues
- between XSK wakeup and control path using RCU
-In-Reply-To: <cfe64691-7a0f-5b8a-d511-ebe742cec3c0@intel.com>
-References: <20191217162023.16011-1-maximmi@mellanox.com>
- <cfe64691-7a0f-5b8a-d511-ebe742cec3c0@intel.com>
-Message-ID: <20191219155953.GD4198@linux-9.fritz.box>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Thu, 19 Dec 2019 11:56:12 -0800
+Subject: [Intel-wired-lan] [PATCH] fm10k: use txqueue parameter in
+ fm10k_tx_timeout
+Message-ID: <20191219195612.25616-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Dec 17, 2019 at 06:33:14PM +0100, Bj?rn T?pel wrote:
-> On 2019-12-17 17:20, Maxim Mikityanskiy wrote:
-> > This series addresses the issue described in the commit message of the
-> > first patch: lack of synchronization between XSK wakeup and destroying
-> > the resources used by XSK wakeup. The idea is similar to
-> > napi_synchronize. The series contains fixes for the drivers that
-> > implement XSK. I haven't tested the changes to Intel's drivers, so,
-> > Intel guys, please review them.
-> 
-> Max, thanks a lot for compiling the series on your vacation!
+Make use of the new txqueue parameter to the .ndo_tx_timeout function.
+In fm10k_tx_timeout, remove the now unnecessary loop to determine which
+Tx queue is stuck. Instead, just double check the specified queue
 
-Applied, thanks!
+This could be improved further to attempt resetting only the specific
+queue that got stuck. However, that is a much larger refactor and has
+been left as a future improvement.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index ba2566e2123d..f09c37f2ba7a 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -696,21 +696,24 @@ static netdev_tx_t fm10k_xmit_frame(struct sk_buff *skb, struct net_device *dev)
+ /**
+  * fm10k_tx_timeout - Respond to a Tx Hang
+  * @netdev: network interface device structure
++ * @txqueue: the index of the Tx queue that timed out
+  **/
+ static void fm10k_tx_timeout(struct net_device *netdev, unsigned int txqueue)
+ {
+ 	struct fm10k_intfc *interface = netdev_priv(netdev);
++	struct fm10k_ring *tx_ring;
+ 	bool real_tx_hang = false;
+-	int i;
+-
+-#define TX_TIMEO_LIMIT 16000
+-	for (i = 0; i < interface->num_tx_queues; i++) {
+-		struct fm10k_ring *tx_ring = interface->tx_ring[i];
+ 
+-		if (check_for_tx_hang(tx_ring) && fm10k_check_tx_hang(tx_ring))
+-			real_tx_hang = true;
++	if (txqueue >= interface->num_tx_queues) {
++		WARN(1, "invalid Tx queue index %d", txqueue);
++		return;
+ 	}
+ 
++	tx_ring = interface->tx_ring[txqueue]
++	if (check_for_tx_hang(tx_ring) && fm10k_check_tx_hang(tx_ring))
++		real_tx_hang = true;
++
++#define TX_TIMEO_LIMIT 16000
+ 	if (real_tx_hang) {
+ 		fm10k_tx_timeout_reset(interface);
+ 	} else {
+-- 
+2.24.0.155.gd9f6f3b6195a
+
