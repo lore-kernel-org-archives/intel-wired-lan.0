@@ -1,8 +1,8 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 19 Dec 2019 11:56:12 -0800
-Subject: [Intel-wired-lan] [PATCH] fm10k: use txqueue parameter in
+Date: Thu, 19 Dec 2019 12:10:00 -0800
+Subject: [Intel-wired-lan] [PATCH v2] fm10k: use txqueue parameter in
  fm10k_tx_timeout
-Message-ID: <20191219195612.25616-1-jacob.e.keller@intel.com>
+Message-ID: <20191219201000.1712-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,11 +19,16 @@ been left as a future improvement.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
+
+Woops, sorry for the quick v2. Had missed a semicolon and apparently my
+config I used to check this after a last minute move to add the Tx queue
+warning didn't have CONFIG_FM10K enabled.. Woops.
+
  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 17 ++++++++++-------
  1 file changed, 10 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index ba2566e2123d..f09c37f2ba7a 100644
+index ba2566e2123d..0637ccadee79 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
 @@ -696,21 +696,24 @@ static netdev_tx_t fm10k_xmit_frame(struct sk_buff *skb, struct net_device *dev)
@@ -50,7 +55,7 @@ index ba2566e2123d..f09c37f2ba7a 100644
 +		return;
  	}
  
-+	tx_ring = interface->tx_ring[txqueue]
++	tx_ring = interface->tx_ring[txqueue];
 +	if (check_for_tx_hang(tx_ring) && fm10k_check_tx_hang(tx_ring))
 +		real_tx_hang = true;
 +
