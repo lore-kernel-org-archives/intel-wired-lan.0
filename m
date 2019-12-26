@@ -1,12 +1,12 @@
 From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Wed, 25 Dec 2019 16:17:52 +0200
+Date: Thu, 26 Dec 2019 10:13:08 +0200
 Subject: [Intel-wired-lan] [PATCH v2] igc: Add PHY power management
  control
 In-Reply-To: <f46101da-8d48-84a3-3229-653a36e6e1ae@intel.com>
 References: <20191212173650.14210-1-sasha.neftin@intel.com>
  <87imml5t8z.fsf@linux.intel.com>
  <f46101da-8d48-84a3-3229-653a36e6e1ae@intel.com>
-Message-ID: <2a042920-d948-9b08-826d-492e4f81ec83@intel.com>
+Message-ID: <4d1d0f7d-96a2-02f0-4acb-96bfaee0ee77@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -78,11 +78,8 @@ On 12/12/2019 20:00, Neftin, Sasha wrote:
 >> nitpick: Timeoui -> Timeout
 >>
 > thanks - I will send v3 and fix the typo
-Unfortunately, RST_COMPL signal in a PHY power management registers 
-still not work as properly. Please, disregard this patch. The RST_COMPL 
-indication should be fixed. I will release another patch so.
-> ________________________________________
-_______
+RST_COMP still not works as properly. Let's disregard this patch.
+> _______________________________________________
 > Intel-wired-lan mailing list
 > Intel-wired-lan at osuosl.org
 > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
