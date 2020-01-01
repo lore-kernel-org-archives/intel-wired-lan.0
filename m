@@ -1,33 +1,58 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed,  1 Jan 2020 08:49:13 +0200
-Subject: [Intel-wired-lan] [PATCH v1] igc: Remove unused definition
-Message-ID: <20200101064913.21138-1-sasha.neftin@intel.com>
+Date: Wed,  1 Jan 2020 09:14:17 +0200
+Subject: [Intel-wired-lan] [PATCH v1] igc: Add SKU for i225 device
+Message-ID: <20200101071417.7899-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove the unused IGC_FUNC_0 definition and make the code cleaner
+Add support for blank NVM SKU
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_hw.h | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_base.c | 1 +
+ drivers/net/ethernet/intel/igc/igc_hw.h   | 1 +
+ drivers/net/ethernet/intel/igc/igc_main.c | 1 +
+ 3 files changed, 3 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
+index db289bcce21d..5a506440560a 100644
+--- a/drivers/net/ethernet/intel/igc/igc_base.c
++++ b/drivers/net/ethernet/intel/igc/igc_base.c
+@@ -212,6 +212,7 @@ static s32 igc_get_invariants_base(struct igc_hw *hw)
+ 	case IGC_DEV_ID_I225_I:
+ 	case IGC_DEV_ID_I220_V:
+ 	case IGC_DEV_ID_I225_K:
++	case IGC_DEV_ID_I225_BLANK_NVM:
+ 		mac->type = igc_i225;
+ 		break;
+ 	default:
 diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 20f710645746..be7273c4b53f 100644
+index be7273c4b53f..90ac0e0144d8 100644
 --- a/drivers/net/ethernet/intel/igc/igc_hw.h
 +++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -22,8 +22,6 @@
+@@ -21,6 +21,7 @@
+ #define IGC_DEV_ID_I225_I			0x15F8
  #define IGC_DEV_ID_I220_V			0x15F7
  #define IGC_DEV_ID_I225_K			0x3100
++#define IGC_DEV_ID_I225_BLANK_NVM		0x15FD
  
--#define IGC_FUNC_0				0
--
  /* Function pointers for the MAC. */
  struct igc_mac_operations {
- 	s32 (*check_for_link)(struct igc_hw *hw);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index c76aaf49ff4c..37d2d242c3a6 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -45,6 +45,7 @@ static const struct pci_device_id igc_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_I), board_base },
+ 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I220_V), board_base },
+ 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K), board_base },
++	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_BLANK_NVM), board_base },
+ 	/* required last entry */
+ 	{0, }
+ };
 -- 
 2.11.0
 
