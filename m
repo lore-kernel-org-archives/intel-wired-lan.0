@@ -1,40 +1,147 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Wed, 01 Jan 2020 07:59:29 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 2e80c9b83c99d581b269f4eb9e90d83ff5d3ab20
-Message-ID: <5e0be0e1.qpO6hhLmwupOyV3N%lkp@intel.com>
+Date: Wed, 01 Jan 2020 08:38:35 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD REGRESSION
+ 80581c1fc655e67c755c0e83bd958acfa4e66c77
+Message-ID: <5e0bea0b.fSHxUqcKhoeCmVGA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 2e80c9b83c99d581b269f4eb9e90d83ff5d3ab20  ice: remove redundant assignment to variable xmit_done
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 80581c1fc655e67c755c0e83bd958acfa4e66c77  e1000e: Revert "e1000e: Make watchdog use delayed work"
 
-elapsed time: 286m
+Regressions in current branch:
 
-configs tested: 144
+drivers/net/ethernet/intel/e1000e/netdev.c:7604:6: warning: the address of 'down' will always evaluate as 'true' [-Waddress]
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Error ids grouped by kconfigs:
 
-csky                 randconfig-a001-20200101
-s390                 randconfig-a001-20200101
-sh                   randconfig-a001-20200101
-xtensa               randconfig-a001-20200101
-openrisc             randconfig-a001-20200101
+recent_errors
+|-- alpha-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- i386-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- i386-allyesconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- i386-defconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- i386-randconfig-b001-20191231
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- ia64-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- ia64-randconfig-a001-20191231
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- mips-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- parisc-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- powerpc-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- powerpc-defconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- powerpc-ppc64_defconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- riscv-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- s390-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- sparc-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- sparc64-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- x86_64-allmodconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+|-- x86_64-allyesconfig
+|   `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+`-- xtensa-allmodconfig
+    `-- drivers-net-ethernet-intel-e1000e-netdev.c:warning:the-address-of-down-will-always-evaluate-as-true
+
+elapsed time: 322m
+
+configs tested: 157
+
+i386                 randconfig-h002-20191231
+i386                 randconfig-h003-20191231
+i386                 randconfig-h001-20191231
 i386                 randconfig-b002-20191231
 x86_64               randconfig-b002-20191231
 i386                 randconfig-b001-20191231
 x86_64               randconfig-b001-20191231
 i386                 randconfig-b003-20191231
 x86_64               randconfig-b003-20191231
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                             defconfig
 parisc                            allnoconfig
 parisc                            allyesonfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
+nios2                randconfig-a001-20191231
+microblaze           randconfig-a001-20191231
+c6x                  randconfig-a001-20191231
+h8300                randconfig-a001-20191231
+sparc64              randconfig-a001-20191231
+s390                             alldefconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                             allyesconfig
+s390                          debug_defconfig
+s390                                defconfig
+s390                       zfcpdump_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                             allyesconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+arc                  randconfig-a001-20191231
+arm                  randconfig-a001-20191231
+arm64                randconfig-a001-20191231
+ia64                 randconfig-a001-20191231
+powerpc              randconfig-a001-20191231
+sparc                randconfig-a001-20191231
+alpha                randconfig-a001-20200101
+m68k                 randconfig-a001-20200101
+mips                 randconfig-a001-20200101
+nds32                randconfig-a001-20200101
+parisc               randconfig-a001-20200101
+riscv                randconfig-a001-20200101
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                          rhel-kconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+csky                 randconfig-a001-20200101
+openrisc             randconfig-a001-20200101
+s390                 randconfig-a001-20200101
+xtensa               randconfig-a001-20200101
+riscv                            allmodconfig
+riscv                             allnoconfig
+riscv                            allyesconfig
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allyesconfig
+i386                             alldefconfig
 c6x                              allyesconfig
 c6x                        evmc6678_defconfig
 nios2                         10m50_defconfig
@@ -43,54 +150,61 @@ openrisc                    or1ksim_defconfig
 openrisc                 simple_smp_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
-nios2                randconfig-a001-20191231
-microblaze           randconfig-a001-20191231
-c6x                  randconfig-a001-20191231
-h8300                randconfig-a001-20191231
-sparc64              randconfig-a001-20191231
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                              fedora-25
-x86_64                                  kexec
-sparc                            allyesconfig
-s390                             alldefconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                             allyesconfig
-s390                          debug_defconfig
-s390                                defconfig
-s390                       zfcpdump_defconfig
-sh                               allmodconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64               randconfig-d001-20200101
+x86_64               randconfig-d002-20200101
+x86_64               randconfig-d003-20200101
+i386                 randconfig-d001-20200101
+i386                 randconfig-d002-20200101
+i386                 randconfig-d003-20200101
+x86_64               randconfig-h001-20191231
+x86_64               randconfig-h002-20191231
+x86_64               randconfig-h003-20191231
 alpha                               defconfig
 csky                                defconfig
 nds32                             allnoconfig
 nds32                               defconfig
-mips                             allmodconfig
-mips                           32r2_defconfig
-mips                             allyesconfig
-mips                      malta_kvm_defconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-arc                              allyesconfig
-powerpc                             defconfig
-microblaze                    nommu_defconfig
-powerpc                       ppc64_defconfig
-powerpc                          rhel-kconfig
-microblaze                      mmu_defconfig
-arc                                 defconfig
-powerpc                           allnoconfig
-mips                 randconfig-a001-20200101
-parisc               randconfig-a001-20200101
-riscv                randconfig-a001-20200101
-alpha                randconfig-a001-20200101
-m68k                 randconfig-a001-20200101
-nds32                randconfig-a001-20200101
+x86_64               randconfig-e001-20191231
+x86_64               randconfig-e002-20191231
+x86_64               randconfig-e003-20191231
+i386                 randconfig-e001-20191231
+i386                 randconfig-e002-20191231
+i386                 randconfig-e003-20191231
+x86_64               randconfig-f001-20191229
+x86_64               randconfig-f002-20191229
+x86_64               randconfig-f003-20191229
+i386                 randconfig-f001-20191229
+i386                 randconfig-f002-20191229
+i386                 randconfig-f003-20191229
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64               randconfig-g002-20191231
+x86_64               randconfig-g001-20191231
+i386                 randconfig-g003-20191231
+i386                 randconfig-g002-20191231
+i386                 randconfig-g001-20191231
+x86_64               randconfig-g003-20191231
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+ia64                                defconfig
+x86_64               randconfig-g001-20191230
+x86_64               randconfig-g002-20191230
+x86_64               randconfig-g003-20191230
+i386                 randconfig-g001-20191230
+i386                 randconfig-g002-20191230
+i386                 randconfig-g003-20191230
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
 arm                              allmodconfig
 arm                               allnoconfig
 arm                              allyesconfig
@@ -105,64 +219,6 @@ arm64                            allmodconfig
 arm64                             allnoconfig
 arm64                            allyesconfig
 arm64                               defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             allyesconfig
-i386                             alldefconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                             defconfig
-riscv                          rv32_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-riscv                    nommu_virt_defconfig
-riscv                            allyesconfig
-x86_64               randconfig-a001-20191231
-i386                 randconfig-a002-20191231
-x86_64               randconfig-a002-20191231
-x86_64               randconfig-a003-20191231
-i386                 randconfig-a001-20191231
-i386                 randconfig-a003-20191231
-i386                 randconfig-e002-20191231
-x86_64               randconfig-e001-20191231
-x86_64               randconfig-e003-20191231
-i386                 randconfig-e001-20191231
-x86_64               randconfig-e002-20191231
-i386                 randconfig-e003-20191231
-i386                 randconfig-h002-20191231
-i386                 randconfig-h003-20191231
-i386                 randconfig-h001-20191231
-x86_64               randconfig-h002-20191231
-x86_64               randconfig-h001-20191231
-x86_64               randconfig-h003-20191231
-i386                 randconfig-f001-20191230
-i386                 randconfig-f003-20191230
-x86_64               randconfig-f003-20191230
-x86_64               randconfig-f002-20191230
-i386                 randconfig-f002-20191230
-x86_64               randconfig-f001-20191230
-ia64                 randconfig-a001-20191231
-arm64                randconfig-a001-20191231
-arm                  randconfig-a001-20191231
-arc                  randconfig-a001-20191231
-sparc                randconfig-a001-20191231
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-ia64                                defconfig
-x86_64               randconfig-g002-20191230
-i386                 randconfig-g003-20191230
-x86_64               randconfig-g001-20191230
-i386                 randconfig-g002-20191230
-i386                 randconfig-g001-20191230
-x86_64               randconfig-g003-20191230
 
 ---
 0-DAY kernel test infrastructure                 Open Source Technology Center
