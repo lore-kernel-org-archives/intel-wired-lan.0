@@ -1,182 +1,64 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Fri, 03 Jan 2020 11:14:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 6a877a64faebfd5f1d8dde8f2f63111b8180d9b6
-Message-ID: <5e0eb1af.xeCYu6/KEe3U6t4w%lkp@intel.com>
+Date: Thu, 2 Jan 2020 14:18:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 11/76]
+ drivers/net/ethernet/intel/igc/igc_main.c:143:13: error: redefinition of
+ 'igc_power_down_link'
+Message-ID: <202001021405.ZRJt5NUL%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 6a877a64faebfd5f1d8dde8f2f63111b8180d9b6  igc: Add SKU for i225 device
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   74c2ae1254468e2c3db1ff410175525a465488a3
+commit: 9f6846ba9643830c95a59ec950c1e4ba2afb08fc [11/76] igc: Remove no need declaration of the igc_power_down_link
+config: i386-allyesconfig (attached as .config)
+compiler: gcc-7 (Debian 7.5.0-3) 7.5.0
+reproduce:
+        git checkout 9f6846ba9643830c95a59ec950c1e4ba2afb08fc
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-elapsed time: 249m
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
 
-configs tested: 157
+All errors (new ones prefixed by >>):
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+>> drivers/net/ethernet/intel/igc/igc_main.c:143:13: error: redefinition of 'igc_power_down_link'
+    static void igc_power_down_link(struct igc_adapter *adapter)
+                ^~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/igc/igc_main.c:82:13: note: previous definition of 'igc_power_down_link' was here
+    static void igc_power_down_link(struct igc_adapter *adapter)
+                ^~~~~~~~~~~~~~~~~~~
 
-alpha                               defconfig
-csky                                defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-x86_64               randconfig-c002-20200102
-x86_64               randconfig-c003-20200102
-x86_64               randconfig-c001-20200102
-i386                 randconfig-c001-20200102
-i386                 randconfig-c002-20200102
-i386                 randconfig-c003-20200102
-parisc               randconfig-a001-20200102
-mips                 randconfig-a001-20200102
-riscv                randconfig-a001-20200102
-alpha                randconfig-a001-20200102
-m68k                 randconfig-a001-20200102
-nds32                randconfig-a001-20200102
-riscv                            allmodconfig
-riscv                             allnoconfig
-riscv                            allyesconfig
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                          rhel-kconfig
-csky                 randconfig-a001-20200102
-s390                 randconfig-a001-20200102
-sh                   randconfig-a001-20200102
-xtensa               randconfig-a001-20200102
-openrisc             randconfig-a001-20200102
-arm                              allmodconfig
-arm64                            allmodconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-ia64                                defconfig
-ia64                             alldefconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-x86_64               randconfig-b003-20200102
-i386                 randconfig-b001-20200102
-x86_64               randconfig-b002-20200102
-i386                 randconfig-b003-20200102
-x86_64               randconfig-b001-20200102
-i386                 randconfig-b002-20200102
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             allyesconfig
-i386                             alldefconfig
-x86_64               randconfig-a002-20200103
-x86_64               randconfig-a001-20200103
-i386                 randconfig-a001-20200103
-i386                 randconfig-a002-20200103
-x86_64               randconfig-a003-20200103
-i386                 randconfig-a003-20200103
-microblaze           randconfig-a001-20200102
-sparc64              randconfig-a001-20200102
-nios2                randconfig-a001-20200102
-c6x                  randconfig-a001-20200102
-h8300                randconfig-a001-20200102
-csky                 randconfig-a001-20200103
-openrisc             randconfig-a001-20200103
-s390                 randconfig-a001-20200103
-sh                   randconfig-a001-20200103
-xtensa               randconfig-a001-20200103
-sparc64                          allmodconfig
-sparc                            allyesconfig
-sparc64                          allyesconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                 randconfig-f001-20200102
-x86_64               randconfig-f003-20200102
-i386                 randconfig-f002-20200102
-i386                 randconfig-f003-20200102
-x86_64               randconfig-f001-20200102
-x86_64               randconfig-f002-20200102
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64               randconfig-e001-20200102
-x86_64               randconfig-e002-20200102
-x86_64               randconfig-e003-20200102
-i386                 randconfig-e001-20200102
-i386                 randconfig-e002-20200102
-i386                 randconfig-e003-20200102
-x86_64               randconfig-h003-20200102
-x86_64               randconfig-h002-20200102
-i386                 randconfig-h002-20200102
-i386                 randconfig-h003-20200102
-i386                 randconfig-h001-20200102
-x86_64               randconfig-h001-20200102
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                             allyesconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-parisc                            allnoconfig
-parisc                            allyesonfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64               randconfig-g002-20200102
-i386                 randconfig-g003-20200102
-i386                 randconfig-g002-20200102
-x86_64               randconfig-g003-20200102
-x86_64               randconfig-g001-20200102
-i386                 randconfig-g001-20200102
-arm                               allnoconfig
-arm                              allyesconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-s390                             alldefconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                             allyesconfig
-s390                          debug_defconfig
-s390                                defconfig
-s390                       zfcpdump_defconfig
+vim +/igc_power_down_link +143 drivers/net/ethernet/intel/igc/igc_main.c
+
+c9a11c23ceb65d Sasha Neftin 2018-10-11  138  
+c9a11c23ceb65d Sasha Neftin 2018-10-11  139  /**
+684ea87cc312c9 Sasha Neftin 2019-12-02  140   * igc_power_down_link - Power down the phy link
+c9a11c23ceb65d Sasha Neftin 2018-10-11  141   * @adapter: address of board private structure
+c9a11c23ceb65d Sasha Neftin 2018-10-11  142   */
+c9a11c23ceb65d Sasha Neftin 2018-10-11 @143  static void igc_power_down_link(struct igc_adapter *adapter)
+c9a11c23ceb65d Sasha Neftin 2018-10-11  144  {
+5586838fe9ced0 Sasha Neftin 2018-10-11  145  	if (adapter->hw.phy.media_type == igc_media_type_copper)
+5586838fe9ced0 Sasha Neftin 2018-10-11  146  		igc_power_down_phy_copper_base(&adapter->hw);
+c9a11c23ceb65d Sasha Neftin 2018-10-11  147  }
+c9a11c23ceb65d Sasha Neftin 2018-10-11  148  
+
+:::::: The code at line 143 was first introduced by commit
+:::::: c9a11c23ceb65db7ecc5735e7428311d70e74ba9 igc: Add netdev
+
+:::::: TO: Sasha Neftin <sasha.neftin@intel.com>
+:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
 ---
 0-DAY kernel test infrastructure                 Open Source Technology Center
 https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 70432 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200102/1562f7f6/attachment-0001.bin>
