@@ -1,14 +1,14 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu,  2 Jan 2020 18:09:38 -0800
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: use better trace path
-Message-ID: <20200103020938.816066-1-jesse.brandeburg@intel.com>
+Date: Thu,  2 Jan 2020 18:23:42 -0800
+Subject: [Intel-wired-lan] [PATCH net v2] i40e/iavf: use better trace path
+Message-ID: <20200103022342.820175-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I'm seeing compilation fail of the i40e driver for some reason.
+I'm seeing compilation fail of the i40e/iavf driver for some reason.
 I just checked 5.5-rc4 and the tip of net/net-next and all fail.
 Fails all the way back to v5.1 at least, I didn't check further back.
 
@@ -42,9 +42,13 @@ So fix the include path for the i40e driver trace file to be relative
 to the kernel root like (some) other drivers do.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+
+---
+v2: added iavf for the same fix
 ---
  drivers/net/ethernet/intel/i40e/i40e_trace.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/iavf/iavf_trace.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_trace.h b/drivers/net/ethernet/intel/i40e/i40e_trace.h
 index 424f02077e2e..122a3fcb62b1 100644
@@ -58,6 +62,19 @@ index 424f02077e2e..122a3fcb62b1 100644
 +#define TRACE_INCLUDE_PATH ../../drivers/net/ethernet/intel/i40e
  #undef TRACE_INCLUDE_FILE
  #define TRACE_INCLUDE_FILE i40e_trace
+ #include <trace/define_trace.h>
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_trace.h b/drivers/net/ethernet/intel/iavf/iavf_trace.h
+index 1058e68a02b4..b2674c935c21 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_trace.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_trace.h
+@@ -203,7 +203,7 @@ DEFINE_EVENT(
+  * module.
+  */
+ #undef TRACE_INCLUDE_PATH
+-#define TRACE_INCLUDE_PATH .
++#define TRACE_INCLUDE_PATH ../../drivers/net/ethernet/intel/iavf
+ #undef TRACE_INCLUDE_FILE
+ #define TRACE_INCLUDE_FILE iavf_trace
  #include <trace/define_trace.h>
 -- 
 2.24.1
