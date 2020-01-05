@@ -1,42 +1,177 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Sun,  5 Jan 2020 00:46:00 -0800
-Subject: [Intel-wired-lan] [net] i40e: Fix receive buffer starvation for
- AF_XDP
-Message-ID: <20200105084600.4025394-1-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sun, 05 Jan 2020 20:28:11 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
+ 63c92c9d2e536c91ace17dec7534883f40421753
+Message-ID: <5e11d65b.TdI9cd5OGQkkkwGW%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Magnus's fix to resolve a potential receive buffer starvation for AF_XDP
-got applied to both the i40e_xsk_umem_enable/disable() functions, when it
-should have only been applied to the "enable".  So clean up the undesired
-code in the disable function.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+branch HEAD: 63c92c9d2e536c91ace17dec7534883f40421753  igc: Remove no need declaration of the igc_sw_init
 
-CC: Magnus Karlsson <magnus.karlsson@intel.com>
-Fixes: 1f459bdc2007 ("i40e: fix potential RX buffer starvation for AF_XDP")
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+elapsed time: 316m
+
+configs tested: 152
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+csky                 randconfig-a001-20200105
+s390                 randconfig-a001-20200105
+sh                   randconfig-a001-20200105
+xtensa               randconfig-a001-20200105
+openrisc             randconfig-a001-20200105
+i386                             alldefconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                 randconfig-f001-20200105
+x86_64               randconfig-f003-20200105
+x86_64               randconfig-f001-20200105
+i386                 randconfig-f003-20200105
+i386                 randconfig-f002-20200105
+x86_64               randconfig-f002-20200105
+x86_64               randconfig-c001-20200105
+x86_64               randconfig-c002-20200105
+x86_64               randconfig-c003-20200105
+i386                 randconfig-c001-20200105
+i386                 randconfig-c002-20200105
+i386                 randconfig-c003-20200105
+x86_64               randconfig-d001-20200105
+x86_64               randconfig-d002-20200105
+x86_64               randconfig-d003-20200105
+i386                 randconfig-d001-20200105
+i386                 randconfig-d002-20200105
+i386                 randconfig-d003-20200105
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                          rhel-kconfig
+riscv                            allmodconfig
+riscv                             allnoconfig
+riscv                            allyesconfig
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+nds32                               defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+ia64                                defconfig
+alpha                               defconfig
+csky                                defconfig
+nds32                             allnoconfig
+arm                              allmodconfig
+arm64                            allmodconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                             defconfig
+x86_64               randconfig-g002-20200105
+i386                 randconfig-g003-20200105
+i386                 randconfig-g002-20200105
+x86_64               randconfig-g003-20200105
+x86_64               randconfig-g001-20200105
+i386                 randconfig-g001-20200105
+c6x                  randconfig-a001-20200105
+h8300                randconfig-a001-20200105
+microblaze           randconfig-a001-20200105
+nios2                randconfig-a001-20200105
+sparc64              randconfig-a001-20200105
+x86_64               randconfig-a002-20200105
+i386                 randconfig-a001-20200105
+x86_64               randconfig-a001-20200105
+i386                 randconfig-a002-20200105
+x86_64               randconfig-a003-20200105
+i386                 randconfig-a003-20200105
+x86_64               randconfig-e001-20200105
+x86_64               randconfig-e002-20200105
+x86_64               randconfig-e003-20200105
+i386                 randconfig-e001-20200105
+i386                 randconfig-e002-20200105
+i386                 randconfig-e003-20200105
+s390                             alldefconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                             allyesconfig
+s390                          debug_defconfig
+s390                                defconfig
+s390                       zfcpdump_defconfig
+parisc                            allnoconfig
+parisc                            allyesonfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+mips                 randconfig-a001-20200105
+parisc               randconfig-a001-20200105
+riscv                randconfig-a001-20200105
+alpha                randconfig-a001-20200105
+m68k                 randconfig-a001-20200105
+nds32                randconfig-a001-20200105
+x86_64               randconfig-b001-20200105
+x86_64               randconfig-b002-20200105
+x86_64               randconfig-b003-20200105
+i386                 randconfig-b001-20200105
+i386                 randconfig-b002-20200105
+i386                 randconfig-b003-20200105
+arm                               allnoconfig
+arm                              allyesconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                             allyesconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 5 -----
- 1 file changed, 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 42058fad6a3c..1b13d8e0d67a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -114,11 +114,6 @@ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
- 		err = i40e_queue_pair_enable(vsi, qid);
- 		if (err)
- 			return err;
--
--		/* Kick start the NAPI context so that receiving will start */
--		err = i40e_xsk_wakeup(vsi->netdev, qid, XDP_WAKEUP_RX);
--		if (err)
--			return err;
- 	}
- 
- 	return 0;
--- 
-2.24.1
-
+0-DAY kernel test infrastructure                 Open Source Technology Center
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
