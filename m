@@ -1,134 +1,133 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sun, 05 Jan 2020 21:37:27 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- c91f95f7dd5c9b059917fe9ac3d99ad504fe8564
-Message-ID: <5e11e697.EXwvnlZeD98F7i9W%lkp@intel.com>
+Date: Mon, 06 Jan 2020 01:10:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 77be7962ad5b5f8a0e63b4fe7327f73e14fbabfc
+Message-ID: <5e121880.yifjN6Pjd79JLuM2%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: c91f95f7dd5c9b059917fe9ac3d99ad504fe8564  e1000e: Revert "e1000e: Make watchdog use delayed work"
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 77be7962ad5b5f8a0e63b4fe7327f73e14fbabfc  i40e: Fix receive buffer starvation for AF_XDP
 
-elapsed time: 363m
+Regressions in current branch:
 
-configs tested: 125
+drivers/net/ethernet/intel/igc/igc_ptp.c:425:17: sparse: sparse: incorrect type in argument 1 (different base types)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Error ids grouped by kconfigs:
 
-x86_64               randconfig-c002-20200105
+recent_errors
+|-- x86_64-allmodconfig
+|   `-- drivers-net-ethernet-intel-igc-igc_ptp.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)
+`-- x86_64-allyesconfig
+    `-- drivers-net-ethernet-intel-igc-igc_ptp.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)
+
+elapsed time: 497m
+
+configs tested: 146
+
+sh                               allmodconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sh                            titan_defconfig
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.6
+parisc                            allnoconfig
+parisc                            allyesonfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+ia64                                defconfig
+ia64                             alldefconfig
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                              allyesconfig
+arm64                            allyesconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                            allmodconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allyesconfig
+i386                             alldefconfig
+arm64                randconfig-a001-20200105
+sparc                randconfig-a001-20200105
+arm                  randconfig-a001-20200105
+ia64                 randconfig-a001-20200105
+powerpc              randconfig-a001-20200105
+arc                  randconfig-a001-20200105
+x86_64               randconfig-d003-20200105
+x86_64               randconfig-d002-20200105
+x86_64               randconfig-d001-20200105
+i386                 randconfig-d002-20200105
+i386                 randconfig-d001-20200105
+i386                 randconfig-d003-20200105
+x86_64               randconfig-a002-20200105
+i386                 randconfig-a001-20200105
+x86_64               randconfig-a001-20200105
+i386                 randconfig-a002-20200105
+x86_64               randconfig-a003-20200105
+i386                 randconfig-a003-20200105
+xtensa                       common_defconfig
+openrisc                    or1ksim_defconfig
+nios2                         3c120_defconfig
+xtensa                          iss_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+nios2                         10m50_defconfig
+openrisc                 simple_smp_defconfig
+csky                 randconfig-a001-20200105
+s390                 randconfig-a001-20200105
+sh                   randconfig-a001-20200105
+xtensa               randconfig-a001-20200105
+openrisc             randconfig-a001-20200105
+sparc                            allyesconfig
+i386                 randconfig-f001-20200105
+x86_64               randconfig-f003-20200105
+x86_64               randconfig-f001-20200105
+i386                 randconfig-f003-20200105
+i386                 randconfig-f002-20200105
+x86_64               randconfig-f002-20200105
 x86_64               randconfig-c001-20200105
+x86_64               randconfig-c002-20200105
 x86_64               randconfig-c003-20200105
 i386                 randconfig-c001-20200105
 i386                 randconfig-c002-20200105
 i386                 randconfig-c003-20200105
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-sparc64                          allmodconfig
-sparc                            allyesconfig
-sparc64                          allyesconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
 x86_64               randconfig-g002-20200105
 i386                 randconfig-g003-20200105
 i386                 randconfig-g002-20200105
 x86_64               randconfig-g003-20200105
 x86_64               randconfig-g001-20200105
 i386                 randconfig-g001-20200105
-riscv                            allmodconfig
-riscv                             allnoconfig
-riscv                            allyesconfig
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-ia64                                defconfig
+nds32                               defconfig
 alpha                               defconfig
 csky                                defconfig
 nds32                             allnoconfig
-nds32                               defconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-csky                 randconfig-a001-20200105
-openrisc             randconfig-a001-20200105
-s390                 randconfig-a001-20200105
-sh                   randconfig-a001-20200105
-xtensa               randconfig-a001-20200105
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                              allyesconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-x86_64               randconfig-e001-20200105
-x86_64               randconfig-e002-20200105
-x86_64               randconfig-e003-20200105
-i386                 randconfig-e001-20200105
-i386                 randconfig-e002-20200105
-i386                 randconfig-e003-20200105
-parisc                            allnoconfig
-parisc                            allyesonfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-arm64                randconfig-a001-20200105
-sparc                randconfig-a001-20200105
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-s390                             alldefconfig
-s390                             allmodconfig
 s390                              allnoconfig
-s390                             allyesconfig
+s390                             alldefconfig
 s390                          debug_defconfig
+s390                             allmodconfig
 s390                                defconfig
 s390                       zfcpdump_defconfig
-mips                 randconfig-a001-20200105
-parisc               randconfig-a001-20200105
-riscv                randconfig-a001-20200105
-alpha                randconfig-a001-20200105
-m68k                 randconfig-a001-20200105
-nds32                randconfig-a001-20200105
+s390                             allyesconfig
+i386                 randconfig-b003-20200105
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                             allmodconfig
@@ -136,14 +135,45 @@ mips                              allnoconfig
 mips                             allyesconfig
 mips                      fuloong2e_defconfig
 mips                      malta_kvm_defconfig
+sparc64              randconfig-a001-20200105
+nios2                randconfig-a001-20200105
+h8300                randconfig-a001-20200105
+c6x                  randconfig-a001-20200105
+sparc64                          allmodconfig
+sparc64                          allyesconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                 randconfig-e002-20200105
+x86_64               randconfig-e001-20200105
+x86_64               randconfig-e002-20200105
+i386                 randconfig-e003-20200105
+x86_64               randconfig-e003-20200105
+i386                 randconfig-e001-20200105
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+riscv                          rv32_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+riscv                    nommu_virt_defconfig
+riscv                            allyesconfig
 arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
 powerpc                             defconfig
+microblaze                    nommu_defconfig
 powerpc                       ppc64_defconfig
 powerpc                          rhel-kconfig
+microblaze                      mmu_defconfig
+arc                                 defconfig
+powerpc                           allnoconfig
 
 ---
 0-DAY kernel test infrastructure                 Open Source Technology Center
