@@ -1,177 +1,195 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sun, 05 Jan 2020 20:28:11 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
- 63c92c9d2e536c91ace17dec7534883f40421753
-Message-ID: <5e11d65b.TdI9cd5OGQkkkwGW%lkp@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun,  5 Jan 2020 14:20:53 +0200
+Subject: [Intel-wired-lan] [PATCH v1] igc: Add support for TSO
+Message-ID: <20200105122053.2512-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
-branch HEAD: 63c92c9d2e536c91ace17dec7534883f40421753  igc: Remove no need declaration of the igc_sw_init
+TCP segmentation offload allows a device to segment a single frame
+into multiple frames with a data payload size specified in socket buffer.
+As a result we can now send data approximately up to seven percents fast
+than was previously possible on my system.
 
-elapsed time: 316m
-
-configs tested: 152
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-csky                 randconfig-a001-20200105
-s390                 randconfig-a001-20200105
-sh                   randconfig-a001-20200105
-xtensa               randconfig-a001-20200105
-openrisc             randconfig-a001-20200105
-i386                             alldefconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                 randconfig-f001-20200105
-x86_64               randconfig-f003-20200105
-x86_64               randconfig-f001-20200105
-i386                 randconfig-f003-20200105
-i386                 randconfig-f002-20200105
-x86_64               randconfig-f002-20200105
-x86_64               randconfig-c001-20200105
-x86_64               randconfig-c002-20200105
-x86_64               randconfig-c003-20200105
-i386                 randconfig-c001-20200105
-i386                 randconfig-c002-20200105
-i386                 randconfig-c003-20200105
-x86_64               randconfig-d001-20200105
-x86_64               randconfig-d002-20200105
-x86_64               randconfig-d003-20200105
-i386                 randconfig-d001-20200105
-i386                 randconfig-d002-20200105
-i386                 randconfig-d003-20200105
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                          rhel-kconfig
-riscv                            allmodconfig
-riscv                             allnoconfig
-riscv                            allyesconfig
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-nds32                               defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-ia64                                defconfig
-alpha                               defconfig
-csky                                defconfig
-nds32                             allnoconfig
-arm                              allmodconfig
-arm64                            allmodconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                             defconfig
-x86_64               randconfig-g002-20200105
-i386                 randconfig-g003-20200105
-i386                 randconfig-g002-20200105
-x86_64               randconfig-g003-20200105
-x86_64               randconfig-g001-20200105
-i386                 randconfig-g001-20200105
-c6x                  randconfig-a001-20200105
-h8300                randconfig-a001-20200105
-microblaze           randconfig-a001-20200105
-nios2                randconfig-a001-20200105
-sparc64              randconfig-a001-20200105
-x86_64               randconfig-a002-20200105
-i386                 randconfig-a001-20200105
-x86_64               randconfig-a001-20200105
-i386                 randconfig-a002-20200105
-x86_64               randconfig-a003-20200105
-i386                 randconfig-a003-20200105
-x86_64               randconfig-e001-20200105
-x86_64               randconfig-e002-20200105
-x86_64               randconfig-e003-20200105
-i386                 randconfig-e001-20200105
-i386                 randconfig-e002-20200105
-i386                 randconfig-e003-20200105
-s390                             alldefconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                             allyesconfig
-s390                          debug_defconfig
-s390                                defconfig
-s390                       zfcpdump_defconfig
-parisc                            allnoconfig
-parisc                            allyesonfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-mips                 randconfig-a001-20200105
-parisc               randconfig-a001-20200105
-riscv                randconfig-a001-20200105
-alpha                randconfig-a001-20200105
-m68k                 randconfig-a001-20200105
-nds32                randconfig-a001-20200105
-x86_64               randconfig-b001-20200105
-x86_64               randconfig-b002-20200105
-x86_64               randconfig-b003-20200105
-i386                 randconfig-b001-20200105
-i386                 randconfig-b002-20200105
-i386                 randconfig-b003-20200105
-arm                               allnoconfig
-arm                              allyesconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                             allyesconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
-0-DAY kernel test infrastructure                 Open Source Technology Center
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
+ drivers/net/ethernet/intel/igc/igc_defines.h |   4 +
+ drivers/net/ethernet/intel/igc/igc_main.c    | 113 ++++++++++++++++++++++++++-
+ 2 files changed, 116 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 2121fc34e300..9e34b0969322 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -282,6 +282,10 @@
+ #define IGC_TXD_STAT_TC		0x00000004 /* Tx Underrun */
+ #define IGC_TXD_EXTCMD_TSTAMP	0x00000010 /* IEEE1588 Timestamp packet */
+ 
++/* IPSec Encrypt Enable */
++#define IGC_ADVTXD_L4LEN_SHIFT	8  /* Adv ctxt L4LEN shift */
++#define IGC_ADVTXD_MSS_SHIFT	16 /* Adv ctxt MSS shift */
++
+ /* Transmit Control */
+ #define IGC_TCTL_EN		0x00000002 /* enable Tx */
+ #define IGC_TCTL_PSP		0x00000008 /* pad short packets */
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 37d2d242c3a6..607bf89ecd71 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1000,6 +1000,10 @@ static u32 igc_tx_cmd_type(struct sk_buff *skb, u32 tx_flags)
+ 		       IGC_ADVTXD_DCMD_DEXT |
+ 		       IGC_ADVTXD_DCMD_IFCS;
+ 
++	/* set segmentation bits for TSO */
++	cmd_type |= IGC_SET_FLAG(tx_flags, IGC_TX_FLAGS_TSO,
++				 (IGC_ADVTXD_DCMD_TSE));
++
+ 	/* set timestamp bit if present */
+ 	cmd_type |= IGC_SET_FLAG(tx_flags, IGC_TX_FLAGS_TSTAMP,
+ 				 (IGC_ADVTXD_MAC_TSTAMP));
+@@ -1171,6 +1175,100 @@ static int igc_tx_map(struct igc_ring *tx_ring,
+ 	return -1;
+ }
+ 
++static int igc_tso(struct igc_ring *tx_ring,
++		   struct igc_tx_buffer *first,
++		   u8 *hdr_len)
++{
++	u32 vlan_macip_lens, type_tucmd, mss_l4len_idx;
++	struct sk_buff *skb = first->skb;
++	union {
++		struct iphdr *v4;
++		struct ipv6hdr *v6;
++		unsigned char *hdr;
++	} ip;
++	union {
++		struct tcphdr *tcp;
++		struct udphdr *udp;
++		unsigned char *hdr;
++	} l4;
++	u32 paylen, l4_offset;
++	int err;
++
++	if (skb->ip_summed != CHECKSUM_PARTIAL)
++		return 0;
++
++	if (!skb_is_gso(skb))
++		return 0;
++
++	err = skb_cow_head(skb, 0);
++	if (err < 0)
++		return err;
++
++	ip.hdr = skb_network_header(skb);
++	l4.hdr = skb_checksum_start(skb);
++
++	/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
++	type_tucmd = IGC_ADVTXD_TUCMD_L4T_TCP;
++
++	/* initialize outer IP header fields */
++	if (ip.v4->version == 4) {
++		unsigned char *csum_start = skb_checksum_start(skb);
++		unsigned char *trans_start = ip.hdr + (ip.v4->ihl * 4);
++
++		/* IP header will have to cancel out any data that
++		 * is not a part of the outer IP header
++		 */
++		ip.v4->check = csum_fold(csum_partial(trans_start,
++						      csum_start - trans_start,
++						      0));
++		type_tucmd |= IGC_ADVTXD_TUCMD_IPV4;
++
++		ip.v4->tot_len = 0;
++		first->tx_flags |= IGC_TX_FLAGS_TSO |
++				   IGC_TX_FLAGS_CSUM |
++				   IGC_TX_FLAGS_IPV4;
++	} else {
++		ip.v6->payload_len = 0;
++		first->tx_flags |= IGC_TX_FLAGS_TSO |
++				   IGC_TX_FLAGS_CSUM;
++	}
++
++	/* determine offset of inner transport header */
++	l4_offset = l4.hdr - skb->data;
++
++	/* remove payload length from inner checksum */
++	paylen = skb->len - l4_offset;
++	if (type_tucmd & IGC_ADVTXD_TUCMD_L4T_TCP) {
++		/* compute length of segmentation header */
++		*hdr_len = (l4.tcp->doff * 4) + l4_offset;
++		csum_replace_by_diff(&l4.tcp->check,
++				     (__force __wsum)htonl(paylen));
++	} else {
++		/* compute length of segmentation header */
++		*hdr_len = sizeof(*l4.udp) + l4_offset;
++		csum_replace_by_diff(&l4.udp->check,
++				     (__force __wsum)htonl(paylen));
++	}
++
++	/* update gso size and bytecount with header size */
++	first->gso_segs = skb_shinfo(skb)->gso_segs;
++	first->bytecount += (first->gso_segs - 1) * *hdr_len;
++
++	/* MSS L4LEN IDX */
++	mss_l4len_idx = (*hdr_len - l4_offset) << IGC_ADVTXD_L4LEN_SHIFT;
++	mss_l4len_idx |= skb_shinfo(skb)->gso_size << IGC_ADVTXD_MSS_SHIFT;
++
++	/* VLAN MACLEN IPLEN */
++	vlan_macip_lens = l4.hdr - ip.hdr;
++	vlan_macip_lens |= (ip.hdr - skb->data) << IGC_ADVTXD_MACLEN_SHIFT;
++	vlan_macip_lens |= first->tx_flags & IGC_TX_FLAGS_VLAN_MASK;
++
++	igc_tx_ctxtdesc(tx_ring, first, vlan_macip_lens,
++			type_tucmd, mss_l4len_idx);
++
++	return 1;
++}
++
+ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+ 				       struct igc_ring *tx_ring)
+ {
+@@ -1180,6 +1278,7 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+ 	u32 tx_flags = 0;
+ 	unsigned short f;
+ 	u8 hdr_len = 0;
++	int tso = 0;
+ 
+ 	/* need: 1 descriptor per page * PAGE_SIZE/IGC_MAX_DATA_PER_TXD,
+ 	 *	+ 1 desc for skb_headlen/IGC_MAX_DATA_PER_TXD,
+@@ -1226,11 +1325,21 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+ 	first->tx_flags = tx_flags;
+ 	first->protocol = protocol;
+ 
+-	igc_tx_csum(tx_ring, first);
++	tso = igc_tso(tx_ring, first, &hdr_len);
++	if (tso < 0)
++		goto out_drop;
++	else if (!tso)
++		igc_tx_csum(tx_ring, first);
+ 
+ 	igc_tx_map(tx_ring, first, hdr_len);
+ 
+ 	return NETDEV_TX_OK;
++
++out_drop:
++	dev_kfree_skb_any(first->skb);
++	first->skb = NULL;
++
++	return NETDEV_TX_OK;
+ }
+ 
+ static inline struct igc_ring *igc_tx_queue_mapping(struct igc_adapter *adapter,
+@@ -4588,6 +4697,8 @@ static int igc_probe(struct pci_dev *pdev,
+ 
+ 	/* Add supported features to the features list*/
+ 	netdev->features |= NETIF_F_SG;
++	netdev->features |= NETIF_F_TSO;
++	netdev->features |= NETIF_F_TSO6;
+ 	netdev->features |= NETIF_F_RXCSUM;
+ 	netdev->features |= NETIF_F_HW_CSUM;
+ 	netdev->features |= NETIF_F_SCTP_CRC;
+-- 
+2.11.0
+
