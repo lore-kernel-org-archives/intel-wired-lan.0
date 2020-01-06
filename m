@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 6 Jan 2020 20:18:11 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] i40e/iavf: use better trace
- path
-In-Reply-To: <20200103022342.820175-1-jesse.brandeburg@intel.com>
-References: <20200103022342.820175-1-jesse.brandeburg@intel.com>
-Message-ID: <94caf87af5d749bc8748a90f4f46cb50@intel.com>
+Date: Mon, 6 Jan 2020 20:19:23 +0000
+Subject: [Intel-wired-lan] [PATCH v2] fm10k: use txqueue parameter in
+ fm10k_tx_timeout
+In-Reply-To: <20191219201000.1712-1-jacob.e.keller@intel.com>
+References: <20191219201000.1712-1-jacob.e.keller@intel.com>
+Message-ID: <a5bd2b6577e04a46a91e9257a095bef1@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,56 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jesse Brandeburg
-> Sent: Thursday, January 2, 2020 6:24 PM
-> To: intel-wired-lan at osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net v2] i40e/iavf: use better trace path
+> Behalf Of Jacob Keller
+> Sent: Thursday, December 19, 2019 12:10 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [PATCH v2] fm10k: use txqueue parameter in
+> fm10k_tx_timeout
 > 
-> I'm seeing compilation fail of the i40e/iavf driver for some reason.
-> I just checked 5.5-rc4 and the tip of net/net-next and all fail.
-> Fails all the way back to v5.1 at least, I didn't check further back.
+> Make use of the new txqueue parameter to the .ndo_tx_timeout function.
+> In fm10k_tx_timeout, remove the now unnecessary loop to determine
+> which Tx queue is stuck. Instead, just double check the specified queue
 > 
-> repro steps:
-> $ gcc -v
-> gcc version 9.2.1 20190827 (Red Hat 9.2.1-1) (GCC)
+> This could be improved further to attempt resetting only the specific queue
+> that got stuck. However, that is a much larger refactor and has been left as a
+> future improvement.
 > 
-> $ git checkout -b my-net davem-net/master $ make mrproper $ make
-> O=../my-net.obj defconfig allmodconfig modules_prepare $ make O=../my-
-> net.obj M=drivers/net/ethernet/intel/i40e
-> 
-> make[1]: Entering directory '/home/jbrandeb/git/my-net.obj'
->   CC [M]  drivers/net/ethernet/intel/i40e/i40e_main.o
-> In file included from
-> /home/jbrandeb/git/linux2/drivers/net/ethernet/intel/i40e/i40e_trace.h:20
-> 9,
->                  from
-> /home/jbrandeb/git/linux2/drivers/net/ethernet/intel/i40e/i40e_main.c:20:
-> /home/jbrandeb/git/linux2/include/trace/define_trace.h:95:42: fatal error:
-> ./i40e_trace.h: No such file or directory
->    95 | #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
->       |                                          ^
-> compilation terminated.
-> make[2]: *** [/home/jbrandeb/git/linux2/scripts/Makefile.build:266:
-> drivers/net/ethernet/intel/i40e/i40e_main.o] Error 1
-> make[1]: *** [/home/jbrandeb/git/linux2/Makefile:1693:
-> drivers/net/ethernet/intel/i40e] Error 2
-> make[1]: Leaving directory '/home/jbrandeb/git/my-net.obj'
-> make: *** [Makefile:179: sub-make] Error 2
-> 
-> Just for sanity, I tried building the ice driver the same as above and it
-> succeeds, so the build does work for some drivers.
-> 
-> So fix the include path for the i40e driver trace file to be relative to the kernel
-> root like (some) other drivers do.
-> 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
-> v2: added iavf for the same fix
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_trace.h | 2 +-
-> drivers/net/ethernet/intel/iavf/iavf_trace.h | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Woops, sorry for the quick v2. Had missed a semicolon and apparently my
+> config I used to check this after a last minute move to add the Tx queue
+> warning didn't have CONFIG_FM10K enabled.. Woops.
+> 
+>  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 17 ++++++++++-------
+>  1 file changed, 10 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
