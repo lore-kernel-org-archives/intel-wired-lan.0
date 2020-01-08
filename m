@@ -1,36 +1,92 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 7 Jan 2020 23:28:52 +0000
-Subject: [Intel-wired-lan] [net] i40e: Fix receive buffer starvation for
- AF_XDP
-In-Reply-To: <20200105084600.4025394-1-jeffrey.t.kirsher@intel.com>
-References: <20200105084600.4025394-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <9cca5b6987e343cb844a549651aa9648@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed,  8 Jan 2020 10:19:24 +0200
+Subject: [Intel-wired-lan] [PATCH v3] igc: Add PHY power management control
+Message-ID: <20200108081924.20008-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Sunday, January 5, 2020 12:46 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Karlsson, Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [net] i40e: Fix receive buffer starvation for AF_XDP
-> 
-> Magnus's fix to resolve a potential receive buffer starvation for AF_XDP got
-> applied to both the i40e_xsk_umem_enable/disable() functions, when it
-> should have only been applied to the "enable".  So clean up the undesired
-> code in the disable function.
-> 
-> CC: Magnus Karlsson <magnus.karlsson@intel.com>
-> Fixes: 1f459bdc2007 ("i40e: fix potential RX buffer starvation for AF_XDP")
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 5 -----
->  1 file changed, 5 deletions(-)
+PHY power management control should provide a reliable and accurate
+indication of PHY reset completion and decrease the delay time
+after a PHY reset
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+v1 -> v2: add hw_dbg print for a timeout
+v2 -> v3: address some community comments
 
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_defines.h |  1 +
+ drivers/net/ethernet/intel/igc/igc_phy.c     | 16 +++++++++++++++-
+ drivers/net/ethernet/intel/igc/igc_regs.h    |  1 +
+ 3 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 9e34b0969322..58efa7a02c68 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -464,6 +464,7 @@
+ /* PHY Status Register */
+ #define MII_SR_LINK_STATUS	0x0004 /* Link Status 1 = link */
+ #define MII_SR_AUTONEG_COMPLETE	0x0020 /* Auto Neg Complete */
++#define IGC_PHY_RST_COMP	0x0100 /* Internal PHY reset completion */
+ 
+ /* PHY 1000 MII Register/Bit Definitions */
+ /* PHY Registers defined by IEEE */
+diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
+index f4b05af0dd2f..8e1799508edc 100644
+--- a/drivers/net/ethernet/intel/igc/igc_phy.c
++++ b/drivers/net/ethernet/intel/igc/igc_phy.c
+@@ -173,6 +173,7 @@ s32 igc_check_downshift(struct igc_hw *hw)
+ s32 igc_phy_hw_reset(struct igc_hw *hw)
+ {
+ 	struct igc_phy_info *phy = &hw->phy;
++	u32 phpm = 0, timeout = 10000;
+ 	s32  ret_val;
+ 	u32 ctrl;
+ 
+@@ -186,6 +187,8 @@ s32 igc_phy_hw_reset(struct igc_hw *hw)
+ 	if (ret_val)
+ 		goto out;
+ 
++	phpm = rd32(IGC_I225_PHPM);
++
+ 	ctrl = rd32(IGC_CTRL);
+ 	wr32(IGC_CTRL, ctrl | IGC_CTRL_PHY_RST);
+ 	wrfl();
+@@ -195,7 +198,18 @@ s32 igc_phy_hw_reset(struct igc_hw *hw)
+ 	wr32(IGC_CTRL, ctrl);
+ 	wrfl();
+ 
+-	usleep_range(1500, 2000);
++	/* SW should guarantee 100us for the completion of the PHY reset */
++	usleep_range(100, 150);
++	do {
++		phpm = rd32(IGC_I225_PHPM);
++		timeout--;
++		udelay(1);
++	} while (!(phpm & IGC_PHY_RST_COMP) && timeout);
++
++	if (!timeout)
++		hw_dbg("Timeout is expired after a phy reset\n");
++
++	usleep_range(100, 150);
+ 
+ 	phy->ops.release(hw);
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index c82111051898..164c42b39dfa 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -12,6 +12,7 @@
+ #define IGC_MDIC		0x00020  /* MDI Control - RW */
+ #define IGC_MDICNFG		0x00E04  /* MDC/MDIO Configuration - RW */
+ #define IGC_CONNSW		0x00034  /* Copper/Fiber switch control - RW */
++#define IGC_I225_PHPM		0x00E14	 /* I225 PHY Power Management */
+ 
+ /* Internal Packet Buffer Size Registers */
+ #define IGC_RXPBS		0x02404  /* Rx Packet Buffer Size - RW */
+-- 
+2.11.0
 
