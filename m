@@ -1,92 +1,47 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed,  8 Jan 2020 10:19:24 +0200
-Subject: [Intel-wired-lan] [PATCH v3] igc: Add PHY power management control
-Message-ID: <20200108081924.20008-1-sasha.neftin@intel.com>
+From: Chen Zhou <chenzhou10@huawei.com>
+Date: Wed, 8 Jan 2020 21:39:59 +0800
+Subject: [Intel-wired-lan] [PATCH next] igc: make non-global functions static
+Message-ID: <20200108133959.93035-1-chenzhou10@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-PHY power management control should provide a reliable and accurate
-indication of PHY reset completion and decrease the delay time
-after a PHY reset
+Fix sparse warning:
+drivers/net/ethernet/intel/igc/igc_ptp.c:512:6:
+	warning: symbol 'igc_ptp_tx_work' was not declared. Should it be static?
+drivers/net/ethernet/intel/igc/igc_ptp.c:644:6:
+	warning: symbol 'igc_ptp_suspend' was not declared. Should it be static?
 
-v1 -> v2: add hw_dbg print for a timeout
-v2 -> v3: address some community comments
-
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Chen Zhou <chenzhou10@huawei.com>
 ---
- drivers/net/ethernet/intel/igc/igc_defines.h |  1 +
- drivers/net/ethernet/intel/igc/igc_phy.c     | 16 +++++++++++++++-
- drivers/net/ethernet/intel/igc/igc_regs.h    |  1 +
- 3 files changed, 17 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 9e34b0969322..58efa7a02c68 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -464,6 +464,7 @@
- /* PHY Status Register */
- #define MII_SR_LINK_STATUS	0x0004 /* Link Status 1 = link */
- #define MII_SR_AUTONEG_COMPLETE	0x0020 /* Auto Neg Complete */
-+#define IGC_PHY_RST_COMP	0x0100 /* Internal PHY reset completion */
- 
- /* PHY 1000 MII Register/Bit Definitions */
- /* PHY Registers defined by IEEE */
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
-index f4b05af0dd2f..8e1799508edc 100644
---- a/drivers/net/ethernet/intel/igc/igc_phy.c
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.c
-@@ -173,6 +173,7 @@ s32 igc_check_downshift(struct igc_hw *hw)
- s32 igc_phy_hw_reset(struct igc_hw *hw)
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index 6935065..389a969 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -509,7 +509,7 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
+  * This work function polls the TSYNCTXCTL valid bit to determine when a
+  * timestamp has been taken for the current stored skb.
+  */
+-void igc_ptp_tx_work(struct work_struct *work)
++static void igc_ptp_tx_work(struct work_struct *work)
  {
- 	struct igc_phy_info *phy = &hw->phy;
-+	u32 phpm = 0, timeout = 10000;
- 	s32  ret_val;
- 	u32 ctrl;
- 
-@@ -186,6 +187,8 @@ s32 igc_phy_hw_reset(struct igc_hw *hw)
- 	if (ret_val)
- 		goto out;
- 
-+	phpm = rd32(IGC_I225_PHPM);
-+
- 	ctrl = rd32(IGC_CTRL);
- 	wr32(IGC_CTRL, ctrl | IGC_CTRL_PHY_RST);
- 	wrfl();
-@@ -195,7 +198,18 @@ s32 igc_phy_hw_reset(struct igc_hw *hw)
- 	wr32(IGC_CTRL, ctrl);
- 	wrfl();
- 
--	usleep_range(1500, 2000);
-+	/* SW should guarantee 100us for the completion of the PHY reset */
-+	usleep_range(100, 150);
-+	do {
-+		phpm = rd32(IGC_I225_PHPM);
-+		timeout--;
-+		udelay(1);
-+	} while (!(phpm & IGC_PHY_RST_COMP) && timeout);
-+
-+	if (!timeout)
-+		hw_dbg("Timeout is expired after a phy reset\n");
-+
-+	usleep_range(100, 150);
- 
- 	phy->ops.release(hw);
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-index c82111051898..164c42b39dfa 100644
---- a/drivers/net/ethernet/intel/igc/igc_regs.h
-+++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-@@ -12,6 +12,7 @@
- #define IGC_MDIC		0x00020  /* MDI Control - RW */
- #define IGC_MDICNFG		0x00E04  /* MDC/MDIO Configuration - RW */
- #define IGC_CONNSW		0x00034  /* Copper/Fiber switch control - RW */
-+#define IGC_I225_PHPM		0x00E14	 /* I225 PHY Power Management */
- 
- /* Internal Packet Buffer Size Registers */
- #define IGC_RXPBS		0x02404  /* Rx Packet Buffer Size - RW */
+ 	struct igc_adapter *adapter = container_of(work, struct igc_adapter,
+ 						   ptp_tx_work);
+@@ -641,7 +641,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
+  * This function stops the overflow check work and PTP Tx timestamp work, and
+  * will prepare the device for OS suspend.
+  */
+-void igc_ptp_suspend(struct igc_adapter *adapter)
++static void igc_ptp_suspend(struct igc_adapter *adapter)
+ {
+ 	if (!(adapter->ptp_flags & IGC_PTP_ENABLED))
+ 		return;
 -- 
-2.11.0
+2.7.4
 
