@@ -1,49 +1,90 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 8 Jan 2020 14:47:20 -0800
-Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: Remove limit of 10
- entries for unicast filter list
-In-Reply-To: <ff7c1cc5-3bec-3ce7-f584-6fb1ef1f9cbe@gmail.com>
-References: <20191125142452.21819-1-radoslawx.tyl@intel.com>
- <7e9bbd9b-ee05-b207-a472-77d03c3ee6ac@molgen.mpg.de>
- <CAKgT0UexoZWiF7Z745O3FkA+A+f-E31DhD5mGXjweXecrRJtgw@mail.gmail.com>
- <ff7c1cc5-3bec-3ce7-f584-6fb1ef1f9cbe@gmail.com>
-Message-ID: <35f3bcec-6685-d6c3-8842-09fc1729dd57@intel.com>
+Date: Wed, 8 Jan 2020 14:49:39 -0800
+Subject: [Intel-wired-lan] [PATCH net v2] i40e/iavf: use better trace
+ path
+In-Reply-To: <20200103022342.820175-1-jesse.brandeburg@intel.com>
+References: <20200103022342.820175-1-jesse.brandeburg@intel.com>
+Message-ID: <4185adba-3420-32ad-014d-64eee768d183@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On 11/25/2019 11:14 AM, Gregory Rose wrote:
+On 1/2/2020 6:23 PM, Jesse Brandeburg wrote:
+> I'm seeing compilation fail of the i40e/iavf driver for some reason.
+> I just checked 5.5-rc4 and the tip of net/net-next and all fail.
+> Fails all the way back to v5.1 at least, I didn't check further back.
 > 
-> It's tough to recall exactly what my thinking was - 8 years is a long 
-> time.? However, I think you're
-> right that this is about resource sharing and not allowing any single VF 
-> to consume all the remaining
-> RAR entries.? Ten entries seems arbitrary but I do recall at the time a 
-> common test setup was with
-> 4 VFs.? Also, we needed to reserve RAR entries for the PF too IIRC.
+> repro steps:
+> $ gcc -v
+> gcc version 9.2.1 20190827 (Red Hat 9.2.1-1) (GCC)
 > 
-> Maybe Sibai can recall, I don't know if she's still at Intel but maybe 
-> ask her as well.
+> $ git checkout -b my-net davem-net/master
+> $ make mrproper
+> $ make O=../my-net.obj defconfig allmodconfig modules_prepare
+> $ make O=../my-net.obj M=drivers/net/ethernet/intel/i40e
 > 
-> Sorry I couldn't be more help.
+> make[1]: Entering directory '/home/jbrandeb/git/my-net.obj'
+>   CC [M]  drivers/net/ethernet/intel/i40e/i40e_main.o
+> In file included from
+> /home/jbrandeb/git/linux2/drivers/net/ethernet/intel/i40e/i40e_trace.h:209,
+>                  from /home/jbrandeb/git/linux2/drivers/net/ethernet/intel/i40e/i40e_main.c:20:
+> /home/jbrandeb/git/linux2/include/trace/define_trace.h:95:42: fatal error: ./i40e_trace.h: No such file or directory
+>    95 | #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+>       |                                          ^
+> compilation terminated.
+> make[2]: *** [/home/jbrandeb/git/linux2/scripts/Makefile.build:266: drivers/net/ethernet/intel/i40e/i40e_main.o] Error 1
+> make[1]: *** [/home/jbrandeb/git/linux2/Makefile:1693: drivers/net/ethernet/intel/i40e] Error 2
+> make[1]: Leaving directory '/home/jbrandeb/git/my-net.obj'
+> make: *** [Makefile:179: sub-make] Error 2
 > 
-> Regards,
+> Just for sanity, I tried building the ice driver the same as above and
+> it succeeds, so the build does work for some drivers.
 > 
-> - Greg
 
-Right. This is what I would have thought as well. By not limiting, we
-potentially allow one VF to hog all of the resources.
+So.. ice works for some reason but i40e and iavf do not? Is the ice
+driver using a path relative to the root?
 
-It's plausible that this limit ought to be configurable instead of
-static. This way, a system administrator could change the limit on the
-PF and enable more entries than the static limit of 10.
+> So fix the include path for the i40e driver trace file to be relative
+> to the kernel root like (some) other drivers do.
 
-That obviously requires more plumbing in place to represent the limit
-and find an adequate way of informing the PF system administrator...
+I'd really like to know why this isn't required by all drivers...
 
-Thanks,
-Jake
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> ---
+> v2: added iavf for the same fix
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_trace.h | 2 +-
+>  drivers/net/ethernet/intel/iavf/iavf_trace.h | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_trace.h b/drivers/net/ethernet/intel/i40e/i40e_trace.h
+> index 424f02077e2e..122a3fcb62b1 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_trace.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_trace.h
+> @@ -203,7 +203,7 @@ DEFINE_EVENT(
+>   * module.
+>   */
+>  #undef TRACE_INCLUDE_PATH
+> -#define TRACE_INCLUDE_PATH .
+> +#define TRACE_INCLUDE_PATH ../../drivers/net/ethernet/intel/i40e
+>  #undef TRACE_INCLUDE_FILE
+>  #define TRACE_INCLUDE_FILE i40e_trace
+>  #include <trace/define_trace.h>
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_trace.h b/drivers/net/ethernet/intel/iavf/iavf_trace.h
+> index 1058e68a02b4..b2674c935c21 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_trace.h
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_trace.h
+> @@ -203,7 +203,7 @@ DEFINE_EVENT(
+>   * module.
+>   */
+>  #undef TRACE_INCLUDE_PATH
+> -#define TRACE_INCLUDE_PATH .
+> +#define TRACE_INCLUDE_PATH ../../drivers/net/ethernet/intel/iavf
+>  #undef TRACE_INCLUDE_FILE
+>  #define TRACE_INCLUDE_FILE iavf_trace
+>  #include <trace/define_trace.h>
+> 
