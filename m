@@ -1,59 +1,75 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 8 Jan 2020 16:52:14 -0800
-Subject: [Intel-wired-lan] [net] i40e: Fix receive buffer starvation for
- AF_XDP
-In-Reply-To: <20200105084600.4025394-1-jeffrey.t.kirsher@intel.com>
-References: <20200105084600.4025394-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <648fb7f4-b3b7-8f75-675d-26b0ffdfe2b4@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 9 Jan 2020 01:01:05 +0000
+Subject: [Intel-wired-lan] [PATCH] net: intel: e1000e: fix possible
+ sleep-in-atomic-context bugs in e1000e_get_hw_semaphore()
+In-Reply-To: <20191218141656.12416-1-baijiaju1990@gmail.com>
+References: <20191218141656.12416-1-baijiaju1990@gmail.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B971A925B@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/5/2020 12:46 AM, Jeff Kirsher wrote:
-> Magnus's fix to resolve a potential receive buffer starvation for AF_XDP
-> got applied to both the i40e_xsk_umem_enable/disable() functions, when it
-> should have only been applied to the "enable".  So clean up the undesired
-> code in the disable function.
+> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org>
+> On Behalf Of Jia-Ju Bai
+> Sent: Wednesday, December 18, 2019 6:17 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net
+> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
+> kernel at vger.kernel.org; Jia-Ju Bai <baijiaju1990@gmail.com>
+> Subject: [PATCH] net: intel: e1000e: fix possible sleep-in-atomic-context bugs
+> in e1000e_get_hw_semaphore()
 > 
-> CC: Magnus Karlsson <magnus.karlsson@intel.com>
-> Fixes: 1f459bdc2007 ("i40e: fix potential RX buffer starvation for AF_XDP")
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> The driver may sleep while holding a spinlock.
+> The function call path (from bottom to top) in Linux 4.19 is:
+> 
+> drivers/net/ethernet/intel/e1000e/mac.c, 1366:
+> 	usleep_range in e1000e_get_hw_semaphore
+> drivers/net/ethernet/intel/e1000e/80003es2lan.c, 322:
+> 	e1000e_get_hw_semaphore in
+> e1000_release_swfw_sync_80003es2lan
+> drivers/net/ethernet/intel/e1000e/80003es2lan.c, 197:
+> 	e1000_release_swfw_sync_80003es2lan in
+> e1000_release_phy_80003es2lan
+> drivers/net/ethernet/intel/e1000e/netdev.c, 4883:
+> 	(FUNC_PTR) e1000_release_phy_80003es2lan in
+> e1000e_update_phy_stats
+> drivers/net/ethernet/intel/e1000e/netdev.c, 4917:
+> 	e1000e_update_phy_stats in e1000e_update_stats
+> drivers/net/ethernet/intel/e1000e/netdev.c, 5945:
+> 	e1000e_update_stats in e1000e_get_stats64
+> drivers/net/ethernet/intel/e1000e/netdev.c, 5944:
+> 	spin_lock in e1000e_get_stats64
+> 
+> drivers/net/ethernet/intel/e1000e/mac.c, 1384:
+> 	usleep_range in e1000e_get_hw_semaphore
+> drivers/net/ethernet/intel/e1000e/80003es2lan.c, 322:
+> 	e1000e_get_hw_semaphore in
+> e1000_release_swfw_sync_80003es2lan
+> drivers/net/ethernet/intel/e1000e/80003es2lan.c, 197:
+> 	e1000_release_swfw_sync_80003es2lan in
+> e1000_release_phy_80003es2lan
+> drivers/net/ethernet/intel/e1000e/netdev.c, 4883:
+> 	(FUNC_PTR) e1000_release_phy_80003es2lan in
+> e1000e_update_phy_stats
+> drivers/net/ethernet/intel/e1000e/netdev.c, 4917:
+> 	e1000e_update_phy_stats in e1000e_update_stats
+> drivers/net/ethernet/intel/e1000e/netdev.c, 5945:
+> 	e1000e_update_stats in e1000e_get_stats64
+> drivers/net/ethernet/intel/e1000e/netdev.c, 5944:
+> 	spin_lock in e1000e_get_stats64
+> 
+> (FUNC_PTR) means a function pointer is called.
+> 
+> To fix these bugs, usleep_range() is replaced with udelay().
+> 
+> These bugs are found by a static analysis tool STCheck written by myself.
+> 
+> Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 5 -----
->  1 file changed, 5 deletions(-)
+>  drivers/net/ethernet/intel/e1000e/mac.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> index 42058fad6a3c..1b13d8e0d67a 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> @@ -114,11 +114,6 @@ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
 
-Umm.. Based on the commit message, you meant to remove only from the
-disable function, not the enable one...
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-And indeed you actually did in October:
-
-2c19e395e061 ("i40e: Fix receive buffer starvation for AF_XDP")
-Date:   Mon Oct 7 15:07:24 2019 -0700
-
-I think this patch should be dropped from your tree.
-
-(Thanks Lihong for pointing this out to me!)
-
-Thanks,
-Jake
-
->  		err = i40e_queue_pair_enable(vsi, qid);
->  		if (err)
->  			return err;
-> -
-> -		/* Kick start the NAPI context so that receiving will start */
-> -		err = i40e_xsk_wakeup(vsi->netdev, qid, XDP_WAKEUP_RX);
-> -		if (err)
-> -			return err;
->  	}
->  
->  	return 0;
-> 
