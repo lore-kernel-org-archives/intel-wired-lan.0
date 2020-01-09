@@ -1,69 +1,46 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 8 Jan 2020 14:55:14 -0800
-Subject: [Intel-wired-lan] [PATCH net v2] i40e/iavf: use better trace
- path
-In-Reply-To: <4185adba-3420-32ad-014d-64eee768d183@intel.com>
-References: <20200103022342.820175-1-jesse.brandeburg@intel.com>
- <4185adba-3420-32ad-014d-64eee768d183@intel.com>
-Message-ID: <07213c35-b4fb-e230-75a2-1d11d51815c9@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 9 Jan 2020 00:50:16 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: fix missing cpu_to_le64 on
+ buffer_addr
+In-Reply-To: <20191218095308.2397408-1-ben.dooks@codethink.co.uk>
+References: <20191218095308.2397408-1-ben.dooks@codethink.co.uk>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B971A921A@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/8/2020 2:49 PM, Jacob Keller wrote:
-> On 1/2/2020 6:23 PM, Jesse Brandeburg wrote:
->> I'm seeing compilation fail of the i40e/iavf driver for some reason.
->> I just checked 5.5-rc4 and the tip of net/net-next and all fail.
->> Fails all the way back to v5.1 at least, I didn't check further back.
->>
->> repro steps:
->> $ gcc -v
->> gcc version 9.2.1 20190827 (Red Hat 9.2.1-1) (GCC)
->>
->> $ git checkout -b my-net davem-net/master
->> $ make mrproper
->> $ make O=../my-net.obj defconfig allmodconfig modules_prepare
->> $ make O=../my-net.obj M=drivers/net/ethernet/intel/i40e
->>
->> make[1]: Entering directory '/home/jbrandeb/git/my-net.obj'
->>   CC [M]  drivers/net/ethernet/intel/i40e/i40e_main.o
->> In file included from
->> /home/jbrandeb/git/linux2/drivers/net/ethernet/intel/i40e/i40e_trace.h:209,
->>                  from /home/jbrandeb/git/linux2/drivers/net/ethernet/intel/i40e/i40e_main.c:20:
->> /home/jbrandeb/git/linux2/include/trace/define_trace.h:95:42: fatal error: ./i40e_trace.h: No such file or directory
->>    95 | #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
->>       |                                          ^
->> compilation terminated.
->> make[2]: *** [/home/jbrandeb/git/linux2/scripts/Makefile.build:266: drivers/net/ethernet/intel/i40e/i40e_main.o] Error 1
->> make[1]: *** [/home/jbrandeb/git/linux2/Makefile:1693: drivers/net/ethernet/intel/i40e] Error 2
->> make[1]: Leaving directory '/home/jbrandeb/git/my-net.obj'
->> make: *** [Makefile:179: sub-make] Error 2
->>
->> Just for sanity, I tried building the ice driver the same as above and
->> it succeeds, so the build does work for some drivers.
->>
+> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org>
+> On Behalf Of Ben Dooks (Codethink)
+> Sent: Wednesday, December 18, 2019 1:53 AM
+> To: ben.dooks at codethink.co.uk
+> Cc: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David S. Miller
+> <davem@davemloft.net>; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org
+> Subject: [PATCH] e1000e: fix missing cpu_to_le64 on buffer_addr
 > 
-> So.. ice works for some reason but i40e and iavf do not? Is the ice
-> driver using a path relative to the root?
+> The following warning suggests there is a missing cpu_to_le64() in
+> the e1000_flush_tx_ring() function (it is also the behaviour
+> elsewhere in the driver to do cpu_to_le64() on the buffer_addr
+> when setting it)
 > 
->> So fix the include path for the i40e driver trace file to be relative
->> to the kernel root like (some) other drivers do.
+> drivers/net/ethernet/intel/e1000e/netdev.c:3813:30: warning: incorrect
+> type in assignment (different base types)
+> drivers/net/ethernet/intel/e1000e/netdev.c:3813:30:    expected restricted
+> __le64 [usertype] buffer_addr
+> drivers/net/ethernet/intel/e1000e/netdev.c:3813:30:    got unsigned long
+> long [usertype] dma
 > 
-> I'd really like to know why this isn't required by all drivers...
+> Signed-off-by: Ben Dooks (Codethink) <ben.dooks@codethink.co.uk>
+> ---
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
 
-It looks like this is handled in driver's Makefile via:
-
-ccflags-y += -I$(src)>-->------->-------# needed for trace events
-
-or the following:
-
-CFLAGS_trace.o := -I$(src)
-
-This seems like the preferred solution when building with a separate
-object tree.
-
-Thanks,
-Jake
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
