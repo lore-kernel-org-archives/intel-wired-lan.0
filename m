@@ -1,89 +1,50 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  8 Jan 2020 17:08:19 -0800
-Subject: [Intel-wired-lan] [PATCH 4/4] devlink: add support for
- DEVLINK_CMD_REGION_TRIGGER_SNAPSHOT
+Date: Wed,  8 Jan 2020 17:08:17 -0800
+Subject: [Intel-wired-lan] [PATCH 2/4] doc: fix typo of snapshot in
+ documentation
 In-Reply-To: <20200109010818.1326575-1-jacob.e.keller@intel.com>
 References: <20200109010818.1326575-1-jacob.e.keller@intel.com>
-Message-ID: <20200109010818.1326575-5-jacob.e.keller@intel.com>
+Message-ID: <20200109010818.1326575-3-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add support for the devlink command to trigger a snapshot if the region
-supports it.
+A couple of locations accidentally misspelled snapshot as shapshot.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- devlink/devlink.c            | 20 ++++++++++++++++++++
- include/uapi/linux/devlink.h |  2 ++
- 2 files changed, 22 insertions(+)
+ Documentation/admin-guide/devices.txt    | 2 +-
+ Documentation/media/v4l-drivers/meye.rst | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/devlink/devlink.c b/devlink/devlink.c
-index 95f05a0b..3a473531 100644
---- a/devlink/devlink.c
-+++ b/devlink/devlink.c
-@@ -4200,6 +4200,7 @@ static const char *cmd_obj(uint8_t cmd)
- 	case DEVLINK_CMD_REGION_SET:
- 	case DEVLINK_CMD_REGION_NEW:
- 	case DEVLINK_CMD_REGION_DEL:
-+	case DEVLINK_CMD_REGION_TRIGGER_SNAPSHOT:
- 		return "region";
- 	case DEVLINK_CMD_FLASH_UPDATE:
- 	case DEVLINK_CMD_FLASH_UPDATE_END:
-@@ -6362,12 +6363,28 @@ static int cmd_region_read(struct dl *dl)
- 	return err;
- }
+diff --git a/Documentation/admin-guide/devices.txt b/Documentation/admin-guide/devices.txt
+index 1c5d2281efc9..2a97aaec8b12 100644
+--- a/Documentation/admin-guide/devices.txt
++++ b/Documentation/admin-guide/devices.txt
+@@ -319,7 +319,7 @@
+ 		182 = /dev/perfctr	Performance-monitoring counters
+ 		183 = /dev/hwrng	Generic random number generator
+ 		184 = /dev/cpu/microcode CPU microcode update interface
+-		186 = /dev/atomicps	Atomic shapshot of process state data
++		186 = /dev/atomicps	Atomic snapshot of process state data
+ 		187 = /dev/irnet	IrNET device
+ 		188 = /dev/smbusbios	SMBus BIOS
+ 		189 = /dev/ussp_ctl	User space serial port control
+diff --git a/Documentation/media/v4l-drivers/meye.rst b/Documentation/media/v4l-drivers/meye.rst
+index a572996cdbf6..dc57a6a91b43 100644
+--- a/Documentation/media/v4l-drivers/meye.rst
++++ b/Documentation/media/v4l-drivers/meye.rst
+@@ -95,7 +95,7 @@ so all video4linux tools (like xawtv) should work with this driver.
  
-+static int cmd_region_trigger(struct dl *dl)
-+{
-+	struct nlmsghdr *nlh;
-+	int err;
-+
-+	nlh = mnlg_msg_prepare(dl->nlg, DEVLINK_CMD_REGION_TRIGGER_SNAPSHOT,
-+			NLM_F_REQUEST | NLM_F_ACK);
-+
-+	err = dl_argv_parse_put(nlh, dl, DL_OPT_HANDLE_REGION, 0);
-+	if (err)
-+		return err;
-+
-+	return _mnlg_socket_sndrcv(dl->nlg, nlh, NULL, NULL);
-+}
-+
- static void cmd_region_help(void)
- {
- 	pr_err("Usage: devlink region show [ DEV/REGION ]\n");
- 	pr_err("       devlink region del DEV/REGION snapshot SNAPSHOT_ID\n");
- 	pr_err("       devlink region dump DEV/REGION [ snapshot SNAPSHOT_ID ]\n");
- 	pr_err("       devlink region read DEV/REGION [ snapshot SNAPSHOT_ID ] address ADDRESS length LENGTH\n");
-+	pr_err("       devlink region trigger DEV/REGION\n");
- }
+ Besides the video4linux interface, the driver has a private interface
+ for accessing the Motion Eye extended parameters (camera sharpness,
+-agc, video framerate), the shapshot and the MJPEG capture facilities.
++agc, video framerate), the snapshot and the MJPEG capture facilities.
  
- static int cmd_region(struct dl *dl)
-@@ -6389,6 +6406,9 @@ static int cmd_region(struct dl *dl)
- 	} else if (dl_argv_match(dl, "read")) {
- 		dl_arg_inc(dl);
- 		return cmd_region_read(dl);
-+	} else if (dl_argv_match(dl, "trigger")) {
-+		dl_arg_inc(dl);
-+		return cmd_region_trigger(dl);
- 	}
- 	pr_err("Command \"%s\" not found\n", dl_argv(dl));
- 	return -ENOENT;
-diff --git a/include/uapi/linux/devlink.h b/include/uapi/linux/devlink.h
-index 3f82dedd..37348f84 100644
---- a/include/uapi/linux/devlink.h
-+++ b/include/uapi/linux/devlink.h
-@@ -117,6 +117,8 @@ enum devlink_command {
- 	DEVLINK_CMD_TRAP_GROUP_NEW,
- 	DEVLINK_CMD_TRAP_GROUP_DEL,
- 
-+	DEVLINK_CMD_REGION_TRIGGER_SNAPSHOT,
-+
- 	/* add new commands above here */
- 	__DEVLINK_CMD_MAX,
- 	DEVLINK_CMD_MAX = __DEVLINK_CMD_MAX - 1
+ This interface consists of several ioctls (prototypes and structures
+ can be found in include/linux/meye.h):
 -- 
-2.21.0
+2.25.0.rc1
 
