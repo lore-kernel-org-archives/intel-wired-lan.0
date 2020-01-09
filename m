@@ -1,46 +1,59 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 9 Jan 2020 00:50:16 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: fix missing cpu_to_le64 on
- buffer_addr
-In-Reply-To: <20191218095308.2397408-1-ben.dooks@codethink.co.uk>
-References: <20191218095308.2397408-1-ben.dooks@codethink.co.uk>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B971A921A@ORSMSX103.amr.corp.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed, 8 Jan 2020 16:52:14 -0800
+Subject: [Intel-wired-lan] [net] i40e: Fix receive buffer starvation for
+ AF_XDP
+In-Reply-To: <20200105084600.4025394-1-jeffrey.t.kirsher@intel.com>
+References: <20200105084600.4025394-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <648fb7f4-b3b7-8f75-675d-26b0ffdfe2b4@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org>
-> On Behalf Of Ben Dooks (Codethink)
-> Sent: Wednesday, December 18, 2019 1:53 AM
-> To: ben.dooks at codethink.co.uk
-> Cc: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David S. Miller
-> <davem@davemloft.net>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org
-> Subject: [PATCH] e1000e: fix missing cpu_to_le64 on buffer_addr
+On 1/5/2020 12:46 AM, Jeff Kirsher wrote:
+> Magnus's fix to resolve a potential receive buffer starvation for AF_XDP
+> got applied to both the i40e_xsk_umem_enable/disable() functions, when it
+> should have only been applied to the "enable".  So clean up the undesired
+> code in the disable function.
 > 
-> The following warning suggests there is a missing cpu_to_le64() in
-> the e1000_flush_tx_ring() function (it is also the behaviour
-> elsewhere in the driver to do cpu_to_le64() on the buffer_addr
-> when setting it)
-> 
-> drivers/net/ethernet/intel/e1000e/netdev.c:3813:30: warning: incorrect
-> type in assignment (different base types)
-> drivers/net/ethernet/intel/e1000e/netdev.c:3813:30:    expected restricted
-> __le64 [usertype] buffer_addr
-> drivers/net/ethernet/intel/e1000e/netdev.c:3813:30:    got unsigned long
-> long [usertype] dma
-> 
-> Signed-off-by: Ben Dooks (Codethink) <ben.dooks@codethink.co.uk>
+> CC: Magnus Karlsson <magnus.karlsson@intel.com>
+> Fixes: 1f459bdc2007 ("i40e: fix potential RX buffer starvation for AF_XDP")
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 > ---
-> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 5 -----
+>  1 file changed, 5 deletions(-)
 > 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> index 42058fad6a3c..1b13d8e0d67a 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> @@ -114,11 +114,6 @@ static int i40e_xsk_umem_enable(struct i40e_vsi *vsi, struct xdp_umem *umem,
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Umm.. Based on the commit message, you meant to remove only from the
+disable function, not the enable one...
+
+And indeed you actually did in October:
+
+2c19e395e061 ("i40e: Fix receive buffer starvation for AF_XDP")
+Date:   Mon Oct 7 15:07:24 2019 -0700
+
+I think this patch should be dropped from your tree.
+
+(Thanks Lihong for pointing this out to me!)
+
+Thanks,
+Jake
+
+>  		err = i40e_queue_pair_enable(vsi, qid);
+>  		if (err)
+>  			return err;
+> -
+> -		/* Kick start the NAPI context so that receiving will start */
+> -		err = i40e_xsk_wakeup(vsi->netdev, qid, XDP_WAKEUP_RX);
+> -		if (err)
+> -			return err;
+>  	}
+>  
+>  	return 0;
+> 
