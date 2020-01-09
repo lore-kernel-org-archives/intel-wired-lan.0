@@ -1,53 +1,52 @@
-From: Jiri Pirko <jiri@resnulli.us>
-Date: Thu, 9 Jan 2020 19:59:33 +0100
-Subject: [Intel-wired-lan] [PATCH 0/4] devlink region snapshot triggering
-In-Reply-To: <20200109010818.1326575-1-jacob.e.keller@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Thu, 9 Jan 2020 11:07:26 -0800
+Subject: [Intel-wired-lan] [PATCH 3/4] devlink: add support for
+ triggering snapshots from userspace
+In-Reply-To: <20200109185843.GI2235@nanopsycho.orion>
 References: <20200109010818.1326575-1-jacob.e.keller@intel.com>
-Message-ID: <20200109185933.GJ2235@nanopsycho.orion>
+ <20200109010818.1326575-4-jacob.e.keller@intel.com>
+ <20200109070502.GC2235@nanopsycho.orion>
+ <aace193a-066b-ef8d-72a0-7489ba989d87@intel.com>
+ <20200109185843.GI2235@nanopsycho.orion>
+Message-ID: <f0181371-2f6d-720e-8361-44e17e4a5099@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hmm, could you send patchsets like this one to netdev mailing list?
+On 1/9/2020 10:58 AM, Jiri Pirko wrote:
+> Thu, Jan 09, 2020 at 07:50:23PM CET, jacob.e.keller at intel.com wrote:
+>> On 1/8/2020 11:05 PM, Jiri Pirko wrote:
+>>> Thu, Jan 09, 2020 at 02:08:18AM CET, jacob.e.keller at intel.com wrote:
+>>>> At region creation time, drivers may optionally define
+>>>> a trigger_snapshot function callback. If not defined, the
+>>>> DEVLINK_CMD_REGION_TRIGGER_SNAPSHOT will simply report EOPNOTSUPP.
+>>>
+>>> Similar mechanism is already implemented for health reporters. Why that
+>>> wouln't work for you?
+>>>
+>>
+>> Mostly, I didn't feel that the necessary information (flash contents)
+>> really made sense as a health report. The intent is to enable diagnostic
+>> tools to read the contents of the flash on a device.
+> 
+> I see.
+> 
+>>
+>> I'm fine using the health interface but in this case features like
+>> recovery method, etc do not make sense at all as it would not be
+>> triggered in response to error conditions.
+> 
+> Okay. Perhaps this is a usecase to have the regions.
+> 
+> Anyway, this patch does like 5 things in one. Please split it in
+> multiple patches, each doing one thing.
+> 
+> Thanks!
 
-Thanks!
+I can split it into parts and expand on the reasoning for not using the
+health interface.
 
-Thu, Jan 09, 2020 at 02:08:15AM CET, jacob.e.keller at intel.com wrote:
->This series consists of patches to enable devlink to request a snapshot via
->a new DEVLINK_CMD_REGION_TRIGGER_SNAPSHOT.
->
->The netdevsim driver is modified to support the new trigger_snapshot
->callback as an example of how this can be used.
->
->There is also some fix ups for s/shapshot/snapshot/ in documentation
->and the devlink_snapshot_id_get function.
->
->Jacob Keller (3):
->  devlink: correct misspelling of snapshot
->  doc: fix typo of snapshot in documentation
->  devlink: add support for triggering snapshots from userspace
->
->The last patch is a patch to the iproute2 project to implement support for
->the new command.
->
->Jacob Keller (1):
->  devlink: add support for DEVLINK_CMD_REGION_TRIGGER_SNAPSHOT
->
-> Documentation/admin-guide/devices.txt       |  2 +-
-> Documentation/media/v4l-drivers/meye.rst    |  2 +-
-> drivers/net/ethernet/mellanox/mlx4/crdump.c |  6 +--
-> drivers/net/netdevsim/dev.c                 | 37 +++++++++++-----
-> include/net/devlink.h                       | 14 +++---
-> include/uapi/linux/devlink.h                |  2 +
-> net/core/devlink.c                          | 49 ++++++++++++++++++---
-> 7 files changed, 85 insertions(+), 27 deletions(-)
->
-> devlink/devlink.c            | 20 ++++++++++++++++++++
-> include/uapi/linux/devlink.h |  2 ++
-> 2 files changed, 22 insertions(+)
->
->-- 
->2.25.0.rc1
->
+Thanks,
+Jake
