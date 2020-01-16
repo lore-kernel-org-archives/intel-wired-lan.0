@@ -1,55 +1,55 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 16 Jan 2020 11:42:26 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 171/205] ice: fix stack leakage
-In-Reply-To: <20200116164300.6705-1-sashal@kernel.org>
-References: <20200116164300.6705-1-sashal@kernel.org>
-Message-ID: <20200116164300.6705-171-sashal@kernel.org>
+Date: Thu, 16 Jan 2020 11:43:55 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 004/671] ixgbe: don't clear
+ IPsec sa counters on HW clearing
+In-Reply-To: <20200116165502.8838-1-sashal@kernel.org>
+References: <20200116165502.8838-1-sashal@kernel.org>
+Message-ID: <20200116165502.8838-4-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Shannon Nelson <shannon.nelson@oracle.com>
 
-[ Upstream commit 949375de945f7042df2b6488228a1a2b36e69f35 ]
+[ Upstream commit 9e3f2f5ecee69b0f70003fb3e07639151e91de73 ]
 
-In the case of an invalid virtchannel request the driver
-would return uninitialized data to the VF from the PF stack
-which is a bug.  Fix by initializing the stack variable
-earlier in the function before any return paths can be taken.
+The software SA record counters should not be cleared when clearing
+the hardware tables.  This causes the counters to be out of sync
+after a driver reset.
 
-Fixes: 1071a8358a28 ("ice: Implement virtchnl commands for AVF support")
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Fixes: 63a67fe229ea ("ixgbe: add ipsec offload add and remove SA")
+Signed-off-by: Shannon Nelson <shannon.nelson@oracle.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index c0637a0cbfe8..e92a00a61755 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1873,8 +1873,8 @@ static int ice_vc_get_stats_msg(struct ice_vf *vf, u8 *msg)
- 	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
- 	struct virtchnl_queue_select *vqs =
- 		(struct virtchnl_queue_select *)msg;
-+	struct ice_eth_stats stats = { 0 };
- 	struct ice_pf *pf = vf->pf;
--	struct ice_eth_stats stats;
- 	struct ice_vsi *vsi;
- 
- 	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
-@@ -1893,7 +1893,6 @@ static int ice_vc_get_stats_msg(struct ice_vf *vf, u8 *msg)
- 		goto error_param;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index b27f7a968820..49e6d66ccf80 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -114,7 +114,6 @@ static void ixgbe_ipsec_set_rx_ip(struct ixgbe_hw *hw, u16 idx, __be32 addr[])
+  **/
+ static void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
+ {
+-	struct ixgbe_ipsec *ipsec = adapter->ipsec;
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	u32 buf[4] = {0, 0, 0, 0};
+ 	u16 idx;
+@@ -133,9 +132,6 @@ static void ixgbe_ipsec_clear_hw_tables(struct ixgbe_adapter *adapter)
+ 		ixgbe_ipsec_set_tx_sa(hw, idx, buf, 0);
+ 		ixgbe_ipsec_set_rx_sa(hw, idx, 0, buf, 0, 0, 0);
  	}
+-
+-	ipsec->num_rx_sa = 0;
+-	ipsec->num_tx_sa = 0;
+ }
  
--	memset(&stats, 0, sizeof(struct ice_eth_stats));
- 	ice_update_eth_stats(vsi);
- 
- 	stats = vsi->eth_stats;
+ /**
 -- 
 2.20.1
 
