@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 16 Jan 2020 12:03:01 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 543/671] ixgbe: sync the
+Date: Thu, 16 Jan 2020 12:22:47 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.14 295/371] ixgbe: sync the
  first fragment unconditionally
-In-Reply-To: <20200116170509.12787-1-sashal@kernel.org>
-References: <20200116170509.12787-1-sashal@kernel.org>
-Message-ID: <20200116170509.12787-280-sashal@kernel.org>
+In-Reply-To: <20200116172403.18149-1-sashal@kernel.org>
+References: <20200116172403.18149-1-sashal@kernel.org>
+Message-ID: <20200116172403.18149-238-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -48,10 +48,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index de65ca1e6558..51cd58fbab69 100644
+index 0edfd199937d..e4c1e6345edd 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1822,13 +1822,7 @@ static void ixgbe_pull_tail(struct ixgbe_ring *rx_ring,
+@@ -1871,13 +1871,7 @@ static void ixgbe_pull_tail(struct ixgbe_ring *rx_ring,
  static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
  				struct sk_buff *skb)
  {
@@ -66,7 +66,7 @@ index de65ca1e6558..51cd58fbab69 100644
  		unsigned long offset = (unsigned long)(skb->data) & ~PAGE_MASK;
  
  		dma_sync_single_range_for_cpu(rx_ring->dev,
-@@ -1845,6 +1839,14 @@ static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
+@@ -1894,6 +1888,14 @@ static void ixgbe_dma_sync_frag(struct ixgbe_ring *rx_ring,
  					      skb_frag_size(frag),
  					      DMA_FROM_DEVICE);
  	}
