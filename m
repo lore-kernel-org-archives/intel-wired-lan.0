@@ -1,686 +1,897 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 17 Jan 2020 07:39:16 -0800
-Subject: [Intel-wired-lan] [PATCH S36 5/8] ice: Optimize table usage
+Date: Fri, 17 Jan 2020 07:39:13 -0800
+Subject: [Intel-wired-lan] [PATCH S36 2/8] ice: Allocate flow profile
 In-Reply-To: <20200117153919.50321-1-anthony.l.nguyen@intel.com>
 References: <20200117153919.50321-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200117153919.50321-5-anthony.l.nguyen@intel.com>
+Message-ID: <20200117153919.50321-2-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Attempt to optimize TCAM entries and reduce table resource usage by
-searching for profiles that can be reused. Provide resource cleanup
-of both hardware and software structures.
+Create an extraction sequence based on the packet header protocols to be
+programmed and allocate a flow profile for the extraction sequence.
 
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_flex_pipe.c    | 394 ++++++++++++++++++
- .../net/ethernet/intel/ice/ice_flex_pipe.h    |   4 +
- drivers/net/ethernet/intel/ice/ice_flow.c     | 338 +++++++++++++++
- drivers/net/ethernet/intel/ice/ice_flow.h     |  10 +
- drivers/net/ethernet/intel/ice/ice_lib.c      |  28 +-
- 5 files changed, 773 insertions(+), 1 deletion(-)
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |  75 +++
+ drivers/net/ethernet/intel/ice/ice_common.h   |   6 +
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    | 216 ++++++++
+ .../net/ethernet/intel/ice/ice_flex_pipe.h    |   3 +
+ .../net/ethernet/intel/ice/ice_flex_type.h    |  15 +
+ drivers/net/ethernet/intel/ice/ice_flow.c     | 490 +++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_flow.h     |  23 +
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |   8 +
+ .../ethernet/intel/ice/ice_protocol_type.h    |  24 +
+ drivers/net/ethernet/intel/ice/ice_switch.c   |  36 --
+ drivers/net/ethernet/intel/ice/ice_type.h     |   2 +
+ 12 files changed, 864 insertions(+), 40 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_protocol_type.h
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index 6dca611b408a..99208946224c 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -1921,6 +1921,26 @@ ice_alloc_prof_id(struct ice_hw *hw, enum ice_block blk, u8 *prof_id)
- 	return status;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 2fe53f530517..6a45bbffbbbb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -233,6 +233,12 @@ struct ice_aqc_get_sw_cfg_resp {
+  */
+ #define ICE_AQC_RES_TYPE_VSI_LIST_REP			0x03
+ #define ICE_AQC_RES_TYPE_VSI_LIST_PRUNE			0x04
++#define ICE_AQC_RES_TYPE_HASH_PROF_BLDR_PROFID		0x60
++
++#define ICE_AQC_RES_TYPE_FLAG_SCAN_BOTTOM		BIT(12)
++#define ICE_AQC_RES_TYPE_FLAG_IGNORE_INDEX		BIT(13)
++
++#define ICE_AQC_RES_TYPE_FLAG_DEDICATED			0x00
  
-+/**
-+ * ice_free_prof_id - free profile ID
-+ * @hw: pointer to the HW struct
-+ * @blk: the block from which to free the profile ID
-+ * @prof_id: the profile ID to free
-+ *
-+ * This function frees a profile ID, which also corresponds to a Field Vector.
-+ */
-+static enum ice_status
-+ice_free_prof_id(struct ice_hw *hw, enum ice_block blk, u8 prof_id)
-+{
-+	u16 tmp_prof_id = (u16)prof_id;
-+	u16 res_type;
-+
-+	if (!ice_prof_id_rsrc_type(blk, &res_type))
-+		return ICE_ERR_PARAM;
-+
-+	return ice_free_hw_res(hw, res_type, 1, &tmp_prof_id);
-+}
-+
- /**
-  * ice_prof_inc_ref - increment reference count for profile
-  * @hw: pointer to the HW struct
-@@ -1962,6 +1982,28 @@ ice_write_es(struct ice_hw *hw, enum ice_block blk, u8 prof_id,
+ /* Allocate Resources command (indirect 0x0208)
+  * Free Resources command (indirect 0x0209)
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 84ef40315948..463b1f25e261 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1497,6 +1497,81 @@ void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res)
  	}
  }
  
 +/**
-+ * ice_prof_dec_ref - decrement reference count for profile
++ * ice_aq_alloc_free_res - command to allocate/free resources
 + * @hw: pointer to the HW struct
-+ * @blk: the block from which to free the profile ID
-+ * @prof_id: the profile ID for which to decrement the reference count
++ * @num_entries: number of resource entries in buffer
++ * @buf: Indirect buffer to hold data parameters and response
++ * @buf_size: size of buffer for indirect commands
++ * @opc: pass in the command opcode
++ * @cd: pointer to command details structure or NULL
++ *
++ * Helper function to allocate/free resources using the admin queue commands
++ */
++enum ice_status
++ice_aq_alloc_free_res(struct ice_hw *hw, u16 num_entries,
++		      struct ice_aqc_alloc_free_res_elem *buf, u16 buf_size,
++		      enum ice_adminq_opc opc, struct ice_sq_cd *cd)
++{
++	struct ice_aqc_alloc_free_res_cmd *cmd;
++	struct ice_aq_desc desc;
++
++	cmd = &desc.params.sw_res_ctrl;
++
++	if (!buf)
++		return ICE_ERR_PARAM;
++
++	if (buf_size < (num_entries * sizeof(buf->elem[0])))
++		return ICE_ERR_PARAM;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, opc);
++
++	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
++
++	cmd->num_entries = cpu_to_le16(num_entries);
++
++	return ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
++}
++
++/**
++ * ice_alloc_hw_res - allocate resource
++ * @hw: pointer to the HW struct
++ * @type: type of resource
++ * @num: number of resources to allocate
++ * @btm: allocate from bottom
++ * @res: pointer to array that will receive the resources
++ */
++enum ice_status
++ice_alloc_hw_res(struct ice_hw *hw, u16 type, u16 num, bool btm, u16 *res)
++{
++	struct ice_aqc_alloc_free_res_elem *buf;
++	enum ice_status status;
++	u16 buf_len;
++
++	buf_len = struct_size(buf, elem, num - 1);
++	buf = kzalloc(buf_len, GFP_KERNEL);
++	if (!buf)
++		return ICE_ERR_NO_MEMORY;
++
++	/* Prepare buffer to allocate resource. */
++	buf->num_elems = cpu_to_le16(num);
++	buf->res_type = cpu_to_le16(type | ICE_AQC_RES_TYPE_FLAG_DEDICATED |
++				    ICE_AQC_RES_TYPE_FLAG_IGNORE_INDEX);
++	if (btm)
++		buf->res_type |= cpu_to_le16(ICE_AQC_RES_TYPE_FLAG_SCAN_BOTTOM);
++
++	status = ice_aq_alloc_free_res(hw, 1, buf, buf_len,
++				       ice_aqc_opc_alloc_res, NULL);
++	if (status)
++		goto ice_alloc_res_exit;
++
++	memcpy(res, buf->elem, sizeof(buf->elem) * num);
++
++ice_alloc_res_exit:
++	kfree(buf);
++	return status;
++}
++
+ /**
+  * ice_get_num_per_func - determine number of resources per PF
+  * @hw: pointer to the HW structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index a6beebff1379..00de178c9f52 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -34,10 +34,16 @@ enum ice_status
+ ice_acquire_res(struct ice_hw *hw, enum ice_aq_res_ids res,
+ 		enum ice_aq_res_access_type access, u32 timeout);
+ void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res);
++enum ice_status
++ice_alloc_hw_res(struct ice_hw *hw, u16 type, u16 num, bool btm, u16 *res);
+ enum ice_status ice_init_nvm(struct ice_hw *hw);
+ enum ice_status
+ ice_read_sr_buf(struct ice_hw *hw, u16 offset, u16 *words, u16 *data);
+ enum ice_status
++ice_aq_alloc_free_res(struct ice_hw *hw, u16 num_entries,
++		      struct ice_aqc_alloc_free_res_elem *buf, u16 buf_size,
++		      enum ice_adminq_opc opc, struct ice_sq_cd *cd);
++enum ice_status
+ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+ 		struct ice_aq_desc *desc, void *buf, u16 buf_size,
+ 		struct ice_sq_cd *cd);
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+index f37eb536e7b7..5c09d3105b8b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -1118,6 +1118,117 @@ ice_vsig_add_mv_vsi(struct ice_hw *hw, enum ice_block blk, u16 vsi, u16 vsig)
+ 	return 0;
+ }
+ 
++/**
++ * ice_find_prof_id - find profile ID for a given field vector
++ * @hw: pointer to the hardware structure
++ * @blk: HW block
++ * @fv: field vector to search for
++ * @prof_id: receives the profile ID
 + */
 +static enum ice_status
-+ice_prof_dec_ref(struct ice_hw *hw, enum ice_block blk, u8 prof_id)
++ice_find_prof_id(struct ice_hw *hw, enum ice_block blk,
++		 struct ice_fv_word *fv, u8 *prof_id)
++{
++	struct ice_es *es = &hw->blk[blk].es;
++	u16 off, i;
++
++	for (i = 0; i < es->count; i++) {
++		off = i * es->fvw;
++
++		if (memcmp(&es->t[off], fv, es->fvw * sizeof(*fv)))
++			continue;
++
++		*prof_id = i;
++		return 0;
++	}
++
++	return ICE_ERR_DOES_NOT_EXIST;
++}
++
++/**
++ * ice_prof_id_rsrc_type - get profile ID resource type for a block type
++ * @blk: the block type
++ * @rsrc_type: pointer to variable to receive the resource type
++ */
++static bool ice_prof_id_rsrc_type(enum ice_block blk, u16 *rsrc_type)
++{
++	switch (blk) {
++	case ICE_BLK_RSS:
++		*rsrc_type = ICE_AQC_RES_TYPE_HASH_PROF_BLDR_PROFID;
++		break;
++	default:
++		return false;
++	}
++	return true;
++}
++
++/**
++ * ice_alloc_prof_id - allocate profile ID
++ * @hw: pointer to the HW struct
++ * @blk: the block to allocate the profile ID for
++ * @prof_id: pointer to variable to receive the profile ID
++ *
++ * This function allocates a new profile ID, which also corresponds to a Field
++ * Vector (Extraction Sequence) entry.
++ */
++static enum ice_status
++ice_alloc_prof_id(struct ice_hw *hw, enum ice_block blk, u8 *prof_id)
++{
++	enum ice_status status;
++	u16 res_type;
++	u16 get_prof;
++
++	if (!ice_prof_id_rsrc_type(blk, &res_type))
++		return ICE_ERR_PARAM;
++
++	status = ice_alloc_hw_res(hw, res_type, 1, false, &get_prof);
++	if (!status)
++		*prof_id = (u8)get_prof;
++
++	return status;
++}
++
++/**
++ * ice_prof_inc_ref - increment reference count for profile
++ * @hw: pointer to the HW struct
++ * @blk: the block from which to free the profile ID
++ * @prof_id: the profile ID for which to increment the reference count
++ */
++static enum ice_status
++ice_prof_inc_ref(struct ice_hw *hw, enum ice_block blk, u8 prof_id)
 +{
 +	if (prof_id > hw->blk[blk].es.count)
 +		return ICE_ERR_PARAM;
 +
-+	if (hw->blk[blk].es.ref_count[prof_id] > 0) {
-+		if (!--hw->blk[blk].es.ref_count[prof_id]) {
-+			ice_write_es(hw, blk, prof_id, NULL);
-+			return ice_free_prof_id(hw, blk, prof_id);
++	hw->blk[blk].es.ref_count[prof_id]++;
++
++	return 0;
++}
++
++/**
++ * ice_write_es - write an extraction sequence to hardware
++ * @hw: pointer to the HW struct
++ * @blk: the block in which to write the extraction sequence
++ * @prof_id: the profile ID to write
++ * @fv: pointer to the extraction sequence to write - NULL to clear extraction
++ */
++static void
++ice_write_es(struct ice_hw *hw, enum ice_block blk, u8 prof_id,
++	     struct ice_fv_word *fv)
++{
++	u16 off;
++
++	off = prof_id * hw->blk[blk].es.fvw;
++	if (!fv) {
++		memset(&hw->blk[blk].es.t[off], 0,
++		       hw->blk[blk].es.fvw * sizeof(*fv));
++		hw->blk[blk].es.written[prof_id] = false;
++	} else {
++		memcpy(&hw->blk[blk].es.t[off], fv,
++		       hw->blk[blk].es.fvw * sizeof(*fv));
++	}
++}
++
+ /* Block / table section IDs */
+ static const u32 ice_blk_sids[ICE_BLK_COUNT][ICE_SID_OFF_COUNT] = {
+ 	/* SWITCH */
+@@ -1576,3 +1687,108 @@ enum ice_status ice_init_hw_tbls(struct ice_hw *hw)
+ 	ice_free_hw_tbls(hw);
+ 	return ICE_ERR_NO_MEMORY;
+ }
++
++/**
++ * ice_add_prof - add profile
++ * @hw: pointer to the HW struct
++ * @blk: hardware block
++ * @id: profile tracking ID
++ * @ptypes: array of bitmaps indicating ptypes (ICE_FLOW_PTYPE_MAX bits)
++ * @es: extraction sequence (length of array is determined by the block)
++ *
++ * This function registers a profile, which matches a set of PTGs with a
++ * particular extraction sequence. While the hardware profile is allocated
++ * it will not be written until the first call to ice_add_flow that specifies
++ * the ID value used here.
++ */
++enum ice_status
++ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
++	     struct ice_fv_word *es)
++{
++	u32 bytes = DIV_ROUND_UP(ICE_FLOW_PTYPE_MAX, BITS_PER_BYTE);
++	DECLARE_BITMAP(ptgs_used, ICE_XLT1_CNT);
++	struct ice_prof_map *prof;
++	enum ice_status status;
++	u32 byte = 0;
++	u8 prof_id;
++
++	bitmap_zero(ptgs_used, ICE_XLT1_CNT);
++
++	mutex_lock(&hw->blk[blk].es.prof_map_lock);
++
++	/* search for existing profile */
++	status = ice_find_prof_id(hw, blk, es, &prof_id);
++	if (status) {
++		/* allocate profile ID */
++		status = ice_alloc_prof_id(hw, blk, &prof_id);
++		if (status)
++			goto err_ice_add_prof;
++
++		/* and write new es */
++		ice_write_es(hw, blk, prof_id, es);
++	}
++
++	ice_prof_inc_ref(hw, blk, prof_id);
++
++	/* add profile info */
++	prof = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*prof), GFP_KERNEL);
++	if (!prof)
++		goto err_ice_add_prof;
++
++	prof->profile_cookie = id;
++	prof->prof_id = prof_id;
++	prof->ptg_cnt = 0;
++	prof->context = 0;
++
++	/* build list of ptgs */
++	while (bytes && prof->ptg_cnt < ICE_MAX_PTG_PER_PROFILE) {
++		u32 bit;
++
++		if (!ptypes[byte]) {
++			bytes--;
++			byte++;
++			continue;
++		}
++
++		/* Examine 8 bits per byte */
++		for_each_set_bit(bit, (unsigned long *)&ptypes[byte],
++				 BITS_PER_BYTE) {
++			u16 ptype;
++			u8 ptg;
++			u8 m;
++
++			ptype = byte * BITS_PER_BYTE + bit;
++
++			/* The package should place all ptypes in a non-zero
++			 * PTG, so the following call should never fail.
++			 */
++			if (ice_ptg_find_ptype(hw, blk, ptype, &ptg))
++				continue;
++
++			/* If PTG is already added, skip and continue */
++			if (test_bit(ptg, ptgs_used))
++				continue;
++
++			set_bit(ptg, ptgs_used);
++			prof->ptg[prof->ptg_cnt] = ptg;
++
++			if (++prof->ptg_cnt >= ICE_MAX_PTG_PER_PROFILE)
++				break;
++
++			/* nothing left in byte, then exit */
++			m = ~((1 << (bit + 1)) - 1);
++			if (!(ptypes[byte] & m))
++				break;
++		}
++
++		bytes--;
++		byte++;
++	}
++
++	list_add(&prof->list, &hw->blk[blk].es.prof_map);
++	status = 0;
++
++err_ice_add_prof:
++	mutex_unlock(&hw->blk[blk].es.prof_map_lock);
++	return status;
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
+index 37eb282742d1..8cb7d7f09e0b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
+@@ -18,6 +18,9 @@
+ 
+ #define ICE_PKG_CNT 4
+ 
++enum ice_status
++ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
++	     struct ice_fv_word *es);
+ enum ice_status ice_init_pkg(struct ice_hw *hw, u8 *buff, u32 len);
+ enum ice_status
+ ice_copy_and_init_pkg(struct ice_hw *hw, const u8 *buf, u32 len);
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+index 5d5a7eaffa30..3005f111fb3b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+@@ -3,6 +3,9 @@
+ 
+ #ifndef _ICE_FLEX_TYPE_H_
+ #define _ICE_FLEX_TYPE_H_
++
++#define ICE_FV_OFFSET_INVAL	0x1FF
++
+ /* Extraction Sequence (Field Vector) Table */
+ struct ice_fv_word {
+ 	u8 prot_id;
+@@ -280,6 +283,17 @@ struct ice_ptg_ptype {
+ 	u8 ptg;
+ };
+ 
++#define ICE_MAX_PTG_PER_PROFILE		32
++
++struct ice_prof_map {
++	struct list_head list;
++	u64 profile_cookie;
++	u64 context;
++	u8 prof_id;
++	u8 ptg_cnt;
++	u8 ptg[ICE_MAX_PTG_PER_PROFILE];
++};
++
+ struct ice_vsig_entry {
+ 	struct list_head prop_lst;
+ 	struct ice_vsig_vsi *first_vsi;
+@@ -371,4 +385,5 @@ struct ice_blk_info {
+ 	u8 is_list_init;
+ };
+ 
++#define ICE_FLOW_PTYPE_MAX		ICE_XLT1_CNT
+ #endif /* _ICE_FLEX_TYPE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
+index 4828c64abe98..24fe04f8baa2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.c
++++ b/drivers/net/ethernet/intel/ice/ice_flow.c
+@@ -40,6 +40,457 @@ struct ice_flow_field_info ice_flds_info[ICE_FLOW_FIELD_IDX_MAX] = {
+ 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_UDP, 2, sizeof(__be16)),
+ };
+ 
++/* Bitmaps indicating relevant packet types for a particular protocol header
++ *
++ * Packet types for packets with an Outer/First/Single IPv4 header
++ */
++static const u32 ice_ptypes_ipv4_ofos[] = {
++	0x1DC00000, 0x04000800, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for packets with an Innermost/Last IPv4 header */
++static const u32 ice_ptypes_ipv4_il[] = {
++	0xE0000000, 0xB807700E, 0x80000003, 0xE01DC03B,
++	0x0000000E, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for packets with an Outer/First/Single IPv6 header */
++static const u32 ice_ptypes_ipv6_ofos[] = {
++	0x00000000, 0x00000000, 0x77000000, 0x10002000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for packets with an Innermost/Last IPv6 header */
++static const u32 ice_ptypes_ipv6_il[] = {
++	0x00000000, 0x03B80770, 0x000001DC, 0x0EE00000,
++	0x00000770, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* UDP Packet types for non-tunneled packets or tunneled
++ * packets with inner UDP.
++ */
++static const u32 ice_ptypes_udp_il[] = {
++	0x81000000, 0x20204040, 0x04000010, 0x80810102,
++	0x00000040, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for packets with an Innermost/Last TCP header */
++static const u32 ice_ptypes_tcp_il[] = {
++	0x04000000, 0x80810102, 0x10000040, 0x02040408,
++	0x00000102, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for packets with an Innermost/Last SCTP header */
++static const u32 ice_ptypes_sctp_il[] = {
++	0x08000000, 0x01020204, 0x20000081, 0x04080810,
++	0x00000204, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Manage parameters and info. used during the creation of a flow profile */
++struct ice_flow_prof_params {
++	enum ice_block blk;
++	u16 entry_length; /* # of bytes formatted entry will require */
++	u8 es_cnt;
++	struct ice_flow_prof *prof;
++
++	/* For ACL, the es[0] will have the data of ICE_RX_MDID_PKT_FLAGS_15_0
++	 * This will give us the direction flags.
++	 */
++	struct ice_fv_word es[ICE_MAX_FV_WORDS];
++	DECLARE_BITMAP(ptypes, ICE_FLOW_PTYPE_MAX);
++};
++
++#define ICE_FLOW_SEG_HDRS_L3_MASK	\
++	(ICE_FLOW_SEG_HDR_IPV4 | ICE_FLOW_SEG_HDR_IPV6)
++#define ICE_FLOW_SEG_HDRS_L4_MASK	\
++	(ICE_FLOW_SEG_HDR_TCP | ICE_FLOW_SEG_HDR_UDP | ICE_FLOW_SEG_HDR_SCTP)
++
++/**
++ * ice_flow_val_hdrs - validates packet segments for valid protocol headers
++ * @segs: array of one or more packet segments that describe the flow
++ * @segs_cnt: number of packet segments provided
++ */
++static enum ice_status
++ice_flow_val_hdrs(struct ice_flow_seg_info *segs, u8 segs_cnt)
++{
++	u8 i;
++
++	for (i = 0; i < segs_cnt; i++) {
++		/* Multiple L3 headers */
++		if (segs[i].hdrs & ICE_FLOW_SEG_HDRS_L3_MASK &&
++		    !is_power_of_2(segs[i].hdrs & ICE_FLOW_SEG_HDRS_L3_MASK))
++			return ICE_ERR_PARAM;
++
++		/* Multiple L4 headers */
++		if (segs[i].hdrs & ICE_FLOW_SEG_HDRS_L4_MASK &&
++		    !is_power_of_2(segs[i].hdrs & ICE_FLOW_SEG_HDRS_L4_MASK))
++			return ICE_ERR_PARAM;
++	}
++
++	return 0;
++}
++
++/**
++ * ice_flow_proc_seg_hdrs - process protocol headers present in pkt segments
++ * @params: information about the flow to be processed
++ *
++ * This function identifies the packet types associated with the protocol
++ * headers being present in packet segments of the specified flow profile.
++ */
++static enum ice_status
++ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
++{
++	struct ice_flow_prof *prof;
++	u8 i;
++
++	memset(params->ptypes, 0xff, sizeof(params->ptypes));
++
++	prof = params->prof;
++
++	for (i = 0; i < params->prof->segs_cnt; i++) {
++		const unsigned long *src;
++		u32 hdrs;
++
++		hdrs = prof->segs[i].hdrs;
++
++		if (hdrs & ICE_FLOW_SEG_HDR_IPV4) {
++			src = !i ? (const unsigned long *)ice_ptypes_ipv4_ofos :
++				(const unsigned long *)ice_ptypes_ipv4_il;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_IPV6) {
++			src = !i ? (const unsigned long *)ice_ptypes_ipv6_ofos :
++				(const unsigned long *)ice_ptypes_ipv6_il;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		}
++
++		if (hdrs & ICE_FLOW_SEG_HDR_UDP) {
++			src = (const unsigned long *)ice_ptypes_udp_il;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_TCP) {
++			bitmap_and(params->ptypes, params->ptypes,
++				   (const unsigned long *)ice_ptypes_tcp_il,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_SCTP) {
++			src = (const unsigned long *)ice_ptypes_sctp_il;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
 +		}
 +	}
 +
 +	return 0;
 +}
 +
- /* Block / table section IDs */
- static const u32 ice_blk_sids[ICE_BLK_COUNT][ICE_SID_OFF_COUNT] = {
- 	/* SWITCH */
-@@ -2218,6 +2260,64 @@ void ice_fill_blk_tbls(struct ice_hw *hw)
- 	ice_init_sw_db(hw);
- }
- 
 +/**
-+ * ice_free_prof_map - free profile map
-+ * @hw: pointer to the hardware structure
-+ * @blk_idx: HW block index
++ * ice_flow_xtract_fld - Create an extraction sequence entry for the given field
++ * @hw: pointer to the HW struct
++ * @params: information about the flow to be processed
++ * @seg: packet segment index of the field to be extracted
++ * @fld: ID of field to be extracted
++ *
++ * This function determines the protocol ID, offset, and size of the given
++ * field. It then allocates one or more extraction sequence entries for the
++ * given field, and fill the entries with protocol ID and offset information.
 + */
-+static void ice_free_prof_map(struct ice_hw *hw, u8 blk_idx)
++static enum ice_status
++ice_flow_xtract_fld(struct ice_hw *hw, struct ice_flow_prof_params *params,
++		    u8 seg, enum ice_flow_field fld)
 +{
-+	struct ice_es *es = &hw->blk[blk_idx].es;
-+	struct ice_prof_map *del, *tmp;
++	enum ice_prot_id prot_id = ICE_PROT_ID_INVAL;
++	u8 fv_words = hw->blk[params->blk].es.fvw;
++	struct ice_flow_fld_info *flds;
++	u16 cnt, ese_bits, i;
++	u16 off;
 +
-+	mutex_lock(&es->prof_map_lock);
-+	list_for_each_entry_safe(del, tmp, &es->prof_map, list) {
-+		list_del(&del->list);
-+		devm_kfree(ice_hw_to_dev(hw), del);
++	flds = params->prof->segs[seg].fields;
++
++	switch (fld) {
++	case ICE_FLOW_FIELD_IDX_IPV4_SA:
++	case ICE_FLOW_FIELD_IDX_IPV4_DA:
++		prot_id = seg == 0 ? ICE_PROT_IPV4_OF_OR_S : ICE_PROT_IPV4_IL;
++		break;
++	case ICE_FLOW_FIELD_IDX_IPV6_SA:
++	case ICE_FLOW_FIELD_IDX_IPV6_DA:
++		prot_id = seg == 0 ? ICE_PROT_IPV6_OF_OR_S : ICE_PROT_IPV6_IL;
++		break;
++	case ICE_FLOW_FIELD_IDX_TCP_SRC_PORT:
++	case ICE_FLOW_FIELD_IDX_TCP_DST_PORT:
++		prot_id = ICE_PROT_TCP_IL;
++		break;
++	case ICE_FLOW_FIELD_IDX_UDP_SRC_PORT:
++	case ICE_FLOW_FIELD_IDX_UDP_DST_PORT:
++		prot_id = ICE_PROT_UDP_IL_OR_S;
++		break;
++	default:
++		return ICE_ERR_NOT_IMPL;
 +	}
-+	INIT_LIST_HEAD(&es->prof_map);
-+	mutex_unlock(&es->prof_map_lock);
-+}
 +
-+/**
-+ * ice_free_flow_profs - free flow profile entries
-+ * @hw: pointer to the hardware structure
-+ * @blk_idx: HW block index
-+ */
-+static void ice_free_flow_profs(struct ice_hw *hw, u8 blk_idx)
-+{
-+	struct ice_flow_prof *p, *tmp;
-+
-+	mutex_lock(&hw->fl_profs_locks[blk_idx]);
-+	list_for_each_entry_safe(p, tmp, &hw->fl_profs[blk_idx], l_entry) {
-+		list_del(&p->l_entry);
-+		devm_kfree(ice_hw_to_dev(hw), p);
-+	}
-+	mutex_unlock(&hw->fl_profs_locks[blk_idx]);
-+
-+	/* if driver is in reset and tables are being cleared
-+	 * re-initialize the flow profile list heads
++	/* Each extraction sequence entry is a word in size, and extracts a
++	 * word-aligned offset from a protocol header.
 +	 */
-+	INIT_LIST_HEAD(&hw->fl_profs[blk_idx]);
++	ese_bits = ICE_FLOW_FV_EXTRACT_SZ * BITS_PER_BYTE;
++
++	flds[fld].xtrct.prot_id = prot_id;
++	flds[fld].xtrct.off = (ice_flds_info[fld].off / ese_bits) *
++		ICE_FLOW_FV_EXTRACT_SZ;
++	flds[fld].xtrct.disp = (u8)(ice_flds_info[fld].off % ese_bits);
++	flds[fld].xtrct.idx = params->es_cnt;
++
++	/* Adjust the next field-entry index after accommodating the number of
++	 * entries this field consumes
++	 */
++	cnt = DIV_ROUND_UP(flds[fld].xtrct.disp + ice_flds_info[fld].size,
++			   ese_bits);
++
++	/* Fill in the extraction sequence entries needed for this field */
++	off = flds[fld].xtrct.off;
++	for (i = 0; i < cnt; i++) {
++		u8 idx;
++
++		/* Make sure the number of extraction sequence required
++		 * does not exceed the block's capability
++		 */
++		if (params->es_cnt >= fv_words)
++			return ICE_ERR_MAX_LIMIT;
++
++		/* some blocks require a reversed field vector layout */
++		if (hw->blk[params->blk].es.reverse)
++			idx = fv_words - params->es_cnt - 1;
++		else
++			idx = params->es_cnt;
++
++		params->es[idx].prot_id = prot_id;
++		params->es[idx].off = off;
++		params->es_cnt++;
++
++		off += ICE_FLOW_FV_EXTRACT_SZ;
++	}
++
++	return 0;
 +}
 +
 +/**
-+ * ice_free_vsig_tbl - free complete VSIG table entries
-+ * @hw: pointer to the hardware structure
-+ * @blk: the HW block on which to free the VSIG table entries
-+ */
-+static void ice_free_vsig_tbl(struct ice_hw *hw, enum ice_block blk)
-+{
-+	u16 i;
-+
-+	if (!hw->blk[blk].xlt2.vsig_tbl)
-+		return;
-+
-+	for (i = 1; i < ICE_MAX_VSIGS; i++)
-+		if (hw->blk[blk].xlt2.vsig_tbl[i].in_use)
-+			ice_vsig_free(hw, blk, i);
-+}
-+
- /**
-  * ice_free_hw_tbls - free hardware table memory
-  * @hw: pointer to the hardware structure
-@@ -2231,11 +2331,15 @@ void ice_free_hw_tbls(struct ice_hw *hw)
- 		if (hw->blk[i].is_list_init) {
- 			struct ice_es *es = &hw->blk[i].es;
- 
-+			ice_free_prof_map(hw, i);
- 			mutex_destroy(&es->prof_map_lock);
-+
-+			ice_free_flow_profs(hw, i);
- 			mutex_destroy(&hw->fl_profs_locks[i]);
- 
- 			hw->blk[i].is_list_init = false;
- 		}
-+		ice_free_vsig_tbl(hw, (enum ice_block)i);
- 		devm_kfree(ice_hw_to_dev(hw), hw->blk[i].xlt1.ptypes);
- 		devm_kfree(ice_hw_to_dev(hw), hw->blk[i].xlt1.ptg_tbl);
- 		devm_kfree(ice_hw_to_dev(hw), hw->blk[i].xlt1.t);
-@@ -2283,6 +2387,13 @@ void ice_clear_hw_tbls(struct ice_hw *hw)
- 		struct ice_xlt2 *xlt2 = &hw->blk[i].xlt2;
- 		struct ice_es *es = &hw->blk[i].es;
- 
-+		if (hw->blk[i].is_list_init) {
-+			ice_free_prof_map(hw, i);
-+			ice_free_flow_profs(hw, i);
-+		}
-+
-+		ice_free_vsig_tbl(hw, (enum ice_block)i);
-+
- 		memset(xlt1->ptypes, 0, xlt1->count * sizeof(*xlt1->ptypes));
- 		memset(xlt1->ptg_tbl, 0,
- 		       ICE_MAX_PTGS * sizeof(*xlt1->ptg_tbl));
-@@ -2956,6 +3067,25 @@ ice_search_prof_id(struct ice_hw *hw, enum ice_block blk, u64 id)
- 	return entry;
- }
- 
-+/**
-+ * ice_vsig_prof_id_count - count profiles in a VSIG
++ * ice_flow_create_xtrct_seq - Create an extraction sequence for given segments
 + * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @vsig: VSIG to remove the profile from
-+ */
-+static u16
-+ice_vsig_prof_id_count(struct ice_hw *hw, enum ice_block blk, u16 vsig)
-+{
-+	u16 idx = vsig & ICE_VSIG_IDX_M, count = 0;
-+	struct ice_vsig_prof *p;
-+
-+	list_for_each_entry(p, &hw->blk[blk].xlt2.vsig_tbl[idx].prop_lst,
-+			    list)
-+		count++;
-+
-+	return count;
-+}
-+
- /**
-  * ice_rel_tcam_idx - release a TCAM index
-  * @hw: pointer to the HW struct
-@@ -3064,6 +3194,117 @@ ice_rem_vsig(struct ice_hw *hw, enum ice_block blk, u16 vsig,
- 	return ice_vsig_free(hw, blk, vsig);
- }
- 
-+/**
-+ * ice_rem_prof_id_vsig - remove a specific profile from a VSIG
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @vsig: VSIG to remove the profile from
-+ * @hdl: profile handle indicating which profile to remove
-+ * @chg: list to receive a record of changes
++ * @params: information about the flow to be processed
++ *
++ * This function iterates through all matched fields in the given segments, and
++ * creates an extraction sequence for the fields.
 + */
 +static enum ice_status
-+ice_rem_prof_id_vsig(struct ice_hw *hw, enum ice_block blk, u16 vsig, u64 hdl,
-+		     struct list_head *chg)
++ice_flow_create_xtrct_seq(struct ice_hw *hw,
++			  struct ice_flow_prof_params *params)
 +{
-+	u16 idx = vsig & ICE_VSIG_IDX_M;
-+	struct ice_vsig_prof *p, *t;
-+	enum ice_status status;
++	struct ice_flow_prof *prof = params->prof;
++	enum ice_status status = 0;
++	u8 i;
 +
-+	list_for_each_entry_safe(p, t,
-+				 &hw->blk[blk].xlt2.vsig_tbl[idx].prop_lst,
-+				 list)
-+		if (p->profile_cookie == hdl) {
-+			if (ice_vsig_prof_id_count(hw, blk, vsig) == 1)
-+				/* this is the last profile, remove the VSIG */
-+				return ice_rem_vsig(hw, blk, vsig, chg);
++	for (i = 0; i < prof->segs_cnt; i++) {
++		u8 j;
 +
-+			status = ice_rem_prof_id(hw, blk, p);
-+			if (!status) {
-+				list_del(&p->list);
-+				devm_kfree(ice_hw_to_dev(hw), p);
-+			}
-+			return status;
++		for_each_set_bit(j, (unsigned long *)&prof->segs[i].match,
++				 ICE_FLOW_FIELD_IDX_MAX) {
++			status = ice_flow_xtract_fld(hw, params, i,
++						     (enum ice_flow_field)j);
++			if (status)
++				return status;
 +		}
-+
-+	return ICE_ERR_DOES_NOT_EXIST;
-+}
-+
-+/**
-+ * ice_rem_flow_all - remove all flows with a particular profile
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @id: profile tracking ID
-+ */
-+static enum ice_status
-+ice_rem_flow_all(struct ice_hw *hw, enum ice_block blk, u64 id)
-+{
-+	struct ice_chs_chg *del, *tmp;
-+	enum ice_status status;
-+	struct list_head chg;
-+	u16 i;
-+
-+	INIT_LIST_HEAD(&chg);
-+
-+	for (i = 1; i < ICE_MAX_VSIGS; i++)
-+		if (hw->blk[blk].xlt2.vsig_tbl[i].in_use) {
-+			if (ice_has_prof_vsig(hw, blk, i, id)) {
-+				status = ice_rem_prof_id_vsig(hw, blk, i, id,
-+							      &chg);
-+				if (status)
-+					goto err_ice_rem_flow_all;
-+			}
-+		}
-+
-+	status = ice_upd_prof_hw(hw, blk, &chg);
-+
-+err_ice_rem_flow_all:
-+	list_for_each_entry_safe(del, tmp, &chg, list_entry) {
-+		list_del(&del->list_entry);
-+		devm_kfree(ice_hw_to_dev(hw), del);
 +	}
 +
 +	return status;
 +}
 +
 +/**
-+ * ice_rem_prof - remove profile
++ * ice_flow_proc_segs - process all packet segments associated with a profile
 + * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @id: profile tracking ID
-+ *
-+ * This will remove the profile specified by the ID parameter, which was
-+ * previously created through ice_add_prof. If any existing entries
-+ * are associated with this profile, they will be removed as well.
++ * @params: information about the flow to be processed
 + */
-+enum ice_status ice_rem_prof(struct ice_hw *hw, enum ice_block blk, u64 id)
++static enum ice_status
++ice_flow_proc_segs(struct ice_hw *hw, struct ice_flow_prof_params *params)
 +{
-+	struct ice_prof_map *pmap;
 +	enum ice_status status;
 +
-+	mutex_lock(&hw->blk[blk].es.prof_map_lock);
-+
-+	pmap = ice_search_prof_id_low(hw, blk, id);
-+	if (!pmap) {
-+		status = ICE_ERR_DOES_NOT_EXIST;
-+		goto err_ice_rem_prof;
-+	}
-+
-+	/* remove all flows with this profile */
-+	status = ice_rem_flow_all(hw, blk, pmap->profile_cookie);
++	status = ice_flow_proc_seg_hdrs(params);
 +	if (status)
-+		goto err_ice_rem_prof;
++		return status;
 +
-+	/* dereference profile, and possibly remove */
-+	ice_prof_dec_ref(hw, blk, pmap->prof_id);
++	status = ice_flow_create_xtrct_seq(hw, params);
++	if (status)
++		return status;
 +
-+	list_del(&pmap->list);
-+	devm_kfree(ice_hw_to_dev(hw), pmap);
-+
-+err_ice_rem_prof:
-+	mutex_unlock(&hw->blk[blk].es.prof_map_lock);
-+	return status;
-+}
-+
- /**
-  * ice_get_prof - get profile
-  * @hw: pointer to the HW struct
-@@ -3714,3 +3955,156 @@ ice_add_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl)
- 
- 	return status;
- }
-+
-+/**
-+ * ice_rem_prof_from_list - remove a profile from list
-+ * @hw: pointer to the HW struct
-+ * @lst: list to remove the profile from
-+ * @hdl: the profile handle indicating the profile to remove
-+ */
-+static enum ice_status
-+ice_rem_prof_from_list(struct ice_hw *hw, struct list_head *lst, u64 hdl)
-+{
-+	struct ice_vsig_prof *ent, *tmp;
-+
-+	list_for_each_entry_safe(ent, tmp, lst, list)
-+		if (ent->profile_cookie == hdl) {
-+			list_del(&ent->list);
-+			devm_kfree(ice_hw_to_dev(hw), ent);
-+			return 0;
-+		}
-+
-+	return ICE_ERR_DOES_NOT_EXIST;
-+}
-+
-+/**
-+ * ice_rem_prof_id_flow - remove flow
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @vsi: the VSI from which to remove the profile specified by ID
-+ * @hdl: profile tracking handle
-+ *
-+ * Calling this function will update the hardware tables to remove the
-+ * profile indicated by the ID parameter for the VSIs specified in the VSI
-+ * array. Once successfully called, the flow will be disabled.
-+ */
-+enum ice_status
-+ice_rem_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl)
-+{
-+	struct ice_vsig_prof *tmp1, *del1;
-+	struct ice_chs_chg *tmp, *del;
-+	struct list_head chg, copy;
-+	enum ice_status status;
-+	u16 vsig;
-+
-+	INIT_LIST_HEAD(&copy);
-+	INIT_LIST_HEAD(&chg);
-+
-+	/* determine if VSI is already part of a VSIG */
-+	status = ice_vsig_find_vsi(hw, blk, vsi, &vsig);
-+	if (!status && vsig) {
-+		bool last_profile;
-+		bool only_vsi;
-+		u16 ref;
-+
-+		/* found in VSIG */
-+		last_profile = ice_vsig_prof_id_count(hw, blk, vsig) == 1;
-+		status = ice_vsig_get_ref(hw, blk, vsig, &ref);
-+		if (status)
-+			goto err_ice_rem_prof_id_flow;
-+		only_vsi = (ref == 1);
-+
-+		if (only_vsi) {
-+			/* If the original VSIG only contains one reference,
-+			 * which will be the requesting VSI, then the VSI is not
-+			 * sharing entries and we can simply remove the specific
-+			 * characteristics from the VSIG.
-+			 */
-+
-+			if (last_profile) {
-+				/* If there are no profiles left for this VSIG,
-+				 * then simply remove the the VSIG.
-+				 */
-+				status = ice_rem_vsig(hw, blk, vsig, &chg);
-+				if (status)
-+					goto err_ice_rem_prof_id_flow;
-+			} else {
-+				status = ice_rem_prof_id_vsig(hw, blk, vsig,
-+							      hdl, &chg);
-+				if (status)
-+					goto err_ice_rem_prof_id_flow;
-+
-+				/* Adjust priorities */
-+				status = ice_adj_prof_priorities(hw, blk, vsig,
-+								 &chg);
-+				if (status)
-+					goto err_ice_rem_prof_id_flow;
-+			}
-+
-+		} else {
-+			/* Make a copy of the VSIG's list of Profiles */
-+			status = ice_get_profs_vsig(hw, blk, vsig, &copy);
-+			if (status)
-+				goto err_ice_rem_prof_id_flow;
-+
-+			/* Remove specified profile entry from the list */
-+			status = ice_rem_prof_from_list(hw, &copy, hdl);
-+			if (status)
-+				goto err_ice_rem_prof_id_flow;
-+
-+			if (list_empty(&copy)) {
-+				status = ice_move_vsi(hw, blk, vsi,
-+						      ICE_DEFAULT_VSIG, &chg);
-+				if (status)
-+					goto err_ice_rem_prof_id_flow;
-+
-+			} else if (!ice_find_dup_props_vsig(hw, blk, &copy,
-+							    &vsig)) {
-+				/* found an exact match */
-+				/* add or move VSI to the VSIG that matches */
-+				/* Search for a VSIG with a matching profile
-+				 * list
-+				 */
-+
-+				/* Found match, move VSI to the matching VSIG */
-+				status = ice_move_vsi(hw, blk, vsi, vsig, &chg);
-+				if (status)
-+					goto err_ice_rem_prof_id_flow;
-+			} else {
-+				/* since no existing VSIG supports this
-+				 * characteristic pattern, we need to create a
-+				 * new VSIG and TCAM entries
-+				 */
-+				status = ice_create_vsig_from_lst(hw, blk, vsi,
-+								  &copy, &chg);
-+				if (status)
-+					goto err_ice_rem_prof_id_flow;
-+
-+				/* Adjust priorities */
-+				status = ice_adj_prof_priorities(hw, blk, vsig,
-+								 &chg);
-+				if (status)
-+					goto err_ice_rem_prof_id_flow;
-+			}
-+		}
-+	} else {
-+		status = ICE_ERR_DOES_NOT_EXIST;
-+	}
-+
-+	/* update hardware tables */
-+	if (!status)
-+		status = ice_upd_prof_hw(hw, blk, &chg);
-+
-+err_ice_rem_prof_id_flow:
-+	list_for_each_entry_safe(del, tmp, &chg, list_entry) {
-+		list_del(&del->list_entry);
-+		devm_kfree(ice_hw_to_dev(hw), del);
-+	}
-+
-+	list_for_each_entry_safe(del1, tmp1, &copy, list) {
-+		list_del(&del1->list);
-+		devm_kfree(ice_hw_to_dev(hw), del1);
++	switch (params->blk) {
++	case ICE_BLK_RSS:
++		/* Only header information is provided for RSS configuration.
++		 * No further processing is needed.
++		 */
++		status = 0;
++		break;
++	default:
++		return ICE_ERR_NOT_IMPL;
 +	}
 +
 +	return status;
 +}
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-index 33e4510da24c..c7b5e1a6ea2b 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-@@ -23,6 +23,8 @@ ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
- 	     struct ice_fv_word *es);
- enum ice_status
- ice_add_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl);
-+enum ice_status
-+ice_rem_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl);
- enum ice_status ice_init_pkg(struct ice_hw *hw, u8 *buff, u32 len);
- enum ice_status
- ice_copy_and_init_pkg(struct ice_hw *hw, const u8 *buf, u32 len);
-@@ -31,4 +33,6 @@ void ice_free_seg(struct ice_hw *hw);
- void ice_fill_blk_tbls(struct ice_hw *hw);
- void ice_clear_hw_tbls(struct ice_hw *hw);
- void ice_free_hw_tbls(struct ice_hw *hw);
-+enum ice_status
-+ice_rem_prof(struct ice_hw *hw, enum ice_block blk, u64 id);
- #endif /* _ICE_FLEX_PIPE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-index 1bbf4b6ed7d2..3cd270d96fb8 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-@@ -377,6 +377,77 @@ ice_flow_proc_segs(struct ice_hw *hw, struct ice_flow_prof_params *params)
- 	return status;
- }
- 
-+#define ICE_FLOW_FIND_PROF_CHK_FLDS	0x00000001
-+#define ICE_FLOW_FIND_PROF_CHK_VSI	0x00000002
-+#define ICE_FLOW_FIND_PROF_NOT_CHK_DIR	0x00000004
 +
 +/**
-+ * ice_flow_find_prof_conds - Find a profile matching headers and conditions
++ * ice_flow_add_prof_sync - Add a flow profile for packet segments and fields
 + * @hw: pointer to the HW struct
 + * @blk: classification stage
 + * @dir: flow direction
++ * @prof_id: unique ID to identify this flow profile
 + * @segs: array of one or more packet segments that describe the flow
 + * @segs_cnt: number of packet segments provided
-+ * @vsi_handle: software VSI handle to check VSI (ICE_FLOW_FIND_PROF_CHK_VSI)
-+ * @conds: additional conditions to be checked (ICE_FLOW_FIND_PROF_CHK_*)
-+ */
-+static struct ice_flow_prof *
-+ice_flow_find_prof_conds(struct ice_hw *hw, enum ice_block blk,
-+			 enum ice_flow_dir dir, struct ice_flow_seg_info *segs,
-+			 u8 segs_cnt, u16 vsi_handle, u32 conds)
-+{
-+	struct ice_flow_prof *p, *prof = NULL;
-+
-+	mutex_lock(&hw->fl_profs_locks[blk]);
-+	list_for_each_entry(p, &hw->fl_profs[blk], l_entry)
-+		if ((p->dir == dir || conds & ICE_FLOW_FIND_PROF_NOT_CHK_DIR) &&
-+		    segs_cnt && segs_cnt == p->segs_cnt) {
-+			u8 i;
-+
-+			/* Check for profile-VSI association if specified */
-+			if ((conds & ICE_FLOW_FIND_PROF_CHK_VSI) &&
-+			    ice_is_vsi_valid(hw, vsi_handle) &&
-+			    !test_bit(vsi_handle, p->vsis))
-+				continue;
-+
-+			/* Protocol headers must be checked. Matched fields are
-+			 * checked if specified.
-+			 */
-+			for (i = 0; i < segs_cnt; i++)
-+				if (segs[i].hdrs != p->segs[i].hdrs ||
-+				    ((conds & ICE_FLOW_FIND_PROF_CHK_FLDS) &&
-+				     segs[i].match != p->segs[i].match))
-+					break;
-+
-+			/* A match is found if all segments are matched */
-+			if (i == segs_cnt) {
-+				prof = p;
-+				break;
-+			}
-+		}
-+	mutex_unlock(&hw->fl_profs_locks[blk]);
-+
-+	return prof;
-+}
-+
-+/**
-+ * ice_flow_find_prof_id - Look up a profile with given profile ID
-+ * @hw: pointer to the HW struct
-+ * @blk: classification stage
-+ * @prof_id: unique ID to identify this flow profile
-+ */
-+static struct ice_flow_prof *
-+ice_flow_find_prof_id(struct ice_hw *hw, enum ice_block blk, u64 prof_id)
-+{
-+	struct ice_flow_prof *p;
-+
-+	list_for_each_entry(p, &hw->fl_profs[blk], l_entry)
-+		if (p->id == prof_id)
-+			return p;
-+
-+	return NULL;
-+}
-+
- /**
-  * ice_flow_add_prof_sync - Add a flow profile for packet segments and fields
-  * @hw: pointer to the HW struct
-@@ -450,6 +521,31 @@ ice_flow_add_prof_sync(struct ice_hw *hw, enum ice_block blk,
- 	return status;
- }
- 
-+/**
-+ * ice_flow_rem_prof_sync - remove a flow profile
-+ * @hw: pointer to the hardware structure
-+ * @blk: classification stage
-+ * @prof: pointer to flow profile to remove
++ * @prof: stores the returned flow profile added
 + *
 + * Assumption: the caller has acquired the lock to the profile list
 + */
 +static enum ice_status
-+ice_flow_rem_prof_sync(struct ice_hw *hw, enum ice_block blk,
-+		       struct ice_flow_prof *prof)
++ice_flow_add_prof_sync(struct ice_hw *hw, enum ice_block blk,
++		       enum ice_flow_dir dir, u64 prof_id,
++		       struct ice_flow_seg_info *segs, u8 segs_cnt,
++		       struct ice_flow_prof **prof)
 +{
++	struct ice_flow_prof_params params;
 +	enum ice_status status;
++	u8 i;
 +
-+	/* Remove all hardware profiles associated with this flow profile */
-+	status = ice_rem_prof(hw, blk, prof->id);
-+	if (!status) {
-+		list_del(&prof->l_entry);
-+		mutex_destroy(&prof->entries_lock);
-+		devm_kfree(ice_hw_to_dev(hw), prof);
++	if (!prof)
++		return ICE_ERR_BAD_PTR;
++
++	memset(&params, 0, sizeof(params));
++	params.prof = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*params.prof),
++				   GFP_KERNEL);
++	if (!params.prof)
++		return ICE_ERR_NO_MEMORY;
++
++	/* initialize extraction sequence to all invalid (0xff) */
++	for (i = 0; i < ICE_MAX_FV_WORDS; i++) {
++		params.es[i].prot_id = ICE_PROT_INVALID;
++		params.es[i].off = ICE_FV_OFFSET_INVAL;
 +	}
 +
-+	return status;
-+}
++	params.blk = blk;
++	params.prof->id = prof_id;
++	params.prof->dir = dir;
++	params.prof->segs_cnt = segs_cnt;
 +
- /**
-  * ice_flow_assoc_prof - associate a VSI with a flow profile
-  * @hw: pointer to the hardware structure
-@@ -482,6 +578,38 @@ ice_flow_assoc_prof(struct ice_hw *hw, enum ice_block blk,
- 	return status;
- }
- 
-+/**
-+ * ice_flow_disassoc_prof - disassociate a VSI from a flow profile
-+ * @hw: pointer to the hardware structure
-+ * @blk: classification stage
-+ * @prof: pointer to flow profile
-+ * @vsi_handle: software VSI handle
-+ *
-+ * Assumption: the caller has acquired the lock to the profile list
-+ * and the software VSI handle has been validated
-+ */
-+static enum ice_status
-+ice_flow_disassoc_prof(struct ice_hw *hw, enum ice_block blk,
-+		       struct ice_flow_prof *prof, u16 vsi_handle)
-+{
-+	enum ice_status status = 0;
++	/* Make a copy of the segments that need to be persistent in the flow
++	 * profile instance
++	 */
++	for (i = 0; i < segs_cnt; i++)
++		memcpy(&params.prof->segs[i], &segs[i], sizeof(*segs));
 +
-+	if (test_bit(vsi_handle, prof->vsis)) {
-+		status = ice_rem_prof_id_flow(hw, blk,
-+					      ice_get_hw_vsi_num(hw,
-+								 vsi_handle),
-+					      prof->id);
-+		if (!status)
-+			clear_bit(vsi_handle, prof->vsis);
-+		else
-+			ice_debug(hw, ICE_DBG_FLOW,
-+				  "HW profile remove failed, %d\n",
-+				  status);
-+	}
-+
-+	return status;
-+}
-+
- /**
-  * ice_flow_add_prof - Add a flow profile for packet segments and matched fields
-  * @hw: pointer to the HW struct
-@@ -524,6 +652,35 @@ ice_flow_add_prof(struct ice_hw *hw, enum ice_block blk, enum ice_flow_dir dir,
- 	return status;
- }
- 
-+/**
-+ * ice_flow_rem_prof - Remove a flow profile and all entries associated with it
-+ * @hw: pointer to the HW struct
-+ * @blk: the block for which the flow profile is to be removed
-+ * @prof_id: unique ID of the flow profile to be removed
-+ */
-+static enum ice_status
-+ice_flow_rem_prof(struct ice_hw *hw, enum ice_block blk, u64 prof_id)
-+{
-+	struct ice_flow_prof *prof;
-+	enum ice_status status;
-+
-+	mutex_lock(&hw->fl_profs_locks[blk]);
-+
-+	prof = ice_flow_find_prof_id(hw, blk, prof_id);
-+	if (!prof) {
-+		status = ICE_ERR_DOES_NOT_EXIST;
++	status = ice_flow_proc_segs(hw, &params);
++	if (status) {
++		ice_debug(hw, ICE_DBG_FLOW,
++			  "Error processing a flow's packet segments\n");
 +		goto out;
 +	}
 +
-+	/* prof becomes invalid after the call */
-+	status = ice_flow_rem_prof_sync(hw, blk, prof);
++	/* Add a HW profile for this flow profile */
++	status = ice_add_prof(hw, blk, prof_id, (u8 *)params.ptypes, params.es);
++	if (status) {
++		ice_debug(hw, ICE_DBG_FLOW, "Error adding a HW flow profile\n");
++		goto out;
++	}
++
++	INIT_LIST_HEAD(&params.prof->entries);
++	mutex_init(&params.prof->entries_lock);
++	*prof = params.prof;
 +
 +out:
++	if (status)
++		devm_kfree(ice_hw_to_dev(hw), params.prof);
++
++	return status;
++}
++
++/**
++ * ice_flow_add_prof - Add a flow profile for packet segments and matched fields
++ * @hw: pointer to the HW struct
++ * @blk: classification stage
++ * @dir: flow direction
++ * @prof_id: unique ID to identify this flow profile
++ * @segs: array of one or more packet segments that describe the flow
++ * @segs_cnt: number of packet segments provided
++ */
++static enum ice_status
++ice_flow_add_prof(struct ice_hw *hw, enum ice_block blk, enum ice_flow_dir dir,
++		  u64 prof_id, struct ice_flow_seg_info *segs, u8 segs_cnt)
++{
++	struct ice_flow_prof *prof = NULL;
++	enum ice_status status;
++
++	if (segs_cnt > ICE_FLOW_SEG_MAX)
++		return ICE_ERR_MAX_LIMIT;
++
++	if (!segs_cnt)
++		return ICE_ERR_PARAM;
++
++	if (!segs)
++		return ICE_ERR_BAD_PTR;
++
++	status = ice_flow_val_hdrs(segs, segs_cnt);
++	if (status)
++		return status;
++
++	mutex_lock(&hw->fl_profs_locks[blk]);
++
++	status = ice_flow_add_prof_sync(hw, blk, dir, prof_id, segs, segs_cnt,
++					&prof);
++	if (!status)
++		list_add(&prof->l_entry, &hw->fl_profs[blk]);
++
 +	mutex_unlock(&hw->fl_profs_locks[blk]);
 +
 +	return status;
@@ -689,290 +900,242 @@ index 1bbf4b6ed7d2..3cd270d96fb8 100644
  /**
   * ice_flow_set_fld_ext - specifies locations of field from entry's input buffer
   * @seg: packet segment the field being set belongs to
-@@ -645,6 +802,132 @@ ice_flow_set_rss_seg_info(struct ice_flow_seg_info *segs, u64 hash_fields,
+@@ -161,10 +612,28 @@ ice_flow_set_rss_seg_info(struct ice_flow_seg_info *segs, u64 hash_fields,
  	return 0;
  }
  
-+/**
-+ * ice_rem_vsi_rss_list - remove VSI from RSS list
-+ * @hw: pointer to the hardware structure
-+ * @vsi_handle: software VSI handle
-+ *
-+ * Remove the VSI from all RSS configurations in the list.
-+ */
-+void ice_rem_vsi_rss_list(struct ice_hw *hw, u16 vsi_handle)
-+{
-+	struct ice_rss_cfg *r, *tmp;
++#define ICE_FLOW_PROF_HASH_S	0
++#define ICE_FLOW_PROF_HASH_M	(0xFFFFFFFFULL << ICE_FLOW_PROF_HASH_S)
++#define ICE_FLOW_PROF_HDR_S	32
++#define ICE_FLOW_PROF_HDR_M	(0x3FFFFFFFULL << ICE_FLOW_PROF_HDR_S)
++#define ICE_FLOW_PROF_ENCAP_S	63
++#define ICE_FLOW_PROF_ENCAP_M	(BIT_ULL(ICE_FLOW_PROF_ENCAP_S))
 +
-+	if (list_empty(&hw->rss_list_head))
-+		return;
-+
-+	mutex_lock(&hw->rss_locks);
-+	list_for_each_entry_safe(r, tmp, &hw->rss_list_head, l_entry)
-+		if (test_and_clear_bit(vsi_handle, r->vsis))
-+			if (bitmap_empty(r->vsis, ICE_MAX_VSI)) {
-+				list_del(&r->l_entry);
-+				devm_kfree(ice_hw_to_dev(hw), r);
-+			}
-+	mutex_unlock(&hw->rss_locks);
-+}
-+
-+/**
-+ * ice_rem_vsi_rss_cfg - remove RSS configurations associated with VSI
-+ * @hw: pointer to the hardware structure
-+ * @vsi_handle: software VSI handle
-+ *
-+ * This function will iterate through all flow profiles and disassociate
-+ * the VSI from that profile. If the flow profile has no VSIs it will
-+ * be removed.
-+ */
-+enum ice_status ice_rem_vsi_rss_cfg(struct ice_hw *hw, u16 vsi_handle)
-+{
-+	const enum ice_block blk = ICE_BLK_RSS;
-+	struct ice_flow_prof *p, *t;
-+	enum ice_status status = 0;
-+
-+	if (!ice_is_vsi_valid(hw, vsi_handle))
-+		return ICE_ERR_PARAM;
-+
-+	if (list_empty(&hw->fl_profs[blk]))
-+		return 0;
-+
-+	mutex_lock(&hw->fl_profs_locks[blk]);
-+	list_for_each_entry_safe(p, t, &hw->fl_profs[blk], l_entry)
-+		if (test_bit(vsi_handle, p->vsis)) {
-+			status = ice_flow_disassoc_prof(hw, blk, p, vsi_handle);
-+			if (status)
-+				break;
-+
-+			if (bitmap_empty(p->vsis, ICE_MAX_VSI)) {
-+				status = ice_flow_rem_prof_sync(hw, blk, p);
-+				if (status)
-+					break;
-+			}
-+		}
-+	mutex_unlock(&hw->fl_profs_locks[blk]);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_rem_rss_list - remove RSS configuration from list
-+ * @hw: pointer to the hardware structure
-+ * @vsi_handle: software VSI handle
-+ * @prof: pointer to flow profile
-+ *
-+ * Assumption: lock has already been acquired for RSS list
-+ */
-+static void
-+ice_rem_rss_list(struct ice_hw *hw, u16 vsi_handle, struct ice_flow_prof *prof)
-+{
-+	struct ice_rss_cfg *r, *tmp;
-+
-+	/* Search for RSS hash fields associated to the VSI that match the
-+	 * hash configurations associated to the flow profile. If found
-+	 * remove from the RSS entry list of the VSI context and delete entry.
-+	 */
-+	list_for_each_entry_safe(r, tmp, &hw->rss_list_head, l_entry)
-+		if (r->hashed_flds == prof->segs[prof->segs_cnt - 1].match &&
-+		    r->packet_hdr == prof->segs[prof->segs_cnt - 1].hdrs) {
-+			clear_bit(vsi_handle, r->vsis);
-+			if (bitmap_empty(r->vsis, ICE_MAX_VSI)) {
-+				list_del(&r->l_entry);
-+				devm_kfree(ice_hw_to_dev(hw), r);
-+			}
-+			return;
-+		}
-+}
-+
-+/**
-+ * ice_add_rss_list - add RSS configuration to list
-+ * @hw: pointer to the hardware structure
-+ * @vsi_handle: software VSI handle
-+ * @prof: pointer to flow profile
-+ *
-+ * Assumption: lock has already been acquired for RSS list
-+ */
-+static enum ice_status
-+ice_add_rss_list(struct ice_hw *hw, u16 vsi_handle, struct ice_flow_prof *prof)
-+{
-+	struct ice_rss_cfg *r, *rss_cfg;
-+
-+	list_for_each_entry(r, &hw->rss_list_head, l_entry)
-+		if (r->hashed_flds == prof->segs[prof->segs_cnt - 1].match &&
-+		    r->packet_hdr == prof->segs[prof->segs_cnt - 1].hdrs) {
-+			set_bit(vsi_handle, r->vsis);
-+			return 0;
-+		}
-+
-+	rss_cfg = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*rss_cfg),
-+			       GFP_KERNEL);
-+	if (!rss_cfg)
-+		return ICE_ERR_NO_MEMORY;
-+
-+	rss_cfg->hashed_flds = prof->segs[prof->segs_cnt - 1].match;
-+	rss_cfg->packet_hdr = prof->segs[prof->segs_cnt - 1].hdrs;
-+	set_bit(vsi_handle, rss_cfg->vsis);
-+
-+	list_add_tail(&rss_cfg->l_entry, &hw->rss_list_head);
-+
-+	return 0;
-+}
-+
- #define ICE_FLOW_PROF_HASH_S	0
- #define ICE_FLOW_PROF_HASH_M	(0xFFFFFFFFULL << ICE_FLOW_PROF_HASH_S)
- #define ICE_FLOW_PROF_HDR_S	32
-@@ -696,6 +979,52 @@ ice_add_rss_cfg_sync(struct ice_hw *hw, u16 vsi_handle, u64 hashed_flds,
- 	if (status)
- 		goto exit;
+ #define ICE_RSS_OUTER_HEADERS	1
  
-+	/* Search for a flow profile that has matching headers, hash fields
-+	 * and has the input VSI associated to it. If found, no further
-+	 * operations required and exit.
-+	 */
-+	prof = ice_flow_find_prof_conds(hw, blk, ICE_FLOW_RX, segs, segs_cnt,
-+					vsi_handle,
-+					ICE_FLOW_FIND_PROF_CHK_FLDS |
-+					ICE_FLOW_FIND_PROF_CHK_VSI);
-+	if (prof)
++/* Flow profile ID format:
++ * [0:31] - Packet match fields
++ * [32:62] - Protocol header
++ * [63] - Encapsulation flag, 0 if non-tunneled, 1 if tunneled
++ */
++#define ICE_FLOW_GEN_PROFID(hash, hdr, segs_cnt) \
++	(u64)(((u64)(hash) & ICE_FLOW_PROF_HASH_M) | \
++	      (((u64)(hdr) << ICE_FLOW_PROF_HDR_S) & ICE_FLOW_PROF_HDR_M) | \
++	      ((u8)((segs_cnt) - 1) ? ICE_FLOW_PROF_ENCAP_M : 0))
++
+ /**
+  * ice_add_rss_cfg_sync - add an RSS configuration
++ * @hw: pointer to the hardware structure
+  * @hashed_flds: hash bit fields (ICE_FLOW_HASH_*) to configure
+  * @addl_hdrs: protocol header fields
+  * @segs_cnt: packet segment count
+@@ -172,7 +641,8 @@ ice_flow_set_rss_seg_info(struct ice_flow_seg_info *segs, u64 hash_fields,
+  * Assumption: lock has already been acquired for RSS list
+  */
+ static enum ice_status
+-ice_add_rss_cfg_sync(u64 hashed_flds, u32 addl_hdrs, u8 segs_cnt)
++ice_add_rss_cfg_sync(struct ice_hw *hw, u64 hashed_flds, u32 addl_hdrs,
++		     u8 segs_cnt)
+ {
+ 	struct ice_flow_seg_info *segs;
+ 	enum ice_status status;
+@@ -187,7 +657,19 @@ ice_add_rss_cfg_sync(u64 hashed_flds, u32 addl_hdrs, u8 segs_cnt)
+ 	/* Construct the packet segment info from the hashed fields */
+ 	status = ice_flow_set_rss_seg_info(&segs[segs_cnt - 1], hashed_flds,
+ 					   addl_hdrs);
+-
++	if (status)
 +		goto exit;
 +
-+	/* Check if a flow profile exists with the same protocol headers and
-+	 * associated with the input VSI. If so disasscociate the VSI from
-+	 * this profile. The VSI will be added to a new profile created with
-+	 * the protocol header and new hash field configuration.
++	/* Create a new flow profile with generated profile and packet
++	 * segment information.
 +	 */
-+	prof = ice_flow_find_prof_conds(hw, blk, ICE_FLOW_RX, segs, segs_cnt,
-+					vsi_handle, ICE_FLOW_FIND_PROF_CHK_VSI);
-+	if (prof) {
-+		status = ice_flow_disassoc_prof(hw, blk, prof, vsi_handle);
-+		if (!status)
-+			ice_rem_rss_list(hw, vsi_handle, prof);
-+		else
-+			goto exit;
++	status = ice_flow_add_prof(hw, ICE_BLK_RSS, ICE_FLOW_RX,
++				   ICE_FLOW_GEN_PROFID(hashed_flds,
++						       segs[segs_cnt - 1].hdrs,
++						       segs_cnt),
++				   segs, segs_cnt);
 +
-+		/* Remove profile if it has no VSIs associated */
-+		if (bitmap_empty(prof->vsis, ICE_MAX_VSI)) {
-+			status = ice_flow_rem_prof(hw, blk, prof->id);
-+			if (status)
-+				goto exit;
-+		}
-+	}
-+
-+	/* Search for a profile that has same match fields only. If this
-+	 * exists then associate the VSI to this profile.
-+	 */
-+	prof = ice_flow_find_prof_conds(hw, blk, ICE_FLOW_RX, segs, segs_cnt,
-+					vsi_handle,
-+					ICE_FLOW_FIND_PROF_CHK_FLDS);
-+	if (prof) {
-+		status = ice_flow_assoc_prof(hw, blk, prof, vsi_handle);
-+		if (!status)
-+			status = ice_add_rss_list(hw, vsi_handle, prof);
-+		goto exit;
-+	}
-+
- 	/* Create a new flow profile with generated profile and packet
- 	 * segment information.
- 	 */
-@@ -708,6 +1037,15 @@ ice_add_rss_cfg_sync(struct ice_hw *hw, u16 vsi_handle, u64 hashed_flds,
- 		goto exit;
- 
- 	status = ice_flow_assoc_prof(hw, blk, prof, vsi_handle);
-+	/* If association to a new flow profile failed then this profile can
-+	 * be removed.
-+	 */
-+	if (status) {
-+		ice_flow_rem_prof(hw, blk, prof->id);
-+		goto exit;
-+	}
-+
-+	status = ice_add_rss_list(hw, vsi_handle, prof);
- 
- exit:
++exit:
  	kfree(segs);
+ 	return status;
+ }
+@@ -214,7 +696,7 @@ ice_add_rss_cfg(struct ice_hw *hw, u16 vsi_handle, u64 hashed_flds,
+ 		return ICE_ERR_PARAM;
+ 
+ 	mutex_lock(&hw->rss_locks);
+-	status = ice_add_rss_cfg_sync(hashed_flds, addl_hdrs,
++	status = ice_add_rss_cfg_sync(hw, hashed_flds, addl_hdrs,
+ 				      ICE_RSS_OUTER_HEADERS);
+ 	mutex_unlock(&hw->rss_locks);
+ 
+@@ -237,7 +719,7 @@ enum ice_status ice_replay_rss_cfg(struct ice_hw *hw, u16 vsi_handle)
+ 	mutex_lock(&hw->rss_locks);
+ 	list_for_each_entry(r, &hw->rss_list_head, l_entry) {
+ 		if (test_bit(vsi_handle, r->vsis)) {
+-			status = ice_add_rss_cfg_sync(r->hashed_flds,
++			status = ice_add_rss_cfg_sync(hw, r->hashed_flds,
+ 						      r->packet_hdr,
+ 						      ICE_RSS_OUTER_HEADERS);
+ 			if (status)
 diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
-index 05b0dab4793c..38669b077209 100644
+index 48c0fc09d5ff..05b0dab4793c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_flow.h
 +++ b/drivers/net/ethernet/intel/ice/ice_flow.h
-@@ -4,6 +4,7 @@
- #ifndef _ICE_FLOW_H_
- #define _ICE_FLOW_H_
- 
-+#define ICE_FLOW_ENTRY_HANDLE_INVAL	0
- #define ICE_FLOW_FLD_OFF_INVAL		0xffff
- 
- /* Generate flow hash field from flow field type(s) */
-@@ -60,6 +61,12 @@ enum ice_flow_dir {
- 	ICE_FLOW_RX		= 0x02,
+@@ -56,7 +56,13 @@ enum ice_flow_field {
+ 	ICE_FLOW_FIELD_IDX_MAX
  };
  
-+enum ice_flow_priority {
-+	ICE_FLOW_PRIO_LOW,
-+	ICE_FLOW_PRIO_NORMAL,
-+	ICE_FLOW_PRIO_HIGH
++enum ice_flow_dir {
++	ICE_FLOW_RX		= 0x02,
 +};
 +
  #define ICE_FLOW_SEG_MAX		2
- #define ICE_FLOW_FV_EXTRACT_SZ		2
++#define ICE_FLOW_FV_EXTRACT_SZ		2
++
+ #define ICE_FLOW_SET_HDRS(seg, val)	((seg)->hdrs |= (u32)(val))
  
-@@ -130,7 +137,10 @@ struct ice_rss_cfg {
- 	u32 packet_hdr;
+ struct ice_flow_seg_xtrct {
+@@ -99,6 +105,23 @@ struct ice_flow_seg_info {
+ 	struct ice_flow_fld_info fields[ICE_FLOW_FIELD_IDX_MAX];
  };
  
-+enum ice_status ice_flow_rem_entry(struct ice_hw *hw, u64 entry_h);
-+void ice_rem_vsi_rss_list(struct ice_hw *hw, u16 vsi_handle);
- enum ice_status ice_replay_rss_cfg(struct ice_hw *hw, u16 vsi_handle);
-+enum ice_status ice_rem_vsi_rss_cfg(struct ice_hw *hw, u16 vsi_handle);
- enum ice_status
- ice_add_rss_cfg(struct ice_hw *hw, u16 vsi_handle, u64 hashed_flds,
- 		u32 addl_hdrs);
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 3b4e6462b8ab..b65019978335 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -505,7 +505,28 @@ bool ice_is_peer_ena(struct ice_pf *pf)
- }
++struct ice_flow_prof {
++	struct list_head l_entry;
++
++	u64 id;
++	enum ice_flow_dir dir;
++	u8 segs_cnt;
++
++	/* Keep track of flow entries associated with this flow profile */
++	struct mutex entries_lock;
++	struct list_head entries;
++
++	struct ice_flow_seg_info segs[ICE_FLOW_SEG_MAX];
++
++	/* software VSI handles referenced by this flow profile */
++	DECLARE_BITMAP(vsis, ICE_MAX_VSI);
++};
++
+ struct ice_rss_cfg {
+ 	struct list_head l_entry;
+ 	/* bitmap of VSIs added to the RSS entry */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index 0997d352709b..878e125d8b42 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -199,6 +199,14 @@ enum ice_rxdid {
+ /* Receive Flex Descriptor Rx opcode values */
+ #define ICE_RX_OPC_MDID		0x01
  
- /**
-- * ice_rss_clean - Delete RSS related VSI structures that hold user inputs
-+ * ice_vsi_clean_rss_flow_fld - Delete RSS configuration
-+ * @vsi: the VSI being cleaned up
-+ *
-+ * This function deletes RSS input set for all flows that were configured
-+ * for this VSI
++/* Receive Descriptor MDID values that access packet flags */
++enum ice_flex_mdid_pkt_flags {
++	ICE_RX_MDID_PKT_FLAGS_15_0	= 20,
++	ICE_RX_MDID_PKT_FLAGS_31_16,
++	ICE_RX_MDID_PKT_FLAGS_47_32,
++	ICE_RX_MDID_PKT_FLAGS_63_48,
++};
++
+ /* Receive Descriptor MDID values */
+ enum ice_flex_rx_mdid {
+ 	ICE_RX_MDID_FLOW_ID_LOWER	= 5,
+diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
+new file mode 100644
+index 000000000000..97db46ce7a21
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
+@@ -0,0 +1,24 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c) 2019, Intel Corporation. */
++
++#ifndef _ICE_PROTOCOL_TYPE_H_
++#define _ICE_PROTOCOL_TYPE_H_
++/* Decoders for ice_prot_id:
++ * - F: First
++ * - I: Inner
++ * - L: Last
++ * - O: Outer
++ * - S: Single
 + */
-+static void ice_vsi_clean_rss_flow_fld(struct ice_vsi *vsi)
-+{
-+	struct ice_pf *pf = vsi->back;
-+	enum ice_status status;
-+
-+	if (ice_is_safe_mode(pf))
-+		return;
-+
-+	status = ice_rem_vsi_rss_cfg(&pf->hw, vsi->idx);
-+	if (status)
-+		dev_dbg(ice_pf_to_dev(pf), "ice_rem_vsi_rss_cfg failed for vsi = %d, error = %d\n",
-+			vsi->vsi_num, status);
-+}
-+
-+/**
-+ * ice_rss_clean - Delete RSS related VSI structures and configuration
-  * @vsi: the VSI being removed
-  */
- static void ice_rss_clean(struct ice_vsi *vsi)
-@@ -519,6 +540,11 @@ static void ice_rss_clean(struct ice_vsi *vsi)
- 		devm_kfree(dev, vsi->rss_hkey_user);
- 	if (vsi->rss_lut_user)
- 		devm_kfree(dev, vsi->rss_lut_user);
-+
-+	ice_vsi_clean_rss_flow_fld(vsi);
-+	/* remove RSS replay list */
-+	if (!ice_is_safe_mode(pf))
-+		ice_rem_vsi_rss_list(&pf->hw, vsi->idx);
- }
++enum ice_prot_id {
++	ICE_PROT_ID_INVAL	= 0,
++	ICE_PROT_IPV4_OF_OR_S	= 32,
++	ICE_PROT_IPV4_IL	= 33,
++	ICE_PROT_IPV6_OF_OR_S	= 40,
++	ICE_PROT_IPV6_IL	= 41,
++	ICE_PROT_TCP_IL		= 49,
++	ICE_PROT_UDP_IL_OR_S	= 53,
++	ICE_PROT_META_ID	= 255, /* when offset == metadata */
++	ICE_PROT_INVALID	= 255  /* when offset == ICE_FV_OFFSET_INVAL */
++};
++#endif /* _ICE_PROTOCOL_TYPE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 990b65aed039..1c4124835659 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -49,42 +49,6 @@ static const u8 dummy_eth_header[DUMMY_ETH_HDR_LEN] = { 0x2, 0, 0, 0, 0, 0,
+ 	 sizeof(((struct ice_sw_rule_vsi_list *)0)->vsi) + \
+ 	 ((n) * sizeof(((struct ice_sw_rule_vsi_list *)0)->vsi)))
  
+-/**
+- * ice_aq_alloc_free_res - command to allocate/free resources
+- * @hw: pointer to the HW struct
+- * @num_entries: number of resource entries in buffer
+- * @buf: Indirect buffer to hold data parameters and response
+- * @buf_size: size of buffer for indirect commands
+- * @opc: pass in the command opcode
+- * @cd: pointer to command details structure or NULL
+- *
+- * Helper function to allocate/free resources using the admin queue commands
+- */
+-static enum ice_status
+-ice_aq_alloc_free_res(struct ice_hw *hw, u16 num_entries,
+-		      struct ice_aqc_alloc_free_res_elem *buf, u16 buf_size,
+-		      enum ice_adminq_opc opc, struct ice_sq_cd *cd)
+-{
+-	struct ice_aqc_alloc_free_res_cmd *cmd;
+-	struct ice_aq_desc desc;
+-
+-	cmd = &desc.params.sw_res_ctrl;
+-
+-	if (!buf)
+-		return ICE_ERR_PARAM;
+-
+-	if (buf_size < (num_entries * sizeof(buf->elem[0])))
+-		return ICE_ERR_PARAM;
+-
+-	ice_fill_dflt_direct_cmd_desc(&desc, opc);
+-
+-	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
+-
+-	cmd->num_entries = cpu_to_le16(num_entries);
+-
+-	return ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
+-}
+-
  /**
+  * ice_init_def_sw_recp - initialize the recipe book keeping tables
+  * @hw: pointer to the HW struct
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 67525f6cac89..5224b066730a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -13,6 +13,7 @@
+ #include "ice_controlq.h"
+ #include "ice_lan_tx_rx.h"
+ #include "ice_flex_type.h"
++#include "ice_protocol_type.h"
+ 
+ static inline bool ice_is_tc_ena(unsigned long bitmap, u8 tc)
+ {
+@@ -41,6 +42,7 @@ static inline u32 ice_round_to_num(u32 N, u32 R)
+ #define ICE_DBG_QCTX		BIT_ULL(6)
+ #define ICE_DBG_NVM		BIT_ULL(7)
+ #define ICE_DBG_LAN		BIT_ULL(8)
++#define ICE_DBG_FLOW		BIT_ULL(9)
+ #define ICE_DBG_SW		BIT_ULL(13)
+ #define ICE_DBG_SCHED		BIT_ULL(14)
+ #define ICE_DBG_RDMA		BIT_ULL(15)
 -- 
 2.20.1
 
