@@ -1,1141 +1,804 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 17 Jan 2020 07:39:13 -0800
-Subject: [Intel-wired-lan] [PATCH S36 2/8] ice: Allocate flow profile
+Date: Fri, 17 Jan 2020 07:39:15 -0800
+Subject: [Intel-wired-lan] [PATCH S36 4/8] ice: Enable writing filtering
+ tables
 In-Reply-To: <20200117153919.50321-1-anthony.l.nguyen@intel.com>
 References: <20200117153919.50321-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200117153919.50321-2-anthony.l.nguyen@intel.com>
+Message-ID: <20200117153919.50321-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Create an extraction sequence based on the packet header protocols to be
-programmed and allocate a flow profile for the extraction sequence.
+Write the hardware tables based on the populated software structures.
 
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +
- drivers/net/ethernet/intel/ice/ice_common.c   |  75 +++
- drivers/net/ethernet/intel/ice/ice_common.h   |   6 +
- .../net/ethernet/intel/ice/ice_flex_pipe.c    | 216 ++++++++
- .../net/ethernet/intel/ice/ice_flex_pipe.h    |   3 +
- .../net/ethernet/intel/ice/ice_flex_type.h    |  15 +
- drivers/net/ethernet/intel/ice/ice_flow.c     | 490 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_flow.h     |  23 +
- .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |   8 +
- .../ethernet/intel/ice/ice_protocol_type.h    |  24 +
- drivers/net/ethernet/intel/ice/ice_switch.c   |  36 --
- drivers/net/ethernet/intel/ice/ice_type.h     |   2 +
- 12 files changed, 864 insertions(+), 40 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_protocol_type.h
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   1 +
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    | 604 ++++++++++++++++++
+ .../net/ethernet/intel/ice/ice_flex_type.h    |  46 ++
+ 3 files changed, 651 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 2fe53f530517..6a45bbffbbbb 100644
+index f5d5d38a7cc6..2722789fa703 100644
 --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
 +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -233,6 +233,12 @@ struct ice_aqc_get_sw_cfg_resp {
-  */
- #define ICE_AQC_RES_TYPE_VSI_LIST_REP			0x03
- #define ICE_AQC_RES_TYPE_VSI_LIST_PRUNE			0x04
-+#define ICE_AQC_RES_TYPE_HASH_PROF_BLDR_PROFID		0x60
-+
-+#define ICE_AQC_RES_TYPE_FLAG_SCAN_BOTTOM		BIT(12)
-+#define ICE_AQC_RES_TYPE_FLAG_IGNORE_INDEX		BIT(13)
-+
-+#define ICE_AQC_RES_TYPE_FLAG_DEDICATED			0x00
+@@ -1889,6 +1889,7 @@ enum ice_adminq_opc {
  
- /* Allocate Resources command (indirect 0x0208)
-  * Free Resources command (indirect 0x0209)
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 84ef40315948..463b1f25e261 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1497,6 +1497,81 @@ void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res)
- 	}
- }
+ 	/* package commands */
+ 	ice_aqc_opc_download_pkg			= 0x0C40,
++	ice_aqc_opc_update_pkg				= 0x0C42,
+ 	ice_aqc_opc_get_pkg_info_list			= 0x0C43,
  
-+/**
-+ * ice_aq_alloc_free_res - command to allocate/free resources
-+ * @hw: pointer to the HW struct
-+ * @num_entries: number of resource entries in buffer
-+ * @buf: Indirect buffer to hold data parameters and response
-+ * @buf_size: size of buffer for indirect commands
-+ * @opc: pass in the command opcode
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Helper function to allocate/free resources using the admin queue commands
-+ */
-+enum ice_status
-+ice_aq_alloc_free_res(struct ice_hw *hw, u16 num_entries,
-+		      struct ice_aqc_alloc_free_res_elem *buf, u16 buf_size,
-+		      enum ice_adminq_opc opc, struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_alloc_free_res_cmd *cmd;
-+	struct ice_aq_desc desc;
-+
-+	cmd = &desc.params.sw_res_ctrl;
-+
-+	if (!buf)
-+		return ICE_ERR_PARAM;
-+
-+	if (buf_size < (num_entries * sizeof(buf->elem[0])))
-+		return ICE_ERR_PARAM;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, opc);
-+
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+
-+	cmd->num_entries = cpu_to_le16(num_entries);
-+
-+	return ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
-+}
-+
-+/**
-+ * ice_alloc_hw_res - allocate resource
-+ * @hw: pointer to the HW struct
-+ * @type: type of resource
-+ * @num: number of resources to allocate
-+ * @btm: allocate from bottom
-+ * @res: pointer to array that will receive the resources
-+ */
-+enum ice_status
-+ice_alloc_hw_res(struct ice_hw *hw, u16 type, u16 num, bool btm, u16 *res)
-+{
-+	struct ice_aqc_alloc_free_res_elem *buf;
-+	enum ice_status status;
-+	u16 buf_len;
-+
-+	buf_len = struct_size(buf, elem, num - 1);
-+	buf = kzalloc(buf_len, GFP_KERNEL);
-+	if (!buf)
-+		return ICE_ERR_NO_MEMORY;
-+
-+	/* Prepare buffer to allocate resource. */
-+	buf->num_elems = cpu_to_le16(num);
-+	buf->res_type = cpu_to_le16(type | ICE_AQC_RES_TYPE_FLAG_DEDICATED |
-+				    ICE_AQC_RES_TYPE_FLAG_IGNORE_INDEX);
-+	if (btm)
-+		buf->res_type |= cpu_to_le16(ICE_AQC_RES_TYPE_FLAG_SCAN_BOTTOM);
-+
-+	status = ice_aq_alloc_free_res(hw, 1, buf, buf_len,
-+				       ice_aqc_opc_alloc_res, NULL);
-+	if (status)
-+		goto ice_alloc_res_exit;
-+
-+	memcpy(res, buf->elem, sizeof(buf->elem) * num);
-+
-+ice_alloc_res_exit:
-+	kfree(buf);
-+	return status;
-+}
-+
- /**
-  * ice_get_num_per_func - determine number of resources per PF
-  * @hw: pointer to the HW structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index a6beebff1379..00de178c9f52 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -34,10 +34,16 @@ enum ice_status
- ice_acquire_res(struct ice_hw *hw, enum ice_aq_res_ids res,
- 		enum ice_aq_res_access_type access, u32 timeout);
- void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res);
-+enum ice_status
-+ice_alloc_hw_res(struct ice_hw *hw, u16 type, u16 num, bool btm, u16 *res);
- enum ice_status ice_init_nvm(struct ice_hw *hw);
- enum ice_status
- ice_read_sr_buf(struct ice_hw *hw, u16 offset, u16 *words, u16 *data);
- enum ice_status
-+ice_aq_alloc_free_res(struct ice_hw *hw, u16 num_entries,
-+		      struct ice_aqc_alloc_free_res_elem *buf, u16 buf_size,
-+		      enum ice_adminq_opc opc, struct ice_sq_cd *cd);
-+enum ice_status
- ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
- 		struct ice_aq_desc *desc, void *buf, u16 buf_size,
- 		struct ice_sq_cd *cd);
+ 	/* debug commands */
 diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index f37eb536e7b7..5c09d3105b8b 100644
+index 8c93c303a4a5..6dca611b408a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
 +++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -1118,6 +1118,117 @@ ice_vsig_add_mv_vsi(struct ice_hw *hw, enum ice_block blk, u16 vsi, u16 vsig)
- 	return 0;
- }
+@@ -5,6 +5,86 @@
+ #include "ice_flex_pipe.h"
+ #include "ice_flow.h"
  
-+/**
-+ * ice_find_prof_id - find profile ID for a given field vector
-+ * @hw: pointer to the hardware structure
-+ * @blk: HW block
-+ * @fv: field vector to search for
-+ * @prof_id: receives the profile ID
-+ */
-+static enum ice_status
-+ice_find_prof_id(struct ice_hw *hw, enum ice_block blk,
-+		 struct ice_fv_word *fv, u8 *prof_id)
-+{
-+	struct ice_es *es = &hw->blk[blk].es;
-+	u16 off, i;
++static const u32 ice_sect_lkup[ICE_BLK_COUNT][ICE_SECT_COUNT] = {
++	/* SWITCH */
++	{
++		ICE_SID_XLT0_SW,
++		ICE_SID_XLT_KEY_BUILDER_SW,
++		ICE_SID_XLT1_SW,
++		ICE_SID_XLT2_SW,
++		ICE_SID_PROFID_TCAM_SW,
++		ICE_SID_PROFID_REDIR_SW,
++		ICE_SID_FLD_VEC_SW,
++		ICE_SID_CDID_KEY_BUILDER_SW,
++		ICE_SID_CDID_REDIR_SW
++	},
 +
-+	for (i = 0; i < es->count; i++) {
-+		off = i * es->fvw;
++	/* ACL */
++	{
++		ICE_SID_XLT0_ACL,
++		ICE_SID_XLT_KEY_BUILDER_ACL,
++		ICE_SID_XLT1_ACL,
++		ICE_SID_XLT2_ACL,
++		ICE_SID_PROFID_TCAM_ACL,
++		ICE_SID_PROFID_REDIR_ACL,
++		ICE_SID_FLD_VEC_ACL,
++		ICE_SID_CDID_KEY_BUILDER_ACL,
++		ICE_SID_CDID_REDIR_ACL
++	},
 +
-+		if (memcmp(&es->t[off], fv, es->fvw * sizeof(*fv)))
-+			continue;
++	/* FD */
++	{
++		ICE_SID_XLT0_FD,
++		ICE_SID_XLT_KEY_BUILDER_FD,
++		ICE_SID_XLT1_FD,
++		ICE_SID_XLT2_FD,
++		ICE_SID_PROFID_TCAM_FD,
++		ICE_SID_PROFID_REDIR_FD,
++		ICE_SID_FLD_VEC_FD,
++		ICE_SID_CDID_KEY_BUILDER_FD,
++		ICE_SID_CDID_REDIR_FD
++	},
 +
-+		*prof_id = i;
-+		return 0;
++	/* RSS */
++	{
++		ICE_SID_XLT0_RSS,
++		ICE_SID_XLT_KEY_BUILDER_RSS,
++		ICE_SID_XLT1_RSS,
++		ICE_SID_XLT2_RSS,
++		ICE_SID_PROFID_TCAM_RSS,
++		ICE_SID_PROFID_REDIR_RSS,
++		ICE_SID_FLD_VEC_RSS,
++		ICE_SID_CDID_KEY_BUILDER_RSS,
++		ICE_SID_CDID_REDIR_RSS
++	},
++
++	/* PE */
++	{
++		ICE_SID_XLT0_PE,
++		ICE_SID_XLT_KEY_BUILDER_PE,
++		ICE_SID_XLT1_PE,
++		ICE_SID_XLT2_PE,
++		ICE_SID_PROFID_TCAM_PE,
++		ICE_SID_PROFID_REDIR_PE,
++		ICE_SID_FLD_VEC_PE,
++		ICE_SID_CDID_KEY_BUILDER_PE,
++		ICE_SID_CDID_REDIR_PE
 +	}
-+
-+	return ICE_ERR_DOES_NOT_EXIST;
-+}
++};
 +
 +/**
-+ * ice_prof_id_rsrc_type - get profile ID resource type for a block type
-+ * @blk: the block type
-+ * @rsrc_type: pointer to variable to receive the resource type
-+ */
-+static bool ice_prof_id_rsrc_type(enum ice_block blk, u16 *rsrc_type)
-+{
-+	switch (blk) {
-+	case ICE_BLK_RSS:
-+		*rsrc_type = ICE_AQC_RES_TYPE_HASH_PROF_BLDR_PROFID;
-+		break;
-+	default:
-+		return false;
-+	}
-+	return true;
-+}
-+
-+/**
-+ * ice_alloc_prof_id - allocate profile ID
-+ * @hw: pointer to the HW struct
-+ * @blk: the block to allocate the profile ID for
-+ * @prof_id: pointer to variable to receive the profile ID
++ * ice_sect_id - returns section ID
++ * @blk: block type
++ * @sect: section type
 + *
-+ * This function allocates a new profile ID, which also corresponds to a Field
-+ * Vector (Extraction Sequence) entry.
++ * This helper function returns the proper section ID given a block type and a
++ * section type.
 + */
-+static enum ice_status
-+ice_alloc_prof_id(struct ice_hw *hw, enum ice_block blk, u8 *prof_id)
++static u32 ice_sect_id(enum ice_block blk, enum ice_sect sect)
 +{
-+	enum ice_status status;
-+	u16 res_type;
-+	u16 get_prof;
-+
-+	if (!ice_prof_id_rsrc_type(blk, &res_type))
-+		return ICE_ERR_PARAM;
-+
-+	status = ice_alloc_hw_res(hw, res_type, 1, false, &get_prof);
-+	if (!status)
-+		*prof_id = (u8)get_prof;
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_prof_inc_ref - increment reference count for profile
-+ * @hw: pointer to the HW struct
-+ * @blk: the block from which to free the profile ID
-+ * @prof_id: the profile ID for which to increment the reference count
-+ */
-+static enum ice_status
-+ice_prof_inc_ref(struct ice_hw *hw, enum ice_block blk, u8 prof_id)
-+{
-+	if (prof_id > hw->blk[blk].es.count)
-+		return ICE_ERR_PARAM;
-+
-+	hw->blk[blk].es.ref_count[prof_id]++;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_write_es - write an extraction sequence to hardware
-+ * @hw: pointer to the HW struct
-+ * @blk: the block in which to write the extraction sequence
-+ * @prof_id: the profile ID to write
-+ * @fv: pointer to the extraction sequence to write - NULL to clear extraction
-+ */
-+static void
-+ice_write_es(struct ice_hw *hw, enum ice_block blk, u8 prof_id,
-+	     struct ice_fv_word *fv)
-+{
-+	u16 off;
-+
-+	off = prof_id * hw->blk[blk].es.fvw;
-+	if (!fv) {
-+		memset(&hw->blk[blk].es.t[off], 0,
-+		       hw->blk[blk].es.fvw * sizeof(*fv));
-+		hw->blk[blk].es.written[prof_id] = false;
-+	} else {
-+		memcpy(&hw->blk[blk].es.t[off], fv,
-+		       hw->blk[blk].es.fvw * sizeof(*fv));
-+	}
-+}
-+
- /* Block / table section IDs */
- static const u32 ice_blk_sids[ICE_BLK_COUNT][ICE_SID_OFF_COUNT] = {
- 	/* SWITCH */
-@@ -1576,3 +1687,108 @@ enum ice_status ice_init_hw_tbls(struct ice_hw *hw)
- 	ice_free_hw_tbls(hw);
- 	return ICE_ERR_NO_MEMORY;
- }
-+
-+/**
-+ * ice_add_prof - add profile
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @id: profile tracking ID
-+ * @ptypes: array of bitmaps indicating ptypes (ICE_FLOW_PTYPE_MAX bits)
-+ * @es: extraction sequence (length of array is determined by the block)
-+ *
-+ * This function registers a profile, which matches a set of PTGs with a
-+ * particular extraction sequence. While the hardware profile is allocated
-+ * it will not be written until the first call to ice_add_flow that specifies
-+ * the ID value used here.
-+ */
-+enum ice_status
-+ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
-+	     struct ice_fv_word *es)
-+{
-+	u32 bytes = DIV_ROUND_UP(ICE_FLOW_PTYPE_MAX, BITS_PER_BYTE);
-+	DECLARE_BITMAP(ptgs_used, ICE_XLT1_CNT);
-+	struct ice_prof_map *prof;
-+	enum ice_status status;
-+	u32 byte = 0;
-+	u8 prof_id;
-+
-+	bitmap_zero(ptgs_used, ICE_XLT1_CNT);
-+
-+	mutex_lock(&hw->blk[blk].es.prof_map_lock);
-+
-+	/* search for existing profile */
-+	status = ice_find_prof_id(hw, blk, es, &prof_id);
-+	if (status) {
-+		/* allocate profile ID */
-+		status = ice_alloc_prof_id(hw, blk, &prof_id);
-+		if (status)
-+			goto err_ice_add_prof;
-+
-+		/* and write new es */
-+		ice_write_es(hw, blk, prof_id, es);
-+	}
-+
-+	ice_prof_inc_ref(hw, blk, prof_id);
-+
-+	/* add profile info */
-+	prof = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*prof), GFP_KERNEL);
-+	if (!prof)
-+		goto err_ice_add_prof;
-+
-+	prof->profile_cookie = id;
-+	prof->prof_id = prof_id;
-+	prof->ptg_cnt = 0;
-+	prof->context = 0;
-+
-+	/* build list of ptgs */
-+	while (bytes && prof->ptg_cnt < ICE_MAX_PTG_PER_PROFILE) {
-+		u32 bit;
-+
-+		if (!ptypes[byte]) {
-+			bytes--;
-+			byte++;
-+			continue;
-+		}
-+
-+		/* Examine 8 bits per byte */
-+		for_each_set_bit(bit, (unsigned long *)&ptypes[byte],
-+				 BITS_PER_BYTE) {
-+			u16 ptype;
-+			u8 ptg;
-+			u8 m;
-+
-+			ptype = byte * BITS_PER_BYTE + bit;
-+
-+			/* The package should place all ptypes in a non-zero
-+			 * PTG, so the following call should never fail.
-+			 */
-+			if (ice_ptg_find_ptype(hw, blk, ptype, &ptg))
-+				continue;
-+
-+			/* If PTG is already added, skip and continue */
-+			if (test_bit(ptg, ptgs_used))
-+				continue;
-+
-+			set_bit(ptg, ptgs_used);
-+			prof->ptg[prof->ptg_cnt] = ptg;
-+
-+			if (++prof->ptg_cnt >= ICE_MAX_PTG_PER_PROFILE)
-+				break;
-+
-+			/* nothing left in byte, then exit */
-+			m = ~((1 << (bit + 1)) - 1);
-+			if (!(ptypes[byte] & m))
-+				break;
-+		}
-+
-+		bytes--;
-+		byte++;
-+	}
-+
-+	list_add(&prof->list, &hw->blk[blk].es.prof_map);
-+	status = 0;
-+
-+err_ice_add_prof:
-+	mutex_unlock(&hw->blk[blk].es.prof_map_lock);
-+	return status;
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-index 37eb282742d1..8cb7d7f09e0b 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-@@ -18,6 +18,9 @@
- 
- #define ICE_PKG_CNT 4
- 
-+enum ice_status
-+ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
-+	     struct ice_fv_word *es);
- enum ice_status ice_init_pkg(struct ice_hw *hw, u8 *buff, u32 len);
- enum ice_status
- ice_copy_and_init_pkg(struct ice_hw *hw, const u8 *buf, u32 len);
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-index 5d5a7eaffa30..3005f111fb3b 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-@@ -3,6 +3,9 @@
- 
- #ifndef _ICE_FLEX_TYPE_H_
- #define _ICE_FLEX_TYPE_H_
-+
-+#define ICE_FV_OFFSET_INVAL	0x1FF
-+
- /* Extraction Sequence (Field Vector) Table */
- struct ice_fv_word {
- 	u8 prot_id;
-@@ -280,6 +283,17 @@ struct ice_ptg_ptype {
- 	u8 ptg;
- };
- 
-+#define ICE_MAX_PTG_PER_PROFILE		32
-+
-+struct ice_prof_map {
-+	struct list_head list;
-+	u64 profile_cookie;
-+	u64 context;
-+	u8 prof_id;
-+	u8 ptg_cnt;
-+	u8 ptg[ICE_MAX_PTG_PER_PROFILE];
-+};
-+
- struct ice_vsig_entry {
- 	struct list_head prop_lst;
- 	struct ice_vsig_vsi *first_vsi;
-@@ -371,4 +385,5 @@ struct ice_blk_info {
- 	u8 is_list_init;
- };
- 
-+#define ICE_FLOW_PTYPE_MAX		ICE_XLT1_CNT
- #endif /* _ICE_FLEX_TYPE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-index 4828c64abe98..24fe04f8baa2 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-@@ -40,6 +40,457 @@ struct ice_flow_field_info ice_flds_info[ICE_FLOW_FIELD_IDX_MAX] = {
- 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_UDP, 2, sizeof(__be16)),
- };
- 
-+/* Bitmaps indicating relevant packet types for a particular protocol header
-+ *
-+ * Packet types for packets with an Outer/First/Single IPv4 header
-+ */
-+static const u32 ice_ptypes_ipv4_ofos[] = {
-+	0x1DC00000, 0x04000800, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+};
-+
-+/* Packet types for packets with an Innermost/Last IPv4 header */
-+static const u32 ice_ptypes_ipv4_il[] = {
-+	0xE0000000, 0xB807700E, 0x80000003, 0xE01DC03B,
-+	0x0000000E, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+};
-+
-+/* Packet types for packets with an Outer/First/Single IPv6 header */
-+static const u32 ice_ptypes_ipv6_ofos[] = {
-+	0x00000000, 0x00000000, 0x77000000, 0x10002000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+};
-+
-+/* Packet types for packets with an Innermost/Last IPv6 header */
-+static const u32 ice_ptypes_ipv6_il[] = {
-+	0x00000000, 0x03B80770, 0x000001DC, 0x0EE00000,
-+	0x00000770, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+};
-+
-+/* UDP Packet types for non-tunneled packets or tunneled
-+ * packets with inner UDP.
-+ */
-+static const u32 ice_ptypes_udp_il[] = {
-+	0x81000000, 0x20204040, 0x04000010, 0x80810102,
-+	0x00000040, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+};
-+
-+/* Packet types for packets with an Innermost/Last TCP header */
-+static const u32 ice_ptypes_tcp_il[] = {
-+	0x04000000, 0x80810102, 0x10000040, 0x02040408,
-+	0x00000102, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+};
-+
-+/* Packet types for packets with an Innermost/Last SCTP header */
-+static const u32 ice_ptypes_sctp_il[] = {
-+	0x08000000, 0x01020204, 0x20000081, 0x04080810,
-+	0x00000204, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+};
-+
-+/* Manage parameters and info. used during the creation of a flow profile */
-+struct ice_flow_prof_params {
-+	enum ice_block blk;
-+	u16 entry_length; /* # of bytes formatted entry will require */
-+	u8 es_cnt;
-+	struct ice_flow_prof *prof;
-+
-+	/* For ACL, the es[0] will have the data of ICE_RX_MDID_PKT_FLAGS_15_0
-+	 * This will give us the direction flags.
-+	 */
-+	struct ice_fv_word es[ICE_MAX_FV_WORDS];
-+	DECLARE_BITMAP(ptypes, ICE_FLOW_PTYPE_MAX);
-+};
-+
-+#define ICE_FLOW_SEG_HDRS_L3_MASK	\
-+	(ICE_FLOW_SEG_HDR_IPV4 | ICE_FLOW_SEG_HDR_IPV6)
-+#define ICE_FLOW_SEG_HDRS_L4_MASK	\
-+	(ICE_FLOW_SEG_HDR_TCP | ICE_FLOW_SEG_HDR_UDP | ICE_FLOW_SEG_HDR_SCTP)
-+
-+/**
-+ * ice_flow_val_hdrs - validates packet segments for valid protocol headers
-+ * @segs: array of one or more packet segments that describe the flow
-+ * @segs_cnt: number of packet segments provided
-+ */
-+static enum ice_status
-+ice_flow_val_hdrs(struct ice_flow_seg_info *segs, u8 segs_cnt)
-+{
-+	u8 i;
-+
-+	for (i = 0; i < segs_cnt; i++) {
-+		/* Multiple L3 headers */
-+		if (segs[i].hdrs & ICE_FLOW_SEG_HDRS_L3_MASK &&
-+		    !is_power_of_2(segs[i].hdrs & ICE_FLOW_SEG_HDRS_L3_MASK))
-+			return ICE_ERR_PARAM;
-+
-+		/* Multiple L4 headers */
-+		if (segs[i].hdrs & ICE_FLOW_SEG_HDRS_L4_MASK &&
-+		    !is_power_of_2(segs[i].hdrs & ICE_FLOW_SEG_HDRS_L4_MASK))
-+			return ICE_ERR_PARAM;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_flow_proc_seg_hdrs - process protocol headers present in pkt segments
-+ * @params: information about the flow to be processed
-+ *
-+ * This function identifies the packet types associated with the protocol
-+ * headers being present in packet segments of the specified flow profile.
-+ */
-+static enum ice_status
-+ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
-+{
-+	struct ice_flow_prof *prof;
-+	u8 i;
-+
-+	memset(params->ptypes, 0xff, sizeof(params->ptypes));
-+
-+	prof = params->prof;
-+
-+	for (i = 0; i < params->prof->segs_cnt; i++) {
-+		const unsigned long *src;
-+		u32 hdrs;
-+
-+		hdrs = prof->segs[i].hdrs;
-+
-+		if (hdrs & ICE_FLOW_SEG_HDR_IPV4) {
-+			src = !i ? (const unsigned long *)ice_ptypes_ipv4_ofos :
-+				(const unsigned long *)ice_ptypes_ipv4_il;
-+			bitmap_and(params->ptypes, params->ptypes, src,
-+				   ICE_FLOW_PTYPE_MAX);
-+		} else if (hdrs & ICE_FLOW_SEG_HDR_IPV6) {
-+			src = !i ? (const unsigned long *)ice_ptypes_ipv6_ofos :
-+				(const unsigned long *)ice_ptypes_ipv6_il;
-+			bitmap_and(params->ptypes, params->ptypes, src,
-+				   ICE_FLOW_PTYPE_MAX);
-+		}
-+
-+		if (hdrs & ICE_FLOW_SEG_HDR_UDP) {
-+			src = (const unsigned long *)ice_ptypes_udp_il;
-+			bitmap_and(params->ptypes, params->ptypes, src,
-+				   ICE_FLOW_PTYPE_MAX);
-+		} else if (hdrs & ICE_FLOW_SEG_HDR_TCP) {
-+			bitmap_and(params->ptypes, params->ptypes,
-+				   (const unsigned long *)ice_ptypes_tcp_il,
-+				   ICE_FLOW_PTYPE_MAX);
-+		} else if (hdrs & ICE_FLOW_SEG_HDR_SCTP) {
-+			src = (const unsigned long *)ice_ptypes_sctp_il;
-+			bitmap_and(params->ptypes, params->ptypes, src,
-+				   ICE_FLOW_PTYPE_MAX);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_flow_xtract_fld - Create an extraction sequence entry for the given field
-+ * @hw: pointer to the HW struct
-+ * @params: information about the flow to be processed
-+ * @seg: packet segment index of the field to be extracted
-+ * @fld: ID of field to be extracted
-+ *
-+ * This function determines the protocol ID, offset, and size of the given
-+ * field. It then allocates one or more extraction sequence entries for the
-+ * given field, and fill the entries with protocol ID and offset information.
-+ */
-+static enum ice_status
-+ice_flow_xtract_fld(struct ice_hw *hw, struct ice_flow_prof_params *params,
-+		    u8 seg, enum ice_flow_field fld)
-+{
-+	enum ice_prot_id prot_id = ICE_PROT_ID_INVAL;
-+	u8 fv_words = hw->blk[params->blk].es.fvw;
-+	struct ice_flow_fld_info *flds;
-+	u16 cnt, ese_bits, i;
-+	u16 off;
-+
-+	flds = params->prof->segs[seg].fields;
-+
-+	switch (fld) {
-+	case ICE_FLOW_FIELD_IDX_IPV4_SA:
-+	case ICE_FLOW_FIELD_IDX_IPV4_DA:
-+		prot_id = seg == 0 ? ICE_PROT_IPV4_OF_OR_S : ICE_PROT_IPV4_IL;
-+		break;
-+	case ICE_FLOW_FIELD_IDX_IPV6_SA:
-+	case ICE_FLOW_FIELD_IDX_IPV6_DA:
-+		prot_id = seg == 0 ? ICE_PROT_IPV6_OF_OR_S : ICE_PROT_IPV6_IL;
-+		break;
-+	case ICE_FLOW_FIELD_IDX_TCP_SRC_PORT:
-+	case ICE_FLOW_FIELD_IDX_TCP_DST_PORT:
-+		prot_id = ICE_PROT_TCP_IL;
-+		break;
-+	case ICE_FLOW_FIELD_IDX_UDP_SRC_PORT:
-+	case ICE_FLOW_FIELD_IDX_UDP_DST_PORT:
-+		prot_id = ICE_PROT_UDP_IL_OR_S;
-+		break;
-+	default:
-+		return ICE_ERR_NOT_IMPL;
-+	}
-+
-+	/* Each extraction sequence entry is a word in size, and extracts a
-+	 * word-aligned offset from a protocol header.
-+	 */
-+	ese_bits = ICE_FLOW_FV_EXTRACT_SZ * BITS_PER_BYTE;
-+
-+	flds[fld].xtrct.prot_id = prot_id;
-+	flds[fld].xtrct.off = (ice_flds_info[fld].off / ese_bits) *
-+		ICE_FLOW_FV_EXTRACT_SZ;
-+	flds[fld].xtrct.disp = (u8)(ice_flds_info[fld].off % ese_bits);
-+	flds[fld].xtrct.idx = params->es_cnt;
-+
-+	/* Adjust the next field-entry index after accommodating the number of
-+	 * entries this field consumes
-+	 */
-+	cnt = DIV_ROUND_UP(flds[fld].xtrct.disp + ice_flds_info[fld].size,
-+			   ese_bits);
-+
-+	/* Fill in the extraction sequence entries needed for this field */
-+	off = flds[fld].xtrct.off;
-+	for (i = 0; i < cnt; i++) {
-+		u8 idx;
-+
-+		/* Make sure the number of extraction sequence required
-+		 * does not exceed the block's capability
-+		 */
-+		if (params->es_cnt >= fv_words)
-+			return ICE_ERR_MAX_LIMIT;
-+
-+		/* some blocks require a reversed field vector layout */
-+		if (hw->blk[params->blk].es.reverse)
-+			idx = fv_words - params->es_cnt - 1;
-+		else
-+			idx = params->es_cnt;
-+
-+		params->es[idx].prot_id = prot_id;
-+		params->es[idx].off = off;
-+		params->es_cnt++;
-+
-+		off += ICE_FLOW_FV_EXTRACT_SZ;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_flow_create_xtrct_seq - Create an extraction sequence for given segments
-+ * @hw: pointer to the HW struct
-+ * @params: information about the flow to be processed
-+ *
-+ * This function iterates through all matched fields in the given segments, and
-+ * creates an extraction sequence for the fields.
-+ */
-+static enum ice_status
-+ice_flow_create_xtrct_seq(struct ice_hw *hw,
-+			  struct ice_flow_prof_params *params)
-+{
-+	struct ice_flow_prof *prof = params->prof;
-+	enum ice_status status = 0;
-+	u8 i;
-+
-+	for (i = 0; i < prof->segs_cnt; i++) {
-+		u8 j;
-+
-+		for_each_set_bit(j, (unsigned long *)&prof->segs[i].match,
-+				 ICE_FLOW_FIELD_IDX_MAX) {
-+			status = ice_flow_xtract_fld(hw, params, i,
-+						     (enum ice_flow_field)j);
-+			if (status)
-+				return status;
-+		}
-+	}
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_flow_proc_segs - process all packet segments associated with a profile
-+ * @hw: pointer to the HW struct
-+ * @params: information about the flow to be processed
-+ */
-+static enum ice_status
-+ice_flow_proc_segs(struct ice_hw *hw, struct ice_flow_prof_params *params)
-+{
-+	enum ice_status status;
-+
-+	status = ice_flow_proc_seg_hdrs(params);
-+	if (status)
-+		return status;
-+
-+	status = ice_flow_create_xtrct_seq(hw, params);
-+	if (status)
-+		return status;
-+
-+	switch (params->blk) {
-+	case ICE_BLK_RSS:
-+		/* Only header information is provided for RSS configuration.
-+		 * No further processing is needed.
-+		 */
-+		status = 0;
-+		break;
-+	default:
-+		return ICE_ERR_NOT_IMPL;
-+	}
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_flow_add_prof_sync - Add a flow profile for packet segments and fields
-+ * @hw: pointer to the HW struct
-+ * @blk: classification stage
-+ * @dir: flow direction
-+ * @prof_id: unique ID to identify this flow profile
-+ * @segs: array of one or more packet segments that describe the flow
-+ * @segs_cnt: number of packet segments provided
-+ * @prof: stores the returned flow profile added
-+ *
-+ * Assumption: the caller has acquired the lock to the profile list
-+ */
-+static enum ice_status
-+ice_flow_add_prof_sync(struct ice_hw *hw, enum ice_block blk,
-+		       enum ice_flow_dir dir, u64 prof_id,
-+		       struct ice_flow_seg_info *segs, u8 segs_cnt,
-+		       struct ice_flow_prof **prof)
-+{
-+	struct ice_flow_prof_params params;
-+	enum ice_status status;
-+	u8 i;
-+
-+	if (!prof)
-+		return ICE_ERR_BAD_PTR;
-+
-+	memset(&params, 0, sizeof(params));
-+	params.prof = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*params.prof),
-+				   GFP_KERNEL);
-+	if (!params.prof)
-+		return ICE_ERR_NO_MEMORY;
-+
-+	/* initialize extraction sequence to all invalid (0xff) */
-+	for (i = 0; i < ICE_MAX_FV_WORDS; i++) {
-+		params.es[i].prot_id = ICE_PROT_INVALID;
-+		params.es[i].off = ICE_FV_OFFSET_INVAL;
-+	}
-+
-+	params.blk = blk;
-+	params.prof->id = prof_id;
-+	params.prof->dir = dir;
-+	params.prof->segs_cnt = segs_cnt;
-+
-+	/* Make a copy of the segments that need to be persistent in the flow
-+	 * profile instance
-+	 */
-+	for (i = 0; i < segs_cnt; i++)
-+		memcpy(&params.prof->segs[i], &segs[i], sizeof(*segs));
-+
-+	status = ice_flow_proc_segs(hw, &params);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_FLOW,
-+			  "Error processing a flow's packet segments\n");
-+		goto out;
-+	}
-+
-+	/* Add a HW profile for this flow profile */
-+	status = ice_add_prof(hw, blk, prof_id, (u8 *)params.ptypes, params.es);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_FLOW, "Error adding a HW flow profile\n");
-+		goto out;
-+	}
-+
-+	INIT_LIST_HEAD(&params.prof->entries);
-+	mutex_init(&params.prof->entries_lock);
-+	*prof = params.prof;
-+
-+out:
-+	if (status)
-+		devm_kfree(ice_hw_to_dev(hw), params.prof);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_flow_add_prof - Add a flow profile for packet segments and matched fields
-+ * @hw: pointer to the HW struct
-+ * @blk: classification stage
-+ * @dir: flow direction
-+ * @prof_id: unique ID to identify this flow profile
-+ * @segs: array of one or more packet segments that describe the flow
-+ * @segs_cnt: number of packet segments provided
-+ */
-+static enum ice_status
-+ice_flow_add_prof(struct ice_hw *hw, enum ice_block blk, enum ice_flow_dir dir,
-+		  u64 prof_id, struct ice_flow_seg_info *segs, u8 segs_cnt)
-+{
-+	struct ice_flow_prof *prof = NULL;
-+	enum ice_status status;
-+
-+	if (segs_cnt > ICE_FLOW_SEG_MAX)
-+		return ICE_ERR_MAX_LIMIT;
-+
-+	if (!segs_cnt)
-+		return ICE_ERR_PARAM;
-+
-+	if (!segs)
-+		return ICE_ERR_BAD_PTR;
-+
-+	status = ice_flow_val_hdrs(segs, segs_cnt);
-+	if (status)
-+		return status;
-+
-+	mutex_lock(&hw->fl_profs_locks[blk]);
-+
-+	status = ice_flow_add_prof_sync(hw, blk, dir, prof_id, segs, segs_cnt,
-+					&prof);
-+	if (!status)
-+		list_add(&prof->l_entry, &hw->fl_profs[blk]);
-+
-+	mutex_unlock(&hw->fl_profs_locks[blk]);
-+
-+	return status;
++	return ice_sect_lkup[blk][sect];
 +}
 +
  /**
-  * ice_flow_set_fld_ext - specifies locations of field from entry's input buffer
-  * @seg: packet segment the field being set belongs to
-@@ -161,10 +612,28 @@ ice_flow_set_rss_seg_info(struct ice_flow_seg_info *segs, u64 hash_fields,
- 	return 0;
+  * ice_pkg_val_buf
+  * @buf: pointer to the ice buffer
+@@ -375,6 +455,31 @@ static void ice_release_global_cfg_lock(struct ice_hw *hw)
+ 	ice_release_res(hw, ICE_GLOBAL_CFG_LOCK_RES_ID);
  }
  
-+#define ICE_FLOW_PROF_HASH_S	0
-+#define ICE_FLOW_PROF_HASH_M	(0xFFFFFFFFULL << ICE_FLOW_PROF_HASH_S)
-+#define ICE_FLOW_PROF_HDR_S	32
-+#define ICE_FLOW_PROF_HDR_M	(0x3FFFFFFFULL << ICE_FLOW_PROF_HDR_S)
-+#define ICE_FLOW_PROF_ENCAP_S	63
-+#define ICE_FLOW_PROF_ENCAP_M	(BIT_ULL(ICE_FLOW_PROF_ENCAP_S))
-+
- #define ICE_RSS_OUTER_HEADERS	1
- 
-+/* Flow profile ID format:
-+ * [0:31] - Packet match fields
-+ * [32:62] - Protocol header
-+ * [63] - Encapsulation flag, 0 if non-tunneled, 1 if tunneled
++/**
++ * ice_acquire_change_lock
++ * @hw: pointer to the HW structure
++ * @access: access type (read or write)
++ *
++ * This function will request ownership of the change lock.
 + */
-+#define ICE_FLOW_GEN_PROFID(hash, hdr, segs_cnt) \
-+	(u64)(((u64)(hash) & ICE_FLOW_PROF_HASH_M) | \
-+	      (((u64)(hdr) << ICE_FLOW_PROF_HDR_S) & ICE_FLOW_PROF_HDR_M) | \
-+	      ((u8)((segs_cnt) - 1) ? ICE_FLOW_PROF_ENCAP_M : 0))
++static enum ice_status
++ice_acquire_change_lock(struct ice_hw *hw, enum ice_aq_res_access_type access)
++{
++	return ice_acquire_res(hw, ICE_CHANGE_LOCK_RES_ID, access,
++			       ICE_CHANGE_LOCK_TIMEOUT);
++}
++
++/**
++ * ice_release_change_lock
++ * @hw: pointer to the HW structure
++ *
++ * This function will release the change lock using the proper Admin Command.
++ */
++static void ice_release_change_lock(struct ice_hw *hw)
++{
++	ice_release_res(hw, ICE_CHANGE_LOCK_RES_ID);
++}
 +
  /**
-  * ice_add_rss_cfg_sync - add an RSS configuration
-+ * @hw: pointer to the hardware structure
-  * @hashed_flds: hash bit fields (ICE_FLOW_HASH_*) to configure
-  * @addl_hdrs: protocol header fields
-  * @segs_cnt: packet segment count
-@@ -172,7 +641,8 @@ ice_flow_set_rss_seg_info(struct ice_flow_seg_info *segs, u64 hash_fields,
-  * Assumption: lock has already been acquired for RSS list
-  */
- static enum ice_status
--ice_add_rss_cfg_sync(u64 hashed_flds, u32 addl_hdrs, u8 segs_cnt)
-+ice_add_rss_cfg_sync(struct ice_hw *hw, u64 hashed_flds, u32 addl_hdrs,
-+		     u8 segs_cnt)
- {
- 	struct ice_flow_seg_info *segs;
- 	enum ice_status status;
-@@ -187,7 +657,19 @@ ice_add_rss_cfg_sync(u64 hashed_flds, u32 addl_hdrs, u8 segs_cnt)
- 	/* Construct the packet segment info from the hashed fields */
- 	status = ice_flow_set_rss_seg_info(&segs[segs_cnt - 1], hashed_flds,
- 					   addl_hdrs);
--
-+	if (status)
-+		goto exit;
-+
-+	/* Create a new flow profile with generated profile and packet
-+	 * segment information.
-+	 */
-+	status = ice_flow_add_prof(hw, ICE_BLK_RSS, ICE_FLOW_RX,
-+				   ICE_FLOW_GEN_PROFID(hashed_flds,
-+						       segs[segs_cnt - 1].hdrs,
-+						       segs_cnt),
-+				   segs, segs_cnt);
-+
-+exit:
- 	kfree(segs);
+  * ice_aq_download_pkg
+  * @hw: pointer to the hardware structure
+@@ -423,6 +528,54 @@ ice_aq_download_pkg(struct ice_hw *hw, struct ice_buf_hdr *pkg_buf,
  	return status;
  }
-@@ -214,7 +696,7 @@ ice_add_rss_cfg(struct ice_hw *hw, u16 vsi_handle, u64 hashed_flds,
- 		return ICE_ERR_PARAM;
  
- 	mutex_lock(&hw->rss_locks);
--	status = ice_add_rss_cfg_sync(hashed_flds, addl_hdrs,
-+	status = ice_add_rss_cfg_sync(hw, hashed_flds, addl_hdrs,
- 				      ICE_RSS_OUTER_HEADERS);
- 	mutex_unlock(&hw->rss_locks);
- 
-@@ -237,7 +719,7 @@ enum ice_status ice_replay_rss_cfg(struct ice_hw *hw, u16 vsi_handle)
- 	mutex_lock(&hw->rss_locks);
- 	list_for_each_entry(r, &hw->rss_list_head, l_entry) {
- 		if (test_bit(vsi_handle, r->vsis)) {
--			status = ice_add_rss_cfg_sync(r->hashed_flds,
-+			status = ice_add_rss_cfg_sync(hw, r->hashed_flds,
- 						      r->packet_hdr,
- 						      ICE_RSS_OUTER_HEADERS);
- 			if (status)
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
-index 48c0fc09d5ff..05b0dab4793c 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.h
-@@ -56,7 +56,13 @@ enum ice_flow_field {
- 	ICE_FLOW_FIELD_IDX_MAX
- };
- 
-+enum ice_flow_dir {
-+	ICE_FLOW_RX		= 0x02,
-+};
-+
- #define ICE_FLOW_SEG_MAX		2
-+#define ICE_FLOW_FV_EXTRACT_SZ		2
-+
- #define ICE_FLOW_SET_HDRS(seg, val)	((seg)->hdrs |= (u32)(val))
- 
- struct ice_flow_seg_xtrct {
-@@ -99,6 +105,23 @@ struct ice_flow_seg_info {
- 	struct ice_flow_fld_info fields[ICE_FLOW_FIELD_IDX_MAX];
- };
- 
-+struct ice_flow_prof {
-+	struct list_head l_entry;
-+
-+	u64 id;
-+	enum ice_flow_dir dir;
-+	u8 segs_cnt;
-+
-+	/* Keep track of flow entries associated with this flow profile */
-+	struct mutex entries_lock;
-+	struct list_head entries;
-+
-+	struct ice_flow_seg_info segs[ICE_FLOW_SEG_MAX];
-+
-+	/* software VSI handles referenced by this flow profile */
-+	DECLARE_BITMAP(vsis, ICE_MAX_VSI);
-+};
-+
- struct ice_rss_cfg {
- 	struct list_head l_entry;
- 	/* bitmap of VSIs added to the RSS entry */
-diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-index 0997d352709b..878e125d8b42 100644
---- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-@@ -199,6 +199,14 @@ enum ice_rxdid {
- /* Receive Flex Descriptor Rx opcode values */
- #define ICE_RX_OPC_MDID		0x01
- 
-+/* Receive Descriptor MDID values that access packet flags */
-+enum ice_flex_mdid_pkt_flags {
-+	ICE_RX_MDID_PKT_FLAGS_15_0	= 20,
-+	ICE_RX_MDID_PKT_FLAGS_31_16,
-+	ICE_RX_MDID_PKT_FLAGS_47_32,
-+	ICE_RX_MDID_PKT_FLAGS_63_48,
-+};
-+
- /* Receive Descriptor MDID values */
- enum ice_flex_rx_mdid {
- 	ICE_RX_MDID_FLOW_ID_LOWER	= 5,
-diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-new file mode 100644
-index 000000000000..97db46ce7a21
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-@@ -0,0 +1,24 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2019, Intel Corporation. */
-+
-+#ifndef _ICE_PROTOCOL_TYPE_H_
-+#define _ICE_PROTOCOL_TYPE_H_
-+/* Decoders for ice_prot_id:
-+ * - F: First
-+ * - I: Inner
-+ * - L: Last
-+ * - O: Outer
-+ * - S: Single
++/**
++ * ice_aq_update_pkg
++ * @hw: pointer to the hardware structure
++ * @pkg_buf: the package cmd buffer
++ * @buf_size: the size of the package cmd buffer
++ * @last_buf: last buffer indicator
++ * @error_offset: returns error offset
++ * @error_info: returns error information
++ * @cd: pointer to command details structure or NULL
++ *
++ * Update Package (0x0C42)
 + */
-+enum ice_prot_id {
-+	ICE_PROT_ID_INVAL	= 0,
-+	ICE_PROT_IPV4_OF_OR_S	= 32,
-+	ICE_PROT_IPV4_IL	= 33,
-+	ICE_PROT_IPV6_OF_OR_S	= 40,
-+	ICE_PROT_IPV6_IL	= 41,
-+	ICE_PROT_TCP_IL		= 49,
-+	ICE_PROT_UDP_IL_OR_S	= 53,
-+	ICE_PROT_META_ID	= 255, /* when offset == metadata */
-+	ICE_PROT_INVALID	= 255  /* when offset == ICE_FV_OFFSET_INVAL */
-+};
-+#endif /* _ICE_PROTOCOL_TYPE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 990b65aed039..1c4124835659 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -49,42 +49,6 @@ static const u8 dummy_eth_header[DUMMY_ETH_HDR_LEN] = { 0x2, 0, 0, 0, 0, 0,
- 	 sizeof(((struct ice_sw_rule_vsi_list *)0)->vsi) + \
- 	 ((n) * sizeof(((struct ice_sw_rule_vsi_list *)0)->vsi)))
- 
--/**
-- * ice_aq_alloc_free_res - command to allocate/free resources
-- * @hw: pointer to the HW struct
-- * @num_entries: number of resource entries in buffer
-- * @buf: Indirect buffer to hold data parameters and response
-- * @buf_size: size of buffer for indirect commands
-- * @opc: pass in the command opcode
-- * @cd: pointer to command details structure or NULL
-- *
-- * Helper function to allocate/free resources using the admin queue commands
-- */
--static enum ice_status
--ice_aq_alloc_free_res(struct ice_hw *hw, u16 num_entries,
--		      struct ice_aqc_alloc_free_res_elem *buf, u16 buf_size,
--		      enum ice_adminq_opc opc, struct ice_sq_cd *cd)
--{
--	struct ice_aqc_alloc_free_res_cmd *cmd;
--	struct ice_aq_desc desc;
--
--	cmd = &desc.params.sw_res_ctrl;
--
--	if (!buf)
--		return ICE_ERR_PARAM;
--
--	if (buf_size < (num_entries * sizeof(buf->elem[0])))
--		return ICE_ERR_PARAM;
--
--	ice_fill_dflt_direct_cmd_desc(&desc, opc);
--
--	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
--
--	cmd->num_entries = cpu_to_le16(num_entries);
--
--	return ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
--}
--
++static enum ice_status
++ice_aq_update_pkg(struct ice_hw *hw, struct ice_buf_hdr *pkg_buf, u16 buf_size,
++		  bool last_buf, u32 *error_offset, u32 *error_info,
++		  struct ice_sq_cd *cd)
++{
++	struct ice_aqc_download_pkg *cmd;
++	struct ice_aq_desc desc;
++	enum ice_status status;
++
++	if (error_offset)
++		*error_offset = 0;
++	if (error_info)
++		*error_info = 0;
++
++	cmd = &desc.params.download_pkg;
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_update_pkg);
++	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
++
++	if (last_buf)
++		cmd->flags |= ICE_AQC_DOWNLOAD_PKG_LAST_BUF;
++
++	status = ice_aq_send_cmd(hw, &desc, pkg_buf, buf_size, cd);
++	if (status == ICE_ERR_AQ_ERROR) {
++		/* Read error from buffer only when the FW returned an error */
++		struct ice_aqc_download_pkg_resp *resp;
++
++		resp = (struct ice_aqc_download_pkg_resp *)pkg_buf;
++		if (error_offset)
++			*error_offset = le32_to_cpu(resp->error_offset);
++		if (error_info)
++			*error_info = le32_to_cpu(resp->error_info);
++	}
++
++	return status;
++}
++
  /**
-  * ice_init_def_sw_recp - initialize the recipe book keeping tables
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 67525f6cac89..5224b066730a 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -13,6 +13,7 @@
- #include "ice_controlq.h"
- #include "ice_lan_tx_rx.h"
- #include "ice_flex_type.h"
-+#include "ice_protocol_type.h"
+  * ice_find_seg_in_pkg
+  * @hw: pointer to the hardware structure
+@@ -457,6 +610,44 @@ ice_find_seg_in_pkg(struct ice_hw *hw, u32 seg_type,
+ 	return NULL;
+ }
  
- static inline bool ice_is_tc_ena(unsigned long bitmap, u8 tc)
- {
-@@ -41,6 +42,7 @@ static inline u32 ice_round_to_num(u32 N, u32 R)
- #define ICE_DBG_QCTX		BIT_ULL(6)
- #define ICE_DBG_NVM		BIT_ULL(7)
- #define ICE_DBG_LAN		BIT_ULL(8)
-+#define ICE_DBG_FLOW		BIT_ULL(9)
- #define ICE_DBG_SW		BIT_ULL(13)
- #define ICE_DBG_SCHED		BIT_ULL(14)
- #define ICE_DBG_RDMA		BIT_ULL(15)
++/**
++ * ice_update_pkg
++ * @hw: pointer to the hardware structure
++ * @bufs: pointer to an array of buffers
++ * @count: the number of buffers in the array
++ *
++ * Obtains change lock and updates package.
++ */
++static enum ice_status
++ice_update_pkg(struct ice_hw *hw, struct ice_buf *bufs, u32 count)
++{
++	enum ice_status status;
++	u32 offset, info, i;
++
++	status = ice_acquire_change_lock(hw, ICE_RES_WRITE);
++	if (status)
++		return status;
++
++	for (i = 0; i < count; i++) {
++		struct ice_buf_hdr *bh = (struct ice_buf_hdr *)(bufs + i);
++		bool last = ((i + 1) == count);
++
++		status = ice_aq_update_pkg(hw, bh, le16_to_cpu(bh->data_end),
++					   last, &offset, &info, NULL);
++
++		if (status) {
++			ice_debug(hw, ICE_DBG_PKG,
++				  "Update pkg failed: err %d off %d inf %d\n",
++				  status, offset, info);
++			break;
++		}
++	}
++
++	ice_release_change_lock(hw);
++
++	return status;
++}
++
+ /**
+  * ice_dwnld_cfg_bufs
+  * @hw: pointer to the hardware structure
+@@ -938,6 +1129,169 @@ enum ice_status ice_copy_and_init_pkg(struct ice_hw *hw, const u8 *buf, u32 len)
+ 	return status;
+ }
+ 
++/**
++ * ice_pkg_buf_alloc
++ * @hw: pointer to the HW structure
++ *
++ * Allocates a package buffer and returns a pointer to the buffer header.
++ * Note: all package contents must be in Little Endian form.
++ */
++static struct ice_buf_build *ice_pkg_buf_alloc(struct ice_hw *hw)
++{
++	struct ice_buf_build *bld;
++	struct ice_buf_hdr *buf;
++
++	bld = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*bld), GFP_KERNEL);
++	if (!bld)
++		return NULL;
++
++	buf = (struct ice_buf_hdr *)bld;
++	buf->data_end = cpu_to_le16(offsetof(struct ice_buf_hdr,
++					     section_entry));
++	return bld;
++}
++
++/**
++ * ice_pkg_buf_free
++ * @hw: pointer to the HW structure
++ * @bld: pointer to pkg build (allocated by ice_pkg_buf_alloc())
++ *
++ * Frees a package buffer
++ */
++static void ice_pkg_buf_free(struct ice_hw *hw, struct ice_buf_build *bld)
++{
++	devm_kfree(ice_hw_to_dev(hw), bld);
++}
++
++/**
++ * ice_pkg_buf_reserve_section
++ * @bld: pointer to pkg build (allocated by ice_pkg_buf_alloc())
++ * @count: the number of sections to reserve
++ *
++ * Reserves one or more section table entries in a package buffer. This routine
++ * can be called multiple times as long as they are made before calling
++ * ice_pkg_buf_alloc_section(). Once ice_pkg_buf_alloc_section()
++ * is called once, the number of sections that can be allocated will not be able
++ * to be increased; not using all reserved sections is fine, but this will
++ * result in some wasted space in the buffer.
++ * Note: all package contents must be in Little Endian form.
++ */
++static enum ice_status
++ice_pkg_buf_reserve_section(struct ice_buf_build *bld, u16 count)
++{
++	struct ice_buf_hdr *buf;
++	u16 section_count;
++	u16 data_end;
++
++	if (!bld)
++		return ICE_ERR_PARAM;
++
++	buf = (struct ice_buf_hdr *)&bld->buf;
++
++	/* already an active section, can't increase table size */
++	section_count = le16_to_cpu(buf->section_count);
++	if (section_count > 0)
++		return ICE_ERR_CFG;
++
++	if (bld->reserved_section_table_entries + count > ICE_MAX_S_COUNT)
++		return ICE_ERR_CFG;
++	bld->reserved_section_table_entries += count;
++
++	data_end = le16_to_cpu(buf->data_end) +
++		   (count * sizeof(buf->section_entry[0]));
++	buf->data_end = cpu_to_le16(data_end);
++
++	return 0;
++}
++
++/**
++ * ice_pkg_buf_alloc_section
++ * @bld: pointer to pkg build (allocated by ice_pkg_buf_alloc())
++ * @type: the section type value
++ * @size: the size of the section to reserve (in bytes)
++ *
++ * Reserves memory in the buffer for a section's content and updates the
++ * buffers' status accordingly. This routine returns a pointer to the first
++ * byte of the section start within the buffer, which is used to fill in the
++ * section contents.
++ * Note: all package contents must be in Little Endian form.
++ */
++static void *
++ice_pkg_buf_alloc_section(struct ice_buf_build *bld, u32 type, u16 size)
++{
++	struct ice_buf_hdr *buf;
++	u16 sect_count;
++	u16 data_end;
++
++	if (!bld || !type || !size)
++		return NULL;
++
++	buf = (struct ice_buf_hdr *)&bld->buf;
++
++	/* check for enough space left in buffer */
++	data_end = le16_to_cpu(buf->data_end);
++
++	/* section start must align on 4 byte boundary */
++	data_end = ALIGN(data_end, 4);
++
++	if ((data_end + size) > ICE_MAX_S_DATA_END)
++		return NULL;
++
++	/* check for more available section table entries */
++	sect_count = le16_to_cpu(buf->section_count);
++	if (sect_count < bld->reserved_section_table_entries) {
++		void *section_ptr = ((u8 *)buf) + data_end;
++
++		buf->section_entry[sect_count].offset = cpu_to_le16(data_end);
++		buf->section_entry[sect_count].size = cpu_to_le16(size);
++		buf->section_entry[sect_count].type = cpu_to_le32(type);
++
++		data_end += size;
++		buf->data_end = cpu_to_le16(data_end);
++
++		buf->section_count = cpu_to_le16(sect_count + 1);
++		return section_ptr;
++	}
++
++	/* no free section table entries */
++	return NULL;
++}
++
++/**
++ * ice_pkg_buf_get_active_sections
++ * @bld: pointer to pkg build (allocated by ice_pkg_buf_alloc())
++ *
++ * Returns the number of active sections. Before using the package buffer
++ * in an update package command, the caller should make sure that there is at
++ * least one active section - otherwise, the buffer is not legal and should
++ * not be used.
++ * Note: all package contents must be in Little Endian form.
++ */
++static u16 ice_pkg_buf_get_active_sections(struct ice_buf_build *bld)
++{
++	struct ice_buf_hdr *buf;
++
++	if (!bld)
++		return 0;
++
++	buf = (struct ice_buf_hdr *)&bld->buf;
++	return le16_to_cpu(buf->section_count);
++}
++
++/**
++ * ice_pkg_buf
++ * @bld: pointer to pkg build (allocated by ice_pkg_buf_alloc())
++ *
++ * Return a pointer to the buffer's header
++ */
++static struct ice_buf *ice_pkg_buf(struct ice_buf_build *bld)
++{
++	if (!bld)
++		return NULL;
++
++	return &bld->buf;
++}
++
+ /* PTG Management */
+ 
+ /**
+@@ -2207,6 +2561,252 @@ ice_has_prof_vsig(struct ice_hw *hw, enum ice_block blk, u16 vsig, u64 hdl)
+ 	return false;
+ }
+ 
++/**
++ * ice_prof_bld_es - build profile ID extraction sequence changes
++ * @hw: pointer to the HW struct
++ * @blk: hardware block
++ * @bld: the update package buffer build to add to
++ * @chgs: the list of changes to make in hardware
++ */
++static enum ice_status
++ice_prof_bld_es(struct ice_hw *hw, enum ice_block blk,
++		struct ice_buf_build *bld, struct list_head *chgs)
++{
++	u16 vec_size = hw->blk[blk].es.fvw * sizeof(struct ice_fv_word);
++	struct ice_chs_chg *tmp;
++
++	list_for_each_entry(tmp, chgs, list_entry)
++		if (tmp->type == ICE_PTG_ES_ADD && tmp->add_prof) {
++			u16 off = tmp->prof_id * hw->blk[blk].es.fvw;
++			struct ice_pkg_es *p;
++			u32 id;
++
++			id = ice_sect_id(blk, ICE_VEC_TBL);
++			p = (struct ice_pkg_es *)
++				ice_pkg_buf_alloc_section(bld, id, sizeof(*p) +
++							  vec_size -
++							  sizeof(p->es[0]));
++
++			if (!p)
++				return ICE_ERR_MAX_LIMIT;
++
++			p->count = cpu_to_le16(1);
++			p->offset = cpu_to_le16(tmp->prof_id);
++
++			memcpy(p->es, &hw->blk[blk].es.t[off], vec_size);
++		}
++
++	return 0;
++}
++
++/**
++ * ice_prof_bld_tcam - build profile ID TCAM changes
++ * @hw: pointer to the HW struct
++ * @blk: hardware block
++ * @bld: the update package buffer build to add to
++ * @chgs: the list of changes to make in hardware
++ */
++static enum ice_status
++ice_prof_bld_tcam(struct ice_hw *hw, enum ice_block blk,
++		  struct ice_buf_build *bld, struct list_head *chgs)
++{
++	struct ice_chs_chg *tmp;
++
++	list_for_each_entry(tmp, chgs, list_entry)
++		if (tmp->type == ICE_TCAM_ADD && tmp->add_tcam_idx) {
++			struct ice_prof_id_section *p;
++			u32 id;
++
++			id = ice_sect_id(blk, ICE_PROF_TCAM);
++			p = (struct ice_prof_id_section *)
++				ice_pkg_buf_alloc_section(bld, id, sizeof(*p));
++
++			if (!p)
++				return ICE_ERR_MAX_LIMIT;
++
++			p->count = cpu_to_le16(1);
++			p->entry[0].addr = cpu_to_le16(tmp->tcam_idx);
++			p->entry[0].prof_id = tmp->prof_id;
++
++			memcpy(p->entry[0].key,
++			       &hw->blk[blk].prof.t[tmp->tcam_idx].key,
++			       sizeof(hw->blk[blk].prof.t->key));
++		}
++
++	return 0;
++}
++
++/**
++ * ice_prof_bld_xlt1 - build XLT1 changes
++ * @blk: hardware block
++ * @bld: the update package buffer build to add to
++ * @chgs: the list of changes to make in hardware
++ */
++static enum ice_status
++ice_prof_bld_xlt1(enum ice_block blk, struct ice_buf_build *bld,
++		  struct list_head *chgs)
++{
++	struct ice_chs_chg *tmp;
++
++	list_for_each_entry(tmp, chgs, list_entry)
++		if (tmp->type == ICE_PTG_ES_ADD && tmp->add_ptg) {
++			struct ice_xlt1_section *p;
++			u32 id;
++
++			id = ice_sect_id(blk, ICE_XLT1);
++			p = (struct ice_xlt1_section *)
++				ice_pkg_buf_alloc_section(bld, id, sizeof(*p));
++
++			if (!p)
++				return ICE_ERR_MAX_LIMIT;
++
++			p->count = cpu_to_le16(1);
++			p->offset = cpu_to_le16(tmp->ptype);
++			p->value[0] = tmp->ptg;
++		}
++
++	return 0;
++}
++
++/**
++ * ice_prof_bld_xlt2 - build XLT2 changes
++ * @blk: hardware block
++ * @bld: the update package buffer build to add to
++ * @chgs: the list of changes to make in hardware
++ */
++static enum ice_status
++ice_prof_bld_xlt2(enum ice_block blk, struct ice_buf_build *bld,
++		  struct list_head *chgs)
++{
++	struct ice_chs_chg *tmp;
++
++	list_for_each_entry(tmp, chgs, list_entry) {
++		struct ice_xlt2_section *p;
++		u32 id;
++
++		switch (tmp->type) {
++		case ICE_VSIG_ADD:
++		case ICE_VSI_MOVE:
++		case ICE_VSIG_REM:
++			id = ice_sect_id(blk, ICE_XLT2);
++			p = (struct ice_xlt2_section *)
++				ice_pkg_buf_alloc_section(bld, id, sizeof(*p));
++
++			if (!p)
++				return ICE_ERR_MAX_LIMIT;
++
++			p->count = cpu_to_le16(1);
++			p->offset = cpu_to_le16(tmp->vsi);
++			p->value[0] = cpu_to_le16(tmp->vsig);
++			break;
++		default:
++			break;
++		}
++	}
++
++	return 0;
++}
++
++/**
++ * ice_upd_prof_hw - update hardware using the change list
++ * @hw: pointer to the HW struct
++ * @blk: hardware block
++ * @chgs: the list of changes to make in hardware
++ */
++static enum ice_status
++ice_upd_prof_hw(struct ice_hw *hw, enum ice_block blk,
++		struct list_head *chgs)
++{
++	struct ice_buf_build *b;
++	struct ice_chs_chg *tmp;
++	enum ice_status status;
++	u16 pkg_sects;
++	u16 xlt1 = 0;
++	u16 xlt2 = 0;
++	u16 tcam = 0;
++	u16 es = 0;
++	u16 sects;
++
++	/* count number of sections we need */
++	list_for_each_entry(tmp, chgs, list_entry) {
++		switch (tmp->type) {
++		case ICE_PTG_ES_ADD:
++			if (tmp->add_ptg)
++				xlt1++;
++			if (tmp->add_prof)
++				es++;
++			break;
++		case ICE_TCAM_ADD:
++			tcam++;
++			break;
++		case ICE_VSIG_ADD:
++		case ICE_VSI_MOVE:
++		case ICE_VSIG_REM:
++			xlt2++;
++			break;
++		default:
++			break;
++		}
++	}
++	sects = xlt1 + xlt2 + tcam + es;
++
++	if (!sects)
++		return 0;
++
++	/* Build update package buffer */
++	b = ice_pkg_buf_alloc(hw);
++	if (!b)
++		return ICE_ERR_NO_MEMORY;
++
++	status = ice_pkg_buf_reserve_section(b, sects);
++	if (status)
++		goto error_tmp;
++
++	/* Preserve order of table update: ES, TCAM, PTG, VSIG */
++	if (es) {
++		status = ice_prof_bld_es(hw, blk, b, chgs);
++		if (status)
++			goto error_tmp;
++	}
++
++	if (tcam) {
++		status = ice_prof_bld_tcam(hw, blk, b, chgs);
++		if (status)
++			goto error_tmp;
++	}
++
++	if (xlt1) {
++		status = ice_prof_bld_xlt1(blk, b, chgs);
++		if (status)
++			goto error_tmp;
++	}
++
++	if (xlt2) {
++		status = ice_prof_bld_xlt2(blk, b, chgs);
++		if (status)
++			goto error_tmp;
++	}
++
++	/* After package buffer build check if the section count in buffer is
++	 * non-zero and matches the number of sections detected for package
++	 * update.
++	 */
++	pkg_sects = ice_pkg_buf_get_active_sections(b);
++	if (!pkg_sects || pkg_sects != sects) {
++		status = ICE_ERR_INVAL_SIZE;
++		goto error_tmp;
++	}
++
++	/* update package */
++	status = ice_update_pkg(hw, ice_pkg_buf(b), 1);
++	if (status == ICE_ERR_AQ_ERROR)
++		ice_debug(hw, ICE_DBG_INIT, "Unable to update HW profile\n");
++
++error_tmp:
++	ice_pkg_buf_free(hw, b);
++	return status;
++}
++
+ /**
+  * ice_add_prof - add profile
+  * @hw: pointer to the HW struct
+@@ -3097,6 +3697,10 @@ ice_add_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl)
+ 		}
+ 	}
+ 
++	/* update hardware */
++	if (!status)
++		status = ice_upd_prof_hw(hw, blk, &chg);
++
+ err_ice_add_prof_id_flow:
+ 	list_for_each_entry_safe(del, tmp, &chg, list_entry) {
+ 		list_del(&del->list_entry);
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+index 9d95d51bc760..0fb3fe3ff3ea 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+@@ -108,37 +108,57 @@ struct ice_buf_hdr {
+ 	sizeof(struct ice_buf_hdr) - (hd_sz)) / (ent_sz))
+ 
+ /* ice package section IDs */
++#define ICE_SID_XLT0_SW			10
++#define ICE_SID_XLT_KEY_BUILDER_SW	11
+ #define ICE_SID_XLT1_SW			12
+ #define ICE_SID_XLT2_SW			13
+ #define ICE_SID_PROFID_TCAM_SW		14
+ #define ICE_SID_PROFID_REDIR_SW		15
+ #define ICE_SID_FLD_VEC_SW		16
++#define ICE_SID_CDID_KEY_BUILDER_SW	17
++#define ICE_SID_CDID_REDIR_SW		18
+ 
++#define ICE_SID_XLT0_ACL		20
++#define ICE_SID_XLT_KEY_BUILDER_ACL	21
+ #define ICE_SID_XLT1_ACL		22
+ #define ICE_SID_XLT2_ACL		23
+ #define ICE_SID_PROFID_TCAM_ACL		24
+ #define ICE_SID_PROFID_REDIR_ACL	25
+ #define ICE_SID_FLD_VEC_ACL		26
++#define ICE_SID_CDID_KEY_BUILDER_ACL	27
++#define ICE_SID_CDID_REDIR_ACL		28
+ 
++#define ICE_SID_XLT0_FD			30
++#define ICE_SID_XLT_KEY_BUILDER_FD	31
+ #define ICE_SID_XLT1_FD			32
+ #define ICE_SID_XLT2_FD			33
+ #define ICE_SID_PROFID_TCAM_FD		34
+ #define ICE_SID_PROFID_REDIR_FD		35
+ #define ICE_SID_FLD_VEC_FD		36
++#define ICE_SID_CDID_KEY_BUILDER_FD	37
++#define ICE_SID_CDID_REDIR_FD		38
+ 
++#define ICE_SID_XLT0_RSS		40
++#define ICE_SID_XLT_KEY_BUILDER_RSS	41
+ #define ICE_SID_XLT1_RSS		42
+ #define ICE_SID_XLT2_RSS		43
+ #define ICE_SID_PROFID_TCAM_RSS		44
+ #define ICE_SID_PROFID_REDIR_RSS	45
+ #define ICE_SID_FLD_VEC_RSS		46
++#define ICE_SID_CDID_KEY_BUILDER_RSS	47
++#define ICE_SID_CDID_REDIR_RSS		48
+ 
+ #define ICE_SID_RXPARSER_BOOST_TCAM	56
+ 
++#define ICE_SID_XLT0_PE			80
++#define ICE_SID_XLT_KEY_BUILDER_PE	81
+ #define ICE_SID_XLT1_PE			82
+ #define ICE_SID_XLT2_PE			83
+ #define ICE_SID_PROFID_TCAM_PE		84
+ #define ICE_SID_PROFID_REDIR_PE		85
+ #define ICE_SID_FLD_VEC_PE		86
++#define ICE_SID_CDID_KEY_BUILDER_PE	87
++#define ICE_SID_CDID_REDIR_PE		88
+ 
+ /* Label Metadata section IDs */
+ #define ICE_SID_LBL_FIRST		0x80000010
+@@ -155,6 +175,19 @@ enum ice_block {
+ 	ICE_BLK_COUNT
+ };
+ 
++enum ice_sect {
++	ICE_XLT0 = 0,
++	ICE_XLT_KB,
++	ICE_XLT1,
++	ICE_XLT2,
++	ICE_PROF_TCAM,
++	ICE_PROF_REDIR,
++	ICE_VEC_TBL,
++	ICE_CDID_KB,
++	ICE_CDID_REDIR,
++	ICE_SECT_COUNT
++};
++
+ /* package labels */
+ struct ice_label {
+ 	__le16 value;
+@@ -237,6 +270,13 @@ struct ice_prof_redir_section {
+ 	u8 redir_value[1];
+ };
+ 
++/* package buffer building */
++
++struct ice_buf_build {
++	struct ice_buf buf;
++	u16 reserved_section_table_entries;
++};
++
+ struct ice_pkg_enum {
+ 	struct ice_buf_table *buf_table;
+ 	u32 buf_idx;
+@@ -251,6 +291,12 @@ struct ice_pkg_enum {
+ 	void *(*handler)(u32 sect_type, void *section, u32 index, u32 *offset);
+ };
+ 
++struct ice_pkg_es {
++	__le16 count;
++	__le16 offset;
++	struct ice_fv_word es[1];
++};
++
+ struct ice_es {
+ 	u32 sid;
+ 	u16 count;
 -- 
 2.20.1
 
