@@ -1,52 +1,63 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 17 Jan 2020 22:02:03 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] i40e: Register a virtbus device
- to provide RDMA
-In-Reply-To: <20200116230610.1868-2-shiraz.saleem@intel.com>
-References: <20200116230610.1868-1-shiraz.saleem@intel.com>
- <20200116230610.1868-2-shiraz.saleem@intel.com>
-Message-ID: <966fc2becaec4bd6adcf49ca67cbbeb1@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Fri, 17 Jan 2020 16:01:13 -0800
+Subject: [Intel-wired-lan] [PATCH RFC rdma 01/16] RDMA/irdma: Add driver
+ framework definitions
+In-Reply-To: <20200116230508.1814-2-shiraz.saleem@intel.com>
+References: <20200116230508.1814-1-shiraz.saleem@intel.com>
+ <20200116230508.1814-2-shiraz.saleem@intel.com>
+Message-ID: <69b30196-f854-0e5d-3971-818e720fd410@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Shiraz Saleem
-> Sent: Thursday, January 16, 2020 3:06 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Saleem, Shiraz <shiraz.saleem@intel.com>
-> Subject: [Intel-wired-lan] [PATCH 2/2] i40e: Register a virtbus device to
-> provide RDMA
+Hi Shiraz,
+
+On 1/16/2020 3:04 PM, Shiraz Saleem wrote:
+> From: Mustafa Ismail <mustafa.ismail@intel.com>
 > 
-> Register client virtbus device on the virtbus for the RDMA virtbus driver
-> (irdma) to bind to. It allows to realize a single RDMA driver capable of working
-> with multiple netdev drivers over multi-generation Intel HW supporting
-> RDMA.
-> There is also no load ordering dependencies between i40e and irdma.
-> 
-> Summary of changes:
-> * Support to add/remove virtbus devices
-> * Add 2 new client ops.
-> 	* i40e_client_device_register() which is called during RDMA
-> 	  probe() per PF. Validate client drv OPs and schedule service
-> 	  task to call open()
-> 	* i40e_client_device_unregister() called during RDMA remove()
-> 	  per PF. Call client close() and release_qvlist.
-> * The global register/unregister calls exported for i40iw are retained
->   until i40iw is removed from the kernel.
+> Register irdma as a platform driver capable of supporting platform
+> devices from multi-generation RDMA capable Intel HW. Establish the
+> interface with all supported netdev peer devices and initialize HW.
 > 
 > Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
 > Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
-> ---
->  drivers/net/ethernet/intel/Kconfig            |   1 +
->  drivers/net/ethernet/intel/i40e/i40e_client.c | 137
-> ++++++++++++++++++++++----
->  include/linux/net/intel/i40e_client.h         |  15 +++
->  3 files changed, 133 insertions(+), 20 deletions(-)
-
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
+> +enum irdma_dl_param_id {
+> +	IRDMA_DEVLINK_PARAM_ID_BASE = DEVLINK_PARAM_GENERIC_ID_MAX,
+> +	IRDMA_DEVLINK_PARAM_ID_LIMITS_SELECTOR,
+> +	IRDMA_DEVLINK_PARAM_ID_UPLOAD_CONTEXT,
+> +	IRDMA_DEVLINK_PARAM_ID_ROCE_ENABLE,
+> +};
+> +
+> +static const struct devlink_param irdma_devlink_params[] = {
+> +	/* Common */
+> +	DEVLINK_PARAM_DRIVER(IRDMA_DEVLINK_PARAM_ID_LIMITS_SELECTOR,
+> +			     "resource_limits_selector", DEVLINK_PARAM_TYPE_U8,
+> +			      BIT(DEVLINK_PARAM_CMODE_DRIVERINIT),
+> +			      NULL, NULL, irdma_devlink_rsrc_limits_validate),
+> +	DEVLINK_PARAM_DRIVER(IRDMA_DEVLINK_PARAM_ID_UPLOAD_CONTEXT,
+> +			     "upload_context", DEVLINK_PARAM_TYPE_BOOL,
+> +			     BIT(DEVLINK_PARAM_CMODE_RUNTIME),
+> +			     irdma_devlink_upload_ctx_get,
+> +			     irdma_devlink_upload_ctx_set, NULL),
+> +#define IRDMA_DL_COMMON_PARAMS_ARRAY_SZ 2
+> +	/* GEN_2 only */
+> +	DEVLINK_PARAM_DRIVER(IRDMA_DEVLINK_PARAM_ID_ROCE_ENABLE,
+> +			     "roce_enable", DEVLINK_PARAM_TYPE_BOOL,
+> +			      BIT(DEVLINK_PARAM_CMODE_DRIVERINIT),
+> +			      NULL, NULL, NULL),
+> +};
+> +
+The devlink parameter "roce_enable" should really be the standard
+generic "enable_roce", as documented in
+Documentation/networking/devlink/devlink-params.rst (Previously
+Documentation/networking/devlink-params.txt).
+
+It does not make sense to proliferate additional similar names when a
+generic one already exists.
+
+Thanks,
+Jake
