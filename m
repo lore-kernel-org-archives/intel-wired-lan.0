@@ -1,43 +1,39 @@
-From: Chen Zhou <chenzhou10@huawei.com>
-Date: Sun, 19 Jan 2020 21:21:38 +0800
-Subject: [Intel-wired-lan] [PATCH -next] i40e: remove unnecessary
- conversions to bool
-Message-ID: <20200119132138.37781-1-chenzhou10@huawei.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Sun, 19 Jan 2020 17:53:23 +0200
+Subject: [Intel-wired-lan] [PATCH v3] e1000e: Add support for Alder Lake
+In-Reply-To: <3fcb7594-9e43-5dab-0684-9792ec846619@molgen.mpg.de>
+References: <20200119115713.12710-1-sasha.neftin@intel.com>
+ <3fcb7594-9e43-5dab-0684-9792ec846619@molgen.mpg.de>
+Message-ID: <1ac07fb6-7c72-ea8d-f976-af0b00e6d211@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The conversions to bool are not needed, remove these.
-
-Signed-off-by: Chen Zhou <chenzhou10@huawei.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 33912cf..24cacfa 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1630,7 +1630,7 @@ static int i40e_config_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
- 		}
- 	}
- 	if (lut) {
--		bool pf_lut = vsi->type == I40E_VSI_MAIN ? true : false;
-+		bool pf_lut = vsi->type == I40E_VSI_MAIN;
- 
- 		ret = i40e_aq_set_rss_lut(hw, vsi->id, pf_lut, lut, lut_size);
- 		if (ret) {
-@@ -11455,7 +11455,7 @@ static int i40e_get_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
- 	}
- 
- 	if (lut) {
--		bool pf_lut = vsi->type == I40E_VSI_MAIN ? true : false;
-+		bool pf_lut = vsi->type == I40E_VSI_MAIN;
- 
- 		ret = i40e_aq_get_rss_lut(hw, vsi->id, pf_lut, lut, lut_size);
- 		if (ret) {
--- 
-2.7.4
+On 1/19/2020 15:23, Paul Menzel wrote:
+> Dear Sasha,
+> 
+> 
+> Am 19.01.20 um 12:57 schrieb Sasha Neftin:
+>> Add devices ID's for the next LOM generations that will be
+>> available on the next Intel Client platform (Alder Lake)
+>> This patch provides the initial support for these devices
+>>
+>> v1->v2:
+>> Address community comments
+>> v2->v3:
+>> Fix minor typo
+> 
+> ? and back out fall-through change (no need for v4)
+> 
+"fall through" statements not related to this patch.
+>> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> 
+> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+> 
+> 
+> Kind regards,
+> 
+> Paul
 
