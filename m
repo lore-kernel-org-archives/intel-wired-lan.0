@@ -1,52 +1,17 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Sun, 19 Jan 2020 12:06:36 +0100
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Sun, 19 Jan 2020 13:25:30 +0200
 Subject: [Intel-wired-lan] [PATCH v1] igc: Fix the typo in the comment
-In-Reply-To: <20200119084447.34074-1-sasha.neftin@intel.com>
+In-Reply-To: <7d63a06f-a5d3-77ae-465d-55c1012ce2a5@molgen.mpg.de>
 References: <20200119084447.34074-1-sasha.neftin@intel.com>
-Message-ID: <7d63a06f-a5d3-77ae-465d-55c1012ce2a5@molgen.mpg.de>
+ <7d63a06f-a5d3-77ae-465d-55c1012ce2a5@molgen.mpg.de>
+Message-ID: <fc891d5b-96cb-3571-601c-644d4de464d8@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Sasha,
-
-
-Thank you for the patch. The article *the* could be removed from the 
-commit message summary.
-
- > Fix typo in comment
-
-Am 19.01.20 um 09:44 schrieb Sasha Neftin:
-> Fix the typo and comment to be correspond to the i225 device
-
-*to correspond*
-
-Please mention *why* the FIXME is removed. The comment still says, they 
-need to be confirmed. If the values were confirmed in the mean-time, 
-please document in the commit message by whom, and remove the whole comment.
-
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-> ---
->   drivers/net/ethernet/intel/igc/igc.h | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-> index 5d38d0faeced..6fb222e76293 100644
-> --- a/drivers/net/ethernet/intel/igc/igc.h
-> +++ b/drivers/net/ethernet/intel/igc/igc.h
-> @@ -112,7 +112,7 @@ extern char igc_driver_version[];
->   #define IGC_RX_HDR_LEN			IGC_RXBUFFER_256
->   
->   /* Transmit and receive latency (for PTP timestamps) */
-> -/* FIXME: These values were estimated using the ones that i210 has as
-> +/* These values were estimated using the ones that i225 has as
->    * basis, they seem to provide good numbers with ptp4l/phc2sys, but we
->    * need to confirm them.
->    */
-
-
-Kind regards,
-
-Paul
+On 1/19/2020 13:06, Paul Menzel wrote:
+> Fix typo in comment
+We need to do more tests with PTP tools to confirm that. I will return 
+meanwhile "FIXME". Thanks Paul - I will send v2.
