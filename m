@@ -1,9 +1,9 @@
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Sun, 19 Jan 2020 12:02:56 +0100
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: Add support for Alder Lake
-In-Reply-To: <20200119074601.33324-1-sasha.neftin@intel.com>
-References: <20200119074601.33324-1-sasha.neftin@intel.com>
-Message-ID: <46e9c8d6-3382-2614-4087-8cfedcdeb9dd@molgen.mpg.de>
+Date: Sun, 19 Jan 2020 12:06:36 +0100
+Subject: [Intel-wired-lan] [PATCH v1] igc: Fix the typo in the comment
+In-Reply-To: <20200119084447.34074-1-sasha.neftin@intel.com>
+References: <20200119084447.34074-1-sasha.neftin@intel.com>
+Message-ID: <7d63a06f-a5d3-77ae-465d-55c1012ce2a5@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,40 +13,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 Dear Sasha,
 
 
-Am 19.01.20 um 08:46 schrieb Sasha Neftin:
-> Add devices ID's for the next LOM generations that will be
-> available on the next Intel Client platform (Alder Lake)
-> This patch provides the initial support for these devices
-> 
-> v1->v2:
-> Address comminuty comments
+Thank you for the patch. The article *the* could be removed from the 
+commit message summary.
 
-community
+ > Fix typo in comment
+
+Am 19.01.20 um 09:44 schrieb Sasha Neftin:
+> Fix the typo and comment to be correspond to the i225 device
+
+*to correspond*
+
+Please mention *why* the FIXME is removed. The comment still says, they 
+need to be confirmed. If the values were confirmed in the mean-time, 
+please document in the commit message by whom, and remove the whole comment.
 
 > Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
->   drivers/net/ethernet/intel/e1000e/ethtool.c | 3 ++-
->   drivers/net/ethernet/intel/e1000e/hw.h      | 5 +++++
->   drivers/net/ethernet/intel/e1000e/ich8lan.c | 7 +++++++
->   drivers/net/ethernet/intel/e1000e/netdev.c  | 7 ++++++-
->   drivers/net/ethernet/intel/e1000e/ptp.c     | 1 +
->   5 files changed, 21 insertions(+), 2 deletions(-)
+>   drivers/net/ethernet/intel/igc/igc.h | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> index adce7e319b9e..aac0b7fb6243 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> @@ -895,8 +895,8 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
->   	case e1000_pch_lpt:
->   	case e1000_pch_spt:
->   	case e1000_pch_cnp:
-> -		/* fall through */
-
-Please split this out, or mention this in a commit message. Also, there 
-are more instances. If you want, I can sent a clean-up commit for the 
-unnecessary fall-through comments.
-
-[?]
+> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+> index 5d38d0faeced..6fb222e76293 100644
+> --- a/drivers/net/ethernet/intel/igc/igc.h
+> +++ b/drivers/net/ethernet/intel/igc/igc.h
+> @@ -112,7 +112,7 @@ extern char igc_driver_version[];
+>   #define IGC_RX_HDR_LEN			IGC_RXBUFFER_256
+>   
+>   /* Transmit and receive latency (for PTP timestamps) */
+> -/* FIXME: These values were estimated using the ones that i210 has as
+> +/* These values were estimated using the ones that i225 has as
+>    * basis, they seem to provide good numbers with ptp4l/phc2sys, but we
+>    * need to confirm them.
+>    */
 
 
 Kind regards,
