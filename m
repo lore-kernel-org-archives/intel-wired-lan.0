@@ -1,62 +1,140 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon, 20 Jan 2020 08:33:50 +0200
-Subject: [Intel-wired-lan] [PATCH v1] igc: Complete to commit Add basic
- skeleton for PTP
-Message-ID: <20200120063350.36467-1-sasha.neftin@intel.com>
+From: Magnus Karlsson <magnus.karlsson@gmail.com>
+Date: Mon, 20 Jan 2020 09:24:05 +0100
+Subject: [Intel-wired-lan] zero-copy between interfaces
+In-Reply-To: <20200117171637.GB69024@smtp.ads.isi.edu>
+References: <14f9e1bf5c3a41dbaec53f83cb5f0564@isi.edu>
+ <CAJ+HfNhdPEe34DVUAj4eHxLkBUSTo2CXbLHoWu+dwFCp753oMg@mail.gmail.com>
+ <20200117171637.GB69024@smtp.ads.isi.edu>
+Message-ID: <CAJ8uoz0i2NVxBty18Cq=kK5_Ysue=pt1psBBahLFiZqN168OiQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-commit 5f2958052c58 ("igc: Add basic skeleton for PTP")
-Add ptp suspend method to the igc_shutdown.
+On Fri, Jan 17, 2020 at 6:16 PM Ryan Goodfellow <rgoodfel@isi.edu> wrote:
+>
+> On Fri, Jan 17, 2020 at 01:32:07PM +0100, Bj?rn T?pel wrote:
+> > On Mon, 13 Jan 2020 at 01:28, Ryan Goodfellow <rgoodfel@isi.edu> wrote:
+> > >
+> > [...]
+> > >
+> > > I could not get zero-copy to work with the i40e driver as it would crash. I've
+> > > attached the corresponding traces from dmesg.
+> >
+> > Thanks Ryan! I had a look at the crash, and it's in the XDP setup:
+> >
+> > i40e_xdp_setup:
+> > ...
+> >  for (i = 0; i < vsi->num_queue_pairs; i++)
+> >      WRITE_ONCE(vsi->rx_rings[i]->xdp_prog, vsi->xdp_prog);
+> >
+> > and the vsi->rx_ring[0] is NULL. This is clearly broken.
+> >
+> > It would help with more lines from your dmesg: the cut i40e log hints
+> > that something is really broken:
+> >
+> > [  328.579154] i40e 0000:b7:00.2: failed to get tracking for 256
+> > queues for VSI 0 err -12
+> > [  328.579280] i40e 0000:b7:00.2: setup of MAIN VSI failed
+> > [  328.579367] i40e 0000:b7:00.2: can't remove VEB 162 with 0 VSIs left
+> >
+> > Is it possible to dig out the complete log?
+>
+> Hi Bj?rn,
+>
+> I've linked a full dmesg log from an XDP setup crash. Note that there are
+> two i40e cards on this machine. The X710 (0000:65:00.0, 0000:65:00.1) works
+> fine, the X722 (0000:b7:00.0, 0000:b7:00.1, 0000:b7:00.2, 0000:b7:00.3) is the
+> one that is crashing on XDP setup.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc.h      | 1 +
- drivers/net/ethernet/intel/igc/igc_main.c | 2 ++
- drivers/net/ethernet/intel/igc/igc_ptp.c  | 2 +-
- 3 files changed, 4 insertions(+), 1 deletion(-)
+Ryan,
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 5d38d0faeced..3db1568c88db 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -556,6 +556,7 @@ int igc_erase_filter(struct igc_adapter *adapter,
- 
- void igc_ptp_init(struct igc_adapter *adapter);
- void igc_ptp_reset(struct igc_adapter *adapter);
-+void igc_ptp_suspend(struct igc_adapter *adapter);
- void igc_ptp_stop(struct igc_adapter *adapter);
- void igc_ptp_rx_rgtstamp(struct igc_q_vector *q_vector, struct sk_buff *skb);
- void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 08ed9796d088..fa72460e255a 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -4899,6 +4899,8 @@ static int __igc_shutdown(struct pci_dev *pdev, bool *enable_wake,
- 	if (netif_running(netdev))
- 		__igc_close(netdev, true);
- 
-+	igc_ptp_suspend(adapter);
-+
- 	igc_clear_interrupt_scheme(adapter);
- 	rtnl_unlock();
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 389a969fe5f4..f99c514ad0f4 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -641,7 +641,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
-  * This function stops the overflow check work and PTP Tx timestamp work, and
-  * will prepare the device for OS suspend.
-  */
--static void igc_ptp_suspend(struct igc_adapter *adapter)
-+void igc_ptp_suspend(struct igc_adapter *adapter)
- {
- 	if (!(adapter->ptp_flags & IGC_PTP_ENABLED))
- 		return;
--- 
-2.11.0
+I was wondering if you could run two small experiments since I cannot
+reproduce this?
 
+1: Run your program using the two ports on your X710 card. Does it
+work? This is my setup and works for me.
+2: On your Mellanox setup, insert a kick_tx() call for each of your
+two sockets before the poll() call in your forward() function. Just to
+see if it works when we explicitly wake up the driver.
+
+Thanks: Magnus
+
+> https://gitlab.com/mergetb/tech/network-emulation/kernel/snippets/1931080
+>
+> Some info that may be useful:
+>
+> ry at turbine:~$ sudo ethtool -i eno7
+> driver: i40e
+> version: 2.8.20-k
+> firmware-version: 3.33 0x80001006 1.1747.0
+> expansion-rom-version:
+> bus-info: 0000:b7:00.2
+> supports-statistics: yes
+> supports-test: yes
+> supports-eeprom-access: yes
+> supports-register-dump: yes
+> supports-priv-flags: yes
+>
+> The firmware version 3.33 was the latest I could find as of a few weeks ago.
+>
+> ry at turbine:~$ sudo lspci -vvv | grep 722
+> b7:00.0 Ethernet controller: Intel Corporation Ethernet Connection X722 for 10GBASE-T (rev 04)
+>         DeviceName: Intel LAN X722 #1
+>         Subsystem: Super Micro Computer Inc Ethernet Connection X722 for 10GBASE-T
+> b7:00.1 Ethernet controller: Intel Corporation Ethernet Connection X722 for 10GBASE-T (rev 04)
+>         DeviceName: Intel LAN X722 #2
+>         Subsystem: Super Micro Computer Inc Ethernet Connection X722 for 10GBASE-T
+> b7:00.2 Ethernet controller: Intel Corporation Ethernet Connection X722 for 10GbE SFP+ (rev 04)
+>         DeviceName: Intel LAN X722 #3
+>         Subsystem: Super Micro Computer Inc Ethernet Connection X722 for 10GbE SFP+
+> b7:00.3 Ethernet controller: Intel Corporation Ethernet Connection X722 for 10GbE SFP+ (rev 04)
+>         DeviceName: Intel LAN X722 #4
+>         Subsystem: Super Micro Computer Inc Ethernet Connection X722 for 10GbE SFP+
+>
+> ry at ryzen:~$ uname -a
+> Linux ryzen 4.19.0-6-amd64 #1 SMP Debian 4.19.67-2+deb10u2 (2019-11-11) x86_64 GNU/Linux
+>
+> ry at turbine:~/kmoa/bpf-next$ git log -2
+> commit 60d71397d27e7859fdaaaaab6594e4d977ae46e2 (HEAD -> master)
+> Author: Ryan Goodfellow <rgoodfel@isi.edu>
+> Date:   Wed Jan 15 16:54:39 2020 -0500
+>
+>     add xdpsock_multidev sample program
+>
+>     This is a simple program that uses AF_XDP sockets to forward packets
+>     between two interfaces using a common memory region and no copying of
+>     packets.
+>
+>     Signed-off-by: Ryan Goodfellow <rgoodfel@isi.edu>
+>
+> commit 9173cac3b64e6785dd604f5075e6035b045a0026 (origin/master, origin/HEAD)
+> Author: Andrii Nakryiko <andriin@fb.com>
+> Date:   Wed Jan 15 11:08:56 2020 -0800
+>
+>     libbpf: Support .text sub-calls relocations
+>
+>     The LLVM patch https://reviews.llvm.org/D72197 makes LLVM emit function call
+>     relocations within the same section. This includes a default .text section,
+>     which contains any BPF sub-programs. This wasn't the case before and so libbpf
+>     was able to get a way with slightly simpler handling of subprogram call
+>     relocations.
+>
+>     This patch adds support for .text section relocations. It needs to ensure
+>     correct order of relocations, so does two passes:
+>     - first, relocate .text instructions, if there are any relocations in it;
+>     - then process all the other programs and copy over patched .text instructions
+>     for all sub-program calls.
+>
+>     v1->v2:
+>     - break early once .text program is processed.
+>
+>     Signed-off-by: Andrii Nakryiko <andriin@fb.com>
+>     Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+>     Acked-by: Yonghong Song <yhs@fb.com>
+>     Cc: Alexei Starovoitov <ast@kernel.org>
+>     Link: https://lore.kernel.org/bpf/20200115190856.2391325-1-andriin at fb.com
+>
+> --
+> ~ ry
