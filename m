@@ -1,35 +1,62 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon, 20 Jan 2020 08:17:58 +0200
-Subject: [Intel-wired-lan] [PATCH v2] igc: Fix the typo in comment
-Message-ID: <20200120061758.25650-1-sasha.neftin@intel.com>
+Date: Mon, 20 Jan 2020 08:33:50 +0200
+Subject: [Intel-wired-lan] [PATCH v1] igc: Complete to commit Add basic
+ skeleton for PTP
+Message-ID: <20200120063350.36467-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix the typo and comment to correspond to the i225 device
-v1->v2:
-Address community comment
+commit 5f2958052c58 ("igc: Add basic skeleton for PTP")
+Add ptp suspend method to the igc_shutdown.
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc.h      | 1 +
+ drivers/net/ethernet/intel/igc/igc_main.c | 2 ++
+ drivers/net/ethernet/intel/igc/igc_ptp.c  | 2 +-
+ 3 files changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 5d38d0faeced..cb1362188c2a 100644
+index 5d38d0faeced..3db1568c88db 100644
 --- a/drivers/net/ethernet/intel/igc/igc.h
 +++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -112,7 +112,7 @@ extern char igc_driver_version[];
- #define IGC_RX_HDR_LEN			IGC_RXBUFFER_256
+@@ -556,6 +556,7 @@ int igc_erase_filter(struct igc_adapter *adapter,
  
- /* Transmit and receive latency (for PTP timestamps) */
--/* FIXME: These values were estimated using the ones that i210 has as
-+/* FIXME: These values were estimated using the ones that i225 has as
-  * basis, they seem to provide good numbers with ptp4l/phc2sys, but we
-  * need to confirm them.
+ void igc_ptp_init(struct igc_adapter *adapter);
+ void igc_ptp_reset(struct igc_adapter *adapter);
++void igc_ptp_suspend(struct igc_adapter *adapter);
+ void igc_ptp_stop(struct igc_adapter *adapter);
+ void igc_ptp_rx_rgtstamp(struct igc_q_vector *q_vector, struct sk_buff *skb);
+ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 08ed9796d088..fa72460e255a 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -4899,6 +4899,8 @@ static int __igc_shutdown(struct pci_dev *pdev, bool *enable_wake,
+ 	if (netif_running(netdev))
+ 		__igc_close(netdev, true);
+ 
++	igc_ptp_suspend(adapter);
++
+ 	igc_clear_interrupt_scheme(adapter);
+ 	rtnl_unlock();
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index 389a969fe5f4..f99c514ad0f4 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -641,7 +641,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
+  * This function stops the overflow check work and PTP Tx timestamp work, and
+  * will prepare the device for OS suspend.
   */
+-static void igc_ptp_suspend(struct igc_adapter *adapter)
++void igc_ptp_suspend(struct igc_adapter *adapter)
+ {
+ 	if (!(adapter->ptp_flags & IGC_PTP_ENABLED))
+ 		return;
 -- 
 2.11.0
 
