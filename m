@@ -1,327 +1,54 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Jan 2020 07:20:29 -0800
-Subject: [Intel-wired-lan] [PATCH S37 03/15] ice: display supported and
- advertised link modes
+Date: Wed, 22 Jan 2020 07:20:39 -0800
+Subject: [Intel-wired-lan] [PATCH S37 13/15] ice: Cleanup
+ ice_vsi_alloc_q_vectors
 In-Reply-To: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
 References: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200122152041.41498-3-anthony.l.nguyen@intel.com>
+Message-ID: <20200122152041.41498-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paul Greenwalt <paul.greenwalt@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-Display all of the supported and advertised link modes based on the PHY
-capability with media.
+1. Remove local variable num_q_vectors and use vsi->num_q_vectors instead
+2. Remove local variable pf and pass vsi->back to ice_pf_to_dev
 
-Displaying all supported modes is more informative then only displaying
-the current link mode.
-
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 282 +------------------
- 1 file changed, 2 insertions(+), 280 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_base.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 90c6a3ca20c9..26eca4ce9e2c 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1710,291 +1710,13 @@ ice_get_settings_link_up(struct ethtool_link_ksettings *ks,
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index 46f427a95056..81885efadc7a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -503,20 +503,15 @@ int ice_vsi_ctrl_rx_ring(struct ice_vsi *vsi, bool ena, u16 rxq_idx)
+  */
+ int ice_vsi_alloc_q_vectors(struct ice_vsi *vsi)
  {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_port_info *pi = np->vsi->port_info;
--	struct ethtool_link_ksettings cap_ksettings;
- 	struct ice_link_status *link_info;
- 	struct ice_vsi *vsi = np->vsi;
--	bool unrecog_phy_high = false;
--	bool unrecog_phy_low = false;
+-	struct ice_pf *pf = vsi->back;
+-	int v_idx = 0, num_q_vectors;
+-	struct device *dev;
+-	int err;
++	struct device *dev = ice_pf_to_dev(vsi->back);
++	int v_idx, err;
  
- 	link_info = &vsi->port_info->phy.link_info;
+-	dev = ice_pf_to_dev(pf);
+ 	if (vsi->q_vectors[0]) {
+ 		dev_dbg(dev, "VSI %d has existing q_vectors\n", vsi->vsi_num);
+ 		return -EEXIST;
+ 	}
  
--	/* Initialize supported and advertised settings based on PHY settings */
--	switch (link_info->phy_type_low) {
--	case ICE_PHY_TYPE_LOW_100BASE_TX:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     100baseT_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     100baseT_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_100M_SGMII:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     100baseT_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_1000BASE_T:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     1000baseT_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     1000baseT_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_1G_SGMII:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     1000baseT_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_1000BASE_SX:
--	case ICE_PHY_TYPE_LOW_1000BASE_LX:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     1000baseX_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_1000BASE_KX:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     1000baseKX_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     1000baseKX_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_2500BASE_T:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     2500baseT_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     2500baseT_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_2500BASE_X:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     2500baseX_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_2500BASE_KX:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     2500baseX_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     2500baseX_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_5GBASE_T:
--	case ICE_PHY_TYPE_LOW_5GBASE_KR:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     5000baseT_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     5000baseT_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_10GBASE_T:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     10000baseT_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     10000baseT_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_10G_SFI_DA:
--	case ICE_PHY_TYPE_LOW_10G_SFI_AOC_ACC:
--	case ICE_PHY_TYPE_LOW_10G_SFI_C2C:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     10000baseT_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_10GBASE_SR:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     10000baseSR_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_10GBASE_LR:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     10000baseLR_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_10GBASE_KR_CR1:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     10000baseKR_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     10000baseKR_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_25GBASE_T:
--	case ICE_PHY_TYPE_LOW_25GBASE_CR:
--	case ICE_PHY_TYPE_LOW_25GBASE_CR_S:
--	case ICE_PHY_TYPE_LOW_25GBASE_CR1:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     25000baseCR_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     25000baseCR_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_25G_AUI_AOC_ACC:
--	case ICE_PHY_TYPE_LOW_25G_AUI_C2C:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     25000baseCR_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_25GBASE_SR:
--	case ICE_PHY_TYPE_LOW_25GBASE_LR:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     25000baseSR_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_25GBASE_KR:
--	case ICE_PHY_TYPE_LOW_25GBASE_KR1:
--	case ICE_PHY_TYPE_LOW_25GBASE_KR_S:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     25000baseKR_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     25000baseKR_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_40GBASE_CR4:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     40000baseCR4_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     40000baseCR4_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_40G_XLAUI_AOC_ACC:
--	case ICE_PHY_TYPE_LOW_40G_XLAUI:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     40000baseCR4_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_40GBASE_SR4:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     40000baseSR4_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_40GBASE_LR4:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     40000baseLR4_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_40GBASE_KR4:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     40000baseKR4_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     40000baseKR4_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_50GBASE_CR2:
--	case ICE_PHY_TYPE_LOW_50GBASE_CP:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     50000baseCR2_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     50000baseCR2_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_50G_LAUI2_AOC_ACC:
--	case ICE_PHY_TYPE_LOW_50G_LAUI2:
--	case ICE_PHY_TYPE_LOW_50G_AUI2_AOC_ACC:
--	case ICE_PHY_TYPE_LOW_50G_AUI2:
--	case ICE_PHY_TYPE_LOW_50GBASE_SR:
--	case ICE_PHY_TYPE_LOW_50G_AUI1_AOC_ACC:
--	case ICE_PHY_TYPE_LOW_50G_AUI1:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     50000baseCR2_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_50GBASE_KR2:
--	case ICE_PHY_TYPE_LOW_50GBASE_KR_PAM4:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     50000baseKR2_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     50000baseKR2_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_50GBASE_SR2:
--	case ICE_PHY_TYPE_LOW_50GBASE_LR2:
--	case ICE_PHY_TYPE_LOW_50GBASE_FR:
--	case ICE_PHY_TYPE_LOW_50GBASE_LR:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     50000baseSR2_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_100GBASE_CR4:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     100000baseCR4_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     100000baseCR4_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_100G_CAUI4_AOC_ACC:
--	case ICE_PHY_TYPE_LOW_100G_CAUI4:
--	case ICE_PHY_TYPE_LOW_100G_AUI4_AOC_ACC:
--	case ICE_PHY_TYPE_LOW_100G_AUI4:
--	case ICE_PHY_TYPE_LOW_100GBASE_CR_PAM4:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     100000baseCR4_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_100GBASE_CP2:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     100000baseCR4_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     100000baseCR4_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_100GBASE_SR4:
--	case ICE_PHY_TYPE_LOW_100GBASE_SR2:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     100000baseSR4_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_100GBASE_LR4:
--	case ICE_PHY_TYPE_LOW_100GBASE_DR:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     100000baseLR4_ER4_Full);
--		break;
--	case ICE_PHY_TYPE_LOW_100GBASE_KR4:
--	case ICE_PHY_TYPE_LOW_100GBASE_KR_PAM4:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     100000baseKR4_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     100000baseKR4_Full);
--		break;
--	default:
--		unrecog_phy_low = true;
--	}
+-	num_q_vectors = vsi->num_q_vectors;
 -
--	switch (link_info->phy_type_high) {
--	case ICE_PHY_TYPE_HIGH_100GBASE_KR2_PAM4:
--		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     100000baseKR4_Full);
--		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--		ethtool_link_ksettings_add_link_mode(ks, advertising,
--						     100000baseKR4_Full);
--		break;
--	case ICE_PHY_TYPE_HIGH_100G_CAUI2_AOC_ACC:
--	case ICE_PHY_TYPE_HIGH_100G_CAUI2:
--	case ICE_PHY_TYPE_HIGH_100G_AUI2_AOC_ACC:
--	case ICE_PHY_TYPE_HIGH_100G_AUI2:
--		ethtool_link_ksettings_add_link_mode(ks, supported,
--						     100000baseCR4_Full);
--		break;
--	default:
--		unrecog_phy_high = true;
--	}
--
--	if (unrecog_phy_low && unrecog_phy_high) {
--		/* if we got here and link is up something bad is afoot */
--		netdev_info(netdev,
--			    "WARNING: Unrecognized PHY_Low (0x%llx).\n",
--			    (u64)link_info->phy_type_low);
--		netdev_info(netdev,
--			    "WARNING: Unrecognized PHY_High (0x%llx).\n",
--			    (u64)link_info->phy_type_high);
--	}
--
--	/* Now that we've worked out everything that could be supported by the
--	 * current PHY type, get what is supported by the NVM and intersect
--	 * them to get what is truly supported
--	 */
--	memset(&cap_ksettings, 0, sizeof(cap_ksettings));
--	ice_phy_type_to_ethtool(netdev, &cap_ksettings);
--	ethtool_intersect_link_masks(ks, &cap_ksettings);
-+	/* Get supported and advertised settings from PHY ability with media */
-+	ice_phy_type_to_ethtool(netdev, ks);
- 
- 	switch (link_info->link_speed) {
- 	case ICE_AQ_LINK_SPEED_100GB:
+-	for (v_idx = 0; v_idx < num_q_vectors; v_idx++) {
++	for (v_idx = 0; v_idx < vsi->num_q_vectors; v_idx++) {
+ 		err = ice_vsi_alloc_q_vector(vsi, v_idx);
+ 		if (err)
+ 			goto err_out;
 -- 
 2.20.1
 
