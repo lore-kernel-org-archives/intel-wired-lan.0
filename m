@@ -1,144 +1,133 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Jan 2020 07:21:32 -0800
-Subject: [Intel-wired-lan] [PATCH S38 09/15] ice: Fix and refactor Rx queue
- disable for VFs
+Date: Wed, 22 Jan 2020 07:21:35 -0800
+Subject: [Intel-wired-lan] [PATCH S38 12/15] ice: replace "fallthrough"
+ comments with fallthrough reserved word
 In-Reply-To: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
 References: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200122152138.41585-9-anthony.l.nguyen@intel.com>
+Message-ID: <20200122152138.41585-12-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Currently when a VF driver sends the PF a request to disable Rx queues
-we will disable them one at a time, even if the VF driver sent us a
-batch of queues to disable. This is causing issues where the Rx queue
-disable times out with LFC enabled. This can be improved by detecting
-when the VF is trying to disable all of its queues.
+"fallthrough" comments are used in switch case statements to explicitly
+indicate the code is intended to fall through to the following statement.
+Different variants of "fallthough" are acceptable, e.g. "fall through",
+"fallthrough", "Fall-through".  The GCC compiler has an optional warning
+(-Wimplicit-fallthrough[=n]) to warn when such a comment is not present;
+the default version of which is enabled when compiling the Linux kernel.
 
-Also remove the variable num_qs_ena from the ice_vf structure as it was
-only used to see if there were no Rx and no Tx queues active. Instead
-add a function that checks if both the vf->rxq_ena and vf->txq_ena
-bitmaps are empty.
+There have been recent discussions in kernel mailing lists regarding
+replacing non-standardized "fallthrough" comments with the pseudo-reserved
+word 'fallthrough' which will be defined as __attribute__ ((fallthrough))
+for versions of gcc that support it (i.e. gcc 7 and newer) or as a nop
+for versions that do not.  Replace "fallthrough" comments with fallthrough
+reserved word.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 36 ++++++++++++++-----
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  1 -
- 2 files changed, 27 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_main.c   | 2 +-
+ drivers/net/ethernet/intel/ice/ice_switch.c | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_txrx.c   | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_xsk.c    | 4 ++--
+ 5 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 6f67a45a9026..5513ee42de3c 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -90,6 +90,19 @@ ice_set_pfe_link(struct ice_vf *vf, struct virtchnl_pf_event *pfe,
- 	}
- }
- 
-+/**
-+ * ice_vf_has_no_qs_ena - check if the VF has any Rx or Tx queues enabled
-+ * @vf: the VF to check
-+ *
-+ * Returns true if the VF has no Rx and no Tx queues enabled and returns false
-+ * otherwise
-+ */
-+static bool ice_vf_has_no_qs_ena(struct ice_vf *vf)
-+{
-+	return (!bitmap_weight(vf->rxq_ena, ICE_MAX_BASE_QS_PER_VF) &&
-+		!bitmap_weight(vf->txq_ena, ICE_MAX_BASE_QS_PER_VF));
-+}
-+
- /**
-  * ice_is_vf_link_up - check if the VF's link is up
-  * @vf: VF to check if link is up
-@@ -101,7 +114,7 @@ static bool ice_is_vf_link_up(struct ice_vf *vf)
- 	if (ice_check_vf_init(pf, vf))
- 		return false;
- 
--	if (!vf->num_qs_ena)
-+	if (ice_vf_has_no_qs_ena(vf))
- 		return false;
- 	else if (vf->link_forced)
- 		return vf->link_up;
-@@ -255,7 +268,6 @@ void ice_set_vf_state_qs_dis(struct ice_vf *vf)
- 	/* Clear Rx/Tx enabled queues flag */
- 	bitmap_zero(vf->txq_ena, ICE_MAX_BASE_QS_PER_VF);
- 	bitmap_zero(vf->rxq_ena, ICE_MAX_BASE_QS_PER_VF);
--	vf->num_qs_ena = 0;
- 	clear_bit(ICE_VF_STATE_QS_ENA, vf->vf_states);
- }
- 
-@@ -2100,7 +2112,6 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 873c632271b8..af2ce567d486 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1182,7 +1182,7 @@ ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf,
+ 	case ice_aqc_opc_release_res:
+ 		if (le16_to_cpu(cmd->res_id) == ICE_AQC_RES_ID_GLBL_LOCK)
+ 			break;
+-		/* fall-through */
++		fallthrough;
+ 	default:
+ 		mutex_lock(&ice_global_cfg_lock_sw);
+ 		lock_acquired = true;
+@@ -2719,7 +2719,7 @@ __ice_aq_get_set_rss_lut(struct ice_hw *hw, u16 vsi_id, u8 lut_type, u8 *lut,
+ 				 ICE_AQC_GSET_RSS_LUT_TABLE_SIZE_M;
+ 			break;
  		}
- 
- 		set_bit(vf_q_id, vf->rxq_ena);
--		vf->num_qs_ena++;
- 	}
- 
- 	vsi = pf->vsi[vf->lan_vsi_idx];
-@@ -2116,7 +2127,6 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
- 			continue;
- 
- 		set_bit(vf_q_id, vf->txq_ena);
--		vf->num_qs_ena++;
- 	}
- 
- 	/* Set flag to indicate that queues are enabled */
-@@ -2203,13 +2213,22 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
- 
- 			/* Clear enabled queues flag */
- 			clear_bit(vf_q_id, vf->txq_ena);
--			vf->num_qs_ena--;
+-		/* fall-through */
++		fallthrough;
+ 	default:
+ 		status = ICE_ERR_PARAM;
+ 		goto ice_aq_get_set_rss_lut_exit;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 09458455df41..bfc79a5a92ed 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3011,7 +3011,7 @@ ice_log_pkg_init(struct ice_hw *hw, enum ice_status *status)
+ 		default:
+ 			break;
  		}
- 	}
- 
--	if (vqs->rx_queues) {
--		q_map = vqs->rx_queues;
-+	q_map = vqs->rx_queues;
-+	/* speed up Rx queue disable by batching them if possible */
-+	if (q_map &&
-+	    bitmap_equal(&q_map, vf->rxq_ena, ICE_MAX_BASE_QS_PER_VF)) {
-+		if (ice_vsi_stop_all_rx_rings(vsi)) {
-+			dev_err(ice_pf_to_dev(vsi->back), "Failed to stop all Rx rings on VSI %d\n",
-+				vsi->vsi_num);
-+			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+			goto error_param;
-+		}
- 
-+		bitmap_zero(vf->rxq_ena, ICE_MAX_BASE_QS_PER_VF);
-+	} else if (q_map) {
- 		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_BASE_QS_PER_VF) {
- 			if (!ice_vc_isvalid_q_id(vf, vqs->vsi_id, vf_q_id)) {
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-@@ -2230,12 +2249,11 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
- 
- 			/* Clear enabled queues flag */
- 			clear_bit(vf_q_id, vf->rxq_ena);
--			vf->num_qs_ena--;
- 		}
- 	}
- 
- 	/* Clear enabled queues flag */
--	if (v_ret == VIRTCHNL_STATUS_SUCCESS && !vf->num_qs_ena)
-+	if (v_ret == VIRTCHNL_STATUS_SUCCESS && ice_vf_has_no_qs_ena(vf))
- 		clear_bit(ICE_VF_STATE_QS_ENA, vf->vf_states);
- 
- error_param:
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index c65269c15dfc..474b2613f09c 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -90,7 +90,6 @@ struct ice_vf {
- 	u8 num_req_qs;			/* num of queue pairs requested by VF */
- 	u16 num_mac;
- 	u16 num_vf_qs;			/* num of queue configured per VF */
--	u16 num_qs_ena;			/* total num of Tx/Rx queue enabled */
- };
- 
- #ifdef CONFIG_PCI_IOV
+-		/* fall-through */
++		fallthrough;
+ 	default:
+ 		dev_err(dev, "An unknown error (%d) occurred when loading the DDP package.  Entering Safe Mode.\n",
+ 			*status);
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 1c4124835659..e8f43e7b7e8b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -787,7 +787,7 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
+ 		break;
+ 	case ICE_SW_LKUP_ETHERTYPE_MAC:
+ 		daddr = f_info->l_data.ethertype_mac.mac_addr;
+-		/* fall-through */
++		fallthrough;
+ 	case ICE_SW_LKUP_ETHERTYPE:
+ 		off = (__force __be16 *)(eth_hdr + ICE_ETH_ETHTYPE_OFFSET);
+ 		*off = cpu_to_be16(f_info->l_data.ethertype_mac.ethertype);
+@@ -798,7 +798,7 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
+ 		break;
+ 	case ICE_SW_LKUP_PROMISC_VLAN:
+ 		vlan_id = f_info->l_data.mac_vlan.vlan_id;
+-		/* fall-through */
++		fallthrough;
+ 	case ICE_SW_LKUP_PROMISC:
+ 		daddr = f_info->l_data.mac_vlan.mac_addr;
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 0c08ab0462df..f67e8362958c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -453,10 +453,10 @@ ice_run_xdp(struct ice_ring *rx_ring, struct xdp_buff *xdp,
+ 		break;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
+-		/* fallthrough -- not supported action */
++		fallthrough;
+ 	case XDP_ABORTED:
+ 		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
+-		/* fallthrough -- handle aborts by dropping frame */
++		fallthrough;
+ 	case XDP_DROP:
+ 		result = ICE_XDP_CONSUMED;
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index fd96301e59bb..4adb8a3ba06e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -816,10 +816,10 @@ ice_run_xdp_zc(struct ice_ring *rx_ring, struct xdp_buff *xdp)
+ 		break;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
+-		/* fallthrough -- not supported action */
++		fallthrough;
+ 	case XDP_ABORTED:
+ 		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
+-		/* fallthrough -- handle aborts by dropping frame */
++		fallthrough;
+ 	case XDP_DROP:
+ 		result = ICE_XDP_CONSUMED;
+ 		break;
 -- 
 2.20.1
 
