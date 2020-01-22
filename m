@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Jan 2020 07:21:34 -0800
-Subject: [Intel-wired-lan] [PATCH S38 11/15] ice: remove unnecessary
- fallthrough comments
+Date: Wed, 22 Jan 2020 07:21:38 -0800
+Subject: [Intel-wired-lan] [PATCH S38 15/15] ice: use true/false for bool
+ types
 In-Reply-To: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
 References: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200122152138.41585-11-anthony.l.nguyen@intel.com>
+Message-ID: <20200122152138.41585-15-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,122 +13,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bruce Allan <bruce.w.allan@intel.com>
 
-Fallthrough comments are used to explicitly indicate the code is intended
-to flow from one case statement to the next in a switch statement rather
-than break out of the switch statement.  They are only needed when a case
-has one or more statements to execute before falling through to the next
-case, not when there is a list of cases for which the same statement(s)
-should be executed.
+Subject says it all.
 
 Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_base.c    | 1 -
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 2 --
- drivers/net/ethernet/intel/ice/ice_lib.c     | 2 --
- drivers/net/ethernet/intel/ice/ice_main.c    | 2 --
- drivers/net/ethernet/intel/ice/ice_sriov.c   | 2 --
- drivers/net/ethernet/intel/ice/ice_txrx.c    | 1 -
- 6 files changed, 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_xsk.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 1c41e7e6d548..75cc5a366b26 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -247,7 +247,6 @@ ice_setup_tx_ctx(struct ice_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf_q)
- 	 */
- 	switch (vsi->type) {
- 	case ICE_VSI_LB:
--		/* fall through */
- 	case ICE_VSI_PF:
- 		tlan_ctx->vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_PF;
- 		break;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 8da99e576d4e..7b34c7c04547 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1091,7 +1091,6 @@ ice_get_fecparam(struct net_device *netdev, struct ethtool_fecparam *fecparam)
- 		fecparam->active_fec = ETHTOOL_FEC_BASER;
- 		break;
- 	case ICE_AQ_LINK_25G_RS_528_FEC_EN:
--		/* fall through */
- 	case ICE_AQ_LINK_25G_RS_544_FEC_EN:
- 		fecparam->active_fec = ETHTOOL_FEC_RS;
- 		break;
-@@ -1781,7 +1780,6 @@ ice_get_settings_link_up(struct ethtool_link_ksettings *ks,
- 						     Asym_Pause);
- 		break;
- 	case ICE_FC_PFC:
--		/* fall through */
- 	default:
- 		ethtool_link_ksettings_del_link_mode(ks, lp_advertising, Pause);
- 		ethtool_link_ksettings_del_link_mode(ks, lp_advertising,
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index cea664da9b94..1ab5fb20523b 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -121,7 +121,6 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
- {
- 	switch (vsi->type) {
- 	case ICE_VSI_PF:
--		/* fall through */
- 	case ICE_VSI_LB:
- 		vsi->num_rx_desc = ICE_DFLT_NUM_RX_DESC;
- 		vsi->num_tx_desc = ICE_DFLT_NUM_TX_DESC;
-@@ -828,7 +827,6 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
- 	ctxt->info = vsi->info;
- 	switch (vsi->type) {
- 	case ICE_VSI_LB:
--		/* fall through */
- 	case ICE_VSI_PF:
- 		ctxt->flags = ICE_AQ_VSI_TYPE_PF;
- 		break;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 4add2c3e830e..09458455df41 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -709,7 +709,6 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
- 	/* Get FEC mode based on negotiated link info */
- 	switch (vsi->port_info->phy.link_info.fec_info) {
- 	case ICE_AQ_LINK_25G_RS_528_FEC_EN:
--		/* fall through */
- 	case ICE_AQ_LINK_25G_RS_544_FEC_EN:
- 		fec = "RS-FEC";
- 		break;
-@@ -2981,7 +2980,6 @@ ice_log_pkg_init(struct ice_hw *hw, enum ice_status *status)
- 		}
- 		break;
- 	case ICE_ERR_BUF_TOO_SHORT:
--		/* fall-through */
- 	case ICE_ERR_CFG:
- 		dev_err(dev, "The DDP package file is invalid. Entering Safe Mode.\n");
- 		break;
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index d2db0d04e117..554f567476f3 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -121,9 +121,7 @@ u32 ice_conv_link_speed_to_virtchnl(bool adv_link_support, u16 link_speed)
- 			speed = (u32)VIRTCHNL_LINK_SPEED_25GB;
- 			break;
- 		case ICE_AQ_LINK_SPEED_40GB:
--			/* fall through */
- 		case ICE_AQ_LINK_SPEED_50GB:
--			/* fall through */
- 		case ICE_AQ_LINK_SPEED_100GB:
- 			speed = (u32)VIRTCHNL_LINK_SPEED_40GB;
- 			break;
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 4de61dbedd36..0c08ab0462df 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1188,7 +1188,6 @@ ice_adjust_itr_by_size_and_speed(struct ice_port_info *port_info,
- 				    avg_pkt_size + 640);
- 		break;
- 	case ICE_AQ_LINK_SPEED_10GB:
--		/* fall through */
- 	default:
- 		itr += DIV_ROUND_UP(170 * (avg_pkt_size + 24),
- 				    avg_pkt_size + 640);
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index b6b0f1180b13..55d994f2d71e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -841,8 +841,8 @@ int ice_clean_rx_irq_zc(struct ice_ring *rx_ring, int budget)
+ 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
+ 	u16 cleaned_count = ICE_DESC_UNUSED(rx_ring);
+ 	unsigned int xdp_xmit = 0;
++	bool failure = false;
+ 	struct xdp_buff xdp;
+-	bool failure = 0;
+ 
+ 	xdp.rxq = &rx_ring->xdp_rxq;
+ 
 -- 
 2.20.1
 
