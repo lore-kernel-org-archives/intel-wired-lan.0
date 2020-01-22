@@ -1,60 +1,43 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Jan 2020 07:20:28 -0800
-Subject: [Intel-wired-lan] [PATCH S37 02/15] ice: Fix switch between FW and
- SW LLDP
+Date: Wed, 22 Jan 2020 07:20:30 -0800
+Subject: [Intel-wired-lan] [PATCH S37 04/15] ice: Don't allow same value for
+ Rx tail to be written twice
 In-Reply-To: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
 References: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200122152041.41498-2-anthony.l.nguyen@intel.com>
+Message-ID: <20200122152041.41498-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-When switching between FW and SW LLDP mode, the
-number of configured TLV apps in the driver's
-DCB configuration is getting out of synch with
-what lldpad thinks is configured.  This is causing
-a problem when shutting down lldpad.  The cleanup
-is trying to delete TLV apps that are not defined
-in the kernel.
+Currently we compare the value we are about to write to the Rx tail
+register with the previous value of next_to_use. The problem with this
+is we only write tail on 8 descriptor boundaries, but next_to_use is
+updated whenever we clean Rx descriptors. Fix this by comparing the
+value we are about to write to tail with the previously written tail
+value. This will prevent duplicate Rx tail bumps.
 
-Since the driver is keeping an accurate account
-of the apps defined, use the drivers number of
-apps to determine if there is an app to delete.
-If the number of apps is <= 1, then do not
-attempt to delete.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index d870c1aedc17..926c9772f086 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -713,13 +713,13 @@ static int ice_dcbnl_delapp(struct net_device *netdev, struct dcb_app *app)
- 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+index 35bbc4ff603c..6da048a6ca7c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+@@ -10,7 +10,7 @@
+  */
+ void ice_release_rx_desc(struct ice_ring *rx_ring, u32 val)
+ {
+-	u16 prev_ntu = rx_ring->next_to_use;
++	u16 prev_ntu = rx_ring->next_to_use & ~0x7;
  
- 	mutex_lock(&pf->tc_mutex);
--	ret = dcb_ieee_delapp(netdev, app);
--	if (ret)
--		goto delapp_out;
--
- 	old_cfg = &pf->hw.port_info->local_dcbx_cfg;
+ 	rx_ring->next_to_use = val;
  
--	if (old_cfg->numapps == 1)
-+	if (old_cfg->numapps <= 1)
-+		goto delapp_out;
-+
-+	ret = dcb_ieee_delapp(netdev, app);
-+	if (ret)
- 		goto delapp_out;
- 
- 	new_cfg = &pf->hw.port_info->desired_dcbx_cfg;
 -- 
 2.20.1
 
