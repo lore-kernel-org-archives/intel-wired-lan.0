@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Jan 2020 07:21:30 -0800
-Subject: [Intel-wired-lan] [PATCH S38 07/15] ice: Fix implicit queue mapping
- mode in ice_vsi_get_qs
+Date: Wed, 22 Jan 2020 07:21:28 -0800
+Subject: [Intel-wired-lan] [PATCH S38 05/15] ice: Only allow tagged
+ bcast/mcast traffic for VF in port VLAN
 In-Reply-To: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
 References: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200122152138.41585-7-anthony.l.nguyen@intel.com>
+Message-ID: <20200122152138.41585-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,66 +13,123 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Currently in ice_vsi_get_qs() we set the mapping_mode for Tx and Rx to
-vsi->[tx|rx]_mapping_mode, but the problem is vsi->[tx|rx]_mapping_mode
-have not been set yet. This was working because ICE_VSI_MAP_CONTIG is
-defined to 0. Fix this by being explicit with our mapping mode by
-initializing the Tx and Rx structure's mapping_mode to
-ICE_VSI_MAP_CONTIG and then setting the vsi->[tx|rx]_mapping_mode to the
-[tx|rx]_qs_cfg.mapping_mode values.
+Currently the VF can see other's broadcast and multicast traffic because
+it always has a VLAN filter for VLAN 0. Fix this by removing/adding the
+VF's VLAN 0 filter when a port VLAN is added/removed respectively.
 
-Also, only assign the vsi->[tx|rx]_mapping_mode when the queues are
-successfully mapped to the VSI. With this change there was no longer a
-need to initialize the ret variable to 0 so remove that.
+This required a few changes.
+
+1. Move where we add VLAN 0 by default for the VF into
+ice_alloc_vsi_res() because this is when we determine if a port VLAN is
+present for load and reset.
+
+2. Moved where we kill the old port VLAN filter in
+ice_set_vf_port_vlan() to the very end of the function because it allows
+us to save the old port VLAN configuration upon any failure case.
+
+3. During adding/removing of a port VLAN via ice_set_vf_port_vlan() we
+also need to remove/add the VLAN 0 filter rule respectively.
+
+4. Improve log messages.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 21 ++++++++++++---------
- 1 file changed, 12 insertions(+), 9 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 49 ++++++++++++-------
+ 1 file changed, 31 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 7e927576fcf0..cea664da9b94 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -443,7 +443,7 @@ static int ice_vsi_get_qs(struct ice_vsi *vsi)
- 		.scatter_count = ICE_MAX_SCATTER_TXQS,
- 		.vsi_map = vsi->txq_map,
- 		.vsi_map_offset = 0,
--		.mapping_mode = vsi->tx_mapping_mode
-+		.mapping_mode = ICE_VSI_MAP_CONTIG
- 	};
- 	struct ice_qs_cfg rx_qs_cfg = {
- 		.qs_mutex = &pf->avail_q_mutex,
-@@ -453,18 +453,21 @@ static int ice_vsi_get_qs(struct ice_vsi *vsi)
- 		.scatter_count = ICE_MAX_SCATTER_RXQS,
- 		.vsi_map = vsi->rxq_map,
- 		.vsi_map_offset = 0,
--		.mapping_mode = vsi->rx_mapping_mode
-+		.mapping_mode = ICE_VSI_MAP_CONTIG
- 	};
--	int ret = 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 250fbfd4c5ff..993bc89c920e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -528,7 +528,18 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
+ 	/* Check if port VLAN exist before, and restore it accordingly */
+ 	if (vf->port_vlan_info) {
+ 		ice_vsi_manage_pvid(vsi, vf->port_vlan_info, true);
+-		ice_vsi_add_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK);
++		if (ice_vsi_add_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK))
++			dev_warn(ice_pf_to_dev(pf), "Failed to add Port VLAN %d filter for VF %d\n",
++				 vf->port_vlan_info & VLAN_VID_MASK, vf->vf_id);
++	} else {
++		/* set VLAN 0 filter by default when no port VLAN is
++		 * enabled. If a port VLAN is enabled we don't want
++		 * untagged broadcast/multicast traffic seen on the VF
++		 * interface.
++		 */
++		if (ice_vsi_add_vlan(vsi, 0))
++			dev_warn(ice_pf_to_dev(pf), "Failed to add VLAN 0 filter for VF %d, MDD events will trigger. Reset the VF, disable spoofchk, or enable 8021q module on the guest\n",
++				 vf->vf_id);
+ 	}
+ 
+ 	eth_broadcast_addr(broadcast);
+@@ -936,17 +947,9 @@ static void ice_cleanup_and_realloc_vf(struct ice_vf *vf)
+ 
+ 	/* reallocate VF resources to finish resetting the VSI state */
+ 	if (!ice_alloc_vf_res(vf)) {
+-		struct ice_vsi *vsi;
 -
--	vsi->tx_mapping_mode = ICE_VSI_MAP_CONTIG;
--	vsi->rx_mapping_mode = ICE_VSI_MAP_CONTIG;
-+	int ret;
+ 		ice_ena_vf_mappings(vf);
+ 		set_bit(ICE_VF_STATE_ACTIVE, vf->vf_states);
+ 		clear_bit(ICE_VF_STATE_DIS, vf->vf_states);
+-
+-		vsi = pf->vsi[vf->lan_vsi_idx];
+-		if (ice_vsi_add_vlan(vsi, 0))
+-			dev_warn(ice_pf_to_dev(pf),
+-				 "Failed to add VLAN 0 filter for VF %d, MDD events will trigger. Reset the VF, disable spoofchk, or enable 8021q module on the guest",
+-				 vf->vf_id);
+ 	}
  
- 	ret = __ice_vsi_get_qs(&tx_qs_cfg);
--	if (!ret)
--		ret = __ice_vsi_get_qs(&rx_qs_cfg);
-+	if (ret)
-+		return ret;
-+	vsi->tx_mapping_mode = tx_qs_cfg.mapping_mode;
+ 	/* Tell the VF driver the reset is done. This needs to be done only
+@@ -2694,15 +2697,24 @@ ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
+ 		return ret;
+ 	}
  
--	return ret;
-+	ret = __ice_vsi_get_qs(&rx_qs_cfg);
-+	if (ret)
-+		return ret;
-+	vsi->rx_mapping_mode = rx_qs_cfg.mapping_mode;
-+
-+	return 0;
- }
+-	/* If PVID, then remove all filters on the old VLAN */
+-	if (vf->port_vlan_info)
+-		ice_vsi_kill_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK);
+-
+ 	if (vlan_id || qos) {
++		/* remove VLAN 0 filter set by default when transitioning from
++		 * no port VLAN to a port VLAN. No change to old port VLAN on
++		 * failure.
++		 */
++		ret = ice_vsi_kill_vlan(vsi, 0);
++		if (ret)
++			return ret;
+ 		ret = ice_vsi_manage_pvid(vsi, vlanprio, true);
+ 		if (ret)
+-			goto error_manage_pvid;
++			return ret;
+ 	} else {
++		/* add VLAN 0 filter back when transitioning from port VLAN to
++		 * no port VLAN. No change to old port VLAN on failure.
++		 */
++		ret = ice_vsi_add_vlan(vsi, 0);
++		if (ret)
++			return ret;
+ 		ret = ice_vsi_manage_pvid(vsi, 0, false);
+ 		if (ret)
+ 			goto error_manage_pvid;
+@@ -2712,15 +2724,16 @@ ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
+ 		dev_info(dev, "Setting VLAN %d, QoS 0x%x on VF %d\n",
+ 			 vlan_id, qos, vf_id);
  
- /**
+-		/* add new VLAN filter for each MAC */
++		/* add VLAN filter for the port VLAN */
+ 		ret = ice_vsi_add_vlan(vsi, vlan_id);
+ 		if (ret)
+ 			goto error_manage_pvid;
+ 	}
++	/* remove old port VLAN filter with valid VLAN ID or QoS fields */
++	if (vf->port_vlan_info)
++		ice_vsi_kill_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK);
+ 
+-	/* The Port VLAN needs to be saved across resets the same as the
+-	 * default LAN MAC address.
+-	 */
++	/* keep port VLAN information persistent on resets */
+ 	vf->port_vlan_info = le16_to_cpu(vsi->info.pvid);
+ 
+ error_manage_pvid:
 -- 
 2.20.1
 
