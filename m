@@ -1,135 +1,134 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Jan 2020 07:21:28 -0800
-Subject: [Intel-wired-lan] [PATCH S38 05/15] ice: Only allow tagged
- bcast/mcast traffic for VF in port VLAN
+Date: Wed, 22 Jan 2020 07:21:34 -0800
+Subject: [Intel-wired-lan] [PATCH S38 11/15] ice: remove unnecessary
+ fallthrough comments
 In-Reply-To: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
 References: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200122152138.41585-5-anthony.l.nguyen@intel.com>
+Message-ID: <20200122152138.41585-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Currently the VF can see other's broadcast and multicast traffic because
-it always has a VLAN filter for VLAN 0. Fix this by removing/adding the
-VF's VLAN 0 filter when a port VLAN is added/removed respectively.
+Fallthrough comments are used to explicitly indicate the code is intended
+to flow from one case statement to the next in a switch statement rather
+than break out of the switch statement.  They are only needed when a case
+has one or more statements to execute before falling through to the next
+case, not when there is a list of cases for which the same statement(s)
+should be executed.
 
-This required a few changes.
-
-1. Move where we add VLAN 0 by default for the VF into
-ice_alloc_vsi_res() because this is when we determine if a port VLAN is
-present for load and reset.
-
-2. Moved where we kill the old port VLAN filter in
-ice_set_vf_port_vlan() to the very end of the function because it allows
-us to save the old port VLAN configuration upon any failure case.
-
-3. During adding/removing of a port VLAN via ice_set_vf_port_vlan() we
-also need to remove/add the VLAN 0 filter rule respectively.
-
-4. Improve log messages.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 49 ++++++++++++-------
- 1 file changed, 31 insertions(+), 18 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_base.c    | 1 -
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 2 --
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 2 --
+ drivers/net/ethernet/intel/ice/ice_main.c    | 2 --
+ drivers/net/ethernet/intel/ice/ice_sriov.c   | 2 --
+ drivers/net/ethernet/intel/ice/ice_txrx.c    | 1 -
+ 6 files changed, 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 250fbfd4c5ff..993bc89c920e 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -528,7 +528,18 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
- 	/* Check if port VLAN exist before, and restore it accordingly */
- 	if (vf->port_vlan_info) {
- 		ice_vsi_manage_pvid(vsi, vf->port_vlan_info, true);
--		ice_vsi_add_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK);
-+		if (ice_vsi_add_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK))
-+			dev_warn(ice_pf_to_dev(pf), "Failed to add Port VLAN %d filter for VF %d\n",
-+				 vf->port_vlan_info & VLAN_VID_MASK, vf->vf_id);
-+	} else {
-+		/* set VLAN 0 filter by default when no port VLAN is
-+		 * enabled. If a port VLAN is enabled we don't want
-+		 * untagged broadcast/multicast traffic seen on the VF
-+		 * interface.
-+		 */
-+		if (ice_vsi_add_vlan(vsi, 0))
-+			dev_warn(ice_pf_to_dev(pf), "Failed to add VLAN 0 filter for VF %d, MDD events will trigger. Reset the VF, disable spoofchk, or enable 8021q module on the guest\n",
-+				 vf->vf_id);
- 	}
- 
- 	eth_broadcast_addr(broadcast);
-@@ -936,17 +947,9 @@ static void ice_cleanup_and_realloc_vf(struct ice_vf *vf)
- 
- 	/* reallocate VF resources to finish resetting the VSI state */
- 	if (!ice_alloc_vf_res(vf)) {
--		struct ice_vsi *vsi;
--
- 		ice_ena_vf_mappings(vf);
- 		set_bit(ICE_VF_STATE_ACTIVE, vf->vf_states);
- 		clear_bit(ICE_VF_STATE_DIS, vf->vf_states);
--
--		vsi = pf->vsi[vf->lan_vsi_idx];
--		if (ice_vsi_add_vlan(vsi, 0))
--			dev_warn(ice_pf_to_dev(pf),
--				 "Failed to add VLAN 0 filter for VF %d, MDD events will trigger. Reset the VF, disable spoofchk, or enable 8021q module on the guest",
--				 vf->vf_id);
- 	}
- 
- 	/* Tell the VF driver the reset is done. This needs to be done only
-@@ -2694,15 +2697,24 @@ ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
- 		return ret;
- 	}
- 
--	/* If PVID, then remove all filters on the old VLAN */
--	if (vf->port_vlan_info)
--		ice_vsi_kill_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK);
--
- 	if (vlan_id || qos) {
-+		/* remove VLAN 0 filter set by default when transitioning from
-+		 * no port VLAN to a port VLAN. No change to old port VLAN on
-+		 * failure.
-+		 */
-+		ret = ice_vsi_kill_vlan(vsi, 0);
-+		if (ret)
-+			return ret;
- 		ret = ice_vsi_manage_pvid(vsi, vlanprio, true);
- 		if (ret)
--			goto error_manage_pvid;
-+			return ret;
- 	} else {
-+		/* add VLAN 0 filter back when transitioning from port VLAN to
-+		 * no port VLAN. No change to old port VLAN on failure.
-+		 */
-+		ret = ice_vsi_add_vlan(vsi, 0);
-+		if (ret)
-+			return ret;
- 		ret = ice_vsi_manage_pvid(vsi, 0, false);
- 		if (ret)
- 			goto error_manage_pvid;
-@@ -2712,15 +2724,16 @@ ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
- 		dev_info(dev, "Setting VLAN %d, QoS 0x%x on VF %d\n",
- 			 vlan_id, qos, vf_id);
- 
--		/* add new VLAN filter for each MAC */
-+		/* add VLAN filter for the port VLAN */
- 		ret = ice_vsi_add_vlan(vsi, vlan_id);
- 		if (ret)
- 			goto error_manage_pvid;
- 	}
-+	/* remove old port VLAN filter with valid VLAN ID or QoS fields */
-+	if (vf->port_vlan_info)
-+		ice_vsi_kill_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK);
- 
--	/* The Port VLAN needs to be saved across resets the same as the
--	 * default LAN MAC address.
--	 */
-+	/* keep port VLAN information persistent on resets */
- 	vf->port_vlan_info = le16_to_cpu(vsi->info.pvid);
- 
- error_manage_pvid:
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index 1c41e7e6d548..75cc5a366b26 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -247,7 +247,6 @@ ice_setup_tx_ctx(struct ice_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf_q)
+ 	 */
+ 	switch (vsi->type) {
+ 	case ICE_VSI_LB:
+-		/* fall through */
+ 	case ICE_VSI_PF:
+ 		tlan_ctx->vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_PF;
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 8da99e576d4e..7b34c7c04547 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -1091,7 +1091,6 @@ ice_get_fecparam(struct net_device *netdev, struct ethtool_fecparam *fecparam)
+ 		fecparam->active_fec = ETHTOOL_FEC_BASER;
+ 		break;
+ 	case ICE_AQ_LINK_25G_RS_528_FEC_EN:
+-		/* fall through */
+ 	case ICE_AQ_LINK_25G_RS_544_FEC_EN:
+ 		fecparam->active_fec = ETHTOOL_FEC_RS;
+ 		break;
+@@ -1781,7 +1780,6 @@ ice_get_settings_link_up(struct ethtool_link_ksettings *ks,
+ 						     Asym_Pause);
+ 		break;
+ 	case ICE_FC_PFC:
+-		/* fall through */
+ 	default:
+ 		ethtool_link_ksettings_del_link_mode(ks, lp_advertising, Pause);
+ 		ethtool_link_ksettings_del_link_mode(ks, lp_advertising,
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index cea664da9b94..1ab5fb20523b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -121,7 +121,6 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
+ {
+ 	switch (vsi->type) {
+ 	case ICE_VSI_PF:
+-		/* fall through */
+ 	case ICE_VSI_LB:
+ 		vsi->num_rx_desc = ICE_DFLT_NUM_RX_DESC;
+ 		vsi->num_tx_desc = ICE_DFLT_NUM_TX_DESC;
+@@ -828,7 +827,6 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
+ 	ctxt->info = vsi->info;
+ 	switch (vsi->type) {
+ 	case ICE_VSI_LB:
+-		/* fall through */
+ 	case ICE_VSI_PF:
+ 		ctxt->flags = ICE_AQ_VSI_TYPE_PF;
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 4add2c3e830e..09458455df41 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -709,7 +709,6 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
+ 	/* Get FEC mode based on negotiated link info */
+ 	switch (vsi->port_info->phy.link_info.fec_info) {
+ 	case ICE_AQ_LINK_25G_RS_528_FEC_EN:
+-		/* fall through */
+ 	case ICE_AQ_LINK_25G_RS_544_FEC_EN:
+ 		fec = "RS-FEC";
+ 		break;
+@@ -2981,7 +2980,6 @@ ice_log_pkg_init(struct ice_hw *hw, enum ice_status *status)
+ 		}
+ 		break;
+ 	case ICE_ERR_BUF_TOO_SHORT:
+-		/* fall-through */
+ 	case ICE_ERR_CFG:
+ 		dev_err(dev, "The DDP package file is invalid. Entering Safe Mode.\n");
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+index d2db0d04e117..554f567476f3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.c
++++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+@@ -121,9 +121,7 @@ u32 ice_conv_link_speed_to_virtchnl(bool adv_link_support, u16 link_speed)
+ 			speed = (u32)VIRTCHNL_LINK_SPEED_25GB;
+ 			break;
+ 		case ICE_AQ_LINK_SPEED_40GB:
+-			/* fall through */
+ 		case ICE_AQ_LINK_SPEED_50GB:
+-			/* fall through */
+ 		case ICE_AQ_LINK_SPEED_100GB:
+ 			speed = (u32)VIRTCHNL_LINK_SPEED_40GB;
+ 			break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 4de61dbedd36..0c08ab0462df 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1188,7 +1188,6 @@ ice_adjust_itr_by_size_and_speed(struct ice_port_info *port_info,
+ 				    avg_pkt_size + 640);
+ 		break;
+ 	case ICE_AQ_LINK_SPEED_10GB:
+-		/* fall through */
+ 	default:
+ 		itr += DIV_ROUND_UP(170 * (avg_pkt_size + 24),
+ 				    avg_pkt_size + 640);
 -- 
 2.20.1
 
