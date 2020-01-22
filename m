@@ -1,43 +1,47 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Jan 2020 07:20:30 -0800
-Subject: [Intel-wired-lan] [PATCH S37 04/15] ice: Don't allow same value for
- Rx tail to be written twice
+Date: Wed, 22 Jan 2020 07:20:32 -0800
+Subject: [Intel-wired-lan] [PATCH S37 06/15] ice: Remove CONFIG_PCI_IOV wrap
+ in ice_set_pf_caps
 In-Reply-To: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
 References: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200122152041.41498-4-anthony.l.nguyen@intel.com>
+Message-ID: <20200122152041.41498-6-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-Currently we compare the value we are about to write to the Rx tail
-register with the previous value of next_to_use. The problem with this
-is we only write tail on 8 descriptor boundaries, but next_to_use is
-updated whenever we clean Rx descriptors. Fix this by comparing the
-value we are about to write to tail with the previously written tail
-value. This will prevent duplicate Rx tail bumps.
+Remove unnecessary CONFIG_PCI_IOV wrapping in ice_set_pf_caps. None
+of the data structures accessed within the block are wrapped with
+this flag. When CONFIG_PCI_IOV is undefined, pf->num_vfs_supported
+will be 0 anyway.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-index 35bbc4ff603c..6da048a6ca7c 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-@@ -10,7 +10,7 @@
-  */
- void ice_release_rx_desc(struct ice_ring *rx_ring, u32 val)
- {
--	u16 prev_ntu = rx_ring->next_to_use;
-+	u16 prev_ntu = rx_ring->next_to_use & ~0x7;
- 
- 	rx_ring->next_to_use = val;
- 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index d4bc6fd3321c..cddadd308253 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2677,14 +2677,12 @@ static void ice_set_pf_caps(struct ice_pf *pf)
+ 	clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+ 	if (func_caps->common_cap.dcb)
+ 		set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+-#ifdef CONFIG_PCI_IOV
+ 	clear_bit(ICE_FLAG_SRIOV_CAPABLE, pf->flags);
+ 	if (func_caps->common_cap.sr_iov_1_1) {
+ 		set_bit(ICE_FLAG_SRIOV_CAPABLE, pf->flags);
+ 		pf->num_vfs_supported = min_t(int, func_caps->num_allocd_vfs,
+ 					      ICE_MAX_VF_COUNT);
+ 	}
+-#endif /* CONFIG_PCI_IOV */
+ 	clear_bit(ICE_FLAG_RSS_ENA, pf->flags);
+ 	if (func_caps->common_cap.rss_table_size)
+ 		set_bit(ICE_FLAG_RSS_ENA, pf->flags);
 -- 
 2.20.1
 
