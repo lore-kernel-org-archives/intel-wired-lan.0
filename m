@@ -1,42 +1,69 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Wed, 22 Jan 2020 08:28:41 +0200
-Subject: [Intel-wired-lan] [PATCH v1] igc: Complete to commit Add basic
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed, 22 Jan 2020 11:21:13 +0200
+Subject: [Intel-wired-lan] [PATCH v2] igc: Complete to commit Add basic
  skeleton for PTP
-In-Reply-To: <87o8uw31zr.fsf@linux.intel.com>
-References: <20200120063350.36467-1-sasha.neftin@intel.com>
- <87o8uw31zr.fsf@linux.intel.com>
-Message-ID: <545eced6-a1ef-185d-41a5-3289cc045107@intel.com>
+Message-ID: <20200122092113.28381-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/21/2020 23:59, Vinicius Costa Gomes wrote:
-> Hi Sasha,
-> 
-> Sasha Neftin <sasha.neftin@intel.com> writes:
-> 
->> commit 5f2958052c58 ("igc: Add basic skeleton for PTP")
->> Add ptp suspend method to the igc_shutdown.
-> 
-> I guess the commit message could use a bit more text, something like
-> this:
-> 
-> "Commit 5f2958052c58 ("igc: Add basic skeleton for PTP") added basic
-> support for PTP, what's missing is support for suspending. By cleaning
-> the runtime storage for timestamp this avoids a possible invalid memory
-> access when the system comes back from suspend."
-Thanks Vinicius - I will extend the commit message in v2.
-> 
-> Apart from that, the code looks good.
-> 
-> Is this the only thing missing for suspend/resume to work? If so, that's
-> cool :-)
-> 
-> 
-> Cheers,
-> --
-> Vinicius
-> 
+commit 5f2958052c58 ("igc: Add basic skeleton for PTP") added basic
+support for PTP, what's missing is support for suspending.
+Legacy power management has been added. Now we can add
+the suspend method to the igc_shutdown.
+By cleaning the runtime storage for timestamp this avoids a possible
+invalid memory access when the system comes back from suspend state.
+
+v1->v2:
+Address community comment
+
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc.h      | 1 +
+ drivers/net/ethernet/intel/igc/igc_main.c | 2 ++
+ drivers/net/ethernet/intel/igc/igc_ptp.c  | 2 +-
+ 3 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index cb1362188c2a..5e9c2dd8b8e4 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -556,6 +556,7 @@ int igc_erase_filter(struct igc_adapter *adapter,
+ 
+ void igc_ptp_init(struct igc_adapter *adapter);
+ void igc_ptp_reset(struct igc_adapter *adapter);
++void igc_ptp_suspend(struct igc_adapter *adapter);
+ void igc_ptp_stop(struct igc_adapter *adapter);
+ void igc_ptp_rx_rgtstamp(struct igc_q_vector *q_vector, struct sk_buff *skb);
+ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 08ed9796d088..fa72460e255a 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -4899,6 +4899,8 @@ static int __igc_shutdown(struct pci_dev *pdev, bool *enable_wake,
+ 	if (netif_running(netdev))
+ 		__igc_close(netdev, true);
+ 
++	igc_ptp_suspend(adapter);
++
+ 	igc_clear_interrupt_scheme(adapter);
+ 	rtnl_unlock();
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index 389a969fe5f4..f99c514ad0f4 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -641,7 +641,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
+  * This function stops the overflow check work and PTP Tx timestamp work, and
+  * will prepare the device for OS suspend.
+  */
+-static void igc_ptp_suspend(struct igc_adapter *adapter)
++void igc_ptp_suspend(struct igc_adapter *adapter)
+ {
+ 	if (!(adapter->ptp_flags & IGC_PTP_ENABLED))
+ 		return;
+-- 
+2.11.0
 
