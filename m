@@ -1,10 +1,8 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Jan 2020 07:21:26 -0800
-Subject: [Intel-wired-lan] [PATCH S38 03/15] ice: Add helper to determine if
- VF link is up
-In-Reply-To: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
-References: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200122152138.41585-3-anthony.l.nguyen@intel.com>
+Date: Wed, 22 Jan 2020 07:21:24 -0800
+Subject: [Intel-wired-lan] [PATCH S38 01/15] ice: Add initial support for
+ QinQ
+Message-ID: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,81 +11,215 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-The check for vf->link_up is incorrect because this field is only valid if
-vf->link_forced is true. Fix this by adding the helper ice_is_vf_link_up()
-to determine if the VF's link is up.
+Allow support for S-Tag + C-Tag VLAN traffic by disabling pruning when
+there are no 0x8100 VLAN interfaces currently created on top of the PF.
+When an 0x8100 VLAN interface is configured, enable pruning and only
+support single and double C-Tag VLAN traffic. If all of the 0x8100
+interfaces that were created on top of the PF are removed via
+ethtool -K <iface> rx-vlan-filter off or via ip tools, then disable
+pruning and allow S-Tag + C-Tag traffic again.
+
+Add VLAN 0 filter by default for the PF. This is because a bridge
+sets the default_pvid to 1, sends the request down to
+ice_vlan_rx_add_vid(), and we never get the request to add VLAN 0 via
+the 8021q module which causes all untagged traffic to be dropped.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 42 +++++++++++--------
- 1 file changed, 25 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c      | 43 +++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_lib.h      |  2 +
+ drivers/net/ethernet/intel/ice/ice_main.c     | 21 ++++++---
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 14 +++---
+ 4 files changed, 63 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 8349369b06bf..0133a79bbf4c 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -90,6 +90,26 @@ ice_set_pfe_link(struct ice_vf *vf, struct virtchnl_pf_event *pfe,
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 3c9353d7b0ed..3d851ac489cf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1383,7 +1383,9 @@ int ice_vsi_add_vlan(struct ice_vsi *vsi, u16 vid)
+ 	list_add(&tmp->list_entry, &tmp_add_list);
+ 
+ 	status = ice_add_vlan(&pf->hw, &tmp_add_list);
+-	if (status) {
++	if (!status) {
++		vsi->num_vlan++;
++	} else {
+ 		err = -ENODEV;
+ 		dev_err(dev, "Failure Adding VLAN %d on VSI %i\n", vid,
+ 			vsi->vsi_num);
+@@ -1425,10 +1427,12 @@ int ice_vsi_kill_vlan(struct ice_vsi *vsi, u16 vid)
+ 	list_add(&list->list_entry, &tmp_add_list);
+ 
+ 	status = ice_remove_vlan(&pf->hw, &tmp_add_list);
+-	if (status == ICE_ERR_DOES_NOT_EXIST) {
++	if (!status) {
++		vsi->num_vlan--;
++	} else if (status == ICE_ERR_DOES_NOT_EXIST) {
+ 		dev_dbg(dev, "Failed to remove VLAN %d on VSI %i, it does not exist, status: %d\n",
+ 			vid, vsi->vsi_num, status);
+-	} else if (status) {
++	} else {
+ 		dev_err(dev, "Error removing VLAN %d on vsi %i error: %d\n",
+ 			vid, vsi->vsi_num, status);
+ 		err = -EIO;
+@@ -1790,6 +1794,26 @@ int ice_vsi_stop_xdp_tx_rings(struct ice_vsi *vsi)
+ 	return ice_vsi_stop_tx_rings(vsi, ICE_NO_RESET, 0, vsi->xdp_rings);
  }
  
 +/**
-+ * ice_is_vf_link_up - check if the VF's link is up
-+ * @vf: VF to check if link is up
++ * ice_vsi_is_vlan_pruning_ena - check if VLAN pruning is enabled or not
++ * @vsi: VSI to check whether or not VLAN pruning is enabled.
++ *
++ * returns true if Rx VLAN pruning and Tx VLAN anti-spoof is enabled and false
++ * otherwise.
 + */
-+static bool ice_is_vf_link_up(struct ice_vf *vf)
++bool ice_vsi_is_vlan_pruning_ena(struct ice_vsi *vsi)
 +{
-+	struct ice_pf *pf = vf->pf;
++	u8 rx_pruning = ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA;
++	u8 tx_pruning = ICE_AQ_VSI_SEC_TX_VLAN_PRUNE_ENA <<
++		ICE_AQ_VSI_SEC_TX_PRUNE_ENA_S;
 +
-+	if (ice_check_vf_init(pf, vf))
++	if (!vsi)
 +		return false;
 +
-+	if (!vf->num_qs_ena)
-+		return false;
-+	else if (vf->link_forced)
-+		return vf->link_up;
-+	else
-+		return pf->hw.port_info->phy.link_info.link_info &
-+			ICE_AQ_LINK_UP;
++	return ((vsi->info.sw_flags2 & rx_pruning) &&
++		(vsi->info.sec_flags & tx_pruning));
 +}
 +
  /**
-  * ice_vc_notify_vf_link_state - Inform a VF of link status
-  * @vf: pointer to the VF structure
-@@ -99,28 +119,16 @@ ice_set_pfe_link(struct ice_vf *vf, struct virtchnl_pf_event *pfe,
- static void ice_vc_notify_vf_link_state(struct ice_vf *vf)
- {
- 	struct virtchnl_pf_event pfe = { 0 };
--	struct ice_link_status *ls;
--	struct ice_pf *pf = vf->pf;
--	struct ice_hw *hw;
--
--	hw = &pf->hw;
--	ls = &hw->port_info->phy.link_info;
-+	struct ice_hw *hw = &vf->pf->hw;
+  * ice_cfg_vlan_pruning - enable or disable VLAN pruning on the VSI
+  * @vsi: VSI to enable or disable VLAN pruning on
+@@ -2060,6 +2084,17 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 		if (ret)
+ 			goto unroll_vector_base;
  
- 	pfe.event = VIRTCHNL_EVENT_LINK_CHANGE;
- 	pfe.severity = PF_EVENT_SEVERITY_INFO;
++		/* Always add VLAN ID 0 switch rule by default. This is needed
++		 * in order to allow all untagged and 0 tagged priority traffic
++		 * if Rx VLAN pruning is enabled. Also there are cases where we
++		 * don't get the call to add VLAN 0 via ice_vlan_rx_add_vid()
++		 * so this handles those cases (i.e. adding the PF to a bridge
++		 * without the 8021q module loaded).
++		 */
++		ret = ice_vsi_add_vlan(vsi, 0);
++		if (ret)
++			goto unroll_clear_rings;
++
+ 		ice_vsi_map_rings_to_vectors(vsi);
  
--	/* Always report link is down if the VF queues aren't enabled */
--	if (!vf->num_qs_ena) {
-+	if (ice_is_vf_link_up(vf))
-+		ice_set_pfe_link(vf, &pfe,
-+				 hw->port_info->phy.link_info.link_speed, true);
-+	else
- 		ice_set_pfe_link(vf, &pfe, ICE_AQ_LINK_SPEED_UNKNOWN, false);
--	} else if (vf->link_forced) {
--		u16 link_speed = vf->link_up ?
--			ls->link_speed : ICE_AQ_LINK_SPEED_UNKNOWN;
--
--		ice_set_pfe_link(vf, &pfe, link_speed, vf->link_up);
--	} else {
--		ice_set_pfe_link(vf, &pfe, ls->link_speed,
--				 ls->link_info & ICE_AQ_LINK_UP);
--	}
+ 		/* Do not exit if configuring RSS had an issue, at least
+@@ -2139,6 +2174,8 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
  
- 	ice_aq_send_msg_to_vf(hw, vf->vf_id, VIRTCHNL_OP_EVENT,
- 			      VIRTCHNL_STATUS_SUCCESS, (u8 *)&pfe,
+ 	return vsi;
+ 
++unroll_clear_rings:
++	ice_vsi_clear_rings(vsi);
+ unroll_vector_base:
+ 	/* reclaim SW interrupts back to the common pool */
+ 	ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 002fdbdade4f..b1e131c44e52 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -44,6 +44,8 @@ int ice_vsi_cfg_xdp_txqs(struct ice_vsi *vsi);
+ 
+ int ice_vsi_stop_xdp_tx_rings(struct ice_vsi *vsi);
+ 
++bool ice_vsi_is_vlan_pruning_ena(struct ice_vsi *vsi);
++
+ int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena, bool vlan_promisc);
+ 
+ void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 1bf6d21c38e4..4f20add0c5e3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2467,16 +2467,19 @@ ice_vlan_rx_add_vid(struct net_device *netdev, __always_unused __be16 proto,
+ 	if (vsi->info.pvid)
+ 		return -EINVAL;
+ 
+-	/* Enable VLAN pruning when VLAN 0 is added */
+-	if (unlikely(!vid)) {
++	/* VLAN 0 is added by default during load/reset */
++	if (!vid)
++		return 0;
++
++	/* Enable VLAN pruning when a VLAN other than 0 is added */
++	if (!ice_vsi_is_vlan_pruning_ena(vsi)) {
+ 		ret = ice_cfg_vlan_pruning(vsi, true, false);
+ 		if (ret)
+ 			return ret;
+ 	}
+ 
+-	/* Add all VLAN IDs including 0 to the switch filter. VLAN ID 0 is
+-	 * needed to continue allowing all untagged packets since VLAN prune
+-	 * list is applied to all packets by the switch
++	/* Add a switch rule for this VLAN ID so its corresponding VLAN tagged
++	 * packets aren't pruned by the device's internal switch on Rx
+ 	 */
+ 	ret = ice_vsi_add_vlan(vsi, vid);
+ 	if (!ret) {
+@@ -2506,6 +2509,10 @@ ice_vlan_rx_kill_vid(struct net_device *netdev, __always_unused __be16 proto,
+ 	if (vsi->info.pvid)
+ 		return -EINVAL;
+ 
++	/* don't allow removal of VLAN 0 */
++	if (!vid)
++		return 0;
++
+ 	/* Make sure ice_vsi_kill_vlan is successful before updating VLAN
+ 	 * information
+ 	 */
+@@ -2513,8 +2520,8 @@ ice_vlan_rx_kill_vid(struct net_device *netdev, __always_unused __be16 proto,
+ 	if (ret)
+ 		return ret;
+ 
+-	/* Disable VLAN pruning when VLAN 0 is removed */
+-	if (unlikely(!vid))
++	/* Disable pruning when VLAN 0 is the only VLAN rule */
++	if (vsi->num_vlan == 1 && ice_vsi_is_vlan_pruning_ena(vsi))
+ 		ret = ice_cfg_vlan_pruning(vsi, false, false);
+ 
+ 	vsi->vlan_ena = false;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 1874bfa65796..8230a58a9b19 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2843,9 +2843,9 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
+ 				goto error_param;
+ 			}
+ 
+-			vsi->num_vlan++;
+-			/* Enable VLAN pruning when VLAN is added */
+-			if (!vlan_promisc) {
++			/* Enable VLAN pruning when non-zero VLAN is added */
++			if (!vlan_promisc && vid &&
++			    !ice_vsi_is_vlan_pruning_ena(vsi)) {
+ 				status = ice_cfg_vlan_pruning(vsi, true, false);
+ 				if (status) {
+ 					v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+@@ -2853,7 +2853,7 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
+ 						vid, status);
+ 					goto error_param;
+ 				}
+-			} else {
++			} else if (vlan_promisc) {
+ 				/* Enable Ucast/Mcast VLAN promiscuous mode */
+ 				promisc_m = ICE_PROMISC_VLAN_TX |
+ 					    ICE_PROMISC_VLAN_RX;
+@@ -2897,9 +2897,9 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
+ 				goto error_param;
+ 			}
+ 
+-			vsi->num_vlan--;
+-			/* Disable VLAN pruning when the last VLAN is removed */
+-			if (!vsi->num_vlan)
++			/* Disable VLAN pruning when only VLAN 0 is left */
++			if (vsi->num_vlan == 1 &&
++			    ice_vsi_is_vlan_pruning_ena(vsi))
+ 				ice_cfg_vlan_pruning(vsi, false, false);
+ 
+ 			/* Disable Unicast/Multicast VLAN promiscuous mode */
 -- 
 2.20.1
 
