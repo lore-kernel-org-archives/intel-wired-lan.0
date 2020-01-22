@@ -1,87 +1,225 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Jan 2020 07:20:35 -0800
-Subject: [Intel-wired-lan] [PATCH S37 09/15] ice: update Unit Load Status
- bitmask to check after reset
-In-Reply-To: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
-References: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200122152041.41498-9-anthony.l.nguyen@intel.com>
+Date: Wed, 22 Jan 2020 07:20:27 -0800
+Subject: [Intel-wired-lan] [PATCH S37 01/15] ice: Fix DCB rebuild after reset
+Message-ID: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Dave Ertman <david.m.ertman@intel.com>
 
-After a reset the Unit Load Status bits in the GLNVM_ULD register to check
-for completion should be 0x7FF before continuing.  Update the mask to check
-(minus the three reserved bits that are always set).
+The function ice_dcb_rebuild had some logic
+flaws in it, and also didn't differentiate
+between FW and SW modes needs.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+For FW flow, the willing setting was being
+forced to OFF and left that way.  Unwilling
+in DCB FW mode is not a supported model.
+
+Leave the config alone and use the return value
+from the set command to determine if setting the
+config was successful.
+
+The SW DCB flow does not need to need to register
+for MIB change events (as they are not used in
+SW mode).
+
+Use !is_sw_lldp checks to only perform FW specific
+task while in FW mode.
+
+Also adding a reapplication of the current DCB
+config after a link event.  Some NVMs are not
+maintaining their DCB configs across link events.
+
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c    | 18 +++++++++++++-----
- .../net/ethernet/intel/ice/ice_hw_autogen.h    |  6 ++++++
- 2 files changed, 19 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 82 ++++++++------------
+ drivers/net/ethernet/intel/ice/ice_main.c    |  1 +
+ 2 files changed, 35 insertions(+), 48 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 2d418c84d6a5..e89b549b943d 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -818,7 +818,7 @@ void ice_deinit_hw(struct ice_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 9401f2051293..8268122face2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -339,9 +339,9 @@ ice_dcb_need_recfg(struct ice_pf *pf, struct ice_dcbx_cfg *old_cfg,
   */
- enum ice_status ice_check_reset(struct ice_hw *hw)
+ void ice_dcb_rebuild(struct ice_pf *pf)
  {
--	u32 cnt, reg = 0, grst_delay;
-+	u32 cnt, reg = 0, grst_delay, uld_mask;
+-	struct ice_dcbx_cfg *local_dcbx_cfg, *desired_dcbx_cfg, *prev_cfg;
+ 	struct ice_aqc_port_ets_elem buf = { 0 };
+ 	struct device *dev = ice_pf_to_dev(pf);
++	struct ice_dcbx_cfg *err_cfg;
+ 	enum ice_status ret;
  
- 	/* Poll for Device Active state in case a recent CORER, GLOBR,
- 	 * or EMPR has occurred. The grst delay value is in 100ms units.
-@@ -840,13 +840,21 @@ enum ice_status ice_check_reset(struct ice_hw *hw)
- 		return ICE_ERR_RESET_FAILED;
+ 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
+@@ -354,53 +354,25 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+ 	if (!test_bit(ICE_FLAG_DCB_ENA, pf->flags))
+ 		return;
+ 
+-	local_dcbx_cfg = &pf->hw.port_info->local_dcbx_cfg;
+-	desired_dcbx_cfg = &pf->hw.port_info->desired_dcbx_cfg;
++	mutex_lock(&pf->tc_mutex);
+ 
+-	/* Save current willing state and force FW to unwilling */
+-	local_dcbx_cfg->etscfg.willing = 0x0;
+-	local_dcbx_cfg->pfc.willing = 0x0;
+-	local_dcbx_cfg->app_mode = ICE_DCBX_APPS_NON_WILLING;
++	if (!pf->hw.port_info->is_sw_lldp)
++		ice_cfg_etsrec_defaults(pf->hw.port_info);
+ 
+-	ice_cfg_etsrec_defaults(pf->hw.port_info);
+ 	ret = ice_set_dcb_cfg(pf->hw.port_info);
+ 	if (ret) {
+-		dev_err(dev, "Failed to set DCB to unwilling\n");
++		dev_err(dev, "Failed to set DCB config in rebuild\n");
+ 		goto dcb_error;
  	}
  
--#define ICE_RESET_DONE_MASK	(GLNVM_ULD_CORER_DONE_M | \
--				 GLNVM_ULD_GLOBR_DONE_M)
-+#define ICE_RESET_DONE_MASK	(GLNVM_ULD_PCIER_DONE_M |\
-+				 GLNVM_ULD_PCIER_DONE_1_M |\
-+				 GLNVM_ULD_CORER_DONE_M |\
-+				 GLNVM_ULD_GLOBR_DONE_M |\
-+				 GLNVM_ULD_POR_DONE_M |\
-+				 GLNVM_ULD_POR_DONE_1_M |\
-+				 GLNVM_ULD_PCIER_DONE_2_M)
-+
-+	uld_mask = ICE_RESET_DONE_MASK | (hw->func_caps.common_cap.iwarp ?
-+					  GLNVM_ULD_PE_DONE_M : 0);
+-	/* Retrieve DCB config and ensure same as current in SW */
+-	prev_cfg = kmemdup(local_dcbx_cfg, sizeof(*prev_cfg), GFP_KERNEL);
+-	if (!prev_cfg)
+-		goto dcb_error;
+-
+-	ice_init_dcb(&pf->hw, true);
+-	if (pf->hw.port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
+-		pf->hw.port_info->is_sw_lldp = true;
+-	else
+-		pf->hw.port_info->is_sw_lldp = false;
+-
+-	if (ice_dcb_need_recfg(pf, prev_cfg, local_dcbx_cfg)) {
+-		/* difference in cfg detected - disable DCB till next MIB */
+-		dev_err(dev, "Set local MIB not accurate\n");
+-		kfree(prev_cfg);
+-		goto dcb_error;
++	if (!pf->hw.port_info->is_sw_lldp) {
++		ret = ice_cfg_lldp_mib_change(&pf->hw, true);
++		if (ret && !pf->hw.port_info->is_sw_lldp) {
++			dev_err(dev, "Failed to register for MIB changes\n");
++			goto dcb_error;
++		}
+ 	}
  
- 	/* Device is Active; check Global Reset processes are done */
- 	for (cnt = 0; cnt < ICE_PF_RESET_WAIT_COUNT; cnt++) {
--		reg = rd32(hw, GLNVM_ULD) & ICE_RESET_DONE_MASK;
--		if (reg == ICE_RESET_DONE_MASK) {
-+		reg = rd32(hw, GLNVM_ULD) & uld_mask;
-+		if (reg == uld_mask) {
- 			ice_debug(hw, ICE_DBG_INIT,
- 				  "Global reset processes done. %d\n", cnt);
- 			break;
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 30f50b06173e..306b8943cfc0 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -268,8 +268,14 @@
- #define GLNVM_GENS_SR_SIZE_S			5
- #define GLNVM_GENS_SR_SIZE_M			ICE_M(0x7, 5)
- #define GLNVM_ULD				0x000B6008
-+#define GLNVM_ULD_PCIER_DONE_M			BIT(0)
-+#define GLNVM_ULD_PCIER_DONE_1_M		BIT(1)
- #define GLNVM_ULD_CORER_DONE_M			BIT(3)
- #define GLNVM_ULD_GLOBR_DONE_M			BIT(4)
-+#define GLNVM_ULD_POR_DONE_M			BIT(5)
-+#define GLNVM_ULD_POR_DONE_1_M			BIT(8)
-+#define GLNVM_ULD_PCIER_DONE_2_M		BIT(9)
-+#define GLNVM_ULD_PE_DONE_M			BIT(10)
- #define GLPCI_CNF2				0x000BE004
- #define GLPCI_CNF2_CACHELINE_SIZE_M		BIT(1)
- #define PF_FUNC_RID				0x0009E880
+-	/* fetched config congruent to previous configuration */
+-	kfree(prev_cfg);
+-
+-	/* Set the local desired config */
+-	if (local_dcbx_cfg->dcbx_mode == ICE_DCBX_MODE_CEE)
+-		memcpy(local_dcbx_cfg, desired_dcbx_cfg,
+-		       sizeof(*local_dcbx_cfg));
+-
+-	ice_cfg_etsrec_defaults(pf->hw.port_info);
+-	ret = ice_set_dcb_cfg(pf->hw.port_info);
+-	if (ret) {
+-		dev_err(dev, "Failed to set desired config\n");
+-		goto dcb_error;
+-	}
+ 	dev_info(dev, "DCB restored after reset\n");
+ 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
+ 	if (ret) {
+@@ -408,26 +380,32 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+ 		goto dcb_error;
+ 	}
+ 
++	mutex_unlock(&pf->tc_mutex);
++
+ 	return;
+ 
+ dcb_error:
+ 	dev_err(dev, "Disabling DCB until new settings occur\n");
+-	prev_cfg = kzalloc(sizeof(*prev_cfg), GFP_KERNEL);
+-	if (!prev_cfg)
++	err_cfg = kzalloc(sizeof(*err_cfg), GFP_KERNEL);
++	if (!err_cfg) {
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
++	}
+ 
+-	prev_cfg->etscfg.willing = true;
+-	prev_cfg->etscfg.tcbwtable[0] = ICE_TC_MAX_BW;
+-	prev_cfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
+-	memcpy(&prev_cfg->etsrec, &prev_cfg->etscfg, sizeof(prev_cfg->etsrec));
++	err_cfg->etscfg.willing = true;
++	err_cfg->etscfg.tcbwtable[0] = ICE_TC_MAX_BW;
++	err_cfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
++	memcpy(&err_cfg->etsrec, &err_cfg->etscfg, sizeof(err_cfg->etsrec));
+ 	/* Coverity warns the return code of ice_pf_dcb_cfg() is not checked
+ 	 * here as is done for other calls to that function. That check is
+ 	 * not necessary since this is in this function's error cleanup path.
+ 	 * Suppress the Coverity warning with the following comment...
+ 	 */
+ 	/* coverity[check_return] */
+-	ice_pf_dcb_cfg(pf, prev_cfg, false);
+-	kfree(prev_cfg);
++	ice_pf_dcb_cfg(pf, err_cfg, false);
++	kfree(err_cfg);
++
++	mutex_unlock(&pf->tc_mutex);
+ }
+ 
+ /**
+@@ -842,6 +820,8 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 		}
+ 	}
+ 
++	mutex_lock(&pf->tc_mutex);
++
+ 	/* store the old configuration */
+ 	tmp_dcbx_cfg = pf->hw.port_info->local_dcbx_cfg;
+ 
+@@ -852,20 +832,24 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 	ret = ice_get_dcb_cfg(pf->hw.port_info);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to get DCB config\n");
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
+ 	}
+ 
+ 	/* No change detected in DCBX configs */
+ 	if (!memcmp(&tmp_dcbx_cfg, &pi->local_dcbx_cfg, sizeof(tmp_dcbx_cfg))) {
+ 		dev_dbg(dev, "No change detected in DCBX configuration.\n");
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
+ 	}
+ 
+ 	need_reconfig = ice_dcb_need_recfg(pf, &tmp_dcbx_cfg,
+ 					   &pi->local_dcbx_cfg);
+ 	ice_dcbnl_flush_apps(pf, &tmp_dcbx_cfg, &pi->local_dcbx_cfg);
+-	if (!need_reconfig)
++	if (!need_reconfig) {
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
++	}
+ 
+ 	/* Enable DCB tagging only when more than one TC */
+ 	if (ice_dcb_get_num_tc(&pi->local_dcbx_cfg) > 1) {
+@@ -889,6 +873,7 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 	if (ret) {
+ 		dev_err(dev, "Query Port ETS failed\n");
+ 		rtnl_unlock();
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
+ 	}
+ 
+@@ -897,4 +882,5 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 
+ 	ice_ena_vsi(pf_vsi, true);
+ 	rtnl_unlock();
++	mutex_unlock(&pf->tc_mutex);
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 6ce422789df7..d4bc6fd3321c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -844,6 +844,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
+ 		}
+ 	}
+ 
++	ice_dcb_rebuild(pf);
+ 	ice_vsi_link_event(vsi, link_up);
+ 	ice_print_link_msg(vsi, link_up);
+ 
 -- 
 2.20.1
 
