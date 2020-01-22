@@ -1,154 +1,50 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 21 Jan 2020 08:20:21 -0800
-Subject: [Intel-wired-lan] [PATCH S34 v3 6/6] ice: Pass through
- communications to VF
-In-Reply-To: <20200121162021.17107-1-anthony.l.nguyen@intel.com>
-References: <20200121162021.17107-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200121162021.17107-6-anthony.l.nguyen@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Wed, 22 Jan 2020 08:23:45 +0200
+Subject: [Intel-wired-lan] [PATCH v1] e1000e: Add support to 0x15F5
+ Device Id of Tiger Lake
+In-Reply-To: <20200119100809.38869-1-vitaly.lifshits@intel.com>
+References: <20200119100809.38869-1-vitaly.lifshits@intel.com>
+Message-ID: <f5267132-ff6e-3631-70a0-635ef8f3f03c@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
-
-Allow for forwarding of RDMA and VF virt channel messages. The driver will
-forward messages from the RDMA driver to the VF via the vc_send operation
-and invoke the peer's vc_receive() call when receiving a virt channel
-message destined for the peer driver.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h          |  1 +
- drivers/net/ethernet/intel/ice/ice_idc.c      | 34 +++++++++++++++++++
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 34 +++++++++++++++++++
- 3 files changed, 69 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 24ec228b99d8..8b33fe62198f 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -384,6 +384,7 @@ struct ice_pf {
- 	u32 msg_enable;
- 	u32 num_rdma_msix;	/* Total MSIX vectors for RDMA driver */
- 	u32 rdma_base_vector;
-+	struct iidc_peer_dev *rdma_peer;
- 	u32 hw_csum_rx_error;
- 	u32 oicr_idx;		/* Other interrupt cause MSIX vector index */
- 	u32 num_avail_sw_msix;	/* remaining MSIX SW vectors left unclaimed */
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-index 6d625cc18a9d..0f884bf187f2 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc.c
-+++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-@@ -1095,6 +1095,38 @@ ice_peer_update_vsi_filter(struct iidc_peer_dev *peer_dev,
- 	return ret;
- }
- 
-+/**
-+ * ice_peer_vc_send - send a virt channel message from RDMA peer
-+ * @peer_dev: pointer to RDMA peer dev
-+ * @vf_id: the absolute VF ID of recipient of message
-+ * @msg: pointer to message contents
-+ * @len: len of message
-+ */
-+static int
-+ice_peer_vc_send(struct iidc_peer_dev *peer_dev, u32 vf_id, u8 *msg, u16 len)
-+{
-+	struct ice_pf *pf;
-+	int err;
-+
-+	if (!ice_validate_peer_dev(peer_dev))
-+		return -EINVAL;
-+	if (!msg || !len)
-+		return -ENOMEM;
-+
-+	pf = pci_get_drvdata(peer_dev->pdev);
-+	if (vf_id >= pf->num_alloc_vfs || len > ICE_AQ_MAX_BUF_LEN)
-+		return -EINVAL;
-+
-+	/* VIRTCHNL_OP_IWARP is being used for RoCEv2 msg also */
-+	err = ice_aq_send_msg_to_vf(&pf->hw, vf_id, VIRTCHNL_OP_IWARP, 0, msg,
-+				    len, NULL);
-+	if (err)
-+		dev_err(ice_pf_to_dev(pf), "Unable to send RDMA msg to VF, error %d\n",
-+			err);
-+
-+	return err;
-+}
-+
- /* Initialize the ice_ops struct, which is used in 'ice_init_peer_devices' */
- static const struct iidc_ops ops = {
- 	.alloc_res			= ice_peer_alloc_res,
-@@ -1107,6 +1139,7 @@ static const struct iidc_ops ops = {
- 	.peer_register			= ice_peer_register,
- 	.peer_unregister		= ice_peer_unregister,
- 	.update_vsi_filter		= ice_peer_update_vsi_filter,
-+	.vc_send			= ice_peer_vc_send,
- };
- 
- /**
-@@ -1286,6 +1319,7 @@ int ice_init_peer_devices(struct ice_pf *pf)
- 		switch (ice_peers[i].id) {
- 		case IIDC_PEER_RDMA_ID:
- 			if (test_bit(ICE_FLAG_IWARP_ENA, pf->flags)) {
-+				pf->rdma_peer = peer_dev;
- 				peer_dev->msix_count = pf->num_rdma_msix;
- 				entry = &pf->msix_entries[pf->rdma_base_vector];
- 			}
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index c4f825650f30..d8016d104ca4 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -3031,6 +3031,37 @@ static int ice_vc_dis_vlan_stripping(struct ice_vf *vf)
- 				     v_ret, NULL, 0);
- }
- 
-+/**
-+ * ice_vc_rdma_msg - send msg to RDMA PF from VF
-+ * @vf: pointer to VF info
-+ * @msg: pointer to msg buffer
-+ * @len: length of the message
-+ *
-+ * This function is called indirectly from the AQ clean function.
-+ */
-+static int ice_vc_rdma_msg(struct ice_vf *vf, u8 *msg, u16 len)
-+{
-+	struct iidc_peer_dev *rdma_peer;
-+	int ret;
-+
-+	rdma_peer = vf->pf->rdma_peer;
-+	if (!rdma_peer) {
-+		pr_err("Invalid RDMA peer attempted to send message to peer\n");
-+		return -EIO;
-+	}
-+
-+	if (!rdma_peer->peer_ops || !rdma_peer->peer_ops->vc_receive) {
-+		pr_err("Incomplete RMDA peer attempting to send msg\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = rdma_peer->peer_ops->vc_receive(rdma_peer, vf->vf_id, msg, len);
-+	if (ret)
-+		pr_err("Failed to send message to RDMA peer, error %d\n", ret);
-+
-+	return ret;
-+}
-+
- /**
-  * ice_vf_init_vlan_stripping - enable/disable VLAN stripping on initialization
-  * @vf: VF to enable/disable VLAN stripping for on initialization
-@@ -3166,6 +3197,9 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
- 		err = ice_vc_dis_vlan_stripping(vf);
- 		break;
-+	case VIRTCHNL_OP_IWARP:
-+		err = ice_vc_rdma_msg(vf, msg, msglen);
-+		break;
- 	case VIRTCHNL_OP_UNKNOWN:
- 	default:
- 		dev_err(dev, "Unsupported opcode %d from VF %d\n", v_opcode,
--- 
-2.20.1
-
+On 1/19/2020 12:08, Vitaly Lifshits wrote:
+> Added support to 0x15F5 Device ID which is part of Intel Tiger Lake
+> Platforms. This patch follows commit:
+> 776f5d57ee ("e1000e: Add support for Tiger Lake").
+> 
+> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/hw.h     | 1 +
+>   drivers/net/ethernet/intel/e1000e/netdev.c | 1 +
+>   2 files changed, 2 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
+> index f556163481cb..b85210ef31d9 100644
+> --- a/drivers/net/ethernet/intel/e1000e/hw.h
+> +++ b/drivers/net/ethernet/intel/e1000e/hw.h
+> @@ -97,6 +97,7 @@ struct e1000_hw;
+>   #define E1000_DEV_ID_PCH_TGP_I219_LM14		0x15F9
+>   #define E1000_DEV_ID_PCH_TGP_I219_V14		0x15FA
+>   #define E1000_DEV_ID_PCH_TGP_I219_LM15		0x15F4
+> +#define E1000_DEV_ID_PCH_TGP_I219_V15		0x15F5
+>   
+>   #define E1000_REVISION_4	4
+>   
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 8797913b2702..3c3624f276d5 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -7764,6 +7764,7 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+>   	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14), board_pch_cnp },
+>   	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_cnp },
+>   	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_cnp },
+> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_cnp },
+>   
+>   	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
+>   };
+> 
+Acked-by: Sasha Neftin <sasha.neftin@intel.com>
