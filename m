@@ -1,9 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Jan 2020 07:21:27 -0800
-Subject: [Intel-wired-lan] [PATCH S38 04/15] ice: Fix Port VLAN priority bits
+Date: Wed, 22 Jan 2020 07:21:33 -0800
+Subject: [Intel-wired-lan] [PATCH S38 10/15] ice: Fix virtchnl_queue_select
+ bitmap validation
 In-Reply-To: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
 References: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200122152138.41585-4-anthony.l.nguyen@intel.com>
+Message-ID: <20200122152138.41585-10-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,135 +13,78 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Currently when configuring a port VLAN for a VF we are only shifting the
-QoS bits by 12. This is incorrect. Fix this by getting rid of the ICE
-specific VLAN defines and use the kernel VLAN defines instead.
+Currently in ice_vc_ena_qs_msg() we are incorrectly validating the
+virtchnl queue select bitmaps. The virtchnl_queue_select rx_queues and
+tx_queue bitmap is being compared against ICE_MAX_BASE_QS_PER_VF, but
+the problem is that these bitmaps can have a value greater than
+ICE_MAX_BASE_QS_PER_VF. Fix this by comparing the bitmaps against
+BIT(ICE_MAX_BASE_QS_PER_VF).
 
-Also, don't assign a value to vlanprio until the VLAN ID and QoS
-parameters have been validated.
+Also, add the function ice_vc_validate_vqs_bitmaps() that checks to see
+if both virtchnl_queue_select bitmaps are empty along with checking that
+the bitmaps only have valid bits set. This function can then be used in
+both the queue enable and disable flows.
 
-Also, there are many places we do (le16_to_cpu(vsi->info.pvid) &
-VLAN_VID_MASK). Instead do (vf->port_vlan_info & VLAN_VID_MASK) because
-we always save what's stored in vsi->info.pvid to vf->port_vlan_info in
-the CPU's endianness.
+Arkady Gilinksky's patch on the intel-wired-lan mailing list
+("i40e/iavf: Fix msg interface between VF and PF") made me
+aware of this issue.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 27 +++++++++----------
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  5 ----
- 2 files changed, 13 insertions(+), 19 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 26 +++++++++++++------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 0133a79bbf4c..250fbfd4c5ff 100644
+index 5513ee42de3c..7d778b3d5d5a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -528,7 +528,7 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
- 	/* Check if port VLAN exist before, and restore it accordingly */
- 	if (vf->port_vlan_info) {
- 		ice_vsi_manage_pvid(vsi, vf->port_vlan_info, true);
--		ice_vsi_add_vlan(vsi, vf->port_vlan_info & ICE_VLAN_M);
-+		ice_vsi_add_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK);
- 	}
+@@ -2045,6 +2045,22 @@ static int ice_vc_get_stats_msg(struct ice_vf *vf, u8 *msg)
+ 				     (u8 *)&stats, sizeof(stats));
+ }
  
- 	eth_broadcast_addr(broadcast);
-@@ -2659,19 +2659,20 @@ int
- ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
- 		     __be16 vlan_proto)
- {
--	u16 vlanprio = vlan_id | (qos << ICE_VLAN_PRIORITY_S);
- 	struct ice_pf *pf = ice_netdev_to_pf(netdev);
- 	struct ice_vsi *vsi;
- 	struct device *dev;
- 	struct ice_vf *vf;
-+	u16 vlanprio;
- 	int ret = 0;
- 
- 	dev = ice_pf_to_dev(pf);
- 	if (ice_validate_vf_id(pf, vf_id))
- 		return -EINVAL;
- 
--	if (vlan_id > ICE_MAX_VLANID || qos > 7) {
--		dev_err(dev, "Invalid VF Parameters\n");
-+	if (vlan_id >= VLAN_N_VID || qos > 7) {
-+		dev_err(dev, "Invalid Port VLAN parameters for VF %d, ID %d, QoS %d\n",
-+			vf_id, vlan_id, qos);
- 		return -EINVAL;
- 	}
- 
-@@ -2685,16 +2686,17 @@ ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
- 	if (ice_check_vf_init(pf, vf))
- 		return -EBUSY;
- 
--	if (le16_to_cpu(vsi->info.pvid) == vlanprio) {
-+	vlanprio = vlan_id | (qos << VLAN_PRIO_SHIFT);
++/**
++ * ice_vc_validate_vqs_bitmaps - validate Rx/Tx queue bitmaps from VIRTCHNL
++ * @vqs: virtchnl_queue_select structure containing bitmaps to validate
++ *
++ * Return true on successful validation, else false
++ */
++static bool ice_vc_validate_vqs_bitmaps(struct virtchnl_queue_select *vqs)
++{
++	if ((!vqs->rx_queues && !vqs->tx_queues) ||
++	    vqs->rx_queues >= BIT(ICE_MAX_BASE_QS_PER_VF) ||
++	    vqs->tx_queues >= BIT(ICE_MAX_BASE_QS_PER_VF))
++		return false;
 +
-+	if (vf->port_vlan_info == vlanprio) {
- 		/* duplicate request, so just return success */
- 		dev_dbg(dev, "Duplicate pvid %d request\n", vlanprio);
- 		return ret;
++	return true;
++}
++
+ /**
+  * ice_vc_ena_qs_msg
+  * @vf: pointer to the VF info
+@@ -2072,13 +2088,7 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
  	}
  
- 	/* If PVID, then remove all filters on the old VLAN */
--	if (vsi->info.pvid)
--		ice_vsi_kill_vlan(vsi, (le16_to_cpu(vsi->info.pvid) &
--				  VLAN_VID_MASK));
-+	if (vf->port_vlan_info)
-+		ice_vsi_kill_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK);
- 
- 	if (vlan_id || qos) {
- 		ret = ice_vsi_manage_pvid(vsi, vlanprio, true);
-@@ -2775,7 +2777,7 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
- 	}
- 
- 	for (i = 0; i < vfl->num_elements; i++) {
--		if (vfl->vlan_id[i] > ICE_MAX_VLANID) {
-+		if (vfl->vlan_id[i] >= VLAN_N_VID) {
- 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 			dev_err(dev, "invalid VF VLAN id %d\n",
- 				vfl->vlan_id[i]);
-@@ -3206,14 +3208,12 @@ int
- ice_get_vf_cfg(struct net_device *netdev, int vf_id, struct ifla_vf_info *ivi)
- {
- 	struct ice_pf *pf = ice_netdev_to_pf(netdev);
--	struct ice_vsi *vsi;
- 	struct ice_vf *vf;
- 
- 	if (ice_validate_vf_id(pf, vf_id))
- 		return -EINVAL;
- 
- 	vf = &pf->vf[vf_id];
--	vsi = pf->vsi[vf->lan_vsi_idx];
- 
- 	if (ice_check_vf_init(pf, vf))
- 		return -EBUSY;
-@@ -3222,9 +3222,8 @@ ice_get_vf_cfg(struct net_device *netdev, int vf_id, struct ifla_vf_info *ivi)
- 	ether_addr_copy(ivi->mac, vf->dflt_lan_addr.addr);
- 
- 	/* VF configuration for VLAN and applicable QoS */
--	ivi->vlan = le16_to_cpu(vsi->info.pvid) & ICE_VLAN_M;
--	ivi->qos = (le16_to_cpu(vsi->info.pvid) & ICE_PRIORITY_M) >>
--		    ICE_VLAN_PRIORITY_S;
-+	ivi->vlan = vf->port_vlan_info & VLAN_VID_MASK;
-+	ivi->qos = (vf->port_vlan_info & VLAN_PRIO_MASK) >> VLAN_PRIO_SHIFT;
- 
- 	ivi->trusted = vf->trusted;
- 	ivi->spoofchk = vf->spoofchk;
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 80bb1acc7c28..a1bb196d417a 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -5,11 +5,6 @@
- #define _ICE_VIRTCHNL_PF_H_
- #include "ice.h"
- 
--#define ICE_MAX_VLANID			4095
--#define ICE_VLAN_PRIORITY_S		12
--#define ICE_VLAN_M			0xFFF
--#define ICE_PRIORITY_M			0x7000
+-	if (!vqs->rx_queues && !vqs->tx_queues) {
+-		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+-		goto error_param;
+-	}
 -
- /* Restrict number of MAC Addr and VLAN that non-trusted VF can programmed */
- #define ICE_MAX_VLAN_PER_VF		8
- #define ICE_MAX_MACADDR_PER_VF		12
+-	if (vqs->rx_queues > ICE_MAX_BASE_QS_PER_VF ||
+-	    vqs->tx_queues > ICE_MAX_BASE_QS_PER_VF) {
++	if (!ice_vc_validate_vqs_bitmaps(vqs)) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		goto error_param;
+ 	}
+@@ -2168,7 +2178,7 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
+-	if (!vqs->rx_queues && !vqs->tx_queues) {
++	if (!ice_vc_validate_vqs_bitmaps(vqs)) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		goto error_param;
+ 	}
 -- 
 2.20.1
 
