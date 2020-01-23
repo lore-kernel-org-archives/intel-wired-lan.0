@@ -1,35 +1,59 @@
-From: Colin King <colin.king@canonical.com>
-Date: Thu, 23 Jan 2020 00:14:29 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: fix spelling mistake "to" -> "too"
-Message-ID: <20200123001429.2831701-1-colin.king@canonical.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 23 Jan 2020 00:33:51 +0000
+Subject: [Intel-wired-lan] [PATCH S34 v3 1/6] ice: Create and register
+ virtual bus for RDMA
+In-Reply-To: <20200121162021.17107-1-anthony.l.nguyen@intel.com>
+References: <20200121162021.17107-1-anthony.l.nguyen@intel.com>
+Message-ID: <d3719a7426404bbfb7fac958d90720d7@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Tuesday, January 21, 2020 8:20 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S34 v3 1/6] ice: Create and register virtual
+> bus for RDMA
+> 
+> From: Dave Ertman <david.m.ertman@intel.com>
+> 
+> The RDMA block does not have its own PCI function, instead it must utilize
+> the ice driver to gain access to the PCI device. Create a virtual bus device so
+> the irdma driver can register a virtual bus driver to bind to it and receive
+> device data. The device data contains all of the relevant information that the
+> irdma peer will need to access this PF's IIDC API callbacks.
+> 
+> Note the header file iidc.h is located under include/linux/net/intel as this is a
+> unified header file to be used by all consumers of the IIDC interface.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  MAINTAINERS                                   |   1 +
+>  drivers/net/ethernet/intel/Kconfig            |   1 +
+>  drivers/net/ethernet/intel/ice/Makefile       |   1 +
+>  drivers/net/ethernet/intel/ice/ice.h          |  13 +
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   1 +
+>  drivers/net/ethernet/intel/ice/ice_common.c   |  15 +
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |  31 ++
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |   3 +
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   |   1 +
+>  drivers/net/ethernet/intel/ice/ice_idc.c      | 422 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_idc_int.h  |  67 +++
+>  drivers/net/ethernet/intel/ice/ice_lib.c      |  11 +
+>  drivers/net/ethernet/intel/ice/ice_lib.h      |   2 +
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  56 ++-
+>  drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+>  include/linux/net/intel/iidc.h                | 337 ++++++++++++++
+>  16 files changed, 961 insertions(+), 2 deletions(-)  create mode 100644
+> drivers/net/ethernet/intel/ice/ice_idc.c
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_idc_int.h
+>  create mode 100644 include/linux/net/intel/iidc.h
 
-There is a spelling mistake in a hw_dbg message. Fix it.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/net/ethernet/intel/i40e/i40e_common.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index d4055037af89..45b90eb11adb 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1113,7 +1113,7 @@ i40e_status i40e_read_pba_string(struct i40e_hw *hw, u8 *pba_num,
- 	 */
- 	pba_size--;
- 	if (pba_num_size < (((u32)pba_size * 2) + 1)) {
--		hw_dbg(hw, "Buffer to small for PBA data.\n");
-+		hw_dbg(hw, "Buffer too small for PBA data.\n");
- 		return I40E_ERR_PARAM;
- 	}
- 
--- 
-2.24.0
 
