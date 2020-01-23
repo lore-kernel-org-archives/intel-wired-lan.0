@@ -1,30 +1,35 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 23 Jan 2020 00:12:30 +0000
-Subject: [Intel-wired-lan] [PATCH S36 8/8] ice: Bump version
-In-Reply-To: <20200117153919.50321-8-anthony.l.nguyen@intel.com>
-References: <20200117153919.50321-1-anthony.l.nguyen@intel.com>
- <20200117153919.50321-8-anthony.l.nguyen@intel.com>
-Message-ID: <e2356cf29bc54f8cb5faabcc8e5531d4@intel.com>
+From: Colin King <colin.king@canonical.com>
+Date: Thu, 23 Jan 2020 00:14:29 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: fix spelling mistake "to" -> "too"
+Message-ID: <20200123001429.2831701-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Friday, January 17, 2020 7:39 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S36 8/8] ice: Bump version
-> 
-> Bump version to 0.8.2-k
-> 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+From: Colin Ian King <colin.king@canonical.com>
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+There is a spelling mistake in a hw_dbg message. Fix it.
 
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index d4055037af89..45b90eb11adb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1113,7 +1113,7 @@ i40e_status i40e_read_pba_string(struct i40e_hw *hw, u8 *pba_num,
+ 	 */
+ 	pba_size--;
+ 	if (pba_num_size < (((u32)pba_size * 2) + 1)) {
+-		hw_dbg(hw, "Buffer to small for PBA data.\n");
++		hw_dbg(hw, "Buffer too small for PBA data.\n");
+ 		return I40E_ERR_PARAM;
+ 	}
+ 
+-- 
+2.24.0
 
