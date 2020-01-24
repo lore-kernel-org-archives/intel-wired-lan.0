@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
 Date: Fri, 24 Jan 2020 23:17:07 +0000
-Subject: [Intel-wired-lan] [PATCH S37 02/15] ice: Fix switch between FW
- and SW LLDP
-In-Reply-To: <20200122152041.41498-2-anthony.l.nguyen@intel.com>
+Subject: [Intel-wired-lan] [PATCH S37 03/15] ice: display supported and
+ advertised link modes
+In-Reply-To: <20200122152041.41498-3-anthony.l.nguyen@intel.com>
 References: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
- <20200122152041.41498-2-anthony.l.nguyen@intel.com>
-Message-ID: <f36e6fafc0e1406e8fd14f3e73c4d3d9@intel.com>
+ <20200122152041.41498-3-anthony.l.nguyen@intel.com>
+Message-ID: <0e9bfe8d77f24170b9470b51875badb8@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, January 22, 2020 7:20 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S37 02/15] ice: Fix switch between FW and
-> SW LLDP
+> Subject: [Intel-wired-lan] [PATCH S37 03/15] ice: display supported and
+> advertised link modes
 > 
-> From: Dave Ertman <david.m.ertman@intel.com>
+> From: Paul Greenwalt <paul.greenwalt@intel.com>
 > 
-> When switching between FW and SW LLDP mode, the number of configured
-> TLV apps in the driver's DCB configuration is getting out of synch with what
-> lldpad thinks is configured.  This is causing a problem when shutting down
-> lldpad.  The cleanup is trying to delete TLV apps that are not defined in the
-> kernel.
+> Display all of the supported and advertised link modes based on the PHY
+> capability with media.
 > 
-> Since the driver is keeping an accurate account of the apps defined, use the
-> drivers number of apps to determine if there is an app to delete.
-> If the number of apps is <= 1, then do not attempt to delete.
+> Displaying all supported modes is more informative then only displaying the
+> current link mode.
 > 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 282 +------------------
+>  1 file changed, 2 insertions(+), 280 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
