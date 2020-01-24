@@ -1,130 +1,50 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 24 Jan 2020 09:17:12 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 042/107] iavf: remove current
- MAC address filter on VF reset
-In-Reply-To: <20200124141817.28793-1-sashal@kernel.org>
-References: <20200124141817.28793-1-sashal@kernel.org>
-Message-ID: <20200124141817.28793-42-sashal@kernel.org>
+Date: Fri, 24 Jan 2020 09:19:36 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 20/56] ixgbevf: Remove limit
+ of 10 entries for unicast filter list
+In-Reply-To: <20200124142012.29752-1-sashal@kernel.org>
+References: <20200124142012.29752-1-sashal@kernel.org>
+Message-ID: <20200124142012.29752-20-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Stefan Assmann <sassmann@kpanic.de>
+From: Radoslaw Tyl <radoslawx.tyl@intel.com>
 
-[ Upstream commit 9e05229190380f6b8f702da39aaeb97a0fc80dc3 ]
+[ Upstream commit aa604651d523b1493988d0bf6710339f3ee60272 ]
 
-Currently MAC filters are not altered during a VF reset event. This may
-lead to a stale filter when an administratively set MAC is forced by the
-PF.
+Currently, though the FDB entry is added to VF, it does not appear in
+RAR filters. VF driver only allows to add 10 entries. Attempting to add
+another causes an error. This patch removes limitation and allows use of
+all free RAR entries for the FDB if needed.
 
-For an administratively set MAC the PF driver deletes the VFs filters,
-overwrites the VFs MAC address and triggers a VF reset. However
-the VF driver itself is not aware of the filter removal, which is what
-the VF reset is for.
-The VF reset queues all filters present in the VF driver to be re-added
-to the PF filter list (including the filter for the now stale VF MAC
-address) and triggers a VIRTCHNL_OP_GET_VF_RESOURCES event, which
-provides the new MAC address to the VF.
-
-When this happens i40e will complain and reject the stale MAC filter,
-at least in the untrusted VF case.
-i40e 0000:08:00.0: Setting MAC 3c:fa:fa:fa:fa:01 on VF 0
-iavf 0000:08:02.0: Reset warning received from the PF
-iavf 0000:08:02.0: Scheduling reset task
-i40e 0000:08:00.0: Bring down and up the VF interface to make this change effective.
-i40e 0000:08:00.0: VF attempting to override administratively set MAC address, bring down and up the VF interface to resume normal operation
-i40e 0000:08:00.0: VF 0 failed opcode 10, retval: -1
-iavf 0000:08:02.0: Failed to add MAC filter, error IAVF_ERR_NVM
-
-To avoid re-adding the stale MAC filter it needs to be removed from the
-VF driver's filter list before queuing the existing filters. Then during
-the VIRTCHNL_OP_GET_VF_RESOURCES event the correct filter needs to be
-added again, at which point the MAC address has been updated.
-
-As a bonus this change makes bringing the VF down and up again
-superfluous for the administratively set MAC case.
-
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Fixes: 46ec20ff7d ("ixgbevf: Add macvlan support in the set rx mode op")
+Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
+Acked-by: Paul Menzel <pmenzel@molgen.mpg.de>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/iavf/iavf.h          |  2 ++
- drivers/net/ethernet/intel/iavf/iavf_main.c     | 17 +++++++++++++----
- drivers/net/ethernet/intel/iavf/iavf_virtchnl.c |  3 +++
- 3 files changed, 18 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 29de3ae96ef22..bd1b1ed323f4f 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -415,4 +415,6 @@ void iavf_enable_channels(struct iavf_adapter *adapter);
- void iavf_disable_channels(struct iavf_adapter *adapter);
- void iavf_add_cloud_filter(struct iavf_adapter *adapter);
- void iavf_del_cloud_filter(struct iavf_adapter *adapter);
-+struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
-+					const u8 *macaddr);
- #endif /* _IAVF_H_ */
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 821987da5698a..8e16be960e96b 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -743,9 +743,8 @@ iavf_mac_filter *iavf_find_filter(struct iavf_adapter *adapter,
-  *
-  * Returns ptr to the filter object or NULL when no memory available.
-  **/
--static struct
--iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
--				 const u8 *macaddr)
-+struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
-+					const u8 *macaddr)
- {
- 	struct iavf_mac_filter *f;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 4093a9c52c182..a10756f0b0d8b 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -2066,11 +2066,6 @@ static int ixgbevf_write_uc_addr_list(struct net_device *netdev)
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	int count = 0;
  
-@@ -2065,9 +2064,9 @@ static void iavf_reset_task(struct work_struct *work)
- 	struct virtchnl_vf_resource *vfres = adapter->vf_res;
- 	struct net_device *netdev = adapter->netdev;
- 	struct iavf_hw *hw = &adapter->hw;
-+	struct iavf_mac_filter *f, *ftmp;
- 	struct iavf_vlan_filter *vlf;
- 	struct iavf_cloud_filter *cf;
--	struct iavf_mac_filter *f;
- 	u32 reg_val;
- 	int i = 0, err;
- 	bool running;
-@@ -2181,6 +2180,16 @@ continue_reset:
+-	if ((netdev_uc_count(netdev)) > 10) {
+-		pr_err("Too many unicast filters - No Space\n");
+-		return -ENOSPC;
+-	}
+-
+ 	if (!netdev_uc_empty(netdev)) {
+ 		struct netdev_hw_addr *ha;
  
- 	spin_lock_bh(&adapter->mac_vlan_list_lock);
- 
-+	/* Delete filter for the current MAC address, it could have
-+	 * been changed by the PF via administratively set MAC.
-+	 * Will be re-added via VIRTCHNL_OP_GET_VF_RESOURCES.
-+	 */
-+	list_for_each_entry_safe(f, ftmp, &adapter->mac_filter_list, list) {
-+		if (ether_addr_equal(f->macaddr, adapter->hw.mac.addr)) {
-+			list_del(&f->list);
-+			kfree(f);
-+		}
-+	}
- 	/* re-add all MAC filters */
- 	list_for_each_entry(f, &adapter->mac_filter_list, list) {
- 		f->add = true;
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index c46770eba320e..1ab9cb339acb4 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -1359,6 +1359,9 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 			ether_addr_copy(netdev->perm_addr,
- 					adapter->hw.mac.addr);
- 		}
-+		spin_lock_bh(&adapter->mac_vlan_list_lock);
-+		iavf_add_filter(adapter, adapter->hw.mac.addr);
-+		spin_unlock_bh(&adapter->mac_vlan_list_lock);
- 		iavf_process_config(adapter);
- 		}
- 		break;
 -- 
 2.20.1
 
