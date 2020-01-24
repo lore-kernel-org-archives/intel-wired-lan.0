@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 24 Jan 2020 23:17:09 +0000
-Subject: [Intel-wired-lan] [PATCH S37 09/15] ice: update Unit Load
- Status bitmask to check after reset
-In-Reply-To: <20200122152041.41498-9-anthony.l.nguyen@intel.com>
+Date: Fri, 24 Jan 2020 23:17:08 +0000
+Subject: [Intel-wired-lan] [PATCH S37 07/15] ice: Modify link message
+ logging
+In-Reply-To: <20200122152041.41498-7-anthony.l.nguyen@intel.com>
 References: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
- <20200122152041.41498-9-anthony.l.nguyen@intel.com>
-Message-ID: <ba8ef820247142c4a3663d41db885f7d@intel.com>
+ <20200122152041.41498-7-anthony.l.nguyen@intel.com>
+Message-ID: <464317bd572c4b5a8caedbd3c53c4fb2@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, January 22, 2020 7:21 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S37 09/15] ice: update Unit Load Status
-> bitmask to check after reset
+> Subject: [Intel-wired-lan] [PATCH S37 07/15] ice: Modify link message logging
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > 
-> After a reset the Unit Load Status bits in the GLNVM_ULD register to check
-> for completion should be 0x7FF before continuing.  Update the mask to
-> check (minus the three reserved bits that are always set).
+> This patch modifies link message logging to include "Full Duplex" and
+> "Negotiated" for FEC, so as to distinguish it from "Requested" FEC.
 > 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c    | 18 +++++++++++++-----
->  .../net/ethernet/intel/ice/ice_hw_autogen.h    |  6 ++++++
->  2 files changed, 19 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
