@@ -1,50 +1,91 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 24 Jan 2020 09:19:36 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 20/56] ixgbevf: Remove limit
- of 10 entries for unicast filter list
+Date: Fri, 24 Jan 2020 09:19:37 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 21/56] ixgbe: Fix calculation
+ of queue with VFs and flow director on interface flap
 In-Reply-To: <20200124142012.29752-1-sashal@kernel.org>
 References: <20200124142012.29752-1-sashal@kernel.org>
-Message-ID: <20200124142012.29752-20-sashal@kernel.org>
+Message-ID: <20200124142012.29752-21-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Radoslaw Tyl <radoslawx.tyl@intel.com>
+From: Cambda Zhu <cambda@linux.alibaba.com>
 
-[ Upstream commit aa604651d523b1493988d0bf6710339f3ee60272 ]
+[ Upstream commit 4fad78ad6422d9bca62135bbed8b6abc4cbb85b8 ]
 
-Currently, though the FDB entry is added to VF, it does not appear in
-RAR filters. VF driver only allows to add 10 entries. Attempting to add
-another causes an error. This patch removes limitation and allows use of
-all free RAR entries for the FDB if needed.
+This patch fixes the calculation of queue when we restore flow director
+filters after resetting adapter. In ixgbe_fdir_filter_restore(), filter's
+vf may be zero which makes the queue outside of the rx_ring array.
 
-Fixes: 46ec20ff7d ("ixgbevf: Add macvlan support in the set rx mode op")
-Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
-Acked-by: Paul Menzel <pmenzel@molgen.mpg.de>
+The calculation is changed to the same as ixgbe_add_ethtool_fdir_entry().
+
+Signed-off-by: Cambda Zhu <cambda@linux.alibaba.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 5 -----
- 1 file changed, 5 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 37 ++++++++++++++-----
+ 1 file changed, 27 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 4093a9c52c182..a10756f0b0d8b 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -2066,11 +2066,6 @@ static int ixgbevf_write_uc_addr_list(struct net_device *netdev)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index de65ca1e65580..7db8a05de861a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5187,7 +5187,7 @@ static void ixgbe_fdir_filter_restore(struct ixgbe_adapter *adapter)
  	struct ixgbe_hw *hw = &adapter->hw;
- 	int count = 0;
+ 	struct hlist_node *node2;
+ 	struct ixgbe_fdir_filter *filter;
+-	u64 action;
++	u8 queue;
  
--	if ((netdev_uc_count(netdev)) > 10) {
--		pr_err("Too many unicast filters - No Space\n");
--		return -ENOSPC;
--	}
--
- 	if (!netdev_uc_empty(netdev)) {
- 		struct netdev_hw_addr *ha;
+ 	spin_lock(&adapter->fdir_perfect_lock);
  
+@@ -5196,17 +5196,34 @@ static void ixgbe_fdir_filter_restore(struct ixgbe_adapter *adapter)
+ 
+ 	hlist_for_each_entry_safe(filter, node2,
+ 				  &adapter->fdir_filter_list, fdir_node) {
+-		action = filter->action;
+-		if (action != IXGBE_FDIR_DROP_QUEUE && action != 0)
+-			action =
+-			(action >> ETHTOOL_RX_FLOW_SPEC_RING_VF_OFF) - 1;
++		if (filter->action == IXGBE_FDIR_DROP_QUEUE) {
++			queue = IXGBE_FDIR_DROP_QUEUE;
++		} else {
++			u32 ring = ethtool_get_flow_spec_ring(filter->action);
++			u8 vf = ethtool_get_flow_spec_ring_vf(filter->action);
++
++			if (!vf && (ring >= adapter->num_rx_queues)) {
++				e_err(drv, "FDIR restore failed without VF, ring: %u\n",
++				      ring);
++				continue;
++			} else if (vf &&
++				   ((vf > adapter->num_vfs) ||
++				     ring >= adapter->num_rx_queues_per_pool)) {
++				e_err(drv, "FDIR restore failed with VF, vf: %hhu, ring: %u\n",
++				      vf, ring);
++				continue;
++			}
++
++			/* Map the ring onto the absolute queue index */
++			if (!vf)
++				queue = adapter->rx_ring[ring]->reg_idx;
++			else
++				queue = ((vf - 1) *
++					adapter->num_rx_queues_per_pool) + ring;
++		}
+ 
+ 		ixgbe_fdir_write_perfect_filter_82599(hw,
+-				&filter->filter,
+-				filter->sw_idx,
+-				(action == IXGBE_FDIR_DROP_QUEUE) ?
+-				IXGBE_FDIR_DROP_QUEUE :
+-				adapter->rx_ring[action]->reg_idx);
++				&filter->filter, filter->sw_idx, queue);
+ 	}
+ 
+ 	spin_unlock(&adapter->fdir_perfect_lock);
 -- 
 2.20.1
 
