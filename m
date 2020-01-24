@@ -1,54 +1,42 @@
-From: Ben Greear <greearb@candelatech.com>
-Date: Fri, 24 Jan 2020 11:31:05 -0800
-Subject: [Intel-wired-lan] ixgbe: "Warning firmware error detected FWSM:
- 0xFFFFFFFF"
-Message-ID: <9c5158a4-8c45-f45c-636e-7ea75d40eabf@candelatech.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 24 Jan 2020 23:17:07 +0000
+Subject: [Intel-wired-lan] [PATCH S37 02/15] ice: Fix switch between FW
+ and SW LLDP
+In-Reply-To: <20200122152041.41498-2-anthony.l.nguyen@intel.com>
+References: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
+ <20200122152041.41498-2-anthony.l.nguyen@intel.com>
+Message-ID: <f36e6fafc0e1406e8fd14f3e73c4d3d9@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Wednesday, January 22, 2020 7:20 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S37 02/15] ice: Fix switch between FW and
+> SW LLDP
+> 
+> From: Dave Ertman <david.m.ertman@intel.com>
+> 
+> When switching between FW and SW LLDP mode, the number of configured
+> TLV apps in the driver's DCB configuration is getting out of synch with what
+> lldpad thinks is configured.  This is causing a problem when shutting down
+> lldpad.  The cleanup is trying to delete TLV apps that are not defined in the
+> kernel.
+> 
+> Since the driver is keeping an accurate account of the apps defined, use the
+> drivers number of apps to determine if there is an app to delete.
+> If the number of apps is <= 1, then do not attempt to delete.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 
-Anyone know what this problem means?
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-# dmesg|grep ixg
-[    3.840480] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver - version 5.1.0-k
-[    3.840481] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
-[    4.535677] ixgbe 0000:01:00.0: Multiqueue Enabled: Rx Queue count = 8, Tx Queue count = 8 XDP Queue count = 0
-[    4.633347] ixgbe 0000:01:00.0: 31.504 Gb/s available PCIe bandwidth (8 GT/s x4 link)
-[    4.745337] ixgbe 0000:01:00.0: MAC: 4, PHY: 0, PBA No: H86377-005
-[    4.745338] ixgbe 0000:01:00.0: 9c:69:b4:60:e4:a6
-[    4.904379] ixgbe 0000:01:00.0: Intel(R) 10 Gigabit Network Connection
-[    4.904413] libphy: ixgbe-mdio: probed
-[    5.610158] ixgbe 0000:01:00.1: Multiqueue Enabled: Rx Queue count = 8, Tx Queue count = 8 XDP Queue count = 0
-[    5.709523] ixgbe 0000:01:00.1: 31.504 Gb/s available PCIe bandwidth (8 GT/s x4 link)
-[    5.823067] ixgbe 0000:01:00.1: MAC: 4, PHY: 0, PBA No: H86377-005
-[    5.823071] ixgbe 0000:01:00.1: 9c:69:b4:60:e4:a7
-[    5.986413] ixgbe 0000:01:00.1: Intel(R) 10 Gigabit Network Connection
-[    5.986444] libphy: ixgbe-mdio: probed
-[    5.987671] ixgbe 0000:01:00.0 enp1s0f0: renamed from eth0
-[    5.995744] ixgbe 0000:01:00.1 enp1s0f1: renamed from eth1
-[   10.086982] ixgbe 0000:01:00.0 eth2: renamed from enp1s0f0
-[   10.098434] ixgbe 0000:01:00.1 eth3: renamed from enp1s0f1
-[   30.868089] ixgbe 0000:01:00.0: registered PHC device on eth2
-[   31.327796] ixgbe 0000:01:00.1: registered PHC device on eth3
-[   47.567801] ixgbe 0000:01:00.0: Adapter removed
-[   47.571172] ixgbe 0000:01:00.0: Warning firmware error detected FWSM: 0xFFFFFFFF
-[   47.571188] ixgbe 0000:01:00.0: Firmware recovery mode detected. Limiting functionality. Refer to the Intel(R) Ethernet Adapters and Devices User Guide for 
-details on firmware recovery mode.
-[   47.588245] ixgbe 0000:01:00.0: removed PHC on eth2
-[   48.056546] ixgbe 0000:01:00.1: Adapter removed
-[   48.059916] ixgbe 0000:01:00.1: Warning firmware error detected FWSM: 0xFFFFFFFF
-[   48.059932] ixgbe 0000:01:00.1: Firmware recovery mode detected. Limiting functionality. Refer to the Intel(R) Ethernet Adapters and Devices User Guide for 
-details on firmware recovery mode.
-[   48.076589] ixgbe 0000:01:00.1: removed PHC on eth3
-
-Thanks,
-Ben
-
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
 
