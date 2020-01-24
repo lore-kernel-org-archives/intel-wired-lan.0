@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
 Date: Fri, 24 Jan 2020 23:17:08 +0000
-Subject: [Intel-wired-lan] [PATCH S37 07/15] ice: Modify link message
- logging
-In-Reply-To: <20200122152041.41498-7-anthony.l.nguyen@intel.com>
+Subject: [Intel-wired-lan] [PATCH S37 05/15] ice: Remove
+ ice_dev_onetime_setup()
+In-Reply-To: <20200122152041.41498-5-anthony.l.nguyen@intel.com>
 References: <20200122152041.41498-1-anthony.l.nguyen@intel.com>
- <20200122152041.41498-7-anthony.l.nguyen@intel.com>
-Message-ID: <464317bd572c4b5a8caedbd3c53c4fb2@intel.com>
+ <20200122152041.41498-5-anthony.l.nguyen@intel.com>
+Message-ID: <d94fe307cd6a40a3b95630b076a2391f@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,17 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, January 22, 2020 7:21 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S37 07/15] ice: Modify link message logging
+> Subject: [Intel-wired-lan] [PATCH S37 05/15] ice: Remove
+> ice_dev_onetime_setup()
 > 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> This patch modifies link message logging to include "Full Duplex" and
-> "Negotiated" for FEC, so as to distinguish it from "Requested" FEC.
+> ice_dev_onetime_setup contains driver workarounds needed for firmware
+> limitations. These issues have now been resolved in newer NVMs so remove
+> the function.
 > 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c     | 16 ----------------
+>  drivers/net/ethernet/intel/ice/ice_common.h     |  2 --
+>  drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  1 -
+>  drivers/net/ethernet/intel/ice/ice_lib.c        |  1 -
+>  4 files changed, 20 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
