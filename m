@@ -1,76 +1,82 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 25 Jan 2020 02:50:15 +0000
-Subject: [Intel-wired-lan] [PATCH v3] e1000e: Add support for Alder Lake
-In-Reply-To: <20200119115713.12710-1-sasha.neftin@intel.com>
-References: <20200119115713.12710-1-sasha.neftin@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B971CC502@ORSMSX103.amr.corp.intel.com>
+From: Ben Greear <greearb@candelatech.com>
+Date: Fri, 24 Jan 2020 21:45:24 -0800
+Subject: [Intel-wired-lan] ixgbe: "Warning firmware error detected FWSM:
+ 0xFFFFFFFF"
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69B09BD46@ORSMSX115.amr.corp.intel.com>
+References: <9c5158a4-8c45-f45c-636e-7ea75d40eabf@candelatech.com>
+ <9B4A1B1917080E46B64F07F2989DADD69B09BD46@ORSMSX115.amr.corp.intel.com>
+Message-ID: <97e04320-3d4d-471a-f32a-2923f60c0173@candelatech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Sasha Neftin
-> Sent: Sunday, January 19, 2020 3:57 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3] e1000e: Add support for Alder Lake
-> 
-> Add devices ID's for the next LOM generations that will be
-> available on the next Intel Client platform (Alder Lake)
-> This patch provides the initial support for these devices
-> 
-> v1->v2:
-> Address community comments
-> v2->v3:
-> Fix minor typo
-> 
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-> ---
->  drivers/net/ethernet/intel/e1000e/ethtool.c | 2 ++
->  drivers/net/ethernet/intel/e1000e/hw.h      | 5 +++++
->  drivers/net/ethernet/intel/e1000e/ich8lan.c | 7 +++++++
->  drivers/net/ethernet/intel/e1000e/netdev.c  | 6 ++++++
->  drivers/net/ethernet/intel/e1000e/ptp.c     | 1 +
->  5 files changed, 21 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c
-> b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> index adce7e319b9e..9e7881db7859 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> @@ -897,6 +897,7 @@ static int e1000_reg_test(struct e1000_adapter
-> *adapter, u64 *data)
->  	case e1000_pch_cnp:
->  		/* fall through */
->  	case e1000_pch_tgp:
-> +	case e1000_pch_adp:
->  		mask |= BIT(18);
->  		break;
->  	default:
-> @@ -1561,6 +1562,7 @@ static void e1000_loopback_cleanup(struct
-> e1000_adapter *adapter)
->  	case e1000_pch_spt:
->  	case e1000_pch_cnp:
->  	case e1000_pch_tgp:
-> +	case e1000_pch_adp:
->  		fext_nvm11 = er32(FEXTNVM11);
->  		fext_nvm11 &= ~E1000_FEXTNVM11_DISABLE_MULR_FIX;
->  		ew32(FEXTNVM11, fext_nvm11);
-> diff --git a/drivers/net/ethernet/intel/e1000e/hw.h
-> b/drivers/net/ethernet/intel/e1000e/hw.h
-> index f556163481cb..a1dbf8df1c70 100644
-> --- a/drivers/net/ethernet/intel/e1000e/hw.h
-> +++ b/drivers/net/ethernet/intel/e1000e/hw.h
-> @@ -97,6 +97,10 @@ struct e1000_hw;
->  #define E1000_DEV_ID_PCH_TGP_I219_LM14		0x15F9
->  #define E1000_DEV_ID_PCH_TGP_I219_V14		0x15FA
->  #define E1000_DEV_ID_PCH_TGP_I219_LM15		0x15F4
-> +#define E1000_DEV_ID_PCH_ADP_1219_LM16		0x1A1E
-> +#define E1000_DEV_ID_PCH_ADP_1219_V16		0x1A1F
-> +#define E1000_DEV_ID_PCH_ADP_1219_LM17		0x1A1C
-> +#define E1000_DEV_ID_PCH_ADP_1219_V17		0x1A1D
+I don't even know how to update firmware on the 10G NIC.
 
-Something seems to be missing.  After building and booting to the kernel with this patch included I do not see the a 1a1e, 1a1f, 1a1c or 1a1d device from modinfo:
-u1519:[1]/usr/src/kernels/next-queue> modinfo igc|grep -i 1a1
-u1519:[1]/usr/src/kernels/next-queue>
+It happened once, reboot made the problem go away, so it's mostly
+just a curiosity at this point.
+
+Thanks,
+Ben
+
+On 01/24/2020 04:55 PM, Fujinaka, Todd wrote:
+> Was the firmware updated or edited somehow?
+>
+> Or is this a card that's been running and started randomly generating errors?
+>
+> Todd Fujinaka
+> Software Application Engineer
+> Datacenter Engineering Group
+> Intel Corporation
+> todd.fujinaka at intel.com
+>
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Ben Greear
+> Sent: Friday, January 24, 2020 11:31 AM
+> To: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] ixgbe: "Warning firmware error detected FWSM: 0xFFFFFFFF"
+>
+> Hello,
+>
+> Anyone know what this problem means?
+>
+> # dmesg|grep ixg
+> [    3.840480] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver - version 5.1.0-k
+> [    3.840481] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
+> [    4.535677] ixgbe 0000:01:00.0: Multiqueue Enabled: Rx Queue count = 8, Tx Queue count = 8 XDP Queue count = 0
+> [    4.633347] ixgbe 0000:01:00.0: 31.504 Gb/s available PCIe bandwidth (8 GT/s x4 link)
+> [    4.745337] ixgbe 0000:01:00.0: MAC: 4, PHY: 0, PBA No: H86377-005
+> [    4.745338] ixgbe 0000:01:00.0: 9c:69:b4:60:e4:a6
+> [    4.904379] ixgbe 0000:01:00.0: Intel(R) 10 Gigabit Network Connection
+> [    4.904413] libphy: ixgbe-mdio: probed
+> [    5.610158] ixgbe 0000:01:00.1: Multiqueue Enabled: Rx Queue count = 8, Tx Queue count = 8 XDP Queue count = 0
+> [    5.709523] ixgbe 0000:01:00.1: 31.504 Gb/s available PCIe bandwidth (8 GT/s x4 link)
+> [    5.823067] ixgbe 0000:01:00.1: MAC: 4, PHY: 0, PBA No: H86377-005
+> [    5.823071] ixgbe 0000:01:00.1: 9c:69:b4:60:e4:a7
+> [    5.986413] ixgbe 0000:01:00.1: Intel(R) 10 Gigabit Network Connection
+> [    5.986444] libphy: ixgbe-mdio: probed
+> [    5.987671] ixgbe 0000:01:00.0 enp1s0f0: renamed from eth0
+> [    5.995744] ixgbe 0000:01:00.1 enp1s0f1: renamed from eth1
+> [   10.086982] ixgbe 0000:01:00.0 eth2: renamed from enp1s0f0
+> [   10.098434] ixgbe 0000:01:00.1 eth3: renamed from enp1s0f1
+> [   30.868089] ixgbe 0000:01:00.0: registered PHC device on eth2
+> [   31.327796] ixgbe 0000:01:00.1: registered PHC device on eth3
+> [   47.567801] ixgbe 0000:01:00.0: Adapter removed
+> [   47.571172] ixgbe 0000:01:00.0: Warning firmware error detected FWSM: 0xFFFFFFFF
+> [   47.571188] ixgbe 0000:01:00.0: Firmware recovery mode detected. Limiting functionality. Refer to the Intel(R) Ethernet Adapters and Devices User Guide for
+> details on firmware recovery mode.
+> [   47.588245] ixgbe 0000:01:00.0: removed PHC on eth2
+> [   48.056546] ixgbe 0000:01:00.1: Adapter removed
+> [   48.059916] ixgbe 0000:01:00.1: Warning firmware error detected FWSM: 0xFFFFFFFF
+> [   48.059932] ixgbe 0000:01:00.1: Firmware recovery mode detected. Limiting functionality. Refer to the Intel(R) Ethernet Adapters and Devices User Guide for
+> details on firmware recovery mode.
+> [   48.076589] ixgbe 0000:01:00.1: removed PHC on eth3
+>
+> Thanks,
+> Ben
+>
+
+-- 
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
