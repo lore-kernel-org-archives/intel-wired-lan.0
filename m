@@ -1,140 +1,94 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 27 Jan 2020 00:59:26 -0800
-Subject: [Intel-wired-lan] [PATCH S39 14/15] ice: add support for E823
- devices
+Date: Mon, 27 Jan 2020 00:59:17 -0800
+Subject: [Intel-wired-lan] [PATCH S39 05/15] ice: Add DCBNL ops required to
+ configure ETS in CEE for SW DCB
 In-Reply-To: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
 References: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200127085927.13999-14-anthony.l.nguyen@intel.com>
+Message-ID: <20200127085927.13999-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Avinash JD <avinash.dayanand@intel.com>
 
-Add E823 device ids and convert conditional expressions to a more
-appropriate switch statement.
+Couple of DCBNL ops are required for configuring ETS in SW DCB CEE mode. If
+these functions are not added, it'll break the CEE functionality.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Avinash JD <avinash.dayanand@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_devids.h | 20 +++++++++++++
- drivers/net/ethernet/intel/ice/ice_main.c   | 10 +++++++
- drivers/net/ethernet/intel/ice/ice_nvm.c    | 32 +++++++++++++++------
- 3 files changed, 53 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 43 +++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_devids.h b/drivers/net/ethernet/intel/ice/ice_devids.h
-index 56952d89ada8..6fccb66ff43c 100644
---- a/drivers/net/ethernet/intel/ice/ice_devids.h
-+++ b/drivers/net/ethernet/intel/ice/ice_devids.h
-@@ -5,6 +5,16 @@
- #define _ICE_DEVIDS_H_
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+index a45e8abef8f3..912467add847 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+@@ -541,6 +541,30 @@ ice_dcbnl_get_pg_tc_cfg_rx(struct net_device *netdev, int prio,
+ 	*pgid = pi->local_dcbx_cfg.etscfg.prio_table[prio];
+ }
  
- /* Device IDs */
-+/* Intel(R) Ethernet Connection E823-L for backplane */
-+#define ICE_DEV_ID_E823L_BACKPLANE	0x124C
-+/* Intel(R) Ethernet Connection E823-L for SFP */
-+#define ICE_DEV_ID_E823L_SFP		0x124D
-+/* Intel(R) Ethernet Connection E823-L/X557-AT 10GBASE-T */
-+#define ICE_DEV_ID_E823L_10G_BASE_T	0x124E
-+/* Intel(R) Ethernet Connection E823-L 1GbE */
-+#define ICE_DEV_ID_E823L_1GBE		0x124F
-+/* Intel(R) Ethernet Connection E823-L for QSFP */
-+#define ICE_DEV_ID_E823L_QSFP		0x151D
- /* Intel(R) Ethernet Controller E810-C for backplane */
- #define ICE_DEV_ID_E810C_BACKPLANE	0x1591
- /* Intel(R) Ethernet Controller E810-C for QSFP */
-@@ -13,6 +23,16 @@
- #define ICE_DEV_ID_E810C_SFP		0x1593
- /* Intel(R) Ethernet Controller E810-XXV for SFP */
- #define ICE_DEV_ID_E810_XXV_SFP		0x159B
-+/* Intel(R) Ethernet Connection E823-C for backplane */
-+#define ICE_DEV_ID_E823C_BACKPLANE	0x188A
-+/* Intel(R) Ethernet Connection E823-C for QSFP */
-+#define ICE_DEV_ID_E823C_QSFP		0x188B
-+/* Intel(R) Ethernet Connection E823-C for SFP */
-+#define ICE_DEV_ID_E823C_SFP		0x188C
-+/* Intel(R) Ethernet Connection E823-C/X557-AT 10GBASE-T */
-+#define ICE_DEV_ID_E823C_10G_BASE_T	0x188D
-+/* Intel(R) Ethernet Connection E823-C 1GbE */
-+#define ICE_DEV_ID_E823C_SGMII		0x188E
- /* Intel(R) Ethernet Connection E822-C for backplane */
- #define ICE_DEV_ID_E822C_BACKPLANE	0x1890
- /* Intel(R) Ethernet Connection E822-C for QSFP */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 017d68b158fc..5f23806669e2 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3616,6 +3616,11 @@ static const struct pci_device_id ice_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_QSFP), 0 },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_SFP), 0 },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810_XXV_SFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823C_BACKPLANE), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823C_QSFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823C_SFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823C_10G_BASE_T), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823C_SGMII), 0 },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_BACKPLANE), 0 },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_QSFP), 0 },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_SFP), 0 },
-@@ -3625,6 +3630,11 @@ static const struct pci_device_id ice_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_SFP), 0 },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_10G_BASE_T), 0 },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_SGMII), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823L_BACKPLANE), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823L_SFP), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823L_10G_BASE_T), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823L_1GBE), 0 },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823L_QSFP), 0 },
- 	/* required last entry */
- 	{ 0, }
- };
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index 7525ac50742e..75cd4cbb473b 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -289,17 +289,31 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
++/**
++ * ice_dcbnl_set_pg_tc_cfg_rx
++ * @netdev: relevant netdev struct
++ * @prio: corresponding user priority
++ * @prio_type: the traffic priority type
++ * @pgid: the PG ID
++ * @bw_pct: BW percentage for corresponding BWG
++ * @up_map: prio mapped to corresponding TC
++ *
++ * lldpad requires this function pointer to be non-NULL to complete CEE config.
++ */
++static void
++ice_dcbnl_set_pg_tc_cfg_rx(struct net_device *netdev,
++			   int __always_unused prio,
++			   u8 __always_unused prio_type,
++			   u8 __always_unused pgid,
++			   u8 __always_unused bw_pct,
++			   u8 __always_unused up_map)
++{
++	struct ice_pf *pf = ice_netdev_to_pf(netdev);
++
++	dev_dbg(ice_pf_to_dev(pf), "Rx TC PG Config Not Supported.\n");
++}
++
+ /**
+  * ice_dcbnl_get_pg_bwg_cfg_rx - Get CEE PG BW Rx config
+  * @netdev: pointer to netdev struct
+@@ -560,6 +584,23 @@ ice_dcbnl_get_pg_bwg_cfg_rx(struct net_device *netdev, int __always_unused pgid,
+ 	*bw_pct = 0;
+ }
  
- 	nvm->eetrack = (eetrack_hi << 16) | eetrack_lo;
- 
-+	switch (hw->device_id) {
- 	/* the following devices do not have boot_cfg_tlv yet */
--	if (hw->device_id == ICE_DEV_ID_E822C_BACKPLANE ||
--	    hw->device_id == ICE_DEV_ID_E822C_QSFP ||
--	    hw->device_id == ICE_DEV_ID_E822C_10G_BASE_T ||
--	    hw->device_id == ICE_DEV_ID_E822C_SGMII ||
--	    hw->device_id == ICE_DEV_ID_E822C_SFP ||
--	    hw->device_id == ICE_DEV_ID_E822X_BACKPLANE ||
--	    hw->device_id == ICE_DEV_ID_E822L_SFP ||
--	    hw->device_id == ICE_DEV_ID_E822L_10G_BASE_T ||
--	    hw->device_id == ICE_DEV_ID_E822L_SGMII)
-+	case ICE_DEV_ID_E823C_BACKPLANE:
-+	case ICE_DEV_ID_E823C_QSFP:
-+	case ICE_DEV_ID_E823C_SFP:
-+	case ICE_DEV_ID_E823C_10G_BASE_T:
-+	case ICE_DEV_ID_E823C_SGMII:
-+	case ICE_DEV_ID_E822C_BACKPLANE:
-+	case ICE_DEV_ID_E822C_QSFP:
-+	case ICE_DEV_ID_E822C_10G_BASE_T:
-+	case ICE_DEV_ID_E822C_SGMII:
-+	case ICE_DEV_ID_E822C_SFP:
-+	case ICE_DEV_ID_E822X_BACKPLANE:
-+	case ICE_DEV_ID_E822L_SFP:
-+	case ICE_DEV_ID_E822L_10G_BASE_T:
-+	case ICE_DEV_ID_E822L_SGMII:
-+	case ICE_DEV_ID_E823L_BACKPLANE:
-+	case ICE_DEV_ID_E823L_SFP:
-+	case ICE_DEV_ID_E823L_10G_BASE_T:
-+	case ICE_DEV_ID_E823L_1GBE:
-+	case ICE_DEV_ID_E823L_QSFP:
- 		return status;
-+	default:
-+		break;
-+	}
- 
- 	status = ice_get_pfa_module_tlv(hw, &boot_cfg_tlv, &boot_cfg_tlv_len,
- 					ICE_SR_BOOT_CFG_PTR);
++/**
++ * ice_dcbnl_set_pg_bwg_cfg_rx
++ * @netdev: the corresponding netdev
++ * @pgid: corresponding TC
++ * @bw_pct: BW percentage for given TC
++ *
++ * lldpad requires this function pointer to be non-NULL to complete CEE config.
++ */
++static void
++ice_dcbnl_set_pg_bwg_cfg_rx(struct net_device *netdev, int __always_unused pgid,
++			    u8 __always_unused bw_pct)
++{
++	struct ice_pf *pf = ice_netdev_to_pf(netdev);
++
++	dev_dbg(ice_pf_to_dev(pf), "Rx BWG PG Config Not Supported.\n");
++}
++
+ /**
+  * ice_dcbnl_get_cap - Get DCBX capabilities of adapter
+  * @netdev: pointer to netdev struct
+@@ -806,6 +847,8 @@ static const struct dcbnl_rtnl_ops dcbnl_ops = {
+ 	.getpermhwaddr = ice_dcbnl_get_perm_hw_addr,
+ 	.setpgtccfgtx = ice_dcbnl_set_pg_tc_cfg_tx,
+ 	.setpgbwgcfgtx = ice_dcbnl_set_pg_bwg_cfg_tx,
++	.setpgtccfgrx = ice_dcbnl_set_pg_tc_cfg_rx,
++	.setpgbwgcfgrx = ice_dcbnl_set_pg_bwg_cfg_rx,
+ 	.getpgtccfgtx = ice_dcbnl_get_pg_tc_cfg_tx,
+ 	.getpgbwgcfgtx = ice_dcbnl_get_pg_bwg_cfg_tx,
+ 	.getpgtccfgrx = ice_dcbnl_get_pg_tc_cfg_rx,
 -- 
 2.20.1
 
