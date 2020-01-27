@@ -1,192 +1,52 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Mon, 27 Jan 2020 15:53:18 +0100
-Subject: [Intel-wired-lan] [PATCH v1] igc: Add pcie error handler support
-In-Reply-To: <20200127115831.18047-1-sasha.neftin@intel.com>
-References: <20200127115831.18047-1-sasha.neftin@intel.com>
-Message-ID: <5a057e0a-c746-ce58-8dbe-9a31ab883c4f@molgen.mpg.de>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Mon, 27 Jan 2020 00:59:25 -0800
+Subject: [Intel-wired-lan] [PATCH S39 13/15] ice: add additional E810 device
+ id
+In-Reply-To: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
+References: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200127085927.13999-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Sasha,
+From: Bruce Allan <bruce.w.allan@intel.com>
 
+Add support for device id 0x159b.
 
-Thank you for your patch set.
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_devids.h | 2 ++
+ drivers/net/ethernet/intel/ice/ice_main.c   | 1 +
+ 2 files changed, 3 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_devids.h b/drivers/net/ethernet/intel/ice/ice_devids.h
+index ce63017c56c7..56952d89ada8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devids.h
++++ b/drivers/net/ethernet/intel/ice/ice_devids.h
+@@ -11,6 +11,8 @@
+ #define ICE_DEV_ID_E810C_QSFP		0x1592
+ /* Intel(R) Ethernet Controller E810-C for SFP */
+ #define ICE_DEV_ID_E810C_SFP		0x1593
++/* Intel(R) Ethernet Controller E810-XXV for SFP */
++#define ICE_DEV_ID_E810_XXV_SFP		0x159B
+ /* Intel(R) Ethernet Connection E822-C for backplane */
+ #define ICE_DEV_ID_E822C_BACKPLANE	0x1890
+ /* Intel(R) Ethernet Connection E822-C for QSFP */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index b695a65b2b3c..017d68b158fc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3615,6 +3615,7 @@ static const struct pci_device_id ice_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_BACKPLANE), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_QSFP), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_SFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810_XXV_SFP), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_BACKPLANE), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_QSFP), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_SFP), 0 },
+-- 
+2.20.1
 
-On 2020-01-27 12:58, Sasha Neftin wrote:
-> Add pcie error detection, slot reset and resume capability
-
-Tested how?
-
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 105 ++++++++++++++++++++++++++++++
->  1 file changed, 105 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index fa72460e255a..b0656ae2fcb3 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -5076,6 +5076,110 @@ static void igc_shutdown(struct pci_dev *pdev)
->  	}
->  }
->  
-> +/**
-> + *  igc_io_error_detected - called when PCI error is detected
-> + *  @pdev: Pointer to PCI device
-> + *  @state: The current pci connection state
-
-PCI
-
-> + *
-> + *  This function is called after a PCI bus error affecting
-> + *  this device has been detected.
-
-Document the two possible return codes?
-
-> + **/
-> +static pci_ers_result_t igc_io_error_detected(struct pci_dev *pdev,
-> +					      pci_channel_state_t state)
-> +{
-> +	struct net_device *netdev = pci_get_drvdata(pdev);
-> +	struct igc_adapter *adapter = netdev_priv(netdev);
-> +
-> +	netif_device_detach(netdev);
-> +
-> +	if (state == pci_channel_io_perm_failure)
-> +		return PCI_ERS_RESULT_DISCONNECT;
-> +
-> +	if (netif_running(netdev))
-> +		igc_down(adapter);
-> +	pci_disable_device(pdev);
-> +
-> +	/* Request a slot slot reset. */
-
-One slot?
-
-> +	return PCI_ERS_RESULT_NEED_RESET;
-> +}
-> +
-> +/**
-> + *  igc_io_slot_reset - called after the pci bus has been reset.
-
-PCI
-
-> + *  @pdev: Pointer to PCI device
-> + *
-> + *  Restart the card from scratch, as if from a cold-boot. Implementation
-> + *  resembles the first-half of the igc_resume routine.
-
-Shouldn?t the common code be factored out then?
-
-> + **/
-> +static pci_ers_result_t igc_io_slot_reset(struct pci_dev *pdev)
-> +{
-> +	struct net_device *netdev = pci_get_drvdata(pdev);
-> +	struct igc_adapter *adapter = netdev_priv(netdev);
-> +	struct igc_hw *hw = &adapter->hw;
-> +	pci_ers_result_t result;
-> +
-> +	if (pci_enable_device_mem(pdev)) {
-> +		dev_err(&pdev->dev,
-> +			"Cannot re-enable PCI device after reset.\n");
-
-*Could not*, so it?s clear, it was tried, and not a policy decision.
-
-> +		result = PCI_ERS_RESULT_DISCONNECT;
-> +	} else {
-> +		pci_set_master(pdev);
-> +		pci_restore_state(pdev);
-> +		pci_save_state(pdev);
-> +
-> +		pci_enable_wake(pdev, PCI_D3hot, 0);
-> +		pci_enable_wake(pdev, PCI_D3cold, 0);
-> +
-> +		/* In case of PCI error, adapter lose its HW address
-
-lose*s*
-
-> +		 * so we should re-assign it here.
-> +		 */
-> +		hw->hw_addr = adapter->io_addr;
-> +
-> +		igc_reset(adapter);
-> +		wr32(IGC_WUS, ~0);
-> +		result = PCI_ERS_RESULT_RECOVERED;
-> +	}
-> +
-> +	return result;
-
-You can get rid of the if-else statement, by returning in the if branch,
-and use the else branch as the follow-on(?). Then you can return the
-result directly too, and even remove the variable `result`.
-
-> +}
-> +
-> +/**
-> + *  igc_io_resume - called when traffic can start flowing again.
-
-start to flow
-
-> + *  @pdev: Pointer to PCI device
-> + *
-> + *  This callback is called when the error recovery driver tells us that
-> + *  its OK to resume normal operation. Implementation resembles the
-> + *  second-half of the igc_resume routine.
-> + */
-> +static void igc_io_resume(struct pci_dev *pdev)
-> +{
-> +	struct net_device *netdev = pci_get_drvdata(pdev);
-> +	struct igc_adapter *adapter = netdev_priv(netdev);
-> +	u32 err = 0;
-> +
-> +	rtnl_lock();
-> +	if (netif_running(netdev)) {
-> +		err = igc_open(netdev);
-> +		if (err) {
-
-Use `if (igc_open(netdev)) {`, and remove variable `err`?
-
-> +			dev_err(&pdev->dev, "igic_open failed after reset\n");
-> +			return;
-> +		}
-> +	}
-> +
-> +	netif_device_attach(netdev);
-> +
-> +	/* let the f/w know that the h/w is now under the control of the
-> +	 * driver.
-> +	 */
-> +	igc_get_hw_control(adapter);
-> +	rtnl_unlock();
-> +}
-> +
-> +static const struct pci_error_handlers igc_err_handler = {
-> +	.error_detected = igc_io_error_detected,
-> +	.slot_reset = igc_io_slot_reset,
-> +	.resume = igc_io_resume,
-> +};
-> +
->  #ifdef CONFIG_PM
->  static const struct dev_pm_ops igc_pm_ops = {
->  	SET_SYSTEM_SLEEP_PM_OPS(igc_suspend, igc_resume)
-> @@ -5093,6 +5197,7 @@ static struct pci_driver igc_driver = {
->  	.driver.pm = &igc_pm_ops,
->  #endif
->  	.shutdown = igc_shutdown,
-> +	.err_handler = &igc_err_handler,
->  };
->  
->  /**
-> 
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 5174 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200127/b35d9905/attachment.p7s>
