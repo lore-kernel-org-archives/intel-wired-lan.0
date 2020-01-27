@@ -1,50 +1,40 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 27 Jan 2020 00:59:19 -0800
-Subject: [Intel-wired-lan] [PATCH S39 07/15] ice: SW DCB,
- report correct max TC value
+Date: Mon, 27 Jan 2020 00:59:23 -0800
+Subject: [Intel-wired-lan] [PATCH S39 11/15] ice: increase PF reset wait
+ timeout to 300 milliseconds
 In-Reply-To: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
 References: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200127085927.13999-7-anthony.l.nguyen@intel.com>
+Message-ID: <20200127085927.13999-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-lldpad is using the value reported in the DCB config for
-max_tc as the max allowed number of TCs, not the current
-max.  ICE driver was reporting it as current maximum TC.
+Increase the maximum time that the driver will wait for a PF reset from
+200 milliseconds to 300 milliseconds, to account for possibility of
+a slightly longer than expected PF reset.
 
-Change DCB_NL function to report maximum TC allowed by
-this device.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index 912467add847..823c2da62629 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -101,14 +101,7 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
- 		goto ets_out;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index f70e601610fc..6d7d7dbf29fe 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -6,7 +6,7 @@
+ #include "ice_adminq_cmd.h"
+ #include "ice_flow.h"
  
--	/* max_tc is a 1-8 value count of number of TC's, not a 0-7 value
--	 * for the TC's index number.  Add one to value if not zero, and
--	 * for zero set it to the FW's default value
--	 */
--	if (max_tc)
--		max_tc++;
--	else
--		max_tc = IEEE_8021QAZ_MAX_TCS;
-+	max_tc = pf->hw.func_caps.common_cap.maxtc;
+-#define ICE_PF_RESET_WAIT_COUNT	200
++#define ICE_PF_RESET_WAIT_COUNT	300
  
- 	new_cfg->etscfg.maxtcs = max_tc;
- 
+ /**
+  * ice_set_mac_type - Sets MAC type
 -- 
 2.20.1
 
