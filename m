@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 27 Jan 2020 23:19:57 +0000
-Subject: [Intel-wired-lan] [PATCH S38 14/15] ice: add function argument
- description to function header comment
-In-Reply-To: <20200122152138.41585-14-anthony.l.nguyen@intel.com>
+Date: Mon, 27 Jan 2020 23:20:23 +0000
+Subject: [Intel-wired-lan] [PATCH S38 15/15] ice: use true/false for
+ bool types
+In-Reply-To: <20200122152138.41585-15-anthony.l.nguyen@intel.com>
 References: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
- <20200122152138.41585-14-anthony.l.nguyen@intel.com>
-Message-ID: <37a2fa6b73a84681b3121c6ccaf6c915@intel.com>
+ <20200122152138.41585-15-anthony.l.nguyen@intel.com>
+Message-ID: <b71ba7e8434d47e98b74b94d44561f1a@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, January 22, 2020 7:22 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S38 14/15] ice: add function argument
-> description to function header comment
+> Subject: [Intel-wired-lan] [PATCH S38 15/15] ice: use true/false for bool types
 > 
 > From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> Commit 0290bd291cc0 ("netdev: pass the stuck queue to the timeout
-> handler") introduced a new argument to the function but missed adding the
-> description of the argument to the function header comment.  Add it now.
+> Subject says it all.
 > 
 > Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/ice/ice_xsk.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
