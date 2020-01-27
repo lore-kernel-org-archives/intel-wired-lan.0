@@ -1,140 +1,72 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 27 Jan 2020 00:59:13 -0800
-Subject: [Intel-wired-lan] [PATCH S39 01/15] ice: Validate config for SW DCB
- map
-Message-ID: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
+Date: Mon, 27 Jan 2020 00:59:16 -0800
+Subject: [Intel-wired-lan] [PATCH S39 04/15] ice: Always clear the
+ QRXFLXP_CNTXT register for VF Rx queues
+In-Reply-To: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
+References: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200127085927.13999-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Validate the inputs for SW DCB config received either via lldptool or pcap
-file. And don't apply DCB for bad bandwidth inputs or non-contiguous TCs.
-Without this patch, any config having bad inputs will cause the loss of
-link making PF unusable even after driver reload. Recoverable only via
-system reboot.
+Currently when the PF reduces its number of channels via ethtool and
+then VFs are created there may be stale data for some of the Rx queues
+belonging to VFs. This happens when a VF reuses an Rx queue that was
+previously used by the PF. Specifically, the QRXFLXP_CNTXT register
+will have incorrect values. Fix this by always clearing the relevant
+values in the QRXFLXP_CNTXT register for VF queues.
 
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 55 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  1 +
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c  |  7 +++
- 3 files changed, 63 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_base.c       | 8 ++++++--
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 1 +
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 0f4ca813a7ab..bd361212921c 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -169,6 +169,56 @@ ice_peer_prep_tc_change(struct ice_peer_dev_int *peer_dev_int,
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index 75cc5a366b26..54aa533f36d4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -386,8 +386,8 @@ int ice_setup_rx_ctx(struct ice_ring *ring)
+ 	 /* Enable Flexible Descriptors in the queue context which
+ 	  * allows this driver to select a specific receive descriptor format
+ 	  */
++	regval = rd32(hw, QRXFLXP_CNTXT(pf_q));
+ 	if (vsi->type != ICE_VSI_VF) {
+-		regval = rd32(hw, QRXFLXP_CNTXT(pf_q));
+ 		regval |= (rxdid << QRXFLXP_CNTXT_RXDID_IDX_S) &
+ 			QRXFLXP_CNTXT_RXDID_IDX_M;
  
-+/**
-+ * ice_dcb_bwchk - check if ETS bandwidth input parameters are correct
-+ * @dcbcfg: pointer to DCB config structure
-+ */
-+int ice_dcb_bwchk(struct ice_dcbx_cfg *dcbcfg)
-+{
-+	struct ice_dcb_ets_cfg *etscfg = &dcbcfg->etscfg;
-+	u8 num_tc, total_bw = 0;
-+	int i;
-+
-+	/* returns number of contigous TCs and 1 TC for non-contigous TCs,
-+	 * since at least 1 TC has to be configured
-+	 */
-+	num_tc = ice_dcb_get_num_tc(dcbcfg);
-+
-+	/* no bandwidth checks required if there's only one TC and assign
-+	 * all bandwidth to it i.e. to TC0 and return
-+	 */
-+	if (num_tc == 1) {
-+		etscfg->tcbwtable[0] = ICE_TC_MAX_BW;
-+		return 0;
-+	}
-+	/* There are few rules with which TC bandwidth can be applied for any TC
-+	 * with a UP mapped to it.
-+	 *	1. All TCs have zero BW - Valid
-+	 *	   ex:  tcbw=0,0,0
-+	 *	2. First few non-zero and rest zero BW - Valid
-+	 *	   ex:  tcbw=100,0,0
-+	 *	3. Zero BW in between 2 non-zero BW TCs - Invalid
-+	 *	   ex:  tcbw=25,0,75
-+	 */
-+	for (i = 0; i < num_tc; i++) {
-+		/* don't allow zero BW for TCs other than TC0 */
-+		if (i && !etscfg->tcbwtable[i])
-+			goto err;
-+
-+		if (etscfg->tsatable[i] == ICE_IEEE_TSA_ETS)
-+			total_bw += etscfg->tcbwtable[i];
-+	}
-+
-+	 /* total bandwidth should be equal to 100 */
-+	if (total_bw != ICE_TC_MAX_BW)
-+		goto err;
-+
-+	return 0;
-+
-+err:
-+	return -EINVAL;
-+}
-+
- /**
-  * ice_pf_dcb_cfg - Apply new DCB configuration
-  * @pf: pointer to the PF struct
-@@ -206,6 +256,11 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
- 	/* Notify capable peers about impending change to TCs */
- 	ice_for_each_peer(pf, NULL, ice_peer_prep_tc_change);
+@@ -398,8 +398,12 @@ int ice_setup_rx_ctx(struct ice_ring *ring)
+ 		regval |= (0x03 << QRXFLXP_CNTXT_RXDID_PRIO_S) &
+ 			QRXFLXP_CNTXT_RXDID_PRIO_M;
  
-+	if (ice_dcb_bwchk(new_cfg)) {
-+		dev_err(dev, "Invalid config, not applying DCB\n");
-+		return -EINVAL;
-+	}
-+
- 	/* Store old config in case FW config fails */
- 	old_cfg = kmemdup(curr_cfg, sizeof(*old_cfg), GFP_KERNEL);
- 	if (!old_cfg)
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-index bb53edf462ba..2b900da27f57 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-@@ -20,6 +20,7 @@ u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
- u8 ice_dcb_get_tc(struct ice_vsi *vsi, int queue_index);
- int
- ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked);
-+int ice_dcb_bwchk(struct ice_dcbx_cfg *dcbcfg);
- void ice_pf_dcb_recfg(struct ice_pf *pf);
- void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
- int ice_init_pf_dcb(struct ice_pf *pf, bool locked);
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index b61aba428adb..a45e8abef8f3 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -95,6 +95,12 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
- 		new_cfg->etsrec.prio_table[i] = ets->reco_prio_tc[i];
+-		wr32(hw, QRXFLXP_CNTXT(pf_q), regval);
++	} else {
++		regval &= ~(QRXFLXP_CNTXT_RXDID_IDX_M |
++			    QRXFLXP_CNTXT_RXDID_PRIO_M |
++			    QRXFLXP_CNTXT_TS_M);
  	}
++	wr32(hw, QRXFLXP_CNTXT(pf_q), regval);
  
-+	if (ice_dcb_bwchk(new_cfg)) {
-+		netdev_err(netdev, "Invalid config, not applying DCB\n");
-+		err = -EINVAL;
-+		goto ets_out;
-+	}
-+
- 	/* max_tc is a 1-8 value count of number of TC's, not a 0-7 value
- 	 * for the TC's index number.  Add one to value if not zero, and
- 	 * for zero set it to the FW's default value
-@@ -119,6 +125,7 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
- 	if (err == ICE_DCB_NO_HW_CHG)
- 		err = ICE_DCB_HW_CHG_RST;
- 
-+ets_out:
- 	mutex_unlock(&pf->tc_mutex);
- 	return err;
- }
+ 	/* Absolute queue number out of 2K needs to be passed */
+ 	err = ice_write_rxq_ctx(hw, &rlan_ctx, pf_q);
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 57f1c4513c0b..3f40736a8295 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -86,6 +86,7 @@
+ #define QRXFLXP_CNTXT_RXDID_IDX_M		ICE_M(0x3F, 0)
+ #define QRXFLXP_CNTXT_RXDID_PRIO_S		8
+ #define QRXFLXP_CNTXT_RXDID_PRIO_M		ICE_M(0x7, 8)
++#define QRXFLXP_CNTXT_TS_M			BIT(11)
+ #define GLGEN_RSTAT				0x000B8188
+ #define GLGEN_RSTAT_DEVSTATE_M			ICE_M(0x3, 0)
+ #define GLGEN_RSTCTL				0x000B8180
 -- 
 2.20.1
 
