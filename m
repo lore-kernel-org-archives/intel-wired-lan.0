@@ -1,94 +1,140 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 27 Jan 2020 00:59:17 -0800
-Subject: [Intel-wired-lan] [PATCH S39 05/15] ice: Add DCBNL ops required to
- configure ETS in CEE for SW DCB
-In-Reply-To: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
-References: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200127085927.13999-5-anthony.l.nguyen@intel.com>
+Date: Mon, 27 Jan 2020 00:59:13 -0800
+Subject: [Intel-wired-lan] [PATCH S39 01/15] ice: Validate config for SW DCB
+ map
+Message-ID: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash JD <avinash.dayanand@intel.com>
+From: Avinash Dayanand <avinash.dayanand@intel.com>
 
-Couple of DCBNL ops are required for configuring ETS in SW DCB CEE mode. If
-these functions are not added, it'll break the CEE functionality.
+Validate the inputs for SW DCB config received either via lldptool or pcap
+file. And don't apply DCB for bad bandwidth inputs or non-contiguous TCs.
+Without this patch, any config having bad inputs will cause the loss of
+link making PF unusable even after driver reload. Recoverable only via
+system reboot.
 
-Signed-off-by: Avinash JD <avinash.dayanand@intel.com>
+Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 43 +++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 55 ++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  1 +
+ drivers/net/ethernet/intel/ice/ice_dcb_nl.c  |  7 +++
+ 3 files changed, 63 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 0f4ca813a7ab..bd361212921c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -169,6 +169,56 @@ ice_peer_prep_tc_change(struct ice_peer_dev_int *peer_dev_int,
+ 	return 0;
+ }
+ 
++/**
++ * ice_dcb_bwchk - check if ETS bandwidth input parameters are correct
++ * @dcbcfg: pointer to DCB config structure
++ */
++int ice_dcb_bwchk(struct ice_dcbx_cfg *dcbcfg)
++{
++	struct ice_dcb_ets_cfg *etscfg = &dcbcfg->etscfg;
++	u8 num_tc, total_bw = 0;
++	int i;
++
++	/* returns number of contigous TCs and 1 TC for non-contigous TCs,
++	 * since at least 1 TC has to be configured
++	 */
++	num_tc = ice_dcb_get_num_tc(dcbcfg);
++
++	/* no bandwidth checks required if there's only one TC and assign
++	 * all bandwidth to it i.e. to TC0 and return
++	 */
++	if (num_tc == 1) {
++		etscfg->tcbwtable[0] = ICE_TC_MAX_BW;
++		return 0;
++	}
++	/* There are few rules with which TC bandwidth can be applied for any TC
++	 * with a UP mapped to it.
++	 *	1. All TCs have zero BW - Valid
++	 *	   ex:  tcbw=0,0,0
++	 *	2. First few non-zero and rest zero BW - Valid
++	 *	   ex:  tcbw=100,0,0
++	 *	3. Zero BW in between 2 non-zero BW TCs - Invalid
++	 *	   ex:  tcbw=25,0,75
++	 */
++	for (i = 0; i < num_tc; i++) {
++		/* don't allow zero BW for TCs other than TC0 */
++		if (i && !etscfg->tcbwtable[i])
++			goto err;
++
++		if (etscfg->tsatable[i] == ICE_IEEE_TSA_ETS)
++			total_bw += etscfg->tcbwtable[i];
++	}
++
++	 /* total bandwidth should be equal to 100 */
++	if (total_bw != ICE_TC_MAX_BW)
++		goto err;
++
++	return 0;
++
++err:
++	return -EINVAL;
++}
++
+ /**
+  * ice_pf_dcb_cfg - Apply new DCB configuration
+  * @pf: pointer to the PF struct
+@@ -206,6 +256,11 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
+ 	/* Notify capable peers about impending change to TCs */
+ 	ice_for_each_peer(pf, NULL, ice_peer_prep_tc_change);
+ 
++	if (ice_dcb_bwchk(new_cfg)) {
++		dev_err(dev, "Invalid config, not applying DCB\n");
++		return -EINVAL;
++	}
++
+ 	/* Store old config in case FW config fails */
+ 	old_cfg = kmemdup(curr_cfg, sizeof(*old_cfg), GFP_KERNEL);
+ 	if (!old_cfg)
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+index bb53edf462ba..2b900da27f57 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+@@ -20,6 +20,7 @@ u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
+ u8 ice_dcb_get_tc(struct ice_vsi *vsi, int queue_index);
+ int
+ ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked);
++int ice_dcb_bwchk(struct ice_dcbx_cfg *dcbcfg);
+ void ice_pf_dcb_recfg(struct ice_pf *pf);
+ void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
+ int ice_init_pf_dcb(struct ice_pf *pf, bool locked);
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index a45e8abef8f3..912467add847 100644
+index b61aba428adb..a45e8abef8f3 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
 +++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -541,6 +541,30 @@ ice_dcbnl_get_pg_tc_cfg_rx(struct net_device *netdev, int prio,
- 	*pgid = pi->local_dcbx_cfg.etscfg.prio_table[prio];
- }
+@@ -95,6 +95,12 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
+ 		new_cfg->etsrec.prio_table[i] = ets->reco_prio_tc[i];
+ 	}
  
-+/**
-+ * ice_dcbnl_set_pg_tc_cfg_rx
-+ * @netdev: relevant netdev struct
-+ * @prio: corresponding user priority
-+ * @prio_type: the traffic priority type
-+ * @pgid: the PG ID
-+ * @bw_pct: BW percentage for corresponding BWG
-+ * @up_map: prio mapped to corresponding TC
-+ *
-+ * lldpad requires this function pointer to be non-NULL to complete CEE config.
-+ */
-+static void
-+ice_dcbnl_set_pg_tc_cfg_rx(struct net_device *netdev,
-+			   int __always_unused prio,
-+			   u8 __always_unused prio_type,
-+			   u8 __always_unused pgid,
-+			   u8 __always_unused bw_pct,
-+			   u8 __always_unused up_map)
-+{
-+	struct ice_pf *pf = ice_netdev_to_pf(netdev);
++	if (ice_dcb_bwchk(new_cfg)) {
++		netdev_err(netdev, "Invalid config, not applying DCB\n");
++		err = -EINVAL;
++		goto ets_out;
++	}
 +
-+	dev_dbg(ice_pf_to_dev(pf), "Rx TC PG Config Not Supported.\n");
-+}
-+
- /**
-  * ice_dcbnl_get_pg_bwg_cfg_rx - Get CEE PG BW Rx config
-  * @netdev: pointer to netdev struct
-@@ -560,6 +584,23 @@ ice_dcbnl_get_pg_bwg_cfg_rx(struct net_device *netdev, int __always_unused pgid,
- 	*bw_pct = 0;
- }
+ 	/* max_tc is a 1-8 value count of number of TC's, not a 0-7 value
+ 	 * for the TC's index number.  Add one to value if not zero, and
+ 	 * for zero set it to the FW's default value
+@@ -119,6 +125,7 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
+ 	if (err == ICE_DCB_NO_HW_CHG)
+ 		err = ICE_DCB_HW_CHG_RST;
  
-+/**
-+ * ice_dcbnl_set_pg_bwg_cfg_rx
-+ * @netdev: the corresponding netdev
-+ * @pgid: corresponding TC
-+ * @bw_pct: BW percentage for given TC
-+ *
-+ * lldpad requires this function pointer to be non-NULL to complete CEE config.
-+ */
-+static void
-+ice_dcbnl_set_pg_bwg_cfg_rx(struct net_device *netdev, int __always_unused pgid,
-+			    u8 __always_unused bw_pct)
-+{
-+	struct ice_pf *pf = ice_netdev_to_pf(netdev);
-+
-+	dev_dbg(ice_pf_to_dev(pf), "Rx BWG PG Config Not Supported.\n");
-+}
-+
- /**
-  * ice_dcbnl_get_cap - Get DCBX capabilities of adapter
-  * @netdev: pointer to netdev struct
-@@ -806,6 +847,8 @@ static const struct dcbnl_rtnl_ops dcbnl_ops = {
- 	.getpermhwaddr = ice_dcbnl_get_perm_hw_addr,
- 	.setpgtccfgtx = ice_dcbnl_set_pg_tc_cfg_tx,
- 	.setpgbwgcfgtx = ice_dcbnl_set_pg_bwg_cfg_tx,
-+	.setpgtccfgrx = ice_dcbnl_set_pg_tc_cfg_rx,
-+	.setpgbwgcfgrx = ice_dcbnl_set_pg_bwg_cfg_rx,
- 	.getpgtccfgtx = ice_dcbnl_get_pg_tc_cfg_tx,
- 	.getpgbwgcfgtx = ice_dcbnl_get_pg_bwg_cfg_tx,
- 	.getpgtccfgrx = ice_dcbnl_get_pg_tc_cfg_rx,
++ets_out:
+ 	mutex_unlock(&pf->tc_mutex);
+ 	return err;
+ }
 -- 
 2.20.1
 
