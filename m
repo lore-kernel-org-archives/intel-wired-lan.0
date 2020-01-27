@@ -1,72 +1,50 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 27 Jan 2020 00:59:20 -0800
-Subject: [Intel-wired-lan] [PATCH S39 08/15] ice: Support XDP UMEM wake up
- mechanism
+Date: Mon, 27 Jan 2020 00:59:22 -0800
+Subject: [Intel-wired-lan] [PATCH S39 10/15] ice: Don't tell the OS that
+ link is going down
 In-Reply-To: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
 References: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200127085927.13999-8-anthony.l.nguyen@intel.com>
+Message-ID: <20200127085927.13999-10-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+From: Michal Swiatkowski <michal.swiatkowski@intel.com>
 
-Add support for a new AF_XDP feature that has already been introduced in
-upstreamed Intel NIC drivers. If a user space application signals that
-it might sleep using the new bind flag XDP_USE_NEED_WAKEUP, the driver
-will then set this flag if it has no more buffers on the NIC Rx ring and
-yield to the application. For Tx, it will set the flag if it has no
-outstanding Tx completion interrupts and return to the application.
+Remove code that tell the OS that link is going down when user
+change flow control via ethtool. When link is up it isn't certain
+that link goes down after 0x0605 aq command. If link doesn't go
+down, OS thinks that link is down, but physical link is up. To
+reset this state user have to take interface down and up.
 
-Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+If link goes down after 0x0605 command, FW send information
+about that and after that driver tells the OS that the link goes
+down. So this code in ethtool is unnecessary.
+
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_xsk.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 55d994f2d71e..3fd31ad73e0e 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -937,6 +937,15 @@ int ice_clean_rx_irq_zc(struct ice_ring *rx_ring, int budget)
- 	ice_finalize_xdp_rx(rx_ring, xdp_xmit);
- 	ice_update_rx_ring_stats(rx_ring, total_rx_packets, total_rx_bytes);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index ae0b63d5673d..c302470b095b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -2935,13 +2935,6 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
+ 	else
+ 		return -EINVAL;
  
-+	if (xsk_umem_uses_need_wakeup(rx_ring->xsk_umem)) {
-+		if (failure || rx_ring->next_to_clean == rx_ring->next_to_use)
-+			xsk_set_rx_need_wakeup(rx_ring->xsk_umem);
-+		else
-+			xsk_clear_rx_need_wakeup(rx_ring->xsk_umem);
-+
-+		return (int)total_rx_packets;
-+	}
-+
- 	return failure ? budget : (int)total_rx_packets;
- }
- 
-@@ -988,6 +997,8 @@ static bool ice_xmit_zc(struct ice_ring *xdp_ring, int budget)
- 	if (tx_desc) {
- 		ice_xdp_ring_update_tail(xdp_ring);
- 		xsk_umem_consume_tx_done(xdp_ring->xsk_umem);
-+		if (xsk_umem_uses_need_wakeup(xdp_ring->xsk_umem))
-+			xsk_clear_tx_need_wakeup(xdp_ring->xsk_umem);
- 	}
- 
- 	return budget > 0 && work_done;
-@@ -1063,6 +1074,13 @@ bool ice_clean_tx_irq_zc(struct ice_ring *xdp_ring, int budget)
- 	if (xsk_frames)
- 		xsk_umem_complete_tx(xdp_ring->xsk_umem, xsk_frames);
- 
-+	if (xsk_umem_uses_need_wakeup(xdp_ring->xsk_umem)) {
-+		if (xdp_ring->next_to_clean == xdp_ring->next_to_use)
-+			xsk_set_tx_need_wakeup(xdp_ring->xsk_umem);
-+		else
-+			xsk_clear_tx_need_wakeup(xdp_ring->xsk_umem);
-+	}
-+
- 	ice_update_tx_ring_stats(xdp_ring, total_packets, total_bytes);
- 	xmit_done = ice_xmit_zc(xdp_ring, ICE_DFLT_IRQ_WORK);
+-	/* Tell the OS link is going down, the link will go back up when fw
+-	 * says it is ready asynchronously
+-	 */
+-	ice_print_link_msg(vsi, false);
+-	netif_carrier_off(netdev);
+-	netif_tx_stop_all_queues(netdev);
+-
+ 	/* Set the FC mode and only restart AN if link is up */
+ 	status = ice_set_fc(pi, &aq_failures, link_up);
  
 -- 
 2.20.1
