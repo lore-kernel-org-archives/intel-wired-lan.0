@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 27 Jan 2020 23:15:28 +0000
-Subject: [Intel-wired-lan] [PATCH S38 08/15] ice: Handle LAN overflow
- event for VF queues
-In-Reply-To: <20200122152138.41585-8-anthony.l.nguyen@intel.com>
+Date: Mon, 27 Jan 2020 23:15:58 +0000
+Subject: [Intel-wired-lan] [PATCH S38 09/15] ice: Fix and refactor Rx
+ queue disable for VFs
+In-Reply-To: <20200122152138.41585-9-anthony.l.nguyen@intel.com>
 References: <20200122152138.41585-1-anthony.l.nguyen@intel.com>
- <20200122152138.41585-8-anthony.l.nguyen@intel.com>
-Message-ID: <dbd4d3b2d0db4bfca002c14264b8e30b@intel.com>
+ <20200122152138.41585-9-anthony.l.nguyen@intel.com>
+Message-ID: <f9bb58de468b403cb39f458a5ea390de@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,32 +17,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Wednesday, January 22, 2020 7:22 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S38 08/15] ice: Handle LAN overflow event
-> for VF queues
+> Subject: [Intel-wired-lan] [PATCH S38 09/15] ice: Fix and refactor Rx queue
+> disable for VFs
 > 
 > From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Currently we are not handling LAN overflow events. There can be cases
-> where LAN overflow events occur on VF queues, especially with Link Flow
-> Control (LFC) enabled on the controlling PF. In order to recover from the LAN
-> overflow event caused by a VF we need to determine if the queue belongs
-> to a VF and reset that VF accordingly.
+> Currently when a VF driver sends the PF a request to disable Rx queues we
+> will disable them one at a time, even if the VF driver sent us a batch of
+> queues to disable. This is causing issues where the Rx queue disable times
+> out with LFC enabled. This can be improved by detecting when the VF is
+> trying to disable all of its queues.
 > 
-> The struct ice_aqc_event_lan_overflow returns a copy of the GLDCB_RTCTQ
-> register, which tells us what the queue index is in the global/device space.
-> The global queue index needs to first be converted to a PF space queue
-> index and then it can be used to find if a VF owns it.
+> Also remove the variable num_qs_ena from the ice_vf structure as it was
+> only used to see if there were no Rx and no Tx queues active. Instead add a
+> function that checks if both the vf->rxq_ena and vf->txq_ena bitmaps are
+> empty.
 > 
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 11 ++++
->  .../net/ethernet/intel/ice/ice_hw_autogen.h   |  2 +
->  drivers/net/ethernet/intel/ice/ice_main.c     |  3 +
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 66 +++++++++++++++++++
-> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  4 ++
->  5 files changed, 86 insertions(+)
-
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 36 ++++++++++++++-----
+> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  1 -
+>  2 files changed, 27 insertions(+), 10 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
