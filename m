@@ -1,162 +1,143 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Mon, 20 Jan 2020 04:46:25 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD INCOMPLETE
- fbbba9bd5f4ef21862357fe534619d6edb37b546
-Message-ID: <5e24c021.9BpbXbznmNozVNIf%lkp@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Mon, 27 Jan 2020 13:58:31 +0200
+Subject: [Intel-wired-lan] [PATCH v1] igc: Add pcie error handler support
+Message-ID: <20200127115831.18047-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: fbbba9bd5f4ef21862357fe534619d6edb37b546  i40e: Fix receive buffer starvation for AF_XDP
+Add pcie error detection, slot reset and resume capability
 
-TIMEOUT after 2886m
-
-
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
-
-configs timed out: 10
-
-i386                             alldefconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-riscv                            allmodconfig
-riscv                             allnoconfig
-riscv                            allyesconfig
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-
-configs tested: 118
-configs skipped: 0
-
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                          rhel-kconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-ia64                                defconfig
-alpha                randconfig-a001-20200118
-m68k                 randconfig-a001-20200118
-mips                 randconfig-a001-20200118
-nds32                randconfig-a001-20200118
-parisc               randconfig-a001-20200118
-riscv                randconfig-a001-20200118
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64               randconfig-b001-20200118
-x86_64               randconfig-b002-20200118
-x86_64               randconfig-b003-20200118
-i386                 randconfig-b001-20200118
-i386                 randconfig-b002-20200118
-i386                 randconfig-b003-20200118
-x86_64               randconfig-d001-20200118
-x86_64               randconfig-d002-20200118
-x86_64               randconfig-d003-20200118
-i386                 randconfig-d001-20200118
-i386                 randconfig-d002-20200118
-i386                 randconfig-d003-20200118
-parisc                            allnoconfig
-parisc                            allyesonfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                             defconfig
-csky                 randconfig-a001-20200118
-openrisc             randconfig-a001-20200118
-s390                 randconfig-a001-20200118
-sh                   randconfig-a001-20200118
-xtensa               randconfig-a001-20200118
-c6x                  randconfig-a001-20200118
-h8300                randconfig-a001-20200118
-microblaze           randconfig-a001-20200118
-nios2                randconfig-a001-20200118
-sparc64              randconfig-a001-20200118
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-alpha                               defconfig
-csky                                defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm                              allyesconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.6
-s390                              allnoconfig
-s390                             alldefconfig
-s390                          debug_defconfig
-s390                             allmodconfig
-s390                                defconfig
-s390                       zfcpdump_defconfig
-s390                             allyesconfig
-sparc                randconfig-a001-20200119
-arm                  randconfig-a001-20200119
-arm64                randconfig-a001-20200119
-powerpc              randconfig-a001-20200119
-ia64                 randconfig-a001-20200119
-arc                  randconfig-a001-20200119
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                             allyesconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
-0-DAY kernel test infrastructure                 Open Source Technology Center
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
+ drivers/net/ethernet/intel/igc/igc_main.c | 105 ++++++++++++++++++++++++++++++
+ 1 file changed, 105 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index fa72460e255a..b0656ae2fcb3 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -5076,6 +5076,110 @@ static void igc_shutdown(struct pci_dev *pdev)
+ 	}
+ }
+ 
++/**
++ *  igc_io_error_detected - called when PCI error is detected
++ *  @pdev: Pointer to PCI device
++ *  @state: The current pci connection state
++ *
++ *  This function is called after a PCI bus error affecting
++ *  this device has been detected.
++ **/
++static pci_ers_result_t igc_io_error_detected(struct pci_dev *pdev,
++					      pci_channel_state_t state)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct igc_adapter *adapter = netdev_priv(netdev);
++
++	netif_device_detach(netdev);
++
++	if (state == pci_channel_io_perm_failure)
++		return PCI_ERS_RESULT_DISCONNECT;
++
++	if (netif_running(netdev))
++		igc_down(adapter);
++	pci_disable_device(pdev);
++
++	/* Request a slot slot reset. */
++	return PCI_ERS_RESULT_NEED_RESET;
++}
++
++/**
++ *  igc_io_slot_reset - called after the pci bus has been reset.
++ *  @pdev: Pointer to PCI device
++ *
++ *  Restart the card from scratch, as if from a cold-boot. Implementation
++ *  resembles the first-half of the igc_resume routine.
++ **/
++static pci_ers_result_t igc_io_slot_reset(struct pci_dev *pdev)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct igc_adapter *adapter = netdev_priv(netdev);
++	struct igc_hw *hw = &adapter->hw;
++	pci_ers_result_t result;
++
++	if (pci_enable_device_mem(pdev)) {
++		dev_err(&pdev->dev,
++			"Cannot re-enable PCI device after reset.\n");
++		result = PCI_ERS_RESULT_DISCONNECT;
++	} else {
++		pci_set_master(pdev);
++		pci_restore_state(pdev);
++		pci_save_state(pdev);
++
++		pci_enable_wake(pdev, PCI_D3hot, 0);
++		pci_enable_wake(pdev, PCI_D3cold, 0);
++
++		/* In case of PCI error, adapter lose its HW address
++		 * so we should re-assign it here.
++		 */
++		hw->hw_addr = adapter->io_addr;
++
++		igc_reset(adapter);
++		wr32(IGC_WUS, ~0);
++		result = PCI_ERS_RESULT_RECOVERED;
++	}
++
++	return result;
++}
++
++/**
++ *  igc_io_resume - called when traffic can start flowing again.
++ *  @pdev: Pointer to PCI device
++ *
++ *  This callback is called when the error recovery driver tells us that
++ *  its OK to resume normal operation. Implementation resembles the
++ *  second-half of the igc_resume routine.
++ */
++static void igc_io_resume(struct pci_dev *pdev)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct igc_adapter *adapter = netdev_priv(netdev);
++	u32 err = 0;
++
++	rtnl_lock();
++	if (netif_running(netdev)) {
++		err = igc_open(netdev);
++		if (err) {
++			dev_err(&pdev->dev, "igic_open failed after reset\n");
++			return;
++		}
++	}
++
++	netif_device_attach(netdev);
++
++	/* let the f/w know that the h/w is now under the control of the
++	 * driver.
++	 */
++	igc_get_hw_control(adapter);
++	rtnl_unlock();
++}
++
++static const struct pci_error_handlers igc_err_handler = {
++	.error_detected = igc_io_error_detected,
++	.slot_reset = igc_io_slot_reset,
++	.resume = igc_io_resume,
++};
++
+ #ifdef CONFIG_PM
+ static const struct dev_pm_ops igc_pm_ops = {
+ 	SET_SYSTEM_SLEEP_PM_OPS(igc_suspend, igc_resume)
+@@ -5093,6 +5197,7 @@ static struct pci_driver igc_driver = {
+ 	.driver.pm = &igc_pm_ops,
+ #endif
+ 	.shutdown = igc_shutdown,
++	.err_handler = &igc_err_handler,
+ };
+ 
+ /**
+-- 
+2.11.0
+
