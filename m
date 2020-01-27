@@ -1,451 +1,128 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 27 Jan 2020 00:59:14 -0800
-Subject: [Intel-wired-lan] [PATCH S39 02/15] ice: update malicious driver
- detection event handling
+Date: Mon, 27 Jan 2020 00:59:21 -0800
+Subject: [Intel-wired-lan] [PATCH S39 09/15] ice: Don't reject odd values of
+ usecs set by user
 In-Reply-To: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
 References: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200127085927.13999-2-anthony.l.nguyen@intel.com>
+Message-ID: <20200127085927.13999-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paul Greenwalt <paul.greenwalt@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Update the PF VFs MDD event message to rate limit once per second and
-report the total number Rx|Tx event count. Add support to print pending
-MDD events that occur during the rate limit. The use of net_ratelimit did
-not allow for per VF Rx|Tx granularity.
+Currently if a user sets an odd [tx|rx]-usecs value through ethtool,
+the request is denied because the hardware is set to have an ITR
+granularity of 2us. This caused poor customer experience. Fix this by
+aligning to a register allowed value, which results in rounding down.
+Also, print a once per ring container type message to be clear about
+our intentions.
 
-Additional PF MDD log messages are guarded by netif_msg_[rx|tx]_err().
+Also, change the ITR_TO_REG define to be the bitwise and of the ITR
+setting and the ICE_ITR_MASK. This makes the purpose of ITR_TO_REG more
+obvious.
 
-Since VF RX MDD events disable the queue, add ethtool private flag
-mdd-auto-reset-vf to configure VF reset to re-enable the queue.
-
-Disable anti-spoof detection interrupt to prevent spurious events
-during a function reset.
-
-To avoid race condition do not make PF MDD register reads conditional
-on global MDD result.
-
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h          |   4 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |   1 +
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   2 +
- drivers/net/ethernet/intel/ice/ice_main.c     | 126 ++++++++++--------
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  54 +++++++-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  20 ++-
- 6 files changed, 148 insertions(+), 59 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 49 +++++++++++++++-----
+ drivers/net/ethernet/intel/ice/ice_txrx.h    |  2 +-
+ 2 files changed, 39 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 8b33fe62198f..92e44a87f905 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -216,6 +216,7 @@ enum ice_state {
- 	__ICE_SERVICE_SCHED,
- 	__ICE_SERVICE_DIS,
- 	__ICE_OICR_INTR_DIS,		/* Global OICR interrupt disabled */
-+	__ICE_MDD_VF_PRINT_PENDING,	/* set when MDD event handle */
- 	__ICE_STATE_NBITS		/* must be last */
- };
- 
-@@ -347,6 +348,7 @@ enum ice_pf_flags {
- 	ICE_FLAG_FW_LLDP_AGENT,
- 	ICE_FLAG_ETHTOOL_CTXT,		/* set when ethtool holds RTNL lock */
- 	ICE_FLAG_LEGACY_RX,
-+	ICE_FLAG_MDD_AUTO_RESET_VF,
- 	ICE_PF_FLAGS_NBITS		/* must be last */
- };
- 
-@@ -370,6 +372,8 @@ struct ice_pf {
- 	u16 num_vfs_supported;		/* num VFs supported for this PF */
- 	u16 num_vf_qps;			/* num queue pairs per VF */
- 	u16 num_vf_msix;		/* num vectors per VF */
-+	/* used to ratelimit the MDD event logging */
-+	unsigned long last_printed_mdd_jiffies;
- 	DECLARE_BITMAP(state, __ICE_STATE_NBITS);
- 	DECLARE_BITMAP(flags, ICE_PF_FLAGS_NBITS);
- 	unsigned long *avail_txqs;	/* bitmap to track PF Tx queue usage */
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 7b34c7c04547..db14ec2e0b46 100644
+index db14ec2e0b46..ae0b63d5673d 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -157,6 +157,7 @@ struct ice_priv_flag {
- static const struct ice_priv_flag ice_gstrings_priv_flags[] = {
- 	ICE_PRIV_FLAG("link-down-on-close", ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA),
- 	ICE_PRIV_FLAG("fw-lldp-agent", ICE_FLAG_FW_LLDP_AGENT),
-+	ICE_PRIV_FLAG("mdd-auto-reset-vf", ICE_FLAG_MDD_AUTO_RESET_VF),
- 	ICE_PRIV_FLAG("legacy-rx", ICE_FLAG_LEGACY_RX),
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index d767c398ac71..57f1c4513c0b 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -218,6 +218,8 @@
- #define VPLAN_TX_QBASE_VFNUMQ_M			ICE_M(0xFF, 16)
- #define VPLAN_TXQ_MAPENA(_VF)			(0x00073800 + ((_VF) * 4))
- #define VPLAN_TXQ_MAPENA_TX_ENA_M		BIT(0)
-+#define GL_MDCK_TX_TDPU				0x00049348
-+#define GL_MDCK_TX_TDPU_RCU_ANTISPOOF_ITR_DIS_M BIT(1)
- #define GL_MDET_RX				0x00294C00
- #define GL_MDET_RX_QNUM_S			0
- #define GL_MDET_RX_QNUM_M			ICE_M(0x7FFF, 0)
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 3857e3f7a3f2..bbc428c4ec07 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1190,20 +1190,28 @@ static void ice_service_timer(struct timer_list *t)
-  * ice_handle_mdd_event - handle malicious driver detect event
-  * @pf: pointer to the PF structure
-  *
-- * Called from service task. OICR interrupt handler indicates MDD event
-+ * Called from service task. OICR interrupt handler indicates MDD event.
-+ * VF MDD logging is guarded by net_ratelimit. Additional PF and VF log
-+ * messages are wrapped by netif_msg_[rx|tx]_err. Since VF Rx MDD events
-+ * disable the queue, the PF can be configured to reset the VF using ethtool
-+ * private flag mdd-auto-reset-vf.
-  */
- static void ice_handle_mdd_event(struct ice_pf *pf)
- {
- 	struct device *dev = ice_pf_to_dev(pf);
- 	struct ice_hw *hw = &pf->hw;
--	bool mdd_detected = false;
- 	u32 reg;
- 	int i;
- 
--	if (!test_and_clear_bit(__ICE_MDD_EVENT_PENDING, pf->state))
-+	if (!test_and_clear_bit(__ICE_MDD_EVENT_PENDING, pf->state)) {
-+		/* Since the VF MDD event logging is rate limited, check if
-+		 * there are pending MDD events.
-+		 */
-+		ice_print_vfs_mdd_events(pf);
- 		return;
-+	}
- 
--	/* find what triggered the MDD event */
-+	/* find what triggered an MDD event */
- 	reg = rd32(hw, GL_MDET_TX_PQM);
- 	if (reg & GL_MDET_TX_PQM_VALID_M) {
- 		u8 pf_num = (reg & GL_MDET_TX_PQM_PF_NUM_M) >>
-@@ -1219,7 +1227,6 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
- 			dev_info(dev, "Malicious Driver Detection event %d on TX queue %d PF# %d VF# %d\n",
- 				 event, queue, pf_num, vf_num);
- 		wr32(hw, GL_MDET_TX_PQM, 0xffffffff);
--		mdd_detected = true;
+@@ -3488,21 +3488,13 @@ ice_set_rc_coalesce(enum ice_container_type c_type, struct ethtool_coalesce *ec,
+ 		return -EINVAL;
  	}
  
- 	reg = rd32(hw, GL_MDET_TX_TCLAN);
-@@ -1237,7 +1244,6 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
- 			dev_info(dev, "Malicious Driver Detection event %d on TX queue %d PF# %d VF# %d\n",
- 				 event, queue, pf_num, vf_num);
- 		wr32(hw, GL_MDET_TX_TCLAN, 0xffffffff);
--		mdd_detected = true;
- 	}
- 
- 	reg = rd32(hw, GL_MDET_RX);
-@@ -1255,85 +1261,85 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
- 			dev_info(dev, "Malicious Driver Detection event %d on RX queue %d PF# %d VF# %d\n",
- 				 event, queue, pf_num, vf_num);
- 		wr32(hw, GL_MDET_RX, 0xffffffff);
--		mdd_detected = true;
- 	}
- 
--	if (mdd_detected) {
--		bool pf_mdd_detected = false;
+-	/* hardware only supports an ITR granularity of 2us */
+-	if (coalesce_usecs % 2 != 0) {
+-		netdev_info(vsi->netdev, "Invalid value, %s-usecs must be even\n",
+-			    c_type_str);
+-		return -EINVAL;
+-	}
 -
--		reg = rd32(hw, PF_MDET_TX_PQM);
--		if (reg & PF_MDET_TX_PQM_VALID_M) {
--			wr32(hw, PF_MDET_TX_PQM, 0xFFFF);
--			dev_info(dev, "TX driver issue detected, PF reset issued\n");
--			pf_mdd_detected = true;
--		}
-+	/* check to see if this PF caused an MDD event */
-+	reg = rd32(hw, PF_MDET_TX_PQM);
-+	if (reg & PF_MDET_TX_PQM_VALID_M) {
-+		wr32(hw, PF_MDET_TX_PQM, 0xFFFF);
-+		if (netif_msg_tx_err(pf))
-+			dev_info(dev, "Malicious Driver Detection event TX_PQM detected on PF\n");
-+	}
- 
--		reg = rd32(hw, PF_MDET_TX_TCLAN);
--		if (reg & PF_MDET_TX_TCLAN_VALID_M) {
--			wr32(hw, PF_MDET_TX_TCLAN, 0xFFFF);
--			dev_info(dev, "TX driver issue detected, PF reset issued\n");
--			pf_mdd_detected = true;
--		}
-+	reg = rd32(hw, PF_MDET_TX_TCLAN);
-+	if (reg & PF_MDET_TX_TCLAN_VALID_M) {
-+		wr32(hw, PF_MDET_TX_TCLAN, 0xFFFF);
-+		if (netif_msg_tx_err(pf))
-+			dev_info(dev, "Malicious Driver Detection event TX_TCLAN detected on PF\n");
-+	}
- 
--		reg = rd32(hw, PF_MDET_RX);
--		if (reg & PF_MDET_RX_VALID_M) {
--			wr32(hw, PF_MDET_RX, 0xFFFF);
--			dev_info(dev, "RX driver issue detected, PF reset issued\n");
--			pf_mdd_detected = true;
--		}
--		/* Queue belongs to the PF initiate a reset */
--		if (pf_mdd_detected) {
--			set_bit(__ICE_NEEDS_RESTART, pf->state);
--			ice_service_task_schedule(pf);
--		}
-+	reg = rd32(hw, PF_MDET_RX);
-+	if (reg & PF_MDET_RX_VALID_M) {
-+		wr32(hw, PF_MDET_RX, 0xFFFF);
-+		if (netif_msg_rx_err(pf))
-+			dev_info(dev, "Malicious Driver Detection event RX detected on PF\n");
+ 	if (use_adaptive_coalesce) {
+ 		rc->itr_setting |= ICE_ITR_DYNAMIC;
+ 	} else {
+-		/* store user facing value how it was set */
++		/* save the user set usecs */
+ 		rc->itr_setting = coalesce_usecs;
+-		/* set to static and convert to value HW understands */
+-		rc->target_itr =
+-			ITR_TO_REG(ITR_REG_ALIGN(rc->itr_setting));
++		/* device ITR granularity is in 2 usec increments */
++		rc->target_itr = ITR_REG_ALIGN(rc->itr_setting);
  	}
- 
--	/* check to see if one of the VFs caused the MDD */
-+	/* Check to see if one of the VFs caused an MDD event, and then
-+	 * increment counters and set print pending
-+	 */
- 	ice_for_each_vf(pf, i) {
- 		struct ice_vf *vf = &pf->vf[i];
- 
--		bool vf_mdd_detected = false;
--
- 		reg = rd32(hw, VP_MDET_TX_PQM(i));
- 		if (reg & VP_MDET_TX_PQM_VALID_M) {
- 			wr32(hw, VP_MDET_TX_PQM(i), 0xFFFF);
--			vf_mdd_detected = true;
--			dev_info(dev, "TX driver issue detected on VF %d\n",
--				 i);
-+			vf->mdd_tx_events.count++;
-+			set_bit(__ICE_MDD_VF_PRINT_PENDING, pf->state);
-+			if (netif_msg_tx_err(pf))
-+				dev_info(dev, "Malicious Driver Detection event TX_PQM detected on VF %d\n",
-+					 i);
- 		}
- 
- 		reg = rd32(hw, VP_MDET_TX_TCLAN(i));
- 		if (reg & VP_MDET_TX_TCLAN_VALID_M) {
- 			wr32(hw, VP_MDET_TX_TCLAN(i), 0xFFFF);
--			vf_mdd_detected = true;
--			dev_info(dev, "TX driver issue detected on VF %d\n",
--				 i);
-+			vf->mdd_tx_events.count++;
-+			set_bit(__ICE_MDD_VF_PRINT_PENDING, pf->state);
-+			if (netif_msg_tx_err(pf))
-+				dev_info(dev, "Malicious Driver Detection event TX_TCLAN detected on VF %d\n",
-+					 i);
- 		}
- 
- 		reg = rd32(hw, VP_MDET_TX_TDPU(i));
- 		if (reg & VP_MDET_TX_TDPU_VALID_M) {
- 			wr32(hw, VP_MDET_TX_TDPU(i), 0xFFFF);
--			vf_mdd_detected = true;
--			dev_info(dev, "TX driver issue detected on VF %d\n",
--				 i);
-+			vf->mdd_tx_events.count++;
-+			set_bit(__ICE_MDD_VF_PRINT_PENDING, pf->state);
-+			if (netif_msg_tx_err(pf))
-+				dev_info(dev, "Malicious Driver Detection event TX_TDPU detected on VF %d\n",
-+					 i);
- 		}
- 
- 		reg = rd32(hw, VP_MDET_RX(i));
- 		if (reg & VP_MDET_RX_VALID_M) {
- 			wr32(hw, VP_MDET_RX(i), 0xFFFF);
--			vf_mdd_detected = true;
--			dev_info(dev, "RX driver issue detected on VF %d\n",
--				 i);
--		}
--
--		if (vf_mdd_detected) {
--			vf->num_mdd_events++;
--			if (vf->num_mdd_events &&
--			    vf->num_mdd_events <= ICE_MDD_EVENTS_THRESHOLD)
--				dev_info(dev, "VF %d has had %llu MDD events since last boot, Admin might need to reload AVF driver with this number of events\n",
--					 i, vf->num_mdd_events);
-+			vf->mdd_rx_events.count++;
-+			set_bit(__ICE_MDD_VF_PRINT_PENDING, pf->state);
-+			if (netif_msg_rx_err(pf))
-+				dev_info(dev, "Malicious Driver Detection event RX detected on VF %d\n",
-+					 i);
-+
-+			/* Since the queue is disabled on VF Rx MDD events, the
-+			 * PF can be configured to reset the VF through ethtool
-+			 * private flag mdd-auto-reset-vf.
-+			 */
-+			if (test_bit(ICE_FLAG_MDD_AUTO_RESET_VF, pf->flags))
-+				ice_reset_vf(&pf->vf[i], false);
- 		}
- 	}
-+
-+	ice_print_vfs_mdd_events(pf);
- }
- 
- /**
-@@ -2001,6 +2007,14 @@ static void ice_ena_misc_vector(struct ice_pf *pf)
- 	struct ice_hw *hw = &pf->hw;
- 	u32 val;
- 
-+	/* Disable anti-spoof detection interrupt to prevent spurious event
-+	 * interrupts during a function reset. Anti-spoof functionally is
-+	 * still supported.
-+	 */
-+	val = rd32(hw, GL_MDCK_TX_TDPU);
-+	val |= GL_MDCK_TX_TDPU_RCU_ANTISPOOF_ITR_DIS_M;
-+	wr32(hw, GL_MDCK_TX_TDPU, val);
-+
- 	/* clear things first */
- 	wr32(hw, PFINT_OICR_ENA, 0);	/* disable all */
- 	rd32(hw, PFINT_OICR);		/* read to clear */
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 7d778b3d5d5a..c84ac00a316e 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -171,6 +171,11 @@ static void ice_free_vf_res(struct ice_vf *vf)
- 	}
- 
- 	last_vector_idx = vf->first_vector_idx + pf->num_vf_msix - 1;
-+
-+	/* clear VF MDD event information */
-+	memset(&vf->mdd_tx_events, 0, sizeof(vf->mdd_tx_events));
-+	memset(&vf->mdd_rx_events, 0, sizeof(vf->mdd_rx_events));
-+
- 	/* Disable interrupts so that VF starts in a known state */
- 	for (i = vf->first_vector_idx; i <= last_vector_idx; i++) {
- 		wr32(&pf->hw, GLINT_DYN_CTL(i), GLINT_DYN_CTL_CLEARPBA_M);
-@@ -1175,7 +1180,7 @@ static bool ice_is_vf_disabled(struct ice_vf *vf)
-  *
-  * Returns true if the VF is reset, false otherwise.
-  */
--static bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
-+bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- {
- 	struct ice_pf *pf = vf->pf;
- 	struct ice_vsi *vsi;
-@@ -3538,3 +3543,50 @@ int ice_get_vf_stats(struct net_device *netdev, int vf_id,
  
  	return 0;
+@@ -3595,6 +3587,30 @@ ice_is_coalesce_param_invalid(struct net_device *netdev,
+ 	return 0;
  }
-+
+ 
 +/**
-+ * ice_print_vfs_mdd_event - print VFs malicious driver detect event
-+ * @pf: pointer to the PF structure
-+ *
-+ * Called from ice_handle_mdd_event to rate limit and print VFs MDD events.
++ * ice_print_if_odd_usecs - print message if user tries to set odd [tx|rx]-usecs
++ * @netdev: netdev used for print
++ * @itr_setting: previous user setting
++ * @use_adaptive_coalesce: if adaptive coalesce is enabled or being enabled
++ * @coalesce_usecs: requested value of [tx|rx]-usecs
++ * @c_type_str: either "rx" or "tx" to match user set field of [tx|rx]-usecs
 + */
-+void ice_print_vfs_mdd_events(struct ice_pf *pf)
++static void
++ice_print_if_odd_usecs(struct net_device *netdev, u16 itr_setting,
++		       u32 use_adaptive_coalesce, u32 coalesce_usecs,
++		       const char *c_type_str)
 +{
-+	struct device *dev = ice_pf_to_dev(pf);
-+	struct ice_hw *hw = &pf->hw;
-+	int i;
-+
-+	/* check that there are pending MDD events to print */
-+	if (!test_and_clear_bit(__ICE_MDD_VF_PRINT_PENDING, pf->state))
++	if (use_adaptive_coalesce)
 +		return;
 +
-+	/* VF MDD event logs are rate limited to one second intervals */
-+	if (time_is_after_jiffies(pf->last_printed_mdd_jiffies + HZ * 1))
-+		return;
++	itr_setting = ITR_TO_REG(itr_setting);
 +
-+	pf->last_printed_mdd_jiffies = jiffies;
-+
-+	ice_for_each_vf(pf, i) {
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		/* only print Rx MDD event message if there are new events */
-+		if (vf->mdd_rx_events.count != vf->mdd_rx_events.last_printed) {
-+			vf->mdd_rx_events.last_printed =
-+							vf->mdd_rx_events.count;
-+
-+			dev_info(dev, "%d Rx Malicious Driver Detection events detected on PF %d VF %d. mdd-auto-reset-vfs=%s\n",
-+				 vf->mdd_rx_events.count, hw->pf_id, i,
-+				 test_bit(ICE_FLAG_MDD_AUTO_RESET_VF, pf->flags)
-+					  ? "on" : "off");
-+		}
-+
-+		/* only print Tx MDD event message if there are new events */
-+		if (vf->mdd_tx_events.count != vf->mdd_tx_events.last_printed) {
-+			vf->mdd_tx_events.last_printed =
-+							vf->mdd_tx_events.count;
-+
-+			dev_info(dev, "%d Tx Malicious Driver Detection events detected on PF %d VF %d.\n",
-+				 vf->mdd_tx_events.count, hw->pf_id, i);
-+		}
-+	}
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 474b2613f09c..656f1909b38f 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -55,6 +55,13 @@ enum ice_virtchnl_cap {
- 	ICE_VIRTCHNL_VF_CAP_PRIVILEGE,
- };
- 
-+/* VF MDD events print structure */
-+struct ice_mdd_vf_events {
-+	u16 count;			/* total count of Rx|Tx events */
-+	/* count number of the last printed event */
-+	u16 last_printed;
-+};
-+
- /* VF information structure */
- struct ice_vf {
- 	struct ice_pf *pf;
-@@ -83,13 +90,14 @@ struct ice_vf {
- 	unsigned int tx_rate;		/* Tx bandwidth limit in Mbps */
- 	DECLARE_BITMAP(vf_states, ICE_VF_STATES_NBITS);	/* VF runtime states */
- 
--	u64 num_mdd_events;		/* number of MDD events detected */
- 	u64 num_inval_msgs;		/* number of continuous invalid msgs */
- 	u64 num_valid_msgs;		/* number of valid msgs detected */
- 	unsigned long vf_caps;		/* VF's adv. capabilities */
- 	u8 num_req_qs;			/* num of queue pairs requested by VF */
- 	u16 num_mac;
- 	u16 num_vf_qs;			/* num of queue configured per VF */
-+	struct ice_mdd_vf_events mdd_rx_events;
-+	struct ice_mdd_vf_events mdd_tx_events;
- };
- 
- #ifdef CONFIG_PCI_IOV
-@@ -104,6 +112,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event);
- void ice_vc_notify_link_state(struct ice_pf *pf);
- void ice_vc_notify_reset(struct ice_pf *pf);
- bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr);
-+bool ice_reset_vf(struct ice_vf *vf, bool is_vflr);
- 
- int
- ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
-@@ -123,7 +132,7 @@ ice_get_vf_stats(struct net_device *netdev, int vf_id,
- 		 struct ifla_vf_stats *vf_stats);
- void
- ice_vf_lan_overflow_event(struct ice_pf *pf, struct ice_rq_event_info *event);
--
-+void ice_print_vfs_mdd_events(struct ice_pf *pf);
- #else /* CONFIG_PCI_IOV */
- #define ice_process_vflr_event(pf) do {} while (0)
- #define ice_free_vfs(pf) do {} while (0)
-@@ -132,6 +141,7 @@ ice_vf_lan_overflow_event(struct ice_pf *pf, struct ice_rq_event_info *event);
- #define ice_vc_notify_reset(pf) do {} while (0)
- #define ice_set_vf_state_qs_dis(vf) do {} while (0)
- #define ice_vf_lan_overflow_event(pf, event) do {} while (0)
-+#define ice_print_vfs_mdd_events(pf) do {} while (0)
- 
- static inline bool
- ice_reset_all_vfs(struct ice_pf __always_unused *pf,
-@@ -140,6 +150,12 @@ ice_reset_all_vfs(struct ice_pf __always_unused *pf,
- 	return true;
- }
- 
-+static inline bool
-+ice_reset_vf(struct ice_vf __always_unused *vf, bool __always_unused is_vflr)
-+{
-+	return true;
++	if (itr_setting != coalesce_usecs && (coalesce_usecs % 2))
++		netdev_info(netdev, "User set %s-usecs to %d, device only supports even values. Rounding down and attempting to set %s-usecs to %d\n",
++			    c_type_str, coalesce_usecs, c_type_str,
++			    ITR_REG_ALIGN(coalesce_usecs));
 +}
 +
- static inline int
- ice_sriov_configure(struct pci_dev __always_unused *pdev,
- 		    int __always_unused num_vfs)
+ /**
+  * __ice_set_coalesce - set ITR/INTRL values for the device
+  * @netdev: pointer to the netdev associated with this query
+@@ -3615,8 +3631,19 @@ __ice_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
+ 		return -EINVAL;
+ 
+ 	if (q_num < 0) {
++		struct ice_q_vector *q_vector = vsi->q_vectors[0];
+ 		int v_idx;
+ 
++		if (q_vector) {
++			ice_print_if_odd_usecs(netdev, q_vector->rx.itr_setting,
++					       ec->use_adaptive_rx_coalesce,
++					       ec->rx_coalesce_usecs, "rx");
++
++			ice_print_if_odd_usecs(netdev, q_vector->tx.itr_setting,
++					       ec->use_adaptive_tx_coalesce,
++					       ec->tx_coalesce_usecs, "tx");
++		}
++
+ 		ice_for_each_q_vector(vsi, v_idx) {
+ 			/* In some cases if DCB is configured the num_[rx|tx]q
+ 			 * can be less than vsi->num_q_vectors. This check
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index a86270696df1..3e3cc2599824 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -222,7 +222,7 @@ enum ice_rx_dtype {
+ #define ICE_ITR_GRAN_S		1	/* ITR granularity is always 2us */
+ #define ICE_ITR_GRAN_US		BIT(ICE_ITR_GRAN_S)
+ #define ICE_ITR_MASK		0x1FFE	/* ITR register value alignment mask */
+-#define ITR_REG_ALIGN(setting)	__ALIGN_MASK(setting, ~ICE_ITR_MASK)
++#define ITR_REG_ALIGN(setting)	((setting) & ICE_ITR_MASK)
+ 
+ #define ICE_ITR_ADAPTIVE_MIN_INC	0x0002
+ #define ICE_ITR_ADAPTIVE_MIN_USECS	0x0002
 -- 
 2.20.1
 
