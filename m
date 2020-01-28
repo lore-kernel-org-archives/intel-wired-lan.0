@@ -1,239 +1,378 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 28 Jan 2020 15:39:16 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 25/27]
- drivers/net/ethernet/intel/igc/igc_dump.c:197:25: sparse: sparse: cast to
- restricted __le64
-Message-ID: <202001281514.Wa7UWB6r%lkp@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Tue, 28 Jan 2020 12:24:32 +0100
+Subject: [Intel-wired-lan] [next-queue v6] virtual-bus: Implementation
+ of Virtual Bus
+In-Reply-To: <20200122174152.5962-1-jeffrey.t.kirsher@intel.com>
+References: <20200122174152.5962-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <2e19c1f8-49e4-ac9a-cb2c-817f3cc0a344@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   6a71a4851aa363f042d1446967d96c4cf1392f66
-commit: 0ac10c5733a8a2cb846cd95048777338df0e23d3 [25/27] igc: Add dump options
-reproduce:
-        # apt-get install sparse
-        # sparse version: v0.6.1-153-g47b6dfef-dirty
-        git checkout 0ac10c5733a8a2cb846cd95048777338df0e23d3
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__'
-
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
+Dear Jeff, dear Dave,
 
 
-sparse warnings: (new ones prefixed by >>)
+Thank you. I have a few more style issues and nitpicks.
 
->> drivers/net/ethernet/intel/igc/igc_dump.c:197:25: sparse: sparse: cast to restricted __le64
->> drivers/net/ethernet/intel/igc/igc_dump.c:197:25: sparse: sparse: cast to restricted __le64
-   drivers/net/ethernet/intel/igc/igc_dump.c:278:33: sparse: sparse: cast to restricted __le64
-   drivers/net/ethernet/intel/igc/igc_dump.c:278:33: sparse: sparse: cast to restricted __le64
-   drivers/net/ethernet/intel/igc/igc_dump.c:284:33: sparse: sparse: cast to restricted __le64
-   drivers/net/ethernet/intel/igc/igc_dump.c:284:33: sparse: sparse: cast to restricted __le64
 
-vim +197 drivers/net/ethernet/intel/igc/igc_dump.c
+On 2020-01-22 18:41, Jeff Kirsher wrote:
+> From: Dave Ertman <david.m.ertman@intel.com>
+> 
+> This is the initial implementation of the Virtual Bus,
+> virtbus_device and virtbus_driver.  The virtual bus is
+> a software based bus intended to support registering
+> virtbus_devices and virtbus_drivers and provide matching
+> between them and probing of the registered drivers.
+> 
+> The bus will support probe/remove shutdown and
+> suspend/resume callbacks.
+> 
+> Kconfig and Makefile alterations are included
 
-   112	
-   113	/* igc_rings_dump - Tx-rings and Rx-rings */
-   114	void igc_rings_dump(struct igc_adapter *adapter)
-   115	{
-   116		struct net_device *netdev = adapter->netdev;
-   117		struct my_u0 { u64 a; u64 b; } *u0;
-   118		union igc_adv_tx_desc *tx_desc;
-   119		union igc_adv_rx_desc *rx_desc;
-   120		struct igc_ring *tx_ring;
-   121		struct igc_ring *rx_ring;
-   122		u32 staterr;
-   123		u16 i, n;
-   124	
-   125		if (!netif_msg_hw(adapter))
-   126			return;
-   127	
-   128		/* Print netdevice Info */
-   129		if (netdev) {
-   130			dev_info(&adapter->pdev->dev, "Net device Info\n");
-   131			pr_info("Device Name     state            trans_start\n");
-   132			pr_info("%-15s %016lX %016lX\n", netdev->name,
-   133				netdev->state, dev_trans_start(netdev));
-   134		}
-   135	
-   136		/* Print TX Ring Summary */
-   137		if (!netdev || !netif_running(netdev))
-   138			goto exit;
-   139	
-   140		dev_info(&adapter->pdev->dev, "TX Rings Summary\n");
-   141		pr_info("Queue [NTU] [NTC] [bi(ntc)->dma  ] leng ntw timestamp\n");
-   142		for (n = 0; n < adapter->num_tx_queues; n++) {
-   143			struct igc_tx_buffer *buffer_info;
-   144	
-   145			tx_ring = adapter->tx_ring[n];
-   146			buffer_info = &tx_ring->tx_buffer_info[tx_ring->next_to_clean];
-   147	
-   148			pr_info(" %5d %5X %5X %016llX %04X %p %016llX\n",
-   149				n, tx_ring->next_to_use, tx_ring->next_to_clean,
-   150				(u64)dma_unmap_addr(buffer_info, dma),
-   151				dma_unmap_len(buffer_info, len),
-   152				buffer_info->next_to_watch,
-   153				(u64)buffer_info->time_stamp);
-   154		}
-   155	
-   156		/* Print TX Rings */
-   157		if (!netif_msg_tx_done(adapter))
-   158			goto rx_ring_summary;
-   159	
-   160		dev_info(&adapter->pdev->dev, "TX Rings Dump\n");
-   161	
-   162		/* Transmit Descriptor Formats
-   163		 *
-   164		 * Advanced Transmit Descriptor
-   165		 *   +--------------------------------------------------------------+
-   166		 * 0 |         Buffer Address [63:0]                                |
-   167		 *   +--------------------------------------------------------------+
-   168		 * 8 | PAYLEN  | PORTS  |CC|IDX | STA | DCMD  |DTYP|MAC|RSV| DTALEN |
-   169		 *   +--------------------------------------------------------------+
-   170		 *   63      46 45    40 39 38 36 35 32 31   24             15       0
-   171		 */
-   172	
-   173		for (n = 0; n < adapter->num_tx_queues; n++) {
-   174			tx_ring = adapter->tx_ring[n];
-   175			pr_info("------------------------------------\n");
-   176			pr_info("TX QUEUE INDEX = %d\n", tx_ring->queue_index);
-   177			pr_info("------------------------------------\n");
-   178			pr_info("T [desc]     [address 63:0  ] [PlPOCIStDDM Ln] [bi->dma       ] leng  ntw timestamp        bi->skb\n");
-   179	
-   180			for (i = 0; tx_ring->desc && (i < tx_ring->count); i++) {
-   181				const char *next_desc;
-   182				struct igc_tx_buffer *buffer_info;
-   183	
-   184				tx_desc = IGC_TX_DESC(tx_ring, i);
-   185				buffer_info = &tx_ring->tx_buffer_info[i];
-   186				u0 = (struct my_u0 *)tx_desc;
-   187				if (i == tx_ring->next_to_use &&
-   188				    i == tx_ring->next_to_clean)
-   189					next_desc = " NTC/U";
-   190				else if (i == tx_ring->next_to_use)
-   191					next_desc = " NTU";
-   192				else if (i == tx_ring->next_to_clean)
-   193					next_desc = " NTC";
-   194				else
-   195					next_desc = "";
-   196	
- > 197				pr_info("T [0x%03X]    %016llX %016llX %016llX %04X  %p %016llX %p%s\n",
-   198					i, le64_to_cpu(u0->a),
-   199					le64_to_cpu(u0->b),
-   200					(u64)dma_unmap_addr(buffer_info, dma),
-   201					dma_unmap_len(buffer_info, len),
-   202					buffer_info->next_to_watch,
-   203					(u64)buffer_info->time_stamp,
-   204					buffer_info->skb, next_desc);
-   205	
-   206				if (netif_msg_pktdata(adapter) && buffer_info->skb)
-   207					print_hex_dump(KERN_INFO, "",
-   208						       DUMP_PREFIX_ADDRESS,
-   209						       16, 1, buffer_info->skb->data,
-   210						       dma_unmap_len(buffer_info, len),
-   211						       true);
-   212			}
-   213		}
-   214	
-   215		/* Print RX Rings Summary */
-   216	rx_ring_summary:
-   217		dev_info(&adapter->pdev->dev, "RX Rings Summary\n");
-   218		pr_info("Queue [NTU] [NTC]\n");
-   219		for (n = 0; n < adapter->num_rx_queues; n++) {
-   220			rx_ring = adapter->rx_ring[n];
-   221			pr_info(" %5d %5X %5X\n",
-   222				n, rx_ring->next_to_use, rx_ring->next_to_clean);
-   223		}
-   224	
-   225		/* Print RX Rings */
-   226		if (!netif_msg_rx_status(adapter))
-   227			goto exit;
-   228	
-   229		dev_info(&adapter->pdev->dev, "RX Rings Dump\n");
-   230	
-   231		/* Advanced Receive Descriptor (Read) Format
-   232		 *    63                                           1        0
-   233		 *    +-----------------------------------------------------+
-   234		 *  0 |       Packet Buffer Address [63:1]           |A0/NSE|
-   235		 *    +----------------------------------------------+------+
-   236		 *  8 |       Header Buffer Address [63:1]           |  DD  |
-   237		 *    +-----------------------------------------------------+
-   238		 *
-   239		 *
-   240		 * Advanced Receive Descriptor (Write-Back) Format
-   241		 *
-   242		 *   63       48 47    32 31  30      21 20 17 16   4 3     0
-   243		 *   +------------------------------------------------------+
-   244		 * 0 | Packet     IP     |SPH| HDR_LEN   | RSV|Packet|  RSS |
-   245		 *   | Checksum   Ident  |   |           |    | Type | Type |
-   246		 *   +------------------------------------------------------+
-   247		 * 8 | VLAN Tag | Length | Extended Error | Extended Status |
-   248		 *   +------------------------------------------------------+
-   249		 *   63       48 47    32 31            20 19               0
-   250		 */
-   251	
-   252		for (n = 0; n < adapter->num_rx_queues; n++) {
-   253			rx_ring = adapter->rx_ring[n];
-   254			pr_info("------------------------------------\n");
-   255			pr_info("RX QUEUE INDEX = %d\n", rx_ring->queue_index);
-   256			pr_info("------------------------------------\n");
-   257			pr_info("R  [desc]      [ PktBuf     A0] [  HeadBuf   DD] [bi->dma       ] [bi->skb] <-- Adv Rx Read format\n");
-   258			pr_info("RWB[desc]      [PcsmIpSHl PtRs] [vl er S cks ln] ---------------- [bi->skb] <-- Adv Rx Write-Back format\n");
-   259	
-   260			for (i = 0; i < rx_ring->count; i++) {
-   261				const char *next_desc;
-   262				struct igc_rx_buffer *buffer_info;
-   263	
-   264				buffer_info = &rx_ring->rx_buffer_info[i];
-   265				rx_desc = IGC_RX_DESC(rx_ring, i);
-   266				u0 = (struct my_u0 *)rx_desc;
-   267				staterr = le32_to_cpu(rx_desc->wb.upper.status_error);
-   268	
-   269				if (i == rx_ring->next_to_use)
-   270					next_desc = " NTU";
-   271				else if (i == rx_ring->next_to_clean)
-   272					next_desc = " NTC";
-   273				else
-   274					next_desc = "";
-   275	
-   276				if (staterr & IGC_RXD_STAT_DD) {
-   277					/* Descriptor Done */
-   278					pr_info("%s[0x%03X]     %016llX %016llX ---------------- %s\n",
-   279						"RWB", i,
-   280						le64_to_cpu(u0->a),
-   281						le64_to_cpu(u0->b),
-   282						next_desc);
-   283				} else {
-   284					pr_info("%s[0x%03X]     %016llX %016llX %016llX %s\n",
-   285						"R  ", i,
-   286						le64_to_cpu(u0->a),
-   287						le64_to_cpu(u0->b),
-   288						(u64)buffer_info->dma,
-   289						next_desc);
-   290	
-   291					if (netif_msg_pktdata(adapter) &&
-   292					    buffer_info->dma && buffer_info->page) {
-   293						print_hex_dump(KERN_INFO, "",
-   294							       DUMP_PREFIX_ADDRESS,
-   295							       16, 1,
-   296							       page_address
-   297							       (buffer_info->page) +
-   298							       buffer_info->page_offset,
-   299							       igc_rx_bufsz(rx_ring),
-   300							       true);
-   301					}
-   302				}
-   303			}
-   304		}
-   305	
-   306	exit:
-   307		return;
-   308	}
-   309	
+Nit: Dot/period at the end?
 
----
-0-DAY kernel test infrastructure                 Open Source Technology Center
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org Intel Corporation
+Are tests available, or examples how to use it?
+
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> ---
+> v6: Fix the order of put_device() and device_del() in
+>     virtbus_dev_unregister()
+> 
+>  Documentation/driver-api/virtual_bus.rst |  59 +++++
+>  drivers/bus/Kconfig                      |  11 +
+>  drivers/bus/Makefile                     |   1 +
+>  drivers/bus/virtual_bus.c                | 267 +++++++++++++++++++++++
+>  include/linux/mod_devicetable.h          |   8 +
+>  include/linux/virtual_bus.h              |  57 +++++
+>  scripts/mod/devicetable-offsets.c        |   3 +
+>  scripts/mod/file2alias.c                 |   8 +
+>  8 files changed, 414 insertions(+)
+>  create mode 100644 Documentation/driver-api/virtual_bus.rst
+>  create mode 100644 drivers/bus/virtual_bus.c
+>  create mode 100644 include/linux/virtual_bus.h
+> 
+> diff --git a/Documentation/driver-api/virtual_bus.rst b/Documentation/driver-api/virtual_bus.rst
+> new file mode 100644
+> index 000000000000..5f35c19171d7
+> --- /dev/null
+> +++ b/Documentation/driver-api/virtual_bus.rst
+> @@ -0,0 +1,59 @@
+> +===============================
+> +Virtual Bus Devices and Drivers
+> +===============================
+> +
+> +See <linux/virtual_bus.h> for the models for virtbus_device and virtbus_driver.
+
+Mark up ``virtbus_device`` and ``virtbus_driver``?
+
+> +This bus is meant to be a lightweight software based bus to attach generic
+> +devices and drivers to so that a chunk of data can be passed between them.
+> +
+> +One use case example is an rdma driver needing to connect with several
+> +different types of PCI LAN devices to be able to request resources from
+> +them (queue sets).  Each LAN driver that supports rdma will register a
+> +virtbus_device on the virtual bus for each physical function.  The rdma
+> +driver will register as a virtbus_driver on the virtual bus to be
+> +matched up with multiple virtbus_devices and receive a pointer to a
+> +struct containing the callbacks that the PCI LAN drivers support for
+> +registering with them.
+
+Ditto. (Also in the rest of the file.)
+
+> +
+> +Sections in this document:
+> +        Virtbus devices
+> +        Virtbus drivers
+> +        Device Enumeration
+> +        Device naming and driver binding
+> +        Virtual Bus API entry points
+> +
+> +Virtbus devices
+> +~~~~~~~~~~~~~~~
+> +Virtbus_devices support the minimal device functionality.  Devices will
+
+Virtbus devices ?
+
+> +accept a name, and then, when added to the virtual bus, an automatically
+> +generated index is concatenated onto it for the virtbus_device->name.
+> +
+> +Virtbus drivers
+> +~~~~~~~~~~~~~~~
+> +Virtbus drivers register with the virtual bus to be matched with virtbus
+> +devices.  They expect to be registered with a probe and remove callback,
+> +and also support shutdown, suspend, and resume callbacks.  They otherwise
+> +follow the standard driver behavior of having discovery and enumeration
+> +handled in the bus infrastructure.
+> +
+> +Virtbus drivers register themselves with the API entry point virtbus_drv_reg
+> +and unregister with virtbus_drv_unreg.
+> +
+> +Device Enumeration
+> +~~~~~~~~~~~~~~~~~~
+> +Enumeration is handled automatically by the bus infrastructure via the
+> +ida_simple methods.
+> +
+> +Device naming and driver binding
+> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> +The virtbus_device.dev.name is the canonical name for the device. It is
+> +built from two other parts:
+> +
+> +        - virtbus_device.name (also used for matching).
+> +        - virtbus_device.id (generated automatically from ida_simple calls)
+> +
+> +Virtbus device IDs are always in "<name>.<instance>" format.  Instances are
+
+``<name>.<instance>``
+
+> +automatically selected through an ida_simple_get so are positive integers.
+> +Names are taken from the device name field.  Driver IDs are simple <name>.
+> +Need to extract the name from the Virtual Device compare to name of the
+> +driver.
+
+The last sentence sounds incomplete to me.
+
+> diff --git a/drivers/bus/Kconfig b/drivers/bus/Kconfig
+> index 50200d1c06ea..43e9f108d690 100644
+> --- a/drivers/bus/Kconfig
+> +++ b/drivers/bus/Kconfig
+> @@ -203,4 +203,15 @@ config DA8XX_MSTPRI
+>  
+>  source "drivers/bus/fsl-mc/Kconfig"
+>  
+> +config VIRTUAL_BUS
+> +       tristate "Software based Virtual Bus"
+> +       help
+> +         Provides a software bus for virtbus_devices to be added to it
+> +         and virtbus_drivers to be registered on it.  Will create a match
+> +         between the driver and device, then call the driver's probe with
+> +         the virtbus_device's struct.
+> +         One example is the irdma driver needing to connect with various
+
+Above only rdma was written.
+
+> +         PCI LAN drivers to request resources (queues) to be able to perform
+> +         its function.
+> +
+>  endmenu
+> diff --git a/drivers/bus/Makefile b/drivers/bus/Makefile
+> index 1320bcf9fa9d..6721c77dc71b 100644
+> --- a/drivers/bus/Makefile
+> +++ b/drivers/bus/Makefile
+> @@ -34,3 +34,4 @@ obj-$(CONFIG_UNIPHIER_SYSTEM_BUS)	+= uniphier-system-bus.o
+>  obj-$(CONFIG_VEXPRESS_CONFIG)	+= vexpress-config.o
+>  
+>  obj-$(CONFIG_DA8XX_MSTPRI)	+= da8xx-mstpri.o
+> +obj-$(CONFIG_VIRTUAL_BUS)	+= virtual_bus.o
+> diff --git a/drivers/bus/virtual_bus.c b/drivers/bus/virtual_bus.c
+> new file mode 100644
+> index 000000000000..85d2dbfa3376
+> --- /dev/null
+> +++ b/drivers/bus/virtual_bus.c
+> @@ -0,0 +1,267 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * virtual_bus.c - lightweight software based bus for virtual devices
+> + *
+> + * Copyright (c) 2019-20 Intel Corporation
+> + *
+> + * Please see Documentation/driver-api/virtual_bus.rst for
+> + * more information
+
+At least *more* fits on the line above. Below it?s on one line.
+
+> + */
+> +
+> +#include <linux/string.h>
+> +#include <linux/virtual_bus.h>
+> +#include <linux/of_irq.h>
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/acpi.h>
+> +#include <linux/device.h>
+> +
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_DESCRIPTION("Lightweight Virtual Bus");
+> +MODULE_AUTHOR("David Ertman <david.m.ertman@intel.com>");
+> +MODULE_AUTHOR("Kiran Patil <kiran.patil@intel.com>");
+> +
+> +static DEFINE_IDA(virtbus_dev_ida);
+> +
+> +static const
+> +struct virtbus_dev_id *virtbus_match_id(const struct virtbus_dev_id *id,
+> +					struct virtbus_device *vdev)
+> +{
+> +	while (id->name[0]) {
+> +		if (!strcmp(vdev->name, id->name)) {
+
+Use strncmp with `VIRTBUS_NAME_SIZE`?
+
+> +			vdev->matched_element = id;
+> +			return id;
+> +		}
+> +		id++;
+> +	}
+> +	return NULL;
+> +}
+> +
+> +static int virtbus_match(struct device *dev, struct device_driver *drv)
+> +{
+> +	struct virtbus_driver *vdrv = to_virtbus_drv(drv);
+> +	struct virtbus_device *vdev = to_virtbus_dev(dev);
+> +
+> +	return virtbus_match_id(vdrv->id_table, vdev) != NULL;
+> +}
+> +
+> +static int virtbus_probe(struct device *dev)
+> +{
+> +	return dev->driver->probe(dev);
+> +}
+> +
+> +static int virtbus_remove(struct device *dev)
+> +{
+> +	return dev->driver->remove(dev);
+> +}
+> +
+> +static void virtbus_shutdown(struct device *dev)
+> +{
+> +	dev->driver->shutdown(dev);
+> +}
+> +
+> +static int virtbus_suspend(struct device *dev, pm_message_t state)
+> +{
+> +	if (dev->driver->suspend)
+> +		return dev->driver->suspend(dev, state);
+> +
+> +	return 0;
+> +}
+> +
+> +static int virtbus_resume(struct device *dev)
+> +{
+> +	if (dev->driver->resume)
+> +		return dev->driver->resume(dev);
+> +
+> +	return 0;
+> +}
+> +
+> +struct bus_type virtual_bus_type = {
+> +	.name = "virtbus",
+> +	.match = virtbus_match,
+> +	.probe = virtbus_probe,
+> +	.remove = virtbus_remove,
+> +	.shutdown = virtbus_shutdown,
+> +	.suspend = virtbus_suspend,
+> +	.resume = virtbus_resume,
+> +};
+> +
+> +/**
+> + * virtbus_dev_release - Destroy a virtbus device
+> + * @vdev: virtual device to release
+> + */
+> +static void virtbus_dev_release(struct device *_dev)
+> +{
+> +	struct virtbus_device *vdev = to_virtbus_dev(_dev);
+> +
+> +	ida_simple_remove(&virtbus_dev_ida, vdev->id);
+> +	vdev->release(vdev);
+> +}
+> +
+> +/**
+> + * virtbus_dev_register - add a virtual bus device
+> + * @vdev: virtual bus device to add
+> + */
+> +int virtbus_dev_register(struct virtbus_device *vdev)
+> +{
+> +	int ret;
+> +
+> +	if (!vdev->release) {
+> +		dev_err(&vdev->dev, "virtbus_device .release callback NULL\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	device_initialize(&vdev->dev);
+> +
+> +	vdev->dev.bus = &virtual_bus_type;
+> +	vdev->dev.release = virtbus_dev_release;
+> +	/* All device IDs are automatically allocated */
+> +	ret = ida_simple_get(&virtbus_dev_ida, 0, 0, GFP_KERNEL);
+> +	if (ret < 0) {
+> +		dev_err(&vdev->dev, "get IDA idx for virtbus device failed!\n");
+> +		put_device(&vdev->dev);
+> +		return ret;
+> +	}
+> +
+> +	vdev->id = ret;
+> +	dev_set_name(&vdev->dev, "%s.%d", vdev->name, vdev->id);
+> +
+> +	dev_dbg(&vdev->dev, "Registering virtbus device '%s'\n",
+> +		dev_name(&vdev->dev));
+> +
+> +	ret = device_add(&vdev->dev);
+> +	if (ret)
+> +		goto device_add_err;
+> +
+> +	return 0;
+> +
+> +device_add_err:
+> +	dev_err(&vdev->dev, "Add device to virtbus failed!\n");
+> +	put_device(&vdev->dev);
+> +	ida_simple_remove(&virtbus_dev_ida, vdev->id);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(virtbus_dev_register);
+> +
+> +/**
+> + * virtbus_dev_unregister - remove a virtual bus device
+> + * vdev: virtual bus device we are removing
+> + */
+> +void virtbus_dev_unregister(struct virtbus_device *vdev)
+> +{
+> +	device_del(&vdev->dev);
+> +	put_device(&vdev->dev);
+> +}
+> +EXPORT_SYMBOL_GPL(virtbus_dev_unregister);
+> +
+> +static int virtbus_drv_probe(struct device *_dev)
+> +{
+> +	struct virtbus_driver *vdrv = to_virtbus_drv(_dev->driver);
+> +	struct virtbus_device *vdev = to_virtbus_dev(_dev);
+> +	int ret;
+> +
+> +	ret = dev_pm_domain_attach(_dev, true);
+> +	if (ret) {
+> +		dev_warn(_dev, "Failed to attatch to PM Domain : %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	ret = vdrv->probe(vdev);
+> +	if (ret) {
+> +		dev_err(&vdev->dev, "Probe returned error\n");
+
+Print out the error value?
+
+> +		dev_pm_domain_detach(_dev, true);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+
+[?]
+
+
+Kind regards,
+
+Paul
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 5174 bytes
+Desc: S/MIME Cryptographic Signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200128/028c7d5f/attachment.p7s>
