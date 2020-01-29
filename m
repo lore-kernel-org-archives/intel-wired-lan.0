@@ -1,32 +1,144 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 29 Jan 2020 00:21:49 +0000
-Subject: [Intel-wired-lan] [next-queue v2] e1000e: Add support for Tiger
- Lake device
-In-Reply-To: <20200121234628.4123479-1-jeffrey.t.kirsher@intel.com>
-References: <20200121234628.4123479-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B971CF9CA@ORSMSX103.amr.corp.intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed, 29 Jan 2020 16:30:07 +0200
+Subject: [Intel-wired-lan] [PATCH v2 1/1] igc: Add pcie error handler support
+Message-ID: <20200129143007.19836-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jeff Kirsher
-> Sent: Tuesday, January 21, 2020 3:46 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next-queue v2] e1000e: Add support for Tiger
-> Lake device
-> 
-> From: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> 
-> Added support for a device id that is a part of the Intel Tiger Lake
-> platform.
-> 
-> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> ---
->  drivers/net/ethernet/intel/e1000e/hw.h     | 1 +
->  drivers/net/ethernet/intel/e1000e/netdev.c | 1 +
->  2 files changed, 2 insertions(+)
-> 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Add pcie error detection, slot reset and resume capability
+
+v1->v2:
+Address community comments
+
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_main.c | 103 ++++++++++++++++++++++++++++++
+ 1 file changed, 103 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index fa72460e255a..2b79e22d5e5f 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -5076,6 +5076,108 @@ static void igc_shutdown(struct pci_dev *pdev)
+ 	}
+ }
+ 
++/**
++ *  igc_io_error_detected - called when PCI error is detected
++ *  @pdev: Pointer to PCI device
++ *  @state: The current PCI connection state
++ *
++ *  This function is called after a PCI bus error affecting
++ *  this device has been detected.
++ **/
++static pci_ers_result_t igc_io_error_detected(struct pci_dev *pdev,
++					      pci_channel_state_t state)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct igc_adapter *adapter = netdev_priv(netdev);
++
++	netif_device_detach(netdev);
++
++	if (state == pci_channel_io_perm_failure)
++		return PCI_ERS_RESULT_DISCONNECT;
++
++	if (netif_running(netdev))
++		igc_down(adapter);
++	pci_disable_device(pdev);
++
++	/* Request a slot reset. */
++	return PCI_ERS_RESULT_NEED_RESET;
++}
++
++/**
++ *  igc_io_slot_reset - called after the PCI bus has been reset.
++ *  @pdev: Pointer to PCI device
++ *
++ *  Restart the card from scratch, as if from a cold-boot. Implementation
++ *  resembles the first-half of the igc_resume routine.
++ **/
++static pci_ers_result_t igc_io_slot_reset(struct pci_dev *pdev)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct igc_adapter *adapter = netdev_priv(netdev);
++	struct igc_hw *hw = &adapter->hw;
++	pci_ers_result_t result;
++
++	if (pci_enable_device_mem(pdev)) {
++		dev_err(&pdev->dev,
++			"Could not re-enable PCI device after reset.\n");
++		result = PCI_ERS_RESULT_DISCONNECT;
++	} else {
++		pci_set_master(pdev);
++		pci_restore_state(pdev);
++		pci_save_state(pdev);
++
++		pci_enable_wake(pdev, PCI_D3hot, 0);
++		pci_enable_wake(pdev, PCI_D3cold, 0);
++
++		/* In case of PCI error, adapter loses its HW address
++		 * so we should re-assign it here.
++		 */
++		hw->hw_addr = adapter->io_addr;
++
++		igc_reset(adapter);
++		wr32(IGC_WUS, ~0);
++		result = PCI_ERS_RESULT_RECOVERED;
++	}
++
++	return result;
++}
++
++/**
++ *  igc_io_resume - called when traffic can start to flow again.
++ *  @pdev: Pointer to PCI device
++ *
++ *  This callback is called when the error recovery driver tells us that
++ *  its OK to resume normal operation. Implementation resembles the
++ *  second-half of the igc_resume routine.
++ */
++static void igc_io_resume(struct pci_dev *pdev)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct igc_adapter *adapter = netdev_priv(netdev);
++
++	rtnl_lock();
++	if (netif_running(netdev)) {
++		if (igc_open(netdev)) {
++			dev_err(&pdev->dev, "igc_open failed after reset\n");
++			return;
++		}
++	}
++
++	netif_device_attach(netdev);
++
++	/* let the f/w know that the h/w is now under the control of the
++	 * driver.
++	 */
++	igc_get_hw_control(adapter);
++	rtnl_unlock();
++}
++
++static const struct pci_error_handlers igc_err_handler = {
++	.error_detected = igc_io_error_detected,
++	.slot_reset = igc_io_slot_reset,
++	.resume = igc_io_resume,
++};
++
+ #ifdef CONFIG_PM
+ static const struct dev_pm_ops igc_pm_ops = {
+ 	SET_SYSTEM_SLEEP_PM_OPS(igc_suspend, igc_resume)
+@@ -5093,6 +5195,7 @@ static struct pci_driver igc_driver = {
+ 	.driver.pm = &igc_pm_ops,
+ #endif
+ 	.shutdown = igc_shutdown,
++	.err_handler = &igc_err_handler,
+ };
+ 
+ /**
+-- 
+2.11.0
+
