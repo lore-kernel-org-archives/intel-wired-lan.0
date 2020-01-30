@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 30 Jan 2020 22:45:34 +0000
-Subject: [Intel-wired-lan] [PATCH S39 04/15] ice: Always clear the
- QRXFLXP_CNTXT register for VF Rx queues
-In-Reply-To: <20200127085927.13999-4-anthony.l.nguyen@intel.com>
+Date: Thu, 30 Jan 2020 22:46:01 +0000
+Subject: [Intel-wired-lan] [PATCH S39 05/15] ice: Add DCBNL ops required
+ to configure ETS in CEE for SW DCB
+In-Reply-To: <20200127085927.13999-5-anthony.l.nguyen@intel.com>
 References: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
- <20200127085927.13999-4-anthony.l.nguyen@intel.com>
-Message-ID: <8f4a3062aea74e349d3c63a8145ef0da@intel.com>
+ <20200127085927.13999-5-anthony.l.nguyen@intel.com>
+Message-ID: <6fec9af186d347a6b1c320da12aa4979@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Monday, January 27, 2020 12:59 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S39 04/15] ice: Always clear the
-> QRXFLXP_CNTXT register for VF Rx queues
+> Subject: [Intel-wired-lan] [PATCH S39 05/15] ice: Add DCBNL ops required to
+> configure ETS in CEE for SW DCB
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Avinash JD <avinash.dayanand@intel.com>
 > 
-> Currently when the PF reduces its number of channels via ethtool and then
-> VFs are created there may be stale data for some of the Rx queues belonging
-> to VFs. This happens when a VF reuses an Rx queue that was previously used
-> by the PF. Specifically, the QRXFLXP_CNTXT register will have incorrect
-> values. Fix this by always clearing the relevant values in the QRXFLXP_CNTXT
-> register for VF queues.
+> Couple of DCBNL ops are required for configuring ETS in SW DCB CEE mode. If
+> these functions are not added, it'll break the CEE functionality.
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Avinash JD <avinash.dayanand@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_base.c       | 8 ++++++--
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 1 +
->  2 files changed, 7 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 43 +++++++++++++++++++++
+>  1 file changed, 43 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
