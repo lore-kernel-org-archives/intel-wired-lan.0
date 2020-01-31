@@ -1,37 +1,45 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 30 Jan 2020 22:54:01 +0000
-Subject: [Intel-wired-lan] [PATCH S39 15/15] ice: fix define for E822
- backplane device
-In-Reply-To: <20200127085927.13999-15-anthony.l.nguyen@intel.com>
-References: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
- <20200127085927.13999-15-anthony.l.nguyen@intel.com>
-Message-ID: <2ca9b3db7bbf401b86a81180fa9178a6@intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 31 Jan 2020 07:56:59 +0300
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix a couple off by one bugs
+Message-ID: <20200131045658.ahliv7jvubpwoeru@kili.mountain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Monday, January 27, 2020 12:59 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S39 15/15] ice: fix define for E822
-> backplane device
-> 
-> From: Bruce Allan <bruce.w.allan@intel.com>
-> 
-> This product's name has changed; update the macro identifier accordingly.
-> 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_devids.h | 4 ++--
->  drivers/net/ethernet/intel/ice/ice_main.c   | 2 +-
->  drivers/net/ethernet/intel/ice/ice_nvm.c    | 2 +-
->  3 files changed, 4 insertions(+), 4 deletions(-)
+The hw->blk[blk]->es.ref_count[] array has hw->blk[blk].es.count
+elements.  It gets allocated in ice_init_hw_tbls().  So the > should be
+>= to prevent accessing one element beyond the end of the array.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Fixes: 2c61054c5fda ("ice: Optimize table usage")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+ drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+index 99208946224c..38a7041fe774 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -1950,7 +1950,7 @@ ice_free_prof_id(struct ice_hw *hw, enum ice_block blk, u8 prof_id)
+ static enum ice_status
+ ice_prof_inc_ref(struct ice_hw *hw, enum ice_block blk, u8 prof_id)
+ {
+-	if (prof_id > hw->blk[blk].es.count)
++	if (prof_id >= hw->blk[blk].es.count)
+ 		return ICE_ERR_PARAM;
+ 
+ 	hw->blk[blk].es.ref_count[prof_id]++;
+@@ -1991,7 +1991,7 @@ ice_write_es(struct ice_hw *hw, enum ice_block blk, u8 prof_id,
+ static enum ice_status
+ ice_prof_dec_ref(struct ice_hw *hw, enum ice_block blk, u8 prof_id)
+ {
+-	if (prof_id > hw->blk[blk].es.count)
++	if (prof_id >= hw->blk[blk].es.count)
+ 		return ICE_ERR_PARAM;
+ 
+ 	if (hw->blk[blk].es.ref_count[prof_id] > 0) {
+-- 
+2.11.0
 
