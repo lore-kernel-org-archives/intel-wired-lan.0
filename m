@@ -1,288 +1,275 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 31 Jan 2020 05:39:01 -0800
-Subject: [Intel-wired-lan] [PATCH S37 v2 11/15] ice: Use ice_pf_to_dev
+Date: Fri, 31 Jan 2020 05:39:05 -0800
+Subject: [Intel-wired-lan] [PATCH S37 v2 15/15] ice: Trivial fixes
 In-Reply-To: <20200131133905.42518-1-anthony.l.nguyen@intel.com>
 References: <20200131133905.42518-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200131133905.42518-11-anthony.l.nguyen@intel.com>
+Message-ID: <20200131133905.42518-15-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+This is a collection of trivial fixes including fixing whitespace, typos,
+function headers, reverse Christmas tree, etc.
 
-Use ice_pf_to_dev(pf) instead of &pf->pdev->dev
-Use ice_pf_to_dev(vsi->back) instead of &vsi->back->pdev->dev
-When a pointer to the pf instance is available, use ice_pf_to_dev
-instead of ice_hw_to_dev
-
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_base.c        | 12 ++++++------
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c      |  2 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c     |  2 +-
- drivers/net/ethernet/intel/ice/ice_lib.c         | 14 +++++++-------
- drivers/net/ethernet/intel/ice/ice_main.c        | 16 ++++++++--------
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  8 ++++----
- 6 files changed, 27 insertions(+), 27 deletions(-)
+v2:
+- Another whitespace fix
+---
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h  |  1 +
+ drivers/net/ethernet/intel/ice/ice_common.c      |  4 ++--
+ drivers/net/ethernet/intel/ice/ice_dcb.c         |  8 ++++----
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c     |  4 ++--
+ drivers/net/ethernet/intel/ice/ice_ethtool.c     | 10 +++++-----
+ drivers/net/ethernet/intel/ice/ice_lib.c         |  7 ++++---
+ drivers/net/ethernet/intel/ice/ice_main.c        |  4 +++-
+ drivers/net/ethernet/intel/ice/ice_txrx.c        |  9 ++++-----
+ drivers/net/ethernet/intel/ice/ice_txrx.h        |  4 ++--
+ drivers/net/ethernet/intel/ice/ice_type.h        |  2 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  3 +--
+ 11 files changed, 29 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index d8e975cceb21..8c7d08e2916e 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -324,7 +324,7 @@ int ice_setup_rx_ctx(struct ice_ring *ring)
- 			if (err)
- 				return err;
- 
--			dev_info(&vsi->back->pdev->dev, "Registered XDP mem model MEM_TYPE_ZERO_COPY on Rx ring %d\n",
-+			dev_info(ice_pf_to_dev(vsi->back), "Registered XDP mem model MEM_TYPE_ZERO_COPY on Rx ring %d\n",
- 				 ring->q_index);
- 		} else {
- 			ring->zca.free = NULL;
-@@ -405,7 +405,7 @@ int ice_setup_rx_ctx(struct ice_ring *ring)
- 	/* Absolute queue number out of 2K needs to be passed */
- 	err = ice_write_rxq_ctx(hw, &rlan_ctx, pf_q);
- 	if (err) {
--		dev_err(&vsi->back->pdev->dev,
-+		dev_err(ice_pf_to_dev(vsi->back),
- 			"Failed to set LAN Rx queue context for absolute Rx queue %d error: %d\n",
- 			pf_q, err);
- 		return -EIO;
-@@ -428,7 +428,7 @@ int ice_setup_rx_ctx(struct ice_ring *ring)
- 	      ice_alloc_rx_bufs_slow_zc(ring, ICE_DESC_UNUSED(ring)) :
- 	      ice_alloc_rx_bufs(ring, ICE_DESC_UNUSED(ring));
- 	if (err)
--		dev_info(&vsi->back->pdev->dev,
-+		dev_info(ice_pf_to_dev(vsi->back),
- 			 "Failed allocate some buffers on %sRx ring %d (pf_q %d)\n",
- 			 ring->xsk_umem ? "UMEM enabled " : "",
- 			 ring->q_index, pf_q);
-@@ -815,13 +815,13 @@ ice_vsi_stop_tx_ring(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
- 	 * queues at the hardware level anyway.
- 	 */
- 	if (status == ICE_ERR_RESET_ONGOING) {
--		dev_dbg(&vsi->back->pdev->dev,
-+		dev_dbg(ice_pf_to_dev(vsi->back),
- 			"Reset in progress. LAN Tx queues already disabled\n");
- 	} else if (status == ICE_ERR_DOES_NOT_EXIST) {
--		dev_dbg(&vsi->back->pdev->dev,
-+		dev_dbg(ice_pf_to_dev(vsi->back),
- 			"LAN Tx queues do not exist, nothing to disable\n");
- 	} else if (status) {
--		dev_err(&vsi->back->pdev->dev,
-+		dev_err(ice_pf_to_dev(vsi->back),
- 			"Failed to disable LAN Tx queues, error: %d\n", status);
- 		return -ENODEV;
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index 926c9772f086..265cf69b321b 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -882,7 +882,7 @@ ice_dcbnl_vsi_del_app(struct ice_vsi *vsi,
- 	sapp.protocol = app->prot_id;
- 	sapp.priority = app->priority;
- 	err = ice_dcbnl_delapp(vsi->netdev, &sapp);
--	dev_dbg(&vsi->back->pdev->dev,
-+	dev_dbg(ice_pf_to_dev(vsi->back),
- 		"Deleting app for VSI idx=%d err=%d sel=%d proto=0x%x, prio=%d\n",
- 		vsi->idx, err, app->selector, app->prot_id, app->priority);
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 2722789fa703..210113eade20 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1691,6 +1691,7 @@ struct ice_aqc_get_pkg_info_resp {
+ 	__le32 count;
+ 	struct ice_aqc_get_pkg_info pkg_info[1];
+ };
++
+ /**
+  * struct ice_aq_desc - Admin Queue (AQ) descriptor
+  * @flags: ICE_AQ_FLAG_* flags
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 8931c6a3e3f6..e7e528631757 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -588,10 +588,10 @@ void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf)
  }
+ 
+ /**
+- * ice_get_itr_intrl_gran - determine int/intrl granularity
++ * ice_get_itr_intrl_gran
+  * @hw: pointer to the HW struct
+  *
+- * Determines the ITR/intrl granularities based on the maximum aggregate
++ * Determines the ITR/INTRL granularities based on the maximum aggregate
+  * bandwidth according to the device's configuration during power-on.
+  */
+ static void ice_get_itr_intrl_gran(struct ice_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
+index 713e8a892e14..adb8dab765c8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
+@@ -1323,13 +1323,13 @@ enum ice_status ice_set_dcb_cfg(struct ice_port_info *pi)
+ }
+ 
+ /**
+- * ice_aq_query_port_ets - query port ets configuration
++ * ice_aq_query_port_ets - query port ETS configuration
+  * @pi: port information structure
+  * @buf: pointer to buffer
+  * @buf_size: buffer size in bytes
+  * @cd: pointer to command details structure or NULL
+  *
+- * query current port ets configuration
++ * query current port ETS configuration
+  */
+ static enum ice_status
+ ice_aq_query_port_ets(struct ice_port_info *pi,
+@@ -1416,13 +1416,13 @@ ice_update_port_tc_tree_cfg(struct ice_port_info *pi,
+ }
+ 
+ /**
+- * ice_query_port_ets - query port ets configuration
++ * ice_query_port_ets - query port ETS configuration
+  * @pi: port information structure
+  * @buf: pointer to buffer
+  * @buf_size: buffer size in bytes
+  * @cd: pointer to command details structure or NULL
+  *
+- * query current port ets configuration and update the
++ * query current port ETS configuration and update the
+  * SW DB with the TC changes
+  */
+ enum ice_status
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 545f1d8eaa7b..fe3a39cdab2f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -436,9 +436,9 @@ static int ice_dcb_init_cfg(struct ice_pf *pf, bool locked)
+ }
+ 
+ /**
+- * ice_dcb_sw_default_config - Apply a default DCB config
++ * ice_dcb_sw_dflt_cfg - Apply a default DCB config
+  * @pf: PF to apply config to
+- * @ets_willing: configure ets willing
++ * @ets_willing: configure ETS willing
+  * @locked: was this function called with RTNL held
+  */
+ static int ice_dcb_sw_dflt_cfg(struct ice_pf *pf, bool ets_willing, bool locked)
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 7539fd8147de..8110da94c979 100644
+index 4b29d1ae56a7..c0f58e08890e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1058,7 +1058,7 @@ ice_set_fecparam(struct net_device *netdev, struct ethtool_fecparam *fecparam)
- 		fec = ICE_FEC_NONE;
- 		break;
- 	default:
--		dev_warn(&vsi->back->pdev->dev, "Unsupported FEC mode: %d\n",
-+		dev_warn(ice_pf_to_dev(vsi->back), "Unsupported FEC mode: %d\n",
- 			 fecparam->fec);
- 		return -EINVAL;
- 	}
+@@ -3800,11 +3800,11 @@ ice_get_module_eeprom(struct net_device *netdev,
+ static const struct ethtool_ops ice_ethtool_ops = {
+ 	.get_link_ksettings	= ice_get_link_ksettings,
+ 	.set_link_ksettings	= ice_set_link_ksettings,
+-	.get_drvinfo            = ice_get_drvinfo,
+-	.get_regs_len           = ice_get_regs_len,
+-	.get_regs               = ice_get_regs,
+-	.get_msglevel           = ice_get_msglevel,
+-	.set_msglevel           = ice_set_msglevel,
++	.get_drvinfo		= ice_get_drvinfo,
++	.get_regs_len		= ice_get_regs_len,
++	.get_regs		= ice_get_regs,
++	.get_msglevel		= ice_get_msglevel,
++	.set_msglevel		= ice_set_msglevel,
+ 	.self_test		= ice_self_test,
+ 	.get_link		= ethtool_op_get_link,
+ 	.get_eeprom_len		= ice_get_eeprom_len,
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 37ff98da5ca8..ac06f0141740 100644
+index 7d546c75dcc6..3c9353d7b0ed 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -117,7 +117,7 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
- 		vsi->num_tx_desc = ICE_DFLT_NUM_TX_DESC;
- 		break;
- 	default:
--		dev_dbg(&vsi->back->pdev->dev,
-+		dev_dbg(ice_pf_to_dev(vsi->back),
- 			"Not setting number of Tx/Rx descriptors for VSI type %d\n",
- 			vsi->type);
- 		break;
-@@ -735,7 +735,7 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- 	vsi->num_txq = tx_count;
- 
- 	if (vsi->type == ICE_VSI_VF && vsi->num_txq != vsi->num_rxq) {
--		dev_dbg(&vsi->back->pdev->dev, "VF VSI should have same number of Tx and Rx queues. Hence making them equal\n");
-+		dev_dbg(ice_pf_to_dev(vsi->back), "VF VSI should have same number of Tx and Rx queues. Hence making them equal\n");
- 		/* since there is a chance that num_rxq could have been changed
- 		 * in the above for loop, make num_txq equal to num_rxq.
- 		 */
-@@ -1488,7 +1488,7 @@ int ice_vsi_cfg_rxqs(struct ice_vsi *vsi)
- 
- 		err = ice_setup_rx_ctx(vsi->rx_rings[i]);
- 		if (err) {
--			dev_err(&vsi->back->pdev->dev,
-+			dev_err(ice_pf_to_dev(vsi->back),
- 				"ice_setup_rx_ctx failed for RxQ %d, err %d\n",
- 				i, err);
- 			return err;
-@@ -1658,7 +1658,7 @@ int ice_vsi_manage_vlan_insertion(struct ice_vsi *vsi)
- 
- 	status = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (status) {
--		dev_err(&vsi->back->pdev->dev, "update VSI for VLAN insert failed, err %d aq_err %d\n",
-+		dev_err(ice_pf_to_dev(vsi->back), "update VSI for VLAN insert failed, err %d aq_err %d\n",
- 			status, hw->adminq.sq_last_status);
- 		ret = -EIO;
- 		goto out;
-@@ -1704,7 +1704,7 @@ int ice_vsi_manage_vlan_stripping(struct ice_vsi *vsi, bool ena)
- 
- 	status = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (status) {
--		dev_err(&vsi->back->pdev->dev, "update VSI for VLAN strip failed, ena = %d err %d aq_err %d\n",
-+		dev_err(ice_pf_to_dev(vsi->back), "update VSI for VLAN strip failed, ena = %d err %d aq_err %d\n",
- 			ena, status, hw->adminq.sq_last_status);
- 		ret = -EIO;
- 		goto out;
-@@ -1869,7 +1869,7 @@ ice_vsi_set_q_vectors_reg_idx(struct ice_vsi *vsi)
- 		struct ice_q_vector *q_vector = vsi->q_vectors[i];
- 
- 		if (!q_vector) {
--			dev_err(&vsi->back->pdev->dev,
-+			dev_err(ice_pf_to_dev(vsi->back),
- 				"Failed to set reg_idx on q_vector %d VSI %d\n",
- 				i, vsi->vsi_num);
- 			goto clear_reg_idx;
-@@ -3011,7 +3011,7 @@ ice_vsi_cfg_mac_fltr(struct ice_vsi *vsi, const u8 *macaddr, bool set)
- 		status = ice_remove_mac(&vsi->back->hw, &tmp_add_list);
- 
- cfg_mac_fltr_exit:
--	ice_free_fltr_list(&vsi->back->pdev->dev, &tmp_add_list);
-+	ice_free_fltr_list(ice_pf_to_dev(vsi->back), &tmp_add_list);
- 	return status;
- }
- 
+@@ -1241,8 +1241,9 @@ static void ice_vsi_set_rss_flow_fld(struct ice_vsi *vsi)
+  *
+  * Returns 0 on success or ENOMEM on failure.
+  */
+-int ice_add_mac_to_list(struct ice_vsi *vsi, struct list_head *add_list,
+-			const u8 *macaddr)
++int
++ice_add_mac_to_list(struct ice_vsi *vsi, struct list_head *add_list,
++		    const u8 *macaddr)
+ {
+ 	struct ice_fltr_list_entry *tmp;
+ 	struct ice_pf *pf = vsi->back;
+@@ -2874,8 +2875,8 @@ static void ice_vsi_update_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctx)
+ int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc)
+ {
+ 	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
+-	struct ice_vsi_ctx *ctx;
+ 	struct ice_pf *pf = vsi->back;
++	struct ice_vsi_ctx *ctx;
+ 	enum ice_status status;
+ 	struct device *dev;
+ 	int i, ret = 0;
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index f3ca72a19d03..3a05f9e3b86e 100644
+index 2297a5a5c572..1bf6d21c38e4 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -269,7 +269,7 @@ static int ice_cfg_promisc(struct ice_vsi *vsi, u8 promisc_m, bool set_promisc)
+@@ -3179,7 +3179,9 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	struct ice_hw *hw;
+ 	int err;
+ 
+-	/* this driver uses devres, see Documentation/driver-api/driver-model/devres.rst */
++	/* this driver uses devres, see
++	 * Documentation/driver-api/driver-model/devres.rst
++	 */
+ 	err = pcim_enable_device(pdev);
+ 	if (err)
+ 		return err;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 1d4755acca3d..4de61dbedd36 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -644,7 +644,7 @@ static bool ice_page_is_reserved(struct page *page)
+  * Update the offset within page so that Rx buf will be ready to be reused.
+  * For systems with PAGE_SIZE < 8192 this function will flip the page offset
+  * so the second half of page assigned to Rx buffer will be used, otherwise
+- * the offset is moved by the @size bytes
++ * the offset is moved by "size" bytes
   */
- static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
+ static void
+ ice_rx_buf_adjust_pg_offset(struct ice_rx_buf *rx_buf, unsigned int size)
+@@ -1619,11 +1619,11 @@ ice_tx_map(struct ice_ring *tx_ring, struct ice_tx_buf *first,
  {
--	struct device *dev = &vsi->back->pdev->dev;
-+	struct device *dev = ice_pf_to_dev(vsi->back);
- 	struct net_device *netdev = vsi->netdev;
- 	bool promisc_forced_on = false;
- 	struct ice_pf *pf = vsi->back;
-@@ -1371,7 +1371,7 @@ static int ice_force_phys_link_state(struct ice_vsi *vsi, bool link_up)
- 	if (vsi->type != ICE_VSI_PF)
- 		return 0;
+ 	u64 td_offset, td_tag, td_cmd;
+ 	u16 i = tx_ring->next_to_use;
+-	skb_frag_t *frag;
+ 	unsigned int data_len, size;
+ 	struct ice_tx_desc *tx_desc;
+ 	struct ice_tx_buf *tx_buf;
+ 	struct sk_buff *skb;
++	skb_frag_t *frag;
+ 	dma_addr_t dma;
  
--	dev = &vsi->back->pdev->dev;
-+	dev = ice_pf_to_dev(vsi->back);
+ 	td_tag = off->td_l2tag1;
+@@ -1736,9 +1736,8 @@ ice_tx_map(struct ice_ring *tx_ring, struct ice_tx_buf *first,
+ 	ice_maybe_stop_tx(tx_ring, DESC_NEEDED);
  
- 	pi = vsi->port_info;
+ 	/* notify HW of packet */
+-	if (netif_xmit_stopped(txring_txq(tx_ring)) || !netdev_xmit_more()) {
++	if (netif_xmit_stopped(txring_txq(tx_ring)) || !netdev_xmit_more())
+ 		writel(i, tx_ring->tail);
+-	}
  
-@@ -1692,7 +1692,7 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi, char *basename)
+ 	return;
+ 
+@@ -2076,7 +2075,7 @@ static bool __ice_chk_linearize(struct sk_buff *skb)
+ 	frag = &skb_shinfo(skb)->frags[0];
+ 
+ 	/* Initialize size to the negative value of gso_size minus 1. We
+-	 * use this as the worst case scenerio in which the frag ahead
++	 * use this as the worst case scenario in which the frag ahead
+ 	 * of us only provides one byte which is why we are limited to 6
+ 	 * descriptors for a single transmit as the header and previous
+ 	 * fragment are already consuming 2 descriptors.
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index a86270696df1..14a1bf445889 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -33,8 +33,8 @@
+  * frame.
+  *
+  * Note: For cache line sizes 256 or larger this value is going to end
+- *       up negative.  In these cases we should fall back to the legacy
+- *       receive path.
++ *	 up negative.  In these cases we should fall back to the legacy
++ *	 receive path.
   */
- static int ice_xdp_alloc_setup_rings(struct ice_vsi *vsi)
- {
--	struct device *dev = &vsi->back->pdev->dev;
-+	struct device *dev = ice_pf_to_dev(vsi->back);
- 	int i;
+ #if (PAGE_SIZE < 8192)
+ #define ICE_2K_TOO_SMALL_WITH_PADDING \
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 5224b066730a..bf67f6df5333 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -521,7 +521,7 @@ struct ice_hw {
+ 	struct ice_fw_log_cfg fw_log;
  
- 	for (i = 0; i < vsi->num_xdp_txq; i++) {
-@@ -3933,14 +3933,14 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
- 
- 	/* Don't set any netdev advanced features with device in Safe Mode */
- 	if (ice_is_safe_mode(vsi->back)) {
--		dev_err(&vsi->back->pdev->dev,
-+		dev_err(ice_pf_to_dev(vsi->back),
- 			"Device is in Safe Mode - not enabling advanced netdev features\n");
- 		return ret;
- 	}
- 
- 	/* Do not change setting during reset */
- 	if (ice_is_reset_in_progress(pf->state)) {
--		dev_err(&vsi->back->pdev->dev,
-+		dev_err(ice_pf_to_dev(vsi->back),
- 			"Device is resetting, changing advanced netdev features temporarily unavailable.\n");
- 		return -EBUSY;
- 	}
-@@ -4483,7 +4483,7 @@ int ice_vsi_setup_tx_rings(struct ice_vsi *vsi)
- 	int i, err = 0;
- 
- 	if (!vsi->num_txq) {
--		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Tx queues\n",
-+		dev_err(ice_pf_to_dev(vsi->back), "VSI %d has 0 Tx queues\n",
- 			vsi->vsi_num);
- 		return -EINVAL;
- 	}
-@@ -4514,7 +4514,7 @@ int ice_vsi_setup_rx_rings(struct ice_vsi *vsi)
- 	int i, err = 0;
- 
- 	if (!vsi->num_rxq) {
--		dev_err(&vsi->back->pdev->dev, "VSI %d has 0 Rx queues\n",
-+		dev_err(ice_pf_to_dev(vsi->back), "VSI %d has 0 Rx queues\n",
- 			vsi->vsi_num);
- 		return -EINVAL;
- 	}
-@@ -5073,7 +5073,7 @@ static int ice_vsi_update_bridge_mode(struct ice_vsi *vsi, u16 bmode)
- 
- 	status = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (status) {
--		dev_err(&vsi->back->pdev->dev, "update VSI for bridge mode failed, bmode = %d err %d aq_err %d\n",
-+		dev_err(ice_pf_to_dev(vsi->back), "update VSI for bridge mode failed, bmode = %d err %d aq_err %d\n",
- 			bmode, status, hw->adminq.sq_last_status);
- 		ret = -EIO;
- 		goto out;
+ /* Device max aggregate bandwidths corresponding to the GL_PWR_MODE_CTL
+- * register. Used for determining the ITR/intrl granularity during
++ * register. Used for determining the ITR/INTRL granularity during
+  * initialization.
+  */
+ #define ICE_MAX_AGG_BW_200G	0x0
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index d8016d104ca4..a287068c5274 100644
+index 6d78bcdd162d..1874bfa65796 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -462,7 +462,7 @@ static int ice_vsi_manage_pvid(struct ice_vsi *vsi, u16 vid, bool enable)
+@@ -1093,7 +1093,6 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	 * finished resetting.
+ 	 */
+ 	for (i = 0, v = 0; i < 10 && v < pf->num_alloc_vfs; i++) {
+-
+ 		/* Check each VF in sequence */
+ 		while (v < pf->num_alloc_vfs) {
+ 			u32 reg;
+@@ -2612,8 +2611,8 @@ static int ice_vc_request_qs_msg(struct ice_vf *vf, u8 *msg)
+ 	struct ice_pf *pf = vf->pf;
+ 	u16 max_allowed_vf_queues;
+ 	u16 tx_rx_queue_left;
+-	u16 cur_queues;
+ 	struct device *dev;
++	u16 cur_queues;
  
- 	status = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (status) {
--		dev_info(&vsi->back->pdev->dev, "update VSI for port VLAN failed, err %d aq_err %d\n",
-+		dev_info(ice_pf_to_dev(vsi->back), "update VSI for port VLAN failed, err %d aq_err %d\n",
- 			 status, hw->adminq.sq_last_status);
- 		ret = -EIO;
- 		goto out;
-@@ -2038,7 +2038,7 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
- 			continue;
- 
- 		if (ice_vsi_ctrl_rx_ring(vsi, true, vf_q_id)) {
--			dev_err(&vsi->back->pdev->dev,
-+			dev_err(ice_pf_to_dev(vsi->back),
- 				"Failed to enable Rx ring %d on VSI %d\n",
- 				vf_q_id, vsi->vsi_num);
- 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-@@ -2141,7 +2141,7 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
- 
- 			if (ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, vf->vf_id,
- 						 ring, &txq_meta)) {
--				dev_err(&vsi->back->pdev->dev,
-+				dev_err(ice_pf_to_dev(vsi->back),
- 					"Failed to stop Tx ring %d on VSI %d\n",
- 					vf_q_id, vsi->vsi_num);
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-@@ -2168,7 +2168,7 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
- 				continue;
- 
- 			if (ice_vsi_ctrl_rx_ring(vsi, false, vf_q_id)) {
--				dev_err(&vsi->back->pdev->dev,
-+				dev_err(ice_pf_to_dev(vsi->back),
- 					"Failed to stop Rx ring %d on VSI %d\n",
- 					vf_q_id, vsi->vsi_num);
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 	dev = ice_pf_to_dev(pf);
+ 	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
 -- 
 2.20.1
 
