@@ -1,54 +1,39 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 31 Jan 2020 05:39:03 -0800
-Subject: [Intel-wired-lan] [PATCH S37 v2 13/15] ice: Cleanup
- ice_vsi_alloc_q_vectors
+Date: Fri, 31 Jan 2020 05:38:57 -0800
+Subject: [Intel-wired-lan] [PATCH S37 v2 07/15] ice: Modify link message
+ logging
 In-Reply-To: <20200131133905.42518-1-anthony.l.nguyen@intel.com>
 References: <20200131133905.42518-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200131133905.42518-13-anthony.l.nguyen@intel.com>
+Message-ID: <20200131133905.42518-7-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-1. Remove local variable num_q_vectors and use vsi->num_q_vectors instead
-2. Remove local variable pf and pass vsi->back to ice_pf_to_dev
+This patch modifies link message logging to include "Full Duplex" and
+"Negotiated" for FEC, so as to distinguish it from "Requested" FEC.
 
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_base.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 46f427a95056..81885efadc7a 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -503,20 +503,15 @@ int ice_vsi_ctrl_rx_ring(struct ice_vsi *vsi, bool ena, u16 rxq_idx)
-  */
- int ice_vsi_alloc_q_vectors(struct ice_vsi *vsi)
- {
--	struct ice_pf *pf = vsi->back;
--	int v_idx = 0, num_q_vectors;
--	struct device *dev;
--	int err;
-+	struct device *dev = ice_pf_to_dev(vsi->back);
-+	int v_idx, err;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index cddadd308253..809e7bee8f62 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -755,7 +755,7 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
+ 	kfree(caps);
  
--	dev = ice_pf_to_dev(pf);
- 	if (vsi->q_vectors[0]) {
- 		dev_dbg(dev, "VSI %d has existing q_vectors\n", vsi->vsi_num);
- 		return -EEXIST;
- 	}
- 
--	num_q_vectors = vsi->num_q_vectors;
--
--	for (v_idx = 0; v_idx < num_q_vectors; v_idx++) {
-+	for (v_idx = 0; v_idx < vsi->num_q_vectors; v_idx++) {
- 		err = ice_vsi_alloc_q_vector(vsi, v_idx);
- 		if (err)
- 			goto err_out;
+ done:
+-	netdev_info(vsi->netdev, "NIC Link is up %sbps, Requested FEC: %s, FEC: %s, Autoneg: %s, Flow Control: %s\n",
++	netdev_info(vsi->netdev, "NIC Link is up %sbps Full Duplex, Requested FEC: %s, Negotiated FEC: %s, Autoneg: %s, Flow Control: %s\n",
+ 		    speed, fec_req, fec, an, fc);
+ 	ice_print_topo_conflict(vsi);
+ }
 -- 
 2.20.1
 
