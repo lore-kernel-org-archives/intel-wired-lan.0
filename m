@@ -1,87 +1,47 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 31 Jan 2020 05:38:59 -0800
-Subject: [Intel-wired-lan] [PATCH S37 v2 09/15] ice: update Unit Load Status
- bitmask to check after reset
+Date: Fri, 31 Jan 2020 05:38:56 -0800
+Subject: [Intel-wired-lan] [PATCH S37 v2 06/15] ice: Remove CONFIG_PCI_IOV
+ wrap in ice_set_pf_caps
 In-Reply-To: <20200131133905.42518-1-anthony.l.nguyen@intel.com>
 References: <20200131133905.42518-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200131133905.42518-9-anthony.l.nguyen@intel.com>
+Message-ID: <20200131133905.42518-6-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-After a reset the Unit Load Status bits in the GLNVM_ULD register to check
-for completion should be 0x7FF before continuing.  Update the mask to check
-(minus the three reserved bits that are always set).
+Remove unnecessary CONFIG_PCI_IOV wrapping in ice_set_pf_caps. None
+of the data structures accessed within the block are wrapped with
+this flag. When CONFIG_PCI_IOV is undefined, pf->num_vfs_supported
+will be 0 anyway.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c    | 18 +++++++++++++-----
- .../net/ethernet/intel/ice/ice_hw_autogen.h    |  6 ++++++
- 2 files changed, 19 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 151bec82bc0c..8931c6a3e3f6 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -818,7 +818,7 @@ void ice_deinit_hw(struct ice_hw *hw)
-  */
- enum ice_status ice_check_reset(struct ice_hw *hw)
- {
--	u32 cnt, reg = 0, grst_delay;
-+	u32 cnt, reg = 0, grst_delay, uld_mask;
- 
- 	/* Poll for Device Active state in case a recent CORER, GLOBR,
- 	 * or EMPR has occurred. The grst delay value is in 100ms units.
-@@ -840,13 +840,21 @@ enum ice_status ice_check_reset(struct ice_hw *hw)
- 		return ICE_ERR_RESET_FAILED;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index d4bc6fd3321c..cddadd308253 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2677,14 +2677,12 @@ static void ice_set_pf_caps(struct ice_pf *pf)
+ 	clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+ 	if (func_caps->common_cap.dcb)
+ 		set_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+-#ifdef CONFIG_PCI_IOV
+ 	clear_bit(ICE_FLAG_SRIOV_CAPABLE, pf->flags);
+ 	if (func_caps->common_cap.sr_iov_1_1) {
+ 		set_bit(ICE_FLAG_SRIOV_CAPABLE, pf->flags);
+ 		pf->num_vfs_supported = min_t(int, func_caps->num_allocd_vfs,
+ 					      ICE_MAX_VF_COUNT);
  	}
- 
--#define ICE_RESET_DONE_MASK	(GLNVM_ULD_CORER_DONE_M | \
--				 GLNVM_ULD_GLOBR_DONE_M)
-+#define ICE_RESET_DONE_MASK	(GLNVM_ULD_PCIER_DONE_M |\
-+				 GLNVM_ULD_PCIER_DONE_1_M |\
-+				 GLNVM_ULD_CORER_DONE_M |\
-+				 GLNVM_ULD_GLOBR_DONE_M |\
-+				 GLNVM_ULD_POR_DONE_M |\
-+				 GLNVM_ULD_POR_DONE_1_M |\
-+				 GLNVM_ULD_PCIER_DONE_2_M)
-+
-+	uld_mask = ICE_RESET_DONE_MASK | (hw->func_caps.common_cap.iwarp ?
-+					  GLNVM_ULD_PE_DONE_M : 0);
- 
- 	/* Device is Active; check Global Reset processes are done */
- 	for (cnt = 0; cnt < ICE_PF_RESET_WAIT_COUNT; cnt++) {
--		reg = rd32(hw, GLNVM_ULD) & ICE_RESET_DONE_MASK;
--		if (reg == ICE_RESET_DONE_MASK) {
-+		reg = rd32(hw, GLNVM_ULD) & uld_mask;
-+		if (reg == uld_mask) {
- 			ice_debug(hw, ICE_DBG_INIT,
- 				  "Global reset processes done. %d\n", cnt);
- 			break;
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 30f50b06173e..306b8943cfc0 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -268,8 +268,14 @@
- #define GLNVM_GENS_SR_SIZE_S			5
- #define GLNVM_GENS_SR_SIZE_M			ICE_M(0x7, 5)
- #define GLNVM_ULD				0x000B6008
-+#define GLNVM_ULD_PCIER_DONE_M			BIT(0)
-+#define GLNVM_ULD_PCIER_DONE_1_M		BIT(1)
- #define GLNVM_ULD_CORER_DONE_M			BIT(3)
- #define GLNVM_ULD_GLOBR_DONE_M			BIT(4)
-+#define GLNVM_ULD_POR_DONE_M			BIT(5)
-+#define GLNVM_ULD_POR_DONE_1_M			BIT(8)
-+#define GLNVM_ULD_PCIER_DONE_2_M		BIT(9)
-+#define GLNVM_ULD_PE_DONE_M			BIT(10)
- #define GLPCI_CNF2				0x000BE004
- #define GLPCI_CNF2_CACHELINE_SIZE_M		BIT(1)
- #define PF_FUNC_RID				0x0009E880
+-#endif /* CONFIG_PCI_IOV */
+ 	clear_bit(ICE_FLAG_RSS_ENA, pf->flags);
+ 	if (func_caps->common_cap.rss_table_size)
+ 		set_bit(ICE_FLAG_RSS_ENA, pf->flags);
 -- 
 2.20.1
 
