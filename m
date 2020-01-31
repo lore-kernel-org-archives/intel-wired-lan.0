@@ -1,123 +1,237 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 31 Jan 2020 05:38:58 -0800
-Subject: [Intel-wired-lan] [PATCH S37 v2 08/15] ice: fix and consolidate
- logging of NVM/firmware version information
-In-Reply-To: <20200131133905.42518-1-anthony.l.nguyen@intel.com>
-References: <20200131133905.42518-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200131133905.42518-8-anthony.l.nguyen@intel.com>
+Date: Fri, 31 Jan 2020 05:38:51 -0800
+Subject: [Intel-wired-lan] [PATCH S37 v2 01/15] ice: Fix DCB rebuild after
+ reset
+Message-ID: <20200131133905.42518-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Dave Ertman <david.m.ertman@intel.com>
 
-Logging the firmware/NVM information during driver load is redundant since
-that information is also available via ethtool.  Move the functionality
-found in ice_nvm_version_str() directly into ice_get_drvinfo() and remove
-calling the former and logging that info during driver probe.  This also
-gets rid of a bug in ice_nvm_version_str() where it returns a pointer to
-a buffer which is free'ed when that function exits.
+The function ice_dcb_rebuild had some logic
+flaws in it, and also didn't differentiate
+between FW and SW modes needs.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+For FW flow, the willing setting was being
+forced to OFF and left that way.  Unwilling
+in DCB FW mode is not a supported model.
+
+Leave the config alone and use the return value
+from the set command to determine if setting the
+config was successful.
+
+The SW DCB flow does not need to need to register
+for MIB change events (as they are not used in
+SW mode).
+
+Use !is_sw_lldp checks to only perform FW specific
+task while in FW mode.
+
+Also adding a reapplication of the current DCB
+config after a link event.  Some NVMs are not
+maintaining their DCB configs across link events.
+
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 15 +++++++++++++--
- drivers/net/ethernet/intel/ice/ice_lib.c     | 19 -------------------
- drivers/net/ethernet/intel/ice/ice_lib.h     |  2 --
- drivers/net/ethernet/intel/ice/ice_main.c    |  5 -----
- 4 files changed, 13 insertions(+), 28 deletions(-)
+v2:
+- Add missing mutex_unlock() in error path
+---
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 83 +++++++++-----------
+ drivers/net/ethernet/intel/ice/ice_main.c    |  1 +
+ 2 files changed, 36 insertions(+), 48 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 26eca4ce9e2c..7539fd8147de 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -166,13 +166,24 @@ static void
- ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 9401f2051293..8e96c722b065 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -339,9 +339,9 @@ ice_dcb_need_recfg(struct ice_pf *pf, struct ice_dcbx_cfg *old_cfg,
+  */
+ void ice_dcb_rebuild(struct ice_pf *pf)
  {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	u8 oem_ver, oem_patch, nvm_ver_hi, nvm_ver_lo;
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
-+	struct ice_hw *hw = &pf->hw;
-+	u16 oem_build;
+-	struct ice_dcbx_cfg *local_dcbx_cfg, *desired_dcbx_cfg, *prev_cfg;
+ 	struct ice_aqc_port_ets_elem buf = { 0 };
+ 	struct device *dev = ice_pf_to_dev(pf);
++	struct ice_dcbx_cfg *err_cfg;
+ 	enum ice_status ret;
  
- 	strlcpy(drvinfo->driver, KBUILD_MODNAME, sizeof(drvinfo->driver));
- 	strlcpy(drvinfo->version, ice_drv_ver, sizeof(drvinfo->version));
--	strlcpy(drvinfo->fw_version, ice_nvm_version_str(&pf->hw),
--		sizeof(drvinfo->fw_version));
-+
-+	/* Display NVM version (from which the firmware version can be
-+	 * determined) which contains more pertinent information.
-+	 */
-+	ice_get_nvm_version(hw, &oem_ver, &oem_build, &oem_patch,
-+			    &nvm_ver_hi, &nvm_ver_lo);
-+	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
-+		 "%x.%02x 0x%x %d.%d.%d", nvm_ver_hi, nvm_ver_lo,
-+		 hw->nvm.eetrack, oem_ver, oem_build, oem_patch);
-+
- 	strlcpy(drvinfo->bus_info, pci_name(pf->pdev),
- 		sizeof(drvinfo->bus_info));
- 	drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 90efa0e718b4..37ff98da5ca8 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2940,25 +2940,6 @@ int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc)
- }
- #endif /* CONFIG_DCB */
+ 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
+@@ -354,53 +354,25 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+ 	if (!test_bit(ICE_FLAG_DCB_ENA, pf->flags))
+ 		return;
  
--/**
-- * ice_nvm_version_str - format the NVM version strings
-- * @hw: ptr to the hardware info
-- */
--char *ice_nvm_version_str(struct ice_hw *hw)
--{
--	u8 oem_ver, oem_patch, ver_hi, ver_lo;
--	static char buf[ICE_NVM_VER_LEN];
--	u16 oem_build;
--
--	ice_get_nvm_version(hw, &oem_ver, &oem_build, &oem_patch, &ver_hi,
--			    &ver_lo);
--
--	snprintf(buf, sizeof(buf), "%x.%02x 0x%x %d.%d.%d", ver_hi, ver_lo,
--		 hw->nvm.eetrack, oem_ver, oem_build, oem_patch);
--
--	return buf;
--}
--
- /**
-  * ice_update_ring_stats - Update ring statistics
-  * @ring: ring to update
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index 85d07fedff93..002fdbdade4f 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -99,8 +99,6 @@ void ice_vsi_cfg_frame_size(struct ice_vsi *vsi);
+-	local_dcbx_cfg = &pf->hw.port_info->local_dcbx_cfg;
+-	desired_dcbx_cfg = &pf->hw.port_info->desired_dcbx_cfg;
++	mutex_lock(&pf->tc_mutex);
  
- u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran);
+-	/* Save current willing state and force FW to unwilling */
+-	local_dcbx_cfg->etscfg.willing = 0x0;
+-	local_dcbx_cfg->pfc.willing = 0x0;
+-	local_dcbx_cfg->app_mode = ICE_DCBX_APPS_NON_WILLING;
++	if (!pf->hw.port_info->is_sw_lldp)
++		ice_cfg_etsrec_defaults(pf->hw.port_info);
  
--char *ice_nvm_version_str(struct ice_hw *hw);
--
- enum ice_status
- ice_vsi_cfg_mac_fltr(struct ice_vsi *vsi, const u8 *macaddr, bool set);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 809e7bee8f62..f3ca72a19d03 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3270,11 +3270,6 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		goto err_exit_unroll;
+-	ice_cfg_etsrec_defaults(pf->hw.port_info);
+ 	ret = ice_set_dcb_cfg(pf->hw.port_info);
+ 	if (ret) {
+-		dev_err(dev, "Failed to set DCB to unwilling\n");
++		dev_err(dev, "Failed to set DCB config in rebuild\n");
+ 		goto dcb_error;
  	}
  
--	dev_info(dev, "firmware %d.%d.%d api %d.%d.%d nvm %s build 0x%08x\n",
--		 hw->fw_maj_ver, hw->fw_min_ver, hw->fw_patch,
--		 hw->api_maj_ver, hw->api_min_ver, hw->api_patch,
--		 ice_nvm_version_str(hw), hw->fw_build);
+-	/* Retrieve DCB config and ensure same as current in SW */
+-	prev_cfg = kmemdup(local_dcbx_cfg, sizeof(*prev_cfg), GFP_KERNEL);
+-	if (!prev_cfg)
+-		goto dcb_error;
 -
- 	ice_request_fw(pf);
+-	ice_init_dcb(&pf->hw, true);
+-	if (pf->hw.port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
+-		pf->hw.port_info->is_sw_lldp = true;
+-	else
+-		pf->hw.port_info->is_sw_lldp = false;
+-
+-	if (ice_dcb_need_recfg(pf, prev_cfg, local_dcbx_cfg)) {
+-		/* difference in cfg detected - disable DCB till next MIB */
+-		dev_err(dev, "Set local MIB not accurate\n");
+-		kfree(prev_cfg);
+-		goto dcb_error;
++	if (!pf->hw.port_info->is_sw_lldp) {
++		ret = ice_cfg_lldp_mib_change(&pf->hw, true);
++		if (ret && !pf->hw.port_info->is_sw_lldp) {
++			dev_err(dev, "Failed to register for MIB changes\n");
++			goto dcb_error;
++		}
+ 	}
  
- 	/* if ice_request_fw fails, ICE_FLAG_ADV_FEATURES bit won't be
+-	/* fetched config congruent to previous configuration */
+-	kfree(prev_cfg);
+-
+-	/* Set the local desired config */
+-	if (local_dcbx_cfg->dcbx_mode == ICE_DCBX_MODE_CEE)
+-		memcpy(local_dcbx_cfg, desired_dcbx_cfg,
+-		       sizeof(*local_dcbx_cfg));
+-
+-	ice_cfg_etsrec_defaults(pf->hw.port_info);
+-	ret = ice_set_dcb_cfg(pf->hw.port_info);
+-	if (ret) {
+-		dev_err(dev, "Failed to set desired config\n");
+-		goto dcb_error;
+-	}
+ 	dev_info(dev, "DCB restored after reset\n");
+ 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
+ 	if (ret) {
+@@ -408,26 +380,32 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+ 		goto dcb_error;
+ 	}
+ 
++	mutex_unlock(&pf->tc_mutex);
++
+ 	return;
+ 
+ dcb_error:
+ 	dev_err(dev, "Disabling DCB until new settings occur\n");
+-	prev_cfg = kzalloc(sizeof(*prev_cfg), GFP_KERNEL);
+-	if (!prev_cfg)
++	err_cfg = kzalloc(sizeof(*err_cfg), GFP_KERNEL);
++	if (!err_cfg) {
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
++	}
+ 
+-	prev_cfg->etscfg.willing = true;
+-	prev_cfg->etscfg.tcbwtable[0] = ICE_TC_MAX_BW;
+-	prev_cfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
+-	memcpy(&prev_cfg->etsrec, &prev_cfg->etscfg, sizeof(prev_cfg->etsrec));
++	err_cfg->etscfg.willing = true;
++	err_cfg->etscfg.tcbwtable[0] = ICE_TC_MAX_BW;
++	err_cfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
++	memcpy(&err_cfg->etsrec, &err_cfg->etscfg, sizeof(err_cfg->etsrec));
+ 	/* Coverity warns the return code of ice_pf_dcb_cfg() is not checked
+ 	 * here as is done for other calls to that function. That check is
+ 	 * not necessary since this is in this function's error cleanup path.
+ 	 * Suppress the Coverity warning with the following comment...
+ 	 */
+ 	/* coverity[check_return] */
+-	ice_pf_dcb_cfg(pf, prev_cfg, false);
+-	kfree(prev_cfg);
++	ice_pf_dcb_cfg(pf, err_cfg, false);
++	kfree(err_cfg);
++
++	mutex_unlock(&pf->tc_mutex);
+ }
+ 
+ /**
+@@ -842,6 +820,8 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 		}
+ 	}
+ 
++	mutex_lock(&pf->tc_mutex);
++
+ 	/* store the old configuration */
+ 	tmp_dcbx_cfg = pf->hw.port_info->local_dcbx_cfg;
+ 
+@@ -852,20 +832,24 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 	ret = ice_get_dcb_cfg(pf->hw.port_info);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to get DCB config\n");
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
+ 	}
+ 
+ 	/* No change detected in DCBX configs */
+ 	if (!memcmp(&tmp_dcbx_cfg, &pi->local_dcbx_cfg, sizeof(tmp_dcbx_cfg))) {
+ 		dev_dbg(dev, "No change detected in DCBX configuration.\n");
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
+ 	}
+ 
+ 	need_reconfig = ice_dcb_need_recfg(pf, &tmp_dcbx_cfg,
+ 					   &pi->local_dcbx_cfg);
+ 	ice_dcbnl_flush_apps(pf, &tmp_dcbx_cfg, &pi->local_dcbx_cfg);
+-	if (!need_reconfig)
++	if (!need_reconfig) {
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
++	}
+ 
+ 	/* Enable DCB tagging only when more than one TC */
+ 	if (ice_dcb_get_num_tc(&pi->local_dcbx_cfg) > 1) {
+@@ -879,6 +863,7 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 	pf_vsi = ice_get_main_vsi(pf);
+ 	if (!pf_vsi) {
+ 		dev_dbg(dev, "PF VSI doesn't exist\n");
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
+ 	}
+ 
+@@ -889,6 +874,7 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 	if (ret) {
+ 		dev_err(dev, "Query Port ETS failed\n");
+ 		rtnl_unlock();
++		mutex_unlock(&pf->tc_mutex);
+ 		return;
+ 	}
+ 
+@@ -897,4 +883,5 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 
+ 	ice_ena_vsi(pf_vsi, true);
+ 	rtnl_unlock();
++	mutex_unlock(&pf->tc_mutex);
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 6ce422789df7..d4bc6fd3321c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -844,6 +844,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
+ 		}
+ 	}
+ 
++	ice_dcb_rebuild(pf);
+ 	ice_vsi_link_event(vsi, link_up);
+ 	ice_print_link_msg(vsi, link_up);
+ 
 -- 
 2.20.1
 
