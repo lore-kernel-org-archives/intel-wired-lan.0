@@ -1,76 +1,150 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Sun, 16 Feb 2020 11:47:03 +0200
-Subject: [Intel-wired-lan] [PATCH v2 1/1] igc: Complete to commit Add
- support for TSO
-Message-ID: <20200216094703.17867-1-sasha.neftin@intel.com>
+Date: Mon,  3 Feb 2020 09:55:20 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add WOL support
+Message-ID: <20200203075520.16976-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-commit f38b782dccab ("igc: Add support for TSO")
-Add option to setting transmit command (TUCMD) of the context
-descriptor based on skb_shinfo gso_type and SKB_GSO_UDP_L4 flag.
-
-v1 -> v2: add SKB_GSO_UDP_L4 to features check and probe
+This patch adds a define and WOL support for an i225 parts.
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_defines.h | 1 +
- drivers/net/ethernet/intel/igc/igc_main.c    | 6 +++++-
- 2 files changed, 6 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc.h         |  1 +
+ drivers/net/ethernet/intel/igc/igc_defines.h |  3 ++
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 61 ++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_main.c    | 10 +++++
+ 4 files changed, 75 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 34300f551d84..7202c3761068 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -61,6 +61,7 @@ extern char igc_driver_version[];
+ #define IGC_FLAG_QUEUE_PAIRS		BIT(3)
+ #define IGC_FLAG_DMAC			BIT(4)
+ #define IGC_FLAG_PTP			BIT(8)
++#define IGC_FLAG_WOL_SUPPORTED		BIT(8)
+ #define IGC_FLAG_NEED_LINK_UPDATE	BIT(9)
+ #define IGC_FLAG_MEDIA_RESET		BIT(10)
+ #define IGC_FLAG_MAS_ENABLE		BIT(12)
 diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 4ddccccf42cc..044c0f8d4c16 100644
+index d400786fc413..6468253ec4f5 100644
 --- a/drivers/net/ethernet/intel/igc/igc_defines.h
 +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -509,6 +509,7 @@
- #define IGC_VLAPQF_QUEUE_MASK	0x03
+@@ -16,7 +16,10 @@
  
- #define IGC_ADVTXD_MACLEN_SHIFT		9  /* Adv ctxt desc mac len shift */
-+#define IGC_ADVTXD_TUCMD_L4T_UDP	0x00000000  /* L4 Packet TYPE of UDP */
- #define IGC_ADVTXD_TUCMD_IPV4		0x00000400  /* IP Packet Type:1=IPv4 */
- #define IGC_ADVTXD_TUCMD_L4T_TCP	0x00000800  /* L4 Packet Type of TCP */
- #define IGC_ADVTXD_TUCMD_L4T_SCTP	0x00001000 /* L4 packet TYPE of SCTP */
+ /* Wake Up Filter Control */
+ #define IGC_WUFC_LNKC	0x00000001 /* Link Status Change Wakeup Enable */
++#define IGC_WUFC_MAG	0x00000002 /* Magic Packet Wakeup Enable */
++#define IGC_WUFC_EX	0x00000004 /* Directed Exact Wakeup Enable */
+ #define IGC_WUFC_MC	0x00000008 /* Directed Multicast Wakeup Enable */
++#define IGC_WUFC_BC	0x00000010 /* Broadcast Wakeup Enable */
+ 
+ #define IGC_CTRL_ADVD3WUC	0x00100000  /* D3 WUC */
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index ee07011e13e9..69f50b8e2af3 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -308,6 +308,65 @@ static void igc_get_regs(struct net_device *netdev,
+ 		regs_buff[168 + i] = rd32(IGC_TXDCTL(i));
+ }
+ 
++static void igc_get_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
++{
++	struct igc_adapter *adapter = netdev_priv(netdev);
++
++	wol->wolopts = 0;
++
++	if (!(adapter->flags & IGC_FLAG_WOL_SUPPORTED))
++		return;
++
++	wol->supported = WAKE_UCAST | WAKE_MCAST |
++			 WAKE_BCAST | WAKE_MAGIC |
++			 WAKE_PHY;
++
++	/* apply any specific unsupported masks here */
++	switch (adapter->hw.device_id) {
++	default:
++		break;
++	}
++
++	if (adapter->wol & IGC_WUFC_EX)
++		wol->wolopts |= WAKE_UCAST;
++	if (adapter->wol & IGC_WUFC_MC)
++		wol->wolopts |= WAKE_MCAST;
++	if (adapter->wol & IGC_WUFC_BC)
++		wol->wolopts |= WAKE_BCAST;
++	if (adapter->wol & IGC_WUFC_MAG)
++		wol->wolopts |= WAKE_MAGIC;
++	if (adapter->wol & IGC_WUFC_LNKC)
++		wol->wolopts |= WAKE_PHY;
++}
++
++static int igc_set_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
++{
++	struct igc_adapter *adapter = netdev_priv(netdev);
++
++	if (wol->wolopts & (WAKE_ARP | WAKE_MAGICSECURE | WAKE_FILTER))
++		return -EOPNOTSUPP;
++
++	if (!(adapter->flags & IGC_FLAG_WOL_SUPPORTED))
++		return wol->wolopts ? -EOPNOTSUPP : 0;
++
++	/* these settings will always override what we currently have */
++	adapter->wol = 0;
++
++	if (wol->wolopts & WAKE_UCAST)
++		adapter->wol |= IGC_WUFC_EX;
++	if (wol->wolopts & WAKE_MCAST)
++		adapter->wol |= IGC_WUFC_MC;
++	if (wol->wolopts & WAKE_BCAST)
++		adapter->wol |= IGC_WUFC_BC;
++	if (wol->wolopts & WAKE_MAGIC)
++		adapter->wol |= IGC_WUFC_MAG;
++	if (wol->wolopts & WAKE_PHY)
++		adapter->wol |= IGC_WUFC_LNKC;
++	device_set_wakeup_enable(&adapter->pdev->dev, adapter->wol);
++
++	return 0;
++}
++
+ static u32 igc_get_msglevel(struct net_device *netdev)
+ {
+ 	struct igc_adapter *adapter = netdev_priv(netdev);
+@@ -1859,6 +1918,8 @@ static const struct ethtool_ops igc_ethtool_ops = {
+ 	.get_drvinfo		= igc_get_drvinfo,
+ 	.get_regs_len		= igc_get_regs_len,
+ 	.get_regs		= igc_get_regs,
++	.get_wol		= igc_get_wol,
++	.set_wol		= igc_set_wol,
+ 	.get_msglevel		= igc_get_msglevel,
+ 	.set_msglevel		= igc_set_msglevel,
+ 	.nway_reset		= igc_nway_reset,
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 771148e57941..f1f6a5230dda 100644
+index af5dd43a4c6c..dec6f5a4f03f 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -1208,7 +1208,8 @@ static int igc_tso(struct igc_ring *tx_ring,
- 	l4.hdr = skb_checksum_start(skb);
+@@ -4966,6 +4966,16 @@ static int igc_probe(struct pci_dev *pdev,
+ 	hw->fc.requested_mode = igc_fc_default;
+ 	hw->fc.current_mode = igc_fc_default;
  
- 	/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
--	type_tucmd = IGC_ADVTXD_TUCMD_L4T_TCP;
-+	type_tucmd = (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_L4) ?
-+		      IGC_ADVTXD_TUCMD_L4T_UDP : IGC_ADVTXD_TUCMD_L4T_TCP;
++	/* By default, support wake on port A */
++	adapter->flags |= IGC_FLAG_WOL_SUPPORTED;
++
++	/* initialize the wol settings based on the eeprom settings */
++	if (adapter->flags & IGC_FLAG_WOL_SUPPORTED)
++		adapter->wol |= IGC_WUFC_MAG;
++
++	device_set_wakeup_enable(&adapter->pdev->dev,
++				 adapter->flags & IGC_FLAG_WOL_SUPPORTED);
++
+ 	/* reset the hardware with the new settings */
+ 	igc_reset(adapter);
  
- 	/* initialize outer IP header fields */
- 	if (ip.v4->version == 4) {
-@@ -3669,6 +3670,7 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
- 	if (unlikely(mac_hdr_len > IGC_MAX_MAC_HDR_LEN))
- 		return features & ~(NETIF_F_HW_CSUM |
- 				    NETIF_F_SCTP_CRC |
-+				    NETIF_F_GSO_UDP_L4 |
- 				    NETIF_F_HW_VLAN_CTAG_TX |
- 				    NETIF_F_TSO |
- 				    NETIF_F_TSO6);
-@@ -3677,6 +3679,7 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
- 	if (unlikely(network_hdr_len >  IGC_MAX_NETWORK_HDR_LEN))
- 		return features & ~(NETIF_F_HW_CSUM |
- 				    NETIF_F_SCTP_CRC |
-+				    NETIF_F_GSO_UDP_L4 |
- 				    NETIF_F_TSO |
- 				    NETIF_F_TSO6);
- 
-@@ -4726,6 +4729,7 @@ static int igc_probe(struct pci_dev *pdev,
- 	netdev->features |= NETIF_F_RXCSUM;
- 	netdev->features |= NETIF_F_HW_CSUM;
- 	netdev->features |= NETIF_F_SCTP_CRC;
-+	netdev->features |= NETIF_F_GSO_UDP_L4;
- 
- 	/* setup the private structure */
- 	err = igc_sw_init(adapter);
 -- 
 2.11.0
 
