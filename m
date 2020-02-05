@@ -1,227 +1,80 @@
-From: Allan, Bruce W <bruce.w.allan@intel.com>
-Date: Tue, 4 Feb 2020 18:47:45 +0000
-Subject: [Intel-wired-lan] [PATCH S37 v2 01/15] ice: Fix DCB rebuild
- after reset
-In-Reply-To: <ed6d6d50b8e023f1381d8bdaf7bc4404ecc3ed92.camel@intel.com>
-References: <20200131133905.42518-1-anthony.l.nguyen@intel.com>
- <804857E1F29AAC47BF68C404FC60A184010AF5CFED@ORSMSX113.amr.corp.intel.com>
- <ed6d6d50b8e023f1381d8bdaf7bc4404ecc3ed92.camel@intel.com>
-Message-ID: <804857E1F29AAC47BF68C404FC60A184010AF5D530@ORSMSX113.amr.corp.intel.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Wed,  5 Feb 2020 16:16:15 +0800
+Subject: [Intel-wired-lan] [PATCH v2 1/2] igb: Use device_lock() insead of
+ rtnl_lock()
+Message-ID: <20200205081616.18378-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-> Sent: Tuesday, February 04, 2020 9:57 AM
-> To: Allan, Bruce W <bruce.w.allan@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Cc: Ertman, David M <david.m.ertman@intel.com>
-> Subject: Re: [Intel-wired-lan] [PATCH S37 v2 01/15] ice: Fix DCB rebuild after
-> reset
-> 
-> On Tue, 2020-02-04 at 09:17 -0800, Allan, Bruce W wrote:
-> > > -----Original Message-----
-> > > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On
-> > > Behalf Of
-> > > Tony Nguyen
-> > > Sent: Friday, January 31, 2020 5:39 AM
-> > > To: intel-wired-lan at lists.osuosl.org
-> > > Subject: [Intel-wired-lan] [PATCH S37 v2 01/15] ice: Fix DCB
-> > > rebuild after reset
-> > >
-> > > From: Dave Ertman <david.m.ertman@intel.com>
-> > >
-> > > The function ice_dcb_rebuild had some logic
-> > > flaws in it, and also didn't differentiate
-> > > between FW and SW modes needs.
-> > >
-> > > For FW flow, the willing setting was being
-> > > forced to OFF and left that way.  Unwilling
-> > > in DCB FW mode is not a supported model.
-> > >
-> > > Leave the config alone and use the return value
-> > > from the set command to determine if setting the
-> > > config was successful.
-> > >
-> > > The SW DCB flow does not need to need to register
-> > > for MIB change events (as they are not used in
-> > > SW mode).
-> > >
-> > > Use !is_sw_lldp checks to only perform FW specific
-> > > task while in FW mode.
-> > >
-> > > Also adding a reapplication of the current DCB
-> > > config after a link event.  Some NVMs are not
-> > > maintaining their DCB configs across link events.
-> > >
-> > > Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> > > ---
-> > > v2:
-> > > - Add missing mutex_unlock() in error path
-> > > ---
-> > >  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 83 +++++++++-------
-> > > ----
-> > >  drivers/net/ethernet/intel/ice/ice_main.c    |  1 +
-> > >  2 files changed, 36 insertions(+), 48 deletions(-)
-> > >
-> > > diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-> > > b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-> > > index 9401f2051293..8e96c722b065 100644
-> > > --- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-> > > +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-> > > @@ -339,9 +339,9 @@ ice_dcb_need_recfg(struct ice_pf *pf, struct
-> > > ice_dcbx_cfg *old_cfg,
-> > >   */
-> > >  void ice_dcb_rebuild(struct ice_pf *pf)
-> > >  {
-> > > -	struct ice_dcbx_cfg *local_dcbx_cfg, *desired_dcbx_cfg,
-> > > *prev_cfg;
-> > >  	struct ice_aqc_port_ets_elem buf = { 0 };
-> > >  	struct device *dev = ice_pf_to_dev(pf);
-> > > +	struct ice_dcbx_cfg *err_cfg;
-> > >  	enum ice_status ret;
-> > >
-> > >  	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf),
-> > > NULL);
-> > > @@ -354,53 +354,25 @@ void ice_dcb_rebuild(struct ice_pf *pf)
-> > >  	if (!test_bit(ICE_FLAG_DCB_ENA, pf->flags))
-> > >  		return;
-> > >
-> > > -	local_dcbx_cfg = &pf->hw.port_info->local_dcbx_cfg;
-> > > -	desired_dcbx_cfg = &pf->hw.port_info->desired_dcbx_cfg;
-> > > +	mutex_lock(&pf->tc_mutex);
-> > >
-> > > -	/* Save current willing state and force FW to unwilling */
-> > > -	local_dcbx_cfg->etscfg.willing = 0x0;
-> > > -	local_dcbx_cfg->pfc.willing = 0x0;
-> > > -	local_dcbx_cfg->app_mode = ICE_DCBX_APPS_NON_WILLING;
-> > > +	if (!pf->hw.port_info->is_sw_lldp)
-> > > +		ice_cfg_etsrec_defaults(pf->hw.port_info);
-> > >
-> > > -	ice_cfg_etsrec_defaults(pf->hw.port_info);
-> > >  	ret = ice_set_dcb_cfg(pf->hw.port_info);
-> > >  	if (ret) {
-> > > -		dev_err(dev, "Failed to set DCB to unwilling\n");
-> > > +		dev_err(dev, "Failed to set DCB config in rebuild\n");
-> > >  		goto dcb_error;
-> > >  	}
-> > >
-> > > -	/* Retrieve DCB config and ensure same as current in SW */
-> > > -	prev_cfg = kmemdup(local_dcbx_cfg, sizeof(*prev_cfg),
-> > > GFP_KERNEL);
-> > > -	if (!prev_cfg)
-> > > -		goto dcb_error;
-> > > -
-> > > -	ice_init_dcb(&pf->hw, true);
-> > > -	if (pf->hw.port_info->dcbx_status == ICE_DCBX_STATUS_DIS)
-> > > -		pf->hw.port_info->is_sw_lldp = true;
-> > > -	else
-> > > -		pf->hw.port_info->is_sw_lldp = false;
-> > > -
-> > > -	if (ice_dcb_need_recfg(pf, prev_cfg, local_dcbx_cfg)) {
-> > > -		/* difference in cfg detected - disable DCB till next
-> > > MIB */
-> > > -		dev_err(dev, "Set local MIB not accurate\n");
-> > > -		kfree(prev_cfg);
-> > > -		goto dcb_error;
-> > > +	if (!pf->hw.port_info->is_sw_lldp) {
-> > > +		ret = ice_cfg_lldp_mib_change(&pf->hw, true);
-> > > +		if (ret && !pf->hw.port_info->is_sw_lldp) {
-> > > +			dev_err(dev, "Failed to register for MIB
-> > > changes\n");
-> > > +			goto dcb_error;
-> > > +		}
-> > >  	}
-> > >
-> > > -	/* fetched config congruent to previous configuration */
-> > > -	kfree(prev_cfg);
-> > > -
-> > > -	/* Set the local desired config */
-> > > -	if (local_dcbx_cfg->dcbx_mode == ICE_DCBX_MODE_CEE)
-> > > -		memcpy(local_dcbx_cfg, desired_dcbx_cfg,
-> > > -		       sizeof(*local_dcbx_cfg));
-> > > -
-> > > -	ice_cfg_etsrec_defaults(pf->hw.port_info);
-> > > -	ret = ice_set_dcb_cfg(pf->hw.port_info);
-> > > -	if (ret) {
-> > > -		dev_err(dev, "Failed to set desired config\n");
-> > > -		goto dcb_error;
-> > > -	}
-> > >  	dev_info(dev, "DCB restored after reset\n");
-> > >  	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf),
-> > > NULL);
-> > >  	if (ret) {
-> > > @@ -408,26 +380,32 @@ void ice_dcb_rebuild(struct ice_pf *pf)
-> > >  		goto dcb_error;
-> > >  	}
-> > >
-> > > +	mutex_unlock(&pf->tc_mutex);
-> > > +
-> > >  	return;
-> > >
-> > >  dcb_error:
-> > >  	dev_err(dev, "Disabling DCB until new settings occur\n");
-> > > -	prev_cfg = kzalloc(sizeof(*prev_cfg), GFP_KERNEL);
-> > > -	if (!prev_cfg)
-> > > +	err_cfg = kzalloc(sizeof(*err_cfg), GFP_KERNEL);
-> > > +	if (!err_cfg) {
-> > > +		mutex_unlock(&pf->tc_mutex);
-> > >  		return;
-> > > +	}
-> > >
-> > > -	prev_cfg->etscfg.willing = true;
-> > > -	prev_cfg->etscfg.tcbwtable[0] = ICE_TC_MAX_BW;
-> > > -	prev_cfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
-> > > -	memcpy(&prev_cfg->etsrec, &prev_cfg->etscfg, sizeof(prev_cfg-
-> > > > etsrec));
-> > >
-> > > +	err_cfg->etscfg.willing = true;
-> > > +	err_cfg->etscfg.tcbwtable[0] = ICE_TC_MAX_BW;
-> > > +	err_cfg->etscfg.tsatable[0] = ICE_IEEE_TSA_ETS;
-> > > +	memcpy(&err_cfg->etsrec, &err_cfg->etscfg, sizeof(err_cfg-
-> > > >etsrec));
-> > >  	/* Coverity warns the return code of ice_pf_dcb_cfg() is not
-> > > checked
-> > >  	 * here as is done for other calls to that function. That check
-> > > is
-> > >  	 * not necessary since this is in this function's error cleanup
-> > > path.
-> > >  	 * Suppress the Coverity warning with the following comment...
-> > >  	 */
-> > >  	/* coverity[check_return] */
-> > > -	ice_pf_dcb_cfg(pf, prev_cfg, false);
-> > > -	kfree(prev_cfg);
-> > > +	ice_pf_dcb_cfg(pf, err_cfg, false);
-> > > +	kfree(err_cfg);
-> > > +
-> > > +	mutex_unlock(&pf->tc_mutex);
-> > >  }
-> > >
-> > >  /**
-> > > @@ -842,6 +820,8 @@ ice_dcb_process_lldp_set_mib_change(struct
-> > > ice_pf
-> > > *pf,
-> > >  		}
-> > >  	}
-> > >
-> > > +	mutex_lock(&pf->tc_mutex);
-> >
-> > This lock is unlocked with most but not all return() function exit
-> > points.  That needs fixing,
-> > and it would be better if there was a single function exit point
-> > where things like the locked
-> > mutex and locked rtnl are unrolled.
-> 
-> Thanks for the feedback Bruce. I'll make those changes and send out a
-> v3.
-> 
-> -Tony
+Commit 9474933caf21 ("igb: close/suspend race in netif_device_detach")
+fixed race condition between close and power management ops by using
+rtnl_lock().
 
-To clarify, I meant there is one return() function exit point _after_ the mutex is locked
-that does not unlock the mutex.  The return()'s _before_ the mutex_lock() clearly do
-not need to unlock the mutex, and can be left as-is.  Sorry for not making that clear.
+However we can achieve the same by using device_lock() since all power
+management ops are protected by device_lock().
 
-Bruce.
+This fix is a preparation for next patch, to prevent a dead lock under
+rtnl_lock() when calling runtime resume routine.
+
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+---
+v2:
+ - No change.
+
+ drivers/net/ethernet/intel/igb/igb_main.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index b46bff8fe056..3750e2b926b1 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -4026,8 +4026,13 @@ static int __igb_close(struct net_device *netdev, bool suspending)
+ 
+ int igb_close(struct net_device *netdev)
+ {
++	struct igb_adapter *adapter = netdev_priv(netdev);
++	struct device *dev = &adapter->pdev->dev;
++
++	device_lock(dev);
+ 	if (netif_device_present(netdev) || netdev->dismantle)
+ 		return __igb_close(netdev, false);
++	device_unlock(dev);
+ 	return 0;
+ }
+ 
+@@ -8760,7 +8765,6 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+ 	u32 wufc = runtime ? E1000_WUFC_LNKC : adapter->wol;
+ 	bool wake;
+ 
+-	rtnl_lock();
+ 	netif_device_detach(netdev);
+ 
+ 	if (netif_running(netdev))
+@@ -8769,7 +8773,6 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+ 	igb_ptp_suspend(adapter);
+ 
+ 	igb_clear_interrupt_scheme(adapter);
+-	rtnl_unlock();
+ 
+ 	status = rd32(E1000_STATUS);
+ 	if (status & E1000_STATUS_LU)
+@@ -8897,13 +8900,11 @@ static int __maybe_unused igb_resume(struct device *dev)
+ 
+ 	wr32(E1000_WUS, ~0);
+ 
+-	rtnl_lock();
+ 	if (!err && netif_running(netdev))
+ 		err = __igb_open(netdev, true);
+ 
+ 	if (!err)
+ 		netif_device_attach(netdev);
+-	rtnl_unlock();
+ 
+ 	return err;
+ }
+-- 
+2.17.1
+
