@@ -1,39 +1,41 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  6 Feb 2020 01:20:05 -0800
-Subject: [Intel-wired-lan] [PATCH S37 v3 07/15] ice: Modify link message
- logging
+Date: Thu,  6 Feb 2020 01:20:08 -0800
+Subject: [Intel-wired-lan] [PATCH S37 v3 10/15] ice: Remove possible null
+ dereference
 In-Reply-To: <20200206092013.23388-1-anthony.l.nguyen@intel.com>
 References: <20200206092013.23388-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200206092013.23388-7-anthony.l.nguyen@intel.com>
+Message-ID: <20200206092013.23388-10-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Commit 1f45ebe0d8fb ("ice: add extra check for null Rx descriptor") moved
+the call to ice_construct_skb() under a null check as Coverity reported a
+possible use of null skb. However, the original call was not deleted, do so
+now.
 
-This patch modifies link message logging to include "Full Duplex" and
-"Negotiated" for FEC, so as to distinguish it from "Requested" FEC.
-
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Fixes: 1f45ebe0d8fb ("ice: add extra check for null Rx descriptor")
+Reported-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index cddadd308253..809e7bee8f62 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -755,7 +755,7 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup)
- 	kfree(caps);
- 
- done:
--	netdev_info(vsi->netdev, "NIC Link is up %sbps, Requested FEC: %s, FEC: %s, Autoneg: %s, Flow Control: %s\n",
-+	netdev_info(vsi->netdev, "NIC Link is up %sbps Full Duplex, Requested FEC: %s, Negotiated FEC: %s, Autoneg: %s, Flow Control: %s\n",
- 		    speed, fec_req, fec, an, fc);
- 	ice_print_topo_conflict(vsi);
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index fd17ace6b226..1d4755acca3d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1078,8 +1078,6 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 				skb = ice_build_skb(rx_ring, rx_buf, &xdp);
+ 			else
+ 				skb = ice_construct_skb(rx_ring, rx_buf, &xdp);
+-		} else {
+-			skb = ice_construct_skb(rx_ring, rx_buf, &xdp);
+ 		}
+ 		/* exit if we failed to retrieve a buffer */
+ 		if (!skb) {
 -- 
 2.20.1
 
