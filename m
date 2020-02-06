@@ -1,49 +1,54 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  6 Feb 2020 01:28:10 -0800
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix the conditional for
- i40e_vc_validate_vqs_bitmaps
-Message-ID: <20200206092810.26378-1-anthony.l.nguyen@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 6 Feb 2020 10:18:33 -0800
+Subject: [Intel-wired-lan] bad iperf3 tcp performance of Intel 10G NIC
+ when MTU is 9000
+In-Reply-To: <6bc9d97b27a24cf79edadedf502caf06@inspur.com>
+References: <6bc9d97b27a24cf79edadedf502caf06@inspur.com>
+Message-ID: <CAKgT0UeebAZ9GfQJ+EJ_mYvnoqvOYOofmGfqTkOro9x7V0c5DA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+On Tue, Feb 4, 2020 at 7:34 AM Yi Yang (??)-????? <yangyi01@inspur.com> wrote:
+>
+> Hi, all
+>
+> We find a very weird issue on Intel 10G NIC, iperf3 tcp performance is good
+> when MTU is 1500, but it is about one third of the former when MTU is 9000,
+> anybody knows why it is so, is any solution to it available?
+>
+> The below is our kernel and ixgbe deriver information:
+>
+> Ubuntu 16.04 and kernel is updated to 4.15.0-36-generic x86_64
+> Ixgbe driver version: 5.1.0-k
+> Firmware version: 0x61c10001
+>
+> BTW, tso is on.
 
-Commit d9d6a9aed3f6 ("i40e: Fix virtchnl_queue_select bitmap
-validation") introduced a necessary change for verifying how queue
-bitmaps from the iavf driver get validated. Unfortunately, the
-conditional was reversed. Fix this.
+There could be quite a few things going on, but it is hard to say
+without more information.
 
-Fixes: d9d6a9aed3f6 ("i40e: Fix virtchnl_queue_select bitmap validation")
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+What is the test you are running and what are the numbers you are
+seeing at 1500 MTU versus 9000 MTU? Have you taken a look at the
+"netstat -s" info on both ends to see if anything might be going on
+there? One possibility is if you have a congested network moving the
+9K MTU frames can be slower as any 9K frames dropped will have to be
+retransmitted and since the frames are larger you may encounter the
+need for retransmit more often and they would be slower.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 69523ac85639..56b9e445732b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2362,7 +2362,7 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
--	if (i40e_vc_validate_vqs_bitmaps(vqs)) {
-+	if (!i40e_vc_validate_vqs_bitmaps(vqs)) {
- 		aq_ret = I40E_ERR_PARAM;
- 		goto error_param;
- 	}
-@@ -2424,7 +2424,7 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
- 
--	if (i40e_vc_validate_vqs_bitmaps(vqs)) {
-+	if (!i40e_vc_validate_vqs_bitmaps(vqs)) {
- 		aq_ret = I40E_ERR_PARAM;
- 		goto error_param;
- 	}
--- 
-2.20.1
+Also have you checked the network path to make certain that you are
+able to send 9K frames between the two systems? If there are any
+switches in between not configured for 9K MTU that could cause
+performance issues.
 
+One debugging step you might try would be to incrementally increase
+the MTU size and run several tests to see if there is a certain packet
+size that the performance drops at. If we find the regression starts
+at a certain size it could point to a specific issue either in the
+network stack, driver, or the network itself.
+
+Thanks.
+
+- Alex
