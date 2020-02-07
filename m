@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 7 Feb 2020 22:34:04 +0000
-Subject: [Intel-wired-lan] [PATCH S37 v3 09/15] ice: update Unit Load
- Status bitmask to check after reset
-In-Reply-To: <20200206092013.23388-9-anthony.l.nguyen@intel.com>
+Date: Fri, 7 Feb 2020 22:34:27 +0000
+Subject: [Intel-wired-lan] [PATCH S37 v3 10/15] ice: Remove possible
+ null dereference
+In-Reply-To: <20200206092013.23388-10-anthony.l.nguyen@intel.com>
 References: <20200206092013.23388-1-anthony.l.nguyen@intel.com>
- <20200206092013.23388-9-anthony.l.nguyen@intel.com>
-Message-ID: <6d71af06e6a9422ca9343c54eda1ecb3@intel.com>
+ <20200206092013.23388-10-anthony.l.nguyen@intel.com>
+Message-ID: <22f83e0754ef43bab667381164a9b8ac@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, February 6, 2020 1:20 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S37 v3 09/15] ice: update Unit Load Status
-> bitmask to check after reset
+> Subject: [Intel-wired-lan] [PATCH S37 v3 10/15] ice: Remove possible null
+> dereference
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> Commit 1f45ebe0d8fb ("ice: add extra check for null Rx descriptor") moved
+> the call to ice_construct_skb() under a null check as Coverity reported a
+> possible use of null skb. However, the original call was not deleted, do so
+> now.
 > 
-> After a reset the Unit Load Status bits in the GLNVM_ULD register to check
-> for completion should be 0x7FF before continuing.  Update the mask to
-> check (minus the three reserved bits that are always set).
-> 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Fixes: 1f45ebe0d8fb ("ice: add extra check for null Rx descriptor")
+> Reported-by: Bruce Allan <bruce.w.allan@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c    | 18 +++++++++++++-----
->  .../net/ethernet/intel/ice/ice_hw_autogen.h    |  6 ++++++
->  2 files changed, 19 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_txrx.c | 2 --
+>  1 file changed, 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
