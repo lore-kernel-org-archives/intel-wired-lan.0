@@ -1,41 +1,54 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Fri, 7 Feb 2020 16:51:09 -0500
-Subject: [Intel-wired-lan] i40e X722 RSS problem with NAT-Traversal
- IPsec packets
-In-Reply-To: <CAKgT0Ue1M8_30PVPmoJy_EGo2mjM26ecz32Myx-hpnuq_6wdjw@mail.gmail.com>
-References: <CAKgT0Ucd0s_0F5_nwqXknRngwROyuecUt+4bYzWvp1-2cNSg7g@mail.gmail.com>
- <20190517172317.amopafirjfizlgej@csclub.uwaterloo.ca>
- <CAKgT0UdM28pSTCsaT=TWqmQwCO44NswS0PqFLAzgs9pmn41VeQ@mail.gmail.com>
- <20190521151537.xga4aiq3gjtiif4j@csclub.uwaterloo.ca>
- <CAKgT0UfpZ-ve3Hx26gDkb+YTDHvN3=MJ7NZd2NE7ewF5g=kHHw@mail.gmail.com>
- <20190521175456.zlkiiov5hry2l4q2@csclub.uwaterloo.ca>
- <CAKgT0UcR3q1maBmJz7xj_i+_oux_6FQxua9DOjXQSZzyq6FhkQ@mail.gmail.com>
- <20190522143956.quskqh33ko2wuf47@csclub.uwaterloo.ca>
- <20190607143906.wgi344jcc77qvh24@csclub.uwaterloo.ca>
- <CAKgT0Ue1M8_30PVPmoJy_EGo2mjM26ecz32Myx-hpnuq_6wdjw@mail.gmail.com>
-Message-ID: <20200207215109.ym6evogglt5atbnk@csclub.uwaterloo.ca>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 7 Feb 2020 22:31:29 +0000
+Subject: [Intel-wired-lan] [PATCH S37 v3 01/15] ice: Fix DCB rebuild
+ after reset
+In-Reply-To: <20200206092013.23388-1-anthony.l.nguyen@intel.com>
+References: <20200206092013.23388-1-anthony.l.nguyen@intel.com>
+Message-ID: <b5f9eb9c83a14c7aabaa562ed097017e@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jun 07, 2019 at 12:32:51PM -0700, Alexander Duyck wrote:
-> I had reached out to some folks over in the networking division hoping
-> that they can get a reproduction as I don't have the hardware that you
-> are seeing the issue on so I have no way to reproduce it.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
+> Behalf Of Tony Nguyen
+> Sent: Thursday, February 6, 2020 1:20 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S37 v3 01/15] ice: Fix DCB rebuild after
+> reset
 > 
-> Maybe someone from that group can reply and tell us where they are on that?
+> From: Dave Ertman <david.m.ertman@intel.com>
+> 
+> The function ice_dcb_rebuild had some logic flaws in it, and also didn't
+> differentiate between FW and SW modes needs.
+> 
+> For FW flow, the willing setting was being forced to OFF and left that way.
+> Unwilling in DCB FW mode is not a supported model.
+> 
+> Leave the config alone and use the return value from the set command to
+> determine if setting the config was successful.
+> 
+> The SW DCB flow does not need to need to register for MIB change events
+> (as they are not used in SW mode).
+> 
+> Use !is_sw_lldp checks to only perform FW specific task while in FW mode.
+> 
+> Also adding a reapplication of the current DCB config after a link event.  Some
+> NVMs are not maintaining their DCB configs across link events.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> ---
+> v3:
+> - Use goto's for single exit/unlock path
+> v2:
+> - Add missing mutex_unlock() in error path
+> ---
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 88 ++++++++------------
+>  drivers/net/ethernet/intel/ice/ice_main.c    |  1 +
+>  2 files changed, 36 insertions(+), 53 deletions(-)
 
-Well I still never heard anything from anyone.  Just installed 4.10
-firmware in case that security fix (the only change to happen in over
-12 months) did something, but no.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-So all UDP encapsulated IPsec packets still always have RSS value of 0.
 
-I am tempted to write a test to see if all UDP encapsulated IP packets
-that are not of one of the explicitly handled types have this problem
-since I have a suspicion they do.
-
--- 
-Len Sorensen
