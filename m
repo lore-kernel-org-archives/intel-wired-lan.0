@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 7 Feb 2020 22:33:11 +0000
-Subject: [Intel-wired-lan] [PATCH S37 v3 06/15] ice: Remove
- CONFIG_PCI_IOV wrap in ice_set_pf_caps
-In-Reply-To: <20200206092013.23388-6-anthony.l.nguyen@intel.com>
+Date: Fri, 7 Feb 2020 22:33:30 +0000
+Subject: [Intel-wired-lan] [PATCH S37 v3 07/15] ice: Modify link message
+ logging
+In-Reply-To: <20200206092013.23388-7-anthony.l.nguyen@intel.com>
 References: <20200206092013.23388-1-anthony.l.nguyen@intel.com>
- <20200206092013.23388-6-anthony.l.nguyen@intel.com>
-Message-ID: <00165864e7ae4fe4aad94620d3498707@intel.com>
+ <20200206092013.23388-7-anthony.l.nguyen@intel.com>
+Message-ID: <ce5e1e271d3a49c984a73ce454b4e276@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, February 6, 2020 1:20 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S37 v3 06/15] ice: Remove
-> CONFIG_PCI_IOV wrap in ice_set_pf_caps
+> Subject: [Intel-wired-lan] [PATCH S37 v3 07/15] ice: Modify link message
+> logging
 > 
-> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > 
-> Remove unnecessary CONFIG_PCI_IOV wrapping in ice_set_pf_caps. None
-> of the data structures accessed within the block are wrapped with this flag.
-> When CONFIG_PCI_IOV is undefined, pf->num_vfs_supported will be 0
-> anyway.
+> This patch modifies link message logging to include "Full Duplex" and
+> "Negotiated" for FEC, so as to distinguish it from "Requested" FEC.
 > 
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
+> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 2 --
->  1 file changed, 2 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
