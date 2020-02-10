@@ -1,11 +1,11 @@
 From: Andre Guedes <andre.guedes@linux.intel.com>
-Date: Mon, 10 Feb 2020 12:33:59 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v2 1/2] igc: Add support
- for taprio offloading
-In-Reply-To: <20200207182443.1501016-2-vinicius.gomes@intel.com>
+Date: Mon, 10 Feb 2020 12:34:08 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v2 2/2] igc: Add support
+ for ETF offloading
+In-Reply-To: <20200207182443.1501016-3-vinicius.gomes@intel.com>
 References: <20200207182443.1501016-1-vinicius.gomes@intel.com>
- <20200207182443.1501016-2-vinicius.gomes@intel.com>
-Message-ID: <158136683984.75536.11605147606262842969@1.0.0.127.in-addr.arpa>
+ <20200207182443.1501016-3-vinicius.gomes@intel.com>
+Message-ID: <158136684850.75536.15541483288653337386@1.0.0.127.in-addr.arpa>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,29 +14,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Hi Vinicius,
 
-Quoting Vinicius Costa Gomes (2020-02-07 10:24:42)
+Quoting Vinicius Costa Gomes (2020-02-07 10:24:43)
 ...
-> --- a/drivers/net/ethernet/intel/igc/igc_defines.h
-> +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
 ...
-> +/* Transmit Scheduling */
-> +#define IGC_TQAVCTRL_TRANSMIT_MODE_TSN 0x00000001
-> +#define IGC_TQAVCTRL_ENHANCED_QAV      0x00000008
+> @@ -4497,6 +4516,32 @@ static int igc_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
+>         }
+>  }
+>  
+> +static int igc_save_launchtime_params(struct igc_adapter *adapter, int queue,
+> +                                     bool enable)
+> +{
+> +       struct igc_ring *ring;
+> +       int i;
 > +
-> +#define IGC_TXQCTL_STRICT_CYCLE                0x00000002
-> +#define IGC_TXQCTL_STRICT_END          0x00000004
-> +#define IGC_TXQCTL_PREEMPTIBLE         0x00000008
+> +       if (queue < 0 || queue > adapter->num_tx_queues)
+> +               return -EINVAL;
 
-It seems you missed removing IGC_TXQCTL_PREEMPTIBLE here. This macro is not
-used anywhere in the code.
+I believe we have an off-by-one bug here. Shouldn't it be queue >=
+adapter->num_tx_queues instead?
 
-> --- /dev/null
-> +++ b/drivers/net/ethernet/intel/igc/igc_tsn.h
-> @@ -0,0 +1,9 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +/* Copyright (c)  2018 Intel Corporation */
+> @@ -4600,6 +4661,9 @@ static int igc_setup_tc(struct net_device *dev, enum tc_setup_type type,
+>         case TC_SETUP_QDISC_TAPRIO:
+>                 return igc_tsn_enable_qbv_scheduling(adapter, type_data);
+>  
+> +       case TC_SETUP_QDISC_ETF:
+> +               return igc_tsn_enable_launchtime(adapter, type_data);
 
-s/2018/2020 ?
+Consider the scenario where both TAPRIO and ETF offloads are disabled and we
+want to enable ETF offload. ETF depends on adapter->base_time is set to work
+properly, but I couldn't find where in this patch it is set. Could you please
+clarify that?
 
 Regards,
 
