@@ -1,192 +1,171 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Tue, 11 Feb 2020 22:20:25 +0000
-Subject: [Intel-wired-lan] [PATCH S39 01/15] ice: Validate config for SW
- DCB map
-In-Reply-To: <5cea01f5-7e1b-f835-60b3-2dafa8b6e744@molgen.mpg.de>
+Date: Tue, 11 Feb 2020 22:23:01 +0000
+Subject: [Intel-wired-lan] [PATCH S39 09/15] ice: Don't reject odd
+ values of usecs set by user
+In-Reply-To: <9d07b895-938e-c013-65a5-f274a3b8dcdf@molgen.mpg.de>
 References: <20200127085927.13999-1-anthony.l.nguyen@intel.com>
- <5cea01f5-7e1b-f835-60b3-2dafa8b6e744@molgen.mpg.de>
-Message-ID: <69197e331233673ea185bd5d48f9773ee72bf45e.camel@intel.com>
+ <20200127085927.13999-9-anthony.l.nguyen@intel.com>
+ <9d07b895-938e-c013-65a5-f274a3b8dcdf@molgen.mpg.de>
+Message-ID: <201a8cea45b211d6a5d4257c527bf723799149d8.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2020-02-11 at 18:07 +0100, Paul Menzel wrote:
+On Tue, 2020-02-11 at 18:21 +0100, Paul Menzel wrote:
 > Dear Tony,
 > 
 > 
 > On 2020-01-27 09:59, Tony Nguyen wrote:
-> > From: Avinash Dayanand <avinash.dayanand@intel.com>
+> > From: Brett Creeley <brett.creeley@intel.com>
 > > 
-> > Validate the inputs for SW DCB config received either via lldptool
-> > or pcap
-> > file. And don't apply DCB for bad bandwidth inputs or non-
-> > contiguous TCs.
-> > Without this patch, any config having bad inputs will cause the
-> > loss of
-> > link making PF unusable even after driver reload. Recoverable only
-> > via
-> > system reboot.
+> > Currently if a user sets an odd [tx|rx]-usecs value through
+> > ethtool,
+> > the request is denied because the hardware is set to have an ITR
+> > granularity of 2us. This caused poor customer experience. Fix this
+> > by
+> > aligning to a register allowed value, which results in rounding
+> > down.
+> > Also, print a once per ring container type message to be clear
+> > about
+> > our intentions.
 > > 
-> > Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
-> > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> > Also, change the ITR_TO_REG define to be the bitwise and of the ITR
+> > setting and the ICE_ITR_MASK. This makes the purpose of ITR_TO_REG
+> > more
+> > obvious.
+> > 
+> > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > > ---
-> >  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 55
-> > ++++++++++++++++++++
-> >  drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  1 +
-> >  drivers/net/ethernet/intel/ice/ice_dcb_nl.c  |  7 +++
-> >  3 files changed, 63 insertions(+)
+> >  drivers/net/ethernet/intel/ice/ice_ethtool.c | 49 +++++++++++++++-
+> > ----
+> >  drivers/net/ethernet/intel/ice/ice_txrx.h    |  2 +-
+> >  2 files changed, 39 insertions(+), 12 deletions(-)
 > > 
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-> > b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-> > index 0f4ca813a7ab..bd361212921c 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-> > @@ -169,6 +169,56 @@ ice_peer_prep_tc_change(struct
-> > ice_peer_dev_int *peer_dev_int,
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > index db14ec2e0b46..ae0b63d5673d 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > @@ -3488,21 +3488,13 @@ ice_set_rc_coalesce(enum ice_container_type
+> > c_type, struct ethtool_coalesce *ec,
+> >  		return -EINVAL;
+> >  	}
+> >  
+> > -	/* hardware only supports an ITR granularity of 2us */
+> > -	if (coalesce_usecs % 2 != 0) {
+> > -		netdev_info(vsi->netdev, "Invalid value, %s-usecs must
+> > be even\n",
+> > -			    c_type_str);
+> > -		return -EINVAL;
+> > -	}
+> > -
+> >  	if (use_adaptive_coalesce) {
+> >  		rc->itr_setting |= ICE_ITR_DYNAMIC;
+> >  	} else {
+> > -		/* store user facing value how it was set */
+> > +		/* save the user set usecs */
+> >  		rc->itr_setting = coalesce_usecs;
+> > -		/* set to static and convert to value HW understands */
+> > -		rc->target_itr =
+> > -			ITR_TO_REG(ITR_REG_ALIGN(rc->itr_setting));
+> > +		/* device ITR granularity is in 2 usec increments */
+> > +		rc->target_itr = ITR_REG_ALIGN(rc->itr_setting);
+> >  	}
+> >  
+> >  	return 0;
+> > @@ -3595,6 +3587,30 @@ ice_is_coalesce_param_invalid(struct
+> > net_device *netdev,
 > >  	return 0;
 > >  }
 > >  
 > > +/**
-> > + * ice_dcb_bwchk - check if ETS bandwidth input parameters are
-> > correct
-> > + * @dcbcfg: pointer to DCB config structure
+> > + * ice_print_if_odd_usecs - print message if user tries to set odd
+> > [tx|rx]-usecs
+> > + * @netdev: netdev used for print
+> > + * @itr_setting: previous user setting
+> > + * @use_adaptive_coalesce: if adaptive coalesce is enabled or
+> > being enabled
+> > + * @coalesce_usecs: requested value of [tx|rx]-usecs
+> > + * @c_type_str: either "rx" or "tx" to match user set field of
+> > [tx|rx]-usecs
+> 
+> Why `c_type_str`? What does it mean?
+
+It stands for container type string; so whether the container type is
+"rx" or "tx".  It is has the same usage in ice_set_rx_coalesce() so we
+continued with the convention here.
+
 > > + */
-> > +int ice_dcb_bwchk(struct ice_dcbx_cfg *dcbcfg)
+> > +static void
+> > +ice_print_if_odd_usecs(struct net_device *netdev, u16 itr_setting,
+> > +		       u32 use_adaptive_coalesce, u32 coalesce_usecs,
+> > +		       const char *c_type_str)
 > > +{
-> > +	struct ice_dcb_ets_cfg *etscfg = &dcbcfg->etscfg;
-> > +	u8 num_tc, total_bw = 0;
-> > +	int i;
-> > +
-> > +	/* returns number of contigous TCs and 1 TC for non-contigous
-> > TCs,
-> > +	 * since at least 1 TC has to be configured
-> > +	 */
-> > +	num_tc = ice_dcb_get_num_tc(dcbcfg);
-> > +
-> > +	/* no bandwidth checks required if there's only one TC and
-> > assign
-> > +	 * all bandwidth to it i.e. to TC0 and return
+> > +	if (use_adaptive_coalesce)
+> > +		return;
 > 
-> ?, so assign all bandwidth to TC0 and return
-> 
+> Why not check that before calling the function and not passing the it
+> to this
+> one.
 
-Will fix the comment to include this
-
-> > +	 */
-> > +	if (num_tc == 1) {
-> > +		etscfg->tcbwtable[0] = ICE_TC_MAX_BW;
-> > +		return 0;
-> > +	}
-> > +	/* There are few rules with which TC bandwidth can be applied
-> > for any TC
-> > +	 * with a UP mapped to it.
-> > +	 *	1. All TCs have zero BW - Valid
-> > +	 *	   ex:  tcbw=0,0,0
-> > +	 *	2. First few non-zero and rest zero BW - Valid
-> > +	 *	   ex:  tcbw=100,0,0
-> > +	 *	3. Zero BW in between 2 non-zero BW TCs - Invalid
-> > +	 *	   ex:  tcbw=25,0,75
-> > +	 */
-> > +	for (i = 0; i < num_tc; i++) {
-> > +		/* don't allow zero BW for TCs other than TC0 */
-> > +		if (i && !etscfg->tcbwtable[i])
-> > +			goto err;
-> 
-> As the error handling is just `return -EINVAL`, please do that
-> directly
-> here.
-
-After talking to others this check is not needed so I'll take it out
-altogether.
+This is put in the function instead of before calling it to reduce code
+duplication.  Adaptive coalesce can be set for Tx and Rx; usecs can
+also be set for Tx and RX so putting it in here allows us to use the
+same code to do the checks.  Otherwise, we will need to check each
+condition for both Tx and Rx before calling this function.
 
 > > +
-> > +		if (etscfg->tsatable[i] == ICE_IEEE_TSA_ETS)
-> > +			total_bw += etscfg->tcbwtable[i];
-> > +	}
+> > +	itr_setting = ITR_TO_REG(itr_setting);
 > > +
-> > +	 /* total bandwidth should be equal to 100 */
-> > +	if (total_bw != ICE_TC_MAX_BW)
-> > +		goto err;
-> 
-> Ditto.
-> 
-> Also, why not print an error for this case?
-
-Will do both.
-
-> > +
-> > +	return 0;
-> > +
-> > +err:
-> > +	return -EINVAL;
+> > +	if (itr_setting != coalesce_usecs && (coalesce_usecs % 2))
+> > +		netdev_info(netdev, "User set %s-usecs to %d, device
+> > only supports even values. Rounding down and attempting to set %s-
+> > usecs to %d\n",
+> > +			    c_type_str, coalesce_usecs, c_type_str,
+> > +			    ITR_REG_ALIGN(coalesce_usecs));
 > > +}
 > > +
 > >  /**
-> >   * ice_pf_dcb_cfg - Apply new DCB configuration
-> >   * @pf: pointer to the PF struct
-> > @@ -206,6 +256,11 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct
-> > ice_dcbx_cfg *new_cfg, bool locked)
-> >  	/* Notify capable peers about impending change to TCs */
-> >  	ice_for_each_peer(pf, NULL, ice_peer_prep_tc_change);
+> >   * __ice_set_coalesce - set ITR/INTRL values for the device
+> >   * @netdev: pointer to the netdev associated with this query
+> > @@ -3615,8 +3631,19 @@ __ice_set_coalesce(struct net_device
+> > *netdev, struct ethtool_coalesce *ec,
+> >  		return -EINVAL;
 > >  
-> > +	if (ice_dcb_bwchk(new_cfg)) {
-> > +		dev_err(dev, "Invalid config, not applying DCB\n");
+> >  	if (q_num < 0) {
+> > +		struct ice_q_vector *q_vector = vsi->q_vectors[0];
+> >  		int v_idx;
+> >  
+> > +		if (q_vector) {
 > 
-> It?d be useful to know what is incorrect. So, maybe move the error
-> message
-> into the function.
+> Why not check for `(coalesce_usecs % 2)` here already?
 
-Will include messaging in the function on what is incorrect.
+Explained in previous response.
 
-> 
-> > +		return -EINVAL;
-> > +	}
+> > +			ice_print_if_odd_usecs(netdev, q_vector-
+> > >rx.itr_setting,
+> > +					       ec-
+> > >use_adaptive_rx_coalesce,
+> > +					       ec->rx_coalesce_usecs,
+> > "rx");
 > > +
-> >  	/* Store old config in case FW config fails */
-> >  	old_cfg = kmemdup(curr_cfg, sizeof(*old_cfg), GFP_KERNEL);
-> >  	if (!old_cfg)
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-> > b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-> > index bb53edf462ba..2b900da27f57 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-> > +++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-> > @@ -20,6 +20,7 @@ u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg
-> > *dcbcfg);
-> >  u8 ice_dcb_get_tc(struct ice_vsi *vsi, int queue_index);
-> >  int
-> >  ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg,
-> > bool locked);
-> > +int ice_dcb_bwchk(struct ice_dcbx_cfg *dcbcfg);
-> >  void ice_pf_dcb_recfg(struct ice_pf *pf);
-> >  void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
-> >  int ice_init_pf_dcb(struct ice_pf *pf, bool locked);
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-> > b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-> > index b61aba428adb..a45e8abef8f3 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-> > @@ -95,6 +95,12 @@ static int ice_dcbnl_setets(struct net_device
-> > *netdev, struct ieee_ets *ets)
-> >  		new_cfg->etsrec.prio_table[i] = ets->reco_prio_tc[i];
-> >  	}
-> >  
-> > +	if (ice_dcb_bwchk(new_cfg)) {
-> > +		netdev_err(netdev, "Invalid config, not applying
-> > DCB\n");
-> > +		err = -EINVAL;
-> > +		goto ets_out;
+> > +			ice_print_if_odd_usecs(netdev, q_vector-
+> > >tx.itr_setting,
+> > +					       ec-
+> > >use_adaptive_tx_coalesce,
+> > +					       ec->tx_coalesce_usecs,
+> > "tx");
+> > +		}
+> > +
 > 
-> Is that good style to use goto in this case? Why can?t it be put
-> after
-> `ice_pf_dcb_cfg()`?
+> I do not know of such a construct in the rest of the Linux kernel. Is
+> there
+> a better way to achieve your goal?
 
-We need to validate the config before applying it, which is what
-ice_pf_dcb_cfg() does. We can't apply the config without knowing that
-it's a good configuration.
-
-For the goto, we're trying to have a single point of unlock/exit.
+I'm not aware of anything else to use, but I'm open to other thoughts
+or suggestions if you have any.
 
 Thanks,
 Tony
@@ -196,4 +175,4 @@ Name: smime.p7s
 Type: application/x-pkcs7-signature
 Size: 3277 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200211/1255c25f/attachment.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200211/9efe9e02/attachment-0001.bin>
