@@ -1,130 +1,140 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 13 Feb 2020 13:30:59 -0800
-Subject: [Intel-wired-lan] [PATCH S39 v2 01/15] ice: Validate config for SW
- DCB map
-Message-ID: <20200213213059.33939-1-anthony.l.nguyen@intel.com>
+Date: Thu, 13 Feb 2020 13:31:28 -0800
+Subject: [Intel-wired-lan] [PATCH S39 v2 14/15] ice: add support for E823
+ devices
+In-Reply-To: <20200213213129.34023-1-anthony.l.nguyen@intel.com>
+References: <20200213213129.34023-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200213213129.34023-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Validate the inputs for SW DCB config received either via lldptool or pcap
-file. And don't apply DCB for bad bandwidth inputs. Without this patch, any
-config having bad inputs will cause the loss of link making PF unusable
-even after driver reload. Recoverable only via system reboot.
+Add E823 device ids and convert conditional expressions to a more
+appropriate switch statement.
 
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
-v2:
-- Allocate all bandwidth to TC0 if no TCs requested any bandwidth
-- Remove zero bandwidth check on non-TC0
-- Add message about reason for error and return from error immediately in
-  ice_dcb_bwchk()
-- Change a comment
----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 40 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  1 +
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c  |  6 +++
- 3 files changed, 47 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_devids.h | 20 +++++++++++++
+ drivers/net/ethernet/intel/ice/ice_main.c   | 10 +++++++
+ drivers/net/ethernet/intel/ice/ice_nvm.c    | 32 +++++++++++++++------
+ 3 files changed, 53 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 017b71d8e894..175b08219f7a 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -169,6 +169,43 @@ ice_peer_prep_tc_change(struct ice_peer_dev_int *peer_dev_int,
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_devids.h b/drivers/net/ethernet/intel/ice/ice_devids.h
+index 56952d89ada8..6fccb66ff43c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devids.h
++++ b/drivers/net/ethernet/intel/ice/ice_devids.h
+@@ -5,6 +5,16 @@
+ #define _ICE_DEVIDS_H_
  
-+/**
-+ * ice_dcb_bwchk - check if ETS bandwidth input parameters are correct
-+ * @pf: pointer to the PF struct
-+ * @dcbcfg: pointer to DCB config structure
-+ */
-+int ice_dcb_bwchk(struct ice_pf *pf, struct ice_dcbx_cfg *dcbcfg)
-+{
-+	struct ice_dcb_ets_cfg *etscfg = &dcbcfg->etscfg;
-+	u8 num_tc, total_bw = 0;
-+	int i;
-+
-+	/* returns number of contigous TCs and 1 TC for non-contigous TCs,
-+	 * since at least 1 TC has to be configured
-+	 */
-+	num_tc = ice_dcb_get_num_tc(dcbcfg);
-+
-+	/* no bandwidth checks required if there's only one TC, so assign
-+	 * all bandwidth to TC0 and return
-+	 */
-+	if (num_tc == 1) {
-+		etscfg->tcbwtable[0] = ICE_TC_MAX_BW;
-+		return 0;
+ /* Device IDs */
++/* Intel(R) Ethernet Connection E823-L for backplane */
++#define ICE_DEV_ID_E823L_BACKPLANE	0x124C
++/* Intel(R) Ethernet Connection E823-L for SFP */
++#define ICE_DEV_ID_E823L_SFP		0x124D
++/* Intel(R) Ethernet Connection E823-L/X557-AT 10GBASE-T */
++#define ICE_DEV_ID_E823L_10G_BASE_T	0x124E
++/* Intel(R) Ethernet Connection E823-L 1GbE */
++#define ICE_DEV_ID_E823L_1GBE		0x124F
++/* Intel(R) Ethernet Connection E823-L for QSFP */
++#define ICE_DEV_ID_E823L_QSFP		0x151D
+ /* Intel(R) Ethernet Controller E810-C for backplane */
+ #define ICE_DEV_ID_E810C_BACKPLANE	0x1591
+ /* Intel(R) Ethernet Controller E810-C for QSFP */
+@@ -13,6 +23,16 @@
+ #define ICE_DEV_ID_E810C_SFP		0x1593
+ /* Intel(R) Ethernet Controller E810-XXV for SFP */
+ #define ICE_DEV_ID_E810_XXV_SFP		0x159B
++/* Intel(R) Ethernet Connection E823-C for backplane */
++#define ICE_DEV_ID_E823C_BACKPLANE	0x188A
++/* Intel(R) Ethernet Connection E823-C for QSFP */
++#define ICE_DEV_ID_E823C_QSFP		0x188B
++/* Intel(R) Ethernet Connection E823-C for SFP */
++#define ICE_DEV_ID_E823C_SFP		0x188C
++/* Intel(R) Ethernet Connection E823-C/X557-AT 10GBASE-T */
++#define ICE_DEV_ID_E823C_10G_BASE_T	0x188D
++/* Intel(R) Ethernet Connection E823-C 1GbE */
++#define ICE_DEV_ID_E823C_SGMII		0x188E
+ /* Intel(R) Ethernet Connection E822-C for backplane */
+ #define ICE_DEV_ID_E822C_BACKPLANE	0x1890
+ /* Intel(R) Ethernet Connection E822-C for QSFP */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 017d68b158fc..5f23806669e2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3616,6 +3616,11 @@ static const struct pci_device_id ice_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_QSFP), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810C_SFP), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E810_XXV_SFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823C_BACKPLANE), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823C_QSFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823C_SFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823C_10G_BASE_T), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823C_SGMII), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_BACKPLANE), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_QSFP), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822C_SFP), 0 },
+@@ -3625,6 +3630,11 @@ static const struct pci_device_id ice_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_SFP), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_10G_BASE_T), 0 },
+ 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E822L_SGMII), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823L_BACKPLANE), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823L_SFP), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823L_10G_BASE_T), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823L_1GBE), 0 },
++	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E823L_QSFP), 0 },
+ 	/* required last entry */
+ 	{ 0, }
+ };
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index 7525ac50742e..75cd4cbb473b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -289,17 +289,31 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
+ 
+ 	nvm->eetrack = (eetrack_hi << 16) | eetrack_lo;
+ 
++	switch (hw->device_id) {
+ 	/* the following devices do not have boot_cfg_tlv yet */
+-	if (hw->device_id == ICE_DEV_ID_E822C_BACKPLANE ||
+-	    hw->device_id == ICE_DEV_ID_E822C_QSFP ||
+-	    hw->device_id == ICE_DEV_ID_E822C_10G_BASE_T ||
+-	    hw->device_id == ICE_DEV_ID_E822C_SGMII ||
+-	    hw->device_id == ICE_DEV_ID_E822C_SFP ||
+-	    hw->device_id == ICE_DEV_ID_E822X_BACKPLANE ||
+-	    hw->device_id == ICE_DEV_ID_E822L_SFP ||
+-	    hw->device_id == ICE_DEV_ID_E822L_10G_BASE_T ||
+-	    hw->device_id == ICE_DEV_ID_E822L_SGMII)
++	case ICE_DEV_ID_E823C_BACKPLANE:
++	case ICE_DEV_ID_E823C_QSFP:
++	case ICE_DEV_ID_E823C_SFP:
++	case ICE_DEV_ID_E823C_10G_BASE_T:
++	case ICE_DEV_ID_E823C_SGMII:
++	case ICE_DEV_ID_E822C_BACKPLANE:
++	case ICE_DEV_ID_E822C_QSFP:
++	case ICE_DEV_ID_E822C_10G_BASE_T:
++	case ICE_DEV_ID_E822C_SGMII:
++	case ICE_DEV_ID_E822C_SFP:
++	case ICE_DEV_ID_E822X_BACKPLANE:
++	case ICE_DEV_ID_E822L_SFP:
++	case ICE_DEV_ID_E822L_10G_BASE_T:
++	case ICE_DEV_ID_E822L_SGMII:
++	case ICE_DEV_ID_E823L_BACKPLANE:
++	case ICE_DEV_ID_E823L_SFP:
++	case ICE_DEV_ID_E823L_10G_BASE_T:
++	case ICE_DEV_ID_E823L_1GBE:
++	case ICE_DEV_ID_E823L_QSFP:
+ 		return status;
++	default:
++		break;
 +	}
-+
-+	for (i = 0; i < num_tc; i++)
-+		total_bw += etscfg->tcbwtable[i];
-+
-+	if (!total_bw) {
-+		etscfg->tcbwtable[0] = ICE_TC_MAX_BW;
-+	} else if (total_bw != ICE_TC_MAX_BW) {
-+		dev_err(ice_pf_to_dev(pf), "Invalid config, total bandwidth must equal 100\n");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * ice_pf_dcb_cfg - Apply new DCB configuration
-  * @pf: pointer to the PF struct
-@@ -206,6 +243,9 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
- 	/* Notify capable peers about impending change to TCs */
- 	ice_for_each_peer(pf, NULL, ice_peer_prep_tc_change);
  
-+	if (ice_dcb_bwchk(pf, new_cfg))
-+		return -EINVAL;
-+
- 	/* Store old config in case FW config fails */
- 	old_cfg = kmemdup(curr_cfg, sizeof(*old_cfg), GFP_KERNEL);
- 	if (!old_cfg)
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-index bb53edf462ba..11457b6ba145 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-@@ -20,6 +20,7 @@ u8 ice_dcb_get_num_tc(struct ice_dcbx_cfg *dcbcfg);
- u8 ice_dcb_get_tc(struct ice_vsi *vsi, int queue_index);
- int
- ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked);
-+int ice_dcb_bwchk(struct ice_pf *pf, struct ice_dcbx_cfg *dcbcfg);
- void ice_pf_dcb_recfg(struct ice_pf *pf);
- void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
- int ice_init_pf_dcb(struct ice_pf *pf, bool locked);
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index b61aba428adb..c572aa5c28e0 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -95,6 +95,11 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
- 		new_cfg->etsrec.prio_table[i] = ets->reco_prio_tc[i];
- 	}
- 
-+	if (ice_dcb_bwchk(pf, new_cfg)) {
-+		err = -EINVAL;
-+		goto ets_out;
-+	}
-+
- 	/* max_tc is a 1-8 value count of number of TC's, not a 0-7 value
- 	 * for the TC's index number.  Add one to value if not zero, and
- 	 * for zero set it to the FW's default value
-@@ -119,6 +124,7 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
- 	if (err == ICE_DCB_NO_HW_CHG)
- 		err = ICE_DCB_HW_CHG_RST;
- 
-+ets_out:
- 	mutex_unlock(&pf->tc_mutex);
- 	return err;
- }
+ 	status = ice_get_pfa_module_tlv(hw, &boot_cfg_tlv, &boot_cfg_tlv_len,
+ 					ICE_SR_BOOT_CFG_PTR);
 -- 
 2.20.1
 
