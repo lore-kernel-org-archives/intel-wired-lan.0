@@ -1,66 +1,214 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri, 14 Feb 2020 15:52:01 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v3 0/2] igc: Add initial TSN
- qdiscs offloading
-Message-ID: <20200214235203.3910513-1-vinicius.gomes@intel.com>
+Date: Fri, 14 Feb 2020 15:52:03 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v3 2/2] igc: Add support for
+ ETF offloading
+In-Reply-To: <20200214235203.3910513-1-vinicius.gomes@intel.com>
+References: <20200214235203.3910513-1-vinicius.gomes@intel.com>
+Message-ID: <20200214235203.3910513-3-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+This adds support for ETF offloading for the i225 controller.
 
-Changes from v2:
-  - Fixed review comments (Andre Guedes);
-  - Just a note, about the comment about ETF + taprio, when both are
-    in offload mode, since commit bfabd41da341 ("taprio: Fix dropping
-    packets when using taprio + ETF offloading") it should work fine.
+For i225, the LaunchTime feature is almost a subset of the Qbv
+feature. The main change from the i210 is that the launchtime of each
+packet is specified as an offset applied to the BASET register. BASET
+is automatically incremented each cycle.
 
-Changes from v1:
-  - Fixed review comments (Andre Guedes);
+For i225, the approach chosen is to re-use most of the setup used for
+taprio offloading. With a few changes:
 
-Original cover letter:
+ - The more or less obvious one is that when ETF is enabled, we should
+ set add the expected launchtime to the (advanced) transmit
+ descriptor;
 
-This adds support for offloading taprio (which handles what was
-formerly known as Qbv) and ETF (using the LaunchTime feature) to i225.
+ - The less obvious, is that when taprio offloading is not enabled, we
+ add a dummy schedule (all queues are open all the time, with a cycle
+ time of 1 second).
 
-To try and keep things organized, a new file is added: igc_tsn.c. The
-idea is that the more TSN specific code will live here, in the future
-this will include frame-preemption support, and CBS (formerly Qav)
-support.
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_defines.h |  1 +
+ drivers/net/ethernet/intel/igc/igc_main.c    | 70 +++++++++++++++++++-
+ drivers/net/ethernet/intel/igc/igc_tsn.c     | 19 +++++-
+ 3 files changed, 86 insertions(+), 4 deletions(-)
 
-The current support has a few limitations:
-  - because the BASET registers can only be written once per reset,
-    when removing taprio or ETF, we force the NIC to reset;
-  - In part because of the above limitation, we don't support changing
-    schedules;
-  - The way the registers for the schedule are organized, each queue
-    can only be opened and closed once per cycle, so some schedules
-    provided by the user are going to be rejected by the driver;
-
-Future improvements:
-  - When configuring a Qbv cycle, when we detect that a queue would
-    stay open for two intervals, we could want to merge them;
-  - More testing with taprio and ETF together, when ETF is installed
-    under taprio (when using them separately, it works fine);
-
-
-Vinicius Costa Gomes (2):
-  igc: Add support for taprio offloading
-  igc: Add support for ETF offloading
-
- drivers/net/ethernet/intel/igc/Makefile      |   2 +-
- drivers/net/ethernet/intel/igc/igc.h         |   7 +
- drivers/net/ethernet/intel/igc/igc_defines.h |  13 ++
- drivers/net/ethernet/intel/igc/igc_main.c    | 183 ++++++++++++++++++-
- drivers/net/ethernet/intel/igc/igc_regs.h    |  12 ++
- drivers/net/ethernet/intel/igc/igc_tsn.c     | 157 ++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_tsn.h     |   9 +
- 7 files changed, 379 insertions(+), 4 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/igc/igc_tsn.c
- create mode 100644 drivers/net/ethernet/intel/igc/igc_tsn.h
-
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 3077d0a69b04..0746fa42ff3f 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -440,6 +440,7 @@
+ #define IGC_TQAVCTRL_TRANSMIT_MODE_TSN	0x00000001
+ #define IGC_TQAVCTRL_ENHANCED_QAV	0x00000008
+ 
++#define IGC_TXQCTL_QUEUE_MODE_LAUNCHT	0x00000001
+ #define IGC_TXQCTL_STRICT_CYCLE		0x00000002
+ #define IGC_TXQCTL_STRICT_END		0x00000004
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 5fb52768de18..55ab6077455d 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -869,6 +869,23 @@ static int igc_write_mc_addr_list(struct net_device *netdev)
+ 	return netdev_mc_count(netdev);
+ }
+ 
++static __le32 igc_tx_launchtime(struct igc_adapter *adapter, ktime_t txtime)
++{
++	ktime_t cycle_time = adapter->cycle_time;
++	ktime_t base_time = adapter->base_time;
++	u32 launchtime;
++
++	/* FIXME: when using ETF together with taprio, we may have a
++	 * case where 'delta' is larger than the cycle_time, this may
++	 * cause problems if we don't read the current value of
++	 * IGC_BASET, as the value writen into the launchtime
++	 * descriptor field may be misinterpreted.
++	 */
++	div_s64_rem(ktime_sub_ns(txtime, base_time), cycle_time, &launchtime);
++
++	return cpu_to_le32(launchtime);
++}
++
+ static void igc_tx_ctxtdesc(struct igc_ring *tx_ring,
+ 			    struct igc_tx_buffer *first,
+ 			    u32 vlan_macip_lens, u32 type_tucmd,
+@@ -876,7 +893,6 @@ static void igc_tx_ctxtdesc(struct igc_ring *tx_ring,
+ {
+ 	struct igc_adv_tx_context_desc *context_desc;
+ 	u16 i = tx_ring->next_to_use;
+-	struct timespec64 ts;
+ 
+ 	context_desc = IGC_TX_CTXTDESC(tx_ring, i);
+ 
+@@ -898,9 +914,12 @@ static void igc_tx_ctxtdesc(struct igc_ring *tx_ring,
+ 	 * should have been handled by the upper layers.
+ 	 */
+ 	if (tx_ring->launchtime_enable) {
+-		ts = ktime_to_timespec64(first->skb->tstamp);
++		struct igc_adapter *adapter = netdev_priv(tx_ring->netdev);
++		ktime_t txtime = first->skb->tstamp;
++
+ 		first->skb->tstamp = ktime_set(0, 0);
+-		context_desc->launch_time = cpu_to_le32(ts.tv_nsec / 32);
++		context_desc->launch_time = igc_tx_launchtime(adapter,
++							      txtime);
+ 	} else {
+ 		context_desc->launch_time = 0;
+ 	}
+@@ -4497,6 +4516,32 @@ static int igc_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
+ 	}
+ }
+ 
++static int igc_save_launchtime_params(struct igc_adapter *adapter, int queue,
++				      bool enable)
++{
++	struct igc_ring *ring;
++	int i;
++
++	if (queue < 0 || queue >= adapter->num_tx_queues)
++		return -EINVAL;
++
++	ring = adapter->tx_ring[queue];
++	ring->launchtime_enable = enable;
++
++	if (adapter->base_time)
++		return 0;
++
++	adapter->cycle_time = NSEC_PER_SEC;
++
++	for (i = 0; i < adapter->num_tx_queues; i++) {
++		ring = adapter->tx_ring[i];
++		ring->start_time = 0;
++		ring->end_time = NSEC_PER_SEC;
++	}
++
++	return 0;
++}
++
+ static bool validate_schedule(const struct tc_taprio_qopt_offload *qopt)
+ {
+ 	int queue_uses[IGC_MAX_TX_QUEUES] = { };
+@@ -4529,6 +4574,22 @@ static bool validate_schedule(const struct tc_taprio_qopt_offload *qopt)
+ 	return true;
+ }
+ 
++static int igc_tsn_enable_launchtime(struct igc_adapter *adapter,
++				     struct tc_etf_qopt_offload *qopt)
++{
++	struct igc_hw *hw = &adapter->hw;
++	int err;
++
++	if (hw->mac.type != igc_i225)
++		return -EOPNOTSUPP;
++
++	err = igc_save_launchtime_params(adapter, qopt->queue, qopt->enable);
++	if (err)
++		return err;
++
++	return igc_tsn_offload_apply(adapter);
++}
++
+ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+ 				 struct tc_taprio_qopt_offload *qopt)
+ {
+@@ -4599,6 +4660,9 @@ static int igc_setup_tc(struct net_device *dev, enum tc_setup_type type,
+ 	case TC_SETUP_QDISC_TAPRIO:
+ 		return igc_tsn_enable_qbv_scheduling(adapter, type_data);
+ 
++	case TC_SETUP_QDISC_ETF:
++		return igc_tsn_enable_launchtime(adapter, type_data);
++
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
+index 257fe970afe8..174103c4bea6 100644
+--- a/drivers/net/ethernet/intel/igc/igc_tsn.c
++++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
+@@ -4,6 +4,20 @@
+ #include "igc.h"
+ #include "igc_tsn.h"
+ 
++static bool is_any_launchtime(struct igc_adapter *adapter)
++{
++	int i;
++
++	for (i = 0; i < adapter->num_tx_queues; i++) {
++		struct igc_ring *ring = adapter->tx_ring[i];
++
++		if (ring->launchtime_enable)
++			return true;
++	}
++
++	return false;
++}
++
+ /* Returns the TSN specific registers to their default values after
+  * TSN offloading is disabled.
+  */
+@@ -88,6 +102,9 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+ 				IGC_TXQCTL_STRICT_END;
+ 		}
+ 
++		if (ring->launchtime_enable)
++			txqctl |= IGC_TXQCTL_QUEUE_MODE_LAUNCHT;
++
+ 		wr32(IGC_TXQCTL(i), txqctl);
+ 	}
+ 
+@@ -115,7 +132,7 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+ 
+ int igc_tsn_offload_apply(struct igc_adapter *adapter)
+ {
+-	bool is_any_enabled = adapter->base_time;
++	bool is_any_enabled = adapter->base_time || is_any_launchtime(adapter);
+ 
+ 	if (!(adapter->flags & IGC_FLAG_TSN_QBV_ENABLED) && !is_any_enabled)
+ 		return 0;
 -- 
 2.25.0
 
