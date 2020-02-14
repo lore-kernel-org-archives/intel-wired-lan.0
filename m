@@ -1,47 +1,66 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 14 Feb 2020 11:01:45 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 455/459] i40e: Relax
- i40e_xsk_wakeup's return value when PF is busy
-In-Reply-To: <20200214160149.11681-1-sashal@kernel.org>
-References: <20200214160149.11681-1-sashal@kernel.org>
-Message-ID: <20200214160149.11681-455-sashal@kernel.org>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri, 14 Feb 2020 15:52:01 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v3 0/2] igc: Add initial TSN
+ qdiscs offloading
+Message-ID: <20200214235203.3910513-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Hi,
 
-[ Upstream commit c77e9f09143822623dd71a0fdc84331129e97c3a ]
+Changes from v2:
+  - Fixed review comments (Andre Guedes);
+  - Just a note, about the comment about ETF + taprio, when both are
+    in offload mode, since commit bfabd41da341 ("taprio: Fix dropping
+    packets when using taprio + ETF offloading") it should work fine.
 
-Return -EAGAIN instead of -ENETDOWN to provide a slightly milder
-information to user space so that an application will know to retry the
-syscall when __I40E_CONFIG_BUSY bit is set on pf->state.
+Changes from v1:
+  - Fixed review comments (Andre Guedes);
 
-Fixes: b3873a5be757 ("net/i40e: Fix concurrency issues between config flow and XSK")
-Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
-Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
-Link: https://lore.kernel.org/bpf/20200205045834.56795-2-maciej.fijalkowski at intel.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Original cover letter:
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index f73cd917c44f7..3156de786d955 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -791,7 +791,7 @@ int i40e_xsk_wakeup(struct net_device *dev, u32 queue_id, u32 flags)
- 	struct i40e_ring *ring;
- 
- 	if (test_bit(__I40E_CONFIG_BUSY, pf->state))
--		return -ENETDOWN;
-+		return -EAGAIN;
- 
- 	if (test_bit(__I40E_VSI_DOWN, vsi->state))
- 		return -ENETDOWN;
+This adds support for offloading taprio (which handles what was
+formerly known as Qbv) and ETF (using the LaunchTime feature) to i225.
+
+To try and keep things organized, a new file is added: igc_tsn.c. The
+idea is that the more TSN specific code will live here, in the future
+this will include frame-preemption support, and CBS (formerly Qav)
+support.
+
+The current support has a few limitations:
+  - because the BASET registers can only be written once per reset,
+    when removing taprio or ETF, we force the NIC to reset;
+  - In part because of the above limitation, we don't support changing
+    schedules;
+  - The way the registers for the schedule are organized, each queue
+    can only be opened and closed once per cycle, so some schedules
+    provided by the user are going to be rejected by the driver;
+
+Future improvements:
+  - When configuring a Qbv cycle, when we detect that a queue would
+    stay open for two intervals, we could want to merge them;
+  - More testing with taprio and ETF together, when ETF is installed
+    under taprio (when using them separately, it works fine);
+
+
+Vinicius Costa Gomes (2):
+  igc: Add support for taprio offloading
+  igc: Add support for ETF offloading
+
+ drivers/net/ethernet/intel/igc/Makefile      |   2 +-
+ drivers/net/ethernet/intel/igc/igc.h         |   7 +
+ drivers/net/ethernet/intel/igc/igc_defines.h |  13 ++
+ drivers/net/ethernet/intel/igc/igc_main.c    | 183 ++++++++++++++++++-
+ drivers/net/ethernet/intel/igc/igc_regs.h    |  12 ++
+ drivers/net/ethernet/intel/igc/igc_tsn.c     | 157 ++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_tsn.h     |   9 +
+ 7 files changed, 379 insertions(+), 4 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_tsn.c
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_tsn.h
+
 -- 
-2.20.1
+2.25.0
 
