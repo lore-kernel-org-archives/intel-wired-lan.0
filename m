@@ -1,56 +1,76 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Sun, 16 Feb 2020 10:40:54 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Complete to commit Add
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun, 16 Feb 2020 11:47:03 +0200
+Subject: [Intel-wired-lan] [PATCH v2 1/1] igc: Complete to commit Add
  support for TSO
-In-Reply-To: <CAKgT0UejnOv1p4TQJ+CcMkJ-d4nGpBxVaOZJRfN6q7muvrp+XQ@mail.gmail.com>
-References: <20200205123115.44103-1-sasha.neftin@intel.com>
- <309B89C4C689E141A5FF6A0C5FB2118B971F357D@ORSMSX103.amr.corp.intel.com>
- <CAKgT0UfvFZBPEYf1-b+WU48RKk1_sp8xzJtKe6rAXAk8_bCZ9Q@mail.gmail.com>
- <c6c9c3e0-5c56-5f4f-8975-a46f8c5a08af@intel.com>
- <CAKgT0UejnOv1p4TQJ+CcMkJ-d4nGpBxVaOZJRfN6q7muvrp+XQ@mail.gmail.com>
-Message-ID: <f04aad5d-7225-cd81-3b15-f3aa1af75b86@intel.com>
+Message-ID: <20200216094703.17867-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/13/2020 18:59, Alexander Duyck wrote:
-> On Thu, Feb 13, 2020 at 12:02 AM Neftin, Sasha <sasha.neftin@intel.com> wrote:
->>
->> On 2/13/2020 00:47, Alexander Duyck wrote:
->>> On Wed, Feb 12, 2020 at 2:39 PM Brown, Aaron F <aaron.f.brown@intel.com> wrote:
->>>>
->>>>> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->>>>> Sasha Neftin
->>>>> Sent: Wednesday, February 5, 2020 4:31 AM
->>>>> To: intel-wired-lan at lists.osuosl.org
->>>>> Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Complete to commit Add
->>>>> support for TSO
->>>>>
->>>>> commit f38b782dccab ("igc: Add support for TSO")
->>>>> Add option to setting transmit command (TUCMD) of the context
->>>>> descriptor based on skb_shinfo gso_type and SKB_GSO_UDP_L4 flag.
->>>>>
->>>>> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
->>>>> ---
->>>>>    drivers/net/ethernet/intel/igc/igc_defines.h | 1 +
->>>>>    drivers/net/ethernet/intel/igc/igc_main.c    | 3 ++-
->>>>>    2 files changed, 3 insertions(+), 1 deletion(-)
->>>>>
->>>> Aside from possibly including the responses to Jesse's questions on this...
->>>> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
->>>
->>> I'm not sure the patch makes any sense. Does the driver support UDP
->>> GSO? I don't see the feature flag (NETIF_F_GSO_UDP_L4) anywhere that
->>> enables it.
->>>
->> Yes, it is supported. The MAC is similar to igb from segmentation
->> perspectives. I missed add it. Please, let me finish some testing and I
->> will add NETIF_F_GSO_UDP_L4 flag to _features_check and _probe methods.
-> 
-> Thats fine. I just wouldn't submit this patch as it is. It should be
-> adding the NETIF_F_GSO_UDP_L4 flag so you can actually test the code
-> and verify the hardware is handling it correctly.
-> 
-Thanks Alex. I will address fix in v2.
+commit f38b782dccab ("igc: Add support for TSO")
+Add option to setting transmit command (TUCMD) of the context
+descriptor based on skb_shinfo gso_type and SKB_GSO_UDP_L4 flag.
+
+v1 -> v2: add SKB_GSO_UDP_L4 to features check and probe
+
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_defines.h | 1 +
+ drivers/net/ethernet/intel/igc/igc_main.c    | 6 +++++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 4ddccccf42cc..044c0f8d4c16 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -509,6 +509,7 @@
+ #define IGC_VLAPQF_QUEUE_MASK	0x03
+ 
+ #define IGC_ADVTXD_MACLEN_SHIFT		9  /* Adv ctxt desc mac len shift */
++#define IGC_ADVTXD_TUCMD_L4T_UDP	0x00000000  /* L4 Packet TYPE of UDP */
+ #define IGC_ADVTXD_TUCMD_IPV4		0x00000400  /* IP Packet Type:1=IPv4 */
+ #define IGC_ADVTXD_TUCMD_L4T_TCP	0x00000800  /* L4 Packet Type of TCP */
+ #define IGC_ADVTXD_TUCMD_L4T_SCTP	0x00001000 /* L4 packet TYPE of SCTP */
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 771148e57941..f1f6a5230dda 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1208,7 +1208,8 @@ static int igc_tso(struct igc_ring *tx_ring,
+ 	l4.hdr = skb_checksum_start(skb);
+ 
+ 	/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
+-	type_tucmd = IGC_ADVTXD_TUCMD_L4T_TCP;
++	type_tucmd = (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_L4) ?
++		      IGC_ADVTXD_TUCMD_L4T_UDP : IGC_ADVTXD_TUCMD_L4T_TCP;
+ 
+ 	/* initialize outer IP header fields */
+ 	if (ip.v4->version == 4) {
+@@ -3669,6 +3670,7 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
+ 	if (unlikely(mac_hdr_len > IGC_MAX_MAC_HDR_LEN))
+ 		return features & ~(NETIF_F_HW_CSUM |
+ 				    NETIF_F_SCTP_CRC |
++				    NETIF_F_GSO_UDP_L4 |
+ 				    NETIF_F_HW_VLAN_CTAG_TX |
+ 				    NETIF_F_TSO |
+ 				    NETIF_F_TSO6);
+@@ -3677,6 +3679,7 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
+ 	if (unlikely(network_hdr_len >  IGC_MAX_NETWORK_HDR_LEN))
+ 		return features & ~(NETIF_F_HW_CSUM |
+ 				    NETIF_F_SCTP_CRC |
++				    NETIF_F_GSO_UDP_L4 |
+ 				    NETIF_F_TSO |
+ 				    NETIF_F_TSO6);
+ 
+@@ -4726,6 +4729,7 @@ static int igc_probe(struct pci_dev *pdev,
+ 	netdev->features |= NETIF_F_RXCSUM;
+ 	netdev->features |= NETIF_F_HW_CSUM;
+ 	netdev->features |= NETIF_F_SCTP_CRC;
++	netdev->features |= NETIF_F_GSO_UDP_L4;
+ 
+ 	/* setup the private structure */
+ 	err = igc_sw_init(adapter);
+-- 
+2.11.0
+
