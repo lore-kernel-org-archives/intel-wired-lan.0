@@ -1,61 +1,41 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon, 17 Feb 2020 08:07:18 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Fix typo in Alder Lake
- brand name
-Message-ID: <20200217060718.20965-1-sasha.neftin@intel.com>
+From: Heiner Kallweit <hkallweit1@gmail.com>
+Date: Mon, 17 Feb 2020 22:39:27 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 0/3] net: core: add helper
+ tcp_v6_gso_csum_prep
+Message-ID: <76cd6cfc-f4f3-ece7-203a-0266b7f02a12@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Follow to commit e15ef7697361 ("e1000e: Add support for Alder Lake")
-Fix typo in brand name string
+Several network drivers for chips that support TSO6 share the same code
+for preparing the TCP header. A difference is that some reset the
+payload_len whilst others don't do this. Let's factor out this common
+code to a new helper.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/e1000e/hw.h     | 8 ++++----
- drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+Heiner Kallweit (3):
+  net: core: add helper tcp_v6_gso_csum_prep
+  r8169: use new helper tcp_v6_gso_csum_prep
+  net: use new helper tcp_v6_gso_csum_prep
 
-diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
-index 61a0c7cb9ced..b1447221669e 100644
---- a/drivers/net/ethernet/intel/e1000e/hw.h
-+++ b/drivers/net/ethernet/intel/e1000e/hw.h
-@@ -98,10 +98,10 @@ struct e1000_hw;
- #define E1000_DEV_ID_PCH_TGP_I219_V14		0x15FA
- #define E1000_DEV_ID_PCH_TGP_I219_LM15		0x15F4
- #define E1000_DEV_ID_PCH_TGP_I219_V15		0x15F5
--#define E1000_DEV_ID_PCH_ADP_1219_LM16		0x1A1E
--#define E1000_DEV_ID_PCH_ADP_1219_V16		0x1A1F
--#define E1000_DEV_ID_PCH_ADP_1219_LM17		0x1A1C
--#define E1000_DEV_ID_PCH_ADP_1219_V17		0x1A1D
-+#define E1000_DEV_ID_PCH_ADP_I219_LM16		0x1A1E
-+#define E1000_DEV_ID_PCH_ADP_I219_V16		0x1A1F
-+#define E1000_DEV_ID_PCH_ADP_I219_LM17		0x1A1C
-+#define E1000_DEV_ID_PCH_ADP_I219_V17		0x1A1D
- 
- #define E1000_REVISION_4	4
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 35f21add3732..fb92002cabee 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7763,10 +7763,10 @@ static const struct pci_device_id e1000_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_cnp },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_cnp },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_1219_LM16), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_1219_V16), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_1219_LM17), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_1219_V17), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V17), board_pch_cnp },
- 
- 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
- };
+ drivers/net/ethernet/atheros/alx/main.c       |  5 +---
+ .../net/ethernet/atheros/atl1c/atl1c_main.c   |  6 ++---
+ drivers/net/ethernet/brocade/bna/bnad.c       |  7 +----
+ drivers/net/ethernet/cisco/enic/enic_main.c   |  3 +--
+ drivers/net/ethernet/intel/e1000/e1000_main.c |  6 +----
+ drivers/net/ethernet/intel/e1000e/netdev.c    |  5 +---
+ drivers/net/ethernet/jme.c                    |  7 +----
+ .../net/ethernet/pensando/ionic/ionic_txrx.c  |  5 +---
+ drivers/net/ethernet/qualcomm/emac/emac-mac.c |  7 ++---
+ drivers/net/ethernet/realtek/r8169_main.c     | 26 ++-----------------
+ drivers/net/ethernet/socionext/netsec.c       |  6 +----
+ drivers/net/hyperv/netvsc_drv.c               |  5 +---
+ drivers/net/usb/r8152.c                       | 26 ++-----------------
+ drivers/net/vmxnet3/vmxnet3_drv.c             |  5 +---
+ include/net/ip6_checksum.h                    | 12 +++++++++
+ 15 files changed, 30 insertions(+), 101 deletions(-)
+
 -- 
-2.11.0
+2.25.0
 
