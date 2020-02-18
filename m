@@ -1,36 +1,56 @@
-From: Andre Guedes <andre.guedes@linux.intel.com>
-Date: Tue, 18 Feb 2020 10:07:31 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v3 2/2] igc: Add support
- for ETF offloading
-In-Reply-To: <20200214235203.3910513-3-vinicius.gomes@intel.com>
-References: <20200214235203.3910513-1-vinicius.gomes@intel.com>
- <20200214235203.3910513-3-vinicius.gomes@intel.com>
-Message-ID: <158204925112.42041.14818320744953321769@1.0.0.127.in-addr.arpa>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 18 Feb 2020 10:25:19 -0800
+Subject: [Intel-wired-lan] [PATCH net-next 1/3] net: core: add helper
+ tcp_v6_gso_csum_prep
+In-Reply-To: <9fdc5f0c-fdf0-122e-48a5-43ff029cf8d9@gmail.com>
+References: <76cd6cfc-f4f3-ece7-203a-0266b7f02a12@gmail.com>
+ <9fdc5f0c-fdf0-122e-48a5-43ff029cf8d9@gmail.com>
+Message-ID: <CAKgT0UeUEcoKZsRnxzftMA4tc2chasmW+sWQkP11hVLbdYTYxA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Quoting Vinicius Costa Gomes (2020-02-14 15:52:03)
-> This adds support for ETF offloading for the i225 controller.
-> 
-> For i225, the LaunchTime feature is almost a subset of the Qbv
-> feature. The main change from the i210 is that the launchtime of each
-> packet is specified as an offset applied to the BASET register. BASET
-> is automatically incremented each cycle.
-> 
-> For i225, the approach chosen is to re-use most of the setup used for
-> taprio offloading. With a few changes:
-> 
->  - The more or less obvious one is that when ETF is enabled, we should
->  set add the expected launchtime to the (advanced) transmit
->  descriptor;
-> 
->  - The less obvious, is that when taprio offloading is not enabled, we
->  add a dummy schedule (all queues are open all the time, with a cycle
->  time of 1 second).
-> 
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+On Mon, Feb 17, 2020 at 1:41 PM Heiner Kallweit <hkallweit1@gmail.com> wrote:
+>
+> Several network drivers for chips that support TSO6 share the same code
+> for preparing the TCP header. A difference is that some reset the
+> payload_len whilst others don't do this. Let's factor out this common
+> code to a new helper.
+>
+> Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
+> ---
+>  include/net/ip6_checksum.h | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
+>
+> diff --git a/include/net/ip6_checksum.h b/include/net/ip6_checksum.h
+> index 7bec95df4..ef0130023 100644
+> --- a/include/net/ip6_checksum.h
+> +++ b/include/net/ip6_checksum.h
+> @@ -76,6 +76,18 @@ static inline void __tcp_v6_send_check(struct sk_buff *skb,
+>         }
+>  }
+>
+> +static inline void tcp_v6_gso_csum_prep(struct sk_buff *skb,
+> +                                       bool clear_payload_len)
+> +{
+> +       struct ipv6hdr *ipv6h = ipv6_hdr(skb);
+> +       struct tcphdr *th = tcp_hdr(skb);
+> +
+> +       if (clear_payload_len)
+> +               ipv6h->payload_len = 0;
+> +
+> +       th->check = ~tcp_v6_check(0, &ipv6h->saddr, &ipv6h->daddr, 0);
+> +}
+> +
+>  #if IS_ENABLED(CONFIG_IPV6)
+>  static inline void tcp_v6_send_check(struct sock *sk, struct sk_buff *skb)
+>  {
 
-Reviewed-by: Andre Guedes <andre.guedes@intel.com>
+So functionally I believe this is correct. The only piece I have a
+question about is if we should just force the clear_payload_len as
+always being the case since the value should either be
+ignored/overwritten in any GSO case anyway.
+
+Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
