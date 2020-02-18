@@ -1,22 +1,28 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 18 Feb 2020 09:45:55 -0800
-Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Fix typo in Alder Lake
- brand name
-In-Reply-To: <20200217060718.20965-1-sasha.neftin@intel.com>
-References: <20200217060718.20965-1-sasha.neftin@intel.com>
-Message-ID: <20200218094555.00001cb4@intel.com>
+From: Andre Guedes <andre.guedes@linux.intel.com>
+Date: Tue, 18 Feb 2020 10:07:20 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v3 1/2] igc: Add support
+ for taprio offloading
+In-Reply-To: <20200214235203.3910513-2-vinicius.gomes@intel.com>
+References: <20200214235203.3910513-1-vinicius.gomes@intel.com>
+ <20200214235203.3910513-2-vinicius.gomes@intel.com>
+Message-ID: <158204924056.42041.6687775774624197860@1.0.0.127.in-addr.arpa>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 17 Feb 2020 08:07:18 +0200 Sasha wrote:
-> -#define E1000_DEV_ID_PCH_ADP_1219_LM16		0x1A1E
-                                ^
-                                ^^^
-Man this change is so subtle, you should definitely mention in your
-commit message that you're changing a "one" to an "I"
+Quoting Vinicius Costa Gomes (2020-02-14 15:52:02)
+> Adds support for translating taprio schedules into i225 cycles. This
+> will allow schedules to run in the hardware, making the schedules
+> enforcement more precise and saving CPU time.
+> 
+> Right now, the only simple schedules are allowed, complex schedules are
+> rejected. "simple" in this context are schedules that each HW queue is
+> opened and closed only once in each cycle.
+> 
+> Changing schedules is still not supported as well.
+> 
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 
-I wrote a whole response to this mail without seeing the difference
-until the end.
+Reviewed-by: Andre Guedes <andre.guedes@intel.com>
