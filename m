@@ -1,8 +1,10 @@
 From: Heiner Kallweit <hkallweit1@gmail.com>
-Date: Tue, 18 Feb 2020 20:55:18 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v2 0/13] net: core: add helper
+Date: Tue, 18 Feb 2020 20:56:41 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v2 01/13] net: core: add helper
  tcp_v6_gso_csum_prep
-Message-ID: <fffc8b6d-68ed-7501-18f1-94cf548821fb@gmail.com>
+In-Reply-To: <fffc8b6d-68ed-7501-18f1-94cf548821fb@gmail.com>
+References: <fffc8b6d-68ed-7501-18f1-94cf548821fb@gmail.com>
+Message-ID: <82ba1653-6a88-edf2-b22f-938b64e46655@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,38 +17,33 @@ A difference is that some drivers reset the payload_len whilst others
 don't do this. This value is overwritten by TSO anyway, therefore
 the new helper resets it in general.
 
-Heiner Kallweit (13):
-  net: core: add helper tcp_v6_gso_csum_prep
-  r8169: use new helper tcp_v6_gso_csum_prep
-  net: atheros: use new helper tcp_v6_gso_csum_prep
-  bna: use new helper tcp_v6_gso_csum_prep
-  enic: use new helper tcp_v6_gso_csum_prep
-  e1000(e): use new helper tcp_v6_gso_csum_prep
-  jme: use new helper tcp_v6_gso_csum_prep
-  ionic: use new helper tcp_v6_gso_csum_prep
-  net: qcom/emac: use new helper tcp_v6_gso_csum_prep
-  net: socionext: use new helper tcp_v6_gso_csum_prep
-  hv_netvsc: use new helper tcp_v6_gso_csum_prep
-  r8152: use new helper tcp_v6_gso_csum_prep
-  vmxnet3: use new helper tcp_v6_gso_csum_prep
+Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
+Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+---
+ include/net/ip6_checksum.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
- drivers/net/ethernet/atheros/alx/main.c       |  5 +---
- .../net/ethernet/atheros/atl1c/atl1c_main.c   |  6 ++---
- drivers/net/ethernet/brocade/bna/bnad.c       |  7 +----
- drivers/net/ethernet/cisco/enic/enic_main.c   |  3 +--
- drivers/net/ethernet/intel/e1000/e1000_main.c |  6 +----
- drivers/net/ethernet/intel/e1000e/netdev.c    |  5 +---
- drivers/net/ethernet/jme.c                    |  7 +----
- .../net/ethernet/pensando/ionic/ionic_txrx.c  |  5 +---
- drivers/net/ethernet/qualcomm/emac/emac-mac.c |  7 ++---
- drivers/net/ethernet/realtek/r8169_main.c     | 26 ++-----------------
- drivers/net/ethernet/socionext/netsec.c       |  6 +----
- drivers/net/hyperv/netvsc_drv.c               |  5 +---
- drivers/net/usb/r8152.c                       | 26 ++-----------------
- drivers/net/vmxnet3/vmxnet3_drv.c             |  5 +---
- include/net/ip6_checksum.h                    |  9 +++++++
- 15 files changed, 27 insertions(+), 101 deletions(-)
-
+diff --git a/include/net/ip6_checksum.h b/include/net/ip6_checksum.h
+index 7bec95df4..27ec612cd 100644
+--- a/include/net/ip6_checksum.h
++++ b/include/net/ip6_checksum.h
+@@ -76,6 +76,15 @@ static inline void __tcp_v6_send_check(struct sk_buff *skb,
+ 	}
+ }
+ 
++static inline void tcp_v6_gso_csum_prep(struct sk_buff *skb)
++{
++	struct ipv6hdr *ipv6h = ipv6_hdr(skb);
++	struct tcphdr *th = tcp_hdr(skb);
++
++	ipv6h->payload_len = 0;
++	th->check = ~tcp_v6_check(0, &ipv6h->saddr, &ipv6h->daddr, 0);
++}
++
+ #if IS_ENABLED(CONFIG_IPV6)
+ static inline void tcp_v6_send_check(struct sock *sk, struct sk_buff *skb)
+ {
 -- 
 2.25.1
+
 
