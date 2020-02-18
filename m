@@ -1,8 +1,8 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 18 Feb 2020 14:50:59 -0800
-Subject: [Intel-wired-lan] [net-queue v4] ice: Wait for VF to be reset/ready
+Date: Tue, 18 Feb 2020 14:54:06 -0800
+Subject: [Intel-wired-lan] [net-queue v3] ice: Wait for VF to be reset/ready
  before configuration
-Message-ID: <20200218225059.1294769-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20200218225406.1300598-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -48,10 +48,9 @@ take a max of ~800ms and previously the wait was a max of ~300ms.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
-v2: add SKB_GSO_UDP_L4 to features check and probe
-v3: patch did not apply cleanly to next-queue tree, due to other igc
-    patches that had been applied, so fixed up the patch to apply cleanly
-v4: fixed two return values, which should have returned 0 (Success)
+v2: Original patch did not apply cleanly to my net-queue tree, so it had
+    to be applied by hand, this version applies cleanly to net-queue
+v3: fixed two return values, which should have returned 0 (Success)
 
  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 127 ++++++++++--------
  .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   3 +-
