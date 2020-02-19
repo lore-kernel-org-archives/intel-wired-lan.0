@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 19 Feb 2020 19:43:09 +0000
-Subject: [Intel-wired-lan] [PATCH S39 v2 12/15] ice: add backslash-n to
- strings
-In-Reply-To: <20200213213129.34023-11-anthony.l.nguyen@intel.com>
+Date: Wed, 19 Feb 2020 19:43:39 +0000
+Subject: [Intel-wired-lan] [PATCH S39 v2 13/15] ice: add additional E810
+ device id
+In-Reply-To: <20200213213129.34023-12-anthony.l.nguyen@intel.com>
 References: <20200213213129.34023-1-anthony.l.nguyen@intel.com>
- <20200213213129.34023-11-anthony.l.nguyen@intel.com>
-Message-ID: <0e64c42f8d5340fda100646840030e21@intel.com>
+ <20200213213129.34023-12-anthony.l.nguyen@intel.com>
+Message-ID: <02cd3b7ceab6492085f1b002f1907c7b@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, February 13, 2020 1:31 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S39 v2 12/15] ice: add backslash-n to strings
+> Subject: [Intel-wired-lan] [PATCH S39 v2 13/15] ice: add additional E810
+> device id
 > 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> There were several strings found without line feeds, fix them by adding a line
-> feed, as is typical.  Without this lotsofmessagescanbejumbledtogether.
+> Add support for device id 0x159b.
 > 
-> This patch has known checkpatch warnings from long lines for the NL_*
-> messages, because checkpatch doesn't know how to ignore them.
-> 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_base.c        |  3 +--
->  drivers/net/ethernet/intel/ice/ice_ethtool.c     |  8 ++++----
->  drivers/net/ethernet/intel/ice/ice_main.c        | 12 ++++--------
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  2 +-
->  drivers/net/ethernet/intel/ice/ice_xsk.c         |  6 +++---
->  5 files changed, 13 insertions(+), 18 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_devids.h | 2 ++
+>  drivers/net/ethernet/intel/ice/ice_main.c   | 1 +
+>  2 files changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
