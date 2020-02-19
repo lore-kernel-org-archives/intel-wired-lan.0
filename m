@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 19 Feb 2020 19:42:16 +0000
-Subject: [Intel-wired-lan] [PATCH S39 v2 10/15] ice: Don't tell the OS
- that link is going down
-In-Reply-To: <20200213213129.34023-9-anthony.l.nguyen@intel.com>
+Date: Wed, 19 Feb 2020 19:42:43 +0000
+Subject: [Intel-wired-lan] [PATCH S39 v2 11/15] ice: increase PF reset
+ wait timeout to 300 milliseconds
+In-Reply-To: <20200213213129.34023-10-anthony.l.nguyen@intel.com>
 References: <20200213213129.34023-1-anthony.l.nguyen@intel.com>
- <20200213213129.34023-9-anthony.l.nguyen@intel.com>
-Message-ID: <7e4597c386854c15bc37399ced3aed66@intel.com>
+ <20200213213129.34023-10-anthony.l.nguyen@intel.com>
+Message-ID: <bf67d5df5fa842df82e2349b94042622@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, February 13, 2020 1:31 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S39 v2 10/15] ice: Don't tell the OS that link
-> is going down
+> Subject: [Intel-wired-lan] [PATCH S39 v2 11/15] ice: increase PF reset wait
+> timeout to 300 milliseconds
 > 
-> From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Remove code that tell the OS that link is going down when user change flow
-> control via ethtool. When link is up it isn't certain that link goes down after
-> 0x0605 aq command. If link doesn't go down, OS thinks that link is down, but
-> physical link is up. To reset this state user have to take interface down and
-> up.
+> Increase the maximum time that the driver will wait for a PF reset from
+> 200 milliseconds to 300 milliseconds, to account for possibility of a slightly
+> longer than expected PF reset.
 > 
-> If link goes down after 0x0605 command, FW send information about that
-> and after that driver tells the OS that the link goes down. So this code in
-> ethtool is unnecessary.
-> 
-> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 7 -------
->  1 file changed, 7 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
