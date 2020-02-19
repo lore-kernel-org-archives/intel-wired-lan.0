@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 19 Feb 2020 19:45:33 +0000
-Subject: [Intel-wired-lan] [PATCH S39 v2 14/15] ice: add support for
- E823 devices
-In-Reply-To: <20200213213129.34023-13-anthony.l.nguyen@intel.com>
+Date: Wed, 19 Feb 2020 19:45:57 +0000
+Subject: [Intel-wired-lan] [PATCH S39 v2 15/15] ice: fix define for E822
+ backplane device
+In-Reply-To: <20200213213129.34023-14-anthony.l.nguyen@intel.com>
 References: <20200213213129.34023-1-anthony.l.nguyen@intel.com>
- <20200213213129.34023-13-anthony.l.nguyen@intel.com>
-Message-ID: <f20630e718ca46be9e751d7a6a88dc51@intel.com>
+ <20200213213129.34023-14-anthony.l.nguyen@intel.com>
+Message-ID: <69a5a23e267344969c08dcaec25993fb@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, February 13, 2020 1:31 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S39 v2 14/15] ice: add support for E823
-> devices
+> Subject: [Intel-wired-lan] [PATCH S39 v2 15/15] ice: fix define for E822
+> backplane device
 > 
 > From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> Add E823 device ids and convert conditional expressions to a more
-> appropriate switch statement.
+> This product's name has changed; update the macro identifier accordingly.
 > 
 > Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_devids.h | 20 +++++++++++++
->  drivers/net/ethernet/intel/ice/ice_main.c   | 10 +++++++
->  drivers/net/ethernet/intel/ice/ice_nvm.c    | 32 +++++++++++++++------
->  3 files changed, 53 insertions(+), 9 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_devids.h | 4 ++--
+>  drivers/net/ethernet/intel/ice/ice_main.c   | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_nvm.c    | 2 +-
+>  3 files changed, 4 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
