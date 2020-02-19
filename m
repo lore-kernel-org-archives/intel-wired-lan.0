@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 19 Feb 2020 19:42:43 +0000
-Subject: [Intel-wired-lan] [PATCH S39 v2 11/15] ice: increase PF reset
- wait timeout to 300 milliseconds
-In-Reply-To: <20200213213129.34023-10-anthony.l.nguyen@intel.com>
+Date: Wed, 19 Feb 2020 19:43:09 +0000
+Subject: [Intel-wired-lan] [PATCH S39 v2 12/15] ice: add backslash-n to
+ strings
+In-Reply-To: <20200213213129.34023-11-anthony.l.nguyen@intel.com>
 References: <20200213213129.34023-1-anthony.l.nguyen@intel.com>
- <20200213213129.34023-10-anthony.l.nguyen@intel.com>
-Message-ID: <bf67d5df5fa842df82e2349b94042622@intel.com>
+ <20200213213129.34023-11-anthony.l.nguyen@intel.com>
+Message-ID: <0e64c42f8d5340fda100646840030e21@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, February 13, 2020 1:31 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S39 v2 11/15] ice: increase PF reset wait
-> timeout to 300 milliseconds
+> Subject: [Intel-wired-lan] [PATCH S39 v2 12/15] ice: add backslash-n to strings
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> Increase the maximum time that the driver will wait for a PF reset from
-> 200 milliseconds to 300 milliseconds, to account for possibility of a slightly
-> longer than expected PF reset.
+> There were several strings found without line feeds, fix them by adding a line
+> feed, as is typical.  Without this lotsofmessagescanbejumbledtogether.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> This patch has known checkpatch warnings from long lines for the NL_*
+> messages, because checkpatch doesn't know how to ignore them.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_base.c        |  3 +--
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c     |  8 ++++----
+>  drivers/net/ethernet/intel/ice/ice_main.c        | 12 ++++--------
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  2 +-
+>  drivers/net/ethernet/intel/ice/ice_xsk.c         |  6 +++---
+>  5 files changed, 13 insertions(+), 18 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
