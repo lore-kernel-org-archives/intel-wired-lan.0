@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 19 Feb 2020 19:37:32 +0000
-Subject: [Intel-wired-lan] [PATCH S39 v2 01/15] ice: Validate config for
- SW DCB map
-In-Reply-To: <20200213213059.33939-1-anthony.l.nguyen@intel.com>
-References: <20200213213059.33939-1-anthony.l.nguyen@intel.com>
-Message-ID: <ebef05a4d22e42b79d943e9b444c0b19@intel.com>
+Date: Wed, 19 Feb 2020 19:38:13 +0000
+Subject: [Intel-wired-lan] [PATCH S39 v2 02/15] ice: update malicious
+ driver detection event handling
+In-Reply-To: <20200213213129.34023-1-anthony.l.nguyen@intel.com>
+References: <20200213213129.34023-1-anthony.l.nguyen@intel.com>
+Message-ID: <c2937eb7cc0f4156b1eeb6b467be5f32@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,31 +15,41 @@ List-ID: <intel-wired-lan.osuosl.org>
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
 > Behalf Of Tony Nguyen
 > Sent: Thursday, February 13, 2020 1:31 PM
-> To: intel-wired-lan at lists.osuosl.org; pmenzel at molgen.mpg.de
-> Subject: [Intel-wired-lan] [PATCH S39 v2 01/15] ice: Validate config for SW
-> DCB map
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S39 v2 02/15] ice: update malicious driver
+> detection event handling
 > 
-> From: Avinash Dayanand <avinash.dayanand@intel.com>
+> From: Paul Greenwalt <paul.greenwalt@intel.com>
 > 
-> Validate the inputs for SW DCB config received either via lldptool or pcap file.
-> And don't apply DCB for bad bandwidth inputs. Without this patch, any config
-> having bad inputs will cause the loss of link making PF unusable even after
-> driver reload. Recoverable only via system reboot.
+> Update the PF VFs MDD event message to rate limit once per second and
+> report the total number Rx|Tx event count. Add support to print pending
+> MDD events that occur during the rate limit. The use of net_ratelimit did not
+> allow for per VF Rx|Tx granularity.
 > 
-> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+> Additional PF MDD log messages are guarded by netif_msg_[rx|tx]_err().
+> 
+> Since VF RX MDD events disable the queue, add ethtool private flag mdd-
+> auto-reset-vf to configure VF reset to re-enable the queue.
+> 
+> Disable anti-spoof detection interrupt to prevent spurious events during a
+> function reset.
+> 
+> To avoid race condition do not make PF MDD register reads conditional on
+> global MDD result.
+> 
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
 > v2:
-> - Allocate all bandwidth to TC0 if no TCs requested any bandwidth
-> - Remove zero bandwidth check on non-TC0
-> - Add message about reason for error and return from error immediately in
->   ice_dcb_bwchk()
-> - Change a comment
+> - Add MAC address to MDD message
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 40 ++++++++++++++++++++
-> drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  1 +
-> drivers/net/ethernet/intel/ice/ice_dcb_nl.c  |  6 +++
->  3 files changed, 47 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice.h          |   4 +
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c  |   1 +
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   |   2 +
+>  drivers/net/ethernet/intel/ice/ice_main.c     | 126 ++++++++++--------
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  56 +++++++-
+> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  20 ++-
+>  6 files changed, 150 insertions(+), 59 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
