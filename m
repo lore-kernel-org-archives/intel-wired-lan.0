@@ -1,82 +1,94 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 18 Feb 2020 14:56:51 -0800
-Subject: [Intel-wired-lan] [net-queue v4] ice: Wait for VF to be
- reset/ready before configuration
-In-Reply-To: <20200218225059.1294769-1-jeffrey.t.kirsher@intel.com>
-References: <20200218225059.1294769-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <c78f27ad9d3eeccdbe85ec5d393fbcc9fac662a5.camel@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 18 Feb 2020 16:10:59 -0800
+Subject: [Intel-wired-lan] [next-queue v3] igc: Complete to commit Add
+ support for TSO
+In-Reply-To: <20200218214148.1127641-1-jeffrey.t.kirsher@intel.com>
+References: <20200218214148.1127641-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <CAKgT0Ucyv5bYGpjTJuXLZhdDi-t47XXTgtEiHER7p=6b1xqc4g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2020-02-18 at 14:50 -0800, Jeff Kirsher wrote:
-> From: Brett Creeley <brett.creeley@intel.com>
-> 
-> The configuration/command below is failing when the VF in the xml
-> file is already bound to the host iavf driver.
-> 
-> pci_0000_af_0_0.xml:
-> 
-> <interface type='hostdev' managed='yes'>
-> <source>
-> <address type='pci' domain='0x0000' bus='0xaf' slot='0x0'
-> function='0x0'/>
-> </source>
-> <mac address='00:de:ad:00:11:01'/>
-> </interface>
-> 
-> > virsh attach-device domain_name pci_0000_af_0_0.xml
-> error: Failed to attach device from pci_0000_af_0_0.xml
-> error: Cannot set interface MAC/vlanid to 00:de:ad:00:11:01/0 for
->         ifname ens1f1 vf 0: Device or resource busy
-> 
-> This is failing because the VF has not been completely removed/reset
-> after being unbound (via the virsh command above) from the host iavf
-> driver and ice_set_vf_mac() checks if the VF is disabled before
-> waiting
-> for the reset to finish.
-> 
-> Fix this by waiting for the VF remove/reset process to happen before
-> checking if the VF is disabled. Also, since many functions for VF
-> administration on the PF were more or less calling the same 3
-> functions
-> (ice_wait_on_vf_reset(), ice_is_vf_disabled(), and
-> ice_check_vf_init())
-> move these into the helper function ice_check_vf_ready_for_cfg().
-> Then
-> call this function in any flow that attempts to configure/query a VF
-> from the PF.
-> 
-> Lastly, increase the maximum wait time in ice_wait_on_vf_reset() to
-> 800ms, and modify/add the #define(s) that determine the wait time.
-> This was done for robustness because in rare/stress cases VF removal
-> can
-> take a max of ~800ms and previously the wait was a max of ~300ms.
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+On Tue, Feb 18, 2020 at 1:42 PM Jeff Kirsher
+<jeffrey.t.kirsher@intel.com> wrote:
+>
+> From: Sasha Neftin <sasha.neftin@intel.com>
+>
+> commit f38b782dccab ("igc: Add support for TSO")
+> Add option to setting transmit command (TUCMD) of the context
+> descriptor based on skb_shinfo gso_type and SKB_GSO_UDP_L4 flag.
+>
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 
-Disregard this submission, I put the wrong change log below on this
-patch and this was supposed to be v3, not v4.  I have already submitted
-the correct version, with the correct change log.
+The title and description should be redone. This patch is adding
+support for UDP segmentation offload. It should mention that in the
+title and explain that in the commit message.
 
 > ---
 > v2: add SKB_GSO_UDP_L4 to features check and probe
 > v3: patch did not apply cleanly to next-queue tree, due to other igc
->     patches that had been applied, so fixed up the patch to apply
-> cleanly
-> v4: fixed two return values, which should have returned 0 (Success)
-> 
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 127 ++++++++++----
-> ----
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   3 +-
->  2 files changed, 73 insertions(+), 57 deletions(-)
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200218/651498c0/attachment.asc>
+>     patches that had been applied, so fixed up the patch to apply cleanly
+>
+>  drivers/net/ethernet/intel/igc/igc_defines.h | 1 +
+>  drivers/net/ethernet/intel/igc/igc_main.c    | 6 +++++-
+>  2 files changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+> index 1b0fd2ffd08d..0746fa42ff3f 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_defines.h
+> +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+> @@ -522,6 +522,7 @@
+>  #define IGC_VLAPQF_QUEUE_MASK  0x03
+>
+>  #define IGC_ADVTXD_MACLEN_SHIFT                9  /* Adv ctxt desc mac len shift */
+> +#define IGC_ADVTXD_TUCMD_L4T_UDP       0x00000000  /* L4 Packet TYPE of UDP */
+>  #define IGC_ADVTXD_TUCMD_IPV4          0x00000400  /* IP Packet Type:1=IPv4 */
+>  #define IGC_ADVTXD_TUCMD_L4T_TCP       0x00000800  /* L4 Packet Type of TCP */
+>  #define IGC_ADVTXD_TUCMD_L4T_SCTP      0x00001000 /* L4 packet TYPE of SCTP */
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 972c833a552b..d406aaea24af 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -1232,7 +1232,8 @@ static int igc_tso(struct igc_ring *tx_ring,
+>         l4.hdr = skb_checksum_start(skb);
+>
+>         /* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
+> -       type_tucmd = IGC_ADVTXD_TUCMD_L4T_TCP;
+> +       type_tucmd = (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_L4) ?
+> +                     IGC_ADVTXD_TUCMD_L4T_UDP : IGC_ADVTXD_TUCMD_L4T_TCP;
+>
+>         /* initialize outer IP header fields */
+>         if (ip.v4->version == 4) {
+> @@ -3693,6 +3694,7 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
+>         if (unlikely(mac_hdr_len > IGC_MAX_MAC_HDR_LEN))
+>                 return features & ~(NETIF_F_HW_CSUM |
+>                                     NETIF_F_SCTP_CRC |
+> +                                   NETIF_F_GSO_UDP_L4 |
+>                                     NETIF_F_HW_VLAN_CTAG_TX |
+>                                     NETIF_F_TSO |
+>                                     NETIF_F_TSO6);
+> @@ -3701,6 +3703,7 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
+>         if (unlikely(network_hdr_len >  IGC_MAX_NETWORK_HDR_LEN))
+>                 return features & ~(NETIF_F_HW_CSUM |
+>                                     NETIF_F_SCTP_CRC |
+> +                                   NETIF_F_GSO_UDP_L4 |
+>                                     NETIF_F_TSO |
+>                                     NETIF_F_TSO6);
+>
+> @@ -4903,6 +4906,7 @@ static int igc_probe(struct pci_dev *pdev,
+>         netdev->features |= NETIF_F_RXCSUM;
+>         netdev->features |= NETIF_F_HW_CSUM;
+>         netdev->features |= NETIF_F_SCTP_CRC;
+> +       netdev->features |= NETIF_F_GSO_UDP_L4;
+>
+>  #define IGC_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
+>                                   NETIF_F_GSO_GRE_CSUM | \
+> --
+> 2.24.1
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
