@@ -1,96 +1,61 @@
-From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Date: Thu, 20 Feb 2020 00:56:15 +0000
-Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: Fix typo in Alder Lake
- brand name
-In-Reply-To: <20200219064951.43639-1-sasha.neftin@intel.com>
-References: <20200219064951.43639-1-sasha.neftin@intel.com>
-Message-ID: <61CC2BC414934749BD9F5BF3D5D94044984CD0DB@ORSMSX112.amr.corp.intel.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 19 Feb 2020 22:23:02 -0800
+Subject: [Intel-wired-lan] [PATCH] e1000: Distribute switch variables for
+ initialization
+Message-ID: <20200220062302.68898-1-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Variables declared in a switch statement before any case statements
+cannot be automatically initialized with compiler instrumentation (as
+they are not part of any execution flow). With GCC's proposed automatic
+stack variable initialization feature, this triggers a warning (and they
+don't get initialized). Clang's automatic stack variable initialization
+(via CONFIG_INIT_STACK_ALL=y) doesn't throw a warning, but it also
+doesn't initialize such variables[1]. Note that these warnings (or silent
+skipping) happen before the dead-store elimination optimization phase,
+so even when the automatic initializations are later elided in favor of
+direct initializations, the warnings remain.
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Sasha
-> Neftin
-> Sent: Tuesday, February 18, 2020 22:50
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: Fix typo in Alder Lake brand
-> name
-> 
-> Follow to commit e15ef7697361 ("e1000e: Add support for Alder Lake") Fix
-> typo in brand name string. Changing a "one" to an "I"
-> 
-> v1 -> v2: make a commit message clear
-> 
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-> ---
-[Kirsher, Jeffrey T] 
+To avoid these problems, move such variables into the "case" where
+they're used or lift them up into the main function body.
 
-Since I had not pushed the Alder Lake support patch upstream yet, I just combined this patch with previous patch to fix the typo in the device define names.
+drivers/net/ethernet/intel/e1000/e1000_main.c: In function ?e1000_xmit_frame?:
+drivers/net/ethernet/intel/e1000/e1000_main.c:3143:18: warning: statement will never be executed [-Wswitch-unreachable]
+ 3143 |     unsigned int pull_size;
+      |                  ^~~~~~~~~
 
->  drivers/net/ethernet/intel/e1000e/hw.h     | 8 ++++----
->  drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
->  2 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/hw.h
-> b/drivers/net/ethernet/intel/e1000e/hw.h
-> index 61a0c7cb9ced..b1447221669e 100644
-> --- a/drivers/net/ethernet/intel/e1000e/hw.h
-> +++ b/drivers/net/ethernet/intel/e1000e/hw.h
-> @@ -98,10 +98,10 @@ struct e1000_hw;
->  #define E1000_DEV_ID_PCH_TGP_I219_V14		0x15FA
->  #define E1000_DEV_ID_PCH_TGP_I219_LM15		0x15F4
->  #define E1000_DEV_ID_PCH_TGP_I219_V15		0x15F5
-> -#define E1000_DEV_ID_PCH_ADP_1219_LM16		0x1A1E
-> -#define E1000_DEV_ID_PCH_ADP_1219_V16		0x1A1F
-> -#define E1000_DEV_ID_PCH_ADP_1219_LM17		0x1A1C
-> -#define E1000_DEV_ID_PCH_ADP_1219_V17		0x1A1D
-> +#define E1000_DEV_ID_PCH_ADP_I219_LM16		0x1A1E
-> +#define E1000_DEV_ID_PCH_ADP_I219_V16		0x1A1F
-> +#define E1000_DEV_ID_PCH_ADP_I219_LM17		0x1A1C
-> +#define E1000_DEV_ID_PCH_ADP_I219_V17		0x1A1D
-> 
->  #define E1000_REVISION_4	4
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
-> b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 35f21add3732..fb92002cabee 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -7763,10 +7763,10 @@ static const struct pci_device_id e1000_pci_tbl[] =
-> {
->  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14),
-> board_pch_cnp },
->  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15),
-> board_pch_cnp },
->  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15),
-> board_pch_cnp },
-> -	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_1219_LM16),
-> board_pch_cnp },
-> -	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_1219_V16),
-> board_pch_cnp },
-> -	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_1219_LM17),
-> board_pch_cnp },
-> -	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_1219_V17),
-> board_pch_cnp },
-> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16),
-> board_pch_cnp },
-> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16),
-> board_pch_cnp },
-> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17),
-> board_pch_cnp },
-> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V17),
-> board_pch_cnp },
-> 
->  	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
->  };
-> --
-> 2.11.0
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+[1] https://bugs.llvm.org/show_bug.cgi?id=44916
+
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ drivers/net/ethernet/intel/e1000/e1000_main.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 2bced34c19ba..a540d0206129 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -3140,8 +3140,9 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
+ 		hdr_len = skb_transport_offset(skb) + tcp_hdrlen(skb);
+ 		if (skb->data_len && hdr_len == len) {
+ 			switch (hw->mac_type) {
++			case e1000_82544: {
+ 				unsigned int pull_size;
+-			case e1000_82544:
++
+ 				/* Make sure we have room to chop off 4 bytes,
+ 				 * and that the end alignment will work out to
+ 				 * this hardware's requirements
+@@ -3162,6 +3163,7 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
+ 				}
+ 				len = skb_headlen(skb);
+ 				break;
++			}
+ 			default:
+ 				/* do nothing */
+ 				break;
+
