@@ -1,48 +1,91 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 22 Feb 2020 21:21:04 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.5 43/58] ice: Don't allow same
- value for Rx tail to be written twice
+Date: Sat, 22 Feb 2020 21:21:06 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.5 45/58] ice: update Unit Load
+ Status bitmask to check after reset
 In-Reply-To: <20200223022119.707-1-sashal@kernel.org>
 References: <20200223022119.707-1-sashal@kernel.org>
-Message-ID: <20200223022119.707-43-sashal@kernel.org>
+Message-ID: <20200223022119.707-45-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-[ Upstream commit 168983a8e19b89efd175661e53faa6246be363a0 ]
+[ Upstream commit cf8fc2a0863f9ff27ebd2efcdb1f7d378b9fb8a6 ]
 
-Currently we compare the value we are about to write to the Rx tail
-register with the previous value of next_to_use. The problem with this
-is we only write tail on 8 descriptor boundaries, but next_to_use is
-updated whenever we clean Rx descriptors. Fix this by comparing the
-value we are about to write to tail with the previously written tail
-value. This will prevent duplicate Rx tail bumps.
+After a reset the Unit Load Status bits in the GLNVM_ULD register to check
+for completion should be 0x7FF before continuing.  Update the mask to check
+(minus the three reserved bits that are always set).
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_common.c     | 17 ++++++++++++-----
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  6 ++++++
+ 2 files changed, 18 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-index 35bbc4ff603cd..6da048a6ca7c1 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-@@ -10,7 +10,7 @@
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index fb1d930470c71..cb437a448305e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -937,7 +937,7 @@ void ice_deinit_hw(struct ice_hw *hw)
   */
- void ice_release_rx_desc(struct ice_ring *rx_ring, u32 val)
+ enum ice_status ice_check_reset(struct ice_hw *hw)
  {
--	u16 prev_ntu = rx_ring->next_to_use;
-+	u16 prev_ntu = rx_ring->next_to_use & ~0x7;
+-	u32 cnt, reg = 0, grst_delay;
++	u32 cnt, reg = 0, grst_delay, uld_mask;
  
- 	rx_ring->next_to_use = val;
+ 	/* Poll for Device Active state in case a recent CORER, GLOBR,
+ 	 * or EMPR has occurred. The grst delay value is in 100ms units.
+@@ -959,13 +959,20 @@ enum ice_status ice_check_reset(struct ice_hw *hw)
+ 		return ICE_ERR_RESET_FAILED;
+ 	}
  
+-#define ICE_RESET_DONE_MASK	(GLNVM_ULD_CORER_DONE_M | \
+-				 GLNVM_ULD_GLOBR_DONE_M)
++#define ICE_RESET_DONE_MASK	(GLNVM_ULD_PCIER_DONE_M |\
++				 GLNVM_ULD_PCIER_DONE_1_M |\
++				 GLNVM_ULD_CORER_DONE_M |\
++				 GLNVM_ULD_GLOBR_DONE_M |\
++				 GLNVM_ULD_POR_DONE_M |\
++				 GLNVM_ULD_POR_DONE_1_M |\
++				 GLNVM_ULD_PCIER_DONE_2_M)
++
++	uld_mask = ICE_RESET_DONE_MASK;
+ 
+ 	/* Device is Active; check Global Reset processes are done */
+ 	for (cnt = 0; cnt < ICE_PF_RESET_WAIT_COUNT; cnt++) {
+-		reg = rd32(hw, GLNVM_ULD) & ICE_RESET_DONE_MASK;
+-		if (reg == ICE_RESET_DONE_MASK) {
++		reg = rd32(hw, GLNVM_ULD) & uld_mask;
++		if (reg == uld_mask) {
+ 			ice_debug(hw, ICE_DBG_INIT,
+ 				  "Global reset processes done. %d\n", cnt);
+ 			break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index e8f32350fed29..6f4a70fa39037 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -276,8 +276,14 @@
+ #define GLNVM_GENS_SR_SIZE_S			5
+ #define GLNVM_GENS_SR_SIZE_M			ICE_M(0x7, 5)
+ #define GLNVM_ULD				0x000B6008
++#define GLNVM_ULD_PCIER_DONE_M			BIT(0)
++#define GLNVM_ULD_PCIER_DONE_1_M		BIT(1)
+ #define GLNVM_ULD_CORER_DONE_M			BIT(3)
+ #define GLNVM_ULD_GLOBR_DONE_M			BIT(4)
++#define GLNVM_ULD_POR_DONE_M			BIT(5)
++#define GLNVM_ULD_POR_DONE_1_M			BIT(8)
++#define GLNVM_ULD_PCIER_DONE_2_M		BIT(9)
++#define GLNVM_ULD_PE_DONE_M			BIT(10)
+ #define GLPCI_CNF2				0x000BE004
+ #define GLPCI_CNF2_CACHELINE_SIZE_M		BIT(1)
+ #define PF_FUNC_RID				0x0009E880
 -- 
 2.20.1
 
