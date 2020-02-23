@@ -1,57 +1,91 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 22 Feb 2020 21:22:13 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 28/50] i40e: Fix the
- conditional for i40e_vc_validate_vqs_bitmaps
+Date: Sat, 22 Feb 2020 21:22:26 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 41/50] ice: update Unit Load
+ Status bitmask to check after reset
 In-Reply-To: <20200223022235.1404-1-sashal@kernel.org>
 References: <20200223022235.1404-1-sashal@kernel.org>
-Message-ID: <20200223022235.1404-28-sashal@kernel.org>
+Message-ID: <20200223022235.1404-41-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-[ Upstream commit f27f37a04a69890ac85d9155f03ee2d23b678d8f ]
+[ Upstream commit cf8fc2a0863f9ff27ebd2efcdb1f7d378b9fb8a6 ]
 
-Commit d9d6a9aed3f6 ("i40e: Fix virtchnl_queue_select bitmap
-validation") introduced a necessary change for verifying how queue
-bitmaps from the iavf driver get validated. Unfortunately, the
-conditional was reversed. Fix this.
+After a reset the Unit Load Status bits in the GLNVM_ULD register to check
+for completion should be 0x7FF before continuing.  Update the mask to check
+(minus the three reserved bits that are always set).
 
-Fixes: d9d6a9aed3f6 ("i40e: Fix virtchnl_queue_select bitmap validation")
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c     | 17 ++++++++++++-----
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  6 ++++++
+ 2 files changed, 18 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 3515ace0f0201..38042d610f82c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2363,7 +2363,7 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg)
- 		goto error_param;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 3a6b3950eb0e2..171f0b6254073 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -934,7 +934,7 @@ void ice_deinit_hw(struct ice_hw *hw)
+  */
+ enum ice_status ice_check_reset(struct ice_hw *hw)
+ {
+-	u32 cnt, reg = 0, grst_delay;
++	u32 cnt, reg = 0, grst_delay, uld_mask;
+ 
+ 	/* Poll for Device Active state in case a recent CORER, GLOBR,
+ 	 * or EMPR has occurred. The grst delay value is in 100ms units.
+@@ -956,13 +956,20 @@ enum ice_status ice_check_reset(struct ice_hw *hw)
+ 		return ICE_ERR_RESET_FAILED;
  	}
  
--	if (i40e_vc_validate_vqs_bitmaps(vqs)) {
-+	if (!i40e_vc_validate_vqs_bitmaps(vqs)) {
- 		aq_ret = I40E_ERR_PARAM;
- 		goto error_param;
- 	}
-@@ -2425,7 +2425,7 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
+-#define ICE_RESET_DONE_MASK	(GLNVM_ULD_CORER_DONE_M | \
+-				 GLNVM_ULD_GLOBR_DONE_M)
++#define ICE_RESET_DONE_MASK	(GLNVM_ULD_PCIER_DONE_M |\
++				 GLNVM_ULD_PCIER_DONE_1_M |\
++				 GLNVM_ULD_CORER_DONE_M |\
++				 GLNVM_ULD_GLOBR_DONE_M |\
++				 GLNVM_ULD_POR_DONE_M |\
++				 GLNVM_ULD_POR_DONE_1_M |\
++				 GLNVM_ULD_PCIER_DONE_2_M)
++
++	uld_mask = ICE_RESET_DONE_MASK;
  
--	if (i40e_vc_validate_vqs_bitmaps(vqs)) {
-+	if (!i40e_vc_validate_vqs_bitmaps(vqs)) {
- 		aq_ret = I40E_ERR_PARAM;
- 		goto error_param;
- 	}
+ 	/* Device is Active; check Global Reset processes are done */
+ 	for (cnt = 0; cnt < ICE_PF_RESET_WAIT_COUNT; cnt++) {
+-		reg = rd32(hw, GLNVM_ULD) & ICE_RESET_DONE_MASK;
+-		if (reg == ICE_RESET_DONE_MASK) {
++		reg = rd32(hw, GLNVM_ULD) & uld_mask;
++		if (reg == uld_mask) {
+ 			ice_debug(hw, ICE_DBG_INIT,
+ 				  "Global reset processes done. %d\n", cnt);
+ 			break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 152fbd556e9b4..9138b19de87e0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -273,8 +273,14 @@
+ #define GLNVM_GENS_SR_SIZE_S			5
+ #define GLNVM_GENS_SR_SIZE_M			ICE_M(0x7, 5)
+ #define GLNVM_ULD				0x000B6008
++#define GLNVM_ULD_PCIER_DONE_M			BIT(0)
++#define GLNVM_ULD_PCIER_DONE_1_M		BIT(1)
+ #define GLNVM_ULD_CORER_DONE_M			BIT(3)
+ #define GLNVM_ULD_GLOBR_DONE_M			BIT(4)
++#define GLNVM_ULD_POR_DONE_M			BIT(5)
++#define GLNVM_ULD_POR_DONE_1_M			BIT(8)
++#define GLNVM_ULD_PCIER_DONE_2_M		BIT(9)
++#define GLNVM_ULD_PE_DONE_M			BIT(10)
+ #define GLPCI_CNF2				0x000BE004
+ #define GLPCI_CNF2_CACHELINE_SIZE_M		BIT(1)
+ #define PF_FUNC_RID				0x0009E880
 -- 
 2.20.1
 
