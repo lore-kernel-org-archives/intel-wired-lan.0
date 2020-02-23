@@ -1,57 +1,65 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 22 Feb 2020 21:20:50 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.5 29/58] i40e: Fix the
- conditional for i40e_vc_validate_vqs_bitmaps
+Date: Sat, 22 Feb 2020 21:21:03 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.5 42/58] ice: Fix switch between
+ FW and SW LLDP
 In-Reply-To: <20200223022119.707-1-sashal@kernel.org>
 References: <20200223022119.707-1-sashal@kernel.org>
-Message-ID: <20200223022119.707-29-sashal@kernel.org>
+Message-ID: <20200223022119.707-42-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Dave Ertman <david.m.ertman@intel.com>
 
-[ Upstream commit f27f37a04a69890ac85d9155f03ee2d23b678d8f ]
+[ Upstream commit 53977ee47410885e7d4eee87d2c811a48a275150 ]
 
-Commit d9d6a9aed3f6 ("i40e: Fix virtchnl_queue_select bitmap
-validation") introduced a necessary change for verifying how queue
-bitmaps from the iavf driver get validated. Unfortunately, the
-conditional was reversed. Fix this.
+When switching between FW and SW LLDP mode, the
+number of configured TLV apps in the driver's
+DCB configuration is getting out of synch with
+what lldpad thinks is configured.  This is causing
+a problem when shutting down lldpad.  The cleanup
+is trying to delete TLV apps that are not defined
+in the kernel.
 
-Fixes: d9d6a9aed3f6 ("i40e: Fix virtchnl_queue_select bitmap validation")
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Since the driver is keeping an accurate account
+of the apps defined, use the drivers number of
+apps to determine if there is an app to delete.
+If the number of apps is <= 1, then do not
+attempt to delete.
+
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 69523ac85639e..56b9e445732ba 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2362,7 +2362,7 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+index d870c1aedc170..926c9772f0860 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+@@ -713,13 +713,13 @@ static int ice_dcbnl_delapp(struct net_device *netdev, struct dcb_app *app)
+ 		return -EINVAL;
  
--	if (i40e_vc_validate_vqs_bitmaps(vqs)) {
-+	if (!i40e_vc_validate_vqs_bitmaps(vqs)) {
- 		aq_ret = I40E_ERR_PARAM;
- 		goto error_param;
- 	}
-@@ -2424,7 +2424,7 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg)
- 		goto error_param;
- 	}
+ 	mutex_lock(&pf->tc_mutex);
+-	ret = dcb_ieee_delapp(netdev, app);
+-	if (ret)
+-		goto delapp_out;
+-
+ 	old_cfg = &pf->hw.port_info->local_dcbx_cfg;
  
--	if (i40e_vc_validate_vqs_bitmaps(vqs)) {
-+	if (!i40e_vc_validate_vqs_bitmaps(vqs)) {
- 		aq_ret = I40E_ERR_PARAM;
- 		goto error_param;
- 	}
+-	if (old_cfg->numapps == 1)
++	if (old_cfg->numapps <= 1)
++		goto delapp_out;
++
++	ret = dcb_ieee_delapp(netdev, app);
++	if (ret)
+ 		goto delapp_out;
+ 
+ 	new_cfg = &pf->hw.port_info->desired_dcbx_cfg;
 -- 
 2.20.1
 
