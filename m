@@ -1,65 +1,128 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 22 Feb 2020 21:21:03 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.5 42/58] ice: Fix switch between
- FW and SW LLDP
+Date: Sat, 22 Feb 2020 21:21:05 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.5 44/58] ice: fix and
+ consolidate logging of NVM/firmware version information
 In-Reply-To: <20200223022119.707-1-sashal@kernel.org>
 References: <20200223022119.707-1-sashal@kernel.org>
-Message-ID: <20200223022119.707-42-sashal@kernel.org>
+Message-ID: <20200223022119.707-44-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-[ Upstream commit 53977ee47410885e7d4eee87d2c811a48a275150 ]
+[ Upstream commit fbf1e1f6988e70287b1bfcad4f655ca96b681929 ]
 
-When switching between FW and SW LLDP mode, the
-number of configured TLV apps in the driver's
-DCB configuration is getting out of synch with
-what lldpad thinks is configured.  This is causing
-a problem when shutting down lldpad.  The cleanup
-is trying to delete TLV apps that are not defined
-in the kernel.
+Logging the firmware/NVM information during driver load is redundant since
+that information is also available via ethtool.  Move the functionality
+found in ice_nvm_version_str() directly into ice_get_drvinfo() and remove
+calling the former and logging that info during driver probe.  This also
+gets rid of a bug in ice_nvm_version_str() where it returns a pointer to
+a buffer which is free'ed when that function exits.
 
-Since the driver is keeping an accurate account
-of the apps defined, use the drivers number of
-apps to determine if there is an app to delete.
-If the number of apps is <= 1, then do not
-attempt to delete.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 15 +++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 19 -------------------
+ drivers/net/ethernet/intel/ice/ice_lib.h     |  2 --
+ drivers/net/ethernet/intel/ice/ice_main.c    |  5 -----
+ 4 files changed, 13 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index d870c1aedc170..926c9772f0860 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -713,13 +713,13 @@ static int ice_dcbnl_delapp(struct net_device *netdev, struct dcb_app *app)
- 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 9ebd93e79aeb6..f956f7bb4ef2d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -165,13 +165,24 @@ static void
+ ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
++	u8 oem_ver, oem_patch, nvm_ver_hi, nvm_ver_lo;
+ 	struct ice_vsi *vsi = np->vsi;
+ 	struct ice_pf *pf = vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	u16 oem_build;
  
- 	mutex_lock(&pf->tc_mutex);
--	ret = dcb_ieee_delapp(netdev, app);
--	if (ret)
--		goto delapp_out;
--
- 	old_cfg = &pf->hw.port_info->local_dcbx_cfg;
- 
--	if (old_cfg->numapps == 1)
-+	if (old_cfg->numapps <= 1)
-+		goto delapp_out;
+ 	strlcpy(drvinfo->driver, KBUILD_MODNAME, sizeof(drvinfo->driver));
+ 	strlcpy(drvinfo->version, ice_drv_ver, sizeof(drvinfo->version));
+-	strlcpy(drvinfo->fw_version, ice_nvm_version_str(&pf->hw),
+-		sizeof(drvinfo->fw_version));
 +
-+	ret = dcb_ieee_delapp(netdev, app);
-+	if (ret)
- 		goto delapp_out;
++	/* Display NVM version (from which the firmware version can be
++	 * determined) which contains more pertinent information.
++	 */
++	ice_get_nvm_version(hw, &oem_ver, &oem_build, &oem_patch,
++			    &nvm_ver_hi, &nvm_ver_lo);
++	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
++		 "%x.%02x 0x%x %d.%d.%d", nvm_ver_hi, nvm_ver_lo,
++		 hw->nvm.eetrack, oem_ver, oem_build, oem_patch);
++
+ 	strlcpy(drvinfo->bus_info, pci_name(pf->pdev),
+ 		sizeof(drvinfo->bus_info));
+ 	drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index e7449248fab4c..e0e3c6400e4b9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2647,25 +2647,6 @@ int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc)
+ }
+ #endif /* CONFIG_DCB */
  
- 	new_cfg = &pf->hw.port_info->desired_dcbx_cfg;
+-/**
+- * ice_nvm_version_str - format the NVM version strings
+- * @hw: ptr to the hardware info
+- */
+-char *ice_nvm_version_str(struct ice_hw *hw)
+-{
+-	u8 oem_ver, oem_patch, ver_hi, ver_lo;
+-	static char buf[ICE_NVM_VER_LEN];
+-	u16 oem_build;
+-
+-	ice_get_nvm_version(hw, &oem_ver, &oem_build, &oem_patch, &ver_hi,
+-			    &ver_lo);
+-
+-	snprintf(buf, sizeof(buf), "%x.%02x 0x%x %d.%d.%d", ver_hi, ver_lo,
+-		 hw->nvm.eetrack, oem_ver, oem_build, oem_patch);
+-
+-	return buf;
+-}
+-
+ /**
+  * ice_update_ring_stats - Update ring statistics
+  * @ring: ring to update
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 6e31e30aba394..0d2b1119c0e38 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -97,8 +97,6 @@ void ice_vsi_cfg_frame_size(struct ice_vsi *vsi);
+ 
+ u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran);
+ 
+-char *ice_nvm_version_str(struct ice_hw *hw);
+-
+ enum ice_status
+ ice_vsi_cfg_mac_fltr(struct ice_vsi *vsi, const u8 *macaddr, bool set);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 69bff085acf75..b4cbeb4f3177f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3241,11 +3241,6 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		goto err_exit_unroll;
+ 	}
+ 
+-	dev_info(dev, "firmware %d.%d.%d api %d.%d.%d nvm %s build 0x%08x\n",
+-		 hw->fw_maj_ver, hw->fw_min_ver, hw->fw_patch,
+-		 hw->api_maj_ver, hw->api_min_ver, hw->api_patch,
+-		 ice_nvm_version_str(hw), hw->fw_build);
+-
+ 	ice_request_fw(pf);
+ 
+ 	/* if ice_request_fw fails, ICE_FLAG_ADV_FEATURES bit won't be
 -- 
 2.20.1
 
