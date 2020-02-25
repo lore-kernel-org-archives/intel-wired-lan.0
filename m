@@ -1,173 +1,56 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Tue, 25 Feb 2020 17:42:26 +0800
-Subject: [Intel-wired-lan] [RFC PATCH v2] e1000e: Use rtnl_lock to
- prevent race conditions between net and pci/pm
-In-Reply-To: <20191007172559.11166.29328.stgit@localhost.localdomain>
-References: <CAKgT0UdwqGGKvaSJ+3vd-_d-6t9MB=No+7SpkbOT2PnynRK+2w@mail.gmail.com>
- <20191007172559.11166.29328.stgit@localhost.localdomain>
-Message-ID: <681404C7-9015-4C64-B8FE-2C93D75A7318@canonical.com>
+From: Jiri Pirko <jiri@resnulli.us>
+Date: Tue, 25 Feb 2020 13:10:23 +0100
+Subject: [Intel-wired-lan] [patch net-next] iavf: use
+ tc_cls_can_offload_basic() instead of chain check
+Message-ID: <20200225121023.6011-1-jiri@resnulli.us>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Greg,
+From: Jiri Pirko <jiri@mellanox.com>
 
-> On Oct 8, 2019, at 01:27, Alexander Duyck <alexander.duyck@gmail.com> wrote:
-> 
-> From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> 
-> This patch is meant to address possible race conditions that can exist
-> between network configuration and power management. A similar issue was
-> fixed for igb in commit 9474933caf21 ("igb: close/suspend race in
-> netif_device_detach").
-> 
-> In addition it consolidates the code so that the PCI error handling code
-> will essentially perform the power management freeze on the device prior to
-> attempting a reset, and will thaw the device afterwards if that is what it
-> is planning to do. Otherwise when we call close on the interface it should
-> see it is detached and not attempt to call the logic to down the interface
-> and free the IRQs again.
-> 
->> From what I can tell the check that was adding the check for __E1000_DOWN
-> in e1000e_close was added when runtime power management was added. However
-> it should not be relevant for us as we perform a call to
-> pm_runtime_get_sync before we call e1000_down/free_irq so it should always
-> be back up before we call into this anyway.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Looks like the iavf code actually experienced a race condition, when a
+developer took code before the check for chain 0 was put to helper.
+So use tc_cls_can_offload_basic() helper instead of direct check and
+move the check to _cb() so this is similar to i40e code.
 
-Please merge this commit, a7023819404ac9bd2bb311a4fafd38515cfa71ec to stable v5.14.
+Signed-off-by: Jiri Pirko <jiri@mellanox.com>
+---
+This was originally part of "net: allow user specify TC filter HW stats type"
+patchset, but it is no longer related after the requested changes.
+Sending separatelly.
+---
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-`modprobe -r e1000e` triggers a null pointer dereference [1] after the the following two patches are applied to v5.4.y:
-d635e7c4b34e6a630c7a1e8f1a8fd52c3e3ceea7 e1000e: Revert "e1000e: Make watchdog use delayed work"
-21c6137939723ed6f5e4aec7882cdfc247304c27 e1000e: Drop unnecessary __E1000_DOWN bit twiddling
-
-[1] https://bugs.launchpad.net/bugs/1864303
-
-Kai-Heng
-
-> ---
-> 
-> RFC v2: Dropped some unused variables
-> 	Added logic to check for device present before removing to pm_freeze
-> 	Fixed misplaced err_irq to before rtnl_unlock()
-> 
-> drivers/net/ethernet/intel/e1000e/netdev.c |   40 +++++++++++++++-------------
-> 1 file changed, 21 insertions(+), 19 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index d7d56e42a6aa..8b4e589aca36 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -4715,12 +4715,12 @@ int e1000e_close(struct net_device *netdev)
-> 
-> 	pm_runtime_get_sync(&pdev->dev);
-> 
-> -	if (!test_bit(__E1000_DOWN, &adapter->state)) {
-> +	if (netif_device_present(netdev)) {
-> 		e1000e_down(adapter, true);
-> 		e1000_free_irq(adapter);
-> 
-> 		/* Link status message must follow this format */
-> -		pr_info("%s NIC Link is Down\n", adapter->netdev->name);
-> +		pr_info("%s NIC Link is Down\n", netdev->name);
-> 	}
-> 
-> 	napi_disable(&adapter->napi);
-> @@ -6298,10 +6298,14 @@ static int e1000e_pm_freeze(struct device *dev)
-> {
-> 	struct net_device *netdev = dev_get_drvdata(dev);
-> 	struct e1000_adapter *adapter = netdev_priv(netdev);
-> +	bool present;
-> 
-> +	rtnl_lock();
-> +
-> +	present = netif_device_present(netdev);
-> 	netif_device_detach(netdev);
-> 
-> -	if (netif_running(netdev)) {
-> +	if (present && netif_running(netdev)) {
-> 		int count = E1000_CHECK_RESET_COUNT;
-> 
-> 		while (test_bit(__E1000_RESETTING, &adapter->state) && count--)
-> @@ -6313,6 +6317,8 @@ static int e1000e_pm_freeze(struct device *dev)
-> 		e1000e_down(adapter, false);
-> 		e1000_free_irq(adapter);
-> 	}
-> +	rtnl_unlock();
-> +
-> 	e1000e_reset_interrupt_capability(adapter);
-> 
-> 	/* Allow time for pending master requests to run */
-> @@ -6626,27 +6632,31 @@ static int __e1000_resume(struct pci_dev *pdev)
-> 	return 0;
-> }
-> 
-> -#ifdef CONFIG_PM_SLEEP
-> static int e1000e_pm_thaw(struct device *dev)
-> {
-> 	struct net_device *netdev = dev_get_drvdata(dev);
-> 	struct e1000_adapter *adapter = netdev_priv(netdev);
-> +	int rc = 0;
-> 
-> 	e1000e_set_interrupt_capability(adapter);
-> -	if (netif_running(netdev)) {
-> -		u32 err = e1000_request_irq(adapter);
-> 
-> -		if (err)
-> -			return err;
-> +	rtnl_lock();
-> +	if (netif_running(netdev)) {
-> +		rc = e1000_request_irq(adapter);
-> +		if (rc)
-> +			goto err_irq;
-> 
-> 		e1000e_up(adapter);
-> 	}
-> 
-> 	netif_device_attach(netdev);
-> +err_irq:
-> +	rtnl_unlock();
-> 
-> -	return 0;
-> +	return rc;
-> }
-> 
-> +#ifdef CONFIG_PM_SLEEP
-> static int e1000e_pm_suspend(struct device *dev)
-> {
-> 	struct pci_dev *pdev = to_pci_dev(dev);
-> @@ -6818,16 +6828,11 @@ static void e1000_netpoll(struct net_device *netdev)
-> static pci_ers_result_t e1000_io_error_detected(struct pci_dev *pdev,
-> 						pci_channel_state_t state)
-> {
-> -	struct net_device *netdev = pci_get_drvdata(pdev);
-> -	struct e1000_adapter *adapter = netdev_priv(netdev);
-> -
-> -	netif_device_detach(netdev);
-> +	e1000e_pm_freeze(&pdev->dev);
-> 
-> 	if (state == pci_channel_io_perm_failure)
-> 		return PCI_ERS_RESULT_DISCONNECT;
-> 
-> -	if (netif_running(netdev))
-> -		e1000e_down(adapter, true);
-> 	pci_disable_device(pdev);
-> 
-> 	/* Request a slot slot reset. */
-> @@ -6893,10 +6898,7 @@ static void e1000_io_resume(struct pci_dev *pdev)
-> 
-> 	e1000_init_manageability_pt(adapter);
-> 
-> -	if (netif_running(netdev))
-> -		e1000e_up(adapter);
-> -
-> -	netif_device_attach(netdev);
-> +	e1000e_pm_thaw(&pdev->dev);
-> 
-> 	/* If the controller has AMT, do not set DRV_LOAD until the interface
-> 	 * is up.  For all other cases, let the f/w know that the h/w is now
-> 
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 62fe56ddcb6e..8bc0d287d025 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -3061,9 +3061,6 @@ static int iavf_delete_clsflower(struct iavf_adapter *adapter,
+ static int iavf_setup_tc_cls_flower(struct iavf_adapter *adapter,
+ 				    struct flow_cls_offload *cls_flower)
+ {
+-	if (cls_flower->common.chain_index)
+-		return -EOPNOTSUPP;
+-
+ 	switch (cls_flower->command) {
+ 	case FLOW_CLS_REPLACE:
+ 		return iavf_configure_clsflower(adapter, cls_flower);
+@@ -3087,6 +3084,11 @@ static int iavf_setup_tc_cls_flower(struct iavf_adapter *adapter,
+ static int iavf_setup_tc_block_cb(enum tc_setup_type type, void *type_data,
+ 				  void *cb_priv)
+ {
++	struct iavf_adapter *adapter = cb_priv;
++
++	if (!tc_cls_can_offload_basic(adapter->netdev, type_data))
++		return -EOPNOTSUPP;
++
+ 	switch (type) {
+ 	case TC_SETUP_CLSFLOWER:
+ 		return iavf_setup_tc_cls_flower(cb_priv, type_data);
+-- 
+2.21.1
 
