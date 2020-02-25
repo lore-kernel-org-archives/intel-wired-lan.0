@@ -1,59 +1,51 @@
-From: Allan, Bruce W <bruce.w.allan@intel.com>
-Date: Tue, 25 Feb 2020 19:16:36 +0000
-Subject: [Intel-wired-lan] [PATCH][next] ice: remove redundant
- assignment to pointer vsi
-In-Reply-To: <20200222171054.171505-1-colin.king@canonical.com>
-References: <20200222171054.171505-1-colin.king@canonical.com>
-Message-ID: <804857E1F29AAC47BF68C404FC60A184010B0500CE@ORSMSX113.amr.corp.intel.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Tue, 25 Feb 2020 21:46:13 +0100
+Subject: [Intel-wired-lan] [RFC PATCH v2] e1000e: Use rtnl_lock to
+ prevent race conditions between net and pci/pm
+In-Reply-To: <681404C7-9015-4C64-B8FE-2C93D75A7318@canonical.com>
+References: <CAKgT0UdwqGGKvaSJ+3vd-_d-6t9MB=No+7SpkbOT2PnynRK+2w@mail.gmail.com>
+ <20191007172559.11166.29328.stgit@localhost.localdomain>
+ <681404C7-9015-4C64-B8FE-2C93D75A7318@canonical.com>
+Message-ID: <20200225204613.GA14366@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Colin King
-> Sent: Saturday, February 22, 2020 9:11 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David S . Miller
-> <davem@davemloft.net>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org
-> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH][next] ice: remove redundant assignment to
-> pointer vsi
+On Tue, Feb 25, 2020 at 05:42:26PM +0800, Kai-Heng Feng wrote:
+> Hi Greg,
 > 
-> From: Colin Ian King <colin.king@canonical.com>
+> > On Oct 8, 2019, at 01:27, Alexander Duyck <alexander.duyck@gmail.com> wrote:
+> > 
+> > From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> > 
+> > This patch is meant to address possible race conditions that can exist
+> > between network configuration and power management. A similar issue was
+> > fixed for igb in commit 9474933caf21 ("igb: close/suspend race in
+> > netif_device_detach").
+> > 
+> > In addition it consolidates the code so that the PCI error handling code
+> > will essentially perform the power management freeze on the device prior to
+> > attempting a reset, and will thaw the device afterwards if that is what it
+> > is planning to do. Otherwise when we call close on the interface it should
+> > see it is detached and not attempt to call the logic to down the interface
+> > and free the IRQs again.
+> > 
+> >> From what I can tell the check that was adding the check for __E1000_DOWN
+> > in e1000e_close was added when runtime power management was added. However
+> > it should not be relevant for us as we perform a call to
+> > pm_runtime_get_sync before we call e1000_down/free_irq so it should always
+> > be back up before we call into this anyway.
+> > 
+> > Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 > 
-> Pointer vsi is being re-assigned a value that is never read,
-> the assignment is redundant and can be removed.
+> Please merge this commit, a7023819404ac9bd2bb311a4fafd38515cfa71ec to stable v5.14.
 > 
-> Addresses-Coverity: ("Unused value")
+> `modprobe -r e1000e` triggers a null pointer dereference [1] after the the following two patches are applied to v5.4.y:
+> d635e7c4b34e6a630c7a1e8f1a8fd52c3e3ceea7 e1000e: Revert "e1000e: Make watchdog use delayed work"
+> 21c6137939723ed6f5e4aec7882cdfc247304c27 e1000e: Drop unnecessary __E1000_DOWN bit twiddling
 
-What version of coverity and what options were used?
+Now queued up, thanks.
 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> index 169b72a94b9d..2c8e334c47a0 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> @@ -2191,7 +2191,6 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8
-> *msg)
->  		set_bit(vf_q_id, vf->rxq_ena);
->  	}
-> 
-> -	vsi = pf->vsi[vf->lan_vsi_idx];
->  	q_map = vqs->tx_queues;
->  	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_BASE_QS_PER_VF) {
->  		if (!ice_vc_isvalid_q_id(vf, vqs->vsi_id, vf_q_id)) {
-> --
-> 2.25.0
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+greg k-h
