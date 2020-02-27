@@ -1,109 +1,57 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 27 Feb 2020 10:14:58 -0800
-Subject: [Intel-wired-lan] [PATCH S40 08/15] ice: renegotiate link after FW
- DCB on
+Date: Thu, 27 Feb 2020 10:15:00 -0800
+Subject: [Intel-wired-lan] [PATCH S40 10/15] ice: Increase mailbox receive
+ queue length to maximum
 In-Reply-To: <20200227181505.61720-1-anthony.l.nguyen@intel.com>
 References: <20200227181505.61720-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200227181505.61720-8-anthony.l.nguyen@intel.com>
+Message-ID: <20200227181505.61720-10-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Lukasz Czapnik <lukasz.czapnik@intel.com>
 
-When switching from SW DCB to FW DCB it is necessary
-to renegotiate DCBx so that the FW agent can have up
-to date information about the DCB settings of the link
-partner.
+Currently the PF's mailbox receive queue is only 512 entries. This fine,
+but considering that all VF's mailbox send queues funnel into the PF's
+single mailbox receive queue, let's increase it to the maximum size. This
+will help prevent any possible bottleneck/slowdown occurring from the PF's
+mailbox receive queue being full.
 
-Perform an autoneg restart on the link when activating
-FW DCB.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 53 +++++++++++---------
- 1 file changed, 29 insertions(+), 24 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h      | 1 -
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index c9c217202046..c67cfae64f2b 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1131,6 +1131,33 @@ ice_get_fecparam(struct net_device *netdev, struct ethtool_fecparam *fecparam)
- 	return err;
- }
- 
-+/**
-+ * ice_nway_reset - restart autonegotiation
-+ * @netdev: network interface device structure
-+ */
-+static int ice_nway_reset(struct net_device *netdev)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_vsi *vsi = np->vsi;
-+	struct ice_port_info *pi;
-+	enum ice_status status;
-+
-+	pi = vsi->port_info;
-+	/* If VSI state is up, then restart autoneg with link up */
-+	if (!test_bit(__ICE_DOWN, vsi->back->state))
-+		status = ice_aq_set_link_restart_an(pi, true, NULL);
-+	else
-+		status = ice_aq_set_link_restart_an(pi, false, NULL);
-+
-+	if (status) {
-+		netdev_info(netdev, "link restart failed, err %d aq_err %d\n",
-+			    status, pi->hw->adminq.sq_last_status);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * ice_get_priv_flags - report device private flags
-  * @netdev: network interface device structure
-@@ -1264,6 +1291,8 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			status = ice_cfg_lldp_mib_change(&pf->hw, true);
- 			if (status)
- 				dev_dbg(dev, "Fail to enable MIB change events\n");
-+
-+			ice_nway_reset(netdev);
- 		}
- 	}
- 	if (test_bit(ICE_FLAG_LEGACY_RX, change_flags)) {
-@@ -2775,30 +2804,6 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 	return err;
- }
- 
--static int ice_nway_reset(struct net_device *netdev)
--{
--	/* restart autonegotiation */
--	struct ice_netdev_priv *np = netdev_priv(netdev);
--	struct ice_vsi *vsi = np->vsi;
--	struct ice_port_info *pi;
--	enum ice_status status;
--
--	pi = vsi->port_info;
--	/* If VSI state is up, then restart autoneg with link up */
--	if (!test_bit(__ICE_DOWN, vsi->back->state))
--		status = ice_aq_set_link_restart_an(pi, true, NULL);
--	else
--		status = ice_aq_set_link_restart_an(pi, false, NULL);
--
--	if (status) {
--		netdev_info(netdev, "link restart failed, err %d aq_err %d\n",
--			    status, pi->hw->adminq.sq_last_status);
--		return -EIO;
--	}
--
--	return 0;
--}
--
- /**
-  * ice_get_pauseparam - Get Flow Control status
-  * @netdev: network interface device structure
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index b32d9ed35b21..f237df923ea1 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -66,7 +66,6 @@ extern const char ice_drv_ver[];
+ #define ICE_INT_NAME_STR_LEN	(IFNAMSIZ + 16)
+ #define ICE_AQ_LEN		64
+ #define ICE_MBXSQ_LEN		64
+-#define ICE_MBXRQ_LEN		512
+ #define ICE_MIN_MSIX		2
+ #define ICE_NO_VSI		0xffff
+ #define ICE_VSI_MAP_CONTIG	0
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 13ac6073a75d..af1c2be5f6ff 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1524,7 +1524,7 @@ static void ice_set_ctrlq_len(struct ice_hw *hw)
+ 	hw->adminq.num_sq_entries = ICE_AQ_LEN;
+ 	hw->adminq.rq_buf_size = ICE_AQ_MAX_BUF_LEN;
+ 	hw->adminq.sq_buf_size = ICE_AQ_MAX_BUF_LEN;
+-	hw->mailboxq.num_rq_entries = ICE_MBXRQ_LEN;
++	hw->mailboxq.num_rq_entries = PF_MBX_ARQLEN_ARQLEN_M;
+ 	hw->mailboxq.num_sq_entries = ICE_MBXSQ_LEN;
+ 	hw->mailboxq.rq_buf_size = ICE_MBXQ_MAX_BUF_LEN;
+ 	hw->mailboxq.sq_buf_size = ICE_MBXQ_MAX_BUF_LEN;
 -- 
 2.20.1
 
