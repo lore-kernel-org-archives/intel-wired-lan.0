@@ -1,167 +1,65 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 27 Feb 2020 10:14:55 -0800
-Subject: [Intel-wired-lan] [PATCH S40 05/15] ice: Fix removing driver while
- bare-metal VFs pass traffic
+Date: Thu, 27 Feb 2020 10:15:03 -0800
+Subject: [Intel-wired-lan] [PATCH S40 13/15] ice: Use EOPNOTSUPP instead of
+ ENOTSUPP
 In-Reply-To: <20200227181505.61720-1-anthony.l.nguyen@intel.com>
 References: <20200227181505.61720-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200227181505.61720-5-anthony.l.nguyen@intel.com>
+Message-ID: <20200227181505.61720-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-Currently, if there are bare-metal VFs passing traffic and the ice
-driver is removed, there is a possibility of VFs triggering a Tx timeout
-right before iavf_remove(). This is causing iavf_close() to not be
-called because there is a check in the beginning of iavf_remove() that
-bails out early if (adapter->state < IAVF_DOWN_PENDING). This makes it
-so some resources do not get cleaned up. Specifically, free_irq()
-is never called for data interrupts, which results in the following line
-of code to trigger:
+Using ENOTSUPP almost always results in some bizarre error message to
+be printed in userspace. This is likely because ENOTSUPP was defined for
+the NFS protocol (as per a comment in include/linux/errno.h). Use
+EOPNOTSUPP instead.
 
-pci_disable_msix()
-	free_msi_irqs()
-		...
-		BUG_ON(irq_has_action(entry->irq + i));
-		...
-
-To prevent the Tx timeout from occurring on the VF during driver unload
-for ice and the iavf there are a few changes that are needed.
-
-[1] Don't disable all active VF Tx/Rx queues prior to calling
-pci_disable_sriov.
-
-[2] Call ice_free_vfs() before disabling the service task.
-
-[3] Disable VF resets when the ice driver is being unloaded by setting
-the pf->state flag __ICE_VF_RESETS_DISABLED.
-
-Changing [1] and [2] allow each VF driver's remove flow to successfully
-send VIRTCHNL requests, which includes queue disable. This prevents
-unexpected Tx timeouts because the PF driver is no longer forcefully
-disabling queues.
-
-Due to [1] and [2] there is a possibility that the PF driver will get a
-VFLR or reset request over VIRTCHNL from a VF during PF driver unload.
-Prevent that by doing [3].
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h          |  1 +
- drivers/net/ethernet/intel/ice/ice_main.c     | 19 +++++++++++++++----
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 19 +++++++++++++------
- 3 files changed, 29 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_xsk.h         | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index bdd6d8a732f5..b32d9ed35b21 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -220,6 +220,7 @@ enum ice_state {
- 	__ICE_SERVICE_DIS,
- 	__ICE_OICR_INTR_DIS,		/* Global OICR interrupt disabled */
- 	__ICE_MDD_VF_PRINT_PENDING,	/* set when MDD event handle */
-+	__ICE_VF_RESETS_DISABLED,	/* disable resets during ice_remove */
- 	__ICE_STATE_NBITS		/* must be last */
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 933f41455628..13ac6073a75d 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2060,8 +2060,16 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 		set_bit(__ICE_MDD_EVENT_PENDING, pf->state);
- 	}
- 	if (oicr & PFINT_OICR_VFLR_M) {
--		ena_mask &= ~PFINT_OICR_VFLR_M;
--		set_bit(__ICE_VFLR_EVENT_PENDING, pf->state);
-+		/* disable any further VFLR event notifications */
-+		if (test_bit(__ICE_VF_RESETS_DISABLED, pf->state)) {
-+			u32 reg = rd32(hw, PFINT_OICR_ENA);
-+
-+			reg &= ~PFINT_OICR_VFLR_M;
-+			wr32(hw, PFINT_OICR_ENA, reg);
-+		} else {
-+			ena_mask &= ~PFINT_OICR_VFLR_M;
-+			set_bit(__ICE_VFLR_EVENT_PENDING, pf->state);
-+		}
- 	}
- 
- 	if (oicr & PFINT_OICR_GRST_M) {
-@@ -3457,6 +3465,11 @@ static void ice_remove(struct pci_dev *pdev)
- 		msleep(100);
- 	}
- 
-+	if (test_bit(ICE_FLAG_SRIOV_ENA, pf->flags)) {
-+		set_bit(__ICE_VF_RESETS_DISABLED, pf->state);
-+		ice_free_vfs(pf);
-+	}
-+
- 	ice_service_task_stop(pf);
- 	if (ice_is_peer_ena(pf)) {
- 		reason = IIDC_REASON_INTERFACE_DOWN;
-@@ -3464,8 +3477,6 @@ static void ice_remove(struct pci_dev *pdev)
- 	}
- 	set_bit(__ICE_DOWN, pf->state);
- 
--	if (test_bit(ICE_FLAG_SRIOV_ENA, pf->flags))
--		ice_free_vfs(pf);
- 	ice_vsi_release_all(pf);
- 	if (ice_is_peer_ena(pf)) {
- 		ice_for_each_peer(pf, NULL, ice_unreg_peer_device);
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 48791fc387ba..5fb457479060 100644
+index 5fb457479060..1aac440f199b 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -300,11 +300,6 @@ void ice_free_vfs(struct ice_pf *pf)
- 	while (test_and_set_bit(__ICE_VF_DIS, pf->state))
- 		usleep_range(1000, 2000);
+@@ -1404,7 +1404,7 @@ static int ice_pci_sriov_ena(struct ice_pf *pf, int num_vfs)
+ 	if (num_vfs > pf->num_vfs_supported) {
+ 		dev_err(dev, "Can't enable %d VFs, max VFs supported is %d\n",
+ 			num_vfs, pf->num_vfs_supported);
+-		return -ENOTSUPP;
++		return -EOPNOTSUPP;
+ 	}
  
--	/* Avoid wait time by stopping all VFs at the same time */
--	ice_for_each_vf(pf, i)
--		if (test_bit(ICE_VF_STATE_QS_ENA, pf->vf[i].vf_states))
--			ice_dis_vf_qs(&pf->vf[i]);
--
- 	/* Disable IOV before freeing resources. This lets any VF drivers
- 	 * running in the host get themselves cleaned up before we yank
- 	 * the carpet out from underneath their feet.
-@@ -314,6 +309,11 @@ void ice_free_vfs(struct ice_pf *pf)
- 	else
- 		dev_warn(dev, "VFs are assigned - not disabling SR-IOV\n");
- 
-+	/* Avoid wait time by stopping all VFs at the same time */
-+	ice_for_each_vf(pf, i)
-+		if (test_bit(ICE_VF_STATE_QS_ENA, pf->vf[i].vf_states))
-+			ice_dis_vf_qs(&pf->vf[i]);
-+
- 	tmp = pf->num_alloc_vfs;
- 	pf->num_qps_per_vf = 0;
- 	pf->num_alloc_vfs = 0;
-@@ -1155,7 +1155,8 @@ static bool ice_is_vf_disabled(struct ice_vf *vf)
-  * @vf: pointer to the VF structure
-  * @is_vflr: true if VFLR was issued, false if not
-  *
-- * Returns true if the VF is reset, false otherwise.
-+ * Returns true if the VF is currently in reset, resets successfully, or resets
-+ * are disabled and false otherwise.
-  */
- bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 	dev_info(dev, "Allocating %d VFs\n", num_vfs);
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.h b/drivers/net/ethernet/intel/ice/ice_xsk.h
+index 3479e1de98fe..8a4ba7c6d549 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.h
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.h
+@@ -24,7 +24,7 @@ ice_xsk_umem_setup(struct ice_vsi __always_unused *vsi,
+ 		   struct xdp_umem __always_unused *umem,
+ 		   u16 __always_unused qid)
  {
-@@ -1170,6 +1171,12 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+-	return -ENOTSUPP;
++	return -EOPNOTSUPP;
+ }
  
- 	dev = ice_pf_to_dev(pf);
+ static inline void
+@@ -63,7 +63,7 @@ static inline int
+ ice_xsk_wakeup(struct net_device __always_unused *netdev,
+ 	       u32 __always_unused queue_id, u32 __always_unused flags)
+ {
+-	return -ENOTSUPP;
++	return -EOPNOTSUPP;
+ }
  
-+	if (test_bit(__ICE_VF_RESETS_DISABLED, pf->state)) {
-+		dev_dbg(dev, "Trying to reset VF %d, but all VF resets are disabled\n",
-+			vf->vf_id);
-+		return true;
-+	}
-+
- 	if (ice_is_vf_disabled(vf)) {
- 		dev_dbg(dev, "VF is already disabled, there is no need for resetting it, telling VM, all is fine %d\n",
- 			vf->vf_id);
+ #define ice_xsk_clean_rx_ring(rx_ring) do {} while (0)
 -- 
 2.20.1
 
