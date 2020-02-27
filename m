@@ -1,47 +1,46 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 27 Feb 2020 10:14:57 -0800
-Subject: [Intel-wired-lan] [PATCH S40 07/15] ice: Fix corner case when
- switching from IEEE to CEE
+Date: Thu, 27 Feb 2020 10:15:02 -0800
+Subject: [Intel-wired-lan] [PATCH S40 12/15] ice: Fix format specifier
 In-Reply-To: <20200227181505.61720-1-anthony.l.nguyen@intel.com>
 References: <20200227181505.61720-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200227181505.61720-7-anthony.l.nguyen@intel.com>
+Message-ID: <20200227181505.61720-12-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash JD <avinash.dayanand@intel.com>
+Commit ed5a3f664c55 ("ice: Removing hung_queue variable to use txqueue
+function parameter") began utilizing the txqueue variable over the
+hung_queue variable. hung_queue was an int where txqueue is an unsigned
+int. Update the format specfiers to reflect the new type.
 
-While testing DCB for a corner case in which mode is switched from IEEE to
-CEE and pfc_ena bitmask unchanged then DCBX mode doesn't get updated.
-
-This is happening because the function ice_dcb_get_mode() is called
-in a "no change detected block" instead of "change detected block".
-
-Signed-off-by: Avinash JD <avinash.dayanand@intel.com>
-Signed-off-by: Scott Register <scottx.register@intel.com>
+Fixes: ed5a3f664c55 ("ice: Removing hung_queue variable to use txqueue function parameter")
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 49e05f8ad93e..f9145a471f4d 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -873,10 +873,11 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
- 	/* No change detected in DCBX configs */
- 	if (!memcmp(&tmp_dcbx_cfg, &pi->local_dcbx_cfg, sizeof(tmp_dcbx_cfg))) {
- 		dev_dbg(dev, "No change detected in DCBX configuration.\n");
--		pf->dcbx_cap = ice_dcb_get_mode(pi, false);
- 		goto out;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index af1c2be5f6ff..d44613c3cacc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5205,13 +5205,13 @@ static void ice_tx_timeout(struct net_device *netdev, unsigned int txqueue)
+ 		/* Read interrupt register */
+ 		val = rd32(hw, GLINT_DYN_CTL(tx_ring->q_vector->reg_idx));
+ 
+-		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %d, NTC: 0x%x, HW_HEAD: 0x%x, NTU: 0x%x, INT: 0x%x\n",
++		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %u, NTC: 0x%x, HW_HEAD: 0x%x, NTU: 0x%x, INT: 0x%x\n",
+ 			    vsi->vsi_num, txqueue, tx_ring->next_to_clean,
+ 			    head, tx_ring->next_to_use, val);
  	}
  
-+	pf->dcbx_cap = ice_dcb_get_mode(pi, false);
-+
- 	need_reconfig = ice_dcb_need_recfg(pf, &tmp_dcbx_cfg,
- 					   &pi->local_dcbx_cfg);
- 	ice_dcbnl_flush_apps(pf, &tmp_dcbx_cfg, &pi->local_dcbx_cfg);
+ 	pf->tx_timeout_last_recovery = jiffies;
+-	netdev_info(netdev, "tx_timeout recovery level %d, txqueue %d\n",
++	netdev_info(netdev, "tx_timeout recovery level %d, txqueue %u\n",
+ 		    pf->tx_timeout_recovery_level, txqueue);
+ 
+ 	switch (pf->tx_timeout_recovery_level) {
 -- 
 2.20.1
 
