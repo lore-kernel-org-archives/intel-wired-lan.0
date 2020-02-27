@@ -1,74 +1,91 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 28 Feb 2020 10:53:58 -0800
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: fix XDP redirect on
- archs with PAGE_SIZE above 4K
-In-Reply-To: <158289240414.1877500.8426359194461700361.stgit@firesoul>
-References: <158289240414.1877500.8426359194461700361.stgit@firesoul>
-Message-ID: <CAKgT0Udj=BRNh3=TkNk5XyY5zbXtY_3kw+VORspUZLhvUFDN+w@mail.gmail.com>
+From: Maciej =?unknown-8bit?q?=C5=BBenczykowski?= <zenczykowski@gmail.com>
+Date: Thu, 27 Feb 2020 14:54:15 -0800
+Subject: [Intel-wired-lan] ixgbe 2.5 / 5 gbit support works but is not
+ reported as supported/advertised
+Message-ID: <CAHo-OozeA2Dp_4pRZr84A+nH8pLbM3L26_50enHgPV4HpevpCg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Feb 28, 2020 at 4:20 AM Jesper Dangaard Brouer
-<brouer@redhat.com> wrote:
->
-> The ixgbe driver have another memory model when compiled on archs with
-> PAGE_SIZE above 4096 bytes. In this mode it doesn't split the page in
-> two halves, but instead increment rx_buffer->page_offset by truesize of
-> packet (which include headroom and tailroom for skb_shared_info).
->
-> This is done correctly in ixgbe_build_skb(), but in ixgbe_rx_buffer_flip
-> which is currently only called on XDP_TX and XDP_REDIRECT, it forgets
-> to add the tailroom for skb_shared_info. This breaks XDP_REDIRECT, for
-> veth and cpumap.  Fix by adding size of skb_shared_info tailroom.
->
-> Fixes: 6453073987ba ("ixgbe: add initial support for xdp redirect")
-> Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
+https://www.startech.com/Networking-IO/Adapter-Cards/dual-port-network-card~ST10GPEXNDPI
 
-This approach to fixing it seems problematic at best. From what I can
-tell there wasn't an issue until this frame gets up into the
-XDP_REDIRECT path. In the case of XDP_TX the ixgbe driver has not need
-for the extra shared info space. I assume you need this because you
-are converting the buffer to an skbuff.
+84:00.0 Ethernet controller [0200]: Intel Corporation Ethernet
+Controller 10G X550T [8086:1563] (rev 01)
+84:00.1 Ethernet controller [0200]: Intel Corporation Ethernet
+Controller 10G X550T [8086:1563] (rev 01)
 
-The question I have is exactly how is this failing, are we talking
-about it resulting in the region being shared with the next frame, or
-is it being correctly identified that there is no tailroom and the
-frame is dropped? If we are seeing memory corruption due to it sharing
-the memory I would say we have a problem with the design for
-XDP_REDIRECT since it is assuming things about the buffer that may or
-may not be true. At a minimum we are going to need to guarantee that
-all XDP devices going forward provide this padding on the end of the
-frame which has not been anything that was communicated up until now.
+This card will negotiate 2.5g or 5g if plugged in to a 2.5/5g port on
+the other end of a 7ft cat 5e cable.
+But it doesn't *claim* to support it.
 
-I would argue that we should not be using build_skb on XDP buffers
-since it is going to lead to similar issues in the future. It would be
-much better to simply add the XDP frame as a fragment and to pull the
-headers as we have done in the past.
+# ethtool eix1
+Settings for eix1:
+        Supported ports: [ TP ]
+        Supported link modes:   100baseT/Full
+                                1000baseT/Full
+                                10000baseT/Full
+        Supported pause frame use: Symmetric
+        Supports auto-negotiation: Yes
+        Supported FEC modes: Not reported
+        Advertised link modes:  100baseT/Full
+                                1000baseT/Full
+                                10000baseT/Full
+        Advertised pause frame use: Symmetric
+        Advertised auto-negotiation: Yes
+        Advertised FEC modes: Not reported
+        Speed: 2500Mb/s     <-- or 5000Mb/s
+        Duplex: Full
+        Port: Twisted Pair
+        PHYAD: 0
+        Transceiver: internal
+        Auto-negotiation: on
+        MDI-X: Unknown
+        Supports Wake-on: d
+        Wake-on: d
+        Current message level: 0x00000007 (7)
+                               drv probe link
+        Link detected: yes
 
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 718931d951bc..ea6834bae04c 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -2254,7 +2254,8 @@ static void ixgbe_rx_buffer_flip(struct ixgbe_ring *rx_ring,
->         rx_buffer->page_offset ^= truesize;
->  #else
->         unsigned int truesize = ring_uses_build_skb(rx_ring) ?
-> -                               SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) :
-> +                               SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) +
-> +                               SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) :
->                                 SKB_DATA_ALIGN(size);
->
->         rx_buffer->page_offset += truesize;
->
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+(note the lack of
+                                2500baseT/Full
+                                5000baseT/Full
+under supported/advertised)
+
+5.2.17-1rodete3-amd64 #1 SMP Debian
+[240677.031802] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver
+- version 5.1.0-k
+[240677.031806] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
+[240677.717538] ixgbe 0000:84:00.0: Multiqueue Enabled: Rx Queue count
+= 56, Tx Queue count = 56 XDP Queue count = 0
+[240677.816262] ixgbe 0000:84:00.0: 31.504 Gb/s available PCIe
+bandwidth (8 GT/s x4 link)
+[240677.844663] ixgbe 0000:84:00.0: MAC: 4, PHY: 0, PBA No: 000500-000
+[240677.844668] ixgbe 0000:84:00.0: 00:0a:...
+[240677.994928] ixgbe 0000:84:00.0 eix1: renamed from eth1
+[240678.005278] ixgbe 0000:84:00.0: Intel(R) 10 Gigabit Network Connection
+[240678.005360] libphy: ixgbe-mdio: probed
+[240678.694408] ixgbe 0000:84:00.1: Multiqueue Enabled: Rx Queue count
+= 56, Tx Queue count = 56 XDP Queue count = 0
+[240678.792505] ixgbe 0000:84:00.1: 31.504 Gb/s available PCIe
+bandwidth (8 GT/s x4 link)
+[240678.820671] ixgbe 0000:84:00.1: MAC: 4, PHY: 0, PBA No: 000500-000
+[240678.820677] ixgbe 0000:84:00.1: 00:0a:...
+[240678.970174] ixgbe 0000:84:00.1 eix2: renamed from eth1
+[240678.980665] ixgbe 0000:84:00.1: Intel(R) 10 Gigabit Network Connection
+[240678.980747] libphy: ixgbe-mdio: probed
+[242612.969243] ixgbe 0000:84:00.0: registered PHC device on eix1
+[242615.246740] ixgbe 0000:84:00.1: registered PHC device on eix2
+[242620.138766] ixgbe 0000:84:00.0 eix1: NIC Link is Up 10 Gbps, Flow
+Control: RX/TX
+[242620.162687] ixgbe 0000:84:00.1 eix2: NIC Link is Up 10 Gbps, Flow
+Control: RX/TX
+[242712.081620] ixgbe 0000:84:00.0 eix1: NIC Link is Down
+[242712.280592] ixgbe 0000:84:00.1 eix2: NIC Link is Down
+[242867.346797] ixgbe 0000:84:00.0 eix1: NIC Link is Up 5 Gbps, Flow
+Control: RX/TX
+[243018.281569] ixgbe 0000:84:00.0 eix1: NIC Link is Down
+[243028.975451] ixgbe 0000:84:00.0 eix1: NIC Link is Up 2.5 Gbps, Flow
+Control: RX/TX
+[243405.309056] ixgbe 0000:84:00.0 eix1: NIC Link is Down
