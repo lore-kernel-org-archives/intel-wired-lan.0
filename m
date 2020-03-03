@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon,  2 Mar 2020 21:46:00 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.5 51/66] ice: Don't tell the OS
+Date: Mon,  2 Mar 2020 21:47:28 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 46/58] ice: Don't tell the OS
  that link is going down
-In-Reply-To: <20200303024615.8889-1-sashal@kernel.org>
-References: <20200303024615.8889-1-sashal@kernel.org>
-Message-ID: <20200303024615.8889-51-sashal@kernel.org>
+In-Reply-To: <20200303024740.9511-1-sashal@kernel.org>
+References: <20200303024740.9511-1-sashal@kernel.org>
+Message-ID: <20200303024740.9511-46-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -34,10 +34,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 9ebd93e79aeb6..9744fcd6662dd 100644
+index 1fe9f6050635d..62673e27af0e8 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -2966,13 +2966,6 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
+@@ -2916,13 +2916,6 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
  	else
  		return -EINVAL;
  
