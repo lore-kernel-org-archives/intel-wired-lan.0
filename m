@@ -1,56 +1,53 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon,  2 Mar 2020 21:48:48 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 29/32] ice: Don't tell the OS
- that link is going down
-In-Reply-To: <20200303024851.10054-1-sashal@kernel.org>
-References: <20200303024851.10054-1-sashal@kernel.org>
-Message-ID: <20200303024851.10054-29-sashal@kernel.org>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 3 Mar 2020 08:00:27 -0800
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove copper fiber
+ switch control
+In-Reply-To: <549bd226-b5fa-eb68-44a5-f77dcaf28c5a@intel.com>
+References: <20200302202307.23260-1-sasha.neftin@intel.com>
+ <CAKgT0UdFW1KbAzsUX2o7-UDD1ay70euxs6Ts=RjYN4dfFEE6Fg@mail.gmail.com>
+ <549bd226-b5fa-eb68-44a5-f77dcaf28c5a@intel.com>
+Message-ID: <CAKgT0Uc-nbt+8+gbNWabWrA0xZrUFqBtvUWNiNNpKMD-XhCCKg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+On Mon, Mar 2, 2020 at 4:44 PM Neftin, Sasha <sasha.neftin@intel.com> wrote:
+>
+> On 3/2/2020 13:26, Alexander Duyck wrote:
+> > On Mon, Mar 2, 2020 at 12:23 PM Sasha Neftin <sasha.neftin@intel.com> wrote:
+> >>
+> >> i225 device support copper mode only
+> >> PHY signal detect indication for copper fiber switch
+> >> not applicable to i225 part
+> >>
+> >> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> >
+> > So there are a couple issues with this patch.
+> >
+> > All the changes in igc_ethtool.c are broken at this point. Once a
+> > register is defined in regs_buff you cannot change it. Otherwise you
+> > cannot debug this in the future. You would be better off just skipping
+> > the register that you were storing CONNSW and let it default to zero
+> > instead of doing all of the shifting you are doing. You can just skip
+> > over the register in the dump in ethtool assuming there is even a file
+> > for the device that hasbeen added.
+> >
+> This change not affected igc_ethtool.c behavior. I see the same behavior
+> on my setup.
+> Actually ethtool --register-dump not called (as properly).get_regs
+> callback from igc_ethtool.c. This is not related to this patch and I
+> need investigate and fix it.
+> ethtool --register-dump <adapter> show me row generic data. Data is
+> really from i225 registers, but not parcered as for other drivers.
+>
 
-[ Upstream commit 8a55c08d3bbc9ffc9639f69f742e59ebd99f913b ]
+Right. It isn't implemented yet, but you don't want to break it. The
+logic for the register dump assumes the register locations are fixed.
+So once you released this the first time you cannot move the registers
+around. You can drop registers or add registers, but once they are in
+the list they are permanently in that position. If you don't do that
+you will never be able to decode the data.
 
-Remove code that tell the OS that link is going down when user
-change flow control via ethtool. When link is up it isn't certain
-that link goes down after 0x0605 aq command. If link doesn't go
-down, OS thinks that link is down, but physical link is up. To
-reset this state user have to take interface down and up.
-
-If link goes down after 0x0605 command, FW send information
-about that and after that driver tells the OS that the link goes
-down. So this code in ethtool is unnecessary.
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 7 -------
- 1 file changed, 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 4c5c87b158f55..627abef829c9a 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -772,13 +772,6 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
- 	else
- 		return -EINVAL;
- 
--	/* Tell the OS link is going down, the link will go back up when fw
--	 * says it is ready asynchronously
--	 */
--	ice_print_link_msg(vsi, false);
--	netif_carrier_off(netdev);
--	netif_tx_stop_all_queues(netdev);
--
- 	/* Set the FC mode and only restart AN if link is up */
- 	status = ice_set_fc(pi, &aq_failures, link_up);
- 
--- 
-2.20.1
-
+- Alex
