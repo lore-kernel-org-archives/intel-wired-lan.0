@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 3 Mar 2020 19:09:14 +0000
-Subject: [Intel-wired-lan] [PATCH S40 12/15] ice: Fix format specifier
-In-Reply-To: <20200227181505.61720-12-anthony.l.nguyen@intel.com>
+Date: Tue, 3 Mar 2020 19:10:52 +0000
+Subject: [Intel-wired-lan] [PATCH S40 15/15] ice: fix incorrect size
+ description of ice_get_nvm_version
+In-Reply-To: <20200227181505.61720-15-anthony.l.nguyen@intel.com>
 References: <20200227181505.61720-1-anthony.l.nguyen@intel.com>
- <20200227181505.61720-12-anthony.l.nguyen@intel.com>
-Message-ID: <90e3c6ccc41f4d8e8167f64ce8babc33@intel.com>
+ <20200227181505.61720-15-anthony.l.nguyen@intel.com>
+Message-ID: <0037bbf254ed4a94866c4719eacad706@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,18 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, February 27, 2020 10:15 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S40 12/15] ice: Fix format specifier
+> Subject: [Intel-wired-lan] [PATCH S40 15/15] ice: fix incorrect size description
+> of ice_get_nvm_version
 > 
-> Commit ed5a3f664c55 ("ice: Removing hung_queue variable to use txqueue
-> function parameter") began utilizing the txqueue variable over the
-> hung_queue variable. hung_queue was an int where txqueue is an unsigned
-> int. Update the format specfiers to reflect the new type.
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Fixes: ed5a3f664c55 ("ice: Removing hung_queue variable to use txqueue
-> function parameter")
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> The function comment for ice_get_nvm_version indicated that the ver_hi
+> and ver_lo values were 16 bits. In fact, they are only uint8_t values, meaning
+> that they have a maximum size of 8 bits. Fix the comment to match the
+> correct size.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
+>  drivers/net/ethernet/intel/ice/ice_common.c | 4 ++--
 >  1 file changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
