@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 3 Mar 2020 19:10:13 +0000
-Subject: [Intel-wired-lan] [PATCH S40 14/15] ice: use variable name more
- descriptive than type
-In-Reply-To: <20200227181505.61720-14-anthony.l.nguyen@intel.com>
+Date: Tue, 3 Mar 2020 19:11:25 +0000
+Subject: [Intel-wired-lan] [PATCH S40 01/15] iavf: Enable support for up
+ to 16 queues
+In-Reply-To: <20200227181505.61720-1-anthony.l.nguyen@intel.com>
 References: <20200227181505.61720-1-anthony.l.nguyen@intel.com>
- <20200227181505.61720-14-anthony.l.nguyen@intel.com>
-Message-ID: <edbbf198c07146e4a5913d60628a3ac1@intel.com>
+Message-ID: <87e86f4dc9764af59aecebf2a18edfbd@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,23 +16,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Tony Nguyen
 > Sent: Thursday, February 27, 2020 10:15 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S40 14/15] ice: use variable name more
-> descriptive than type
+> Subject: [Intel-wired-lan] [PATCH S40 01/15] iavf: Enable support for up to 16
+> queues
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> The variable name 'type' is not very descriptive. Replace instances of those
-> with a variable name that is more descriptive or replace it if not needed.
+> Previous devices could only allocate 4 MSI-X vectors per VF so there was a
+> limitation of 4 queues. 800-series hardware can allocate more than 4 MSI-X
+> vectors, so expand the limitation on the number of queues that the driver
+> can support to account for these capabilities.
 > 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Fix eththool channel operations to accommodate this change and adjust the
+> reporting of max number of queues to what is given to us by the PF. Since
+> we're not requesting queues above this value, just trigger reset to activate
+> the queues, which we already own.
+> 
+> Finally, fix a test condition that would display an incorrect error message.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 16 ++++++-------
->  drivers/net/ethernet/intel/ice/ice_flow.c    |  8 +++----
->  drivers/net/ethernet/intel/ice/ice_lib.c     | 24 ++++++++++----------
->  drivers/net/ethernet/intel/ice/ice_lib.h     |  4 ++--
->  drivers/net/ethernet/intel/ice/ice_switch.c  | 20 ++++++++--------
->  5 files changed, 36 insertions(+), 36 deletions(-)
+>  drivers/net/ethernet/intel/iavf/iavf.h        |  2 +-
+>  .../net/ethernet/intel/iavf/iavf_ethtool.c    | 20 +++++++-------
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   |  2 +-
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 27 -------------------
+>  4 files changed, 11 insertions(+), 40 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
