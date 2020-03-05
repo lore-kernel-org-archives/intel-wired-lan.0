@@ -1,11 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 5 Mar 2020 22:35:25 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] i40e: Register a virtbus device
- to provide RDMA
-In-Reply-To: <20200302165154.1098-2-shiraz.saleem@intel.com>
-References: <20200302165154.1098-1-shiraz.saleem@intel.com>
- <20200302165154.1098-2-shiraz.saleem@intel.com>
-Message-ID: <1af6ad8f2d2a4b9f8041989f805a910b@intel.com>
+Date: Thu, 5 Mar 2020 22:37:09 +0000
+Subject: [Intel-wired-lan] [next-queue v7] Implementation of Virtual Bus
+In-Reply-To: <20200302213023.1326468-1-jeffrey.t.kirsher@intel.com>
+References: <20200302213023.1326468-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <a848ffbdf7e6488298de878611de69ab@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,37 +12,39 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Shiraz Saleem
-> Sent: Monday, March 2, 2020 8:52 AM
+> Behalf Of Jeff Kirsher
+> Sent: Monday, March 2, 2020 1:30 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Saleem, Shiraz <shiraz.saleem@intel.com>
-> Subject: [Intel-wired-lan] [PATCH 2/2] i40e: Register a virtbus device to
-> provide RDMA
+> Subject: [Intel-wired-lan] [next-queue v7] Implementation of Virtual Bus
 > 
-> Register client virtbus device on the virtbus for the RDMA virtbus driver
-> (irdma) to bind to. It allows to realize a single RDMA driver capable of working
-> with multiple netdev drivers over multi-generation Intel HW supporting
-> RDMA.
-> There is also no load ordering dependencies between i40e and irdma.
+> From: Dave Ertman <david.m.ertman@intel.com>
 > 
-> Summary of changes:
-> * Support to add/remove virtbus devices
-> * Add 2 new client ops.
-> 	* i40e_client_device_register() which is called during RDMA
-> 	  probe() per PF. Validate client drv OPs and schedule service
-> 	  task to call open()
-> 	* i40e_client_device_unregister() called during RDMA remove()
-> 	  per PF. Call client close() and release_qvlist.
-> * The global register/unregister calls exported for i40iw are retained
->   until i40iw is removed from the kernel.
+> This is the initial implementation of the Virtual Bus, virtbus_device and
+> virtbus_driver.  The virtual bus is a software based bus intended to support
+> registering virtbus_devices and virtbus_drivers and provide matching
+> between them and probing of the registered drivers.
 > 
-> Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
-> Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
+> The bus will support probe/remove shutdown and suspend/resume
+> callbacks.
+> 
+> Kconfig and Makefile alterations are included
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 > ---
->  drivers/net/ethernet/intel/Kconfig            |   1 +
->  drivers/net/ethernet/intel/i40e/i40e_client.c | 131
-> ++++++++++++++++++++++----
->  include/linux/net/intel/i40e_client.h         |  15 +++
->  3 files changed, 127 insertions(+), 20 deletions(-)
+>  Documentation/driver-api/virtual_bus.rst |  62 ++++++
+>  drivers/bus/Kconfig                      |  10 +
+>  drivers/bus/Makefile                     |   1 +
+>  drivers/bus/virtual_bus.c                | 270 +++++++++++++++++++++++
+>  include/linux/mod_devicetable.h          |   8 +
+>  include/linux/virtual_bus.h              |  53 +++++
+>  scripts/mod/devicetable-offsets.c        |   3 +
+>  scripts/mod/file2alias.c                 |   8 +
+>  8 files changed, 415 insertions(+)
+>  create mode 100644 Documentation/driver-api/virtual_bus.rst
+>  create mode 100644 drivers/bus/virtual_bus.c  create mode 100644
+> include/linux/virtual_bus.h
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
