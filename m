@@ -1,11 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 5 Mar 2020 22:34:11 +0000
-Subject: [Intel-wired-lan] [PATCH S34 v4 6/6] ice: Pass through
- communications to VF
-In-Reply-To: <20200302233107.4691-6-anthony.l.nguyen@intel.com>
-References: <20200302233107.4691-1-anthony.l.nguyen@intel.com>
- <20200302233107.4691-6-anthony.l.nguyen@intel.com>
-Message-ID: <d46f8c4527334d28bef838e45633f2ea@intel.com>
+Date: Thu, 5 Mar 2020 22:35:01 +0000
+Subject: [Intel-wired-lan] [PATCH 1/2] i40e: Move client header location
+In-Reply-To: <20200302165154.1098-1-shiraz.saleem@intel.com>
+References: <20200302165154.1098-1-shiraz.saleem@intel.com>
+Message-ID: <866c6802a791470585e7df68253b1063@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,26 +12,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Monday, March 2, 2020 3:31 PM
+> Behalf Of Shiraz Saleem
+> Sent: Monday, March 2, 2020 8:52 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S34 v4 6/6] ice: Pass through
-> communications to VF
+> Cc: Saleem, Shiraz <shiraz.saleem@intel.com>
+> Subject: [Intel-wired-lan] [PATCH 1/2] i40e: Move client header location
 > 
-> From: Dave Ertman <david.m.ertman@intel.com>
+> Move i40e_client.h to include/linux/net/intel/* since its shared between
+> i40iw and i40e.
 > 
-> Allow for forwarding of RDMA and VF virt channel messages. The driver will
-> forward messages from the RDMA driver to the VF via the vc_send operation
-> and invoke the peer's vc_receive() call when receiving a virt channel message
-> destined for the peer driver.
-> 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h          |  1 +
->  drivers/net/ethernet/intel/ice/ice_idc.c      | 34 +++++++++++++++++++
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 34 +++++++++++++++++++
->  3 files changed, 69 insertions(+)
+>  drivers/infiniband/hw/i40iw/Makefile          |   1 -
+>  drivers/infiniband/hw/i40iw/i40iw.h           |   2 +-
+>  drivers/net/ethernet/intel/i40e/i40e.h        |   2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_client.c |   2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_client.h | 203 --------------------------
+>  include/linux/net/intel/i40e_client.h         | 203
+> ++++++++++++++++++++++++++
+>  6 files changed, 206 insertions(+), 207 deletions(-)  delete mode 100644
+> drivers/net/ethernet/intel/i40e/i40e_client.h
+>  create mode 100644 include/linux/net/intel/i40e_client.h
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
