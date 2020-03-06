@@ -1,173 +1,73 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 07 Mar 2020 07:22:16 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 7b81f04d1bfa48bb19e13a7e7f90990541012b9e
-Message-ID: <5e62db28.8mlDhlMeyqBXqIqg%lkp@intel.com>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Fri,  6 Mar 2020 15:54:03 -0800
+Subject: [Intel-wired-lan] [PATCH] igc: Fix NFC queue redirection support
+Message-ID: <20200306235403.18751-1-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 7b81f04d1bfa48bb19e13a7e7f90990541012b9e  ethernet/intel: Remove driver versions
+The support for ethtool Network Flow Classification (NFC) queue
+redirection based on destination MAC address is currently broken in IGC.
+For instance, if we add the following rule, matching frames aren't
+enqueued on the expected rx queue.
 
-elapsed time: 481m
+$ ethtool -N IFNAME flow-type ether dst 3c:fd:fe:9e:7f:71 queue 2
 
-configs tested: 147
-configs skipped: 0
+The issue here is due to the fact that igc_rar_set_index() is missing
+code to enable the queue selection feature from Receive Address High
+(RAH) register. This patch adds the missing code and fixes the issue.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                              allmodconfig
-arm                               allnoconfig
-arm                              allyesconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                               defconfig
-sparc                            allyesconfig
-h8300                    h8300h-sim_defconfig
-alpha                               defconfig
-riscv                    nommu_virt_defconfig
-csky                                defconfig
-m68k                           sun3_defconfig
-i386                              allnoconfig
-i386                             alldefconfig
-i386                             allyesconfig
-i386                                defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-ia64                             alldefconfig
-nios2                         3c120_defconfig
-nios2                         10m50_defconfig
-c6x                        evmc6678_defconfig
-xtensa                          iss_defconfig
-c6x                              allyesconfig
-xtensa                       common_defconfig
-openrisc                 simple_smp_defconfig
-openrisc                    or1ksim_defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-h8300                     edosk2674_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-arc                              allyesconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                          rhel-kconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-mips                             allyesconfig
-mips                           32r2_defconfig
-mips                         64r6el_defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-parisc                            allnoconfig
-parisc                generic-64bit_defconfig
-parisc                generic-32bit_defconfig
-parisc                           allyesconfig
-x86_64               randconfig-a001-20200305
-x86_64               randconfig-a002-20200305
-x86_64               randconfig-a003-20200305
-i386                 randconfig-a001-20200305
-i386                 randconfig-a002-20200305
-i386                 randconfig-a003-20200305
-alpha                randconfig-a001-20200306
-m68k                 randconfig-a001-20200306
-mips                 randconfig-a001-20200306
-nds32                randconfig-a001-20200306
-parisc               randconfig-a001-20200306
-riscv                randconfig-a001-20200306
-sh                   randconfig-a001-20200305
-openrisc             randconfig-a001-20200305
-csky                 randconfig-a001-20200305
-s390                 randconfig-a001-20200305
-xtensa               randconfig-a001-20200305
-x86_64               randconfig-b001-20200306
-x86_64               randconfig-b002-20200306
-x86_64               randconfig-b003-20200306
-i386                 randconfig-b001-20200306
-i386                 randconfig-b002-20200306
-i386                 randconfig-b003-20200306
-x86_64               randconfig-b001-20200305
-x86_64               randconfig-b002-20200305
-x86_64               randconfig-b003-20200305
-i386                 randconfig-b001-20200305
-i386                 randconfig-b002-20200305
-i386                 randconfig-b003-20200305
-x86_64               randconfig-c001-20200306
-x86_64               randconfig-c002-20200306
-x86_64               randconfig-c003-20200306
-i386                 randconfig-c001-20200306
-i386                 randconfig-c002-20200306
-i386                 randconfig-c003-20200306
-x86_64               randconfig-d001-20200306
-x86_64               randconfig-d002-20200306
-x86_64               randconfig-d003-20200306
-i386                 randconfig-d001-20200306
-i386                 randconfig-d002-20200306
-i386                 randconfig-d003-20200306
-x86_64               randconfig-e001-20200305
-x86_64               randconfig-e002-20200305
-x86_64               randconfig-e003-20200305
-i386                 randconfig-e001-20200305
-i386                 randconfig-e002-20200305
-i386                 randconfig-e003-20200305
-i386                 randconfig-f003-20200305
-x86_64               randconfig-f001-20200305
-i386                 randconfig-f001-20200305
-i386                 randconfig-f002-20200305
-x86_64               randconfig-f002-20200305
-x86_64               randconfig-f003-20200305
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-s390                       zfcpdump_defconfig
-s390                          debug_defconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                             alldefconfig
-s390                                defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                             defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                         rhel-7.2-clear
-x86_64                               rhel-7.6
-
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/igc/igc_defines.h |  5 ++++-
+ drivers/net/ethernet/intel/igc/igc_main.c    | 11 ++++++++---
+ 2 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index e5116337b68d..63d3d34763da 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -63,8 +63,11 @@
+  * (RAR[15]) for our directed address used by controllers with
+  * manageability enabled, allowing us room for 15 multicast addresses.
+  */
++#define IGC_RAH_QSEL_MASK	0x000C0000
++#define IGC_RAH_QSEL_SHIFT	18
++#define IGC_RAH_QSEL_ENABLE	BIT(28)
+ #define IGC_RAH_AV		0x80000000 /* Receive descriptor valid */
+-#define IGC_RAH_POOL_1		0x00040000
++
+ #define IGC_RAL_MAC_ADDR_LEN	4
+ #define IGC_RAH_MAC_ADDR_LEN	2
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 025f2e439aef..49a0d0bff727 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -780,13 +780,18 @@ static void igc_rar_set_index(struct igc_adapter *adapter, u32 index)
+ 	rar_low = le32_to_cpup((__le32 *)(addr));
+ 	rar_high = le16_to_cpup((__le16 *)(addr + 4));
+ 
++	if (adapter->mac_table[index].state & IGC_MAC_STATE_QUEUE_STEERING) {
++		u8 queue = adapter->mac_table[index].queue;
++		u32 qsel = IGC_RAH_QSEL_MASK & (queue << IGC_RAH_QSEL_SHIFT);
++
++		rar_high |= qsel;
++		rar_high |= IGC_RAH_QSEL_ENABLE;
++	}
++
+ 	/* Indicate to hardware the Address is Valid. */
+ 	if (adapter->mac_table[index].state & IGC_MAC_STATE_IN_USE) {
+ 		if (is_valid_ether_addr(addr))
+ 			rar_high |= IGC_RAH_AV;
+-
+-		rar_high |= IGC_RAH_POOL_1 <<
+-			adapter->mac_table[index].queue;
+ 	}
+ 
+ 	wr32(IGC_RAL(index), rar_low);
+-- 
+2.25.0
+
