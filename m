@@ -1,8 +1,8 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 10 Mar 2020 16:15:27 -0700
-Subject: [Intel-wired-lan] [next-queue] net/intel: remove driver versions
+Date: Tue, 10 Mar 2020 16:23:01 -0700
+Subject: [Intel-wired-lan] [next-queue v2] net/intel: remove driver versions
  from Intel drivers
-Message-ID: <20200310231527.2468955-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <20200310232301.2470904-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -23,8 +23,10 @@ CC: Alek Loktionov <aleksandr.loktionov@intel.com>
 CC: Kevin Liedtke <kevin.d.liedtke@intel.com>
 CC: Aaron Rowden <aaron.f.rowden@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Co-developed: Jacob Keller <jacob.e.keller@intel.com>
+Co-developed-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
+v2: fixed Co-developed-by: tag
+
  drivers/net/ethernet/intel/e100.c             |  6 +----
  drivers/net/ethernet/intel/e1000/e1000.h      |  1 -
  .../net/ethernet/intel/e1000/e1000_ethtool.c  |  2 --
