@@ -1,65 +1,182 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed, 11 Mar 2020 11:35:06 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add new device IDs for i225
- part
-Message-ID: <20200311093506.36496-1-sasha.neftin@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 12 Mar 2020 00:15:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ dab02de8673f6f9dff67fb8c21b816c846fe152e
+Message-ID: <5e690e8c.HFvbupXGE0IB82/y%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add new device IDs for the next step of i225
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: dab02de8673f6f9dff67fb8c21b816c846fe152e  ice: fix incorrect size description of ice_get_nvm_version
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+elapsed time: 1198m
+
+configs tested: 156
+configs skipped: 0
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                              allmodconfig
+arm                               allnoconfig
+arm                              allyesconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                            allyesconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                               defconfig
+sparc                            allyesconfig
+xtensa                       common_defconfig
+c6x                              allyesconfig
+s390                          debug_defconfig
+i386                              allnoconfig
+i386                             alldefconfig
+i386                             allyesconfig
+i386                                defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+ia64                                defconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+csky                                defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                             allyesconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+parisc                            allnoconfig
+parisc                           allyesconfig
+parisc                generic-32bit_defconfig
+parisc                generic-64bit_defconfig
+x86_64               randconfig-a001-20200311
+x86_64               randconfig-a002-20200311
+x86_64               randconfig-a003-20200311
+i386                 randconfig-a001-20200311
+i386                 randconfig-a002-20200311
+i386                 randconfig-a003-20200311
+alpha                randconfig-a001-20200311
+m68k                 randconfig-a001-20200311
+mips                 randconfig-a001-20200311
+nds32                randconfig-a001-20200311
+parisc               randconfig-a001-20200311
+riscv                randconfig-a001-20200311
+alpha                randconfig-a001-20200309
+m68k                 randconfig-a001-20200309
+mips                 randconfig-a001-20200309
+nds32                randconfig-a001-20200309
+parisc               randconfig-a001-20200309
+riscv                randconfig-a001-20200309
+c6x                  randconfig-a001-20200311
+h8300                randconfig-a001-20200311
+microblaze           randconfig-a001-20200311
+nios2                randconfig-a001-20200311
+sparc64              randconfig-a001-20200311
+csky                 randconfig-a001-20200311
+openrisc             randconfig-a001-20200311
+s390                 randconfig-a001-20200311
+sh                   randconfig-a001-20200311
+xtensa               randconfig-a001-20200311
+x86_64               randconfig-b001-20200311
+x86_64               randconfig-b002-20200311
+x86_64               randconfig-b003-20200311
+i386                 randconfig-b001-20200311
+i386                 randconfig-b002-20200311
+i386                 randconfig-b003-20200311
+x86_64               randconfig-c001-20200311
+x86_64               randconfig-c002-20200311
+x86_64               randconfig-c003-20200311
+i386                 randconfig-c001-20200311
+i386                 randconfig-c002-20200311
+i386                 randconfig-c003-20200311
+x86_64               randconfig-d001-20200311
+x86_64               randconfig-d002-20200311
+x86_64               randconfig-d003-20200311
+i386                 randconfig-d001-20200311
+i386                 randconfig-d002-20200311
+i386                 randconfig-d003-20200311
+x86_64               randconfig-f001-20200311
+x86_64               randconfig-f002-20200311
+x86_64               randconfig-f003-20200311
+i386                 randconfig-f001-20200311
+i386                 randconfig-f002-20200311
+i386                 randconfig-f003-20200311
+x86_64               randconfig-g001-20200311
+x86_64               randconfig-g002-20200311
+x86_64               randconfig-g003-20200311
+i386                 randconfig-g001-20200311
+i386                 randconfig-g002-20200311
+i386                 randconfig-g003-20200311
+x86_64               randconfig-g001-20200309
+x86_64               randconfig-g002-20200309
+x86_64               randconfig-g003-20200309
+i386                 randconfig-g001-20200309
+i386                 randconfig-g002-20200309
+i386                 randconfig-g003-20200309
+x86_64               randconfig-h001-20200311
+x86_64               randconfig-h002-20200311
+x86_64               randconfig-h003-20200311
+i386                 randconfig-h001-20200311
+i386                 randconfig-h002-20200311
+i386                 randconfig-h003-20200311
+riscv                            allmodconfig
+riscv                             allnoconfig
+riscv                            allyesconfig
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+s390                             alldefconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                             allyesconfig
+s390                                defconfig
+s390                       zfcpdump_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                             defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+x86_64                                  kexec
+
 ---
- drivers/net/ethernet/intel/igc/igc_base.c | 3 +++
- drivers/net/ethernet/intel/igc/igc_hw.h   | 3 +++
- drivers/net/ethernet/intel/igc/igc_main.c | 3 +++
- 3 files changed, 9 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-index 5a506440560a..f7fb18d8d8f5 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.c
-+++ b/drivers/net/ethernet/intel/igc/igc_base.c
-@@ -212,6 +212,9 @@ static s32 igc_get_invariants_base(struct igc_hw *hw)
- 	case IGC_DEV_ID_I225_I:
- 	case IGC_DEV_ID_I220_V:
- 	case IGC_DEV_ID_I225_K:
-+	case IGC_DEV_ID_I225_K2:
-+	case IGC_DEV_ID_I225_LMVP:
-+	case IGC_DEV_ID_I225_IT:
- 	case IGC_DEV_ID_I225_BLANK_NVM:
- 		mac->type = igc_i225;
- 		break;
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 90ac0e0144d8..af34ae310327 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -21,6 +21,9 @@
- #define IGC_DEV_ID_I225_I			0x15F8
- #define IGC_DEV_ID_I220_V			0x15F7
- #define IGC_DEV_ID_I225_K			0x3100
-+#define IGC_DEV_ID_I225_K2			0x3101
-+#define IGC_DEV_ID_I225_LMVP			0x5502
-+#define IGC_DEV_ID_I225_IT			0x0D9F
- #define IGC_DEV_ID_I225_BLANK_NVM		0x15FD
- 
- /* Function pointers for the MAC. */
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 9ffaabfaa93a..1b8023f69f28 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -47,6 +47,9 @@ static const struct pci_device_id igc_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_I), board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I220_V), board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K), board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K2), board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LMVP), board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_IT), board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_BLANK_NVM), board_base },
- 	/* required last entry */
- 	{0, }
--- 
-2.11.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
