@@ -1,322 +1,332 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Mar 2020 18:27:20 -0700
-Subject: [Intel-wired-lan] [PATCH v2 3/9] ice: store NVM version info in
- extracted format
+Date: Wed, 11 Mar 2020 18:27:22 -0700
+Subject: [Intel-wired-lan] [PATCH v2 5/9] ice: implement full NVM read from
+ ETHTOOL_GEEPROM
 In-Reply-To: <20200312012726.973301-1-jacob.e.keller@intel.com>
 References: <20200312012726.973301-1-jacob.e.keller@intel.com>
-Message-ID: <20200312012726.973301-4-jacob.e.keller@intel.com>
+Message-ID: <20200312012726.973301-6-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The NVM version and Option ROM version information is stored within the
-struct ice_nvm_ver_info structure. The data for the NVM is stored as
-a 2byte value with the major and minor versions each using one byte from
-the field. The Option ROM is stored as a 4byte value that contains
-a major, build, and patch number.
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Modify the code to immediately extract the version values and store them
-in a new struct ice_orom_info. Remove the now unnecessary
-ice_get_nvm_version function.
+The current implementation of .get_eeprom only enables reading from the
+Shadow RAM portion of the NVM contents. Implement support for reading
+the entire flash contents instead of only the initial portion contained
+in the Shadow RAM.
 
-Update ice_ethtool.c to use the new fields directly from the structured
-data.
+A complete dump can take several seconds, but the ETHTOOL_GEEPROM ioctl
+is capable of reading only a limited portion at a time by specifying the
+offset and length to read.
 
-This reduces complexity of the code that prints these versions in
-ice_ethtool.c
+In order to perform the reads directly, several functions are made non
+static. Additionally, the unused ice_read_sr_buf_aq and ice_read_sr_buf
+functions are removed.
 
-Update the macro definitions and variable names to use the term "orom"
-instead of "oem" for the Option ROM version. This helps increase the
-clarity of the Option ROM version code.
-
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c  | 23 -----
- drivers/net/ethernet/intel/ice/ice_common.h  |  3 -
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 13 +--
- drivers/net/ethernet/intel/ice/ice_nvm.c     | 94 +++++++++++++-------
- drivers/net/ethernet/intel/ice/ice_type.h    | 30 ++++---
- 5 files changed, 88 insertions(+), 75 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.h  |   3 -
+ drivers/net/ethernet/intel/ice/ice_ethtool.c |  33 ++--
+ drivers/net/ethernet/intel/ice/ice_nvm.c     | 150 +------------------
+ drivers/net/ethernet/intel/ice/ice_nvm.h     |   4 +
+ 4 files changed, 26 insertions(+), 164 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index f8dd840c03fb..a16ec5c6a0bc 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -614,29 +614,6 @@ static void ice_get_itr_intrl_gran(struct ice_hw *hw)
- 	}
- }
- 
--/**
-- * ice_get_nvm_version - get cached NVM version data
-- * @hw: pointer to the hardware structure
-- * @oem_ver: 8 bit NVM version
-- * @oem_build: 16 bit NVM build number
-- * @oem_patch: 8 NVM patch number
-- * @ver_hi: high 8 bits of the NVM version
-- * @ver_lo: low 8 bits of the NVM version
-- */
--void
--ice_get_nvm_version(struct ice_hw *hw, u8 *oem_ver, u16 *oem_build,
--		    u8 *oem_patch, u8 *ver_hi, u8 *ver_lo)
--{
--	struct ice_nvm_info *nvm = &hw->nvm;
--
--	*oem_ver = (u8)((nvm->oem_ver & ICE_OEM_VER_MASK) >> ICE_OEM_VER_SHIFT);
--	*oem_patch = (u8)(nvm->oem_ver & ICE_OEM_VER_PATCH_MASK);
--	*oem_build = (u16)((nvm->oem_ver & ICE_OEM_VER_BUILD_MASK) >>
--			   ICE_OEM_VER_BUILD_SHIFT);
--	*ver_hi = (nvm->ver & ICE_NVM_VER_HI_MASK) >> ICE_NVM_VER_HI_SHIFT;
--	*ver_lo = (nvm->ver & ICE_NVM_VER_LO_MASK) >> ICE_NVM_VER_LO_SHIFT;
--}
--
- /**
-  * ice_init_hw - main hardware initialization routine
-  * @hw: pointer to the hardware structure
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 21b31cd33c41..0885bdb5830c 100644
+index 0885bdb5830c..ded704236643 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.h
 +++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -162,9 +162,6 @@ ice_stat_update40(struct ice_hw *hw, u32 reg, bool prev_stat_loaded,
- void
- ice_stat_update32(struct ice_hw *hw, u32 reg, bool prev_stat_loaded,
- 		  u64 *prev_stat, u64 *cur_stat);
--void
--ice_get_nvm_version(struct ice_hw *hw, u8 *oem_ver, u16 *oem_build,
--		    u8 *oem_patch, u8 *ver_hi, u8 *ver_lo);
+@@ -38,9 +38,6 @@ enum ice_status
+ ice_alloc_hw_res(struct ice_hw *hw, u16 type, u16 num, bool btm, u16 *res);
  enum ice_status
- ice_sched_query_elem(struct ice_hw *hw, u32 node_teid,
- 		     struct ice_aqc_get_elem *buf);
+ ice_free_hw_res(struct ice_hw *hw, u16 type, u16 num, u16 *res);
+-enum ice_status ice_init_nvm(struct ice_hw *hw);
+-enum ice_status
+-ice_read_sr_buf(struct ice_hw *hw, u16 offset, u16 *words, u16 *data);
+ enum ice_status
+ ice_aq_alloc_free_res(struct ice_hw *hw, u16 num_entries,
+ 		      struct ice_aqc_alloc_free_res_elem *buf, u16 buf_size,
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index e3d148f12aac..75970bcfa6c0 100644
+index 75970bcfa6c0..593fb37bd59e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -167,11 +167,14 @@ static void
- ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
+@@ -245,7 +245,7 @@ static int ice_get_eeprom_len(struct net_device *netdev)
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 	struct ice_pf *pf = np->vsi->back;
+ 
+-	return (int)(pf->hw.nvm.sr_words * sizeof(u16));
++	return (int)pf->hw.nvm.flash_size;
+ }
+ 
+ static int
+@@ -253,39 +253,46 @@ ice_get_eeprom(struct net_device *netdev, struct ethtool_eeprom *eeprom,
+ 	       u8 *bytes)
  {
  	struct ice_netdev_priv *np = netdev_priv(netdev);
--	u8 oem_ver, oem_patch, nvm_ver_hi, nvm_ver_lo;
+-	u16 first_word, last_word, nwords;
  	struct ice_vsi *vsi = np->vsi;
  	struct ice_pf *pf = vsi->back;
  	struct ice_hw *hw = &pf->hw;
--	u16 oem_build;
-+	struct ice_orom_info *orom;
-+	struct ice_nvm_info *nvm;
+ 	enum ice_status status;
+ 	struct device *dev;
+ 	int ret = 0;
+-	u16 *buf;
++	u8 *buf;
+ 
+ 	dev = ice_pf_to_dev(pf);
+ 
+ 	eeprom->magic = hw->vendor_id | (hw->device_id << 16);
++	netdev_dbg(netdev, "GEEPROM cmd 0x%08x, offset 0x%08x, len 0x%08x\n",
++		   eeprom->cmd, eeprom->offset, eeprom->len);
+ 
+-	first_word = eeprom->offset >> 1;
+-	last_word = (eeprom->offset + eeprom->len - 1) >> 1;
+-	nwords = last_word - first_word + 1;
+-
+-	buf = devm_kcalloc(dev, nwords, sizeof(u16), GFP_KERNEL);
++	buf = kzalloc(eeprom->len, GFP_KERNEL);
+ 	if (!buf)
+ 		return -ENOMEM;
+ 
+-	status = ice_read_sr_buf(hw, first_word, &nwords, buf);
++	status = ice_acquire_nvm(hw, ICE_RES_READ);
+ 	if (status) {
+-		dev_err(dev, "ice_read_sr_buf failed, err %d aq_err %d\n",
++		dev_err(dev, "ice_acquire_nvm failed, err %d aq_err %d\n",
+ 			status, hw->adminq.sq_last_status);
+-		eeprom->len = sizeof(u16) * nwords;
+ 		ret = -EIO;
+ 		goto out;
+ 	}
+ 
+-	memcpy(bytes, (u8 *)buf + (eeprom->offset & 1), eeprom->len);
++	status = ice_read_flat_nvm(hw, eeprom->offset, &eeprom->len, buf,
++				   false);
++	if (status) {
++		dev_err(dev, "ice_read_flat_nvm failed, err %d aq_err %d\n",
++			status, hw->adminq.sq_last_status);
++		ret = -EIO;
++		goto release;
++	}
 +
-+	nvm = &hw->nvm;
-+	orom = &nvm->orom;
++	memcpy(bytes, buf, eeprom->len);
++release:
++	ice_release_nvm(hw);
+ out:
+-	devm_kfree(dev, buf);
++	kfree(buf);
+ 	return ret;
+ }
  
- 	strscpy(drvinfo->driver, KBUILD_MODNAME, sizeof(drvinfo->driver));
- 	strscpy(drvinfo->version, ice_drv_ver, sizeof(drvinfo->version));
-@@ -179,11 +182,9 @@ ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
- 	/* Display NVM version (from which the firmware version can be
- 	 * determined) which contains more pertinent information.
- 	 */
--	ice_get_nvm_version(hw, &oem_ver, &oem_build, &oem_patch,
--			    &nvm_ver_hi, &nvm_ver_lo);
- 	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
--		 "%x.%02x 0x%x %d.%d.%d", nvm_ver_hi, nvm_ver_lo,
--		 hw->nvm.eetrack, oem_ver, oem_build, oem_patch);
-+		 "%x.%02x 0x%x %d.%d.%d", nvm->major_ver, nvm->minor_ver,
-+		 nvm->eetrack, orom->major, orom->build, orom->patch);
- 
- 	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
- 		sizeof(drvinfo->bus_info));
 diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index 97aaf75379ae..ef68fa989a57 100644
+index 4cdce0370963..08909d1c7cce 100644
 --- a/drivers/net/ethernet/intel/ice/ice_nvm.c
 +++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -307,6 +307,62 @@ enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data)
+@@ -107,70 +107,6 @@ ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
  	return status;
  }
  
-+/**
-+ * ice_get_orom_ver_info - Read Option ROM version information
-+ * @hw: pointer to the HW struct
-+ *
-+ * Read the Combo Image version data from the Boot Configuration TLV and fill
-+ * in the option ROM version data.
-+ */
-+static enum ice_status ice_get_orom_ver_info(struct ice_hw *hw)
-+{
-+	u16 combo_hi, combo_lo, boot_cfg_tlv, boot_cfg_tlv_len;
-+	struct ice_orom_info *orom = &hw->nvm.orom;
-+	enum ice_status status;
-+	u32 combo_ver;
-+
-+	status = ice_get_pfa_module_tlv(hw, &boot_cfg_tlv, &boot_cfg_tlv_len,
-+					ICE_SR_BOOT_CFG_PTR);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT,
-+			  "Failed to read Boot Configuration Block TLV.\n");
-+		return status;
-+	}
-+
-+	/* Boot Configuration Block must have length at least 2 words
-+	 * (Combo Image Version High and Combo Image Version Low)
-+	 */
-+	if (boot_cfg_tlv_len < 2) {
-+		ice_debug(hw, ICE_DBG_INIT,
-+			  "Invalid Boot Configuration Block TLV size.\n");
-+		return ICE_ERR_INVAL_SIZE;
-+	}
-+
-+	status = ice_read_sr_word(hw, (boot_cfg_tlv + ICE_NVM_OROM_VER_OFF),
-+				  &combo_hi);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to read OROM_VER hi.\n");
-+		return status;
-+	}
-+
-+	status = ice_read_sr_word(hw, (boot_cfg_tlv + ICE_NVM_OROM_VER_OFF + 1),
-+				  &combo_lo);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to read OROM_VER lo.\n");
-+		return status;
-+	}
-+
-+	combo_ver = ((u32)combo_hi << 16) | combo_lo;
-+
-+	orom->major = (u8)((combo_ver & ICE_OROM_VER_MASK) >>
-+			   ICE_OROM_VER_SHIFT);
-+	orom->patch = (u8)(combo_ver & ICE_OROM_VER_PATCH_MASK);
-+	orom->build = (u16)((combo_ver & ICE_OROM_VER_BUILD_MASK) >>
-+			    ICE_OROM_VER_BUILD_SHIFT);
-+
-+	return 0;
-+}
-+
- /**
-  * ice_init_nvm - initializes NVM setting
-  * @hw: pointer to the HW struct
-@@ -316,9 +372,8 @@ enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data)
-  */
- enum ice_status ice_init_nvm(struct ice_hw *hw)
- {
--	u16 oem_hi, oem_lo, boot_cfg_tlv, boot_cfg_tlv_len;
- 	struct ice_nvm_info *nvm = &hw->nvm;
--	u16 eetrack_lo, eetrack_hi;
-+	u16 eetrack_lo, eetrack_hi, ver;
- 	enum ice_status status;
- 	u32 fla, gens_stat;
- 	u8 sr_size;
-@@ -344,12 +399,14 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
- 		return ICE_ERR_NVM_BLANK_MODE;
- 	}
- 
--	status = ice_read_sr_word(hw, ICE_SR_NVM_DEV_STARTER_VER, &nvm->ver);
-+	status = ice_read_sr_word(hw, ICE_SR_NVM_DEV_STARTER_VER, &ver);
- 	if (status) {
- 		ice_debug(hw, ICE_DBG_INIT,
- 			  "Failed to read DEV starter version.\n");
- 		return status;
- 	}
-+	nvm->major_ver = (ver & ICE_NVM_VER_HI_MASK) >> ICE_NVM_VER_HI_SHIFT;
-+	nvm->minor_ver = (ver & ICE_NVM_VER_LO_MASK) >> ICE_NVM_VER_LO_SHIFT;
- 
- 	status = ice_read_sr_word(hw, ICE_SR_NVM_EETRACK_LO, &eetrack_lo);
- 	if (status) {
-@@ -390,39 +447,12 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
- 		break;
- 	}
- 
--	status = ice_get_pfa_module_tlv(hw, &boot_cfg_tlv, &boot_cfg_tlv_len,
--					ICE_SR_BOOT_CFG_PTR);
-+	status = ice_get_orom_ver_info(hw);
- 	if (status) {
--		ice_debug(hw, ICE_DBG_INIT,
--			  "Failed to read Boot Configuration Block TLV.\n");
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to read Option ROM info.\n");
- 		return status;
- 	}
- 
--	/* Boot Configuration Block must have length at least 2 words
--	 * (Combo Image Version High and Combo Image Version Low)
+-/**
+- * ice_check_sr_access_params - verify params for Shadow RAM R/W operations.
+- * @hw: pointer to the HW structure
+- * @offset: offset in words from module start
+- * @words: number of words to access
+- */
+-static enum ice_status
+-ice_check_sr_access_params(struct ice_hw *hw, u32 offset, u16 words)
+-{
+-	if ((offset + words) > hw->nvm.sr_words) {
+-		ice_debug(hw, ICE_DBG_NVM,
+-			  "NVM error: offset beyond SR lmt.\n");
+-		return ICE_ERR_PARAM;
+-	}
+-
+-	if (words > ICE_SR_SECTOR_SIZE_IN_WORDS) {
+-		/* We can access only up to 4KB (one sector), in one AQ write */
+-		ice_debug(hw, ICE_DBG_NVM,
+-			  "NVM error: tried to access %d words, limit is %d.\n",
+-			  words, ICE_SR_SECTOR_SIZE_IN_WORDS);
+-		return ICE_ERR_PARAM;
+-	}
+-
+-	if (((offset + (words - 1)) / ICE_SR_SECTOR_SIZE_IN_WORDS) !=
+-	    (offset / ICE_SR_SECTOR_SIZE_IN_WORDS)) {
+-		/* A single access cannot spread over two sectors */
+-		ice_debug(hw, ICE_DBG_NVM,
+-			  "NVM error: cannot spread over two sectors.\n");
+-		return ICE_ERR_PARAM;
+-	}
+-
+-	return 0;
+-}
+-
+-/**
+- * ice_read_sr_aq - Read Shadow RAM.
+- * @hw: pointer to the HW structure
+- * @offset: offset in words from module start
+- * @words: number of words to read
+- * @data: storage for the words read from Shadow RAM (Little Endian)
+- * @last_command: tells the AdminQ that this is the last command
+- *
+- * Reads 16-bit Little Endian word buffers from the Shadow RAM using the admin
+- * command.
+- */
+-static enum ice_status
+-ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, __le16 *data,
+-	       bool last_command)
+-{
+-	enum ice_status status;
+-
+-	status = ice_check_sr_access_params(hw, offset, words);
+-
+-	/* values in "offset" and "words" parameters are sized as words
+-	 * (16 bits) but ice_aq_read_nvm expects these values in bytes.
+-	 * So do this conversion while calling ice_aq_read_nvm.
 -	 */
--	if (boot_cfg_tlv_len < 2) {
--		ice_debug(hw, ICE_DBG_INIT,
--			  "Invalid Boot Configuration Block TLV size.\n");
--		return ICE_ERR_INVAL_SIZE;
--	}
+-	if (!status)
+-		status = ice_aq_read_nvm(hw, 0, 2 * offset, 2 * words, data,
+-					 last_command, true, NULL);
 -
--	status = ice_read_sr_word(hw, (boot_cfg_tlv + ICE_NVM_OEM_VER_OFF),
--				  &oem_hi);
--	if (status) {
--		ice_debug(hw, ICE_DBG_INIT, "Failed to read OEM_VER hi.\n");
--		return status;
--	}
+-	return status;
+-}
 -
--	status = ice_read_sr_word(hw, (boot_cfg_tlv + ICE_NVM_OEM_VER_OFF + 1),
--				  &oem_lo);
--	if (status) {
--		ice_debug(hw, ICE_DBG_INIT, "Failed to read OEM_VER lo.\n");
--		return status;
--	}
--
--	nvm->oem_ver = ((u32)oem_hi << 16) | oem_lo;
--
+ /**
+  * ice_read_sr_word_aq - Reads Shadow RAM via AQ
+  * @hw: pointer to the HW structure
+@@ -198,63 +134,6 @@ ice_read_sr_word_aq(struct ice_hw *hw, u16 offset, u16 *data)
  	return 0;
  }
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index bf0b7e5b9d39..72591b4aca11 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -241,12 +241,20 @@ struct ice_fc_info {
- 	enum ice_fc_mode req_mode;	/* FC mode requested by caller */
- };
+-/**
+- * ice_read_sr_buf_aq - Reads Shadow RAM buf via AQ
+- * @hw: pointer to the HW structure
+- * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
+- * @words: (in) number of words to read; (out) number of words actually read
+- * @data: words read from the Shadow RAM
+- *
+- * Reads 16 bit words (data buf) from the SR using the ice_read_sr_aq
+- * method. Ownership of the NVM is taken before reading the buffer and later
+- * released.
+- */
+-static enum ice_status
+-ice_read_sr_buf_aq(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
+-{
+-	enum ice_status status;
+-	bool last_cmd = false;
+-	u16 words_read = 0;
+-	u16 i = 0;
+-
+-	do {
+-		u16 read_size, off_w;
+-
+-		/* Calculate number of bytes we should read in this step.
+-		 * It's not allowed to read more than one page at a time or
+-		 * to cross page boundaries.
+-		 */
+-		off_w = offset % ICE_SR_SECTOR_SIZE_IN_WORDS;
+-		read_size = off_w ?
+-			min_t(u16, *words,
+-			      (ICE_SR_SECTOR_SIZE_IN_WORDS - off_w)) :
+-			min_t(u16, (*words - words_read),
+-			      ICE_SR_SECTOR_SIZE_IN_WORDS);
+-
+-		/* Check if this is last command, if so set proper flag */
+-		if ((words_read + read_size) >= *words)
+-			last_cmd = true;
+-
+-		status = ice_read_sr_aq(hw, offset, read_size,
+-					data + words_read, last_cmd);
+-		if (status)
+-			goto read_nvm_buf_aq_exit;
+-
+-		/* Increment counter for words already read and move offset to
+-		 * new read location
+-		 */
+-		words_read += read_size;
+-		offset += read_size;
+-	} while (words_read < *words);
+-
+-	for (i = 0; i < *words; i++)
+-		data[i] = le16_to_cpu(((__force __le16 *)data)[i]);
+-
+-read_nvm_buf_aq_exit:
+-	*words = words_read;
+-	return status;
+-}
+-
+ /**
+  * ice_acquire_nvm - Generic request for acquiring the NVM ownership
+  * @hw: pointer to the HW structure
+@@ -262,7 +141,7 @@ ice_read_sr_buf_aq(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
+  *
+  * This function will request NVM ownership.
+  */
+-static enum ice_status
++enum ice_status
+ ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access)
+ {
+ 	if (hw->nvm.blank_nvm_mode)
+@@ -277,7 +156,7 @@ ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access)
+  *
+  * This function will release NVM ownership.
+  */
+-static void ice_release_nvm(struct ice_hw *hw)
++void ice_release_nvm(struct ice_hw *hw)
+ {
+ 	if (hw->nvm.blank_nvm_mode)
+ 		return;
+@@ -514,31 +393,6 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
+ 	return 0;
+ }
  
-+/* Option ROM version information */
-+struct ice_orom_info {
-+	u8 major;			/* Major version of OROM */
-+	u8 patch;			/* Patch version of OROM */
-+	u16 build;			/* Build version of OROM */
-+};
-+
- /* NVM Information */
- struct ice_nvm_info {
--	u32 eetrack;              /* NVM data version */
--	u32 oem_ver;              /* OEM version info */
--	u16 sr_words;             /* Shadow RAM size in words */
--	u16 ver;                  /* NVM package version */
-+	struct ice_orom_info orom;	/* Option ROM version info */
-+	u32 eetrack;			/* NVM data version */
-+	u16 sr_words;			/* Shadow RAM size in words */
-+	u8 major_ver;			/* major version of NVM package */
-+	u8 minor_ver;			/* minor version of dev starter */
- 	u8 blank_nvm_mode;        /* is NVM empty (no FW present) */
- };
+-/**
+- * ice_read_sr_buf - Reads Shadow RAM buf and acquire lock if necessary
+- * @hw: pointer to the HW structure
+- * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
+- * @words: (in) number of words to read; (out) number of words actually read
+- * @data: words read from the Shadow RAM
+- *
+- * Reads 16 bit words (data buf) from the SR using the ice_read_nvm_buf_aq
+- * method. The buf read is preceded by the NVM ownership take
+- * and followed by the release.
+- */
+-enum ice_status
+-ice_read_sr_buf(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
+-{
+-	enum ice_status status;
+-
+-	status = ice_acquire_nvm(hw, ICE_RES_READ);
+-	if (!status) {
+-		status = ice_read_sr_buf_aq(hw, offset, words, data);
+-		ice_release_nvm(hw);
+-	}
+-
+-	return status;
+-}
+-
+ /**
+  * ice_nvm_validate_checksum
+  * @hw: pointer to the HW struct
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
+index 4245ef988edf..7375f6b96919 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.h
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
+@@ -4,8 +4,12 @@
+ #ifndef _ICE_NVM_H_
+ #define _ICE_NVM_H_
  
-@@ -633,7 +641,7 @@ struct ice_hw_port_stats {
- 
- /* Checksum and Shadow RAM pointers */
- #define ICE_SR_BOOT_CFG_PTR		0x132
--#define ICE_NVM_OEM_VER_OFF		0x02
-+#define ICE_NVM_OROM_VER_OFF		0x02
- #define ICE_SR_NVM_DEV_STARTER_VER	0x18
- #define ICE_SR_NVM_EETRACK_LO		0x2D
- #define ICE_SR_NVM_EETRACK_HI		0x2E
-@@ -641,12 +649,12 @@ struct ice_hw_port_stats {
- #define ICE_NVM_VER_LO_MASK		(0xff << ICE_NVM_VER_LO_SHIFT)
- #define ICE_NVM_VER_HI_SHIFT		12
- #define ICE_NVM_VER_HI_MASK		(0xf << ICE_NVM_VER_HI_SHIFT)
--#define ICE_OEM_VER_PATCH_SHIFT		0
--#define ICE_OEM_VER_PATCH_MASK		(0xff << ICE_OEM_VER_PATCH_SHIFT)
--#define ICE_OEM_VER_BUILD_SHIFT		8
--#define ICE_OEM_VER_BUILD_MASK		(0xffff << ICE_OEM_VER_BUILD_SHIFT)
--#define ICE_OEM_VER_SHIFT		24
--#define ICE_OEM_VER_MASK		(0xff << ICE_OEM_VER_SHIFT)
-+#define ICE_OROM_VER_PATCH_SHIFT	0
-+#define ICE_OROM_VER_PATCH_MASK		(0xff << ICE_OROM_VER_PATCH_SHIFT)
-+#define ICE_OROM_VER_BUILD_SHIFT	8
-+#define ICE_OROM_VER_BUILD_MASK		(0xffff << ICE_OROM_VER_BUILD_SHIFT)
-+#define ICE_OROM_VER_SHIFT		24
-+#define ICE_OROM_VER_MASK		(0xff << ICE_OROM_VER_SHIFT)
- #define ICE_SR_PFA_PTR			0x40
- #define ICE_SR_SECTOR_SIZE_IN_WORDS	0x800
- #define ICE_SR_WORDS_IN_1KB		512
++enum ice_status
++ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access);
++void ice_release_nvm(struct ice_hw *hw);
+ enum ice_status
+ ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
+ 		  bool read_shadow_ram);
++enum ice_status ice_init_nvm(struct ice_hw *hw);
+ enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data);
+ #endif /* _ICE_NVM_H_ */
 -- 
 2.24.1
 
