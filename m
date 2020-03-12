@@ -1,215 +1,351 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Mar 2020 18:58:11 -0700
-Subject: [Intel-wired-lan] [PATCH v3 2/9] ice: create function to read a
- section of the NVM and Shadow RAM
+Date: Wed, 11 Mar 2020 18:58:18 -0700
+Subject: [Intel-wired-lan] [PATCH v3 9/9] ice: add board identifier info to
+ devlink .info_get
 In-Reply-To: <20200312015818.1007882-1-jacob.e.keller@intel.com>
 References: <20200312015818.1007882-1-jacob.e.keller@intel.com>
-Message-ID: <20200312015818.1007882-3-jacob.e.keller@intel.com>
+Message-ID: <20200312015818.1007882-10-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The NVM contents are read via firmware by using the ice_aq_read_nvm
-function. This function has a couple of limits:
+Export a unique board identifier using "board.id" for devlink's
+.info_get command.
 
-1) The AdminQ commands can only take buffers sized up to 4Kb. Thus, any
-   larger read must be split into multiple reads.
-2) when reading from the Shadow RAM, reads must not cross sector
-   boundaries. The sectors are also 4Kb in size.
-
-Implement the ice_read_flat_nvm function to read portions of the NVM by
-flat offset. That is, to read using offsets from the start of the NVM
-rather than from a specific module.
-
-This function will be able to read both from the NVM and from the Shadow
-RAM. For simplicity NVM reads will always be broken up to not cross 4Kb
-page boundaries, even though this is not required unless reading from
-the Shadow RAM.
-
-Use this new function as the implementation of ice_read_sr_word_aq.
-
-The ice_read_sr_buf_aq function is not modified here. This is because
-a following change will remove the only caller of that function in favor
-of directly using ice_read_flat_nvm. Thus, there is little benefit to
-changing it now only to remove it momentarily. At the same time, the
-ice_read_sr_aq function will also be removed.
+Obtain this by reading the NVM for the PBA identification string.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  2 +
- drivers/net/ethernet/intel/ice/ice_nvm.c      | 87 +++++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_nvm.h      |  3 +
- 3 files changed, 85 insertions(+), 7 deletions(-)
+ Documentation/networking/devlink/ice.rst     |   4 +
+ drivers/net/ethernet/intel/ice/ice_common.c  |  66 ----------
+ drivers/net/ethernet/intel/ice/ice_common.h  |   3 -
+ drivers/net/ethernet/intel/ice/ice_devlink.c |  16 ++-
+ drivers/net/ethernet/intel/ice/ice_nvm.c     | 125 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_nvm.h     |   5 +
+ drivers/net/ethernet/intel/ice/ice_type.h    |   1 +
+ 7 files changed, 150 insertions(+), 70 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 801e4fd40b03..f7d4befcf283 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1251,6 +1251,8 @@ struct ice_aqc_nvm {
- 	__le32 addr_low;
- };
+diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
+index 56739a51cdfe..37fbbd40a5e5 100644
+--- a/Documentation/networking/devlink/ice.rst
++++ b/Documentation/networking/devlink/ice.rst
+@@ -19,6 +19,10 @@ The ``ice`` driver reports the following versions
+       - Type
+       - Example
+       - Description
++    * - ``board.id``
++      - fixed
++      - K65390-000
++      - The Product Board Assembly (PBA) identifier of the board.
+     * - ``fw.mgmt``
+       - running
+       - 2.1.7
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index a16ec5c6a0bc..c760fae4aed4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -935,72 +935,6 @@ enum ice_status ice_reset(struct ice_hw *hw, enum ice_reset_req req)
+ 	return ice_check_reset(hw);
+ }
  
-+#define ICE_AQC_NVM_START_POINT			0
+-/**
+- * ice_get_pfa_module_tlv - Reads sub module TLV from NVM PFA
+- * @hw: pointer to hardware structure
+- * @module_tlv: pointer to module TLV to return
+- * @module_tlv_len: pointer to module TLV length to return
+- * @module_type: module type requested
+- *
+- * Finds the requested sub module TLV type from the Preserved Field
+- * Area (PFA) and returns the TLV pointer and length. The caller can
+- * use these to read the variable length TLV value.
+- */
+-enum ice_status
+-ice_get_pfa_module_tlv(struct ice_hw *hw, u16 *module_tlv, u16 *module_tlv_len,
+-		       u16 module_type)
+-{
+-	enum ice_status status;
+-	u16 pfa_len, pfa_ptr;
+-	u16 next_tlv;
+-
+-	status = ice_read_sr_word(hw, ICE_SR_PFA_PTR, &pfa_ptr);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_INIT, "Preserved Field Array pointer.\n");
+-		return status;
+-	}
+-	status = ice_read_sr_word(hw, pfa_ptr, &pfa_len);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_INIT, "Failed to read PFA length.\n");
+-		return status;
+-	}
+-	/* Starting with first TLV after PFA length, iterate through the list
+-	 * of TLVs to find the requested one.
+-	 */
+-	next_tlv = pfa_ptr + 1;
+-	while (next_tlv < pfa_ptr + pfa_len) {
+-		u16 tlv_sub_module_type;
+-		u16 tlv_len;
+-
+-		/* Read TLV type */
+-		status = ice_read_sr_word(hw, next_tlv, &tlv_sub_module_type);
+-		if (status) {
+-			ice_debug(hw, ICE_DBG_INIT, "Failed to read TLV type.\n");
+-			break;
+-		}
+-		/* Read TLV length */
+-		status = ice_read_sr_word(hw, next_tlv + 1, &tlv_len);
+-		if (status) {
+-			ice_debug(hw, ICE_DBG_INIT, "Failed to read TLV length.\n");
+-			break;
+-		}
+-		if (tlv_sub_module_type == module_type) {
+-			if (tlv_len) {
+-				*module_tlv = next_tlv;
+-				*module_tlv_len = tlv_len;
+-				return 0;
+-			}
+-			return ICE_ERR_INVAL_SIZE;
+-		}
+-		/* Check next TLV, i.e. current TLV pointer + length + 2 words
+-		 * (for current TLV's type and length)
+-		 */
+-		next_tlv = next_tlv + tlv_len + 2;
+-	}
+-	/* Module does not exist */
+-	return ICE_ERR_DOES_NOT_EXIST;
+-}
+-
+ /**
+  * ice_copy_rxq_ctx_to_hw
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index ded704236643..db63fd6b5608 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -15,9 +15,6 @@ enum ice_status ice_nvm_validate_checksum(struct ice_hw *hw);
+ 
+ enum ice_status ice_init_hw(struct ice_hw *hw);
+ void ice_deinit_hw(struct ice_hw *hw);
+-enum ice_status
+-ice_get_pfa_module_tlv(struct ice_hw *hw, u16 *module_tlv, u16 *module_tlv_len,
+-		       u16 module_type);
+ enum ice_status ice_check_reset(struct ice_hw *hw);
+ enum ice_status ice_reset(struct ice_hw *hw, enum ice_reset_req req);
+ enum ice_status ice_create_all_ctrlq(struct ice_hw *hw);
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+index 410e2b531e5d..27c5034c039a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devlink.c
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+@@ -19,6 +19,18 @@ static int ice_info_get_dsn(struct ice_pf *pf, char *buf, size_t len)
+ 	return 0;
+ }
+ 
++static int ice_info_pba(struct ice_pf *pf, char *buf, size_t len)
++{
++	struct ice_hw *hw = &pf->hw;
++	enum ice_status status;
 +
- /* NVM Checksum Command (direct, 0x0706) */
- struct ice_aqc_nvm_checksum {
- 	u8 flags;
++	status = ice_read_pba_string(hw, (u8 *)buf, len);
++	if (status)
++		return -EIO;
++
++	return 0;
++}
++
+ static int ice_info_fw_mgmt(struct ice_pf *pf, char *buf, size_t len)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+@@ -93,6 +105,7 @@ static int ice_info_ddp_pkg_version(struct ice_pf *pf, char *buf, size_t len)
+ 	return 0;
+ }
+ 
++#define fixed(key, getter) { ICE_VERSION_FIXED, key, getter }
+ #define running(key, getter) { ICE_VERSION_RUNNING, key, getter }
+ 
+ enum ice_version_type {
+@@ -106,6 +119,7 @@ static const struct ice_devlink_version {
+ 	const char *key;
+ 	int (*getter)(struct ice_pf *pf, char *buf, size_t len);
+ } ice_devlink_versions[] = {
++	fixed(DEVLINK_INFO_VERSION_GENERIC_BOARD_ID, ice_info_pba),
+ 	running(DEVLINK_INFO_VERSION_GENERIC_FW_MGMT, ice_info_fw_mgmt),
+ 	running("fw.mgmt.api", ice_info_fw_api),
+ 	running("fw.mgmt.build", ice_info_fw_build),
+@@ -125,7 +139,7 @@ static const struct ice_devlink_version {
+  * Callback for the devlink .info_get operation. Reports information about the
+  * device.
+  *
+- * @returns zero on success or an error code on failure.
++ * Return: zero on success or an error code on failure.
+  */
+ static int ice_devlink_info_get(struct devlink *devlink,
+ 				struct devlink_info_req *req,
 diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index 5597ec50a662..97aaf75379ae 100644
+index 08909d1c7cce..8beb675d676b 100644
 --- a/drivers/net/ethernet/intel/ice/ice_nvm.c
 +++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -11,13 +11,15 @@
-  * @length: length of the section to be read (in bytes from the offset)
-  * @data: command buffer (size [bytes] = length)
-  * @last_command: tells if this is the last command in a series
-+ * @read_shadow_ram: tell if this is a shadow RAM read
-  * @cd: pointer to command details structure or NULL
-  *
-  * Read the NVM using the admin queue commands (0x0701)
-  */
- static enum ice_status
- ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
--		void *data, bool last_command, struct ice_sq_cd *cd)
-+		void *data, bool last_command, bool read_shadow_ram,
-+		struct ice_sq_cd *cd)
- {
- 	struct ice_aq_desc desc;
- 	struct ice_aqc_nvm *cmd;
-@@ -30,6 +32,9 @@ ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
- 
- 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_nvm_read);
- 
-+	if (!read_shadow_ram && module_typeid == ICE_AQC_NVM_START_POINT)
-+		cmd->cmd_flags |= ICE_AQC_NVM_FLASH_ONLY;
-+
- 	/* If this is the last command in a series, set the proper flag. */
- 	if (last_command)
- 		cmd->cmd_flags |= ICE_AQC_NVM_LAST_CMD;
-@@ -41,6 +46,68 @@ ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
- 	return ice_aq_send_cmd(hw, &desc, data, length, cd);
+@@ -185,6 +185,131 @@ enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data)
+ 	return status;
  }
  
 +/**
-+ * ice_read_flat_nvm - Read portion of NVM by flat offset
-+ * @hw: pointer to the HW struct
-+ * @offset: offset from beginning of NVM
-+ * @length: (in) number of bytes to read; (out) number of bytes actually read
-+ * @data: buffer to return data in (sized to fit the specified length)
-+ * @read_shadow_ram: if true, read from shadow RAM instead of NVM
++ * ice_get_pfa_module_tlv - Reads sub module TLV from NVM PFA
++ * @hw: pointer to hardware structure
++ * @module_tlv: pointer to module TLV to return
++ * @module_tlv_len: pointer to module TLV length to return
++ * @module_type: module type requested
 + *
-+ * Reads a portion of the NVM, as a flat memory space. This function correctly
-+ * breaks read requests across Shadow RAM sectors and ensures that no single
-+ * read request exceeds the maximum 4Kb read for a single AdminQ command.
-+ *
-+ * Returns a status code on failure. Note that the data pointer may be
-+ * partially updated if some reads succeed before a failure.
++ * Finds the requested sub module TLV type from the Preserved Field
++ * Area (PFA) and returns the TLV pointer and length. The caller can
++ * use these to read the variable length TLV value.
 + */
 +enum ice_status
-+ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
-+		  bool read_shadow_ram)
++ice_get_pfa_module_tlv(struct ice_hw *hw, u16 *module_tlv, u16 *module_tlv_len,
++		       u16 module_type)
 +{
 +	enum ice_status status;
-+	u32 inlen = *length;
-+	u32 bytes_read = 0;
-+	bool last_cmd;
++	u16 pfa_len, pfa_ptr;
++	u16 next_tlv;
 +
-+	*length = 0;
++	status = ice_read_sr_word(hw, ICE_SR_PFA_PTR, &pfa_ptr);
++	if (status) {
++		ice_debug(hw, ICE_DBG_INIT, "Preserved Field Array pointer.\n");
++		return status;
++	}
++	status = ice_read_sr_word(hw, pfa_ptr, &pfa_len);
++	if (status) {
++		ice_debug(hw, ICE_DBG_INIT, "Failed to read PFA length.\n");
++		return status;
++	}
++	/* Starting with first TLV after PFA length, iterate through the list
++	 * of TLVs to find the requested one.
++	 */
++	next_tlv = pfa_ptr + 1;
++	while (next_tlv < pfa_ptr + pfa_len) {
++		u16 tlv_sub_module_type;
++		u16 tlv_len;
 +
-+	/* Verify the length of the read if this is for the Shadow RAM */
-+	if (read_shadow_ram && ((offset + inlen) > (hw->nvm.sr_words * 2u))) {
-+		ice_debug(hw, ICE_DBG_NVM,
-+			  "NVM error: requested offset is beyond Shadow RAM limit\n");
++		/* Read TLV type */
++		status = ice_read_sr_word(hw, next_tlv, &tlv_sub_module_type);
++		if (status) {
++			ice_debug(hw, ICE_DBG_INIT, "Failed to read TLV type.\n");
++			break;
++		}
++		/* Read TLV length */
++		status = ice_read_sr_word(hw, next_tlv + 1, &tlv_len);
++		if (status) {
++			ice_debug(hw, ICE_DBG_INIT, "Failed to read TLV length.\n");
++			break;
++		}
++		if (tlv_sub_module_type == module_type) {
++			if (tlv_len) {
++				*module_tlv = next_tlv;
++				*module_tlv_len = tlv_len;
++				return 0;
++			}
++			return ICE_ERR_INVAL_SIZE;
++		}
++		/* Check next TLV, i.e. current TLV pointer + length + 2 words
++		 * (for current TLV's type and length)
++		 */
++		next_tlv = next_tlv + tlv_len + 2;
++	}
++	/* Module does not exist */
++	return ICE_ERR_DOES_NOT_EXIST;
++}
++
++/**
++ * ice_read_pba_string - Reads part number string from NVM
++ * @hw: pointer to hardware structure
++ * @pba_num: stores the part number string from the NVM
++ * @pba_num_size: part number string buffer length
++ *
++ * Reads the part number string from the NVM.
++ */
++enum ice_status
++ice_read_pba_string(struct ice_hw *hw, u8 *pba_num, u32 pba_num_size)
++{
++	u16 pba_tlv, pba_tlv_len;
++	enum ice_status status;
++	u16 pba_word, pba_size;
++	u16 i;
++
++	status = ice_get_pfa_module_tlv(hw, &pba_tlv, &pba_tlv_len,
++					ICE_SR_PBA_BLOCK_PTR);
++	if (status) {
++		ice_debug(hw, ICE_DBG_INIT, "Failed to read PBA Block TLV.\n");
++		return status;
++	}
++
++	/* pba_size is the next word */
++	status = ice_read_sr_word(hw, (pba_tlv + 2), &pba_size);
++	if (status) {
++		ice_debug(hw, ICE_DBG_INIT, "Failed to read PBA Section size.\n");
++		return status;
++	}
++
++	if (pba_tlv_len < pba_size) {
++		ice_debug(hw, ICE_DBG_INIT, "Invalid PBA Block TLV size.\n");
++		return ICE_ERR_INVAL_SIZE;
++	}
++
++	/* Subtract one to get PBA word count (PBA Size word is included in
++	 * total size)
++	 */
++	pba_size--;
++	if (pba_num_size < (((u32)pba_size * 2) + 1)) {
++		ice_debug(hw, ICE_DBG_INIT, "Buffer too small for PBA data.\n");
 +		return ICE_ERR_PARAM;
 +	}
 +
-+	do {
-+		u32 read_size, sector_offset;
++	for (i = 0; i < pba_size; i++) {
++		status = ice_read_sr_word(hw, (pba_tlv + 2 + 1) + i, &pba_word);
++		if (status) {
++			ice_debug(hw, ICE_DBG_INIT, "Failed to read PBA Block word %d.\n", i);
++			return status;
++		}
 +
-+		/* ice_aq_read_nvm cannot read more than 4Kb at a time.
-+		 * Additionally, a read from the Shadow RAM may not cross over
-+		 * a sector boundary. Conveniently, the sector size is also
-+		 * 4Kb.
-+		 */
-+		sector_offset = offset % ICE_AQ_MAX_BUF_LEN;
-+		read_size = min_t(u32, ICE_AQ_MAX_BUF_LEN - sector_offset,
-+				  inlen - bytes_read);
++		pba_num[(i * 2)] = (pba_word >> 8) & 0xFF;
++		pba_num[(i * 2) + 1] = pba_word & 0xFF;
++	}
++	pba_num[(pba_size * 2)] = '\0';
 +
-+		last_cmd = !(bytes_read + read_size < inlen);
-+
-+		status = ice_aq_read_nvm(hw, ICE_AQC_NVM_START_POINT,
-+					 offset, read_size,
-+					 data + bytes_read, last_cmd,
-+					 read_shadow_ram, NULL);
-+		if (status)
-+			break;
-+
-+		bytes_read += read_size;
-+		offset += read_size;
-+	} while (!last_cmd);
-+
-+	*length = bytes_read;
 +	return status;
 +}
 +
  /**
-  * ice_check_sr_access_params - verify params for Shadow RAM R/W operations.
-  * @hw: pointer to the HW structure
-@@ -100,7 +167,7 @@ ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, __le16 *data,
- 	 */
- 	if (!status)
- 		status = ice_aq_read_nvm(hw, 0, 2 * offset, 2 * words, data,
--					 last_command, NULL);
-+					 last_command, true, NULL);
- 
- 	return status;
- }
-@@ -111,19 +178,25 @@ ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, __le16 *data,
-  * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-  * @data: word read from the Shadow RAM
-  *
-- * Reads one 16 bit word from the Shadow RAM using the ice_read_sr_aq method.
-+ * Reads one 16 bit word from the Shadow RAM using ice_read_flat_nvm.
-  */
- static enum ice_status
- ice_read_sr_word_aq(struct ice_hw *hw, u16 offset, u16 *data)
- {
-+	u32 bytes = sizeof(u16);
- 	enum ice_status status;
- 	__le16 data_local;
- 
--	status = ice_read_sr_aq(hw, offset, 1, &data_local, true);
--	if (!status)
--		*data = le16_to_cpu(data_local);
-+	/* Note that ice_read_flat_nvm takes into account the 4Kb AdminQ and
-+	 * Shadow RAM sector restrictions necessary when reading from the NVM.
-+	 */
-+	status = ice_read_flat_nvm(hw, offset * sizeof(u16), &bytes,
-+				   (u8 *)&data_local, true);
-+	if (status)
-+		return status;
- 
--	return status;
-+	*data = le16_to_cpu(data_local);
-+	return 0;
- }
- 
- /**
+  * ice_get_orom_ver_info - Read Option ROM version information
+  * @hw: pointer to the HW struct
 diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
-index a9fa011c22c6..4245ef988edf 100644
+index 7375f6b96919..999f273ba6ad 100644
 --- a/drivers/net/ethernet/intel/ice/ice_nvm.h
 +++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
-@@ -4,5 +4,8 @@
- #ifndef _ICE_NVM_H_
- #define _ICE_NVM_H_
- 
+@@ -10,6 +10,11 @@ void ice_release_nvm(struct ice_hw *hw);
+ enum ice_status
+ ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
+ 		  bool read_shadow_ram);
 +enum ice_status
-+ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
-+		  bool read_shadow_ram);
++ice_get_pfa_module_tlv(struct ice_hw *hw, u16 *module_tlv, u16 *module_tlv_len,
++		       u16 module_type);
++enum ice_status
++ice_read_pba_string(struct ice_hw *hw, u8 *pba_num, u32 pba_num_size);
+ enum ice_status ice_init_nvm(struct ice_hw *hw);
  enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data);
  #endif /* _ICE_NVM_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 200aceae4323..26e00f41dd89 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -643,6 +643,7 @@ struct ice_hw_port_stats {
+ /* Checksum and Shadow RAM pointers */
+ #define ICE_SR_BOOT_CFG_PTR		0x132
+ #define ICE_NVM_OROM_VER_OFF		0x02
++#define ICE_SR_PBA_BLOCK_PTR		0x16
+ #define ICE_SR_NVM_DEV_STARTER_VER	0x18
+ #define ICE_SR_NVM_EETRACK_LO		0x2D
+ #define ICE_SR_NVM_EETRACK_HI		0x2E
 -- 
 2.24.1
 
