@@ -1,352 +1,165 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Mar 2020 18:27:26 -0700
-Subject: [Intel-wired-lan] [PATCH v2 9/9] ice: add board identifier info to
- devlink .info_get
+Date: Wed, 11 Mar 2020 18:27:21 -0700
+Subject: [Intel-wired-lan] [PATCH v2 4/9] ice: discover and store size of
+ available flash
 In-Reply-To: <20200312012726.973301-1-jacob.e.keller@intel.com>
 References: <20200312012726.973301-1-jacob.e.keller@intel.com>
-Message-ID: <20200312012726.973301-10-jacob.e.keller@intel.com>
+Message-ID: <20200312012726.973301-5-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Export a unique board identifier using "board.id" for devlink's
-.info_get command.
+When reading from the NVM using a flat address, it is useful to know the
+upper bound on the size of the flash contents. This value is not stored
+within the NVM.
 
-Obtain this by reading the NVM for the PBA identification string.
+We can determine the size by performing a bisection between upper and
+lower bounds. It is known that the size cannot exceed 16 MB (offset of
+0xFFFFFF).
+
+Use a while loop to bisect the upper and lower bounds by reading one
+byte at a time. On a failed read, lower the maximum bound. On
+a successful read, increase the lower bound.
+
+Save this as the flash_size in the ice_nvm_info structure that contains
+data related to the NVM.
+
+The size will be used in a future patch for implementing full NVM read
+via ethtool's GEEPROM command.
+
+The maximum possible size for the flash is bounded by the size limit for
+the NVM AdminQ commands. Add a new macro, ICE_AQC_NVM_MAX_OFFSET, which
+can be used to represent this upper bound.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Reviewed-by: Jakub Kicinski <kuba@kernel.org>
 ---
- Documentation/networking/devlink/ice.rst     |   4 +
- drivers/net/ethernet/intel/ice/ice_common.c  |  66 ----------
- drivers/net/ethernet/intel/ice/ice_common.h  |   3 -
- drivers/net/ethernet/intel/ice/ice_devlink.c |  16 ++-
- drivers/net/ethernet/intel/ice/ice_nvm.c     | 125 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_nvm.h     |   5 +
- drivers/net/ethernet/intel/ice/ice_type.h    |   1 +
- 7 files changed, 150 insertions(+), 70 deletions(-)
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  2 +
+ drivers/net/ethernet/intel/ice/ice_nvm.c      | 62 ++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_type.h     |  1 +
+ 3 files changed, 63 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
-index 56739a51cdfe..37fbbd40a5e5 100644
---- a/Documentation/networking/devlink/ice.rst
-+++ b/Documentation/networking/devlink/ice.rst
-@@ -19,6 +19,10 @@ The ``ice`` driver reports the following versions
-       - Type
-       - Example
-       - Description
-+    * - ``board.id``
-+      - fixed
-+      - K65390-000
-+      - The Product Board Assembly (PBA) identifier of the board.
-     * - ``fw.mgmt``
-       - running
-       - 2.1.7
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index a16ec5c6a0bc..c760fae4aed4 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -935,72 +935,6 @@ enum ice_status ice_reset(struct ice_hw *hw, enum ice_reset_req req)
- 	return ice_check_reset(hw);
- }
- 
--/**
-- * ice_get_pfa_module_tlv - Reads sub module TLV from NVM PFA
-- * @hw: pointer to hardware structure
-- * @module_tlv: pointer to module TLV to return
-- * @module_tlv_len: pointer to module TLV length to return
-- * @module_type: module type requested
-- *
-- * Finds the requested sub module TLV type from the Preserved Field
-- * Area (PFA) and returns the TLV pointer and length. The caller can
-- * use these to read the variable length TLV value.
-- */
--enum ice_status
--ice_get_pfa_module_tlv(struct ice_hw *hw, u16 *module_tlv, u16 *module_tlv_len,
--		       u16 module_type)
--{
--	enum ice_status status;
--	u16 pfa_len, pfa_ptr;
--	u16 next_tlv;
--
--	status = ice_read_sr_word(hw, ICE_SR_PFA_PTR, &pfa_ptr);
--	if (status) {
--		ice_debug(hw, ICE_DBG_INIT, "Preserved Field Array pointer.\n");
--		return status;
--	}
--	status = ice_read_sr_word(hw, pfa_ptr, &pfa_len);
--	if (status) {
--		ice_debug(hw, ICE_DBG_INIT, "Failed to read PFA length.\n");
--		return status;
--	}
--	/* Starting with first TLV after PFA length, iterate through the list
--	 * of TLVs to find the requested one.
--	 */
--	next_tlv = pfa_ptr + 1;
--	while (next_tlv < pfa_ptr + pfa_len) {
--		u16 tlv_sub_module_type;
--		u16 tlv_len;
--
--		/* Read TLV type */
--		status = ice_read_sr_word(hw, next_tlv, &tlv_sub_module_type);
--		if (status) {
--			ice_debug(hw, ICE_DBG_INIT, "Failed to read TLV type.\n");
--			break;
--		}
--		/* Read TLV length */
--		status = ice_read_sr_word(hw, next_tlv + 1, &tlv_len);
--		if (status) {
--			ice_debug(hw, ICE_DBG_INIT, "Failed to read TLV length.\n");
--			break;
--		}
--		if (tlv_sub_module_type == module_type) {
--			if (tlv_len) {
--				*module_tlv = next_tlv;
--				*module_tlv_len = tlv_len;
--				return 0;
--			}
--			return ICE_ERR_INVAL_SIZE;
--		}
--		/* Check next TLV, i.e. current TLV pointer + length + 2 words
--		 * (for current TLV's type and length)
--		 */
--		next_tlv = next_tlv + tlv_len + 2;
--	}
--	/* Module does not exist */
--	return ICE_ERR_DOES_NOT_EXIST;
--}
--
- /**
-  * ice_copy_rxq_ctx_to_hw
-  * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index ded704236643..db63fd6b5608 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -15,9 +15,6 @@ enum ice_status ice_nvm_validate_checksum(struct ice_hw *hw);
- 
- enum ice_status ice_init_hw(struct ice_hw *hw);
- void ice_deinit_hw(struct ice_hw *hw);
--enum ice_status
--ice_get_pfa_module_tlv(struct ice_hw *hw, u16 *module_tlv, u16 *module_tlv_len,
--		       u16 module_type);
- enum ice_status ice_check_reset(struct ice_hw *hw);
- enum ice_status ice_reset(struct ice_hw *hw, enum ice_reset_req req);
- enum ice_status ice_create_all_ctrlq(struct ice_hw *hw);
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index 410e2b531e5d..27c5034c039a 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -19,6 +19,18 @@ static int ice_info_get_dsn(struct ice_pf *pf, char *buf, size_t len)
- 	return 0;
- }
- 
-+static int ice_info_pba(struct ice_pf *pf, char *buf, size_t len)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+	enum ice_status status;
-+
-+	status = ice_read_pba_string(hw, (u8 *)buf, len);
-+	if (status)
-+		return -EIO;
-+
-+	return 0;
-+}
-+
- static int ice_info_fw_mgmt(struct ice_pf *pf, char *buf, size_t len)
- {
- 	struct ice_hw *hw = &pf->hw;
-@@ -93,6 +105,7 @@ static int ice_info_ddp_pkg_version(struct ice_pf *pf, char *buf, size_t len)
- 	return 0;
- }
- 
-+#define fixed(key, getter) { ICE_VERSION_FIXED, key, getter }
- #define running(key, getter) { ICE_VERSION_RUNNING, key, getter }
- 
- enum ice_version_type {
-@@ -106,6 +119,7 @@ static const struct ice_devlink_version {
- 	const char *key;
- 	int (*getter)(struct ice_pf *pf, char *buf, size_t len);
- } ice_devlink_versions[] = {
-+	fixed(DEVLINK_INFO_VERSION_GENERIC_BOARD_ID, ice_info_pba),
- 	running(DEVLINK_INFO_VERSION_GENERIC_FW_MGMT, ice_info_fw_mgmt),
- 	running("fw.mgmt.api", ice_info_fw_api),
- 	running("fw.mgmt.build", ice_info_fw_build),
-@@ -125,7 +139,7 @@ static const struct ice_devlink_version {
-  * Callback for the devlink .info_get operation. Reports information about the
-  * device.
-  *
-- * @returns zero on success or an error code on failure.
-+ * Return: zero on success or an error code on failure.
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index f7d4befcf283..a1066c4bf40d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1233,6 +1233,7 @@ struct ice_aqc_sff_eeprom {
+  * NVM Update commands (indirect 0x0703)
   */
- static int ice_devlink_info_get(struct devlink *devlink,
- 				struct devlink_info_req *req,
+ struct ice_aqc_nvm {
++#define ICE_AQC_NVM_MAX_OFFSET		0xFFFFFF
+ 	__le16 offset_low;
+ 	u8 offset_high;
+ 	u8 cmd_flags;
+@@ -1798,6 +1799,7 @@ enum ice_aq_err {
+ 	ICE_AQ_RC_ENOMEM	= 9,  /* Out of memory */
+ 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
+ 	ICE_AQ_RC_EEXIST	= 13, /* Object already exists */
++	ICE_AQ_RC_EINVAL	= 14, /* Invalid argument */
+ 	ICE_AQ_RC_ENOSPC	= 16, /* No space left or allocation failure */
+ 	ICE_AQ_RC_ENOSYS	= 17, /* Function not implemented */
+ 	ICE_AQ_RC_ENOSEC	= 24, /* Missing security manifest */
 diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index 08909d1c7cce..8beb675d676b 100644
+index ef68fa989a57..4cdce0370963 100644
 --- a/drivers/net/ethernet/intel/ice/ice_nvm.c
 +++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -185,6 +185,131 @@ enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data)
- 	return status;
+@@ -26,8 +26,7 @@ ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
+ 
+ 	cmd = &desc.params.nvm;
+ 
+-	/* In offset the highest byte must be zeroed. */
+-	if (offset & 0xFF000000)
++	if (offset > ICE_AQC_NVM_MAX_OFFSET)
+ 		return ICE_ERR_PARAM;
+ 
+ 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_nvm_read);
+@@ -363,6 +362,58 @@ static enum ice_status ice_get_orom_ver_info(struct ice_hw *hw)
+ 	return 0;
  }
  
 +/**
-+ * ice_get_pfa_module_tlv - Reads sub module TLV from NVM PFA
-+ * @hw: pointer to hardware structure
-+ * @module_tlv: pointer to module TLV to return
-+ * @module_tlv_len: pointer to module TLV length to return
-+ * @module_type: module type requested
++ * ice_discover_flash_size - Discover the available flash size.
++ * @hw: pointer to the HW struct
 + *
-+ * Finds the requested sub module TLV type from the Preserved Field
-+ * Area (PFA) and returns the TLV pointer and length. The caller can
-+ * use these to read the variable length TLV value.
++ * The device flash could be up to 16MB in size. However, it is possible that
++ * the actual size is smaller. Use bisection to determine the accessible size
++ * of flash memory.
 + */
-+enum ice_status
-+ice_get_pfa_module_tlv(struct ice_hw *hw, u16 *module_tlv, u16 *module_tlv_len,
-+		       u16 module_type)
++static enum ice_status ice_discover_flash_size(struct ice_hw *hw)
 +{
++	u32 min_size = 0, max_size = ICE_AQC_NVM_MAX_OFFSET + 1;
 +	enum ice_status status;
-+	u16 pfa_len, pfa_ptr;
-+	u16 next_tlv;
 +
-+	status = ice_read_sr_word(hw, ICE_SR_PFA_PTR, &pfa_ptr);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Preserved Field Array pointer.\n");
++	status = ice_acquire_nvm(hw, ICE_RES_READ);
++	if (status)
 +		return status;
-+	}
-+	status = ice_read_sr_word(hw, pfa_ptr, &pfa_len);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to read PFA length.\n");
-+		return status;
-+	}
-+	/* Starting with first TLV after PFA length, iterate through the list
-+	 * of TLVs to find the requested one.
-+	 */
-+	next_tlv = pfa_ptr + 1;
-+	while (next_tlv < pfa_ptr + pfa_len) {
-+		u16 tlv_sub_module_type;
-+		u16 tlv_len;
 +
-+		/* Read TLV type */
-+		status = ice_read_sr_word(hw, next_tlv, &tlv_sub_module_type);
-+		if (status) {
-+			ice_debug(hw, ICE_DBG_INIT, "Failed to read TLV type.\n");
-+			break;
++	while ((max_size - min_size) > 1) {
++		u32 offset = (max_size + min_size) / 2;
++		u32 len = 1;
++		u8 data;
++
++		status = ice_read_flat_nvm(hw, offset, &len, &data, false);
++		if (status == ICE_ERR_AQ_ERROR &&
++		    hw->adminq.sq_last_status == ICE_AQ_RC_EINVAL) {
++			ice_debug(hw, ICE_DBG_NVM,
++				  "%s: New upper bound of %u bytes\n",
++				  __func__, offset);
++			status = 0;
++			max_size = offset;
++		} else if (!status) {
++			ice_debug(hw, ICE_DBG_NVM,
++				  "%s: New lower bound of %u bytes\n",
++				  __func__, offset);
++			min_size = offset;
++		} else {
++			/* an unexpected error occurred */
++			goto err_read_flat_nvm;
 +		}
-+		/* Read TLV length */
-+		status = ice_read_sr_word(hw, next_tlv + 1, &tlv_len);
-+		if (status) {
-+			ice_debug(hw, ICE_DBG_INIT, "Failed to read TLV length.\n");
-+			break;
-+		}
-+		if (tlv_sub_module_type == module_type) {
-+			if (tlv_len) {
-+				*module_tlv = next_tlv;
-+				*module_tlv_len = tlv_len;
-+				return 0;
-+			}
-+			return ICE_ERR_INVAL_SIZE;
-+		}
-+		/* Check next TLV, i.e. current TLV pointer + length + 2 words
-+		 * (for current TLV's type and length)
-+		 */
-+		next_tlv = next_tlv + tlv_len + 2;
-+	}
-+	/* Module does not exist */
-+	return ICE_ERR_DOES_NOT_EXIST;
-+}
-+
-+/**
-+ * ice_read_pba_string - Reads part number string from NVM
-+ * @hw: pointer to hardware structure
-+ * @pba_num: stores the part number string from the NVM
-+ * @pba_num_size: part number string buffer length
-+ *
-+ * Reads the part number string from the NVM.
-+ */
-+enum ice_status
-+ice_read_pba_string(struct ice_hw *hw, u8 *pba_num, u32 pba_num_size)
-+{
-+	u16 pba_tlv, pba_tlv_len;
-+	enum ice_status status;
-+	u16 pba_word, pba_size;
-+	u16 i;
-+
-+	status = ice_get_pfa_module_tlv(hw, &pba_tlv, &pba_tlv_len,
-+					ICE_SR_PBA_BLOCK_PTR);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to read PBA Block TLV.\n");
-+		return status;
 +	}
 +
-+	/* pba_size is the next word */
-+	status = ice_read_sr_word(hw, (pba_tlv + 2), &pba_size);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to read PBA Section size.\n");
-+		return status;
-+	}
++	ice_debug(hw, ICE_DBG_NVM,
++		  "Predicted flash size is %u bytes\n", max_size);
 +
-+	if (pba_tlv_len < pba_size) {
-+		ice_debug(hw, ICE_DBG_INIT, "Invalid PBA Block TLV size.\n");
-+		return ICE_ERR_INVAL_SIZE;
-+	}
++	hw->nvm.flash_size = max_size;
 +
-+	/* Subtract one to get PBA word count (PBA Size word is included in
-+	 * total size)
-+	 */
-+	pba_size--;
-+	if (pba_num_size < (((u32)pba_size * 2) + 1)) {
-+		ice_debug(hw, ICE_DBG_INIT, "Buffer too small for PBA data.\n");
-+		return ICE_ERR_PARAM;
-+	}
-+
-+	for (i = 0; i < pba_size; i++) {
-+		status = ice_read_sr_word(hw, (pba_tlv + 2 + 1) + i, &pba_word);
-+		if (status) {
-+			ice_debug(hw, ICE_DBG_INIT, "Failed to read PBA Block word %d.\n", i);
-+			return status;
-+		}
-+
-+		pba_num[(i * 2)] = (pba_word >> 8) & 0xFF;
-+		pba_num[(i * 2) + 1] = pba_word & 0xFF;
-+	}
-+	pba_num[(pba_size * 2)] = '\0';
++err_read_flat_nvm:
++	ice_release_nvm(hw);
 +
 +	return status;
 +}
 +
  /**
-  * ice_get_orom_ver_info - Read Option ROM version information
+  * ice_init_nvm - initializes NVM setting
   * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
-index 7375f6b96919..999f273ba6ad 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.h
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
-@@ -10,6 +10,11 @@ void ice_release_nvm(struct ice_hw *hw);
- enum ice_status
- ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
- 		  bool read_shadow_ram);
-+enum ice_status
-+ice_get_pfa_module_tlv(struct ice_hw *hw, u16 *module_tlv, u16 *module_tlv_len,
-+		       u16 module_type);
-+enum ice_status
-+ice_read_pba_string(struct ice_hw *hw, u8 *pba_num, u32 pba_num_size);
- enum ice_status ice_init_nvm(struct ice_hw *hw);
- enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data);
- #endif /* _ICE_NVM_H_ */
+@@ -421,6 +472,13 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
+ 
+ 	nvm->eetrack = (eetrack_hi << 16) | eetrack_lo;
+ 
++	status = ice_discover_flash_size(hw);
++	if (status) {
++		ice_debug(hw, ICE_DBG_NVM,
++			  "NVM init error: failed to discover flash size.\n");
++		return status;
++	}
++
+ 	switch (hw->device_id) {
+ 	/* the following devices do not have boot_cfg_tlv yet */
+ 	case ICE_DEV_ID_E823C_BACKPLANE:
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 200aceae4323..26e00f41dd89 100644
+index 72591b4aca11..200aceae4323 100644
 --- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -643,6 +643,7 @@ struct ice_hw_port_stats {
- /* Checksum and Shadow RAM pointers */
- #define ICE_SR_BOOT_CFG_PTR		0x132
- #define ICE_NVM_OROM_VER_OFF		0x02
-+#define ICE_SR_PBA_BLOCK_PTR		0x16
- #define ICE_SR_NVM_DEV_STARTER_VER	0x18
- #define ICE_SR_NVM_EETRACK_LO		0x2D
- #define ICE_SR_NVM_EETRACK_HI		0x2E
+@@ -253,6 +253,7 @@ struct ice_nvm_info {
+ 	struct ice_orom_info orom;	/* Option ROM version info */
+ 	u32 eetrack;			/* NVM data version */
+ 	u16 sr_words;			/* Shadow RAM size in words */
++	u32 flash_size;			/* Size of available flash in bytes */
+ 	u8 major_ver;			/* major version of NVM package */
+ 	u8 minor_ver;			/* minor version of dev starter */
+ 	u8 blank_nvm_mode;        /* is NVM empty (no FW present) */
 -- 
 2.24.1
 
