@@ -1,332 +1,361 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Mar 2020 18:58:14 -0700
-Subject: [Intel-wired-lan] [PATCH v3 5/9] ice: implement full NVM read from
- ETHTOOL_GEEPROM
+Date: Wed, 11 Mar 2020 18:58:17 -0700
+Subject: [Intel-wired-lan] [PATCH v3 8/9] ice: add basic handler for devlink
+ .info_get
 In-Reply-To: <20200312015818.1007882-1-jacob.e.keller@intel.com>
 References: <20200312015818.1007882-1-jacob.e.keller@intel.com>
-Message-ID: <20200312015818.1007882-6-jacob.e.keller@intel.com>
+Message-ID: <20200312015818.1007882-9-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+The devlink .info_get callback allows the driver to report detailed
+version information. The following devlink versions are reported with
+this initial implementation:
 
-The current implementation of .get_eeprom only enables reading from the
-Shadow RAM portion of the NVM contents. Implement support for reading
-the entire flash contents instead of only the initial portion contained
-in the Shadow RAM.
+ "fw.mgmt" -> The version of the firmware that controls PHY, link, etc
+ "fw.mgmt.api" -> API version of interface exposed over the AdminQ
+ "fw.mgmt.build" -> Unique build id of the source for the management fw
+ "fw.undi" -> Version of the Option ROM containing the UEFI driver
+ "fw.psid.api" -> Version of the NVM image format.
+ "fw.bundle_id" -> Unique identifier for the combined flash image.
+ "fw.app.name" -> The name of the active DDP package.
+ "fw.app" -> The version of the active DDP package.
 
-A complete dump can take several seconds, but the ETHTOOL_GEEPROM ioctl
-is capable of reading only a limited portion at a time by specifying the
-offset and length to read.
+With this, devlink dev info can report at least as much information as
+is reported by ETHTOOL_GDRVINFO.
 
-In order to perform the reads directly, several functions are made non
-static. Additionally, the unused ice_read_sr_buf_aq and ice_read_sr_buf
-functions are removed.
+Compare the output from ethtool vs from devlink:
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+  $ ethtool -i ens785s0
+  driver: ice
+  version: 0.8.1-k
+  firmware-version: 0.80 0x80002ec0 1.2581.0
+  expansion-rom-version:
+  bus-info: 0000:3b:00.0
+  supports-statistics: yes
+  supports-test: yes
+  supports-eeprom-access: yes
+  supports-register-dump: yes
+  supports-priv-flags: yes
+
+  $ devlink dev info pci/0000:3b:00.0
+  pci/0000:3b:00.0:
+  driver ice
+  serial number 00-01-ab-ff-ff-ca-05-68
+  versions:
+      running:
+        fw.mgmt 2.1.7
+        fw.mgmt.api 1.5
+        fw.mgmt.build 0x305d955f
+        fw.undi 1.2581.0
+        fw.psid.api 0.80
+        fw.bundle_id 0x80002ec0
+        fw.app.name ICE OS Default Package
+        fw.app 1.3.1.0
+
+More pieces of information can be displayed, each version is kept
+separate instead of munged together, and each version has an identifier
+which comes with associated documentation.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.h  |   3 -
- drivers/net/ethernet/intel/ice/ice_ethtool.c |  33 ++--
- drivers/net/ethernet/intel/ice/ice_nvm.c     | 150 +------------------
- drivers/net/ethernet/intel/ice/ice_nvm.h     |   4 +
- 4 files changed, 26 insertions(+), 164 deletions(-)
+ Documentation/networking/devlink/ice.rst     |  67 +++++++
+ Documentation/networking/devlink/index.rst   |   1 +
+ drivers/net/ethernet/intel/ice/ice_devlink.c | 189 +++++++++++++++++++
+ 3 files changed, 257 insertions(+)
+ create mode 100644 Documentation/networking/devlink/ice.rst
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 0885bdb5830c..ded704236643 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -38,9 +38,6 @@ enum ice_status
- ice_alloc_hw_res(struct ice_hw *hw, u16 type, u16 num, bool btm, u16 *res);
- enum ice_status
- ice_free_hw_res(struct ice_hw *hw, u16 type, u16 num, u16 *res);
--enum ice_status ice_init_nvm(struct ice_hw *hw);
--enum ice_status
--ice_read_sr_buf(struct ice_hw *hw, u16 offset, u16 *words, u16 *data);
- enum ice_status
- ice_aq_alloc_free_res(struct ice_hw *hw, u16 num_entries,
- 		      struct ice_aqc_alloc_free_res_elem *buf, u16 buf_size,
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 75970bcfa6c0..593fb37bd59e 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -245,7 +245,7 @@ static int ice_get_eeprom_len(struct net_device *netdev)
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_pf *pf = np->vsi->back;
+diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
+new file mode 100644
+index 000000000000..56739a51cdfe
+--- /dev/null
++++ b/Documentation/networking/devlink/ice.rst
+@@ -0,0 +1,67 @@
++.. SPDX-License-Identifier: GPL-2.0
++
++===================
++ice devlink support
++===================
++
++This document describes the devlink features implemented by the ``ice``
++device driver.
++
++Info versions
++=============
++
++The ``ice`` driver reports the following versions
++
++.. list-table:: devlink info versions implemented
++    :widths: 5 5 5 90
++
++    * - Name
++      - Type
++      - Example
++      - Description
++    * - ``fw.mgmt``
++      - running
++      - 2.1.7
++      - 3-digit version number of the management firmware that controls the
++        PHY, link, etc.
++    * - ``fw.mgmt.api``
++      - running
++      - 1.5
++      - 2-digit version number of the API exported over the AdminQ by the
++        management firmware. Used by the driver to identify what commands
++        are supported.
++    * - ``fw.mgmt.build``
++      - running
++      - 0x305d955f
++      - Unique identifier of the source for the management firmware.
++    * - ``fw.undi``
++      - running
++      - 1.2581.0
++      - Version of the Option ROM containing the UEFI driver. The version is
++        reported in ``major.minor.patch`` format. The major version is
++        incremented whenever a major breaking change occurs, or when the
++        minor version would overflow. The minor version is incremented for
++        non-breaking changes and reset to 1 when the major version is
++        incremented. The patch version is normally 0 but is incremented when
++        a fix is delivered as a patch against an older base Option ROM.
++    * - ``fw.psid.api``
++      - running
++      - 0.80
++      - Version defining the format of the flash contents.
++    * - ``fw.bundle_id``
++      - running
++      - 0x80002ec0
++      - Unique identifier of the firmware image file that was loaded onto
++        the device. Also referred to as the EETRACK identifier of the NVM.
++    * - ``fw.app.name``
++      - running
++      - ICE OS Default Package
++      - The name of the DDP package that is active in the device. The DDP
++        package is loaded by the driver during initialization. Each varation
++        of DDP package shall have a unique name.
++    * - ``fw.app``
++      - running
++      - 1.3.1.0
++      - The version of the DDP package that is active in the device. Note
++        that both the name (as reported by ``fw.app.name``) and version are
++        required to uniquely identify the package.
+diff --git a/Documentation/networking/devlink/index.rst b/Documentation/networking/devlink/index.rst
+index 087ff54d53fc..272509cd9215 100644
+--- a/Documentation/networking/devlink/index.rst
++++ b/Documentation/networking/devlink/index.rst
+@@ -32,6 +32,7 @@ parameters, info versions, and other features it supports.
  
--	return (int)(pf->hw.nvm.sr_words * sizeof(u16));
-+	return (int)pf->hw.nvm.flash_size;
- }
+    bnxt
+    ionic
++   ice
+    mlx4
+    mlx5
+    mlxsw
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+index cedd9d02299e..410e2b531e5d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devlink.c
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+@@ -2,9 +2,198 @@
+ /* Copyright (c) 2020, Intel Corporation. */
  
- static int
-@@ -253,39 +253,46 @@ ice_get_eeprom(struct net_device *netdev, struct ethtool_eeprom *eeprom,
- 	       u8 *bytes)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
--	u16 first_word, last_word, nwords;
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
- 	struct ice_hw *hw = &pf->hw;
- 	enum ice_status status;
- 	struct device *dev;
- 	int ret = 0;
--	u16 *buf;
-+	u8 *buf;
+ #include "ice.h"
++#include "ice_lib.h"
+ #include "ice_devlink.h"
  
- 	dev = ice_pf_to_dev(pf);
- 
- 	eeprom->magic = hw->vendor_id | (hw->device_id << 16);
-+	netdev_dbg(netdev, "GEEPROM cmd 0x%08x, offset 0x%08x, len 0x%08x\n",
-+		   eeprom->cmd, eeprom->offset, eeprom->len);
- 
--	first_word = eeprom->offset >> 1;
--	last_word = (eeprom->offset + eeprom->len - 1) >> 1;
--	nwords = last_word - first_word + 1;
--
--	buf = devm_kcalloc(dev, nwords, sizeof(u16), GFP_KERNEL);
-+	buf = kzalloc(eeprom->len, GFP_KERNEL);
- 	if (!buf)
- 		return -ENOMEM;
- 
--	status = ice_read_sr_buf(hw, first_word, &nwords, buf);
-+	status = ice_acquire_nvm(hw, ICE_RES_READ);
- 	if (status) {
--		dev_err(dev, "ice_read_sr_buf failed, err %d aq_err %d\n",
-+		dev_err(dev, "ice_acquire_nvm failed, err %d aq_err %d\n",
- 			status, hw->adminq.sq_last_status);
--		eeprom->len = sizeof(u16) * nwords;
- 		ret = -EIO;
- 		goto out;
- 	}
- 
--	memcpy(bytes, (u8 *)buf + (eeprom->offset & 1), eeprom->len);
-+	status = ice_read_flat_nvm(hw, eeprom->offset, &eeprom->len, buf,
-+				   false);
-+	if (status) {
-+		dev_err(dev, "ice_read_flat_nvm failed, err %d aq_err %d\n",
-+			status, hw->adminq.sq_last_status);
-+		ret = -EIO;
-+		goto release;
++static int ice_info_get_dsn(struct ice_pf *pf, char *buf, size_t len)
++{
++	u8 dsn[8];
++
++	/* Copy the DSN into an array in Big Endian format */
++	put_unaligned_be64(pci_get_dsn(pf->pdev), dsn);
++
++	snprintf(buf, len, "%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x",
++		 dsn[0], dsn[1], dsn[2], dsn[3],
++		 dsn[4], dsn[5], dsn[6], dsn[7]);
++
++	return 0;
++}
++
++static int ice_info_fw_mgmt(struct ice_pf *pf, char *buf, size_t len)
++{
++	struct ice_hw *hw = &pf->hw;
++
++	snprintf(buf, len, "%u.%u.%u", hw->fw_maj_ver, hw->fw_min_ver,
++		 hw->fw_patch);
++
++	return 0;
++}
++
++static int ice_info_fw_api(struct ice_pf *pf, char *buf, size_t len)
++{
++	struct ice_hw *hw = &pf->hw;
++
++	snprintf(buf, len, "%u.%u", hw->api_maj_ver, hw->api_min_ver);
++
++	return 0;
++}
++
++static int ice_info_fw_build(struct ice_pf *pf, char *buf, size_t len)
++{
++	struct ice_hw *hw = &pf->hw;
++
++	snprintf(buf, len, "0x%08x", hw->fw_build);
++
++	return 0;
++}
++
++static int ice_info_orom_ver(struct ice_pf *pf, char *buf, size_t len)
++{
++	struct ice_orom_info *orom = &pf->hw.nvm.orom;
++
++	snprintf(buf, len, "%u.%u.%u", orom->major, orom->build, orom->patch);
++
++	return 0;
++}
++
++static int ice_info_nvm_ver(struct ice_pf *pf, char *buf, size_t len)
++{
++	struct ice_nvm_info *nvm = &pf->hw.nvm;
++
++	snprintf(buf, len, "%x.%02x", nvm->major_ver, nvm->minor_ver);
++
++	return 0;
++}
++
++static int ice_info_eetrack(struct ice_pf *pf, char *buf, size_t len)
++{
++	struct ice_nvm_info *nvm = &pf->hw.nvm;
++
++	snprintf(buf, len, "0x%08x", nvm->eetrack);
++
++	return 0;
++}
++
++static int ice_info_ddp_pkg_name(struct ice_pf *pf, char *buf, size_t len)
++{
++	struct ice_hw *hw = &pf->hw;
++
++	snprintf(buf, len, "%s", hw->active_pkg_name);
++
++	return 0;
++}
++
++static int ice_info_ddp_pkg_version(struct ice_pf *pf, char *buf, size_t len)
++{
++	struct ice_pkg_ver *pkg = &pf->hw.active_pkg_ver;
++
++	snprintf(buf, len, "%u.%u.%u.%u", pkg->major, pkg->minor, pkg->update,
++		 pkg->draft);
++
++	return 0;
++}
++
++#define running(key, getter) { ICE_VERSION_RUNNING, key, getter }
++
++enum ice_version_type {
++	ICE_VERSION_FIXED,
++	ICE_VERSION_RUNNING,
++	ICE_VERSION_STORED,
++};
++
++static const struct ice_devlink_version {
++	enum ice_version_type type;
++	const char *key;
++	int (*getter)(struct ice_pf *pf, char *buf, size_t len);
++} ice_devlink_versions[] = {
++	running(DEVLINK_INFO_VERSION_GENERIC_FW_MGMT, ice_info_fw_mgmt),
++	running("fw.mgmt.api", ice_info_fw_api),
++	running("fw.mgmt.build", ice_info_fw_build),
++	running(DEVLINK_INFO_VERSION_GENERIC_FW_UNDI, ice_info_orom_ver),
++	running("fw.psid.api", ice_info_nvm_ver),
++	running(DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID, ice_info_eetrack),
++	running("fw.app.name", ice_info_ddp_pkg_name),
++	running(DEVLINK_INFO_VERSION_GENERIC_FW_APP, ice_info_ddp_pkg_version),
++};
++
++/**
++ * ice_devlink_info_get - .info_get devlink handler
++ * @devlink: devlink instance structure
++ * @req: the devlink info request
++ * @extack: extended netdev ack structure
++ *
++ * Callback for the devlink .info_get operation. Reports information about the
++ * device.
++ *
++ * @returns zero on success or an error code on failure.
++ */
++static int ice_devlink_info_get(struct devlink *devlink,
++				struct devlink_info_req *req,
++				struct netlink_ext_ack *extack)
++{
++	struct ice_pf *pf = devlink_priv(devlink);
++	char buf[100];
++	size_t i;
++	int err;
++
++	err = devlink_info_driver_name_put(req, KBUILD_MODNAME);
++	if (err) {
++		NL_SET_ERR_MSG_MOD(extack, "Unable to set driver name");
++		return err;
 +	}
 +
-+	memcpy(bytes, buf, eeprom->len);
-+release:
-+	ice_release_nvm(hw);
- out:
--	devm_kfree(dev, buf);
-+	kfree(buf);
- 	return ret;
- }
++	err = ice_info_get_dsn(pf, buf, sizeof(buf));
++	if (err) {
++		NL_SET_ERR_MSG_MOD(extack, "Unable to obtain serial number");
++		return err;
++	}
++
++	err = devlink_info_serial_number_put(req, buf);
++	if (err) {
++		NL_SET_ERR_MSG_MOD(extack, "Unable to set serial number");
++		return err;
++	}
++
++	for (i = 0; i < ARRAY_SIZE(ice_devlink_versions); i++) {
++		enum ice_version_type type = ice_devlink_versions[i].type;
++		const char *key = ice_devlink_versions[i].key;
++
++		err = ice_devlink_versions[i].getter(pf, buf, sizeof(buf));
++		if (err) {
++			NL_SET_ERR_MSG_MOD(extack, "Unable to obtain version info");
++			return err;
++		}
++
++		switch (type) {
++		case ICE_VERSION_FIXED:
++			err = devlink_info_version_fixed_put(req, key, buf);
++			if (err) {
++				NL_SET_ERR_MSG_MOD(extack, "Unable to set fixed version");
++				return err;
++			}
++			break;
++		case ICE_VERSION_RUNNING:
++			err = devlink_info_version_running_put(req, key, buf);
++			if (err) {
++				NL_SET_ERR_MSG_MOD(extack, "Unable to set running version");
++				return err;
++			}
++			break;
++		case ICE_VERSION_STORED:
++			err = devlink_info_version_stored_put(req, key, buf);
++			if (err) {
++				NL_SET_ERR_MSG_MOD(extack, "Unable to set stored version");
++				return err;
++			}
++			break;
++		}
++	}
++
++	return 0;
++}
++
+ static const struct devlink_ops ice_devlink_ops = {
++	.info_get = ice_devlink_info_get,
+ };
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index 4cdce0370963..08909d1c7cce 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -107,70 +107,6 @@ ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
- 	return status;
- }
- 
--/**
-- * ice_check_sr_access_params - verify params for Shadow RAM R/W operations.
-- * @hw: pointer to the HW structure
-- * @offset: offset in words from module start
-- * @words: number of words to access
-- */
--static enum ice_status
--ice_check_sr_access_params(struct ice_hw *hw, u32 offset, u16 words)
--{
--	if ((offset + words) > hw->nvm.sr_words) {
--		ice_debug(hw, ICE_DBG_NVM,
--			  "NVM error: offset beyond SR lmt.\n");
--		return ICE_ERR_PARAM;
--	}
--
--	if (words > ICE_SR_SECTOR_SIZE_IN_WORDS) {
--		/* We can access only up to 4KB (one sector), in one AQ write */
--		ice_debug(hw, ICE_DBG_NVM,
--			  "NVM error: tried to access %d words, limit is %d.\n",
--			  words, ICE_SR_SECTOR_SIZE_IN_WORDS);
--		return ICE_ERR_PARAM;
--	}
--
--	if (((offset + (words - 1)) / ICE_SR_SECTOR_SIZE_IN_WORDS) !=
--	    (offset / ICE_SR_SECTOR_SIZE_IN_WORDS)) {
--		/* A single access cannot spread over two sectors */
--		ice_debug(hw, ICE_DBG_NVM,
--			  "NVM error: cannot spread over two sectors.\n");
--		return ICE_ERR_PARAM;
--	}
--
--	return 0;
--}
--
--/**
-- * ice_read_sr_aq - Read Shadow RAM.
-- * @hw: pointer to the HW structure
-- * @offset: offset in words from module start
-- * @words: number of words to read
-- * @data: storage for the words read from Shadow RAM (Little Endian)
-- * @last_command: tells the AdminQ that this is the last command
-- *
-- * Reads 16-bit Little Endian word buffers from the Shadow RAM using the admin
-- * command.
-- */
--static enum ice_status
--ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, __le16 *data,
--	       bool last_command)
--{
--	enum ice_status status;
--
--	status = ice_check_sr_access_params(hw, offset, words);
--
--	/* values in "offset" and "words" parameters are sized as words
--	 * (16 bits) but ice_aq_read_nvm expects these values in bytes.
--	 * So do this conversion while calling ice_aq_read_nvm.
--	 */
--	if (!status)
--		status = ice_aq_read_nvm(hw, 0, 2 * offset, 2 * words, data,
--					 last_command, true, NULL);
--
--	return status;
--}
--
- /**
-  * ice_read_sr_word_aq - Reads Shadow RAM via AQ
-  * @hw: pointer to the HW structure
-@@ -198,63 +134,6 @@ ice_read_sr_word_aq(struct ice_hw *hw, u16 offset, u16 *data)
- 	return 0;
- }
- 
--/**
-- * ice_read_sr_buf_aq - Reads Shadow RAM buf via AQ
-- * @hw: pointer to the HW structure
-- * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-- * @words: (in) number of words to read; (out) number of words actually read
-- * @data: words read from the Shadow RAM
-- *
-- * Reads 16 bit words (data buf) from the SR using the ice_read_sr_aq
-- * method. Ownership of the NVM is taken before reading the buffer and later
-- * released.
-- */
--static enum ice_status
--ice_read_sr_buf_aq(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
--{
--	enum ice_status status;
--	bool last_cmd = false;
--	u16 words_read = 0;
--	u16 i = 0;
--
--	do {
--		u16 read_size, off_w;
--
--		/* Calculate number of bytes we should read in this step.
--		 * It's not allowed to read more than one page at a time or
--		 * to cross page boundaries.
--		 */
--		off_w = offset % ICE_SR_SECTOR_SIZE_IN_WORDS;
--		read_size = off_w ?
--			min_t(u16, *words,
--			      (ICE_SR_SECTOR_SIZE_IN_WORDS - off_w)) :
--			min_t(u16, (*words - words_read),
--			      ICE_SR_SECTOR_SIZE_IN_WORDS);
--
--		/* Check if this is last command, if so set proper flag */
--		if ((words_read + read_size) >= *words)
--			last_cmd = true;
--
--		status = ice_read_sr_aq(hw, offset, read_size,
--					data + words_read, last_cmd);
--		if (status)
--			goto read_nvm_buf_aq_exit;
--
--		/* Increment counter for words already read and move offset to
--		 * new read location
--		 */
--		words_read += read_size;
--		offset += read_size;
--	} while (words_read < *words);
--
--	for (i = 0; i < *words; i++)
--		data[i] = le16_to_cpu(((__force __le16 *)data)[i]);
--
--read_nvm_buf_aq_exit:
--	*words = words_read;
--	return status;
--}
--
- /**
-  * ice_acquire_nvm - Generic request for acquiring the NVM ownership
-  * @hw: pointer to the HW structure
-@@ -262,7 +141,7 @@ ice_read_sr_buf_aq(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
-  *
-  * This function will request NVM ownership.
-  */
--static enum ice_status
-+enum ice_status
- ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access)
- {
- 	if (hw->nvm.blank_nvm_mode)
-@@ -277,7 +156,7 @@ ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access)
-  *
-  * This function will release NVM ownership.
-  */
--static void ice_release_nvm(struct ice_hw *hw)
-+void ice_release_nvm(struct ice_hw *hw)
- {
- 	if (hw->nvm.blank_nvm_mode)
- 		return;
-@@ -514,31 +393,6 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
- 	return 0;
- }
- 
--/**
-- * ice_read_sr_buf - Reads Shadow RAM buf and acquire lock if necessary
-- * @hw: pointer to the HW structure
-- * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-- * @words: (in) number of words to read; (out) number of words actually read
-- * @data: words read from the Shadow RAM
-- *
-- * Reads 16 bit words (data buf) from the SR using the ice_read_nvm_buf_aq
-- * method. The buf read is preceded by the NVM ownership take
-- * and followed by the release.
-- */
--enum ice_status
--ice_read_sr_buf(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
--{
--	enum ice_status status;
--
--	status = ice_acquire_nvm(hw, ICE_RES_READ);
--	if (!status) {
--		status = ice_read_sr_buf_aq(hw, offset, words, data);
--		ice_release_nvm(hw);
--	}
--
--	return status;
--}
--
- /**
-  * ice_nvm_validate_checksum
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
-index 4245ef988edf..7375f6b96919 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.h
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
-@@ -4,8 +4,12 @@
- #ifndef _ICE_NVM_H_
- #define _ICE_NVM_H_
- 
-+enum ice_status
-+ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access);
-+void ice_release_nvm(struct ice_hw *hw);
- enum ice_status
- ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
- 		  bool read_shadow_ram);
-+enum ice_status ice_init_nvm(struct ice_hw *hw);
- enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data);
- #endif /* _ICE_NVM_H_ */
+ static void ice_devlink_free(void *devlink_ptr)
 -- 
 2.24.1
 
