@@ -1,346 +1,138 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Mar 2020 18:58:15 -0700
-Subject: [Intel-wired-lan] [PATCH v3 6/9] ice: enable initial devlink support
-In-Reply-To: <20200312015818.1007882-1-jacob.e.keller@intel.com>
-References: <20200312015818.1007882-1-jacob.e.keller@intel.com>
-Message-ID: <20200312015818.1007882-7-jacob.e.keller@intel.com>
+Date: Wed, 11 Mar 2020 18:58:09 -0700
+Subject: [Intel-wired-lan] [PATCH v3 0/9] ice devlink support
+Message-ID: <20200312015818.1007882-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Begin implementing support for the devlink interface with the ice
-driver.
+(Sorry for the thrash, v3 should correct the warning)
 
-The pf structure is currently memory managed through devres, via
-a devm_alloc. To mimic this behavior, after allocating the devlink
-pointer, use devm_add_action to add a teardown action for releasing the
-devlink memory on exit.
+Implement basic support for the devlink interface in the ice driver.
+Additionally pave some necessary changes for adding a devlink region that
+exposes the NVM contents.
 
-The ice hardware is a multi-function PCIe device. Thus, each physical
-function will get its own devlink instance. This means that each
-function will be treated independently, with its own parameters and
-configuration. This is done because the ice driver loads a separate
-instance for each function.
+This series first contains 5 patches for enabling and implementing full NVM
+read access via the ETHTOOL_GEEPROM interface. This includes some cleanup of
+endian-types, a new function for reading from the NVM and Shadow RAM as a
+flat addressable space, a function to calculate the available flash size
+during load, and a change to how some of the NVM version fields are stored
+in the ice_nvm_info structure.
 
-Due to this, the implementation does not enable devlink to manage
-device-wide resources or configuration, as each physical function will
-be treated independently. This is done for simplicity, as managing
-a devlink instance across multiple driver instances would significantly
-increase the complexity for minimal gain.
+Following this is 3 patches for implementing devlink support. First, one
+patch which implements the basic framework and introduces the ice_devlink.c
+file. Second, a patch to implement basic .info_get support. Finally, a
+patch which reads the device PBA identifier and reports it as the `board.id`
+value in the .info_get response.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
- drivers/net/ethernet/intel/Kconfig           |   1 +
- drivers/net/ethernet/intel/ice/Makefile      |   1 +
- drivers/net/ethernet/intel/ice/ice.h         |   4 +
- drivers/net/ethernet/intel/ice/ice_devlink.c | 117 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_devlink.h |  14 +++
- drivers/net/ethernet/intel/ice/ice_main.c    |  33 +++++-
- 6 files changed, 166 insertions(+), 4 deletions(-)
+This series builds on previous reviews for patches sent as RFC and is
+intended to pave the way for the devlink region changes to support creating
+snapshots from userspace and reading from a region without a snapshot.
+
+Previous RFC series and discussion can be found at the following locations
+
+* v1 https://lore.kernel.org/netdev/20200130225913.1671982-2-jacob.e.keller at intel.com/
+* v2 https://lore.kernel.org/netdev/20200214232223.3442651-1-jacob.e.keller at intel.com/
+
+This series only contains the ice driver changes for the basic devlink
+interface. I am working on updating the devlink core proposals and will send
+them to the netdev list after this has been merged.
+
+Once again, thank you for your continued review and feedback.
+
+## Changes since v2 ##
+
+* create devlink_port before calling register_netdev, correctly fixing the
+  issue pointed out by Jiri in the RFC review.
+
+## Changes since v1 ##
+
+* added a patch to promote ``fw.bundle_id`` to a generic version
+* used ``fw.bundle_id`` instead of ``fw.bundle``
+
+## Changes since the RFC ##
+
+Removed patches:
+* remove "ice: rename variables used for Option ROM version", as this is
+  superseded by the patch to change now NVM version data is stored.
+
+Patches without change:
+* "ice: use __le16 types for explicitly Little Endian values"
+* "ice: create function to read a section of the NVM and Shadow RAM"
+
+New patches:
+* "ice: store NVM version info in extracted format"
+  a patch which modifies how the NVM version information is stored
+* "ice: discover and store size of available flash"
+  a patch to discover and save the available flash size during load
+
+Changes in "ice: implement full NVM read from ETHTOOL_GEEPROM"
+* use the new flash_size field in ice_get_eeprom_len, enabling a complete
+  dump of flash contents, instead of only the initial 64Kb
+* remove the unnecessary EINVAL check on return value from
+  ice_read_flat_nvm. Now that we report the proper flash size, this error
+  code is unexpected, and should be treated as an error.
+* Use a "goto release" to ensure that the ice_release_nvm() function is
+  called.
+
+Changes in "ice: enable initial devlink support"
+* Update copyright year on ice_devlink.c to 2020
+* make ice_devlink_ops static
+* Use "Return:" instead of "@returns" in kernel-doc comments
+* Move the call to devlink_port_type_eth_set into ice_cfg_netdev, after the
+  call to register_netdev().
+
+Changes in "ice: add basic handler for devlink .info_get"
+* convert to a loop over structured data, similar to the nfp driver
+* change ``fw.mgmt.bundle`` to ``fw.mgmt.build``
+* change ``fw.undi.orom`` to just ``fw.undi``
+* change ``nvm.psid`` to ``fw.psid.api``
+* change ``nvm.bundle`` to ``fw.bundle``
+* add ``fw.app.name`` and ``fw.app`` representing the name and version of
+  the active DDP package
+* use lowercase %08x instead of %08X for ``fw.bundle``
+
+Changes in "ice: add board identifier info to devlink .info_get"
+* modified to use the new structured format for adding new versions
+
+Jacob Keller (8):
+  ice: use __le16 types for explicitly Little Endian values
+  ice: create function to read a section of the NVM and Shadow RAM
+  ice: store NVM version info in extracted format
+  ice: discover and store size of available flash
+  ice: enable initial devlink support
+  devlink: promote "fw.bundle_id" to a generic info version
+  ice: add basic handler for devlink .info_get
+  ice: add board identifier info to devlink .info_get
+
+Jesse Brandeburg (1):
+  ice: implement full NVM read from ETHTOOL_GEEPROM
+
+ .../networking/devlink/devlink-info.rst       |   5 +
+ Documentation/networking/devlink/ice.rst      |  71 +++
+ Documentation/networking/devlink/index.rst    |   1 +
+ drivers/net/ethernet/intel/Kconfig            |   1 +
+ drivers/net/ethernet/intel/ice/Makefile       |   1 +
+ drivers/net/ethernet/intel/ice/ice.h          |   4 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   4 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |  89 ----
+ drivers/net/ethernet/intel/ice/ice_common.h   |   9 -
+ drivers/net/ethernet/intel/ice/ice_devlink.c  | 320 ++++++++++++
+ drivers/net/ethernet/intel/ice/ice_devlink.h  |  14 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  46 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |  33 +-
+ drivers/net/ethernet/intel/ice/ice_nvm.c      | 484 +++++++++++-------
+ drivers/net/ethernet/intel/ice/ice_nvm.h      |  12 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |  32 +-
+ .../net/ethernet/netronome/nfp/nfp_devlink.c  |   2 +-
+ include/net/devlink.h                         |   2 +
+ 18 files changed, 826 insertions(+), 304 deletions(-)
+ create mode 100644 Documentation/networking/devlink/ice.rst
  create mode 100644 drivers/net/ethernet/intel/ice/ice_devlink.c
  create mode 100644 drivers/net/ethernet/intel/ice/ice_devlink.h
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index ced9d2650da4..b421c0c5fc8b 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -296,6 +296,7 @@ config ICE
- 	default n
- 	depends on PCI_MSI
- 	select VIRTUAL_BUS
-+	select NET_DEVLINK
- 	---help---
- 	  This driver supports Intel(R) Ethernet Connection E800 Series of
- 	  devices.  For more information on how to identify your adapter, go
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 85e2ba18cec2..41bfd5f21679 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -20,6 +20,7 @@ ice-y := ice_main.o	\
- 	 ice_flex_pipe.o \
- 	 ice_flow.o	\
- 	 ice_idc.o	\
-+	 ice_devlink.o	\
- 	 ice_ethtool.o
- ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o
- ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index f237df923ea1..288b6d08eb3f 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -35,6 +35,7 @@
- #include <linux/bpf.h>
- #include <linux/virtual_bus.h>
- #include <linux/avf/virtchnl.h>
-+#include <net/devlink.h>
- #include <net/ipv6.h>
- #include <net/xdp_sock.h>
- #include <net/geneve.h>
-@@ -358,6 +359,9 @@ enum ice_pf_flags {
- struct ice_pf {
- 	struct pci_dev *pdev;
- 
-+	/* devlink port data */
-+	struct devlink_port devlink_port;
-+
- 	/* OS reserved IRQ details */
- 	struct msix_entry *msix_entries;
- 	struct ice_res_tracker *irq_tracker;
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-new file mode 100644
-index 000000000000..cedd9d02299e
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -0,0 +1,117 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2020, Intel Corporation. */
-+
-+#include "ice.h"
-+#include "ice_devlink.h"
-+
-+static const struct devlink_ops ice_devlink_ops = {
-+};
-+
-+static void ice_devlink_free(void *devlink_ptr)
-+{
-+	devlink_free((struct devlink *)devlink_ptr);
-+}
-+
-+/**
-+ * ice_allocate_pf - Allocate devlink and return PF structure pointer
-+ * @dev: the device to allocate for
-+ *
-+ * Allocate a devlink instance for this device and return the private area as
-+ * the PF structure. The devlink memory is kept track of through devres by
-+ * adding an action to remove it when unwinding.
-+ */
-+struct ice_pf *ice_allocate_pf(struct device *dev)
-+{
-+	struct devlink *devlink;
-+
-+	devlink = devlink_alloc(&ice_devlink_ops, sizeof(struct ice_pf));
-+	if (!devlink)
-+		return NULL;
-+
-+	/* Add an action to teardown the devlink when unwinding the driver */
-+	if (devm_add_action(dev, ice_devlink_free, devlink)) {
-+		devlink_free(devlink);
-+		return NULL;
-+	}
-+
-+	return devlink_priv(devlink);
-+}
-+
-+/**
-+ * ice_devlink_register - Register devlink interface for this PF
-+ * @pf: the PF to register the devlink for.
-+ *
-+ * Register the devlink instance associated with this physical function.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+int ice_devlink_register(struct ice_pf *pf)
-+{
-+	struct devlink *devlink = priv_to_devlink(pf);
-+	struct device *dev = ice_pf_to_dev(pf);
-+	int err;
-+
-+	err = devlink_register(devlink, dev);
-+	if (err) {
-+		dev_err(dev, "devlink registration failed: %d\n", err);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_unregister - Unregister devlink resources for this PF.
-+ * @pf: the PF structure to cleanup
-+ *
-+ * Releases resources used by devlink and cleans up associated memory.
-+ */
-+void ice_devlink_unregister(struct ice_pf *pf)
-+{
-+	devlink_unregister(priv_to_devlink(pf));
-+}
-+
-+/**
-+ * ice_devlink_create_port - Create a devlink port for this PF
-+ * @pf: the PF to create a port for
-+ *
-+ * Create and register a devlink_port for this PF. Note that although each
-+ * physical function is connected to a separate devlink instance, the port
-+ * will still be numbered according to the physical function id.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+int ice_devlink_create_port(struct ice_pf *pf)
-+{
-+	struct devlink *devlink = priv_to_devlink(pf);
-+	struct ice_vsi *vsi = ice_get_main_vsi(pf);
-+	struct device *dev = ice_pf_to_dev(pf);
-+	int err;
-+
-+	if (!vsi) {
-+		dev_err(dev, "%s: unable to find main VSI\n", __func__);
-+		return -EIO;
-+	}
-+
-+	devlink_port_attrs_set(&pf->devlink_port, DEVLINK_PORT_FLAVOUR_PHYSICAL,
-+			       pf->hw.pf_id, false, 0, NULL, 0);
-+	err = devlink_port_register(devlink, &pf->devlink_port, pf->hw.pf_id);
-+	if (err) {
-+		dev_err(dev, "devlink_port_register failed: %d\n", err);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_destroy_port - Destroy the devlink_port for this PF
-+ * @pf: the PF to cleanup
-+ *
-+ * Unregisters the devlink_port structure associated with this PF.
-+ */
-+void ice_devlink_destroy_port(struct ice_pf *pf)
-+{
-+	devlink_port_type_clear(&pf->devlink_port);
-+	devlink_port_unregister(&pf->devlink_port);
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.h b/drivers/net/ethernet/intel/ice/ice_devlink.h
-new file mode 100644
-index 000000000000..f94dc93c24c5
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.h
-@@ -0,0 +1,14 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2019, Intel Corporation. */
-+
-+#ifndef _ICE_DEVLINK_H_
-+#define _ICE_DEVLINK_H_
-+
-+struct ice_pf *ice_allocate_pf(struct device *dev);
-+
-+int ice_devlink_register(struct ice_pf *pf);
-+void ice_devlink_unregister(struct ice_pf *pf);
-+int ice_devlink_create_port(struct ice_pf *pf);
-+void ice_devlink_destroy_port(struct ice_pf *pf);
-+
-+#endif /* _ICE_DEVLINK_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 5e99b100fcb3..9003801d6944 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -10,6 +10,7 @@
- #include "ice_lib.h"
- #include "ice_dcb_lib.h"
- #include "ice_dcb_nl.h"
-+#include "ice_devlink.h"
- 
- #define DRV_VERSION_MAJOR 0
- #define DRV_VERSION_MINOR 8
-@@ -2391,10 +2392,16 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
- 	u8 mac_addr[ETH_ALEN];
- 	int err;
- 
-+	err = ice_devlink_create_port(pf);
-+	if (err)
-+		return err;
-+
- 	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
- 				    vsi->alloc_rxq);
--	if (!netdev)
--		return -ENOMEM;
-+	if (!netdev) {
-+		err = -ENOMEM;
-+		goto err_destroy_devlink_port;
-+	}
- 
- 	vsi->netdev = netdev;
- 	np = netdev_priv(netdev);
-@@ -2424,7 +2431,9 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
- 
- 	err = register_netdev(vsi->netdev);
- 	if (err)
--		return err;
-+		goto err_destroy_devlink_port;
-+
-+	devlink_port_type_eth_set(&pf->devlink_port, vsi->netdev);
- 
- 	netif_carrier_off(vsi->netdev);
- 
-@@ -2432,6 +2441,11 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
- 	netif_tx_stop_all_queues(vsi->netdev);
- 
- 	return 0;
-+
-+err_destroy_devlink_port:
-+	ice_devlink_destroy_port(pf);
-+
-+	return err;
- }
- 
- /**
-@@ -3224,7 +3238,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		return err;
- 	}
- 
--	pf = devm_kzalloc(dev, sizeof(*pf), GFP_KERNEL);
-+	pf = ice_allocate_pf(dev);
- 	if (!pf)
- 		return -ENOMEM;
- 
-@@ -3262,6 +3276,12 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 
- 	pf->msg_enable = netif_msg_init(debug, ICE_DFLT_NETIF_M);
- 
-+	err = ice_devlink_register(pf);
-+	if (err) {
-+		dev_err(dev, "ice_devlink_register failed: %d\n", err);
-+		goto err_exit_unroll;
-+	}
-+
- #ifndef CONFIG_DYNAMIC_DEBUG
- 	if (debug < -1)
- 		hw->debug_mask = debug;
-@@ -3422,6 +3442,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		}
- 	}
- err_alloc_sw_unroll:
-+	ice_devlink_destroy_port(pf);
- 	set_bit(__ICE_SERVICE_DIS, pf->state);
- 	set_bit(__ICE_DOWN, pf->state);
- 	devm_kfree(dev, pf->first_sw);
-@@ -3434,6 +3455,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	ice_deinit_pf(pf);
- 	ice_deinit_hw(hw);
- err_exit_unroll:
-+	ice_devlink_unregister(pf);
- 	pci_disable_pcie_error_reporting(pdev);
- 	return err;
- }
-@@ -3469,6 +3491,7 @@ static void ice_remove(struct pci_dev *pdev)
- 	}
- 	set_bit(__ICE_DOWN, pf->state);
- 
-+	ice_devlink_destroy_port(pf);
- 	ice_vsi_release_all(pf);
- 	if (ice_is_peer_ena(pf)) {
- 		ice_for_each_peer(pf, NULL, ice_unreg_peer_device);
-@@ -3482,6 +3505,8 @@ static void ice_remove(struct pci_dev *pdev)
- 	}
- 	ice_deinit_pf(pf);
- 	ice_deinit_hw(&pf->hw);
-+	ice_devlink_unregister(pf);
-+
- 	/* Issue a PFR as part of the prescribed driver unload flow.  Do not
- 	 * do it via ice_schedule_reset() since there is no need to rebuild
- 	 * and the service task is already stopped.
 -- 
 2.24.1
 
