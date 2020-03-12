@@ -1,165 +1,325 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Mar 2020 18:27:21 -0700
-Subject: [Intel-wired-lan] [PATCH v2 4/9] ice: discover and store size of
- available flash
+Date: Wed, 11 Mar 2020 18:27:23 -0700
+Subject: [Intel-wired-lan] [PATCH v2 6/9] ice: enable initial devlink support
 In-Reply-To: <20200312012726.973301-1-jacob.e.keller@intel.com>
 References: <20200312012726.973301-1-jacob.e.keller@intel.com>
-Message-ID: <20200312012726.973301-5-jacob.e.keller@intel.com>
+Message-ID: <20200312012726.973301-7-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When reading from the NVM using a flat address, it is useful to know the
-upper bound on the size of the flash contents. This value is not stored
-within the NVM.
+Begin implementing support for the devlink interface with the ice
+driver.
 
-We can determine the size by performing a bisection between upper and
-lower bounds. It is known that the size cannot exceed 16 MB (offset of
-0xFFFFFF).
+The pf structure is currently memory managed through devres, via
+a devm_alloc. To mimic this behavior, after allocating the devlink
+pointer, use devm_add_action to add a teardown action for releasing the
+devlink memory on exit.
 
-Use a while loop to bisect the upper and lower bounds by reading one
-byte at a time. On a failed read, lower the maximum bound. On
-a successful read, increase the lower bound.
+The ice hardware is a multi-function PCIe device. Thus, each physical
+function will get its own devlink instance. This means that each
+function will be treated independently, with its own parameters and
+configuration. This is done because the ice driver loads a separate
+instance for each function.
 
-Save this as the flash_size in the ice_nvm_info structure that contains
-data related to the NVM.
-
-The size will be used in a future patch for implementing full NVM read
-via ethtool's GEEPROM command.
-
-The maximum possible size for the flash is bounded by the size limit for
-the NVM AdminQ commands. Add a new macro, ICE_AQC_NVM_MAX_OFFSET, which
-can be used to represent this upper bound.
+Due to this, the implementation does not enable devlink to manage
+device-wide resources or configuration, as each physical function will
+be treated independently. This is done for simplicity, as managing
+a devlink instance across multiple driver instances would significantly
+increase the complexity for minimal gain.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  2 +
- drivers/net/ethernet/intel/ice/ice_nvm.c      | 62 ++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_type.h     |  1 +
- 3 files changed, 63 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/Kconfig           |   1 +
+ drivers/net/ethernet/intel/ice/Makefile      |   1 +
+ drivers/net/ethernet/intel/ice/ice.h         |   4 +
+ drivers/net/ethernet/intel/ice/ice_devlink.c | 117 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_devlink.h |  14 +++
+ drivers/net/ethernet/intel/ice/ice_main.c    |  21 +++-
+ 6 files changed, 157 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_devlink.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_devlink.h
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index f7d4befcf283..a1066c4bf40d 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1233,6 +1233,7 @@ struct ice_aqc_sff_eeprom {
-  * NVM Update commands (indirect 0x0703)
-  */
- struct ice_aqc_nvm {
-+#define ICE_AQC_NVM_MAX_OFFSET		0xFFFFFF
- 	__le16 offset_low;
- 	u8 offset_high;
- 	u8 cmd_flags;
-@@ -1798,6 +1799,7 @@ enum ice_aq_err {
- 	ICE_AQ_RC_ENOMEM	= 9,  /* Out of memory */
- 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
- 	ICE_AQ_RC_EEXIST	= 13, /* Object already exists */
-+	ICE_AQ_RC_EINVAL	= 14, /* Invalid argument */
- 	ICE_AQ_RC_ENOSPC	= 16, /* No space left or allocation failure */
- 	ICE_AQ_RC_ENOSYS	= 17, /* Function not implemented */
- 	ICE_AQ_RC_ENOSEC	= 24, /* Missing security manifest */
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index ef68fa989a57..4cdce0370963 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -26,8 +26,7 @@ ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index ced9d2650da4..b421c0c5fc8b 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -296,6 +296,7 @@ config ICE
+ 	default n
+ 	depends on PCI_MSI
+ 	select VIRTUAL_BUS
++	select NET_DEVLINK
+ 	---help---
+ 	  This driver supports Intel(R) Ethernet Connection E800 Series of
+ 	  devices.  For more information on how to identify your adapter, go
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index 85e2ba18cec2..41bfd5f21679 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -20,6 +20,7 @@ ice-y := ice_main.o	\
+ 	 ice_flex_pipe.o \
+ 	 ice_flow.o	\
+ 	 ice_idc.o	\
++	 ice_devlink.o	\
+ 	 ice_ethtool.o
+ ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o
+ ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index f237df923ea1..288b6d08eb3f 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -35,6 +35,7 @@
+ #include <linux/bpf.h>
+ #include <linux/virtual_bus.h>
+ #include <linux/avf/virtchnl.h>
++#include <net/devlink.h>
+ #include <net/ipv6.h>
+ #include <net/xdp_sock.h>
+ #include <net/geneve.h>
+@@ -358,6 +359,9 @@ enum ice_pf_flags {
+ struct ice_pf {
+ 	struct pci_dev *pdev;
  
- 	cmd = &desc.params.nvm;
- 
--	/* In offset the highest byte must be zeroed. */
--	if (offset & 0xFF000000)
-+	if (offset > ICE_AQC_NVM_MAX_OFFSET)
- 		return ICE_ERR_PARAM;
- 
- 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_nvm_read);
-@@ -363,6 +362,58 @@ static enum ice_status ice_get_orom_ver_info(struct ice_hw *hw)
- 	return 0;
- }
- 
-+/**
-+ * ice_discover_flash_size - Discover the available flash size.
-+ * @hw: pointer to the HW struct
-+ *
-+ * The device flash could be up to 16MB in size. However, it is possible that
-+ * the actual size is smaller. Use bisection to determine the accessible size
-+ * of flash memory.
-+ */
-+static enum ice_status ice_discover_flash_size(struct ice_hw *hw)
++	/* devlink port data */
++	struct devlink_port devlink_port;
++
+ 	/* OS reserved IRQ details */
+ 	struct msix_entry *msix_entries;
+ 	struct ice_res_tracker *irq_tracker;
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+new file mode 100644
+index 000000000000..cedd9d02299e
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+@@ -0,0 +1,117 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (c) 2020, Intel Corporation. */
++
++#include "ice.h"
++#include "ice_devlink.h"
++
++static const struct devlink_ops ice_devlink_ops = {
++};
++
++static void ice_devlink_free(void *devlink_ptr)
 +{
-+	u32 min_size = 0, max_size = ICE_AQC_NVM_MAX_OFFSET + 1;
-+	enum ice_status status;
-+
-+	status = ice_acquire_nvm(hw, ICE_RES_READ);
-+	if (status)
-+		return status;
-+
-+	while ((max_size - min_size) > 1) {
-+		u32 offset = (max_size + min_size) / 2;
-+		u32 len = 1;
-+		u8 data;
-+
-+		status = ice_read_flat_nvm(hw, offset, &len, &data, false);
-+		if (status == ICE_ERR_AQ_ERROR &&
-+		    hw->adminq.sq_last_status == ICE_AQ_RC_EINVAL) {
-+			ice_debug(hw, ICE_DBG_NVM,
-+				  "%s: New upper bound of %u bytes\n",
-+				  __func__, offset);
-+			status = 0;
-+			max_size = offset;
-+		} else if (!status) {
-+			ice_debug(hw, ICE_DBG_NVM,
-+				  "%s: New lower bound of %u bytes\n",
-+				  __func__, offset);
-+			min_size = offset;
-+		} else {
-+			/* an unexpected error occurred */
-+			goto err_read_flat_nvm;
-+		}
-+	}
-+
-+	ice_debug(hw, ICE_DBG_NVM,
-+		  "Predicted flash size is %u bytes\n", max_size);
-+
-+	hw->nvm.flash_size = max_size;
-+
-+err_read_flat_nvm:
-+	ice_release_nvm(hw);
-+
-+	return status;
++	devlink_free((struct devlink *)devlink_ptr);
 +}
 +
- /**
-  * ice_init_nvm - initializes NVM setting
-  * @hw: pointer to the HW struct
-@@ -421,6 +472,13 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
- 
- 	nvm->eetrack = (eetrack_hi << 16) | eetrack_lo;
- 
-+	status = ice_discover_flash_size(hw);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_NVM,
-+			  "NVM init error: failed to discover flash size.\n");
-+		return status;
++/**
++ * ice_allocate_pf - Allocate devlink and return PF structure pointer
++ * @dev: the device to allocate for
++ *
++ * Allocate a devlink instance for this device and return the private area as
++ * the PF structure. The devlink memory is kept track of through devres by
++ * adding an action to remove it when unwinding.
++ */
++struct ice_pf *ice_allocate_pf(struct device *dev)
++{
++	struct devlink *devlink;
++
++	devlink = devlink_alloc(&ice_devlink_ops, sizeof(struct ice_pf));
++	if (!devlink)
++		return NULL;
++
++	/* Add an action to teardown the devlink when unwinding the driver */
++	if (devm_add_action(dev, ice_devlink_free, devlink)) {
++		devlink_free(devlink);
++		return NULL;
 +	}
 +
- 	switch (hw->device_id) {
- 	/* the following devices do not have boot_cfg_tlv yet */
- 	case ICE_DEV_ID_E823C_BACKPLANE:
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 72591b4aca11..200aceae4323 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -253,6 +253,7 @@ struct ice_nvm_info {
- 	struct ice_orom_info orom;	/* Option ROM version info */
- 	u32 eetrack;			/* NVM data version */
- 	u16 sr_words;			/* Shadow RAM size in words */
-+	u32 flash_size;			/* Size of available flash in bytes */
- 	u8 major_ver;			/* major version of NVM package */
- 	u8 minor_ver;			/* minor version of dev starter */
- 	u8 blank_nvm_mode;        /* is NVM empty (no FW present) */
++	return devlink_priv(devlink);
++}
++
++/**
++ * ice_devlink_register - Register devlink interface for this PF
++ * @pf: the PF to register the devlink for.
++ *
++ * Register the devlink instance associated with this physical function.
++ *
++ * Return: zero on success or an error code on failure.
++ */
++int ice_devlink_register(struct ice_pf *pf)
++{
++	struct devlink *devlink = priv_to_devlink(pf);
++	struct device *dev = ice_pf_to_dev(pf);
++	int err;
++
++	err = devlink_register(devlink, dev);
++	if (err) {
++		dev_err(dev, "devlink registration failed: %d\n", err);
++		return err;
++	}
++
++	return 0;
++}
++
++/**
++ * ice_devlink_unregister - Unregister devlink resources for this PF.
++ * @pf: the PF structure to cleanup
++ *
++ * Releases resources used by devlink and cleans up associated memory.
++ */
++void ice_devlink_unregister(struct ice_pf *pf)
++{
++	devlink_unregister(priv_to_devlink(pf));
++}
++
++/**
++ * ice_devlink_create_port - Create a devlink port for this PF
++ * @pf: the PF to create a port for
++ *
++ * Create and register a devlink_port for this PF. Note that although each
++ * physical function is connected to a separate devlink instance, the port
++ * will still be numbered according to the physical function id.
++ *
++ * Return: zero on success or an error code on failure.
++ */
++int ice_devlink_create_port(struct ice_pf *pf)
++{
++	struct devlink *devlink = priv_to_devlink(pf);
++	struct ice_vsi *vsi = ice_get_main_vsi(pf);
++	struct device *dev = ice_pf_to_dev(pf);
++	int err;
++
++	if (!vsi) {
++		dev_err(dev, "%s: unable to find main VSI\n", __func__);
++		return -EIO;
++	}
++
++	devlink_port_attrs_set(&pf->devlink_port, DEVLINK_PORT_FLAVOUR_PHYSICAL,
++			       pf->hw.pf_id, false, 0, NULL, 0);
++	err = devlink_port_register(devlink, &pf->devlink_port, pf->hw.pf_id);
++	if (err) {
++		dev_err(dev, "devlink_port_register failed: %d\n", err);
++		return err;
++	}
++
++	return 0;
++}
++
++/**
++ * ice_devlink_destroy_port - Destroy the devlink_port for this PF
++ * @pf: the PF to cleanup
++ *
++ * Unregisters the devlink_port structure associated with this PF.
++ */
++void ice_devlink_destroy_port(struct ice_pf *pf)
++{
++	devlink_port_type_clear(&pf->devlink_port);
++	devlink_port_unregister(&pf->devlink_port);
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.h b/drivers/net/ethernet/intel/ice/ice_devlink.h
+new file mode 100644
+index 000000000000..f94dc93c24c5
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c) 2019, Intel Corporation. */
++
++#ifndef _ICE_DEVLINK_H_
++#define _ICE_DEVLINK_H_
++
++struct ice_pf *ice_allocate_pf(struct device *dev);
++
++int ice_devlink_register(struct ice_pf *pf);
++void ice_devlink_unregister(struct ice_pf *pf);
++int ice_devlink_create_port(struct ice_pf *pf);
++void ice_devlink_destroy_port(struct ice_pf *pf);
++
++#endif /* _ICE_DEVLINK_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 5e99b100fcb3..e4284084e7b5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -10,6 +10,7 @@
+ #include "ice_lib.h"
+ #include "ice_dcb_lib.h"
+ #include "ice_dcb_nl.h"
++#include "ice_devlink.h"
+ 
+ #define DRV_VERSION_MAJOR 0
+ #define DRV_VERSION_MINOR 8
+@@ -2426,6 +2427,8 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
+ 	if (err)
+ 		return err;
+ 
++	devlink_port_type_eth_set(&pf->devlink_port, vsi->netdev);
++
+ 	netif_carrier_off(vsi->netdev);
+ 
+ 	/* make sure transmit queues start off as stopped */
+@@ -3224,7 +3227,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		return err;
+ 	}
+ 
+-	pf = devm_kzalloc(dev, sizeof(*pf), GFP_KERNEL);
++	pf = ice_allocate_pf(dev);
+ 	if (!pf)
+ 		return -ENOMEM;
+ 
+@@ -3262,6 +3265,12 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 
+ 	pf->msg_enable = netif_msg_init(debug, ICE_DFLT_NETIF_M);
+ 
++	err = ice_devlink_register(pf);
++	if (err) {
++		dev_err(dev, "ice_devlink_register failed: %d\n", err);
++		goto err_exit_unroll;
++	}
++
+ #ifndef CONFIG_DYNAMIC_DEBUG
+ 	if (debug < -1)
+ 		hw->debug_mask = debug;
+@@ -3353,6 +3362,11 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		goto err_alloc_sw_unroll;
+ 	}
+ 
++	err = ice_devlink_create_port(pf);
++	if (err)
++		goto err_alloc_sw_unroll;
++
++
+ 	clear_bit(__ICE_SERVICE_DIS, pf->state);
+ 
+ 	/* tell the firmware we are up */
+@@ -3422,6 +3436,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		}
+ 	}
+ err_alloc_sw_unroll:
++	ice_devlink_destroy_port(pf);
+ 	set_bit(__ICE_SERVICE_DIS, pf->state);
+ 	set_bit(__ICE_DOWN, pf->state);
+ 	devm_kfree(dev, pf->first_sw);
+@@ -3434,6 +3449,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	ice_deinit_pf(pf);
+ 	ice_deinit_hw(hw);
+ err_exit_unroll:
++	ice_devlink_unregister(pf);
+ 	pci_disable_pcie_error_reporting(pdev);
+ 	return err;
+ }
+@@ -3469,6 +3485,7 @@ static void ice_remove(struct pci_dev *pdev)
+ 	}
+ 	set_bit(__ICE_DOWN, pf->state);
+ 
++	ice_devlink_destroy_port(pf);
+ 	ice_vsi_release_all(pf);
+ 	if (ice_is_peer_ena(pf)) {
+ 		ice_for_each_peer(pf, NULL, ice_unreg_peer_device);
+@@ -3482,6 +3499,8 @@ static void ice_remove(struct pci_dev *pdev)
+ 	}
+ 	ice_deinit_pf(pf);
+ 	ice_deinit_hw(&pf->hw);
++	ice_devlink_unregister(pf);
++
+ 	/* Issue a PFR as part of the prescribed driver unload flow.  Do not
+ 	 * do it via ice_schedule_reset() since there is no need to rebuild
+ 	 * and the service task is already stopped.
 -- 
 2.24.1
 
