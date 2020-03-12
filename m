@@ -1,68 +1,165 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Mar 2020 18:58:16 -0700
-Subject: [Intel-wired-lan] [PATCH v3 7/9] devlink: promote "fw.bundle_id" to
- a generic info version
+Date: Wed, 11 Mar 2020 18:58:13 -0700
+Subject: [Intel-wired-lan] [PATCH v3 4/9] ice: discover and store size of
+ available flash
 In-Reply-To: <20200312015818.1007882-1-jacob.e.keller@intel.com>
 References: <20200312015818.1007882-1-jacob.e.keller@intel.com>
-Message-ID: <20200312015818.1007882-8-jacob.e.keller@intel.com>
+Message-ID: <20200312015818.1007882-5-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The nfp driver uses ``fw.bundle_id`` to represent a unique identifier of the
-entire firmware bundle.
+When reading from the NVM using a flat address, it is useful to know the
+upper bound on the size of the flash contents. This value is not stored
+within the NVM.
 
-A future change is going to introduce a similar notion in the ice
-driver, so promote ``fw.bundle_id`` into a generic version now.
+We can determine the size by performing a bisection between upper and
+lower bounds. It is known that the size cannot exceed 16 MB (offset of
+0xFFFFFF).
+
+Use a while loop to bisect the upper and lower bounds by reading one
+byte at a time. On a failed read, lower the maximum bound. On
+a successful read, increase the lower bound.
+
+Save this as the flash_size in the ice_nvm_info structure that contains
+data related to the NVM.
+
+The size will be used in a future patch for implementing full NVM read
+via ethtool's GEEPROM command.
+
+The maximum possible size for the flash is bounded by the size limit for
+the NVM AdminQ commands. Add a new macro, ICE_AQC_NVM_MAX_OFFSET, which
+can be used to represent this upper bound.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- Documentation/networking/devlink/devlink-info.rst | 5 +++++
- drivers/net/ethernet/netronome/nfp/nfp_devlink.c  | 2 +-
- include/net/devlink.h                             | 2 ++
- 3 files changed, 8 insertions(+), 1 deletion(-)
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  2 +
+ drivers/net/ethernet/intel/ice/ice_nvm.c      | 62 ++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_type.h     |  1 +
+ 3 files changed, 63 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/networking/devlink/devlink-info.rst b/Documentation/networking/devlink/devlink-info.rst
-index 70981dd1b981..b701899b7f42 100644
---- a/Documentation/networking/devlink/devlink-info.rst
-+++ b/Documentation/networking/devlink/devlink-info.rst
-@@ -98,3 +98,8 @@ fw.roce
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index f7d4befcf283..a1066c4bf40d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1233,6 +1233,7 @@ struct ice_aqc_sff_eeprom {
+  * NVM Update commands (indirect 0x0703)
+  */
+ struct ice_aqc_nvm {
++#define ICE_AQC_NVM_MAX_OFFSET		0xFFFFFF
+ 	__le16 offset_low;
+ 	u8 offset_high;
+ 	u8 cmd_flags;
+@@ -1798,6 +1799,7 @@ enum ice_aq_err {
+ 	ICE_AQ_RC_ENOMEM	= 9,  /* Out of memory */
+ 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
+ 	ICE_AQ_RC_EEXIST	= 13, /* Object already exists */
++	ICE_AQ_RC_EINVAL	= 14, /* Invalid argument */
+ 	ICE_AQ_RC_ENOSPC	= 16, /* No space left or allocation failure */
+ 	ICE_AQ_RC_ENOSYS	= 17, /* Function not implemented */
+ 	ICE_AQ_RC_ENOSEC	= 24, /* Missing security manifest */
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index ef68fa989a57..4cdce0370963 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -26,8 +26,7 @@ ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
  
- RoCE firmware version which is responsible for handling roce
- management.
-+
-+fw.bundle_id
-+------------
-+
-+Unique identifier of the entire firmware bundle.
-diff --git a/drivers/net/ethernet/netronome/nfp/nfp_devlink.c b/drivers/net/ethernet/netronome/nfp/nfp_devlink.c
-index c50fce42f473..07dbf4d72227 100644
---- a/drivers/net/ethernet/netronome/nfp/nfp_devlink.c
-+++ b/drivers/net/ethernet/netronome/nfp/nfp_devlink.c
-@@ -211,7 +211,7 @@ static const struct nfp_devlink_versions {
- 	enum nfp_nsp_versions id;
- 	const char *key;
- } nfp_devlink_versions_nsp[] = {
--	{ NFP_VERSIONS_BUNDLE,	"fw.bundle_id", },
-+	{ NFP_VERSIONS_BUNDLE,	DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID, },
- 	{ NFP_VERSIONS_BSP,	DEVLINK_INFO_VERSION_GENERIC_FW_MGMT, },
- 	{ NFP_VERSIONS_CPLD,	"fw.cpld", },
- 	{ NFP_VERSIONS_APP,	DEVLINK_INFO_VERSION_GENERIC_FW_APP, },
-diff --git a/include/net/devlink.h b/include/net/devlink.h
-index c9ca86b054bc..e68781b9b7d4 100644
---- a/include/net/devlink.h
-+++ b/include/net/devlink.h
-@@ -490,6 +490,8 @@ enum devlink_param_generic_id {
- #define DEVLINK_INFO_VERSION_GENERIC_FW_PSID	"fw.psid"
- /* RoCE FW version */
- #define DEVLINK_INFO_VERSION_GENERIC_FW_ROCE	"fw.roce"
-+/* Firmware bundle identifier */
-+#define DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID	"fw.bundle_id"
+ 	cmd = &desc.params.nvm;
  
- struct devlink_region;
- struct devlink_info_req;
+-	/* In offset the highest byte must be zeroed. */
+-	if (offset & 0xFF000000)
++	if (offset > ICE_AQC_NVM_MAX_OFFSET)
+ 		return ICE_ERR_PARAM;
+ 
+ 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_nvm_read);
+@@ -363,6 +362,58 @@ static enum ice_status ice_get_orom_ver_info(struct ice_hw *hw)
+ 	return 0;
+ }
+ 
++/**
++ * ice_discover_flash_size - Discover the available flash size.
++ * @hw: pointer to the HW struct
++ *
++ * The device flash could be up to 16MB in size. However, it is possible that
++ * the actual size is smaller. Use bisection to determine the accessible size
++ * of flash memory.
++ */
++static enum ice_status ice_discover_flash_size(struct ice_hw *hw)
++{
++	u32 min_size = 0, max_size = ICE_AQC_NVM_MAX_OFFSET + 1;
++	enum ice_status status;
++
++	status = ice_acquire_nvm(hw, ICE_RES_READ);
++	if (status)
++		return status;
++
++	while ((max_size - min_size) > 1) {
++		u32 offset = (max_size + min_size) / 2;
++		u32 len = 1;
++		u8 data;
++
++		status = ice_read_flat_nvm(hw, offset, &len, &data, false);
++		if (status == ICE_ERR_AQ_ERROR &&
++		    hw->adminq.sq_last_status == ICE_AQ_RC_EINVAL) {
++			ice_debug(hw, ICE_DBG_NVM,
++				  "%s: New upper bound of %u bytes\n",
++				  __func__, offset);
++			status = 0;
++			max_size = offset;
++		} else if (!status) {
++			ice_debug(hw, ICE_DBG_NVM,
++				  "%s: New lower bound of %u bytes\n",
++				  __func__, offset);
++			min_size = offset;
++		} else {
++			/* an unexpected error occurred */
++			goto err_read_flat_nvm;
++		}
++	}
++
++	ice_debug(hw, ICE_DBG_NVM,
++		  "Predicted flash size is %u bytes\n", max_size);
++
++	hw->nvm.flash_size = max_size;
++
++err_read_flat_nvm:
++	ice_release_nvm(hw);
++
++	return status;
++}
++
+ /**
+  * ice_init_nvm - initializes NVM setting
+  * @hw: pointer to the HW struct
+@@ -421,6 +472,13 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
+ 
+ 	nvm->eetrack = (eetrack_hi << 16) | eetrack_lo;
+ 
++	status = ice_discover_flash_size(hw);
++	if (status) {
++		ice_debug(hw, ICE_DBG_NVM,
++			  "NVM init error: failed to discover flash size.\n");
++		return status;
++	}
++
+ 	switch (hw->device_id) {
+ 	/* the following devices do not have boot_cfg_tlv yet */
+ 	case ICE_DEV_ID_E823C_BACKPLANE:
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 72591b4aca11..200aceae4323 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -253,6 +253,7 @@ struct ice_nvm_info {
+ 	struct ice_orom_info orom;	/* Option ROM version info */
+ 	u32 eetrack;			/* NVM data version */
+ 	u16 sr_words;			/* Shadow RAM size in words */
++	u32 flash_size;			/* Size of available flash in bytes */
+ 	u8 major_ver;			/* major version of NVM package */
+ 	u8 minor_ver;			/* minor version of dev starter */
+ 	u8 blank_nvm_mode;        /* is NVM empty (no FW present) */
 -- 
 2.24.1
 
