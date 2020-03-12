@@ -1,332 +1,109 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Mar 2020 18:27:22 -0700
-Subject: [Intel-wired-lan] [PATCH v2 5/9] ice: implement full NVM read from
- ETHTOOL_GEEPROM
-In-Reply-To: <20200312012726.973301-1-jacob.e.keller@intel.com>
+Date: Wed, 11 Mar 2020 18:34:38 -0700
+Subject: [Intel-wired-lan] [PATCH v2 6/9] ice: enable initial devlink
+ support
+In-Reply-To: <20200312012726.973301-7-jacob.e.keller@intel.com>
 References: <20200312012726.973301-1-jacob.e.keller@intel.com>
-Message-ID: <20200312012726.973301-6-jacob.e.keller@intel.com>
+ <20200312012726.973301-7-jacob.e.keller@intel.com>
+Message-ID: <ef5f5cb1-fecf-52ec-4814-79bb0ca09ce0@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Ugh sorry for the thrash, Jeff, please do not apply this to IWL yet,
+looks like I need a v3.
 
-The current implementation of .get_eeprom only enables reading from the
-Shadow RAM portion of the NVM contents. Implement support for reading
-the entire flash contents instead of only the initial portion contained
-in the Shadow RAM.
+On 3/11/2020 6:27 PM, Jacob Keller wrote:
+> +/**
+> + * ice_devlink_create_port - Create a devlink port for this PF
+> + * @pf: the PF to create a port for
+> + *
+> + * Create and register a devlink_port for this PF. Note that although each
+> + * physical function is connected to a separate devlink instance, the port
+> + * will still be numbered according to the physical function id.
+> + *
+> + * Return: zero on success or an error code on failure.
+> + */
+> +int ice_devlink_create_port(struct ice_pf *pf)
+> +{
+> +	struct devlink *devlink = priv_to_devlink(pf);
+> +	struct ice_vsi *vsi = ice_get_main_vsi(pf);
+> +	struct device *dev = ice_pf_to_dev(pf);
+> +	int err;
+> +
+> +	if (!vsi) {
+> +		dev_err(dev, "%s: unable to find main VSI\n", __func__);
+> +		return -EIO;
+> +	}
+> +
+> +	devlink_port_attrs_set(&pf->devlink_port, DEVLINK_PORT_FLAVOUR_PHYSICAL,
+> +			       pf->hw.pf_id, false, 0, NULL, 0);
+> +	err = devlink_port_register(devlink, &pf->devlink_port, pf->hw.pf_id);
+> +	if (err) {
+> +		dev_err(dev, "devlink_port_register failed: %d\n", err);
+> +		return err;
+> +	}
+> +
+> +	return 0;
+> +}
 
-A complete dump can take several seconds, but the ETHTOOL_GEEPROM ioctl
-is capable of reading only a limited portion at a time by specifying the
-offset and length to read.
+<snip>
 
-In order to perform the reads directly, several functions are made non
-static. Additionally, the unused ice_read_sr_buf_aq and ice_read_sr_buf
-functions are removed.
+>  #define DRV_VERSION_MAJOR 0
+>  #define DRV_VERSION_MINOR 8
+> @@ -2426,6 +2427,8 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
+>  	if (err)
+>  		return err;
+>  
+> +	devlink_port_type_eth_set(&pf->devlink_port, vsi->netdev);
+> +
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_common.h  |   3 -
- drivers/net/ethernet/intel/ice/ice_ethtool.c |  33 ++--
- drivers/net/ethernet/intel/ice/ice_nvm.c     | 150 +------------------
- drivers/net/ethernet/intel/ice/ice_nvm.h     |   4 +
- 4 files changed, 26 insertions(+), 164 deletions(-)
+Ugh. I just noticed this when I went to reboot my test system,
+apparently this is called before ice_devlink_create_port and generates a
+warning:
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 0885bdb5830c..ded704236643 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -38,9 +38,6 @@ enum ice_status
- ice_alloc_hw_res(struct ice_hw *hw, u16 type, u16 num, bool btm, u16 *res);
- enum ice_status
- ice_free_hw_res(struct ice_hw *hw, u16 type, u16 num, u16 *res);
--enum ice_status ice_init_nvm(struct ice_hw *hw);
--enum ice_status
--ice_read_sr_buf(struct ice_hw *hw, u16 offset, u16 *words, u16 *data);
- enum ice_status
- ice_aq_alloc_free_res(struct ice_hw *hw, u16 num_entries,
- 		      struct ice_aqc_alloc_free_res_elem *buf, u16 buf_size,
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 75970bcfa6c0..593fb37bd59e 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -245,7 +245,7 @@ static int ice_get_eeprom_len(struct net_device *netdev)
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_pf *pf = np->vsi->back;
- 
--	return (int)(pf->hw.nvm.sr_words * sizeof(u16));
-+	return (int)pf->hw.nvm.flash_size;
- }
- 
- static int
-@@ -253,39 +253,46 @@ ice_get_eeprom(struct net_device *netdev, struct ethtool_eeprom *eeprom,
- 	       u8 *bytes)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
--	u16 first_word, last_word, nwords;
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
- 	struct ice_hw *hw = &pf->hw;
- 	enum ice_status status;
- 	struct device *dev;
- 	int ret = 0;
--	u16 *buf;
-+	u8 *buf;
- 
- 	dev = ice_pf_to_dev(pf);
- 
- 	eeprom->magic = hw->vendor_id | (hw->device_id << 16);
-+	netdev_dbg(netdev, "GEEPROM cmd 0x%08x, offset 0x%08x, len 0x%08x\n",
-+		   eeprom->cmd, eeprom->offset, eeprom->len);
- 
--	first_word = eeprom->offset >> 1;
--	last_word = (eeprom->offset + eeprom->len - 1) >> 1;
--	nwords = last_word - first_word + 1;
--
--	buf = devm_kcalloc(dev, nwords, sizeof(u16), GFP_KERNEL);
-+	buf = kzalloc(eeprom->len, GFP_KERNEL);
- 	if (!buf)
- 		return -ENOMEM;
- 
--	status = ice_read_sr_buf(hw, first_word, &nwords, buf);
-+	status = ice_acquire_nvm(hw, ICE_RES_READ);
- 	if (status) {
--		dev_err(dev, "ice_read_sr_buf failed, err %d aq_err %d\n",
-+		dev_err(dev, "ice_acquire_nvm failed, err %d aq_err %d\n",
- 			status, hw->adminq.sq_last_status);
--		eeprom->len = sizeof(u16) * nwords;
- 		ret = -EIO;
- 		goto out;
- 	}
- 
--	memcpy(bytes, (u8 *)buf + (eeprom->offset & 1), eeprom->len);
-+	status = ice_read_flat_nvm(hw, eeprom->offset, &eeprom->len, buf,
-+				   false);
-+	if (status) {
-+		dev_err(dev, "ice_read_flat_nvm failed, err %d aq_err %d\n",
-+			status, hw->adminq.sq_last_status);
-+		ret = -EIO;
-+		goto release;
-+	}
-+
-+	memcpy(bytes, buf, eeprom->len);
-+release:
-+	ice_release_nvm(hw);
- out:
--	devm_kfree(dev, buf);
-+	kfree(buf);
- 	return ret;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index 4cdce0370963..08909d1c7cce 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -107,70 +107,6 @@ ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
- 	return status;
- }
- 
--/**
-- * ice_check_sr_access_params - verify params for Shadow RAM R/W operations.
-- * @hw: pointer to the HW structure
-- * @offset: offset in words from module start
-- * @words: number of words to access
-- */
--static enum ice_status
--ice_check_sr_access_params(struct ice_hw *hw, u32 offset, u16 words)
--{
--	if ((offset + words) > hw->nvm.sr_words) {
--		ice_debug(hw, ICE_DBG_NVM,
--			  "NVM error: offset beyond SR lmt.\n");
--		return ICE_ERR_PARAM;
--	}
--
--	if (words > ICE_SR_SECTOR_SIZE_IN_WORDS) {
--		/* We can access only up to 4KB (one sector), in one AQ write */
--		ice_debug(hw, ICE_DBG_NVM,
--			  "NVM error: tried to access %d words, limit is %d.\n",
--			  words, ICE_SR_SECTOR_SIZE_IN_WORDS);
--		return ICE_ERR_PARAM;
--	}
--
--	if (((offset + (words - 1)) / ICE_SR_SECTOR_SIZE_IN_WORDS) !=
--	    (offset / ICE_SR_SECTOR_SIZE_IN_WORDS)) {
--		/* A single access cannot spread over two sectors */
--		ice_debug(hw, ICE_DBG_NVM,
--			  "NVM error: cannot spread over two sectors.\n");
--		return ICE_ERR_PARAM;
--	}
--
--	return 0;
--}
--
--/**
-- * ice_read_sr_aq - Read Shadow RAM.
-- * @hw: pointer to the HW structure
-- * @offset: offset in words from module start
-- * @words: number of words to read
-- * @data: storage for the words read from Shadow RAM (Little Endian)
-- * @last_command: tells the AdminQ that this is the last command
-- *
-- * Reads 16-bit Little Endian word buffers from the Shadow RAM using the admin
-- * command.
-- */
--static enum ice_status
--ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, __le16 *data,
--	       bool last_command)
--{
--	enum ice_status status;
--
--	status = ice_check_sr_access_params(hw, offset, words);
--
--	/* values in "offset" and "words" parameters are sized as words
--	 * (16 bits) but ice_aq_read_nvm expects these values in bytes.
--	 * So do this conversion while calling ice_aq_read_nvm.
--	 */
--	if (!status)
--		status = ice_aq_read_nvm(hw, 0, 2 * offset, 2 * words, data,
--					 last_command, true, NULL);
--
--	return status;
--}
--
- /**
-  * ice_read_sr_word_aq - Reads Shadow RAM via AQ
-  * @hw: pointer to the HW structure
-@@ -198,63 +134,6 @@ ice_read_sr_word_aq(struct ice_hw *hw, u16 offset, u16 *data)
- 	return 0;
- }
- 
--/**
-- * ice_read_sr_buf_aq - Reads Shadow RAM buf via AQ
-- * @hw: pointer to the HW structure
-- * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-- * @words: (in) number of words to read; (out) number of words actually read
-- * @data: words read from the Shadow RAM
-- *
-- * Reads 16 bit words (data buf) from the SR using the ice_read_sr_aq
-- * method. Ownership of the NVM is taken before reading the buffer and later
-- * released.
-- */
--static enum ice_status
--ice_read_sr_buf_aq(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
--{
--	enum ice_status status;
--	bool last_cmd = false;
--	u16 words_read = 0;
--	u16 i = 0;
--
--	do {
--		u16 read_size, off_w;
--
--		/* Calculate number of bytes we should read in this step.
--		 * It's not allowed to read more than one page at a time or
--		 * to cross page boundaries.
--		 */
--		off_w = offset % ICE_SR_SECTOR_SIZE_IN_WORDS;
--		read_size = off_w ?
--			min_t(u16, *words,
--			      (ICE_SR_SECTOR_SIZE_IN_WORDS - off_w)) :
--			min_t(u16, (*words - words_read),
--			      ICE_SR_SECTOR_SIZE_IN_WORDS);
--
--		/* Check if this is last command, if so set proper flag */
--		if ((words_read + read_size) >= *words)
--			last_cmd = true;
--
--		status = ice_read_sr_aq(hw, offset, read_size,
--					data + words_read, last_cmd);
--		if (status)
--			goto read_nvm_buf_aq_exit;
--
--		/* Increment counter for words already read and move offset to
--		 * new read location
--		 */
--		words_read += read_size;
--		offset += read_size;
--	} while (words_read < *words);
--
--	for (i = 0; i < *words; i++)
--		data[i] = le16_to_cpu(((__force __le16 *)data)[i]);
--
--read_nvm_buf_aq_exit:
--	*words = words_read;
--	return status;
--}
--
- /**
-  * ice_acquire_nvm - Generic request for acquiring the NVM ownership
-  * @hw: pointer to the HW structure
-@@ -262,7 +141,7 @@ ice_read_sr_buf_aq(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
-  *
-  * This function will request NVM ownership.
-  */
--static enum ice_status
-+enum ice_status
- ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access)
- {
- 	if (hw->nvm.blank_nvm_mode)
-@@ -277,7 +156,7 @@ ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access)
-  *
-  * This function will release NVM ownership.
-  */
--static void ice_release_nvm(struct ice_hw *hw)
-+void ice_release_nvm(struct ice_hw *hw)
- {
- 	if (hw->nvm.blank_nvm_mode)
- 		return;
-@@ -514,31 +393,6 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
- 	return 0;
- }
- 
--/**
-- * ice_read_sr_buf - Reads Shadow RAM buf and acquire lock if necessary
-- * @hw: pointer to the HW structure
-- * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-- * @words: (in) number of words to read; (out) number of words actually read
-- * @data: words read from the Shadow RAM
-- *
-- * Reads 16 bit words (data buf) from the SR using the ice_read_nvm_buf_aq
-- * method. The buf read is preceded by the NVM ownership take
-- * and followed by the release.
-- */
--enum ice_status
--ice_read_sr_buf(struct ice_hw *hw, u16 offset, u16 *words, u16 *data)
--{
--	enum ice_status status;
--
--	status = ice_acquire_nvm(hw, ICE_RES_READ);
--	if (!status) {
--		status = ice_read_sr_buf_aq(hw, offset, words, data);
--		ice_release_nvm(hw);
--	}
--
--	return status;
--}
--
- /**
-  * ice_nvm_validate_checksum
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
-index 4245ef988edf..7375f6b96919 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.h
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
-@@ -4,8 +4,12 @@
- #ifndef _ICE_NVM_H_
- #define _ICE_NVM_H_
- 
-+enum ice_status
-+ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access);
-+void ice_release_nvm(struct ice_hw *hw);
- enum ice_status
- ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
- 		  bool read_shadow_ram);
-+enum ice_status ice_init_nvm(struct ice_hw *hw);
- enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data);
- #endif /* _ICE_NVM_H_ */
--- 
-2.24.1
+> [  186.682927] ------------[ cut here ]------------
+> [  186.682934] WARNING: CPU: 28 PID: 731 at net/core/devlink.c:6936 __devlink_port_type_set+0x60/0x70
+> [  186.682934] Modules linked in: ice(+) ip6t_REJECT nf_reject_ipv6 ip6t_rpfilter ipt_REJECT nf_reject_ipv4 xt_conntrack ebtable_nat ebtable_broute ip6table_nat ip6table_mangle ip6table_raw ip6table_security iptable_nat nf_nat iptable_ma
+> ngle iptable_raw iptable_security nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 ip_set nfnetlink ebtable_filter ebtables ip6table_filter ip6_tables iptable_filter sunrpc vfat fat intel_rapl_msr intel_rapl_common isst_if_common skx_edac nfit
+>  libnvdimm x86_pkg_temp_thermal intel_powerclamp coretemp kvm_intel kvm irqbypass crct10dif_pclmul crc32_pclmul ghash_clmulni_intel iTCO_wdt iTCO_vendor_support intel_cstate qat_c62x ipmi_ssif intel_qat intel_uncore mei_me mei intel_rapl
+> _perf ioatdma joydev authenc pcspkr i2c_i801 lpc_ich ipmi_si dca ipmi_devintf ipmi_msghandler acpi_power_meter acpi_pad ip_tables xfs libcrc32c ast i2c_algo_bit drm_vram_helper drm_ttm_helper ttm drm_kms_helper cec drm i40e crc32c_intel
+> virtual_bus wmi pkcs8_key_parser [last unloaded: ice]
+> [  186.682962] CPU: 28 PID: 731 Comm: kworker/28:1 Tainted: G        W         5.6.0-rc3+ #3
+> [  186.682963] Hardware name: Intel Corporation S2600STQ/S2600STQ, BIOS SE5C620.86B.02.01.0010.010620200716 01/06/2020
+> [  186.682969] Workqueue: events work_for_cpu_fn
+> [  186.682971] RIP: 0010:__devlink_port_type_set+0x60/0x70
+> [  186.682972] Code: 89 e7 e8 33 52 16 00 44 89 6d 34 4c 89 e7 48 89 5d 40 e8 93 52 16 00 48 89 ef 5b be 07 00 00 00 5d 41 5c 41 5d e9 90 fc ff ff <0f> 0b c3 66 66 2e 0f 1f 84 00 00 00 00 00 66 90 0f 1f 44 00 00 41
+> [  186.682973] RSP: 0018:ffffa14c60567d70 EFLAGS: 00010246
+> [  186.682974] RAX: 0000000000000000 RBX: ffffffffc05b86c0 RCX: 0000000000000000
+> [  186.682974] RDX: ffff8bdffb72b000 RSI: 0000000000000002 RDI: ffff8bdff7568128
+> [  186.682975] RBP: ffff8bdff7568128 R08: ffffffffb77f9820 R09: ffffa14c60567c68
+> [  186.682975] R10: ffff8bdfa9d22a18 R11: ffff8bdfff16af38 R12: ffff8bdffb72b000
+> [  186.682975] R13: ffff8bdff7568120 R14: ffff8bdff7568280 R15: 0000000000000000
+> [  186.682976] FS:  0000000000000000(0000) GS:ffff8bdfff000000(0000) knlGS:0000000000000000
+> [  186.682977] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> [  186.682977] CR2: 0000556b79c52c58 CR3: 0000000e5760a004 CR4: 00000000007606e0
+> [  186.682978] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [  186.682978] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+> [  186.682979] PKRU: 55555554
+> [  186.682979] Call Trace:
+> [  186.682983]  devlink_port_type_eth_set+0x7b/0xb0
+> [  186.682993]  ice_probe+0x7dc/0xda0 [ice]
+> [  186.682998]  local_pci_probe+0x42/0x80
+> [  186.683002]  ? __schedule+0x2cf/0x740
+> [  186.683003]  work_for_cpu_fn+0x16/0x20
+> [  186.683006]  process_one_work+0x1b5/0x360
+> [  186.683007]  worker_thread+0x1e2/0x3c0
+> [  186.683010]  kthread+0xf9/0x130
+> [  186.683012]  ? process_one_work+0x360/0x360
+> [  186.683013]  ? kthread_park+0x90/0x90
+> [  186.683014]  ret_from_fork+0x35/0x40
+> [  186.683016] ---[ end trace 5fff949e65047c29 ]---
 
+I'm fairly sure this is because we do not call ice_devlink_create_port
+early enough, but I need to figure out the best place to put this :(
+
+Regards,
+Jake
