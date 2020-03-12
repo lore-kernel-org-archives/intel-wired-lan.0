@@ -1,68 +1,68 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Mar 2020 18:58:10 -0700
-Subject: [Intel-wired-lan] [PATCH v3 1/9] ice: use __le16 types for
- explicitly Little Endian values
+Date: Wed, 11 Mar 2020 18:58:16 -0700
+Subject: [Intel-wired-lan] [PATCH v3 7/9] devlink: promote "fw.bundle_id" to
+ a generic info version
 In-Reply-To: <20200312015818.1007882-1-jacob.e.keller@intel.com>
 References: <20200312015818.1007882-1-jacob.e.keller@intel.com>
-Message-ID: <20200312015818.1007882-2-jacob.e.keller@intel.com>
+Message-ID: <20200312015818.1007882-8-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice_read_sr_aq function returns words in the Little Endian format.
-Remove the need for __force and typecasting by using a local variable in
-the ice_read_sr_word_aq function.
+The nfp driver uses ``fw.bundle_id`` to represent a unique identifier of the
+entire firmware bundle.
 
-Additionally clarify explicitly that the ice_read_sr_aq function takes
-storage for __le16 values instead of using u16.
-
-Being explicit about the endianness of this data helps when using tools
-like sparse to catch endian-related issues.
+A future change is going to introduce a similar notion in the ice
+driver, so promote ``fw.bundle_id`` into a generic version now.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_nvm.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ Documentation/networking/devlink/devlink-info.rst | 5 +++++
+ drivers/net/ethernet/netronome/nfp/nfp_devlink.c  | 2 +-
+ include/net/devlink.h                             | 2 ++
+ 3 files changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index f6e25db22c23..5597ec50a662 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -80,13 +80,14 @@ ice_check_sr_access_params(struct ice_hw *hw, u32 offset, u16 words)
-  * @hw: pointer to the HW structure
-  * @offset: offset in words from module start
-  * @words: number of words to read
-- * @data: buffer for words reads from Shadow RAM
-+ * @data: storage for the words read from Shadow RAM (Little Endian)
-  * @last_command: tells the AdminQ that this is the last command
-  *
-- * Reads 16-bit word buffers from the Shadow RAM using the admin command.
-+ * Reads 16-bit Little Endian word buffers from the Shadow RAM using the admin
-+ * command.
-  */
- static enum ice_status
--ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, u16 *data,
-+ice_read_sr_aq(struct ice_hw *hw, u32 offset, u16 words, __le16 *data,
- 	       bool last_command)
- {
- 	enum ice_status status;
-@@ -116,10 +117,11 @@ static enum ice_status
- ice_read_sr_word_aq(struct ice_hw *hw, u16 offset, u16 *data)
- {
- 	enum ice_status status;
-+	__le16 data_local;
+diff --git a/Documentation/networking/devlink/devlink-info.rst b/Documentation/networking/devlink/devlink-info.rst
+index 70981dd1b981..b701899b7f42 100644
+--- a/Documentation/networking/devlink/devlink-info.rst
++++ b/Documentation/networking/devlink/devlink-info.rst
+@@ -98,3 +98,8 @@ fw.roce
  
--	status = ice_read_sr_aq(hw, offset, 1, data, true);
-+	status = ice_read_sr_aq(hw, offset, 1, &data_local, true);
- 	if (!status)
--		*data = le16_to_cpu(*(__force __le16 *)data);
-+		*data = le16_to_cpu(data_local);
+ RoCE firmware version which is responsible for handling roce
+ management.
++
++fw.bundle_id
++------------
++
++Unique identifier of the entire firmware bundle.
+diff --git a/drivers/net/ethernet/netronome/nfp/nfp_devlink.c b/drivers/net/ethernet/netronome/nfp/nfp_devlink.c
+index c50fce42f473..07dbf4d72227 100644
+--- a/drivers/net/ethernet/netronome/nfp/nfp_devlink.c
++++ b/drivers/net/ethernet/netronome/nfp/nfp_devlink.c
+@@ -211,7 +211,7 @@ static const struct nfp_devlink_versions {
+ 	enum nfp_nsp_versions id;
+ 	const char *key;
+ } nfp_devlink_versions_nsp[] = {
+-	{ NFP_VERSIONS_BUNDLE,	"fw.bundle_id", },
++	{ NFP_VERSIONS_BUNDLE,	DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID, },
+ 	{ NFP_VERSIONS_BSP,	DEVLINK_INFO_VERSION_GENERIC_FW_MGMT, },
+ 	{ NFP_VERSIONS_CPLD,	"fw.cpld", },
+ 	{ NFP_VERSIONS_APP,	DEVLINK_INFO_VERSION_GENERIC_FW_APP, },
+diff --git a/include/net/devlink.h b/include/net/devlink.h
+index c9ca86b054bc..e68781b9b7d4 100644
+--- a/include/net/devlink.h
++++ b/include/net/devlink.h
+@@ -490,6 +490,8 @@ enum devlink_param_generic_id {
+ #define DEVLINK_INFO_VERSION_GENERIC_FW_PSID	"fw.psid"
+ /* RoCE FW version */
+ #define DEVLINK_INFO_VERSION_GENERIC_FW_ROCE	"fw.roce"
++/* Firmware bundle identifier */
++#define DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID	"fw.bundle_id"
  
- 	return status;
- }
+ struct devlink_region;
+ struct devlink_info_req;
 -- 
 2.24.1
 
