@@ -1,5210 +1,4956 @@
-From: Jack Ping CHNG <jack.ping.chng@linux.intel.com>
-Date: Fri, 13 Mar 2020 16:39:43 +0800
-Subject: [Intel-wired-lan] [next-queue PATCH v3] gwdpa: gswip: Introduce
- Gigabit Ethernet Switch (GSWIP) device driver
-Message-ID: <8bd05d664cec0b4d72ee8f31b77d3f12b90e27a0.1584088476.git.jack.ping.chng@linux.intel.com>
+From: Shiraz Saleem <shiraz.saleem@intel.com>
+Date: Fri, 13 Mar 2020 10:16:31 -0500
+Subject: [Intel-wired-lan] [PATCH RFC v5 07/16] RDMA/irdma: Add connection
+ manager
+In-Reply-To: <20200313151640.2070-1-shiraz.saleem@intel.com>
+References: <20200313151640.2070-1-shiraz.saleem@intel.com>
+Message-ID: <20200313151640.2070-8-shiraz.saleem@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This driver enables the Intel's LGM SoC GSWIP block. GSWIP is a core module
-tailored for L2/L3/L4+ data plane and QoS functions. It allows CPUs and
-other accelerators connected to the SoC datapath to enqueue and dequeue
-packets through DMAs. Most configuration values are stored in tables
-such as Parsing and Classification Engine tables, Buffer Manager tables
-and Pseudo MAC tables.
+From: Mustafa Ismail <mustafa.ismail@intel.com>
 
-Signed-off-by: Jack Ping CHNG <jack.ping.chng@linux.intel.com>
-Signed-off-by: Amireddy Mallikarjuna reddy <mallikarjunax.reddy@linux.intel.com>
+Add connection management (CM) implementation for
+iWARP including accept, reject, connect, create_listen,
+destroy_listen and CM utility functions
+
+Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
+Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 ---
-Changes:
+ drivers/infiniband/hw/irdma/cm.c | 4499 ++++++++++++++++++++++++++++++++++++++
+ drivers/infiniband/hw/irdma/cm.h |  413 ++++
+ 2 files changed, 4912 insertions(+)
+ create mode 100644 drivers/infiniband/hw/irdma/cm.c
+ create mode 100644 drivers/infiniband/hw/irdma/cm.h
 
-v3:
-- Removed redundant err print for platform_get_irq_byname
-- Fixed duplicated argument mac_get_mii_interface
-- Used common define for MAC/PMAC
----
- drivers/net/ethernet/intel/Kconfig                 |  11 +
- drivers/net/ethernet/intel/Makefile                |   1 +
- drivers/net/ethernet/intel/gwdpa/Makefile          |   5 +
- drivers/net/ethernet/intel/gwdpa/gswip/Makefile    |  10 +
- drivers/net/ethernet/intel/gwdpa/gswip/gswip.h     | 448 ++++++++++++
- .../net/ethernet/intel/gwdpa/gswip/gswip_core.c    | 804 +++++++++++++++++++++
- .../net/ethernet/intel/gwdpa/gswip/gswip_core.h    |  90 +++
- drivers/net/ethernet/intel/gwdpa/gswip/gswip_dev.c | 179 +++++
- drivers/net/ethernet/intel/gwdpa/gswip/gswip_dev.h |  19 +
- drivers/net/ethernet/intel/gwdpa/gswip/gswip_mac.c | 225 ++++++
- .../net/ethernet/intel/gwdpa/gswip/gswip_port.c    | 330 +++++++++
- drivers/net/ethernet/intel/gwdpa/gswip/gswip_reg.h | 491 +++++++++++++
- drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.c | 332 +++++++++
- drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.h | 195 +++++
- drivers/net/ethernet/intel/gwdpa/gswip/lmac.c      |  46 ++
- drivers/net/ethernet/intel/gwdpa/gswip/mac_cfg.c   | 524 ++++++++++++++
- .../net/ethernet/intel/gwdpa/gswip/mac_common.h    | 238 ++++++
- drivers/net/ethernet/intel/gwdpa/gswip/mac_dev.c   | 186 +++++
- drivers/net/ethernet/intel/gwdpa/gswip/xgmac.c     | 643 ++++++++++++++++
- drivers/net/ethernet/intel/gwdpa/gswip/xgmac.h     | 236 ++++++
- 20 files changed, 5013 insertions(+)
- create mode 100644 drivers/net/ethernet/intel/gwdpa/Makefile
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/Makefile
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/gswip.h
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/gswip_core.c
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/gswip_core.h
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/gswip_dev.c
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/gswip_dev.h
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/gswip_mac.c
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/gswip_port.c
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/gswip_reg.h
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.c
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.h
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/lmac.c
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/mac_cfg.c
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/mac_common.h
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/mac_dev.c
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/xgmac.c
- create mode 100644 drivers/net/ethernet/intel/gwdpa/gswip/xgmac.h
-
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 154e2e818ec6..82fa937cfa48 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -341,4 +341,15 @@ config IGC
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called igc.
- 
-+config INTEL_GSWIP
-+	tristate "Intel(R) Gigabit Ethernet Switch IP support"
-+	default n
-+	depends on OF_MDIO
-+	help
-+	  Turn on this option to build GSWIP driver.
-+	  Gigabit Ethernet Switch is a hardware IP in the
-+	  Intel Networking SoCs. This driver consists of
-+	  core and mac. It is part of the Intel gateway
-+	  datapath architecture.
-+
- endif # NET_VENDOR_INTEL
-diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
-index 3075290063f6..ab3281e9bc4c 100644
---- a/drivers/net/ethernet/intel/Makefile
-+++ b/drivers/net/ethernet/intel/Makefile
-@@ -16,3 +16,4 @@ obj-$(CONFIG_IXGB) += ixgb/
- obj-$(CONFIG_IAVF) += iavf/
- obj-$(CONFIG_FM10K) += fm10k/
- obj-$(CONFIG_ICE) += ice/
-+obj-y += gwdpa/
-diff --git a/drivers/net/ethernet/intel/gwdpa/Makefile b/drivers/net/ethernet/intel/gwdpa/Makefile
+diff --git a/drivers/infiniband/hw/irdma/cm.c b/drivers/infiniband/hw/irdma/cm.c
 new file mode 100644
-index 000000000000..ada65e907601
+index 0000000..87d6300
 --- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/Makefile
-@@ -0,0 +1,5 @@
-+# SPDX-License-Identifier: GPL-2.0
-+#
-+# Makefile for the Intel datapath specific drivers.
-+#
-+obj-$(CONFIG_INTEL_GSWIP)	+= gswip/
-\ No newline at end of file
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/Makefile b/drivers/net/ethernet/intel/gwdpa/gswip/Makefile
-new file mode 100644
-index 000000000000..548b716d6984
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/Makefile
-@@ -0,0 +1,10 @@
-+# SPDX-License-Identifier: GPL-2.0
-+#
-+# Makefile for GSWIP
-+#
-+obj-y += gswip-dev.o gswip-core.o gswip-mac.o
-+
-+gswip-dev-y := gswip_dev.o
-+gswip-core-y := gswip_core.o gswip_port.o gswip_tbl.o
-+gswip-mac-y := mac_dev.o mac_cfg.o gswip_mac.o xgmac.o lmac.o
-+
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/gswip.h b/drivers/net/ethernet/intel/gwdpa/gswip/gswip.h
-new file mode 100644
-index 000000000000..1e8b4b5b146a
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/gswip.h
-@@ -0,0 +1,448 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+#ifndef _DATAPATH_GSWIP_H_
-+#define _DATAPATH_GSWIP_H_
-+
-+#include <linux/device.h>
-+#include <linux/bits.h>
-+
-+#define BR_PORT_MAP_NUM		16
-+#define PMAC_BSL_THRES_NUM	3
-+#define PMAC_HEADER_NUM		8
-+
-+enum gswip_cpu_parser_hdr_cfg {
-+	GSWIP_CPU_PARSER_NIL,
-+	GSWIP_CPU_PARSER_FLAGS,
-+	GSWIP_CPU_PARSER_OFFSETS_FLAGS,
-+	GSWIP_CPU_PARSER_RESERVED,
-+};
-+
-+struct gswip_cpu_port_cfg {
-+	u8 lpid;
-+	bool is_cpu_port;
-+	bool spec_tag_ig;
-+	bool spec_tag_eg;
-+	bool fcs_chk;
-+	bool fcs_generate;
-+	enum gswip_cpu_parser_hdr_cfg no_mpe_parser_cfg;
-+	enum gswip_cpu_parser_hdr_cfg mpe1_parser_cfg;
-+	enum gswip_cpu_parser_hdr_cfg mpe2_parser_cfg;
-+	enum gswip_cpu_parser_hdr_cfg mpe3_parser_cfg;
-+	bool ts_rm_ptp_pkt;
-+	bool ts_rm_non_ptp_pkt;
-+};
-+
-+enum gswip_pmac_short_frm_chk {
-+	GSWIP_PMAC_SHORT_LEN_DIS,
-+	GSWIP_PMAC_SHORT_LEN_ENA_UNTAG,
-+	GSWIP_PMAC_SHORT_LEN_ENA_TAG,
-+	GSWIP_PMAC_SHORT_LEN_RESERVED,
-+};
-+
-+enum gswip_pmac_proc_flags_eg_cfg {
-+	GSWIP_PMAC_PROC_FLAGS_NONE,
-+	GSWIP_PMAC_PROC_FLAGS_TC,
-+	GSWIP_PMAC_PROC_FLAGS_FLAG,
-+	GSWIP_PMAC_PROC_FLAGS_MIX,
-+};
-+
-+struct gswip_pmac_glb_cfg {
-+	u8 pmac_id;
-+	bool apad_en;
-+	bool pad_en;
-+	bool vpad_en;
-+	bool svpad_en;
-+	bool rx_fcs_dis;
-+	bool tx_fcs_dis;
-+	bool ip_trans_chk_reg_dis;
-+	bool ip_trans_chk_ver_dis;
-+	bool jumbo_en;
-+	u16 max_jumbo_len;
-+	u16 jumbo_thresh_len;
-+	bool long_frm_chk_dis;
-+	enum gswip_pmac_short_frm_chk short_frm_chk_type;
-+	bool proc_flags_eg_cfg_en;
-+	enum gswip_pmac_proc_flags_eg_cfg proc_flags_eg_cfg;
-+	u16 bsl_thresh[PMAC_BSL_THRES_NUM];
-+};
-+
-+struct gswip_pmac_bp_map {
-+	u8 pmac_id;
-+	u8 tx_dma_chan_id;
-+	u32 tx_q_mask;
-+	u32 rx_port_mask;
-+};
-+
-+enum gswip_pmac_ig_cfg_src {
-+	GSWIP_PMAC_IG_CFG_SRC_DMA_DESC,
-+	GSWIP_PMAC_IG_CFG_SRC_DEF_PMAC,
-+	GSWIP_PMAC_IG_CFG_SRC_PMAC,
-+};
-+
-+struct gswip_pmac_ig_cfg {
-+	u8 pmac_id;
-+	u8 tx_dma_chan_id;
-+	bool err_pkt_disc;
-+	bool class_def;
-+	bool class_en;
-+	enum gswip_pmac_ig_cfg_src sub_id;
-+	bool src_port_id_def;
-+	bool pmac_present;
-+	u8 def_pmac_hdr[PMAC_HEADER_NUM];
-+};
-+
-+struct gswip_pmac_eg_cfg {
-+	u8 pmac_id;
-+	u8 dst_port_id;
-+	u8 tc;
-+	bool mpe1;
-+	bool mpe2;
-+	bool decrypt;
-+	bool encrypt;
-+	u8 flow_id_msb;
-+	bool process_sel;
-+	u8 rx_dma_chan_id;
-+	bool rm_l2_hdr;
-+	u8 num_byte_rm;
-+	bool fcs_en;
-+	bool pmac_en;
-+	bool redir_en;
-+	bool bsl_seg_disable;
-+	u8 bsl_tc;
-+	bool resv_dw1_en;
-+	u8 resv_dw1;
-+	bool resv_1dw0_en;
-+	u8 resv_1dw0;
-+	bool resv_2dw0_en;
-+	u8 resv_2dw0;
-+	bool tc_en;
-+};
-+
-+struct gswip_lpid2gpid {
-+	u16 lpid;
-+	u16 first_gpid;
-+	u16 num_gpid;
-+	u8 valid_bits;
-+};
-+
-+struct gswip_gpid2lpid {
-+	u16 gpid;
-+	u16 lpid;
-+	u8 subif_grp_field;
-+	bool subif_grp_field_ovr;
-+};
-+
-+enum gswip_ctp_port_config_mask {
-+	GSWIP_CTP_PORT_CONFIG_MASK_BRIDGE_PORT_ID	= BIT(0),
-+	GSWIP_CTP_PORT_CONFIG_MASK_FORCE_TRAFFIC_CLASS	= BIT(1),
-+	GSWIP_CTP_PORT_CONFIG_MASK_INGRESS_VLAN		= BIT(2),
-+	GSWIP_CTP_PORT_CONFIG_MASK_INGRESS_VLAN_IGMP	= BIT(3),
-+	GSWIP_CTP_PORT_CONFIG_MASK_EGRESS_VLAN		= BIT(4),
-+	GSWIP_CTP_PORT_CONFIG_MASK_EGRESS_VLAN_IGMP	= BIT(5),
-+	GSWIP_CTP_PORT_CONFIG_MASK_INRESS_NTO1_VLAN	= BIT(6),
-+	GSWIP_CTP_PORT_CONFIG_MASK_EGRESS_NTO1_VLAN	= BIT(7),
-+	GSWIP_CTP_PORT_CONFIG_INGRESS_MARKING		= BIT(8),
-+	GSWIP_CTP_PORT_CONFIG_EGRESS_MARKING		= BIT(9),
-+	GSWIP_CTP_PORT_CONFIG_EGRESS_MARKING_OVERRIDE	= BIT(10),
-+	GSWIP_CTP_PORT_CONFIG_EGRESS_REMARKING		= BIT(11),
-+	GSWIP_CTP_PORT_CONFIG_INGRESS_METER		= BIT(12),
-+	GSWIP_CTP_PORT_CONFIG_EGRESS_METER		= BIT(13),
-+	GSWIP_CTP_PORT_CONFIG_BRIDGING_BYPASS		= BIT(14),
-+	GSWIP_CTP_PORT_CONFIG_FLOW_ENTRY		= BIT(15),
-+	GSWIP_CTP_PORT_CONFIG_LOOPBACK_AND_MIRROR	= BIT(16),
-+	GSWIP_CTP_PORT_CONFIG_MASK_FORCE		= BIT(31),
-+};
-+
-+struct gswip_ctp_port_cfg {
-+	u8 lpid;
-+	u16 subif_id_grp;
-+	u16 br_pid;
-+	enum gswip_ctp_port_config_mask mask;
-+	bool br_bypass;
-+};
-+
-+enum gswip_lport_mode {
-+	GSWIP_LPORT_8BIT_WLAN,
-+	GSWIP_LPORT_9BIT_WLAN,
-+	GSWIP_LPORT_GPON,
-+	GSWIP_LPORT_EPON,
-+	GSWIP_LPORT_GINT,
-+	GSWIP_LPORT_OTHER = 0xFF,
-+};
-+
-+struct gswip_ctp_port_info {
-+	u8 lpid;
-+	u16 first_pid;
-+	u16 num_port;
-+	enum gswip_lport_mode mode;
-+	u16 br_pid;
-+};
-+
-+enum gswip_br_port_cfg_mask {
-+	GSWIP_BR_PORT_CFG_MASK_BR_ID			= BIT(0),
-+	GSWIP_BR_PORT_CFG_MASK_IG_VLAN			= BIT(1),
-+	GSWIP_BR_PORT_CFG_MASK_EG_VLAN			= BIT(2),
-+	GSWIP_BR_PORT_CFG_MASK_IG_MARKING		= BIT(3),
-+	GSWIP_BR_PORT_CFG_MASK_EG_REMARKING		= BIT(4),
-+	GSWIP_BR_PORT_CFG_MASK_IG_METER			= BIT(5),
-+	GSWIP_BR_PORT_CFG_MASK_EG_SUB_METER		= BIT(6),
-+	GSWIP_BR_PORT_CFG_MASK_EG_CTP_MAPPING		= BIT(7),
-+	GSWIP_BR_PORT_CFG_MASK_BR_PORT_MAP		= BIT(8),
-+	GSWIP_BR_PORT_CFG_MASK_MCAST_DST_IP_LOOKUP	= BIT(9),
-+	GSWIP_BR_PORT_CFG_MASK_MCAST_SRC_IP_LOOKUP	= BIT(10),
-+	GSWIP_BR_PORT_CFG_MASK_MCAST_DST_MAC_LOOKUP	= BIT(11),
-+	GSWIP_BR_PORT_CFG_MASK_MCAST_SRC_MAC_LEARNING	= BIT(12),
-+	GSWIP_BR_PORT_CFG_MASK_MAC_SPOOFING		= BIT(13),
-+	GSWIP_BR_PORT_CFG_MASK_PORT_LOCK		= BIT(14),
-+	GSWIP_BR_PORT_CFG_MASK_MAC_LEARNING_LIMIT	= BIT(15),
-+	GSWIP_BR_PORT_CFG_MASK_MAC_LEARNED_COUNT	= BIT(16),
-+	GSWIP_BR_PORT_CFG_MASK_IG_VLAN_FILTER		= BIT(17),
-+	GSWIP_BR_PORT_CFG_MASK_EG_VLAN_FILTER1		= BIT(18),
-+	GSWIP_BR_PORT_CFG_MASK_EG_VLAN_FILTER2		= BIT(19),
-+	GSWIP_BR_PORT_CFG_MASK_FORCE			= BIT(31),
-+};
-+
-+enum gswip_pmapper_mapping_mode {
-+	GSWIP_PMAPPER_MAPPING_PCP,
-+	GSWIP_PMAPPER_MAPPING_DSCP,
-+};
-+
-+enum gswip_br_port_eg_meter {
-+	GSWIP_BR_PORT_EG_METER_BROADCAST,
-+	GSWIP_BR_PORT_EG_METER_MULTICAST,
-+	GSWIP_BR_PORT_EG_METER_UNKNOWN_MCAST_IP,
-+	GSWIP_BR_PORT_EG_METER_UNKNOWN_MCAST_NON_IP,
-+	GSWIP_BR_PORT_EG_METER_UNKNOWN_UCAST,
-+	GSWIP_BR_PORT_EG_METER_OTHERS,
-+	GSWIP_BR_PORT_EG_METER_MAX,
-+};
-+
-+struct gswip_br_port_alloc {
-+	u8 br_id;
-+	u8 br_pid;
-+};
-+
-+enum gswip_br_cfg_mask {
-+	GSWIP_BR_CFG_MASK_MAC_LEARNING_LIMIT	= BIT(0),
-+	GSWIP_BR_CFG_MASK_MAC_LEARNED_COUNT	= BIT(1),
-+	GSWIP_BR_CFG_MASK_MAC_DISCARD_COUNT	= BIT(2),
-+	GSWIP_BR_CFG_MASK_SUB_METER		= BIT(3),
-+	GSWIP_BR_CFG_MASK_FORWARDING_MODE	= BIT(4),
-+	GSWIP_BR_CFG_MASK_FORCE			= BIT(31),
-+};
-+
-+enum gswip_br_fwd_mode {
-+	GSWIP_BR_FWD_FLOOD,
-+	GSWIP_BR_FWD_DISCARD,
-+	GSWIP_BR_FWD_CPU,
-+};
-+
-+struct gswip_br_alloc {
-+	u8 br_id;
-+};
-+
-+struct gswip_br_cfg {
-+	u8 br_id;
-+	enum gswip_br_cfg_mask mask;
-+	bool mac_lrn_limit_en;
-+	u16 mac_lrn_limit;
-+	u16 mac_lrn_count;
-+	u32 lrn_disc_event;
-+	enum gswip_br_fwd_mode fwd_bcast;
-+	enum gswip_br_fwd_mode fwd_unk_mcast_ip;
-+	enum gswip_br_fwd_mode fwd_unk_mcast_non_ip;
-+	enum gswip_br_fwd_mode fwd_unk_ucast;
-+};
-+
-+struct gswip_qos_wred_q_cfg {
-+	u8 qid;
-+	u16 red_min;
-+	u16 red_max;
-+	u16 yellow_min;
-+	u16 yellow_max;
-+	u16 green_min;
-+	u16 green_max;
-+};
-+
-+struct gswip_qos_wred_port_cfg {
-+	u8 lpid;
-+	u16 red_min;
-+	u16 red_max;
-+	u16 yellow_min;
-+	u16 yellow_max;
-+	u16 green_min;
-+	u16 green_max;
-+};
-+
-+enum gswip_qos_q_map_mode {
-+	GSWIP_QOS_QMAP_SINGLE_MD,
-+	GSWIP_QOS_QMAP_SUBIFID_MD,
-+};
-+
-+struct gswip_qos_q_port {
-+	u8 lpid;
-+	bool extration_en;
-+	enum gswip_qos_q_map_mode q_map_mode;
-+	u8 tc_id;
-+	u8 qid;
-+	bool egress;
-+	u8 redir_port_id;
-+	bool en_ig_pce_bypass;
-+	bool resv_port_mode;
-+};
-+
-+struct gswip_register {
-+	u16 offset;
-+	u16 data;
-+};
-+
-+enum {
-+	SPEED_LMAC_10M,
-+	SPEED_LMAC_100M,
-+	SPEED_LMAC_200M,
-+	SPEED_LMAC_1G,
-+	SPEED_XGMAC_10M,
-+	SPEED_XGMAC_100M,
-+	SPEED_XGMAC_1G,
-+	SPEED_XGMII_25G,
-+	SPEED_XGMAC_5G,
-+	SPEED_XGMAC_10G,
-+	SPEED_GMII_25G,
-+	SPEED_MAC_AUTO,
-+};
-+
-+enum gsw_portspeed {
-+	/* 10 Mbit/s */
-+	GSW_PORT_SPEED_10 = 10,
-+
-+	/* 100 Mbit/s */
-+	GSW_PORT_SPEED_100 = 100,
-+
-+	/* 200 Mbit/s */
-+	GSW_PORT_SPEED_200 = 200,
-+
-+	/* 1000 Mbit/s */
-+	GSW_PORT_SPEED_1000 = 1000,
-+
-+	/* 2.5 Gbit/s */
-+	GSW_PORT_SPEED_25000 = 25000,
-+
-+	/* 10 Gbit/s */
-+	GSW_PORT_SPEED_100000 = 100000,
-+};
-+
-+enum gsw_portlink_status {
-+	LINK_AUTO,
-+	LINK_UP,
-+	LINK_DOWN,
-+};
-+
-+enum gsw_flow_control_modes {
-+	FC_AUTO,
-+	FC_RX,
-+	FC_TX,
-+	FC_RXTX,
-+	FC_DIS,
-+	FC_INVALID,
-+};
-+
-+/* Ethernet port interface mode. */
-+enum gsw_mii_mode {
-+	/* Normal PHY interface (twisted pair), use internal MII Interface */
-+	GSW_PORT_HW_MII,
-+
-+	/* Reduced MII interface in normal mode */
-+	GSW_PORT_HW_RMII,
-+
-+	/* GMII or MII, depending upon the speed */
-+	GSW_PORT_HW_GMII,
-+
-+	/* RGMII mode */
-+	GSW_PORT_HW_RGMII,
-+
-+	/* XGMII mode */
-+	GSW_PORT_HW_XGMII,
-+};
-+
-+struct core_common_ops {
-+	int (*enable)(struct device *dev, bool enable);
-+	int (*cpu_port_cfg_get)(struct device *dev,
-+				struct gswip_cpu_port_cfg *cpu);
-+	int (*reg_get)(struct device *dev, struct gswip_register *param);
-+	int (*reg_set)(struct device *dev, struct gswip_register *param);
-+};
-+
-+struct core_pmac_ops {
-+	int (*gbl_cfg_set)(struct device *dev, struct gswip_pmac_glb_cfg *pmac);
-+	int (*bp_map_get)(struct device *dev, struct gswip_pmac_bp_map *bp);
-+	int (*ig_cfg_set)(struct device *dev, struct gswip_pmac_ig_cfg *ig);
-+	int (*eg_cfg_set)(struct device *dev, struct gswip_pmac_eg_cfg *eg);
-+};
-+
-+struct core_gpid_ops {
-+	int (*lpid2gpid_set)(struct device *dev,
-+			     struct gswip_lpid2gpid *lp2gp);
-+	int (*lpid2gpid_get)(struct device *dev,
-+			     struct gswip_lpid2gpid *lp2gp);
-+	int (*gpid2lpid_set)(struct device *dev,
-+			     struct gswip_gpid2lpid *gp2lp);
-+	int (*gpid2lpid_get)(struct device *dev,
-+			     struct gswip_gpid2lpid *gp2lp);
-+};
-+
-+struct core_ctp_ops {
-+	int (*alloc)(struct device *dev, struct gswip_ctp_port_info *ctp);
-+	int (*free)(struct device *dev, u8 lpid);
-+};
-+
-+struct core_br_port_ops {
-+	int (*alloc)(struct device *dev, struct gswip_br_port_alloc *bp);
-+	int (*free)(struct device *dev, struct gswip_br_port_alloc *bp);
-+};
-+
-+struct core_br_ops {
-+	int (*alloc)(struct device *dev, struct gswip_br_alloc *br);
-+	int (*free)(struct device *dev, struct gswip_br_alloc *br);
-+};
-+
-+struct core_qos_ops {
-+	int (*q_port_set)(struct device *dev, struct gswip_qos_q_port *qport);
-+	int (*wred_q_cfg_set)(struct device *dev,
-+			      struct gswip_qos_wred_q_cfg *wredq);
-+	int (*wred_port_cfg_set)(struct device *dev,
-+				 struct gswip_qos_wred_port_cfg *wredp);
-+};
-+
-+struct gsw_mac_ops {
-+	/* Initialize MAC */
-+	int (*init)(struct device *dev);
-+
-+	int (*set_macaddr)(struct device *dev, u8 *mac_addr);
-+	int (*get_link_sts)(struct device *dev);
-+
-+	int (*get_duplex)(struct device *dev);
-+
-+	int (*set_speed)(struct device *dev, u8 speed);
-+	int (*get_speed)(struct device *dev);
-+
-+	u32 (*get_mtu)(struct device *dev);
-+	int (*set_mtu)(struct device *dev, u32 mtu);
-+
-+	u32 (*get_flowctrl)(struct device *dev);
-+	int (*set_flowctrl)(struct device *dev, u32 val);
-+
-+	int (*get_pfsa)(struct device *dev, u8 *addr, u32 *mode);
-+	int (*set_pfsa)(struct device *dev, u8 *mac_addr, u32 macif);
-+
-+	int (*get_mii_if)(struct device *dev);
-+	int (*set_mii_if)(struct device *dev, u32 mii_mode);
-+
-+	u32 (*get_lpi)(struct device *dev);
-+
-+	int (*get_fcsgen)(struct device *dev);
-+};
-+
-+struct gsw_adap_ops {
-+	int (*sw_core_enable)(struct device *dev, u32 val);
-+};
-+#endif
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/gswip_core.c b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_core.c
-new file mode 100644
-index 000000000000..164840beaae4
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_core.c
-@@ -0,0 +1,804 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+
-+#include <asm/unaligned.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/of_platform.h>
-+
-+#include "gswip_core.h"
-+#include "gswip_dev.h"
-+#include "gswip_reg.h"
-+#include "gswip_tbl.h"
-+#include "mac_common.h"
-+
-+#define GSWIP_VER		0x32
-+
-+/* TX DMA channels for PMAC0 to PMAC2 */
-+#define PMAC0_TX_DMACHID_START	0
-+#define PMAC0_TX_DMACHID_END	16
-+#define PMAC1_TX_DMACHID_START	0
-+#define PMAC1_TX_DMACHID_END	16
-+#define PMAC2_TX_DMACHID_START	0
-+#define PMAC2_TX_DMACHID_END	16
-+
-+#define MAX_JUMBO_FRM_LEN	10000
-+
-+/* Data Protocol Unit (DPU) */
-+enum dpu {
-+	DPU,
-+	NON_DPU,
-+};
-+
-+enum queue_id {
-+	QUEUE0,
-+	QUEUE1,
-+	QUEUE2,
-+	QUEUE3,
-+	QUEUE4,
-+	QUEUE5,
-+	QUEUE6,
-+	QUEUE7,
-+	QUEUE8,
-+	QUEUE9,
-+	QUEUE10,
-+};
-+
-+enum traffic_class {
-+	TC0,
-+	TC1,
-+	TC2,
-+	TC3,
-+	TC_MAX,
-+};
-+
-+struct eg_pce_bypass_path {
-+	/* egress logical port id */
-+	u8 eg_pid;
-+	/* local extracted */
-+	bool ext;
-+	/* queue id */
-+	u8 qid;
-+	/* redirect logical port id */
-+	u8 redir_pid;
-+};
-+
-+struct ig_pce_bypass_path {
-+	/* ingress logical port id */
-+	u8 ig_pid;
-+	/* local extracted */
-+	bool ext;
-+	/* traffic class */
-+	u8 tc_start;
-+	u8 tc_end;
-+	/* queue id */
-+	u8 qid;
-+	/* redirect logical port id */
-+	u8 redir_pid;
-+};
-+
-+/* default GSWIP egress PCE bypass path Q-map */
-+static struct eg_pce_bypass_path eg_pce_byp_path[] = {
-+	{MAC2,  false, QUEUE0, MAC2 },
-+	{MAC3,  false, QUEUE1, MAC3 },
-+	{MAC4,  false, QUEUE2, MAC4 },
-+	{MAC5,  false, QUEUE3, MAC5 },
-+	{MAC6,  false, QUEUE4, MAC6 },
-+	{MAC7,  false, QUEUE5, MAC7 },
-+	{MAC8,  false, QUEUE6, MAC8 },
-+	{MAC9,  false, QUEUE7, MAC9 },
-+	{MAC10, false, QUEUE8, MAC10},
-+};
-+
-+/* default GSWIP ingress PCE bypass path Q-map */
-+static struct ig_pce_bypass_path ig_pce_byp_path[] = {
-+	{PMAC0, false, TC0, TC_MAX, QUEUE10, PMAC2},
-+	{MAC2,  false, TC0, TC_MAX, QUEUE10, PMAC2},
-+	{MAC3,  false, TC0, TC_MAX, QUEUE10, PMAC2},
-+	{MAC4,  false, TC0, TC_MAX, QUEUE10, PMAC2},
-+	{MAC5,  false, TC0, TC_MAX, QUEUE10, PMAC2},
-+	{MAC6,  false, TC0, TC_MAX, QUEUE10, PMAC2},
-+	{MAC7,  false, TC0, TC_MAX, QUEUE10, PMAC2},
-+	{MAC8,  false, TC0, TC_MAX, QUEUE10, PMAC2},
-+	{MAC9,  false, TC0, TC_MAX, QUEUE10, PMAC2},
-+	{MAC10, false, TC0, TC_MAX, QUEUE10, PMAC2},
-+};
-+
-+static inline int pmac_ig_cfg(struct gswip_core_priv *priv, u8 pmac_id, u8 dpu)
++++ b/drivers/infiniband/hw/irdma/cm.c
+@@ -0,0 +1,4499 @@
++// SPDX-License-Identifier: GPL-2.0 or Linux-OpenIB
++/* Copyright (c) 2015 - 2019 Intel Corporation */
++#include <linux/highmem.h>
++#include <net/addrconf.h>
++#include <net/ip6_route.h>
++#include <net/flow.h>
++#include <net/secure_seq.h>
++
++#include "main.h"
++#include "trace.h"
++
++static void irdma_rem_ref_cm_node(struct irdma_cm_node *);
++static void irdma_cm_post_event(struct irdma_cm_event *event);
++static void irdma_disconnect_worker(struct work_struct *work);
++
++/**
++ * irdma_free_sqbuf - put back puda buffer if refcount is 0
++ * @vsi: The VSI structure of the device
++ * @bufp: puda buffer to free
++ */
++void irdma_free_sqbuf(struct irdma_sc_vsi *vsi, void *bufp)
 +{
-+	const struct core_pmac_ops *pmac_ops =  priv->ops.pmac_ops;
-+	u8 start[] = { PMAC0_TX_DMACHID_START,
-+		       PMAC1_TX_DMACHID_START,
-+		       PMAC2_TX_DMACHID_START };
-+	u8 end[] = { PMAC0_TX_DMACHID_END,
-+		     PMAC1_TX_DMACHID_END,
-+		     PMAC2_TX_DMACHID_END };
-+	u8 pmac[] = { PMAC0, PMAC1, PMAC2 };
-+	struct gswip_pmac_ig_cfg ig_cfg = {0};
-+	int i, ret;
++	struct irdma_puda_buf *buf = bufp;
++	struct irdma_puda_rsrc *ilq = vsi->ilq;
 +
-+	ig_cfg.pmac_id = pmac_id;
-+	ig_cfg.err_pkt_disc = true;
-+	ig_cfg.class_en = true;
-+
-+	for (i = start[pmac_id]; i < end[pmac_id]; i++) {
-+		ig_cfg.tx_dma_chan_id = i;
-+		ig_cfg.def_pmac_hdr[2] = FIELD_PREP(PMAC_IGCFG_HDR_ID,
-+						    pmac[pmac_id]);
-+
-+		ret = pmac_ops->ig_cfg_set(priv->dev, &ig_cfg);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
++	if (refcount_dec_and_test(&buf->refcount))
++		irdma_puda_ret_bufpool(ilq, buf);
 +}
 +
-+static inline int pmac_eg_cfg(struct gswip_core_priv *priv, u8 pmac_id, u8 dpu)
++/**
++ * irdma_derive_hw_ird_setting - Calculate IRD
++ * @cm_ird: IRD of connection's node
++ *
++ * The ird from the connection is rounded to a supported HW
++ * setting (2,8,32,64,128) and then encoded for ird_size field
++ * of qp_ctx
++ */
++u8 irdma_derive_hw_ird_setting(u16 cm_ird)
 +{
-+	const struct core_pmac_ops *pmac_ops =  priv->ops.pmac_ops;
-+	struct gswip_pmac_eg_cfg pmac_eg = {0};
-+
-+	pmac_eg.pmac_id = pmac_id;
-+	pmac_eg.pmac_en = true;
-+	pmac_eg.bsl_seg_disable = true;
-+
-+	return pmac_ops->eg_cfg_set(priv->dev, &pmac_eg);
-+}
-+
-+static inline int pmac_glbl_cfg(struct gswip_core_priv *priv, u8 pmac_id)
-+{
-+	const struct core_pmac_ops *pmac_ops =  priv->ops.pmac_ops;
-+	struct gswip_pmac_glb_cfg pmac_cfg = {0};
-+
-+	pmac_cfg.pmac_id = pmac_id;
-+	pmac_cfg.rx_fcs_dis = true;
-+	pmac_cfg.jumbo_en = true;
-+	pmac_cfg.max_jumbo_len = MAX_JUMBO_FRM_LEN;
-+	pmac_cfg.long_frm_chk_dis = true;
-+	pmac_cfg.short_frm_chk_type = GSWIP_PMAC_SHORT_LEN_ENA_UNTAG;
-+	pmac_cfg.proc_flags_eg_cfg_en = true;
-+	pmac_cfg.proc_flags_eg_cfg = GSWIP_PMAC_PROC_FLAGS_MIX;
-+
-+	return pmac_ops->gbl_cfg_set(priv->dev, &pmac_cfg);
-+}
-+
-+static int gswip_core_pmac_init_nondpu(struct gswip_core_priv *priv)
-+{
-+	int i, ret;
-+
-+	for (i = 0; i < priv->num_pmac; i++) {
-+		ret = pmac_glbl_cfg(priv, i);
-+		if (ret)
-+			return ret;
-+
-+		ret = pmac_ig_cfg(priv, i, NON_DPU);
-+		if (ret)
-+			return ret;
-+
-+		ret = pmac_eg_cfg(priv, i, NON_DPU);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int gswip_core_set_def_eg_pce_bypass_qmap(struct gswip_core_priv *priv,
-+						 enum gswip_qos_q_map_mode mode)
-+{
-+	const struct core_qos_ops *qos_ops =  priv->ops.qos_ops;
-+	int num_elem = ARRAY_SIZE(eg_pce_byp_path);
-+	struct gswip_qos_q_port q_map = {0};
-+	int i, ret;
-+
-+	q_map.egress = true;
-+	q_map.q_map_mode = mode;
-+
-+	for (i = 0; i < num_elem; i++) {
-+		q_map.lpid = eg_pce_byp_path[i].eg_pid;
-+		q_map.extration_en = eg_pce_byp_path[i].ext;
-+		q_map.qid = eg_pce_byp_path[i].qid;
-+		q_map.redir_port_id = eg_pce_byp_path[i].redir_pid;
-+
-+		ret = qos_ops->q_port_set(priv->dev, &q_map);
-+		if (ret)
-+			return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int gswip_core_set_def_ig_pce_bypass_qmap(struct gswip_core_priv *priv)
-+{
-+	const struct core_qos_ops *qos_ops =  priv->ops.qos_ops;
-+	int num_elem = ARRAY_SIZE(ig_pce_byp_path);
-+	struct gswip_qos_q_port q_map = {0};
-+	int i, j, ret;
-+
-+	q_map.en_ig_pce_bypass = true;
-+
-+	for (i = 0; i < num_elem; i++) {
-+		for (j = ig_pce_byp_path[i].tc_start;
-+		     j < ig_pce_byp_path[i].tc_end; j++) {
-+			q_map.lpid = ig_pce_byp_path[i].ig_pid;
-+			q_map.qid = ig_pce_byp_path[i].qid;
-+			q_map.redir_port_id = ig_pce_byp_path[i].redir_pid;
-+			q_map.tc_id = j;
-+
-+			ret = qos_ops->q_port_set(priv->dev, &q_map);
-+			if (ret)
-+				return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static inline u16 pmac_reg(u16 offset, u8 id)
-+{
-+	u16 pmac_offset[] = { 0, PMAC_REG_OFFSET_1, PMAC_REG_OFFSET_2 };
-+
-+	return offset += pmac_offset[id];
-+}
-+
-+/* PMAC global configuration */
-+static int gswip_pmac_glb_cfg_set(struct device *dev,
-+				  struct gswip_pmac_glb_cfg *pmac)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	u16 bsl_reg[] = { PMAC_BSL_LEN0, PMAC_BSL_LEN1, PMAC_BSL_LEN2 };
-+	u16 ctrl_reg[] = { PMAC_CTRL_0, PMAC_CTRL_1,
-+			   PMAC_CTRL_2, PMAC_CTRL_4 };
-+	u16 ctrl[PMAC_CTRL_NUM] = {0};
-+	u8 id;
-+	int i;
-+
-+	if (pmac->pmac_id >= priv->num_pmac) {
-+		dev_err(priv->dev, "Invalid pmac id %d\n", pmac->pmac_id);
-+		return -EINVAL;
-+	}
-+
-+	ctrl[0] = FIELD_PREP(PMAC_CTRL_0_FCSEN, pmac->rx_fcs_dis) |
-+		  FIELD_PREP(PMAC_CTRL_0_APADEN, pmac->apad_en) |
-+		  FIELD_PREP(PMAC_CTRL_0_VPAD2EN, pmac->svpad_en) |
-+		  FIELD_PREP(PMAC_CTRL_0_VPADEN, pmac->vpad_en) |
-+		  FIELD_PREP(PMAC_CTRL_0_PADEN, pmac->pad_en) |
-+		  FIELD_PREP(PMAC_CTRL_0_FCS, pmac->tx_fcs_dis) |
-+		  FIELD_PREP(PMAC_CTRL_0_CHKREG, pmac->ip_trans_chk_reg_dis) |
-+		  FIELD_PREP(PMAC_CTRL_0_CHKVER, pmac->ip_trans_chk_ver_dis);
-+
-+	if (pmac->jumbo_en) {
-+		ctrl[1] = pmac->max_jumbo_len,
-+		ctrl[2] = FIELD_PREP(PMAC_CTRL_2_MLEN, 1);
-+	}
-+
-+	ctrl[2] |= FIELD_PREP(PMAC_CTRL_2_LCHKL, pmac->long_frm_chk_dis);
-+
-+	switch (pmac->short_frm_chk_type) {
-+	case GSWIP_PMAC_SHORT_LEN_DIS:
-+		ctrl[2] |= FIELD_PREP(PMAC_CTRL_2_LCHKS, 0);
-+		break;
-+
-+	case GSWIP_PMAC_SHORT_LEN_ENA_UNTAG:
-+		ctrl[2] |= FIELD_PREP(PMAC_CTRL_2_LCHKS, 1);
-+		break;
-+
-+	case GSWIP_PMAC_SHORT_LEN_ENA_TAG:
-+		ctrl[2] |= FIELD_PREP(PMAC_CTRL_2_LCHKS, 2);
-+		break;
-+
-+	case GSWIP_PMAC_SHORT_LEN_RESERVED:
-+		ctrl[2] |= FIELD_PREP(PMAC_CTRL_2_LCHKS, 3);
++	/* ird_size field is encoded in qp_ctx */
++	switch (cm_ird ? roundup_pow_of_two(cm_ird) : 0) {
++	case IRDMA_HW_IRD_SETTING_128:
++		return 4;
++	case IRDMA_HW_IRD_SETTING_64:
++		return 3;
++	case IRDMA_HW_IRD_SETTING_32:
++	case IRDMA_HW_IRD_SETTING_16:
++		return 2;
++	case IRDMA_HW_IRD_SETTING_8:
++	case IRDMA_HW_IRD_SETTING_4:
++		return 1;
++	case IRDMA_HW_IRD_SETTING_2:
++	default:
 +		break;
 +	}
 +
-+	switch (pmac->proc_flags_eg_cfg) {
-+	case GSWIP_PMAC_PROC_FLAGS_NONE:
++	return 0;
++}
++
++/**
++ * irdma_record_ird_ord - Record IRD/ORD passed in
++ * @cm_node: connection's node
++ * @conn_ird: connection IRD
++ * @conn_ord: connection ORD
++ */
++static void irdma_record_ird_ord(struct irdma_cm_node *cm_node, u32 conn_ird,
++				 u32 conn_ord)
++{
++	if (conn_ird > cm_node->dev->hw_attrs.max_hw_ird)
++		conn_ird = cm_node->dev->hw_attrs.max_hw_ird;
++
++	if (conn_ord > cm_node->dev->hw_attrs.max_hw_ord)
++		conn_ord = cm_node->dev->hw_attrs.max_hw_ord;
++	else if (!conn_ord && cm_node->send_rdma0_op == SEND_RDMA_READ_ZERO)
++		conn_ord = 1;
++	cm_node->ird_size = conn_ird;
++	cm_node->ord_size = conn_ord;
++}
++
++/**
++ * irdma_copy_ip_ntohl - copy IP address from  network to host
++ * @dst: IP address in host order
++ * @src: IP address in network order (big endian)
++ */
++void irdma_copy_ip_ntohl(u32 *dst, __be32 *src)
++{
++	*dst++ = ntohl(*src++);
++	*dst++ = ntohl(*src++);
++	*dst++ = ntohl(*src++);
++	*dst = ntohl(*src);
++}
++
++/**
++ * irdma_copy_ip_htonl - copy IP address from host to network order
++ * @dst: IP address in network order (big endian)
++ * @src: IP address in host order
++ */
++void irdma_copy_ip_htonl(__be32 *dst, u32 *src)
++{
++	*dst++ = htonl(*src++);
++	*dst++ = htonl(*src++);
++	*dst++ = htonl(*src++);
++	*dst = htonl(*src);
++}
++
++/**
++ * irdma_get_addr_info
++ * @cm_node: contains ip/tcp info
++ * @cm_info: to get a copy of the cm_node ip/tcp info
++ */
++static void irdma_get_addr_info(struct irdma_cm_node *cm_node,
++				struct irdma_cm_info *cm_info)
++{
++	memset(cm_info, 0, sizeof(*cm_info));
++	cm_info->ipv4 = cm_node->ipv4;
++	cm_info->vlan_id = cm_node->vlan_id;
++	memcpy(cm_info->loc_addr, cm_node->loc_addr, sizeof(cm_info->loc_addr));
++	memcpy(cm_info->rem_addr, cm_node->rem_addr, sizeof(cm_info->rem_addr));
++	cm_info->loc_port = cm_node->loc_port;
++	cm_info->rem_port = cm_node->rem_port;
++}
++
++/**
++ * irdma_fill_sockaddr4 - fill in addr info for IPv4 connection
++ * @cm_node: connection's node
++ * @event: upper layer's cm event
++ */
++static inline void irdma_fill_sockaddr4(struct irdma_cm_node *cm_node,
++					struct iw_cm_event *event)
++{
++	struct sockaddr_in *laddr = (struct sockaddr_in *)&event->local_addr;
++	struct sockaddr_in *raddr = (struct sockaddr_in *)&event->remote_addr;
++
++	laddr->sin_family = AF_INET;
++	raddr->sin_family = AF_INET;
++
++	laddr->sin_port = htons(cm_node->loc_port);
++	raddr->sin_port = htons(cm_node->rem_port);
++
++	laddr->sin_addr.s_addr = htonl(cm_node->loc_addr[0]);
++	raddr->sin_addr.s_addr = htonl(cm_node->rem_addr[0]);
++}
++
++/**
++ * irdma_fill_sockaddr6 - fill in addr info for IPv6 connection
++ * @cm_node: connection's node
++ * @event: upper layer's cm event
++ */
++static inline void irdma_fill_sockaddr6(struct irdma_cm_node *cm_node,
++					struct iw_cm_event *event)
++{
++	struct sockaddr_in6 *laddr6 = (struct sockaddr_in6 *)&event->local_addr;
++	struct sockaddr_in6 *raddr6 = (struct sockaddr_in6 *)&event->remote_addr;
++
++	laddr6->sin6_family = AF_INET6;
++	raddr6->sin6_family = AF_INET6;
++
++	laddr6->sin6_port = htons(cm_node->loc_port);
++	raddr6->sin6_port = htons(cm_node->rem_port);
++
++	irdma_copy_ip_htonl(laddr6->sin6_addr.in6_u.u6_addr32,
++			    cm_node->loc_addr);
++	irdma_copy_ip_htonl(raddr6->sin6_addr.in6_u.u6_addr32,
++			    cm_node->rem_addr);
++}
++
++/**
++ * irdma_get_cmevent_info - for cm event upcall
++ * @cm_node: connection's node
++ * @cm_id: upper layers cm struct for the event
++ * @event: upper layer's cm event
++ */
++static inline void irdma_get_cmevent_info(struct irdma_cm_node *cm_node,
++					  struct iw_cm_id *cm_id,
++					  struct iw_cm_event *event)
++{
++	memcpy(&event->local_addr, &cm_id->m_local_addr,
++	       sizeof(event->local_addr));
++	memcpy(&event->remote_addr, &cm_id->m_remote_addr,
++	       sizeof(event->remote_addr));
++	if (cm_node) {
++		event->private_data = cm_node->pdata_buf;
++		event->private_data_len = (u8)cm_node->pdata.size;
++		event->ird = cm_node->ird_size;
++		event->ord = cm_node->ord_size;
++	}
++}
++
++/**
++ * irdma_send_cm_event - upcall cm's event handler
++ * @cm_node: connection's node
++ * @cm_id: upper layer's cm info struct
++ * @type: Event type to indicate
++ * @status: status for the event type
++ */
++static int irdma_send_cm_event(struct irdma_cm_node *cm_node,
++			       struct iw_cm_id *cm_id,
++			       enum iw_cm_event_type type, int status)
++{
++	struct iw_cm_event event = {};
++
++	event.event = type;
++	event.status = status;
++	switch (type) {
++	case IW_CM_EVENT_CONNECT_REQUEST:
++		trace_irdma_send_cm_event(cm_node, cm_id, type, status,
++					  __builtin_return_address(0));
++		if (cm_node->ipv4)
++			irdma_fill_sockaddr4(cm_node, &event);
++		else
++			irdma_fill_sockaddr6(cm_node, &event);
++		event.provider_data = cm_node;
++		event.private_data = cm_node->pdata_buf;
++		event.private_data_len = (u8)cm_node->pdata.size;
++		event.ird = cm_node->ird_size;
 +		break;
-+
-+	case GSWIP_PMAC_PROC_FLAGS_TC:
-+		ctrl[3] |= FIELD_PREP(PMAC_CTRL_4_FLAGEN, 0);
++	case IW_CM_EVENT_CONNECT_REPLY:
++		trace_irdma_send_cm_event(cm_node, cm_id, type, status,
++					  __builtin_return_address(0));
++		irdma_get_cmevent_info(cm_node, cm_id, &event);
 +		break;
-+
-+	case GSWIP_PMAC_PROC_FLAGS_FLAG:
-+		ctrl[3] |= FIELD_PREP(PMAC_CTRL_4_FLAGEN, 1);
++	case IW_CM_EVENT_ESTABLISHED:
++		trace_irdma_send_cm_event(cm_node, cm_id, type, status,
++					  __builtin_return_address(0));
++		event.ird = cm_node->ird_size;
++		event.ord = cm_node->ord_size;
 +		break;
-+
-+	case GSWIP_PMAC_PROC_FLAGS_MIX:
-+		ctrl[3] |= FIELD_PREP(PMAC_CTRL_4_FLAGEN, 2);
++	case IW_CM_EVENT_DISCONNECT:
++		trace_irdma_send_cm_event_no_node(cm_id, type, status,
++						  __builtin_return_address(0));
 +		break;
-+	}
-+
-+	id = pmac->pmac_id;
-+
-+	for (i = 0; i < PMAC_CTRL_NUM; i++)
-+		regmap_write(priv->regmap, pmac_reg(ctrl_reg[i], id), ctrl[i]);
-+
-+	for (i = 0; i < PMAC_BSL_NUM; i++)
-+		regmap_write(priv->regmap, pmac_reg(bsl_reg[i], id),
-+			     pmac->bsl_thresh[i]);
-+
-+	return 0;
-+}
-+
-+/* PMAC backpressure configuration */
-+static int gswip_pmac_bp_map_get(struct device *dev,
-+				 struct gswip_pmac_bp_map *bp)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	struct pmac_tbl_prog pmac_tbl = {0};
-+	int ret;
-+
-+	pmac_tbl.id = PMAC_BP_MAP;
-+	pmac_tbl.pmac_id = bp->pmac_id;
-+	pmac_tbl.addr = FIELD_GET(PMAC_BPMAP_TX_DMA_CH, bp->tx_dma_chan_id);
-+	pmac_tbl.num_val = PMAC_BP_MAP_TBL_VAL_NUM;
-+
-+	ret = gswip_pmac_table_read(priv, &pmac_tbl);
-+	if (ret)
-+		return -EINVAL;
-+
-+	bp->rx_port_mask = pmac_tbl.val[0];
-+	bp->tx_q_mask = pmac_tbl.val[1];
-+	bp->tx_q_mask |= FIELD_PREP(PMAC_BPMAP_TX_Q_UPPER, pmac_tbl.val[2]);
-+
-+	return 0;
-+}
-+
-+/* PMAC ingress configuration */
-+static int gswip_pmac_ig_cfg_set(struct device *dev,
-+				 struct gswip_pmac_ig_cfg *ig)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	struct pmac_tbl_prog pmac_tbl = {0};
-+	u16 *val;
-+	u16 i;
-+
-+	pmac_tbl.id = PMAC_IG_CFG;
-+	pmac_tbl.pmac_id = ig->pmac_id;
-+	pmac_tbl.addr = FIELD_GET(PMAC_IGCFG_TX_DMA_CH, ig->tx_dma_chan_id);
-+
-+	val = &pmac_tbl.val[0];
-+	for (i = 0; i < 4; i++)
-+		val[i] = get_unaligned_be16(&ig->def_pmac_hdr[i * 2]);
-+
-+	switch (ig->sub_id) {
-+	case GSWIP_PMAC_IG_CFG_SRC_DMA_DESC:
++	case IW_CM_EVENT_CLOSE:
++		trace_irdma_send_cm_event_no_node(cm_id, type, status,
++						  __builtin_return_address(0));
 +		break;
-+
-+	case GSWIP_PMAC_IG_CFG_SRC_PMAC:
-+	case GSWIP_PMAC_IG_CFG_SRC_DEF_PMAC:
-+		val[4] = PMAC_IGCFG_VAL4_SUBID_MODE;
-+		break;
++	default:
++		ibdev_dbg(to_ibdev(cm_node->iwdev),
++			  "CM: Unsupported event type received type = %d\n",
++			  type);
++		return -1;
 +	}
 +
-+	val[4] |= FIELD_PREP(PMAC_IGCFG_VAL4_PMAC_FLAG, ig->pmac_present) |
-+		  FIELD_PREP(PMAC_IGCFG_VAL4_CLASSEN_MODE, ig->class_en) |
-+		  FIELD_PREP(PMAC_IGCFG_VAL4_CLASS_MODE, ig->class_def) |
-+		  FIELD_PREP(PMAC_IGCFG_VAL4_ERR_DP, ig->err_pkt_disc) |
-+		  FIELD_PREP(PMAC_IGCFG_VAL4_SPPID_MODE, ig->src_port_id_def);
-+
-+	pmac_tbl.num_val = PMAC_IG_CFG_TBL_VAL_NUM;
-+
-+	return gswip_pmac_table_write(priv, &pmac_tbl);
++	return cm_id->event_handler(cm_id, &event);
 +}
 +
-+/* PMAC egress configuration */
-+static int gswip_pmac_eg_cfg_set(struct device *dev,
-+				 struct gswip_pmac_eg_cfg *eg)
++/**
++ * irdma_create_event - create cm event
++ * @cm_node: connection's node
++ * @type: Event type to generate
++ */
++static struct irdma_cm_event *irdma_create_event(struct irdma_cm_node *cm_node,
++						 enum irdma_cm_event_type type)
 +{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	struct pmac_tbl_prog pmac_tbl = {0};
-+	u16 ctrl, pmac_ctrl4;
-+	u16 *val;
++	struct irdma_cm_event *event;
 +
-+	pmac_ctrl4 = pmac_reg(PMAC_CTRL_4, eg->pmac_id);
++	if (!cm_node->cm_id)
++		return NULL;
 +
-+	pmac_tbl.id = PMAC_EG_CFG;
-+	pmac_tbl.pmac_id = eg->pmac_id;
-+	pmac_tbl.addr = FIELD_PREP(PMAC_EGCFG_DST_PORT_ID, eg->dst_port_id)
-+			| FIELD_PREP(PMAC_EGCFG_FLOW_ID_MSB,
-+				     eg->flow_id_msb);
++	event = kzalloc(sizeof(*event), GFP_ATOMIC);
 +
-+	ctrl = reg_rbits(priv, pmac_ctrl4, PMAC_CTRL_4_FLAGEN);
++	if (!event)
++		return NULL;
 +
-+	if (ctrl == PMAC_RX_FSM_IDLE) {
-+		pmac_tbl.addr |= FIELD_PREP(PMAC_EGCFG_TC_4BITS, eg->tc);
-+	} else if (ctrl == PMAC_RX_FSM_IGCFG) {
-+		pmac_tbl.addr |= FIELD_PREP(PMAC_EGCFG_MPE1, eg->mpe1) |
-+				 FIELD_PREP(PMAC_EGCFG_MPE2, eg->mpe2) |
-+				 FIELD_PREP(PMAC_EGCFG_ECRYPT, eg->encrypt) |
-+				 FIELD_PREP(PMAC_EGCFG_DECRYPT, eg->decrypt);
-+	} else if (ctrl == PMAC_RX_FSM_DASA) {
-+		pmac_tbl.addr |= FIELD_PREP(PMAC_EGCFG_TC_2BITS, eg->tc) |
-+				 FIELD_PREP(PMAC_EGCFG_MPE1, eg->mpe1) |
-+				 FIELD_PREP(PMAC_EGCFG_MPE2, eg->mpe2);
++	event->type = type;
++	event->cm_node = cm_node;
++	memcpy(event->cm_info.rem_addr, cm_node->rem_addr,
++	       sizeof(event->cm_info.rem_addr));
++	memcpy(event->cm_info.loc_addr, cm_node->loc_addr,
++	       sizeof(event->cm_info.loc_addr));
++	event->cm_info.rem_port = cm_node->rem_port;
++	event->cm_info.loc_port = cm_node->loc_port;
++	event->cm_info.cm_id = cm_node->cm_id;
++	ibdev_dbg(to_ibdev(cm_node->iwdev),
++		  "CM: node=%p event=%p type=%u dst=%pI4 src=%pI4\n", cm_node,
++		  event, type, event->cm_info.loc_addr,
++		  event->cm_info.rem_addr);
++	trace_irdma_create_event(cm_node, type, __builtin_return_address(0));
++	irdma_cm_post_event(event);
++
++	return event;
++}
++
++/**
++ * irdma_free_retrans_entry - free send entry
++ * @cm_node: connection's node
++ */
++static void irdma_free_retrans_entry(struct irdma_cm_node *cm_node)
++{
++	struct irdma_device *iwdev = cm_node->iwdev;
++	struct irdma_timer_entry *send_entry;
++
++	send_entry = cm_node->send_entry;
++	if (!send_entry)
++		return;
++
++	cm_node->send_entry = NULL;
++	irdma_free_sqbuf(&iwdev->vsi, send_entry->sqbuf);
++	kfree(send_entry);
++	refcount_dec(&cm_node->refcnt);
++}
++
++/**
++ * irdma_cleanup_retrans_entry - free send entry with lock
++ * @cm_node: connection's node
++ */
++static void irdma_cleanup_retrans_entry(struct irdma_cm_node *cm_node)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&cm_node->retrans_list_lock, flags);
++	irdma_free_retrans_entry(cm_node);
++	spin_unlock_irqrestore(&cm_node->retrans_list_lock, flags);
++}
++
++/**
++ * irdma_form_ah_cm_frame - get a free packet and build frame with address handle
++ * @cm_node: connection's node ionfo to use in frame
++ * @options: pointer to options info
++ * @hdr: pointer mpa header
++ * @pdata: pointer to private data
++ * @flags:  indicates FIN or ACK
++ */
++static struct irdma_puda_buf *irdma_form_ah_cm_frame(struct irdma_cm_node *cm_node,
++						     struct irdma_kmem_info *options,
++						     struct irdma_kmem_info *hdr,
++						     struct irdma_kmem_info *pdata,
++						     u8 flags)
++{
++	struct irdma_puda_buf *sqbuf;
++	struct irdma_sc_vsi *vsi = &cm_node->iwdev->vsi;
++	u8 *buf;
++	struct tcphdr *tcph;
++	u16 pktsize;
++	u32 opts_len = 0;
++	u32 pd_len = 0;
++	u32 hdr_len = 0;
++
++	if (!cm_node->ah || !cm_node->ah->ah_info.ah_valid) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev), "CM: AH invalid\n");
++		return NULL;
 +	}
 +
-+	val = &pmac_tbl.val[0];
-+	val[0] = FIELD_PREP(PMAC_EGCFG_VAL0_REDIR, eg->redir_en) |
-+		 FIELD_PREP(PMAC_EGCFG_VAL0_RES_3BITS, ctrl) |
-+		   FIELD_PREP(PMAC_EGCFG_VAL0_BSL, eg->bsl_tc) |
-+		   FIELD_PREP(PMAC_EGCFG_VAL0_RES_2BITS, eg->resv_2dw0);
-+
-+	val[1] = FIELD_PREP(PMAC_EGCFG_VAL1_RX_DMA_CH, eg->rx_dma_chan_id);
-+
-+	val[2] = FIELD_PREP(PMAC_EGCFG_VAL2_FCS_MODE, eg->fcs_en) |
-+		   FIELD_PREP(PMAC_EGCFG_VAL2_PMAC_FLAG, eg->pmac_en);
-+
-+	if (eg->rm_l2_hdr) {
-+		val[2] |= PMAC_EGCFG_VAL2_L2HD_RM_MODE |
-+			    FIELD_PREP(PMAC_EGCFG_VAL2_L2HD_RM,
-+				       eg->num_byte_rm);
++	sqbuf = irdma_puda_get_bufpool(vsi->ilq);
++	if (!sqbuf) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev), "CM: SQ buf NULL\n");
++		return NULL;
 +	}
 +
-+	pmac_tbl.num_val = PMAC_EG_CFG_TBL_VAL_NUM;
++	sqbuf->ah_id = cm_node->ah->ah_info.ah_idx;
++	buf = sqbuf->mem.va;
++	if (options)
++		opts_len = (u32)options->size;
 +
-+	return gswip_pmac_table_write(priv, &pmac_tbl);
-+}
++	if (hdr)
++		hdr_len = hdr->size;
 +
-+static int gswip_cpu_port_cfg_get(struct device *dev,
-+				  struct gswip_cpu_port_cfg *cpu)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	u16 lpid, val;
++	if (pdata)
++		pd_len = pdata->size;
 +
-+	lpid = cpu->lpid;
-+	if (lpid >= priv->num_lport) {
-+		dev_err(priv->dev, "Invalid cpu port id %d > %d\n",
-+			lpid, priv->num_lport);
-+		return -EINVAL;
-+	}
++	pktsize = sizeof(*tcph) + opts_len + hdr_len + pd_len;
 +
-+	cpu->is_cpu_port = lpid == priv->cpu_port;
-+	cpu->spec_tag_ig = reg_rbits(priv, PCE_PCTRL_0(lpid),
-+				     PCE_PCTRL_0_IGSTEN);
-+	cpu->fcs_chk = reg_rbits(priv, SDMA_PCTRL(lpid), SDMA_PCTRL_FCSIGN);
++	memset(buf, 0, pktsize);
 +
-+	reg_r16(priv, FDMA_PASR, &val);
-+	cpu->no_mpe_parser_cfg = FIELD_GET(FDMA_PASR_CPU, val);
-+	cpu->mpe1_parser_cfg = FIELD_GET(FDMA_PASR_MPE1, val);
-+	cpu->mpe2_parser_cfg = FIELD_GET(FDMA_PASR_MPE2, val);
-+	cpu->mpe3_parser_cfg = FIELD_GET(FDMA_PASR_MPE3, val);
++	sqbuf->totallen = pktsize;
++	sqbuf->tcphlen = sizeof(*tcph) + opts_len;
++	sqbuf->scratch = cm_node;
 +
-+	reg_r16(priv, FDMA_PCTRL(lpid), &val);
-+	cpu->spec_tag_eg = FIELD_GET(FDMA_PCTRL_STEN, val);
-+	cpu->ts_rm_ptp_pkt = FIELD_GET(FDMA_PCTRL_TS_PTP, val);
-+	cpu->ts_rm_non_ptp_pkt = FIELD_GET(FDMA_PCTRL_TS_NONPTP, val);
++	tcph = (struct tcphdr *)buf;
++	buf += sizeof(*tcph);
 +
-+	return 0;
-+}
++	tcph->source = htons(cm_node->loc_port);
++	tcph->dest = htons(cm_node->rem_port);
++	tcph->seq = htonl(cm_node->tcp_cntxt.loc_seq_num);
 +
-+static int gswip_register_get(struct device *dev, struct gswip_register *param)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+
-+	reg_r16(priv, param->offset, &param->data);
-+
-+	return 0;
-+}
-+
-+static int gswip_register_set(struct device *dev, struct gswip_register *param)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+
-+	regmap_write(priv->regmap, param->offset, param->data);
-+
-+	return 0;
-+}
-+
-+/* Global Port ID/ Logical Port ID */
-+static int gswip_lpid2gpid_set(struct device *dev,
-+			       struct gswip_lpid2gpid *lp2gp)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	u16 lpid, first_gpid, last_gpid, val;
-+
-+	lpid = lp2gp->lpid;
-+	first_gpid = lp2gp->first_gpid;
-+	last_gpid = first_gpid + lp2gp->num_gpid - 1;
-+
-+	if (lpid >= priv->num_lport) {
-+		dev_err(priv->dev, "Invalid lpid %d >= %d\n",
-+			lpid, priv->num_lport);
-+		return -EINVAL;
-+	}
-+
-+	if (last_gpid >= priv->num_glb_port) {
-+		dev_err(priv->dev, "Invalid last gpid %d >= %d\n",
-+			last_gpid, priv->num_glb_port);
-+		return -EINVAL;
-+	}
-+
-+	val = FIELD_PREP(ETHSW_GPID_STARTID_STARTID, first_gpid) |
-+	      FIELD_PREP(ETHSW_GPID_STARTID_BITS, lp2gp->valid_bits);
-+	regmap_write(priv->regmap, ETHSW_GPID_STARTID(lpid), val);
-+
-+	reg_wbits(priv, ETHSW_GPID_ENDID(lpid),
-+		  ETHSW_GPID_ENDID_ENDID, last_gpid);
-+
-+	return 0;
-+}
-+
-+static int gswip_lpid2gpid_get(struct device *dev,
-+			       struct gswip_lpid2gpid *lp2gp)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	u16 lpid, val;
-+
-+	lpid = lp2gp->lpid;
-+	if (lpid >= priv->num_lport) {
-+		dev_err(priv->dev, "Invalid lpid %d >= %d\n",
-+			lpid, priv->num_lport);
-+		return -EINVAL;
-+	}
-+
-+	reg_r16(priv, ETHSW_GPID_STARTID(lpid), &val);
-+	lp2gp->first_gpid = FIELD_GET(ETHSW_GPID_STARTID_STARTID, val);
-+	lp2gp->valid_bits = FIELD_GET(ETHSW_GPID_STARTID_BITS, val);
-+
-+	reg_r16(priv, ETHSW_GPID_ENDID(lpid), &val);
-+	lp2gp->num_gpid = val - lp2gp->first_gpid + 1;
-+
-+	return 0;
-+}
-+
-+static int gswip_gpid2lpid_set(struct device *dev,
-+			       struct gswip_gpid2lpid *gp2lp)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	u16 val = 0;
-+
-+	if (gp2lp->lpid >= priv->num_lport) {
-+		dev_err(priv->dev, "Invalid lpid %d >= %d\n",
-+			gp2lp->lpid, priv->num_lport);
-+		return -EINVAL;
-+	}
-+
-+	if (gp2lp->gpid >= priv->num_glb_port) {
-+		dev_err(priv->dev, "Invalid gpid %d >= %d\n",
-+			gp2lp->gpid, priv->num_glb_port);
-+		return -EINVAL;
-+	}
-+
-+	val = FIELD_PREP(GPID_RAM_VAL_LPID, gp2lp->lpid) |
-+	      FIELD_PREP(GPID_RAM_VAL_SUBID_GRP, gp2lp->subif_grp_field) |
-+	      FIELD_PREP(GPID_RAM_VAL_OV, gp2lp->subif_grp_field_ovr);
-+
-+	regmap_write(priv->regmap, GPID_RAM_VAL, val);
-+
-+	if (tbl_rw_tmout(priv, GPID_RAM_CTRL, GPID_RAM_CTRL_BAS)) {
-+		dev_err(priv->dev, "failed to access gpid table\n");
-+		return -EBUSY;
-+	}
-+
-+	reg_r16(priv, GPID_RAM_CTRL, &val);
-+
-+	update_val(&val, GPID_RAM_CTRL_ADDR, gp2lp->gpid);
-+	val |= FIELD_PREP(GPID_RAM_CTRL_OPMOD, 1) |
-+	       FIELD_PREP(GPID_RAM_CTRL_BAS, 1);
-+
-+	regmap_write(priv->regmap, GPID_RAM_CTRL, val);
-+
-+	if (tbl_rw_tmout(priv, GPID_RAM_CTRL, GPID_RAM_CTRL_BAS)) {
-+		dev_err(priv->dev, "failed to write gpid table\n");
-+		return -EBUSY;
-+	}
-+
-+	return 0;
-+}
-+
-+static int gswip_gpid2lpid_get(struct device *dev,
-+			       struct gswip_gpid2lpid *gp2lp)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	u16 val;
-+
-+	if (gp2lp->gpid >= priv->num_glb_port) {
-+		dev_err(priv->dev, "gpid %d >= %d\n",
-+			gp2lp->gpid, priv->num_glb_port);
-+		return -EINVAL;
-+	}
-+
-+	if (tbl_rw_tmout(priv, GPID_RAM_CTRL, GPID_RAM_CTRL_BAS)) {
-+		dev_err(priv->dev, "failed to access gpid table\n");
-+		return -EBUSY;
-+	}
-+
-+	reg_r16(priv, GPID_RAM_CTRL, &val);
-+
-+	update_val(&val, GPID_RAM_CTRL_ADDR, gp2lp->gpid);
-+	val |= FIELD_PREP(GPID_RAM_CTRL_OPMOD, 0) |
-+	       FIELD_PREP(GPID_RAM_CTRL_BAS, 1);
-+
-+	regmap_write(priv->regmap, GPID_RAM_CTRL, val);
-+
-+	if (tbl_rw_tmout(priv, GPID_RAM_CTRL, GPID_RAM_CTRL_BAS)) {
-+		dev_err(priv->dev, "failed to read gpid table\n");
-+		return -EBUSY;
-+	}
-+
-+	reg_r16(priv, GPID_RAM_VAL, &val);
-+
-+	gp2lp->lpid = FIELD_GET(GPID_RAM_VAL_LPID, val);
-+	gp2lp->subif_grp_field = FIELD_GET(GPID_RAM_VAL_SUBID_GRP, val);
-+	gp2lp->subif_grp_field_ovr = FIELD_GET(GPID_RAM_VAL_OV, val);
-+
-+	return 0;
-+}
-+
-+static int gswip_enable(struct device *dev, bool enable)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	u16 i;
-+
-+	for (i = 0; i < priv->num_lport; i++) {
-+		reg_wbits(priv, FDMA_PCTRL(i), FDMA_PCTRL_EN, enable);
-+		reg_wbits(priv, SDMA_PCTRL(i), SDMA_PCTRL_PEN, enable);
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct core_common_ops gswip_core_common_ops = {
-+	.enable = gswip_enable,
-+	.cpu_port_cfg_get = gswip_cpu_port_cfg_get,
-+	.reg_get = gswip_register_get,
-+	.reg_set = gswip_register_set,
-+};
-+
-+static const struct core_pmac_ops gswip_core_pmac_ops = {
-+	.gbl_cfg_set = gswip_pmac_glb_cfg_set,
-+	.bp_map_get = gswip_pmac_bp_map_get,
-+	.ig_cfg_set = gswip_pmac_ig_cfg_set,
-+	.eg_cfg_set = gswip_pmac_eg_cfg_set,
-+};
-+
-+static const struct core_gpid_ops gswip_core_gpid_ops = {
-+	.lpid2gpid_set = gswip_lpid2gpid_set,
-+	.lpid2gpid_get = gswip_lpid2gpid_get,
-+	.gpid2lpid_set = gswip_gpid2lpid_set,
-+	.gpid2lpid_get = gswip_gpid2lpid_get,
-+};
-+
-+static int gswip_core_setup_ops(struct gswip_core_priv *priv)
-+{
-+	struct core_ops *ops =  &priv->ops;
-+
-+	ops->common_ops = &gswip_core_common_ops;
-+	ops->pmac_ops = &gswip_core_pmac_ops;
-+	ops->gpid_ops = &gswip_core_gpid_ops;
-+
-+	return 0;
-+}
-+
-+static int gswip_core_get_hw_cap(struct gswip_core_priv *priv)
-+{
-+	u16 val;
-+
-+	priv->ver = reg_rbits(priv, ETHSW_VERSION, ETHSW_VERSION_REV_ID);
-+	if (priv->ver != GSWIP_VER) {
-+		dev_err(priv->dev, "Wrong hardware ip version %d\n",
-+			priv->ver);
-+		return -EINVAL;
-+	}
-+
-+	priv->num_phy_port = reg_rbits(priv, ETHSW_CAP_1, ETHSW_CAP_1_PPORTS);
-+
-+	reg_r16(priv, ETHSW_CAP_1, &val);
-+	priv->num_lport = priv->num_phy_port;
-+	priv->num_lport += FIELD_GET(ETHSW_CAP_1_VPORTS, val);
-+	priv->num_q = FIELD_GET(ETHSW_CAP_1_QUEUE, val);
-+
-+	priv->num_pmac = reg_rbits(priv, ETHSW_CAP_13, ETHSW_CAP_13_PMAC);
-+
-+	reg_r16(priv, ETHSW_CAP_17, &val);
-+	priv->num_br = (1 << FIELD_GET(ETHSW_CAP_17_BRG, val));
-+	priv->num_br_port = (1 << FIELD_GET(ETHSW_CAP_17_BRGPT, val));
-+
-+	reg_r16(priv, ETHSW_CAP_18, &priv->num_ctp);
-+
-+	priv->num_glb_port = priv->num_br_port * 2;
-+
-+	return 0;
-+}
-+
-+static int gswip_core_init(struct gswip_core_priv *priv)
-+{
-+	priv->br_map = devm_kzalloc(priv->dev, BITS_TO_LONGS(priv->num_br),
-+				    GFP_KERNEL);
-+	if (!priv->br_map)
-+		return -ENOMEM;
-+
-+	priv->br_port_map = devm_kzalloc(priv->dev,
-+					 BITS_TO_LONGS(priv->num_br_port),
-+					 GFP_KERNEL);
-+	if (!priv->br_port_map)
-+		return -ENOMEM;
-+
-+	priv->ctp_port_map = devm_kzalloc(priv->dev,
-+					  BITS_TO_LONGS(priv->num_ctp),
-+					  GFP_KERNEL);
-+	if (!priv->ctp_port_map)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&priv->tbl_lock);
-+
-+	gswip_core_setup_ops(priv);
-+	gswip_core_setup_port_ops(priv);
-+
-+	return 0;
-+}
-+
-+static int gswip_core_setup(struct gswip_core_priv *priv)
-+{
-+	int ret;
-+
-+	ret = gswip_core_set_def_eg_pce_bypass_qmap(priv,
-+						    GSWIP_QOS_QMAP_SINGLE_MD);
-+	if (ret)
-+		return ret;
-+
-+	ret = gswip_core_set_def_ig_pce_bypass_qmap(priv);
-+	if (ret)
-+		return ret;
-+
-+	ret = gswip_core_pmac_init_nondpu(priv);
-+	if (ret)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int gswip_core_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct device *parent = dev->parent;
-+	struct gswip_core_priv *priv;
-+	struct gswip_pdata *pdata = parent->platform_data;
-+	int ret;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->pdev = pdev;
-+	priv->dev = dev;
-+	priv->regmap = pdata->core_regmap;
-+
-+	platform_set_drvdata(pdev, priv);
-+
-+	ret = gswip_core_get_hw_cap(priv);
-+	if (ret)
-+		return -EINVAL;
-+
-+	ret = gswip_core_init(priv);
-+	if (ret)
-+		return ret;
-+
-+	ret = gswip_core_setup(priv);
-+	if (ret)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id gswip_core_of_match_table[] = {
-+	{ .compatible = "gswip-core" },
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(of, gswip_core);
-+
-+static struct platform_driver gswip_core_drv = {
-+	.probe = gswip_core_probe,
-+	.driver = {
-+		.name = "gswip_core",
-+		.of_match_table = gswip_core_of_match_table,
-+	},
-+};
-+
-+module_platform_driver(gswip_core_drv);
-+
-+MODULE_LICENSE("GPL v2");
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/gswip_core.h b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_core.h
-new file mode 100644
-index 000000000000..614a9089c1b0
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_core.h
-@@ -0,0 +1,90 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+#ifndef _GSWIP_CORE_H_
-+#define _GSWIP_CORE_H_
-+
-+#include <linux/bitfield.h>
-+#include <linux/delay.h>
-+#include <linux/regmap.h>
-+
-+#include "gswip.h"
-+
-+/* table should be ready in 30 clock cycle */
-+#define TBL_BUSY_TIMEOUT_US	1
-+
-+struct core_ops {
-+	const struct core_common_ops *common_ops;
-+	const struct core_pmac_ops *pmac_ops;
-+	const struct core_gpid_ops *gpid_ops;
-+	const struct core_ctp_ops *ctp_ops;
-+	const struct core_br_port_ops *br_port_ops;
-+	const struct core_br_ops *br_ops;
-+	const struct core_qos_ops *qos_ops;
-+};
-+
-+struct gswip_core_priv {
-+	struct device *dev;
-+
-+	unsigned long *br_map;
-+	unsigned long *br_port_map;
-+	unsigned long *ctp_port_map;
-+	void *pdev;
-+
-+	u8 cpu_port;
-+	u8 num_lport;
-+	u8 num_br;
-+	u8 num_br_port;
-+	u16 num_ctp;
-+	u16 num_glb_port;
-+	u16 num_pmac;
-+	u16 num_phy_port;
-+	u16 num_q;
-+
-+	u16 ver;
-+	struct regmap *regmap;
-+	/* table read/write lock */
-+	spinlock_t tbl_lock;
-+
-+	struct core_ops ops;
-+};
-+
-+static inline void update_val(u16 *val, u16 mask, u16 set)
-+{
-+	*val &= ~mask;
-+	*val |= FIELD_PREP(mask, set);
-+}
-+
-+static inline void reg_r16(struct gswip_core_priv *priv, u16 reg, u16 *val)
-+{
-+	unsigned int reg_val;
-+
-+	regmap_read(priv->regmap, reg, &reg_val);
-+	*val = reg_val;
-+}
-+
-+static inline void reg_wbits(struct gswip_core_priv *priv,
-+			     u16 reg, u16 mask, u16 val)
-+{
-+	regmap_update_bits(priv->regmap, reg, mask, FIELD_PREP(mask, val));
-+}
-+
-+static inline u16 reg_rbits(struct gswip_core_priv *priv, u16 reg, u16 mask)
-+{
-+	unsigned int reg_val;
-+
-+	regmap_read(priv->regmap, reg, &reg_val);
-+	return FIELD_GET(mask, reg_val);
-+}
-+
-+/* Access table with timeout */
-+static inline int tbl_rw_tmout(struct gswip_core_priv *priv, u16 reg, u16 mask)
-+{
-+	unsigned int val;
-+
-+	return regmap_read_poll_timeout(priv->regmap, reg, val, !(val & mask),
-+					0, TBL_BUSY_TIMEOUT_US);
-+}
-+
-+int gswip_core_setup_port_ops(struct gswip_core_priv *priv);
-+
-+#endif
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/gswip_dev.c b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_dev.c
-new file mode 100644
-index 000000000000..492e0dfd7159
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_dev.c
-@@ -0,0 +1,179 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+
-+#include <linux/clk.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/reset.h>
-+
-+#include "gswip.h"
-+#include "gswip_dev.h"
-+
-+#define GSWIP_SUBDEV_MAC_MAX	9
-+#define GSWIP_SUBDEV_CORE_MAX	1
-+#define GSWIP_MAC_DEV_NAME	"gswip_mac"
-+#define GSWIP_CORE_DEV_NAME	"gswip_core"
-+
-+struct gswip_priv {
-+	struct device *dev;
-+	u32 id;
-+	int num_subdev_mac;
-+	int num_subdev_core;
-+	struct gswip_pdata pdata;
-+};
-+
-+static int regmap_reg_write(void *context, unsigned int reg, unsigned int val)
-+{
-+	struct gswip_pdata *pdata = context;
-+
-+	writew(val, pdata->core + reg);
-+
-+	return 0;
-+}
-+
-+static int regmap_reg_read(void *context, unsigned int reg, unsigned int *val)
-+{
-+	struct gswip_pdata *pdata = context;
-+
-+	*val = readw(pdata->core + reg);
-+
-+	return 0;
-+}
-+
-+static const struct regmap_config gswip_core_regmap_config = {
-+	.reg_bits = 16,
-+	.val_bits = 16,
-+	.reg_stride = 4,
-+	.reg_write = regmap_reg_write,
-+	.reg_read = regmap_reg_read,
-+	.fast_io = true,
-+};
-+
-+static int np_gswip_parse_dt(struct platform_device *pdev,
-+			     struct gswip_priv *priv)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct device_node *node = dev->of_node;
-+	struct gswip_pdata *pdata = &priv->pdata;
-+	struct device_node *np;
-+
-+	pdata->sw = devm_platform_ioremap_resource_byname(pdev, "switch");
-+	if (IS_ERR(pdata->sw))
-+		return PTR_ERR(pdata->sw);
-+
-+	pdata->lmac = devm_platform_ioremap_resource_byname(pdev, "lmac");
-+	if (IS_ERR(pdata->lmac))
-+		return PTR_ERR(pdata->lmac);
-+
-+	pdata->core = devm_platform_ioremap_resource_byname(pdev, "core");
-+	if (IS_ERR(pdata->core))
-+		return PTR_ERR(pdata->core);
-+	pdata->core_regmap = devm_regmap_init(dev, NULL, pdata,
-+					      &gswip_core_regmap_config);
-+	if (IS_ERR(pdata->core_regmap))
-+		return PTR_ERR(pdata->core_regmap);
-+
-+	pdata->sw_irq = platform_get_irq_byname(pdev, "switch");
-+	if (pdata->sw_irq < 0)
-+		return -ENODEV;
-+
-+	pdata->core_irq = platform_get_irq_byname(pdev, "core");
-+	if (pdata->core_irq < 0)
-+		return -ENODEV;
-+
-+	pdata->ptp_clk = devm_clk_get(dev, "ptp");
-+	if (IS_ERR(pdata->ptp_clk))
-+		return PTR_ERR(pdata->ptp_clk);
-+
-+	pdata->sw_clk = devm_clk_get(dev, "switch");
-+	if (IS_ERR(pdata->sw_clk))
-+		return PTR_ERR(pdata->sw_clk);
-+
-+	for_each_node_by_name(node, GSWIP_MAC_DEV_NAME) {
-+		priv->num_subdev_mac++;
-+		if (priv->num_subdev_mac > GSWIP_SUBDEV_MAC_MAX) {
-+			dev_err(dev, "too many GSWIP mac subdevices\n");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (!priv->num_subdev_mac) {
-+		dev_err(dev, "GSWIP mac subdevice not found\n");
-+		return -EINVAL;
-+	}
-+
-+	np = of_find_node_by_name(node, GSWIP_CORE_DEV_NAME);
-+	if (np) {
-+		priv->num_subdev_core++;
-+		of_node_put(np);
++	if (flags & SET_ACK) {
++		cm_node->tcp_cntxt.loc_ack_num = cm_node->tcp_cntxt.rcv_nxt;
++		tcph->ack_seq = htonl(cm_node->tcp_cntxt.loc_ack_num);
++		tcph->ack = 1;
 +	} else {
-+		dev_err(dev, "GSWIP core subdevice not found\n");
-+		return -EINVAL;
++		tcph->ack_seq = 0;
 +	}
++
++	if (flags & SET_SYN) {
++		cm_node->tcp_cntxt.loc_seq_num++;
++		tcph->syn = 1;
++	} else {
++		cm_node->tcp_cntxt.loc_seq_num += hdr_len + pd_len;
++	}
++
++	if (flags & SET_FIN) {
++		cm_node->tcp_cntxt.loc_seq_num++;
++		tcph->fin = 1;
++	}
++
++	if (flags & SET_RST)
++		tcph->rst = 1;
++
++	tcph->doff = (u16)((sizeof(*tcph) + opts_len + 3) >> 2);
++	sqbuf->tcphlen = tcph->doff << 2;
++	tcph->window = htons(cm_node->tcp_cntxt.rcv_wnd);
++	tcph->urg_ptr = 0;
++
++	if (opts_len) {
++		memcpy(buf, options->addr, opts_len);
++		buf += opts_len;
++	}
++
++	if (hdr_len) {
++		memcpy(buf, hdr->addr, hdr_len);
++		buf += hdr_len;
++	}
++
++	if (pdata && pdata->addr)
++		memcpy(buf, pdata->addr, pdata->size);
++
++	refcount_set(&sqbuf->refcount, 1);
++
++	irdma_debug_buf(vsi->dev, IRDMA_DEBUG_ILQ, "TRANSMIT ILQ BUFFER",
++			sqbuf->mem.va, sqbuf->totallen);
++
++	return sqbuf;
++}
++
++/**
++ * irdma_form_uda_cm_frame - get a free packet and build frame full tcpip packet
++ * @cm_node: connection's node ionfo to use in frame
++ * @options: pointer to options info
++ * @hdr: pointer mpa header
++ * @pdata: pointer to private data
++ * @flags:  indicates FIN or ACK
++ */
++static struct irdma_puda_buf *irdma_form_uda_cm_frame(struct irdma_cm_node *cm_node,
++						      struct irdma_kmem_info *options,
++						      struct irdma_kmem_info *hdr,
++						      struct irdma_kmem_info *pdata,
++						      u8 flags)
++{
++	struct irdma_puda_buf *sqbuf;
++	struct irdma_sc_vsi *vsi = &cm_node->iwdev->vsi;
++	u8 *buf;
++
++	struct tcphdr *tcph;
++	struct iphdr *iph;
++	struct ipv6hdr *ip6h;
++	struct ethhdr *ethh;
++	u16 pktsize;
++	u16 eth_hlen = ETH_HLEN;
++	u32 opts_len = 0;
++	u32 pd_len = 0;
++	u32 hdr_len = 0;
++
++	u16 vtag;
++
++	sqbuf = irdma_puda_get_bufpool(vsi->ilq);
++	if (!sqbuf)
++		return NULL;
++
++	buf = sqbuf->mem.va;
++
++	if (options)
++		opts_len = (u32)options->size;
++
++	if (hdr)
++		hdr_len = hdr->size;
++
++	if (pdata)
++		pd_len = pdata->size;
++
++	if (cm_node->vlan_id < VLAN_N_VID)
++		eth_hlen += 4;
++
++	if (cm_node->ipv4)
++		pktsize = sizeof(*iph) + sizeof(*tcph);
++	else
++		pktsize = sizeof(*ip6h) + sizeof(*tcph);
++	pktsize += opts_len + hdr_len + pd_len;
++
++	memset(buf, 0, eth_hlen + pktsize);
++
++	sqbuf->totallen = pktsize + eth_hlen;
++	sqbuf->maclen = eth_hlen;
++	sqbuf->tcphlen = sizeof(*tcph) + opts_len;
++	sqbuf->scratch = cm_node;
++
++	ethh = (struct ethhdr *)buf;
++	buf += eth_hlen;
++
++	if (cm_node->do_lpb)
++		sqbuf->do_lpb = true;
++
++	if (cm_node->ipv4) {
++		sqbuf->ipv4 = true;
++
++		iph = (struct iphdr *)buf;
++		buf += sizeof(*iph);
++		tcph = (struct tcphdr *)buf;
++		buf += sizeof(*tcph);
++
++		ether_addr_copy(ethh->h_dest, cm_node->rem_mac);
++		ether_addr_copy(ethh->h_source, cm_node->loc_mac);
++		if (cm_node->vlan_id < VLAN_N_VID) {
++			((struct vlan_ethhdr *)ethh)->h_vlan_proto =
++				htons(ETH_P_8021Q);
++			vtag = (cm_node->user_pri << VLAN_PRIO_SHIFT) |
++			       cm_node->vlan_id;
++			((struct vlan_ethhdr *)ethh)->h_vlan_TCI = htons(vtag);
++
++			((struct vlan_ethhdr *)ethh)->h_vlan_encapsulated_proto =
++				htons(ETH_P_IP);
++		} else {
++			ethh->h_proto = htons(ETH_P_IP);
++		}
++
++		iph->version = IPVERSION;
++		iph->ihl = 5; /* 5 * 4Byte words, IP headr len */
++		iph->tos = cm_node->tos;
++		iph->tot_len = htons(pktsize);
++		iph->id = htons(++cm_node->tcp_cntxt.loc_id);
++
++		iph->frag_off = htons(0x4000);
++		iph->ttl = 0x40;
++		iph->protocol = IPPROTO_TCP;
++		iph->saddr = htonl(cm_node->loc_addr[0]);
++		iph->daddr = htonl(cm_node->rem_addr[0]);
++	} else {
++		sqbuf->ipv4 = false;
++		ip6h = (struct ipv6hdr *)buf;
++		buf += sizeof(*ip6h);
++		tcph = (struct tcphdr *)buf;
++		buf += sizeof(*tcph);
++
++		ether_addr_copy(ethh->h_dest, cm_node->rem_mac);
++		ether_addr_copy(ethh->h_source, cm_node->loc_mac);
++		if (cm_node->vlan_id < VLAN_N_VID) {
++			((struct vlan_ethhdr *)ethh)->h_vlan_proto =
++				htons(ETH_P_8021Q);
++			vtag = (cm_node->user_pri << VLAN_PRIO_SHIFT) |
++			       cm_node->vlan_id;
++			((struct vlan_ethhdr *)ethh)->h_vlan_TCI = htons(vtag);
++			((struct vlan_ethhdr *)ethh)->h_vlan_encapsulated_proto =
++				htons(ETH_P_IPV6);
++		} else {
++			ethh->h_proto = htons(ETH_P_IPV6);
++		}
++		ip6h->version = 6;
++		ip6h->priority = cm_node->tos >> 4;
++		ip6h->flow_lbl[0] = cm_node->tos << 4;
++		ip6h->flow_lbl[1] = 0;
++		ip6h->flow_lbl[2] = 0;
++		ip6h->payload_len = htons(pktsize - sizeof(*ip6h));
++		ip6h->nexthdr = 6;
++		ip6h->hop_limit = 128;
++		irdma_copy_ip_htonl(ip6h->saddr.in6_u.u6_addr32,
++				    cm_node->loc_addr);
++		irdma_copy_ip_htonl(ip6h->daddr.in6_u.u6_addr32,
++				    cm_node->rem_addr);
++	}
++
++	tcph->source = htons(cm_node->loc_port);
++	tcph->dest = htons(cm_node->rem_port);
++	tcph->seq = htonl(cm_node->tcp_cntxt.loc_seq_num);
++
++	if (flags & SET_ACK) {
++		cm_node->tcp_cntxt.loc_ack_num = cm_node->tcp_cntxt.rcv_nxt;
++		tcph->ack_seq = htonl(cm_node->tcp_cntxt.loc_ack_num);
++		tcph->ack = 1;
++	} else {
++		tcph->ack_seq = 0;
++	}
++
++	if (flags & SET_SYN) {
++		cm_node->tcp_cntxt.loc_seq_num++;
++		tcph->syn = 1;
++	} else {
++		cm_node->tcp_cntxt.loc_seq_num += hdr_len + pd_len;
++	}
++
++	if (flags & SET_FIN) {
++		cm_node->tcp_cntxt.loc_seq_num++;
++		tcph->fin = 1;
++	}
++
++	if (flags & SET_RST)
++		tcph->rst = 1;
++
++	tcph->doff = (u16)((sizeof(*tcph) + opts_len + 3) >> 2);
++	sqbuf->tcphlen = tcph->doff << 2;
++	tcph->window = htons(cm_node->tcp_cntxt.rcv_wnd);
++	tcph->urg_ptr = 0;
++
++	if (opts_len) {
++		memcpy(buf, options->addr, opts_len);
++		buf += opts_len;
++	}
++
++	if (hdr_len) {
++		memcpy(buf, hdr->addr, hdr_len);
++		buf += hdr_len;
++	}
++
++	if (pdata && pdata->addr)
++		memcpy(buf, pdata->addr, pdata->size);
++
++	refcount_set(&sqbuf->refcount, 1);
++
++	irdma_debug_buf(vsi->dev, IRDMA_DEBUG_ILQ, "TRANSMIT ILQ BUFFER",
++			sqbuf->mem.va, sqbuf->totallen);
++
++	return sqbuf;
++}
++
++/**
++ * irdma_send_reset - Send RST packet
++ * @cm_node: connection's node
++ */
++int irdma_send_reset(struct irdma_cm_node *cm_node)
++{
++	struct irdma_puda_buf *sqbuf;
++	int flags = SET_RST | SET_ACK;
++
++	trace_irdma_send_reset(cm_node, 0, __builtin_return_address(0));
++	sqbuf = cm_node->cm_core->form_cm_frame(cm_node, NULL, NULL, NULL,
++						flags);
++	if (!sqbuf)
++		return -1;
++
++	return irdma_schedule_cm_timer(cm_node, sqbuf, IRDMA_TIMER_TYPE_SEND, 0,
++				       1);
++}
++
++/**
++ * irdma_active_open_err - send event for active side cm error
++ * @cm_node: connection's node
++ * @reset: Flag to send reset or not
++ */
++static void irdma_active_open_err(struct irdma_cm_node *cm_node, bool reset)
++{
++	trace_irdma_active_open_err(cm_node, reset,
++				    __builtin_return_address(0));
++	irdma_cleanup_retrans_entry(cm_node);
++	cm_node->cm_core->stats_connect_errs++;
++	if (reset) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev),
++			  "CM: cm_node=%p state=%d\n", cm_node,
++			  cm_node->state);
++		refcount_inc(&cm_node->refcnt);
++		irdma_send_reset(cm_node);
++	}
++
++	cm_node->state = IRDMA_CM_STATE_CLOSED;
++	irdma_create_event(cm_node, IRDMA_CM_EVENT_ABORTED);
++}
++
++/**
++ * irdma_passive_open_err - handle passive side cm error
++ * @cm_node: connection's node
++ * @reset: send reset or just free cm_node
++ */
++static void irdma_passive_open_err(struct irdma_cm_node *cm_node, bool reset)
++{
++	irdma_cleanup_retrans_entry(cm_node);
++	cm_node->cm_core->stats_passive_errs++;
++	cm_node->state = IRDMA_CM_STATE_CLOSED;
++	ibdev_dbg(to_ibdev(cm_node->iwdev), "CM: cm_node=%p state =%d\n",
++		  cm_node, cm_node->state);
++	trace_irdma_passive_open_err(cm_node, reset,
++				     __builtin_return_address(0));
++	if (reset)
++		irdma_send_reset(cm_node);
++	else
++		irdma_rem_ref_cm_node(cm_node);
++}
++
++/**
++ * irdma_event_connect_error - to create connect error event
++ * @event: cm information for connect event
++ */
++static void irdma_event_connect_error(struct irdma_cm_event *event)
++{
++	struct irdma_qp *iwqp;
++	struct iw_cm_id *cm_id;
++
++	cm_id = event->cm_node->cm_id;
++	if (!cm_id)
++		return;
++
++	iwqp = cm_id->provider_data;
++
++	if (!iwqp || !iwqp->iwdev)
++		return;
++
++	iwqp->cm_id = NULL;
++	cm_id->provider_data = NULL;
++	irdma_send_cm_event(event->cm_node, cm_id, IW_CM_EVENT_CONNECT_REPLY,
++			    -ECONNRESET);
++	cm_id->rem_ref(cm_id);
++	irdma_rem_ref_cm_node(event->cm_node);
++}
++
++/**
++ * irdma_process_options - process options from TCP header
++ * @cm_node: connection's node
++ * @optionsloc: point to start of options
++ * @optionsize: size of all options
++ * @syn_pkt: flag if syn packet
++ */
++static int irdma_process_options(struct irdma_cm_node *cm_node, u8 *optionsloc,
++				 u32 optionsize, u32 syn_pkt)
++{
++	u32 tmp;
++	u32 offset = 0;
++	union all_known_options *all_options;
++	char got_mss_option = 0;
++
++	while (offset < optionsize) {
++		all_options = (union all_known_options *)(optionsloc + offset);
++		switch (all_options->base.optionnum) {
++		case OPTION_NUM_EOL:
++			offset = optionsize;
++			break;
++		case OPTION_NUM_NONE:
++			offset += 1;
++			continue;
++		case OPTION_NUM_MSS:
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: MSS Length: %d Offset: %d Size: %d\n",
++				  all_options->mss.len, offset, optionsize);
++			got_mss_option = 1;
++			if (all_options->mss.len != 4)
++				return -EINVAL;
++			tmp = ntohs(all_options->mss.mss);
++			if ((cm_node->ipv4 &&
++			     (tmp + IRDMA_MTU_TO_MSS_IPV4) < IRDMA_MIN_MTU_IPV4) ||
++			    (!cm_node->ipv4 &&
++			     (tmp + IRDMA_MTU_TO_MSS_IPV6) < IRDMA_MIN_MTU_IPV6))
++				return -EINVAL;
++			if (tmp < cm_node->tcp_cntxt.mss)
++				cm_node->tcp_cntxt.mss = tmp;
++			break;
++		case OPTION_NUM_WINDOW_SCALE:
++			cm_node->tcp_cntxt.snd_wscale =
++				all_options->windowscale.shiftcount;
++			break;
++		default:
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: Unsupported TCP Option: %x\n",
++				  all_options->base.optionnum);
++			break;
++		}
++		offset += all_options->base.len;
++	}
++	if (!got_mss_option && syn_pkt)
++		cm_node->tcp_cntxt.mss = IRDMA_CM_DEFAULT_MSS;
 +
 +	return 0;
 +}
 +
-+static const struct of_device_id gswip_of_match_table[] = {
-+	{ .compatible = "intel,lgm-gswip" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, gswip_of_match_table);
-+
-+static int np_gswip_probe(struct platform_device *pdev)
++/**
++ * irdma_handle_tcp_options - setup TCP context info after parsing TCP options
++ * @cm_node: connection's node
++ * @tcph: pointer tcp header
++ * @optionsize: size of options rcvd
++ * @passive: active or passive flag
++ */
++static int irdma_handle_tcp_options(struct irdma_cm_node *cm_node,
++				    struct tcphdr *tcph, int optionsize,
++				    int passive)
 +{
-+	struct device *dev = &pdev->dev;
-+	struct reset_control *rcu_reset;
-+	struct gswip_priv *priv;
-+	int ret;
++	u8 *optionsloc = (u8 *)&tcph[1];
 +
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
++	if (optionsize) {
++		if (irdma_process_options(cm_node, optionsloc, optionsize,
++					  (u32)tcph->syn)) {
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: Node %p, Sending Reset\n", cm_node);
++			if (passive)
++				irdma_passive_open_err(cm_node, true);
++			else
++				irdma_active_open_err(cm_node, true);
++			return -1;
++		}
++	}
++
++	cm_node->tcp_cntxt.snd_wnd = ntohs(tcph->window)
++				     << cm_node->tcp_cntxt.snd_wscale;
++
++	if (cm_node->tcp_cntxt.snd_wnd > cm_node->tcp_cntxt.max_snd_wnd)
++		cm_node->tcp_cntxt.max_snd_wnd = cm_node->tcp_cntxt.snd_wnd;
++
++	return 0;
++}
++
++/**
++ * irdma_build_mpa_v1 - build a MPA V1 frame
++ * @cm_node: connection's node
++ * @start_addr: address where to build frame
++ * @mpa_key: to do read0 or write0
++ */
++static void irdma_build_mpa_v1(struct irdma_cm_node *cm_node, void *start_addr,
++			       u8 mpa_key)
++{
++	struct ietf_mpa_v1 *mpa_frame = start_addr;
++
++	switch (mpa_key) {
++	case MPA_KEY_REQUEST:
++		memcpy(mpa_frame->key, IEFT_MPA_KEY_REQ, IETF_MPA_KEY_SIZE);
++		break;
++	case MPA_KEY_REPLY:
++		memcpy(mpa_frame->key, IEFT_MPA_KEY_REP, IETF_MPA_KEY_SIZE);
++		break;
++	default:
++		break;
++	}
++	mpa_frame->flags = IETF_MPA_FLAGS_CRC;
++	mpa_frame->rev = cm_node->mpa_frame_rev;
++	mpa_frame->priv_data_len = htons(cm_node->pdata.size);
++}
++
++/**
++ * irdma_build_mpa_v2 - build a MPA V2 frame
++ * @cm_node: connection's node
++ * @start_addr: buffer start address
++ * @mpa_key: to do read0 or write0
++ */
++static void irdma_build_mpa_v2(struct irdma_cm_node *cm_node, void *start_addr,
++			       u8 mpa_key)
++{
++	struct ietf_mpa_v2 *mpa_frame = start_addr;
++	struct ietf_rtr_msg *rtr_msg = &mpa_frame->rtr_msg;
++	u16 ctrl_ird, ctrl_ord;
++
++	/* initialize the upper 5 bytes of the frame */
++	irdma_build_mpa_v1(cm_node, start_addr, mpa_key);
++	mpa_frame->flags |= IETF_MPA_V2_FLAG;
++	mpa_frame->priv_data_len = cpu_to_be16(be16_to_cpu(mpa_frame->priv_data_len) +
++					       IETF_RTR_MSG_SIZE);
++
++	/* initialize RTR msg */
++	if (cm_node->mpav2_ird_ord == IETF_NO_IRD_ORD) {
++		ctrl_ird = IETF_NO_IRD_ORD;
++		ctrl_ord = IETF_NO_IRD_ORD;
++	} else {
++		ctrl_ird = (cm_node->ird_size > IETF_NO_IRD_ORD) ?
++				   IETF_NO_IRD_ORD :
++				   cm_node->ird_size;
++		ctrl_ord = (cm_node->ord_size > IETF_NO_IRD_ORD) ?
++				   IETF_NO_IRD_ORD :
++				   cm_node->ord_size;
++	}
++	ctrl_ird |= IETF_PEER_TO_PEER;
++
++	switch (mpa_key) {
++	case MPA_KEY_REQUEST:
++		ctrl_ord |= IETF_RDMA0_WRITE;
++		ctrl_ord |= IETF_RDMA0_READ;
++		break;
++	case MPA_KEY_REPLY:
++		switch (cm_node->send_rdma0_op) {
++		case SEND_RDMA_WRITE_ZERO:
++			ctrl_ord |= IETF_RDMA0_WRITE;
++			break;
++		case SEND_RDMA_READ_ZERO:
++			ctrl_ord |= IETF_RDMA0_READ;
++			break;
++		}
++		break;
++	default:
++		break;
++	}
++	rtr_msg->ctrl_ird = htons(ctrl_ird);
++	rtr_msg->ctrl_ord = htons(ctrl_ord);
++}
++
++/**
++ * irdma_cm_build_mpa_frame - build mpa frame for mpa version 1 or version 2
++ * @cm_node: connection's node
++ * @mpa: mpa: data buffer
++ * @mpa_key: to do read0 or write0
++ */
++static int irdma_cm_build_mpa_frame(struct irdma_cm_node *cm_node,
++				    struct irdma_kmem_info *mpa, u8 mpa_key)
++{
++	int hdr_len = 0;
++
++	switch (cm_node->mpa_frame_rev) {
++	case IETF_MPA_V1:
++		hdr_len = sizeof(struct ietf_mpa_v1);
++		irdma_build_mpa_v1(cm_node, mpa->addr, mpa_key);
++		break;
++	case IETF_MPA_V2:
++		hdr_len = sizeof(struct ietf_mpa_v2);
++		irdma_build_mpa_v2(cm_node, mpa->addr, mpa_key);
++		break;
++	default:
++		break;
++	}
++
++	return hdr_len;
++}
++
++/**
++ * irdma_send_mpa_request - active node send mpa request to passive node
++ * @cm_node: connection's node
++ */
++static int irdma_send_mpa_request(struct irdma_cm_node *cm_node)
++{
++	struct irdma_puda_buf *sqbuf;
++
++	if (!cm_node) {
++		pr_err("cm_node == NULL\n");
++		return -1;
++	}
++
++	cm_node->mpa_hdr.addr = &cm_node->mpa_frame;
++	cm_node->mpa_hdr.size = irdma_cm_build_mpa_frame(cm_node,
++							 &cm_node->mpa_hdr,
++							 MPA_KEY_REQUEST);
++	if (!cm_node->mpa_hdr.size) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev), "CM: mpa size = %d\n",
++			  cm_node->mpa_hdr.size);
++		return -1;
++	}
++
++	sqbuf = cm_node->cm_core->form_cm_frame(cm_node, NULL,
++						&cm_node->mpa_hdr,
++						&cm_node->pdata, SET_ACK);
++	if (!sqbuf)
++		return -1;
++
++	return irdma_schedule_cm_timer(cm_node, sqbuf, IRDMA_TIMER_TYPE_SEND, 1,
++				       0);
++}
++
++/**
++ * irdma_send_mpa_reject -
++ * @cm_node: connection's node
++ * @pdata: reject data for connection
++ * @plen: length of reject data
++ */
++static int irdma_send_mpa_reject(struct irdma_cm_node *cm_node,
++				 const void *pdata, u8 plen)
++{
++	struct irdma_puda_buf *sqbuf;
++	struct irdma_kmem_info priv_info;
++
++	cm_node->mpa_hdr.addr = &cm_node->mpa_frame;
++	cm_node->mpa_hdr.size = irdma_cm_build_mpa_frame(cm_node,
++							 &cm_node->mpa_hdr,
++							 MPA_KEY_REPLY);
++
++	cm_node->mpa_frame.flags |= IETF_MPA_FLAGS_REJECT;
++	priv_info.addr = (void *)pdata;
++	priv_info.size = plen;
++
++	sqbuf = cm_node->cm_core->form_cm_frame(cm_node, NULL,
++						&cm_node->mpa_hdr, &priv_info,
++						SET_ACK | SET_FIN);
++	if (!sqbuf)
 +		return -ENOMEM;
 +
-+	priv->dev = dev;
++	cm_node->state = IRDMA_CM_STATE_FIN_WAIT1;
 +
-+	ret = np_gswip_parse_dt(pdev, priv);
-+	if (ret) {
-+		dev_err(dev, "failed to parse device tree\n");
-+		return ret;
++	return irdma_schedule_cm_timer(cm_node, sqbuf, IRDMA_TIMER_TYPE_SEND, 1,
++				       0);
++}
++
++/**
++ * irdma_mpav2_negotiate_ird_ord - negotiate MPAv2 IRD/ORD
++ * @cm_node: connection's node
++ * @buf: Data pointer
++ */
++static int irdma_negotiate_mpa_v2_ird_ord(struct irdma_cm_node *cm_node,
++					  u8 *buf)
++{
++	struct ietf_mpa_v2 *mpa_v2_frame;
++	struct ietf_rtr_msg *rtr_msg;
++	u16 ird_size;
++	u16 ord_size;
++	u16 ctrl_ord;
++	u16 ctrl_ird;
++
++	mpa_v2_frame = (struct ietf_mpa_v2 *)buf;
++	rtr_msg = &mpa_v2_frame->rtr_msg;
++
++	/* parse rtr message */
++	ctrl_ord = ntohs(rtr_msg->ctrl_ord);
++	ctrl_ird = ntohs(rtr_msg->ctrl_ird);
++	ird_size = ctrl_ird & IETF_NO_IRD_ORD;
++	ord_size = ctrl_ord & IETF_NO_IRD_ORD;
++
++	if (!(ctrl_ird & IETF_PEER_TO_PEER))
++		return -1;
++
++	if (ird_size == IETF_NO_IRD_ORD || ord_size == IETF_NO_IRD_ORD) {
++		cm_node->mpav2_ird_ord = IETF_NO_IRD_ORD;
++		goto negotiate_done;
 +	}
 +
-+	dev->id = priv->id;
++	if (cm_node->state != IRDMA_CM_STATE_MPAREQ_SENT) {
++		/* responder */
++		if (!ord_size && (ctrl_ord & IETF_RDMA0_READ))
++			cm_node->ird_size = 1;
++		if (cm_node->ord_size > ird_size)
++			cm_node->ord_size = ird_size;
++	} else {
++		/* initiator */
++		if (!ird_size && (ctrl_ord & IETF_RDMA0_READ))
++			/* Remote peer doesn't support RDMA0_READ */
++			return -1;
 +
-+	rcu_reset = devm_reset_control_get_optional(dev, NULL);
-+	if (IS_ERR(rcu_reset)) {
-+		dev_err(dev, "error getting reset control of gswip\n");
-+		return PTR_ERR(rcu_reset);
++		if (cm_node->ord_size > ird_size)
++			cm_node->ord_size = ird_size;
++
++		if (cm_node->ird_size < ord_size)
++		/* no resources available */
++			return -1;
 +	}
 +
-+	reset_control_assert(rcu_reset);
-+	udelay(1);
-+	reset_control_deassert(rcu_reset);
++negotiate_done:
++	if (ctrl_ord & IETF_RDMA0_READ)
++		cm_node->send_rdma0_op = SEND_RDMA_READ_ZERO;
++	else if (ctrl_ord & IETF_RDMA0_WRITE)
++		cm_node->send_rdma0_op = SEND_RDMA_WRITE_ZERO;
++	else
++		/* Not supported RDMA0 operation */
++		return -1;
 +
-+	dev_set_drvdata(dev, priv);
++	ibdev_dbg(to_ibdev(cm_node->iwdev),
++		  "CM: MPAV2 Negotiated ORD: %d, IRD: %d\n",
++		  cm_node->ord_size, cm_node->ird_size);
++	trace_irdma_negotiate_mpa_v2(cm_node);
++	return 0;
++}
 +
-+	dev->platform_data = &priv->pdata;
++/**
++ * recv_mpa - process an IETF MPA frame
++ * @cm_node: connection's node
++ * @buf: Data pointer
++ * @type: to return accept or reject
++ * @len: Len of mpa buffer
++ */
++static int irdma_parse_mpa(struct irdma_cm_node *cm_node, u8 *buf, u32 *type,
++			   u32 len)
++{
++	struct ietf_mpa_v1 *mpa_frame;
++	int mpa_hdr_len;
++	int priv_data_len;
 +
-+	ret = devm_of_platform_populate(dev);
++	*type = IRDMA_MPA_REQUEST_ACCEPT;
++
++	if (len < sizeof(struct ietf_mpa_v1)) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev),
++			  "CM: ietf buffer small (%x)\n", len);
++		return -1;
++	}
++
++	mpa_frame = (struct ietf_mpa_v1 *)buf;
++	mpa_hdr_len = sizeof(struct ietf_mpa_v1);
++	priv_data_len = ntohs(mpa_frame->priv_data_len);
++
++	if (priv_data_len > IETF_MAX_PRIV_DATA_LEN) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev), "CM: large pri_data %d\n",
++			  priv_data_len);
++		return -1;
++	}
++
++	if (mpa_frame->rev != IETF_MPA_V1 && mpa_frame->rev != IETF_MPA_V2) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev),
++			  "CM: unsupported mpa rev = %d\n", mpa_frame->rev);
++		return -1;
++	}
++
++	if (mpa_frame->rev > cm_node->mpa_frame_rev) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev), "CM: rev %d\n",
++			  mpa_frame->rev);
++		return -1;
++	}
++
++	cm_node->mpa_frame_rev = mpa_frame->rev;
++	if (cm_node->state != IRDMA_CM_STATE_MPAREQ_SENT) {
++		if (memcmp(mpa_frame->key, IEFT_MPA_KEY_REQ,
++			   IETF_MPA_KEY_SIZE)) {
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: Unexpected MPA Key received\n");
++			return -1;
++		}
++	} else {
++		if (memcmp(mpa_frame->key, IEFT_MPA_KEY_REP,
++			   IETF_MPA_KEY_SIZE)) {
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: Unexpected MPA Key received\n");
++			return -1;
++		}
++	}
++
++	if (priv_data_len + mpa_hdr_len > len) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev),
++			  "CM: ietf buffer len(%x + %x != %x)\n",
++			  priv_data_len, mpa_hdr_len, len);
++		return -1;
++	}
++
++	if (len > IRDMA_MAX_CM_BUF) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev),
++			  "CM: ietf buffer large len = %d\n", len);
++		return -1;
++	}
++
++	switch (mpa_frame->rev) {
++	case IETF_MPA_V2:
++		mpa_hdr_len += IETF_RTR_MSG_SIZE;
++		if (irdma_negotiate_mpa_v2_ird_ord(cm_node, buf))
++			return -1;
++		break;
++	case IETF_MPA_V1:
++	default:
++		break;
++	}
++
++	memcpy(cm_node->pdata_buf, buf + mpa_hdr_len, priv_data_len);
++	cm_node->pdata.size = priv_data_len;
++
++	if (mpa_frame->flags & IETF_MPA_FLAGS_REJECT)
++		*type = IRDMA_MPA_REQUEST_REJECT;
++
++	if (mpa_frame->flags & IETF_MPA_FLAGS_MARKERS)
++		cm_node->snd_mark_en = true;
++
++	return 0;
++}
++
++/**
++ * irdma_schedule_cm_timer
++ * @cm_node: connection's node
++ * @sqbuf: buffer to send
++ * @type: if it is send or close
++ * @send_retrans: if rexmits to be done
++ * @close_when_complete: is cm_node to be removed
++ *
++ * note - cm_node needs to be protected before calling this. Encase in:
++ *		irdma_rem_ref_cm_node(cm_core, cm_node);
++ *		irdma_schedule_cm_timer(...)
++ *		refcount_inc(&cm_node->refcnt);
++ */
++int irdma_schedule_cm_timer(struct irdma_cm_node *cm_node,
++			    struct irdma_puda_buf *sqbuf,
++			    enum irdma_timer_type type, int send_retrans,
++			    int close_when_complete)
++{
++	struct irdma_sc_vsi *vsi = &cm_node->iwdev->vsi;
++	struct irdma_cm_core *cm_core = cm_node->cm_core;
++	struct irdma_timer_entry *new_send;
++	u32 was_timer_set;
++	unsigned long flags;
++
++	new_send = kzalloc(sizeof(*new_send), GFP_ATOMIC);
++	if (!new_send) {
++		if (type != IRDMA_TIMER_TYPE_CLOSE)
++			irdma_free_sqbuf(vsi, sqbuf);
++		return -ENOMEM;
++	}
++
++	new_send->retrycount = IRDMA_DEFAULT_RETRYS;
++	new_send->retranscount = IRDMA_DEFAULT_RETRANS;
++	new_send->sqbuf = sqbuf;
++	new_send->timetosend = jiffies;
++	new_send->type = type;
++	new_send->send_retrans = send_retrans;
++	new_send->close_when_complete = close_when_complete;
++
++	if (type == IRDMA_TIMER_TYPE_CLOSE) {
++		new_send->timetosend += (HZ / 10);
++		if (cm_node->close_entry) {
++			kfree(new_send);
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: already close entry\n");
++			return -EINVAL;
++		}
++
++		cm_node->close_entry = new_send;
++	} else { /* type == IRDMA_TIMER_TYPE_SEND */
++		spin_lock_irqsave(&cm_node->retrans_list_lock, flags);
++		cm_node->send_entry = new_send;
++		refcount_inc(&cm_node->refcnt);
++		spin_unlock_irqrestore(&cm_node->retrans_list_lock, flags);
++		new_send->timetosend = jiffies + IRDMA_RETRY_TIMEOUT;
++
++		refcount_inc(&sqbuf->refcount);
++		irdma_puda_send_buf(vsi->ilq, sqbuf);
++		if (!send_retrans) {
++			irdma_cleanup_retrans_entry(cm_node);
++			if (close_when_complete)
++				irdma_rem_ref_cm_node(cm_node);
++			return 0;
++		}
++	}
++
++	spin_lock_irqsave(&cm_core->ht_lock, flags);
++	was_timer_set = timer_pending(&cm_core->tcp_timer);
++
++	if (!was_timer_set) {
++		cm_core->tcp_timer.expires = new_send->timetosend;
++		add_timer(&cm_core->tcp_timer);
++	}
++	spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++
++	return 0;
++}
++
++/**
++ * irdma_retrans_expired - Could not rexmit the packet
++ * @cm_node: connection's node
++ */
++static void irdma_retrans_expired(struct irdma_cm_node *cm_node)
++{
++	struct iw_cm_id *cm_id = cm_node->cm_id;
++	enum irdma_cm_node_state state = cm_node->state;
++
++	cm_node->state = IRDMA_CM_STATE_CLOSED;
++	switch (state) {
++	case IRDMA_CM_STATE_SYN_RCVD:
++	case IRDMA_CM_STATE_CLOSING:
++		irdma_rem_ref_cm_node(cm_node);
++		break;
++	case IRDMA_CM_STATE_FIN_WAIT1:
++	case IRDMA_CM_STATE_LAST_ACK:
++		if (cm_node->cm_id)
++			cm_id->rem_ref(cm_id);
++		irdma_send_reset(cm_node);
++		break;
++	default:
++		refcount_inc(&cm_node->refcnt);
++		irdma_send_reset(cm_node);
++		irdma_create_event(cm_node, IRDMA_CM_EVENT_ABORTED);
++		break;
++	}
++}
++
++/**
++ * irdma_handle_close_entry - for handling retry/timeouts
++ * @cm_node: connection's node
++ * @rem_node: flag for remove cm_node
++ */
++static void irdma_handle_close_entry(struct irdma_cm_node *cm_node,
++				     u32 rem_node)
++{
++	struct irdma_timer_entry *close_entry = cm_node->close_entry;
++	struct iw_cm_id *cm_id = cm_node->cm_id;
++	struct irdma_qp *iwqp;
++	unsigned long flags;
++
++	if (!close_entry)
++		return;
++	iwqp = (struct irdma_qp *)close_entry->sqbuf;
++	if (iwqp) {
++		spin_lock_irqsave(&iwqp->lock, flags);
++		if (iwqp->cm_id) {
++			iwqp->hw_tcp_state = IRDMA_TCP_STATE_CLOSED;
++			iwqp->hw_iwarp_state = IRDMA_QP_STATE_ERROR;
++			iwqp->last_aeq = IRDMA_AE_RESET_SENT;
++			iwqp->ibqp_state = IB_QPS_ERR;
++			spin_unlock_irqrestore(&iwqp->lock, flags);
++			irdma_cm_disconn(iwqp);
++		} else {
++			spin_unlock_irqrestore(&iwqp->lock, flags);
++		}
++	} else if (rem_node) {
++		/* TIME_WAIT state */
++		irdma_rem_ref_cm_node(cm_node);
++	}
++	if (cm_id)
++		cm_id->rem_ref(cm_id);
++	kfree(close_entry);
++	cm_node->close_entry = NULL;
++}
++
++/**
++ * irdma_build_timer_list - Add cm_nodes to timer list
++ * @timer_list: ptr to timer list
++ * @hte: ptr to accelerated or non-accelerated list
++ */
++static void irdma_build_timer_list(struct list_head *timer_list,
++				   struct list_head *hte)
++{
++	struct irdma_cm_node *cm_node;
++	struct list_head *list_core_temp, *list_node;
++
++	list_for_each_safe (list_node, list_core_temp, hte) {
++		cm_node = container_of(list_node, struct irdma_cm_node, list);
++		if (cm_node->close_entry || cm_node->send_entry) {
++			refcount_inc(&cm_node->refcnt);
++			list_add(&cm_node->timer_entry, timer_list);
++		}
++	}
++}
++
++/**
++ * irdma_cm_timer_tick - system's timer expired callback
++ * @t: Pointer to timer_list
++ */
++static void irdma_cm_timer_tick(struct timer_list *t)
++{
++	unsigned long nexttimeout = jiffies + IRDMA_LONG_TIME;
++	struct irdma_cm_node *cm_node;
++	struct irdma_timer_entry *send_entry, *close_entry;
++	struct list_head *list_core_temp;
++	struct list_head *list_node;
++	struct irdma_cm_core *cm_core = from_timer(cm_core, t, tcp_timer);
++	struct irdma_sc_vsi *vsi;
++	u32 settimer = 0;
++	unsigned long timetosend;
++	unsigned long flags;
++	struct list_head timer_list;
++
++	INIT_LIST_HEAD(&timer_list);
++
++	spin_lock_irqsave(&cm_core->ht_lock, flags);
++	irdma_build_timer_list(&timer_list, &cm_core->non_accelerated_list);
++	irdma_build_timer_list(&timer_list, &cm_core->accelerated_list);
++	spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++
++	list_for_each_safe (list_node, list_core_temp, &timer_list) {
++		cm_node = container_of(list_node, struct irdma_cm_node,
++				       timer_entry);
++		close_entry = cm_node->close_entry;
++
++		if (close_entry) {
++			if (time_after(close_entry->timetosend, jiffies)) {
++				if (nexttimeout > close_entry->timetosend ||
++				    !settimer) {
++					nexttimeout = close_entry->timetosend;
++					settimer = 1;
++				}
++			} else {
++				irdma_handle_close_entry(cm_node, 1);
++			}
++		}
++
++		spin_lock_irqsave(&cm_node->retrans_list_lock, flags);
++
++		send_entry = cm_node->send_entry;
++		if (!send_entry)
++			goto done;
++		if (time_after(send_entry->timetosend, jiffies)) {
++			if (cm_node->state != IRDMA_CM_STATE_OFFLOADED) {
++				if (nexttimeout > send_entry->timetosend ||
++				    !settimer) {
++					nexttimeout = send_entry->timetosend;
++					settimer = 1;
++				}
++			} else {
++				irdma_free_retrans_entry(cm_node);
++			}
++			goto done;
++		}
++
++		if (cm_node->state == IRDMA_CM_STATE_OFFLOADED ||
++		    cm_node->state == IRDMA_CM_STATE_CLOSED) {
++			irdma_free_retrans_entry(cm_node);
++			goto done;
++		}
++
++		if (!send_entry->retranscount || !send_entry->retrycount) {
++			irdma_free_retrans_entry(cm_node);
++
++			spin_unlock_irqrestore(&cm_node->retrans_list_lock,
++					       flags);
++			irdma_retrans_expired(cm_node);
++			cm_node->state = IRDMA_CM_STATE_CLOSED;
++			spin_lock_irqsave(&cm_node->retrans_list_lock, flags);
++			goto done;
++		}
++		spin_unlock_irqrestore(&cm_node->retrans_list_lock, flags);
++
++		vsi = &cm_node->iwdev->vsi;
++		if (!cm_node->ack_rcvd) {
++			refcount_inc(&send_entry->sqbuf->refcount);
++			irdma_puda_send_buf(vsi->ilq, send_entry->sqbuf);
++			cm_node->cm_core->stats_pkt_retrans++;
++		}
++
++		spin_lock_irqsave(&cm_node->retrans_list_lock, flags);
++		if (send_entry->send_retrans) {
++			send_entry->retranscount--;
++			timetosend = (IRDMA_RETRY_TIMEOUT <<
++				      (IRDMA_DEFAULT_RETRANS -
++				       send_entry->retranscount));
++
++			send_entry->timetosend = jiffies +
++			    min(timetosend, IRDMA_MAX_TIMEOUT);
++			if (nexttimeout > send_entry->timetosend || !settimer) {
++				nexttimeout = send_entry->timetosend;
++				settimer = 1;
++			}
++		} else {
++			int close_when_complete;
++
++			close_when_complete = send_entry->close_when_complete;
++			irdma_free_retrans_entry(cm_node);
++			if (close_when_complete)
++				irdma_rem_ref_cm_node(cm_node);
++		}
++done:
++		spin_unlock_irqrestore(&cm_node->retrans_list_lock, flags);
++		irdma_rem_ref_cm_node(cm_node);
++	}
++
++	if (settimer) {
++		spin_lock_irqsave(&cm_core->ht_lock, flags);
++		if (!timer_pending(&cm_core->tcp_timer)) {
++			cm_core->tcp_timer.expires = nexttimeout;
++			add_timer(&cm_core->tcp_timer);
++		}
++		spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++	}
++}
++
++/**
++ * irdma_send_syn - send SYN packet
++ * @cm_node: connection's node
++ * @sendack: flag to set ACK bit or not
++ */
++int irdma_send_syn(struct irdma_cm_node *cm_node, u32 sendack)
++{
++	struct irdma_puda_buf *sqbuf;
++	int flags = SET_SYN;
++	char optionsbuf[sizeof(struct option_mss) +
++			sizeof(struct option_windowscale) +
++			sizeof(struct option_base) + TCP_OPTIONS_PADDING];
++	struct irdma_kmem_info opts;
++	int optionssize = 0;
++	/* Sending MSS option */
++	union all_known_options *options;
++
++	opts.addr = optionsbuf;
++	if (!cm_node)
++		return -EINVAL;
++
++	options = (union all_known_options *)&optionsbuf[optionssize];
++	options->mss.optionnum = OPTION_NUM_MSS;
++	options->mss.len = sizeof(struct option_mss);
++	options->mss.mss = htons(cm_node->tcp_cntxt.mss);
++	optionssize += sizeof(struct option_mss);
++
++	options = (union all_known_options *)&optionsbuf[optionssize];
++	options->windowscale.optionnum = OPTION_NUM_WINDOW_SCALE;
++	options->windowscale.len = sizeof(struct option_windowscale);
++	options->windowscale.shiftcount = cm_node->tcp_cntxt.rcv_wscale;
++	optionssize += sizeof(struct option_windowscale);
++	options = (union all_known_options *)&optionsbuf[optionssize];
++	options->eol = OPTION_NUM_EOL;
++	optionssize += 1;
++
++	if (sendack)
++		flags |= SET_ACK;
++
++	opts.size = optionssize;
++
++	sqbuf = cm_node->cm_core->form_cm_frame(cm_node, &opts, NULL, NULL,
++						flags);
++	if (!sqbuf)
++		return -ENOMEM;
++
++	return irdma_schedule_cm_timer(cm_node, sqbuf, IRDMA_TIMER_TYPE_SEND, 1,
++				       0);
++}
++
++/**
++ * irdma_send_ack - Send ACK packet
++ * @cm_node: connection's node
++ */
++void irdma_send_ack(struct irdma_cm_node *cm_node)
++{
++	struct irdma_puda_buf *sqbuf;
++	struct irdma_sc_vsi *vsi = &cm_node->iwdev->vsi;
++
++	sqbuf = cm_node->cm_core->form_cm_frame(cm_node, NULL, NULL, NULL,
++						SET_ACK);
++	if (sqbuf)
++		irdma_puda_send_buf(vsi->ilq, sqbuf);
++}
++
++/**
++ * irdma_send_fin - Send FIN pkt
++ * @cm_node: connection's node
++ */
++static int irdma_send_fin(struct irdma_cm_node *cm_node)
++{
++	struct irdma_puda_buf *sqbuf;
++
++	sqbuf = cm_node->cm_core->form_cm_frame(cm_node, NULL, NULL, NULL,
++						SET_ACK | SET_FIN);
++	if (!sqbuf)
++		return -1;
++
++	return irdma_schedule_cm_timer(cm_node, sqbuf, IRDMA_TIMER_TYPE_SEND, 1,
++				       0);
++}
++
++/**
++ * irdma_find_node - find a cm node that matches the reference
++ * cm node
++ * @cm_core: cm's core
++ * @rem_port: remote tcp port num
++ * @rem_addr: remote ip addr
++ * @loc_port: local tcp port num
++ * @loc_addr: loc ip addr
++ * @add_refcnt: flag to increment refcount of cm_node
++ * @accelerated_list: flag for accelerated vs non-accelerated list to search
++ */
++struct irdma_cm_node *irdma_find_node(struct irdma_cm_core *cm_core,
++				      u16 rem_port, u32 *rem_addr, u16 loc_port,
++				      u32 *loc_addr, bool add_refcnt,
++				      bool accelerated_list)
++{
++	struct list_head *hte;
++	struct irdma_cm_node *cm_node;
++	unsigned long flags;
++
++	hte = accelerated_list ? &cm_core->accelerated_list :
++				 &cm_core->non_accelerated_list;
++
++	spin_lock_irqsave(&cm_core->ht_lock, flags);
++	list_for_each_entry (cm_node, hte, list) {
++		if (!memcmp(cm_node->loc_addr, loc_addr, sizeof(cm_node->loc_addr)) &&
++		    cm_node->loc_port == loc_port &&
++		    !memcmp(cm_node->rem_addr, rem_addr, sizeof(cm_node->rem_addr)) &&
++		    cm_node->rem_port == rem_port) {
++			if (add_refcnt)
++				refcount_inc(&cm_node->refcnt);
++			spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++			trace_irdma_find_node(cm_node, 0, NULL);
++			return cm_node;
++		}
++	}
++	spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++
++	/* no owner node */
++	return NULL;
++}
++
++/**
++ * irdma_find_listener - find a cm node listening on this addr-port pair
++ * @cm_core: cm's core
++ * @dst_addr: listener ip addr
++ * @dst_port: listener tcp port num
++ * @vlan_id: virtual LAN ID
++ * @listener_state: state to match with listen node's
++ */
++static struct irdma_cm_listener *
++irdma_find_listener(struct irdma_cm_core *cm_core, u32 *dst_addr, u16 dst_port,
++		    u16 vlan_id, enum irdma_cm_listener_state listener_state)
++{
++	struct irdma_cm_listener *listen_node;
++	static const u32 ip_zero[4] = { 0, 0, 0, 0 };
++	u32 listen_addr[4];
++	u16 listen_port;
++	unsigned long flags;
++
++	/* walk list and find cm_node associated with this session ID */
++	spin_lock_irqsave(&cm_core->listen_list_lock, flags);
++	list_for_each_entry (listen_node, &cm_core->listen_nodes, list) {
++		memcpy(listen_addr, listen_node->loc_addr, sizeof(listen_addr));
++		listen_port = listen_node->loc_port;
++		/* compare node pair, return node handle if a match */
++		if ((!memcmp(listen_addr, dst_addr, sizeof(listen_addr)) ||
++		     !memcmp(listen_addr, ip_zero, sizeof(listen_addr))) &&
++		    listen_port == dst_port &&
++		    vlan_id == listen_node->vlan_id &&
++		    (listener_state & listen_node->listener_state)) {
++			refcount_inc(&listen_node->refcnt);
++			spin_unlock_irqrestore(&cm_core->listen_list_lock,
++					       flags);
++			trace_irdma_find_listener(listen_node);
++			return listen_node;
++		}
++	}
++	spin_unlock_irqrestore(&cm_core->listen_list_lock, flags);
++
++	return NULL;
++}
++
++/**
++ * irdma_add_hte_node - add a cm node to the hash table
++ * @cm_core: cm's core
++ * @cm_node: connection's node
++ */
++static void irdma_add_hte_node(struct irdma_cm_core *cm_core,
++			       struct irdma_cm_node *cm_node)
++{
++	unsigned long flags;
++
++	if (!cm_node || !cm_core)
++		return;
++
++	spin_lock_irqsave(&cm_core->ht_lock, flags);
++	list_add_tail(&cm_node->list, &cm_core->non_accelerated_list);
++	spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++}
++
++/**
++ * irdma_find_port - find port that matches reference port
++ * @hte: ptr to accelerated or non-accelerated list
++ * @port: port number
++ */
++static bool irdma_find_port(struct list_head *hte, u16 port)
++{
++	struct irdma_cm_node *cm_node;
++
++	list_for_each_entry (cm_node, hte, list) {
++		if (cm_node->loc_port == port)
++			return true;
++	}
++
++	return false;
++}
++
++/**
++ * irdma_port_in_use - determine if port is in use
++ * @cm_core: cm's core
++ * @port: port number
++ */
++bool irdma_port_in_use(struct irdma_cm_core *cm_core, u16 port)
++{
++	struct irdma_cm_listener *listen_node;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cm_core->ht_lock, flags);
++	if (irdma_find_port(&cm_core->accelerated_list, port) ||
++	    irdma_find_port(&cm_core->non_accelerated_list, port)) {
++		spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++		return true;
++	}
++	spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++
++	spin_lock_irqsave(&cm_core->listen_list_lock, flags);
++	list_for_each_entry (listen_node, &cm_core->listen_nodes, list) {
++		if (listen_node->loc_port == port) {
++			spin_unlock_irqrestore(&cm_core->listen_list_lock, flags);
++			return true;
++		}
++	}
++	spin_unlock_irqrestore(&cm_core->listen_list_lock, flags);
++
++	return false;
++}
++
++/**
++ * irdma_del_multiple_qhash - Remove qhash and child listens
++ * @iwdev: iWarp device
++ * @cm_info: CM info for parent listen node
++ * @cm_parent_listen_node: The parent listen node
++ */
++static enum irdma_status_code
++irdma_del_multiple_qhash(struct irdma_device *iwdev,
++			 struct irdma_cm_info *cm_info,
++			 struct irdma_cm_listener *cm_parent_listen_node)
++{
++	struct irdma_cm_listener *child_listen_node;
++	enum irdma_status_code ret = IRDMA_ERR_CFG;
++	struct list_head *pos, *tpos;
++	unsigned long flags;
++
++	spin_lock_irqsave(&iwdev->cm_core.listen_list_lock, flags);
++	list_for_each_safe (pos, tpos,
++			    &cm_parent_listen_node->child_listen_list) {
++		child_listen_node = list_entry(pos, struct irdma_cm_listener,
++					       child_listen_list);
++		if (child_listen_node->ipv4)
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: removing child listen for IP=%pI4, port=%d, vlan=%d\n",
++				  child_listen_node->loc_addr,
++				  child_listen_node->loc_port,
++				  child_listen_node->vlan_id);
++		else
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: removing child listen for IP=%pI6, port=%d, vlan=%d\n",
++				  child_listen_node->loc_addr,
++				  child_listen_node->loc_port,
++				  child_listen_node->vlan_id);
++		trace_irdma_del_multiple_qhash(child_listen_node);
++		list_del(pos);
++		memcpy(cm_info->loc_addr, child_listen_node->loc_addr,
++		       sizeof(cm_info->loc_addr));
++		cm_info->vlan_id = child_listen_node->vlan_id;
++		if (child_listen_node->qhash_set) {
++			ret = irdma_manage_qhash(iwdev, cm_info,
++						 IRDMA_QHASH_TYPE_TCP_SYN,
++						 IRDMA_QHASH_MANAGE_TYPE_DELETE,
++						 NULL, false);
++			child_listen_node->qhash_set = false;
++		} else {
++			ret = 0;
++		}
++		ibdev_dbg(to_ibdev(iwdev),
++			  "CM: Child listen node freed = %p\n",
++			  child_listen_node);
++		kfree(child_listen_node);
++		cm_parent_listen_node->cm_core->stats_listen_nodes_destroyed++;
++	}
++	spin_unlock_irqrestore(&iwdev->cm_core.listen_list_lock, flags);
 +
 +	return ret;
 +}
 +
-+static struct platform_driver np_gswip_driver = {
-+	.probe = np_gswip_probe,
-+	.driver = {
-+		.name = "np_gswip",
-+		.of_match_table = gswip_of_match_table,
-+	},
-+};
-+
-+module_platform_driver(np_gswip_driver);
-+
-+MODULE_LICENSE("GPL v2");
-+
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/gswip_dev.h b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_dev.h
-new file mode 100644
-index 000000000000..bdf5f26bc2ce
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_dev.h
-@@ -0,0 +1,19 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+#ifndef _GSWIP_DEV_H
-+#define _GSWIP_DEV_H
-+
-+struct gswip_pdata {
-+	void __iomem *sw;
-+	void __iomem *lmac;
-+	void __iomem *core;
-+	int sw_irq;
-+	int core_irq;
-+	struct clk *ptp_clk;
-+	struct clk *sw_clk;
-+	bool intr_flag;
-+	struct regmap *core_regmap;
-+};
-+
-+#endif
-+
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/gswip_mac.c b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_mac.c
-new file mode 100644
-index 000000000000..eb8c8049a77f
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_mac.c
-@@ -0,0 +1,225 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+
-+#include <linux/bitfield.h>
-+#include <linux/types.h>
-+
-+#include "mac_common.h"
-+
-+int sw_core_enable(struct device *dev, u32 val)
++/**
++ * irdma_netdev_vlan_ipv6 - Gets the netdev and mac
++ * @addr: local IPv6 address
++ * @vlan_id: vlan id for the given IPv6 address
++ * @mac: mac address for the given IPv6 address
++ *
++ * Returns the net_device of the IPv6 address and also sets the
++ * vlan id and mac for that address.
++ */
++struct net_device *irdma_netdev_vlan_ipv6(u32 *addr, u16 *vlan_id, u8 *mac)
 +{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+	u32 reg;
++	struct net_device *ip_dev = NULL;
++	struct in6_addr laddr6;
 +
-+	spin_lock_bh(&priv->sw_lock);
-+	reg = sw_read(priv, GSWIP_CFG);
-+	reg &= ~GSWIP_CFG_CORE_SE_EN;
-+	reg |= FIELD_PREP(GSWIP_CFG_CORE_SE_EN, val);
-+	sw_write(priv, GSWIP_CFG, reg);
-+	spin_unlock_bh(&priv->sw_lock);
++	if (!IS_ENABLED(CONFIG_IPV6))
++		return NULL;
 +
-+	return 0;
++	irdma_copy_ip_htonl(laddr6.in6_u.u6_addr32, addr);
++	if (vlan_id)
++		*vlan_id = 0xFFFF;	/* Match rdma_vlan_dev_vlan_id() */
++	if (mac)
++		eth_zero_addr(mac);
++
++	rcu_read_lock();
++	for_each_netdev_rcu (&init_net, ip_dev) {
++		if (ipv6_chk_addr(&init_net, &laddr6, ip_dev, 1)) {
++			if (vlan_id)
++				*vlan_id = rdma_vlan_dev_vlan_id(ip_dev);
++			if (ip_dev->dev_addr && mac)
++				ether_addr_copy(mac, ip_dev->dev_addr);
++			break;
++		}
++	}
++	rcu_read_unlock();
++
++	return ip_dev;
 +}
 +
-+int sw_set_mac_rxfcs_op(struct gswip_mac *priv, u32 val)
++/**
++ * irdma_get_vlan_ipv4 - Returns the vlan_id for IPv4 address
++ * @addr: local IPv4 address
++ */
++u16 irdma_get_vlan_ipv4(u32 *addr)
 +{
-+	u32 mac_op_cfg;
++	struct net_device *netdev;
++	u16 vlan_id = 0xFFFF;
 +
-+	mac_op_cfg = sw_read(priv, MAC_OP_CFG_REG(priv->mac_idx));
-+	if (FIELD_GET(MAC_OP_CFG_RX_FCS, mac_op_cfg) != val) {
-+		mac_op_cfg &= ~MAC_OP_CFG_RX_FCS;
-+		mac_op_cfg |= FIELD_PREP(MAC_OP_CFG_RX_FCS, val);
-+		sw_write(priv, MAC_OP_CFG_REG(priv->mac_idx), mac_op_cfg);
++	netdev = ip_dev_find(&init_net, htonl(addr[0]));
++	if (netdev) {
++		vlan_id = rdma_vlan_dev_vlan_id(netdev);
++		dev_put(netdev);
 +	}
 +
-+	return 0;
++	return vlan_id;
 +}
 +
-+int sw_set_eee_cap(struct gswip_mac *priv, u32 val)
++/**
++ * irdma_add_mqh_6 - Adds multiple qhashes for IPv6
++ * @iwdev: iWarp device
++ * @cm_info: CM info for parent listen node
++ * @cm_parent_listen_node: The parent listen node
++ *
++ * Adds a qhash and a child listen node for every IPv6 address
++ * on the adapter and adds the associated qhash filter
++ */
++static enum irdma_status_code
++irdma_add_mqh_6(struct irdma_device *iwdev, struct irdma_cm_info *cm_info,
++		struct irdma_cm_listener *cm_parent_listen_node)
 +{
-+	u32 aneg_eee;
++	struct net_device *ip_dev;
++	struct inet6_dev *idev;
++	struct inet6_ifaddr *ifp, *tmp;
++	enum irdma_status_code ret = 0;
++	struct irdma_cm_listener *child_listen_node;
++	unsigned long flags;
 +
-+	aneg_eee = sw_read(priv, ANEG_EEE_REG(priv->mac_idx));
-+	aneg_eee &= ~ANEG_EEE_CAP;
-+	aneg_eee |= FIELD_PREP(ANEG_EEE_CAP, val);
-+	sw_write(priv, ANEG_EEE_REG(priv->mac_idx), aneg_eee);
++	rtnl_lock();
++	for_each_netdev (&init_net, ip_dev) {
++		if (!(ip_dev->flags & IFF_UP))
++			continue;
 +
-+	return 0;
++		if (((rdma_vlan_dev_vlan_id(ip_dev) >= VLAN_N_VID) ||
++		     (rdma_vlan_dev_real_dev(ip_dev) != iwdev->netdev)) &&
++		    ip_dev != iwdev->netdev)
++			continue;
++
++		idev = __in6_dev_get(ip_dev);
++		if (!idev) {
++			ibdev_dbg(to_ibdev(iwdev), "CM: idev == NULL\n");
++			break;
++		}
++		list_for_each_entry_safe (ifp, tmp, &idev->addr_list, if_list) {
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: IP=%pI6, vlan_id=%d, MAC=%pM\n",
++				  &ifp->addr, rdma_vlan_dev_vlan_id(ip_dev),
++				  ip_dev->dev_addr);
++			child_listen_node = kzalloc(sizeof(*child_listen_node), GFP_KERNEL);
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: Allocating child listener %p\n",
++				  child_listen_node);
++			if (!child_listen_node) {
++				ibdev_dbg(to_ibdev(iwdev),
++					  "CM: listener memory allocation\n");
++				ret = IRDMA_ERR_NO_MEMORY;
++				goto exit;
++			}
++
++			cm_info->vlan_id = rdma_vlan_dev_vlan_id(ip_dev);
++			cm_parent_listen_node->vlan_id = cm_info->vlan_id;
++			memcpy(child_listen_node, cm_parent_listen_node,
++			       sizeof(*child_listen_node));
++			irdma_copy_ip_ntohl(child_listen_node->loc_addr,
++					    ifp->addr.in6_u.u6_addr32);
++			memcpy(cm_info->loc_addr, child_listen_node->loc_addr,
++			       sizeof(cm_info->loc_addr));
++			ret = irdma_manage_qhash(iwdev, cm_info,
++						 IRDMA_QHASH_TYPE_TCP_SYN,
++						 IRDMA_QHASH_MANAGE_TYPE_ADD,
++						 NULL, true);
++			if (ret) {
++				kfree(child_listen_node);
++				continue;
++			}
++
++			trace_irdma_add_mqh_6(iwdev, child_listen_node,
++					      ip_dev->dev_addr);
++
++			child_listen_node->qhash_set = true;
++			spin_lock_irqsave(&iwdev->cm_core.listen_list_lock, flags);
++			list_add(&child_listen_node->child_listen_list,
++				 &cm_parent_listen_node->child_listen_list);
++			spin_unlock_irqrestore(&iwdev->cm_core.listen_list_lock, flags);
++			cm_parent_listen_node->cm_core->stats_listen_nodes_created++;
++		}
++	}
++exit:
++	rtnl_unlock();
++
++	return ret;
 +}
 +
-+int sw_set_fe_intf(struct gswip_mac *priv, u32 macif)
++/**
++ * irdma_add_mqh_4 - Adds multiple qhashes for IPv4
++ * @iwdev: iWarp device
++ * @cm_info: CM info for parent listen node
++ * @cm_parent_listen_node: The parent listen node
++ *
++ * Adds a qhash and a child listen node for every IPv4 address
++ * on the adapter and adds the associated qhash filter
++ */
++static enum irdma_status_code
++irdma_add_mqh_4(struct irdma_device *iwdev, struct irdma_cm_info *cm_info,
++		struct irdma_cm_listener *cm_parent_listen_node)
 +{
-+	u32 mac_if_cfg;
++	struct net_device *dev;
++	struct in_device *idev;
++	struct irdma_cm_listener *child_listen_node;
++	enum irdma_status_code ret = 0;
++	unsigned long flags;
++	const struct in_ifaddr *ifa;
 +
-+	mac_if_cfg = sw_read(priv, MAC_IF_CFG_REG(priv->mac_idx));
++	rtnl_lock();
++	for_each_netdev (&init_net, dev) {
++		if (!(dev->flags & IFF_UP))
++			continue;
 +
-+	if (macif == LMAC_MII)
-+		mac_if_cfg &= ~MAC_IF_CFG_CFGFE;
-+	else
-+		mac_if_cfg |= MAC_IF_CFG_CFGFE;
++		if (((rdma_vlan_dev_vlan_id(dev) >= VLAN_N_VID) ||
++		     (rdma_vlan_dev_real_dev(dev) != iwdev->netdev)) &&
++		    dev != iwdev->netdev)
++			continue;
 +
-+	sw_write(priv, MAC_IF_CFG_REG(priv->mac_idx), mac_if_cfg);
++		idev = in_dev_get(dev);
++		in_dev_for_each_ifa_rtnl(ifa, idev) {
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: Allocating child CM Listener forIP=%pI4, vlan_id=%d, MAC=%pM\n",
++				  &ifa->ifa_address,
++				  rdma_vlan_dev_vlan_id(dev), dev->dev_addr);
++			child_listen_node = kzalloc(sizeof(*child_listen_node), GFP_KERNEL);
++			cm_parent_listen_node->cm_core->stats_listen_nodes_created++;
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: Allocating child listener %p\n",
++				  child_listen_node);
++			if (!child_listen_node) {
++				ibdev_dbg(to_ibdev(iwdev),
++					  "CM: listener memory allocation\n");
++				in_dev_put(idev);
++				ret = IRDMA_ERR_NO_MEMORY;
++				goto exit;
++			}
 +
-+	return 0;
++			cm_info->vlan_id = rdma_vlan_dev_vlan_id(dev);
++			cm_parent_listen_node->vlan_id = cm_info->vlan_id;
++			memcpy(child_listen_node, cm_parent_listen_node,
++			       sizeof(*child_listen_node));
++			child_listen_node->loc_addr[0] =
++				ntohl(ifa->ifa_address);
++			memcpy(cm_info->loc_addr, child_listen_node->loc_addr,
++			       sizeof(cm_info->loc_addr));
++			ret = irdma_manage_qhash(iwdev, cm_info,
++						 IRDMA_QHASH_TYPE_TCP_SYN,
++						 IRDMA_QHASH_MANAGE_TYPE_ADD,
++						 NULL, true);
++			if (ret) {
++				kfree(child_listen_node);
++				cm_parent_listen_node->cm_core
++					->stats_listen_nodes_created--;
++				continue;
++			}
++
++			trace_irdma_add_mqh_4(iwdev, child_listen_node,
++					      dev->dev_addr);
++
++			child_listen_node->qhash_set = true;
++			spin_lock_irqsave(&iwdev->cm_core.listen_list_lock,
++					  flags);
++			list_add(&child_listen_node->child_listen_list,
++				 &cm_parent_listen_node->child_listen_list);
++			spin_unlock_irqrestore(&iwdev->cm_core.listen_list_lock, flags);
++		}
++		in_dev_put(idev);
++	}
++exit:
++	rtnl_unlock();
++
++	return ret;
 +}
 +
-+int sw_set_1g_intf(struct gswip_mac *priv, u32 macif)
++/**
++ * irdma_dec_refcnt_listen - delete listener and associated cm nodes
++ * @cm_core: cm's core
++ * @listener: pointer to listener node
++ * @free_hanging_nodes: to free associated cm_nodes
++ * @apbvt_del: flag to delete the apbvt
++ */
++static int irdma_dec_refcnt_listen(struct irdma_cm_core *cm_core,
++				   struct irdma_cm_listener *listener,
++				   int free_hanging_nodes, bool apbvt_del)
 +{
-+	u32 mac_if_cfg;
++	int err;
++	struct list_head *list_pos;
++	struct list_head *list_temp;
++	struct irdma_cm_node *cm_node;
++	struct list_head reset_list;
++	struct irdma_cm_info nfo;
++	enum irdma_cm_node_state old_state;
++	unsigned long flags;
 +
-+	mac_if_cfg = sw_read(priv, MAC_IF_CFG_REG(priv->mac_idx));
-+
-+	if (macif == LMAC_GMII)
-+		mac_if_cfg &= ~MAC_IF_CFG_CFG1G;
-+	else
-+		mac_if_cfg |= MAC_IF_CFG_CFG1G;
-+
-+	sw_write(priv, MAC_IF_CFG_REG(priv->mac_idx), mac_if_cfg);
-+
-+	return 0;
-+}
-+
-+int sw_set_2G5_intf(struct gswip_mac *priv, u32 macif)
-+{
-+	u32 mac_if_cfg;
-+
-+	mac_if_cfg = sw_read(priv, MAC_IF_CFG_REG(priv->mac_idx));
-+
-+	if (macif == XGMAC_GMII)
-+		mac_if_cfg &= ~MAC_IF_CFG_CFG2G5;
-+	else
-+		mac_if_cfg |= MAC_IF_CFG_CFG2G5;
-+
-+	sw_write(priv, MAC_IF_CFG_REG(priv->mac_idx), mac_if_cfg);
-+
-+	return 0;
-+}
-+
-+int sw_set_speed(struct gswip_mac *priv, u8 speed)
-+{
-+	u16 phy_mode = 0;
-+	u8 speed_msb = 0, speed_lsb = 0;
-+
-+	phy_mode = sw_read(priv, PHY_MODE_REG(priv->mac_idx));
-+
-+	/* clear first */
-+	phy_mode &= ~PHY_MODE_SPEED_MSB & ~PHY_MODE_SPEED_LSB;
-+
-+	speed_msb = FIELD_GET(SPEED_MSB, speed);
-+	speed_lsb = FIELD_GET(SPEED_LSB, speed);
-+	phy_mode |= FIELD_PREP(PHY_MODE_SPEED_MSB, speed_msb);
-+	phy_mode |= FIELD_PREP(PHY_MODE_SPEED_LSB, speed_lsb);
-+
-+	sw_write(priv, PHY_MODE_REG(priv->mac_idx), phy_mode);
-+
-+	return 0;
-+}
-+
-+int sw_set_duplex_mode(struct gswip_mac *priv, u32 val)
-+{
-+	u16 phy_mode;
-+
-+	phy_mode = sw_read(priv, PHY_MODE_REG(priv->mac_idx));
-+	if (FIELD_GET(PHY_MODE_FDUP, phy_mode) != val) {
-+		phy_mode &= ~PHY_MODE_FDUP;
-+		phy_mode |= FIELD_PREP(PHY_MODE_FDUP, val);
-+		sw_write(priv, PHY_MODE_REG(priv->mac_idx), phy_mode);
++	trace_irdma_dec_refcnt_listen(listener, __builtin_return_address(0));
++	/* free non-accelerated child nodes for this listener */
++	INIT_LIST_HEAD(&reset_list);
++	if (free_hanging_nodes) {
++		spin_lock_irqsave(&cm_core->ht_lock, flags);
++		list_for_each_safe (list_pos, list_temp,
++				    &cm_core->non_accelerated_list) {
++			cm_node = container_of(list_pos, struct irdma_cm_node,
++					       list);
++			if (cm_node->listener == listener &&
++			    !cm_node->accelerated) {
++				refcount_inc(&cm_node->refcnt);
++				list_add(&cm_node->reset_entry, &reset_list);
++			}
++		}
++		spin_unlock_irqrestore(&cm_core->ht_lock, flags);
 +	}
 +
-+	return 0;
-+}
++	list_for_each_safe (list_pos, list_temp, &reset_list) {
++		cm_node = container_of(list_pos, struct irdma_cm_node,
++				       reset_entry);
++		if (cm_node->state >= IRDMA_CM_STATE_FIN_WAIT1) {
++			irdma_rem_ref_cm_node(cm_node);
++			continue;
++		}
 +
-+int sw_get_duplex_mode(struct gswip_mac *priv)
-+{
-+	u16 phy_mode;
-+	int val;
-+
-+	phy_mode = sw_read(priv, PHY_STAT_REG(priv->mac_idx));
-+	val = FIELD_GET(PHY_STAT_FDUP, phy_mode);
-+
-+	return val;
-+}
-+
-+int sw_get_linkstatus(struct gswip_mac *priv)
-+{
-+	u16 phy_mode;
-+	int linkst;
-+
-+	phy_mode = sw_read(priv, PHY_STAT_REG(priv->mac_idx));
-+	linkst = FIELD_GET(PHY_STAT_LSTAT, phy_mode);
-+
-+	return linkst;
-+}
-+
-+int sw_set_linkstatus(struct gswip_mac *priv, u8 linkst)
-+{
-+	u16 phy_mode;
-+	u8 val;
-+
-+	phy_mode = sw_read(priv, PHY_MODE_REG(priv->mac_idx));
-+	val = FIELD_GET(PHY_MODE_LINKST, phy_mode);
-+	if (val != linkst) {
-+		phy_mode &= ~PHY_MODE_LINKST;
-+		phy_mode |= FIELD_PREP(PHY_MODE_LINKST, linkst);
-+		sw_write(priv, PHY_MODE_REG(priv->mac_idx), phy_mode);
++		irdma_cleanup_retrans_entry(cm_node);
++		err = irdma_send_reset(cm_node);
++		if (err) {
++			cm_node->state = IRDMA_CM_STATE_CLOSED;
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: send reset failed\n");
++		} else {
++			old_state = cm_node->state;
++			cm_node->state = IRDMA_CM_STATE_LISTENER_DESTROYED;
++			if (old_state != IRDMA_CM_STATE_MPAREQ_RCVD)
++				irdma_rem_ref_cm_node(cm_node);
++		}
 +	}
 +
-+	return 0;
-+}
++	if (refcount_dec_and_test(&listener->refcnt)) {
++		spin_lock_irqsave(&cm_core->listen_list_lock, flags);
++		list_del(&listener->list);
++		spin_unlock_irqrestore(&cm_core->listen_list_lock, flags);
 +
-+int sw_set_flowctrl(struct gswip_mac *priv, u8 val, u32 mode)
-+{
-+	u16 phy_mode;
++		if (listener->iwdev) {
++			if (apbvt_del)
++				irdma_manage_apbvt(listener->iwdev,
++						   listener->loc_port,
++						   IRDMA_MANAGE_APBVT_DEL);
++			memcpy(nfo.loc_addr, listener->loc_addr,
++			       sizeof(nfo.loc_addr));
++			nfo.loc_port = listener->loc_port;
++			nfo.ipv4 = listener->ipv4;
++			nfo.vlan_id = listener->vlan_id;
++			nfo.user_pri = listener->user_pri;
++			nfo.qh_qpid = listener->iwdev->vsi.ilq->qp_id;
 +
-+	phy_mode = sw_read(priv, PHY_MODE_REG(priv->mac_idx));
++			if (!list_empty(&listener->child_listen_list)) {
++				irdma_del_multiple_qhash(listener->iwdev, &nfo,
++							 listener);
++			} else {
++				if (listener->qhash_set)
++					irdma_manage_qhash(listener->iwdev,
++							   &nfo,
++							   IRDMA_QHASH_TYPE_TCP_SYN,
++							   IRDMA_QHASH_MANAGE_TYPE_DELETE,
++							   NULL, false);
++			}
++		}
 +
-+	switch (mode) {
-+	case FCONRX:
-+		phy_mode &= ~PHY_MODE_FCONRX;
-+		phy_mode |= FIELD_PREP(PHY_MODE_FCONRX, val);
-+		break;
-+
-+	case FCONTX:
-+		phy_mode &= ~PHY_MODE_FCONTX;
-+		phy_mode |= FIELD_PREP(PHY_MODE_FCONTX, val);
-+		break;
-+	}
-+
-+	sw_write(priv, PHY_MODE_REG(priv->mac_idx), phy_mode);
-+
-+	return 0;
-+}
-+
-+u32 sw_get_speed(struct gswip_mac *priv)
-+{
-+	u16 phy_mode = 0;
-+	u32 speed_msb, speed_lsb, speed;
-+
-+	phy_mode = sw_read(priv, PHY_STAT_REG(priv->mac_idx));
-+	speed_msb = FIELD_GET(PHY_STAT_SPEED_MSB, phy_mode);
-+	speed_lsb = FIELD_GET(PHY_STAT_SPEED_LSB, phy_mode);
-+	speed = (speed_msb << 2) | speed_lsb;
-+
-+	return speed;
-+}
-+
-+u32 sw_mac_get_mtu(struct gswip_mac *priv)
-+{
-+	u32 reg, val;
-+
-+	reg = sw_read(priv, MAC_MTU_CFG_REG(priv->mac_idx));
-+	val = FIELD_PREP(MAC_MTU_CFG_MTU, reg);
-+
-+	return val;
-+}
-+
-+int sw_mac_set_mtu(struct gswip_mac *priv, u32 mtu)
-+{
-+	u32 val;
-+
-+	val = sw_mac_get_mtu(priv);
-+	if (val != mtu)
-+		sw_write(priv, MAC_MTU_CFG_REG(priv->mac_idx), mtu);
-+
-+	return 0;
-+}
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/gswip_port.c b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_port.c
-new file mode 100644
-index 000000000000..1fd611db9ffc
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_port.c
-@@ -0,0 +1,330 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2016-2019 Intel Corporation.*/
-+#include "gswip_core.h"
-+#include "gswip_reg.h"
-+#include "gswip_tbl.h"
-+
-+#define ENABLE		1
-+#define DISABLE		0
-+
-+static int gswip_ctp_port_set(struct gswip_core_priv *priv,
-+			      struct gswip_ctp_port_info *ctp)
-+{
-+	u16 val, last_port;
-+
-+	val = ctp->first_pid;
-+	last_port = ctp->first_pid + ctp->num_port - 1;
-+
-+	switch (ctp->mode) {
-+	case GSWIP_LPORT_8BIT_WLAN:
-+		val |= FIELD_PREP(ETHSW_CTP_STARTID_MD, MD_WLAN8);
-+		break;
-+
-+	case GSWIP_LPORT_9BIT_WLAN:
-+		val |= FIELD_PREP(ETHSW_CTP_STARTID_MD, MD_WLAN8);
-+		break;
-+	case GSWIP_LPORT_GPON:
-+	case GSWIP_LPORT_EPON:
-+	case GSWIP_LPORT_GINT:
-+	case GSWIP_LPORT_OTHER:
-+		val |= FIELD_PREP(ETHSW_CTP_STARTID_MD, MD_OTHER);
-+		break;
-+	}
-+
-+	regmap_write(priv->regmap, ETHSW_CTP_STARTID(ctp->lpid), val);
-+	regmap_write(priv->regmap, ETHSW_CTP_ENDID(ctp->lpid), last_port);
-+
-+	return 0;
-+}
-+
-+static int gswip_ctp_port_get(struct gswip_core_priv *priv,
-+			      struct gswip_ctp_port_info *ctp)
-+{
-+	u16 val, last_port;
-+
-+	reg_r16(priv, ETHSW_CTP_STARTID(ctp->lpid), &val);
-+
-+	ctp->mode = FIELD_GET(ETHSW_CTP_STARTID_MD, val);
-+	ctp->first_pid = FIELD_GET(ETHSW_CTP_STARTID_STARTID, val);
-+
-+	last_port = reg_rbits(priv, ETHSW_CTP_ENDID(ctp->lpid),
-+			      ETHSW_CTP_ENDID_ENDID);
-+	ctp->num_port = last_port - ctp->first_pid + 1;
-+
-+	return 0;
-+}
-+
-+static int gswip_ctp_port_alloc(struct device *dev,
-+				struct gswip_ctp_port_info *ctp)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	u16 first_ctp;
-+	int ret;
-+
-+	if (!ctp->num_port || ctp->num_port >= priv->num_ctp) {
-+		dev_err(priv->dev, "Invalid num of ctp port requested %d\n",
-+			ctp->num_port);
-+		return -EINVAL;
-+	}
-+
-+	first_ctp = bitmap_find_next_zero_area(priv->ctp_port_map,
-+					       priv->num_ctp, 0,
-+					       ctp->num_port, 0);
-+	if (first_ctp >= priv->num_ctp) {
-+		dev_err(priv->dev, "Failed to find contiguous ctp port\n");
-+		return -EINVAL;
-+	}
-+
-+	bitmap_set(priv->ctp_port_map, first_ctp, ctp->num_port);
-+	ctp->first_pid = first_ctp;
-+
-+	ret = gswip_ctp_port_set(priv, ctp);
-+	if (ret) {
-+		bitmap_clear(priv->ctp_port_map, first_ctp, ctp->num_port);
-+		return ret;
-+	}
-+
-+	reg_wbits(priv, SDMA_PCTRL(ctp->lpid), SDMA_PCTRL_PEN, ENABLE);
-+
-+	return 0;
-+}
-+
-+static int gswip_ctp_port_free(struct device *dev, u8 lpid)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	struct gswip_ctp_port_info ctp;
-+
-+	if (lpid >= priv->num_lport) {
-+		dev_err(priv->dev, "Invalid lpid %d\n", lpid);
-+		return -EINVAL;
-+	}
-+
-+	ctp.lpid = lpid;
-+	gswip_ctp_port_get(priv, &ctp);
-+
-+	reg_wbits(priv, SDMA_PCTRL(lpid), SDMA_PCTRL_PEN, DISABLE);
-+	regmap_write(priv->regmap, ETHSW_CTP_STARTID(lpid), 0);
-+	regmap_write(priv->regmap, ETHSW_CTP_ENDID(lpid), 0);
-+
-+	bitmap_clear(priv->ctp_port_map, ctp.first_pid, ctp.num_port);
-+
-+	return 0;
-+}
-+
-+static int gswip_bridge_port_alloc(struct device *dev,
-+				   struct gswip_br_port_alloc *bp)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	struct pce_tbl_prog pce_tbl = {0};
-+	int ret;
-+
-+	bp->br_pid = find_first_zero_bit(priv->br_port_map, priv->num_br_port);
-+	if (bp->br_pid >= priv->num_br_port) {
-+		dev_err(priv->dev, "failed to alloc bridge port\n");
-+		return -EINVAL;
-+	}
-+
-+	set_bit(bp->br_pid, priv->br_port_map);
-+
-+	pce_tbl.id = PCE_IG_BRP_CFG;
-+	pce_tbl.addr = bp->br_pid;
-+	pce_tbl.val[4] = PCE_MAC_LIMIT_NUM |
-+			 FIELD_PREP(PCE_IGBGP_VAL4_BR_ID, bp->br_id);
-+
-+	ret = gswip_pce_table_write(priv, &pce_tbl);
-+	if (ret) {
-+		clear_bit(bp->br_pid, priv->br_port_map);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int gswip_bridge_port_free(struct device *dev,
-+				  struct gswip_br_port_alloc *bp)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	struct pce_tbl_prog pce_tbl = {0};
-+	u16 br_pid;
-+	int ret;
-+
-+	br_pid = bp->br_pid;
-+	if (br_pid >= priv->num_br_port) {
-+		dev_err(priv->dev, "brige port id %d >=%d\n",
-+			br_pid, priv->num_br_port);
-+		return -EINVAL;
-+	}
-+
-+	if (!test_bit(br_pid, priv->br_port_map)) {
-+		dev_err(priv->dev, "bridge port id %d is not in used\n",
-+			br_pid);
-+		return -EINVAL;
-+	}
-+
-+	pce_tbl.id = PCE_IG_BRP_CFG;
-+	pce_tbl.addr = br_pid;
-+	pce_tbl.val[4] = PCE_MAC_LIMIT_NUM;
-+
-+	ret = gswip_pce_table_write(priv, &pce_tbl);
-+	if (ret)
-+		return ret;
-+
-+	clear_bit(br_pid, priv->br_port_map);
-+
-+	return 0;
-+}
-+
-+static int gswip_bridge_alloc(struct device *dev, struct gswip_br_alloc *br)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+
-+	br->br_id = find_first_zero_bit(priv->br_map, priv->num_br);
-+	if (br->br_id >= priv->num_br) {
-+		dev_err(priv->dev, "failed to alloc bridge\n");
-+		return -EINVAL;
-+	}
-+
-+	set_bit(br->br_id, priv->br_map);
-+
-+	return 0;
-+}
-+
-+static int gswip_bridge_free(struct device *dev, struct gswip_br_alloc *br)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	struct pce_tbl_prog pce_tbl = {0};
-+	u16 br_id;
-+	int ret;
-+
-+	if (br->br_id >= priv->num_br) {
-+		dev_err(priv->dev, "bridge id %d >= %d\n",
-+			br->br_id, priv->num_br);
-+		return -EINVAL;
-+	}
-+
-+	br_id = br->br_id;
-+	if (!test_bit(br_id, priv->br_map)) {
-+		dev_err(priv->dev, "bridge id %d not allocated\n", br_id);
++		cm_core->stats_listen_destroyed++;
++		kfree(listener);
++		cm_core->stats_listen_nodes_destroyed++;
++		listener = NULL;
 +		return 0;
 +	}
 +
-+	pce_tbl.id = PCE_BR_CFG;
-+	pce_tbl.addr = br_id;
-+	pce_tbl.val[0] = PCE_MAC_LIMIT_NUM;
-+
-+	ret = gswip_pce_table_write(priv, &pce_tbl);
-+	if (ret)
-+		return ret;
-+
-+	clear_bit(br_id, priv->br_map);
-+
-+	return 0;
++	return -EINVAL;
 +}
-+
-+/* Set queue for a logical port based on egress/ingress packet.
-+ * Then map the queue to an egress port.
-+ *  +----------------------+               +---------------------+
-+ *  | ingress logical port | -> queue/s -> | egress logical port |
-+ *  +----------------------+               +---------------------+
-+ */
-+static int gswip_qos_q_port_set(struct device *dev,
-+				struct gswip_qos_q_port *qport)
-+{
-+	struct gswip_core_priv *priv = dev_get_drvdata(dev);
-+	struct pce_tbl_prog pce_tbl = {0};
-+	struct bm_tbl_prog bm_tbl = {0};
-+	u16 eg_port, val;
-+	u8 qid;
-+	int ret;
-+
-+	qid = qport->qid;
-+
-+	if (qport->egress) {
-+		/* Egress packet always bypass PCE.
-+		 * Queue identifier is set in the SDMA_BYPASS register
-+		 * for each logical port.
-+		 */
-+		reg_r16(priv, SDMA_BYPASS(qport->lpid), &val);
-+
-+		if (!qport->extration_en) {
-+			if (qport->q_map_mode == GSWIP_QOS_QMAP_SINGLE_MD)
-+				val |= FIELD_PREP(SDMA_BYPASS_MD, 1);
-+			else
-+				val |= FIELD_PREP(SDMA_BYPASS_MD, 0);
-+
-+			val |= FIELD_PREP(SDMA_BYPASS_NMQID, qid);
-+		} else {
-+			val |= FIELD_PREP(SDMA_BYPASS_EXTQID, qid);
-+		}
-+
-+		regmap_write(priv->regmap, SDMA_BYPASS(qport->lpid), val);
-+	} else {
-+		/* Ingress packet can bypass or not bypass PCE.
-+		 * Queue identifier is set in the Queue Mapping Table
-+		 * under PCE Table Programming. This table will be used
-+		 * for bypass/no bypass case.
-+		 */
-+		pce_tbl.id = PCE_Q_MAP;
-+		pce_tbl.addr = qport->tc_id;
-+		pce_tbl.addr |= FIELD_PREP(PCE_Q_MAP_EG_PID, qport->lpid);
-+
-+		if (qport->en_ig_pce_bypass || qport->resv_port_mode) {
-+			pce_tbl.addr |= PCE_Q_MAP_IG_PORT_MODE;
-+		} else {
-+			if (qport->extration_en)
-+				pce_tbl.addr |= PCE_Q_MAP_LOCAL_EXTRACT;
-+		}
-+
-+		pce_tbl.val[0] = qid;
-+		ret = gswip_pce_table_write(priv, &pce_tbl);
-+		if (ret)
-+			return ret;
-+
-+		reg_wbits(priv, SDMA_BYPASS(qport->lpid),
-+			  SDMA_BYPASS_PCEBYP, qport->en_ig_pce_bypass);
-+	}
-+
-+	/* Redirect port id for table is bit 4, and bit (2,0) */
-+	eg_port = FIELD_GET(BM_Q_MAP_VAL4_REDIR_PID, qport->redir_port_id);
-+	val = FIELD_GET(BM_Q_MAP_VAL4_REDIR_PID_MSB, qport->redir_port_id);
-+	eg_port |= FIELD_PREP(BM_Q_MAP_VAL4_REDIR_PID_BIT4, val);
-+
-+	/* Map queue to an egress port. */
-+	bm_tbl.id = BM_Q_MAP;
-+	bm_tbl.val[0] = eg_port;
-+	bm_tbl.num_val = 1;
-+	bm_tbl.qmap.qid = qid;
-+
-+	return gswip_bm_table_write(priv, &bm_tbl);
-+}
-+
-+static const struct core_ctp_ops gswip_core_ctp_ops = {
-+	.alloc = gswip_ctp_port_alloc,
-+	.free = gswip_ctp_port_free,
-+};
-+
-+static const struct core_br_port_ops gswip_core_br_port_ops = {
-+	.alloc = gswip_bridge_port_alloc,
-+	.free = gswip_bridge_port_free,
-+};
-+
-+static const struct core_br_ops gswip_core_br_ops = {
-+	.alloc = gswip_bridge_alloc,
-+	.free = gswip_bridge_free,
-+};
-+
-+static const struct core_qos_ops gswip_core_qos_ops = {
-+	.q_port_set = gswip_qos_q_port_set,
-+};
-+
-+int gswip_core_setup_port_ops(struct gswip_core_priv *priv)
-+{
-+	struct core_ops *ops =  &priv->ops;
-+
-+	ops->ctp_ops = &gswip_core_ctp_ops;
-+	ops->br_port_ops = &gswip_core_br_port_ops;
-+	ops->br_ops = &gswip_core_br_ops;
-+	ops->qos_ops = &gswip_core_qos_ops;
-+
-+	return 0;
-+}
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/gswip_reg.h b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_reg.h
-new file mode 100644
-index 000000000000..50a13b68ef85
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_reg.h
-@@ -0,0 +1,491 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2016-2019 Intel Corporation.
-+ *
-+ * GSWIP-O Top and Legacy MAC Register Description.
-+ */
-+#ifndef _GSWIP_REG_H
-+#define _GSWIP_REG_H
-+
-+#define ETHSW_CAP_1			0x001c
-+#define ETHSW_CAP_1_PPORTS		GENMASK(3, 0)
-+#define ETHSW_CAP_1_VPORTS		GENMASK(7, 4)
-+#define ETHSW_CAP_1_QUEUE		GENMASK(14, 8)
-+#define ETHSW_CAP_1_GMAC		BIT(15)
-+
-+#define ETHSW_VERSION			0x004c
-+#define ETHSW_VERSION_REV_ID		GENMASK(7, 0)
-+#define ETHSW_VERSION_MOD_ID		GENMASK(15, 8)
-+
-+#define ETHSW_CAP_13			0x0058
-+#define ETHSW_CAP_13_EVLAN		GENMASK(3, 0)
-+#define ETHSW_CAP_13_INTRMON		GENMASK(7, 4)
-+#define ETHSW_CAP_13_PAYLOAD		GENMASK(11, 8)
-+#define ETHSW_CAP_13_PMAC		GENMASK(15, 12)
-+
-+#define ETHSW_CAP_17			0x0068
-+#define ETHSW_CAP_17_BRGPT		GENMASK(3, 0)
-+#define ETHSW_CAP_17_BRG		GENMASK(7, 4)
-+#define ETHSW_CAP_17_PMAP		GENMASK(11, 8)
-+
-+#define ETHSW_CAP_18			0x006c
-+#define ETHSW_CAP_18_CTP		GENMASK(15, 0)
-+
-+#define BM_RAM_VAL_OFFSET		4
-+#define BM_RAM_VAL_0			0x010c
-+#define BM_RAM_VAL_0_VAL0		GENMASK(15, 0)
-+
-+#define BM_RAM_ADDR			0x0110
-+#define BM_RAM_ADDR_ADDR		GENMASK(15, 0)
-+
-+#define BM_RAM_CTRL			0x0114
-+#define BM_RAM_CTRL_ADDR		GENMASK(4, 0)
-+#define BM_RAM_CTRL_OPMOD		BIT(5)
-+#define BM_RAM_CTRL_RMON		BIT(6)
-+#define BM_RAM_CTRL_BAS			BIT(15)
-+
-+#define BM_RMON_GCTRL			0x0188
-+#define BM_RMON_GCTRL_METER_RES		BIT(1)
-+#define BM_RMON_GCTRL_ALLITF_RES	BIT(2)
-+#define BM_RMON_GCTRL_INT_RES		BIT(3)
-+#define BM_RMON_GCTRL_ITFID		GENMASK(11, 4)
-+#define BM_RMON_GCTRL_PMAC_RES		BIT(12)
-+#define BM_RMON_GCTRL_MRMON		BIT(14)
-+#define BM_RMON_GCTRL_INTMON		BIT(15)
-+
-+#define BM_PCFG_OFFSET			8
-+#define BM_PCFG(x)			(0x0200 + BM_PCFG_OFFSET * (x))
-+#define BM_PCFG_CNTEN			BIT(0)
-+
-+#define BM_RMON_CTRL_OFFSET		8
-+#define BM_RMON_CTRL(x)			(0x0204 + BM_RMON_CTRL_OFFSET * (x))
-+#define BM_RMON_CTRL_RAM1_RES		BIT(0)
-+#define BM_RMON_CTRL_RAM2_RES		BIT(1)
-+
-+#define BM_PWRED_RTH_0_OFFSET		24
-+#define BM_PWRED_RTH_0(x)		(0x0280 + BM_PWRED_RTH_0_OFFSET * (x))
-+#define BM_PWRED_RTH_0_MINTH		GENMASK(9, 0)
-+
-+#define BM_PWRED_RTH_1_OFFSET		24
-+#define BM_PWRED_RTH_1(x)		(0x0284 + BM_PWRED_RTH_1_OFFSET * (x))
-+#define BM_PWRED_RTH_1_MAXTH		GENMASK(9, 0)
-+
-+#define BM_PWRED_YTH_0_OFFSET		24
-+#define BM_PWRED_YTH_0(x)		(0x0288 + BM_PWRED_YTH_0_OFFSET * (x))
-+#define BM_PWRED_YTH_0_MINTH		GENMASK(9, 0)
-+
-+#define BM_PWRED_YTH_1_OFFSET		24
-+#define BM_PWRED_YTH_1(x)		(0x028c + BM_PWRED_YTH_1_OFFSET * (x))
-+#define BM_PWRED_YTH_1_MAXTH		GENMASK(9, 0)
-+
-+#define BM_PWRED_GTH_0_OFFSET		24
-+#define BM_PWRED_GTH_0(x)		(0x0290 + BM_PWRED_GTH_0_OFFSET * (x))
-+#define BM_PWRED_GTH_0_MINTH		GENMASK(9, 0)
-+
-+#define BM_PWRED_GTH_1_OFFSET		24
-+#define BM_PWRED_GTH_1(x)		(0x0294 + BM_PWRED_GTH_1_OFFSET * (x))
-+#define BM_PWRED_GTH_1_MAXTH		GENMASK(9, 0)
-+
-+#define PCE_TBL_VAL_30			0x1014
-+#define PCE_TBL_VAL_29			0x1018
-+#define PCE_TBL_VAL_28			0x101c
-+#define PCE_TBL_VAL_27			0x1020
-+#define PCE_TBL_VAL_26			0x1024
-+
-+#define PCE_TBL_KEY_33			0x1038
-+#define PCE_TBL_KEY_32			0x103c
-+#define PCE_TBL_KEY_31			0x1040
-+#define PCE_TBL_KEY_30			0x1044
-+#define PCE_TBL_KEY_29			0x1048
-+#define PCE_TBL_KEY_28			0x104c
-+#define PCE_TBL_KEY_27			0x1050
-+#define PCE_TBL_KEY_26			0x1054
-+#define PCE_TBL_KEY_25			0x1058
-+#define PCE_TBL_KEY_24			0x105c
-+#define PCE_TBL_KEY_23			0x1060
-+#define PCE_TBL_KEY_22			0x1064
-+#define PCE_TBL_KEY_21			0x1068
-+#define PCE_TBL_KEY_20			0x106c
-+#define PCE_TBL_KEY_19			0x1070
-+#define PCE_TBL_KEY_18			0x1074
-+#define PCE_TBL_KEY_17			0x1078
-+#define PCE_TBL_KEY_16			0x107c
-+
-+#define PCE_TBL_VAL_25			0x1080
-+#define PCE_TBL_VAL_24			0x1084
-+#define PCE_TBL_VAL_23			0x1088
-+#define PCE_TBL_VAL_22			0x108c
-+#define PCE_TBL_VAL_21			0x1090
-+#define PCE_TBL_VAL_20			0x1094
-+#define PCE_TBL_VAL_19			0x1098
-+#define PCE_TBL_VAL_18			0x109c
-+#define PCE_TBL_VAL_17			0x10a0
-+#define PCE_TBL_VAL_16			0x10a4
-+
-+#define PCE_TBL_MASK_3			0x10a8
-+#define PCE_TBL_MASK_2			0x10ac
-+#define PCE_TBL_MASK_1			0x10b0
-+
-+#define PCE_TBL_VAL_15			0x10b4
-+#define PCE_TBL_VAL_14			0x10b8
-+#define PCE_TBL_VAL_13			0x10bc
-+#define PCE_TBL_VAL_12			0x10c0
-+#define PCE_TBL_VAL_11			0x10c4
-+#define PCE_TBL_VAL_10			0x10c8
-+#define PCE_TBL_VAL_9			0x10cc
-+#define PCE_TBL_VAL_8			0x10d0
-+#define PCE_TBL_VAL_7			0x10d4
-+#define PCE_TBL_VAL_6			0x10d8
-+#define PCE_TBL_VAL_5			0x10dc
-+
-+#define PCE_TBL_KEY_15			0x01e0
-+#define PCE_TBL_KEY_14			0x10e4
-+#define PCE_TBL_KEY_13			0x10e8
-+#define PCE_TBL_KEY_12			0x10ec
-+#define PCE_TBL_KEY_11			0x10f0
-+#define PCE_TBL_KEY_10			0x10f4
-+#define PCE_TBL_KEY_9			0x10f8
-+#define PCE_TBL_KEY_8			0x10fc
-+#define PCE_TBL_KEY_7			0x1100
-+#define PCE_TBL_KEY_6			0x1104
-+#define PCE_TBL_KEY_5			0x1108
-+#define PCE_TBL_KEY_4			0x110c
-+#define PCE_TBL_KEY_3			0x1110
-+#define PCE_TBL_KEY_2			0x1114
-+#define PCE_TBL_KEY_1			0x1118
-+#define PCE_TBL_KEY_0			0x111c
-+
-+#define PCE_TBL_MASK_0			0x1120
-+
-+#define PCE_TBL_VAL_4			0x1124
-+#define PCE_TBL_VAL_3			0x1128
-+#define PCE_TBL_VAL_2			0x112c
-+#define PCE_TBL_VAL_1			0x1130
-+#define PCE_TBL_VAL_0			0x1134
-+
-+#define PCE_TBL_ADDR			0x1138
-+#define PCE_TBL_ADDR_ADDR		GENMASK(11, 0)
-+
-+#define PCE_TBL_CTRL			0x113c
-+#define PCE_TBL_CTRL_ADDR		GENMASK(4, 0)
-+#define PCE_TBL_CTRL_OPMOD		GENMASK(6, 5)
-+#define PCE_TBL_CTRL_GMAP		GENMASK(10, 7)
-+#define PCE_TBL_CTRL_KEYFORM		BIT(11)
-+#define PCE_TBL_CTRL_VLD		BIT(12)
-+#define PCE_TBL_CTRL_TYPE		BIT(13)
-+#define PCE_TBL_CTRL_EXTOP		BIT(14)
-+#define PCE_TBL_CTRL_BAS		BIT(15)
-+
-+#define PCE_PCTRL_OFFSET		40
-+#define PCE_PCTRL_0(x)			(0x1200 + PCE_PCTRL_OFFSET * (x))
-+#define PCE_PCTRL_0_PSTATE		GENMASK(2, 0)
-+#define PCE_PCTRL_0_AGEDIS		BIT(3)
-+#define PCE_PCTRL_0_PLOCK		BIT(4)
-+#define PCE_PCTRL_0_TVM			BIT(5)
-+#define PCE_PCTRL_0_VREP		BIT(6)
-+#define PCE_PCTRL_0_CMOD		BIT(7)
-+#define PCE_PCTRL_0_DPEN		BIT(8)
-+#define PCE_PCTRL_0_CLPEN		BIT(9)
-+#define PCE_PCTRL_0_PCPEN		BIT(10)
-+#define PCE_PCTRL_0_IGSTEN		BIT(11)
-+#define PCE_PCTRL_0_EGSTEN		BIT(12)
-+#define PCE_PCTRL_0_MCST		BIT(13)
-+#define PCE_PCTRL_0_SPFDIS		BIT(14)
-+#define PCE_PCTRL_0_MSTP		BIT(15)
-+
-+#define FDMA_PASR			0x291c
-+#define FDMA_PASR_CPU			GENMASK(1, 0)
-+#define FDMA_PASR_MPE1			GENMASK(3, 2)
-+#define FDMA_PASR_MPE2			GENMASK(5, 4)
-+#define FDMA_PASR_MPE3			GENMASK(7, 6)
-+
-+#define FDMA_PCTRL_OFFSET		24
-+#define FDMA_PCTRL(x)			(0x2a00 + FDMA_PCTRL_OFFSET * (x))
-+#define FDMA_PCTRL_EN			BIT(0)
-+#define FDMA_PCTRL_STEN			BIT(1)
-+#define FDMA_PCTRL_DSCPRM		BIT(2)
-+#define FDMA_PCTRL_VLANMOD		BIT(3)
-+#define FDMA_PCTRL_TS_PTP		BIT(4)
-+#define FDMA_PCTRL_TS_NONPTP		BIT(5)
-+#define FDMA_PCTRL_HEADER_SHORT		BIT(6)
-+#define FDMA_PCTRL_VLANTPID		BIT(7)
-+
-+#define SDMA_PCTRL_OFFSET		24
-+#define SDMA_PCTRL(x)			(0x2f00 + SDMA_PCTRL_OFFSET * (x))
-+#define SDMA_PCTRL_PEN			BIT(0)
-+#define SDMA_PCTRL_FCEN			BIT(1)
-+#define SDMA_PCTRL_MFCEN		BIT(2)
-+#define SDMA_PCTRL_PAUFWD		BIT(3)
-+#define SDMA_PCTRL_FCSFWD		BIT(4)
-+#define SDMA_PCTRL_FCSIGN		BIT(5)
-+#define SDMA_PCTRL_USFWD		BIT(6)
-+#define SDMA_PCTRL_OSFWD		BIT(7)
-+#define SDMA_PCTRL_LENFWD		BIT(8)
-+#define SDMA_PCTRL_ALGFWD		BIT(9)
-+#define SDMA_PCTRL_PHYEFWD		BIT(10)
-+#define SDMA_PCTRL_PTHR			GENMASK(12, 11)
-+#define SDMA_PCTRL_DTHR			GENMASK(14, 13)
-+
-+#define SDMA_PRIO_OFFSET		24
-+#define SDMA_PRIO(x)			(0x2f04 + SDMA_PRIO_OFFSET * (x))
-+#define SDMA_PRIO_BIT10			GENMASK(1, 0)
-+#define SDMA_PRIO_USIGN			BIT(2)
-+#define SDMA_PRIO_OSIGN			BIT(3)
-+#define SDMA_PRIO_LENIGN		BIT(4)
-+#define SDMA_PRIO_ALGIGN		BIT(5)
-+#define SDMA_PRIO_PHYEIGN		BIT(6)
-+#define SDMA_PRIO_MIN_IFG		GENMASK(11, 7)
-+
-+#define SDMA_BYPASS_OFFSET		24
-+#define SDMA_BYPASS(x)			(0x2f10 + SDMA_BYPASS_OFFSET * (x))
-+#define SDMA_BYPASS_MD			BIT(0)
-+#define SDMA_BYPASS_NMQID		GENMASK(5, 1)
-+#define SDMA_BYPASS_EXTQID		GENMASK(10, 6)
-+#define SDMA_BYPASS_PCEBYP		BIT(11)
-+#define SDMA_BYPASS_IGMIR		BIT(12)
-+#define SDMA_BYPASS_EGMIR		BIT(13)
-+
-+#define PMAC_CTRL_0			0x340c
-+#define PMAC_CTRL_0_CHKVER		BIT(5)
-+#define PMAC_CTRL_0_CHKREG		BIT(6)
-+#define PMAC_CTRL_0_FCS			BIT(7)
-+#define PMAC_CTRL_0_PADEN		BIT(8)
-+#define PMAC_CTRL_0_VPADEN		BIT(9)
-+#define PMAC_CTRL_0_VPAD2EN		BIT(10)
-+#define PMAC_CTRL_0_APADEN		BIT(11)
-+#define PMAC_CTRL_0_FCSEN		BIT(12)
-+
-+#define PMAC_CTRL_1			0x3410
-+#define PMAC_CTRL_1_MLEN		GENMASK(13, 0)
-+
-+#define PMAC_CTRL_2			0x3414
-+#define PMAC_CTRL_2_LCHKS		GENMASK(1, 0)
-+#define PMAC_CTRL_2_LCHKL		BIT(2)
-+#define PMAC_CTRL_2_MLEN		BIT(3)
-+
-+#define PMAC_CTRL_4			0x341c
-+#define PMAC_CTRL_4_FLAGEN		GENMASK(1, 0)
-+#define PMAC_RX_FSM_IDLE		0x00
-+#define PMAC_RX_FSM_IGCFG		0x01
-+#define PMAC_RX_FSM_DASA		0x10
-+
-+#define PMAC_CTRL_NUM			4
-+
-+#define PMAC_REG_OFFSET_1		0x200
-+#define PMAC_REG_OFFSET_2		0x600
-+
-+#define	PMAC_BSL_LEN0			0x3440
-+#define	PMAC_BSL_LEN0_LEN0		GENMASK(15, 0)
-+
-+#define	PMAC_BSL_LEN1			0x3444
-+#define	PMAC_BSL_LEN1_LEN1		GENMASK(15, 0)
-+
-+#define	PMAC_BSL_LEN2			0x3448
-+#define	PMAC_BSL_LEN2_LEN2		GENMASK(15, 0)
-+
-+#define PMAC_BSL_NUM			3
-+
-+#define PMAC_TBL_VAL_OFFSET		0x200
-+#define PMAC_TBL_VAL(_x)		\
-+				({ typeof(_x) (x) = (_x); \
-+				(0x3510 + PMAC_TBL_VAL_OFFSET * (x) * (x)); })
-+#define PMAC_TBL_VAL_0_VAL0		GENMASK(15, 0)
-+
-+#define PMAC_TBL_VAL_SFT		4
-+
-+#define PMAC_TBL_ADDR_OFFSET		0x200
-+#define PMAC_TBL_ADDR(_x)		\
-+				({ typeof(_x) (x) = (_x); \
-+				(0x3514 + PMAC_TBL_ADDR_OFFSET * (x) * (x)); })
-+#define PMAC_TBL_ADDR_ADDR		GENMASK(11, 0)
-+
-+#define PMAC_TBL_CTRL_OFFSET		0x200
-+#define PMAC_TBL_CTRL(_x)		\
-+				({ typeof(_x) (x) = (_x); \
-+				(0x3518 + PMAC_TBL_CTRL_OFFSET * (x) * (x)); })
-+#define PMAC_TBL_CTRL_ADDR		GENMASK(2, 0)
-+#define PMAC_TBL_CTRL_OPMOD		BIT(5)
-+#define PMAC_TBL_CTRL_BAS		BIT(15)
-+
-+#define ETHSW_CTP_STARTID_OFFSET	8
-+#define ETHSW_CTP_STARTID(x)		\
-+				(0x3a00 + ETHSW_CTP_STARTID_OFFSET * (x))
-+#define ETHSW_CTP_STARTID_STARTID	GENMASK(8, 0)
-+#define ETHSW_CTP_STARTID_MD		GENMASK(15, 14)
-+#define MD_WLAN8			0
-+#define MD_WLAN9			1
-+#define MD_OTHER			2
-+
-+#define ETHSW_CTP_ENDID_0		0x3a04
-+#define ETHSW_CTP_ENDID(x)		\
-+			(ETHSW_CTP_ENDID_0 + ETHSW_CTP_STARTID_OFFSET * (x))
-+#define ETHSW_CTP_ENDID_ENDID		GENMASK(8, 0)
-+
-+#define ETHSW_GPID_STARTID_OFFSET	8
-+#define ETHSW_GPID_STARTID(x)		\
-+				(0x3a80 + ETHSW_GPID_STARTID_OFFSET * (x))
-+#define ETHSW_GPID_STARTID_BITS		GENMASK(14, 12)
-+#define ETHSW_GPID_STARTID_STARTID	GENMASK(7, 0)
-+
-+#define ETHSW_GPID_ENDID_OFFSET		8
-+#define ETHSW_GPID_ENDID(x)		\
-+				(0x3a84 + ETHSW_GPID_ENDID_OFFSET * (x))
-+#define ETHSW_GPID_ENDID_ENDID		GENMASK(8, 0)
-+
-+#define GPID_RAM_VAL			0x3b00
-+#define GPID_RAM_VAL_OV			BIT(15)
-+#define GPID_RAM_VAL_SUBID_GRP		GENMASK(11, 4)
-+#define GPID_RAM_VAL_LPID		GENMASK(3, 0)
-+
-+#define GPID_RAM_CTRL			0x3b04
-+#define GPID_RAM_CTRL_BAS		BIT(15)
-+#define GPID_RAM_CTRL_OPMOD		BIT(8)
-+#define GPID_RAM_CTRL_ADDR		GENMASK(7, 0)
-+
-+/** GSWIP-O Top Register Description **/
-+#define GSWIP_CFG			0x0000
-+#define GSWIP_CFG_SS_HWRES_ON		BIT(1)
-+#define GSWIP_CFG_CLK_MD		GENMASK(3, 2)
-+#define GSWIP_CFG_CLK_MUX_SEL		GENMASK(12, 11)
-+#define GSWIP_CFG_CORE_SE_EN		BIT(15)
-+
-+#define MACSEC_EN			0x0008
-+#define GSWIPSS_IER0			0x0010
-+
-+#define GSWIPSS_ISR0			0x0014
-+#define GSWIPSS_I_XGMAC2		BIT(2)
-+#define GSWIPSS_I_XGMAC3		BIT(3)
-+#define GSWIPSS_I_XGMAC4		BIT(4)
-+#define GSWIPSS_I_XGMAC5		BIT(5)
-+#define GSWIPSS_I_XGMAC6		BIT(6)
-+#define GSWIPSS_I_XGMAC7		BIT(7)
-+#define GSWIPSS_I_XGMAC8		BIT(8)
-+#define GSWIPSS_I_XGMAC9		BIT(9)
-+#define GSWIPSS_I_XGMAC10		BIT(10)
-+
-+#define GSWIPSS_IER1			0x0018
-+#define GSWIPSS_ISR1			0x001c
-+#define GSWIPSS_SPTAG_ETYPE		0x0038
-+#define GSWIPSS_1588_CFG0		0x0050
-+#define GSWIPSS_1588_CFG1		0x0054
-+#define GSWIPSS_NCO1_LSB		0x0060
-+#define GSWIPSS_NCO1_USB		0x0064
-+#define GSWIPSS_NCO2_LSB		0x0068
-+#define GSWIPSS_NC02_MSB		0x006c
-+#define GSWIPSS_NCO3_LSB		0x0070
-+#define GSWIPSS_NCO3_MSB		0x0074
-+#define GSWIPSS_NC04_LSB		0x0078
-+#define GSWIPSS_NC04_MSB		0x007c
-+#define GSWIP_MEMLS0			0x0080
-+#define GSWIP_MEMLS1			0x0084
-+
-+/* GSWIP-O Top: MAC Registers */
-+#define MAC_IF_CFG			0X1200
-+#define MAC_IF_CFG_CFG2G5		BIT(0)
-+#define MAC_IF_CFG_CFG1G		BIT(1)
-+#define MAC_IF_CFG_CFGFE		BIT(2)
-+#define MAC_IF_CFG_PTP_DIS		BIT(11)
-+#define MAC_IF_CFG_MAC_EN		BIT(12)
-+#define MAC_IF_CFG_XGMAC_RES		BIT(13)
-+#define MAC_IF_CFG_LMAC_RES		BIT(14)
-+#define MAC_IF_CFG_ADAP_RES		BIT(15)
-+
-+#define MAC_OP_CFG			0X1204
-+#define MAC_OP_CFG_RX_SPTAG		GENMASK(1, 0)
-+#define MAC_OP_CFG_RX_TIME		GENMASK(3, 2)
-+#define MAC_OP_CFG_RX_FCS		GENMASK(5, 4)
-+#define MAC_OP_CFG_RX_FCS_M0		0x00
-+#define MAC_OP_CFG_RX_FCS_M1		0x01
-+#define MAC_OP_CFG_RX_FCS_M2		0X02
-+#define MAC_OP_CFG_RX_FCS_M3		0x03
-+
-+#define MAC_MTU_CFG			0X1208
-+#define MAC_MTU_CFG_MTU			GENMASK(13, 0)
-+
-+#define PHY_MODE			0x1270
-+#define PHY_MODE_FCONRX			GENMASK(6, 5)
-+#define PHY_MODE_FCONTX			GENMASK(8, 7)
-+#define PHY_MODE_FCON_AUTO		0x00
-+#define PHY_MODE_FCON_EN		0x01
-+#define PHY_MODE_FCON_DIS		0x11
-+#define PHY_MODE_FDUP			GENMASK(10, 9)
-+#define PHY_MODE_FDUP_AUTO		0x00
-+#define PHY_MODE_FDUP_FD		0x01
-+#define PHY_MODE_FDUP_HD		0x11
-+#define PHY_MODE_SPEED_LSB		GENMASK(12, 11)
-+#define PHY_MODE_LINKST			GENMASK(14, 13)
-+#define PHY_MODE_LINKST_AUTO		0x00
-+#define PHY_MODE_LINKST_UP		0x01
-+#define PHY_MODE_LINKST_DOWN		0x10
-+#define PHY_MODE_SPEED_MSB		BIT(15)
-+#define PHY_MODE_SPEED_10M		0x000
-+#define PHY_MODE_SPEED_100M		0x001
-+#define PHY_MODE_SPEED_1G		0x010
-+#define PHY_MODE_SPEED_10G		0x011
-+#define PHY_MODE_SPEED_2G5		0x100
-+#define PHY_MODE_SPEED_5G		0x101
-+#define PHY_MODE_SPEED_FLEX		0x110
-+#define PHY_MODE_SPEED_AUTO		0x111
-+
-+#define PHY_STAT			0x1274
-+#define PHY_STAT_FDUP			BIT(2)
-+#define PHY_STAT_SPEED_LSB		GENMASK(4, 3)
-+#define PHY_STAT_LSTAT			BIT(5)
-+#define PHY_STAT_SPEED_MSB		BIT(11)
-+
-+#define ANEG_EEE			0x1278
-+#define ANEG_EEE_CAP			GENMASK(1, 0)
-+#define ANEG_EEE_CAP_AUTO		0x00
-+#define ANEG_EEE_CAP_ON			0x01
-+#define ANEG_EEE_CAP_OFF		0x11
-+#define ANEG_EEE_CLK_STOP_CAP		GENMASK(3, 2)
-+
-+#define MAC_Q_INC			0x100
-+#define MAC_IF_CFG_REG(x)		(MAC_IF_CFG + ((x) - MAC2) * MAC_Q_INC)
-+#define MAC_OP_CFG_REG(x)		(MAC_OP_CFG + ((x) - MAC2) * MAC_Q_INC)
-+#define MAC_MTU_CFG_REG(x)		\
-+				(MAC_MTU_CFG + ((x) - MAC2) * MAC_Q_INC)
-+#define PHY_MODE_REG(x)			(PHY_MODE + ((x) - MAC2) * MAC_Q_INC)
-+#define PHY_STAT_REG(x)			(PHY_STAT + ((x) - MAC2) * MAC_Q_INC)
-+#define ANEG_EEE_REG(x)			(ANEG_EEE + ((x) - MAC2) * MAC_Q_INC)
-+
-+/* GSWIP-O TOP: XGMAC indirect access */
-+#define XGMAC_CTRL			0x1280
-+#define XGMAC_REGACC_DATA0		0x1290
-+#define XGMAC_REGACC_DATA1		0x1294
-+
-+#define XGMAC_REGACC_CTRL		0x1298
-+#define XGMAC_REGACC_CTRL_ADDR		GENMASK(13, 0)
-+#define XGMAC_REGACC_CTRL_OPMOD_WR	BIT(14)
-+#define XGMAC_REGACC_CTRL_ADDR_BAS	BIT(15)
-+
-+/** Legacy MAC Register Description **/
-+
-+/* Legacy MAC: Common Registers */
-+#define MAC_TEST			0x0300
-+#define MAC_PFAD_CFG			0x0304
-+#define MAC_PFSA_0			0x0308
-+#define MAC_PFSA_1			0x030c
-+#define MAC_PFSA_2			0x0310
-+#define LMAC_IER			0x0320
-+#define LMAC_ISR			0x0324
-+#define LMAC_I_MAC2			BIT(0)
-+
-+#define LMAC_CNT_LSB			0x0328
-+#define LMAC_CNT_MSB			0x032c
-+#define LMAC_CNT_ACC			0x0330
-+
-+/* Legacy MAC: Single MAC Registers */
-+#define MAC_CTRL0			0x040c
-+#define MAC_CTRL0_GMII			GENMASK(1, 0)
-+#define MAC_CTRL0_FDUP			GENMASK(3, 2)
-+#define MAC_CTRL0_FCON			GENMASK(5, 4)
-+#define MAC_CTRL0_FCS			BIT(7)
-+#define MAC_CTRL0_PADEN			BIT(8)
-+#define MAC_CTRL0_VPADEN		BIT(9)
-+#define MAC_CTRL0_VPAD2EN		BIT(10)
-+#define MAC_CTRL0_APADEN		BIT(11)
-+
-+#define LMAC_Q_INC			0x30
-+#define MAC_CTRL0_REG(x)		(MAC_CTRL0 + ((x) - MAC2) * LMAC_Q_INC)
-+
-+#endif /* _GSWIP_REG_H_ */
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.c b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.c
-new file mode 100644
-index 000000000000..18e75e75d7ab
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.c
-@@ -0,0 +1,332 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2016-2019 Intel Corporation.*/
-+#include <linux/kernel.h>
-+
-+#include "gswip_core.h"
-+#include "gswip_reg.h"
-+#include "gswip_tbl.h"
-+
-+enum tbl_opmode {
-+	TBL_RD,
-+	TBL_WR,
-+};
-+
-+enum tbl_busy_indication {
-+	TBL_READY,
-+	TBL_BUSY,
-+};
-+
-+enum pce_tbl_opmode {
-+	/* Address-based read access  */
-+	PCE_OPMODE_ADRD,
-+	/* Address-based write access */
-+	PCE_OPMODE_ADWR,
-+	/* Key-based read access      */
-+	PCE_OPMODE_KSRD,
-+	/* Key-based write access     */
-+	PCE_OPMODE_KSWR
-+};
-+
-+struct pce_tbl_config {
-+	u16 num_key;
-+	u16 num_mask;
-+	u16 num_val;
-+};
-+
-+struct pce_tbl_reg_map {
-+	const u16 *key;
-+	const u16 *mask;
-+	const u16 *value;
-+};
-+
-+static const u16 pce_tbl_key[] = {
-+	PCE_TBL_KEY_0, PCE_TBL_KEY_1,   PCE_TBL_KEY_2, PCE_TBL_KEY_3,
-+	PCE_TBL_KEY_4, PCE_TBL_KEY_5,   PCE_TBL_KEY_6, PCE_TBL_KEY_7,
-+	PCE_TBL_KEY_8, PCE_TBL_KEY_9,   PCE_TBL_KEY_10, PCE_TBL_KEY_11,
-+	PCE_TBL_KEY_12, PCE_TBL_KEY_13, PCE_TBL_KEY_14, PCE_TBL_KEY_15,
-+	PCE_TBL_KEY_16, PCE_TBL_KEY_17, PCE_TBL_KEY_18, PCE_TBL_KEY_19,
-+	PCE_TBL_KEY_20, PCE_TBL_KEY_21, PCE_TBL_KEY_22, PCE_TBL_KEY_23,
-+	PCE_TBL_KEY_24, PCE_TBL_KEY_25, PCE_TBL_KEY_26, PCE_TBL_KEY_27,
-+	PCE_TBL_KEY_28, PCE_TBL_KEY_29, PCE_TBL_KEY_30, PCE_TBL_KEY_31,
-+	PCE_TBL_KEY_32, PCE_TBL_KEY_33,
-+};
-+
-+static const u16 pce_tbl_mask[] = {
-+	PCE_TBL_MASK_0, PCE_TBL_MASK_1, PCE_TBL_MASK_2, PCE_TBL_MASK_3,
-+};
-+
-+static const u16 pce_tbl_value[] = {
-+	PCE_TBL_VAL_0, PCE_TBL_VAL_1,   PCE_TBL_VAL_2, PCE_TBL_VAL_3,
-+	PCE_TBL_VAL_4, PCE_TBL_VAL_5,   PCE_TBL_VAL_6, PCE_TBL_VAL_7,
-+	PCE_TBL_VAL_8, PCE_TBL_VAL_9,   PCE_TBL_VAL_10, PCE_TBL_VAL_11,
-+	PCE_TBL_VAL_12, PCE_TBL_VAL_13, PCE_TBL_VAL_14, PCE_TBL_VAL_15,
-+	PCE_TBL_VAL_16, PCE_TBL_VAL_17, PCE_TBL_VAL_18, PCE_TBL_VAL_19,
-+	PCE_TBL_VAL_20, PCE_TBL_VAL_21, PCE_TBL_VAL_22, PCE_TBL_VAL_23,
-+	PCE_TBL_VAL_24, PCE_TBL_VAL_25, PCE_TBL_VAL_26, PCE_TBL_VAL_27,
-+	PCE_TBL_VAL_28, PCE_TBL_VAL_29, PCE_TBL_VAL_30,
-+};
-+
-+/* PCE table default entries for Key, Mask and Value.
-+ * Only minimum entries settings are required by default.
-+ */
-+static const struct pce_tbl_config pce_tbl_def_cfg[] = {
-+	/* Parser ucode table                      */
-+	{ 0,  0,  4 },
-+	/* Dummy                                   */
-+	{ 0,  0,  0 },
-+	/* VLAN filter table                       */
-+	{ 1,  0,  1 },
-+	/* PPPoE table                             */
-+	{ 1,  0,  0 },
-+	/* Protocol table                          */
-+	{ 1,  1,  0 },
-+	/* Application table                       */
-+	{ 1,  1,  0 },
-+	/* IP DA/SA MSB table                      */
-+	{ 4,  4,  0 },
-+	/* IP DA/SA LSB table                      */
-+	{ 4,  4,  0 },
-+	/* Packet length table                     */
-+	{ 1,  1,  0 },
-+	/* Inner PCP/DEI table                     */
-+	{ 0,  0,  1 },
-+	/* DSCP table                              */
-+	{ 0,  0,  1 },
-+	/* MAC bridging table                      */
-+	{ 4,  0,  10},
-+	/* DSCP2PCP configuration table            */
-+	{ 0,  0,  2 },
-+	/* Multicast SW table                      */
-+	{ 19, 0,  10},
-+	/* Dummy                                   */
-+	{ 0,  0,  0 },
-+	/* Traffic Flow table                      */
-+	{ 34, 0,  31},
-+	/* PBB tunnel template configuration table */
-+	{ 0,  0,  11},
-+	/* Queue mapping table                     */
-+	{ 0,  0,  1 },
-+	/* Ingress CTP port configuration table    */
-+	{ 0,  0,  9 },
-+	/* Egress CTP port configuration table     */
-+	{ 0,  0,  7 },
-+	/* Ingress bridge port configuration table */
-+	{ 0,  0,  18},
-+	/* Egress bridge port configuration table  */
-+	{ 0,  0,  14},
-+	/* MAC DA table                            */
-+	{ 3,  1,  0 },
-+	/* MAC SA table                            */
-+	{ 3,  1,  0 },
-+	/* Flags table                             */
-+	{ 1,  1,  0 },
-+	/* Bridge configuration table              */
-+	{ 0,  0,  10},
-+	/* Outer PCP/DEI table                     */
-+	{ 0,  0,  1 },
-+	/* Color marking table                     */
-+	{ 0,  0,  1 },
-+	/* Color remarking table                   */
-+	{ 0,  0,  1 },
-+	/* Payload table                           */
-+	{ 1,  1,  0 },
-+	/* Extended VLAN operation table           */
-+	{ 4,  0,  6 },
-+	/* P-mapping configuration table           */
-+	{ 0,  0,  1 },
-+};
-+
-+int gswip_pce_table_write(struct gswip_core_priv *priv,
-+			  struct pce_tbl_prog *pce_tbl)
-+{
-+	struct regmap *regmap = priv->regmap;
-+	u16 i, ctrl;
-+
-+	spin_lock(&priv->tbl_lock);
-+
-+	/* update key registers */
-+	for (i = 0; i < pce_tbl_def_cfg[pce_tbl->id].num_key; i++)
-+		regmap_write(regmap, pce_tbl_key[i], pce_tbl->key[i]);
-+
-+	/* update mask registers */
-+	for (i = 0; i < pce_tbl_def_cfg[pce_tbl->id].num_mask; i++)
-+		regmap_write(regmap, pce_tbl_mask[i], pce_tbl->mask[i]);
-+
-+	/* update value registers */
-+	for (i = 0; i < pce_tbl_def_cfg[pce_tbl->id].num_val; i++)
-+		regmap_write(regmap, pce_tbl_value[i], pce_tbl->val[i]);
-+
-+	ctrl = FIELD_PREP(PCE_TBL_CTRL_ADDR, pce_tbl->id) |
-+	       FIELD_PREP(PCE_TBL_CTRL_OPMOD, PCE_OPMODE_ADWR) |
-+	       FIELD_PREP(PCE_TBL_CTRL_BAS, TBL_BUSY);
-+
-+	/* update the pce table */
-+	regmap_write(regmap, PCE_TBL_ADDR, pce_tbl->addr);
-+	regmap_write(regmap, PCE_TBL_CTRL, ctrl);
-+
-+	if (tbl_rw_tmout(priv, PCE_TBL_CTRL, PCE_TBL_CTRL_BAS)) {
-+		dev_err(priv->dev, "failed to write pce table\n");
-+		spin_unlock(&priv->tbl_lock);
-+		return -EBUSY;
-+	}
-+
-+	spin_unlock(&priv->tbl_lock);
-+
-+	return 0;
-+}
-+
-+int gswip_pce_table_read(struct gswip_core_priv *priv,
-+			 struct pce_tbl_prog *pce_tbl)
-+{
-+	u16 i, ctrl;
-+
-+	spin_lock(&priv->tbl_lock);
-+
-+	regmap_write(priv->regmap, PCE_TBL_ADDR, pce_tbl->addr);
-+
-+	ctrl = FIELD_PREP(PCE_TBL_CTRL_ADDR, pce_tbl->id) |
-+	       FIELD_PREP(PCE_TBL_CTRL_OPMOD, PCE_OPMODE_ADRD) |
-+	       FIELD_PREP(PCE_TBL_CTRL_BAS, TBL_BUSY);
-+	regmap_write(priv->regmap, PCE_TBL_CTRL, ctrl);
-+
-+	if (tbl_rw_tmout(priv, PCE_TBL_CTRL, PCE_TBL_CTRL_BAS)) {
-+		dev_err(priv->dev, "failed to read pce table\n");
-+		spin_unlock(&priv->tbl_lock);
-+		return -EBUSY;
-+	}
-+
-+	for (i = 0; i < pce_tbl_def_cfg[pce_tbl->id].num_key; i++)
-+		reg_r16(priv, pce_tbl_key[i], &pce_tbl->key[i]);
-+
-+	for (i = 0; i < pce_tbl_def_cfg[pce_tbl->id].num_mask; i++)
-+		reg_r16(priv, pce_tbl_mask[i], &pce_tbl->mask[i]);
-+
-+	for (i = 0; i < pce_tbl_def_cfg[pce_tbl->id].num_val; i++)
-+		reg_r16(priv, pce_tbl_value[i], &pce_tbl->val[i]);
-+
-+	spin_unlock(&priv->tbl_lock);
-+
-+	return 0;
-+}
-+
-+int gswip_bm_table_write(struct gswip_core_priv *priv,
-+			 struct bm_tbl_prog *bm_tbl)
-+{
-+	struct regmap *regmap = priv->regmap;
-+	u16 ctrl;
-+	int i;
-+
-+	spin_lock(&priv->tbl_lock);
-+
-+	for (i = 0; i < bm_tbl->num_val; i++)
-+		regmap_write(regmap, (BM_RAM_VAL_0 - i * BM_RAM_VAL_OFFSET),
-+			     bm_tbl->val[i]);
-+
-+	regmap_write(regmap, BM_RAM_ADDR, bm_tbl->addr);
-+
-+	ctrl = bm_tbl->id;
-+	ctrl |= FIELD_PREP(BM_RAM_CTRL_OPMOD, TBL_WR);
-+	ctrl |= FIELD_PREP(BM_RAM_CTRL_BAS, TBL_BUSY);
-+	regmap_write(regmap, BM_RAM_CTRL, ctrl);
-+
-+	if (tbl_rw_tmout(priv, BM_RAM_CTRL, BM_RAM_CTRL_BAS)) {
-+		dev_err(priv->dev, "failed to write bm table\n");
-+		spin_unlock(&priv->tbl_lock);
-+		return -EBUSY;
-+	}
-+
-+	spin_unlock(&priv->tbl_lock);
-+
-+	return 0;
-+}
-+
-+int gswip_bm_table_read(struct gswip_core_priv *priv,
-+			struct bm_tbl_prog *bm_tbl)
-+{
-+	u16 ctrl;
-+	int i;
-+
-+	spin_lock(&priv->tbl_lock);
-+
-+	regmap_write(priv->regmap, BM_RAM_ADDR, bm_tbl->addr);
-+
-+	ctrl = FIELD_PREP(BM_RAM_CTRL_ADDR, bm_tbl->id) |
-+	       FIELD_PREP(BM_RAM_CTRL_OPMOD, TBL_RD) |
-+	       FIELD_PREP(BM_RAM_CTRL_BAS, TBL_BUSY);
-+	regmap_write(priv->regmap, BM_RAM_CTRL, ctrl);
-+
-+	if (tbl_rw_tmout(priv, BM_RAM_CTRL, BM_RAM_CTRL_BAS)) {
-+		dev_err(priv->dev, "failed to read bm table\n");
-+		spin_unlock(&priv->tbl_lock);
-+		return -EBUSY;
-+	}
-+
-+	for (i = 0; i < bm_tbl->num_val; i++)
-+		reg_r16(priv, (BM_RAM_VAL_0 - i * BM_RAM_VAL_OFFSET),
-+			&bm_tbl->val[i]);
-+
-+	spin_unlock(&priv->tbl_lock);
-+
-+	return 0;
-+}
-+
-+int gswip_pmac_table_write(struct gswip_core_priv *priv,
-+			   struct pmac_tbl_prog *pmac_tbl)
-+{
-+	u16 pmac_id = pmac_tbl->pmac_id, ctrl;
-+	int i;
-+
-+	spin_lock(&priv->tbl_lock);
-+
-+	for (i = 0; i < pmac_tbl->num_val; i++)
-+		regmap_write(priv->regmap,
-+			     (PMAC_TBL_VAL(pmac_id) - i * PMAC_TBL_VAL_SFT),
-+			     pmac_tbl->val[i]);
-+
-+	regmap_write(priv->regmap, PMAC_TBL_ADDR(pmac_id), pmac_tbl->addr);
-+
-+	ctrl = FIELD_PREP(PMAC_TBL_CTRL_ADDR, pmac_tbl->id) |
-+	       FIELD_PREP(PMAC_TBL_CTRL_OPMOD, TBL_WR) |
-+	       FIELD_PREP(PMAC_TBL_CTRL_BAS, TBL_BUSY);
-+	regmap_write(priv->regmap, PMAC_TBL_CTRL(pmac_id), ctrl);
-+
-+	if (tbl_rw_tmout(priv, PMAC_TBL_CTRL(pmac_id), PMAC_TBL_CTRL_BAS)) {
-+		dev_err(priv->dev, "failed to write pmac table\n");
-+		spin_unlock(&priv->tbl_lock);
-+		return -EBUSY;
-+	}
-+
-+	spin_unlock(&priv->tbl_lock);
-+
-+	return 0;
-+}
-+
-+int gswip_pmac_table_read(struct gswip_core_priv *priv,
-+			  struct pmac_tbl_prog *pmac_tbl)
-+{
-+	u16 pmac_id = pmac_tbl->pmac_id, ctrl;
-+	int i;
-+
-+	spin_lock(&priv->tbl_lock);
-+
-+	regmap_write(priv->regmap, PMAC_TBL_ADDR(pmac_id), pmac_tbl->addr);
-+
-+	ctrl = FIELD_PREP(PMAC_TBL_CTRL_ADDR, pmac_tbl->id) |
-+	       FIELD_PREP(PMAC_TBL_CTRL_OPMOD, TBL_RD) |
-+	       FIELD_PREP(PMAC_TBL_CTRL_BAS, TBL_BUSY);
-+	regmap_write(priv->regmap, PMAC_TBL_CTRL(pmac_id), ctrl);
-+
-+	if (tbl_rw_tmout(priv, PMAC_TBL_CTRL(pmac_id), PMAC_TBL_CTRL_BAS)) {
-+		dev_err(priv->dev, "failed to read pmac table\n");
-+		spin_unlock(&priv->tbl_lock);
-+		return -EBUSY;
-+	}
-+
-+	for (i = 0; i < pmac_tbl->num_val; i++)
-+		reg_r16(priv, (PMAC_TBL_VAL(pmac_id) - i * PMAC_TBL_VAL_SFT),
-+			&pmac_tbl->val[i]);
-+
-+	spin_unlock(&priv->tbl_lock);
-+
-+	return 0;
-+}
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.h b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.h
-new file mode 100644
-index 000000000000..4bd92951e7ae
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.h
-@@ -0,0 +1,195 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+#ifndef _GSW_TBL_RW_H_
-+#define _GSW_TBL_RW_H_
-+
-+#define PCE_TBL_KEY_NUM		34
-+#define PCE_TBL_VAL_NUM		31
-+#define PCE_TBL_MASK_NUM	4
-+#define PCE_MAC_LIMIT_NUM	255
-+
-+/* PCE queue mapping table */
-+#define PCE_Q_MAP_LOCAL_EXTRACT			BIT(8)
-+#define PCE_Q_MAP_IG_PORT_MODE			BIT(9)
-+#define PCE_Q_MAP_EG_PID			GENMASK(7, 4)
-+
-+/* PCE ingress CTP port configuration table */
-+#define PCE_IGCTP_VAL4_BYPASS_BR		BIT(15)
-+
-+/* PCE ingress bridge port configuration table */
-+#define PCE_IGBGP_VAL10_PORT_MAP_0		10
-+#define PCE_IGBGP_VAL4_LRN_LIMIT		GENMASK(7, 0)
-+#define PCE_IGBGP_VAL4_BR_ID			GENMASK(13, 8)
-+
-+/* PCE EGBGP table */
-+#define PCE_EGBGP_VAL4_DST_SUBIF_ID_GRP		GENMASK(7, 0)
-+#define PCE_EGBGP_VAL4_DST_LPID			GENMASK(11, 8)
-+#define PCE_EGBGP_VAL4_PMAPPER			BIT(14)
-+
-+/* PCE_BRGCFG table */
-+#define PCE_BRGCFG_VAL1_BCAST_FW_MODE		GENMASK(1, 0)
-+#define PCE_BRGCFG_VAL1_UCAST_FW_MODE		GENMASK(3, 2)
-+#define PCE_BRGCFG_VAL1_MCAST_NIP_FW_MODE	GENMASK(5, 4)
-+#define PCE_BRGCFG_VAL1_MCAST_IP_FW_MODE	GENMASK(7, 6)
-+#define PCE_BRGCFG_VAL3_LRN_DISC_CNT		GENMASK(31, 16)
-+
-+/* BM_PQM_THRES table */
-+#define BM_PQM_THRES_Q_NUM			GENMASK(7, 3)
-+
-+/* BM_Q_MAP table */
-+#define BM_Q_MAP_VAL4_REDIR_PID			GENMASK(2, 0)
-+#define BM_Q_MAP_VAL4_REDIR_PID_MSB		BIT(3)
-+#define BM_Q_MAP_VAL4_REDIR_PID_BIT4		BIT(4)
-+
-+enum pce_tbl_id {
-+	PCE_TFLOW	= 0x0f,
-+	PCE_Q_MAP	= 0x11,
-+	PCE_IG_CTP_CFG	= 0x12,
-+	PCE_EG_CTP_CFG	= 0x13,
-+	PCE_IG_BRP_CFG	= 0x14,
-+	PCE_EG_BRP_CFG	= 0x15,
-+	PCE_BR_CFG	= 0x19,
-+	PCE_PMAP	= 0x1f,
-+};
-+
-+#define PCE_TBL_KEY_NUM		34
-+#define PCE_TBL_VAL_NUM		31
-+#define PCE_TBL_MASK_NUM	4
-+
-+/* PCE programming table */
-+struct pce_tbl_prog {
-+	enum pce_tbl_id id;
-+	u16 val[PCE_TBL_VAL_NUM];
-+	u16 key[PCE_TBL_KEY_NUM];
-+	u16 mask[PCE_TBL_MASK_NUM];
-+	u16 addr;
-+};
-+
-+/* BM programming table */
-+enum bm_tbl_id {
-+	BM_CTP_RX_RMON		= 0x00,
-+	BM_CTP_TX_RMON		= 0x01,
-+	BM_BR_RX_RMON		= 0x02,
-+	BM_BR_TX_RMON		= 0x03,
-+	BM_CTP_PCE_BYPASS_RMON	= 0x04,
-+	BM_TFLOW_RX_RMON	= 0x05,
-+	BM_TFLOW_TX_RMON	= 0x06,
-+	BM_WFQ_PARAM		= 0x07,
-+	BM_PQM_THRES		= 0x09,
-+	BM_Q_MAP		= 0x0e,
-+	BM_PMAC_CNTR		= 0x1c
-+};
-+
-+#define BM_RAM_VAL_MAX		10
-+
-+struct rmon_cntr_tbl {
-+	u16 ctr_offset : 6;
-+	u16 port_offset : 10;
-+};
-+
-+struct qmap_tbl {
-+	u16 qid : 6;
-+	u16 reserved : 10;
-+};
-+
-+struct pmac_cntr_tbl {
-+	u16 addr : 5;
-+	u16 ctr_offset : 3;
-+	u16 pmac_id : 3;
-+	u16 reserved : 1;
-+	u16 ctr_offset_hdr : 1;
-+	u16 reserved1 : 3;
-+};
-+
-+struct bm_tbl_prog {
-+	enum bm_tbl_id id;
-+	union {
-+		struct rmon_cntr_tbl rmon_cntr;
-+		struct qmap_tbl qmap;
-+		struct pmac_cntr_tbl pmac_cntr;
-+		u16 addr;
-+	};
-+	u16 val[BM_RAM_VAL_MAX];
-+	u32 num_val;
-+};
-+
-+/* PMAC programming table */
-+enum pmac_tbl_id {
-+	PMAC_BP_MAP,
-+	PMAC_IG_CFG,
-+	PMAC_EG_CFG,
-+};
-+
-+#define PMAC_BP_MAP_TBL_VAL_NUM		3
-+#define PMAC_IG_CFG_TBL_VAL_NUM		5
-+#define PMAC_EG_CFG_TBL_VAL_NUM		3
-+#define PMAC_TBL_VAL_MAX		11
-+
-+/* PMAC_BP_MAP table */
-+/* Table Control */
-+#define PMAC_BPMAP_TX_DMA_CH		GENMASK(4, 0)
-+/* PMAC_TBL_VAL_2 */
-+#define PMAC_BPMAP_TX_Q_UPPER		GENMASK(31, 16)
-+
-+/* PMAC_IG_CFG table */
-+/* Table Control */
-+#define PMAC_IGCFG_TX_DMA_CH		GENMASK(4, 0)
-+/* PMAC_TBL_VAL_2 */
-+#define PMAC_IGCFG_HDR_ID		GENMASK(7, 4)
-+/* PMAC_TBL_VAL_4 */
-+#define PMAC_IGCFG_VAL4_PMAC_FLAG	BIT(0)
-+#define PMAC_IGCFG_VAL4_SPPID_MODE	BIT(1)
-+#define PMAC_IGCFG_VAL4_SUBID_MODE	BIT(2)
-+#define PMAC_IGCFG_VAL4_CLASSEN_MODE	BIT(3)
-+#define PMAC_IGCFG_VAL4_CLASS_MODE	BIT(5)
-+#define PMAC_IGCFG_VAL4_ERR_DP		BIT(7)
-+
-+/* PMAC_EG_CFG table */
-+/* Table Control */
-+#define PMAC_EGCFG_DST_PORT_ID		GENMASK(3, 0)
-+#define PMAC_EGCFG_MPE1			BIT(4)
-+#define PMAC_EGCFG_MPE2			BIT(5)
-+#define PMAC_EGCFG_ECRYPT		BIT(6)
-+#define PMAC_EGCFG_DECRYPT		BIT(7)
-+#define PMAC_EGCFG_TC_4BITS		GENMASK(7, 4)
-+#define PMAC_EGCFG_TC_2BITS		GENMASK(7, 6)
-+#define PMAC_EGCFG_FLOW_ID_MSB		GENMASK(9, 8)
-+/* PMAC_TBL_VAL_0 */
-+#define PMAC_EGCFG_VAL0_RES_2BITS	GENMASK(1, 0)
-+#define PMAC_EGCFG_VAL0_RES_3BITS	GENMASK(4, 2)
-+#define PMAC_EGCFG_VAL0_REDIR		BIT(4)
-+#define PMAC_EGCFG_VAL0_BSL		GENMASK(7, 5)
-+/* PMAC_TBL_VAL_1 */
-+#define PMAC_EGCFG_VAL1_RX_DMA_CH	GENMASK(3, 0)
-+/* PMAC_TBL_VAL_2 */
-+#define PMAC_EGCFG_VAL2_PMAC_FLAG	BIT(0)
-+#define PMAC_EGCFG_VAL2_FCS_MODE	BIT(1)
-+#define PMAC_EGCFG_VAL2_L2HD_RM_MODE	BIT(2)
-+#define PMAC_EGCFG_VAL2_L2HD_RM		GENMASK(15, 8)
-+
-+struct pmac_tbl_prog {
-+	u16 pmac_id;
-+	enum pmac_tbl_id id;
-+	u16 val[PMAC_TBL_VAL_MAX];
-+	u8 num_val;
-+	u16 addr;
-+};
-+
-+struct gswip_core_priv;
-+
-+int gswip_pce_table_init(void);
-+int gswip_pce_table_write(struct gswip_core_priv *priv,
-+			  struct pce_tbl_prog *pce_tbl);
-+int gswip_pce_table_read(struct gswip_core_priv *priv,
-+			 struct pce_tbl_prog *pce_tbl);
-+int gswip_bm_table_read(struct gswip_core_priv *priv,
-+			struct bm_tbl_prog *bm_tbl);
-+int gswip_bm_table_write(struct gswip_core_priv *priv,
-+			 struct bm_tbl_prog *bm_tbl);
-+int gswip_pmac_table_read(struct gswip_core_priv *priv,
-+			  struct pmac_tbl_prog *pmac_tbl);
-+int gswip_pmac_table_write(struct gswip_core_priv *priv,
-+			   struct pmac_tbl_prog *pmac_tbl);
-+
-+#endif
-+
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/lmac.c b/drivers/net/ethernet/intel/gwdpa/gswip/lmac.c
-new file mode 100644
-index 000000000000..2fef9eaeeadc
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/lmac.c
-@@ -0,0 +1,46 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+
-+#include <linux/bitfield.h>
-+#include <linux/types.h>
-+
-+#include "mac_common.h"
-+
-+int lmac_set_duplex_mode(struct gswip_mac *priv, u32 val)
-+{
-+	u32 mac_ctrl0 = lmac_read(priv, MAC_CTRL0_REG(priv->mac_idx));
-+
-+	if (FIELD_GET(MAC_CTRL0_FDUP, mac_ctrl0) != val) {
-+		mac_ctrl0 &= ~MAC_CTRL0_FDUP;
-+		mac_ctrl0 |= FIELD_PREP(MAC_CTRL0_FDUP, val);
-+		lmac_write(priv, MAC_CTRL0_REG(priv->mac_idx), mac_ctrl0);
-+	}
-+
-+	return 0;
-+}
-+
-+int lmac_set_flowcon_mode(struct gswip_mac *priv, u32 val)
-+{
-+	u32 mac_ctrl0 = lmac_read(priv, MAC_CTRL0_REG(priv->mac_idx));
-+
-+	if (FIELD_GET(MAC_CTRL0_FCON, mac_ctrl0) != val) {
-+		mac_ctrl0 &= ~MAC_CTRL0_FCON;
-+		mac_ctrl0 |= FIELD_PREP(MAC_CTRL0_FCON, val);
-+		lmac_write(priv, MAC_CTRL0_REG(priv->mac_idx), mac_ctrl0);
-+	}
-+
-+	return 0;
-+}
-+
-+int lmac_set_intf_mode(struct gswip_mac *priv, u32 val)
-+{
-+	u32 mac_ctrl0 = lmac_read(priv, MAC_CTRL0_REG(priv->mac_idx));
-+
-+	if (FIELD_GET(MAC_CTRL0_GMII, mac_ctrl0) != val) {
-+		mac_ctrl0 &= ~MAC_CTRL0_GMII;
-+		mac_ctrl0 |= FIELD_PREP(MAC_CTRL0_GMII, val);
-+		lmac_write(priv, MAC_CTRL0_REG(priv->mac_idx), mac_ctrl0);
-+	}
-+
-+	return 0;
-+}
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/mac_cfg.c b/drivers/net/ethernet/intel/gwdpa/gswip/mac_cfg.c
-new file mode 100644
-index 000000000000..dcbcb3e3deab
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/mac_cfg.c
-@@ -0,0 +1,524 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+
-+#include <linux/bitfield.h>
-+#include <linux/ethtool.h>
-+#include "mac_common.h"
-+
-+static int mac_speed_to_val(u32 speed)
-+{
-+	int val;
-+
-+	switch (speed) {
-+	case SPEED_10M:
-+		val = SPEED_10;
-+		break;
-+	case SPEED_100M:
-+		val = SPEED_100;
-+		break;
-+	case SPEED_1G:
-+		val = SPEED_1000;
-+		break;
-+	case SPEED_10G:
-+		val = SPEED_10000;
-+		break;
-+	case SPEED_2G5:
-+		val = SPEED_2500;
-+		break;
-+	case SPEED_5G:
-+		val = SPEED_5000;
-+		break;
-+	default:
-+		val = SPEED_UNKNOWN;
-+	}
-+
-+	return val;
-+}
-+
-+static int mac_get_speed(struct device *dev)
-+{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+	u32 mac_speed;
-+
-+	spin_lock_bh(&priv->mac_lock);
-+	mac_speed = sw_get_speed(priv);
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return mac_speed_to_val(mac_speed);
-+}
-+
-+static int mac_set_physpeed(struct gswip_mac *priv, u32 phy_speed)
-+{
-+	spin_lock_bh(&priv->mac_lock);
-+	xgmac_set_extcfg(priv, 1);
-+
-+	switch (phy_speed) {
-+	default:
-+	case SPEED_MAC_AUTO:
-+		sw_set_speed(priv, SPEED_AUTO);
-+		break;
-+
-+	case SPEED_XGMAC_10G:
-+		xgmac_set_xgmii_speed(priv);
-+		sw_set_speed(priv, SPEED_10G);
-+		break;
-+
-+	case SPEED_GMII_25G:
-+		sw_set_speed(priv, SPEED_2G5);
-+		sw_set_2G5_intf(priv, XGMAC_GMII);
-+		xgmac_set_gmii_2500_speed(priv);
-+		break;
-+
-+	case SPEED_XGMII_25G:
-+		sw_set_speed(priv, SPEED_2G5);
-+		sw_set_2G5_intf(priv, XGMAC_XGMII);
-+		xgmac_set_xgmii_2500_speed(priv);
-+		break;
-+
-+	case SPEED_XGMAC_1G:
-+		sw_set_speed(priv, SPEED_1G);
-+		sw_set_1g_intf(priv, XGMAC_GMII);
-+		xgmac_set_gmii_speed(priv);
-+		xgmac_set_extcfg(priv, 1);
-+		break;
-+
-+	case SPEED_XGMAC_10M:
-+		sw_set_speed(priv, SPEED_10M);
-+		/* FALLTHRU */
-+	case SPEED_XGMAC_100M:
-+		if (phy_speed != SPEED_XGMAC_10M)
-+			sw_set_speed(priv, SPEED_100M);
-+
-+		sw_set_fe_intf(priv, XGMAC_GMII);
-+		sw_set_1g_intf(priv, XGMAC_GMII);
-+		xgmac_set_gmii_speed(priv);
-+		break;
-+
-+	case SPEED_LMAC_10M:
-+		sw_set_speed(priv, SPEED_10M);
-+		/* FALLTHRU */
-+	case SPEED_LMAC_100M:
-+		if (phy_speed != SPEED_LMAC_10M)
-+			sw_set_speed(priv, SPEED_100M);
-+
-+		sw_set_fe_intf(priv, LMAC_MII);
-+		lmac_set_intf_mode(priv, 1);
-+		break;
-+
-+	case SPEED_LMAC_1G:
-+		sw_set_speed(priv, SPEED_1G);
-+		sw_set_1g_intf(priv, LMAC_GMII);
-+		lmac_set_intf_mode(priv, 2);
-+		break;
-+	}
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return 0;
-+}
-+
-+static int mac_set_duplex(struct gswip_mac *priv, u32 mode)
-+{
-+	u32 val;
-+
-+	spin_lock_bh(&priv->mac_lock);
-+	switch (mode) {
-+	default:
-+	case GSW_DUPLEX_AUTO:
-+		val = PHY_MODE_FDUP_AUTO;
-+		break;
-+	case GSW_DUPLEX_HALF:
-+		val = PHY_MODE_FDUP_HD;
-+		break;
-+	case GSW_DUPLEX_FULL:
-+		val = PHY_MODE_FDUP_FD;
-+		break;
-+	}
-+
-+	sw_set_duplex_mode(priv, val);
-+	lmac_set_duplex_mode(priv, val);
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return 0;
-+}
-+
-+static int mac_get_duplex(struct device *dev)
-+{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+	int val;
-+
-+	spin_lock_bh(&priv->mac_lock);
-+	val = sw_get_duplex_mode(priv);
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return val;
-+}
-+
-+static int mac_get_linksts(struct device *dev)
-+{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+	int linksts;
-+
-+	spin_lock_bh(&priv->mac_lock);
-+	linksts = sw_get_linkstatus(priv);
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return linksts;
-+}
-+
-+static int mac_set_linksts(struct gswip_mac *priv, u32 mode)
-+{
-+	u8 val;
-+
-+	spin_lock_bh(&priv->mac_lock);
-+	switch (mode) {
-+	default:
-+	case LINK_AUTO:
-+		val = PHY_MODE_LINKST_AUTO;
-+		break;
-+
-+	case LINK_UP:
-+		val = PHY_MODE_LINKST_UP;
-+		break;
-+
-+	case LINK_DOWN:
-+		val = PHY_MODE_LINKST_DOWN;
-+		break;
-+	}
-+	sw_set_linkstatus(priv, val);
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return 0;
-+}
-+
-+static int mac_set_flowctrl(struct device *dev, u32 val)
-+{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+
-+	if (val >= FC_INVALID)
-+		return -EINVAL;
-+
-+	spin_lock_bh(&priv->mac_lock);
-+	lmac_set_flowcon_mode(priv, val);
-+
-+	switch (val) {
-+	default:
-+	case FC_AUTO:
-+		xgmac_tx_flow_ctl(priv, priv->pause_time, XGMAC_FC_EN);
-+		xgmac_rx_flow_ctl(priv, XGMAC_FC_EN);
-+		sw_set_flowctrl(priv, PHY_MODE_FCON_AUTO, FCONRX);
-+		sw_set_flowctrl(priv, PHY_MODE_FCON_AUTO, FCONTX);
-+		break;
-+
-+	case FC_RX:
-+		/* Disable TX in XGMAC and GSWSS */
-+		xgmac_tx_flow_ctl(priv, priv->pause_time, XGMAC_FC_DIS);
-+		sw_set_flowctrl(priv, PHY_MODE_FCON_DIS, FCONTX);
-+
-+		/* Enable RX in XGMAC and GSWSS */
-+		xgmac_rx_flow_ctl(priv, XGMAC_FC_EN);
-+
-+		sw_set_flowctrl(priv, PHY_MODE_FCON_EN, FCONRX);
-+		break;
-+
-+	case FC_TX:
-+		/* Disable RX in XGMAC and GSWSS */
-+		xgmac_rx_flow_ctl(priv, XGMAC_FC_DIS);
-+		sw_set_flowctrl(priv, PHY_MODE_FCON_DIS, FCONTX);
-+
-+		/* Enable TX in XGMAC and GSWSS */
-+		xgmac_tx_flow_ctl(priv, priv->pause_time, XGMAC_FC_EN);
-+		sw_set_flowctrl(priv, PHY_MODE_FCON_EN, FCONTX);
-+		break;
-+
-+	case FC_RXTX:
-+		xgmac_tx_flow_ctl(priv, priv->pause_time, XGMAC_FC_EN);
-+		xgmac_rx_flow_ctl(priv, XGMAC_FC_EN);
-+		sw_set_flowctrl(priv, PHY_MODE_FCON_EN, FCONRX);
-+		sw_set_flowctrl(priv, PHY_MODE_FCON_EN, FCONTX);
-+		break;
-+
-+	case FC_DIS:
-+		xgmac_tx_flow_ctl(priv, priv->pause_time, XGMAC_FC_DIS);
-+		xgmac_rx_flow_ctl(priv, XGMAC_FC_DIS);
-+		sw_set_flowctrl(priv, PHY_MODE_FCON_DIS, FCONRX);
-+		sw_set_flowctrl(priv, PHY_MODE_FCON_EN, FCONTX);
-+		break;
-+	}
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return 0;
-+}
-+
-+inline int get_2G5_intf(struct gswip_mac *priv)
-+{
-+	u32 mac_if_cfg, macif;
-+	int ret;
-+
-+	mac_if_cfg = sw_read(priv, MAC_IF_CFG_REG(priv->mac_idx));
-+	macif = FIELD_PREP(MAC_IF_CFG_CFG2G5, mac_if_cfg);
-+
-+	if (macif == 0)
-+		ret = XGMAC_GMII;
-+	else if (macif == 1)
-+		ret = XGMAC_XGMII;
-+	else
-+		ret = -EINVAL;
-+
-+	return ret;
-+}
-+
-+inline int get_1g_intf(struct gswip_mac *priv)
-+{
-+	u32 mac_if_cfg, macif;
-+	int ret;
-+
-+	mac_if_cfg = sw_read(priv, MAC_IF_CFG_REG(priv->mac_idx));
-+	macif = FIELD_GET(MAC_IF_CFG_CFG1G, mac_if_cfg);
-+
-+	if (macif == 0)
-+		ret = LMAC_GMII;
-+	else if (macif == 1)
-+		ret = XGMAC_GMII;
-+	else
-+		ret = -EINVAL;
-+
-+	return ret;
-+}
-+
-+inline int get_fe_intf(struct gswip_mac *priv)
-+{
-+	u32 mac_if_cfg, macif;
-+	int ret;
-+
-+	mac_if_cfg = sw_read(priv, MAC_IF_CFG_REG(priv->mac_idx));
-+	macif = FIELD_GET(MAC_IF_CFG_CFGFE, mac_if_cfg);
-+
-+	if (macif == 0)
-+		ret = LMAC_MII;
-+	else if (macif == 1)
-+		ret = XGMAC_GMII;
-+	else
-+		ret = -EINVAL;
-+
-+	return ret;
-+}
-+
-+static int mac_get_mii_interface(struct device *dev)
-+{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+	int intf, ret;
-+	u8 mac_speed;
-+
-+	spin_lock_bh(&priv->mac_lock);
-+	mac_speed = sw_get_speed(priv);
-+	switch (mac_speed) {
-+	case SPEED_10M:
-+	case SPEED_100M:
-+		intf = get_fe_intf(priv);
-+		if (intf == XGMAC_GMII)
-+			ret = GSW_PORT_HW_GMII;
-+		else if (intf == LMAC_MII)
-+			ret = GSW_PORT_HW_MII;
-+		else
-+			ret = -EINVAL;
-+		break;
-+
-+	case SPEED_1G:
-+		intf = get_1g_intf(priv);
-+		if (intf == LMAC_GMII || intf == XGMAC_GMII)
-+			ret = GSW_PORT_HW_GMII;
-+		else
-+			ret = -EINVAL;
-+		break;
-+
-+	case SPEED_2G5:
-+		intf = get_2G5_intf(priv);
-+		if (intf == XGMAC_GMII)
-+			ret = GSW_PORT_HW_GMII;
-+		else if (intf == XGMAC_XGMII)
-+			ret = GSW_PORT_HW_XGMII;
-+		else
-+			ret = -EINVAL;
-+		break;
-+
-+	case SPEED_10G:
-+		ret = GSW_PORT_HW_XGMII;
-+		break;
-+
-+	case SPEED_AUTO:
-+		ret = GSW_PORT_HW_XGMII;
-+		break;
-+
-+	default:
-+		ret = -EINVAL;
-+	}
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return ret;
-+}
-+
-+inline u32 set_mii_if_fe(u32 mode)
-+{
-+	u32 val = 0;
-+
-+	switch (mode) {
-+	default:
-+	case LMAC_MII:
-+		val &= ~MAC_IF_CFG_CFGFE;
-+		break;
-+
-+	case XGMAC_GMII:
-+		val |= MAC_IF_CFG_CFGFE;
-+		break;
-+	}
-+
-+	return val;
-+}
-+
-+inline u32 set_mii_if_1g(u32 mode)
-+{
-+	u32 val = 0;
-+
-+	switch (mode) {
-+	default:
-+	case LMAC_GMII:
-+		val &= ~MAC_IF_CFG_CFG1G;
-+		break;
-+
-+	case XGMAC_GMII:
-+		val |= MAC_IF_CFG_CFG1G;
-+		break;
-+	}
-+
-+	return val;
-+}
-+
-+inline u32 set_mii_if_2G5(u32 mode)
-+{
-+	u32 val = 0;
-+
-+	switch (mode) {
-+	default:
-+	case XGMAC_GMII:
-+		val &= ~MAC_IF_CFG_CFG2G5;
-+		break;
-+
-+	case XGMAC_XGMII:
-+		val |= MAC_IF_CFG_CFG2G5;
-+		break;
-+	}
-+
-+	return val;
-+}
-+
-+static int mac_set_mii_interface(struct device *dev, u32 mii_mode)
-+{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+	u32 reg_val = 0;
-+
-+	spin_lock_bh(&priv->mac_lock);
-+	reg_val = sw_read(priv, MAC_IF_CFG_REG(priv->mac_idx));
-+
-+	/* Default modes...
-+	 *		2.5G -	XGMAC_GMII
-+	 *		1G   -	LMAC_GMII
-+	 *		FE   -	LMAC_MII
-+	 */
-+	switch (mii_mode) {
-+	default:
-+	case GSW_PORT_HW_XGMII:
-+		reg_val |= set_mii_if_2G5(XGMAC_XGMII);
-+		break;
-+
-+	case GSW_PORT_HW_GMII:
-+		reg_val |= set_mii_if_1g(XGMAC_GMII);
-+		reg_val |= set_mii_if_fe(XGMAC_GMII);
-+		reg_val |= set_mii_if_2G5(XGMAC_GMII);
-+		break;
-+
-+	case GSW_PORT_HW_MII:
-+		reg_val |= set_mii_if_fe(LMAC_MII);
-+		break;
-+	}
-+
-+	sw_write(priv, MAC_IF_CFG_REG(priv->mac_idx), reg_val);
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return 0;
-+}
-+
-+static u32 mac_get_mtu(struct device *dev)
-+{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+	u32 val;
-+
-+	spin_lock_bh(&priv->mac_lock);
-+	val = sw_mac_get_mtu(priv);
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return val;
-+}
-+
-+static int mac_set_mtu(struct device *dev, u32 mtu)
-+{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+
-+	if (mtu > LGM_MAX_MTU)
-+		return -EINVAL;
-+
-+	spin_lock_bh(&priv->mac_lock);
-+	sw_mac_set_mtu(priv, mtu);
-+	xgmac_config_pkt(priv, mtu);
-+	spin_unlock_bh(&priv->mac_lock);
-+
-+	return 0;
-+}
-+
-+static int mac_init(struct device *dev)
-+{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+
-+	xgmac_set_mac_address(priv, priv->mac_addr);
-+	mac_set_mtu(dev, priv->mtu);
-+	xgmac_config_packet_filter(priv, PROMISC);
-+	xgmac_config_packet_filter(priv, PASS_ALL_MULTICAST);
-+	mac_set_mii_interface(dev, GSW_PORT_HW_GMII);
-+	mac_set_flowctrl(dev, FC_RXTX);
-+	mac_set_linksts(priv, LINK_UP);
-+	mac_set_duplex(priv, GSW_DUPLEX_FULL);
-+	xgmac_set_mac_lpitx(priv, LPITX_EN);
-+	mac_set_physpeed(priv, SPEED_XGMAC_10G);
-+	/* Enable XMAC Tx/Rx */
-+	xgmac_enable(priv);
-+	xgmac_pause_frame_filter(priv, 1);
-+	sw_set_eee_cap(priv, ANEG_EEE_CAP_OFF);
-+	sw_set_mac_rxfcs_op(priv, MAC_OP_CFG_RX_FCS_M3);
-+	xgmac_mdio_set_clause(priv, MDIO_CLAUSE22, (priv->mac_idx - MAC2));
-+	xgmac_mdio_register(priv);
-+
-+	return 0;
-+}
-+
-+static const struct gsw_mac_ops lgm_mac_ops = {
-+	.init		= mac_init,
-+	.set_mtu	= mac_set_mtu,
-+	.get_mtu	= mac_get_mtu,
-+	.set_mii_if	= mac_set_mii_interface,
-+	.get_mii_if	= mac_get_mii_interface,
-+	.set_flowctrl	= mac_set_flowctrl,
-+	.get_link_sts	= mac_get_linksts,
-+	.get_duplex	= mac_get_duplex,
-+	.get_speed	= mac_get_speed,
-+};
-+
-+static const struct gsw_adap_ops lgm_adap_ops = {
-+	.sw_core_enable = sw_core_enable,
-+};
-+
-+void mac_init_ops(struct device *dev)
-+{
-+	struct gswip_mac *priv = dev_get_drvdata(dev);
-+
-+	priv->mac_ops = &lgm_mac_ops;
-+	priv->adap_ops = &lgm_adap_ops;
-+}
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/mac_common.h b/drivers/net/ethernet/intel/gwdpa/gswip/mac_common.h
-new file mode 100644
-index 000000000000..581997a615d6
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/mac_common.h
-@@ -0,0 +1,238 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+
-+#ifndef _MAC_COMMON_H
-+#define _MAC_COMMON_H
-+
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/spinlock.h>
-+
-+#include "gswip.h"
-+#include "gswip_reg.h"
-+#include "gswip_dev.h"
-+
-+#define LGM_MAX_MTU	10000
-+#define LPITX_EN	1
-+#define SPEED_LSB	GENMASK(1, 0)
-+#define SPEED_MSB	BIT(2)
-+#define MDIO_CLAUSE22	1
-+#define MDIO_CLAUSE45	0
-+
-+/* MAC Index */
-+enum mac_index {
-+	PMAC0 = 0,
-+	PMAC1,
-+	MAC2,
-+	MAC3,
-+	MAC4,
-+	MAC5,
-+	MAC6,
-+	MAC7,
-+	MAC8,
-+	MAC9,
-+	MAC10,
-+	PMAC2,
-+	MAC_LAST,
-+};
-+
-+enum packet_flilter_mode {
-+	PROMISC = 0,
-+	PASS_ALL_MULTICAST,
-+	PKT_FR_DEF,
-+};
-+
-+enum mii_interface {
-+	LMAC_MII = 0,
-+	LMAC_GMII,
-+	XGMAC_GMII,
-+	XGMAC_XGMII,
-+};
-+
-+enum speed_interface {
-+	SPEED_10M = 0,
-+	SPEED_100M,
-+	SPEED_1G,
-+	SPEED_10G,
-+	SPEED_2G5,
-+	SPEED_5G,
-+	SPEED_FLEX,
-+	SPEED_AUTO
-+};
-+
-+enum gsw_fcon {
-+	FCONRX = 0,
-+	FCONTX,
-+	FDUP,
-+};
-+
-+enum xgmac_fcon_on_off {
-+	XGMAC_FC_EN = 0,
-+	XGMAC_FC_DIS,
-+};
-+
-+enum gsw_portduplex_mode {
-+	GSW_DUPLEX_AUTO = 0,
-+	GSW_DUPLEX_HALF,
-+	GSW_DUPLEX_FULL,
-+};
-+
-+struct xgmac_hw_features {
-+	/* HW version */
-+	u32 version;
-+
-+	/* HW Feature0 Register: core */
-+	u32 gmii;	/* 1000 Mbps support */
-+	u32 vlhash;	/* VLAN Hash Filter */
-+	u32 sma;	/* SMA(MDIO) Interface */
-+	u32 rwk;	/* PMT remote wake-up packet */
-+	u32 mgk;	/* PMT magic packet */
-+	u32 mmc;	/* RMON module */
-+	u32 aoe;	/* ARP Offload */
-+	u32 ts;		/* IEEE 1588-2008 Advanced Timestamp */
-+	u32 eee;	/* Energy Efficient Ethernet */
-+	u32 tx_coe;	/* Tx Checksum Offload */
-+	u32 rx_coe;	/* Rx Checksum Offload */
-+	u32 addn_mac;	/* Additional MAC Addresses */
-+	u32 ts_src;	/* Timestamp Source */
-+	u32 sa_vlan_ins;/* Source Address or VLAN Insertion */
-+	u32 vxn;	/* VxLAN/NVGRE Support */
-+	u32 ediffc;	/* Different Descriptor Cache */
-+	u32 edma;	/* Enhanced DMA */
-+
-+	/* HW Feature1 Register: DMA and MTL */
-+	u32 rx_fifo_size;	/* MTL Receive FIFO Size */
-+	u32 tx_fifo_size;	/* MTL Transmit FIFO Size */
-+	u32 osten;		/* One-Step Timestamping Enable */
-+	u32 ptoen;		/* PTP Offload Enable */
-+	u32 adv_ts_hi;		/* Advance Timestamping High Word */
-+	u32 dma_width;		/* DMA width */
-+	u32 dcb;		/* DCB Feature */
-+	u32 sph;		/* Split Header Feature */
-+	u32 tso;		/* TCP Segmentation Offload */
-+	u32 dma_debug;		/* DMA Debug Registers */
-+	u32 rss;		/* Receive Side Scaling */
-+	u32 tc_cnt;		/* Number of Traffic Classes */
-+	u32 hash_table_size;	/* Hash Table Size */
-+	u32 l3l4_filter_num;	/* Number of L3-L4 Filters */
-+
-+	/* HW Feature2 Register: Channels(DMA) and Queues(MTL) */
-+	u32 rx_q_cnt;		/* Number of MTL Receive Queues */
-+	u32 tx_q_cnt;		/* Number of MTL Transmit Queues */
-+	u32 rx_ch_cnt;		/* Number of DMA Receive Channels */
-+	u32 tx_ch_cnt;		/* Number of DMA Transmit Channels */
-+	u32 pps_out_num;	/* Number of PPS outputs */
-+	u32 aux_snap_num;	/* Number of Aux snapshot inputs */
-+};
-+
-+struct gswip_mac {
-+	void __iomem *sw;	/* adaption layer */
-+	void __iomem *lmac;	/* legacy mac */
-+
-+	/* XGMAC registers for indirect accessing */
-+	u32 xgmac_ctrl_reg;
-+	u32 xgmac_data0_reg;
-+	u32 xgmac_data1_reg;
-+
-+	u32 sw_irq;
-+	struct clk *ptp_clk;
-+	struct clk *sw_clk;
-+
-+	struct device *dev;
-+	struct device *parent;
-+
-+	spinlock_t mac_lock;	/* MAC spin lock*/
-+	spinlock_t irw_lock;	/* lock for Indirect read/write */
-+	spinlock_t sw_lock;	/* adaption lock */
-+
-+	/* Phy status */
-+	u32 phy_speed;
-+	const char *phy_mode;
-+
-+	u32 ver;
-+	/* Index to point XGMAC 2/3/4/.. */
-+	u32 mac_idx;
-+	u32 mac_max;
-+	u32 ptp_clk_rate;
-+
-+	struct xgmac_hw_features hw_feat;
-+	const struct gsw_mac_ops *mac_ops;
-+
-+	const struct gsw_adap_ops *adap_ops;
-+	u32 core_en_cnt;
-+	struct mii_bus *mii;
-+
-+	u8 mac_addr[6];
-+	u32 mtu;
-+	bool promisc_mode;
-+	bool all_mcast_mode;
-+	u32 pause_time;
-+};
-+
-+/*  GSWIP-O Top Register write */
-+static inline void sw_write(struct gswip_mac *priv, u32 reg, u32 val)
-+{
-+	writel(val, priv->sw + reg);
-+}
-+
-+/* GSWIP-O Top Register read */
-+static inline int sw_read(struct gswip_mac *priv, u32 reg)
-+{
-+	return readl(priv->sw + reg);
-+}
-+
-+/* Legacy MAC Register read */
-+static inline void lmac_write(struct gswip_mac *priv, u32 reg, u32 val)
-+{
-+	writel(val, priv->lmac + reg);
-+}
-+
-+/* Legacy MAC Register write */
-+static inline int lmac_read(struct gswip_mac *priv, u32 reg)
-+{
-+	return readl(priv->lmac + reg);
-+}
-+
-+/* prototype */
-+void mac_init_ops(struct device *dev);
-+void xgmac_init_priv(struct gswip_mac *priv);
-+void xgmac_get_hw_features(struct gswip_mac *priv);
-+void xgmac_set_mac_address(struct gswip_mac *priv, u8 *mac_addr);
-+void xgmac_config_pkt(struct gswip_mac *priv, u32 mtu);
-+void xgmac_config_packet_filter(struct gswip_mac *priv, u32 mode);
-+void xgmac_tx_flow_ctl(struct gswip_mac *priv, u32 pause_time, u32 mode);
-+void xgmac_rx_flow_ctl(struct gswip_mac *priv, u32 mode);
-+int xgmac_set_mac_lpitx(struct gswip_mac *priv, u32 val);
-+int xgmac_enable(struct gswip_mac *priv);
-+int xgmac_disable(struct gswip_mac *priv);
-+int xgmac_pause_frame_filter(struct gswip_mac *priv, u32 val);
-+int xgmac_set_extcfg(struct gswip_mac *priv, u32 val);
-+int xgmac_set_xgmii_speed(struct gswip_mac *priv);
-+int xgmac_set_gmii_2500_speed(struct gswip_mac *priv);
-+int xgmac_set_xgmii_2500_speed(struct gswip_mac *priv);
-+int xgmac_set_gmii_speed(struct gswip_mac *priv);
-+int xgmac_mdio_set_clause(struct gswip_mac *priv, u32 clause, u32 phy_id);
-+int xgmac_mdio_register(struct gswip_mac *priv);
-+
-+int sw_mac_set_mtu(struct gswip_mac *priv, u32 mtu);
-+u32 sw_mac_get_mtu(struct gswip_mac *priv);
-+u32 sw_get_speed(struct gswip_mac *priv);
-+int sw_set_flowctrl(struct gswip_mac *priv, u8 val, u32 mode);
-+int sw_get_linkstatus(struct gswip_mac *priv);
-+int sw_set_linkstatus(struct gswip_mac *priv, u8 linkst);
-+int sw_get_duplex_mode(struct gswip_mac *priv);
-+int sw_set_duplex_mode(struct gswip_mac *priv, u32 val);
-+int sw_set_speed(struct gswip_mac *priv, u8 speed);
-+int sw_set_2G5_intf(struct gswip_mac *priv, u32 macif);
-+int sw_set_1g_intf(struct gswip_mac *priv, u32 macif);
-+int sw_set_fe_intf(struct gswip_mac *priv, u32 macif);
-+int sw_set_eee_cap(struct gswip_mac *priv, u32 val);
-+int sw_set_mac_rxfcs_op(struct gswip_mac *priv, u32 val);
-+
-+int lmac_set_flowcon_mode(struct gswip_mac *priv, u32 val);
-+int lmac_set_duplex_mode(struct gswip_mac *priv, u32 val);
-+int lmac_set_intf_mode(struct gswip_mac *priv, u32 val);
-+
-+int sw_core_enable(struct device *dev, u32 val);
-+#endif
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/mac_dev.c b/drivers/net/ethernet/intel/gwdpa/gswip/mac_dev.c
-new file mode 100644
-index 000000000000..028c580cdf8e
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/mac_dev.c
-@@ -0,0 +1,186 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2016-2019 Intel Corporation.
-+ *
-+ * GSWIP MAC controller driver.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/err.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of_platform.h>
-+#include <linux/phy.h>
-+#include <linux/platform_device.h>
-+#include <linux/spinlock.h>
-+
-+#include "mac_common.h"
-+
-+#define	MAX_MAC	9
-+
-+static const char *link_status_to_str(int link)
-+{
-+	switch (link) {
-+	case 0:
-+		return "DOWN";
-+	case 1:
-+		return "UP";
-+	default:
-+		return "UNKNOWN";
-+	}
-+}
-+
-+static void gswss_update_interrupt(struct gswip_mac *priv, u32 mask, u32 set)
-+{
-+	u32 val;
-+
-+	val = (sw_read(priv, GSWIPSS_IER0) & ~mask) | set;
-+	sw_write(priv, GSWIPSS_IER0, val);
-+}
-+
-+static void lmac_update_interrupt(struct gswip_mac *priv, u32 mask, u32 set)
-+{
-+	u32 val;
-+
-+	val = (lmac_read(priv, LMAC_IER) & ~mask) | set;
-+	lmac_write(priv, LMAC_IER, val);
-+}
-+
-+static void gswss_clear_interrupt_all(struct gswip_mac *priv)
-+{
-+	unsigned long xgmac_status, lmac_status;
-+	u32 pos;
-+
-+	xgmac_status = sw_read(priv, GSWIPSS_ISR0);
-+	lmac_status = lmac_read(priv, LMAC_ISR);
-+
-+	pos = GSWIPSS_I_XGMAC2;
-+	for_each_set_bit_from(pos, &xgmac_status, priv->mac_max)
-+		gswss_update_interrupt(priv, BIT(pos), 0);
-+
-+	pos = LMAC_I_MAC2;
-+	for_each_set_bit_from(pos, &lmac_status, priv->mac_max)
-+		lmac_update_interrupt(priv, BIT(pos), 0);
-+}
-+
-+static irqreturn_t mac_interrupt(int irq, void *data)
-+{
-+	struct gswip_mac *priv = data;
-+
-+	/* clear all interrupts */
-+	gswss_clear_interrupt_all(priv);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/* All MAC instances have one interrupt line and need to register only once. */
-+static int mac_irq_init(struct gswip_mac *priv)
-+{
-+	return devm_request_irq(priv->dev, priv->sw_irq, mac_interrupt, 0,
-+				"gswip_mac", priv);
-+}
-+
-+static int get_mac_index(struct device_node *node, u32 *idx)
-+{
-+	if (!strstr(node->full_name, "@"))
-+		return -EINVAL;
-+
-+	return kstrtou32(node->full_name + strlen(node->name) + 1, 0, idx);
-+}
-+
-+static int mac_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	int linksts, duplex, speed;
-+	struct gswip_pdata *pdata;
-+	struct device_node *node;
-+	struct gswip_mac *priv;
-+	int ret;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	node = dev->of_node;
-+	pdata = dev_get_platdata(dev->parent);
-+
-+	/* get the platform data */
-+	priv->dev = &pdev->dev;
-+	priv->parent = dev->parent;
-+	priv->sw = pdata->sw;
-+	priv->lmac = pdata->lmac;
-+	priv->sw_irq = pdata->sw_irq;
-+	priv->ptp_clk = pdata->ptp_clk;
-+	priv->sw_clk = pdata->sw_clk;
-+
-+	/* Initialize spin lock */
-+	spin_lock_init(&priv->mac_lock);
-+	spin_lock_init(&priv->irw_lock);
-+	spin_lock_init(&priv->sw_lock);
-+
-+	priv->mac_max =	MAX_MAC;
-+	ret = get_mac_index(node, &priv->mac_idx);
-+	if (ret)
-+		return ret;
-+
-+	/* check the mac index range */
-+	if (priv->mac_idx < 0 || priv->mac_idx > priv->mac_max) {
-+		dev_err(dev, "Mac index Error!!\n");
-+		return -EINVAL;
-+	}
-+
-+	priv->ptp_clk_rate = clk_get_rate(priv->ptp_clk);
-+
-+	ret = of_property_read_string(node, "phy-mode", &priv->phy_mode);
-+	if (ret)
-+		return ret;
-+
-+	ret = of_property_read_u32(node, "speed", &priv->phy_speed);
-+	if (ret)
-+		return ret;
-+
-+	/* Request IRQ on first MAC instance */
-+	if (!pdata->intr_flag) {
-+		ret = mac_irq_init(priv);
-+		if (ret)
-+			return ret;
-+		pdata->intr_flag = true;
-+	}
-+
-+	dev_set_drvdata(dev, priv);
-+	xgmac_init_priv(priv);
-+	xgmac_get_hw_features(priv);
-+	mac_init_ops(dev);
-+
-+	/* Initialize MAC */
-+	priv->mac_ops->init(dev);
-+
-+	linksts = priv->mac_ops->get_link_sts(dev);
-+	duplex = priv->mac_ops->get_duplex(dev);
-+	speed = priv->mac_ops->get_speed(dev);
-+
-+	priv->adap_ops->sw_core_enable(dev, 1);
-+
-+	dev_info(dev, "Init done - Rev:%x Mac_id:%d Speed=%s Link=%s Duplex=%s\n",
-+		 priv->ver, priv->mac_idx, phy_speed_to_str(speed),
-+		 link_status_to_str(linksts), phy_duplex_to_str(duplex));
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id gswip_mac_match[] = {
-+	{ .compatible = "gswip-mac" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, gswip_mac_match);
-+
-+static struct platform_driver gswip_mac_driver = {
-+	.probe = mac_probe,
-+	.driver = {
-+		.name = "gswip-mac",
-+		.of_match_table = gswip_mac_match,
-+	},
-+};
-+
-+module_platform_driver(gswip_mac_driver);
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/xgmac.c b/drivers/net/ethernet/intel/gwdpa/gswip/xgmac.c
-new file mode 100644
-index 000000000000..e3f9d9680579
---- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/xgmac.c
-@@ -0,0 +1,643 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+
-+#include <linux/bitfield.h>
-+#include <linux/device.h>
-+#include <linux/of_mdio.h>
-+#include <linux/phy.h>
-+
-+#include "mac_common.h"
-+#include "xgmac.h"
 +
 +/**
-+ * xgmac_reg_rw - XGMAC register indirect read and write access.
-+ * @priv: mac private data.
-+ * @reg: register offset.
-+ * @val:
-+ *	read - pointer variable to read the value into.
-+ *	write - pointer variable to the write value.
-+ * @rd_wr: boolean value, true/false.
-+ *	false - read.
-+ *	true - write.
++ * irdma_cm_del_listen - delete a listener
++ * @cm_core: cm's core
++ * @listener: passive connection's listener
++ * @apbvt_del: flag to delete apbvt
 + */
-+static inline void xgmac_reg_rw(struct gswip_mac *priv, u16 reg, u32 *val,
-+				bool rd_wr)
++static int irdma_cm_del_listen(struct irdma_cm_core *cm_core,
++			       struct irdma_cm_listener *listener,
++			       bool apbvt_del)
 +{
-+	void __iomem *xgmac_ctrl_reg  = priv->sw + priv->xgmac_ctrl_reg;
-+	void __iomem *xgmac_data0_reg = priv->sw + priv->xgmac_data0_reg;
-+	void __iomem *xgmac_data1_reg = priv->sw + priv->xgmac_data1_reg;
-+	u32 access = XGMAC_REGACC_CTRL_ADDR_BAS;
-+	u32 retries = 2000;
++	listener->listener_state = IRDMA_CM_LISTENER_PASSIVE_STATE;
++	listener->cm_id = NULL;
 +
-+	spin_lock_bh(&priv->irw_lock);
-+	access &= ~XGMAC_REGACC_CTRL_OPMOD_WR;
-+	if (rd_wr) {
-+		writel(FIELD_GET(MASK_HIGH, *val), xgmac_data1_reg);
-+		writel(FIELD_GET(MASK_LOW, *val), xgmac_data0_reg);
-+		access |= XGMAC_REGACC_CTRL_OPMOD_WR;
++	return irdma_dec_refcnt_listen(cm_core, listener, 1, apbvt_del);
++}
++
++/**
++ * irdma_addr_resolve_neigh - resolve neighbor address
++ * @iwdev: iwarp device structure
++ * @src_ip: local ip address
++ * @dst_ip: remote ip address
++ * @arpindex: if there is an arp entry
++ */
++static int irdma_addr_resolve_neigh(struct irdma_device *iwdev, u32 src_ip,
++				    u32 dst_ip, int arpindex)
++{
++	struct rtable *rt;
++	struct neighbour *neigh;
++	int rc = arpindex;
++	__be32 dst_ipaddr = htonl(dst_ip);
++	__be32 src_ipaddr = htonl(src_ip);
++
++	rt = ip_route_output(&init_net, dst_ipaddr, src_ipaddr, 0, 0);
++	if (IS_ERR(rt)) {
++		ibdev_dbg(to_ibdev(iwdev), "CM: ip_route_output fail\n");
++		return -EINVAL;
 +	}
 +
-+	writel(access | reg, xgmac_ctrl_reg);
++	neigh = dst_neigh_lookup(&rt->dst, &dst_ipaddr);
++	if (!neigh)
++		goto exit;
 +
-+	do {
-+		if (!(readl(xgmac_ctrl_reg) & XGMAC_REGACC_CTRL_ADDR_BAS))
-+			break;
-+		cpu_relax();
-+	} while (--retries);
-+	if (!retries)
-+		dev_warn(priv->dev, "Xgmac register %s failed for Offset %x\n",
-+			 rd_wr ? "write" : "read", reg);
-+
-+	if (!rd_wr)
-+		*val = FIELD_PREP(MASK_HIGH, readl(xgmac_data1_reg)) |
-+		       readl(xgmac_data0_reg);
-+	spin_unlock_bh(&priv->irw_lock);
-+}
-+
-+void xgmac_get_hw_features(struct gswip_mac *priv)
-+{
-+	struct xgmac_hw_features *hw_feat = &priv->hw_feat;
-+	u32 mac_hfr0, mac_hfr1, mac_hfr2;
-+
-+	xgmac_reg_rw(priv, MAC_HW_F0, &mac_hfr0, false);
-+	xgmac_reg_rw(priv, MAC_HW_F1, &mac_hfr1, false);
-+	xgmac_reg_rw(priv, MAC_HW_F2, &mac_hfr2, false);
-+	xgmac_reg_rw(priv, MAC_VER, &hw_feat->version, false);
-+
-+	priv->ver = FIELD_GET(MAC_VER_USERVER, hw_feat->version);
-+
-+	/* Hardware feature0 regiter*/
-+	hw_feat->gmii = FIELD_GET(MAC_HW_F0_GMIISEL, mac_hfr0);
-+	hw_feat->vlhash = FIELD_GET(MAC_HW_F0_VLHASH, mac_hfr0);
-+	hw_feat->sma = FIELD_GET(MAC_HW_F0_SMASEL, mac_hfr0);
-+	hw_feat->rwk = FIELD_GET(MAC_HW_F0_RWKSEL, mac_hfr0);
-+	hw_feat->mgk = FIELD_GET(MAC_HW_F0_MGKSEL, mac_hfr0);
-+	hw_feat->mmc = FIELD_GET(MAC_HW_F0_MMCSEL, mac_hfr0);
-+	hw_feat->aoe = FIELD_GET(MAC_HW_F0_ARPOFFSEL, mac_hfr0);
-+	hw_feat->ts = FIELD_GET(MAC_HW_F0_TSSEL, mac_hfr0);
-+	hw_feat->eee = FIELD_GET(MAC_HW_F0_EEESEL, mac_hfr0);
-+	hw_feat->tx_coe = FIELD_GET(MAC_HW_F0_TXCOESEL, mac_hfr0);
-+	hw_feat->rx_coe = FIELD_GET(MAC_HW_F0_RXCOESEL, mac_hfr0);
-+	hw_feat->addn_mac = FIELD_GET(MAC_HW_F0_ADDMACADRSEL, mac_hfr0);
-+	hw_feat->ts_src = FIELD_GET(MAC_HW_F0_TSSTSSEL, mac_hfr0);
-+	hw_feat->sa_vlan_ins = FIELD_GET(MAC_HW_F0_SAVLANINS, mac_hfr0);
-+	hw_feat->vxn = FIELD_GET(MAC_HW_F0_VXN, mac_hfr0);
-+	hw_feat->ediffc = FIELD_GET(MAC_HW_F0_EDIFFC, mac_hfr0);
-+	hw_feat->edma = FIELD_GET(MAC_HW_F0_EDMA, mac_hfr0);
-+
-+	/* Hardware feature1 register*/
-+	hw_feat->rx_fifo_size = FIELD_GET(MAC_HW_F1_RXFIFOSIZE, mac_hfr1);
-+	hw_feat->tx_fifo_size = FIELD_GET(MAC_HW_F1_TXFIFOSIZE, mac_hfr1);
-+	hw_feat->osten = FIELD_GET(MAC_HW_F1_OSTEN, mac_hfr1);
-+	hw_feat->ptoen = FIELD_GET(MAC_HW_F1_PTOEN, mac_hfr1);
-+	hw_feat->adv_ts_hi = FIELD_GET(MAC_HW_F1_ADVTHWORD, mac_hfr1);
-+	hw_feat->dma_width = FIELD_GET(MAC_HW_F1_ADDR64, mac_hfr1);
-+	hw_feat->dcb = FIELD_GET(MAC_HW_F1_DCBEN, mac_hfr1);
-+	hw_feat->sph = FIELD_GET(MAC_HW_F1_SPHEN, mac_hfr1);
-+	hw_feat->tso = FIELD_GET(MAC_HW_F1_TSOEN, mac_hfr1);
-+	hw_feat->dma_debug = FIELD_GET(MAC_HW_F1_DBGMEMA, mac_hfr1);
-+	hw_feat->rss = FIELD_GET(MAC_HW_F1_RSSEN, mac_hfr1);
-+	hw_feat->tc_cnt = FIELD_GET(MAC_HW_F1_NUMTC, mac_hfr1);
-+	hw_feat->hash_table_size = FIELD_GET(MAC_HW_F1_HASHTBLSZ, mac_hfr1);
-+	hw_feat->l3l4_filter_num = FIELD_GET(MAC_HW_F1_L3L4FNUM, mac_hfr1);
-+
-+	/* Hardware feature2 register*/
-+	hw_feat->rx_q_cnt = FIELD_GET(MAC_HW_F2_RXCHCNT, mac_hfr2);
-+	hw_feat->tx_q_cnt = FIELD_GET(MAC_HW_F2_TXQCNT, mac_hfr2);
-+	hw_feat->rx_ch_cnt = FIELD_GET(MAC_HW_F2_RXCHCNT, mac_hfr2);
-+	hw_feat->tx_ch_cnt = FIELD_GET(MAC_HW_F2_TXCHCNT, mac_hfr2);
-+	hw_feat->pps_out_num = FIELD_GET(MAC_HW_F2_PPSOUTNUM, mac_hfr2);
-+	hw_feat->aux_snap_num = FIELD_GET(MAC_HW_F2_AUXSNAPNUM, mac_hfr2);
-+
-+	/* TC and Queue are zero based so increment to get the actual number */
-+	hw_feat->tc_cnt++;
-+	hw_feat->rx_q_cnt++;
-+	hw_feat->tx_q_cnt++;
-+}
-+
-+void xgmac_init_priv(struct gswip_mac *priv)
-+{
-+	u8 mac_addr[6] = {0x00, 0x00, 0x94, 0x00, 0x00, 0x08};
-+
-+	priv->mac_idx += MAC2;
-+
-+	priv->xgmac_ctrl_reg = XGMAC_CTRL_REG(priv->mac_idx);
-+	priv->xgmac_data1_reg = XGMAC_DATA1_REG(priv->mac_idx);
-+	priv->xgmac_data0_reg = XGMAC_DATA0_REG(priv->mac_idx);
-+
-+	/* Temp mac addr, Later eth driver will update */
-+	mac_addr[5] = priv->mac_idx;
-+	memcpy(priv->mac_addr, mac_addr, 6);
-+
-+	priv->mtu = LGM_MAX_MTU;
-+	priv->promisc_mode = true;
-+	priv->all_mcast_mode = true;
-+}
-+
-+void xgmac_set_mac_address(struct gswip_mac *priv, u8 *mac_addr)
-+{
-+	u32 mac_addr_hi, mac_addr_low;
-+	u32 val;
-+
-+	mac_addr_hi = (mac_addr[5] << 8) | (mac_addr[4] << 0);
-+	mac_addr_low = (mac_addr[3] << 24) | (mac_addr[2] << 16) |
-+			(mac_addr[1] <<  8) | (mac_addr[0] <<  0);
-+
-+	xgmac_reg_rw(priv, MAC_MACA0HR, &mac_addr_hi, true);
-+
-+	xgmac_reg_rw(priv, MAC_MACA0LR, &val, false);
-+	if (val != mac_addr_low)
-+		xgmac_reg_rw(priv, MAC_MACA0LR, &mac_addr_low, true);
-+}
-+
-+inline void xgmac_prep_pkt_jumbo(u32 mtu, u32 *mac_rcr, u32 *mac_tcr)
-+{
-+	if (mtu < XGMAC_MAX_GPSL) {	/* upto 9018 configuration */
-+		*mac_rcr |= MAC_RX_CFG_JE;
-+		*mac_rcr &= ~MAC_RX_CFG_WD & ~MAC_RX_CFG_GPSLCE;
-+		*mac_tcr &= ~MAC_TX_CFG_JD;
-+
-+	} else {			/* upto 16K configuration */
-+		*mac_rcr &= ~MAC_RX_CFG_JE;
-+		*mac_rcr |= MAC_RX_CFG_WD | MAC_RX_CFG_GPSLCE |
-+			    FIELD_PREP(MAC_RX_CFG_GPSL,
-+				       XGMAC_MAX_SUPPORTED_MTU);
-+		*mac_tcr |= MAC_TX_CFG_JD;
-+	}
-+}
-+
-+inline void xgmac_prep_pkt_standard(u32 *mac_rcr, u32 *mac_tcr)
-+{
-+	*mac_rcr &= ~MAC_RX_CFG_JE & ~MAC_RX_CFG_WD & ~MAC_RX_CFG_GPSLCE;
-+	*mac_tcr &= ~MAC_TX_CFG_JD;
-+}
-+
-+void xgmac_config_pkt(struct gswip_mac *priv, u32 mtu)
-+{
-+	u32 mac_rcr, mac_tcr;
-+
-+	xgmac_reg_rw(priv, MAC_RX_CFG, &mac_rcr, false);
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, false);
-+
-+	if (mtu > XGMAC_MAX_STD_PACKET)
-+		xgmac_prep_pkt_jumbo(mtu, &mac_rcr, &mac_tcr);
++	if (neigh->nud_state & NUD_VALID)
++		rc = irdma_add_arp(iwdev->rf, &dst_ip, true, neigh->ha);
 +	else
-+		xgmac_prep_pkt_standard(&mac_rcr, &mac_tcr);
++		neigh_event_send(neigh, NULL);
++exit:
++	if (neigh)
++		neigh_release(neigh);
 +
-+	xgmac_reg_rw(priv, MAC_RX_CFG, &mac_rcr, true);
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, true);
++	ip_rt_put(rt);
++
++	return rc;
 +}
 +
-+void xgmac_config_packet_filter(struct gswip_mac *priv, u32 mode)
++/**
++ * irdma_get_dst_ipv6 - get destination cache entry via ipv6 lookup
++ * @src_addr: local ipv6 sock address
++ * @dst_addr: destination ipv6 sock address
++ */
++static struct dst_entry *irdma_get_dst_ipv6(struct sockaddr_in6 *src_addr,
++					    struct sockaddr_in6 *dst_addr)
 +{
-+	u32 reg_val;
++	struct dst_entry *dst = NULL;
 +
-+	xgmac_reg_rw(priv, MAC_PKT_FR, &reg_val, false);
++	if ((IS_ENABLED(CONFIG_IPV6))) {
++		struct flowi6 fl6 = {};
 +
-+	switch (mode) {
-+	case PROMISC:
-+		reg_val &= ~MAC_PKT_FR_PR;
-+		reg_val |= FIELD_PREP(MAC_PKT_FR_PR, priv->promisc_mode);
-+		break;
++		fl6.daddr = dst_addr->sin6_addr;
++		fl6.saddr = src_addr->sin6_addr;
++		if (ipv6_addr_type(&fl6.daddr) & IPV6_ADDR_LINKLOCAL)
++			fl6.flowi6_oif = dst_addr->sin6_scope_id;
 +
-+	case PASS_ALL_MULTICAST:
-+		reg_val &= ~MAC_PKT_FR_PM;
-+		reg_val |= FIELD_PREP(MAC_PKT_FR_PM, priv->all_mcast_mode);
-+		break;
-+
-+	default:
-+		reg_val &= ~MAC_PKT_FR_PR & ~MAC_PKT_FR_PM;
-+		reg_val |= FIELD_PREP(MAC_PKT_FR_PR, priv->promisc_mode) |
-+			   FIELD_PREP(MAC_PKT_FR_PM, priv->all_mcast_mode);
++		dst = ip6_route_output(&init_net, NULL, &fl6);
 +	}
 +
-+	xgmac_reg_rw(priv, MAC_PKT_FR, &reg_val, true);
++	return dst;
 +}
 +
-+void xgmac_tx_flow_ctl(struct gswip_mac *priv, u32 pause_time, u32 mode)
++/**
++ * irdma_addr_resolve_neigh_ipv6 - resolve neighbor ipv6 address
++ * @iwdev: iwarp device structure
++ * @src: local ip address
++ * @dest: remote ip address
++ * @arpindex: if there is an arp entry
++ */
++static int irdma_addr_resolve_neigh_ipv6(struct irdma_device *iwdev, u32 *src,
++					 u32 *dest, int arpindex)
 +{
-+	u32 reg_val = 0;
++	struct neighbour *neigh;
++	int rc = arpindex;
++	struct dst_entry *dst;
++	struct sockaddr_in6 dst_addr = {};
++	struct sockaddr_in6 src_addr = {};
 +
-+	xgmac_reg_rw(priv, MAC_TX_FCR, &reg_val, false);
-+
-+	switch (mode) {
-+	case XGMAC_FC_EN:
-+		/* enable tx flow control */
-+		reg_val |= MAC_TX_FCR_TFE;
-+
-+		/* Set pause time */
-+		reg_val &= ~MAC_TX_FCR_PT;
-+		reg_val |= FIELD_PREP(MAC_TX_FCR_PT, pause_time);
-+		break;
-+
-+	case XGMAC_FC_DIS:
-+		reg_val &= ~MAC_TX_FCR_TFE;
-+		break;
++	dst_addr.sin6_family = AF_INET6;
++	irdma_copy_ip_htonl(dst_addr.sin6_addr.in6_u.u6_addr32, dest);
++	src_addr.sin6_family = AF_INET6;
++	irdma_copy_ip_htonl(src_addr.sin6_addr.in6_u.u6_addr32, src);
++	dst = irdma_get_dst_ipv6(&src_addr, &dst_addr);
++	if (!dst || dst->error) {
++		if (dst) {
++			dst_release(dst);
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: ip6_route_output returned dst->error = %d\n",
++				  dst->error);
++		}
++		return -EINVAL;
 +	}
 +
-+	xgmac_reg_rw(priv, MAC_TX_FCR, &reg_val, true);
-+}
++	neigh = dst_neigh_lookup(dst, dst_addr.sin6_addr.in6_u.u6_addr32);
++	if (!neigh)
++		goto exit;
 +
-+void xgmac_rx_flow_ctl(struct gswip_mac *priv, u32 mode)
-+{
-+	u32 reg_val = 0;
++	ibdev_dbg(to_ibdev(iwdev), "CM: dst_neigh_lookup MAC=%pM\n",
++		  neigh->ha);
 +
-+	xgmac_reg_rw(priv, MAC_RX_FCR, &reg_val, false);
++	trace_irdma_addr_resolve(iwdev, neigh->ha);
 +
-+	switch (mode) {
-+	case XGMAC_FC_EN:
-+		/* rx fc enable */
-+		reg_val |= MAC_RX_FCR_RFE;
-+		reg_val &= ~MAC_RX_FCR_PFCE;
-+		break;
-+
-+	case XGMAC_FC_DIS:
-+		reg_val &= ~MAC_RX_FCR_RFE;
-+		break;
-+	}
-+
-+	xgmac_reg_rw(priv, MAC_RX_FCR, &reg_val, true);
-+}
-+
-+int xgmac_set_mac_lpitx(struct gswip_mac *priv, u32 val)
-+{
-+	u32 lpiate;
-+
-+	xgmac_reg_rw(priv, MAC_LPI_CSR, &lpiate, false);
-+
-+	if (FIELD_GET(MAC_LPI_CSR_LPIATE, lpiate) != val) {
-+		lpiate &= ~MAC_LPI_CSR_LPIATE;
-+		lpiate |= FIELD_PREP(MAC_LPI_CSR_LPIATE, val);
-+	}
-+
-+	if (FIELD_GET(MAC_LPI_CSR_LPITXA, lpiate) != val) {
-+		lpiate &= ~MAC_LPI_CSR_LPITXA;
-+		lpiate |= FIELD_PREP(MAC_LPI_CSR_LPITXA, val);
-+	}
-+
-+	xgmac_reg_rw(priv, MAC_LPI_CSR, &lpiate, true);
-+
-+	return 0;
-+}
-+
-+int xgmac_enable(struct gswip_mac *priv)
-+{
-+	u32 mac_tcr, mac_rcr, mac_pfr;
-+
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, false);
-+	xgmac_reg_rw(priv, MAC_RX_CFG, &mac_rcr, false);
-+	xgmac_reg_rw(priv, MAC_PKT_FR, &mac_pfr, false);
-+
-+	/* Enable MAC Tx */
-+	if (!FIELD_GET(MAC_TX_CFG_TE, mac_tcr)) {
-+		mac_tcr |= MAC_TX_CFG_TE;
-+		xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, true);
-+	}
-+
-+	/* Enable MAC Rx */
-+	if (!FIELD_GET(MAC_RX_CFG_RE, mac_rcr)) {
-+		mac_rcr |= MAC_RX_CFG_RE;
-+		xgmac_reg_rw(priv, MAC_RX_CFG, &mac_rcr, true);
-+	}
-+
-+	/* Enable MAC Filter Rx All */
-+	if (!FIELD_GET(MAC_PKT_FR_RA, mac_pfr)) {
-+		mac_pfr |= MAC_PKT_FR_RA;
-+		xgmac_reg_rw(priv, MAC_PKT_FR, &mac_pfr, true);
-+	}
-+
-+	return 0;
-+}
-+
-+int xgmac_disable(struct gswip_mac *priv)
-+{
-+	u32 mac_tcr, mac_rcr, mac_pfr;
-+
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, false);
-+	xgmac_reg_rw(priv, MAC_RX_CFG, &mac_rcr, false);
-+	xgmac_reg_rw(priv, MAC_PKT_FR, &mac_pfr, false);
-+
-+	/* Disable MAC Tx */
-+	if (FIELD_GET(MAC_TX_CFG_TE, mac_tcr) != 0) {
-+		mac_tcr &= ~MAC_TX_CFG_TE;
-+		xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, true);
-+	}
-+
-+	/* Disable MAC Rx */
-+	if (FIELD_GET(MAC_RX_CFG_RE, mac_rcr) != 0) {
-+		mac_rcr &= ~MAC_RX_CFG_RE;
-+		xgmac_reg_rw(priv, MAC_RX_CFG, &mac_rcr, true);
-+	}
-+
-+	/* Disable MAC Filter Rx All */
-+	if (FIELD_GET(MAC_PKT_FR_RA, mac_pfr) != 0) {
-+		mac_pfr &= ~MAC_PKT_FR_RA;
-+		xgmac_reg_rw(priv, MAC_PKT_FR, &mac_pfr, true);
-+	}
-+
-+	return 0;
-+}
-+
-+int xgmac_pause_frame_filter(struct gswip_mac *priv, u32 val)
-+{
-+	u32 mac_pfr;
-+
-+	xgmac_reg_rw(priv, MAC_PKT_FR, &mac_pfr, false);
-+
-+	if (FIELD_GET(MAC_PKT_FR_PCF, mac_pfr) != val) {
-+		/* Pause filtering */
-+		mac_pfr &= ~MAC_PKT_FR_PCF;
-+		mac_pfr |= FIELD_PREP(MAC_PKT_FR_PCF, val);
-+	}
-+
-+	/* The Receiver module passes only those packets to the application
-+	 * that pass the SA or DA address filter.
-+	 */
-+	if (FIELD_GET(MAC_PKT_FR_RA, mac_pfr) == 1)
-+		mac_pfr &= ~MAC_PKT_FR_RA;
-+
-+	xgmac_reg_rw(priv, MAC_PKT_FR, &mac_pfr, true);
-+
-+	return 0;
-+}
-+
-+int xgmac_set_extcfg(struct gswip_mac *priv, u32 val)
-+{
-+	u32 mac_extcfg;
-+
-+	xgmac_reg_rw(priv, MAC_EXTCFG, &mac_extcfg, false);
-+
-+	if (FIELD_GET(MAC_EXTCFG_SBDIOEN, mac_extcfg) != val) {
-+		mac_extcfg &= ~MAC_EXTCFG_SBDIOEN;
-+		mac_extcfg |= FIELD_PREP(MAC_EXTCFG_SBDIOEN, val);
-+		xgmac_reg_rw(priv, MAC_EXTCFG, &mac_extcfg, true);
-+	}
-+
-+	return 0;
-+}
-+
-+int xgmac_set_xgmii_speed(struct gswip_mac *priv)
-+{
-+	u32 mac_tcr;
-+
-+	xgmac_disable(priv);
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, false);
-+
-+	if (FIELD_GET(MAC_TX_CFG_USS, mac_tcr) != 0)
-+		mac_tcr &= ~MAC_TX_CFG_USS;
-+
-+	if (FIELD_GET(MAC_TX_CFG_SS, mac_tcr) != 0)
-+		mac_tcr &= ~MAC_TX_CFG_SS;
-+
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, true);
-+	xgmac_enable(priv);
-+
-+	return 0;
-+}
-+
-+int xgmac_set_gmii_2500_speed(struct gswip_mac *priv)
-+{
-+	u32 mac_tcr;
-+
-+	xgmac_disable(priv);
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, false);
-+
-+	if (FIELD_GET(MAC_TX_CFG_USS, mac_tcr) != 0)
-+		mac_tcr &= ~MAC_TX_CFG_USS;
-+
-+	if (FIELD_GET(MAC_TX_CFG_SS, mac_tcr) != 0x2) {
-+		mac_tcr &= ~MAC_TX_CFG_SS;
-+		mac_tcr |= FIELD_PREP(MAC_TX_CFG_SS, 0x2);
-+	}
-+
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, true);
-+	xgmac_enable(priv);
-+
-+	return 0;
-+}
-+
-+int xgmac_set_xgmii_2500_speed(struct gswip_mac *priv)
-+{
-+	u32 mac_tcr;
-+
-+	xgmac_disable(priv);
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, false);
-+
-+	if (FIELD_GET(MAC_TX_CFG_USS, mac_tcr) != 1)
-+		mac_tcr |= MAC_TX_CFG_USS;
-+
-+	if (FIELD_GET(MAC_TX_CFG_SS, mac_tcr) != 0x2) {
-+		mac_tcr &= ~MAC_TX_CFG_SS;
-+		mac_tcr |= FIELD_PREP(MAC_TX_CFG_SS, 0x2);
-+	}
-+
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, true);
-+	xgmac_enable(priv);
-+
-+	return 0;
-+}
-+
-+int xgmac_set_gmii_speed(struct gswip_mac *priv)
-+{
-+	u32 mac_tcr;
-+
-+	xgmac_disable(priv);
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, false);
-+
-+	if (FIELD_GET(MAC_TX_CFG_USS, mac_tcr) != 0)
-+		mac_tcr &= MAC_TX_CFG_USS;
-+
-+	if (FIELD_GET(MAC_TX_CFG_SS, mac_tcr) != 0x3) {
-+		mac_tcr &= ~MAC_TX_CFG_SS;
-+		mac_tcr |= FIELD_PREP(MAC_TX_CFG_SS, 0x3);
-+	}
-+
-+	xgmac_reg_rw(priv, MAC_TX_CFG, &mac_tcr, true);
-+	xgmac_enable(priv);
-+
-+	return 0;
-+}
-+
-+int xgmac_mdio_set_clause(struct gswip_mac *priv, u32 clause, u32 phy_id)
-+{
-+	u32 mdio_c22p = 0;
-+
-+	xgmac_reg_rw(priv, MDIO_C22P, &mdio_c22p, false);
-+
-+	if (clause == MDIO_CLAUSE22)
-+		mdio_c22p |= MDIO_C22P_PORT(phy_id);
++	if (neigh->nud_state & NUD_VALID)
++		rc = irdma_add_arp(iwdev->rf, dest, false, neigh->ha);
 +	else
-+		mdio_c22p &= ~MDIO_C22P_PORT(phy_id);
++		neigh_event_send(neigh, NULL);
++exit:
++	if (neigh)
++		neigh_release(neigh);
++	dst_release(dst);
 +
-+	/* Select port 0, 1, 2 and 3 as Clause 22/45 ports */
-+	xgmac_reg_rw(priv, MDIO_C22P, &mdio_c22p, true);
-+
-+	return 0;
++	return rc;
 +}
 +
-+static int xgmac_mdio_single_wr(struct gswip_mac *priv, u32 dev_adr,
-+				u32 phy_id, u32 phy_reg, u32 phy_reg_data)
++/**
++ * irdma_ipv4_is_lpb - check if loopback
++ * @loc_addr: local addr to compare
++ * @rem_addr: remote address
++ */
++bool irdma_ipv4_is_lpb(u32 loc_addr, u32 rem_addr)
 +{
-+	u32 mdio_sccdr, mdio_scar;
-+	u32 retries = 100;
++	return ipv4_is_loopback(htonl(rem_addr)) || (loc_addr == rem_addr);
++}
 +
-+	/* wait for any previous MDIO read/write operation to complete */
-+	/* Poll */
-+	do {
-+		xgmac_reg_rw(priv, MDIO_SCCDR, &mdio_sccdr, false);
-+		if (!FIELD_GET(MDIO_SCCDR_BUSY, mdio_sccdr))
-+			break;
-+		cpu_relax();
-+	} while (--retries);
-+	if (!retries) {
-+		dev_err(priv->dev, "Xgmac MDIO rd/wr operation failed\n");
-+		return -ETIMEDOUT;
++/**
++ * irdma_ipv6_is_loopback - check if loopback
++ * @loc_addr: local addr to compare
++ * @rem_addr: remote address
++ */
++bool irdma_ipv6_is_lpb(u32 *loc_addr, u32 *rem_addr)
++{
++	struct in6_addr raddr6;
++
++	irdma_copy_ip_htonl(raddr6.in6_u.u6_addr32, rem_addr);
++
++	return !memcmp(loc_addr, rem_addr, 16) || ipv6_addr_loopback(&raddr6);
++}
++
++/**
++ * irdma_cm_create_ah - create a cm address handle
++ * @cm_node: The connection manager node to create AH for
++ * @wait: Provides option to wait for ah creation or not
++ */
++static int irdma_cm_create_ah(struct irdma_cm_node *cm_node, bool wait)
++{
++	struct irdma_ah_info ah_info = {};
++	struct irdma_device *iwdev = cm_node->iwdev;
++
++	ether_addr_copy(ah_info.mac_addr, iwdev->netdev->dev_addr);
++
++	ah_info.hop_ttl = 0x40;
++	ah_info.tc_tos = cm_node->tos;
++	ah_info.vsi = &iwdev->vsi;
++
++	if (cm_node->ipv4) {
++		ah_info.ipv4_valid = true;
++		ah_info.dest_ip_addr[0] = cm_node->rem_addr[0];
++		ah_info.src_ip_addr[0] = cm_node->loc_addr[0];
++		ah_info.do_lpbk = irdma_ipv4_is_lpb(ah_info.src_ip_addr[0],
++						    ah_info.dest_ip_addr[0]);
++	} else {
++		memcpy(ah_info.dest_ip_addr, cm_node->rem_addr,
++		       sizeof(ah_info.dest_ip_addr));
++		memcpy(ah_info.src_ip_addr, cm_node->loc_addr,
++		       sizeof(ah_info.src_ip_addr));
++		ah_info.do_lpbk = irdma_ipv6_is_lpb(ah_info.src_ip_addr,
++						    ah_info.dest_ip_addr);
 +	}
 +
-+	xgmac_reg_rw(priv, MDIO_SCAR, &mdio_scar, false);
-+	mdio_scar &= ~MDIO_SCAR_DA & ~MDIO_SCAR_PA & ~MDIO_SCAR_RA;
-+	mdio_scar |= FIELD_PREP(MDIO_SCAR_DA, dev_adr);
-+	mdio_scar |= FIELD_PREP(MDIO_SCAR_PA, phy_id);
-+	mdio_scar |= FIELD_PREP(MDIO_SCAR_RA, phy_reg);
-+	xgmac_reg_rw(priv, MDIO_SCAR, &mdio_scar, true);
-+
-+	xgmac_reg_rw(priv, MDIO_SCCDR, &mdio_sccdr, false);
-+	mdio_sccdr &= ~MDIO_SCCDR_SDATA & ~MDIO_SCCDR_CMD;
-+	mdio_sccdr |= FIELD_PREP(MDIO_SCCDR_SDATA, phy_reg_data);
-+	mdio_sccdr |= MDIO_SCCDR_BUSY;
-+	mdio_sccdr &= ~MDIO_SCCDR_SADDR;
-+	mdio_sccdr |= FIELD_PREP(MDIO_SCCDR_CMD, 1);
-+	xgmac_reg_rw(priv, MDIO_SCCDR, &mdio_sccdr, true);
-+
-+	retries = 100;
-+	/* wait for MDIO read operation to complete */
-+	/* Poll */
-+	do {
-+		xgmac_reg_rw(priv, MDIO_SCCDR, &mdio_sccdr, false);
-+		if (!FIELD_GET(MDIO_SCCDR_BUSY, mdio_sccdr))
-+			break;
-+		cpu_relax();
-+	} while (--retries);
-+	if (!retries) {
-+		dev_err(priv->dev, "Xgmac MDIO rd/wr operation failed\n");
-+		return -ETIMEDOUT;
++	ah_info.vlan_tag = cm_node->vlan_id;
++	if (cm_node->vlan_id < VLAN_N_VID) {
++		ah_info.insert_vlan_tag = 1;
++		ah_info.vlan_tag |= cm_node->user_pri << VLAN_PRIO_SHIFT;
 +	}
 +
-+	return 0;
-+}
++	ah_info.dst_arpindex =
++		irdma_arp_table(iwdev->rf, ah_info.dest_ip_addr,
++				ah_info.ipv4_valid, NULL, IRDMA_ARP_RESOLVE);
 +
-+static int xgmac_mdio_single_rd(struct gswip_mac *priv, u32 dev_adr,
-+				u32 phy_id, u32 phy_reg)
-+{
-+	u32 mdio_sccdr, mdio_scar;
-+	u32 retries = 100;
-+	int phy_reg_data;
-+
-+	/* wait for any previous MDIO read/write operation to complete */
-+	/* Poll */
-+	do {
-+		xgmac_reg_rw(priv, MDIO_SCCDR, &mdio_sccdr, false);
-+		if (!FIELD_GET(MDIO_SCCDR_BUSY, mdio_sccdr))
-+			break;
-+		cpu_relax();
-+	} while (--retries);
-+	if (!retries) {
-+		dev_err(priv->dev, "Xgmac MDIO rd/wr operation failed\n");
-+		return -ETIMEDOUT;
-+	}
-+
-+	/* initiate the MDIO read operation by updating desired bits
-+	 * PA - phy address/id (0 - 31)
-+	 * RA - phy register offset
-+	 */
-+
-+	xgmac_reg_rw(priv, MDIO_SCAR, &mdio_scar, false);
-+	mdio_scar &= ~MDIO_SCAR_DA & ~MDIO_SCAR_PA & ~MDIO_SCAR_RA;
-+	mdio_scar |= FIELD_PREP(MDIO_SCAR_DA, dev_adr);
-+	mdio_scar |= FIELD_PREP(MDIO_SCAR_PA, phy_id);
-+	mdio_scar |= FIELD_PREP(MDIO_SCAR_RA, phy_reg);
-+	xgmac_reg_rw(priv, MDIO_SCAR, &mdio_scar, true);
-+
-+	xgmac_reg_rw(priv, MDIO_SCCDR, &mdio_sccdr, false);
-+	mdio_sccdr &= ~MDIO_SCCDR_CMD & ~MDIO_SCCDR_SDATA;
-+	mdio_sccdr |= MDIO_SCCDR_BUSY;
-+	mdio_sccdr &= ~MDIO_SCCDR_SADDR;
-+	mdio_sccdr |= FIELD_PREP(MDIO_SCCDR_CMD, 3);
-+	mdio_sccdr |= FIELD_PREP(MDIO_SCCDR_SDATA, 0);
-+	xgmac_reg_rw(priv, MDIO_SCCDR, &mdio_sccdr, true);
-+
-+	retries = 100;
-+	/* wait for MDIO read operation to complete */
-+	/* Poll */
-+	do {
-+		xgmac_reg_rw(priv, MDIO_SCCDR, &mdio_sccdr, false);
-+		if (!FIELD_GET(MDIO_SCCDR_BUSY, mdio_sccdr))
-+			break;
-+		cpu_relax();
-+	} while (--retries);
-+	if (!retries) {
-+		dev_err(priv->dev, "Xgmac MDIO rd/wr operation failed\n");
-+		return -ETIMEDOUT;
-+	}
-+
-+	/* read the data */
-+	xgmac_reg_rw(priv, MDIO_SCCDR, &mdio_sccdr, false);
-+	phy_reg_data = FIELD_GET(MDIO_SCCDR_SDATA, mdio_sccdr);
-+
-+	return phy_reg_data;
-+}
-+
-+static int xgmac_mdio_read(struct mii_bus *bus, int phyadr, int phyreg)
-+{
-+	struct gswip_mac *priv = bus->priv;
-+
-+	return xgmac_mdio_single_rd(priv, 0, phyadr, phyreg);
-+}
-+
-+static int xgmac_mdio_write(struct mii_bus *bus, int phyadr, int phyreg,
-+			    u16 phydata)
-+{
-+	struct gswip_mac *priv = bus->priv;
-+
-+	return xgmac_mdio_single_wr(priv, 0, phyadr, phyreg, phydata);
-+}
-+
-+int xgmac_mdio_register(struct gswip_mac *priv)
-+{
-+	struct device_node *mdio_np;
-+	struct mii_bus *bus;
-+	int ret;
-+
-+	mdio_np = of_get_child_by_name(priv->dev->of_node, "mdio");
-+	if (!mdio_np)
-+		return -ENOLINK;
-+
-+	bus = mdiobus_alloc();
-+	if (!bus)
++	if (irdma_puda_create_ah(&iwdev->rf->sc_dev, &ah_info, wait,
++				 IRDMA_PUDA_RSRC_TYPE_ILQ, cm_node,
++				 &cm_node->ah))
 +		return -ENOMEM;
 +
-+	bus->name = "xgmac_phy";
-+	bus->read = xgmac_mdio_read;
-+	bus->write = xgmac_mdio_write;
-+	bus->reset = NULL;
-+	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-%x", bus->name, priv->mac_idx);
-+	bus->priv = priv;
-+	bus->parent = priv->dev;
++	trace_irdma_create_ah(cm_node);
++	return 0;
++}
 +
-+	/* At this moment gphy is not yet up (firmware not yet loaded), so we
-+	 * avoid auto mdio scan.
-+	 */
-+	bus->phy_mask = 0xFFFFFFFF;
++/**
++ * irdma_cm_free_ah - free a cm address handle
++ * @cm_node: The connection manager node to create AH for
++ */
++static void irdma_cm_free_ah(struct irdma_cm_node *cm_node)
++{
++	struct irdma_device *iwdev = cm_node->iwdev;
 +
-+	ret = of_mdiobus_register(bus, mdio_np);
-+	if (ret) {
-+		mdiobus_free(bus);
-+		return ret;
++	trace_irdma_cm_free_ah(cm_node);
++	irdma_puda_free_ah(&iwdev->rf->sc_dev, cm_node->ah);
++	cm_node->ah = NULL;
++}
++
++/**
++ * irdma_make_cm_node - create a new instance of a cm node
++ * @cm_core: cm's core
++ * @iwdev: iwarp device structure
++ * @cm_info: quad info for connection
++ * @listener: passive connection's listener
++ */
++static struct irdma_cm_node *
++irdma_make_cm_node(struct irdma_cm_core *cm_core, struct irdma_device *iwdev,
++		   struct irdma_cm_info *cm_info,
++		   struct irdma_cm_listener *listener)
++{
++	struct irdma_cm_node *cm_node;
++	int oldarpindex;
++	int arpindex;
++	struct net_device *netdev = iwdev->netdev;
++
++	/* create an hte and cm_node for this instance */
++	cm_node = kzalloc(sizeof(*cm_node), GFP_ATOMIC);
++	if (!cm_node)
++		return NULL;
++
++	/* set our node specific transport info */
++	cm_node->ipv4 = cm_info->ipv4;
++	cm_node->vlan_id = cm_info->vlan_id;
++	if (cm_node->vlan_id >= VLAN_N_VID && iwdev->dcb)
++		cm_node->vlan_id = 0;
++	cm_node->tos = cm_info->tos;
++	cm_node->user_pri = cm_info->user_pri;
++	if (listener) {
++		if (listener->tos != cm_info->tos)
++			dev_warn(rfdev_to_dev(&iwdev->rf->sc_dev),
++				 "application TOS[%d] and remote client TOS[%d] mismatch\n",
++				 listener->tos, cm_info->tos);
++		cm_node->tos = max(listener->tos, cm_info->tos);
++		cm_node->user_pri = rt_tos2priority(cm_node->tos);
++		ibdev_dbg(to_ibdev(iwdev),
++			  "DCB: listener: TOS:[%d] UP:[%d]\n", cm_node->tos,
++			  cm_node->user_pri);
++		trace_irdma_listener_tos(iwdev, cm_node->tos,
++					 cm_node->user_pri);
++	}
++	memcpy(cm_node->loc_addr, cm_info->loc_addr, sizeof(cm_node->loc_addr));
++	memcpy(cm_node->rem_addr, cm_info->rem_addr, sizeof(cm_node->rem_addr));
++	cm_node->loc_port = cm_info->loc_port;
++	cm_node->rem_port = cm_info->rem_port;
++
++	cm_node->mpa_frame_rev = IRDMA_CM_DEFAULT_MPA_VER;
++	cm_node->send_rdma0_op = SEND_RDMA_READ_ZERO;
++	cm_node->iwdev = iwdev;
++	cm_node->dev = &iwdev->rf->sc_dev;
++
++	cm_node->ird_size = cm_node->dev->hw_attrs.max_hw_ird;
++	cm_node->ord_size = cm_node->dev->hw_attrs.max_hw_ord;
++
++	cm_node->listener = listener;
++	cm_node->cm_id = cm_info->cm_id;
++	ether_addr_copy(cm_node->loc_mac, netdev->dev_addr);
++	spin_lock_init(&cm_node->retrans_list_lock);
++	cm_node->ack_rcvd = false;
++
++	refcount_set(&cm_node->refcnt, 1);
++	/* associate our parent CM core */
++	cm_node->cm_core = cm_core;
++	cm_node->tcp_cntxt.loc_id = IRDMA_CM_DEFAULT_LOCAL_ID;
++	cm_node->tcp_cntxt.rcv_wscale = iwdev->rcv_wscale;
++	cm_node->tcp_cntxt.rcv_wnd = iwdev->rcv_wnd >> cm_node->tcp_cntxt.rcv_wscale;
++	if (cm_node->ipv4) {
++		cm_node->tcp_cntxt.loc_seq_num = secure_tcp_seq(htonl(cm_node->loc_addr[0]),
++								htonl(cm_node->rem_addr[0]),
++								htons(cm_node->loc_port),
++								htons(cm_node->rem_port));
++		cm_node->tcp_cntxt.mss = iwdev->vsi.mtu - IRDMA_MTU_TO_MSS_IPV4;
++	} else if (IS_ENABLED(CONFIG_IPV6)) {
++		__be32 loc[4] = {
++			htonl(cm_node->loc_addr[0]), htonl(cm_node->loc_addr[1]),
++			htonl(cm_node->loc_addr[2]), htonl(cm_node->loc_addr[3])
++		};
++		__be32 rem[4] = {
++			htonl(cm_node->rem_addr[0]), htonl(cm_node->rem_addr[1]),
++			htonl(cm_node->rem_addr[2]), htonl(cm_node->rem_addr[3])
++		};
++		cm_node->tcp_cntxt.loc_seq_num = secure_tcpv6_seq(loc, rem,
++								  htons(cm_node->loc_port),
++								  htons(cm_node->rem_port));
++		cm_node->tcp_cntxt.mss = iwdev->vsi.mtu - IRDMA_MTU_TO_MSS_IPV6;
 +	}
 +
-+	priv->mii = bus;
-+	dev_info(priv->dev, "XGMAC %d: MDIO register Successful\n",
-+		 priv->mac_idx);
++	if ((cm_node->ipv4 &&
++	     irdma_ipv4_is_lpb(cm_node->loc_addr[0], cm_node->rem_addr[0])) ||
++	    (!cm_node->ipv4 &&
++	     irdma_ipv6_is_lpb(cm_node->loc_addr, cm_node->rem_addr))) {
++		cm_node->do_lpb = true;
++		arpindex = irdma_arp_table(iwdev->rf, cm_node->rem_addr,
++					   cm_node->ipv4, NULL,
++					   IRDMA_ARP_RESOLVE);
++	} else {
++		oldarpindex = irdma_arp_table(iwdev->rf, cm_node->rem_addr,
++					      cm_node->ipv4, NULL,
++					      IRDMA_ARP_RESOLVE);
++		if (cm_node->ipv4)
++			arpindex = irdma_addr_resolve_neigh(iwdev,
++							    cm_info->loc_addr[0],
++							    cm_info->rem_addr[0],
++							    oldarpindex);
++		else if (IS_ENABLED(CONFIG_IPV6))
++			arpindex = irdma_addr_resolve_neigh_ipv6(iwdev,
++								 cm_info->loc_addr,
++								 cm_info->rem_addr,
++								 oldarpindex);
++		else
++			arpindex = -EINVAL;
++	}
++
++	if (arpindex < 0)
++		goto err;
++
++	ether_addr_copy(cm_node->rem_mac,
++			iwdev->rf->arp_table[arpindex].mac_addr);
++	irdma_add_hte_node(cm_core, cm_node);
++	cm_core->stats_nodes_created++;
++	return cm_node;
++
++err:
++	kfree(cm_node);
++
++	return NULL;
++}
++
++/**
++ * irdma_rem_ref_cm_node - destroy an instance of a cm node
++ * @cm_node: connection's node
++ */
++static void irdma_rem_ref_cm_node(struct irdma_cm_node *cm_node)
++{
++	struct irdma_cm_core *cm_core = cm_node->cm_core;
++	struct irdma_qp *iwqp;
++	struct irdma_cm_info nfo;
++	unsigned long flags;
++
++	trace_irdma_rem_ref_cm_node(cm_node, 0, __builtin_return_address(0));
++	spin_lock_irqsave(&cm_node->cm_core->ht_lock, flags);
++	if (!refcount_dec_and_test(&cm_node->refcnt)) {
++		spin_unlock_irqrestore(&cm_node->cm_core->ht_lock, flags);
++		return;
++	}
++
++	list_del(&cm_node->list);
++	spin_unlock_irqrestore(&cm_node->cm_core->ht_lock, flags);
++
++	/* if the node is destroyed before connection was accelerated */
++	if (!cm_node->accelerated && cm_node->accept_pend) {
++		ibdev_dbg(to_ibdev(cm_node->iwdev),
++			  "CM: node destroyed before established\n");
++		atomic_dec(&cm_node->listener->pend_accepts_cnt);
++	}
++	if (cm_node->close_entry)
++		irdma_handle_close_entry(cm_node, 0);
++	if (cm_node->listener) {
++		irdma_dec_refcnt_listen(cm_core, cm_node->listener, 0, true);
++	} else {
++		if (cm_node->apbvt_set) {
++			irdma_manage_apbvt(cm_node->iwdev, cm_node->loc_port,
++					   IRDMA_MANAGE_APBVT_DEL);
++			cm_node->apbvt_set = 0;
++		}
++		irdma_get_addr_info(cm_node, &nfo);
++		if (cm_node->qhash_set) {
++			nfo.qh_qpid = cm_node->iwdev->vsi.ilq->qp_id;
++			irdma_manage_qhash(cm_node->iwdev, &nfo,
++					   IRDMA_QHASH_TYPE_TCP_ESTABLISHED,
++					   IRDMA_QHASH_MANAGE_TYPE_DELETE, NULL,
++					   false);
++			cm_node->qhash_set = 0;
++		}
++	}
++
++	iwqp = cm_node->iwqp;
++	if (iwqp) {
++		iwqp->cm_node = NULL;
++		irdma_rem_ref(&iwqp->ibqp);
++		cm_node->iwqp = NULL;
++	} else if (cm_node->qhash_set) {
++		irdma_get_addr_info(cm_node, &nfo);
++		nfo.qh_qpid = cm_node->iwdev->vsi.ilq->qp_id;
++		irdma_manage_qhash(cm_node->iwdev, &nfo,
++				   IRDMA_QHASH_TYPE_TCP_ESTABLISHED,
++				   IRDMA_QHASH_MANAGE_TYPE_DELETE, NULL, false);
++		cm_node->qhash_set = 0;
++	}
++	cm_core->cm_free_ah(cm_node);
++	cm_node->cm_core->stats_nodes_destroyed++;
++	kfree(cm_node);
++}
++
++/**
++ * irdma_handle_fin_pkt - FIN packet received
++ * @cm_node: connection's node
++ */
++static void irdma_handle_fin_pkt(struct irdma_cm_node *cm_node)
++{
++	switch (cm_node->state) {
++	case IRDMA_CM_STATE_SYN_RCVD:
++	case IRDMA_CM_STATE_SYN_SENT:
++	case IRDMA_CM_STATE_ESTABLISHED:
++	case IRDMA_CM_STATE_MPAREJ_RCVD:
++		cm_node->tcp_cntxt.rcv_nxt++;
++		irdma_cleanup_retrans_entry(cm_node);
++		cm_node->state = IRDMA_CM_STATE_LAST_ACK;
++		irdma_send_fin(cm_node);
++		break;
++	case IRDMA_CM_STATE_MPAREQ_SENT:
++		irdma_create_event(cm_node, IRDMA_CM_EVENT_ABORTED);
++		cm_node->tcp_cntxt.rcv_nxt++;
++		irdma_cleanup_retrans_entry(cm_node);
++		cm_node->state = IRDMA_CM_STATE_CLOSED;
++		refcount_inc(&cm_node->refcnt);
++		irdma_send_reset(cm_node);
++		break;
++	case IRDMA_CM_STATE_FIN_WAIT1:
++		cm_node->tcp_cntxt.rcv_nxt++;
++		irdma_cleanup_retrans_entry(cm_node);
++		cm_node->state = IRDMA_CM_STATE_CLOSING;
++		irdma_send_ack(cm_node);
++		/*
++		 * Wait for ACK as this is simultaneous close.
++		 * After we receive ACK, do not send anything.
++		 * Just rm the node.
++		 */
++		break;
++	case IRDMA_CM_STATE_FIN_WAIT2:
++		cm_node->tcp_cntxt.rcv_nxt++;
++		irdma_cleanup_retrans_entry(cm_node);
++		cm_node->state = IRDMA_CM_STATE_TIME_WAIT;
++		irdma_send_ack(cm_node);
++		irdma_schedule_cm_timer(cm_node, NULL, IRDMA_TIMER_TYPE_CLOSE,
++					1, 0);
++		break;
++	case IRDMA_CM_STATE_TIME_WAIT:
++		cm_node->tcp_cntxt.rcv_nxt++;
++		irdma_cleanup_retrans_entry(cm_node);
++		cm_node->state = IRDMA_CM_STATE_CLOSED;
++		irdma_rem_ref_cm_node(cm_node);
++		break;
++	case IRDMA_CM_STATE_OFFLOADED:
++	default:
++		ibdev_dbg(to_ibdev(cm_node->iwdev),
++			  "CM: bad state node state = %d\n", cm_node->state);
++		break;
++	}
++}
++
++/**
++ * irdma_handle_rst_pkt - process received RST packet
++ * @cm_node: connection's node
++ * @rbuf: receive buffer
++ */
++static void irdma_handle_rst_pkt(struct irdma_cm_node *cm_node,
++				 struct irdma_puda_buf *rbuf)
++{
++	irdma_cleanup_retrans_entry(cm_node);
++	switch (cm_node->state) {
++	case IRDMA_CM_STATE_SYN_SENT:
++	case IRDMA_CM_STATE_MPAREQ_SENT:
++		switch (cm_node->mpa_frame_rev) {
++		case IETF_MPA_V2:
++			/* Drop down to MPA_V1*/
++			cm_node->mpa_frame_rev = IETF_MPA_V1;
++			/* send a syn and goto syn sent state */
++			cm_node->state = IRDMA_CM_STATE_SYN_SENT;
++			if (irdma_send_syn(cm_node, 0))
++				irdma_active_open_err(cm_node, false);
++			break;
++		case IETF_MPA_V1:
++		default:
++			irdma_active_open_err(cm_node, false);
++			break;
++		}
++		break;
++	case IRDMA_CM_STATE_MPAREQ_RCVD:
++		atomic_add_return(1, &cm_node->passive_state);
++		break;
++	case IRDMA_CM_STATE_ESTABLISHED:
++	case IRDMA_CM_STATE_SYN_RCVD:
++	case IRDMA_CM_STATE_LISTENING:
++		irdma_passive_open_err(cm_node, false);
++		break;
++	case IRDMA_CM_STATE_OFFLOADED:
++		irdma_active_open_err(cm_node, false);
++		break;
++	case IRDMA_CM_STATE_CLOSED:
++		break;
++	case IRDMA_CM_STATE_FIN_WAIT2:
++	case IRDMA_CM_STATE_FIN_WAIT1:
++	case IRDMA_CM_STATE_LAST_ACK:
++		cm_node->cm_id->rem_ref(cm_node->cm_id);
++		/* fall through */
++	case IRDMA_CM_STATE_TIME_WAIT:
++		cm_node->state = IRDMA_CM_STATE_CLOSED;
++		irdma_rem_ref_cm_node(cm_node);
++		break;
++	default:
++		break;
++	}
++}
++
++/**
++ * irdma_handle_rcv_mpa - Process a recv'd mpa buffer
++ * @cm_node: connection's node
++ * @rbuf: receive buffer
++ */
++static void irdma_handle_rcv_mpa(struct irdma_cm_node *cm_node,
++				 struct irdma_puda_buf *rbuf)
++{
++	int err;
++	int datasize = rbuf->datalen;
++	u8 *dataloc = rbuf->data;
++
++	enum irdma_cm_event_type type = IRDMA_CM_EVENT_UNKNOWN;
++	u32 res_type;
++
++	err = irdma_parse_mpa(cm_node, dataloc, &res_type, datasize);
++	if (err) {
++		if (cm_node->state == IRDMA_CM_STATE_MPAREQ_SENT)
++			irdma_active_open_err(cm_node, true);
++		else
++			irdma_passive_open_err(cm_node, true);
++		return;
++	}
++
++	switch (cm_node->state) {
++	case IRDMA_CM_STATE_ESTABLISHED:
++		if (res_type == IRDMA_MPA_REQUEST_REJECT)
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: state for reject\n");
++		cm_node->state = IRDMA_CM_STATE_MPAREQ_RCVD;
++		type = IRDMA_CM_EVENT_MPA_REQ;
++		irdma_send_ack(cm_node); /* ACK received MPA request */
++		atomic_set(&cm_node->passive_state,
++			   IRDMA_PASSIVE_STATE_INDICATED);
++		break;
++	case IRDMA_CM_STATE_MPAREQ_SENT:
++		irdma_cleanup_retrans_entry(cm_node);
++		if (res_type == IRDMA_MPA_REQUEST_REJECT) {
++			type = IRDMA_CM_EVENT_MPA_REJECT;
++			cm_node->state = IRDMA_CM_STATE_MPAREJ_RCVD;
++		} else {
++			type = IRDMA_CM_EVENT_CONNECTED;
++			cm_node->state = IRDMA_CM_STATE_OFFLOADED;
++		}
++		irdma_send_ack(cm_node);
++		break;
++	default:
++		ibdev_dbg(to_ibdev(cm_node->iwdev),
++			  "CM: wrong cm_node state =%d\n", cm_node->state);
++		break;
++	}
++	irdma_create_event(cm_node, type);
++}
++
++/**
++ * irdma_check_syn - Check for error on received syn ack
++ * @cm_node: connection's node
++ * @tcph: pointer tcp header
++ */
++static int irdma_check_syn(struct irdma_cm_node *cm_node, struct tcphdr *tcph)
++{
++	if (ntohl(tcph->ack_seq) != cm_node->tcp_cntxt.loc_seq_num) {
++		irdma_active_open_err(cm_node, true);
++		return 1;
++	}
 +
 +	return 0;
 +}
-diff --git a/drivers/net/ethernet/intel/gwdpa/gswip/xgmac.h b/drivers/net/ethernet/intel/gwdpa/gswip/xgmac.h
++
++/**
++ * irdma_check_seq - check seq numbers if OK
++ * @cm_node: connection's node
++ * @tcph: pointer tcp header
++ */
++static int irdma_check_seq(struct irdma_cm_node *cm_node, struct tcphdr *tcph)
++{
++	u32 seq;
++	u32 ack_seq;
++	u32 loc_seq_num = cm_node->tcp_cntxt.loc_seq_num;
++	u32 rcv_nxt = cm_node->tcp_cntxt.rcv_nxt;
++	u32 rcv_wnd;
++	int err = 0;
++
++	seq = ntohl(tcph->seq);
++	ack_seq = ntohl(tcph->ack_seq);
++	rcv_wnd = cm_node->tcp_cntxt.rcv_wnd;
++	if (ack_seq != loc_seq_num ||
++	    !between(seq, rcv_nxt, (rcv_nxt + rcv_wnd)))
++		err = -1;
++	if (err)
++		ibdev_dbg(to_ibdev(cm_node->iwdev), "CM: seq number err\n");
++
++	return err;
++}
++
++/**
++ * irdma_handle_syn_pkt - is for Passive node
++ * @cm_node: connection's node
++ * @rbuf: receive buffer
++ */
++static void irdma_handle_syn_pkt(struct irdma_cm_node *cm_node,
++				 struct irdma_puda_buf *rbuf)
++{
++	struct tcphdr *tcph = (struct tcphdr *)rbuf->tcph;
++	int err;
++	u32 inc_sequence;
++	int optionsize;
++	struct irdma_cm_info nfo;
++
++	optionsize = (tcph->doff << 2) - sizeof(struct tcphdr);
++	inc_sequence = ntohl(tcph->seq);
++
++	switch (cm_node->state) {
++	case IRDMA_CM_STATE_SYN_SENT:
++	case IRDMA_CM_STATE_MPAREQ_SENT:
++		/* Rcvd syn on active open connection */
++		irdma_active_open_err(cm_node, 1);
++		break;
++	case IRDMA_CM_STATE_LISTENING:
++		/* Passive OPEN */
++		if (atomic_read(&cm_node->listener->pend_accepts_cnt) >
++		    cm_node->listener->backlog) {
++			cm_node->cm_core->stats_backlog_drops++;
++			irdma_passive_open_err(cm_node, false);
++			break;
++		}
++		err = irdma_handle_tcp_options(cm_node, tcph, optionsize, 1);
++		if (err) {
++			irdma_passive_open_err(cm_node, false);
++			/* drop pkt */
++			break;
++		}
++		err = cm_node->cm_core->cm_create_ah(cm_node, false);
++		if (err) {
++			irdma_passive_open_err(cm_node, false);
++			/* drop pkt */
++			break;
++		}
++		cm_node->tcp_cntxt.rcv_nxt = inc_sequence + 1;
++		cm_node->accept_pend = 1;
++		atomic_inc(&cm_node->listener->pend_accepts_cnt);
++
++		cm_node->state = IRDMA_CM_STATE_SYN_RCVD;
++		irdma_get_addr_info(cm_node, &nfo);
++		nfo.qh_qpid = cm_node->iwdev->vsi.ilq->qp_id;
++		err = irdma_manage_qhash(cm_node->iwdev, &nfo,
++					 IRDMA_QHASH_TYPE_TCP_ESTABLISHED,
++					 IRDMA_QHASH_MANAGE_TYPE_ADD,
++					 cm_node, false);
++		cm_node->qhash_set = true;
++		break;
++	case IRDMA_CM_STATE_CLOSED:
++		irdma_cleanup_retrans_entry(cm_node);
++		refcount_inc(&cm_node->refcnt);
++		irdma_send_reset(cm_node);
++		break;
++	case IRDMA_CM_STATE_OFFLOADED:
++	case IRDMA_CM_STATE_ESTABLISHED:
++	case IRDMA_CM_STATE_FIN_WAIT1:
++	case IRDMA_CM_STATE_FIN_WAIT2:
++	case IRDMA_CM_STATE_MPAREQ_RCVD:
++	case IRDMA_CM_STATE_LAST_ACK:
++	case IRDMA_CM_STATE_CLOSING:
++	case IRDMA_CM_STATE_UNKNOWN:
++	default:
++		break;
++	}
++}
++
++/**
++ * irdma_handle_synack_pkt - Process SYN+ACK packet (active side)
++ * @cm_node: connection's node
++ * @rbuf: receive buffer
++ */
++static void irdma_handle_synack_pkt(struct irdma_cm_node *cm_node,
++				    struct irdma_puda_buf *rbuf)
++{
++	struct tcphdr *tcph = (struct tcphdr *)rbuf->tcph;
++	int err;
++	u32 inc_sequence;
++	int optionsize;
++
++	optionsize = (tcph->doff << 2) - sizeof(struct tcphdr);
++	inc_sequence = ntohl(tcph->seq);
++	switch (cm_node->state) {
++	case IRDMA_CM_STATE_SYN_SENT:
++		irdma_cleanup_retrans_entry(cm_node);
++		/* active open */
++		if (irdma_check_syn(cm_node, tcph)) {
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: check syn fail\n");
++			return;
++		}
++		cm_node->tcp_cntxt.rem_ack_num = ntohl(tcph->ack_seq);
++		/* setup options */
++		err = irdma_handle_tcp_options(cm_node, tcph, optionsize, 0);
++		if (err) {
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: cm_node=%p tcp_options failed\n",
++				  cm_node);
++			break;
++		}
++		irdma_cleanup_retrans_entry(cm_node);
++		cm_node->tcp_cntxt.rcv_nxt = inc_sequence + 1;
++		irdma_send_ack(cm_node); /* ACK  for the syn_ack */
++		err = irdma_send_mpa_request(cm_node);
++		if (err) {
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: cm_node=%p irdma_send_mpa_request failed\n",
++				  cm_node);
++			break;
++		}
++		cm_node->state = IRDMA_CM_STATE_MPAREQ_SENT;
++		break;
++	case IRDMA_CM_STATE_MPAREQ_RCVD:
++		irdma_passive_open_err(cm_node, true);
++		break;
++	case IRDMA_CM_STATE_LISTENING:
++		cm_node->tcp_cntxt.loc_seq_num = ntohl(tcph->ack_seq);
++		irdma_cleanup_retrans_entry(cm_node);
++		cm_node->state = IRDMA_CM_STATE_CLOSED;
++		irdma_send_reset(cm_node);
++		break;
++	case IRDMA_CM_STATE_CLOSED:
++		cm_node->tcp_cntxt.loc_seq_num = ntohl(tcph->ack_seq);
++		irdma_cleanup_retrans_entry(cm_node);
++		refcount_inc(&cm_node->refcnt);
++		irdma_send_reset(cm_node);
++		break;
++	case IRDMA_CM_STATE_ESTABLISHED:
++	case IRDMA_CM_STATE_FIN_WAIT1:
++	case IRDMA_CM_STATE_FIN_WAIT2:
++	case IRDMA_CM_STATE_LAST_ACK:
++	case IRDMA_CM_STATE_OFFLOADED:
++	case IRDMA_CM_STATE_CLOSING:
++	case IRDMA_CM_STATE_UNKNOWN:
++	case IRDMA_CM_STATE_MPAREQ_SENT:
++	default:
++		break;
++	}
++}
++
++/**
++ * irdma_handle_ack_pkt - process packet with ACK
++ * @cm_node: connection's node
++ * @rbuf: receive buffer
++ */
++static int irdma_handle_ack_pkt(struct irdma_cm_node *cm_node,
++				struct irdma_puda_buf *rbuf)
++{
++	struct tcphdr *tcph = (struct tcphdr *)rbuf->tcph;
++	u32 inc_sequence;
++	int ret;
++	int optionsize;
++	u32 datasize = rbuf->datalen;
++
++	optionsize = (tcph->doff << 2) - sizeof(struct tcphdr);
++
++	if (irdma_check_seq(cm_node, tcph))
++		return -EINVAL;
++
++	inc_sequence = ntohl(tcph->seq);
++	switch (cm_node->state) {
++	case IRDMA_CM_STATE_SYN_RCVD:
++		irdma_cleanup_retrans_entry(cm_node);
++		ret = irdma_handle_tcp_options(cm_node, tcph, optionsize, 1);
++		if (ret)
++			return ret;
++		cm_node->tcp_cntxt.rem_ack_num = ntohl(tcph->ack_seq);
++		cm_node->state = IRDMA_CM_STATE_ESTABLISHED;
++		if (datasize) {
++			cm_node->tcp_cntxt.rcv_nxt = inc_sequence + datasize;
++			irdma_handle_rcv_mpa(cm_node, rbuf);
++		}
++		break;
++	case IRDMA_CM_STATE_ESTABLISHED:
++		irdma_cleanup_retrans_entry(cm_node);
++		if (datasize) {
++			cm_node->tcp_cntxt.rcv_nxt = inc_sequence + datasize;
++			irdma_handle_rcv_mpa(cm_node, rbuf);
++		}
++		break;
++	case IRDMA_CM_STATE_MPAREQ_SENT:
++		cm_node->tcp_cntxt.rem_ack_num = ntohl(tcph->ack_seq);
++		if (datasize) {
++			cm_node->tcp_cntxt.rcv_nxt = inc_sequence + datasize;
++			cm_node->ack_rcvd = false;
++			irdma_handle_rcv_mpa(cm_node, rbuf);
++		} else {
++			cm_node->ack_rcvd = true;
++		}
++		break;
++	case IRDMA_CM_STATE_LISTENING:
++		irdma_cleanup_retrans_entry(cm_node);
++		cm_node->state = IRDMA_CM_STATE_CLOSED;
++		irdma_send_reset(cm_node);
++		break;
++	case IRDMA_CM_STATE_CLOSED:
++		irdma_cleanup_retrans_entry(cm_node);
++		refcount_inc(&cm_node->refcnt);
++		irdma_send_reset(cm_node);
++		break;
++	case IRDMA_CM_STATE_LAST_ACK:
++	case IRDMA_CM_STATE_CLOSING:
++		irdma_cleanup_retrans_entry(cm_node);
++		cm_node->state = IRDMA_CM_STATE_CLOSED;
++		if (!cm_node->accept_pend)
++			cm_node->cm_id->rem_ref(cm_node->cm_id);
++		irdma_rem_ref_cm_node(cm_node);
++		break;
++	case IRDMA_CM_STATE_FIN_WAIT1:
++		irdma_cleanup_retrans_entry(cm_node);
++		cm_node->state = IRDMA_CM_STATE_FIN_WAIT2;
++		break;
++	case IRDMA_CM_STATE_SYN_SENT:
++	case IRDMA_CM_STATE_FIN_WAIT2:
++	case IRDMA_CM_STATE_OFFLOADED:
++	case IRDMA_CM_STATE_MPAREQ_RCVD:
++	case IRDMA_CM_STATE_UNKNOWN:
++	default:
++		irdma_cleanup_retrans_entry(cm_node);
++		break;
++	}
++
++	return 0;
++}
++
++/**
++ * irdma_process_packet - process cm packet
++ * @cm_node: connection's node
++ * @rbuf: receive buffer
++ */
++static void irdma_process_pkt(struct irdma_cm_node *cm_node,
++			      struct irdma_puda_buf *rbuf)
++{
++	enum irdma_tcpip_pkt_type pkt_type = IRDMA_PKT_TYPE_UNKNOWN;
++	struct tcphdr *tcph = (struct tcphdr *)rbuf->tcph;
++	u32 fin_set = 0;
++	int err;
++
++	if (tcph->rst) {
++		pkt_type = IRDMA_PKT_TYPE_RST;
++	} else if (tcph->syn) {
++		pkt_type = IRDMA_PKT_TYPE_SYN;
++		if (tcph->ack)
++			pkt_type = IRDMA_PKT_TYPE_SYNACK;
++	} else if (tcph->ack) {
++		pkt_type = IRDMA_PKT_TYPE_ACK;
++	}
++	if (tcph->fin)
++		fin_set = 1;
++
++	switch (pkt_type) {
++	case IRDMA_PKT_TYPE_SYN:
++		irdma_handle_syn_pkt(cm_node, rbuf);
++		break;
++	case IRDMA_PKT_TYPE_SYNACK:
++		irdma_handle_synack_pkt(cm_node, rbuf);
++		break;
++	case IRDMA_PKT_TYPE_ACK:
++		err = irdma_handle_ack_pkt(cm_node, rbuf);
++		if (fin_set && !err)
++			irdma_handle_fin_pkt(cm_node);
++		break;
++	case IRDMA_PKT_TYPE_RST:
++		irdma_handle_rst_pkt(cm_node, rbuf);
++		break;
++	default:
++		if (fin_set &&
++		    (!irdma_check_seq(cm_node, (struct tcphdr *)rbuf->tcph)))
++			irdma_handle_fin_pkt(cm_node);
++		break;
++	}
++}
++
++/**
++ * irdma_make_listen_node - create a listen node with params
++ * @cm_core: cm's core
++ * @iwdev: iwarp device structure
++ * @cm_info: quad info for connection
++ */
++static struct irdma_cm_listener *
++irdma_make_listen_node(struct irdma_cm_core *cm_core,
++		       struct irdma_device *iwdev,
++		       struct irdma_cm_info *cm_info)
++{
++	struct irdma_cm_listener *listener;
++	unsigned long flags;
++
++	/* cannot have multiple matching listeners */
++	listener = irdma_find_listener(cm_core, cm_info->loc_addr,
++				       cm_info->loc_port, cm_info->vlan_id,
++				       IRDMA_CM_LISTENER_EITHER_STATE);
++	if (listener &&
++	    listener->listener_state == IRDMA_CM_LISTENER_ACTIVE_STATE) {
++		refcount_dec(&listener->refcnt);
++		return NULL;
++	}
++
++	if (!listener) {
++		/* create a CM listen node
++		 * 1/2 node to compare incoming traffic to
++		 */
++		listener = kzalloc(sizeof(*listener), GFP_KERNEL);
++		if (!listener)
++			return NULL;
++		cm_core->stats_listen_nodes_created++;
++		memcpy(listener->loc_addr, cm_info->loc_addr,
++		       sizeof(listener->loc_addr));
++		listener->loc_port = cm_info->loc_port;
++
++		INIT_LIST_HEAD(&listener->child_listen_list);
++
++		refcount_set(&listener->refcnt, 1);
++	} else {
++		listener->reused_node = 1;
++	}
++
++	listener->cm_id = cm_info->cm_id;
++	listener->ipv4 = cm_info->ipv4;
++	listener->vlan_id = cm_info->vlan_id;
++	atomic_set(&listener->pend_accepts_cnt, 0);
++	listener->cm_core = cm_core;
++	listener->iwdev = iwdev;
++
++	listener->backlog = cm_info->backlog;
++	listener->listener_state = IRDMA_CM_LISTENER_ACTIVE_STATE;
++
++	if (!listener->reused_node) {
++		spin_lock_irqsave(&cm_core->listen_list_lock, flags);
++		list_add(&listener->list, &cm_core->listen_nodes);
++		spin_unlock_irqrestore(&cm_core->listen_list_lock, flags);
++	}
++
++	return listener;
++}
++
++/**
++ * irdma_create_cm_node - make a connection node with params
++ * @cm_core: cm's core
++ * @iwdev: iwarp device structure
++ * @conn_param: connection parameters
++ * @cm_info: quad info for connection
++ * @caller_cm_node: pointer to cm_node structure to return
++ */
++static int irdma_create_cm_node(struct irdma_cm_core *cm_core,
++				struct irdma_device *iwdev,
++				struct iw_cm_conn_param *conn_param,
++				struct irdma_cm_info *cm_info,
++				struct irdma_cm_node **caller_cm_node)
++{
++	struct irdma_cm_node *cm_node;
++	u16 private_data_len = conn_param->private_data_len;
++	const void *private_data = conn_param->private_data;
++
++	/* create a CM connection node */
++	cm_node = irdma_make_cm_node(cm_core, iwdev, cm_info, NULL);
++	if (!cm_node)
++		return -ENOMEM;
++
++	/* set our node side to client (active) side */
++	cm_node->tcp_cntxt.client = 1;
++	cm_node->tcp_cntxt.rcv_wscale = IRDMA_CM_DEFAULT_RCV_WND_SCALE;
++
++	irdma_record_ird_ord(cm_node, conn_param->ird, conn_param->ord);
++
++	cm_node->pdata.size = private_data_len;
++	cm_node->pdata.addr = cm_node->pdata_buf;
++
++	memcpy(cm_node->pdata_buf, private_data, private_data_len);
++	*caller_cm_node = cm_node;
++
++	return 0;
++}
++
++/**
++ * irdma_cm_reject - reject and teardown a connection
++ * @cm_node: connection's node
++ * @pdata: ptr to private data for reject
++ * @plen: size of private data
++ */
++static int irdma_cm_reject(struct irdma_cm_node *cm_node, const void *pdata,
++			   u8 plen)
++{
++	int ret;
++	int passive_state;
++	struct iw_cm_id *cm_id = cm_node->cm_id;
++
++	if (cm_node->tcp_cntxt.client)
++		return 0;
++
++	irdma_cleanup_retrans_entry(cm_node);
++
++	passive_state = atomic_add_return(1, &cm_node->passive_state);
++	if (passive_state == IRDMA_SEND_RESET_EVENT) {
++		cm_node->state = IRDMA_CM_STATE_CLOSED;
++		irdma_rem_ref_cm_node(cm_node);
++		return 0;
++	}
++
++	if (cm_node->state == IRDMA_CM_STATE_LISTENER_DESTROYED) {
++		irdma_rem_ref_cm_node(cm_node);
++		return 0;
++	}
++
++	ret = irdma_send_mpa_reject(cm_node, pdata, plen);
++	if (!ret) {
++		cm_id->add_ref(cm_id);
++		return 0;
++	}
++
++	cm_node->state = IRDMA_CM_STATE_CLOSED;
++	if (irdma_send_reset(cm_node))
++		ibdev_dbg(to_ibdev(cm_node->iwdev), "CM: send reset failed\n");
++	return ret;
++}
++
++/**
++ * irdma_cm_close - close of cm connection
++ * @cm_node: connection's node
++ */
++static int irdma_cm_close(struct irdma_cm_node *cm_node)
++{
++	if (!cm_node)
++		return -EINVAL;
++
++	switch (cm_node->state) {
++	case IRDMA_CM_STATE_SYN_RCVD:
++	case IRDMA_CM_STATE_SYN_SENT:
++	case IRDMA_CM_STATE_ONE_SIDE_ESTABLISHED:
++	case IRDMA_CM_STATE_ESTABLISHED:
++	case IRDMA_CM_STATE_ACCEPTING:
++	case IRDMA_CM_STATE_MPAREQ_SENT:
++	case IRDMA_CM_STATE_MPAREQ_RCVD:
++		irdma_cleanup_retrans_entry(cm_node);
++		irdma_send_reset(cm_node);
++		break;
++	case IRDMA_CM_STATE_CLOSE_WAIT:
++		cm_node->state = IRDMA_CM_STATE_LAST_ACK;
++		irdma_send_fin(cm_node);
++		break;
++	case IRDMA_CM_STATE_FIN_WAIT1:
++	case IRDMA_CM_STATE_FIN_WAIT2:
++	case IRDMA_CM_STATE_LAST_ACK:
++	case IRDMA_CM_STATE_TIME_WAIT:
++	case IRDMA_CM_STATE_CLOSING:
++		return -1;
++	case IRDMA_CM_STATE_LISTENING:
++		irdma_cleanup_retrans_entry(cm_node);
++		irdma_send_reset(cm_node);
++		break;
++	case IRDMA_CM_STATE_MPAREJ_RCVD:
++	case IRDMA_CM_STATE_UNKNOWN:
++	case IRDMA_CM_STATE_INITED:
++	case IRDMA_CM_STATE_CLOSED:
++	case IRDMA_CM_STATE_LISTENER_DESTROYED:
++		irdma_rem_ref_cm_node(cm_node);
++		break;
++	case IRDMA_CM_STATE_OFFLOADED:
++		if (cm_node->send_entry)
++			ibdev_dbg(to_ibdev(cm_node->iwdev),
++				  "CM: CM send_entry in OFFLOADED state\n");
++		irdma_rem_ref_cm_node(cm_node);
++		break;
++	}
++
++	return 0;
++}
++
++/**
++ * irdma_receive_ilq - recv an ETHERNET packet, and process it
++ * through CM
++ * @vsi: VSI structure of dev
++ * @rbuf: receive buffer
++ */
++void irdma_receive_ilq(struct irdma_sc_vsi *vsi, struct irdma_puda_buf *rbuf)
++{
++	struct irdma_cm_node *cm_node;
++	struct irdma_cm_listener *listener;
++	struct iphdr *iph;
++	struct ipv6hdr *ip6h;
++	struct tcphdr *tcph;
++	struct irdma_cm_info cm_info = {};
++	struct irdma_device *iwdev = vsi->back_vsi;
++	struct irdma_cm_core *cm_core = &iwdev->cm_core;
++	struct vlan_ethhdr *ethh;
++	u16 vtag;
++
++	/* if vlan, then maclen = 18 else 14 */
++	iph = (struct iphdr *)rbuf->iph;
++	irdma_debug_buf(vsi->dev, IRDMA_DEBUG_ILQ, "RECEIVE ILQ BUFFER",
++			rbuf->mem.va, rbuf->totallen);
++	if (iwdev->rf->sc_dev.hw_attrs.uk_attrs.hw_rev > IRDMA_GEN_1) {
++		if (rbuf->vlan_valid) {
++			vtag = rbuf->vlan_id;
++			cm_info.user_pri = (vtag & VLAN_PRIO_MASK) >>
++					   VLAN_PRIO_SHIFT;
++			cm_info.vlan_id = vtag & VLAN_VID_MASK;
++		} else {
++			cm_info.vlan_id = 0xFFFF;
++		}
++	} else {
++		ethh = rbuf->mem.va;
++
++		if (ethh->h_vlan_proto == htons(ETH_P_8021Q)) {
++			vtag = ntohs(ethh->h_vlan_TCI);
++			cm_info.user_pri = (vtag & VLAN_PRIO_MASK) >>
++					   VLAN_PRIO_SHIFT;
++			cm_info.vlan_id = vtag & VLAN_VID_MASK;
++			ibdev_dbg(to_ibdev(cm_core->iwdev),
++				  "CM: vlan_id=%d\n", cm_info.vlan_id);
++		} else {
++			cm_info.vlan_id = 0xFFFF;
++		}
++	}
++	tcph = (struct tcphdr *)rbuf->tcph;
++
++	if (rbuf->ipv4) {
++		cm_info.loc_addr[0] = ntohl(iph->daddr);
++		cm_info.rem_addr[0] = ntohl(iph->saddr);
++		cm_info.ipv4 = true;
++		cm_info.tos = iph->tos;
++	} else {
++		ip6h = (struct ipv6hdr *)rbuf->iph;
++		irdma_copy_ip_ntohl(cm_info.loc_addr,
++				    ip6h->daddr.in6_u.u6_addr32);
++		irdma_copy_ip_ntohl(cm_info.rem_addr,
++				    ip6h->saddr.in6_u.u6_addr32);
++		cm_info.ipv4 = false;
++		cm_info.tos = (ip6h->priority << 4) | (ip6h->flow_lbl[0] >> 4);
++	}
++	cm_info.loc_port = ntohs(tcph->dest);
++	cm_info.rem_port = ntohs(tcph->source);
++	cm_node = irdma_find_node(cm_core, cm_info.rem_port, cm_info.rem_addr,
++				  cm_info.loc_port, cm_info.loc_addr, true,
++				  false);
++
++	if (!cm_node) {
++		/* Only type of packet accepted are for the
++		 * PASSIVE open (syn only)
++		 */
++		if (!tcph->syn || tcph->ack)
++			return;
++
++		listener = irdma_find_listener(cm_core,
++					       cm_info.loc_addr,
++					       cm_info.loc_port,
++					       cm_info.vlan_id,
++					       IRDMA_CM_LISTENER_ACTIVE_STATE);
++		if (!listener) {
++			cm_info.cm_id = NULL;
++			ibdev_dbg(to_ibdev(cm_core->iwdev),
++				  "CM: no listener found\n");
++			return;
++		}
++
++		cm_info.cm_id = listener->cm_id;
++		cm_node = irdma_make_cm_node(cm_core, iwdev, &cm_info,
++					     listener);
++		if (!cm_node) {
++			ibdev_dbg(to_ibdev(cm_core->iwdev),
++				  "CM: allocate node failed\n");
++			refcount_dec(&listener->refcnt);
++			return;
++		}
++
++		if (!tcph->rst && !tcph->fin) {
++			cm_node->state = IRDMA_CM_STATE_LISTENING;
++		} else {
++			irdma_rem_ref_cm_node(cm_node);
++			return;
++		}
++
++		refcount_inc(&cm_node->refcnt);
++	} else if (cm_node->state == IRDMA_CM_STATE_OFFLOADED) {
++		irdma_rem_ref_cm_node(cm_node);
++		return;
++	}
++
++	irdma_process_pkt(cm_node, rbuf);
++	irdma_rem_ref_cm_node(cm_node);
++}
++
++static int irdma_cm_create_ah_nop(struct irdma_cm_node *cm_node, bool wait)
++{
++	return 0;
++}
++
++static void irdma_cm_free_ah_nop(struct irdma_cm_node *cm_node)
++{
++}
++
++/**
++ * irdma_setup_cm_core - setup top level instance of a cm core
++ * @iwdev: iwarp device structure
++ * @rdma_ver: HW version
++ */
++enum irdma_status_code irdma_setup_cm_core(struct irdma_device *iwdev,
++					   u8 rdma_ver)
++{
++	struct irdma_cm_core *cm_core = &iwdev->cm_core;
++
++	cm_core->iwdev = iwdev;
++	cm_core->dev = &iwdev->rf->sc_dev;
++
++	/* Handles CM event work items send to Iwarp core */
++	cm_core->event_wq = alloc_ordered_workqueue("iwarp-event-wq", 0);
++	if (!cm_core->event_wq)
++		return IRDMA_ERR_NO_MEMORY;
++
++	INIT_LIST_HEAD(&cm_core->accelerated_list);
++	INIT_LIST_HEAD(&cm_core->non_accelerated_list);
++	INIT_LIST_HEAD(&cm_core->listen_nodes);
++
++	timer_setup(&cm_core->tcp_timer, irdma_cm_timer_tick, 0);
++
++	spin_lock_init(&cm_core->ht_lock);
++	spin_lock_init(&cm_core->listen_list_lock);
++	spin_lock_init(&cm_core->apbvt_lock);
++
++	switch (rdma_ver) {
++	case IRDMA_GEN_1:
++		cm_core->form_cm_frame = irdma_form_uda_cm_frame;
++		cm_core->cm_create_ah = irdma_cm_create_ah_nop;
++		cm_core->cm_free_ah = irdma_cm_free_ah_nop;
++		break;
++	case IRDMA_GEN_2:
++	default:
++		cm_core->form_cm_frame = irdma_form_ah_cm_frame;
++		cm_core->cm_create_ah = irdma_cm_create_ah;
++		cm_core->cm_free_ah = irdma_cm_free_ah;
++	}
++
++	return 0;
++}
++
++/**
++ * irdma_cleanup_cm_core - deallocate a top level instance of a
++ * cm core
++ * @cm_core: cm's core
++ */
++void irdma_cleanup_cm_core(struct irdma_cm_core *cm_core)
++{
++	unsigned long flags;
++
++	if (!cm_core)
++		return;
++
++	spin_lock_irqsave(&cm_core->ht_lock, flags);
++	if (timer_pending(&cm_core->tcp_timer))
++		del_timer_sync(&cm_core->tcp_timer);
++	spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++
++	destroy_workqueue(cm_core->event_wq);
++	cm_core->dev->ws_reset(&cm_core->iwdev->vsi);
++}
++
++/**
++ * irdma_init_tcp_ctx - setup qp context
++ * @cm_node: connection's node
++ * @tcp_info: offload info for tcp
++ * @iwqp: associate qp for the connection
++ */
++static void irdma_init_tcp_ctx(struct irdma_cm_node *cm_node,
++			       struct irdma_tcp_offload_info *tcp_info,
++			       struct irdma_qp *iwqp)
++{
++	tcp_info->ipv4 = cm_node->ipv4;
++	tcp_info->drop_ooo_seg = !iwqp->iwdev->rf->ooo;
++	tcp_info->wscale = true;
++	tcp_info->ignore_tcp_opt = true;
++	tcp_info->ignore_tcp_uns_opt = true;
++	tcp_info->no_nagle = false;
++
++	tcp_info->ttl = IRDMA_DEFAULT_TTL;
++	tcp_info->rtt_var = IRDMA_DEFAULT_RTT_VAR;
++	tcp_info->ss_thresh = IRDMA_DEFAULT_SS_THRESH;
++	tcp_info->rexmit_thresh = IRDMA_DEFAULT_REXMIT_THRESH;
++
++	tcp_info->tcp_state = IRDMA_TCP_STATE_ESTABLISHED;
++	tcp_info->snd_wscale = cm_node->tcp_cntxt.snd_wscale;
++	tcp_info->rcv_wscale = cm_node->tcp_cntxt.rcv_wscale;
++
++	tcp_info->snd_nxt = cm_node->tcp_cntxt.loc_seq_num;
++	tcp_info->snd_wnd = cm_node->tcp_cntxt.snd_wnd;
++	tcp_info->rcv_nxt = cm_node->tcp_cntxt.rcv_nxt;
++	tcp_info->snd_max = cm_node->tcp_cntxt.loc_seq_num;
++
++	tcp_info->snd_una = cm_node->tcp_cntxt.loc_seq_num;
++	tcp_info->cwnd = 2 * cm_node->tcp_cntxt.mss;
++	tcp_info->snd_wl1 = cm_node->tcp_cntxt.rcv_nxt;
++	tcp_info->snd_wl2 = cm_node->tcp_cntxt.loc_seq_num;
++	tcp_info->max_snd_window = cm_node->tcp_cntxt.max_snd_wnd;
++	tcp_info->rcv_wnd = cm_node->tcp_cntxt.rcv_wnd
++			    << cm_node->tcp_cntxt.rcv_wscale;
++
++	tcp_info->flow_label = 0;
++	tcp_info->snd_mss = (u32)cm_node->tcp_cntxt.mss;
++	if (cm_node->vlan_id < VLAN_N_VID) {
++		tcp_info->insert_vlan_tag = true;
++		tcp_info->vlan_tag = cm_node->vlan_id;
++		tcp_info->vlan_tag |= cm_node->user_pri << VLAN_PRIO_SHIFT;
++		tcp_info->tos = cm_node->tos;
++	}
++	if (cm_node->ipv4) {
++		tcp_info->src_port = cm_node->loc_port;
++		tcp_info->dst_port = cm_node->rem_port;
++
++		tcp_info->dest_ip_addr3 = cm_node->rem_addr[0];
++		tcp_info->local_ipaddr3 = cm_node->loc_addr[0];
++		tcp_info->arp_idx = (u16)irdma_arp_table(iwqp->iwdev->rf,
++							 &tcp_info->dest_ip_addr3,
++							 true, NULL,
++							 IRDMA_ARP_RESOLVE);
++	} else {
++		tcp_info->src_port = cm_node->loc_port;
++		tcp_info->dst_port = cm_node->rem_port;
++		tcp_info->dest_ip_addr0 = cm_node->rem_addr[0];
++		tcp_info->dest_ip_addr1 = cm_node->rem_addr[1];
++		tcp_info->dest_ip_addr2 = cm_node->rem_addr[2];
++		tcp_info->dest_ip_addr3 = cm_node->rem_addr[3];
++		tcp_info->local_ipaddr0 = cm_node->loc_addr[0];
++		tcp_info->local_ipaddr1 = cm_node->loc_addr[1];
++		tcp_info->local_ipaddr2 = cm_node->loc_addr[2];
++		tcp_info->local_ipaddr3 = cm_node->loc_addr[3];
++		tcp_info->arp_idx = (u16)irdma_arp_table(iwqp->iwdev->rf,
++							 &tcp_info->dest_ip_addr0,
++							 false, NULL,
++							 IRDMA_ARP_RESOLVE);
++	}
++}
++
++/**
++ * irdma_cm_init_tsa_conn - setup qp for RTS
++ * @iwqp: associate qp for the connection
++ * @cm_node: connection's node
++ */
++static void irdma_cm_init_tsa_conn(struct irdma_qp *iwqp,
++				   struct irdma_cm_node *cm_node)
++{
++	struct irdma_iwarp_offload_info *iwarp_info;
++	struct irdma_qp_host_ctx_info *ctx_info;
++	struct irdma_sc_dev *dev = &iwqp->iwdev->rf->sc_dev;
++
++	iwarp_info = &iwqp->iwarp_info;
++	ctx_info = &iwqp->ctx_info;
++
++	ctx_info->tcp_info = &iwqp->tcp_info;
++	ctx_info->send_cq_num = iwqp->iwscq->sc_cq.cq_uk.cq_id;
++	ctx_info->rcv_cq_num = iwqp->iwrcq->sc_cq.cq_uk.cq_id;
++
++	iwarp_info->ord_size = cm_node->ord_size;
++	iwarp_info->ird_size = irdma_derive_hw_ird_setting(cm_node->ird_size);
++	iwarp_info->rd_en = true;
++	iwarp_info->rdmap_ver = 1;
++	iwarp_info->ddp_ver = 1;
++	iwarp_info->pd_id = iwqp->iwpd->sc_pd.pd_id;
++
++	ctx_info->tcp_info_valid = true;
++	ctx_info->iwarp_info_valid = true;
++	ctx_info->user_pri = cm_node->user_pri;
++
++	irdma_init_tcp_ctx(cm_node, &iwqp->tcp_info, iwqp);
++	if (cm_node->snd_mark_en) {
++		iwarp_info->snd_mark_en = true;
++		iwarp_info->snd_mark_offset = (iwqp->tcp_info.snd_nxt & SNDMARKER_SEQNMASK) +
++					      cm_node->lsmm_size;
++	}
++
++	cm_node->state = IRDMA_CM_STATE_OFFLOADED;
++	iwqp->tcp_info.tcp_state = IRDMA_TCP_STATE_ESTABLISHED;
++	iwqp->tcp_info.src_mac_addr_idx = iwqp->iwdev->mac_ip_table_idx;
++
++	dev->iw_priv_qp_ops->qp_setctx(&iwqp->sc_qp, iwqp->host_ctx.va,
++				       ctx_info);
++
++	/* once tcp_info is set, no need to do it again */
++	ctx_info->tcp_info_valid = false;
++	ctx_info->iwarp_info_valid = false;
++}
++
++/**
++ * irdma_cm_disconn - when a connection is being closed
++ * @iwqp: associated qp for the connection
++ */
++void irdma_cm_disconn(struct irdma_qp *iwqp)
++{
++	struct disconn_work *work;
++	struct irdma_device *iwdev = iwqp->iwdev;
++	unsigned long flags;
++
++	work = kzalloc(sizeof(*work), GFP_ATOMIC);
++	if (!work)
++		return;
++
++	spin_lock_irqsave(&iwdev->rf->qptable_lock, flags);
++	if (!iwdev->rf->qp_table[iwqp->ibqp.qp_num]) {
++		spin_unlock_irqrestore(&iwdev->rf->qptable_lock, flags);
++		ibdev_dbg(to_ibdev(iwdev), "CM: qp_id %d is already freed\n",
++			  iwqp->ibqp.qp_num);
++		kfree(work);
++		return;
++	}
++	irdma_add_ref(&iwqp->ibqp);
++	spin_unlock_irqrestore(&iwdev->rf->qptable_lock, flags);
++
++	work->iwqp = iwqp;
++	INIT_WORK(&work->work, irdma_disconnect_worker);
++	queue_work(iwdev->cleanup_wq, &work->work);
++}
++
++/**
++ * irdma_qp_disconnect - free qp and close cm
++ * @iwqp: associate qp for the connection
++ */
++static void irdma_qp_disconnect(struct irdma_qp *iwqp)
++{
++	struct irdma_device *iwdev = iwqp->iwdev;
++
++	iwqp->active_conn = 0;
++	/* close the CM node down if it is still active */
++	if (iwqp->cm_node) {
++		ibdev_dbg(to_ibdev(iwdev), "CM: Call close API\n");
++		irdma_cm_close(iwqp->cm_node);
++	}
++}
++
++/**
++ * irdma_cm_disconn_true - called by worker thread to disconnect qp
++ * @iwqp: associate qp for the connection
++ */
++static void irdma_cm_disconn_true(struct irdma_qp *iwqp)
++{
++	struct iw_cm_id *cm_id;
++	struct irdma_device *iwdev;
++	struct irdma_sc_qp *qp = &iwqp->sc_qp;
++	u16 last_ae;
++	u8 original_hw_tcp_state;
++	u8 original_ibqp_state;
++	int disconn_status = 0;
++	int issue_disconn = 0;
++	int issue_close = 0;
++	int issue_flush = 0;
++	struct ib_event ibevent;
++	unsigned long flags;
++	int err;
++
++	iwdev = iwqp->iwdev;
++	spin_lock_irqsave(&iwqp->lock, flags);
++	if (rdma_protocol_roce(&iwdev->ibdev, 1)) {
++		struct ib_qp_attr attr;
++
++		if (iwqp->flush_issued || iwqp->destroyed) {
++			spin_unlock_irqrestore(&iwqp->lock, flags);
++			return;
++		}
++
++		spin_unlock_irqrestore(&iwqp->lock, flags);
++
++		attr.qp_state = IB_QPS_ERR;
++		irdma_modify_qp_roce(&iwqp->ibqp, &attr, IB_QP_STATE, NULL);
++		if (iwqp->ibqp.event_handler) {
++			ibevent.device = iwqp->ibqp.device;
++			ibevent.event = IB_EVENT_QP_FATAL;
++			ibevent.element.qp = &iwqp->ibqp;
++			iwqp->ibqp.event_handler(&ibevent,
++						 iwqp->ibqp.qp_context);
++		}
++		return;
++	}
++
++	cm_id = iwqp->cm_id;
++	/* make sure we havent already closed this connection */
++	if (!cm_id) {
++		spin_unlock_irqrestore(&iwqp->lock, flags);
++		return;
++	}
++
++	original_hw_tcp_state = iwqp->hw_tcp_state;
++	original_ibqp_state = iwqp->ibqp_state;
++	last_ae = iwqp->last_aeq;
++
++	if (qp->term_flags) {
++		issue_disconn = 1;
++		issue_close = 1;
++		iwqp->cm_id = NULL;
++		irdma_terminate_del_timer(qp);
++		if (!iwqp->flush_issued) {
++			iwqp->flush_issued = 1;
++			issue_flush = 1;
++		}
++	} else if ((original_hw_tcp_state == IRDMA_TCP_STATE_CLOSE_WAIT) ||
++		   ((original_ibqp_state == IB_QPS_RTS) &&
++		    (last_ae == IRDMA_AE_LLP_CONNECTION_RESET))) {
++		issue_disconn = 1;
++		if (last_ae == IRDMA_AE_LLP_CONNECTION_RESET)
++			disconn_status = -ECONNRESET;
++	}
++
++	if ((original_hw_tcp_state == IRDMA_TCP_STATE_CLOSED ||
++	     original_hw_tcp_state == IRDMA_TCP_STATE_TIME_WAIT ||
++	     last_ae == IRDMA_AE_RDMAP_ROE_BAD_LLP_CLOSE ||
++	     last_ae == IRDMA_AE_BAD_CLOSE ||
++	     last_ae == IRDMA_AE_LLP_CONNECTION_RESET || iwdev->reset)) {
++		issue_close = 1;
++		iwqp->cm_id = NULL;
++		qp->term_flags = 0;
++		if (!iwqp->flush_issued) {
++			iwqp->flush_issued = 1;
++			issue_flush = 1;
++		}
++	}
++
++	spin_unlock_irqrestore(&iwqp->lock, flags);
++	if (issue_flush && !iwqp->destroyed) {
++		irdma_flush_wqes(iwqp, IRDMA_FLUSH_SQ | IRDMA_FLUSH_RQ |
++				 IRDMA_FLUSH_WAIT);
++
++		if (qp->term_flags && iwqp->ibqp.event_handler) {
++			ibevent.device = iwqp->ibqp.device;
++			ibevent.event = (qp->eventtype == TERM_EVENT_QP_FATAL) ?
++						IB_EVENT_QP_FATAL :
++						IB_EVENT_QP_ACCESS_ERR;
++			ibevent.element.qp = &iwqp->ibqp;
++			iwqp->ibqp.event_handler(&ibevent,
++						 iwqp->ibqp.qp_context);
++		}
++	}
++
++	if (!cm_id || !cm_id->event_handler)
++		return;
++	if (issue_disconn) {
++		err = irdma_send_cm_event(NULL, cm_id, IW_CM_EVENT_DISCONNECT,
++					  disconn_status);
++		if (err)
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: disconnect event failed: - cm_id = %p\n",
++				  cm_id);
++	}
++	if (issue_close) {
++		irdma_qp_disconnect(iwqp);
++		cm_id->provider_data = iwqp;
++		err = irdma_send_cm_event(NULL, cm_id, IW_CM_EVENT_CLOSE, 0);
++		if (err)
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: close event failed: - cm_id = %p\n",
++				  cm_id);
++		cm_id->rem_ref(cm_id);
++	}
++}
++
++/**
++ * irdma_disconnect_worker - worker for connection close
++ * @work: points or disconn structure
++ */
++static void irdma_disconnect_worker(struct work_struct *work)
++{
++	struct disconn_work *dwork = container_of(work, struct disconn_work, work);
++	struct irdma_qp *iwqp = dwork->iwqp;
++
++	kfree(dwork);
++	irdma_cm_disconn_true(iwqp);
++	irdma_rem_ref(&iwqp->ibqp);
++}
++
++/**
++ * irdma_free_lsmm_rsrc - free lsmm memory and deregister
++ * @iwqp: associate qp for the connection
++ */
++void irdma_free_lsmm_rsrc(struct irdma_qp *iwqp)
++{
++	struct irdma_device *iwdev;
++
++	iwdev = iwqp->iwdev;
++
++	if (iwqp->ietf_mem.va) {
++		if (iwqp->lsmm_mr)
++			iwdev->ibdev.ops.dereg_mr(iwqp->lsmm_mr, NULL);
++		dma_free_coherent(hw_to_dev(iwdev->rf->sc_dev.hw),
++				  iwqp->ietf_mem.size, iwqp->ietf_mem.va,
++				  iwqp->ietf_mem.pa);
++		iwqp->ietf_mem.va = NULL;
++		iwqp->ietf_mem.va = NULL;
++	}
++}
++
++/**
++ * irdma_accept - registered call for connection to be accepted
++ * @cm_id: cm information for passive connection
++ * @conn_param: accpet parameters
++ */
++int irdma_accept(struct iw_cm_id *cm_id, struct iw_cm_conn_param *conn_param)
++{
++	struct ib_qp *ibqp;
++	struct irdma_qp *iwqp;
++	struct irdma_device *iwdev;
++	struct irdma_sc_dev *dev;
++	struct irdma_cm_core *cm_core;
++	struct irdma_cm_node *cm_node;
++	struct ib_qp_attr attr = {};
++	int passive_state;
++	struct ib_mr *ibmr;
++	struct irdma_pd *iwpd;
++	u16 buf_len = 0;
++	struct irdma_kmem_info accept;
++	unsigned long flags;
++	u64 tagged_offset;
++	int wait_ret;
++	int ret = 0;
++
++	ibqp = irdma_get_qp(cm_id->device, conn_param->qpn);
++	if (!ibqp)
++		return -EINVAL;
++
++	iwqp = to_iwqp(ibqp);
++	iwdev = iwqp->iwdev;
++	dev = &iwdev->rf->sc_dev;
++	cm_core = &iwdev->cm_core;
++	cm_node = cm_id->provider_data;
++
++	if (((struct sockaddr_in *)&cm_id->local_addr)->sin_family == AF_INET) {
++		cm_node->ipv4 = true;
++		cm_node->vlan_id = irdma_get_vlan_ipv4(cm_node->loc_addr);
++	} else {
++		cm_node->ipv4 = false;
++		irdma_netdev_vlan_ipv6(cm_node->loc_addr, &cm_node->vlan_id,
++				       NULL);
++	}
++	ibdev_dbg(to_ibdev(iwdev), "CM: Accept vlan_id=%d\n",
++		  cm_node->vlan_id);
++
++	trace_irdma_accept(cm_node, 0, NULL);
++
++	if (cm_node->state == IRDMA_CM_STATE_LISTENER_DESTROYED) {
++		ret = -EINVAL;
++		goto error;
++	}
++
++	passive_state = atomic_add_return(1, &cm_node->passive_state);
++	if (passive_state == IRDMA_SEND_RESET_EVENT) {
++		ret = -ECONNRESET;
++		goto error;
++	}
++
++	cm_node->cm_core->stats_accepts++;
++	iwqp->cm_node = cm_node;
++	cm_node->iwqp = iwqp;
++
++	buf_len = conn_param->private_data_len + IRDMA_MAX_IETF_SIZE;
++
++	iwqp->ietf_mem.size = ALIGN(buf_len, 1);
++	iwqp->ietf_mem.va = dma_alloc_coherent(hw_to_dev(dev->hw),
++					       iwqp->ietf_mem.size,
++					       &iwqp->ietf_mem.pa, GFP_KERNEL);
++	if (!iwqp->ietf_mem.va) {
++		ret = -ENOMEM;
++		goto error;
++	}
++
++	cm_node->pdata.size = conn_param->private_data_len;
++	accept.addr = iwqp->ietf_mem.va;
++	accept.size = irdma_cm_build_mpa_frame(cm_node, &accept, MPA_KEY_REPLY);
++	memcpy(accept.addr + accept.size, conn_param->private_data,
++	       conn_param->private_data_len);
++
++	if (cm_node->dev->ws_add(iwqp->sc_qp.vsi, cm_node->user_pri)) {
++		ret = -ENOMEM;
++		goto error;
++	}
++	irdma_qp_add_qos(&iwqp->sc_qp);
++
++	/* setup our first outgoing iWarp send WQE (the IETF frame response) */
++	iwpd = iwqp->iwpd;
++	tagged_offset = (uintptr_t)iwqp->ietf_mem.va;
++	ibmr = irdma_reg_phys_mr(&iwpd->ibpd, iwqp->ietf_mem.pa, buf_len,
++				 IB_ACCESS_LOCAL_WRITE, &tagged_offset);
++	if (IS_ERR(ibmr)) {
++		ret = -ENOMEM;
++		goto error;
++	}
++
++	ibmr->pd = &iwpd->ibpd;
++	ibmr->device = iwpd->ibpd.device;
++	iwqp->lsmm_mr = ibmr;
++	if (iwqp->page)
++		iwqp->sc_qp.qp_uk.sq_base = kmap(iwqp->page);
++	dev->iw_priv_qp_ops->qp_send_lsmm(&iwqp->sc_qp,
++					  iwqp->ietf_mem.va,
++					  (accept.size + conn_param->private_data_len),
++					  ibmr->lkey);
++
++	if (iwqp->page)
++		kunmap(iwqp->page);
++
++	iwqp->cm_id = cm_id;
++	cm_node->cm_id = cm_id;
++
++	cm_id->provider_data = iwqp;
++	iwqp->active_conn = 0;
++
++	cm_node->lsmm_size = accept.size + conn_param->private_data_len;
++
++	irdma_cm_init_tsa_conn(iwqp, cm_node);
++	cm_id->add_ref(cm_id);
++	irdma_add_ref(&iwqp->ibqp);
++
++	attr.qp_state = IB_QPS_RTS;
++	cm_node->qhash_set = false;
++	cm_node->cm_core->cm_free_ah(cm_node);
++
++	irdma_modify_qp(&iwqp->ibqp, &attr, IB_QP_STATE, NULL);
++	spin_lock_irqsave(&cm_core->ht_lock, flags);
++	list_move_tail(&cm_node->list, &cm_core->accelerated_list);
++	spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++
++	if (dev->hw_attrs.uk_attrs.feature_flags & IRDMA_FEATURE_RTS_AE) {
++		wait_ret = wait_event_interruptible_timeout(iwqp->waitq,
++							    iwqp->rts_ae_rcvd,
++							    IRDMA_MAX_TIMEOUT);
++		if (!wait_ret) {
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: Slow Connection: cm_node=%p, loc_port=%d, rem_port=%d, cm_id=%p\n",
++				  cm_node, cm_node->loc_port,
++				  cm_node->rem_port, cm_node->cm_id);
++			ret = -ECONNRESET;
++			goto error;
++		}
++	}
++
++	cm_node->accelerated = true;
++	irdma_send_cm_event(cm_node, cm_id, IW_CM_EVENT_ESTABLISHED, 0);
++
++	if (cm_node->accept_pend) {
++		atomic_dec(&cm_node->listener->pend_accepts_cnt);
++		cm_node->accept_pend = 0;
++	}
++
++	ibdev_dbg(to_ibdev(iwdev),
++		  "CM: rem_port=0x%04x, loc_port=0x%04x rem_addr=%pI4 loc_addr=%pI4 cm_node=%p cm_id=%p qp_id = %d\n\n",
++		  cm_node->rem_port, cm_node->loc_port, cm_node->rem_addr,
++		  cm_node->loc_addr, cm_node, cm_id, ibqp->qp_num);
++
++	return 0;
++error:
++	irdma_free_lsmm_rsrc(iwqp);
++	irdma_rem_ref_cm_node(cm_node);
++
++	return ret;
++}
++
++/**
++ * irdma_reject - registered call for connection to be rejected
++ * @cm_id: cm information for passive connection
++ * @pdata: private data to be sent
++ * @pdata_len: private data length
++ */
++int irdma_reject(struct iw_cm_id *cm_id, const void *pdata, u8 pdata_len)
++{
++	struct irdma_device *iwdev;
++	struct irdma_cm_node *cm_node;
++
++	cm_node = cm_id->provider_data;
++	cm_node->cm_id = cm_id;
++	cm_node->pdata.size = pdata_len;
++
++	trace_irdma_reject(cm_node, 0, NULL);
++
++	iwdev = to_iwdev(cm_id->device);
++	if (!iwdev)
++		return -EINVAL;
++
++	cm_node->cm_core->stats_rejects++;
++
++	if (pdata_len + sizeof(struct ietf_mpa_v2) > IRDMA_MAX_CM_BUF)
++		return -EINVAL;
++
++	return irdma_cm_reject(cm_node, pdata, pdata_len);
++}
++
++/**
++ * irdma_connect - registered call for connection to be established
++ * @cm_id: cm information for passive connection
++ * @conn_param: Information about the connection
++ */
++int irdma_connect(struct iw_cm_id *cm_id, struct iw_cm_conn_param *conn_param)
++{
++	struct ib_qp *ibqp;
++	struct irdma_qp *iwqp;
++	struct irdma_device *iwdev;
++	struct irdma_cm_node *cm_node;
++	struct irdma_cm_info cm_info;
++	struct sockaddr_in *laddr;
++	struct sockaddr_in *raddr;
++	struct sockaddr_in6 *laddr6;
++	struct sockaddr_in6 *raddr6;
++	int ret = 0;
++
++	ibqp = irdma_get_qp(cm_id->device, conn_param->qpn);
++	if (!ibqp)
++		return -EINVAL;
++	iwqp = to_iwqp(ibqp);
++	if (!iwqp)
++		return -EINVAL;
++	iwdev = iwqp->iwdev;
++	if (!iwdev)
++		return -EINVAL;
++
++	laddr = (struct sockaddr_in *)&cm_id->m_local_addr;
++	raddr = (struct sockaddr_in *)&cm_id->m_remote_addr;
++	laddr6 = (struct sockaddr_in6 *)&cm_id->m_local_addr;
++	raddr6 = (struct sockaddr_in6 *)&cm_id->m_remote_addr;
++
++	if (!(laddr->sin_port) || !(raddr->sin_port))
++		return -EINVAL;
++
++	iwqp->active_conn = 1;
++	iwqp->cm_id = NULL;
++	cm_id->provider_data = iwqp;
++
++	/* set up the connection params for the node */
++	if (cm_id->remote_addr.ss_family == AF_INET) {
++		if (iwdev->vsi.mtu < IRDMA_MIN_MTU_IPV4)
++			return -EINVAL;
++
++		cm_info.ipv4 = true;
++		memset(cm_info.loc_addr, 0, sizeof(cm_info.loc_addr));
++		memset(cm_info.rem_addr, 0, sizeof(cm_info.rem_addr));
++		cm_info.loc_addr[0] = ntohl(laddr->sin_addr.s_addr);
++		cm_info.rem_addr[0] = ntohl(raddr->sin_addr.s_addr);
++		cm_info.loc_port = ntohs(laddr->sin_port);
++		cm_info.rem_port = ntohs(raddr->sin_port);
++		cm_info.vlan_id = irdma_get_vlan_ipv4(cm_info.loc_addr);
++	} else {
++		if (iwdev->vsi.mtu < IRDMA_MIN_MTU_IPV6)
++			return -EINVAL;
++
++		cm_info.ipv4 = false;
++		irdma_copy_ip_ntohl(cm_info.loc_addr,
++				    laddr6->sin6_addr.in6_u.u6_addr32);
++		irdma_copy_ip_ntohl(cm_info.rem_addr,
++				    raddr6->sin6_addr.in6_u.u6_addr32);
++		cm_info.loc_port = ntohs(laddr6->sin6_port);
++		cm_info.rem_port = ntohs(raddr6->sin6_port);
++		irdma_netdev_vlan_ipv6(cm_info.loc_addr, &cm_info.vlan_id,
++				       NULL);
++	}
++	cm_info.cm_id = cm_id;
++	cm_info.qh_qpid = iwdev->vsi.ilq->qp_id;
++	cm_info.tos = cm_id->tos;
++	cm_info.user_pri = rt_tos2priority(cm_id->tos);
++
++	if (iwqp->sc_qp.dev->ws_add(iwqp->sc_qp.vsi, cm_info.user_pri))
++		return -ENOMEM;
++	irdma_qp_add_qos(&iwqp->sc_qp);
++
++	ibdev_dbg(to_ibdev(iwdev), "DCB: TOS:[%d] UP:[%d]\n", cm_id->tos,
++		  cm_info.user_pri);
++
++	trace_irdma_dcb_tos(iwdev, cm_id->tos, cm_info.user_pri);
++
++	cm_id->add_ref(cm_id);
++	ret = irdma_create_cm_node(&iwdev->cm_core, iwdev, conn_param, &cm_info,
++				   &cm_node);
++	if (ret) {
++		cm_id->rem_ref(cm_id);
++		return ret;
++	}
++	ret = cm_node->cm_core->cm_create_ah(cm_node, true);
++	if (ret)
++		goto err;
++	if (irdma_manage_qhash(iwdev, &cm_info,
++			       IRDMA_QHASH_TYPE_TCP_ESTABLISHED,
++			       IRDMA_QHASH_MANAGE_TYPE_ADD, NULL, true)) {
++		ret = -EINVAL;
++		goto err;
++	}
++	cm_node->qhash_set = true;
++
++	if (irdma_manage_apbvt(iwdev, cm_info.loc_port,
++			       IRDMA_MANAGE_APBVT_ADD)) {
++		ret = -EINVAL;
++		goto err;
++	}
++
++	cm_node->apbvt_set = true;
++	iwqp->cm_node = cm_node;
++	cm_node->iwqp = iwqp;
++	iwqp->cm_id = cm_id;
++	irdma_add_ref(&iwqp->ibqp);
++
++	if (cm_node->state != IRDMA_CM_STATE_OFFLOADED) {
++		cm_node->state = IRDMA_CM_STATE_SYN_SENT;
++		ret = irdma_send_syn(cm_node, 0);
++		if (ret)
++			goto err;
++	}
++
++	ibdev_dbg(to_ibdev(iwdev),
++		  "CM: rem_port=0x%04x, loc_port=0x%04x rem_addr=%pI4 loc_addr=%pI4 cm_node=%p cm_id=%p qp_id = %d\n\n",
++		  cm_node->rem_port, cm_node->loc_port, cm_node->rem_addr,
++		  cm_node->loc_addr, cm_node, cm_id, ibqp->qp_num);
++
++	trace_irdma_connect(cm_node, 0, NULL);
++
++	return 0;
++
++err:
++	if (cm_info.ipv4)
++		ibdev_dbg(to_ibdev(iwdev),
++			  "CM: connect() FAILED: dest addr=%pI4",
++			  cm_info.rem_addr);
++	else
++		ibdev_dbg(to_ibdev(iwdev),
++			  "CM: connect() FAILED: dest addr=%pI6",
++			  cm_info.rem_addr);
++	irdma_rem_ref_cm_node(cm_node);
++	cm_id->rem_ref(cm_id);
++	iwdev->cm_core.stats_connect_errs++;
++
++	return ret;
++}
++
++/**
++ * irdma_create_listen - registered call creating listener
++ * @cm_id: cm information for passive connection
++ * @backlog: to max accept pending count
++ */
++int irdma_create_listen(struct iw_cm_id *cm_id, int backlog)
++{
++	struct irdma_device *iwdev;
++	struct irdma_cm_listener *cm_listen_node;
++	struct irdma_cm_info cm_info = {};
++	enum irdma_status_code err;
++	struct sockaddr_in *laddr;
++	struct sockaddr_in6 *laddr6;
++	bool wildcard = false;
++
++	iwdev = to_iwdev(cm_id->device);
++	if (!iwdev)
++		return -EINVAL;
++
++	laddr = (struct sockaddr_in *)&cm_id->m_local_addr;
++	laddr6 = (struct sockaddr_in6 *)&cm_id->m_local_addr;
++	cm_info.qh_qpid = iwdev->vsi.ilq->qp_id;
++
++	if (laddr->sin_family == AF_INET) {
++		if (iwdev->vsi.mtu < IRDMA_MIN_MTU_IPV4)
++			return -EINVAL;
++
++		cm_info.ipv4 = true;
++		cm_info.loc_addr[0] = ntohl(laddr->sin_addr.s_addr);
++		cm_info.loc_port = ntohs(laddr->sin_port);
++
++		if (laddr->sin_addr.s_addr != htonl(INADDR_ANY)) {
++			cm_info.vlan_id = irdma_get_vlan_ipv4(cm_info.loc_addr);
++		} else {
++			cm_info.vlan_id = 0xFFFF;
++			wildcard = true;
++		}
++	} else {
++		if (iwdev->vsi.mtu < IRDMA_MIN_MTU_IPV6)
++			return -EINVAL;
++
++		cm_info.ipv4 = false;
++		irdma_copy_ip_ntohl(cm_info.loc_addr,
++				    laddr6->sin6_addr.in6_u.u6_addr32);
++		cm_info.loc_port = ntohs(laddr6->sin6_port);
++		if (ipv6_addr_type(&laddr6->sin6_addr) != IPV6_ADDR_ANY) {
++			irdma_netdev_vlan_ipv6(cm_info.loc_addr,
++					       &cm_info.vlan_id, NULL);
++		} else {
++			cm_info.vlan_id = 0xFFFF;
++			wildcard = true;
++		}
++	}
++
++	if (cm_info.vlan_id >= VLAN_N_VID && iwdev->dcb)
++		cm_info.vlan_id = 0;
++	cm_info.backlog = backlog;
++	cm_info.cm_id = cm_id;
++
++	trace_irdma_create_listen(iwdev, &cm_info);
++
++	cm_listen_node = irdma_make_listen_node(&iwdev->cm_core, iwdev,
++						&cm_info);
++	if (!cm_listen_node) {
++		ibdev_dbg(to_ibdev(iwdev), "CM: cm_listen_node == NULL\n");
++		return -ENOMEM;
++	}
++
++	cm_id->provider_data = cm_listen_node;
++
++	cm_listen_node->tos = cm_id->tos;
++	cm_listen_node->user_pri = rt_tos2priority(cm_id->tos);
++	cm_info.user_pri = cm_listen_node->user_pri;
++	if (!cm_listen_node->reused_node) {
++		if (wildcard) {
++			if (cm_info.ipv4)
++				err = irdma_add_mqh_4(iwdev, &cm_info,
++						      cm_listen_node);
++			else
++				err = irdma_add_mqh_6(iwdev, &cm_info,
++						      cm_listen_node);
++			if (err)
++				goto error;
++
++			err = irdma_manage_apbvt(iwdev, cm_info.loc_port,
++						 IRDMA_MANAGE_APBVT_ADD);
++
++			if (err)
++				goto error;
++		} else {
++			err = irdma_manage_qhash(iwdev, &cm_info,
++						 IRDMA_QHASH_TYPE_TCP_SYN,
++						 IRDMA_QHASH_MANAGE_TYPE_ADD,
++						 NULL, true);
++			if (err)
++				goto error;
++
++			cm_listen_node->qhash_set = true;
++			err = irdma_manage_apbvt(iwdev, cm_info.loc_port,
++						 IRDMA_MANAGE_APBVT_ADD);
++			if (err)
++				goto error;
++		}
++	}
++	cm_id->add_ref(cm_id);
++	cm_listen_node->cm_core->stats_listen_created++;
++	return 0;
++
++error:
++
++	irdma_cm_del_listen(&iwdev->cm_core, cm_listen_node, false);
++
++	return -EINVAL;
++}
++
++/**
++ * irdma_destroy_listen - registered call to destroy listener
++ * @cm_id: cm information for passive connection
++ */
++int irdma_destroy_listen(struct iw_cm_id *cm_id)
++{
++	struct irdma_device *iwdev;
++
++	iwdev = to_iwdev(cm_id->device);
++	if (cm_id->provider_data)
++		irdma_cm_del_listen(&iwdev->cm_core, cm_id->provider_data,
++				    true);
++	else
++		ibdev_dbg(to_ibdev(iwdev),
++			  "CM: cm_id->provider_data was NULL\n");
++
++	cm_id->rem_ref(cm_id);
++
++	return 0;
++}
++
++/**
++ * irdma_cm_event_connected - handle connected active node
++ * @event: the info for cm_node of connection
++ */
++static void irdma_cm_event_connected(struct irdma_cm_event *event)
++{
++	struct irdma_qp *iwqp;
++	struct irdma_device *iwdev;
++	struct irdma_cm_core *cm_core;
++	struct irdma_cm_node *cm_node;
++	struct irdma_sc_dev *dev;
++	struct ib_qp_attr attr = {};
++	struct iw_cm_id *cm_id;
++	unsigned long flags;
++	int status;
++	bool read0;
++	int wait_ret = 0;
++
++	cm_node = event->cm_node;
++	cm_id = cm_node->cm_id;
++	iwqp = cm_id->provider_data;
++	iwdev = iwqp->iwdev;
++	dev = &iwdev->rf->sc_dev;
++	cm_core = &iwdev->cm_core;
++
++	if (iwqp->destroyed) {
++		status = -ETIMEDOUT;
++		goto error;
++	}
++
++	irdma_cm_init_tsa_conn(iwqp, cm_node);
++	read0 = (cm_node->send_rdma0_op == SEND_RDMA_READ_ZERO);
++	if (iwqp->page)
++		iwqp->sc_qp.qp_uk.sq_base = kmap(iwqp->page);
++	dev->iw_priv_qp_ops->qp_send_rtt(&iwqp->sc_qp, read0);
++	if (iwqp->page)
++		kunmap(iwqp->page);
++
++	attr.qp_state = IB_QPS_RTS;
++	cm_node->qhash_set = false;
++	irdma_modify_qp(&iwqp->ibqp, &attr, IB_QP_STATE, NULL);
++	spin_lock_irqsave(&cm_core->ht_lock, flags);
++	list_move_tail(&cm_node->list, &cm_core->accelerated_list);
++	spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++
++	if (dev->hw_attrs.uk_attrs.feature_flags & IRDMA_FEATURE_RTS_AE) {
++		wait_ret = wait_event_interruptible_timeout(iwqp->waitq,
++							    iwqp->rts_ae_rcvd,
++							    IRDMA_MAX_TIMEOUT);
++		if (!wait_ret)
++			ibdev_dbg(to_ibdev(iwdev),
++				  "CM: Slow Connection: cm_node=%p, loc_port=%d, rem_port=%d, cm_id=%p\n",
++				  cm_node, cm_node->loc_port,
++				  cm_node->rem_port, cm_node->cm_id);
++	}
++
++	cm_node->accelerated = true;
++	irdma_send_cm_event(cm_node, cm_id, IW_CM_EVENT_CONNECT_REPLY, 0);
++	cm_node->cm_core->cm_free_ah(cm_node);
++	return;
++
++error:
++	iwqp->cm_id = NULL;
++	cm_id->provider_data = NULL;
++	irdma_send_cm_event(event->cm_node, cm_id, IW_CM_EVENT_CONNECT_REPLY,
++			    status);
++	cm_id->rem_ref(cm_id);
++	irdma_rem_ref_cm_node(event->cm_node);
++}
++
++/**
++ * irdma_cm_event_reset - handle reset
++ * @event: the info for cm_node of connection
++ */
++static void irdma_cm_event_reset(struct irdma_cm_event *event)
++{
++	struct irdma_cm_node *cm_node = event->cm_node;
++	struct iw_cm_id *cm_id = cm_node->cm_id;
++	struct irdma_qp *iwqp;
++
++	if (!cm_id)
++		return;
++
++	iwqp = cm_id->provider_data;
++	if (!iwqp)
++		return;
++
++	ibdev_dbg(to_ibdev(cm_node->iwdev),
++		  "CM: reset event %p - cm_id = %p\n", event->cm_node, cm_id);
++	iwqp->cm_id = NULL;
++
++	irdma_send_cm_event(cm_node, cm_node->cm_id, IW_CM_EVENT_DISCONNECT,
++			    -ECONNRESET);
++	irdma_send_cm_event(cm_node, cm_node->cm_id, IW_CM_EVENT_CLOSE, 0);
++}
++
++/**
++ * irdma_cm_event_handler - send event to cm upper layer
++ * @work: pointer of cm event info.
++ */
++static void irdma_cm_event_handler(struct work_struct *work)
++{
++	struct irdma_cm_event *event = container_of(work, struct irdma_cm_event, event_work);
++	struct irdma_cm_node *cm_node;
++
++	if (!event || !event->cm_node || !event->cm_node->cm_core)
++		return;
++
++	cm_node = event->cm_node;
++	trace_irdma_cm_event_handler(cm_node, event->type, NULL);
++
++	switch (event->type) {
++	case IRDMA_CM_EVENT_MPA_REQ:
++		irdma_send_cm_event(cm_node, cm_node->cm_id,
++				    IW_CM_EVENT_CONNECT_REQUEST, 0);
++		break;
++	case IRDMA_CM_EVENT_RESET:
++		irdma_cm_event_reset(event);
++		break;
++	case IRDMA_CM_EVENT_CONNECTED:
++		if (!event->cm_node->cm_id ||
++		    event->cm_node->state != IRDMA_CM_STATE_OFFLOADED)
++			break;
++		irdma_cm_event_connected(event);
++		break;
++	case IRDMA_CM_EVENT_MPA_REJECT:
++		if (!event->cm_node->cm_id ||
++		    cm_node->state == IRDMA_CM_STATE_OFFLOADED)
++			break;
++		irdma_send_cm_event(cm_node, cm_node->cm_id,
++				    IW_CM_EVENT_CONNECT_REPLY, -ECONNREFUSED);
++		break;
++	case IRDMA_CM_EVENT_ABORTED:
++		if (!event->cm_node->cm_id ||
++		    event->cm_node->state == IRDMA_CM_STATE_OFFLOADED)
++			break;
++		irdma_event_connect_error(event);
++		break;
++	default:
++		ibdev_dbg(to_ibdev(cm_node->iwdev),
++			  "CM: bad event type = %d\n", event->type);
++		break;
++	}
++
++	event->cm_info.cm_id->rem_ref(event->cm_info.cm_id);
++	irdma_rem_ref_cm_node(event->cm_node);
++	kfree(event);
++}
++
++/**
++ * irdma_cm_post_event - queue event request for worker thread
++ * @event: cm node's info for up event call
++ */
++static void irdma_cm_post_event(struct irdma_cm_event *event)
++{
++	refcount_inc(&event->cm_node->refcnt);
++	event->cm_info.cm_id->add_ref(event->cm_info.cm_id);
++	INIT_WORK(&event->event_work, irdma_cm_event_handler);
++	queue_work(event->cm_node->cm_core->event_wq, &event->event_work);
++}
++
++/**
++ * irdma_qhash_ctrl - enable/disable qhash for list
++ * @iwdev: device pointer
++ * @parent_listen_node: parent listen node
++ * @nfo: cm info node
++ * @ipaddr: Pointer to IPv4 or IPv6 address
++ * @ipv4: flag indicating IPv4 when true
++ * @ifup: flag indicating interface up when true
++ *
++ * Enables or disables the qhash for the node in the child
++ * listen list that matches ipaddr. If no matching IP was found
++ * it will allocate and add a new child listen node to the
++ * parent listen node. The listen_list_lock is assumed to be
++ * held when called.
++ */
++static void irdma_qhash_ctrl(struct irdma_device *iwdev,
++			     struct irdma_cm_listener *parent_listen_node,
++			     struct irdma_cm_info *nfo, u32 *ipaddr, bool ipv4,
++			     bool ifup)
++{
++	struct list_head *child_listen_list = &parent_listen_node->child_listen_list;
++	struct irdma_cm_listener *child_listen_node;
++	struct list_head *pos, *tpos;
++	enum irdma_status_code err;
++	bool node_allocated = false;
++	enum irdma_quad_hash_manage_type op = ifup ?
++					      IRDMA_QHASH_MANAGE_TYPE_ADD :
++					      IRDMA_QHASH_MANAGE_TYPE_DELETE;
++
++	list_for_each_safe (pos, tpos, child_listen_list) {
++		child_listen_node = list_entry(pos, struct irdma_cm_listener,
++					       child_listen_list);
++		if (!memcmp(child_listen_node->loc_addr, ipaddr, ipv4 ? 4 : 16))
++			goto set_qhash;
++	}
++
++	/* if not found then add a child listener if interface is going up */
++	if (!ifup)
++		return;
++	child_listen_node = kmemdup(parent_listen_node,
++				    sizeof(*child_listen_node), GFP_ATOMIC);
++	if (!child_listen_node)
++		return;
++
++	node_allocated = true;
++	memcpy(child_listen_node->loc_addr, ipaddr, ipv4 ? 4 : 16);
++
++set_qhash:
++	memcpy(nfo->loc_addr, child_listen_node->loc_addr,
++	       sizeof(nfo->loc_addr));
++	nfo->vlan_id = child_listen_node->vlan_id;
++	err = irdma_manage_qhash(iwdev, nfo, IRDMA_QHASH_TYPE_TCP_SYN, op, NULL,
++				 false);
++	if (!err) {
++		child_listen_node->qhash_set = ifup;
++		if (node_allocated)
++			list_add(&child_listen_node->child_listen_list,
++				 &parent_listen_node->child_listen_list);
++	} else if (node_allocated) {
++		kfree(child_listen_node);
++	}
++}
++
++/**
++ * irdma_cm_teardown_connections - teardown QPs
++ * @iwdev: device pointer
++ * @ipaddr: Pointer to IPv4 or IPv6 address
++ * @nfo: Connection info
++ * @disconnect_all: flag indicating disconnect all QPs
++ *
++ * teardown QPs where source or destination addr matches ip addr
++ */
++void irdma_cm_teardown_connections(struct irdma_device *iwdev, u32 *ipaddr,
++				   struct irdma_cm_info *nfo,
++				   bool disconnect_all)
++{
++	struct irdma_cm_core *cm_core = &iwdev->cm_core;
++	struct list_head *list_core_temp;
++	struct list_head *list_node;
++	struct irdma_cm_node *cm_node;
++	struct list_head teardown_list;
++	struct ib_qp_attr attr;
++	struct irdma_sc_vsi *vsi = &iwdev->vsi;
++	struct irdma_sc_qp *sc_qp;
++	struct irdma_qp *qp;
++	int i;
++	unsigned long flags;
++
++	INIT_LIST_HEAD(&teardown_list);
++
++	spin_lock_irqsave(&cm_core->ht_lock, flags);
++	list_for_each_safe (list_node, list_core_temp,
++			    &cm_core->accelerated_list) {
++		cm_node = container_of(list_node, struct irdma_cm_node, list);
++		if (disconnect_all ||
++		    (nfo->vlan_id == cm_node->vlan_id &&
++		     !memcmp(cm_node->loc_addr, ipaddr, nfo->ipv4 ? 4 : 16))) {
++			refcount_inc(&cm_node->refcnt);
++			list_add(&cm_node->teardown_entry, &teardown_list);
++		}
++	}
++	list_for_each_safe (list_node, list_core_temp,
++			    &cm_core->non_accelerated_list) {
++		cm_node = container_of(list_node, struct irdma_cm_node, list);
++		if (disconnect_all ||
++		    (nfo->vlan_id == cm_node->vlan_id &&
++		     !memcmp(cm_node->loc_addr, ipaddr, nfo->ipv4 ? 4 : 16))) {
++			refcount_inc(&cm_node->refcnt);
++			list_add(&cm_node->teardown_entry, &teardown_list);
++		}
++	}
++	spin_unlock_irqrestore(&cm_core->ht_lock, flags);
++
++	list_for_each_safe (list_node, list_core_temp, &teardown_list) {
++		cm_node = container_of(list_node, struct irdma_cm_node,
++				       teardown_entry);
++		attr.qp_state = IB_QPS_ERR;
++		irdma_modify_qp(&cm_node->iwqp->ibqp, &attr, IB_QP_STATE, NULL);
++		if (iwdev->reset)
++			irdma_cm_disconn(cm_node->iwqp);
++		irdma_rem_ref_cm_node(cm_node);
++	}
++	if (!iwdev->roce_mode)
++		return;
++
++	INIT_LIST_HEAD(&teardown_list);
++	for (i = 0; i < IRDMA_MAX_USER_PRIORITY; i++) {
++		spin_lock_irqsave(&vsi->qos[i].lock, flags);
++		list_for_each_safe (list_node, list_core_temp,
++				    &vsi->qos[i].qplist) {
++			u32 qp_ip[4];
++
++			sc_qp = container_of(list_node, struct irdma_sc_qp,
++					     list);
++			if (sc_qp->qp_type != IRDMA_QP_TYPE_ROCE_RC)
++				continue;
++
++			qp = sc_qp->qp_uk.back_qp;
++			if (!disconnect_all) {
++				if (nfo->ipv4)
++					qp_ip[0] = qp->udp_info.local_ipaddr3;
++				else
++					memcpy(qp_ip,
++					       &qp->udp_info.local_ipaddr0,
++					       sizeof(qp_ip));
++			}
++
++			if (disconnect_all ||
++			    (nfo->vlan_id == (qp->udp_info.vlan_tag & VLAN_VID_MASK) &&
++			     !memcmp(qp_ip, ipaddr, nfo->ipv4 ? 4 : 16))) {
++				spin_lock(&iwdev->rf->qptable_lock);
++				if (iwdev->rf->qp_table[sc_qp->qp_uk.qp_id]) {
++					irdma_add_ref(&qp->ibqp);
++					list_add(&qp->teardown_entry,
++						 &teardown_list);
++				}
++				spin_unlock(&iwdev->rf->qptable_lock);
++			}
++		}
++		spin_unlock_irqrestore(&vsi->qos[i].lock, flags);
++	}
++
++	list_for_each_safe (list_node, list_core_temp, &teardown_list) {
++		qp = container_of(list_node, struct irdma_qp, teardown_entry);
++		attr.qp_state = IB_QPS_ERR;
++		irdma_modify_qp_roce(&qp->ibqp, &attr, IB_QP_STATE, NULL);
++		irdma_rem_ref(&qp->ibqp);
++	}
++}
++
++/**
++ * irdma_ifdown_notify - process an ifdown on an interface
++ * @iwdev: device pointer
++ * @netdev: network device structure
++ * @ipaddr: Pointer to IPv4 or IPv6 address
++ * @ipv4: flag indicating IPv4 when true
++ * @ifup: flag indicating interface up when true
++ */
++void irdma_if_notify(struct irdma_device *iwdev, struct net_device *netdev,
++		     u32 *ipaddr, bool ipv4, bool ifup)
++{
++	struct irdma_cm_core *cm_core = &iwdev->cm_core;
++	unsigned long flags;
++	struct irdma_cm_listener *listen_node;
++	static const u32 ip_zero[4] = { 0, 0, 0, 0 };
++	struct irdma_cm_info nfo;
++	u16 vlan_id = rdma_vlan_dev_vlan_id(netdev);
++	enum irdma_quad_hash_manage_type op = ifup ?
++					      IRDMA_QHASH_MANAGE_TYPE_ADD :
++					      IRDMA_QHASH_MANAGE_TYPE_DELETE;
++
++	nfo.vlan_id = vlan_id;
++	nfo.ipv4 = ipv4;
++
++	/* Disable or enable qhash for listeners */
++	spin_lock_irqsave(&cm_core->listen_list_lock, flags);
++	list_for_each_entry (listen_node, &cm_core->listen_nodes, list) {
++		if (vlan_id != listen_node->vlan_id ||
++		    (memcmp(listen_node->loc_addr, ipaddr, ipv4 ? 4 : 16) &&
++		     memcmp(listen_node->loc_addr, ip_zero, ipv4 ? 4 : 16)))
++			continue;
++
++		memcpy(nfo.loc_addr, listen_node->loc_addr,
++		       sizeof(nfo.loc_addr));
++		nfo.loc_port = listen_node->loc_port;
++		nfo.user_pri = listen_node->user_pri;
++		if (!list_empty(&listen_node->child_listen_list)) {
++			irdma_qhash_ctrl(iwdev, listen_node, &nfo, ipaddr, ipv4,
++					 ifup);
++		} else if (memcmp(listen_node->loc_addr, ip_zero,
++				  ipv4 ? 4 : 16)) {
++			if (!irdma_manage_qhash(iwdev, &nfo,
++						IRDMA_QHASH_TYPE_TCP_SYN, op,
++						NULL, false))
++				listen_node->qhash_set = ifup;
++		}
++	}
++	spin_unlock_irqrestore(&cm_core->listen_list_lock, flags);
++
++	/* disconnect any connected qp's on ifdown */
++	if (!ifup)
++		irdma_cm_teardown_connections(iwdev, ipaddr, &nfo, false);
++}
+diff --git a/drivers/infiniband/hw/irdma/cm.h b/drivers/infiniband/hw/irdma/cm.h
 new file mode 100644
-index 000000000000..0d1be931fcf3
+index 0000000..37ea0b6
 --- /dev/null
-+++ b/drivers/net/ethernet/intel/gwdpa/gswip/xgmac.h
-@@ -0,0 +1,236 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2016-2019 Intel Corporation. */
-+/* Xgmac registers indirect access */
++++ b/drivers/infiniband/hw/irdma/cm.h
+@@ -0,0 +1,413 @@
++/* SPDX-License-Identifier: GPL-2.0 or Linux-OpenIB */
++/* Copyright (c) 2015 - 2019 Intel Corporation */
++#ifndef IRDMA_CM_H
++#define IRDMA_CM_H
 +
-+#ifndef _XGMAC_H
-+#define _XGMAC_H
++#define IRDMA_MANAGE_APBVT_DEL	0
++#define IRDMA_MANAGE_APBVT_ADD	1
 +
-+#include <linux/bits.h>
++#define IRDMA_MPA_REQUEST_ACCEPT	1
++#define IRDMA_MPA_REQUEST_REJECT	2
 +
-+/* MAC register offsets */
-+#define MAC_TX_CFG			0x0000
-+#define MAC_TX_CFG_TE			BIT(0)
-+#define MAC_TX_CFG_DDIC			BIT(1)
-+#define MAC_TX_CFG_ISM			BIT(3)
-+#define MAC_TX_CFG_ISR			GENMASK(7, 4)
-+#define MAC_TX_CFG_IPG			GENMASK(10, 8)
-+#define MAC_TX_CFG_IFP			BIT(11)
-+#define MAC_TX_CFG_JD			BIT(16)
-+#define MAC_TX_CFG_SARC			GENMASK(22, 20)
-+#define MAC_TX_CFG_VNE			BIT(24)
-+#define MAC_TX_CFG_VNM			BIT(25)
-+#define MAC_TX_CFG_G9991EN		BIT(28)
-+#define MAC_TX_CFG_SS			GENMASK(30, 29)
-+#define MAC_TX_CFG_USS			BIT(31)
++/* IETF MPA -- defines */
++#define IEFT_MPA_KEY_REQ	"MPA ID Req Frame"
++#define IEFT_MPA_KEY_REP	"MPA ID Rep Frame"
++#define IETF_MPA_KEY_SIZE	16
++#define IETF_MPA_VER		1
++#define IETF_MAX_PRIV_DATA_LEN	512
++#define IETF_MPA_FRAME_SIZE	20
++#define IETF_RTR_MSG_SIZE	4
++#define IETF_MPA_V2_FLAG	0x10
++#define SNDMARKER_SEQNMASK	0x000001ff
++#define IRDMA_MAX_IETF_SIZE	32
 +
-+#define MAC_RX_CFG			0x0004
-+#define MAC_RX_CFG_RE			BIT(0)
-+#define MAC_RX_CFG_ACS			BIT(1)
-+#define MAC_RX_CFG_CST			BIT(2)
-+#define MAC_RX_CFG_DCRCC		BIT(3)
-+#define MAC_RX_CFG_SPEN			BIT(4)
-+#define MAC_RX_CFG_USP			BIT(5)
-+#define MAC_RX_CFG_GPSLCE		BIT(6)
-+#define MAC_RX_CFG_WD			BIT(7)
-+#define MAC_RX_CFG_JE			BIT(8)
-+#define MAC_RX_CFG_IPC			BIT(9)
-+#define MAC_RX_CFG_LM			BIT(10)
-+#define MAC_RX_CFG_S2KP			BIT(11)
-+#define MAC_RX_CFG_HDSMS		GENMASK(14, 12)
-+#define MAC_RX_CFG_GPSL			GENMASK(29, 16)
-+#define MAC_RX_CFG_ELEN			BIT(30)
-+#define MAC_RX_CFG_ARPEN		BIT(31)
++/* IETF RTR MSG Fields */
++#define IETF_PEER_TO_PEER	0x8000
++#define IETF_FLPDU_ZERO_LEN	0x4000
++#define IETF_RDMA0_WRITE	0x8000
++#define IETF_RDMA0_READ		0x4000
++#define IETF_NO_IRD_ORD		0x3fff
 +
-+#define MAC_PKT_FR			0x0008
-+#define MAC_PKT_FR_PR			BIT(0)
-+#define MAC_PKT_FR_HUC			BIT(1)
-+#define MAC_PKT_FR_HMC			BIT(2)
-+#define MAC_PKT_FR_DAIF			BIT(3)
-+#define MAC_PKT_FR_PM			BIT(4)
-+#define MAC_PKT_FR_DBF			BIT(5)
-+#define MAC_PKT_FR_PCF			GENMASK(7, 6)
-+#define MAC_PKT_FR_SAIF			BIT(8)
-+#define MAC_PKT_FR_SAF			BIT(9)
-+#define MAC_PKT_FR_HPF			BIT(10)
-+#define MAC_PKT_FR_VTFE			BIT(16)
-+#define MAC_PKT_FR_IPFE			BIT(20)
-+#define MAC_PKT_FR_DNTU			BIT(21)
-+#define MAC_PKT_FR_VUCC			BIT(22)
-+#define MAC_PKT_FR_RA			BIT(31)
-+#define MAC_TX_FCR			0x0070
-+#define MAC_TX_FCR_FCB			BIT(0)
-+#define MAC_TX_FCR_TFE			BIT(1)
-+#define MAC_TX_FCR_PLT			GENMASK(6, 4)
-+#define MAC_TX_FCR_DZPQ			BIT(7)
-+#define MAC_TX_FCR_PT			GENMASK(31, 16)
++/* HW-supported IRD sizes*/
++#define	IRDMA_HW_IRD_SETTING_2		2
++#define	IRDMA_HW_IRD_SETTING_4		4
++#define	IRDMA_HW_IRD_SETTING_8		8
++#define	IRDMA_HW_IRD_SETTING_16		16
++#define	IRDMA_HW_IRD_SETTING_32		32
++#define	IRDMA_HW_IRD_SETTING_64		64
++#define	IRDMA_HW_IRD_SETTING_128	128
 +
-+#define MAC_TX_FCR1			0x0074
-+#define MAC_TX_FCR2			0x0078
-+#define MAC_TX_FCR3			0x007C
-+#define MAC_TX_FCR4			0x0080
-+#define MAC_TX_FCR5			0x0084
-+#define MAC_TX_FCR6			0x0088
-+#define MAC_TX_FCR7			0x008C
-+#define MAC_RX_FCR			0x0090
-+#define MAC_RX_FCR_RFE			BIT(0)
-+#define MAC_RX_FCR_UP			BIT(1)
-+#define MAC_RX_FCR_PFCE			BIT(8)
++#define MAX_PORTS	65536
 +
-+#define MAC_ISR				0x00b0
-+#define MAC_IER				0x00b4
-+#define MAC_RXTX_STS			0x00b8
-+#define MAC_PMT_CSR			0x00c0
-+#define MAC_RWK_PFR			0x00c4
-+#define MAC_LPI_CSR			0x00d0
-+#define MAC_LPI_CSR_TLPIEN		BIT(0)
-+#define MAC_LPI_CSR_TLPIEX		BIT(1)
-+#define MAC_LPI_CSR_RLPIEN		BIT(2)
-+#define MAC_LPI_CSR_RLPIEX		BIT(3)
-+#define MAC_LPI_CSR_TLPIST		BIT(8)
-+#define MAC_LPI_CSR_RLPIST		BIT(9)
-+#define MAC_LPI_CSR_RXRSTP		BIT(10)
-+#define MAC_LPI_CSR_TXRSTP		BIT(11)
-+#define MAC_LPI_CSR_LPITXEN		BIT(16)
-+#define MAC_LPI_CSR_PLS			BIT(17)
-+#define MAC_LPI_CSR_PLSDIS		BIT(18)
-+#define MAC_LPI_CSR_LPITXA		BIT(19)
-+#define MAC_LPI_CSR_LPIATE		BIT(20)
-+#define MAC_LPI_CSR_TXCGE		BIT(21)
++#define IRDMA_PASSIVE_STATE_INDICATED	0
++#define IRDMA_DO_NOT_SEND_RESET_EVENT	1
++#define IRDMA_SEND_RESET_EVENT		2
 +
-+#define MAC_LPI_TCR			0x00d4
-+#define MAC_VER				0x0110
-+#define MAC_VER_USERVER			GENMASK(23, 16)
++#define MAX_IRDMA_IFS	4
 +
-+#define MAC_HW_F0			0x011c
-+#define MAC_HW_F0_GMIISEL		BIT(1)
-+#define MAC_HW_F0_VLHASH		BIT(4)
-+#define MAC_HW_F0_SMASEL		BIT(5)
-+#define MAC_HW_F0_RWKSEL		BIT(6)
-+#define MAC_HW_F0_MGKSEL		BIT(7)
-+#define MAC_HW_F0_MMCSEL		BIT(8)
-+#define MAC_HW_F0_ARPOFFSEL		BIT(9)
-+#define MAC_HW_F0_TSSEL			BIT(12)
-+#define MAC_HW_F0_EEESEL		BIT(13)
-+#define MAC_HW_F0_TXCOESEL		BIT(14)
-+#define MAC_HW_F0_RXCOESEL		BIT(16)
-+#define MAC_HW_F0_ADDMACADRSEL		GENMASK(22, 18)
-+#define MAC_HW_F0_TSSTSSEL		GENMASK(26, 25)
-+#define MAC_HW_F0_SAVLANINS		BIT(27)
-+#define MAC_HW_F0_VXN			BIT(29)
-+#define MAC_HW_F0_EDIFFC		BIT(30)
-+#define MAC_HW_F0_EDMA			BIT(31)
++#define SET_ACK		1
++#define SET_SYN		2
++#define SET_FIN		4
++#define SET_RST		8
 +
-+#define MAC_HW_F1			0x0120
-+#define MAC_HW_F1_RXFIFOSIZE		GENMASK(4, 0)
-+#define MAC_HW_F1_TXFIFOSIZE		GENMASK(10, 6)
-+#define MAC_HW_F1_OSTEN			BIT(11)
-+#define MAC_HW_F1_PTOEN			BIT(12)
-+#define MAC_HW_F1_ADVTHWORD		BIT(13)
-+#define MAC_HW_F1_ADDR64		GENMASK(15, 14)
-+#define MAC_HW_F1_DCBEN			BIT(16)
-+#define MAC_HW_F1_SPHEN			BIT(17)
-+#define MAC_HW_F1_TSOEN			BIT(18)
-+#define MAC_HW_F1_DBGMEMA		BIT(19)
-+#define MAC_HW_F1_RSSEN			BIT(20)
-+#define MAC_HW_F1_NUMTC			GENMASK(23, 21)
-+#define MAC_HW_F1_HASHTBLSZ		GENMASK(25, 24)
-+#define MAC_HW_F1_L3L4FNUM		GENMASK(30, 27)
++#define TCP_OPTIONS_PADDING	3
 +
-+#define MAC_HW_F2			0x0124
-+#define MAC_HW_F2_RXQCNT		GENMASK(3, 0)
-+#define MAC_HW_F2_TXQCNT		GENMASK(9, 6)
-+#define MAC_HW_F2_RXCHCNT		GENMASK(15, 12)
-+#define MAC_HW_F2_TXCHCNT		GENMASK(21, 18)
-+#define MAC_HW_F2_PPSOUTNUM		GENMASK(26, 24)
-+#define MAC_HW_F2_AUXSNAPNUM		GENMASK(30, 28)
++#define IRDMA_DEFAULT_RETRYS	64
++#define IRDMA_DEFAULT_RETRANS	8
++#define IRDMA_DEFAULT_TTL		0x40
++#define IRDMA_DEFAULT_RTT_VAR		6
++#define IRDMA_DEFAULT_SS_THRESH		0x3fffffff
++#define IRDMA_DEFAULT_REXMIT_THRESH	8
 +
-+#define MAC_EXTCFG			0x0140
-+#define MAC_EXTCFG_SBDIOEN		BIT(8)
++#define IRDMA_RETRY_TIMEOUT	HZ
++#define IRDMA_SHORT_TIME	10
++#define IRDMA_LONG_TIME		(2 * HZ)
++#define IRDMA_MAX_TIMEOUT	((unsigned long)(12 * HZ))
 +
-+#define MDIO_SCAR			0x200
-+#define MDIO_SCAR_RA			GENMASK(15, 0)
-+#define MDIO_SCAR_PA			GENMASK(20, 16)
-+#define MDIO_SCAR_DA			GENMASK(25, 21)
++#define IRDMA_CM_HASHTABLE_SIZE		1024
++#define IRDMA_CM_TCP_TIMER_INTERVAL	3000
++#define IRDMA_CM_DEFAULT_MTU		1540
++#define IRDMA_CM_DEFAULT_FRAME_CNT	10
++#define IRDMA_CM_THREAD_STACK_SIZE	256
++#define IRDMA_CM_DEFAULT_RCV_WND	64240
++#define IRDMA_CM_DEFAULT_RCV_WND_SCALED	0x3fffc
++#define IRDMA_CM_DEFAULT_RCV_WND_SCALE	2
++#define IRDMA_CM_DEFAULT_FREE_PKTS	10
++#define IRDMA_CM_FREE_PKT_LO_WATERMARK	2
++#define IRDMA_CM_DEFAULT_MSS		536
++#define IRDMA_CM_DEFAULT_MPA_VER	2
++#define IRDMA_CM_DEFAULT_SEQ		0x159bf75f
++#define IRDMA_CM_DEFAULT_LOCAL_ID	0x3b47
++#define IRDMA_CM_DEFAULT_SEQ2		0x18ed5740
++#define IRDMA_CM_DEFAULT_LOCAL_ID2	0xb807
++#define IRDMA_MAX_CM_BUF		(IRDMA_MAX_IETF_SIZE + IETF_MAX_PRIV_DATA_LEN)
 +
-+#define MDIO_SCCDR			0x204
-+#define MDIO_SCCDR_SDATA		GENMASK(15, 0)
-+#define MDIO_SCCDR_CMD			GENMASK(17, 16)
-+#define MDIO_SCCDR_SADDR		BIT(18)
-+#define MDIO_SCCDR_CR			GENMASK(21, 19)
-+#define MDIO_SCCDR_BUSY			BIT(22)
++enum ietf_mpa_flags {
++	IETF_MPA_FLAGS_REJECT  = 0x20,
++	IETF_MPA_FLAGS_CRC     = 0x40,
++	IETF_MPA_FLAGS_MARKERS = 0x80,
++};
 +
-+#define MDIO_C22P			0x220
-+#define MDIO_C22P_PORT(idx)		BIT(idx)
++enum irdma_timer_type {
++	IRDMA_TIMER_TYPE_SEND,
++	IRDMA_TIMER_TYPE_CLOSE,
++};
 +
-+#define MAC_MACA0HR			0x0300
-+#define MAC_MACA0LR			0x0304
-+#define MAC_MACA1HR			0x0308
-+#define MAC_MACA1LR			0x030c
++enum option_nums {
++	OPTION_NUM_EOL,
++	OPTION_NUM_NONE,
++	OPTION_NUM_MSS,
++	OPTION_NUM_WINDOW_SCALE,
++	OPTION_NUM_SACK_PERM,
++	OPTION_NUM_SACK,
++	OPTION_NUM_WRITE0 = 0xbc,
++};
 +
-+#define MMC_CR				0x0800
++/* cm node transition states */
++enum irdma_cm_node_state {
++	IRDMA_CM_STATE_UNKNOWN,
++	IRDMA_CM_STATE_INITED,
++	IRDMA_CM_STATE_LISTENING,
++	IRDMA_CM_STATE_SYN_RCVD,
++	IRDMA_CM_STATE_SYN_SENT,
++	IRDMA_CM_STATE_ONE_SIDE_ESTABLISHED,
++	IRDMA_CM_STATE_ESTABLISHED,
++	IRDMA_CM_STATE_ACCEPTING,
++	IRDMA_CM_STATE_MPAREQ_SENT,
++	IRDMA_CM_STATE_MPAREQ_RCVD,
++	IRDMA_CM_STATE_MPAREJ_RCVD,
++	IRDMA_CM_STATE_OFFLOADED,
++	IRDMA_CM_STATE_FIN_WAIT1,
++	IRDMA_CM_STATE_FIN_WAIT2,
++	IRDMA_CM_STATE_CLOSE_WAIT,
++	IRDMA_CM_STATE_TIME_WAIT,
++	IRDMA_CM_STATE_LAST_ACK,
++	IRDMA_CM_STATE_CLOSING,
++	IRDMA_CM_STATE_LISTENER_DESTROYED,
++	IRDMA_CM_STATE_CLOSED,
++};
 +
-+#define MMC_TXOCTETCOUNT_GB_LO		0x0814
-+#define MMC_TXFRAMECOUNT_GB_LO		0x081c
-+#define MMC_TXBROADCASTFRAMES_G_LO	0x0824
-+#define MMC_TXMULTICASTFRAMES_G_LO	0x082c
-+#define MMC_TXUNICASTFRAMES_GB_LO	0x0864
-+#define MMC_TXMULTICASTFRAMES_GB_LO	0x086c
-+#define MMC_TXBROADCASTFRAMES_GB_LO	0x0874
-+#define MMC_TXUNDERFLOWERROR_LO		0x087c
-+#define MMC_TXOCTETCOUNT_G_LO		0x0884
-+#define MMC_TXFRAMECOUNT_G_LO		0x088c
-+#define MMC_TXPAUSEFRAMES_LO		0x0894
-+#define MMC_TXVLANFRAMES_G_LO		0x089c
++enum mpa_frame_ver {
++	IETF_MPA_V1 = 1,
++	IETF_MPA_V2 = 2,
++};
 +
-+#define MMC_RXFRAMECOUNT_GB_LO		0x0900
-+#define MMC_RXOCTETCOUNT_GB_LO		0x0908
-+#define MMC_RXOCTETCOUNT_G_LO		0x0910
-+#define MMC_RXBROADCASTFRAMES_G_LO	0x0918
-+#define MMC_RXMULTICASTFRAMES_G_LO	0x0920
-+#define MMC_RXCRCERROR_LO		0x0928
-+#define MMC_RXRUNTERROR			0x0930
-+#define MMC_RXJABBERERROR		0x0934
-+#define MMC_RXUNDERSIZE_G		0x0938
-+#define MMC_RXOVERSIZE_G		0x093c
-+#define MMC_RXUNICASTFRAMES_G_LO	0x0970
-+#define MMC_RXLENGTHERROR_LO		0x0978
-+#define MMC_RXOUTOFRANGETYPE_LO		0x0980
-+#define MMC_RXPAUSEFRAMES_LO		0x0988
-+#define MMC_RXFIFOOVERFLOW_LO		0x0990
-+#define MMC_RXVLANFRAMES_GB_LO		0x0998
-+#define MMC_RXWATCHDOGERROR		0x09a0
++enum mpa_frame_key {
++	MPA_KEY_REQUEST,
++	MPA_KEY_REPLY,
++};
 +
-+#define MAC_TSTAMP_CR			0x0d00
-+#define MAC_SUBSEC_INCR			0x0d04
-+#define MAC_SYS_TIME_SEC		0x0d08
-+#define MAC_SYS_TIME_NSEC		0x0d0c
-+#define MAC_SYS_TIME_SEC_UPD		0x0d10
-+#define MAC_SYS_TIME_NSEC_UPD		0x0d14
-+#define MAC_TSTAMP_ADDNDR		0x0d18
-+#define MAC_TSTAMP_STSR			0x0d20
-+#define MAC_TXTSTAMP_NSECR		0x0d30
-+#define MAC_TXTSTAMP_SECR		0x0d34
-+#define MAC_TXTSTAMP_STS		0x0d38
-+#define MAC_AUX_CTRL			0x0d40
-+#define MAC_AUX_NSEC			0x0d48
-+#define MAC_AUX_SEC			0x0d4c
-+#define MAC_RX_PCH_CRC_CNT		0x0d2c
++enum send_rdma0 {
++	SEND_RDMA_READ_ZERO  = 1,
++	SEND_RDMA_WRITE_ZERO = 2,
++};
 +
-+#define XGMAC_Q_INC			0x100
-+#define XGMAC_CTRL_REG(idx)					\
-+	(XGMAC_REGACC_CTRL + ((idx) - MAC2) * XGMAC_Q_INC)
-+#define XGMAC_DATA0_REG(idx)					\
-+	(XGMAC_REGACC_DATA0 + ((idx) - MAC2) * XGMAC_Q_INC)
-+#define XGMAC_DATA1_REG(idx)					\
-+	(XGMAC_REGACC_DATA1 + ((idx) - MAC2) * XGMAC_Q_INC)
++enum irdma_tcpip_pkt_type {
++	IRDMA_PKT_TYPE_UNKNOWN,
++	IRDMA_PKT_TYPE_SYN,
++	IRDMA_PKT_TYPE_SYNACK,
++	IRDMA_PKT_TYPE_ACK,
++	IRDMA_PKT_TYPE_FIN,
++	IRDMA_PKT_TYPE_RST,
++};
 +
-+#define MASK_LOW			GENMASK(15, 0)
-+#define MASK_HIGH			GENMASK(31, 16)
++enum irdma_cm_listener_state {
++	IRDMA_CM_LISTENER_PASSIVE_STATE = 1,
++	IRDMA_CM_LISTENER_ACTIVE_STATE  = 2,
++	IRDMA_CM_LISTENER_EITHER_STATE  = 3,
++};
 +
-+/* gaint packet size limit */
-+#define XGMAC_MAX_GPSL			9000
-+#define XGMAC_MAX_SUPPORTED_MTU		16380
++/* CM event codes */
++enum irdma_cm_event_type {
++	IRDMA_CM_EVENT_UNKNOWN,
++	IRDMA_CM_EVENT_ESTABLISHED,
++	IRDMA_CM_EVENT_MPA_REQ,
++	IRDMA_CM_EVENT_MPA_CONNECT,
++	IRDMA_CM_EVENT_MPA_ACCEPT,
++	IRDMA_CM_EVENT_MPA_REJECT,
++	IRDMA_CM_EVENT_MPA_ESTABLISHED,
++	IRDMA_CM_EVENT_CONNECTED,
++	IRDMA_CM_EVENT_RESET,
++	IRDMA_CM_EVENT_ABORTED,
++};
 +
-+#define XGMAC_MAX_STD_PACKET		1518
++struct irdma_bth { /* Base Trasnport Header */
++	u8 opcode;
++	u8 flags;
++	__be16 pkey;
++	__be32 qpn;
++	__be32 apsn;
++};
 +
-+#endif
++struct ietf_mpa_v1 {
++	u8 key[IETF_MPA_KEY_SIZE];
++	u8 flags;
++	u8 rev;
++	__be16 priv_data_len;
++	u8 priv_data[0];
++};
++
++struct ietf_rtr_msg {
++	__be16 ctrl_ird;
++	__be16 ctrl_ord;
++};
++
++struct ietf_mpa_v2 {
++	u8 key[IETF_MPA_KEY_SIZE];
++	u8 flags;
++	u8 rev;
++	__be16 priv_data_len;
++	struct ietf_rtr_msg rtr_msg;
++	u8 priv_data[0];
++};
++
++struct option_base {
++	u8 optionnum;
++	u8 len;
++};
++
++struct option_mss {
++	u8 optionnum;
++	u8 len;
++	__be16 mss;
++};
++
++struct option_windowscale {
++	u8 optionnum;
++	u8 len;
++	u8 shiftcount;
++};
++
++union all_known_options {
++	char eol;
++	struct option_base base;
++	struct option_mss mss;
++	struct option_windowscale windowscale;
++};
++
++struct irdma_timer_entry {
++	struct list_head list;
++	unsigned long timetosend; /* jiffies */
++	struct irdma_puda_buf *sqbuf;
++	u32 type;
++	u32 retrycount;
++	u32 retranscount;
++	u32 context;
++	u32 send_retrans;
++	int close_when_complete;
++};
++
++/* CM context params */
++struct irdma_cm_tcp_context {
++	u8 client;
++	u32 loc_seq_num;
++	u32 loc_ack_num;
++	u32 rem_ack_num;
++	u32 rcv_nxt;
++	u32 loc_id;
++	u32 rem_id;
++	u32 snd_wnd;
++	u32 max_snd_wnd;
++	u32 rcv_wnd;
++	u32 mss;
++	u8 snd_wscale;
++	u8 rcv_wscale;
++};
++
++struct irdma_cm_listener {
++	struct list_head list;
++	struct iw_cm_id *cm_id;
++	struct irdma_cm_core *cm_core;
++	struct irdma_device *iwdev;
++	struct list_head child_listen_list;
++	enum irdma_cm_listener_state listener_state;
++	refcount_t refcnt;
++	atomic_t pend_accepts_cnt;
++	u32 loc_addr[4];
++	u32 reused_node;
++	int backlog;
++	u16 loc_port;
++	u16 vlan_id;
++	u8 loc_mac[ETH_ALEN];
++	u8 user_pri;
++	u8 tos;
++	bool qhash_set:1;
++	bool ipv4:1;
++};
++
++struct irdma_kmem_info {
++	void *addr;
++	u32 size;
++};
++
++struct irdma_cm_node {
++	struct irdma_qp *iwqp;
++	struct irdma_device *iwdev;
++	struct irdma_sc_dev *dev;
++	struct irdma_cm_tcp_context tcp_cntxt;
++	struct irdma_cm_core *cm_core;
++	struct irdma_timer_entry *send_entry;
++	struct irdma_timer_entry *close_entry;
++	struct irdma_cm_listener *listener;
++	struct list_head timer_entry;
++	struct list_head reset_entry;
++	struct list_head teardown_entry;
++	struct irdma_kmem_info pdata;
++	struct irdma_sc_ah *ah;
++	union {
++		struct ietf_mpa_v1 mpa_frame;
++		struct ietf_mpa_v2 mpa_v2_frame;
++	};
++	struct irdma_kmem_info mpa_hdr;
++	struct iw_cm_id *cm_id;
++	struct list_head list;
++	spinlock_t retrans_list_lock; /* protect CM node rexmit updates*/
++	atomic_t passive_state;
++	refcount_t refcnt;
++	enum irdma_cm_node_state state;
++	enum send_rdma0 send_rdma0_op;
++	enum mpa_frame_ver mpa_frame_rev;
++	u32 loc_addr[4], rem_addr[4];
++	u16 loc_port, rem_port;
++	int apbvt_set;
++	int accept_pend;
++	u16 vlan_id;
++	u16 ird_size;
++	u16 ord_size;
++	u16 mpav2_ird_ord;
++	u16 lsmm_size;
++	u8 pdata_buf[IETF_MAX_PRIV_DATA_LEN];
++	u8 loc_mac[ETH_ALEN];
++	u8 rem_mac[ETH_ALEN];
++	u8 user_pri;
++	u8 tos;
++	bool ack_rcvd:1;
++	bool qhash_set:1;
++	bool ipv4:1;
++	bool snd_mark_en:1;
++	bool do_lpb:1;
++	bool accelerated:1;
++};
++
++/* Used by internal CM APIs to pass CM information*/
++struct irdma_cm_info {
++	struct iw_cm_id *cm_id;
++	u16 loc_port;
++	u16 rem_port;
++	u32 loc_addr[4];
++	u32 rem_addr[4];
++	u32 qh_qpid;
++	u16 vlan_id;
++	int backlog;
++	u8 user_pri;
++	u8 tos;
++	bool ipv4;
++};
++
++struct irdma_cm_event {
++	enum irdma_cm_event_type type;
++	struct irdma_cm_info cm_info;
++	struct work_struct event_work;
++	struct irdma_cm_node *cm_node;
++};
++
++struct irdma_cm_core {
++	struct irdma_device *iwdev;
++	struct irdma_sc_dev *dev;
++	struct list_head listen_nodes;
++	struct list_head accelerated_list;
++	struct list_head non_accelerated_list;
++	struct timer_list tcp_timer;
++	struct workqueue_struct *event_wq;
++	spinlock_t ht_lock; /* protect CM node (active side) list */
++	spinlock_t listen_list_lock; /* protect listener list */
++	spinlock_t apbvt_lock; /*serialize apbvt add/del entries*/
++	unsigned long ports_in_use[BITS_TO_LONGS(MAX_PORTS)];
++	u64 stats_nodes_created;
++	u64 stats_nodes_destroyed;
++	u64 stats_listen_created;
++	u64 stats_listen_destroyed;
++	u64 stats_listen_nodes_created;
++	u64 stats_listen_nodes_destroyed;
++	u64 stats_lpbs;
++	u64 stats_accepts;
++	u64 stats_rejects;
++	u64 stats_connect_errs;
++	u64 stats_passive_errs;
++	u64 stats_pkt_retrans;
++	u64 stats_backlog_drops;
++	struct irdma_puda_buf *(*form_cm_frame)(struct irdma_cm_node *cm_node,
++						struct irdma_kmem_info *options,
++						struct irdma_kmem_info *hdr,
++						struct irdma_kmem_info *pdata,
++						u8 flags);
++	int (*cm_create_ah)(struct irdma_cm_node *cm_node, bool wait);
++	void (*cm_free_ah)(struct irdma_cm_node *cm_node);
++};
++
++int irdma_schedule_cm_timer(struct irdma_cm_node *cm_node,
++			    struct irdma_puda_buf *sqbuf,
++			    enum irdma_timer_type type, int send_retrans,
++			    int close_when_complete);
++int irdma_accept(struct iw_cm_id *cm_id, struct iw_cm_conn_param *conn_param);
++int irdma_reject(struct iw_cm_id *cm_id, const void *pdata, u8 pdata_len);
++int irdma_connect(struct iw_cm_id *cm_id, struct iw_cm_conn_param *conn_param);
++int irdma_create_listen(struct iw_cm_id *cm_id, int backlog);
++int irdma_destroy_listen(struct iw_cm_id *cm_id);
++void irdma_cm_teardown_connections(struct irdma_device *iwdev, u32 *ipaddr,
++				   struct irdma_cm_info *nfo,
++				   bool disconnect_all);
++int irdma_cm_start(struct irdma_device *dev);
++int irdma_cm_stop(struct irdma_device *dev);
++bool irdma_ipv4_is_lpb(u32 loc_addr, u32 rem_addr);
++bool irdma_ipv6_is_lpb(u32 *loc_addr, u32 *rem_addr);
++int irdma_arp_table(struct irdma_pci_f *rf, u32 *ip_addr, bool ipv4,
++		    u8 *mac_addr, u32 action);
++int irdma_add_arp(struct irdma_pci_f *rf, u32 *ip, bool ipv4, u8 *mac);
++void irdma_if_notify(struct irdma_device *iwdev, struct net_device *netdev,
++		     u32 *ipaddr, bool ipv4, bool ifup);
++bool irdma_port_in_use(struct irdma_cm_core *cm_core, u16 port);
++void irdma_send_ack(struct irdma_cm_node *cm_node);
++void irdma_lpb_nop(struct irdma_sc_qp *qp);
++u8 irdma_derive_hw_ird_setting(u16 cm_ird);
++#endif /* IRDMA_CM_H */
 -- 
-2.11.0
+1.8.3.1
+
 
