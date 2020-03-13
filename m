@@ -1,10 +1,10 @@
 From: Shiraz Saleem <shiraz.saleem@intel.com>
-Date: Fri, 13 Mar 2020 10:16:28 -0500
-Subject: [Intel-wired-lan] [PATCH RFC v5 04/16] RDMA/irdma: Add HMC backing
- store setup functions
+Date: Fri, 13 Mar 2020 10:16:34 -0500
+Subject: [Intel-wired-lan] [PATCH RFC v5 10/16] RDMA/irdma: Add RoCEv2 UD OP
+ support
 In-Reply-To: <20200313151640.2070-1-shiraz.saleem@intel.com>
 References: <20200313151640.2070-1-shiraz.saleem@intel.com>
-Message-ID: <20200313151640.2070-5-shiraz.saleem@intel.com>
+Message-ID: <20200313151640.2070-11-shiraz.saleem@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,957 +13,875 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Mustafa Ismail <mustafa.ismail@intel.com>
 
-HW uses host memory as a backing store for a number of
-protocol context objects and queue state tracking.
-The Host Memory Cache (HMC) is a component responsible for
-managing these objects stored in host memory.
-
-Add the functions and data structures to manage the allocation
-of backing pages used by the HMC for the various objects
+Add the header, data structures and functions
+to populate the WQE descriptors and issue the
+Control QP commands that support RoCEv2 UD operations.
 
 Signed-off-by: Mustafa Ismail <mustafa.ismail@intel.com>
 Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 ---
- drivers/infiniband/hw/irdma/hmc.c | 705 ++++++++++++++++++++++++++++++++++++++
- drivers/infiniband/hw/irdma/hmc.h | 217 ++++++++++++
- 2 files changed, 922 insertions(+)
- create mode 100644 drivers/infiniband/hw/irdma/hmc.c
- create mode 100644 drivers/infiniband/hw/irdma/hmc.h
+ drivers/infiniband/hw/irdma/uda.c   | 390 ++++++++++++++++++++++++++++++++++++
+ drivers/infiniband/hw/irdma/uda.h   |  64 ++++++
+ drivers/infiniband/hw/irdma/uda_d.h | 382 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 836 insertions(+)
+ create mode 100644 drivers/infiniband/hw/irdma/uda.c
+ create mode 100644 drivers/infiniband/hw/irdma/uda.h
+ create mode 100644 drivers/infiniband/hw/irdma/uda_d.h
 
-diff --git a/drivers/infiniband/hw/irdma/hmc.c b/drivers/infiniband/hw/irdma/hmc.c
+diff --git a/drivers/infiniband/hw/irdma/uda.c b/drivers/infiniband/hw/irdma/uda.c
 new file mode 100644
-index 0000000..a592803
+index 0000000..08c9f48
 --- /dev/null
-+++ b/drivers/infiniband/hw/irdma/hmc.c
-@@ -0,0 +1,705 @@
++++ b/drivers/infiniband/hw/irdma/uda.c
+@@ -0,0 +1,390 @@
 +// SPDX-License-Identifier: GPL-2.0 or Linux-OpenIB
-+/* Copyright (c) 2015 - 2019 Intel Corporation */
++/* Copyright (c) 2019 Intel Corporation */
 +#include "osdep.h"
 +#include "status.h"
 +#include "hmc.h"
 +#include "defs.h"
 +#include "type.h"
 +#include "protos.h"
++#include "uda.h"
++#include "uda_d.h"
 +
 +/**
-+ * irdma_find_sd_index_limit - finds segment descriptor index limit
-+ * @hmc_info: pointer to the HMC configuration information structure
-+ * @type: type of HMC resources we're searching
-+ * @idx: starting index for the object
-+ * @cnt: number of objects we're trying to create
-+ * @sd_idx: pointer to return index of the segment descriptor in question
-+ * @sd_limit: pointer to return the maximum number of segment descriptors
-+ *
-+ * This function calculates the segment descriptor index and index limit
-+ * for the resource defined by irdma_hmc_rsrc_type.
++ * irdma_sc_ah_init - initialize sc ah struct
++ * @dev: sc device struct
++ * @ah: sc ah ptr
 + */
-+
-+static void irdma_find_sd_index_limit(struct irdma_hmc_info *hmc_info, u32 type,
-+				      u32 idx, u32 cnt, u32 *sd_idx,
-+				      u32 *sd_limit)
++static void irdma_sc_init_ah(struct irdma_sc_dev *dev, struct irdma_sc_ah *ah)
 +{
-+	u64 fpm_addr, fpm_limit;
-+
-+	fpm_addr = hmc_info->hmc_obj[(type)].base +
-+		   hmc_info->hmc_obj[type].size * idx;
-+	fpm_limit = fpm_addr + hmc_info->hmc_obj[type].size * cnt;
-+	*sd_idx = (u32)(fpm_addr / IRDMA_HMC_DIRECT_BP_SIZE);
-+	*sd_limit = (u32)((fpm_limit - 1) / IRDMA_HMC_DIRECT_BP_SIZE);
-+	*sd_limit += 1;
++	ah->dev = dev;
 +}
 +
 +/**
-+ * irdma_find_pd_index_limit - finds page descriptor index limit
-+ * @hmc_info: pointer to the HMC configuration information struct
-+ * @type: HMC resource type we're examining
-+ * @idx: starting index for the object
-+ * @cnt: number of objects we're trying to create
-+ * @pd_idx: pointer to return page descriptor index
-+ * @pd_limit: pointer to return page descriptor index limit
-+ *
-+ * Calculates the page descriptor index and index limit for the resource
-+ * defined by irdma_hmc_rsrc_type.
++ * irdma_sc_access_ah() - Create, modify or delete AH
++ * @cqp: struct for cqp hw
++ * @info: ah information
++ * @op: Operation
++ * @scratch: u64 saved to be used during cqp completion
 + */
-+
-+static void irdma_find_pd_index_limit(struct irdma_hmc_info *hmc_info, u32 type,
-+				      u32 idx, u32 cnt, u32 *pd_idx,
-+				      u32 *pd_limit)
++static enum irdma_status_code irdma_sc_access_ah(struct irdma_sc_cqp *cqp,
++						 struct irdma_ah_info *info,
++						 u32 op, u64 scratch)
 +{
-+	u64 fpm_adr, fpm_limit;
++	__le64 *wqe;
++	u64 qw1, qw2;
 +
-+	fpm_adr = hmc_info->hmc_obj[type].base +
-+		  hmc_info->hmc_obj[type].size * idx;
-+	fpm_limit = fpm_adr + (hmc_info)->hmc_obj[(type)].size * (cnt);
-+	*pd_idx = (u32)(fpm_adr / IRDMA_HMC_PAGED_BP_SIZE);
-+	*pd_limit = (u32)((fpm_limit - 1) / IRDMA_HMC_PAGED_BP_SIZE);
-+	*pd_limit += 1;
-+}
++	wqe = irdma_sc_cqp_get_next_send_wqe(cqp, scratch);
++	if (!wqe)
++		return IRDMA_ERR_RING_FULL;
 +
-+/**
-+ * irdma_set_sd_entry - setup entry for sd programming
-+ * @pa: physical addr
-+ * @idx: sd index
-+ * @type: paged or direct sd
-+ * @entry: sd entry ptr
-+ */
-+static void irdma_set_sd_entry(u64 pa, u32 idx, enum irdma_sd_entry_type type,
-+			       struct irdma_update_sd_entry *entry)
-+{
-+	entry->data = pa | (IRDMA_HMC_MAX_BP_COUNT << IRDMA_PFHMC_SDDATALOW_PMSDBPCOUNT_S) |
-+		      (((type == IRDMA_SD_TYPE_PAGED) ? 0 : 1) << IRDMA_PFHMC_SDDATALOW_PMSDTYPE_S) |
-+		      (1 << IRDMA_PFHMC_SDDATALOW_PMSDVALID_S);
-+	entry->cmd = (idx | (1 << IRDMA_PFHMC_SDCMD_PMSDWR_S) | (1 << 15));
-+}
++	set_64bit_val(wqe, 0, LS_64_1(info->mac_addr[5], 16) |
++					 LS_64_1(info->mac_addr[4], 24) |
++					 LS_64_1(info->mac_addr[3], 32) |
++					 LS_64_1(info->mac_addr[2], 40) |
++					 LS_64_1(info->mac_addr[1], 48) |
++					 LS_64_1(info->mac_addr[0], 56));
 +
-+/**
-+ * irdma_clr_sd_entry - setup entry for sd clear
-+ * @idx: sd index
-+ * @type: paged or direct sd
-+ * @entry: sd entry ptr
-+ */
-+static void irdma_clr_sd_entry(u32 idx, enum irdma_sd_entry_type type,
-+			       struct irdma_update_sd_entry *entry)
-+{
-+	entry->data = (IRDMA_HMC_MAX_BP_COUNT << IRDMA_PFHMC_SDDATALOW_PMSDBPCOUNT_S) |
-+		      (((type == IRDMA_SD_TYPE_PAGED) ? 0 : 1) << IRDMA_PFHMC_SDDATALOW_PMSDTYPE_S);
-+	entry->cmd = (idx | (1 << IRDMA_PFHMC_SDCMD_PMSDWR_S) | (1 << 15));
-+}
++	qw1 = LS_64(info->pd_idx, IRDMA_UDA_CQPSQ_MAV_PDINDEXLO) |
++	      LS_64(info->tc_tos, IRDMA_UDA_CQPSQ_MAV_TC) |
++	      LS_64(info->vlan_tag, IRDMA_UDAQPC_VLANTAG);
 +
-+/**
-+ * irdma_hmc_sd_one - setup 1 sd entry for cqp
-+ * @dev: pointer to the device structure
-+ * @hmc_fn_id: hmc's function id
-+ * @pa: physical addr
-+ * @sd_idx: sd index
-+ * @type: paged or direct sd
-+ * @setsd: flag to set or clear sd
-+ */
-+enum irdma_status_code irdma_hmc_sd_one(struct irdma_sc_dev *dev, u8 hmc_fn_id,
-+					u64 pa, u32 sd_idx,
-+					enum irdma_sd_entry_type type,
-+					bool setsd)
-+{
-+	struct irdma_update_sds_info sdinfo;
++	qw2 = LS_64(info->dst_arpindex, IRDMA_UDA_CQPSQ_MAV_ARPINDEX) |
++	      LS_64(info->flow_label, IRDMA_UDA_CQPSQ_MAV_FLOWLABEL) |
++	      LS_64(info->hop_ttl, IRDMA_UDA_CQPSQ_MAV_HOPLIMIT) |
++	      LS_64(info->pd_idx >> 16, IRDMA_UDA_CQPSQ_MAV_PDINDEXHI);
 +
-+	sdinfo.cnt = 1;
-+	sdinfo.hmc_fn_id = hmc_fn_id;
-+	if (setsd)
-+		irdma_set_sd_entry(pa, sd_idx, type, sdinfo.entry);
-+	else
-+		irdma_clr_sd_entry(sd_idx, type, sdinfo.entry);
-+	return dev->cqp->process_cqp_sds(dev, &sdinfo);
-+}
++	if (!info->ipv4_valid) {
++		set_64bit_val(wqe, 40,
++			      LS_64(info->dest_ip_addr[0], IRDMA_UDA_CQPSQ_MAV_ADDR0) |
++			      LS_64(info->dest_ip_addr[1], IRDMA_UDA_CQPSQ_MAV_ADDR1));
++		set_64bit_val(wqe, 32,
++			      LS_64(info->dest_ip_addr[2], IRDMA_UDA_CQPSQ_MAV_ADDR2) |
++			      LS_64(info->dest_ip_addr[3], IRDMA_UDA_CQPSQ_MAV_ADDR3));
 +
-+/**
-+ * irdma_hmc_sd_grp - setup group of sd entries for cqp
-+ * @dev: pointer to the device structure
-+ * @hmc_info: pointer to the HMC configuration information struct
-+ * @sd_index: sd index
-+ * @sd_cnt: number of sd entries
-+ * @setsd: flag to set or clear sd
-+ */
-+static enum irdma_status_code irdma_hmc_sd_grp(struct irdma_sc_dev *dev,
-+					       struct irdma_hmc_info *hmc_info,
-+					       u32 sd_index, u32 sd_cnt,
-+					       bool setsd)
-+{
-+	struct irdma_hmc_sd_entry *sd_entry;
-+	struct irdma_update_sds_info sdinfo = {};
-+	u64 pa;
-+	u32 i;
-+	enum irdma_status_code ret_code = 0;
++		set_64bit_val(wqe, 56,
++			      LS_64(info->src_ip_addr[0], IRDMA_UDA_CQPSQ_MAV_ADDR0) |
++			      LS_64(info->src_ip_addr[1], IRDMA_UDA_CQPSQ_MAV_ADDR1));
++		set_64bit_val(wqe, 48,
++			      LS_64(info->src_ip_addr[2], IRDMA_UDA_CQPSQ_MAV_ADDR2) |
++			      LS_64(info->src_ip_addr[3], IRDMA_UDA_CQPSQ_MAV_ADDR3));
++	} else {
++		set_64bit_val(wqe, 32,
++			      LS_64(info->dest_ip_addr[0], IRDMA_UDA_CQPSQ_MAV_ADDR3));
 +
-+	sdinfo.hmc_fn_id = hmc_info->hmc_fn_id;
-+	for (i = sd_index; i < sd_index + sd_cnt; i++) {
-+		sd_entry = &hmc_info->sd_table.sd_entry[i];
-+		if (!sd_entry || (!sd_entry->valid && setsd) ||
-+		    (sd_entry->valid && !setsd))
-+			continue;
-+		if (setsd) {
-+			pa = (sd_entry->entry_type == IRDMA_SD_TYPE_PAGED) ?
-+				     sd_entry->u.pd_table.pd_page_addr.pa :
-+				     sd_entry->u.bp.addr.pa;
-+			irdma_set_sd_entry(pa, i, sd_entry->entry_type,
-+					   &sdinfo.entry[sdinfo.cnt]);
-+		} else {
-+			irdma_clr_sd_entry(i, sd_entry->entry_type,
-+					   &sdinfo.entry[sdinfo.cnt]);
-+		}
-+		sdinfo.cnt++;
-+		if (sdinfo.cnt == IRDMA_MAX_SD_ENTRIES) {
-+			ret_code = dev->cqp->process_cqp_sds(dev, &sdinfo);
-+			if (ret_code) {
-+				dev_dbg(rfdev_to_dev(dev),
-+					"HMC: sd_programming failed err=%d\n",
-+					ret_code);
-+				return ret_code;
-+			}
-+
-+			sdinfo.cnt = 0;
-+		}
++		set_64bit_val(wqe, 48,
++			      LS_64(info->src_ip_addr[0], IRDMA_UDA_CQPSQ_MAV_ADDR3));
 +	}
-+	if (sdinfo.cnt)
-+		ret_code = dev->cqp->process_cqp_sds(dev, &sdinfo);
 +
-+	return ret_code;
++	set_64bit_val(wqe, 8, qw1);
++	set_64bit_val(wqe, 16, qw2);
++
++	dma_wmb(); /* need write block before writing WQE header */
++
++	set_64bit_val(
++		wqe, 24,
++		LS_64(cqp->polarity, IRDMA_UDA_CQPSQ_MAV_WQEVALID) |
++		LS_64(op, IRDMA_UDA_CQPSQ_MAV_OPCODE) |
++		LS_64(info->do_lpbk, IRDMA_UDA_CQPSQ_MAV_DOLOOPBACKK) |
++		LS_64(info->ipv4_valid, IRDMA_UDA_CQPSQ_MAV_IPV4VALID) |
++		LS_64(info->ah_idx, IRDMA_UDA_CQPSQ_MAV_AVIDX) |
++		LS_64(info->insert_vlan_tag,
++		      IRDMA_UDA_CQPSQ_MAV_INSERTVLANTAG));
++
++	irdma_debug_buf(cqp->dev, IRDMA_DEBUG_WQE, "MANAGE_AH WQE", wqe,
++			IRDMA_CQP_WQE_SIZE * 8);
++	irdma_sc_cqp_post_sq(cqp);
++
++	return 0;
 +}
 +
 +/**
-+ * irdma_hmc_finish_add_sd_reg - program sd entries for objects
-+ * @dev: pointer to the device structure
-+ * @info: create obj info
++ * irdma_sc_create_ah() - Create AH
++ * @cqp: struct for cqp hw
++ * @info: ah information
++ * @scratch: u64 saved to be used during cqp completion
++ */
++static enum irdma_status_code irdma_sc_create_ah(struct irdma_sc_cqp *cqp,
++						 struct irdma_ah_info *info,
++						 u64 scratch)
++{
++	return irdma_sc_access_ah(cqp, info, IRDMA_CQP_OP_CREATE_ADDR_HANDLE,
++				  scratch);
++}
++
++/**
++ * irdma_sc_modify_ah() - Modify AH
++ * @cqp: struct for cqp hw
++ * @info: ah information
++ * @scratch: u64 saved to be used during cqp completion
++ */
++static enum irdma_status_code irdma_sc_modify_ah(struct irdma_sc_cqp *cqp,
++						 struct irdma_ah_info *info,
++						 u64 scratch)
++{
++	return irdma_sc_access_ah(cqp, info, IRDMA_CQP_OP_MODIFY_ADDR_HANDLE,
++				  scratch);
++}
++
++/**
++ * irdma_sc_destroy_ah() - Delete AH
++ * @cqp: struct for cqp hw
++ * @info: ah information
++ * @scratch: u64 saved to be used during cqp completion
++ */
++static enum irdma_status_code irdma_sc_destroy_ah(struct irdma_sc_cqp *cqp,
++						  struct irdma_ah_info *info,
++						  u64 scratch)
++{
++	return irdma_sc_access_ah(cqp, info, IRDMA_CQP_OP_DESTROY_ADDR_HANDLE,
++				  scratch);
++}
++
++/**
++ * create_mg_ctx() - create a mcg context
++ * @info: multicast group context info
 + */
 +static enum irdma_status_code
-+irdma_hmc_finish_add_sd_reg(struct irdma_sc_dev *dev,
-+			    struct irdma_hmc_create_obj_info *info)
++irdma_create_mg_ctx(struct irdma_mcast_grp_info *info)
 +{
-+	if (info->start_idx >= info->hmc_info->hmc_obj[info->rsrc_type].cnt)
-+		return IRDMA_ERR_INVALID_HMC_OBJ_INDEX;
++	struct irdma_mcast_grp_ctx_entry_info *entry_info = NULL;
++	u8 idx = 0; /* index in the array */
++	u8 ctx_idx = 0; /* index in the MG context */
 +
-+	if ((info->start_idx + info->count) >
-+	    info->hmc_info->hmc_obj[info->rsrc_type].cnt)
-+		return IRDMA_ERR_INVALID_HMC_OBJ_COUNT;
++	memset(info->dma_mem_mc.va, 0, IRDMA_MAX_MGS_PER_CTX * sizeof(u64));
 +
-+	if (!info->add_sd_cnt)
-+		return 0;
-+	return irdma_hmc_sd_grp(dev, info->hmc_info,
-+				info->hmc_info->sd_indexes[0], info->add_sd_cnt,
-+				true);
++	for (idx = 0; idx < IRDMA_MAX_MGS_PER_CTX; idx++) {
++		entry_info = &info->mg_ctx_info[idx];
++		if (entry_info->valid_entry) {
++			set_64bit_val((__le64 *)info->dma_mem_mc.va,
++				      ctx_idx * sizeof(u64),
++				      LS_64(entry_info->dest_port, IRDMA_UDA_MGCTX_DESTPORT) |
++				      LS_64(entry_info->valid_entry, IRDMA_UDA_MGCTX_VALIDENT) |
++				      LS_64(entry_info->qp_id, IRDMA_UDA_MGCTX_QPID));
++			ctx_idx++;
++		}
++	}
++
++	return 0;
 +}
 +
 +/**
-+ * irdma_sc_create_hmc_obj - allocate backing store for hmc objects
-+ * @dev: pointer to the device structure
-+ * @info: pointer to irdma_hmc_create_obj_info struct
-+ *
-+ * This will allocate memory for PDs and backing pages and populate
-+ * the sd and pd entries.
-+ */
-+enum irdma_status_code
-+irdma_sc_create_hmc_obj(struct irdma_sc_dev *dev,
-+			struct irdma_hmc_create_obj_info *info)
-+{
-+	struct irdma_hmc_sd_entry *sd_entry;
-+	u32 sd_idx, sd_lmt;
-+	u32 pd_idx = 0, pd_lmt = 0;
-+	u32 pd_idx1 = 0, pd_lmt1 = 0;
-+	u32 i, j;
-+	bool pd_error = false;
-+	enum irdma_status_code ret_code = 0;
-+
-+	if (info->start_idx >= info->hmc_info->hmc_obj[info->rsrc_type].cnt)
-+		return IRDMA_ERR_INVALID_HMC_OBJ_INDEX;
-+
-+	if ((info->start_idx + info->count) >
-+	    info->hmc_info->hmc_obj[info->rsrc_type].cnt) {
-+		dev_dbg(rfdev_to_dev(dev),
-+			"HMC: error type %u, start = %u, req cnt %u, cnt = %u\n",
-+			info->rsrc_type, info->start_idx, info->count,
-+			info->hmc_info->hmc_obj[info->rsrc_type].cnt);
-+		return IRDMA_ERR_INVALID_HMC_OBJ_COUNT;
-+	}
-+
-+	irdma_find_sd_index_limit(info->hmc_info, info->rsrc_type,
-+				  info->start_idx, info->count, &sd_idx,
-+				  &sd_lmt);
-+	if (sd_idx >= info->hmc_info->sd_table.sd_cnt ||
-+	    sd_lmt > info->hmc_info->sd_table.sd_cnt) {
-+		return IRDMA_ERR_INVALID_SD_INDEX;
-+	}
-+
-+	irdma_find_pd_index_limit(info->hmc_info, info->rsrc_type,
-+				  info->start_idx, info->count, &pd_idx,
-+				  &pd_lmt);
-+
-+	for (j = sd_idx; j < sd_lmt; j++) {
-+		ret_code = irdma_add_sd_table_entry(dev->hw, info->hmc_info, j,
-+						    info->entry_type,
-+						    IRDMA_HMC_DIRECT_BP_SIZE);
-+		if (ret_code)
-+			goto exit_sd_error;
-+
-+		sd_entry = &info->hmc_info->sd_table.sd_entry[j];
-+		if (sd_entry->entry_type == IRDMA_SD_TYPE_PAGED &&
-+		    (dev->hmc_info == info->hmc_info &&
-+		     info->rsrc_type != IRDMA_HMC_IW_PBLE)) {
-+			pd_idx1 = max(pd_idx, (j * IRDMA_HMC_MAX_BP_COUNT));
-+			pd_lmt1 = min(pd_lmt, (j + 1) * IRDMA_HMC_MAX_BP_COUNT);
-+			for (i = pd_idx1; i < pd_lmt1; i++) {
-+				/* update the pd table entry */
-+				ret_code = irdma_add_pd_table_entry(dev,
-+								    info->hmc_info,
-+								    i, NULL);
-+				if (ret_code) {
-+					pd_error = true;
-+					break;
-+				}
-+			}
-+			if (pd_error) {
-+				while (i && (i > pd_idx1)) {
-+					irdma_remove_pd_bp(dev, info->hmc_info,
-+							   i - 1);
-+					i--;
-+				}
-+			}
-+		}
-+		if (sd_entry->valid)
-+			continue;
-+
-+		info->hmc_info->sd_indexes[info->add_sd_cnt] = (u16)j;
-+		info->add_sd_cnt++;
-+		sd_entry->valid = true;
-+	}
-+	return irdma_hmc_finish_add_sd_reg(dev, info);
-+
-+exit_sd_error:
-+	while (j && (j > sd_idx)) {
-+		sd_entry = &info->hmc_info->sd_table.sd_entry[j - 1];
-+		switch (sd_entry->entry_type) {
-+		case IRDMA_SD_TYPE_PAGED:
-+			pd_idx1 = max(pd_idx, (j - 1) * IRDMA_HMC_MAX_BP_COUNT);
-+			pd_lmt1 = min(pd_lmt, (j * IRDMA_HMC_MAX_BP_COUNT));
-+			for (i = pd_idx1; i < pd_lmt1; i++)
-+				irdma_prep_remove_pd_page(info->hmc_info, i);
-+			break;
-+		case IRDMA_SD_TYPE_DIRECT:
-+			irdma_prep_remove_pd_page(info->hmc_info, (j - 1));
-+			break;
-+		default:
-+			ret_code = IRDMA_ERR_INVALID_SD_TYPE;
-+			break;
-+		}
-+		j--;
-+	}
-+
-+	return ret_code;
-+}
-+
-+/**
-+ * irdma_finish_del_sd_reg - delete sd entries for objects
-+ * @dev: pointer to the device structure
-+ * @info: dele obj info
-+ * @reset: true if called before reset
++ * irdma_access_mcast_grp() - Access mcast group based on op
++ * @cqp: Control QP
++ * @info: multicast group context info
++ * @op: operation to perform
++ * @scratch: u64 saved to be used during cqp completion
 + */
 +static enum irdma_status_code
-+irdma_finish_del_sd_reg(struct irdma_sc_dev *dev,
-+			struct irdma_hmc_del_obj_info *info, bool reset)
++irdma_access_mcast_grp(struct irdma_sc_cqp *cqp,
++		       struct irdma_mcast_grp_info *info, u32 op, u64 scratch)
 +{
-+	struct irdma_hmc_sd_entry *sd_entry;
++	__le64 *wqe;
 +	enum irdma_status_code ret_code = 0;
-+	u32 i, sd_idx;
-+	struct irdma_dma_mem *mem;
 +
-+	if (dev->privileged && !reset)
-+		ret_code = irdma_hmc_sd_grp(dev, info->hmc_info,
-+					    info->hmc_info->sd_indexes[0],
-+					    info->del_sd_cnt, false);
++	if (info->mg_id >= IRDMA_UDA_MAX_FSI_MGS) {
++		dev_dbg(rfdev_to_dev(cqp->dev), "WQE: mg_id out of range\n");
++		return IRDMA_ERR_PARAM;
++	}
 +
++	wqe = irdma_sc_cqp_get_next_send_wqe(cqp, scratch);
++	if (!wqe) {
++		dev_dbg(rfdev_to_dev(cqp->dev), "WQE: ring full\n");
++		return IRDMA_ERR_RING_FULL;
++	}
++
++	ret_code = irdma_create_mg_ctx(info);
 +	if (ret_code)
-+		dev_dbg(rfdev_to_dev(dev), "HMC: error cqp sd sd_grp\n");
-+	for (i = 0; i < info->del_sd_cnt; i++) {
-+		sd_idx = info->hmc_info->sd_indexes[i];
-+		sd_entry = &info->hmc_info->sd_table.sd_entry[sd_idx];
-+		if (!sd_entry)
-+			continue;
-+		mem = (sd_entry->entry_type == IRDMA_SD_TYPE_PAGED) ?
-+			      &sd_entry->u.pd_table.pd_page_addr :
-+			      &sd_entry->u.bp.addr;
++		return ret_code;
 +
-+		if (!mem || !mem->va) {
-+			dev_dbg(rfdev_to_dev(dev), "HMC: error cqp sd mem\n");
-+		} else {
-+			dma_free_coherent(hw_to_dev(dev->hw), mem->size,
-+					  mem->va, mem->pa);
-+			mem->va = NULL;
-+		}
++	set_64bit_val(wqe, 32, info->dma_mem_mc.pa);
++	set_64bit_val(wqe, 16,
++		      LS_64(info->vlan_id, IRDMA_UDA_CQPSQ_MG_VLANID) |
++		      LS_64(info->qs_handle, IRDMA_UDA_CQPSQ_QS_HANDLE));
++	set_64bit_val(wqe, 0, LS_64_1(info->dest_mac_addr[5], 0) |
++					 LS_64_1(info->dest_mac_addr[4], 8) |
++					 LS_64_1(info->dest_mac_addr[3], 16) |
++					 LS_64_1(info->dest_mac_addr[2], 24) |
++					 LS_64_1(info->dest_mac_addr[1], 32) |
++					 LS_64_1(info->dest_mac_addr[0], 40));
++	set_64bit_val(wqe, 8,
++		      LS_64(info->hmc_fcn_id, IRDMA_UDA_CQPSQ_MG_HMC_FCN_ID));
++
++	if (!info->ipv4_valid) {
++		set_64bit_val(wqe, 56,
++			      LS_64(info->dest_ip_addr[0], IRDMA_UDA_CQPSQ_MAV_ADDR0) |
++			      LS_64(info->dest_ip_addr[1], IRDMA_UDA_CQPSQ_MAV_ADDR1));
++		set_64bit_val(wqe, 48,
++			      LS_64(info->dest_ip_addr[2], IRDMA_UDA_CQPSQ_MAV_ADDR2) |
++			      LS_64(info->dest_ip_addr[3], IRDMA_UDA_CQPSQ_MAV_ADDR3));
++	} else {
++		set_64bit_val(wqe, 48,
++			      LS_64(info->dest_ip_addr[0], IRDMA_UDA_CQPSQ_MAV_ADDR3));
 +	}
 +
-+	return ret_code;
-+}
++	dma_wmb(); /* need write memory block before writing the WQE header. */
 +
-+/**
-+ * irdma_sc_del_hmc_obj - remove pe hmc objects
-+ * @dev: pointer to the device structure
-+ * @info: pointer to irdma_hmc_del_obj_info struct
-+ * @reset: true if called before reset
-+ *
-+ * This will de-populate the SDs and PDs.  It frees
-+ * the memory for PDS and backing storage.  After this function is returned,
-+ * caller should deallocate memory allocated previously for
-+ * book-keeping information about PDs and backing storage.
-+ */
-+enum irdma_status_code irdma_sc_del_hmc_obj(struct irdma_sc_dev *dev,
-+					    struct irdma_hmc_del_obj_info *info,
-+					    bool reset)
-+{
-+	struct irdma_hmc_pd_table *pd_table;
-+	u32 sd_idx, sd_lmt;
-+	u32 pd_idx, pd_lmt, rel_pd_idx;
-+	u32 i, j;
-+	enum irdma_status_code ret_code = 0;
++	set_64bit_val(wqe, 24,
++		      LS_64(cqp->polarity, IRDMA_UDA_CQPSQ_MG_WQEVALID) |
++		      LS_64(op, IRDMA_UDA_CQPSQ_MG_OPCODE) |
++		      LS_64(info->mg_id, IRDMA_UDA_CQPSQ_MG_MGIDX) |
++		      LS_64(info->vlan_valid, IRDMA_UDA_CQPSQ_MG_VLANVALID) |
++		      LS_64(info->ipv4_valid, IRDMA_UDA_CQPSQ_MG_IPV4VALID));
 +
-+	if (info->start_idx >= info->hmc_info->hmc_obj[info->rsrc_type].cnt) {
-+		dev_dbg(rfdev_to_dev(dev),
-+			"HMC: error start_idx[%04d]  >= [type %04d].cnt[%04d]\n",
-+			info->start_idx, info->rsrc_type,
-+			info->hmc_info->hmc_obj[info->rsrc_type].cnt);
-+		return IRDMA_ERR_INVALID_HMC_OBJ_INDEX;
-+	}
-+
-+	if ((info->start_idx + info->count) >
-+	    info->hmc_info->hmc_obj[info->rsrc_type].cnt) {
-+		dev_dbg(rfdev_to_dev(dev),
-+			"HMC: error start_idx[%04d] + count %04d  >= [type %04d].cnt[%04d]\n",
-+			info->start_idx, info->count, info->rsrc_type,
-+			info->hmc_info->hmc_obj[info->rsrc_type].cnt);
-+		return IRDMA_ERR_INVALID_HMC_OBJ_COUNT;
-+	}
-+
-+	irdma_find_pd_index_limit(info->hmc_info, info->rsrc_type,
-+				  info->start_idx, info->count, &pd_idx,
-+				  &pd_lmt);
-+
-+	for (j = pd_idx; j < pd_lmt; j++) {
-+		sd_idx = j / IRDMA_HMC_PD_CNT_IN_SD;
-+
-+		if (!info->hmc_info->sd_table.sd_entry[sd_idx].valid)
-+			continue;
-+
-+		if (info->hmc_info->sd_table.sd_entry[sd_idx].entry_type !=
-+		    IRDMA_SD_TYPE_PAGED)
-+			continue;
-+
-+		rel_pd_idx = j % IRDMA_HMC_PD_CNT_IN_SD;
-+		pd_table = &info->hmc_info->sd_table.sd_entry[sd_idx].u.pd_table;
-+		if (pd_table->pd_entry &&
-+		    pd_table->pd_entry[rel_pd_idx].valid) {
-+			ret_code = irdma_remove_pd_bp(dev, info->hmc_info, j);
-+			if (ret_code) {
-+				dev_dbg(rfdev_to_dev(dev),
-+					"HMC: remove_pd_bp error\n");
-+				return ret_code;
-+			}
-+		}
-+	}
-+
-+	irdma_find_sd_index_limit(info->hmc_info, info->rsrc_type,
-+				  info->start_idx, info->count, &sd_idx,
-+				  &sd_lmt);
-+	if (sd_idx >= info->hmc_info->sd_table.sd_cnt ||
-+	    sd_lmt > info->hmc_info->sd_table.sd_cnt) {
-+		dev_dbg(rfdev_to_dev(dev), "HMC: invalid sd_idx\n");
-+		return IRDMA_ERR_INVALID_SD_INDEX;
-+	}
-+
-+	for (i = sd_idx; i < sd_lmt; i++) {
-+		pd_table = &info->hmc_info->sd_table.sd_entry[i].u.pd_table;
-+		if (!info->hmc_info->sd_table.sd_entry[i].valid)
-+			continue;
-+		switch (info->hmc_info->sd_table.sd_entry[i].entry_type) {
-+		case IRDMA_SD_TYPE_DIRECT:
-+			ret_code = irdma_prep_remove_sd_bp(info->hmc_info, i);
-+			if (!ret_code) {
-+				info->hmc_info->sd_indexes[info->del_sd_cnt] =
-+					(u16)i;
-+				info->del_sd_cnt++;
-+			}
-+			break;
-+		case IRDMA_SD_TYPE_PAGED:
-+			ret_code = irdma_prep_remove_pd_page(info->hmc_info, i);
-+			if (ret_code)
-+				break;
-+			if (dev->hmc_info != info->hmc_info &&
-+			    info->rsrc_type == IRDMA_HMC_IW_PBLE &&
-+			    pd_table->pd_entry) {
-+				kfree(pd_table->pd_entry_virt_mem.va);
-+				pd_table->pd_entry = NULL;
-+			}
-+			info->hmc_info->sd_indexes[info->del_sd_cnt] = (u16)i;
-+			info->del_sd_cnt++;
-+			break;
-+		default:
-+			break;
-+		}
-+	}
-+	return irdma_finish_del_sd_reg(dev, info, reset);
-+}
-+
-+/**
-+ * irdma_add_sd_table_entry - Adds a segment descriptor to the table
-+ * @hw: pointer to our hw struct
-+ * @hmc_info: pointer to the HMC configuration information struct
-+ * @sd_index: segment descriptor index to manipulate
-+ * @type: what type of segment descriptor we're manipulating
-+ * @direct_mode_sz: size to alloc in direct mode
-+ */
-+enum irdma_status_code irdma_add_sd_table_entry(struct irdma_hw *hw,
-+						struct irdma_hmc_info *hmc_info,
-+						u32 sd_index,
-+						enum irdma_sd_entry_type type,
-+						u64 direct_mode_sz)
-+{
-+	struct irdma_hmc_sd_entry *sd_entry;
-+	struct irdma_dma_mem dma_mem;
-+	u64 alloc_len;
-+
-+	sd_entry = &hmc_info->sd_table.sd_entry[sd_index];
-+	if (!sd_entry->valid) {
-+		if (type == IRDMA_SD_TYPE_PAGED)
-+			alloc_len = IRDMA_HMC_PAGED_BP_SIZE;
-+		else
-+			alloc_len = direct_mode_sz;
-+
-+		/* allocate a 4K pd page or 2M backing page */
-+		dma_mem.size = ALIGN(alloc_len, IRDMA_HMC_PD_BP_BUF_ALIGNMENT);
-+		dma_mem.va = dma_alloc_coherent(hw_to_dev(hw),
-+						dma_mem.size, &dma_mem.pa,
-+						GFP_ATOMIC);
-+		if (!dma_mem.va)
-+			return IRDMA_ERR_NO_MEMORY;
-+
-+		if (type == IRDMA_SD_TYPE_PAGED) {
-+			struct irdma_virt_mem *vmem =
-+				&sd_entry->u.pd_table.pd_entry_virt_mem;
-+
-+			vmem->size = sizeof(struct irdma_hmc_pd_entry) * 512;
-+			vmem->va = kzalloc(vmem->size, GFP_ATOMIC);
-+			if (!vmem->va) {
-+				dma_free_coherent(hw_to_dev(hw), dma_mem.size,
-+						  dma_mem.va, dma_mem.pa);
-+				dma_mem.va = NULL;
-+				return IRDMA_ERR_NO_MEMORY;
-+			}
-+			sd_entry->u.pd_table.pd_entry = vmem->va;
-+
-+			memcpy(&sd_entry->u.pd_table.pd_page_addr, &dma_mem,
-+			       sizeof(sd_entry->u.pd_table.pd_page_addr));
-+		} else {
-+			memcpy(&sd_entry->u.bp.addr, &dma_mem,
-+			       sizeof(sd_entry->u.bp.addr));
-+
-+			sd_entry->u.bp.sd_pd_index = sd_index;
-+		}
-+
-+		hmc_info->sd_table.sd_entry[sd_index].entry_type = type;
-+		IRDMA_INC_SD_REFCNT(&hmc_info->sd_table);
-+	}
-+	if (sd_entry->entry_type == IRDMA_SD_TYPE_DIRECT)
-+		IRDMA_INC_BP_REFCNT(&sd_entry->u.bp);
++	irdma_debug_buf(cqp->dev, IRDMA_DEBUG_WQE, "MANAGE_MCG WQE", wqe,
++			IRDMA_CQP_WQE_SIZE * 8);
++	irdma_debug_buf(cqp->dev, IRDMA_DEBUG_WQE, "MCG_HOST CTX WQE",
++			info->dma_mem_mc.va, IRDMA_MAX_MGS_PER_CTX * 8);
++	irdma_sc_cqp_post_sq(cqp);
 +
 +	return 0;
 +}
 +
 +/**
-+ * irdma_add_pd_table_entry - Adds page descriptor to the specified table
-+ * @dev: pointer to our device structure
-+ * @hmc_info: pointer to the HMC configuration information structure
-+ * @pd_index: which page descriptor index to manipulate
-+ * @rsrc_pg: if not NULL, use preallocated page instead of allocating new one.
-+ *
-+ * This function:
-+ *	1. Initializes the pd entry
-+ *	2. Adds pd_entry in the pd_table
-+ *	3. Mark the entry valid in irdma_hmc_pd_entry structure
-+ *	4. Initializes the pd_entry's ref count to 1
-+ * assumptions:
-+ *	1. The memory for pd should be pinned down, physically contiguous and
-+ *	   aligned on 4K boundary and zeroed memory.
-+ *	2. It should be 4K in size.
++ * irdma_sc_create_mcast_grp() - Create mcast group.
++ * @cqp: Control QP
++ * @info: multicast group context info
++ * @scratch: u64 saved to be used during cqp completion
 + */
-+enum irdma_status_code irdma_add_pd_table_entry(struct irdma_sc_dev *dev,
-+						struct irdma_hmc_info *hmc_info,
-+						u32 pd_index,
-+						struct irdma_dma_mem *rsrc_pg)
++static enum irdma_status_code
++irdma_sc_create_mcast_grp(struct irdma_sc_cqp *cqp,
++			  struct irdma_mcast_grp_info *info, u64 scratch)
 +{
-+	struct irdma_hmc_pd_table *pd_table;
-+	struct irdma_hmc_pd_entry *pd_entry;
-+	struct irdma_dma_mem mem;
-+	struct irdma_dma_mem *page = &mem;
-+	u32 sd_idx, rel_pd_idx;
-+	u64 *pd_addr;
-+	u64 page_desc;
++	return irdma_access_mcast_grp(cqp, info, IRDMA_CQP_OP_CREATE_MCAST_GRP,
++				      scratch);
++}
 +
-+	if (pd_index / IRDMA_HMC_PD_CNT_IN_SD >= hmc_info->sd_table.sd_cnt)
-+		return IRDMA_ERR_INVALID_PAGE_DESC_INDEX;
++/**
++ * irdma_sc_modify_mcast_grp() - Modify mcast group
++ * @cqp: Control QP
++ * @info: multicast group context info
++ * @scratch: u64 saved to be used during cqp completion
++ */
++static enum irdma_status_code
++irdma_sc_modify_mcast_grp(struct irdma_sc_cqp *cqp,
++			  struct irdma_mcast_grp_info *info, u64 scratch)
++{
++	return irdma_access_mcast_grp(cqp, info, IRDMA_CQP_OP_MODIFY_MCAST_GRP,
++				      scratch);
++}
 +
-+	sd_idx = (pd_index / IRDMA_HMC_PD_CNT_IN_SD);
-+	if (hmc_info->sd_table.sd_entry[sd_idx].entry_type !=
-+	    IRDMA_SD_TYPE_PAGED)
++/**
++ * irdma_sc_destroy_mcast_grp() - Destroys mcast group
++ * @cqp: Control QP
++ * @info: multicast group context info
++ * @scratch: u64 saved to be used during cqp completion
++ */
++static enum irdma_status_code
++irdma_sc_destroy_mcast_grp(struct irdma_sc_cqp *cqp,
++			   struct irdma_mcast_grp_info *info, u64 scratch)
++{
++	return irdma_access_mcast_grp(cqp, info, IRDMA_CQP_OP_DESTROY_MCAST_GRP,
++				      scratch);
++}
++
++/**
++ * irdma_compare_mgs - Compares two multicast group structures
++ * @entry1: Multcast group info
++ * @entry2: Multcast group info in context
++ */
++static bool irdma_compare_mgs(struct irdma_mcast_grp_ctx_entry_info *entry1,
++			      struct irdma_mcast_grp_ctx_entry_info *entry2)
++{
++	if (entry1->dest_port == entry2->dest_port &&
++	    entry1->qp_id == entry2->qp_id)
++		return true;
++
++	return false;
++}
++
++/**
++ * irdma_sc_add_mcast_grp - Allocates mcast group entry in ctx
++ * @ctx: Multcast group context
++ * @mg: Multcast group info
++ */
++static enum irdma_status_code
++irdma_sc_add_mcast_grp(struct irdma_mcast_grp_info *ctx,
++		       struct irdma_mcast_grp_ctx_entry_info *mg)
++{
++	u32 idx;
++	bool free_entry_found = false;
++	u32 free_entry_idx = 0;
++
++	/* find either an identical or a free entry for a multicast group */
++	for (idx = 0; idx < IRDMA_MAX_MGS_PER_CTX; idx++) {
++		if (ctx->mg_ctx_info[idx].valid_entry) {
++			if (irdma_compare_mgs(&ctx->mg_ctx_info[idx], mg)) {
++				ctx->mg_ctx_info[idx].use_cnt++;
++				return 0;
++			}
++			continue;
++		}
++		if (!free_entry_found) {
++			free_entry_found = true;
++			free_entry_idx = idx;
++		}
++	}
++
++	if (free_entry_found) {
++		ctx->mg_ctx_info[free_entry_idx] = *mg;
++		ctx->mg_ctx_info[free_entry_idx].valid_entry = true;
++		ctx->mg_ctx_info[free_entry_idx].use_cnt = 1;
++		ctx->no_of_mgs++;
 +		return 0;
-+
-+	rel_pd_idx = (pd_index % IRDMA_HMC_PD_CNT_IN_SD);
-+	pd_table = &hmc_info->sd_table.sd_entry[sd_idx].u.pd_table;
-+	pd_entry = &pd_table->pd_entry[rel_pd_idx];
-+	if (!pd_entry->valid) {
-+		if (rsrc_pg) {
-+			pd_entry->rsrc_pg = true;
-+			page = rsrc_pg;
-+		} else {
-+			page->size = ALIGN(IRDMA_HMC_PAGED_BP_SIZE,
-+					   IRDMA_HMC_PD_BP_BUF_ALIGNMENT);
-+			page->va = dma_alloc_coherent(hw_to_dev(dev->hw),
-+						      page->size, &page->pa,
-+						      GFP_KERNEL);
-+			if (!page->va)
-+				return IRDMA_ERR_NO_MEMORY;
-+
-+			pd_entry->rsrc_pg = false;
-+		}
-+
-+		memcpy(&pd_entry->bp.addr, page, sizeof(pd_entry->bp.addr));
-+		pd_entry->bp.sd_pd_index = pd_index;
-+		pd_entry->bp.entry_type = IRDMA_SD_TYPE_PAGED;
-+		page_desc = page->pa | 0x1;
-+		pd_addr = pd_table->pd_page_addr.va;
-+		pd_addr += rel_pd_idx;
-+		memcpy(pd_addr, &page_desc, sizeof(*pd_addr));
-+		pd_entry->sd_index = sd_idx;
-+		pd_entry->valid = true;
-+		IRDMA_INC_PD_REFCNT(pd_table);
-+		if (hmc_info->hmc_fn_id < dev->hw_attrs.first_hw_vf_fpm_id)
-+			IRDMA_INVALIDATE_PF_HMC_PD(dev, sd_idx, rel_pd_idx);
-+		else if (dev->hw->hmc.hmc_fn_id != hmc_info->hmc_fn_id)
-+			IRDMA_INVALIDATE_VF_HMC_PD(dev, sd_idx, rel_pd_idx,
-+						   hmc_info->hmc_fn_id);
 +	}
-+	IRDMA_INC_BP_REFCNT(&pd_entry->bp);
 +
-+	return 0;
++	return IRDMA_ERR_NO_MEMORY;
 +}
 +
 +/**
-+ * irdma_remove_pd_bp - remove a backing page from a page descriptor
-+ * @dev: pointer to our HW structure
-+ * @hmc_info: pointer to the HMC configuration information structure
-+ * @idx: the page index
++ * irdma_sc_del_mcast_grp - Delete mcast group
++ * @ctx: Multcast group context
++ * @mg: Multcast group info
 + *
-+ * This function:
-+ *	1. Marks the entry in pd table (for paged address mode) or in sd table
-+ *	   (for direct address mode) invalid.
-+ *	2. Write to register PMPDINV to invalidate the backing page in FV cache
-+ *	3. Decrement the ref count for the pd _entry
-+ * assumptions:
-+ *	1. Caller can deallocate the memory used by backing storage after this
-+ *	   function returns.
++ * Finds and removes a specific mulicast group from context, all
++ * parameters must match to remove a multicast group.
 + */
-+enum irdma_status_code irdma_remove_pd_bp(struct irdma_sc_dev *dev,
-+					  struct irdma_hmc_info *hmc_info,
-+					  u32 idx)
++static enum irdma_status_code
++irdma_sc_del_mcast_grp(struct irdma_mcast_grp_info *ctx,
++		       struct irdma_mcast_grp_ctx_entry_info *mg)
 +{
-+	struct irdma_hmc_pd_entry *pd_entry;
-+	struct irdma_hmc_pd_table *pd_table;
-+	struct irdma_hmc_sd_entry *sd_entry;
-+	u32 sd_idx, rel_pd_idx;
-+	struct irdma_dma_mem *mem;
-+	u64 *pd_addr;
++	u32 idx;
 +
-+	sd_idx = idx / IRDMA_HMC_PD_CNT_IN_SD;
-+	rel_pd_idx = idx % IRDMA_HMC_PD_CNT_IN_SD;
-+	if (sd_idx >= hmc_info->sd_table.sd_cnt)
-+		return IRDMA_ERR_INVALID_PAGE_DESC_INDEX;
++	/* find an entry in multicast group context */
++	for (idx = 0; idx < IRDMA_MAX_MGS_PER_CTX; idx++) {
++		if (!ctx->mg_ctx_info[idx].valid_entry)
++			continue;
 +
-+	sd_entry = &hmc_info->sd_table.sd_entry[sd_idx];
-+	if (sd_entry->entry_type != IRDMA_SD_TYPE_PAGED)
-+		return IRDMA_ERR_INVALID_SD_TYPE;
++		if (irdma_compare_mgs(mg, &ctx->mg_ctx_info[idx])) {
++			ctx->mg_ctx_info[idx].use_cnt--;
 +
-+	pd_table = &hmc_info->sd_table.sd_entry[sd_idx].u.pd_table;
-+	pd_entry = &pd_table->pd_entry[rel_pd_idx];
-+	IRDMA_DEC_BP_REFCNT(&pd_entry->bp);
-+	if (pd_entry->bp.ref_cnt)
-+		return 0;
++			if (!ctx->mg_ctx_info[idx].use_cnt) {
++				ctx->mg_ctx_info[idx].valid_entry = false;
++				ctx->no_of_mgs--;
++				/* Remove gap if element was not the last */
++				if (idx != ctx->no_of_mgs &&
++				    ctx->no_of_mgs > 0) {
++					memcpy(&ctx->mg_ctx_info[idx],
++					       &ctx->mg_ctx_info[ctx->no_of_mgs - 1],
++					       sizeof(ctx->mg_ctx_info[idx]));
++					ctx->mg_ctx_info[ctx->no_of_mgs - 1].valid_entry = false;
++				}
++			}
 +
-+	pd_entry->valid = false;
-+	IRDMA_DEC_PD_REFCNT(pd_table);
-+	pd_addr = pd_table->pd_page_addr.va;
-+	pd_addr += rel_pd_idx;
-+	memset(pd_addr, 0, sizeof(u64));
-+	if (dev->privileged) {
-+		if (dev->hmc_fn_id == hmc_info->hmc_fn_id)
-+			IRDMA_INVALIDATE_PF_HMC_PD(dev, sd_idx, idx);
-+		else
-+			IRDMA_INVALIDATE_VF_HMC_PD(dev, sd_idx, idx,
-+						   hmc_info->hmc_fn_id);
++			return 0;
++		}
 +	}
 +
-+	if (!pd_entry->rsrc_pg) {
-+		mem = &pd_entry->bp.addr;
-+		if (!mem || !mem->va)
-+			return IRDMA_ERR_PARAM;
-+
-+		dma_free_coherent(hw_to_dev(dev->hw), mem->size, mem->va,
-+				  mem->pa);
-+		mem->va = NULL;
-+	}
-+	if (!pd_table->ref_cnt)
-+		kfree(pd_table->pd_entry_virt_mem.va);
-+
-+	return 0;
++	return IRDMA_ERR_PARAM;
 +}
 +
-+/**
-+ * irdma_prep_remove_sd_bp - Prepares to remove a backing page from a sd entry
-+ * @hmc_info: pointer to the HMC configuration information structure
-+ * @idx: the page index
-+ */
-+enum irdma_status_code irdma_prep_remove_sd_bp(struct irdma_hmc_info *hmc_info,
-+					       u32 idx)
-+{
-+	struct irdma_hmc_sd_entry *sd_entry;
-+
-+	sd_entry = &hmc_info->sd_table.sd_entry[idx];
-+	IRDMA_DEC_BP_REFCNT(&sd_entry->u.bp);
-+	if (sd_entry->u.bp.ref_cnt)
-+		return IRDMA_ERR_NOT_READY;
-+
-+	IRDMA_DEC_SD_REFCNT(&hmc_info->sd_table);
-+	sd_entry->valid = false;
-+
-+	return 0;
-+}
-+
-+/**
-+ * irdma_prep_remove_pd_page - Prepares to remove a PD page from sd entry.
-+ * @hmc_info: pointer to the HMC configuration information structure
-+ * @idx: segment descriptor index to find the relevant page descriptor
-+ */
-+enum irdma_status_code
-+irdma_prep_remove_pd_page(struct irdma_hmc_info *hmc_info, u32 idx)
-+{
-+	struct irdma_hmc_sd_entry *sd_entry;
-+
-+	sd_entry = &hmc_info->sd_table.sd_entry[idx];
-+
-+	if (sd_entry->u.pd_table.ref_cnt)
-+		return IRDMA_ERR_NOT_READY;
-+
-+	sd_entry->valid = false;
-+	IRDMA_DEC_SD_REFCNT(&hmc_info->sd_table);
-+
-+	return 0;
-+}
-diff --git a/drivers/infiniband/hw/irdma/hmc.h b/drivers/infiniband/hw/irdma/hmc.h
++struct irdma_uda_ops irdma_uda_ops = {
++	.create_ah = irdma_sc_create_ah,
++	.destroy_ah = irdma_sc_destroy_ah,
++	.init_ah = irdma_sc_init_ah,
++	.mcast_grp_add = irdma_sc_add_mcast_grp,
++	.mcast_grp_create = irdma_sc_create_mcast_grp,
++	.mcast_grp_del = irdma_sc_del_mcast_grp,
++	.mcast_grp_destroy = irdma_sc_destroy_mcast_grp,
++	.mcast_grp_modify = irdma_sc_modify_mcast_grp,
++	.modify_ah = irdma_sc_modify_ah,
++};
+diff --git a/drivers/infiniband/hw/irdma/uda.h b/drivers/infiniband/hw/irdma/uda.h
 new file mode 100644
-index 0000000..6f3fbf6
+index 0000000..71c3990
 --- /dev/null
-+++ b/drivers/infiniband/hw/irdma/hmc.h
-@@ -0,0 +1,217 @@
++++ b/drivers/infiniband/hw/irdma/uda.h
+@@ -0,0 +1,64 @@
 +/* SPDX-License-Identifier: GPL-2.0 or Linux-OpenIB */
-+/* Copyright (c) 2015 - 2019 Intel Corporation */
-+#ifndef IRDMA_HMC_H
-+#define IRDMA_HMC_H
++/* Copyright (c) 2019 Intel Corporation */
++#ifndef IRDMA_UDA_H
++#define IRDMA_UDA_H
 +
-+#include "defs.h"
++extern struct irdma_uda_ops irdma_uda_ops;
 +
-+#define IRDMA_HMC_MAX_BP_COUNT			512
-+#define IRDMA_MAX_SD_ENTRIES			11
-+#define IRDMA_HW_DBG_HMC_INVALID_BP_MARK	0xca
-+#define IRDMA_HMC_INFO_SIGNATURE		0x484d5347
-+#define IRDMA_HMC_PD_CNT_IN_SD			512
-+#define IRDMA_HMC_DIRECT_BP_SIZE		0x200000
-+#define IRDMA_HMC_MAX_SD_COUNT			8192
-+#define IRDMA_HMC_PAGED_BP_SIZE			4096
-+#define IRDMA_HMC_PD_BP_BUF_ALIGNMENT		4096
-+#define IRDMA_FIRST_VF_FPM_ID			8
-+#define FPM_MULTIPLIER				1024
++#define IRDMA_UDA_MAX_FSI_MGS	4096
++#define IRDMA_UDA_MAX_PFS	16
++#define IRDMA_UDA_MAX_VFS	128
 +
-+#define IRDMA_INC_SD_REFCNT(sd_table)	((sd_table)->ref_cnt++)
-+#define IRDMA_INC_PD_REFCNT(pd_table)	((pd_table)->ref_cnt++)
-+#define IRDMA_INC_BP_REFCNT(bp)		((bp)->ref_cnt++)
++struct irdma_sc_cqp;
 +
-+#define IRDMA_DEC_SD_REFCNT(sd_table)	((sd_table)->ref_cnt--)
-+#define IRDMA_DEC_PD_REFCNT(pd_table)	((pd_table)->ref_cnt--)
-+#define IRDMA_DEC_BP_REFCNT(bp)		((bp)->ref_cnt--)
-+
-+/**
-+ * IRDMA_INVALIDATE_PF_HMC_PD - Invalidates the pd cache in the hardware
-+ * @hw: pointer to our hw struct
-+ * @sd_idx: segment descriptor index
-+ * @pd_idx: page descriptor index
-+ */
-+#define IRDMA_INVALIDATE_PF_HMC_PD(dev, sd_idx, pd_idx)			\
-+	writel((((sd_idx) << IRDMA_PFHMC_PDINV_PMSDIDX_S) |		\
-+		(0x1 << IRDMA_PFHMC_PDINV_PMSDPARTSEL_S) |		\
-+		((pd_idx) << IRDMA_PFHMC_PDINV_PMPDIDX_S)),		\
-+	       (dev)->hw_regs[IRDMA_PFHMC_PDINV])
-+
-+/**
-+ * IRDMA_INVALIDATE_VF_HMC_PD - Invalidates the pd cache in the hardware
-+ * @hw: pointer to our hw struct
-+ * @sd_idx: segment descriptor index
-+ * @pd_idx: page descriptor index
-+ * @hmc_fn_id: VF's function id
-+ */
-+#define IRDMA_INVALIDATE_VF_HMC_PD(dev, sd_idx, pd_idx, hmc_fn_id)	\
-+	writel((((sd_idx) << IRDMA_PFHMC_PDINV_PMSDIDX_S) |		\
-+		((pd_idx) << IRDMA_PFHMC_PDINV_PMPDIDX_S)),		\
-+	       (dev)->hw_regs[IRDMA_GLHMC_VFPDINV] +			\
-+		((hmc_fn_id) - (dev)->hw_attrs.first_hw_vf_fpm_id))
-+
-+enum irdma_hmc_rsrc_type {
-+	IRDMA_HMC_IW_QP		 = 0,
-+	IRDMA_HMC_IW_CQ		 = 1,
-+	IRDMA_HMC_IW_RESERVED	 = 2,
-+	IRDMA_HMC_IW_HTE	 = 3,
-+	IRDMA_HMC_IW_ARP	 = 4,
-+	IRDMA_HMC_IW_APBVT_ENTRY = 5,
-+	IRDMA_HMC_IW_MR		 = 6,
-+	IRDMA_HMC_IW_XF		 = 7,
-+	IRDMA_HMC_IW_XFFL	 = 8,
-+	IRDMA_HMC_IW_Q1		 = 9,
-+	IRDMA_HMC_IW_Q1FL	 = 10,
-+	IRDMA_HMC_IW_TIMER       = 11,
-+	IRDMA_HMC_IW_FSIMC       = 12,
-+	IRDMA_HMC_IW_FSIAV       = 13,
-+	IRDMA_HMC_IW_PBLE	 = 14,
-+	IRDMA_HMC_IW_RRF	 = 15,
-+	IRDMA_HMC_IW_RRFFL       = 16,
-+	IRDMA_HMC_IW_HDR	 = 17,
-+	IRDMA_HMC_IW_MD		 = 18,
-+	IRDMA_HMC_IW_OOISC       = 19,
-+	IRDMA_HMC_IW_OOISCFFL    = 20,
-+	IRDMA_HMC_IW_MAX, /* Must be last entry */
++struct irdma_ah_info {
++	struct irdma_sc_ah *ah;
++	struct irdma_sc_vsi *vsi;
++	u32 pd_idx;
++	u32 dst_arpindex;
++	u32 dest_ip_addr[4];
++	u32 src_ip_addr[4];
++	u32 flow_label;
++	u32 ah_idx;
++	u16 vlan_tag;
++	u8 insert_vlan_tag;
++	u8 tc_tos;
++	u8 hop_ttl;
++	u8 mac_addr[ETH_ALEN];
++	bool ah_valid:1;
++	bool ipv4_valid:1;
++	bool do_lpbk:1;
 +};
 +
-+enum irdma_sd_entry_type {
-+	IRDMA_SD_TYPE_INVALID = 0,
-+	IRDMA_SD_TYPE_PAGED   = 1,
-+	IRDMA_SD_TYPE_DIRECT  = 2,
++struct irdma_sc_ah {
++	struct irdma_sc_dev *dev;
++	struct irdma_ah_info ah_info;
 +};
 +
-+struct irdma_hmc_obj_info {
-+	u64 base;
-+	u32 max_cnt;
-+	u32 cnt;
-+	u64 size;
++struct irdma_uda_ops {
++	void (*init_ah)(struct irdma_sc_dev *dev, struct irdma_sc_ah *ah);
++	enum irdma_status_code (*create_ah)(struct irdma_sc_cqp *cqp,
++					    struct irdma_ah_info *info,
++					    u64 scratch);
++	enum irdma_status_code (*modify_ah)(struct irdma_sc_cqp *cqp,
++					    struct irdma_ah_info *info,
++					    u64 scratch);
++	enum irdma_status_code (*destroy_ah)(struct irdma_sc_cqp *cqp,
++					     struct irdma_ah_info *info,
++					     u64 scratch);
++	/* multicast */
++	enum irdma_status_code (*mcast_grp_create)(struct irdma_sc_cqp *cqp,
++						   struct irdma_mcast_grp_info *info,
++						   u64 scratch);
++	enum irdma_status_code (*mcast_grp_modify)(struct irdma_sc_cqp *cqp,
++						   struct irdma_mcast_grp_info *info,
++						   u64 scratch);
++	enum irdma_status_code (*mcast_grp_destroy)(struct irdma_sc_cqp *cqp,
++						    struct irdma_mcast_grp_info *info,
++						    u64 scratch);
++	enum irdma_status_code (*mcast_grp_add)(struct irdma_mcast_grp_info *ctx,
++						struct irdma_mcast_grp_ctx_entry_info *mg);
++	enum irdma_status_code (*mcast_grp_del)(struct irdma_mcast_grp_info *ctx,
++						struct irdma_mcast_grp_ctx_entry_info *mg);
 +};
++#endif /* IRDMA_UDA_H */
+diff --git a/drivers/infiniband/hw/irdma/uda_d.h b/drivers/infiniband/hw/irdma/uda_d.h
+new file mode 100644
+index 0000000..266e9ed
+--- /dev/null
++++ b/drivers/infiniband/hw/irdma/uda_d.h
+@@ -0,0 +1,382 @@
++/* SPDX-License-Identifier: GPL-2.0 or Linux-OpenIB */
++/* Copyright (c) 2019 Intel Corporation */
++#ifndef IRDMA_UDA_D_H
++#define IRDMA_UDA_D_H
 +
-+struct irdma_hmc_bp {
-+	enum irdma_sd_entry_type entry_type;
-+	struct irdma_dma_mem addr;
-+	u32 sd_pd_index;
-+	u32 ref_cnt;
-+};
++/* L4 packet type */
++#define IRDMA_E_UDA_SQ_L4T_UNKNOWN	0
++#define IRDMA_E_UDA_SQ_L4T_TCP		1
++#define IRDMA_E_UDA_SQ_L4T_SCTP		2
++#define IRDMA_E_UDA_SQ_L4T_UDP		3
 +
-+struct irdma_hmc_pd_entry {
-+	struct irdma_hmc_bp bp;
-+	u32 sd_index;
-+	bool rsrc_pg:1;
-+	bool valid:1;
-+};
++/* Inner IP header type */
++#define IRDMA_E_UDA_SQ_IIPT_UNKNOWN		0
++#define IRDMA_E_UDA_SQ_IIPT_IPV6		1
++#define IRDMA_E_UDA_SQ_IIPT_IPV4_NO_CSUM	2
++#define IRDMA_E_UDA_SQ_IIPT_IPV4_CSUM		3
 +
-+struct irdma_hmc_pd_table {
-+	struct irdma_dma_mem pd_page_addr;
-+	struct irdma_hmc_pd_entry *pd_entry;
-+	struct irdma_virt_mem pd_entry_virt_mem;
-+	u32 ref_cnt;
-+	u32 sd_index;
-+};
++/* UDA defined fields for transmit descriptors */
++#define IRDMA_UDA_QPSQ_PUSHWQE_S 56
++#define IRDMA_UDA_QPSQ_PUSHWQE_M BIT_ULL(IRDMA_UDA_QPSQ_PUSHWQE_S)
 +
-+struct irdma_hmc_sd_entry {
-+	enum irdma_sd_entry_type entry_type;
-+	bool valid;
-+	union {
-+		struct irdma_hmc_pd_table pd_table;
-+		struct irdma_hmc_bp bp;
-+	} u;
-+};
++#define IRDMA_UDA_QPSQ_INLINEDATAFLAG_S 57
++#define IRDMA_UDA_QPSQ_INLINEDATAFLAG_M \
++	BIT_ULL(IRDMA_UDA_QPSQ_INLINEDATAFLAG_S)
 +
-+struct irdma_hmc_sd_table {
-+	struct irdma_virt_mem addr;
-+	u32 sd_cnt;
-+	u32 ref_cnt;
-+	struct irdma_hmc_sd_entry *sd_entry;
-+};
++#define IRDMA_UDA_QPSQ_INLINEDATALEN_S 48
++#define IRDMA_UDA_QPSQ_INLINEDATALEN_M \
++	((u64)0xff << IRDMA_UDA_QPSQ_INLINEDATALEN_S)
 +
-+struct irdma_hmc_info {
-+	u32 signature;
-+	u8 hmc_fn_id;
-+	u16 first_sd_index;
-+	struct irdma_hmc_obj_info *hmc_obj;
-+	struct irdma_virt_mem hmc_obj_virt_mem;
-+	struct irdma_hmc_sd_table sd_table;
-+	u16 sd_indexes[IRDMA_HMC_MAX_SD_COUNT];
-+};
++#define IRDMA_UDA_QPSQ_ADDFRAGCNT_S 38
++#define IRDMA_UDA_QPSQ_ADDFRAGCNT_M \
++	((u64)0x0F << IRDMA_UDA_QPSQ_ADDFRAGCNT_S)
 +
-+struct irdma_update_sd_entry {
-+	u64 cmd;
-+	u64 data;
-+};
++#define IRDMA_UDA_QPSQ_IPFRAGFLAGS_S 42
++#define IRDMA_UDA_QPSQ_IPFRAGFLAGS_M \
++	((u64)0x3 << IRDMA_UDA_QPSQ_IPFRAGFLAGS_S)
 +
-+struct irdma_update_sds_info {
-+	u32 cnt;
-+	u8 hmc_fn_id;
-+	struct irdma_update_sd_entry entry[IRDMA_MAX_SD_ENTRIES];
-+};
++#define IRDMA_UDA_QPSQ_NOCHECKSUM_S 45
++#define IRDMA_UDA_QPSQ_NOCHECKSUM_M \
++	BIT_ULL(IRDMA_UDA_QPSQ_NOCHECKSUM_S)
 +
-+struct irdma_ccq_cqe_info;
-+struct irdma_hmc_fcn_info {
-+	void (*callback_fcn)(struct irdma_sc_dev *dev, void *cqp_callback_param,
-+			     struct irdma_ccq_cqe_info *ccq_cqe_info);
-+	void *cqp_callback_param;
-+	u32 vf_id;
-+	u16 iw_vf_idx;
-+	u8 free_fcn;
-+};
++#define IRDMA_UDA_QPSQ_AHIDXVALID_S 46
++#define IRDMA_UDA_QPSQ_AHIDXVALID_M \
++	BIT_ULL(IRDMA_UDA_QPSQ_AHIDXVALID_S)
 +
-+struct irdma_hmc_create_obj_info {
-+	struct irdma_hmc_info *hmc_info;
-+	struct irdma_virt_mem add_sd_virt_mem;
-+	u32 rsrc_type;
-+	u32 start_idx;
-+	u32 count;
-+	u32 add_sd_cnt;
-+	enum irdma_sd_entry_type entry_type;
-+	bool privileged;
-+};
++#define IRDMA_UDA_QPSQ_LOCAL_FENCE_S 61
++#define IRDMA_UDA_QPSQ_LOCAL_FENCE_M \
++	BIT_ULL(IRDMA_UDA_QPSQ_LOCAL_FENCE_S)
 +
-+struct irdma_hmc_del_obj_info {
-+	struct irdma_hmc_info *hmc_info;
-+	struct irdma_virt_mem del_sd_virt_mem;
-+	u32 rsrc_type;
-+	u32 start_idx;
-+	u32 count;
-+	u32 del_sd_cnt;
-+	bool privileged;
-+};
++#define IRDMA_UDA_QPSQ_AHIDX_S 0
++#define IRDMA_UDA_QPSQ_AHIDX_M ((u64)0x1ffff << IRDMA_UDA_QPSQ_AHIDX_S)
 +
-+enum irdma_status_code irdma_copy_dma_mem(struct irdma_hw *hw, void *dest_buf,
-+					  struct irdma_dma_mem *src_mem,
-+					  u64 src_offset, u64 size);
-+enum irdma_status_code
-+irdma_sc_create_hmc_obj(struct irdma_sc_dev *dev,
-+			struct irdma_hmc_create_obj_info *info);
-+enum irdma_status_code irdma_sc_del_hmc_obj(struct irdma_sc_dev *dev,
-+					    struct irdma_hmc_del_obj_info *info,
-+					    bool reset);
-+enum irdma_status_code irdma_hmc_sd_one(struct irdma_sc_dev *dev, u8 hmc_fn_id,
-+					u64 pa, u32 sd_idx,
-+					enum irdma_sd_entry_type type,
-+					bool setsd);
-+enum irdma_status_code
-+irdma_update_sds_noccq(struct irdma_sc_dev *dev,
-+		       struct irdma_update_sds_info *info);
-+struct irdma_vfdev *irdma_vfdev_from_fpm(struct irdma_sc_dev *dev,
-+					 u8 hmc_fn_id);
-+struct irdma_hmc_info *irdma_vf_hmcinfo_from_fpm(struct irdma_sc_dev *dev,
-+						 u8 hmc_fn_id);
-+enum irdma_status_code irdma_add_sd_table_entry(struct irdma_hw *hw,
-+						struct irdma_hmc_info *hmc_info,
-+						u32 sd_index,
-+						enum irdma_sd_entry_type type,
-+						u64 direct_mode_sz);
-+enum irdma_status_code irdma_add_pd_table_entry(struct irdma_sc_dev *dev,
-+						struct irdma_hmc_info *hmc_info,
-+						u32 pd_index,
-+						struct irdma_dma_mem *rsrc_pg);
-+enum irdma_status_code irdma_remove_pd_bp(struct irdma_sc_dev *dev,
-+					  struct irdma_hmc_info *hmc_info,
-+					  u32 idx);
-+enum irdma_status_code irdma_prep_remove_sd_bp(struct irdma_hmc_info *hmc_info,
-+					       u32 idx);
-+enum irdma_status_code
-+irdma_prep_remove_pd_page(struct irdma_hmc_info *hmc_info, u32 idx);
-+#endif /* IRDMA_HMC_H */
++#define IRDMA_UDA_QPSQ_PROTOCOL_S 16
++#define IRDMA_UDA_QPSQ_PROTOCOL_M \
++	((u64)0xff << IRDMA_UDA_QPSQ_PROTOCOL_S)
++
++#define IRDMA_UDA_QPSQ_EXTHDRLEN_S 32
++#define IRDMA_UDA_QPSQ_EXTHDRLEN_M \
++	((u64)0x1ff << IRDMA_UDA_QPSQ_EXTHDRLEN_S)
++
++#define IRDMA_UDA_QPSQ_MULTICAST_S 63
++#define IRDMA_UDA_QPSQ_MULTICAST_M \
++	BIT_ULL(IRDMA_UDA_QPSQ_MULTICAST_S)
++
++#define IRDMA_UDA_QPSQ_MACLEN_S 56
++#define IRDMA_UDA_QPSQ_MACLEN_M \
++	((u64)0x7f << IRDMA_UDA_QPSQ_MACLEN_S)
++#define IRDMA_UDA_QPSQ_MACLEN_LINE 2
++
++#define IRDMA_UDA_QPSQ_IPLEN_S 48
++#define IRDMA_UDA_QPSQ_IPLEN_M \
++	((u64)0x7f << IRDMA_UDA_QPSQ_IPLEN_S)
++#define IRDMA_UDA_QPSQ_IPLEN_LINE 2
++
++#define IRDMA_UDA_QPSQ_L4T_S 30
++#define IRDMA_UDA_QPSQ_L4T_M ((u64)0x3 << IRDMA_UDA_QPSQ_L4T_S)
++#define IRDMA_UDA_QPSQ_L4T_LINE 2
++
++#define IRDMA_UDA_QPSQ_IIPT_S 28
++#define IRDMA_UDA_QPSQ_IIPT_M ((u64)0x3 << IRDMA_UDA_QPSQ_IIPT_S)
++#define IRDMA_UDA_QPSQ_IIPT_LINE 2
++
++#define IRDMA_UDA_QPSQ_DO_LPB_LINE 3
++
++#define IRDMA_UDA_QPSQ_FWD_PROG_CONFIRM_S 45
++#define IRDMA_UDA_QPSQ_FWD_PROG_CONFIRM_M \
++	BIT_ULL(IRDMA_UDA_QPSQ_FWD_PROG_CONFIRM_S)
++#define IRDMA_UDA_QPSQ_FWD_PROG_CONFIRM_LINE 3
++
++#define IRDMA_UDA_QPSQ_IMMDATA_S 0
++#define IRDMA_UDA_QPSQ_IMMDATA_M \
++	((u64)0xffffffffffffffff << IRDMA_UDA_QPSQ_IMMDATA_S)
++
++/* Byte Offset 0 */
++#define IRDMA_UDAQPC_IPV4_S 3
++#define IRDMA_UDAQPC_IPV4_M BIT_ULL(IRDMAQPC_IPV4_S)
++
++#define IRDMA_UDAQPC_INSERTVLANTAG_S 5
++#define IRDMA_UDAQPC_INSERTVLANTAG_M BIT_ULL(IRDMA_UDAQPC_INSERTVLANTAG_S)
++
++#define IRDMA_UDAQPC_ISQP1_S 6
++#define IRDMA_UDAQPC_ISQP1_M BIT_ULL(IRDMA_UDAQPC_ISQP1_S)
++
++#define IRDMA_UDAQPC_RQWQESIZE_S IRDMAQPC_RQWQESIZE_S
++#define IRDMA_UDAQPC_RQWQESIZE_M IRDMAQPC_RQWQESIZE_M
++
++#define IRDMA_UDAQPC_ECNENABLE_S 14
++#define IRDMA_UDAQPC_ECNENABLE_M BIT_ULL(IRDMA_UDAQPC_ECNENABLE_S)
++
++#define IRDMA_UDAQPC_PDINDEXHI_S 20
++#define IRDMA_UDAQPC_PDINDEXHI_M ((u64)3 << IRDMA_UDAQPC_PDINDEXHI_S)
++
++#define IRDMA_UDAQPC_DCTCPENABLE_S 25
++#define IRDMA_UDAQPC_DCTCPENABLE_M BIT_ULL(IRDMA_UDAQPC_DCTCPENABLE_S)
++
++#define IRDMA_UDAQPC_RCVTPHEN_S IRDMAQPC_RCVTPHEN_S
++#define IRDMA_UDAQPC_RCVTPHEN_M IRDMAQPC_RCVTPHEN_M
++
++#define IRDMA_UDAQPC_XMITTPHEN_S IRDMAQPC_XMITTPHEN_S
++#define IRDMA_UDAQPC_XMITTPHEN_M IRDMAQPC_XMITTPHEN_M
++
++#define IRDMA_UDAQPC_RQTPHEN_S IRDMAQPC_RQTPHEN_S
++#define IRDMA_UDAQPC_RQTPHEN_M IRDMAQPC_RQTPHEN_M
++
++#define IRDMA_UDAQPC_SQTPHEN_S IRDMAQPC_SQTPHEN_S
++#define IRDMA_UDAQPC_SQTPHEN_M IRDMAQPC_SQTPHEN_M
++
++#define IRDMA_UDAQPC_PPIDX_S IRDMAQPC_PPIDX_S
++#define IRDMA_UDAQPC_PPIDX_M IRDMAQPC_PPIDX_M
++
++#define IRDMA_UDAQPC_PMENA_S IRDMAQPC_PMENA_S
++#define IRDMA_UDAQPC_PMENA_M IRDMAQPC_PMENA_M
++
++#define IRDMA_UDAQPC_INSERTTAG2_S 11
++#define IRDMA_UDAQPC_INSERTTAG2_M BIT_ULL(IRDMA_UDAQPC_INSERTTAG2_S)
++
++#define IRDMA_UDAQPC_INSERTTAG3_S 14
++#define IRDMA_UDAQPC_INSERTTAG3_M BIT_ULL(IRDMA_UDAQPC_INSERTTAG3_S)
++
++#define IRDMA_UDAQPC_RQSIZE_S IRDMAQPC_RQSIZE_S
++#define IRDMA_UDAQPC_RQSIZE_M IRDMAQPC_RQSIZE_M
++
++#define IRDMA_UDAQPC_SQSIZE_S IRDMAQPC_SQSIZE_S
++#define IRDMA_UDAQPC_SQSIZE_M IRDMAQPC_SQSIZE_M
++
++#define IRDMA_UDAQPC_TXCQNUM_S IRDMAQPC_TXCQNUM_S
++#define IRDMA_UDAQPC_TXCQNUM_M IRDMAQPC_TXCQNUM_M
++
++#define IRDMA_UDAQPC_RXCQNUM_S IRDMAQPC_RXCQNUM_S
++#define IRDMA_UDAQPC_RXCQNUM_M IRDMAQPC_RXCQNUM_M
++
++#define IRDMA_UDAQPC_QPCOMPCTX_S IRDMAQPC_QPCOMPCTX_S
++#define IRDMA_UDAQPC_QPCOMPCTX_M IRDMAQPC_QPCOMPCTX_M
++
++#define IRDMA_UDAQPC_SQTPHVAL_S IRDMAQPC_SQTPHVAL_S
++#define IRDMA_UDAQPC_SQTPHVAL_M IRDMAQPC_SQTPHVAL_M
++
++#define IRDMA_UDAQPC_RQTPHVAL_S IRDMAQPC_RQTPHVAL_S
++#define IRDMA_UDAQPC_RQTPHVAL_M IRDMAQPC_RQTPHVAL_M
++
++#define IRDMA_UDAQPC_QSHANDLE_S IRDMAQPC_QSHANDLE_S
++#define IRDMA_UDAQPC_QSHANDLE_M IRDMAQPC_QSHANDLE_M
++
++#define IRDMA_UDAQPC_RQHDRRINGBUFSIZE_S 48
++#define IRDMA_UDAQPC_RQHDRRINGBUFSIZE_M \
++	((u64)0x3 << IRDMA_UDAQPC_RQHDRRINGBUFSIZE_S)
++
++#define IRDMA_UDAQPC_SQHDRRINGBUFSIZE_S 32
++#define IRDMA_UDAQPC_SQHDRRINGBUFSIZE_M \
++	((u64)0x3 << IRDMA_UDAQPC_SQHDRRINGBUFSIZE_S)
++
++#define IRDMA_UDAQPC_PRIVILEGEENABLE_S 25
++#define IRDMA_UDAQPC_PRIVILEGEENABLE_M \
++	BIT_ULL(IRDMA_UDAQPC_PRIVILEGEENABLE_S)
++
++#define IRDMA_UDAQPC_USE_STATISTICS_INSTANCE_S 26
++#define IRDMA_UDAQPC_USE_STATISTICS_INSTANCE_M \
++	BIT_ULL(IRDMA_UDAQPC_USE_STATISTICS_INSTANCE_S)
++
++#define IRDMA_UDAQPC_STATISTICS_INSTANCE_INDEX_S 0
++#define IRDMA_UDAQPC_STATISTICS_INSTANCE_INDEX_M \
++	((u64)0x7F << IRDMA_UDAQPC_STATISTICS_INSTANCE_INDEX_S)
++
++#define IRDMA_UDAQPC_PRIVHDRGENENABLE_S 0
++#define IRDMA_UDAQPC_PRIVHDRGENENABLE_M \
++	BIT_ULL(IRDMA_UDAQPC_PRIVHDRGENENABLE_S)
++
++#define IRDMA_UDAQPC_RQHDRSPLITENABLE_S 3
++#define IRDMA_UDAQPC_RQHDRSPLITENABLE_M \
++	BIT_ULL(IRDMA_UDAQPC_RQHDRSPLITENABLE_S)
++
++#define IRDMA_UDAQPC_RQHDRRINGBUFENABLE_S 2
++#define IRDMA_UDAQPC_RQHDRRINGBUFENABLE_M \
++	BIT_ULL(IRDMA_UDAQPC_RQHDRRINGBUFENABLE_S)
++
++#define IRDMA_UDAQPC_SQHDRRINGBUFENABLE_S 1
++#define IRDMA_UDAQPC_SQHDRRINGBUFENABLE_M \
++	BIT_ULL(IRDMA_UDAQPC_SQHDRRINGBUFENABLE_S)
++
++#define IRDMA_UDAQPC_IPID_S 32
++#define IRDMA_UDAQPC_IPID_M ((u64)0xffff << IRDMA_UDAQPC_IPID_S)
++
++#define IRDMA_UDAQPC_SNDMSS_S 16
++#define IRDMA_UDAQPC_SNDMSS_M ((u64)0x3fff << IRDMA_UDAQPC_SNDMSS_S)
++
++#define IRDMA_UDAQPC_VLANTAG_S 0
++#define IRDMA_UDAQPC_VLANTAG_M  ((u64)0xffff << IRDMA_UDAQPC_VLANTAG_S)
++
++/* Address Handle */
++#define IRDMA_UDA_CQPSQ_MAV_PDINDEXHI_S 20
++#define IRDMA_UDA_CQPSQ_MAV_PDINDEXHI_M \
++	((u64)0x3 << IRDMA_UDA_CQPSQ_MAV_PDINDEXHI_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_PDINDEXLO_S 48
++#define IRDMA_UDA_CQPSQ_MAV_PDINDEXLO_M \
++	((u64)0xffff << IRDMA_UDA_CQPSQ_MAV_PDINDEXLO_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_SRCMACADDRINDEX_S 24
++#define IRDMA_UDA_CQPSQ_MAV_SRCMACADDRINDEX_M \
++	((u64)0x3f << IRDMA_UDA_CQPSQ_MAV_SRCMACADDRINDEX_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_ARPINDEX_S 48
++#define IRDMA_UDA_CQPSQ_MAV_ARPINDEX_M \
++	((u64)0xffff << IRDMA_UDA_CQPSQ_MAV_ARPINDEX_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_TC_S 32
++#define IRDMA_UDA_CQPSQ_MAV_TC_M ((u64)0xff << IRDMA_UDA_CQPSQ_MAV_TC_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_HOPLIMIT_S 32
++#define IRDMA_UDA_CQPSQ_MAV_HOPLIMIT_M \
++	((u64)0xff << IRDMA_UDA_CQPSQ_MAV_HOPLIMIT_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_FLOWLABEL_S 0
++#define IRDMA_UDA_CQPSQ_MAV_FLOWLABEL_M \
++	((u64)0xfffff << IRDMA_UDA_CQPSQ_MAV_FLOWLABEL_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_ADDR0_S 32
++#define IRDMA_UDA_CQPSQ_MAV_ADDR0_M \
++	((u64)0xffffffff << IRDMA_UDA_CQPSQ_MAV_ADDR0_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_ADDR1_S 0
++#define IRDMA_UDA_CQPSQ_MAV_ADDR1_M \
++	((u64)0xffffffff << IRDMA_UDA_CQPSQ_MAV_ADDR1_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_ADDR2_S 32
++#define IRDMA_UDA_CQPSQ_MAV_ADDR2_M \
++	((u64)0xffffffff << IRDMA_UDA_CQPSQ_MAV_ADDR2_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_ADDR3_S 0
++#define IRDMA_UDA_CQPSQ_MAV_ADDR3_M \
++	((u64)0xffffffff << IRDMA_UDA_CQPSQ_MAV_ADDR3_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_WQEVALID_S 63
++#define IRDMA_UDA_CQPSQ_MAV_WQEVALID_M \
++	BIT_ULL(IRDMA_UDA_CQPSQ_MAV_WQEVALID_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_OPCODE_S 32
++#define IRDMA_UDA_CQPSQ_MAV_OPCODE_M \
++	((u64)0x3f << IRDMA_UDA_CQPSQ_MAV_OPCODE_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_DOLOOPBACKK_S 62
++#define IRDMA_UDA_CQPSQ_MAV_DOLOOPBACKK_M \
++	BIT_ULL(IRDMA_UDA_CQPSQ_MAV_DOLOOPBACKK_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_IPV4VALID_S 59
++#define IRDMA_UDA_CQPSQ_MAV_IPV4VALID_M \
++	BIT_ULL(IRDMA_UDA_CQPSQ_MAV_IPV4VALID_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_AVIDX_S 0
++#define IRDMA_UDA_CQPSQ_MAV_AVIDX_M \
++	((u64)0x1ffff << IRDMA_UDA_CQPSQ_MAV_AVIDX_S)
++
++#define IRDMA_UDA_CQPSQ_MAV_INSERTVLANTAG_S 60
++#define IRDMA_UDA_CQPSQ_MAV_INSERTVLANTAG_M BIT_ULL(IRDMA_UDA_CQPSQ_MAV_INSERTVLANTAG_S)
++
++/* UDA multicast group */
++
++#define IRDMA_UDA_MGCTX_VFFLAG_S 29
++#define IRDMA_UDA_MGCTX_VFFLAG_M BIT_ULL(IRDMA_UDA_MGCTX_VFFLAG_S)
++
++#define IRDMA_UDA_MGCTX_DESTPORT_S 32
++#define IRDMA_UDA_MGCTX_DESTPORT_M ((u64)0xffff << IRDMA_UDA_MGCTX_DESTPORT_S)
++
++#define IRDMA_UDA_MGCTX_VFID_S 22
++#define IRDMA_UDA_MGCTX_VFID_M ((u64)0x7f << IRDMA_UDA_MGCTX_VFID_S)
++
++#define IRDMA_UDA_MGCTX_VALIDENT_S 31
++#define IRDMA_UDA_MGCTX_VALIDENT_M BIT_ULL(IRDMA_UDA_MGCTX_VALIDENT_S)
++
++#define IRDMA_UDA_MGCTX_PFID_S 18
++#define IRDMA_UDA_MGCTX_PFID_M ((u64)0xf << IRDMA_UDA_MGCTX_PFID_S)
++
++#define IRDMA_UDA_MGCTX_FLAGIGNOREDPORT_S 30
++#define IRDMA_UDA_MGCTX_FLAGIGNOREDPORT_M \
++	BIT_ULL(IRDMA_UDA_MGCTX_FLAGIGNOREDPORT_S)
++
++#define IRDMA_UDA_MGCTX_QPID_S 0
++#define IRDMA_UDA_MGCTX_QPID_M ((u64)0x3ffff << IRDMA_UDA_MGCTX_QPID_S)
++
++/* multicast group create CQP command */
++
++#define IRDMA_UDA_CQPSQ_MG_WQEVALID_S 63
++#define IRDMA_UDA_CQPSQ_MG_WQEVALID_M \
++	BIT_ULL(IRDMA_UDA_CQPSQ_MG_WQEVALID_S)
++
++#define IRDMA_UDA_CQPSQ_MG_OPCODE_S 32
++#define IRDMA_UDA_CQPSQ_MG_OPCODE_M ((u64)0x3f << IRDMA_UDA_CQPSQ_MG_OPCODE_S)
++
++#define IRDMA_UDA_CQPSQ_MG_MGIDX_S 0
++#define IRDMA_UDA_CQPSQ_MG_MGIDX_M ((u64)0x1fff << IRDMA_UDA_CQPSQ_MG_MGIDX_S)
++
++#define IRDMA_UDA_CQPSQ_MG_IPV4VALID_S 60
++#define IRDMA_UDA_CQPSQ_MG_IPV4VALID_M BIT_ULL(IRDMA_UDA_CQPSQ_MG_IPV4VALID_S)
++
++#define IRDMA_UDA_CQPSQ_MG_VLANVALID_S 59
++#define IRDMA_UDA_CQPSQ_MG_VLANVALID_M BIT_ULL(IRDMA_UDA_CQPSQ_MG_VLANVALID_S)
++
++#define IRDMA_UDA_CQPSQ_MG_HMC_FCN_ID_S 0
++#define IRDMA_UDA_CQPSQ_MG_HMC_FCN_ID_M ((u64)0x3F << IRDMA_UDA_CQPSQ_MG_HMC_FCN_ID_S)
++
++#define IRDMA_UDA_CQPSQ_MG_VLANID_S 32
++#define IRDMA_UDA_CQPSQ_MG_VLANID_M ((u64)0xFFF << IRDMA_UDA_CQPSQ_MG_VLANID_S)
++
++#define IRDMA_UDA_CQPSQ_QS_HANDLE_S 0
++#define IRDMA_UDA_CQPSQ_QS_HANDLE_M ((u64)0x3FF << IRDMA_UDA_CQPSQ_QS_HANDLE_S)
++
++/* Quad hash table */
++#define IRDMA_UDA_CQPSQ_QHASH_QPN_S 32
++#define IRDMA_UDA_CQPSQ_QHASH_QPN_M \
++	((u64)0x3ffff << IRDMA_UDA_CQPSQ_QHASH_QPN_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH__S 0
++#define IRDMA_UDA_CQPSQ_QHASH__M BIT_ULL(IRDMA_UDA_CQPSQ_QHASH__S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_SRC_PORT_S 16
++#define IRDMA_UDA_CQPSQ_QHASH_SRC_PORT_M \
++	((u64)0xffff << IRDMA_UDA_CQPSQ_QHASH_SRC_PORT_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_DEST_PORT_S 0
++#define IRDMA_UDA_CQPSQ_QHASH_DEST_PORT_M \
++	((u64)0xffff << IRDMA_UDA_CQPSQ_QHASH_DEST_PORT_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_ADDR0_S 32
++#define IRDMA_UDA_CQPSQ_QHASH_ADDR0_M \
++	((u64)0xffffffff << IRDMA_UDA_CQPSQ_QHASH_ADDR0_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_ADDR1_S 0
++#define IRDMA_UDA_CQPSQ_QHASH_ADDR1_M \
++	((u64)0xffffffff << IRDMA_UDA_CQPSQ_QHASH_ADDR1_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_ADDR2_S 32
++#define IRDMA_UDA_CQPSQ_QHASH_ADDR2_M \
++	((u64)0xffffffff << IRDMA_UDA_CQPSQ_QHASH_ADDR2_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_ADDR3_S 0
++#define IRDMA_UDA_CQPSQ_QHASH_ADDR3_M \
++	((u64)0xffffffff << IRDMA_UDA_CQPSQ_QHASH_ADDR3_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_WQEVALID_S 63
++#define IRDMA_UDA_CQPSQ_QHASH_WQEVALID_M \
++	BIT_ULL(IRDMA_UDA_CQPSQ_QHASH_WQEVALID_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_OPCODE_S 32
++#define IRDMA_UDA_CQPSQ_QHASH_OPCODE_M \
++	((u64)0x3f << IRDMA_UDA_CQPSQ_QHASH_OPCODE_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_MANAGE_S 61
++#define IRDMA_UDA_CQPSQ_QHASH_MANAGE_M \
++	((u64)0x3 << IRDMA_UDA_CQPSQ_QHASH_MANAGE_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_IPV4VALID_S 60
++#define IRDMA_UDA_CQPSQ_QHASH_IPV4VALID_M \
++	((u64)0x1 << IRDMA_UDA_CQPSQ_QHASH_IPV4VALID_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_LANFWD_S 59
++#define IRDMA_UDA_CQPSQ_QHASH_LANFWD_M \
++	((u64)0x1 << IRDMA_UDA_CQPSQ_QHASH_LANFWD_S)
++
++#define IRDMA_UDA_CQPSQ_QHASH_ENTRYTYPE_S 42
++#define IRDMA_UDA_CQPSQ_QHASH_ENTRYTYPE_M \
++	((u64)0x7 << IRDMA_UDA_CQPSQ_QHASH_ENTRYTYPE_S)
++#endif /* IRDMA_UDA_D_H */
 -- 
 1.8.3.1
 
