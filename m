@@ -1,20 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Mon, 16 Mar 2020 21:54:38 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 841ffcb05f90e728da7e284fc639f93c837140cc
-Message-ID: <5e6f851e.GE4H+GmUYhdNpHFZ%lkp@intel.com>
+Date: Mon, 16 Mar 2020 21:54:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
+ 94b18a87efdd1626a1e6aef87271af4a7c616d36
+Message-ID: <5e6f8510.0OcbfdLtfM4/oHX5%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 841ffcb05f90e728da7e284fc639f93c837140cc  ice: Fix a couple off by one bugs
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+branch HEAD: 94b18a87efdd1626a1e6aef87271af4a7c616d36  Merge tag 'wireless-drivers-2020-03-13' of git://git.kernel.org/pub/scm/linux/kernel/git/kvalo/wireless-drivers
 
-elapsed time: 484m
+elapsed time: 483m
 
-configs tested: 109
+configs tested: 113
 configs skipped: 0
 
 The following configs have been built successfully.
@@ -47,6 +47,10 @@ openrisc                    or1ksim_defconfig
 openrisc                 simple_smp_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
+alpha                               defconfig
+csky                                defconfig
+nds32                             allnoconfig
+nds32                               defconfig
 h8300                     edosk2674_defconfig
 h8300                    h8300h-sim_defconfig
 h8300                       h8s-sim_defconfig
