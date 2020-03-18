@@ -1,139 +1,121 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Wed, 18 Mar 2020 16:00:59 -0700
-Subject: [Intel-wired-lan] [PATCH 09/12] igc: Remove
- igc_*_mac_steering_filter() wrappers
+Date: Wed, 18 Mar 2020 16:01:02 -0700
+Subject: [Intel-wired-lan] [PATCH 12/12] igc: Add debug messages to MAC
+ filter code
 In-Reply-To: <20200318230102.36952-1-andre.guedes@intel.com>
 References: <20200318230102.36952-1-andre.guedes@intel.com>
-Message-ID: <20200318230102.36952-10-andre.guedes@intel.com>
+Message-ID: <20200318230102.36952-13-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-With the previous two patches, igc_add_mac_steering_filter() and
-igc_del_mac_steering_filter() became a pointless wrapper of
-igc_add_mac_filter() and igc_del_mac_filter().
-
-This patch removes these wrappers and update callers to call
-igc_add_mac_filter() and igc_del_mac_filter() directly.
+This patch adds log messages to functions related to the MAC address
+filtering code to ease debugging.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h         |  8 ++++----
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 20 ++++++++------------
- drivers/net/ethernet/intel/igc/igc_main.c    | 20 ++++----------------
- 3 files changed, 16 insertions(+), 32 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 24 +++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 192cef07bdf7..6c18c74a68fb 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -231,10 +231,10 @@ void igc_write_rss_indir_tbl(struct igc_adapter *adapter);
- bool igc_has_link(struct igc_adapter *adapter);
- void igc_reset(struct igc_adapter *adapter);
- int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx);
--int igc_add_mac_steering_filter(struct igc_adapter *adapter,
--				const u8 *addr, u8 queue, u8 flags);
--int igc_del_mac_steering_filter(struct igc_adapter *adapter,
--				const u8 *addr, u8 queue, u8 flags);
-+int igc_add_mac_filter(struct igc_adapter *adapter, const u8 *addr,
-+		       const s8 queue, const u8 flags);
-+int igc_del_mac_filter(struct igc_adapter *adapter, const u8 *addr,
-+		       const u8 flags);
- void igc_update_stats(struct igc_adapter *adapter);
- 
- /* igc_dump declarations */
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 9ef133fe6e40..93608bd57c29 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1267,18 +1267,16 @@ int igc_add_filter(struct igc_adapter *adapter, struct igc_nfc_filter *input)
- 	}
- 
- 	if (input->filter.match_flags & IGC_FILTER_FLAG_DST_MAC_ADDR) {
--		err = igc_add_mac_steering_filter(adapter,
--						  input->filter.dst_addr,
--						  input->action, 0);
-+		err = igc_add_mac_filter(adapter, input->filter.dst_addr,
-+					 input->action, 0);
- 		if (err)
- 			return err;
- 	}
- 
- 	if (input->filter.match_flags & IGC_FILTER_FLAG_SRC_MAC_ADDR) {
--		err = igc_add_mac_steering_filter(adapter,
--						  input->filter.src_addr,
--						  input->action,
--						  IGC_MAC_STATE_SRC_ADDR);
-+		err = igc_add_mac_filter(adapter, input->filter.src_addr,
-+					 input->action,
-+					 IGC_MAC_STATE_SRC_ADDR);
- 		if (err)
- 			return err;
- 	}
-@@ -1332,13 +1330,11 @@ int igc_erase_filter(struct igc_adapter *adapter, struct igc_nfc_filter *input)
- 					   ntohs(input->filter.vlan_tci));
- 
- 	if (input->filter.match_flags & IGC_FILTER_FLAG_SRC_MAC_ADDR)
--		igc_del_mac_steering_filter(adapter, input->filter.src_addr,
--					    input->action,
--					    IGC_MAC_STATE_SRC_ADDR);
-+		igc_del_mac_filter(adapter, input->filter.src_addr,
-+				   IGC_MAC_STATE_SRC_ADDR);
- 
- 	if (input->filter.match_flags & IGC_FILTER_FLAG_DST_MAC_ADDR)
--		igc_del_mac_steering_filter(adapter, input->filter.dst_addr,
--					    input->action, 0);
-+		igc_del_mac_filter(adapter, input->filter.dst_addr, 0);
- 
- 	return 0;
- }
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 273817252823..25d0431f4f4a 100644
+index fa7cf33c58a9..abbe0e1e0cf5 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2210,8 +2210,8 @@ static bool igc_mac_entry_can_be_used(const struct igc_mac_addr *entry,
-  *
-  * In case of success, returns 0. Otherwise, it returns a negative errno code.
-   */
--static int igc_add_mac_filter(struct igc_adapter *adapter, const u8 *addr,
--			      const s8 queue, const u8 flags)
-+int igc_add_mac_filter(struct igc_adapter *adapter, const u8 *addr,
-+		       const s8 queue, const u8 flags)
+@@ -776,6 +776,7 @@ static void igc_setup_tctl(struct igc_adapter *adapter)
+ static void igc_set_mac_filter_hw(struct igc_adapter *adapter, int index,
+ 				  const u8 *addr, int queue)
  {
++	struct net_device *dev = adapter->netdev;
  	struct igc_hw *hw = &adapter->hw;
- 	int rar_entries = hw->mac.rar_entry_count;
-@@ -2251,8 +2251,8 @@ static int igc_add_mac_filter(struct igc_adapter *adapter, const u8 *addr,
-  *
-  * In case of success, returns 0. Otherwise, it returns a negative errno code.
-   */
--static int igc_del_mac_filter(struct igc_adapter *adapter, const u8 *addr,
--			      const u8 flags)
-+int igc_del_mac_filter(struct igc_adapter *adapter, const u8 *addr,
-+		       const u8 flags)
- {
- 	struct igc_hw *hw = &adapter->hw;
- 	int rar_entries = hw->mac.rar_entry_count;
-@@ -3736,18 +3736,6 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
- 	return features;
+ 	u32 ral, rah;
+ 
+@@ -795,6 +796,8 @@ static void igc_set_mac_filter_hw(struct igc_adapter *adapter, int index,
+ 
+ 	wr32(IGC_RAL(index), ral);
+ 	wr32(IGC_RAH(index), rah);
++
++	netdev_dbg(dev, "MAC address filter set in HW: index %d", index);
  }
  
--int igc_add_mac_steering_filter(struct igc_adapter *adapter,
--				const u8 *addr, u8 queue, u8 flags)
--{
--	return igc_add_mac_filter(adapter, addr, queue, flags);
--}
--
--int igc_del_mac_steering_filter(struct igc_adapter *adapter,
--				const u8 *addr, u8 queue, u8 flags)
--{
--	return igc_del_mac_filter(adapter, addr, flags);
--}
--
- static void igc_tsync_interrupt(struct igc_adapter *adapter)
+ /* Clear MAC address filter in hardware.
+@@ -804,6 +807,7 @@ static void igc_set_mac_filter_hw(struct igc_adapter *adapter, int index,
+  */
+ static void igc_clear_mac_filter_hw(struct igc_adapter *adapter, int index)
  {
++	struct net_device *dev = adapter->netdev;
  	struct igc_hw *hw = &adapter->hw;
+ 
+ 	if (WARN_ON(index >= hw->mac.rar_entry_count))
+@@ -811,18 +815,24 @@ static void igc_clear_mac_filter_hw(struct igc_adapter *adapter, int index)
+ 
+ 	wr32(IGC_RAL(index), 0);
+ 	wr32(IGC_RAH(index), 0);
++
++	netdev_dbg(dev, "MAC address filter cleared in HW: index %d", index);
+ }
+ 
+ /* Set default MAC address for the PF in the first RAR entry */
+ static void igc_set_default_mac_filter(struct igc_adapter *adapter)
+ {
+ 	struct igc_mac_addr *mac_table = &adapter->mac_table[0];
++	struct net_device *dev = adapter->netdev;
++	u8 *addr = adapter->hw.mac.addr;
++
++	netdev_dbg(dev, "Set default MAC address filter: address %pM", addr);
+ 
+-	ether_addr_copy(mac_table->addr, adapter->hw.mac.addr);
++	ether_addr_copy(mac_table->addr, addr);
+ 	mac_table->state = IGC_MAC_STATE_DEFAULT | IGC_MAC_STATE_IN_USE;
+ 	mac_table->queue = -1;
+ 
+-	igc_set_mac_filter_hw(adapter, 0, mac_table->addr, mac_table->queue);
++	igc_set_mac_filter_hw(adapter, 0, addr, mac_table->queue);
+ }
+ 
+ /**
+@@ -2232,6 +2242,7 @@ static int igc_get_avail_mac_filter_slot(struct igc_adapter *adapter)
+ int igc_add_mac_filter(struct igc_adapter *adapter, const u8 *addr,
+ 		       const s8 queue, const u8 flags)
+ {
++	struct net_device *dev = adapter->netdev;
+ 	int index;
+ 
+ 	if (!is_valid_ether_addr(addr))
+@@ -2247,6 +2258,9 @@ int igc_add_mac_filter(struct igc_adapter *adapter, const u8 *addr,
+ 	if (index < 0)
+ 		return -ENOSPC;
+ 
++	netdev_dbg(dev, "Add MAC address filter: index %d address %pM queue %d",
++		   index, addr, queue);
++
+ 	ether_addr_copy(adapter->mac_table[index].addr, addr);
+ 	adapter->mac_table[index].state |= IGC_MAC_STATE_IN_USE | flags;
+ update_queue_assignment:
+@@ -2268,6 +2282,7 @@ int igc_add_mac_filter(struct igc_adapter *adapter, const u8 *addr,
+ int igc_del_mac_filter(struct igc_adapter *adapter, const u8 *addr,
+ 		       const u8 flags)
+ {
++	struct net_device *dev = adapter->netdev;
+ 	struct igc_mac_addr *entry;
+ 	int index;
+ 
+@@ -2285,9 +2300,14 @@ int igc_del_mac_filter(struct igc_adapter *adapter, const u8 *addr,
+ 		 * We just reset to its default value i.e. disable queue
+ 		 * assignment.
+ 		 */
++		netdev_dbg(dev, "Disable default MAC filter queue assignment");
++
+ 		entry->queue = -1;
+ 		igc_set_mac_filter_hw(adapter, 0, addr, entry->queue);
+ 	} else {
++		netdev_dbg(dev, "Delete MAC address filter: index %d address %pM",
++			   index, addr);
++
+ 		entry->state = 0;
+ 		entry->queue = -1;
+ 		memset(entry->addr, 0, ETH_ALEN);
 -- 
 2.25.0
 
