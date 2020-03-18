@@ -1,8 +1,8 @@
 From: Vitaly Lifshits <vitaly.lifshits@intel.com>
-Date: Wed, 18 Mar 2020 15:52:00 +0200
-Subject: [Intel-wired-lan] [PATCH v1] igc: add support to interrupt, eeprom,
+Date: Wed, 18 Mar 2020 15:54:46 +0200
+Subject: [Intel-wired-lan] [PATCH v2] igc: add support to interrupt, eeprom,
  registers and link self-tests
-Message-ID: <20200318135200.10845-1-vitaly.lifshits@intel.com>
+Message-ID: <20200318135446.10921-1-vitaly.lifshits@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,10 +15,13 @@ these files are being used by ethtool self-test callbacks.
 Which mean that interrupt, eeprom, registers and link self-tests for
 ethtool were implemented.
 
-Change-type: ImplementationChange
-Title: igc: add support to interrupt, eeprom, registers and link self-tests
 Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Reported-by: kbuild test robot <lkp@intel.com>
 ---
+v1->v2:
+Fix return 0/1 to boolean value in igc_reg_test function
+---
+
  drivers/net/ethernet/intel/igc/Makefile      |   2 +-
  drivers/net/ethernet/intel/igc/igc.h         |   4 +
  drivers/net/ethernet/intel/igc/igc_diag.c    | 350 +++++++++++++++++++++++++++
@@ -64,7 +67,7 @@ index 4823b8ead547..e743f92a27c6 100644
  void igc_free_tx_resources(struct igc_ring *ring);
 diff --git a/drivers/net/ethernet/intel/igc/igc_diag.c b/drivers/net/ethernet/intel/igc/igc_diag.c
 new file mode 100644
-index 000000000000..80f96c9e5a90
+index 000000000000..cfb6a4cc623f
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igc/igc_diag.c
 @@ -0,0 +1,350 @@
@@ -186,7 +189,7 @@ index 000000000000..80f96c9e5a90
 +			"failed STATUS register test got: 0x%08X expected: 0x%08X\n",
 +			after, value);
 +		*data = 1;
-+		return 1;
++		return true;
 +	}
 +	/* restore previous status */
 +	wr32(IGC_STATUS, before);
