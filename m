@@ -1,36 +1,60 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 18 Mar 2020 22:32:11 +0000
-Subject: [Intel-wired-lan] [PATCH] igc: Fix NFC queue redirection support
-In-Reply-To: <20200306235403.18751-1-andre.guedes@intel.com>
-References: <20200306235403.18751-1-andre.guedes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B972234BF@ORSMSX103.amr.corp.intel.com>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Wed, 18 Mar 2020 16:00:50 -0700
+Subject: [Intel-wired-lan] [PATCH 00/12] igc: Refactor MAC address filtering
+ code
+Message-ID: <20200318230102.36952-1-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Andre Guedes
-> Sent: Friday, March 6, 2020 3:54 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] igc: Fix NFC queue redirection support
-> 
-> The support for ethtool Network Flow Classification (NFC) queue
-> redirection based on destination MAC address is currently broken in IGC.
-> For instance, if we add the following rule, matching frames aren't
-> enqueued on the expected rx queue.
-> 
-> $ ethtool -N IFNAME flow-type ether dst 3c:fd:fe:9e:7f:71 queue 2
-> 
-> The issue here is due to the fact that igc_rar_set_index() is missing
-> code to enable the queue selection feature from Receive Address High
-> (RAH) register. This patch adds the missing code and fixes the issue.
-> 
-> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc_defines.h |  5 ++++-
->  drivers/net/ethernet/intel/igc/igc_main.c    | 11 ++++++++---
->  2 files changed, 12 insertions(+), 4 deletions(-)
+Hi all,
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+The MAC address filtering support from IGC driver has some duplicate code and
+convoluted logic, making it harder to read, debug, and maintain.
+
+As a follow-up to the bug fixes already applied to dev-queue, this patchset
+refactors the MAC address filtering code to address those issues. It also takes
+the opportunity to improve documentation from some key functions and clean up
+comments that are not applicable to IGC, and fix minor issues along the way.
+
+In summary, the new MAC address filtering code is organized as follows:
+
+	* Filters are added and deleted only via igc_add_mac_filter() and
+	  igc_del_mac_filter() APIs. These APIs manage the adapter->mac_table.
+	  They are defined in igc_main.c and used in both igc_main.c and
+	  igc_ethtool.c.
+
+	* Filter configuration in hardware is handled by igc_set_mac_filter_
+	  hw() and igc_clear_mac_filter_hw() local helpers in igc_main.c.
+
+	* IGC_MAC_STATE_QUEUE_STEERING flag as well as igc_*_mac_steering_
+	  filter() are gone.
+
+Best regards,
+
+Andre
+
+Andre Guedes (12):
+  igc: Remove duplicate code in MAC filtering logic
+  igc: Check unsupported flag in igc_add_mac_filter()
+  igc: Change igc_add_mac_filter() returning value
+  igc: Fix igc_uc_unsync()
+  igc: Refactor igc_rar_set_index()
+  igc: Improve address check in igc_del_mac_filter()
+  igc: Remove 'queue' check in igc_del_mac_filter()
+  igc: Remove IGC_MAC_STATE_QUEUE_STEERING
+  igc: Remove igc_*_mac_steering_filter() wrappers
+  igc: Refactor igc_mac_entry_can_be_used()
+  igc: Refactor igc_del_mac_filter()
+  igc: Add debug messages to MAC filter code
+
+ drivers/net/ethernet/intel/igc/igc.h         |  11 +-
+ drivers/net/ethernet/intel/igc/igc_ethtool.c |  22 +-
+ drivers/net/ethernet/intel/igc/igc_main.c    | 372 ++++++++-----------
+ 3 files changed, 169 insertions(+), 236 deletions(-)
+
+-- 
+2.25.0
+
