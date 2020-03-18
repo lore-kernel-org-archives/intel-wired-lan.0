@@ -1,53 +1,29 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Wed, 18 Mar 2020 11:12:20 +0800
-Subject: [Intel-wired-lan] [Regression] "e1000e: Add support for S0ix"
- breaks s2idle on Lenovo X1 Carbon 7th
-In-Reply-To: <540fd2d3-9187-1dba-185a-58d94c4c5b69@intel.com>
-References: <0A7D1E37-88A4-4E5A-8522-B80A8AE679EE@canonical.com>
- <8c0032bd-15be-734b-1b52-dedba72a8da3@intel.com>
- <897C8B9E-839A-4FC1-9411-B3CB141890BC@canonical.com>
- <540fd2d3-9187-1dba-185a-58d94c4c5b69@intel.com>
-Message-ID: <BA29B851-8765-4F47-AC98-E2D604595EA6@canonical.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 18 Mar 2020 13:40:14 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 49/49]
+ drivers/net/ethernet/intel/igc/igc_diag.c:119:9-10: WARNING: return of 0/1
+ in function 'igc_reg_test' with return type bool
+Message-ID: <202003181310.IqYz3010%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Vitaly,
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   a6017405fcd0cda0cd9f35b34cae92400cf9e3e3
+commit: a6017405fcd0cda0cd9f35b34cae92400cf9e3e3 [49/49] igc: add support to interrupt, eeprom, registers and link self-tests
 
-> On Mar 17, 2020, at 22:39, Vitaly Lifshits <vitaly.lifshits@intel.com> wrote:
-> 
-> On 3/17/2020 16:04, Kai-Heng Feng wrote:
->>> On Mar 17, 2020, at 21:56, Neftin, Sasha <sasha.neftin@intel.com> wrote:
->>> 
->>> On 3/17/2020 15:34, Kai-Heng Feng wrote:
->>>> Hi,
->>>> Users reported that X1 Carbon 7th can only suspend once due of "e1000e 0000:00:1f.6 enp0s31f6: Hardware Error" [1] [2].
->>>> I managed to get one at hand and I can confirm the issue is 100% reproducible.
->>>> The error occurs at the first e1e_rphy() in e1000_copper_link_setup_82577() [3].
->>>> Reverting "e1000e: Add support for S0ix" makes suspend work again.
->>>> I also tried commit e1738282f6c6 "e1000e: fix S0ix flows for cable connected case" however the issue persists.
->>>> Kai-Heng
->>>> [1] https://bugs.launchpad.net/bugs/1865570
->>>> [2] https://bugs.launchpad.net/bugs/1866170
->>>> [3] https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/tree/drivers/net/ethernet/intel/e1000e/phy.c?h=dev-queue&id=e1738282f6c6ad0ec56a15c4d5a3b657d90e4435#n630
->>> please, check of ME enabled on this system. try disable ME and re-run
->> I disabled "Intel AMT", issue is still reproducible.
->> Kai-Heng
-> Hi Kai,
-> 
-> Do you work with cable connected?
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
 
-No, ethernet cable is not plugged.
 
-> If so, please try to run this command:
-> sudo echo 3 > /sys/kernel/debug/pmc_core/ltr_ignore
+coccinelle warnings: (new ones prefixed by >>)
 
-Same issue after doing that.
+>> drivers/net/ethernet/intel/igc/igc_diag.c:119:9-10: WARNING: return of 0/1 in function 'igc_reg_test' with return type bool
 
-Though unlikely, can this be caused by the special design of X1 Carbon?
-To keep the laptop thin, it doesn't have a RJ45 port. Instead it has a special connecter which requires a RJ45 dongle to support ethernet.
-Maybe that's why the PHY part isn't working after suspend?
+Please review and possibly fold the followup patch.
 
-Kai-Heng
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
