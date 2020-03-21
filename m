@@ -1,20 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 21 Mar 2020 22:04:26 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 27ad149131e711652f19afde20326ab631e87cd8
-Message-ID: <5e761eea.q9JRORyMeA2NiTG2%lkp@intel.com>
+Date: Sat, 21 Mar 2020 23:06:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 0a7c179da494e48df1930ff91dc8f0093b32affc
+Message-ID: <5e762d92.Uh7AeDC4dKTRBRp9%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 27ad149131e711652f19afde20326ab631e87cd8  ice: Fix a couple off by one bugs
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 0a7c179da494e48df1930ff91dc8f0093b32affc  e1000e: Disable s0ix flow for X1 Carbon 7th
 
-elapsed time: 823m
+elapsed time: 528m
 
-configs tested: 145
+configs tested: 162
 configs skipped: 0
 
 The following configs have been built successfully.
@@ -33,17 +33,18 @@ arm                        multi_v5_defconfig
 arm                           sunxi_defconfig
 arm                        multi_v7_defconfig
 sparc                            allyesconfig
-microblaze                    nommu_defconfig
-um                           x86_64_defconfig
+h8300                    h8300h-sim_defconfig
 i386                              allnoconfig
-i386                             alldefconfig
 i386                             allyesconfig
+i386                             alldefconfig
 i386                                defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                              allnoconfig
 ia64                             allyesconfig
 ia64                             alldefconfig
+arm64                            allmodconfig
+arm                              allmodconfig
 nios2                         3c120_defconfig
 nios2                         10m50_defconfig
 c6x                        evmc6678_defconfig
@@ -56,20 +57,20 @@ nds32                               defconfig
 nds32                             allnoconfig
 csky                                defconfig
 alpha                               defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
 h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
+h8300                     edosk2674_defconfig
 m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
+m68k                             allmodconfig
 m68k                           sun3_defconfig
-arc                              allyesconfig
+m68k                          multi_defconfig
 arc                                 defconfig
-microblaze                      mmu_defconfig
-powerpc                           allnoconfig
+arc                              allyesconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 powerpc                          rhel-kconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
 mips                           32r2_defconfig
 mips                         64r6el_defconfig
 mips                             allmodconfig
@@ -93,53 +94,68 @@ m68k                 randconfig-a001-20200321
 parisc               randconfig-a001-20200321
 alpha                randconfig-a001-20200321
 riscv                randconfig-a001-20200321
-s390                 randconfig-a001-20200320
-csky                 randconfig-a001-20200320
-xtensa               randconfig-a001-20200320
-openrisc             randconfig-a001-20200320
-sh                   randconfig-a001-20200320
+h8300                randconfig-a001-20200321
+microblaze           randconfig-a001-20200321
+nios2                randconfig-a001-20200321
+c6x                  randconfig-a001-20200321
+sparc64              randconfig-a001-20200321
+s390                 randconfig-a001-20200321
+xtensa               randconfig-a001-20200321
 csky                 randconfig-a001-20200321
 openrisc             randconfig-a001-20200321
-s390                 randconfig-a001-20200321
 sh                   randconfig-a001-20200321
-xtensa               randconfig-a001-20200321
+i386                 randconfig-b003-20200321
+i386                 randconfig-b001-20200321
+x86_64               randconfig-b003-20200321
+i386                 randconfig-b002-20200321
+x86_64               randconfig-b002-20200321
+x86_64               randconfig-b001-20200321
 x86_64               randconfig-c003-20200321
 i386                 randconfig-c002-20200321
 x86_64               randconfig-c001-20200321
 x86_64               randconfig-c002-20200321
 i386                 randconfig-c003-20200321
 i386                 randconfig-c001-20200321
-x86_64               randconfig-d001-20200321
-x86_64               randconfig-d002-20200321
-x86_64               randconfig-d003-20200321
-i386                 randconfig-d001-20200321
-i386                 randconfig-d002-20200321
 i386                 randconfig-d003-20200321
+i386                 randconfig-d001-20200321
+x86_64               randconfig-d002-20200321
+i386                 randconfig-d002-20200321
+x86_64               randconfig-d001-20200321
+x86_64               randconfig-d003-20200321
 x86_64               randconfig-e001-20200321
-x86_64               randconfig-e002-20200321
-x86_64               randconfig-e003-20200321
-i386                 randconfig-e001-20200321
 i386                 randconfig-e002-20200321
+x86_64               randconfig-e003-20200321
 i386                 randconfig-e003-20200321
+x86_64               randconfig-e002-20200321
+i386                 randconfig-e001-20200321
+i386                 randconfig-f001-20200321
+i386                 randconfig-f003-20200321
+i386                 randconfig-f002-20200321
+x86_64               randconfig-f002-20200321
+x86_64               randconfig-f003-20200321
+x86_64               randconfig-f001-20200321
 i386                 randconfig-g003-20200321
 x86_64               randconfig-g002-20200321
 i386                 randconfig-g001-20200321
 i386                 randconfig-g002-20200321
 x86_64               randconfig-g001-20200321
 x86_64               randconfig-g003-20200321
-x86_64               randconfig-h001-20200321
-x86_64               randconfig-h002-20200321
 x86_64               randconfig-h003-20200321
+i386                 randconfig-h003-20200321
+x86_64               randconfig-h001-20200321
 i386                 randconfig-h001-20200321
 i386                 randconfig-h002-20200321
-i386                 randconfig-h003-20200321
-arc                  randconfig-a001-20200321
 arm                  randconfig-a001-20200321
 arm64                randconfig-a001-20200321
 ia64                 randconfig-a001-20200321
-powerpc              randconfig-a001-20200321
 sparc                randconfig-a001-20200321
+arc                  randconfig-a001-20200321
 riscv                          rv32_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
 s390                       zfcpdump_defconfig
 s390                          debug_defconfig
 s390                             allyesconfig
@@ -157,14 +173,15 @@ sparc64                             defconfig
 sparc64                           allnoconfig
 sparc64                          allyesconfig
 sparc64                          allmodconfig
+um                           x86_64_defconfig
 um                             i386_defconfig
 um                                  defconfig
+x86_64                                   rhel
 x86_64                               rhel-7.6
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
 x86_64                              fedora-25
 x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                         rhel-7.2-clear
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
