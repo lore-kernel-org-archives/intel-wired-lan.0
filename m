@@ -1,239 +1,203 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Tue, 24 Mar 2020 17:38:18 -0700
-Subject: [Intel-wired-lan] [PATCH 04/10] igc: Use netdev log helpers in
- igc_dump.c
+Date: Tue, 24 Mar 2020 17:38:22 -0700
+Subject: [Intel-wired-lan] [PATCH 08/10] igc: Remove '\n' from log strings
+ in igc_mac.c
 In-Reply-To: <20200325003824.5487-1-andre.guedes@intel.com>
 References: <20200325003824.5487-1-andre.guedes@intel.com>
-Message-ID: <20200325003824.5487-5-andre.guedes@intel.com>
+Message-ID: <20200325003824.5487-9-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In igc_dump.c we print log messages using dev_* and pr_* helpers,
-generating inconsistent output with the rest of the driver. Since this
-is a network device driver, we should preferably use netdev_* helpers
-because they append the interface name to the message, helping making
-sense out of the logs.
+To keep log strings in igc_mac.c consistent with the rest of the driver
+code, this patch removes the '\n' character at the end. The newline
+character is automatically added by netdev_dbg() so there is no changes
+in the output.
 
-This patch converts all dev_* and pr_* calls to netdev_*. It also takes
-this opportunity to remove the '\n' character at the end of messages
-since is it automatically added by netdev_* log helpers.
-
-Quick note about igc_rings_dump(): This function is always called with
-valid adapter->netdev so there is not need to check it.
+Note: hw_dbg() is a macro that expands to netdev_dbg().
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_dump.c | 109 +++++++++++-----------
- 1 file changed, 54 insertions(+), 55 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_mac.c | 42 ++++++++++++------------
+ 1 file changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_dump.c b/drivers/net/ethernet/intel/igc/igc_dump.c
-index 657ab50ae296..d6990d63c8bb 100644
---- a/drivers/net/ethernet/intel/igc/igc_dump.c
-+++ b/drivers/net/ethernet/intel/igc/igc_dump.c
-@@ -47,6 +47,7 @@ static const struct igc_reg_info igc_reg_info_tbl[] = {
- /* igc_regdump - register printout routine */
- static void igc_regdump(struct igc_hw *hw, struct igc_reg_info *reginfo)
- {
-+	struct net_device *dev = igc_get_hw_dev(hw);
- 	int n = 0;
- 	char rname[16];
- 	u32 regs[8];
-@@ -101,13 +102,14 @@ static void igc_regdump(struct igc_hw *hw, struct igc_reg_info *reginfo)
- 			regs[n] = rd32(IGC_TXDCTL(n));
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
+index 12aa6b5fcb5d..2cd52b5c203d 100644
+--- a/drivers/net/ethernet/intel/igc/igc_mac.c
++++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+@@ -37,7 +37,7 @@ s32 igc_disable_pcie_master(struct igc_hw *hw)
+ 	}
+ 
+ 	if (!timeout) {
+-		hw_dbg("Master requests are pending.\n");
++		hw_dbg("Master requests are pending");
+ 		ret_val = -IGC_ERR_MASTER_REQUESTS_PENDING;
+ 		goto out;
+ 	}
+@@ -61,12 +61,12 @@ void igc_init_rx_addrs(struct igc_hw *hw, u16 rar_count)
+ 	u32 i;
+ 
+ 	/* Setup the receive address */
+-	hw_dbg("Programming MAC Address into RAR[0]\n");
++	hw_dbg("Programming MAC Address into RAR[0]");
+ 
+ 	hw->mac.ops.rar_set(hw, hw->mac.addr, 0);
+ 
+ 	/* Zero out the other (rar_entry_count - 1) receive addresses */
+-	hw_dbg("Clearing RAR[1-%u]\n", rar_count - 1);
++	hw_dbg("Clearing RAR[1-%u]", rar_count - 1);
+ 	for (i = 1; i < rar_count; i++)
+ 		hw->mac.ops.rar_set(hw, mac_addr, i);
+ }
+@@ -138,7 +138,7 @@ s32 igc_setup_link(struct igc_hw *hw)
+ 	 */
+ 	hw->fc.current_mode = hw->fc.requested_mode;
+ 
+-	hw_dbg("After fix-ups FlowControl is now = %x\n", hw->fc.current_mode);
++	hw_dbg("After fix-ups FlowControl is now = %x", hw->fc.current_mode);
+ 
+ 	/* Call the necessary media_type subroutine to configure the link. */
+ 	ret_val = hw->mac.ops.setup_physical_interface(hw);
+@@ -150,7 +150,7 @@ s32 igc_setup_link(struct igc_hw *hw)
+ 	 * control is disabled, because it does not hurt anything to
+ 	 * initialize these registers.
+ 	 */
+-	hw_dbg("Initializing the Flow Control address, type and timer regs\n");
++	hw_dbg("Initializing the Flow Control address, type and timer regs");
+ 	wr32(IGC_FCT, FLOW_CONTROL_TYPE);
+ 	wr32(IGC_FCAH, FLOW_CONTROL_ADDRESS_HIGH);
+ 	wr32(IGC_FCAL, FLOW_CONTROL_ADDRESS_LOW);
+@@ -197,7 +197,7 @@ s32 igc_force_mac_fc(struct igc_hw *hw)
+ 	 *      3:  Both Rx and TX flow control (symmetric) is enabled.
+ 	 *  other:  No other values should be possible at this point.
+ 	 */
+-	hw_dbg("hw->fc.current_mode = %u\n", hw->fc.current_mode);
++	hw_dbg("hw->fc.current_mode = %u", hw->fc.current_mode);
+ 
+ 	switch (hw->fc.current_mode) {
+ 	case igc_fc_none:
+@@ -215,7 +215,7 @@ s32 igc_force_mac_fc(struct igc_hw *hw)
+ 		ctrl |= (IGC_CTRL_TFCE | IGC_CTRL_RFCE);
  		break;
  	default:
--		pr_info("%-15s %08x\n", reginfo->name, rd32(reginfo->ofs));
-+		netdev_info(dev, "%-15s %08x", reginfo->name,
-+			    rd32(reginfo->ofs));
- 		return;
+-		hw_dbg("Flow control param set incorrectly\n");
++		hw_dbg("Flow control param set incorrectly");
+ 		ret_val = -IGC_ERR_CONFIG;
+ 		goto out;
+ 	}
+@@ -419,7 +419,7 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
+ 	 */
+ 	ret_val = igc_config_fc_after_link_up(hw);
+ 	if (ret_val)
+-		hw_dbg("Error configuring flow control\n");
++		hw_dbg("Error configuring flow control");
+ 
+ out:
+ 	return ret_val;
+@@ -473,7 +473,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
  	}
  
- 	snprintf(rname, 16, "%s%s", reginfo->name, "[0-3]");
--	pr_info("%-15s %08x %08x %08x %08x\n", rname, regs[0], regs[1],
--		regs[2], regs[3]);
-+	netdev_info(dev, "%-15s %08x %08x %08x %08x", rname, regs[0], regs[1],
-+		    regs[2], regs[3]);
- }
- 
- /* igc_rings_dump - Tx-rings and Rx-rings */
-@@ -125,39 +127,34 @@ void igc_rings_dump(struct igc_adapter *adapter)
- 	if (!netif_msg_hw(adapter))
- 		return;
- 
--	/* Print netdevice Info */
--	if (netdev) {
--		dev_info(&adapter->pdev->dev, "Net device Info\n");
--		pr_info("Device Name     state            trans_start\n");
--		pr_info("%-15s %016lX %016lX\n", netdev->name,
--			netdev->state, dev_trans_start(netdev));
--	}
-+	netdev_info(netdev, "Device info: state %016lX trans_start %016lX",
-+		    netdev->state, dev_trans_start(netdev));
- 
- 	/* Print TX Ring Summary */
--	if (!netdev || !netif_running(netdev))
-+	if (!netif_running(netdev))
- 		goto exit;
- 
--	dev_info(&adapter->pdev->dev, "TX Rings Summary\n");
--	pr_info("Queue [NTU] [NTC] [bi(ntc)->dma  ] leng ntw timestamp\n");
-+	netdev_info(netdev, "TX Rings Summary");
-+	netdev_info(netdev, "Queue [NTU] [NTC] [bi(ntc)->dma  ] leng ntw timestamp");
- 	for (n = 0; n < adapter->num_tx_queues; n++) {
- 		struct igc_tx_buffer *buffer_info;
- 
- 		tx_ring = adapter->tx_ring[n];
- 		buffer_info = &tx_ring->tx_buffer_info[tx_ring->next_to_clean];
- 
--		pr_info(" %5d %5X %5X %016llX %04X %p %016llX\n",
--			n, tx_ring->next_to_use, tx_ring->next_to_clean,
--			(u64)dma_unmap_addr(buffer_info, dma),
--			dma_unmap_len(buffer_info, len),
--			buffer_info->next_to_watch,
--			(u64)buffer_info->time_stamp);
-+		netdev_info(netdev, "%5d %5X %5X %016llX %04X %p %016llX",
-+			    n, tx_ring->next_to_use, tx_ring->next_to_clean,
-+			    (u64)dma_unmap_addr(buffer_info, dma),
-+			    dma_unmap_len(buffer_info, len),
-+			    buffer_info->next_to_watch,
-+			    (u64)buffer_info->time_stamp);
+ 	if (ret_val) {
+-		hw_dbg("Error forcing flow control settings\n");
++		hw_dbg("Error forcing flow control settings");
+ 		goto out;
  	}
  
- 	/* Print TX Rings */
- 	if (!netif_msg_tx_done(adapter))
- 		goto rx_ring_summary;
+@@ -497,7 +497,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
+ 			goto out;
  
--	dev_info(&adapter->pdev->dev, "TX Rings Dump\n");
-+	netdev_info(netdev, "TX Rings Dump");
+ 		if (!(mii_status_reg & MII_SR_AUTONEG_COMPLETE)) {
+-			hw_dbg("Copper PHY and Auto Neg has not completed.\n");
++			hw_dbg("Copper PHY and Auto Neg has not completed");
+ 			goto out;
+ 		}
  
- 	/* Transmit Descriptor Formats
- 	 *
-@@ -172,10 +169,11 @@ void igc_rings_dump(struct igc_adapter *adapter)
- 
- 	for (n = 0; n < adapter->num_tx_queues; n++) {
- 		tx_ring = adapter->tx_ring[n];
--		pr_info("------------------------------------\n");
--		pr_info("TX QUEUE INDEX = %d\n", tx_ring->queue_index);
--		pr_info("------------------------------------\n");
--		pr_info("T [desc]     [address 63:0  ] [PlPOCIStDDM Ln] [bi->dma       ] leng  ntw timestamp        bi->skb\n");
-+		netdev_info(netdev, "------------------------------------");
-+		netdev_info(netdev, "TX QUEUE INDEX = %d",
-+			    tx_ring->queue_index);
-+		netdev_info(netdev, "------------------------------------");
-+		netdev_info(netdev, "T [desc]     [address 63:0  ] [PlPOCIStDDM Ln] [bi->dma       ] leng  ntw timestamp        bi->skb");
- 
- 		for (i = 0; tx_ring->desc && (i < tx_ring->count); i++) {
- 			const char *next_desc;
-@@ -194,14 +192,14 @@ void igc_rings_dump(struct igc_adapter *adapter)
- 			else
- 				next_desc = "";
- 
--			pr_info("T [0x%03X]    %016llX %016llX %016llX %04X  %p %016llX %p%s\n",
--				i, le64_to_cpu(u0->a),
--				le64_to_cpu(u0->b),
--				(u64)dma_unmap_addr(buffer_info, dma),
--				dma_unmap_len(buffer_info, len),
--				buffer_info->next_to_watch,
--				(u64)buffer_info->time_stamp,
--				buffer_info->skb, next_desc);
-+			netdev_info(netdev, "T [0x%03X]    %016llX %016llX %016llX %04X  %p %016llX %p%s",
-+				    i, le64_to_cpu(u0->a),
-+				    le64_to_cpu(u0->b),
-+				    (u64)dma_unmap_addr(buffer_info, dma),
-+				    dma_unmap_len(buffer_info, len),
-+				    buffer_info->next_to_watch,
-+				    (u64)buffer_info->time_stamp,
-+				    buffer_info->skb, next_desc);
- 
- 			if (netif_msg_pktdata(adapter) && buffer_info->skb)
- 				print_hex_dump(KERN_INFO, "",
-@@ -214,19 +212,19 @@ void igc_rings_dump(struct igc_adapter *adapter)
- 
- 	/* Print RX Rings Summary */
- rx_ring_summary:
--	dev_info(&adapter->pdev->dev, "RX Rings Summary\n");
--	pr_info("Queue [NTU] [NTC]\n");
-+	netdev_info(netdev, "RX Rings Summary");
-+	netdev_info(netdev, "Queue [NTU] [NTC]");
- 	for (n = 0; n < adapter->num_rx_queues; n++) {
- 		rx_ring = adapter->rx_ring[n];
--		pr_info(" %5d %5X %5X\n",
--			n, rx_ring->next_to_use, rx_ring->next_to_clean);
-+		netdev_info(netdev, "%5d %5X %5X", n, rx_ring->next_to_use,
-+			    rx_ring->next_to_clean);
- 	}
- 
- 	/* Print RX Rings */
- 	if (!netif_msg_rx_status(adapter))
- 		goto exit;
- 
--	dev_info(&adapter->pdev->dev, "RX Rings Dump\n");
-+	netdev_info(netdev, "RX Rings Dump");
- 
- 	/* Advanced Receive Descriptor (Read) Format
- 	 *    63                                           1        0
-@@ -251,11 +249,12 @@ void igc_rings_dump(struct igc_adapter *adapter)
- 
- 	for (n = 0; n < adapter->num_rx_queues; n++) {
- 		rx_ring = adapter->rx_ring[n];
--		pr_info("------------------------------------\n");
--		pr_info("RX QUEUE INDEX = %d\n", rx_ring->queue_index);
--		pr_info("------------------------------------\n");
--		pr_info("R  [desc]      [ PktBuf     A0] [  HeadBuf   DD] [bi->dma       ] [bi->skb] <-- Adv Rx Read format\n");
--		pr_info("RWB[desc]      [PcsmIpSHl PtRs] [vl er S cks ln] ---------------- [bi->skb] <-- Adv Rx Write-Back format\n");
-+		netdev_info(netdev, "------------------------------------");
-+		netdev_info(netdev, "RX QUEUE INDEX = %d",
-+			    rx_ring->queue_index);
-+		netdev_info(netdev, "------------------------------------");
-+		netdev_info(netdev, "R  [desc]      [ PktBuf     A0] [  HeadBuf   DD] [bi->dma       ] [bi->skb] <-- Adv Rx Read format");
-+		netdev_info(netdev, "RWB[desc]      [PcsmIpSHl PtRs] [vl er S cks ln] ---------------- [bi->skb] <-- Adv Rx Write-Back format");
- 
- 		for (i = 0; i < rx_ring->count; i++) {
- 			const char *next_desc;
-@@ -275,18 +274,18 @@ void igc_rings_dump(struct igc_adapter *adapter)
- 
- 			if (staterr & IGC_RXD_STAT_DD) {
- 				/* Descriptor Done */
--				pr_info("%s[0x%03X]     %016llX %016llX ---------------- %s\n",
--					"RWB", i,
--					le64_to_cpu(u0->a),
--					le64_to_cpu(u0->b),
--					next_desc);
-+				netdev_info(netdev, "%s[0x%03X]     %016llX %016llX ---------------- %s",
-+					    "RWB", i,
-+					    le64_to_cpu(u0->a),
-+					    le64_to_cpu(u0->b),
-+					    next_desc);
+@@ -558,10 +558,10 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
+ 			 */
+ 			if (hw->fc.requested_mode == igc_fc_full) {
+ 				hw->fc.current_mode = igc_fc_full;
+-				hw_dbg("Flow Control = FULL.\n");
++				hw_dbg("Flow Control = FULL");
  			} else {
--				pr_info("%s[0x%03X]     %016llX %016llX %016llX %s\n",
--					"R  ", i,
--					le64_to_cpu(u0->a),
--					le64_to_cpu(u0->b),
--					(u64)buffer_info->dma,
--					next_desc);
-+				netdev_info(netdev, "%s[0x%03X]     %016llX %016llX %016llX %s",
-+					    "R  ", i,
-+					    le64_to_cpu(u0->a),
-+					    le64_to_cpu(u0->b),
-+					    (u64)buffer_info->dma,
-+					    next_desc);
+ 				hw->fc.current_mode = igc_fc_rx_pause;
+-				hw_dbg("Flow Control = RX PAUSE frames only.\n");
++				hw_dbg("Flow Control = RX PAUSE frames only");
+ 			}
+ 		}
  
- 				if (netif_msg_pktdata(adapter) &&
- 				    buffer_info->dma && buffer_info->page) {
-@@ -314,8 +313,8 @@ void igc_regs_dump(struct igc_adapter *adapter)
- 	struct igc_reg_info *reginfo;
+@@ -577,7 +577,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
+ 			 (mii_nway_lp_ability_reg & NWAY_LPAR_PAUSE) &&
+ 			 (mii_nway_lp_ability_reg & NWAY_LPAR_ASM_DIR)) {
+ 			hw->fc.current_mode = igc_fc_tx_pause;
+-			hw_dbg("Flow Control = TX PAUSE frames only.\n");
++			hw_dbg("Flow Control = TX PAUSE frames only");
+ 		}
+ 		/* For transmitting PAUSE frames ONLY.
+ 		 *
+@@ -591,7 +591,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
+ 			 !(mii_nway_lp_ability_reg & NWAY_LPAR_PAUSE) &&
+ 			 (mii_nway_lp_ability_reg & NWAY_LPAR_ASM_DIR)) {
+ 			hw->fc.current_mode = igc_fc_rx_pause;
+-			hw_dbg("Flow Control = RX PAUSE frames only.\n");
++			hw_dbg("Flow Control = RX PAUSE frames only");
+ 		}
+ 		/* Per the IEEE spec, at this point flow control should be
+ 		 * disabled.  However, we want to consider that we could
+@@ -617,10 +617,10 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
+ 			 (hw->fc.requested_mode == igc_fc_tx_pause) ||
+ 			 (hw->fc.strict_ieee)) {
+ 			hw->fc.current_mode = igc_fc_none;
+-			hw_dbg("Flow Control = NONE.\n");
++			hw_dbg("Flow Control = NONE");
+ 		} else {
+ 			hw->fc.current_mode = igc_fc_rx_pause;
+-			hw_dbg("Flow Control = RX PAUSE frames only.\n");
++			hw_dbg("Flow Control = RX PAUSE frames only");
+ 		}
  
- 	/* Print Registers */
--	dev_info(&adapter->pdev->dev, "Register Dump\n");
--	pr_info(" Register Name   Value\n");
-+	netdev_info(adapter->netdev, "Register Dump");
-+	netdev_info(adapter->netdev, "Register Name   Value");
- 	for (reginfo = (struct igc_reg_info *)igc_reg_info_tbl;
- 	     reginfo->name; reginfo++) {
- 		igc_regdump(hw, reginfo);
+ 		/* Now we need to do one last check...  If we auto-
+@@ -629,7 +629,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
+ 		 */
+ 		ret_val = hw->mac.ops.get_speed_and_duplex(hw, &speed, &duplex);
+ 		if (ret_val) {
+-			hw_dbg("Error getting link speed and duplex\n");
++			hw_dbg("Error getting link speed and duplex");
+ 			goto out;
+ 		}
+ 
+@@ -641,7 +641,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
+ 		 */
+ 		ret_val = igc_force_mac_fc(hw);
+ 		if (ret_val) {
+-			hw_dbg("Error forcing flow control settings\n");
++			hw_dbg("Error forcing flow control settings");
+ 			goto out;
+ 		}
+ 	}
+@@ -669,7 +669,7 @@ s32 igc_get_auto_rd_done(struct igc_hw *hw)
+ 	}
+ 
+ 	if (i == AUTO_READ_DONE_TIMEOUT) {
+-		hw_dbg("Auto read by HW from NVM has not completed.\n");
++		hw_dbg("Auto read by HW from NVM has not completed");
+ 		ret_val = -IGC_ERR_RESET;
+ 		goto out;
+ 	}
+@@ -716,10 +716,10 @@ s32 igc_get_speed_and_duplex_copper(struct igc_hw *hw, u16 *speed,
+ 
+ 	if (status & IGC_STATUS_FD) {
+ 		*duplex = FULL_DUPLEX;
+-		hw_dbg("Full Duplex\n");
++		hw_dbg("Full Duplex");
+ 	} else {
+ 		*duplex = HALF_DUPLEX;
+-		hw_dbg("Half Duplex\n");
++		hw_dbg("Half Duplex");
+ 	}
+ 
+ 	return 0;
 -- 
 2.25.0
 
