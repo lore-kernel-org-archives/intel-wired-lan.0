@@ -1,219 +1,57 @@
-From: Andre Guedes <andre.guedes@intel.com>
-Date: Tue, 24 Mar 2020 17:38:24 -0700
-Subject: [Intel-wired-lan] [PATCH 10/10] igc: Remove '\n' from log strings
- in igc_phy.c
-In-Reply-To: <20200325003824.5487-1-andre.guedes@intel.com>
-References: <20200325003824.5487-1-andre.guedes@intel.com>
-Message-ID: <20200325003824.5487-11-andre.guedes@intel.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Wed, 25 Mar 2020 12:17:15 +0800
+Subject: [Intel-wired-lan] [PATCH] e1000e: bump up timeout to wait when
+ ME un-configure ULP mode
+In-Reply-To: <20200323191639.48826-1-aaron.ma@canonical.com>
+References: <20200323191639.48826-1-aaron.ma@canonical.com>
+Message-ID: <EC4F7F0B-90F8-4325-B170-84C65D8BBBB8@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-To keep log strings in igc_phy.c consistent with the rest of the driver
-code, this patch removes the '\n' character at the end. The newline
-character is automatically added by netdev_dbg() so there is no changes
-in the output.
+Hi Aaron,
 
-Note: hw_dbg() is a macro that expands to netdev_dbg().
+> On Mar 24, 2020, at 03:16, Aaron Ma <aaron.ma@canonical.com> wrote:
+> 
+> ME takes 2+ seconds to un-configure ULP mode done after resume
+> from s2idle on some ThinkPad laptops.
+> Without enough wait, reset and re-init will fail with error.
 
-Signed-off-by: Andre Guedes <andre.guedes@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_phy.c | 52 ++++++++++++------------
- 1 file changed, 26 insertions(+), 26 deletions(-)
+Thanks, this patch solves the issue. We can drop the DMI quirk in favor of this patch.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
-index 8e1799508edc..a11c2e45d894 100644
---- a/drivers/net/ethernet/intel/igc/igc_phy.c
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.c
-@@ -207,7 +207,7 @@ s32 igc_phy_hw_reset(struct igc_hw *hw)
- 	} while (!(phpm & IGC_PHY_RST_COMP) && timeout);
- 
- 	if (!timeout)
--		hw_dbg("Timeout is expired after a phy reset\n");
-+		hw_dbg("Timeout is expired after a phy reset");
- 
- 	usleep_range(100, 150);
- 
-@@ -278,49 +278,49 @@ static s32 igc_phy_setup_autoneg(struct igc_hw *hw)
- 				 NWAY_AR_10T_HD_CAPS);
- 	mii_1000t_ctrl_reg &= ~(CR_1000T_HD_CAPS | CR_1000T_FD_CAPS);
- 
--	hw_dbg("autoneg_advertised %x\n", phy->autoneg_advertised);
-+	hw_dbg("autoneg_advertised %x", phy->autoneg_advertised);
- 
- 	/* Do we want to advertise 10 Mb Half Duplex? */
- 	if (phy->autoneg_advertised & ADVERTISE_10_HALF) {
--		hw_dbg("Advertise 10mb Half duplex\n");
-+		hw_dbg("Advertise 10mb Half duplex");
- 		mii_autoneg_adv_reg |= NWAY_AR_10T_HD_CAPS;
- 	}
- 
- 	/* Do we want to advertise 10 Mb Full Duplex? */
- 	if (phy->autoneg_advertised & ADVERTISE_10_FULL) {
--		hw_dbg("Advertise 10mb Full duplex\n");
-+		hw_dbg("Advertise 10mb Full duplex");
- 		mii_autoneg_adv_reg |= NWAY_AR_10T_FD_CAPS;
- 	}
- 
- 	/* Do we want to advertise 100 Mb Half Duplex? */
- 	if (phy->autoneg_advertised & ADVERTISE_100_HALF) {
--		hw_dbg("Advertise 100mb Half duplex\n");
-+		hw_dbg("Advertise 100mb Half duplex");
- 		mii_autoneg_adv_reg |= NWAY_AR_100TX_HD_CAPS;
- 	}
- 
- 	/* Do we want to advertise 100 Mb Full Duplex? */
- 	if (phy->autoneg_advertised & ADVERTISE_100_FULL) {
--		hw_dbg("Advertise 100mb Full duplex\n");
-+		hw_dbg("Advertise 100mb Full duplex");
- 		mii_autoneg_adv_reg |= NWAY_AR_100TX_FD_CAPS;
- 	}
- 
- 	/* We do not allow the Phy to advertise 1000 Mb Half Duplex */
- 	if (phy->autoneg_advertised & ADVERTISE_1000_HALF)
--		hw_dbg("Advertise 1000mb Half duplex request denied!\n");
-+		hw_dbg("Advertise 1000mb Half duplex request denied");
- 
- 	/* Do we want to advertise 1000 Mb Full Duplex? */
- 	if (phy->autoneg_advertised & ADVERTISE_1000_FULL) {
--		hw_dbg("Advertise 1000mb Full duplex\n");
-+		hw_dbg("Advertise 1000mb Full duplex");
- 		mii_1000t_ctrl_reg |= CR_1000T_FD_CAPS;
- 	}
- 
- 	/* We do not allow the Phy to advertise 2500 Mb Half Duplex */
- 	if (phy->autoneg_advertised & ADVERTISE_2500_HALF)
--		hw_dbg("Advertise 2500mb Half duplex request denied!\n");
-+		hw_dbg("Advertise 2500mb Half duplex request denied");
- 
- 	/* Do we want to advertise 2500 Mb Full Duplex? */
- 	if (phy->autoneg_advertised & ADVERTISE_2500_FULL) {
--		hw_dbg("Advertise 2500mb Full duplex\n");
-+		hw_dbg("Advertise 2500mb Full duplex");
- 		aneg_multigbt_an_ctrl |= CR_2500T_FD_CAPS;
- 	} else {
- 		aneg_multigbt_an_ctrl &= ~CR_2500T_FD_CAPS;
-@@ -376,7 +376,7 @@ static s32 igc_phy_setup_autoneg(struct igc_hw *hw)
- 		mii_autoneg_adv_reg |= (NWAY_AR_ASM_DIR | NWAY_AR_PAUSE);
- 		break;
- 	default:
--		hw_dbg("Flow control param set incorrectly\n");
-+		hw_dbg("Flow control param set incorrectly");
- 		return -IGC_ERR_CONFIG;
- 	}
- 
-@@ -384,7 +384,7 @@ static s32 igc_phy_setup_autoneg(struct igc_hw *hw)
- 	if (ret_val)
- 		return ret_val;
- 
--	hw_dbg("Auto-Neg Advertising %x\n", mii_autoneg_adv_reg);
-+	hw_dbg("Auto-Neg Advertising %x", mii_autoneg_adv_reg);
- 
- 	if (phy->autoneg_mask & ADVERTISE_1000_FULL)
- 		ret_val = phy->ops.write_reg(hw, PHY_1000T_CTRL,
-@@ -458,13 +458,13 @@ static s32 igc_copper_link_autoneg(struct igc_hw *hw)
- 	if (phy->autoneg_advertised == 0)
- 		phy->autoneg_advertised = phy->autoneg_mask;
- 
--	hw_dbg("Reconfiguring auto-neg advertisement params\n");
-+	hw_dbg("Reconfiguring auto-neg advertisement params");
- 	ret_val = igc_phy_setup_autoneg(hw);
- 	if (ret_val) {
--		hw_dbg("Error Setting up Auto-Negotiation\n");
-+		hw_dbg("Error Setting up Auto-Negotiation");
- 		goto out;
- 	}
--	hw_dbg("Restarting Auto-Neg\n");
-+	hw_dbg("Restarting Auto-Neg");
- 
- 	/* Restart auto-negotiation by setting the Auto Neg Enable bit and
- 	 * the Auto Neg Restart bit in the PHY control register.
-@@ -484,7 +484,7 @@ static s32 igc_copper_link_autoneg(struct igc_hw *hw)
- 	if (phy->autoneg_wait_to_complete) {
- 		ret_val = igc_wait_autoneg(hw);
- 		if (ret_val) {
--			hw_dbg("Error while waiting for autoneg to complete\n");
-+			hw_dbg("Error while waiting for autoneg to complete");
- 			goto out;
- 		}
- 	}
-@@ -520,10 +520,10 @@ s32 igc_setup_copper_link(struct igc_hw *hw)
- 		/* PHY will be set to 10H, 10F, 100H or 100F
- 		 * depending on user settings.
- 		 */
--		hw_dbg("Forcing Speed and Duplex\n");
-+		hw_dbg("Forcing Speed and Duplex");
- 		ret_val = hw->phy.ops.force_speed_duplex(hw);
- 		if (ret_val) {
--			hw_dbg("Error Forcing Speed and Duplex\n");
-+			hw_dbg("Error Forcing Speed and Duplex");
- 			goto out;
- 		}
- 	}
-@@ -536,11 +536,11 @@ s32 igc_setup_copper_link(struct igc_hw *hw)
- 		goto out;
- 
- 	if (link) {
--		hw_dbg("Valid link established!!!\n");
-+		hw_dbg("Valid link established");
- 		igc_config_collision_dist(hw);
- 		ret_val = igc_config_fc_after_link_up(hw);
- 	} else {
--		hw_dbg("Unable to establish link!!!\n");
-+		hw_dbg("Unable to establish link");
- 	}
- 
- out:
-@@ -563,7 +563,7 @@ static s32 igc_read_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 *data)
- 	s32 ret_val = 0;
- 
- 	if (offset > MAX_PHY_REG_ADDRESS) {
--		hw_dbg("PHY Address %d is out of range\n", offset);
-+		hw_dbg("PHY Address %d is out of range", offset);
- 		ret_val = -IGC_ERR_PARAM;
- 		goto out;
- 	}
-@@ -589,12 +589,12 @@ static s32 igc_read_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 *data)
- 			break;
- 	}
- 	if (!(mdic & IGC_MDIC_READY)) {
--		hw_dbg("MDI Read did not complete\n");
-+		hw_dbg("MDI Read did not complete");
- 		ret_val = -IGC_ERR_PHY;
- 		goto out;
- 	}
- 	if (mdic & IGC_MDIC_ERROR) {
--		hw_dbg("MDI Error\n");
-+		hw_dbg("MDI Error");
- 		ret_val = -IGC_ERR_PHY;
- 		goto out;
- 	}
-@@ -619,7 +619,7 @@ static s32 igc_write_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 data)
- 	s32 ret_val = 0;
- 
- 	if (offset > MAX_PHY_REG_ADDRESS) {
--		hw_dbg("PHY Address %d is out of range\n", offset);
-+		hw_dbg("PHY Address %d is out of range", offset);
- 		ret_val = -IGC_ERR_PARAM;
- 		goto out;
- 	}
-@@ -646,12 +646,12 @@ static s32 igc_write_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 data)
- 			break;
- 	}
- 	if (!(mdic & IGC_MDIC_READY)) {
--		hw_dbg("MDI Write did not complete\n");
-+		hw_dbg("MDI Write did not complete");
- 		ret_val = -IGC_ERR_PHY;
- 		goto out;
- 	}
- 	if (mdic & IGC_MDIC_ERROR) {
--		hw_dbg("MDI Error\n");
-+		hw_dbg("MDI Error");
- 		ret_val = -IGC_ERR_PHY;
- 		goto out;
- 	}
--- 
-2.25.0
+> 
+> Fixes: f15bb6dde738cc8fa0 ("e1000e: Add support for S0ix")
+> BugLink: https://bugs.launchpad.net/bugs/1865570
+> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+> ---
+> drivers/net/ethernet/intel/e1000e/ich8lan.c | 4 ++--
+> 1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> index b4135c50e905..147b15a2f8b3 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> @@ -1240,9 +1240,9 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
+> 			ew32(H2ME, mac_reg);
+> 		}
+> 
+> -		/* Poll up to 300msec for ME to clear ULP_CFG_DONE. */
+> +		/* Poll up to 2.5sec for ME to clear ULP_CFG_DONE. */
+> 		while (er32(FWSM) & E1000_FWSM_ULP_CFG_DONE) {
+> -			if (i++ == 30) {
+> +			if (i++ == 250) {
+> 				ret_val = -E1000_ERR_PHY;
+> 				goto out;
+> 			}
+
+The return value was not caught by the caller, so the error ends up unnoticed.
+Maybe let the caller check the return value of e1000_disable_ulp_lpt_lp()?
+
+Kai-Heng
+
+> -- 
+> 2.17.1
+> 
 
