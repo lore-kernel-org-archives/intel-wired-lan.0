@@ -1,17 +1,30 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Wed, 25 Mar 2020 14:39:51 +0800
+From: Tsai, Rex <rex.tsai@intel.com>
+Date: Wed, 25 Mar 2020 06:42:59 +0000
 Subject: [Intel-wired-lan] [PATCH] e1000e: bump up timeout to wait when
  ME un-configure ULP mode
-In-Reply-To: <2c765c59-556e-266b-4d0d-a4602db94476@intel.com>
+In-Reply-To: <206441A5-70CF-4F34-93B2-90F4A846BF4E@canonical.com>
 References: <20200323191639.48826-1-aaron.ma@canonical.com>
  <EC4F7F0B-90F8-4325-B170-84C65D8BBBB8@canonical.com>
  <2c765c59-556e-266b-4d0d-a4602db94476@intel.com>
-Message-ID: <206441A5-70CF-4F34-93B2-90F4A846BF4E@canonical.com>
+ <206441A5-70CF-4F34-93B2-90F4A846BF4E@canonical.com>
+Message-ID: <D83742F1B1819A43B1E71852F964BF245D7698AD@PGSMSX101.gar.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+Hello Kai-Heng,
+If you are using vPro system, ME LAN driver is always alive and you have no way to disable it until you build new BIOS. Is this also for Lenovo system?
+
+Rex Tsai | Intel Client LAN Engineer | +1 (503) 264-0517
+
+-----Original Message-----
+From: Kai-Heng Feng <kai.heng.feng@canonical.com> 
+Sent: Tuesday, March 24, 2020 11:40 PM
+To: Neftin, Sasha <sasha.neftin@intel.com>
+Cc: Aaron Ma <aaron.ma@canonical.com>; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David Miller <davem@davemloft.net>; moderated list:INTEL ETHERNET DRIVERS <intel-wired-lan@lists.osuosl.org>; open list:NETWORKING DRIVERS <netdev@vger.kernel.org>; open list <linux-kernel@vger.kernel.org>; Lifshits, Vitaly <vitaly.lifshits@intel.com>; Tsai, Rex <rex.tsai@intel.com>
+Subject: Re: [PATCH] e1000e: bump up timeout to wait when ME un-configure ULP mode
 
 Hi Sasha,
 
@@ -21,8 +34,8 @@ Hi Sasha,
 >> Hi Aaron,
 >>> On Mar 24, 2020, at 03:16, Aaron Ma <aaron.ma@canonical.com> wrote:
 >>> 
->>> ME takes 2+ seconds to un-configure ULP mode done after resume
->>> from s2idle on some ThinkPad laptops.
+>>> ME takes 2+ seconds to un-configure ULP mode done after resume from 
+>>> s2idle on some ThinkPad laptops.
 >>> Without enough wait, reset and re-init will fail with error.
 >> Thanks, this patch solves the issue. We can drop the DMI quirk in favor of this patch.
 >>> 
@@ -33,7 +46,8 @@ Hi Sasha,
 >>> drivers/net/ethernet/intel/e1000e/ich8lan.c | 4 ++--
 >>> 1 file changed, 2 insertions(+), 2 deletions(-)
 >>> 
->>> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c 
+>>> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
 >>> index b4135c50e905..147b15a2f8b3 100644
 >>> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
 >>> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
@@ -67,6 +81,6 @@ Kai-Heng
 > Meanwhile I prefer keep DMI quirk.
 > Thanks,
 > Sasha
->>> -- 
+>>> --
 >>> 2.17.1
 
