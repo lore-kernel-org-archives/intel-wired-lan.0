@@ -1,17 +1,17 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Tue, 24 Mar 2020 17:38:22 -0700
-Subject: [Intel-wired-lan] [PATCH 08/10] igc: Remove '\n' from log strings
- in igc_mac.c
+Date: Tue, 24 Mar 2020 17:38:24 -0700
+Subject: [Intel-wired-lan] [PATCH 10/10] igc: Remove '\n' from log strings
+ in igc_phy.c
 In-Reply-To: <20200325003824.5487-1-andre.guedes@intel.com>
 References: <20200325003824.5487-1-andre.guedes@intel.com>
-Message-ID: <20200325003824.5487-9-andre.guedes@intel.com>
+Message-ID: <20200325003824.5487-11-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-To keep log strings in igc_mac.c consistent with the rest of the driver
+To keep log strings in igc_phy.c consistent with the rest of the driver
 code, this patch removes the '\n' character at the end. The newline
 character is automatically added by netdev_dbg() so there is no changes
 in the output.
@@ -20,184 +20,200 @@ Note: hw_dbg() is a macro that expands to netdev_dbg().
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_mac.c | 42 ++++++++++++------------
- 1 file changed, 21 insertions(+), 21 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_phy.c | 52 ++++++++++++------------
+ 1 file changed, 26 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-index 12aa6b5fcb5d..2cd52b5c203d 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.c
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-@@ -37,7 +37,7 @@ s32 igc_disable_pcie_master(struct igc_hw *hw)
+diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
+index 8e1799508edc..a11c2e45d894 100644
+--- a/drivers/net/ethernet/intel/igc/igc_phy.c
++++ b/drivers/net/ethernet/intel/igc/igc_phy.c
+@@ -207,7 +207,7 @@ s32 igc_phy_hw_reset(struct igc_hw *hw)
+ 	} while (!(phpm & IGC_PHY_RST_COMP) && timeout);
+ 
+ 	if (!timeout)
+-		hw_dbg("Timeout is expired after a phy reset\n");
++		hw_dbg("Timeout is expired after a phy reset");
+ 
+ 	usleep_range(100, 150);
+ 
+@@ -278,49 +278,49 @@ static s32 igc_phy_setup_autoneg(struct igc_hw *hw)
+ 				 NWAY_AR_10T_HD_CAPS);
+ 	mii_1000t_ctrl_reg &= ~(CR_1000T_HD_CAPS | CR_1000T_FD_CAPS);
+ 
+-	hw_dbg("autoneg_advertised %x\n", phy->autoneg_advertised);
++	hw_dbg("autoneg_advertised %x", phy->autoneg_advertised);
+ 
+ 	/* Do we want to advertise 10 Mb Half Duplex? */
+ 	if (phy->autoneg_advertised & ADVERTISE_10_HALF) {
+-		hw_dbg("Advertise 10mb Half duplex\n");
++		hw_dbg("Advertise 10mb Half duplex");
+ 		mii_autoneg_adv_reg |= NWAY_AR_10T_HD_CAPS;
  	}
  
- 	if (!timeout) {
--		hw_dbg("Master requests are pending.\n");
-+		hw_dbg("Master requests are pending");
- 		ret_val = -IGC_ERR_MASTER_REQUESTS_PENDING;
- 		goto out;
+ 	/* Do we want to advertise 10 Mb Full Duplex? */
+ 	if (phy->autoneg_advertised & ADVERTISE_10_FULL) {
+-		hw_dbg("Advertise 10mb Full duplex\n");
++		hw_dbg("Advertise 10mb Full duplex");
+ 		mii_autoneg_adv_reg |= NWAY_AR_10T_FD_CAPS;
  	}
-@@ -61,12 +61,12 @@ void igc_init_rx_addrs(struct igc_hw *hw, u16 rar_count)
- 	u32 i;
  
- 	/* Setup the receive address */
--	hw_dbg("Programming MAC Address into RAR[0]\n");
-+	hw_dbg("Programming MAC Address into RAR[0]");
+ 	/* Do we want to advertise 100 Mb Half Duplex? */
+ 	if (phy->autoneg_advertised & ADVERTISE_100_HALF) {
+-		hw_dbg("Advertise 100mb Half duplex\n");
++		hw_dbg("Advertise 100mb Half duplex");
+ 		mii_autoneg_adv_reg |= NWAY_AR_100TX_HD_CAPS;
+ 	}
  
- 	hw->mac.ops.rar_set(hw, hw->mac.addr, 0);
+ 	/* Do we want to advertise 100 Mb Full Duplex? */
+ 	if (phy->autoneg_advertised & ADVERTISE_100_FULL) {
+-		hw_dbg("Advertise 100mb Full duplex\n");
++		hw_dbg("Advertise 100mb Full duplex");
+ 		mii_autoneg_adv_reg |= NWAY_AR_100TX_FD_CAPS;
+ 	}
  
- 	/* Zero out the other (rar_entry_count - 1) receive addresses */
--	hw_dbg("Clearing RAR[1-%u]\n", rar_count - 1);
-+	hw_dbg("Clearing RAR[1-%u]", rar_count - 1);
- 	for (i = 1; i < rar_count; i++)
- 		hw->mac.ops.rar_set(hw, mac_addr, i);
- }
-@@ -138,7 +138,7 @@ s32 igc_setup_link(struct igc_hw *hw)
- 	 */
- 	hw->fc.current_mode = hw->fc.requested_mode;
+ 	/* We do not allow the Phy to advertise 1000 Mb Half Duplex */
+ 	if (phy->autoneg_advertised & ADVERTISE_1000_HALF)
+-		hw_dbg("Advertise 1000mb Half duplex request denied!\n");
++		hw_dbg("Advertise 1000mb Half duplex request denied");
  
--	hw_dbg("After fix-ups FlowControl is now = %x\n", hw->fc.current_mode);
-+	hw_dbg("After fix-ups FlowControl is now = %x", hw->fc.current_mode);
+ 	/* Do we want to advertise 1000 Mb Full Duplex? */
+ 	if (phy->autoneg_advertised & ADVERTISE_1000_FULL) {
+-		hw_dbg("Advertise 1000mb Full duplex\n");
++		hw_dbg("Advertise 1000mb Full duplex");
+ 		mii_1000t_ctrl_reg |= CR_1000T_FD_CAPS;
+ 	}
  
- 	/* Call the necessary media_type subroutine to configure the link. */
- 	ret_val = hw->mac.ops.setup_physical_interface(hw);
-@@ -150,7 +150,7 @@ s32 igc_setup_link(struct igc_hw *hw)
- 	 * control is disabled, because it does not hurt anything to
- 	 * initialize these registers.
- 	 */
--	hw_dbg("Initializing the Flow Control address, type and timer regs\n");
-+	hw_dbg("Initializing the Flow Control address, type and timer regs");
- 	wr32(IGC_FCT, FLOW_CONTROL_TYPE);
- 	wr32(IGC_FCAH, FLOW_CONTROL_ADDRESS_HIGH);
- 	wr32(IGC_FCAL, FLOW_CONTROL_ADDRESS_LOW);
-@@ -197,7 +197,7 @@ s32 igc_force_mac_fc(struct igc_hw *hw)
- 	 *      3:  Both Rx and TX flow control (symmetric) is enabled.
- 	 *  other:  No other values should be possible at this point.
- 	 */
--	hw_dbg("hw->fc.current_mode = %u\n", hw->fc.current_mode);
-+	hw_dbg("hw->fc.current_mode = %u", hw->fc.current_mode);
+ 	/* We do not allow the Phy to advertise 2500 Mb Half Duplex */
+ 	if (phy->autoneg_advertised & ADVERTISE_2500_HALF)
+-		hw_dbg("Advertise 2500mb Half duplex request denied!\n");
++		hw_dbg("Advertise 2500mb Half duplex request denied");
  
- 	switch (hw->fc.current_mode) {
- 	case igc_fc_none:
-@@ -215,7 +215,7 @@ s32 igc_force_mac_fc(struct igc_hw *hw)
- 		ctrl |= (IGC_CTRL_TFCE | IGC_CTRL_RFCE);
+ 	/* Do we want to advertise 2500 Mb Full Duplex? */
+ 	if (phy->autoneg_advertised & ADVERTISE_2500_FULL) {
+-		hw_dbg("Advertise 2500mb Full duplex\n");
++		hw_dbg("Advertise 2500mb Full duplex");
+ 		aneg_multigbt_an_ctrl |= CR_2500T_FD_CAPS;
+ 	} else {
+ 		aneg_multigbt_an_ctrl &= ~CR_2500T_FD_CAPS;
+@@ -376,7 +376,7 @@ static s32 igc_phy_setup_autoneg(struct igc_hw *hw)
+ 		mii_autoneg_adv_reg |= (NWAY_AR_ASM_DIR | NWAY_AR_PAUSE);
  		break;
  	default:
 -		hw_dbg("Flow control param set incorrectly\n");
 +		hw_dbg("Flow control param set incorrectly");
- 		ret_val = -IGC_ERR_CONFIG;
+ 		return -IGC_ERR_CONFIG;
+ 	}
+ 
+@@ -384,7 +384,7 @@ static s32 igc_phy_setup_autoneg(struct igc_hw *hw)
+ 	if (ret_val)
+ 		return ret_val;
+ 
+-	hw_dbg("Auto-Neg Advertising %x\n", mii_autoneg_adv_reg);
++	hw_dbg("Auto-Neg Advertising %x", mii_autoneg_adv_reg);
+ 
+ 	if (phy->autoneg_mask & ADVERTISE_1000_FULL)
+ 		ret_val = phy->ops.write_reg(hw, PHY_1000T_CTRL,
+@@ -458,13 +458,13 @@ static s32 igc_copper_link_autoneg(struct igc_hw *hw)
+ 	if (phy->autoneg_advertised == 0)
+ 		phy->autoneg_advertised = phy->autoneg_mask;
+ 
+-	hw_dbg("Reconfiguring auto-neg advertisement params\n");
++	hw_dbg("Reconfiguring auto-neg advertisement params");
+ 	ret_val = igc_phy_setup_autoneg(hw);
+ 	if (ret_val) {
+-		hw_dbg("Error Setting up Auto-Negotiation\n");
++		hw_dbg("Error Setting up Auto-Negotiation");
  		goto out;
  	}
-@@ -419,7 +419,7 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
- 	 */
- 	ret_val = igc_config_fc_after_link_up(hw);
- 	if (ret_val)
--		hw_dbg("Error configuring flow control\n");
-+		hw_dbg("Error configuring flow control");
+-	hw_dbg("Restarting Auto-Neg\n");
++	hw_dbg("Restarting Auto-Neg");
+ 
+ 	/* Restart auto-negotiation by setting the Auto Neg Enable bit and
+ 	 * the Auto Neg Restart bit in the PHY control register.
+@@ -484,7 +484,7 @@ static s32 igc_copper_link_autoneg(struct igc_hw *hw)
+ 	if (phy->autoneg_wait_to_complete) {
+ 		ret_val = igc_wait_autoneg(hw);
+ 		if (ret_val) {
+-			hw_dbg("Error while waiting for autoneg to complete\n");
++			hw_dbg("Error while waiting for autoneg to complete");
+ 			goto out;
+ 		}
+ 	}
+@@ -520,10 +520,10 @@ s32 igc_setup_copper_link(struct igc_hw *hw)
+ 		/* PHY will be set to 10H, 10F, 100H or 100F
+ 		 * depending on user settings.
+ 		 */
+-		hw_dbg("Forcing Speed and Duplex\n");
++		hw_dbg("Forcing Speed and Duplex");
+ 		ret_val = hw->phy.ops.force_speed_duplex(hw);
+ 		if (ret_val) {
+-			hw_dbg("Error Forcing Speed and Duplex\n");
++			hw_dbg("Error Forcing Speed and Duplex");
+ 			goto out;
+ 		}
+ 	}
+@@ -536,11 +536,11 @@ s32 igc_setup_copper_link(struct igc_hw *hw)
+ 		goto out;
+ 
+ 	if (link) {
+-		hw_dbg("Valid link established!!!\n");
++		hw_dbg("Valid link established");
+ 		igc_config_collision_dist(hw);
+ 		ret_val = igc_config_fc_after_link_up(hw);
+ 	} else {
+-		hw_dbg("Unable to establish link!!!\n");
++		hw_dbg("Unable to establish link");
+ 	}
  
  out:
- 	return ret_val;
-@@ -473,7 +473,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 	}
+@@ -563,7 +563,7 @@ static s32 igc_read_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 *data)
+ 	s32 ret_val = 0;
  
- 	if (ret_val) {
--		hw_dbg("Error forcing flow control settings\n");
-+		hw_dbg("Error forcing flow control settings");
+ 	if (offset > MAX_PHY_REG_ADDRESS) {
+-		hw_dbg("PHY Address %d is out of range\n", offset);
++		hw_dbg("PHY Address %d is out of range", offset);
+ 		ret_val = -IGC_ERR_PARAM;
  		goto out;
  	}
- 
-@@ -497,7 +497,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 			goto out;
- 
- 		if (!(mii_status_reg & MII_SR_AUTONEG_COMPLETE)) {
--			hw_dbg("Copper PHY and Auto Neg has not completed.\n");
-+			hw_dbg("Copper PHY and Auto Neg has not completed");
- 			goto out;
- 		}
- 
-@@ -558,10 +558,10 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 			 */
- 			if (hw->fc.requested_mode == igc_fc_full) {
- 				hw->fc.current_mode = igc_fc_full;
--				hw_dbg("Flow Control = FULL.\n");
-+				hw_dbg("Flow Control = FULL");
- 			} else {
- 				hw->fc.current_mode = igc_fc_rx_pause;
--				hw_dbg("Flow Control = RX PAUSE frames only.\n");
-+				hw_dbg("Flow Control = RX PAUSE frames only");
- 			}
- 		}
- 
-@@ -577,7 +577,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 			 (mii_nway_lp_ability_reg & NWAY_LPAR_PAUSE) &&
- 			 (mii_nway_lp_ability_reg & NWAY_LPAR_ASM_DIR)) {
- 			hw->fc.current_mode = igc_fc_tx_pause;
--			hw_dbg("Flow Control = TX PAUSE frames only.\n");
-+			hw_dbg("Flow Control = TX PAUSE frames only");
- 		}
- 		/* For transmitting PAUSE frames ONLY.
- 		 *
-@@ -591,7 +591,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 			 !(mii_nway_lp_ability_reg & NWAY_LPAR_PAUSE) &&
- 			 (mii_nway_lp_ability_reg & NWAY_LPAR_ASM_DIR)) {
- 			hw->fc.current_mode = igc_fc_rx_pause;
--			hw_dbg("Flow Control = RX PAUSE frames only.\n");
-+			hw_dbg("Flow Control = RX PAUSE frames only");
- 		}
- 		/* Per the IEEE spec, at this point flow control should be
- 		 * disabled.  However, we want to consider that we could
-@@ -617,10 +617,10 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 			 (hw->fc.requested_mode == igc_fc_tx_pause) ||
- 			 (hw->fc.strict_ieee)) {
- 			hw->fc.current_mode = igc_fc_none;
--			hw_dbg("Flow Control = NONE.\n");
-+			hw_dbg("Flow Control = NONE");
- 		} else {
- 			hw->fc.current_mode = igc_fc_rx_pause;
--			hw_dbg("Flow Control = RX PAUSE frames only.\n");
-+			hw_dbg("Flow Control = RX PAUSE frames only");
- 		}
- 
- 		/* Now we need to do one last check...  If we auto-
-@@ -629,7 +629,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 		 */
- 		ret_val = hw->mac.ops.get_speed_and_duplex(hw, &speed, &duplex);
- 		if (ret_val) {
--			hw_dbg("Error getting link speed and duplex\n");
-+			hw_dbg("Error getting link speed and duplex");
- 			goto out;
- 		}
- 
-@@ -641,7 +641,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 		 */
- 		ret_val = igc_force_mac_fc(hw);
- 		if (ret_val) {
--			hw_dbg("Error forcing flow control settings\n");
-+			hw_dbg("Error forcing flow control settings");
- 			goto out;
- 		}
+@@ -589,12 +589,12 @@ static s32 igc_read_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 *data)
+ 			break;
  	}
-@@ -669,7 +669,7 @@ s32 igc_get_auto_rd_done(struct igc_hw *hw)
- 	}
- 
- 	if (i == AUTO_READ_DONE_TIMEOUT) {
--		hw_dbg("Auto read by HW from NVM has not completed.\n");
-+		hw_dbg("Auto read by HW from NVM has not completed");
- 		ret_val = -IGC_ERR_RESET;
+ 	if (!(mdic & IGC_MDIC_READY)) {
+-		hw_dbg("MDI Read did not complete\n");
++		hw_dbg("MDI Read did not complete");
+ 		ret_val = -IGC_ERR_PHY;
  		goto out;
  	}
-@@ -716,10 +716,10 @@ s32 igc_get_speed_and_duplex_copper(struct igc_hw *hw, u16 *speed,
- 
- 	if (status & IGC_STATUS_FD) {
- 		*duplex = FULL_DUPLEX;
--		hw_dbg("Full Duplex\n");
-+		hw_dbg("Full Duplex");
- 	} else {
- 		*duplex = HALF_DUPLEX;
--		hw_dbg("Half Duplex\n");
-+		hw_dbg("Half Duplex");
+ 	if (mdic & IGC_MDIC_ERROR) {
+-		hw_dbg("MDI Error\n");
++		hw_dbg("MDI Error");
+ 		ret_val = -IGC_ERR_PHY;
+ 		goto out;
  	}
+@@ -619,7 +619,7 @@ static s32 igc_write_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 data)
+ 	s32 ret_val = 0;
  
- 	return 0;
+ 	if (offset > MAX_PHY_REG_ADDRESS) {
+-		hw_dbg("PHY Address %d is out of range\n", offset);
++		hw_dbg("PHY Address %d is out of range", offset);
+ 		ret_val = -IGC_ERR_PARAM;
+ 		goto out;
+ 	}
+@@ -646,12 +646,12 @@ static s32 igc_write_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 data)
+ 			break;
+ 	}
+ 	if (!(mdic & IGC_MDIC_READY)) {
+-		hw_dbg("MDI Write did not complete\n");
++		hw_dbg("MDI Write did not complete");
+ 		ret_val = -IGC_ERR_PHY;
+ 		goto out;
+ 	}
+ 	if (mdic & IGC_MDIC_ERROR) {
+-		hw_dbg("MDI Error\n");
++		hw_dbg("MDI Error");
+ 		ret_val = -IGC_ERR_PHY;
+ 		goto out;
+ 	}
 -- 
 2.25.0
 
