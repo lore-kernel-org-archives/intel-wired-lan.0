@@ -1,114 +1,190 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Fri, 27 Mar 2020 01:16:39 +0800
-Subject: [Intel-wired-lan] [PATCH] igb: Use a sperate mutex insead of
- rtnl_lock()
-In-Reply-To: <CAKgT0UfFnXcSSsXvxk8+xiZvyzDh+8V-9bCT-z5U+MEVoAVKLw@mail.gmail.com>
-References: <20200326103926.20888-1-kai.heng.feng@canonical.com>
- <CAKgT0UfFnXcSSsXvxk8+xiZvyzDh+8V-9bCT-z5U+MEVoAVKLw@mail.gmail.com>
-Message-ID: <98E86E5A-4EE9-4CB5-81CF-49C3E74C3AE6@canonical.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Fri, 27 Mar 2020 01:46:55 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ 0675e85be3de135bc369d64a91c7da5b65a1987c
+Message-ID: <5e7cea8f.mk6TdxCVYG/85K3A%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Alexander,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: 0675e85be3de135bc369d64a91c7da5b65a1987c  i40e: Register a virtbus device to provide RDMA
 
-> On Mar 27, 2020, at 00:27, Alexander Duyck <alexander.duyck@gmail.com> wrote:
-> 
-> On Thu, Mar 26, 2020 at 3:39 AM Kai-Heng Feng
-> <kai.heng.feng at canonical.com <mailto:kai.heng.feng@canonical.com>> wrote:
->> 
->> Commit 9474933caf21 ("igb: close/suspend race in netif_device_detach")
->> fixed race condition between close and power management ops by using
->> rtnl_lock().
->> 
->> This fix is a preparation for next patch, to prevent a dead lock under
->> rtnl_lock() when calling runtime resume routine.
->> 
->> However, we can't use device_lock() in igb_close() because when module
->> is getting removed, the lock is already held for igb_remove(), and
->> igb_close() gets called during unregistering the netdev, hence causing a
->> deadlock. So let's introduce a new mutex so we don't cause a deadlock
->> with driver core or netdev core.
->> 
->> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> 
-> So this description doesn't make much sense to me. You describe the
-> use of the device_lock() in igb_close() but it isn't used there.
+elapsed time: 898m
 
-Sorry I forgot to add a revision number.
-It was used by previous version and Aaron found a regression when device_lock() is used.
+configs tested: 164
+configs skipped: 0
 
-> In addition it seems like you are arbitrarily moving code that was
-> wrapped in the rtnl_lock out of it. I'm not entirely sure that is safe
-> since there are calls within many of these functions that assume the
-> rtnl_lock is held and changing that is likely going to introduce more
-> issues.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-The reason why rtnl lock needs to be removed is because of the following patch:
-https://lore.kernel.org/lkml/20200207101005.4454-2-kai.heng.feng at canonical.com/
+arm64                            allyesconfig
+arm                              allyesconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm                               allnoconfig
+arm                              allmodconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                               defconfig
+sparc                            allyesconfig
+openrisc                    or1ksim_defconfig
+i386                              allnoconfig
+i386                             alldefconfig
+i386                             allyesconfig
+i386                                defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+ia64                             alldefconfig
+nios2                         3c120_defconfig
+nios2                         10m50_defconfig
+c6x                        evmc6678_defconfig
+xtensa                          iss_defconfig
+c6x                              allyesconfig
+xtensa                       common_defconfig
+openrisc                 simple_smp_defconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                                defconfig
+alpha                               defconfig
+h8300                       h8s-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+h8300                    h8300h-sim_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                          rhel-kconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+mips                             allyesconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                           32r2_defconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                generic-64bit_defconfig
+parisc                generic-32bit_defconfig
+parisc                           allyesconfig
+i386                 randconfig-a002-20200326
+i386                 randconfig-a001-20200326
+x86_64               randconfig-a002-20200326
+x86_64               randconfig-a001-20200326
+i386                 randconfig-a003-20200326
+x86_64               randconfig-a003-20200326
+alpha                randconfig-a001-20200326
+m68k                 randconfig-a001-20200326
+mips                 randconfig-a001-20200326
+nds32                randconfig-a001-20200326
+parisc               randconfig-a001-20200326
+riscv                randconfig-a001-20200326
+h8300                randconfig-a001-20200325
+microblaze           randconfig-a001-20200325
+nios2                randconfig-a001-20200325
+c6x                  randconfig-a001-20200325
+sparc64              randconfig-a001-20200325
+c6x                  randconfig-a001-20200326
+h8300                randconfig-a001-20200326
+microblaze           randconfig-a001-20200326
+nios2                randconfig-a001-20200326
+sparc64              randconfig-a001-20200326
+csky                 randconfig-a001-20200326
+openrisc             randconfig-a001-20200326
+s390                 randconfig-a001-20200326
+xtensa               randconfig-a001-20200326
+sh                   randconfig-a001-20200326
+i386                 randconfig-b003-20200326
+i386                 randconfig-b001-20200326
+x86_64               randconfig-b003-20200326
+i386                 randconfig-b002-20200326
+x86_64               randconfig-b002-20200326
+x86_64               randconfig-c003-20200326
+x86_64               randconfig-c001-20200326
+i386                 randconfig-c002-20200326
+x86_64               randconfig-c002-20200326
+i386                 randconfig-c003-20200326
+i386                 randconfig-c001-20200326
+i386                 randconfig-d003-20200326
+i386                 randconfig-d001-20200326
+i386                 randconfig-d002-20200326
+x86_64               randconfig-e001-20200326
+x86_64               randconfig-e003-20200326
+i386                 randconfig-e002-20200326
+i386                 randconfig-e003-20200326
+i386                 randconfig-e001-20200326
+x86_64               randconfig-e002-20200326
+i386                 randconfig-f001-20200326
+i386                 randconfig-f003-20200326
+i386                 randconfig-f002-20200326
+x86_64               randconfig-f002-20200326
+x86_64               randconfig-f003-20200326
+x86_64               randconfig-f001-20200326
+i386                 randconfig-g003-20200326
+x86_64               randconfig-g002-20200326
+i386                 randconfig-g001-20200326
+i386                 randconfig-g002-20200326
+x86_64               randconfig-g001-20200326
+x86_64               randconfig-g003-20200326
+x86_64               randconfig-h002-20200326
+x86_64               randconfig-h003-20200326
+i386                 randconfig-h003-20200326
+i386                 randconfig-h001-20200326
+x86_64               randconfig-h001-20200326
+i386                 randconfig-h002-20200326
+arc                  randconfig-a001-20200326
+arm                  randconfig-a001-20200326
+arm64                randconfig-a001-20200326
+ia64                 randconfig-a001-20200326
+powerpc              randconfig-a001-20200326
+sparc                randconfig-a001-20200326
+riscv                             allnoconfig
+riscv                            allyesconfig
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+s390                       zfcpdump_defconfig
+s390                          debug_defconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                             alldefconfig
+s390                                defconfig
+sh                          rsk7269_defconfig
+sh                               allmodconfig
+sh                            titan_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                             defconfig
+um                                  defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+x86_64                                  kexec
 
-Ethtools helpers already held rtnl_lock, so to prevent a deadlock, my idea is to use another lock to solve what "igb: close/suspend race in netif_device_detach" originally tried to fix.
-
-> 
-> 
-> 
->> ---
->> drivers/net/ethernet/intel/igb/igb_main.c | 19 +++++++++++++------
->> 1 file changed, 13 insertions(+), 6 deletions(-)
->> 
->> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
->> index b46bff8fe056..dc7ed5dd216b 100644
->> --- a/drivers/net/ethernet/intel/igb/igb_main.c
->> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
->> @@ -288,6 +288,8 @@ static const struct igb_reg_info igb_reg_info_tbl[] = {
->>        {}
->> };
->> 
->> +static DEFINE_MUTEX(igb_mutex);
->> +
->> /* igb_regdump - register printout routine */
->> static void igb_regdump(struct e1000_hw *hw, struct igb_reg_info *reginfo)
->> {
->> @@ -4026,9 +4028,14 @@ static int __igb_close(struct net_device *netdev, bool suspending)
->> 
->> int igb_close(struct net_device *netdev)
->> {
->> +       int err = 0;
->> +
->> +       mutex_lock(&igb_mutex);
->>        if (netif_device_present(netdev) || netdev->dismantle)
->> -               return __igb_close(netdev, false);
->> -       return 0;
->> +               err = __igb_close(netdev, false);
->> +       mutex_unlock(&igb_mutex);
->> +
->> +       return err;
->> }
->> 
-> 
-> Okay, so I am guessing the problem has something to do with the
-> addition of the netdev->dismantle test here and the fact that it is
-> bypassing the present check for the hotplug remove case?
-
-Please see the rationale above.
-
-> 
-> So it looks like nobody ever really reviewed commit 888f22931478
-> ("igb: Free IRQs when device is hotplugged"). What I would recommend
-> is reverting it and instead we fix the remaining pieces that need to
-> be addressed in igb so it more closely matches what we have in e1000e
-> after commit a7023819404a ("e1000e: Use rtnl_lock to prevent race
-> conditions between net and pci/pm"). From what I can tell the only
-> pieces that are really missing is to update igb_io_error_detected so
-> that in addition to igb_down it will call igb_free_irq, and then in
-> addition we should be wrapping most of the code in that function with
-> an rtnl_lock since it is detaching a device and making modifications
-> to it.
-
-In addition to that, igb_shutdown() indirectly calls igb_close() when netdev unregistering the device.
-
-My "only scratch the surface" approach is because I don't have a reproducer for commit "igb: close/suspend race in netif_device_detach", and I am afraid of breaking it.
-
-Kai-Heng
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
