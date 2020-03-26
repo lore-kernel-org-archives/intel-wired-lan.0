@@ -1,119 +1,112 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 26 Mar 2020 12:16:10 +0100
-Subject: [Intel-wired-lan] [PATCH] igb: Use a sperate mutex insead of
- rtnl_lock()
-In-Reply-To: <20200326103926.20888-1-kai.heng.feng@canonical.com>
-References: <20200326103926.20888-1-kai.heng.feng@canonical.com>
-Message-ID: <432c9705-7aca-d213-5c00-204ed2aeb9c9@molgen.mpg.de>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Thu, 26 Mar 2020 19:29:59 +0800
+Subject: [Intel-wired-lan] [PATCH] e1000e: bump up timeout to wait when
+ ME un-configure ULP mode
+In-Reply-To: <f9dc1980-fa8b-7df9-6460-b0944c7ebc43@molgen.mpg.de>
+References: <20200323191639.48826-1-aaron.ma@canonical.com>
+ <EC4F7F0B-90F8-4325-B170-84C65D8BBBB8@canonical.com>
+ <2c765c59-556e-266b-4d0d-a4602db94476@intel.com>
+ <899895bc-fb88-a97d-a629-b514ceda296d@canonical.com>
+ <750ad0ad-816a-5896-de2f-7e034d2a2508@intel.com>
+ <f9dc1980-fa8b-7df9-6460-b0944c7ebc43@molgen.mpg.de>
+Message-ID: <60A8493D-811B-4AD5-A8D3-82054B562A8C@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Kai-Heng,
+Hi Paul,
 
-
-Thank you.
-
-There is a small typo in the commit summary: s*epa*rate.
-
-Am 26.03.20 um 11:39 schrieb Kai-Heng Feng:
-> Commit 9474933caf21 ("igb: close/suspend race in netif_device_detach")
-> fixed race condition between close and power management ops by using
-> rtnl_lock().
+> On Mar 25, 2020, at 23:49, Paul Menzel <pmenzel@molgen.mpg.de> wrote:
 > 
-> This fix is a preparation for next patch, to prevent a dead lock under
-> rtnl_lock() when calling runtime resume routine.
-
-Do you refer with *this fix* to the referenced commit? Or do you mean 
-the patch you just sent?
-
-How can the issue be reproduced?
-
-> However, we can't use device_lock() in igb_close() because when module
-> is getting removed, the lock is already held for igb_remove(), and
-> igb_close() gets called during unregistering the netdev, hence causing a
-> deadlock. So let's introduce a new mutex so we don't cause a deadlock
-> with driver core or netdev core.
-
-Is there a bug report with more details?
-
-If this fixes a regression, please add the appropriate `Fixes:` tag.
-
-> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> ---
->   drivers/net/ethernet/intel/igb/igb_main.c | 19 +++++++++++++------
->   1 file changed, 13 insertions(+), 6 deletions(-)
+> Dear Linux folks,
 > 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index b46bff8fe056..dc7ed5dd216b 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -288,6 +288,8 @@ static const struct igb_reg_info igb_reg_info_tbl[] = {
->   	{}
->   };
->   
-> +static DEFINE_MUTEX(igb_mutex);
-> +
->   /* igb_regdump - register printout routine */
->   static void igb_regdump(struct e1000_hw *hw, struct igb_reg_info *reginfo)
->   {
-> @@ -4026,9 +4028,14 @@ static int __igb_close(struct net_device *netdev, bool suspending)
->   
->   int igb_close(struct net_device *netdev)
->   {
-> +	int err = 0;
-> +
-> +	mutex_lock(&igb_mutex);
->   	if (netif_device_present(netdev) || netdev->dismantle)
-> -		return __igb_close(netdev, false);
-> -	return 0;
-> +		err = __igb_close(netdev, false);
-> +	mutex_unlock(&igb_mutex);
-> +
-> +	return err;
->   }
->   
->   /**
-> @@ -8760,7 +8767,7 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
->   	u32 wufc = runtime ? E1000_WUFC_LNKC : adapter->wol;
->   	bool wake;
->   
-> -	rtnl_lock();
-> +	mutex_lock(&igb_mutex);
->   	netif_device_detach(netdev);
->   
->   	if (netif_running(netdev))
-> @@ -8769,7 +8776,7 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
->   	igb_ptp_suspend(adapter);
->   
->   	igb_clear_interrupt_scheme(adapter);
-> -	rtnl_unlock();
-> +	mutex_unlock(&igb_mutex);
->   
->   	status = rd32(E1000_STATUS);
->   	if (status & E1000_STATUS_LU)
-> @@ -8897,13 +8904,13 @@ static int __maybe_unused igb_resume(struct device *dev)
->   
->   	wr32(E1000_WUS, ~0);
->   
-> -	rtnl_lock();
-> +	mutex_lock(&igb_mutex);
->   	if (!err && netif_running(netdev))
->   		err = __igb_open(netdev, true);
->   
->   	if (!err)
->   		netif_device_attach(netdev);
-> -	rtnl_unlock();
-> +	mutex_unlock(&igb_mutex);
->   
->   	return err;
->   }
+> 
+> Am 25.03.20 um 14:58 schrieb Neftin, Sasha:
+>> On 3/25/2020 08:43, Aaron Ma wrote:
+> 
+>>> On 3/25/20 2:36 PM, Neftin, Sasha wrote:
+>>>> On 3/25/2020 06:17, Kai-Heng Feng wrote:
+> 
+>>>>>> On Mar 24, 2020, at 03:16, Aaron Ma <aaron.ma@canonical.com> wrote:
+>>>>>> 
+>>>>>> ME takes 2+ seconds to un-configure ULP mode done after resume
+>>>>>> from s2idle on some ThinkPad laptops.
+>>>>>> Without enough wait, reset and re-init will fail with error.
+>>>>> 
+>>>>> Thanks, this patch solves the issue. We can drop the DMI quirk in
+>>>>> favor of this patch.
+>>>>> 
+>>>>>> Fixes: f15bb6dde738cc8fa0 ("e1000e: Add support for S0ix")
+>>>>>> BugLink: https://bugs.launchpad.net/bugs/1865570
+>>>>>> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+>>>>>> ---
+>>>>>> drivers/net/ethernet/intel/e1000e/ich8lan.c | 4 ++--
+>>>>>> 1 file changed, 2 insertions(+), 2 deletions(-)
+>>>>>> 
+>>>>>> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>>>>> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>>>>> index b4135c50e905..147b15a2f8b3 100644
+>>>>>> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>>>>> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>>>>> @@ -1240,9 +1240,9 @@ static s32 e1000_disable_ulp_lpt_lp(struct
+>>>>>> e1000_hw *hw, bool force)
+>>>>>>              ew32(H2ME, mac_reg);
+>>>>>>          }
+>>>>>> 
+>>>>>> -        /* Poll up to 300msec for ME to clear ULP_CFG_DONE. */
+>>>>>> +        /* Poll up to 2.5sec for ME to clear ULP_CFG_DONE. */
+>>>>>>          while (er32(FWSM) & E1000_FWSM_ULP_CFG_DONE) {
+>>>>>> -            if (i++ == 30) {
+>>>>>> +            if (i++ == 250) {
+>>>>>>                  ret_val = -E1000_ERR_PHY;
+>>>>>>                  goto out;
+>>>>>>              }
+>>>>> 
+>>>>> The return value was not caught by the caller, so the error ends up
+>>>>> unnoticed.
+>>>>> Maybe let the caller check the return value of
+>>>>> e1000_disable_ulp_lpt_lp()?
+> 
+>>>> I a bit confused. In our previous conversation you told ME not running.
+>>>> let me shimming in. Increasing delay won't be solve the problem and just
+>>>> mask it. We need to understand why ME take too much time. What is
+>>>> problem with this specific system?
+>>>> So, basically no ME system should works for you.
+>>> 
+>>> Some laptops ME work that's why only reproduce issue on some laptops.
+>>> In this issue i219 is controlled by ME.
+>> 
+>> Who can explain - why ME required too much time on this system?
+>> Probably need work with ME/BIOS vendor and understand it.
+>> Delay will just mask the real problem - we need to find root cause.
+>>> Quirk is only for 1 model type. But issue is reproduced by more models.
+>>> So it won't work.
+> 
+> (Where is Aaron?s reply? It wasn?t delivered to me yet.)
+> 
+> As this is clearly a regression, please revert the commit for now, and then find a way to correctly implement S0ix support. Linux? regression policy demands that as no fix has been found since v5.5-rc1. Changing Intel ME settings, even if it would work around the issue, is not an acceptable solution. Delaying the resume time is also not a solution.
 
-The rest looks fine.
+The s0ix patch can reduce power consumption, finally makes S2idle an acceptable sleep method.
+So I'd say it's a fix, albeit a regression was introduced.
 
+> 
+> Regarding Intel Management Engine, only Intel knows what it does and what the error is, as the ME firmware is proprietary and closed.
+> 
+> Lastly, there is no way to fully disable the Intel Management Engine. The HAP stuff claims to stop the Intel ME execution, but nobody knows, if it?s successful.
+> 
+> Aaron, Kai-Hang, can you send the revert?
 
-Kind regards,
+I consider that as an important fix for s2idle, I don't think reverting is appropriate.
 
-Paul
+Kai-Heng
+
+> 
+> 
+> Kind regards,
+> 
+> Paul
+> 
+> 
+
