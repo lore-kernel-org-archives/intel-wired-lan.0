@@ -1,23 +1,19 @@
-From: David Miller <davem@davemloft.net>
-Date: Thu, 26 Mar 2020 19:31:40 -0700 (PDT)
-Subject: [Intel-wired-lan] [PATCH 1/2] igb: convert to use
- i2c_new_client_device()
-In-Reply-To: <20200326211001.13171-2-wsa+renesas@sang-engineering.com>
-References: <20200326211001.13171-1-wsa+renesas@sang-engineering.com>
- <20200326211001.13171-2-wsa+renesas@sang-engineering.com>
-Message-ID: <20200326.193140.518355155914627267.davem@davemloft.net>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Fri, 27 Mar 2020 11:15:00 +0800
+Subject: [Intel-wired-lan] Please drop "igb: Use device_lock() insead of
+ rtnl_lock()" "e1000e: Disable s0ix flow for X1 Carbon 7th"
+Message-ID: <79788C8C-D645-4D67-87E7-F02F15DC4DDE@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Date: Thu, 26 Mar 2020 22:09:59 +0100
+Hi Jeffrey,
 
-> Move away from the deprecated API and return the shiny new ERRPTR where
-> useful.
-> 
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+"igb: Use device_lock() insead of rtnl_lock()" caused a regression, and I am taking a different approach as Alexander suggested.
+"e1000e: Disable s0ix flow for X1 Carbon 7th" is superseded by "e1000e: bump up timeout to wait when ME un-configure ULP mode"
 
-Applied.
+So please drop both of them from dev-queue, thanks!
+
+Kai-Heng
