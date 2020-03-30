@@ -1,75 +1,82 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Fri, 6 Mar 2020 20:07:36 -0800
-Subject: [Intel-wired-lan] [PATCH] igc: Fix NFC queue redirection support
-In-Reply-To: <20200306235403.18751-1-andre.guedes@intel.com>
-References: <20200306235403.18751-1-andre.guedes@intel.com>
-Message-ID: <66f9198b-9cdb-441b-b2e1-1a4254971274@intel.com>
+From: syzbot <syzbot+89731ccb6fec15ce1c22@syzkaller.appspotmail.com>
+Date: Mon, 30 Mar 2020 06:51:18 -0700
+Subject: [Intel-wired-lan] kernel panic: smack: Failed to initialize cipso
+ DOI.
+Message-ID: <000000000000db448f05a212beea@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/6/2020 15:54, Andre Guedes wrote:
-> The support for ethtool Network Flow Classification (NFC) queue
-> redirection based on destination MAC address is currently broken in IGC.
-> For instance, if we add the following rule, matching frames aren't
-> enqueued on the expected rx queue.
-> 
-> $ ethtool -N IFNAME flow-type ether dst 3c:fd:fe:9e:7f:71 queue 2
-> 
-> The issue here is due to the fact that igc_rar_set_index() is missing
-> code to enable the queue selection feature from Receive Address High
-> (RAH) register. This patch adds the missing code and fixes the issue.
-> 
-> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> ---
->   drivers/net/ethernet/intel/igc/igc_defines.h |  5 ++++-
->   drivers/net/ethernet/intel/igc/igc_main.c    | 11 ++++++++---
->   2 files changed, 12 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-> index e5116337b68d..63d3d34763da 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_defines.h
-> +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-> @@ -63,8 +63,11 @@
->    * (RAR[15]) for our directed address used by controllers with
->    * manageability enabled, allowing us room for 15 multicast addresses.
->    */
-> +#define IGC_RAH_QSEL_MASK	0x000C0000
-> +#define IGC_RAH_QSEL_SHIFT	18
-> +#define IGC_RAH_QSEL_ENABLE	BIT(28)
->   #define IGC_RAH_AV		0x80000000 /* Receive descriptor valid */
-> -#define IGC_RAH_POOL_1		0x00040000
-> +
->   #define IGC_RAL_MAC_ADDR_LEN	4
->   #define IGC_RAH_MAC_ADDR_LEN	2
->   
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 025f2e439aef..49a0d0bff727 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -780,13 +780,18 @@ static void igc_rar_set_index(struct igc_adapter *adapter, u32 index)
->   	rar_low = le32_to_cpup((__le32 *)(addr));
->   	rar_high = le16_to_cpup((__le16 *)(addr + 4));
->   
-> +	if (adapter->mac_table[index].state & IGC_MAC_STATE_QUEUE_STEERING) {
-> +		u8 queue = adapter->mac_table[index].queue;
-> +		u32 qsel = IGC_RAH_QSEL_MASK & (queue << IGC_RAH_QSEL_SHIFT);
-> +
-> +		rar_high |= qsel;
-> +		rar_high |= IGC_RAH_QSEL_ENABLE;
-> +	}
-> +
->   	/* Indicate to hardware the Address is Valid. */
->   	if (adapter->mac_table[index].state & IGC_MAC_STATE_IN_USE) {
->   		if (is_valid_ether_addr(addr))
->   			rar_high |= IGC_RAH_AV;
-> -
-> -		rar_high |= IGC_RAH_POOL_1 <<
-> -			adapter->mac_table[index].queue;
->   	}
->   
->   	wr32(IGC_RAL(index), rar_low);
-> 
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+Hello,
+
+syzbot found the following crash on:
+
+HEAD commit:    1b649e0b Merge git://git.kernel.org/pub/scm/linux/kernel/g..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=14957099e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=4ac76c43beddbd9
+dashboard link: https://syzkaller.appspot.com/bug?extid=89731ccb6fec15ce1c22
+compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1202c375e00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1390bb03e00000
+
+The bug was bisected to:
+
+commit a9d2d53a788a9c5bc8a7d1b4ea7857b68e221357
+Author: Ken Cox <jkc@redhat.com>
+Date:   Tue Nov 15 19:00:37 2016 +0000
+
+    ixgbe: test for trust in macvlan adjustments for VF
+
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=13cb06f3e00000
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=102b06f3e00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=17cb06f3e00000
+
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+89731ccb6fec15ce1c22 at syzkaller.appspotmail.com
+Fixes: a9d2d53a788a ("ixgbe: test for trust in macvlan adjustments for VF")
+
+RSP: 002b:00007ffebd499a38 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007ffebd499a40 RCX: 00000000004404e9
+RDX: 0000000000000014 RSI: 0000000020000040 RDI: 0000000000000003
+RBP: 0000000000000004 R08: 0000000000000001 R09: 00007ffebd490031
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000401dd0
+R13: 0000000000401e60 R14: 0000000000000000 R15: 0000000000000000
+Kernel panic - not syncing: smack:  Failed to initialize cipso DOI.
+CPU: 1 PID: 7197 Comm: syz-executor480 Not tainted 5.6.0-rc7-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x1e9/0x30e lib/dump_stack.c:118
+ panic+0x264/0x7a0 kernel/panic.c:221
+ smk_cipso_doi+0x4d8/0x4e0 security/smack/smackfs.c:698
+ smk_write_doi+0x123/0x190 security/smack/smackfs.c:1595
+ __vfs_write+0xa7/0x710 fs/read_write.c:494
+ vfs_write+0x271/0x570 fs/read_write.c:558
+ ksys_write+0x115/0x220 fs/read_write.c:611
+ do_syscall_64+0xf3/0x1b0 arch/x86/entry/common.c:294
+ entry_SYSCALL_64_after_hwframe+0x49/0xbe
+RIP: 0033:0x4404e9
+Code: 18 89 d0 c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 0f 83 5b 14 fc ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007ffebd499a38 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007ffebd499a40 RCX: 00000000004404e9
+RDX: 0000000000000014 RSI: 0000000020000040 RDI: 0000000000000003
+RBP: 0000000000000004 R08: 0000000000000001 R09: 00007ffebd490031
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000401dd0
+R13: 0000000000401e60 R14: 0000000000000000 R15: 0000000000000000
+Kernel Offset: disabled
+Rebooting in 86400 seconds..
+
+
+---
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller at googlegroups.com.
+
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+syzbot can test patches for this bug, for details see:
+https://goo.gl/tpsmEJ#testing-patches
