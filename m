@@ -1,32 +1,46 @@
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Date: Tue, 31 Mar 2020 00:13:05 +0900
-Subject: [Intel-wired-lan] kernel panic: smack: Failed to initialize
- cipso DOI.
-In-Reply-To: <000000000000db448f05a212beea@google.com>
-References: <000000000000db448f05a212beea@google.com>
-Message-ID: <a293a766-4329-f6de-c8a9-1a5051217c45@I-love.SAKURA.ne.jp>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Mon, 30 Mar 2020 23:29:29 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v3 1/2] igc: Add support
+ for taprio offloading
+In-Reply-To: <20200214235203.3910513-2-vinicius.gomes@intel.com>
+References: <20200214235203.3910513-1-vinicius.gomes@intel.com>
+ <20200214235203.3910513-2-vinicius.gomes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722CFA6@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2020/03/30 22:51, syzbot wrote:
-> Hello,
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Vinicius Costa Gomes
+> Sent: Friday, February 14, 2020 3:52 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next-queue PATCH v3 1/2] igc: Add support for taprio
+> offloading
 > 
-> syzbot found the following crash on:
+> Adds support for translating taprio schedules into i225 cycles. This
+> will allow schedules to run in the hardware, making the schedules
+> enforcement more precise and saving CPU time.
 > 
-> HEAD commit:    1b649e0b Merge git://git.kernel.org/pub/scm/linux/kernel/g..
-> git tree:       upstream
-> console output: https://syzkaller.appspot.com/x/log.txt?x=14957099e00000
-> kernel config:  https://syzkaller.appspot.com/x/.config?x=4ac76c43beddbd9
-> dashboard link: https://syzkaller.appspot.com/bug?extid=89731ccb6fec15ce1c22
-> compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
-> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1202c375e00000
-> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1390bb03e00000
+> Right now, the only simple schedules are allowed, complex schedules are
+> rejected. "simple" in this context are schedules that each HW queue is
+> opened and closed only once in each cycle.
+> 
+> Changing schedules is still not supported as well.
+> 
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igc/Makefile      |   2 +-
+>  drivers/net/ethernet/intel/igc/igc.h         |   7 +
+>  drivers/net/ethernet/intel/igc/igc_defines.h |  12 ++
+>  drivers/net/ethernet/intel/igc/igc_main.c    | 113 +++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_regs.h    |  12 ++
+>  drivers/net/ethernet/intel/igc/igc_tsn.c     | 140 +++++++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_tsn.h     |   9 ++
+>  7 files changed, 294 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/net/ethernet/intel/igc/igc_tsn.c
+>  create mode 100644 drivers/net/ethernet/intel/igc/igc_tsn.h
+> 
 
-Wrong bisection. This is not a network / driver problem.
-There is a memory allocation fault injection prior to this panic.
-
-  [ T1576] FAULT_INJECTION: forcing a failure.
-  [ T1576] Kernel panic - not syncing: smack:  Failed to initialize cipso DOI.
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
