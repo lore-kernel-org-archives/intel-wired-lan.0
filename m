@@ -1,11 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 31 Mar 2020 19:59:20 +0000
-Subject: [Intel-wired-lan] [PATCH 03/12] igc: Change
- igc_add_mac_filter() returning value
-In-Reply-To: <20200318230102.36952-4-andre.guedes@intel.com>
+Date: Tue, 31 Mar 2020 19:59:57 +0000
+Subject: [Intel-wired-lan] [PATCH 04/12] igc: Fix igc_uc_unsync()
+In-Reply-To: <20200318230102.36952-5-andre.guedes@intel.com>
 References: <20200318230102.36952-1-andre.guedes@intel.com>
- <20200318230102.36952-4-andre.guedes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722DDA4@ORSMSX103.amr.corp.intel.com>
+ <20200318230102.36952-5-andre.guedes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722DDB8@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,22 +15,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Andre Guedes
 > Sent: Wednesday, March 18, 2020 4:01 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 03/12] igc: Change igc_add_mac_filter()
-> returning value
+> Subject: [Intel-wired-lan] [PATCH 04/12] igc: Fix igc_uc_unsync()
 > 
-> In case of success, igc_add_mac_filter() returns the index in
-> adapter->mac_table where the requested filter was added. This
-> information, however, is not used by any caller of that function.
-> In fact, callers have extra code just to handle this returning
-> index as 0 (success).
-> 
-> So this patch changes the function to return 0 on success instead,
-> and cleans up the extra code.
+> In case igc_del_mac_filter() returns error, that error is masked
+> since the functions always return 0 (success). This patch fixes
+> igc_uc_unsync() so it returns whatever value igc_del_mac_filter()
+> returns (0 on success, negative number on error).
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_ethtool.c | 2 --
->  drivers/net/ethernet/intel/igc/igc_main.c    | 7 ++-----
->  2 files changed, 2 insertions(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_main.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
