@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 31 Mar 2020 19:58:31 +0000
-Subject: [Intel-wired-lan] [PATCH 01/12] igc: Remove duplicate code in
- MAC filtering logic
-In-Reply-To: <20200318230102.36952-2-andre.guedes@intel.com>
+Date: Tue, 31 Mar 2020 19:58:57 +0000
+Subject: [Intel-wired-lan] [PATCH 02/12] igc: Check unsupported flag in
+ igc_add_mac_filter()
+In-Reply-To: <20200318230102.36952-3-andre.guedes@intel.com>
 References: <20200318230102.36952-1-andre.guedes@intel.com>
- <20200318230102.36952-2-andre.guedes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722DD7C@ORSMSX103.amr.corp.intel.com>
+ <20200318230102.36952-3-andre.guedes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722DD90@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,25 +16,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Andre Guedes
 > Sent: Wednesday, March 18, 2020 4:01 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 01/12] igc: Remove duplicate code in MAC
-> filtering logic
+> Subject: [Intel-wired-lan] [PATCH 02/12] igc: Check unsupported flag in
+> igc_add_mac_filter()
 > 
-> This patch does a code refactoring in the MAC address filtering logic to
-> get rid of some duplicate code.
-> 
-> IGC driver has two functions to add MAC address filters that are pretty
-> much the same: igc_add_mac_filter() and igc_add_mac_filter_flags(). The
-> only difference is that the latter allows the callee to specify the
-> 'flags' parameter while the former has it hardcoded as zero. The same
-> rationale applies to filter deletion counterparts.
-> 
-> So this patch refactors igc_add_mac_filter() and igc_del_mac_filter() so
-> they handle the 'flags' parameters, removes the _flags() functions, and
-> fixes callees accordingly.
+> The IGC_MAC_STATE_SRC_ADDR flags is not supported by igc_add_mac_
+> filter() so this patch adds a check for it and returns -ENOTSUPP
+> in case it is set.
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 112 +++-------------------
->  1 file changed, 13 insertions(+), 99 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_main.c | 2 ++
+>  1 file changed, 2 insertions(+)
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
