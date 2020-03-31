@@ -1,97 +1,40 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 31 Mar 2020 18:53:10 +0300
-Subject: [Intel-wired-lan] [PATCH 07/12] igc: Remove 'queue' check in
- igc_del_mac_filter()
-In-Reply-To: <20200318230102.36952-8-andre.guedes@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Tue, 31 Mar 2020 19:58:31 +0000
+Subject: [Intel-wired-lan] [PATCH 01/12] igc: Remove duplicate code in
+ MAC filtering logic
+In-Reply-To: <20200318230102.36952-2-andre.guedes@intel.com>
 References: <20200318230102.36952-1-andre.guedes@intel.com>
- <20200318230102.36952-8-andre.guedes@intel.com>
-Message-ID: <7d8b419b-a4e4-0222-c6b5-a6c422232ff7@intel.com>
+ <20200318230102.36952-2-andre.guedes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722DD7C@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/19/2020 01:00, Andre Guedes wrote:
-> igc_add_mac_filter() doesn't allow us to have more than one entry with
-> the same address and address type in adapter->mac_table so checking if
-> 'queue' matches in igc_del_mac_filter() isn't necessary. This patch
-> removes that check.
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Andre Guedes
+> Sent: Wednesday, March 18, 2020 4:01 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH 01/12] igc: Remove duplicate code in MAC
+> filtering logic
 > 
-> This patch also takes the opportunity to improve the igc_del_mac_filter
-> documentation and remove comment which is not applicable to this I225
-> controller.
+> This patch does a code refactoring in the MAC address filtering logic to
+> get rid of some duplicate code.
+> 
+> IGC driver has two functions to add MAC address filters that are pretty
+> much the same: igc_add_mac_filter() and igc_add_mac_filter_flags(). The
+> only difference is that the latter allows the callee to specify the
+> 'flags' parameter while the former has it hardcoded as zero. The same
+> rationale applies to filter deletion counterparts.
+> 
+> So this patch refactors igc_add_mac_filter() and igc_del_mac_filter() so
+> they handle the 'flags' parameters, removes the _flags() functions, and
+> fixes callees accordingly.
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_main.c | 27 ++++++++++-------------
->   1 file changed, 12 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index a71f1a5ca27c..8a3cae2367d4 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -2234,14 +2234,17 @@ static int igc_add_mac_filter(struct igc_adapter *adapter, const u8 *addr,
->   	return -ENOSPC;
->   }
->   
-> -/* Remove a MAC filter for 'addr' directing matching traffic to
-> - * 'queue', 'flags' is used to indicate what kind of match need to be
-> - * removed, match is by default for the destination address, if
-> - * matching by source address is to be removed the flag
-> - * IGC_MAC_STATE_SRC_ADDR can be used.
-> - */
-> +/* Delete MAC address filter from adapter.
-> + *
-> + * @adapter: Pointer to adapter where the filter should be deleted from.
-> + * @addr: MAC address.
-> + * @flags: Set IGC_MAC_STATE_SRC_ADDR bit to indicate @address is a source
-> + * address.
-> + *
-> + * In case of success, returns 0. Otherwise, it returns a negative errno code.
-Block comments should align the * on each line (please, remove one space 
-before *)
-> +  */ >   static int igc_del_mac_filter(struct igc_adapter *adapter, const u8 
-*addr,
-> -			      const u8 queue, const u8 flags)
-> +			      const u8 flags)
->   {
->   	struct igc_hw *hw = &adapter->hw;
->   	int rar_entries = hw->mac.rar_entry_count;
-> @@ -2250,17 +2253,11 @@ static int igc_del_mac_filter(struct igc_adapter *adapter, const u8 *addr,
->   	if (!is_valid_ether_addr(addr))
->   		return -EINVAL;
->   
-> -	/* Search for matching entry in the MAC table based on given address
-> -	 * and queue. Do not touch entries at the end of the table reserved
-> -	 * for the VF MAC addresses.
-> -	 */
->   	for (i = 0; i < rar_entries; i++) {
->   		if (!(adapter->mac_table[i].state & IGC_MAC_STATE_IN_USE))
->   			continue;
->   		if (flags && (adapter->mac_table[i].state & flags) != flags)
->   			continue;
-> -		if (adapter->mac_table[i].queue != queue)
-> -			continue;
->   		if (!ether_addr_equal(adapter->mac_table[i].addr, addr))
->   			continue;
->   
-> @@ -2296,7 +2293,7 @@ static int igc_uc_unsync(struct net_device *netdev, const unsigned char *addr)
->   {
->   	struct igc_adapter *adapter = netdev_priv(netdev);
->   
-> -	return igc_del_mac_filter(adapter, addr, adapter->num_rx_queues, 0);
-> +	return igc_del_mac_filter(adapter, addr, 0);
->   }
->   
->   /**
-> @@ -3741,7 +3738,7 @@ int igc_add_mac_steering_filter(struct igc_adapter *adapter,
->   int igc_del_mac_steering_filter(struct igc_adapter *adapter,
->   				const u8 *addr, u8 queue, u8 flags)
->   {
-> -	return igc_del_mac_filter(adapter, addr, queue,
-> +	return igc_del_mac_filter(adapter, addr,
->   				  IGC_MAC_STATE_QUEUE_STEERING | flags);
->   }
->   
-> 
+>  drivers/net/ethernet/intel/igc/igc_main.c | 112 +++-------------------
+>  1 file changed, 13 insertions(+), 99 deletions(-)
+
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
