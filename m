@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 31 Mar 2020 20:57:11 +0000
-Subject: [Intel-wired-lan] [PATCH 11/12] igc: Refactor
- igc_del_mac_filter()
-In-Reply-To: <20200318230102.36952-12-andre.guedes@intel.com>
+Date: Tue, 31 Mar 2020 20:57:36 +0000
+Subject: [Intel-wired-lan] [PATCH 12/12] igc: Add debug messages to MAC
+ filter code
+In-Reply-To: <20200318230102.36952-13-andre.guedes@intel.com>
 References: <20200318230102.36952-1-andre.guedes@intel.com>
- <20200318230102.36952-12-andre.guedes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722DF01@ORSMSX103.amr.corp.intel.com>
+ <20200318230102.36952-13-andre.guedes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722DF14@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,16 +16,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Andre Guedes
 > Sent: Wednesday, March 18, 2020 4:01 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 11/12] igc: Refactor igc_del_mac_filter()
+> Subject: [Intel-wired-lan] [PATCH 12/12] igc: Add debug messages to MAC filter
+> code
 > 
-> This patch does a code refactoring in igc_del_mac_filter() so it uses
-> the new helper igc_find_mac_filter() and improves the comment about the
-> special handling when deleting the default filter.
+> This patch adds log messages to functions related to the MAC address
+> filtering code to ease debugging.
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 45 ++++++++++-------------
->  1 file changed, 19 insertions(+), 26 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_main.c | 24 +++++++++++++++++++++--
+>  1 file changed, 22 insertions(+), 2 deletions(-)
 > 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
