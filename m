@@ -1,39 +1,31 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 31 Mar 2020 20:59:34 +0000
-Subject: [Intel-wired-lan] [PATCH 02/12] igc: Check unsupported flag in
- igc_add_mac_filter()
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B9722DD90@ORSMSX103.amr.corp.intel.com>
+From: Andre Guedes <andre.guedes@linux.intel.com>
+Date: Tue, 31 Mar 2020 14:12:12 -0700
+Subject: [Intel-wired-lan] [PATCH 05/12] igc: Refactor
+ igc_rar_set_index()
+In-Reply-To: <bddc690a-8d29-fb44-8b26-67c3cf9fdf80@intel.com>
 References: <20200318230102.36952-1-andre.guedes@intel.com>
- <20200318230102.36952-3-andre.guedes@intel.com>
- <309B89C4C689E141A5FF6A0C5FB2118B9722DD90@ORSMSX103.amr.corp.intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722DF36@ORSMSX103.amr.corp.intel.com>
+ <20200318230102.36952-6-andre.guedes@intel.com>
+ <bddc690a-8d29-fb44-8b26-67c3cf9fdf80@intel.com>
+Message-ID: <158568913295.84366.14895161973219728060@latran-mobl.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Brown, Aaron F
-> Sent: Tuesday, March 31, 2020 12:59 PM
-> To: Guedes, Andre <andre.guedes@intel.com>; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH 02/12] igc: Check unsupported flag in
-> igc_add_mac_filter()
-> 
-> > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> > Andre Guedes
-> > Sent: Wednesday, March 18, 2020 4:01 PM
-> > To: intel-wired-lan at lists.osuosl.org
-> > Subject: [Intel-wired-lan] [PATCH 02/12] igc: Check unsupported flag in
-> > igc_add_mac_filter()
-> >
-> > The IGC_MAC_STATE_SRC_ADDR flags is not supported by igc_add_mac_
-> > filter() so this patch adds a check for it and returns -ENOTSUPP
-> > in case it is set.
-> >
-> > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/igc/igc_main.c | 2 ++
-> >  1 file changed, 2 insertions(+)
+Quoting Neftin, Sasha (2020-03-31 04:22:12)
+> > -/**
+> > - * igc_rar_set_index - Sync RAL[index] and RAH[index] registers with MAC table
+> > - * @adapter: address of board private structure
+> > - * @index: Index of the RAR entry which need to be synced with MAC table
+> > +/* Set MAC address filter in hardware.
+> Small correction to be consistently. Please, keep /** line above method 
+> declaration line.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Yes, I can fix that. I thought we utilized kernel-doc style comments only for
+APIs, not local helper functions like this.
+
+@Jeff, what works better for your workflow, I send a v2 in-reply-to this patch
+or I send a v2 of the whole patchset?
+
+- Andre
