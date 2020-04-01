@@ -1,94 +1,186 @@
-From: Tsai, Rex <rex.tsai@intel.com>
-Date: Sun, 22 Mar 2020 00:10:15 +0000
-Subject: [Intel-wired-lan] [PATCH 1/1] e1000e: Disable s0ix flow for X1
- Carbon 7th
-In-Reply-To: <20200319052629.7282-1-kai.heng.feng@canonical.com>
-References: <20200319052629.7282-1-kai.heng.feng@canonical.com>
-Message-ID: <D83742F1B1819A43B1E71852F964BF245D763260@PGSMSX101.gar.corp.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 01 Apr 2020 13:17:45 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 52d03ca7a30cbad75206ebc7d5c2d113ea36798e
+Message-ID: <5e8423f9.mwg/k0s7Xu/5EbCR%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Kai-Heng,
-I will take over here. When do you have a chance to talk this issue next week?
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 52d03ca7a30cbad75206ebc7d5c2d113ea36798e  ice: Pass through communications to VF
 
-Rex Tsai | Intel Client LAN Engineer | +1 (503) 264-0517
+elapsed time: 516m
 
------Original Message-----
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Kai-Heng Feng
-Sent: Wednesday, March 18, 2020 10:26 PM
-To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Cc: open list:NETWORKING DRIVERS <netdev@vger.kernel.org>; Kai-Heng Feng <kai.heng.feng@canonical.com>; moderated list:INTEL ETHERNET DRIVERS <intel-wired-lan@lists.osuosl.org>; David S. Miller <davem@davemloft.net>; open list <linux-kernel@vger.kernel.org>
-Subject: [Intel-wired-lan] [PATCH 1/1] e1000e: Disable s0ix flow for X1 Carbon 7th
+configs tested: 160
+configs skipped: 0
 
-The s0ix flow makes X1 Carbon 7th can only run S2Idle for only once.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Temporarily disable it until Intel found a solution.
+arm64                            allyesconfig
+arm                              allyesconfig
+arm64                             allnoconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                               defconfig
+sparc                            allyesconfig
+mips                      malta_kvm_defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                             alldefconfig
+i386                                defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+ia64                             alldefconfig
+arm64                            allmodconfig
+arm                              allmodconfig
+nios2                         3c120_defconfig
+nios2                         10m50_defconfig
+c6x                        evmc6678_defconfig
+xtensa                          iss_defconfig
+c6x                              allyesconfig
+xtensa                       common_defconfig
+openrisc                 simple_smp_defconfig
+openrisc                    or1ksim_defconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                                defconfig
+alpha                               defconfig
+h8300                     edosk2674_defconfig
+h8300                    h8300h-sim_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+arc                                 defconfig
+arc                              allyesconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                          rhel-kconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+mips                      fuloong2e_defconfig
+mips                             allyesconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                           32r2_defconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                generic-64bit_defconfig
+parisc                generic-32bit_defconfig
+parisc                           allyesconfig
+x86_64               randconfig-a003-20200331
+x86_64               randconfig-a002-20200331
+i386                 randconfig-a001-20200331
+i386                 randconfig-a002-20200331
+i386                 randconfig-a003-20200331
+x86_64               randconfig-a001-20200331
+riscv                randconfig-a001-20200331
+mips                 randconfig-a001-20200331
+m68k                 randconfig-a001-20200331
+parisc               randconfig-a001-20200331
+alpha                randconfig-a001-20200331
+nds32                randconfig-a001-20200331
+c6x                  randconfig-a001-20200401
+h8300                randconfig-a001-20200401
+microblaze           randconfig-a001-20200401
+nios2                randconfig-a001-20200401
+sparc64              randconfig-a001-20200401
+microblaze           randconfig-a001-20200331
+h8300                randconfig-a001-20200331
+nios2                randconfig-a001-20200331
+c6x                  randconfig-a001-20200331
+sparc64              randconfig-a001-20200331
+csky                 randconfig-a001-20200331
+s390                 randconfig-a001-20200331
+xtensa               randconfig-a001-20200331
+openrisc             randconfig-a001-20200331
+sh                   randconfig-a001-20200331
+x86_64               randconfig-c001-20200401
+x86_64               randconfig-c002-20200401
+x86_64               randconfig-c003-20200401
+i386                 randconfig-c001-20200401
+i386                 randconfig-c002-20200401
+i386                 randconfig-c003-20200401
+i386                 randconfig-d003-20200331
+i386                 randconfig-d001-20200331
+i386                 randconfig-d002-20200331
+x86_64               randconfig-d001-20200331
+x86_64               randconfig-d002-20200331
+x86_64               randconfig-e001-20200331
+i386                 randconfig-e002-20200331
+x86_64               randconfig-e003-20200331
+i386                 randconfig-e003-20200331
+x86_64               randconfig-e002-20200331
+i386                 randconfig-e001-20200331
+i386                 randconfig-f001-20200401
+i386                 randconfig-f003-20200401
+x86_64               randconfig-f003-20200401
+x86_64               randconfig-f001-20200401
+i386                 randconfig-f002-20200401
+x86_64               randconfig-f002-20200401
+x86_64               randconfig-g002-20200331
+x86_64               randconfig-g003-20200331
+i386                 randconfig-g001-20200331
+i386                 randconfig-g002-20200331
+x86_64               randconfig-g001-20200331
+i386                 randconfig-g003-20200331
+x86_64               randconfig-h002-20200401
+i386                 randconfig-h002-20200401
+i386                 randconfig-h003-20200401
+i386                 randconfig-h001-20200401
+x86_64               randconfig-h001-20200401
+x86_64               randconfig-h003-20200401
+arm64                randconfig-a001-20200401
+sparc                randconfig-a001-20200401
+ia64                 randconfig-a001-20200401
+arc                  randconfig-a001-20200401
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+s390                       zfcpdump_defconfig
+s390                          debug_defconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                             alldefconfig
+s390                                defconfig
+sh                          rsk7269_defconfig
+sh                               allmodconfig
+sh                            titan_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+x86_64                                  kexec
 
-Link:
-https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20200316/0192
-22.html
-BugLink: https://bugs.launchpad.net/bugs/1865570
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
-b/drivers/net/ethernet/intel/e1000e/netdev.c
-index db4ea58bac82..3e090aa993ee 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -25,6 +25,7 @@
- #include <linux/pm_runtime.h>
- #include <linux/aer.h>
- #include <linux/prefetch.h>
-+#include <linux/dmi.h>
- 
- #include "e1000.h"
- 
-@@ -6843,6 +6844,17 @@ static int __e1000_resume(struct pci_dev *pdev)  }
- 
- #ifdef CONFIG_PM_SLEEP
-+static const struct dmi_system_id s0ix_blacklist[] = {
-+	{
-+		.ident = "LENOVO ThinkPad X1 Carbon 7th",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
-+			DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad X1 Carbon
-7th"),
-+		},
-+	},
-+	{}
-+};
-+
- static int e1000e_pm_suspend(struct device *dev)  {
- 	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev)); @@ -6860,7 +6872,7 @@ static int e1000e_pm_suspend(struct device *dev)
- 		e1000e_pm_thaw(dev);
- 
- 	/* Introduce S0ix implementation */
--	if (hw->mac.type >= e1000_pch_cnp)
-+	if (hw->mac.type >= e1000_pch_cnp &&
-!dmi_check_system(s0ix_blacklist))
- 		e1000e_s0ix_entry_flow(adapter);
- 
- 	return rc;
-@@ -6875,7 +6887,7 @@ static int e1000e_pm_resume(struct device *dev)
- 	int rc;
- 
- 	/* Introduce S0ix implementation */
--	if (hw->mac.type >= e1000_pch_cnp)
-+	if (hw->mac.type >= e1000_pch_cnp &&
-!dmi_check_system(s0ix_blacklist))
- 		e1000e_s0ix_exit_flow(adapter);
- 
- 	rc = __e1000_resume(pdev);
---
-2.17.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
