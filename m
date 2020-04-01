@@ -1,35 +1,67 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed,  1 Apr 2020 11:43:20 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove PCIe Control register
-Message-ID: <20200401084320.26165-1-sasha.neftin@intel.com>
+From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Date: Wed,  1 Apr 2020 12:16:44 +0300
+Subject: [Intel-wired-lan] [PATCH v1] igc: remove IGC_REMOVED function
+Message-ID: <20200401091644.5863-1-vitaly.lifshits@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-GCR (PCIe Control) register not in use and should be removed
-This patch clean up this register
+igc driver has leftovers from the previous device that supported
+virtualization. This can be found in the function IGC_REMOVED which
+became obsolete, and can be removed.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_regs.h | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_mac.h  | 4 ----
+ drivers/net/ethernet/intel/igc/igc_main.c | 3 ---
+ drivers/net/ethernet/intel/igc/igc_regs.h | 3 +--
+ 3 files changed, 1 insertion(+), 9 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.h b/drivers/net/ethernet/intel/igc/igc_mac.h
+index 832cccec87cd..b5963f86defb 100644
+--- a/drivers/net/ethernet/intel/igc/igc_mac.h
++++ b/drivers/net/ethernet/intel/igc/igc_mac.h
+@@ -8,10 +8,6 @@
+ #include "igc_phy.h"
+ #include "igc_defines.h"
+ 
+-#ifndef IGC_REMOVED
+-#define IGC_REMOVED(a) (0)
+-#endif /* IGC_REMOVED */
+-
+ /* forward declaration */
+ s32 igc_disable_pcie_master(struct igc_hw *hw);
+ s32 igc_check_for_copper_link(struct igc_hw *hw);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index c3555148ca0e..cb0d523ffc19 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -4662,9 +4662,6 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+ 	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
+ 	u32 value = 0;
+ 
+-	if (IGC_REMOVED(hw_addr))
+-		return ~value;
+-
+ 	value = readl(&hw_addr[reg]);
+ 
+ 	/* reads should not return all F's */
 diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-index 96dee3c1a5f7..0d227c6e79d2 100644
+index 82158176634c..21b6fc42edbb 100644
 --- a/drivers/net/ethernet/intel/igc/igc_regs.h
 +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-@@ -37,9 +37,6 @@
- #define IGC_FCRTV		0x02460  /* FC Refresh Timer Value - RW */
- #define IGC_FCSTS		0x02464  /* FC Status - RO */
+@@ -277,8 +277,7 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg);
+ #define wr32(reg, val) \
+ do { \
+ 	u8 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
+-	if (!IGC_REMOVED(hw_addr)) \
+-		writel((val), &hw_addr[(reg)]); \
++	writel((val), &hw_addr[(reg)]); \
+ } while (0)
  
--/* PCIe Register Description */
--#define IGC_GCR			0x05B00  /* PCIe control- RW */
--
- /* Semaphore registers */
- #define IGC_SW_FW_SYNC		0x05B5C  /* SW-FW Synchronization - RW */
- #define IGC_SWSM		0x05B50  /* SW Semaphore */
+ #define rd32(reg) (igc_rd32(hw, reg))
 -- 
 2.11.0
 
