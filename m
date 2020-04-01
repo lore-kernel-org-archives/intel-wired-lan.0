@@ -1,67 +1,38 @@
-From: Vitaly Lifshits <vitaly.lifshits@intel.com>
-Date: Wed,  1 Apr 2020 12:16:44 +0300
-Subject: [Intel-wired-lan] [PATCH v1] igc: remove IGC_REMOVED function
-Message-ID: <20200401091644.5863-1-vitaly.lifshits@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed,  1 Apr 2020 14:38:44 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Clean up obsolete NVM defines
+Message-ID: <20200401113844.17969-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-igc driver has leftovers from the previous device that supported
-virtualization. This can be found in the function IGC_REMOVED which
-became obsolete, and can be removed.
+Packet buffer allocation, reserved word and pointer guard
+not applicable for i225 parts.
+This patch comes to clean up these obsolete defines
 
-Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_mac.h  | 4 ----
- drivers/net/ethernet/intel/igc/igc_main.c | 3 ---
- drivers/net/ethernet/intel/igc/igc_regs.h | 3 +--
- 3 files changed, 1 insertion(+), 9 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_defines.h | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.h b/drivers/net/ethernet/intel/igc/igc_mac.h
-index 832cccec87cd..b5963f86defb 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.h
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.h
-@@ -8,10 +8,6 @@
- #include "igc_phy.h"
- #include "igc_defines.h"
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index dd0c86ce09ed..eda4510dd90e 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -163,11 +163,6 @@
  
--#ifndef IGC_REMOVED
--#define IGC_REMOVED(a) (0)
--#endif /* IGC_REMOVED */
+ /* For checksumming, the sum of all words in the NVM should equal 0xBABA. */
+ #define NVM_SUM				0xBABA
 -
- /* forward declaration */
- s32 igc_disable_pcie_master(struct igc_hw *hw);
- s32 igc_check_for_copper_link(struct igc_hw *hw);
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index c3555148ca0e..cb0d523ffc19 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -4662,9 +4662,6 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
- 	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
- 	u32 value = 0;
+-#define NVM_PBA_OFFSET_0		8
+-#define NVM_PBA_OFFSET_1		9
+-#define NVM_RESERVED_WORD		0xFFFF
+-#define NVM_PBA_PTR_GUARD		0xFAFA
+ #define NVM_WORD_SIZE_BASE_SHIFT	6
  
--	if (IGC_REMOVED(hw_addr))
--		return ~value;
--
- 	value = readl(&hw_addr[reg]);
- 
- 	/* reads should not return all F's */
-diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-index 82158176634c..21b6fc42edbb 100644
---- a/drivers/net/ethernet/intel/igc/igc_regs.h
-+++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-@@ -277,8 +277,7 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg);
- #define wr32(reg, val) \
- do { \
- 	u8 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
--	if (!IGC_REMOVED(hw_addr)) \
--		writel((val), &hw_addr[(reg)]); \
-+	writel((val), &hw_addr[(reg)]); \
- } while (0)
- 
- #define rd32(reg) (igc_rd32(hw, reg))
+ /* Collision related configuration parameters */
 -- 
 2.11.0
 
