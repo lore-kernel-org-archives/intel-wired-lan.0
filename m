@@ -1,75 +1,85 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 2 Apr 2020 09:19:25 +0300
-Subject: [Intel-wired-lan] [PATCH v1] igc: remove IGC_REMOVED function
-In-Reply-To: <08d29d85-9f5b-f97b-d6dc-9346b5844beb@intel.com>
-References: <20200401091644.5863-1-vitaly.lifshits@intel.com>
- <08d29d85-9f5b-f97b-d6dc-9346b5844beb@intel.com>
-Message-ID: <1c5fb458-dd3e-e488-b63d-71268a878e35@intel.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 2 Apr 2020 14:31:41 +0200
+Subject: [Intel-wired-lan] [PATCH] e1000e: bump up timeout to wait when
+ ME un-configure ULP mode
+In-Reply-To: <20200323191639.48826-1-aaron.ma@canonical.com>
+References: <20200323191639.48826-1-aaron.ma@canonical.com>
+Message-ID: <4f9f1ad0-e66a-d3c8-b152-209e9595e5d7@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/2/2020 09:16, Neftin, Sasha wrote:
-> On 4/1/2020 12:16, Vitaly Lifshits wrote:
->> igc driver has leftovers from the previous device that supported
->> virtualization. This can be found in the function IGC_REMOVED which
->> became obsolete, and can be removed.
->>
->> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
->> ---
->> ? drivers/net/ethernet/intel/igc/igc_mac.h? | 4 ----
->> ? drivers/net/ethernet/intel/igc/igc_main.c | 3 ---
->> ? drivers/net/ethernet/intel/igc/igc_regs.h | 3 +--
->> ? 3 files changed, 1 insertion(+), 9 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/igc/igc_mac.h 
->> b/drivers/net/ethernet/intel/igc/igc_mac.h
->> index 832cccec87cd..b5963f86defb 100644
->> --- a/drivers/net/ethernet/intel/igc/igc_mac.h
->> +++ b/drivers/net/ethernet/intel/igc/igc_mac.h
->> @@ -8,10 +8,6 @@
->> ? #include "igc_phy.h"
->> ? #include "igc_defines.h"
->> -#ifndef IGC_REMOVED
->> -#define IGC_REMOVED(a) (0)
->> -#endif /* IGC_REMOVED */
->> -
->> ? /* forward declaration */
->> ? s32 igc_disable_pcie_master(struct igc_hw *hw);
->> ? s32 igc_check_for_copper_link(struct igc_hw *hw);
->> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c 
->> b/drivers/net/ethernet/intel/igc/igc_main.c
->> index c3555148ca0e..cb0d523ffc19 100644
->> --- a/drivers/net/ethernet/intel/igc/igc_main.c
->> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
->> @@ -4662,9 +4662,6 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
->> ????? u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
->> ????? u32 value = 0;
->> -??? if (IGC_REMOVED(hw_addr))
->> -??????? return ~value;
->> -
->> ????? value = readl(&hw_addr[reg]);
->> ????? /* reads should not return all F's */
->> diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h 
->> b/drivers/net/ethernet/intel/igc/igc_regs.h
->> index 82158176634c..21b6fc42edbb 100644
->> --- a/drivers/net/ethernet/intel/igc/igc_regs.h
->> +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
->> @@ -277,8 +277,7 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg);
->> ? #define wr32(reg, val) \
->> ? do { \
->> ????? u8 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
->> -??? if (!IGC_REMOVED(hw_addr)) \
->> -??????? writel((val), &hw_addr[(reg)]); \
->> +??? writel((val), &hw_addr[(reg)]); \
->> ? } while (0)
->> ? #define rd32(reg) (igc_rd32(hw, reg))
->>
-> Acked-by: Sasha Neftin <sasha.neftin@intel.com>
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Hi,
+
+On 3/23/20 8:16 PM, Aaron Ma wrote:
+> ME takes 2+ seconds to un-configure ULP mode done after resume
+> from s2idle on some ThinkPad laptops.
+> Without enough wait, reset and re-init will fail with error.
+> 
+> Fixes: f15bb6dde738cc8fa0 ("e1000e: Add support for S0ix")
+> BugLink: https://bugs.launchpad.net/bugs/1865570
+> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+
+I have been testing this bug because this is being reported against
+Fedora 32 too:
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1816621
+
+I can confirm that this patch fixes the problem of both
+a X1 7th gen as a X1 8th gen no longer suspending after
+a suspend resume cycle.
+
+Not only does it fix that, before this patch the kernel
+would regularly log the following error on these laptops
+independent of suspend/resume activity:
+
+e1000e 0000:00:1f.6 enp0s31f6: Hardware Error
+
+These messages are now also gone. So it seems that the timeout
+is really just too short.
+
+I can agree that it would be good to better understand this;
+and/or to get the ME firmware fixed to not take so long.
+
+But in my experience when dealing with e.g. embedded-controller
+in various laptops sometimes the firmware of these devives
+simply just takes a long time for certain things.
+
+This fix fixes a real problem, on a popular model laptop
+and since it just extends a timeout it is a pretty harmless
+(no chance of regressions) fix. As such since there seems
+to be no other solution in sight, can we please move forward
+with this fix for now ?
+
+Regards,
+
+Hans
+
+
+
+
+
+> ---
+>   drivers/net/ethernet/intel/e1000e/ich8lan.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> index b4135c50e905..147b15a2f8b3 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> @@ -1240,9 +1240,9 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
+>   			ew32(H2ME, mac_reg);
+>   		}
+>   
+> -		/* Poll up to 300msec for ME to clear ULP_CFG_DONE. */
+> +		/* Poll up to 2.5sec for ME to clear ULP_CFG_DONE. */
+>   		while (er32(FWSM) & E1000_FWSM_ULP_CFG_DONE) {
+> -			if (i++ == 30) {
+> +			if (i++ == 250) {
+>   				ret_val = -E1000_ERR_PHY;
+>   				goto out;
+>   			}
+> 
 
