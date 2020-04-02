@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 2 Apr 2020 03:33:17 +0000
-Subject: [Intel-wired-lan] [PATCH 01/10] igc: Use netdev log helpers in
- igc_main.c
-In-Reply-To: <20200325003824.5487-2-andre.guedes@intel.com>
+Date: Thu, 2 Apr 2020 03:35:37 +0000
+Subject: [Intel-wired-lan] [PATCH 02/10] igc: Use netdev log helpers in
+ igc_ethtool.c
+In-Reply-To: <20200325003824.5487-3-andre.guedes@intel.com>
 References: <20200325003824.5487-1-andre.guedes@intel.com>
- <20200325003824.5487-2-andre.guedes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722EBDE@ORSMSX103.amr.corp.intel.com>
+ <20200325003824.5487-3-andre.guedes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722EBF3@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,24 +16,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Andre Guedes
 > Sent: Tuesday, March 24, 2020 5:38 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 01/10] igc: Use netdev log helpers in
-> igc_main.c
+> Subject: [Intel-wired-lan] [PATCH 02/10] igc: Use netdev log helpers in
+> igc_ethtool.c
 > 
-> In igc_main.c we print log messages using both dev_* and netdev_*
-> helpers, generating inconsistent output. Since this is a network device
-> driver, we should preferably use netdev_* helpers because they append
-> the interface name to the message, helping making sense out of the logs.
+> In igc_ethtool.c we print log messages using dev_* helpers, generating
+> inconsistent output with the rest of the driver. Since this is a network
+> device driver, we should preferably use netdev_* helpers because they
+> append the interface name to the message, helping making sense the of
+> the logs.
 > 
-> This patch converts all dev_* calls to netdev_*. There is only two
-> exceptions: one in igc_probe (net_device has not been allocated yet),
-> and another one in igc_init_module (module initialization). It also
-> takes this opportunity to improve some messages and remove the '\n'
-> character at the end of messages since it is automatically added to by
-> netdev_* log helpers.
+> This patch converts all dev_* calls to netdev_*. It also takes this
+> opportunity to remove the '\n' character at the end of messages since it
+> is automatically added by netdev_* log helpers.
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 129 ++++++++++------------
->  1 file changed, 59 insertions(+), 70 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_ethtool.c | 48 +++++++++-----------
+>  1 file changed, 22 insertions(+), 26 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
