@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 2 Apr 2020 03:41:10 +0000
-Subject: [Intel-wired-lan] [PATCH 05/10] igc: Use netdev log helpers in
- igc_base.c
-In-Reply-To: <20200325003824.5487-6-andre.guedes@intel.com>
+Date: Thu, 2 Apr 2020 03:42:51 +0000
+Subject: [Intel-wired-lan] [PATCH 06/10] igc: Use netdev log helpers in
+ igc_diag.c
+In-Reply-To: <20200325003824.5487-7-andre.guedes@intel.com>
 References: <20200325003824.5487-1-andre.guedes@intel.com>
- <20200325003824.5487-6-andre.guedes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722EC34@ORSMSX103.amr.corp.intel.com>
+ <20200325003824.5487-7-andre.guedes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722EC48@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,19 +16,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Andre Guedes
 > Sent: Tuesday, March 24, 2020 5:38 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 05/10] igc: Use netdev log helpers in
-> igc_base.c
+> Subject: [Intel-wired-lan] [PATCH 06/10] igc: Use netdev log helpers in
+> igc_diag.c
 > 
-> This patch coverts one pr_debug() call to hw_dbg() in order to keep log
-> output aligned with the rest of the driver. hw_dbg() is actually a macro
-> defined in igc_hw.h that expands to netdev_dbg().
+> In igc_diag.c we print log messages using dev_* helpers, generating
+> inconsistent output with the rest of the driver. Since this is a network
+> device driver, we should preferably use netdev_* helpers because they
+> append the interface name to the message, helping making sense out of
+> the logs.
 > 
-> It also takes this opportunity to remove the '\n' character at the end
-> of messages since it is automatically added to by netdev_dbg().
+> This patch converts all dev_* calls to netdev_*. It also takes this
+> opportunity to remove the '\n' character at the end of messages since it
+> is automatically added by netdev_* log helpers.
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_base.c | 16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_diag.c | 22 +++++++++++-----------
+>  1 file changed, 11 insertions(+), 11 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
