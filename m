@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 2 Apr 2020 03:42:51 +0000
-Subject: [Intel-wired-lan] [PATCH 06/10] igc: Use netdev log helpers in
- igc_diag.c
-In-Reply-To: <20200325003824.5487-7-andre.guedes@intel.com>
+Date: Thu, 2 Apr 2020 03:44:49 +0000
+Subject: [Intel-wired-lan] [PATCH 07/10] igc: Remove '\n' from log
+ strings in igc_i225.c
+In-Reply-To: <20200325003824.5487-8-andre.guedes@intel.com>
 References: <20200325003824.5487-1-andre.guedes@intel.com>
- <20200325003824.5487-7-andre.guedes@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722EC48@ORSMSX103.amr.corp.intel.com>
+ <20200325003824.5487-8-andre.guedes@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B9722EC5E@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,22 +16,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Andre Guedes
 > Sent: Tuesday, March 24, 2020 5:38 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 06/10] igc: Use netdev log helpers in
-> igc_diag.c
+> Subject: [Intel-wired-lan] [PATCH 07/10] igc: Remove '\n' from log strings in
+> igc_i225.c
 > 
-> In igc_diag.c we print log messages using dev_* helpers, generating
-> inconsistent output with the rest of the driver. Since this is a network
-> device driver, we should preferably use netdev_* helpers because they
-> append the interface name to the message, helping making sense out of
-> the logs.
+> To keep log strings in igc_i225.c consistent with the rest of the driver
+> code, this patch removes the '\n' character at the end. The newline
+> character is automatically added by netdev_dbg() so there is no changes
+> in the output.
 > 
-> This patch converts all dev_* calls to netdev_*. It also takes this
-> opportunity to remove the '\n' character at the end of messages since it
-> is automatically added by netdev_* log helpers.
+> Note: hw_dbg() is a macro that expands to netdev_dbg().
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_diag.c | 22 +++++++++++-----------
+>  drivers/net/ethernet/intel/igc/igc_i225.c | 22 +++++++++++-----------
 >  1 file changed, 11 insertions(+), 11 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
