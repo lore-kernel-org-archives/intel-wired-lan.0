@@ -1,204 +1,44 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Fri,  3 Apr 2020 11:17:43 -0700
-Subject: [Intel-wired-lan] [PATCH 4/4] igc: Refactor VLAN priority filtering
- code
+Date: Fri,  3 Apr 2020 11:17:42 -0700
+Subject: [Intel-wired-lan] [PATCH 3/4] igc: Return -EOPNOTSUPP when VLAN
+ mask doesn't match
 In-Reply-To: <20200403181743.23447-1-andre.guedes@intel.com>
 References: <20200403181743.23447-1-andre.guedes@intel.com>
-Message-ID: <20200403181743.23447-5-andre.guedes@intel.com>
+Message-ID: <20200403181743.23447-4-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The whole VLAN priority filtering code is implemented in igc_ethtool.c
-and mixes logic from ethtool and core parts. This patch refactors it so
-core logic is moved to igc_main.c, aligning the VLAN priority filtering
-code organization with the MAC address filtering code.
+The I225 controller supports rx queue assignment based on VLAN priority
+only. Other Tag Control Information (TCI) are valid, but not supported
+by the driver. So this patch changes the returning code from igc_add_
+ethtool_nfc_entry() to -EOPNOTSUPP in order to provide more meaningful
+information on why the function failed.
 
-This patch also takes the opportunity to add some log messages to ease
-debugging.
+It also adds a debug messages to give the user a hint about what went
+wrong with the NFC setup.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h         |  3 +
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 64 ++++----------------
- drivers/net/ethernet/intel/igc/igc_main.c    | 52 ++++++++++++++++
- 3 files changed, 68 insertions(+), 51 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 1b07e8b870c2..48eb9c00a44d 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -235,6 +235,9 @@ int igc_add_mac_filter(struct igc_adapter *adapter, const u8 *addr,
- 		       const s8 queue, const u8 flags);
- int igc_del_mac_filter(struct igc_adapter *adapter, const u8 *addr,
- 		       const u8 flags);
-+int igc_add_vlan_prio_filter(struct igc_adapter *adapter, int prio,
-+			     int queue);
-+void igc_del_vlan_prio_filter(struct igc_adapter *adapter, int prio);
- void igc_update_stats(struct igc_adapter *adapter);
- 
- /* igc_dump declarations */
 diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 036a2244b76c..35bc125183a0 100644
+index dfc21908347d..036a2244b76c 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1223,35 +1223,6 @@ static int igc_rxnfc_write_etype_filter(struct igc_adapter *adapter,
- 	return 0;
- }
+@@ -1446,7 +1446,8 @@ static int igc_add_ethtool_nfc_entry(struct igc_adapter *adapter,
  
--static int igc_rxnfc_write_vlan_prio_filter(struct igc_adapter *adapter,
--					    struct igc_nfc_filter *input)
--{
--	struct igc_hw *hw = &adapter->hw;
--	u8 vlan_priority;
--	u16 queue_index;
--	u32 vlapqf;
--
--	vlapqf = rd32(IGC_VLANPQF);
--	vlan_priority = (ntohs(input->filter.vlan_tci) & VLAN_PRIO_MASK)
--				>> VLAN_PRIO_SHIFT;
--	queue_index = (vlapqf >> (vlan_priority * 4)) & IGC_VLANPQF_QUEUE_MASK;
--
--	/* check whether this vlan prio is already set */
--	if (vlapqf & IGC_VLANPQF_VALID(vlan_priority) &&
--	    queue_index != input->action) {
--		netdev_err(adapter->netdev,
--			   "ethtool rxnfc set vlan prio filter failed");
--		return -EEXIST;
--	}
--
--	vlapqf |= IGC_VLANPQF_VALID(vlan_priority);
--	vlapqf |= IGC_VLANPQF_QSEL(vlan_priority, input->action);
--
--	wr32(IGC_VLANPQF, vlapqf);
--
--	return 0;
--}
--
- int igc_add_filter(struct igc_adapter *adapter, struct igc_nfc_filter *input)
- {
- 	struct igc_hw *hw = &adapter->hw;
-@@ -1285,10 +1256,15 @@ int igc_add_filter(struct igc_adapter *adapter, struct igc_nfc_filter *input)
- 			return err;
- 	}
- 
--	if (input->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI)
--		err = igc_rxnfc_write_vlan_prio_filter(adapter, input);
-+	if (input->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
-+		int prio = (ntohs(input->filter.vlan_tci) & VLAN_PRIO_MASK)
-+				>> VLAN_PRIO_SHIFT;
-+		err = igc_add_vlan_prio_filter(adapter, prio, input->action);
-+		if (err)
-+			return err;
-+	}
- 
--	return err;
-+	return 0;
- }
- 
- static void igc_clear_etype_filter_regs(struct igc_adapter *adapter,
-@@ -1306,31 +1282,17 @@ static void igc_clear_etype_filter_regs(struct igc_adapter *adapter,
- 	adapter->etype_bitmap[reg_index] = false;
- }
- 
--static void igc_clear_vlan_prio_filter(struct igc_adapter *adapter,
--				       u16 vlan_tci)
--{
--	struct igc_hw *hw = &adapter->hw;
--	u8 vlan_priority;
--	u32 vlapqf;
--
--	vlan_priority = (vlan_tci & VLAN_PRIO_MASK) >> VLAN_PRIO_SHIFT;
--
--	vlapqf = rd32(IGC_VLANPQF);
--	vlapqf &= ~IGC_VLANPQF_VALID(vlan_priority);
--	vlapqf &= ~IGC_VLANPQF_QSEL(vlan_priority, IGC_VLANPQF_QUEUE_MASK);
--
--	wr32(IGC_VLANPQF, vlapqf);
--}
--
- int igc_erase_filter(struct igc_adapter *adapter, struct igc_nfc_filter *input)
- {
- 	if (input->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE)
- 		igc_clear_etype_filter_regs(adapter,
- 					    input->etype_reg_index);
- 
--	if (input->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI)
--		igc_clear_vlan_prio_filter(adapter,
--					   ntohs(input->filter.vlan_tci));
-+	if (input->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
-+		int prio = (ntohs(input->filter.vlan_tci) & VLAN_PRIO_MASK)
-+				>> VLAN_PRIO_SHIFT;
-+		igc_del_vlan_prio_filter(adapter, prio);
-+	}
- 
- 	if (input->filter.match_flags & IGC_FILTER_FLAG_SRC_MAC_ADDR)
- 		igc_del_mac_filter(adapter, input->filter.src_addr,
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index c3555148ca0e..70f861b418b2 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2315,6 +2315,58 @@ int igc_del_mac_filter(struct igc_adapter *adapter, const u8 *addr,
- 	return 0;
- }
- 
-+/**
-+ * igc_add_vlan_prio_filter() - Add VLAN priority filter.
-+ * @adapter: Pointer to adapter where the filter should be added.
-+ * @prio: VLAN priority value.
-+ * @queue: Queue number which matching frames are assigned to.
-+ *
-+ * Return: 0 in case of success, negative errno code otherwise.
-+ */
-+int igc_add_vlan_prio_filter(struct igc_adapter *adapter, int prio, int queue)
-+{
-+	struct net_device *dev = adapter->netdev;
-+	struct igc_hw *hw = &adapter->hw;
-+	u32 vlanpqf;
-+
-+	vlanpqf = rd32(IGC_VLANPQF);
-+
-+	if (vlanpqf & IGC_VLANPQF_VALID(prio)) {
-+		netdev_dbg(dev, "VLAN priority filter already in use");
-+		return -EEXIST;
-+	}
-+
-+	vlanpqf |= IGC_VLANPQF_QSEL(prio, queue);
-+	vlanpqf |= IGC_VLANPQF_VALID(prio);
-+
-+	wr32(IGC_VLANPQF, vlanpqf);
-+
-+	netdev_dbg(dev, "Add VLAN priority filter: prio %d queue %d",
-+		   prio, queue);
-+	return 0;
-+}
-+
-+/**
-+ * igc_del_vlan_prio_filter() - Delete VLAN priority filter.
-+ * @adapter: Pointer to adapter where the filter should be deleted from.
-+ * @prio: VLAN priority value.
-+ */
-+void igc_del_vlan_prio_filter(struct igc_adapter *adapter, int prio)
-+{
-+	struct igc_hw *hw = &adapter->hw;
-+	u32 vlanpqf;
-+
-+	vlanpqf = rd32(IGC_VLANPQF);
-+
-+	vlanpqf &= ~IGC_VLANPQF_VALID(prio);
-+	vlanpqf |= ~IGC_VLANPQF_QSEL(prio, 0);
-+
-+	wr32(IGC_VLANPQF, vlanpqf);
-+
-+	netdev_dbg(adapter->netdev, "Delete VLAN priority filter: prio %d",
-+		   prio);
-+}
-+
- static int igc_uc_sync(struct net_device *netdev, const unsigned char *addr)
- {
- 	struct igc_adapter *adapter = netdev_priv(netdev);
+ 	if ((fsp->flow_type & FLOW_EXT) && fsp->m_ext.vlan_tci) {
+ 		if (fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK)) {
+-			err = -EINVAL;
++			netdev_dbg(netdev, "VLAN mask not supported");
++			err = -EOPNOTSUPP;
+ 			goto err_out;
+ 		}
+ 		input->filter.vlan_tci = fsp->h_ext.vlan_tci;
 -- 
 2.26.0
 
