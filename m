@@ -1,250 +1,208 @@
-From: Rafael J. Wysocki <rjw@rjwysocki.net>
-Date: Sat, 18 Apr 2020 18:53:01 +0200
-Subject: [Intel-wired-lan] [PATCH v2 7/9] PM: sleep: core: Rename
- DPM_FLAG_NEVER_SKIP
-In-Reply-To: <5673945.BT02kTCndr@kreacher>
-References: <1888197.j9z7NJ8yPn@kreacher> <5673945.BT02kTCndr@kreacher>
-Message-ID: <2011970.oZpq0QmfcQ@kreacher>
+From: Kevin Newman <knewman@peak6.com>
+Date: Mon, 6 Apr 2020 15:22:22 +0000
+Subject: [Intel-wired-lan] X550 + ixgbe Reporting "ECC Err" With Strange
+ Regularity...
+Message-ID: <MWHPR2201MB1727D9040A0A395978363BB0E9C20@MWHPR2201MB1727.namprd22.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Hi,
 
-Rename DPM_FLAG_NEVER_SKIP to DPM_FLAG_NO_DIRECT_COMPLETE which
-matches its purpose more closely.
+I'm seeing a strangely high incidence of the following type of "ECC error" on X550 NICs running ixgbe 5.1.0 via kernel 4.15.0:
 
-No functional impact.
+2020-04-06T08:35:16.077662-05:00 dell-server1 kernel: [155528.916479] ixgbe 0000:19:00.1 eno2: Received ECC Err, initiating reset
+2020-04-06T08:35:16.077684-05:00 dell-server1 kernel: [155528.916480] ixgbe 0000:19:00.0 eno1: Received ECC Err, initiating reset
+2020-04-06T08:35:16.077685-05:00 dell-server1 kernel: [155528.916491] ixgbe 0000:19:00.0 eno1: Reset adapter
+2020-04-06T08:35:16.090422-05:00 dell-server1 kernel: [155528.930407] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 0 not cleared within the polling period
+2020-04-06T08:35:16.090439-05:00 dell-server1 kernel: [155528.930572] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 1 not cleared within the polling period
+2020-04-06T08:35:16.090440-05:00 dell-server1 kernel: [155528.930721] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 2 not cleared within the polling period
+2020-04-06T08:35:16.090440-05:00 dell-server1 kernel: [155528.930877] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 3 not cleared within the polling period
+2020-04-06T08:35:16.090442-05:00 dell-server1 kernel: [155528.931032] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 4 not cleared within the polling period
+2020-04-06T08:35:16.090443-05:00 dell-server1 kernel: [155528.931188] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 5 not cleared within the polling period
+2020-04-06T08:35:16.094301-05:00 dell-server1 kernel: [155528.933193] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 6 not cleared within the polling period
+2020-04-06T08:35:16.094319-05:00 dell-server1 kernel: [155528.935148] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 7 not cleared within the polling period
+2020-04-06T08:35:16.098055-05:00 dell-server1 kernel: [155528.937064] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 8 not cleared within the polling period
+2020-04-06T08:35:16.098062-05:00 dell-server1 kernel: [155528.938939] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 9 not cleared within the polling period
+2020-04-06T08:35:16.101678-05:00 dell-server1 kernel: [155528.940816] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 10 not cleared within the polling period
+2020-04-06T08:35:16.101685-05:00 dell-server1 kernel: [155528.942620] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 11 not cleared within the polling period
+2020-04-06T08:35:16.106751-05:00 dell-server1 kernel: [155528.944435] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 12 not cleared within the polling period
+2020-04-06T08:35:16.106759-05:00 dell-server1 kernel: [155528.946149] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 13 not cleared within the polling period
+2020-04-06T08:35:16.106760-05:00 dell-server1 kernel: [155528.947827] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 14 not cleared within the polling period
+2020-04-06T08:35:16.109948-05:00 dell-server1 kernel: [155528.949507] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 15 not cleared within the polling period
+2020-04-06T08:35:16.109955-05:00 dell-server1 kernel: [155528.951112] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 16 not cleared within the polling period
+2020-04-06T08:35:16.114513-05:00 dell-server1 kernel: [155528.952707] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 17 not cleared within the polling period
+2020-04-06T08:35:16.114522-05:00 dell-server1 kernel: [155528.954248] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 18 not cleared within the polling period
+2020-04-06T08:35:16.114528-05:00 dell-server1 kernel: [155528.955757] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 19 not cleared within the polling period
+2020-04-06T08:35:16.118763-05:00 dell-server1 kernel: [155528.957271] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 20 not cleared within the polling period
+2020-04-06T08:35:16.118769-05:00 dell-server1 kernel: [155528.958751] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 21 not cleared within the polling period
+2020-04-06T08:35:16.118770-05:00 dell-server1 kernel: [155528.960153] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 22 not cleared within the polling period
+2020-04-06T08:35:16.122679-05:00 dell-server1 kernel: [155528.961525] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 23 not cleared within the polling period
+2020-04-06T08:35:16.122690-05:00 dell-server1 kernel: [155528.962851] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 24 not cleared within the polling period
+2020-04-06T08:35:16.122691-05:00 dell-server1 kernel: [155528.964160] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 25 not cleared within the polling period
+2020-04-06T08:35:16.126155-05:00 dell-server1 kernel: [155528.965440] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 26 not cleared within the polling period
+2020-04-06T08:35:16.126167-05:00 dell-server1 kernel: [155528.966637] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 27 not cleared within the polling period
+2020-04-06T08:35:16.126168-05:00 dell-server1 kernel: [155528.967767] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 28 not cleared within the polling period
+2020-04-06T08:35:16.130187-05:00 dell-server1 kernel: [155528.968913] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 29 not cleared within the polling period
+2020-04-06T08:35:16.130206-05:00 dell-server1 kernel: [155528.969974] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 30 not cleared within the polling period
+2020-04-06T08:35:16.130207-05:00 dell-server1 kernel: [155528.971011] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 31 not cleared within the polling period
+2020-04-06T08:35:16.130208-05:00 dell-server1 kernel: [155528.971998] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 32 not cleared within the polling period
+2020-04-06T08:35:16.134180-05:00 dell-server1 kernel: [155528.972946] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 33 not cleared within the polling period
+2020-04-06T08:35:16.134192-05:00 dell-server1 kernel: [155528.973828] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 34 not cleared within the polling period
+2020-04-06T08:35:16.134193-05:00 dell-server1 kernel: [155528.974679] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 35 not cleared within the polling period
+2020-04-06T08:35:16.134194-05:00 dell-server1 kernel: [155528.975470] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 36 not cleared within the polling period
+2020-04-06T08:35:16.134195-05:00 dell-server1 kernel: [155528.976227] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 37 not cleared within the polling period
+2020-04-06T08:35:16.137630-05:00 dell-server1 kernel: [155528.976933] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 38 not cleared within the polling period
+2020-04-06T08:35:16.137641-05:00 dell-server1 kernel: [155528.977592] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 39 not cleared within the polling period
+2020-04-06T08:35:16.137642-05:00 dell-server1 kernel: [155528.978215] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 40 not cleared within the polling period
+2020-04-06T08:35:16.137643-05:00 dell-server1 kernel: [155528.978796] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 41 not cleared within the polling period
+2020-04-06T08:35:16.137644-05:00 dell-server1 kernel: [155528.979335] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 42 not cleared within the polling period
+2020-04-06T08:35:16.137645-05:00 dell-server1 kernel: [155528.979830] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 43 not cleared within the polling period
+2020-04-06T08:35:16.141629-05:00 dell-server1 kernel: [155528.980314] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 44 not cleared within the polling period
+2020-04-06T08:35:16.141640-05:00 dell-server1 kernel: [155528.980712] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 45 not cleared within the polling period
+2020-04-06T08:35:16.141641-05:00 dell-server1 kernel: [155528.981079] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 46 not cleared within the polling period
+2020-04-06T08:35:16.141642-05:00 dell-server1 kernel: [155528.981433] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 47 not cleared within the polling period
+2020-04-06T08:35:16.141649-05:00 dell-server1 kernel: [155528.981761] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 48 not cleared within the polling period
+2020-04-06T08:35:16.141650-05:00 dell-server1 kernel: [155528.982083] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 49 not cleared within the polling period
+2020-04-06T08:35:16.141651-05:00 dell-server1 kernel: [155528.982414] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 50 not cleared within the polling period
+2020-04-06T08:35:16.141652-05:00 dell-server1 kernel: [155528.982735] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 51 not cleared within the polling period
+2020-04-06T08:35:16.141652-05:00 dell-server1 kernel: [155528.983061] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 52 not cleared within the polling period
+2020-04-06T08:35:16.141722-05:00 dell-server1 kernel: [155528.983390] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 53 not cleared within the polling period
+2020-04-06T08:35:16.141738-05:00 dell-server1 kernel: [155528.983703] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 54 not cleared within the polling period
+2020-04-06T08:35:16.141740-05:00 dell-server1 kernel: [155528.984032] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 55 not cleared within the polling period
+2020-04-06T08:35:16.141748-05:00 dell-server1 kernel: [155528.984375] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 56 not cleared within the polling period
+2020-04-06T08:35:16.145642-05:00 dell-server1 kernel: [155528.984697] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 57 not cleared within the polling period
+2020-04-06T08:35:16.145653-05:00 dell-server1 kernel: [155528.985012] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 58 not cleared within the polling period
+2020-04-06T08:35:16.145654-05:00 dell-server1 kernel: [155528.985316] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 59 not cleared within the polling period
+2020-04-06T08:35:16.145655-05:00 dell-server1 kernel: [155528.985624] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 60 not cleared within the polling period
+2020-04-06T08:35:16.145690-05:00 dell-server1 kernel: [155528.985936] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 61 not cleared within the polling period
+2020-04-06T08:35:16.145691-05:00 dell-server1 kernel: [155528.986246] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 62 not cleared within the polling period
+2020-04-06T08:35:17.037635-05:00 dell-server1 kernel: [155529.877028] ixgbe 0000:19:00.1 eno2: Reset adapter
+2020-04-06T08:35:17.037648-05:00 dell-server1 kernel: [155529.877044] ixgbe 0000:19:00.0 eno1: speed changed to 0 for port eno1
+2020-04-06T08:35:17.049728-05:00 dell-server1 kernel: [155529.891566] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 0 not cleared within the polling period
+2020-04-06T08:35:17.049734-05:00 dell-server1 kernel: [155529.891856] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 1 not cleared within the polling period
+2020-04-06T08:35:17.049736-05:00 dell-server1 kernel: [155529.892133] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 2 not cleared within the polling period
+2020-04-06T08:35:17.053617-05:00 dell-server1 kernel: [155529.892410] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 3 not cleared within the polling period
+2020-04-06T08:35:17.053621-05:00 dell-server1 kernel: [155529.892665] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 4 not cleared within the polling period
+2020-04-06T08:35:17.053621-05:00 dell-server1 kernel: [155529.892917] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 5 not cleared within the polling period
+2020-04-06T08:35:17.053622-05:00 dell-server1 kernel: [155529.893170] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 6 not cleared within the polling period
+2020-04-06T08:35:17.053622-05:00 dell-server1 kernel: [155529.893420] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 7 not cleared within the polling period
+2020-04-06T08:35:17.053623-05:00 dell-server1 kernel: [155529.893670] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 8 not cleared within the polling period
+2020-04-06T08:35:17.053625-05:00 dell-server1 kernel: [155529.893921] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 9 not cleared within the polling period
+2020-04-06T08:35:17.053626-05:00 dell-server1 kernel: [155529.894171] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 10 not cleared within the polling period
+2020-04-06T08:35:17.053626-05:00 dell-server1 kernel: [155529.894430] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 11 not cleared within the polling period
+2020-04-06T08:35:17.053627-05:00 dell-server1 kernel: [155529.894688] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 12 not cleared within the polling period
+2020-04-06T08:35:17.053628-05:00 dell-server1 kernel: [155529.894945] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 13 not cleared within the polling period
+2020-04-06T08:35:17.053629-05:00 dell-server1 kernel: [155529.895201] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 14 not cleared within the polling period
+2020-04-06T08:35:17.053630-05:00 dell-server1 kernel: [155529.895458] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 15 not cleared within the polling period
+2020-04-06T08:35:17.053630-05:00 dell-server1 kernel: [155529.895715] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 16 not cleared within the polling period
+2020-04-06T08:35:17.053700-05:00 dell-server1 kernel: [155529.895971] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 17 not cleared within the polling period
+2020-04-06T08:35:17.053722-05:00 dell-server1 kernel: [155529.896235] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 18 not cleared within the polling period
+2020-04-06T08:35:17.057692-05:00 dell-server1 kernel: [155529.896519] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 19 not cleared within the polling period
+2020-04-06T08:35:17.057697-05:00 dell-server1 kernel: [155529.896775] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 20 not cleared within the polling period
+2020-04-06T08:35:17.057698-05:00 dell-server1 kernel: [155529.897029] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 21 not cleared within the polling period
+2020-04-06T08:35:17.057699-05:00 dell-server1 kernel: [155529.897285] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 22 not cleared within the polling period
+2020-04-06T08:35:17.057699-05:00 dell-server1 kernel: [155529.897540] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 23 not cleared within the polling period
+2020-04-06T08:35:17.057700-05:00 dell-server1 kernel: [155529.897796] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 24 not cleared within the polling period
+2020-04-06T08:35:17.057701-05:00 dell-server1 kernel: [155529.898049] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 25 not cleared within the polling period
+2020-04-06T08:35:17.057705-05:00 dell-server1 kernel: [155529.898309] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 26 not cleared within the polling period
+2020-04-06T08:35:17.057706-05:00 dell-server1 kernel: [155529.898562] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 27 not cleared within the polling period
+2020-04-06T08:35:17.057708-05:00 dell-server1 kernel: [155529.898815] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 28 not cleared within the polling period
+2020-04-06T08:35:17.057710-05:00 dell-server1 kernel: [155529.899069] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 29 not cleared within the polling period
+2020-04-06T08:35:17.057711-05:00 dell-server1 kernel: [155529.899322] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 30 not cleared within the polling period
+2020-04-06T08:35:17.057713-05:00 dell-server1 kernel: [155529.899575] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 31 not cleared within the polling period
+2020-04-06T08:35:17.057715-05:00 dell-server1 kernel: [155529.899828] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 32 not cleared within the polling period
+2020-04-06T08:35:17.057716-05:00 dell-server1 kernel: [155529.900082] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 33 not cleared within the polling period
+2020-04-06T08:35:17.061626-05:00 dell-server1 kernel: [155529.900350] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 34 not cleared within the polling period
+2020-04-06T08:35:17.061632-05:00 dell-server1 kernel: [155529.900605] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 35 not cleared within the polling period
+2020-04-06T08:35:17.061633-05:00 dell-server1 kernel: [155529.900859] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 36 not cleared within the polling period
+2020-04-06T08:35:17.061633-05:00 dell-server1 kernel: [155529.901114] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 37 not cleared within the polling period
+2020-04-06T08:35:17.061634-05:00 dell-server1 kernel: [155529.901368] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 38 not cleared within the polling period
+2020-04-06T08:35:17.061635-05:00 dell-server1 kernel: [155529.901622] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 39 not cleared within the polling period
+2020-04-06T08:35:17.061636-05:00 dell-server1 kernel: [155529.901876] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 40 not cleared within the polling period
+2020-04-06T08:35:17.061637-05:00 dell-server1 kernel: [155529.902130] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 41 not cleared within the polling period
+2020-04-06T08:35:17.061641-05:00 dell-server1 kernel: [155529.902383] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 42 not cleared within the polling period
+2020-04-06T08:35:17.061642-05:00 dell-server1 kernel: [155529.902636] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 43 not cleared within the polling period
+2020-04-06T08:35:17.061643-05:00 dell-server1 kernel: [155529.902890] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 44 not cleared within the polling period
+2020-04-06T08:35:17.061643-05:00 dell-server1 kernel: [155529.903145] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 45 not cleared within the polling period
+2020-04-06T08:35:17.061644-05:00 dell-server1 kernel: [155529.903383] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 46 not cleared within the polling period
+2020-04-06T08:35:17.061656-05:00 dell-server1 kernel: [155529.903616] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 47 not cleared within the polling period
+2020-04-06T08:35:17.061658-05:00 dell-server1 kernel: [155529.903836] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 48 not cleared within the polling period
+2020-04-06T08:35:17.061659-05:00 dell-server1 kernel: [155529.904054] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 49 not cleared within the polling period
+2020-04-06T08:35:17.065643-05:00 dell-server1 kernel: [155529.904286] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 50 not cleared within the polling period
+2020-04-06T08:35:17.065655-05:00 dell-server1 kernel: [155529.904510] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 51 not cleared within the polling period
+2020-04-06T08:35:17.065656-05:00 dell-server1 kernel: [155529.904730] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 52 not cleared within the polling period
+2020-04-06T08:35:17.065661-05:00 dell-server1 kernel: [155529.904950] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 53 not cleared within the polling period
+2020-04-06T08:35:17.065662-05:00 dell-server1 kernel: [155529.905170] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 54 not cleared within the polling period
+2020-04-06T08:35:17.065670-05:00 dell-server1 kernel: [155529.905389] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 55 not cleared within the polling period
+2020-04-06T08:35:17.065671-05:00 dell-server1 kernel: [155529.905608] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 56 not cleared within the polling period
+2020-04-06T08:35:17.065672-05:00 dell-server1 kernel: [155529.905827] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 57 not cleared within the polling period
+2020-04-06T08:35:17.065673-05:00 dell-server1 kernel: [155529.906039] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 58 not cleared within the polling period
+2020-04-06T08:35:17.065674-05:00 dell-server1 kernel: [155529.906250] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 59 not cleared within the polling period
+2020-04-06T08:35:17.065674-05:00 dell-server1 kernel: [155529.906462] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 60 not cleared within the polling period
+2020-04-06T08:35:17.065675-05:00 dell-server1 kernel: [155529.906674] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 61 not cleared within the polling period
+2020-04-06T08:35:17.065676-05:00 dell-server1 kernel: [155529.906885] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 62 not cleared within the polling period
+2020-04-06T08:35:17.965630-05:00 dell-server1 kernel: [155530.804204] bond0: link status definitely down for interface eno1, disabling it
+2020-04-06T08:35:17.965648-05:00 dell-server1 kernel: [155530.804272] bond0: link status definitely down for interface eno2, disabling it
+2020-04-06T08:35:17.965649-05:00 dell-server1 kernel: [155530.804274] bond0: now running without any active interface!
+2020-04-06T08:35:18.069645-05:00 dell-server1 kernel: [155530.908165] bond0: link status definitely down for interface eno2, disabling it
+2020-04-06T08:35:22.137624-05:00 dell-server1 kernel: [155534.976629] ixgbe 0000:19:00.0 eno1: NIC Link is Up 10 Gbps, Flow Control: None
+2020-04-06T08:35:22.141618-05:00 dell-server1 kernel: [155534.979784] bond0: link status definitely up for interface eno1, 10000 Mbps full duplex
+2020-04-06T08:35:22.141627-05:00 dell-server1 kernel: [155534.979791] bond0: first active interface up!
+2020-04-06T08:35:23.005627-05:00 dell-server1 kernel: [155535.844845] ixgbe 0000:19:00.1 eno2: NIC Link is Up 10 Gbps, Flow Control: None
+2020-04-06T08:35:23.077611-05:00 dell-server1 kernel: [155535.915696] bond0: link status definitely up for interface eno2, 10000 Mbps full duplex
+2020-04-06T08:35:25.256404-05:00 dell-server1 kernel: [155538.083623] ixgbe 0000:19:00.0 eno1: Detected Tx Unit Hang
+2020-04-06T08:35:25.256418-05:00 dell-server1 kernel: [155538.083623]   Tx Queue             <39>
+2020-04-06T08:35:25.256419-05:00 dell-server1 kernel: [155538.083623]   TDH, TDT             <0>, <d>
+2020-04-06T08:35:25.256420-05:00 dell-server1 kernel: [155538.083623]   next_to_use          <d>
+2020-04-06T08:35:25.256421-05:00 dell-server1 kernel: [155538.083623]   next_to_clean        <0>
+2020-04-06T08:35:25.256421-05:00 dell-server1 kernel: [155538.083623] tx_buffer_info[next_to_clean]
+2020-04-06T08:35:25.256422-05:00 dell-server1 kernel: [155538.083623]   time_stamp           <1025039c7>
+2020-04-06T08:35:25.256422-05:00 dell-server1 kernel: [155538.083623]   jiffies              <102503cb8>
+2020-04-06T08:35:25.256423-05:00 dell-server1 kernel: [155538.083626] ixgbe 0000:19:00.0 eno1: Detected Tx Unit Hang
+2020-04-06T08:35:25.256424-05:00 dell-server1 kernel: [155538.083626]   Tx Queue             <35>
+2020-04-06T08:35:25.256425-05:00 dell-server1 kernel: [155538.083626]   TDH, TDT             <0>, <6>
+2020-04-06T08:35:25.256425-05:00 dell-server1 kernel: [155538.083626]   next_to_use          <6>
+2020-04-06T08:35:25.256425-05:00 dell-server1 kernel: [155538.083626]   next_to_clean        <0>
+2020-04-06T08:35:25.256439-05:00 dell-server1 kernel: [155538.083626] tx_buffer_info[next_to_clean]
+2020-04-06T08:35:25.256440-05:00 dell-server1 kernel: [155538.083626]   time_stamp           <1025039e0>
+2020-04-06T08:35:25.256441-05:00 dell-server1 kernel: [155538.083626]   jiffies              <102503cb8>
+2020-04-06T08:35:25.256443-05:00 dell-server1 kernel: [155538.083629] ixgbe 0000:19:00.0 eno1: Detected Tx Unit Hang
+2020-04-06T08:35:25.256444-05:00 dell-server1 kernel: [155538.083629]   Tx Queue             <52>
+2020-04-06T08:35:25.256445-05:00 dell-server1 kernel: [155538.083629]   TDH, TDT             <0>, <3>
+2020-04-06T08:35:25.256445-05:00 dell-server1 kernel: [155538.083629]   next_to_use          <3>
+2020-04-06T08:35:25.256449-05:00 dell-server1 kernel: [155538.083629]   next_to_clean        <0>
+2020-04-06T08:35:25.256450-05:00 dell-server1 kernel: [155538.083629] tx_buffer_info[next_to_clean]
+2020-04-06T08:35:25.256451-05:00 dell-server1 kernel: [155538.083629]   time_stamp           <102503a08>
+2020-04-06T08:35:25.256453-05:00 dell-server1 kernel: [155538.083629]   jiffies              <102503cb8>
+2020-04-06T08:35:25.256454-05:00 dell-server1 kernel: [155538.083632] ixgbe 0000:19:00.0 eno1: Detected Tx Unit Hang
+2020-04-06T08:35:25.256456-05:00 dell-server1 kernel: [155538.083632]   Tx Queue             <56>
+2020-04-06T08:35:25.256458-05:00 dell-server1 kernel: [155538.083632]   TDH, TDT             <0>, <4>
+2020-04-06T08:35:25.256460-05:00 dell-server1 kernel: [155538.083632]   next_to_use          <4>
+2020-04-06T08:35:25.256461-05:00 dell-server1 kernel: [155538.083632]   next_to_clean        <0>
+2020-04-06T08:35:25.256463-05:00 dell-server1 kernel: [155538.083632] tx_buffer_info[next_to_clean]
+2020-04-06T08:35:25.256464-05:00 dell-server1 kernel: [155538.083632]   time_stamp           <1025039f0>
+2020-04-06T08:35:25.256467-05:00 dell-server1 kernel: [155538.083632]   jiffies              <102503cb8>
+2020-04-06T08:35:25.256469-05:00 dell-server1 kernel: [155538.083634] ixgbe 0000:19:00.0 eno1: Detected Tx Unit Hang
+2020-04-06T08:35:25.256470-05:00 dell-server1 kernel: [155538.083634]   Tx Queue             <55>
+(...and this process repeats itself, even after rmmod'ing ixgbe and modprobe'ing it back...)
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Bjorn Helgaas <bhelgaas@google.com> # for PCI parts
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
+The reason I say it's a high incidence is that we have about 100 of these NICs and have already seen it on 4 or 5 of them. 3 of them were on 19.0 firmware when it happened but this latest one was on 19.5 firmware when it happened.
 
--> v2:
-   * Rebased.
-   * Added tags received so far.
+I'm skeptical of this "ECC Err" that triggers it since they're all fairly new servers and having bad memory on that many NICs is still abnormally high. In that same vein, the main system DIMMs don't report any errors or anything to indicate that there are multi-bit or even single-bit errors going on.
 
----
- Documentation/driver-api/pm/devices.rst    |  6 +++---
- Documentation/power/pci.rst                | 10 +++++-----
- drivers/base/power/main.c                  |  2 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c    |  2 +-
- drivers/gpu/drm/i915/intel_runtime_pm.c    |  2 +-
- drivers/gpu/drm/radeon/radeon_kms.c        |  2 +-
- drivers/misc/mei/pci-me.c                  |  2 +-
- drivers/misc/mei/pci-txe.c                 |  2 +-
- drivers/net/ethernet/intel/e1000e/netdev.c |  2 +-
- drivers/net/ethernet/intel/igb/igb_main.c  |  2 +-
- drivers/net/ethernet/intel/igc/igc_main.c  |  2 +-
- drivers/pci/pcie/portdrv_pci.c             |  2 +-
- include/linux/pm.h                         |  6 +++---
- 13 files changed, 21 insertions(+), 21 deletions(-)
-
-diff --git a/Documentation/driver-api/pm/devices.rst b/Documentation/driver-api/pm/devices.rst
-index f66c7b9126ea..4ace0eba4506 100644
---- a/Documentation/driver-api/pm/devices.rst
-+++ b/Documentation/driver-api/pm/devices.rst
-@@ -361,9 +361,9 @@ the phases are: ``prepare``, ``suspend``, ``suspend_late``, ``suspend_noirq``.
- 	runtime PM disabled.
- 
- 	This feature also can be controlled by device drivers by using the
--	``DPM_FLAG_NEVER_SKIP`` and ``DPM_FLAG_SMART_PREPARE`` driver power
--	management flags.  [Typically, they are set at the time the driver is
--	probed against the device in question by passing them to the
-+	``DPM_FLAG_NO_DIRECT_COMPLETE`` and ``DPM_FLAG_SMART_PREPARE`` driver
-+	power management flags.  [Typically, they are set at the time the driver
-+	is probed against the device in question by passing them to the
- 	:c:func:`dev_pm_set_driver_flags` helper function.]  If the first of
- 	these flags is set, the PM core will not apply the direct-complete
- 	procedure described above to the given device and, consequenty, to any
-diff --git a/Documentation/power/pci.rst b/Documentation/power/pci.rst
-index aa1c7fce6cd0..9e1408121bea 100644
---- a/Documentation/power/pci.rst
-+++ b/Documentation/power/pci.rst
-@@ -1004,11 +1004,11 @@ including the PCI bus type.  The flags should be set once at the driver probe
- time with the help of the dev_pm_set_driver_flags() function and they should not
- be updated directly afterwards.
- 
--The DPM_FLAG_NEVER_SKIP flag prevents the PM core from using the direct-complete
--mechanism allowing device suspend/resume callbacks to be skipped if the device
--is in runtime suspend when the system suspend starts.  That also affects all of
--the ancestors of the device, so this flag should only be used if absolutely
--necessary.
-+The DPM_FLAG_NO_DIRECT_COMPLETE flag prevents the PM core from using the
-+direct-complete mechanism allowing device suspend/resume callbacks to be skipped
-+if the device is in runtime suspend when the system suspend starts.  That also
-+affects all of the ancestors of the device, so this flag should only be used if
-+absolutely necessary.
- 
- The DPM_FLAG_SMART_PREPARE flag instructs the PCI bus type to only return a
- positive value from pci_pm_prepare() if the ->prepare callback provided by the
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 3170d93e29f9..dbc1e5e7346b 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1844,7 +1844,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 	spin_lock_irq(&dev->power.lock);
- 	dev->power.direct_complete = state.event == PM_EVENT_SUSPEND &&
- 		(ret > 0 || dev->power.no_pm_callbacks) &&
--		!dev_pm_test_driver_flags(dev, DPM_FLAG_NEVER_SKIP);
-+		!dev_pm_test_driver_flags(dev, DPM_FLAG_NO_DIRECT_COMPLETE);
- 	spin_unlock_irq(&dev->power.lock);
- 	return 0;
- }
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c
-index fd1dc3236eca..a9086ea1ab60 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c
-@@ -191,7 +191,7 @@ int amdgpu_driver_load_kms(struct drm_device *dev, unsigned long flags)
- 	}
- 
- 	if (adev->runpm) {
--		dev_pm_set_driver_flags(dev->dev, DPM_FLAG_NEVER_SKIP);
-+		dev_pm_set_driver_flags(dev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
- 		pm_runtime_use_autosuspend(dev->dev);
- 		pm_runtime_set_autosuspend_delay(dev->dev, 5000);
- 		pm_runtime_set_active(dev->dev);
-diff --git a/drivers/gpu/drm/i915/intel_runtime_pm.c b/drivers/gpu/drm/i915/intel_runtime_pm.c
-index ad719c9602af..9cb2d7548daa 100644
---- a/drivers/gpu/drm/i915/intel_runtime_pm.c
-+++ b/drivers/gpu/drm/i915/intel_runtime_pm.c
-@@ -549,7 +549,7 @@ void intel_runtime_pm_enable(struct intel_runtime_pm *rpm)
- 	 * becaue the HDA driver may require us to enable the audio power
- 	 * domain during system suspend.
- 	 */
--	dev_pm_set_driver_flags(kdev, DPM_FLAG_NEVER_SKIP);
-+	dev_pm_set_driver_flags(kdev, DPM_FLAG_NO_DIRECT_COMPLETE);
- 
- 	pm_runtime_set_autosuspend_delay(kdev, 10000); /* 10s */
- 	pm_runtime_mark_last_busy(kdev);
-diff --git a/drivers/gpu/drm/radeon/radeon_kms.c b/drivers/gpu/drm/radeon/radeon_kms.c
-index 58176db85952..372962358a18 100644
---- a/drivers/gpu/drm/radeon/radeon_kms.c
-+++ b/drivers/gpu/drm/radeon/radeon_kms.c
-@@ -158,7 +158,7 @@ int radeon_driver_load_kms(struct drm_device *dev, unsigned long flags)
- 	}
- 
- 	if (radeon_is_px(dev)) {
--		dev_pm_set_driver_flags(dev->dev, DPM_FLAG_NEVER_SKIP);
-+		dev_pm_set_driver_flags(dev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
- 		pm_runtime_use_autosuspend(dev->dev);
- 		pm_runtime_set_autosuspend_delay(dev->dev, 5000);
- 		pm_runtime_set_active(dev->dev);
-diff --git a/drivers/misc/mei/pci-me.c b/drivers/misc/mei/pci-me.c
-index 3d21c38e2dbb..53f16f3bd091 100644
---- a/drivers/misc/mei/pci-me.c
-+++ b/drivers/misc/mei/pci-me.c
-@@ -240,7 +240,7 @@ static int mei_me_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	 * MEI requires to resume from runtime suspend mode
- 	 * in order to perform link reset flow upon system suspend.
- 	 */
--	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NEVER_SKIP);
-+	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
- 
- 	/*
- 	 * ME maps runtime suspend/resume to D0i states,
-diff --git a/drivers/misc/mei/pci-txe.c b/drivers/misc/mei/pci-txe.c
-index beacf2a2f2b5..4bf26ce61044 100644
---- a/drivers/misc/mei/pci-txe.c
-+++ b/drivers/misc/mei/pci-txe.c
-@@ -128,7 +128,7 @@ static int mei_txe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	 * MEI requires to resume from runtime suspend mode
- 	 * in order to perform link reset flow upon system suspend.
- 	 */
--	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NEVER_SKIP);
-+	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
- 
- 	/*
- 	 * TXE maps runtime suspend/resume to own power gating states,
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 177c6da80c57..2730b1c7dddb 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7549,7 +7549,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	e1000_print_device_info(adapter);
- 
--	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NEVER_SKIP);
-+	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
- 
- 	if (pci_dev_run_wake(pdev) && hw->mac.type < e1000_pch_cnp)
- 		pm_runtime_put_noidle(&pdev->dev);
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index b46bff8fe056..8bb3db2cbd41 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3445,7 +3445,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		}
- 	}
- 
--	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NEVER_SKIP);
-+	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
- 
- 	pm_runtime_put_noidle(&pdev->dev);
- 	return 0;
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 69fa1ce1f927..59fc0097438f 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -4825,7 +4825,7 @@ static int igc_probe(struct pci_dev *pdev,
- 	pcie_print_link_status(pdev);
- 	netdev_info(netdev, "MAC: %pM\n", netdev->dev_addr);
- 
--	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NEVER_SKIP);
-+	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
- 
- 	pm_runtime_put_noidle(&pdev->dev);
- 
-diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-index 160d67c59310..3acf151ae015 100644
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -115,7 +115,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
- 
- 	pci_save_state(dev);
- 
--	dev_pm_set_driver_flags(&dev->dev, DPM_FLAG_NEVER_SKIP |
-+	dev_pm_set_driver_flags(&dev->dev, DPM_FLAG_NO_DIRECT_COMPLETE |
- 					   DPM_FLAG_SMART_SUSPEND);
- 
- 	if (pci_bridge_d3_possible(dev)) {
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 8c59a7f0bcf4..cdb8fbd6ab18 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -544,7 +544,7 @@ struct pm_subsys_data {
-  * These flags can be set by device drivers at the probe time.  They need not be
-  * cleared by the drivers as the driver core will take care of that.
-  *
-- * NEVER_SKIP: Do not skip all system suspend/resume callbacks for the device.
-+ * NO_DIRECT_COMPLETE: Do not apply direct-complete optimization to the device.
-  * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
-  * SMART_SUSPEND: No need to resume the device from runtime suspend.
-  * LEAVE_SUSPENDED: Avoid resuming the device during system resume if possible.
-@@ -554,7 +554,7 @@ struct pm_subsys_data {
-  * their ->prepare callbacks if the driver's ->prepare callback returns 0 (in
-  * other words, the system suspend/resume callbacks can only be skipped for the
-  * device if its driver doesn't object against that).  This flag has no effect
-- * if NEVER_SKIP is set.
-+ * if NO_DIRECT_COMPLETE is set.
-  *
-  * Setting SMART_SUSPEND instructs bus types and PM domains which may want to
-  * runtime resume the device upfront during system suspend that doing so is not
-@@ -565,7 +565,7 @@ struct pm_subsys_data {
-  * Setting LEAVE_SUSPENDED informs the PM core and middle-layer code that the
-  * driver prefers the device to be left in suspend after system resume.
-  */
--#define DPM_FLAG_NEVER_SKIP		BIT(0)
-+#define DPM_FLAG_NO_DIRECT_COMPLETE	BIT(0)
- #define DPM_FLAG_SMART_PREPARE		BIT(1)
- #define DPM_FLAG_SMART_SUSPEND		BIT(2)
- #define DPM_FLAG_LEAVE_SUSPENDED	BIT(3)
--- 
-2.16.4
+Are there any further diagnostic tools I could use to figure out what's going on here? I can't seem to reproduce the issue by sending high packet load at the cards or anything. Or is this a bug that you all are aware of?
 
 
+Thanks!
+
+-Kevin
 
 
+______________________________________________________________________
+See http://www.peak6.com/email_disclaimer/ for terms and conditions related to this email
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200406/e54ec385/attachment-0001.html>
