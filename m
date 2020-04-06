@@ -1,27 +1,39 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Mon, 6 Apr 2020 21:31:54 +0000
+From: Kevin Newman <knewman@peak6.com>
+Date: Mon, 6 Apr 2020 22:19:06 +0000
 Subject: [Intel-wired-lan] X550 + ixgbe Reporting "ECC Err" With Strange
  Regularity...
-In-Reply-To: <MWHPR2201MB1727D9040A0A395978363BB0E9C20@MWHPR2201MB1727.namprd22.prod.outlook.com>
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69B107E30@ORSMSX115.amr.corp.intel.com>
 References: <MWHPR2201MB1727D9040A0A395978363BB0E9C20@MWHPR2201MB1727.namprd22.prod.outlook.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD69B107E30@ORSMSX115.amr.corp.intel.com>
+ <9B4A1B1917080E46B64F07F2989DADD69B107E30@ORSMSX115.amr.corp.intel.com>
+Message-ID: <MWHPR2201MB1727AB167B14105544DC5CDFE9C20@MWHPR2201MB1727.namprd22.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Sure. Just booted a few days ago actually. Full dmesg log attached (ends with me hard booting the server).
+
+
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Sent: Monday, April 6, 2020 4:32 PM
+To: Kevin Newman <knewman@peak6.com>; intel-wired-lan at lists.osuosl.org
+Subject: RE: X550 + ixgbe Reporting "ECC Err" With Strange Regularity...
+
+This is an EXTERNAL EMAIL. STOP. THINK before you CLICK links or OPEN attachments.
+
+________________________________
 Unfortunately, the "ECC Error" bit in the ICR is overloaded and could be caused by other things. Do you have a dmesg we can look at? (The whole thing from boot to the error?)
 
 Todd Fujinaka
 Software Application Engineer
 Data Center Group
 Intel Corporation
-todd.fujinaka at intel.com
+todd.fujinaka at intel.com<mailto:todd.fujinaka@intel.com>
 
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Kevin Newman
+From: Intel-wired-lan <intel-wired-lan-bounces at osuosl.org<mailto:intel-wired-lan-bounces@osuosl.org>> On Behalf Of Kevin Newman
 Sent: Monday, April 6, 2020 8:22 AM
-To: intel-wired-lan@lists.osuosl.org
+To: intel-wired-lan@lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
 Subject: [Intel-wired-lan] X550 + ixgbe Reporting "ECC Err" With Strange Regularity...
 
 Hi,
@@ -221,4 +233,11 @@ ________________________________
 See http://www.peak6.com/email_disclaimer/ for terms and conditions related to this email
 -------------- next part --------------
 An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200406/8da54940/attachment-0001.html>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200406/0cb34048/attachment-0001.html>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: dell-server1.kern.log
+Type: application/octet-stream
+Size: 860459 bytes
+Desc: dell-server1.kern.log
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200406/0cb34048/attachment-0001.obj>
