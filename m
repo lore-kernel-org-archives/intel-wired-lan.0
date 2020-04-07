@@ -1,18 +1,29 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Tue, 7 Apr 2020 01:15:02 +0000
+From: Kevin Newman <knewman@peak6.com>
+Date: Tue, 7 Apr 2020 01:43:08 +0000
 Subject: [Intel-wired-lan] X550 + ixgbe Reporting "ECC Err" With Strange
  Regularity...
-In-Reply-To: <MWHPR2201MB1727AB167B14105544DC5CDFE9C20@MWHPR2201MB1727.namprd22.prod.outlook.com>
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69B107F0B@ORSMSX115.amr.corp.intel.com>
 References: <MWHPR2201MB1727D9040A0A395978363BB0E9C20@MWHPR2201MB1727.namprd22.prod.outlook.com>
  <9B4A1B1917080E46B64F07F2989DADD69B107E30@ORSMSX115.amr.corp.intel.com>
  <MWHPR2201MB1727AB167B14105544DC5CDFE9C20@MWHPR2201MB1727.namprd22.prod.outlook.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD69B107F0B@ORSMSX115.amr.corp.intel.com>
+ <9B4A1B1917080E46B64F07F2989DADD69B107F0B@ORSMSX115.amr.corp.intel.com>
+Message-ID: <MWHPR2201MB1727FA48A9AB2F1F3EDAC480E9C30@MWHPR2201MB1727.namprd22.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Such is my situation, unfortunately :( I've been going back and forth with their support and they've told me that they can't talk to Intel unless I can reproduce the error. Having seen this only 5 times in the past 4 months, I don't have a reliable method for reproducing it. I've done all sorts of multicast load tests on the NIC and haven't been able to reproduce. Yet, 5 NICs in the past few months totally dropping offline when this happens is extremely concerning to me and damaging to our confidence in the Intel chipset. They're all X550s too. I have about 300 other that are a combinations of X520 and X540 under similar load that haven't seen the issue. Happy to forward you the ticket number if that helps!
+
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Sent: Monday, April 6, 2020 8:15 PM
+To: Kevin Newman <knewman@peak6.com>; intel-wired-lan at lists.osuosl.org
+Subject: RE: X550 + ixgbe Reporting "ECC Err" With Strange Regularity...
+
+This is an EXTERNAL EMAIL. STOP. THINK before you CLICK links or OPEN attachments.
+
+________________________________
 I just realized as this is a Dell server, you have to go through them first. Can you file a ticket with Dell?
 
 Thanks.
@@ -21,11 +32,11 @@ Todd Fujinaka
 Software Application Engineer
 Data Center Group
 Intel Corporation
-todd.fujinaka at intel.com
+todd.fujinaka at intel.com<mailto:todd.fujinaka@intel.com>
 
-From: Kevin Newman <knewman@peak6.com>
+From: Kevin Newman <knewman at peak6.com<mailto:knewman@peak6.com>>
 Sent: Monday, April 6, 2020 3:19 PM
-To: Fujinaka, Todd <todd.fujinaka@intel.com>; intel-wired-lan at lists.osuosl.org
+To: Fujinaka, Todd <todd.fujinaka at intel.com<mailto:todd.fujinaka@intel.com>>; intel-wired-lan at lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
 Subject: RE: X550 + ixgbe Reporting "ECC Err" With Strange Regularity...
 
 Sure. Just booted a few days ago actually. Full dmesg log attached (ends with me hard booting the server).
@@ -249,4 +260,4 @@ ________________________________
 See http://www.peak6.com/email_disclaimer/ for terms and conditions related to this email
 -------------- next part --------------
 An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200407/0400fa76/attachment-0001.html>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200407/cf2cac36/attachment-0001.html>
