@@ -1,42 +1,37 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Tue,  7 Apr 2020 14:07:06 -0700
-Subject: [Intel-wired-lan] [PATCH 0/5] igc: Fixes for ethertype filtering
- code
-Message-ID: <20200407210711.24371-1-andre.guedes@intel.com>
+Date: Tue,  7 Apr 2020 14:07:11 -0700
+Subject: [Intel-wired-lan] [PATCH 5/5] igc: Dump ETQF registers
+In-Reply-To: <20200407210711.24371-1-andre.guedes@intel.com>
+References: <20200407210711.24371-1-andre.guedes@intel.com>
+Message-ID: <20200407210711.24371-6-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+This patch adds the EType Queue Filter (ETQF) registers to the list of
+registers dumped by igc_get_regs().
 
-This patch series provides some fixes and improvements to the ethertype
-filtering code from IGC driver.
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-The improvements focuses on aligning the code organization to follow the
-same rationale from the rest of the filtering code (MAC address and VLAN
-priority filtering).
-
-Best regards,
-
-Andre
-
-Andre Guedes (5):
-  igc: Remove duplicated IGC_RXPBS macro
-  igc: Remove ethertype filter in ptp code
-  igc: Fix MAX_ETYPE_FILTER value
-  igc: Refactor ethertype filtering code
-  igc: Dump ETQF registers
-
- drivers/net/ethernet/intel/igc/igc.h         |  6 +-
- drivers/net/ethernet/intel/igc/igc_defines.h |  3 -
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 70 +++------------
- drivers/net/ethernet/intel/igc/igc_main.c    | 93 ++++++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_ptp.c     | 12 ---
- drivers/net/ethernet/intel/igc/igc_regs.h    |  2 -
- 6 files changed, 107 insertions(+), 79 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 5a53bf6ee1e5..eb7a6932dae2 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -318,6 +318,9 @@ static void igc_get_regs(struct net_device *netdev,
+ 		regs_buff[188 + i] = rd32(IGC_RAH(i));
+ 
+ 	regs_buff[204] = rd32(IGC_VLANPQF);
++
++	for (i = 0; i < 8; i++)
++		regs_buff[205 + i] = rd32(IGC_ETQF(i));
+ }
+ 
+ static void igc_get_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
 -- 
 2.26.0
 
