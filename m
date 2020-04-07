@@ -1,263 +1,291 @@
-From: Kevin Newman <knewman@peak6.com>
-Date: Tue, 7 Apr 2020 01:43:08 +0000
-Subject: [Intel-wired-lan] X550 + ixgbe Reporting "ECC Err" With Strange
- Regularity...
-In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD69B107F0B@ORSMSX115.amr.corp.intel.com>
-References: <MWHPR2201MB1727D9040A0A395978363BB0E9C20@MWHPR2201MB1727.namprd22.prod.outlook.com>
- <9B4A1B1917080E46B64F07F2989DADD69B107E30@ORSMSX115.amr.corp.intel.com>
- <MWHPR2201MB1727AB167B14105544DC5CDFE9C20@MWHPR2201MB1727.namprd22.prod.outlook.com>
- <9B4A1B1917080E46B64F07F2989DADD69B107F0B@ORSMSX115.amr.corp.intel.com>
-Message-ID: <MWHPR2201MB1727FA48A9AB2F1F3EDAC480E9C30@MWHPR2201MB1727.namprd22.prod.outlook.com>
+From: arkadiusz.kubalewski@intel.com <arkadiusz.kubalewski@intel.com>
+Date: Tue,  7 Apr 2020 10:13:59 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Add support for a new feature:
+ Total Port Shutdown
+Message-ID: <20200407101359.14064-1-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Such is my situation, unfortunately :( I've been going back and forth with their support and they've told me that they can't talk to Intel unless I can reproduce the error. Having seen this only 5 times in the past 4 months, I don't have a reliable method for reproducing it. I've done all sorts of multicast load tests on the NIC and haven't been able to reproduce. Yet, 5 NICs in the past few months totally dropping offline when this happens is extremely concerning to me and damaging to our confidence in the Intel chipset. They're all X550s too. I have about 300 other that are a combinations of X520 and X540 under similar load that haven't seen the issue. Happy to forward you the ticket number if that helps!
+From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Sent: Monday, April 6, 2020 8:15 PM
-To: Kevin Newman <knewman@peak6.com>; intel-wired-lan at lists.osuosl.org
-Subject: RE: X550 + ixgbe Reporting "ECC Err" With Strange Regularity...
+Currently after requesting to down a link on a physical network port,
+the traffic is no longer being processed but the physical link
+with a link partner is still established.
 
-This is an EXTERNAL EMAIL. STOP. THINK before you CLICK links or OPEN attachments.
+Total Port Shutdown allows to completely shutdown the port on the
+link-down procedure by physically removing the link from the port.
 
-________________________________
-I just realized as this is a Dell server, you have to go through them first. Can you file a ticket with Dell?
+Introduced changes:
+- probe NVM if the feature was enabled at initialization of the port
+- special handling on link-down procedure to let FW physically
+shutdown the port if the feature was enabled
 
-Thanks.
+Testing Hints (required if no HSD):
+Link up/down, link-down-on-close
 
-Todd Fujinaka
-Software Application Engineer
-Data Center Group
-Intel Corporation
-todd.fujinaka at intel.com<mailto:todd.fujinaka@intel.com>
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com> 
+---
+ drivers/net/ethernet/intel/i40e/i40e.h        |   1 +
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |   8 ++
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 125 +++++++++++++++---
+ 3 files changed, 113 insertions(+), 21 deletions(-)
 
-From: Kevin Newman <knewman at peak6.com<mailto:knewman@peak6.com>>
-Sent: Monday, April 6, 2020 3:19 PM
-To: Fujinaka, Todd <todd.fujinaka at intel.com<mailto:todd.fujinaka@intel.com>>; intel-wired-lan at lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
-Subject: RE: X550 + ixgbe Reporting "ECC Err" With Strange Regularity...
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 4833187..8a1cbeb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -567,6 +567,7 @@ struct i40e_pf {
+ #define I40E_FLAG_DISABLE_FW_LLDP		BIT(24)
+ #define I40E_FLAG_RS_FEC			BIT(25)
+ #define I40E_FLAG_BASE_R_FEC			BIT(26)
++#define I40E_FLAG_TOTAL_PORT_SHUTDOWN		BIT(27)
+ 
+ 	struct i40e_client_instance *cinst;
+ 	bool stat_offsets_loaded;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 317f3f1..4fdb6ef 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -428,6 +428,7 @@ struct i40e_priv_flags {
+ static const struct i40e_priv_flags i40e_gstrings_priv_flags[] = {
+ 	/* NOTE: MFP setting cannot be changed */
+ 	I40E_PRIV_FLAG("MFP", I40E_FLAG_MFP_ENABLED, 1),
++	I40E_PRIV_FLAG("total-port-shutdown", I40E_FLAG_TOTAL_PORT_SHUTDOWN, 1),
+ 	I40E_PRIV_FLAG("LinkPolling", I40E_FLAG_LINK_POLLING_ENABLED, 0),
+ 	I40E_PRIV_FLAG("flow-director-atr", I40E_FLAG_FD_ATR_ENABLED, 0),
+ 	I40E_PRIV_FLAG("veb-stats", I40E_FLAG_VEB_STATS_ENABLED, 0),
+@@ -5006,6 +5007,13 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 			dev_warn(&pf->pdev->dev, "Cannot change FEC config\n");
+ 	}
+ 
++	if ((changed_flags & I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED) &&
++	    (orig_flags & I40E_FLAG_TOTAL_PORT_SHUTDOWN)) {
++		dev_err(&pf->pdev->dev,
++			"Setting link-down-on-close not supported on this port\n");
++		return -EOPNOTSUPP;
++	}
++
+ 	if ((changed_flags & new_flags &
+ 	     I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED) &&
+ 	    (new_flags & I40E_FLAG_MFP_ENABLED))
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 8c3e753..62a2074 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -54,7 +54,7 @@ static void i40e_fdir_sb_setup(struct i40e_pf *pf);
+ static int i40e_veb_get_bw_info(struct i40e_veb *veb);
+ static int i40e_get_capabilities(struct i40e_pf *pf,
+ 				 enum i40e_admin_queue_opc list_type);
+-
++static bool i40e_is_total_port_shutdown_enabled(struct i40e_pf *pf);
+ 
+ /* i40e_pci_tbl - PCI Device ID Table
+  *
+@@ -6672,21 +6672,6 @@ static void i40e_vsi_reinit_locked(struct i40e_vsi *vsi)
+ 	clear_bit(__I40E_CONFIG_BUSY, pf->state);
+ }
+ 
+-/**
+- * i40e_up - Bring the connection back up after being down
+- * @vsi: the VSI being configured
+- **/
+-int i40e_up(struct i40e_vsi *vsi)
+-{
+-	int err;
+-
+-	err = i40e_vsi_configure(vsi);
+-	if (!err)
+-		err = i40e_up_complete(vsi);
+-
+-	return err;
+-}
+-
+ /**
+  * i40e_force_link_state - Force the link status
+  * @pf: board private structure
+@@ -6697,10 +6682,12 @@ static i40e_status i40e_force_link_state(struct i40e_pf *pf, bool is_up)
+ 	struct i40e_aq_get_phy_abilities_resp abilities;
+ 	struct i40e_aq_set_phy_config config = {0};
+ 	struct i40e_hw *hw = &pf->hw;
++	bool non_zero_phy_type;
+ 	i40e_status err;
+ 	u64 mask;
+ 	u8 speed;
+ 
++	non_zero_phy_type = is_up;
+ 	/* Card might've been put in an unstable state by other drivers
+ 	 * and applications, which causes incorrect speed values being
+ 	 * set on startup. In order to clear speed registers, we call
+@@ -6731,8 +6718,11 @@ static i40e_status i40e_force_link_state(struct i40e_pf *pf, bool is_up)
+ 
+ 	/* If link needs to go up, but was not forced to go down,
+ 	 * and its speed values are OK, no need for a flap
++	 * if non_zero_phy_type was set, still need to force up
+ 	 */
+-	if (is_up && abilities.phy_type != 0 && abilities.link_speed != 0)
++	if (pf->flags & I40E_FLAG_TOTAL_PORT_SHUTDOWN)
++		non_zero_phy_type = true;
++	else if (is_up && abilities.phy_type != 0 && abilities.link_speed != 0)
+ 		return I40E_SUCCESS;
+ 
+ 	/* To force link we need to set bits for all supported PHY types,
+@@ -6740,10 +6730,18 @@ static i40e_status i40e_force_link_state(struct i40e_pf *pf, bool is_up)
+ 	 * across two fields.
+ 	 */
+ 	mask = I40E_PHY_TYPES_BITMASK;
+-	config.phy_type = is_up ? cpu_to_le32((u32)(mask & 0xffffffff)) : 0;
+-	config.phy_type_ext = is_up ? (u8)((mask >> 32) & 0xff) : 0;
++	config.phy_type =
++		non_zero_phy_type ? cpu_to_le32((u32)(mask & 0xffffffff)) : 0;
++	config.phy_type_ext =
++		non_zero_phy_type ? (u8)((mask >> 32) & 0xff) : 0;
+ 	/* Copy the old settings, except of phy_type */
+ 	config.abilities = abilities.abilities;
++	if (pf->flags & I40E_FLAG_TOTAL_PORT_SHUTDOWN) {
++		if (is_up)
++			config.abilities |= I40E_AQ_PHY_ENABLE_LINK;
++		else
++			config.abilities &= ~(I40E_AQ_PHY_ENABLE_LINK);
++	}
+ 	if (abilities.link_speed != 0)
+ 		config.link_speed = abilities.link_speed;
+ 	else
+@@ -6774,11 +6772,31 @@ static i40e_status i40e_force_link_state(struct i40e_pf *pf, bool is_up)
+ 		i40e_update_link_info(hw);
+ 	}
+ 
+-	i40e_aq_set_link_restart_an(hw, true, NULL);
++	i40e_aq_set_link_restart_an(hw, is_up, NULL);
+ 
+ 	return I40E_SUCCESS;
+ }
+ 
++/**
++ * i40e_up - Bring the connection back up after being down
++ * @vsi: the VSI being configured
++ **/
++int i40e_up(struct i40e_vsi *vsi)
++{
++	int err;
++
++	if (vsi->type == I40E_VSI_MAIN &&
++	    (vsi->back->flags & I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED ||
++	     vsi->back->flags & I40E_FLAG_TOTAL_PORT_SHUTDOWN))
++		i40e_force_link_state(vsi->back, true);
++
++	err = i40e_vsi_configure(vsi);
++	if (!err)
++		err = i40e_up_complete(vsi);
++
++	return err;
++}
++
+ /**
+  * i40e_down - Shutdown the connection processing
+  * @vsi: the VSI being stopped
+@@ -6797,7 +6815,8 @@ void i40e_down(struct i40e_vsi *vsi)
+ 	i40e_vsi_disable_irq(vsi);
+ 	i40e_vsi_stop_rings(vsi);
+ 	if (vsi->type == I40E_VSI_MAIN &&
+-	    vsi->back->flags & I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED)
++	   (vsi->back->flags & I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED ||
++	    vsi->back->flags & I40E_FLAG_TOTAL_PORT_SHUTDOWN))
+ 		i40e_force_link_state(vsi->back, false);
+ 	i40e_napi_disable_all(vsi);
+ 
+@@ -11837,6 +11856,60 @@ i40e_status i40e_commit_partition_bw_setting(struct i40e_pf *pf)
+ 	return ret;
+ }
+ 
++/**
++ * i40e_is_total_port_shutdown_enabled - read nvm and return value
++ * if total port shutdown feature is enabled for this pf
++ * @pf: board private structure
++ **/
++static bool i40e_is_total_port_shutdown_enabled(struct i40e_pf *pf)
++{
++#define I40E_TOTAL_PORT_SHUTDOWN_ENABLED	BIT(4)
++#define I40E_FEATURES_ENABLE_PTR		0x2A
++#define I40E_CURRENT_SETTING_PTR		0x2B
++#define I40E_LINK_BEHAVIOR_WORD_OFFSET		0x2D
++#define I40E_LINK_BEHAVIOR_WORD_LENGTH		0x1
++#define I40E_LINK_BEHAVIOR_OS_FORCED_ENABLED	BIT(0)
++#define I40E_LINK_BEHAVIOR_PORT_BIT_LENGTH	4
++	i40e_status read_status = I40E_SUCCESS;
++	u16 sr_emp_sr_settings_ptr = 0;
++	u16 features_enable = 0;
++	u16 link_behavior = 0;
++	bool ret = false;
++
++	read_status = i40e_read_nvm_word(&pf->hw,
++					 I40E_SR_EMP_SR_SETTINGS_PTR,
++					 &sr_emp_sr_settings_ptr);
++	if (read_status)
++		goto err_nvm;
++	read_status = i40e_read_nvm_word(&pf->hw,
++					 sr_emp_sr_settings_ptr +
++					 I40E_FEATURES_ENABLE_PTR,
++					 &features_enable);
++	if (read_status)
++		goto err_nvm;
++	if (I40E_TOTAL_PORT_SHUTDOWN_ENABLED & features_enable) {
++		read_status =
++		i40e_read_nvm_module_data(&pf->hw,
++					  I40E_SR_EMP_SR_SETTINGS_PTR,
++					  I40E_CURRENT_SETTING_PTR,
++					  I40E_LINK_BEHAVIOR_WORD_OFFSET,
++					  I40E_LINK_BEHAVIOR_WORD_LENGTH,
++					  &link_behavior);
++		if (read_status)
++			goto err_nvm;
++		link_behavior >>=
++		(pf->hw.port * I40E_LINK_BEHAVIOR_PORT_BIT_LENGTH);
++		ret = I40E_LINK_BEHAVIOR_OS_FORCED_ENABLED & link_behavior;
++	}
++	return ret;
++
++err_nvm:
++	dev_warn(&pf->pdev->dev,
++		 "Total Port Shutdown feature is off due to read nvm error:%d\n",
++		 read_status);
++	return ret;
++}
++
+ /**
+  * i40e_sw_init - Initialize general software structures (struct i40e_pf)
+  * @pf: board private structure to initialize
+@@ -12012,6 +12085,16 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 
+ 	pf->tx_timeout_recovery_level = 1;
+ 
++	if (pf->hw.mac.type != I40E_MAC_X722 &&
++	    i40e_is_total_port_shutdown_enabled(pf)) {
++		/* Link down on close must be on when total port shutdown
++		 * is enabled for a given port
++		 */
++		pf->flags |= (I40E_FLAG_TOTAL_PORT_SHUTDOWN
++			  | I40E_FLAG_LINK_DOWN_ON_CLOSE_ENABLED);
++		dev_info(&pf->pdev->dev,
++			 "Total Port Shutdown is enabled, link-down-on-close forced on\n");
++	}
+ 	mutex_init(&pf->switch_mutex);
+ 
+ sw_init_done:
+-- 
+2.26.0
 
-Sure. Just booted a few days ago actually. Full dmesg log attached (ends with me hard booting the server).
+--------------------------------------------------------------------
 
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
 
-From: Fujinaka, Todd <todd.fujinaka at intel.com<mailto:todd.fujinaka@intel.com>>
-Sent: Monday, April 6, 2020 4:32 PM
-To: Kevin Newman <knewman at peak6.com<mailto:knewman@peak6.com>>; intel-wired-lan at lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
-Subject: RE: X550 + ixgbe Reporting "ECC Err" With Strange Regularity...
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
 
-This is an EXTERNAL EMAIL. STOP. THINK before you CLICK links or OPEN attachments.
-
-________________________________
-Unfortunately, the "ECC Error" bit in the ICR is overloaded and could be caused by other things. Do you have a dmesg we can look at? (The whole thing from boot to the error?)
-
-Todd Fujinaka
-Software Application Engineer
-Data Center Group
-Intel Corporation
-todd.fujinaka at intel.com<mailto:todd.fujinaka@intel.com>
-
-From: Intel-wired-lan <intel-wired-lan-bounces at osuosl.org<mailto:intel-wired-lan-bounces@osuosl.org>> On Behalf Of Kevin Newman
-Sent: Monday, April 6, 2020 8:22 AM
-To: intel-wired-lan@lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
-Subject: [Intel-wired-lan] X550 + ixgbe Reporting "ECC Err" With Strange Regularity...
-
-Hi,
-
-I'm seeing a strangely high incidence of the following type of "ECC error" on X550 NICs running ixgbe 5.1.0 via kernel 4.15.0:
-
-2020-04-06T08:35:16.077662-05:00 dell-server1 kernel: [155528.916479] ixgbe 0000:19:00.1 eno2: Received ECC Err, initiating reset
-2020-04-06T08:35:16.077684-05:00 dell-server1 kernel: [155528.916480] ixgbe 0000:19:00.0 eno1: Received ECC Err, initiating reset
-2020-04-06T08:35:16.077685-05:00 dell-server1 kernel: [155528.916491] ixgbe 0000:19:00.0 eno1: Reset adapter
-2020-04-06T08:35:16.090422-05:00 dell-server1 kernel: [155528.930407] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 0 not cleared within the polling period
-2020-04-06T08:35:16.090439-05:00 dell-server1 kernel: [155528.930572] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 1 not cleared within the polling period
-2020-04-06T08:35:16.090440-05:00 dell-server1 kernel: [155528.930721] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 2 not cleared within the polling period
-2020-04-06T08:35:16.090440-05:00 dell-server1 kernel: [155528.930877] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 3 not cleared within the polling period
-2020-04-06T08:35:16.090442-05:00 dell-server1 kernel: [155528.931032] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 4 not cleared within the polling period
-2020-04-06T08:35:16.090443-05:00 dell-server1 kernel: [155528.931188] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 5 not cleared within the polling period
-2020-04-06T08:35:16.094301-05:00 dell-server1 kernel: [155528.933193] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 6 not cleared within the polling period
-2020-04-06T08:35:16.094319-05:00 dell-server1 kernel: [155528.935148] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 7 not cleared within the polling period
-2020-04-06T08:35:16.098055-05:00 dell-server1 kernel: [155528.937064] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 8 not cleared within the polling period
-2020-04-06T08:35:16.098062-05:00 dell-server1 kernel: [155528.938939] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 9 not cleared within the polling period
-2020-04-06T08:35:16.101678-05:00 dell-server1 kernel: [155528.940816] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 10 not cleared within the polling period
-2020-04-06T08:35:16.101685-05:00 dell-server1 kernel: [155528.942620] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 11 not cleared within the polling period
-2020-04-06T08:35:16.106751-05:00 dell-server1 kernel: [155528.944435] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 12 not cleared within the polling period
-2020-04-06T08:35:16.106759-05:00 dell-server1 kernel: [155528.946149] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 13 not cleared within the polling period
-2020-04-06T08:35:16.106760-05:00 dell-server1 kernel: [155528.947827] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 14 not cleared within the polling period
-2020-04-06T08:35:16.109948-05:00 dell-server1 kernel: [155528.949507] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 15 not cleared within the polling period
-2020-04-06T08:35:16.109955-05:00 dell-server1 kernel: [155528.951112] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 16 not cleared within the polling period
-2020-04-06T08:35:16.114513-05:00 dell-server1 kernel: [155528.952707] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 17 not cleared within the polling period
-2020-04-06T08:35:16.114522-05:00 dell-server1 kernel: [155528.954248] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 18 not cleared within the polling period
-2020-04-06T08:35:16.114528-05:00 dell-server1 kernel: [155528.955757] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 19 not cleared within the polling period
-2020-04-06T08:35:16.118763-05:00 dell-server1 kernel: [155528.957271] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 20 not cleared within the polling period
-2020-04-06T08:35:16.118769-05:00 dell-server1 kernel: [155528.958751] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 21 not cleared within the polling period
-2020-04-06T08:35:16.118770-05:00 dell-server1 kernel: [155528.960153] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 22 not cleared within the polling period
-2020-04-06T08:35:16.122679-05:00 dell-server1 kernel: [155528.961525] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 23 not cleared within the polling period
-2020-04-06T08:35:16.122690-05:00 dell-server1 kernel: [155528.962851] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 24 not cleared within the polling period
-2020-04-06T08:35:16.122691-05:00 dell-server1 kernel: [155528.964160] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 25 not cleared within the polling period
-2020-04-06T08:35:16.126155-05:00 dell-server1 kernel: [155528.965440] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 26 not cleared within the polling period
-2020-04-06T08:35:16.126167-05:00 dell-server1 kernel: [155528.966637] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 27 not cleared within the polling period
-2020-04-06T08:35:16.126168-05:00 dell-server1 kernel: [155528.967767] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 28 not cleared within the polling period
-2020-04-06T08:35:16.130187-05:00 dell-server1 kernel: [155528.968913] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 29 not cleared within the polling period
-2020-04-06T08:35:16.130206-05:00 dell-server1 kernel: [155528.969974] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 30 not cleared within the polling period
-2020-04-06T08:35:16.130207-05:00 dell-server1 kernel: [155528.971011] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 31 not cleared within the polling period
-2020-04-06T08:35:16.130208-05:00 dell-server1 kernel: [155528.971998] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 32 not cleared within the polling period
-2020-04-06T08:35:16.134180-05:00 dell-server1 kernel: [155528.972946] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 33 not cleared within the polling period
-2020-04-06T08:35:16.134192-05:00 dell-server1 kernel: [155528.973828] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 34 not cleared within the polling period
-2020-04-06T08:35:16.134193-05:00 dell-server1 kernel: [155528.974679] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 35 not cleared within the polling period
-2020-04-06T08:35:16.134194-05:00 dell-server1 kernel: [155528.975470] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 36 not cleared within the polling period
-2020-04-06T08:35:16.134195-05:00 dell-server1 kernel: [155528.976227] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 37 not cleared within the polling period
-2020-04-06T08:35:16.137630-05:00 dell-server1 kernel: [155528.976933] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 38 not cleared within the polling period
-2020-04-06T08:35:16.137641-05:00 dell-server1 kernel: [155528.977592] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 39 not cleared within the polling period
-2020-04-06T08:35:16.137642-05:00 dell-server1 kernel: [155528.978215] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 40 not cleared within the polling period
-2020-04-06T08:35:16.137643-05:00 dell-server1 kernel: [155528.978796] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 41 not cleared within the polling period
-2020-04-06T08:35:16.137644-05:00 dell-server1 kernel: [155528.979335] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 42 not cleared within the polling period
-2020-04-06T08:35:16.137645-05:00 dell-server1 kernel: [155528.979830] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 43 not cleared within the polling period
-2020-04-06T08:35:16.141629-05:00 dell-server1 kernel: [155528.980314] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 44 not cleared within the polling period
-2020-04-06T08:35:16.141640-05:00 dell-server1 kernel: [155528.980712] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 45 not cleared within the polling period
-2020-04-06T08:35:16.141641-05:00 dell-server1 kernel: [155528.981079] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 46 not cleared within the polling period
-2020-04-06T08:35:16.141642-05:00 dell-server1 kernel: [155528.981433] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 47 not cleared within the polling period
-2020-04-06T08:35:16.141649-05:00 dell-server1 kernel: [155528.981761] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 48 not cleared within the polling period
-2020-04-06T08:35:16.141650-05:00 dell-server1 kernel: [155528.982083] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 49 not cleared within the polling period
-2020-04-06T08:35:16.141651-05:00 dell-server1 kernel: [155528.982414] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 50 not cleared within the polling period
-2020-04-06T08:35:16.141652-05:00 dell-server1 kernel: [155528.982735] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 51 not cleared within the polling period
-2020-04-06T08:35:16.141652-05:00 dell-server1 kernel: [155528.983061] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 52 not cleared within the polling period
-2020-04-06T08:35:16.141722-05:00 dell-server1 kernel: [155528.983390] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 53 not cleared within the polling period
-2020-04-06T08:35:16.141738-05:00 dell-server1 kernel: [155528.983703] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 54 not cleared within the polling period
-2020-04-06T08:35:16.141740-05:00 dell-server1 kernel: [155528.984032] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 55 not cleared within the polling period
-2020-04-06T08:35:16.141748-05:00 dell-server1 kernel: [155528.984375] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 56 not cleared within the polling period
-2020-04-06T08:35:16.145642-05:00 dell-server1 kernel: [155528.984697] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 57 not cleared within the polling period
-2020-04-06T08:35:16.145653-05:00 dell-server1 kernel: [155528.985012] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 58 not cleared within the polling period
-2020-04-06T08:35:16.145654-05:00 dell-server1 kernel: [155528.985316] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 59 not cleared within the polling period
-2020-04-06T08:35:16.145655-05:00 dell-server1 kernel: [155528.985624] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 60 not cleared within the polling period
-2020-04-06T08:35:16.145690-05:00 dell-server1 kernel: [155528.985936] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 61 not cleared within the polling period
-2020-04-06T08:35:16.145691-05:00 dell-server1 kernel: [155528.986246] ixgbe 0000:19:00.0 eno1: RXDCTL.ENABLE on Rx queue 62 not cleared within the polling period
-2020-04-06T08:35:17.037635-05:00 dell-server1 kernel: [155529.877028] ixgbe 0000:19:00.1 eno2: Reset adapter
-2020-04-06T08:35:17.037648-05:00 dell-server1 kernel: [155529.877044] ixgbe 0000:19:00.0 eno1: speed changed to 0 for port eno1
-2020-04-06T08:35:17.049728-05:00 dell-server1 kernel: [155529.891566] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 0 not cleared within the polling period
-2020-04-06T08:35:17.049734-05:00 dell-server1 kernel: [155529.891856] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 1 not cleared within the polling period
-2020-04-06T08:35:17.049736-05:00 dell-server1 kernel: [155529.892133] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 2 not cleared within the polling period
-2020-04-06T08:35:17.053617-05:00 dell-server1 kernel: [155529.892410] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 3 not cleared within the polling period
-2020-04-06T08:35:17.053621-05:00 dell-server1 kernel: [155529.892665] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 4 not cleared within the polling period
-2020-04-06T08:35:17.053621-05:00 dell-server1 kernel: [155529.892917] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 5 not cleared within the polling period
-2020-04-06T08:35:17.053622-05:00 dell-server1 kernel: [155529.893170] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 6 not cleared within the polling period
-2020-04-06T08:35:17.053622-05:00 dell-server1 kernel: [155529.893420] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 7 not cleared within the polling period
-2020-04-06T08:35:17.053623-05:00 dell-server1 kernel: [155529.893670] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 8 not cleared within the polling period
-2020-04-06T08:35:17.053625-05:00 dell-server1 kernel: [155529.893921] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 9 not cleared within the polling period
-2020-04-06T08:35:17.053626-05:00 dell-server1 kernel: [155529.894171] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 10 not cleared within the polling period
-2020-04-06T08:35:17.053626-05:00 dell-server1 kernel: [155529.894430] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 11 not cleared within the polling period
-2020-04-06T08:35:17.053627-05:00 dell-server1 kernel: [155529.894688] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 12 not cleared within the polling period
-2020-04-06T08:35:17.053628-05:00 dell-server1 kernel: [155529.894945] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 13 not cleared within the polling period
-2020-04-06T08:35:17.053629-05:00 dell-server1 kernel: [155529.895201] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 14 not cleared within the polling period
-2020-04-06T08:35:17.053630-05:00 dell-server1 kernel: [155529.895458] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 15 not cleared within the polling period
-2020-04-06T08:35:17.053630-05:00 dell-server1 kernel: [155529.895715] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 16 not cleared within the polling period
-2020-04-06T08:35:17.053700-05:00 dell-server1 kernel: [155529.895971] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 17 not cleared within the polling period
-2020-04-06T08:35:17.053722-05:00 dell-server1 kernel: [155529.896235] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 18 not cleared within the polling period
-2020-04-06T08:35:17.057692-05:00 dell-server1 kernel: [155529.896519] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 19 not cleared within the polling period
-2020-04-06T08:35:17.057697-05:00 dell-server1 kernel: [155529.896775] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 20 not cleared within the polling period
-2020-04-06T08:35:17.057698-05:00 dell-server1 kernel: [155529.897029] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 21 not cleared within the polling period
-2020-04-06T08:35:17.057699-05:00 dell-server1 kernel: [155529.897285] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 22 not cleared within the polling period
-2020-04-06T08:35:17.057699-05:00 dell-server1 kernel: [155529.897540] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 23 not cleared within the polling period
-2020-04-06T08:35:17.057700-05:00 dell-server1 kernel: [155529.897796] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 24 not cleared within the polling period
-2020-04-06T08:35:17.057701-05:00 dell-server1 kernel: [155529.898049] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 25 not cleared within the polling period
-2020-04-06T08:35:17.057705-05:00 dell-server1 kernel: [155529.898309] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 26 not cleared within the polling period
-2020-04-06T08:35:17.057706-05:00 dell-server1 kernel: [155529.898562] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 27 not cleared within the polling period
-2020-04-06T08:35:17.057708-05:00 dell-server1 kernel: [155529.898815] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 28 not cleared within the polling period
-2020-04-06T08:35:17.057710-05:00 dell-server1 kernel: [155529.899069] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 29 not cleared within the polling period
-2020-04-06T08:35:17.057711-05:00 dell-server1 kernel: [155529.899322] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 30 not cleared within the polling period
-2020-04-06T08:35:17.057713-05:00 dell-server1 kernel: [155529.899575] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 31 not cleared within the polling period
-2020-04-06T08:35:17.057715-05:00 dell-server1 kernel: [155529.899828] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 32 not cleared within the polling period
-2020-04-06T08:35:17.057716-05:00 dell-server1 kernel: [155529.900082] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 33 not cleared within the polling period
-2020-04-06T08:35:17.061626-05:00 dell-server1 kernel: [155529.900350] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 34 not cleared within the polling period
-2020-04-06T08:35:17.061632-05:00 dell-server1 kernel: [155529.900605] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 35 not cleared within the polling period
-2020-04-06T08:35:17.061633-05:00 dell-server1 kernel: [155529.900859] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 36 not cleared within the polling period
-2020-04-06T08:35:17.061633-05:00 dell-server1 kernel: [155529.901114] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 37 not cleared within the polling period
-2020-04-06T08:35:17.061634-05:00 dell-server1 kernel: [155529.901368] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 38 not cleared within the polling period
-2020-04-06T08:35:17.061635-05:00 dell-server1 kernel: [155529.901622] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 39 not cleared within the polling period
-2020-04-06T08:35:17.061636-05:00 dell-server1 kernel: [155529.901876] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 40 not cleared within the polling period
-2020-04-06T08:35:17.061637-05:00 dell-server1 kernel: [155529.902130] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 41 not cleared within the polling period
-2020-04-06T08:35:17.061641-05:00 dell-server1 kernel: [155529.902383] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 42 not cleared within the polling period
-2020-04-06T08:35:17.061642-05:00 dell-server1 kernel: [155529.902636] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 43 not cleared within the polling period
-2020-04-06T08:35:17.061643-05:00 dell-server1 kernel: [155529.902890] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 44 not cleared within the polling period
-2020-04-06T08:35:17.061643-05:00 dell-server1 kernel: [155529.903145] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 45 not cleared within the polling period
-2020-04-06T08:35:17.061644-05:00 dell-server1 kernel: [155529.903383] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 46 not cleared within the polling period
-2020-04-06T08:35:17.061656-05:00 dell-server1 kernel: [155529.903616] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 47 not cleared within the polling period
-2020-04-06T08:35:17.061658-05:00 dell-server1 kernel: [155529.903836] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 48 not cleared within the polling period
-2020-04-06T08:35:17.061659-05:00 dell-server1 kernel: [155529.904054] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 49 not cleared within the polling period
-2020-04-06T08:35:17.065643-05:00 dell-server1 kernel: [155529.904286] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 50 not cleared within the polling period
-2020-04-06T08:35:17.065655-05:00 dell-server1 kernel: [155529.904510] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 51 not cleared within the polling period
-2020-04-06T08:35:17.065656-05:00 dell-server1 kernel: [155529.904730] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 52 not cleared within the polling period
-2020-04-06T08:35:17.065661-05:00 dell-server1 kernel: [155529.904950] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 53 not cleared within the polling period
-2020-04-06T08:35:17.065662-05:00 dell-server1 kernel: [155529.905170] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 54 not cleared within the polling period
-2020-04-06T08:35:17.065670-05:00 dell-server1 kernel: [155529.905389] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 55 not cleared within the polling period
-2020-04-06T08:35:17.065671-05:00 dell-server1 kernel: [155529.905608] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 56 not cleared within the polling period
-2020-04-06T08:35:17.065672-05:00 dell-server1 kernel: [155529.905827] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 57 not cleared within the polling period
-2020-04-06T08:35:17.065673-05:00 dell-server1 kernel: [155529.906039] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 58 not cleared within the polling period
-2020-04-06T08:35:17.065674-05:00 dell-server1 kernel: [155529.906250] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 59 not cleared within the polling period
-2020-04-06T08:35:17.065674-05:00 dell-server1 kernel: [155529.906462] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 60 not cleared within the polling period
-2020-04-06T08:35:17.065675-05:00 dell-server1 kernel: [155529.906674] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 61 not cleared within the polling period
-2020-04-06T08:35:17.065676-05:00 dell-server1 kernel: [155529.906885] ixgbe 0000:19:00.1 eno2: RXDCTL.ENABLE on Rx queue 62 not cleared within the polling period
-2020-04-06T08:35:17.965630-05:00 dell-server1 kernel: [155530.804204] bond0: link status definitely down for interface eno1, disabling it
-2020-04-06T08:35:17.965648-05:00 dell-server1 kernel: [155530.804272] bond0: link status definitely down for interface eno2, disabling it
-2020-04-06T08:35:17.965649-05:00 dell-server1 kernel: [155530.804274] bond0: now running without any active interface!
-2020-04-06T08:35:18.069645-05:00 dell-server1 kernel: [155530.908165] bond0: link status definitely down for interface eno2, disabling it
-2020-04-06T08:35:22.137624-05:00 dell-server1 kernel: [155534.976629] ixgbe 0000:19:00.0 eno1: NIC Link is Up 10 Gbps, Flow Control: None
-2020-04-06T08:35:22.141618-05:00 dell-server1 kernel: [155534.979784] bond0: link status definitely up for interface eno1, 10000 Mbps full duplex
-2020-04-06T08:35:22.141627-05:00 dell-server1 kernel: [155534.979791] bond0: first active interface up!
-2020-04-06T08:35:23.005627-05:00 dell-server1 kernel: [155535.844845] ixgbe 0000:19:00.1 eno2: NIC Link is Up 10 Gbps, Flow Control: None
-2020-04-06T08:35:23.077611-05:00 dell-server1 kernel: [155535.915696] bond0: link status definitely up for interface eno2, 10000 Mbps full duplex
-2020-04-06T08:35:25.256404-05:00 dell-server1 kernel: [155538.083623] ixgbe 0000:19:00.0 eno1: Detected Tx Unit Hang
-2020-04-06T08:35:25.256418-05:00 dell-server1 kernel: [155538.083623]   Tx Queue             <39>
-2020-04-06T08:35:25.256419-05:00 dell-server1 kernel: [155538.083623]   TDH, TDT             <0>, <d>
-2020-04-06T08:35:25.256420-05:00 dell-server1 kernel: [155538.083623]   next_to_use          <d>
-2020-04-06T08:35:25.256421-05:00 dell-server1 kernel: [155538.083623]   next_to_clean        <0>
-2020-04-06T08:35:25.256421-05:00 dell-server1 kernel: [155538.083623] tx_buffer_info[next_to_clean]
-2020-04-06T08:35:25.256422-05:00 dell-server1 kernel: [155538.083623]   time_stamp           <1025039c7>
-2020-04-06T08:35:25.256422-05:00 dell-server1 kernel: [155538.083623]   jiffies              <102503cb8>
-2020-04-06T08:35:25.256423-05:00 dell-server1 kernel: [155538.083626] ixgbe 0000:19:00.0 eno1: Detected Tx Unit Hang
-2020-04-06T08:35:25.256424-05:00 dell-server1 kernel: [155538.083626]   Tx Queue             <35>
-2020-04-06T08:35:25.256425-05:00 dell-server1 kernel: [155538.083626]   TDH, TDT             <0>, <6>
-2020-04-06T08:35:25.256425-05:00 dell-server1 kernel: [155538.083626]   next_to_use          <6>
-2020-04-06T08:35:25.256425-05:00 dell-server1 kernel: [155538.083626]   next_to_clean        <0>
-2020-04-06T08:35:25.256439-05:00 dell-server1 kernel: [155538.083626] tx_buffer_info[next_to_clean]
-2020-04-06T08:35:25.256440-05:00 dell-server1 kernel: [155538.083626]   time_stamp           <1025039e0>
-2020-04-06T08:35:25.256441-05:00 dell-server1 kernel: [155538.083626]   jiffies              <102503cb8>
-2020-04-06T08:35:25.256443-05:00 dell-server1 kernel: [155538.083629] ixgbe 0000:19:00.0 eno1: Detected Tx Unit Hang
-2020-04-06T08:35:25.256444-05:00 dell-server1 kernel: [155538.083629]   Tx Queue             <52>
-2020-04-06T08:35:25.256445-05:00 dell-server1 kernel: [155538.083629]   TDH, TDT             <0>, <3>
-2020-04-06T08:35:25.256445-05:00 dell-server1 kernel: [155538.083629]   next_to_use          <3>
-2020-04-06T08:35:25.256449-05:00 dell-server1 kernel: [155538.083629]   next_to_clean        <0>
-2020-04-06T08:35:25.256450-05:00 dell-server1 kernel: [155538.083629] tx_buffer_info[next_to_clean]
-2020-04-06T08:35:25.256451-05:00 dell-server1 kernel: [155538.083629]   time_stamp           <102503a08>
-2020-04-06T08:35:25.256453-05:00 dell-server1 kernel: [155538.083629]   jiffies              <102503cb8>
-2020-04-06T08:35:25.256454-05:00 dell-server1 kernel: [155538.083632] ixgbe 0000:19:00.0 eno1: Detected Tx Unit Hang
-2020-04-06T08:35:25.256456-05:00 dell-server1 kernel: [155538.083632]   Tx Queue             <56>
-2020-04-06T08:35:25.256458-05:00 dell-server1 kernel: [155538.083632]   TDH, TDT             <0>, <4>
-2020-04-06T08:35:25.256460-05:00 dell-server1 kernel: [155538.083632]   next_to_use          <4>
-2020-04-06T08:35:25.256461-05:00 dell-server1 kernel: [155538.083632]   next_to_clean        <0>
-2020-04-06T08:35:25.256463-05:00 dell-server1 kernel: [155538.083632] tx_buffer_info[next_to_clean]
-2020-04-06T08:35:25.256464-05:00 dell-server1 kernel: [155538.083632]   time_stamp           <1025039f0>
-2020-04-06T08:35:25.256467-05:00 dell-server1 kernel: [155538.083632]   jiffies              <102503cb8>
-2020-04-06T08:35:25.256469-05:00 dell-server1 kernel: [155538.083634] ixgbe 0000:19:00.0 eno1: Detected Tx Unit Hang
-2020-04-06T08:35:25.256470-05:00 dell-server1 kernel: [155538.083634]   Tx Queue             <55>
-(...and this process repeats itself, even after rmmod'ing ixgbe and modprobe'ing it back...)
-
-The reason I say it's a high incidence is that we have about 100 of these NICs and have already seen it on 4 or 5 of them. 3 of them were on 19.0 firmware when it happened but this latest one was on 19.5 firmware when it happened.
-
-I'm skeptical of this "ECC Err" that triggers it since they're all fairly new servers and having bad memory on that many NICs is still abnormally high. In that same vein, the main system DIMMs don't report any errors or anything to indicate that there are multi-bit or even single-bit errors going on.
-
-Are there any further diagnostic tools I could use to figure out what's going on here? I can't seem to reproduce the issue by sending high packet load at the cards or anything. Or is this a bug that you all are aware of?
-
-
-Thanks!
-
--Kevin
-
-
-
-________________________________
-See http://www.peak6.com/email_disclaimer/ for terms and conditions related to this email
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200407/cf2cac36/attachment-0001.html>
