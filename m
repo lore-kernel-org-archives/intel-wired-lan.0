@@ -1,192 +1,122 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 09 Apr 2020 14:53:54 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 2006204a0524501d0ce640bee425c98476477844
-Message-ID: <5e8ec682.awNzWo2y8hxxJjl+%lkp@intel.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Wed, 08 Apr 2020 13:50:34 +0200
+Subject: [Intel-wired-lan] [PATCH RFC v2 00/33] XDP extend with knowledge of
+ frame size
+Message-ID: <158634658714.707275.7903484085370879864.stgit@firesoul>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 2006204a0524501d0ce640bee425c98476477844  igc: Dump ETQF registers
+RFC-note: This is only an RFC because net-next is closed.
+- Please ACK patches you like, then I will collect those for later.
 
-Warning in current branch:
+XDP have evolved to support several frame sizes, but xdp_buff was not
+updated with this information. This have caused the side-effect that
+XDP frame data hard end is unknown. This have limited the BPF-helper
+bpf_xdp_adjust_tail to only shrink the packet. This patchset address
+this and add packet tail extend/grow.
 
-drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.c:39:13: warning: struct member 'pce_tbl_reg_map::value' is never used. [unusedStructMember]
-drivers/net/ethernet/intel/igc/igc_main.c:5309:6: warning: Condition '!err' is always true [knownConditionTrueFalse]
+The purpose of the patchset is ALSO to reserve a memory area that can be
+used for storing extra information, specifically for extending XDP with
+multi-buffer support. One proposal is to use same layout as
+skb_shared_info, which is why this area is currently 320 bytes.
 
-Warning ids grouped by kconfigs:
-
-recent_errors
-|-- i386-allmodconfig
-|   `-- drivers-net-ethernet-intel-igc-igc_main.c:warning:Condition-err-is-always-true-knownConditionTrueFalse
-`-- x86_64-allyesconfig
-    |-- drivers-net-ethernet-intel-gwdpa-gswip-gswip_tbl.c:warning:struct-member-pce_tbl_reg_map::value-is-never-used.-unusedStructMember
-    `-- drivers-net-ethernet-intel-igc-igc_main.c:warning:Condition-err-is-always-true-knownConditionTrueFalse
-
-elapsed time: 1737m
-
-configs tested: 152
-configs skipped: 0
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                              allmodconfig
-arm                               allnoconfig
-arm                              allyesconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm64                            allyesconfig
-arm                           efm32_defconfig
-arm                         at91_dt_defconfig
-arm                        shmobile_defconfig
-arm64                               defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm                        multi_v7_defconfig
-sparc                            allyesconfig
-powerpc                       ppc64_defconfig
-riscv                          rv32_defconfig
-riscv                               defconfig
-s390                          debug_defconfig
-ia64                             alldefconfig
-sparc64                           allnoconfig
-ia64                             allmodconfig
-arc                              allyesconfig
-s390                             alldefconfig
-nios2                         3c120_defconfig
-i386                                defconfig
-powerpc                             defconfig
-mips                              allnoconfig
-i386                              allnoconfig
-i386                             alldefconfig
-i386                             allyesconfig
-i386                              debian-10.3
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-csky                                defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-arc                                 defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                          rhel-kconfig
-mips                      fuloong2e_defconfig
-mips                             allyesconfig
-mips                           32r2_defconfig
-mips                             allmodconfig
-mips                         64r6el_defconfig
-mips                      malta_kvm_defconfig
-parisc                            allnoconfig
-parisc                           allyesconfig
-parisc                generic-32bit_defconfig
-parisc                generic-64bit_defconfig
-x86_64               randconfig-a001-20200408
-x86_64               randconfig-a002-20200408
-x86_64               randconfig-a003-20200408
-i386                 randconfig-a001-20200408
-i386                 randconfig-a002-20200408
-i386                 randconfig-a003-20200408
-nds32                randconfig-a001-20200408
-m68k                 randconfig-a001-20200408
-alpha                randconfig-a001-20200408
-parisc               randconfig-a001-20200408
-riscv                randconfig-a001-20200408
-c6x                  randconfig-a001-20200408
-h8300                randconfig-a001-20200408
-microblaze           randconfig-a001-20200408
-nios2                randconfig-a001-20200408
-sparc64              randconfig-a001-20200408
-s390                 randconfig-a001-20200408
-xtensa               randconfig-a001-20200408
-csky                 randconfig-a001-20200408
-openrisc             randconfig-a001-20200408
-sh                   randconfig-a001-20200408
-i386                 randconfig-b003-20200408
-x86_64               randconfig-b002-20200408
-x86_64               randconfig-b003-20200408
-i386                 randconfig-b001-20200408
-x86_64               randconfig-b001-20200408
-i386                 randconfig-b002-20200408
-x86_64               randconfig-c001-20200408
-x86_64               randconfig-c002-20200408
-x86_64               randconfig-c003-20200408
-i386                 randconfig-c001-20200408
-i386                 randconfig-c002-20200408
-i386                 randconfig-c003-20200408
-x86_64               randconfig-e002-20200408
-i386                 randconfig-e003-20200408
-i386                 randconfig-e001-20200408
-x86_64               randconfig-e001-20200408
-x86_64               randconfig-e003-20200408
-i386                 randconfig-e002-20200408
-i386                 randconfig-f001-20200408
-x86_64               randconfig-g003-20200408
-i386                 randconfig-g003-20200408
-x86_64               randconfig-g002-20200408
-i386                 randconfig-g002-20200408
-i386                 randconfig-g001-20200408
-x86_64               randconfig-h001-20200408
-x86_64               randconfig-h002-20200408
-x86_64               randconfig-h003-20200408
-i386                 randconfig-h001-20200408
-i386                 randconfig-h002-20200408
-i386                 randconfig-h003-20200408
-arc                  randconfig-a001-20200408
-arm                  randconfig-a001-20200408
-arm64                randconfig-a001-20200408
-ia64                 randconfig-a001-20200408
-powerpc              randconfig-a001-20200408
-sparc                randconfig-a001-20200408
-riscv                            allmodconfig
-riscv                             allnoconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                             allyesconfig
-s390                                defconfig
-s390                       zfcpdump_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-sparc64                             defconfig
-um                                  defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                         rhel-7.2-clear
-x86_64                               rhel-7.6
+When converting xdp_frame to SKB (veth and cpumap), the full tailroom
+area can now be used and SKB truesize is now correct. For most
+drivers this result in a much larger tailroom in SKB "head" data
+area. The network stack can now take advantage of this when doing SKB
+coalescing. Thus, a good driver test is to use xdp_redirect_cpu from
+samples/bpf/ and do some TCP stream testing.
 
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+
+Ilias Apalodimas (1):
+      net: netsec: Add support for XDP frame size
+
+Jesper Dangaard Brouer (32):
+      xdp: add frame size to xdp_buff
+      bnxt: add XDP frame size to driver
+      sfc: add XDP frame size
+      mvneta: add XDP frame size to driver
+      net: XDP-generic determining XDP frame size
+      xdp: xdp_frame add member frame_sz and handle in convert_to_xdp_frame
+      xdp: cpumap redirect use frame_sz and increase skb_tailroom
+      veth: adjust hard_start offset on redirect XDP frames
+      veth: xdp using frame_sz in veth driver
+      dpaa2-eth: add XDP frame size
+      hv_netvsc: add XDP frame size to driver
+      qlogic/qede: add XDP frame size to driver
+      net: ethernet: ti: add XDP frame size to driver cpsw
+      ena: add XDP frame size to amazon NIC driver
+      mlx4: add XDP frame size and adjust max XDP MTU
+      mlx5: rx queue setup time determine frame_sz for XDP
+      net: thunderx: add XDP frame size
+      nfp: add XDP frame size to netronome driver
+      tun: add XDP frame size
+      vhost_net: also populate XDP frame size
+      virtio_net: add XDP frame size in two code paths
+      ixgbe: fix XDP redirect on archs with PAGE_SIZE above 4K
+      ixgbe: add XDP frame size to driver
+      ixgbevf: add XDP frame size to VF driver
+      i40e: add XDP frame size to driver
+      ice: add XDP frame size to driver
+      xdp: for Intel AF_XDP drivers add XDP frame_sz
+      xdp: allow bpf_xdp_adjust_tail() to grow packet size
+      xdp: clear grow memory in bpf_xdp_adjust_tail()
+      bpf: add xdp.frame_sz in bpf_prog_test_run_xdp().
+      selftests/bpf: adjust BPF selftest for xdp_adjust_tail
+      selftests/bpf: xdp_adjust_tail add grow tail tests
+
+
+ drivers/net/ethernet/amazon/ena/ena_netdev.c       |    1 
+ drivers/net/ethernet/amazon/ena/ena_netdev.h       |    5 -
+ drivers/net/ethernet/broadcom/bnxt/bnxt_xdp.c      |    1 
+ drivers/net/ethernet/cavium/thunder/nicvf_main.c   |    1 
+ drivers/net/ethernet/freescale/dpaa2/dpaa2-eth.c   |    1 
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        |   31 ++++-
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c         |    2 
+ drivers/net/ethernet/intel/ice/ice_txrx.c          |   34 ++++--
+ drivers/net/ethernet/intel/ice/ice_xsk.c           |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      |   33 ++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c       |    2 
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c  |   34 ++++--
+ drivers/net/ethernet/marvell/mvneta.c              |   25 ++--
+ drivers/net/ethernet/mellanox/mlx4/en_netdev.c     |    3 
+ drivers/net/ethernet/mellanox/mlx4/en_rx.c         |    1 
+ drivers/net/ethernet/mellanox/mlx5/core/en.h       |    1 
+ drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c   |    1 
+ drivers/net/ethernet/mellanox/mlx5/core/en_main.c  |    4 +
+ .../net/ethernet/netronome/nfp/nfp_net_common.c    |    1 
+ drivers/net/ethernet/qlogic/qede/qede_fp.c         |    1 
+ drivers/net/ethernet/qlogic/qede/qede_main.c       |    2 
+ drivers/net/ethernet/sfc/rx.c                      |    1 
+ drivers/net/ethernet/socionext/netsec.c            |   30 +++--
+ drivers/net/ethernet/ti/cpsw.c                     |    1 
+ drivers/net/ethernet/ti/cpsw_new.c                 |    1 
+ drivers/net/hyperv/netvsc_bpf.c                    |    1 
+ drivers/net/hyperv/netvsc_drv.c                    |    2 
+ drivers/net/tun.c                                  |    2 
+ drivers/net/veth.c                                 |   28 +++--
+ drivers/net/virtio_net.c                           |   15 ++
+ drivers/vhost/net.c                                |    1 
+ include/net/xdp.h                                  |   31 +++++
+ include/net/xdp_sock.h                             |   11 ++
+ include/uapi/linux/bpf.h                           |    4 -
+ kernel/bpf/cpumap.c                                |   21 ---
+ net/bpf/test_run.c                                 |   16 ++-
+ net/core/dev.c                                     |   14 +-
+ net/core/filter.c                                  |   23 +++-
+ net/core/xdp.c                                     |    7 +
+ .../selftests/bpf/prog_tests/xdp_adjust_tail.c     |  123 +++++++++++++++++++-
+ .../testing/selftests/bpf/progs/test_adjust_tail.c |   30 -----
+ .../bpf/progs/test_xdp_adjust_tail_grow.c          |   33 +++++
+ .../bpf/progs/test_xdp_adjust_tail_shrink.c        |   30 +++++
+ 43 files changed, 472 insertions(+), 139 deletions(-)
+ delete mode 100644 tools/testing/selftests/bpf/progs/test_adjust_tail.c
+ create mode 100644 tools/testing/selftests/bpf/progs/test_xdp_adjust_tail_grow.c
+ create mode 100644 tools/testing/selftests/bpf/progs/test_xdp_adjust_tail_shrink.c
+
+--
+
