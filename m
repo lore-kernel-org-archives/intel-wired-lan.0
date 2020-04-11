@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 11 Apr 2020 19:13:07 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.14 18/37] net: intel: e1000e:
- fix possible sleep-in-atomic-context bugs in e1000e_get_hw_semaphore()
-In-Reply-To: <20200411231327.26550-1-sashal@kernel.org>
-References: <20200411231327.26550-1-sashal@kernel.org>
-Message-ID: <20200411231327.26550-18-sashal@kernel.org>
+Date: Sat, 11 Apr 2020 19:14:00 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.9 13/26] net: intel: e1000e: fix
+ possible sleep-in-atomic-context bugs in e1000e_get_hw_semaphore()
+In-Reply-To: <20200411231413.26911-1-sashal@kernel.org>
+References: <20200411231413.26911-1-sashal@kernel.org>
+Message-ID: <20200411231413.26911-13-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -63,7 +63,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
-index 48cc945fc8b0f..4f79a778e1758 100644
+index 5bdc3a2d4fd70..0fc9f49844632 100644
 --- a/drivers/net/ethernet/intel/e1000e/mac.c
 +++ b/drivers/net/ethernet/intel/e1000e/mac.c
 @@ -1381,7 +1381,7 @@ s32 e1000e_get_hw_semaphore(struct e1000_hw *hw)
