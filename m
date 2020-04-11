@@ -1,98 +1,89 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 11 Apr 2020 19:02:15 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.6 058/149] ice: Add helper to
- determine if VF link is up
-In-Reply-To: <20200411230347.22371-1-sashal@kernel.org>
-References: <20200411230347.22371-1-sashal@kernel.org>
-Message-ID: <20200411230347.22371-58-sashal@kernel.org>
+Date: Sat, 11 Apr 2020 19:05:47 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.5 042/121] net: intel: e1000e:
+ fix possible sleep-in-atomic-context bugs in e1000e_get_hw_semaphore()
+In-Reply-To: <20200411230706.23855-1-sashal@kernel.org>
+References: <20200411230706.23855-1-sashal@kernel.org>
+Message-ID: <20200411230706.23855-42-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Jia-Ju Bai <baijiaju1990@gmail.com>
 
-[ Upstream commit 0b6c6a8bb6d541aad9e0f3bb2307316707aec723 ]
+[ Upstream commit 2e05f756c7099c8991142382648a37b0d4c85943 ]
 
-The check for vf->link_up is incorrect because this field is only valid if
-vf->link_forced is true. Fix this by adding the helper ice_is_vf_link_up()
-to determine if the VF's link is up.
+The driver may sleep while holding a spinlock.
+The function call path (from bottom to top) in Linux 4.19 is:
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+drivers/net/ethernet/intel/e1000e/mac.c, 1366:
+	usleep_range in e1000e_get_hw_semaphore
+drivers/net/ethernet/intel/e1000e/80003es2lan.c, 322:
+	e1000e_get_hw_semaphore in e1000_release_swfw_sync_80003es2lan
+drivers/net/ethernet/intel/e1000e/80003es2lan.c, 197:
+	e1000_release_swfw_sync_80003es2lan in e1000_release_phy_80003es2lan
+drivers/net/ethernet/intel/e1000e/netdev.c, 4883:
+	(FUNC_PTR) e1000_release_phy_80003es2lan in e1000e_update_phy_stats
+drivers/net/ethernet/intel/e1000e/netdev.c, 4917:
+	e1000e_update_phy_stats in e1000e_update_stats
+drivers/net/ethernet/intel/e1000e/netdev.c, 5945:
+	e1000e_update_stats in e1000e_get_stats64
+drivers/net/ethernet/intel/e1000e/netdev.c, 5944:
+	spin_lock in e1000e_get_stats64
+
+drivers/net/ethernet/intel/e1000e/mac.c, 1384:
+	usleep_range in e1000e_get_hw_semaphore
+drivers/net/ethernet/intel/e1000e/80003es2lan.c, 322:
+	e1000e_get_hw_semaphore in e1000_release_swfw_sync_80003es2lan
+drivers/net/ethernet/intel/e1000e/80003es2lan.c, 197:
+	e1000_release_swfw_sync_80003es2lan in e1000_release_phy_80003es2lan
+drivers/net/ethernet/intel/e1000e/netdev.c, 4883:
+	(FUNC_PTR) e1000_release_phy_80003es2lan in e1000e_update_phy_stats
+drivers/net/ethernet/intel/e1000e/netdev.c, 4917:
+	e1000e_update_phy_stats in e1000e_update_stats
+drivers/net/ethernet/intel/e1000e/netdev.c, 5945:
+	e1000e_update_stats in e1000e_get_stats64
+drivers/net/ethernet/intel/e1000e/netdev.c, 5944:
+	spin_lock in e1000e_get_stats64
+
+(FUNC_PTR) means a function pointer is called.
+
+To fix these bugs, usleep_range() is replaced with udelay().
+
+These bugs are found by a static analysis tool STCheck written by myself.
+
+Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 42 +++++++++++--------
- 1 file changed, 25 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/intel/e1000e/mac.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 75c70d432c724..5924924b464a4 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -90,6 +90,26 @@ ice_set_pfe_link(struct ice_vf *vf, struct virtchnl_pf_event *pfe,
+diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
+index e531976f8a677..51512a73fdd07 100644
+--- a/drivers/net/ethernet/intel/e1000e/mac.c
++++ b/drivers/net/ethernet/intel/e1000e/mac.c
+@@ -1363,7 +1363,7 @@ s32 e1000e_get_hw_semaphore(struct e1000_hw *hw)
+ 		if (!(swsm & E1000_SWSM_SMBI))
+ 			break;
+ 
+-		usleep_range(50, 100);
++		udelay(100);
+ 		i++;
  	}
- }
  
-+/**
-+ * ice_is_vf_link_up - check if the VF's link is up
-+ * @vf: VF to check if link is up
-+ */
-+static bool ice_is_vf_link_up(struct ice_vf *vf)
-+{
-+	struct ice_pf *pf = vf->pf;
-+
-+	if (ice_check_vf_init(pf, vf))
-+		return false;
-+
-+	if (!vf->num_qs_ena)
-+		return false;
-+	else if (vf->link_forced)
-+		return vf->link_up;
-+	else
-+		return pf->hw.port_info->phy.link_info.link_info &
-+			ICE_AQ_LINK_UP;
-+}
-+
- /**
-  * ice_vc_notify_vf_link_state - Inform a VF of link status
-  * @vf: pointer to the VF structure
-@@ -99,28 +119,16 @@ ice_set_pfe_link(struct ice_vf *vf, struct virtchnl_pf_event *pfe,
- static void ice_vc_notify_vf_link_state(struct ice_vf *vf)
- {
- 	struct virtchnl_pf_event pfe = { 0 };
--	struct ice_link_status *ls;
--	struct ice_pf *pf = vf->pf;
--	struct ice_hw *hw;
--
--	hw = &pf->hw;
--	ls = &hw->port_info->phy.link_info;
-+	struct ice_hw *hw = &vf->pf->hw;
+@@ -1381,7 +1381,7 @@ s32 e1000e_get_hw_semaphore(struct e1000_hw *hw)
+ 		if (er32(SWSM) & E1000_SWSM_SWESMBI)
+ 			break;
  
- 	pfe.event = VIRTCHNL_EVENT_LINK_CHANGE;
- 	pfe.severity = PF_EVENT_SEVERITY_INFO;
+-		usleep_range(50, 100);
++		udelay(100);
+ 	}
  
--	/* Always report link is down if the VF queues aren't enabled */
--	if (!vf->num_qs_ena) {
-+	if (ice_is_vf_link_up(vf))
-+		ice_set_pfe_link(vf, &pfe,
-+				 hw->port_info->phy.link_info.link_speed, true);
-+	else
- 		ice_set_pfe_link(vf, &pfe, ICE_AQ_LINK_SPEED_UNKNOWN, false);
--	} else if (vf->link_forced) {
--		u16 link_speed = vf->link_up ?
--			ls->link_speed : ICE_AQ_LINK_SPEED_UNKNOWN;
--
--		ice_set_pfe_link(vf, &pfe, link_speed, vf->link_up);
--	} else {
--		ice_set_pfe_link(vf, &pfe, ls->link_speed,
--				 ls->link_info & ICE_AQ_LINK_UP);
--	}
- 
- 	ice_aq_send_msg_to_vf(hw, vf->vf_id, VIRTCHNL_OP_EVENT,
- 			      VIRTCHNL_STATUS_SUCCESS, (u8 *)&pfe,
+ 	if (i == timeout) {
 -- 
 2.20.1
 
