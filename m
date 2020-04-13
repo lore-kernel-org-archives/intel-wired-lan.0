@@ -1,66 +1,197 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 13 Apr 2020 11:47:21 -0700
-Subject: [Intel-wired-lan] BUG: e1000: infinitely loop at
- e1000_set_link_ksettings
-In-Reply-To: <20200412191824.GA109724@laptop>
-References: <20200412191824.GA109724@laptop>
-Message-ID: <CAKgT0Udn3sE4iZci2dRNun6i3DMoG==kuksX_gLXWQORXA1kWA@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 14 Apr 2020 02:57:41 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 149a6f1718926d6066be50e6ec8bf9cef943eaea
+Message-ID: <5e94b625.aEvrMpqBFeBPuXbk%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Apr 12, 2020 at 4:12 PM Maxim Zhukov
-<mussitantesmortem@gmail.com> wrote:
->
-> On Qemu X86 (kernel 5.4.31):
-What version of QEMU are you running? That would tell us more about
-how the device is being emulated.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 149a6f1718926d6066be50e6ec8bf9cef943eaea  igc: Remove unused registers
 
-> The system-maintenance daemon hangout on D-state at startup on
-> ioctl(ETHTOOL_SSET) for setup advertising, duplex, etc...
->
-> kgdb stacktrace:
->
-> ----
->
+Warning in current branch:
 
-I am dropping the first backtrace since it is a symptom of the trace
-below. Essentially the issue is all calls to e1000_reinit_locked get
-stuck because the __E1000_RESETTING bit is stuck set because this
-first thread is stuck waiting on napi_disable to succeed.
+drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.c:39:13: warning: struct member 'pce_tbl_reg_map::value' is never used. [unusedStructMember]
+drivers/net/ethernet/intel/igc/igc_main.c:5298:6: warning: Condition '!err' is always true [knownConditionTrueFalse]
 
-> Also stalled workers backtrace:
->
-> #3  0xc19e0870 in schedule () at kernel/sched/core.c:4150
-> #4  0xc19e2f3e in schedule_timeout (timeout=<optimized out>) at kernel/time/timer.c:1895
-> #5  0xc19e3041 in schedule_timeout_uninterruptible (timeout=<optimized out>) at kernel/time/timer.c:1929
-> #6  0xc10b3dd1 in msleep (msecs=<optimized out>) at kernel/time/timer.c:2048
-> #7  0xc1771fb4 in napi_disable (n=0xdec0b7d8) at net/core/dev.c:6240
-> #8  0xc15f0e87 in e1000_down (adapter=0xdec0b540) at drivers/net/ethernet/intel/e1000/e1000_main.c:522
-> #9  0xc15f0f35 in e1000_reinit_locked (adapter=0xdec0b540) at drivers/net/ethernet/intel/e1000/e1000_main.c:545
-> #10 0xc15f6ecd in e1000_reset_task (work=0xdec0bca0) at drivers/net/ethernet/intel/e1000/e1000_main.c:3506
-> #11 0xc106c882 in process_one_work (worker=0xdef4d840, work=0xdec0bca0) at kernel/workqueue.c:2272
-> #12 0xc106ccc6 in worker_thread (__worker=0xdef4d840) at kernel/workqueue.c:2418
-> #13 0xc1070657 in kthread (_create=0xdf508800) at kernel/kthread.c:255
-> #14 0xc19e4078 in ret_from_fork () at arch/x86/entry/entry_32.S:813
+Warning ids grouped by kconfigs:
 
-So the question I would have is what is causing napi_disable to stall
-out? I have looked over the latest QEMU code and the driver code and
-both the Tx and Rx paths should have been shut down at the point where
-napi_disable is called. I'm assuming there is little to no traffic
-present so the NAPI thread shouldn't be stuck in the polling state for
-that reason. The only other thing I can think of is that somehow this
-is getting scheduled after the interface was already brought down
-causing napi_disable to be called a second time for the same NAPI
-instance.
+recent_errors
+|-- i386-allmodconfig
+|   `-- drivers-net-ethernet-intel-igc-igc_main.c:warning:Condition-err-is-always-true-knownConditionTrueFalse
+`-- x86_64-allyesconfig
+    |-- drivers-net-ethernet-intel-gwdpa-gswip-gswip_tbl.c:warning:struct-member-pce_tbl_reg_map::value-is-never-used.-unusedStructMember
+    `-- drivers-net-ethernet-intel-igc-igc_main.c:warning:Condition-err-is-always-true-knownConditionTrueFalse
 
-A dmesg log for the system at the time of the hang might be useful as
-it could include some information on what other configuration options
-might have been changed that led to us blocking on the napi_disable
-call.
+elapsed time: 663m
 
-Other than that, how easy is it to trigger this hang. Is this
-happening every time you start the guest, or does this just happen
-periodically?
+configs tested: 157
+configs skipped: 0
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm64                            allyesconfig
+arm                              allyesconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                               defconfig
+sparc                            allyesconfig
+parisc                generic-32bit_defconfig
+csky                                defconfig
+ia64                                defconfig
+powerpc                             defconfig
+parisc                            allnoconfig
+sh                                allnoconfig
+i386                              allnoconfig
+i386                             alldefconfig
+i386                             allyesconfig
+i386                              debian-10.3
+i386                                defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+arm                              allmodconfig
+c6x                              allyesconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+nds32                               defconfig
+nds32                             allnoconfig
+alpha                               defconfig
+h8300                       h8s-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+h8300                    h8300h-sim_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+arc                              allyesconfig
+arc                                 defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+powerpc                           allnoconfig
+powerpc                       ppc64_defconfig
+powerpc                          rhel-kconfig
+mips                      malta_kvm_defconfig
+parisc                generic-64bit_defconfig
+parisc                           allyesconfig
+i386                 randconfig-a002-20200413
+x86_64               randconfig-a002-20200413
+i386                 randconfig-a003-20200413
+i386                 randconfig-a001-20200413
+mips                 randconfig-a001-20200413
+nds32                randconfig-a001-20200413
+riscv                randconfig-a001-20200413
+m68k                 randconfig-a001-20200413
+parisc               randconfig-a001-20200413
+alpha                randconfig-a001-20200413
+h8300                randconfig-a001-20200413
+nios2                randconfig-a001-20200413
+c6x                  randconfig-a001-20200413
+microblaze           randconfig-a001-20200413
+sparc64              randconfig-a001-20200413
+csky                 randconfig-a001-20200413
+openrisc             randconfig-a001-20200413
+s390                 randconfig-a001-20200413
+sh                   randconfig-a001-20200413
+xtensa               randconfig-a001-20200413
+x86_64               randconfig-b002-20200413
+i386                 randconfig-b001-20200413
+x86_64               randconfig-b001-20200413
+x86_64               randconfig-b003-20200413
+i386                 randconfig-b003-20200413
+i386                 randconfig-b002-20200413
+x86_64               randconfig-c003-20200413
+i386                 randconfig-c003-20200413
+i386                 randconfig-c002-20200413
+x86_64               randconfig-c002-20200413
+i386                 randconfig-c001-20200413
+x86_64               randconfig-c001-20200413
+i386                 randconfig-d002-20200413
+x86_64               randconfig-d003-20200413
+x86_64               randconfig-d001-20200413
+i386                 randconfig-d003-20200413
+i386                 randconfig-d001-20200413
+x86_64               randconfig-d002-20200413
+x86_64               randconfig-e001-20200413
+i386                 randconfig-e002-20200413
+i386                 randconfig-e001-20200413
+x86_64               randconfig-e002-20200413
+i386                 randconfig-e003-20200413
+x86_64               randconfig-e003-20200413
+i386                 randconfig-f003-20200413
+i386                 randconfig-f002-20200413
+x86_64               randconfig-f003-20200413
+x86_64               randconfig-f001-20200413
+x86_64               randconfig-f002-20200413
+i386                 randconfig-f001-20200413
+x86_64               randconfig-g003-20200413
+i386                 randconfig-g003-20200413
+x86_64               randconfig-g001-20200413
+x86_64               randconfig-g002-20200413
+i386                 randconfig-g002-20200413
+i386                 randconfig-g001-20200413
+x86_64               randconfig-h001-20200413
+i386                 randconfig-h003-20200413
+i386                 randconfig-h002-20200413
+i386                 randconfig-h001-20200413
+x86_64               randconfig-h002-20200413
+ia64                 randconfig-a001-20200413
+arc                  randconfig-a001-20200413
+arm                  randconfig-a001-20200413
+sparc                randconfig-a001-20200413
+arm64                randconfig-a001-20200413
+powerpc              randconfig-a001-20200413
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+s390                       zfcpdump_defconfig
+s390                          debug_defconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                             alldefconfig
+s390                                defconfig
+sh                          rsk7269_defconfig
+sh                               allmodconfig
+sh                            titan_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
