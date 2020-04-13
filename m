@@ -1,179 +1,141 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 14 Apr 2020 03:02:49 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 708f75b95f51edac07660d56587a227041a20f08
-Message-ID: <5e94b759.UGjxTz2plM/ePvzX%lkp@intel.com>
+From: Maxim Zhukov <mussitantesmortem@gmail.com>
+Date: Tue, 14 Apr 2020 00:55:08 +0300
+Subject: [Intel-wired-lan] BUG: e1000: infinitely loop at
+ e1000_set_link_ksettings
+In-Reply-To: <CAKgT0Udn3sE4iZci2dRNun6i3DMoG==kuksX_gLXWQORXA1kWA@mail.gmail.com>
+References: <20200412191824.GA109724@laptop>
+ <CAKgT0Udn3sE4iZci2dRNun6i3DMoG==kuksX_gLXWQORXA1kWA@mail.gmail.com>
+Message-ID: <20200413215508.GA122208@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 708f75b95f51edac07660d56587a227041a20f08  ice: Fix a couple off by one bugs
+On Mon, Apr 13, 2020 at 11:47:21AM -0700, Alexander Duyck wrote:
+> On Sun, Apr 12, 2020 at 4:12 PM Maxim Zhukov
+> <mussitantesmortem@gmail.com> wrote:
+> >
+> > On Qemu X86 (kernel 5.4.31):
+> What version of QEMU are you running? That would tell us more about
+> how the device is being emulated.
+$ qemu-system-i386 --version
+QEMU emulator version 4.2.0
+Copyright (c) 2003-2019 Fabrice Bellard and the QEMU Project developers
+>
+> > The system-maintenance daemon hangout on D-state at startup on
+> > ioctl(ETHTOOL_SSET) for setup advertising, duplex, etc...
+> >
+> > kgdb stacktrace:
+> >
+> > ----
+> >
+> 
+> I am dropping the first backtrace since it is a symptom of the trace
+> below. Essentially the issue is all calls to e1000_reinit_locked get
+> stuck because the __E1000_RESETTING bit is stuck set because this
+> first thread is stuck waiting on napi_disable to succeed.
+> 
+> > Also stalled workers backtrace:
+> >
+> > #3  0xc19e0870 in schedule () at kernel/sched/core.c:4150
+> > #4  0xc19e2f3e in schedule_timeout (timeout=<optimized out>) at kernel/time/timer.c:1895
+> > #5  0xc19e3041 in schedule_timeout_uninterruptible (timeout=<optimized out>) at kernel/time/timer.c:1929
+> > #6  0xc10b3dd1 in msleep (msecs=<optimized out>) at kernel/time/timer.c:2048
+> > #7  0xc1771fb4 in napi_disable (n=0xdec0b7d8) at net/core/dev.c:6240
+> > #8  0xc15f0e87 in e1000_down (adapter=0xdec0b540) at drivers/net/ethernet/intel/e1000/e1000_main.c:522
+> > #9  0xc15f0f35 in e1000_reinit_locked (adapter=0xdec0b540) at drivers/net/ethernet/intel/e1000/e1000_main.c:545
+> > #10 0xc15f6ecd in e1000_reset_task (work=0xdec0bca0) at drivers/net/ethernet/intel/e1000/e1000_main.c:3506
+> > #11 0xc106c882 in process_one_work (worker=0xdef4d840, work=0xdec0bca0) at kernel/workqueue.c:2272
+> > #12 0xc106ccc6 in worker_thread (__worker=0xdef4d840) at kernel/workqueue.c:2418
+> > #13 0xc1070657 in kthread (_create=0xdf508800) at kernel/kthread.c:255
+> > #14 0xc19e4078 in ret_from_fork () at arch/x86/entry/entry_32.S:813
+> 
+> So the question I would have is what is causing napi_disable to stall
+> out? I have looked over the latest QEMU code and the driver code and
+> both the Tx and Rx paths should have been shut down at the point where
+> napi_disable is called. I'm assuming there is little to no traffic
+> present so the NAPI thread shouldn't be stuck in the polling state for
+> that reason. The only other thing I can think of is that somehow this
+> is getting scheduled after the interface was already brought down
+> causing napi_disable to be called a second time for the same NAPI
+> instance.
+In the log below udhcpc sends discover packets in the raw mode (https://git.busybox.net/busybox/tree/networking/udhcp/dhcpc.c#n738), maybe it's triggered stall?
 
-elapsed time: 500m
+> 
+> A dmesg log for the system at the time of the hang might be useful as
+> it could include some information on what other configuration options
+> might have been changed that led to us blocking on the napi_disable
+> call.
 
-configs tested: 153
-configs skipped: 0
+running command:
+qemu-system-i386 \
+        -kernel bzImage \
+        -drive file=rootfs.ext2,index=0,media=disk,format=raw \
+        -drive file=storage.ext2,index=1,media=disk,format=raw \
+        -smp 2 \
+        -m 2047M \
+        -enable-kvm \
+        -append "console=ttyS0 root=/dev/sda rw storage=/dev/sdb rw virtfs_tag=host0" \
+        -netdev tap,id=mynet1,ifname=tap0,script=no,downscript=no -device e1000,netdev=mynet1,mac=02:88:b1:e7:d1:f7 \
+        -netdev tap,id=mynet2,ifname=tap1,script=no,downscript=no -device e1000,netdev=mynet2,mac=02:70:67:e7:d1:f7 \
+        -virtfs local,path=./share/,mount_tag=host0,security_model=mapped-file,id=host0 \
+        -nographic
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-arm64                            allyesconfig
-arm                              allyesconfig
-arm64                             allnoconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                               defconfig
-sparc                            allyesconfig
-s390                             allyesconfig
-m68k                          multi_defconfig
-ia64                             alldefconfig
-sh                               allmodconfig
-parisc                generic-64bit_defconfig
-ia64                                defconfig
-powerpc                             defconfig
-i386                              allnoconfig
-i386                             alldefconfig
-i386                             allyesconfig
-i386                              debian-10.3
-i386                                defconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-arm                              allmodconfig
-arm64                            allmodconfig
-c6x                              allyesconfig
-c6x                        evmc6678_defconfig
-nios2                         10m50_defconfig
-nios2                         3c120_defconfig
-openrisc                    or1ksim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                                defconfig
-alpha                               defconfig
-h8300                     edosk2674_defconfig
-h8300                    h8300h-sim_defconfig
-h8300                       h8s-sim_defconfig
-m68k                             allmodconfig
-m68k                       m5475evb_defconfig
-m68k                           sun3_defconfig
-arc                                 defconfig
-arc                              allyesconfig
-powerpc                          rhel-kconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-powerpc                           allnoconfig
-powerpc                       ppc64_defconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-mips                             allyesconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                           32r2_defconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                           allyesconfig
-parisc                generic-32bit_defconfig
-x86_64               randconfig-a001-20200413
-x86_64               randconfig-a002-20200413
-x86_64               randconfig-a003-20200413
-i386                 randconfig-a001-20200413
-i386                 randconfig-a002-20200413
-i386                 randconfig-a003-20200413
-h8300                randconfig-a001-20200413
-nios2                randconfig-a001-20200413
-c6x                  randconfig-a001-20200413
-microblaze           randconfig-a001-20200413
-sparc64              randconfig-a001-20200413
-csky                 randconfig-a001-20200413
-openrisc             randconfig-a001-20200413
-s390                 randconfig-a001-20200413
-sh                   randconfig-a001-20200413
-xtensa               randconfig-a001-20200413
-x86_64               randconfig-b002-20200413
-i386                 randconfig-b001-20200413
-x86_64               randconfig-b001-20200413
-x86_64               randconfig-b003-20200413
-i386                 randconfig-b003-20200413
-i386                 randconfig-b002-20200413
-x86_64               randconfig-c001-20200413
-x86_64               randconfig-c002-20200413
-x86_64               randconfig-c003-20200413
-i386                 randconfig-c001-20200413
-i386                 randconfig-c002-20200413
-i386                 randconfig-c003-20200413
-x86_64               randconfig-d001-20200413
-x86_64               randconfig-d002-20200413
-x86_64               randconfig-d003-20200413
-i386                 randconfig-d001-20200413
-i386                 randconfig-d002-20200413
-i386                 randconfig-d003-20200413
-x86_64               randconfig-e001-20200413
-i386                 randconfig-e002-20200413
-i386                 randconfig-e001-20200413
-x86_64               randconfig-e002-20200413
-i386                 randconfig-e003-20200413
-x86_64               randconfig-e003-20200413
-i386                 randconfig-f003-20200413
-i386                 randconfig-f002-20200413
-x86_64               randconfig-f003-20200413
-x86_64               randconfig-f001-20200413
-x86_64               randconfig-f002-20200413
-i386                 randconfig-f001-20200413
-x86_64               randconfig-g003-20200413
-i386                 randconfig-g003-20200413
-x86_64               randconfig-g001-20200413
-x86_64               randconfig-g002-20200413
-i386                 randconfig-g002-20200413
-i386                 randconfig-g001-20200413
-x86_64               randconfig-h001-20200413
-i386                 randconfig-h003-20200413
-i386                 randconfig-h002-20200413
-i386                 randconfig-h001-20200413
-x86_64               randconfig-h002-20200413
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-s390                       zfcpdump_defconfig
-s390                          debug_defconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                             alldefconfig
-s390                                defconfig
-sh                          rsk7269_defconfig
-sh                            titan_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                             defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-x86_64                              fedora-25
-x86_64                                  kexec
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                         rhel-7.2-clear
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
+dmesg:
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+---------
+[    2.113622] Run /sbin/init as init process
+[    2.145965] random: init: uninitialized urandom read (4 bytes read)
+[    3.175813] random: modprobe: uninitialized urandom read (4 bytes read)
+[    3.182942] modprobe (1267) used greatest stack depth: 5904 bytes left
+[    3.193894] EXT4-fs (sdb): mounting ext2 file system using the ext4 subsystem
+[    3.196343] EXT4-fs (sdb): warning: mounting unchecked fs, running e2fsck is recommended
+[    3.406740] EXT4-fs (sdb): mounted filesystem without journal. Opts: (null)
+[    3.408419] ext2 filesystem being mounted at /boot supports timestamps until 2038 (0x7fffffff)
+[    3.412388] random: sh: uninitialized urandom read (4 bytes read)
+[    3.415512] random: startup.sh: uninitialized urandom read (4 bytes read)
+[    3.907569] 8021q: adding VLAN 0 to HW filter on device eth0
+[    3.909715] e1000: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
+[    3.912057] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+[    3.922927] 8021q: adding VLAN 0 to HW filter on device x86eth100
+[    3.934933] 8021q: adding VLAN 0 to HW filter on device eth1
+[    3.936800] e1000: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
+[    3.939092] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
+[    3.948995] 8021q: adding VLAN 0 to HW filter on device x86eth200
+[    4.178555] e1000 0000:00:04.0 eth1: Reset adapter
+[    4.219492] dmsd[wrkr] (1350) used greatest stack depth: 5536 bytes left
+[    4.368172] random: crng init done
+[    4.369034] random: 6 urandom warning(s) missed due to ratelimiting
+[    4.502536] 8021q: adding VLAN 0 to HW filter on device x86eth100
+[    4.520655] 8021q: adding VLAN 0 to HW filter on device x86eth200
+[    4.558841] br1: port 1(x86eth100) entered blocking state
+[    4.560342] br1: port 1(x86eth100) entered disabled state
+[    4.561649] device x86eth100 entered promiscuous mode
+[    4.562823] device eth0 entered promiscuous mode
+[    9.705295] 8021q: adding VLAN 0 to HW filter on device eth0
+[   11.731948] e1000: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
+----
+
+syslog:
+
+----
+Apr 14 00:31:23 [ALRT] default_port_status_set[1716]: ioctl(eth0, ETHTOOL_SSET)
+Apr 14 00:31:23 [ALRT] default_port_status_set[1716]: ifup eth0
+Apr 14 00:31:23 [INFO] kernel: [    9.705295] 8021q: adding VLAN 0 to HW filter on device eth0
+Apr 14 00:31:23 [ALRT] default_port_status_set[1717]: ioctl(eth1, ETHTOOL_SSET)                                   <<<<<<<<<<< last ioctl
+Apr 14 00:31:24 [INFO] udhcpc[1545]: sending discover
+Apr 14 00:31:25 [INFO] kernel: [   11.731948] e1000: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
+----
+
+
+> 
+> Other than that, how easy is it to trigger this hang. Is this
+> happening every time you start the guest, or does this just happen
+> periodically?
+It's happening periodically, sometimes the chance is very low.
+
+I did't find the way for reproduce this hang (I tried to call ioctl + ifups in several configurations)
+
+Thanks for your attention!
