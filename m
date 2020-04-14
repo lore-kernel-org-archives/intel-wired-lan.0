@@ -1,51 +1,54 @@
-From: Joe Perches <joe@perches.com>
-Date: Mon, 13 Apr 2020 14:31:32 -0700
-Subject: [Intel-wired-lan] [PATCH 2/2] crypto: Remove unnecessary
- memzero_explicit()
-In-Reply-To: <20200413211550.8307-3-longman@redhat.com>
+From: Jason A. Donenfeld <Jason@zx2c4.com>
+Date: Tue, 14 Apr 2020 02:32:03 -0600
+Subject: [Intel-wired-lan] [PATCH 1/2] mm,
+ treewide: Rename kzfree() to kfree_sensitive()
+In-Reply-To: <20200413211550.8307-2-longman@redhat.com>
 References: <20200413211550.8307-1-longman@redhat.com>
- <20200413211550.8307-3-longman@redhat.com>
-Message-ID: <efd6ceb1f182aa7364e9706422768a1c1335aee4.camel@perches.com>
+ <20200413211550.8307-2-longman@redhat.com>
+Message-ID: <4babf834-c531-50ba-53f6-e88410b15ce3@zx2c4.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2020-04-13 at 17:15 -0400, Waiman Long wrote:
-> Since kfree_sensitive() will do an implicit memzero_explicit(), there
-> is no need to call memzero_explicit() before it. Eliminate those
-> memzero_explicit() and simplify the call sites.
+On 4/13/20 3:15 PM, Waiman Long wrote:
+> As said by Linus:
+> 
+>    A symmetric naming is only helpful if it implies symmetries in use.
+>    Otherwise it's actively misleading.
+> 
+>    In "kzalloc()", the z is meaningful and an important part of what the
+>    caller wants.
+> 
+>    In "kzfree()", the z is actively detrimental, because maybe in the
+>    future we really _might_ want to use that "memfill(0xdeadbeef)" or
+>    something. The "zero" part of the interface isn't even _relevant_.
+> 
+> The main reason that kzfree() exists is to clear sensitive information
+> that should not be leaked to other future users of the same memory
+> objects.
+> 
+> Rename kzfree() to kfree_sensitive() to follow the example of the
+> recently added kvfree_sensitive() and make the intention of the API
+> more explicit. 
 
-2 bits of trivia:
+Seems reasonable to me. One bikeshed, that you can safely discard and 
+ignore as a mere bikeshed: kfree_memzero or kfree_scrub or 
+kfree_{someverb} seems like a better function name, as it describes what 
+the function does, rather than "_sensitive" that suggests something 
+about the data maybe but who knows what that entails. If you disagree, 
+not a big deal either way.
 
-> diff --git a/drivers/crypto/allwinner/sun8i-ce/sun8i-ce-cipher.c b/drivers/crypto/allwinner/sun8i-ce/sun8i-ce-cipher.c
-[]
-> @@ -391,10 +388,7 @@ int sun8i_ce_aes_setkey(struct crypto_skcipher *tfm, const u8 *key,
->  		dev_dbg(ce->dev, "ERROR: Invalid keylen %u\n", keylen);
->  		return -EINVAL;
->  	}
-> -	if (op->key) {
-> -		memzero_explicit(op->key, op->keylen);
-> -		kfree(op->key);
-> -	}
-> +	kfree_sensitive(op->key);
->  	op->keylen = keylen;
->  	op->key = kmemdup(key, keylen, GFP_KERNEL | GFP_DMA);
->  	if (!op->key)
+ > In addition, memzero_explicit() is used to clear the
+ > memory to make sure that it won't get optimized away by the compiler.
 
-It might be a defect to set op->keylen before the kmemdup succeeds.
-
-> @@ -416,10 +410,7 @@ int sun8i_ce_des3_setkey(struct crypto_skcipher *tfm, const u8 *key,
->  	if (err)
->  		return err;
->  
-> -	if (op->key) {
-> -		memzero_explicit(op->key, op->keylen);
-> -		kfree(op->key);
-> -	}
-> +	free_sensitive(op->key, op->keylen);
-
-Why not kfree_sensitive(op->key) ?
-
-
+This had occurred to me momentarily a number of years ago, but I was 
+under the impression that the kernel presumes extern function calls to 
+always imply a compiler barrier, making it difficult for the compiler to 
+reason about what happens in/after kfree, in order to be able to 
+optimize out the preceding memset. With LTO, that rule obviously 
+changes. I guess new code should be written with cross-object 
+optimizations in mind now a days? [Meanwhile, it would be sort of 
+interesting to teach gcc about kfree to enable additional scary 
+optimizations...]
