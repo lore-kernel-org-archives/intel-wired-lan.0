@@ -1,86 +1,52 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 16 Apr 2020 13:34:19 -0700
-Subject: [Intel-wired-lan] [RFC PATCH] e1000: Do not perform reset in
- reset_task if we are already down
-In-Reply-To: <20200414184547.ue7mvj6olmr76m2i@laptop>
-References: <20200414184547.ue7mvj6olmr76m2i@laptop>
-Message-ID: <20200416203151.10210.78244.stgit@localhost.localdomain>
+Date: Thu, 16 Apr 2020 14:21:11 -0700
+Subject: [Intel-wired-lan] Pls provide some advice - e1000e Linux link
+ down
+In-Reply-To: <61CC2BC414934749BD9F5BF3D5D940449863D544@ORSMSX112.amr.corp.intel.com>
+References: <CABcq3pESeM2aF=HP-j4-iu2fwaxF7+mr65zTgFaBK8prmu+srw@mail.gmail.com>
+ <61CC2BC414934749BD9F5BF3D5D940449863D544@ORSMSX112.amr.corp.intel.com>
+Message-ID: <CAKgT0Uc2w6gKGsUMrzDoTtM237DjVnQrUGhi+jARMKBcDBJu+g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+On Thu, Apr 16, 2020 at 9:16 AM Kirsher, Jeffrey T
+<jeffrey.t.kirsher@intel.com> wrote:
+>
+> > From: Andrew Melnichenko <andrew@daynix.com>
+> > Sent: Saturday, April 11, 2020 12:56
+> > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> > Subject: Pls provide some advice - e1000e Linux link down
+> >
+> > Yo,
+> > I'm a humble linux developer, currently I'm researching the issue with e1000e driver that can't handle "link down" on Linux guest(https://bugzilla.redhat.com/show_bug.cgi?id=1707441).
+> > For now I've found that qemu can't raise LSC interrupts. But, on Windows guests the issue doesn't reproduce.
 
-We are seeing a deadlock in e1000 down when NAPI is being disabled. Looking
-over the kernel function trace of the system it appears that the interface
-is being closed and then a reset is hitting which deadlocks the interface
-as the NAPI interface is already disabled.
+What do you mean that QEMU cannot raise LSC interrupts? Looking over
+the latest QEMU code it looks like it is attempting to do just that in
+e1000e_core_set_link_status(https://lxr.missinglinkelectronics.com/qemu+v4.0.0/hw/net/e1000e_core.c#L1800).
 
-To prevent this from happening I am disabling the reset task when
-__E1000_DOWN is already set. In addition code has been added so that we set
-the __E1000_DOWN while holding the __E1000_RESET flag in e1000_close in
-order to guarantee that the reset task will not run after we have started
-the close call.
+> > I've researched spec and the driver and for now, my main suspicion is still the issue in qemu and I have few hacks for "fixing".
+> > But because on Windows guests that issue wasn't reproduced and I don't have a "real" device - I have a question:
+> > Does "real" e1000e with Linux driver detect cable removing? Should I look more the driver?
+> > Currently I have one hack for the driver that would "fix" the issue(small differences in interrupt clearing).
+>
+> Adding the e1000e developers and the Intel Wired LAN mailing list...
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
----
+So the fact that you need to hack on the interrupt clearing tells me
+that odds are you probably don't have a good emulation of the
+interrupt register behavior. We have had to make a number of changes
+to that code to work around the quirks in the hardware. I wouldn't
+find it too surprising if the emulation behavior didn't match up just
+because there have been a number of errata that have had to be work
+around.
 
-Maxim,
-
-If possible I would appreciate it if you could try this patch and see if
-it addresses the issues you were seeing. From what I can tell this issue
-is due to the interface being closed around the same time a reset is
-scheduled so the two are racing and resulting in down being called after
-a down was already completed. Adding this test for the down flag should
-correct that.
-
-If it does I will resubmit this patch as a non-RFC.
+If you could include the code form your "fix" that might be useful as
+that would tell us what behavior it is you are running into that needs
+to be sorted out between QEMU and the hardware.
 
 Thanks.
 
-Alex
-
- drivers/net/ethernet/intel/e1000/e1000_main.c |   18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index f7103356ef56..566bbcb74056 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -542,8 +542,13 @@ void e1000_reinit_locked(struct e1000_adapter *adapter)
- 	WARN_ON(in_interrupt());
- 	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
- 		msleep(1);
--	e1000_down(adapter);
--	e1000_up(adapter);
-+
-+	/* only run the task if not already down */
-+	if (!test_bit(__E1000_DOWN, &adapter->flags)) {
-+		e1000_down(adapter);
-+		e1000_up(adapter);
-+	}
-+
- 	clear_bit(__E1000_RESETTING, &adapter->flags);
- }
- 
-@@ -1433,10 +1438,15 @@ int e1000_close(struct net_device *netdev)
- 	struct e1000_hw *hw = &adapter->hw;
- 	int count = E1000_CHECK_RESET_COUNT;
- 
--	while (test_bit(__E1000_RESETTING, &adapter->flags) && count--)
-+	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags) && count--)
- 		usleep_range(10000, 20000);
- 
--	WARN_ON(test_bit(__E1000_RESETTING, &adapter->flags));
-+	WARN_ON(count < 0);
-+
-+	/* signal that we're down so that the reset task will no longer run */
-+	set_bit(__E1000_DOWN, &adapter->flags);
-+	clear_bit(__E1000_RESETTING, &adapter->flags);
-+
- 	e1000_down(adapter);
- 	e1000_power_down_phy(adapter);
- 	e1000_free_irq(adapter);
-
+- Alex
