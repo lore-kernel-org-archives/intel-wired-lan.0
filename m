@@ -1,96 +1,121 @@
-From: Yi Yang =?unknown-8bit?b?5p2o54eaLeS6keacjeWKoembhuWbog==?= <yangyi01@inspur.com>
-Date: Thu, 16 Apr 2020 02:24:48 +0000
-Subject: [Intel-wired-lan] =?utf-8?b?562U5aSNOiAgQW55Ym9keSBrbm93cyB3aHkg?=
- =?utf-8?q?Intel_82599ES_10Gb_NIC_has_low_small_UDP_packets_forwarding_per?=
- =?utf-8?q?formance=3F?=
-In-Reply-To: <CAKgT0UeKxrJr_GrcRR8igxNLAPoh9b=pYajozsL+b3==abhdBQ@mail.gmail.com>
-References: <e640c125696a0a5395089846266c9146@sslemail.net>
- <CAKgT0UeKxrJr_GrcRR8igxNLAPoh9b=pYajozsL+b3==abhdBQ@mail.gmail.com>
-Message-ID: <d418667033b84bcdb23e57e4ea8ecd61@inspur.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 16 Apr 2020 11:50:49 +0200
+Subject: [Intel-wired-lan] [PATCH] virtchnl: Add missing explicit padding to
+ structures
+Message-ID: <20200416095049.12917-1-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks Alexander, but unfortunately, this NIC is integrated into motherboard, so we can't unplug it.
+On e.g. m68k, the alignment of 32-bit values is only 2 bytes, leading
+to:
 
-I'm very sure it isn't PCIe bandwidth issue, because TCP and UDP performance are ok, only small UDP pps performance is bad. 16 bytes UDP packets won't consume too much bandwidth, 200Mbps is enough.
+    ./include/linux/avf/virtchnl.h:147:36: warning: division by zero [-Wdiv-by-zero]
+      { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+					^
+    ./include/linux/avf/virtchnl.h:577:1: note: in expansion of macro ?VIRTCHNL_CHECK_STRUCT_LEN?
+     VIRTCHNL_CHECK_STRUCT_LEN(272, virtchnl_filter);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~
+    ./include/linux/avf/virtchnl.h:577:32: error: enumerator value for ?virtchnl_static_assert_virtchnl_filter? is not an integer constant
+     VIRTCHNL_CHECK_STRUCT_LEN(272, virtchnl_filter);
+				    ^~~~~~~~~~~~~~~
+    ./include/linux/avf/virtchnl.h:147:53: note: in definition of macro ?VIRTCHNL_CHECK_STRUCT_LEN?
+      { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+							 ^
+    ./include/linux/avf/virtchnl.h:147:36: warning: division by zero [-Wdiv-by-zero]
+      { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+					^
+    ./include/linux/avf/virtchnl.h:619:1: note: in expansion of macro ?VIRTCHNL_CHECK_STRUCT_LEN?
+     VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_pf_event);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~
+    ./include/linux/avf/virtchnl.h:619:31: error: enumerator value for ?virtchnl_static_assert_virtchnl_pf_event? is not an integer constant
+     VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_pf_event);
+				   ^~~~~~~~~~~~~~~~~
+    ./include/linux/avf/virtchnl.h:147:53: note: in definition of macro ?VIRTCHNL_CHECK_STRUCT_LEN?
+      { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+							 ^
+    ./include/linux/avf/virtchnl.h:147:36: warning: division by zero [-Wdiv-by-zero]
+      { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+					^
+    ./include/linux/avf/virtchnl.h:640:1: note: in expansion of macro ?VIRTCHNL_CHECK_STRUCT_LEN?
+     VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_iwarp_qv_info);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~
+    ./include/linux/avf/virtchnl.h:640:31: error: enumerator value for ?virtchnl_static_assert_virtchnl_iwarp_qv_info? is not an integer constant
+     VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_iwarp_qv_info);
+				   ^~~~~~~~~~~~~~~~~~~~~~
+    ./include/linux/avf/virtchnl.h:147:53: note: in definition of macro ?VIRTCHNL_CHECK_STRUCT_LEN?
+      { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+							 ^
+    ./include/linux/avf/virtchnl.h:147:36: warning: division by zero [-Wdiv-by-zero]
+      { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+					^
+    ./include/linux/avf/virtchnl.h:647:1: note: in expansion of macro ?VIRTCHNL_CHECK_STRUCT_LEN?
+     VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_iwarp_qvlist_info);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~
+    ./include/linux/avf/virtchnl.h:647:31: error: enumerator value for ?virtchnl_static_assert_virtchnl_iwarp_qvlist_info? is not an integer constant
+     VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_iwarp_qvlist_info);
+				   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+    ./include/linux/avf/virtchnl.h:147:53: note: in definition of macro ?VIRTCHNL_CHECK_STRUCT_LEN?
+      { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+							 ^
 
------????-----
-???: Alexander Duyck [mailto:alexander.duyck at gmail.com] 
-????: 2020?4?15? 23:15
-???: Yi Yang (??)-????? <yangyi01@inspur.com>
-??: intel-wired-lan at lists.osuosl.org
-??: Re: [Intel-wired-lan] Anybody knows why Intel 82599ES 10Gb NIC has low small UDP packets forwarding performance?
+Fix this by adding explicit padding to structures with holes.
 
-On Wed, Apr 15, 2020 at 1:03 AM Yi Yang (??)-????? <yangyi01@inspur.com> wrote:
->
-> Hi, guys
->
-> We find Intel 82599ES 10Gb NIC has low small UDP packets forwarding 
-> performance, this also impacts on 16 bytes UDP pps(packet per second) 
-> performance of VMs in Openstack environment, my NIC information is below:
->
-> $ ethtool -i ten1
-> driver: ixgbe
-> version: 5.6.5
-> firmware-version: 0x800003df
-> expansion-rom-version:
-> bus-info: 0000:06:00.0
-> supports-statistics: yes
-> supports-test: yes
-> supports-eeprom-access: yes
-> supports-register-dump: yes
-> supports-priv-flags: yes
-> $
->
-> On VMs,for 16 bytes UDP packets, maximum pps is about 180000 (I have 
-> tuned irq affinity, VM is pinned to fixed CPU, it is scheduled on the 
-> same numa node as NIC, so this has been a maximum possible value), we 
-> also tried physical port to physical port pps performance in two 
-> physical machines, that only can reach maximum pps 300000 (I have tried all the tuning ways).
->
-> But on my other servers which have Intel X710 10Gb NIC, the driver is 
-> i40e, not ixgbe, it can reach 350000 pps for physical port to physical 
-> port case without any extra tuning. In VxLAN case, for 32 bytes UDP 
-> packets, pps can reach 200000 very easily, it doesn?t need any extra tuning.
->
-> https://docs.openstack.org/developer/performance-docs/test_plans/tenan
-> t_netw
-> orking/plan.html and
-> https://docs.openstack.org/developer/performance-docs/test_results/ten
-> ant_ne tworking/neutron_vxlan_dvr_378/perl_l2/index.html#tcp show 
-> ixgbe driver also can reach 200000 pps for 32 bytes UDP packet for VMs 
-> and VxLAN cases. It doesn't mention which Intel Ethernet Controller is 
-> used.
->
-> Metric
->                Min    Avg     Max
-> loss, %                4.09
-> jitter, ms              0.01
-> packets, pps 190320     199583  213660
->
->
-> My issue is anybody knows if 82599ES can reach 350000 pps for 16 bytes 
-> UDP packets for physical port to physical port case (note: I mean 
-> iperf3 performance, I know DPDK can reach this).
->
-> BTW, I find 82599ES can support VxLAN TSO offload, the performance 
-> data is good in case that VM MTU is configured to 8950 (our underlay 
-> MTU is 9000), both TCP and UDP performance can reach line speed.
+Reported-by: noreply at ellerman.id.au
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+Exposed by the "select PCI" in commit 4be5e8648b0c287a ("media: move CEC
+platform drivers to a separate directory").
+---
+ include/linux/avf/virtchnl.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-There could be a number of things going on. You might want to check your interrupt moderation settings, you might want to make sure you do not have an IOMMU enabled, you will want to make certain you have sufficient PCIe bandwidth as the X710 is a PCIe gen 3 part and 82599 is only gen2. You may want to double check to make sure the memory layout between the two systems is the same as memory can cause delays in packet throughput.
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index ca956b672ac0f759..40bad71865ea7628 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -476,6 +476,7 @@ struct virtchnl_rss_key {
+ 	u16 vsi_id;
+ 	u16 key_len;
+ 	u8 key[1];         /* RSS hash key, packed bytes */
++	u8 pad[1];
+ };
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
+@@ -484,6 +485,7 @@ struct virtchnl_rss_lut {
+ 	u16 vsi_id;
+ 	u16 lut_entries;
+ 	u8 lut[1];        /* RSS lookup table */
++	u8 pad[1];
+ };
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
+@@ -572,6 +574,7 @@ struct virtchnl_filter {
+ 	enum	virtchnl_action action;
+ 	u32	action_meta;
+ 	u8	field_flags;
++	u8	pad[3];
+ };
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(272, virtchnl_filter);
+@@ -610,6 +613,7 @@ struct virtchnl_pf_event {
+ 			/* link_speed provided in Mbps */
+ 			u32 link_speed;
+ 			u8 link_status;
++			u8 pad[3];
+ 		} link_event_adv;
+ 	} event_data;
+ 
+@@ -635,6 +639,7 @@ struct virtchnl_iwarp_qv_info {
+ 	u16 ceq_idx;
+ 	u16 aeq_idx;
+ 	u8 itr_idx;
++	u8 pad[3];
+ };
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_iwarp_qv_info);
+-- 
+2.17.1
 
-My advice would be to see if you can swap the X710 and 82599 between two of your systems and see if the performance issues follow the card or the server. If it follows the server then you likely have something misconfigured on the server, if it follows the card then we could follow up with additional debugging.
-
-Thanks.
-
-- Alex
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 3600 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200416/0b2e5ed7/attachment-0001.p7s>
