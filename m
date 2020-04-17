@@ -1,5 +1,5 @@
 From: Yi Yang =?unknown-8bit?b?5p2o54eaLeS6keacjeWKoembhuWbog==?= <yangyi01@inspur.com>
-Date: Fri, 17 Apr 2020 01:32:05 +0000
+Date: Fri, 17 Apr 2020 01:36:32 +0000
 Subject: [Intel-wired-lan] =?utf-8?b?562U5aSNOiAgQW55Ym9keSBrbm93cyB3aHkg?=
  =?utf-8?q?Intel_82599ES_10Gb_NIC_has_low_small_UDP_packets_forwarding_per?=
  =?utf-8?q?formance=3F?=
@@ -8,24 +8,44 @@ References: <e640c125696a0a5395089846266c9146@sslemail.net>
  <CAKgT0UeKxrJr_GrcRR8igxNLAPoh9b=pYajozsL+b3==abhdBQ@mail.gmail.com>
  <d418667033b84bcdb23e57e4ea8ecd61@inspur.com>
  <CAKgT0UeaeQo1b1+yfiOZQG_GrGWGy5EX0QD+r4NxYJcmf-EjOA@mail.gmail.com>
-Message-ID: <bb3a9253b3a94592b319b2fa245c6124@inspur.com>
+Message-ID: <5fe974cae1fd4841a092abc1369d0994@inspur.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks Alexander, I checked IOMMU, here is info.
+Here is my coalesce parameters, can you help provide what specific parameters can be tuned for this? It'll be better if you can give out specific command lines.
 
-$ sudo cat /proc/cmdline
-BOOT_IMAGE=/boot/vmlinuz-4.15.0-46-generic root=/dev/mapper/vg1-lvroot ro default_hugepagesz=1G hugepagesz=1G hugepages=16
-$ dmesg | grep -i iommu
-[    0.000000] DMAR-IR: IOAPIC id 3 under DRHD base  0xfbffc000 IOMMU 0
-[    0.000000] DMAR-IR: IOAPIC id 1 under DRHD base  0xc7ffc000 IOMMU 1
-[    0.000000] DMAR-IR: IOAPIC id 2 under DRHD base  0xc7ffc000 IOMMU 1
+$ sudo ethtool -c ten1
+Coalesce parameters for ten1:
+Adaptive RX: off  TX: off
+stats-block-usecs: 0
+sample-interval: 0
+pkt-rate-low: 0
+pkt-rate-high: 0
+
+rx-usecs: 1
+rx-frames: 0
+rx-usecs-irq: 0
+rx-frames-irq: 0
+
+tx-usecs: 0
+tx-frames: 0
+tx-usecs-irq: 0
+tx-frames-irq: 256
+
+rx-usecs-low: 0
+rx-frame-low: 0
+tx-usecs-low: 0
+tx-frame-low: 0
+
+rx-usecs-high: 0
+rx-frame-high: 0
+tx-usecs-high: 0
+tx-frame-high: 0
+
 $
-
-It looks like IOMMU isn't enabled.
 
 -----????-----
 ???: Alexander Duyck [mailto:alexander.duyck at gmail.com] 
@@ -130,4 +150,4 @@ Name: smime.p7s
 Type: application/pkcs7-signature
 Size: 3600 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200417/e9df7f4c/attachment.p7s>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200417/9e11c0b4/attachment-0001.p7s>
