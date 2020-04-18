@@ -1,80 +1,35 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 18 Apr 2020 03:58:12 +0000
-Subject: [Intel-wired-lan] Pls provide some advice - e1000e Linux link
- down
-In-Reply-To: <CABcq3pHBpCvNgZ3gw66-Lp+tKMPrKq8LN9M8r09_dFGOHymA5g@mail.gmail.com>
-References: <CABcq3pESeM2aF=HP-j4-iu2fwaxF7+mr65zTgFaBK8prmu+srw@mail.gmail.com>
- <61CC2BC414934749BD9F5BF3D5D940449863D544@ORSMSX112.amr.corp.intel.com>
- <CAKgT0Uc2w6gKGsUMrzDoTtM237DjVnQrUGhi+jARMKBcDBJu+g@mail.gmail.com>
- <CABcq3pHBpCvNgZ3gw66-Lp+tKMPrKq8LN9M8r09_dFGOHymA5g@mail.gmail.com>
-Message-ID: <DM6PR11MB28909C8289E3941459165C3CBCD60@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Sat, 18 Apr 2020 04:00:17 +0000
+Subject: [Intel-wired-lan] [PATCH v1] e1000e: fix S0ix flows for cable
+ connected case
+In-Reply-To: <20200312115707.6534-1-vitaly.lifshits@intel.com>
+References: <20200312115707.6534-1-vitaly.lifshits@intel.com>
+Message-ID: <DM6PR11MB28902EB7C6FF2F8818ADB21ABCD60@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Vitaly Lifshits
+> Sent: Thursday, March 12, 2020 4:57 AM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v1] e1000e: fix S0ix flows for cable
+> connected case
+> 
+> Added a fix to S0ix entry and exit flows for TGP and above
+> MAC types, to the case when the ethernet cable is connected
+> and the link is up. With that the system is able to reach
+> SLP_S0 when going to freeze power state.
+> 
+> Change-type: ImplementationChange
+> Title: e1000e: fix S0ix flows for cable connected case
+> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 54
+> ++++++++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/e1000e/regs.h   |  3 ++
+>  2 files changed, 57 insertions(+)
 
-
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Andrew Melnichenko
-Sent: Friday, April 17, 2020 4:06 AM
-To: Alexander Duyck <alexander.duyck@gmail.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] Pls provide some advice - e1000e Linux link down
-
-Definitely - LSC detected by watchdog.Should I look more the driver?
-?Does this watchdog work during link up to detect link down?
-
-Please, try work with latest stable version from http://kernel.org. (any 
-restrictions?)
-I've checked the issue on 4.18 and 5.5.6.
-
-What do you mean that QEMU cannot raise LSC interrupts?
-Interrupt pending hasn't been cleared, so it can't be raised again.
-
-If you could include the code form your "fix" 
-Ok. 
-
-
-On Fri, Apr 17, 2020 at 12:21 AM Alexander Duyck <mailto:alexander.duyck@gmail.com> wrote:
-On Thu, Apr 16, 2020 at 9:16 AM Kirsher, Jeffrey T
-<mailto:jeffrey.t.kirsher@intel.com> wrote:
->
-> > From: Andrew Melnichenko <mailto:andrew@daynix.com>
-> > Sent: Saturday, April 11, 2020 12:56
-> > To: Kirsher, Jeffrey T <mailto:jeffrey.t.kirsher@intel.com>
-> > Subject: Pls provide some advice - e1000e Linux link down
-> >
-> > Yo,
-> > I'm a humble linux developer, currently I'm researching the issue with e1000e driver that can't handle "link down" on Linux guest(https://bugzilla.redhat.com/show_bug.cgi?id=1707441).
-> > For now I've found that qemu can't raise LSC interrupts. But, on Windows guests the issue doesn't reproduce.
-
-What do you mean that QEMU cannot raise LSC interrupts? Looking over
-the latest QEMU code it looks like it is attempting to do just that in
-e1000e_core_set_link_status(https://lxr.missinglinkelectronics.com/qemu+v4.0.0/hw/net/e1000e_core.c#L1800).
-
-> > I've researched spec and the driver and for now, my main suspicion is still the issue in qemu and I have few hacks for "fixing".
-> > But because on Windows guests that issue wasn't reproduced and I don't have a "real" device - I have a question:
-> > Does "real" e1000e with Linux driver detect cable removing? Should I look more the driver?
-
-Yes, real e1000e hardware does detect link changes on cable removal.
-
-> > Currently I have one hack for the driver that would "fix" the issue(small differences in interrupt clearing).
->
-> Adding the e1000e developers and the Intel Wired LAN mailing list...
-
-So the fact that you need to hack on the interrupt clearing tells me
-that odds are you probably don't have a good emulation of the
-interrupt register behavior. We have had to make a number of changes
-to that code to work around the quirks in the hardware. I wouldn't
-find it too surprising if the emulation behavior didn't match up just
-because there have been a number of errata that have had to be work
-around.
-
-If you could include the code form your "fix" that might be useful as
-that would tell us what behavior it is you are running into that needs
-to be sorted out between QEMU and the hardware.
-
-Thanks.
-
-- Alex
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
