@@ -1,7 +1,7 @@
 From: Jason Yan <yanaijie@huawei.com>
-Date: Mon, 20 Apr 2020 20:34:48 +0800
-Subject: [Intel-wired-lan] [PATCH] i40e: Remove unneeded conversion to bool
-Message-ID: <20200420123448.7382-1-yanaijie@huawei.com>
+Date: Mon, 20 Apr 2020 20:35:06 +0800
+Subject: [Intel-wired-lan] [PATCH] e1000: remove unneeded conversion to bool
+Message-ID: <20200420123506.7716-1-yanaijie@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,38 +11,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 The '==' expression itself is bool, no need to convert it to bool again.
 This fixes the following coccicheck warning:
 
-drivers/net/ethernet/intel/i40e/i40e_main.c:1614:52-57: WARNING:
-conversion to bool not needed here
-drivers/net/ethernet/intel/i40e/i40e_main.c:11439:52-57: WARNING:
+drivers/net/ethernet/intel/e1000/e1000_main.c:1479:44-49: WARNING:
 conversion to bool not needed here
 
 Signed-off-by: Jason Yan <yanaijie@huawei.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 8c3e753bfb9d..2a037ec244b9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1611,7 +1611,7 @@ static int i40e_config_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
- 		}
- 	}
- 	if (lut) {
--		bool pf_lut = vsi->type == I40E_VSI_MAIN ? true : false;
-+		bool pf_lut = vsi->type == I40E_VSI_MAIN;
- 
- 		ret = i40e_aq_set_rss_lut(hw, vsi->id, pf_lut, lut, lut_size);
- 		if (ret) {
-@@ -11436,7 +11436,7 @@ static int i40e_get_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index ac5146d53c4c..05bc6e216bca 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -1476,7 +1476,7 @@ static bool e1000_check_64k_bound(struct e1000_adapter *adapter, void *start,
+ 	if (hw->mac_type == e1000_82545 ||
+ 	    hw->mac_type == e1000_ce4100 ||
+ 	    hw->mac_type == e1000_82546) {
+-		return ((begin ^ (end - 1)) >> 16) != 0 ? false : true;
++		return ((begin ^ (end - 1)) >> 16) == 0;
  	}
  
- 	if (lut) {
--		bool pf_lut = vsi->type == I40E_VSI_MAIN ? true : false;
-+		bool pf_lut = vsi->type == I40E_VSI_MAIN;
- 
- 		ret = i40e_aq_get_rss_lut(hw, vsi->id, pf_lut, lut, lut_size);
- 		if (ret) {
+ 	return true;
 -- 
 2.21.1
 
