@@ -1,96 +1,116 @@
 From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Wed, 22 Apr 2020 18:09:23 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 24/33] ixgbevf: add XDP frame
- size to VF driver
+Date: Wed, 22 Apr 2020 18:09:33 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 26/33] ice: add XDP frame size to
+ driver
 In-Reply-To: <158757160439.1370371.13213378122947426220.stgit@firesoul>
 References: <158757160439.1370371.13213378122947426220.stgit@firesoul>
-Message-ID: <158757176299.1370371.1994831134457116714.stgit@firesoul>
+Message-ID: <158757177315.1370371.11465655870660712794.stgit@firesoul>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch mirrors the changes to ixgbe in previous patch.
+This driver uses different memory models depending on PAGE_SIZE at
+compile time. For PAGE_SIZE 4K it uses page splitting, meaning for
+normal MTU frame size is 2048 bytes (and headroom 192 bytes). For
+larger MTUs the driver still use page splitting, by allocating
+order-1 pages (8192 bytes) for RX frames. For PAGE_SIZE larger than
+4K, driver instead advance its rx_buffer->page_offset with the frame
+size "truesize".
 
-This VF driver doesn't support XDP_REDIRECT, but correct tailroom is
-still necessary for BPF-helper xdp_adjust_tail.  In legacy-mode +
-larger PAGE_SIZE, due to lacking tailroom, we accept that
-xdp_adjust_tail shrink doesn't work.
+For XDP frame size calculations, this mean that in PAGE_SIZE larger
+than 4K mode the frame_sz change on a per packet basis. For the page
+split 4K PAGE_SIZE mode, xdp.frame_sz is more constant and can be
+updated once outside the main NAPI loop.
+
+The default setting in the driver uses build_skb(), which provides
+the necessary headroom and tailroom for XDP-redirect in RX-frame
+(in both modes).
+
+There is one complication, which is legacy-rx mode (configurable via
+ethtool priv-flags). There are zero headroom in this mode, which is a
+requirement for XDP-redirect to work. The conversion to xdp_frame
+(convert_to_xdp_frame) will detect this insufficient space, and
+xdp_do_redirect() call will fail. This is deemed acceptable, as it
+allows other XDP actions to still work in legacy-mode. In
+legacy-mode + larger PAGE_SIZE due to lacking tailroom, we also
+accept that xdp_adjust_tail shrink doesn't work.
 
 Cc: intel-wired-lan at lists.osuosl.org
 Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Cc: Alexander Duyck <alexander.duyck@gmail.com>
 Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   34 +++++++++++++++++----
- 1 file changed, 27 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c |   34 +++++++++++++++++++++--------
+ 1 file changed, 25 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 4622c4ea2e46..62bc3e3b5b9c 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1095,19 +1095,31 @@ static struct sk_buff *ixgbevf_run_xdp(struct ixgbevf_adapter *adapter,
- 	return ERR_PTR(-result);
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index f67e8362958c..69b21b436f9a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -423,6 +423,22 @@ static unsigned int ice_rx_offset(struct ice_ring *rx_ring)
+ 	return 0;
  }
  
-+static unsigned int ixgbevf_rx_frame_truesize(struct ixgbevf_ring *rx_ring,
-+					      unsigned int size)
++static unsigned int ice_rx_frame_truesize(struct ice_ring *rx_ring,
++					  unsigned int size)
 +{
 +	unsigned int truesize;
 +
 +#if (PAGE_SIZE < 8192)
-+	truesize = ixgbevf_rx_pg_size(rx_ring) / 2; /* Must be power-of-2 */
++	truesize = ice_rx_pg_size(rx_ring) / 2; /* Must be power-of-2 */
 +#else
-+	truesize = ring_uses_build_skb(rx_ring) ?
-+		SKB_DATA_ALIGN(IXGBEVF_SKB_PAD + size) +
++	truesize = ice_rx_offset(rx_ring) ?
++		SKB_DATA_ALIGN(ice_rx_offset(rx_ring) + size) +
 +		SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) :
 +		SKB_DATA_ALIGN(size);
 +#endif
-+       return truesize;
++	return truesize;
 +}
 +
- static void ixgbevf_rx_buffer_flip(struct ixgbevf_ring *rx_ring,
- 				   struct ixgbevf_rx_buffer *rx_buffer,
- 				   unsigned int size)
- {
--#if (PAGE_SIZE < 8192)
--	unsigned int truesize = ixgbevf_rx_pg_size(rx_ring) / 2;
-+	unsigned int truesize = ixgbevf_rx_frame_truesize(rx_ring, size);
- 
-+#if (PAGE_SIZE < 8192)
- 	rx_buffer->page_offset ^= truesize;
- #else
--	unsigned int truesize = ring_uses_build_skb(rx_ring) ?
--				SKB_DATA_ALIGN(IXGBEVF_SKB_PAD + size) :
--				SKB_DATA_ALIGN(size);
--
- 	rx_buffer->page_offset += truesize;
- #endif
- }
-@@ -1125,6 +1137,11 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
+ /**
+  * ice_run_xdp - Executes an XDP program on initialized xdp_buff
+  * @rx_ring: Rx ring
+@@ -991,6 +1007,10 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 	bool failure;
  
  	xdp.rxq = &rx_ring->xdp_rxq;
- 
 +	/* Frame size depend on rx_ring setup when PAGE_SIZE=4K */
 +#if (PAGE_SIZE < 8192)
-+	xdp.frame_sz = ixgbevf_rx_frame_truesize(rx_ring, 0);
++	xdp.frame_sz = ice_rx_frame_truesize(rx_ring, 0);
 +#endif
-+
- 	while (likely(total_rx_packets < budget)) {
- 		struct ixgbevf_rx_buffer *rx_buffer;
- 		union ixgbe_adv_rx_desc *rx_desc;
-@@ -1157,7 +1174,10 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
- 			xdp.data_hard_start = xdp.data -
- 					      ixgbevf_rx_offset(rx_ring);
- 			xdp.data_end = xdp.data + size;
--
-+#if (PAGE_SIZE > 4096)
-+			/* At larger PAGE_SIZE, frame_sz depend on len size */
-+			xdp.frame_sz = ixgbevf_rx_frame_truesize(rx_ring, size);
-+#endif
- 			skb = ixgbevf_run_xdp(adapter, rx_ring, &xdp);
- 		}
  
+ 	/* start the loop to process Rx packets bounded by 'budget' */
+ 	while (likely(total_rx_pkts < (unsigned int)budget)) {
+@@ -1038,6 +1058,10 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 		xdp.data_hard_start = xdp.data - ice_rx_offset(rx_ring);
+ 		xdp.data_meta = xdp.data;
+ 		xdp.data_end = xdp.data + size;
++#if (PAGE_SIZE > 4096)
++		/* At larger PAGE_SIZE, frame_sz depend on len size */
++		xdp.frame_sz = ice_rx_frame_truesize(rx_ring, size);
++#endif
+ 
+ 		rcu_read_lock();
+ 		xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+@@ -1051,16 +1075,8 @@ static int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 		if (!xdp_res)
+ 			goto construct_skb;
+ 		if (xdp_res & (ICE_XDP_TX | ICE_XDP_REDIR)) {
+-			unsigned int truesize;
+-
+-#if (PAGE_SIZE < 8192)
+-			truesize = ice_rx_pg_size(rx_ring) / 2;
+-#else
+-			truesize = SKB_DATA_ALIGN(ice_rx_offset(rx_ring) +
+-						  size);
+-#endif
+ 			xdp_xmit |= xdp_res;
+-			ice_rx_buf_adjust_pg_offset(rx_buf, truesize);
++			ice_rx_buf_adjust_pg_offset(rx_buf, xdp.frame_sz);
+ 		} else {
+ 			rx_buf->pagecnt_bias++;
+ 		}
 
 
