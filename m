@@ -1,221 +1,35 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 23 Apr 2020 01:06:35 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 60/60]
- drivers/net/ethernet/intel/i40e/i40e_main.c:15350:24: error:
- 'I40E_PRTGL_SAH' undeclared; did you mean 'I40E_PRTGEN_CNF'?
-Message-ID: <202004230131.kH3dvL4o%lkp@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 22 Apr 2020 18:49:03 +0000
+Subject: [Intel-wired-lan] [net-next v2] i40e: Add a check to see if MFS
+ is set
+In-Reply-To: <20200421221734.503494-1-jeffrey.t.kirsher@intel.com>
+References: <20200421221734.503494-1-jeffrey.t.kirsher@intel.com>
+Message-ID: <38c988b9d043460a804500d8c765af85@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   826a1eed0402b218f4374a26b6a1009404d6ba65
-commit: 826a1eed0402b218f4374a26b6a1009404d6ba65 [60/60] i40e: Add a check to see if MFS is set
-config: ia64-randconfig-a001-20200421 (attached as .config)
-compiler: ia64-linux-gcc (GCC) 9.3.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 826a1eed0402b218f4374a26b6a1009404d6ba65
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day GCC_VERSION=9.3.0 make.cross ARCH=ia64 
+-----Original Message-----
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jeff Kirsher
+Sent: Tuesday, April 21, 2020 3:18 PM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [net-next v2] i40e: Add a check to see if MFS is set
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kbuild test robot <lkp@intel.com>
+From: Todd Fujinaka <todd.fujinaka@intel.com>
 
-All errors (new ones prefixed by >>):
+A customer was chain-booting to provision his systems and one of the steps was setting MFS. MFS isn't cleared by normal warm reboots (clearing requires a GLOBR) and there was no indication of why Jumbo Frame receives were failing.
 
-   In file included from drivers/net/ethernet/intel/i40e/i40e_type.h:8,
-                    from drivers/net/ethernet/intel/i40e/i40e.h:39,
-                    from drivers/net/ethernet/intel/i40e/i40e_main.c:10:
-   drivers/net/ethernet/intel/i40e/i40e_main.c: In function 'i40e_probe':
->> drivers/net/ethernet/intel/i40e/i40e_main.c:15350:24: error: 'I40E_PRTGL_SAH' undeclared (first use in this function); did you mean 'I40E_PRTGEN_CNF'?
-   15350 |   val = (rd32(&pf->hw, I40E_PRTGL_SAH + 0x4 * i) &
-         |                        ^~~~~~~~~~~~~~
-   drivers/net/ethernet/intel/i40e/i40e_osdep.h:27:45: note: in definition of macro 'rd32'
-      27 | #define rd32(a, reg)  readl((a)->hw_addr + (reg))
-         |                                             ^~~
-   drivers/net/ethernet/intel/i40e/i40e_main.c:15350:24: note: each undeclared identifier is reported only once for each function it appears in
-   15350 |   val = (rd32(&pf->hw, I40E_PRTGL_SAH + 0x4 * i) &
-         |                        ^~~~~~~~~~~~~~
-   drivers/net/ethernet/intel/i40e/i40e_osdep.h:27:45: note: in definition of macro 'rd32'
-      27 | #define rd32(a, reg)  readl((a)->hw_addr + (reg))
-         |                                             ^~~
->> drivers/net/ethernet/intel/i40e/i40e_main.c:15351:10: error: 'I40E_PRTGL_SAH_MFS_MASK' undeclared (first use in this function); did you mean 'I40E_REG_MSS_MIN_MASK'?
-   15351 |          I40E_PRTGL_SAH_MFS_MASK) >> I40E_PRTGL_SAH_MFS_SHIFT;
-         |          ^~~~~~~~~~~~~~~~~~~~~~~
-         |          I40E_REG_MSS_MIN_MASK
->> drivers/net/ethernet/intel/i40e/i40e_main.c:15351:38: error: 'I40E_PRTGL_SAH_MFS_SHIFT' undeclared (first use in this function)
-   15351 |          I40E_PRTGL_SAH_MFS_MASK) >> I40E_PRTGL_SAH_MFS_SHIFT;
-         |                                      ^~~~~~~~~~~~~~~~~~~~~~~~
+Add a warning if MFS is set to anything lower than the default.
 
-vim +15350 drivers/net/ethernet/intel/i40e/i40e_main.c
-
- 15248	
- 15249		if (pf->flags & I40E_FLAG_IWARP_ENABLED) {
- 15250			pf->iwarp_base_vector = i40e_get_lump(pf, pf->irq_pile,
- 15251							      pf->num_iwarp_msix,
- 15252							      I40E_IWARP_IRQ_PILE_ID);
- 15253			if (pf->iwarp_base_vector < 0) {
- 15254				dev_info(&pdev->dev,
- 15255					 "failed to get tracking for %d vectors for IWARP err=%d\n",
- 15256					 pf->num_iwarp_msix, pf->iwarp_base_vector);
- 15257				pf->flags &= ~I40E_FLAG_IWARP_ENABLED;
- 15258			}
- 15259		}
- 15260	
- 15261		i40e_dbg_pf_init(pf);
- 15262	
- 15263		/* tell the firmware that we're starting */
- 15264		i40e_send_version(pf);
- 15265	
- 15266		/* since everything's happy, start the service_task timer */
- 15267		mod_timer(&pf->service_timer,
- 15268			  round_jiffies(jiffies + pf->service_timer_period));
- 15269	
- 15270		/* add this PF to client device list and launch a client service task */
- 15271		if (pf->flags & I40E_FLAG_IWARP_ENABLED) {
- 15272			err = i40e_lan_add_device(pf);
- 15273			if (err)
- 15274				dev_info(&pdev->dev, "Failed to add PF to client API service list: %d\n",
- 15275					 err);
- 15276		}
- 15277	
- 15278	#define PCI_SPEED_SIZE 8
- 15279	#define PCI_WIDTH_SIZE 8
- 15280		/* Devices on the IOSF bus do not have this information
- 15281		 * and will report PCI Gen 1 x 1 by default so don't bother
- 15282		 * checking them.
- 15283		 */
- 15284		if (!(pf->hw_features & I40E_HW_NO_PCI_LINK_CHECK)) {
- 15285			char speed[PCI_SPEED_SIZE] = "Unknown";
- 15286			char width[PCI_WIDTH_SIZE] = "Unknown";
- 15287	
- 15288			/* Get the negotiated link width and speed from PCI config
- 15289			 * space
- 15290			 */
- 15291			pcie_capability_read_word(pf->pdev, PCI_EXP_LNKSTA,
- 15292						  &link_status);
- 15293	
- 15294			i40e_set_pci_config_data(hw, link_status);
- 15295	
- 15296			switch (hw->bus.speed) {
- 15297			case i40e_bus_speed_8000:
- 15298				strlcpy(speed, "8.0", PCI_SPEED_SIZE); break;
- 15299			case i40e_bus_speed_5000:
- 15300				strlcpy(speed, "5.0", PCI_SPEED_SIZE); break;
- 15301			case i40e_bus_speed_2500:
- 15302				strlcpy(speed, "2.5", PCI_SPEED_SIZE); break;
- 15303			default:
- 15304				break;
- 15305			}
- 15306			switch (hw->bus.width) {
- 15307			case i40e_bus_width_pcie_x8:
- 15308				strlcpy(width, "8", PCI_WIDTH_SIZE); break;
- 15309			case i40e_bus_width_pcie_x4:
- 15310				strlcpy(width, "4", PCI_WIDTH_SIZE); break;
- 15311			case i40e_bus_width_pcie_x2:
- 15312				strlcpy(width, "2", PCI_WIDTH_SIZE); break;
- 15313			case i40e_bus_width_pcie_x1:
- 15314				strlcpy(width, "1", PCI_WIDTH_SIZE); break;
- 15315			default:
- 15316				break;
- 15317			}
- 15318	
- 15319			dev_info(&pdev->dev, "PCI-Express: Speed %sGT/s Width x%s\n",
- 15320				 speed, width);
- 15321	
- 15322			if (hw->bus.width < i40e_bus_width_pcie_x8 ||
- 15323			    hw->bus.speed < i40e_bus_speed_8000) {
- 15324				dev_warn(&pdev->dev, "PCI-Express bandwidth available for this device may be insufficient for optimal performance.\n");
- 15325				dev_warn(&pdev->dev, "Please move the device to a different PCI-e link with more lanes and/or higher transfer rate.\n");
- 15326			}
- 15327		}
- 15328	
- 15329		/* get the requested speeds from the fw */
- 15330		err = i40e_aq_get_phy_capabilities(hw, false, false, &abilities, NULL);
- 15331		if (err)
- 15332			dev_dbg(&pf->pdev->dev, "get requested speeds ret =  %s last_status =  %s\n",
- 15333				i40e_stat_str(&pf->hw, err),
- 15334				i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
- 15335		pf->hw.phy.link_info.requested_speeds = abilities.link_speed;
- 15336	
- 15337		/* set the FEC config due to the board capabilities */
- 15338		i40e_set_fec_in_flags(abilities.fec_cfg_curr_mod_ext_info, &pf->flags);
- 15339	
- 15340		/* get the supported phy types from the fw */
- 15341		err = i40e_aq_get_phy_capabilities(hw, false, true, &abilities, NULL);
- 15342		if (err)
- 15343			dev_dbg(&pf->pdev->dev, "get supported phy types ret =  %s last_status =  %s\n",
- 15344				i40e_stat_str(&pf->hw, err),
- 15345				i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
- 15346	
- 15347		/* make sure the MFS hasn't been set lower than the default */
- 15348	#define MAX_FRAME_SIZE_DEFAULT 0x2600
- 15349		for (i = 0; i < 4; i++) {
- 15350			val = (rd32(&pf->hw, I40E_PRTGL_SAH + 0x4 * i) &
- 15351			       I40E_PRTGL_SAH_MFS_MASK) >> I40E_PRTGL_SAH_MFS_SHIFT;
- 15352			if (val < MAX_FRAME_SIZE_DEFAULT)
- 15353				dev_warn(&pdev->dev, "MFS for port %x has been set below the default: %x\n", i, val);
- 15354		}
- 15355	
- 15356		/* Add a filter to drop all Flow control frames from any VSI from being
- 15357		 * transmitted. By doing so we stop a malicious VF from sending out
- 15358		 * PAUSE or PFC frames and potentially controlling traffic for other
- 15359		 * PF/VF VSIs.
- 15360		 * The FW can still send Flow control frames if enabled.
- 15361		 */
- 15362		i40e_add_filter_to_drop_tx_flow_control_frames(&pf->hw,
- 15363							       pf->main_vsi_seid);
- 15364	
- 15365		if ((pf->hw.device_id == I40E_DEV_ID_10G_BASE_T) ||
- 15366			(pf->hw.device_id == I40E_DEV_ID_10G_BASE_T4))
- 15367			pf->hw_features |= I40E_HW_PHY_CONTROLS_LEDS;
- 15368		if (pf->hw.device_id == I40E_DEV_ID_SFP_I_X722)
- 15369			pf->hw_features |= I40E_HW_HAVE_CRT_RETIMER;
- 15370		/* print a string summarizing features */
- 15371		i40e_print_features(pf);
- 15372	
- 15373		return 0;
- 15374	
- 15375		/* Unwind what we've done if something failed in the setup */
- 15376	err_vsis:
- 15377		set_bit(__I40E_DOWN, pf->state);
- 15378		i40e_clear_interrupt_scheme(pf);
- 15379		kfree(pf->vsi);
- 15380	err_switch_setup:
- 15381		i40e_reset_interrupt_capability(pf);
- 15382		del_timer_sync(&pf->service_timer);
- 15383	err_mac_addr:
- 15384	err_configure_lan_hmc:
- 15385		(void)i40e_shutdown_lan_hmc(hw);
- 15386	err_init_lan_hmc:
- 15387		kfree(pf->qp_pile);
- 15388	err_sw_init:
- 15389	err_adminq_setup:
- 15390	err_pf_reset:
- 15391		iounmap(hw->hw_addr);
- 15392	err_ioremap:
- 15393		kfree(pf);
- 15394	err_pf_alloc:
- 15395		pci_disable_pcie_error_reporting(pdev);
- 15396		pci_release_mem_regions(pdev);
- 15397	err_pci_reg:
- 15398	err_dma:
- 15399		pci_disable_device(pdev);
- 15400		return err;
- 15401	}
- 15402	
-
+Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 29427 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200423/53a4beb5/attachment-0001.bin>
+v2: fix the math calculation on accessing the SAH register
+
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+
+
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
