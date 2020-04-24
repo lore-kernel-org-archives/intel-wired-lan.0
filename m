@@ -1,76 +1,68 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Fri, 24 Apr 2020 13:16:06 -0700
-Subject: [Intel-wired-lan] [PATCH 02/19] igc: Get rid of igc_max_channels()
-In-Reply-To: <20200424201623.10971-1-andre.guedes@intel.com>
-References: <20200424201623.10971-1-andre.guedes@intel.com>
-Message-ID: <20200424201623.10971-3-andre.guedes@intel.com>
+Date: Fri, 24 Apr 2020 13:16:04 -0700
+Subject: [Intel-wired-lan] [PATCH 00/19] igc: Fixes to NFC support code
+Message-ID: <20200424201623.10971-1-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The local function igc_max_channels() is a pointless wrapper around
-igc_get_max_rss_queues(). This patch removes it and updates the callers
-accordingly. It also does some cleanup on igc_get_max_rss_queues().
+Hi all,
 
-Signed-off-by: Andre Guedes <andre.guedes@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 9 ++-------
- drivers/net/ethernet/intel/igc/igc_main.c    | 7 +------
- 2 files changed, 3 insertions(+), 13 deletions(-)
+Previous patch series [1-4] addressed issues with IGC filtering support
+individually (MAC address, VLAN priority, and ethertype filtering). This
+patch series fixes issues with the Network Flow Classification (NFC)
+support, which is built on top of those individual filters.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 9023dc2a2446..ee2563ef24ac 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1508,18 +1508,13 @@ static int igc_set_rxfh(struct net_device *netdev, const u32 *indir,
- 	return 0;
- }
- 
--static unsigned int igc_max_channels(struct igc_adapter *adapter)
--{
--	return igc_get_max_rss_queues(adapter);
--}
--
- static void igc_get_channels(struct net_device *netdev,
- 			     struct ethtool_channels *ch)
- {
- 	struct igc_adapter *adapter = netdev_priv(netdev);
- 
- 	/* Report maximum channels */
--	ch->max_combined = igc_max_channels(adapter);
-+	ch->max_combined = igc_get_max_rss_queues(adapter);
- 
- 	/* Report info for other vector */
- 	if (adapter->flags & IGC_FLAG_HAS_MSIX) {
-@@ -1546,7 +1541,7 @@ static int igc_set_channels(struct net_device *netdev,
- 		return -EINVAL;
- 
- 	/* Verify the number of channels doesn't exceed hw limits */
--	max_combined = igc_max_channels(adapter);
-+	max_combined = igc_get_max_rss_queues(adapter);
- 	if (count > max_combined)
- 		return -EINVAL;
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 73140938ec2c..04f7f4112205 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2732,12 +2732,7 @@ void igc_set_flag_queue_pairs(struct igc_adapter *adapter,
- 
- unsigned int igc_get_max_rss_queues(struct igc_adapter *adapter)
- {
--	unsigned int max_rss_queues;
--
--	/* Determine the maximum number of RSS queues supported. */
--	max_rss_queues = IGC_MAX_RX_QUEUES;
--
--	return max_rss_queues;
-+	return IGC_MAX_RX_QUEUES;
- }
- 
- static void igc_init_queue_configuration(struct igc_adapter *adapter)
+This series is organized as follows:
+
+    * Initial patches (1 to 4) do trivial code cleanup like remove unused
+      code, useless wrappers, simplify logic, etc.
+
+    * Midsection patches (5 to 8) refactor the NFC support code to improve
+      code reuse and organization. It also makes some upcoming bug fixes
+      simpler.
+
+    * The rest of the series (9 to 19) fixes multiple bugs related to rules
+      insertion, overwrite, and restoration as well as other issues like
+      memory leak and locking.
+
+Best regards,
+
+Andre
+
+[1] https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20200318230102.36952-1-andre.guedes at intel.com/
+[2] https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20200403181743.23447-1-andre.guedes at intel.com/
+[3] https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20200407210711.24371-1-andre.guedes at intel.com/
+[4] https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20200411002834.13916-1-andre.guedes at intel.com/
+
+Andre Guedes (19):
+  igc: Remove unused field from igc_nfc_filter
+  igc: Get rid of igc_max_channels()
+  igc: Cleanup _get|set_rxnfc ethtool ops
+  igc: Early return in igc_get_ethtool_nfc_entry()
+  igc: Add 'igc_ethtool_' prefix to functions in igc_ethtool.c
+  igc: Align terms used in NFC support code
+  igc: Change byte order in struct igc_nfc_filter
+  igc: Refactor igc_ethtool_add_nfc_rule()
+  igc: Fix 'sw_idx' type in struct igc_nfc_rule
+  igc: Fix locking issue when retrieving NFC rules
+  igc: Fix NFC rule overwrite cases
+  igc: Fix NFC rules with multicast addresses
+  igc: Fix NFC rules restoration
+  igc: Refactor igc_ethtool_update_nfc_rule()
+  igc: Fix NFC rules leak when driver is unloaded
+  igc: Fix NFC rule validation
+  igc: Change return type from igc_disable_nfc_rule()
+  igc: Change adapter->nfc_rule_lock to mutex
+  igc: Remove igc_nfc_rule_exit()
+
+ drivers/net/ethernet/intel/igc/igc.h         |  57 +-
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 608 ++++++++-----------
+ drivers/net/ethernet/intel/igc/igc_main.c    | 257 +++++---
+ 3 files changed, 469 insertions(+), 453 deletions(-)
+
 -- 
 2.26.0
 
