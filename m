@@ -1,237 +1,85 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Fri, 24 Apr 2020 13:16:12 -0700
-Subject: [Intel-wired-lan] [PATCH 08/19] igc: Refactor
- igc_ethtool_add_nfc_rule()
+Date: Fri, 24 Apr 2020 13:16:14 -0700
+Subject: [Intel-wired-lan] [PATCH 10/19] igc: Fix locking issue when
+ retrieving NFC rules
 In-Reply-To: <20200424201623.10971-1-andre.guedes@intel.com>
 References: <20200424201623.10971-1-andre.guedes@intel.com>
-Message-ID: <20200424201623.10971-9-andre.guedes@intel.com>
+Message-ID: <20200424201623.10971-11-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Current implementation of igc_ethtool_add_nfc_rule() is quite long and a
-bit convoluted so this patch does a code refactoring to improve the
-code.
-
-Code related to NFC rule object initialization is refactored out to the
-local helper function igc_ethtool_init_nfc_rule(). Likewise, code
-related to NFC rule validation is refactored out to another local
-helper, igc_ethtool_is_nfc_rule_valid().
-
-RX_CLS_FLOW_DISC check is removed since it is redundant. The macro is
-defined as the max value fsp->ring_cookie can have, so checking if
-fsp->ring_cookie >= adapter->num_rx_queues is already sufficient.
-
-Finally, some log messages are improved or added, and obvious comments
-are removed.
+Access to NFC rules stored in adapter->nfc_rule_list is protect by
+adapter->nfc_rule_lock. The functions igc_ethtool_get_nfc_rule()
+and igc_ethtool_get_nfc_rules() are missing to hold the lock while
+accessing rule objects.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 150 ++++++++++++-------
- 1 file changed, 92 insertions(+), 58 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index f9518aa1375b..bdb7c99f66be 100644
+index 93274e75e8c5..38ac61c04e5c 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1271,9 +1271,6 @@ static int igc_ethtool_update_nfc_rule(struct igc_adapter *adapter,
- 	if (!input)
- 		return err;
+@@ -939,16 +939,18 @@ static int igc_ethtool_get_nfc_rule(struct igc_adapter *adapter,
  
--	/* initialize node */
--	INIT_HLIST_NODE(&input->nfc_node);
--
- 	/* add filter to the list */
- 	if (parent)
- 		hlist_add_behind(&input->nfc_node, &parent->nfc_node);
-@@ -1286,41 +1283,19 @@ static int igc_ethtool_update_nfc_rule(struct igc_adapter *adapter,
- 	return 0;
- }
+ 	cmd->data = IGC_MAX_RXNFC_RULES;
  
--static int igc_ethtool_add_nfc_rule(struct igc_adapter *adapter,
--				    struct ethtool_rxnfc *cmd)
-+static void igc_ethtool_init_nfc_rule(struct igc_nfc_rule *rule,
-+				      const struct ethtool_rx_flow_spec *fsp)
- {
--	struct net_device *netdev = adapter->netdev;
--	struct ethtool_rx_flow_spec *fsp =
--		(struct ethtool_rx_flow_spec *)&cmd->fs;
--	struct igc_nfc_rule *rule, *tmp;
--	int err = 0;
--
--	if (!(netdev->hw_features & NETIF_F_NTUPLE))
--		return -EOPNOTSUPP;
-+	INIT_HLIST_NODE(&rule->nfc_node);
- 
--	/* Don't allow programming if the action is a queue greater than
--	 * the number of online Rx queues.
--	 */
--	if (fsp->ring_cookie == RX_CLS_FLOW_DISC ||
--	    fsp->ring_cookie >= adapter->num_rx_queues) {
--		netdev_err(netdev,
--			   "ethtool -N: The specified action is invalid");
--		return -EINVAL;
--	}
-+	rule->action = fsp->ring_cookie;
-+	rule->sw_idx = fsp->location;
- 
--	/* Don't allow indexes to exist outside of available space */
--	if (fsp->location >= IGC_MAX_RXNFC_RULES) {
--		netdev_err(netdev, "Location out of range");
--		return -EINVAL;
-+	if ((fsp->flow_type & FLOW_EXT) && fsp->m_ext.vlan_tci) {
-+		rule->filter.vlan_tci = ntohs(fsp->h_ext.vlan_tci);
-+		rule->filter.match_flags |= IGC_FILTER_FLAG_VLAN_TCI;
- 	}
- 
--	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW)
--		return -EINVAL;
--
--	rule = kzalloc(sizeof(*rule), GFP_KERNEL);
--	if (!rule)
--		return -ENOMEM;
--
- 	if (fsp->m_u.ether_spec.h_proto == ETHER_TYPE_FULL_MASK) {
- 		rule->filter.etype = ntohs(fsp->h_u.ether_spec.h_proto);
- 		rule->filter.match_flags = IGC_FILTER_FLAG_ETHER_TYPE;
-@@ -1340,51 +1315,110 @@ static int igc_ethtool_add_nfc_rule(struct igc_adapter *adapter,
- 		ether_addr_copy(rule->filter.dst_addr,
- 				fsp->h_u.ether_spec.h_dest);
- 	}
-+}
- 
--	if (rule->filter.match_flags & IGC_FILTER_FLAG_DST_MAC_ADDR &&
--	    rule->filter.match_flags & IGC_FILTER_FLAG_SRC_MAC_ADDR) {
--		netdev_dbg(netdev, "Filters with both dst and src are not supported");
--		err = -EOPNOTSUPP;
--		goto err_out;
--	}
-+/**
-+ * igc_ethtool_check_nfc_rule() - Check if NFC rule is valid.
-+ * @adapter: Pointer to adapter.
-+ * @rule: Rule under evaluation.
-+ *
-+ * Rules with both destination and source MAC addresses are considered invalid
-+ * since the driver doesn't support them.
-+ *
-+ * Also, if there is already another rule with the same filter, @rule is
-+ * considered invalid.
-+ *
-+ * Context: Expects adapter->nfc_rule_lock to be held by caller.
-+ *
-+ * Return: 0 in case of success, negative errno code otherwise.
-+ */
-+static int igc_ethtool_check_nfc_rule(struct igc_adapter *adapter,
-+				      struct igc_nfc_rule *rule)
-+{
-+	struct net_device *dev = adapter->netdev;
-+	u8 flags = rule->filter.match_flags;
-+	struct igc_nfc_rule *tmp;
- 
--	if ((fsp->flow_type & FLOW_EXT) && fsp->m_ext.vlan_tci) {
--		if (fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK)) {
--			netdev_dbg(netdev, "VLAN mask not supported");
--			err = -EOPNOTSUPP;
--			goto err_out;
--		}
--		rule->filter.vlan_tci = ntohs(fsp->h_ext.vlan_tci);
--		rule->filter.match_flags |= IGC_FILTER_FLAG_VLAN_TCI;
-+	if (!flags) {
-+		netdev_dbg(dev, "Rule with no match");
-+		return -EINVAL;
- 	}
- 
--	rule->action = fsp->ring_cookie;
--	rule->sw_idx = fsp->location;
--
--	spin_lock(&adapter->nfc_rule_lock);
-+	if (flags & IGC_FILTER_FLAG_DST_MAC_ADDR &&
-+	    flags & IGC_FILTER_FLAG_SRC_MAC_ADDR) {
-+		netdev_dbg(dev, "Filters with both dst and src are not supported");
-+		return -EOPNOTSUPP;
-+	}
- 
- 	hlist_for_each_entry(tmp, &adapter->nfc_rule_list, nfc_node) {
- 		if (!memcmp(&rule->filter, &tmp->filter,
- 			    sizeof(rule->filter))) {
--			err = -EEXIST;
--			netdev_err(netdev,
--				   "ethtool: this filter is already set");
--			goto err_out_w_lock;
-+			netdev_dbg(dev, "Rule already exists");
-+			return -EEXIST;
- 		}
- 	}
- 
-+	return 0;
-+}
-+
-+static int igc_ethtool_add_nfc_rule(struct igc_adapter *adapter,
-+				    struct ethtool_rxnfc *cmd)
-+{
-+	struct net_device *netdev = adapter->netdev;
-+	struct ethtool_rx_flow_spec *fsp =
-+		(struct ethtool_rx_flow_spec *)&cmd->fs;
-+	struct igc_nfc_rule *rule;
-+	int err;
-+
-+	if (!(netdev->hw_features & NETIF_F_NTUPLE)) {
-+		netdev_dbg(netdev, "N-tuple filters disabled");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW) {
-+		netdev_dbg(netdev, "Only ethernet flow type is supported");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if ((fsp->flow_type & FLOW_EXT) &&
-+	    fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK)) {
-+		netdev_dbg(netdev, "VLAN mask not supported");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (fsp->ring_cookie >= adapter->num_rx_queues) {
-+		netdev_dbg(netdev, "Invalid action");
-+		return -EINVAL;
-+	}
-+
-+	if (fsp->location >= IGC_MAX_RXNFC_RULES) {
-+		netdev_dbg(netdev, "Invalid location");
-+		return -EINVAL;
-+	}
-+
-+	rule = kzalloc(sizeof(*rule), GFP_KERNEL);
-+	if (!rule)
-+		return -ENOMEM;
-+
-+	igc_ethtool_init_nfc_rule(rule, fsp);
-+
 +	spin_lock(&adapter->nfc_rule_lock);
 +
-+	err = igc_ethtool_check_nfc_rule(adapter, rule);
-+	if (err)
-+		goto err;
-+
- 	err = igc_enable_nfc_rule(adapter, rule);
- 	if (err)
--		goto err_out_w_lock;
-+		goto err;
+ 	hlist_for_each_entry(rule, &adapter->nfc_rule_list, nfc_node) {
+ 		if (fsp->location <= rule->location)
+ 			break;
+ 	}
  
- 	igc_ethtool_update_nfc_rule(adapter, rule, rule->sw_idx);
+ 	if (!rule || fsp->location != rule->location)
+-		return -EINVAL;
++		goto out;
  
- 	spin_unlock(&adapter->nfc_rule_lock);
+ 	if (!rule->filter.match_flags)
+-		return -EINVAL;
++		goto out;
+ 
+ 	fsp->flow_type = ETHER_FLOW;
+ 	fsp->ring_cookie = rule->action;
+@@ -976,7 +978,12 @@ static int igc_ethtool_get_nfc_rule(struct igc_adapter *adapter,
+ 		eth_broadcast_addr(fsp->m_u.ether_spec.h_source);
+ 	}
+ 
++	spin_unlock(&adapter->nfc_rule_lock);
  	return 0;
- 
--err_out_w_lock:
-+err:
- 	spin_unlock(&adapter->nfc_rule_lock);
--err_out:
- 	kfree(rule);
- 	return err;
++
++out:
++	spin_unlock(&adapter->nfc_rule_lock);
++	return -EINVAL;
  }
+ 
+ static int igc_ethtool_get_nfc_rules(struct igc_adapter *adapter,
+@@ -988,13 +995,19 @@ static int igc_ethtool_get_nfc_rules(struct igc_adapter *adapter,
+ 
+ 	cmd->data = IGC_MAX_RXNFC_RULES;
+ 
++	spin_lock(&adapter->nfc_rule_lock);
++
+ 	hlist_for_each_entry(rule, &adapter->nfc_rule_list, nfc_node) {
+-		if (cnt == cmd->rule_cnt)
++		if (cnt == cmd->rule_cnt) {
++			spin_unlock(&adapter->nfc_rule_lock);
+ 			return -EMSGSIZE;
++		}
+ 		rule_locs[cnt] = rule->location;
+ 		cnt++;
+ 	}
+ 
++	spin_unlock(&adapter->nfc_rule_lock);
++
+ 	cmd->rule_cnt = cnt;
+ 
+ 	return 0;
 -- 
 2.26.0
 
