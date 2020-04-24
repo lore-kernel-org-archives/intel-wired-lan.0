@@ -1,68 +1,134 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Fri, 24 Apr 2020 13:16:04 -0700
-Subject: [Intel-wired-lan] [PATCH 00/19] igc: Fixes to NFC support code
-Message-ID: <20200424201623.10971-1-andre.guedes@intel.com>
+Date: Fri, 24 Apr 2020 13:16:11 -0700
+Subject: [Intel-wired-lan] [PATCH 07/19] igc: Change byte order in struct
+ igc_nfc_filter
+In-Reply-To: <20200424201623.10971-1-andre.guedes@intel.com>
+References: <20200424201623.10971-1-andre.guedes@intel.com>
+Message-ID: <20200424201623.10971-8-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi all,
+Every time we access the 'etype' and 'vlan_tci' fields from struct
+igc_nfc_filter to enable or disable filters in hardware we have to
+convert them from big endian to host order so it makes more sense to
+simply have these fields in host order.
 
-Previous patch series [1-4] addressed issues with IGC filtering support
-individually (MAC address, VLAN priority, and ethertype filtering). This
-patch series fixes issues with the Network Flow Classification (NFC)
-support, which is built on top of those individual filters.
+The byte order conversion should take place in igc_ethtool_get_nfc_
+rule() and igc_ethtool_add_nfc_rule(), which are called by .get_rxnfc
+and .set_rxnfc ethtool ops, since ethtool subsystem is the one who deals
+with them in big endian order.
 
-This series is organized as follows:
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc.h         | 10 ++------
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 25 +++++++++-----------
+ 2 files changed, 13 insertions(+), 22 deletions(-)
 
-    * Initial patches (1 to 4) do trivial code cleanup like remove unused
-      code, useless wrappers, simplify logic, etc.
-
-    * Midsection patches (5 to 8) refactor the NFC support code to improve
-      code reuse and organization. It also makes some upcoming bug fixes
-      simpler.
-
-    * The rest of the series (9 to 19) fixes multiple bugs related to rules
-      insertion, overwrite, and restoration as well as other issues like
-      memory leak and locking.
-
-Best regards,
-
-Andre
-
-[1] https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20200318230102.36952-1-andre.guedes at intel.com/
-[2] https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20200403181743.23447-1-andre.guedes at intel.com/
-[3] https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20200407210711.24371-1-andre.guedes at intel.com/
-[4] https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20200411002834.13916-1-andre.guedes at intel.com/
-
-Andre Guedes (19):
-  igc: Remove unused field from igc_nfc_filter
-  igc: Get rid of igc_max_channels()
-  igc: Cleanup _get|set_rxnfc ethtool ops
-  igc: Early return in igc_get_ethtool_nfc_entry()
-  igc: Add 'igc_ethtool_' prefix to functions in igc_ethtool.c
-  igc: Align terms used in NFC support code
-  igc: Change byte order in struct igc_nfc_filter
-  igc: Refactor igc_ethtool_add_nfc_rule()
-  igc: Fix 'sw_idx' type in struct igc_nfc_rule
-  igc: Fix locking issue when retrieving NFC rules
-  igc: Fix NFC rule overwrite cases
-  igc: Fix NFC rules with multicast addresses
-  igc: Fix NFC rules restoration
-  igc: Refactor igc_ethtool_update_nfc_rule()
-  igc: Fix NFC rules leak when driver is unloaded
-  igc: Fix NFC rule validation
-  igc: Change return type from igc_disable_nfc_rule()
-  igc: Change adapter->nfc_rule_lock to mutex
-  igc: Remove igc_nfc_rule_exit()
-
- drivers/net/ethernet/intel/igc/igc.h         |  57 +-
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 608 ++++++++-----------
- drivers/net/ethernet/intel/igc/igc_main.c    | 257 +++++---
- 3 files changed, 469 insertions(+), 453 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 7124ba254b89..fcc6261d7f67 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -452,16 +452,10 @@ enum igc_filter_match_flags {
+ 	IGC_FILTER_FLAG_DST_MAC_ADDR =	0x8,
+ };
+ 
+-/* RX network flow classification data structure */
+ struct igc_nfc_filter {
+-	/* Byte layout in order, all values with MSB first:
+-	 * match_flags - 1 byte
+-	 * etype - 2 bytes
+-	 * vlan_tci - 2 bytes
+-	 */
+ 	u8 match_flags;
+-	__be16 etype;
+-	__be16 vlan_tci;
++	u16 etype;
++	u16 vlan_tci;
+ 	u8 src_addr[ETH_ALEN];
+ 	u8 dst_addr[ETH_ALEN];
+ };
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 46599ee7f0b9..f9518aa1375b 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -954,13 +954,13 @@ static int igc_ethtool_get_nfc_rule(struct igc_adapter *adapter,
+ 	fsp->ring_cookie = rule->action;
+ 
+ 	if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE) {
+-		fsp->h_u.ether_spec.h_proto = rule->filter.etype;
++		fsp->h_u.ether_spec.h_proto = htons(rule->filter.etype);
+ 		fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
+ 	}
+ 
+ 	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
+ 		fsp->flow_type |= FLOW_EXT;
+-		fsp->h_ext.vlan_tci = rule->filter.vlan_tci;
++		fsp->h_ext.vlan_tci = htons(rule->filter.vlan_tci);
+ 		fsp->m_ext.vlan_tci = htons(VLAN_PRIO_MASK);
+ 	}
+ 
+@@ -1183,9 +1183,8 @@ int igc_enable_nfc_rule(struct igc_adapter *adapter,
+ 	int err = -EINVAL;
+ 
+ 	if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE) {
+-		u16 etype = ntohs(rule->filter.etype);
+-
+-		err = igc_add_etype_filter(adapter, etype, rule->action);
++		err = igc_add_etype_filter(adapter, rule->filter.etype,
++					   rule->action);
+ 		if (err)
+ 			return err;
+ 	}
+@@ -1205,8 +1204,9 @@ int igc_enable_nfc_rule(struct igc_adapter *adapter,
+ 	}
+ 
+ 	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
+-		int prio = (ntohs(rule->filter.vlan_tci) & VLAN_PRIO_MASK)
++		int prio = (rule->filter.vlan_tci & VLAN_PRIO_MASK)
+ 				>> VLAN_PRIO_SHIFT;
++
+ 		err = igc_add_vlan_prio_filter(adapter, prio, rule->action);
+ 		if (err)
+ 			return err;
+@@ -1218,14 +1218,11 @@ int igc_enable_nfc_rule(struct igc_adapter *adapter,
+ int igc_disable_nfc_rule(struct igc_adapter *adapter,
+ 			 const struct igc_nfc_rule *rule)
+ {
+-	if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE) {
+-		u16 etype = ntohs(rule->filter.etype);
+-
+-		igc_del_etype_filter(adapter, etype);
+-	}
++	if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE)
++		igc_del_etype_filter(adapter, rule->filter.etype);
+ 
+ 	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
+-		int prio = (ntohs(rule->filter.vlan_tci) & VLAN_PRIO_MASK)
++		int prio = (rule->filter.vlan_tci & VLAN_PRIO_MASK)
+ 				>> VLAN_PRIO_SHIFT;
+ 		igc_del_vlan_prio_filter(adapter, prio);
+ 	}
+@@ -1325,7 +1322,7 @@ static int igc_ethtool_add_nfc_rule(struct igc_adapter *adapter,
+ 		return -ENOMEM;
+ 
+ 	if (fsp->m_u.ether_spec.h_proto == ETHER_TYPE_FULL_MASK) {
+-		rule->filter.etype = fsp->h_u.ether_spec.h_proto;
++		rule->filter.etype = ntohs(fsp->h_u.ether_spec.h_proto);
+ 		rule->filter.match_flags = IGC_FILTER_FLAG_ETHER_TYPE;
+ 	}
+ 
+@@ -1357,7 +1354,7 @@ static int igc_ethtool_add_nfc_rule(struct igc_adapter *adapter,
+ 			err = -EOPNOTSUPP;
+ 			goto err_out;
+ 		}
+-		rule->filter.vlan_tci = fsp->h_ext.vlan_tci;
++		rule->filter.vlan_tci = ntohs(fsp->h_ext.vlan_tci);
+ 		rule->filter.match_flags |= IGC_FILTER_FLAG_VLAN_TCI;
+ 	}
+ 
 -- 
 2.26.0
 
