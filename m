@@ -1,204 +1,59 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Fri, 24 Apr 2020 13:16:22 -0700
-Subject: [Intel-wired-lan] [PATCH 18/19] igc: Change adapter->nfc_rule_lock
- to mutex
+Date: Fri, 24 Apr 2020 13:16:20 -0700
+Subject: [Intel-wired-lan] [PATCH 16/19] igc: Fix NFC rule validation
 In-Reply-To: <20200424201623.10971-1-andre.guedes@intel.com>
 References: <20200424201623.10971-1-andre.guedes@intel.com>
-Message-ID: <20200424201623.10971-19-andre.guedes@intel.com>
+Message-ID: <20200424201623.10971-17-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch changes adapter->nfc_rule_lock type from spin_lock to mutex
-so we avoid unnecessary busy waiting on lock contention.
+If we try to overwrite an existing rule with the same filter but
+different action, we get EEXIST error as shown below.
 
-A closer look at the execution context of NFC rule API users shows that
-all of them run in process context. The API users are: ethtool ops,
-igc_configure(), called when interface is brought up by user or reset
-workequeue thread, igc_down(), called when interface is brought down,
-and igc_remove(), called when driver is unloaded.
+$ ethtool -N eth0 flow-type ether dst <MACADDR> action 1 loc 10
+$ ethtool -N eth0 flow-type ether dst <MACADDR> action 2 loc 10
+rmgr: Cannot insert RX class rule: File exists
+
+The second command is expected to overwrite the previous rule in location
+10 and succeed.
+
+This patch fixes igc_ethtool_check_nfc_rule() so it also checks the
+rules location. In case they match, the rule under evaluation should not
+be considered invalid.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
-Note that checkpatch.pl reports an issue with this patch. The issue is a false
-positive. There is a comment right above that line referring to the lock.
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Here is the report:
-
-CHECK: struct mutex definition without comment
-#31: FILE: drivers/net/ethernet/intel/igc/igc.h:193:
-+       struct mutex nfc_rule_lock;
----
- drivers/net/ethernet/intel/igc/igc.h         |  2 +-
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 24 ++++++++++----------
- drivers/net/ethernet/intel/igc/igc_main.c    | 14 ++++++------
- 3 files changed, 20 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index a484b328268b..14f9edaaaf83 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -190,7 +190,7 @@ struct igc_adapter {
- 	/* Any access to elements in nfc_rule_list is protected by the
- 	 * nfc_rule_lock.
- 	 */
--	spinlock_t nfc_rule_lock;
-+	struct mutex nfc_rule_lock;
- 	struct list_head nfc_rule_list;
- 	unsigned int nfc_rule_count;
- 
 diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 32bc77af71dd..db42dc046403 100644
+index de9ab3c8179a..32bc77af71dd 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -939,7 +939,7 @@ static int igc_ethtool_get_nfc_rule(struct igc_adapter *adapter,
+@@ -1225,8 +1225,8 @@ static void igc_ethtool_init_nfc_rule(struct igc_nfc_rule *rule,
+  * Rules with both destination and source MAC addresses are considered invalid
+  * since the driver doesn't support them.
+  *
+- * Also, if there is already another rule with the same filter, @rule is
+- * considered invalid.
++ * Also, if there is already another rule with the same filter in a different
++ * location, @rule is considered invalid.
+  *
+  * Context: Expects adapter->nfc_rule_lock to be held by caller.
+  *
+@@ -1252,7 +1252,8 @@ static int igc_ethtool_check_nfc_rule(struct igc_adapter *adapter,
  
- 	cmd->data = IGC_MAX_RXNFC_RULES;
- 
--	spin_lock(&adapter->nfc_rule_lock);
-+	mutex_lock(&adapter->nfc_rule_lock);
- 
- 	rule = igc_get_nfc_rule(adapter, fsp->location);
- 	if (!rule)
-@@ -971,11 +971,11 @@ static int igc_ethtool_get_nfc_rule(struct igc_adapter *adapter,
- 		eth_broadcast_addr(fsp->m_u.ether_spec.h_source);
- 	}
- 
--	spin_unlock(&adapter->nfc_rule_lock);
-+	mutex_unlock(&adapter->nfc_rule_lock);
- 	return 0;
- 
- out:
--	spin_unlock(&adapter->nfc_rule_lock);
-+	mutex_unlock(&adapter->nfc_rule_lock);
- 	return -EINVAL;
- }
- 
-@@ -988,18 +988,18 @@ static int igc_ethtool_get_nfc_rules(struct igc_adapter *adapter,
- 
- 	cmd->data = IGC_MAX_RXNFC_RULES;
- 
--	spin_lock(&adapter->nfc_rule_lock);
-+	mutex_lock(&adapter->nfc_rule_lock);
- 
- 	list_for_each_entry(rule, &adapter->nfc_rule_list, list) {
- 		if (cnt == cmd->rule_cnt) {
--			spin_unlock(&adapter->nfc_rule_lock);
-+			mutex_unlock(&adapter->nfc_rule_lock);
- 			return -EMSGSIZE;
+ 	list_for_each_entry(tmp, &adapter->nfc_rule_list, list) {
+ 		if (!memcmp(&rule->filter, &tmp->filter,
+-			    sizeof(rule->filter))) {
++			    sizeof(rule->filter)) &&
++		    tmp->location != rule->location) {
+ 			netdev_dbg(dev, "Rule already exists");
+ 			return -EEXIST;
  		}
- 		rule_locs[cnt] = rule->location;
- 		cnt++;
- 	}
- 
--	spin_unlock(&adapter->nfc_rule_lock);
-+	mutex_unlock(&adapter->nfc_rule_lock);
- 
- 	cmd->rule_cnt = cnt;
- 
-@@ -1303,7 +1303,7 @@ static int igc_ethtool_add_nfc_rule(struct igc_adapter *adapter,
- 
- 	igc_ethtool_init_nfc_rule(rule, fsp);
- 
--	spin_lock(&adapter->nfc_rule_lock);
-+	mutex_lock(&adapter->nfc_rule_lock);
- 
- 	err = igc_ethtool_check_nfc_rule(adapter, rule);
- 	if (err)
-@@ -1317,11 +1317,11 @@ static int igc_ethtool_add_nfc_rule(struct igc_adapter *adapter,
- 	if (err)
- 		goto err;
- 
--	spin_unlock(&adapter->nfc_rule_lock);
-+	mutex_unlock(&adapter->nfc_rule_lock);
- 	return 0;
- 
- err:
--	spin_unlock(&adapter->nfc_rule_lock);
-+	mutex_unlock(&adapter->nfc_rule_lock);
- 	kfree(rule);
- 	return err;
- }
-@@ -1333,17 +1333,17 @@ static int igc_ethtool_del_nfc_rule(struct igc_adapter *adapter,
- 		(struct ethtool_rx_flow_spec *)&cmd->fs;
- 	struct igc_nfc_rule *rule;
- 
--	spin_lock(&adapter->nfc_rule_lock);
-+	mutex_lock(&adapter->nfc_rule_lock);
- 
- 	rule = igc_get_nfc_rule(adapter, fsp->location);
- 	if (!rule) {
--		spin_unlock(&adapter->nfc_rule_lock);
-+		mutex_unlock(&adapter->nfc_rule_lock);
- 		return -EINVAL;
- 	}
- 
- 	igc_del_nfc_rule(adapter, rule);
- 
--	spin_unlock(&adapter->nfc_rule_lock);
-+	mutex_unlock(&adapter->nfc_rule_lock);
- 	return 0;
- }
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 134523064fe9..38327d9ec385 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2540,12 +2540,12 @@ static void igc_flush_nfc_rules(struct igc_adapter *adapter)
- {
- 	struct igc_nfc_rule *rule, *tmp;
- 
--	spin_lock(&adapter->nfc_rule_lock);
-+	mutex_lock(&adapter->nfc_rule_lock);
- 
- 	list_for_each_entry_safe(rule, tmp, &adapter->nfc_rule_list, list)
- 		igc_del_nfc_rule(adapter, rule);
- 
--	spin_unlock(&adapter->nfc_rule_lock);
-+	mutex_unlock(&adapter->nfc_rule_lock);
- }
- 
- /**
-@@ -2584,24 +2584,24 @@ static void igc_restore_nfc_rules(struct igc_adapter *adapter)
- {
- 	struct igc_nfc_rule *rule;
- 
--	spin_lock(&adapter->nfc_rule_lock);
-+	mutex_lock(&adapter->nfc_rule_lock);
- 
- 	list_for_each_entry_reverse(rule, &adapter->nfc_rule_list, list)
- 		igc_enable_nfc_rule(adapter, rule);
- 
--	spin_unlock(&adapter->nfc_rule_lock);
-+	mutex_unlock(&adapter->nfc_rule_lock);
- }
- 
- static void igc_nfc_rule_exit(struct igc_adapter *adapter)
- {
- 	struct igc_nfc_rule *rule;
- 
--	spin_lock(&adapter->nfc_rule_lock);
-+	mutex_lock(&adapter->nfc_rule_lock);
- 
- 	list_for_each_entry(rule, &adapter->nfc_rule_list, list)
- 		igc_disable_nfc_rule(adapter, rule);
- 
--	spin_unlock(&adapter->nfc_rule_lock);
-+	mutex_unlock(&adapter->nfc_rule_lock);
- }
- 
- static int igc_uc_sync(struct net_device *netdev, const unsigned char *addr)
-@@ -3574,7 +3574,7 @@ static int igc_sw_init(struct igc_adapter *adapter)
- 				VLAN_HLEN;
- 	adapter->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
- 
--	spin_lock_init(&adapter->nfc_rule_lock);
-+	mutex_init(&adapter->nfc_rule_lock);
- 	INIT_LIST_HEAD(&adapter->nfc_rule_list);
- 	adapter->nfc_rule_count = 0;
- 
 -- 
 2.26.0
 
