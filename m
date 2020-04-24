@@ -1,96 +1,76 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Fri, 24 Apr 2020 13:16:08 -0700
-Subject: [Intel-wired-lan] [PATCH 04/19] igc: Early return in
- igc_get_ethtool_nfc_entry()
+Date: Fri, 24 Apr 2020 13:16:06 -0700
+Subject: [Intel-wired-lan] [PATCH 02/19] igc: Get rid of igc_max_channels()
 In-Reply-To: <20200424201623.10971-1-andre.guedes@intel.com>
 References: <20200424201623.10971-1-andre.guedes@intel.com>
-Message-ID: <20200424201623.10971-5-andre.guedes@intel.com>
+Message-ID: <20200424201623.10971-3-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch re-writes the second half of igc_ethtool_get_nfc_entry() to
-follow the 'return early' pattern seen in other parts of the driver and
-removes some duplicate comments.
+The local function igc_max_channels() is a pointless wrapper around
+igc_get_max_rss_queues(). This patch removes it and updates the callers
+accordingly. It also does some cleanup on igc_get_max_rss_queues().
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 58 ++++++++++----------
- 1 file changed, 28 insertions(+), 30 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 9 ++-------
+ drivers/net/ethernet/intel/igc/igc_main.c    | 7 +------
+ 2 files changed, 3 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index c67c3ead323f..45481b1c9ee3 100644
+index 9023dc2a2446..ee2563ef24ac 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -945,38 +945,36 @@ static int igc_get_ethtool_nfc_entry(struct igc_adapter *adapter,
- 	if (!rule || fsp->location != rule->sw_idx)
- 		return -EINVAL;
- 
--	if (rule->filter.match_flags) {
--		fsp->flow_type = ETHER_FLOW;
--		fsp->ring_cookie = rule->action;
--		if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE) {
--			fsp->h_u.ether_spec.h_proto = rule->filter.etype;
--			fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
--		}
--		if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
--			fsp->flow_type |= FLOW_EXT;
--			fsp->h_ext.vlan_tci = rule->filter.vlan_tci;
--			fsp->m_ext.vlan_tci = htons(VLAN_PRIO_MASK);
--		}
--		if (rule->filter.match_flags & IGC_FILTER_FLAG_DST_MAC_ADDR) {
--			ether_addr_copy(fsp->h_u.ether_spec.h_dest,
--					rule->filter.dst_addr);
--			/* As we only support matching by the full
--			 * mask, return the mask to userspace
--			 */
--			eth_broadcast_addr(fsp->m_u.ether_spec.h_dest);
--		}
--		if (rule->filter.match_flags & IGC_FILTER_FLAG_SRC_MAC_ADDR) {
--			ether_addr_copy(fsp->h_u.ether_spec.h_source,
--					rule->filter.src_addr);
--			/* As we only support matching by the full
--			 * mask, return the mask to userspace
--			 */
--			eth_broadcast_addr(fsp->m_u.ether_spec.h_source);
--		}
-+	if (!rule->filter.match_flags)
-+		return -EINVAL;
- 
--		return 0;
-+	fsp->flow_type = ETHER_FLOW;
-+	fsp->ring_cookie = rule->action;
-+
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE) {
-+		fsp->h_u.ether_spec.h_proto = rule->filter.etype;
-+		fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
- 	}
--	return -EINVAL;
-+
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
-+		fsp->flow_type |= FLOW_EXT;
-+		fsp->h_ext.vlan_tci = rule->filter.vlan_tci;
-+		fsp->m_ext.vlan_tci = htons(VLAN_PRIO_MASK);
-+	}
-+
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_DST_MAC_ADDR) {
-+		ether_addr_copy(fsp->h_u.ether_spec.h_dest,
-+				rule->filter.dst_addr);
-+		eth_broadcast_addr(fsp->m_u.ether_spec.h_dest);
-+	}
-+
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_SRC_MAC_ADDR) {
-+		ether_addr_copy(fsp->h_u.ether_spec.h_source,
-+				rule->filter.src_addr);
-+		eth_broadcast_addr(fsp->m_u.ether_spec.h_source);
-+	}
-+
-+	return 0;
+@@ -1508,18 +1508,13 @@ static int igc_set_rxfh(struct net_device *netdev, const u32 *indir,
+ 	return 0;
  }
  
- static int igc_get_ethtool_nfc_all(struct igc_adapter *adapter,
+-static unsigned int igc_max_channels(struct igc_adapter *adapter)
+-{
+-	return igc_get_max_rss_queues(adapter);
+-}
+-
+ static void igc_get_channels(struct net_device *netdev,
+ 			     struct ethtool_channels *ch)
+ {
+ 	struct igc_adapter *adapter = netdev_priv(netdev);
+ 
+ 	/* Report maximum channels */
+-	ch->max_combined = igc_max_channels(adapter);
++	ch->max_combined = igc_get_max_rss_queues(adapter);
+ 
+ 	/* Report info for other vector */
+ 	if (adapter->flags & IGC_FLAG_HAS_MSIX) {
+@@ -1546,7 +1541,7 @@ static int igc_set_channels(struct net_device *netdev,
+ 		return -EINVAL;
+ 
+ 	/* Verify the number of channels doesn't exceed hw limits */
+-	max_combined = igc_max_channels(adapter);
++	max_combined = igc_get_max_rss_queues(adapter);
+ 	if (count > max_combined)
+ 		return -EINVAL;
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 73140938ec2c..04f7f4112205 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -2732,12 +2732,7 @@ void igc_set_flag_queue_pairs(struct igc_adapter *adapter,
+ 
+ unsigned int igc_get_max_rss_queues(struct igc_adapter *adapter)
+ {
+-	unsigned int max_rss_queues;
+-
+-	/* Determine the maximum number of RSS queues supported. */
+-	max_rss_queues = IGC_MAX_RX_QUEUES;
+-
+-	return max_rss_queues;
++	return IGC_MAX_RX_QUEUES;
+ }
+ 
+ static void igc_init_queue_configuration(struct igc_adapter *adapter)
 -- 
 2.26.0
 
