@@ -1,191 +1,59 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Fri, 24 Apr 2020 13:16:17 -0700
-Subject: [Intel-wired-lan] [PATCH 13/19] igc: Fix NFC rules restoration
+Date: Fri, 24 Apr 2020 13:16:23 -0700
+Subject: [Intel-wired-lan] [PATCH 19/19] igc: Remove igc_nfc_rule_exit()
 In-Reply-To: <20200424201623.10971-1-andre.guedes@intel.com>
 References: <20200424201623.10971-1-andre.guedes@intel.com>
-Message-ID: <20200424201623.10971-14-andre.guedes@intel.com>
+Message-ID: <20200424201623.10971-20-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When network interface is brought up, the driver re-enables the NFC
-rules previously configured. However, this is done in reverse order
-the rules were added and hardware filters are configured differently.
-
-For example, consider the following rules:
-
-$ ethtool -N eth0 flow-type ether dst 00:00:00:00:00:AA queue 0
-$ ethtool -N eth0 flow-type ether dst 00:00:00:00:00:BB queue 1
-$ ethtool -N eth0 flow-type ether dst 00:00:00:00:00:CC queue 2
-$ ethtool -N eth0 flow-type ether dst 00:00:00:00:00:DD queue 3
-
-RAL/RAH registers are configure so filter index 1 has address ending
-with AA, filter index 2 has address ending in BB, and so on.
-
-If we bring the interface down and up again, RAL/RAH registers are
-configured so filter index 1 has address ending in DD, filter index 2
-has CC, and so on. IOW, in reverse order we had before bringing the
-interface down.
-
-This issue can be fixed by traversing adapter->nfc_rule_list in
-backwards when restoring the rules. Since hlist doesn't support
-backwards traversal, this patch replaces it by list_head and fixes
-igc_restore_nfc_rules() accordingly.
+During igc_down(), we call igc_nfc_rule_exit() which traverse the NFC
+rule list disabling filters one by one. Later on in igc_down() flow
+we issue an hardware reset which also clear all filters.  Since we
+already reset the hardware, we don't actually need to disable each
+filter manually. In order to simplify the code, this patch removes
+igc_nfc_rule() altogether.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h         |  4 ++--
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 19 ++++++++-----------
- drivers/net/ethernet/intel/igc/igc_main.c    | 16 +++++++++-------
- 3 files changed, 19 insertions(+), 20 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 14 --------------
+ 1 file changed, 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index ae7d48070ee2..76bc3a51ad70 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -191,7 +191,7 @@ struct igc_adapter {
- 	 * nfc_rule_lock.
- 	 */
- 	spinlock_t nfc_rule_lock;
--	struct hlist_head nfc_rule_list;
-+	struct list_head nfc_rule_list;
- 	unsigned int nfc_rule_count;
- 
- 	u8 rss_indir_tbl[IGC_RETA_SIZE];
-@@ -461,7 +461,7 @@ struct igc_nfc_filter {
- };
- 
- struct igc_nfc_rule {
--	struct hlist_node nfc_node;
-+	struct list_head list;
- 	struct igc_nfc_filter filter;
- 	u32 location;
- 	u16 action;
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index e975efea4a15..944cad748e61 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -941,7 +941,7 @@ static int igc_ethtool_get_nfc_rule(struct igc_adapter *adapter,
- 
- 	spin_lock(&adapter->nfc_rule_lock);
- 
--	hlist_for_each_entry(rule, &adapter->nfc_rule_list, nfc_node) {
-+	list_for_each_entry(rule, &adapter->nfc_rule_list, list) {
- 		if (fsp->location <= rule->location)
- 			break;
- 	}
-@@ -997,7 +997,7 @@ static int igc_ethtool_get_nfc_rules(struct igc_adapter *adapter,
- 
- 	spin_lock(&adapter->nfc_rule_lock);
- 
--	hlist_for_each_entry(rule, &adapter->nfc_rule_list, nfc_node) {
-+	list_for_each_entry(rule, &adapter->nfc_rule_list, list) {
- 		if (cnt == cmd->rule_cnt) {
- 			spin_unlock(&adapter->nfc_rule_lock);
- 			return -EMSGSIZE;
-@@ -1261,7 +1261,7 @@ static int igc_ethtool_update_nfc_rule(struct igc_adapter *adapter,
- 	parent = NULL;
- 	rule = NULL;
- 
--	hlist_for_each_entry(rule, &adapter->nfc_rule_list, nfc_node) {
-+	list_for_each_entry(rule, &adapter->nfc_rule_list, list) {
- 		/* hash found, or no matching entry */
- 		if (rule->location >= location)
- 			break;
-@@ -1272,7 +1272,7 @@ static int igc_ethtool_update_nfc_rule(struct igc_adapter *adapter,
- 	if (rule && rule->location == location) {
- 		err = igc_disable_nfc_rule(adapter, rule);
- 
--		hlist_del(&rule->nfc_node);
-+		list_del(&rule->list);
- 		kfree(rule);
- 		adapter->nfc_rule_count--;
- 	}
-@@ -1283,11 +1283,8 @@ static int igc_ethtool_update_nfc_rule(struct igc_adapter *adapter,
- 	if (!input)
- 		return err;
- 
--	/* add filter to the list */
--	if (parent)
--		hlist_add_behind(&input->nfc_node, &parent->nfc_node);
--	else
--		hlist_add_head(&input->nfc_node, &adapter->nfc_rule_list);
-+	list_add(&input->list, parent ? &parent->list :
-+					&adapter->nfc_rule_list);
- 
- 	/* update counts */
- 	adapter->nfc_rule_count++;
-@@ -1298,7 +1295,7 @@ static int igc_ethtool_update_nfc_rule(struct igc_adapter *adapter,
- static void igc_ethtool_init_nfc_rule(struct igc_nfc_rule *rule,
- 				      const struct ethtool_rx_flow_spec *fsp)
- {
--	INIT_HLIST_NODE(&rule->nfc_node);
-+	INIT_LIST_HEAD(&rule->list);
- 
- 	rule->action = fsp->ring_cookie;
- 	rule->location = fsp->location;
-@@ -1362,7 +1359,7 @@ static int igc_ethtool_check_nfc_rule(struct igc_adapter *adapter,
- 		return -EOPNOTSUPP;
- 	}
- 
--	hlist_for_each_entry(tmp, &adapter->nfc_rule_list, nfc_node) {
-+	list_for_each_entry(tmp, &adapter->nfc_rule_list, list) {
- 		if (!memcmp(&rule->filter, &tmp->filter,
- 			    sizeof(rule->filter))) {
- 			netdev_dbg(dev, "Rule already exists");
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index b0c4206f9c7d..1b554b3a63c2 100644
+index 38327d9ec385..eaf797fcf581 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2181,7 +2181,7 @@ static void igc_restore_nfc_rules(struct igc_adapter *adapter)
+@@ -2592,18 +2592,6 @@ static void igc_restore_nfc_rules(struct igc_adapter *adapter)
+ 	mutex_unlock(&adapter->nfc_rule_lock);
+ }
  
- 	spin_lock(&adapter->nfc_rule_lock);
+-static void igc_nfc_rule_exit(struct igc_adapter *adapter)
+-{
+-	struct igc_nfc_rule *rule;
+-
+-	mutex_lock(&adapter->nfc_rule_lock);
+-
+-	list_for_each_entry(rule, &adapter->nfc_rule_list, list)
+-		igc_disable_nfc_rule(adapter, rule);
+-
+-	mutex_unlock(&adapter->nfc_rule_lock);
+-}
+-
+ static int igc_uc_sync(struct net_device *netdev, const unsigned char *addr)
+ {
+ 	struct igc_adapter *adapter = netdev_priv(netdev);
+@@ -3822,8 +3810,6 @@ void igc_down(struct igc_adapter *adapter)
+ 	wr32(IGC_RCTL, rctl & ~IGC_RCTL_EN);
+ 	/* flush and sleep below */
  
--	hlist_for_each_entry(rule, &adapter->nfc_rule_list, nfc_node)
-+	list_for_each_entry_reverse(rule, &adapter->nfc_rule_list, list)
- 		igc_enable_nfc_rule(adapter, rule);
+-	igc_nfc_rule_exit(adapter);
+-
+ 	/* set trans_start so we don't get spurious watchdogs during reset */
+ 	netif_trans_update(netdev);
  
- 	spin_unlock(&adapter->nfc_rule_lock);
-@@ -3420,6 +3420,9 @@ static int igc_sw_init(struct igc_adapter *adapter)
- 	adapter->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
- 
- 	spin_lock_init(&adapter->nfc_rule_lock);
-+	INIT_LIST_HEAD(&adapter->nfc_rule_list);
-+	adapter->nfc_rule_count = 0;
-+
- 	spin_lock_init(&adapter->stats64_lock);
- 	/* Assume MSI-X interrupts, will be checked during IRQ allocation */
- 	adapter->flags |= IGC_FLAG_HAS_MSIX;
-@@ -3652,7 +3655,7 @@ static void igc_nfc_rule_exit(struct igc_adapter *adapter)
- 
- 	spin_lock(&adapter->nfc_rule_lock);
- 
--	hlist_for_each_entry(rule, &adapter->nfc_rule_list, nfc_node)
-+	list_for_each_entry(rule, &adapter->nfc_rule_list, list)
- 		igc_disable_nfc_rule(adapter, rule);
- 
- 	spin_unlock(&adapter->nfc_rule_lock);
-@@ -3827,14 +3830,13 @@ static int igc_set_features(struct net_device *netdev,
- 		return 0;
- 
- 	if (!(features & NETIF_F_NTUPLE)) {
--		struct hlist_node *node2;
--		struct igc_nfc_rule *rule;
-+		struct igc_nfc_rule *rule, *tmp;
- 
- 		spin_lock(&adapter->nfc_rule_lock);
--		hlist_for_each_entry_safe(rule, node2,
--					  &adapter->nfc_rule_list, nfc_node) {
-+		list_for_each_entry_safe(rule, tmp,
-+					 &adapter->nfc_rule_list, list) {
- 			igc_disable_nfc_rule(adapter, rule);
--			hlist_del(&rule->nfc_node);
-+			list_del(&rule->list);
- 			kfree(rule);
- 		}
- 		spin_unlock(&adapter->nfc_rule_lock);
 -- 
 2.26.0
 
