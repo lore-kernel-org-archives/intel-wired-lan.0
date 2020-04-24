@@ -1,36 +1,93 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Fri, 24 Apr 2020 13:16:05 -0700
-Subject: [Intel-wired-lan] [PATCH 01/19] igc: Remove unused field from
- igc_nfc_filter
+Date: Fri, 24 Apr 2020 13:16:07 -0700
+Subject: [Intel-wired-lan] [PATCH 03/19] igc: Cleanup _get|set_rxnfc ethtool
+ ops
 In-Reply-To: <20200424201623.10971-1-andre.guedes@intel.com>
 References: <20200424201623.10971-1-andre.guedes@intel.com>
-Message-ID: <20200424201623.10971-2-andre.guedes@intel.com>
+Message-ID: <20200424201623.10971-4-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The 'cookie' field is not used anywhere in the code so this patch
-removes it from struct igc_nfc_filter.
+This patch does a trivial change in igc_ethtool_get_rxnfc() and
+igc_ethtool_set_rxnfc() to simplify their logic.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 33 ++++++--------------
+ 1 file changed, 10 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index b501be243536..7c92fc7703be 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -470,7 +470,6 @@ struct igc_nfc_input {
- struct igc_nfc_filter {
- 	struct hlist_node nfc_node;
- 	struct igc_nfc_input filter;
--	unsigned long cookie;
- 	u16 sw_idx;
- 	u16 action;
- };
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index ee2563ef24ac..c67c3ead323f 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -1055,31 +1055,23 @@ static int igc_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd,
+ 			 u32 *rule_locs)
+ {
+ 	struct igc_adapter *adapter = netdev_priv(dev);
+-	int ret = -EOPNOTSUPP;
+ 
+ 	switch (cmd->cmd) {
+ 	case ETHTOOL_GRXRINGS:
+ 		cmd->data = adapter->num_rx_queues;
+-		ret = 0;
+-		break;
++		return 0;
+ 	case ETHTOOL_GRXCLSRLCNT:
+ 		cmd->rule_cnt = adapter->nfc_filter_count;
+-		ret = 0;
+-		break;
++		return 0;
+ 	case ETHTOOL_GRXCLSRULE:
+-		ret = igc_get_ethtool_nfc_entry(adapter, cmd);
+-		break;
++		return igc_get_ethtool_nfc_entry(adapter, cmd);
+ 	case ETHTOOL_GRXCLSRLALL:
+-		ret = igc_get_ethtool_nfc_all(adapter, cmd, rule_locs);
+-		break;
++		return igc_get_ethtool_nfc_all(adapter, cmd, rule_locs);
+ 	case ETHTOOL_GRXFH:
+-		ret = igc_get_rss_hash_opts(adapter, cmd);
+-		break;
++		return igc_get_rss_hash_opts(adapter, cmd);
+ 	default:
+-		break;
++		return -EOPNOTSUPP;
+ 	}
+-
+-	return ret;
+ }
+ 
+ #define UDP_RSS_FLAGS (IGC_FLAG_RSS_FIELD_IPV4_UDP | \
+@@ -1418,22 +1410,17 @@ static int igc_del_ethtool_nfc_entry(struct igc_adapter *adapter,
+ static int igc_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
+ {
+ 	struct igc_adapter *adapter = netdev_priv(dev);
+-	int ret = -EOPNOTSUPP;
+ 
+ 	switch (cmd->cmd) {
+ 	case ETHTOOL_SRXFH:
+-		ret = igc_set_rss_hash_opt(adapter, cmd);
+-		break;
++		return igc_set_rss_hash_opt(adapter, cmd);
+ 	case ETHTOOL_SRXCLSRLINS:
+-		ret = igc_add_ethtool_nfc_entry(adapter, cmd);
+-		break;
++		return igc_add_ethtool_nfc_entry(adapter, cmd);
+ 	case ETHTOOL_SRXCLSRLDEL:
+-		ret = igc_del_ethtool_nfc_entry(adapter, cmd);
++		return igc_del_ethtool_nfc_entry(adapter, cmd);
+ 	default:
+-		break;
++		return -EOPNOTSUPP;
+ 	}
+-
+-	return ret;
+ }
+ 
+ void igc_write_rss_indir_tbl(struct igc_adapter *adapter)
 -- 
 2.26.0
 
