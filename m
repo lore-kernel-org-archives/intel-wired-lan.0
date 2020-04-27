@@ -1,51 +1,58 @@
-From: Daniel Borkmann <daniel@iogearbox.net>
-Date: Mon, 27 Apr 2020 21:51:50 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 23/33] ixgbe: add XDP frame
- size to driver
-In-Reply-To: <158757175790.1370371.16071055208561239272.stgit@firesoul>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Sun, 26 Apr 2020 22:37:35 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 00/33] XDP extend with
+ knowledge of frame size
+In-Reply-To: <158757160439.1370371.13213378122947426220.stgit@firesoul>
 References: <158757160439.1370371.13213378122947426220.stgit@firesoul>
- <158757175790.1370371.16071055208561239272.stgit@firesoul>
-Message-ID: <69e05693-c3df-8f48-7a08-03bf4d58cb07@iogearbox.net>
+Message-ID: <5ea66f9f84ba1_59462aeb755845b813@john-XPS-13-9370.notmuch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/22/20 6:09 PM, Jesper Dangaard Brouer wrote:
-> This driver uses different memory models depending on PAGE_SIZE at
-> compile time. For PAGE_SIZE 4K it uses page splitting, meaning for
-> normal MTU frame size is 2048 bytes (and headroom 192 bytes). For
-> larger MTUs the driver still use page splitting, by allocating
-> order-1 pages (8192 bytes) for RX frames. For PAGE_SIZE larger than
-> 4K, driver instead advance its rx_buffer->page_offset with the frame
-> size "truesize".
+Jesper Dangaard Brouer wrote:
+> (Send for net-next due to all the driver updates)
 > 
-> For XDP frame size calculations, this mean that in PAGE_SIZE larger
-> than 4K mode the frame_sz change on a per packet basis. For the page
-> split 4K PAGE_SIZE mode, xdp.frame_sz is more constant and can be
-> updated once outside the main NAPI loop.
+> XDP have evolved to support several frame sizes, but xdp_buff was not
+> updated with this information. This have caused the side-effect that
+> XDP frame data hard end is unknown. This have limited the BPF-helper
+> bpf_xdp_adjust_tail to only shrink the packet. This patchset address
+> this and add packet tail extend/grow.
 > 
-> The default setting in the driver uses build_skb(), which provides
-> the necessary headroom and tailroom for XDP-redirect in RX-frame
-> (in both modes).
+> The purpose of the patchset is ALSO to reserve a memory area that can be
+> used for storing extra information, specifically for extending XDP with
+> multi-buffer support. One proposal is to use same layout as
+> skb_shared_info, which is why this area is currently 320 bytes.
 > 
-> There is one complication, which is legacy-rx mode (configurable via
-> ethtool priv-flags). There are zero headroom in this mode, which is a
-> requirement for XDP-redirect to work. The conversion to xdp_frame
-> (convert_to_xdp_frame) will detect this insufficient space, and
-> xdp_do_redirect() call will fail. This is deemed acceptable, as it
-> allows other XDP actions to still work in legacy-mode. In
-> legacy-mode + larger PAGE_SIZE due to lacking tailroom, we also
-> accept that xdp_adjust_tail shrink doesn't work.
+> When converting xdp_frame to SKB (veth and cpumap), the full tailroom
+> area can now be used and SKB truesize is now correct. For most
+> drivers this result in a much larger tailroom in SKB "head" data
+> area. The network stack can now take advantage of this when doing SKB
+> coalescing. Thus, a good driver test is to use xdp_redirect_cpu from
+> samples/bpf/ and do some TCP stream testing.
 > 
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Cc: Alexander Duyck <alexander.duyck@gmail.com>
-> Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
+> Use-cases for tail grow/extend:
+> (1) IPsec / XFRM needs a tail extend[1][2].
+> (2) DNS-cache responses in XDP.
+> (3) HAProxy ALOHA would need it to convert to XDP.
+> 
+> [1] http://vger.kernel.org/netconf2019_files/xfrm_xdp.pdf
+> [2] http://vger.kernel.org/netconf2019.html
+> 
 
-Alexander/Jeff, in case the ixgbe/i40e/ice changes look good to you,
-please ack.
+Hi Jesper, Overall series looks good to me. One question about the
+memset on grow though. (typo in specific reply meant data for with and
+without the memset would be nice) For a hairpin use case where the
+data is then sent back onto the wire it would be nice to avoid that
+memset. Could we mark the packet with a flag and then only clear if
+the user tries to pass it to the stack for instance?
+
+Lots of patches but also seems OK given the majority are for each
+driver.
+
+The comment about the warning being a warn on once also seems like a
+good catch.
 
 Thanks,
-Daniel
+John
