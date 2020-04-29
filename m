@@ -1,30 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Wed, 29 Apr 2020 20:12:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- c097661edb2b012589051ae18bb2454cd8750656
-Message-ID: <5ea96f17.Ym8Wag4iPet+qliy%lkp@intel.com>
+Date: Wed, 29 Apr 2020 20:42:55 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ b1d4ad68cf8e6a2c2d8ab106315e50304002fac4
+Message-ID: <5ea9764f.MWHxOe9U06xrc5fF%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: c097661edb2b012589051ae18bb2454cd8750656  ice: Fix error return code in ice_add_prof()
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: b1d4ad68cf8e6a2c2d8ab106315e50304002fac4  ice: Fix a couple off by one bugs
 
-Warning in current branch:
+elapsed time: 745m
 
-drivers/net/ethernet/intel/gwdpa/gswip/gswip_tbl.c:39:13: warning: struct member 'pce_tbl_reg_map::value' is never used. [unusedStructMember]
-
-Warning ids grouped by kconfigs:
-
-recent_errors
-`-- x86_64-allyesconfig
-    `-- drivers-net-ethernet-intel-gwdpa-gswip-gswip_tbl.c:warning:struct-member-pce_tbl_reg_map::value-is-never-used.-unusedStructMember
-
-elapsed time: 590m
-
-configs tested: 177
+configs tested: 174
 configs skipped: 0
 
 The following configs have been built successfully.
@@ -41,21 +31,24 @@ arm                         at91_dt_defconfig
 arm                        shmobile_defconfig
 arm                          exynos_defconfig
 arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
 arm                        multi_v7_defconfig
 arm64                               defconfig
+arm                           sunxi_defconfig
 sparc                            allyesconfig
-powerpc                             defconfig
-ia64                                defconfig
 mips                      fuloong2e_defconfig
+powerpc                           allnoconfig
+um                                  defconfig
+mips                malta_kvm_guest_defconfig
+s390                          debug_defconfig
 parisc                generic-64bit_defconfig
-h8300                     edosk2674_defconfig
+xtensa                          iss_defconfig
 i386                              allnoconfig
 i386                             allyesconfig
 i386                             alldefconfig
 i386                                defconfig
 i386                              debian-10.3
 ia64                             allmodconfig
+ia64                                defconfig
 ia64                              allnoconfig
 ia64                        generic_defconfig
 ia64                          tiger_defconfig
@@ -71,6 +64,7 @@ nios2                         3c120_defconfig
 nios2                         10m50_defconfig
 c6x                        evmc6678_defconfig
 c6x                              allyesconfig
+xtensa                       common_defconfig
 openrisc                 simple_smp_defconfig
 openrisc                    or1ksim_defconfig
 nds32                               defconfig
@@ -78,16 +72,15 @@ nds32                             allnoconfig
 csky                                defconfig
 alpha                               defconfig
 h8300                       h8s-sim_defconfig
-xtensa                          iss_defconfig
+h8300                     edosk2674_defconfig
 h8300                    h8300h-sim_defconfig
-xtensa                       common_defconfig
 arc                                 defconfig
 arc                              allyesconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 powerpc                       ppc64_defconfig
 powerpc                          rhel-kconfig
-powerpc                           allnoconfig
+powerpc                             defconfig
 mips                      malta_kvm_defconfig
 mips                            ar7_defconfig
 mips                             allyesconfig
@@ -95,7 +88,6 @@ mips                         64r6el_defconfig
 mips                              allnoconfig
 mips                           32r2_defconfig
 mips                             allmodconfig
-mips                malta_kvm_guest_defconfig
 mips                         tb0287_defconfig
 mips                       capcella_defconfig
 mips                           ip32_defconfig
@@ -138,21 +130,18 @@ xtensa               randconfig-a001-20200429
 openrisc             randconfig-a001-20200429
 i386                 randconfig-b002-20200429
 i386                 randconfig-b001-20200429
-x86_64               randconfig-b001-20200429
-i386                 randconfig-b003-20200429
-x86_64               randconfig-b002-20200429
-x86_64               randconfig-b003-20200429
 i386                 randconfig-c002-20200429
 i386                 randconfig-c001-20200429
 x86_64               randconfig-c002-20200429
 x86_64               randconfig-c001-20200429
 i386                 randconfig-c003-20200429
 x86_64               randconfig-c003-20200429
-x86_64               randconfig-d001-20200428
-i386                 randconfig-d002-20200428
-i386                 randconfig-d001-20200428
-x86_64               randconfig-d003-20200428
-i386                 randconfig-d003-20200428
+x86_64               randconfig-d001-20200429
+x86_64               randconfig-d002-20200429
+i386                 randconfig-d002-20200429
+i386                 randconfig-d001-20200429
+x86_64               randconfig-d003-20200429
+i386                 randconfig-d003-20200429
 x86_64               randconfig-e002-20200429
 i386                 randconfig-e003-20200429
 i386                 randconfig-e002-20200429
@@ -181,7 +170,6 @@ riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
 s390                       zfcpdump_defconfig
-s390                          debug_defconfig
 s390                             allyesconfig
 s390                              allnoconfig
 s390                             allmodconfig
@@ -199,7 +187,6 @@ sparc64                          allyesconfig
 sparc64                          allmodconfig
 um                           x86_64_defconfig
 um                             i386_defconfig
-um                                  defconfig
 x86_64                                   rhel
 x86_64                               rhel-7.6
 x86_64                    rhel-7.6-kselftests
