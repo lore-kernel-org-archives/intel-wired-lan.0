@@ -1,120 +1,208 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Thu, 30 Apr 2020 13:22:38 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v2 27/33] xdp: for Intel AF_XDP
- drivers add XDP frame_sz
-In-Reply-To: <158824557985.2172139.4173570969543904434.stgit@firesoul>
-References: <158824557985.2172139.4173570969543904434.stgit@firesoul>
-Message-ID: <158824575868.2172139.9112642256444167939.stgit@firesoul>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Thu, 30 Apr 2020 16:48:14 -0700
+Subject: [Intel-wired-lan] Does the 'igb` kernel module support setting
+ 2-Tuple filters (aka `--config-ntuple`) on a i210 NIC?
+In-Reply-To: <CAGrNP8nfqAZnEoOBsrxrsvszw7T5pdKHG4mt6fVcKB6iigV_BA@mail.gmail.com>
+Message-ID: <87zhaswn5t.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Intel drivers implement native AF_XDP zerocopy in separate C-files,
-that have its own invocation of bpf_prog_run_xdp(). The setup of
-xdp_buff is also handled in separately from normal code path.
+Dan Williams <dwilliams@nextdroid.com> writes:
 
-This patch update XDP frame_sz for AF_XDP zerocopy drivers i40e, ice
-and ixgbe, as the code changes needed are very similar.  Introduce a
-helper function xsk_umem_xdp_frame_sz() for calculating frame size.
+> Does the 'igb` kernel module support setting "2-Tuple filters" (aka
+> `--config-ntuple`, aka RFS) on a I-210IC NIC?
+> - Is this the appropriate mailing list?
+> - If not, which module *should* we be using instead?
+> - If so, how do we enable it in the 'igb' driver?
+>
+>
+> *.1. Context: *
+> Hey, all, we're running into a very perplexing configuration issue, while
+> trying to tune our 'igb' driver, and the documentation out there is
+> sparse.  All the examples we've found come up dry.  (either by throwing
+> errors with our setup, or emitting nothing but opaque error messages:
+> "Operation not supported"  "invalid argument")   Hopefully, someone on the
+> list can point us in the right direction.
+>
+> We have a computer logging a high rate of ethernet packets ( 25k
+> packets/sec ~70 Mb/sec);   But we're having trouble convincing the hardware
+> to receive all of these packets, at a sustained rate -- specifically we're
+> dropping packets while processing through the kernel layers.    We're
+> currently attempting to optimize the network stack,  but we're having
+> trouble setting the driver parameters... which is what this message is all
+> about.
 
-Cc: intel-wired-lan at lists.osuosl.org
-Cc: Bj?rn T?pel <bjorn.topel@intel.com>
-Cc: Magnus Karlsson <magnus.karlsson@intel.com>
-Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
-Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_xsk.c   |    2 ++
- drivers/net/ethernet/intel/ice/ice_xsk.c     |    2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c |    2 ++
- include/net/xdp_sock.h                       |   11 +++++++++++
- 4 files changed, 17 insertions(+)
+That's weird. That packet rate is not *that* high, the Linux kernel
+should be able to handle that fine.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 0b7d29192b2c..2b9184aead5f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -531,12 +531,14 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
- {
- 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
- 	u16 cleaned_count = I40E_DESC_UNUSED(rx_ring);
-+	struct xdp_umem *umem = rx_ring->xsk_umem;
- 	unsigned int xdp_res, xdp_xmit = 0;
- 	bool failure = false;
- 	struct sk_buff *skb;
- 	struct xdp_buff xdp;
- 
- 	xdp.rxq = &rx_ring->xdp_rxq;
-+	xdp.frame_sz = xsk_umem_xdp_frame_sz(umem);
- 
- 	while (likely(total_rx_packets < (unsigned int)budget)) {
- 		struct i40e_rx_buffer *bi;
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 8279db15e870..23e5515d4527 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -840,11 +840,13 @@ int ice_clean_rx_irq_zc(struct ice_ring *rx_ring, int budget)
- {
- 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
- 	u16 cleaned_count = ICE_DESC_UNUSED(rx_ring);
-+	struct xdp_umem *umem = rx_ring->xsk_umem;
- 	unsigned int xdp_xmit = 0;
- 	bool failure = false;
- 	struct xdp_buff xdp;
- 
- 	xdp.rxq = &rx_ring->xdp_rxq;
-+	xdp.frame_sz = xsk_umem_xdp_frame_sz(umem);
- 
- 	while (likely(total_rx_packets < (unsigned int)budget)) {
- 		union ice_32b_rx_flex_desc *rx_desc;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-index 74b540ebb3dc..a656ee9a1fae 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-@@ -431,12 +431,14 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
- 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
- 	struct ixgbe_adapter *adapter = q_vector->adapter;
- 	u16 cleaned_count = ixgbe_desc_unused(rx_ring);
-+	struct xdp_umem *umem = rx_ring->xsk_umem;
- 	unsigned int xdp_res, xdp_xmit = 0;
- 	bool failure = false;
- 	struct sk_buff *skb;
- 	struct xdp_buff xdp;
- 
- 	xdp.rxq = &rx_ring->xdp_rxq;
-+	xdp.frame_sz = xsk_umem_xdp_frame_sz(umem);
- 
- 	while (likely(total_rx_packets < budget)) {
- 		union ixgbe_adv_rx_desc *rx_desc;
-diff --git a/include/net/xdp_sock.h b/include/net/xdp_sock.h
-index e86ec48ef627..1cd1ec3cea97 100644
---- a/include/net/xdp_sock.h
-+++ b/include/net/xdp_sock.h
-@@ -237,6 +237,12 @@ static inline u64 xsk_umem_adjust_offset(struct xdp_umem *umem, u64 address,
- 	else
- 		return address + offset;
- }
-+
-+static inline u32 xsk_umem_xdp_frame_sz(struct xdp_umem *umem)
-+{
-+	return umem->chunk_size_nohr + umem->headroom;
-+}
-+
- #else
- static inline int xsk_generic_rcv(struct xdp_sock *xs, struct xdp_buff *xdp)
- {
-@@ -367,6 +373,11 @@ static inline u64 xsk_umem_adjust_offset(struct xdp_umem *umem, u64 handle,
- 	return 0;
- }
- 
-+static inline u32 xsk_umem_xdp_frame_sz(struct xdp_umem *umem)
-+{
-+	return 0;
-+}
-+
- static inline int __xsk_map_redirect(struct xdp_sock *xs, struct xdp_buff *xdp)
- {
- 	return -EOPNOTSUPP;
+Can you give more details of the workload you are running?
 
+>
+> *.2. Platform Summary:*
+> Hardware:
+> Advantech 3500
+> <https://www.advantech.com/products/1-2jkd2d/ark-3500/mod_adb8f9a9-4b1b-4cf5-84ba-9e135c099c43>
+> CPU ($ lscpu):
+> Architecture:         x86_64
+> CPU family:          6
+> Model:                  58
+> Model name:        Intel(R) Core(TM) i7-3610QE CPU @ 2.30GHz
+> NIC ($ lspci -vs 02:00.0)
+> 02:00.0 Ethernet controller: Intel Corporation I210 Gigabit Network
+> Connection (rev 03)
+> Flags: bus master, fast devsel, latency 0, IRQ 18
+> OS ($ lsb_release -a)
+> Ubuntu 16.04.6 LTS
+> Kernel (`uname -r`):
+> 4.15.0-88-lowlatency
+> Kernel Module ($ modinfo igb)
+> filename:
+> /lib/modules/4.15.0-88-lowlatency/kernel/drivers/net/ethernet/intel/igb/igb.ko
+> version:        5.4.0-k
+> license:        GPL
+> Ethtool Version ($ ethtool --version)
+> ethtool version 4.5
 
+There had been a lot of improvements in the network stack in the last 4
+years, trying with a recent kernel, if possible, would be useful to know
+if the issue you are seeing persists.
+
+>
+> *.3. What have we tried so far:*
+> .3.a.  The NIC supports what we want to do:
+> The data sheet,
+> <https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=2ahUKEwj_nona25DpAhWPoHIEHfvYBWcQFjAAegQIARAB&url=https%3A%2F%2Fwww.intel.com%2Fcontent%2Fwww%2Fus%2Fen%2Fembedded%2Fproducts%2Fnetworking%2Fi210-ethernet-controller-datasheet.html&usg=AOvVaw1N7hqg0JJAaqXsomLAUhfB>
+> in section 7.1.2.4 "2-Tuple Filters", says:
+>
+>> The 2-tuple filters are configured via the TTQF (See Section 8.11.3), IMIR
+>> (See Section 8.11.1) and
+>> IMIR_EXT (See Section 8.11.2) registers as follows (per filter):
+>>
+
+The problem is that the NIC supports the 2-tuple filters, but support
+for using them in Linux was never added.
+
+>
+> Am I correct in assuming these are the mechanisms the 'igb' driver is
+> interfacing with?
+
+You are right.
+
+>
+> .3.b.   What is the flow table currenttly?
+>
+>> # ethtool --show-rxfh enp2s0
+>> RX flow hash indirection table for enp2s0 with 4 RX ring(s):
+>>     0:      0     0     0     0     0     0     0     0
+>>     8:      0     0     0     0     0     0     0     0
+>>    16:      0     0     0     0     0     0     0     0
+>>    24:      0     0     0     0     0     0     0     0
+>>    32:      0     0     0     0     0     0     0     0
+>>    40:      0     0     1     1     1     1     1     1
+>>    48:      1     1     1     1     1     1     1     1
+>>    56:      1     1     1     1     1     1     1     1
+>>    64:      1     1     1     1     1     1     1     1
+>>    72:      1     1     1     1     1     1     1     1
+>>    80:      1     1     1     1     1     2     2     2
+>>    88:      2     2     2     2     2     2     2     2
+>>    96:      2     2     2     2     2     2     2     2
+>>   104:      2     2     2     2     2     2     2     2
+>>   112:      2     2     2     2     2     2     2     2
+>>   120:      2     2     2     2     2     2     2     2
+>> RSS hash key:
+>> Operation not supported
+>>
+>
+> "Operation not supported" -- does this mean the NIC has RSS routing
+> hard-coded? And we cannot change the hash-function?
+> Or is RSS just hard-coded?
+
+IIRC the function and hash key cannot be changed, the only thing that
+can be changed is the indirection table, i.e. assigning different
+"target" queues to different hash values.
+
+>
+>
+> .3.c. Current "Hash flow" settings:
+>
+>> # ethtool -n  enp2s0 rx-flow-hash udp4
+>> UDP over IPV4 flows use these fields for computing Hash flow key:
+>> IP SA
+>> IP DA
+>> L4 bytes 0 & 1 [TCP/UDP src port]
+>> L4 bytes 2 & 3 [TCP/UDP dst port]
+>>
+>
+>
+>> # sudo ethtool -n enp2s0
+>> 4 RX rings available
+>> Total 0 rules
+>>
+>
+>
+> .3.d.  Enable ntuple features:
+>
+>> # ethtool --show-features enp2s0 | grep ntuple
+>> ntuple-filters: on
+>>
+>
+> .3.e. Add ntuple rule: Commands Tried:
+>
+>> # ethtool -U enp2s0 flow-type udp4 src-ip 192.168.3.43 dst-ip 0.0.0.0
+>> src-port 555 dst-port 2368 action -1
+>> rmgr: Cannot insert RX class rule: Invalid argument
+>> # ethtool -U enp2s0 flow-type udp4 src-ip 192.168.3.43 action 1
+>> rmgr: Cannot insert RX class rule: Invalid argument
+>>
+> # ethtool -U enp2s0 flow-type ip4 src-ip 192.168.3.43 action 1
+>> rmgr: Cannot insert RX class rule: Invalid argument
+>> # ethtool -U enp2s0 flow-type ip4 src-ip 192.168.3.43 action 1 loc 4
+>> rmgr: Cannot insert RX class rule: Invalid argument
+>>
+
+Right now, only filters for ethernet addresses, ethtype, VLAN ID and PCP
+are implemented. I agree that returning -EINVAL is not helpful.
+
+>
+> .3.f. More Interface info:
+>
+>> # ethtool -i enp2s0
+>> driver: igb
+>> version: 5.4.0-k
+>> firmware-version: 3.16, 0x800004ad
+>> expansion-rom-version:
+>> bus-info: 0000:02:00.0
+>> supports-statistics: yes
+>> supports-test: yes
+>> supports-eeprom-access: yes
+>> supports-register-dump: yes
+>> supports-priv-flags: yes
+>>
+>
+> # ethtool -t enp2s0
+>> The test result is PASS
+>> The test extra info:
+>> Register test  (offline) 0
+>> Eeprom test    (offline) 0
+>> Interrupt test (offline) 0
+>> Loopback test  (offline) 0
+>> Link test   (on/offline) 0
+>>
+>
+>
+>
+>
+>
+>
+> Daniel Williams  |  Software Engineer
+> dwilliams at nextdroid.com
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+-- 
+Vinicius
