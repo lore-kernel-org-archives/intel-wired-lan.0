@@ -1,174 +1,137 @@
-From: Dan Williams <dwilliams@nextdroid.com>
-Date: Thu, 30 Apr 2020 15:22:02 -0400
-Subject: [Intel-wired-lan] Does the 'igb` kernel module support setting
- 2-Tuple filters (aka `--config-ntuple`) on a i210 NIC?
-Message-ID: <CAGrNP8nfqAZnEoOBsrxrsvszw7T5pdKHG4mt6fVcKB6iigV_BA@mail.gmail.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Thu, 30 Apr 2020 13:20:21 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2 00/33] XDP extend with
+ knowledge of frame size
+Message-ID: <158824557985.2172139.4173570969543904434.stgit@firesoul>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Does the 'igb` kernel module support setting "2-Tuple filters" (aka
-`--config-ntuple`, aka RFS) on a I-210IC NIC?
-- Is this the appropriate mailing list?
-- If not, which module *should* we be using instead?
-- If so, how do we enable it in the 'igb' driver?
+(Send for net-next due to all the driver updates)
+
+V2:
+- Fix bug in mlx5 for XDP_PASS case
+- Collected nitpicks and ACKs from mailing list
+V1:
+- Fix bug in dpaa2
+
+XDP have evolved to support several frame sizes, but xdp_buff was not
+updated with this information. This have caused the side-effect that
+XDP frame data hard end is unknown. This have limited the BPF-helper
+bpf_xdp_adjust_tail to only shrink the packet. This patchset address
+this and add packet tail extend/grow.
+
+The purpose of the patchset is ALSO to reserve a memory area that can be
+used for storing extra information, specifically for extending XDP with
+multi-buffer support. One proposal is to use same layout as
+skb_shared_info, which is why this area is currently 320 bytes.
+
+When converting xdp_frame to SKB (veth and cpumap), the full tailroom
+area can now be used and SKB truesize is now correct. For most
+drivers this result in a much larger tailroom in SKB "head" data
+area. The network stack can now take advantage of this when doing SKB
+coalescing. Thus, a good driver test is to use xdp_redirect_cpu from
+samples/bpf/ and do some TCP stream testing.
+
+Use-cases for tail grow/extend:
+(1) IPsec / XFRM needs a tail extend[1][2].
+(2) DNS-cache responses in XDP.
+(3) HAProxy ALOHA would need it to convert to XDP.
+(4) Add tail info e.g. timestamp and collect via tcpdump
+
+[1] http://vger.kernel.org/netconf2019_files/xfrm_xdp.pdf
+[2] http://vger.kernel.org/netconf2019.html
+
+---
+
+Ilias Apalodimas (1):
+      net: netsec: Add support for XDP frame size
+
+Jesper Dangaard Brouer (32):
+      xdp: add frame size to xdp_buff
+      bnxt: add XDP frame size to driver
+      sfc: add XDP frame size
+      mvneta: add XDP frame size to driver
+      net: XDP-generic determining XDP frame size
+      xdp: xdp_frame add member frame_sz and handle in convert_to_xdp_frame
+      xdp: cpumap redirect use frame_sz and increase skb_tailroom
+      veth: adjust hard_start offset on redirect XDP frames
+      veth: xdp using frame_sz in veth driver
+      dpaa2-eth: add XDP frame size
+      hv_netvsc: add XDP frame size to driver
+      qlogic/qede: add XDP frame size to driver
+      net: ethernet: ti: add XDP frame size to driver cpsw
+      ena: add XDP frame size to amazon NIC driver
+      mlx4: add XDP frame size and adjust max XDP MTU
+      net: thunderx: add XDP frame size
+      nfp: add XDP frame size to netronome driver
+      tun: add XDP frame size
+      vhost_net: also populate XDP frame size
+      virtio_net: add XDP frame size in two code paths
+      ixgbe: fix XDP redirect on archs with PAGE_SIZE above 4K
+      ixgbe: add XDP frame size to driver
+      ixgbevf: add XDP frame size to VF driver
+      i40e: add XDP frame size to driver
+      ice: add XDP frame size to driver
+      xdp: for Intel AF_XDP drivers add XDP frame_sz
+      mlx5: rx queue setup time determine frame_sz for XDP
+      xdp: allow bpf_xdp_adjust_tail() to grow packet size
+      xdp: clear grow memory in bpf_xdp_adjust_tail()
+      bpf: add xdp.frame_sz in bpf_prog_test_run_xdp().
+      selftests/bpf: adjust BPF selftest for xdp_adjust_tail
+      selftests/bpf: xdp_adjust_tail add grow tail tests
 
 
-*.1. Context: *
-Hey, all, we're running into a very perplexing configuration issue, while
-trying to tune our 'igb' driver, and the documentation out there is
-sparse.  All the examples we've found come up dry.  (either by throwing
-errors with our setup, or emitting nothing but opaque error messages:
-"Operation not supported"  "invalid argument")   Hopefully, someone on the
-list can point us in the right direction.
+ drivers/net/ethernet/amazon/ena/ena_netdev.c       |    1 
+ drivers/net/ethernet/amazon/ena/ena_netdev.h       |    5 -
+ drivers/net/ethernet/broadcom/bnxt/bnxt_xdp.c      |    1 
+ drivers/net/ethernet/cavium/thunder/nicvf_main.c   |    1 
+ drivers/net/ethernet/freescale/dpaa2/dpaa2-eth.c   |    7 +
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        |   30 ++++-
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c         |    2 
+ drivers/net/ethernet/intel/ice/ice_txrx.c          |   34 ++++--
+ drivers/net/ethernet/intel/ice/ice_xsk.c           |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      |   33 ++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c       |    2 
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c  |   34 ++++--
+ drivers/net/ethernet/marvell/mvneta.c              |   25 ++--
+ drivers/net/ethernet/mellanox/mlx4/en_netdev.c     |    3 
+ drivers/net/ethernet/mellanox/mlx4/en_rx.c         |    1 
+ drivers/net/ethernet/mellanox/mlx5/core/en.h       |    1 
+ drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c   |    1 
+ drivers/net/ethernet/mellanox/mlx5/core/en_main.c  |    6 +
+ drivers/net/ethernet/mellanox/mlx5/core/en_rx.c    |    2 
+ .../net/ethernet/netronome/nfp/nfp_net_common.c    |    6 +
+ drivers/net/ethernet/qlogic/qede/qede_fp.c         |    1 
+ drivers/net/ethernet/qlogic/qede/qede_main.c       |    2 
+ drivers/net/ethernet/sfc/rx.c                      |    1 
+ drivers/net/ethernet/socionext/netsec.c            |   30 +++--
+ drivers/net/ethernet/ti/cpsw.c                     |    1 
+ drivers/net/ethernet/ti/cpsw_new.c                 |    1 
+ drivers/net/hyperv/netvsc_bpf.c                    |    1 
+ drivers/net/hyperv/netvsc_drv.c                    |    2 
+ drivers/net/tun.c                                  |    2 
+ drivers/net/veth.c                                 |   28 +++--
+ drivers/net/virtio_net.c                           |   15 ++
+ drivers/vhost/net.c                                |    1 
+ include/net/xdp.h                                  |   27 ++++
+ include/net/xdp_sock.h                             |   11 ++
+ include/uapi/linux/bpf.h                           |    4 -
+ kernel/bpf/cpumap.c                                |   21 ---
+ net/bpf/test_run.c                                 |   16 ++-
+ net/core/dev.c                                     |   14 +-
+ net/core/filter.c                                  |   15 ++
+ net/core/xdp.c                                     |    7 +
+ .../selftests/bpf/prog_tests/xdp_adjust_tail.c     |  123 +++++++++++++++++++-
+ .../testing/selftests/bpf/progs/test_adjust_tail.c |   30 -----
+ .../bpf/progs/test_xdp_adjust_tail_grow.c          |   33 +++++
+ .../bpf/progs/test_xdp_adjust_tail_shrink.c        |   30 +++++
+ 44 files changed, 474 insertions(+), 139 deletions(-)
+ delete mode 100644 tools/testing/selftests/bpf/progs/test_adjust_tail.c
+ create mode 100644 tools/testing/selftests/bpf/progs/test_xdp_adjust_tail_grow.c
+ create mode 100644 tools/testing/selftests/bpf/progs/test_xdp_adjust_tail_shrink.c
 
-We have a computer logging a high rate of ethernet packets ( 25k
-packets/sec ~70 Mb/sec);   But we're having trouble convincing the hardware
-to receive all of these packets, at a sustained rate -- specifically we're
-dropping packets while processing through the kernel layers.    We're
-currently attempting to optimize the network stack,  but we're having
-trouble setting the driver parameters... which is what this message is all
-about.
+--
 
-*.2. Platform Summary:*
-Hardware:
-Advantech 3500
-<https://www.advantech.com/products/1-2jkd2d/ark-3500/mod_adb8f9a9-4b1b-4cf5-84ba-9e135c099c43>
-CPU ($ lscpu):
-Architecture:         x86_64
-CPU family:          6
-Model:                  58
-Model name:        Intel(R) Core(TM) i7-3610QE CPU @ 2.30GHz
-NIC ($ lspci -vs 02:00.0)
-02:00.0 Ethernet controller: Intel Corporation I210 Gigabit Network
-Connection (rev 03)
-Flags: bus master, fast devsel, latency 0, IRQ 18
-OS ($ lsb_release -a)
-Ubuntu 16.04.6 LTS
-Kernel (`uname -r`):
-4.15.0-88-lowlatency
-Kernel Module ($ modinfo igb)
-filename:
-/lib/modules/4.15.0-88-lowlatency/kernel/drivers/net/ethernet/intel/igb/igb.ko
-version:        5.4.0-k
-license:        GPL
-Ethtool Version ($ ethtool --version)
-ethtool version 4.5
-
-*.3. What have we tried so far:*
-.3.a.  The NIC supports what we want to do:
-The data sheet,
-<https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=2ahUKEwj_nona25DpAhWPoHIEHfvYBWcQFjAAegQIARAB&url=https%3A%2F%2Fwww.intel.com%2Fcontent%2Fwww%2Fus%2Fen%2Fembedded%2Fproducts%2Fnetworking%2Fi210-ethernet-controller-datasheet.html&usg=AOvVaw1N7hqg0JJAaqXsomLAUhfB>
-in section 7.1.2.4 "2-Tuple Filters", says:
-
-> The 2-tuple filters are configured via the TTQF (See Section 8.11.3), IMIR
-> (See Section 8.11.1) and
-> IMIR_EXT (See Section 8.11.2) registers as follows (per filter):
->
-
-Am I correct in assuming these are the mechanisms the 'igb' driver is
-interfacing with?
-
-.3.b.   What is the flow table currenttly?
-
-> # ethtool --show-rxfh enp2s0
-> RX flow hash indirection table for enp2s0 with 4 RX ring(s):
->     0:      0     0     0     0     0     0     0     0
->     8:      0     0     0     0     0     0     0     0
->    16:      0     0     0     0     0     0     0     0
->    24:      0     0     0     0     0     0     0     0
->    32:      0     0     0     0     0     0     0     0
->    40:      0     0     1     1     1     1     1     1
->    48:      1     1     1     1     1     1     1     1
->    56:      1     1     1     1     1     1     1     1
->    64:      1     1     1     1     1     1     1     1
->    72:      1     1     1     1     1     1     1     1
->    80:      1     1     1     1     1     2     2     2
->    88:      2     2     2     2     2     2     2     2
->    96:      2     2     2     2     2     2     2     2
->   104:      2     2     2     2     2     2     2     2
->   112:      2     2     2     2     2     2     2     2
->   120:      2     2     2     2     2     2     2     2
-> RSS hash key:
-> Operation not supported
->
-
-"Operation not supported" -- does this mean the NIC has RSS routing
-hard-coded? And we cannot change the hash-function?
-Or is RSS just hard-coded?
-
-
-.3.c. Current "Hash flow" settings:
-
-> # ethtool -n  enp2s0 rx-flow-hash udp4
-> UDP over IPV4 flows use these fields for computing Hash flow key:
-> IP SA
-> IP DA
-> L4 bytes 0 & 1 [TCP/UDP src port]
-> L4 bytes 2 & 3 [TCP/UDP dst port]
->
-
-
-> # sudo ethtool -n enp2s0
-> 4 RX rings available
-> Total 0 rules
->
-
-
-.3.d.  Enable ntuple features:
-
-> # ethtool --show-features enp2s0 | grep ntuple
-> ntuple-filters: on
->
-
-.3.e. Add ntuple rule: Commands Tried:
-
-> # ethtool -U enp2s0 flow-type udp4 src-ip 192.168.3.43 dst-ip 0.0.0.0
-> src-port 555 dst-port 2368 action -1
-> rmgr: Cannot insert RX class rule: Invalid argument
-> # ethtool -U enp2s0 flow-type udp4 src-ip 192.168.3.43 action 1
-> rmgr: Cannot insert RX class rule: Invalid argument
->
-# ethtool -U enp2s0 flow-type ip4 src-ip 192.168.3.43 action 1
-> rmgr: Cannot insert RX class rule: Invalid argument
-> # ethtool -U enp2s0 flow-type ip4 src-ip 192.168.3.43 action 1 loc 4
-> rmgr: Cannot insert RX class rule: Invalid argument
->
-
-.3.f. More Interface info:
-
-> # ethtool -i enp2s0
-> driver: igb
-> version: 5.4.0-k
-> firmware-version: 3.16, 0x800004ad
-> expansion-rom-version:
-> bus-info: 0000:02:00.0
-> supports-statistics: yes
-> supports-test: yes
-> supports-eeprom-access: yes
-> supports-register-dump: yes
-> supports-priv-flags: yes
->
-
-# ethtool -t enp2s0
-> The test result is PASS
-> The test extra info:
-> Register test  (offline) 0
-> Eeprom test    (offline) 0
-> Interrupt test (offline) 0
-> Loopback test  (offline) 0
-> Link test   (on/offline) 0
->
-
-
-
-
-
-
-Daniel Williams  |  Software Engineer
-dwilliams at nextdroid.com
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200430/d221c541/attachment.html>
