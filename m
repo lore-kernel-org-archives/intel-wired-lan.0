@@ -1,10 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 1 May 2020 22:41:29 +0000
-Subject: [Intel-wired-lan] [PATCH 13/19] igc: Fix NFC rules restoration
-In-Reply-To: <20200424201623.10971-14-andre.guedes@intel.com>
+Date: Fri, 1 May 2020 22:42:56 +0000
+Subject: [Intel-wired-lan] [PATCH 14/19] igc: Refactor
+ igc_ethtool_update_nfc_rule()
+In-Reply-To: <20200424201623.10971-15-andre.guedes@intel.com>
 References: <20200424201623.10971-1-andre.guedes@intel.com>
- <20200424201623.10971-14-andre.guedes@intel.com>
-Message-ID: <DM6PR11MB28905AF4268AFDFA1DA8A771BCAB0@DM6PR11MB2890.namprd11.prod.outlook.com>
+ <20200424201623.10971-15-andre.guedes@intel.com>
+Message-ID: <DM6PR11MB28909D7CF0FC6DDF2BEE554DBCAB0@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,38 +16,40 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Andre Guedes
 > Sent: Friday, April 24, 2020 1:16 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 13/19] igc: Fix NFC rules restoration
+> Subject: [Intel-wired-lan] [PATCH 14/19] igc: Refactor
+> igc_ethtool_update_nfc_rule()
 > 
-> When network interface is brought up, the driver re-enables the NFC
-> rules previously configured. However, this is done in reverse order
-> the rules were added and hardware filters are configured differently.
+> Current implementation of igc_ethtool_update_nfc_rule() is a bit
+> convoluted since it handles too many things: rule lookup, deletion
+> and addition. This patch breaks it into three functions so we simplify
+> the code and improve code reuse.
 > 
-> For example, consider the following rules:
+> Code related to rule lookup is refactored out to a new function called
+> igc_get_nfc_rule().
 > 
-> $ ethtool -N eth0 flow-type ether dst 00:00:00:00:00:AA queue 0
-> $ ethtool -N eth0 flow-type ether dst 00:00:00:00:00:BB queue 1
-> $ ethtool -N eth0 flow-type ether dst 00:00:00:00:00:CC queue 2
-> $ ethtool -N eth0 flow-type ether dst 00:00:00:00:00:DD queue 3
+> Code related to rule addition is refactored out to a new function called
+> igc_add_nfc_rule(). This function enables the rule in hardware and adds
+> it to the adapter's list.
 > 
-> RAL/RAH registers are configure so filter index 1 has address ending
-> with AA, filter index 2 has address ending in BB, and so on.
+> Code related to rule deletion is refactored out to a new function called
+> igc_del_nfc_rule(). This function disables the rule in hardware, removes
+> it from adapter's list, and deletes it.
 > 
-> If we bring the interface down and up again, RAL/RAH registers are
-> configured so filter index 1 has address ending in DD, filter index 2
-> has CC, and so on. IOW, in reverse order we had before bringing the
-> interface down.
+> As a byproduct of this refactoring, igc_enable_nfc_rule() and
+> igc_disable_nfc_rule() are moved to igc_main.c since they are not used
+> in igc_ethtool.c anymore, and igc_restore_nfc_rules() and igc_nfc_rule_
+> exit() are moved around to avoid forward declaration.
 > 
-> This issue can be fixed by traversing adapter->nfc_rule_list in
-> backwards when restoring the rules. Since hlist doesn't support
-> backwards traversal, this patch replaces it by list_head and fixes
-> igc_restore_nfc_rules() accordingly.
+> Also, since this patch already touches igc_ethtool_get_nfc_rule(), it
+> takes the opportunity to remove the 'match_flags' check. Empty flags
+> are not allowed to be added so no need to check that.
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc.h         |  4 ++--
->  drivers/net/ethernet/intel/igc/igc_ethtool.c | 19 ++++++++-----------
->  drivers/net/ethernet/intel/igc/igc_main.c    | 16 +++++++++-------
->  3 files changed, 19 insertions(+), 20 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc.h         |  18 +-
+>  drivers/net/ethernet/intel/igc/igc_ethtool.c | 138 ++-----------
+>  drivers/net/ethernet/intel/igc/igc_main.c    | 205 ++++++++++++++++---
+>  3 files changed, 195 insertions(+), 166 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
