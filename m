@@ -1,75 +1,41 @@
-From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Date: Fri, 1 May 2020 21:43:47 +0000
-Subject: [Intel-wired-lan] [PATCH v4] igc: add support to interrupt,
- eeprom, registers and link self-tests
-In-Reply-To: <DM6PR11MB28904C37A37D025A95494FBBBCAB0@DM6PR11MB2890.namprd11.prod.outlook.com>
-References: <20200405121604.36654-1-vitaly.lifshits@intel.com>
- <DM6PR11MB28909C9B5CE19650132FB7B0BCAB0@DM6PR11MB2890.namprd11.prod.outlook.com>
- <DM6PR11MB28904C37A37D025A95494FBBBCAB0@DM6PR11MB2890.namprd11.prod.outlook.com>
-Message-ID: <61CC2BC414934749BD9F5BF3D5D94044986827A1@ORSMSX112.amr.corp.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 1 May 2020 21:47:51 +0000
+Subject: [Intel-wired-lan] [PATCH v2 4/4] igc: Refactor VLAN priority
+ filtering code
+In-Reply-To: <20200424011119.98746-1-andre.guedes@intel.com>
+References: <20200403181743.23447-5-andre.guedes@intel.com>
+ <20200424011119.98746-1-andre.guedes@intel.com>
+Message-ID: <DM6PR11MB2890E517D65797E6E2CFC206BCAB0@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Brown, Aaron F
-> Sent: Friday, May 1, 2020 14:42
-> To: Lifshits, Vitaly <vitaly.lifshits@intel.com>; intel-wired-lan at osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH v4] igc: add support to interrupt, eeprom,
-> registers and link self-tests
+> From: Guedes, Andre <andre.guedes@intel.com>
+> Sent: Thursday, April 23, 2020 6:11 PM
+> To: intel-wired-lan at lists.osuosl.org; Brown, Aaron F
+> <aaron.f.brown@intel.com>; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Subject: [PATCH v2 4/4] igc: Refactor VLAN priority filtering code
 > 
-> > From: Brown, Aaron F
-> > Sent: Friday, May 1, 2020 2:26 PM
-> > To: Vitaly Lifshits <vitaly.lifshits@intel.com>;
-> > intel-wired-lan at osuosl.org
-> > Subject: RE: [Intel-wired-lan] [PATCH v4] igc: add support to
-> > interrupt, eeprom, registers and link self-tests
-> >
-> > > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
-> > > Of Vitaly Lifshits
-> > > Sent: Sunday, April 5, 2020 5:16 AM
-> > > To: intel-wired-lan at osuosl.org
-> > > Subject: [Intel-wired-lan] [PATCH v4] igc: add support to interrupt,
-> > > eeprom, registers and link self-tests
-> > >
-> > > Introduced igc_diag.c and igc_diag.h, these files have the
-> > > diagnostics functionality of igc driver. For the time being these
-> > > files are being used by ethtool self-test callbacks.
-> > > Which mean that interrupt, eeprom, registers and link self-tests for
-> > > ethtool were implemented.
-> > >
-> > > Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> > > Reported-by: kbuild test robot <lkp@intel.com>
-> > > Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> > > ---
-> > > v2: Fix return 0/1 to boolean value in igc_reg_test function
-> > > v3: Address community comments
-> > > v4: Fix interrupt test and address community comments
-> > > ---
-> > >  drivers/net/ethernet/intel/igc/Makefile      |   2 +-
-> > >  drivers/net/ethernet/intel/igc/igc.h         |   4 +
-> > >  drivers/net/ethernet/intel/igc/igc_diag.c    | 336
-> > > +++++++++++++++++++++++++++
-> > >  drivers/net/ethernet/intel/igc/igc_diag.h    |  37 +++
-> > >  drivers/net/ethernet/intel/igc/igc_ethtool.c |  63 +++++
-> > >  drivers/net/ethernet/intel/igc/igc_main.c    |   4 +-
-> > >  drivers/net/ethernet/intel/igc/igc_regs.h    |   2 +
-> > >  7 files changed, 445 insertions(+), 3 deletions(-)  create mode
-> > > 100644 drivers/net/ethernet/intel/igc/igc_diag.c
-> > >  create mode 100644 drivers/net/ethernet/intel/igc/igc_diag.h
-> > >
-> >
-> > Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-> Sorry, I was intending the apply this to a different patch.  This is the patch that
-> enables ethtool diags, which causes the call trace I sent out earlier today.
+> The whole VLAN priority filtering code is implemented in igc_ethtool.c
+> and mixes logic from ethtool and core parts. This patch refactors it so
+> core logic is moved to igc_main.c, aligning the VLAN priority filtering
+> code organization with the MAC address filtering code.
+> 
+> This patch also takes the opportunity to add some log messages to ease
+> debugging.
+> 
+> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> ---
+> v2: Previous version had a bug when clearing IGC_VLANPQF_QSEL bits in
+>     igc_del_vlan_prio_filter().
+> ---
+>  drivers/net/ethernet/intel/igc/igc.h         |  3 +
+>  drivers/net/ethernet/intel/igc/igc_ethtool.c | 64 ++++----------------
+>  drivers/net/ethernet/intel/igc/igc_main.c    | 52 ++++++++++++++++
+>  3 files changed, 68 insertions(+), 51 deletions(-)
+> 
 
-[Kirsher, Jeffrey T] 
-I was just about to ask why the mixed messages...
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
