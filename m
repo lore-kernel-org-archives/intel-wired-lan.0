@@ -1,10 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 1 May 2020 22:47:42 +0000
-Subject: [Intel-wired-lan] [PATCH 16/19] igc: Fix NFC rule validation
-In-Reply-To: <20200424201623.10971-17-andre.guedes@intel.com>
+Date: Fri, 1 May 2020 22:49:00 +0000
+Subject: [Intel-wired-lan] [PATCH 18/19] igc: Change
+ adapter->nfc_rule_lock to mutex
+In-Reply-To: <20200424201623.10971-19-andre.guedes@intel.com>
 References: <20200424201623.10971-1-andre.guedes@intel.com>
- <20200424201623.10971-17-andre.guedes@intel.com>
-Message-ID: <DM6PR11MB2890EE318BC858D333BFAFB1BCAB0@DM6PR11MB2890.namprd11.prod.outlook.com>
+ <20200424201623.10971-19-andre.guedes@intel.com>
+Message-ID: <DM6PR11MB2890BD31E8311A95FA5860F2BCAB0@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,25 +16,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Andre Guedes
 > Sent: Friday, April 24, 2020 1:16 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 16/19] igc: Fix NFC rule validation
+> Subject: [Intel-wired-lan] [PATCH 18/19] igc: Change adapter->nfc_rule_lock
+> to mutex
 > 
-> If we try to overwrite an existing rule with the same filter but
-> different action, we get EEXIST error as shown below.
+> This patch changes adapter->nfc_rule_lock type from spin_lock to mutex
+> so we avoid unnecessary busy waiting on lock contention.
 > 
-> $ ethtool -N eth0 flow-type ether dst <MACADDR> action 1 loc 10
-> $ ethtool -N eth0 flow-type ether dst <MACADDR> action 2 loc 10
-> rmgr: Cannot insert RX class rule: File exists
-> 
-> The second command is expected to overwrite the previous rule in location
-> 10 and succeed.
-> 
-> This patch fixes igc_ethtool_check_nfc_rule() so it also checks the
-> rules location. In case they match, the rule under evaluation should not
-> be considered invalid.
+> A closer look at the execution context of NFC rule API users shows that
+> all of them run in process context. The API users are: ethtool ops,
+> igc_configure(), called when interface is brought up by user or reset
+> workequeue thread, igc_down(), called when interface is brought down,
+> and igc_remove(), called when driver is unloaded.
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_ethtool.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+> Note that checkpatch.pl reports an issue with this patch. The issue is a false
+> positive. There is a comment right above that line referring to the lock.
+> 
+> Here is the report:
+> 
+> CHECK: struct mutex definition without comment
+> #31: FILE: drivers/net/ethernet/intel/igc/igc.h:193:
+> +       struct mutex nfc_rule_lock;
+> ---
+>  drivers/net/ethernet/intel/igc/igc.h         |  2 +-
+>  drivers/net/ethernet/intel/igc/igc_ethtool.c | 24 ++++++++++----------
+>  drivers/net/ethernet/intel/igc/igc_main.c    | 14 ++++++------
+>  3 files changed, 20 insertions(+), 20 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+
