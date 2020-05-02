@@ -1,22 +1,35 @@
-From: Ralf Ertzinger <ralf@camperquake.de>
-Date: Sat, 2 May 2020 19:55:41 +0200
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Sat, 2 May 2020 12:08:21 -0700
 Subject: [Intel-wired-lan] i350 not coming out of D3 when link should be
  reestablished
-In-Reply-To: <20200421133745.GA1557688@shell-202.tara.dn.lalufu.net>
+In-Reply-To: <20200502175541.GB7062@faith.camperquake.de>
 References: <20200421133745.GA1557688@shell-202.tara.dn.lalufu.net>
-Message-ID: <20200502175541.GB7062@faith.camperquake.de>
+ <20200502175541.GB7062@faith.camperquake.de>
+Message-ID: <CAKgT0Uf8+sTsc0HCmxvpjYNKpOivV3z0N36zmHJiYzWXtjMTtA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+On Sat, May 2, 2020 at 10:55 AM Ralf Ertzinger <ralf@camperquake.de> wrote:
+>
+> Hi,
+>
+> On Tue, Apr 21, 2020 at 01:37:45PM +0000, Ralf Ertzinger wrote:
+>
+> > I have a Supermicro board (M11SDV-4C-LN4F) which has one (or four? not
+> > sure) i350 network cards, breaking out into four 1GB RJ45 ports:
+>
+> is this the right mailing list for these sort of issues? If not, where
+> should I bring this up?
 
-On Tue, Apr 21, 2020 at 01:37:45PM +0000, Ralf Ertzinger wrote:
+This is the right list
 
-> I have a Supermicro board (M11SDV-4C-LN4F) which has one (or four? not
-> sure) i350 network cards, breaking out into four 1GB RJ45 ports:
+As far as the behavior I am fairly certain it is a bug. I suspect
+there are some functions that aren't correctly taking the power saving
+features into account and as a result they aren't working correctly.
+Unfortunately I don't know how much testing takes place for the igb
+parts with run time power management enabled.
 
-is this the right mailing list for these sort of issues? If not, where
-should I bring this up?
+- Alex
