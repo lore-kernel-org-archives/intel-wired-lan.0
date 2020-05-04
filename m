@@ -1,20 +1,19 @@
 From: Jarod Wilson <jarod@redhat.com>
-Date: Mon,  4 May 2020 10:59:41 -0400
-Subject: [Intel-wired-lan] [RFC PATCH net-next 1/3] xfrm: bail early on
- slave pass over skb
+Date: Mon,  4 May 2020 10:59:42 -0400
+Subject: [Intel-wired-lan] [RFC PATCH net-next 2/3] ixgbe_ipsec: become
+ aware of when running as a bonding slave
 In-Reply-To: <20200504145943.8841-1-jarod@redhat.com>
 References: <20200504145943.8841-1-jarod@redhat.com>
-Message-ID: <20200504145943.8841-2-jarod@redhat.com>
+Message-ID: <20200504145943.8841-3-jarod@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is prep work for initial support of bonding hardware encryption
-pass-through support. The bonding driver will fill in the slave_dev
-pointer, and we use that to know not to skb_push() again on a given
-skb that was already processed on the bond device.
+Slave devices in a bond doing hardware encryption also need to be aware
+that they're slaves, so we operate on the slave instead of the bonding
+master to do the actual hardware encryption offload bits.
 
 CC: Jay Vosburgh <j.vosburgh@gmail.com>
 CC: Veaceslav Falico <vfalico@gmail.com>
@@ -28,83 +27,95 @@ CC: netdev at vger.kernel.org
 CC: intel-wired-lan at lists.osuosl.org
 Signed-off-by: Jarod Wilson <jarod@redhat.com>
 ---
- include/net/xfrm.h     |  1 +
- net/xfrm/xfrm_device.c | 34 +++++++++++++++++-----------------
- 2 files changed, 18 insertions(+), 17 deletions(-)
+ .../net/ethernet/intel/ixgbe/ixgbe_ipsec.c    | 39 +++++++++++++++----
+ 1 file changed, 31 insertions(+), 8 deletions(-)
 
-diff --git a/include/net/xfrm.h b/include/net/xfrm.h
-index 8f71c111e65a..a6ec341cd9f0 100644
---- a/include/net/xfrm.h
-+++ b/include/net/xfrm.h
-@@ -127,6 +127,7 @@ struct xfrm_state_walk {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index 113f6087c7c9..26b0a58a064d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -432,6 +432,9 @@ static int ixgbe_ipsec_parse_proto_keys(struct xfrm_state *xs,
+ 	char *alg_name = NULL;
+ 	int key_len;
  
- struct xfrm_state_offload {
- 	struct net_device	*dev;
-+	struct net_device	*slave_dev;
- 	unsigned long		offload_handle;
- 	unsigned int		num_exthdrs;
- 	u8			flags;
-diff --git a/net/xfrm/xfrm_device.c b/net/xfrm/xfrm_device.c
-index 6cc7f7f1dd68..1cd31dcf59da 100644
---- a/net/xfrm/xfrm_device.c
-+++ b/net/xfrm/xfrm_device.c
-@@ -108,6 +108,7 @@ struct sk_buff *validate_xmit_xfrm(struct sk_buff *skb, netdev_features_t featur
- 	struct sk_buff *skb2, *nskb, *pskb = NULL;
- 	netdev_features_t esp_features = features;
- 	struct xfrm_offload *xo = xfrm_offload(skb);
-+	struct net_device *dev = skb->dev;
- 	struct sec_path *sp;
- 
- 	if (!xo)
-@@ -121,6 +122,10 @@ struct sk_buff *validate_xmit_xfrm(struct sk_buff *skb, netdev_features_t featur
- 	if (xo->flags & XFRM_GRO || x->xso.flags & XFRM_OFFLOAD_INBOUND)
- 		return skb;
- 
-+	/* This skb was already validated on the master dev */
-+	if ((x->xso.dev != dev) && (x->xso.slave_dev == dev))
-+		return skb;
++	if (xs->xso.slave_dev)
++		dev = xs->xso.slave_dev;
 +
- 	local_irq_save(flags);
- 	sd = this_cpu_ptr(&softnet_data);
- 	err = !skb_queue_empty(&sd->xfrm_backlog);
-@@ -131,25 +136,20 @@ struct sk_buff *validate_xmit_xfrm(struct sk_buff *skb, netdev_features_t featur
- 		return skb;
- 	}
+ 	if (!xs->aead) {
+ 		netdev_err(dev, "Unsupported IPsec algorithm\n");
+ 		return -EINVAL;
+@@ -478,8 +481,8 @@ static int ixgbe_ipsec_parse_proto_keys(struct xfrm_state *xs,
+ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+ {
+ 	struct net_device *dev = xs->xso.dev;
+-	struct ixgbe_adapter *adapter = netdev_priv(dev);
+-	struct ixgbe_hw *hw = &adapter->hw;
++	struct ixgbe_adapter *adapter;
++	struct ixgbe_hw *hw;
+ 	u32 mfval, manc, reg;
+ 	int num_filters = 4;
+ 	bool manc_ipv4;
+@@ -497,6 +500,12 @@ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+ #define BMCIP_V6                 0x3
+ #define BMCIP_MASK               0x3
  
--	if (skb_is_gso(skb)) {
--		struct net_device *dev = skb->dev;
--
--		if (unlikely(x->xso.dev != dev)) {
--			struct sk_buff *segs;
-+	if (skb_is_gso(skb) && unlikely(x->xso.dev != dev)) {
-+		struct sk_buff *segs;
++	if (xs->xso.slave_dev)
++		dev = xs->xso.slave_dev;
++
++	adapter = netdev_priv(dev);
++	hw = &adapter->hw;
++
+ 	manc = IXGBE_READ_REG(hw, IXGBE_MANC);
+ 	manc_ipv4 = !!(manc & MANC_EN_IPV4_FILTER);
+ 	mfval = IXGBE_READ_REG(hw, IXGBE_MFVAL);
+@@ -561,14 +570,21 @@ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
+ {
+ 	struct net_device *dev = xs->xso.dev;
+-	struct ixgbe_adapter *adapter = netdev_priv(dev);
+-	struct ixgbe_ipsec *ipsec = adapter->ipsec;
+-	struct ixgbe_hw *hw = &adapter->hw;
++	struct ixgbe_adapter *adapter;
++	struct ixgbe_ipsec *ipsec;
++	struct ixgbe_hw *hw;
+ 	int checked, match, first;
+ 	u16 sa_idx;
+ 	int ret;
+ 	int i;
  
--			/* Packet got rerouted, fixup features and segment it. */
--			esp_features = esp_features & ~(NETIF_F_HW_ESP
--							| NETIF_F_GSO_ESP);
-+		/* Packet got rerouted, fixup features and segment it. */
-+		esp_features = esp_features & ~(NETIF_F_HW_ESP | NETIF_F_GSO_ESP);
++	if (xs->xso.slave_dev)
++		dev = xs->xso.slave_dev;
++
++	adapter = netdev_priv(dev);
++	ipsec = adapter->ipsec;
++	hw = &adapter->hw;
++
+ 	if (xs->id.proto != IPPROTO_ESP && xs->id.proto != IPPROTO_AH) {
+ 		netdev_err(dev, "Unsupported protocol 0x%04x for ipsec offload\n",
+ 			   xs->id.proto);
+@@ -746,12 +762,19 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
+ static void ixgbe_ipsec_del_sa(struct xfrm_state *xs)
+ {
+ 	struct net_device *dev = xs->xso.dev;
+-	struct ixgbe_adapter *adapter = netdev_priv(dev);
+-	struct ixgbe_ipsec *ipsec = adapter->ipsec;
+-	struct ixgbe_hw *hw = &adapter->hw;
++	struct ixgbe_adapter *adapter;
++	struct ixgbe_ipsec *ipsec;
++	struct ixgbe_hw *hw;
+ 	u32 zerobuf[4] = {0, 0, 0, 0};
+ 	u16 sa_idx;
  
--			segs = skb_gso_segment(skb, esp_features);
--			if (IS_ERR(segs)) {
--				kfree_skb(skb);
--				atomic_long_inc(&dev->tx_dropped);
--				return NULL;
--			} else {
--				consume_skb(skb);
--				skb = segs;
--			}
-+		segs = skb_gso_segment(skb, esp_features);
-+		if (IS_ERR(segs)) {
-+			kfree_skb(skb);
-+			atomic_long_inc(&dev->tx_dropped);
-+			return NULL;
-+		} else {
-+			consume_skb(skb);
-+			skb = segs;
- 		}
- 	}
- 
++	if (xs->xso.slave_dev)
++		dev = xs->xso.slave_dev;
++
++	adapter = netdev_priv(dev);
++	ipsec = adapter->ipsec;
++	hw = &adapter->hw;
++
+ 	if (xs->xso.flags & XFRM_OFFLOAD_INBOUND) {
+ 		struct rx_sa *rsa;
+ 		u8 ipi;
 -- 
 2.20.1
 
