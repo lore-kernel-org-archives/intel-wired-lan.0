@@ -1,598 +1,306 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Mon,  4 May 2020 13:37:11 +0200
-Subject: [Intel-wired-lan] [RFC PATCH bpf-next 09/13] ixgbe,
- xsk: migrate to new MEM_TYPE_XSK_BUFF_POOL
-In-Reply-To: <20200504113716.7930-1-bjorn.topel@gmail.com>
-References: <20200504113716.7930-1-bjorn.topel@gmail.com>
-Message-ID: <20200504113716.7930-10-bjorn.topel@gmail.com>
+From: Dan Williams <dwilliams@nextdroid.com>
+Date: Mon, 4 May 2020 09:58:31 -0400
+Subject: [Intel-wired-lan] Does the 'igb` kernel module support setting
+ 2-Tuple filters (aka `--config-ntuple`) on a i210 NIC?
+In-Reply-To: <87zhaswn5t.fsf@intel.com>
+References: <CAGrNP8nfqAZnEoOBsrxrsvszw7T5pdKHG4mt6fVcKB6iigV_BA@mail.gmail.com>
+ <87zhaswn5t.fsf@intel.com>
+Message-ID: <CAGrNP8=qr3_ZPL7c4oWz0L6hzLSSHjh3iWa52VsUTmJjfUqxdw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
+>
+> > We have a computer logging a high rate of ethernet packets ( 25k
+>> > packets/sec ~70 Mb/sec);   But we're having trouble convincing the
+>> hardware
+>> > to receive all of these packets, at a sustained rate -- specifically
+>> we're
+>> > dropping packets while processing through the kernel layers.    We're
+>> > currently attempting to optimize the network stack,  but we're having
+>> > trouble setting the driver parameters... which is what this message is
+>> all
+>> > about.
+>>
+>
+> That's weird. That packet rate is not *that* high, the Linux kernel
+> should be able to handle that fine.
 
-Remove MEM_TYPE_ZERO_COPY in favor of the new MEM_TYPE_XSK_BUFF_POOL
-APIs.
 
-Cc: intel-wired-lan at lists.osuosl.org
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   9 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  15 +-
- .../ethernet/intel/ixgbe/ixgbe_txrx_common.h  |   2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 305 +++---------------
- 4 files changed, 62 insertions(+), 269 deletions(-)
+> Can you give more details of the workload you are running?
+>
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 2833e4f041ce..5ddfc83a1e46 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -224,17 +224,17 @@ struct ixgbe_tx_buffer {
- };
- 
- struct ixgbe_rx_buffer {
--	struct sk_buff *skb;
--	dma_addr_t dma;
- 	union {
- 		struct {
-+			struct sk_buff *skb;
-+			dma_addr_t dma;
- 			struct page *page;
- 			__u32 page_offset;
- 			__u16 pagecnt_bias;
- 		};
- 		struct {
--			void *addr;
--			u64 handle;
-+			bool discard;
-+			struct xdp_buff *xdp;
- 		};
- 	};
- };
-@@ -351,7 +351,6 @@ struct ixgbe_ring {
- 	};
- 	struct xdp_rxq_info xdp_rxq;
- 	struct xdp_umem *xsk_umem;
--	struct zero_copy_allocator zca; /* ZC allocator anchor */
- 	u16 ring_idx;		/* {rx,tx,xdp}_ring back reference idx */
- 	u16 rx_buf_len;
- } ____cacheline_internodealigned_in_smp;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 718931d951bc..da7b8042901f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -35,7 +35,7 @@
- #include <net/tc_act/tc_mirred.h>
- #include <net/vxlan.h>
- #include <net/mpls.h>
--#include <net/xdp_sock.h>
-+#include <net/xdp_sock_drv.h>
- #include <net/xfrm.h>
- 
- #include "ixgbe.h"
-@@ -3726,8 +3726,7 @@ static void ixgbe_configure_srrctl(struct ixgbe_adapter *adapter,
- 
- 	/* configure the packet buffer length */
- 	if (rx_ring->xsk_umem) {
--		u32 xsk_buf_len = rx_ring->xsk_umem->chunk_size_nohr -
--				  XDP_PACKET_HEADROOM;
-+		u32 xsk_buf_len = xsk_umem_get_rx_frame_size(rx_ring->xsk_umem);
- 
- 		/* If the MAC support setting RXDCTL.RLPML, the
- 		 * SRRCTL[n].BSIZEPKT is set to PAGE_SIZE and
-@@ -4074,11 +4073,10 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
- 	xdp_rxq_info_unreg_mem_model(&ring->xdp_rxq);
- 	ring->xsk_umem = ixgbe_xsk_umem(adapter, ring);
- 	if (ring->xsk_umem) {
--		ring->zca.free = ixgbe_zca_free;
- 		WARN_ON(xdp_rxq_info_reg_mem_model(&ring->xdp_rxq,
--						   MEM_TYPE_ZERO_COPY,
--						   &ring->zca));
--
-+						   MEM_TYPE_XSK_BUFF_POOL,
-+						   NULL));
-+		xsk_buff_set_rxq_info(ring->xsk_umem, &ring->xdp_rxq);
- 	} else {
- 		WARN_ON(xdp_rxq_info_reg_mem_model(&ring->xdp_rxq,
- 						   MEM_TYPE_PAGE_SHARED, NULL));
-@@ -4134,8 +4132,7 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
- 	}
- 
- 	if (ring->xsk_umem && hw->mac.type != ixgbe_mac_82599EB) {
--		u32 xsk_buf_len = ring->xsk_umem->chunk_size_nohr -
--				  XDP_PACKET_HEADROOM;
-+		u32 xsk_buf_len = xsk_umem_get_rx_frame_size(ring->xsk_umem);
- 
- 		rxdctl &= ~(IXGBE_RXDCTL_RLPMLMASK |
- 			    IXGBE_RXDCTL_RLPML_EN);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-index 6d01700b46bc..7887ae4aaf4f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_txrx_common.h
-@@ -35,7 +35,7 @@ int ixgbe_xsk_umem_setup(struct ixgbe_adapter *adapter, struct xdp_umem *umem,
- 
- void ixgbe_zca_free(struct zero_copy_allocator *alloc, unsigned long handle);
- 
--void ixgbe_alloc_rx_buffers_zc(struct ixgbe_ring *rx_ring, u16 cleaned_count);
-+bool ixgbe_alloc_rx_buffers_zc(struct ixgbe_ring *rx_ring, u16 cleaned_count);
- int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
- 			  struct ixgbe_ring *rx_ring,
- 			  const int budget);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-index 5b6edbd8a4ed..12f5dc3fe76e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-@@ -20,54 +20,11 @@ struct xdp_umem *ixgbe_xsk_umem(struct ixgbe_adapter *adapter,
- 	return xdp_get_umem_from_qid(adapter->netdev, qid);
- }
- 
--static int ixgbe_xsk_umem_dma_map(struct ixgbe_adapter *adapter,
--				  struct xdp_umem *umem)
--{
--	struct device *dev = &adapter->pdev->dev;
--	unsigned int i, j;
--	dma_addr_t dma;
--
--	for (i = 0; i < umem->npgs; i++) {
--		dma = dma_map_page_attrs(dev, umem->pgs[i], 0, PAGE_SIZE,
--					 DMA_BIDIRECTIONAL, IXGBE_RX_DMA_ATTR);
--		if (dma_mapping_error(dev, dma))
--			goto out_unmap;
--
--		umem->pages[i].dma = dma;
--	}
--
--	return 0;
--
--out_unmap:
--	for (j = 0; j < i; j++) {
--		dma_unmap_page_attrs(dev, umem->pages[i].dma, PAGE_SIZE,
--				     DMA_BIDIRECTIONAL, IXGBE_RX_DMA_ATTR);
--		umem->pages[i].dma = 0;
--	}
--
--	return -1;
--}
--
--static void ixgbe_xsk_umem_dma_unmap(struct ixgbe_adapter *adapter,
--				     struct xdp_umem *umem)
--{
--	struct device *dev = &adapter->pdev->dev;
--	unsigned int i;
--
--	for (i = 0; i < umem->npgs; i++) {
--		dma_unmap_page_attrs(dev, umem->pages[i].dma, PAGE_SIZE,
--				     DMA_BIDIRECTIONAL, IXGBE_RX_DMA_ATTR);
--
--		umem->pages[i].dma = 0;
--	}
--}
--
- static int ixgbe_xsk_umem_enable(struct ixgbe_adapter *adapter,
- 				 struct xdp_umem *umem,
- 				 u16 qid)
- {
- 	struct net_device *netdev = adapter->netdev;
--	struct xdp_umem_fq_reuse *reuseq;
- 	bool if_running;
- 	int err;
- 
-@@ -78,13 +35,7 @@ static int ixgbe_xsk_umem_enable(struct ixgbe_adapter *adapter,
- 	    qid >= netdev->real_num_tx_queues)
- 		return -EINVAL;
- 
--	reuseq = xsk_reuseq_prepare(adapter->rx_ring[0]->count);
--	if (!reuseq)
--		return -ENOMEM;
--
--	xsk_reuseq_free(xsk_reuseq_swap(umem, reuseq));
--
--	err = ixgbe_xsk_umem_dma_map(adapter, umem);
-+	err = xsk_buff_dma_map(umem, &adapter->pdev->dev, IXGBE_RX_DMA_ATTR);
- 	if (err)
- 		return err;
- 
-@@ -124,7 +75,7 @@ static int ixgbe_xsk_umem_disable(struct ixgbe_adapter *adapter, u16 qid)
- 		ixgbe_txrx_ring_disable(adapter, qid);
- 
- 	clear_bit(qid, adapter->af_xdp_zc_qps);
--	ixgbe_xsk_umem_dma_unmap(adapter, umem);
-+	xsk_buff_dma_unmap(umem, IXGBE_RX_DMA_ATTR);
- 
- 	if (if_running)
- 		ixgbe_txrx_ring_enable(adapter, qid);
-@@ -143,19 +94,14 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
- 			    struct ixgbe_ring *rx_ring,
- 			    struct xdp_buff *xdp)
- {
--	struct xdp_umem *umem = rx_ring->xsk_umem;
- 	int err, result = IXGBE_XDP_PASS;
- 	struct bpf_prog *xdp_prog;
- 	struct xdp_frame *xdpf;
--	u64 offset;
- 	u32 act;
- 
- 	rcu_read_lock();
- 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
- 	act = bpf_prog_run_xdp(xdp_prog, xdp);
--	offset = xdp->data - xdp->data_hard_start;
--
--	xdp->handle = xsk_umem_adjust_offset(umem, xdp->handle, offset);
- 
- 	switch (act) {
- 	case XDP_PASS:
-@@ -186,140 +132,16 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
- 	return result;
- }
- 
--static struct
--ixgbe_rx_buffer *ixgbe_get_rx_buffer_zc(struct ixgbe_ring *rx_ring,
--					unsigned int size)
--{
--	struct ixgbe_rx_buffer *bi;
--
--	bi = &rx_ring->rx_buffer_info[rx_ring->next_to_clean];
--
--	/* we are reusing so sync this buffer for CPU use */
--	dma_sync_single_range_for_cpu(rx_ring->dev,
--				      bi->dma, 0,
--				      size,
--				      DMA_BIDIRECTIONAL);
--
--	return bi;
--}
--
--static void ixgbe_reuse_rx_buffer_zc(struct ixgbe_ring *rx_ring,
--				     struct ixgbe_rx_buffer *obi)
--{
--	u16 nta = rx_ring->next_to_alloc;
--	struct ixgbe_rx_buffer *nbi;
--
--	nbi = &rx_ring->rx_buffer_info[rx_ring->next_to_alloc];
--	/* update, and store next to alloc */
--	nta++;
--	rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
--
--	/* transfer page from old buffer to new buffer */
--	nbi->dma = obi->dma;
--	nbi->addr = obi->addr;
--	nbi->handle = obi->handle;
--
--	obi->addr = NULL;
--	obi->skb = NULL;
--}
--
--void ixgbe_zca_free(struct zero_copy_allocator *alloc, unsigned long handle)
--{
--	struct ixgbe_rx_buffer *bi;
--	struct ixgbe_ring *rx_ring;
--	u64 hr, mask;
--	u16 nta;
--
--	rx_ring = container_of(alloc, struct ixgbe_ring, zca);
--	hr = rx_ring->xsk_umem->headroom + XDP_PACKET_HEADROOM;
--	mask = rx_ring->xsk_umem->chunk_mask;
--
--	nta = rx_ring->next_to_alloc;
--	bi = rx_ring->rx_buffer_info;
--
--	nta++;
--	rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
--
--	handle &= mask;
--
--	bi->dma = xdp_umem_get_dma(rx_ring->xsk_umem, handle);
--	bi->dma += hr;
--
--	bi->addr = xdp_umem_get_data(rx_ring->xsk_umem, handle);
--	bi->addr += hr;
--
--	bi->handle = xsk_umem_adjust_offset(rx_ring->xsk_umem, (u64)handle,
--					    rx_ring->xsk_umem->headroom);
--}
--
--static bool ixgbe_alloc_buffer_zc(struct ixgbe_ring *rx_ring,
--				  struct ixgbe_rx_buffer *bi)
--{
--	struct xdp_umem *umem = rx_ring->xsk_umem;
--	void *addr = bi->addr;
--	u64 handle, hr;
--
--	if (addr)
--		return true;
--
--	if (!xsk_umem_peek_addr(umem, &handle)) {
--		rx_ring->rx_stats.alloc_rx_page_failed++;
--		return false;
--	}
--
--	hr = umem->headroom + XDP_PACKET_HEADROOM;
--
--	bi->dma = xdp_umem_get_dma(umem, handle);
--	bi->dma += hr;
--
--	bi->addr = xdp_umem_get_data(umem, handle);
--	bi->addr += hr;
--
--	bi->handle = xsk_umem_adjust_offset(umem, handle, umem->headroom);
--
--	xsk_umem_release_addr(umem);
--	return true;
--}
--
--static bool ixgbe_alloc_buffer_slow_zc(struct ixgbe_ring *rx_ring,
--				       struct ixgbe_rx_buffer *bi)
--{
--	struct xdp_umem *umem = rx_ring->xsk_umem;
--	u64 handle, hr;
--
--	if (!xsk_umem_peek_addr_rq(umem, &handle)) {
--		rx_ring->rx_stats.alloc_rx_page_failed++;
--		return false;
--	}
--
--	handle &= rx_ring->xsk_umem->chunk_mask;
--
--	hr = umem->headroom + XDP_PACKET_HEADROOM;
--
--	bi->dma = xdp_umem_get_dma(umem, handle);
--	bi->dma += hr;
--
--	bi->addr = xdp_umem_get_data(umem, handle);
--	bi->addr += hr;
--
--	bi->handle = xsk_umem_adjust_offset(umem, handle, umem->headroom);
--
--	xsk_umem_release_addr_rq(umem);
--	return true;
--}
--
--static __always_inline bool
--__ixgbe_alloc_rx_buffers_zc(struct ixgbe_ring *rx_ring, u16 cleaned_count,
--			    bool alloc(struct ixgbe_ring *rx_ring,
--				       struct ixgbe_rx_buffer *bi))
-+bool ixgbe_alloc_rx_buffers_zc(struct ixgbe_ring *rx_ring, u16 count)
- {
- 	union ixgbe_adv_rx_desc *rx_desc;
- 	struct ixgbe_rx_buffer *bi;
- 	u16 i = rx_ring->next_to_use;
-+	dma_addr_t dma;
- 	bool ok = true;
- 
- 	/* nothing to do */
--	if (!cleaned_count)
-+	if (!count)
- 		return true;
- 
- 	rx_desc = IXGBE_RX_DESC(rx_ring, i);
-@@ -327,21 +149,18 @@ __ixgbe_alloc_rx_buffers_zc(struct ixgbe_ring *rx_ring, u16 cleaned_count,
- 	i -= rx_ring->count;
- 
- 	do {
--		if (!alloc(rx_ring, bi)) {
-+		bi->xdp = xsk_buff_alloc(rx_ring->xsk_umem);
-+		if (!bi->xdp) {
- 			ok = false;
- 			break;
- 		}
- 
--		/* sync the buffer for use by the device */
--		dma_sync_single_range_for_device(rx_ring->dev, bi->dma,
--						 bi->page_offset,
--						 rx_ring->rx_buf_len,
--						 DMA_BIDIRECTIONAL);
-+		dma = xsk_buff_xdp_get_dma(bi->xdp);
- 
- 		/* Refresh the desc even if buffer_addrs didn't change
- 		 * because each write-back erases this info.
- 		 */
--		rx_desc->read.pkt_addr = cpu_to_le64(bi->dma);
-+		rx_desc->read.pkt_addr = cpu_to_le64(dma);
- 
- 		rx_desc++;
- 		bi++;
-@@ -355,17 +174,14 @@ __ixgbe_alloc_rx_buffers_zc(struct ixgbe_ring *rx_ring, u16 cleaned_count,
- 		/* clear the length for the next_to_use descriptor */
- 		rx_desc->wb.upper.length = 0;
- 
--		cleaned_count--;
--	} while (cleaned_count);
-+		count--;
-+	} while (count);
- 
- 	i += rx_ring->count;
- 
- 	if (rx_ring->next_to_use != i) {
- 		rx_ring->next_to_use = i;
- 
--		/* update next to alloc since we have filled the ring */
--		rx_ring->next_to_alloc = i;
--
- 		/* Force memory writes to complete before letting h/w
- 		 * know there are new descriptors to fetch.  (Only
- 		 * applicable for weak-ordered memory model archs,
-@@ -378,40 +194,27 @@ __ixgbe_alloc_rx_buffers_zc(struct ixgbe_ring *rx_ring, u16 cleaned_count,
- 	return ok;
- }
- 
--void ixgbe_alloc_rx_buffers_zc(struct ixgbe_ring *rx_ring, u16 count)
--{
--	__ixgbe_alloc_rx_buffers_zc(rx_ring, count,
--				    ixgbe_alloc_buffer_slow_zc);
--}
--
--static bool ixgbe_alloc_rx_buffers_fast_zc(struct ixgbe_ring *rx_ring,
--					   u16 count)
--{
--	return __ixgbe_alloc_rx_buffers_zc(rx_ring, count,
--					   ixgbe_alloc_buffer_zc);
--}
--
- static struct sk_buff *ixgbe_construct_skb_zc(struct ixgbe_ring *rx_ring,
--					      struct ixgbe_rx_buffer *bi,
--					      struct xdp_buff *xdp)
-+					      struct ixgbe_rx_buffer *bi)
- {
--	unsigned int metasize = xdp->data - xdp->data_meta;
--	unsigned int datasize = xdp->data_end - xdp->data;
-+	unsigned int metasize = bi->xdp->data - bi->xdp->data_meta;
-+	unsigned int datasize = bi->xdp->data_end - bi->xdp->data;
- 	struct sk_buff *skb;
- 
- 	/* allocate a skb to store the frags */
- 	skb = __napi_alloc_skb(&rx_ring->q_vector->napi,
--			       xdp->data_end - xdp->data_hard_start,
-+			       bi->xdp->data_end - bi->xdp->data_hard_start,
- 			       GFP_ATOMIC | __GFP_NOWARN);
- 	if (unlikely(!skb))
- 		return NULL;
- 
--	skb_reserve(skb, xdp->data - xdp->data_hard_start);
--	memcpy(__skb_put(skb, datasize), xdp->data, datasize);
-+	skb_reserve(skb, bi->xdp->data - bi->xdp->data_hard_start);
-+	memcpy(__skb_put(skb, datasize), bi->xdp->data, datasize);
- 	if (metasize)
- 		skb_metadata_set(skb, metasize);
- 
--	ixgbe_reuse_rx_buffer_zc(rx_ring, bi);
-+	xsk_buff_free(bi->xdp);
-+	bi->xdp = NULL;
- 	return skb;
- }
- 
-@@ -434,9 +237,6 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
- 	unsigned int xdp_res, xdp_xmit = 0;
- 	bool failure = false;
- 	struct sk_buff *skb;
--	struct xdp_buff xdp;
--
--	xdp.rxq = &rx_ring->xdp_rxq;
- 
- 	while (likely(total_rx_packets < budget)) {
- 		union ixgbe_adv_rx_desc *rx_desc;
-@@ -446,8 +246,8 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
- 		/* return some buffers to hardware, one@a time is too slow */
- 		if (cleaned_count >= IXGBE_RX_BUFFER_WRITE) {
- 			failure = failure ||
--				  !ixgbe_alloc_rx_buffers_fast_zc(rx_ring,
--								 cleaned_count);
-+				  !ixgbe_alloc_rx_buffers_zc(rx_ring,
-+							     cleaned_count);
- 			cleaned_count = 0;
- 		}
- 
-@@ -462,42 +262,40 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
- 		 */
- 		dma_rmb();
- 
--		bi = ixgbe_get_rx_buffer_zc(rx_ring, size);
-+		bi = &rx_ring->rx_buffer_info[rx_ring->next_to_clean];
- 
- 		if (unlikely(!ixgbe_test_staterr(rx_desc,
- 						 IXGBE_RXD_STAT_EOP))) {
- 			struct ixgbe_rx_buffer *next_bi;
- 
--			ixgbe_reuse_rx_buffer_zc(rx_ring, bi);
-+			xsk_buff_free(bi->xdp);
-+			bi->xdp = NULL;
- 			ixgbe_inc_ntc(rx_ring);
- 			next_bi =
- 			       &rx_ring->rx_buffer_info[rx_ring->next_to_clean];
--			next_bi->skb = ERR_PTR(-EINVAL);
-+			next_bi->discard = true;
- 			continue;
- 		}
- 
--		if (unlikely(bi->skb)) {
--			ixgbe_reuse_rx_buffer_zc(rx_ring, bi);
-+		if (unlikely(bi->discard)) {
-+			xsk_buff_free(bi->xdp);
-+			bi->xdp = NULL;
-+			bi->discard = false;
- 			ixgbe_inc_ntc(rx_ring);
- 			continue;
- 		}
- 
--		xdp.data = bi->addr;
--		xdp.data_meta = xdp.data;
--		xdp.data_hard_start = xdp.data - XDP_PACKET_HEADROOM;
--		xdp.data_end = xdp.data + size;
--		xdp.handle = bi->handle;
--
--		xdp_res = ixgbe_run_xdp_zc(adapter, rx_ring, &xdp);
-+		bi->xdp->data_end = bi->xdp->data_end + size;
-+		xsk_buff_dma_sync_for_cpu(bi->xdp);
-+		xdp_res = ixgbe_run_xdp_zc(adapter, rx_ring, bi->xdp);
- 
- 		if (xdp_res) {
--			if (xdp_res & (IXGBE_XDP_TX | IXGBE_XDP_REDIR)) {
-+			if (xdp_res & (IXGBE_XDP_TX | IXGBE_XDP_REDIR))
- 				xdp_xmit |= xdp_res;
--				bi->addr = NULL;
--				bi->skb = NULL;
--			} else {
--				ixgbe_reuse_rx_buffer_zc(rx_ring, bi);
--			}
-+			else
-+				xsk_buff_free(bi->xdp);
-+
-+			bi->xdp = NULL;
- 			total_rx_packets++;
- 			total_rx_bytes += size;
- 
-@@ -507,7 +305,7 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
- 		}
- 
- 		/* XDP_PASS path */
--		skb = ixgbe_construct_skb_zc(rx_ring, bi, &xdp);
-+		skb = ixgbe_construct_skb_zc(rx_ring, bi);
- 		if (!skb) {
- 			rx_ring->rx_stats.alloc_rx_buff_failed++;
- 			break;
-@@ -559,17 +357,17 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
- 
- void ixgbe_xsk_clean_rx_ring(struct ixgbe_ring *rx_ring)
- {
--	u16 i = rx_ring->next_to_clean;
--	struct ixgbe_rx_buffer *bi = &rx_ring->rx_buffer_info[i];
-+	struct ixgbe_rx_buffer *bi;
-+	u16 i;
- 
--	while (i != rx_ring->next_to_alloc) {
--		xsk_umem_fq_reuse(rx_ring->xsk_umem, bi->handle);
--		i++;
--		bi++;
--		if (i == rx_ring->count) {
--			i = 0;
--			bi = rx_ring->rx_buffer_info;
--		}
-+	for (i = 0; i < rx_ring->count; i++) {
-+		bi = &rx_ring->rx_buffer_info[i];
-+
-+		if (!bi->xdp)
-+			continue;
-+
-+		xsk_buff_free(bi->xdp);
-+		bi->xdp = NULL;
- 	}
- }
- 
-@@ -592,10 +390,9 @@ static bool ixgbe_xmit_zc(struct ixgbe_ring *xdp_ring, unsigned int budget)
- 		if (!xsk_umem_consume_tx(xdp_ring->xsk_umem, &desc))
- 			break;
- 
--		dma = xdp_umem_get_dma(xdp_ring->xsk_umem, desc.addr);
--
--		dma_sync_single_for_device(xdp_ring->dev, dma, desc.len,
--					   DMA_BIDIRECTIONAL);
-+		dma = xsk_buff_raw_get_dma(xdp_ring->xsk_umem, desc.addr);
-+		xsk_buff_raw_dma_sync_for_device(xdp_ring->xsk_umem, dma,
-+						 desc.len);
- 
- 		tx_bi = &xdp_ring->tx_buffer_info[xdp_ring->next_to_use];
- 		tx_bi->bytecount = desc.len;
--- 
-2.25.1
+Okay, in more detail: we have two groups of incoming streams:  (for the
+minimum setup to cause a problem)
+- 4x Camera Streams  each transmits a 3.2mb image every .1 s, split into
+jumbo frames (mtu is set to the full 9000)
+- Constant stream of data from a Lidar at 18k packets / sec.  Each packet
+is 1206 bytes long.
+- Both streams continue steady-state, indefinitely (we have verified
+behavior out to 4 hours so far)
 
+We receive all of these over ethernet, and routed to a single network port
+on a single NIC.   The driver is the 'igb' kernel module, as supplied from
+ubuntu.
+The OS is Ubuntu 16.04 LTS with a 4.15.0-88-lowlatency kernel.
+
+----
+Biggest Problem:
+
+Over time decay of packet processing.
+
+We've been working on this for a couple of weeks; when the processes start
+we're logging the full data rate (~24kpps) but over time, something slows
+down, and our logging rate shrinks.
+(on the order of 20 packets / second / minute, consistently falling over
+hours. ... after the first hour, we've lost 500 pps, after the second hour,
+1kpps... etc.)
+
+Our user-land process simply isn't seeing the full count of packets -- we
+have debug code that reads it from the OS, and then immediately drops the
+buffer on the floor.  Generally, we see drops in netstat, but not in the
+driver. (i.e. from `ethtool -S | grep rx_*`)
+So, our tentative guess is that we want to tune some parameters, somewhere
+in the kernel or network driver to help out the kernel.    Ideas welcome,
+of course :)
+
+( We are *also* dropping from the ring buffer, when both the lidar stream
+and a camera stream are assigned to the same queue, but that looks like a
+releated but separate issue)
+
+Things we've tried / checked:
+- irq alignment -- they're already reasonable set
+- cpu assignment (via `taskset`)
+- change processor task scheduling / priority (no effect)
+
+Ideas:
+- what is the default hash algorithm?  if we can't change it, maybe we can
+work around it?
+- is there any other way to set the queue settings on this network card?
+Debug tool?  Rebuilding the kernel module with custom settings?
+- Our hardware also has an 82579 NIC as well -- would you guys recommend we
+use that NIC, instead?
+- Do other network cards / chipsets have better support under linux?
+Particularly when tuning input queues?
+
+
+Daniel Williams  |  Software Engineer
+dwilliams at nextdroid.com
+
+
+
+On Thu, Apr 30, 2020 at 7:48 PM Vinicius Costa Gomes <
+vinicius.gomes@intel.com> wrote:
+
+> Dan Williams <dwilliams@nextdroid.com> writes:
+>
+> > Does the 'igb` kernel module support setting "2-Tuple filters" (aka
+> > `--config-ntuple`, aka RFS) on a I-210IC NIC?
+> > - Is this the appropriate mailing list?
+> > - If not, which module *should* we be using instead?
+> > - If so, how do we enable it in the 'igb' driver?
+> >
+> >
+> > *.1. Context: *
+> > Hey, all, we're running into a very perplexing configuration issue, while
+> > trying to tune our 'igb' driver, and the documentation out there is
+> > sparse.  All the examples we've found come up dry.  (either by throwing
+> > errors with our setup, or emitting nothing but opaque error messages:
+> > "Operation not supported"  "invalid argument")   Hopefully, someone on
+> the
+> > list can point us in the right direction.
+> >
+> > We have a computer logging a high rate of ethernet packets ( 25k
+> > packets/sec ~70 Mb/sec);   But we're having trouble convincing the
+> hardware
+> > to receive all of these packets, at a sustained rate -- specifically
+> we're
+> > dropping packets while processing through the kernel layers.    We're
+> > currently attempting to optimize the network stack,  but we're having
+> > trouble setting the driver parameters... which is what this message is
+> all
+> > about.
+>
+> That's weird. That packet rate is not *that* high, the Linux kernel
+> should be able to handle that fine.
+>
+> Can you give more details of the workload you are running?
+>
+> >
+> > *.2. Platform Summary:*
+> > Hardware:
+> > Advantech 3500
+> > <
+> https://www.advantech.com/products/1-2jkd2d/ark-3500/mod_adb8f9a9-4b1b-4cf5-84ba-9e135c099c43
+> >
+> > CPU ($ lscpu):
+> > Architecture:         x86_64
+> > CPU family:          6
+> > Model:                  58
+> > Model name:        Intel(R) Core(TM) i7-3610QE CPU @ 2.30GHz
+> > NIC ($ lspci -vs 02:00.0)
+> > 02:00.0 Ethernet controller: Intel Corporation I210 Gigabit Network
+> > Connection (rev 03)
+> > Flags: bus master, fast devsel, latency 0, IRQ 18
+> > OS ($ lsb_release -a)
+> > Ubuntu 16.04.6 LTS
+> > Kernel (`uname -r`):
+> > 4.15.0-88-lowlatency
+> > Kernel Module ($ modinfo igb)
+> > filename:
+> >
+> /lib/modules/4.15.0-88-lowlatency/kernel/drivers/net/ethernet/intel/igb/igb.ko
+> > version:        5.4.0-k
+> > license:        GPL
+> > Ethtool Version ($ ethtool --version)
+> > ethtool version 4.5
+>
+> There had been a lot of improvements in the network stack in the last 4
+> years, trying with a recent kernel, if possible, would be useful to know
+> if the issue you are seeing persists.
+>
+> >
+> > *.3. What have we tried so far:*
+> > .3.a.  The NIC supports what we want to do:
+> > The data sheet,
+> > <
+> https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=2ahUKEwj_nona25DpAhWPoHIEHfvYBWcQFjAAegQIARAB&url=https%3A%2F%2Fwww.intel.com%2Fcontent%2Fwww%2Fus%2Fen%2Fembedded%2Fproducts%2Fnetworking%2Fi210-ethernet-controller-datasheet.html&usg=AOvVaw1N7hqg0JJAaqXsomLAUhfB
+> >
+> > in section 7.1.2.4 "2-Tuple Filters", says:
+> >
+> >> The 2-tuple filters are configured via the TTQF (See Section 8.11.3),
+> IMIR
+> >> (See Section 8.11.1) and
+> >> IMIR_EXT (See Section 8.11.2) registers as follows (per filter):
+> >>
+>
+> The problem is that the NIC supports the 2-tuple filters, but support
+> for using them in Linux was never added.
+>
+> >
+> > Am I correct in assuming these are the mechanisms the 'igb' driver is
+> > interfacing with?
+>
+> You are right.
+>
+> >
+> > .3.b.   What is the flow table currenttly?
+> >
+> >> # ethtool --show-rxfh enp2s0
+> >> RX flow hash indirection table for enp2s0 with 4 RX ring(s):
+> >>     0:      0     0     0     0     0     0     0     0
+> >>     8:      0     0     0     0     0     0     0     0
+> >>    16:      0     0     0     0     0     0     0     0
+> >>    24:      0     0     0     0     0     0     0     0
+> >>    32:      0     0     0     0     0     0     0     0
+> >>    40:      0     0     1     1     1     1     1     1
+> >>    48:      1     1     1     1     1     1     1     1
+> >>    56:      1     1     1     1     1     1     1     1
+> >>    64:      1     1     1     1     1     1     1     1
+> >>    72:      1     1     1     1     1     1     1     1
+> >>    80:      1     1     1     1     1     2     2     2
+> >>    88:      2     2     2     2     2     2     2     2
+> >>    96:      2     2     2     2     2     2     2     2
+> >>   104:      2     2     2     2     2     2     2     2
+> >>   112:      2     2     2     2     2     2     2     2
+> >>   120:      2     2     2     2     2     2     2     2
+> >> RSS hash key:
+> >> Operation not supported
+> >>
+> >
+> > "Operation not supported" -- does this mean the NIC has RSS routing
+> > hard-coded? And we cannot change the hash-function?
+> > Or is RSS just hard-coded?
+>
+> IIRC the function and hash key cannot be changed, the only thing that
+> can be changed is the indirection table, i.e. assigning different
+> "target" queues to different hash values.
+>
+> >
+> >
+> > .3.c. Current "Hash flow" settings:
+> >
+> >> # ethtool -n  enp2s0 rx-flow-hash udp4
+> >> UDP over IPV4 flows use these fields for computing Hash flow key:
+> >> IP SA
+> >> IP DA
+> >> L4 bytes 0 & 1 [TCP/UDP src port]
+> >> L4 bytes 2 & 3 [TCP/UDP dst port]
+> >>
+> >
+> >
+> >> # sudo ethtool -n enp2s0
+> >> 4 RX rings available
+> >> Total 0 rules
+> >>
+> >
+> >
+> > .3.d.  Enable ntuple features:
+> >
+> >> # ethtool --show-features enp2s0 | grep ntuple
+> >> ntuple-filters: on
+> >>
+> >
+> > .3.e. Add ntuple rule: Commands Tried:
+> >
+> >> # ethtool -U enp2s0 flow-type udp4 src-ip 192.168.3.43 dst-ip 0.0.0.0
+> >> src-port 555 dst-port 2368 action -1
+> >> rmgr: Cannot insert RX class rule: Invalid argument
+> >> # ethtool -U enp2s0 flow-type udp4 src-ip 192.168.3.43 action 1
+> >> rmgr: Cannot insert RX class rule: Invalid argument
+> >>
+> > # ethtool -U enp2s0 flow-type ip4 src-ip 192.168.3.43 action 1
+> >> rmgr: Cannot insert RX class rule: Invalid argument
+> >> # ethtool -U enp2s0 flow-type ip4 src-ip 192.168.3.43 action 1 loc 4
+> >> rmgr: Cannot insert RX class rule: Invalid argument
+> >>
+>
+> Right now, only filters for ethernet addresses, ethtype, VLAN ID and PCP
+> are implemented. I agree that returning -EINVAL is not helpful.
+>
+> >
+> > .3.f. More Interface info:
+> >
+> >> # ethtool -i enp2s0
+> >> driver: igb
+> >> version: 5.4.0-k
+> >> firmware-version: 3.16, 0x800004ad
+> >> expansion-rom-version:
+> >> bus-info: 0000:02:00.0
+> >> supports-statistics: yes
+> >> supports-test: yes
+> >> supports-eeprom-access: yes
+> >> supports-register-dump: yes
+> >> supports-priv-flags: yes
+> >>
+> >
+> > # ethtool -t enp2s0
+> >> The test result is PASS
+> >> The test extra info:
+> >> Register test  (offline) 0
+> >> Eeprom test    (offline) 0
+> >> Interrupt test (offline) 0
+> >> Loopback test  (offline) 0
+> >> Link test   (on/offline) 0
+> >>
+> >
+> >
+> >
+> >
+> >
+> >
+> > Daniel Williams  |  Software Engineer
+> > dwilliams at nextdroid.com
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at osuosl.org
+> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>
+> --
+> Vinicius
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200504/d47ddb4a/attachment-0001.html>
