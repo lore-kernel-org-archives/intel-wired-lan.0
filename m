@@ -1,80 +1,41 @@
-From: Vladimir Oltean <olteanv@gmail.com>
-Date: Sun, 17 May 2020 22:04:23 +0300
-Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
- frame preemption
-In-Reply-To: <20200517184514.GD606317@lunn.ch>
-References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
- <20200516.133739.285740119627243211.davem@davemloft.net>
- <CA+h21hoNW_++QHRob+NbWC2k7y7sFec3kotSjTL6s8eZGGT+2Q@mail.gmail.com>
- <20200516.151932.575795129235955389.davem@davemloft.net>
- <CA+h21hrg_CeD2-zT+7v3b3hPRFaeggmZC9NqPp+soedCYwG63A@mail.gmail.com>
- <20200517184514.GD606317@lunn.ch>
-Message-ID: <CA+h21hqi0dX349dxXz8vrWUGLoHrk-er77S4rvUrj7jM3QAXWQ@mail.gmail.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Mon,  4 May 2020 09:29:25 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused descriptor's
+ flags
+Message-ID: <20200504062925.18819-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Andrew,
+Enable Tidv register, Report Packet Sent, Report Status and
+Ethernet CRC flags not in use.
+This patch comes to clean up these flags.
 
-On Sun, 17 May 2020 at 21:45, Andrew Lunn <andrew@lunn.ch> wrote:
->
-> On Sun, May 17, 2020 at 01:51:19PM +0300, Vladimir Oltean wrote:
-> > On Sun, 17 May 2020 at 01:19, David Miller <davem@davemloft.net> wrote:
-> > >
-> > > From: Vladimir Oltean <olteanv@gmail.com>
-> > > Date: Sun, 17 May 2020 00:03:39 +0300
-> > >
-> > > > As to why this doesn't go to tc but to ethtool: why would it go to tc?
-> > >
-> > > Maybe you can't %100 duplicate the on-the-wire special format and
-> > > whatever, but the queueing behavior ABSOLUTELY you can emulate in
-> > > software.
-> > >
-> > > And then you have the proper hooks added for HW offload which can
-> > > do the on-the-wire stuff.
-> > >
-> > > That's how we do these things, not with bolted on ethtool stuff.
-> >
-> > When talking about frame preemption in the way that it is defined in
-> > 802.1Qbu and 802.3br, it says or assumes nothing about queuing. It
-> > describes the fact that there are 2 MACs per interface, 1 MAC dealing
-> > with some traffic classes and the other dealing with the rest.
->
-> I did not follow the previous discussion, but i assume you talked
-> about modelling it in Linux as two MACs? Why was that approach not
-> followed?
->
->    Andrew
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_defines.h | 4 ----
+ 1 file changed, 4 deletions(-)
 
-I don't recall having discussed that option, but I guess that you can
-see why, if I quote this portion from IEEE 802.1Q-2018:
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 95de1eb515cb..aa1d012b3e2a 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -265,13 +265,9 @@
+ #define IGC_TXD_POPTS_IXSM	0x01       /* Insert IP checksum */
+ #define IGC_TXD_POPTS_TXSM	0x02       /* Insert TCP/UDP checksum */
+ #define IGC_TXD_CMD_EOP		0x01000000 /* End of Packet */
+-#define IGC_TXD_CMD_IFCS	0x02000000 /* Insert FCS (Ethernet CRC) */
+ #define IGC_TXD_CMD_IC		0x04000000 /* Insert Checksum */
+-#define IGC_TXD_CMD_RS		0x08000000 /* Report Status */
+-#define IGC_TXD_CMD_RPS		0x10000000 /* Report Packet Sent */
+ #define IGC_TXD_CMD_DEXT	0x20000000 /* Desc extension (0 = legacy) */
+ #define IGC_TXD_CMD_VLE		0x40000000 /* Add VLAN tag */
+-#define IGC_TXD_CMD_IDE		0x80000000 /* Enable Tidv register */
+ #define IGC_TXD_STAT_DD		0x00000001 /* Descriptor Done */
+ #define IGC_TXD_STAT_EC		0x00000002 /* Excess Collisions */
+ #define IGC_TXD_STAT_LC		0x00000004 /* Late Collisions */
+-- 
+2.11.0
 
-6.7.1 Support of the ISS by IEEE Std 802.3 (Ethernet)
-Mapping between M_CONTROL.requests/indications and IEEE 802.3
-MA_CONTROL.requests/indications is performed as specified in IEEE Std
-802.1AC. If the MAC supports IEEE 802.3br (TM) Interspersing Express
-Traffic, then PFC M_CONTROL.requests are mapped onto the MAC control
-interface associated with the express MAC (eMAC).
-If frame preemption (6.7.2) is supported on a Port, then the IEEE
-802.3 MAC provides the following two MAC service interfaces (99.4 of
-IEEE Std 802.3br (TM)-2016 [B21]):
-a) A preemptible MAC (pMAC) service interface
-b) An express MAC (eMAC) service interface
-For priority values that are identified in the frame preemption status
-table (6.7.2) as preemptible, frames that are selected for
-transmission shall be transmitted using the pMAC service instance, and
-for priority values that are identified in the frame preemption status
-table as express, frames that are selected for transmission shall be
-transmitted using the eMAC service instance.
-
-_In all other respects, the Port behaves as if it is supported by a
-single MAC service interface_ (emphasis mine). In particular, all
-frames received by the Port are treated as if they were received on a
-single MAC service interface regardless of whether they were received
-on the eMAC service interface or the pMAC service interface, except
-with respect to frame preemption.
-
-Thanks,
--Vladimir
