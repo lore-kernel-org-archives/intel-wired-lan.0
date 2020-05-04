@@ -1,262 +1,56 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Mon, 04 May 2020 22:20:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 4726c14e382081e483d53a9721d8b986f52a6e3d
-Message-ID: <5eb024c0.vURCjUGpHoIXIssr%lkp@intel.com>
+From: Jarod Wilson <jarod@redhat.com>
+Date: Mon,  4 May 2020 10:59:40 -0400
+Subject: [Intel-wired-lan] [RFC PATCH net-next 0/3] bonding: support
+ hardware crypto offload
+Message-ID: <20200504145943.8841-1-jarod@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 4726c14e382081e483d53a9721d8b986f52a6e3d  igc: Remove igc_nfc_rule_exit()
+This is an initial "proof of concept" functional implementation for doing
+pass-through of hardware encryption from bonding device to capable slaves.
+This was tested using an ixgbe-driven Intel x520 NIC with libreswan and a
+transport mode connection, on top of an active-backup bond, using netperf
+and downing an interface during. Failover takes a moment, but does work,
+and overall performance is right on par with offload when running on a
+bare interface.
 
-elapsed time: 4774m
+Caveats: this is ONLY enabled for active-backup, because I'm not sure
+how one would manage multiple offload handles for different devices all
+running at the same time in the same xfrm, and it relies on some minor
+changes to both the xfrm code and slave device driver code to get things
+to behave, and I don't have immediate access to any other hardware that
+could function similarly to update driver code accordingly.
 
-configs tested: 236
-configs skipped: 0
+I'm hoping folks with more of an idea about xfrm have some thoughts on
+ways to make this cleaner, and possibly support more bonding modes, but
+I'm reasonably happy I've made it this far. :)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Jarod Wilson (3):
+  xfrm: bail early on slave pass over skb
+  ixgbe_ipsec: become aware of when running as a bonding slave
+  bonding: support hardware encryption offload to slaves
 
-arm64                            allyesconfig
-arm                              allyesconfig
-arm64                            allmodconfig
-arm                              allmodconfig
-arm64                             allnoconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                         at91_dt_defconfig
-arm                        shmobile_defconfig
-arm64                               defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm                        multi_v7_defconfig
-sparc                            allyesconfig
-xtensa                          iss_defconfig
-h8300                    h8300h-sim_defconfig
-c6x                              allyesconfig
-arc                                 defconfig
-powerpc                             defconfig
-sparc64                           allnoconfig
-i386                             alldefconfig
-powerpc                    adder875_defconfig
-powerpc                      chrp32_defconfig
-m68k                       m5475evb_defconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                        generic_defconfig
-ia64                          tiger_defconfig
-ia64                         bigsur_defconfig
-ia64                             allyesconfig
-ia64                             alldefconfig
-m68k                             allmodconfig
-m68k                       bvme6000_defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-nios2                         3c120_defconfig
-nios2                         10m50_defconfig
-c6x                        evmc6678_defconfig
-openrisc                 simple_smp_defconfig
-openrisc                    or1ksim_defconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                                defconfig
-alpha                               defconfig
-h8300                       h8s-sim_defconfig
-h8300                     edosk2674_defconfig
-xtensa                       common_defconfig
-arc                              allyesconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-mips                            ar7_defconfig
-mips                             allyesconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                           32r2_defconfig
-mips                             allmodconfig
-mips                malta_kvm_guest_defconfig
-mips                         tb0287_defconfig
-mips                       capcella_defconfig
-mips                           ip32_defconfig
-mips                  decstation_64_defconfig
-mips                      loongson3_defconfig
-mips                          ath79_defconfig
-mips                        bcm63xx_defconfig
-parisc                            allnoconfig
-parisc                generic-64bit_defconfig
-parisc                generic-32bit_defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                       holly_defconfig
-powerpc                       ppc64_defconfig
-powerpc                          rhel-kconfig
-powerpc                           allnoconfig
-powerpc                  mpc866_ads_defconfig
-powerpc                    amigaone_defconfig
-powerpc                     ep8248e_defconfig
-powerpc                          g5_defconfig
-powerpc                     mpc512x_defconfig
-parisc               randconfig-a001-20200430
-mips                 randconfig-a001-20200430
-m68k                 randconfig-a001-20200430
-riscv                randconfig-a001-20200430
-alpha                randconfig-a001-20200430
-nds32                randconfig-a001-20200430
-m68k                 randconfig-a001-20200501
-mips                 randconfig-a001-20200501
-nds32                randconfig-a001-20200501
-alpha                randconfig-a001-20200501
-parisc               randconfig-a001-20200501
-riscv                randconfig-a001-20200501
-microblaze           randconfig-a001-20200430
-nios2                randconfig-a001-20200430
-h8300                randconfig-a001-20200430
-c6x                  randconfig-a001-20200430
-sparc64              randconfig-a001-20200430
-h8300                randconfig-a001-20200501
-nios2                randconfig-a001-20200501
-microblaze           randconfig-a001-20200501
-c6x                  randconfig-a001-20200501
-sparc64              randconfig-a001-20200501
-s390                 randconfig-a001-20200430
-xtensa               randconfig-a001-20200430
-csky                 randconfig-a001-20200430
-openrisc             randconfig-a001-20200430
-sh                   randconfig-a001-20200430
-s390                 randconfig-a001-20200501
-xtensa               randconfig-a001-20200501
-sh                   randconfig-a001-20200501
-openrisc             randconfig-a001-20200501
-csky                 randconfig-a001-20200501
-i386                 randconfig-b003-20200501
-x86_64               randconfig-b002-20200501
-i386                 randconfig-b001-20200501
-x86_64               randconfig-b003-20200501
-x86_64               randconfig-b001-20200501
-i386                 randconfig-b002-20200501
-i386                 randconfig-b001-20200430
-i386                 randconfig-b002-20200430
-x86_64               randconfig-b001-20200430
-i386                 randconfig-b003-20200430
-x86_64               randconfig-b002-20200430
-x86_64               randconfig-b003-20200430
-i386                 randconfig-b003-20200502
-i386                 randconfig-b001-20200502
-x86_64               randconfig-b003-20200502
-x86_64               randconfig-b001-20200502
-i386                 randconfig-b002-20200502
-x86_64               randconfig-c001-20200430
-i386                 randconfig-c001-20200430
-i386                 randconfig-c002-20200430
-x86_64               randconfig-c002-20200430
-x86_64               randconfig-c003-20200430
-i386                 randconfig-c003-20200430
-x86_64               randconfig-d002-20200430
-x86_64               randconfig-d001-20200430
-i386                 randconfig-d001-20200430
-i386                 randconfig-d003-20200430
-i386                 randconfig-d002-20200430
-x86_64               randconfig-d003-20200430
-x86_64               randconfig-e003-20200502
-i386                 randconfig-e003-20200502
-x86_64               randconfig-e001-20200502
-i386                 randconfig-e002-20200502
-i386                 randconfig-e001-20200502
-x86_64               randconfig-e002-20200501
-x86_64               randconfig-e003-20200501
-i386                 randconfig-e003-20200501
-x86_64               randconfig-e001-20200501
-i386                 randconfig-e002-20200501
-i386                 randconfig-e001-20200501
-x86_64               randconfig-e002-20200430
-i386                 randconfig-e003-20200430
-x86_64               randconfig-e003-20200430
-i386                 randconfig-e002-20200430
-x86_64               randconfig-e001-20200430
-i386                 randconfig-e001-20200430
-i386                 randconfig-f003-20200501
-x86_64               randconfig-f001-20200501
-x86_64               randconfig-f003-20200501
-i386                 randconfig-f001-20200501
-i386                 randconfig-f002-20200501
-x86_64               randconfig-f001-20200430
-i386                 randconfig-f002-20200430
-i386                 randconfig-f003-20200430
-i386                 randconfig-f001-20200430
-x86_64               randconfig-f003-20200430
-i386                 randconfig-g002-20200430
-i386                 randconfig-g001-20200430
-i386                 randconfig-g003-20200430
-x86_64               randconfig-g002-20200430
-x86_64               randconfig-g003-20200502
-i386                 randconfig-g003-20200502
-i386                 randconfig-g002-20200502
-x86_64               randconfig-g001-20200502
-x86_64               randconfig-g002-20200502
-i386                 randconfig-g001-20200502
-i386                 randconfig-h001-20200501
-i386                 randconfig-h002-20200501
-i386                 randconfig-h003-20200501
-x86_64               randconfig-h001-20200501
-x86_64               randconfig-h003-20200501
-i386                 randconfig-h002-20200430
-i386                 randconfig-h003-20200430
-x86_64               randconfig-h001-20200430
-x86_64               randconfig-h003-20200430
-i386                 randconfig-h001-20200430
-ia64                 randconfig-a001-20200501
-arc                  randconfig-a001-20200501
-powerpc              randconfig-a001-20200501
-arm                  randconfig-a001-20200501
-sparc                randconfig-a001-20200501
-sparc                randconfig-a001-20200430
-arc                  randconfig-a001-20200430
-ia64                 randconfig-a001-20200430
-powerpc              randconfig-a001-20200430
-arm                  randconfig-a001-20200430
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-s390                       zfcpdump_defconfig
-s390                          debug_defconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                             alldefconfig
-s390                                defconfig
-sh                          rsk7269_defconfig
-sh                               allmodconfig
-sh                            titan_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                                  kexec
+CC: Jay Vosburgh <j.vosburgh@gmail.com>
+CC: Veaceslav Falico <vfalico@gmail.com>
+CC: Andy Gospodarek <andy@greyhouse.net>
+CC: "David S. Miller" <davem@davemloft.net>
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: Jakub Kicinski <kuba@kernel.org>
+CC: Steffen Klassert <steffen.klassert@secunet.com>
+CC: Herbert Xu <herbert@gondor.apana.org.au>
+CC: netdev at vger.kernel.org
+CC: intel-wired-lan at lists.osuosl.org
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/bonding/bond_main.c               | 103 +++++++++++++++++-
+ .../net/ethernet/intel/ixgbe/ixgbe_ipsec.c    |  39 +++++--
+ include/net/bonding.h                         |   1 +
+ include/net/xfrm.h                            |   1 +
+ net/xfrm/xfrm_device.c                        |  34 +++---
+ 5 files changed, 150 insertions(+), 28 deletions(-)
+
+-- 
+2.20.1
+
