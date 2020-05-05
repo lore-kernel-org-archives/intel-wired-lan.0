@@ -1,50 +1,59 @@
-From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Date: Tue, 5 May 2020 02:44:17 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: fix
- signed-integer-overflow warning
-In-Reply-To: <20200505024521.24635-1-xiexiuqi@huawei.com>
-References: <20200505024521.24635-1-xiexiuqi@huawei.com>
-Message-ID: <61CC2BC414934749BD9F5BF3D5D94044986886BA@ORSMSX112.amr.corp.intel.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Tue,  5 May 2020 12:01:54 +0800
+Subject: [Intel-wired-lan] [PATCH v2] igb: Report speed and duplex as
+ unknown when device is runtime suspended
+Message-ID: <20200505040154.24080-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Xie XiuQi <xiexiuqi@huawei.com>
-> Sent: Monday, May 4, 2020 19:45
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net
-> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org
-> Subject: [PATCH net-next] ixgbe: fix signed-integer-overflow warning
-> 
-> ubsan report this warning, fix it by adding a unsigned suffix.
-> 
-> UBSAN: signed-integer-overflow in
-> drivers/net/ethernet/intel/ixgbe/ixgbe_common.c:2246:26
-> 65535 * 65537 cannot be represented in type 'int'
-> CPU: 21 PID: 7 Comm: kworker/u256:0 Not tainted 5.7.0-rc3-debug+ #39
-> Hardware name: Huawei TaiShan 2280 V2/BC82AMDC, BIOS 2280-V2
-> 03/27/2020
-> Workqueue: ixgbe ixgbe_service_task [ixgbe] Call trace:
->  dump_backtrace+0x0/0x3f0
->  show_stack+0x28/0x38
->  dump_stack+0x154/0x1e4
->  ubsan_epilogue+0x18/0x60
->  handle_overflow+0xf8/0x148
->  __ubsan_handle_mul_overflow+0x34/0x48
->  ixgbe_fc_enable_generic+0x4d0/0x590 [ixgbe]
->  ixgbe_service_task+0xc20/0x1f78 [ixgbe]
->  process_one_work+0x8f0/0xf18
->  worker_thread+0x430/0x6d0
->  kthread+0x218/0x238
->  ret_from_fork+0x10/0x18
-> 
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Xie XiuQi <xiexiuqi@huawei.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+igb device gets runtime suspended when there's no link partner. We can't
+get correct speed under that state:
+$ cat /sys/class/net/enp3s0/speed
+1000
 
-Dave, I am picking this up.
+In addition to that, an error can also be spotted in dmesg:
+[  385.991957] igb 0000:03:00.0 enp3s0: PCIe link lost
+
+Since device can only be runtime suspended when there's no link partner,
+we can skip reading register and let the following logic set speed and
+duplex with correct status.
+
+The more generic approach will be wrap get_link_ksettings() with begin()
+and complete() callbacks. However, for this particular issue, begin()
+calls igb_runtime_resume() , which tries to rtnl_lock() while the lock
+is already hold by upper ethtool layer.
+
+So let's take this approach until the igb_runtime_resume() no longer
+needs to hold rtnl_lock.
+
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: Aaron Brown <aaron.f.brown@intel.com>
+Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+---
+v2:
+ - Don't early return the routine so other info can be set.
+
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 39d3b76a6f5d..2cd003c5ad43 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -143,7 +143,8 @@ static int igb_get_link_ksettings(struct net_device *netdev,
+ 	u32 speed;
+ 	u32 supported, advertising;
+ 
+-	status = rd32(E1000_STATUS);
++	status = pm_runtime_suspended(&adapter->pdev->dev) ?
++		 0 : rd32(E1000_STATUS);
+ 	if (hw->phy.media_type == e1000_media_type_copper) {
+ 
+ 		supported = (SUPPORTED_10baseT_Half |
+-- 
+2.17.1
+
