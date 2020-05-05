@@ -1,59 +1,39 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Tue,  5 May 2020 12:01:54 +0800
-Subject: [Intel-wired-lan] [PATCH v2] igb: Report speed and duplex as
- unknown when device is runtime suspended
-Message-ID: <20200505040154.24080-1-kai.heng.feng@canonical.com>
+From: Jason Yan <yanaijie@huawei.com>
+Date: Tue, 5 May 2020 15:41:57 +0800
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: Remove conversion to bool
+ in ixgbe_device_supports_autoneg_fc()
+Message-ID: <20200505074157.40938-1-yanaijie@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-igb device gets runtime suspended when there's no link partner. We can't
-get correct speed under that state:
-$ cat /sys/class/net/enp3s0/speed
-1000
+No need to convert '==' expression to bool. This fixes the following
+coccicheck warning:
 
-In addition to that, an error can also be spotted in dmesg:
-[  385.991957] igb 0000:03:00.0 enp3s0: PCIe link lost
+drivers/net/ethernet/intel/ixgbe/ixgbe_common.c:68:11-16: WARNING:
+conversion to bool not needed here
 
-Since device can only be runtime suspended when there's no link partner,
-we can skip reading register and let the following logic set speed and
-duplex with correct status.
-
-The more generic approach will be wrap get_link_ksettings() with begin()
-and complete() callbacks. However, for this particular issue, begin()
-calls igb_runtime_resume() , which tries to rtnl_lock() while the lock
-is already hold by upper ethtool layer.
-
-So let's take this approach until the igb_runtime_resume() no longer
-needs to hold rtnl_lock.
-
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: Aaron Brown <aaron.f.brown@intel.com>
-Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
 ---
-v2:
- - Don't early return the routine so other info can be set.
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 39d3b76a6f5d..2cd003c5ad43 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -143,7 +143,8 @@ static int igb_get_link_ksettings(struct net_device *netdev,
- 	u32 speed;
- 	u32 supported, advertising;
- 
--	status = rd32(E1000_STATUS);
-+	status = pm_runtime_suspended(&adapter->pdev->dev) ?
-+		 0 : rd32(E1000_STATUS);
- 	if (hw->phy.media_type == e1000_media_type_copper) {
- 
- 		supported = (SUPPORTED_10baseT_Half |
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 0bd1294ba517..2d896d663e3d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -64,8 +64,7 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
+ 			hw->mac.ops.check_link(hw, &speed, &link_up, false);
+ 			/* if link is down, assume supported */
+ 			if (link_up)
+-				supported = speed == IXGBE_LINK_SPEED_1GB_FULL ?
+-				true : false;
++				supported = speed == IXGBE_LINK_SPEED_1GB_FULL;
+ 			else
+ 				supported = true;
+ 		}
 -- 
-2.17.1
+2.21.1
 
