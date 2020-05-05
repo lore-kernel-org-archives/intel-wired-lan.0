@@ -1,21 +1,29 @@
 From: Jarod Wilson <jarod@redhat.com>
-Date: Tue,  5 May 2020 18:58:36 -0400
-Subject: [Intel-wired-lan] [RFC PATCH net-next v2 1/3] xfrm: bail early on
- slave pass over skb
+Date: Tue,  5 May 2020 18:58:38 -0400
+Subject: [Intel-wired-lan] [RFC PATCH net-next v2 3/3] bonding: support
+ hardware encryption offload to slaves
 In-Reply-To: <20200505225838.59505-1-jarod@redhat.com>
 References: <20200504145943.8841-1-jarod@redhat.com>
  <20200505225838.59505-1-jarod@redhat.com>
-Message-ID: <20200505225838.59505-2-jarod@redhat.com>
+Message-ID: <20200505225838.59505-4-jarod@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is prep work for initial support of bonding hardware encryption
-pass-through support. The bonding driver will fill in the slave_dev
-pointer, and we use that to know not to skb_push() again on a given
-skb that was already processed on the bond device.
+Currently, this support is limited to active-backup mode, as I'm not sure
+about the feasilibity of mapping an xfrm_state's offload handle to
+multiple hardware devices simultaneously, and we rely on being able to
+pass some hints to both the xfrm and NIC driver about whether or not
+they're operating on a slave device.
+
+I've tested this atop an Intel x520 device (ixgbe) using libreswan in
+transport mode, succesfully achieving ~4.3Gbps throughput with netperf
+(more or less identical to throughput on a bare NIC in this system),
+as well as successful failover and recovery mid-netperf.
+
+v2: rebase on latest net-next and wrap with #ifdef CONFIG_XFRM_OFFLOAD
 
 CC: Jay Vosburgh <j.vosburgh@gmail.com>
 CC: Veaceslav Falico <vfalico@gmail.com>
@@ -28,84 +36,212 @@ CC: Herbert Xu <herbert@gondor.apana.org.au>
 CC: netdev at vger.kernel.org
 CC: intel-wired-lan at lists.osuosl.org
 Signed-off-by: Jarod Wilson <jarod@redhat.com>
----
- include/net/xfrm.h     |  1 +
- net/xfrm/xfrm_device.c | 34 +++++++++++++++++-----------------
- 2 files changed, 18 insertions(+), 17 deletions(-)
 
-diff --git a/include/net/xfrm.h b/include/net/xfrm.h
-index 8f71c111e65a..a6ec341cd9f0 100644
---- a/include/net/xfrm.h
-+++ b/include/net/xfrm.h
-@@ -127,6 +127,7 @@ struct xfrm_state_walk {
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+---
+ drivers/net/bonding/bond_main.c | 111 +++++++++++++++++++++++++++++++-
+ include/net/bonding.h           |   3 +
+ 2 files changed, 111 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index baa93191dfdd..b90a86029df5 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -79,6 +79,7 @@
+ #include <net/pkt_sched.h>
+ #include <linux/rculist.h>
+ #include <net/flow_dissector.h>
++#include <net/xfrm.h>
+ #include <net/bonding.h>
+ #include <net/bond_3ad.h>
+ #include <net/bond_alb.h>
+@@ -278,8 +279,6 @@ const char *bond_mode_name(int mode)
+ 	return names[mode];
+ }
  
- struct xfrm_state_offload {
- 	struct net_device	*dev;
-+	struct net_device	*slave_dev;
- 	unsigned long		offload_handle;
- 	unsigned int		num_exthdrs;
- 	u8			flags;
-diff --git a/net/xfrm/xfrm_device.c b/net/xfrm/xfrm_device.c
-index 6cc7f7f1dd68..1cd31dcf59da 100644
---- a/net/xfrm/xfrm_device.c
-+++ b/net/xfrm/xfrm_device.c
-@@ -108,6 +108,7 @@ struct sk_buff *validate_xmit_xfrm(struct sk_buff *skb, netdev_features_t featur
- 	struct sk_buff *skb2, *nskb, *pskb = NULL;
- 	netdev_features_t esp_features = features;
- 	struct xfrm_offload *xo = xfrm_offload(skb);
-+	struct net_device *dev = skb->dev;
- 	struct sec_path *sp;
- 
- 	if (!xo)
-@@ -121,6 +122,10 @@ struct sk_buff *validate_xmit_xfrm(struct sk_buff *skb, netdev_features_t featur
- 	if (xo->flags & XFRM_GRO || x->xso.flags & XFRM_OFFLOAD_INBOUND)
- 		return skb;
- 
-+	/* This skb was already validated on the master dev */
-+	if ((x->xso.dev != dev) && (x->xso.slave_dev == dev))
-+		return skb;
-+
- 	local_irq_save(flags);
- 	sd = this_cpu_ptr(&softnet_data);
- 	err = !skb_queue_empty(&sd->xfrm_backlog);
-@@ -131,25 +136,20 @@ struct sk_buff *validate_xmit_xfrm(struct sk_buff *skb, netdev_features_t featur
- 		return skb;
- 	}
- 
--	if (skb_is_gso(skb)) {
--		struct net_device *dev = skb->dev;
+-/*---------------------------------- VLAN -----------------------------------*/
 -
--		if (unlikely(x->xso.dev != dev)) {
--			struct sk_buff *segs;
-+	if (skb_is_gso(skb) && unlikely(x->xso.dev != dev)) {
-+		struct sk_buff *segs;
+ /**
+  * bond_dev_queue_xmit - Prepare skb for xmit.
+  *
+@@ -302,6 +301,8 @@ void bond_dev_queue_xmit(struct bonding *bond, struct sk_buff *skb,
+ 		dev_queue_xmit(skb);
+ }
  
--			/* Packet got rerouted, fixup features and segment it. */
--			esp_features = esp_features & ~(NETIF_F_HW_ESP
--							| NETIF_F_GSO_ESP);
-+		/* Packet got rerouted, fixup features and segment it. */
-+		esp_features = esp_features & ~(NETIF_F_HW_ESP | NETIF_F_GSO_ESP);
++/*---------------------------------- VLAN -----------------------------------*/
++
+ /* In the following 2 functions, bond_vlan_rx_add_vid and bond_vlan_rx_kill_vid,
+  * We don't protect the slave list iteration with a lock because:
+  * a. This operation is performed in IOCTL context,
+@@ -372,6 +373,84 @@ static int bond_vlan_rx_kill_vid(struct net_device *bond_dev,
+ 	return 0;
+ }
  
--			segs = skb_gso_segment(skb, esp_features);
--			if (IS_ERR(segs)) {
--				kfree_skb(skb);
--				atomic_long_inc(&dev->tx_dropped);
--				return NULL;
--			} else {
--				consume_skb(skb);
--				skb = segs;
--			}
-+		segs = skb_gso_segment(skb, esp_features);
-+		if (IS_ERR(segs)) {
-+			kfree_skb(skb);
-+			atomic_long_inc(&dev->tx_dropped);
-+			return NULL;
-+		} else {
-+			consume_skb(skb);
-+			skb = segs;
- 		}
++/*---------------------------------- XFRM -----------------------------------*/
++
++#ifdef CONFIG_XFRM_OFFLOAD
++/**
++ * bond_ipsec_add_sa - program device with a security association
++ * @xs: pointer to transformer state struct
++ **/
++static int bond_ipsec_add_sa(struct xfrm_state *xs)
++{
++	struct net_device *bond_dev = xs->xso.dev;
++	struct bonding *bond = netdev_priv(bond_dev);
++	struct slave *slave = rtnl_dereference(bond->curr_active_slave);
++
++	xs->xso.slave_dev = slave->dev;
++	bond->xs = xs;
++
++	if (!(slave->dev->xfrmdev_ops
++	      && slave->dev->xfrmdev_ops->xdo_dev_state_add)) {
++		slave_warn(bond_dev, slave->dev, "Slave does not support ipsec offload\n");
++		return -EINVAL;
++	}
++
++	return slave->dev->xfrmdev_ops->xdo_dev_state_add(xs);
++}
++
++/**
++ * bond_ipsec_del_sa - clear out this specific SA
++ * @xs: pointer to transformer state struct
++ **/
++static void bond_ipsec_del_sa(struct xfrm_state *xs)
++{
++	struct net_device *bond_dev = xs->xso.dev;
++	struct bonding *bond = netdev_priv(bond_dev);
++	struct slave *slave = rtnl_dereference(bond->curr_active_slave);
++
++	if (!slave)
++		return;
++
++	xs->xso.slave_dev = slave->dev;
++
++	if (!(slave->dev->xfrmdev_ops
++	      && slave->dev->xfrmdev_ops->xdo_dev_state_delete)) {
++		slave_warn(bond_dev, slave->dev, "%s: no slave xdo_dev_state_delete\n", __func__);
++		return;
++	}
++
++	slave->dev->xfrmdev_ops->xdo_dev_state_delete(xs);
++}
++
++/**
++ * bond_ipsec_offload_ok - can this packet use the xfrm hw offload
++ * @skb: current data packet
++ * @xs: pointer to transformer state struct
++ **/
++static bool bond_ipsec_offload_ok(struct sk_buff *skb, struct xfrm_state *xs)
++{
++	struct net_device *bond_dev = xs->xso.dev;
++	struct bonding *bond = netdev_priv(bond_dev);
++	struct slave *curr_active = rtnl_dereference(bond->curr_active_slave);
++	struct net_device *slave_dev = curr_active->dev;
++
++	if (!(slave_dev->xfrmdev_ops
++	      && slave_dev->xfrmdev_ops->xdo_dev_offload_ok)) {
++		slave_warn(bond_dev, slave_dev, "%s: no slave xdo_dev_offload_ok\n", __func__);
++		return false;
++	}
++
++	xs->xso.slave_dev = slave_dev;
++	return slave_dev->xfrmdev_ops->xdo_dev_offload_ok(skb, xs);
++}
++
++static const struct xfrmdev_ops bond_xfrmdev_ops = {
++	.xdo_dev_state_add = bond_ipsec_add_sa,
++	.xdo_dev_state_delete = bond_ipsec_del_sa,
++	.xdo_dev_offload_ok = bond_ipsec_offload_ok,
++};
++#endif /* CONFIG_XFRM_OFFLOAD */
++
+ /*------------------------------- Link status -------------------------------*/
+ 
+ /* Set the carrier state for the master according to the state of its
+@@ -878,6 +957,11 @@ void bond_change_active_slave(struct bonding *bond, struct slave *new_active)
+ 	if (old_active == new_active)
+ 		return;
+ 
++#ifdef CONFIG_XFRM_OFFLOAD
++	if ((BOND_MODE(bond) == BOND_MODE_ACTIVEBACKUP) && bond->xs)
++		bond_ipsec_del_sa(bond->xs);
++#endif /* CONFIG_XFRM_OFFLOAD */
++
+ 	if (new_active) {
+ 		new_active->last_link_up = jiffies;
+ 
+@@ -941,6 +1025,13 @@ void bond_change_active_slave(struct bonding *bond, struct slave *new_active)
+ 					bond_should_notify_peers(bond);
+ 			}
+ 
++#ifdef CONFIG_XFRM_OFFLOAD
++			if (old_active && bond->xs) {
++				xfrm_dev_state_flush(dev_net(bond->dev), bond->dev, true);
++				bond_ipsec_add_sa(bond->xs);
++			}
++#endif /* CONFIG_XFRM_OFFLOAD */
++
+ 			call_netdevice_notifiers(NETDEV_BONDING_FAILOVER, bond->dev);
+ 			if (should_notify_peers) {
+ 				bond->send_peer_notif--;
+@@ -1125,7 +1216,9 @@ static netdev_features_t bond_fix_features(struct net_device *dev,
+ 				 NETIF_F_HIGHDMA | NETIF_F_LRO)
+ 
+ #define BOND_ENC_FEATURES	(NETIF_F_HW_CSUM | NETIF_F_SG | \
+-				 NETIF_F_RXCSUM | NETIF_F_ALL_TSO)
++				 NETIF_F_RXCSUM | NETIF_F_ALL_TSO | \
++				 NETIF_F_HW_ESP | NETIF_F_HW_ESP_TX_CSUM | \
++				 NETIF_F_GSO_ESP)
+ 
+ #define BOND_MPLS_FEATURES	(NETIF_F_HW_CSUM | NETIF_F_SG | \
+ 				 NETIF_F_ALL_TSO)
+@@ -1464,6 +1557,9 @@ int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev,
+ 		slave_dbg(bond_dev, slave_dev, "is !NETIF_F_VLAN_CHALLENGED\n");
  	}
  
++	if (slave_dev->features & NETIF_F_HW_ESP)
++		slave_dbg(bond_dev, slave_dev, "is esp-hw-offload capable\n");
++
+ 	/* Old ifenslave binaries are no longer supported.  These can
+ 	 * be identified with moderate accuracy by the state of the slave:
+ 	 * the current ifenslave will set the interface down prior to
+@@ -4444,6 +4540,13 @@ void bond_setup(struct net_device *bond_dev)
+ 	bond_dev->priv_flags |= IFF_BONDING | IFF_UNICAST_FLT | IFF_NO_QUEUE;
+ 	bond_dev->priv_flags &= ~(IFF_XMIT_DST_RELEASE | IFF_TX_SKB_SHARING);
+ 
++#ifdef CONFIG_XFRM_OFFLOAD
++	/* set up xfrm device ops (only supported in active-backup right now */
++	if ((BOND_MODE(bond) == BOND_MODE_ACTIVEBACKUP))
++		bond_dev->xfrmdev_ops = &bond_xfrmdev_ops;
++	bond->xs = NULL;
++#endif /* CONFIG_XFRM_OFFLOAD */
++
+ 	/* don't acquire bond device's netif_tx_lock when transmitting */
+ 	bond_dev->features |= NETIF_F_LLTX;
+ 
+@@ -4462,6 +4565,8 @@ void bond_setup(struct net_device *bond_dev)
+ 				NETIF_F_HW_VLAN_CTAG_FILTER;
+ 
+ 	bond_dev->hw_features |= NETIF_F_GSO_ENCAP_ALL | NETIF_F_GSO_UDP_L4;
++	if ((BOND_MODE(bond) == BOND_MODE_ACTIVEBACKUP))
++		bond_dev->hw_features |= BOND_ENC_FEATURES;
+ 	bond_dev->features |= bond_dev->hw_features;
+ 	bond_dev->features |= NETIF_F_HW_VLAN_CTAG_TX | NETIF_F_HW_VLAN_STAG_TX;
+ }
+diff --git a/include/net/bonding.h b/include/net/bonding.h
+index 0b696da5c115..4ca178b2d0e2 100644
+--- a/include/net/bonding.h
++++ b/include/net/bonding.h
+@@ -237,6 +237,9 @@ struct bonding {
+ 	struct	 dentry *debug_dir;
+ #endif /* CONFIG_DEBUG_FS */
+ 	struct rtnl_link_stats64 bond_stats;
++#ifdef CONFIG_XFRM_OFFLOAD
++	struct xfrm_state *xs;
++#endif /* CONFIG_XFRM_OFFLOAD */
+ };
+ 
+ #define bond_slave_get_rcu(dev) \
 -- 
 2.20.1
 
