@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 May 2020 20:42:45 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: Use true,
- false for bool variable in __ixgbe_enable_sriov()
-In-Reply-To: <20200505074337.21477-1-yanaijie@huawei.com>
-References: <20200505074337.21477-1-yanaijie@huawei.com>
-Message-ID: <DM5PR11MB16599DCBE62862ADE61E6BBE8CA50@DM5PR11MB1659.namprd11.prod.outlook.com>
+Date: Thu, 7 May 2020 20:44:46 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] ice: report netlist version
+ in .info_get
+In-Reply-To: <20200505225537.3318391-1-jacob.e.keller@intel.com>
+References: <20200505225537.3318391-1-jacob.e.keller@intel.com>
+Message-ID: <DM5PR11MB1659DCDDE7D1A976AF7A72CF8CA50@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,21 +12,29 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 -----Original Message-----
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jason Yan
-Sent: Tuesday, May 5, 2020 12:44 AM
-To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net; ast at kernel.org; daniel at iogearbox.net; kuba at kernel.org; hawk at kernel.org; john.fastabend at gmail.com; intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org; bpf at vger.kernel.org
-Cc: Jason Yan <yanaijie@huawei.com>
-Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: Use true, false for bool variable in __ixgbe_enable_sriov()
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jacob Keller
+Sent: Tuesday, May 5, 2020 3:56 PM
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Subject: [Intel-wired-lan] [PATCH net-next] ice: report netlist version in .info_get
 
-Fix the following coccicheck warning:
+The flash memory for the ice hardware contains a block of information used for link management called the Netlist module.
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c:105:2-38: WARNING:
-Assignment of 0/1 to bool variable
+As this essentially represents another section of firmware, add its version information to the output of the driver's .info_get handler.
 
-Signed-off-by: Jason Yan <yanaijie@huawei.com>
+This includes both a version and the first few bytes of a hash of the module contents.
+
+  fw.netlist -> the version information extracted from the netlist module
+  fw.netlist.build-> first 4 bytes of the hash of the contents, similar
+                     to fw.mgmt.build
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/networking/devlink/ice.rst      | 11 +++
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 27 ++++++
+ drivers/net/ethernet/intel/ice/ice_devlink.c  | 23 +++++
+ drivers/net/ethernet/intel/ice/ice_nvm.c      | 86 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_type.h     | 11 +++
+ 5 files changed, 158 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
