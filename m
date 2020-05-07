@@ -1,20 +1,20 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Thu, 07 May 2020 20:54:23 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
- f0d15e3c67a0e5e609c16964f20e75d95320eb2c
-Message-ID: <5eb404ff.E37x5c+k9U6S49uY%lkp@intel.com>
+Date: Thu, 07 May 2020 22:09:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 405fe1a071f68fa0242c327e59429d1260b5edc3
+Message-ID: <5eb416b1.TiYDaFWy46hMuLDY%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-branch HEAD: f0d15e3c67a0e5e609c16964f20e75d95320eb2c  i40e: Register a virtbus device to provide RDMA
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 405fe1a071f68fa0242c327e59429d1260b5edc3  i40e: Make i40e_shutdown_adminq() return void
 
-elapsed time: 948m
+elapsed time: 794m
 
-configs tested: 86
+configs tested: 95
 configs skipped: 1
 
 The following configs have been built successfully.
@@ -30,26 +30,21 @@ arm64                            allmodconfig
 arm64                             allnoconfig
 sparc                            allyesconfig
 m68k                             allyesconfig
-ia64                             allyesconfig
 s390                             allmodconfig
 i386                              allnoconfig
-h8300                            allmodconfig
-csky                             allyesconfig
 nios2                               defconfig
 um                                  defconfig
 nds32                             allnoconfig
-openrisc                            defconfig
 mips                              allnoconfig
-powerpc                             defconfig
+h8300                            allmodconfig
 nios2                            allyesconfig
 alpha                               defconfig
 parisc                           allyesconfig
-um                                allnoconfig
 alpha                            allyesconfig
 m68k                              allnoconfig
 riscv                               defconfig
-openrisc                         allyesconfig
-um                               allmodconfig
+csky                             allyesconfig
+openrisc                            defconfig
 nds32                               defconfig
 microblaze                       allyesconfig
 csky                                defconfig
@@ -59,11 +54,13 @@ i386                             allyesconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                              allnoconfig
+ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                           sun3_defconfig
 m68k                                defconfig
 c6x                              allyesconfig
 c6x                               allnoconfig
+openrisc                         allyesconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
 xtensa                              defconfig
@@ -75,18 +72,28 @@ microblaze                        allnoconfig
 mips                             allyesconfig
 mips                             allmodconfig
 parisc                            allnoconfig
-parisc                           allmodconfig
 parisc                              defconfig
+parisc                           allmodconfig
+powerpc                             defconfig
 powerpc                          allyesconfig
 powerpc                          rhel-kconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-x86_64               randconfig-a004-20200507
-x86_64               randconfig-a006-20200507
-x86_64               randconfig-a002-20200507
+i386                 randconfig-a005-20200507
+i386                 randconfig-a004-20200507
 i386                 randconfig-a001-20200507
 i386                 randconfig-a002-20200507
 i386                 randconfig-a003-20200507
+i386                 randconfig-a006-20200507
+i386                 randconfig-a012-20200507
+i386                 randconfig-a016-20200507
+i386                 randconfig-a014-20200507
+i386                 randconfig-a011-20200507
+i386                 randconfig-a015-20200507
+i386                 randconfig-a013-20200507
+x86_64               randconfig-a004-20200507
+x86_64               randconfig-a006-20200507
+x86_64               randconfig-a002-20200507
 riscv                            allyesconfig
 riscv                             allnoconfig
 riscv                            allmodconfig
@@ -94,10 +101,12 @@ s390                             allyesconfig
 s390                              allnoconfig
 s390                                defconfig
 sparc                               defconfig
-sparc64                             defconfig
 sparc64                           allnoconfig
 sparc64                          allyesconfig
 sparc64                          allmodconfig
+sparc64                             defconfig
+um                               allmodconfig
+um                                allnoconfig
 um                               allyesconfig
 x86_64                                   rhel
 x86_64                               rhel-7.6
