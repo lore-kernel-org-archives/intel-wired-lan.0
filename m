@@ -1,96 +1,50 @@
-From: Vitaly Lifshits <vitaly.lifshits@intel.com>
-Date: Thu,  7 May 2020 20:14:06 +0300
-Subject: [Intel-wired-lan] [PATCH v1] e1000e: disable s0ix entry and exit
- flows for ME systems
-Message-ID: <20200507171406.6883-1-vitaly.lifshits@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 7 May 2020 20:37:02 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: fix
+ signed-integer-overflow warning
+In-Reply-To: <20200505024521.24635-1-xiexiuqi@huawei.com>
+References: <20200505024521.24635-1-xiexiuqi@huawei.com>
+Message-ID: <DM5PR11MB165997BA5F9C67A56DACF29E8CA50@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Since ME systems do not support SLP_S0 in S0ix state, and S0ix entry
-and exit flows may cause errors on them it is best to avoid using
-e1000e_s0ix_entry_flow and e1000e_s0ix_exit_flow functions.
+-----Original Message-----
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Xie XiuQi
+Sent: Monday, May 4, 2020 7:45 PM
+To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net
+Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: fix signed-integer-overflow warning
 
-This was done by creating a struct of all devices that comes with ME
-and by checking if the current device has ME.
+ubsan report this warning, fix it by adding a unsigned suffix.
 
-Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+UBSAN: signed-integer-overflow in
+drivers/net/ethernet/intel/ixgbe/ixgbe_common.c:2246:26
+65535 * 65537 cannot be represented in type 'int'
+CPU: 21 PID: 7 Comm: kworker/u256:0 Not tainted 5.7.0-rc3-debug+ #39 Hardware name: Huawei TaiShan 2280 V2/BC82AMDC, BIOS 2280-V2 03/27/2020
+Workqueue: ixgbe ixgbe_service_task [ixgbe] Call trace:
+ dump_backtrace+0x0/0x3f0
+ show_stack+0x28/0x38
+ dump_stack+0x154/0x1e4
+ ubsan_epilogue+0x18/0x60
+ handle_overflow+0xf8/0x148
+ __ubsan_handle_mul_overflow+0x34/0x48
+ ixgbe_fc_enable_generic+0x4d0/0x590 [ixgbe]
+ ixgbe_service_task+0xc20/0x1f78 [ixgbe]
+ process_one_work+0x8f0/0xf18
+ worker_thread+0x430/0x6d0
+ kthread+0x218/0x238
+ ret_from_fork+0x10/0x18
+
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Xie XiuQi <xiexiuqi@huawei.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 45 ++++++++++++++++++++++++++++--
- 1 file changed, 43 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index e0b074820b47..57af6b81d79d 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -107,6 +107,45 @@ static const struct e1000_reg_info e1000_reg_info_tbl[] = {
- 	{0, NULL}
- };
- 
-+struct e1000e_me_supported {
-+	u16 device_id;		/* supported device ID */
-+};
-+
-+static const struct e1000e_me_supported me_supported[] = {
-+	{E1000_DEV_ID_PCH_LPT_I217_LM},
-+	{E1000_DEV_ID_PCH_LPTLP_I218_LM},
-+	{E1000_DEV_ID_PCH_I218_LM2},
-+	{E1000_DEV_ID_PCH_I218_LM3},
-+	{E1000_DEV_ID_PCH_SPT_I219_LM},
-+	{E1000_DEV_ID_PCH_SPT_I219_LM2},
-+	{E1000_DEV_ID_PCH_LBG_I219_LM3},
-+	{E1000_DEV_ID_PCH_SPT_I219_LM4},
-+	{E1000_DEV_ID_PCH_SPT_I219_LM5},
-+	{E1000_DEV_ID_PCH_CNP_I219_LM6},
-+	{E1000_DEV_ID_PCH_CNP_I219_LM7},
-+	{E1000_DEV_ID_PCH_ICP_I219_LM8},
-+	{E1000_DEV_ID_PCH_ICP_I219_LM9},
-+	{E1000_DEV_ID_PCH_CMP_I219_LM10},
-+	{E1000_DEV_ID_PCH_CMP_I219_LM11},
-+	{E1000_DEV_ID_PCH_CMP_I219_LM12},
-+	{E1000_DEV_ID_PCH_TGP_I219_LM13},
-+	{E1000_DEV_ID_PCH_TGP_I219_LM14},
-+	{E1000_DEV_ID_PCH_TGP_I219_LM15},
-+	{0}
-+};
-+
-+static bool e1000e_check_me(u16 device_id)
-+{
-+	struct e1000e_me_supported *id;
-+
-+	for (id = (struct e1000e_me_supported *)me_supported;
-+	     id->device_id; id++)
-+		if (device_id == id->device_id)
-+			return true;
-+
-+	return false;
-+}
-+
- /**
-  * __ew32_prepare - prepare to write to MAC CSR register on certain parts
-  * @hw: pointer to the HW structure
-@@ -6912,7 +6951,8 @@ static int e1000e_pm_suspend(struct device *dev)
- 		e1000e_pm_thaw(dev);
- 
- 	/* Introduce S0ix implementation */
--	if (hw->mac.type >= e1000_pch_cnp)
-+	if (hw->mac.type >= e1000_pch_cnp &&
-+	    !e1000e_check_me(hw->adapter->pdev->device))
- 		e1000e_s0ix_entry_flow(adapter);
- 
- 	return rc;
-@@ -6927,7 +6967,8 @@ static int e1000e_pm_resume(struct device *dev)
- 	int rc;
- 
- 	/* Introduce S0ix implementation */
--	if (hw->mac.type >= e1000_pch_cnp)
-+	if (hw->mac.type >= e1000_pch_cnp &&
-+	    !e1000e_check_me(hw->adapter->pdev->device))
- 		e1000e_s0ix_exit_flow(adapter);
- 
- 	rc = __e1000_resume(pdev);
--- 
-2.11.0
+
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
 
