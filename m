@@ -1,39 +1,40 @@
-From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Date: Thu, 7 May 2020 00:51:16 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] i40e: Make
- i40e_shutdown_adminq() return void
-In-Reply-To: <20200506.140239.2129195871879981516.davem@davemloft.net>
-References: <20200506061835.19662-1-yanaijie@huawei.com>
- <20200506.140239.2129195871879981516.davem@davemloft.net>
-Message-ID: <61CC2BC414934749BD9F5BF3D5D940449868CF1C@ORSMSX112.amr.corp.intel.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Thu,  7 May 2020 14:25:45 +0800
+Subject: [Intel-wired-lan] [PATCH] e1000e: Warn if disabling ULP failed
+Message-ID: <20200507062545.15461-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: David Miller <davem@davemloft.net>
-> Sent: Wednesday, May 6, 2020 14:03
-> To: yanaijie at huawei.com
-> Cc: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Azarewicz, Piotr
-> <piotr.azarewicz@intel.com>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: Re: [PATCH net-next] i40e: Make i40e_shutdown_adminq() return void
-> 
-> From: Jason Yan <yanaijie@huawei.com>
-> Date: Wed, 6 May 2020 14:18:35 +0800
-> 
-> > Fix the following coccicheck warning:
-> >
-> > drivers/net/ethernet/intel/i40e/i40e_adminq.c:699:13-21: Unneeded
-> > variable: "ret_code". Return "0" on line 710
-> >
-> > Signed-off-by: Jason Yan <yanaijie@huawei.com>
-> 
-> Jeff, please pick this up.
-> 
-> Thank you.
-[Kirsher, Jeffrey T] 
+The hardware may stop working if driver failed to disable ULP mode.
 
-Yep already added it to my queue, thanks.
+Take the return value of e1000_disable_ulp_lpt_lp() into account, and
+pass up the error if it fails.
+
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 15f6c0a4dc63..9cbd2d6c7da4 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -300,7 +300,11 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
+ 	 * so forcibly disable it.
+ 	 */
+ 	hw->dev_spec.ich8lan.ulp_state = e1000_ulp_state_unknown;
+-	e1000_disable_ulp_lpt_lp(hw, true);
++	ret_val = e1000_disable_ulp_lpt_lp(hw, true);
++	if (ret_val) {
++		e_warn("Failed to disable ULP\n");
++		goto out;
++	}
+ 
+ 	ret_val = hw->phy.ops.acquire(hw);
+ 	if (ret_val) {
+-- 
+2.17.1
+
