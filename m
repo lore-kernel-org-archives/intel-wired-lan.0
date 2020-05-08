@@ -1,64 +1,64 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  7 May 2020 17:41:01 -0700
-Subject: [Intel-wired-lan] [PATCH S41 03/15] ice: Fix check for contiguous
- TCs
+Date: Thu,  7 May 2020 17:41:09 -0700
+Subject: [Intel-wired-lan] [PATCH S41 11/15] ice: Fix check for
+ removing/adding mac filters
 In-Reply-To: <20200508004113.39725-1-anthony.l.nguyen@intel.com>
 References: <20200508004113.39725-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200508004113.39725-3-anthony.l.nguyen@intel.com>
+Message-ID: <20200508004113.39725-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Lihong Yang <lihong.yang@intel.com>
 
-The current implementation for contiguous TC check
-is assuming that the UPs will be mapped to TCs in
-a linear progressing fashion.  This is obviously
-not always true.
+In function ice_set_mac_address, we will remove old dev_addr before
+adding the new MAC. In the removing and adding process of the MAC,
+there is no need to return error if the check finds the to-be-removed
+dev_addr does not exist in the MAC filter list or the to-be-added mac
+already exists, keep going or return success accordingly.
 
-Change the check to allow for various UP2TC mapping
-configurations.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Lihong Yang <lihong.yang@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index d91bd72eebdc..d5055d9e3fd2 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -611,16 +611,21 @@ static int ice_dcb_sw_dflt_cfg(struct ice_pf *pf, bool ets_willing, bool locked)
-  */
- static bool ice_dcb_tc_contig(u8 *prio_table)
- {
--	u8 max_tc = 0;
-+	bool found_empty = false;
-+	u8 used_tc = 0;
- 	int i;
- 
--	for (i = 0; i < CEE_DCBX_MAX_PRIO; i++) {
--		u8 cur_tc = prio_table[i];
-+	/* Create a bitmap of used TCs */
-+	for (i = 0; i < CEE_DCBX_MAX_PRIO; i++)
-+		used_tc |= BIT(prio_table[i]);
- 
--		if (cur_tc > max_tc)
--			return false;
--		else if (cur_tc == max_tc)
--			max_tc++;
-+	for (i = 0; i < CEE_DCBX_MAX_PRIO; i++) {
-+		if (used_tc & BIT(i)) {
-+			if (found_empty)
-+				return false;
-+		} else {
-+			found_empty = true;
-+		}
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 99fa36f35a4f..5eca66849e52 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3771,19 +3771,24 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
+ 		return -EBUSY;
  	}
  
- 	return true;
+-	/* Clean up old MAC filter before changing the MAC address */
++	/* Clean up old MAC filter. Not an error if old filter doesn't exist */
+ 	status = ice_fltr_remove_mac(vsi, netdev->dev_addr, ICE_FWD_TO_VSI);
+-	if (status) {
++	if (status && status != ICE_ERR_DOES_NOT_EXIST) {
+ 		err = -EADDRNOTAVAIL;
+ 		goto err_update_filters;
+ 	}
+ 
++	/* Add filter for new MAC. If filter exists, just return success */
+ 	status = ice_fltr_add_mac(vsi, mac, ICE_FWD_TO_VSI);
+-	if (status) {
+-		err = -EADDRNOTAVAIL;
+-		goto err_update_filters;
++	if (status == ICE_ERR_ALREADY_EXISTS) {
++		netdev_dbg(netdev, "filter for MAC %pM already exists\n", mac);
++		return 0;
+ 	}
+ 
++	/* error if the new filter addition failed */
++	if (status)
++		err = -EADDRNOTAVAIL;
++
+ err_update_filters:
+ 	if (err) {
+ 		netdev_err(netdev, "can't set MAC %pM. filter update failed\n",
 -- 
 2.20.1
 
