@@ -1,116 +1,59 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Fri, 8 May 2020 00:37:08 +0200
-Subject: [Intel-wired-lan] [PATCH v1] e1000e: disable s0ix entry and
- exit flows for ME systems
-In-Reply-To: <20200507171406.6883-1-vitaly.lifshits@intel.com>
-References: <20200507171406.6883-1-vitaly.lifshits@intel.com>
-Message-ID: <c48737dd-8d6e-cc3b-2e91-29c81de66957@molgen.mpg.de>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Thu,  7 May 2020 17:41:02 -0700
+Subject: [Intel-wired-lan] [PATCH S41 04/15] ice: only drop link once when
+ setting pauseparams
+In-Reply-To: <20200508004113.39725-1-anthony.l.nguyen@intel.com>
+References: <20200508004113.39725-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200508004113.39725-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Vitaly,
+From: Dave Ertman <david.m.ertman@intel.com>
 
+Currently, the ice driver is setting a PHY configuration,
+which causes a link drop, and then additionally it calls
+for a nway_reset, which restarts auto-negotiation on the
+link, which also causes a link drop.  These two link
+events in such close timing is causing the FW to not be
+able to generate a link interrupt for the driver to
+respond to.
 
-Am 07.05.20 um 19:14 schrieb Vitaly Lifshits:
-> Since ME systems do not support SLP_S0 in S0ix state, and S0ix entry
-> and exit flows may cause errors on them it is best to avoid using
-> e1000e_s0ix_entry_flow and e1000e_s0ix_exit_flow functions.
+Remove the unnecessary auto-negotiation restart from the
+set pauseparams flow.  Also remove error path that
+would have performed an ice_down/ice_up as that is
+also unnecessary.
 
-Can you please elaborate? I am unable to parse the sentence. Do you mean 
-the SLP_S0# signal on a mainboard? What are ?ME systems?? Do you mean AMT?
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 12 ------------
+ 1 file changed, 12 deletions(-)
 
-Where is that limitation you state documented?
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 66d0bcc51ad9..db547c0c7c6f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -2977,18 +2977,6 @@ ice_set_pauseparam(struct net_device *netdev, struct ethtool_pauseparam *pause)
+ 		err = -EAGAIN;
+ 	}
+ 
+-	if (!test_bit(__ICE_DOWN, pf->state)) {
+-		/* Give it a little more time to try to come back. If still
+-		 * down, restart autoneg link or reinitialize the interface.
+-		 */
+-		msleep(75);
+-		if (!test_bit(__ICE_DOWN, pf->state))
+-			return ice_nway_reset(netdev);
+-
+-		ice_down(vsi);
+-		ice_up(vsi);
+-	}
+-
+ 	return err;
+ }
+ 
+-- 
+2.20.1
 
-Also please mention, that there are problem reports. (But wasn?t it only 
-for some devices?)
-
-> This was done by creating a struct of all devices that comes with ME
-> and by checking if the current device has ME.
-
-Please list the bug reports and discussions. Also, please CC the 
-affected people.
-
-> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/netdev.c | 45 ++++++++++++++++++++++++++++--
->   1 file changed, 43 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index e0b074820b47..57af6b81d79d 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -107,6 +107,45 @@ static const struct e1000_reg_info e1000_reg_info_tbl[] = {
->   	{0, NULL}
->   };
->   
-> +struct e1000e_me_supported {
-> +	u16 device_id;		/* supported device ID */
-> +};
-> +
-> +static const struct e1000e_me_supported me_supported[] = {
-> +	{E1000_DEV_ID_PCH_LPT_I217_LM},
-> +	{E1000_DEV_ID_PCH_LPTLP_I218_LM},
-> +	{E1000_DEV_ID_PCH_I218_LM2},
-> +	{E1000_DEV_ID_PCH_I218_LM3},
-> +	{E1000_DEV_ID_PCH_SPT_I219_LM},
-> +	{E1000_DEV_ID_PCH_SPT_I219_LM2},
-> +	{E1000_DEV_ID_PCH_LBG_I219_LM3},
-> +	{E1000_DEV_ID_PCH_SPT_I219_LM4},
-> +	{E1000_DEV_ID_PCH_SPT_I219_LM5},
-> +	{E1000_DEV_ID_PCH_CNP_I219_LM6},
-> +	{E1000_DEV_ID_PCH_CNP_I219_LM7},
-> +	{E1000_DEV_ID_PCH_ICP_I219_LM8},
-> +	{E1000_DEV_ID_PCH_ICP_I219_LM9},
-> +	{E1000_DEV_ID_PCH_CMP_I219_LM10},
-> +	{E1000_DEV_ID_PCH_CMP_I219_LM11},
-> +	{E1000_DEV_ID_PCH_CMP_I219_LM12},
-> +	{E1000_DEV_ID_PCH_TGP_I219_LM13},
-> +	{E1000_DEV_ID_PCH_TGP_I219_LM14},
-> +	{E1000_DEV_ID_PCH_TGP_I219_LM15},
-> +	{0}
-> +};
-> +
-> +static bool e1000e_check_me(u16 device_id)
-> +{
-> +	struct e1000e_me_supported *id;
-> +
-> +	for (id = (struct e1000e_me_supported *)me_supported;
-> +	     id->device_id; id++)
-> +		if (device_id == id->device_id)
-> +			return true;
-> +
-> +	return false;
-> +}
-> +
->   /**
->    * __ew32_prepare - prepare to write to MAC CSR register on certain parts
->    * @hw: pointer to the HW structure
-> @@ -6912,7 +6951,8 @@ static int e1000e_pm_suspend(struct device *dev)
->   		e1000e_pm_thaw(dev);
->   
->   	/* Introduce S0ix implementation */
-> -	if (hw->mac.type >= e1000_pch_cnp)
-> +	if (hw->mac.type >= e1000_pch_cnp &&
-> +	    !e1000e_check_me(hw->adapter->pdev->device))
->   		e1000e_s0ix_entry_flow(adapter);
->   
->   	return rc;
-> @@ -6927,7 +6967,8 @@ static int e1000e_pm_resume(struct device *dev)
->   	int rc;
->   
->   	/* Introduce S0ix implementation */
-> -	if (hw->mac.type >= e1000_pch_cnp)
-> +	if (hw->mac.type >= e1000_pch_cnp &&
-> +	    !e1000e_check_me(hw->adapter->pdev->device))
->   		e1000e_s0ix_exit_flow(adapter);
->   
->   	rc = __e1000_resume(pdev);
-> 
-
-
-Kind regards,
-
-Paul
