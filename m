@@ -1,48 +1,39 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 8 May 2020 18:11:33 +0000
-Subject: [Intel-wired-lan] [PATCH v5] igc: add support to eeprom,
- registers and link self-tests
-In-Reply-To: <20200505140638.44937-1-vitaly.lifshits@intel.com>
-References: <20200505140638.44937-1-vitaly.lifshits@intel.com>
-Message-ID: <DM6PR11MB289041C1D48B674A3C59B1B1BCA20@DM6PR11MB2890.namprd11.prod.outlook.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun, 10 May 2020 18:52:00 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused flags
+Message-ID: <20200510155200.21068-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Vitaly Lifshits
-> Sent: Tuesday, May 5, 2020 7:07 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v5] igc: add support to eeprom, registers
-> and link self-tests
-> 
-> Introduced igc_diag.c and igc_diag.h, these files have the
-> diagnostics functionality of igc driver. For the time being
-> these files are being used by ethtool self-test callbacks.
-> Which mean that eeprom, registers and link self-tests for
-> ethtool were implemented.
-> 
-> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> Reported-by: kbuild test robot <lkp@intel.com>
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
-> v2: Fix return 0/1 to boolean value in igc_reg_test function
-> v3: Address community comments
-> v4: Fix interrupt test and address community comments
-> v5: Remove interrupt test in order to avoid kernel panic
-> ---
->  drivers/net/ethernet/intel/igc/Makefile      |   2 +-
->  drivers/net/ethernet/intel/igc/igc.h         |   4 +
->  drivers/net/ethernet/intel/igc/igc_diag.c    | 186
-> +++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/igc/igc_diag.h    |  30 +++++
->  drivers/net/ethernet/intel/igc/igc_ethtool.c |  60 +++++++++
->  drivers/net/ethernet/intel/igc/igc_main.c    |   4 +-
->  drivers/net/ethernet/intel/igc/igc_regs.h    |   2 +
->  7 files changed, 285 insertions(+), 3 deletions(-)
->  create mode 100644 drivers/net/ethernet/intel/igc/igc_diag.c
->  create mode 100644 drivers/net/ethernet/intel/igc/igc_diag.h
-> 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Transmit underrun, late and excess collision flags not in use.
+This patch comes to clean up these flags.
+
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_defines.h | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index aa1d012b3e2a..80b664e64465 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -269,13 +269,9 @@
+ #define IGC_TXD_CMD_DEXT	0x20000000 /* Desc extension (0 = legacy) */
+ #define IGC_TXD_CMD_VLE		0x40000000 /* Add VLAN tag */
+ #define IGC_TXD_STAT_DD		0x00000001 /* Descriptor Done */
+-#define IGC_TXD_STAT_EC		0x00000002 /* Excess Collisions */
+-#define IGC_TXD_STAT_LC		0x00000004 /* Late Collisions */
+-#define IGC_TXD_STAT_TU		0x00000008 /* Transmit underrun */
+ #define IGC_TXD_CMD_TCP		0x01000000 /* TCP packet */
+ #define IGC_TXD_CMD_IP		0x02000000 /* IP packet */
+ #define IGC_TXD_CMD_TSE		0x04000000 /* TCP Seg enable */
+-#define IGC_TXD_STAT_TC		0x00000004 /* Tx Underrun */
+ #define IGC_TXD_EXTCMD_TSTAMP	0x00000010 /* IEEE1588 Timestamp packet */
+ 
+ /* IPSec Encrypt Enable */
+-- 
+2.11.0
+
