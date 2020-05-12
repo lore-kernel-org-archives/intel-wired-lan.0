@@ -1,1044 +1,1012 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 11 May 2020 18:01:46 -0700
-Subject: [Intel-wired-lan] [PATCH S42 7/7] ice: Implement aRFS
+Date: Mon, 11 May 2020 18:01:43 -0700
+Subject: [Intel-wired-lan] [PATCH S42 4/7] ice: Support IPv6 Flow Director
+ filters
 In-Reply-To: <20200512010146.41303-1-anthony.l.nguyen@intel.com>
 References: <20200512010146.41303-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200512010146.41303-7-anthony.l.nguyen@intel.com>
+Message-ID: <20200512010146.41303-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Henry Tieman <henry.w.tieman@intel.com>
 
-Enable accelerated Receive Flow Steering (aRFS). It is used to steer Rx
-flows to a specific queue. This functionality is triggerred by the network
-stack through ndo_rx_flow_steer and requires Flow Director (ntuple on) to
-function.
+Extend supported filters to allow for IPv6 filters.
 
-The fltr_info is used to add/remove/update flow rules in the HW, the
-fltr_state is used to determine what to do with the filter with respect
-to HW and/or SW, and the flow_id is used in co-ordination with the
-network stack.
+Supported fields are: src-ip, dst-ip, src-port, and dst-port
+Supported flow-types are: tcp6, udp6, sctp6, ip6
 
-The work for aRFS is split into two paths: the ndo_rx_flow_steer
-operation and the ice_service_task. The former is where the kernel hands
-us an Rx SKB among other items to setup aRFS and the latter is where
-the driver adds/updates/removes filter rules from HW and updates filter
-state.
+Example usage:
 
-In the Rx path the following things can happen:
-        1. New aRFS entries are added to the hash table and the state is
-           set to ICE_ARFS_INACTIVE so the filter can be updated in HW
-           by the ice_service_task path.
-        2. aRFS entries have their Rx Queue updated if we receive a
-           pre-existing flow_id and the filter state is ICE_ARFS_ACTIVE.
-           The state is set to ICE_ARFS_INACTIVE so the filter can be
-           updated in HW by the ice_service_task path.
-        3. aRFS entries marked as ICE_ARFS_TODEL are deleted
+ethtool -N eth0 flow-type tcp6 src-port 12 dst-port 13 \
+src-ip fce0::1:34 dst-ip fce0::1:35 action 32
 
-In the ice_service_task path the following things can happen:
-        1. New aRFS entries marked as ICE_ARFS_INACTIVE are added or
-           updated in HW.
-           and their state is updated to ICE_ARFS_ACTIVE.
-        2. aRFS entries are deleted from HW and their state is updated
-           to ICE_ARFS_TODEL.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
+Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile       |   1 +
- drivers/net/ethernet/intel/ice/ice.h          |  14 +
- drivers/net/ethernet/intel/ice/ice_arfs.c     | 663 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_arfs.h     |  82 +++
- .../net/ethernet/intel/ice/ice_ethtool_fdir.c |   8 +-
- drivers/net/ethernet/intel/ice/ice_lib.c      |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c     |  48 +-
- 7 files changed, 805 insertions(+), 12 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_arfs.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_arfs.h
+ .../net/ethernet/intel/ice/ice_ethtool_fdir.c | 391 +++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_fdir.c     | 303 ++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_fdir.h     |  19 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |   6 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |   4 +
+ 5 files changed, 642 insertions(+), 81 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 8bda3796a853..14b27a4f5d45 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -27,4 +27,5 @@ ice-y := ice_main.o	\
- 	 ice_ethtool.o
- ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o
- ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o
-+ice-$(CONFIG_RFS_ACCEL) += ice_arfs.o
- ice-$(CONFIG_XDP_SOCKETS) += ice_xsk.o
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 4d011def973a..8e877860a96f 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -34,6 +34,7 @@
- #include <linux/ctype.h>
- #include <linux/bpf.h>
- #include <linux/avf/virtchnl.h>
-+#include <linux/cpu_rmap.h>
- #include <net/devlink.h>
- #include <net/ipv6.h>
- #include <net/xdp_sock.h>
-@@ -53,6 +54,7 @@
- #include "ice_sriov.h"
- #include "ice_fdir.h"
- #include "ice_xsk.h"
-+#include "ice_arfs.h"
- 
- extern const char ice_drv_ver[];
- #define ICE_BAR0		0
-@@ -274,6 +276,14 @@ struct ice_vsi {
- 	u8 *rss_lut_user;	/* User configured lookup table entries */
- 	u8 rss_lut_type;	/* used to configure Get/Set RSS LUT AQ call */
- 
-+	/* aRFS members only allocated for the PF VSI */
-+#define ICE_MAX_ARFS_LIST	1024
-+#define ICE_ARFS_LST_MASK	(ICE_MAX_ARFS_LIST - 1)
-+	struct hlist_head *arfs_fltr_list;
-+	struct ice_arfs_active_fltr_cntrs *arfs_fltr_cntrs;
-+	spinlock_t arfs_lock;	/* protects aRFS hash table and filter state */
-+	atomic_t *arfs_last_fltr_id;
-+
- 	u16 max_frame;
- 	u16 rx_buf_len;
- 
-@@ -572,6 +582,9 @@ ice_for_each_peer(struct ice_pf *pf, void *data,
- 		  int (*fn)(struct ice_peer_dev_int *, void *));
- const char *ice_stat_str(enum ice_status stat_err);
- const char *ice_aq_str(enum ice_aq_err aq_err);
-+int
-+ice_fdir_write_fltr(struct ice_pf *pf, struct ice_fdir_fltr *input, bool add,
-+		    bool is_tun);
- void ice_vsi_manage_fdir(struct ice_vsi *vsi, bool ena);
- int ice_add_fdir_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd);
- int ice_del_fdir_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd);
-@@ -585,5 +598,6 @@ void ice_fdir_replay_fltrs(struct ice_pf *pf);
- int ice_fdir_create_dflt_rules(struct ice_pf *pf);
- int ice_open(struct net_device *netdev);
- int ice_stop(struct net_device *netdev);
-+void ice_service_task_schedule(struct ice_pf *pf);
- 
- #endif /* _ICE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_arfs.c b/drivers/net/ethernet/intel/ice/ice_arfs.c
-new file mode 100644
-index 000000000000..bed8c2f9177e
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_arfs.c
-@@ -0,0 +1,663 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2018-2019, Intel Corporation. */
-+
-+#include "ice.h"
-+
-+/**
-+ * ice_is_arfs_active - helper to check is aRFS is active
-+ * @vsi: VSI to check
-+ */
-+static bool ice_is_arfs_active(struct ice_vsi *vsi)
-+{
-+	return !!vsi->arfs_fltr_list;
-+}
-+
-+/**
-+ * ice_is_arfs_using_perfect_flow - check if aRFS has active perfect filters
-+ * @hw: pointer to the HW structure
-+ * @flow_type: flow type as Flow Director understands it
-+ *
-+ * Flow Director will query this function to see if aRFS is currently using
-+ * the specified flow_type for perfect (4-tuple) filters.
-+ */
-+bool
-+ice_is_arfs_using_perfect_flow(struct ice_hw *hw, enum ice_fltr_ptype flow_type)
-+{
-+	struct ice_arfs_active_fltr_cntrs *arfs_fltr_cntrs;
-+	struct ice_pf *pf = hw->back;
-+	struct ice_vsi *vsi;
-+
-+	vsi = ice_get_main_vsi(pf);
-+	if (!vsi)
-+		return false;
-+
-+	arfs_fltr_cntrs = vsi->arfs_fltr_cntrs;
-+
-+	/* active counters can be updated by multiple CPUs */
-+	smp_mb__before_atomic();
-+	switch (flow_type) {
-+	case ICE_FLTR_PTYPE_NONF_IPV4_UDP:
-+		return atomic_read(&arfs_fltr_cntrs->active_udpv4_cnt) > 0;
-+	case ICE_FLTR_PTYPE_NONF_IPV6_UDP:
-+		return atomic_read(&arfs_fltr_cntrs->active_udpv6_cnt) > 0;
-+	case ICE_FLTR_PTYPE_NONF_IPV4_TCP:
-+		return atomic_read(&arfs_fltr_cntrs->active_tcpv4_cnt) > 0;
-+	case ICE_FLTR_PTYPE_NONF_IPV6_TCP:
-+		return atomic_read(&arfs_fltr_cntrs->active_tcpv6_cnt) > 0;
-+	default:
-+		return false;
-+	}
-+}
-+
-+/**
-+ * ice_arfs_update_active_fltr_cntrs - update active filter counters for aRFS
-+ * @vsi: VSI that aRFS is active on
-+ * @entry: aRFS entry used to change counters
-+ * @add: true to increment counter, false to decrement
-+ */
-+static void
-+ice_arfs_update_active_fltr_cntrs(struct ice_vsi *vsi,
-+				  struct ice_arfs_entry *entry, bool add)
-+{
-+	struct ice_arfs_active_fltr_cntrs *fltr_cntrs = vsi->arfs_fltr_cntrs;
-+
-+	switch (entry->fltr_info.flow_type) {
-+	case ICE_FLTR_PTYPE_NONF_IPV4_TCP:
-+		if (add)
-+			atomic_inc(&fltr_cntrs->active_tcpv4_cnt);
-+		else
-+			atomic_dec(&fltr_cntrs->active_tcpv4_cnt);
-+		break;
-+	case ICE_FLTR_PTYPE_NONF_IPV6_TCP:
-+		if (add)
-+			atomic_inc(&fltr_cntrs->active_tcpv6_cnt);
-+		else
-+			atomic_dec(&fltr_cntrs->active_tcpv6_cnt);
-+		break;
-+	case ICE_FLTR_PTYPE_NONF_IPV4_UDP:
-+		if (add)
-+			atomic_inc(&fltr_cntrs->active_udpv4_cnt);
-+		else
-+			atomic_dec(&fltr_cntrs->active_udpv4_cnt);
-+		break;
-+	case ICE_FLTR_PTYPE_NONF_IPV6_UDP:
-+		if (add)
-+			atomic_inc(&fltr_cntrs->active_udpv6_cnt);
-+		else
-+			atomic_dec(&fltr_cntrs->active_udpv6_cnt);
-+		break;
-+	default:
-+		dev_err(ice_pf_to_dev(vsi->back), "aRFS: Failed to update filter counters, invalid filter type %d\n",
-+			entry->fltr_info.flow_type);
-+	}
-+}
-+
-+/**
-+ * ice_arfs_del_flow_rules - delete the rules passed in from HW
-+ * @vsi: VSI for the flow rules that need to be deleted
-+ * @del_list_head: head of the list of ice_arfs_entry(s) for rule deletion
-+ *
-+ * Loop through the delete list passed in and remove the rules from HW. After
-+ * each rule is deleted, disconnect and free the ice_arfs_entry because it is no
-+ * longer being referenced by the aRFS hash table.
-+ */
-+static void
-+ice_arfs_del_flow_rules(struct ice_vsi *vsi, struct hlist_head *del_list_head)
-+{
-+	struct ice_arfs_entry *e;
-+	struct hlist_node *n;
-+	struct device *dev;
-+
-+	dev = ice_pf_to_dev(vsi->back);
-+
-+	hlist_for_each_entry_safe(e, n, del_list_head, list_entry) {
-+		int result;
-+
-+		result = ice_fdir_write_fltr(vsi->back, &e->fltr_info, false,
-+					     false);
-+		if (!result)
-+			ice_arfs_update_active_fltr_cntrs(vsi, e, false);
-+		else
-+			dev_dbg(dev, "Unable to delete aRFS entry, err %d fltr_state %d fltr_id %d flow_id %d Q %d\n",
-+				result, e->fltr_state, e->fltr_info.fltr_id,
-+				e->flow_id, e->fltr_info.q_index);
-+
-+		/* The aRFS hash table is no longer referencing this entry */
-+		hlist_del(&e->list_entry);
-+		devm_kfree(dev, e);
-+	}
-+}
-+
-+/**
-+ * ice_arfs_add_flow_rules - add the rules passed in from HW
-+ * @vsi: VSI for the flow rules that need to be added
-+ * @add_list_head: head of the list of ice_arfs_entry_ptr(s) for rule addition
-+ *
-+ * Loop through the add list passed in and remove the rules from HW. After each
-+ * rule is added, disconnect and free the ice_arfs_entry_ptr node. Don't free
-+ * the ice_arfs_entry(s) because they are still being referenced in the aRFS
-+ * hash table.
-+ */
-+static void
-+ice_arfs_add_flow_rules(struct ice_vsi *vsi, struct hlist_head *add_list_head)
-+{
-+	struct ice_arfs_entry_ptr *ep;
-+	struct hlist_node *n;
-+	struct device *dev;
-+
-+	dev = ice_pf_to_dev(vsi->back);
-+
-+	hlist_for_each_entry_safe(ep, n, add_list_head, list_entry) {
-+		int result;
-+
-+		result = ice_fdir_write_fltr(vsi->back,
-+					     &ep->arfs_entry->fltr_info, true,
-+					     false);
-+		if (!result)
-+			ice_arfs_update_active_fltr_cntrs(vsi, ep->arfs_entry,
-+							  true);
-+		else
-+			dev_dbg(dev, "Unable to add aRFS entry, err %d fltr_state %d fltr_id %d flow_id %d Q %d\n",
-+				result, ep->arfs_entry->fltr_state,
-+				ep->arfs_entry->fltr_info.fltr_id,
-+				ep->arfs_entry->flow_id,
-+				ep->arfs_entry->fltr_info.q_index);
-+
-+		hlist_del(&ep->list_entry);
-+		devm_kfree(dev, ep);
-+	}
-+}
-+
-+/**
-+ * ice_arfs_is_flow_expired - check if the aRFS entry has expired
-+ * @vsi: VSI containing the aRFS entry
-+ * @arfs_entry: aRFS entry that's being checked for expiration
-+ *
-+ * Return true if the flow has expired, else false. This function should be used
-+ * to determine whether or not an aRFS entry should be removed from the hardware
-+ * and software structures.
-+ */
-+static bool
-+ice_arfs_is_flow_expired(struct ice_vsi *vsi, struct ice_arfs_entry *arfs_entry)
-+{
-+#define ICE_ARFS_TIME_DELTA_EXPIRATION	msecs_to_jiffies(5000)
-+	if (rps_may_expire_flow(vsi->netdev, arfs_entry->fltr_info.q_index,
-+				arfs_entry->flow_id,
-+				arfs_entry->fltr_info.fltr_id))
-+		return true;
-+
-+	/* expiration timer only used for UDP filters */
-+	if (arfs_entry->fltr_info.flow_type != ICE_FLTR_PTYPE_NONF_IPV4_UDP &&
-+	    arfs_entry->fltr_info.flow_type != ICE_FLTR_PTYPE_NONF_IPV6_UDP)
-+		return false;
-+
-+	return time_in_range64(arfs_entry->time_activated +
-+			       ICE_ARFS_TIME_DELTA_EXPIRATION,
-+			       arfs_entry->time_activated, get_jiffies_64());
-+}
-+
-+/**
-+ * ice_arfs_update_flow_rules - add/delete aRFS rules in HW
-+ * @vsi: the VSI to be forwarded to
-+ * @idx: index into the table of aRFS filter lists. Obtained from skb->hash
-+ * @add_list: list to populate with filters to be added to Flow Director
-+ * @del_list: list to populate with filters to be deleted from Flow Director
-+ *
-+ * Iterate over the hlist at the index given in the aRFS hash table and
-+ * determine if there are any aRFS entries that need to be either added or
-+ * deleted in the HW. If the aRFS entry is marked as ICE_ARFS_INACTIVE the
-+ * filter needs to be added to HW, else if it's marked as ICE_ARFS_ACTIVE and
-+ * the flow has expired delete the filter from HW. The caller of this function
-+ * is expected to add/delete rules on the add_list/del_list respectively.
-+ */
-+static void
-+ice_arfs_update_flow_rules(struct ice_vsi *vsi, u16 idx,
-+			   struct hlist_head *add_list,
-+			   struct hlist_head *del_list)
-+{
-+	struct ice_arfs_entry *e;
-+	struct hlist_node *n;
-+	struct device *dev;
-+
-+	dev = ice_pf_to_dev(vsi->back);
-+
-+	/* go through the aRFS hlist at this idx and check for needed updates */
-+	hlist_for_each_entry_safe(e, n, &vsi->arfs_fltr_list[idx], list_entry)
-+		/* check if filter needs to be added to HW */
-+		if (e->fltr_state == ICE_ARFS_INACTIVE) {
-+			enum ice_fltr_ptype flow_type = e->fltr_info.flow_type;
-+			struct ice_arfs_entry_ptr *ep =
-+				devm_kzalloc(dev, sizeof(*ep), GFP_ATOMIC);
-+
-+			if (!ep)
-+				continue;
-+			INIT_HLIST_NODE(&ep->list_entry);
-+			/* reference aRFS entry to add HW filter */
-+			ep->arfs_entry = e;
-+			hlist_add_head(&ep->list_entry, add_list);
-+			e->fltr_state = ICE_ARFS_ACTIVE;
-+			/* expiration timer only used for UDP flows */
-+			if (flow_type == ICE_FLTR_PTYPE_NONF_IPV4_UDP ||
-+			    flow_type == ICE_FLTR_PTYPE_NONF_IPV6_UDP)
-+				e->time_activated = get_jiffies_64();
-+		} else if (e->fltr_state == ICE_ARFS_ACTIVE) {
-+			/* check if filter needs to be removed from HW */
-+			if (ice_arfs_is_flow_expired(vsi, e)) {
-+				/* remove aRFS entry from hash table for delete
-+				 * and to prevent referencing it the next time
-+				 * through this hlist index
-+				 */
-+				hlist_del(&e->list_entry);
-+				e->fltr_state = ICE_ARFS_TODEL;
-+				/* save reference to aRFS entry for delete */
-+				hlist_add_head(&e->list_entry, del_list);
-+			}
-+		}
-+}
-+
-+/**
-+ * ice_sync_arfs_fltrs - update all aRFS filters
-+ * @pf: board private structure
-+ */
-+void ice_sync_arfs_fltrs(struct ice_pf *pf)
-+{
-+	HLIST_HEAD(tmp_del_list);
-+	HLIST_HEAD(tmp_add_list);
-+	struct ice_vsi *pf_vsi;
-+	unsigned int i;
-+
-+	pf_vsi = ice_get_main_vsi(pf);
-+	if (!pf_vsi)
-+		return;
-+
-+	if (!ice_is_arfs_active(pf_vsi))
-+		return;
-+
-+	spin_lock_bh(&pf_vsi->arfs_lock);
-+	/* Once we process aRFS for the PF VSI get out */
-+	for (i = 0; i < ICE_MAX_ARFS_LIST; i++)
-+		ice_arfs_update_flow_rules(pf_vsi, i, &tmp_add_list,
-+					   &tmp_del_list);
-+	spin_unlock_bh(&pf_vsi->arfs_lock);
-+
-+	/* use list of ice_arfs_entry(s) for delete */
-+	ice_arfs_del_flow_rules(pf_vsi, &tmp_del_list);
-+
-+	/* use list of ice_arfs_entry_ptr(s) for add */
-+	ice_arfs_add_flow_rules(pf_vsi, &tmp_add_list);
-+}
-+
-+/**
-+ * ice_arfs_build_entry - builds an aRFS entry based on input
-+ * @vsi: destination VSI for this flow
-+ * @fk: flow dissector keys for creating the tuple
-+ * @rxq_idx: Rx queue to steer this flow to
-+ * @flow_id: passed down from the stack and saved for flow expiration
-+ *
-+ * returns an aRFS entry on success and NULL on failure
-+ */
-+static struct ice_arfs_entry *
-+ice_arfs_build_entry(struct ice_vsi *vsi, const struct flow_keys *fk,
-+		     u16 rxq_idx, u32 flow_id)
-+{
-+	struct ice_arfs_entry *arfs_entry;
-+	struct ice_fdir_fltr *fltr_info;
-+	u8 ip_proto;
-+
-+	arfs_entry = devm_kzalloc(ice_pf_to_dev(vsi->back),
-+				  sizeof(*arfs_entry),
-+				  GFP_ATOMIC | __GFP_NOWARN);
-+	if (!arfs_entry)
-+		return NULL;
-+
-+	fltr_info = &arfs_entry->fltr_info;
-+	fltr_info->q_index = rxq_idx;
-+	fltr_info->dest_ctl = ICE_FLTR_PRGM_DESC_DEST_DIRECT_PKT_QINDEX;
-+	fltr_info->dest_vsi = vsi->idx;
-+	ip_proto = fk->basic.ip_proto;
-+
-+	if (fk->basic.n_proto == htons(ETH_P_IP)) {
-+		fltr_info->ip.v4.proto = ip_proto;
-+		fltr_info->flow_type = (ip_proto == IPPROTO_TCP) ?
-+			ICE_FLTR_PTYPE_NONF_IPV4_TCP :
-+			ICE_FLTR_PTYPE_NONF_IPV4_UDP;
-+		fltr_info->ip.v4.src_ip = fk->addrs.v4addrs.src;
-+		fltr_info->ip.v4.dst_ip = fk->addrs.v4addrs.dst;
-+		fltr_info->ip.v4.src_port = fk->ports.src;
-+		fltr_info->ip.v4.dst_port = fk->ports.dst;
-+	} else { /* ETH_P_IPV6 */
-+		fltr_info->ip.v6.proto = ip_proto;
-+		fltr_info->flow_type = (ip_proto == IPPROTO_TCP) ?
-+			ICE_FLTR_PTYPE_NONF_IPV6_TCP :
-+			ICE_FLTR_PTYPE_NONF_IPV6_UDP;
-+		memcpy(&fltr_info->ip.v6.src_ip, &fk->addrs.v6addrs.src,
-+		       sizeof(struct in6_addr));
-+		memcpy(&fltr_info->ip.v6.dst_ip, &fk->addrs.v6addrs.dst,
-+		       sizeof(struct in6_addr));
-+		fltr_info->ip.v6.src_port = fk->ports.src;
-+		fltr_info->ip.v6.dst_port = fk->ports.dst;
-+	}
-+
-+	arfs_entry->flow_id = flow_id;
-+	fltr_info->fltr_id =
-+		atomic_inc_return(vsi->arfs_last_fltr_id) % RPS_NO_FILTER;
-+
-+	return arfs_entry;
-+}
-+
-+/**
-+ * ice_arfs_is_perfect_flow_set - Check to see if perfect flow is set
-+ * @hw: pointer to HW structure
-+ * @l3_proto: ETH_P_IP or ETH_P_IPV6 in network order
-+ * @l4_proto: IPPROTO_UDP or IPPROTO_TCP
-+ *
-+ * We only support perfect (4-tuple) filters for aRFS. This function allows aRFS
-+ * to check if perfect (4-tuple) flow rules are currently in place by Flow
-+ * Director.
-+ */
-+static bool
-+ice_arfs_is_perfect_flow_set(struct ice_hw *hw, __be16 l3_proto, u8 l4_proto)
-+{
-+	unsigned long *perfect_fltr = hw->fdir_perfect_fltr;
-+
-+	/* advanced Flow Director disabled, perfect filters always supported */
-+	if (!perfect_fltr)
-+		return true;
-+
-+	if (l3_proto == htons(ETH_P_IP) && l4_proto == IPPROTO_UDP)
-+		return test_bit(ICE_FLTR_PTYPE_NONF_IPV4_UDP, perfect_fltr);
-+	else if (l3_proto == htons(ETH_P_IP) && l4_proto == IPPROTO_TCP)
-+		return test_bit(ICE_FLTR_PTYPE_NONF_IPV4_TCP, perfect_fltr);
-+	else if (l3_proto == htons(ETH_P_IPV6) && l4_proto == IPPROTO_UDP)
-+		return test_bit(ICE_FLTR_PTYPE_NONF_IPV6_UDP, perfect_fltr);
-+	else if (l3_proto == htons(ETH_P_IPV6) && l4_proto == IPPROTO_TCP)
-+		return test_bit(ICE_FLTR_PTYPE_NONF_IPV6_TCP, perfect_fltr);
-+
-+	return false;
-+}
-+
-+/**
-+ * ice_rx_flow_steer - steer the Rx flow to where application is being run
-+ * @netdev: ptr to the netdev being adjusted
-+ * @skb: buffer with required header information
-+ * @rxq_idx: queue to which the flow needs to move
-+ * @flow_id: flow identifier provided by the netdev
-+ *
-+ * Based on the skb, rxq_idx, and flow_id passed in add/update an entry in the
-+ * aRFS hash table. Iterate over one of the hlists in the aRFS hash table and
-+ * if the flow_id already exists in the hash table but the rxq_idx has changed
-+ * mark the entry as ICE_ARFS_INACTIVE so it can get updated in HW, else
-+ * if the entry is marked as ICE_ARFS_TODEL delete it from the aRFS hash table.
-+ * If neither of the previous conditions are true then add a new entry in the
-+ * aRFS hash table, which gets set to ICE_ARFS_INACTIVE by default so it can be
-+ * added to HW.
-+ */
-+int
-+ice_rx_flow_steer(struct net_device *netdev, const struct sk_buff *skb,
-+		  u16 rxq_idx, u32 flow_id)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_arfs_entry *arfs_entry;
-+	struct ice_vsi *vsi = np->vsi;
-+	struct flow_keys fk;
-+	struct ice_pf *pf;
-+	__be16 n_proto;
-+	u8 ip_proto;
-+	u16 idx;
-+	int ret;
-+
-+	/* failed to allocate memory for aRFS so don't crash */
-+	if (unlikely(!vsi->arfs_fltr_list))
-+		return -ENODEV;
-+
-+	pf = vsi->back;
-+
-+	if (skb->encapsulation)
-+		return -EPROTONOSUPPORT;
-+
-+	if (!skb_flow_dissect_flow_keys(skb, &fk, 0))
-+		return -EPROTONOSUPPORT;
-+
-+	n_proto = fk.basic.n_proto;
-+	/* Support only IPV4 and IPV6 */
-+	if ((n_proto == htons(ETH_P_IP) && !ip_is_fragment(ip_hdr(skb))) ||
-+	    n_proto == htons(ETH_P_IPV6))
-+		ip_proto = fk.basic.ip_proto;
-+	else
-+		return -EPROTONOSUPPORT;
-+
-+	/* Support only TCP and UDP */
-+	if (ip_proto != IPPROTO_TCP && ip_proto != IPPROTO_UDP)
-+		return -EPROTONOSUPPORT;
-+
-+	/* only support 4-tuple filters for aRFS */
-+	if (!ice_arfs_is_perfect_flow_set(&pf->hw, n_proto, ip_proto))
-+		return -EOPNOTSUPP;
-+
-+	/* choose the aRFS list bucket based on skb hash */
-+	idx = skb_get_hash_raw(skb) & ICE_ARFS_LST_MASK;
-+	/* search for entry in the bucket */
-+	spin_lock_bh(&vsi->arfs_lock);
-+	hlist_for_each_entry(arfs_entry, &vsi->arfs_fltr_list[idx],
-+			     list_entry) {
-+		struct ice_fdir_fltr *fltr_info;
-+
-+		/* keep searching for the already existing arfs_entry flow */
-+		if (arfs_entry->flow_id != flow_id)
-+			continue;
-+
-+		fltr_info = &arfs_entry->fltr_info;
-+		ret = fltr_info->fltr_id;
-+
-+		if (fltr_info->q_index == rxq_idx ||
-+		    arfs_entry->fltr_state != ICE_ARFS_ACTIVE)
-+			goto out;
-+
-+		/* update the queue to forward to on an already existing flow */
-+		fltr_info->q_index = rxq_idx;
-+		arfs_entry->fltr_state = ICE_ARFS_INACTIVE;
-+		ice_arfs_update_active_fltr_cntrs(vsi, arfs_entry, false);
-+		goto out_schedule_service_task;
-+	}
-+
-+	arfs_entry = ice_arfs_build_entry(vsi, &fk, rxq_idx, flow_id);
-+	if (!arfs_entry) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+
-+	ret = arfs_entry->fltr_info.fltr_id;
-+	INIT_HLIST_NODE(&arfs_entry->list_entry);
-+	hlist_add_head(&arfs_entry->list_entry, &vsi->arfs_fltr_list[idx]);
-+out_schedule_service_task:
-+	ice_service_task_schedule(pf);
-+out:
-+	spin_unlock_bh(&vsi->arfs_lock);
-+	return ret;
-+}
-+
-+/**
-+ * ice_init_arfs_cntrs - initialize aRFS counter values
-+ * @vsi: VSI that aRFS counters need to be initialized on
-+ */
-+static int ice_init_arfs_cntrs(struct ice_vsi *vsi)
-+{
-+	if (!vsi || vsi->type != ICE_VSI_PF)
-+		return -EINVAL;
-+
-+	vsi->arfs_fltr_cntrs = kzalloc(sizeof(*vsi->arfs_fltr_cntrs),
-+				       GFP_KERNEL);
-+	if (!vsi->arfs_fltr_cntrs)
-+		return -ENOMEM;
-+
-+	vsi->arfs_last_fltr_id = kzalloc(sizeof(*vsi->arfs_last_fltr_id),
-+					 GFP_KERNEL);
-+	if (!vsi->arfs_last_fltr_id) {
-+		kfree(vsi->arfs_fltr_cntrs);
-+		vsi->arfs_fltr_cntrs = NULL;
-+		return -ENOMEM;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_init_arfs - initialize aRFS resources
-+ * @vsi: the VSI to be forwarded to
-+ */
-+void ice_init_arfs(struct ice_vsi *vsi)
-+{
-+	struct hlist_head *arfs_fltr_list;
-+	unsigned int i;
-+
-+	if (!vsi || vsi->type != ICE_VSI_PF)
-+		return;
-+
-+	arfs_fltr_list = kzalloc(sizeof(*arfs_fltr_list) * ICE_MAX_ARFS_LIST,
-+				 GFP_KERNEL);
-+	if (!arfs_fltr_list)
-+		return;
-+
-+	if (ice_init_arfs_cntrs(vsi))
-+		goto free_arfs_fltr_list;
-+
-+	for (i = 0; i < ICE_MAX_ARFS_LIST; i++)
-+		INIT_HLIST_HEAD(&arfs_fltr_list[i]);
-+
-+	spin_lock_init(&vsi->arfs_lock);
-+
-+	vsi->arfs_fltr_list = arfs_fltr_list;
-+
-+	return;
-+
-+free_arfs_fltr_list:
-+	kfree(arfs_fltr_list);
-+}
-+
-+/**
-+ * ice_clear_arfs - clear the aRFS hash table and any memory used for aRFS
-+ * @vsi: the VSI to be forwarded to
-+ */
-+void ice_clear_arfs(struct ice_vsi *vsi)
-+{
-+	struct device *dev;
-+	unsigned int i;
-+
-+	if (!vsi || vsi->type != ICE_VSI_PF || !vsi->back ||
-+	    !vsi->arfs_fltr_list)
-+		return;
-+
-+	dev = ice_pf_to_dev(vsi->back);
-+	for (i = 0; i < ICE_MAX_ARFS_LIST; i++) {
-+		struct ice_arfs_entry *r;
-+		struct hlist_node *n;
-+
-+		spin_lock_bh(&vsi->arfs_lock);
-+		hlist_for_each_entry_safe(r, n, &vsi->arfs_fltr_list[i],
-+					  list_entry) {
-+			hlist_del(&r->list_entry);
-+			devm_kfree(dev, r);
-+		}
-+		spin_unlock_bh(&vsi->arfs_lock);
-+	}
-+
-+	kfree(vsi->arfs_fltr_list);
-+	vsi->arfs_fltr_list = NULL;
-+	kfree(vsi->arfs_last_fltr_id);
-+	vsi->arfs_last_fltr_id = NULL;
-+	kfree(vsi->arfs_fltr_cntrs);
-+	vsi->arfs_fltr_cntrs = NULL;
-+}
-+
-+/**
-+ * ice_free_cpu_rx_rmap - free setup cpu reverse map
-+ * @vsi: the VSI to be forwarded to
-+ */
-+void ice_free_cpu_rx_rmap(struct ice_vsi *vsi)
-+{
-+	struct net_device *netdev;
-+
-+	if (!vsi || vsi->type != ICE_VSI_PF || !vsi->arfs_fltr_list)
-+		return;
-+
-+	netdev = vsi->netdev;
-+	if (!netdev || !netdev->rx_cpu_rmap ||
-+	    netdev->reg_state != NETREG_REGISTERED)
-+		return;
-+
-+	free_irq_cpu_rmap(netdev->rx_cpu_rmap);
-+	netdev->rx_cpu_rmap = NULL;
-+}
-+
-+/**
-+ * ice_set_cpu_rx_rmap - setup cpu reverse map for each queue
-+ * @vsi: the VSI to be forwarded to
-+ */
-+int ice_set_cpu_rx_rmap(struct ice_vsi *vsi)
-+{
-+	struct net_device *netdev;
-+	struct ice_pf *pf;
-+	int base_idx, i;
-+
-+	if (!vsi || vsi->type != ICE_VSI_PF)
-+		return -EINVAL;
-+
-+	pf = vsi->back;
-+	netdev = vsi->netdev;
-+	if (!pf || !netdev || !vsi->num_q_vectors ||
-+	    vsi->netdev->reg_state != NETREG_REGISTERED)
-+		return -EINVAL;
-+
-+	netdev_dbg(netdev, "Setup CPU RMAP: vsi type 0x%x, ifname %s, q_vectors %d\n",
-+		   vsi->type, netdev->name, vsi->num_q_vectors);
-+
-+	netdev->rx_cpu_rmap = alloc_irq_cpu_rmap(vsi->num_q_vectors);
-+	if (unlikely(!netdev->rx_cpu_rmap))
-+		return -EINVAL;
-+
-+	base_idx = vsi->base_vector;
-+	for (i = 0; i < vsi->num_q_vectors; i++)
-+		if (irq_cpu_rmap_add(netdev->rx_cpu_rmap,
-+				     pf->msix_entries[base_idx + i].vector)) {
-+			ice_free_cpu_rx_rmap(vsi);
-+			return -EINVAL;
-+		}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_remove_arfs - remove/clear all aRFS resources
-+ * @pf: device private structure
-+ */
-+void ice_remove_arfs(struct ice_pf *pf)
-+{
-+	struct ice_vsi *pf_vsi;
-+
-+	pf_vsi = ice_get_main_vsi(pf);
-+	if (!pf_vsi)
-+		return;
-+
-+	ice_free_cpu_rx_rmap(pf_vsi);
-+	ice_clear_arfs(pf_vsi);
-+}
-+
-+/**
-+ * ice_rebuild_arfs - remove/clear all aRFS resources and rebuild after reset
-+ * @pf: device private structure
-+ */
-+void ice_rebuild_arfs(struct ice_pf *pf)
-+{
-+	struct ice_vsi *pf_vsi;
-+
-+	pf_vsi = ice_get_main_vsi(pf);
-+	if (!pf_vsi)
-+		return;
-+
-+	ice_remove_arfs(pf);
-+	if (ice_set_cpu_rx_rmap(pf_vsi)) {
-+		dev_err(ice_pf_to_dev(pf), "Failed to rebuild aRFS\n");
-+		return;
-+	}
-+	ice_init_arfs(pf_vsi);
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_arfs.h b/drivers/net/ethernet/intel/ice/ice_arfs.h
-new file mode 100644
-index 000000000000..593385a669ff
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_arfs.h
-@@ -0,0 +1,82 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2018-2019, Intel Corporation. */
-+
-+#ifndef _ICE_ARFS_H_
-+#define _ICE_ARFS_H_
-+enum ice_arfs_fltr_state {
-+	ICE_ARFS_INACTIVE,
-+	ICE_ARFS_ACTIVE,
-+	ICE_ARFS_TODEL,
-+};
-+
-+struct ice_arfs_entry {
-+	struct ice_fdir_fltr fltr_info;
-+	struct hlist_node list_entry;
-+	u64 time_activated;	/* only valid for UDP flows */
-+	u32 flow_id;
-+	/* fltr_state = 0 - ICE_ARFS_INACTIVE:
-+	 *	filter needs to be updated or programmed in HW.
-+	 * fltr_state = 1 - ICE_ARFS_ACTIVE:
-+	 *	filter is active and programmed in HW.
-+	 * fltr_state = 2 - ICE_ARFS_TODEL:
-+	 *	filter has been deleted from HW and needs to be removed from
-+	 *	the aRFS hash table.
-+	 */
-+	u8 fltr_state;
-+};
-+
-+struct ice_arfs_entry_ptr {
-+	struct ice_arfs_entry *arfs_entry;
-+	struct hlist_node list_entry;
-+};
-+
-+struct ice_arfs_active_fltr_cntrs {
-+	atomic_t active_tcpv4_cnt;
-+	atomic_t active_tcpv6_cnt;
-+	atomic_t active_udpv4_cnt;
-+	atomic_t active_udpv6_cnt;
-+};
-+
-+#ifdef CONFIG_RFS_ACCEL
-+int
-+ice_rx_flow_steer(struct net_device *netdev, const struct sk_buff *skb,
-+		  u16 rxq_idx, u32 flow_id);
-+void ice_clear_arfs(struct ice_vsi *vsi);
-+void ice_free_cpu_rx_rmap(struct ice_vsi *vsi);
-+void ice_init_arfs(struct ice_vsi *vsi);
-+void ice_sync_arfs_fltrs(struct ice_pf *pf);
-+int ice_set_cpu_rx_rmap(struct ice_vsi *vsi);
-+void ice_remove_arfs(struct ice_pf *pf);
-+void ice_rebuild_arfs(struct ice_pf *pf);
-+bool
-+ice_is_arfs_using_perfect_flow(struct ice_hw *hw,
-+			       enum ice_fltr_ptype flow_type);
-+#else
-+#define ice_sync_arfs_fltrs(pf) do {} while (0)
-+#define ice_init_arfs(vsi) do {} while (0)
-+#define ice_clear_arfs(vsi) do {} while (0)
-+#define ice_remove_arfs(pf) do {} while (0)
-+#define ice_free_cpu_rx_rmap(vsi) do {} while (0)
-+#define ice_rebuild_arfs(pf) do {} while (0)
-+
-+static inline int ice_set_cpu_rx_rmap(struct ice_vsi __always_unused *vsi)
-+{
-+	return 0;
-+}
-+
-+static inline int
-+ice_rx_flow_steer(struct net_device __always_unused *netdev,
-+		  const struct sk_buff __always_unused *skb,
-+		  u16 __always_unused rxq_idx, u32 __always_unused flow_id)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline bool
-+ice_is_arfs_using_perfect_flow(struct ice_hw __always_unused *hw,
-+			       enum ice_fltr_ptype __always_unused flow_type)
-+{
-+	return false;
-+}
-+#endif /* CONFIG_RFS_ACCEL */
-+#endif /* _ICE_ARFS_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
-index aa353e96b30f..22cc4167b974 100644
+index b584b7a03f10..5b7774aabe3c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
-@@ -566,6 +566,12 @@ ice_fdir_set_hw_fltr_rule(struct ice_pf *pf, struct ice_flow_seg_info *seg,
- 			return -EINVAL;
- 		}
+@@ -7,6 +7,24 @@
+ #include "ice_lib.h"
+ #include "ice_flow.h"
  
-+		if (ice_is_arfs_using_perfect_flow(hw, flow)) {
-+			dev_err(dev, "aRFS using perfect flow type %d, cannot change input set\n",
-+				flow);
-+			return -EINVAL;
++static struct in6_addr full_ipv6_addr_mask = {
++	.in6_u = {
++		.u6_addr8 = {
++			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 +		}
++	}
++};
 +
- 		/* remove HW filter definition */
- 		ice_fdir_rem_flow(hw, ICE_BLK_FD, flow);
- 	}
-@@ -1176,7 +1182,7 @@ ice_cfg_fdir_xtrct_seq(struct ice_pf *pf, struct ethtool_rx_flow_spec *fsp,
-  *
-  * returns 0 on success and negative value on error
++static struct in6_addr zero_ipv6_addr_mask = {
++	.in6_u = {
++		.u6_addr8 = {
++			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++		}
++	}
++};
++
+ /* calls to ice_flow_add_prof require the number of segments in the array
+  * for segs_cnt. In this code that is one more than the index.
   */
--static int
-+int
- ice_fdir_write_fltr(struct ice_pf *pf, struct ice_fdir_fltr *input, bool add,
- 		    bool is_tun)
- {
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 2bc260092f47..86a3a15c21c8 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2210,6 +2210,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 				ice_vsi_cfg_rss_lut_key(vsi);
- 				ice_vsi_set_rss_flow_fld(vsi);
- 			}
-+		ice_init_arfs(vsi);
+@@ -30,6 +48,14 @@ static int ice_fltr_to_ethtool_flow(enum ice_fltr_ptype flow)
+ 		return SCTP_V4_FLOW;
+ 	case ICE_FLTR_PTYPE_NONF_IPV4_OTHER:
+ 		return IPV4_USER_FLOW;
++	case ICE_FLTR_PTYPE_NONF_IPV6_TCP:
++		return TCP_V6_FLOW;
++	case ICE_FLTR_PTYPE_NONF_IPV6_UDP:
++		return UDP_V6_FLOW;
++	case ICE_FLTR_PTYPE_NONF_IPV6_SCTP:
++		return SCTP_V6_FLOW;
++	case ICE_FLTR_PTYPE_NONF_IPV6_OTHER:
++		return IPV6_USER_FLOW;
+ 	default:
+ 		/* 0 is undefined ethtool flow */
+ 		return 0;
+@@ -53,6 +79,14 @@ static enum ice_fltr_ptype ice_ethtool_flow_to_fltr(int eth)
+ 		return ICE_FLTR_PTYPE_NONF_IPV4_SCTP;
+ 	case IPV4_USER_FLOW:
+ 		return ICE_FLTR_PTYPE_NONF_IPV4_OTHER;
++	case TCP_V6_FLOW:
++		return ICE_FLTR_PTYPE_NONF_IPV6_TCP;
++	case UDP_V6_FLOW:
++		return ICE_FLTR_PTYPE_NONF_IPV6_UDP;
++	case SCTP_V6_FLOW:
++		return ICE_FLTR_PTYPE_NONF_IPV6_SCTP;
++	case IPV6_USER_FLOW:
++		return ICE_FLTR_PTYPE_NONF_IPV6_OTHER;
+ 	default:
+ 		return ICE_FLTR_PTYPE_NONF_NONE;
+ 	}
+@@ -92,28 +126,64 @@ int ice_get_ethtool_fdir_entry(struct ice_hw *hw, struct ethtool_rxnfc *cmd)
+ 	case IPV4_USER_FLOW:
+ 		fsp->h_u.usr_ip4_spec.ip_ver = ETH_RX_NFC_IP4;
+ 		fsp->h_u.usr_ip4_spec.proto = 0;
+-		fsp->h_u.usr_ip4_spec.l4_4_bytes = rule->ip.l4_header;
+-		fsp->h_u.usr_ip4_spec.tos = rule->ip.tos;
+-		fsp->h_u.usr_ip4_spec.ip4src = rule->ip.src_ip;
+-		fsp->h_u.usr_ip4_spec.ip4dst = rule->ip.dst_ip;
+-		fsp->m_u.usr_ip4_spec.ip4src = rule->mask.src_ip;
+-		fsp->m_u.usr_ip4_spec.ip4dst = rule->mask.dst_ip;
++		fsp->h_u.usr_ip4_spec.l4_4_bytes = rule->ip.v4.l4_header;
++		fsp->h_u.usr_ip4_spec.tos = rule->ip.v4.tos;
++		fsp->h_u.usr_ip4_spec.ip4src = rule->ip.v4.src_ip;
++		fsp->h_u.usr_ip4_spec.ip4dst = rule->ip.v4.dst_ip;
++		fsp->m_u.usr_ip4_spec.ip4src = rule->mask.v4.src_ip;
++		fsp->m_u.usr_ip4_spec.ip4dst = rule->mask.v4.dst_ip;
+ 		fsp->m_u.usr_ip4_spec.ip_ver = 0xFF;
+ 		fsp->m_u.usr_ip4_spec.proto = 0;
+-		fsp->m_u.usr_ip4_spec.l4_4_bytes = rule->mask.l4_header;
+-		fsp->m_u.usr_ip4_spec.tos = rule->mask.tos;
++		fsp->m_u.usr_ip4_spec.l4_4_bytes = rule->mask.v4.l4_header;
++		fsp->m_u.usr_ip4_spec.tos = rule->mask.v4.tos;
  		break;
- 	case ICE_VSI_VF:
- 		/* VF driver will take care of creating netdev for this type and
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 0eca14a1702e..f738e3046fb5 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1117,7 +1117,7 @@ static void ice_clean_mailboxq_subtask(struct ice_pf *pf)
+ 	case TCP_V4_FLOW:
+ 	case UDP_V4_FLOW:
+ 	case SCTP_V4_FLOW:
+-		fsp->h_u.tcp_ip4_spec.psrc = rule->ip.src_port;
+-		fsp->h_u.tcp_ip4_spec.pdst = rule->ip.dst_port;
+-		fsp->h_u.tcp_ip4_spec.ip4src = rule->ip.src_ip;
+-		fsp->h_u.tcp_ip4_spec.ip4dst = rule->ip.dst_ip;
+-		fsp->m_u.tcp_ip4_spec.psrc = rule->mask.src_port;
+-		fsp->m_u.tcp_ip4_spec.pdst = rule->mask.dst_port;
+-		fsp->m_u.tcp_ip4_spec.ip4src = rule->mask.src_ip;
+-		fsp->m_u.tcp_ip4_spec.ip4dst = rule->mask.dst_ip;
++		fsp->h_u.tcp_ip4_spec.psrc = rule->ip.v4.src_port;
++		fsp->h_u.tcp_ip4_spec.pdst = rule->ip.v4.dst_port;
++		fsp->h_u.tcp_ip4_spec.ip4src = rule->ip.v4.src_ip;
++		fsp->h_u.tcp_ip4_spec.ip4dst = rule->ip.v4.dst_ip;
++		fsp->m_u.tcp_ip4_spec.psrc = rule->mask.v4.src_port;
++		fsp->m_u.tcp_ip4_spec.pdst = rule->mask.v4.dst_port;
++		fsp->m_u.tcp_ip4_spec.ip4src = rule->mask.v4.src_ip;
++		fsp->m_u.tcp_ip4_spec.ip4dst = rule->mask.v4.dst_ip;
++		break;
++	case IPV6_USER_FLOW:
++		fsp->h_u.usr_ip6_spec.l4_4_bytes = rule->ip.v6.l4_header;
++		fsp->h_u.usr_ip6_spec.tclass = rule->ip.v6.tc;
++		fsp->h_u.usr_ip6_spec.l4_proto = rule->ip.v6.proto;
++		memcpy(fsp->h_u.tcp_ip6_spec.ip6src, rule->ip.v6.src_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->h_u.tcp_ip6_spec.ip6dst, rule->ip.v6.dst_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->m_u.tcp_ip6_spec.ip6src, rule->mask.v6.src_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->m_u.tcp_ip6_spec.ip6dst, rule->mask.v6.dst_ip,
++		       sizeof(struct in6_addr));
++		fsp->m_u.usr_ip6_spec.l4_4_bytes = rule->mask.v6.l4_header;
++		fsp->m_u.usr_ip6_spec.tclass = rule->mask.v6.tc;
++		fsp->m_u.usr_ip6_spec.l4_proto = rule->mask.v6.proto;
++		break;
++	case TCP_V6_FLOW:
++	case UDP_V6_FLOW:
++	case SCTP_V6_FLOW:
++		memcpy(fsp->h_u.tcp_ip6_spec.ip6src, rule->ip.v6.src_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->h_u.tcp_ip6_spec.ip6dst, rule->ip.v6.dst_ip,
++		       sizeof(struct in6_addr));
++		fsp->h_u.tcp_ip6_spec.psrc = rule->ip.v6.src_port;
++		fsp->h_u.tcp_ip6_spec.pdst = rule->ip.v6.dst_port;
++		memcpy(fsp->m_u.tcp_ip6_spec.ip6src,
++		       rule->mask.v6.src_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->m_u.tcp_ip6_spec.ip6dst,
++		       rule->mask.v6.dst_ip,
++		       sizeof(struct in6_addr));
++		fsp->m_u.tcp_ip6_spec.psrc = rule->mask.v6.src_port;
++		fsp->m_u.tcp_ip6_spec.pdst = rule->mask.v6.dst_port;
++		fsp->h_u.tcp_ip6_spec.tclass = rule->ip.v6.tc;
++		fsp->m_u.tcp_ip6_spec.tclass = rule->mask.v6.tc;
+ 		break;
+ 	default:
+ 		break;
+@@ -441,6 +511,7 @@ ice_fdir_set_hw_fltr_rule(struct ice_pf *pf, struct ice_flow_seg_info *seg,
+ /**
+  * ice_set_init_fdir_seg
+  * @seg: flow segment for programming
++ * @l3_proto: ICE_FLOW_SEG_HDR_IPV4 or ICE_FLOW_SEG_HDR_IPV6
+  * @l4_proto: ICE_FLOW_SEG_HDR_TCP or ICE_FLOW_SEG_HDR_UDP
   *
-  * If not already scheduled, this puts the task into the work queue.
+  * Set the configuration for perfect filters to the provided flow segment for
+@@ -449,13 +520,24 @@ ice_fdir_set_hw_fltr_rule(struct ice_pf *pf, struct ice_flow_seg_info *seg,
   */
--static void ice_service_task_schedule(struct ice_pf *pf)
-+void ice_service_task_schedule(struct ice_pf *pf)
+ static int
+ ice_set_init_fdir_seg(struct ice_flow_seg_info *seg,
++		      enum ice_flow_seg_hdr l3_proto,
+ 		      enum ice_flow_seg_hdr l4_proto)
  {
- 	if (!test_bit(__ICE_SERVICE_DIS, pf->state) &&
- 	    !test_and_set_bit(__ICE_SERVICE_SCHED, pf->state) &&
-@@ -1490,7 +1490,7 @@ static void ice_service_task(struct work_struct *work)
+-	enum ice_flow_field src_port, dst_port;
++	enum ice_flow_field src_addr, dst_addr, src_port, dst_port;
  
- 	ice_process_vflr_event(pf);
- 	ice_clean_mailboxq_subtask(pf);
--
-+	ice_sync_arfs_fltrs(pf);
- 	/* Clear __ICE_SERVICE_SCHED flag to allow scheduling next event */
- 	ice_service_task_complete(pf);
+ 	if (!seg)
+ 		return -EINVAL;
  
-@@ -1649,9 +1649,14 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi, char *basename)
- 		}
- 
- 		/* register for affinity change notifications */
--		q_vector->affinity_notify.notify = ice_irq_affinity_notify;
--		q_vector->affinity_notify.release = ice_irq_affinity_release;
--		irq_set_affinity_notifier(irq_num, &q_vector->affinity_notify);
-+		if (!IS_ENABLED(CONFIG_RFS_ACCEL)) {
-+			struct irq_affinity_notify *affinity_notify;
++	if (l3_proto == ICE_FLOW_SEG_HDR_IPV4) {
++		src_addr = ICE_FLOW_FIELD_IDX_IPV4_SA;
++		dst_addr = ICE_FLOW_FIELD_IDX_IPV4_DA;
++	} else if (l3_proto == ICE_FLOW_SEG_HDR_IPV6) {
++		src_addr = ICE_FLOW_FIELD_IDX_IPV6_SA;
++		dst_addr = ICE_FLOW_FIELD_IDX_IPV6_DA;
++	} else {
++		return -EINVAL;
++	}
 +
-+			affinity_notify = &q_vector->affinity_notify;
-+			affinity_notify->notify = ice_irq_affinity_notify;
-+			affinity_notify->release = ice_irq_affinity_release;
-+			irq_set_affinity_notifier(irq_num, affinity_notify);
-+		}
- 
- 		/* assign the mask for this irq */
- 		irq_set_affinity_hint(irq_num, &q_vector->affinity_mask);
-@@ -1663,8 +1668,9 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi, char *basename)
- free_q_irqs:
- 	while (vector) {
- 		vector--;
--		irq_num = pf->msix_entries[base + vector].vector,
--		irq_set_affinity_notifier(irq_num, NULL);
-+		irq_num = pf->msix_entries[base + vector].vector;
-+		if (!IS_ENABLED(CONFIG_RFS_ACCEL))
-+			irq_set_affinity_notifier(irq_num, NULL);
- 		irq_set_affinity_hint(irq_num, NULL);
- 		devm_free_irq(dev, irq_num, &vsi->q_vectors[vector]);
+ 	if (l4_proto == ICE_FLOW_SEG_HDR_TCP) {
+ 		src_port = ICE_FLOW_FIELD_IDX_TCP_SRC_PORT;
+ 		dst_port = ICE_FLOW_FIELD_IDX_TCP_DST_PORT;
+@@ -466,17 +548,15 @@ ice_set_init_fdir_seg(struct ice_flow_seg_info *seg,
+ 		return -EINVAL;
  	}
-@@ -2618,12 +2624,22 @@ static int ice_setup_pf_sw(struct ice_pf *pf)
- 	 */
- 	ice_napi_add(vsi);
  
-+	status = ice_set_cpu_rx_rmap(vsi);
-+	if (status) {
-+		dev_err(ice_pf_to_dev(pf), "Failed to set CPU Rx map VSI %d error %d\n",
-+			vsi->vsi_num, status);
-+		status = -EINVAL;
-+		goto unroll_napi_add;
-+	}
- 	status = ice_init_mac_fltr(pf);
- 	if (status)
--		goto unroll_napi_add;
-+		goto free_cpu_rx_map;
+-	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV4 | l4_proto);
++	ICE_FLOW_SET_HDRS(seg, l3_proto | l4_proto);
  
- 	return status;
+ 	/* IP source address */
+-	ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV4_SA,
+-			 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
+-			 ICE_FLOW_FLD_OFF_INVAL, false);
++	ice_flow_set_fld(seg, src_addr, ICE_FLOW_FLD_OFF_INVAL,
++			 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL, false);
  
-+free_cpu_rx_map:
-+	ice_free_cpu_rx_rmap(vsi);
-+
- unroll_napi_add:
- 	if (vsi) {
- 		ice_napi_del(vsi);
-@@ -3577,6 +3593,8 @@ static void ice_remove(struct pci_dev *pdev)
- 	set_bit(__ICE_DOWN, pf->state);
+ 	/* IP destination address */
+-	ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV4_DA,
+-			 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
+-			 ICE_FLOW_FLD_OFF_INVAL, false);
++	ice_flow_set_fld(seg, dst_addr, ICE_FLOW_FLD_OFF_INVAL,
++			 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL, false);
  
- 	mutex_destroy(&(&pf->hw)->fdir_fltr_lock);
-+	if (!ice_is_safe_mode(pf))
-+		ice_remove_arfs(pf);
- 	ice_devlink_destroy_port(pf);
- 	ice_vsi_release_all(pf);
- 	if (ice_is_peer_ena(pf)) {
-@@ -4098,11 +4116,14 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
- 		ret = ice_cfg_vlan_pruning(vsi, false, false);
+ 	/* Layer 4 source port */
+ 	ice_flow_set_fld(seg, src_port, ICE_FLOW_FLD_OFF_INVAL,
+@@ -521,9 +601,17 @@ ice_create_init_fdir_rule(struct ice_pf *pf, enum ice_fltr_ptype flow)
+ 	}
  
- 	if ((features & NETIF_F_NTUPLE) &&
--	    !(netdev->features & NETIF_F_NTUPLE))
-+	    !(netdev->features & NETIF_F_NTUPLE)) {
- 		ice_vsi_manage_fdir(vsi, true);
--	else if (!(features & NETIF_F_NTUPLE) &&
--		 (netdev->features & NETIF_F_NTUPLE))
-+		ice_init_arfs(vsi);
-+	} else if (!(features & NETIF_F_NTUPLE) &&
-+		 (netdev->features & NETIF_F_NTUPLE)) {
- 		ice_vsi_manage_fdir(vsi, false);
-+		ice_clear_arfs(vsi);
-+	}
- 
- 	return ret;
+ 	if (flow == ICE_FLTR_PTYPE_NONF_IPV4_TCP)
+-		ret = ice_set_init_fdir_seg(seg, ICE_FLOW_SEG_HDR_TCP);
++		ret = ice_set_init_fdir_seg(seg, ICE_FLOW_SEG_HDR_IPV4,
++					    ICE_FLOW_SEG_HDR_TCP);
+ 	else if (flow == ICE_FLTR_PTYPE_NONF_IPV4_UDP)
+-		ret = ice_set_init_fdir_seg(seg, ICE_FLOW_SEG_HDR_UDP);
++		ret = ice_set_init_fdir_seg(seg, ICE_FLOW_SEG_HDR_IPV4,
++					    ICE_FLOW_SEG_HDR_UDP);
++	else if (flow == ICE_FLTR_PTYPE_NONF_IPV6_TCP)
++		ret = ice_set_init_fdir_seg(seg, ICE_FLOW_SEG_HDR_IPV6,
++					    ICE_FLOW_SEG_HDR_TCP);
++	else if (flow == ICE_FLTR_PTYPE_NONF_IPV6_UDP)
++		ret = ice_set_init_fdir_seg(seg, ICE_FLOW_SEG_HDR_IPV6,
++					    ICE_FLOW_SEG_HDR_UDP);
+ 	else
+ 		ret = -EINVAL;
+ 	if (ret)
+@@ -694,6 +782,156 @@ ice_set_fdir_ip4_usr_seg(struct ice_flow_seg_info *seg,
+ 	return 0;
  }
-@@ -5012,6 +5033,8 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
  
- 		/* replay Flow Director filters */
- 		ice_fdir_replay_fltrs(pf);
++/**
++ * ice_set_fdir_ip6_seg
++ * @seg: flow segment for programming
++ * @tcp_ip6_spec: mask data from ethtool
++ * @l4_proto: Layer 4 protocol to program
++ * @perfect_fltr: only valid on success; returns true if perfect filter,
++ *		  false if not
++ *
++ * Set the mask data into the flow segment to be used to program HW
++ * table based on provided L4 protocol for IPv6
++ */
++static int
++ice_set_fdir_ip6_seg(struct ice_flow_seg_info *seg,
++		     struct ethtool_tcpip6_spec *tcp_ip6_spec,
++		     enum ice_flow_seg_hdr l4_proto, bool *perfect_fltr)
++{
++	enum ice_flow_field src_port, dst_port;
 +
-+		ice_rebuild_arfs(pf);
++	/* make sure we don't have any empty rule */
++	if (!memcmp(tcp_ip6_spec->ip6src, &zero_ipv6_addr_mask,
++		    sizeof(struct in6_addr)) &&
++	    !memcmp(tcp_ip6_spec->ip6dst, &zero_ipv6_addr_mask,
++		    sizeof(struct in6_addr)) &&
++	    !tcp_ip6_spec->psrc && !tcp_ip6_spec->pdst)
++		return -EINVAL;
++
++	/* filtering on TC not supported */
++	if (tcp_ip6_spec->tclass)
++		return -EOPNOTSUPP;
++
++	if (l4_proto == ICE_FLOW_SEG_HDR_TCP) {
++		src_port = ICE_FLOW_FIELD_IDX_TCP_SRC_PORT;
++		dst_port = ICE_FLOW_FIELD_IDX_TCP_DST_PORT;
++	} else if (l4_proto == ICE_FLOW_SEG_HDR_UDP) {
++		src_port = ICE_FLOW_FIELD_IDX_UDP_SRC_PORT;
++		dst_port = ICE_FLOW_FIELD_IDX_UDP_DST_PORT;
++	} else if (l4_proto == ICE_FLOW_SEG_HDR_SCTP) {
++		src_port = ICE_FLOW_FIELD_IDX_SCTP_SRC_PORT;
++		dst_port = ICE_FLOW_FIELD_IDX_SCTP_DST_PORT;
++	} else {
++		return -EINVAL;
++	}
++
++	*perfect_fltr = true;
++	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV6 | l4_proto);
++
++	if (!memcmp(tcp_ip6_spec->ip6src, &full_ipv6_addr_mask,
++		    sizeof(struct in6_addr)))
++		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV6_SA,
++				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
++				 ICE_FLOW_FLD_OFF_INVAL, false);
++	else if (!memcmp(tcp_ip6_spec->ip6src, &zero_ipv6_addr_mask,
++			 sizeof(struct in6_addr)))
++		*perfect_fltr = false;
++	else
++		return -EOPNOTSUPP;
++
++	if (!memcmp(tcp_ip6_spec->ip6dst, &full_ipv6_addr_mask,
++		    sizeof(struct in6_addr)))
++		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV6_DA,
++				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
++				 ICE_FLOW_FLD_OFF_INVAL, false);
++	else if (!memcmp(tcp_ip6_spec->ip6dst, &zero_ipv6_addr_mask,
++			 sizeof(struct in6_addr)))
++		*perfect_fltr = false;
++	else
++		return -EOPNOTSUPP;
++
++	/* Layer 4 source port */
++	if (tcp_ip6_spec->psrc == htons(0xFFFF))
++		ice_flow_set_fld(seg, src_port, ICE_FLOW_FLD_OFF_INVAL,
++				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
++				 false);
++	else if (!tcp_ip6_spec->psrc)
++		*perfect_fltr = false;
++	else
++		return -EOPNOTSUPP;
++
++	/* Layer 4 destination port */
++	if (tcp_ip6_spec->pdst == htons(0xFFFF))
++		ice_flow_set_fld(seg, dst_port, ICE_FLOW_FLD_OFF_INVAL,
++				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
++				 false);
++	else if (!tcp_ip6_spec->pdst)
++		*perfect_fltr = false;
++	else
++		return -EOPNOTSUPP;
++
++	return 0;
++}
++
++/**
++ * ice_set_fdir_ip6_usr_seg
++ * @seg: flow segment for programming
++ * @usr_ip6_spec: ethtool userdef packet offset
++ * @perfect_fltr: only valid on success; returns true if perfect filter,
++ *		  false if not
++ *
++ * Set the offset data into the flow segment to be used to program HW
++ * table for IPv6
++ */
++static int
++ice_set_fdir_ip6_usr_seg(struct ice_flow_seg_info *seg,
++			 struct ethtool_usrip6_spec *usr_ip6_spec,
++			 bool *perfect_fltr)
++{
++	/* filtering on Layer 4 bytes not supported */
++	if (usr_ip6_spec->l4_4_bytes)
++		return -EOPNOTSUPP;
++	/* filtering on TC not supported */
++	if (usr_ip6_spec->tclass)
++		return -EOPNOTSUPP;
++	/* filtering on Layer 4 protocol not supported */
++	if (usr_ip6_spec->l4_proto)
++		return -EOPNOTSUPP;
++	/* empty rules are not valid */
++	if (!memcmp(usr_ip6_spec->ip6src, &zero_ipv6_addr_mask,
++		    sizeof(struct in6_addr)) &&
++	    !memcmp(usr_ip6_spec->ip6dst, &zero_ipv6_addr_mask,
++		    sizeof(struct in6_addr)))
++		return -EINVAL;
++
++	*perfect_fltr = true;
++	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV6);
++
++	if (!memcmp(usr_ip6_spec->ip6src, &full_ipv6_addr_mask,
++		    sizeof(struct in6_addr)))
++		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV6_SA,
++				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
++				 ICE_FLOW_FLD_OFF_INVAL, false);
++	else if (!memcmp(usr_ip6_spec->ip6src, &zero_ipv6_addr_mask,
++			 sizeof(struct in6_addr)))
++		*perfect_fltr = false;
++	else
++		return -EOPNOTSUPP;
++
++	if (!memcmp(usr_ip6_spec->ip6dst, &full_ipv6_addr_mask,
++		    sizeof(struct in6_addr)))
++		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_IPV6_DA,
++				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
++				 ICE_FLOW_FLD_OFF_INVAL, false);
++	else if (!memcmp(usr_ip6_spec->ip6dst, &zero_ipv6_addr_mask,
++			 sizeof(struct in6_addr)))
++		*perfect_fltr = false;
++	else
++		return -EOPNOTSUPP;
++
++	return 0;
++}
++
+ /**
+  * ice_cfg_fdir_xtrct_seq - Configure extraction sequence for the given filter
+  * @pf: PF structure
+@@ -742,6 +980,25 @@ ice_cfg_fdir_xtrct_seq(struct ice_pf *pf, struct ethtool_rx_flow_spec *fsp)
+ 		ret = ice_set_fdir_ip4_usr_seg(seg, &fsp->m_u.usr_ip4_spec,
+ 					       &perfect_filter);
+ 		break;
++	case TCP_V6_FLOW:
++		ret = ice_set_fdir_ip6_seg(seg, &fsp->m_u.tcp_ip6_spec,
++					   ICE_FLOW_SEG_HDR_TCP,
++					   &perfect_filter);
++		break;
++	case UDP_V6_FLOW:
++		ret = ice_set_fdir_ip6_seg(seg, &fsp->m_u.tcp_ip6_spec,
++					   ICE_FLOW_SEG_HDR_UDP,
++					   &perfect_filter);
++		break;
++	case SCTP_V6_FLOW:
++		ret = ice_set_fdir_ip6_seg(seg, &fsp->m_u.tcp_ip6_spec,
++					   ICE_FLOW_SEG_HDR_SCTP,
++					   &perfect_filter);
++		break;
++	case IPV6_USER_FLOW:
++		ret = ice_set_fdir_ip6_usr_seg(seg, &fsp->m_u.usr_ip6_spec,
++					       &perfect_filter);
++		break;
+ 	default:
+ 		ret = -EINVAL;
+ 	}
+@@ -910,6 +1167,14 @@ int ice_fdir_create_dflt_rules(struct ice_pf *pf)
+ 		return err;
+ 
+ 	err = ice_create_init_fdir_rule(pf, ICE_FLTR_PTYPE_NONF_IPV4_UDP);
++	if (err)
++		return err;
++
++	err = ice_create_init_fdir_rule(pf, ICE_FLTR_PTYPE_NONF_IPV6_TCP);
++	if (err)
++		return err;
++
++	err = ice_create_init_fdir_rule(pf, ICE_FLTR_PTYPE_NONF_IPV6_UDP);
+ 
+ 	return err;
+ }
+@@ -1094,28 +1359,62 @@ ice_set_fdir_input_set(struct ice_vsi *vsi, struct ethtool_rx_flow_spec *fsp,
+ 	case TCP_V4_FLOW:
+ 	case UDP_V4_FLOW:
+ 	case SCTP_V4_FLOW:
+-		input->ip.dst_port = fsp->h_u.tcp_ip4_spec.pdst;
+-		input->ip.src_port = fsp->h_u.tcp_ip4_spec.psrc;
+-		input->ip.dst_ip = fsp->h_u.tcp_ip4_spec.ip4dst;
+-		input->ip.src_ip = fsp->h_u.tcp_ip4_spec.ip4src;
+-		input->mask.dst_port = fsp->m_u.tcp_ip4_spec.pdst;
+-		input->mask.src_port = fsp->m_u.tcp_ip4_spec.psrc;
+-		input->mask.dst_ip = fsp->m_u.tcp_ip4_spec.ip4dst;
+-		input->mask.src_ip = fsp->m_u.tcp_ip4_spec.ip4src;
++		input->ip.v4.dst_port = fsp->h_u.tcp_ip4_spec.pdst;
++		input->ip.v4.src_port = fsp->h_u.tcp_ip4_spec.psrc;
++		input->ip.v4.dst_ip = fsp->h_u.tcp_ip4_spec.ip4dst;
++		input->ip.v4.src_ip = fsp->h_u.tcp_ip4_spec.ip4src;
++		input->mask.v4.dst_port = fsp->m_u.tcp_ip4_spec.pdst;
++		input->mask.v4.src_port = fsp->m_u.tcp_ip4_spec.psrc;
++		input->mask.v4.dst_ip = fsp->m_u.tcp_ip4_spec.ip4dst;
++		input->mask.v4.src_ip = fsp->m_u.tcp_ip4_spec.ip4src;
+ 		break;
+ 	case IPV4_USER_FLOW:
+-		input->ip.dst_ip = fsp->h_u.usr_ip4_spec.ip4dst;
+-		input->ip.src_ip = fsp->h_u.usr_ip4_spec.ip4src;
+-		input->ip.l4_header = fsp->h_u.usr_ip4_spec.l4_4_bytes;
+-		input->ip.proto = fsp->h_u.usr_ip4_spec.proto;
+-		input->ip.ip_ver = fsp->h_u.usr_ip4_spec.ip_ver;
+-		input->ip.tos = fsp->h_u.usr_ip4_spec.tos;
+-		input->mask.dst_ip = fsp->m_u.usr_ip4_spec.ip4dst;
+-		input->mask.src_ip = fsp->m_u.usr_ip4_spec.ip4src;
+-		input->mask.l4_header = fsp->m_u.usr_ip4_spec.l4_4_bytes;
+-		input->mask.proto = fsp->m_u.usr_ip4_spec.proto;
+-		input->mask.ip_ver = fsp->m_u.usr_ip4_spec.ip_ver;
+-		input->mask.tos = fsp->m_u.usr_ip4_spec.tos;
++		input->ip.v4.dst_ip = fsp->h_u.usr_ip4_spec.ip4dst;
++		input->ip.v4.src_ip = fsp->h_u.usr_ip4_spec.ip4src;
++		input->ip.v4.l4_header = fsp->h_u.usr_ip4_spec.l4_4_bytes;
++		input->ip.v4.proto = fsp->h_u.usr_ip4_spec.proto;
++		input->ip.v4.ip_ver = fsp->h_u.usr_ip4_spec.ip_ver;
++		input->ip.v4.tos = fsp->h_u.usr_ip4_spec.tos;
++		input->mask.v4.dst_ip = fsp->m_u.usr_ip4_spec.ip4dst;
++		input->mask.v4.src_ip = fsp->m_u.usr_ip4_spec.ip4src;
++		input->mask.v4.l4_header = fsp->m_u.usr_ip4_spec.l4_4_bytes;
++		input->mask.v4.proto = fsp->m_u.usr_ip4_spec.proto;
++		input->mask.v4.ip_ver = fsp->m_u.usr_ip4_spec.ip_ver;
++		input->mask.v4.tos = fsp->m_u.usr_ip4_spec.tos;
++		break;
++	case TCP_V6_FLOW:
++	case UDP_V6_FLOW:
++	case SCTP_V6_FLOW:
++		memcpy(input->ip.v6.dst_ip, fsp->h_u.usr_ip6_spec.ip6dst,
++		       sizeof(struct in6_addr));
++		memcpy(input->ip.v6.src_ip, fsp->h_u.usr_ip6_spec.ip6src,
++		       sizeof(struct in6_addr));
++		input->ip.v6.dst_port = fsp->h_u.tcp_ip6_spec.pdst;
++		input->ip.v6.src_port = fsp->h_u.tcp_ip6_spec.psrc;
++		input->ip.v6.tc = fsp->h_u.tcp_ip6_spec.tclass;
++		memcpy(input->mask.v6.dst_ip, fsp->m_u.tcp_ip6_spec.ip6dst,
++		       sizeof(struct in6_addr));
++		memcpy(input->mask.v6.src_ip, fsp->m_u.tcp_ip6_spec.ip6src,
++		       sizeof(struct in6_addr));
++		input->mask.v6.dst_port = fsp->m_u.tcp_ip6_spec.pdst;
++		input->mask.v6.src_port = fsp->m_u.tcp_ip6_spec.psrc;
++		input->mask.v6.tc = fsp->m_u.tcp_ip6_spec.tclass;
++		break;
++	case IPV6_USER_FLOW:
++		memcpy(input->ip.v6.dst_ip, fsp->h_u.usr_ip6_spec.ip6dst,
++		       sizeof(struct in6_addr));
++		memcpy(input->ip.v6.src_ip, fsp->h_u.usr_ip6_spec.ip6src,
++		       sizeof(struct in6_addr));
++		input->ip.v6.l4_header = fsp->h_u.usr_ip6_spec.l4_4_bytes;
++		input->ip.v6.tc = fsp->h_u.usr_ip6_spec.tclass;
++		input->ip.v6.proto = fsp->h_u.usr_ip6_spec.l4_proto;
++		memcpy(input->mask.v6.dst_ip, fsp->m_u.usr_ip6_spec.ip6dst,
++		       sizeof(struct in6_addr));
++		memcpy(input->mask.v6.src_ip, fsp->m_u.usr_ip6_spec.ip6src,
++		       sizeof(struct in6_addr));
++		input->mask.v6.l4_header = fsp->m_u.usr_ip6_spec.l4_4_bytes;
++		input->mask.v6.tc = fsp->m_u.usr_ip6_spec.tclass;
++		input->mask.v6.proto = fsp->m_u.usr_ip6_spec.l4_proto;
+ 		break;
+ 	default:
+ 		/* not doing un-parsed flow types */
+diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
+index 505017c9f1e8..e94277dc9cdc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
+@@ -40,6 +40,52 @@ static const u8 ice_fdir_ipv4_pkt[] = {
+ 	0x00, 0x00
+ };
+ 
++static const u8 ice_fdir_tcpv6_pkt[] = {
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x86, 0xDD, 0x60, 0x00,
++	0x00, 0x00, 0x00, 0x14, 0x06, 0x40, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x50, 0x00, 0x20, 0x00, 0x00, 0x00,
++	0x00, 0x00,
++};
++
++static const u8 ice_fdir_udpv6_pkt[] = {
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x86, 0xDD, 0x60, 0x00,
++	0x00, 0x00, 0x00, 0x08, 0x11, 0x40, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x08, 0x00, 0x00,
++};
++
++static const u8 ice_fdir_sctpv6_pkt[] = {
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x86, 0xDD, 0x60, 0x00,
++	0x00, 0x00, 0x00, 0x0C, 0x84, 0x40, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00,
++};
++
++static const u8 ice_fdir_ipv6_pkt[] = {
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x86, 0xDD, 0x60, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x3B, 0x40, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++};
++
+ static const u8 ice_fdir_tcp4_tun_pkt[] = {
+ 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x45, 0x00,
+@@ -100,6 +146,76 @@ static const u8 ice_fdir_ip4_tun_pkt[] = {
+ 	0x00, 0x00, 0x00, 0x00,
+ };
+ 
++static const u8 ice_fdir_tcp6_tun_pkt[] = {
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x45, 0x00,
++	0x00, 0x6e, 0x00, 0x00, 0x40, 0x00, 0x40, 0x11,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x04, 0x00, 0x00, 0x03, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x86, 0xdd,
++	0x60, 0x00, 0x00, 0x00, 0x00, 0x14, 0x06, 0x40,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x50, 0x00, 0x20, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++};
++
++static const u8 ice_fdir_udp6_tun_pkt[] = {
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x45, 0x00,
++	0x00, 0x62, 0x00, 0x00, 0x40, 0x00, 0x40, 0x11,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x04, 0x00, 0x00, 0x03, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x86, 0xdd,
++	0x60, 0x00, 0x00, 0x00, 0x00, 0x08, 0x11, 0x40,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++};
++
++static const u8 ice_fdir_sctp6_tun_pkt[] = {
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x45, 0x00,
++	0x00, 0x66, 0x00, 0x00, 0x40, 0x00, 0x40, 0x11,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x04, 0x00, 0x00, 0x03, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x86, 0xdd,
++	0x60, 0x00, 0x00, 0x00, 0x00, 0x0c, 0x84, 0x40,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++};
++
++static const u8 ice_fdir_ip6_tun_pkt[] = {
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x45, 0x00,
++	0x00, 0x5a, 0x00, 0x00, 0x40, 0x00, 0x40, 0x11,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x04, 0x00, 0x00, 0x03, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x86, 0xdd,
++	0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3b, 0x40,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++};
++
+ /* Flow Director no-op training packet table */
+ static const struct ice_fdir_base_pkt ice_fdir_pkt[] = {
+ 	{
+@@ -122,6 +238,26 @@ static const struct ice_fdir_base_pkt ice_fdir_pkt[] = {
+ 		sizeof(ice_fdir_ipv4_pkt), ice_fdir_ipv4_pkt,
+ 		sizeof(ice_fdir_ip4_tun_pkt), ice_fdir_ip4_tun_pkt,
+ 	},
++	{
++		ICE_FLTR_PTYPE_NONF_IPV6_TCP,
++		sizeof(ice_fdir_tcpv6_pkt), ice_fdir_tcpv6_pkt,
++		sizeof(ice_fdir_tcp6_tun_pkt), ice_fdir_tcp6_tun_pkt,
++	},
++	{
++		ICE_FLTR_PTYPE_NONF_IPV6_UDP,
++		sizeof(ice_fdir_udpv6_pkt), ice_fdir_udpv6_pkt,
++		sizeof(ice_fdir_udp6_tun_pkt), ice_fdir_udp6_tun_pkt,
++	},
++	{
++		ICE_FLTR_PTYPE_NONF_IPV6_SCTP,
++		sizeof(ice_fdir_sctpv6_pkt), ice_fdir_sctpv6_pkt,
++		sizeof(ice_fdir_sctp6_tun_pkt), ice_fdir_sctp6_tun_pkt,
++	},
++	{
++		ICE_FLTR_PTYPE_NONF_IPV6_OTHER,
++		sizeof(ice_fdir_ipv6_pkt), ice_fdir_ipv6_pkt,
++		sizeof(ice_fdir_ip6_tun_pkt), ice_fdir_ip6_tun_pkt,
++	},
+ };
+ 
+ #define ICE_FDIR_NUM_PKT ARRAY_SIZE(ice_fdir_pkt)
+@@ -319,6 +455,21 @@ int ice_get_fdir_cnt_all(struct ice_hw *hw)
+ 	return hw->func_caps.fd_fltr_guar + hw->func_caps.fd_fltr_best_effort;
+ }
+ 
++/**
++ * ice_pkt_insert_ipv6_addr - insert a be32 IPv6 address into a memory buffer.
++ * @pkt: packet buffer
++ * @offset: offset into buffer
++ * @addr: IPv6 address to convert and insert into pkt at offset
++ */
++static void ice_pkt_insert_ipv6_addr(u8 *pkt, int offset, __be32 *addr)
++{
++	int idx;
++
++	for (idx = 0; idx < ICE_IPV6_ADDR_LEN_AS_U32; idx++)
++		memcpy(pkt + offset + idx * sizeof(*addr), &addr[idx],
++		       sizeof(*addr));
++}
++
+ /**
+  * ice_pkt_insert_u16 - insert a be16 value into a memory buffer.
+  * @pkt: packet buffer
+@@ -359,7 +510,7 @@ ice_fdir_get_gen_prgm_pkt(struct ice_hw *hw, struct ice_fdir_fltr *input,
+ 	u16 idx;
+ 
+ 	if (input->flow_type == ICE_FLTR_PTYPE_NONF_IPV4_OTHER) {
+-		switch (input->ip.proto) {
++		switch (input->ip.v4.proto) {
+ 		case IPPROTO_TCP:
+ 			flow = ICE_FLTR_PTYPE_NONF_IPV4_TCP;
+ 			break;
+@@ -375,6 +526,23 @@ ice_fdir_get_gen_prgm_pkt(struct ice_hw *hw, struct ice_fdir_fltr *input,
+ 		default:
+ 			return ICE_ERR_PARAM;
+ 		}
++	} else if (input->flow_type == ICE_FLTR_PTYPE_NONF_IPV6_OTHER) {
++		switch (input->ip.v6.proto) {
++		case IPPROTO_TCP:
++			flow = ICE_FLTR_PTYPE_NONF_IPV6_TCP;
++			break;
++		case IPPROTO_UDP:
++			flow = ICE_FLTR_PTYPE_NONF_IPV6_UDP;
++			break;
++		case IPPROTO_SCTP:
++			flow = ICE_FLTR_PTYPE_NONF_IPV6_SCTP;
++			break;
++		case IPPROTO_IP:
++			flow = ICE_FLTR_PTYPE_NONF_IPV6_OTHER;
++			break;
++		default:
++			return ICE_ERR_PARAM;
++		}
+ 	} else {
+ 		flow = input->flow_type;
+ 	}
+@@ -405,43 +573,79 @@ ice_fdir_get_gen_prgm_pkt(struct ice_hw *hw, struct ice_fdir_fltr *input,
+ 	switch (flow) {
+ 	case ICE_FLTR_PTYPE_NONF_IPV4_TCP:
+ 		ice_pkt_insert_u32(loc, ICE_IPV4_DST_ADDR_OFFSET,
+-				   input->ip.src_ip);
++				   input->ip.v4.src_ip);
+ 		ice_pkt_insert_u16(loc, ICE_IPV4_TCP_DST_PORT_OFFSET,
+-				   input->ip.src_port);
++				   input->ip.v4.src_port);
+ 		ice_pkt_insert_u32(loc, ICE_IPV4_SRC_ADDR_OFFSET,
+-				   input->ip.dst_ip);
++				   input->ip.v4.dst_ip);
+ 		ice_pkt_insert_u16(loc, ICE_IPV4_TCP_SRC_PORT_OFFSET,
+-				   input->ip.dst_port);
++				   input->ip.v4.dst_port);
+ 		if (frag)
+ 			loc[20] = ICE_FDIR_IPV4_PKT_FLAG_DF;
+ 		break;
+ 	case ICE_FLTR_PTYPE_NONF_IPV4_UDP:
+ 		ice_pkt_insert_u32(loc, ICE_IPV4_DST_ADDR_OFFSET,
+-				   input->ip.src_ip);
++				   input->ip.v4.src_ip);
+ 		ice_pkt_insert_u16(loc, ICE_IPV4_UDP_DST_PORT_OFFSET,
+-				   input->ip.src_port);
++				   input->ip.v4.src_port);
+ 		ice_pkt_insert_u32(loc, ICE_IPV4_SRC_ADDR_OFFSET,
+-				   input->ip.dst_ip);
++				   input->ip.v4.dst_ip);
+ 		ice_pkt_insert_u16(loc, ICE_IPV4_UDP_SRC_PORT_OFFSET,
+-				   input->ip.dst_port);
++				   input->ip.v4.dst_port);
+ 		break;
+ 	case ICE_FLTR_PTYPE_NONF_IPV4_SCTP:
+ 		ice_pkt_insert_u32(loc, ICE_IPV4_DST_ADDR_OFFSET,
+-				   input->ip.src_ip);
++				   input->ip.v4.src_ip);
+ 		ice_pkt_insert_u16(loc, ICE_IPV4_SCTP_DST_PORT_OFFSET,
+-				   input->ip.src_port);
++				   input->ip.v4.src_port);
+ 		ice_pkt_insert_u32(loc, ICE_IPV4_SRC_ADDR_OFFSET,
+-				   input->ip.dst_ip);
++				   input->ip.v4.dst_ip);
+ 		ice_pkt_insert_u16(loc, ICE_IPV4_SCTP_SRC_PORT_OFFSET,
+-				   input->ip.dst_port);
++				   input->ip.v4.dst_port);
+ 		break;
+ 	case ICE_FLTR_PTYPE_NONF_IPV4_OTHER:
+ 		ice_pkt_insert_u32(loc, ICE_IPV4_DST_ADDR_OFFSET,
+-				   input->ip.src_ip);
++				   input->ip.v4.src_ip);
+ 		ice_pkt_insert_u32(loc, ICE_IPV4_SRC_ADDR_OFFSET,
+-				   input->ip.dst_ip);
++				   input->ip.v4.dst_ip);
+ 		ice_pkt_insert_u16(loc, ICE_IPV4_PROTO_OFFSET, 0);
+ 		break;
++	case ICE_FLTR_PTYPE_NONF_IPV6_TCP:
++		ice_pkt_insert_ipv6_addr(loc, ICE_IPV6_DST_ADDR_OFFSET,
++					 input->ip.v6.src_ip);
++		ice_pkt_insert_ipv6_addr(loc, ICE_IPV6_SRC_ADDR_OFFSET,
++					 input->ip.v6.dst_ip);
++		ice_pkt_insert_u16(loc, ICE_IPV6_TCP_DST_PORT_OFFSET,
++				   input->ip.v6.src_port);
++		ice_pkt_insert_u16(loc, ICE_IPV6_TCP_SRC_PORT_OFFSET,
++				   input->ip.v6.dst_port);
++		break;
++	case ICE_FLTR_PTYPE_NONF_IPV6_UDP:
++		ice_pkt_insert_ipv6_addr(loc, ICE_IPV6_DST_ADDR_OFFSET,
++					 input->ip.v6.src_ip);
++		ice_pkt_insert_ipv6_addr(loc, ICE_IPV6_SRC_ADDR_OFFSET,
++					 input->ip.v6.dst_ip);
++		ice_pkt_insert_u16(loc, ICE_IPV6_UDP_DST_PORT_OFFSET,
++				   input->ip.v6.src_port);
++		ice_pkt_insert_u16(loc, ICE_IPV6_UDP_SRC_PORT_OFFSET,
++				   input->ip.v6.dst_port);
++		break;
++	case ICE_FLTR_PTYPE_NONF_IPV6_SCTP:
++		ice_pkt_insert_ipv6_addr(loc, ICE_IPV6_DST_ADDR_OFFSET,
++					 input->ip.v6.src_ip);
++		ice_pkt_insert_ipv6_addr(loc, ICE_IPV6_SRC_ADDR_OFFSET,
++					 input->ip.v6.dst_ip);
++		ice_pkt_insert_u16(loc, ICE_IPV6_SCTP_DST_PORT_OFFSET,
++				   input->ip.v6.src_port);
++		ice_pkt_insert_u16(loc, ICE_IPV6_SCTP_SRC_PORT_OFFSET,
++				   input->ip.v6.dst_port);
++		break;
++	case ICE_FLTR_PTYPE_NONF_IPV6_OTHER:
++		ice_pkt_insert_ipv6_addr(loc, ICE_IPV6_DST_ADDR_OFFSET,
++					 input->ip.v6.src_ip);
++		ice_pkt_insert_ipv6_addr(loc, ICE_IPV6_SRC_ADDR_OFFSET,
++					 input->ip.v6.dst_ip);
++		break;
+ 	default:
+ 		return ICE_ERR_PARAM;
+ 	}
+@@ -527,37 +731,68 @@ ice_fdir_update_cntrs(struct ice_hw *hw, enum ice_fltr_ptype flow, bool add)
+ 		hw->fdir_fltr_cnt[flow] += incr;
+ }
+ 
++/**
++ * ice_cmp_ipv6_addr - compare 2 IP v6 addresses
++ * @a: IP v6 address
++ * @b: IP v6 address
++ *
++ * Returns 0 on equal, returns non-0 if different
++ */
++static int ice_cmp_ipv6_addr(__be32 *a, __be32 *b)
++{
++	return memcmp(a, b, 4 * sizeof(__be32));
++}
++
+ /**
+  * ice_fdir_comp_rules - compare 2 filters
+  * @a: a Flow Director filter data structure
+  * @b: a Flow Director filter data structure
++ * @v6: bool true if v6 filter
+  *
+  * Returns true if the filters match
+  */
+ static bool
+-ice_fdir_comp_rules(struct ice_fdir_fltr *a,  struct ice_fdir_fltr *b)
++ice_fdir_comp_rules(struct ice_fdir_fltr *a,  struct ice_fdir_fltr *b, bool v6)
+ {
+ 	enum ice_fltr_ptype flow_type = a->flow_type;
+ 
+ 	/* The calling function already checks that the two filters have the
+ 	 * same flow_type.
+ 	 */
+-	if (flow_type == ICE_FLTR_PTYPE_NONF_IPV4_TCP ||
+-	    flow_type == ICE_FLTR_PTYPE_NONF_IPV4_UDP ||
+-	    flow_type == ICE_FLTR_PTYPE_NONF_IPV4_SCTP) {
+-		if (a->ip.dst_ip == b->ip.dst_ip &&
+-		    a->ip.src_ip == b->ip.src_ip &&
+-		    a->ip.dst_port == b->ip.dst_port &&
+-		    a->ip.src_port == b->ip.src_port)
+-			return true;
+-	} else if (flow_type == ICE_FLTR_PTYPE_NONF_IPV4_OTHER) {
+-		if (a->ip.dst_ip == b->ip.dst_ip &&
+-		    a->ip.src_ip == b->ip.src_ip &&
+-		    a->ip.l4_header == b->ip.l4_header &&
+-		    a->ip.proto == b->ip.proto &&
+-		    a->ip.ip_ver == b->ip.ip_ver &&
+-		    a->ip.tos == b->ip.tos)
+-			return true;
++	if (!v6) {
++		if (flow_type == ICE_FLTR_PTYPE_NONF_IPV4_TCP ||
++		    flow_type == ICE_FLTR_PTYPE_NONF_IPV4_UDP ||
++		    flow_type == ICE_FLTR_PTYPE_NONF_IPV4_SCTP) {
++			if (a->ip.v4.dst_ip == b->ip.v4.dst_ip &&
++			    a->ip.v4.src_ip == b->ip.v4.src_ip &&
++			    a->ip.v4.dst_port == b->ip.v4.dst_port &&
++			    a->ip.v4.src_port == b->ip.v4.src_port)
++				return true;
++		} else if (flow_type == ICE_FLTR_PTYPE_NONF_IPV4_OTHER) {
++			if (a->ip.v4.dst_ip == b->ip.v4.dst_ip &&
++			    a->ip.v4.src_ip == b->ip.v4.src_ip &&
++			    a->ip.v4.l4_header == b->ip.v4.l4_header &&
++			    a->ip.v4.proto == b->ip.v4.proto &&
++			    a->ip.v4.ip_ver == b->ip.v4.ip_ver &&
++			    a->ip.v4.tos == b->ip.v4.tos)
++				return true;
++		}
++	} else {
++		if (flow_type == ICE_FLTR_PTYPE_NONF_IPV6_UDP ||
++		    flow_type == ICE_FLTR_PTYPE_NONF_IPV6_TCP ||
++		    flow_type == ICE_FLTR_PTYPE_NONF_IPV6_SCTP) {
++			if (a->ip.v6.dst_port == b->ip.v6.dst_port &&
++			    a->ip.v6.src_port == b->ip.v6.src_port &&
++			    !ice_cmp_ipv6_addr(a->ip.v6.dst_ip,
++					       b->ip.v6.dst_ip) &&
++			    !ice_cmp_ipv6_addr(a->ip.v6.src_ip,
++					       b->ip.v6.src_ip))
++				return true;
++		} else if (flow_type == ICE_FLTR_PTYPE_NONF_IPV6_OTHER) {
++			if (a->ip.v6.dst_port == b->ip.v6.dst_port &&
++			    a->ip.v6.src_port == b->ip.v6.src_port)
++				return true;
++		}
  	}
  
- 	ice_update_pf_netdev_link(pf);
-@@ -5806,6 +5829,9 @@ static const struct net_device_ops ice_netdev_ops = {
- 	.ndo_bridge_setlink = ice_bridge_setlink,
- 	.ndo_fdb_add = ice_fdb_add,
- 	.ndo_fdb_del = ice_fdb_del,
-+#ifdef CONFIG_RFS_ACCEL
-+	.ndo_rx_flow_steer = ice_rx_flow_steer,
-+#endif
- 	.ndo_tx_timeout = ice_tx_timeout,
- 	.ndo_bpf = ice_xdp,
- 	.ndo_xdp_xmit = ice_xdp_xmit,
+ 	return false;
+@@ -586,7 +821,9 @@ bool ice_fdir_is_dup_fltr(struct ice_hw *hw, struct ice_fdir_fltr *input)
+ 		    flow_type == ICE_FLTR_PTYPE_NONF_IPV4_UDP ||
+ 		    flow_type == ICE_FLTR_PTYPE_NONF_IPV4_SCTP ||
+ 		    flow_type == ICE_FLTR_PTYPE_NONF_IPV4_OTHER)
+-			ret = ice_fdir_comp_rules(rule, input);
++			ret = ice_fdir_comp_rules(rule, input, false);
++		else
++			ret = ice_fdir_comp_rules(rule, input, true);
+ 		if (ret) {
+ 			if (rule->fltr_id == input->fltr_id &&
+ 			    rule->q_index != input->q_index)
+diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.h b/drivers/net/ethernet/intel/ice/ice_fdir.h
+index cd02ba59603c..1a47420d67b2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fdir.h
++++ b/drivers/net/ethernet/intel/ice/ice_fdir.h
+@@ -80,6 +80,19 @@ struct ice_fdir_v4 {
+ 	u8 proto;
+ };
+ 
++#define ICE_IPV6_ADDR_LEN_AS_U32		4
++
++struct ice_fdir_v6 {
++	__be32 dst_ip[ICE_IPV6_ADDR_LEN_AS_U32];
++	__be32 src_ip[ICE_IPV6_ADDR_LEN_AS_U32];
++	__be16 dst_port;
++	__be16 src_port;
++	__be32 l4_header; /* next header */
++	__be32 sec_parm_idx; /* security parameter index */
++	u8 tc;
++	u8 proto;
++};
++
+ struct ice_fdir_extra {
+ 	u8 dst_mac[ETH_ALEN];	/* dest MAC address */
+ 	u32 usr_def[2];		/* user data */
+@@ -91,8 +104,10 @@ struct ice_fdir_fltr {
+ 	struct list_head fltr_node;
+ 	enum ice_fltr_ptype flow_type;
+ 
+-	struct ice_fdir_v4 ip;
+-	struct ice_fdir_v4 mask;
++	union {
++		struct ice_fdir_v4 v4;
++		struct ice_fdir_v6 v6;
++	} ip, mask;
+ 
+ 	struct ice_fdir_extra ext_data;
+ 	struct ice_fdir_extra ext_mask;
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+index 16d2f599bd70..da82783d1571 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -3518,6 +3518,12 @@ static const struct ice_fd_src_dst_pair ice_fd_pairs[] = {
+ 	{ ICE_PROT_IPV4_IL, 2, 12 },
+ 	{ ICE_PROT_IPV4_IL, 2, 16 },
+ 
++	{ ICE_PROT_IPV6_OF_OR_S, 8, 8 },
++	{ ICE_PROT_IPV6_OF_OR_S, 8, 24 },
++
++	{ ICE_PROT_IPV6_IL, 8, 8 },
++	{ ICE_PROT_IPV6_IL, 8, 24 },
++
+ 	{ ICE_PROT_TCP_IL, 1, 0 },
+ 	{ ICE_PROT_TCP_IL, 1, 2 },
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 6d574ddb2b1e..88a729e20fe4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -172,6 +172,10 @@ enum ice_fltr_ptype {
+ 	ICE_FLTR_PTYPE_NONF_IPV4_SCTP,
+ 	ICE_FLTR_PTYPE_NONF_IPV4_OTHER,
+ 	ICE_FLTR_PTYPE_FRAG_IPV4,
++	ICE_FLTR_PTYPE_NONF_IPV6_UDP,
++	ICE_FLTR_PTYPE_NONF_IPV6_TCP,
++	ICE_FLTR_PTYPE_NONF_IPV6_SCTP,
++	ICE_FLTR_PTYPE_NONF_IPV6_OTHER,
+ 	ICE_FLTR_PTYPE_MAX,
+ };
+ 
 -- 
 2.20.1
 
