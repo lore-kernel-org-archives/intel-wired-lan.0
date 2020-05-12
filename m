@@ -1,10 +1,9 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 11 May 2020 18:01:41 -0700
-Subject: [Intel-wired-lan] [PATCH S42 2/7] ice: Support displaying ntuple
- rules
+Date: Mon, 11 May 2020 18:01:44 -0700
+Subject: [Intel-wired-lan] [PATCH S42 5/7] ice: Enable flex-bytes support
 In-Reply-To: <20200512010146.41303-1-anthony.l.nguyen@intel.com>
 References: <20200512010146.41303-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200512010146.41303-2-anthony.l.nguyen@intel.com>
+Message-ID: <20200512010146.41303-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,426 +12,460 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Henry Tieman <henry.w.tieman@intel.com>
 
-Add functionality for ethtool --show-ntuple, allowing for filters to be
-displayed when set functionality is added. Add statistics related to
-Flow Director matches and status.
+Flex-bytes allows for packet matching based on an offset and value. This
+is supported via the ethtool user-def option.  It is specified by providing
+an offset followed by a 2 byte match value. Offset is measured from the
+start of the MAC address.
+
+The following restrictions apply to flex-bytes. The specified offset must
+be an even number and be smaller than 0x1fe.
+
+Example usage:
+
+ethtool -N eth0 flow-type tcp4 src-ip 192.168.0.55 dst-ip 172.16.0.55 \
+src-port 12 dst-port 13 user-def 0x10ffff action 32
 
 Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h          |   9 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |  17 ++
- .../net/ethernet/intel/ice/ice_ethtool_fdir.c | 161 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_fdir.c     |  33 ++++
- drivers/net/ethernet/intel/ice/ice_fdir.h     |  47 +++++
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c     |   9 +
- drivers/net/ethernet/intel/ice/ice_type.h     |   3 +
- 8 files changed, 280 insertions(+)
+ .../net/ethernet/intel/ice/ice_ethtool_fdir.c |  88 +++++++++-
+ drivers/net/ethernet/intel/ice/ice_fdir.c     |   3 +
+ drivers/net/ethernet/intel/ice/ice_fdir.h     |  13 ++
+ drivers/net/ethernet/intel/ice/ice_flow.c     | 150 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_flow.h     |  12 ++
+ .../ethernet/intel/ice/ice_protocol_type.h    |   1 +
+ 6 files changed, 265 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index a070ddcc2cb3..51caf3a3c76b 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -535,6 +535,11 @@ static inline struct ice_vsi *ice_get_ctrl_vsi(struct ice_pf *pf)
- 	return pf->vsi[pf->ctrl_vsi_idx];
- }
- 
-+#define ICE_FD_STAT_CTR_BLOCK_COUNT	256
-+#define ICE_FD_STAT_PF_IDX(base_idx) \
-+			((base_idx) * ICE_FD_STAT_CTR_BLOCK_COUNT)
-+#define ICE_FD_SB_STAT_IDX(base_idx) ICE_FD_STAT_PF_IDX(base_idx)
-+
- int ice_vsi_setup_tx_rings(struct ice_vsi *vsi);
- int ice_vsi_setup_rx_rings(struct ice_vsi *vsi);
- int ice_vsi_open_ctrl(struct ice_vsi *vsi);
-@@ -566,6 +571,10 @@ ice_for_each_peer(struct ice_pf *pf, void *data,
- const char *ice_stat_str(enum ice_status stat_err);
- const char *ice_aq_str(enum ice_aq_err aq_err);
- void ice_vsi_manage_fdir(struct ice_vsi *vsi, bool ena);
-+int ice_get_ethtool_fdir_entry(struct ice_hw *hw, struct ethtool_rxnfc *cmd);
-+int
-+ice_get_fdir_fltr_ids(struct ice_hw *hw, struct ethtool_rxnfc *cmd,
-+		      u32 *rule_locs);
- void ice_fdir_release_flows(struct ice_hw *hw);
- int ice_fdir_create_dflt_rules(struct ice_pf *pf);
- int ice_open(struct net_device *netdev);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index d11960b21474..f77db28e1e4c 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -130,6 +130,8 @@ static const struct ice_stats ice_gstrings_pf_stats[] = {
- 	ICE_PF_STAT("illegal_bytes.nic", stats.illegal_bytes),
- 	ICE_PF_STAT("mac_local_faults.nic", stats.mac_local_faults),
- 	ICE_PF_STAT("mac_remote_faults.nic", stats.mac_remote_faults),
-+	ICE_PF_STAT("fdir_sb_match.nic", stats.fd_sb_match),
-+	ICE_PF_STAT("fdir_sb_status.nic", stats.fd_sb_status),
- };
- 
- static const u32 ice_regs_dump_list[] = {
-@@ -2558,12 +2560,27 @@ ice_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
- 	int ret = -EOPNOTSUPP;
-+	struct ice_hw *hw;
-+
-+	hw = &vsi->back->hw;
- 
- 	switch (cmd->cmd) {
- 	case ETHTOOL_GRXRINGS:
- 		cmd->data = vsi->rss_size;
- 		ret = 0;
- 		break;
-+	case ETHTOOL_GRXCLSRLCNT:
-+		cmd->rule_cnt = hw->fdir_active_fltr;
-+		/* report total rule count */
-+		cmd->data = ice_get_fdir_cnt_all(hw);
-+		ret = 0;
-+		break;
-+	case ETHTOOL_GRXCLSRULE:
-+		ret = ice_get_ethtool_fdir_entry(hw, cmd);
-+		break;
-+	case ETHTOOL_GRXCLSRLALL:
-+		ret = ice_get_fdir_fltr_ids(hw, cmd, (u32 *)rule_locs);
-+		break;
- 	case ETHTOOL_GRXFH:
- 		ice_get_rss_hash_opt(vsi, cmd);
- 		ret = 0;
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
-index f07f40cb70bd..a7349cdb5ed1 100644
+index 5b7774aabe3c..223a883f7796 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
-@@ -12,6 +12,167 @@
-  */
- #define TNL_SEG_CNT(_TNL_) ((_TNL_) + 1)
+@@ -92,6 +92,19 @@ static enum ice_fltr_ptype ice_ethtool_flow_to_fltr(int eth)
+ 	}
+ }
  
 +/**
-+ * ice_fltr_to_ethtool_flow - convert filter type values to ethtool
-+ * flow type values
-+ * @flow: filter type to be converted
++ * ice_is_mask_valid - check mask field set
++ * @mask: full mask to check
++ * @field: field for which mask should be valid
 + *
-+ * Returns the corresponding ethtool flow type.
++ * If the mask is fully set return true. If it is not valid for field return
++ * false.
 + */
-+static int ice_fltr_to_ethtool_flow(enum ice_fltr_ptype flow)
++static bool ice_is_mask_valid(u64 mask, u64 field)
 +{
-+	switch (flow) {
-+	case ICE_FLTR_PTYPE_NONF_IPV4_TCP:
-+		return TCP_V4_FLOW;
-+	case ICE_FLTR_PTYPE_NONF_IPV4_UDP:
-+		return UDP_V4_FLOW;
-+	case ICE_FLTR_PTYPE_NONF_IPV4_SCTP:
-+		return SCTP_V4_FLOW;
-+	case ICE_FLTR_PTYPE_NONF_IPV4_OTHER:
-+		return IPV4_USER_FLOW;
-+	default:
-+		/* 0 is undefined ethtool flow */
-+		return 0;
-+	}
-+}
-+
-+/**
-+ * ice_ethtool_flow_to_fltr - convert ethtool flow type to filter enum
-+ * @eth: Ethtool flow type to be converted
-+ *
-+ * Returns flow enum
-+ */
-+static enum ice_fltr_ptype ice_ethtool_flow_to_fltr(int eth)
-+{
-+	switch (eth) {
-+	case TCP_V4_FLOW:
-+		return ICE_FLTR_PTYPE_NONF_IPV4_TCP;
-+	case UDP_V4_FLOW:
-+		return ICE_FLTR_PTYPE_NONF_IPV4_UDP;
-+	case SCTP_V4_FLOW:
-+		return ICE_FLTR_PTYPE_NONF_IPV4_SCTP;
-+	case IPV4_USER_FLOW:
-+		return ICE_FLTR_PTYPE_NONF_IPV4_OTHER;
-+	default:
-+		return ICE_FLTR_PTYPE_NONF_NONE;
-+	}
-+}
-+
-+/**
-+ * ice_get_ethtool_fdir_entry - fill ethtool structure with fdir filter data
-+ * @hw: hardware structure that contains filter list
-+ * @cmd: ethtool command data structure to receive the filter data
-+ *
-+ * Returns 0 on success and -EINVAL on failure
-+ */
-+int ice_get_ethtool_fdir_entry(struct ice_hw *hw, struct ethtool_rxnfc *cmd)
-+{
-+	struct ethtool_rx_flow_spec *fsp;
-+	struct ice_fdir_fltr *rule;
-+	int ret = 0;
-+	u16 idx;
-+
-+	fsp = (struct ethtool_rx_flow_spec *)&cmd->fs;
-+
-+	mutex_lock(&hw->fdir_fltr_lock);
-+
-+	rule = ice_fdir_find_fltr_by_idx(hw, fsp->location);
-+
-+	if (!rule || fsp->location != rule->fltr_id) {
-+		ret = -EINVAL;
-+		goto release_lock;
-+	}
-+
-+	fsp->flow_type = ice_fltr_to_ethtool_flow(rule->flow_type);
-+
-+	memset(&fsp->m_u, 0, sizeof(fsp->m_u));
-+	memset(&fsp->m_ext, 0, sizeof(fsp->m_ext));
-+
-+	switch (fsp->flow_type) {
-+	case IPV4_USER_FLOW:
-+		fsp->h_u.usr_ip4_spec.ip_ver = ETH_RX_NFC_IP4;
-+		fsp->h_u.usr_ip4_spec.proto = 0;
-+		fsp->h_u.usr_ip4_spec.l4_4_bytes = rule->ip.l4_header;
-+		fsp->h_u.usr_ip4_spec.tos = rule->ip.tos;
-+		fsp->h_u.usr_ip4_spec.ip4src = rule->ip.src_ip;
-+		fsp->h_u.usr_ip4_spec.ip4dst = rule->ip.dst_ip;
-+		fsp->m_u.usr_ip4_spec.ip4src = rule->mask.src_ip;
-+		fsp->m_u.usr_ip4_spec.ip4dst = rule->mask.dst_ip;
-+		fsp->m_u.usr_ip4_spec.ip_ver = 0xFF;
-+		fsp->m_u.usr_ip4_spec.proto = 0;
-+		fsp->m_u.usr_ip4_spec.l4_4_bytes = rule->mask.l4_header;
-+		fsp->m_u.usr_ip4_spec.tos = rule->mask.tos;
-+		break;
-+	case TCP_V4_FLOW:
-+	case UDP_V4_FLOW:
-+	case SCTP_V4_FLOW:
-+		fsp->h_u.tcp_ip4_spec.psrc = rule->ip.src_port;
-+		fsp->h_u.tcp_ip4_spec.pdst = rule->ip.dst_port;
-+		fsp->h_u.tcp_ip4_spec.ip4src = rule->ip.src_ip;
-+		fsp->h_u.tcp_ip4_spec.ip4dst = rule->ip.dst_ip;
-+		fsp->m_u.tcp_ip4_spec.psrc = rule->mask.src_port;
-+		fsp->m_u.tcp_ip4_spec.pdst = rule->mask.dst_port;
-+		fsp->m_u.tcp_ip4_spec.ip4src = rule->mask.src_ip;
-+		fsp->m_u.tcp_ip4_spec.ip4dst = rule->mask.dst_ip;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	if (rule->dest_ctl == ICE_FLTR_PRGM_DESC_DEST_DROP_PKT)
-+		fsp->ring_cookie = RX_CLS_FLOW_DISC;
-+	else
-+		fsp->ring_cookie = rule->q_index;
-+
-+	idx = ice_ethtool_flow_to_fltr(fsp->flow_type);
-+	if (idx == ICE_FLTR_PTYPE_NONF_NONE) {
-+		dev_err(ice_hw_to_dev(hw), "Missing input index for flow_type %d\n",
-+			rule->flow_type);
-+		ret = -EINVAL;
-+	}
-+
-+release_lock:
-+	mutex_unlock(&hw->fdir_fltr_lock);
-+	return ret;
-+}
-+
-+/**
-+ * ice_get_fdir_fltr_ids - fill buffer with filter IDs of active filters
-+ * @hw: hardware structure containing the filter list
-+ * @cmd: ethtool command data structure
-+ * @rule_locs: ethtool array passed in from OS to receive filter IDs
-+ *
-+ * Returns 0 as expected for success by ethtool
-+ */
-+int
-+ice_get_fdir_fltr_ids(struct ice_hw *hw, struct ethtool_rxnfc *cmd,
-+		      u32 *rule_locs)
-+{
-+	struct ice_fdir_fltr *f_rule;
-+	unsigned int cnt = 0;
-+	int val = 0;
-+
-+	/* report total rule count */
-+	cmd->data = ice_get_fdir_cnt_all(hw);
-+
-+	mutex_lock(&hw->fdir_fltr_lock);
-+
-+	list_for_each_entry(f_rule, &hw->fdir_list_head, fltr_node) {
-+		if (cnt == cmd->rule_cnt) {
-+			val = -EMSGSIZE;
-+			goto release_lock;
-+		}
-+		rule_locs[cnt] = f_rule->fltr_id;
-+		cnt++;
-+	}
-+
-+release_lock:
-+	mutex_unlock(&hw->fdir_fltr_lock);
-+	if (!val)
-+		cmd->rule_cnt = cnt;
-+	return val;
++	return (mask & field) == field;
 +}
 +
  /**
-  * ice_fdir_get_hw_prof - return the ice_fd_hw_proc associated with a flow
-  * @hw: hardware structure containing the filter list
+  * ice_get_ethtool_fdir_entry - fill ethtool structure with fdir filter data
+  * @hw: hardware structure that contains filter list
+@@ -335,6 +348,53 @@ void ice_fdir_release_flows(struct ice_hw *hw)
+ 		ice_fdir_erase_flow_from_hw(hw, ICE_BLK_FD, flow);
+ }
+ 
++/**
++ * ice_parse_rx_flow_user_data - deconstruct user-defined data
++ * @fsp: pointer to ethtool Rx flow specification
++ * @data: pointer to userdef data structure for storage
++ *
++ * Returns 0 on success, negative error value on failure
++ */
++static int
++ice_parse_rx_flow_user_data(struct ethtool_rx_flow_spec *fsp,
++			    struct ice_rx_flow_userdef *data)
++{
++	u64 value, mask;
++
++	memset(data, 0, sizeof(*data));
++	if (!(fsp->flow_type & FLOW_EXT))
++		return 0;
++
++	value = be64_to_cpu(*((__force __be64 *)fsp->h_ext.data));
++	mask = be64_to_cpu(*((__force __be64 *)fsp->m_ext.data));
++	if (!mask)
++		return 0;
++
++#define ICE_USERDEF_FLEX_WORD_M	GENMASK_ULL(15, 0)
++#define ICE_USERDEF_FLEX_OFFS_S	16
++#define ICE_USERDEF_FLEX_OFFS_M	GENMASK_ULL(31, ICE_USERDEF_FLEX_OFFS_S)
++#define ICE_USERDEF_FLEX_FLTR_M	GENMASK_ULL(31, 0)
++
++	/* 0x1fe is the maximum value for offsets stored in the internal
++	 * filtering tables.
++	 */
++#define ICE_USERDEF_FLEX_MAX_OFFS_VAL 0x1fe
++
++	if (!ice_is_mask_valid(mask, ICE_USERDEF_FLEX_FLTR_M) ||
++	    value > ICE_USERDEF_FLEX_FLTR_M)
++		return -EINVAL;
++
++	data->flex_word = value & ICE_USERDEF_FLEX_WORD_M;
++	data->flex_offset = (value & ICE_USERDEF_FLEX_OFFS_M) >>
++			     ICE_USERDEF_FLEX_OFFS_S;
++	if (data->flex_offset > ICE_USERDEF_FLEX_MAX_OFFS_VAL)
++		return -EINVAL;
++
++	data->flex_fltr = true;
++
++	return 0;
++}
++
+ /**
+  * ice_fdir_num_avail_fltr - return the number of unused flow director filters
+  * @hw: pointer to hardware structure
+@@ -936,11 +996,13 @@ ice_set_fdir_ip6_usr_seg(struct ice_flow_seg_info *seg,
+  * ice_cfg_fdir_xtrct_seq - Configure extraction sequence for the given filter
+  * @pf: PF structure
+  * @fsp: pointer to ethtool Rx flow specification
++ * @user: user defined data from flow specification
+  *
+  * Returns 0 on success.
+  */
+ static int
+-ice_cfg_fdir_xtrct_seq(struct ice_pf *pf, struct ethtool_rx_flow_spec *fsp)
++ice_cfg_fdir_xtrct_seq(struct ice_pf *pf, struct ethtool_rx_flow_spec *fsp,
++		       struct ice_rx_flow_userdef *user)
+ {
+ 	struct ice_flow_seg_info *seg, *tun_seg;
+ 	struct device *dev = ice_pf_to_dev(pf);
+@@ -1008,6 +1070,18 @@ ice_cfg_fdir_xtrct_seq(struct ice_pf *pf, struct ethtool_rx_flow_spec *fsp)
+ 	/* tunnel segments are shifted up one. */
+ 	memcpy(&tun_seg[1], seg, sizeof(*seg));
+ 
++	if (user && user->flex_fltr) {
++		perfect_filter = false;
++		ice_flow_add_fld_raw(seg, user->flex_offset,
++				     ICE_FLTR_PRGM_FLEX_WORD_SIZE,
++				     ICE_FLOW_FLD_OFF_INVAL,
++				     ICE_FLOW_FLD_OFF_INVAL);
++		ice_flow_add_fld_raw(&tun_seg[1], user->flex_offset,
++				     ICE_FLTR_PRGM_FLEX_WORD_SIZE,
++				     ICE_FLOW_FLD_OFF_INVAL,
++				     ICE_FLOW_FLD_OFF_INVAL);
++	}
++
+ 	/* add filter for outer headers */
+ 	fltr_idx = ice_ethtool_flow_to_fltr(fsp->flow_type & ~FLOW_EXT);
+ 	ret = ice_fdir_set_hw_fltr_rule(pf, seg, fltr_idx,
+@@ -1433,6 +1507,7 @@ ice_set_fdir_input_set(struct ice_vsi *vsi, struct ethtool_rx_flow_spec *fsp,
+  */
+ int ice_add_fdir_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+ {
++	struct ice_rx_flow_userdef userdata;
+ 	struct ethtool_rx_flow_spec *fsp;
+ 	struct ice_fdir_fltr *input;
+ 	struct device *dev;
+@@ -1460,10 +1535,13 @@ int ice_add_fdir_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+ 
+ 	fsp = (struct ethtool_rx_flow_spec *)&cmd->fs;
+ 
++	if (ice_parse_rx_flow_user_data(fsp, &userdata))
++		return -EINVAL;
++
+ 	if (fsp->flow_type & FLOW_MAC_EXT)
+ 		return -EINVAL;
+ 
+-	ret = ice_cfg_fdir_xtrct_seq(pf, fsp);
++	ret = ice_cfg_fdir_xtrct_seq(pf, fsp, &userdata);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -1495,6 +1573,12 @@ int ice_add_fdir_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+ 		goto release_lock;
+ 	}
+ 
++	if (userdata.flex_fltr) {
++		input->flex_fltr = true;
++		input->flex_word = cpu_to_be16(userdata.flex_word);
++		input->flex_offset = userdata.flex_offset;
++	}
++
+ 	/* input struct is added to the HW filter list */
+ 	ice_fdir_update_list_entry(pf, input, fsp->location);
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
-index c43f79d0bd5a..68405882f63f 100644
+index e94277dc9cdc..548a41140c05 100644
 --- a/drivers/net/ethernet/intel/ice/ice_fdir.c
 +++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
-@@ -52,3 +52,36 @@ ice_alloc_fd_shrd_item(struct ice_hw *hw, u16 *cntr_id, u16 num_fltr)
- 				  ICE_AQC_RES_TYPE_FLAG_DEDICATED, num_fltr,
- 				  cntr_id);
+@@ -650,6 +650,9 @@ ice_fdir_get_gen_prgm_pkt(struct ice_hw *hw, struct ice_fdir_fltr *input,
+ 		return ICE_ERR_PARAM;
+ 	}
+ 
++	if (input->flex_fltr)
++		ice_pkt_insert_u16(loc, input->flex_offset, input->flex_word);
++
+ 	return 0;
  }
-+
-+/**
-+ * ice_get_fdir_cnt_all - get the number of Flow Director filters
-+ * @hw: hardware data structure
-+ *
-+ * Returns the number of filters available on device
-+ */
-+int ice_get_fdir_cnt_all(struct ice_hw *hw)
-+{
-+	return hw->func_caps.fd_fltr_guar + hw->func_caps.fd_fltr_best_effort;
-+}
-+
-+/**
-+ * ice_fdir_find_by_idx - find filter with idx
-+ * @hw: pointer to hardware structure
-+ * @fltr_idx: index to find.
-+ *
-+ * Returns pointer to filter if found or null
-+ */
-+struct ice_fdir_fltr *
-+ice_fdir_find_fltr_by_idx(struct ice_hw *hw, u32 fltr_idx)
-+{
-+	struct ice_fdir_fltr *rule;
-+
-+	list_for_each_entry(rule, &hw->fdir_list_head, fltr_node) {
-+		/* rule ID found in the list */
-+		if (fltr_idx == rule->fltr_id)
-+			return rule;
-+		if (fltr_idx < rule->fltr_id)
-+			break;
-+	}
-+	return NULL;
-+}
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.h b/drivers/net/ethernet/intel/ice/ice_fdir.h
-index 2cb8cb089d9f..d37171d1a306 100644
+index 1a47420d67b2..d6e47b645cdd 100644
 --- a/drivers/net/ethernet/intel/ice/ice_fdir.h
 +++ b/drivers/net/ethernet/intel/ice/ice_fdir.h
-@@ -3,10 +3,57 @@
- 
- #ifndef _ICE_FDIR_H_
- #define _ICE_FDIR_H_
-+
-+enum ice_fltr_prgm_desc_dest {
-+	ICE_FLTR_PRGM_DESC_DEST_DROP_PKT,
-+	ICE_FLTR_PRGM_DESC_DEST_DIRECT_PKT_QINDEX,
-+};
-+
-+struct ice_fdir_v4 {
-+	__be32 dst_ip;
-+	__be32 src_ip;
-+	__be16 dst_port;
-+	__be16 src_port;
-+	__be32 l4_header;
-+	__be32 sec_parm_idx;	/* security parameter index */
-+	u8 tos;
-+	u8 ip_ver;
-+	u8 proto;
-+};
-+
-+struct ice_fdir_extra {
-+	u8 dst_mac[ETH_ALEN];	/* dest MAC address */
-+	u32 usr_def[2];		/* user data */
-+	__be16 vlan_type;	/* VLAN ethertype */
-+	__be16 vlan_tag;	/* VLAN tag info */
-+};
-+
-+struct ice_fdir_fltr {
-+	struct list_head fltr_node;
-+	enum ice_fltr_ptype flow_type;
-+
-+	struct ice_fdir_v4 ip;
-+	struct ice_fdir_v4 mask;
-+
-+	struct ice_fdir_extra ext_data;
-+	struct ice_fdir_extra ext_mask;
-+
-+	/* filter control */
-+	u16 q_index;
-+	u16 dest_vsi;
-+	u8 dest_ctl;
-+	u8 fltr_status;
-+	u16 cnt_index;
-+	u32 fltr_id;
-+};
-+
- enum ice_status ice_alloc_fd_res_cntr(struct ice_hw *hw, u16 *cntr_id);
- enum ice_status ice_free_fd_res_cntr(struct ice_hw *hw, u16 cntr_id);
- enum ice_status
- ice_alloc_fd_guar_item(struct ice_hw *hw, u16 *cntr_id, u16 num_fltr);
- enum ice_status
- ice_alloc_fd_shrd_item(struct ice_hw *hw, u16 *cntr_id, u16 num_fltr);
-+int ice_get_fdir_cnt_all(struct ice_hw *hw);
-+struct ice_fdir_fltr *
-+ice_fdir_find_fltr_by_idx(struct ice_hw *hw, u32 fltr_idx);
- #endif /* _ICE_FDIR_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 3a85138d526b..dd96409673d4 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -344,6 +344,7 @@
- #define GLPRT_TDOLD(_i)				(0x00381280 + ((_i) * 8))
- #define GLPRT_UPRCL(_i)				(0x00381300 + ((_i) * 8))
- #define GLPRT_UPTCL(_i)				(0x003811C0 + ((_i) * 8))
-+#define GLSTAT_FD_CNT0L(_i)			(0x003A0000 + ((_i) * 8))
- #define GLV_BPRCL(_i)				(0x003B6000 + ((_i) * 8))
- #define GLV_BPTCL(_i)				(0x0030E000 + ((_i) * 8))
- #define GLV_GORCL(_i)				(0x003B0000 + ((_i) * 8))
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 83457d8ca587..bf7d070eaba1 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4343,6 +4343,7 @@ void ice_update_pf_stats(struct ice_pf *pf)
- {
- 	struct ice_hw_port_stats *prev_ps, *cur_ps;
- 	struct ice_hw *hw = &pf->hw;
-+	u16 fd_ctr_base;
- 	u8 port;
- 
- 	port = hw->port_info->lport;
-@@ -4431,6 +4432,12 @@ void ice_update_pf_stats(struct ice_pf *pf)
- 	ice_stat_update40(hw, GLPRT_PTC9522L(port), pf->stat_prev_loaded,
- 			  &prev_ps->tx_size_big, &cur_ps->tx_size_big);
- 
-+	fd_ctr_base = hw->fd_ctr_base;
-+
-+	ice_stat_update40(hw,
-+			  GLSTAT_FD_CNT0L(ICE_FD_SB_STAT_IDX(fd_ctr_base)),
-+			  pf->stat_prev_loaded, &prev_ps->fd_sb_match,
-+			  &cur_ps->fd_sb_match);
- 	ice_stat_update32(hw, GLPRT_LXONRXC(port), pf->stat_prev_loaded,
- 			  &prev_ps->link_xon_rx, &cur_ps->link_xon_rx);
- 
-@@ -4474,6 +4481,8 @@ void ice_update_pf_stats(struct ice_pf *pf)
- 	ice_stat_update32(hw, GLPRT_RJC(port), pf->stat_prev_loaded,
- 			  &prev_ps->rx_jabber, &cur_ps->rx_jabber);
- 
-+	cur_ps->fd_sb_status = test_bit(ICE_FLAG_FD_ENA, pf->flags) ? 1 : 0;
-+
- 	pf->stat_prev_loaded = true;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 571f707544c6..5291b687a75f 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -695,6 +695,9 @@ struct ice_hw_port_stats {
- 	u64 tx_size_1023;		/* ptc1023 */
- 	u64 tx_size_1522;		/* ptc1522 */
- 	u64 tx_size_big;		/* ptc9522 */
-+	/* flow director stats */
-+	u32 fd_sb_status;
-+	u64 fd_sb_match;
+@@ -68,6 +68,14 @@ struct ice_fd_fltr_desc_ctx {
+ 	u8 fdid_mdid;
  };
  
- /* Checksum and Shadow RAM pointers */
++#define ICE_FLTR_PRGM_FLEX_WORD_SIZE	sizeof(__be16)
++
++struct ice_rx_flow_userdef {
++	u16 flex_word;
++	u16 flex_offset;
++	u16 flex_fltr;
++};
++
+ struct ice_fdir_v4 {
+ 	__be32 dst_ip;
+ 	__be32 src_ip;
+@@ -112,6 +120,11 @@ struct ice_fdir_fltr {
+ 	struct ice_fdir_extra ext_data;
+ 	struct ice_fdir_extra ext_mask;
+ 
++	/* flex byte filter data */
++	__be16 flex_word;
++	u16 flex_offset;
++	u16 flex_fltr;
++
+ 	/* filter control */
+ 	u16 q_index;
+ 	u16 dest_vsi;
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
+index f4b6c3933564..d74e5290677f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.c
++++ b/drivers/net/ethernet/intel/ice/ice_flow.c
+@@ -193,6 +193,40 @@ ice_flow_val_hdrs(struct ice_flow_seg_info *segs, u8 segs_cnt)
+ 	return 0;
+ }
+ 
++/* Sizes of fixed known protocol headers without header options */
++#define ICE_FLOW_PROT_HDR_SZ_MAC	14
++#define ICE_FLOW_PROT_HDR_SZ_IPV4	20
++#define ICE_FLOW_PROT_HDR_SZ_IPV6	40
++#define ICE_FLOW_PROT_HDR_SZ_TCP	20
++#define ICE_FLOW_PROT_HDR_SZ_UDP	8
++#define ICE_FLOW_PROT_HDR_SZ_SCTP	12
++
++/**
++ * ice_flow_calc_seg_sz - calculates size of a packet segment based on headers
++ * @params: information about the flow to be processed
++ * @seg: index of packet segment whose header size is to be determined
++ */
++static u16 ice_flow_calc_seg_sz(struct ice_flow_prof_params *params, u8 seg)
++{
++	u16 sz = ICE_FLOW_PROT_HDR_SZ_MAC;
++
++	/* L3 headers */
++	if (params->prof->segs[seg].hdrs & ICE_FLOW_SEG_HDR_IPV4)
++		sz += ICE_FLOW_PROT_HDR_SZ_IPV4;
++	else if (params->prof->segs[seg].hdrs & ICE_FLOW_SEG_HDR_IPV6)
++		sz += ICE_FLOW_PROT_HDR_SZ_IPV6;
++
++	/* L4 headers */
++	if (params->prof->segs[seg].hdrs & ICE_FLOW_SEG_HDR_TCP)
++		sz += ICE_FLOW_PROT_HDR_SZ_TCP;
++	else if (params->prof->segs[seg].hdrs & ICE_FLOW_SEG_HDR_UDP)
++		sz += ICE_FLOW_PROT_HDR_SZ_UDP;
++	else if (params->prof->segs[seg].hdrs & ICE_FLOW_SEG_HDR_SCTP)
++		sz += ICE_FLOW_PROT_HDR_SZ_SCTP;
++
++	return sz;
++}
++
+ /**
+  * ice_flow_proc_seg_hdrs - process protocol headers present in pkt segments
+  * @params: information about the flow to be processed
+@@ -347,6 +381,81 @@ ice_flow_xtract_fld(struct ice_hw *hw, struct ice_flow_prof_params *params,
+ 	return 0;
+ }
+ 
++/**
++ * ice_flow_xtract_raws - Create extract sequence entries for raw bytes
++ * @hw: pointer to the HW struct
++ * @params: information about the flow to be processed
++ * @seg: index of packet segment whose raw fields are to be be extracted
++ */
++static enum ice_status
++ice_flow_xtract_raws(struct ice_hw *hw, struct ice_flow_prof_params *params,
++		     u8 seg)
++{
++	u16 fv_words;
++	u16 hdrs_sz;
++	u8 i;
++
++	if (!params->prof->segs[seg].raws_cnt)
++		return 0;
++
++	if (params->prof->segs[seg].raws_cnt >
++	    ARRAY_SIZE(params->prof->segs[seg].raws))
++		return ICE_ERR_MAX_LIMIT;
++
++	/* Offsets within the segment headers are not supported */
++	hdrs_sz = ice_flow_calc_seg_sz(params, seg);
++	if (!hdrs_sz)
++		return ICE_ERR_PARAM;
++
++	fv_words = hw->blk[params->blk].es.fvw;
++
++	for (i = 0; i < params->prof->segs[seg].raws_cnt; i++) {
++		struct ice_flow_seg_fld_raw *raw;
++		u16 off, cnt, j;
++
++		raw = &params->prof->segs[seg].raws[i];
++
++		/* Storing extraction information */
++		raw->info.xtrct.prot_id = ICE_PROT_MAC_OF_OR_S;
++		raw->info.xtrct.off = (raw->off / ICE_FLOW_FV_EXTRACT_SZ) *
++			ICE_FLOW_FV_EXTRACT_SZ;
++		raw->info.xtrct.disp = (raw->off % ICE_FLOW_FV_EXTRACT_SZ) *
++			BITS_PER_BYTE;
++		raw->info.xtrct.idx = params->es_cnt;
++
++		/* Determine the number of field vector entries this raw field
++		 * consumes.
++		 */
++		cnt = DIV_ROUND_UP(raw->info.xtrct.disp +
++				   (raw->info.src.last * BITS_PER_BYTE),
++				   (ICE_FLOW_FV_EXTRACT_SZ * BITS_PER_BYTE));
++		off = raw->info.xtrct.off;
++		for (j = 0; j < cnt; j++) {
++			u16 idx;
++
++			/* Make sure the number of extraction sequence required
++			 * does not exceed the block's capability
++			 */
++			if (params->es_cnt >= hw->blk[params->blk].es.count ||
++			    params->es_cnt >= ICE_MAX_FV_WORDS)
++				return ICE_ERR_MAX_LIMIT;
++
++			/* some blocks require a reversed field vector layout */
++			if (hw->blk[params->blk].es.reverse)
++				idx = fv_words - params->es_cnt - 1;
++			else
++				idx = params->es_cnt;
++
++			params->es[idx].prot_id = raw->info.xtrct.prot_id;
++			params->es[idx].off = off;
++			params->es_cnt++;
++			off += ICE_FLOW_FV_EXTRACT_SZ;
++		}
++	}
++
++	return 0;
++}
++
+ /**
+  * ice_flow_create_xtrct_seq - Create an extraction sequence for given segments
+  * @hw: pointer to the HW struct
+@@ -373,6 +482,11 @@ ice_flow_create_xtrct_seq(struct ice_hw *hw,
+ 			if (status)
+ 				return status;
+ 		}
++
++		/* Process raw matching bytes */
++		status = ice_flow_xtract_raws(hw, params, i);
++		if (status)
++			return status;
+ 	}
+ 
+ 	return status;
+@@ -943,6 +1057,42 @@ ice_flow_set_fld(struct ice_flow_seg_info *seg, enum ice_flow_field fld,
+ 	ice_flow_set_fld_ext(seg, fld, t, val_loc, mask_loc, last_loc);
+ }
+ 
++/**
++ * ice_flow_add_fld_raw - sets locations of a raw field from entry's input buf
++ * @seg: packet segment the field being set belongs to
++ * @off: offset of the raw field from the beginning of the segment in bytes
++ * @len: length of the raw pattern to be matched
++ * @val_loc: location of the value to match from entry's input buffer
++ * @mask_loc: location of mask value from entry's input buffer
++ *
++ * This function specifies the offset of the raw field to be match from the
++ * beginning of the specified packet segment, and the locations, in the form of
++ * byte offsets from the start of the input buffer for a flow entry, from where
++ * the value to match and the mask value to be extracted. These locations are
++ * then stored in the flow profile. When adding flow entries to the associated
++ * flow profile, these locations can be used to quickly extract the values to
++ * create the content of a match entry. This function should only be used for
++ * fixed-size data structures.
++ */
++void
++ice_flow_add_fld_raw(struct ice_flow_seg_info *seg, u16 off, u8 len,
++		     u16 val_loc, u16 mask_loc)
++{
++	if (seg->raws_cnt < ICE_FLOW_SEG_RAW_FLD_MAX) {
++		seg->raws[seg->raws_cnt].off = off;
++		seg->raws[seg->raws_cnt].info.type = ICE_FLOW_FLD_TYPE_SIZE;
++		seg->raws[seg->raws_cnt].info.src.val = val_loc;
++		seg->raws[seg->raws_cnt].info.src.mask = mask_loc;
++		/* The "last" field is used to store the length of the field */
++		seg->raws[seg->raws_cnt].info.src.last = len;
++	}
++
++	/* Overflows of "raws" will be handled as an error condition later in
++	 * the flow when this information is processed.
++	 */
++	seg->raws_cnt++;
++}
++
+ #define ICE_FLOW_RSS_SEG_HDR_L3_MASKS \
+ 	(ICE_FLOW_SEG_HDR_IPV4 | ICE_FLOW_SEG_HDR_IPV6)
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
+index 3c784c3b5db2..3913da2116d2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.h
++++ b/drivers/net/ethernet/intel/ice/ice_flow.h
+@@ -128,6 +128,7 @@ enum ice_flow_priority {
+ };
+ 
+ #define ICE_FLOW_SEG_MAX		2
++#define ICE_FLOW_SEG_RAW_FLD_MAX	2
+ #define ICE_FLOW_FV_EXTRACT_SZ		2
+ 
+ #define ICE_FLOW_SET_HDRS(seg, val)	((seg)->hdrs |= (u32)(val))
+@@ -164,12 +165,20 @@ struct ice_flow_fld_info {
+ 	struct ice_flow_seg_xtrct xtrct;
+ };
+ 
++struct ice_flow_seg_fld_raw {
++	struct ice_flow_fld_info info;
++	u16 off;	/* Offset from the start of the segment */
++};
++
+ struct ice_flow_seg_info {
+ 	u32 hdrs;	/* Bitmask indicating protocol headers present */
+ 	u64 match;	/* Bitmask indicating header fields to be matched */
+ 	u64 range;	/* Bitmask indicating header fields matched as ranges */
+ 
+ 	struct ice_flow_fld_info fields[ICE_FLOW_FIELD_IDX_MAX];
++
++	u8 raws_cnt;	/* Number of raw fields to be matched */
++	struct ice_flow_seg_fld_raw raws[ICE_FLOW_SEG_RAW_FLD_MAX];
+ };
+ 
+ /* This structure describes a flow entry, and is tracked only in this file */
+@@ -228,6 +237,9 @@ ice_flow_rem_entry(struct ice_hw *hw, enum ice_block blk, u64 entry_h);
+ void
+ ice_flow_set_fld(struct ice_flow_seg_info *seg, enum ice_flow_field fld,
+ 		 u16 val_loc, u16 mask_loc, u16 last_loc, bool range);
++void
++ice_flow_add_fld_raw(struct ice_flow_seg_info *seg, u16 off, u8 len,
++		     u16 val_loc, u16 mask_loc);
+ void ice_rem_vsi_rss_list(struct ice_hw *hw, u16 vsi_handle);
+ enum ice_status ice_replay_rss_cfg(struct ice_hw *hw, u16 vsi_handle);
+ enum ice_status
+diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
+index babe4a485fd6..7f4c1ec1eff2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
+@@ -12,6 +12,7 @@
+  */
+ enum ice_prot_id {
+ 	ICE_PROT_ID_INVAL	= 0,
++	ICE_PROT_MAC_OF_OR_S	= 1,
+ 	ICE_PROT_IPV4_OF_OR_S	= 32,
+ 	ICE_PROT_IPV4_IL	= 33,
+ 	ICE_PROT_IPV6_OF_OR_S	= 40,
 -- 
 2.20.1
 
