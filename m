@@ -1,130 +1,61 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 12 May 2020 13:24:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 9b53afbafe731bf17d3353c8b2619a0479833836
-Message-ID: <5eba32f5.UO3v6HHTGpzCBsoX%lkp@intel.com>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Tue, 12 May 2020 10:33:27 -0700
+Subject: [Intel-wired-lan] [RFC PATCH] igc: Reject NFC rules with
+ multiple matches
+In-Reply-To: <20200429214306.71046-1-andre.guedes@intel.com>
+References: <20200429214306.71046-1-andre.guedes@intel.com>
+Message-ID: <158930480743.38976.12790388485955040034@ksengupt-mobl1.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 9b53afbafe731bf17d3353c8b2619a0479833836  ASoC: SOF: ops: Add new op for client registration
+> The way rx queue assignment based on mac address, ethetype and vlan
+> priority filtering operates in I225 doesn't allow us to properly support
+> NFC rules with multiple matches.
+> 
+> Consider the following example which assigns to queue 2 frames matching
+> the address MACADDR *and* ethertype ETYPE.
+> 
+> $ ethtool -N eth0 flow-type ether dst <MACADDR> proto <ETYPE> queue 2
+> 
+> When such rule is applied, we have 2 unwanted behaviors:
+> 
+>     1) Any frame matching MACADDR will be assigned to queue 2. It
+>        doesn't matter the ETYPE value.
+> 
+>     2) Any accepted frame that has ethertype equals to ETYPE, no matter
+>        the mac address, will be assigned to queue 2 as well.
+> 
+> While we could fix 1) by not enabling queue assignment on the MAC
+> address filter, 2) would still happen.
+> 
+> In current code, multiple-match filters are accepted by the driver, even
+> though it doesn't support them properly. This patch adds a check for
+> multiple-match rules in igc_ethtool_is_nfc_rule_valid() so they are
+> rejected.
+> 
+> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> ---
+> Hi folks,
+> 
+> This patch was originally included in the series "igc: Fixes to NFC support
+> code", but since it changes the way the driver interacts with user space, I
+> decided to sent it separately as RFC to collect your opinions.
+> 
+> The patch description gives a detailed explanation about the issue. The bottom
+> line is: Current code silently accepts a configuration that is not supported.
+> This patch changes the driver so EOPNOTSUPP is returned instead of success.
+> 
+> What I'd like to get your feedback on is:
+> 
+> Is this considered an user-kernel break? If so, what would be the best way to
+> move forward. Keep accepting the configuration but warn user via log message
+> about not supporting it?
 
-elapsed time: 490m
+I'm assuming this is not considered a user-kernel break since I could spot at
+least one similar change in igb driver (b4a38d4276e1). I'll rebase and send
+this as PATCH.
 
-configs tested: 104
-configs skipped: 1
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-sparc                            allyesconfig
-m68k                             allyesconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a005-20200511
-x86_64               randconfig-a003-20200511
-x86_64               randconfig-a006-20200511
-x86_64               randconfig-a004-20200511
-x86_64               randconfig-a001-20200511
-x86_64               randconfig-a002-20200511
-i386                 randconfig-a006-20200511
-i386                 randconfig-a005-20200511
-i386                 randconfig-a003-20200511
-i386                 randconfig-a001-20200511
-i386                 randconfig-a004-20200511
-i386                 randconfig-a002-20200511
-i386                 randconfig-a006-20200512
-i386                 randconfig-a005-20200512
-i386                 randconfig-a003-20200512
-i386                 randconfig-a001-20200512
-i386                 randconfig-a004-20200512
-i386                 randconfig-a002-20200512
-i386                 randconfig-a012-20200512
-i386                 randconfig-a016-20200512
-i386                 randconfig-a014-20200512
-i386                 randconfig-a011-20200512
-i386                 randconfig-a013-20200512
-i386                 randconfig-a015-20200512
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-x86_64                              defconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                                  kexec
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+- Andre
