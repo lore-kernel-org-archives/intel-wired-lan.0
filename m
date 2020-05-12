@@ -1,68 +1,82 @@
-From: Andre Guedes <andre.guedes@intel.com>
-Date: Tue, 12 May 2020 10:35:52 -0700
-Subject: [Intel-wired-lan] [PATCH 1/2] igc: Reject NFC rules with multiple
- matches
-Message-ID: <20200512173553.39460-1-andre.guedes@intel.com>
+From: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
+Date: Tue, 12 May 2020 13:43:47 +0900
+Subject: [Intel-wired-lan] [RFC] e1000e: Relax condition to trigger reset
+ for ME workaround
+Message-ID: <20200512044347.3810257-1-punit1.agrawal@toshiba.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The way rx queue assignment based on mac address, ethetype and vlan
-priority filtering operates in I225 doesn't allow us to properly support
-NFC rules with multiple matches.
+It's an error if the value of the RX/TX tail descriptor does not match
+what was written. The error condition is true regardless the duration
+of the interference from ME. But the code only performs the reset if
+E1000_ICH_FWSM_PCIM2PCI_COUNT (2000) iterations of 50us delay have
+transpired. The extra condition can lead to inconsistency between the
+state of hardware as expected by the driver.
 
-Consider the following example which assigns to queue 2 frames matching
-the address MACADDR *and* ethertype ETYPE.
+Fix this by dropping the check for number of delay iterations.
 
-$ ethtool -N eth0 flow-type ether dst <MACADDR> proto <ETYPE> queue 2
-
-When such rule is applied, we have 2 unwanted behaviors:
-
-    1) Any frame matching MACADDR will be assigned to queue 2. It
-       doesn't matter the ETYPE value.
-
-    2) Any accepted frame that has ethertype equals to ETYPE, no matter
-       the mac address, will be assigned to queue 2 as well.
-
-In current code, multiple-match filters are accepted by the driver, even
-though it doesn't support them properly. This patch adds a check for
-multiple-match rules in igc_ethtool_is_nfc_rule_valid() so they are
-rejected.
-
-Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+Signed-off-by: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: intel-wired-lan at lists.osuosl.org
+Cc: netdev at vger.kernel.org
+Cc: linux-kernel at vger.kernel.org
 ---
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+Hi,
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 247d0f5c4eb8..2214a5d3a259 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1222,8 +1222,8 @@ static void igc_ethtool_init_nfc_rule(struct igc_nfc_rule *rule,
-  * @adapter: Pointer to adapter.
-  * @rule: Rule under evaluation.
-  *
-- * Rules with both destination and source MAC addresses are considered invalid
-- * since the driver doesn't support them.
-+ * The driver doesn't support rules with multiple matches so if more than
-+ * one bit in filter flags is set, @rule is considered invalid.
-  *
-  * Also, if there is already another rule with the same filter in a different
-  * location, @rule is considered invalid.
-@@ -1244,9 +1244,8 @@ static int igc_ethtool_check_nfc_rule(struct igc_adapter *adapter,
- 		return -EINVAL;
- 	}
+The issue was noticed through code inspection while backporting the
+workaround for TDT corruption. Sending it out as an RFC as I am not
+familiar with the hardware internals of the e1000e.
+
+Another unresolved question is the inherent racy nature of the
+workaround - the ME could block access again after releasing the
+device (i.e., BIT(E1000_ICH_FWSM_PCIM2PCI) clear) but before the
+driver performs the write. Has this not been a problem?
+
+Any feedback on the patch or the more information on the issues
+appreciated.
+
+Thanks,
+Punit
+
+ drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 177c6da80c57..5ed4d7ed35b3 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -607,11 +607,11 @@ static void e1000e_update_rdt_wa(struct e1000_ring *rx_ring, unsigned int i)
+ {
+ 	struct e1000_adapter *adapter = rx_ring->adapter;
+ 	struct e1000_hw *hw = &adapter->hw;
+-	s32 ret_val = __ew32_prepare(hw);
  
--	if (flags & IGC_FILTER_FLAG_DST_MAC_ADDR &&
--	    flags & IGC_FILTER_FLAG_SRC_MAC_ADDR) {
--		netdev_dbg(dev, "Filters with both dst and src are not supported");
-+	if (flags & (flags - 1)) {
-+		netdev_dbg(dev, "Rule with multiple matches not supported");
- 		return -EOPNOTSUPP;
- 	}
++	__ew32_prepare(hw);
+ 	writel(i, rx_ring->tail);
  
+-	if (unlikely(!ret_val && (i != readl(rx_ring->tail)))) {
++	if (unlikely(i != readl(rx_ring->tail))) {
+ 		u32 rctl = er32(RCTL);
+ 
+ 		ew32(RCTL, rctl & ~E1000_RCTL_EN);
+@@ -624,11 +624,11 @@ static void e1000e_update_tdt_wa(struct e1000_ring *tx_ring, unsigned int i)
+ {
+ 	struct e1000_adapter *adapter = tx_ring->adapter;
+ 	struct e1000_hw *hw = &adapter->hw;
+-	s32 ret_val = __ew32_prepare(hw);
+ 
++	__ew32_prepare(hw);
+ 	writel(i, tx_ring->tail);
+ 
+-	if (unlikely(!ret_val && (i != readl(tx_ring->tail)))) {
++	if (unlikely(i != readl(tx_ring->tail))) {
+ 		u32 tctl = er32(TCTL);
+ 
+ 		ew32(TCTL, tctl & ~E1000_TCTL_EN);
 -- 
 2.26.2
 
