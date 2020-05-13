@@ -1,82 +1,41 @@
-From: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
-Date: Tue, 12 May 2020 13:43:47 +0900
-Subject: [Intel-wired-lan] [RFC] e1000e: Relax condition to trigger reset
- for ME workaround
-Message-ID: <20200512044347.3810257-1-punit1.agrawal@toshiba.co.jp>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Wed, 13 May 2020 09:59:13 +0300
+Subject: [Intel-wired-lan] [PATCH 2/2] igc: Fix IGC_MAX_RXNFC_RULES
+In-Reply-To: <20200512173553.39460-2-andre.guedes@intel.com>
+References: <20200512173553.39460-1-andre.guedes@intel.com>
+ <20200512173553.39460-2-andre.guedes@intel.com>
+Message-ID: <3cb071e1-28d4-c885-bc64-d5ab03cf9578@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-It's an error if the value of the RX/TX tail descriptor does not match
-what was written. The error condition is true regardless the duration
-of the interference from ME. But the code only performs the reset if
-E1000_ICH_FWSM_PCIM2PCI_COUNT (2000) iterations of 50us delay have
-transpired. The extra condition can lead to inconsistency between the
-state of hardware as expected by the driver.
-
-Fix this by dropping the check for number of delay iterations.
-
-Signed-off-by: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: intel-wired-lan at lists.osuosl.org
-Cc: netdev at vger.kernel.org
-Cc: linux-kernel at vger.kernel.org
----
-Hi,
-
-The issue was noticed through code inspection while backporting the
-workaround for TDT corruption. Sending it out as an RFC as I am not
-familiar with the hardware internals of the e1000e.
-
-Another unresolved question is the inherent racy nature of the
-workaround - the ME could block access again after releasing the
-device (i.e., BIT(E1000_ICH_FWSM_PCIM2PCI) clear) but before the
-driver performs the write. Has this not been a problem?
-
-Any feedback on the patch or the more information on the issues
-appreciated.
-
-Thanks,
-Punit
-
- drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 177c6da80c57..5ed4d7ed35b3 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -607,11 +607,11 @@ static void e1000e_update_rdt_wa(struct e1000_ring *rx_ring, unsigned int i)
- {
- 	struct e1000_adapter *adapter = rx_ring->adapter;
- 	struct e1000_hw *hw = &adapter->hw;
--	s32 ret_val = __ew32_prepare(hw);
- 
-+	__ew32_prepare(hw);
- 	writel(i, rx_ring->tail);
- 
--	if (unlikely(!ret_val && (i != readl(rx_ring->tail)))) {
-+	if (unlikely(i != readl(rx_ring->tail))) {
- 		u32 rctl = er32(RCTL);
- 
- 		ew32(RCTL, rctl & ~E1000_RCTL_EN);
-@@ -624,11 +624,11 @@ static void e1000e_update_tdt_wa(struct e1000_ring *tx_ring, unsigned int i)
- {
- 	struct e1000_adapter *adapter = tx_ring->adapter;
- 	struct e1000_hw *hw = &adapter->hw;
--	s32 ret_val = __ew32_prepare(hw);
- 
-+	__ew32_prepare(hw);
- 	writel(i, tx_ring->tail);
- 
--	if (unlikely(!ret_val && (i != readl(tx_ring->tail)))) {
-+	if (unlikely(i != readl(tx_ring->tail))) {
- 		u32 tctl = er32(TCTL);
- 
- 		ew32(TCTL, tctl & ~E1000_TCTL_EN);
--- 
-2.26.2
-
+On 5/12/2020 20:35, Andre Guedes wrote:
+> IGC supports a total of 32 rules. 16 MAC address based, 8 VLAN priority
+> based, and 8 ethertype based. This patch fixes IGC_MAX_RXNFC_RULES
+> accordingly.
+> 
+> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc.h | 5 ++++-
+>   1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+> index 14f9edaaaf83..5dbc5a156626 100644
+> --- a/drivers/net/ethernet/intel/igc/igc.h
+> +++ b/drivers/net/ethernet/intel/igc/igc.h
+> @@ -457,7 +457,10 @@ struct igc_nfc_rule {
+>   	u16 action;
+>   };
+>   
+> -#define IGC_MAX_RXNFC_RULES		16
+> +/* IGC supports a total of 32 NFC rules: 16 MAC address based,, 8 VLAN priority
+> + * based, and 8 ethertype based.
+> + */
+> +#define IGC_MAX_RXNFC_RULES		32
+>   
+>   /* igc_desc_unused - calculate if we have unused descriptors */
+>   static inline u16 igc_desc_unused(const struct igc_ring *ring)
+> 
+Acked-by: Sasha Neftin <sasha.neftin@intel.com>
