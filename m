@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 15 May 2020 19:40:39 +0000
-Subject: [Intel-wired-lan] [PATCH S41 03/15] ice: Fix check for
- contiguous TCs
-In-Reply-To: <20200508004113.39725-3-anthony.l.nguyen@intel.com>
+Date: Fri, 15 May 2020 19:41:05 +0000
+Subject: [Intel-wired-lan] [PATCH S41 04/15] ice: only drop link once
+ when setting pauseparams
+In-Reply-To: <20200508004113.39725-4-anthony.l.nguyen@intel.com>
 References: <20200508004113.39725-1-anthony.l.nguyen@intel.com>
- <20200508004113.39725-3-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB16593D432CC3CBC0EA7E07988CBD0@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200508004113.39725-4-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB1659C7D2934B06BBE86D14FA8CBD0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Thursday, May 7, 2020 5:41 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S41 03/15] ice: Fix check for contiguous TCs
+> Subject: [Intel-wired-lan] [PATCH S41 04/15] ice: only drop link once when
+> setting pauseparams
 > 
 > From: Dave Ertman <david.m.ertman@intel.com>
 > 
-> The current implementation for contiguous TC check is assuming that the UPs
-> will be mapped to TCs in a linear progressing fashion.  This is obviously not
-> always true.
+> Currently, the ice driver is setting a PHY configuration, which causes a link
+> drop, and then additionally it calls for a nway_reset, which restarts auto-
+> negotiation on the link, which also causes a link drop.  These two link events
+> in such close timing is causing the FW to not be able to generate a link
+> interrupt for the driver to respond to.
 > 
-> Change the check to allow for various UP2TC mapping configurations.
+> Remove the unnecessary auto-negotiation restart from the set pauseparams
+> flow.  Also remove error path that would have performed an
+> ice_down/ice_up as that is also unnecessary.
 > 
 > Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 19 ++++++++++++-------
->  1 file changed, 12 insertions(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 12 ------------
+>  1 file changed, 12 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
