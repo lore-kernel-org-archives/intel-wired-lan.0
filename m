@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 15 May 2020 19:45:48 +0000
-Subject: [Intel-wired-lan] [PATCH S41 09/15] ice: Fix resource leak on
- early exit from function
-In-Reply-To: <20200508004113.39725-9-anthony.l.nguyen@intel.com>
+Date: Fri, 15 May 2020 19:46:28 +0000
+Subject: [Intel-wired-lan] [PATCH S41 10/15] ice: refactor filter
+ functions
+In-Reply-To: <20200508004113.39725-10-anthony.l.nguyen@intel.com>
 References: <20200508004113.39725-1-anthony.l.nguyen@intel.com>
- <20200508004113.39725-9-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB16595619396F0EB3DD0A1B968CBD0@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200508004113.39725-10-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB1659FD33B92AB9733E4DD3868CBD0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,41 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Thursday, May 7, 2020 5:41 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S41 09/15] ice: Fix resource leak on early
-> exit from function
+> Subject: [Intel-wired-lan] [PATCH S41 10/15] ice: refactor filter functions
 > 
-> From: Eric Joyner <eric.joyner@intel.com>
+> From: Michal Swiatkowski <michal.swiatkowski@intel.com>
 > 
-> Memory allocated in the ice_add_prof_id_vsig() function wasn't being
-> properly freed if an error occurred inside the for-loop in the function.
+> Move filter functions to separate file.
 > 
-> In particular, 'p' wasn't being freed if an error occurred before it was added
-> to the resource list at the end of the for-loop.
+> Add functions that prepare suitable ice_fltr_info struct depending on the
+> filter type and add this struct to earlier created
+> list:
+> - ice_fltr_add_mac_to_list
+> - ice_fltr_add_vlan_to_list
+> - ice_fltr_add_eth_to_list
+> This functions are used in adding and removing filters.
 > 
-> Signed-off-by: Eric Joyner <eric.joyner@intel.com>
+> Create wrappers for functions mentioned above that alloc list, add suitable
+> ice_fltr_info to it and call add or remove function.
+> - ice_fltr_prepare_mac
+> - ice_fltr_prepare_mac_and_broadcast
+> - ice_fltr_prepare_vlan
+> - ice_fltr_prepare_eth
+> 
+> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/Makefile       |   1 +
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  13 +-
+>  drivers/net/ethernet/intel/ice/ice_fltr.c     | 397 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_fltr.h     |  39 ++
+>  drivers/net/ethernet/intel/ice/ice_lib.c      | 212 +---------
+>  drivers/net/ethernet/intel/ice/ice_lib.h      |   9 +-
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  53 +--
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  34 +-
+>  8 files changed, 494 insertions(+), 264 deletions(-)  create mode 100644
+> drivers/net/ethernet/intel/ice/ice_fltr.c
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_fltr.h
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
