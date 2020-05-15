@@ -1,16 +1,16 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 14 May 2020 23:34:57 -0700
-Subject: [Intel-wired-lan] [iecm/idpf V1 11/14] iecm: Add singleq TX/RX
+Date: Thu, 14 May 2020 23:34:54 -0700
+Subject: [Intel-wired-lan] [iecm/idpf V1 08/14] iecm: Init and allocate vport
 In-Reply-To: <20200515063500.48301-1-alice.michael@intel.com>
 References: <20200515063500.48301-1-alice.michael@intel.com>
-Message-ID: <20200515063500.48301-12-alice.michael@intel.com>
+Message-ID: <20200515063500.48301-9-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Implement legacy single queue model for TX/RX flows.
+Initialize vport and allocate queue resources.
 
 Signed-off-by: Alice Michael <alice.michael@intel.com>
 Signed-off-by: Alan Brady <Alan.Brady@intel.com>
@@ -22,807 +22,1161 @@ Reviewed-by: Donald Skidmore <donald.c.skidmore@intel.com>
 Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 ---
- .../ethernet/intel/iecm/iecm_singleq_txrx.c   | 670 +++++++++++++++++-
- 1 file changed, 652 insertions(+), 18 deletions(-)
+ drivers/net/ethernet/intel/iecm/iecm_lib.c    |  87 +-
+ drivers/net/ethernet/intel/iecm/iecm_txrx.c   | 797 +++++++++++++++++-
+ .../net/ethernet/intel/iecm/iecm_virtchnl.c   |  37 +-
+ 3 files changed, 890 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_singleq_txrx.c b/drivers/net/ethernet/intel/iecm/iecm_singleq_txrx.c
-index 3e7209f91134..e8c47af0b42c 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_singleq_txrx.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_singleq_txrx.c
-@@ -17,7 +17,11 @@ static __le64
- iecm_tx_singleq_build_ctob(u64 td_cmd, u64 td_offset, unsigned int size,
- 			   u64 td_tag)
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_lib.c b/drivers/net/ethernet/intel/iecm/iecm_lib.c
+index f41fb395ab66..ffcc3b3a86c2 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_lib.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_lib.c
+@@ -443,7 +443,15 @@ static void iecm_vport_rel_all(struct iecm_adapter *adapter)
+  */
+ void iecm_vport_set_hsplit(struct iecm_vport *vport, struct bpf_prog *prog)
  {
 -	/* stub */
-+	return cpu_to_le64(IECM_TX_DESC_DTYPE_DATA |
-+			   (td_cmd    << IECM_TXD_QW1_CMD_S) |
-+			   (td_offset << IECM_TXD_QW1_OFFSET_S) |
-+			   ((u64)size << IECM_TXD_QW1_TX_BUF_SZ_S) |
-+			   (td_tag    << IECM_TXD_QW1_L2TAG1_S));
++	if (prog) {
++		vport->rx_hsplit_en = IECM_RX_NO_HDR_SPLIT;
++		return;
++	}
++	if (iecm_is_cap_ena(vport->adapter, VIRTCHNL_CAP_HEADER_SPLIT) &&
++	    iecm_is_queue_model_split(vport->rxq_model))
++		vport->rx_hsplit_en = IECM_RX_HDR_SPLIT;
++	else
++		vport->rx_hsplit_en = IECM_RX_NO_HDR_SPLIT;
  }
  
  /**
-@@ -31,7 +35,93 @@ static
- int iecm_tx_singleq_csum(struct iecm_tx_buf *first,
- 			 struct iecm_tx_offload_params *off)
+@@ -531,7 +539,12 @@ static void iecm_service_task(struct work_struct *work)
+  */
+ static void iecm_up_complete(struct iecm_vport *vport)
  {
 -	/* stub */
-+	u32 l4_len = 0, l3_len = 0, l2_len = 0;
-+	struct sk_buff *skb = first->skb;
-+	union {
-+		struct iphdr *v4;
-+		struct ipv6hdr *v6;
-+		unsigned char *hdr;
-+	} ip;
-+	union {
-+		struct tcphdr *tcp;
-+		unsigned char *hdr;
-+	} l4;
-+	__be16 frag_off, protocol;
-+	unsigned char *exthdr;
-+	u32 offset, cmd = 0;
-+	u8 l4_proto = 0;
++	netif_set_real_num_rx_queues(vport->netdev, vport->num_txq);
++	netif_set_real_num_tx_queues(vport->netdev, vport->num_rxq);
++	netif_carrier_on(vport->netdev);
++	netif_tx_start_all_queues(vport->netdev);
 +
-+	if (skb->ip_summed != CHECKSUM_PARTIAL)
-+		return 0;
++	vport->adapter->state = __IECM_UP;
+ }
+ 
+ /**
+@@ -540,7 +553,71 @@ static void iecm_up_complete(struct iecm_vport *vport)
+  */
+ static int iecm_vport_open(struct iecm_vport *vport)
+ {
+-	/* stub */
++	struct iecm_adapter *adapter = vport->adapter;
++	int err;
 +
-+	if (skb->encapsulation)
-+		return -1;
++	if (vport->adapter->state != __IECM_DOWN)
++		return -EBUSY;
 +
-+	ip.hdr = skb_network_header(skb);
-+	l4.hdr = skb_transport_header(skb);
++	/* we do not allow interface up just yet */
++	netif_carrier_off(vport->netdev);
 +
-+	/* compute outer L2 header size */
-+	l2_len = ip.hdr - skb->data;
-+	offset = (l2_len / 2) << IECM_TX_DESC_LEN_MACLEN_S;
++	if (adapter->dev_ops.vc_ops.enable_vport) {
++		err = adapter->dev_ops.vc_ops.enable_vport(vport);
++		if (err)
++			return -EAGAIN;
++	}
 +
-+	/* Enable IP checksum offloads */
-+	protocol = vlan_get_protocol(skb);
-+	if (protocol == htons(ETH_P_IP)) {
-+		l4_proto = ip.v4->protocol;
-+		/* the stack computes the IP header already, the only time we
-+		 * need the hardware to recompute it is in the case of TSO.
-+		 */
-+		if (first->tx_flags & IECM_TX_FLAGS_TSO)
-+			cmd |= IECM_TX_DESC_CMD_IIPT_IPV4_CSUM;
-+		else
-+			cmd |= IECM_TX_DESC_CMD_IIPT_IPV4;
++	if (iecm_vport_queues_alloc(vport)) {
++		err = -ENOMEM;
++		goto unroll_queues_alloc;
++	}
 +
-+	} else if (protocol == htons(ETH_P_IPV6)) {
-+		cmd |= IECM_TX_DESC_CMD_IIPT_IPV6;
-+		exthdr = ip.hdr + sizeof(*ip.v6);
-+		l4_proto = ip.v6->nexthdr;
-+		if (l4.hdr != exthdr)
-+			ipv6_skip_exthdr(skb, exthdr - skb->data, &l4_proto,
-+					 &frag_off);
++	err = iecm_vport_intr_init(vport);
++	if (err)
++		goto unroll_intr_init;
++
++	err = vport->adapter->dev_ops.vc_ops.config_queues(vport);
++	if (err)
++		goto unroll_config_queues;
++	err = vport->adapter->dev_ops.vc_ops.irq_map_unmap(vport, true);
++	if (err) {
++		dev_err(&vport->adapter->pdev->dev,
++			"Call to irq_map_unmap returned %d\n", err);
++		goto unroll_config_queues;
++	}
++	err = vport->adapter->dev_ops.vc_ops.enable_queues(vport);
++	if (err)
++		goto unroll_enable_queues;
++
++	err = vport->adapter->dev_ops.vc_ops.get_ptype(vport);
++	if (err)
++		goto unroll_get_ptype;
++
++	if (adapter->rss_data.rss_lut)
++		err = iecm_config_rss(vport);
++	else
++		err = iecm_init_rss(vport);
++	if (err)
++		goto unroll_init_rss;
++	iecm_up_complete(vport);
++
++	netif_info(vport->adapter, hw, vport->netdev, "%s\n", __func__);
++
++	return 0;
++unroll_init_rss:
++unroll_get_ptype:
++	vport->adapter->dev_ops.vc_ops.disable_queues(vport);
++unroll_enable_queues:
++	vport->adapter->dev_ops.vc_ops.irq_map_unmap(vport, false);
++unroll_config_queues:
++	iecm_vport_intr_deinit(vport);
++unroll_intr_init:
++	iecm_vport_queues_rel(vport);
++unroll_queues_alloc:
++	adapter->dev_ops.vc_ops.disable_vport(vport);
++
++	return err;
+ }
+ 
+ /**
+@@ -861,7 +938,9 @@ EXPORT_SYMBOL(iecm_shutdown);
+  */
+ static int iecm_open(struct net_device *netdev)
+ {
+-	/* stub */
++	struct iecm_netdev_priv *np = netdev_priv(netdev);
++
++	return iecm_vport_open(np->vport);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_txrx.c b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
+index a31dd170394b..8fe4d9f48cc9 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_txrx.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
+@@ -82,7 +82,37 @@ void iecm_tx_desc_rel_all(struct iecm_vport *vport)
+  */
+ static enum iecm_status iecm_tx_buf_alloc_all(struct iecm_queue *tx_q)
+ {
+-	/* stub */
++	int buf_size;
++	int i = 0;
++
++	/* Allocate book keeping buffers only. Buffers to be supplied to HW
++	 * are allocated by kernel network stack and received as part of skb
++	 */
++	buf_size = sizeof(struct iecm_tx_buf) * tx_q->desc_count;
++	tx_q->tx_buf = kzalloc(buf_size, GFP_KERNEL);
++	if (!tx_q->tx_buf)
++		return IECM_ERR_NO_MEMORY;
++
++	/* Initialize tx buf stack for out-of-order completions if
++	 * flow scheduling offload is enabled
++	 */
++	tx_q->buf_stack.bufs =
++		kcalloc(tx_q->desc_count, sizeof(struct iecm_tx_buf *),
++			GFP_KERNEL);
++	if (!tx_q->buf_stack.bufs)
++		return IECM_ERR_NO_MEMORY;
++
++	for (i = 0; i < tx_q->desc_count; i++) {
++		tx_q->buf_stack.bufs[i] = kzalloc(sizeof(struct iecm_tx_buf),
++						  GFP_KERNEL);
++		if (!tx_q->buf_stack.bufs[i])
++			return IECM_ERR_NO_MEMORY;
++	}
++
++	tx_q->buf_stack.size = tx_q->desc_count;
++	tx_q->buf_stack.top = tx_q->desc_count;
++
++	return 0;
+ }
+ 
+ /**
+@@ -92,7 +122,40 @@ static enum iecm_status iecm_tx_buf_alloc_all(struct iecm_queue *tx_q)
+  */
+ static enum iecm_status iecm_tx_desc_alloc(struct iecm_queue *tx_q, bool bufq)
+ {
+-	/* stub */
++	struct device *dev = tx_q->dev;
++	enum iecm_status err = 0;
++
++	if (bufq) {
++		err = iecm_tx_buf_alloc_all(tx_q);
++		if (err)
++			goto err_alloc;
++		tx_q->size = tx_q->desc_count *
++				sizeof(struct iecm_base_tx_desc);
 +	} else {
-+		return -1;
++		tx_q->size = tx_q->desc_count *
++				sizeof(struct iecm_splitq_tx_compl_desc);
 +	}
 +
-+	/* compute inner L3 header size */
-+	l3_len = l4.hdr - ip.hdr;
-+	offset |= (l3_len / 4) << IECM_TX_DESC_LEN_IPLEN_S;
-+
-+	/* Enable L4 checksum offloads */
-+	switch (l4_proto) {
-+	case IPPROTO_TCP:
-+		/* enable checksum offloads */
-+		cmd |= IECM_TX_DESC_CMD_L4T_EOFT_TCP;
-+		l4_len = l4.tcp->doff;
-+		offset |= l4_len << IECM_TX_DESC_LEN_L4_LEN_S;
-+		break;
-+	case IPPROTO_UDP:
-+		/* enable UDP checksum offload */
-+		cmd |= IECM_TX_DESC_CMD_L4T_EOFT_UDP;
-+		l4_len = (sizeof(struct udphdr) >> 2);
-+		offset |= l4_len << IECM_TX_DESC_LEN_L4_LEN_S;
-+		break;
-+	case IPPROTO_SCTP:
-+		/* enable SCTP checksum offload */
-+		cmd |= IECM_TX_DESC_CMD_L4T_EOFT_SCTP;
-+		l4_len = sizeof(struct sctphdr) >> 2;
-+		offset |= l4_len << IECM_TX_DESC_LEN_L4_LEN_S;
-+		break;
-+
-+	default:
-+		if (first->tx_flags & IECM_TX_FLAGS_TSO)
-+			return -1;
-+		skb_checksum_help(skb);
-+		return 0;
++	/* Allocate descriptors also round up to nearest 4K */
++	tx_q->size = ALIGN(tx_q->size, 4096);
++	tx_q->desc_ring = dmam_alloc_coherent(dev, tx_q->size, &tx_q->dma,
++					      GFP_KERNEL);
++	if (!tx_q->desc_ring) {
++		dev_info(dev, "Unable to allocate memory for the Tx descriptor ring, size=%d\n",
++			 tx_q->size);
++		err = IECM_ERR_NO_MEMORY;
++		goto err_alloc;
 +	}
 +
-+	off->td_cmd |= cmd;
-+	off->hdr_offsets |= offset;
-+	return 1;
++	tx_q->next_to_alloc = 0;
++	tx_q->next_to_use = 0;
++	tx_q->next_to_clean = 0;
++	set_bit(__IECM_Q_GEN_CHK, tx_q->flags);
++
++err_alloc:
++	if (err)
++		iecm_tx_desc_rel(tx_q, bufq);
++	return err;
  }
  
  /**
-@@ -48,7 +138,125 @@ static void
- iecm_tx_singleq_map(struct iecm_queue *tx_q, struct iecm_tx_buf *first,
- 		    struct iecm_tx_offload_params *offloads)
+@@ -101,7 +164,41 @@ static enum iecm_status iecm_tx_desc_alloc(struct iecm_queue *tx_q, bool bufq)
+  */
+ static enum iecm_status iecm_tx_desc_alloc_all(struct iecm_vport *vport)
  {
 -	/* stub */
-+	u32 offsets = offloads->hdr_offsets;
-+	struct iecm_base_tx_desc *tx_desc;
-+	u64  td_cmd = offloads->td_cmd;
-+	unsigned int data_len, size;
-+	struct iecm_tx_buf *tx_buf;
-+	u16 i = tx_q->next_to_use;
-+	struct netdev_queue *nq;
-+	struct sk_buff *skb;
-+	skb_frag_t *frag;
++	struct pci_dev *pdev = vport->adapter->pdev;
++	enum iecm_status err = 0;
++	int i, j;
++
++	/* Setup buffer queues. In single queue model buffer queues and
++	 * completion queues will be same
++	 */
++	for (i = 0; i < vport->num_txq_grp; i++) {
++		for (j = 0; j < vport->txq_grps[i].num_txq; j++) {
++			err = iecm_tx_desc_alloc(&vport->txq_grps[i].txqs[j],
++						 true);
++			if (err) {
++				dev_err(&pdev->dev,
++					"Allocation for Tx Queue %u failed\n",
++					i);
++				goto err_out;
++			}
++		}
++
++		if (iecm_is_queue_model_split(vport->txq_model)) {
++			/* Setup completion queues */
++			err = iecm_tx_desc_alloc(vport->txq_grps[i].complq,
++						 false);
++			if (err) {
++				dev_err(&pdev->dev,
++					"Allocation for Tx Completion Queue %u failed\n",
++					i);
++				goto err_out;
++			}
++		}
++	}
++err_out:
++	if (err)
++		iecm_tx_desc_rel_all(vport);
++	return err;
+ }
+ 
+ /**
+@@ -156,7 +253,17 @@ void iecm_rx_desc_rel_all(struct iecm_vport *vport)
+  */
+ void iecm_rx_buf_hw_update(struct iecm_queue *rxq, u32 val)
+ {
+-	/* stub */
++	/* update next to alloc since we have filled the ring */
++	rxq->next_to_alloc = val;
++
++	rxq->next_to_use = val;
++	/* Force memory writes to complete before letting h/w
++	 * know there are new descriptors to fetch.  (Only
++	 * applicable for weak-ordered memory model archs,
++	 * such as IA-64).
++	 */
++	wmb();
++	writel_relaxed(val, rxq->tail);
+ }
+ 
+ /**
+@@ -169,7 +276,34 @@ void iecm_rx_buf_hw_update(struct iecm_queue *rxq, u32 val)
+  */
+ bool iecm_rx_buf_hw_alloc(struct iecm_queue *rxq, struct iecm_rx_buf *buf)
+ {
+-	/* stub */
++	struct page *page = buf->page;
 +	dma_addr_t dma;
 +
-+	skb = first->skb;
++	/* since we are recycling buffers we should seldom need to alloc */
++	if (likely(page))
++		return true;
 +
-+	data_len = skb->data_len;
-+	size = skb_headlen(skb);
-+
-+	tx_desc = IECM_BASE_TX_DESC(tx_q, i);
-+
-+	dma = dma_map_single(tx_q->dev, skb->data, size, DMA_TO_DEVICE);
-+
-+	tx_buf = first;
-+
-+	/* write each descriptor with CRC bit */
-+	if (tx_q->vport->adapter->dev_ops.crc_enable)
-+		tx_q->vport->adapter->dev_ops.crc_enable(&td_cmd);
-+
-+	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
-+		unsigned int max_data = IECM_TX_MAX_DESC_DATA_ALIGNED;
-+
-+		if (dma_mapping_error(tx_q->dev, dma))
-+			goto dma_error;
-+
-+		/* record length, and DMA address */
-+		dma_unmap_len_set(tx_buf, len, size);
-+		dma_unmap_addr_set(tx_buf, dma, dma);
-+
-+		/* align size to end of page */
-+		max_data += -dma & (IECM_TX_MAX_READ_REQ_SIZE - 1);
-+		tx_desc->buf_addr = cpu_to_le64(dma);
-+
-+		/* account for data chunks larger than the hardware
-+		 * can handle
-+		 */
-+		while (unlikely(size > IECM_TX_MAX_DESC_DATA)) {
-+			tx_desc->qw1 = iecm_tx_singleq_build_ctob(td_cmd,
-+								  offsets,
-+								  size, 0);
-+			tx_desc++;
-+			i++;
-+
-+			if (i == tx_q->desc_count) {
-+				tx_desc = IECM_BASE_TX_DESC(tx_q, 0);
-+				i = 0;
-+			}
-+
-+			dma += max_data;
-+			size -= max_data;
-+
-+			max_data = IECM_TX_MAX_DESC_DATA_ALIGNED;
-+			tx_desc->buf_addr = cpu_to_le64(dma);
-+		}
-+
-+		if (likely(!data_len))
-+			break;
-+		tx_desc->qw1 = iecm_tx_singleq_build_ctob(td_cmd, offsets,
-+							  size, 0);
-+		tx_desc++;
-+		i++;
-+
-+		if (i == tx_q->desc_count) {
-+			tx_desc = IECM_BASE_TX_DESC(tx_q, 0);
-+			i = 0;
-+		}
-+
-+		size = skb_frag_size(frag);
-+		data_len -= size;
-+
-+		dma = skb_frag_dma_map(tx_q->dev, frag, 0, size,
-+				       DMA_TO_DEVICE);
-+
-+		tx_buf = &tx_q->tx_buf[i];
-+	}
-+
-+	/* record bytecount for BQL */
-+	nq = netdev_get_tx_queue(tx_q->vport->netdev, tx_q->idx);
-+	netdev_tx_sent_queue(nq, first->bytecount);
-+
-+	/* record SW timestamp if HW timestamp is not available */
-+	skb_tx_timestamp(first->skb);
-+
-+	/* write last descriptor with RS and EOP bits */
-+	td_cmd |= (u64)(IECM_TX_DESC_CMD_EOP | IECM_TX_DESC_CMD_RS);
-+
-+	tx_desc->qw1 = iecm_tx_singleq_build_ctob(td_cmd, offsets, size, 0);
-+
-+	i++;
-+	if (i == tx_q->desc_count)
-+		i = 0;
-+
-+	/* set next_to_watch value indicating a packet is present */
-+	first->next_to_watch = tx_desc;
-+
-+	iecm_tx_buf_hw_update(tx_q, i, skb);
-+
-+	return;
-+
-+dma_error:
-+	/* clear dma mappings for failed tx_buf map */
-+	for (;;) {
-+		tx_buf = &tx_q->tx_buf[i];
-+		iecm_tx_buf_rel(tx_q, tx_buf);
-+		if (tx_buf == first)
-+			break;
-+		if (i == 0)
-+			i = tx_q->desc_count;
-+		i--;
-+	}
-+
-+	tx_q->next_to_use = i;
- }
- 
- /**
-@@ -61,7 +269,42 @@ iecm_tx_singleq_map(struct iecm_queue *tx_q, struct iecm_tx_buf *first,
- static netdev_tx_t
- iecm_tx_singleq_frame(struct sk_buff *skb, struct iecm_queue *tx_q)
- {
--	/* stub */
-+	struct iecm_tx_offload_params offload = {0};
-+	struct iecm_tx_buf *first;
-+	unsigned int count;
-+	int csum;
-+
-+	count = iecm_tx_desc_count_required(skb);
-+
-+	/* need: 1 descriptor per page * PAGE_SIZE/IECM_MAX_DATA_PER_TXD,
-+	 *       + 1 desc for skb_head_len/IECM_MAX_DATA_PER_TXD,
-+	 *       + 4 desc gap to avoid the cache line where head is,
-+	 *       + 1 desc for context descriptor,
-+	 * otherwise try next time
-+	 */
-+	if (iecm_tx_maybe_stop(tx_q, count + IECM_TX_DESCS_PER_CACHE_LINE +
-+			       IECM_TX_DESCS_FOR_CTX)) {
-+		return NETDEV_TX_BUSY;
-+	}
-+
-+	/* record the location of the first descriptor for this packet */
-+	first = &tx_q->tx_buf[tx_q->next_to_use];
-+	first->skb = skb;
-+	first->bytecount = max_t(unsigned int, skb->len, ETH_ZLEN);
-+	first->gso_segs = 1;
-+	first->tx_flags = 0;
-+
-+	csum = iecm_tx_singleq_csum(first, &offload);
-+	if (csum < 0)
-+		goto out_drop;
-+
-+	iecm_tx_singleq_map(tx_q, first, &offload);
-+
-+	return NETDEV_TX_OK;
-+
-+out_drop:
-+	dev_kfree_skb_any(skb);
-+	return NETDEV_TX_OK;
- }
- 
- /**
-@@ -74,7 +317,18 @@ iecm_tx_singleq_frame(struct sk_buff *skb, struct iecm_queue *tx_q)
- netdev_tx_t iecm_tx_singleq_start(struct sk_buff *skb,
- 				  struct net_device *netdev)
- {
--	/* stub */
-+	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
-+	struct iecm_queue *tx_q;
-+
-+	tx_q = vport->txqs[skb->queue_mapping];
-+
-+	/* hardware can't handle really short frames, hardware padding works
-+	 * beyond this point
-+	 */
-+	if (skb_put_padto(skb, IECM_TX_MIN_LEN))
-+		return NETDEV_TX_OK;
-+
-+	return iecm_tx_singleq_frame(skb, tx_q);
- }
- 
- /**
-@@ -85,7 +339,98 @@ netdev_tx_t iecm_tx_singleq_start(struct sk_buff *skb,
-  */
- static bool iecm_tx_singleq_clean(struct iecm_queue *tx_q, int napi_budget)
- {
--	/* stub */
-+	unsigned int budget = tx_q->vport->compln_clean_budget;
-+	unsigned int total_bytes = 0, total_pkts = 0;
-+	struct iecm_base_tx_desc *tx_desc;
-+	s16 ntc = tx_q->next_to_clean;
-+	struct iecm_tx_buf *tx_buf;
-+	struct netdev_queue *nq;
-+
-+	tx_desc = IECM_BASE_TX_DESC(tx_q, ntc);
-+	tx_buf = &tx_q->tx_buf[ntc];
-+	ntc -= tx_q->desc_count;
-+
-+	do {
-+		struct iecm_base_tx_desc *eop_desc = tx_buf->next_to_watch;
-+
-+		/* if next_to_watch is not set then no work pending */
-+		if (!eop_desc)
-+			break;
-+
-+		/* prevent any other reads prior to eop_desc */
-+		smp_rmb();
-+
-+		/* if the descriptor isn't done, no work yet to do */
-+		if (!(eop_desc->qw1 &
-+		      cpu_to_le64(IECM_TX_DESC_DTYPE_DESC_DONE)))
-+			break;
-+
-+		/* clear next_to_watch to prevent false hangs */
-+		tx_buf->next_to_watch = NULL;
-+
-+		/* update the statistics for this packet */
-+		total_bytes += tx_buf->bytecount;
-+		total_pkts += tx_buf->gso_segs;
-+
-+		/* free the skb */
-+		napi_consume_skb(tx_buf->skb, napi_budget);
-+
-+		/* unmap skb header data */
-+		dma_unmap_single(tx_q->dev,
-+				 dma_unmap_addr(tx_buf, dma),
-+				 dma_unmap_len(tx_buf, len),
-+				 DMA_TO_DEVICE);
-+
-+		/* clear tx_buf data */
-+		tx_buf->skb = NULL;
-+		dma_unmap_len_set(tx_buf, len, 0);
-+
-+		/* unmap remaining buffers */
-+		while (tx_desc != eop_desc) {
-+			tx_buf++;
-+			tx_desc++;
-+			ntc++;
-+			if (unlikely(!ntc)) {
-+				ntc -= tx_q->desc_count;
-+				tx_buf = tx_q->tx_buf;
-+				tx_desc = IECM_BASE_TX_DESC(tx_q, 0);
-+			}
-+
-+			/* unmap any remaining paged data */
-+			if (dma_unmap_len(tx_buf, len)) {
-+				dma_unmap_page(tx_q->dev,
-+					       dma_unmap_addr(tx_buf, dma),
-+					       dma_unmap_len(tx_buf, len),
-+					       DMA_TO_DEVICE);
-+				dma_unmap_len_set(tx_buf, len, 0);
-+			}
-+		}
-+
-+		tx_buf++;
-+		tx_desc++;
-+		ntc++;
-+		if (unlikely(!ntc)) {
-+			ntc -= tx_q->desc_count;
-+			tx_buf = tx_q->tx_buf;
-+			tx_desc = IECM_BASE_TX_DESC(tx_q, 0);
-+		}
-+		/* update budget */
-+		budget--;
-+	} while (likely(budget));
-+
-+	ntc += tx_q->desc_count;
-+	tx_q->next_to_clean = ntc;
-+	nq = netdev_get_tx_queue(tx_q->vport->netdev, tx_q->idx);
-+	netdev_tx_completed_queue(nq, total_pkts, total_bytes);
-+	tx_q->itr.stats.tx.packets += total_pkts;
-+	tx_q->itr.stats.tx.bytes += total_bytes;
-+
-+	u64_stats_update_begin(&tx_q->stats_sync);
-+	tx_q->q_stats.tx.packets += total_pkts;
-+	tx_q->q_stats.tx.bytes += total_bytes;
-+	u64_stats_update_end(&tx_q->stats_sync);
-+
-+	return !!budget;
- }
- 
- /**
-@@ -98,7 +443,16 @@ static bool iecm_tx_singleq_clean(struct iecm_queue *tx_q, int napi_budget)
- static inline bool
- iecm_tx_singleq_clean_all(struct iecm_q_vector *q_vec, int budget)
- {
--	/* stub */
-+	bool clean_complete = true;
-+	int i, budget_per_q;
-+
-+	budget_per_q = max(budget / q_vec->num_txq, 1);
-+	for (i = 0; i < q_vec->num_txq; i++) {
-+		if (!iecm_tx_singleq_clean(q_vec->tx[i], budget_per_q))
-+			clean_complete = false;
-+	}
-+
-+	return clean_complete;
- }
- 
- /**
-@@ -116,7 +470,8 @@ static bool
- iecm_rx_singleq_test_staterr(struct iecm_singleq_base_rx_desc *rx_desc,
- 			     const u64 stat_err_bits)
- {
--	/* stub */
-+	return !!(rx_desc->qword1.status_error_ptype_len &
-+		  cpu_to_le64(stat_err_bits));
- }
- 
- /**
-@@ -129,7 +484,15 @@ static bool iecm_rx_singleq_is_non_eop(struct iecm_queue *rxq,
- 				       struct iecm_singleq_base_rx_desc
- 				       *rx_desc, struct sk_buff *skb)
- {
--	/* stub */
-+	/* if we are the last buffer then there is nothing else to do */
-+ #define IECM_RXD_EOF BIT(IECM_RX_BASE_DESC_STATUS_EOF_S)
-+	if (likely(iecm_rx_singleq_test_staterr(rx_desc, IECM_RXD_EOF)))
++	/* alloc new page for storage */
++	page = alloc_page(GFP_ATOMIC | __GFP_NOWARN);
++	if (unlikely(!page))
 +		return false;
 +
-+	/* place skb in next buffer to be received */
-+	rxq->rx_buf.buf[rxq->next_to_clean].skb = skb;
++	/* map page for use */
++	dma = dma_map_page(rxq->dev, page, 0, PAGE_SIZE, DMA_FROM_DEVICE);
++
++	/* if mapping failed free memory back to system since
++	 * there isn't much point in holding memory we can't use
++	 */
++	if (dma_mapping_error(rxq->dev, dma)) {
++		__free_pages(page, 0);
++		return false;
++	}
++
++	buf->dma = dma;
++	buf->page = page;
++	buf->page_offset = iecm_rx_offset(rxq);
 +
 +	return true;
  }
  
  /**
-@@ -145,7 +508,63 @@ static void iecm_rx_singleq_csum(struct iecm_queue *rxq, struct sk_buff *skb,
- 				 struct iecm_singleq_base_rx_desc *rx_desc,
- 				 u8 ptype)
+@@ -183,7 +317,34 @@ bool iecm_rx_buf_hw_alloc(struct iecm_queue *rxq, struct iecm_rx_buf *buf)
+ bool iecm_rx_hdr_buf_hw_alloc(struct iecm_queue *rxq,
+ 			      struct iecm_rx_buf *hdr_buf)
  {
 -	/* stub */
-+	u64 qw1 = le64_to_cpu(rx_desc->qword1.status_error_ptype_len);
-+	struct iecm_rx_ptype_decoded decoded;
-+	bool ipv4, ipv6;
-+	u32 rx_status;
-+	u8 rx_error;
++	struct page *page = hdr_buf->page;
++	dma_addr_t dma;
 +
-+	/* Start with CHECKSUM_NONE and by default csum_level = 0 */
-+	skb->ip_summed = CHECKSUM_NONE;
-+	skb_checksum_none_assert(skb);
++	/* since we are recycling buffers we should seldom need to alloc */
++	if (likely(page))
++		return true;
 +
-+	/* check if Rx checksum is enabled */
-+	if (!(rxq->vport->netdev->features & NETIF_F_RXCSUM))
-+		return;
++	/* alloc new page for storage */
++	page = alloc_page(GFP_ATOMIC | __GFP_NOWARN);
++	if (unlikely(!page))
++		return false;
 +
-+	rx_status = ((qw1 & IECM_RXD_QW1_STATUS_M) >> IECM_RXD_QW1_STATUS_S);
-+	rx_error = ((qw1 & IECM_RXD_QW1_ERROR_M) >> IECM_RXD_QW1_ERROR_S);
++	/* map page for use */
++	dma = dma_map_page(rxq->dev, page, 0, PAGE_SIZE, DMA_FROM_DEVICE);
 +
-+	/* check if HW has decoded the packet and checksum */
-+	if (!(rx_status & BIT(IECM_RX_BASE_DESC_STATUS_L3L4P_S)))
-+		return;
-+
-+	decoded = rxq->vport->rx_ptype_lkup[ptype];
-+	if (!(decoded.known && decoded.outer_ip))
-+		return;
-+
-+	ipv4 = (decoded.outer_ip == IECM_RX_PTYPE_OUTER_IP) &&
-+	       (decoded.outer_ip_ver == IECM_RX_PTYPE_OUTER_IPV4);
-+	ipv6 = (decoded.outer_ip == IECM_RX_PTYPE_OUTER_IP) &&
-+	       (decoded.outer_ip_ver == IECM_RX_PTYPE_OUTER_IPV6);
-+
-+	if (ipv4 && (rx_error & (BIT(IECM_RX_BASE_DESC_ERROR_IPE_S) |
-+				 BIT(IECM_RX_BASE_DESC_ERROR_EIPE_S))))
-+		goto checksum_fail;
-+	else if (ipv6 && (rx_status &
-+		 (BIT(IECM_RX_BASE_DESC_STATUS_IPV6EXADD_S))))
-+		goto checksum_fail;
-+
-+	/* check for L4 errors and handle packets that were not able to be
-+	 * checksummed due to arrival speed
++	/* if mapping failed free memory back to system since
++	 * there isn't much point in holding memory we can't use
 +	 */
-+	if (rx_error & BIT(IECM_RX_BASE_DESC_ERROR_L3L4E_S))
-+		goto checksum_fail;
-+
-+	/* Only report checksum unnecessary for ICMP, TCP, UDP, or SCTP */
-+	switch (decoded.inner_prot) {
-+	case IECM_RX_PTYPE_INNER_PROT_ICMP:
-+	case IECM_RX_PTYPE_INNER_PROT_TCP:
-+	case IECM_RX_PTYPE_INNER_PROT_UDP:
-+	case IECM_RX_PTYPE_INNER_PROT_SCTP:
-+		skb->ip_summed = CHECKSUM_UNNECESSARY;
-+	default:
-+		break;
++	if (dma_mapping_error(rxq->dev, dma)) {
++		__free_pages(page, 0);
++		return false;
 +	}
-+	return;
 +
-+checksum_fail:
-+	dev_dbg(rxq->dev, "RX Checksum not available\n");
++	hdr_buf->dma = dma;
++	hdr_buf->page = page;
++	hdr_buf->page_offset = 0;
++
++	return true;
  }
  
  /**
-@@ -163,7 +582,10 @@ iecm_rx_singleq_process_skb_fields(struct iecm_queue *rxq, struct sk_buff *skb,
- 				   struct iecm_singleq_base_rx_desc *rx_desc,
- 				   u8 ptype)
+@@ -197,7 +358,59 @@ static bool
+ iecm_rx_buf_hw_alloc_all(struct iecm_queue *rxq,
+ 			 u16 cleaned_count)
  {
 -	/* stub */
-+	/* modifies the skb - consumes the enet header */
-+	skb->protocol = eth_type_trans(skb, rxq->vport->netdev);
-+
-+	iecm_rx_singleq_csum(rxq, skb, rx_desc, ptype);
- }
- 
- /**
-@@ -176,7 +598,44 @@ iecm_rx_singleq_process_skb_fields(struct iecm_queue *rxq, struct sk_buff *skb,
- bool iecm_rx_singleq_buf_hw_alloc_all(struct iecm_queue *rx_q,
- 				      u16 cleaned_count)
- {
--	/* stub */
-+	struct iecm_singleq_rx_buf_desc *singleq_rx_desc = NULL;
-+	u16 nta = rx_q->next_to_alloc;
++	struct iecm_splitq_rx_buf_desc *splitq_rx_desc = NULL;
++	struct iecm_rx_buf *hdr_buf = NULL;
++	u16 nta = rxq->next_to_alloc;
 +	struct iecm_rx_buf *buf;
 +
 +	/* do nothing if no valid netdev defined */
-+	if (!rx_q->vport->netdev || !cleaned_count)
++	if (!rxq->vport->netdev || !cleaned_count)
 +		return false;
 +
-+	singleq_rx_desc = IECM_SINGLEQ_RX_BUF_DESC(rx_q, nta);
-+	buf = &rx_q->rx_buf.buf[nta];
++	splitq_rx_desc = IECM_SPLITQ_RX_BUF_DESC(rxq, nta);
++
++	buf = &rxq->rx_buf.buf[nta];
++	if (rxq->rx_hsplit_en)
++		hdr_buf = &rxq->rx_buf.hdr_buf[nta];
 +
 +	do {
-+		if (!iecm_rx_buf_hw_alloc(rx_q, buf))
++		if (rxq->rx_hsplit_en) {
++			if (!iecm_rx_hdr_buf_hw_alloc(rxq, hdr_buf))
++				break;
++
++			splitq_rx_desc->hdr_addr =
++				cpu_to_le64(hdr_buf->dma +
++					    hdr_buf->page_offset);
++			hdr_buf++;
++		}
++
++		if (!iecm_rx_buf_hw_alloc(rxq, buf))
 +			break;
 +
 +		/* Refresh the desc even if buffer_addrs didn't change
 +		 * because each write-back erases this info.
 +		 */
-+		singleq_rx_desc->pkt_addr =
++		splitq_rx_desc->pkt_addr =
 +			cpu_to_le64(buf->dma + buf->page_offset);
-+		singleq_rx_desc->hdr_addr = 0;
-+		singleq_rx_desc++;
++		splitq_rx_desc->qword0.buf_id = cpu_to_le64(nta);
 +
++		splitq_rx_desc++;
 +		buf++;
 +		nta++;
-+		if (unlikely(nta == rx_q->desc_count)) {
-+			singleq_rx_desc = IECM_SINGLEQ_RX_BUF_DESC(rx_q, 0);
-+			buf = rx_q->rx_buf.buf;
++		if (unlikely(nta == rxq->desc_count)) {
++			splitq_rx_desc = IECM_SPLITQ_RX_BUF_DESC(rxq, 0);
++			buf = rxq->rx_buf.buf;
++			hdr_buf = rxq->rx_buf.hdr_buf;
 +			nta = 0;
 +		}
 +
 +		cleaned_count--;
 +	} while (cleaned_count);
 +
-+	if (rx_q->next_to_alloc != nta)
-+		iecm_rx_buf_hw_update(rx_q, nta);
++	if (rxq->next_to_alloc != nta)
++		iecm_rx_buf_hw_update(rxq, nta);
 +
 +	return !!cleaned_count;
  }
  
  /**
-@@ -190,7 +649,16 @@ bool iecm_rx_singleq_buf_hw_alloc_all(struct iecm_queue *rx_q,
- static void iecm_singleq_rx_put_buf(struct iecm_queue *rx_bufq,
- 				    struct iecm_rx_buf *rx_buf)
+@@ -206,7 +419,44 @@ iecm_rx_buf_hw_alloc_all(struct iecm_queue *rxq,
+  */
+ static enum iecm_status iecm_rx_buf_alloc_all(struct iecm_queue *rxq)
  {
 -	/* stub */
-+	u16 ntu = rx_bufq->next_to_use;
-+	bool recycled = false;
++	enum iecm_status err = 0;
 +
-+	recycled = iecm_rx_recycle_buf(rx_bufq, false, rx_buf);
-+
-+	/* update, and store next to alloc if the buffer was recycled */
-+	if (recycled) {
-+		ntu++;
-+		rx_bufq->next_to_use = (ntu < rx_bufq->desc_count) ? ntu : 0;
++	/* Allocate book keeping buffers */
++	rxq->rx_buf.buf = kcalloc(rxq->desc_count, sizeof(struct iecm_rx_buf),
++				  GFP_KERNEL);
++	if (!rxq->rx_buf.buf) {
++		err = IECM_ERR_NO_MEMORY;
++		goto rx_buf_alloc_all_out;
 +	}
++
++	if (rxq->rx_hsplit_en) {
++		rxq->rx_buf.hdr_buf =
++			kcalloc(rxq->desc_count, sizeof(struct iecm_rx_buf),
++				GFP_KERNEL);
++		if (!rxq->rx_buf.hdr_buf) {
++			err = IECM_ERR_NO_MEMORY;
++			goto rx_buf_alloc_all_out;
++		}
++	} else {
++		rxq->rx_buf.hdr_buf = NULL;
++	}
++
++	/* Allocate buffers to be given to HW. Allocate one less than
++	 * total descriptor count as RX splits 4k buffers to 2K and recycles
++	 */
++	if (iecm_is_queue_model_split(rxq->vport->rxq_model)) {
++		if (iecm_rx_buf_hw_alloc_all(rxq,
++					     rxq->desc_count - 1))
++			err = IECM_ERR_NO_MEMORY;
++	} else if (iecm_rx_singleq_buf_hw_alloc_all(rxq,
++						    rxq->desc_count - 1)) {
++		err = IECM_ERR_NO_MEMORY;
++	}
++
++rx_buf_alloc_all_out:
++	if (err)
++		iecm_rx_buf_rel_all(rxq);
++	return err;
  }
  
  /**
-@@ -199,7 +667,12 @@ static void iecm_singleq_rx_put_buf(struct iecm_queue *rx_bufq,
+@@ -218,7 +468,50 @@ static enum iecm_status iecm_rx_buf_alloc_all(struct iecm_queue *rxq)
+ static enum iecm_status iecm_rx_desc_alloc(struct iecm_queue *rxq, bool bufq,
+ 					   enum virtchnl_queue_model q_model)
+ {
+-	/* stub */
++	struct device *dev = rxq->dev;
++	enum iecm_status err = 0;
++
++	/* As both single and split descriptors are 32 byte, memory size
++	 * will be same for all three singleq_base rx, buf., splitq_base
++	 * rx. So pick anyone of them for size
++	 */
++	if (bufq) {
++		rxq->size = rxq->desc_count *
++			sizeof(struct iecm_splitq_rx_buf_desc);
++	} else {
++		rxq->size = rxq->desc_count *
++			sizeof(union iecm_rx_desc);
++	}
++
++	/* Allocate descriptors and also round up to nearest 4K */
++	rxq->size = ALIGN(rxq->size, 4096);
++	rxq->desc_ring = dmam_alloc_coherent(dev, rxq->size,
++					     &rxq->dma, GFP_KERNEL);
++	if (!rxq->desc_ring) {
++		dev_info(dev, "Unable to allocate memory for the Rx descriptor ring, size=%d\n",
++			 rxq->size);
++		err = IECM_ERR_NO_MEMORY;
++		return err;
++	}
++
++	rxq->next_to_alloc = 0;
++	rxq->next_to_clean = 0;
++	rxq->next_to_use = 0;
++	set_bit(__IECM_Q_GEN_CHK, rxq->flags);
++
++	/* Allocate buffers for a rx queue if the q_model is single OR if it
++	 * is a buffer queue in split queue model
++	 */
++	if (bufq || !iecm_is_queue_model_split(q_model)) {
++		err = iecm_rx_buf_alloc_all(rxq);
++		if (err)
++			goto err_alloc;
++	}
++
++err_alloc:
++	if (err)
++		iecm_rx_desc_rel(rxq, bufq, q_model);
++	return err;
+ }
+ 
+ /**
+@@ -227,7 +520,48 @@ static enum iecm_status iecm_rx_desc_alloc(struct iecm_queue *rxq, bool bufq,
   */
- static void iecm_singleq_rx_bump_ntc(struct iecm_queue *q)
+ static enum iecm_status iecm_rx_desc_alloc_all(struct iecm_vport *vport)
  {
 -	/* stub */
-+	u16 ntc = q->next_to_clean + 1;
-+	/* fetch, update, and store next to clean */
-+	if (ntc < q->desc_count)
-+		q->next_to_clean = ntc;
-+	else
-+		q->next_to_clean = 0;
- }
- 
- /**
-@@ -214,7 +687,17 @@ static struct sk_buff *
- iecm_singleq_rx_get_buf_page(struct device *dev, struct iecm_rx_buf *rx_buf,
- 			     const unsigned int size)
- {
--	/* stub */
-+	prefetch(rx_buf->page);
++	struct device *dev = &vport->adapter->pdev->dev;
++	enum iecm_status err = 0;
++	struct iecm_queue *q;
++	int i, j, num_rxq;
 +
-+	/* we are reusing so sync this buffer for CPU use */
-+	dma_sync_single_range_for_cpu(dev, rx_buf->dma,
-+				      rx_buf->page_offset, size,
-+				      DMA_FROM_DEVICE);
-+
-+	/* We have pulled a buffer for use, so decrement pagecnt_bias */
-+	rx_buf->pagecnt_bias--;
-+
-+	return rx_buf->skb;
- }
- 
- /**
-@@ -226,7 +709,116 @@ iecm_singleq_rx_get_buf_page(struct device *dev, struct iecm_rx_buf *rx_buf,
-  */
- static int iecm_rx_singleq_clean(struct iecm_queue *rx_q, int budget)
- {
--	/* stub */
-+	struct iecm_singleq_base_rx_desc *singleq_base_rx_desc;
-+	unsigned int total_rx_bytes = 0, total_rx_pkts = 0;
-+	u16 cleaned_count = 0;
-+	bool failure = false;
-+
-+	/* Process Rx packets bounded by budget */
-+	while (likely(total_rx_pkts < (unsigned int)budget)) {
-+		union iecm_rx_desc *rx_desc;
-+		struct sk_buff *skb = NULL;
-+		struct iecm_rx_buf *rx_buf;
-+		unsigned int size;
-+		u8 rx_ptype;
-+		u64 qword;
-+
-+		/* get the Rx desc from Rx queue based on 'next_to_clean' */
-+		rx_desc = IECM_RX_DESC(rx_q, rx_q->next_to_clean);
-+		singleq_base_rx_desc = (struct iecm_singleq_base_rx_desc *)
-+					rx_desc;
-+		/* status_error_ptype_len will always be zero for unused
-+		 * descriptors because it's cleared in cleanup, and overlaps
-+		 * with hdr_addr which is always zero because packet split
-+		 * isn't used, if the hardware wrote DD then the length will be
-+		 * non-zero
-+		 */
-+		qword =
-+		le64_to_cpu(rx_desc->base_wb.qword1.status_error_ptype_len);
-+
-+		/* This memory barrier is needed to keep us from reading
-+		 * any other fields out of the rx_desc
-+		 */
-+		dma_rmb();
-+#define IECM_RXD_DD BIT(IECM_RX_BASE_DESC_STATUS_DD_S)
-+		if (!iecm_rx_singleq_test_staterr(singleq_base_rx_desc,
-+						  IECM_RXD_DD))
-+			break;
-+
-+		size = (qword & IECM_RXD_QW1_LEN_PBUF_M) >>
-+		       IECM_RXD_QW1_LEN_PBUF_S;
-+		if (!size)
-+			break;
-+
-+		rx_buf = &rx_q->rx_buf.buf[rx_q->next_to_clean];
-+		skb = iecm_singleq_rx_get_buf_page(rx_q->dev, rx_buf, size);
-+
-+		if (skb)
-+			iecm_rx_add_frag(rx_buf, skb, size);
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		if (iecm_is_queue_model_split(vport->rxq_model))
++			num_rxq = vport->rxq_grps[i].splitq.num_rxq_sets;
 +		else
-+			skb = iecm_rx_construct_skb(rx_q, rx_buf, size);
++			num_rxq = vport->rxq_grps[i].singleq.num_rxq;
 +
-+		/* exit if we failed to retrieve a buffer */
-+		if (!skb) {
-+			rx_buf->pagecnt_bias++;
-+			break;
++		for (j = 0; j < num_rxq; j++) {
++			if (iecm_is_queue_model_split(vport->rxq_model))
++				q = &vport->rxq_grps[i].splitq.rxq_sets[j].rxq;
++			else
++				q = &vport->rxq_grps[i].singleq.rxqs[j];
++			err = iecm_rx_desc_alloc(q, false, vport->rxq_model);
++			if (err) {
++				dev_err(dev, "Memory allocation for Rx Queue %u failed\n",
++					i);
++				goto err_out;
++			}
 +		}
 +
-+		iecm_singleq_rx_put_buf(rx_q, rx_buf);
-+		iecm_singleq_rx_bump_ntc(rx_q);
-+
-+		cleaned_count++;
-+
-+		/* skip if it is non EOP desc */
-+		if (iecm_rx_singleq_is_non_eop(rx_q, singleq_base_rx_desc,
-+					       skb))
-+			continue;
-+
-+#define IECM_RXD_ERR_S BIT(IECM_RXD_QW1_ERROR_S)
-+		if (unlikely(iecm_rx_singleq_test_staterr(singleq_base_rx_desc,
-+							  IECM_RXD_ERR_S))) {
-+			dev_kfree_skb_any(skb);
-+			skb = NULL;
-+			continue;
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
++				q =
++				  &vport->rxq_grps[i].splitq.bufq_sets[j].bufq;
++				err = iecm_rx_desc_alloc(q, true,
++							 vport->rxq_model);
++				if (err) {
++					dev_err(dev, "Memory allocation for Rx Buffer Queue %u failed\n",
++						i);
++					goto err_out;
++				}
++			}
 +		}
-+
-+		/* correct empty headers and pad skb if needed (to make valid
-+		 * ethernet frame
-+		 */
-+		if (iecm_rx_cleanup_headers(skb)) {
-+			skb = NULL;
-+			continue;
-+		}
-+
-+		/* probably a little skewed due to removing CRC */
-+		total_rx_bytes += skb->len;
-+
-+		rx_ptype = (qword & IECM_RXD_QW1_PTYPE_M) >>
-+				IECM_RXD_QW1_PTYPE_S;
-+
-+		/* protocol */
-+		iecm_rx_singleq_process_skb_fields(rx_q, skb,
-+						   singleq_base_rx_desc,
-+						   rx_ptype);
-+
-+		/* send completed skb up the stack */
-+		iecm_rx_skb(rx_q, skb);
-+
-+		/* update budget accounting */
-+		total_rx_pkts++;
 +	}
-+	if (cleaned_count)
-+		failure = iecm_rx_singleq_buf_hw_alloc_all(rx_q, cleaned_count);
-+
-+	rx_q->itr.stats.rx.packets += total_rx_pkts;
-+	rx_q->itr.stats.rx.bytes += total_rx_bytes;
-+	u64_stats_update_begin(&rx_q->stats_sync);
-+	rx_q->q_stats.rx.packets += total_rx_pkts;
-+	rx_q->q_stats.rx.bytes += total_rx_bytes;
-+	u64_stats_update_end(&rx_q->stats_sync);
-+
-+	/* guarantee a trip back through this routine if there was a failure */
-+	return failure ? budget : (int)total_rx_pkts;
++err_out:
++	if (err)
++		iecm_rx_desc_rel_all(vport);
++	return err;
  }
  
  /**
-@@ -241,7 +833,22 @@ static inline bool
- iecm_rx_singleq_clean_all(struct iecm_q_vector *q_vec, int budget,
- 			  int *cleaned)
+@@ -279,7 +613,26 @@ void iecm_vport_queues_rel(struct iecm_vport *vport)
+ static enum iecm_status
+ iecm_vport_init_fast_path_txqs(struct iecm_vport *vport)
  {
 -	/* stub */
-+	bool clean_complete = true;
-+	int pkts_cleaned_per_q;
-+	int budget_per_q, i;
++	enum iecm_status err = 0;
++	int i, j, k = 0;
 +
-+	budget_per_q = max(budget / q_vec->num_rxq, 1);
-+	for (i = 0; i < q_vec->num_rxq; i++) {
-+		pkts_cleaned_per_q = iecm_rx_singleq_clean(q_vec->rx[0],
-+							   budget_per_q);
++	vport->txqs = kcalloc(vport->num_txq, sizeof(struct iecm_queue *),
++			      GFP_KERNEL);
 +
-+		/* if we clean as many as budgeted, we must not be done */
-+		if (pkts_cleaned_per_q >= budget_per_q)
-+			clean_complete = false;
-+		*cleaned += pkts_cleaned_per_q;
++	if (!vport->txqs) {
++		err = IECM_ERR_NO_MEMORY;
++		goto err_alloc;
 +	}
++	for (i = 0; i < vport->num_txq_grp; i++) {
++		struct iecm_txq_group *tx_grp = &vport->txq_grps[i];
 +
-+	return clean_complete;
++		for (j = 0; j < tx_grp->num_txq; j++, k++) {
++			vport->txqs[k] = &tx_grp->txqs[j];
++			vport->txqs[k]->idx = k;
++		}
++	}
++err_alloc:
++	return err;
  }
  
  /**
-@@ -251,5 +858,32 @@ iecm_rx_singleq_clean_all(struct iecm_q_vector *q_vec, int budget,
+@@ -290,7 +643,12 @@ iecm_vport_init_fast_path_txqs(struct iecm_vport *vport)
+ void iecm_vport_init_num_qs(struct iecm_vport *vport,
+ 			    struct virtchnl_create_vport *vport_msg)
+ {
+-	/* stub */
++	vport->num_txq = vport_msg->num_tx_q;
++	vport->num_rxq = vport_msg->num_rx_q;
++	if (iecm_is_queue_model_split(vport->txq_model))
++		vport->num_complq = vport_msg->num_tx_complq;
++	if (iecm_is_queue_model_split(vport->rxq_model))
++		vport->num_bufq = vport_msg->num_rx_bufq;
+ }
+ 
+ /**
+@@ -299,7 +657,32 @@ void iecm_vport_init_num_qs(struct iecm_vport *vport,
   */
- int iecm_vport_singleq_napi_poll(struct napi_struct *napi, int budget)
+ void iecm_vport_calc_num_q_desc(struct iecm_vport *vport)
  {
 -	/* stub */
-+	struct iecm_q_vector *q_vector =
-+				container_of(napi, struct iecm_q_vector, napi);
-+	bool clean_complete;
-+	int work_done = 0;
++	int num_req_txq_desc = vport->adapter->config_data.num_req_txq_desc;
++	int num_req_rxq_desc = vport->adapter->config_data.num_req_rxq_desc;
 +
-+	clean_complete = iecm_tx_singleq_clean_all(q_vector, budget);
-+
-+	/* Handle case where we are called by netpoll with a budget of 0 */
-+	if (budget <= 0)
-+		return budget;
-+
-+	/* We attempt to distribute budget to each Rx queue fairly, but don't
-+	 * allow the budget to go below 1 because that would exit polling early.
-+	 */
-+	clean_complete |= iecm_rx_singleq_clean_all(q_vector, budget,
-+						    &work_done);
-+
-+	/* If work not completed, return budget and polling will return */
-+	if (!clean_complete)
-+		return budget;
-+
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done)))
-+		iecm_vport_intr_update_itr_ena_irq(q_vector);
-+
-+	return min_t(int, work_done, budget - 1);
++	vport->complq_desc_count = 0;
++	vport->bufq_desc_count = 0;
++	if (num_req_txq_desc) {
++		vport->txq_desc_count = num_req_txq_desc;
++		if (iecm_is_queue_model_split(vport->txq_model))
++			vport->complq_desc_count = num_req_txq_desc;
++	} else {
++		vport->txq_desc_count =
++			IECM_DFLT_TX_Q_DESC_COUNT;
++		if (iecm_is_queue_model_split(vport->txq_model)) {
++			vport->complq_desc_count =
++				IECM_DFLT_TX_COMPLQ_DESC_COUNT;
++		}
++	}
++	if (num_req_rxq_desc) {
++		vport->rxq_desc_count = num_req_rxq_desc;
++		if (iecm_is_queue_model_split(vport->rxq_model))
++			vport->bufq_desc_count = num_req_rxq_desc;
++	} else {
++		vport->rxq_desc_count = IECM_DFLT_RX_Q_DESC_COUNT;
++		if (iecm_is_queue_model_split(vport->rxq_model))
++			vport->bufq_desc_count = IECM_DFLT_RX_BUFQ_DESC_COUNT;
++	}
  }
+ EXPORT_SYMBOL(iecm_vport_calc_num_q_desc);
+ 
+@@ -311,7 +694,51 @@ EXPORT_SYMBOL(iecm_vport_calc_num_q_desc);
+ void iecm_vport_calc_total_qs(struct virtchnl_create_vport *vport_msg,
+ 			      int num_req_qs)
+ {
+-	/* stub */
++	int dflt_splitq_txq_grps, dflt_singleq_txqs;
++	int dflt_splitq_rxq_grps, dflt_singleq_rxqs;
++	int num_txq_grps, num_rxq_grps;
++	int num_cpus;
++
++	/* Restrict num of queues to cpus online as a default configuration to
++	 * give best performance. User can always override to a max number
++	 * of queues via ethtool.
++	 */
++	num_cpus = num_online_cpus();
++	dflt_splitq_txq_grps = min_t(int, IECM_DFLT_SPLITQ_TX_Q_GROUPS,
++				     num_cpus);
++	dflt_singleq_txqs = min_t(int, IECM_DFLT_SINGLEQ_TXQ_PER_GROUP,
++				  num_cpus);
++	dflt_splitq_rxq_grps = min_t(int, IECM_DFLT_SPLITQ_RX_Q_GROUPS,
++				     num_cpus);
++	dflt_singleq_rxqs = min_t(int, IECM_DFLT_SINGLEQ_RXQ_PER_GROUP,
++				  num_cpus);
++
++	if (iecm_is_queue_model_split(vport_msg->txq_model)) {
++		num_txq_grps = num_req_qs ? num_req_qs : dflt_splitq_txq_grps;
++		vport_msg->num_tx_complq = num_txq_grps *
++			IECM_COMPLQ_PER_GROUP;
++		vport_msg->num_tx_q = num_txq_grps *
++				      IECM_DFLT_SPLITQ_TXQ_PER_GROUP;
++	} else {
++		num_txq_grps = IECM_DFLT_SINGLEQ_TX_Q_GROUPS;
++		vport_msg->num_tx_q = num_txq_grps *
++				      (num_req_qs ? num_req_qs :
++				       dflt_singleq_txqs);
++		vport_msg->num_tx_complq = 0;
++	}
++	if (iecm_is_queue_model_split(vport_msg->rxq_model)) {
++		num_rxq_grps = num_req_qs ? num_req_qs : dflt_splitq_rxq_grps;
++		vport_msg->num_rx_bufq = num_rxq_grps *
++					 IECM_BUFQS_PER_RXQ_SET;
++		vport_msg->num_rx_q = num_rxq_grps *
++				      IECM_DFLT_SPLITQ_RXQ_PER_GROUP;
++	} else {
++		num_rxq_grps = IECM_DFLT_SINGLEQ_RX_Q_GROUPS;
++		vport_msg->num_rx_bufq = 0;
++		vport_msg->num_rx_q = num_rxq_grps *
++				      (num_req_qs ? num_req_qs :
++				       dflt_singleq_rxqs);
++	}
+ }
+ 
+ /**
+@@ -320,7 +747,15 @@ void iecm_vport_calc_total_qs(struct virtchnl_create_vport *vport_msg,
+  */
+ void iecm_vport_calc_num_q_groups(struct iecm_vport *vport)
+ {
+-	/* stub */
++	if (iecm_is_queue_model_split(vport->txq_model))
++		vport->num_txq_grp = vport->num_txq;
++	else
++		vport->num_txq_grp = IECM_DFLT_SINGLEQ_TX_Q_GROUPS;
++
++	if (iecm_is_queue_model_split(vport->rxq_model))
++		vport->num_rxq_grp = vport->num_rxq;
++	else
++		vport->num_rxq_grp = IECM_DFLT_SINGLEQ_RX_Q_GROUPS;
+ }
+ EXPORT_SYMBOL(iecm_vport_calc_num_q_groups);
+ 
+@@ -333,7 +768,15 @@ EXPORT_SYMBOL(iecm_vport_calc_num_q_groups);
+ static void iecm_vport_calc_numq_per_grp(struct iecm_vport *vport,
+ 					 int *num_txq, int *num_rxq)
+ {
+-	/* stub */
++	if (iecm_is_queue_model_split(vport->txq_model))
++		*num_txq = IECM_DFLT_SPLITQ_TXQ_PER_GROUP;
++	else
++		*num_txq = vport->num_txq;
++
++	if (iecm_is_queue_model_split(vport->rxq_model))
++		*num_rxq = IECM_DFLT_SPLITQ_RXQ_PER_GROUP;
++	else
++		*num_rxq = vport->num_rxq;
+ }
+ 
+ /**
+@@ -344,7 +787,10 @@ static void iecm_vport_calc_numq_per_grp(struct iecm_vport *vport,
+  */
+ void iecm_vport_calc_num_q_vec(struct iecm_vport *vport)
+ {
+-	/* stub */
++	if (iecm_is_queue_model_split(vport->txq_model))
++		vport->num_q_vectors = vport->num_txq_grp;
++	else
++		vport->num_q_vectors = vport->num_txq;
+ }
+ 
+ /**
+@@ -355,7 +801,68 @@ void iecm_vport_calc_num_q_vec(struct iecm_vport *vport)
+ static enum iecm_status iecm_txq_group_alloc(struct iecm_vport *vport,
+ 					     int num_txq)
+ {
+-	/* stub */
++	struct iecm_itr tx_itr = { 0 };
++	enum iecm_status err = 0;
++	int i;
++
++	vport->txq_grps = kcalloc(vport->num_txq_grp,
++				  sizeof(*vport->txq_grps), GFP_KERNEL);
++	if (!vport->txq_grps)
++		return IECM_ERR_NO_MEMORY;
++
++	tx_itr.target_itr = IECM_ITR_TX_DEF;
++	tx_itr.itr_idx = VIRTCHNL_ITR_IDX_1;
++	tx_itr.next_update = jiffies + 1;
++
++	for (i = 0; i < vport->num_txq_grp; i++) {
++		struct iecm_txq_group *tx_qgrp = &vport->txq_grps[i];
++		int j;
++
++		tx_qgrp->vport = vport;
++		tx_qgrp->num_txq = num_txq;
++		tx_qgrp->txqs = kcalloc(num_txq, sizeof(*tx_qgrp->txqs),
++					GFP_KERNEL);
++		if (!tx_qgrp->txqs) {
++			err = IECM_ERR_NO_MEMORY;
++			goto err_alloc;
++		}
++
++		for (j = 0; j < tx_qgrp->num_txq; j++) {
++			struct iecm_queue *q = &tx_qgrp->txqs[j];
++
++			q->dev = &vport->adapter->pdev->dev;
++			q->desc_count = vport->txq_desc_count;
++			q->vport = vport;
++			q->txq_grp = tx_qgrp;
++			hash_init(q->sched_buf_hash);
++
++			if (!iecm_is_queue_model_split(vport->txq_model))
++				q->itr = tx_itr;
++		}
++
++		if (!iecm_is_queue_model_split(vport->txq_model))
++			continue;
++
++		tx_qgrp->complq = kcalloc(IECM_COMPLQ_PER_GROUP,
++					  sizeof(*tx_qgrp->complq),
++					  GFP_KERNEL);
++		if (!tx_qgrp->complq) {
++			err = IECM_ERR_NO_MEMORY;
++			goto err_alloc;
++		}
++
++		tx_qgrp->complq->dev = &vport->adapter->pdev->dev;
++		tx_qgrp->complq->desc_count = vport->complq_desc_count;
++		tx_qgrp->complq->vport = vport;
++		tx_qgrp->complq->txq_grp = tx_qgrp;
++
++		tx_qgrp->complq->itr = tx_itr;
++	}
++
++err_alloc:
++	if (err)
++		iecm_txq_group_rel(vport);
++	return err;
+ }
+ 
+ /**
+@@ -366,7 +873,118 @@ static enum iecm_status iecm_txq_group_alloc(struct iecm_vport *vport,
+ static enum iecm_status iecm_rxq_group_alloc(struct iecm_vport *vport,
+ 					     int num_rxq)
+ {
+-	/* stub */
++	enum iecm_status err = 0;
++	struct iecm_itr rx_itr = {0};
++	struct iecm_queue *q;
++	int i;
++
++	vport->rxq_grps = kcalloc(vport->num_rxq_grp,
++				  sizeof(struct iecm_rxq_group), GFP_KERNEL);
++	if (!vport->rxq_grps) {
++		err = IECM_ERR_NO_MEMORY;
++		goto err_alloc;
++	}
++
++	rx_itr.target_itr = IECM_ITR_RX_DEF;
++	rx_itr.itr_idx = VIRTCHNL_ITR_IDX_0;
++	rx_itr.next_update = jiffies + 1;
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct iecm_rxq_group *rx_qgrp = &vport->rxq_grps[i];
++		int j;
++
++		rx_qgrp->vport = vport;
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			rx_qgrp->splitq.num_rxq_sets = num_rxq;
++			rx_qgrp->splitq.rxq_sets =
++				kcalloc(num_rxq,
++					sizeof(struct iecm_rxq_set),
++					GFP_KERNEL);
++			if (!rx_qgrp->splitq.rxq_sets) {
++				err = IECM_ERR_NO_MEMORY;
++				goto err_alloc;
++			}
++
++			rx_qgrp->splitq.bufq_sets =
++				kcalloc(IECM_BUFQS_PER_RXQ_SET,
++					sizeof(struct iecm_bufq_set),
++					GFP_KERNEL);
++			if (!rx_qgrp->splitq.bufq_sets) {
++				err = IECM_ERR_NO_MEMORY;
++				goto err_alloc;
++			}
++
++			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
++				int swq_size = sizeof(struct iecm_sw_queue);
++
++				q = &rx_qgrp->splitq.bufq_sets[j].bufq;
++				q->dev = &vport->adapter->pdev->dev;
++				q->desc_count = vport->bufq_desc_count;
++				q->vport = vport;
++				q->rxq_grp = rx_qgrp;
++				q->idx = j;
++				q->rx_buf_size = IECM_RX_BUF_2048;
++				q->rsc_low_watermark = IECM_LOW_WATERMARK;
++				q->rx_buf_stride = IECM_RX_BUF_STRIDE;
++				q->itr = rx_itr;
++
++				if (vport->rx_hsplit_en) {
++					q->rx_hsplit_en = vport->rx_hsplit_en;
++					q->rx_hbuf_size = IECM_HDR_BUF_SIZE;
++				}
++
++				rx_qgrp->splitq.bufq_sets[j].num_refillqs =
++					num_rxq;
++				rx_qgrp->splitq.bufq_sets[j].refillqs =
++					kcalloc(num_rxq, swq_size, GFP_KERNEL);
++				if (!rx_qgrp->splitq.bufq_sets[j].refillqs) {
++					err = IECM_ERR_NO_MEMORY;
++					goto err_alloc;
++				}
++			}
++		} else {
++			rx_qgrp->singleq.num_rxq = num_rxq;
++			rx_qgrp->singleq.rxqs = kcalloc(num_rxq,
++							sizeof(struct iecm_queue),
++							GFP_KERNEL);
++			if (!rx_qgrp->singleq.rxqs)  {
++				err = IECM_ERR_NO_MEMORY;
++				goto err_alloc;
++			}
++		}
++
++		for (j = 0; j < num_rxq; j++) {
++			if (iecm_is_queue_model_split(vport->rxq_model)) {
++				q = &rx_qgrp->splitq.rxq_sets[j].rxq;
++				rx_qgrp->splitq.rxq_sets[j].refillq0 =
++				      &rx_qgrp->splitq.bufq_sets[0].refillqs[j];
++				rx_qgrp->splitq.rxq_sets[j].refillq1 =
++				      &rx_qgrp->splitq.bufq_sets[1].refillqs[j];
++
++				if (vport->rx_hsplit_en) {
++					q->rx_hsplit_en = vport->rx_hsplit_en;
++					q->rx_hbuf_size = IECM_HDR_BUF_SIZE;
++				}
++
++			} else {
++				q = &rx_qgrp->singleq.rxqs[j];
++			}
++			q->dev = &vport->adapter->pdev->dev;
++			q->desc_count = vport->rxq_desc_count;
++			q->vport = vport;
++			q->rxq_grp = rx_qgrp;
++			q->idx = (i * num_rxq) + j;
++			q->rx_buf_size = IECM_RX_BUF_2048;
++			q->rsc_low_watermark = IECM_LOW_WATERMARK;
++			q->rx_max_pkt_size = vport->netdev->mtu +
++							IECM_PACKET_HDR_PAD;
++			q->itr = rx_itr;
++		}
++	}
++err_alloc:
++	if (err)
++		iecm_rxq_group_rel(vport);
++	return err;
+ }
+ 
+ /**
+@@ -376,7 +994,20 @@ static enum iecm_status iecm_rxq_group_alloc(struct iecm_vport *vport,
+ static enum iecm_status
+ iecm_vport_queue_grp_alloc_all(struct iecm_vport *vport)
+ {
+-	/* stub */
++	int num_txq, num_rxq;
++	enum iecm_status err;
++
++	iecm_vport_calc_numq_per_grp(vport, &num_txq, &num_rxq);
++
++	err = iecm_txq_group_alloc(vport, num_txq);
++	if (err)
++		goto err_out;
++
++	err = iecm_rxq_group_alloc(vport, num_rxq);
++err_out:
++	if (err)
++		iecm_vport_queue_grp_rel_all(vport);
++	return err;
+ }
+ 
+ /**
+@@ -387,7 +1018,35 @@ iecm_vport_queue_grp_alloc_all(struct iecm_vport *vport)
+  */
+ enum iecm_status iecm_vport_queues_alloc(struct iecm_vport *vport)
+ {
+-	/* stub */
++	struct iecm_adapter *adapter = vport->adapter;
++	enum iecm_status err;
++
++	err = iecm_vport_queue_grp_alloc_all(vport);
++	if (err)
++		goto err_out;
++
++	err = adapter->dev_ops.vc_ops.vport_queue_ids_init(vport);
++	if (err)
++		goto err_out;
++
++	adapter->dev_ops.reg_ops.vportq_reg_init(vport);
++
++	err = iecm_tx_desc_alloc_all(vport);
++	if (err)
++		goto err_out;
++
++	err = iecm_rx_desc_alloc_all(vport);
++	if (err)
++		goto err_out;
++
++	err = iecm_vport_init_fast_path_txqs(vport);
++	if (err)
++		goto err_out;
++
++	return 0;
++err_out:
++	iecm_vport_queues_rel(vport);
++	return err;
+ }
+ 
+ /**
+@@ -1786,7 +2445,16 @@ EXPORT_SYMBOL(iecm_vport_calc_num_q_vec);
+  */
+ int iecm_config_rss(struct iecm_vport *vport)
+ {
+-	/* stub */
++	int err = iecm_send_get_set_rss_key_msg(vport, false);
++
++	if (!err)
++		err = vport->adapter->dev_ops.vc_ops.get_set_rss_lut(vport,
++								     false);
++	if (!err)
++		err = vport->adapter->dev_ops.vc_ops.get_set_rss_hash(vport,
++								      false);
++
++	return err;
+ }
+ 
+ /**
+@@ -1797,7 +2465,20 @@ int iecm_config_rss(struct iecm_vport *vport)
+  */
+ void iecm_get_rx_qid_list(struct iecm_vport *vport, u16 *qid_list)
+ {
+-	/* stub */
++	int i, j, k = 0;
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct iecm_rxq_group *rx_qgrp = &vport->rxq_grps[i];
++
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			for (j = 0; j < rx_qgrp->splitq.num_rxq_sets; j++)
++				qid_list[k++] =
++					rx_qgrp->splitq.rxq_sets[j].rxq.q_id;
++		} else {
++			for (j = 0; j < rx_qgrp->singleq.num_rxq; j++)
++				qid_list[k++] = rx_qgrp->singleq.rxqs[j].q_id;
++		}
++	}
+ }
+ 
+ /**
+@@ -1809,7 +2490,13 @@ void iecm_get_rx_qid_list(struct iecm_vport *vport, u16 *qid_list)
+  */
+ void iecm_fill_dflt_rss_lut(struct iecm_vport *vport, u16 *qid_list)
+ {
+-	/* stub */
++	int num_lut_segs, lut_seg, i, k = 0;
++
++	num_lut_segs = vport->adapter->rss_data.rss_lut_size / vport->num_rxq;
++	for (lut_seg = 0; lut_seg < num_lut_segs; lut_seg++) {
++		for (i = 0; i < vport->num_rxq; i++)
++			vport->adapter->rss_data.rss_lut[k++] = qid_list[i];
++	}
+ }
+ 
+ /**
+@@ -1820,7 +2507,67 @@ void iecm_fill_dflt_rss_lut(struct iecm_vport *vport, u16 *qid_list)
+  */
+ int iecm_init_rss(struct iecm_vport *vport)
+ {
+-	/* stub */
++	struct iecm_adapter *adapter = vport->adapter;
++	u16 *qid_list;
++	int err;
++
++	adapter->rss_data.rss_key = kzalloc(adapter->rss_data.rss_key_size,
++					    GFP_KERNEL);
++	if (!adapter->rss_data.rss_key)
++		return IECM_ERR_NO_MEMORY;
++	adapter->rss_data.rss_lut = kzalloc(adapter->rss_data.rss_lut_size,
++					    GFP_KERNEL);
++	if (!adapter->rss_data.rss_lut) {
++		kfree(adapter->rss_data.rss_key);
++		adapter->rss_data.rss_key = NULL;
++		return IECM_ERR_NO_MEMORY;
++	}
++
++	/* Initialize default rss key */
++	netdev_rss_key_fill((void *)adapter->rss_data.rss_key,
++			    adapter->rss_data.rss_key_size);
++
++	/* Initialize default rss lut */
++	if (adapter->rss_data.rss_lut_size % vport->num_rxq) {
++		u16 dflt_qid;
++		int i;
++
++		/* Set all entries to a default RX queue if the algorithm below
++		 * won't fill all entries
++		 */
++		if (iecm_is_queue_model_split(vport->rxq_model))
++			dflt_qid =
++				vport->rxq_grps[0].splitq.rxq_sets[0].rxq.q_id;
++		else
++			dflt_qid =
++				vport->rxq_grps[0].singleq.rxqs[0].q_id;
++
++		for (i = 0; i < adapter->rss_data.rss_lut_size; i++)
++			adapter->rss_data.rss_lut[i] = dflt_qid;
++	}
++
++	qid_list = kcalloc(vport->num_rxq, sizeof(u16), GFP_KERNEL);
++	if (!qid_list) {
++		kfree(adapter->rss_data.rss_lut);
++		adapter->rss_data.rss_lut = NULL;
++		kfree(adapter->rss_data.rss_key);
++		adapter->rss_data.rss_key = NULL;
++		return IECM_ERR_NO_MEMORY;
++	}
++
++	iecm_get_rx_qid_list(vport, qid_list);
++
++	/* Fill the default RSS lut values*/
++	iecm_fill_dflt_rss_lut(vport, qid_list);
++
++	kfree(qid_list);
++
++	 /* Initialize default rss HASH */
++	adapter->rss_data.rss_hash = IECM_DEFAULT_RSS_HASH_EXPANDED;
++
++	err = iecm_config_rss(vport);
++
++	return err;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
+index a386a5f6af55..2ddd5ecded2c 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
+@@ -664,7 +664,20 @@ iecm_send_destroy_vport_msg(struct iecm_vport *vport)
+ enum iecm_status
+ iecm_send_enable_vport_msg(struct iecm_vport *vport)
+ {
+-	/* stub */
++	struct iecm_adapter *adapter = vport->adapter;
++	struct virtchnl_vport v_id;
++	enum iecm_status err;
++
++	v_id.vport_id = vport->vport_id;
++
++	err = iecm_send_mb_msg(adapter, VIRTCHNL_OP_ENABLE_VPORT,
++			       sizeof(v_id), (u8 *)&v_id);
++
++	if (!err)
++		err = iecm_wait_for_event(adapter, IECM_VC_ENA_VPORT,
++					  IECM_VC_ENA_VPORT_ERR);
++
++	return err;
+ }
+ 
+ /**
+@@ -1858,7 +1871,27 @@ EXPORT_SYMBOL(iecm_vc_core_init);
+  */
+ static void iecm_vport_init(struct iecm_vport *vport, int vport_id)
+ {
+-	/* stub */
++	struct virtchnl_create_vport *vport_msg;
++
++	vport_msg = (struct virtchnl_create_vport *)
++				vport->adapter->vport_params_recvd[0];
++	vport->txq_model = vport_msg->txq_model;
++	vport->rxq_model = vport_msg->rxq_model;
++	vport->vport_type = (u16)vport_msg->vport_type;
++	vport->vport_id = vport_msg->vport_id;
++	vport->adapter->rss_data.rss_key_size = min_t(u16, NETDEV_RSS_KEY_LEN,
++						      vport_msg->rss_key_size);
++	vport->adapter->rss_data.rss_lut_size = vport_msg->rss_lut_size;
++	ether_addr_copy(vport->default_mac_addr, vport_msg->default_mac_addr);
++	vport->max_mtu = IECM_MAX_MTU;
++
++	iecm_vport_set_hsplit(vport, NULL);
++
++	init_waitqueue_head(&vport->sw_marker_wq);
++	iecm_vport_init_num_qs(vport, vport_msg);
++	iecm_vport_calc_num_q_desc(vport);
++	iecm_vport_calc_num_q_groups(vport);
++	iecm_vport_calc_num_q_vec(vport);
+ }
+ 
+ /**
 -- 
 2.21.0
 
